@@ -1,8 +1,7 @@
-# ArchMap Schema Cheatsheet
+# ArchMap Observation Schema Cheatsheet
 
-Use this reference when filling an `archmap-v0` document. Prefer the field names listed here.
-When the ArchSig source repository is available, fixtures and schema code may be used as additional
-examples, but they are not required for this skill.
+Use this reference when filling an `archmap-observation-map-v0` document. Prefer the field names listed here.
+When the ArchSig source repository is available, fixtures and schema code may be used as additional examples, but they are not required for this skill.
 
 ## Top-Level Fields
 
@@ -10,35 +9,25 @@ Required top-level shape:
 
 ```json
 {
-  "schemaVersion": "archmap-v0",
+  "schemaVersion": "archmap-observation-map-v0",
   "mapId": "...",
   "architectureId": "...",
   "generatedAt": "2026-05-24T00:00:00Z",
   "generator": {},
+  "promptRefs": [],
   "sourceInventoryRef": {},
   "generationBoundary": {},
   "sourceUniverse": {},
-  "targetUniverse": {},
-  "atomCandidates": [],
-  "moleculeCandidates": [],
-  "obstructionCircuitCandidates": [],
+  "provenance": {},
+  "atomObservations": [],
+  "moleculeObservations": [],
+  "semanticObservations": [],
   "observationGaps": [],
-  "mapItems": [],
-  "coverage": {},
-  "conflicts": [],
+  "projectionInfo": [],
+  "concernHints": [],
   "nonConclusions": []
 }
 ```
-
-Use `promptRefs` when a prompt pack was used.
-
-The atomic fields are optional for backward compatibility, but new ArchMap v2-style artifacts should
-fill them when the evidence supports it:
-
-- `atomCandidates`: source-grounded primitive architecture fact candidates.
-- `moleculeCandidates`: composed roles such as responsibility over atom candidate refs.
-- `obstructionCircuitCandidates`: failed-filling / failed-lifting / law-boundary circuits over atoms or molecules.
-- `observationGaps`: unknown, private, unavailable, or out-of-scope evidence that must not be rounded to absence.
 
 ## Source Universe
 
@@ -53,123 +42,130 @@ fill them when the evidence supports it:
 - `knownBlindSpots`: dynamic loading, framework convention expansion, runtime traces, private registries
 - `selectionBoundary`: one sentence describing the bounded scope
 
-Use `artifactId` values consistently. `mapItems[].sourceRefs[]` should point back to `sourceUniverse.includedRefs[]` when possible.
+Use `artifactId` values consistently. Observation `sourceRefs[]` should point back to `sourceUniverse.includedRefs[]` when possible.
 
-## Map Item Fields
+## Provenance
 
-Each `mapItems[]` entry should include:
+`provenance` records how the observation map was produced:
 
-- `mapItemId`: stable snake/kebab id
-- `mappingKind`: selector for the architecture/SFT interpretation
-- `sourceRefs`: evidence refs
-- `targetRef`: projected architecture target
-- `preserves`: structures preserved by the mapping
-- `forgets`: structures intentionally forgotten
-- `claimClassification`: claim status
-- `measurementBoundary`: measurement status
-- `confidence`: review priority, not probability
-- `requiredAssumptions`: optional assumptions needed to read the item
-- `missingEvidence`: evidence gaps
-- `nonConclusions`: claims this item does not make
-- `conflictCategory`: optional review cue
-- `evidenceRefs` or `theoremRefs`: optional supporting refs when available
+- `observer`
+- `observationMethod`
+- `sourceRoot`
+- `observationBoundary`
+- `reviewedRefs`
+- `excludedReadings`
+- `nonConclusions`
 
-## Atomic Observation Fields
+Use `excludedReadings` for things intentionally not read, such as lawfulness, obstruction circuits, zero curvature, private policy, runtime traces, or FieldSig forecast evidence.
 
-Each `atomCandidates[]` entry should include:
+## Atom Observations
 
-- `atomCandidateId`
-- `atomFamily`: for example `Existence.Component`, `Relation.Dependency`, `Capability.CRUD`, `Data.Table`, `Effect.DatabaseWrite`, `Observation.Contract`
+Each `atomObservations[]` entry should include:
+
+- `atomObservationId`
+- `atomFamily`: for example `existence`, `relation`, `contractSpecification`, `runtimeInteraction`, `effect`, `state`
 - `predicate`
 - `subjectRef`
 - `objectRefs`
 - `sourceRefs`
 - `observationStatus`: usually `observed` or `unmeasured`
-- `measurementBoundary`
+- `evidenceBoundary`: for example `sourceObserved`, `unmeasured`, `private`, `unavailable`, `outOfScope`
 - `confidence`: review priority, not probability
 - `uncertainty`
+- `projectionRefs`
 - `nonConclusions`
 
-Do not use atom families such as `Obstruction.*`. Obstruction belongs in
-`obstructionCircuitCandidates[]`.
+Do not use atom families such as `obstruction` or `lawViolation`. Obstruction is law-relative ArchSig analysis, not an ArchMap atom observation.
 
-Each `moleculeCandidates[]` entry should list `moleculeCandidateId`, `moleculeKind`,
-`roleName`, `atomCandidateRefs`, `sourceRefs`, `observationStatus`, `confidence`, and
-`nonConclusions`. Responsibility is a molecule, not a primitive atom.
+## Molecule Observations
 
-Each `obstructionCircuitCandidates[]` entry should list `circuitCandidateId`, `circuitKind`,
-`lawRef`, `atomCandidateRefs`, `moleculeCandidateRefs`, `sourceRefs`, `observationStatus`,
-`measurementBoundary`, `claimBoundary`, and `nonConclusions`.
+Each `moleculeObservations[]` entry should include:
 
-Each `observationGaps[]` entry should list `gapId`, `gapKind`, `subjectRef`, `evidenceStatus`,
-`reason`, `expectedAtomFamilies`, `sourceRefs`, and `nonConclusions`. Use `unmeasured`,
-`unavailable`, `private`, or `outOfScope` for gaps; do not use `measuredZero`.
+- `moleculeObservationId`
+- `moleculeFamily`
+- `roleName`
+- `atomObservationRefs`
+- `sourceRefs`
+- `observationStatus`
+- `evidenceBoundary`
+- `confidence`
+- `nonConclusions`
 
-## Common `mappingKind` Values
+Responsibility is a molecule over atom observations, not a primitive atom.
 
-AAT/AIR-facing:
+## Semantic Observations
 
-- `object`
-- `relation`
-- `semanticRole`
-- `semanticDiagram`
-- `semanticCommutationClaim`
-- `nonfillabilityWitness`
-- `policyBoundary`
-- `reviewBoundary`
+Each `semanticObservations[]` entry should include:
 
-SFT-facing:
+- `semanticObservationId`
+- `semanticFamily`: for example `operationMeaning`, `contractBehavior`, `workflow`, `semanticDiagram`, `commutationClaim`
+- `subjectRef`
+- `predicate`
+- `atomObservationRefs`
+- `moleculeObservationRefs`
+- `sourceRefs`
+- `observationStatus`
+- `evidenceBoundary`
+- `nonConclusions`
 
-- `operationCandidate`
-- `workflowCandidate`
-- `eventCandidate`
-- `stateCandidate`
-- `stateTransitionCandidate`
-- `testOracleCandidate`
-- `runtimeObservationCandidate`
-- `proposalForceCandidate`
+Scope semantic observations to the selected source refs. Do not generalize a test, fixture, or doc section into global semantic correctness.
 
-## Common `targetRef.kind` Values
+## Observation Gaps
 
-AAT/AIR-facing:
+Each `observationGaps[]` entry should include:
 
-- `air-component`
-- `air-relation`
-- `air-claim`
-- `semantic-diagram`
-- `nonfillability-witness`
+- `gapId`
+- `gapKind`
+- `subjectRef`
+- `evidenceStatus`: `unmeasured`, `unavailable`, `private`, or `outOfScope`
+- `reason`
+- `expectedAtomFamilies`
+- `sourceRefs`
+- `nonConclusions`
 
-SFT-facing:
+Do not use `measuredZero` for unavailable evidence. Use measured absence only when the selected measurement actually observed absence.
 
-- `sft-operation-candidate`
-- `sft-workflow-candidate`
-- `sft-event-candidate`
-- `sft-state-candidate`
-- `sft-transition-candidate`
-- `sft-test-oracle-candidate`
-- `sft-runtime-observation-candidate`
-- `sft-proposal-force-candidate`
+## Projection Info
 
-Use `targetRef.layer` to separate `static`, `semantic`, `policy`, `runtime`, `framework`, `dynamic`, and `operation` surfaces.
+Each `projectionInfo[]` entry should include:
 
-## Classification Values
+- `projectionId`
+- `projectionFamily`: for example `object`, `relation`, `signatureAxis`, `operationCandidate`, `stateTransitionCandidate`
+- `sourceObservationRef`
+- `targetSurface`
+- `reading`
+- `projectionBoundary`
+- `nonConclusions`
 
-Prefer these values:
+Projection info is a handoff hint. It is not ArchMap lawfulness, Lean proof, zero curvature, or FieldSig forecast output.
 
-- `measured`: source evidence was inspected and cited.
+## Concern Hints
+
+Each `concernHints[]` entry should include:
+
+- `concernHintId`
+- `concernFamily`
+- `subjectRef`
+- `atomObservationRefs`
+- `moleculeObservationRefs`
+- `semanticObservationRefs`
+- `sourceRefs`
+- `evidenceBoundary`
+- `analysisBoundary`
+- `nonConclusions`
+
+Concern hints are review cues only. They are not obstruction circuits, not law violations, and not theorem evidence. ArchSig can construct law-relative obstruction readings only after combining ArchMap with LawPolicy.
+
+## Coverage And Boundary Rules
+
+Prefer these observation statuses:
+
+- `observed`: source evidence was inspected and cited.
 - `assumed`: supplied doc/policy assumption is used.
 - `unmeasured`: relevant evidence was not measured.
-- `formal-candidate`: item may connect to Lean proof obligations, but is not discharged.
-
-Prefer these measurement boundaries:
-
-- `measuredNonzero`
-- `measuredZero`
-- `unmeasured`
-- `unavailable`
-- `private`
-- `notComparable`
-- `outOfScope`
+- `unavailable`: relevant evidence is named but not available.
+- `private`: relevant evidence is private and not inspected.
+- `outOfScope`: relevant evidence is intentionally outside the selected universe.
 
 Use confidence as qualitative review priority:
 
@@ -179,35 +175,21 @@ Use confidence as qualitative review priority:
 
 Do not read confidence as probability.
 
-## Coverage
-
-Use coverage to avoid overclaiming:
-
-```json
-{
-  "measuredLayers": ["static", "semantic"],
-  "unmeasuredLayers": ["runtime", "framework", "dynamic"],
-  "assumedLayers": ["policy"],
-  "unsupportedConstructs": ["dynamic plugin loading"]
-}
-```
-
-If any `mapItem` is semantic, make sure semantic coverage is recorded as measured, assumed, or unmeasured.
-
 ## Validation Checklist
 
 Before validation:
 
-- every `mapItemId` is unique
+- every observation id is unique
 - source refs resolve to included refs or are clearly boundary refs
-- measured claims cite source refs
+- observed claims cite source refs
 - missing evidence is not represented as measured zero
-- semantic items have semantic coverage
-- SFT-facing items are not presented as Lean theorem claims
-- atom candidates are source-grounded observations, not certified atoms
-- obstruction circuit candidates are not placed in `atomCandidates`
+- semantic observations have source support
+- SFT-facing projection hints are not presented as forecast results
+- atom observations are source-grounded observations, not certified atoms
+- responsibility is represented through molecule observations
+- concern hints are not represented as obstruction circuits
 - observation gaps are not represented as measured zero
-- non-conclusions exist at both item and top level
+- non-conclusions exist at child and top level
 
 Validate with:
 
@@ -215,4 +197,20 @@ Validate with:
 ${ARCHSIG_BIN:-archsig} archmap \
   --input <archmap.json> \
   --out .archsig/archmap/validation.json
+```
+
+Then, for handoff:
+
+```bash
+${ARCHSIG_BIN:-archsig} law-policy --input <law-policy.json> --out .archsig/law-policy/validation.json
+${ARCHSIG_BIN:-archsig} archsig-analysis \
+  --archmap <archmap.json> \
+  --law-policy <law-policy.json> \
+  --out .archsig/analysis/packet.json \
+  --validation-out .archsig/analysis/validation.json
+
+${ARCHSIG_BIN:-archsig} llm-native-workflow \
+  --archmap <archmap.json> \
+  --law-policy <law-policy.json> \
+  --out-dir .archsig/llm-native
 ```

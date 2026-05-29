@@ -1,57 +1,15 @@
-# ArchMap Examples
+# ArchMap Observation Examples
 
 Use these examples as authoring patterns. Keep examples small and evidence-bound.
 
-## Object Mapping
+## Atom Observation
 
 Good:
 
 ```json
 {
-  "mapItemId": "object-service-user",
-  "mappingKind": "object",
-  "sourceRefs": [
-    {"artifactId": "src-service-user", "kind": "file", "path": "src/services/user.ts", "symbol": "UserService", "line": 12}
-  ],
-  "targetRef": {"kind": "air-component", "id": "service.user"},
-  "preserves": ["component identity"],
-  "forgets": ["constructor details"],
-  "claimClassification": "measured",
-  "measurementBoundary": "measuredNonzero",
-  "confidence": "high",
-  "missingEvidence": [],
-  "nonConclusions": ["service mapping is not global service completeness"]
-}
-```
-
-Bad:
-
-```json
-{
-  "mapItemId": "object-service-user",
-  "mappingKind": "object",
-  "sourceRefs": [],
-  "targetRef": {"kind": "air-component", "id": "service.user"},
-  "preserves": ["all service semantics"],
-  "forgets": [],
-  "claimClassification": "measured",
-  "measurementBoundary": "measuredNonzero",
-  "confidence": "high",
-  "missingEvidence": [],
-  "nonConclusions": []
-}
-```
-
-Why bad: it has no evidence refs, overclaims semantics, and lacks boundaries.
-
-## Atomic Observation
-
-Good:
-
-```json
-{
-  "atomCandidateId": "atom-component-service-user",
-  "atomFamily": "Existence.Component",
+  "atomObservationId": "atom:component:service-user",
+  "atomFamily": "existence",
   "predicate": "component service.user exists",
   "subjectRef": "service.user",
   "objectRefs": ["service.user"],
@@ -59,10 +17,11 @@ Good:
     {"artifactId": "src-service-user", "kind": "file", "path": "src/services/user.ts", "symbol": "UserService", "line": 12}
   ],
   "observationStatus": "observed",
-  "measurementBoundary": "measuredNonzero",
+  "evidenceBoundary": "sourceObserved",
   "confidence": "high",
   "uncertainty": [],
-  "nonConclusions": ["atom candidate is not a certified ArchitectureAtom"]
+  "projectionRefs": ["projection:aat:service-user"],
+  "nonConclusions": ["atom observation is not a certified universal ArchitectureAtom"]
 }
 ```
 
@@ -70,73 +29,90 @@ Bad:
 
 ```json
 {
-  "atomCandidateId": "atom-obstruction-user-saga",
-  "atomFamily": "Obstruction.MissingCompensation",
-  "predicate": "saga is bad",
+  "atomObservationId": "atom:obstruction:user-saga",
+  "atomFamily": "obstruction",
+  "predicate": "saga violates compensation law",
   "subjectRef": "user_saga",
   "objectRefs": [],
   "sourceRefs": [],
   "observationStatus": "certified",
-  "measurementBoundary": "measuredNonzero",
+  "evidenceBoundary": "sourceObserved",
   "confidence": "high",
   "uncertainty": [],
+  "projectionRefs": [],
   "nonConclusions": []
 }
 ```
 
-Why bad: obstruction is a circuit over observed facts, not a primitive atom, and ArchMap does not certify atoms.
+Why bad: obstruction and law violation are law-relative ArchSig readings, not ArchMap atom observations. It also has no source refs and claims certification.
 
-Good obstruction circuit:
+## Molecule Observation
+
+Good:
 
 ```json
 {
-  "circuitCandidateId": "circuit-user-saga-missing-compensation",
-  "circuitKind": "FailedFilling",
-  "lawRef": "law:semantic-compensation",
-  "atomCandidateRefs": ["atom-contract-create-user"],
-  "moleculeCandidateRefs": ["molecule-user-request-responsibility"],
+  "moleculeObservationId": "molecule:user-request-responsibility",
+  "moleculeFamily": "responsibility",
+  "roleName": "user request orchestration",
+  "atomObservationRefs": [
+    "atom:component:route-users",
+    "atom:component:service-user",
+    "atom:relation:route-service"
+  ],
   "sourceRefs": [
+    {"artifactId": "doc-architecture", "kind": "docSection", "path": "docs/architecture.md", "section": "Layer policy"}
+  ],
+  "observationStatus": "observed",
+  "evidenceBoundary": "sourceObserved",
+  "confidence": "medium",
+  "nonConclusions": ["responsibility is a molecule over atom observations, not a primitive atom"]
+}
+```
+
+Bad:
+
+```json
+{
+  "atomObservationId": "atom:responsibility:user-request",
+  "atomFamily": "responsibility",
+  "predicate": "UserService owns all user request behavior",
+  "subjectRef": "service.user",
+  "objectRefs": [],
+  "sourceRefs": [],
+  "observationStatus": "observed",
+  "evidenceBoundary": "sourceObserved",
+  "confidence": "high",
+  "uncertainty": [],
+  "projectionRefs": [],
+  "nonConclusions": []
+}
+```
+
+Why bad: responsibility is composed from observed atoms and source context; it should be a molecule observation with boundaries.
+
+## Semantic Observation
+
+Good:
+
+```json
+{
+  "semanticObservationId": "semantic:create-user-flow",
+  "semanticFamily": "operationMeaning",
+  "subjectRef": "operation.createUser",
+  "predicate": "route, service, and contract jointly describe create-user behavior",
+  "atomObservationRefs": [
+    "atom:relation:route-service",
+    "atom:contract:create-user"
+  ],
+  "moleculeObservationRefs": ["molecule:user-request-responsibility"],
+  "sourceRefs": [
+    {"artifactId": "doc-architecture", "kind": "docSection", "path": "docs/architecture.md", "section": "Layer policy"},
     {"artifactId": "test-user-contract", "kind": "test", "path": "tests/user_contract.test.ts", "symbol": "createsUser"}
   ],
   "observationStatus": "observed",
-  "measurementBoundary": "measuredNonzero",
-  "claimBoundary": "selected witness; not incident causality",
-  "nonConclusions": ["obstruction circuit candidate is not an ArchitectureAtom"]
-}
-```
-
-## Semantic Relation
-
-Good:
-
-```json
-{
-  "mapItemId": "relation-route-service",
-  "mappingKind": "relation",
-  "sourceRefs": [
-    {"artifactId": "src-route-users", "kind": "file", "path": "src/routes/users.ts", "symbol": "createUserRoute", "line": 42},
-    {"artifactId": "src-service-user", "kind": "file", "path": "src/services/user.ts", "symbol": "UserService", "line": 12}
-  ],
-  "targetRef": {
-    "kind": "air-relation",
-    "layer": "semantic",
-    "id": "relation-route-service",
-    "from": "route.users",
-    "to": "service.user",
-    "subjectRef": "semantic.route.users->service.user",
-    "predicate": "route delegates user creation to service"
-  },
-  "preserves": ["request-to-service semantic dependency"],
-  "forgets": ["call count", "runtime frequency"],
-  "claimClassification": "measured",
-  "measurementBoundary": "measuredNonzero",
-  "confidence": "medium",
-  "missingEvidence": [],
-  "nonConclusions": [
-    "semantic relation is not complete over all routes",
-    "LLM-authored relation does not prove runtime relation"
-  ],
-  "conflictCategory": "missing-static-edge"
+  "evidenceBoundary": "sourceObserved",
+  "nonConclusions": ["semantic observation is not a proof of global semantic correctness"]
 }
 ```
 
@@ -144,52 +120,37 @@ Bad:
 
 ```json
 {
-  "mapItemId": "relation-route-service",
-  "mappingKind": "relation",
-  "sourceRefs": [{"artifactId": "src-route-users", "kind": "file", "path": "src/routes/users.ts"}],
-  "targetRef": {"kind": "air-relation", "layer": "semantic", "from": "route.users", "to": "service.user"},
-  "preserves": ["runtime dependency is proven"],
-  "forgets": [],
-  "claimClassification": "measured",
-  "measurementBoundary": "measuredNonzero",
-  "confidence": "high",
-  "missingEvidence": [],
+  "semanticObservationId": "semantic:create-user-global",
+  "semanticFamily": "operationMeaning",
+  "subjectRef": "operation.createUser",
+  "predicate": "all create-user executions are correct",
+  "atomObservationRefs": [],
+  "moleculeObservationRefs": [],
+  "sourceRefs": [{"artifactId": "test-user-contract", "kind": "test", "path": "tests/user_contract.test.ts"}],
+  "observationStatus": "observed",
+  "evidenceBoundary": "sourceObserved",
   "nonConclusions": []
 }
 ```
 
-Why bad: one source ref is insufficient for the relation, runtime is overclaimed, and the item has no non-conclusion.
+Why bad: it turns a selected test or doc reading into global correctness.
 
-## Semantic Diagram
+## Observation Gap
 
 Good:
 
 ```json
 {
-  "mapItemId": "contract_preservation",
-  "mappingKind": "semanticDiagram",
+  "gapId": "gap-runtime-user-db-trace",
+  "gapKind": "UnavailableRuntimeTrace",
+  "subjectRef": "runtime.service.user->db.users",
+  "evidenceStatus": "unavailable",
+  "reason": "runtime trace was requested but not supplied",
+  "expectedAtomFamilies": ["runtimeInteraction", "effect"],
   "sourceRefs": [
-    {"artifactId": "src-user-contract", "kind": "test", "path": "tests/user_contract.test.ts", "symbol": "createsUser"}
+    {"kind": "runtimeTrace", "path": ".archsig/runtime-trace.json"}
   ],
-  "targetRef": {
-    "kind": "semantic-diagram",
-    "layer": "semantic",
-    "id": "diagram-contract-preservation",
-    "from": "request.createUser",
-    "to": "state.userCreated",
-    "lhsPathRef": "path-route-service-contract",
-    "rhsPathRef": "path-service-contract",
-    "equivalence": "observational",
-    "subjectRef": "semantic.contract.create_user",
-    "predicate": "selected contract observation is preserved across the route-service path"
-  },
-  "preserves": ["contract preservation", "contract-test observation"],
-  "forgets": ["all production traces"],
-  "claimClassification": "measured",
-  "measurementBoundary": "measuredNonzero",
-  "confidence": "medium",
-  "missingEvidence": [],
-  "nonConclusions": ["contract preservation cue is selected-test relative"]
+  "nonConclusions": ["unavailable runtime trace is not measured zero"]
 }
 ```
 
@@ -197,49 +158,75 @@ Bad:
 
 ```json
 {
-  "mapItemId": "contract_preservation",
-  "mappingKind": "semanticDiagram",
-  "sourceRefs": [{"artifactId": "src-user-contract", "kind": "test", "path": "tests/user_contract.test.ts"}],
-  "targetRef": {"kind": "semantic-diagram", "layer": "semantic"},
-  "preserves": ["all user creation semantics"],
-  "forgets": [],
-  "claimClassification": "measured",
-  "measurementBoundary": "measuredNonzero",
+  "atomObservationId": "atom:runtime:user-db-none",
+  "atomFamily": "runtimeInteraction",
+  "predicate": "service.user has no runtime database interaction",
+  "subjectRef": "service.user",
+  "objectRefs": ["db.users"],
+  "sourceRefs": [],
+  "observationStatus": "observed",
+  "evidenceBoundary": "sourceObserved",
   "confidence": "high",
-  "missingEvidence": [],
+  "uncertainty": [],
+  "projectionRefs": [],
   "nonConclusions": []
 }
 ```
 
-Why bad: it turns a selected contract observation into a global semantic claim.
+Why bad: unavailable runtime evidence cannot be rewritten as observed absence.
 
-## SFT Operation Candidate
+## Projection Info
 
 Good:
 
 ```json
 {
-  "mapItemId": "operation-user-signup",
-  "mappingKind": "operationCandidate",
+  "projectionId": "projection:sft:create-user",
+  "projectionFamily": "operationCandidate",
+  "sourceObservationRef": "semantic:create-user-flow",
+  "targetSurface": "sft:operation:create-user",
+  "reading": "semantic observation can be handed off as bounded SFT evidence after ArchSig analysis",
+  "projectionBoundary": "SFT consequence analysis is not owned by ArchMap",
+  "nonConclusions": ["projection is not a forecast correctness claim"]
+}
+```
+
+Bad:
+
+```json
+{
+  "projectionId": "projection:sft:forecast-create-user",
+  "projectionFamily": "forecastCone",
+  "sourceObservationRef": "semantic:create-user-flow",
+  "targetSurface": "sft:forecast:create-user",
+  "reading": "this change will reduce risk",
+  "projectionBoundary": "computed by ArchMap",
+  "nonConclusions": []
+}
+```
+
+Why bad: ForecastCone and consequence analysis belong to FieldSig, not ArchMap.
+
+## Concern Hint
+
+Good:
+
+```json
+{
+  "concernHintId": "concern:missing-compensation",
+  "concernFamily": "missingCompensation",
+  "subjectRef": "operation.createUser",
+  "atomObservationRefs": ["atom:contract:create-user"],
+  "moleculeObservationRefs": ["molecule:user-request-responsibility"],
+  "semanticObservationRefs": ["semantic:create-user-flow"],
   "sourceRefs": [
-    {"artifactId": "src-saga", "kind": "file", "path": "src/workflows/user_signup_saga.ts", "symbol": "UserSignupSaga"}
+    {"artifactId": "test-user-contract", "kind": "test", "path": "tests/user_contract.test.ts", "symbol": "createsUser"}
   ],
-  "targetRef": {
-    "kind": "sft-operation-candidate",
-    "layer": "operation",
-    "id": "operation.user_signup",
-    "subjectRef": "operation.user_signup",
-    "predicate": "selected signup workflow is an operation-support candidate"
-  },
-  "preserves": ["operation support candidate", "workflow source ref"],
-  "forgets": ["forecast correctness", "incident causality"],
-  "claimClassification": "measured",
-  "measurementBoundary": "measuredNonzero",
-  "confidence": "medium",
-  "missingEvidence": ["runtime success/failure distribution not supplied"],
+  "evidenceBoundary": "review cue from observed contract atom and semantic observation",
+  "analysisBoundary": "not an obstruction circuit; ArchSig must combine this ArchMap with LawPolicy before constructing obstruction witnesses",
   "nonConclusions": [
-    "operation candidate is not a ForecastCone result",
-    "operation candidate does not prove future trajectory"
+    "concern hint does not prove a law violation",
+    "concern hint is not an obstruction circuit"
   ]
 }
 ```
@@ -248,68 +235,17 @@ Bad:
 
 ```json
 {
-  "mapItemId": "forecast-user-signup",
-  "mappingKind": "operationCandidate",
-  "sourceRefs": [{"artifactId": "src-saga", "kind": "file", "path": "src/workflows/user_signup_saga.ts"}],
-  "targetRef": {"kind": "sft-operation-candidate", "id": "operation.user_signup"},
-  "preserves": ["this workflow will reduce risk"],
-  "forgets": [],
-  "claimClassification": "measured",
-  "measurementBoundary": "measuredNonzero",
-  "confidence": "high",
-  "missingEvidence": [],
+  "concernHintId": "concern:missing-compensation",
+  "concernFamily": "obstructionCircuit",
+  "subjectRef": "operation.createUser",
+  "atomObservationRefs": ["atom:contract:create-user"],
+  "moleculeObservationRefs": [],
+  "semanticObservationRefs": [],
+  "sourceRefs": [],
+  "evidenceBoundary": "proved violation",
+  "analysisBoundary": "ArchMap computed the obstruction",
   "nonConclusions": []
 }
 ```
 
-Why bad: ArchMap cannot author risk reduction, forecast correctness, or future trajectory claims.
-
-## Runtime Missing Evidence
-
-Good:
-
-```json
-{
-  "mapItemId": "runtime_static_disagreement",
-  "mappingKind": "reviewBoundary",
-  "sourceRefs": [
-    {"artifactId": "src-runtime-trace", "kind": "runtimeTrace", "path": ".archsig/runtime-trace.json"},
-    {"artifactId": "src-static-edge", "kind": "file", "path": "src/db/user_db.ts", "symbol": "UserDb"}
-  ],
-  "targetRef": {
-    "kind": "air-claim",
-    "layer": "runtime",
-    "id": "claim-runtime-static-disagreement",
-    "subjectRef": "runtime.service_user.db_users",
-    "predicate": "runtime edge is unavailable while static code suggests a database dependency"
-  },
-  "preserves": ["runtime/static disagreement"],
-  "forgets": ["runtime frequency"],
-  "claimClassification": "unmeasured",
-  "measurementBoundary": "unmeasured",
-  "confidence": "low",
-  "missingEvidence": ["runtime trace not supplied"],
-  "nonConclusions": ["unavailable runtime edge is not measured zero"],
-  "conflictCategory": "semantic-runtime-disagreement"
-}
-```
-
-Bad:
-
-```json
-{
-  "mapItemId": "runtime_static_disagreement",
-  "mappingKind": "reviewBoundary",
-  "sourceRefs": [{"artifactId": "src-static-edge", "kind": "file", "path": "src/db/user_db.ts"}],
-  "targetRef": {"kind": "air-claim", "layer": "runtime"},
-  "preserves": ["no runtime dependency exists"],
-  "forgets": [],
-  "claimClassification": "measured",
-  "measurementBoundary": "measuredZero",
-  "confidence": "high",
-  "missingEvidence": [],
-  "nonConclusions": []
-}
-```
-
-Why bad: unavailable runtime evidence is not measured zero.
+Why bad: `concernHints[]` are not obstruction circuits. They remain review cues until ArchSig combines ArchMap with LawPolicy.

@@ -1,87 +1,84 @@
-# ArchMap Mapping Guide
+# ArchMap Observation Guide
 
-Use this guide when deciding what repository evidence should become an ArchMap `mapItem`.
-ArchMap authoring is evidence mapping, not architecture invention.
+Use this guide when deciding what repository evidence should become an ArchMap observation.
+ArchMap authoring is source-grounded observation, not architecture invention and not law-relative analysis.
 
-## Source Cues To Map Items
+## Source Cues To Observations
 
-| Source cue | Preferred ArchMap reading | Typical `mappingKind` | Typical `targetRef.kind` | Notes |
-| --- | --- | --- | --- | --- |
-| File, module, namespace, class, service, package | Architecture object candidate plus `Existence.Component` atom candidate | `object` | `air-component` | Preserve component identity. Forget implementation detail such as method count unless it is the measured subject. |
-| Static import, explicit dependency, constructor injection, function call used as boundary evidence | Relation candidate plus `Relation.Dependency` atom candidate | `relation` | `air-relation` | Static evidence alone does not prove semantic dependency or runtime frequency. |
-| Doc policy, layer rule, dependency rule, ownership rule | Law or policy boundary | `policyBoundary` | `air-claim` | Use `claimClassification=assumed` unless independently measured by tooling. |
-| Test, theorem, contract spec, golden fixture | Semantic evidence or contract observation | `semanticDiagram` or `semanticCommutationClaim` | `semantic-diagram` | Scope to the selected observation. Do not generalize to all executions. |
-| Two workflow paths with the same observed result | Commutation candidate | `semanticCommutationClaim` | `semantic-diagram` | Use `equivalence=observational` when the equality is test/spec relative. |
-| Workflow paths with different observed results, missing compensation, impossible filler | Obstruction circuit candidate | `nonfillabilityWitness` | `nonfillability-witness` | Put the primitive facts in `atomCandidates` and the failed filling in `obstructionCircuitCandidates`; avoid root-cause or incident-causality claims. |
-| Component with multiple responsibility regions or reasons to change | Responsibility molecule / SRP review cue | `semanticRole` | `air-claim` | Treat responsibility as a molecule over atoms, not a primitive atom. Treat SOLID as local contract-layer evidence, not a universal theorem. |
-| Event stream to read model, replay projection, CQRS projection | Event-sourcing semantic diagram | `semanticDiagram` | `semantic-diagram` | Forget event-log completeness unless the log evidence was supplied. |
-| Saga branch, rollback path, compensation handler | Compensation or missing compensation cue | `nonfillabilityWitness` or `semanticDiagram` | `nonfillability-witness` or `semantic-diagram` | Keep incident causality out of ArchMap. |
-| Runtime trace, production edge, log-derived dependency | Runtime observation candidate | `runtimeObservationCandidate` or `reviewBoundary` | `air-claim` | If trace is unavailable, mark unmeasured and list missing evidence. |
-| Framework convention such as route filename, DI registration, ORM relation | Framework boundary | `reviewBoundary` | `air-claim` | Mark framework expansion as unmeasured unless an adapter artifact is supplied. |
-| Dynamic plugin loading, reflection, generated code, private registry | Blind spot / unsupported construct | `reviewBoundary` | `air-claim` | Put it in `knownBlindSpots`, coverage, and non-conclusions. |
-| CLI workflow, observed tool workflow, user operation in repository evidence | SFT operation or workflow input candidate | `operationCandidate` or `workflowCandidate` | `sft-operation-candidate` or `sft-workflow-candidate` | This feeds FieldSig SFT projection; it is not a ForecastCone result. Use FieldSig intent skills for Epic / PRD / Spec intent. |
-| Domain event, state update, migration, lifecycle transition | SFT event / state transition candidate | `eventCandidate`, `stateCandidate`, or `stateTransitionCandidate` | `sft-event-candidate`, `sft-state-candidate`, or `sft-transition-candidate` | Preserve source refs and missing preconditions. |
-| Test oracle, acceptance criterion, invariant check | SFT test oracle candidate | `testOracleCandidate` | `sft-test-oracle-candidate` | Use as evidence for operation support, not correctness proof. |
+| Source cue | Preferred ArchMap reading | Primary field | Notes |
+| --- | --- | --- | --- |
+| File, module, namespace, class, service, package | Component existence atom observation | `atomObservations[]` | Preserve component identity. Forget implementation detail such as method count unless it is the measured subject. |
+| Static import, explicit dependency, constructor injection, function call used as boundary evidence | Relation atom observation | `atomObservations[]` | Static evidence alone does not prove semantic dependency or runtime frequency. |
+| Doc policy, layer rule, dependency rule, ownership rule | Policy or selected-universe source observation | `semanticObservations[]` or `observationGaps[]` | Record policy evidence as supplied context. Do not decide lawfulness in ArchMap. |
+| Test, theorem, contract spec, golden fixture | Contract or behavior atom / semantic observation | `atomObservations[]`, `semanticObservations[]` | Scope to the selected observation. Do not generalize to all executions. |
+| Two workflow paths with the same observed result | Semantic commutation cue | `semanticObservations[]` | Use an observational boundary when equality is test/spec relative. |
+| Workflow paths with different observed results, missing compensation, impossible filler | Review concern cue over observed facts | `concernHints[]` | Keep primitive facts in atom observations. The concern hint is not an obstruction circuit and not incident causality. |
+| Component with multiple responsibility regions or reasons to change | Responsibility molecule / SRP review cue | `moleculeObservations[]`, `concernHints[]` | Treat responsibility as a molecule over atoms, not a primitive atom. Treat SOLID as local contract-layer evidence, not a universal theorem. |
+| Event stream to read model, replay projection, CQRS projection | Event-sourcing semantic observation | `semanticObservations[]` | Forget event-log completeness unless log evidence was supplied. |
+| Saga branch, rollback path, compensation handler | Compensation observation or missing-compensation concern | `semanticObservations[]`, `concernHints[]` | Keep incident causality out of ArchMap. |
+| Runtime trace, production edge, log-derived dependency | Runtime atom observation | `atomObservations[]` | If trace is unavailable, record an observation gap. |
+| Framework convention such as route filename, DI registration, ORM relation | Framework boundary | `observationGaps[]` or low-confidence observation | Mark framework expansion as unmeasured unless an adapter artifact is supplied. |
+| Dynamic plugin loading, reflection, generated code, private registry | Blind spot / unsupported construct | `observationGaps[]` | Put it in source universe blind spots and non-conclusions. |
+| CLI workflow, observed tool workflow, user operation in repository evidence | SFT handoff hint over observed operation evidence | `semanticObservations[]`, `projectionInfo[]` | This may feed FieldSig after ArchSig analysis. It is not a ForecastCone result. |
+| Domain event, state update, migration, lifecycle transition | Event / state transition observation | `atomObservations[]`, `semanticObservations[]`, `projectionInfo[]` | Preserve source refs and missing preconditions. |
+| Test oracle, acceptance criterion, invariant check | Test oracle observation | `semanticObservations[]`, `projectionInfo[]` | Use as evidence for later operation support, not correctness proof. |
 
 ## AAT-Facing Vs SFT-Facing
 
-AAT-facing items preserve architecture structure:
+AAT-facing observations preserve architecture structure:
 
-- `object`
-- `relation`
-- `semanticRole`
-- `semanticDiagram`
-- `semanticCommutationClaim`
-- `nonfillabilityWitness`
-- `policyBoundary`
-- flatness or exactness boundary cues expressed through `preserves[]`, `targetRef.subjectRef`, or coverage fields
+- component existence
+- relation evidence
+- responsibility molecules
+- semantic diagrams or commutation cues
+- selected policy/source boundary readings
 
-SFT-facing items describe input candidates for deterministic FieldSig SFT artifacts:
+SFT-facing readings should be projection hints over observations:
 
-- `operationCandidate`
-- `workflowCandidate`
-- `eventCandidate`
-- `stateCandidate`
-- `stateTransitionCandidate`
-- `testOracleCandidate`
-- `runtimeObservationCandidate`
-- `proposalForceCandidate`
+- operation candidate
+- workflow candidate
+- event candidate
+- state candidate
+- state transition candidate
+- test oracle candidate
+- runtime observation candidate
 
 Do not put `ForecastCone`, `ConsequenceEnvelope`, attractor, basin, quality ranking, forecast correctness, or incident causality in ArchMap. Those are downstream FieldSig report surfaces.
 
 ## Evidence Strength
 
-Use conservative classification:
+Use conservative status and boundary text:
 
-| Evidence situation | `claimClassification` | `measurementBoundary` | `confidence` |
+| Evidence situation | `observationStatus` | `evidenceBoundary` | `confidence` |
 | --- | --- | --- | --- |
-| Direct source file or test evidence was read and cited | `measured` | `measuredNonzero` | `high` or `medium` |
-| Policy/doc assumption is supplied but not independently measured | `assumed` | `unmeasured` or `notComparable` | `medium` |
-| Runtime/framework/dynamic evidence is named but not supplied | `unmeasured` | `unmeasured` or `unavailable` | `low` |
+| Direct source file or test evidence was read and cited | `observed` | `sourceObserved` | `high` or `medium` |
+| Policy/doc assumption is supplied but not independently measured | `assumed` | `assumedSource` | `medium` |
+| Runtime/framework/dynamic evidence is named but not supplied | `unmeasured` | `unavailable` or `unmeasured` | `low` |
 | Private evidence is referenced but cannot be inspected | `unmeasured` | `private` | `low` |
-| Source contradicts another artifact or extraction result | `measured` or `unmeasured` depending on source | matching boundary | `medium` or `low` |
-| LLM inference without specific source refs | avoid the item | `unmeasured` if retained as boundary | `low` |
+| Source contradicts another artifact or extraction result | `observed` or `unmeasured` depending on source | matching boundary | `medium` or `low` |
+| LLM inference without specific source refs | avoid the observation | `unmeasured` if retained as a gap | `low` |
 
-Never use `measuredZero` for unavailable evidence. Use `measuredZero` only when the selected measurement actually observed absence.
+Never use measured absence for unavailable evidence. Use measured absence only when the selected measurement actually observed absence.
 
-## Conflict Categories
+## Concern Hints
 
-Use conflict categories as review cues:
+Use concern hints for source-grounded review cues:
 
-- `missing-static-edge`: semantic relation is claimed but static extractor does not show the edge.
-- `unexplained-static-edge`: static edge exists but no ArchMap item explains its semantic role.
-- `policy-disagreement`: source evidence disagrees with supplied policy.
-- `semantic-runtime-disagreement`: semantic and runtime evidence disagree, or one side is unavailable.
+- `missingCompensation`
+- `missingRuntimeEvidence`
+- `semanticRuntimeDisagreement`
+- `policySourceDisagreement`
+- `unexplainedStaticRelation`
+- `responsibilityOverload`
 
-Conflicts are not automatic failures and not automatic repair instructions.
+Concern hints are not automatic failures, not automatic repair instructions, not law violations, and not obstruction circuits. ArchSig constructs law-relative obstruction readings after ArchMap is paired with LawPolicy.
 
 ## Authoring Heuristics
 
-- Prefer fewer, well-evidenced map items over broad speculative coverage.
-- Use one `mapItem` per preserved structure, not one per paragraph.
-- Put global uncertainty in `coverage`, `knownBlindSpots`, and top-level `nonConclusions`.
-- Put item-local uncertainty in `missingEvidence` and item-level `nonConclusions`.
-- If a source file supports both AAT and SFT readings, create separate items with shared `sourceRefs`.
-- If the item is SFT-facing, make the downstream role clear in `preserves[]` and `targetRef.kind`.
-- If a theorem or Lean definition is referenced, record it as a candidate or assumption; do not claim proof discharge from JSON validation.
-- For v2-style artifacts, keep `atomCandidates`, `moleculeCandidates`, `obstructionCircuitCandidates`, and `observationGaps` synchronized with `mapItems`. These fields are observation surfaces; they do not certify universal atoms, zero curvature, or SFT forecast correctness.
+- Prefer fewer, well-evidenced observations over broad speculative coverage.
+- Use one observation per source-grounded fact or semantic reading.
+- Put global uncertainty in `sourceUniverse`, `provenance`, `observationGaps`, and top-level `nonConclusions`.
+- Put observation-local uncertainty in `uncertainty`, `evidenceBoundary`, and child-level `nonConclusions`.
+- If a source file supports both AAT and SFT readings, create observations first and put SFT reading hints in `projectionInfo[]`.
+- If a theorem or Lean definition is referenced, record it as source evidence or a candidate reading; do not claim proof discharge from JSON validation.
+- Keep `atomObservations[]`, `moleculeObservations[]`, `semanticObservations[]`, `observationGaps[]`, `projectionInfo[]`, and `concernHints[]` synchronized through refs.

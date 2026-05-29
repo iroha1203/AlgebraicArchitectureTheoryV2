@@ -1,13 +1,13 @@
 ---
 name: archmap-creater
-description: Create bounded ArchMap artifacts from repository evidence. Use when Codex is asked to draft, generate, update, or validate an archmap-v0 JSON file, prepare an ArchMap source inventory or prompt pack, run the archmap-generate protocol, or turn code/docs/tests/runtime hints into LLM-authored architecture mapping evidence.
+description: Create bounded ArchMap observation artifacts from repository evidence. Use when Codex is asked to draft, generate, update, or validate an archmap-observation-map-v0 JSON file, prepare an ArchMap source inventory or prompt pack, run the archmap-generate protocol, or turn code/docs/tests/runtime hints into LLM-authored Atom observation evidence.
 ---
 
 # ArchMap Creater
 
 ## Purpose
 
-Create `archmap-v0` as bounded LLM-authored architecture evidence. Treat ArchMap as a source-to-architecture mapping and atomic observation artifact that may feed AIR, PR / CI review, and SFT projections, not as ground truth, certified atom truth, Lean proof, forecast correctness, or causal diagnosis.
+Create `archmap-observation-map-v0` as bounded LLM-authored Atom observation evidence. Treat ArchMap as a source-grounded observation map that records observed atoms, molecules, semantic observations, gaps, projection notes, and concern hints for later ArchSig analysis. It is not ground truth, certified atom truth, obstruction analysis, Lean proof, forecast correctness, or causal diagnosis.
 
 ## Inputs
 
@@ -33,7 +33,6 @@ When working inside the ArchSig source repository, these optional source referen
 - `tools/archsig/docs/artifacts-and-boundaries.md`
 - `tools/archsig/tests/fixtures/minimal/archmap.json`
 - `tools/archsig/tests/fixtures/minimal/archmap_source_inventory.json`
-- `tools/archsig/tests/fixtures/expressiveness/archmap_expressiveness_suite_v0.json`
 
 ## Workflow
 
@@ -42,7 +41,7 @@ When working inside the ArchSig source repository, these optional source referen
    - Preserve blind spots instead of filling them with guesses.
    - Do not infer evidence from files that were not read or supplied.
    - For a new repository or unfamiliar area, read `references/repository-survey.md` first.
-   - For non-trivial authoring, read `references/mapping-guide.md` before drafting map items.
+   - For non-trivial authoring, read `references/mapping-guide.md` before drafting observations.
    - When unsure about field values, read `references/schema-cheatsheet.md`.
    - When checking output quality, compare against `references/examples.md`.
 
@@ -57,11 +56,15 @@ ${ARCHSIG_BIN:-archsig} archmap-generate \
   --out .archsig/archmap/generation-protocol.json
 ```
 
-3. Draft `archmap-v0`.
-   - Use `mapItems[]` as the unit of mapping.
-   - Use `atomCandidates[]` for primitive observed facts, `moleculeCandidates[]` for roles such as responsibility, `obstructionCircuitCandidates[]` for failed filling / lifting circuits, and `observationGaps[]` for unknown/private/unavailable boundaries.
-   - Keep `sourceRefs`, `targetRef`, `preserves`, `forgets`, `claimClassification`, `measurementBoundary`, `confidence`, `missingEvidence`, and `nonConclusions` explicit.
-   - Separate AAT-facing items from SFT-facing items. Shared source refs are allowed; proof claims and forecast inputs must not be conflated.
+3. Draft `archmap-observation-map-v0`.
+   - Use `atomObservations[]` for source-grounded primitive observations.
+   - Use `moleculeObservations[]` for composed roles such as responsibility over atom observation refs.
+   - Use `semanticObservations[]` for selected behavioral, contract, workflow, or diagram readings supported by sources.
+   - Use `observationGaps[]` for unknown/private/unavailable/out-of-scope evidence; never round gaps to absence.
+   - Use `projectionInfo[]` only as downstream reading hints, not as proof or lawfulness claims.
+   - Use `concernHints[]` only as review cues. A concern hint is not an obstruction circuit; ArchSig constructs law-relative obstruction readings only after combining ArchMap with LawPolicy.
+   - Keep `sourceRefs`, `observationStatus`, `evidenceBoundary`, `confidence`, `uncertainty`, `projectionRefs`, and `nonConclusions` explicit.
+   - Separate AAT-facing observations from SFT-facing projection hints. Shared source refs are allowed; proof claims and forecast inputs must not be conflated.
    - Include semantic structure only when evidence supports it.
 
 4. Validate the result.
@@ -73,7 +76,26 @@ ${ARCHSIG_BIN:-archsig} archmap \
 
 ```
 
-5. Read the validation report before handing the artifact downstream.
+5. Build downstream analysis only through the LLM-native path when a LawPolicy is available.
+
+```bash
+${ARCHSIG_BIN:-archsig} law-policy \
+  --input <law-policy.json> \
+  --out .archsig/law-policy/validation.json
+
+${ARCHSIG_BIN:-archsig} archsig-analysis \
+  --archmap <archmap.json> \
+  --law-policy <law-policy.json> \
+  --out .archsig/analysis/packet.json \
+  --validation-out .archsig/analysis/validation.json
+
+${ARCHSIG_BIN:-archsig} llm-native-workflow \
+  --archmap <archmap.json> \
+  --law-policy <law-policy.json> \
+  --out-dir .archsig/llm-native
+```
+
+6. Read the validation report before handing the artifact downstream.
    - Treat failures as schema or boundary problems to fix.
    - Treat warnings as review cues, not automatic rejection.
    - Check `formalPromotionGuardrailChecks`, `leanPreservationPreconditionChecklist`, `sourceInventoryChecks`, `atomicObservationChecks`, `atomicObservationSummary`, conflicts, missing evidence, and non-conclusions.
@@ -81,10 +103,10 @@ ${ARCHSIG_BIN:-archsig} archmap \
 ## Writing Rules
 
 - Preserve uncertainty in fields; do not erase it in prose.
-- Never claim that `archmap-v0` validates architecture lawfulness.
-- Never claim that `atomCandidates[]` certifies universal `ArchitectureAtom` truth.
-- Never put obstruction in `atomCandidates[]`; use `obstructionCircuitCandidates[]`.
-- Never treat responsibility as a primitive atom; use `moleculeCandidates[]`.
+- Never claim that `archmap-observation-map-v0` validates architecture lawfulness.
+- Never claim that `atomObservations[]` certifies universal `ArchitectureAtom` truth.
+- Never put obstruction circuits in ArchMap. Use `concernHints[]` for source-grounded review cues and let ArchSig + LawPolicy construct law-relative obstruction readings.
+- Never treat responsibility as a primitive atom; use `moleculeObservations[]`.
 - Never claim that validation produces a Lean proof term.
 - Never put ForecastCone, ConsequenceEnvelope, attractor, basin, incident causality, or quality ranking into ArchMap as computed results.
 - Do not write implementation progress into PRDs. Use issues, theorem indexes, proof obligations, roadmaps, or PRs for status.
@@ -93,4 +115,4 @@ ${ARCHSIG_BIN:-archsig} archmap \
 
 Use `$arch-pr-analyzer` after this skill when the user asks what an ArchMap or PR / CI artifact implies for PR quality or current architecture state.
 
-Use FieldSig planning skills after this skill when the user has both an ArchMap and IntentMap and asks for planning forecast.
+Use FieldSig planning skills after ArchSig has produced `archsig-analysis-packet-v0` and the user asks for planning forecast.
