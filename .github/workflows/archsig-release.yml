@@ -108,6 +108,7 @@ jobs:
           cp LICENSE package/LICENSE
           cp tools/archsig/README.md package/README.md
           cp tools/archsig/docs/commands.md package/docs/commands.md
+          cp -R tools/archsig/skills package/skills
 
       - name: Create tar archive
         if: matrix.archive_format == 'tar.gz'
@@ -134,40 +135,11 @@ jobs:
           path: dist/*
           if-no-files-found: error
 
-  package-skills:
-    name: Package ArchSig skills
-    needs: release-context
-    runs-on: ubuntu-latest
-    env:
-      RELEASE_TAG: ${{ needs.release-context.outputs.tag }}
-      ASSET_TAG: ${{ needs.release-context.outputs.asset_tag }}
-    steps:
-      - name: Checkout release tag
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ needs.release-context.outputs.tag }}
-
-      - name: Create skills archive
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          mkdir -p dist
-          tar -czf "dist/archsig-skills-${ASSET_TAG}.tar.gz" -C tools/archsig skills
-
-      - name: Upload skills archive
-        uses: actions/upload-artifact@v4
-        with:
-          name: archsig-skills
-          path: dist/*
-          if-no-files-found: error
-
   publish-assets:
     name: Upload release assets
     needs:
       - release-context
       - build-binaries
-      - package-skills
     runs-on: ubuntu-latest
     env:
       GH_TOKEN: ${{ github.token }}
