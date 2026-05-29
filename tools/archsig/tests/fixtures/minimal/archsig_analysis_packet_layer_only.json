@@ -1582,6 +1582,7 @@
           "bridgeAtomFamilies": [],
           "bridgeScore": 0,
           "pathPairRefs": [],
+          "edgeBreakdowns": [],
           "sharedAxisRefs": [
             "authorityTrustBoundary",
             "llmOutputMediation",
@@ -2404,6 +2405,7 @@
     "transferBridgeSummary": [
       "transfer-bridge:fixture-archmap-atom-observation transfers=1 bridges=1 repairRanks=1 boundaryRanks=0 (needsReview)"
     ],
+    "transferBridgeEdgeSummary": [],
     "repairOperationSummary": [],
     "complexityTransferNotes": [
       "molecule:user-request-responsibility: review low (permissionCoverage, sourceBackedDomainCohesion, llmOutputMediation)"

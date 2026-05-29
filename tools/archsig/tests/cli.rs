@@ -921,12 +921,46 @@ fn assert_north_star_packet_surfaces(json: &Value) {
                         && bridge["targetHubMoleculeRef"].as_str().is_some()
                         && bridge["bridgeAtomFamilies"].as_array().is_some()
                         && bridge["pathPairRefs"].as_array().is_some()
+                        && bridge["edgeBreakdowns"].as_array().is_some()
                         && bridge["reviewRisk"].as_str().is_some()
                         && bridge["recommendedBoundaryPreparation"].as_str().is_some()
                         && bridge["evidenceBoundary"].as_str().is_some()
                 })
         }),
         "bridge atom family readings must carry hub refs, bridge families, path refs, review risk, and evidence boundaries"
+    );
+    assert!(
+        transfer_bridges.iter().all(|entry| {
+            entry["bridgeAtomFamilies"]
+                .as_array()
+                .expect("bridge atom families are array")
+                .iter()
+                .flat_map(|bridge| {
+                    bridge["edgeBreakdowns"]
+                        .as_array()
+                        .expect("edge breakdowns are array")
+                })
+                .all(|edge| {
+                    edge["sourceMoleculeRef"].as_str().is_some()
+                        && edge["targetMoleculeRef"].as_str().is_some()
+                        && edge["pairRef"].as_str().is_some()
+                        && edge["overlapScore"].as_i64().is_some_and(|score| score > 0)
+                        && edge["sharedAtomFamilies"]
+                            .as_array()
+                            .is_some_and(|items| !items.is_empty())
+                        && edge["familySupportingAtomRefs"]
+                            .as_array()
+                            .is_some_and(|items| !items.is_empty())
+                        && edge["sourceRefs"]
+                            .as_array()
+                            .is_some_and(|items| !items.is_empty())
+                        && edge["dependencyKind"].as_str().is_some()
+                        && edge["dependencyReading"].as_str().is_some()
+                        && edge["recommendedCutKind"].as_str().is_some()
+                        && edge["cutRationale"].as_str().is_some()
+                })
+        }),
+        "bridge edge breakdowns must carry molecule refs, source refs, dependency reading, and cut recommendation"
     );
     assert!(
         json["llmInterpretationPacket"]["recommendedHumanReviewFocus"]

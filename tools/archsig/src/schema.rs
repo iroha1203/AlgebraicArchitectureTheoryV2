@@ -1056,9 +1056,30 @@ pub struct ArchSigBridgeAtomFamilyReadingV0 {
     pub bridge_atom_families: Vec<String>,
     pub bridge_score: i64,
     pub path_pair_refs: Vec<String>,
+    pub edge_breakdowns: Vec<ArchSigBridgeEdgeBreakdownV0>,
     pub shared_axis_refs: Vec<String>,
     pub review_risk: String,
     pub recommended_boundary_preparation: String,
+    pub evidence_boundary: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigBridgeEdgeBreakdownV0 {
+    pub edge_id: String,
+    pub source_molecule_ref: String,
+    pub target_molecule_ref: String,
+    pub pair_ref: String,
+    pub overlap_score: i64,
+    pub shared_atom_families: Vec<String>,
+    pub shared_atom_refs: Vec<String>,
+    pub family_supporting_atom_refs: Vec<String>,
+    pub source_refs: Vec<String>,
+    pub dependency_kind: String,
+    pub dependency_reading: String,
+    pub recommended_cut_kind: String,
+    pub cut_rationale: String,
     pub evidence_boundary: String,
     pub non_conclusions: Vec<String>,
 }
@@ -1220,6 +1241,7 @@ pub struct ArchSigLlmInterpretationPacketV0 {
     pub spectral_mode_summary: Vec<String>,
     pub spectral_drilldown_summary: Vec<String>,
     pub transfer_bridge_summary: Vec<String>,
+    pub transfer_bridge_edge_summary: Vec<String>,
     pub repair_operation_summary: Vec<String>,
     pub complexity_transfer_notes: Vec<String>,
     pub coverage_gaps_and_exactness_blockers: Vec<String>,
