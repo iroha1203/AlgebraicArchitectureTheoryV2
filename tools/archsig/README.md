@@ -60,12 +60,10 @@ existing tag. The workflow uploads:
 - `archsig-<tag>-linux-x86_64.tar.gz`
 - `archsig-<tag>-macos-universal.tar.gz`
 - `archsig-<tag>-windows-x86_64.zip`
-- `archsig-skills-<tag>.tar.gz`
 - `SHA256SUMS.txt`
 
 Each binary archive contains the `archsig` executable, the repository license,
-and the ArchSig README / command guide. The skills archive contains
-`tools/archsig/skills`.
+the ArchSig README / command guide, and the ArchSig skills directory.
 
 Use version-only tags such as `v0.1.0` or prerelease tags such as
 `v0.1.0-rc.1`. Do not include `archsig` in the tag name; asset names already
