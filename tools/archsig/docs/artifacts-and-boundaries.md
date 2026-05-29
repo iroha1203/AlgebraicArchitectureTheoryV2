@@ -56,6 +56,13 @@ Adapter output must preserve coverage boundary, unsupported constructs, missing
 evidence, and non-conclusions. Missing, private, unavailable, unsupported,
 dynamic, or framework-specific evidence is not measured zero.
 
+ArchSig keeps the shared signature-shape and delta helpers only for snapshot,
+diff, AIR, and bounded review attribution. PR metadata accepted by `air` and
+`signature-diff` is read as `archsig-snapshot-attribution-input-v0`, not as an
+empirical outcome dataset. ArchSig does not emit empirical PR-history datasets
+or own historical outcome modeling; those surfaces belong to FieldSig or to an
+explicit external data pipeline.
+
 ## FieldSig Handoff
 
 FieldSig consumes the serialized `archsig-analysis-packet-v0` through
