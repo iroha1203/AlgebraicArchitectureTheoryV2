@@ -35,6 +35,39 @@ The command emits only:
 reading. It is not a natural-language judgement, Lean proof, architecture
 lawfulness certificate, or automatic repair instruction.
 
+## Sharded ArchMap Authoring
+
+Large ArchMaps may be drafted in a sharded authoring layout documented in
+`tools/archsig/docs/sharded-archmap.md`:
+
+```text
+.archsig/archmap/
+  manifest.json
+  slices/
+    authority.archmap-slice.json
+    state.archmap-slice.json
+    effects.archmap-slice.json
+    providers.archmap-slice.json
+    runtime.archmap-slice.json
+```
+
+The manifest schema is `archmap-shard-manifest-v0`. This is an authoring-side
+layout, not a current analysis input. The primary sharding model is horizontal:
+each `archmap-observation-slice-v0` file is a bounded observation slice over a
+repository surface or sub-agent assignment. Bundle/export must produce a
+monolithic `archmap-observation-map-v0` file before running:
+
+```bash
+cargo run --manifest-path tools/archsig/Cargo.toml -- archmap \
+  --input .archsig/archmap/archmap.json \
+  --out .archsig/llm-native/archmap-validation.json
+```
+
+Current commands intentionally keep the analysis contract monolithic. A future
+bundle/export command should validate slice paths, duplicate ids, dangling
+cross-slice refs, required/optional slice policy, allowed cross-slice
+references, and source refs before writing the exported ArchMap.
+
 ## Step Commands
 
 ```bash

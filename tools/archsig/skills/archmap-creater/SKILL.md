@@ -149,6 +149,50 @@ Integration rules:
 - Preserve each agent's blind spots and excluded readings in `sourceUniverse`, `provenance`, `observationGaps[]`, or `nonConclusions[]`.
 - Do not merge all candidates mechanically. The final ArchMap is an integrated bounded observation map.
 
+## Sharded ArchMap Authoring
+
+For large maps, author shards under `.archsig/archmap/` and keep
+`manifest.json` as the review index. Use horizontal bounded observation slices
+by repository surface, subsystem, package, team-owned area, or sub-agent
+assignment. Sharding is an authoring layout only; export to monolithic
+`archmap-observation-map-v0` before handing the artifact to current ArchSig
+analysis commands.
+
+Default shard layout:
+
+```text
+.archsig/archmap/
+  manifest.json
+  slices/
+    authority.archmap-slice.json
+    state.archmap-slice.json
+    effects.archmap-slice.json
+    providers.archmap-slice.json
+    runtime.archmap-slice.json
+```
+
+Use `archmap-shard-manifest-v0` for the manifest. It should list slice ids,
+surfaces, paths, owned source scopes, allowed cross-slice references,
+required/optional status, export policy, cross-reference validation checks,
+fixture policy, and non-conclusions.
+
+Each `archmap-observation-slice-v0` should contain a local
+`sourceUniverseFragment`, `provenanceFragment`, `generationBoundary`,
+`atomObservations[]`, `moleculeObservations[]`, `semanticObservations[]`,
+`observationGaps[]`, `projectionInfo[]`, `concernHints[]`, and
+`nonConclusions[]`.
+
+Bundle/export rules:
+
+- Export must produce one valid `archmap-observation-map-v0` JSON file.
+- Required missing slices fail; optional missing slices may warn.
+- Duplicate observation ids across slices fail.
+- Source-universe fragments merge by artifact id, path, kind, and boundary.
+- Dangling molecule, semantic, projection, concern, and source refs fail unless the reference is explicitly a gap/private/unavailable boundary.
+- Disallowed cross-slice references fail or must be downgraded to uncertainty/gap before export.
+- Source refs for observed atoms must resolve to exported `sourceUniverse.includedRefs[]`.
+- Sharding does not prove source completeness, lawfulness, certified Atom truth, or Lean theorem discharge.
+
 ## Workflow
 
 1. Identify the bounded source universe.
