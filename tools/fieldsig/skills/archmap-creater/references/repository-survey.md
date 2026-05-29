@@ -84,7 +84,7 @@ Read enough to support claims:
 - For semantic diagrams, read the test/spec/fixture that observes the path or equivalence.
 - For SFT candidates, read the operation/workflow/state source and record missing runtime/calibration evidence.
 
-If a claim requires more reading than the current scope allows, keep it out of `mapItems[]` or mark it as `unmeasured` with `missingEvidence`.
+If a claim requires more reading than the current scope allows, keep it out of `atomObservations[]` / `semanticObservations[]` or record it as an `observationGaps[]` entry.
 
 ## Drafting Order
 

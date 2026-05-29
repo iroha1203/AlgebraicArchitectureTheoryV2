@@ -15,7 +15,7 @@ tooling evidence, LLM judgment, human review, and Lean proof.
 
 - `aat-observable-bundle-v0` and validation report
 - AIR and AIR validation
-- `archmap-v0` and ArchMap validation report
+- `archmap-observation-map-v0` and ArchMap validation report
 - theorem-check report
 - Feature Extension Report
 - `obstruction-witness-v0`
