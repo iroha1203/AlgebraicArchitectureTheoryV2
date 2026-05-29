@@ -25,11 +25,18 @@ candidate observations. The final ArchMap still requires an integration pass
 that deduplicates candidates, resolves source refs, preserves gaps, and promotes
 only primitive source-grounded facts to `atomObservations`.
 
+Large ArchMaps may be authored as horizontal bounded observation slices. This is
+a review and authoring layout headed by `archmap-shard-manifest-v0`; the current
+compatibility contract remains exported `archmap-observation-map-v0`. Current
+ArchSig analysis commands consume the exported monolithic artifact, not slice
+fragments.
+
 ## Current Artifacts
 
 | artifact | schemaVersion | role |
 | --- | --- | --- |
 | ArchMap observation map | `archmap-observation-map-v0` | Source-grounded Atom observation evidence. It records `atomObservations`, `moleculeObservations`, `semanticObservations`, `observationGaps`, `projectionInfo`, `concernHints`, provenance, and non-conclusions. It is law-independent and does not own obstruction circuits, lawfulness, zero curvature, repair conclusions, or Lean theorem discharge. |
+| ArchMap shard manifest | `archmap-shard-manifest-v0` | Planned authoring-side manifest for splitting large ArchMaps into horizontal bounded observation slices such as authority, state, effects, providers, runtime, domain, and governance. It is not a LawPolicy, runtime trace, or source inventory. It must bundle/export to `archmap-observation-map-v0` before current analysis. |
 | ArchMap validation report | `archmap-validation-report-v0` | Checks schema support, identity, references, provenance, source refs, observation / concern guardrails, projection separation, gap boundaries, and formal-promotion non-conclusions. |
 | LawPolicy | `law-policy-v0` | Selected LawUniverse / witness-rule / molecule-pattern / obstruction-definition / signature-axis policy for one review context. |
 | LawPolicy validation report | `law-policy-validation-report-v0` | Checks LawPolicy identity, uniqueness, cross references, witness / obstruction guardrails, coverage requirements, exactness assumptions, and non-conclusions. |

@@ -1,0 +1,92 @@
+{
+  "schemaVersion": "archmap-observation-slice-v0",
+  "sliceId": "state",
+  "sliceKind": "boundedObservationSlice",
+  "surface": "state/model",
+  "generationBoundary": {
+    "tokenBudget": "fixture",
+    "scope": ["src/services", "src/models"],
+    "excludedRefs": [],
+    "privateRefs": [],
+    "unavailableRefs": [],
+    "nonConclusions": [
+      "state slice does not imply complete data model coverage"
+    ]
+  },
+  "sourceUniverseFragment": {
+    "root": ".",
+    "includedRefs": [
+      {
+        "artifactId": "src-service-user",
+        "kind": "file",
+        "path": "src/services/user.ts",
+        "symbol": "UserService",
+        "line": 12
+      }
+    ],
+    "excludedRefs": [],
+    "unavailableRefs": [],
+    "privateRefs": [],
+    "hashes": [],
+    "knownBlindSpots": [],
+    "selectionBoundary": "state slice over user service state evidence"
+  },
+  "provenanceFragment": {
+    "observer": "human-reviewed-fixture",
+    "observationMethod": "bounded state slice fixture",
+    "sourceRoot": ".",
+    "observationBoundary": "source-grounded state observations only",
+    "reviewedRefs": [
+      {
+        "artifactId": "src-service-user",
+        "kind": "file",
+        "path": "src/services/user.ts",
+        "symbol": "UserService",
+        "line": 12
+      }
+    ],
+    "excludedReadings": [
+      "complete data model coverage",
+      "runtime database state"
+    ],
+    "nonConclusions": [
+      "slice provenance is not complete repository coverage"
+    ]
+  },
+  "atomObservations": [
+    {
+      "atomObservationId": "atom:state:user-record",
+      "atomFamily": "state",
+      "predicate": "user service persists user record state",
+      "subjectRef": "state.userRecord",
+      "objectRefs": ["service.user"],
+      "sourceRefs": [
+        {
+          "artifactId": "src-service-user",
+          "kind": "file",
+          "path": "src/services/user.ts",
+          "symbol": "UserService",
+          "line": 12
+        }
+      ],
+      "observationStatus": "observed",
+      "evidenceBoundary": "sourceObserved",
+      "confidence": "high",
+      "uncertainty": [
+        "runtime database contents were not inspected"
+      ],
+      "projectionRefs": [],
+      "nonConclusions": [
+        "state atom does not prove persistence correctness"
+      ]
+    }
+  ],
+  "moleculeObservations": [],
+  "semanticObservations": [],
+  "observationGaps": [],
+  "projectionInfo": [],
+  "concernHints": [],
+  "nonConclusions": [
+    "state slice is candidate ArchMap evidence until bundled and validated"
+  ]
+}

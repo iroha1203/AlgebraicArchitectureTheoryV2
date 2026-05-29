@@ -19,6 +19,10 @@ forecast, governance, calibration, and operational feedback under
 | ArchSig analysis | `archsig-analysis`, `llm-native-workflow` | ArchSig combines ArchMap and LawPolicy into law-relative molecule readings, obstruction circuits, signature axes, flatness readings, repair candidates, and LLM interpretation notes. |
 | Schema | `schema-catalog` | The catalog lists only the current LLM Atom ArchMap artifacts. |
 
+Large ArchMaps may be authored in shards for review and parallel generation,
+but current commands consume the exported monolithic
+`archmap-observation-map-v0` artifact.
+
 Pre-Atom ArchSig commands were removed instead of kept as compatibility shims.
 Git history is the archive for those workflows.
 
@@ -50,6 +54,7 @@ scan-first path is no longer an ArchSig workflow.
 
 - [Command Guide](docs/commands.md)
 - [Artifacts And Boundaries](docs/artifacts-and-boundaries.md)
+- [Sharded ArchMap Design](docs/sharded-archmap.md)
 
 ## Test
 

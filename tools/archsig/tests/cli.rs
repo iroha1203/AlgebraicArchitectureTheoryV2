@@ -13,6 +13,10 @@ fn expressiveness_root() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/expressiveness")
 }
 
+fn sharded_root() -> PathBuf {
+    Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/sharded")
+}
+
 #[test]
 fn cli_help_exposes_only_llm_atom_archmap_surface() {
     let output = run_sig0_output(&["--help"]);
@@ -146,6 +150,46 @@ fn cli_runs_llm_native_archmap_lawpolicy_archsig_workflow() {
     );
     let llm_packet = read_json(&out_dir.join("llm-interpretation-packet.json"));
     assert_eq!(llm_packet, analysis_packet);
+}
+
+#[test]
+fn sharded_archmap_design_fixture_uses_horizontal_slices() {
+    let root = sharded_root();
+    let manifest = read_json(&root.join("manifest.json"));
+    assert_eq!(manifest["schemaVersion"], "archmap-shard-manifest-v0");
+    assert_eq!(
+        manifest["shardingMode"],
+        "horizontal-bounded-observation-slices"
+    );
+
+    let slices = manifest["slices"]
+        .as_array()
+        .expect("manifest slices are an array");
+    assert!(
+        slices.len() >= 2,
+        "horizontal fixture should include multiple bounded slices"
+    );
+    for slice in slices {
+        assert_eq!(slice["sliceKind"], "boundedObservationSlice");
+        let path = slice["path"].as_str().expect("slice path is present");
+        let slice_json = read_json(&root.join(path));
+        assert_eq!(slice_json["schemaVersion"], "archmap-observation-slice-v0");
+        assert_eq!(slice_json["sliceId"], slice["sliceId"]);
+        assert_eq!(slice_json["surface"], slice["surface"]);
+        assert!(
+            slice_json.get("sourceUniverseFragment").is_some(),
+            "slice {path} must carry its local source universe fragment"
+        );
+        assert!(
+            slice_json.get("atomObservations").is_some(),
+            "slice {path} must retain ArchMap observation arrays"
+        );
+    }
+
+    assert_eq!(
+        manifest["exportPolicy"]["targetSchemaVersion"],
+        "archmap-observation-map-v0"
+    );
 }
 
 #[test]

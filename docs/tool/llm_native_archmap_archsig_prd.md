@@ -134,6 +134,23 @@ uncertainty、non-conclusions を持つ候補 packet にとどめる。最終 Ar
 重複を解消し、source refs を `sourceUniverse` に解決し、coarse candidate を適切な
 surface に分配し、agent 間の不一致を confidence / uncertainty / gap として保存する。
 
+巨大な `archmap.json` を直接編集・review する必要がある場合は、authoring-side の
+`archmap-shard-manifest-v0` を使って水平 shard に分割できる。標準 shard は schema field
+ごとの垂直分割ではなく、authority/authentication、state/model、effects/jobs、
+provider/trust、domain/contracts、runtime/framework、docs/governance などの bounded
+observation slice である。各 `archmap-observation-slice-v0` は、local source universe
+fragment、provenance fragment、Atom / Molecule / Semantic observations、gaps、
+projections、concerns、non-conclusions を持つ。manifest は slice path、surface、
+owned source scope、cross-slice reference rule、bundle/export policy、fixture policy を
+保持する。
+
+sharded ArchMap は新しい分析面ではない。現在の互換 contract は、bundle/export 後の
+monolithic `archmap-observation-map-v0` である。bundle/export validation は、shard path、
+required/optional slice、id collision、source refs、molecule / semantic / projection /
+concern の cross-reference、cross-slice reference、non-conclusions の保持を確認する。
+ただし、source completeness、lawfulness、Lean theorem discharge、forecast correctness は
+証明しない。
+
 ### R2. ArchMap は law-independent に保つ
 
 ArchMap は Atom、Molecule、Semantic observation、Observation gap を記録する。
@@ -316,6 +333,8 @@ ArchSig は FieldSig の forecast、governance、calibration、operational feedb
   observation の根拠そのものではないことが明記されている。
 - 大規模 repository 向けに、sub-agent の候補 packet と integrator の統合責務が
   ArchMap authoring 境界として定義されている。
+- `archmap-shard-manifest-v0` の manifest、水平 bounded observation slice、monolithic
+  export 互換方針、cross-reference validation、fixture 方針が定義されている。
 - Non-Goals が、LLM truth、extractor completeness、Lean theorem discharge、future safety、
   SFT forecast correctness を明確に除外している。
 - 破壊的変更を許容し、既存 `archmap-v0` / report / fixture / CLI surface との後方互換性を
