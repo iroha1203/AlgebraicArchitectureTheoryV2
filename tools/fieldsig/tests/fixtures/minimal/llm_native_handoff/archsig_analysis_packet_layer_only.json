@@ -91,6 +91,21 @@
       ],
       "evidenceSummary": "0 obstruction circuit(s) contribute to sig-axis:layer-violation",
       "sourceRefs": [],
+      "missingEvidence": [
+        "coverage:layer-atoms: report observation gap and block signature-zero reflection",
+        "gap-runtime-user-db-trace: runtime trace was requested but not supplied"
+      ],
+      "excludedReadings": [
+        "Lean theorem discharge",
+        "SFT forecast correctness",
+        "automatic repair safety",
+        "exactness-limited: the selected witness rules cover only policy-declared laws",
+        "exactness-limited: zero readings are exact only for observed atoms and declared coverage requirements",
+        "global architecture lawfulness",
+        "global architecture truth",
+        "sig-axis:layer-violation coverage boundary: coverage gaps remain observation gaps, not measured zero",
+        "single architecture quality score"
+      ],
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",

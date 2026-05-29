@@ -7,16 +7,16 @@ use crate::{
     AirDocumentInput, AirDocumentV0, AirEvidence, AirExtension, AirFeature, AirIdPolicies,
     AirOperationTrace, AirPolicies, AirRelation, AirRevision, AirSignature, AirSignatureAxis,
     ArchitectureSignatureV1DatasetShape, COMPONENT_KIND, ComponentUniverseValidationReport,
-    EMPIRICAL_DATASET_SCHEMA_VERSION, EXTRACTOR_NAME, Edge, EmpiricalDatasetInput, MetricStatus,
-    PYTHON_COMPONENT_KIND, PYTHON_IMPORT_RULE_VERSION, RUNTIME_PROJECTION_RULE_VERSION,
-    Sig0Document, SignatureDiffReportV0, unmeasured_status,
+    EXTRACTOR_NAME, Edge, MetricStatus, PYTHON_COMPONENT_KIND, PYTHON_IMPORT_RULE_VERSION,
+    RUNTIME_PROJECTION_RULE_VERSION, SNAPSHOT_ATTRIBUTION_INPUT_SCHEMA_VERSION, Sig0Document,
+    SignatureDiffReportV0, SnapshotAttributionInput, unmeasured_status,
 };
 
 pub fn build_air_document(
     sig0: &Sig0Document,
     validation: Option<&ComponentUniverseValidationReport>,
     diff: Option<&SignatureDiffReportV0>,
-    pr_metadata: Option<&EmpiricalDatasetInput>,
+    pr_metadata: Option<&SnapshotAttributionInput>,
     input: AirDocumentInput,
 ) -> AirDocumentV0 {
     let signature = dataset_signature_shape(sig0);
@@ -58,7 +58,7 @@ pub fn build_air_document(
         artifacts.push(AirArtifact {
             artifact_id: "artifact-pr-metadata".to_string(),
             kind: "pr_metadata".to_string(),
-            schema_version: Some(EMPIRICAL_DATASET_SCHEMA_VERSION.to_string()),
+            schema_version: Some(SNAPSHOT_ATTRIBUTION_INPUT_SCHEMA_VERSION.to_string()),
             path: input.pr_metadata_path,
             content_hash: None,
             produced_by: Some(EXTRACTOR_NAME.to_string()),
@@ -411,7 +411,7 @@ fn air_component_lifecycle(diff: Option<&SignatureDiffReportV0>) -> BTreeMap<Str
 
 fn air_revision(
     diff: Option<&SignatureDiffReportV0>,
-    pr_metadata: Option<&EmpiricalDatasetInput>,
+    pr_metadata: Option<&SnapshotAttributionInput>,
 ) -> AirRevision {
     if let Some(diff) = diff {
         return AirRevision {
@@ -431,7 +431,7 @@ fn air_revision(
     }
 }
 
-fn air_feature(pr_metadata: Option<&EmpiricalDatasetInput>) -> AirFeature {
+fn air_feature(pr_metadata: Option<&SnapshotAttributionInput>) -> AirFeature {
     if let Some(pr_metadata) = pr_metadata {
         AirFeature {
             feature_id: Some(format!("#{}", pr_metadata.pull_request.number)),

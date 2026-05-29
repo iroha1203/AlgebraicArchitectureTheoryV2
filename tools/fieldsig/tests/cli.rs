@@ -439,6 +439,32 @@ fn cli_projects_archsig_analysis_packet_to_sft_input_boundary() {
             }),
         "coverage gaps must remain unknown remainder"
     );
+    assert!(
+        estimate_json["unknownRemainder"]
+            .as_array()
+            .expect("unknown remainder is array")
+            .iter()
+            .any(|entry| {
+                entry["reason"]
+                    .as_str()
+                    .expect("reason is string")
+                    .contains("ArchSig child record")
+                    && entry["treatment"]
+                        .as_str()
+                        .expect("treatment is string")
+                        .contains("do not round child boundary")
+                    && entry["unknownAxes"]
+                        .as_array()
+                        .expect("unknown axes are array")
+                        .iter()
+                        .any(|axis| {
+                            axis.as_str()
+                                .expect("unknown axis is string")
+                                .starts_with("excluded reading:")
+                        })
+            }),
+        "child-level ArchSig missing evidence and excluded readings must remain unknown remainder"
+    );
 
     let cone_json = read_json(&cone);
     assert!(

@@ -1,8 +1,16 @@
 # ArchSig Commands
 
-`archsig` is the LLM-native ArchMap / LawPolicy / ArchSig tool surface. The normal review path starts from supplied `archmap-observation-map-v0` evidence, validates a selected `law-policy-v0`, and builds an `archsig-analysis-packet-v0` containing law-relative molecule readings, obstruction circuits, signature axes, flatness reading, repair operation candidates, evidence boundaries, LLM interpretation notes, and non-conclusions. Lean / Python import-graph scanning is available only through the explicit `adapter-scan` command as bounded evidence.
+`archsig` is the LLM-native ArchMap / LawPolicy / ArchSig tool surface. The normal review path starts from supplied `archmap-observation-map-v0` evidence, validates a selected `law-policy-v0`, and builds an `archsig-analysis-packet-v0` containing law-relative molecule readings, obstruction circuits, signature axes, flatness reading, repair operation candidates, child-level evidence boundaries, LLM interpretation notes, and non-conclusions. Lean / Python import-graph scanning is available only through the explicit `adapter-scan` command as bounded evidence.
 
 FieldSig owns SFT forecast, IntentMap, workflow evidence, operational feedback, dynamics, governance, and calibration commands under `tools/fieldsig`.
+
+ArchMap validation accepts a small legacy compatibility surface, but it does not
+silently treat it as primary. If an input includes `homomorphism`, `mapItems`,
+`atomCandidates`, `moleculeCandidates`, or `obstructionCircuitCandidates`, the
+validation report records `legacySchemaChecks` warnings. New authoring should
+use `atomObservations`, `moleculeObservations`, `semanticObservations`,
+`observationGaps`, `projectionInfo`, and `concernHints`; `concernHints` are
+review cues, not obstruction circuits.
 
 ## LLM-Native Workflow
 

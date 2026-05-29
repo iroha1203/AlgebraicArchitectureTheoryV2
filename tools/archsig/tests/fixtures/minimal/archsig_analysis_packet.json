@@ -46,7 +46,9 @@
     {
       "moleculeReadingId": "molecule-reading:user-request-responsibility",
       "moleculeObservationRef": "molecule:user-request-responsibility",
-      "lawRefs": ["law:semantic-contract-alignment"],
+      "lawRefs": [
+        "law:semantic-contract-alignment"
+      ],
       "atomObservationRefs": [
         "atom:relation:route-service",
         "atom:contract:create-user"
@@ -54,7 +56,10 @@
       "reading": "observed route/service/contract atoms form one operation-responsibility molecule",
       "evidenceSummary": "molecule reading uses ArchMap atom observations and the selected semantic-contract law",
       "evidenceBoundary": "law-relative reading over observed atoms; not a primitive atom and not theorem evidence",
-      "sourceRefs": ["doc-architecture", "test-user-contract"],
+      "sourceRefs": [
+        "doc-architecture",
+        "test-user-contract"
+      ],
       "interpretationNotesForLLM": [
         "Explain this as a responsibility grouping over observed atoms."
       ],
@@ -78,9 +83,15 @@
         "atom:relation:route-service",
         "atom:contract:create-user"
       ],
-      "moleculeReadingRefs": ["molecule-reading:user-request-responsibility"],
-      "concernHintRefs": ["concern:missing-compensation"],
-      "signatureAxisRefs": ["sig-axis:semantic-inconsistency"],
+      "moleculeReadingRefs": [
+        "molecule-reading:user-request-responsibility"
+      ],
+      "concernHintRefs": [
+        "concern:missing-compensation"
+      ],
+      "signatureAxisRefs": [
+        "sig-axis:semantic-inconsistency"
+      ],
       "minimalityReading": "minimal within the selected operation molecule and semantic contract witness rule",
       "evidenceSummary": "constructed from the concern hint, contract atom, relation atom, and semantic molecule reading",
       "evidenceBoundary": "computed ArchSig witness under selected LawPolicy; not an ArchMap observation",
@@ -94,6 +105,15 @@
         "signature axes are law-policy-relative, not universal quality scores",
         "flatness reading is blocked by coverage gaps and exactness assumptions",
         "repair operation candidates are not automatic safe refactorings"
+      ],
+      "missingEvidence": [
+        "gap-runtime-user-db-trace: runtime trace was requested but not supplied",
+        "coverage:semantic-contract-atoms: report observation gap and block signature-zero reflection"
+      ],
+      "excludedReadings": [
+        "single architecture quality score",
+        "global architecture lawfulness",
+        "zero readings are exact only for observed atoms and declared coverage requirements"
       ]
     }
   ],
@@ -110,7 +130,9 @@
         "selected layer law observes only declared route/service relation atoms"
       ],
       "evidenceSummary": "no BoundaryLeakCircuit witness was constructed from the fixture atoms",
-      "sourceRefs": ["atom:relation:route-service"],
+      "sourceRefs": [
+        "atom:relation:route-service"
+      ],
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -118,6 +140,15 @@
         "signature axes are law-policy-relative, not universal quality scores",
         "flatness reading is blocked by coverage gaps and exactness assumptions",
         "repair operation candidates are not automatic safe refactorings"
+      ],
+      "missingEvidence": [
+        "gap-runtime-user-db-trace: runtime trace was requested but not supplied",
+        "coverage:layer-atoms: report observation gap and block signature-zero reflection"
+      ],
+      "excludedReadings": [
+        "global architecture lawfulness",
+        "automatic repair safety",
+        "zero readings are exact only for observed atoms and declared coverage requirements"
       ]
     },
     {
@@ -143,6 +174,15 @@
         "signature axes are law-policy-relative, not universal quality scores",
         "flatness reading is blocked by coverage gaps and exactness assumptions",
         "repair operation candidates are not automatic safe refactorings"
+      ],
+      "missingEvidence": [
+        "gap-runtime-user-db-trace: runtime trace was requested but not supplied",
+        "coverage:semantic-contract-atoms: report observation gap and block signature-zero reflection"
+      ],
+      "excludedReadings": [
+        "single architecture quality score",
+        "global architecture lawfulness",
+        "zero readings are exact only for observed atoms and declared coverage requirements"
       ]
     }
   ],
@@ -150,9 +190,15 @@
     "readingId": "flatness:selected-law-policy",
     "selectedLawPolicyRef": "llm-native-aat-law-policy-fixture",
     "status": "nonflatUnderSelectedPolicy",
-    "zeroSignatureAxisRefs": ["sig-axis:layer-violation"],
-    "nonzeroSignatureAxisRefs": ["sig-axis:semantic-inconsistency"],
-    "blockedByCoverageGaps": ["gap-runtime-user-db-trace"],
+    "zeroSignatureAxisRefs": [
+      "sig-axis:layer-violation"
+    ],
+    "nonzeroSignatureAxisRefs": [
+      "sig-axis:semantic-inconsistency"
+    ],
+    "blockedByCoverageGaps": [
+      "gap-runtime-user-db-trace"
+    ],
     "evidenceBoundary": "flatness is read from selected signature axes; coverage gaps block global zero claims",
     "interpretationNotesForLLM": [
       "Report this as selected-policy non-flatness, not global architecture quality."
@@ -172,7 +218,9 @@
       "atom:component:service-user",
       "atom:relation:route-service"
     ],
-    "runtimeObservationRefs": ["gap-runtime-user-db-trace"],
+    "runtimeObservationRefs": [
+      "gap-runtime-user-db-trace"
+    ],
     "semanticObservationRefs": [
       "atom:contract:create-user",
       "semantic:create-user-flow"
@@ -219,6 +267,15 @@
         "signature axes are law-policy-relative, not universal quality scores",
         "flatness reading is blocked by coverage gaps and exactness assumptions",
         "repair operation candidates are not automatic safe refactorings"
+      ],
+      "missingEvidence": [
+        "gap-runtime-user-db-trace: runtime trace was requested but not supplied",
+        "implementation patch and verification evidence are not supplied by ArchSig analysis"
+      ],
+      "excludedReadings": [
+        "automatic repair safety",
+        "causal forecast correctness",
+        "global architecture lawfulness"
       ]
     }
   ],
