@@ -41,6 +41,12 @@ surfaces, but they do not replace the analysis packet as the source of truth.
 | AAT Observable Bundle | `aat-observable-bundle-v0` | AAT concept / witness / selected-universe review bundle projected from analysis-derived artifacts with deterministic, LLM, human, and formal-proof responsibility boundaries. |
 | PR quality analysis | `pr-quality-analysis-report-v0` | Review cue projection from supplied review artifacts. It is not merge approval. |
 
+Standalone AIR / theorem-check / Feature Report / AAT Observable Bundle commands
+are bounded projection utilities for existing consumers. In the normal
+LLM-native workflow, these artifacts are downstream of
+`archsig-analysis-packet-v0`; they are not primary ArchSig analysis surfaces and
+must not be read as replacing the packet.
+
 ## Adapter Evidence
 
 | artifact | schemaVersion | role |

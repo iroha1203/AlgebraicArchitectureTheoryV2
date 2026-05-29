@@ -245,7 +245,7 @@ enum Command {
         out: Option<PathBuf>,
     },
 
-    /// Build an AIR v0 document from Signature artifacts.
+    /// Build legacy Sig0-backed AIR; normal review uses analysis-packet projection.
     Air {
         /// Input ArchSig Sig0 JSON path.
         #[arg(long)]
@@ -352,7 +352,7 @@ enum Command {
         out: Option<PathBuf>,
     },
 
-    /// Project a supplied ArchMap observation JSON artifact into AIR v0.
+    /// Project supplied ArchMap JSON into compat AIR; not the normal review path.
     AirFromArchmap {
         /// Input ArchMap JSON path.
         #[arg(long)]
@@ -371,7 +371,7 @@ enum Command {
         out: Option<PathBuf>,
     },
 
-    /// Validate an AIR v0 document.
+    /// Validate a bounded AIR projection; validation is not source-of-truth.
     ValidateAir {
         /// Input AIR JSON path.
         #[arg(long)]
@@ -386,7 +386,7 @@ enum Command {
         strict_measured_evidence: bool,
     },
 
-    /// Build a static Feature Extension Report v0 from an AIR v0 document.
+    /// Build a bounded Feature Report projection from AIR; not primary analysis.
     FeatureReport {
         /// Input AIR JSON path.
         #[arg(long)]
@@ -397,7 +397,7 @@ enum Command {
         out: Option<PathBuf>,
     },
 
-    /// Check theorem package preconditions for AIR v0 claims.
+    /// Check theorem preconditions for projected AIR; not Lean discharge.
     TheoremCheck {
         /// Input AIR JSON path.
         #[arg(long)]
@@ -526,7 +526,7 @@ enum Command {
         out: Option<PathBuf>,
     },
 
-    /// Emit or validate an aat-observable-bundle-v0 artifact.
+    /// Emit or validate a bounded AAT Observable Bundle projection.
     AatObservableBundle {
         /// Optional AAT observable bundle JSON path to validate.
         #[arg(long)]

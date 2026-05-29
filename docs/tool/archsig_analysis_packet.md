@@ -97,6 +97,11 @@ These projections carry the `ArchMap + LawPolicy -> ArchSig analysis` boundary.
 They do not make the legacy ArchMap projection rule the source of truth, and
 they do not promote analysis-packet validation into theorem proof, global
 architecture lawfulness, extractor completeness, or automatic repair safety.
+The public `air`, `validate-air`, `theorem-check`, `feature-report`, and
+`aat-observable-bundle` commands are compatibility / bounded projection
+utilities for existing consumers; the normal path is still
+`llm-native-workflow` or `archsig-analysis` followed by packet-derived
+projections.
 FieldSig handoff projects child-level `missingEvidence` / `excludedReadings`
 as unknown remainder and evidence-boundary refs instead of rounding them to
 absence, measured zero, forecast truth, or repair safety.

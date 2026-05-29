@@ -357,6 +357,16 @@ fn cli_runs_llm_native_archmap_lawpolicy_archsig_workflow() {
         Some("manual"),
         "analysis-packet AIR remains a bounded manual review projection"
     );
+    assert_eq!(
+        air_json["feature"]["title"].as_str(),
+        Some("ArchSig analysis packet downstream projection"),
+        "AIR title must identify the analysis-packet projection layer"
+    );
+    assert_eq!(
+        air_json["feature"]["description"].as_str(),
+        Some("AIR generated from archsig-analysis-packet-v0, not direct ArchMap homomorphism"),
+        "AIR description must keep the analysis packet source boundary"
+    );
     assert!(
         air_json["artifacts"]
             .as_array()
@@ -378,6 +388,16 @@ fn cli_runs_llm_native_archmap_lawpolicy_archsig_workflow() {
         theorem_check["schemaVersion"],
         "theorem-precondition-check-report-v0"
     );
+    assert_eq!(
+        theorem_check["input"]["path"].as_str(),
+        Some(
+            out_dir
+                .join("air.json")
+                .to_str()
+                .expect("AIR path is utf-8")
+        ),
+        "theorem-check must consume the analysis-packet-derived AIR projection"
+    );
     let feature_report = read_json(&out_dir.join("feature-report.json"));
     assert_eq!(
         feature_report["schemaVersion"],
@@ -393,6 +413,14 @@ fn cli_runs_llm_native_archmap_lawpolicy_archsig_workflow() {
         Some("archsig-analysis-packet-v0"),
         "Feature Report must carry ArchSig analysis packet state forward"
     );
+    assert!(
+        feature_report["homomorphismSummary"]["nonConclusions"]
+            .as_array()
+            .expect("feature homomorphism nonConclusions are array")
+            .iter()
+            .any(|entry| entry == "Feature Report is derived from ArchSig analysis packet state"),
+        "Feature Report must explicitly retain the analysis packet projection boundary"
+    );
     let bundle = read_json(&out_dir.join("aat-observable-bundle.json"));
     assert_eq!(bundle["schemaVersion"], "aat-observable-bundle-v0");
     let source_ref_ids = bundle["sourceRefs"]
@@ -403,6 +431,13 @@ fn cli_runs_llm_native_archmap_lawpolicy_archsig_workflow() {
         .collect::<Vec<_>>();
     assert!(source_ref_ids.contains(&"source:archsig-analysis-packet:primary"));
     assert!(source_ref_ids.contains(&"source:air:analysis-packet"));
+    assert!(!source_ref_ids.contains(&"source:air:primary"));
+    assert!(
+        serde_json::to_string(&bundle)
+            .expect("bundle serializes")
+            .contains("AAT observable bundle is generated from ArchSig analysis packet state"),
+        "AAT Observable Bundle must record that it is generated from analysis packet state"
+    );
     let bundle_validation = read_json(&out_dir.join("aat-observable-bundle-validation.json"));
     assert_eq!(
         bundle_validation["summary"]["result"].as_str(),
