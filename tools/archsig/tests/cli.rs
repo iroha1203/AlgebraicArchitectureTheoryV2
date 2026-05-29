@@ -124,8 +124,8 @@ fn cli_adapter_scan_emits_bounded_sig0_evidence() {
 }
 
 #[test]
-fn cli_runs_archmap_primary_workflow() {
-    let out_dir = temp_dir("archmap-workflow");
+fn cli_runs_archmap_compat_projection_workflow() {
+    let out_dir = temp_dir("archmap-compat-workflow");
     let root = fixture_root();
     let archmap = root.join("archmap.json");
 
@@ -178,7 +178,7 @@ fn cli_runs_archmap_primary_workflow() {
             "archmap-legacy-schema-fields"
         ),
         "pass",
-        "primary ArchMap fixture must not require legacy fields"
+        "compat ArchMap fixture must not require legacy fields"
     );
     assert_eq!(
         validation_check_result(
@@ -187,7 +187,7 @@ fn cli_runs_archmap_primary_workflow() {
             "archmap-legacy-obstruction-circuit-candidates"
         ),
         "pass",
-        "primary ArchMap fixture must not expose obstruction candidates"
+        "compat ArchMap fixture must not expose obstruction candidates"
     );
     assert_eq!(
         validation_json["atomicObservationSummary"]["atomObservationCount"], 4,
@@ -226,6 +226,20 @@ fn cli_runs_archmap_primary_workflow() {
 
     let air_json = read_json(&out_dir.join("air.json"));
     assert_eq!(air_json["schemaVersion"], "aat-air-v0");
+    assert!(
+        air_json["claims"]
+            .as_array()
+            .expect("AIR claims are an array")
+            .iter()
+            .any(|claim| claim["claimId"] == "claim-archmap-compat-projection-boundary"
+                && claim["nonConclusions"]
+                    .as_array()
+                    .expect("claim nonConclusions are an array")
+                    .iter()
+                    .any(|entry| entry
+                        == "direct ArchMap to AIR projection is compatibility-only and not the current ArchSig source of truth")),
+        "direct ArchMap AIR output must carry the compatibility-only source-of-truth boundary"
+    );
     let theorem_json = read_json(&out_dir.join("theorem-precondition-check.json"));
     assert_eq!(
         theorem_json["schemaVersion"],
@@ -233,6 +247,15 @@ fn cli_runs_archmap_primary_workflow() {
     );
     let feature_json = read_json(&out_dir.join("feature-report.json"));
     assert_eq!(feature_json["schemaVersion"], "feature-extension-report-v0");
+    assert!(
+        feature_json["nonConclusions"]
+            .as_array()
+            .expect("feature nonConclusions are an array")
+            .iter()
+            .any(|entry| entry
+                == "direct ArchMap to AIR projection is compatibility-only and not the current ArchSig source of truth"),
+        "Feature report from archmap-workflow must retain the compatibility-only boundary"
+    );
     assert!(
         matches!(
             feature_json["homomorphismSummary"]["classification"].as_str(),

@@ -67,6 +67,13 @@ first-class ArchMap output; new ArchMap files use `concernHints` for review cues
 and ArchSig constructs law-relative obstruction circuits only from ArchMap plus
 LawPolicy.
 
+`archmap-workflow` and `air-from-archmap` are compat-only direct ArchMap
+projection commands. They remain available for older review consumers, but they
+are not the normal source-of-truth path. Current ArchSig review uses
+`llm-native-workflow` or `archsig-analysis` to produce
+`archsig-analysis-packet-v0`, then projects bounded AIR / theorem-check /
+Feature Report / AAT Observable Bundle artifacts from that packet.
+
 ## Snapshot Attribution Boundary
 
 ArchSig keeps the shared signature-shape and delta helpers only for snapshot,
