@@ -1,22 +1,24 @@
-use std::collections::BTreeSet;
+use std::collections::{BTreeMap, BTreeSet};
 
 use crate::validation::{count_checks, duplicates, generic_validation_example, validation_check};
 use crate::{
     ARCHMAP_SCHEMA_VERSION, ARCHSIG_ANALYSIS_PACKET_SCHEMA_VERSION,
-    ARCHSIG_ANALYSIS_PACKET_VALIDATION_REPORT_SCHEMA_VERSION, ArchMapDocumentV0, ArchMapSourceRef,
-    ArchSigAatConceptSurfaceV0, ArchSigAnalysisArtifactRefV0, ArchSigAnalysisPacketV0,
-    ArchSigAnalysisPacketValidationInputV0, ArchSigAnalysisPacketValidationReportV0,
-    ArchSigAnalysisPacketValidationSummaryV0, ArchSigAnalyticRepresentationV0,
-    ArchSigArchitectureObjectProjectionV0, ArchSigArchitectureStateV0,
-    ArchSigAtomConfigurationSummaryV0, ArchSigBoundedJudgementV0, ArchSigChangeImpactReadingV0,
-    ArchSigCouplingCohesionReadingV0, ArchSigDesignPressureReadingV0,
+    ARCHSIG_ANALYSIS_PACKET_VALIDATION_REPORT_SCHEMA_VERSION, ArchMapConcernHintV0,
+    ArchMapDocumentV0, ArchMapMoleculeObservationV0, ArchMapSemanticObservationV0,
+    ArchMapSourceRef, ArchSigAatConceptSurfaceV0, ArchSigAnalysisArtifactRefV0,
+    ArchSigAnalysisPacketV0, ArchSigAnalysisPacketValidationInputV0,
+    ArchSigAnalysisPacketValidationReportV0, ArchSigAnalysisPacketValidationSummaryV0,
+    ArchSigAnalyticRepresentationV0, ArchSigArchitectureObjectProjectionV0,
+    ArchSigArchitectureStateV0, ArchSigAtomConfigurationSummaryV0, ArchSigBoundedJudgementV0,
+    ArchSigChangeImpactReadingV0, ArchSigCouplingCohesionReadingV0, ArchSigDesignPressureReadingV0,
     ArchSigDesignPrincipleReadingV0, ArchSigFlatnessReadingV0, ArchSigInvariantFamilyReadingV0,
     ArchSigLawUniverseReadingV0, ArchSigLayerSplitV0, ArchSigLlmInterpretationPacketV0,
     ArchSigMoleculeReadingV0, ArchSigObstructionCircuitV0, ArchSigOperationDeltaReadingV0,
     ArchSigPathHomotopyDiagramReadingV0, ArchSigRepairOperationCandidateV0,
-    ArchSigSignatureAxisReadingV0, LAW_POLICY_SCHEMA_VERSION, LawPolicyDocumentV0,
-    LawPolicyObstructionCircuitDefinitionV0, LawPolicySignatureAxisDefinitionV0,
-    LawPolicyWitnessRuleV0, ValidationCheck, ValidationExample,
+    ArchSigSignatureAxisReadingV0, ArchSigWorkflowAtomFamilyCountV0,
+    ArchSigWorkflowRiskAxisReadingV0, ArchSigWorkflowRiskReadingV0, LAW_POLICY_SCHEMA_VERSION,
+    LawPolicyDocumentV0, LawPolicyObstructionCircuitDefinitionV0,
+    LawPolicySignatureAxisDefinitionV0, LawPolicyWitnessRuleV0, ValidationCheck, ValidationExample,
 };
 
 const REQUIRED_NON_CONCLUSIONS: [&str; 6] = [
@@ -69,6 +71,7 @@ pub fn build_archsig_analysis_packet(
     let analytic_representations =
         build_analytic_representations(archmap, &signature_axes, &obstruction_circuits);
     let coupling_cohesion_readings = build_coupling_cohesion_readings(archmap);
+    let workflow_risk_readings = build_workflow_risk_readings(archmap);
     let design_principle_readings = build_design_principle_readings(
         archmap,
         &invariant_family_readings,
@@ -107,6 +110,7 @@ pub fn build_archsig_analysis_packet(
         &design_pressure,
         &signature_axes,
         &analytic_representations,
+        &workflow_risk_readings,
         &repair_operation_candidates,
         &bounded_judgements,
     );
@@ -144,6 +148,7 @@ pub fn build_archsig_analysis_packet(
         signature_axes,
         analytic_representations,
         coupling_cohesion_readings,
+        workflow_risk_readings,
         design_principle_readings,
         flatness_reading,
         static_runtime_semantic_layer_split: build_layer_split(archmap),
@@ -1130,6 +1135,420 @@ fn coupling_reading(
     }
 }
 
+fn build_workflow_risk_readings(archmap: &ArchMapDocumentV0) -> Vec<ArchSigWorkflowRiskReadingV0> {
+    let atom_by_id = archmap
+        .atom_observations
+        .iter()
+        .map(|atom| (atom.atom_observation_id.as_str(), atom))
+        .collect::<BTreeMap<_, _>>();
+    let mut readings = archmap
+        .molecule_observations
+        .iter()
+        .map(|molecule| {
+            let molecule_atoms = molecule
+                .atom_observation_refs
+                .iter()
+                .filter_map(|atom_ref| atom_by_id.get(atom_ref.as_str()).copied())
+                .collect::<Vec<_>>();
+            let semantic_refs = archmap
+                .semantic_observations
+                .iter()
+                .filter(|semantic| {
+                    semantic
+                        .molecule_observation_refs
+                        .contains(&molecule.molecule_observation_id)
+                })
+                .map(|semantic| semantic.semantic_observation_id.clone())
+                .collect::<Vec<_>>();
+            let concerns = archmap
+                .concern_hints
+                .iter()
+                .filter(|concern| {
+                    concern
+                        .molecule_observation_refs
+                        .contains(&molecule.molecule_observation_id)
+                })
+                .collect::<Vec<_>>();
+            let concern_refs = concerns
+                .iter()
+                .map(|concern| concern.concern_hint_id.clone())
+                .collect::<Vec<_>>();
+            let family_counts = workflow_atom_family_counts(&molecule_atoms);
+            let workflow_blob = workflow_text_blob(molecule, &molecule_atoms, archmap, &concerns);
+            let mut top_axes = workflow_risk_axis_readings(
+                &family_counts,
+                &workflow_blob,
+                archmap,
+                &concerns,
+            );
+            top_axes.sort_by(|left, right| right.score.cmp(&left.score).then(left.axis.cmp(&right.axis)));
+            let risk_score = top_axes.iter().map(|axis| axis.score).sum::<i64>();
+            let coverage_gap_refs = top_axes
+                .iter()
+                .flat_map(|axis| axis.coverage_gap_refs.clone())
+                .collect::<BTreeSet<_>>()
+                .into_iter()
+                .collect::<Vec<_>>();
+            let review_focus = top_axes
+                .iter()
+                .take(3)
+                .map(|axis| workflow_review_focus(axis.axis.as_str()))
+                .collect::<BTreeSet<_>>()
+                .into_iter()
+                .collect::<Vec<_>>();
+            ArchSigWorkflowRiskReadingV0 {
+                workflow_risk_id: format!(
+                    "workflow-risk:{}",
+                    stable_id(&molecule.molecule_observation_id)
+                ),
+                molecule_observation_ref: molecule.molecule_observation_id.clone(),
+                molecule_family: molecule.molecule_family.clone(),
+                role_name: molecule.role_name.clone(),
+                status: workflow_risk_status(risk_score, &coverage_gap_refs).to_string(),
+                risk_score,
+                risk_tier: workflow_risk_tier(risk_score).to_string(),
+                atom_count: molecule_atoms.len(),
+                atom_family_counts: family_counts
+                    .iter()
+                    .map(|(atom_family, count)| ArchSigWorkflowAtomFamilyCountV0 {
+                        atom_family: atom_family.clone(),
+                        count: *count,
+                    })
+                    .collect(),
+                semantic_refs,
+                concern_refs,
+                top_axes,
+                review_focus,
+                coverage_gap_refs,
+                evidence_boundary:
+                    "workflow risk is a molecule-local ArchMap reading for review prioritization, not a quality score or proof"
+                        .to_string(),
+                recommended_next_action:
+                    "review the top axes, source refs, concern hints, and coverage gaps before planning repair"
+                        .to_string(),
+                non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
+            }
+        })
+        .collect::<Vec<_>>();
+    readings.sort_by(|left, right| {
+        right
+            .risk_score
+            .cmp(&left.risk_score)
+            .then(left.workflow_risk_id.cmp(&right.workflow_risk_id))
+    });
+    readings
+}
+
+fn workflow_atom_family_counts(
+    atoms: &[&crate::ArchMapAtomObservationV0],
+) -> BTreeMap<String, usize> {
+    let mut counts = BTreeMap::new();
+    for atom in atoms {
+        *counts.entry(atom.atom_family.clone()).or_insert(0) += 1;
+    }
+    counts
+}
+
+fn workflow_text_blob(
+    molecule: &ArchMapMoleculeObservationV0,
+    atoms: &[&crate::ArchMapAtomObservationV0],
+    archmap: &ArchMapDocumentV0,
+    concerns: &[&ArchMapConcernHintV0],
+) -> String {
+    let mut parts = vec![
+        molecule.molecule_observation_id.clone(),
+        molecule.molecule_family.clone(),
+        molecule.role_name.clone(),
+        molecule.evidence_boundary.clone(),
+    ];
+    parts.extend(atoms.iter().map(|atom| atom.predicate.clone()));
+    parts.extend(atoms.iter().map(|atom| atom.subject_ref.clone()));
+    parts.extend(
+        archmap
+            .semantic_observations
+            .iter()
+            .filter(|semantic| {
+                semantic
+                    .molecule_observation_refs
+                    .contains(&molecule.molecule_observation_id)
+            })
+            .map(workflow_semantic_text),
+    );
+    parts.extend(concerns.iter().map(|concern| {
+        format!(
+            "{} {} {}",
+            concern.concern_hint_id, concern.concern_family, concern.subject_ref
+        )
+    }));
+    parts.join(" ").to_ascii_lowercase()
+}
+
+fn workflow_semantic_text(semantic: &ArchMapSemanticObservationV0) -> String {
+    format!(
+        "{} {} {} {}",
+        semantic.semantic_observation_id,
+        semantic.semantic_family,
+        semantic.subject_ref,
+        semantic.predicate
+    )
+}
+
+fn workflow_risk_axis_readings(
+    family_counts: &BTreeMap<String, usize>,
+    workflow_blob: &str,
+    archmap: &ArchMapDocumentV0,
+    concerns: &[&ArchMapConcernHintV0],
+) -> Vec<ArchSigWorkflowRiskAxisReadingV0> {
+    workflow_axis_specs()
+        .into_iter()
+        .filter_map(|spec| {
+            let family_score = spec
+                .family_weights
+                .iter()
+                .map(|(family, weight)| {
+                    family_counts.get(*family).copied().unwrap_or_default() as i64 * *weight
+                })
+                .sum::<i64>();
+            let keyword_hits = matching_keywords(workflow_blob, spec.keywords);
+            let concern_refs = concerns
+                .iter()
+                .filter(|concern| {
+                    let text = format!(
+                        "{} {} {}",
+                        concern.concern_hint_id, concern.concern_family, concern.subject_ref
+                    )
+                    .to_ascii_lowercase();
+                    !matching_keywords(&text, spec.concern_keywords).is_empty()
+                })
+                .map(|concern| concern.concern_hint_id.clone())
+                .collect::<Vec<_>>();
+            let coverage_gap_refs = workflow_axis_gap_refs(archmap, spec.gap_keywords);
+            let score = family_score
+                + keyword_hits.len() as i64 * 2
+                + concern_refs.len() as i64 * 3
+                + coverage_gap_refs.len().min(3) as i64;
+            if score == 0 {
+                return None;
+            }
+            Some(ArchSigWorkflowRiskAxisReadingV0 {
+                axis: spec.axis.to_string(),
+                status: if coverage_gap_refs.is_empty() {
+                    "actionable"
+                } else {
+                    "needsReview"
+                }
+                .to_string(),
+                score,
+                family_score,
+                keyword_hits,
+                concern_refs,
+                coverage_gap_refs,
+                reading: spec.reading.to_string(),
+                non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
+            })
+        })
+        .collect()
+}
+
+struct WorkflowAxisSpec {
+    axis: &'static str,
+    family_weights: &'static [(&'static str, i64)],
+    keywords: &'static [&'static str],
+    concern_keywords: &'static [&'static str],
+    gap_keywords: &'static [&'static str],
+    reading: &'static str,
+}
+
+fn workflow_axis_specs() -> Vec<WorkflowAxisSpec> {
+    vec![
+        WorkflowAxisSpec {
+            axis: "authorityTrustBoundary",
+            family_weights: &[
+                ("authority", 3),
+                ("trust", 3),
+                ("contractSpecification", 1),
+                ("effect", 1),
+            ],
+            keywords: &[
+                "admin",
+                "auth",
+                "jwt",
+                "token",
+                "session",
+                "permission",
+                "role",
+                "trust",
+                "provider",
+                "external",
+            ],
+            concern_keywords: &["permission", "trust", "provider"],
+            gap_keywords: &["permission", "route", "provider", "runtime"],
+            reading: "authority labels, trust handoffs, provider output, and boundary checks concentrate in this workflow",
+        },
+        WorkflowAxisSpec {
+            axis: "stateEffectReconciliation",
+            family_weights: &[
+                ("state", 3),
+                ("effect", 3),
+                ("contractSpecification", 1),
+                ("semantic", 1),
+            ],
+            keywords: &[
+                "job",
+                "event",
+                "status",
+                "retry",
+                "processing",
+                "external",
+                "effect",
+                "commit",
+                "delete",
+                "purge",
+                "upload",
+            ],
+            concern_keywords: &["commit", "recovery", "retry"],
+            gap_keywords: &["runtime", "provider", "test"],
+            reading: "durable state, external effects, retry, and status-finalization pressure concentrate in this workflow",
+        },
+        WorkflowAxisSpec {
+            axis: "sourceBackedDomainCohesion",
+            family_weights: &[
+                ("state", 2),
+                ("semantic", 3),
+                ("contractSpecification", 2),
+                ("relation", 2),
+            ],
+            keywords: &[
+                "source", "voc", "insight", "solution", "persona", "market", "domain", "artifact",
+                "context",
+            ],
+            concern_keywords: &[],
+            gap_keywords: &["model", "semantic", "test"],
+            reading: "source-backed domain identity, relation, and contract cohesion concentrate in this workflow",
+        },
+        WorkflowAxisSpec {
+            axis: "llmOutputMediation",
+            family_weights: &[
+                ("trust", 3),
+                ("semantic", 3),
+                ("contractSpecification", 2),
+                ("effect", 2),
+                ("capability", 1),
+            ],
+            keywords: &[
+                "llm",
+                "ai",
+                "agent",
+                "prompt",
+                "generation",
+                "provider",
+                "openai",
+                "tool",
+                "transcription",
+            ],
+            concern_keywords: &["provider", "trust"],
+            gap_keywords: &["provider", "runtime", "test"],
+            reading: "prompt/context validation, LLM/provider output, filtering, and persistence gates concentrate in this workflow",
+        },
+        WorkflowAxisSpec {
+            axis: "permissionCoverage",
+            family_weights: &[
+                ("authority", 4),
+                ("relation", 2),
+                ("contractSpecification", 2),
+                ("trust", 1),
+            ],
+            keywords: &[
+                "route",
+                "api",
+                "admin",
+                "workspace",
+                "permission",
+                "role",
+                "tenant",
+                "session",
+                "jwt",
+            ],
+            concern_keywords: &["permission"],
+            gap_keywords: &["permission", "route"],
+            reading: "route/session/admin authority coverage concentrates in this workflow",
+        },
+    ]
+}
+
+fn matching_keywords(text: &str, keywords: &[&str]) -> Vec<String> {
+    keywords
+        .iter()
+        .filter(|keyword| text.contains(**keyword))
+        .map(|keyword| keyword.to_string())
+        .collect::<BTreeSet<_>>()
+        .into_iter()
+        .collect()
+}
+
+fn workflow_axis_gap_refs(archmap: &ArchMapDocumentV0, gap_keywords: &[&str]) -> Vec<String> {
+    archmap
+        .observation_gaps
+        .iter()
+        .filter(|gap| {
+            let text = format!(
+                "{} {} {} {} {}",
+                gap.gap_id,
+                gap.gap_kind,
+                gap.subject_ref,
+                gap.reason,
+                gap.expected_atom_families.join(" ")
+            )
+            .to_ascii_lowercase();
+            !matching_keywords(&text, gap_keywords).is_empty()
+        })
+        .map(|gap| gap.gap_id.clone())
+        .collect()
+}
+
+fn workflow_review_focus(axis: &str) -> String {
+    match axis {
+        "authorityTrustBoundary" => {
+            "authority label, trust handoff, provider output, and boundary checks".to_string()
+        }
+        "stateEffectReconciliation" => {
+            "retry / duplicate / partial failure / status finalization".to_string()
+        }
+        "sourceBackedDomainCohesion" => {
+            "Source-backed domain identity, relations, and contract cohesion".to_string()
+        }
+        "llmOutputMediation" => {
+            "prompt/context validation, LLM output filtering, persistence gate".to_string()
+        }
+        "permissionCoverage" => {
+            "route-by-route permission dependency and tenant/workspace scope".to_string()
+        }
+        _ => "inspect source refs and coverage boundaries".to_string(),
+    }
+}
+
+fn workflow_risk_status(risk_score: i64, coverage_gap_refs: &[String]) -> &'static str {
+    if risk_score == 0 {
+        "nonConclusion"
+    } else if !coverage_gap_refs.is_empty() {
+        "needsReview"
+    } else {
+        "actionable"
+    }
+}
+
+fn workflow_risk_tier(risk_score: i64) -> &'static str {
+    if risk_score >= 90 {
+        "high"
+    } else if risk_score >= 45 {
+        "medium"
+    } else if risk_score > 0 {
+        "low"
+    } else {
+        "unmeasured"
+    }
+}
+
 fn build_design_principle_readings(
     archmap: &ArchMapDocumentV0,
     invariant_readings: &[ArchSigInvariantFamilyReadingV0],
@@ -1488,6 +1907,7 @@ fn build_llm_interpretation_packet(
     design_pressure: &[ArchSigDesignPressureReadingV0],
     signature_axes: &[ArchSigSignatureAxisReadingV0],
     analytic_representations: &[ArchSigAnalyticRepresentationV0],
+    workflow_risk_readings: &[ArchSigWorkflowRiskReadingV0],
     repair_candidates: &[ArchSigRepairOperationCandidateV0],
     bounded_judgements: &[ArchSigBoundedJudgementV0],
 ) -> ArchSigLlmInterpretationPacketV0 {
@@ -1543,6 +1963,20 @@ fn build_llm_interpretation_packet(
         complexity_transfer_notes: repair_candidates
             .iter()
             .flat_map(|candidate| candidate.transfer_risks.clone())
+            .chain(workflow_risk_readings.iter().take(5).map(|reading| {
+                format!(
+                    "{}: review {} ({})",
+                    reading.molecule_observation_ref,
+                    reading.risk_tier,
+                    reading
+                        .top_axes
+                        .iter()
+                        .take(3)
+                        .map(|axis| axis.axis.clone())
+                        .collect::<Vec<_>>()
+                        .join(", ")
+                )
+            }))
             .collect(),
         coverage_gaps_and_exactness_blockers: archmap_gap_missing_evidence(archmap),
         non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
@@ -1611,6 +2045,7 @@ pub fn validate_archsig_analysis_packet_report(
         check_north_star_aat_surfaces(packet),
         check_bounded_judgement_surface(packet),
         check_analytic_and_principle_surfaces(packet),
+        check_workflow_risk_surface(packet),
         check_law_relative_analysis(packet),
         check_signature_and_flatness(packet),
         check_repair_candidates(packet),
@@ -1631,6 +2066,7 @@ pub fn validate_archsig_analysis_packet_report(
         signature_axis_count: packet.signature_axes.len(),
         analytic_representation_count: packet.analytic_representations.len(),
         coupling_cohesion_reading_count: packet.coupling_cohesion_readings.len(),
+        workflow_risk_reading_count: packet.workflow_risk_readings.len(),
         design_principle_reading_count: packet.design_principle_readings.len(),
         repair_operation_candidate_count: packet.repair_operation_candidates.len(),
         operation_delta_count: packet.operation_deltas.len(),
@@ -1906,6 +2342,104 @@ fn check_analytic_and_principle_surfaces(packet: &ArchSigAnalysisPacketV0) -> Va
     check_from_examples(
         "archsig-analysis-packet-analytic-and-principle-surfaces",
         "packet exposes analytic axes, semantic coupling/cohesion, and static-hard design principle readings",
+        examples,
+        "fail",
+    )
+}
+
+fn check_workflow_risk_surface(packet: &ArchSigAnalysisPacketV0) -> ValidationCheck {
+    let molecule_ids = set(packet
+        .molecule_readings
+        .iter()
+        .map(|reading| reading.molecule_observation_ref.as_str()));
+    let allowed_statuses =
+        BTreeSet::from(["actionable", "needsReview", "blocked", "nonConclusion"]);
+    let mut examples = Vec::new();
+    if packet.workflow_risk_readings.is_empty() {
+        examples.push(generic_validation_example(
+            "workflowRiskReadings",
+            "empty",
+            "packet must expose workflow-local risk readings for review prioritization",
+        ));
+    }
+    examples.extend(duplicate_examples(
+        "workflowRiskReadings[].workflowRiskId",
+        duplicates(
+            packet
+                .workflow_risk_readings
+                .iter()
+                .map(|reading| reading.workflow_risk_id.as_str()),
+        ),
+    ));
+    for reading in &packet.workflow_risk_readings {
+        if !molecule_ids.contains(reading.molecule_observation_ref.as_str()) {
+            examples.push(generic_validation_example(
+                &reading.workflow_risk_id,
+                &reading.molecule_observation_ref,
+                "workflow risk reading must reference an existing molecule reading",
+            ));
+        }
+        if !allowed_statuses.contains(reading.status.as_str()) {
+            examples.push(generic_validation_example(
+                &reading.workflow_risk_id,
+                &reading.status,
+                "workflow risk status must be actionable, needsReview, blocked, or nonConclusion",
+            ));
+        }
+        if reading.risk_score < 0 {
+            examples.push(generic_validation_example(
+                &reading.workflow_risk_id,
+                &reading.risk_score.to_string(),
+                "workflow risk score must be non-negative bounded ranking evidence",
+            ));
+        }
+        if reading.top_axes.is_empty() {
+            examples.push(generic_validation_example(
+                &reading.workflow_risk_id,
+                "topAxes",
+                "workflow risk reading must carry at least one axis reading",
+            ));
+        }
+        if reading.review_focus.is_empty() || has_blank(&reading.review_focus) {
+            examples.push(generic_validation_example(
+                &reading.workflow_risk_id,
+                "reviewFocus",
+                "workflow risk reading must provide review focus",
+            ));
+        }
+        push_blank(
+            &mut examples,
+            &format!("{} evidenceBoundary", reading.workflow_risk_id),
+            &reading.evidence_boundary,
+        );
+        push_blank(
+            &mut examples,
+            &format!("{} recommendedNextAction", reading.workflow_risk_id),
+            &reading.recommended_next_action,
+        );
+        for axis in &reading.top_axes {
+            push_blank(
+                &mut examples,
+                &format!("{} topAxes[].axis", reading.workflow_risk_id),
+                &axis.axis,
+            );
+            if axis.score < 0 || axis.family_score < 0 {
+                examples.push(generic_validation_example(
+                    &reading.workflow_risk_id,
+                    &axis.axis,
+                    "workflow risk axis scores must be non-negative",
+                ));
+            }
+            push_blank(
+                &mut examples,
+                &format!("{} topAxes[].reading", reading.workflow_risk_id),
+                &axis.reading,
+            );
+        }
+    }
+    check_from_examples(
+        "archsig-analysis-packet-workflow-risk-surface",
+        "packet exposes workflow-local risk readings with review focus and bounded evidence boundaries",
         examples,
         "fail",
     )

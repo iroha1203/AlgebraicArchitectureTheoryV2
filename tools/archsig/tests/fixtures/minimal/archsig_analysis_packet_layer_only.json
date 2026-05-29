@@ -911,6 +911,158 @@
       ]
     }
   ],
+  "workflowRiskReadings": [
+    {
+      "workflowRiskId": "workflow-risk:molecule-user-request-responsibility",
+      "moleculeObservationRef": "molecule:user-request-responsibility",
+      "moleculeFamily": "responsibility",
+      "roleName": "user request orchestration",
+      "status": "needsReview",
+      "riskScore": 19,
+      "riskTier": "low",
+      "atomCount": 4,
+      "atomFamilyCounts": [
+        {
+          "atomFamily": "contractSpecification",
+          "count": 1
+        },
+        {
+          "atomFamily": "existence",
+          "count": 2
+        },
+        {
+          "atomFamily": "relation",
+          "count": 1
+        }
+      ],
+      "semanticRefs": [
+        "semantic:create-user-flow"
+      ],
+      "concernRefs": [
+        "concern:missing-compensation"
+      ],
+      "topAxes": [
+        {
+          "axis": "permissionCoverage",
+          "status": "actionable",
+          "score": 6,
+          "familyScore": 4,
+          "keywordHits": [
+            "route"
+          ],
+          "concernRefs": [],
+          "coverageGapRefs": [],
+          "reading": "route/session/admin authority coverage concentrates in this workflow",
+          "nonConclusions": [
+            "ArchSig analysis packet is not a Lean theorem proof",
+            "ArchSig analysis packet is not global architecture truth",
+            "ArchSig analysis packet does not prove source extraction completeness",
+            "signature axes are law-policy-relative, not universal quality scores",
+            "flatness reading is blocked by coverage gaps and exactness assumptions",
+            "repair operation candidates are not automatic safe refactorings"
+          ]
+        },
+        {
+          "axis": "sourceBackedDomainCohesion",
+          "status": "actionable",
+          "score": 6,
+          "familyScore": 4,
+          "keywordHits": [
+            "source"
+          ],
+          "concernRefs": [],
+          "coverageGapRefs": [],
+          "reading": "source-backed domain identity, relation, and contract cohesion concentrate in this workflow",
+          "nonConclusions": [
+            "ArchSig analysis packet is not a Lean theorem proof",
+            "ArchSig analysis packet is not global architecture truth",
+            "ArchSig analysis packet does not prove source extraction completeness",
+            "signature axes are law-policy-relative, not universal quality scores",
+            "flatness reading is blocked by coverage gaps and exactness assumptions",
+            "repair operation candidates are not automatic safe refactorings"
+          ]
+        },
+        {
+          "axis": "llmOutputMediation",
+          "status": "needsReview",
+          "score": 3,
+          "familyScore": 2,
+          "keywordHits": [],
+          "concernRefs": [],
+          "coverageGapRefs": [
+            "gap-runtime-user-db-trace"
+          ],
+          "reading": "prompt/context validation, LLM/provider output, filtering, and persistence gates concentrate in this workflow",
+          "nonConclusions": [
+            "ArchSig analysis packet is not a Lean theorem proof",
+            "ArchSig analysis packet is not global architecture truth",
+            "ArchSig analysis packet does not prove source extraction completeness",
+            "signature axes are law-policy-relative, not universal quality scores",
+            "flatness reading is blocked by coverage gaps and exactness assumptions",
+            "repair operation candidates are not automatic safe refactorings"
+          ]
+        },
+        {
+          "axis": "authorityTrustBoundary",
+          "status": "needsReview",
+          "score": 2,
+          "familyScore": 1,
+          "keywordHits": [],
+          "concernRefs": [],
+          "coverageGapRefs": [
+            "gap-runtime-user-db-trace"
+          ],
+          "reading": "authority labels, trust handoffs, provider output, and boundary checks concentrate in this workflow",
+          "nonConclusions": [
+            "ArchSig analysis packet is not a Lean theorem proof",
+            "ArchSig analysis packet is not global architecture truth",
+            "ArchSig analysis packet does not prove source extraction completeness",
+            "signature axes are law-policy-relative, not universal quality scores",
+            "flatness reading is blocked by coverage gaps and exactness assumptions",
+            "repair operation candidates are not automatic safe refactorings"
+          ]
+        },
+        {
+          "axis": "stateEffectReconciliation",
+          "status": "needsReview",
+          "score": 2,
+          "familyScore": 1,
+          "keywordHits": [],
+          "concernRefs": [],
+          "coverageGapRefs": [
+            "gap-runtime-user-db-trace"
+          ],
+          "reading": "durable state, external effects, retry, and status-finalization pressure concentrate in this workflow",
+          "nonConclusions": [
+            "ArchSig analysis packet is not a Lean theorem proof",
+            "ArchSig analysis packet is not global architecture truth",
+            "ArchSig analysis packet does not prove source extraction completeness",
+            "signature axes are law-policy-relative, not universal quality scores",
+            "flatness reading is blocked by coverage gaps and exactness assumptions",
+            "repair operation candidates are not automatic safe refactorings"
+          ]
+        }
+      ],
+      "reviewFocus": [
+        "Source-backed domain identity, relations, and contract cohesion",
+        "prompt/context validation, LLM output filtering, persistence gate",
+        "route-by-route permission dependency and tenant/workspace scope"
+      ],
+      "coverageGapRefs": [
+        "gap-runtime-user-db-trace"
+      ],
+      "evidenceBoundary": "workflow risk is a molecule-local ArchMap reading for review prioritization, not a quality score or proof",
+      "recommendedNextAction": "review the top axes, source refs, concern hints, and coverage gaps before planning repair",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings"
+      ]
+    }
+  ],
   "designPrincipleReadings": [
     {
       "principleId": "principle:informationhiding",
@@ -1661,7 +1813,9 @@
       "zeroReflectingAggregateBoundary=blockedByObservationGaps (needsReview)"
     ],
     "repairOperationSummary": [],
-    "complexityTransferNotes": [],
+    "complexityTransferNotes": [
+      "molecule:user-request-responsibility: review low (permissionCoverage, sourceBackedDomainCohesion, llmOutputMediation)"
+    ],
     "coverageGapsAndExactnessBlockers": [
       "gap-runtime-user-db-trace: runtime trace was requested but not supplied"
     ],

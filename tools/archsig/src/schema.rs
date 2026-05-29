@@ -615,6 +615,7 @@ pub struct ArchSigAnalysisPacketV0 {
     pub signature_axes: Vec<ArchSigSignatureAxisReadingV0>,
     pub analytic_representations: Vec<ArchSigAnalyticRepresentationV0>,
     pub coupling_cohesion_readings: Vec<ArchSigCouplingCohesionReadingV0>,
+    pub workflow_risk_readings: Vec<ArchSigWorkflowRiskReadingV0>,
     pub design_principle_readings: Vec<ArchSigDesignPrincipleReadingV0>,
     pub flatness_reading: ArchSigFlatnessReadingV0,
     pub static_runtime_semantic_layer_split: ArchSigLayerSplitV0,
@@ -848,6 +849,49 @@ pub struct ArchSigCouplingCohesionReadingV0 {
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+pub struct ArchSigWorkflowRiskReadingV0 {
+    pub workflow_risk_id: String,
+    pub molecule_observation_ref: String,
+    pub molecule_family: String,
+    pub role_name: String,
+    pub status: String,
+    pub risk_score: i64,
+    pub risk_tier: String,
+    pub atom_count: usize,
+    pub atom_family_counts: Vec<ArchSigWorkflowAtomFamilyCountV0>,
+    pub semantic_refs: Vec<String>,
+    pub concern_refs: Vec<String>,
+    pub top_axes: Vec<ArchSigWorkflowRiskAxisReadingV0>,
+    pub review_focus: Vec<String>,
+    pub coverage_gap_refs: Vec<String>,
+    pub evidence_boundary: String,
+    pub recommended_next_action: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigWorkflowAtomFamilyCountV0 {
+    pub atom_family: String,
+    pub count: usize,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigWorkflowRiskAxisReadingV0 {
+    pub axis: String,
+    pub status: String,
+    pub score: i64,
+    pub family_score: i64,
+    pub keyword_hits: Vec<String>,
+    pub concern_refs: Vec<String>,
+    pub coverage_gap_refs: Vec<String>,
+    pub reading: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct ArchSigDesignPrincipleReadingV0 {
     pub principle_id: String,
     pub principle: String,
@@ -1004,6 +1048,7 @@ pub struct ArchSigAnalysisPacketValidationSummaryV0 {
     pub signature_axis_count: usize,
     pub analytic_representation_count: usize,
     pub coupling_cohesion_reading_count: usize,
+    pub workflow_risk_reading_count: usize,
     pub design_principle_reading_count: usize,
     pub repair_operation_candidate_count: usize,
     pub operation_delta_count: usize,
