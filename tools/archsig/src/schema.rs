@@ -7,7 +7,7 @@ pub const COMPONENT_KIND: &str = "lean-module";
 pub const PYTHON_COMPONENT_KIND: &str = "python-module";
 pub const PYTHON_IMPORT_RULE_VERSION: &str = "python-import-graph-v0";
 pub const VALIDATION_REPORT_SCHEMA_VERSION: &str = "component-universe-validation-report-v0";
-pub const EMPIRICAL_DATASET_SCHEMA_VERSION: &str = "empirical-signature-dataset-v0";
+pub const SNAPSHOT_ATTRIBUTION_INPUT_SCHEMA_VERSION: &str = "archsig-snapshot-attribution-input-v0";
 pub const SIGNATURE_SNAPSHOT_STORE_SCHEMA_VERSION: &str = "signature-snapshot-store-v0";
 pub const SIGNATURE_DIFF_REPORT_SCHEMA_VERSION: &str = "signature-diff-report-v0";
 pub const AIR_SCHEMA_VERSION: &str = "aat-air-v0";
@@ -533,28 +533,13 @@ pub struct ValidationExample {
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct EmpiricalDatasetInput {
+pub struct SnapshotAttributionInput {
     pub repository: RepositoryRef,
     pub pull_request: PullRequestRef,
     pub pr_metrics: PullRequestMetrics,
     #[serde(default)]
     pub issue_incident_links: Vec<IssueIncidentLink>,
     #[serde(default)]
-    pub analysis_metadata: AnalysisMetadata,
-}
-
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct EmpiricalSignatureDatasetV0 {
-    pub schema_version: String,
-    pub repository: RepositoryRef,
-    pub pull_request: PullRequestRef,
-    pub signature_before: SignatureSnapshot,
-    pub signature_after: SignatureSnapshot,
-    pub delta_signature_signed: NullableSignatureIntVector,
-    pub metric_delta_status: BTreeMap<String, MetricDeltaStatus>,
-    pub pr_metrics: PullRequestMetrics,
-    pub issue_incident_links: Vec<IssueIncidentLink>,
     pub analysis_metadata: AnalysisMetadata,
 }
 

@@ -20,7 +20,7 @@ use archsig::{
     ArchMapValidationReportV0, ArchSigAnalysisPacketV0, ArchitecturePolicyV0,
     ArchitecturePolicyValidationReportV0, ComponentUniverseValidationReport,
     CustomRulePluginRegistryV0, CustomRulePluginRegistryValidationReportV0, DEFAULT_UNIVERSE_MODE,
-    DetectableValuesReportedAxesCatalogV0, EmpiricalDatasetInput, FeatureExtensionReportV0,
+    DetectableValuesReportedAxesCatalogV0, FeatureExtensionReportV0,
     FeatureReportHomomorphismFamily, FeatureReportHomomorphismSummary, FrameworkAdapterEvidenceV0,
     LawPolicyDocumentV0, LawPolicyTemplateRegistryV0, LawPolicyTemplateRegistryValidationReportV0,
     LawViolationReportV0, MeasurementUnitRegistryV0, MeasurementUnitRegistryValidationReportV0,
@@ -30,11 +30,11 @@ use archsig::{
     RepairRuleRegistryValidationReportV0, ReportArtifactRetentionManifestV0,
     ReportArtifactRetentionValidationReportV0, RepositoryRevisionRef, RiskDispositionV0,
     ScanMetadata, SchemaCompatibilityCheckReportV0, SchemaVersionCatalogV0, Sig0Document,
-    SignatureDiffReportV0, SignatureSnapshotStoreRecordV0, SnapshotRecordInput,
-    SnapshotRepositoryRef, SynthesisConstraintArtifactV0, SynthesisConstraintValidationReportV0,
-    TheoremPreconditionCheckReportV0, apply_architecture_policy_to_sig0,
-    attach_framework_adapter_evidence, build_air_document, build_air_from_archmap,
-    build_archsig_analysis_packet, build_baseline_suppression_report,
+    SignatureDiffReportV0, SignatureSnapshotStoreRecordV0, SnapshotAttributionInput,
+    SnapshotRecordInput, SnapshotRepositoryRef, SynthesisConstraintArtifactV0,
+    SynthesisConstraintValidationReportV0, TheoremPreconditionCheckReportV0,
+    apply_architecture_policy_to_sig0, attach_framework_adapter_evidence, build_air_document,
+    build_air_from_archmap, build_archsig_analysis_packet, build_baseline_suppression_report,
     build_feature_extension_report, build_feature_extension_report_with_archmap_diagnostics,
     build_law_violation_report, build_policy_decision_report,
     build_schema_compatibility_check_report, build_signature_diff_report,
@@ -830,7 +830,7 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
             let pr_metadata = pr_metadata
                 .iter()
                 .map(read_json)
-                .collect::<Result<Vec<EmpiricalDatasetInput>, Box<dyn Error>>>()?;
+                .collect::<Result<Vec<SnapshotAttributionInput>, Box<dyn Error>>>()?;
             let report = build_signature_diff_report(
                 &before,
                 &after,
@@ -855,7 +855,7 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                 validation.as_ref().map(read_json).transpose()?;
             let diff_report: Option<SignatureDiffReportV0> =
                 diff.as_ref().map(read_json).transpose()?;
-            let pr_metadata_document: Option<EmpiricalDatasetInput> =
+            let pr_metadata_document: Option<SnapshotAttributionInput> =
                 pr_metadata.as_ref().map(read_json).transpose()?;
             let mut air = build_air_document(
                 &document,
