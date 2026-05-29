@@ -117,6 +117,9 @@ Each `moleculeObservations[]` entry should include:
 - `nonConclusions`
 
 Responsibility is a molecule over atom observations, not a primitive atom.
+Use molecule observations for composed roles or patterns whose meaning depends on multiple atom observations. A molecule should reference the atom observations it composes; it should not replace those atoms.
+
+Do not create an atom with `atomFamily: "responsibility"`, `atomFamily: "workflow"`, or `atomFamily: "policy"` to avoid building the molecule/semantic layer.
 
 ## Semantic Observations
 
@@ -136,6 +139,9 @@ Each `semanticObservations[]` entry should include:
 - `nonConclusions`
 
 Scope semantic observations to the selected source refs. Do not generalize a test, fixture, or doc section into global semantic correctness.
+Use semantic observations for workflow meaning, operation meaning, behavior readings, contract readings, policy readings, and commutation cues. Do not use a coarse `semantic` atom when the reading combines multiple primitive facts.
+
+If a semantic observation depends on primitive facts, list their `atomObservationRefs`. If it depends on a composed role, list the relevant `moleculeObservationRefs`.
 
 ## Observation Gaps
 

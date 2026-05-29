@@ -115,6 +115,10 @@ primitive fact を `atomObservations` に置き、責務は `moleculeObservation
 reading は `semanticObservations`、不足 evidence は `observationGaps`、review cue は
 `concernHints` に分離する。
 
+LLM は workflow-first に source を読んで Atom 候補を発見してよい。ただし artifact としての
+ArchMap では、workflow そのものを Atom として保存しない。workflow reading は、参照する
+Atom / Molecule refs を明示した semantic observation として保存する。
+
 ### R2. ArchMap は law-independent に保つ
 
 ArchMap は Atom、Molecule、Semantic observation、Observation gap を記録する。
