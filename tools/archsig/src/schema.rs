@@ -1696,6 +1696,8 @@ pub struct ArchMapValidationReportV0 {
     pub semantic_coverage_checks: Vec<ValidationCheck>,
     pub conflict_checks: Vec<ValidationCheck>,
     pub formal_promotion_guardrail_checks: Vec<ValidationCheck>,
+    #[serde(default)]
+    pub legacy_schema_checks: Vec<ValidationCheck>,
     pub homomorphism_diagnostics: ArchMapHomomorphismDiagnosticsV0,
     #[serde(default)]
     pub atomic_observation_checks: Vec<ValidationCheck>,

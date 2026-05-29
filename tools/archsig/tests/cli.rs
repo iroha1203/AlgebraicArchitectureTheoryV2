@@ -14,6 +14,17 @@ fn expressiveness_root() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/expressiveness")
 }
 
+fn validation_check_result<'a>(json: &'a Value, group: &str, id: &str) -> &'a str {
+    json[group]
+        .as_array()
+        .expect("validation check group is array")
+        .iter()
+        .find(|check| check["id"] == id)
+        .unwrap_or_else(|| panic!("validation check {id} exists in {group}"))["result"]
+        .as_str()
+        .expect("validation check result is string")
+}
+
 #[test]
 fn cli_help_excludes_fieldsig_owned_commands() {
     let output = run_sig0_output(&["--help"]);
@@ -159,6 +170,24 @@ fn cli_runs_archmap_primary_workflow() {
             Some("pass" | "warn")
         ),
         "ArchMap validation should complete without failing"
+    );
+    assert_eq!(
+        validation_check_result(
+            &validation_json,
+            "legacySchemaChecks",
+            "archmap-legacy-schema-fields"
+        ),
+        "pass",
+        "primary ArchMap fixture must not require legacy fields"
+    );
+    assert_eq!(
+        validation_check_result(
+            &validation_json,
+            "legacySchemaChecks",
+            "archmap-legacy-obstruction-circuit-candidates"
+        ),
+        "pass",
+        "primary ArchMap fixture must not expose obstruction candidates"
     );
     assert_eq!(
         validation_json["atomicObservationSummary"]["atomObservationCount"], 4,
@@ -547,6 +576,66 @@ fn cli_locks_archmap_homomorphism_expressiveness_matrix() {
             .as_array()
             .is_some_and(|items| !items.is_empty()),
         "unmeasured AAT concept coverage must remain explicit"
+    );
+    assert_eq!(
+        validation_check_result(&json, "legacySchemaChecks", "archmap-legacy-schema-fields"),
+        "warn",
+        "legacy expressiveness fixture should be accepted only as compatibility input"
+    );
+    assert_eq!(
+        validation_check_result(
+            &json,
+            "legacySchemaChecks",
+            "archmap-legacy-obstruction-circuit-candidates"
+        ),
+        "pass",
+        "expressiveness fixture should not need legacy obstruction candidate input"
+    );
+
+    let legacy_obstruction_dir = temp_dir("archmap-legacy-obstruction-candidate");
+    let legacy_archmap = legacy_obstruction_dir.join("archmap-with-legacy-obstruction.json");
+    let legacy_validation = legacy_obstruction_dir.join("archmap-validation.json");
+    let mut legacy_doc = read_json(&archmap);
+    legacy_doc["obstructionCircuitCandidates"] = serde_json::from_str(
+        r#"[{
+          "circuitCandidateId": "legacy-circuit",
+          "circuitKind": "FailedFilling",
+          "lawRef": "law:legacy",
+          "atomCandidateRefs": [],
+          "moleculeCandidateRefs": [],
+          "sourceRefs": [{"artifactId": "src-service-user", "kind": "file", "path": "src/services/user.ts"}],
+          "observationStatus": "observed",
+          "measurementBoundary": "measuredNonzero",
+          "claimBoundary": "legacy compatibility fixture",
+          "nonConclusions": ["legacy obstruction candidate is not primary ArchMap output"]
+        }]"#,
+    )
+    .expect("legacy obstruction candidate fixture parses");
+    fs::write(
+        &legacy_archmap,
+        serde_json::to_vec_pretty(&legacy_doc).expect("legacy archmap serializes"),
+    )
+    .expect("legacy archmap fixture can be written");
+    run_sig0(&[
+        "archmap",
+        "--input",
+        legacy_archmap
+            .to_str()
+            .expect("legacy archmap path is utf-8"),
+        "--out",
+        legacy_validation
+            .to_str()
+            .expect("legacy validation path is utf-8"),
+    ]);
+    let legacy_json = read_json(&legacy_validation);
+    assert_eq!(
+        validation_check_result(
+            &legacy_json,
+            "legacySchemaChecks",
+            "archmap-legacy-obstruction-circuit-candidates"
+        ),
+        "warn",
+        "legacy obstruction candidates should be called out as non-primary ArchMap output"
     );
 
     let workflow_dir = temp_dir("archmap-homomorphism-expressiveness-workflow");

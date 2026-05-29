@@ -45,6 +45,7 @@ pub fn validate_archmap_report(
         check_formal_promotion_guardrail(document),
         check_projection_separation(document),
     ];
+    let legacy_schema_checks = archmap_legacy_schema_checks(document);
     let homomorphism = archmap_homomorphism(document);
     let homomorphism_diagnostics = archmap_homomorphism_diagnostics(document, &homomorphism, sig0);
     let homomorphism_checks = vec![check_homomorphism_diagnostics(&homomorphism_diagnostics)];
@@ -59,6 +60,7 @@ pub fn validate_archmap_report(
     all_checks.extend(semantic_coverage_checks.clone());
     all_checks.extend(conflict_checks.clone());
     all_checks.extend(formal_promotion_guardrail_checks.clone());
+    all_checks.extend(legacy_schema_checks.clone());
     all_checks.extend(homomorphism_checks);
     all_checks.extend(atomic_observation_checks.clone());
     all_checks.extend(responsibility_checks.clone());
@@ -84,6 +86,7 @@ pub fn validate_archmap_report(
         semantic_coverage_checks,
         conflict_checks,
         formal_promotion_guardrail_checks,
+        legacy_schema_checks,
         homomorphism_diagnostics: homomorphism_diagnostics.clone(),
         atomic_observation_checks,
         atomic_observation_summary,
@@ -98,6 +101,97 @@ pub fn validate_archmap_report(
         },
         non_conclusions: archmap_non_conclusions(document),
     }
+}
+
+fn archmap_legacy_schema_checks(document: &ArchMapDocumentV0) -> Vec<ValidationCheck> {
+    vec![
+        check_legacy_archmap_fields(document),
+        check_legacy_obstruction_candidates(document),
+    ]
+}
+
+fn check_legacy_archmap_fields(document: &ArchMapDocumentV0) -> ValidationCheck {
+    let mut examples = Vec::new();
+    if !document.homomorphism.is_empty() {
+        examples.push(generic_validation_example(
+            "homomorphism",
+            "compatibility projection",
+            "legacy homomorphism field is accepted only as non-primary compatibility input",
+        ));
+    }
+    if !document.map_items.is_empty() {
+        examples.push(generic_validation_example(
+            "mapItems",
+            &document.map_items.len().to_string(),
+            "legacy mapItems field is accepted only as non-primary compatibility input",
+        ));
+    }
+    if !document.atom_candidates.is_empty() {
+        examples.push(generic_validation_example(
+            "atomCandidates",
+            &document.atom_candidates.len().to_string(),
+            "legacy atomCandidates field is accepted only as non-primary compatibility input",
+        ));
+    }
+    if !document.molecule_candidates.is_empty() {
+        examples.push(generic_validation_example(
+            "moleculeCandidates",
+            &document.molecule_candidates.len().to_string(),
+            "legacy moleculeCandidates field is accepted only as non-primary compatibility input",
+        ));
+    }
+
+    let mut check = validation_check(
+        "archmap-legacy-schema-fields",
+        "Legacy ArchMap schema fields are compatibility-only and not the primary Atom observation surface",
+        if examples.is_empty() { "pass" } else { "warn" },
+    );
+    check.count = Some(examples.len());
+    if examples.is_empty() {
+        check.reason = Some(
+            "no legacy homomorphism, mapItems, atomCandidates, or moleculeCandidates fields were supplied"
+                .to_string(),
+        );
+    } else {
+        check.reason = Some(
+            "legacy fields were supplied; current primary ArchMap input is archmap-observation-map-v0 with atomObservations, moleculeObservations, semanticObservations, observationGaps, projectionInfo, and concernHints"
+                .to_string(),
+        );
+    }
+    check.examples = examples;
+    check
+}
+
+fn check_legacy_obstruction_candidates(document: &ArchMapDocumentV0) -> ValidationCheck {
+    let mut check = validation_check(
+        "archmap-legacy-obstruction-circuit-candidates",
+        "Legacy obstructionCircuitCandidates are not first-class ArchMap output",
+        if document.obstruction_circuit_candidates.is_empty() {
+            "pass"
+        } else {
+            "warn"
+        },
+    );
+    check.count = Some(document.obstruction_circuit_candidates.len());
+    check.reason = Some(if document.obstruction_circuit_candidates.is_empty() {
+        "no legacy obstructionCircuitCandidates were supplied; concernHints remain review cues"
+            .to_string()
+    } else {
+        "obstructionCircuitCandidates were supplied through the legacy compatibility field; new ArchMap authoring must use concernHints only, and ArchSig constructs law-relative obstruction circuits from ArchMap plus LawPolicy"
+            .to_string()
+    });
+    check.examples = document
+        .obstruction_circuit_candidates
+        .iter()
+        .map(|candidate| {
+            generic_validation_example(
+                "obstructionCircuitCandidates",
+                &candidate.circuit_candidate_id,
+                "legacy obstruction candidate is compatibility-only, not primary ArchMap output",
+            )
+        })
+        .collect();
+    check
 }
 
 pub fn archmap_homomorphism(document: &ArchMapDocumentV0) -> ArchMapHomomorphismV0 {
