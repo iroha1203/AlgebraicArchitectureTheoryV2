@@ -1063,6 +1063,242 @@
       ]
     }
   ],
+  "spectralAnalysisReadings": [
+    {
+      "spectralReadingId": "spectral:workflow-risk-axis-pressure",
+      "representationFamily": "workflowRiskAxisPressureMatrix",
+      "status": "needsReview",
+      "matrixShape": {
+        "rowDomain": "workflowRiskReadings",
+        "columnDomain": "workflowRiskAxes",
+        "rowCount": 1,
+        "columnCount": 5,
+        "nonzeroEntryCount": 5
+      },
+      "entryRule": "entry(i,j) is the workflow risk axis score for workflow i and risk axis j",
+      "valueType": "boundedSpectralProxy",
+      "values": [
+        {
+          "name": "maxRowSum",
+          "value": "19",
+          "interpretation": "largest molecule-local review pressure"
+        },
+        {
+          "name": "maxColumnSum",
+          "value": "6",
+          "interpretation": "largest accumulated axis pressure"
+        },
+        {
+          "name": "frobeniusNorm",
+          "value": "9.434",
+          "interpretation": "global pressure magnitude of the observed finite matrix"
+        },
+        {
+          "name": "spectralRadiusUpperBound",
+          "value": "10.677",
+          "interpretation": "nonnegative-matrix upper bound, not an exact eigen theorem"
+        }
+      ],
+      "dominantComponents": [
+        {
+          "componentRef": "molecule:user-request-responsibility",
+          "componentKind": "workflow",
+          "value": "19",
+          "reading": "dominant row pressure in the workflow-by-axis matrix"
+        },
+        {
+          "componentRef": "sourceBackedDomainCohesion",
+          "componentKind": "workflowRiskAxis",
+          "value": "6",
+          "reading": "dominant column pressure accumulated across workflows"
+        }
+      ],
+      "supportRefs": [
+        "workflow-risk:molecule-user-request-responsibility"
+      ],
+      "reading": "workflow risk pressure is concentrated by rows and axes; use the dominant row and column before treating local risk as isolated",
+      "coverageBoundary": "coverage gaps on workflow axes block measured-zero interpretation for absent entries",
+      "zeroReflectingBoundary": "zero entries mean no observed risk-axis evidence under current ArchMap and heuristics, not absence of architectural pressure",
+      "recommendedNextAction": "review the dominant workflow row, dominant axis column, and coverage gaps before selecting repair operations",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings"
+      ]
+    },
+    {
+      "spectralReadingId": "spectral:molecule-atom-overlap-coupling",
+      "representationFamily": "moleculeAtomOverlapCouplingMatrix",
+      "status": "needsReview",
+      "matrixShape": {
+        "rowDomain": "moleculeObservations",
+        "columnDomain": "moleculeObservations",
+        "rowCount": 1,
+        "columnCount": 1,
+        "nonzeroEntryCount": 1
+      },
+      "entryRule": "entry(i,j) is exact atom overlap weighted with atom-family overlap; the diagonal records molecule atom-family mass",
+      "valueType": "boundedSpectralProxy",
+      "values": [
+        {
+          "name": "maxRowSum",
+          "value": "4",
+          "interpretation": "largest observed molecule overlap mass"
+        },
+        {
+          "name": "frobeniusNorm",
+          "value": "4.000",
+          "interpretation": "observed overlap magnitude of the molecule coupling matrix"
+        },
+        {
+          "name": "spectralRadiusUpperBound",
+          "value": "4.000",
+          "interpretation": "Gershgorin-style row-sum upper bound for this nonnegative matrix"
+        }
+      ],
+      "dominantComponents": [
+        {
+          "componentRef": "molecule:user-request-responsibility",
+          "componentKind": "molecule",
+          "value": "4",
+          "reading": "dominant molecule by atom/family overlap mass"
+        }
+      ],
+      "supportRefs": [
+        "molecule:user-request-responsibility"
+      ],
+      "reading": "molecules sharing atom refs or atom families form an overlap coupling surface that is invisible to import-only static analysis",
+      "coverageBoundary": "missing atom families and observation gaps can make overlap coupling appear smaller than the source architecture actually is",
+      "zeroReflectingBoundary": "zero off-diagonal overlap means no shared observed atom/family evidence, not guaranteed independence",
+      "recommendedNextAction": "inspect the dominant molecule and any high-overlap neighbors before splitting or moving responsibilities",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings"
+      ]
+    },
+    {
+      "spectralReadingId": "spectral:obstruction-axis-curvature",
+      "representationFamily": "obstructionAxisCurvatureMatrix",
+      "status": "nonConclusion",
+      "matrixShape": {
+        "rowDomain": "obstructionCircuits",
+        "columnDomain": "signatureAxes",
+        "rowCount": 0,
+        "columnCount": 1,
+        "nonzeroEntryCount": 0
+      },
+      "entryRule": "entry(i,j) is 1 when obstruction circuit i contributes to signature axis j",
+      "valueType": "boundedSpectralProxy",
+      "values": [
+        {
+          "name": "maxRowSum",
+          "value": "0",
+          "interpretation": "widest obstruction-to-axis curvature row"
+        },
+        {
+          "name": "maxColumnSum",
+          "value": "0",
+          "interpretation": "most repeated obstruction axis"
+        },
+        {
+          "name": "frobeniusNorm",
+          "value": "0.000",
+          "interpretation": "curvature incidence magnitude over constructed obstruction circuits"
+        },
+        {
+          "name": "spectralRadiusUpperBound",
+          "value": "0.000",
+          "interpretation": "incidence-matrix upper bound, not a global flatness proof"
+        }
+      ],
+      "dominantComponents": [],
+      "supportRefs": [],
+      "reading": "obstruction circuits distribute curvature onto signature axes; repeated columns indicate axes where local failures accumulate",
+      "coverageBoundary": "only constructed obstruction circuits are represented; concern hints that lack witness rules remain outside this matrix",
+      "zeroReflectingBoundary": "zero incidence means no constructed obstruction-to-axis edge, not proof of zero curvature",
+      "recommendedNextAction": "review the dominant obstruction row and repeated axis column before treating a signature axis as local",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings"
+      ]
+    },
+    {
+      "spectralReadingId": "spectral:operation-signature-delta",
+      "representationFamily": "operationSignatureDeltaMatrix",
+      "status": "actionable",
+      "matrixShape": {
+        "rowDomain": "operationDeltas",
+        "columnDomain": "signatureAxes",
+        "rowCount": 1,
+        "columnCount": 1,
+        "nonzeroEntryCount": 1
+      },
+      "entryRule": "entry(i,j) is 1 when operation delta i declares or mentions a change to signature axis j",
+      "valueType": "boundedSpectralProxy",
+      "values": [
+        {
+          "name": "maxRowSum",
+          "value": "1",
+          "interpretation": "widest operation-to-signature delta row"
+        },
+        {
+          "name": "maxColumnSum",
+          "value": "1",
+          "interpretation": "signature axis touched by most operations"
+        },
+        {
+          "name": "frobeniusNorm",
+          "value": "1.000",
+          "interpretation": "operation delta incidence magnitude"
+        },
+        {
+          "name": "spectralRadiusUpperBound",
+          "value": "1.000",
+          "interpretation": "operation-transition upper bound, not repair correctness"
+        }
+      ],
+      "dominantComponents": [
+        {
+          "componentRef": "operation-delta:observe-before-repair",
+          "componentKind": "operationDelta",
+          "value": "0",
+          "reading": "dominant operation row by declared decreased axes"
+        },
+        {
+          "componentRef": "sig-axis:layer-violation",
+          "componentKind": "signatureAxis",
+          "value": "1",
+          "reading": "dominant signature axis touched by operation deltas"
+        }
+      ],
+      "supportRefs": [
+        "operation-delta:observe-before-repair"
+      ],
+      "reading": "operation deltas show which signature axes would move together under candidate repairs or evidence enrichment",
+      "coverageBoundary": "candidate operations are bounded review artifacts; absent delta entries are not proof that an operation preserves an axis",
+      "zeroReflectingBoundary": "zero delta incidence means no declared or text-mentioned axis movement under current candidates, not repair safety",
+      "recommendedNextAction": "review the dominant operation row and repeated axis column before converting a repair candidate into code changes",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings"
+      ]
+    }
+  ],
   "designPrincipleReadings": [
     {
       "principleId": "principle:informationhiding",
@@ -1811,6 +2047,12 @@
       "curvatureValuation=0 (measured)",
       "stateAlgebra=state/effect algebra requires explicit state transition and runtime/effect atoms (unmeasured)",
       "zeroReflectingAggregateBoundary=blockedByObservationGaps (needsReview)"
+    ],
+    "spectralReadingsSummary": [
+      "workflowRiskAxisPressureMatrix upperBound=10.677 shape=1x5 (needsReview)",
+      "moleculeAtomOverlapCouplingMatrix upperBound=4.000 shape=1x1 (needsReview)",
+      "obstructionAxisCurvatureMatrix upperBound=0.000 shape=0x1 (nonConclusion)",
+      "operationSignatureDeltaMatrix upperBound=1.000 shape=1x1 (actionable)"
     ],
     "repairOperationSummary": [],
     "complexityTransferNotes": [

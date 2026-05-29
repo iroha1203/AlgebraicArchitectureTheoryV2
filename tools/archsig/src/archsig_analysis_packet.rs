@@ -15,10 +15,12 @@ use crate::{
     ArchSigLawUniverseReadingV0, ArchSigLayerSplitV0, ArchSigLlmInterpretationPacketV0,
     ArchSigMoleculeReadingV0, ArchSigObstructionCircuitV0, ArchSigOperationDeltaReadingV0,
     ArchSigPathHomotopyDiagramReadingV0, ArchSigRepairOperationCandidateV0,
-    ArchSigSignatureAxisReadingV0, ArchSigWorkflowAtomFamilyCountV0,
-    ArchSigWorkflowRiskAxisReadingV0, ArchSigWorkflowRiskReadingV0, LAW_POLICY_SCHEMA_VERSION,
-    LawPolicyDocumentV0, LawPolicyObstructionCircuitDefinitionV0,
-    LawPolicySignatureAxisDefinitionV0, LawPolicyWitnessRuleV0, ValidationCheck, ValidationExample,
+    ArchSigSignatureAxisReadingV0, ArchSigSpectralAnalysisReadingV0,
+    ArchSigSpectralDominantComponentV0, ArchSigSpectralMatrixShapeV0, ArchSigSpectralValueV0,
+    ArchSigWorkflowAtomFamilyCountV0, ArchSigWorkflowRiskAxisReadingV0,
+    ArchSigWorkflowRiskReadingV0, LAW_POLICY_SCHEMA_VERSION, LawPolicyDocumentV0,
+    LawPolicyObstructionCircuitDefinitionV0, LawPolicySignatureAxisDefinitionV0,
+    LawPolicyWitnessRuleV0, ValidationCheck, ValidationExample,
 };
 
 const REQUIRED_NON_CONCLUSIONS: [&str; 6] = [
@@ -80,6 +82,13 @@ pub fn build_archsig_analysis_packet(
     );
     let operation_deltas =
         build_operation_deltas(archmap, &repair_operation_candidates, &signature_axes);
+    let spectral_analysis_readings = build_spectral_analysis_readings(
+        archmap,
+        &workflow_risk_readings,
+        &obstruction_circuits,
+        &signature_axes,
+        &operation_deltas,
+    );
     let path_homotopy_diagram_readings =
         build_path_homotopy_diagram_readings(archmap, &molecule_readings, &obstruction_circuits);
     let bounded_judgements = build_bounded_judgements(
@@ -111,6 +120,7 @@ pub fn build_archsig_analysis_packet(
         &signature_axes,
         &analytic_representations,
         &workflow_risk_readings,
+        &spectral_analysis_readings,
         &repair_operation_candidates,
         &bounded_judgements,
     );
@@ -149,6 +159,7 @@ pub fn build_archsig_analysis_packet(
         analytic_representations,
         coupling_cohesion_readings,
         workflow_risk_readings,
+        spectral_analysis_readings,
         design_principle_readings,
         flatness_reading,
         static_runtime_semantic_layer_split: build_layer_split(archmap),
@@ -1549,6 +1560,533 @@ fn workflow_risk_tier(risk_score: i64) -> &'static str {
     }
 }
 
+fn build_spectral_analysis_readings(
+    archmap: &ArchMapDocumentV0,
+    workflow_risk_readings: &[ArchSigWorkflowRiskReadingV0],
+    obstruction_circuits: &[ArchSigObstructionCircuitV0],
+    signature_axes: &[ArchSigSignatureAxisReadingV0],
+    operation_deltas: &[ArchSigOperationDeltaReadingV0],
+) -> Vec<ArchSigSpectralAnalysisReadingV0> {
+    vec![
+        workflow_risk_axis_pressure_spectrum(workflow_risk_readings),
+        molecule_atom_overlap_spectrum(archmap),
+        obstruction_axis_curvature_spectrum(obstruction_circuits, signature_axes),
+        operation_signature_delta_spectrum(operation_deltas, signature_axes),
+    ]
+}
+
+fn workflow_risk_axis_pressure_spectrum(
+    workflow_risk_readings: &[ArchSigWorkflowRiskReadingV0],
+) -> ArchSigSpectralAnalysisReadingV0 {
+    let axes = workflow_risk_readings
+        .iter()
+        .flat_map(|reading| reading.top_axes.iter().map(|axis| axis.axis.as_str()))
+        .collect::<BTreeSet<_>>();
+    let nonzero_entry_count = workflow_risk_readings
+        .iter()
+        .map(|reading| reading.top_axes.len())
+        .sum::<usize>();
+    let max_row = workflow_risk_readings
+        .iter()
+        .map(|reading| reading.risk_score)
+        .max()
+        .unwrap_or_default();
+    let mut axis_scores = BTreeMap::<String, i64>::new();
+    let mut squared_sum = 0_f64;
+    for axis in workflow_risk_readings
+        .iter()
+        .flat_map(|reading| reading.top_axes.iter())
+    {
+        *axis_scores.entry(axis.axis.clone()).or_default() += axis.score;
+        squared_sum += (axis.score as f64).powi(2);
+    }
+    let max_col = axis_scores.values().copied().max().unwrap_or_default();
+    let mut dominant_components = Vec::new();
+    if let Some(workflow) = workflow_risk_readings.iter().max_by(|left, right| {
+        left.risk_score
+            .cmp(&right.risk_score)
+            .then(left.workflow_risk_id.cmp(&right.workflow_risk_id))
+    }) {
+        dominant_components.push(spectral_component(
+            &workflow.molecule_observation_ref,
+            "workflow",
+            workflow.risk_score.to_string(),
+            "dominant row pressure in the workflow-by-axis matrix",
+        ));
+    }
+    if let Some((axis, score)) = axis_scores
+        .iter()
+        .max_by(|left, right| left.1.cmp(right.1).then(left.0.cmp(right.0)))
+    {
+        dominant_components.push(spectral_component(
+            axis,
+            "workflowRiskAxis",
+            score.to_string(),
+            "dominant column pressure accumulated across workflows",
+        ));
+    }
+
+    spectral_reading(
+        "spectral:workflow-risk-axis-pressure",
+        "workflowRiskAxisPressureMatrix",
+        spectral_status(
+            nonzero_entry_count,
+            workflow_risk_readings
+                .iter()
+                .any(|reading| !reading.coverage_gap_refs.is_empty()),
+        ),
+        spectral_shape(
+            "workflowRiskReadings",
+            "workflowRiskAxes",
+            workflow_risk_readings.len(),
+            axes.len(),
+            nonzero_entry_count,
+        ),
+        "entry(i,j) is the workflow risk axis score for workflow i and risk axis j",
+        vec![
+            spectral_value(
+                "maxRowSum",
+                max_row,
+                "largest molecule-local review pressure",
+            ),
+            spectral_value("maxColumnSum", max_col, "largest accumulated axis pressure"),
+            spectral_float_value(
+                "frobeniusNorm",
+                squared_sum.sqrt(),
+                "global pressure magnitude of the observed finite matrix",
+            ),
+            spectral_float_value(
+                "spectralRadiusUpperBound",
+                spectral_upper_bound(max_row, max_col),
+                "nonnegative-matrix upper bound, not an exact eigen theorem",
+            ),
+        ],
+        dominant_components,
+        workflow_risk_readings
+            .iter()
+            .map(|reading| reading.workflow_risk_id.clone())
+            .collect(),
+        "workflow risk pressure is concentrated by rows and axes; use the dominant row and column before treating local risk as isolated",
+        "coverage gaps on workflow axes block measured-zero interpretation for absent entries",
+        "zero entries mean no observed risk-axis evidence under current ArchMap and heuristics, not absence of architectural pressure",
+        "review the dominant workflow row, dominant axis column, and coverage gaps before selecting repair operations",
+    )
+}
+
+fn molecule_atom_overlap_spectrum(archmap: &ArchMapDocumentV0) -> ArchSigSpectralAnalysisReadingV0 {
+    let atom_family_by_id = archmap
+        .atom_observations
+        .iter()
+        .map(|atom| (atom.atom_observation_id.as_str(), atom.atom_family.as_str()))
+        .collect::<BTreeMap<_, _>>();
+    let molecule_atoms = archmap
+        .molecule_observations
+        .iter()
+        .map(|molecule| {
+            let atom_refs = molecule
+                .atom_observation_refs
+                .iter()
+                .cloned()
+                .collect::<BTreeSet<_>>();
+            let family_counts = molecule
+                .atom_observation_refs
+                .iter()
+                .filter_map(|atom_ref| atom_family_by_id.get(atom_ref.as_str()).copied())
+                .fold(BTreeMap::<String, usize>::new(), |mut counts, family| {
+                    *counts.entry(family.to_string()).or_default() += 1;
+                    counts
+                });
+            (
+                molecule.molecule_observation_id.clone(),
+                atom_refs,
+                family_counts,
+            )
+        })
+        .collect::<Vec<_>>();
+
+    let mut row_sums = BTreeMap::<String, i64>::new();
+    let mut nonzero_entry_count = 0_usize;
+    let mut squared_sum = 0_f64;
+    for (left_id, left_atoms, left_families) in &molecule_atoms {
+        for (right_id, right_atoms, right_families) in &molecule_atoms {
+            let exact_overlap = left_atoms.intersection(right_atoms).count() as i64;
+            let family_overlap = left_families
+                .iter()
+                .map(|(family, left_count)| {
+                    right_families
+                        .get(family)
+                        .map(|right_count| (*left_count).min(*right_count))
+                        .unwrap_or_default()
+                })
+                .sum::<usize>() as i64;
+            let weight = if left_id == right_id {
+                family_overlap.max(exact_overlap)
+            } else {
+                exact_overlap * 2 + family_overlap
+            };
+            if weight > 0 {
+                nonzero_entry_count += 1;
+                squared_sum += (weight as f64).powi(2);
+                *row_sums.entry(left_id.clone()).or_default() += weight;
+            }
+        }
+    }
+    let max_row = row_sums.values().copied().max().unwrap_or_default();
+    let dominant_components = row_sums
+        .iter()
+        .max_by(|left, right| left.1.cmp(right.1).then(left.0.cmp(right.0)))
+        .map(|(molecule_ref, value)| {
+            vec![spectral_component(
+                molecule_ref,
+                "molecule",
+                value.to_string(),
+                "dominant molecule by atom/family overlap mass",
+            )]
+        })
+        .unwrap_or_default();
+
+    spectral_reading(
+        "spectral:molecule-atom-overlap-coupling",
+        "moleculeAtomOverlapCouplingMatrix",
+        spectral_status(nonzero_entry_count, !archmap.observation_gaps.is_empty()),
+        spectral_shape(
+            "moleculeObservations",
+            "moleculeObservations",
+            molecule_atoms.len(),
+            molecule_atoms.len(),
+            nonzero_entry_count,
+        ),
+        "entry(i,j) is exact atom overlap weighted with atom-family overlap; the diagonal records molecule atom-family mass",
+        vec![
+            spectral_value(
+                "maxRowSum",
+                max_row,
+                "largest observed molecule overlap mass",
+            ),
+            spectral_float_value(
+                "frobeniusNorm",
+                squared_sum.sqrt(),
+                "observed overlap magnitude of the molecule coupling matrix",
+            ),
+            spectral_float_value(
+                "spectralRadiusUpperBound",
+                max_row as f64,
+                "Gershgorin-style row-sum upper bound for this nonnegative matrix",
+            ),
+        ],
+        dominant_components,
+        archmap
+            .molecule_observations
+            .iter()
+            .map(|molecule| molecule.molecule_observation_id.clone())
+            .collect(),
+        "molecules sharing atom refs or atom families form an overlap coupling surface that is invisible to import-only static analysis",
+        "missing atom families and observation gaps can make overlap coupling appear smaller than the source architecture actually is",
+        "zero off-diagonal overlap means no shared observed atom/family evidence, not guaranteed independence",
+        "inspect the dominant molecule and any high-overlap neighbors before splitting or moving responsibilities",
+    )
+}
+
+fn obstruction_axis_curvature_spectrum(
+    obstruction_circuits: &[ArchSigObstructionCircuitV0],
+    signature_axes: &[ArchSigSignatureAxisReadingV0],
+) -> ArchSigSpectralAnalysisReadingV0 {
+    let axis_ids = signature_axes
+        .iter()
+        .map(|axis| axis.signature_axis_id.as_str())
+        .collect::<BTreeSet<_>>();
+    let mut axis_scores = BTreeMap::<String, i64>::new();
+    let mut max_row = 0_i64;
+    let mut squared_sum = 0_f64;
+    let mut nonzero_entry_count = 0_usize;
+    for circuit in obstruction_circuits {
+        let row_sum = circuit
+            .signature_axis_refs
+            .iter()
+            .filter(|axis_ref| axis_ids.contains(axis_ref.as_str()))
+            .map(|axis_ref| {
+                *axis_scores.entry(axis_ref.clone()).or_default() += 1;
+                squared_sum += 1_f64;
+                nonzero_entry_count += 1;
+                1_i64
+            })
+            .sum::<i64>();
+        max_row = max_row.max(row_sum);
+    }
+    let max_col = axis_scores.values().copied().max().unwrap_or_default();
+    let mut dominant_components = Vec::new();
+    if let Some(circuit) = obstruction_circuits.iter().max_by(|left, right| {
+        left.signature_axis_refs
+            .len()
+            .cmp(&right.signature_axis_refs.len())
+            .then(
+                left.obstruction_circuit_id
+                    .cmp(&right.obstruction_circuit_id),
+            )
+    }) {
+        dominant_components.push(spectral_component(
+            &circuit.obstruction_circuit_id,
+            "obstructionCircuit",
+            circuit.signature_axis_refs.len().to_string(),
+            "dominant obstruction row by connected signature axes",
+        ));
+    }
+    if let Some((axis_ref, value)) = axis_scores
+        .iter()
+        .max_by(|left, right| left.1.cmp(right.1).then(left.0.cmp(right.0)))
+    {
+        dominant_components.push(spectral_component(
+            axis_ref,
+            "signatureAxis",
+            value.to_string(),
+            "dominant curvature column across obstruction circuits",
+        ));
+    }
+
+    spectral_reading(
+        "spectral:obstruction-axis-curvature",
+        "obstructionAxisCurvatureMatrix",
+        spectral_status(nonzero_entry_count, false),
+        spectral_shape(
+            "obstructionCircuits",
+            "signatureAxes",
+            obstruction_circuits.len(),
+            signature_axes.len(),
+            nonzero_entry_count,
+        ),
+        "entry(i,j) is 1 when obstruction circuit i contributes to signature axis j",
+        vec![
+            spectral_value(
+                "maxRowSum",
+                max_row,
+                "widest obstruction-to-axis curvature row",
+            ),
+            spectral_value("maxColumnSum", max_col, "most repeated obstruction axis"),
+            spectral_float_value(
+                "frobeniusNorm",
+                squared_sum.sqrt(),
+                "curvature incidence magnitude over constructed obstruction circuits",
+            ),
+            spectral_float_value(
+                "spectralRadiusUpperBound",
+                spectral_upper_bound(max_row, max_col),
+                "incidence-matrix upper bound, not a global flatness proof",
+            ),
+        ],
+        dominant_components,
+        obstruction_circuits
+            .iter()
+            .map(|circuit| circuit.obstruction_circuit_id.clone())
+            .collect(),
+        "obstruction circuits distribute curvature onto signature axes; repeated columns indicate axes where local failures accumulate",
+        "only constructed obstruction circuits are represented; concern hints that lack witness rules remain outside this matrix",
+        "zero incidence means no constructed obstruction-to-axis edge, not proof of zero curvature",
+        "review the dominant obstruction row and repeated axis column before treating a signature axis as local",
+    )
+}
+
+fn operation_signature_delta_spectrum(
+    operation_deltas: &[ArchSigOperationDeltaReadingV0],
+    signature_axes: &[ArchSigSignatureAxisReadingV0],
+) -> ArchSigSpectralAnalysisReadingV0 {
+    let axis_ids = signature_axes
+        .iter()
+        .map(|axis| axis.signature_axis_id.as_str())
+        .collect::<BTreeSet<_>>();
+    let mut axis_scores = BTreeMap::<String, i64>::new();
+    let mut max_row = 0_i64;
+    let mut squared_sum = 0_f64;
+    let mut nonzero_entry_count = 0_usize;
+    for delta in operation_deltas {
+        let mentioned_axes = delta
+            .signature_delta
+            .iter()
+            .flat_map(|entry| {
+                axis_ids
+                    .iter()
+                    .filter(|axis_id| entry.contains(**axis_id))
+                    .map(|axis_id| (*axis_id).to_string())
+                    .collect::<Vec<_>>()
+            })
+            .chain(delta.decreased_axes.iter().cloned())
+            .collect::<BTreeSet<_>>();
+        let row_sum = mentioned_axes
+            .iter()
+            .filter(|axis_ref| axis_ids.contains(axis_ref.as_str()))
+            .map(|axis_ref| {
+                *axis_scores.entry(axis_ref.clone()).or_default() += 1;
+                squared_sum += 1_f64;
+                nonzero_entry_count += 1;
+                1_i64
+            })
+            .sum::<i64>();
+        max_row = max_row.max(row_sum);
+    }
+    let max_col = axis_scores.values().copied().max().unwrap_or_default();
+    let mut dominant_components = Vec::new();
+    if let Some(delta) = operation_deltas.iter().max_by(|left, right| {
+        left.decreased_axes
+            .len()
+            .cmp(&right.decreased_axes.len())
+            .then(left.operation_delta_id.cmp(&right.operation_delta_id))
+    }) {
+        dominant_components.push(spectral_component(
+            &delta.operation_delta_id,
+            "operationDelta",
+            delta.decreased_axes.len().to_string(),
+            "dominant operation row by declared decreased axes",
+        ));
+    }
+    if let Some((axis_ref, value)) = axis_scores
+        .iter()
+        .max_by(|left, right| left.1.cmp(right.1).then(left.0.cmp(right.0)))
+    {
+        dominant_components.push(spectral_component(
+            axis_ref,
+            "signatureAxis",
+            value.to_string(),
+            "dominant signature axis touched by operation deltas",
+        ));
+    }
+
+    spectral_reading(
+        "spectral:operation-signature-delta",
+        "operationSignatureDeltaMatrix",
+        spectral_status(nonzero_entry_count, false),
+        spectral_shape(
+            "operationDeltas",
+            "signatureAxes",
+            operation_deltas.len(),
+            signature_axes.len(),
+            nonzero_entry_count,
+        ),
+        "entry(i,j) is 1 when operation delta i declares or mentions a change to signature axis j",
+        vec![
+            spectral_value(
+                "maxRowSum",
+                max_row,
+                "widest operation-to-signature delta row",
+            ),
+            spectral_value(
+                "maxColumnSum",
+                max_col,
+                "signature axis touched by most operations",
+            ),
+            spectral_float_value(
+                "frobeniusNorm",
+                squared_sum.sqrt(),
+                "operation delta incidence magnitude",
+            ),
+            spectral_float_value(
+                "spectralRadiusUpperBound",
+                spectral_upper_bound(max_row, max_col),
+                "operation-transition upper bound, not repair correctness",
+            ),
+        ],
+        dominant_components,
+        operation_deltas
+            .iter()
+            .map(|delta| delta.operation_delta_id.clone())
+            .collect(),
+        "operation deltas show which signature axes would move together under candidate repairs or evidence enrichment",
+        "candidate operations are bounded review artifacts; absent delta entries are not proof that an operation preserves an axis",
+        "zero delta incidence means no declared or text-mentioned axis movement under current candidates, not repair safety",
+        "review the dominant operation row and repeated axis column before converting a repair candidate into code changes",
+    )
+}
+
+fn spectral_reading(
+    spectral_reading_id: &str,
+    representation_family: &str,
+    status: &str,
+    matrix_shape: ArchSigSpectralMatrixShapeV0,
+    entry_rule: &str,
+    values: Vec<ArchSigSpectralValueV0>,
+    dominant_components: Vec<ArchSigSpectralDominantComponentV0>,
+    support_refs: Vec<String>,
+    reading: &str,
+    coverage_boundary: &str,
+    zero_reflecting_boundary: &str,
+    recommended_next_action: &str,
+) -> ArchSigSpectralAnalysisReadingV0 {
+    ArchSigSpectralAnalysisReadingV0 {
+        spectral_reading_id: spectral_reading_id.to_string(),
+        representation_family: representation_family.to_string(),
+        status: status.to_string(),
+        matrix_shape,
+        entry_rule: entry_rule.to_string(),
+        value_type: "boundedSpectralProxy".to_string(),
+        values,
+        dominant_components,
+        support_refs,
+        reading: reading.to_string(),
+        coverage_boundary: coverage_boundary.to_string(),
+        zero_reflecting_boundary: zero_reflecting_boundary.to_string(),
+        recommended_next_action: recommended_next_action.to_string(),
+        non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
+    }
+}
+
+fn spectral_shape(
+    row_domain: &str,
+    column_domain: &str,
+    row_count: usize,
+    column_count: usize,
+    nonzero_entry_count: usize,
+) -> ArchSigSpectralMatrixShapeV0 {
+    ArchSigSpectralMatrixShapeV0 {
+        row_domain: row_domain.to_string(),
+        column_domain: column_domain.to_string(),
+        row_count,
+        column_count,
+        nonzero_entry_count,
+    }
+}
+
+fn spectral_value(name: &str, value: i64, interpretation: &str) -> ArchSigSpectralValueV0 {
+    ArchSigSpectralValueV0 {
+        name: name.to_string(),
+        value: value.to_string(),
+        interpretation: interpretation.to_string(),
+    }
+}
+
+fn spectral_float_value(name: &str, value: f64, interpretation: &str) -> ArchSigSpectralValueV0 {
+    ArchSigSpectralValueV0 {
+        name: name.to_string(),
+        value: format!("{value:.3}"),
+        interpretation: interpretation.to_string(),
+    }
+}
+
+fn spectral_component(
+    component_ref: &str,
+    component_kind: &str,
+    value: String,
+    reading: &str,
+) -> ArchSigSpectralDominantComponentV0 {
+    ArchSigSpectralDominantComponentV0 {
+        component_ref: component_ref.to_string(),
+        component_kind: component_kind.to_string(),
+        value,
+        reading: reading.to_string(),
+    }
+}
+
+fn spectral_status(nonzero_entry_count: usize, has_coverage_gap: bool) -> &'static str {
+    if nonzero_entry_count == 0 {
+        "nonConclusion"
+    } else if has_coverage_gap {
+        "needsReview"
+    } else {
+        "actionable"
+    }
+}
+
+fn spectral_upper_bound(max_row: i64, max_col: i64) -> f64 {
+    ((max_row.max(0) as f64) * (max_col.max(0) as f64)).sqrt()
+}
+
 fn build_design_principle_readings(
     archmap: &ArchMapDocumentV0,
     invariant_readings: &[ArchSigInvariantFamilyReadingV0],
@@ -1908,6 +2446,7 @@ fn build_llm_interpretation_packet(
     signature_axes: &[ArchSigSignatureAxisReadingV0],
     analytic_representations: &[ArchSigAnalyticRepresentationV0],
     workflow_risk_readings: &[ArchSigWorkflowRiskReadingV0],
+    spectral_analysis_readings: &[ArchSigSpectralAnalysisReadingV0],
     repair_candidates: &[ArchSigRepairOperationCandidateV0],
     bounded_judgements: &[ArchSigBoundedJudgementV0],
 ) -> ArchSigLlmInterpretationPacketV0 {
@@ -1948,6 +2487,25 @@ fn build_llm_interpretation_packet(
                 format!(
                     "{}={} ({})",
                     reading.representation_family, reading.value, reading.status
+                )
+            })
+            .collect(),
+        spectral_readings_summary: spectral_analysis_readings
+            .iter()
+            .map(|reading| {
+                let upper_bound = reading
+                    .values
+                    .iter()
+                    .find(|value| value.name == "spectralRadiusUpperBound")
+                    .map(|value| value.value.as_str())
+                    .unwrap_or("unmeasured");
+                format!(
+                    "{} upperBound={} shape={}x{} ({})",
+                    reading.representation_family,
+                    upper_bound,
+                    reading.matrix_shape.row_count,
+                    reading.matrix_shape.column_count,
+                    reading.status
                 )
             })
             .collect(),
@@ -2046,6 +2604,7 @@ pub fn validate_archsig_analysis_packet_report(
         check_bounded_judgement_surface(packet),
         check_analytic_and_principle_surfaces(packet),
         check_workflow_risk_surface(packet),
+        check_spectral_analysis_surface(packet),
         check_law_relative_analysis(packet),
         check_signature_and_flatness(packet),
         check_repair_candidates(packet),
@@ -2067,6 +2626,7 @@ pub fn validate_archsig_analysis_packet_report(
         analytic_representation_count: packet.analytic_representations.len(),
         coupling_cohesion_reading_count: packet.coupling_cohesion_readings.len(),
         workflow_risk_reading_count: packet.workflow_risk_readings.len(),
+        spectral_analysis_reading_count: packet.spectral_analysis_readings.len(),
         design_principle_reading_count: packet.design_principle_readings.len(),
         repair_operation_candidate_count: packet.repair_operation_candidates.len(),
         operation_delta_count: packet.operation_deltas.len(),
@@ -2440,6 +3000,141 @@ fn check_workflow_risk_surface(packet: &ArchSigAnalysisPacketV0) -> ValidationCh
     check_from_examples(
         "archsig-analysis-packet-workflow-risk-surface",
         "packet exposes workflow-local risk readings with review focus and bounded evidence boundaries",
+        examples,
+        "fail",
+    )
+}
+
+fn check_spectral_analysis_surface(packet: &ArchSigAnalysisPacketV0) -> ValidationCheck {
+    let required_families = BTreeSet::from([
+        "workflowRiskAxisPressureMatrix",
+        "moleculeAtomOverlapCouplingMatrix",
+        "obstructionAxisCurvatureMatrix",
+        "operationSignatureDeltaMatrix",
+    ]);
+    let allowed_statuses =
+        BTreeSet::from(["actionable", "needsReview", "blocked", "nonConclusion"]);
+    let present_families = packet
+        .spectral_analysis_readings
+        .iter()
+        .map(|reading| reading.representation_family.as_str())
+        .collect::<BTreeSet<_>>();
+    let mut examples = required_families
+        .iter()
+        .filter(|family| !present_families.contains(**family))
+        .map(|family| {
+            generic_validation_example(
+                "spectralAnalysisReadings",
+                family,
+                "packet must expose required AAT spectral analysis representation families",
+            )
+        })
+        .collect::<Vec<_>>();
+    if packet.spectral_analysis_readings.is_empty() {
+        examples.push(generic_validation_example(
+            "spectralAnalysisReadings",
+            "empty",
+            "packet must expose bounded spectral analysis readings",
+        ));
+    }
+    examples.extend(duplicate_examples(
+        "spectralAnalysisReadings[].spectralReadingId",
+        duplicates(
+            packet
+                .spectral_analysis_readings
+                .iter()
+                .map(|reading| reading.spectral_reading_id.as_str()),
+        ),
+    ));
+    for reading in &packet.spectral_analysis_readings {
+        if !allowed_statuses.contains(reading.status.as_str()) {
+            examples.push(generic_validation_example(
+                &reading.spectral_reading_id,
+                &reading.status,
+                "spectral analysis status must be actionable, needsReview, blocked, or nonConclusion",
+            ));
+        }
+        push_blank(
+            &mut examples,
+            &format!("{} matrixShape.rowDomain", reading.spectral_reading_id),
+            &reading.matrix_shape.row_domain,
+        );
+        push_blank(
+            &mut examples,
+            &format!("{} matrixShape.columnDomain", reading.spectral_reading_id),
+            &reading.matrix_shape.column_domain,
+        );
+        push_blank(
+            &mut examples,
+            &format!("{} entryRule", reading.spectral_reading_id),
+            &reading.entry_rule,
+        );
+        push_blank(
+            &mut examples,
+            &format!("{} reading", reading.spectral_reading_id),
+            &reading.reading,
+        );
+        push_blank(
+            &mut examples,
+            &format!("{} coverageBoundary", reading.spectral_reading_id),
+            &reading.coverage_boundary,
+        );
+        push_blank(
+            &mut examples,
+            &format!("{} zeroReflectingBoundary", reading.spectral_reading_id),
+            &reading.zero_reflecting_boundary,
+        );
+        push_blank(
+            &mut examples,
+            &format!("{} recommendedNextAction", reading.spectral_reading_id),
+            &reading.recommended_next_action,
+        );
+        if reading.values.is_empty() {
+            examples.push(generic_validation_example(
+                &reading.spectral_reading_id,
+                "values",
+                "spectral analysis reading must carry bounded numeric values",
+            ));
+        }
+        for value in &reading.values {
+            push_blank(
+                &mut examples,
+                &format!("{} values[].name", reading.spectral_reading_id),
+                &value.name,
+            );
+            push_blank(
+                &mut examples,
+                &format!("{} values[].value", reading.spectral_reading_id),
+                &value.value,
+            );
+            push_blank(
+                &mut examples,
+                &format!("{} values[].interpretation", reading.spectral_reading_id),
+                &value.interpretation,
+            );
+        }
+        for component in &reading.dominant_components {
+            push_blank(
+                &mut examples,
+                &format!(
+                    "{} dominantComponents[].componentRef",
+                    reading.spectral_reading_id
+                ),
+                &component.component_ref,
+            );
+            push_blank(
+                &mut examples,
+                &format!(
+                    "{} dominantComponents[].reading",
+                    reading.spectral_reading_id
+                ),
+                &component.reading,
+            );
+        }
+    }
+    check_from_examples(
+        "archsig-analysis-packet-spectral-analysis-surface",
+        "packet exposes AAT spectral readings as bounded finite-representation proxies",
         examples,
         "fail",
     )
