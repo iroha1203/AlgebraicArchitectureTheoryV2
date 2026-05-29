@@ -67,6 +67,10 @@ Each binary archive contains the `archsig` executable, the repository license,
 and the ArchSig README / command guide. The skills archive contains
 `tools/archsig/skills`.
 
+Use version-only tags such as `v0.1.0` or prerelease tags such as
+`v0.1.0-rc.1`. Do not include `archsig` in the tag name; asset names already
+carry the `archsig-` prefix.
+
 ## Docs
 
 - [Command Guide](docs/commands.md)
