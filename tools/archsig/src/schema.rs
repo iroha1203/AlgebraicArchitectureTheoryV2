@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 use std::collections::BTreeMap;
 
 use serde::{Deserialize, Serialize};
@@ -647,16 +649,6 @@ pub struct RelationComplexityComponents {
     pub projections: usize,
     pub failure_transitions: usize,
     pub idempotency_requirements: usize,
-}
-
-impl RelationComplexityComponents {
-    pub(crate) fn relation_complexity(&self) -> usize {
-        self.constraints
-            + self.compensations
-            + self.projections
-            + self.failure_transitions
-            + self.idempotency_requirements
-    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

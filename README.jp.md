@@ -165,7 +165,7 @@ runtime metrics、empirical hypotheses、一般数値 curvature、実コード e
 - `docs/sft`
   - AAT / SFT interface と SFT 本文。
 - `docs/tool`
-  - AIR、extractor、report、claim discipline、workflow、schema compatibility。
+  - LLM Atom ArchMap、LawPolicy、ArchSig analysis packet、FieldSig handoff、tooling claim boundary。
 - `docs/website`
   - 公開 website の sitemap、design、tone、publication rule を管理する内部運用メモ。
 - `website`

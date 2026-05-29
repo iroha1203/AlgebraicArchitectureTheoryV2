@@ -1,1 +1,0 @@
-def parserName : String := "csv"

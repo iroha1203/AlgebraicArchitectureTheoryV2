@@ -82,26 +82,14 @@ The builder:
   observation gaps, LawPolicy coverage and exactness assumptions, selected
   witness rules, and repair-candidate evidence limits
 
-## Downstream Review Artifacts
+## Downstream Handoff
 
-`llm-native-workflow` treats the analysis packet as the source artifact for
-downstream review surfaces:
+`llm-native-workflow` treats the analysis packet as the source artifact and
+emits only ArchMap validation, LawPolicy validation, the analysis packet, packet
+validation, and the LLM interpretation packet. Old AIR, theorem-check, Feature
+Report, and AAT Observable Bundle projections are no longer current ArchSig
+CLI surface.
 
-- AIR projection
-- AIR validation
-- theorem precondition check
-- Feature Extension Report
-- AAT Observable Bundle
-
-These projections carry the `ArchMap + LawPolicy -> ArchSig analysis` boundary.
-They do not make the legacy ArchMap projection rule the source of truth, and
-they do not promote analysis-packet validation into theorem proof, global
-architecture lawfulness, extractor completeness, or automatic repair safety.
-The public `air`, `validate-air`, `theorem-check`, `feature-report`, and
-`aat-observable-bundle` commands are compatibility / bounded projection
-utilities for existing consumers; the normal path is still
-`llm-native-workflow` or `archsig-analysis` followed by packet-derived
-projections.
 FieldSig handoff projects child-level `missingEvidence` / `excludedReadings`
 as unknown remainder and evidence-boundary refs instead of rounding them to
 absence, measured zero, forecast truth, or repair safety.
