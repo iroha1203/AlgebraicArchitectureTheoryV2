@@ -168,6 +168,21 @@ cargo run --manifest-path tools/archsig/Cargo.toml -- signature-diff \
 
 ## Policy And Reports
 
+These commands are not the LLM-native source-of-truth path. They are classified
+as follows:
+
+| command / surface | classification | boundary |
+| --- | --- | --- |
+| `architecture-policy` | adapter evidence | Project-local deterministic policy over Sig0 adapter evidence; not `law-policy-v0`. |
+| `law-violation-report` | adapter evidence | Findings over explicit Sig0 adapter evidence; not ArchSig analysis packet output. |
+| `organization-policy` | bounded review projection | Review-level policy for report handling; not FieldSig governance. |
+| `policy-decision` | bounded review projection | Warn / fail / advisory review projection; not merge approval. |
+| `pr-comment` | bounded review projection | Markdown rendering of review cues; not merge approval. |
+| `baseline-suppression` | bounded review projection | Suppression / accepted-risk metadata; not repair, governance closure, or forecast calibration. |
+| `pr-quality-analysis` | bounded review projection | Reviewer-facing cue projection; not merge approval or quality score. |
+| `report-artifacts` | bounded review projection | Retention and traceability metadata; missing artifacts are not measured zero. |
+| FieldSig forecast / governance / calibration | FieldSig-owned | Use FieldSig surfaces; ArchSig does not own forecast correctness or governance state. |
+
 ```bash
 cargo run --manifest-path tools/archsig/Cargo.toml -- architecture-policy \
   --input tools/archsig/tests/fixtures/minimal/architecture_policy.json \
@@ -179,7 +194,7 @@ cargo run --manifest-path tools/archsig/Cargo.toml -- law-violation-report \
   --out .archsig/policy/law-violation-report.json
 
 cargo run --manifest-path tools/archsig/Cargo.toml -- policy-decision \
-  --feature-report .archsig/archmap-primary/feature-report.json \
+  --feature-report .archsig/llm-native/feature-report.json \
   --out .archsig/review/policy-decision.json
 ```
 

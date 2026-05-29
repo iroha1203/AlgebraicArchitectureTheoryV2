@@ -8,7 +8,7 @@
       "artifactId": "signature-artifact",
       "artifactName": "Architecture Signature artifact",
       "schemaVersionName": "archsig-sig0-v0",
-      "artifactRole": "extractor-output",
+      "artifactRole": "adapter evidence",
       "ownerPhase": "B0-B8",
       "status": "implemented",
       "primaryDocs": [
@@ -38,7 +38,7 @@
       "artifactId": "air",
       "artifactName": "Architecture Intermediate Representation",
       "schemaVersionName": "aat-air-v0",
-      "artifactRole": "intermediate-representation",
+      "artifactRole": "bounded review projection",
       "ownerPhase": "B0-B9",
       "status": "implemented",
       "primaryDocs": [
@@ -69,7 +69,7 @@
       "artifactId": "archmap",
       "artifactName": "LLM-native ArchMap Atom observation artifact",
       "schemaVersionName": "archmap-observation-map-v0",
-      "artifactRole": "atom-observation-input",
+      "artifactRole": "primary",
       "ownerPhase": "LLM-native ArchMap / ArchSig",
       "status": "implemented",
       "primaryDocs": [
@@ -100,7 +100,7 @@
       "artifactId": "archmap-validation-report",
       "artifactName": "ArchMap Validation Report",
       "schemaVersionName": "archmap-validation-report-v0",
-      "artifactRole": "validation-output",
+      "artifactRole": "primary",
       "ownerPhase": "LLM-native ArchMap / ArchSig",
       "status": "implemented",
       "primaryDocs": [
@@ -131,7 +131,7 @@
       "artifactId": "law-policy",
       "artifactName": "LLM-native selected LawPolicy artifact",
       "schemaVersionName": "law-policy-v0",
-      "artifactRole": "selected-law-universe-policy",
+      "artifactRole": "primary",
       "ownerPhase": "LLM-native ArchMap / ArchSig",
       "status": "implemented",
       "primaryDocs": [
@@ -162,7 +162,7 @@
       "artifactId": "law-policy-validation-report",
       "artifactName": "LLM-native LawPolicy validation report",
       "schemaVersionName": "law-policy-validation-report-v0",
-      "artifactRole": "validation-output",
+      "artifactRole": "primary",
       "ownerPhase": "LLM-native ArchMap / ArchSig",
       "status": "implemented",
       "primaryDocs": [
@@ -191,7 +191,7 @@
       "artifactId": "archsig-analysis-packet",
       "artifactName": "LLM-native ArchSig AAT analysis packet",
       "schemaVersionName": "archsig-analysis-packet-v0",
-      "artifactRole": "analysis-output",
+      "artifactRole": "primary",
       "ownerPhase": "LLM-native ArchMap / ArchSig",
       "status": "implemented",
       "primaryDocs": [
@@ -222,7 +222,7 @@
       "artifactId": "archsig-analysis-packet-validation-report",
       "artifactName": "LLM-native ArchSig analysis packet validation report",
       "schemaVersionName": "archsig-analysis-packet-validation-report-v0",
-      "artifactRole": "validation-output",
+      "artifactRole": "primary",
       "ownerPhase": "LLM-native ArchMap / ArchSig",
       "status": "implemented",
       "primaryDocs": [
@@ -251,8 +251,8 @@
       "artifactId": "architecture-policy",
       "artifactName": "Architecture policy artifact",
       "schemaVersionName": "architecture-policy-v0",
-      "artifactRole": "law-aware-review-policy",
-      "ownerPhase": "ArchMap law-aware review",
+      "artifactRole": "adapter evidence",
+      "ownerPhase": "Adapter evidence review",
       "status": "implemented",
       "primaryDocs": [
         "tools/archsig/docs/artifacts-and-boundaries.md",
@@ -262,13 +262,13 @@
         "#1162"
       ],
       "compatibilityBoundary": {
-        "fieldMappingPolicy": "Map adopted laws, layer selectors, dependency rules, exceptions, and SRP taxonomy explicitly; do not infer policy from repository shape.",
+        "fieldMappingPolicy": "Map adopted laws, layer selectors, dependency rules, exceptions, and SRP taxonomy explicitly for Sig0 adapter evidence; do not infer LawPolicy or primary ArchSig analysis from repository shape.",
         "deprecatedFields": [],
         "newRequiredAssumptions": [
           "New law families must declare deterministic versus LLM-review enforcement boundary."
         ],
         "coverageExactnessBoundary": [
-          "Architecture policy is review evidence, not a Lean theorem or architecture lawfulness proof."
+          "Architecture policy is adapter-evidence review policy, not LawPolicy, Lean theorem evidence, architecture lawfulness proof, or FieldSig governance."
         ],
         "nonConclusions": [
           "field mapping does not prove semantic preservation",
@@ -281,8 +281,8 @@
       "artifactId": "architecture-policy-validation-report",
       "artifactName": "Architecture policy validation report",
       "schemaVersionName": "architecture-policy-validation-report-v0",
-      "artifactRole": "validation-output",
-      "ownerPhase": "ArchMap law-aware review",
+      "artifactRole": "adapter evidence",
+      "ownerPhase": "Adapter evidence review",
       "status": "implemented",
       "primaryDocs": [
         "tools/archsig/docs/commands.md"
@@ -297,7 +297,7 @@
           "New checks must distinguish fail, warn, and unmeasured policy evidence."
         ],
         "coverageExactnessBoundary": [
-          "Validation pass does not imply architecture lawfulness or SRP violation."
+          "Validation pass does not imply architecture lawfulness, LawPolicy selection, FieldSig governance, or SRP violation."
         ],
         "nonConclusions": [
           "field mapping does not prove semantic preservation",
@@ -310,8 +310,8 @@
       "artifactId": "law-violation-report",
       "artifactName": "Law violation report",
       "schemaVersionName": "law-violation-report-v0",
-      "artifactRole": "review-output",
-      "ownerPhase": "ArchMap law-aware review",
+      "artifactRole": "adapter evidence",
+      "ownerPhase": "Adapter evidence review",
       "status": "implemented",
       "primaryDocs": [
         "tools/archsig/docs/commands.md",
@@ -322,13 +322,13 @@
         "#1165"
       ],
       "compatibilityBoundary": {
-        "fieldMappingPolicy": "Map deterministic Layered findings, allowed exceptions, SRP cues, unmeasured selectors, review actions, and non-conclusions explicitly.",
+        "fieldMappingPolicy": "Map deterministic Layered findings, allowed exceptions, SRP cues, unmeasured selectors, review actions, and non-conclusions over explicit Sig0 adapter evidence.",
         "deprecatedFields": [],
         "newRequiredAssumptions": [
           "New law findings must preserve evidence refs and policy refs before review classification."
         ],
         "coverageExactnessBoundary": [
-          "Layered findings are selected-universe tooling evidence and SRP cues are not tool-only violations."
+          "Layered findings are selected-universe adapter evidence; SRP cues are not tool-only violations, LawPolicy output, FieldSig governance, or merge approval."
         ],
         "nonConclusions": [
           "field mapping does not prove semantic preservation",
@@ -341,7 +341,7 @@
       "artifactId": "archmap-generation-protocol",
       "artifactName": "ArchMap generation protocol",
       "schemaVersionName": "archmap-generation-protocol-v0",
-      "artifactRole": "external-agent-protocol",
+      "artifactRole": "compat-only",
       "ownerPhase": "ArchMap v2",
       "status": "implemented",
       "primaryDocs": [
@@ -371,7 +371,7 @@
       "artifactId": "pr-quality-analysis",
       "artifactName": "PR Quality Analysis report",
       "schemaVersionName": "pr-quality-analysis-report-v0",
-      "artifactRole": "review-output",
+      "artifactRole": "bounded review projection",
       "ownerPhase": "PRD v3",
       "status": "implemented",
       "primaryDocs": [
@@ -388,7 +388,214 @@
           "New cue kinds must declare evidence boundary and avoid merge-decision or architecture-lawfulness claims."
         ],
         "coverageExactnessBoundary": [
-          "PR quality analysis is review evidence, not merge approval or a global architecture ranking."
+          "PR quality analysis is bounded review projection, not merge approval, FieldSig governance, forecast, calibration, or global architecture ranking."
+        ],
+        "nonConclusions": [
+          "field mapping does not prove semantic preservation",
+          "missing coverage is not measured zero",
+          "renamed fields do not discharge new required assumptions"
+        ]
+      }
+    },
+    {
+      "artifactId": "organization-policy",
+      "artifactName": "Organization policy artifact",
+      "schemaVersionName": "organization-policy-v0",
+      "artifactRole": "bounded review projection",
+      "ownerPhase": "B7 review policy",
+      "status": "implemented",
+      "primaryDocs": [
+        "tools/archsig/docs/artifacts-and-boundaries.md",
+        "tools/archsig/docs/commands.md"
+      ],
+      "downstreamIssues": [
+        "#1151"
+      ],
+      "compatibilityBoundary": {
+        "fieldMappingPolicy": "Map review levels, required axes, allowed suppressions, and governance labels only as ArchSig review policy inputs.",
+        "deprecatedFields": [],
+        "newRequiredAssumptions": [
+          "New review policy fields must preserve non-approval and non-governance boundaries."
+        ],
+        "coverageExactnessBoundary": [
+          "Organization policy is not FieldSig governance, forecast calibration, merge approval, or LawPolicy."
+        ],
+        "nonConclusions": [
+          "field mapping does not prove semantic preservation",
+          "missing coverage is not measured zero",
+          "renamed fields do not discharge new required assumptions"
+        ]
+      }
+    },
+    {
+      "artifactId": "organization-policy-validation-report",
+      "artifactName": "Organization policy validation report",
+      "schemaVersionName": "organization-policy-validation-report-v0",
+      "artifactRole": "bounded review projection",
+      "ownerPhase": "B7 review policy",
+      "status": "implemented",
+      "primaryDocs": [
+        "tools/archsig/docs/commands.md"
+      ],
+      "downstreamIssues": [
+        "#1151"
+      ],
+      "compatibilityBoundary": {
+        "fieldMappingPolicy": "Validate organization policy consistency without promoting review levels to governance authority.",
+        "deprecatedFields": [],
+        "newRequiredAssumptions": [
+          "New checks must keep review policy and FieldSig governance separate."
+        ],
+        "coverageExactnessBoundary": [
+          "Validation pass is not merge approval, governance approval, or forecast correctness."
+        ],
+        "nonConclusions": [
+          "field mapping does not prove semantic preservation",
+          "missing coverage is not measured zero",
+          "renamed fields do not discharge new required assumptions"
+        ]
+      }
+    },
+    {
+      "artifactId": "policy-decision",
+      "artifactName": "Policy decision report",
+      "schemaVersionName": "policy-decision-report-v0",
+      "artifactRole": "bounded review projection",
+      "ownerPhase": "B7 review policy",
+      "status": "implemented",
+      "primaryDocs": [
+        "tools/archsig/docs/artifacts-and-boundaries.md",
+        "tools/archsig/docs/commands.md"
+      ],
+      "downstreamIssues": [
+        "#1152"
+      ],
+      "compatibilityBoundary": {
+        "fieldMappingPolicy": "Map feature-report findings to warn/fail/advisory review decisions without creating merge approval or governance state.",
+        "deprecatedFields": [],
+        "newRequiredAssumptions": [
+          "New decision fields must preserve missing evidence and human-review boundaries."
+        ],
+        "coverageExactnessBoundary": [
+          "Policy decision is a bounded ArchSig review projection, not FieldSig governance, forecast, calibration, or automatic merge approval."
+        ],
+        "nonConclusions": [
+          "field mapping does not prove semantic preservation",
+          "missing coverage is not measured zero",
+          "renamed fields do not discharge new required assumptions"
+        ]
+      }
+    },
+    {
+      "artifactId": "pr-comment-summary",
+      "artifactName": "PR comment summary",
+      "schemaVersionName": "pr-comment-summary-v0",
+      "artifactRole": "bounded review projection",
+      "ownerPhase": "B7 review policy",
+      "status": "implemented",
+      "primaryDocs": [
+        "tools/archsig/docs/commands.md"
+      ],
+      "downstreamIssues": [
+        "#1154"
+      ],
+      "compatibilityBoundary": {
+        "fieldMappingPolicy": "Render feature-report and optional policy-decision refs into Markdown review cues without changing artifact semantics.",
+        "deprecatedFields": [],
+        "newRequiredAssumptions": [
+          "New comment sections must preserve report refs and non-conclusion boundaries."
+        ],
+        "coverageExactnessBoundary": [
+          "PR comment is not merge approval, governance approval, forecast correctness, or theorem evidence."
+        ],
+        "nonConclusions": [
+          "field mapping does not prove semantic preservation",
+          "missing coverage is not measured zero",
+          "renamed fields do not discharge new required assumptions"
+        ]
+      }
+    },
+    {
+      "artifactId": "report-artifact-retention-manifest",
+      "artifactName": "Report artifact retention manifest",
+      "schemaVersionName": "report-artifact-retention-manifest-v0",
+      "artifactRole": "bounded review projection",
+      "ownerPhase": "B7 review policy",
+      "status": "implemented",
+      "primaryDocs": [
+        "tools/archsig/docs/artifacts-and-boundaries.md",
+        "tools/archsig/docs/commands.md"
+      ],
+      "downstreamIssues": [
+        "#1155"
+      ],
+      "compatibilityBoundary": {
+        "fieldMappingPolicy": "Map retained, missing, private, and unavailable review artifacts for traceability without treating absence as measured zero.",
+        "deprecatedFields": [],
+        "newRequiredAssumptions": [
+          "New retained artifact kinds must declare missing/private evidence semantics."
+        ],
+        "coverageExactnessBoundary": [
+          "Retention metadata is not proof of completeness, merge approval, governance approval, or forecast evidence."
+        ],
+        "nonConclusions": [
+          "field mapping does not prove semantic preservation",
+          "missing coverage is not measured zero",
+          "renamed fields do not discharge new required assumptions"
+        ]
+      }
+    },
+    {
+      "artifactId": "report-artifact-retention-validation-report",
+      "artifactName": "Report artifact retention validation report",
+      "schemaVersionName": "report-artifact-retention-validation-report-v0",
+      "artifactRole": "bounded review projection",
+      "ownerPhase": "B7 review policy",
+      "status": "implemented",
+      "primaryDocs": [
+        "tools/archsig/docs/commands.md"
+      ],
+      "downstreamIssues": [
+        "#1155"
+      ],
+      "compatibilityBoundary": {
+        "fieldMappingPolicy": "Validate retention manifest consistency while preserving missing/private artifact boundaries.",
+        "deprecatedFields": [],
+        "newRequiredAssumptions": [
+          "New checks must not convert missing artifacts to absence or measured zero."
+        ],
+        "coverageExactnessBoundary": [
+          "Validation pass does not prove evidence completeness, governance state, or forecast correctness."
+        ],
+        "nonConclusions": [
+          "field mapping does not prove semantic preservation",
+          "missing coverage is not measured zero",
+          "renamed fields do not discharge new required assumptions"
+        ]
+      }
+    },
+    {
+      "artifactId": "baseline-suppression",
+      "artifactName": "Baseline suppression report",
+      "schemaVersionName": "baseline-suppression-report-v0",
+      "artifactRole": "bounded review projection",
+      "ownerPhase": "B7 review policy",
+      "status": "implemented",
+      "primaryDocs": [
+        "tools/archsig/docs/artifacts-and-boundaries.md",
+        "tools/archsig/docs/commands.md"
+      ],
+      "downstreamIssues": [
+        "#1156"
+      ],
+      "compatibilityBoundary": {
+        "fieldMappingPolicy": "Compare baseline/current review reports and accepted-risk metadata without treating suppression as repair or governance closure.",
+        "deprecatedFields": [],
+        "newRequiredAssumptions": [
+          "New suppression states must distinguish accepted risk, unresolved evidence, and repaired structure."
+        ],
+        "coverageExactnessBoundary": [
+          "Suppression is not resolution, repair proof, FieldSig governance, forecast calibration, or merge approval."
         ],
         "nonConclusions": [
           "field mapping does not prove semantic preservation",
@@ -401,7 +608,7 @@
       "artifactId": "aat-observable-bundle",
       "artifactName": "AAT Observable Bundle",
       "schemaVersionName": "aat-observable-bundle-v0",
-      "artifactRole": "aat-observable-review-bundle",
+      "artifactRole": "bounded review projection",
       "ownerPhase": "AAT observable bridge",
       "status": "implemented",
       "primaryDocs": [
@@ -446,7 +653,7 @@
       "artifactId": "feature-extension-report",
       "artifactName": "Feature Extension Report",
       "schemaVersionName": "feature-extension-report-v0",
-      "artifactRole": "review-output",
+      "artifactRole": "bounded review projection",
       "ownerPhase": "B1-B9",
       "status": "implemented",
       "primaryDocs": [

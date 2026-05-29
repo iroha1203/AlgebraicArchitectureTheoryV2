@@ -762,6 +762,32 @@ fn cli_schema_catalog_is_archsig_owned() {
         .collect::<Vec<_>>();
     assert!(ids.contains(&"signature-artifact"));
     assert!(ids.contains(&"archmap"));
+    assert_eq!(
+        schema_catalog_artifact_role(artifacts, "archsig-analysis-packet"),
+        "primary"
+    );
+    assert_eq!(
+        schema_catalog_artifact_role(artifacts, "architecture-policy"),
+        "adapter evidence"
+    );
+    assert_eq!(
+        schema_catalog_artifact_role(artifacts, "law-violation-report"),
+        "adapter evidence"
+    );
+    for bounded_surface in [
+        "organization-policy",
+        "policy-decision",
+        "pr-comment-summary",
+        "baseline-suppression",
+        "pr-quality-analysis",
+        "report-artifact-retention-manifest",
+    ] {
+        assert_eq!(
+            schema_catalog_artifact_role(artifacts, bounded_surface),
+            "bounded review projection",
+            "{bounded_surface} must be classified as a bounded review projection"
+        );
+    }
     for fieldsig_id in [
         "intentmap",
         "operation-support-estimate",
@@ -774,6 +800,18 @@ fn cli_schema_catalog_is_archsig_owned() {
             "ArchSig catalog still owns FieldSig artifact {fieldsig_id}"
         );
     }
+}
+
+fn schema_catalog_artifact_role<'a>(
+    artifacts: &'a [serde_json::Value],
+    artifact_id: &str,
+) -> &'a str {
+    artifacts
+        .iter()
+        .find(|entry| entry["artifactId"] == artifact_id)
+        .unwrap_or_else(|| panic!("schema catalog artifact {artifact_id} exists"))["artifactRole"]
+        .as_str()
+        .expect("artifact role is string")
 }
 
 fn temp_dir(test_name: &str) -> PathBuf {

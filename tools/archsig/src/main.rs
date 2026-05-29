@@ -441,7 +441,7 @@ enum Command {
         out: Option<PathBuf>,
     },
 
-    /// Validate an organization policy. If input is omitted, validate the static B7 policy.
+    /// Validate bounded review projection policy; not FieldSig governance.
     OrganizationPolicy {
         /// Optional organization policy JSON path.
         #[arg(long)]
@@ -452,7 +452,7 @@ enum Command {
         out: Option<PathBuf>,
     },
 
-    /// Validate a project-local architecture-policy v0 artifact.
+    /// Validate adapter-evidence architecture-policy v0; not LawPolicy.
     ArchitecturePolicy {
         /// Architecture policy JSON path.
         #[arg(long)]
@@ -463,7 +463,7 @@ enum Command {
         out: Option<PathBuf>,
     },
 
-    /// Evaluate architecture-policy laws against a Sig0 artifact.
+    /// Evaluate adapter-evidence architecture-policy laws against a Sig0 artifact.
     LawViolationReport {
         /// Sig0 JSON path.
         #[arg(long)]
@@ -511,7 +511,7 @@ enum Command {
         out: Option<PathBuf>,
     },
 
-    /// Emit or validate a pr-quality-analysis-report-v0 artifact.
+    /// Emit or validate bounded PR review cues; not merge approval.
     PrQualityAnalysis {
         /// Optional PR quality analysis JSON path to validate.
         #[arg(long)]
@@ -582,7 +582,7 @@ enum Command {
         out: Option<PathBuf>,
     },
 
-    /// Build a B7 warn / fail / advisory policy decision report.
+    /// Build bounded warn / fail / advisory review projection; not merge approval.
     PolicyDecision {
         /// Feature Extension Report JSON path.
         #[arg(long = "feature-report")]
@@ -597,7 +597,7 @@ enum Command {
         out: Option<PathBuf>,
     },
 
-    /// Validate report artifact retention metadata. If input is omitted, validate the static B7 manifest.
+    /// Validate bounded review artifact retention metadata.
     ReportArtifacts {
         /// Optional report artifact retention manifest JSON path.
         #[arg(long)]
@@ -608,7 +608,7 @@ enum Command {
         out: Option<PathBuf>,
     },
 
-    /// Render a GitHub Checks / PR comment Markdown summary.
+    /// Render a bounded GitHub Checks / PR comment Markdown summary.
     PrComment {
         /// Feature Extension Report JSON path.
         #[arg(long = "feature-report")]
@@ -623,7 +623,7 @@ enum Command {
         out: Option<PathBuf>,
     },
 
-    /// Compare baseline/current reports and apply suppression / accepted-risk workflow metadata.
+    /// Compare reports and apply suppression metadata; not governance closure.
     BaselineSuppression {
         /// Baseline Feature Extension Report JSON path.
         #[arg(long = "baseline-feature-report")]
