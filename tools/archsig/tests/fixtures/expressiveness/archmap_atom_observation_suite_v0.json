@@ -291,7 +291,8 @@
       "evidenceBoundary": "sourceObserved",
       "confidence": "medium",
       "nonConclusions": [
-        "responsibility is a molecule over atoms, not a primitive atom"
+        "responsibility is a molecule over atoms, not a primitive atom",
+        "this fixture must not encode responsibility as a coarse atom"
       ]
     }
   ],
@@ -325,7 +326,8 @@
       "observationStatus": "observed",
       "evidenceBoundary": "sourceObserved",
       "nonConclusions": [
-        "semantic observation is not a proof of global semantic correctness"
+        "semantic observation is not a proof of global semantic correctness",
+        "workflow meaning is represented here, not as a coarse semantic atom"
       ]
     }
   ],
@@ -423,6 +425,7 @@
     "concernHints are review cues, not obstruction circuits",
     "observation gaps are not measured zero",
     "Atom observations are source-grounded observations, not universal atom truth",
+    "coarse workflow, responsibility, and policy readings are not atom observations",
     "archmap-atom-observation-suite-v0 is an Atom observation regression over current root fields"
   ]
 }

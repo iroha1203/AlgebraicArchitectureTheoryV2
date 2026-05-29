@@ -55,6 +55,8 @@ Before emitting an observed atom:
 - Use `concernHints[]` for review cues only. A concern hint is not an obstruction circuit.
 - Use `nonConclusions[]` to state what the artifact does not prove.
 
+Workflow-first reading is allowed for discovery, but the output must not contain coarse workflow atoms. Split primitive source facts into `atomObservations[]`, compose responsibilities in `moleculeObservations[]`, and put workflow or behavior readings in `semanticObservations[]`.
+
 ## Output Requirements
 
 - Output valid JSON only when asked for the artifact.

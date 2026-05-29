@@ -51,6 +51,28 @@ Anti-patterns:
 - Do not use atom families such as `responsibility`, `workflow`, `policy`, `obstruction`, `lawViolation`, `forecast`, `qualityScore`, or `incidentCausality`.
 - Do not turn an unavailable trace, private secret, unexpanded framework convention, or unreviewed generated file into an observed atom.
 
+## Atom Vs Molecule Vs Semantic
+
+Use this decision boundary after the atomFamily check.
+
+| Question | If yes | If no |
+| --- | --- | --- |
+| Can the reading be stated as one primitive source-grounded architecture fact? | It may be an `atomObservations[]` entry. | Do not force it into an atom. |
+| Does the reading name a role, responsibility, responsibility overload, or pattern over several atoms? | Use `moleculeObservations[]`. | Continue checking. |
+| Does the reading describe workflow meaning, operation behavior, contract behavior, policy meaning, or commutation over atoms/molecules? | Use `semanticObservations[]`. | Continue checking. |
+| Is the reading a review cue about risk, overload, missing compensation, missing runtime evidence, or disagreement? | Use `concernHints[]`. | Continue checking. |
+| Is the required evidence unavailable, private, unmeasured, generated, or out of scope? | Use `observationGaps[]`. | Read more source or discard the candidate. |
+
+Examples:
+
+- `route.users calls UserService.create` is a relation atom.
+- `route.users + service.user + create-user contract form user request orchestration` is a responsibility molecule.
+- `the route/service/contract group describes create-user behavior` is a semantic observation.
+- `the create-user workflow may lack compensation evidence` is a concern hint.
+- `runtime DB trace for create-user was not supplied` is an observation gap.
+
+Do not use `semantic` atom as a dumping ground for broad workflow readings. A `semantic` atom is only for primitive source-supported meaning, such as an identity meaning, unit meaning, ownership meaning, or status meaning.
+
 ## AAT-Facing Vs SFT-Facing
 
 AAT-facing observations preserve architecture structure:

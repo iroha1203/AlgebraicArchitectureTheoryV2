@@ -80,6 +80,21 @@ If a source can support both a primitive fact and a larger interpretation, write
 
 See `references/mapping-guide.md` for atomFamily-specific yes/no examples and `references/schema-cheatsheet.md` for required evidence metadata.
 
+## Observation Surface Decision Rules
+
+Choose the output surface by the role of the reading, not by how important it feels:
+
+| Candidate reading | Use | Do not use |
+| --- | --- | --- |
+| One primitive source-grounded architectural fact | `atomObservations[]` | `moleculeObservations[]` just because the fact is important |
+| A responsibility, role, or pattern composed from several atom refs | `moleculeObservations[]` | `atomObservations[]` with `atomFamily: "responsibility"` |
+| A workflow, operation meaning, contract behavior reading, policy reading, or commutation cue over atoms/molecules | `semanticObservations[]` | A coarse `semantic` atom that hides multiple facts |
+| Missing, private, unavailable, unmeasured, or out-of-scope evidence | `observationGaps[]` | An observed atom claiming absence |
+| A downstream AAT/SFT handoff hint | `projectionInfo[]` | A proof, forecast, lawfulness, or quality claim |
+| A source-grounded review cue | `concernHints[]` | An obstruction circuit or law violation |
+
+Workflow-first exploration is allowed: you may read a workflow to discover atoms. The ArchMap output must still put primitive facts in atoms and the workflow reading in `semanticObservations[]` after the atoms exist.
+
 ## Workflow
 
 1. Identify the bounded source universe.
