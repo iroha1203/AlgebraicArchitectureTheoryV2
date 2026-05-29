@@ -61,7 +61,7 @@ cargo run --manifest-path tools/archsig/Cargo.toml -- archsig-analysis \
 ```bash
 cargo run --manifest-path tools/archsig/Cargo.toml -- archmap-generate \
   --source-inventory tools/archsig/tests/fixtures/minimal/archmap_source_inventory.json \
-  --prompt-pack docs/tool/archmap_prompt_pack.md \
+  --prompt-pack tools/archsig/skills/archmap-creater/references/prompt-pack.md \
   --provider external-agent \
   --model-id unspecified \
   --out .archsig/llm-native/archmap-generation-protocol.json

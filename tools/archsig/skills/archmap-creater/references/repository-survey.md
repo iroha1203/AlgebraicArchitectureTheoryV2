@@ -7,7 +7,7 @@ Use this guide before drafting ArchMap for an unfamiliar repository or unfamilia
 1. Read entry documents.
    - `README.md`, language-specific README files, tool README files
    - architecture docs when present
-   - architecture docs, tool docs, and policy docs when present
+   - tool docs and policy docs when present
    - AAT/SFT boundary docs when present
 
 2. Identify executable and library entrypoints.
@@ -78,30 +78,31 @@ Prefer 5-20 high-value included refs for an initial ArchMap. A small accurate Ar
 
 Read enough to support claims:
 
-- For object items, read the declaration or module boundary.
-- For relation items, read both endpoints and the connecting evidence.
-- For semantic roles, read the responsibility-bearing code and the policy/doc/test that gives it meaning.
-- For semantic diagrams, read the test/spec/fixture that observes the path or equivalence.
-- For SFT candidates, read the operation/workflow/state source and record missing runtime/calibration evidence.
+- For component existence atom observations, read the declaration, module boundary, or entrypoint evidence.
+- For relation atom observations, read both endpoints and the connecting evidence.
+- For capability, state, effect, authority, trust, contract, runtime, or semantic atom observations, read the specific source that supports that primitive fact.
+- For molecule observations such as responsibility, read the atom observations plus the policy/doc/test/code that gives the composed role meaning.
+- For semantic observations, read the test/spec/doc/fixture/code that observes the behavior, workflow, meaning, or commutation cue.
+- For SFT projection hints, read the operation/workflow/state source and record missing runtime/calibration evidence.
 
 If a claim requires more reading than the current scope allows, keep it out of `atomObservations[]` / `semanticObservations[]` or record it as an `observationGaps[]` entry.
 
 ## Drafting Order
 
-Draft items in this order:
+Draft observations in this order:
 
-1. `object` items for selected components.
-2. `relation` items for selected dependencies.
-3. `policyBoundary` or `semanticRole` items for responsibilities and rules.
-4. `semanticDiagram`, `semanticCommutationClaim`, or `nonfillabilityWitness` items for selected observations.
-5. SFT-facing candidate items such as `operationCandidate`, `workflowCandidate`, `stateTransitionCandidate`, or `testOracleCandidate`.
-6. `reviewBoundary` items for runtime, framework, dynamic, private, or unsupported areas.
+1. `atomObservations[]` for selected primitive facts: existence, relation, capability, state, effect, authority, trust, contract, semantic fact, or runtime interaction.
+2. `moleculeObservations[]` for composed roles such as responsibility over atom observation refs.
+3. `semanticObservations[]` for source-supported meanings, workflows, contract readings, behavior readings, or commutation cues.
+4. `observationGaps[]` for runtime, framework convention, generated code, dynamic loading, private, unavailable, or unsupported evidence.
+5. `projectionInfo[]` for downstream AAT/SFT handoff hints such as `operationCandidate`, `workflowCandidate`, `stateTransitionCandidate`, or `testOracleCandidate`.
+6. `concernHints[]` for review cues over observations, never for obstruction circuits.
 
 After drafting, revise coverage:
 
-- semantic items require semantic coverage
-- runtime claims require runtime coverage or missing evidence
-- policy claims require assumed or measured policy coverage
+- semantic observations require semantic source support
+- runtime atom observations require runtime evidence, otherwise record a gap
+- policy readings require assumed or measured policy source support
 - dynamic/framework boundaries should not become measured zero
 
 ## Stop Conditions

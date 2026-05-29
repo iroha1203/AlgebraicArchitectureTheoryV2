@@ -42,7 +42,7 @@ Required top-level shape:
 - `knownBlindSpots`: dynamic loading, framework convention expansion, runtime traces, private registries
 - `selectionBoundary`: one sentence describing the bounded scope
 
-Use `artifactId` values consistently. Observation `sourceRefs[]` should point back to `sourceUniverse.includedRefs[]` when possible.
+Use `artifactId` values consistently. Source refs that support observed claims must point back to `sourceUniverse.includedRefs[]`. Use `unavailableRefs[]`, `privateRefs[]`, or `observationGaps[]` for boundary refs that were not inspected.
 
 ## Provenance
 
@@ -60,10 +60,12 @@ Use `excludedReadings` for things intentionally not read, such as lawfulness, ob
 
 ## Atom Observations
 
+An atom observation records a bounded observation of a primitive architectural fact. It does not certify the canonical Atom itself.
+
 Each `atomObservations[]` entry should include:
 
 - `atomObservationId`
-- `atomFamily`: for example `existence`, `relation`, `contractSpecification`, `runtimeInteraction`, `effect`, `state`
+- `atomFamily`: for example `existence`, `relation`, `capability`, `state`, `effect`, `authority`, `trust`, `contractSpecification`, `semantic`, `runtimeInteraction`
 - `predicate`
 - `subjectRef`
 - `objectRefs`
@@ -75,7 +77,7 @@ Each `atomObservations[]` entry should include:
 - `projectionRefs`
 - `nonConclusions`
 
-Do not use atom families such as `obstruction` or `lawViolation`. Obstruction is law-relative ArchSig analysis, not an ArchMap atom observation.
+Do not use atom families such as `responsibility`, `obstruction`, `lawViolation`, `forecast`, `qualityScore`, or `incidentCausality`. Responsibility is a molecule. Obstruction is law-relative ArchSig analysis, not an ArchMap atom observation.
 
 ## Molecule Observations
 
@@ -95,10 +97,12 @@ Responsibility is a molecule over atom observations, not a primitive atom.
 
 ## Semantic Observations
 
+Semantic observations are source-supported readings over atom and molecule observations. They are not proof of global semantic correctness.
+
 Each `semanticObservations[]` entry should include:
 
 - `semanticObservationId`
-- `semanticFamily`: for example `operationMeaning`, `contractBehavior`, `workflow`, `semanticDiagram`, `commutationClaim`
+- `semanticFamily`: for example `operationMeaning`, `contractBehavior`, `workflow`, `semanticReading`, `commutationCue`
 - `subjectRef`
 - `predicate`
 - `atomObservationRefs`
