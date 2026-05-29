@@ -10,8 +10,7 @@ archmap-observation-map-v0
   -> FieldSig handoff
 ```
 
-Git history is the archive for the old Sig0, AIR, Feature Report,
-theorem-check, AAT Observable Bundle, signature-diff, and PR governance
+Git history is the archive for pre-Atom scan, projection, report, and PR-review
 surfaces. They are not current ArchSig artifacts or commands.
 
 ## Current Artifacts
@@ -28,20 +27,10 @@ surfaces. They are not current ArchSig artifacts or commands.
 
 ## Removed Surfaces
 
-The current CLI and schema catalog do not expose:
-
-- Sig0 adapter scan / validation / snapshot / signature diff
-- AIR projection / AIR validation
-- theorem precondition check
-- Feature Extension Report
-- AAT Observable Bundle
-- architecture-policy / law-violation-report
-- organization-policy / policy-decision / PR comment / PR quality analysis
-- report artifact retention / baseline suppression
-- schema compatibility command
-
-These were removed rather than kept as compatibility shims. If one is needed
-again, rebuild it as a new feature on top of `archsig-analysis-packet-v0`.
+The current CLI and schema catalog expose only the current artifacts above.
+Pre-Atom surfaces were removed rather than kept as compatibility shims. If one
+is needed again, rebuild it as a new feature on top of
+`archsig-analysis-packet-v0`.
 
 ## FieldSig Handoff
 

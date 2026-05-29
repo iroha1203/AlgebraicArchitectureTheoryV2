@@ -44,9 +44,8 @@ Atom-based AAT responsibility split
   > backward compatibility
 ```
 
-既存 `archmap-v0` の field、`mapItems`、homomorphism-primary reading、
-`obstructionCircuitCandidates`、AIR projection、Feature Report 連携は、必要なら
-削除・改名・分割・後段 artifact への移動を行う。
+既存 `archmap-v0` の pre-Atom field と primary reading は、互換 layer として
+残さず削除・改名・分割・後段 artifact への移動を行う。
 
 破壊的変更を入れる場合でも、claim boundary は弱めない。
 互換性よりも、次の責務分離を優先する。
@@ -68,9 +67,9 @@ FieldSig:
 ### R1. ArchMap を LLM-native Atom observation map として定義する
 
 ArchMap は、source artifact から Atom ontology への観測記録である。
-ArchMap の主語は homomorphism ではなく Atom observation である。
-homomorphism、projection、preservation claim は、Atom observation から導かれる
-後段 view として扱う。
+ArchMap の主語は Atom observation である。
+projection や preservation claim は、必要なら Atom observation から導かれる
+後段 view として扱い、ArchMap root schema の互換 field としては持たない。
 
 ArchMap は少なくとも次を保持する。
 

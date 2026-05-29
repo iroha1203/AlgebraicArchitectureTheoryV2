@@ -3,13 +3,10 @@ use std::collections::BTreeSet;
 use crate::validation::{count_checks, duplicates, generic_validation_example, validation_check};
 use crate::{
     ARCHMAP_SCHEMA_VERSION, ARCHMAP_SOURCE_INVENTORY_SCHEMA_VERSION,
-    ARCHMAP_VALIDATION_REPORT_SCHEMA_VERSION, ArchMapAtomicObservationSummary, ArchMapConflict,
-    ArchMapDocumentV0, ArchMapHomomorphismDiagnosticsV0, ArchMapHomomorphismFamilySummaryV0,
-    ArchMapHomomorphismMapEntryV0, ArchMapHomomorphismPreservationClaimV0,
-    ArchMapHomomorphismUniverseV0, ArchMapHomomorphismV0, ArchMapLeanPreservationChecklistEntry,
-    ArchMapLeanPreservationVocabularyEntry, ArchMapMapItem, ArchMapSourceInventoryV0,
-    ArchMapSourceRef, ArchMapValidationReportV0, ArchMapValidationSummary, Sig0Document,
-    ValidationCheck,
+    ARCHMAP_VALIDATION_REPORT_SCHEMA_VERSION, ArchMapAtomicObservationSummary, ArchMapDocumentV0,
+    ArchMapLeanPreservationChecklistEntry, ArchMapLeanPreservationVocabularyEntry,
+    ArchMapSourceInventoryV0, ArchMapSourceRef, ArchMapValidationReportV0,
+    ArchMapValidationSummary, ValidationCheck,
 };
 
 pub struct ArchMapSourceInventoryInput<'a> {
@@ -21,7 +18,6 @@ pub struct ArchMapSourceInventoryInput<'a> {
 pub fn validate_archmap_report(
     document: &ArchMapDocumentV0,
     input_path: &str,
-    sig0: Option<&Sig0Document>,
     source_inventory: Option<ArchMapSourceInventoryInput<'_>>,
 ) -> ArchMapValidationReportV0 {
     let source_inventory_checks = vec![
@@ -29,38 +25,41 @@ pub fn validate_archmap_report(
         check_source_inventory_boundary(document),
         check_source_inventory_artifact(document, source_inventory.as_ref()),
     ];
-    let mut source_ref_checks = vec![check_archmap_unique_map_item_ids(document)];
-    source_ref_checks.push(check_source_refs(document));
+    let source_ref_checks = vec![
+        check_source_refs(document),
+        check_unique_observation_ids(document),
+        check_projection_refs(document),
+    ];
     let claim_boundary_checks = vec![
         check_measured_claim_evidence(document),
         check_missing_evidence_not_measured_zero(document),
-        check_srp_evidence_boundary(document),
+        check_observation_status_boundary(document),
     ];
     let semantic_coverage_checks = vec![check_semantic_coverage(document)];
-    let conflict_checks = vec![check_conflicts(document, sig0)];
     let formal_promotion_guardrail_checks = vec![
         check_formal_promotion_guardrail(document),
         check_projection_separation(document),
     ];
-    let legacy_schema_checks = archmap_legacy_schema_checks(document);
-    let homomorphism = archmap_homomorphism(document);
-    let homomorphism_diagnostics = archmap_homomorphism_diagnostics(document, &homomorphism, sig0);
-    let homomorphism_checks = vec![check_homomorphism_diagnostics(&homomorphism_diagnostics)];
-    let atomic_observation_checks = archmap_atomic_observation_checks(document);
+    let atomic_observation_checks = vec![
+        check_atom_observations(document),
+        check_molecule_observations(document),
+        check_semantic_observations(document),
+        check_observation_gaps(document),
+        check_concern_hints(document),
+    ];
     let atomic_observation_summary = archmap_atomic_observation_summary(document);
     let responsibility_checks = vec![check_archmap_required_non_conclusions(document)];
 
-    let mut all_checks = Vec::new();
-    all_checks.append(&mut source_inventory_checks.clone());
-    all_checks.extend(source_ref_checks.clone());
-    all_checks.extend(claim_boundary_checks.clone());
-    all_checks.extend(semantic_coverage_checks.clone());
-    all_checks.extend(conflict_checks.clone());
-    all_checks.extend(formal_promotion_guardrail_checks.clone());
-    all_checks.extend(legacy_schema_checks.clone());
-    all_checks.extend(homomorphism_checks);
-    all_checks.extend(atomic_observation_checks.clone());
-    all_checks.extend(responsibility_checks.clone());
+    let all_checks = source_inventory_checks
+        .iter()
+        .chain(source_ref_checks.iter())
+        .chain(claim_boundary_checks.iter())
+        .chain(semantic_coverage_checks.iter())
+        .chain(formal_promotion_guardrail_checks.iter())
+        .chain(atomic_observation_checks.iter())
+        .chain(responsibility_checks.iter())
+        .cloned()
+        .collect::<Vec<_>>();
 
     let failed_check_count = count_checks(&all_checks, "fail");
     let warning_check_count = count_checks(&all_checks, "warn");
@@ -81,18 +80,16 @@ pub fn validate_archmap_report(
         source_ref_checks,
         claim_boundary_checks,
         semantic_coverage_checks,
-        conflict_checks,
         formal_promotion_guardrail_checks,
-        legacy_schema_checks,
-        homomorphism_diagnostics: homomorphism_diagnostics.clone(),
         atomic_observation_checks,
         atomic_observation_summary,
         responsibility_checks,
         summary: ArchMapValidationSummary {
             result: result.to_string(),
-            map_item_count: document.map_items.len(),
-            homomorphism_classification: homomorphism_diagnostics.classification,
-            conflict_count: explicit_and_derived_conflicts(document, sig0).len(),
+            atom_observation_count: document.atom_observations.len(),
+            molecule_observation_count: document.molecule_observations.len(),
+            semantic_observation_count: document.semantic_observations.len(),
+            observation_gap_count: document.observation_gaps.len(),
             failed_check_count,
             warning_check_count,
         },
@@ -100,737 +97,36 @@ pub fn validate_archmap_report(
     }
 }
 
-fn archmap_legacy_schema_checks(document: &ArchMapDocumentV0) -> Vec<ValidationCheck> {
-    vec![
-        check_legacy_archmap_fields(document),
-        check_legacy_obstruction_candidates(document),
-    ]
-}
-
-fn check_legacy_archmap_fields(document: &ArchMapDocumentV0) -> ValidationCheck {
-    let mut examples = Vec::new();
-    if !document.homomorphism.is_empty() {
-        examples.push(generic_validation_example(
-            "homomorphism",
-            "compatibility projection",
-            "legacy homomorphism field is accepted only as non-primary compatibility input",
-        ));
-    }
-    if !document.map_items.is_empty() {
-        examples.push(generic_validation_example(
-            "mapItems",
-            &document.map_items.len().to_string(),
-            "legacy mapItems field is accepted only as non-primary compatibility input",
-        ));
-    }
-    if !document.atom_candidates.is_empty() {
-        examples.push(generic_validation_example(
-            "atomCandidates",
-            &document.atom_candidates.len().to_string(),
-            "legacy atomCandidates field is accepted only as non-primary compatibility input",
-        ));
-    }
-    if !document.molecule_candidates.is_empty() {
-        examples.push(generic_validation_example(
-            "moleculeCandidates",
-            &document.molecule_candidates.len().to_string(),
-            "legacy moleculeCandidates field is accepted only as non-primary compatibility input",
-        ));
-    }
-
-    let mut check = validation_check(
-        "archmap-legacy-schema-fields",
-        "Legacy ArchMap schema fields are compatibility-only and not the primary Atom observation surface",
-        if examples.is_empty() { "pass" } else { "warn" },
-    );
-    check.count = Some(examples.len());
-    if examples.is_empty() {
-        check.reason = Some(
-            "no legacy homomorphism, mapItems, atomCandidates, or moleculeCandidates fields were supplied"
-                .to_string(),
-        );
-    } else {
-        check.reason = Some(
-            "legacy fields were supplied; current primary ArchMap input is archmap-observation-map-v0 with atomObservations, moleculeObservations, semanticObservations, observationGaps, projectionInfo, and concernHints"
-                .to_string(),
-        );
-    }
-    check.examples = examples;
-    check
-}
-
-fn check_legacy_obstruction_candidates(document: &ArchMapDocumentV0) -> ValidationCheck {
-    let mut check = validation_check(
-        "archmap-legacy-obstruction-circuit-candidates",
-        "Legacy obstructionCircuitCandidates are not first-class ArchMap output",
-        if document.obstruction_circuit_candidates.is_empty() {
-            "pass"
-        } else {
-            "warn"
-        },
-    );
-    check.count = Some(document.obstruction_circuit_candidates.len());
-    check.reason = Some(if document.obstruction_circuit_candidates.is_empty() {
-        "no legacy obstructionCircuitCandidates were supplied; concernHints remain review cues"
-            .to_string()
-    } else {
-        "obstructionCircuitCandidates were supplied through the legacy compatibility field; new ArchMap authoring must use concernHints only, and ArchSig constructs law-relative obstruction circuits from ArchMap plus LawPolicy"
-            .to_string()
-    });
-    check.examples = document
-        .obstruction_circuit_candidates
-        .iter()
-        .map(|candidate| {
-            generic_validation_example(
-                "obstructionCircuitCandidates",
-                &candidate.circuit_candidate_id,
-                "legacy obstruction candidate is compatibility-only, not primary ArchMap output",
-            )
-        })
-        .collect();
-    check
-}
-
-pub fn archmap_homomorphism(document: &ArchMapDocumentV0) -> ArchMapHomomorphismV0 {
-    if !document.homomorphism.object_map.is_empty()
-        || !document.homomorphism.relation_map.is_empty()
-        || !document.homomorphism.law_map.is_empty()
-        || !document.homomorphism.obstruction_map.is_empty()
-        || !document.homomorphism.signature_axis_map.is_empty()
-    {
-        return document.homomorphism.clone();
-    }
-
-    let domain_refs = document
-        .source_universe
-        .included_refs
-        .iter()
-        .map(archmap_source_ref_label)
-        .collect();
-    let codomain_refs = if document.projection_info.is_empty() {
-        document
-            .target_universe
-            .selected_layers
-            .iter()
-            .map(|layer| format!("aat-layer:{layer}"))
-            .collect()
-    } else {
-        document
-            .projection_info
-            .iter()
-            .map(|projection| projection.target_surface.clone())
-            .collect()
-    };
-    let mut hom = ArchMapHomomorphismV0 {
-        reading: "derived bounded projection from source-grounded Atom observations".to_string(),
-        domain: ArchMapHomomorphismUniverseV0 {
-            universe_id: format!("source:{}", document.architecture_id),
-            description: "selected source architecture evidence".to_string(),
-            refs: domain_refs,
-            boundary: document.source_universe.selection_boundary.clone(),
-        },
-        codomain: ArchMapHomomorphismUniverseV0 {
-            universe_id: format!("aat:{}", document.architecture_id),
-            description: document.target_universe.representation.clone(),
-            refs: codomain_refs,
-            boundary: "selected AAT observable universe".to_string(),
-        },
-        object_map: Vec::new(),
-        relation_map: Vec::new(),
-        law_map: Vec::new(),
-        obstruction_map: Vec::new(),
-        signature_axis_map: Vec::new(),
-        preservation_claims: Vec::new(),
-        forgetful_boundary: Vec::new(),
-        unmeasured_boundary: document.coverage.unmeasured_layers.clone(),
-        unsupported_boundary: document.coverage.unsupported_constructs.clone(),
-        non_conclusions: archmap_non_conclusions(document),
-    };
-
-    for projection in &document.projection_info {
-        let entry = ArchMapHomomorphismMapEntryV0 {
-            map_entry_id: projection.projection_id.clone(),
-            map_family: projection.projection_family.clone(),
-            source_ref: projection.source_observation_ref.clone(),
-            target_ref: projection.target_surface.clone(),
-            preserves: vec![projection.reading.clone()],
-            forgets: vec![projection.projection_boundary.clone()],
-            measurement_boundary: "derivedFromAtomObservation".to_string(),
-            claim_classification: "observed".to_string(),
-            evidence_refs: vec![projection.source_observation_ref.clone()],
-            non_conclusions: projection.non_conclusions.clone(),
-        };
-        hom.forgetful_boundary.push(format!(
-            "{} boundary {}",
-            projection.projection_id, projection.projection_boundary
-        ));
-        match entry.map_family.as_str() {
-            "object" => hom.object_map.push(entry),
-            "relation" => hom.relation_map.push(entry),
-            "law" => hom.law_map.push(entry),
-            "obstruction" => hom.obstruction_map.push(entry),
-            "signatureAxis" => hom.signature_axis_map.push(entry),
-            _ => hom.signature_axis_map.push(entry),
-        }
-    }
-
-    for item in &document.map_items {
-        let entry = ArchMapHomomorphismMapEntryV0 {
-            map_entry_id: item.map_item_id.clone(),
-            map_family: archmap_item_map_family(item).to_string(),
-            source_ref: item
-                .source_refs
-                .first()
-                .map(archmap_source_ref_label)
-                .unwrap_or_else(|| "source:unspecified".to_string()),
-            target_ref: archmap_target_ref_label(item),
-            preserves: item.preserves.clone(),
-            forgets: item.forgets.clone(),
-            measurement_boundary: item.measurement_boundary.clone(),
-            claim_classification: item.claim_classification.clone(),
-            evidence_refs: item.evidence_refs.clone(),
-            non_conclusions: archmap_item_non_conclusions(item),
-        };
-        for forgets in &item.forgets {
-            hom.forgetful_boundary
-                .push(format!("{} forgets {forgets}", item.map_item_id));
-        }
-        if item.measurement_boundary == "unmeasured" || item.claim_classification == "unmeasured" {
-            hom.unmeasured_boundary.push(item.map_item_id.clone());
-        }
-        hom.preservation_claims
-            .extend(
-                item.preserves
-                    .iter()
-                    .enumerate()
-                    .map(
-                        |(index, preserved_structure)| ArchMapHomomorphismPreservationClaimV0 {
-                            claim_id: format!("preservation-{}-{}", item.map_item_id, index + 1),
-                            map_entry_ref: item.map_item_id.clone(),
-                            preserved_structure: preserved_structure.clone(),
-                            status: archmap_item_homomorphism_status(document, item).to_string(),
-                            boundary: item.measurement_boundary.clone(),
-                            missing_evidence: item.missing_evidence.clone(),
-                            non_conclusions: archmap_item_non_conclusions(item),
-                        },
-                    ),
-            );
-
-        match entry.map_family.as_str() {
-            "object" => hom.object_map.push(entry),
-            "relation" => hom.relation_map.push(entry),
-            "law" => hom.law_map.push(entry),
-            "obstruction" => hom.obstruction_map.push(entry),
-            "signatureAxis" => hom.signature_axis_map.push(entry),
-            _ => hom.signature_axis_map.push(entry),
-        }
-    }
-
-    hom.forgetful_boundary.sort();
-    hom.forgetful_boundary.dedup();
-    hom.unmeasured_boundary.sort();
-    hom.unmeasured_boundary.dedup();
-    hom.unsupported_boundary.sort();
-    hom.unsupported_boundary.dedup();
-    hom
-}
-
-fn archmap_homomorphism_diagnostics(
-    document: &ArchMapDocumentV0,
-    hom: &ArchMapHomomorphismV0,
-    sig0: Option<&Sig0Document>,
-) -> ArchMapHomomorphismDiagnosticsV0 {
-    let families = [
-        ("object", hom.object_map.as_slice()),
-        ("relation", hom.relation_map.as_slice()),
-        ("law", hom.law_map.as_slice()),
-        ("obstruction", hom.obstruction_map.as_slice()),
-        ("signatureAxis", hom.signature_axis_map.as_slice()),
-    ];
-    let map_family_summaries = families
-        .iter()
-        .map(|(family, entries)| homomorphism_family_summary(family, entries))
-        .collect::<Vec<_>>();
-    let mut preservation_failures = hom
-        .preservation_claims
-        .iter()
-        .filter(|claim| claim.status == "nonHomomorphic" || claim.status == "blocked")
-        .map(|claim| {
-            format!(
-                "{} does not preserve {}",
-                claim.map_entry_ref, claim.preserved_structure
-            )
-        })
-        .collect::<Vec<_>>();
-    preservation_failures.extend(
-        explicit_and_derived_conflicts(document, sig0)
-            .into_iter()
-            .map(|conflict| format!("{}: {}", conflict.category, conflict.subject_ref)),
-    );
-    preservation_failures.sort();
-    preservation_failures.dedup();
-
-    let mut next_evidence = Vec::new();
-    if !hom.unmeasured_boundary.is_empty() {
-        next_evidence.push("supply evidence for unmeasured homomorphism map families".to_string());
-    }
-    if !hom.unsupported_boundary.is_empty() {
-        next_evidence
-            .push("declare adapter or manual evidence for unsupported constructs".to_string());
-    }
-    if !preservation_failures.is_empty() {
-        next_evidence.push("review non-homomorphic preservation failures".to_string());
-    }
-
-    let classification = if !preservation_failures.is_empty() {
-        "nonHomomorphic"
-    } else if !hom.unmeasured_boundary.is_empty() || !hom.unsupported_boundary.is_empty() {
-        "partial"
-    } else if !hom.forgetful_boundary.is_empty() {
-        "lossy"
-    } else {
-        "homomorphic"
-    };
-
-    ArchMapHomomorphismDiagnosticsV0 {
-        classification: classification.to_string(),
-        reading: if hom.reading.is_empty() {
-            "bounded AAT homomorphism".to_string()
-        } else {
-            hom.reading.clone()
-        },
-        domain_ref: hom.domain.universe_id.clone(),
-        codomain_ref: hom.codomain.universe_id.clone(),
-        map_family_summaries,
-        preservation_failures,
-        forgetful_boundaries: hom.forgetful_boundary.clone(),
-        unmeasured_boundaries: hom.unmeasured_boundary.clone(),
-        unsupported_boundaries: hom.unsupported_boundary.clone(),
-        obstruction_refs: hom
-            .obstruction_map
-            .iter()
-            .map(|entry| entry.target_ref.clone())
-            .collect(),
-        signature_axis_refs: hom
-            .signature_axis_map
-            .iter()
-            .map(|entry| entry.target_ref.clone())
-            .collect(),
-        next_evidence,
-        non_conclusions: hom.non_conclusions.clone(),
-    }
-}
-
-fn homomorphism_family_summary(
-    family: &str,
-    entries: &[ArchMapHomomorphismMapEntryV0],
-) -> ArchMapHomomorphismFamilySummaryV0 {
-    ArchMapHomomorphismFamilySummaryV0 {
-        map_family: family.to_string(),
-        entry_count: entries.len(),
-        measured_count: entries
-            .iter()
-            .filter(|entry| entry.claim_classification == "measured")
-            .count(),
-        unmeasured_count: entries
-            .iter()
-            .filter(|entry| {
-                entry.claim_classification == "unmeasured"
-                    || entry.measurement_boundary == "unmeasured"
-            })
-            .count(),
-        assumed_count: entries
-            .iter()
-            .filter(|entry| entry.claim_classification == "assumed")
-            .count(),
-        lossy_count: entries
-            .iter()
-            .filter(|entry| !entry.forgets.is_empty())
-            .count(),
-    }
-}
-
-fn check_homomorphism_diagnostics(
-    diagnostics: &ArchMapHomomorphismDiagnosticsV0,
-) -> ValidationCheck {
-    let result = if diagnostics.classification == "nonHomomorphic" {
-        "warn"
-    } else {
-        "pass"
-    };
-    let mut check = validation_check(
-        "archmap-homomorphism-diagnostics",
-        "ArchMap is read as a bounded AAT homomorphism with explicit loss and boundary diagnostics",
-        result,
-    );
-    if diagnostics.classification == "nonHomomorphic" {
-        check.reason = Some(
-            "non-homomorphic preservation failures are retained as review evidence".to_string(),
-        );
-    }
-    check
-}
-
-fn archmap_atomic_observation_checks(document: &ArchMapDocumentV0) -> Vec<ValidationCheck> {
-    vec![
-        check_atomic_observation_ids_unique(document),
-        check_atom_observations_have_source_evidence(document),
-        check_concern_hints_are_not_obstruction_circuits(document),
-        check_observation_gaps_are_not_measured_zero(document),
-    ]
-}
-
-fn check_atomic_observation_ids_unique(document: &ArchMapDocumentV0) -> ValidationCheck {
-    let mut examples = Vec::new();
-    examples.extend(
-        duplicates(
-            document
-                .atom_observations
-                .iter()
-                .map(|observation| observation.atom_observation_id.as_str()),
-        )
-        .iter()
-        .map(|id| {
-            generic_validation_example(
-                "atomObservations[].atomObservationId",
-                id,
-                "duplicate atom observation id",
-            )
-        }),
-    );
-    examples.extend(
-        duplicates(
-            document
-                .molecule_observations
-                .iter()
-                .map(|observation| observation.molecule_observation_id.as_str()),
-        )
-        .iter()
-        .map(|id| {
-            generic_validation_example(
-                "moleculeObservations[].moleculeObservationId",
-                id,
-                "duplicate molecule observation id",
-            )
-        }),
-    );
-    examples.extend(
-        duplicates(
-            document
-                .semantic_observations
-                .iter()
-                .map(|observation| observation.semantic_observation_id.as_str()),
-        )
-        .iter()
-        .map(|id| {
-            generic_validation_example(
-                "semanticObservations[].semanticObservationId",
-                id,
-                "duplicate semantic observation id",
-            )
-        }),
-    );
-    examples.extend(
-        duplicates(
-            document
-                .concern_hints
-                .iter()
-                .map(|hint| hint.concern_hint_id.as_str()),
-        )
-        .iter()
-        .map(|id| {
-            generic_validation_example(
-                "concernHints[].concernHintId",
-                id,
-                "duplicate concern hint id",
-            )
-        }),
-    );
-    examples.extend(
-        duplicates(
-            document
-                .observation_gaps
-                .iter()
-                .map(|gap| gap.gap_id.as_str()),
-        )
-        .iter()
-        .map(|id| {
-            generic_validation_example(
-                "observationGaps[].gapId",
-                id,
-                "duplicate observation gap id",
-            )
-        }),
-    );
-    check_from_examples(
-        "archmap-atomic-observation-ids-unique",
-        "Atomic observation ids are unique inside each observation family",
-        examples,
-        "fail",
-    )
-}
-
-fn check_atom_observations_have_source_evidence(document: &ArchMapDocumentV0) -> ValidationCheck {
-    let mut examples = document
-        .atom_observations
-        .iter()
-        .filter(|candidate| {
-            candidate.observation_status == "observed" && candidate.source_refs.is_empty()
-        })
-        .map(|candidate| {
-            generic_validation_example(
-                &candidate.atom_observation_id,
-                &candidate.atom_family,
-                "observed atom must cite source refs; ArchMap does not certify unsupported atoms",
-            )
-        })
-        .collect::<Vec<_>>();
-    examples.extend(
-        document
-            .atom_observations
-            .iter()
-            .filter(|candidate| {
-                matches!(
-                    candidate.observation_status.as_str(),
-                    "certified" | "proved" | "groundTruth"
-                )
-            })
-            .map(|candidate| {
-                generic_validation_example(
-                    &candidate.atom_observation_id,
-                    &candidate.observation_status,
-                    "ArchMap observes source-grounded atoms, but must not certify universal atoms",
-                )
-            }),
-    );
-    check_from_examples(
-        "archmap-atom-observations-are-source-grounded-not-certified",
-        "Atom observations preserve source evidence and are not certified as universal atoms by ArchMap",
-        examples,
-        "fail",
-    )
-}
-
-fn check_concern_hints_are_not_obstruction_circuits(
-    document: &ArchMapDocumentV0,
-) -> ValidationCheck {
-    let mut examples = document
-        .atom_observations
-        .iter()
-        .filter(|candidate| {
-            candidate
-                .atom_family
-                .to_ascii_lowercase()
-                .contains("obstruction")
-        })
-        .map(|candidate| {
-            generic_validation_example(
-                &candidate.atom_observation_id,
-                &candidate.atom_family,
-                "obstruction circuit is law-relative analysis output, not an ArchMap atom observation",
-            )
-        })
-        .collect::<Vec<_>>();
-    examples.extend(
-        document
-            .concern_hints
-            .iter()
-            .filter(|hint| {
-                hint.analysis_boundary
-                    .to_ascii_lowercase()
-                    .contains("obstruction circuit")
-                    && !hint
-                        .analysis_boundary
-                        .to_ascii_lowercase()
-                        .contains("not an obstruction circuit")
-            })
-            .map(|hint| {
-                generic_validation_example(
-                    &hint.concern_hint_id,
-                    &hint.concern_family,
-                    "concern hint must explicitly say it is not an obstruction circuit",
-                )
-            }),
-    );
-    check_from_examples(
-        "archmap-concern-hints-are-not-obstruction-circuits",
-        "Concern hints are retained as review cues and not promoted to obstruction circuits",
-        examples,
-        "fail",
-    )
-}
-
-fn check_observation_gaps_are_not_measured_zero(document: &ArchMapDocumentV0) -> ValidationCheck {
-    let examples = document
-        .observation_gaps
-        .iter()
-        .filter(|gap| {
-            matches!(
-                gap.evidence_status.as_str(),
-                "measuredZero" | "observedAbsent" | "absent"
-            )
-        })
-        .map(|gap| {
-            generic_validation_example(
-                &gap.gap_id,
-                &gap.evidence_status,
-                "observation gap must remain unknown/private/unavailable/out-of-scope, not measured zero",
-            )
-        })
-        .collect::<Vec<_>>();
-    check_from_examples(
-        "archmap-observation-gaps-not-measured-zero",
-        "Observation gaps are retained as gaps instead of absence claims",
-        examples,
-        "fail",
-    )
-}
-
-fn check_archmap_required_non_conclusions(document: &ArchMapDocumentV0) -> ValidationCheck {
-    let present = document
-        .non_conclusions
-        .iter()
-        .map(|value| value.as_str())
-        .collect::<BTreeSet<_>>();
-    let examples = required_archmap_non_conclusions()
-        .into_iter()
-        .filter(|required| !present.contains(required.as_str()))
-        .map(|required| {
-            generic_validation_example(
-                &document.map_id,
-                &required,
-                "missing required ArchMap responsibility non-conclusion",
-            )
-        })
-        .collect();
-    check_from_examples(
-        "archmap-responsibility-non-conclusion-boundary",
-        "ArchMap keeps lawfulness, obstruction circuit, zero curvature, concern hint, and atom truth boundaries explicit",
-        examples,
-        "fail",
-    )
-}
-
-fn archmap_atomic_observation_summary(
-    document: &ArchMapDocumentV0,
-) -> ArchMapAtomicObservationSummary {
-    let atom_observation_count = document.atom_observations.len();
-    let molecule_observation_count = document.molecule_observations.len();
-    let semantic_observation_count = document.semantic_observations.len();
-    let concern_hint_count = document.concern_hints.len();
-    let observation_gap_count = document.observation_gaps.len();
-    let promotable_atom_observation_count = document
-        .atom_observations
-        .iter()
-        .filter(|candidate| atom_observation_promotable_to_presentation(candidate))
-        .count();
-    let rejected_or_uncertain_observation_count = document
-        .atom_observations
-        .iter()
-        .filter(|candidate| {
-            matches!(
-                candidate.observation_status.as_str(),
-                "rejected" | "rejectedCandidate" | "uncertain" | "uncertainCandidate" | "ambiguous"
-            )
-        })
-        .count();
-    let lean_presentation_candidate_count =
-        promotable_atom_observation_count + molecule_observation_count + semantic_observation_count;
-    ArchMapAtomicObservationSummary {
-        atom_observation_count,
-        observed_atom_count: document
-            .atom_observations
-            .iter()
-            .filter(|candidate| {
-                is_observed_atomic_boundary(&candidate.observation_status, &candidate.evidence_boundary)
-            })
-            .count(),
-        promotable_atom_observation_count,
-        rejected_or_uncertain_observation_count,
-        molecule_observation_count,
-        observed_molecule_count: document
-            .molecule_observations
-            .iter()
-            .filter(|candidate| candidate.observation_status == "observed")
-            .count(),
-        semantic_observation_count,
-        concern_hint_count,
-        observation_gap_count,
-        lean_presentation_candidate_count,
-        sft_handoff_ref_count: atom_observation_count + concern_hint_count + observation_gap_count,
-        zero_curvature_reading:
-            "zero curvature is not an ArchMap output; it requires ArchSig analysis over ArchMap plus selected LawPolicy"
-                .to_string(),
-        promotion_boundary:
-            "Lean-facing AtomPresentation contains promotable observed atom, molecule, semantic, and gap observations with source evidence; validation does not certify universal ArchitectureAtom truth"
-                .to_string(),
-        boundary:
-            "ArchMap records source-grounded atom, molecule, semantic, concern-hint, and gap observations; LawPolicy and ArchSig decide law-relative obstruction meaning"
-                .to_string(),
-        non_conclusions: archmap_atomic_non_conclusions(),
-    }
-}
-
-fn atom_observation_promotable_to_presentation(
-    candidate: &crate::ArchMapAtomObservationV0,
-) -> bool {
-    is_observed_atomic_boundary(&candidate.observation_status, &candidate.evidence_boundary)
-        && !candidate.source_refs.is_empty()
-}
-
-fn is_observed_atomic_boundary(observation_status: &str, measurement_boundary: &str) -> bool {
-    matches!(observation_status, "observed" | "measured")
-        || measurement_boundary == "measuredNonzero"
-}
-
-fn archmap_atomic_non_conclusions() -> Vec<String> {
-    vec![
-        "ArchMap atom observation is not a certified universal ArchitectureAtom".to_string(),
-        "molecule observation is reported over atoms, not as a primitive atom".to_string(),
-        "concern hint is not an obstruction circuit".to_string(),
-        "obstruction circuit is computed by ArchSig from ArchMap plus LawPolicy".to_string(),
-        "observation gap is not measured zero".to_string(),
-        "Lean-facing AtomPresentation boundary does not certify universal ArchitectureAtom truth"
-            .to_string(),
-        "atomic observation summary does not prove zero curvature".to_string(),
-        "atomic observation summary does not prove SFT forecast correctness".to_string(),
-    ]
-}
-
-fn required_archmap_non_conclusions() -> Vec<String> {
-    vec![
-        "ArchMap does not prove architecture lawfulness".to_string(),
-        "ArchMap does not output obstruction circuits".to_string(),
-        "ArchMap does not prove zero curvature".to_string(),
-        "concernHints are review cues, not obstruction circuits".to_string(),
-        "observation gaps are not measured zero".to_string(),
-        "Atom observations are source-grounded observations, not universal atom truth".to_string(),
-    ]
-}
-
 fn check_archmap_schema_version(schema_version: &str) -> ValidationCheck {
     let mut check = validation_check(
-        "archmap-schema-version-supported",
-        "ArchMap schema version is supported",
+        "archmap-schema-version",
+        "ArchMap uses the current Atom observation schema",
         if schema_version == ARCHMAP_SCHEMA_VERSION {
             "pass"
         } else {
             "fail"
         },
     );
-    if check.result == "fail" {
-        check.reason = Some(format!("unsupported schemaVersion: {schema_version}"));
+    if schema_version != ARCHMAP_SCHEMA_VERSION {
+        check.reason = Some(format!(
+            "expected {ARCHMAP_SCHEMA_VERSION}, found {schema_version}"
+        ));
     }
     check
 }
 
 fn check_source_inventory_boundary(document: &ArchMapDocumentV0) -> ValidationCheck {
-    let mut missing = Vec::new();
+    let mut check = validation_check(
+        "archmap-source-inventory-boundary",
+        "ArchMap declares bounded source inventory and observation scope",
+        "pass",
+    );
+    let mut examples = Vec::new();
     if document.source_universe.included_refs.is_empty() {
-        missing.push(generic_validation_example(
+        examples.push(generic_validation_example(
             "sourceUniverse.includedRefs",
             "empty",
-            "bounded source inventory must enumerate included refs",
+            "source-grounded ArchMap needs at least one included source ref",
         ));
     }
     if document
@@ -839,1183 +135,795 @@ fn check_source_inventory_boundary(document: &ArchMapDocumentV0) -> ValidationCh
         .trim()
         .is_empty()
     {
-        missing.push(generic_validation_example(
+        examples.push(generic_validation_example(
             "sourceUniverse.selectionBoundary",
             "empty",
-            "source inventory selection boundary must be explicit",
+            "source selection boundary must be explicit",
         ));
     }
-    if document.generation_boundary.non_conclusions.is_empty()
-        && document.non_conclusions.is_empty()
-    {
-        missing.push(generic_validation_example(
-            "generationBoundary.nonConclusions",
+    if document.provenance.observation_boundary.trim().is_empty() {
+        examples.push(generic_validation_example(
+            "provenance.observationBoundary",
             "empty",
-            "LLM generation boundary must preserve non-conclusions",
+            "observation boundary must be explicit",
         ));
     }
-    check_from_examples(
-        "archmap-source-inventory-boundary",
-        "Source inventory keeps included / excluded / unavailable / private boundary explicit",
-        missing,
-        "fail",
-    )
+    if !examples.is_empty() {
+        check.result = "fail".to_string();
+        check.examples = examples;
+    }
+    check
 }
 
 fn check_source_inventory_artifact(
     document: &ArchMapDocumentV0,
     source_inventory: Option<&ArchMapSourceInventoryInput<'_>>,
 ) -> ValidationCheck {
-    let Some(source_inventory_ref) = &document.source_inventory_ref else {
-        return warning_check_from_examples(
-            "archmap-source-inventory-artifact",
-            "Source inventory artifact ref is present and matches sourceUniverse",
-            vec![generic_validation_example(
-                "sourceInventoryRef",
-                "missing",
-                "source inventory artifact ref is absent; input boundary remains embedded only",
-            )],
-        );
+    let mut check = validation_check(
+        "archmap-source-inventory-artifact",
+        "Optional source inventory sidecar is readable and matches the current schema",
+        "pass",
+    );
+    let Some(input) = source_inventory else {
+        check.reason =
+            Some("no sourceInventoryRef supplied; sourceUniverse is used directly".to_string());
+        return check;
     };
-
-    let mut examples = Vec::new();
-    let expected_path = source_inventory_ref.path.as_deref().unwrap_or_default();
-    if expected_path.trim().is_empty() {
-        examples.push(generic_validation_example(
+    if let Some(error) = &input.read_error {
+        check.result = "fail".to_string();
+        check.reason = Some(error.clone());
+        check.examples = vec![generic_validation_example(
             "sourceInventoryRef.path",
-            "empty",
-            "source inventory artifact path must be explicit",
-        ));
+            input.path,
+            "source inventory sidecar could not be loaded",
+        )];
+        return check;
     }
-
-    let Some(source_inventory) = source_inventory else {
-        examples.push(generic_validation_example(
-            "sourceInventoryRef.path",
-            expected_path,
-            "source inventory artifact was not supplied to validation",
-        ));
-        return warning_check_from_examples(
-            "archmap-source-inventory-artifact",
-            "Source inventory artifact ref is present and matches sourceUniverse",
-            examples,
-        );
+    let Some(inventory) = input.document else {
+        check.result = "fail".to_string();
+        check.reason = Some("source inventory sidecar was requested but not available".to_string());
+        return check;
     };
-
-    if source_inventory.path != expected_path {
-        examples.push(generic_validation_example(
-            "sourceInventoryRef.path",
-            source_inventory.path,
-            "loaded source inventory path differs from ArchMap sourceInventoryRef.path",
-        ));
-    }
-    if let Some(read_error) = &source_inventory.read_error {
-        examples.push(generic_validation_example(
-            "sourceInventoryRef.path",
-            expected_path,
-            read_error,
-        ));
-    }
-
-    let Some(inventory) = source_inventory.document else {
-        return warning_check_from_examples(
-            "archmap-source-inventory-artifact",
-            "Source inventory artifact ref is present and matches sourceUniverse",
-            examples,
-        );
-    };
-
     if inventory.schema_version != ARCHMAP_SOURCE_INVENTORY_SCHEMA_VERSION {
-        examples.push(generic_validation_example(
+        check.result = "fail".to_string();
+        check.examples.push(generic_validation_example(
             "sourceInventory.schemaVersion",
             &inventory.schema_version,
-            "source inventory schema version is unsupported",
+            "source inventory must use the current schema",
         ));
     }
     if inventory.root != document.source_universe.root {
-        examples.push(generic_validation_example(
+        check.result = "warn".to_string();
+        check.examples.push(generic_validation_example(
             "sourceInventory.root",
             &inventory.root,
             "source inventory root differs from ArchMap sourceUniverse.root",
         ));
     }
-    if inventory.selection_boundary != document.source_universe.selection_boundary {
-        examples.push(generic_validation_example(
-            "sourceInventory.selectionBoundary",
-            &inventory.selection_boundary,
-            "source inventory selection boundary differs from ArchMap sourceUniverse",
-        ));
-    }
-
-    compare_source_ref_sets(
-        &mut examples,
-        "includedRefs",
-        &inventory.included_refs,
-        &document.source_universe.included_refs,
-    );
-    compare_source_ref_sets(
-        &mut examples,
-        "excludedRefs",
-        &inventory.excluded_refs,
-        &document.source_universe.excluded_refs,
-    );
-    compare_source_ref_sets(
-        &mut examples,
-        "unavailableRefs",
-        &inventory.unavailable_refs,
-        &document.source_universe.unavailable_refs,
-    );
-    compare_source_ref_sets(
-        &mut examples,
-        "privateRefs",
-        &inventory.private_refs,
-        &document.source_universe.private_refs,
-    );
-
-    compare_artifact_ref_sets(
-        &mut examples,
-        "hashes",
-        &inventory.hashes,
-        &document.source_universe.hashes,
-    );
-
-    let mut check = warning_check_from_examples(
-        "archmap-source-inventory-artifact",
-        "Source inventory artifact ref is present and matches sourceUniverse",
-        examples,
-    );
-    if check.result == "pass" {
-        check.count = Some(
-            inventory.included_refs.len()
-                + inventory.excluded_refs.len()
-                + inventory.unavailable_refs.len()
-                + inventory.private_refs.len(),
-        );
-        check.reason = Some(
-            "source inventory preserves included, excluded, unavailable, private, hash, and selection boundary categories"
-                .to_string(),
-        );
-    }
     check
 }
 
-fn check_archmap_unique_map_item_ids(document: &ArchMapDocumentV0) -> ValidationCheck {
-    let duplicate_ids = duplicates(
-        document
-            .map_items
-            .iter()
-            .map(|item| item.map_item_id.as_str()),
+fn check_source_refs(document: &ArchMapDocumentV0) -> ValidationCheck {
+    let declared = declared_source_ref_ids(document);
+    let mut examples = Vec::new();
+    for (owner, refs) in observation_source_refs(document) {
+        for source_ref in refs {
+            if let Some(artifact_id) = &source_ref.artifact_id {
+                if !declared.contains(artifact_id.as_str()) {
+                    examples.push(generic_validation_example(
+                        &owner,
+                        artifact_id,
+                        "observation references a source artifact outside sourceUniverse.includedRefs",
+                    ));
+                }
+            }
+        }
+    }
+    let mut check = validation_check(
+        "archmap-source-refs-declared",
+        "Observation source refs are declared in the source universe",
+        if examples.is_empty() { "pass" } else { "fail" },
     );
-    let examples = duplicate_ids
-        .iter()
-        .map(|id| generic_validation_example("mapItems[].mapItemId", id, "duplicate map item id"))
-        .collect();
-    check_from_examples(
-        "archmap-map-item-ids-unique",
-        "ArchMap map item ids are unique",
-        examples,
-        "fail",
-    )
+    check.count = Some(examples.len());
+    check.examples = examples;
+    check
 }
 
-fn check_source_refs(document: &ArchMapDocumentV0) -> ValidationCheck {
-    let included: BTreeSet<String> = document
-        .source_universe
-        .included_refs
+fn check_unique_observation_ids(document: &ArchMapDocumentV0) -> ValidationCheck {
+    let mut ids = Vec::new();
+    ids.extend(
+        document
+            .atom_observations
+            .iter()
+            .map(|observation| observation.atom_observation_id.as_str()),
+    );
+    ids.extend(
+        document
+            .molecule_observations
+            .iter()
+            .map(|observation| observation.molecule_observation_id.as_str()),
+    );
+    ids.extend(
+        document
+            .semantic_observations
+            .iter()
+            .map(|observation| observation.semantic_observation_id.as_str()),
+    );
+    ids.extend(
+        document
+            .observation_gaps
+            .iter()
+            .map(|gap| gap.gap_id.as_str()),
+    );
+    ids.extend(
+        document
+            .concern_hints
+            .iter()
+            .map(|hint| hint.concern_hint_id.as_str()),
+    );
+    let duplicate_ids = duplicates(ids.into_iter());
+    let mut check = validation_check(
+        "archmap-observation-ids-unique",
+        "Atom observation surface ids are unique",
+        if duplicate_ids.is_empty() {
+            "pass"
+        } else {
+            "fail"
+        },
+    );
+    check.examples = duplicate_ids
         .iter()
-        .map(source_ref_key)
+        .map(|id| generic_validation_example("observation id", id, "duplicate id"))
         .collect();
+    check.count = Some(check.examples.len());
+    check
+}
+
+fn check_projection_refs(document: &ArchMapDocumentV0) -> ValidationCheck {
+    let projection_ids = document
+        .projection_info
+        .iter()
+        .map(|projection| projection.projection_id.as_str())
+        .collect::<BTreeSet<_>>();
     let mut examples = Vec::new();
-    for (field, id, refs) in archmap_observation_source_ref_groups(document) {
-        for source_ref in refs {
-            let key = source_ref_key(source_ref);
-            if !included.contains(&key) {
+    for observation in &document.atom_observations {
+        for projection_ref in &observation.projection_refs {
+            if !projection_ids.contains(projection_ref.as_str()) {
                 examples.push(generic_validation_example(
-                    &format!("{field}[{id}].sourceRefs"),
-                    &key,
-                    "source ref is outside includedRefs and is preserved as a dangling boundary",
+                    &observation.atom_observation_id,
+                    projection_ref,
+                    "atom observation references missing projectionInfo entry",
                 ));
             }
         }
     }
-    check_from_examples(
-        "archmap-source-refs-resolve",
-        "ArchMap observation source refs resolve inside the selected source inventory",
-        examples,
-        "warn",
-    )
+    let mut check = validation_check(
+        "archmap-projection-refs-declared",
+        "Atom observation projection refs are declared in projectionInfo",
+        if examples.is_empty() { "pass" } else { "warn" },
+    );
+    check.examples = examples;
+    check.count = Some(check.examples.len());
+    check
 }
 
 fn check_measured_claim_evidence(document: &ArchMapDocumentV0) -> ValidationCheck {
-    let examples: Vec<_> = document
-        .map_items
-        .iter()
-        .filter(|item| item.claim_classification == "measured" && item.source_refs.is_empty())
-        .map(|item| {
-            generic_validation_example(
-                &item.map_item_id,
-                &item.measurement_boundary,
-                "measured ArchMap claim must cite source refs",
-            )
-        })
-        .collect();
-    check_from_examples(
+    let mut examples = Vec::new();
+    for observation in &document.atom_observations {
+        if observation.observation_status == "observed" && observation.source_refs.is_empty() {
+            examples.push(generic_validation_example(
+                &observation.atom_observation_id,
+                "sourceRefs",
+                "observed atom must carry source evidence",
+            ));
+        }
+        if observation.evidence_boundary.trim().is_empty() {
+            examples.push(generic_validation_example(
+                &observation.atom_observation_id,
+                "evidenceBoundary",
+                "atom observation must keep evidence boundary explicit",
+            ));
+        }
+    }
+    for observation in &document.molecule_observations {
+        if observation.observation_status == "observed"
+            && observation.atom_observation_refs.is_empty()
+        {
+            examples.push(generic_validation_example(
+                &observation.molecule_observation_id,
+                "atomObservationRefs",
+                "observed molecule must reference atom observations",
+            ));
+        }
+    }
+    let mut check = validation_check(
         "archmap-measured-claims-have-evidence",
-        "Measured ArchMap claims carry evidence refs",
-        examples,
-        "fail",
-    )
+        "Observed ArchMap claims carry source or atom evidence",
+        if examples.is_empty() { "pass" } else { "fail" },
+    );
+    check.examples = examples;
+    check.count = Some(check.examples.len());
+    check
 }
 
 fn check_missing_evidence_not_measured_zero(document: &ArchMapDocumentV0) -> ValidationCheck {
-    let examples: Vec<_> = document
-        .map_items
-        .iter()
-        .filter(|item| {
-            item.measurement_boundary == "measuredZero" && !item.missing_evidence.is_empty()
-        })
-        .map(|item| {
-            generic_validation_example(
-                &item.map_item_id,
-                "measuredZero",
-                "missing evidence cannot be rounded to measured zero",
-            )
-        })
-        .collect();
-    check_from_examples(
-        "archmap-missing-evidence-not-measured-zero",
-        "Missing evidence is not rounded to measured zero",
-        examples,
-        "fail",
-    )
+    let mut examples = Vec::new();
+    for gap in &document.observation_gaps {
+        let joined = [
+            gap.evidence_status.as_str(),
+            gap.reason.as_str(),
+            &gap.non_conclusions.join(" "),
+        ]
+        .join(" ")
+        .to_ascii_lowercase();
+        if gap.evidence_status == "measuredZero"
+            || (joined.contains("measured zero") && !joined.contains("not measured zero"))
+            || joined.contains("zero evidence")
+            || joined.contains("no issue")
+        {
+            examples.push(generic_validation_example(
+                &gap.gap_id,
+                &gap.evidence_status,
+                "missing evidence must remain an observation gap, not a measured-zero claim",
+            ));
+        }
+    }
+    let mut check = validation_check(
+        "archmap-observation-gaps-not-measured-zero",
+        "Observation gaps are preserved separately from measured zero",
+        if examples.is_empty() { "pass" } else { "fail" },
+    );
+    check.examples = examples;
+    check.count = Some(check.examples.len());
+    check
 }
 
-fn check_srp_evidence_boundary(document: &ArchMapDocumentV0) -> ValidationCheck {
-    let examples: Vec<_> = document
-        .map_items
-        .iter()
-        .filter(|item| is_srp_item(item))
-        .filter(|item| {
-            item.semantic_role.is_none()
-                || item.responsibility_regions.is_empty()
-                || item.reason_to_change.is_empty()
-                || item.law_refs.is_empty()
-        })
-        .map(|item| {
-            generic_validation_example(
-                &item.map_item_id,
-                "SRP",
-                "SRP review cue must keep semanticRole, responsibilityRegions, reasonToChange, and lawRefs typed",
-            )
-        })
-        .collect();
-    check_from_examples(
-        "archmap-srp-evidence-boundary-typed",
-        "SRP review cues keep typed semantic evidence",
-        examples,
-        "warn",
-    )
-}
-
-fn is_srp_item(item: &ArchMapMapItem) -> bool {
-    item.law_refs.iter().any(|law| law.contains("SRP"))
-        || item
-            .preserves
-            .iter()
-            .any(|preserve| preserve.to_ascii_lowercase().contains("srp"))
-        || item.map_item_id.to_ascii_lowercase().contains("srp")
+fn check_observation_status_boundary(document: &ArchMapDocumentV0) -> ValidationCheck {
+    let mut examples = Vec::new();
+    for observation in &document.atom_observations {
+        if is_promoted_truth_status(&observation.observation_status) {
+            examples.push(generic_validation_example(
+                &observation.atom_observation_id,
+                &observation.observation_status,
+                "Atom observations must not be promoted to formal truth",
+            ));
+        }
+    }
+    for observation in &document.semantic_observations {
+        if is_promoted_truth_status(&observation.observation_status) {
+            examples.push(generic_validation_example(
+                &observation.semantic_observation_id,
+                &observation.observation_status,
+                "Semantic observations must not be promoted to formal truth",
+            ));
+        }
+    }
+    let mut check = validation_check(
+        "archmap-observation-status-boundary",
+        "Observation statuses remain observational and bounded",
+        if examples.is_empty() { "pass" } else { "fail" },
+    );
+    check.examples = examples;
+    check.count = Some(check.examples.len());
+    check
 }
 
 fn check_semantic_coverage(document: &ArchMapDocumentV0) -> ValidationCheck {
-    let has_semantic_item = !document.semantic_observations.is_empty()
-        || document.map_items.iter().any(|item| {
-            item.mapping_kind.starts_with("semantic")
-                || item.mapping_kind == "nonfillabilityWitness"
-                || item.target_ref.layer.as_deref() == Some("semantic")
-        });
-    let semantic_recorded = document
-        .semantic_observations
-        .iter()
-        .any(|observation| !observation.source_refs.is_empty())
-        || document
-            .coverage
-            .measured_layers
-            .iter()
-            .chain(document.coverage.unmeasured_layers.iter())
-            .chain(document.coverage.assumed_layers.iter())
-            .any(|layer| layer == "semantic");
+    let atom_ids = atom_ids(document);
+    let molecule_ids = molecule_ids(document);
     let mut examples = Vec::new();
-    if has_semantic_item && !semantic_recorded {
-        examples.push(generic_validation_example(
-            "coverage",
-            "semantic",
-            "semantic map items require measured, assumed, or unmeasured semantic coverage",
-        ));
+    for observation in &document.semantic_observations {
+        for atom_ref in &observation.atom_observation_refs {
+            if !atom_ids.contains(atom_ref.as_str()) {
+                examples.push(generic_validation_example(
+                    &observation.semantic_observation_id,
+                    atom_ref,
+                    "semantic observation references missing atom observation",
+                ));
+            }
+        }
+        for molecule_ref in &observation.molecule_observation_refs {
+            if !molecule_ids.contains(molecule_ref.as_str()) {
+                examples.push(generic_validation_example(
+                    &observation.semantic_observation_id,
+                    molecule_ref,
+                    "semantic observation references missing molecule observation",
+                ));
+            }
+        }
     }
-    check_from_examples(
-        "archmap-semantic-coverage-boundary",
-        "Semantic coverage is explicit and is not inferred from absence",
-        examples,
-        "fail",
-    )
-}
-
-fn check_conflicts(document: &ArchMapDocumentV0, sig0: Option<&Sig0Document>) -> ValidationCheck {
-    let conflicts = explicit_and_derived_conflicts(document, sig0);
     let mut check = validation_check(
-        "archmap-conflicts-preserved-as-review-cues",
-        "ArchMap conflicts are preserved as review cues instead of resolved claims",
-        if conflicts.is_empty() { "pass" } else { "warn" },
+        "archmap-semantic-coverage",
+        "Semantic observations reference declared atom or molecule observations",
+        if examples.is_empty() { "pass" } else { "fail" },
     );
-    check.count = Some(conflicts.len());
-    check.examples = conflicts
-        .iter()
-        .take(10)
-        .map(|conflict| {
-            generic_validation_example(
-                &conflict.category,
-                &conflict.subject_ref,
-                &conflict.description,
-            )
-        })
-        .collect();
+    check.examples = examples;
+    check.count = Some(check.examples.len());
     check
 }
 
 fn check_formal_promotion_guardrail(document: &ArchMapDocumentV0) -> ValidationCheck {
-    let examples: Vec<_> = document
-        .map_items
-        .iter()
-        .filter(|item| {
-            matches!(item.claim_classification.as_str(), "proved" | "formal")
-                && item.theorem_refs.is_empty()
-        })
-        .map(|item| {
-            generic_validation_example(
-                &item.map_item_id,
-                &item.claim_classification,
-                "formal/proved claim requires theorem refs and is not inferred from LLM output",
-            )
-        })
-        .collect();
-    check_from_examples(
+    let mut examples = Vec::new();
+    for value in archmap_non_conclusions(document) {
+        let lower = value.to_ascii_lowercase();
+        if lower.contains("lean proof complete")
+            || lower.contains("formal truth")
+            || lower.contains("certified atom truth")
+        {
+            examples.push(generic_validation_example(
+                "nonConclusions",
+                &value,
+                "ArchMap must not promote observations to formal proof",
+            ));
+        }
+    }
+    let mut check = validation_check(
         "archmap-formal-promotion-guardrail",
-        "LLM-authored claims are not promoted to formal/proved theorem claims",
-        examples,
-        "fail",
-    )
+        "ArchMap does not promote observations to Lean theorem evidence",
+        if examples.is_empty() { "pass" } else { "fail" },
+    );
+    check.examples = examples;
+    check.count = Some(check.examples.len());
+    check
 }
 
 fn check_projection_separation(document: &ArchMapDocumentV0) -> ValidationCheck {
     let mut examples = Vec::new();
-    let has_aat = document.map_items.iter().any(is_aat_facing_item)
-        || document
-            .projection_info
-            .iter()
-            .any(|projection| projection.target_surface.contains("aat"));
-    let has_sft = document.map_items.iter().any(is_sft_facing_item)
-        || document
-            .projection_info
-            .iter()
-            .any(|projection| projection.target_surface.contains("sft"));
-    if !has_aat {
-        examples.push(generic_validation_example(
-            "mapItems[]",
-            "aat-facing",
-            "AAT-facing projection has no selected map item",
-        ));
+    for projection in &document.projection_info {
+        let reading = projection.reading.to_ascii_lowercase();
+        if reading.contains("lawful")
+            || reading.contains("zero curvature")
+            || reading.contains("obstruction circuit")
+        {
+            examples.push(generic_validation_example(
+                &projection.projection_id,
+                &projection.reading,
+                "projectionInfo must not construct law-relative ArchSig conclusions",
+            ));
+        }
     }
-    if !has_sft {
-        examples.push(generic_validation_example(
-            "mapItems[]",
-            "sft-facing",
-            "SFT-facing projection has no selected map item",
-        ));
-    }
-    examples.extend(document.map_items.iter().filter_map(|item| {
-        (is_sft_facing_item(item)
-            && matches!(item.claim_classification.as_str(), "proved" | "formal"))
-        .then(|| {
-            generic_validation_example(
-                &item.map_item_id,
-                &item.claim_classification,
-                "SFT-facing forecast input item must not be promoted to a Lean theorem claim",
-            )
-        })
-    }));
-    check_from_examples(
-        "archmap-aat-sft-projection-separation",
-        "AAT-facing and SFT-facing projections remain separate bounded readings",
-        examples,
-        "warn",
-    )
-}
-
-fn check_from_examples(
-    id: &str,
-    title: &str,
-    examples: Vec<crate::ValidationExample>,
-    failure_result: &str,
-) -> ValidationCheck {
     let mut check = validation_check(
-        id,
-        title,
-        if examples.is_empty() {
-            "pass"
-        } else {
-            failure_result
-        },
+        "archmap-projection-separation",
+        "Projection info remains observation-derived and law-independent",
+        if examples.is_empty() { "pass" } else { "fail" },
     );
-    if !examples.is_empty() {
-        check.count = Some(examples.len());
-        check.examples = examples;
-    }
+    check.examples = examples;
+    check.count = Some(check.examples.len());
     check
 }
 
-fn warning_check_from_examples(
-    id: &str,
-    title: &str,
-    examples: Vec<crate::ValidationExample>,
-) -> ValidationCheck {
-    check_from_examples(id, title, examples, "warn")
+fn check_atom_observations(document: &ArchMapDocumentV0) -> ValidationCheck {
+    let mut examples = Vec::new();
+    for observation in &document.atom_observations {
+        if observation.atom_family.trim().is_empty()
+            || observation.predicate.trim().is_empty()
+            || observation.subject_ref.trim().is_empty()
+            || observation.evidence_boundary.trim().is_empty()
+        {
+            examples.push(generic_validation_example(
+                &observation.atom_observation_id,
+                "atom observation fields",
+                "atom observation requires family, predicate, subject, and evidence boundary",
+            ));
+        }
+    }
+    let mut check = validation_check(
+        "archmap-atom-observation-surface",
+        "Atom observations use explicit source-grounded fields",
+        if examples.is_empty() { "pass" } else { "fail" },
+    );
+    check.count = Some(document.atom_observations.len());
+    check.examples = examples;
+    check
 }
 
-fn compare_source_ref_sets(
-    examples: &mut Vec<crate::ValidationExample>,
-    field: &str,
-    inventory_refs: &[ArchMapSourceRef],
-    embedded_refs: &[ArchMapSourceRef],
-) {
-    let inventory_keys: BTreeSet<_> = inventory_refs.iter().map(source_ref_key).collect();
-    let embedded_keys: BTreeSet<_> = embedded_refs.iter().map(source_ref_key).collect();
-    for key in inventory_keys.difference(&embedded_keys) {
-        examples.push(generic_validation_example(
-            &format!("sourceInventory.{field}"),
-            key,
-            "source inventory ref is absent from embedded ArchMap sourceUniverse",
-        ));
-    }
-    for key in embedded_keys.difference(&inventory_keys) {
-        examples.push(generic_validation_example(
-            &format!("sourceUniverse.{field}"),
-            key,
-            "embedded ArchMap sourceUniverse ref is absent from source inventory artifact",
-        ));
-    }
-}
-
-fn compare_artifact_ref_sets(
-    examples: &mut Vec<crate::ValidationExample>,
-    field: &str,
-    inventory_refs: &[crate::ArchMapArtifactRef],
-    embedded_refs: &[crate::ArchMapArtifactRef],
-) {
-    let inventory_keys: BTreeSet<_> = inventory_refs.iter().map(artifact_ref_key).collect();
-    let embedded_keys: BTreeSet<_> = embedded_refs.iter().map(artifact_ref_key).collect();
-    for key in inventory_keys.difference(&embedded_keys) {
-        examples.push(generic_validation_example(
-            &format!("sourceInventory.{field}"),
-            key,
-            "source inventory artifact hash is absent from embedded ArchMap sourceUniverse",
-        ));
-    }
-    for key in embedded_keys.difference(&inventory_keys) {
-        examples.push(generic_validation_example(
-            &format!("sourceUniverse.{field}"),
-            key,
-            "embedded ArchMap sourceUniverse hash is absent from source inventory artifact",
-        ));
-    }
-}
-
-fn explicit_and_derived_conflicts(
-    document: &ArchMapDocumentV0,
-    sig0: Option<&Sig0Document>,
-) -> Vec<ArchMapConflict> {
-    let mut conflicts = document.conflicts.clone();
-    conflicts.extend(document.map_items.iter().filter_map(|item| {
-        item.conflict_category
-            .as_ref()
-            .map(|category| ArchMapConflict {
-                conflict_id: format!("conflict-{}", item.map_item_id),
-                category: category.clone(),
-                subject_ref: item
-                    .target_ref
-                    .subject_ref
-                    .clone()
-                    .or_else(|| item.target_ref.id.clone())
-                    .unwrap_or_else(|| item.map_item_id.clone()),
-                description: format!("ArchMap item {} reports {}", item.map_item_id, category),
-                source_refs: item.source_refs.clone(),
-                non_conclusions: vec![
-                    "conflict cue does not decide which source is correct".to_string(),
-                ],
-            })
-    }));
-    let included: BTreeSet<String> = document
-        .source_universe
-        .included_refs
-        .iter()
-        .map(source_ref_key)
-        .collect();
-    for item in &document.map_items {
-        for source_ref in &item.source_refs {
-            let key = source_ref_key(source_ref);
-            if !included.contains(&key) {
-                conflicts.push(ArchMapConflict {
-                    conflict_id: format!("conflict-source-ref-dangling-{}", item.map_item_id),
-                    category: "source-ref-dangling".to_string(),
-                    subject_ref: key,
-                    description: "map item cites a source ref outside sourceUniverse.includedRefs"
-                        .to_string(),
-                    source_refs: vec![source_ref.clone()],
-                    non_conclusions: vec![
-                        "dangling source ref is not measured zero".to_string(),
-                        "validation does not infer source availability".to_string(),
-                    ],
-                });
+fn check_molecule_observations(document: &ArchMapDocumentV0) -> ValidationCheck {
+    let atom_ids = atom_ids(document);
+    let mut examples = Vec::new();
+    for observation in &document.molecule_observations {
+        for atom_ref in &observation.atom_observation_refs {
+            if !atom_ids.contains(atom_ref.as_str()) {
+                examples.push(generic_validation_example(
+                    &observation.molecule_observation_id,
+                    atom_ref,
+                    "molecule observation references missing atom observation",
+                ));
             }
         }
     }
-    if let Some(sig0) = sig0 {
-        conflicts.extend(static_edge_conflicts(document, sig0));
-    }
-    unique_conflicts(conflicts)
+    let mut check = validation_check(
+        "archmap-molecule-observation-surface",
+        "Molecule observations are assembled from declared atom observations",
+        if examples.is_empty() { "pass" } else { "fail" },
+    );
+    check.count = Some(document.molecule_observations.len());
+    check.examples = examples;
+    check
 }
 
-fn static_edge_conflicts(
-    document: &ArchMapDocumentV0,
-    sig0: &Sig0Document,
-) -> Vec<ArchMapConflict> {
-    let static_edges: BTreeSet<(String, String)> = sig0
-        .edges
-        .iter()
-        .map(|edge| (edge.source.clone(), edge.target.clone()))
-        .collect();
-    let archmap_edges: BTreeSet<(String, String)> = document
-        .map_items
-        .iter()
-        .filter_map(|item| Some((item.target_ref.from.clone()?, item.target_ref.to.clone()?)))
-        .collect();
-    let mut conflicts = Vec::new();
-    for (from, to) in archmap_edges.difference(&static_edges) {
-        conflicts.push(ArchMapConflict {
-            conflict_id: format!(
-                "conflict-missing-static-edge-{}-{}",
-                stable_id(from),
-                stable_id(to)
-            ),
-            category: "missing-static-edge".to_string(),
-            subject_ref: format!("{from}->{to}"),
-            description: "ArchMap relation is not present in supplied Sig0 static edges"
-                .to_string(),
-            source_refs: Vec::new(),
-            non_conclusions: vec![
-                "semantic relation is not resolved by static extraction".to_string(),
-            ],
-        });
-    }
-    for (from, to) in static_edges.difference(&archmap_edges) {
-        conflicts.push(ArchMapConflict {
-            conflict_id: format!(
-                "conflict-unexplained-static-edge-{}-{}",
-                stable_id(from),
-                stable_id(to)
-            ),
-            category: "unexplained-static-edge".to_string(),
-            subject_ref: format!("{from}->{to}"),
-            description: "Sig0 static edge has no ArchMap semantic explanation".to_string(),
-            source_refs: Vec::new(),
-            non_conclusions: vec![
-                "unexplained static edge is a review cue, not a violation proof".to_string(),
-            ],
-        });
-    }
-    conflicts
-}
-
-fn unique_conflicts(conflicts: Vec<ArchMapConflict>) -> Vec<ArchMapConflict> {
-    let mut seen = BTreeSet::new();
-    conflicts
-        .into_iter()
-        .filter(|conflict| {
-            seen.insert((
-                conflict.category.clone(),
-                conflict.subject_ref.clone(),
-                conflict.description.clone(),
-            ))
-        })
-        .collect()
-}
-
-pub fn archmap_lean_preservation_vocabulary() -> Vec<ArchMapLeanPreservationVocabularyEntry> {
-    vec![
-        lean_vocabulary_entry(
-            "archmap-object-preservation",
-            "mappingKind=object or targetRef.kind=air-component",
-            "ObjectPreservation",
-            "selected ArchMap object candidate preserves a bounded Lean object field",
-        ),
-        lean_vocabulary_entry(
-            "archmap-relation-preservation",
-            "mappingKind=relation or targetRef.kind=air-relation",
-            "RelationPreservation",
-            "selected ArchMap relation candidate preserves a bounded Lean relation field",
-        ),
-        lean_vocabulary_entry(
-            "archmap-semantic-diagram-preservation",
-            "mappingKind=semanticDiagram or targetRef.kind=semantic-diagram",
-            "SemanticDiagramPreservation",
-            "selected semantic diagram candidate preserves a bounded diagram field",
-        ),
-        lean_vocabulary_entry(
-            "archmap-semantic-commutation-preservation",
-            "mappingKind=semanticCommutationClaim",
-            "SemanticCommutationPreservation",
-            "selected commutation claim candidate is tracked without proving commutation",
-        ),
-        lean_vocabulary_entry(
-            "archmap-nonfillability-witness-preservation",
-            "mappingKind=nonfillabilityWitness or targetRef.kind=nonfillability-witness",
-            "NonfillabilityWitnessPreservation",
-            "selected non-fillability witness candidate is preserved as review evidence",
-        ),
-        lean_vocabulary_entry(
-            "archmap-law-policy-preservation",
-            "mappingKind=policyBoundary, targetRef.layer=policy, or preserves[] contains Layered Architecture / SRP responsibility",
-            "LawPolicyPreservation",
-            "selected policy boundary candidate is tracked as supplied policy evidence",
-        ),
-        lean_vocabulary_entry(
-            "archmap-contract-observation-preservation",
-            "preserves[] contains contract preservation, contract-test observation, observation equivalence, or event sourcing projection",
-            "SemanticDiagramPreservation",
-            "selected contract or event-projection candidate is tracked as bounded semantic diagram evidence",
-        ),
-        lean_vocabulary_entry(
-            "archmap-semantic-non-commutation-boundary",
-            "preserves[] contains semantic non-commutation, saga compensation, or nonfillability witness",
-            "NonfillabilityWitnessPreservation",
-            "selected non-commutation or compensation candidate is preserved as bounded obstruction evidence",
-        ),
-        lean_vocabulary_entry(
-            "archmap-flatness-precondition-preservation",
-            "targetRef.subjectRef contains flatnessPrecondition or preserves contains flatness precondition boundary",
-            "FlatnessPreconditionPreservation",
-            "selected flatness precondition candidate is tracked without discharging flatness",
-        ),
-        lean_vocabulary_entry(
-            "archmap-runtime-static-disagreement-boundary",
-            "preserves[] contains runtime/static disagreement, framework convention boundary, or dynamic plugin blind spot",
-            "CoverageExactnessBoundary",
-            "review-only coverage boundary remains explicit and is not promoted to a preservation proof",
-        ),
-        lean_vocabulary_entry(
-            "archmap-coverage-boundary",
-            "coverage, missingEvidence, nonConclusions",
-            "CoverageExactnessBoundary",
-            "coverage gaps, exactness limits, missing evidence, and non-conclusions remain explicit",
-        ),
-    ]
-}
-
-pub fn archmap_lean_preservation_checklist(
-    document: &ArchMapDocumentV0,
-) -> Vec<ArchMapLeanPreservationChecklistEntry> {
-    let mut entries: Vec<_> = document
-        .map_items
-        .iter()
-        .map(|item| archmap_item_preservation_checklist_entry(document, item))
-        .collect();
-    entries.push(archmap_coverage_boundary_checklist_entry(document));
-    entries.push(archmap_formal_promotion_guardrail_checklist_entry());
-    entries
-}
-
-fn lean_vocabulary_entry(
-    vocabulary_id: &str,
-    archmap_selector: &str,
-    lean_package_field: &str,
-    preservation_role: &str,
-) -> ArchMapLeanPreservationVocabularyEntry {
-    ArchMapLeanPreservationVocabularyEntry {
-        vocabulary_id: vocabulary_id.to_string(),
-        archmap_selector: archmap_selector.to_string(),
-        lean_package_field: lean_package_field.to_string(),
-        preservation_role: preservation_role.to_string(),
-        report_boundary:
-            "tooling vocabulary records a preservation candidate; it is not a Lean proof witness"
-                .to_string(),
-    }
-}
-
-fn archmap_item_preservation_checklist_entry(
-    document: &ArchMapDocumentV0,
-    item: &ArchMapMapItem,
-) -> ArchMapLeanPreservationChecklistEntry {
-    let lean_package_field = archmap_item_lean_package_field(item);
-    let status = archmap_item_preservation_status(document, item, lean_package_field);
-    let mut blocking_reasons = Vec::new();
-    if !item.missing_evidence.is_empty() {
-        blocking_reasons
-            .push("missing evidence blocks preservation precondition discharge".to_string());
-    }
-    if status == "blockedByUnmeasuredCoverage" {
-        blocking_reasons.push("unmeasured coverage remains a coverage gap".to_string());
-    }
-    if matches!(item.claim_classification.as_str(), "proved" | "formal")
-        && item.theorem_refs.is_empty()
-    {
-        blocking_reasons.push(
-            "formal promotion guardrail blocks theorem claim without theorem refs".to_string(),
-        );
-    }
-    if lean_package_field == "OutOfScopeBoundary" {
-        blocking_reasons
-            .push("mapping kind is outside the ArchMapPreservationPackage vocabulary".to_string());
-    }
-
-    ArchMapLeanPreservationChecklistEntry {
-        checklist_id: format!("archmap-preservation-{}", item.map_item_id),
-        map_item_id: Some(item.map_item_id.clone()),
-        lean_package_field: lean_package_field.to_string(),
-        status: status.to_string(),
-        candidate_sources: vec![
-            format!("mappingKind={}", item.mapping_kind),
-            format!("targetRef.kind={}", item.target_ref.kind),
-        ],
-        blocking_reasons,
-        missing_evidence: item.missing_evidence.clone(),
-        coverage_boundary: archmap_item_coverage_boundary(document, item),
-        non_conclusions: archmap_item_non_conclusions(item),
-    }
-}
-
-fn archmap_coverage_boundary_checklist_entry(
-    document: &ArchMapDocumentV0,
-) -> ArchMapLeanPreservationChecklistEntry {
-    let mut blocking_reasons = Vec::new();
-    if !document.coverage.unmeasured_layers.is_empty() {
-        blocking_reasons.push(format!(
-            "unmeasured layers remain: {}",
-            document.coverage.unmeasured_layers.join(", ")
-        ));
-    }
-    if !document.coverage.unsupported_constructs.is_empty() {
-        blocking_reasons.push(format!(
-            "unsupported constructs remain: {}",
-            document.coverage.unsupported_constructs.join(", ")
-        ));
-    }
-    ArchMapLeanPreservationChecklistEntry {
-        checklist_id: "archmap-preservation-coverage-boundary".to_string(),
-        map_item_id: None,
-        lean_package_field: "CoverageExactnessBoundary".to_string(),
-        status: if blocking_reasons.is_empty() {
-            "candidate"
-        } else {
-            "blockedByUnmeasuredCoverage"
+fn check_semantic_observations(document: &ArchMapDocumentV0) -> ValidationCheck {
+    let mut examples = Vec::new();
+    for observation in &document.semantic_observations {
+        if observation.semantic_family.trim().is_empty()
+            || observation.subject_ref.trim().is_empty()
+            || observation.predicate.trim().is_empty()
+            || observation.evidence_boundary.trim().is_empty()
+        {
+            examples.push(generic_validation_example(
+                &observation.semantic_observation_id,
+                "semantic observation fields",
+                "semantic observation requires family, subject, predicate, and evidence boundary",
+            ));
         }
-        .to_string(),
-        candidate_sources: vec!["coverage".to_string(), "nonConclusions".to_string()],
-        blocking_reasons,
-        missing_evidence: Vec::new(),
-        coverage_boundary: format!(
-            "measured=[{}]; unmeasured=[{}]; assumed=[{}]",
-            document.coverage.measured_layers.join(", "),
-            document.coverage.unmeasured_layers.join(", "),
-            document.coverage.assumed_layers.join(", ")
-        ),
+    }
+    let mut check = validation_check(
+        "archmap-semantic-observation-surface",
+        "Semantic observations stay source-grounded and law-independent",
+        if examples.is_empty() { "pass" } else { "fail" },
+    );
+    check.count = Some(document.semantic_observations.len());
+    check.examples = examples;
+    check
+}
+
+fn check_observation_gaps(document: &ArchMapDocumentV0) -> ValidationCheck {
+    let mut examples = Vec::new();
+    for gap in &document.observation_gaps {
+        if gap.evidence_status.trim().is_empty() || gap.reason.trim().is_empty() {
+            examples.push(generic_validation_example(
+                &gap.gap_id,
+                "observation gap fields",
+                "observation gap requires evidence status and reason",
+            ));
+        }
+    }
+    let mut check = validation_check(
+        "archmap-observation-gap-surface",
+        "Observation gaps explicitly preserve unavailable evidence",
+        if examples.is_empty() { "pass" } else { "fail" },
+    );
+    check.count = Some(document.observation_gaps.len());
+    check.examples = examples;
+    check
+}
+
+fn check_concern_hints(document: &ArchMapDocumentV0) -> ValidationCheck {
+    let mut examples = Vec::new();
+    for hint in &document.concern_hints {
+        let combined = [
+            hint.concern_family.as_str(),
+            hint.analysis_boundary.as_str(),
+            &hint.non_conclusions.join(" "),
+        ]
+        .join(" ")
+        .to_ascii_lowercase();
+        let analysis_boundary = hint.analysis_boundary.to_ascii_lowercase();
+        if analysis_boundary.contains("promoted")
+            || analysis_boundary.contains("candidate")
+            || (combined.contains("obstruction circuit")
+                && !combined.contains("not obstruction")
+                && !combined.contains("not an obstruction"))
+        {
+            examples.push(generic_validation_example(
+                &hint.concern_hint_id,
+                &hint.concern_family,
+                "concernHints are review cues and must not be promoted to obstruction circuits",
+            ));
+        }
+    }
+    let mut check = validation_check(
+        "archmap-concern-hints-are-not-obstruction-circuits",
+        "Concern hints remain review cues until ArchSig applies a LawPolicy",
+        if examples.is_empty() { "pass" } else { "fail" },
+    );
+    check.count = Some(document.concern_hints.len());
+    check.examples = examples;
+    check
+}
+
+fn check_archmap_required_non_conclusions(document: &ArchMapDocumentV0) -> ValidationCheck {
+    let required = [
+        "ArchMap is not a Lean theorem proof",
+        "ArchMap does not construct obstruction circuits",
+        "ArchMap does not prove zero curvature",
+        "ArchMap does not prove source completeness",
+    ];
+    let present = archmap_non_conclusions(document)
+        .into_iter()
+        .map(|value| value.to_ascii_lowercase())
+        .collect::<Vec<_>>();
+    let missing = required
+        .iter()
+        .filter(|required| {
+            let required = required.to_ascii_lowercase();
+            !present.iter().any(|value| value.contains(&required))
+        })
+        .collect::<Vec<_>>();
+    let mut check = validation_check(
+        "archmap-required-non-conclusions",
+        "ArchMap carries non-conclusions for proof, lawfulness, zero, and completeness",
+        if missing.is_empty() { "pass" } else { "fail" },
+    );
+    check.examples = missing
+        .iter()
+        .map(|value| {
+            generic_validation_example("nonConclusions", value, "required boundary missing")
+        })
+        .collect();
+    check.count = Some(check.examples.len());
+    check
+}
+
+fn archmap_atomic_observation_summary(
+    document: &ArchMapDocumentV0,
+) -> ArchMapAtomicObservationSummary {
+    let observed_atom_count = document
+        .atom_observations
+        .iter()
+        .filter(|observation| observation.observation_status == "observed")
+        .count();
+    let observed_molecule_count = document
+        .molecule_observations
+        .iter()
+        .filter(|observation| observation.observation_status == "observed")
+        .count();
+    let promotable_atom_observation_count = document
+        .atom_observations
+        .iter()
+        .filter(|observation| {
+            observation.observation_status == "observed"
+                && !observation.source_refs.is_empty()
+                && !observation.evidence_boundary.trim().is_empty()
+        })
+        .count();
+    let rejected_or_uncertain_observation_count = document
+        .atom_observations
+        .iter()
+        .filter(|observation| {
+            observation.observation_status != "observed" || !observation.uncertainty.is_empty()
+        })
+        .count()
+        + document.observation_gaps.len();
+    let lean_presentation_candidate_count = document
+        .atom_observations
+        .iter()
+        .filter(|observation| observation.atom_family == "existence")
+        .count();
+    let sft_handoff_ref_count = document
+        .source_universe
+        .included_refs
+        .iter()
+        .filter(|source_ref| {
+            source_ref.kind.contains("runtime")
+                || source_ref.kind.contains("test")
+                || source_ref.kind.contains("doc")
+        })
+        .count()
+        + document.observation_gaps.len();
+
+    ArchMapAtomicObservationSummary {
+        atom_observation_count: document.atom_observations.len(),
+        observed_atom_count,
+        promotable_atom_observation_count,
+        rejected_or_uncertain_observation_count,
+        molecule_observation_count: document.molecule_observations.len(),
+        observed_molecule_count,
+        semantic_observation_count: document.semantic_observations.len(),
+        concern_hint_count: document.concern_hints.len(),
+        observation_gap_count: document.observation_gaps.len(),
+        lean_presentation_candidate_count,
+        sft_handoff_ref_count,
+        zero_curvature_reading: if document.observation_gaps.is_empty() {
+            "not computed; no observed gaps in this ArchMap".to_string()
+        } else {
+            "not computed; observation gaps block zero-curvature reflection".to_string()
+        },
+        promotion_boundary:
+            "source-grounded Atom observations may guide Lean presentation, but are not proof"
+                .to_string(),
+        boundary: "summary counts current Atom observation fields only".to_string(),
         non_conclusions: archmap_non_conclusions(document),
     }
 }
 
-fn archmap_formal_promotion_guardrail_checklist_entry() -> ArchMapLeanPreservationChecklistEntry {
-    ArchMapLeanPreservationChecklistEntry {
-        checklist_id: "archmap-preservation-formal-promotion-guardrail".to_string(),
-        map_item_id: None,
-        lean_package_field: "FormalPromotionGuardrail".to_string(),
-        status: "blockedByFormalPromotionGuardrail".to_string(),
-        candidate_sources: vec![
-            "archmap validation pass".to_string(),
-            "AIR projection success".to_string(),
-        ],
-        blocking_reasons: vec![
-            "validation and projection do not discharge ArchMapPreservationPackage fields"
-                .to_string(),
-        ],
-        missing_evidence: vec![
-            "Lean theorem witness not supplied by ArchMap observation artifact".to_string(),
-        ],
-        coverage_boundary:
-            "formal promotion requires explicit Lean theorem refs and discharged preconditions"
-                .to_string(),
-        non_conclusions: vec![
-            "ArchMap validation pass is not a Lean theorem proof".to_string(),
-            "AIR projection success is not a semantic preservation proof".to_string(),
-        ],
-    }
+fn archmap_lean_preservation_vocabulary() -> Vec<ArchMapLeanPreservationVocabularyEntry> {
+    vec![
+        ArchMapLeanPreservationVocabularyEntry {
+            vocabulary_id: "atomObservations".to_string(),
+            archmap_selector: "atomObservations[]".to_string(),
+            lean_package_field: "candidate Atom predicate evidence".to_string(),
+            preservation_role: "source-grounded observation; not theorem evidence".to_string(),
+            report_boundary:
+                "Lean preservation requires separate formalization and proof obligations"
+                    .to_string(),
+        },
+        ArchMapLeanPreservationVocabularyEntry {
+            vocabulary_id: "moleculeObservations".to_string(),
+            archmap_selector: "moleculeObservations[]".to_string(),
+            lean_package_field: "candidate molecule presentation".to_string(),
+            preservation_role: "observed grouping over atom observations".to_string(),
+            report_boundary: "molecule observation is not minimality proof".to_string(),
+        },
+        ArchMapLeanPreservationVocabularyEntry {
+            vocabulary_id: "observationGaps".to_string(),
+            archmap_selector: "observationGaps[]".to_string(),
+            lean_package_field: "coverage boundary".to_string(),
+            preservation_role: "blocks measured-zero and proof promotion".to_string(),
+            report_boundary: "gap is preserved as unavailable evidence".to_string(),
+        },
+    ]
 }
 
-fn archmap_item_lean_package_field(item: &ArchMapMapItem) -> &'static str {
-    let preserves_lower = item
-        .preserves
-        .iter()
-        .map(|preserves| preserves.to_ascii_lowercase())
-        .collect::<Vec<_>>();
-    if item.mapping_kind == "object" || item.target_ref.kind == "air-component" {
-        "ObjectPreservation"
-    } else if item.mapping_kind == "relation" || item.target_ref.kind == "air-relation" {
-        "RelationPreservation"
-    } else if item.mapping_kind == "semanticCommutationClaim" {
-        "SemanticCommutationPreservation"
-    } else if item.mapping_kind == "semanticDiagram" || item.target_ref.kind == "semantic-diagram" {
-        "SemanticDiagramPreservation"
-    } else if item.mapping_kind == "nonfillabilityWitness"
-        || item.target_ref.kind == "nonfillability-witness"
-    {
-        "NonfillabilityWitnessPreservation"
-    } else if item.mapping_kind == "policyBoundary"
-        || item.target_ref.layer.as_deref() == Some("policy")
-        || preserves_lower.iter().any(|preserves| {
-            preserves.contains("layered architecture")
-                || preserves.contains("srp responsibility")
-                || preserves.contains("reason-to-change")
-        })
-    {
-        "LawPolicyPreservation"
-    } else if preserves_lower.iter().any(|preserves| {
-        preserves.contains("contract preservation")
-            || preserves.contains("contract-test observation")
-            || preserves.contains("observation equivalence")
-            || preserves.contains("event sourcing projection")
-    }) {
-        "SemanticDiagramPreservation"
-    } else if preserves_lower.iter().any(|preserves| {
-        preserves.contains("semantic non-commutation")
-            || preserves.contains("saga compensation")
-            || preserves.contains("nonfillability witness")
-            || preserves.contains("obstruction witness")
-    }) {
-        "NonfillabilityWitnessPreservation"
-    } else if preserves_lower.iter().any(|preserves| {
-        preserves.contains("runtime/static disagreement")
-            || preserves.contains("framework convention boundary")
-            || preserves.contains("dynamic plugin blind spot")
-    }) {
-        "CoverageExactnessBoundary"
-    } else if item
-        .target_ref
-        .subject_ref
-        .as_deref()
-        .is_some_and(|subject_ref| subject_ref.contains("flatnessPrecondition"))
-        || preserves_lower
+fn archmap_lean_preservation_checklist(
+    document: &ArchMapDocumentV0,
+) -> Vec<ArchMapLeanPreservationChecklistEntry> {
+    let mut entries = Vec::new();
+    entries.push(ArchMapLeanPreservationChecklistEntry {
+        checklist_id: "atom-observation-source-evidence".to_string(),
+        lean_package_field: "Atom predicate candidate".to_string(),
+        status: if document
+            .atom_observations
             .iter()
-            .any(|preserves| preserves.contains("flatness precondition"))
-    {
-        "FlatnessPreconditionPreservation"
-    } else {
-        "OutOfScopeBoundary"
-    }
-}
-
-fn archmap_item_preservation_status(
-    document: &ArchMapDocumentV0,
-    item: &ArchMapMapItem,
-    lean_package_field: &str,
-) -> &'static str {
-    if lean_package_field == "OutOfScopeBoundary" {
-        "notApplicableOutOfScope"
-    } else if lean_package_field == "CoverageExactnessBoundary" {
-        if item.missing_evidence.is_empty() && !archmap_item_has_unmeasured_coverage(document, item)
+            .all(|observation| !observation.source_refs.is_empty())
         {
-            "candidate"
+            "ready-for-human-review"
         } else {
-            "blockedByUnmeasuredCoverage"
+            "blocked"
         }
-    } else if matches!(item.claim_classification.as_str(), "proved" | "formal")
-        && item.theorem_refs.is_empty()
-    {
-        "blockedByFormalPromotionGuardrail"
-    } else if !item.missing_evidence.is_empty() {
-        "blockedByMissingEvidence"
-    } else if item.claim_classification == "assumed" || !item.required_assumptions.is_empty() {
-        "satisfiedBySuppliedAssumption"
-    } else if archmap_item_has_unmeasured_coverage(document, item) {
-        "blockedByUnmeasuredCoverage"
-    } else {
-        "candidate"
-    }
-}
-
-fn archmap_item_has_unmeasured_coverage(
-    document: &ArchMapDocumentV0,
-    item: &ArchMapMapItem,
-) -> bool {
-    item.measurement_boundary == "unmeasured"
-        || item
-            .target_ref
-            .layer
-            .as_ref()
-            .is_some_and(|layer| document.coverage.unmeasured_layers.contains(layer))
-}
-
-fn archmap_item_coverage_boundary(document: &ArchMapDocumentV0, item: &ArchMapMapItem) -> String {
-    let layer = item.target_ref.layer.as_deref().unwrap_or("unlayered");
-    let layer_state = if document
-        .coverage
-        .measured_layers
-        .iter()
-        .any(|measured| measured == layer)
-    {
-        "measured"
-    } else if document
-        .coverage
-        .assumed_layers
-        .iter()
-        .any(|assumed| assumed == layer)
-    {
-        "assumed"
-    } else if document
-        .coverage
-        .unmeasured_layers
-        .iter()
-        .any(|unmeasured| unmeasured == layer)
-    {
-        "unmeasured"
-    } else {
-        "not listed"
-    };
-    format!(
-        "layer={layer}; layerState={layer_state}; measurementBoundary={}",
-        item.measurement_boundary
-    )
-}
-
-fn archmap_item_non_conclusions(item: &ArchMapMapItem) -> Vec<String> {
-    let mut non_conclusions = item.non_conclusions.clone();
-    non_conclusions.push("ArchMap item is not architecture ground truth".to_string());
-    non_conclusions.push("ArchMap item does not prove semantic preservation".to_string());
-    non_conclusions.push(
-        "ArchMap map item may support atom observation, but is not an atom certificate".to_string(),
-    );
-    if item.claim_classification != "proved" {
-        non_conclusions.push("LLM-authored mapping is not a Lean theorem".to_string());
-    }
-    if is_srp_item(item) {
-        non_conclusions.push("SRP cue is not a deterministic tool violation".to_string());
-        non_conclusions.push(
-            "SRP probableViolation requires review judgment with cited evidence and policy refs"
-                .to_string(),
-        );
-    }
-    non_conclusions.sort();
-    non_conclusions.dedup();
-    non_conclusions
+        .to_string(),
+        candidate_sources: document
+            .atom_observations
+            .iter()
+            .map(|observation| observation.atom_observation_id.clone())
+            .collect(),
+        blocking_reasons: document
+            .atom_observations
+            .iter()
+            .filter(|observation| observation.source_refs.is_empty())
+            .map(|observation| format!("{} has no sourceRefs", observation.atom_observation_id))
+            .collect(),
+        missing_evidence: document
+            .observation_gaps
+            .iter()
+            .map(|gap| gap.gap_id.clone())
+            .collect(),
+        coverage_boundary: "only observed source-backed atoms are candidates".to_string(),
+        non_conclusions: archmap_non_conclusions(document),
+    });
+    entries.push(ArchMapLeanPreservationChecklistEntry {
+        checklist_id: "observation-gap-boundary".to_string(),
+        lean_package_field: "coverage assumption".to_string(),
+        status: if document.observation_gaps.is_empty() {
+            "no-gap-declared"
+        } else {
+            "gap-preserved"
+        }
+        .to_string(),
+        candidate_sources: document
+            .observation_gaps
+            .iter()
+            .map(|gap| gap.gap_id.clone())
+            .collect(),
+        blocking_reasons: document
+            .observation_gaps
+            .iter()
+            .map(|gap| format!("{}: {}", gap.gap_id, gap.reason))
+            .collect(),
+        missing_evidence: document
+            .observation_gaps
+            .iter()
+            .map(|gap| gap.gap_id.clone())
+            .collect(),
+        coverage_boundary: "missing evidence is not measured zero".to_string(),
+        non_conclusions: archmap_non_conclusions(document),
+    });
+    entries
 }
 
 fn archmap_non_conclusions(document: &ArchMapDocumentV0) -> Vec<String> {
-    let mut non_conclusions = document.non_conclusions.clone();
-    non_conclusions.extend(document.homomorphism.non_conclusions.clone());
-    non_conclusions.extend(document.generation_boundary.non_conclusions.clone());
-    non_conclusions.extend(document.provenance.non_conclusions.clone());
-    non_conclusions.extend(required_archmap_non_conclusions());
-    non_conclusions.extend(archmap_atomic_non_conclusions());
-    non_conclusions.push("ArchMap validation does not prove architecture lawfulness".to_string());
-    non_conclusions.push("ArchMap validation does not prove semantic completeness".to_string());
-    non_conclusions.sort();
-    non_conclusions.dedup();
-    non_conclusions
-}
-
-fn archmap_item_map_family(item: &ArchMapMapItem) -> &'static str {
-    let lean_field = archmap_item_lean_package_field(item);
-    match lean_field {
-        "ObjectPreservation" => "object",
-        "RelationPreservation" | "SemanticDiagramPreservation" => "relation",
-        "LawPolicyPreservation" => "law",
-        "NonfillabilityWitnessPreservation" => "obstruction",
-        "FlatnessPreconditionPreservation" | "CoverageExactnessBoundary" => "signatureAxis",
-        _ => "signatureAxis",
+    let mut values = vec![
+        "ArchMap is not a Lean theorem proof".to_string(),
+        "ArchMap does not construct obstruction circuits".to_string(),
+        "ArchMap does not prove zero curvature".to_string(),
+        "ArchMap does not prove source completeness".to_string(),
+    ];
+    values.extend(document.non_conclusions.clone());
+    values.extend(document.provenance.non_conclusions.clone());
+    values.extend(document.provenance.excluded_readings.clone());
+    for observation in &document.atom_observations {
+        values.extend(observation.non_conclusions.clone());
     }
-}
-
-fn archmap_item_homomorphism_status(
-    document: &ArchMapDocumentV0,
-    item: &ArchMapMapItem,
-) -> &'static str {
-    if item.conflict_category.is_some() {
-        "nonHomomorphic"
-    } else if !item.missing_evidence.is_empty()
-        || archmap_item_has_unmeasured_coverage(document, item)
-    {
-        "blocked"
-    } else if item.claim_classification == "assumed" {
-        "assumed"
-    } else {
-        "preserved"
+    for observation in &document.molecule_observations {
+        values.extend(observation.non_conclusions.clone());
     }
-}
-
-fn archmap_source_ref_label(source_ref: &ArchMapSourceRef) -> String {
-    if let Some(artifact_id) = &source_ref.artifact_id {
-        return artifact_id.clone();
+    for observation in &document.semantic_observations {
+        values.extend(observation.non_conclusions.clone());
     }
-    if let Some(path) = &source_ref.path {
-        return path.clone();
+    for gap in &document.observation_gaps {
+        values.extend(gap.non_conclusions.clone());
     }
-    source_ref.kind.clone()
-}
-
-fn archmap_target_ref_label(item: &ArchMapMapItem) -> String {
-    item.target_ref
-        .subject_ref
-        .clone()
-        .or_else(|| item.target_ref.id.clone())
-        .or_else(|| {
-            item.target_ref
-                .from
-                .as_ref()
-                .zip(item.target_ref.to.as_ref())
-                .map(|(from, to)| format!("{from}->{to}"))
-        })
-        .unwrap_or_else(|| item.map_item_id.clone())
-}
-
-fn is_aat_facing_item(item: &ArchMapMapItem) -> bool {
-    let target = item
-        .target_ref
-        .subject_ref
-        .as_deref()
-        .unwrap_or_default()
-        .to_ascii_lowercase();
-    item.preserves
-        .iter()
-        .any(|preserves| preserves.to_ascii_lowercase().contains("aat"))
-        || target.contains("signature")
-        || target.contains("flatness")
-        || item
-            .theorem_refs
-            .iter()
-            .any(|theorem| theorem.contains("ArchMap"))
-}
-
-fn is_sft_facing_item(item: &ArchMapMapItem) -> bool {
-    matches!(
-        item.mapping_kind.as_str(),
-        "operation"
-            | "workflow"
-            | "event"
-            | "state"
-            | "transition"
-            | "testOracle"
-            | "runtimeObservation"
-            | "proposalForceCandidate"
-            | "relation"
-            | "semanticRole"
-            | "policyBoundary"
-            | "nonfillabilityWitness"
-    ) || item.target_ref.layer.as_deref() == Some("runtime")
-        || item.preserves.iter().any(|preserves| {
-            let lower = preserves.to_ascii_lowercase();
-            lower.contains("operation")
-                || lower.contains("workflow")
-                || lower.contains("event")
-                || lower.contains("runtime")
-                || lower.contains("obstruction")
-        })
-}
-
-fn archmap_observation_source_ref_groups<'a>(
-    document: &'a ArchMapDocumentV0,
-) -> Vec<(&'static str, &'a str, &'a [ArchMapSourceRef])> {
-    let mut groups = Vec::new();
-    groups.extend(document.map_items.iter().map(|item| {
-        (
-            "mapItems",
-            item.map_item_id.as_str(),
-            item.source_refs.as_slice(),
-        )
-    }));
-    groups.extend(document.atom_observations.iter().map(|observation| {
-        (
-            "atomObservations",
-            observation.atom_observation_id.as_str(),
-            observation.source_refs.as_slice(),
-        )
-    }));
-    groups.extend(document.molecule_observations.iter().map(|observation| {
-        (
-            "moleculeObservations",
-            observation.molecule_observation_id.as_str(),
-            observation.source_refs.as_slice(),
-        )
-    }));
-    groups.extend(document.semantic_observations.iter().map(|observation| {
-        (
-            "semanticObservations",
-            observation.semantic_observation_id.as_str(),
-            observation.source_refs.as_slice(),
-        )
-    }));
-    groups.extend(document.concern_hints.iter().map(|hint| {
-        (
-            "concernHints",
-            hint.concern_hint_id.as_str(),
-            hint.source_refs.as_slice(),
-        )
-    }));
-    groups.extend(document.observation_gaps.iter().map(|gap| {
-        (
-            "observationGaps",
-            gap.gap_id.as_str(),
-            gap.source_refs.as_slice(),
-        )
-    }));
-    groups
-}
-
-fn source_ref_key(source_ref: &ArchMapSourceRef) -> String {
-    if let Some(artifact_id) = &source_ref.artifact_id {
-        return artifact_id.clone();
+    for hint in &document.concern_hints {
+        values.extend(hint.non_conclusions.clone());
     }
-    format!(
-        "{}:{}:{}:{}:{}",
-        source_ref.kind,
-        source_ref.path.as_deref().unwrap_or(""),
-        source_ref.symbol.as_deref().unwrap_or(""),
-        source_ref
-            .line
-            .map(|line| line.to_string())
-            .unwrap_or_default(),
-        source_ref.section.as_deref().unwrap_or("")
-    )
-}
-
-fn artifact_ref_key(artifact_ref: &crate::ArchMapArtifactRef) -> String {
-    let mut parts = Vec::new();
-    parts.push(format!("artifactId={}", artifact_ref.artifact_id));
-    if let Some(kind) = &artifact_ref.kind {
-        parts.push(format!("kind={kind}"));
-    }
-    if let Some(path) = &artifact_ref.path {
-        parts.push(format!("path={path}"));
-    }
-    if let Some(content_hash) = &artifact_ref.content_hash {
-        parts.push(format!("contentHash={content_hash}"));
-    }
-    parts.join("|")
-}
-
-fn stable_id(value: &str) -> String {
-    value
-        .chars()
-        .map(|character| {
-            if character.is_ascii_alphanumeric() {
-                character.to_ascii_lowercase()
-            } else {
-                '-'
-            }
-        })
+    let mut seen = BTreeSet::new();
+    values
+        .into_iter()
+        .filter(|value| seen.insert(value.clone()))
         .collect()
+}
+
+fn declared_source_ref_ids(document: &ArchMapDocumentV0) -> BTreeSet<&str> {
+    document
+        .source_universe
+        .included_refs
+        .iter()
+        .filter_map(|source_ref| source_ref.artifact_id.as_deref())
+        .collect()
+}
+
+fn observation_source_refs(document: &ArchMapDocumentV0) -> Vec<(String, &[ArchMapSourceRef])> {
+    let mut refs = Vec::new();
+    for observation in &document.atom_observations {
+        refs.push((
+            format!(
+                "atomObservations[{}].sourceRefs",
+                observation.atom_observation_id
+            ),
+            observation.source_refs.as_slice(),
+        ));
+    }
+    for observation in &document.molecule_observations {
+        refs.push((
+            format!(
+                "moleculeObservations[{}].sourceRefs",
+                observation.molecule_observation_id
+            ),
+            observation.source_refs.as_slice(),
+        ));
+    }
+    for observation in &document.semantic_observations {
+        refs.push((
+            format!(
+                "semanticObservations[{}].sourceRefs",
+                observation.semantic_observation_id
+            ),
+            observation.source_refs.as_slice(),
+        ));
+    }
+    for gap in &document.observation_gaps {
+        refs.push((
+            format!("observationGaps[{}].sourceRefs", gap.gap_id),
+            gap.source_refs.as_slice(),
+        ));
+    }
+    for hint in &document.concern_hints {
+        refs.push((
+            format!("concernHints[{}].sourceRefs", hint.concern_hint_id),
+            hint.source_refs.as_slice(),
+        ));
+    }
+    refs
+}
+
+fn atom_ids(document: &ArchMapDocumentV0) -> BTreeSet<&str> {
+    document
+        .atom_observations
+        .iter()
+        .map(|observation| observation.atom_observation_id.as_str())
+        .collect()
+}
+
+fn molecule_ids(document: &ArchMapDocumentV0) -> BTreeSet<&str> {
+    document
+        .molecule_observations
+        .iter()
+        .map(|observation| observation.molecule_observation_id.as_str())
+        .collect()
+}
+
+fn is_promoted_truth_status(status: &str) -> bool {
+    matches!(
+        status,
+        "proved" | "certified" | "theorem" | "lawful" | "zeroCurvature"
+    )
 }

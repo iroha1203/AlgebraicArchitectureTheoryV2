@@ -423,6 +423,6 @@
     "concernHints are review cues, not obstruction circuits",
     "observation gaps are not measured zero",
     "Atom observations are source-grounded observations, not universal atom truth",
-    "archmap-atom-observation-suite-v0 is an Atom observation regression, not legacy mapItems evidence"
+    "archmap-atom-observation-suite-v0 is an Atom observation regression over current root fields"
   ]
 }
