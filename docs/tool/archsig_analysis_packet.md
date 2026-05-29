@@ -68,9 +68,10 @@ The implemented schema records:
 Packet validation checks identity, ArchMap / interpretation profile references,
 AAT concept coverage, bounded judgement statuses, analytic axes, workflow risk
 readings, spectral analysis readings, spectral mode readings, design principle
-readings, spectral drilldown readings, transfer bridge readings, law-relative
-obstruction links, signature / flatness references, repair candidate guardrails,
-LLM interpretation notes, evidence boundary, and required non-conclusions.
+readings, spectral drilldown readings, transfer bridge readings and bridge-edge
+source refs, law-relative obstruction links, signature / flatness references,
+repair candidate guardrails, LLM interpretation notes, evidence boundary, and
+required non-conclusions.
 Each obstruction circuit, signature axis reading, and repair operation candidate
 must carry its own `missingEvidence` and `excludedReadings`. Packet-level
 `excludedReadings` does not stand in for child-record evidence boundaries.
@@ -130,7 +131,11 @@ The builder:
   neutral repair axis deltas.
 - transfer bridge readings summarize repair-operation-by-transferred-axis
   matrices, indirect bridge atom families between architecture hubs, and
-  evolution risk rankings for repairs and boundary preparation.
+  evolution risk rankings for repairs and boundary preparation. Each bridge
+  edge records shared atom families, exact shared atom refs when present,
+  family-supporting atom refs, source refs, explicit-contract / implicit-
+  dependency reading, and a recommended cut kind: interface, policy,
+  transaction boundary, or anti-corruption layer.
 - analytic representations include weighted adjacency, walk count, reachable
   cone size, nilpotence boundary, selected subgraph spectrum, propagation depth,
   spectral radius, curvature valuation, state algebra boundary, and

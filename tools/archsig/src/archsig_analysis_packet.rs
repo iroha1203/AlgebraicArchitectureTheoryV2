@@ -11,21 +11,22 @@ use crate::{
     ArchSigAnalyticRepresentationV0, ArchSigArchitectureObjectProjectionV0,
     ArchSigArchitectureStateV0, ArchSigAtomConfigurationSummaryV0,
     ArchSigBoundaryPreparationRankV0, ArchSigBoundedJudgementV0, ArchSigBridgeAtomFamilyReadingV0,
-    ArchSigChangeImpactReadingV0, ArchSigCouplingCohesionReadingV0, ArchSigDesignPressureReadingV0,
-    ArchSigDesignPrincipleReadingV0, ArchSigDominantAtomFamilyCompositionV0,
-    ArchSigEvolutionRiskRankingV0, ArchSigFlatnessReadingV0, ArchSigHighOverlapMoleculePairV0,
-    ArchSigInvariantFamilyReadingV0, ArchSigLawUniverseReadingV0, ArchSigLayerSplitV0,
-    ArchSigLlmInterpretationPacketV0, ArchSigMoleculeReadingV0, ArchSigObstructionCircuitV0,
-    ArchSigOperationDeltaReadingV0, ArchSigPathHomotopyDiagramReadingV0,
-    ArchSigRepairAxisDeltaReadingV0, ArchSigRepairOperationCandidateV0,
-    ArchSigRepairTransferRiskRankV0, ArchSigSignatureAxisReadingV0,
-    ArchSigSpectralAnalysisReadingV0, ArchSigSpectralDominantComponentV0,
-    ArchSigSpectralDrilldownReadingV0, ArchSigSpectralMatrixShapeV0,
-    ArchSigSpectralModeComponentV0, ArchSigSpectralModeReadingV0, ArchSigSpectralValueV0,
-    ArchSigTransferBridgeReadingV0, ArchSigTransferMatrixEntryV0, ArchSigWorkflowAtomFamilyCountV0,
-    ArchSigWorkflowRiskAxisReadingV0, ArchSigWorkflowRiskReadingV0, LAW_POLICY_SCHEMA_VERSION,
-    LawPolicyDocumentV0, LawPolicyObstructionCircuitDefinitionV0,
-    LawPolicySignatureAxisDefinitionV0, LawPolicyWitnessRuleV0, ValidationCheck, ValidationExample,
+    ArchSigBridgeEdgeBreakdownV0, ArchSigChangeImpactReadingV0, ArchSigCouplingCohesionReadingV0,
+    ArchSigDesignPressureReadingV0, ArchSigDesignPrincipleReadingV0,
+    ArchSigDominantAtomFamilyCompositionV0, ArchSigEvolutionRiskRankingV0,
+    ArchSigFlatnessReadingV0, ArchSigHighOverlapMoleculePairV0, ArchSigInvariantFamilyReadingV0,
+    ArchSigLawUniverseReadingV0, ArchSigLayerSplitV0, ArchSigLlmInterpretationPacketV0,
+    ArchSigMoleculeReadingV0, ArchSigObstructionCircuitV0, ArchSigOperationDeltaReadingV0,
+    ArchSigPathHomotopyDiagramReadingV0, ArchSigRepairAxisDeltaReadingV0,
+    ArchSigRepairOperationCandidateV0, ArchSigRepairTransferRiskRankV0,
+    ArchSigSignatureAxisReadingV0, ArchSigSpectralAnalysisReadingV0,
+    ArchSigSpectralDominantComponentV0, ArchSigSpectralDrilldownReadingV0,
+    ArchSigSpectralMatrixShapeV0, ArchSigSpectralModeComponentV0, ArchSigSpectralModeReadingV0,
+    ArchSigSpectralValueV0, ArchSigTransferBridgeReadingV0, ArchSigTransferMatrixEntryV0,
+    ArchSigWorkflowAtomFamilyCountV0, ArchSigWorkflowRiskAxisReadingV0,
+    ArchSigWorkflowRiskReadingV0, LAW_POLICY_SCHEMA_VERSION, LawPolicyDocumentV0,
+    LawPolicyObstructionCircuitDefinitionV0, LawPolicySignatureAxisDefinitionV0,
+    LawPolicyWitnessRuleV0, ValidationCheck, ValidationExample,
 };
 
 const REQUIRED_NON_CONCLUSIONS: [&str; 6] = [
@@ -2657,6 +2658,7 @@ fn build_transfer_bridge_readings(
     let bridge_atom_families = drilldown
         .map(|reading| {
             build_bridge_atom_family_readings(
+                archmap,
                 spectral_mode_readings,
                 workflow_risk_readings,
                 &reading.high_overlap_molecule_pairs,
@@ -2735,6 +2737,7 @@ fn build_transfer_matrix_entries(
 }
 
 fn build_bridge_atom_family_readings(
+    archmap: &ArchMapDocumentV0,
     spectral_mode_readings: &[ArchSigSpectralModeReadingV0],
     workflow_risk_readings: &[ArchSigWorkflowRiskReadingV0],
     high_overlap_pairs: &[ArchSigHighOverlapMoleculePairV0],
@@ -2770,6 +2773,7 @@ fn build_bridge_atom_family_readings(
             bridge_atom_families: Vec::new(),
             bridge_score: 0,
             path_pair_refs: Vec::new(),
+            edge_breakdowns: Vec::new(),
             shared_axis_refs: Vec::new(),
             review_risk: "nonConclusion".to_string(),
             recommended_boundary_preparation:
@@ -2791,6 +2795,7 @@ fn build_bridge_atom_family_readings(
         })
         .collect::<BTreeMap<_, _>>();
     let mut path_pair_refs = Vec::new();
+    let mut edge_breakdowns = Vec::new();
     let mut bridge_atom_families = BTreeSet::new();
     let mut bridge_score = 0_i64;
     for edge in path.windows(2) {
@@ -2798,6 +2803,9 @@ fn build_bridge_atom_family_readings(
             path_pair_refs.push(pair.pair_id.clone());
             bridge_score += pair.overlap_score;
             bridge_atom_families.extend(pair.shared_atom_families.iter().cloned());
+            edge_breakdowns.push(build_bridge_edge_breakdown(
+                archmap, &edge[0], &edge[1], pair,
+            ));
         }
     }
     let shared_axis_refs = shared_workflow_axes(&source_hub, &target_hub, workflow_risk_readings);
@@ -2827,6 +2835,7 @@ fn build_bridge_atom_family_readings(
         bridge_atom_families: bridge_atom_families.into_iter().collect(),
         bridge_score,
         path_pair_refs,
+        edge_breakdowns,
         shared_axis_refs,
         review_risk: review_risk.to_string(),
         recommended_boundary_preparation: format!(
@@ -2837,6 +2846,185 @@ fn build_bridge_atom_family_readings(
                 .to_string(),
         non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
     }]
+}
+
+fn build_bridge_edge_breakdown(
+    archmap: &ArchMapDocumentV0,
+    source_molecule_ref: &str,
+    target_molecule_ref: &str,
+    pair: &ArchSigHighOverlapMoleculePairV0,
+) -> ArchSigBridgeEdgeBreakdownV0 {
+    let atom_by_id = archmap
+        .atom_observations
+        .iter()
+        .map(|atom| (atom.atom_observation_id.as_str(), atom))
+        .collect::<BTreeMap<_, _>>();
+    let molecule_atom_refs = archmap
+        .molecule_observations
+        .iter()
+        .map(|molecule| {
+            (
+                molecule.molecule_observation_id.as_str(),
+                molecule.atom_observation_refs.as_slice(),
+            )
+        })
+        .collect::<BTreeMap<_, _>>();
+    let shared_family_set = pair
+        .shared_atom_families
+        .iter()
+        .map(|family| family.as_str())
+        .collect::<BTreeSet<_>>();
+    let exact_shared_set = pair
+        .shared_atom_refs
+        .iter()
+        .map(|atom_ref| atom_ref.as_str())
+        .collect::<BTreeSet<_>>();
+    let mut family_supporting_atom_refs = BTreeSet::new();
+    for molecule_ref in [source_molecule_ref, target_molecule_ref] {
+        for atom_ref in molecule_atom_refs
+            .get(molecule_ref)
+            .copied()
+            .unwrap_or_default()
+        {
+            let Some(atom) = atom_by_id.get(atom_ref.as_str()) else {
+                continue;
+            };
+            if shared_family_set.contains(atom.atom_family.as_str())
+                || exact_shared_set.contains(atom.atom_observation_id.as_str())
+            {
+                family_supporting_atom_refs.insert(atom.atom_observation_id.clone());
+            }
+        }
+    }
+    let mut source_refs = BTreeSet::new();
+    for atom_ref in family_supporting_atom_refs
+        .iter()
+        .chain(pair.shared_atom_refs.iter())
+    {
+        if let Some(atom) = atom_by_id.get(atom_ref.as_str()) {
+            source_refs.extend(atom.source_refs.iter().map(source_ref_label));
+        }
+    }
+    let family_supporting_atom_refs = family_supporting_atom_refs.into_iter().collect::<Vec<_>>();
+    let source_refs = source_refs.into_iter().collect::<Vec<_>>();
+    let dependency_kind = bridge_edge_dependency_kind(pair, &atom_by_id).to_string();
+    let recommended_cut_kind =
+        bridge_edge_cut_kind(source_molecule_ref, target_molecule_ref, pair).to_string();
+    let dependency_reading = format!(
+        "{} -> {} is read as {} through shared atom families {:?}",
+        source_molecule_ref, target_molecule_ref, dependency_kind, pair.shared_atom_families
+    );
+    let cut_rationale = bridge_edge_cut_rationale(
+        &recommended_cut_kind,
+        source_molecule_ref,
+        target_molecule_ref,
+    );
+
+    ArchSigBridgeEdgeBreakdownV0 {
+        edge_id: format!(
+            "bridge-edge:{}:{}",
+            stable_id(source_molecule_ref),
+            stable_id(target_molecule_ref)
+        ),
+        source_molecule_ref: source_molecule_ref.to_string(),
+        target_molecule_ref: target_molecule_ref.to_string(),
+        pair_ref: pair.pair_id.clone(),
+        overlap_score: pair.overlap_score,
+        shared_atom_families: pair.shared_atom_families.clone(),
+        shared_atom_refs: pair.shared_atom_refs.clone(),
+        family_supporting_atom_refs,
+        source_refs,
+        dependency_kind,
+        dependency_reading,
+        recommended_cut_kind,
+        cut_rationale,
+        evidence_boundary:
+            "edge source refs are derived from ArchMap atom observations in the two bridge molecules; classification is a review reading, not proof of runtime dependency"
+                .to_string(),
+        non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
+    }
+}
+
+fn bridge_edge_dependency_kind(
+    pair: &ArchSigHighOverlapMoleculePairV0,
+    atom_by_id: &BTreeMap<&str, &crate::ArchMapAtomObservationV0>,
+) -> &'static str {
+    let exact_contract = pair.shared_atom_refs.iter().any(|atom_ref| {
+        atom_by_id
+            .get(atom_ref.as_str())
+            .is_some_and(|atom| atom.atom_family == "contractSpecification")
+    });
+    let has_contract_family = pair
+        .shared_atom_families
+        .iter()
+        .any(|family| family == "contractSpecification");
+    if exact_contract {
+        "explicitContract"
+    } else if has_contract_family || !pair.shared_atom_refs.is_empty() {
+        "mixedBoundary"
+    } else {
+        "implicitDependency"
+    }
+}
+
+fn bridge_edge_cut_kind(
+    source_molecule_ref: &str,
+    target_molecule_ref: &str,
+    pair: &ArchSigHighOverlapMoleculePairV0,
+) -> &'static str {
+    let joined = format!(
+        "{} {} {}",
+        source_molecule_ref,
+        target_molecule_ref,
+        pair.shared_atom_families.join(" ")
+    )
+    .to_ascii_lowercase();
+    if joined.contains("tenant")
+        || joined.contains("auth")
+        || joined.contains("permission")
+        || joined.contains("authority")
+        || joined.contains("admin")
+        || joined.contains("http")
+    {
+        "policy"
+    } else if joined.contains("llm")
+        || joined.contains("external")
+        || joined.contains("salesforce")
+        || joined.contains("integration")
+        || joined.contains("provider")
+        || joined.contains("trust")
+    {
+        "antiCorruptionLayer"
+    } else if joined.contains("repository") || joined.contains("transaction") {
+        "transactionBoundary"
+    } else {
+        "interface"
+    }
+}
+
+fn bridge_edge_cut_rationale(
+    recommended_cut_kind: &str,
+    source_molecule_ref: &str,
+    target_molecule_ref: &str,
+) -> String {
+    match recommended_cut_kind {
+        "policy" => format!(
+            "separate tenant/authority decisions from {} -> {} data and workflow access",
+            source_molecule_ref, target_molecule_ref
+        ),
+        "transactionBoundary" => format!(
+            "make state commit ownership explicit before crossing {} -> {}",
+            source_molecule_ref, target_molecule_ref
+        ),
+        "antiCorruptionLayer" => format!(
+            "translate provider/LLM/external effects before they become domain facts across {} -> {}",
+            source_molecule_ref, target_molecule_ref
+        ),
+        _ => format!(
+            "introduce an explicit interface contract before sharing capabilities across {} -> {}",
+            source_molecule_ref, target_molecule_ref
+        ),
+    }
 }
 
 fn dominant_mode_component(
@@ -3483,6 +3671,25 @@ fn build_llm_interpretation_packet(
                         .len(),
                     reading.status
                 )
+            })
+            .collect(),
+        transfer_bridge_edge_summary: transfer_bridge_readings
+            .iter()
+            .flat_map(|reading| {
+                reading.bridge_atom_families.iter().flat_map(|bridge| {
+                    bridge.edge_breakdowns.iter().map(|edge| {
+                        format!(
+                            "{} {} -> {} pair={} kind={} cut={} sourceRefs={}",
+                            edge.edge_id,
+                            edge.source_molecule_ref,
+                            edge.target_molecule_ref,
+                            edge.pair_ref,
+                            edge.dependency_kind,
+                            edge.recommended_cut_kind,
+                            edge.source_refs.len()
+                        )
+                    })
+                })
             })
             .collect(),
         repair_operation_summary: repair_candidates
@@ -4452,8 +4659,26 @@ fn check_transfer_bridge_surface(packet: &ArchSigAnalysisPacketV0) -> Validation
         .molecule_readings
         .iter()
         .map(|reading| reading.molecule_observation_ref.as_str()));
+    let pair_ids = packet
+        .spectral_drilldown_readings
+        .iter()
+        .flat_map(|reading| {
+            reading
+                .high_overlap_molecule_pairs
+                .iter()
+                .map(|pair| pair.pair_id.as_str())
+        })
+        .collect::<BTreeSet<_>>();
     let allowed_statuses =
         BTreeSet::from(["actionable", "needsReview", "blocked", "nonConclusion"]);
+    let allowed_dependency_kinds =
+        BTreeSet::from(["explicitContract", "implicitDependency", "mixedBoundary"]);
+    let allowed_cut_kinds = BTreeSet::from([
+        "interface",
+        "policy",
+        "transactionBoundary",
+        "antiCorruptionLayer",
+    ]);
     let mut examples = Vec::new();
     if packet.transfer_bridge_readings.is_empty() {
         examples.push(generic_validation_example(
@@ -4546,6 +4771,91 @@ fn check_transfer_bridge_surface(packet: &ArchSigAnalysisPacketV0) -> Validation
                     &bridge.bridge_score.to_string(),
                     "bridge score must be non-negative",
                 ));
+            }
+            if !bridge.path_pair_refs.is_empty() && bridge.edge_breakdowns.is_empty() {
+                examples.push(generic_validation_example(
+                    &reading.transfer_bridge_id,
+                    &bridge.bridge_id,
+                    "bridge atom family reading with path pairs must expose edge breakdowns",
+                ));
+            }
+            for edge in &bridge.edge_breakdowns {
+                if !molecule_ids.contains(edge.source_molecule_ref.as_str())
+                    || !molecule_ids.contains(edge.target_molecule_ref.as_str())
+                {
+                    examples.push(generic_validation_example(
+                        &reading.transfer_bridge_id,
+                        &edge.edge_id,
+                        "bridge edge breakdown must reference known source and target molecules",
+                    ));
+                }
+                if !pair_ids.contains(edge.pair_ref.as_str()) {
+                    examples.push(generic_validation_example(
+                        &reading.transfer_bridge_id,
+                        &edge.pair_ref,
+                        "bridge edge breakdown must reference a high-overlap molecule pair",
+                    ));
+                }
+                if edge.overlap_score <= 0 {
+                    examples.push(generic_validation_example(
+                        &reading.transfer_bridge_id,
+                        &edge.overlap_score.to_string(),
+                        "bridge edge breakdown must carry positive overlap score",
+                    ));
+                }
+                if edge.shared_atom_families.is_empty() {
+                    examples.push(generic_validation_example(
+                        &reading.transfer_bridge_id,
+                        &edge.edge_id,
+                        "bridge edge breakdown must carry shared atom families",
+                    ));
+                }
+                if edge.family_supporting_atom_refs.is_empty() {
+                    examples.push(generic_validation_example(
+                        &reading.transfer_bridge_id,
+                        &edge.edge_id,
+                        "bridge edge breakdown must carry family-supporting atom refs",
+                    ));
+                }
+                if edge.source_refs.is_empty() {
+                    examples.push(generic_validation_example(
+                        &reading.transfer_bridge_id,
+                        &edge.edge_id,
+                        "bridge edge breakdown must carry source refs for review",
+                    ));
+                }
+                if !allowed_dependency_kinds.contains(edge.dependency_kind.as_str()) {
+                    examples.push(generic_validation_example(
+                        &reading.transfer_bridge_id,
+                        &edge.dependency_kind,
+                        "bridge edge dependency kind must be explicitContract, implicitDependency, or mixedBoundary",
+                    ));
+                }
+                if !allowed_cut_kinds.contains(edge.recommended_cut_kind.as_str()) {
+                    examples.push(generic_validation_example(
+                        &reading.transfer_bridge_id,
+                        &edge.recommended_cut_kind,
+                        "bridge edge recommended cut kind must be interface, policy, transactionBoundary, or antiCorruptionLayer",
+                    ));
+                }
+                push_blank(
+                    &mut examples,
+                    &format!(
+                        "{} bridgeEdge.dependencyReading",
+                        reading.transfer_bridge_id
+                    ),
+                    &edge.dependency_reading,
+                );
+                push_blank(
+                    &mut examples,
+                    &format!("{} bridgeEdge.cutRationale", reading.transfer_bridge_id),
+                    &edge.cut_rationale,
+                );
+                push_blank(
+                    &mut examples,
+                    &format!("{} bridgeEdge.evidenceBoundary", reading.transfer_bridge_id),
+                    &edge.evidence_boundary,
+                );
             }
             push_blank(
                 &mut examples,
