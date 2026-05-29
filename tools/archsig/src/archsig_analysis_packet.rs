@@ -9,21 +9,23 @@ use crate::{
     ArchSigAnalysisPacketV0, ArchSigAnalysisPacketValidationInputV0,
     ArchSigAnalysisPacketValidationReportV0, ArchSigAnalysisPacketValidationSummaryV0,
     ArchSigAnalyticRepresentationV0, ArchSigArchitectureObjectProjectionV0,
-    ArchSigArchitectureStateV0, ArchSigAtomConfigurationSummaryV0, ArchSigBoundedJudgementV0,
+    ArchSigArchitectureStateV0, ArchSigAtomConfigurationSummaryV0,
+    ArchSigBoundaryPreparationRankV0, ArchSigBoundedJudgementV0, ArchSigBridgeAtomFamilyReadingV0,
     ArchSigChangeImpactReadingV0, ArchSigCouplingCohesionReadingV0, ArchSigDesignPressureReadingV0,
     ArchSigDesignPrincipleReadingV0, ArchSigDominantAtomFamilyCompositionV0,
-    ArchSigFlatnessReadingV0, ArchSigHighOverlapMoleculePairV0, ArchSigInvariantFamilyReadingV0,
-    ArchSigLawUniverseReadingV0, ArchSigLayerSplitV0, ArchSigLlmInterpretationPacketV0,
-    ArchSigMoleculeReadingV0, ArchSigObstructionCircuitV0, ArchSigOperationDeltaReadingV0,
-    ArchSigPathHomotopyDiagramReadingV0, ArchSigRepairAxisDeltaReadingV0,
-    ArchSigRepairOperationCandidateV0, ArchSigSignatureAxisReadingV0,
+    ArchSigEvolutionRiskRankingV0, ArchSigFlatnessReadingV0, ArchSigHighOverlapMoleculePairV0,
+    ArchSigInvariantFamilyReadingV0, ArchSigLawUniverseReadingV0, ArchSigLayerSplitV0,
+    ArchSigLlmInterpretationPacketV0, ArchSigMoleculeReadingV0, ArchSigObstructionCircuitV0,
+    ArchSigOperationDeltaReadingV0, ArchSigPathHomotopyDiagramReadingV0,
+    ArchSigRepairAxisDeltaReadingV0, ArchSigRepairOperationCandidateV0,
+    ArchSigRepairTransferRiskRankV0, ArchSigSignatureAxisReadingV0,
     ArchSigSpectralAnalysisReadingV0, ArchSigSpectralDominantComponentV0,
     ArchSigSpectralDrilldownReadingV0, ArchSigSpectralMatrixShapeV0,
     ArchSigSpectralModeComponentV0, ArchSigSpectralModeReadingV0, ArchSigSpectralValueV0,
-    ArchSigWorkflowAtomFamilyCountV0, ArchSigWorkflowRiskAxisReadingV0,
-    ArchSigWorkflowRiskReadingV0, LAW_POLICY_SCHEMA_VERSION, LawPolicyDocumentV0,
-    LawPolicyObstructionCircuitDefinitionV0, LawPolicySignatureAxisDefinitionV0,
-    LawPolicyWitnessRuleV0, ValidationCheck, ValidationExample,
+    ArchSigTransferBridgeReadingV0, ArchSigTransferMatrixEntryV0, ArchSigWorkflowAtomFamilyCountV0,
+    ArchSigWorkflowRiskAxisReadingV0, ArchSigWorkflowRiskReadingV0, LAW_POLICY_SCHEMA_VERSION,
+    LawPolicyDocumentV0, LawPolicyObstructionCircuitDefinitionV0,
+    LawPolicySignatureAxisDefinitionV0, LawPolicyWitnessRuleV0, ValidationCheck, ValidationExample,
 };
 
 const REQUIRED_NON_CONCLUSIONS: [&str; 6] = [
@@ -101,6 +103,12 @@ pub fn build_archsig_analysis_packet(
         &signature_axes,
         &operation_deltas,
     );
+    let transfer_bridge_readings = build_transfer_bridge_readings(
+        archmap,
+        &spectral_mode_readings,
+        &spectral_drilldown_readings,
+        &workflow_risk_readings,
+    );
     let path_homotopy_diagram_readings =
         build_path_homotopy_diagram_readings(archmap, &molecule_readings, &obstruction_circuits);
     let bounded_judgements = build_bounded_judgements(
@@ -135,6 +143,7 @@ pub fn build_archsig_analysis_packet(
         &spectral_analysis_readings,
         &spectral_mode_readings,
         &spectral_drilldown_readings,
+        &transfer_bridge_readings,
         &repair_operation_candidates,
         &bounded_judgements,
     );
@@ -176,6 +185,7 @@ pub fn build_archsig_analysis_packet(
         spectral_analysis_readings,
         spectral_mode_readings,
         spectral_drilldown_readings,
+        transfer_bridge_readings,
         design_principle_readings,
         flatness_reading,
         static_runtime_semantic_layer_split: build_layer_split(archmap),
@@ -2634,6 +2644,375 @@ fn repair_axis_delta_reading_text(
     }
 }
 
+fn build_transfer_bridge_readings(
+    archmap: &ArchMapDocumentV0,
+    spectral_mode_readings: &[ArchSigSpectralModeReadingV0],
+    spectral_drilldown_readings: &[ArchSigSpectralDrilldownReadingV0],
+    workflow_risk_readings: &[ArchSigWorkflowRiskReadingV0],
+) -> Vec<ArchSigTransferBridgeReadingV0> {
+    let drilldown = spectral_drilldown_readings.first();
+    let transfer_matrix_entries = drilldown
+        .map(|reading| build_transfer_matrix_entries(&reading.repair_axis_delta_readings))
+        .unwrap_or_default();
+    let bridge_atom_families = drilldown
+        .map(|reading| {
+            build_bridge_atom_family_readings(
+                spectral_mode_readings,
+                workflow_risk_readings,
+                &reading.high_overlap_molecule_pairs,
+            )
+        })
+        .unwrap_or_default();
+    let evolution_risk_ranking = drilldown
+        .map(|reading| {
+            build_evolution_risk_ranking(
+                &reading.repair_axis_delta_readings,
+                &reading.high_overlap_molecule_pairs,
+            )
+        })
+        .unwrap_or_else(|| ArchSigEvolutionRiskRankingV0 {
+            repair_transfer_risk_ranking: Vec::new(),
+            boundary_preparation_ranking: Vec::new(),
+            reading: "no spectral drilldown evidence is available for evolution risk ranking"
+                .to_string(),
+            non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
+        });
+    let has_bridge_evidence = bridge_atom_families
+        .iter()
+        .any(|bridge| bridge.bridge_score > 0 || !bridge.intermediate_molecule_refs.is_empty());
+    let status = if transfer_matrix_entries.is_empty() && !has_bridge_evidence {
+        "nonConclusion"
+    } else if !transfer_matrix_entries.is_empty()
+        || bridge_atom_families
+            .iter()
+            .any(|bridge| bridge.review_risk == "high")
+    {
+        "needsReview"
+    } else {
+        "actionable"
+    };
+
+    vec![ArchSigTransferBridgeReadingV0 {
+        transfer_bridge_id: format!("transfer-bridge:{}", stable_id(&archmap.map_id)),
+        status: status.to_string(),
+        transfer_matrix_entries,
+        bridge_atom_families,
+        evolution_risk_ranking,
+        reading:
+            "transfer bridge reading connects repair transfer axes, bridge atom families, and evolution risk ranking"
+                .to_string(),
+        evidence_boundary:
+            "transfer bridge is derived from ArchMap atom/molecule overlap and ArchSig repair delta summaries; it is not a repair correctness theorem"
+                .to_string(),
+        recommended_next_action:
+            "review bridge atom families and top transfer-risk repairs before applying local architecture changes"
+                .to_string(),
+        non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
+    }]
+}
+
+fn build_transfer_matrix_entries(
+    repair_axis_delta_readings: &[ArchSigRepairAxisDeltaReadingV0],
+) -> Vec<ArchSigTransferMatrixEntryV0> {
+    repair_axis_delta_readings
+        .iter()
+        .flat_map(|delta| {
+            delta
+                .negative_delta_axes
+                .iter()
+                .map(|axis_ref| ArchSigTransferMatrixEntryV0 {
+                    operation_delta_ref: delta.operation_delta_ref.clone(),
+                    transferred_axis_ref: axis_ref.clone(),
+                    transfer_weight: 1,
+                    transfer_kind: "negativeAxisTransfer".to_string(),
+                    reading: format!(
+                        "{} may transfer complexity into {}",
+                        delta.operation_delta_ref, axis_ref
+                    ),
+                })
+        })
+        .collect()
+}
+
+fn build_bridge_atom_family_readings(
+    spectral_mode_readings: &[ArchSigSpectralModeReadingV0],
+    workflow_risk_readings: &[ArchSigWorkflowRiskReadingV0],
+    high_overlap_pairs: &[ArchSigHighOverlapMoleculePairV0],
+) -> Vec<ArchSigBridgeAtomFamilyReadingV0> {
+    let source_hub = dominant_mode_component(
+        spectral_mode_readings,
+        "moleculeAtomOverlapCouplingMatrix",
+        "molecule",
+    );
+    let target_hub = dominant_mode_component(
+        spectral_mode_readings,
+        "workflowRiskAxisPressureMatrix",
+        "workflow",
+    )
+    .or_else(|| {
+        workflow_risk_readings
+            .first()
+            .map(|reading| reading.molecule_observation_ref.clone())
+    });
+    let (Some(source_hub), Some(target_hub)) = (source_hub, target_hub) else {
+        return Vec::new();
+    };
+    let Some(path) = bridge_path(&source_hub, &target_hub, high_overlap_pairs) else {
+        return vec![ArchSigBridgeAtomFamilyReadingV0 {
+            bridge_id: format!(
+                "bridge:{}:{}",
+                stable_id(&source_hub),
+                stable_id(&target_hub)
+            ),
+            source_hub_molecule_ref: source_hub,
+            target_hub_molecule_ref: target_hub,
+            intermediate_molecule_refs: Vec::new(),
+            bridge_atom_families: Vec::new(),
+            bridge_score: 0,
+            path_pair_refs: Vec::new(),
+            shared_axis_refs: Vec::new(),
+            review_risk: "nonConclusion".to_string(),
+            recommended_boundary_preparation:
+                "no observed overlap path connects the selected hubs under current ArchMap evidence"
+                    .to_string(),
+            evidence_boundary:
+                "absence of a bridge path is not proof of architectural independence".to_string(),
+            non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
+        }];
+    };
+
+    let pair_by_endpoints = high_overlap_pairs
+        .iter()
+        .map(|pair| {
+            (
+                ordered_pair_key(&pair.left_molecule_ref, &pair.right_molecule_ref),
+                pair,
+            )
+        })
+        .collect::<BTreeMap<_, _>>();
+    let mut path_pair_refs = Vec::new();
+    let mut bridge_atom_families = BTreeSet::new();
+    let mut bridge_score = 0_i64;
+    for edge in path.windows(2) {
+        if let Some(pair) = pair_by_endpoints.get(&ordered_pair_key(&edge[0], &edge[1])) {
+            path_pair_refs.push(pair.pair_id.clone());
+            bridge_score += pair.overlap_score;
+            bridge_atom_families.extend(pair.shared_atom_families.iter().cloned());
+        }
+    }
+    let shared_axis_refs = shared_workflow_axes(&source_hub, &target_hub, workflow_risk_readings);
+    let intermediate_molecule_refs = path
+        .iter()
+        .skip(1)
+        .take(path.len().saturating_sub(2))
+        .cloned()
+        .collect::<Vec<_>>();
+    let review_risk = if bridge_score >= 16 || path.len() <= 3 {
+        "high"
+    } else if bridge_score > 0 {
+        "medium"
+    } else {
+        "nonConclusion"
+    };
+
+    vec![ArchSigBridgeAtomFamilyReadingV0 {
+        bridge_id: format!(
+            "bridge:{}:{}",
+            stable_id(&source_hub),
+            stable_id(&target_hub)
+        ),
+        source_hub_molecule_ref: source_hub.clone(),
+        target_hub_molecule_ref: target_hub.clone(),
+        intermediate_molecule_refs,
+        bridge_atom_families: bridge_atom_families.into_iter().collect(),
+        bridge_score,
+        path_pair_refs,
+        shared_axis_refs,
+        review_risk: review_risk.to_string(),
+        recommended_boundary_preparation: format!(
+            "review bridge atom families before assuming {source_hub} and {target_hub} are independent architecture hubs"
+        ),
+        evidence_boundary:
+            "bridge path is computed from high-overlap molecule pairs and shared atom families, not from direct source dependency proof"
+                .to_string(),
+        non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
+    }]
+}
+
+fn dominant_mode_component(
+    spectral_mode_readings: &[ArchSigSpectralModeReadingV0],
+    representation_family: &str,
+    component_kind: &str,
+) -> Option<String> {
+    spectral_mode_readings
+        .iter()
+        .find(|reading| reading.representation_family == representation_family)
+        .and_then(|reading| {
+            reading
+                .mode_components
+                .iter()
+                .find(|component| component.component_kind == component_kind)
+        })
+        .map(|component| component.component_ref.clone())
+}
+
+fn bridge_path(
+    source: &str,
+    target: &str,
+    high_overlap_pairs: &[ArchSigHighOverlapMoleculePairV0],
+) -> Option<Vec<String>> {
+    if source == target {
+        return Some(vec![source.to_string()]);
+    }
+    let mut adjacency = BTreeMap::<String, Vec<(String, i64)>>::new();
+    for pair in high_overlap_pairs {
+        adjacency
+            .entry(pair.left_molecule_ref.clone())
+            .or_default()
+            .push((pair.right_molecule_ref.clone(), pair.overlap_score));
+        adjacency
+            .entry(pair.right_molecule_ref.clone())
+            .or_default()
+            .push((pair.left_molecule_ref.clone(), pair.overlap_score));
+    }
+    for neighbors in adjacency.values_mut() {
+        neighbors.sort_by(|left, right| right.1.cmp(&left.1).then(left.0.cmp(&right.0)));
+    }
+
+    let mut queue = vec![vec![source.to_string()]];
+    let mut visited = BTreeSet::from([source.to_string()]);
+    while let Some(path) = queue.first().cloned() {
+        queue.remove(0);
+        let Some(current) = path.last() else {
+            continue;
+        };
+        for (next, _) in adjacency.get(current).cloned().unwrap_or_default() {
+            if !visited.insert(next.clone()) {
+                continue;
+            }
+            let mut next_path = path.clone();
+            next_path.push(next.clone());
+            if next == target {
+                return Some(next_path);
+            }
+            queue.push(next_path);
+        }
+    }
+    None
+}
+
+fn ordered_pair_key(left: &str, right: &str) -> (String, String) {
+    if left <= right {
+        (left.to_string(), right.to_string())
+    } else {
+        (right.to_string(), left.to_string())
+    }
+}
+
+fn shared_workflow_axes(
+    source_hub: &str,
+    target_hub: &str,
+    workflow_risk_readings: &[ArchSigWorkflowRiskReadingV0],
+) -> Vec<String> {
+    let axes_by_molecule = workflow_risk_readings
+        .iter()
+        .map(|reading| {
+            (
+                reading.molecule_observation_ref.as_str(),
+                reading
+                    .top_axes
+                    .iter()
+                    .map(|axis| axis.axis.clone())
+                    .collect::<BTreeSet<_>>(),
+            )
+        })
+        .collect::<BTreeMap<_, _>>();
+    let source_axes = axes_by_molecule.get(source_hub);
+    let target_axes = axes_by_molecule.get(target_hub);
+    match (source_axes, target_axes) {
+        (Some(source_axes), Some(target_axes)) => source_axes
+            .intersection(target_axes)
+            .cloned()
+            .collect::<Vec<_>>(),
+        (Some(source_axes), None) => source_axes.iter().cloned().collect(),
+        (None, Some(target_axes)) => target_axes.iter().cloned().collect(),
+        (None, None) => Vec::new(),
+    }
+}
+
+fn build_evolution_risk_ranking(
+    repair_axis_delta_readings: &[ArchSigRepairAxisDeltaReadingV0],
+    high_overlap_pairs: &[ArchSigHighOverlapMoleculePairV0],
+) -> ArchSigEvolutionRiskRankingV0 {
+    let mut repair_ranking = repair_axis_delta_readings
+        .iter()
+        .map(|delta| {
+            let transfer_weight =
+                delta.negative_delta_axes.len() as i64 + delta.transfer_risk_refs.len() as i64;
+            (
+                transfer_weight,
+                delta.operation_delta_ref.clone(),
+                delta.positive_delta_axes.len(),
+                delta.negative_delta_axes.len(),
+            )
+        })
+        .collect::<Vec<_>>();
+    repair_ranking.sort_by(|left, right| right.0.cmp(&left.0).then(left.1.cmp(&right.1)));
+    let repair_transfer_risk_ranking = repair_ranking
+        .into_iter()
+        .enumerate()
+        .map(
+            |(index, (transfer_weight, operation_delta_ref, positive_count, transferred_count))| {
+                ArchSigRepairTransferRiskRankV0 {
+                    rank: index + 1,
+                    operation_delta_ref: operation_delta_ref.clone(),
+                    positive_axis_count: positive_count,
+                    transferred_axis_count: transferred_count,
+                    transfer_weight,
+                    reading: format!(
+                        "{operation_delta_ref} has {positive_count} target-positive axis/axes and {transferred_count} transferred axis/axes"
+                    ),
+                }
+            },
+        )
+        .collect::<Vec<_>>();
+
+    let mut boundary_pairs = high_overlap_pairs.to_vec();
+    boundary_pairs.sort_by(|left, right| {
+        right
+            .overlap_score
+            .cmp(&left.overlap_score)
+            .then(left.left_molecule_ref.cmp(&right.left_molecule_ref))
+            .then(left.right_molecule_ref.cmp(&right.right_molecule_ref))
+    });
+    let boundary_preparation_ranking = boundary_pairs
+        .into_iter()
+        .take(8)
+        .enumerate()
+        .map(|(index, pair)| ArchSigBoundaryPreparationRankV0 {
+            rank: index + 1,
+            pair_ref: pair.pair_id.clone(),
+            left_molecule_ref: pair.left_molecule_ref.clone(),
+            right_molecule_ref: pair.right_molecule_ref.clone(),
+            overlap_score: pair.overlap_score,
+            shared_atom_families: pair.shared_atom_families.clone(),
+            reading: format!(
+                "prepare boundary between {} and {} before repairs that touch shared {:?} atoms",
+                pair.left_molecule_ref, pair.right_molecule_ref, pair.shared_atom_families
+            ),
+        })
+        .collect();
+
+    ArchSigEvolutionRiskRankingV0 {
+        repair_transfer_risk_ranking,
+        boundary_preparation_ranking,
+        reading:
+            "evolution risk ranks repairs by transfer-axis pressure and molecule pairs by boundary-preparation need"
+                .to_string(),
+        non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
+    }
+}
+
 fn build_design_principle_readings(
     archmap: &ArchMapDocumentV0,
     invariant_readings: &[ArchSigInvariantFamilyReadingV0],
@@ -2996,6 +3375,7 @@ fn build_llm_interpretation_packet(
     spectral_analysis_readings: &[ArchSigSpectralAnalysisReadingV0],
     spectral_mode_readings: &[ArchSigSpectralModeReadingV0],
     spectral_drilldown_readings: &[ArchSigSpectralDrilldownReadingV0],
+    transfer_bridge_readings: &[ArchSigTransferBridgeReadingV0],
     repair_candidates: &[ArchSigRepairOperationCandidateV0],
     bounded_judgements: &[ArchSigBoundedJudgementV0],
 ) -> ArchSigLlmInterpretationPacketV0 {
@@ -3081,6 +3461,26 @@ fn build_llm_interpretation_packet(
                     reading.dominant_atom_family_composition.len(),
                     reading.high_overlap_molecule_pairs.len(),
                     reading.repair_axis_delta_readings.len(),
+                    reading.status
+                )
+            })
+            .collect(),
+        transfer_bridge_summary: transfer_bridge_readings
+            .iter()
+            .map(|reading| {
+                format!(
+                    "{} transfers={} bridges={} repairRanks={} boundaryRanks={} ({})",
+                    reading.transfer_bridge_id,
+                    reading.transfer_matrix_entries.len(),
+                    reading.bridge_atom_families.len(),
+                    reading
+                        .evolution_risk_ranking
+                        .repair_transfer_risk_ranking
+                        .len(),
+                    reading
+                        .evolution_risk_ranking
+                        .boundary_preparation_ranking
+                        .len(),
                     reading.status
                 )
             })
@@ -3183,6 +3583,7 @@ pub fn validate_archsig_analysis_packet_report(
         check_spectral_analysis_surface(packet),
         check_spectral_mode_surface(packet),
         check_spectral_drilldown_surface(packet),
+        check_transfer_bridge_surface(packet),
         check_law_relative_analysis(packet),
         check_signature_and_flatness(packet),
         check_repair_candidates(packet),
@@ -3207,6 +3608,7 @@ pub fn validate_archsig_analysis_packet_report(
         spectral_analysis_reading_count: packet.spectral_analysis_readings.len(),
         spectral_mode_reading_count: packet.spectral_mode_readings.len(),
         spectral_drilldown_reading_count: packet.spectral_drilldown_readings.len(),
+        transfer_bridge_reading_count: packet.transfer_bridge_readings.len(),
         design_principle_reading_count: packet.design_principle_readings.len(),
         repair_operation_candidate_count: packet.repair_operation_candidates.len(),
         operation_delta_count: packet.operation_deltas.len(),
@@ -4032,6 +4434,199 @@ fn check_spectral_drilldown_surface(packet: &ArchSigAnalysisPacketV0) -> Validat
     check_from_examples(
         "archsig-analysis-packet-spectral-drilldown-surface",
         "packet explains spectral modes through atom families, overlap pairs, and repair axis deltas",
+        examples,
+        "fail",
+    )
+}
+
+fn check_transfer_bridge_surface(packet: &ArchSigAnalysisPacketV0) -> ValidationCheck {
+    let operation_ids = set(packet
+        .operation_deltas
+        .iter()
+        .map(|delta| delta.operation_delta_id.as_str()));
+    let axis_ids = set(packet
+        .signature_axes
+        .iter()
+        .map(|axis| axis.signature_axis_id.as_str()));
+    let molecule_ids = set(packet
+        .molecule_readings
+        .iter()
+        .map(|reading| reading.molecule_observation_ref.as_str()));
+    let allowed_statuses =
+        BTreeSet::from(["actionable", "needsReview", "blocked", "nonConclusion"]);
+    let mut examples = Vec::new();
+    if packet.transfer_bridge_readings.is_empty() {
+        examples.push(generic_validation_example(
+            "transferBridgeReadings",
+            "empty",
+            "packet must expose transfer bridge readings for evolution review",
+        ));
+    }
+    examples.extend(duplicate_examples(
+        "transferBridgeReadings[].transferBridgeId",
+        duplicates(
+            packet
+                .transfer_bridge_readings
+                .iter()
+                .map(|reading| reading.transfer_bridge_id.as_str()),
+        ),
+    ));
+    for reading in &packet.transfer_bridge_readings {
+        if !allowed_statuses.contains(reading.status.as_str()) {
+            examples.push(generic_validation_example(
+                &reading.transfer_bridge_id,
+                &reading.status,
+                "transfer bridge status must be actionable, needsReview, blocked, or nonConclusion",
+            ));
+        }
+        if reading.transfer_matrix_entries.is_empty() && reading.status != "nonConclusion" {
+            examples.push(generic_validation_example(
+                &reading.transfer_bridge_id,
+                "transferMatrixEntries",
+                "transfer bridge must expose repair operation x transferred axis matrix entries",
+            ));
+        }
+        for entry in &reading.transfer_matrix_entries {
+            if !operation_ids.contains(entry.operation_delta_ref.as_str()) {
+                examples.push(generic_validation_example(
+                    &reading.transfer_bridge_id,
+                    &entry.operation_delta_ref,
+                    "transfer matrix entry references an unknown operation delta",
+                ));
+            }
+            if !axis_ids.contains(entry.transferred_axis_ref.as_str()) {
+                examples.push(generic_validation_example(
+                    &reading.transfer_bridge_id,
+                    &entry.transferred_axis_ref,
+                    "transfer matrix entry references an unknown transferred axis",
+                ));
+            }
+            if entry.transfer_weight <= 0 {
+                examples.push(generic_validation_example(
+                    &reading.transfer_bridge_id,
+                    &entry.transfer_weight.to_string(),
+                    "transfer matrix entry must carry positive transfer weight",
+                ));
+            }
+            push_blank(
+                &mut examples,
+                &format!("{} transferMatrixEntry.reading", reading.transfer_bridge_id),
+                &entry.reading,
+            );
+        }
+        if reading.bridge_atom_families.is_empty() {
+            examples.push(generic_validation_example(
+                &reading.transfer_bridge_id,
+                "bridgeAtomFamilies",
+                "transfer bridge must expose bridge atom family readings",
+            ));
+        }
+        for bridge in &reading.bridge_atom_families {
+            if !molecule_ids.contains(bridge.source_hub_molecule_ref.as_str())
+                || !molecule_ids.contains(bridge.target_hub_molecule_ref.as_str())
+            {
+                examples.push(generic_validation_example(
+                    &reading.transfer_bridge_id,
+                    &bridge.bridge_id,
+                    "bridge atom family reading must reference known hub molecules",
+                ));
+            }
+            for molecule_ref in &bridge.intermediate_molecule_refs {
+                if !molecule_ids.contains(molecule_ref.as_str()) {
+                    examples.push(generic_validation_example(
+                        &reading.transfer_bridge_id,
+                        molecule_ref,
+                        "bridge atom family reading references an unknown intermediate molecule",
+                    ));
+                }
+            }
+            if bridge.bridge_score < 0 {
+                examples.push(generic_validation_example(
+                    &reading.transfer_bridge_id,
+                    &bridge.bridge_score.to_string(),
+                    "bridge score must be non-negative",
+                ));
+            }
+            push_blank(
+                &mut examples,
+                &format!("{} bridge.reviewRisk", reading.transfer_bridge_id),
+                &bridge.review_risk,
+            );
+            push_blank(
+                &mut examples,
+                &format!(
+                    "{} bridge.recommendedBoundaryPreparation",
+                    reading.transfer_bridge_id
+                ),
+                &bridge.recommended_boundary_preparation,
+            );
+            push_blank(
+                &mut examples,
+                &format!("{} bridge.evidenceBoundary", reading.transfer_bridge_id),
+                &bridge.evidence_boundary,
+            );
+        }
+        if reading
+            .evolution_risk_ranking
+            .repair_transfer_risk_ranking
+            .is_empty()
+        {
+            examples.push(generic_validation_example(
+                &reading.transfer_bridge_id,
+                "evolutionRiskRanking.repairTransferRiskRanking",
+                "transfer bridge must rank repair transfer risk",
+            ));
+        }
+        for rank in &reading.evolution_risk_ranking.repair_transfer_risk_ranking {
+            if rank.rank == 0 || !operation_ids.contains(rank.operation_delta_ref.as_str()) {
+                examples.push(generic_validation_example(
+                    &reading.transfer_bridge_id,
+                    &rank.operation_delta_ref,
+                    "repair transfer risk ranking must carry positive rank and known operation delta",
+                ));
+            }
+            push_blank(
+                &mut examples,
+                &format!("{} repairTransferRisk.reading", reading.transfer_bridge_id),
+                &rank.reading,
+            );
+        }
+        for rank in &reading.evolution_risk_ranking.boundary_preparation_ranking {
+            if rank.rank == 0
+                || !molecule_ids.contains(rank.left_molecule_ref.as_str())
+                || !molecule_ids.contains(rank.right_molecule_ref.as_str())
+            {
+                examples.push(generic_validation_example(
+                    &reading.transfer_bridge_id,
+                    &rank.pair_ref,
+                    "boundary preparation ranking must carry positive rank and known molecules",
+                ));
+            }
+            push_blank(
+                &mut examples,
+                &format!("{} boundaryPreparation.reading", reading.transfer_bridge_id),
+                &rank.reading,
+            );
+        }
+        push_blank(
+            &mut examples,
+            &format!("{} reading", reading.transfer_bridge_id),
+            &reading.reading,
+        );
+        push_blank(
+            &mut examples,
+            &format!("{} evidenceBoundary", reading.transfer_bridge_id),
+            &reading.evidence_boundary,
+        );
+        push_blank(
+            &mut examples,
+            &format!("{} recommendedNextAction", reading.transfer_bridge_id),
+            &reading.recommended_next_action,
+        );
+    }
+    check_from_examples(
+        "archsig-analysis-packet-transfer-bridge-surface",
+        "packet exposes transfer matrix, bridge atom families, and evolution risk ranking",
         examples,
         "fail",
     )

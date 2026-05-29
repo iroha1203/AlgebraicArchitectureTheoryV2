@@ -865,6 +865,69 @@ fn assert_north_star_packet_surfaces(json: &Value) {
         }),
         "dominant atom-family composition must carry atom family counts and refs"
     );
+    let transfer_bridges = json["transferBridgeReadings"]
+        .as_array()
+        .expect("transfer bridge readings are array");
+    assert!(
+        !transfer_bridges.is_empty(),
+        "North Star packet must expose transfer bridge readings"
+    );
+    assert!(
+        transfer_bridges.iter().all(|entry| {
+            entry["transferBridgeId"].as_str().is_some()
+                && entry["status"].as_str().is_some()
+                && entry["transferMatrixEntries"].as_array().is_some()
+                && entry["bridgeAtomFamilies"]
+                    .as_array()
+                    .is_some_and(|items| !items.is_empty())
+                && entry["evolutionRiskRanking"]["repairTransferRiskRanking"]
+                    .as_array()
+                    .is_some_and(|items| !items.is_empty())
+                && entry["evolutionRiskRanking"]["boundaryPreparationRanking"]
+                    .as_array()
+                    .is_some()
+                && entry["reading"].as_str().is_some()
+                && entry["evidenceBoundary"].as_str().is_some()
+                && entry["recommendedNextAction"].as_str().is_some()
+        }),
+        "transfer bridge readings must carry transfer matrix, bridge atom families, evolution risk ranking, and evidence boundaries"
+    );
+    assert!(
+        transfer_bridges.iter().all(|entry| {
+            entry["transferMatrixEntries"]
+                .as_array()
+                .expect("transfer matrix entries are array")
+                .iter()
+                .all(|matrix_entry| {
+                    matrix_entry["operationDeltaRef"].as_str().is_some()
+                        && matrix_entry["transferredAxisRef"].as_str().is_some()
+                        && matrix_entry["transferWeight"]
+                            .as_i64()
+                            .is_some_and(|weight| weight > 0)
+                        && matrix_entry["transferKind"].as_str().is_some()
+                        && matrix_entry["reading"].as_str().is_some()
+                })
+        }),
+        "transfer matrix entries must carry operation x transferred-axis readings when present"
+    );
+    assert!(
+        transfer_bridges.iter().all(|entry| {
+            entry["bridgeAtomFamilies"]
+                .as_array()
+                .expect("bridge atom families are array")
+                .iter()
+                .all(|bridge| {
+                    bridge["sourceHubMoleculeRef"].as_str().is_some()
+                        && bridge["targetHubMoleculeRef"].as_str().is_some()
+                        && bridge["bridgeAtomFamilies"].as_array().is_some()
+                        && bridge["pathPairRefs"].as_array().is_some()
+                        && bridge["reviewRisk"].as_str().is_some()
+                        && bridge["recommendedBoundaryPreparation"].as_str().is_some()
+                        && bridge["evidenceBoundary"].as_str().is_some()
+                })
+        }),
+        "bridge atom family readings must carry hub refs, bridge families, path refs, review risk, and evidence boundaries"
+    );
     assert!(
         json["llmInterpretationPacket"]["recommendedHumanReviewFocus"]
             .as_array()
