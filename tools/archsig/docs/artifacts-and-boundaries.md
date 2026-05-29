@@ -13,6 +13,18 @@ archmap-observation-map-v0
 Git history is the archive for pre-Atom scan, projection, report, and PR-review
 surfaces. They are not current ArchSig artifacts or commands.
 
+ArchMap is LLM-authored source reading, not an AST extractor result. Static
+artifacts such as ASTs, symbol indexes, import graphs, route lists, and
+framework registries may support navigation, source inventory selection, and
+gap discovery. They do not by themselves certify observed atoms, semantic
+dependencies, runtime interactions, authority coverage, or extractor
+completeness.
+
+For large repositories, parallel agents may survey bounded surfaces and return
+candidate observations. The final ArchMap still requires an integration pass
+that deduplicates candidates, resolves source refs, preserves gaps, and promotes
+only primitive source-grounded facts to `atomObservations`.
+
 ## Current Artifacts
 
 | artifact | schemaVersion | role |

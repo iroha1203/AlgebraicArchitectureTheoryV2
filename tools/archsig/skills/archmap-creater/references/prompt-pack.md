@@ -23,6 +23,8 @@ An atom has no coarse/fine scale. If a candidate summarizes a subsystem, respons
 
 ASTs, symbol indexes, import graphs, route lists, and framework conventions may guide source navigation. They are not sufficient evidence by themselves. Cite the selected source refs that were actually read and that directly support the architectural fact.
 
+If you use static navigation aids, list them in provenance, uncertainty, or local notes as discovery aids only. Do not cite an AST, route list, or import graph as the sole support for an observed atom unless that artifact itself is the selected source being observed.
+
 Common primitive fact families:
 
 - `existence`: component, module, service, class, package, process, table, queue
@@ -56,6 +58,22 @@ Before emitting an observed atom:
 - Use `nonConclusions[]` to state what the artifact does not prove.
 
 Workflow-first reading is allowed for discovery, but the output must not contain coarse workflow atoms. Split primitive source facts into `atomObservations[]`, compose responsibilities in `moleculeObservations[]`, and put workflow or behavior readings in `semanticObservations[]`.
+
+## Parallel Agent Mode
+
+For large codebases, multiple agents may survey separate surfaces such as authority/authentication, state/model, effects/jobs, provider/trust, domain/contracts, runtime/framework, and docs/governance. A surface agent must output candidates, not a final ArchMap. The final integrator decides which candidates are accepted.
+
+Surface-agent candidate packets should include:
+
+- reviewed refs and excluded refs
+- navigation aids used, explicitly marked as non-evidence
+- candidate primitive atoms with source refs actually read
+- candidate molecule or semantic readings only when they reference candidate atoms
+- observation gaps for private, unavailable, generated, framework-expanded, or runtime-only evidence
+- concern hints as review cues only
+- uncertainty and non-conclusions
+
+The integrator must deduplicate by predicate, subject/object refs, and source refs; resolve accepted source refs into `sourceUniverse.includedRefs[]`; lower confidence or create gaps when agents disagree; and keep coarse responsibility, workflow, policy, and concern readings out of `atomObservations[]`.
 
 ## Output Requirements
 

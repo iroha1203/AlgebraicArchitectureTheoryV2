@@ -2,6 +2,8 @@
 
 Use this guide before drafting ArchMap for an unfamiliar repository or unfamiliar subsystem. The goal is to build a bounded source inventory, not to understand the whole codebase.
 
+For large repositories, split the survey across parallel agents. Parallelism is for source discovery and bounded candidate evidence; the final ArchMap still needs one integration pass that checks primitive atom boundaries, source refs, duplicate candidates, confidence, uncertainty, and gaps.
+
 ## Survey Order
 
 1. Read entry documents.
@@ -60,6 +62,64 @@ runtime|trace|plugin|dynamic|framework|convention
 ```
 
 Use the results to select evidence. Do not add all matches to the source inventory.
+
+Static discovery output is a navigation aid. ASTs, symbol indexes, route lists, import graphs, class/function maps, and framework registry dumps may identify files to read, but they are not enough to support observed atoms. If an index finds a route, edge, or symbol and the underlying source is not read, record a gap or review cue instead of an observed atom.
+
+## Parallel Survey Surfaces
+
+When the repository is too large for one sequential pass, assign independent surfaces and require each agent to stay inside its boundary:
+
+| Surface | Look for | Keep out of the packet |
+| --- | --- | --- |
+| Authority/authentication | role gates, ownership checks, admin paths, token/session verification | global permission correctness |
+| State/model | schemas, persisted fields, migrations, lifecycle markers, projections | runtime state not supplied as evidence |
+| Effects/jobs | database writes, event publish, queue enqueue, worker effects, provider calls | delivery success or runtime frequency without traces |
+| Provider/trust | webhook verification, delegated credentials, LLM/provider output validation | trust conclusions from API calls alone |
+| Domain/contracts | DTO validation, invariants, contract tests, operation terms, examples | universal semantic correctness |
+| Runtime/framework | supplied traces, generated code boundaries, dynamic loading, convention expansion | measured absence when runtime/framework evidence is unavailable |
+| Docs/governance | architecture policy, layer rules, runbooks, review criteria | lawfulness or obstruction conclusions |
+
+Each surface agent returns candidates, not final ArchMap entries. The integrator decides which candidates become `atomObservations[]`, `moleculeObservations[]`, `semanticObservations[]`, `observationGaps[]`, `projectionInfo[]`, or `concernHints[]`.
+
+## Sub-Agent Output Contract
+
+Ask each agent for this compact structure:
+
+```json
+{
+  "surface": "<bounded-surface>",
+  "reviewedRefs": [],
+  "excludedRefs": [],
+  "navigationAidsUsed": [],
+  "candidateAtomObservations": [],
+  "candidateMoleculeObservations": [],
+  "candidateSemanticObservations": [],
+  "observationGaps": [],
+  "concernHints": [],
+  "nonConclusions": []
+}
+```
+
+Rules for candidate packets:
+
+- `navigationAidsUsed[]` records search patterns, AST indexes, route lists, or symbol maps used for discovery. These entries are not observation evidence.
+- Candidate atoms must state one primitive predicate and cite source refs the agent actually read.
+- Coarse workflow, responsibility, policy, or review-cue readings should already be outside `candidateAtomObservations[]`.
+- Gaps must preserve unavailable runtime traces, private policies, generated code, dynamic framework expansion, and uninspected areas.
+- Agents should include uncertainty when a candidate spans files, depends on framework convention, or needs another surface to confirm context.
+
+## Integration Checklist
+
+Before accepting parallel output:
+
+- Deduplicate candidates by predicate, subject/object refs, and source refs.
+- Resolve all accepted source refs into `sourceUniverse.includedRefs[]`.
+- Merge reviewed refs and excluded refs without pretending the union is complete repository coverage.
+- Re-read or sample-check high-confidence source claims before finalizing them.
+- Lower confidence or create a concern hint when agents disagree.
+- Promote only primitive source-grounded facts to `atomObservations[]`.
+- Move responsibilities to `moleculeObservations[]`, workflow/contract readings to `semanticObservations[]`, missing evidence to `observationGaps[]`, and review cues to `concernHints[]`.
+- Preserve navigation-aid limits and blind spots in `provenance`, `sourceUniverse.knownBlindSpots`, local `uncertainty[]`, or `nonConclusions[]`.
 
 ## Source Inventory Construction
 
