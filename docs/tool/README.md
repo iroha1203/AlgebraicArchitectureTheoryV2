@@ -11,6 +11,7 @@ Current source-of-truth boundaries:
 - ArchMap starts from supplied `archmap-observation-map-v0` evidence read as a source-grounded Atom observation map. It records `atomObservations`, `moleculeObservations`, `semanticObservations`, `observationGaps`, `projectionInfo`, `concernHints`, provenance, and non-conclusions.
 - LawPolicy selects laws, witness rules, molecule patterns, obstruction circuit definitions, signature axes, coverage requirements, and exactness assumptions separately from ArchMap.
 - ArchSig reads ArchMap + LawPolicy and computes law-relative obstruction / signature analysis. Obstruction circuits and zero-curvature readings are not first-class ArchMap outputs.
+- `llm-native-workflow` and `archsig-analysis` are the normal ArchSig entry points. `archmap-workflow` and `air-from-archmap` are compat-only direct ArchMap projection commands for older review consumers, not the current source-of-truth path.
 - `concernHints` are review cues. They are not obstruction circuits, not law violations, and not theorem evidence.
 - Legacy ArchMap fields such as `homomorphism`, `mapItems`, `atomCandidates`, `moleculeCandidates`, and `obstructionCircuitCandidates` are compatibility-only when accepted. ArchMap validation reports them under `legacySchemaChecks`; new authoring should use the Atom observation fields above.
 - Lean / Python import-graph output is optional bounded adapter evidence, emitted explicitly by `archsig adapter-scan`; adapter artifacts retain `coverageBoundary`, `unsupportedConstructs`, `missingEvidence`, and `nonConclusions`.

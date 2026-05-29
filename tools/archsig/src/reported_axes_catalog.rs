@@ -77,7 +77,7 @@ pub fn static_detectable_values_reported_axes_catalog() -> DetectableValuesRepor
             ],
             "unmeasured",
             vec![
-                "ArchMap mapItems preserve AAT-facing object / relation / semantic / law / flatness selectors",
+                "ArchMap atomObservations, moleculeObservations, semanticObservations, observationGaps, projectionInfo, and concernHints are present with explicit boundaries",
             ],
             vec!["ArchMapModel.ArchMapPreservationPackage.aatHomomorphicRelation"],
             vec![
@@ -85,9 +85,9 @@ pub fn static_detectable_values_reported_axes_catalog() -> DetectableValuesRepor
             ],
         ),
         axis(
-            "archMapHomomorphismClassification",
+            "archMapAtomObservationReadiness",
             "archmap",
-            "homomorphic | partial | lossy | nonHomomorphic | unmeasured",
+            "ready | gapBlocked | concernOnly | unmeasured",
             vec![
                 "ArchMap Validation Report",
                 "Feature Extension Report",
@@ -95,13 +95,13 @@ pub fn static_detectable_values_reported_axes_catalog() -> DetectableValuesRepor
             ],
             "unmeasured",
             vec![
-                "ArchMap declares or derives domain, codomain, object map, relation map, law map, obstruction map, signature-axis map, atom candidates, molecule candidates, obstruction circuit candidates, and observation gaps",
-                "forgetful, unmeasured, unsupported, and non-conclusion boundaries remain explicit",
+                "ArchMap records atom observations, molecule observations, semantic observations, observation gaps, and concern hints without requiring mapItems or obstructionCircuitCandidates",
+                "observation gaps remain gaps and concern hints remain review cues",
             ],
-            vec!["ArchMapModel.AATHomomorphicRelation"],
+            vec!["Observation.ArchMapObservationLayer.observes_atoms"],
             vec![
-                "homomorphic is bounded to the selected ArchMap domain and codomain",
-                "partial and lossy are review states, not failure to parse JSON",
+                "ready is bounded to the supplied source-grounded observation map",
+                "gapBlocked and concernOnly are review states, not failure to parse JSON",
             ],
         ),
     ];
@@ -173,17 +173,18 @@ fn frozen_fixtures() -> Vec<BenchmarkSuiteFixtureV0> {
             ],
         ),
         fixture(
-            "archmap-homomorphism-expressiveness",
-            "tools/archsig/tests/fixtures/expressiveness/archmap_expressiveness_suite_v0.json",
+            "archmap-atom-observation-regression",
+            "tools/archsig/tests/fixtures/expressiveness/archmap_atom_observation_suite_v0.json",
             "ArchMap",
             vec![
-                "AAT concept coverage matrix",
-                "homomorphism boundary preservation",
+                "source-grounded Atom observations",
+                "molecule / semantic observations",
+                "observation gap and concern hint boundaries",
             ],
             vec![
-                "archMapHomomorphismClassification:partial",
-                "runtime:unmeasured",
-                "dynamic:unsupported",
+                "archMapAtomObservationReadiness:gapBlocked",
+                "observationGaps:notMeasuredZero",
+                "concernHints:notObstructionCircuit",
             ],
         ),
     ]

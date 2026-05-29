@@ -352,7 +352,7 @@ enum Command {
         out: Option<PathBuf>,
     },
 
-    /// Project a supplied ArchMap observation JSON artifact into AIR v0.
+    /// Compatibility-only direct projection from supplied ArchMap JSON into AIR v0.
     AirFromArchmap {
         /// Input ArchMap JSON path.
         #[arg(long)]
@@ -541,7 +541,7 @@ enum Command {
         out: Option<PathBuf>,
     },
 
-    /// Build the legacy ArchMap projection review workflow artifacts.
+    /// Build compatibility-only legacy ArchMap projection review artifacts.
     ArchmapWorkflow {
         /// Input ArchMap JSON path.
         #[arg(long)]
