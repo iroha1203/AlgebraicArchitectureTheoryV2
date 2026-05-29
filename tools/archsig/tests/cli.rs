@@ -758,6 +758,40 @@ fn assert_north_star_packet_surfaces(json: &Value) {
         }),
         "workflow risk readings must carry molecule refs, non-negative scores, axes, review focus, and evidence boundaries"
     );
+    let spectral_readings = json["spectralAnalysisReadings"]
+        .as_array()
+        .expect("spectral analysis readings are array");
+    assert!(
+        !spectral_readings.is_empty(),
+        "North Star packet must expose spectral analysis readings"
+    );
+    for family in [
+        "workflowRiskAxisPressureMatrix",
+        "moleculeAtomOverlapCouplingMatrix",
+        "obstructionAxisCurvatureMatrix",
+        "operationSignatureDeltaMatrix",
+    ] {
+        assert!(
+            spectral_readings
+                .iter()
+                .any(|entry| entry["representationFamily"] == family),
+            "North Star packet must expose spectral representation {family}"
+        );
+    }
+    assert!(
+        spectral_readings.iter().all(|entry| {
+            entry["matrixShape"]["rowDomain"].as_str().is_some()
+                && entry["matrixShape"]["columnDomain"].as_str().is_some()
+                && entry["entryRule"].as_str().is_some()
+                && entry["values"]
+                    .as_array()
+                    .is_some_and(|values| !values.is_empty())
+                && entry["coverageBoundary"].as_str().is_some()
+                && entry["zeroReflectingBoundary"].as_str().is_some()
+                && entry["recommendedNextAction"].as_str().is_some()
+        }),
+        "spectral analysis readings must carry matrix shape, entry rule, values, and evidence boundaries"
+    );
     assert!(
         json["llmInterpretationPacket"]["recommendedHumanReviewFocus"]
             .as_array()

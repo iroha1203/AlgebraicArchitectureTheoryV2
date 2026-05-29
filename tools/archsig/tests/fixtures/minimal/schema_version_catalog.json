@@ -129,7 +129,7 @@
       ],
       "downstreamIssues": [],
       "compatibilityBoundary": {
-        "fieldMappingPolicy": "ArchSig analysis packet owns AAT concept surfaces, architecture state, design pressure, change impact, architecture object projections, invariant family readings, LawUniverse reading, molecule readings, obstruction circuits, signature axes, analytic representations, coupling/cohesion readings, workflow risk readings, design principle readings, operation deltas, path/homotopy/diagram readings, bounded judgements, LLM interpretation packet, evidence boundary, excluded readings, and non-conclusions.",
+        "fieldMappingPolicy": "ArchSig analysis packet owns AAT concept surfaces, architecture state, design pressure, change impact, architecture object projections, invariant family readings, LawUniverse reading, molecule readings, obstruction circuits, signature axes, analytic representations, coupling/cohesion readings, workflow risk readings, spectral analysis readings, design principle readings, operation deltas, path/homotopy/diagram readings, bounded judgements, LLM interpretation packet, evidence boundary, excluded readings, and non-conclusions.",
         "deprecatedFields": [],
         "newRequiredAssumptions": [
           "Required fields, observation families, law refs, or analysis axes change.",
@@ -156,7 +156,7 @@
       ],
       "downstreamIssues": [],
       "compatibilityBoundary": {
-        "fieldMappingPolicy": "Validation checks identity, ArchMap and LawPolicy refs, law-relative obstruction links, signature and flatness boundaries, repair candidate guardrails, LLM interpretation surface, and non-conclusions without computing the analysis engine.",
+        "fieldMappingPolicy": "Validation checks identity, ArchMap and LawPolicy refs, workflow risk readings, spectral analysis readings, law-relative obstruction links, signature and flatness boundaries, repair candidate guardrails, LLM interpretation surface, and non-conclusions without computing the analysis engine.",
         "deprecatedFields": [],
         "newRequiredAssumptions": [
           "Required fields, observation families, law refs, or analysis axes change.",

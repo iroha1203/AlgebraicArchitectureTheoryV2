@@ -616,6 +616,7 @@ pub struct ArchSigAnalysisPacketV0 {
     pub analytic_representations: Vec<ArchSigAnalyticRepresentationV0>,
     pub coupling_cohesion_readings: Vec<ArchSigCouplingCohesionReadingV0>,
     pub workflow_risk_readings: Vec<ArchSigWorkflowRiskReadingV0>,
+    pub spectral_analysis_readings: Vec<ArchSigSpectralAnalysisReadingV0>,
     pub design_principle_readings: Vec<ArchSigDesignPrincipleReadingV0>,
     pub flatness_reading: ArchSigFlatnessReadingV0,
     pub static_runtime_semantic_layer_split: ArchSigLayerSplitV0,
@@ -892,6 +893,52 @@ pub struct ArchSigWorkflowRiskAxisReadingV0 {
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+pub struct ArchSigSpectralAnalysisReadingV0 {
+    pub spectral_reading_id: String,
+    pub representation_family: String,
+    pub status: String,
+    pub matrix_shape: ArchSigSpectralMatrixShapeV0,
+    pub entry_rule: String,
+    pub value_type: String,
+    pub values: Vec<ArchSigSpectralValueV0>,
+    pub dominant_components: Vec<ArchSigSpectralDominantComponentV0>,
+    pub support_refs: Vec<String>,
+    pub reading: String,
+    pub coverage_boundary: String,
+    pub zero_reflecting_boundary: String,
+    pub recommended_next_action: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigSpectralMatrixShapeV0 {
+    pub row_domain: String,
+    pub column_domain: String,
+    pub row_count: usize,
+    pub column_count: usize,
+    pub nonzero_entry_count: usize,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigSpectralValueV0 {
+    pub name: String,
+    pub value: String,
+    pub interpretation: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigSpectralDominantComponentV0 {
+    pub component_ref: String,
+    pub component_kind: String,
+    pub value: String,
+    pub reading: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct ArchSigDesignPrincipleReadingV0 {
     pub principle_id: String,
     pub principle: String,
@@ -1011,6 +1058,7 @@ pub struct ArchSigLlmInterpretationPacketV0 {
     pub obstruction_summary: Vec<String>,
     pub signature_axes_summary: Vec<String>,
     pub analytic_readings_summary: Vec<String>,
+    pub spectral_readings_summary: Vec<String>,
     pub repair_operation_summary: Vec<String>,
     pub complexity_transfer_notes: Vec<String>,
     pub coverage_gaps_and_exactness_blockers: Vec<String>,
@@ -1049,6 +1097,7 @@ pub struct ArchSigAnalysisPacketValidationSummaryV0 {
     pub analytic_representation_count: usize,
     pub coupling_cohesion_reading_count: usize,
     pub workflow_risk_reading_count: usize,
+    pub spectral_analysis_reading_count: usize,
     pub design_principle_reading_count: usize,
     pub repair_operation_candidate_count: usize,
     pub operation_delta_count: usize,
