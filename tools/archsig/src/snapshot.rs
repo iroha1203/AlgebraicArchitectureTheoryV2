@@ -6,13 +6,14 @@ use crate::dataset::{
 };
 use crate::{
     AttributionCandidate, ComponentSetDelta, ComponentUniverseValidationReport, EXTRACTOR_NAME,
-    EXTRACTOR_VERSION, Edge, EdgeSetDelta, EmpiricalDatasetInput, ExtractorRef, GitCommitRef,
-    MetricDeltaStatus, PolicyViolation, PolicyViolationSetDelta, RULE_SET_VERSION,
+    EXTRACTOR_VERSION, Edge, EdgeSetDelta, ExtractorRef, GitCommitRef, MetricDeltaStatus,
+    PolicyViolation, PolicyViolationSetDelta, RULE_SET_VERSION,
     SIGNATURE_DIFF_REPORT_SCHEMA_VERSION, SIGNATURE_SNAPSHOT_STORE_SCHEMA_VERSION, Sig0Document,
     SignatureAxisChange, SignatureDiffReportV0, SignatureSnapshot, SignatureSnapshotStoreRecordV0,
-    SnapshotAnalysisMetadata, SnapshotArtifacts, SnapshotComparisonStatus, SnapshotDiffAttribution,
-    SnapshotDiffEndpoint, SnapshotEvidenceDiff, SnapshotExtractorMetadata, SnapshotPolicyMetadata,
-    SnapshotRecordInput, SnapshotValidationSummary, UnmeasuredAxisDelta,
+    SnapshotAnalysisMetadata, SnapshotArtifacts, SnapshotAttributionInput,
+    SnapshotComparisonStatus, SnapshotDiffAttribution, SnapshotDiffEndpoint, SnapshotEvidenceDiff,
+    SnapshotExtractorMetadata, SnapshotPolicyMetadata, SnapshotRecordInput,
+    SnapshotValidationSummary, UnmeasuredAxisDelta,
 };
 
 pub fn build_signature_snapshot_record(
@@ -69,7 +70,7 @@ pub fn build_signature_diff_report(
     after: &SignatureSnapshotStoreRecordV0,
     before_document: Option<&Sig0Document>,
     after_document: Option<&Sig0Document>,
-    pr_metadata: &[EmpiricalDatasetInput],
+    pr_metadata: &[SnapshotAttributionInput],
 ) -> SignatureDiffReportV0 {
     let before_snapshot = store_record_signature_snapshot(before, "before");
     let after_snapshot = store_record_signature_snapshot(after, "after");
@@ -323,7 +324,7 @@ fn snapshot_diff_attribution(
     after: &SignatureSnapshotStoreRecordV0,
     evidence_diff: &SnapshotEvidenceDiff,
     worsened_axes: &[SignatureAxisChange],
-    pr_metadata: &[EmpiricalDatasetInput],
+    pr_metadata: &[SnapshotAttributionInput],
 ) -> SnapshotDiffAttribution {
     let touched_components = touched_components_from_evidence_diff(evidence_diff);
     let worsened_axis_names = worsened_axes
@@ -404,7 +405,7 @@ fn attribution_candidate(
     evidence_diff: &SnapshotEvidenceDiff,
     touched_components: &BTreeSet<String>,
     worsened_axes: &[String],
-    metadata: &EmpiricalDatasetInput,
+    metadata: &SnapshotAttributionInput,
 ) -> AttributionCandidate {
     let changed_components = metadata.pr_metrics.changed_components.clone();
     let changed_set = changed_components.iter().cloned().collect::<BTreeSet<_>>();

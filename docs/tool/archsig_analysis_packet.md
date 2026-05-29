@@ -13,7 +13,8 @@ LawPolicy
 
 ArchSig Analysis Packet
   records molecule readings, obstruction circuits, signature axes, flatness
-  reading, repair operation candidates, evidence boundaries, and LLM notes.
+  reading, repair operation candidates, child-level evidence boundaries, and
+  LLM notes.
 ```
 
 ## Responsibility
@@ -42,6 +43,9 @@ The implemented schema records:
 Packet validation checks identity, ArchMap / LawPolicy references, law-relative
 obstruction links, signature / flatness references, repair candidate guardrails,
 LLM interpretation notes, evidence boundary, and required non-conclusions.
+Each obstruction circuit, signature axis reading, and repair operation candidate
+must carry its own `missingEvidence` and `excludedReadings`. Packet-level
+`excludedReadings` does not stand in for child-record evidence boundaries.
 
 Validation does not imply:
 
@@ -74,6 +78,9 @@ The builder:
 - preserves observation gaps as flatness blockers, not measured zero
 - emits repair operation candidates with preserved invariants, preconditions,
   transfer risks, evidence boundaries, and non-conclusions
+- fills child-level `missingEvidence` / `excludedReadings` from ArchMap
+  observation gaps, LawPolicy coverage and exactness assumptions, selected
+  witness rules, and repair-candidate evidence limits
 
 ## Downstream Review Artifacts
 
@@ -90,3 +97,6 @@ These projections carry the `ArchMap + LawPolicy -> ArchSig analysis` boundary.
 They do not make the legacy ArchMap projection rule the source of truth, and
 they do not promote analysis-packet validation into theorem proof, global
 architecture lawfulness, extractor completeness, or automatic repair safety.
+FieldSig handoff projects child-level `missingEvidence` / `excludedReadings`
+as unknown remainder and evidence-boundary refs instead of rounding them to
+absence, measured zero, forecast truth, or repair safety.

@@ -326,8 +326,8 @@ fn dedup_edges(import_edges: Vec<ImportEdge>) -> Vec<Edge> {
 
 #[cfg(test)]
 mod tests {
-    use crate::dataset::build_empirical_dataset;
-    use crate::test_support::{dataset_input, fixture_root};
+    use crate::dataset::dataset_signature_shape;
+    use crate::test_support::fixture_root;
     use crate::{
         COMPONENT_KIND, RUNTIME_PROJECTION_RULE_VERSION, SCHEMA_VERSION, extractor::ParsedImport,
     };
@@ -512,19 +512,15 @@ import Should.Not.Appear
                 .measured
         );
 
-        let dataset = build_empirical_dataset(&document, &document, dataset_input(), "head")
-            .expect("dataset builds");
         assert_eq!(
-            dataset.signature_after.signature.runtime_propagation,
+            dataset_signature_shape(&document).runtime_propagation,
             Some(2)
         );
-        assert_eq!(dataset.delta_signature_signed.runtime_propagation, Some(0));
         assert!(
-            dataset
-                .signature_after
+            document
                 .metric_status
                 .get("runtimePropagation")
-                .expect("runtime dataset status")
+                .expect("runtime status")
                 .measured
         );
     }

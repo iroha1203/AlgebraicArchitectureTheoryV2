@@ -9,8 +9,8 @@ use crate::{
     ArchSigAtomConfigurationSummaryV0, ArchSigFlatnessReadingV0, ArchSigLayerSplitV0,
     ArchSigMoleculeReadingV0, ArchSigObstructionCircuitV0, ArchSigRepairOperationCandidateV0,
     ArchSigSignatureAxisReadingV0, LAW_POLICY_SCHEMA_VERSION, LawPolicyDocumentV0,
-    LawPolicyObstructionCircuitDefinitionV0, LawPolicyWitnessRuleV0, ValidationCheck,
-    ValidationExample,
+    LawPolicyObstructionCircuitDefinitionV0, LawPolicySignatureAxisDefinitionV0,
+    LawPolicyWitnessRuleV0, ValidationCheck, ValidationExample,
 };
 
 const REQUIRED_NON_CONCLUSIONS: [&str; 6] = [
@@ -109,6 +109,18 @@ pub fn static_archsig_analysis_packet() -> ArchSigAnalysisPacketV0 {
             evidence_boundary:
                 "computed ArchSig witness under selected LawPolicy; not an ArchMap observation"
                     .to_string(),
+            missing_evidence: vec![
+                "gap-runtime-user-db-trace: runtime trace was requested but not supplied"
+                    .to_string(),
+                "coverage:semantic-contract-atoms: report observation gap and block signature-zero reflection"
+                    .to_string(),
+            ],
+            excluded_readings: vec![
+                "single architecture quality score".to_string(),
+                "global architecture lawfulness".to_string(),
+                "zero readings are exact only for observed atoms and declared coverage requirements"
+                    .to_string(),
+            ],
             interpretation_notes_for_llm: vec![
                 "Describe the obstruction as law-relative, not as a universal architecture defect."
                     .to_string(),
@@ -133,6 +145,18 @@ pub fn static_archsig_analysis_packet() -> ArchSigAnalysisPacketV0 {
                     "no BoundaryLeakCircuit witness was constructed from the fixture atoms"
                         .to_string(),
                 source_refs: strings(&["atom:relation:route-service"]),
+                missing_evidence: vec![
+                    "gap-runtime-user-db-trace: runtime trace was requested but not supplied"
+                        .to_string(),
+                    "coverage:layer-atoms: report observation gap and block signature-zero reflection"
+                        .to_string(),
+                ],
+                excluded_readings: vec![
+                    "global architecture lawfulness".to_string(),
+                    "automatic repair safety".to_string(),
+                    "zero readings are exact only for observed atoms and declared coverage requirements"
+                        .to_string(),
+                ],
                 non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
             },
             ArchSigSignatureAxisReadingV0 {
@@ -155,6 +179,18 @@ pub fn static_archsig_analysis_packet() -> ArchSigAnalysisPacketV0 {
                     "atom:contract:create-user",
                     "concern:missing-compensation",
                 ]),
+                missing_evidence: vec![
+                    "gap-runtime-user-db-trace: runtime trace was requested but not supplied"
+                        .to_string(),
+                    "coverage:semantic-contract-atoms: report observation gap and block signature-zero reflection"
+                        .to_string(),
+                ],
+                excluded_readings: vec![
+                    "single architecture quality score".to_string(),
+                    "global architecture lawfulness".to_string(),
+                    "zero readings are exact only for observed atoms and declared coverage requirements"
+                        .to_string(),
+                ],
                 non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
             },
         ],
@@ -214,6 +250,17 @@ pub fn static_archsig_analysis_packet() -> ArchSigAnalysisPacketV0 {
             evidence_boundary:
                 "repair candidate is an operation hypothesis over the selected packet, not an automatic patch"
                     .to_string(),
+            missing_evidence: vec![
+                "gap-runtime-user-db-trace: runtime trace was requested but not supplied"
+                    .to_string(),
+                "implementation patch and verification evidence are not supplied by ArchSig analysis"
+                    .to_string(),
+            ],
+            excluded_readings: vec![
+                "automatic repair safety".to_string(),
+                "causal forecast correctness".to_string(),
+                "global architecture lawfulness".to_string(),
+            ],
             interpretation_notes_for_llm: vec![
                 "Explain preserved invariants before proposing implementation work.".to_string(),
             ],
@@ -402,6 +449,8 @@ fn build_obstruction_circuits(
                 atom_refs,
                 molecule_refs,
                 concern_refs,
+                archmap,
+                law_policy,
             ))
         })
         .collect()
@@ -461,6 +510,8 @@ fn build_signature_axes(
                     })
                     .flat_map(|circuit| circuit.atom_observation_refs.clone())
                     .collect(),
+                missing_evidence: signature_axis_missing_evidence(archmap, law_policy, definition),
+                excluded_readings: signature_axis_excluded_readings(law_policy, definition),
                 non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
             }
         })
@@ -574,6 +625,8 @@ fn build_repair_candidates(
             evidence_boundary:
                 "repair candidate is derived from ArchSig packet evidence, not an automatic patch"
                     .to_string(),
+            missing_evidence: repair_candidate_missing_evidence(archmap, circuit),
+            excluded_readings: repair_candidate_excluded_readings(circuit),
             interpretation_notes_for_llm: vec![
                 "Explain preconditions and transfer risks before implementation advice."
                     .to_string(),
@@ -748,6 +801,20 @@ fn check_law_relative_analysis(packet: &ArchSigAnalysisPacketV0) -> ValidationCh
             &format!("{} evidenceSummary", circuit.obstruction_circuit_id),
             &circuit.evidence_summary,
         );
+        if circuit.missing_evidence.is_empty() || has_blank(&circuit.missing_evidence) {
+            examples.push(generic_validation_example(
+                &circuit.obstruction_circuit_id,
+                "missingEvidence",
+                "obstruction circuit must carry child-level missing evidence boundary",
+            ));
+        }
+        if circuit.excluded_readings.is_empty() || has_blank(&circuit.excluded_readings) {
+            examples.push(generic_validation_example(
+                &circuit.obstruction_circuit_id,
+                "excludedReadings",
+                "obstruction circuit must carry child-level excluded readings boundary",
+            ));
+        }
     }
     check_from_examples(
         "archsig-analysis-packet-law-relative-obstructions",
@@ -791,6 +858,20 @@ fn check_signature_and_flatness(packet: &ArchSigAnalysisPacketV0) -> ValidationC
                 &axis.signature_axis_id,
                 "coverageStatus",
                 "signature axis must keep coverage status explicit",
+            ));
+        }
+        if axis.missing_evidence.is_empty() || has_blank(&axis.missing_evidence) {
+            examples.push(generic_validation_example(
+                &axis.signature_axis_id,
+                "missingEvidence",
+                "signature axis must carry child-level missing evidence boundary",
+            ));
+        }
+        if axis.excluded_readings.is_empty() || has_blank(&axis.excluded_readings) {
+            examples.push(generic_validation_example(
+                &axis.signature_axis_id,
+                "excludedReadings",
+                "signature axis must carry child-level excluded readings boundary",
             ));
         }
     }
@@ -870,6 +951,20 @@ fn check_repair_candidates(packet: &ArchSigAnalysisPacketV0) -> ValidationCheck 
             &format!("{} evidenceBoundary", repair.repair_operation_candidate_id),
             &repair.evidence_boundary,
         );
+        if repair.missing_evidence.is_empty() || has_blank(&repair.missing_evidence) {
+            examples.push(generic_validation_example(
+                &repair.repair_operation_candidate_id,
+                "missingEvidence",
+                "repair candidate must carry child-level missing evidence boundary",
+            ));
+        }
+        if repair.excluded_readings.is_empty() || has_blank(&repair.excluded_readings) {
+            examples.push(generic_validation_example(
+                &repair.repair_operation_candidate_id,
+                "excludedReadings",
+                "repair candidate must carry child-level excluded readings boundary",
+            ));
+        }
     }
     check_from_examples(
         "archsig-analysis-packet-repair-operation-boundary",
@@ -1041,6 +1136,8 @@ fn obstruction_circuit(
     atom_observation_refs: Vec<String>,
     molecule_reading_refs: Vec<String>,
     concern_hint_refs: Vec<String>,
+    archmap: &ArchMapDocumentV0,
+    law_policy: &LawPolicyDocumentV0,
 ) -> ArchSigObstructionCircuitV0 {
     ArchSigObstructionCircuitV0 {
         obstruction_circuit_id: format!("{}:computed", definition.obstruction_circuit_id),
@@ -1059,11 +1156,152 @@ fn obstruction_circuit(
         evidence_boundary:
             "computed ArchSig witness under selected LawPolicy; concern hints are auxiliary evidence only"
                 .to_string(),
+        missing_evidence: obstruction_missing_evidence(archmap, law_policy, definition, witness_rule),
+        excluded_readings: obstruction_excluded_readings(law_policy),
         interpretation_notes_for_llm: vec![
             "Explain this obstruction as selected LawPolicy-relative.".to_string(),
         ],
         non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
     }
+}
+
+fn archmap_gap_missing_evidence(archmap: &ArchMapDocumentV0) -> Vec<String> {
+    archmap
+        .observation_gaps
+        .iter()
+        .map(|gap| format!("{}: {}", gap.gap_id, gap.reason))
+        .collect()
+}
+
+fn coverage_missing_evidence_for_law(
+    law_policy: &LawPolicyDocumentV0,
+    law_ref: &str,
+) -> Vec<String> {
+    law_policy
+        .coverage_requirements
+        .iter()
+        .filter(|requirement| {
+            requirement.applies_to_law_refs.is_empty()
+                || requirement
+                    .applies_to_law_refs
+                    .iter()
+                    .any(|ref_id| ref_id == law_ref)
+        })
+        .map(|requirement| {
+            format!(
+                "{}: {}",
+                requirement.coverage_requirement_id, requirement.missing_coverage_behavior
+            )
+        })
+        .collect()
+}
+
+fn boundary_or_no_missing_evidence(mut values: Vec<String>, context: &str) -> Vec<String> {
+    values.sort();
+    values.dedup();
+    if values.is_empty() {
+        vec![format!(
+            "no child-level missing evidence recorded for {context} inside selected ArchMap and LawPolicy; this is not global completeness"
+        )]
+    } else {
+        values
+    }
+}
+
+fn child_excluded_readings(law_policy: &LawPolicyDocumentV0) -> Vec<String> {
+    let mut values = law_policy.excluded_readings.clone();
+    values.extend(
+        law_policy
+            .exactness_assumptions
+            .iter()
+            .map(|assumption| format!("exactness-limited: {assumption}")),
+    );
+    values.extend([
+        "single architecture quality score".to_string(),
+        "global architecture lawfulness".to_string(),
+        "automatic repair safety".to_string(),
+    ]);
+    values.sort();
+    values.dedup();
+    values
+}
+
+fn obstruction_missing_evidence(
+    archmap: &ArchMapDocumentV0,
+    law_policy: &LawPolicyDocumentV0,
+    definition: &LawPolicyObstructionCircuitDefinitionV0,
+    witness_rule: &LawPolicyWitnessRuleV0,
+) -> Vec<String> {
+    let mut values = archmap_gap_missing_evidence(archmap);
+    values.extend(coverage_missing_evidence_for_law(
+        law_policy,
+        &definition.law_ref,
+    ));
+    if !witness_rule.missing_evidence_behavior.trim().is_empty() {
+        values.push(format!(
+            "{}: {}",
+            witness_rule.witness_rule_id, witness_rule.missing_evidence_behavior
+        ));
+    }
+    boundary_or_no_missing_evidence(values, &definition.obstruction_circuit_id)
+}
+
+fn obstruction_excluded_readings(law_policy: &LawPolicyDocumentV0) -> Vec<String> {
+    child_excluded_readings(law_policy)
+}
+
+fn signature_axis_missing_evidence(
+    archmap: &ArchMapDocumentV0,
+    law_policy: &LawPolicyDocumentV0,
+    definition: &LawPolicySignatureAxisDefinitionV0,
+) -> Vec<String> {
+    let mut values = archmap_gap_missing_evidence(archmap);
+    values.extend(coverage_missing_evidence_for_law(
+        law_policy,
+        &definition.law_ref,
+    ));
+    boundary_or_no_missing_evidence(values, &definition.signature_axis_id)
+}
+
+fn signature_axis_excluded_readings(
+    law_policy: &LawPolicyDocumentV0,
+    definition: &LawPolicySignatureAxisDefinitionV0,
+) -> Vec<String> {
+    let mut values = child_excluded_readings(law_policy);
+    if !definition.coverage_boundary.trim().is_empty() {
+        values.push(format!(
+            "{} coverage boundary: {}",
+            definition.signature_axis_id, definition.coverage_boundary
+        ));
+    }
+    values.sort();
+    values.dedup();
+    values
+}
+
+fn repair_candidate_missing_evidence(
+    archmap: &ArchMapDocumentV0,
+    circuit: &ArchSigObstructionCircuitV0,
+) -> Vec<String> {
+    let mut values = archmap_gap_missing_evidence(archmap);
+    values.extend(circuit.missing_evidence.clone());
+    values.push(
+        "implementation patch and verification evidence are not supplied by ArchSig analysis"
+            .to_string(),
+    );
+    boundary_or_no_missing_evidence(values, &circuit.obstruction_circuit_id)
+}
+
+fn repair_candidate_excluded_readings(circuit: &ArchSigObstructionCircuitV0) -> Vec<String> {
+    let mut values = circuit.excluded_readings.clone();
+    values.extend([
+        "causal forecast correctness".to_string(),
+        "merge approval".to_string(),
+        "automatic repair safety".to_string(),
+    ]);
+    values.sort();
+    values.dedup();
+    values
 }
 
 fn signature_axis_refs_for_obstruction(
@@ -1266,6 +1504,36 @@ mod tests {
             check.id == "archsig-analysis-packet-repair-operation-boundary"
                 && check.result == "fail"
         }));
+    }
+
+    #[test]
+    fn child_boundary_absence_fails_validation() {
+        let mut packet = static_archsig_analysis_packet();
+        packet.obstruction_circuits[0].missing_evidence.clear();
+        packet.signature_axes[0].excluded_readings.clear();
+        packet.repair_operation_candidates[0]
+            .missing_evidence
+            .clear();
+
+        let report = validate_archsig_analysis_packet_report(&packet, "invalid.json");
+
+        assert_eq!(report.summary.result, "fail");
+        assert!(
+            report.checks.iter().any(|check| {
+                check.result == "fail"
+                    && check.examples.iter().any(|example| {
+                        example
+                            .target
+                            .as_deref()
+                            .is_some_and(|target| target == "missingEvidence")
+                            || example
+                                .target
+                                .as_deref()
+                                .is_some_and(|target| target == "excludedReadings")
+                    })
+            }),
+            "validation must reject missing child-level evidence boundaries"
+        );
     }
 
     #[test]
