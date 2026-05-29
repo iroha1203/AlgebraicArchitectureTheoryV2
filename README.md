@@ -167,7 +167,7 @@ completeness of real-code extractors are not included in that QED.
 - `docs/sft`
   - AAT / SFT interface and the SFT body.
 - `docs/tool`
-  - AIR, extractor, report, claim discipline, workflow, and schema compatibility.
+  - LLM Atom ArchMap, LawPolicy, ArchSig analysis packet, FieldSig handoff, and tooling claim boundaries.
 - `docs/website`
   - Internal operating notes for the public website, including sitemap, design,
     tone, and publication rules.

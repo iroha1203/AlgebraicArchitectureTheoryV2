@@ -40,12 +40,6 @@ Expected ArchSig outputs:
 .lake/llm-native-e2e/archsig/archsig-analysis-packet.json
 .lake/llm-native-e2e/archsig/archsig-analysis-validation.json
 .lake/llm-native-e2e/archsig/llm-interpretation-packet.json
-.lake/llm-native-e2e/archsig/air.json
-.lake/llm-native-e2e/archsig/air-validation.json
-.lake/llm-native-e2e/archsig/theorem-precondition-check.json
-.lake/llm-native-e2e/archsig/feature-report.json
-.lake/llm-native-e2e/archsig/aat-observable-bundle.json
-.lake/llm-native-e2e/archsig/aat-observable-bundle-validation.json
 ```
 
 The LLM interpretation packet is byte-for-byte the same structured analysis
@@ -82,6 +76,9 @@ The E2E flow must preserve these boundaries:
   the current handoff input.
 - Coverage gaps are carried as unknown remainder; they are not rounded to
   absence, measured zero, or forecast truth.
+- ArchSig does not emit AIR, Feature Report, theorem-check, AAT Observable
+  Bundle, Sig0 adapter, PR governance, or signature-diff artifacts in the
+  current E2E route.
 
 ## CI
 

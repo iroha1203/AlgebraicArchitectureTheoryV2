@@ -1,6 +1,6 @@
 # Tool Docs
 
-`docs/tool/` is being rebuilt around the LLM-native ArchMap / LawPolicy / ArchSig workflow tracked by Issue #1328 and its child Issues.
+`docs/tool/` is built around the LLM-native ArchMap / LawPolicy / ArchSig workflow.
 
 The previous mixed ArchSig / ArchMap / AIR / theorem-precondition / FieldSig-transition documents are archived under:
 
@@ -11,12 +11,10 @@ Current source-of-truth boundaries:
 - ArchMap starts from supplied `archmap-observation-map-v0` evidence read as a source-grounded Atom observation map. It records `atomObservations`, `moleculeObservations`, `semanticObservations`, `observationGaps`, `projectionInfo`, `concernHints`, provenance, and non-conclusions.
 - LawPolicy selects laws, witness rules, molecule patterns, obstruction circuit definitions, signature axes, coverage requirements, and exactness assumptions separately from ArchMap.
 - ArchSig reads ArchMap + LawPolicy and computes law-relative obstruction / signature analysis. Obstruction circuits and zero-curvature readings are not first-class ArchMap outputs.
-- `llm-native-workflow` and `archsig-analysis` are the normal ArchSig entry points. `archmap-workflow` and `air-from-archmap` are compat-only direct ArchMap projection commands for older review consumers, not the current source-of-truth path.
+- `llm-native-workflow` and `archsig-analysis` are the normal ArchSig entry points. The old direct ArchMap projection, Sig0 adapter, AIR, Feature Report, theorem-check, signature-diff, and PR governance commands are no longer current ArchSig surface.
 - `concernHints` are review cues. They are not obstruction circuits, not law violations, and not theorem evidence.
 - Legacy ArchMap fields such as `homomorphism`, `mapItems`, `atomCandidates`, `moleculeCandidates`, and `obstructionCircuitCandidates` are compatibility-only when accepted. ArchMap validation reports them under `legacySchemaChecks`; new authoring should use the Atom observation fields above.
-- Lean / Python import-graph output is optional bounded adapter evidence, emitted explicitly by `archsig adapter-scan`; adapter artifacts retain `coverageBoundary`, `unsupportedConstructs`, `missingEvidence`, and `nonConclusions`.
-- `architecture-policy` and `law-violation-report` are adapter-evidence review surfaces over Sig0; they are not substitutes for `law-policy-v0` or `archsig-analysis-packet-v0`.
-- `organization-policy`, `policy-decision`, `pr-comment`, `baseline-suppression`, `pr-quality-analysis`, and `report-artifacts` are bounded review projections. They do not own merge approval, FieldSig governance, forecast correctness, calibration, or operational feedback.
+- The ArchSig schema catalog contains only ArchMap, LawPolicy, ArchSig analysis packet, and their validation reports.
 - ArchSig validation does not prove extractor completeness, semantic correctness, architecture lawfulness, global safety, certified universal atom truth, zero curvature, SFT forecast correctness, or Lean theorem discharge.
 - FieldSig / SFT forecast and governance surfaces are not owned by ArchSig. FieldSig consumes `archsig-analysis-packet-v0` as bounded local AAT state and projects obstruction circuits, signature axes, repair candidates, and coverage gaps into SFT input boundaries. It does not read raw ArchMap observations as forecast truth.
 
