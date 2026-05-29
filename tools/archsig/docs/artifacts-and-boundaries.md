@@ -22,8 +22,8 @@ ArchSig analysis.
 | ArchMap validation report | `archmap-validation-report-v0` | Checks schema support, identity, references, provenance, source refs, observation / concern guardrails, projection separation, gap boundaries, and formal-promotion non-conclusions for a supplied ArchMap observation map. |
 | LawPolicy | `law-policy-v0` | Selected LawUniverse / witness-rule / molecule-pattern / obstruction-definition / signature-axis policy artifact for one review context. It is not AAT theory itself and does not create atoms. |
 | LawPolicy validation report | `law-policy-validation-report-v0` | Checks LawPolicy identity, uniqueness, cross references, witness / obstruction guardrails, coverage requirements, exactness assumptions, and non-conclusions. |
-| ArchSig analysis packet | `archsig-analysis-packet-v0` | Current ArchSig source-of-truth output. It records molecule readings, law-relative obstruction circuits, signature axes, flatness reading, repair candidates, coverage gaps, evidence boundaries, LLM interpretation notes, and non-conclusions. |
-| ArchSig analysis validation report | `archsig-analysis-validation-report-v0` | Checks the analysis packet boundary: ArchMap / LawPolicy refs, law-relative obstruction links, signature-axis refs, flatness refs, repair guardrails, coverage-gap handling, and non-conclusions. |
+| ArchSig analysis packet | `archsig-analysis-packet-v0` | Current ArchSig source-of-truth output. It records molecule readings, law-relative obstruction circuits, signature axes, flatness reading, repair candidates, coverage gaps, child-level `missingEvidence` / `excludedReadings`, evidence boundaries, LLM interpretation notes, and non-conclusions. |
+| ArchSig analysis validation report | `archsig-analysis-validation-report-v0` | Checks the analysis packet boundary: ArchMap / LawPolicy refs, law-relative obstruction links, signature-axis refs, flatness refs, repair guardrails, child-level missing evidence / excluded readings, coverage-gap handling, and non-conclusions. |
 | LLM interpretation packet | `archsig-analysis-packet-v0` | A second serialization of the same structured analysis packet for LLM reading. It is not a natural-language judgement, not a Lean proof, and not an automatic repair instruction. |
 
 ## Bounded Review Projections
@@ -68,7 +68,11 @@ explicit external data pipeline.
 FieldSig consumes the serialized `archsig-analysis-packet-v0` through
 `fieldsig archsig-analysis-sft-input`. That command projects obstruction
 circuits, signature axes, repair candidates, and coverage gaps into
-`operation-support-estimate-v0` as bounded refs and unknown remainder.
+`operation-support-estimate-v0` as bounded refs and unknown remainder. Child
+`missingEvidence` and `excludedReadings` from ArchSig obstruction circuits,
+signature axes, and repair candidates remain FieldSig evidence-boundary refs
+and unknown remainder; they are not rounded to absence, measured zero, forecast
+truth, or repair safety.
 
 ArchSig does not own SFT forecast, IntentMap, workflow evidence, operational
 feedback, dynamics, governance, or calibration. In particular,

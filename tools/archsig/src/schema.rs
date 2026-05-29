@@ -2905,6 +2905,10 @@ pub struct ArchSigObstructionCircuitV0 {
     pub minimality_reading: String,
     pub evidence_summary: String,
     pub evidence_boundary: String,
+    #[serde(default)]
+    pub missing_evidence: Vec<String>,
+    #[serde(default)]
+    pub excluded_readings: Vec<String>,
     #[serde(rename = "interpretationNotesForLLM")]
     pub interpretation_notes_for_llm: Vec<String>,
     pub non_conclusions: Vec<String>,
@@ -2923,6 +2927,10 @@ pub struct ArchSigSignatureAxisReadingV0 {
     pub exactness_assumptions: Vec<String>,
     pub evidence_summary: String,
     pub source_refs: Vec<String>,
+    #[serde(default)]
+    pub missing_evidence: Vec<String>,
+    #[serde(default)]
+    pub excluded_readings: Vec<String>,
     pub non_conclusions: Vec<String>,
 }
 
@@ -2962,6 +2970,10 @@ pub struct ArchSigRepairOperationCandidateV0 {
     pub expected_signature_axis_effects: Vec<String>,
     pub transfer_risks: Vec<String>,
     pub evidence_boundary: String,
+    #[serde(default)]
+    pub missing_evidence: Vec<String>,
+    #[serde(default)]
+    pub excluded_readings: Vec<String>,
     #[serde(rename = "interpretationNotesForLLM")]
     pub interpretation_notes_for_llm: Vec<String>,
     pub non_conclusions: Vec<String>,
