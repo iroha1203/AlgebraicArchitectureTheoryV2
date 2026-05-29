@@ -1,4 +1,3 @@
-use std::collections::BTreeSet;
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::Command;
@@ -124,8 +123,8 @@ fn cli_adapter_scan_emits_bounded_sig0_evidence() {
 }
 
 #[test]
-fn cli_runs_archmap_primary_workflow() {
-    let out_dir = temp_dir("archmap-workflow");
+fn cli_runs_archmap_compat_projection_workflow() {
+    let out_dir = temp_dir("archmap-compat-workflow");
     let root = fixture_root();
     let archmap = root.join("archmap.json");
 
@@ -178,7 +177,7 @@ fn cli_runs_archmap_primary_workflow() {
             "archmap-legacy-schema-fields"
         ),
         "pass",
-        "primary ArchMap fixture must not require legacy fields"
+        "compat ArchMap fixture must not require legacy fields"
     );
     assert_eq!(
         validation_check_result(
@@ -187,7 +186,7 @@ fn cli_runs_archmap_primary_workflow() {
             "archmap-legacy-obstruction-circuit-candidates"
         ),
         "pass",
-        "primary ArchMap fixture must not expose obstruction candidates"
+        "compat ArchMap fixture must not expose obstruction candidates"
     );
     assert_eq!(
         validation_json["atomicObservationSummary"]["atomObservationCount"], 4,
@@ -226,6 +225,20 @@ fn cli_runs_archmap_primary_workflow() {
 
     let air_json = read_json(&out_dir.join("air.json"));
     assert_eq!(air_json["schemaVersion"], "aat-air-v0");
+    assert!(
+        air_json["claims"]
+            .as_array()
+            .expect("AIR claims are an array")
+            .iter()
+            .any(|claim| claim["claimId"] == "claim-archmap-compat-projection-boundary"
+                && claim["nonConclusions"]
+                    .as_array()
+                    .expect("claim nonConclusions are an array")
+                    .iter()
+                    .any(|entry| entry
+                        == "direct ArchMap to AIR projection is compatibility-only and not the current ArchSig source of truth")),
+        "direct ArchMap AIR output must carry the compatibility-only source-of-truth boundary"
+    );
     let theorem_json = read_json(&out_dir.join("theorem-precondition-check.json"));
     assert_eq!(
         theorem_json["schemaVersion"],
@@ -233,6 +246,15 @@ fn cli_runs_archmap_primary_workflow() {
     );
     let feature_json = read_json(&out_dir.join("feature-report.json"));
     assert_eq!(feature_json["schemaVersion"], "feature-extension-report-v0");
+    assert!(
+        feature_json["nonConclusions"]
+            .as_array()
+            .expect("feature nonConclusions are an array")
+            .iter()
+            .any(|entry| entry
+                == "direct ArchMap to AIR projection is compatibility-only and not the current ArchSig source of truth"),
+        "Feature report from archmap-workflow must retain the compatibility-only boundary"
+    );
     assert!(
         matches!(
             feature_json["homomorphismSummary"]["classification"].as_str(),
@@ -570,9 +592,10 @@ fn cli_regression_same_archmap_multiple_law_policies() {
 }
 
 #[test]
-fn cli_locks_archmap_homomorphism_expressiveness_matrix() {
-    let out_dir = temp_dir("archmap-homomorphism-expressiveness");
-    let archmap = expressiveness_root().join("archmap_expressiveness_suite_v0.json");
+fn cli_locks_archmap_atom_observation_regression() {
+    let out_dir = temp_dir("archmap-atom-observation-regression");
+    let root = fixture_root();
+    let archmap = expressiveness_root().join("archmap_atom_observation_suite_v0.json");
     let validation = out_dir.join("archmap-validation.json");
 
     run_sig0(&[
@@ -585,37 +608,45 @@ fn cli_locks_archmap_homomorphism_expressiveness_matrix() {
 
     let json = read_json(&validation);
     assert_eq!(
-        json["homomorphismDiagnostics"]["reading"].as_str(),
-        Some("AAT concept coverage matrix for ArchMap bounded homomorphism expressiveness")
+        json["atomicObservationSummary"]["atomObservationCount"], 4,
+        "Atom observation regression must lock source-grounded atom observations"
     );
-    let family_names = json["homomorphismDiagnostics"]["mapFamilySummaries"]
-        .as_array()
-        .expect("homomorphism family summaries are array")
-        .iter()
-        .map(|entry| entry["mapFamily"].as_str().expect("map family"))
-        .collect::<Vec<_>>();
-    for family in ["object", "relation", "law", "obstruction", "signatureAxis"] {
-        assert!(
-            family_names.contains(&family),
-            "expressiveness matrix must retain AAT {family} map family"
-        );
-    }
-    assert!(
-        json["homomorphismDiagnostics"]["unsupportedBoundaries"]
-            .as_array()
-            .is_some_and(|items| !items.is_empty()),
-        "unsupported AAT concept coverage must remain explicit"
+    assert_eq!(
+        json["atomicObservationSummary"]["moleculeObservationCount"], 1,
+        "Atom observation regression must lock molecule observations"
+    );
+    assert_eq!(
+        json["atomicObservationSummary"]["semanticObservationCount"], 1,
+        "Atom observation regression must lock semantic observations"
+    );
+    assert_eq!(
+        json["atomicObservationSummary"]["observationGapCount"], 1,
+        "Atom observation regression must preserve observation gaps"
+    );
+    assert_eq!(
+        json["atomicObservationSummary"]["concernHintCount"], 1,
+        "Atom observation regression must keep concern hints as review cues"
     );
     assert!(
-        json["homomorphismDiagnostics"]["unmeasuredBoundaries"]
+        json["atomicObservationChecks"]
             .as_array()
-            .is_some_and(|items| !items.is_empty()),
-        "unmeasured AAT concept coverage must remain explicit"
+            .expect("atomic observation checks are array")
+            .iter()
+            .any(|check| check["id"] == "archmap-observation-gaps-not-measured-zero"),
+        "observation gaps must be validated as gaps, not measured zero"
+    );
+    assert!(
+        json["atomicObservationChecks"]
+            .as_array()
+            .expect("atomic observation checks are array")
+            .iter()
+            .any(|check| check["id"] == "archmap-concern-hints-are-not-obstruction-circuits"),
+        "concern hints must be validated without promoting them to obstructions"
     );
     assert_eq!(
         validation_check_result(&json, "legacySchemaChecks", "archmap-legacy-schema-fields"),
-        "warn",
-        "legacy expressiveness fixture should be accepted only as compatibility input"
+        "pass",
+        "Atom observation regression must not require legacy homomorphism or mapItems"
     );
     assert_eq!(
         validation_check_result(
@@ -624,7 +655,28 @@ fn cli_locks_archmap_homomorphism_expressiveness_matrix() {
             "archmap-legacy-obstruction-circuit-candidates"
         ),
         "pass",
-        "expressiveness fixture should not need legacy obstruction candidate input"
+        "Atom observation regression must not require legacy obstruction candidate input"
+    );
+    let derived_families = json["homomorphismDiagnostics"]["mapFamilySummaries"]
+        .as_array()
+        .expect("derived projection summaries are array");
+    let derived_family_names = derived_families
+        .iter()
+        .map(|entry| entry["mapFamily"].as_str().expect("map family"))
+        .collect::<Vec<_>>();
+    for family in ["object", "relation"] {
+        assert!(
+            derived_family_names.contains(&family),
+            "derived compatibility projection may summarize observed {family} atoms"
+        );
+    }
+    let obstruction_family = derived_families
+        .iter()
+        .find(|entry| entry["mapFamily"] == "obstruction")
+        .expect("compatibility diagnostics include obstruction boundary family");
+    assert!(
+        obstruction_family["entryCount"] == 0,
+        "ArchMap observation regression must not populate obstruction as an ArchMap map family"
     );
 
     let legacy_obstruction_dir = temp_dir("archmap-legacy-obstruction-candidate");
@@ -673,69 +725,58 @@ fn cli_locks_archmap_homomorphism_expressiveness_matrix() {
         "legacy obstruction candidates should be called out as non-primary ArchMap output"
     );
 
-    let workflow_dir = temp_dir("archmap-homomorphism-expressiveness-workflow");
+    let full_packet = out_dir.join("archsig-analysis-full.json");
+    let full_validation = out_dir.join("archsig-analysis-full-validation.json");
     run_sig0(&[
-        "archmap-workflow",
+        "archsig-analysis",
         "--archmap",
         archmap.to_str().expect("archmap path is utf-8"),
-        "--out-dir",
-        workflow_dir.to_str().expect("workflow dir path is utf-8"),
+        "--law-policy",
+        root.join("law_policy.json")
+            .to_str()
+            .expect("law policy path is utf-8"),
+        "--out",
+        full_packet.to_str().expect("full packet path is utf-8"),
+        "--validation-out",
+        full_validation
+            .to_str()
+            .expect("full validation path is utf-8"),
     ]);
-    let feature = read_json(&workflow_dir.join("feature-report.json"));
-    let feature_family_names = feature["homomorphismSummary"]["mapFamilies"]
-        .as_array()
-        .expect("feature homomorphism families are array")
-        .iter()
-        .map(|entry| entry["mapFamily"].as_str().expect("map family"))
-        .collect::<Vec<_>>();
-    for family in ["object", "relation", "law", "obstruction", "signatureAxis"] {
-        assert!(
-            feature_family_names.contains(&family),
-            "workflow Feature Report must retain AAT {family} map family"
-        );
-    }
-    let unsupported = feature["homomorphismSummary"]["unsupportedBoundaries"]
-        .as_array()
-        .expect("unsupported boundaries are array")
-        .iter()
-        .map(|item| item.as_str().expect("unsupported boundary"))
-        .collect::<Vec<_>>();
-    let unsupported_unique = unsupported.iter().copied().collect::<BTreeSet<_>>();
-    assert_eq!(
-        unsupported.len(),
-        unsupported_unique.len(),
-        "unsupported boundaries must be deduplicated"
+    let full = read_json(&full_packet);
+    assert!(
+        full["obstructionCircuits"]
+            .as_array()
+            .expect("full obstruction circuits are array")
+            .iter()
+            .any(|entry| entry["lawRef"] == "law:semantic-contract-alignment"),
+        "semantic LawPolicy should construct law-relative obstruction from the same ArchMap"
     );
 
-    let bundle = read_json(&workflow_dir.join("aat-observable-bundle.json"));
-    let concept_status = |concept_id: &str, field: &str| {
-        bundle["conceptMappings"]
-            .as_array()
-            .expect("concept mappings are array")
-            .iter()
-            .find(|entry| entry["conceptId"] == concept_id)
-            .and_then(|entry| entry[field].as_str())
-            .expect("concept field is present")
-            .to_string()
-    };
+    let layer_packet = out_dir.join("archsig-analysis-layer-only.json");
+    let layer_validation = out_dir.join("archsig-analysis-layer-only-validation.json");
+    run_sig0(&[
+        "archsig-analysis",
+        "--archmap",
+        archmap.to_str().expect("archmap path is utf-8"),
+        "--law-policy",
+        root.join("law_policy_layer_only.json")
+            .to_str()
+            .expect("layer-only law policy path is utf-8"),
+        "--out",
+        layer_packet.to_str().expect("layer packet path is utf-8"),
+        "--validation-out",
+        layer_validation
+            .to_str()
+            .expect("layer validation path is utf-8"),
+    ]);
+    let layer_only = read_json(&layer_packet);
     assert_eq!(
-        concept_status("concept:semantic-diagram", "measurementStatus"),
-        "measuredNonzero",
-        "semantic diagram concept status must reflect supplied ArchMap evidence"
-    );
-    assert_eq!(
-        concept_status("concept:theorem-boundary", "reviewStatus"),
-        "blockedByFormalPromotionGuardrail",
-        "theorem boundary must expose the formal promotion guardrail"
-    );
-    let theorem_boundary = &bundle["theoremBoundaries"][0];
-    assert!(
-        theorem_boundary["missingPreconditions"]
+        layer_only["obstructionCircuits"]
             .as_array()
-            .is_some_and(|items| items.iter().any(|item| item
-                .as_str()
-                .is_some_and(|text| text.contains("validation and projection do not discharge")))),
-        "Bundle theorem boundary must retain ArchMap preservation checklist blockers"
+            .expect("layer-only obstruction circuits are array")
+            .len(),
+        0,
+        "layer-only LawPolicy should reanalyze the same ArchMap without semantic obstruction"
     );
 }
 
@@ -756,6 +797,32 @@ fn cli_schema_catalog_is_archsig_owned() {
         .collect::<Vec<_>>();
     assert!(ids.contains(&"signature-artifact"));
     assert!(ids.contains(&"archmap"));
+    assert_eq!(
+        schema_catalog_artifact_role(artifacts, "archsig-analysis-packet"),
+        "primary"
+    );
+    assert_eq!(
+        schema_catalog_artifact_role(artifacts, "architecture-policy"),
+        "adapter evidence"
+    );
+    assert_eq!(
+        schema_catalog_artifact_role(artifacts, "law-violation-report"),
+        "adapter evidence"
+    );
+    for bounded_surface in [
+        "organization-policy",
+        "policy-decision",
+        "pr-comment-summary",
+        "baseline-suppression",
+        "pr-quality-analysis",
+        "report-artifact-retention-manifest",
+    ] {
+        assert_eq!(
+            schema_catalog_artifact_role(artifacts, bounded_surface),
+            "bounded review projection",
+            "{bounded_surface} must be classified as a bounded review projection"
+        );
+    }
     for fieldsig_id in [
         "intentmap",
         "operation-support-estimate",
@@ -768,6 +835,18 @@ fn cli_schema_catalog_is_archsig_owned() {
             "ArchSig catalog still owns FieldSig artifact {fieldsig_id}"
         );
     }
+}
+
+fn schema_catalog_artifact_role<'a>(
+    artifacts: &'a [serde_json::Value],
+    artifact_id: &str,
+) -> &'a str {
+    artifacts
+        .iter()
+        .find(|entry| entry["artifactId"] == artifact_id)
+        .unwrap_or_else(|| panic!("schema catalog artifact {artifact_id} exists"))["artifactRole"]
+        .as_str()
+        .expect("artifact role is string")
 }
 
 fn temp_dir(test_name: &str) -> PathBuf {

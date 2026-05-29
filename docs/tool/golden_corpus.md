@@ -16,11 +16,17 @@ ArchMap observation artifact
 - `tools/archsig/tests/fixtures/minimal/archsig_analysis_packet.json`
 - `tools/archsig/tests/fixtures/minimal/law_policy_layer_only.json`
 - `tools/archsig/tests/fixtures/minimal/archsig_analysis_packet_layer_only.json`
+- `tools/archsig/tests/fixtures/expressiveness/archmap_atom_observation_suite_v0.json`
 
 The layer-only LawPolicy fixture reuses the same ArchMap and produces a
 different ArchSig packet. This fixes the requirement that ArchMap remains
 law-independent and can be reanalyzed under multiple selected LawPolicy
 artifacts.
+
+The expressiveness fixture is now an Atom observation regression. It locks
+`atomObservations`, `moleculeObservations`, `semanticObservations`,
+`observationGaps`, `projectionInfo`, and `concernHints` without requiring
+legacy `mapItems`, `homomorphism`, or `obstructionCircuitCandidates`.
 
 ## Negative Fixtures
 

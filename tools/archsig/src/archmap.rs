@@ -15,6 +15,8 @@ use crate::{
     ArchMapValidationSummary, Sig0Document, ValidationCheck,
 };
 
+const ARCHMAP_COMPAT_PROJECTION_NON_CONCLUSION: &str = "direct ArchMap to AIR projection is compatibility-only and not the current ArchSig source of truth";
+
 pub struct ArchMapSourceInventoryInput<'a> {
     pub path: &'a str,
     pub document: Option<&'a ArchMapSourceInventoryV0>,
@@ -1042,6 +1044,7 @@ pub fn build_air_from_archmap(
     for conflict in &conflicts {
         claims.push(air_claim_from_conflict(conflict));
     }
+    claims.push(air_claim_for_compat_projection_boundary());
 
     AirDocumentV0 {
         schema_version: AIR_SCHEMA_VERSION.to_string(),
@@ -1106,6 +1109,24 @@ pub fn build_air_from_archmap(
             split_claim_ref: None,
             split_status: "unmeasured".to_string(),
         },
+    }
+}
+
+fn air_claim_for_compat_projection_boundary() -> AirClaim {
+    AirClaim {
+        claim_id: "claim-archmap-compat-projection-boundary".to_string(),
+        subject_ref: "archmap-workflow".to_string(),
+        predicate: "direct ArchMap projection compatibility boundary".to_string(),
+        claim_level: "tooling".to_string(),
+        claim_classification: "unmeasured".to_string(),
+        measurement_boundary: "unmeasured".to_string(),
+        theorem_refs: Vec::new(),
+        evidence_refs: vec!["evidence-archmap-artifact".to_string()],
+        required_assumptions: Vec::new(),
+        coverage_assumptions: Vec::new(),
+        exactness_assumptions: Vec::new(),
+        missing_preconditions: Vec::new(),
+        non_conclusions: vec![ARCHMAP_COMPAT_PROJECTION_NON_CONCLUSION.to_string()],
     }
 }
 

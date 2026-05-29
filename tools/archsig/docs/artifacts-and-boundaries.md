@@ -55,12 +55,22 @@ must not be read as replacing the packet.
 | ComponentUniverse validation report | `component-universe-validation-report-v0` | Internal consistency checks for explicit Sig0 adapter artifacts. |
 | Snapshot | `signature-snapshot-store-v0` | Revision-scoped wrapper around Sig0 adapter and validation evidence. |
 | Signature diff | `signature-diff-report-v0` | Before / after structural comparison with measured / unmeasured boundaries. |
-| Architecture policy | `architecture-policy-v0` | Project-local architecture law / review policy for adapter evidence and deterministic policy review. |
-| Law violation report | `law-violation-report-v0` | Deterministic selected-universe law findings and review cues over explicit adapter evidence. |
+| Architecture policy | `architecture-policy-v0` | Project-local deterministic policy for Sig0 adapter evidence. It is not `law-policy-v0` and does not select the LLM-native LawUniverse. |
+| Law violation report | `law-violation-report-v0` | Deterministic selected-universe law findings and review cues over explicit adapter evidence. It is not `archsig-analysis-packet-v0`. |
 
 Adapter output must preserve coverage boundary, unsupported constructs, missing
 evidence, and non-conclusions. Missing, private, unavailable, unsupported,
 dynamic, or framework-specific evidence is not measured zero.
+
+## Surface Classification
+
+| surface | classification | boundary |
+| --- | --- | --- |
+| `archmap-observation-map-v0`, `law-policy-v0`, `archsig-analysis-packet-v0` | primary | Current ArchSig source-of-truth path. |
+| `adapter-scan`, Sig0 validation, snapshots, signature diff, `architecture-policy`, `law-violation-report` | adapter evidence | Bounded repository evidence and deterministic adapter review. |
+| AIR, theorem-check, Feature Report, AAT Observable Bundle, `organization-policy`, `policy-decision`, `pr-comment`, `baseline-suppression`, `pr-quality-analysis`, `report-artifacts` | bounded review projection | Reviewer-facing projections. They do not approve merges or create governance state. |
+| FieldSig forecast / governance / calibration artifacts | FieldSig-owned | ArchSig does not own forecast correctness, governance, calibration, or operational feedback. |
+| Legacy ArchMap fields and direct ArchMap projection workflow | compat-only | Kept for old consumers, not normal authoring or analysis source of truth. |
 
 ## Compatibility Guardrails
 
@@ -72,6 +82,13 @@ new authoring targets. In particular, `obstructionCircuitCandidates` is not a
 first-class ArchMap output; new ArchMap files use `concernHints` for review cues,
 and ArchSig constructs law-relative obstruction circuits only from ArchMap plus
 LawPolicy.
+
+`archmap-workflow` and `air-from-archmap` are compat-only direct ArchMap
+projection commands. They remain available for older review consumers, but they
+are not the normal source-of-truth path. Current ArchSig review uses
+`llm-native-workflow` or `archsig-analysis` to produce
+`archsig-analysis-packet-v0`, then projects bounded AIR / theorem-check /
+Feature Report / AAT Observable Bundle artifacts from that packet.
 
 ## Snapshot Attribution Boundary
 

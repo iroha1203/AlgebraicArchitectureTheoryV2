@@ -4,10 +4,15 @@ use crate::{
     ARCHITECTURE_POLICY_VALIDATION_REPORT_SCHEMA_VERSION, ARCHMAP_SCHEMA_VERSION,
     ARCHMAP_VALIDATION_REPORT_SCHEMA_VERSION, ARCHSIG_ANALYSIS_PACKET_SCHEMA_VERSION,
     ARCHSIG_ANALYSIS_PACKET_VALIDATION_REPORT_SCHEMA_VERSION,
+    BASELINE_SUPPRESSION_REPORT_SCHEMA_VERSION,
     DETECTABLE_VALUES_REPORTED_AXES_CATALOG_SCHEMA_VERSION,
     FEATURE_EXTENSION_REPORT_SCHEMA_VERSION, LAW_POLICY_SCHEMA_VERSION,
     LAW_POLICY_VALIDATION_REPORT_SCHEMA_VERSION, LAW_VIOLATION_REPORT_SCHEMA_VERSION,
-    OBSTRUCTION_WITNESS_SCHEMA_VERSION, PR_QUALITY_ANALYSIS_REPORT_SCHEMA_VERSION,
+    OBSTRUCTION_WITNESS_SCHEMA_VERSION, ORGANIZATION_POLICY_SCHEMA_VERSION,
+    ORGANIZATION_POLICY_VALIDATION_REPORT_SCHEMA_VERSION, POLICY_DECISION_REPORT_SCHEMA_VERSION,
+    PR_COMMENT_SUMMARY_SCHEMA_VERSION, PR_QUALITY_ANALYSIS_REPORT_SCHEMA_VERSION,
+    REPORT_ARTIFACT_RETENTION_MANIFEST_SCHEMA_VERSION,
+    REPORT_ARTIFACT_RETENTION_VALIDATION_REPORT_SCHEMA_VERSION,
     SCHEMA_COMPATIBILITY_POLICY_SCHEMA_VERSION, SCHEMA_VERSION,
     SCHEMA_VERSION_CATALOG_SCHEMA_VERSION, SchemaCompatibilityBoundaryV0,
     SchemaCompatibilityDimensionV0, SchemaCompatibilityPolicyV0, SchemaVersionCatalogEntryV0,
@@ -26,7 +31,7 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 "signature-artifact",
                 "Architecture Signature artifact",
                 SCHEMA_VERSION,
-                "extractor-output",
+                "adapter evidence",
                 "B0-B8",
                 "implemented",
                 vec![
@@ -51,7 +56,7 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 "air",
                 "Architecture Intermediate Representation",
                 AIR_SCHEMA_VERSION,
-                "intermediate-representation",
+                "bounded review projection",
                 "B0-B9",
                 "implemented",
                 vec![
@@ -74,7 +79,7 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 "archmap",
                 "LLM-native ArchMap Atom observation artifact",
                 ARCHMAP_SCHEMA_VERSION,
-                "atom-observation-input",
+                "primary",
                 "LLM-native ArchMap / ArchSig",
                 "implemented",
                 vec![
@@ -98,7 +103,7 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 "archmap-validation-report",
                 "ArchMap Validation Report",
                 ARCHMAP_VALIDATION_REPORT_SCHEMA_VERSION,
-                "validation-output",
+                "primary",
                 "LLM-native ArchMap / ArchSig",
                 "implemented",
                 vec![
@@ -122,7 +127,7 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 "law-policy",
                 "LLM-native selected LawPolicy artifact",
                 LAW_POLICY_SCHEMA_VERSION,
-                "selected-law-universe-policy",
+                "primary",
                 "LLM-native ArchMap / ArchSig",
                 "implemented",
                 vec![
@@ -146,7 +151,7 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 "law-policy-validation-report",
                 "LLM-native LawPolicy validation report",
                 LAW_POLICY_VALIDATION_REPORT_SCHEMA_VERSION,
-                "validation-output",
+                "primary",
                 "LLM-native ArchMap / ArchSig",
                 "implemented",
                 vec!["docs/tool/llm_native_archmap_archsig_prd.md"],
@@ -166,7 +171,7 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 "archsig-analysis-packet",
                 "LLM-native ArchSig AAT analysis packet",
                 ARCHSIG_ANALYSIS_PACKET_SCHEMA_VERSION,
-                "analysis-output",
+                "primary",
                 "LLM-native ArchMap / ArchSig",
                 "implemented",
                 vec![
@@ -190,7 +195,7 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 "archsig-analysis-packet-validation-report",
                 "LLM-native ArchSig analysis packet validation report",
                 ARCHSIG_ANALYSIS_PACKET_VALIDATION_REPORT_SCHEMA_VERSION,
-                "validation-output",
+                "primary",
                 "LLM-native ArchMap / ArchSig",
                 "implemented",
                 vec!["docs/tool/llm_native_archmap_archsig_prd.md"],
@@ -210,8 +215,8 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 "architecture-policy",
                 "Architecture policy artifact",
                 ARCHITECTURE_POLICY_SCHEMA_VERSION,
-                "law-aware-review-policy",
-                "ArchMap law-aware review",
+                "adapter evidence",
+                "Adapter evidence review",
                 "implemented",
                 vec![
                     "tools/archsig/docs/artifacts-and-boundaries.md",
@@ -219,13 +224,13 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 ],
                 vec!["#1162"],
                 compatibility_boundary(
-                    "Map adopted laws, layer selectors, dependency rules, exceptions, and SRP taxonomy explicitly; do not infer policy from repository shape.",
+                    "Map adopted laws, layer selectors, dependency rules, exceptions, and SRP taxonomy explicitly for Sig0 adapter evidence; do not infer LawPolicy or primary ArchSig analysis from repository shape.",
                     vec![],
                     vec![
                         "New law families must declare deterministic versus LLM-review enforcement boundary.",
                     ],
                     vec![
-                        "Architecture policy is review evidence, not a Lean theorem or architecture lawfulness proof.",
+                        "Architecture policy is adapter-evidence review policy, not LawPolicy, Lean theorem evidence, architecture lawfulness proof, or FieldSig governance.",
                     ],
                 ),
             ),
@@ -233,8 +238,8 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 "architecture-policy-validation-report",
                 "Architecture policy validation report",
                 ARCHITECTURE_POLICY_VALIDATION_REPORT_SCHEMA_VERSION,
-                "validation-output",
-                "ArchMap law-aware review",
+                "adapter evidence",
+                "Adapter evidence review",
                 "implemented",
                 vec!["tools/archsig/docs/commands.md"],
                 vec!["#1162"],
@@ -243,7 +248,7 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                     vec![],
                     vec!["New checks must distinguish fail, warn, and unmeasured policy evidence."],
                     vec![
-                        "Validation pass does not imply architecture lawfulness or SRP violation.",
+                        "Validation pass does not imply architecture lawfulness, LawPolicy selection, FieldSig governance, or SRP violation.",
                     ],
                 ),
             ),
@@ -251,8 +256,8 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 "law-violation-report",
                 "Law violation report",
                 LAW_VIOLATION_REPORT_SCHEMA_VERSION,
-                "review-output",
-                "ArchMap law-aware review",
+                "adapter evidence",
+                "Adapter evidence review",
                 "implemented",
                 vec![
                     "tools/archsig/docs/commands.md",
@@ -260,13 +265,13 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 ],
                 vec!["#1164", "#1165"],
                 compatibility_boundary(
-                    "Map deterministic Layered findings, allowed exceptions, SRP cues, unmeasured selectors, review actions, and non-conclusions explicitly.",
+                    "Map deterministic Layered findings, allowed exceptions, SRP cues, unmeasured selectors, review actions, and non-conclusions over explicit Sig0 adapter evidence.",
                     vec![],
                     vec![
                         "New law findings must preserve evidence refs and policy refs before review classification.",
                     ],
                     vec![
-                        "Layered findings are selected-universe tooling evidence and SRP cues are not tool-only violations.",
+                        "Layered findings are selected-universe adapter evidence; SRP cues are not tool-only violations, LawPolicy output, FieldSig governance, or merge approval.",
                     ],
                 ),
             ),
@@ -274,7 +279,7 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 "archmap-generation-protocol",
                 "ArchMap generation protocol",
                 "archmap-generation-protocol-v0",
-                "external-agent-protocol",
+                "compat-only",
                 "ArchMap v2",
                 "implemented",
                 vec![
@@ -297,7 +302,7 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 "pr-quality-analysis",
                 "PR Quality Analysis report",
                 PR_QUALITY_ANALYSIS_REPORT_SCHEMA_VERSION,
-                "review-output",
+                "bounded review projection",
                 "PRD v3",
                 "implemented",
                 vec![
@@ -312,7 +317,157 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                         "New cue kinds must declare evidence boundary and avoid merge-decision or architecture-lawfulness claims.",
                     ],
                     vec![
-                        "PR quality analysis is review evidence, not merge approval or a global architecture ranking.",
+                        "PR quality analysis is bounded review projection, not merge approval, FieldSig governance, forecast, calibration, or global architecture ranking.",
+                    ],
+                ),
+            ),
+            artifact(
+                "organization-policy",
+                "Organization policy artifact",
+                ORGANIZATION_POLICY_SCHEMA_VERSION,
+                "bounded review projection",
+                "B7 review policy",
+                "implemented",
+                vec![
+                    "tools/archsig/docs/artifacts-and-boundaries.md",
+                    "tools/archsig/docs/commands.md",
+                ],
+                vec!["#1151"],
+                compatibility_boundary(
+                    "Map review levels, required axes, allowed suppressions, and governance labels only as ArchSig review policy inputs.",
+                    vec![],
+                    vec![
+                        "New review policy fields must preserve non-approval and non-governance boundaries.",
+                    ],
+                    vec![
+                        "Organization policy is not FieldSig governance, forecast calibration, merge approval, or LawPolicy.",
+                    ],
+                ),
+            ),
+            artifact(
+                "organization-policy-validation-report",
+                "Organization policy validation report",
+                ORGANIZATION_POLICY_VALIDATION_REPORT_SCHEMA_VERSION,
+                "bounded review projection",
+                "B7 review policy",
+                "implemented",
+                vec!["tools/archsig/docs/commands.md"],
+                vec!["#1151"],
+                compatibility_boundary(
+                    "Validate organization policy consistency without promoting review levels to governance authority.",
+                    vec![],
+                    vec!["New checks must keep review policy and FieldSig governance separate."],
+                    vec![
+                        "Validation pass is not merge approval, governance approval, or forecast correctness.",
+                    ],
+                ),
+            ),
+            artifact(
+                "policy-decision",
+                "Policy decision report",
+                POLICY_DECISION_REPORT_SCHEMA_VERSION,
+                "bounded review projection",
+                "B7 review policy",
+                "implemented",
+                vec![
+                    "tools/archsig/docs/artifacts-and-boundaries.md",
+                    "tools/archsig/docs/commands.md",
+                ],
+                vec!["#1152"],
+                compatibility_boundary(
+                    "Map feature-report findings to warn/fail/advisory review decisions without creating merge approval or governance state.",
+                    vec![],
+                    vec![
+                        "New decision fields must preserve missing evidence and human-review boundaries.",
+                    ],
+                    vec![
+                        "Policy decision is a bounded ArchSig review projection, not FieldSig governance, forecast, calibration, or automatic merge approval.",
+                    ],
+                ),
+            ),
+            artifact(
+                "pr-comment-summary",
+                "PR comment summary",
+                PR_COMMENT_SUMMARY_SCHEMA_VERSION,
+                "bounded review projection",
+                "B7 review policy",
+                "implemented",
+                vec!["tools/archsig/docs/commands.md"],
+                vec!["#1154"],
+                compatibility_boundary(
+                    "Render feature-report and optional policy-decision refs into Markdown review cues without changing artifact semantics.",
+                    vec![],
+                    vec![
+                        "New comment sections must preserve report refs and non-conclusion boundaries.",
+                    ],
+                    vec![
+                        "PR comment is not merge approval, governance approval, forecast correctness, or theorem evidence.",
+                    ],
+                ),
+            ),
+            artifact(
+                "report-artifact-retention-manifest",
+                "Report artifact retention manifest",
+                REPORT_ARTIFACT_RETENTION_MANIFEST_SCHEMA_VERSION,
+                "bounded review projection",
+                "B7 review policy",
+                "implemented",
+                vec![
+                    "tools/archsig/docs/artifacts-and-boundaries.md",
+                    "tools/archsig/docs/commands.md",
+                ],
+                vec!["#1155"],
+                compatibility_boundary(
+                    "Map retained, missing, private, and unavailable review artifacts for traceability without treating absence as measured zero.",
+                    vec![],
+                    vec![
+                        "New retained artifact kinds must declare missing/private evidence semantics.",
+                    ],
+                    vec![
+                        "Retention metadata is not proof of completeness, merge approval, governance approval, or forecast evidence.",
+                    ],
+                ),
+            ),
+            artifact(
+                "report-artifact-retention-validation-report",
+                "Report artifact retention validation report",
+                REPORT_ARTIFACT_RETENTION_VALIDATION_REPORT_SCHEMA_VERSION,
+                "bounded review projection",
+                "B7 review policy",
+                "implemented",
+                vec!["tools/archsig/docs/commands.md"],
+                vec!["#1155"],
+                compatibility_boundary(
+                    "Validate retention manifest consistency while preserving missing/private artifact boundaries.",
+                    vec![],
+                    vec![
+                        "New checks must not convert missing artifacts to absence or measured zero.",
+                    ],
+                    vec![
+                        "Validation pass does not prove evidence completeness, governance state, or forecast correctness.",
+                    ],
+                ),
+            ),
+            artifact(
+                "baseline-suppression",
+                "Baseline suppression report",
+                BASELINE_SUPPRESSION_REPORT_SCHEMA_VERSION,
+                "bounded review projection",
+                "B7 review policy",
+                "implemented",
+                vec![
+                    "tools/archsig/docs/artifacts-and-boundaries.md",
+                    "tools/archsig/docs/commands.md",
+                ],
+                vec!["#1156"],
+                compatibility_boundary(
+                    "Compare baseline/current review reports and accepted-risk metadata without treating suppression as repair or governance closure.",
+                    vec![],
+                    vec![
+                        "New suppression states must distinguish accepted risk, unresolved evidence, and repaired structure.",
+                    ],
+                    vec![
+                        "Suppression is not resolution, repair proof, FieldSig governance, forecast calibration, or merge approval.",
                     ],
                 ),
             ),
@@ -320,7 +475,7 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 "aat-observable-bundle",
                 "AAT Observable Bundle",
                 AAT_OBSERVABLE_BUNDLE_SCHEMA_VERSION,
-                "aat-observable-review-bundle",
+                "bounded review projection",
                 "AAT observable bridge",
                 "implemented",
                 vec![
@@ -348,7 +503,7 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 "feature-extension-report",
                 "Feature Extension Report",
                 FEATURE_EXTENSION_REPORT_SCHEMA_VERSION,
-                "review-output",
+                "bounded review projection",
                 "B1-B9",
                 "implemented",
                 vec![

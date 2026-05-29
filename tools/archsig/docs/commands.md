@@ -85,10 +85,12 @@ cargo run --manifest-path tools/archsig/Cargo.toml -- archsig-analysis \
 ```bash
 cargo run --manifest-path tools/archsig/Cargo.toml -- archmap-workflow \
   --archmap tools/archsig/tests/fixtures/minimal/archmap.json \
-  --out-dir .archsig/archmap-primary
+  --out-dir .archsig/compat/archmap-workflow
 ```
 
-These commands emit ArchMap validation, AIR, AIR validation, theorem precondition check, Feature Extension Report, AAT Observable Bundle, and bundle validation artifacts for older review surfaces. They are compatibility projections, not the current ArchSig source of truth. New LLM-native work should prefer `llm-native-workflow` and `archsig-analysis`.
+These commands emit ArchMap validation, AIR, AIR validation, theorem precondition check, Feature Extension Report, AAT Observable Bundle, and bundle validation artifacts for older review surfaces. They are compat-only direct projections, not the current ArchSig source of truth. Normal ArchSig review starts from `llm-native-workflow` or `archsig-analysis`, where `archsig-analysis-packet-v0` is the source-of-truth output.
+
+`archmap-workflow` and `air-from-archmap` outputs carry a compatibility non-conclusion so downstream consumers do not treat direct ArchMap projection as the primary analysis path.
 
 The bundle is assembled from the input ArchMap and generated workflow reports, so static fixture architecture ids, source refs, witnesses, and selected universes are not carried into workflow output. Optional Sig0 adapter evidence can be supplied for static / semantic conflict checks:
 
@@ -96,7 +98,7 @@ The bundle is assembled from the input ArchMap and generated workflow reports, s
 cargo run --manifest-path tools/archsig/Cargo.toml -- archmap-workflow \
   --archmap tools/archsig/tests/fixtures/minimal/archmap.json \
   --sig0 .archsig/adapter/sig0.json \
-  --out-dir .archsig/archmap-primary
+  --out-dir .archsig/compat/archmap-workflow
 ```
 
 Equivalent step-by-step commands remain available:
@@ -174,6 +176,21 @@ cargo run --manifest-path tools/archsig/Cargo.toml -- signature-diff \
 
 ## Policy And Reports
 
+These commands are not the LLM-native source-of-truth path. They are classified
+as follows:
+
+| command / surface | classification | boundary |
+| --- | --- | --- |
+| `architecture-policy` | adapter evidence | Project-local deterministic policy over Sig0 adapter evidence; not `law-policy-v0`. |
+| `law-violation-report` | adapter evidence | Findings over explicit Sig0 adapter evidence; not ArchSig analysis packet output. |
+| `organization-policy` | bounded review projection | Review-level policy for report handling; not FieldSig governance. |
+| `policy-decision` | bounded review projection | Warn / fail / advisory review projection; not merge approval. |
+| `pr-comment` | bounded review projection | Markdown rendering of review cues; not merge approval. |
+| `baseline-suppression` | bounded review projection | Suppression / accepted-risk metadata; not repair, governance closure, or forecast calibration. |
+| `pr-quality-analysis` | bounded review projection | Reviewer-facing cue projection; not merge approval or quality score. |
+| `report-artifacts` | bounded review projection | Retention and traceability metadata; missing artifacts are not measured zero. |
+| FieldSig forecast / governance / calibration | FieldSig-owned | Use FieldSig surfaces; ArchSig does not own forecast correctness or governance state. |
+
 ```bash
 cargo run --manifest-path tools/archsig/Cargo.toml -- architecture-policy \
   --input tools/archsig/tests/fixtures/minimal/architecture_policy.json \
@@ -185,7 +202,7 @@ cargo run --manifest-path tools/archsig/Cargo.toml -- law-violation-report \
   --out .archsig/policy/law-violation-report.json
 
 cargo run --manifest-path tools/archsig/Cargo.toml -- policy-decision \
-  --feature-report .archsig/archmap-primary/feature-report.json \
+  --feature-report .archsig/llm-native/feature-report.json \
   --out .archsig/review/policy-decision.json
 ```
 
