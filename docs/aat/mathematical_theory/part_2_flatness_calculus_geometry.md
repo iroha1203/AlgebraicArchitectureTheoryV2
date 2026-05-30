@@ -522,7 +522,29 @@ SplitFeatureExtensionWithin
 AAT が問うのは、この拡張を一つの局所操作として見たとき、元 core が保存されるか、
 feature 部分が selected observation 上で取り出せるか、どの invariant が破れるかである。
 
-### 命題 7.3 Extension Preservation
+### 命題 7.3 Bridge-Edge Split Obstruction Transfer
+
+candidate split boundary をまたぐ bridge edge が shared Atom support を運び、selected
+obstruction axis がその bridge 上に support を持つなら、split readiness は明示的な
+filler / lifting / boundary-operation evidence に相対化される。
+
+```text
+Bridge(e)
+Support(e, shared atoms)
+ObstructionAxis(o, e)
+--------------------------------
+SplitReadyWithoutTransfer
+  -> FillerEvidence or LiftingEvidence or BoundaryOperationEvidence
+```
+
+したがって、その evidence がない場合、split は obstruction を除去したとは読めない。
+obstruction は消えるのではなく、別の boundary へ transfer される可能性が残る。
+
+これは bridge edge があるだけで transfer を theorem として結論する主張ではない。
+結論できるのは、selected bridge support と selected obstruction support を仮定したとき、
+split claim に必要な boundary evidence が何であるかである。
+
+### 命題 7.4 Extension Preservation
 
 `ext_f` が selected law universe `U` に対して split し、必要な interaction law を満たすなら、
 
@@ -532,7 +554,7 @@ Lawful_U(A) -> Lawful_U(B)
 
 が成り立つ。
 
-### 例 7.4 Coupon Extension
+### 例 7.5 Coupon Extension
 
 coupon feature は、price calculation、discount policy、rounding、tax、payment、
 event emission に Atom を追加する。static dependency が増えなくても、rounding law や
@@ -758,7 +780,30 @@ p ~ q -> Obs(p) = Obs(q)
 逆向きは一般には成り立たない。同じ observation を持つ二つの path が、選ばれた
 generator で変形できるとは限らない。
 
-### 例 11.3 Independent Square
+### 命題 11.3 Signature Trajectory Refutation
+
+selected signature trajectory `T` が homotopy generator によって保存されるなら、
+homotopic path は同じ trajectory を持つ。
+
+```text
+p ~ q
+----------------
+T(p) = T(q)
+```
+
+従って反対向きに、
+
+```text
+T(p) != T(q)
+----------------
+not (p ~ q)
+```
+
+が得られる。ただしこれは `T` を保存する selected homotopy に対する refutation である。
+同じ endpoint を持つ path が一般に非同値であること、または operation が非可換であることを
+無条件に主張しない。endpoint delta と trajectory disagreement は別の reading である。
+
+### 例 11.4 Independent Square
 
 二つの feature extension `f` と `g` が独立なら、
 

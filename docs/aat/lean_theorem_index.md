@@ -4058,6 +4058,31 @@ tooling policy である。
 
 Non-conclusions: `AtomAxiomSystem` は taxonomy completeness、extractor completeness、tool validation correctness、forecast correctness、global future safety を結論しない。ArchMap / ArchSig / FieldSig は Atom を観測・分析・受け渡しする後段 layer であり、Atom や AAT を生成しない。
 
+## Reverse-Import Theorem Packages
+
+File: `Formal/Arch/Evolution/ReverseImportTheorems.lean`.
+
+ArchSig の structural reading から見える projection / trajectory / bridge-transfer の
+パターンを、private source に依存しない AAT theorem package として戻した索引である。
+各 theorem は assumption-relative であり、tooling measurement を global truth や
+automatic repair safety に昇格しない。
+
+| Lean 名 | 種別 | 意味 | Status |
+| --- | --- | --- | --- |
+| `ReverseImportTheorems.AxisForgettingProjectionBoundary` | `structure` | coarse reading preservation と、selected axis preservation / witness completeness に相対化された zero / obstruction reflection boundary を分離する。 | `defined only` |
+| `ReverseImportTheorems.AxisForgettingProjectionBoundary.HasReflectionWitnesses` | `def` | projection reflection に必要な selected axis preservation と witness completeness の組。 | `defined only` |
+| `ReverseImportTheorems.AxisForgettingProjectionBoundary.not_zeroReflecting_of_missingAxisWitness` | `theorem` | axis preservation / witness completeness が欠ける場合、structural zero reflection を結論できない。 | `proved` |
+| `ReverseImportTheorems.AxisForgettingProjectionBoundary.not_obstructionReflecting_of_missingAxisWitness` | `theorem` | axis preservation / witness completeness が欠ける場合、obstruction absence reflection を結論できない。 | `proved` |
+| `ReverseImportTheorems.AxisForgettingProjectionBoundary.records_nonConclusions` | `theorem` | projection boundary が non-conclusion clause を保持する。 | `proved` |
+| `ReverseImportTheorems.selectedSignatureTrajectory_refutesPathHomotopy` | `theorem` | selected trajectory observation を保存する generated homotopy に対し、trajectory disagreement から selected homotopy 不在を得る。 | `proved` |
+| `ReverseImportTheorems.BridgeEdgeSplitObstructionBoundary` | `structure` | bridge edge shared Atom support、selected obstruction support、filler / lifting / boundary-operation evidence、split readiness を束ねる。 | `defined only` |
+| `ReverseImportTheorems.BridgeEdgeSplitObstructionBoundary.HasBoundaryEvidence` | `def` | split transfer を防ぐ filler / lifting / boundary-operation evidence の和。 | `defined only` |
+| `ReverseImportTheorems.BridgeEdgeSplitObstructionBoundary.not_splitReadyWithoutTransfer_of_missingBoundaryEvidence` | `theorem` | selected bridge support と obstruction support の下で boundary evidence が欠ける場合、transfer-free split readiness は結論できない。 | `proved` |
+| `ReverseImportTheorems.BridgeEdgeSplitObstructionBoundary.RecordsTransferRisk` | `def` | bridge support、obstruction support、missing boundary evidence、non-conclusion を transfer-risk report として束ねる。 | `defined only` |
+| `ReverseImportTheorems.BridgeEdgeSplitObstructionBoundary.recordsTransferRisk_of_missingBoundaryEvidence` | `theorem` | 明示前提から transfer-risk report package を構成する。 | `proved` |
+
+Non-conclusions: private repository 名、source path、internal id、global architecture truth、extractor completeness、operation commutativity、automatic repair safety、FieldSig forecast correctness は結論しない。
+
 ## 現在 Lean に入れていないもの
 
 次は意図的に Lean core へ混ぜていない。

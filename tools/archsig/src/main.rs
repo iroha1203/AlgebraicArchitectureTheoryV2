@@ -523,6 +523,9 @@ fn measurement_expansion_summary(
         "pathSignatureTrajectory": limited_array_field(llm_packet, "pathSignatureTrajectorySummary", limit),
         "homotopyOrderSensitivity": limited_array_field(llm_packet, "homotopyOrderSensitivitySummary", limit),
         "diagramFillability": limited_array_field(llm_packet, "diagramFillabilitySummary", limit),
+        "axisForgettingRisk": limited_array_field(llm_packet, "axisForgettingRiskSummary", limit),
+        "signatureTrajectoryHomotopyRefutation": limited_array_field(llm_packet, "signatureTrajectoryHomotopyRefutationSummary", limit),
+        "bridgeSplitObstructionTransfer": limited_array_field(llm_packet, "bridgeSplitObstructionTransferSummary", limit),
         "counts": {
             "atomSupportAxisReadings": array_len(packet, "atomSupportAxisReadings"),
             "atomCompatibilityReadings": array_len(packet, "atomCompatibilityReadings"),
@@ -531,7 +534,10 @@ fn measurement_expansion_summary(
             "operationCalculusLawReadings": array_len(packet, "operationCalculusLawReadings"),
             "pathSignatureTrajectoryReadings": array_len(packet, "pathSignatureTrajectoryReadings"),
             "homotopyOrderSensitivityReadings": array_len(packet, "homotopyOrderSensitivityReadings"),
-            "diagramFillabilityReadings": array_len(packet, "diagramFillabilityReadings")
+            "diagramFillabilityReadings": array_len(packet, "diagramFillabilityReadings"),
+            "axisForgettingRiskReadings": array_len(packet, "axisForgettingRiskReadings"),
+            "signatureTrajectoryHomotopyRefutationReadings": array_len(packet, "signatureTrajectoryHomotopyRefutationReadings"),
+            "bridgeSplitObstructionTransferReadings": array_len(packet, "bridgeSplitObstructionTransferReadings")
         }
     })
 }

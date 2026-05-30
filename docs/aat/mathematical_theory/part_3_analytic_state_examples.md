@@ -255,6 +255,41 @@ R(A) = R(B)
 であっても、`A` と `B` が同じ architecture object であるとは限らない。
 analytic representation は selected axes の読みであり、architecture object 全体の代替ではない。
 
+### 命題 5.6 Axis-Forgetting Projection Non-Reflection
+
+selected Atom axes を忘れる projection は、coarse reading を保存できる。
+
+```text
+pi : Sig(A) -> Coarse(A)
+```
+
+しかし、forgotten axes や mixed-axis support がある場合、coarse value から構造的 zero や
+obstruction absence へ戻る方向は一般には反射しない。
+
+```text
+Coarse(A) = 0
+  does not imply
+StructuralZero(A)
+```
+
+```text
+NoCoarseObstruction(A)
+  does not imply
+NoSelectedObstruction(A)
+```
+
+戻る方向を読むには、少なくとも次の boundary が必要である。
+
+```text
+selected axis preservation
+witness completeness for forgotten coordinates
+LawPolicy-relative coverage / exactness
+```
+
+この命題は projection、matrix、spectral、curvature、aggregate reading を否定するものではない。
+それらを安全に読むため、`ZeroReflecting` と `ObstructionReflecting` がどの仮定に依存するかを
+明示する。
+
 ## 6. Numerical Curvature
 
 Curvature は obstruction valuation の数値表現として扱える。

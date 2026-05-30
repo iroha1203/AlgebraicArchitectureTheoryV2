@@ -11,28 +11,29 @@ use crate::{
     ArchSigAnalyticRepresentationV0, ArchSigArchitectureObjectProjectionV0,
     ArchSigArchitectureStateV0, ArchSigAtomCompatibilityConflictV0,
     ArchSigAtomCompatibilityReadingV0, ArchSigAtomConfigurationSummaryV0,
-    ArchSigAtomSupportAxisReadingV0, ArchSigAxisExcursionV0, ArchSigAxisRestrictionCountV0,
-    ArchSigBoundaryPreparationRankV0, ArchSigBoundedJudgementV0, ArchSigBridgeAtomFamilyReadingV0,
-    ArchSigBridgeEdgeBreakdownV0, ArchSigChangeImpactReadingV0, ArchSigCouplingCohesionReadingV0,
-    ArchSigCoverageStatusV0, ArchSigCurrentStateEvolutionBoundaryV0,
-    ArchSigDesignPressureReadingV0, ArchSigDesignPrincipleReadingV0,
-    ArchSigDiagramFillabilityReadingV0, ArchSigDominantAtomFamilyCompositionV0,
-    ArchSigEvolutionRiskRankingV0, ArchSigFeatureExtensionAxisSummaryV0,
-    ArchSigFeatureExtensionFormulaReadingV0, ArchSigFlatnessReadingV0,
-    ArchSigHighOverlapMoleculePairV0, ArchSigHomotopyOrderSensitivityReadingV0,
-    ArchSigInvariantFamilyReadingV0, ArchSigLawUniverseCoverageReadingV0,
-    ArchSigLawUniverseReadingV0, ArchSigLayerSplitV0, ArchSigLlmInterpretationPacketV0,
-    ArchSigLocalCurvatureDiagramReadingV0, ArchSigMoleculeReadingV0,
-    ArchSigObservationProjectionReadingV0, ArchSigObstructionCircuitV0,
+    ArchSigAtomSupportAxisReadingV0, ArchSigAxisExcursionV0, ArchSigAxisForgettingRiskReadingV0,
+    ArchSigAxisRestrictionCountV0, ArchSigBoundaryPreparationRankV0, ArchSigBoundedJudgementV0,
+    ArchSigBridgeAtomFamilyReadingV0, ArchSigBridgeEdgeBreakdownV0,
+    ArchSigBridgeSplitObstructionTransferReadingV0, ArchSigChangeImpactReadingV0,
+    ArchSigCouplingCohesionReadingV0, ArchSigCoverageStatusV0,
+    ArchSigCurrentStateEvolutionBoundaryV0, ArchSigDesignPressureReadingV0,
+    ArchSigDesignPrincipleReadingV0, ArchSigDiagramFillabilityReadingV0,
+    ArchSigDominantAtomFamilyCompositionV0, ArchSigEvolutionRiskRankingV0,
+    ArchSigFeatureExtensionAxisSummaryV0, ArchSigFeatureExtensionFormulaReadingV0,
+    ArchSigFlatnessReadingV0, ArchSigHighOverlapMoleculePairV0,
+    ArchSigHomotopyOrderSensitivityReadingV0, ArchSigInvariantFamilyReadingV0,
+    ArchSigLawUniverseCoverageReadingV0, ArchSigLawUniverseReadingV0, ArchSigLayerSplitV0,
+    ArchSigLlmInterpretationPacketV0, ArchSigLocalCurvatureDiagramReadingV0,
+    ArchSigMoleculeReadingV0, ArchSigObservationProjectionReadingV0, ArchSigObstructionCircuitV0,
     ArchSigOperationCalculusLawReadingV0, ArchSigOperationDeltaReadingV0,
     ArchSigOperationInvariantGaloisReadingV0, ArchSigPathHomotopyDiagramReadingV0,
     ArchSigPathSignatureTrajectoryReadingV0, ArchSigRepairAxisDeltaReadingV0,
     ArchSigRepairOperationCandidateV0, ArchSigRepairTransferRiskRankV0,
     ArchSigRepresentationStrengthReadingV0, ArchSigSignatureAxisReadingV0,
-    ArchSigSpectralAnalysisReadingV0, ArchSigSpectralDominantComponentV0,
-    ArchSigSpectralDrilldownReadingV0, ArchSigSpectralMatrixShapeV0,
-    ArchSigSpectralModeComponentV0, ArchSigSpectralModeReadingV0, ArchSigSpectralValueV0,
-    ArchSigSplitReadinessReadingV0, ArchSigStateTransitionAlgebraReadingV0,
+    ArchSigSignatureTrajectoryHomotopyRefutationReadingV0, ArchSigSpectralAnalysisReadingV0,
+    ArchSigSpectralDominantComponentV0, ArchSigSpectralDrilldownReadingV0,
+    ArchSigSpectralMatrixShapeV0, ArchSigSpectralModeComponentV0, ArchSigSpectralModeReadingV0,
+    ArchSigSpectralValueV0, ArchSigSplitReadinessReadingV0, ArchSigStateTransitionAlgebraReadingV0,
     ArchSigStructuralReadingReviewSurfaceV0, ArchSigSubjectFamilySpreadV0,
     ArchSigThreeLayerFlatnessReadingV0, ArchSigTransferBridgeReadingV0,
     ArchSigTransferMatrixEntryV0, ArchSigWorkflowAtomFamilyCountV0,
@@ -171,6 +172,17 @@ pub fn build_archsig_analysis_packet(
         &local_curvature_diagram_readings,
         &feature_extension_formula_readings,
     );
+    let axis_forgetting_risk_readings = build_axis_forgetting_risk_readings(
+        &atom_support_axis_readings,
+        &observation_projection_readings,
+    );
+    let signature_trajectory_homotopy_refutation_readings =
+        build_signature_trajectory_homotopy_refutation_readings(
+            &path_signature_trajectory_readings,
+            &homotopy_order_sensitivity_readings,
+        );
+    let bridge_split_obstruction_transfer_readings =
+        build_bridge_split_obstruction_transfer_readings(&split_readiness_readings);
     let structural_reading_review_surface = build_structural_reading_review_surface(
         &representation_strength_readings,
         &local_curvature_diagram_readings,
@@ -187,6 +199,9 @@ pub fn build_archsig_analysis_packet(
         &path_signature_trajectory_readings,
         &homotopy_order_sensitivity_readings,
         &diagram_fillability_readings,
+        &axis_forgetting_risk_readings,
+        &signature_trajectory_homotopy_refutation_readings,
+        &bridge_split_obstruction_transfer_readings,
     );
     let current_state_evolution_boundary =
         build_current_state_evolution_boundary(archmap, law_policy);
@@ -231,6 +246,9 @@ pub fn build_archsig_analysis_packet(
         &path_signature_trajectory_readings,
         &homotopy_order_sensitivity_readings,
         &diagram_fillability_readings,
+        &axis_forgetting_risk_readings,
+        &signature_trajectory_homotopy_refutation_readings,
+        &bridge_split_obstruction_transfer_readings,
         &representation_strength_readings,
         &local_curvature_diagram_readings,
         &three_layer_flatness_readings,
@@ -290,6 +308,9 @@ pub fn build_archsig_analysis_packet(
         path_signature_trajectory_readings,
         homotopy_order_sensitivity_readings,
         diagram_fillability_readings,
+        axis_forgetting_risk_readings,
+        signature_trajectory_homotopy_refutation_readings,
+        bridge_split_obstruction_transfer_readings,
         representation_strength_readings,
         local_curvature_diagram_readings,
         three_layer_flatness_readings,
@@ -4489,6 +4510,165 @@ fn build_diagram_fillability_readings(
         .collect()
 }
 
+fn build_axis_forgetting_risk_readings(
+    atom_support_axis_readings: &[ArchSigAtomSupportAxisReadingV0],
+    observation_projection_readings: &[ArchSigObservationProjectionReadingV0],
+) -> Vec<ArchSigAxisForgettingRiskReadingV0> {
+    let forgotten_axis_refs = unique_strings(
+        observation_projection_readings
+            .iter()
+            .flat_map(|reading| reading.forgotten_coordinates.clone()),
+    );
+    let mixed_axis_scope_refs = atom_support_axis_readings
+        .iter()
+        .filter(|reading| reading.axis_restriction_counts.len() > 1)
+        .map(|reading| reading.reading_id.clone())
+        .collect::<Vec<_>>();
+    let source_atom_support_refs = atom_support_axis_readings
+        .iter()
+        .take(12)
+        .map(|reading| reading.reading_id.clone())
+        .collect::<Vec<_>>();
+    let source_projection_ref = observation_projection_readings
+        .first()
+        .map(|reading| reading.reading_id.clone())
+        .unwrap_or_else(|| "observation-projection:none-observed".to_string());
+    let has_loss = !forgotten_axis_refs.is_empty() || !mixed_axis_scope_refs.is_empty();
+    vec![ArchSigAxisForgettingRiskReadingV0 {
+        reading_id: "axis-forgetting-risk:selected-projection".to_string(),
+        source_projection_ref,
+        source_atom_support_refs,
+        forgotten_axis_refs,
+        mixed_axis_scope_refs,
+        reflection_loss_kind: if has_loss {
+            "selectedAxisOrWitnessLoss".to_string()
+        } else {
+            "notObserved".to_string()
+        },
+        zero_reflection_status: if has_loss {
+            "blockedWithoutAxisPreservationAndWitnessCompleteness".to_string()
+        } else {
+            "notClaimed".to_string()
+        },
+        obstruction_reflection_status: if has_loss {
+            "blockedWithoutAxisPreservationAndWitnessCompleteness".to_string()
+        } else {
+            "notClaimed".to_string()
+        },
+        required_assumptions: vec![
+            "selected axis preservation".to_string(),
+            "witness completeness for forgotten coordinates".to_string(),
+            "coverage boundary matching the selected LawPolicy".to_string(),
+        ],
+        coverage_boundary:
+            "projection reflection is read only under explicit axis preservation and witness completeness assumptions"
+                .to_string(),
+        evidence_boundary:
+            "axis-forgetting risk is current-state ArchSig telemetry; it is not a proof that every projection loses information"
+                .to_string(),
+        non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
+    }]
+}
+
+fn build_signature_trajectory_homotopy_refutation_readings(
+    path_signature_trajectory_readings: &[ArchSigPathSignatureTrajectoryReadingV0],
+    homotopy_order_sensitivity_readings: &[ArchSigHomotopyOrderSensitivityReadingV0],
+) -> Vec<ArchSigSignatureTrajectoryHomotopyRefutationReadingV0> {
+    let trajectory_disagreement_refs = path_signature_trajectory_readings
+        .iter()
+        .filter(|reading| {
+            !reading.non_monotone_axis_refs.is_empty()
+                || !reading.introduced_obstruction_trajectory.is_empty()
+                || reading.endpoint_signature_delta.len() > 1
+        })
+        .map(|reading| reading.reading_id.clone())
+        .collect::<Vec<_>>();
+    let selected_homotopy_ref = homotopy_order_sensitivity_readings
+        .first()
+        .map(|reading| reading.reading_id.clone())
+        .unwrap_or_else(|| "homotopy-order-sensitivity:none-observed".to_string());
+    vec![ArchSigSignatureTrajectoryHomotopyRefutationReadingV0 {
+        reading_id: "signature-trajectory-homotopy-refutation:selected-trajectory".to_string(),
+        selected_homotopy_ref,
+        trajectory_reading_refs: path_signature_trajectory_readings
+            .iter()
+            .map(|reading| reading.reading_id.clone())
+            .collect(),
+        path_refs: path_signature_trajectory_readings
+            .iter()
+            .map(|reading| reading.path_ref.clone())
+            .collect(),
+        trajectory_disagreement_refs,
+        trajectory_equivalence_status: if path_signature_trajectory_readings
+            .iter()
+            .any(|reading| {
+                !reading.non_monotone_axis_refs.is_empty()
+                    || !reading.introduced_obstruction_trajectory.is_empty()
+            }) {
+            "selectedTrajectoryDisagreementObserved".to_string()
+        } else {
+            "notComparableWithoutSelectedEquivalence".to_string()
+        },
+        homotopy_refutation_status: if homotopy_order_sensitivity_readings
+            .iter()
+            .any(|reading| reading.status == "sensitive")
+        {
+            "refutationCandidate".to_string()
+        } else {
+            "notDischarged".to_string()
+        },
+        selected_equivalence_boundary:
+            "trajectory disagreement refutes only homotopy that is selected-signature-preserving"
+                .to_string(),
+        evidence_boundary:
+            "endpoint delta and path trajectory are kept separate; this is not an operation-commutativity theorem"
+                .to_string(),
+        non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
+    }]
+}
+
+fn build_bridge_split_obstruction_transfer_readings(
+    split_readiness_readings: &[ArchSigSplitReadinessReadingV0],
+) -> Vec<ArchSigBridgeSplitObstructionTransferReadingV0> {
+    split_readiness_readings
+        .iter()
+        .map(|reading| {
+            let mut required_boundary_operations = Vec::new();
+            if !reading.recommended_boundary_operation.trim().is_empty() {
+                required_boundary_operations.push(reading.recommended_boundary_operation.clone());
+            }
+            ArchSigBridgeSplitObstructionTransferReadingV0 {
+                reading_id: format!(
+                    "bridge-split-obstruction-transfer:{}",
+                    stable_id(&reading.reading_id)
+                ),
+                split_readiness_ref: reading.reading_id.clone(),
+                bridge_edge_refs: reading.bridge_edge_refs.clone(),
+                molecule_refs: vec![reading.molecule_ref.clone()],
+                obstruction_refs: reading.interaction_obstruction_refs.clone(),
+                required_boundary_operations,
+                filler_evidence_status: if reading.status == "candidateSplitReady" {
+                    "notRequiredByCurrentReading".to_string()
+                } else {
+                    "requiredOrUnmeasured".to_string()
+                },
+                lifting_evidence_status: reading.lifting_evidence_status.clone(),
+                transfer_risk_status: if !reading.bridge_edge_refs.is_empty() {
+                    "mayTransferWithoutBoundaryEvidence".to_string()
+                } else if !reading.interaction_obstruction_refs.is_empty() {
+                    "needsObstructionSupportReview".to_string()
+                } else {
+                    "notObserved".to_string()
+                },
+                evidence_boundary:
+                    "bridge-edge transfer is a split-readiness boundary reading, not proof of automatic obstruction removal"
+                        .to_string(),
+                non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
+            }
+        })
+        .collect::<Vec<_>>()
+}
+
 fn build_structural_reading_review_surface(
     representation_strength_readings: &[ArchSigRepresentationStrengthReadingV0],
     local_curvature_diagram_readings: &[ArchSigLocalCurvatureDiagramReadingV0],
@@ -4505,6 +4685,10 @@ fn build_structural_reading_review_surface(
     path_signature_trajectory_readings: &[ArchSigPathSignatureTrajectoryReadingV0],
     homotopy_order_sensitivity_readings: &[ArchSigHomotopyOrderSensitivityReadingV0],
     diagram_fillability_readings: &[ArchSigDiagramFillabilityReadingV0],
+    axis_forgetting_risk_readings: &[ArchSigAxisForgettingRiskReadingV0],
+    signature_trajectory_homotopy_refutation_readings:
+        &[ArchSigSignatureTrajectoryHomotopyRefutationReadingV0],
+    bridge_split_obstruction_transfer_readings: &[ArchSigBridgeSplitObstructionTransferReadingV0],
 ) -> ArchSigStructuralReadingReviewSurfaceV0 {
     let blocked_representation_count = representation_strength_readings
         .iter()
@@ -4536,6 +4720,18 @@ fn build_structural_reading_review_surface(
     let blocked_diagram_count = diagram_fillability_readings
         .iter()
         .filter(|reading| reading.status != "candidateFillable")
+        .count();
+    let axis_forgetting_count = axis_forgetting_risk_readings
+        .iter()
+        .filter(|reading| reading.reflection_loss_kind != "notObserved")
+        .count();
+    let homotopy_refutation_count = signature_trajectory_homotopy_refutation_readings
+        .iter()
+        .filter(|reading| reading.homotopy_refutation_status == "refutationCandidate")
+        .count();
+    let bridge_transfer_count = bridge_split_obstruction_transfer_readings
+        .iter()
+        .filter(|reading| reading.transfer_risk_status != "notObserved")
         .count();
     let mut connected_reading_refs = Vec::new();
     connected_reading_refs.extend(
@@ -4617,6 +4813,22 @@ fn build_structural_reading_review_surface(
             .iter()
             .map(|reading| reading.reading_id.clone()),
     );
+    connected_reading_refs.extend(
+        axis_forgetting_risk_readings
+            .iter()
+            .map(|reading| reading.reading_id.clone()),
+    );
+    connected_reading_refs.extend(
+        signature_trajectory_homotopy_refutation_readings
+            .iter()
+            .map(|reading| reading.reading_id.clone()),
+    );
+    connected_reading_refs.extend(
+        bridge_split_obstruction_transfer_readings
+            .iter()
+            .take(8)
+            .map(|reading| reading.reading_id.clone()),
+    );
 
     let status = if curvature_count > 0
         || blocked_operation_count > 0
@@ -4624,6 +4836,9 @@ fn build_structural_reading_review_surface(
         || atom_conflict_count > 0
         || unmeasured_law_count > 0
         || blocked_diagram_count > 0
+        || axis_forgetting_count > 0
+        || homotopy_refutation_count > 0
+        || bridge_transfer_count > 0
     {
         "needsReview"
     } else if connected_reading_refs.is_empty() {
@@ -4636,20 +4851,26 @@ fn build_structural_reading_review_surface(
         surface_id: "aat-structural-reading-review-surface".to_string(),
         status: status.to_string(),
         current_state_reading: format!(
-            "ArchSig reads current architecture state across Atom support and compatibility, LawUniverse coverage, feature extension coordinates, operation calculus laws, path signature trajectory, homotopy order sensitivity, diagram fillability, representation strength, local curvature, three-layer flatness, observation projection, state transition algebra, operation-invariant constraints, and split readiness; blockedRepresentations={}, curvatures={}, blockedOperations={}, splitBlockers={}, atomConflicts={}, unmeasuredRequiredLaws={}, blockedDiagrams={}",
+            "ArchSig reads current architecture state across Atom support and compatibility, LawUniverse coverage, feature extension coordinates, operation calculus laws, path signature trajectory, homotopy order sensitivity, diagram fillability, axis forgetting risk, trajectory homotopy refutation, bridge split transfer, representation strength, local curvature, three-layer flatness, observation projection, state transition algebra, operation-invariant constraints, and split readiness; blockedRepresentations={}, curvatures={}, blockedOperations={}, splitBlockers={}, atomConflicts={}, unmeasuredRequiredLaws={}, blockedDiagrams={}, axisForgetting={}, homotopyRefutations={}, bridgeTransfers={}",
             blocked_representation_count,
             curvature_count,
             blocked_operation_count,
             split_blocker_count,
             atom_conflict_count,
             unmeasured_law_count,
-            blocked_diagram_count
+            blocked_diagram_count,
+            axis_forgetting_count,
+            homotopy_refutation_count,
+            bridge_transfer_count
         ),
         connected_reading_refs,
         review_focus: vec![
             "read Atom support and compatibility before collapsing mixed state, effect, contract, authority, semantic, or runtime axes".to_string(),
             "read LawUniverse coverage and witness exactness before treating absence as measured zero".to_string(),
             "read feature extension, operation law, trajectory, homotopy, and diagram-fillability axes as current-state coordinates, not PR evolution claims".to_string(),
+            "read axis-forgetting risk before treating a coarse projection as zero-reflecting or obstruction-reflecting".to_string(),
+            "read selected trajectory disagreement before treating same-endpoint operations as homotopic".to_string(),
+            "read bridge split transfer before treating a boundary operation as obstruction removal".to_string(),
             "read representation-strength blockers before treating zero or obstruction absence as exact".to_string(),
             "read local-curvature diagrams as law-relative state pressure, not as generic lint failures".to_string(),
             "compare static, runtime, and semantic flatness before relying on source layout".to_string(),
@@ -5236,6 +5457,10 @@ fn build_llm_interpretation_packet(
     path_signature_trajectory_readings: &[ArchSigPathSignatureTrajectoryReadingV0],
     homotopy_order_sensitivity_readings: &[ArchSigHomotopyOrderSensitivityReadingV0],
     diagram_fillability_readings: &[ArchSigDiagramFillabilityReadingV0],
+    axis_forgetting_risk_readings: &[ArchSigAxisForgettingRiskReadingV0],
+    signature_trajectory_homotopy_refutation_readings:
+        &[ArchSigSignatureTrajectoryHomotopyRefutationReadingV0],
+    bridge_split_obstruction_transfer_readings: &[ArchSigBridgeSplitObstructionTransferReadingV0],
     representation_strength_readings: &[ArchSigRepresentationStrengthReadingV0],
     local_curvature_diagram_readings: &[ArchSigLocalCurvatureDiagramReadingV0],
     three_layer_flatness_readings: &[ArchSigThreeLayerFlatnessReadingV0],
@@ -5375,7 +5600,7 @@ fn build_llm_interpretation_packet(
             })
             .collect(),
         measurement_expansion_summary: vec![format!(
-            "v0.3.0 measurement expansion reads {} Atom support axes, {} compatibility surfaces, {} LawUniverse coverage surfaces, {} feature-extension formulas, {} operation-law surfaces, {} path trajectories, {} homotopy/order surfaces, and {} diagram-fillability surfaces",
+            "v0.3.0 measurement expansion reads {} Atom support axes, {} compatibility surfaces, {} LawUniverse coverage surfaces, {} feature-extension formulas, {} operation-law surfaces, {} path trajectories, {} homotopy/order surfaces, {} diagram-fillability surfaces, {} axis-forgetting risks, {} trajectory homotopy refutations, and {} bridge split-transfer surfaces",
             atom_support_axis_readings.len(),
             atom_compatibility_readings.len(),
             law_universe_coverage_readings.len(),
@@ -5383,7 +5608,10 @@ fn build_llm_interpretation_packet(
             operation_calculus_law_readings.len(),
             path_signature_trajectory_readings.len(),
             homotopy_order_sensitivity_readings.len(),
-            diagram_fillability_readings.len()
+            diagram_fillability_readings.len(),
+            axis_forgetting_risk_readings.len(),
+            signature_trajectory_homotopy_refutation_readings.len(),
+            bridge_split_obstruction_transfer_readings.len()
         )],
         atom_support_axis_summary: atom_support_axis_readings
             .iter()
@@ -5485,6 +5713,45 @@ fn build_llm_interpretation_packet(
                     reading.status,
                     reading.missing_filler_kind,
                     reading.filling_blocker_refs.len()
+                )
+            })
+            .collect(),
+        axis_forgetting_risk_summary: axis_forgetting_risk_readings
+            .iter()
+            .map(|reading| {
+                format!(
+                    "{} kind={} zeroReflection={} obstructionReflection={} mixedScopes={}",
+                    reading.source_projection_ref,
+                    reading.reflection_loss_kind,
+                    reading.zero_reflection_status,
+                    reading.obstruction_reflection_status,
+                    reading.mixed_axis_scope_refs.len()
+                )
+            })
+            .collect(),
+        signature_trajectory_homotopy_refutation_summary:
+            signature_trajectory_homotopy_refutation_readings
+                .iter()
+                .map(|reading| {
+                    format!(
+                        "{} equivalence={} refutation={} disagreements={}",
+                        reading.selected_homotopy_ref,
+                        reading.trajectory_equivalence_status,
+                        reading.homotopy_refutation_status,
+                        reading.trajectory_disagreement_refs.len()
+                    )
+                })
+                .collect(),
+        bridge_split_obstruction_transfer_summary: bridge_split_obstruction_transfer_readings
+            .iter()
+            .map(|reading| {
+                format!(
+                    "{} transferRisk={} bridgeEdges={} obstructions={} boundaryOps={}",
+                    reading.split_readiness_ref,
+                    reading.transfer_risk_status,
+                    reading.bridge_edge_refs.len(),
+                    reading.obstruction_refs.len(),
+                    reading.required_boundary_operations.len()
                 )
             })
             .collect(),
@@ -5735,6 +6002,13 @@ pub fn validate_archsig_analysis_packet_report(
         path_signature_trajectory_reading_count: packet.path_signature_trajectory_readings.len(),
         homotopy_order_sensitivity_reading_count: packet.homotopy_order_sensitivity_readings.len(),
         diagram_fillability_reading_count: packet.diagram_fillability_readings.len(),
+        axis_forgetting_risk_reading_count: packet.axis_forgetting_risk_readings.len(),
+        signature_trajectory_homotopy_refutation_reading_count: packet
+            .signature_trajectory_homotopy_refutation_readings
+            .len(),
+        bridge_split_obstruction_transfer_reading_count: packet
+            .bridge_split_obstruction_transfer_readings
+            .len(),
         representation_strength_reading_count: packet.representation_strength_readings.len(),
         local_curvature_diagram_reading_count: packet.local_curvature_diagram_readings.len(),
         three_layer_flatness_reading_count: packet.three_layer_flatness_readings.len(),
@@ -7006,6 +7280,30 @@ fn check_aat_structural_reading_surfaces(packet: &ArchSigAnalysisPacketV0) -> Va
             "packet must expose diagram fillability readings",
         ));
     }
+    if packet.axis_forgetting_risk_readings.is_empty() {
+        examples.push(generic_validation_example(
+            "axisForgettingRiskReadings",
+            "empty",
+            "packet must expose axis-forgetting / projection reflection loss readings",
+        ));
+    }
+    if packet
+        .signature_trajectory_homotopy_refutation_readings
+        .is_empty()
+    {
+        examples.push(generic_validation_example(
+            "signatureTrajectoryHomotopyRefutationReadings",
+            "empty",
+            "packet must expose selected trajectory homotopy refutation readings",
+        ));
+    }
+    if packet.bridge_split_obstruction_transfer_readings.is_empty() {
+        examples.push(generic_validation_example(
+            "bridgeSplitObstructionTransferReadings",
+            "empty",
+            "packet must expose bridge split obstruction transfer readings",
+        ));
+    }
 
     for reading in &packet.representation_strength_readings {
         push_blank(
@@ -7250,6 +7548,99 @@ fn check_aat_structural_reading_surfaces(packet: &ArchSigAnalysisPacketV0) -> Va
             &mut examples,
             &format!("{} missingFillerKind", reading.reading_id),
             &reading.missing_filler_kind,
+        );
+        push_blank(
+            &mut examples,
+            &format!("{} evidenceBoundary", reading.reading_id),
+            &reading.evidence_boundary,
+        );
+    }
+    for reading in &packet.axis_forgetting_risk_readings {
+        push_blank(
+            &mut examples,
+            &reading.reading_id,
+            &reading.source_projection_ref,
+        );
+        push_blank(
+            &mut examples,
+            &format!("{} reflectionLossKind", reading.reading_id),
+            &reading.reflection_loss_kind,
+        );
+        push_blank(
+            &mut examples,
+            &format!("{} zeroReflectionStatus", reading.reading_id),
+            &reading.zero_reflection_status,
+        );
+        push_blank(
+            &mut examples,
+            &format!("{} obstructionReflectionStatus", reading.reading_id),
+            &reading.obstruction_reflection_status,
+        );
+        if reading.required_assumptions.is_empty() {
+            examples.push(generic_validation_example(
+                &reading.reading_id,
+                "requiredAssumptions",
+                "axis-forgetting risk must record reflection assumptions",
+            ));
+        }
+        push_blank(
+            &mut examples,
+            &format!("{} coverageBoundary", reading.reading_id),
+            &reading.coverage_boundary,
+        );
+        push_blank(
+            &mut examples,
+            &format!("{} evidenceBoundary", reading.reading_id),
+            &reading.evidence_boundary,
+        );
+    }
+    for reading in &packet.signature_trajectory_homotopy_refutation_readings {
+        push_blank(
+            &mut examples,
+            &reading.reading_id,
+            &reading.selected_homotopy_ref,
+        );
+        push_blank(
+            &mut examples,
+            &format!("{} trajectoryEquivalenceStatus", reading.reading_id),
+            &reading.trajectory_equivalence_status,
+        );
+        push_blank(
+            &mut examples,
+            &format!("{} homotopyRefutationStatus", reading.reading_id),
+            &reading.homotopy_refutation_status,
+        );
+        push_blank(
+            &mut examples,
+            &format!("{} selectedEquivalenceBoundary", reading.reading_id),
+            &reading.selected_equivalence_boundary,
+        );
+        push_blank(
+            &mut examples,
+            &format!("{} evidenceBoundary", reading.reading_id),
+            &reading.evidence_boundary,
+        );
+    }
+    for reading in &packet.bridge_split_obstruction_transfer_readings {
+        push_blank(
+            &mut examples,
+            &reading.reading_id,
+            &reading.split_readiness_ref,
+        );
+        push_blank(
+            &mut examples,
+            &format!("{} fillerEvidenceStatus", reading.reading_id),
+            &reading.filler_evidence_status,
+        );
+        push_blank(
+            &mut examples,
+            &format!("{} liftingEvidenceStatus", reading.reading_id),
+            &reading.lifting_evidence_status,
+        );
+        push_blank(
+            &mut examples,
+            &format!("{} transferRiskStatus", reading.reading_id),
+            &reading.transfer_risk_status,
         );
         push_blank(
             &mut examples,
@@ -7843,6 +8234,27 @@ fn check_llm_interpretation_surface(packet: &ArchSigAnalysisPacketV0) -> Validat
             packet
                 .llm_interpretation_packet
                 .diagram_fillability_summary
+                .is_empty(),
+        ),
+        (
+            "llmInterpretationPacket.axisForgettingRiskSummary",
+            packet
+                .llm_interpretation_packet
+                .axis_forgetting_risk_summary
+                .is_empty(),
+        ),
+        (
+            "llmInterpretationPacket.signatureTrajectoryHomotopyRefutationSummary",
+            packet
+                .llm_interpretation_packet
+                .signature_trajectory_homotopy_refutation_summary
+                .is_empty(),
+        ),
+        (
+            "llmInterpretationPacket.bridgeSplitObstructionTransferSummary",
+            packet
+                .llm_interpretation_packet
+                .bridge_split_obstruction_transfer_summary
                 .is_empty(),
         ),
     ] {

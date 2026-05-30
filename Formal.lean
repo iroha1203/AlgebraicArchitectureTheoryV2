@@ -81,6 +81,7 @@ import Formal.Arch.Evolution.SFTAATFundamentalModularityExamples
 import Formal.Arch.Evolution.SFTArtifactBoundaryBridge
 import Formal.Arch.Evolution.SFTAATArtifactBoundaryExamples
 import Formal.Arch.Evolution.SFTTheoremPackages
+import Formal.Arch.Evolution.ReverseImportTheorems
 import Formal.Arch.Atom.Foundation
 import Formal.Arch.AAT.Molecule
 import Formal.Arch.AAT.Law
