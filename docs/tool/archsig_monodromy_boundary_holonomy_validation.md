@@ -38,7 +38,7 @@ Non-goals remain unchanged:
 | Practical measurement takes priority over full Lean theory. | `tools/archsig` packet readings, `pr-review`, `codebase-inspection`, and `docs/tool/README.md`. | implemented |
 | Engineering outcomes are stated as review / diagnosis benefits. | `docs/tool/archsig_monodromy_boundary_holonomy_prd.md` R1 and AAT Part 3 AMI reading. | documented |
 | PR review and codebase inspection are separated. | `tools/archsig/docs/commands.md`, `tools/archsig/README.md`, `docs/tool/archsig_analysis_packet.md`. | implemented |
-| Raw diff is only an optional scoping hint. | `pr-review` fixture `raw_diff_hint.diff`, `archsig-pr-review-report-v0`, `docs/tool/archmap_store.md`, `docs/tool/golden_corpus.md`. | implemented |
+| Raw diff is not a PR-review input. | `archsig-pr-review-report-v1`, `tools/archsig/docs/commands.md`, `docs/tool/README.md`, `docs/tool/golden_corpus.md`. | implemented |
 | ArchMapStore delta / commit / snapshot / index is the canonical history substrate. | `archMapStoreRefs` in packet fixtures, `docs/tool/archmap_store.md`, PR review and inspection fixtures. | implemented |
 | Operation square candidates are exposed. | `operationSquareCandidates` packet field and CLI regression tests. | implemented |
 | Axis-wise continuation traces are exposed. | `pathContinuationTraces` packet field and analysis packet docs. | implemented |

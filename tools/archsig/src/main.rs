@@ -1,3 +1,4 @@
+use std::collections::BTreeSet;
 use std::error::Error;
 use std::fs::File;
 use std::io::{self, Write};
@@ -151,29 +152,21 @@ enum Command {
         out: Option<PathBuf>,
     },
 
-    /// Produce a lightweight ArchSig PR review report from ArchMapStore change artifacts.
+    /// Produce a lightweight ArchSig PR review report from base ArchMap, PR-local ArchMap delta, and LawPolicy.
     PrReview {
-        /// Input archmap-delta-v0 JSON path. This is the canonical change-local input.
-        #[arg(long)]
-        delta: PathBuf,
+        /// Input base archmap-observation-map-v0 JSON path.
+        #[arg(long = "base-archmap")]
+        base_archmap: PathBuf,
 
-        /// Input archmap-commit-v0 JSON path. This connects the delta to the ArchMapStore chain.
-        #[arg(long)]
-        commit: PathBuf,
+        /// Input archmap-delta-v0 JSON path. This is the PR-local ArchMap observation delta.
+        #[arg(long = "delta-archmap")]
+        delta_archmap: PathBuf,
 
-        /// Base archsig-analysis-packet-v0 JSON path.
-        #[arg(long = "base-packet")]
-        base_packet: PathBuf,
+        /// Input law-policy-v0 JSON path. No LawPolicy, no ArchSig judgement.
+        #[arg(long = "law-policy")]
+        law_policy: PathBuf,
 
-        /// Head archsig-analysis-packet-v0 JSON path.
-        #[arg(long = "head-packet")]
-        head_packet: PathBuf,
-
-        /// Optional raw diff scoping hint. The file is referenced but not parsed as semantic input.
-        #[arg(long = "diff-hint")]
-        diff_hint: Option<PathBuf>,
-
-        /// Output archsig-pr-review-report-v0 JSON path. If omitted, JSON is written to stdout.
+        /// Output archsig-pr-review-report-v1 JSON path. If omitted, JSON is written to stdout.
         #[arg(long)]
         out: Option<PathBuf>,
     },
@@ -402,39 +395,28 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
             Ok(ExitCode::SUCCESS)
         }
         Some(Command::PrReview {
-            delta,
-            commit,
-            base_packet,
-            head_packet,
-            diff_hint,
+            base_archmap,
+            delta_archmap,
+            law_policy,
             out,
         }) => {
-            let delta_document: serde_json::Value = read_json(&delta)?;
-            require_schema(&delta_document, "archmap-delta-v0", "--delta")?;
-            let commit_document: serde_json::Value = read_json(&commit)?;
-            require_schema(&commit_document, "archmap-commit-v0", "--commit")?;
-            let base_packet_document: serde_json::Value = read_json(&base_packet)?;
+            let base_archmap_document: serde_json::Value = read_json(&base_archmap)?;
             require_schema(
-                &base_packet_document,
-                ARCHSIG_ANALYSIS_PACKET_SCHEMA_VERSION,
-                "--base-packet",
+                &base_archmap_document,
+                "archmap-observation-map-v0",
+                "--base-archmap",
             )?;
-            let head_packet_document: serde_json::Value = read_json(&head_packet)?;
-            require_schema(
-                &head_packet_document,
-                ARCHSIG_ANALYSIS_PACKET_SCHEMA_VERSION,
-                "--head-packet",
-            )?;
+            let delta_archmap_document: serde_json::Value = read_json(&delta_archmap)?;
+            require_schema(&delta_archmap_document, "archmap-delta-v0", "--delta-archmap")?;
+            let law_policy_document: serde_json::Value = read_json(&law_policy)?;
+            require_schema(&law_policy_document, "law-policy-v0", "--law-policy")?;
             let report = build_pr_review_report(
-                &delta,
-                &delta_document,
-                &commit,
-                &commit_document,
-                &base_packet,
-                &base_packet_document,
-                &head_packet,
-                &head_packet_document,
-                diff_hint.as_ref(),
+                &base_archmap,
+                &base_archmap_document,
+                &delta_archmap,
+                &delta_archmap_document,
+                &law_policy,
+                &law_policy_document,
             );
             write_json(out, &report)?;
             Ok(ExitCode::SUCCESS)
@@ -712,7 +694,7 @@ fn build_codebase_inspection_report(
             "snapshotCompactionReport": json_field(snapshot, "compactionReport")
         },
         "surfaceBoundary": {
-            "prReviewMode": "change-local diagnosis over ArchMapDelta / ArchMapCommit",
+            "prReviewMode": "change-local diagnosis over base ArchMap / PR-local ArchMapDelta / LawPolicy",
             "codebaseInspectionMode": "current-state architectural diagnosis over latest ArchMapSnapshot / ArchMapIndex / analysis packet",
             "fieldSigBoundary": "FieldSig owns PR / diff / change-vector evolution analysis, forecast, governance, calibration, and longitudinal monitoring"
         },
@@ -818,116 +800,277 @@ fn top_order_sensitive_squares(packet: &serde_json::Value, limit: usize) -> serd
     )
 }
 
-#[allow(clippy::too_many_arguments)]
 fn build_pr_review_report(
-    delta_path: &Path,
-    delta: &serde_json::Value,
-    commit_path: &Path,
-    commit: &serde_json::Value,
-    base_packet_path: &Path,
-    base_packet: &serde_json::Value,
-    head_packet_path: &Path,
-    head_packet: &serde_json::Value,
-    diff_hint: Option<&PathBuf>,
+    base_archmap_path: &Path,
+    base_archmap: &serde_json::Value,
+    delta_archmap_path: &Path,
+    delta_archmap: &serde_json::Value,
+    law_policy_path: &Path,
+    law_policy: &serde_json::Value,
 ) -> serde_json::Value {
-    let head_llm = head_packet
-        .get("llmInterpretationPacket")
-        .unwrap_or(&serde_json::Value::Null);
-    let base_nonzero_count = array_len(base_packet, "nonzeroMonodromyWitnesses");
-    let head_nonzero_count = array_len(head_packet, "nonzeroMonodromyWitnesses");
-    let measured_witnesses = serde_json::Value::Array(
-        array_items(head_packet, "nonzeroMonodromyWitnesses")
+    let changed_refs = string_array(delta_archmap, "changedObservationRefs");
+    let matched_observations = changed_archmap_observations(base_archmap, &changed_refs);
+    let changed_families = changed_atom_families(base_archmap, &changed_refs);
+    let matched_laws = matched_policy_laws(law_policy, &changed_families);
+    let matched_axis_refs = matched_policy_axis_refs(&matched_laws);
+    let source_targets =
+        source_targets_for_changed_refs(base_archmap, delta_archmap, &changed_refs);
+
+    serde_json::json!({
+        "schemaVersion": "archsig-pr-review-report-v1",
+        "reviewId": format!(
+            "archsig-pr-review:{}:{}:{}",
+            json_string(base_archmap, "mapId", "base-archmap"),
+            json_string(delta_archmap, "deltaId", "delta-archmap"),
+            json_string(law_policy, "lawPolicyId", "law-policy")
+        ),
+        "canonicalInputs": {
+            "baseArchMap": {
+                "path": base_archmap_path.display().to_string(),
+                "schemaVersion": schema_string(base_archmap),
+                "mapId": json_field(base_archmap, "mapId"),
+                "architectureId": json_field(base_archmap, "architectureId")
+            },
+            "deltaArchMap": {
+                "path": delta_archmap_path.display().to_string(),
+                "schemaVersion": schema_string(delta_archmap),
+                "deltaId": json_field(delta_archmap, "deltaId"),
+                "baseSnapshotRef": json_field(delta_archmap, "baseSnapshotRef"),
+                "headSnapshotRef": json_field(delta_archmap, "headSnapshotRef"),
+                "changedObservationRefs": array_field(delta_archmap, "changedObservationRefs")
+            },
+            "lawPolicy": {
+                "path": law_policy_path.display().to_string(),
+                "schemaVersion": schema_string(law_policy),
+                "lawPolicyId": json_field(law_policy, "lawPolicyId"),
+                "policyVersion": json_field(law_policy, "policyVersion"),
+                "measurementPolicyId": json_field(
+                    law_policy.get("measurementPolicy").unwrap_or(&serde_json::Value::Null),
+                    "policyId"
+                )
+            }
+        },
+        "policyBoundary": {
+            "lawPolicyRequired": true,
+            "rule": "No LawPolicy, no ArchSig judgement",
+            "selectedAxisRefs": array_field(
+                law_policy.get("measurementPolicy").unwrap_or(&serde_json::Value::Null),
+                "selectedAxisRefs"
+            ),
+            "coveragePolicy": json_field(
+                law_policy.get("measurementPolicy").unwrap_or(&serde_json::Value::Null),
+                "coveragePolicy"
+            )
+        },
+        "changeLocalDiagnosis": {
+            "changedObservationCount": changed_refs.len(),
+            "matchedBaseObservationCount": matched_observations.as_array().map(Vec::len).unwrap_or_default(),
+            "changedAtomFamilies": json_string_array(changed_families.iter()),
+            "policyMatchedLawCount": matched_laws.as_array().map(Vec::len).unwrap_or_default(),
+            "policyMatchedAxisRefs": json_string_array(matched_axis_refs.iter()),
+            "sourceTargetCount": source_targets.as_array().map(Vec::len).unwrap_or_default()
+        },
+        "changedObservations": matched_observations,
+        "policyMatchedLaws": matched_laws,
+        "sourceTargets": source_targets,
+        "evidenceBoundary": "ArchSig PR review reads base ArchMap, PR-local ArchMap delta, and LawPolicy only. Raw diff, ArchMapCommit, and base/head analysis packets are outside this input surface."
+    })
+}
+
+fn changed_archmap_observations(
+    base_archmap: &serde_json::Value,
+    changed_refs: &[String],
+) -> serde_json::Value {
+    serde_json::Value::Array(
+        changed_refs
+            .iter()
+            .map(|changed_ref| {
+                if let Some((kind, observation)) =
+                    find_archmap_observation(base_archmap, changed_ref)
+                {
+                    serde_json::json!({
+                        "ref": changed_ref,
+                        "matched": true,
+                        "kind": kind,
+                        "family": observation_family(kind, observation),
+                        "subjectRef": json_field(observation, "subjectRef"),
+                        "predicate": json_field(observation, "predicate"),
+                        "roleName": json_field(observation, "roleName"),
+                        "sourceRefs": array_field(observation, "sourceRefs")
+                    })
+                } else {
+                    serde_json::json!({
+                        "ref": changed_ref,
+                        "matched": false
+                    })
+                }
+            })
+            .collect(),
+    )
+}
+
+fn find_archmap_observation<'a>(
+    archmap: &'a serde_json::Value,
+    observation_ref: &str,
+) -> Option<(&'static str, &'a serde_json::Value)> {
+    for observation in array_items(archmap, "atomObservations") {
+        if observation
+            .get("atomObservationId")
+            .and_then(serde_json::Value::as_str)
+            == Some(observation_ref)
+        {
+            return Some(("atom", observation));
+        }
+    }
+    for observation in array_items(archmap, "moleculeObservations") {
+        if observation
+            .get("moleculeObservationId")
+            .and_then(serde_json::Value::as_str)
+            == Some(observation_ref)
+        {
+            return Some(("molecule", observation));
+        }
+    }
+    for observation in array_items(archmap, "semanticObservations") {
+        if observation
+            .get("semanticObservationId")
+            .and_then(serde_json::Value::as_str)
+            == Some(observation_ref)
+        {
+            return Some(("semantic", observation));
+        }
+    }
+    None
+}
+
+fn observation_family(kind: &str, observation: &serde_json::Value) -> serde_json::Value {
+    match kind {
+        "atom" => json_field(observation, "atomFamily"),
+        "molecule" => json_field(observation, "moleculeFamily"),
+        "semantic" => serde_json::Value::String("semantic".to_string()),
+        _ => serde_json::Value::Null,
+    }
+}
+
+fn changed_atom_families(
+    base_archmap: &serde_json::Value,
+    changed_refs: &[String],
+) -> BTreeSet<String> {
+    changed_refs
+        .iter()
+        .filter_map(|changed_ref| {
+            find_archmap_observation(base_archmap, changed_ref).and_then(|(kind, observation)| {
+                if kind == "atom" {
+                    observation
+                        .get("atomFamily")
+                        .and_then(serde_json::Value::as_str)
+                        .map(str::to_string)
+                } else if kind == "semantic" {
+                    Some("semantic".to_string())
+                } else {
+                    None
+                }
+            })
+        })
+        .collect()
+}
+
+fn matched_policy_laws(
+    law_policy: &serde_json::Value,
+    changed_families: &BTreeSet<String>,
+) -> serde_json::Value {
+    serde_json::Value::Array(
+        array_items(law_policy, "selectedLaws")
             .into_iter()
-            .take(8)
-            .map(|witness| {
+            .filter(|law| {
+                array_items(law, "appliesToAtomFamilies")
+                    .into_iter()
+                    .filter_map(serde_json::Value::as_str)
+                    .any(|family| changed_families.contains(family))
+            })
+            .map(|law| {
                 serde_json::json!({
-                    "witnessId": json_field(witness, "witnessId"),
-                    "axisFamily": json_field(witness, "axisFamily"),
-                    "defectValue": json_field(witness, "defectValue"),
-                    "operationPair": array_field(witness, "operationPair"),
-                    "pathPair": array_field(witness, "pathPair"),
-                    "affectedAtomRefs": array_field(witness, "affectedAtomRefs"),
-                    "missingEvidence": array_field(witness, "missingEvidence"),
-                    "recommendedReviewFocus": array_field(witness, "recommendedReviewFocus"),
-                    "nonConclusions": array_field(witness, "nonConclusions")
+                    "lawId": json_field(law, "lawId"),
+                    "lawFamily": json_field(law, "lawFamily"),
+                    "requiredAxisRefs": array_field(law, "requiredAxisRefs"),
+                    "matchedAtomFamilies": json_string_array(
+                        array_items(law, "appliesToAtomFamilies")
+                            .into_iter()
+                            .filter_map(serde_json::Value::as_str)
+                            .filter(|family| changed_families.contains(*family))
+                    )
                 })
             })
             .collect(),
-    );
-    let review_focus = serde_json::Value::Array(
-        array_items(head_llm, "recommendedHumanReviewFocus")
-            .into_iter()
-            .take(8)
-            .chain(
-                array_items(head_packet, "nonzeroMonodromyWitnesses")
-                    .into_iter()
-                    .flat_map(|witness| array_items(witness, "recommendedReviewFocus"))
-                    .take(8),
-            )
-            .cloned()
-            .collect(),
-    );
+    )
+}
 
-    serde_json::json!({
-        "schemaVersion": "archsig-pr-review-report-v0",
-        "reviewId": format!(
-            "archsig-pr-review:{}:{}",
-            json_string(delta, "deltaId", "delta"),
-            json_string(commit, "commitId", "commit")
-        ),
-        "canonicalInputs": {
-            "archMapDelta": {
-                "path": delta_path.display().to_string(),
-                "schemaVersion": schema_string(delta),
-                "deltaId": json_field(delta, "deltaId"),
-                "changedObservationRefs": array_field(delta, "changedObservationRefs")
-            },
-            "archMapCommit": {
-                "path": commit_path.display().to_string(),
-                "schemaVersion": schema_string(commit),
-                "commitId": json_field(commit, "commitId"),
-                "parentRefs": array_field(commit, "parentRefs"),
-                "deltaRefs": array_field(commit, "deltaRefs")
-            },
-            "basePacket": {
-                "path": base_packet_path.display().to_string(),
-                "analysisId": json_field(base_packet, "analysisId"),
-                "archMapRef": json_field(base_packet, "archMapRef")
-            },
-            "headPacket": {
-                "path": head_packet_path.display().to_string(),
-                "analysisId": json_field(head_packet, "analysisId"),
-                "archMapRef": json_field(head_packet, "archMapRef")
+fn matched_policy_axis_refs(matched_laws: &serde_json::Value) -> BTreeSet<String> {
+    matched_laws
+        .as_array()
+        .into_iter()
+        .flat_map(|laws| laws.iter())
+        .flat_map(|law| array_items(law, "requiredAxisRefs"))
+        .filter_map(serde_json::Value::as_str)
+        .map(str::to_string)
+        .collect()
+}
+
+fn source_targets_for_changed_refs(
+    base_archmap: &serde_json::Value,
+    delta_archmap: &serde_json::Value,
+    changed_refs: &[String],
+) -> serde_json::Value {
+    let mut paths = BTreeSet::new();
+    for target in array_items(
+        delta_archmap
+            .get("reviewIntent")
+            .unwrap_or(&serde_json::Value::Null),
+        "sourceFirstTargets",
+    ) {
+        if let Some(path) = target.as_str() {
+            paths.insert(path.to_string());
+        }
+    }
+    for changed_ref in changed_refs {
+        if let Some((_kind, observation)) = find_archmap_observation(base_archmap, changed_ref) {
+            for source_ref in array_items(observation, "sourceRefs") {
+                if let Some(path) = source_ref.get("path").and_then(serde_json::Value::as_str) {
+                    let target = if let Some(symbol) =
+                        source_ref.get("symbol").and_then(serde_json::Value::as_str)
+                    {
+                        format!("{path}:{symbol}")
+                    } else {
+                        path.to_string()
+                    };
+                    paths.insert(target);
+                }
             }
-        },
-        "rawDiffHint": {
-            "provided": diff_hint.is_some(),
-            "path": diff_hint.map(|path| path.display().to_string()),
-            "readingBoundary": "raw diff is an optional scoping hint and is not parsed as semantic, state, effect, authority, or boundary evidence"
-        },
-        "changeLocalDiagnosis": {
-            "nonzeroWitnessDelta": (head_nonzero_count as i64) - (base_nonzero_count as i64),
-            "operationOrderSensitivity": limited_array_field(head_llm, "homotopyOrderSensitivitySummary", 6),
-            "boundaryHolonomy": {
-                "nonzeroMonodromyWitnessCount": head_nonzero_count,
-                "featureBoundaryResidualCount": array_len(head_packet, "featureBoundaryResidualReadings"),
-                "featureExtensionDiagnosisCount": array_len(head_packet, "featureExtensionDiagnosisReadings"),
-                "summary": limited_array_field(head_llm, "featureBoundaryResidualSummary", 6)
-            },
-            "missingFillerEvidence": limited_array_field(head_llm, "diagramFillabilitySummary", 6),
-            "liftingEvidence": limited_array_field(head_llm, "featureExtensionDiagnosisSummary", 6),
-            "coverageGaps": json_field(head_packet.get("flatnessReading").unwrap_or(&serde_json::Value::Null), "blockedByCoverageGaps")
-        },
-        "measuredWitnesses": measured_witnesses,
-        "recommendedReviewFocus": review_focus,
-        "evidenceBoundary": "ArchSig PR review reads ArchMapDelta / ArchMapCommit and ArchSig packets as change-local structural telemetry; it is not a merge safety decision",
-        "nonConclusions": [
-            "ArchSig PR review does not replace FieldSig PR / diff / change-vector evolution analysis",
-            "ArchSig PR review does not parse raw diff as primary semantic evidence",
-            "ArchSig PR review is not a merge approval or automatic repair safety certificate",
-            "ArchSig PR review is not forecast, governance, calibration, or longitudinal quality monitoring"
-        ]
-    })
+        }
+    }
+    json_string_array(paths.iter())
+}
+
+fn json_string_array<I, S>(items: I) -> serde_json::Value
+where
+    I: IntoIterator<Item = S>,
+    S: AsRef<str>,
+{
+    let mut values: Vec<String> = items
+        .into_iter()
+        .map(|item| item.as_ref().to_string())
+        .collect();
+    values.sort();
+    values.dedup();
+    serde_json::Value::Array(values.into_iter().map(serde_json::Value::String).collect())
+}
+
+fn string_array(value: &serde_json::Value, key: &str) -> Vec<String> {
+    array_items(value, key)
+        .into_iter()
+        .filter_map(serde_json::Value::as_str)
+        .map(str::to_string)
+        .collect()
 }
 
 fn schema_string(document: &serde_json::Value) -> serde_json::Value {

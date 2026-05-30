@@ -1,3 +1,0 @@
-diff --git a/src/pricing/checkout.ts b/src/pricing/checkout.ts
-@@
-+// scoping hint only: coupon, tax, and rounding order changed.

@@ -12,8 +12,8 @@ archmap-observation-map-v0
 
 ArchSig no longer exposes pre-Atom scan, projection, report, or legacy raw-diff
 PR-review commands. Git history is the archive for those workflows. The
-retained `pr-review` command reads ArchMapStore change artifacts and ArchSig
-packets; raw diff is only an optional scoping hint.
+retained `pr-review` command reads base ArchMap, PR-local ArchMap delta, and
+LawPolicy. Raw diff is not an ArchSig PR-review input.
 FieldSig owns SFT forecast, IntentMap, operational feedback, governance, and
 calibration commands under `tools/fieldsig`.
 
@@ -89,23 +89,19 @@ governance, calibration, and longitudinal monitoring.
 
 ```bash
 cargo run --manifest-path tools/archsig/Cargo.toml -- pr-review \
-  --delta tools/archsig/tests/fixtures/pr_review/archmap_delta.json \
-  --commit tools/archsig/tests/fixtures/pr_review/archmap_commit.json \
-  --base-packet tools/archsig/tests/fixtures/minimal/archsig_analysis_packet.json \
-  --head-packet tools/archsig/tests/fixtures/coupon_rounding/archsig_analysis_packet.json \
-  --diff-hint tools/archsig/tests/fixtures/pr_review/raw_diff_hint.diff \
+  --base-archmap tools/archsig/tests/fixtures/minimal/archmap.json \
+  --delta-archmap tools/archsig/tests/fixtures/pr_review/archmap_delta.json \
+  --law-policy tools/archsig/tests/fixtures/minimal/law_policy.json \
   --out .archsig/pr-review/archsig-pr-review.json
 ```
 
 `pr-review` is the CI-friendly ArchSig surface for small PR review. Its
-canonical inputs are `archmap-delta-v0`, `archmap-commit-v0`, and base/head
-`archsig-analysis-packet-v0` artifacts. The optional `--diff-hint` path is
-recorded as scope only; ArchSig does not parse raw diff as semantic, state,
-effect, authority, or boundary evidence. The report summarizes measured
-monodromy witnesses, operation-order sensitivity, boundary holonomy, missing
-filler / lifting evidence, coverage gaps, and review focus. It is not a merge
-safety decision and does not replace FieldSig PR / diff / change-vector
-evolution analysis.
+canonical inputs are base `archmap-observation-map-v0`, PR-local
+`archmap-delta-v0`, and required `law-policy-v0`. No LawPolicy, no ArchSig
+judgement. `pr-review` does not accept raw diff, `archmap-commit-v0`, or
+base/head `archsig-analysis-packet-v0` artifacts as inputs. The report records
+which base observations, source targets, LawPolicy laws, and selected axes the
+PR-local delta touches. It is not FieldSig longitudinal evolution analysis.
 
 ## Sharded ArchMap Authoring
 

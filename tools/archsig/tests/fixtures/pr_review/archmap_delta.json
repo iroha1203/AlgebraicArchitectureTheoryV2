@@ -1,14 +1,25 @@
 {
   "schemaVersion": "archmap-delta-v0",
-  "deltaId": "delta:coupon-tax-rounding-pr",
-  "baseSnapshotRef": "archmap-snapshot:pricing:base",
-  "headSnapshotRef": "archmap-snapshot:pricing:head",
+  "deltaId": "delta:create-user-boundary-pr",
+  "baseSnapshotRef": "archmap-snapshot:create-user:base",
+  "headSnapshotRef": "archmap-snapshot:create-user:head",
   "changedObservationRefs": [
-    "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding",
-    "atom:semantic:PaymentAmount-ReceiptAmount-coupon-tax-rounding-noncommutation",
-    "semantic:coupon-tax-rounding-paths"
+    "atom:relation:route-service",
+    "atom:contract:create-user",
+    "semantic:create-user-flow"
   ],
-  "changeLocalBoundary": "PR review delta records ArchMap-level pricing observations, not raw source diff semantics",
+  "changeLocalBoundary": "PR review delta records ArchMap-level observations, not raw source diff semantics",
+  "reviewIntent": {
+    "summary": "Fixture PR changes the create-user route/service contract boundary.",
+    "expectedReviewAxes": [
+      "axis:layer-violation",
+      "axis:semantic-inconsistency"
+    ],
+    "sourceFirstTargets": [
+      "src/routes/users.ts",
+      "src/services/user-service.ts"
+    ]
+  },
   "nonConclusions": [
     "ArchMapDelta is not a language parser output guarantee",
     "delta evidence is not merge safety"

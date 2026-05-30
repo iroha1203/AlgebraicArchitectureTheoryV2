@@ -23,7 +23,7 @@ Future PR review and longitudinal workflows should insert ArchMapStore before
 ArchSig analysis:
 
 ```text
-source artifacts or raw diff
+source artifacts
   -> language adapter / extractor / LLM reader / manual authoring
   -> ArchMapDelta / ArchMapCommit
   -> optional ArchMapSnapshot / ArchMapIndex
@@ -31,8 +31,8 @@ source artifacts or raw diff
   -> FieldSig batch evolution monitoring
 ```
 
-Raw diff is an optional scoping hint in this flow. The canonical semantic input
-is ArchMap-level evidence, not the raw diff itself.
+Raw diff is not an ArchSig PR-review input. The canonical semantic input is
+ArchMap-level evidence.
 
 ## Command Transcript
 
@@ -98,12 +98,13 @@ The E2E flow must preserve these boundaries:
 - FieldSig accepts `archsig-analysis-packet-v0` as bounded current AAT
   structural state and rejects raw ArchMap JSON as the current handoff input.
   PR / diff / change-vector evolution remains FieldSig territory.
-- Future ArchSig PR review mode reads ArchMapStore deltas / commits as
-  change-local structural evidence for CI. FieldSig reads ArchMapStore and
-  ArchSig packet chains in batch for longitudinal evolution monitoring.
+- Future ArchSig PR review mode reads base ArchMap, PR-local ArchMap delta,
+  and LawPolicy as change-local structural evidence for CI. FieldSig reads
+  ArchMapStore and ArchSig packet chains in batch for longitudinal evolution
+  monitoring.
 - The implemented lightweight `archsig pr-review` command takes
-  `ArchMapDelta`, `ArchMapCommit`, and base/head ArchSig packets as canonical
-  inputs. Raw diff is recorded only as an optional scoping hint.
+  base ArchMap, PR-local ArchMap delta, and LawPolicy as canonical inputs.
+  Raw diff is not an ArchSig PR-review input.
 - The implemented `archsig codebase-inspection` command takes latest
   `ArchMapSnapshot`, `ArchMapIndex`, an ArchSig packet, optional recent deltas,
   and optional LawPolicy provenance as the current-state diagnosis surface. It

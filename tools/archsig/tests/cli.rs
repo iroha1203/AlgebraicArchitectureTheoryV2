@@ -563,76 +563,65 @@ fn cli_pr_review_reads_archmapstore_inputs() {
     let out_dir = temp_dir("pr-review");
     let review = pr_review_root();
     let minimal = fixture_root();
-    let coupon = coupon_rounding_root();
     let report = out_dir.join("archsig-pr-review.json");
 
     run_sig0(&[
         "pr-review",
-        "--delta",
+        "--base-archmap",
+        minimal
+            .join("archmap.json")
+            .to_str()
+            .expect("base archmap path is utf-8"),
+        "--delta-archmap",
         review
             .join("archmap_delta.json")
             .to_str()
             .expect("delta path is utf-8"),
-        "--commit",
-        review
-            .join("archmap_commit.json")
-            .to_str()
-            .expect("commit path is utf-8"),
-        "--base-packet",
+        "--law-policy",
         minimal
-            .join("archsig_analysis_packet.json")
+            .join("law_policy.json")
             .to_str()
-            .expect("base packet path is utf-8"),
-        "--head-packet",
-        coupon
-            .join("archsig_analysis_packet.json")
-            .to_str()
-            .expect("head packet path is utf-8"),
-        "--diff-hint",
-        review
-            .join("raw_diff_hint.diff")
-            .to_str()
-            .expect("diff hint path is utf-8"),
+            .expect("law policy path is utf-8"),
         "--out",
         report.to_str().expect("report path is utf-8"),
     ]);
 
     let json = read_json(&report);
-    assert_eq!(json["schemaVersion"], "archsig-pr-review-report-v0");
+    assert_eq!(json["schemaVersion"], "archsig-pr-review-report-v1");
     assert_eq!(
-        json["canonicalInputs"]["archMapDelta"]["schemaVersion"],
+        json["canonicalInputs"]["baseArchMap"]["schemaVersion"],
+        "archmap-observation-map-v0"
+    );
+    assert_eq!(
+        json["canonicalInputs"]["deltaArchMap"]["schemaVersion"],
         "archmap-delta-v0"
     );
     assert_eq!(
-        json["canonicalInputs"]["archMapCommit"]["schemaVersion"],
-        "archmap-commit-v0"
+        json["canonicalInputs"]["lawPolicy"]["schemaVersion"],
+        "law-policy-v0"
     );
-    assert_eq!(json["rawDiffHint"]["provided"], true);
-    assert!(
-        json["rawDiffHint"]["readingBoundary"]
-            .as_str()
-            .is_some_and(|boundary| boundary.contains("optional scoping hint"))
+    assert_eq!(json["policyBoundary"]["lawPolicyRequired"], true);
+    assert_eq!(
+        json["policyBoundary"]["rule"],
+        "No LawPolicy, no ArchSig judgement"
     );
     assert!(
-        json["measuredWitnesses"]
+        json.get("rawDiffHint").is_none(),
+        "raw diff must not be part of the PR review input surface"
+    );
+    assert!(
+        json["changedObservations"]
             .as_array()
-            .is_some_and(|witnesses| witnesses.iter().any(|witness| {
-                witness["axisFamily"] == "semantic"
-                    && witness["defectValue"]
-                        .as_i64()
-                        .is_some_and(|value| value > 0)
+            .is_some_and(|observations| observations.iter().any(|observation| {
+                observation["ref"] == "atom:contract:create-user" && observation["matched"] == true
             }))
     );
     assert!(
-        json["recommendedReviewFocus"]
+        json["policyMatchedLaws"]
             .as_array()
-            .is_some_and(|focus| !focus.is_empty())
+            .is_some_and(|laws| !laws.is_empty())
     );
-    assert!(json["nonConclusions"].as_array().is_some_and(|items| {
-        items
-            .iter()
-            .any(|item| item.as_str().is_some_and(|text| text.contains("FieldSig")))
-    }));
+    assert!(json.get("nonConclusions").is_none());
 }
 
 #[test]
@@ -1579,8 +1568,8 @@ fn assert_north_star_packet_surfaces(json: &Value) {
             && json["archMapStoreRefs"]["indexRef"]["artifactKind"] == "archmap-index"
             && json["archMapStoreRefs"]["rawDiffBoundary"]
                 .as_str()
-                .is_some_and(|boundary| boundary.contains("raw diffs")),
-        "ArchMapStore refs must expose delta / commit / snapshot / index and raw diff boundary"
+                .is_some_and(|boundary| boundary.contains("not ArchSig semantic inputs")),
+        "ArchMapStore refs must expose delta / commit / snapshot / index and raw-diff exclusion boundary"
     );
     for family in ["monodromyReadingFamily", "boundaryHolonomyReadingFamily"] {
         assert!(
