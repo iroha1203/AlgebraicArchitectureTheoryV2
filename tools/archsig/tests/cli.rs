@@ -32,6 +32,7 @@ fn cli_help_exposes_only_llm_atom_archmap_surface() {
         "aat-analysis",
         "analysis-summary",
         "summary",
+        "analyze",
         "llm-native-workflow",
         "north-star-workflow",
         "schema-catalog",
@@ -120,8 +121,8 @@ fn cli_rejects_summary_for_non_analysis_packet() {
 }
 
 #[test]
-fn cli_accepts_north_star_command_aliases() {
-    let out_dir = temp_dir("north-star-aliases");
+fn cli_accepts_analysis_command_aliases() {
+    let out_dir = temp_dir("analysis-aliases");
     let root = fixture_root();
     let profile_validation = out_dir.join("interpretation-profile-validation.json");
     run_sig0(&[
@@ -152,7 +153,7 @@ fn cli_accepts_north_star_command_aliases() {
     ]);
     assert_north_star_packet_surfaces(&read_json(&packet));
 
-    let workflow_dir = out_dir.join("workflow");
+    let workflow_dir = out_dir.join("legacy-workflow");
     run_sig0(&[
         "north-star-workflow",
         "--archmap",
@@ -167,6 +168,26 @@ fn cli_accepts_north_star_command_aliases() {
         workflow_dir.to_str().expect("workflow dir is utf-8"),
     ]);
     assert!(workflow_dir.join("archsig-analysis-packet.json").is_file());
+
+    let llm_native_dir = out_dir.join("llm-native-alias");
+    run_sig0(&[
+        "llm-native-workflow",
+        "--archmap",
+        root.join("archmap.json")
+            .to_str()
+            .expect("archmap path is utf-8"),
+        "--law-policy",
+        root.join("law_policy.json")
+            .to_str()
+            .expect("profile path is utf-8"),
+        "--out-dir",
+        llm_native_dir.to_str().expect("workflow dir is utf-8"),
+    ]);
+    assert!(
+        llm_native_dir
+            .join("archsig-analysis-packet.json")
+            .is_file()
+    );
 }
 
 #[test]
@@ -175,8 +196,9 @@ fn cli_rejects_implicit_scan_default() {
     assert!(!output.status.success());
     let stderr = String::from_utf8_lossy(&output.stderr);
     assert!(
-        stderr.contains("LLM-native ArchMap/LawPolicy/analysis-packet primary"),
-        "implicit scan should be rejected with an LLM-native boundary\n{stderr}"
+        stderr.contains("ArchMap/LawPolicy/analysis-packet primary")
+            && stderr.contains("archsig analyze"),
+        "implicit scan should be rejected with the analyze boundary\n{stderr}"
     );
 }
 
@@ -192,14 +214,14 @@ fn removed_legacy_commands_are_not_accepted() {
 }
 
 #[test]
-fn cli_runs_llm_native_archmap_lawpolicy_archsig_workflow() {
-    let out_dir = temp_dir("llm-native-workflow");
+fn cli_runs_primary_archmap_lawpolicy_archsig_analyze_workflow() {
+    let out_dir = temp_dir("analyze-workflow");
     let root = fixture_root();
     let archmap = root.join("archmap.json");
     let law_policy = root.join("law_policy.json");
 
     run_sig0(&[
-        "llm-native-workflow",
+        "analyze",
         "--archmap",
         archmap.to_str().expect("archmap path is utf-8"),
         "--law-policy",
@@ -218,7 +240,7 @@ fn cli_runs_llm_native_archmap_lawpolicy_archsig_workflow() {
     for file in expected {
         assert!(
             out_dir.join(file).is_file(),
-            "LLM-native workflow must write {file}"
+            "analyze workflow must write {file}"
         );
     }
     for removed_file in [
@@ -231,7 +253,7 @@ fn cli_runs_llm_native_archmap_lawpolicy_archsig_workflow() {
     ] {
         assert!(
             !out_dir.join(removed_file).exists(),
-            "LLM-native workflow must not emit legacy artifact {removed_file}"
+            "analyze workflow must not emit legacy artifact {removed_file}"
         );
     }
 

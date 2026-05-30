@@ -60,7 +60,7 @@ SKILL_DIR=<path-to-archsig-reader-skill>
 LAW_POLICY=<project-law-policy.json>
 ARCHSIG_BIN=${ARCHSIG_BIN:-archsig}
 
-"$ARCHSIG_BIN" llm-native-workflow \
+"$ARCHSIG_BIN" analyze \
   --archmap <archmap.json> \
   --law-policy "$LAW_POLICY" \
   --out-dir <out-dir>

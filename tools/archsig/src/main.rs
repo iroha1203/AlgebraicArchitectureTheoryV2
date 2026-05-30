@@ -16,7 +16,7 @@ use clap::{Parser, Subcommand};
 #[derive(Debug, Parser)]
 #[command(
     version,
-    about = "Validate LLM-native ArchMap, LawPolicy, and ArchSig analysis artifacts"
+    about = "Validate ArchMap, LawPolicy, and ArchSig analysis artifacts"
 )]
 struct Args {
     #[command(subcommand)]
@@ -50,6 +50,22 @@ enum Command {
         /// Output LawPolicy fixture or validation report JSON path. If omitted, JSON is written to stdout.
         #[arg(long)]
         out: Option<PathBuf>,
+    },
+
+    /// Run the primary ArchMap + LawPolicy -> ArchSig analysis workflow.
+    #[command(visible_aliases = ["llm-native-workflow", "north-star-workflow"])]
+    Analyze {
+        /// Input ArchMap observation artifact path.
+        #[arg(long)]
+        archmap: PathBuf,
+
+        /// Input LawPolicy artifact path.
+        #[arg(long = "law-policy")]
+        law_policy: PathBuf,
+
+        /// Output directory for ArchSig analysis workflow artifacts.
+        #[arg(long = "out-dir")]
+        out_dir: PathBuf,
     },
 
     /// Build an ArchSig AAT analysis packet from ArchMap + interpretation profile.
@@ -125,22 +141,6 @@ enum Command {
         /// Output generation protocol JSON path. If omitted, JSON is written to stdout.
         #[arg(long)]
         out: Option<PathBuf>,
-    },
-
-    /// Run the ArchMap -> interpretation profile -> ArchSig North Star workflow.
-    #[command(visible_alias = "north-star-workflow")]
-    LlmNativeWorkflow {
-        /// Input ArchMap observation artifact path.
-        #[arg(long)]
-        archmap: PathBuf,
-
-        /// Input LawPolicy artifact path.
-        #[arg(long = "law-policy")]
-        law_policy: PathBuf,
-
-        /// Output directory for LLM-native workflow artifacts.
-        #[arg(long = "out-dir")]
-        out_dir: PathBuf,
     },
 
     /// Emit the current LLM Atom ArchMap schema catalog.
@@ -344,7 +344,7 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
             write_json(out, &protocol)?;
             Ok(ExitCode::SUCCESS)
         }
-        Some(Command::LlmNativeWorkflow {
+        Some(Command::Analyze {
             archmap,
             law_policy,
             out_dir,
@@ -424,7 +424,7 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
             Ok(ExitCode::SUCCESS)
         }
         None => {
-            Err("ArchSig is LLM-native ArchMap/LawPolicy/analysis-packet primary; use `archsig llm-native-workflow` for the main analysis path.".into())
+            Err("ArchSig is ArchMap/LawPolicy/analysis-packet primary; use `archsig analyze` for the main analysis path.".into())
         }
     }
 }

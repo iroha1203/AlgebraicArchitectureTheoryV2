@@ -18,19 +18,20 @@ calibration commands under `tools/fieldsig`.
 ## Primary Workflow
 
 ```bash
+cargo run --manifest-path tools/archsig/Cargo.toml -- analyze \
+  --archmap tools/archsig/tests/fixtures/minimal/archmap.json \
+  --law-policy tools/archsig/tests/fixtures/minimal/law_policy.json \
+  --out-dir .archsig/analyze
+```
+
+`llm-native-workflow` and `north-star-workflow` are visible compatibility
+aliases for the same workflow. Use `analyze` in new docs, scripts, and CI:
+
+```bash
 cargo run --manifest-path tools/archsig/Cargo.toml -- llm-native-workflow \
   --archmap tools/archsig/tests/fixtures/minimal/archmap.json \
   --law-policy tools/archsig/tests/fixtures/minimal/law_policy.json \
-  --out-dir .archsig/llm-native
-```
-
-`north-star-workflow` is a visible alias for the same workflow:
-
-```bash
-cargo run --manifest-path tools/archsig/Cargo.toml -- north-star-workflow \
-  --archmap tools/archsig/tests/fixtures/minimal/archmap.json \
-  --law-policy tools/archsig/tests/fixtures/minimal/law_policy.json \
-  --out-dir .archsig/north-star
+  --out-dir .archsig/compat
 ```
 
 The command emits only:
@@ -49,11 +50,11 @@ To emit a compact review summary from an existing packet, run:
 
 ```bash
 cargo run --manifest-path tools/archsig/Cargo.toml -- analysis-summary \
-  --packet .archsig/llm-native/archsig-analysis-packet.json \
-  --archmap-validation .archsig/llm-native/archmap-validation.json \
-  --law-policy-validation .archsig/llm-native/law-policy-validation.json \
-  --analysis-validation .archsig/llm-native/archsig-analysis-validation.json \
-  --out .archsig/llm-native/archsig-analysis-summary.json
+  --packet .archsig/analyze/archsig-analysis-packet.json \
+  --archmap-validation .archsig/analyze/archmap-validation.json \
+  --law-policy-validation .archsig/analyze/law-policy-validation.json \
+  --analysis-validation .archsig/analyze/archsig-analysis-validation.json \
+  --out .archsig/analyze/archsig-analysis-summary.json
 ```
 
 `summary` is a visible alias. The summary is a reading aid for human / LLM
@@ -84,7 +85,7 @@ monolithic `archmap-observation-map-v0` file before running:
 ```bash
 cargo run --manifest-path tools/archsig/Cargo.toml -- archmap \
   --input .archsig/archmap/archmap.json \
-  --out .archsig/llm-native/archmap-validation.json
+  --out .archsig/analyze/archmap-validation.json
 ```
 
 Current commands intentionally keep the analysis contract monolithic. A future
@@ -97,22 +98,22 @@ references, and source refs before writing the exported ArchMap.
 ```bash
 cargo run --manifest-path tools/archsig/Cargo.toml -- archmap \
   --input tools/archsig/tests/fixtures/minimal/archmap.json \
-  --out .archsig/llm-native/archmap-validation.json
+  --out .archsig/analyze/archmap-validation.json
 
 cargo run --manifest-path tools/archsig/Cargo.toml -- interpretation-profile \
   --input tools/archsig/tests/fixtures/minimal/law_policy.json \
-  --out .archsig/llm-native/law-policy-validation.json
+  --out .archsig/analyze/law-policy-validation.json
 
 cargo run --manifest-path tools/archsig/Cargo.toml -- aat-analysis \
   --archmap tools/archsig/tests/fixtures/minimal/archmap.json \
   --law-policy tools/archsig/tests/fixtures/minimal/law_policy.json \
-  --out .archsig/llm-native/archsig-analysis-packet.json \
-  --validation-out .archsig/llm-native/archsig-analysis-validation.json \
-  --llm-interpretation-out .archsig/llm-native/llm-interpretation-packet.json
+  --out .archsig/analyze/archsig-analysis-packet.json \
+  --validation-out .archsig/analyze/archsig-analysis-validation.json \
+  --llm-interpretation-out .archsig/analyze/llm-interpretation-packet.json
 
 cargo run --manifest-path tools/archsig/Cargo.toml -- analysis-summary \
-  --packet .archsig/llm-native/archsig-analysis-packet.json \
-  --out .archsig/llm-native/archsig-analysis-summary.json
+  --packet .archsig/analyze/archsig-analysis-packet.json \
+  --out .archsig/analyze/archsig-analysis-summary.json
 ```
 
 `law-policy` / `interpretation-profile` validate the selected analysis profile.
@@ -128,7 +129,7 @@ cargo run --manifest-path tools/archsig/Cargo.toml -- archmap-generate \
   --prompt-pack tools/archsig/skills/archmap-creater/references/prompt-pack.md \
   --provider external-agent \
   --model-id unspecified \
-  --out .archsig/llm-native/archmap-generation-protocol.json
+  --out .archsig/analyze/archmap-generation-protocol.json
 ```
 
 This command emits a bounded protocol for an external agent to produce
