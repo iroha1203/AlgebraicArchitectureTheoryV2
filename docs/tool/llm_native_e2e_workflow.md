@@ -101,6 +101,9 @@ The E2E flow must preserve these boundaries:
 - Future ArchSig PR review mode reads ArchMapStore deltas / commits as
   change-local structural evidence for CI. FieldSig reads ArchMapStore and
   ArchSig packet chains in batch for longitudinal evolution monitoring.
+- The implemented lightweight `archsig pr-review` command takes
+  `ArchMapDelta`, `ArchMapCommit`, and base/head ArchSig packets as canonical
+  inputs. Raw diff is recorded only as an optional scoping hint.
 - Coverage gaps are carried as unknown remainder; they are not rounded to
   absence, measured zero, or forecast truth.
 - ArchSig emits only the current ArchMap validation, profile validation,

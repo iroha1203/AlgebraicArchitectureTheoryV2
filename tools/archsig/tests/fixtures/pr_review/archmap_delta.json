@@ -1,0 +1,16 @@
+{
+  "schemaVersion": "archmap-delta-v0",
+  "deltaId": "delta:coupon-tax-rounding-pr",
+  "baseSnapshotRef": "archmap-snapshot:pricing:base",
+  "headSnapshotRef": "archmap-snapshot:pricing:head",
+  "changedObservationRefs": [
+    "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding",
+    "atom:semantic:PaymentAmount-ReceiptAmount-coupon-tax-rounding-noncommutation",
+    "semantic:coupon-tax-rounding-paths"
+  ],
+  "changeLocalBoundary": "PR review delta records ArchMap-level pricing observations, not raw source diff semantics",
+  "nonConclusions": [
+    "ArchMapDelta is not a language parser output guarantee",
+    "delta evidence is not merge safety"
+  ]
+}

@@ -120,6 +120,33 @@ enum Command {
         out: Option<PathBuf>,
     },
 
+    /// Produce a lightweight ArchSig PR review report from ArchMapStore change artifacts.
+    PrReview {
+        /// Input archmap-delta-v0 JSON path. This is the canonical change-local input.
+        #[arg(long)]
+        delta: PathBuf,
+
+        /// Input archmap-commit-v0 JSON path. This connects the delta to the ArchMapStore chain.
+        #[arg(long)]
+        commit: PathBuf,
+
+        /// Base archsig-analysis-packet-v0 JSON path.
+        #[arg(long = "base-packet")]
+        base_packet: PathBuf,
+
+        /// Head archsig-analysis-packet-v0 JSON path.
+        #[arg(long = "head-packet")]
+        head_packet: PathBuf,
+
+        /// Optional raw diff scoping hint. The file is referenced but not parsed as semantic input.
+        #[arg(long = "diff-hint")]
+        diff_hint: Option<PathBuf>,
+
+        /// Output archsig-pr-review-report-v0 JSON path. If omitted, JSON is written to stdout.
+        #[arg(long)]
+        out: Option<PathBuf>,
+    },
+
     /// Emit a bounded external-agent protocol for generating ArchMap JSON.
     ArchmapGenerate {
         /// Source inventory JSON path used by the external agent.
@@ -299,6 +326,44 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
             write_json(out, &summary)?;
             Ok(ExitCode::SUCCESS)
         }
+        Some(Command::PrReview {
+            delta,
+            commit,
+            base_packet,
+            head_packet,
+            diff_hint,
+            out,
+        }) => {
+            let delta_document: serde_json::Value = read_json(&delta)?;
+            require_schema(&delta_document, "archmap-delta-v0", "--delta")?;
+            let commit_document: serde_json::Value = read_json(&commit)?;
+            require_schema(&commit_document, "archmap-commit-v0", "--commit")?;
+            let base_packet_document: serde_json::Value = read_json(&base_packet)?;
+            require_schema(
+                &base_packet_document,
+                ARCHSIG_ANALYSIS_PACKET_SCHEMA_VERSION,
+                "--base-packet",
+            )?;
+            let head_packet_document: serde_json::Value = read_json(&head_packet)?;
+            require_schema(
+                &head_packet_document,
+                ARCHSIG_ANALYSIS_PACKET_SCHEMA_VERSION,
+                "--head-packet",
+            )?;
+            let report = build_pr_review_report(
+                &delta,
+                &delta_document,
+                &commit,
+                &commit_document,
+                &base_packet,
+                &base_packet_document,
+                &head_packet,
+                &head_packet_document,
+                diff_hint.as_ref(),
+            );
+            write_json(out, &report)?;
+            Ok(ExitCode::SUCCESS)
+        }
         Some(Command::ArchmapGenerate {
             source_inventory,
             prompt_pack,
@@ -457,6 +522,149 @@ fn read_json<T: serde::de::DeserializeOwned>(path: &PathBuf) -> Result<T, Box<dy
 
 fn read_optional_json(path: Option<&PathBuf>) -> Result<Option<serde_json::Value>, Box<dyn Error>> {
     path.map(read_json).transpose()
+}
+
+fn require_schema(
+    document: &serde_json::Value,
+    expected: &str,
+    field_name: &str,
+) -> Result<(), Box<dyn Error>> {
+    let actual = document
+        .get("schemaVersion")
+        .or_else(|| document.get("schema"))
+        .and_then(|value| value.as_str());
+    if actual != Some(expected) {
+        return Err(format!("{field_name} must have schemaVersion {expected}").into());
+    }
+    Ok(())
+}
+
+#[allow(clippy::too_many_arguments)]
+fn build_pr_review_report(
+    delta_path: &Path,
+    delta: &serde_json::Value,
+    commit_path: &Path,
+    commit: &serde_json::Value,
+    base_packet_path: &Path,
+    base_packet: &serde_json::Value,
+    head_packet_path: &Path,
+    head_packet: &serde_json::Value,
+    diff_hint: Option<&PathBuf>,
+) -> serde_json::Value {
+    let head_llm = head_packet
+        .get("llmInterpretationPacket")
+        .unwrap_or(&serde_json::Value::Null);
+    let base_nonzero_count = array_len(base_packet, "nonzeroMonodromyWitnesses");
+    let head_nonzero_count = array_len(head_packet, "nonzeroMonodromyWitnesses");
+    let measured_witnesses = serde_json::Value::Array(
+        array_items(head_packet, "nonzeroMonodromyWitnesses")
+            .into_iter()
+            .take(8)
+            .map(|witness| {
+                serde_json::json!({
+                    "witnessId": json_field(witness, "witnessId"),
+                    "axisFamily": json_field(witness, "axisFamily"),
+                    "defectValue": json_field(witness, "defectValue"),
+                    "operationPair": array_field(witness, "operationPair"),
+                    "pathPair": array_field(witness, "pathPair"),
+                    "affectedAtomRefs": array_field(witness, "affectedAtomRefs"),
+                    "missingEvidence": array_field(witness, "missingEvidence"),
+                    "recommendedReviewFocus": array_field(witness, "recommendedReviewFocus"),
+                    "nonConclusions": array_field(witness, "nonConclusions")
+                })
+            })
+            .collect(),
+    );
+    let review_focus = serde_json::Value::Array(
+        array_items(head_llm, "recommendedHumanReviewFocus")
+            .into_iter()
+            .take(8)
+            .chain(
+                array_items(head_packet, "nonzeroMonodromyWitnesses")
+                    .into_iter()
+                    .flat_map(|witness| array_items(witness, "recommendedReviewFocus"))
+                    .take(8),
+            )
+            .cloned()
+            .collect(),
+    );
+
+    serde_json::json!({
+        "schemaVersion": "archsig-pr-review-report-v0",
+        "reviewId": format!(
+            "archsig-pr-review:{}:{}",
+            json_string(delta, "deltaId", "delta"),
+            json_string(commit, "commitId", "commit")
+        ),
+        "canonicalInputs": {
+            "archMapDelta": {
+                "path": delta_path.display().to_string(),
+                "schemaVersion": schema_string(delta),
+                "deltaId": json_field(delta, "deltaId"),
+                "changedObservationRefs": array_field(delta, "changedObservationRefs")
+            },
+            "archMapCommit": {
+                "path": commit_path.display().to_string(),
+                "schemaVersion": schema_string(commit),
+                "commitId": json_field(commit, "commitId"),
+                "parentRefs": array_field(commit, "parentRefs"),
+                "deltaRefs": array_field(commit, "deltaRefs")
+            },
+            "basePacket": {
+                "path": base_packet_path.display().to_string(),
+                "analysisId": json_field(base_packet, "analysisId"),
+                "archMapRef": json_field(base_packet, "archMapRef")
+            },
+            "headPacket": {
+                "path": head_packet_path.display().to_string(),
+                "analysisId": json_field(head_packet, "analysisId"),
+                "archMapRef": json_field(head_packet, "archMapRef")
+            }
+        },
+        "rawDiffHint": {
+            "provided": diff_hint.is_some(),
+            "path": diff_hint.map(|path| path.display().to_string()),
+            "readingBoundary": "raw diff is an optional scoping hint and is not parsed as semantic, state, effect, authority, or boundary evidence"
+        },
+        "changeLocalDiagnosis": {
+            "nonzeroWitnessDelta": (head_nonzero_count as i64) - (base_nonzero_count as i64),
+            "operationOrderSensitivity": limited_array_field(head_llm, "homotopyOrderSensitivitySummary", 6),
+            "boundaryHolonomy": {
+                "nonzeroMonodromyWitnessCount": head_nonzero_count,
+                "featureBoundaryResidualCount": array_len(head_packet, "featureBoundaryResidualReadings"),
+                "featureExtensionDiagnosisCount": array_len(head_packet, "featureExtensionDiagnosisReadings"),
+                "summary": limited_array_field(head_llm, "featureBoundaryResidualSummary", 6)
+            },
+            "missingFillerEvidence": limited_array_field(head_llm, "diagramFillabilitySummary", 6),
+            "liftingEvidence": limited_array_field(head_llm, "featureExtensionDiagnosisSummary", 6),
+            "coverageGaps": json_field(head_packet.get("flatnessReading").unwrap_or(&serde_json::Value::Null), "blockedByCoverageGaps")
+        },
+        "measuredWitnesses": measured_witnesses,
+        "recommendedReviewFocus": review_focus,
+        "evidenceBoundary": "ArchSig PR review reads ArchMapDelta / ArchMapCommit and ArchSig packets as change-local structural telemetry; it is not a merge safety decision",
+        "nonConclusions": [
+            "ArchSig PR review does not replace FieldSig PR / diff / change-vector evolution analysis",
+            "ArchSig PR review does not parse raw diff as primary semantic evidence",
+            "ArchSig PR review is not a merge approval or automatic repair safety certificate",
+            "ArchSig PR review is not forecast, governance, calibration, or longitudinal quality monitoring"
+        ]
+    })
+}
+
+fn schema_string(document: &serde_json::Value) -> serde_json::Value {
+    document
+        .get("schemaVersion")
+        .or_else(|| document.get("schema"))
+        .cloned()
+        .unwrap_or(serde_json::Value::Null)
+}
+
+fn json_string(document: &serde_json::Value, field: &str, fallback: &str) -> String {
+    document
+        .get(field)
+        .and_then(|value| value.as_str())
+        .unwrap_or(fallback)
+        .to_string()
 }
 
 fn build_analysis_summary(

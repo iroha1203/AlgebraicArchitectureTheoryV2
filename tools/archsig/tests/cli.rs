@@ -17,6 +17,10 @@ fn coupon_rounding_root() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/coupon_rounding")
 }
 
+fn pr_review_root() -> PathBuf {
+    Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/pr_review")
+}
+
 fn sharded_root() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/sharded")
 }
@@ -36,6 +40,7 @@ fn cli_help_exposes_only_llm_atom_archmap_surface() {
         "aat-analysis",
         "analysis-summary",
         "summary",
+        "pr-review",
         "analyze",
         "llm-native-workflow",
         "north-star-workflow",
@@ -455,6 +460,83 @@ fn coupon_tax_rounding_fixture_locks_semantic_monodromy() {
     );
     assert!(golden.to_string().contains("PaymentAmount"));
     assert!(golden.to_string().contains("ReceiptAmount"));
+}
+
+#[test]
+fn cli_pr_review_reads_archmapstore_inputs() {
+    let out_dir = temp_dir("pr-review");
+    let review = pr_review_root();
+    let minimal = fixture_root();
+    let coupon = coupon_rounding_root();
+    let report = out_dir.join("archsig-pr-review.json");
+
+    run_sig0(&[
+        "pr-review",
+        "--delta",
+        review
+            .join("archmap_delta.json")
+            .to_str()
+            .expect("delta path is utf-8"),
+        "--commit",
+        review
+            .join("archmap_commit.json")
+            .to_str()
+            .expect("commit path is utf-8"),
+        "--base-packet",
+        minimal
+            .join("archsig_analysis_packet.json")
+            .to_str()
+            .expect("base packet path is utf-8"),
+        "--head-packet",
+        coupon
+            .join("archsig_analysis_packet.json")
+            .to_str()
+            .expect("head packet path is utf-8"),
+        "--diff-hint",
+        review
+            .join("raw_diff_hint.diff")
+            .to_str()
+            .expect("diff hint path is utf-8"),
+        "--out",
+        report.to_str().expect("report path is utf-8"),
+    ]);
+
+    let json = read_json(&report);
+    assert_eq!(json["schemaVersion"], "archsig-pr-review-report-v0");
+    assert_eq!(
+        json["canonicalInputs"]["archMapDelta"]["schemaVersion"],
+        "archmap-delta-v0"
+    );
+    assert_eq!(
+        json["canonicalInputs"]["archMapCommit"]["schemaVersion"],
+        "archmap-commit-v0"
+    );
+    assert_eq!(json["rawDiffHint"]["provided"], true);
+    assert!(
+        json["rawDiffHint"]["readingBoundary"]
+            .as_str()
+            .is_some_and(|boundary| boundary.contains("optional scoping hint"))
+    );
+    assert!(
+        json["measuredWitnesses"]
+            .as_array()
+            .is_some_and(|witnesses| witnesses.iter().any(|witness| {
+                witness["axisFamily"] == "semantic"
+                    && witness["defectValue"]
+                        .as_i64()
+                        .is_some_and(|value| value > 0)
+            }))
+    );
+    assert!(
+        json["recommendedReviewFocus"]
+            .as_array()
+            .is_some_and(|focus| !focus.is_empty())
+    );
+    assert!(json["nonConclusions"].as_array().is_some_and(|items| {
+        items
+            .iter()
+            .any(|item| item.as_str().is_some_and(|text| text.contains("FieldSig")))
+    }));
 }
 
 #[test]
