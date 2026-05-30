@@ -527,6 +527,7 @@ fn measurement_expansion_summary(
         "signatureTrajectoryHomotopyRefutation": limited_array_field(llm_packet, "signatureTrajectoryHomotopyRefutationSummary", limit),
         "bridgeSplitObstructionTransfer": limited_array_field(llm_packet, "bridgeSplitObstructionTransferSummary", limit),
         "nonzeroMonodromyWitness": limited_array_field(llm_packet, "nonzeroMonodromyWitnessSummary", limit),
+        "featureBoundaryResidual": limited_array_field(llm_packet, "featureBoundaryResidualSummary", limit),
         "counts": {
             "atomSupportAxisReadings": array_len(packet, "atomSupportAxisReadings"),
             "atomCompatibilityReadings": array_len(packet, "atomCompatibilityReadings"),
@@ -539,7 +540,8 @@ fn measurement_expansion_summary(
             "axisForgettingRiskReadings": array_len(packet, "axisForgettingRiskReadings"),
             "signatureTrajectoryHomotopyRefutationReadings": array_len(packet, "signatureTrajectoryHomotopyRefutationReadings"),
             "bridgeSplitObstructionTransferReadings": array_len(packet, "bridgeSplitObstructionTransferReadings"),
-            "nonzeroMonodromyWitnesses": array_len(packet, "nonzeroMonodromyWitnesses")
+            "nonzeroMonodromyWitnesses": array_len(packet, "nonzeroMonodromyWitnesses"),
+            "featureBoundaryResidualReadings": array_len(packet, "featureBoundaryResidualReadings")
         }
     })
 }

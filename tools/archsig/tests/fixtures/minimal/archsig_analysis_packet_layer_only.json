@@ -3351,6 +3351,166 @@
       ]
     }
   ],
+  "featureBoundaryResidualReadings": [
+    {
+      "readingId": "feature-boundary-residual:fixture-archmap-atom-observation",
+      "boundaryRef": "Boundary(fixture-archmap-atom-observation, feature-extension)",
+      "featureExtensionRef": "feature-extension-formula:fixture-archmap-atom-observation",
+      "status": "measuredResidual",
+      "coreScopeRef": "fixture-archmap-atom-observation:core",
+      "featureScopeRef": "fixture-archmap-atom-observation:feature",
+      "mixedSubconfigurationRefs": [
+        "gap-runtime-user-db-trace",
+        "split-readiness:molecule-user-request-responsibility"
+      ],
+      "coreLocalReadingRefs": [],
+      "featureLocalReadingRefs": [],
+      "boundarySupportRefs": [
+        "gap-runtime-user-db-trace",
+        "split-readiness:molecule-user-request-responsibility"
+      ],
+      "holonomyAxes": [
+        {
+          "holonomyAxisRef": "Hol_static",
+          "axisFamily": "static",
+          "status": "coveredZeroResidual",
+          "residualValue": 0,
+          "measuredDefectRefs": [],
+          "supportRefs": [
+            "atom:component:route-users",
+            "atom:component:service-user",
+            "atom:relation:route-service"
+          ],
+          "missingEvidence": [],
+          "reading": "Hol_static records boundary-local residual obstruction on the static axis"
+        },
+        {
+          "holonomyAxisRef": "Hol_contract",
+          "axisFamily": "contract",
+          "status": "coveredZeroResidual",
+          "residualValue": 0,
+          "measuredDefectRefs": [],
+          "supportRefs": [
+            "atom:contract:create-user"
+          ],
+          "missingEvidence": [],
+          "reading": "Hol_contract records boundary-local residual obstruction on the contract axis"
+        },
+        {
+          "holonomyAxisRef": "Hol_semantic",
+          "axisFamily": "semantic",
+          "status": "coveredZeroResidual",
+          "residualValue": 0,
+          "measuredDefectRefs": [],
+          "supportRefs": [
+            "semantic:create-user-flow"
+          ],
+          "missingEvidence": [],
+          "reading": "Hol_semantic records boundary-local residual obstruction on the semantic axis"
+        },
+        {
+          "holonomyAxisRef": "Hol_state",
+          "axisFamily": "state",
+          "status": "coverageBlocked",
+          "residualValue": 0,
+          "measuredDefectRefs": [],
+          "supportRefs": [
+            "gap-runtime-user-db-trace",
+            "split-readiness:molecule-user-request-responsibility"
+          ],
+          "missingEvidence": [
+            "missing state observation for operation-square:operation-delta-observe-before-repair:operation-delta-observe-before-repair-continuation"
+          ],
+          "reading": "Hol_state records boundary-local residual obstruction on the state axis"
+        },
+        {
+          "holonomyAxisRef": "Hol_effect",
+          "axisFamily": "effect",
+          "status": "measuredResidual",
+          "residualValue": 2,
+          "measuredDefectRefs": [
+            "mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair-continuation:effect"
+          ],
+          "supportRefs": [
+            "add or refine ArchMap atom observations before claiming repair",
+            "derived-effect-order:p:operation-delta-observe-before-repair-continuation-operation-delta-observe-before-repair",
+            "derived-effect-order:q:operation-delta-observe-before-repair-operation-delta-observe-before-repair-continuation",
+            "no constructed obstruction is transported because no repair candidate exists"
+          ],
+          "missingEvidence": [],
+          "reading": "Hol_effect records boundary-local residual obstruction on the effect axis"
+        },
+        {
+          "holonomyAxisRef": "Hol_authority",
+          "axisFamily": "authority",
+          "status": "coverageBlocked",
+          "residualValue": 0,
+          "measuredDefectRefs": [],
+          "supportRefs": [
+            "gap-runtime-user-db-trace",
+            "split-readiness:molecule-user-request-responsibility"
+          ],
+          "missingEvidence": [
+            "missing authority observation for operation-square:operation-delta-observe-before-repair:operation-delta-observe-before-repair-continuation"
+          ],
+          "reading": "Hol_authority records boundary-local residual obstruction on the authority axis"
+        },
+        {
+          "holonomyAxisRef": "Hol_runtime",
+          "axisFamily": "runtime",
+          "status": "coveredZeroResidual",
+          "residualValue": 0,
+          "measuredDefectRefs": [],
+          "supportRefs": [
+            "gap-runtime-user-db-trace"
+          ],
+          "missingEvidence": [],
+          "reading": "Hol_runtime records boundary-local residual obstruction on the runtime axis"
+        },
+        {
+          "holonomyAxisRef": "Hol_projection",
+          "axisFamily": "projection",
+          "status": "coveredZeroResidual",
+          "residualValue": 0,
+          "measuredDefectRefs": [],
+          "supportRefs": [
+            "projection:aat:route-service",
+            "projection:aat:route-users",
+            "projection:sft:create-user"
+          ],
+          "missingEvidence": [],
+          "reading": "Hol_projection records boundary-local residual obstruction on the projection axis"
+        }
+      ],
+      "residualObstructionRefs": [
+        "gap-runtime-user-db-trace",
+        "mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair-continuation:effect",
+        "split-readiness:molecule-user-request-responsibility"
+      ],
+      "supportSeparationPolicy": "core-local, feature-local, and mixed boundary support are separated as review attribution surfaces, not as a proved direct-sum decomposition",
+      "coverageAssumptions": [
+        "coveragePolicy=measure only selected axes with declared coverage; missing coverage remains blocked, not zero over selected axes [\"axis:layer-violation\"]",
+        "unmeasured boundary support remains residual coverage debt"
+      ],
+      "exactnessAssumptions": [
+        "selected LawPolicy exactness assumptions",
+        "ArchMapStore compaction boundary"
+      ],
+      "attributionPolicy": "multi-label attribution may name core, feature, boundary, law, and coverage contributors without selecting a single cause",
+      "coverageBoundary": "extension formula is computed over current ArchMap state, not an actual PR diff",
+      "exactnessBoundary": "Boundary(A,f) residual is measured over current ArchMap evidence and does not prove Ob(B)=Ob(A)+Ob(f)+Hol(Boundary(A,f))",
+      "evidenceBoundary": "feature boundary residual is a bounded ArchSig review reading, not a theorem about feature safety or danger",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    }
+  ],
   "monodromyReadingFamily": {
     "readingFamilyId": "monodromy-reading-family:measurement-policy-monodromy-boundary-holonomy",
     "status": "schemaFoundationOnly",
@@ -3408,7 +3568,7 @@
       "nonzero-monodromy-witness:mu-operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair-continuation-effect"
     ],
     "featureBoundaryResidualRefs": [
-      "feature-extension-formula:fixture-archmap-atom-observation"
+      "feature-boundary-residual:fixture-archmap-atom-observation"
     ],
     "extensionDiagnosisRefs": [
       "split-readiness:molecule-user-request-responsibility"
@@ -4993,6 +5153,9 @@
     ],
     "nonzeroMonodromyWitnessSummary": [
       "nonzero-monodromy-witness:mu-operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair-continuation-effect axis=effect defect=2 affectedAtoms=4 missingEvidence=0 focus=2"
+    ],
+    "featureBoundaryResidualSummary": [
+      "feature-boundary-residual:fixture-archmap-atom-observation boundary=Boundary(fixture-archmap-atom-observation, feature-extension) status=measuredResidual axes=8 residualRefs=3"
     ],
     "representationStrengthSummary": [
       "weightedAdjacencyMatrix zeroReflecting=blockedByCoverageGap obstructionReflecting=blockedByCoverageGap blockedBy=1",

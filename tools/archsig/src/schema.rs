@@ -669,6 +669,7 @@ pub struct ArchSigAnalysisPacketV0 {
     pub axis_wise_monodromy_defects: Vec<ArchSigAxisWiseMonodromyDefectV0>,
     pub ami_aggregate_readings: Vec<ArchSigAmiAggregateReadingV0>,
     pub nonzero_monodromy_witnesses: Vec<ArchSigNonzeroMonodromyWitnessV0>,
+    pub feature_boundary_residual_readings: Vec<ArchSigFeatureBoundaryResidualReadingV0>,
     pub monodromy_reading_family: ArchSigMonodromyReadingFamilyV0,
     pub boundary_holonomy_reading_family: ArchSigBoundaryHolonomyReadingFamilyV0,
     pub representation_strength_readings: Vec<ArchSigRepresentationStrengthReadingV0>,
@@ -832,6 +833,44 @@ pub struct ArchSigNonzeroMonodromyWitnessV0 {
     pub recommended_review_focus: Vec<String>,
     pub evidence_boundary: String,
     pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigFeatureBoundaryResidualReadingV0 {
+    pub reading_id: String,
+    pub boundary_ref: String,
+    pub feature_extension_ref: String,
+    pub status: String,
+    pub core_scope_ref: String,
+    pub feature_scope_ref: String,
+    pub mixed_subconfiguration_refs: Vec<String>,
+    pub core_local_reading_refs: Vec<String>,
+    pub feature_local_reading_refs: Vec<String>,
+    pub boundary_support_refs: Vec<String>,
+    pub holonomy_axes: Vec<ArchSigBoundaryHolonomyAxisResidualV0>,
+    pub residual_obstruction_refs: Vec<String>,
+    pub support_separation_policy: String,
+    pub coverage_assumptions: Vec<String>,
+    pub exactness_assumptions: Vec<String>,
+    pub attribution_policy: String,
+    pub coverage_boundary: String,
+    pub exactness_boundary: String,
+    pub evidence_boundary: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigBoundaryHolonomyAxisResidualV0 {
+    pub holonomy_axis_ref: String,
+    pub axis_family: String,
+    pub status: String,
+    pub residual_value: i64,
+    pub measured_defect_refs: Vec<String>,
+    pub support_refs: Vec<String>,
+    pub missing_evidence: Vec<String>,
+    pub reading: String,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -1920,6 +1959,8 @@ pub struct ArchSigLlmInterpretationPacketV0 {
     pub bridge_split_obstruction_transfer_summary: Vec<String>,
     #[serde(default)]
     pub nonzero_monodromy_witness_summary: Vec<String>,
+    #[serde(default)]
+    pub feature_boundary_residual_summary: Vec<String>,
     pub representation_strength_summary: Vec<String>,
     pub local_curvature_diagram_summary: Vec<String>,
     pub three_layer_flatness_summary: Vec<String>,

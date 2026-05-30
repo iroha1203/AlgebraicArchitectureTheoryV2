@@ -71,6 +71,7 @@ The implemented schema records:
 - `axisWiseMonodromyDefects`
 - `amiAggregateReadings`
 - `nonzeroMonodromyWitnesses`
+- `featureBoundaryResidualReadings`
 - `monodromyReadingFamily`
 - `boundaryHolonomyReadingFamily`
 - `representationStrengthReadings`
@@ -193,8 +194,8 @@ The builder:
   foundation surfaces. They carry selected axes, distance kind, weight policy,
   coverage policy, and the ArchMapStore ref set used by later operation-square,
   axis-wise defect, AMI, boundary residual, and feature-extension attribution
-  readings. In this issue they define the packet shape and validation boundary;
-  later issues fill the concrete valuation fields.
+  readings. They define the shared measurement policy boundary while concrete
+  valuation fields live in the corresponding reading records.
 - `operationSquareCandidates` enumerates supplied or inferred operation pairs as
   path pairs `p = g . f` and `q = f . g`. Inferred candidates are review cues
   derived from shared Atom support, state / effect / contract / semantic /
@@ -219,6 +220,15 @@ The builder:
   observation refs, law refs, signature axis refs, suggested filler / lifting /
   boundary evidence, review focus cues, coverage boundary, and machine-readable
   non-conclusions. It does not assert repair safety or merge safety.
+- `featureBoundaryResidualReadings` records `Boundary(A, f)` review readings for
+  feature-extension boundaries. Each reading separates core-local,
+  feature-local, and mixed boundary support, exposes `Hol_static`,
+  `Hol_contract`, `Hol_semantic`, `Hol_state`, `Hol_effect`, `Hol_authority`,
+  `Hol_runtime`, and `Hol_projection` residual axes, and keeps support
+  separation, coverage, exactness, attribution policy, evidence boundary, and
+  machine-readable non-conclusions. It does not claim an unconditional
+  `Ob(B) = Ob(A) + Ob(f) + Hol(Boundary(A,f))` theorem or decide feature
+  safety.
 - axis-forgetting risk records when a coarse observation projection has
   forgotten selected axes or collapsed mixed-axis support. It blocks
   `ZeroReflecting` and `ObstructionReflecting` readings unless explicit axis

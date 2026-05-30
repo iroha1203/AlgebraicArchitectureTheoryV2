@@ -14,19 +14,20 @@ use crate::{
     ArchSigAtomConfigurationSummaryV0, ArchSigAtomSupportAxisReadingV0,
     ArchSigAxisContinuationTraceV0, ArchSigAxisExcursionV0, ArchSigAxisForgettingRiskReadingV0,
     ArchSigAxisRestrictionCountV0, ArchSigAxisWiseMonodromyDefectV0,
-    ArchSigBoundaryHolonomyReadingFamilyV0, ArchSigBoundaryPreparationRankV0,
-    ArchSigBoundedJudgementV0, ArchSigBridgeAtomFamilyReadingV0, ArchSigBridgeEdgeBreakdownV0,
-    ArchSigBridgeSplitObstructionTransferReadingV0, ArchSigChangeImpactReadingV0,
-    ArchSigCouplingCohesionReadingV0, ArchSigCoverageStatusV0,
+    ArchSigBoundaryHolonomyAxisResidualV0, ArchSigBoundaryHolonomyReadingFamilyV0,
+    ArchSigBoundaryPreparationRankV0, ArchSigBoundedJudgementV0, ArchSigBridgeAtomFamilyReadingV0,
+    ArchSigBridgeEdgeBreakdownV0, ArchSigBridgeSplitObstructionTransferReadingV0,
+    ArchSigChangeImpactReadingV0, ArchSigCouplingCohesionReadingV0, ArchSigCoverageStatusV0,
     ArchSigCurrentStateEvolutionBoundaryV0, ArchSigDesignPressureReadingV0,
     ArchSigDesignPrincipleReadingV0, ArchSigDiagramFillabilityReadingV0,
     ArchSigDominantAtomFamilyCompositionV0, ArchSigEvolutionRiskRankingV0,
-    ArchSigFeatureExtensionAxisSummaryV0, ArchSigFeatureExtensionFormulaReadingV0,
-    ArchSigFlatnessReadingV0, ArchSigHighOverlapMoleculePairV0,
-    ArchSigHomotopyOrderSensitivityReadingV0, ArchSigInvariantFamilyReadingV0,
-    ArchSigLawUniverseCoverageReadingV0, ArchSigLawUniverseReadingV0, ArchSigLayerSplitV0,
-    ArchSigLlmInterpretationPacketV0, ArchSigLocalCurvatureDiagramReadingV0,
-    ArchSigMoleculeReadingV0, ArchSigMonodromyReadingFamilyV0, ArchSigNonzeroMonodromyWitnessV0,
+    ArchSigFeatureBoundaryResidualReadingV0, ArchSigFeatureExtensionAxisSummaryV0,
+    ArchSigFeatureExtensionFormulaReadingV0, ArchSigFlatnessReadingV0,
+    ArchSigHighOverlapMoleculePairV0, ArchSigHomotopyOrderSensitivityReadingV0,
+    ArchSigInvariantFamilyReadingV0, ArchSigLawUniverseCoverageReadingV0,
+    ArchSigLawUniverseReadingV0, ArchSigLayerSplitV0, ArchSigLlmInterpretationPacketV0,
+    ArchSigLocalCurvatureDiagramReadingV0, ArchSigMoleculeReadingV0,
+    ArchSigMonodromyReadingFamilyV0, ArchSigNonzeroMonodromyWitnessV0,
     ArchSigObservationProjectionReadingV0, ArchSigObstructionCircuitV0,
     ArchSigOperationCalculusLawReadingV0, ArchSigOperationDeltaReadingV0,
     ArchSigOperationInvariantGaloisReadingV0, ArchSigOperationSquareCandidateV0,
@@ -204,6 +205,11 @@ pub fn build_archsig_analysis_packet(
         &path_continuation_traces,
         &axis_wise_monodromy_defects,
     );
+    let feature_boundary_residual_readings = build_feature_boundary_residual_readings(
+        law_policy,
+        &feature_extension_formula_readings,
+        &axis_wise_monodromy_defects,
+    );
     let monodromy_reading_family = build_monodromy_reading_family(
         law_policy,
         &arch_map_store_refs,
@@ -216,7 +222,7 @@ pub fn build_archsig_analysis_packet(
         law_policy,
         &arch_map_store_refs,
         &nonzero_monodromy_witnesses,
-        &feature_extension_formula_readings,
+        &feature_boundary_residual_readings,
         &split_readiness_readings,
     );
     let structural_reading_review_surface = build_structural_reading_review_surface(
@@ -293,6 +299,7 @@ pub fn build_archsig_analysis_packet(
         &operation_invariant_galois_readings,
         &split_readiness_readings,
         &nonzero_monodromy_witnesses,
+        &feature_boundary_residual_readings,
         &structural_reading_review_surface,
         &current_state_evolution_boundary,
         &repair_operation_candidates,
@@ -354,6 +361,7 @@ pub fn build_archsig_analysis_packet(
         axis_wise_monodromy_defects,
         ami_aggregate_readings,
         nonzero_monodromy_witnesses,
+        feature_boundary_residual_readings,
         monodromy_reading_family,
         boundary_holonomy_reading_family,
         representation_strength_readings,
@@ -513,7 +521,7 @@ fn build_boundary_holonomy_reading_family(
     law_policy: &LawPolicyDocumentV0,
     arch_map_store_refs: &ArchSigArchMapStoreRefsV0,
     nonzero_monodromy_witnesses: &[ArchSigNonzeroMonodromyWitnessV0],
-    feature_extension_formula_readings: &[ArchSigFeatureExtensionFormulaReadingV0],
+    feature_boundary_residual_readings: &[ArchSigFeatureBoundaryResidualReadingV0],
     split_readiness_readings: &[ArchSigSplitReadinessReadingV0],
 ) -> ArchSigBoundaryHolonomyReadingFamilyV0 {
     ArchSigBoundaryHolonomyReadingFamilyV0 {
@@ -531,7 +539,7 @@ fn build_boundary_holonomy_reading_family(
             .iter()
             .map(|witness| witness.witness_id.clone())
             .collect(),
-        feature_boundary_residual_refs: feature_extension_formula_readings
+        feature_boundary_residual_refs: feature_boundary_residual_readings
             .iter()
             .map(|reading| reading.reading_id.clone())
             .collect(),
@@ -1122,6 +1130,163 @@ fn compared_trace_summary(
             )
         })
         .collect()
+}
+
+fn build_feature_boundary_residual_readings(
+    law_policy: &LawPolicyDocumentV0,
+    feature_extension_formula_readings: &[ArchSigFeatureExtensionFormulaReadingV0],
+    axis_wise_monodromy_defects: &[ArchSigAxisWiseMonodromyDefectV0],
+) -> Vec<ArchSigFeatureBoundaryResidualReadingV0> {
+    feature_extension_formula_readings
+        .iter()
+        .map(|reading| {
+            let boundary_support_refs = unique_strings(
+                reading
+                    .interaction_obstruction_refs
+                    .iter()
+                    .chain(reading.lifting_failure_refs.iter())
+                    .chain(reading.filling_failure_refs.iter())
+                    .chain(reading.complexity_transfer_refs.iter())
+                    .chain(reading.residual_coverage_gap_refs.iter())
+                    .cloned(),
+            );
+            let mixed_subconfiguration_refs = if boundary_support_refs.is_empty() {
+                vec![format!("boundary-support:{}", stable_id(&reading.scope_ref))]
+            } else {
+                boundary_support_refs.clone()
+            };
+            let holonomy_axes = boundary_holonomy_axis_residuals(
+                axis_wise_monodromy_defects,
+                &mixed_subconfiguration_refs,
+            );
+            let residual_obstruction_refs = unique_strings(
+                holonomy_axes
+                    .iter()
+                    .flat_map(|axis| axis.measured_defect_refs.clone())
+                    .chain(boundary_support_refs.iter().cloned()),
+            );
+            ArchSigFeatureBoundaryResidualReadingV0 {
+                reading_id: format!("feature-boundary-residual:{}", stable_id(&reading.scope_ref)),
+                boundary_ref: format!("Boundary({}, feature-extension)", reading.scope_ref),
+                feature_extension_ref: reading.reading_id.clone(),
+                status: if holonomy_axes
+                    .iter()
+                    .any(|axis| axis.status == "measuredResidual")
+                {
+                    "measuredResidual".to_string()
+                } else {
+                    "coverageBounded".to_string()
+                },
+                core_scope_ref: format!("{}:core", reading.scope_ref),
+                feature_scope_ref: format!("{}:feature", reading.scope_ref),
+                mixed_subconfiguration_refs,
+                core_local_reading_refs: reading.inherited_core_obstruction_refs.clone(),
+                feature_local_reading_refs: reading.feature_local_obstruction_refs.clone(),
+                boundary_support_refs,
+                holonomy_axes,
+                residual_obstruction_refs,
+                support_separation_policy:
+                    "core-local, feature-local, and mixed boundary support are separated as review attribution surfaces, not as a proved direct-sum decomposition"
+                        .to_string(),
+                coverage_assumptions: vec![
+                    format!(
+                        "coveragePolicy={} over selected axes {:?}",
+                        law_policy.measurement_policy.coverage_policy,
+                        law_policy.measurement_policy.selected_axis_refs
+                    ),
+                    "unmeasured boundary support remains residual coverage debt".to_string(),
+                ],
+                exactness_assumptions: if law_policy
+                    .measurement_policy
+                    .exactness_assumption_refs
+                    .is_empty()
+                {
+                    vec![
+                        "no exactness assumption refs supplied; boundary holonomy is an empirical tooling diagnosis"
+                            .to_string(),
+                    ]
+                } else {
+                    law_policy.measurement_policy.exactness_assumption_refs.clone()
+                },
+                attribution_policy:
+                    "multi-label attribution may name core, feature, boundary, law, and coverage contributors without selecting a single cause"
+                        .to_string(),
+                coverage_boundary: reading.evidence_boundary.clone(),
+                exactness_boundary:
+                    "Boundary(A,f) residual is measured over current ArchMap evidence and does not prove Ob(B)=Ob(A)+Ob(f)+Hol(Boundary(A,f))"
+                        .to_string(),
+                evidence_boundary:
+                    "feature boundary residual is a bounded ArchSig review reading, not a theorem about feature safety or danger"
+                        .to_string(),
+                non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
+            }
+        })
+        .collect()
+}
+
+fn boundary_holonomy_axis_residuals(
+    axis_wise_monodromy_defects: &[ArchSigAxisWiseMonodromyDefectV0],
+    fallback_support_refs: &[String],
+) -> Vec<ArchSigBoundaryHolonomyAxisResidualV0> {
+    [
+        ("static", "Hol_static"),
+        ("contract", "Hol_contract"),
+        ("semantic", "Hol_semantic"),
+        ("state", "Hol_state"),
+        ("effect", "Hol_effect"),
+        ("authority", "Hol_authority"),
+        ("runtime", "Hol_runtime"),
+        ("projection", "Hol_projection"),
+    ]
+    .into_iter()
+    .map(|(axis_family, holonomy_axis_ref)| {
+        let axis_defects = axis_wise_monodromy_defects
+            .iter()
+            .filter(|defect| defect.axis_family == axis_family)
+            .collect::<Vec<_>>();
+        let residual_value = axis_defects
+            .iter()
+            .filter_map(|defect| defect.distance_value)
+            .sum::<i64>();
+        let measured_defect_refs = axis_defects
+            .iter()
+            .filter(|defect| defect.distance_value.is_some_and(|value| value > 0))
+            .map(|defect| defect.defect_id.clone())
+            .collect::<Vec<_>>();
+        let mut support_refs = unique_strings(
+            axis_defects
+                .iter()
+                .flat_map(|defect| defect.observation_refs.clone()),
+        );
+        if support_refs.is_empty() {
+            support_refs = fallback_support_refs.to_vec();
+        }
+        let missing_evidence = unique_strings(
+            axis_defects
+                .iter()
+                .flat_map(|defect| defect.missing_refs.clone()),
+        );
+        let status = if residual_value > 0 {
+            "measuredResidual"
+        } else if missing_evidence.is_empty() {
+            "coveredZeroResidual"
+        } else {
+            "coverageBlocked"
+        };
+        ArchSigBoundaryHolonomyAxisResidualV0 {
+            holonomy_axis_ref: holonomy_axis_ref.to_string(),
+            axis_family: axis_family.to_string(),
+            status: status.to_string(),
+            residual_value,
+            measured_defect_refs,
+            support_refs,
+            missing_evidence,
+            reading: format!(
+                "{holonomy_axis_ref} records boundary-local residual obstruction on the {axis_family} axis"
+            ),
+        }
+    })
+    .collect()
 }
 
 fn ami_zero_reflection_assumptions(law_policy: &LawPolicyDocumentV0) -> Vec<String> {
@@ -6351,6 +6516,7 @@ fn build_llm_interpretation_packet(
     operation_invariant_galois_readings: &[ArchSigOperationInvariantGaloisReadingV0],
     split_readiness_readings: &[ArchSigSplitReadinessReadingV0],
     nonzero_monodromy_witnesses: &[ArchSigNonzeroMonodromyWitnessV0],
+    feature_boundary_residual_readings: &[ArchSigFeatureBoundaryResidualReadingV0],
     structural_reading_review_surface: &ArchSigStructuralReadingReviewSurfaceV0,
     current_state_evolution_boundary: &ArchSigCurrentStateEvolutionBoundaryV0,
     repair_candidates: &[ArchSigRepairOperationCandidateV0],
@@ -6653,6 +6819,19 @@ fn build_llm_interpretation_packet(
                 )
             })
             .collect(),
+        feature_boundary_residual_summary: feature_boundary_residual_readings
+            .iter()
+            .map(|reading| {
+                format!(
+                    "{} boundary={} status={} axes={} residualRefs={}",
+                    reading.reading_id,
+                    reading.boundary_ref,
+                    reading.status,
+                    reading.holonomy_axes.len(),
+                    reading.residual_obstruction_refs.len()
+                )
+            })
+            .collect(),
         representation_strength_summary: representation_strength_readings
             .iter()
             .map(|reading| {
@@ -6870,6 +7049,7 @@ pub fn validate_archsig_analysis_packet_report(
         check_operation_square_trace_surface(packet),
         check_axis_wise_defect_ami_surface(packet),
         check_nonzero_monodromy_witness_surface(packet),
+        check_feature_boundary_residual_surface(packet),
         check_monodromy_boundary_schema_foundation(packet),
         check_law_relative_analysis(packet),
         check_signature_and_flatness(packet),
@@ -9369,6 +9549,180 @@ fn check_nonzero_monodromy_witness_surface(packet: &ArchSigAnalysisPacketV0) -> 
     )
 }
 
+fn check_feature_boundary_residual_surface(packet: &ArchSigAnalysisPacketV0) -> ValidationCheck {
+    let feature_extension_ids = set(packet
+        .feature_extension_formula_readings
+        .iter()
+        .map(|reading| reading.reading_id.as_str()));
+    let reading_ids = set(packet
+        .feature_boundary_residual_readings
+        .iter()
+        .map(|reading| reading.reading_id.as_str()));
+    let defect_ids = set(packet
+        .axis_wise_monodromy_defects
+        .iter()
+        .map(|defect| defect.defect_id.as_str()));
+    let required_axes = BTreeSet::from([
+        "Hol_static",
+        "Hol_contract",
+        "Hol_semantic",
+        "Hol_state",
+        "Hol_effect",
+        "Hol_authority",
+        "Hol_runtime",
+        "Hol_projection",
+    ]);
+    let mut examples = Vec::new();
+    if !packet.feature_extension_formula_readings.is_empty()
+        && packet.feature_boundary_residual_readings.is_empty()
+    {
+        examples.push(generic_validation_example(
+            "featureBoundaryResidualReadings",
+            "empty",
+            "feature extension formulas must be lifted to Boundary(A,f) residual readings",
+        ));
+    }
+    examples.extend(duplicate_examples(
+        "featureBoundaryResidualReadings[].readingId",
+        duplicates(
+            packet
+                .feature_boundary_residual_readings
+                .iter()
+                .map(|reading| reading.reading_id.as_str()),
+        ),
+    ));
+    for reading in &packet.feature_boundary_residual_readings {
+        if !feature_extension_ids.contains(reading.feature_extension_ref.as_str()) {
+            examples.push(generic_validation_example(
+                &reading.reading_id,
+                &reading.feature_extension_ref,
+                "feature boundary residual references an unknown feature extension formula",
+            ));
+        }
+        for (field, value) in [
+            ("boundaryRef", &reading.boundary_ref),
+            ("status", &reading.status),
+            ("coreScopeRef", &reading.core_scope_ref),
+            ("featureScopeRef", &reading.feature_scope_ref),
+            (
+                "supportSeparationPolicy",
+                &reading.support_separation_policy,
+            ),
+            ("attributionPolicy", &reading.attribution_policy),
+            ("coverageBoundary", &reading.coverage_boundary),
+            ("exactnessBoundary", &reading.exactness_boundary),
+            ("evidenceBoundary", &reading.evidence_boundary),
+        ] {
+            push_blank(
+                &mut examples,
+                &format!("{} {field}", reading.reading_id),
+                value,
+            );
+        }
+        if reading.mixed_subconfiguration_refs.is_empty()
+            || reading.boundary_support_refs.is_empty()
+        {
+            examples.push(generic_validation_example(
+                &reading.reading_id,
+                "mixedSubconfigurationRefs/boundarySupportRefs",
+                "Boundary(A,f) reading must expose mixed core/feature boundary support",
+            ));
+        }
+        if reading.coverage_assumptions.is_empty() || reading.exactness_assumptions.is_empty() {
+            examples.push(generic_validation_example(
+                &reading.reading_id,
+                "coverageAssumptions/exactnessAssumptions",
+                "feature boundary residual must record support coverage and exactness assumptions",
+            ));
+        }
+        if !reading
+            .exactness_boundary
+            .contains("does not prove Ob(B)=Ob(A)+Ob(f)+Hol(Boundary(A,f))")
+        {
+            examples.push(generic_validation_example(
+                &reading.reading_id,
+                &reading.exactness_boundary,
+                "feature boundary residual must not claim the boundary holonomy conjecture as a theorem",
+            ));
+        }
+        if reading.non_conclusions.is_empty() || has_blank(&reading.non_conclusions) {
+            examples.push(generic_validation_example(
+                &reading.reading_id,
+                "nonConclusions",
+                "feature boundary residual must retain machine-readable non-conclusions",
+            ));
+        }
+        let axis_refs = reading
+            .holonomy_axes
+            .iter()
+            .map(|axis| axis.holonomy_axis_ref.as_str())
+            .collect::<BTreeSet<_>>();
+        if axis_refs != required_axes {
+            examples.push(generic_validation_example(
+                &reading.reading_id,
+                "holonomyAxes",
+                "feature boundary residual must expose all Hol_* axes",
+            ));
+        }
+        for axis in &reading.holonomy_axes {
+            for (field, value) in [
+                ("holonomyAxisRef", &axis.holonomy_axis_ref),
+                ("axisFamily", &axis.axis_family),
+                ("status", &axis.status),
+                ("reading", &axis.reading),
+            ] {
+                push_blank(
+                    &mut examples,
+                    &format!("{} {} {field}", reading.reading_id, axis.holonomy_axis_ref),
+                    value,
+                );
+            }
+            if axis.support_refs.is_empty() {
+                examples.push(generic_validation_example(
+                    &reading.reading_id,
+                    &axis.holonomy_axis_ref,
+                    "each Hol_* axis must keep boundary support refs traceable",
+                ));
+            }
+            if axis.residual_value > 0 && axis.measured_defect_refs.is_empty() {
+                examples.push(generic_validation_example(
+                    &reading.reading_id,
+                    &axis.holonomy_axis_ref,
+                    "positive Hol_* residual value must reference measured defects",
+                ));
+            }
+            for defect_ref in &axis.measured_defect_refs {
+                if !defect_ids.contains(defect_ref.as_str()) {
+                    examples.push(generic_validation_example(
+                        &reading.reading_id,
+                        defect_ref,
+                        "Hol_* axis references an unknown axis-wise defect",
+                    ));
+                }
+            }
+        }
+    }
+    for residual_ref in &packet
+        .boundary_holonomy_reading_family
+        .feature_boundary_residual_refs
+    {
+        if !reading_ids.contains(residual_ref.as_str()) {
+            examples.push(generic_validation_example(
+                &packet.boundary_holonomy_reading_family.reading_family_id,
+                residual_ref,
+                "boundary holonomy reading family references an unknown feature boundary residual",
+            ));
+        }
+    }
+
+    check_from_examples(
+        "archsig-analysis-packet-feature-boundary-residual-surface",
+        "packet surfaces Boundary(A,f) residual holonomy axes as bounded review telemetry",
+        examples,
+        "fail",
+    )
+}
+
 fn check_monodromy_boundary_schema_foundation(packet: &ArchSigAnalysisPacketV0) -> ValidationCheck {
     let mut examples = Vec::new();
     let store_refs = &packet.arch_map_store_refs;
@@ -9934,6 +10288,20 @@ fn check_llm_interpretation_surface(packet: &ArchSigAnalysisPacketV0) -> Validat
             packet
                 .llm_interpretation_packet
                 .bridge_split_obstruction_transfer_summary
+                .is_empty(),
+        ),
+        (
+            "llmInterpretationPacket.nonzeroMonodromyWitnessSummary",
+            packet
+                .llm_interpretation_packet
+                .nonzero_monodromy_witness_summary
+                .is_empty(),
+        ),
+        (
+            "llmInterpretationPacket.featureBoundaryResidualSummary",
+            packet
+                .llm_interpretation_packet
+                .feature_boundary_residual_summary
                 .is_empty(),
         ),
     ] {
@@ -10667,6 +11035,22 @@ mod tests {
         assert_eq!(report.summary.result, "fail");
         assert!(report.checks.iter().any(|check| {
             check.id == "archsig-analysis-packet-nonzero-monodromy-witness-surface"
+                && check.result == "fail"
+        }));
+    }
+
+    #[test]
+    fn feature_boundary_residual_without_holonomy_axes_fails_validation() {
+        let mut packet = static_archsig_analysis_packet();
+        packet.feature_boundary_residual_readings[0]
+            .holonomy_axes
+            .clear();
+
+        let report = validate_archsig_analysis_packet_report(&packet, "invalid.json");
+
+        assert_eq!(report.summary.result, "fail");
+        assert!(report.checks.iter().any(|check| {
+            check.id == "archsig-analysis-packet-feature-boundary-residual-surface"
                 && check.result == "fail"
         }));
     }

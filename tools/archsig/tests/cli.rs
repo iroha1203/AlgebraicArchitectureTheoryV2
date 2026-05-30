@@ -1479,6 +1479,42 @@ fn assert_north_star_packet_surfaces(json: &Value) {
         "nonzero monodromy witnesses must expose operation/path pairs, positive defect value, traceable refs, review focus, and non-conclusions"
     );
     assert!(
+        json["featureBoundaryResidualReadings"]
+            .as_array()
+            .is_some_and(|items| {
+                !items.is_empty()
+                    && items.iter().all(|reading| {
+                        reading["mixedSubconfigurationRefs"]
+                            .as_array()
+                            .is_some_and(|refs| !refs.is_empty())
+                            && reading["boundarySupportRefs"]
+                                .as_array()
+                                .is_some_and(|refs| !refs.is_empty())
+                            && reading["holonomyAxes"].as_array().is_some_and(|axes| {
+                                axes.len() == 8
+                                    && axes.iter().all(|axis| {
+                                        axis["holonomyAxisRef"]
+                                            .as_str()
+                                            .is_some_and(|axis_ref| axis_ref.starts_with("Hol_"))
+                                            && axis["supportRefs"]
+                                                .as_array()
+                                                .is_some_and(|refs| !refs.is_empty())
+                                    })
+                            })
+                            && reading["coverageAssumptions"]
+                                .as_array()
+                                .is_some_and(|items| !items.is_empty())
+                            && reading["exactnessAssumptions"]
+                                .as_array()
+                                .is_some_and(|items| !items.is_empty())
+                            && reading["nonConclusions"]
+                                .as_array()
+                                .is_some_and(|items| !items.is_empty())
+                    })
+            }),
+        "feature boundary residual readings must expose mixed support, Hol_* axes, assumptions, and non-conclusions"
+    );
+    assert!(
         json["llmInterpretationPacket"]["structuralReadingReviewSummary"]
             .as_array()
             .is_some_and(|items| !items.is_empty())
@@ -1489,6 +1525,9 @@ fn assert_north_star_packet_surfaces(json: &Value) {
                 .as_array()
                 .is_some_and(|items| !items.is_empty())
             && json["llmInterpretationPacket"]["nonzeroMonodromyWitnessSummary"]
+                .as_array()
+                .is_some_and(|items| !items.is_empty())
+            && json["llmInterpretationPacket"]["featureBoundaryResidualSummary"]
                 .as_array()
                 .is_some_and(|items| !items.is_empty())
             && json["llmInterpretationPacket"]["atomSupportAxisSummary"]
