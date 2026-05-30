@@ -17,6 +17,10 @@ fn coupon_rounding_root() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/coupon_rounding")
 }
 
+fn acts_spectrum_root() -> PathBuf {
+    Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/acts_spectrum")
+}
+
 fn inspection_root() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/inspection")
 }
@@ -615,6 +619,172 @@ fn coupon_tax_rounding_fixture_locks_semantic_monodromy() {
     );
     assert!(golden.to_string().contains("PaymentAmount"));
     assert!(golden.to_string().contains("ReceiptAmount"));
+}
+
+#[test]
+fn acts_spectrum_fixture_manifest_locks_golden_validation() {
+    let fixtures_root = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures");
+    let manifest = read_json(&acts_spectrum_root().join("manifest.json"));
+    let cases = manifest["cases"]
+        .as_array()
+        .expect("ACTS fixture manifest has cases");
+
+    assert!(
+        manifest["nonConclusions"].as_array().is_some_and(|items| {
+            items.iter().any(|item| {
+                item.as_str()
+                    .is_some_and(|text| text.contains("not architecture lawfulness proof"))
+            })
+        }),
+        "ACTS fixture manifest must preserve fixture non-conclusions"
+    );
+
+    for case in cases {
+        let case_id = case["caseId"].as_str().expect("case id is present");
+        let packet = read_json(
+            &fixtures_root.join(case["packetPath"].as_str().expect("packet path is present")),
+        );
+        let validation = read_json(
+            &fixtures_root.join(
+                case["validationPath"]
+                    .as_str()
+                    .expect("validation path is present"),
+            ),
+        );
+
+        assert_eq!(
+            validation["summary"]["result"], "pass",
+            "{case_id} validation output must pass"
+        );
+        assert!(
+            validation["checks"]
+                .as_array()
+                .expect("validation checks are array")
+                .iter()
+                .any(|check| {
+                    check["id"] == "archsig-analysis-packet-architecture-spectrum-report-surface"
+                        && check["result"] == "pass"
+                }),
+            "{case_id} must lock ArchitectureSpectrumReport validation"
+        );
+
+        let report = &packet["architectureSpectrumReport"];
+        assert!(
+            report["nonConclusions"].as_array().is_some_and(|items| {
+                items.iter().any(|item| {
+                    item.as_str()
+                        .is_some_and(|text| text.contains("single architecture quality score"))
+                })
+            }),
+            "{case_id} must preserve report-level non-conclusions"
+        );
+
+        match case_id {
+            "zero-curvature-support" => {
+                let axis_ref = case["axisRef"].as_str().expect("axis ref is present");
+                let expected = case["expectedCurvatureValue"]
+                    .as_i64()
+                    .expect("expected curvature value is present");
+                let supports = packet["curvatureSupportReadings"][0]["witnessSupports"]
+                    .as_array()
+                    .expect("witness supports are array");
+                assert!(
+                    supports.iter().any(|support| {
+                        support["selectedAxisRef"] == axis_ref
+                            && support["curvatureValue"] == expected
+                            && support["missingEvidence"]
+                                .as_array()
+                                .is_some_and(|items| !items.is_empty())
+                    }),
+                    "zero curvature support must remain distinct from missing evidence"
+                );
+            }
+            "nonzero-semantic-curvature" => {
+                let axis_ref = case["axisRef"].as_str().expect("axis ref is present");
+                let minimum = case["minimumCurvatureValue"]
+                    .as_i64()
+                    .expect("minimum curvature value is present");
+                assert!(
+                    report["topHotspots"]
+                        .as_array()
+                        .expect("top hotspots are array")
+                        .iter()
+                        .any(|hotspot| {
+                            hotspot["axisRef"] == axis_ref
+                                && hotspot["curvatureValue"]
+                                    .as_i64()
+                                    .is_some_and(|value| value >= minimum)
+                                && hotspot["witnessRefs"]
+                                    .as_array()
+                                    .is_some_and(|refs| !refs.is_empty())
+                        }),
+                    "nonzero semantic curvature must be visible as hotspot"
+                );
+            }
+            "transfer-cycle" => {
+                assert!(
+                    packet["curvatureTransferReadings"][0]["transferEdges"]
+                        .as_array()
+                        .expect("transfer edges are array")
+                        .iter()
+                        .any(|edge| {
+                            edge["sourceSupportRef"] == edge["targetSupportRef"]
+                                && edge["weight"].as_i64().is_some_and(|value| value > 0)
+                        }),
+                    "transfer fixture must contain a positive closed transfer edge"
+                );
+                assert!(
+                    report["recurrentObstructions"]
+                        .as_array()
+                        .expect("recurrent obstructions are array")
+                        .iter()
+                        .any(|mode| {
+                            mode["transferEdgeRefs"]
+                                .as_array()
+                                .is_some_and(|refs| !refs.is_empty())
+                                && mode["spectralRadiusReading"]
+                                    .as_str()
+                                    .is_some_and(|text| text.contains("rho(T^kappa) proxy"))
+                        }),
+                    "transfer cycle must surface as recurrent obstruction support"
+                );
+            }
+            "coverage-gap-boundary" => {
+                let required_text = case["requiredText"]
+                    .as_str()
+                    .expect("required text is present");
+                assert!(
+                    report["coverageGaps"]
+                        .as_array()
+                        .expect("coverage gaps are array")
+                        .iter()
+                        .any(|gap| gap
+                            .as_str()
+                            .is_some_and(|text| text.contains(required_text))),
+                    "coverage gap must remain explicit in ArchitectureSpectrumReport"
+                );
+            }
+            "coupon-tax-rounding-acts" => {
+                let required_text = case["requiredText"]
+                    .as_str()
+                    .expect("required text is present");
+                assert!(
+                    packet.to_string().contains(required_text),
+                    "coupon/tax/rounding fixture must keep payment trace gap"
+                );
+                assert!(
+                    report["topHotspots"]
+                        .as_array()
+                        .is_some_and(|items| !items.is_empty())
+                        && report["recurrentObstructions"]
+                            .as_array()
+                            .is_some_and(|items| !items.is_empty()),
+                    "coupon/tax/rounding fixture must expose ACTS report surfaces"
+                );
+            }
+            other => panic!("unhandled ACTS fixture case {other}"),
+        }
+    }
 }
 
 #[test]
