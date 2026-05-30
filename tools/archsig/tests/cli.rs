@@ -1515,6 +1515,42 @@ fn assert_north_star_packet_surfaces(json: &Value) {
         "feature boundary residual readings must expose mixed support, Hol_* axes, assumptions, and non-conclusions"
     );
     assert!(
+        json["featureExtensionDiagnosisReadings"]
+            .as_array()
+            .is_some_and(|items| {
+                !items.is_empty()
+                    && items.iter().all(|reading| {
+                        reading["classificationSummary"]
+                            .as_array()
+                            .is_some_and(|summary| summary.len() == 7)
+                            && reading["attributionRecords"]
+                                .as_array()
+                                .is_some_and(|records| {
+                                    !records.is_empty()
+                                        && records.iter().any(|record| {
+                                            record["labels"]
+                                                .as_array()
+                                                .is_some_and(|labels| labels.len() > 1)
+                                        })
+                                })
+                            && reading["residualCoverageGapRefs"].as_array().is_some()
+                            && reading["liftingFailureRefs"].as_array().is_some()
+                            && reading["fillingFailureRefs"].as_array().is_some()
+                            && reading["complexityTransferRefs"].as_array().is_some()
+                            && reading["classificationBoundary"]
+                                .as_str()
+                                .is_some_and(|boundary| boundary.contains("non-disjoint"))
+                            && reading["fieldsigBoundary"]
+                                .as_str()
+                                .is_some_and(|boundary| boundary.contains("FieldSig"))
+                            && reading["nonConclusions"]
+                                .as_array()
+                                .is_some_and(|items| !items.is_empty())
+                    })
+            }),
+        "feature extension diagnosis readings must expose seven non-disjoint labels, witness attribution, separated failure refs, and FieldSig boundary"
+    );
+    assert!(
         json["llmInterpretationPacket"]["structuralReadingReviewSummary"]
             .as_array()
             .is_some_and(|items| !items.is_empty())
@@ -1528,6 +1564,9 @@ fn assert_north_star_packet_surfaces(json: &Value) {
                 .as_array()
                 .is_some_and(|items| !items.is_empty())
             && json["llmInterpretationPacket"]["featureBoundaryResidualSummary"]
+                .as_array()
+                .is_some_and(|items| !items.is_empty())
+            && json["llmInterpretationPacket"]["featureExtensionDiagnosisSummary"]
                 .as_array()
                 .is_some_and(|items| !items.is_empty())
             && json["llmInterpretationPacket"]["atomSupportAxisSummary"]

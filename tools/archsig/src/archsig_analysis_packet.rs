@@ -22,7 +22,8 @@ use crate::{
     ArchSigDesignPrincipleReadingV0, ArchSigDiagramFillabilityReadingV0,
     ArchSigDominantAtomFamilyCompositionV0, ArchSigEvolutionRiskRankingV0,
     ArchSigFeatureBoundaryResidualReadingV0, ArchSigFeatureExtensionAxisSummaryV0,
-    ArchSigFeatureExtensionFormulaReadingV0, ArchSigFlatnessReadingV0,
+    ArchSigFeatureExtensionDiagnosisReadingV0, ArchSigFeatureExtensionFormulaReadingV0,
+    ArchSigFeatureExtensionWitnessAttributionV0, ArchSigFlatnessReadingV0,
     ArchSigHighOverlapMoleculePairV0, ArchSigHomotopyOrderSensitivityReadingV0,
     ArchSigInvariantFamilyReadingV0, ArchSigLawUniverseCoverageReadingV0,
     ArchSigLawUniverseReadingV0, ArchSigLayerSplitV0, ArchSigLlmInterpretationPacketV0,
@@ -210,6 +211,10 @@ pub fn build_archsig_analysis_packet(
         &feature_extension_formula_readings,
         &axis_wise_monodromy_defects,
     );
+    let feature_extension_diagnosis_readings = build_feature_extension_diagnosis_readings(
+        &feature_extension_formula_readings,
+        &feature_boundary_residual_readings,
+    );
     let monodromy_reading_family = build_monodromy_reading_family(
         law_policy,
         &arch_map_store_refs,
@@ -223,7 +228,7 @@ pub fn build_archsig_analysis_packet(
         &arch_map_store_refs,
         &nonzero_monodromy_witnesses,
         &feature_boundary_residual_readings,
-        &split_readiness_readings,
+        &feature_extension_diagnosis_readings,
     );
     let structural_reading_review_surface = build_structural_reading_review_surface(
         &representation_strength_readings,
@@ -300,6 +305,7 @@ pub fn build_archsig_analysis_packet(
         &split_readiness_readings,
         &nonzero_monodromy_witnesses,
         &feature_boundary_residual_readings,
+        &feature_extension_diagnosis_readings,
         &structural_reading_review_surface,
         &current_state_evolution_boundary,
         &repair_operation_candidates,
@@ -362,6 +368,7 @@ pub fn build_archsig_analysis_packet(
         ami_aggregate_readings,
         nonzero_monodromy_witnesses,
         feature_boundary_residual_readings,
+        feature_extension_diagnosis_readings,
         monodromy_reading_family,
         boundary_holonomy_reading_family,
         representation_strength_readings,
@@ -522,7 +529,7 @@ fn build_boundary_holonomy_reading_family(
     arch_map_store_refs: &ArchSigArchMapStoreRefsV0,
     nonzero_monodromy_witnesses: &[ArchSigNonzeroMonodromyWitnessV0],
     feature_boundary_residual_readings: &[ArchSigFeatureBoundaryResidualReadingV0],
-    split_readiness_readings: &[ArchSigSplitReadinessReadingV0],
+    feature_extension_diagnosis_readings: &[ArchSigFeatureExtensionDiagnosisReadingV0],
 ) -> ArchSigBoundaryHolonomyReadingFamilyV0 {
     ArchSigBoundaryHolonomyReadingFamilyV0 {
         reading_family_id: format!(
@@ -543,9 +550,9 @@ fn build_boundary_holonomy_reading_family(
             .iter()
             .map(|reading| reading.reading_id.clone())
             .collect(),
-        extension_diagnosis_refs: split_readiness_readings
+        extension_diagnosis_refs: feature_extension_diagnosis_readings
             .iter()
-            .map(|reading| reading.reading_id.clone())
+            .map(|reading| reading.diagnosis_id.clone())
             .collect(),
         attribution_boundary:
             "multi-label attribution can name feature, boundary, law, and coverage contributors without claiming a single cause"
@@ -1287,6 +1294,199 @@ fn boundary_holonomy_axis_residuals(
         }
     })
     .collect()
+}
+
+fn build_feature_extension_diagnosis_readings(
+    feature_extension_formula_readings: &[ArchSigFeatureExtensionFormulaReadingV0],
+    feature_boundary_residual_readings: &[ArchSigFeatureBoundaryResidualReadingV0],
+) -> Vec<ArchSigFeatureExtensionDiagnosisReadingV0> {
+    feature_extension_formula_readings
+        .iter()
+        .map(|formula| {
+            let boundary_residual = feature_boundary_residual_readings
+                .iter()
+                .find(|reading| reading.feature_extension_ref == formula.reading_id);
+            let mut attributions = BTreeMap::<String, ArchSigFeatureExtensionWitnessAttributionV0>::new();
+
+            for witness_ref in &formula.inherited_core_obstruction_refs {
+                push_feature_extension_attribution(
+                    &mut attributions,
+                    witness_ref,
+                    "inheritedCoreObstruction",
+                );
+            }
+            for witness_ref in &formula.feature_local_obstruction_refs {
+                push_feature_extension_attribution(
+                    &mut attributions,
+                    witness_ref,
+                    "featureLocalObstruction",
+                );
+            }
+            if let Some(boundary_residual) = boundary_residual {
+                push_feature_extension_attribution(
+                    &mut attributions,
+                    &boundary_residual.reading_id,
+                    "boundaryHolonomy",
+                );
+                for witness_ref in &boundary_residual.residual_obstruction_refs {
+                    push_feature_extension_attribution(
+                        &mut attributions,
+                        witness_ref,
+                        "boundaryHolonomy",
+                    );
+                }
+            }
+            for witness_ref in &formula.lifting_failure_refs {
+                push_feature_extension_attribution(
+                    &mut attributions,
+                    witness_ref,
+                    "liftingFailure",
+                );
+            }
+            for witness_ref in &formula.filling_failure_refs {
+                push_feature_extension_attribution(
+                    &mut attributions,
+                    witness_ref,
+                    "fillingFailure",
+                );
+            }
+            for witness_ref in &formula.complexity_transfer_refs {
+                push_feature_extension_attribution(
+                    &mut attributions,
+                    witness_ref,
+                    "complexityTransfer",
+                );
+            }
+            for witness_ref in &formula.residual_coverage_gap_refs {
+                push_feature_extension_attribution(
+                    &mut attributions,
+                    witness_ref,
+                    "residualCoverageGap",
+                );
+            }
+
+            let mut attribution_records = attributions.into_values().collect::<Vec<_>>();
+            for record in &mut attribution_records {
+                record.labels = unique_strings(record.labels.drain(..));
+                record.inherited_core_refs = unique_strings(record.inherited_core_refs.drain(..));
+                record.feature_local_refs = unique_strings(record.feature_local_refs.drain(..));
+                record.boundary_holonomy_refs =
+                    unique_strings(record.boundary_holonomy_refs.drain(..));
+                record.lifting_failure_refs =
+                    unique_strings(record.lifting_failure_refs.drain(..));
+                record.filling_failure_refs =
+                    unique_strings(record.filling_failure_refs.drain(..));
+                record.complexity_transfer_refs =
+                    unique_strings(record.complexity_transfer_refs.drain(..));
+                record.residual_coverage_gap_refs =
+                    unique_strings(record.residual_coverage_gap_refs.drain(..));
+                record.reading = format!(
+                    "{} carries non-disjoint feature-extension labels {:?}",
+                    record.witness_ref, record.labels
+                );
+            }
+            let has_multi_label = attribution_records
+                .iter()
+                .any(|record| record.labels.len() > 1);
+            ArchSigFeatureExtensionDiagnosisReadingV0 {
+                diagnosis_id: format!(
+                    "feature-extension-diagnosis:{}",
+                    stable_id(&formula.reading_id)
+                ),
+                feature_extension_ref: formula.reading_id.clone(),
+                boundary_residual_ref: boundary_residual
+                    .map(|reading| reading.reading_id.clone())
+                    .unwrap_or_else(|| "feature-boundary-residual:none-observed".to_string()),
+                status: if has_multi_label {
+                    "multiLabelAttributed".to_string()
+                } else {
+                    "singleLabelAttributed".to_string()
+                },
+                classifier_version: "feature-extension-diagnosis-classifier-v0".to_string(),
+                classification_summary: feature_extension_diagnosis_classification_summary(
+                    formula,
+                    boundary_residual,
+                ),
+                attribution_records,
+                residual_coverage_gap_refs: formula.residual_coverage_gap_refs.clone(),
+                lifting_failure_refs: formula.lifting_failure_refs.clone(),
+                filling_failure_refs: formula.filling_failure_refs.clone(),
+                complexity_transfer_refs: formula.complexity_transfer_refs.clone(),
+                classification_boundary:
+                    "feature-extension labels are intentionally non-disjoint; the same witness may carry inherited-core, feature-local, boundary-holonomy, lifting, filling, complexity-transfer, and coverage-gap labels"
+                        .to_string(),
+                fieldsig_boundary:
+                    "ArchSig reports current-state feature-extension attribution; FieldSig owns longitudinal evolution quality analysis"
+                        .to_string(),
+                evidence_boundary:
+                    "diagnosis is computed from ArchSig packet evidence and does not prove a mutually disjoint Architecture Extension Formula"
+                        .to_string(),
+                non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
+            }
+        })
+        .collect()
+}
+
+fn push_feature_extension_attribution(
+    attributions: &mut BTreeMap<String, ArchSigFeatureExtensionWitnessAttributionV0>,
+    witness_ref: &str,
+    label: &str,
+) {
+    let entry = attributions
+        .entry(witness_ref.to_string())
+        .or_insert_with(|| ArchSigFeatureExtensionWitnessAttributionV0 {
+            witness_ref: witness_ref.to_string(),
+            labels: Vec::new(),
+            inherited_core_refs: Vec::new(),
+            feature_local_refs: Vec::new(),
+            boundary_holonomy_refs: Vec::new(),
+            lifting_failure_refs: Vec::new(),
+            filling_failure_refs: Vec::new(),
+            complexity_transfer_refs: Vec::new(),
+            residual_coverage_gap_refs: Vec::new(),
+            reading: String::new(),
+        });
+    entry.labels.push(label.to_string());
+    match label {
+        "inheritedCoreObstruction" => entry.inherited_core_refs.push(witness_ref.to_string()),
+        "featureLocalObstruction" => entry.feature_local_refs.push(witness_ref.to_string()),
+        "boundaryHolonomy" => entry.boundary_holonomy_refs.push(witness_ref.to_string()),
+        "liftingFailure" => entry.lifting_failure_refs.push(witness_ref.to_string()),
+        "fillingFailure" => entry.filling_failure_refs.push(witness_ref.to_string()),
+        "complexityTransfer" => entry.complexity_transfer_refs.push(witness_ref.to_string()),
+        "residualCoverageGap" => entry
+            .residual_coverage_gap_refs
+            .push(witness_ref.to_string()),
+        _ => {}
+    }
+}
+
+fn feature_extension_diagnosis_classification_summary(
+    formula: &ArchSigFeatureExtensionFormulaReadingV0,
+    boundary_residual: Option<&ArchSigFeatureBoundaryResidualReadingV0>,
+) -> Vec<ArchSigFeatureExtensionAxisSummaryV0> {
+    let boundary_holonomy_refs = boundary_residual
+        .map(|reading| {
+            let mut refs = vec![reading.reading_id.clone()];
+            refs.extend(reading.residual_obstruction_refs.clone());
+            unique_strings(refs.into_iter())
+        })
+        .unwrap_or_default();
+    vec![
+        extension_axis_summary(
+            "inheritedCoreObstruction",
+            &formula.inherited_core_obstruction_refs,
+        ),
+        extension_axis_summary(
+            "featureLocalObstruction",
+            &formula.feature_local_obstruction_refs,
+        ),
+        extension_axis_summary("boundaryHolonomy", &boundary_holonomy_refs),
+        extension_axis_summary("liftingFailure", &formula.lifting_failure_refs),
+        extension_axis_summary("fillingFailure", &formula.filling_failure_refs),
+        extension_axis_summary("complexityTransfer", &formula.complexity_transfer_refs),
+        extension_axis_summary("residualCoverageGap", &formula.residual_coverage_gap_refs),
+    ]
 }
 
 fn ami_zero_reflection_assumptions(law_policy: &LawPolicyDocumentV0) -> Vec<String> {
@@ -6517,6 +6717,7 @@ fn build_llm_interpretation_packet(
     split_readiness_readings: &[ArchSigSplitReadinessReadingV0],
     nonzero_monodromy_witnesses: &[ArchSigNonzeroMonodromyWitnessV0],
     feature_boundary_residual_readings: &[ArchSigFeatureBoundaryResidualReadingV0],
+    feature_extension_diagnosis_readings: &[ArchSigFeatureExtensionDiagnosisReadingV0],
     structural_reading_review_surface: &ArchSigStructuralReadingReviewSurfaceV0,
     current_state_evolution_boundary: &ArchSigCurrentStateEvolutionBoundaryV0,
     repair_candidates: &[ArchSigRepairOperationCandidateV0],
@@ -6832,6 +7033,27 @@ fn build_llm_interpretation_packet(
                 )
             })
             .collect(),
+        feature_extension_diagnosis_summary: feature_extension_diagnosis_readings
+            .iter()
+            .map(|reading| {
+                let multi_label_count = reading
+                    .attribution_records
+                    .iter()
+                    .filter(|record| record.labels.len() > 1)
+                    .count();
+                format!(
+                    "{} status={} attributions={} multiLabel={} coverageGaps={} lifting={} filling={} complexity={}",
+                    reading.diagnosis_id,
+                    reading.status,
+                    reading.attribution_records.len(),
+                    multi_label_count,
+                    reading.residual_coverage_gap_refs.len(),
+                    reading.lifting_failure_refs.len(),
+                    reading.filling_failure_refs.len(),
+                    reading.complexity_transfer_refs.len()
+                )
+            })
+            .collect(),
         representation_strength_summary: representation_strength_readings
             .iter()
             .map(|reading| {
@@ -7050,6 +7272,7 @@ pub fn validate_archsig_analysis_packet_report(
         check_axis_wise_defect_ami_surface(packet),
         check_nonzero_monodromy_witness_surface(packet),
         check_feature_boundary_residual_surface(packet),
+        check_feature_extension_diagnosis_surface(packet),
         check_monodromy_boundary_schema_foundation(packet),
         check_law_relative_analysis(packet),
         check_signature_and_flatness(packet),
@@ -9723,6 +9946,178 @@ fn check_feature_boundary_residual_surface(packet: &ArchSigAnalysisPacketV0) -> 
     )
 }
 
+fn check_feature_extension_diagnosis_surface(packet: &ArchSigAnalysisPacketV0) -> ValidationCheck {
+    let feature_extension_ids = set(packet
+        .feature_extension_formula_readings
+        .iter()
+        .map(|reading| reading.reading_id.as_str()));
+    let boundary_residual_ids = set(packet
+        .feature_boundary_residual_readings
+        .iter()
+        .map(|reading| reading.reading_id.as_str()));
+    let diagnosis_ids = set(packet
+        .feature_extension_diagnosis_readings
+        .iter()
+        .map(|reading| reading.diagnosis_id.as_str()));
+    let required_labels = BTreeSet::from([
+        "inheritedCoreObstruction",
+        "featureLocalObstruction",
+        "boundaryHolonomy",
+        "liftingFailure",
+        "fillingFailure",
+        "complexityTransfer",
+        "residualCoverageGap",
+    ]);
+    let mut examples = Vec::new();
+    if !packet.feature_extension_formula_readings.is_empty()
+        && packet.feature_extension_diagnosis_readings.is_empty()
+    {
+        examples.push(generic_validation_example(
+            "featureExtensionDiagnosisReadings",
+            "empty",
+            "feature extension formulas must be classified into multi-label diagnosis readings",
+        ));
+    }
+    examples.extend(duplicate_examples(
+        "featureExtensionDiagnosisReadings[].diagnosisId",
+        duplicates(
+            packet
+                .feature_extension_diagnosis_readings
+                .iter()
+                .map(|reading| reading.diagnosis_id.as_str()),
+        ),
+    ));
+    for reading in &packet.feature_extension_diagnosis_readings {
+        if !feature_extension_ids.contains(reading.feature_extension_ref.as_str()) {
+            examples.push(generic_validation_example(
+                &reading.diagnosis_id,
+                &reading.feature_extension_ref,
+                "feature extension diagnosis references an unknown feature extension formula",
+            ));
+        }
+        if reading.boundary_residual_ref != "feature-boundary-residual:none-observed"
+            && !boundary_residual_ids.contains(reading.boundary_residual_ref.as_str())
+        {
+            examples.push(generic_validation_example(
+                &reading.diagnosis_id,
+                &reading.boundary_residual_ref,
+                "feature extension diagnosis references an unknown boundary residual reading",
+            ));
+        }
+        for (field, value) in [
+            ("status", &reading.status),
+            ("classifierVersion", &reading.classifier_version),
+            ("classificationBoundary", &reading.classification_boundary),
+            ("fieldSigBoundary", &reading.fieldsig_boundary),
+            ("evidenceBoundary", &reading.evidence_boundary),
+        ] {
+            push_blank(
+                &mut examples,
+                &format!("{} {field}", reading.diagnosis_id),
+                value,
+            );
+        }
+        if reading.classification_summary.len() != 7 {
+            examples.push(generic_validation_example(
+                &reading.diagnosis_id,
+                "classificationSummary",
+                "feature extension diagnosis must report all seven classification axes",
+            ));
+        }
+        let summary_labels = reading
+            .classification_summary
+            .iter()
+            .map(|summary| summary.axis.as_str())
+            .collect::<BTreeSet<_>>();
+        if summary_labels != required_labels {
+            examples.push(generic_validation_example(
+                &reading.diagnosis_id,
+                "classificationSummary.axis",
+                "feature extension diagnosis must retain the seven named attribution labels",
+            ));
+        }
+        if reading.attribution_records.is_empty() {
+            examples.push(generic_validation_example(
+                &reading.diagnosis_id,
+                "attributionRecords",
+                "feature extension diagnosis must retain witness-level attribution records",
+            ));
+        }
+        if !reading
+            .attribution_records
+            .iter()
+            .any(|record| record.labels.len() > 1)
+        {
+            examples.push(generic_validation_example(
+                &reading.diagnosis_id,
+                "attributionRecords.labels",
+                "at least one witness must demonstrate non-disjoint multi-label attribution",
+            ));
+        }
+        if reading.non_conclusions.is_empty() || has_blank(&reading.non_conclusions) {
+            examples.push(generic_validation_example(
+                &reading.diagnosis_id,
+                "nonConclusions",
+                "feature extension diagnosis must retain machine-readable non-conclusions",
+            ));
+        }
+        if !reading.fieldsig_boundary.contains("FieldSig") {
+            examples.push(generic_validation_example(
+                &reading.diagnosis_id,
+                &reading.fieldsig_boundary,
+                "feature extension diagnosis must preserve the ArchSig / FieldSig boundary",
+            ));
+        }
+        for record in &reading.attribution_records {
+            push_blank(
+                &mut examples,
+                &format!("{} attribution.witnessRef", reading.diagnosis_id),
+                &record.witness_ref,
+            );
+            if record.labels.is_empty() || has_blank(&record.labels) {
+                examples.push(generic_validation_example(
+                    &reading.diagnosis_id,
+                    &record.witness_ref,
+                    "witness attribution must carry one or more labels",
+                ));
+            }
+            for label in &record.labels {
+                if !required_labels.contains(label.as_str()) {
+                    examples.push(generic_validation_example(
+                        &reading.diagnosis_id,
+                        label,
+                        "witness attribution carries an unknown feature-extension label",
+                    ));
+                }
+            }
+            push_blank(
+                &mut examples,
+                &format!("{} attribution.reading", reading.diagnosis_id),
+                &record.reading,
+            );
+        }
+    }
+    for diagnosis_ref in &packet
+        .boundary_holonomy_reading_family
+        .extension_diagnosis_refs
+    {
+        if !diagnosis_ids.contains(diagnosis_ref.as_str()) {
+            examples.push(generic_validation_example(
+                &packet.boundary_holonomy_reading_family.reading_family_id,
+                diagnosis_ref,
+                "boundary holonomy reading family references an unknown feature extension diagnosis",
+            ));
+        }
+    }
+
+    check_from_examples(
+        "archsig-analysis-packet-feature-extension-diagnosis-surface",
+        "packet reports non-disjoint feature-extension multi-label attribution without replacing FieldSig evolution analysis",
+        examples,
+        "fail",
+    )
+}
+
 fn check_monodromy_boundary_schema_foundation(packet: &ArchSigAnalysisPacketV0) -> ValidationCheck {
     let mut examples = Vec::new();
     let store_refs = &packet.arch_map_store_refs;
@@ -10302,6 +10697,13 @@ fn check_llm_interpretation_surface(packet: &ArchSigAnalysisPacketV0) -> Validat
             packet
                 .llm_interpretation_packet
                 .feature_boundary_residual_summary
+                .is_empty(),
+        ),
+        (
+            "llmInterpretationPacket.featureExtensionDiagnosisSummary",
+            packet
+                .llm_interpretation_packet
+                .feature_extension_diagnosis_summary
                 .is_empty(),
         ),
     ] {
@@ -11051,6 +11453,22 @@ mod tests {
         assert_eq!(report.summary.result, "fail");
         assert!(report.checks.iter().any(|check| {
             check.id == "archsig-analysis-packet-feature-boundary-residual-surface"
+                && check.result == "fail"
+        }));
+    }
+
+    #[test]
+    fn feature_extension_diagnosis_without_multi_label_fails_validation() {
+        let mut packet = static_archsig_analysis_packet();
+        for record in &mut packet.feature_extension_diagnosis_readings[0].attribution_records {
+            record.labels.truncate(1);
+        }
+
+        let report = validate_archsig_analysis_packet_report(&packet, "invalid.json");
+
+        assert_eq!(report.summary.result, "fail");
+        assert!(report.checks.iter().any(|check| {
+            check.id == "archsig-analysis-packet-feature-extension-diagnosis-surface"
                 && check.result == "fail"
         }));
     }

@@ -72,6 +72,7 @@ The implemented schema records:
 - `amiAggregateReadings`
 - `nonzeroMonodromyWitnesses`
 - `featureBoundaryResidualReadings`
+- `featureExtensionDiagnosisReadings`
 - `monodromyReadingFamily`
 - `boundaryHolonomyReadingFamily`
 - `representationStrengthReadings`
@@ -229,6 +230,13 @@ The builder:
   machine-readable non-conclusions. It does not claim an unconditional
   `Ob(B) = Ob(A) + Ob(f) + Hol(Boundary(A,f))` theorem or decide feature
   safety.
+- `featureExtensionDiagnosisReadings` classifies feature-extension witnesses
+  with non-disjoint multi-label attribution. The seven labels are inherited core
+  obstruction, feature-local obstruction, boundary holonomy, lifting failure,
+  filling failure, complexity transfer, and residual coverage gap. A single
+  witness can carry multiple labels; the classifier records this as review
+  attribution, not as a mutually disjoint decomposition, and keeps the ArchSig /
+  FieldSig boundary explicit.
 - axis-forgetting risk records when a coarse observation projection has
   forgotten selected axes or collapsed mixed-axis support. It blocks
   `ZeroReflecting` and `ObstructionReflecting` readings unless explicit axis

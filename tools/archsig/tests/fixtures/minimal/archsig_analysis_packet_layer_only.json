@@ -3511,6 +3511,160 @@
       ]
     }
   ],
+  "featureExtensionDiagnosisReadings": [
+    {
+      "diagnosisId": "feature-extension-diagnosis:feature-extension-formula-fixture-archmap-atom-observation",
+      "featureExtensionRef": "feature-extension-formula:fixture-archmap-atom-observation",
+      "boundaryResidualRef": "feature-boundary-residual:fixture-archmap-atom-observation",
+      "status": "multiLabelAttributed",
+      "classifierVersion": "feature-extension-diagnosis-classifier-v0",
+      "classificationSummary": [
+        {
+          "axis": "inheritedCoreObstruction",
+          "status": "unmeasuredOrAbsent",
+          "refs": [],
+          "reading": "inheritedCoreObstruction is classified as a current-state extension coordinate"
+        },
+        {
+          "axis": "featureLocalObstruction",
+          "status": "unmeasuredOrAbsent",
+          "refs": [],
+          "reading": "featureLocalObstruction is classified as a current-state extension coordinate"
+        },
+        {
+          "axis": "boundaryHolonomy",
+          "status": "observed",
+          "refs": [
+            "feature-boundary-residual:fixture-archmap-atom-observation",
+            "gap-runtime-user-db-trace",
+            "mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair-continuation:effect",
+            "split-readiness:molecule-user-request-responsibility"
+          ],
+          "reading": "boundaryHolonomy is classified as a current-state extension coordinate"
+        },
+        {
+          "axis": "liftingFailure",
+          "status": "observed",
+          "refs": [
+            "split-readiness:molecule-user-request-responsibility"
+          ],
+          "reading": "liftingFailure is classified as a current-state extension coordinate"
+        },
+        {
+          "axis": "fillingFailure",
+          "status": "unmeasuredOrAbsent",
+          "refs": [],
+          "reading": "fillingFailure is classified as a current-state extension coordinate"
+        },
+        {
+          "axis": "complexityTransfer",
+          "status": "unmeasuredOrAbsent",
+          "refs": [],
+          "reading": "complexityTransfer is classified as a current-state extension coordinate"
+        },
+        {
+          "axis": "residualCoverageGap",
+          "status": "observed",
+          "refs": [
+            "gap-runtime-user-db-trace"
+          ],
+          "reading": "residualCoverageGap is classified as a current-state extension coordinate"
+        }
+      ],
+      "attributionRecords": [
+        {
+          "witnessRef": "feature-boundary-residual:fixture-archmap-atom-observation",
+          "labels": [
+            "boundaryHolonomy"
+          ],
+          "inheritedCoreRefs": [],
+          "featureLocalRefs": [],
+          "boundaryHolonomyRefs": [
+            "feature-boundary-residual:fixture-archmap-atom-observation"
+          ],
+          "liftingFailureRefs": [],
+          "fillingFailureRefs": [],
+          "complexityTransferRefs": [],
+          "residualCoverageGapRefs": [],
+          "reading": "feature-boundary-residual:fixture-archmap-atom-observation carries non-disjoint feature-extension labels [\"boundaryHolonomy\"]"
+        },
+        {
+          "witnessRef": "gap-runtime-user-db-trace",
+          "labels": [
+            "boundaryHolonomy",
+            "residualCoverageGap"
+          ],
+          "inheritedCoreRefs": [],
+          "featureLocalRefs": [],
+          "boundaryHolonomyRefs": [
+            "gap-runtime-user-db-trace"
+          ],
+          "liftingFailureRefs": [],
+          "fillingFailureRefs": [],
+          "complexityTransferRefs": [],
+          "residualCoverageGapRefs": [
+            "gap-runtime-user-db-trace"
+          ],
+          "reading": "gap-runtime-user-db-trace carries non-disjoint feature-extension labels [\"boundaryHolonomy\", \"residualCoverageGap\"]"
+        },
+        {
+          "witnessRef": "mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair-continuation:effect",
+          "labels": [
+            "boundaryHolonomy"
+          ],
+          "inheritedCoreRefs": [],
+          "featureLocalRefs": [],
+          "boundaryHolonomyRefs": [
+            "mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair-continuation:effect"
+          ],
+          "liftingFailureRefs": [],
+          "fillingFailureRefs": [],
+          "complexityTransferRefs": [],
+          "residualCoverageGapRefs": [],
+          "reading": "mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair-continuation:effect carries non-disjoint feature-extension labels [\"boundaryHolonomy\"]"
+        },
+        {
+          "witnessRef": "split-readiness:molecule-user-request-responsibility",
+          "labels": [
+            "boundaryHolonomy",
+            "liftingFailure"
+          ],
+          "inheritedCoreRefs": [],
+          "featureLocalRefs": [],
+          "boundaryHolonomyRefs": [
+            "split-readiness:molecule-user-request-responsibility"
+          ],
+          "liftingFailureRefs": [
+            "split-readiness:molecule-user-request-responsibility"
+          ],
+          "fillingFailureRefs": [],
+          "complexityTransferRefs": [],
+          "residualCoverageGapRefs": [],
+          "reading": "split-readiness:molecule-user-request-responsibility carries non-disjoint feature-extension labels [\"boundaryHolonomy\", \"liftingFailure\"]"
+        }
+      ],
+      "residualCoverageGapRefs": [
+        "gap-runtime-user-db-trace"
+      ],
+      "liftingFailureRefs": [
+        "split-readiness:molecule-user-request-responsibility"
+      ],
+      "fillingFailureRefs": [],
+      "complexityTransferRefs": [],
+      "classificationBoundary": "feature-extension labels are intentionally non-disjoint; the same witness may carry inherited-core, feature-local, boundary-holonomy, lifting, filling, complexity-transfer, and coverage-gap labels",
+      "fieldsigBoundary": "ArchSig reports current-state feature-extension attribution; FieldSig owns longitudinal evolution quality analysis",
+      "evidenceBoundary": "diagnosis is computed from ArchSig packet evidence and does not prove a mutually disjoint Architecture Extension Formula",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    }
+  ],
   "monodromyReadingFamily": {
     "readingFamilyId": "monodromy-reading-family:measurement-policy-monodromy-boundary-holonomy",
     "status": "schemaFoundationOnly",
@@ -3571,7 +3725,7 @@
       "feature-boundary-residual:fixture-archmap-atom-observation"
     ],
     "extensionDiagnosisRefs": [
-      "split-readiness:molecule-user-request-responsibility"
+      "feature-extension-diagnosis:feature-extension-formula-fixture-archmap-atom-observation"
     ],
     "attributionBoundary": "multi-label attribution can name feature, boundary, law, and coverage contributors without claiming a single cause",
     "readingBoundary": "records the packet shape for boundary residual and feature-extension diagnosis; concrete attribution is introduced by later issues",
@@ -5156,6 +5310,9 @@
     ],
     "featureBoundaryResidualSummary": [
       "feature-boundary-residual:fixture-archmap-atom-observation boundary=Boundary(fixture-archmap-atom-observation, feature-extension) status=measuredResidual axes=8 residualRefs=3"
+    ],
+    "featureExtensionDiagnosisSummary": [
+      "feature-extension-diagnosis:feature-extension-formula-fixture-archmap-atom-observation status=multiLabelAttributed attributions=4 multiLabel=2 coverageGaps=1 lifting=1 filling=0 complexity=0"
     ],
     "representationStrengthSummary": [
       "weightedAdjacencyMatrix zeroReflecting=blockedByCoverageGap obstructionReflecting=blockedByCoverageGap blockedBy=1",
