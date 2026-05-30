@@ -6,7 +6,8 @@ use crate::{
     LawPolicyAxisDefinitionV0, LawPolicyCoverageRequirementV0, LawPolicyDocumentV0,
     LawPolicyMeasurementPolicyV0, LawPolicyMoleculePatternV0,
     LawPolicyObstructionCircuitDefinitionV0, LawPolicySelectedLawV0,
-    LawPolicySignatureAxisDefinitionV0, LawPolicyValidationInputV0, LawPolicyValidationReportV0,
+    LawPolicySignatureAxisDefinitionV0, LawPolicySpectrumDistanceKindV0,
+    LawPolicySpectrumMeasurementProfileV0, LawPolicyValidationInputV0, LawPolicyValidationReportV0,
     LawPolicyValidationSummaryV0, LawPolicyWitnessRuleV0, ValidationCheck, ValidationExample,
 };
 
@@ -16,6 +17,13 @@ const REQUIRED_NON_CONCLUSIONS: [&str; 5] = [
     "law policy validation does not certify atom truth",
     "missing coverage is not measured zero",
     "signature zero requires ArchSig analysis with declared coverage and exactness assumptions",
+];
+
+const REQUIRED_SPECTRUM_PROFILE_NON_CONCLUSIONS: [&str; 4] = [
+    "spectrum measurement profile is a measurement recipe, not a law universe",
+    "profile differences are not law universe differences",
+    "unmeasured axes are not zero",
+    "spectrum zero requires coverage, exactness, and zero-reflection assumptions",
 ];
 
 pub fn static_law_policy() -> LawPolicyDocumentV0 {
@@ -160,6 +168,55 @@ pub fn static_law_policy() -> LawPolicyDocumentV0 {
             ],
             non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
         },
+        spectrum_measurement_profile: Some(LawPolicySpectrumMeasurementProfileV0 {
+            profile_id: "spectrum-profile:curvature-transfer-default".to_string(),
+            selected_axis_refs: vec![
+                "axis:layer-violation".to_string(),
+                "axis:semantic-inconsistency".to_string(),
+            ],
+            measured_witness_rule_refs: vec![
+                "witness:layer-violation".to_string(),
+                "witness:semantic-contract-mismatch".to_string(),
+            ],
+            distance_kinds: vec![
+                LawPolicySpectrumDistanceKindV0 {
+                    axis_ref: "axis:layer-violation".to_string(),
+                    distance_kind: "boolean-mismatch".to_string(),
+                },
+                LawPolicySpectrumDistanceKindV0 {
+                    axis_ref: "axis:semantic-inconsistency".to_string(),
+                    distance_kind: "semantic-witness-mismatch-count".to_string(),
+                },
+            ],
+            weight_policy: "unit weights until repo-specific calibration is declared".to_string(),
+            support_projection_rule:
+                "project witness support to observed Atom refs and selected axis ids".to_string(),
+            transfer_edge_rule:
+                "construct transfer edges only from measured witness support overlap under selected axes"
+                    .to_string(),
+            clustering_ranking_options: vec![
+                "rank top curvature modes by weighted measured curvature".to_string(),
+                "rank recurrent modes only inside the selected measured support x axis state space"
+                    .to_string(),
+            ],
+            report_focus_options: vec![
+                "surface top modes with witness refs, source refs, coverage gaps, and non-conclusions"
+                    .to_string(),
+            ],
+            coverage_requirement_refs: vec![
+                "coverage:layer-atoms".to_string(),
+                "coverage:semantic-contract-atoms".to_string(),
+            ],
+            coverage_boundary:
+                "missing coverage blocks spectrum zero reflection and remains a report gap".to_string(),
+            exactness_assumption_refs: vec![
+                "selected LawPolicy exactness assumptions".to_string(),
+            ],
+            measurement_boundary:
+                "curvature-transfer spectrum readings are bounded ArchSig diagnostics, not theorem discharge"
+                    .to_string(),
+            non_conclusions: strings(&REQUIRED_SPECTRUM_PROFILE_NON_CONCLUSIONS),
+        }),
         exactness_assumptions: vec![
             "the selected witness rules cover only policy-declared laws".to_string(),
             "zero readings are exact only for observed atoms and declared coverage requirements"
@@ -205,6 +262,7 @@ pub fn validate_law_policy_report(
         check_witness_and_obstruction_boundaries(policy),
         check_coverage_and_exactness(policy),
         check_measurement_policy(policy),
+        check_spectrum_measurement_profile(policy),
         check_non_conclusions(policy),
     ];
     let summary = LawPolicyValidationSummaryV0 {
@@ -329,6 +387,175 @@ fn check_measurement_policy(policy: &LawPolicyDocumentV0) -> ValidationCheck {
     check_from_examples(
         "law-policy-monodromy-measurement-policy",
         "LawPolicy declares selected axes, distance, weight, coverage, and ArchMapStore ref kinds for monodromy readings",
+        examples,
+        "fail",
+    )
+}
+
+fn check_spectrum_measurement_profile(policy: &LawPolicyDocumentV0) -> ValidationCheck {
+    let Some(profile) = &policy.spectrum_measurement_profile else {
+        return validation_check(
+            "law-policy-spectrum-measurement-profile",
+            "optional spectrum measurement profile is absent; LawPolicy remains valid without ACTS readings",
+            "pass",
+        );
+    };
+
+    let axis_ids = policy
+        .required_zero_axes
+        .iter()
+        .chain(policy.optional_axes.iter())
+        .map(|axis| axis.axis_id.as_str())
+        .collect::<BTreeSet<_>>();
+    let signature_axis_ids = set(policy
+        .signature_axis_definitions
+        .iter()
+        .map(|axis| axis.signature_axis_id.as_str()));
+    let witness_ids = set(policy
+        .witness_rules
+        .iter()
+        .map(|rule| rule.witness_rule_id.as_str()));
+    let coverage_ids = set(policy
+        .coverage_requirements
+        .iter()
+        .map(|requirement| requirement.coverage_requirement_id.as_str()));
+    let present_non_conclusions = profile
+        .non_conclusions
+        .iter()
+        .map(|value| value.as_str())
+        .collect::<BTreeSet<_>>();
+    let mut examples = Vec::new();
+
+    push_blank(
+        &mut examples,
+        "spectrumMeasurementProfile.profileId",
+        &profile.profile_id,
+    );
+    if profile.selected_axis_refs.is_empty() {
+        examples.push(generic_validation_example(
+            &profile.profile_id,
+            "selectedAxisRefs",
+            "spectrum profile must select axes for curvature support readings",
+        ));
+    }
+    for axis_ref in &profile.selected_axis_refs {
+        if !axis_ids.contains(axis_ref.as_str()) && !signature_axis_ids.contains(axis_ref.as_str())
+        {
+            examples.push(generic_validation_example(
+                &profile.profile_id,
+                axis_ref,
+                "spectrum profile selectedAxisRefs must reference known axes or signature axes",
+            ));
+        }
+    }
+    if profile.measured_witness_rule_refs.is_empty() {
+        examples.push(generic_validation_example(
+            &profile.profile_id,
+            "measuredWitnessRuleRefs",
+            "spectrum profile must declare measured witness rule refs",
+        ));
+    }
+    for witness_ref in &profile.measured_witness_rule_refs {
+        if !witness_ids.contains(witness_ref.as_str()) {
+            examples.push(generic_validation_example(
+                &profile.profile_id,
+                witness_ref,
+                "spectrum profile measuredWitnessRuleRefs must reference known witness rules",
+            ));
+        }
+    }
+    if profile.distance_kinds.is_empty() {
+        examples.push(generic_validation_example(
+            &profile.profile_id,
+            "distanceKinds",
+            "spectrum profile must declare at least one axis distance kind",
+        ));
+    }
+    for distance in &profile.distance_kinds {
+        if !axis_ids.contains(distance.axis_ref.as_str())
+            && !signature_axis_ids.contains(distance.axis_ref.as_str())
+        {
+            examples.push(generic_validation_example(
+                &profile.profile_id,
+                &distance.axis_ref,
+                "spectrum distanceKinds[].axisRef must reference known axes or signature axes",
+            ));
+        }
+        push_blank(
+            &mut examples,
+            &format!("spectrum distance kind for {}", distance.axis_ref),
+            &distance.distance_kind,
+        );
+    }
+    push_blank(
+        &mut examples,
+        "spectrumMeasurementProfile.weightPolicy",
+        &profile.weight_policy,
+    );
+    push_blank(
+        &mut examples,
+        "spectrumMeasurementProfile.supportProjectionRule",
+        &profile.support_projection_rule,
+    );
+    push_blank(
+        &mut examples,
+        "spectrumMeasurementProfile.transferEdgeRule",
+        &profile.transfer_edge_rule,
+    );
+    if profile.coverage_requirement_refs.is_empty() {
+        examples.push(generic_validation_example(
+            &profile.profile_id,
+            "coverageRequirementRefs",
+            "spectrum profile must reference coverage requirements",
+        ));
+    }
+    for coverage_ref in &profile.coverage_requirement_refs {
+        if !coverage_ids.contains(coverage_ref.as_str()) {
+            examples.push(generic_validation_example(
+                &profile.profile_id,
+                coverage_ref,
+                "spectrum profile coverageRequirementRefs must reference known coverage requirements",
+            ));
+        }
+    }
+    push_blank(
+        &mut examples,
+        "spectrumMeasurementProfile.coverageBoundary",
+        &profile.coverage_boundary,
+    );
+    if profile.exactness_assumption_refs.is_empty() || has_blank(&profile.exactness_assumption_refs)
+    {
+        examples.push(generic_validation_example(
+            &profile.profile_id,
+            "exactnessAssumptionRefs",
+            "spectrum profile must record exactness assumption refs",
+        ));
+    }
+    push_blank(
+        &mut examples,
+        "spectrumMeasurementProfile.measurementBoundary",
+        &profile.measurement_boundary,
+    );
+    if profile.non_conclusions.is_empty() || has_blank(&profile.non_conclusions) {
+        examples.push(generic_validation_example(
+            &profile.profile_id,
+            "nonConclusions",
+            "spectrum profile must keep non-conclusions explicit",
+        ));
+    }
+    for required in REQUIRED_SPECTRUM_PROFILE_NON_CONCLUSIONS {
+        if !present_non_conclusions.contains(required) {
+            examples.push(generic_validation_example(
+                &profile.profile_id,
+                required,
+                "missing required spectrum profile non-conclusion",
+            ));
+        }
+    }
+
+    check_from_examples(
+        "law-policy-spectrum-measurement-profile",
+        "LawPolicy keeps spectrum measurement recipes separate from the selected law universe",
         examples,
         "fail",
     )
@@ -994,6 +1221,39 @@ mod tests {
         assert_eq!(report.summary.result, "fail");
         assert!(report.checks.iter().any(|check| {
             check.id == "law-policy-monodromy-measurement-policy" && check.result == "fail"
+        }));
+    }
+
+    #[test]
+    fn invalid_spectrum_measurement_profile_fails() {
+        let mut policy = static_law_policy();
+        let profile = policy
+            .spectrum_measurement_profile
+            .as_mut()
+            .expect("fixture declares a spectrum profile");
+        profile.selected_axis_refs = vec!["axis:missing".to_string()];
+        profile.measured_witness_rule_refs = vec!["witness:missing".to_string()];
+        profile.coverage_requirement_refs.clear();
+        profile.non_conclusions.clear();
+
+        let report = validate_law_policy_report(&policy, "bad-law-policy.json");
+
+        assert_eq!(report.summary.result, "fail");
+        assert!(report.checks.iter().any(|check| {
+            check.id == "law-policy-spectrum-measurement-profile" && check.result == "fail"
+        }));
+    }
+
+    #[test]
+    fn absent_spectrum_measurement_profile_is_valid() {
+        let mut policy = static_law_policy();
+        policy.spectrum_measurement_profile = None;
+
+        let report = validate_law_policy_report(&policy, "law-policy-without-spectrum.json");
+
+        assert_eq!(report.summary.result, "pass");
+        assert!(report.checks.iter().any(|check| {
+            check.id == "law-policy-spectrum-measurement-profile" && check.result == "pass"
         }));
     }
 

@@ -445,6 +445,8 @@ pub struct LawPolicyDocumentV0 {
     pub obstruction_circuit_definitions: Vec<LawPolicyObstructionCircuitDefinitionV0>,
     pub signature_axis_definitions: Vec<LawPolicySignatureAxisDefinitionV0>,
     pub measurement_policy: LawPolicyMeasurementPolicyV0,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub spectrum_measurement_profile: Option<LawPolicySpectrumMeasurementProfileV0>,
     pub exactness_assumptions: Vec<String>,
     pub coverage_requirements: Vec<LawPolicyCoverageRequirementV0>,
     #[serde(default)]
@@ -468,6 +470,40 @@ pub struct LawPolicyMeasurementPolicyV0 {
     pub exactness_assumption_refs: Vec<String>,
     #[serde(default)]
     pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct LawPolicySpectrumMeasurementProfileV0 {
+    pub profile_id: String,
+    #[serde(default)]
+    pub selected_axis_refs: Vec<String>,
+    #[serde(default)]
+    pub measured_witness_rule_refs: Vec<String>,
+    #[serde(default)]
+    pub distance_kinds: Vec<LawPolicySpectrumDistanceKindV0>,
+    pub weight_policy: String,
+    pub support_projection_rule: String,
+    pub transfer_edge_rule: String,
+    #[serde(default)]
+    pub clustering_ranking_options: Vec<String>,
+    #[serde(default)]
+    pub report_focus_options: Vec<String>,
+    #[serde(default)]
+    pub coverage_requirement_refs: Vec<String>,
+    pub coverage_boundary: String,
+    #[serde(default)]
+    pub exactness_assumption_refs: Vec<String>,
+    pub measurement_boundary: String,
+    #[serde(default)]
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct LawPolicySpectrumDistanceKindV0 {
+    pub axis_ref: String,
+    pub distance_kind: String,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

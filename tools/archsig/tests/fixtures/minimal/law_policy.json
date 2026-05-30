@@ -296,6 +296,52 @@
       "signature zero requires ArchSig analysis with declared coverage and exactness assumptions"
     ]
   },
+  "spectrumMeasurementProfile": {
+    "profileId": "spectrum-profile:curvature-transfer-default",
+    "selectedAxisRefs": [
+      "axis:layer-violation",
+      "axis:semantic-inconsistency"
+    ],
+    "measuredWitnessRuleRefs": [
+      "witness:layer-violation",
+      "witness:semantic-contract-mismatch"
+    ],
+    "distanceKinds": [
+      {
+        "axisRef": "axis:layer-violation",
+        "distanceKind": "boolean-mismatch"
+      },
+      {
+        "axisRef": "axis:semantic-inconsistency",
+        "distanceKind": "semantic-witness-mismatch-count"
+      }
+    ],
+    "weightPolicy": "unit weights until repo-specific calibration is declared",
+    "supportProjectionRule": "project witness support to observed Atom refs and selected axis ids",
+    "transferEdgeRule": "construct transfer edges only from measured witness support overlap under selected axes",
+    "clusteringRankingOptions": [
+      "rank top curvature modes by weighted measured curvature",
+      "rank recurrent modes only inside the selected measured support x axis state space"
+    ],
+    "reportFocusOptions": [
+      "surface top modes with witness refs, source refs, coverage gaps, and non-conclusions"
+    ],
+    "coverageRequirementRefs": [
+      "coverage:layer-atoms",
+      "coverage:semantic-contract-atoms"
+    ],
+    "coverageBoundary": "missing coverage blocks spectrum zero reflection and remains a report gap",
+    "exactnessAssumptionRefs": [
+      "selected LawPolicy exactness assumptions"
+    ],
+    "measurementBoundary": "curvature-transfer spectrum readings are bounded ArchSig diagnostics, not theorem discharge",
+    "nonConclusions": [
+      "spectrum measurement profile is a measurement recipe, not a law universe",
+      "profile differences are not law universe differences",
+      "unmeasured axes are not zero",
+      "spectrum zero requires coverage, exactness, and zero-reflection assumptions"
+    ]
+  },
   "exactnessAssumptions": [
     "the selected witness rules cover only policy-declared laws",
     "zero readings are exact only for observed atoms and declared coverage requirements"
