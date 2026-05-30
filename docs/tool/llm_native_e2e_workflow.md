@@ -104,6 +104,10 @@ The E2E flow must preserve these boundaries:
 - The implemented lightweight `archsig pr-review` command takes
   `ArchMapDelta`, `ArchMapCommit`, and base/head ArchSig packets as canonical
   inputs. Raw diff is recorded only as an optional scoping hint.
+- The implemented `archsig codebase-inspection` command takes latest
+  `ArchMapSnapshot`, `ArchMapIndex`, an ArchSig packet, optional recent deltas,
+  and optional LawPolicy provenance as the current-state diagnosis surface. It
+  is separate from change-local PR review and from FieldSig evolution analysis.
 - Coverage gaps are carried as unknown remainder; they are not rounded to
   absence, measured zero, or forecast truth.
 - ArchSig emits only the current ArchMap validation, profile validation,

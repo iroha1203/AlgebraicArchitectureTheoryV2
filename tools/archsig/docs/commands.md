@@ -62,6 +62,29 @@ cargo run --manifest-path tools/archsig/Cargo.toml -- analysis-summary \
 `summary` is a visible alias. The summary is a reading aid for human / LLM
 review. It does not replace the full packet or validation reports.
 
+## Codebase Inspection
+
+```bash
+cargo run --manifest-path tools/archsig/Cargo.toml -- codebase-inspection \
+  --snapshot tools/archsig/tests/fixtures/inspection/archmap_snapshot.json \
+  --index tools/archsig/tests/fixtures/inspection/archmap_index.json \
+  --packet tools/archsig/tests/fixtures/coupon_rounding/archsig_analysis_packet.json \
+  --law-policy tools/archsig/tests/fixtures/minimal/law_policy.json \
+  --recent-delta tools/archsig/tests/fixtures/pr_review/archmap_delta.json \
+  --out .archsig/inspection/archsig-codebase-inspection.json
+```
+
+`codebase-inspection` is the current-state ArchSig surface for architecture
+health review. Its canonical inputs are the latest `archmap-snapshot-v0`,
+`archmap-index-v0`, an `archsig-analysis-packet-v0`, optional recent
+`archmap-delta-v0` window, and optional `law-policy-v0` provenance. The report
+groups subsystem boundary cues, feature-like clusters, operation-like
+relations, top boundary holonomy readings, top order-sensitive squares,
+coverage / exactness boundaries, and next action cues. It separates this
+current-state diagnosis from `pr-review`, which is change-local, and from
+FieldSig, which owns PR / diff / change-vector evolution analysis, forecast,
+governance, calibration, and longitudinal monitoring.
+
 ## Lightweight PR Review
 
 ```bash

@@ -187,6 +187,14 @@ The builder:
   evidence; `ArchMapSnapshot` and `ArchMapIndex` support large-repository
   current-state inspection. Raw source diffs may narrow source refs, but they
   are not canonical semantic inputs to this packet.
+- `codebase-inspection` reads the latest `ArchMapSnapshot`, `ArchMapIndex`, an
+  `archsig-analysis-packet-v0`, optional recent deltas, and optional LawPolicy
+  provenance to produce `archsig-codebase-inspection-report-v0`. The report is
+  a current-state architecture health surface: subsystem boundaries,
+  feature-like clusters, operation-like relations, top boundary holonomy, top
+  order-sensitive squares, coverage / exactness boundary, and next action cues.
+  It is not PR / diff evolution analysis and does not prove global lawfulness or
+  safety.
 - `archMapStoreRefs` records the packet's canonical history substrate:
   `archmap-delta-v0`, `archmap-commit-v0`, `archmap-snapshot-v0`, and
   `archmap-index-v0`. It also records raw-diff and compaction boundaries so

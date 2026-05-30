@@ -1,0 +1,37 @@
+{
+  "schemaVersion": "archmap-snapshot-v0",
+  "snapshotId": "archmap-snapshot:coupon-tax-rounding-archmap:current",
+  "parents": [
+    "archmap-commit:coupon-tax-rounding-archmap:previous"
+  ],
+  "archMapRef": "coupon-tax-rounding-archmap",
+  "coveredCommitRange": {
+    "from": "archmap-commit:coupon-tax-rounding-archmap:previous",
+    "to": "archmap-commit:coupon-tax-rounding-archmap:current"
+  },
+  "stateHash": "fixture-current-state",
+  "policyRefs": [
+    "llm-native-aat-law-policy-fixture"
+  ],
+  "coverageSummary": {
+    "atomObservationCount": 3,
+    "semanticObservationCount": 1,
+    "coverageGapCount": 1
+  },
+  "compactionReport": {
+    "squashedDeltaCount": 4,
+    "lostChangeGranularity": true,
+    "preservedRefs": [
+      "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding",
+      "semantic:coupon-tax-rounding-paths",
+      "gap:coupon-runtime-payment-trace"
+    ],
+    "nonConclusions": [
+      "snapshot supports current-state diagnosis, not full historical replay"
+    ]
+  },
+  "nonConclusions": [
+    "ArchMapSnapshot is not source extraction completeness",
+    "ArchMapSnapshot is not merge safety"
+  ]
+}

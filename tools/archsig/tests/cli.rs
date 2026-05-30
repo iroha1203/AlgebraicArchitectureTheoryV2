@@ -17,6 +17,10 @@ fn coupon_rounding_root() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/coupon_rounding")
 }
 
+fn inspection_root() -> PathBuf {
+    Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/inspection")
+}
+
 fn pr_review_root() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/pr_review")
 }
@@ -40,6 +44,7 @@ fn cli_help_exposes_only_llm_atom_archmap_surface() {
         "aat-analysis",
         "analysis-summary",
         "summary",
+        "codebase-inspection",
         "pr-review",
         "analyze",
         "llm-native-workflow",
@@ -108,6 +113,97 @@ fn cli_summarizes_archsig_analysis_packet() {
             .as_array()
             .is_some_and(|non_conclusions| !non_conclusions.is_empty())
     );
+}
+
+#[test]
+fn cli_codebase_inspection_reads_snapshot_index_surface() {
+    let out_dir = temp_dir("codebase-inspection");
+    let inspection = inspection_root();
+    let coupon = coupon_rounding_root();
+    let minimal = fixture_root();
+    let review = pr_review_root();
+    let report = out_dir.join("archsig-codebase-inspection.json");
+
+    run_sig0(&[
+        "codebase-inspection",
+        "--snapshot",
+        inspection
+            .join("archmap_snapshot.json")
+            .to_str()
+            .expect("snapshot path is utf-8"),
+        "--index",
+        inspection
+            .join("archmap_index.json")
+            .to_str()
+            .expect("index path is utf-8"),
+        "--packet",
+        coupon
+            .join("archsig_analysis_packet.json")
+            .to_str()
+            .expect("packet path is utf-8"),
+        "--law-policy",
+        minimal
+            .join("law_policy.json")
+            .to_str()
+            .expect("law policy path is utf-8"),
+        "--recent-delta",
+        review
+            .join("archmap_delta.json")
+            .to_str()
+            .expect("recent delta path is utf-8"),
+        "--limit",
+        "3",
+        "--out",
+        report.to_str().expect("report path is utf-8"),
+    ]);
+
+    let json = read_json(&report);
+    assert_eq!(
+        json["schemaVersion"],
+        "archsig-codebase-inspection-report-v0"
+    );
+    assert_eq!(
+        json["diagnosisKind"],
+        "current-state architectural diagnosis"
+    );
+    assert_eq!(
+        json["canonicalInputs"]["archMapSnapshot"]["schemaVersion"],
+        "archmap-snapshot-v0"
+    );
+    assert_eq!(
+        json["canonicalInputs"]["archMapIndex"]["schemaVersion"],
+        "archmap-index-v0"
+    );
+    assert_eq!(json["inspectionFlow"]["recentDeltaCount"], 1);
+    assert!(
+        json["currentStateDiagnosis"]["topBoundaryHolonomy"]
+            .as_array()
+            .is_some_and(|items| !items.is_empty())
+    );
+    assert!(
+        json["currentStateDiagnosis"]["topOrderSensitiveSquares"]
+            .as_array()
+            .is_some_and(|items| {
+                items
+                    .iter()
+                    .any(|item| item["defectValue"].as_i64().is_some_and(|value| value > 0))
+            })
+    );
+    assert!(
+        json["coverageExactnessBoundary"]["coverageGaps"]
+            .as_array()
+            .is_some_and(|items| !items.is_empty())
+    );
+    assert!(
+        json["surfaceBoundary"]["prReviewMode"]
+            .as_str()
+            .is_some_and(|boundary| boundary.contains("change-local"))
+    );
+    assert!(json["nonConclusions"].as_array().is_some_and(|items| {
+        items
+            .iter()
+            .any(|item| item.as_str().is_some_and(|text| text.contains("FieldSig")))
+    }));
 }
 
 #[test]
