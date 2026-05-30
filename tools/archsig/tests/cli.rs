@@ -109,6 +109,41 @@ fn cli_summarizes_archsig_analysis_packet() {
             .is_some_and(|readings| readings.len() <= 2)
     );
     assert!(
+        json["architectureSpectrum"]["hotspots"]
+            .as_array()
+            .is_some_and(|items| !items.is_empty() && items.len() <= 2),
+        "analysis-summary must expose bounded ArchitectureSpectrumReport hotspots"
+    );
+    assert!(
+        json["architectureSpectrum"]["recurrentObstructions"]
+            .as_array()
+            .is_some_and(|items| !items.is_empty() && items.len() <= 2),
+        "analysis-summary must expose recurrent obstruction entries"
+    );
+    assert!(
+        json["architectureSpectrum"]["measuredBoundary"]
+            .as_str()
+            .is_some_and(|boundary| boundary.contains("ArchSig curvature support")),
+        "analysis-summary must keep the ArchitectureSpectrumReport measured boundary"
+    );
+    assert!(
+        json["architectureSpectrum"]["recommendedReviewFocus"]
+            .as_array()
+            .is_some_and(|items| !items.is_empty()),
+        "analysis-summary must expose next review focus from ArchitectureSpectrumReport"
+    );
+    assert!(
+        json["architectureSpectrum"]["nonConclusions"]
+            .as_array()
+            .is_some_and(|items| {
+                items.iter().any(|item| {
+                    item.as_str()
+                        .is_some_and(|text| text.contains("single architecture quality score"))
+                })
+            }),
+        "analysis-summary must preserve ArchitectureSpectrumReport non-conclusions"
+    );
+    assert!(
         json["nonConclusions"]
             .as_array()
             .is_some_and(|non_conclusions| !non_conclusions.is_empty())
@@ -193,6 +228,30 @@ fn cli_codebase_inspection_reads_snapshot_index_surface() {
         json["coverageExactnessBoundary"]["coverageGaps"]
             .as_array()
             .is_some_and(|items| !items.is_empty())
+    );
+    assert!(
+        json["currentStateDiagnosis"]["architectureSpectrum"]["hotspots"]
+            .as_array()
+            .is_some_and(|items| !items.is_empty()),
+        "codebase-inspection must expose ArchitectureSpectrumReport hotspots"
+    );
+    assert!(
+        json["currentStateDiagnosis"]["architectureSpectrum"]["recurrentObstructions"]
+            .as_array()
+            .is_some_and(|items| !items.is_empty()),
+        "codebase-inspection must expose recurrent obstruction entries"
+    );
+    assert!(
+        json["currentStateDiagnosis"]["architectureSpectrum"]["measuredBoundary"]
+            .as_str()
+            .is_some_and(|boundary| boundary.contains("selected LawPolicy")),
+        "codebase-inspection must keep the spectrum measured boundary"
+    );
+    assert!(
+        json["currentStateDiagnosis"]["architectureSpectrum"]["recommendedReviewFocus"]
+            .as_array()
+            .is_some_and(|items| !items.is_empty()),
+        "codebase-inspection must expose next review focus"
     );
     assert!(
         json["surfaceBoundary"]["prReviewMode"]
@@ -1321,6 +1380,56 @@ fn assert_north_star_packet_surfaces(json: &Value) {
                 })
         }),
         "curvature transfer readings must preserve FieldSig forecast boundary"
+    );
+    let architecture_spectrum_report = json["architectureSpectrumReport"]
+        .as_object()
+        .expect("North Star packet must expose ArchitectureSpectrumReport");
+    assert!(
+        architecture_spectrum_report["topHotspots"]
+            .as_array()
+            .is_some_and(|items| !items.is_empty()),
+        "ArchitectureSpectrumReport must expose hotspots"
+    );
+    assert!(
+        architecture_spectrum_report["topEigenmodes"]
+            .as_array()
+            .is_some_and(|items| !items.is_empty()),
+        "ArchitectureSpectrumReport must expose top mode data"
+    );
+    assert!(
+        architecture_spectrum_report["topWitnessClusters"]
+            .as_array()
+            .is_some_and(|items| !items.is_empty()),
+        "ArchitectureSpectrumReport must expose witness clusters"
+    );
+    assert!(
+        architecture_spectrum_report["recurrentObstructions"]
+            .as_array()
+            .is_some_and(|items| !items.is_empty()),
+        "ArchitectureSpectrumReport must expose recurrent obstruction entries"
+    );
+    assert!(
+        architecture_spectrum_report["measuredBoundary"]
+            .as_str()
+            .is_some_and(|boundary| boundary.contains("curvature support and transfer")),
+        "ArchitectureSpectrumReport must keep measured boundary explicit"
+    );
+    assert!(
+        architecture_spectrum_report["recommendedReviewFocus"]
+            .as_array()
+            .is_some_and(|items| !items.is_empty()),
+        "ArchitectureSpectrumReport must expose next review focus"
+    );
+    assert!(
+        architecture_spectrum_report["nonConclusions"]
+            .as_array()
+            .is_some_and(|items| {
+                items.iter().any(|item| {
+                    item.as_str()
+                        .is_some_and(|text| text.contains("single architecture quality score"))
+                })
+            }),
+        "ArchitectureSpectrumReport must preserve report-level non-conclusions"
     );
     let transfer_bridges = json["transferBridgeReadings"]
         .as_array()

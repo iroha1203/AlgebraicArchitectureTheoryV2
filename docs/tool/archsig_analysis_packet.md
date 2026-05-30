@@ -57,6 +57,7 @@ The implemented schema records:
 - `spectralDrilldownReadings`
 - `curvatureSupportReadings`
 - `curvatureTransferReadings`
+- `architectureSpectrumReport`
 - `transferBridgeReadings`
 - `atomSupportAxisReadings`
 - `atomCompatibilityReadings`
@@ -104,8 +105,8 @@ Packet validation checks identity, ArchMap / interpretation profile references,
 AAT concept coverage, bounded judgement statuses, analytic axes, workflow risk
 readings, spectral analysis readings, spectral mode readings, design principle
 readings, spectral drilldown readings, curvature support readings, curvature
-transfer readings, transfer bridge readings and bridge-edge source refs, v0.3.0
-measurement expansion readings, AAT structural state
+transfer readings, ArchitectureSpectrumReport, transfer bridge readings and
+bridge-edge source refs, v0.3.0 measurement expansion readings, AAT structural state
 readings, ArchMapStore delta / commit / snapshot / index refs, operation square
 candidates, axis-wise path continuation traces, monodromy / boundary holonomy
 reading family policy surfaces, law-relative obstruction links, signature /
@@ -179,6 +180,11 @@ The builder:
   `rho(T^kappa)` proxy, and recurrent obstruction modes only as bounded
   current-state diagnostics. They do not conclude future incidents, empirical
   cost increase, amplification, repair safety, or FieldSig forecast truth.
+- `architectureSpectrumReport` summarizes the ACTS surface for human and LLM
+  review: top hotspots, top bounded mode data, witness clusters, recurrent
+  obstruction entries, coverage gaps, measured boundary, and recommended next
+  actions. It is a primary codebase-inspection reading surface, not a single
+  architecture quality score.
 - transfer bridge readings summarize repair-operation-by-transferred-axis
   matrices, indirect bridge atom families between architecture hubs, and
   evolution risk rankings for repairs and boundary preparation. Each bridge
@@ -206,9 +212,9 @@ The builder:
   provenance to produce `archsig-codebase-inspection-report-v0`. The report is
   a current-state architecture health surface: subsystem boundaries,
   feature-like clusters, operation-like relations, top boundary holonomy, top
-  order-sensitive squares, coverage / exactness boundary, and next action cues.
-  It is not PR / diff evolution analysis and does not prove global lawfulness or
-  safety.
+  order-sensitive squares, ArchitectureSpectrumReport hotspots / recurrent
+  obstructions, coverage / exactness boundary, and next action cues. It is not
+  PR / diff evolution analysis and does not prove global lawfulness or safety.
 - `archMapStoreRefs` records the packet's canonical history substrate:
   `archmap-delta-v0`, `archmap-commit-v0`, `archmap-snapshot-v0`, and
   `archmap-index-v0`. It also records raw-diff and compaction boundaries so

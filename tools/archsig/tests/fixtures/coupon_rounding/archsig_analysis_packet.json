@@ -1769,6 +1769,455 @@
       ]
     }
   ],
+  "curvatureSupportReadings": [
+    {
+      "readingId": "curvature-support-reading:spectrum-profile-curvature-transfer-default",
+      "profileRef": "spectrum-profile:curvature-transfer-default",
+      "status": "needsReview",
+      "measuredAxisRefs": [
+        "axis:semantic-inconsistency"
+      ],
+      "unmeasuredAxisRefs": [
+        "axis:layer-violation",
+        "axis:semantic-inconsistency"
+      ],
+      "witnessSupports": [
+        {
+          "witnessSupportId": "curvature-support:witness-layer-violation:axis-layer-violation",
+          "witnessRuleRef": "witness:layer-violation",
+          "selectedAxisRef": "axis:layer-violation",
+          "signatureAxisRef": "sig-axis:layer-violation",
+          "curvatureValue": 0,
+          "weight": 0,
+          "supportRefs": [],
+          "sourceRefs": [],
+          "observationRefs": [],
+          "missingEvidence": [
+            "gap:coupon-runtime-payment-trace: payment processor and receipt reconciliation traces are not included in the fixture"
+          ],
+          "reading": "unmeasured support is preserved as missing evidence, not measured zero"
+        },
+        {
+          "witnessSupportId": "curvature-support:witness-semantic-contract-mismatch:axis-layer-violation",
+          "witnessRuleRef": "witness:semantic-contract-mismatch",
+          "selectedAxisRef": "axis:layer-violation",
+          "signatureAxisRef": "sig-axis:layer-violation",
+          "curvatureValue": 0,
+          "weight": 0,
+          "supportRefs": [],
+          "sourceRefs": [],
+          "observationRefs": [],
+          "missingEvidence": [
+            "gap:coupon-runtime-payment-trace: payment processor and receipt reconciliation traces are not included in the fixture"
+          ],
+          "reading": "unmeasured support is preserved as missing evidence, not measured zero"
+        },
+        {
+          "witnessSupportId": "curvature-support:witness-layer-violation:axis-semantic-inconsistency",
+          "witnessRuleRef": "witness:layer-violation",
+          "selectedAxisRef": "axis:semantic-inconsistency",
+          "signatureAxisRef": "sig-axis:semantic-inconsistency",
+          "curvatureValue": 0,
+          "weight": 0,
+          "supportRefs": [],
+          "sourceRefs": [],
+          "observationRefs": [],
+          "missingEvidence": [
+            "gap:coupon-runtime-payment-trace: payment processor and receipt reconciliation traces are not included in the fixture"
+          ],
+          "reading": "unmeasured support is preserved as missing evidence, not measured zero"
+        },
+        {
+          "witnessSupportId": "curvature-support:witness-semantic-contract-mismatch:axis-semantic-inconsistency",
+          "witnessRuleRef": "witness:semantic-contract-mismatch",
+          "selectedAxisRef": "axis:semantic-inconsistency",
+          "signatureAxisRef": "sig-axis:semantic-inconsistency",
+          "curvatureValue": 1,
+          "weight": 1,
+          "supportRefs": [
+            "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding",
+            "atom:semantic:PaymentAmount-ReceiptAmount-coupon-tax-rounding-noncommutation",
+            "concern:coupon-semantic-monodromy",
+            "molecule-reading:molecule-coupon-operation-contract",
+            "semantic:coupon-tax-rounding-paths"
+          ],
+          "sourceRefs": [
+            "src-pricing-checkout",
+            "test-coupon-rounding"
+          ],
+          "observationRefs": [
+            "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding",
+            "atom:semantic:PaymentAmount-ReceiptAmount-coupon-tax-rounding-noncommutation",
+            "concern:coupon-semantic-monodromy",
+            "molecule-reading:molecule-coupon-operation-contract",
+            "semantic:coupon-tax-rounding-paths"
+          ],
+          "missingEvidence": [
+            "gap:coupon-runtime-payment-trace: payment processor and receipt reconciliation traces are not included in the fixture"
+          ],
+          "reading": "1 constructed witness support(s) contribute to axis:semantic-inconsistency under spectrum-profile:curvature-transfer-default"
+        }
+      ],
+      "topCurvatureModes": [
+        {
+          "modeId": "curvature-mode:curvature-support-witness-semantic-contract-mismatch-axis-semantic-inconsistency",
+          "rank": 1,
+          "axisRef": "axis:semantic-inconsistency",
+          "curvatureValue": 1,
+          "witnessRefs": [
+            "curvature-support:witness-semantic-contract-mismatch:axis-semantic-inconsistency"
+          ],
+          "supportRefs": [
+            "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding",
+            "atom:semantic:PaymentAmount-ReceiptAmount-coupon-tax-rounding-noncommutation",
+            "concern:coupon-semantic-monodromy",
+            "molecule-reading:molecule-coupon-operation-contract",
+            "semantic:coupon-tax-rounding-paths"
+          ],
+          "reading": "top measured curvature support mode with traceable witness and support refs"
+        },
+        {
+          "modeId": "curvature-mode:curvature-support-witness-layer-violation-axis-layer-violation",
+          "rank": 2,
+          "axisRef": "axis:layer-violation",
+          "curvatureValue": 0,
+          "witnessRefs": [
+            "curvature-support:witness-layer-violation:axis-layer-violation"
+          ],
+          "supportRefs": [],
+          "reading": "unmeasured curvature support mode retained as coverage debt"
+        },
+        {
+          "modeId": "curvature-mode:curvature-support-witness-semantic-contract-mismatch-axis-layer-violation",
+          "rank": 3,
+          "axisRef": "axis:layer-violation",
+          "curvatureValue": 0,
+          "witnessRefs": [
+            "curvature-support:witness-semantic-contract-mismatch:axis-layer-violation"
+          ],
+          "supportRefs": [],
+          "reading": "unmeasured curvature support mode retained as coverage debt"
+        },
+        {
+          "modeId": "curvature-mode:curvature-support-witness-layer-violation-axis-semantic-inconsistency",
+          "rank": 4,
+          "axisRef": "axis:semantic-inconsistency",
+          "curvatureValue": 0,
+          "witnessRefs": [
+            "curvature-support:witness-layer-violation:axis-semantic-inconsistency"
+          ],
+          "supportRefs": [],
+          "reading": "unmeasured curvature support mode retained as coverage debt"
+        }
+      ],
+      "witnessClusters": [
+        {
+          "clusterId": "curvature-cluster:axis-layer-violation",
+          "clusterKind": "axisWitnessSupportCluster",
+          "axisRefs": [
+            "axis:layer-violation"
+          ],
+          "witnessRefs": [
+            "curvature-support:witness-layer-violation:axis-layer-violation",
+            "curvature-support:witness-semantic-contract-mismatch:axis-layer-violation"
+          ],
+          "supportRefs": [],
+          "clusterWeight": 0,
+          "reading": "cluster records unmeasured selected axis support as coverage debt"
+        },
+        {
+          "clusterId": "curvature-cluster:axis-semantic-inconsistency",
+          "clusterKind": "axisWitnessSupportCluster",
+          "axisRefs": [
+            "axis:semantic-inconsistency"
+          ],
+          "witnessRefs": [
+            "curvature-support:witness-layer-violation:axis-semantic-inconsistency",
+            "curvature-support:witness-semantic-contract-mismatch:axis-semantic-inconsistency"
+          ],
+          "supportRefs": [
+            "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding",
+            "atom:semantic:PaymentAmount-ReceiptAmount-coupon-tax-rounding-noncommutation",
+            "concern:coupon-semantic-monodromy",
+            "molecule-reading:molecule-coupon-operation-contract",
+            "semantic:coupon-tax-rounding-paths"
+          ],
+          "clusterWeight": 1,
+          "reading": "cluster groups measured witness supports by selected axis for review ranking"
+        }
+      ],
+      "coverageBoundary": "missing coverage blocks spectrum zero reflection and remains a report gap",
+      "exactnessAssumptionRefs": [
+        "selected LawPolicy exactness assumptions"
+      ],
+      "measurementBoundary": "curvature-transfer spectrum readings are bounded ArchSig diagnostics, not theorem discharge",
+      "missingEvidence": [
+        "gap:coupon-runtime-payment-trace: payment processor and receipt reconciliation traces are not included in the fixture"
+      ],
+      "nonConclusions": [
+        "spectrum measurement profile is a measurement recipe, not a law universe",
+        "profile differences are not law universe differences",
+        "unmeasured axes are not zero",
+        "spectrum zero requires coverage, exactness, and zero-reflection assumptions"
+      ]
+    }
+  ],
+  "curvatureTransferReadings": [
+    {
+      "readingId": "curvature-transfer-reading:spectrum-profile-curvature-transfer-default",
+      "profileRef": "spectrum-profile:curvature-transfer-default",
+      "status": "needsReview",
+      "transferOperator": {
+        "operatorId": "transfer-operator:curvature-transfer-reading-spectrum-profile-curvature-transfer-default",
+        "rowDomain": "curvatureWitnessSupports",
+        "columnDomain": "curvatureWitnessSupports",
+        "rowCount": 1,
+        "columnCount": 1,
+        "nonzeroEdgeCount": 1,
+        "entryRule": "entry(i,j) is positive when measured curvature support i can transfer review pressure to support j under shared selected-axis or shared support evidence",
+        "reading": "finite nonnegative transfer operator over measured curvature supports; absent edges are unmeasured, not proof of independence"
+      },
+      "transferEdges": [
+        {
+          "edgeId": "curvature-transfer-edge:curvature-support-witness-semantic-contract-mismatch-axis-semantic-inconsistency:curvature-support-witness-semantic-contract-mismatch-axis-semantic-inconsistency",
+          "sourceSupportRef": "curvature-support:witness-semantic-contract-mismatch:axis-semantic-inconsistency",
+          "sourceAxisRef": "axis:semantic-inconsistency",
+          "targetSupportRef": "curvature-support:witness-semantic-contract-mismatch:axis-semantic-inconsistency",
+          "targetAxisRef": "axis:semantic-inconsistency",
+          "witnessRefs": [
+            "witness:semantic-contract-mismatch"
+          ],
+          "defectValue": 2,
+          "weight": 1,
+          "sourceRefs": [
+            "src-pricing-checkout",
+            "test-coupon-rounding"
+          ],
+          "reading": "positive self-loop records a closed walk in the finite transfer operator"
+        }
+      ],
+      "recurrentObstructionModes": [
+        {
+          "modeId": "recurrent-obstruction:curvature-transfer-edge-curvature-support-witness-semantic-contract-mismatch-axis-semantic-inconsistency-curvature-support-witness-semantic-contract-mismatch-axis-semantic-inconsistency",
+          "transferEdgeRefs": [
+            "curvature-transfer-edge:curvature-support-witness-semantic-contract-mismatch-axis-semantic-inconsistency:curvature-support-witness-semantic-contract-mismatch-axis-semantic-inconsistency"
+          ],
+          "supportRefs": [
+            "curvature-support:witness-semantic-contract-mismatch:axis-semantic-inconsistency"
+          ],
+          "witnessRefs": [
+            "witness:semantic-contract-mismatch"
+          ],
+          "spectralRadiusReading": "rho(T^kappa) proxy 1 > 0 over the finite ArchSig transfer operator",
+          "recurrentObstructionReading": "positive closed walk is reported as recurrent obstruction support only",
+          "reviewFocus": [
+            "inspect the witness support behind the positive transfer self-loop",
+            "check whether coverage gaps or exactness limits block zero-reflection"
+          ],
+          "nonConclusions": [
+            "recurrent obstruction mode is not future incident prediction",
+            "recurrent obstruction mode is not empirical cost amplification",
+            "recurrent obstruction mode is not repair safety evidence"
+          ]
+        }
+      ],
+      "spectralRadiusReading": {
+        "name": "rho(T^kappa)Proxy",
+        "value": "1",
+        "interpretation": "positive proxy is read only as recurrent obstruction support in the finite ArchSig transfer operator, not future incident probability"
+      },
+      "coverageBoundary": "missing coverage blocks spectrum zero reflection and remains a report gap",
+      "evidenceBoundary": "transfer operator is computed from measured curvature support rows and does not forecast future cost, safety, or amplification",
+      "nonConclusions": [
+        "rho(T^kappa) > 0 is only a bounded recurrent obstruction reading",
+        "transfer operator reading does not predict future incidents or empirical cost increase",
+        "transfer operator reading does not replace FieldSig forecast",
+        "absence of transfer edges is not proof of future safety"
+      ]
+    }
+  ],
+  "architectureSpectrumReport": {
+    "reportId": "architecture-spectrum-report:spectrum-profile-curvature-transfer-default",
+    "profileRef": "spectrum-profile:curvature-transfer-default",
+    "status": "needsReview",
+    "topHotspots": [
+      {
+        "hotspotId": "spectrum-hotspot:curvature-mode-curvature-support-witness-semantic-contract-mismatch-axis-semantic-inconsistency",
+        "axisRef": "axis:semantic-inconsistency",
+        "curvatureValue": 1,
+        "supportRefs": [
+          "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding",
+          "atom:semantic:PaymentAmount-ReceiptAmount-coupon-tax-rounding-noncommutation",
+          "concern:coupon-semantic-monodromy",
+          "molecule-reading:molecule-coupon-operation-contract",
+          "semantic:coupon-tax-rounding-paths"
+        ],
+        "witnessRefs": [
+          "curvature-support:witness-semantic-contract-mismatch:axis-semantic-inconsistency"
+        ],
+        "coverageGapRefs": [
+          "gap:coupon-runtime-payment-trace: payment processor and receipt reconciliation traces are not included in the fixture"
+        ],
+        "recommendedNextAction": "review witness support, selected axis coverage, and transfer recurrence before repair planning"
+      },
+      {
+        "hotspotId": "spectrum-hotspot:curvature-mode-curvature-support-witness-layer-violation-axis-layer-violation",
+        "axisRef": "axis:layer-violation",
+        "curvatureValue": 0,
+        "supportRefs": [],
+        "witnessRefs": [
+          "curvature-support:witness-layer-violation:axis-layer-violation"
+        ],
+        "coverageGapRefs": [
+          "gap:coupon-runtime-payment-trace: payment processor and receipt reconciliation traces are not included in the fixture"
+        ],
+        "recommendedNextAction": "resolve coverage and exactness gaps before treating this axis as zero"
+      },
+      {
+        "hotspotId": "spectrum-hotspot:curvature-mode-curvature-support-witness-semantic-contract-mismatch-axis-layer-violation",
+        "axisRef": "axis:layer-violation",
+        "curvatureValue": 0,
+        "supportRefs": [],
+        "witnessRefs": [
+          "curvature-support:witness-semantic-contract-mismatch:axis-layer-violation"
+        ],
+        "coverageGapRefs": [
+          "gap:coupon-runtime-payment-trace: payment processor and receipt reconciliation traces are not included in the fixture"
+        ],
+        "recommendedNextAction": "resolve coverage and exactness gaps before treating this axis as zero"
+      },
+      {
+        "hotspotId": "spectrum-hotspot:curvature-mode-curvature-support-witness-layer-violation-axis-semantic-inconsistency",
+        "axisRef": "axis:semantic-inconsistency",
+        "curvatureValue": 0,
+        "supportRefs": [],
+        "witnessRefs": [
+          "curvature-support:witness-layer-violation:axis-semantic-inconsistency"
+        ],
+        "coverageGapRefs": [
+          "gap:coupon-runtime-payment-trace: payment processor and receipt reconciliation traces are not included in the fixture"
+        ],
+        "recommendedNextAction": "resolve coverage and exactness gaps before treating this axis as zero"
+      }
+    ],
+    "topEigenmodes": [
+      {
+        "modeRef": "curvature-mode:curvature-support-witness-semantic-contract-mismatch-axis-semantic-inconsistency",
+        "rank": 1,
+        "axisRef": "axis:semantic-inconsistency",
+        "curvatureValue": 1,
+        "supportRefs": [
+          "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding",
+          "atom:semantic:PaymentAmount-ReceiptAmount-coupon-tax-rounding-noncommutation",
+          "concern:coupon-semantic-monodromy",
+          "molecule-reading:molecule-coupon-operation-contract",
+          "semantic:coupon-tax-rounding-paths"
+        ],
+        "witnessRefs": [
+          "curvature-support:witness-semantic-contract-mismatch:axis-semantic-inconsistency"
+        ],
+        "reading": "top measured curvature support mode with traceable witness and support refs"
+      },
+      {
+        "modeRef": "curvature-mode:curvature-support-witness-layer-violation-axis-layer-violation",
+        "rank": 2,
+        "axisRef": "axis:layer-violation",
+        "curvatureValue": 0,
+        "supportRefs": [],
+        "witnessRefs": [
+          "curvature-support:witness-layer-violation:axis-layer-violation"
+        ],
+        "reading": "unmeasured curvature support mode retained as coverage debt"
+      },
+      {
+        "modeRef": "curvature-mode:curvature-support-witness-semantic-contract-mismatch-axis-layer-violation",
+        "rank": 3,
+        "axisRef": "axis:layer-violation",
+        "curvatureValue": 0,
+        "supportRefs": [],
+        "witnessRefs": [
+          "curvature-support:witness-semantic-contract-mismatch:axis-layer-violation"
+        ],
+        "reading": "unmeasured curvature support mode retained as coverage debt"
+      },
+      {
+        "modeRef": "curvature-mode:curvature-support-witness-layer-violation-axis-semantic-inconsistency",
+        "rank": 4,
+        "axisRef": "axis:semantic-inconsistency",
+        "curvatureValue": 0,
+        "supportRefs": [],
+        "witnessRefs": [
+          "curvature-support:witness-layer-violation:axis-semantic-inconsistency"
+        ],
+        "reading": "unmeasured curvature support mode retained as coverage debt"
+      }
+    ],
+    "topWitnessClusters": [
+      {
+        "clusterRef": "curvature-cluster:axis-layer-violation",
+        "axisRefs": [
+          "axis:layer-violation"
+        ],
+        "witnessRefs": [
+          "curvature-support:witness-layer-violation:axis-layer-violation",
+          "curvature-support:witness-semantic-contract-mismatch:axis-layer-violation"
+        ],
+        "supportRefs": [],
+        "clusterWeight": 0,
+        "reading": "cluster records unmeasured selected axis support as coverage debt"
+      },
+      {
+        "clusterRef": "curvature-cluster:axis-semantic-inconsistency",
+        "axisRefs": [
+          "axis:semantic-inconsistency"
+        ],
+        "witnessRefs": [
+          "curvature-support:witness-layer-violation:axis-semantic-inconsistency",
+          "curvature-support:witness-semantic-contract-mismatch:axis-semantic-inconsistency"
+        ],
+        "supportRefs": [
+          "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding",
+          "atom:semantic:PaymentAmount-ReceiptAmount-coupon-tax-rounding-noncommutation",
+          "concern:coupon-semantic-monodromy",
+          "molecule-reading:molecule-coupon-operation-contract",
+          "semantic:coupon-tax-rounding-paths"
+        ],
+        "clusterWeight": 1,
+        "reading": "cluster groups measured witness supports by selected axis for review ranking"
+      }
+    ],
+    "recurrentObstructions": [
+      {
+        "modeRef": "recurrent-obstruction:curvature-transfer-edge-curvature-support-witness-semantic-contract-mismatch-axis-semantic-inconsistency-curvature-support-witness-semantic-contract-mismatch-axis-semantic-inconsistency",
+        "spectralRadiusReading": "rho(T^kappa) proxy 1 > 0 over the finite ArchSig transfer operator",
+        "transferEdgeRefs": [
+          "curvature-transfer-edge:curvature-support-witness-semantic-contract-mismatch-axis-semantic-inconsistency:curvature-support-witness-semantic-contract-mismatch-axis-semantic-inconsistency"
+        ],
+        "supportRefs": [
+          "curvature-support:witness-semantic-contract-mismatch:axis-semantic-inconsistency"
+        ],
+        "witnessRefs": [
+          "witness:semantic-contract-mismatch"
+        ],
+        "reading": "positive closed walk is reported as recurrent obstruction support only"
+      }
+    ],
+    "coverageGaps": [
+      "gap:coupon-runtime-payment-trace: payment processor and receipt reconciliation traces are not included in the fixture"
+    ],
+    "measuredBoundary": "report is measured from ArchSig curvature support and transfer readings under selected LawPolicy coverage and exactness assumptions",
+    "recommendedReviewFocus": [
+      "start from nonzero hotspots with traceable witness and support refs",
+      "review recurrent obstruction modes only as current-state bounded diagnostics",
+      "resolve coverage gaps before reading absent support as zero"
+    ],
+    "nonConclusions": [
+      "ArchitectureSpectrumReport is not a single architecture quality score",
+      "ArchitectureSpectrumReport does not prove global lawfulness or flatness",
+      "ArchitectureSpectrumReport does not predict future incidents or empirical cost increase",
+      "ArchitectureSpectrumReport does not replace FieldSig forecast or governance"
+    ]
+  },
   "transferBridgeReadings": [
     {
       "transferBridgeId": "transfer-bridge:coupon-tax-rounding-archmap",
@@ -5685,6 +6134,16 @@
     ],
     "spectralDrilldownSummary": [
       "spectral-drilldown:coupon-tax-rounding-archmap atomFamilies=3 overlapPairs=0 repairAxisDeltas=1 (needsReview)"
+    ],
+    "curvatureSupportSummary": [
+      "curvature-support-reading:spectrum-profile-curvature-transfer-default supports=4 topModes=4 clusters=2 measuredAxes=1 unmeasuredAxes=2 (needsReview)"
+    ],
+    "curvatureTransferSummary": [
+      "curvature-transfer-reading:spectrum-profile-curvature-transfer-default edges=1 recurrentModes=1 rho=1 (needsReview)"
+    ],
+    "architectureSpectrumReportSummary": [
+      "architecture-spectrum-report:spectrum-profile-curvature-transfer-default hotspots=4 recurrent=1 clusters=2 (needsReview)",
+      "report is measured from ArchSig curvature support and transfer readings under selected LawPolicy coverage and exactness assumptions"
     ],
     "transferBridgeSummary": [
       "transfer-bridge:coupon-tax-rounding-archmap transfers=0 bridges=1 repairRanks=1 boundaryRanks=0 (nonConclusion)"

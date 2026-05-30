@@ -9,7 +9,10 @@ use crate::{
     ArchSigAmiTopContributorV0, ArchSigAnalysisArtifactRefV0, ArchSigAnalysisPacketV0,
     ArchSigAnalysisPacketValidationInputV0, ArchSigAnalysisPacketValidationReportV0,
     ArchSigAnalysisPacketValidationSummaryV0, ArchSigAnalyticRepresentationV0,
-    ArchSigArchMapStoreRefsV0, ArchSigArchitectureObjectProjectionV0, ArchSigArchitectureStateV0,
+    ArchSigArchMapStoreRefsV0, ArchSigArchitectureObjectProjectionV0,
+    ArchSigArchitectureSpectrumHotspotV0, ArchSigArchitectureSpectrumModeV0,
+    ArchSigArchitectureSpectrumRecurrentObstructionV0, ArchSigArchitectureSpectrumReportV0,
+    ArchSigArchitectureSpectrumWitnessClusterV0, ArchSigArchitectureStateV0,
     ArchSigAtomCompatibilityConflictV0, ArchSigAtomCompatibilityReadingV0,
     ArchSigAtomConfigurationSummaryV0, ArchSigAtomSupportAxisReadingV0,
     ArchSigAxisContinuationTraceV0, ArchSigAxisExcursionV0, ArchSigAxisForgettingRiskReadingV0,
@@ -137,6 +140,10 @@ pub fn build_archsig_analysis_packet(
     );
     let curvature_transfer_readings =
         build_curvature_transfer_readings(&curvature_support_readings);
+    let architecture_spectrum_report = build_architecture_spectrum_report(
+        &curvature_support_readings,
+        &curvature_transfer_readings,
+    );
     let transfer_bridge_readings = build_transfer_bridge_readings(
         archmap,
         &spectral_mode_readings,
@@ -298,6 +305,7 @@ pub fn build_archsig_analysis_packet(
         &spectral_drilldown_readings,
         &curvature_support_readings,
         &curvature_transfer_readings,
+        architecture_spectrum_report.as_ref(),
         &transfer_bridge_readings,
         &atom_support_axis_readings,
         &atom_compatibility_readings,
@@ -366,6 +374,7 @@ pub fn build_archsig_analysis_packet(
         spectral_drilldown_readings,
         curvature_support_readings,
         curvature_transfer_readings,
+        architecture_spectrum_report,
         transfer_bridge_readings,
         atom_support_axis_readings,
         atom_compatibility_readings,
@@ -3912,6 +3921,111 @@ fn build_recurrent_obstruction_modes(
         .collect()
 }
 
+fn build_architecture_spectrum_report(
+    curvature_support_readings: &[ArchSigCurvatureSupportReadingV0],
+    curvature_transfer_readings: &[ArchSigCurvatureTransferReadingV0],
+) -> Option<ArchSigArchitectureSpectrumReportV0> {
+    let support_reading = curvature_support_readings.first()?;
+    let profile_ref = support_reading.profile_ref.clone();
+    let top_hotspots = support_reading
+        .top_curvature_modes
+        .iter()
+        .take(8)
+        .map(|mode| ArchSigArchitectureSpectrumHotspotV0 {
+            hotspot_id: format!("spectrum-hotspot:{}", stable_id(&mode.mode_id)),
+            axis_ref: mode.axis_ref.clone(),
+            curvature_value: mode.curvature_value,
+            support_refs: mode.support_refs.clone(),
+            witness_refs: mode.witness_refs.clone(),
+            coverage_gap_refs: support_reading.missing_evidence.clone(),
+            recommended_next_action: if mode.curvature_value > 0 {
+                "review witness support, selected axis coverage, and transfer recurrence before repair planning"
+                    .to_string()
+            } else {
+                "resolve coverage and exactness gaps before treating this axis as zero".to_string()
+            },
+        })
+        .collect::<Vec<_>>();
+    let top_eigenmodes = support_reading
+        .top_curvature_modes
+        .iter()
+        .take(8)
+        .map(|mode| ArchSigArchitectureSpectrumModeV0 {
+            mode_ref: mode.mode_id.clone(),
+            rank: mode.rank,
+            axis_ref: mode.axis_ref.clone(),
+            curvature_value: mode.curvature_value,
+            support_refs: mode.support_refs.clone(),
+            witness_refs: mode.witness_refs.clone(),
+            reading: mode.reading.clone(),
+        })
+        .collect::<Vec<_>>();
+    let top_witness_clusters = support_reading
+        .witness_clusters
+        .iter()
+        .take(8)
+        .map(|cluster| ArchSigArchitectureSpectrumWitnessClusterV0 {
+            cluster_ref: cluster.cluster_id.clone(),
+            axis_refs: cluster.axis_refs.clone(),
+            witness_refs: cluster.witness_refs.clone(),
+            support_refs: cluster.support_refs.clone(),
+            cluster_weight: cluster.cluster_weight,
+            reading: cluster.reading.clone(),
+        })
+        .collect::<Vec<_>>();
+    let recurrent_obstructions = curvature_transfer_readings
+        .iter()
+        .flat_map(|reading| {
+            reading.recurrent_obstruction_modes.iter().map(|mode| {
+                ArchSigArchitectureSpectrumRecurrentObstructionV0 {
+                    mode_ref: mode.mode_id.clone(),
+                    spectral_radius_reading: mode.spectral_radius_reading.clone(),
+                    transfer_edge_refs: mode.transfer_edge_refs.clone(),
+                    support_refs: mode.support_refs.clone(),
+                    witness_refs: mode.witness_refs.clone(),
+                    reading: mode.recurrent_obstruction_reading.clone(),
+                }
+            })
+        })
+        .collect::<Vec<_>>();
+    let status = if recurrent_obstructions.is_empty() && top_hotspots.is_empty() {
+        "nonConclusion"
+    } else if !support_reading.unmeasured_axis_refs.is_empty()
+        || !support_reading.missing_evidence.is_empty()
+    {
+        "needsReview"
+    } else {
+        "actionable"
+    };
+    Some(ArchSigArchitectureSpectrumReportV0 {
+        report_id: format!("architecture-spectrum-report:{}", stable_id(&profile_ref)),
+        profile_ref,
+        status: status.to_string(),
+        top_hotspots,
+        top_eigenmodes,
+        top_witness_clusters,
+        recurrent_obstructions,
+        coverage_gaps: support_reading.missing_evidence.clone(),
+        measured_boundary:
+            "report is measured from ArchSig curvature support and transfer readings under selected LawPolicy coverage and exactness assumptions"
+                .to_string(),
+        recommended_review_focus: vec![
+            "start from nonzero hotspots with traceable witness and support refs".to_string(),
+            "review recurrent obstruction modes only as current-state bounded diagnostics"
+                .to_string(),
+            "resolve coverage gaps before reading absent support as zero".to_string(),
+        ],
+        non_conclusions: vec![
+            "ArchitectureSpectrumReport is not a single architecture quality score".to_string(),
+            "ArchitectureSpectrumReport does not prove global lawfulness or flatness".to_string(),
+            "ArchitectureSpectrumReport does not predict future incidents or empirical cost increase"
+                .to_string(),
+            "ArchitectureSpectrumReport does not replace FieldSig forecast or governance"
+                .to_string(),
+        ],
+    })
+}
+
 fn spectral_mode_reading(
     spectral_reading: &ArchSigSpectralAnalysisReadingV0,
 ) -> ArchSigSpectralModeReadingV0 {
@@ -7106,6 +7220,7 @@ fn build_llm_interpretation_packet(
     spectral_drilldown_readings: &[ArchSigSpectralDrilldownReadingV0],
     curvature_support_readings: &[ArchSigCurvatureSupportReadingV0],
     curvature_transfer_readings: &[ArchSigCurvatureTransferReadingV0],
+    architecture_spectrum_report: Option<&ArchSigArchitectureSpectrumReportV0>,
     transfer_bridge_readings: &[ArchSigTransferBridgeReadingV0],
     atom_support_axis_readings: &[ArchSigAtomSupportAxisReadingV0],
     atom_compatibility_readings: &[ArchSigAtomCompatibilityReadingV0],
@@ -7248,6 +7363,21 @@ fn build_llm_interpretation_packet(
                 )
             })
             .collect(),
+        architecture_spectrum_report_summary: architecture_spectrum_report
+            .map(|report| {
+                vec![
+                    format!(
+                        "{} hotspots={} recurrent={} clusters={} ({})",
+                        report.report_id,
+                        report.top_hotspots.len(),
+                        report.recurrent_obstructions.len(),
+                        report.top_witness_clusters.len(),
+                        report.status
+                    ),
+                    report.measured_boundary.clone(),
+                ]
+            })
+            .unwrap_or_default(),
         transfer_bridge_summary: transfer_bridge_readings
             .iter()
             .map(|reading| {
@@ -7706,6 +7836,7 @@ pub fn validate_archsig_analysis_packet_report(
         check_spectral_drilldown_surface(packet),
         check_curvature_support_surface(packet),
         check_curvature_transfer_surface(packet),
+        check_architecture_spectrum_report_surface(packet),
         check_transfer_bridge_surface(packet),
         check_aat_structural_reading_surfaces(packet),
         check_current_state_evolution_boundary(packet),
@@ -8992,6 +9123,140 @@ fn check_curvature_transfer_surface(packet: &ArchSigAnalysisPacketV0) -> Validat
     check_from_examples(
         "archsig-analysis-packet-curvature-transfer-surface",
         "packet exposes finite transfer operator, recurrent obstruction modes, rho(T^kappa) reading, and forecast non-conclusions",
+        examples,
+        "fail",
+    )
+}
+
+fn check_architecture_spectrum_report_surface(packet: &ArchSigAnalysisPacketV0) -> ValidationCheck {
+    let mut examples = Vec::new();
+    let Some(report) = &packet.architecture_spectrum_report else {
+        if !packet.curvature_support_readings.is_empty()
+            || !packet.curvature_transfer_readings.is_empty()
+        {
+            examples.push(generic_validation_example(
+                &packet.analysis_id,
+                "architectureSpectrumReport",
+                "packet with curvature support or transfer readings must include ArchitectureSpectrumReport",
+            ));
+        }
+        return check_from_examples(
+            "archsig-analysis-packet-architecture-spectrum-report-surface",
+            "optional ArchitectureSpectrumReport is absent",
+            examples,
+            "fail",
+        );
+    };
+
+    push_blank(
+        &mut examples,
+        "architectureSpectrumReport.reportId",
+        &report.report_id,
+    );
+    push_blank(
+        &mut examples,
+        "architectureSpectrumReport.profileRef",
+        &report.profile_ref,
+    );
+    if report.top_hotspots.is_empty() {
+        examples.push(generic_validation_example(
+            &report.report_id,
+            "topHotspots",
+            "ArchitectureSpectrumReport must expose hotspot readings",
+        ));
+    }
+    if report.top_eigenmodes.is_empty() {
+        examples.push(generic_validation_example(
+            &report.report_id,
+            "topEigenmodes",
+            "ArchitectureSpectrumReport must expose top mode source data",
+        ));
+    }
+    if report.top_witness_clusters.is_empty() {
+        examples.push(generic_validation_example(
+            &report.report_id,
+            "topWitnessClusters",
+            "ArchitectureSpectrumReport must expose witness clusters",
+        ));
+    }
+    if report.measured_boundary.trim().is_empty() {
+        examples.push(generic_validation_example(
+            &report.report_id,
+            "measuredBoundary",
+            "ArchitectureSpectrumReport must keep measured boundary explicit",
+        ));
+    }
+    if report.recommended_review_focus.is_empty() || has_blank(&report.recommended_review_focus) {
+        examples.push(generic_validation_example(
+            &report.report_id,
+            "recommendedReviewFocus",
+            "ArchitectureSpectrumReport must provide next review actions",
+        ));
+    }
+    if report.non_conclusions.is_empty() || has_blank(&report.non_conclusions) {
+        examples.push(generic_validation_example(
+            &report.report_id,
+            "nonConclusions",
+            "ArchitectureSpectrumReport must retain report-level non-conclusions",
+        ));
+    }
+    for required in [
+        "ArchitectureSpectrumReport is not a single architecture quality score",
+        "ArchitectureSpectrumReport does not replace FieldSig forecast or governance",
+    ] {
+        if !report
+            .non_conclusions
+            .iter()
+            .any(|non_conclusion| non_conclusion == required)
+        {
+            examples.push(generic_validation_example(
+                &report.report_id,
+                required,
+                "ArchitectureSpectrumReport is missing a required non-conclusion",
+            ));
+        }
+    }
+    for hotspot in &report.top_hotspots {
+        if hotspot.curvature_value < 0 {
+            examples.push(generic_validation_example(
+                &hotspot.hotspot_id,
+                &hotspot.curvature_value.to_string(),
+                "hotspot curvature value must be non-negative",
+            ));
+        }
+        if hotspot.witness_refs.is_empty() {
+            examples.push(generic_validation_example(
+                &hotspot.hotspot_id,
+                "witnessRefs",
+                "hotspot must keep witness refs traceable",
+            ));
+        }
+        push_blank(
+            &mut examples,
+            &format!("{} recommendedNextAction", hotspot.hotspot_id),
+            &hotspot.recommended_next_action,
+        );
+    }
+    for recurrent in &report.recurrent_obstructions {
+        if recurrent.transfer_edge_refs.is_empty()
+            || recurrent.support_refs.is_empty()
+            || recurrent.witness_refs.is_empty()
+        {
+            examples.push(generic_validation_example(
+                &recurrent.mode_ref,
+                "transfer/support/witness refs",
+                "recurrent obstruction report entry must keep transfer, support, and witness refs",
+            ));
+        }
+        push_blank(
+            &mut examples,
+            &format!("{} spectralRadiusReading", recurrent.mode_ref),
+            &recurrent.spectral_radius_reading,
+        );
+    }
+    check_from_examples(
+        "archsig-analysis-packet-architecture-spectrum-report-surface",
+        "packet exposes ArchitectureSpectrumReport hotspots, recurrent obstructions, measured boundary, review focus, and non-conclusions",
         examples,
         "fail",
     )
@@ -11568,6 +11833,14 @@ fn check_llm_interpretation_surface(packet: &ArchSigAnalysisPacketV0) -> Validat
                     .curvature_transfer_summary
                     .is_empty(),
         ),
+        (
+            "llmInterpretationPacket.architectureSpectrumReportSummary",
+            packet.architecture_spectrum_report.is_some()
+                && packet
+                    .llm_interpretation_packet
+                    .architecture_spectrum_report_summary
+                    .is_empty(),
+        ),
     ] {
         if is_empty {
             examples.push(generic_validation_example(
@@ -12251,6 +12524,25 @@ mod tests {
         assert_eq!(report.summary.result, "fail");
         assert!(report.checks.iter().any(|check| {
             check.id == "archsig-analysis-packet-curvature-transfer-surface"
+                && check.result == "fail"
+        }));
+    }
+
+    #[test]
+    fn architecture_spectrum_report_without_focus_fails_validation() {
+        let mut packet = static_archsig_analysis_packet();
+        packet
+            .architecture_spectrum_report
+            .as_mut()
+            .expect("fixture has ArchitectureSpectrumReport")
+            .recommended_review_focus
+            .clear();
+
+        let report = validate_archsig_analysis_packet_report(&packet, "invalid.json");
+
+        assert_eq!(report.summary.result, "fail");
+        assert!(report.checks.iter().any(|check| {
+            check.id == "archsig-analysis-packet-architecture-spectrum-report-surface"
                 && check.result == "fail"
         }));
     }
