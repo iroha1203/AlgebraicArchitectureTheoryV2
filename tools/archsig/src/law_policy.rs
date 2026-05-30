@@ -4,7 +4,8 @@ use crate::validation::{count_checks, duplicates, generic_validation_example, va
 use crate::{
     LAW_POLICY_SCHEMA_VERSION, LAW_POLICY_VALIDATION_REPORT_SCHEMA_VERSION,
     LawPolicyAxisDefinitionV0, LawPolicyCoverageRequirementV0, LawPolicyDocumentV0,
-    LawPolicyMoleculePatternV0, LawPolicyObstructionCircuitDefinitionV0, LawPolicySelectedLawV0,
+    LawPolicyMeasurementPolicyV0, LawPolicyMoleculePatternV0,
+    LawPolicyObstructionCircuitDefinitionV0, LawPolicySelectedLawV0,
     LawPolicySignatureAxisDefinitionV0, LawPolicyValidationInputV0, LawPolicyValidationReportV0,
     LawPolicyValidationSummaryV0, LawPolicyWitnessRuleV0, ValidationCheck, ValidationExample,
 };
@@ -131,6 +132,34 @@ pub fn static_law_policy() -> LawPolicyDocumentV0 {
                 "count constructed SemanticMismatchCircuit witnesses",
             ),
         ],
+        measurement_policy: LawPolicyMeasurementPolicyV0 {
+            policy_id: "measurement-policy:monodromy-boundary-holonomy".to_string(),
+            selected_axis_refs: vec![
+                "axis:layer-violation".to_string(),
+                "axis:semantic-inconsistency".to_string(),
+            ],
+            distance_kind: "weighted-axis-l1".to_string(),
+            weight_policy:
+                "unit weights until repo-specific calibration is declared in a future policy"
+                    .to_string(),
+            coverage_policy:
+                "measure only selected axes with declared coverage; missing coverage remains blocked, not zero"
+                    .to_string(),
+            arch_map_store_ref_kinds: vec![
+                "archmap-delta".to_string(),
+                "archmap-commit".to_string(),
+                "archmap-snapshot".to_string(),
+                "archmap-index".to_string(),
+            ],
+            measurement_boundary:
+                "monodromy and boundary holonomy readings are finite ArchMapStore telemetry over selected axes, not theorem proofs"
+                    .to_string(),
+            exactness_assumption_refs: vec![
+                "selected LawPolicy exactness assumptions".to_string(),
+                "ArchMapStore compaction boundary".to_string(),
+            ],
+            non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
+        },
         exactness_assumptions: vec![
             "the selected witness rules cover only policy-declared laws".to_string(),
             "zero readings are exact only for observed atoms and declared coverage requirements"
@@ -175,6 +204,7 @@ pub fn validate_law_policy_report(
         check_axis_refs(policy),
         check_witness_and_obstruction_boundaries(policy),
         check_coverage_and_exactness(policy),
+        check_measurement_policy(policy),
         check_non_conclusions(policy),
     ];
     let summary = LawPolicyValidationSummaryV0 {
@@ -208,6 +238,100 @@ pub fn validate_law_policy_report(
         summary,
         checks,
     }
+}
+
+fn check_measurement_policy(policy: &LawPolicyDocumentV0) -> ValidationCheck {
+    let axis_ids = policy
+        .required_zero_axes
+        .iter()
+        .chain(policy.optional_axes.iter())
+        .map(|axis| axis.axis_id.as_str())
+        .collect::<BTreeSet<_>>();
+    let signature_axis_ids = set(policy
+        .signature_axis_definitions
+        .iter()
+        .map(|axis| axis.signature_axis_id.as_str()));
+    let required_store_kinds = BTreeSet::from([
+        "archmap-delta",
+        "archmap-commit",
+        "archmap-snapshot",
+        "archmap-index",
+    ]);
+    let present_store_kinds = policy
+        .measurement_policy
+        .arch_map_store_ref_kinds
+        .iter()
+        .map(|kind| kind.as_str())
+        .collect::<BTreeSet<_>>();
+    let mut examples = Vec::new();
+
+    push_blank(
+        &mut examples,
+        "measurementPolicy.policyId",
+        &policy.measurement_policy.policy_id,
+    );
+    if policy.measurement_policy.selected_axis_refs.is_empty() {
+        examples.push(generic_validation_example(
+            &policy.measurement_policy.policy_id,
+            "selectedAxisRefs",
+            "measurement policy must select axes for monodromy and boundary holonomy readings",
+        ));
+    }
+    for axis_ref in &policy.measurement_policy.selected_axis_refs {
+        if !axis_ids.contains(axis_ref.as_str()) && !signature_axis_ids.contains(axis_ref.as_str())
+        {
+            examples.push(generic_validation_example(
+                &policy.measurement_policy.policy_id,
+                axis_ref,
+                "measurement policy selectedAxisRefs must reference known axes or signature axes",
+            ));
+        }
+    }
+    for required_kind in required_store_kinds {
+        if !present_store_kinds.contains(required_kind) {
+            examples.push(generic_validation_example(
+                &policy.measurement_policy.policy_id,
+                required_kind,
+                "measurement policy must declare every ArchMapStore ref kind",
+            ));
+        }
+    }
+    push_blank(
+        &mut examples,
+        "measurementPolicy.distanceKind",
+        &policy.measurement_policy.distance_kind,
+    );
+    push_blank(
+        &mut examples,
+        "measurementPolicy.weightPolicy",
+        &policy.measurement_policy.weight_policy,
+    );
+    push_blank(
+        &mut examples,
+        "measurementPolicy.coveragePolicy",
+        &policy.measurement_policy.coverage_policy,
+    );
+    push_blank(
+        &mut examples,
+        "measurementPolicy.measurementBoundary",
+        &policy.measurement_policy.measurement_boundary,
+    );
+    if policy.measurement_policy.non_conclusions.is_empty()
+        || has_blank(&policy.measurement_policy.non_conclusions)
+    {
+        examples.push(generic_validation_example(
+            &policy.measurement_policy.policy_id,
+            "nonConclusions",
+            "measurement policy must keep non-conclusions explicit",
+        ));
+    }
+
+    check_from_examples(
+        "law-policy-monodromy-measurement-policy",
+        "LawPolicy declares selected axes, distance, weight, coverage, and ArchMapStore ref kinds for monodromy readings",
+        examples,
+        "fail",
+    )
 }
 
 fn check_schema_version(policy: &LawPolicyDocumentV0) -> ValidationCheck {
@@ -857,6 +981,31 @@ mod tests {
         assert!(id_check.examples.iter().any(|example| {
             example.source.as_deref() == Some("coverageRequirements[].coverageRequirementId")
         }));
+    }
+
+    #[test]
+    fn invalid_measurement_policy_fails() {
+        let mut policy = static_law_policy();
+        policy.measurement_policy.selected_axis_refs = vec!["axis:missing".to_string()];
+        policy.measurement_policy.arch_map_store_ref_kinds = vec!["archmap-delta".to_string()];
+
+        let report = validate_law_policy_report(&policy, "bad-law-policy.json");
+
+        assert_eq!(report.summary.result, "fail");
+        assert!(report.checks.iter().any(|check| {
+            check.id == "law-policy-monodromy-measurement-policy" && check.result == "fail"
+        }));
+    }
+
+    #[test]
+    fn unknown_top_level_law_policy_field_is_rejected() {
+        let mut value = serde_json::to_value(static_law_policy()).expect("policy serializes");
+        value["unexpectedField"] = serde_json::json!("unknown");
+
+        let error = serde_json::from_value::<LawPolicyDocumentV0>(value)
+            .expect_err("unknown top-level fields must be rejected");
+
+        assert!(error.to_string().contains("unknown field"));
     }
 
     #[test]

@@ -11,7 +11,8 @@ ArchMap
 
 InterpretationProfile
   selects laws, witness rules, molecule patterns, obstruction definitions,
-  signature axes, coverage requirements, and exactness assumptions.
+  signature axes, monodromy measurement policy, coverage requirements, and
+  exactness assumptions.
 
 ArchSig
   reads ArchMap + InterpretationProfile and computes the AAT analysis packet.
@@ -24,8 +25,8 @@ ArchMapDelta / ArchMapCommit / ArchMapSnapshot / ArchMapIndex
   record observation history and lookup structure.
 
 InterpretationProfile
-  selects the laws, axes, coverage, and exactness assumptions used to read that
-  history.
+  selects the laws, axes, distance kind, weight policy, coverage policy, and
+  exactness assumptions used to read that history.
 ```
 
 Raw source diffs may help an adapter choose source refs, but they do not select
@@ -47,6 +48,7 @@ The implemented schema records:
 - `moleculePatterns`
 - `obstructionCircuitDefinitions`
 - `signatureAxisDefinitions`
+- `measurementPolicy`
 - `exactnessAssumptions`
 - `coverageRequirements`
 - `excludedReadings`
@@ -56,7 +58,24 @@ The implemented schema records:
 
 Profile validation checks schema support, identity, uniqueness,
 cross-reference integrity, witness / obstruction boundaries, coverage
-requirements, exactness assumptions, and required non-conclusions.
+requirements, exactness assumptions, the monodromy measurement policy surface,
+and required non-conclusions.
+
+`measurementPolicy` fixes the ArchSig reading policy for the current
+monodromy / boundary holonomy family. It records:
+
+- `selectedAxisRefs`
+- `distanceKind`
+- `weightPolicy`
+- `coveragePolicy`
+- `archMapStoreRefKinds`
+- `measurementBoundary`
+- `exactnessAssumptionRefs`
+- `nonConclusions`
+
+The required `archMapStoreRefKinds` are `archmap-delta`, `archmap-commit`,
+`archmap-snapshot`, and `archmap-index`. Raw diffs may scope changed source
+refs, but they do not choose axes, distance, weight, or coverage policy.
 
 Validation does not imply:
 

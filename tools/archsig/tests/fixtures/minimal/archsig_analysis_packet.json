@@ -20,6 +20,41 @@
     "schemaVersion": "law-policy-v0",
     "path": "tools/archsig/tests/fixtures/minimal/law_policy.json"
   },
+  "archMapStoreRefs": {
+    "refSetId": "archmap-store-refs:fixture-archmap-atom-observation",
+    "archMapRef": "fixture-archmap-atom-observation",
+    "deltaRef": {
+      "artifactId": "archmap-delta:fixture-archmap-atom-observation:current",
+      "artifactKind": "archmap-delta",
+      "schemaVersion": "archmap-delta-v0"
+    },
+    "commitRef": {
+      "artifactId": "archmap-commit:fixture-archmap-atom-observation:current",
+      "artifactKind": "archmap-commit",
+      "schemaVersion": "archmap-commit-v0"
+    },
+    "snapshotRef": {
+      "artifactId": "archmap-snapshot:fixture-archmap-atom-observation:current",
+      "artifactKind": "archmap-snapshot",
+      "schemaVersion": "archmap-snapshot-v0"
+    },
+    "indexRef": {
+      "artifactId": "archmap-index:fixture-archmap-atom-observation:current",
+      "artifactKind": "archmap-index",
+      "schemaVersion": "archmap-index-v0"
+    },
+    "rawDiffBoundary": "raw diffs may scope review, but ArchSig semantic readings use ArchMapStore delta / commit / snapshot / index refs",
+    "compactionBoundary": "snapshot and index compaction may lose per-change granularity; compaction loss remains explicit evidence boundary",
+    "nonConclusions": [
+      "ArchSig analysis packet is not a Lean theorem proof",
+      "ArchSig analysis packet is not global architecture truth",
+      "ArchSig analysis packet does not prove source extraction completeness",
+      "signature axes are law-policy-relative, not universal quality scores",
+      "flatness reading is blocked by coverage gaps and exactness assumptions",
+      "repair operation candidates are not automatic safe refactorings",
+      "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+    ]
+  },
   "architectureState": {
     "stateId": "architecture-state:archmap-fixture-repo",
     "reading": "archmap-fixture-repo is represented as 4 atom observations, 1 molecules, 1 semantic observations, and 1 preserved observation gaps",
@@ -2537,6 +2572,71 @@
       ]
     }
   ],
+  "monodromyReadingFamily": {
+    "readingFamilyId": "monodromy-reading-family:measurement-policy-monodromy-boundary-holonomy",
+    "status": "schemaFoundationOnly",
+    "archMapStoreRefSetRef": "archmap-store-refs:fixture-archmap-atom-observation",
+    "selectedAxisRefs": [
+      "axis:layer-violation",
+      "axis:semantic-inconsistency"
+    ],
+    "distanceKind": "weighted-axis-l1",
+    "weightPolicy": "unit weights until repo-specific calibration is declared in a future policy",
+    "coveragePolicy": "measure only selected axes with declared coverage; missing coverage remains blocked, not zero",
+    "operationSquareCandidateRefs": [
+      "path:semantic-operation-flow",
+      "diagram:obstruction-filling"
+    ],
+    "pathContinuationTraceRefs": [
+      "path-signature-trajectory:operation-delta-repair-obstruction-semantic-contract-mismatch-computed"
+    ],
+    "axisWiseDefectRefs": [],
+    "aggregateReadingKind": "ami-precondition-surface",
+    "readingBoundary": "records the packet shape for axis-wise defect and AMI readings; concrete defect valuation is introduced by later issues",
+    "evidenceBoundary": "monodromy is measured over ArchMapStore refs and selected LawPolicy axes, not over raw source diffs",
+    "nonConclusions": [
+      "ArchSig analysis packet is not a Lean theorem proof",
+      "ArchSig analysis packet is not global architecture truth",
+      "ArchSig analysis packet does not prove source extraction completeness",
+      "signature axes are law-policy-relative, not universal quality scores",
+      "flatness reading is blocked by coverage gaps and exactness assumptions",
+      "repair operation candidates are not automatic safe refactorings",
+      "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+    ]
+  },
+  "boundaryHolonomyReadingFamily": {
+    "readingFamilyId": "boundary-holonomy-reading-family:measurement-policy-monodromy-boundary-holonomy",
+    "status": "schemaFoundationOnly",
+    "archMapStoreRefSetRef": "archmap-store-refs:fixture-archmap-atom-observation",
+    "selectedAxisRefs": [
+      "axis:layer-violation",
+      "axis:semantic-inconsistency"
+    ],
+    "distanceKind": "weighted-axis-l1",
+    "weightPolicy": "unit weights until repo-specific calibration is declared in a future policy",
+    "coveragePolicy": "measure only selected axes with declared coverage; missing coverage remains blocked, not zero",
+    "nonzeroMonodromyWitnessRefs": [
+      "homotopy-order-sensitivity:selected-operations"
+    ],
+    "featureBoundaryResidualRefs": [
+      "feature-extension-formula:fixture-archmap-atom-observation"
+    ],
+    "extensionDiagnosisRefs": [
+      "split-readiness:molecule-user-request-responsibility"
+    ],
+    "attributionBoundary": "multi-label attribution can name feature, boundary, law, and coverage contributors without claiming a single cause",
+    "readingBoundary": "records the packet shape for boundary residual and feature-extension diagnosis; concrete attribution is introduced by later issues",
+    "evidenceBoundary": "boundary holonomy readings use ArchMapStore refs and LawPolicy axes; raw diff hunks remain scoping hints only",
+    "nonConclusions": [
+      "ArchSig analysis packet is not a Lean theorem proof",
+      "ArchSig analysis packet is not global architecture truth",
+      "ArchSig analysis packet does not prove source extraction completeness",
+      "signature axes are law-policy-relative, not universal quality scores",
+      "flatness reading is blocked by coverage gaps and exactness assumptions",
+      "repair operation candidates are not automatic safe refactorings",
+      "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+    ]
+  },
   "representationStrengthReadings": [
     {
       "readingId": "representation-strength:analytic-weighted-adjacency",

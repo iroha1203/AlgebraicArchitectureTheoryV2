@@ -1323,6 +1323,29 @@ fn assert_north_star_packet_surfaces(json: &Value) {
         "current-state/evolution boundary must separate ArchSig and FieldSig responsibilities"
     );
     assert!(
+        json["archMapStoreRefs"]["deltaRef"]["artifactKind"] == "archmap-delta"
+            && json["archMapStoreRefs"]["commitRef"]["artifactKind"] == "archmap-commit"
+            && json["archMapStoreRefs"]["snapshotRef"]["artifactKind"] == "archmap-snapshot"
+            && json["archMapStoreRefs"]["indexRef"]["artifactKind"] == "archmap-index"
+            && json["archMapStoreRefs"]["rawDiffBoundary"]
+                .as_str()
+                .is_some_and(|boundary| boundary.contains("raw diffs")),
+        "ArchMapStore refs must expose delta / commit / snapshot / index and raw diff boundary"
+    );
+    for family in ["monodromyReadingFamily", "boundaryHolonomyReadingFamily"] {
+        assert!(
+            json[family]["archMapStoreRefSetRef"] == json["archMapStoreRefs"]["refSetId"]
+                && json[family]["selectedAxisRefs"]
+                    .as_array()
+                    .is_some_and(|items| !items.is_empty())
+                && json[family]["distanceKind"].as_str().is_some()
+                && json[family]["weightPolicy"].as_str().is_some()
+                && json[family]["coveragePolicy"].as_str().is_some()
+                && json[family]["evidenceBoundary"].as_str().is_some(),
+            "{family} must connect to ArchMapStore refs and carry measurement policy"
+        );
+    }
+    assert!(
         json["llmInterpretationPacket"]["structuralReadingReviewSummary"]
             .as_array()
             .is_some_and(|items| !items.is_empty())

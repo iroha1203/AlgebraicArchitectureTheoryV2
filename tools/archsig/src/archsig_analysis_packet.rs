@@ -8,12 +8,13 @@ use crate::{
     ArchMapSourceRef, ArchSigAatConceptSurfaceV0, ArchSigAnalysisArtifactRefV0,
     ArchSigAnalysisPacketV0, ArchSigAnalysisPacketValidationInputV0,
     ArchSigAnalysisPacketValidationReportV0, ArchSigAnalysisPacketValidationSummaryV0,
-    ArchSigAnalyticRepresentationV0, ArchSigArchitectureObjectProjectionV0,
-    ArchSigArchitectureStateV0, ArchSigAtomCompatibilityConflictV0,
-    ArchSigAtomCompatibilityReadingV0, ArchSigAtomConfigurationSummaryV0,
-    ArchSigAtomSupportAxisReadingV0, ArchSigAxisExcursionV0, ArchSigAxisForgettingRiskReadingV0,
-    ArchSigAxisRestrictionCountV0, ArchSigBoundaryPreparationRankV0, ArchSigBoundedJudgementV0,
-    ArchSigBridgeAtomFamilyReadingV0, ArchSigBridgeEdgeBreakdownV0,
+    ArchSigAnalyticRepresentationV0, ArchSigArchMapStoreRefsV0,
+    ArchSigArchitectureObjectProjectionV0, ArchSigArchitectureStateV0,
+    ArchSigAtomCompatibilityConflictV0, ArchSigAtomCompatibilityReadingV0,
+    ArchSigAtomConfigurationSummaryV0, ArchSigAtomSupportAxisReadingV0, ArchSigAxisExcursionV0,
+    ArchSigAxisForgettingRiskReadingV0, ArchSigAxisRestrictionCountV0,
+    ArchSigBoundaryHolonomyReadingFamilyV0, ArchSigBoundaryPreparationRankV0,
+    ArchSigBoundedJudgementV0, ArchSigBridgeAtomFamilyReadingV0, ArchSigBridgeEdgeBreakdownV0,
     ArchSigBridgeSplitObstructionTransferReadingV0, ArchSigChangeImpactReadingV0,
     ArchSigCouplingCohesionReadingV0, ArchSigCoverageStatusV0,
     ArchSigCurrentStateEvolutionBoundaryV0, ArchSigDesignPressureReadingV0,
@@ -24,7 +25,8 @@ use crate::{
     ArchSigHomotopyOrderSensitivityReadingV0, ArchSigInvariantFamilyReadingV0,
     ArchSigLawUniverseCoverageReadingV0, ArchSigLawUniverseReadingV0, ArchSigLayerSplitV0,
     ArchSigLlmInterpretationPacketV0, ArchSigLocalCurvatureDiagramReadingV0,
-    ArchSigMoleculeReadingV0, ArchSigObservationProjectionReadingV0, ArchSigObstructionCircuitV0,
+    ArchSigMoleculeReadingV0, ArchSigMonodromyReadingFamilyV0,
+    ArchSigObservationProjectionReadingV0, ArchSigObstructionCircuitV0,
     ArchSigOperationCalculusLawReadingV0, ArchSigOperationDeltaReadingV0,
     ArchSigOperationInvariantGaloisReadingV0, ArchSigPathHomotopyDiagramReadingV0,
     ArchSigPathSignatureTrajectoryReadingV0, ArchSigRepairAxisDeltaReadingV0,
@@ -80,6 +82,7 @@ pub fn build_archsig_analysis_packet(
         &law_policy.schema_version,
         law_policy_path,
     );
+    let arch_map_store_refs = build_arch_map_store_refs(archmap);
     let molecule_readings = build_molecule_readings(archmap, law_policy);
     let obstruction_circuits = build_obstruction_circuits(archmap, law_policy, &molecule_readings);
     let signature_axes = build_signature_axes(archmap, law_policy, &obstruction_circuits);
@@ -183,6 +186,19 @@ pub fn build_archsig_analysis_packet(
         );
     let bridge_split_obstruction_transfer_readings =
         build_bridge_split_obstruction_transfer_readings(&split_readiness_readings);
+    let monodromy_reading_family = build_monodromy_reading_family(
+        law_policy,
+        &arch_map_store_refs,
+        &path_homotopy_diagram_readings,
+        &path_signature_trajectory_readings,
+    );
+    let boundary_holonomy_reading_family = build_boundary_holonomy_reading_family(
+        law_policy,
+        &arch_map_store_refs,
+        &homotopy_order_sensitivity_readings,
+        &feature_extension_formula_readings,
+        &split_readiness_readings,
+    );
     let structural_reading_review_surface = build_structural_reading_review_surface(
         &representation_strength_readings,
         &local_curvature_diagram_readings,
@@ -282,6 +298,7 @@ pub fn build_archsig_analysis_packet(
             &law_policy.schema_version,
             law_policy_path,
         ),
+        arch_map_store_refs,
         architecture_state,
         design_pressure,
         change_impact,
@@ -311,6 +328,8 @@ pub fn build_archsig_analysis_packet(
         axis_forgetting_risk_readings,
         signature_trajectory_homotopy_refutation_readings,
         bridge_split_obstruction_transfer_readings,
+        monodromy_reading_family,
+        boundary_holonomy_reading_family,
         representation_strength_readings,
         local_curvature_diagram_readings,
         three_layer_flatness_readings,
@@ -375,6 +394,125 @@ fn build_atom_configuration_summary(
                 .to_string(),
         coverage_summary: coverage_summary(archmap),
         source_refs,
+        non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
+    }
+}
+
+fn build_arch_map_store_refs(archmap: &ArchMapDocumentV0) -> ArchSigArchMapStoreRefsV0 {
+    let base_id = stable_id(&archmap.map_id);
+    ArchSigArchMapStoreRefsV0 {
+        ref_set_id: format!("archmap-store-refs:{base_id}"),
+        arch_map_ref: archmap.map_id.clone(),
+        delta_ref: artifact_ref(
+            &format!("archmap-delta:{base_id}:current"),
+            "archmap-delta",
+            "archmap-delta-v0",
+            None,
+        ),
+        commit_ref: artifact_ref(
+            &format!("archmap-commit:{base_id}:current"),
+            "archmap-commit",
+            "archmap-commit-v0",
+            None,
+        ),
+        snapshot_ref: artifact_ref(
+            &format!("archmap-snapshot:{base_id}:current"),
+            "archmap-snapshot",
+            "archmap-snapshot-v0",
+            None,
+        ),
+        index_ref: artifact_ref(
+            &format!("archmap-index:{base_id}:current"),
+            "archmap-index",
+            "archmap-index-v0",
+            None,
+        ),
+        raw_diff_boundary:
+            "raw diffs may scope review, but ArchSig semantic readings use ArchMapStore delta / commit / snapshot / index refs"
+                .to_string(),
+        compaction_boundary:
+            "snapshot and index compaction may lose per-change granularity; compaction loss remains explicit evidence boundary"
+                .to_string(),
+        non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
+    }
+}
+
+fn build_monodromy_reading_family(
+    law_policy: &LawPolicyDocumentV0,
+    arch_map_store_refs: &ArchSigArchMapStoreRefsV0,
+    path_homotopy_diagram_readings: &[ArchSigPathHomotopyDiagramReadingV0],
+    path_signature_trajectory_readings: &[ArchSigPathSignatureTrajectoryReadingV0],
+) -> ArchSigMonodromyReadingFamilyV0 {
+    ArchSigMonodromyReadingFamilyV0 {
+        reading_family_id: format!(
+            "monodromy-reading-family:{}",
+            stable_id(&law_policy.measurement_policy.policy_id)
+        ),
+        status: "schemaFoundationOnly".to_string(),
+        arch_map_store_ref_set_ref: arch_map_store_refs.ref_set_id.clone(),
+        selected_axis_refs: law_policy.measurement_policy.selected_axis_refs.clone(),
+        distance_kind: law_policy.measurement_policy.distance_kind.clone(),
+        weight_policy: law_policy.measurement_policy.weight_policy.clone(),
+        coverage_policy: law_policy.measurement_policy.coverage_policy.clone(),
+        operation_square_candidate_refs: path_homotopy_diagram_readings
+            .iter()
+            .map(|reading| reading.reading_id.clone())
+            .collect(),
+        path_continuation_trace_refs: path_signature_trajectory_readings
+            .iter()
+            .map(|reading| reading.reading_id.clone())
+            .collect(),
+        axis_wise_defect_refs: Vec::new(),
+        aggregate_reading_kind: "ami-precondition-surface".to_string(),
+        reading_boundary:
+            "records the packet shape for axis-wise defect and AMI readings; concrete defect valuation is introduced by later issues"
+                .to_string(),
+        evidence_boundary:
+            "monodromy is measured over ArchMapStore refs and selected LawPolicy axes, not over raw source diffs"
+                .to_string(),
+        non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
+    }
+}
+
+fn build_boundary_holonomy_reading_family(
+    law_policy: &LawPolicyDocumentV0,
+    arch_map_store_refs: &ArchSigArchMapStoreRefsV0,
+    homotopy_order_sensitivity_readings: &[ArchSigHomotopyOrderSensitivityReadingV0],
+    feature_extension_formula_readings: &[ArchSigFeatureExtensionFormulaReadingV0],
+    split_readiness_readings: &[ArchSigSplitReadinessReadingV0],
+) -> ArchSigBoundaryHolonomyReadingFamilyV0 {
+    ArchSigBoundaryHolonomyReadingFamilyV0 {
+        reading_family_id: format!(
+            "boundary-holonomy-reading-family:{}",
+            stable_id(&law_policy.measurement_policy.policy_id)
+        ),
+        status: "schemaFoundationOnly".to_string(),
+        arch_map_store_ref_set_ref: arch_map_store_refs.ref_set_id.clone(),
+        selected_axis_refs: law_policy.measurement_policy.selected_axis_refs.clone(),
+        distance_kind: law_policy.measurement_policy.distance_kind.clone(),
+        weight_policy: law_policy.measurement_policy.weight_policy.clone(),
+        coverage_policy: law_policy.measurement_policy.coverage_policy.clone(),
+        nonzero_monodromy_witness_refs: homotopy_order_sensitivity_readings
+            .iter()
+            .map(|reading| reading.reading_id.clone())
+            .collect(),
+        feature_boundary_residual_refs: feature_extension_formula_readings
+            .iter()
+            .map(|reading| reading.reading_id.clone())
+            .collect(),
+        extension_diagnosis_refs: split_readiness_readings
+            .iter()
+            .map(|reading| reading.reading_id.clone())
+            .collect(),
+        attribution_boundary:
+            "multi-label attribution can name feature, boundary, law, and coverage contributors without claiming a single cause"
+                .to_string(),
+        reading_boundary:
+            "records the packet shape for boundary residual and feature-extension diagnosis; concrete attribution is introduced by later issues"
+                .to_string(),
+        evidence_boundary:
+            "boundary holonomy readings use ArchMapStore refs and LawPolicy axes; raw diff hunks remain scoping hints only"
+                .to_string(),
         non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
     }
 }
@@ -5969,6 +6107,7 @@ pub fn validate_archsig_analysis_packet_report(
         check_transfer_bridge_surface(packet),
         check_aat_structural_reading_surfaces(packet),
         check_current_state_evolution_boundary(packet),
+        check_monodromy_boundary_schema_foundation(packet),
         check_law_relative_analysis(packet),
         check_signature_and_flatness(packet),
         check_repair_candidates(packet),
@@ -7893,6 +8032,209 @@ fn check_current_state_evolution_boundary(packet: &ArchSigAnalysisPacketV0) -> V
     )
 }
 
+fn check_monodromy_boundary_schema_foundation(packet: &ArchSigAnalysisPacketV0) -> ValidationCheck {
+    let mut examples = Vec::new();
+    let store_refs = &packet.arch_map_store_refs;
+    let axis_refs = packet
+        .signature_axes
+        .iter()
+        .flat_map(|axis| [axis.signature_axis_id.as_str(), axis.axis_ref.as_str()])
+        .collect::<BTreeSet<_>>();
+
+    push_blank(
+        &mut examples,
+        "archMapStoreRefs.refSetId",
+        &store_refs.ref_set_id,
+    );
+    if store_refs.arch_map_ref != packet.arch_map_ref.artifact_id {
+        examples.push(generic_validation_example(
+            "archMapStoreRefs.archMapRef",
+            &store_refs.arch_map_ref,
+            "ArchMapStore refs must connect back to the packet ArchMap ref",
+        ));
+    }
+    for (field, artifact, kind, schema_version) in [
+        (
+            "deltaRef",
+            &store_refs.delta_ref,
+            "archmap-delta",
+            "archmap-delta-v0",
+        ),
+        (
+            "commitRef",
+            &store_refs.commit_ref,
+            "archmap-commit",
+            "archmap-commit-v0",
+        ),
+        (
+            "snapshotRef",
+            &store_refs.snapshot_ref,
+            "archmap-snapshot",
+            "archmap-snapshot-v0",
+        ),
+        (
+            "indexRef",
+            &store_refs.index_ref,
+            "archmap-index",
+            "archmap-index-v0",
+        ),
+    ] {
+        push_blank(
+            &mut examples,
+            &format!("archMapStoreRefs.{field}.artifactId"),
+            &artifact.artifact_id,
+        );
+        if artifact.artifact_kind != kind || artifact.schema_version != schema_version {
+            examples.push(generic_validation_example(
+                &format!("archMapStoreRefs.{field}"),
+                &format!("{}:{}", artifact.artifact_kind, artifact.schema_version),
+                "ArchMapStore refs must preserve delta / commit / snapshot / index schema kinds",
+            ));
+        }
+    }
+    push_blank(
+        &mut examples,
+        "archMapStoreRefs.rawDiffBoundary",
+        &store_refs.raw_diff_boundary,
+    );
+    push_blank(
+        &mut examples,
+        "archMapStoreRefs.compactionBoundary",
+        &store_refs.compaction_boundary,
+    );
+    if store_refs.non_conclusions.is_empty() || has_blank(&store_refs.non_conclusions) {
+        examples.push(generic_validation_example(
+            &store_refs.ref_set_id,
+            "nonConclusions",
+            "ArchMapStore refs must keep non-conclusions explicit",
+        ));
+    }
+
+    check_monodromy_family(
+        "monodromyReadingFamily",
+        &packet.monodromy_reading_family.reading_family_id,
+        &packet.monodromy_reading_family.status,
+        &packet.monodromy_reading_family.arch_map_store_ref_set_ref,
+        &packet.monodromy_reading_family.selected_axis_refs,
+        &packet.monodromy_reading_family.distance_kind,
+        &packet.monodromy_reading_family.weight_policy,
+        &packet.monodromy_reading_family.coverage_policy,
+        &packet.monodromy_reading_family.reading_boundary,
+        &packet.monodromy_reading_family.evidence_boundary,
+        &packet.monodromy_reading_family.non_conclusions,
+        &store_refs.ref_set_id,
+        &axis_refs,
+        &mut examples,
+    );
+    check_monodromy_family(
+        "boundaryHolonomyReadingFamily",
+        &packet.boundary_holonomy_reading_family.reading_family_id,
+        &packet.boundary_holonomy_reading_family.status,
+        &packet
+            .boundary_holonomy_reading_family
+            .arch_map_store_ref_set_ref,
+        &packet.boundary_holonomy_reading_family.selected_axis_refs,
+        &packet.boundary_holonomy_reading_family.distance_kind,
+        &packet.boundary_holonomy_reading_family.weight_policy,
+        &packet.boundary_holonomy_reading_family.coverage_policy,
+        &packet.boundary_holonomy_reading_family.reading_boundary,
+        &packet.boundary_holonomy_reading_family.evidence_boundary,
+        &packet.boundary_holonomy_reading_family.non_conclusions,
+        &store_refs.ref_set_id,
+        &axis_refs,
+        &mut examples,
+    );
+    push_blank(
+        &mut examples,
+        "monodromyReadingFamily.aggregateReadingKind",
+        &packet.monodromy_reading_family.aggregate_reading_kind,
+    );
+    push_blank(
+        &mut examples,
+        "boundaryHolonomyReadingFamily.attributionBoundary",
+        &packet.boundary_holonomy_reading_family.attribution_boundary,
+    );
+
+    check_from_examples(
+        "archsig-analysis-packet-monodromy-boundary-foundation",
+        "packet defines ArchMapStore refs and monodromy / boundary holonomy reading family policy surfaces",
+        examples,
+        "fail",
+    )
+}
+
+#[allow(clippy::too_many_arguments)]
+fn check_monodromy_family(
+    field: &str,
+    reading_family_id: &str,
+    status: &str,
+    arch_map_store_ref_set_ref: &str,
+    selected_axis_refs: &[String],
+    distance_kind: &str,
+    weight_policy: &str,
+    coverage_policy: &str,
+    reading_boundary: &str,
+    evidence_boundary: &str,
+    non_conclusions: &[String],
+    expected_ref_set_id: &str,
+    known_axis_refs: &BTreeSet<&str>,
+    examples: &mut Vec<ValidationExample>,
+) {
+    push_blank(
+        examples,
+        &format!("{field}.readingFamilyId"),
+        reading_family_id,
+    );
+    push_blank(examples, &format!("{field}.status"), status);
+    if arch_map_store_ref_set_ref != expected_ref_set_id {
+        examples.push(generic_validation_example(
+            reading_family_id,
+            arch_map_store_ref_set_ref,
+            "reading family must reference archMapStoreRefs.refSetId",
+        ));
+    }
+    if selected_axis_refs.is_empty() {
+        examples.push(generic_validation_example(
+            reading_family_id,
+            "selectedAxisRefs",
+            "reading family must retain selected measurement axes",
+        ));
+    }
+    for axis_ref in selected_axis_refs {
+        if !known_axis_refs.contains(axis_ref.as_str()) {
+            examples.push(generic_validation_example(
+                reading_family_id,
+                axis_ref,
+                "reading family selectedAxisRefs must resolve to packet signature axis refs",
+            ));
+        }
+    }
+    push_blank(examples, &format!("{field}.distanceKind"), distance_kind);
+    push_blank(examples, &format!("{field}.weightPolicy"), weight_policy);
+    push_blank(
+        examples,
+        &format!("{field}.coveragePolicy"),
+        coverage_policy,
+    );
+    push_blank(
+        examples,
+        &format!("{field}.readingBoundary"),
+        reading_boundary,
+    );
+    push_blank(
+        examples,
+        &format!("{field}.evidenceBoundary"),
+        evidence_boundary,
+    );
+    if non_conclusions.is_empty() || has_blank(non_conclusions) {
+        examples.push(generic_validation_example(
+            reading_family_id,
+            "nonConclusions",
+            "reading family must keep non-conclusions explicit",
+        ));
+    }
+}
+
 fn check_law_relative_analysis(packet: &ArchSigAnalysisPacketV0) -> ValidationCheck {
     let axis_ids = set(packet
         .signature_axes
@@ -8840,6 +9182,36 @@ mod tests {
     }
 
     #[test]
+    fn missing_required_monodromy_packet_field_is_rejected() {
+        let mut value =
+            serde_json::to_value(static_archsig_analysis_packet()).expect("packet serializes");
+        value
+            .as_object_mut()
+            .expect("packet is object")
+            .remove("monodromyReadingFamily");
+
+        let error = serde_json::from_value::<ArchSigAnalysisPacketV0>(value)
+            .expect_err("missing monodromy reading family must be rejected");
+
+        assert!(error.to_string().contains("missing field"));
+    }
+
+    #[test]
+    fn invalid_monodromy_schema_foundation_fails_validation() {
+        let mut packet = static_archsig_analysis_packet();
+        packet.arch_map_store_refs.delta_ref.artifact_kind = "raw-diff".to_string();
+        packet.monodromy_reading_family.selected_axis_refs = vec!["axis:missing".to_string()];
+
+        let report = validate_archsig_analysis_packet_report(&packet, "invalid.json");
+
+        assert_eq!(report.summary.result, "fail");
+        assert!(report.checks.iter().any(|check| {
+            check.id == "archsig-analysis-packet-monodromy-boundary-foundation"
+                && check.result == "fail"
+        }));
+    }
+
+    #[test]
     fn canonical_fixture_matches_static_analysis_packet() {
         let fixture: ArchSigAnalysisPacketV0 = serde_json::from_str(include_str!(
             "../tests/fixtures/minimal/archsig_analysis_packet.json"
@@ -8912,6 +9284,7 @@ mod tests {
         law_policy
             .signature_axis_definitions
             .retain(|axis| axis.law_ref == "law:layer-respecting");
+        law_policy.measurement_policy.selected_axis_refs = vec!["axis:layer-violation".to_string()];
 
         let packet = build_archsig_analysis_packet(&archmap, &law_policy, None, None);
         let report = validate_archsig_analysis_packet_report(&packet, "layer-only.json");

@@ -22,7 +22,8 @@ ArchSig Analysis Packet
   axes, path signature trajectories, homotopy / operation-order sensitivity,
   diagram fillability, bounded judgements, repair operation candidates,
   operation deltas, path / homotopy / diagram readings, child-level evidence
-  boundaries, and an LLM interpretation packet.
+  boundaries, ArchMapStore refs, monodromy / boundary holonomy reading family
+  policy surfaces, and an LLM interpretation packet.
 ```
 
 ## Responsibility
@@ -35,6 +36,7 @@ The implemented schema records:
 - `interpretationProfileRef`
 - `selectedLawPolicyRef`
 - `archMapRef`
+- `archMapStoreRefs`
 - `architectureState`
 - `designPressure`
 - `changeImpact`
@@ -64,6 +66,8 @@ The implemented schema records:
 - `axisForgettingRiskReadings`
 - `signatureTrajectoryHomotopyRefutationReadings`
 - `bridgeSplitObstructionTransferReadings`
+- `monodromyReadingFamily`
+- `boundaryHolonomyReadingFamily`
 - `representationStrengthReadings`
 - `localCurvatureDiagramReadings`
 - `threeLayerFlatnessReadings`
@@ -91,9 +95,10 @@ AAT concept coverage, bounded judgement statuses, analytic axes, workflow risk
 readings, spectral analysis readings, spectral mode readings, design principle
 readings, spectral drilldown readings, transfer bridge readings and bridge-edge
 source refs, v0.3.0 measurement expansion readings, AAT structural state
-readings, law-relative obstruction links, signature / flatness references,
-repair candidate guardrails, LLM interpretation notes, evidence boundary, and
-required non-conclusions.
+readings, ArchMapStore delta / commit / snapshot / index refs, monodromy /
+boundary holonomy reading family policy surfaces, law-relative obstruction
+links, signature / flatness references, repair candidate guardrails, LLM
+interpretation notes, evidence boundary, and required non-conclusions.
 Each obstruction circuit, signature axis reading, and repair operation candidate
 must carry its own `missingEvidence` and `excludedReadings`. Packet-level
 `excludedReadings` does not stand in for child-record evidence boundaries.
@@ -173,6 +178,17 @@ The builder:
   evidence; `ArchMapSnapshot` and `ArchMapIndex` support large-repository
   current-state inspection. Raw source diffs may narrow source refs, but they
   are not canonical semantic inputs to this packet.
+- `archMapStoreRefs` records the packet's canonical history substrate:
+  `archmap-delta-v0`, `archmap-commit-v0`, `archmap-snapshot-v0`, and
+  `archmap-index-v0`. It also records raw-diff and compaction boundaries so
+  review readers can distinguish change-local evidence from snapshot-level
+  current-state evidence.
+- `monodromyReadingFamily` and `boundaryHolonomyReadingFamily` are schema
+  foundation surfaces. They carry selected axes, distance kind, weight policy,
+  coverage policy, and the ArchMapStore ref set used by later operation-square,
+  axis-wise defect, AMI, boundary residual, and feature-extension attribution
+  readings. In this issue they define the packet shape and validation boundary;
+  later issues fill the concrete valuation fields.
 - axis-forgetting risk records when a coarse observation projection has
   forgotten selected axes or collapsed mixed-axis support. It blocks
   `ZeroReflecting` and `ObstructionReflecting` readings unless explicit axis
