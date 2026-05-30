@@ -8,6 +8,7 @@
 
 ## 文書の分担
 
+- [guideline.md](guideline.md): website 編集方針、claim boundary、path rule、preview / 検証を管理する。
 - [SITEMAP.md](SITEMAP.md): 公開 route、production `sitemap.xml`、`robots.txt` の対応を管理する。
 - [DESIGN.md](DESIGN.md): website の設計方針、読者導線、ページネーション、本文成熟度、source mapping を管理する。
 - [SFT_REWRITE_PLAN.md](SFT_REWRITE_PLAN.md): SFT website を既存 Part 構成から削除して三部構成で書き直すための複数セッション向け計画書。
