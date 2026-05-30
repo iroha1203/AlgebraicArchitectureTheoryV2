@@ -17,6 +17,14 @@ fn coupon_rounding_root() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/coupon_rounding")
 }
 
+fn acts_spectrum_root() -> PathBuf {
+    Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/acts_spectrum")
+}
+
+fn homotopy_report_root() -> PathBuf {
+    Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/homotopy_report")
+}
+
 fn inspection_root() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/inspection")
 }
@@ -109,6 +117,41 @@ fn cli_summarizes_archsig_analysis_packet() {
             .is_some_and(|readings| readings.len() <= 2)
     );
     assert!(
+        json["architectureSpectrum"]["hotspots"]
+            .as_array()
+            .is_some_and(|items| !items.is_empty() && items.len() <= 2),
+        "analysis-summary must expose bounded ArchitectureSpectrumReport hotspots"
+    );
+    assert!(
+        json["architectureSpectrum"]["recurrentObstructions"]
+            .as_array()
+            .is_some_and(|items| !items.is_empty() && items.len() <= 2),
+        "analysis-summary must expose recurrent obstruction entries"
+    );
+    assert!(
+        json["architectureSpectrum"]["measuredBoundary"]
+            .as_str()
+            .is_some_and(|boundary| boundary.contains("ArchSig curvature support")),
+        "analysis-summary must keep the ArchitectureSpectrumReport measured boundary"
+    );
+    assert!(
+        json["architectureSpectrum"]["recommendedReviewFocus"]
+            .as_array()
+            .is_some_and(|items| !items.is_empty()),
+        "analysis-summary must expose next review focus from ArchitectureSpectrumReport"
+    );
+    assert!(
+        json["architectureSpectrum"]["nonConclusions"]
+            .as_array()
+            .is_some_and(|items| {
+                items.iter().any(|item| {
+                    item.as_str()
+                        .is_some_and(|text| text.contains("single architecture quality score"))
+                })
+            }),
+        "analysis-summary must preserve ArchitectureSpectrumReport non-conclusions"
+    );
+    assert!(
         json["nonConclusions"]
             .as_array()
             .is_some_and(|non_conclusions| !non_conclusions.is_empty())
@@ -193,6 +236,30 @@ fn cli_codebase_inspection_reads_snapshot_index_surface() {
         json["coverageExactnessBoundary"]["coverageGaps"]
             .as_array()
             .is_some_and(|items| !items.is_empty())
+    );
+    assert!(
+        json["currentStateDiagnosis"]["architectureSpectrum"]["hotspots"]
+            .as_array()
+            .is_some_and(|items| !items.is_empty()),
+        "codebase-inspection must expose ArchitectureSpectrumReport hotspots"
+    );
+    assert!(
+        json["currentStateDiagnosis"]["architectureSpectrum"]["recurrentObstructions"]
+            .as_array()
+            .is_some_and(|items| !items.is_empty()),
+        "codebase-inspection must expose recurrent obstruction entries"
+    );
+    assert!(
+        json["currentStateDiagnosis"]["architectureSpectrum"]["measuredBoundary"]
+            .as_str()
+            .is_some_and(|boundary| boundary.contains("selected LawPolicy")),
+        "codebase-inspection must keep the spectrum measured boundary"
+    );
+    assert!(
+        json["currentStateDiagnosis"]["architectureSpectrum"]["recommendedReviewFocus"]
+            .as_array()
+            .is_some_and(|items| !items.is_empty()),
+        "codebase-inspection must expose next review focus"
     );
     assert!(
         json["surfaceBoundary"]["prReviewMode"]
@@ -556,6 +623,275 @@ fn coupon_tax_rounding_fixture_locks_semantic_monodromy() {
     );
     assert!(golden.to_string().contains("PaymentAmount"));
     assert!(golden.to_string().contains("ReceiptAmount"));
+}
+
+#[test]
+fn acts_spectrum_fixture_manifest_locks_golden_validation() {
+    let fixtures_root = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures");
+    let manifest = read_json(&acts_spectrum_root().join("manifest.json"));
+    let cases = manifest["cases"]
+        .as_array()
+        .expect("ACTS fixture manifest has cases");
+
+    assert!(
+        manifest["nonConclusions"].as_array().is_some_and(|items| {
+            items.iter().any(|item| {
+                item.as_str()
+                    .is_some_and(|text| text.contains("not architecture lawfulness proof"))
+            })
+        }),
+        "ACTS fixture manifest must preserve fixture non-conclusions"
+    );
+
+    for case in cases {
+        let case_id = case["caseId"].as_str().expect("case id is present");
+        let packet = read_json(
+            &fixtures_root.join(case["packetPath"].as_str().expect("packet path is present")),
+        );
+        let validation = read_json(
+            &fixtures_root.join(
+                case["validationPath"]
+                    .as_str()
+                    .expect("validation path is present"),
+            ),
+        );
+
+        assert_eq!(
+            validation["summary"]["result"], "pass",
+            "{case_id} validation output must pass"
+        );
+        assert!(
+            validation["checks"]
+                .as_array()
+                .expect("validation checks are array")
+                .iter()
+                .any(|check| {
+                    check["id"] == "archsig-analysis-packet-architecture-spectrum-report-surface"
+                        && check["result"] == "pass"
+                }),
+            "{case_id} must lock ArchitectureSpectrumReport validation"
+        );
+
+        let report = &packet["architectureSpectrumReport"];
+        assert!(
+            report["nonConclusions"].as_array().is_some_and(|items| {
+                items.iter().any(|item| {
+                    item.as_str()
+                        .is_some_and(|text| text.contains("single architecture quality score"))
+                })
+            }),
+            "{case_id} must preserve report-level non-conclusions"
+        );
+
+        match case_id {
+            "zero-curvature-support" => {
+                let axis_ref = case["axisRef"].as_str().expect("axis ref is present");
+                let expected = case["expectedCurvatureValue"]
+                    .as_i64()
+                    .expect("expected curvature value is present");
+                let supports = packet["curvatureSupportReadings"][0]["witnessSupports"]
+                    .as_array()
+                    .expect("witness supports are array");
+                assert!(
+                    supports.iter().any(|support| {
+                        support["selectedAxisRef"] == axis_ref
+                            && support["curvatureValue"] == expected
+                            && support["missingEvidence"]
+                                .as_array()
+                                .is_some_and(|items| !items.is_empty())
+                    }),
+                    "zero curvature support must remain distinct from missing evidence"
+                );
+            }
+            "nonzero-semantic-curvature" => {
+                let axis_ref = case["axisRef"].as_str().expect("axis ref is present");
+                let minimum = case["minimumCurvatureValue"]
+                    .as_i64()
+                    .expect("minimum curvature value is present");
+                assert!(
+                    report["topHotspots"]
+                        .as_array()
+                        .expect("top hotspots are array")
+                        .iter()
+                        .any(|hotspot| {
+                            hotspot["axisRef"] == axis_ref
+                                && hotspot["curvatureValue"]
+                                    .as_i64()
+                                    .is_some_and(|value| value >= minimum)
+                                && hotspot["witnessRefs"]
+                                    .as_array()
+                                    .is_some_and(|refs| !refs.is_empty())
+                        }),
+                    "nonzero semantic curvature must be visible as hotspot"
+                );
+            }
+            "transfer-cycle" => {
+                assert!(
+                    packet["curvatureTransferReadings"][0]["transferEdges"]
+                        .as_array()
+                        .expect("transfer edges are array")
+                        .iter()
+                        .any(|edge| {
+                            edge["sourceSupportRef"] == edge["targetSupportRef"]
+                                && edge["weight"].as_i64().is_some_and(|value| value > 0)
+                        }),
+                    "transfer fixture must contain a positive closed transfer edge"
+                );
+                assert!(
+                    report["recurrentObstructions"]
+                        .as_array()
+                        .expect("recurrent obstructions are array")
+                        .iter()
+                        .any(|mode| {
+                            mode["transferEdgeRefs"]
+                                .as_array()
+                                .is_some_and(|refs| !refs.is_empty())
+                                && mode["spectralRadiusReading"]
+                                    .as_str()
+                                    .is_some_and(|text| text.contains("rho(T^kappa) proxy"))
+                        }),
+                    "transfer cycle must surface as recurrent obstruction support"
+                );
+            }
+            "coverage-gap-boundary" => {
+                let required_text = case["requiredText"]
+                    .as_str()
+                    .expect("required text is present");
+                assert!(
+                    report["coverageGaps"]
+                        .as_array()
+                        .expect("coverage gaps are array")
+                        .iter()
+                        .any(|gap| gap
+                            .as_str()
+                            .is_some_and(|text| text.contains(required_text))),
+                    "coverage gap must remain explicit in ArchitectureSpectrumReport"
+                );
+            }
+            "coupon-tax-rounding-acts" => {
+                let required_text = case["requiredText"]
+                    .as_str()
+                    .expect("required text is present");
+                assert!(
+                    packet.to_string().contains(required_text),
+                    "coupon/tax/rounding fixture must keep payment trace gap"
+                );
+                assert!(
+                    report["topHotspots"]
+                        .as_array()
+                        .is_some_and(|items| !items.is_empty())
+                        && report["recurrentObstructions"]
+                            .as_array()
+                            .is_some_and(|items| !items.is_empty()),
+                    "coupon/tax/rounding fixture must expose ACTS report surfaces"
+                );
+            }
+            other => panic!("unhandled ACTS fixture case {other}"),
+        }
+    }
+}
+
+#[test]
+fn homotopy_report_fixture_manifest_locks_golden_validation() {
+    let root = homotopy_report_root();
+    let manifest = read_json(&root.join("manifest.json"));
+    let packet = read_json(&root.join("archsig_analysis_packet.json"));
+    let validation = read_json(&root.join("validation.json"));
+    assert_eq!(
+        manifest["schemaVersion"],
+        "archsig-homotopy-report-fixture-manifest-v0"
+    );
+    assert_eq!(validation["summary"]["result"], "pass");
+    assert!(
+        validation["checks"]
+            .as_array()
+            .expect("validation checks are array")
+            .iter()
+            .any(|check| {
+                check["id"] == "archsig-analysis-packet-architecture-homotopy-report-surface"
+                    && check["result"] == "pass"
+            }),
+        "HomotopyReport fixture must lock ArchitectureHomotopyReport validation"
+    );
+
+    let report = &packet["architectureHomotopyReport"];
+    assert!(
+        report["nonConclusions"].as_array().is_some_and(|items| {
+            items.iter().any(|item| {
+                item.as_str()
+                    .is_some_and(|text| text.contains("single architecture quality score"))
+            })
+        }),
+        "HomotopyReport fixture must preserve report-level non-conclusions"
+    );
+
+    for case in manifest["cases"]
+        .as_array()
+        .expect("manifest cases are array")
+    {
+        let case_id = case["caseId"].as_str().expect("case id is present");
+        let path_rule_ref = case["pathRuleRef"]
+            .as_str()
+            .expect("path rule ref is present");
+        let loop_ref = loop_ref_for_path_rule(&packet, path_rule_ref);
+        let stokes = packet["stokesStyleReadings"]
+            .as_array()
+            .expect("stokes readings are array")
+            .iter()
+            .find(|reading| reading["loopRef"] == loop_ref)
+            .unwrap_or_else(|| panic!("missing Stokes reading for {case_id}"));
+        let holonomy = packet["homotopyHolonomyReadings"]
+            .as_array()
+            .expect("holonomy readings are array")
+            .iter()
+            .find(|reading| reading["loopRef"] == loop_ref)
+            .unwrap_or_else(|| panic!("missing holonomy reading for {case_id}"));
+
+        if let Some(expected) = case["expectedHolonomyValue"].as_i64() {
+            assert_eq!(
+                holonomy["value"], expected,
+                "{case_id} must lock expected holonomy value"
+            );
+        }
+        if let Some(minimum) = case["minimumHolonomyValue"].as_i64() {
+            assert!(
+                holonomy["value"]
+                    .as_i64()
+                    .is_some_and(|value| value >= minimum),
+                "{case_id} must expose nonzero holonomy"
+            );
+        }
+        if let Some(expected_status) = case["expectedStokesStatus"].as_str() {
+            assert_eq!(
+                stokes["status"], expected_status,
+                "{case_id} must lock Stokes status"
+            );
+        }
+        if let Some(required_missing) = case["requiredMissingEvidence"].as_str() {
+            assert!(
+                holonomy["missingFillerRefs"]
+                    .as_array()
+                    .expect("missing filler refs are array")
+                    .iter()
+                    .any(|item| item.as_str() == Some(required_missing)),
+                "{case_id} must keep missing filler evidence"
+            );
+            assert!(
+                report["unfilledLoops"]
+                    .as_array()
+                    .expect("unfilled loops are array")
+                    .iter()
+                    .any(|item| item.as_str() == Some(loop_ref)),
+                "{case_id} must surface as an unfilled loop"
+            );
+        }
+        if let Some(required_text) = case["requiredText"].as_str() {
+            assert!(
+                packet.to_string().contains(required_text),
+                "{case_id} must keep required fixture text {required_text}"
+            );
+        }
+    }
 }
 
 #[test]
@@ -996,6 +1332,25 @@ fn has_check_result(json: &Value, id: &str, result: &str) -> bool {
     })
 }
 
+fn loop_ref_for_path_rule<'a>(packet: &'a Value, path_rule_ref: &str) -> &'a str {
+    let path_pair = packet["pathPairCandidates"]
+        .as_array()
+        .expect("path pair candidates are array")
+        .iter()
+        .find(|candidate| candidate["pPathRef"].as_str() == Some(path_rule_ref))
+        .unwrap_or_else(|| panic!("missing path pair for {path_rule_ref}"));
+    let path_pair_ref = path_pair["candidateId"]
+        .as_str()
+        .expect("path pair candidate id is present");
+    packet["loopCandidates"]
+        .as_array()
+        .expect("loop candidates are array")
+        .iter()
+        .find(|candidate| candidate["pathPairRef"].as_str() == Some(path_pair_ref))
+        .and_then(|candidate| candidate["loopId"].as_str())
+        .unwrap_or_else(|| panic!("missing loop candidate for {path_rule_ref}"))
+}
+
 fn assert_north_star_packet_surfaces(json: &Value) {
     for concept in [
         "Atom",
@@ -1262,6 +1617,115 @@ fn assert_north_star_packet_surfaces(json: &Value) {
                 })
         }),
         "curvature support readings must keep unmeasured support separate from measured zero"
+    );
+    let curvature_transfer = json["curvatureTransferReadings"]
+        .as_array()
+        .expect("curvature transfer readings are array");
+    assert!(
+        !curvature_transfer.is_empty(),
+        "North Star packet must expose curvature transfer readings"
+    );
+    assert!(
+        curvature_transfer.iter().all(|entry| {
+            entry["profileRef"].as_str().is_some()
+                && entry["transferOperator"]["nonzeroEdgeCount"]
+                    .as_u64()
+                    .is_some()
+                && entry["transferOperator"]["entryRule"].as_str().is_some()
+                && entry["transferEdges"]
+                    .as_array()
+                    .is_some_and(|items| !items.is_empty())
+                && entry["recurrentObstructionModes"]
+                    .as_array()
+                    .is_some_and(|items| !items.is_empty())
+                && entry["spectralRadiusReading"]["value"].as_str().is_some()
+                && entry["evidenceBoundary"].as_str().is_some()
+                && entry["nonConclusions"]
+                    .as_array()
+                    .is_some_and(|items| !items.is_empty())
+        }),
+        "curvature transfer readings must carry operator, edges, recurrent modes, rho reading, and non-conclusions"
+    );
+    assert!(
+        curvature_transfer.iter().all(|entry| {
+            entry["transferEdges"]
+                .as_array()
+                .expect("curvature transfer edges are array")
+                .iter()
+                .all(|edge| {
+                    edge["sourceSupportRef"].as_str().is_some()
+                        && edge["targetSupportRef"].as_str().is_some()
+                        && edge["witnessRefs"]
+                            .as_array()
+                            .is_some_and(|items| !items.is_empty())
+                        && edge["defectValue"].as_i64().is_some_and(|value| value > 0)
+                        && edge["weight"].as_i64().is_some_and(|value| value > 0)
+                })
+        }),
+        "curvature transfer edges must carry support refs, witness refs, positive defect value, and positive weight"
+    );
+    assert!(
+        curvature_transfer.iter().all(|entry| {
+            entry["nonConclusions"]
+                .as_array()
+                .expect("curvature transfer non-conclusions are array")
+                .iter()
+                .any(|item| {
+                    item.as_str()
+                        .is_some_and(|text| text.contains("does not replace FieldSig forecast"))
+                })
+        }),
+        "curvature transfer readings must preserve FieldSig forecast boundary"
+    );
+    let architecture_spectrum_report = json["architectureSpectrumReport"]
+        .as_object()
+        .expect("North Star packet must expose ArchitectureSpectrumReport");
+    assert!(
+        architecture_spectrum_report["topHotspots"]
+            .as_array()
+            .is_some_and(|items| !items.is_empty()),
+        "ArchitectureSpectrumReport must expose hotspots"
+    );
+    assert!(
+        architecture_spectrum_report["topEigenmodes"]
+            .as_array()
+            .is_some_and(|items| !items.is_empty()),
+        "ArchitectureSpectrumReport must expose top mode data"
+    );
+    assert!(
+        architecture_spectrum_report["topWitnessClusters"]
+            .as_array()
+            .is_some_and(|items| !items.is_empty()),
+        "ArchitectureSpectrumReport must expose witness clusters"
+    );
+    assert!(
+        architecture_spectrum_report["recurrentObstructions"]
+            .as_array()
+            .is_some_and(|items| !items.is_empty()),
+        "ArchitectureSpectrumReport must expose recurrent obstruction entries"
+    );
+    assert!(
+        architecture_spectrum_report["measuredBoundary"]
+            .as_str()
+            .is_some_and(|boundary| boundary.contains("curvature support and transfer")),
+        "ArchitectureSpectrumReport must keep measured boundary explicit"
+    );
+    assert!(
+        architecture_spectrum_report["recommendedReviewFocus"]
+            .as_array()
+            .is_some_and(|items| !items.is_empty()),
+        "ArchitectureSpectrumReport must expose next review focus"
+    );
+    assert!(
+        architecture_spectrum_report["nonConclusions"]
+            .as_array()
+            .is_some_and(|items| {
+                items.iter().any(|item| {
+                    item.as_str()
+                        .is_some_and(|text| text.contains("single architecture quality score"))
+                })
+            }),
+        "ArchitectureSpectrumReport must preserve report-level non-conclusions"
     );
     let transfer_bridges = json["transferBridgeReadings"]
         .as_array()

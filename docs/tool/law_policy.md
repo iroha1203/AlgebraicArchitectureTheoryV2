@@ -96,6 +96,10 @@ evolution readings separately from this profile.
 `spectrumMeasurementProfile` is an optional subobject inside `law-policy-v0`.
 It is used by the Curvature / Transfer Spectrum reading family. It does not
 select a different law universe and does not make ArchMap law-relative.
+The intended authoring surface is LLM-native: derive the profile from human
+intent, repository evidence, ArchMap evidence, unresolved questions, and
+non-conclusions, then validate it with ArchSig. Do not make humans hand-author a
+large profile without source evidence.
 
 The profile records the measurement recipe for ACTS-style readings:
 
@@ -128,6 +132,9 @@ Important boundaries:
 - unmeasured axes are not zero
 - spectrum zero requires coverage, exactness, and zero-reflection assumptions
 - spectrum readings are bounded ArchSig diagnostics, not Lean theorem discharge
+- ArchitectureSpectrumReport is not a single architecture quality score
+- recurrent obstruction support is not future incident prediction or repair
+  safety evidence
 
 Validation does not imply:
 
@@ -139,9 +146,53 @@ Validation does not imply:
 
 Missing coverage remains a coverage gap. It is not measured zero.
 
+## Homotopy Measurement Profile
+
+`homotopyMeasurementProfile` is an optional subobject inside `law-policy-v0`.
+It is used by the Homotopy / Holonomy Stokes reading family. It records how
+ArchSig should discover candidate paths, distinguish filled loops from
+architectural holes, measure selected-axis holonomy, and preserve missing
+filler evidence. It does not select a different law universe and does not make
+ArchMap law-relative.
+
+The intended authoring surface is LLM-native. A human supplies analysis goal,
+risk focus, source scope, normative evidence, excluded readings, and how
+conservative the zero / filler reading should be. The LLM uses
+`tools/archsig/skills/law-policy-creater` to synthesize the profile from
+repository evidence and user intent, then validates it with ArchSig.
+
+The profile records:
+
+- `profileId`
+- `selectedAxisRefs`
+- `pathDiscoveryRules`
+- `fillerRules`
+- `loopMeasurementPolicy`
+- `continuationPolicy`
+- `distancePolicy`
+- `coverageRequirementRefs`
+- `coverageBoundary`
+- `exactnessAssumptionRefs`
+- `measurementBoundary`
+- `nonConclusions`
+
+Validation checks that selected axes and coverage refs resolve, that path
+discovery / filler / loop rules keep evidence boundaries explicit, and that
+required non-conclusions remain present. Important boundaries:
+
+- profile differences are not law-universe differences
+- candidate paths and loops are review cues, not path truth
+- unfilled loops are architectural holes, not automatic violations
+- missing filler evidence is not measured zero
+- nonzero holonomy is bounded current-state diagnosis, not future incident
+  prediction or repair-safety evidence
+- ArchitectureHomotopyReport is not a single architecture quality score,
+  theorem proof, path truth, or global homology computation
+
 ## Current Fixture
 
 - `tools/archsig/tests/fixtures/minimal/law_policy.json`
+- `tools/archsig/tests/fixtures/homotopy_report/law_policy.json`
 
 The fixture is locked against the static Rust builder and the schema catalog
 records both `law-policy-v0` and `law-policy-validation-report-v0`. The schema

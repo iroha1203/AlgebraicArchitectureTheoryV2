@@ -1,14 +1,14 @@
 {
   "schemaVersion": "law-policy-v0",
-  "lawPolicyId": "project-law-policy",
+  "lawPolicyId": "homotopy-report-fixture-policy",
   "policyVersion": "v0",
-  "scope": "Replace with the bounded repository or subsystem scope",
+  "scope": "bounded HomotopyReport fixture for filled, unfilled, holonomy, hole, cache/repository, event projection, retry/idempotency, authorization, and coupon/tax/rounding cases",
   "archmapSchemaRef": "archmap-observation-map-v0",
   "selectedLaws": [
     {
-      "lawId": "law:project-boundary-example",
-      "lawFamily": "authority-boundary",
-      "description": "Replace with a project-approved architecture rule.",
+      "lawId": "law:homotopy-report-fixture",
+      "lawFamily": "semantic-contract",
+      "description": "Fixture law for selected path / filler / loop readings.",
       "enforcementBoundary": "ArchSig computes witnesses from observed ArchMap atoms under this selected policy; this policy does not prove architecture lawfulness",
       "appliesToAtomFamilies": [
         "authority",
@@ -16,10 +16,10 @@
         "relation"
       ],
       "requiredWitnessRefs": [
-        "witness:project-boundary-example"
+        "witness:homotopy-report-fixture"
       ],
       "requiredAxisRefs": [
-        "axis:project-boundary-example"
+        "axis:homotopy-report-fixture"
       ],
       "nonConclusions": [
         "law policy is selected analysis policy, not AAT itself",
@@ -32,8 +32,8 @@
   ],
   "requiredZeroAxes": [
     {
-      "axisId": "axis:project-boundary-example",
-      "axisFamily": "authority-boundary",
+      "axisId": "axis:homotopy-report-fixture",
+      "axisFamily": "semantic-contract",
       "valueType": "nat",
       "zeroReading": "zero means no required witness was constructed under this policy and declared coverage",
       "measurementBoundary": "computedFromObservedAtoms",
@@ -54,9 +54,9 @@
   "optionalAxes": [],
   "witnessRules": [
     {
-      "witnessRuleId": "witness:project-boundary-example",
-      "lawRef": "law:project-boundary-example",
-      "witnessKind": "policy-boundary-review",
+      "witnessRuleId": "witness:homotopy-report-fixture",
+      "lawRef": "law:homotopy-report-fixture",
+      "witnessKind": "homotopy-report-review",
       "atomObservationRefs": [],
       "requiredAtomFamilies": [
         "authority",
@@ -64,7 +64,7 @@
         "relation"
       ],
       "moleculePatternRefs": [
-        "molecule:project-boundary-example"
+        "molecule:homotopy-report-fixture"
       ],
       "evidenceBoundary": "construct only from observed ArchMap Atom observations; concern hints are not obstruction circuits",
       "missingEvidenceBehavior": "report observation gap; do not infer measured zero",
@@ -79,8 +79,8 @@
   ],
   "moleculePatterns": [
     {
-      "moleculePatternId": "molecule:project-boundary-example",
-      "roleName": "project boundary example",
+      "moleculePatternId": "molecule:homotopy-report-fixture",
+      "roleName": "homotopy report fixture",
       "requiredAtomFamilies": [
         "authority",
         "contractSpecification"
@@ -101,14 +101,14 @@
   ],
   "obstructionCircuitDefinitions": [
     {
-      "obstructionCircuitId": "obstruction:project-boundary-example",
-      "lawRef": "law:project-boundary-example",
-      "witnessRuleRef": "witness:project-boundary-example",
-      "circuitKind": "PolicyBoundaryCircuit",
+      "obstructionCircuitId": "obstruction:homotopy-report-fixture",
+      "lawRef": "law:homotopy-report-fixture",
+      "witnessRuleRef": "witness:homotopy-report-fixture",
+      "circuitKind": "HomotopyReportFixtureCircuit",
       "minimalityReading": "minimality is evaluated within the selected observed Atom configuration and witness rule",
       "evidenceBoundary": "law-relative ArchSig witness, not ArchMap observation and not Lean theorem discharge",
       "signatureAxisRefs": [
-        "axis:project-boundary-example"
+        "axis:homotopy-report-fixture"
       ],
       "nonConclusions": [
         "law policy is selected analysis policy, not AAT itself",
@@ -121,9 +121,9 @@
   ],
   "signatureAxisDefinitions": [
     {
-      "signatureAxisId": "sig-axis:project-boundary-example",
-      "lawRef": "law:project-boundary-example",
-      "axisRef": "axis:project-boundary-example",
+      "signatureAxisId": "sig-axis:homotopy-report-fixture",
+      "lawRef": "law:homotopy-report-fixture",
+      "axisRef": "axis:homotopy-report-fixture",
       "valuationRule": "count constructed project boundary witnesses",
       "valueType": "nat",
       "zeroReading": "zero means no matching required witness was constructed under declared coverage and exactness assumptions",
@@ -138,9 +138,9 @@
     }
   ],
   "measurementPolicy": {
-    "policyId": "measurement:project-boundary-example",
+    "policyId": "measurement:homotopy-report-fixture",
     "selectedAxisRefs": [
-      "axis:project-boundary-example"
+      "axis:homotopy-report-fixture"
     ],
     "distanceKind": "witness-mismatch-count",
     "weightPolicy": "unit weights until project-specific calibration is declared",
@@ -164,16 +164,16 @@
     ]
   },
   "spectrumMeasurementProfile": {
-    "profileId": "spectrum-profile:project-boundary-example",
+    "profileId": "spectrum-profile:homotopy-report-fixture",
     "selectedAxisRefs": [
-      "axis:project-boundary-example"
+      "axis:homotopy-report-fixture"
     ],
     "measuredWitnessRuleRefs": [
-      "witness:project-boundary-example"
+      "witness:homotopy-report-fixture"
     ],
     "distanceKinds": [
       {
-        "axisRef": "axis:project-boundary-example",
+        "axisRef": "axis:homotopy-report-fixture",
         "distanceKind": "witness-mismatch-count"
       }
     ],
@@ -188,7 +188,7 @@
       "surface top modes with witness refs, source refs, coverage gaps, measured boundary, and non-conclusions"
     ],
     "coverageRequirementRefs": [
-      "coverage:project-boundary-example"
+      "coverage:homotopy-report-fixture"
     ],
     "coverageBoundary": "missing coverage blocks spectrum zero reflection and remains a report gap",
     "exactnessAssumptionRefs": [
@@ -204,17 +204,101 @@
     ]
   },
   "homotopyMeasurementProfile": {
-    "profileId": "homotopy-profile:project-boundary-example",
+    "profileId": "homotopy-profile:homotopy-report-fixture",
     "selectedAxisRefs": [
-      "axis:project-boundary-example"
+      "axis:homotopy-report-fixture"
     ],
     "pathDiscoveryRules": [
       {
-        "ruleId": "path-rule:project-boundary-example",
-        "pathSourceKind": "llm-discovered-source-backed-path",
+        "ruleId": "path-rule:zero-holonomy-filled-loop",
+        "pathSourceKind": "zero-holonomy-filled-loop-path",
+        "endpointPolicy": "compare cache warm path and repository fallback path only when both endpoints are source-backed",
+        "candidateSource": "fixture source refs and contract test",
+        "evidenceBoundary": "zero holonomy fixture path is a bounded review cue, not path truth",
+        "nonConclusions": [
+          "homotopy measurement profile is a measurement recipe, not a law universe",
+          "candidate paths and loops are review cues, not path truth",
+          "unfilled loops are architectural holes, not automatic violations",
+          "missing filler evidence is not measured zero",
+          "ArchitectureHomotopyReport is not a single architecture quality score"
+        ]
+      },
+      {
+        "ruleId": "path-rule:nonzero-holonomy-filled-loop",
+        "pathSourceKind": "nonzero-holonomy-filled-loop-path",
+        "endpointPolicy": "compare direct projection and event projection paths with shared source-backed endpoint",
+        "candidateSource": "fixture semantic observation and event projection test",
+        "evidenceBoundary": "nonzero holonomy fixture path is bounded to supplied semantic observation",
+        "nonConclusions": [
+          "homotopy measurement profile is a measurement recipe, not a law universe",
+          "candidate paths and loops are review cues, not path truth",
+          "unfilled loops are architectural holes, not automatic violations",
+          "missing filler evidence is not measured zero",
+          "ArchitectureHomotopyReport is not a single architecture quality score"
+        ]
+      },
+      {
+        "ruleId": "path-rule:cache-repository-semantic-loop",
+        "pathSourceKind": "cache-repository-semantic-loop-path",
+        "endpointPolicy": "compare cache read and repository read only under declared semantic contract axis",
+        "candidateSource": "fixture cache/repository source refs and semantic observation",
+        "evidenceBoundary": "cache / repository fixture path is bounded to source refs and selected law policy",
+        "nonConclusions": [
+          "homotopy measurement profile is a measurement recipe, not a law universe",
+          "candidate paths and loops are review cues, not path truth",
+          "unfilled loops are architectural holes, not automatic violations",
+          "missing filler evidence is not measured zero",
+          "ArchitectureHomotopyReport is not a single architecture quality score"
+        ]
+      },
+      {
+        "ruleId": "path-rule:event-projection-direct-read",
+        "pathSourceKind": "event-projection-direct-read-path",
+        "endpointPolicy": "compare event projection and direct read paths only for the same domain object",
+        "candidateSource": "fixture projection source refs and semantic observation",
+        "evidenceBoundary": "event projection fixture path is bounded to supplied source refs",
+        "nonConclusions": [
+          "homotopy measurement profile is a measurement recipe, not a law universe",
+          "candidate paths and loops are review cues, not path truth",
+          "unfilled loops are architectural holes, not automatic violations",
+          "missing filler evidence is not measured zero",
+          "ArchitectureHomotopyReport is not a single architecture quality score"
+        ]
+      },
+      {
+        "ruleId": "path-rule:retry-idempotency-effect",
+        "pathSourceKind": "retry-idempotency-effect-path",
+        "endpointPolicy": "compare retry and single-shot effect paths only under explicit idempotency evidence",
+        "candidateSource": "fixture retry/idempotency source refs and semantic observation",
+        "evidenceBoundary": "retry fixture path is bounded to supplied test and runtime trace expectations",
+        "nonConclusions": [
+          "homotopy measurement profile is a measurement recipe, not a law universe",
+          "candidate paths and loops are review cues, not path truth",
+          "unfilled loops are architectural holes, not automatic violations",
+          "missing filler evidence is not measured zero",
+          "ArchitectureHomotopyReport is not a single architecture quality score"
+        ]
+      },
+      {
+        "ruleId": "path-rule:authorization-bypass-hole",
+        "pathSourceKind": "authorization-bypass-hole-path",
         "endpointPolicy": "compare candidate paths only when endpoints are supported by observed Atom refs or explicit user intent",
-        "candidateSource": "LLM-discovered candidates must cite source refs, docs, tests, runtime traces, or remain unresolved",
-        "evidenceBoundary": "candidate paths are bounded review cues derived from ArchMap evidence, repository evidence, and selected LawPolicy",
+        "candidateSource": "fixture source refs with missing authorization filler evidence",
+        "evidenceBoundary": "authorization bypass fixture path remains a hole until policy/test filler evidence is supplied",
+        "nonConclusions": [
+          "homotopy measurement profile is a measurement recipe, not a law universe",
+          "candidate paths and loops are review cues, not path truth",
+          "unfilled loops are architectural holes, not automatic violations",
+          "missing filler evidence is not measured zero",
+          "ArchitectureHomotopyReport is not a single architecture quality score"
+        ]
+      },
+      {
+        "ruleId": "path-rule:coupon-tax-rounding-semantic-loop",
+        "pathSourceKind": "coupon-tax-rounding-semantic-loop-path",
+        "endpointPolicy": "compare coupon/tax/rounding paths only under selected pricing contract refs",
+        "candidateSource": "fixture coupon/tax/rounding semantic observation and test",
+        "evidenceBoundary": "coupon fixture path is bounded to selected examples, not global pricing correctness",
         "nonConclusions": [
           "homotopy measurement profile is a measurement recipe, not a law universe",
           "candidate paths and loops are review cues, not path truth",
@@ -226,7 +310,7 @@
     ],
     "fillerRules": [
       {
-        "ruleId": "filler-rule:project-boundary-example",
+        "ruleId": "filler-rule:contract-or-test",
         "fillerKind": "contract-test-runtime-or-policy-filler",
         "requiredSourceRefKinds": [
           "docSection",
@@ -246,7 +330,7 @@
       }
     ],
     "loopMeasurementPolicy": {
-      "policyId": "loop-policy:project-boundary-example",
+      "policyId": "loop-policy:homotopy-report-fixture",
       "loopCandidateSources": [
         "LLM-discovered candidate with source refs",
         "LawPolicy-required candidate",
@@ -269,7 +353,7 @@
     "continuationPolicy": "compare selected continuation traces only on axes declared in this profile",
     "distancePolicy": "bounded distance over selected axes; no calibrated severity without project evidence",
     "coverageRequirementRefs": [
-      "coverage:project-boundary-example"
+      "coverage:homotopy-report-fixture"
     ],
     "coverageBoundary": "missing path or filler evidence blocks zero and Stokes-style readings",
     "exactnessAssumptionRefs": [
@@ -291,9 +375,9 @@
   ],
   "coverageRequirements": [
     {
-      "coverageRequirementId": "coverage:project-boundary-example",
+      "coverageRequirementId": "coverage:homotopy-report-fixture",
       "appliesToLawRefs": [
-        "law:project-boundary-example"
+        "law:homotopy-report-fixture"
       ],
       "requiredAtomFamilies": [
         "authority",

@@ -11,6 +11,8 @@ Use this reference when deciding what to read first in an `archsig-analysis-pack
 | `signatureAxes[]` | Gives axis-local support refs, missing evidence, exactness assumptions, and excluded readings. |
 | `workflowRiskReadings[]` | Prioritizes molecule-local review pressure such as permission, LLM mediation, state/effect reconciliation, and domain cohesion. |
 | `spectralAnalysisReadings[]` | Shows dominant rows/columns and coupling surfaces across workflows, molecules, obstructions, and operation deltas. |
+| `architectureSpectrumReport` | Primary ACTS codebase-inspection surface: top hotspots, bounded mode data, witness clusters, recurrent obstruction entries, coverage gaps, measured boundary, review focus, and report non-conclusions. |
+| `architectureHomotopyReport` | Primary Homotopy / Holonomy / Stokes surface: filled loops, unfilled loops, nonzero holonomy loops, local curvature cells, bounded aggregate readings, coverage gaps, review focus, and report non-conclusions. |
 | `transferBridgeReadings[]` | Connects repair transfer axes, molecule overlap paths, bridge edge source refs, review focus, and boundary preparation. |
 | `splitReadinessReadings[]` | Shows which molecules are blocked by bridge edges or need boundary preparation before feature extraction or refactoring. |
 | `structuralReadingReviewSurface` | Summarizes AAT structural review surfaces across representation, curvature, projection, state algebra, Galois, and split readiness. |
@@ -22,6 +24,16 @@ Use this reference when deciding what to read first in an `archsig-analysis-pack
 Do not treat LawPolicy as a harmless default. It defines the selected law universe, witness rules, signature axes, exactness assumptions, and coverage requirements. Changing LawPolicy changes what ArchSig can read as obstruction, nonzero axis, flatness pressure, repair candidate, or non-conclusion.
 
 Use a project-specific LawPolicy for real analysis. If only the bundled `default_law_policy.json` is available, use it only as an explicit generic baseline / smoke test and label the result that way. A bundled baseline run can show that the toolchain and packet-reading workflow work; it should not be presented as the repository's intended architecture law analysis.
+
+For ACTS readings, confirm that the selected LawPolicy contains
+`spectrumMeasurementProfile`. If it is absent, report that
+`ArchitectureSpectrumReport` may be absent and do not infer spectrum hotspots
+from generic spectral fields.
+
+For Homotopy / Holonomy / Stokes readings, confirm that the selected LawPolicy
+contains `homotopyMeasurementProfile`. If it is absent, report that
+`ArchitectureHomotopyReport` may be absent and do not infer loop, filler,
+holonomy, or local-curvature readings from generic obstruction fields.
 
 ## Interpreting Status
 
@@ -57,6 +69,13 @@ For source comparison in this variant, build the review queue from nonzero axes,
 | `sourceBackedDomainCohesion` | domain identity, source relations, contracts | explicit interface / model relationship audit |
 | high molecule overlap | shared atom refs and source refs | split only after boundary preparation |
 | nonzero operation transfer | operation delta touches non-target axes | avoid local repair that transfers complexity |
+| `architectureSpectrumReport.topHotspots[]` | hotspot witness refs, support refs, coverage gaps | review current-state hotspot before repair planning |
+| `architectureSpectrumReport.recurrentObstructions[]` | transfer edge refs and witness support | inspect recurrence as bounded current-state diagnostic |
+| `architectureSpectrumReport.coverageGaps[]` | missing docs, traces, tests, or source refs | collect evidence before reading absent support as zero |
+| `architectureHomotopyReport.nonzeroHolonomyLoops[]` | loop refs, compared continuations, selected axes, source refs | inspect path differences as bounded current-state review queues |
+| `architectureHomotopyReport.unfilledLoops[]` | missing filler evidence, coverage gaps, next check refs | add or confirm contract/test/runtime/policy filler evidence before concluding |
+| `architectureHomotopyReport.topLocalCurvatureCells[]` | filled loop refs and local curvature cell candidates | review local curvature only inside measured fillings, not unfilled holes |
+| `architectureHomotopyReport.aggregateReadings[]` | selected measured complex boundary | use as prioritization counts, not quality score or global homology |
 
 ## Source Comparison Checklist
 
@@ -66,6 +85,10 @@ For source comparison in this variant, build the review queue from nonzero axes,
 - Preserve private/unavailable/runtime gaps; do not infer from missing files.
 - When a reading depends on route coverage, runtime traces, provider logs, or model relationships, report the missing evidence explicitly.
 - Tie every improvement proposal to a packet field and source ref.
+- For homotopy reports, resolve loop refs through `loopCandidates[]`,
+  `pathPairCandidates[]`, `architecturalHoleReadings[]`,
+  `homotopyHolonomyReadings[]`, and `stokesStyleReadings[]` before proposing
+  code or policy changes.
 
 ## Report Boundaries
 
@@ -76,3 +99,11 @@ Always include:
 - whether source comparison was performed
 - which source refs were confirmed, stale, missing, or not inspected
 - non-conclusions relevant to the user's decision
+
+For `ArchitectureHomotopyReport`, always preserve:
+
+- candidate paths and loops are review cues, not path truth
+- unfilled loops are architectural holes, not automatic violations
+- missing filler evidence is not measured zero
+- nonzero holonomy is not future incident prediction or repair-safety evidence
+- ArchitectureHomotopyReport is not a single architecture quality score

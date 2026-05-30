@@ -3274,6 +3274,84 @@ extractor completeness、ArchSig measurement correctness in the wild、global sa
 主張しない。aggregate zero は positive-weight selected entries にだけ local zero を与え、
 zero-weight entry や unmeasured square の zero には読まない。
 
+## ACTS Minimal Theorem Guardrail
+
+File: `Formal/Arch/Signature/CurvatureTransferSpectrum.lean`
+
+この節は Architecture Curvature Transfer Spectrum (ACTS) を Lean 側で読むための
+minimal guardrail である。ArchSig implementation correctness ではなく、finite
+curvature-support family、positive weight、nonempty witness support、finite
+nonnegative transfer relation、positive closed transfer edge に相対化した bounded
+theorem package を置く。
+
+| Lean 名 | 種別 | 意味 | Status |
+| --- | --- | --- | --- |
+| `CurvatureTransferSpectrum.MeasuredCurvatureSupport` | `structure` | selected axis、witness support、nonempty support 証拠、curvature、weight を持つ finite support row。 | `defined only` |
+| `CurvatureTransferSpectrum.MeasuredCurvatureSupport.contribution` | `def` | `weight * curvature` としての nonnegative weighted contribution。 | `defined only` |
+| `CurvatureTransferSpectrum.FiniteCurvatureSupportFamily` | `abbrev` | measured curvature support row の finite list。 | `defined only` |
+| `CurvatureTransferSpectrum.weightedCurvatureSupportAggregate` | `def` | finite support family の weighted aggregate。 | `defined only` |
+| `CurvatureTransferSpectrum.SelectedMeasuredCurvatureZero` | `def` | supplied finite support family のすべての selected measured curvature が zero である predicate。 | `defined only` |
+| `CurvatureTransferSpectrum.localCurvature_zero_of_weightedCurvatureSupportAggregate_zero` | `theorem` | aggregate zero から positive-weight measured support row の local curvature zero を得る。 | `proved` |
+| `CurvatureTransferSpectrum.weightedCurvatureSupportAggregate_zero_of_selectedMeasuredCurvatureZero` | `theorem` | selected measured curvature all zero から aggregate zero を得る。 | `proved` |
+| `CurvatureTransferSpectrum.weightedCurvatureSupportAggregate_zero_iff_selectedMeasuredCurvatureZero` | `theorem` | all rows positive-weight の下で aggregate zero と selected measured curvature all zero が同値。 | `proved` |
+| `CurvatureTransferSpectrum.NonnegativeTransferEdge` | `structure` | finite transfer relation の source / target / nonnegative Nat weight edge。 | `defined only` |
+| `CurvatureTransferSpectrum.FiniteNonnegativeTransferRelation` | `abbrev` | nonnegative transfer edge の finite list。 | `defined only` |
+| `CurvatureTransferSpectrum.PositiveClosedTransferEdge` | `def` | source = target かつ positive weight の transfer edge。 | `defined only` |
+| `CurvatureTransferSpectrum.HasPositiveClosedTransferEdge` | `def` | finite relation が positive closed transfer edge を含む predicate。 | `defined only` |
+| `CurvatureTransferSpectrum.BoundedRecurrentObstructionReading` | `structure` | positive closed transfer edge を current-state recurrent obstruction support として包む bounded reading。 | `defined only` |
+| `CurvatureTransferSpectrum.hasPositiveClosedTransferEdge_of_recurrentReading` | `theorem` | recurrent reading から finite relation 内の positive closed edge 存在を得る。 | `proved` |
+| `CurvatureTransferSpectrum.recurrentReading_of_positiveClosedTransferEdge` | `def` | finite relation 内の positive closed edge を recurrent reading として包む constructor。 | `defined only` |
+| `CurvatureTransferSpectrum.ACTSNonConclusionClause` | `inductive` | ACTS theorem package の non-conclusion clause。 | `defined only` |
+| `CurvatureTransferSpectrum.requiredNonConclusions` | `def` | required non-conclusion clause の finite list。 | `defined only` |
+| `CurvatureTransferSpectrum.ACTSMinimalTheoremGuardrail` | `structure` | support family、transfer relation、non-conclusions を束ねる minimal theorem guardrail package。 | `defined only` |
+| `CurvatureTransferSpectrum.ACTSMinimalTheoremGuardrail.RecordsRequiredNonConclusions` | `def` | package が required non-conclusion clauses を保持する predicate。 | `defined only` |
+| `CurvatureTransferSpectrum.ACTSMinimalTheoremGuardrail.recordsRequiredNonConclusions_of_eq_required` | `theorem` | package の nonConclusions が required list と一致すれば boundary を保持する。 | `proved` |
+
+Non-conclusions: この theorem package は finite supplied support / transfer relation に
+相対化された guardrail であり、ArchSig implementation correctness、global semantic
+flatness、future safety、empirical incident/cost calibration、extractor completeness は
+主張しない。positive closed transfer edge は current-state recurrent obstruction
+support として読むだけで、future incident prediction や repair safety evidence ではない。
+
+## Homotopy-Holonomy Stokes Minimal Guardrail
+
+File: `Formal/Arch/Signature/HomotopyHolonomyStokes.lean`
+
+この節は Homotopy / Holonomy / Stokes readings を Lean 側で読むための minimal
+guardrail である。ArchSig implementation correctness や一般 homology 理論ではなく、
+finite measured path pair、selected continuation、measured loop、finite measured
+2-cell filling、bounded Stokes-style inequality、unfilled loop non-conclusion に
+相対化した theorem package を置く。
+
+| Lean 名 | 種別 | 意味 | Status |
+| --- | --- | --- | --- |
+| `HomotopyHolonomyStokes.MeasuredPathPair` | `structure` | bounded homotopy reading が比較する path pair。 | `defined only` |
+| `HomotopyHolonomyStokes.SelectedContinuation` | `structure` | LawPolicy profile が選ぶ `Nat` 値 continuation。 | `defined only` |
+| `HomotopyHolonomyStokes.selectedHolonomy` | `def` | selected continuation 上で path pair の holonomy を `0/1` として読む。 | `defined only` |
+| `HomotopyHolonomyStokes.MeasuredLoop` | `structure` | path pair と selected boundary holonomy を束ねる measured loop。 | `defined only` |
+| `HomotopyHolonomyStokes.MeasuredTwoCell` | `structure` | measured boundary path pair、local curvature、weight を持つ finite 2-cell row。 | `defined only` |
+| `HomotopyHolonomyStokes.MeasuredTwoCell.contribution` | `def` | `weight * localCurvature` としての nonnegative contribution。 | `defined only` |
+| `HomotopyHolonomyStokes.FiniteMeasuredTwoCellFamily` | `abbrev` | measured 2-cell row の finite list。 | `defined only` |
+| `HomotopyHolonomyStokes.localCurvatureAggregate` | `def` | finite filling の weighted local curvature aggregate。 | `defined only` |
+| `HomotopyHolonomyStokes.MeasuredFilling` | `structure` | measured loop、finite 2-cell family、bounded Stokes assumption を束ねる filling。 | `defined only` |
+| `HomotopyHolonomyStokes.boundedStokesInequality_of_measuredFilling` | `theorem` | measured filling から boundary holonomy ≤ local curvature aggregate を取り出す。 | `proved` |
+| `HomotopyHolonomyStokes.exists_nonzero_localCurvature_of_aggregate_nonzero` | `theorem` | aggregate nonzero から positive-weight nonzero local curvature cell の存在を得る。 | `proved` |
+| `HomotopyHolonomyStokes.localCurvatureAggregate_nonzero_of_boundaryHolonomy_nonzero` | `theorem` | bounded filling の boundary holonomy nonzero から local curvature aggregate nonzero を得る。 | `proved` |
+| `HomotopyHolonomyStokes.exists_nonzero_localCurvature_of_boundaryHolonomy_nonzero` | `theorem` | measured filling の boundary holonomy nonzero から positive-weight nonzero measured local curvature cell の存在を得る。 | `proved` |
+| `HomotopyHolonomyStokes.UnfilledLoopReading` | `structure` | missing filler evidence と violation conclusion refusal を持つ unfilled loop reading。 | `defined only` |
+| `HomotopyHolonomyStokes.unfilledLoop_not_violationConclusion` | `theorem` | unfilled loop reading は violation conclusion を結論しない。 | `proved` |
+| `HomotopyHolonomyStokes.HomotopyStokesNonConclusionClause` | `inductive` | Homotopy / Holonomy / Stokes theorem package の non-conclusion clause。 | `defined only` |
+| `HomotopyHolonomyStokes.requiredNonConclusions` | `def` | required non-conclusion clause の finite list。 | `defined only` |
+| `HomotopyHolonomyStokes.HomotopyHolonomyStokesGuardrail` | `structure` | measured fillings、unfilled loops、non-conclusions を束ねる minimal theorem guardrail package。 | `defined only` |
+| `HomotopyHolonomyStokes.HomotopyHolonomyStokesGuardrail.RecordsRequiredNonConclusions` | `def` | package が required non-conclusion clauses を保持する predicate。 | `defined only` |
+| `HomotopyHolonomyStokes.HomotopyHolonomyStokesGuardrail.recordsRequiredNonConclusions_of_eq_required` | `theorem` | package の nonConclusions が required list と一致すれば boundary を保持する。 | `proved` |
+
+Non-conclusions: この theorem package は finite measured filling に相対化された
+guardrail であり、ArchSig implementation correctness、global homotopy completeness、
+global homology computation、future safety、empirical calibration、extractor
+completeness は主張しない。unfilled loop は architectural hole / missing filler
+evidence として読むだけで、automatic violation conclusion ではない。
+
 ## Static / Semantic Counterexample
 
 File: `Formal/Arch/Examples/StaticSemanticCounterexample.lean`

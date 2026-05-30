@@ -9,7 +9,11 @@ use crate::{
     ArchSigAmiTopContributorV0, ArchSigAnalysisArtifactRefV0, ArchSigAnalysisPacketV0,
     ArchSigAnalysisPacketValidationInputV0, ArchSigAnalysisPacketValidationReportV0,
     ArchSigAnalysisPacketValidationSummaryV0, ArchSigAnalyticRepresentationV0,
-    ArchSigArchMapStoreRefsV0, ArchSigArchitectureObjectProjectionV0, ArchSigArchitectureStateV0,
+    ArchSigArchMapStoreRefsV0, ArchSigArchitecturalHoleReadingV0,
+    ArchSigArchitectureHomotopyReportV0, ArchSigArchitectureObjectProjectionV0,
+    ArchSigArchitectureSpectrumHotspotV0, ArchSigArchitectureSpectrumModeV0,
+    ArchSigArchitectureSpectrumRecurrentObstructionV0, ArchSigArchitectureSpectrumReportV0,
+    ArchSigArchitectureSpectrumWitnessClusterV0, ArchSigArchitectureStateV0,
     ArchSigAtomCompatibilityConflictV0, ArchSigAtomCompatibilityReadingV0,
     ArchSigAtomConfigurationSummaryV0, ArchSigAtomSupportAxisReadingV0,
     ArchSigAxisContinuationTraceV0, ArchSigAxisExcursionV0, ArchSigAxisForgettingRiskReadingV0,
@@ -19,31 +23,36 @@ use crate::{
     ArchSigBridgeEdgeBreakdownV0, ArchSigBridgeSplitObstructionTransferReadingV0,
     ArchSigChangeImpactReadingV0, ArchSigCouplingCohesionReadingV0, ArchSigCoverageStatusV0,
     ArchSigCurrentStateEvolutionBoundaryV0, ArchSigCurvatureSupportReadingV0,
-    ArchSigCurvatureTopModeV0, ArchSigCurvatureWitnessClusterV0, ArchSigCurvatureWitnessSupportV0,
-    ArchSigDesignPressureReadingV0, ArchSigDesignPrincipleReadingV0,
-    ArchSigDiagramFillabilityReadingV0, ArchSigDominantAtomFamilyCompositionV0,
-    ArchSigEvolutionRiskRankingV0, ArchSigFeatureBoundaryResidualReadingV0,
-    ArchSigFeatureExtensionAxisSummaryV0, ArchSigFeatureExtensionDiagnosisReadingV0,
-    ArchSigFeatureExtensionFormulaReadingV0, ArchSigFeatureExtensionWitnessAttributionV0,
-    ArchSigFlatnessReadingV0, ArchSigHighOverlapMoleculePairV0,
-    ArchSigHomotopyOrderSensitivityReadingV0, ArchSigInvariantFamilyReadingV0,
-    ArchSigLawUniverseCoverageReadingV0, ArchSigLawUniverseReadingV0, ArchSigLayerSplitV0,
-    ArchSigLlmInterpretationPacketV0, ArchSigLocalCurvatureDiagramReadingV0,
-    ArchSigMoleculeReadingV0, ArchSigMonodromyReadingFamilyV0, ArchSigNonzeroMonodromyWitnessV0,
+    ArchSigCurvatureTopModeV0, ArchSigCurvatureTransferEdgeV0, ArchSigCurvatureTransferOperatorV0,
+    ArchSigCurvatureTransferReadingV0, ArchSigCurvatureWitnessClusterV0,
+    ArchSigCurvatureWitnessSupportV0, ArchSigDesignPressureReadingV0,
+    ArchSigDesignPrincipleReadingV0, ArchSigDiagramFillabilityReadingV0,
+    ArchSigDominantAtomFamilyCompositionV0, ArchSigEvolutionRiskRankingV0,
+    ArchSigFeatureBoundaryResidualReadingV0, ArchSigFeatureExtensionAxisSummaryV0,
+    ArchSigFeatureExtensionDiagnosisReadingV0, ArchSigFeatureExtensionFormulaReadingV0,
+    ArchSigFeatureExtensionWitnessAttributionV0, ArchSigFillerCandidateReadingV0,
+    ArchSigFlatnessReadingV0, ArchSigHighOverlapMoleculePairV0, ArchSigHomotopyAggregateReadingV0,
+    ArchSigHomotopyCellSummaryV0, ArchSigHomotopyComplexSummaryV0,
+    ArchSigHomotopyHolonomyReadingV0, ArchSigHomotopyOrderSensitivityReadingV0,
+    ArchSigInvariantFamilyReadingV0, ArchSigLawUniverseCoverageReadingV0,
+    ArchSigLawUniverseReadingV0, ArchSigLayerSplitV0, ArchSigLlmInterpretationPacketV0,
+    ArchSigLocalCurvatureDiagramReadingV0, ArchSigLoopCandidateV0, ArchSigMoleculeReadingV0,
+    ArchSigMonodromyReadingFamilyV0, ArchSigNonzeroMonodromyWitnessV0,
     ArchSigObservationProjectionReadingV0, ArchSigObstructionCircuitV0,
     ArchSigOperationCalculusLawReadingV0, ArchSigOperationDeltaReadingV0,
     ArchSigOperationInvariantGaloisReadingV0, ArchSigOperationSquareCandidateV0,
     ArchSigPathContinuationTraceV0, ArchSigPathHomotopyDiagramReadingV0,
-    ArchSigPathSignatureTrajectoryReadingV0, ArchSigRepairAxisDeltaReadingV0,
+    ArchSigPathPairCandidateV0, ArchSigPathSignatureTrajectoryReadingV0,
+    ArchSigRecurrentObstructionModeV0, ArchSigRepairAxisDeltaReadingV0,
     ArchSigRepairOperationCandidateV0, ArchSigRepairTransferRiskRankV0,
     ArchSigRepresentationStrengthReadingV0, ArchSigSignatureAxisReadingV0,
     ArchSigSignatureTrajectoryHomotopyRefutationReadingV0, ArchSigSpectralAnalysisReadingV0,
     ArchSigSpectralDominantComponentV0, ArchSigSpectralDrilldownReadingV0,
     ArchSigSpectralMatrixShapeV0, ArchSigSpectralModeComponentV0, ArchSigSpectralModeReadingV0,
     ArchSigSpectralValueV0, ArchSigSplitReadinessReadingV0, ArchSigStateTransitionAlgebraReadingV0,
-    ArchSigStructuralReadingReviewSurfaceV0, ArchSigSubjectFamilySpreadV0,
-    ArchSigThreeLayerFlatnessReadingV0, ArchSigTransferBridgeReadingV0,
-    ArchSigTransferMatrixEntryV0, ArchSigWorkflowAtomFamilyCountV0,
+    ArchSigStokesStyleReadingV0, ArchSigStructuralReadingReviewSurfaceV0,
+    ArchSigSubjectFamilySpreadV0, ArchSigThreeLayerFlatnessReadingV0,
+    ArchSigTransferBridgeReadingV0, ArchSigTransferMatrixEntryV0, ArchSigWorkflowAtomFamilyCountV0,
     ArchSigWorkflowRiskAxisReadingV0, ArchSigWorkflowRiskReadingV0, LAW_POLICY_SCHEMA_VERSION,
     LawPolicyDocumentV0, LawPolicyObstructionCircuitDefinitionV0,
     LawPolicySignatureAxisDefinitionV0, LawPolicyWitnessRuleV0, ValidationCheck, ValidationExample,
@@ -57,6 +66,14 @@ const REQUIRED_NON_CONCLUSIONS: [&str; 7] = [
     "flatness reading is blocked by coverage gaps and exactness assumptions",
     "repair operation candidates are not automatic safe refactorings",
     "ArchSig reads current architecture state and does not replace FieldSig evolution analysis",
+];
+
+const REQUIRED_HOMOTOPY_NON_CONCLUSIONS: [&str; 5] = [
+    "candidate paths and loops are review cues, not path truth",
+    "unfilled loops are architectural holes, not automatic violations",
+    "missing filler evidence is not measured zero",
+    "nonzero holonomy is bounded diagnosis, not future incident prediction",
+    "homotopy complex summary is not source extraction completeness",
 ];
 
 #[cfg(test)]
@@ -132,6 +149,12 @@ pub fn build_archsig_analysis_packet(
         &obstruction_circuits,
         &signature_axes,
     );
+    let curvature_transfer_readings =
+        build_curvature_transfer_readings(&curvature_support_readings);
+    let architecture_spectrum_report = build_architecture_spectrum_report(
+        &curvature_support_readings,
+        &curvature_transfer_readings,
+    );
     let transfer_bridge_readings = build_transfer_bridge_readings(
         archmap,
         &spectral_mode_readings,
@@ -197,6 +220,45 @@ pub fn build_archsig_analysis_packet(
         );
     let bridge_split_obstruction_transfer_readings =
         build_bridge_split_obstruction_transfer_readings(&split_readiness_readings);
+    let homotopy_complex_summary = build_homotopy_complex_summary(archmap, law_policy);
+    let path_pair_candidates = build_path_pair_candidates(
+        archmap,
+        law_policy,
+        &homotopy_complex_summary,
+        &path_homotopy_diagram_readings,
+    );
+    let loop_candidates = build_loop_candidates(
+        archmap,
+        law_policy,
+        &path_pair_candidates,
+        &homotopy_complex_summary,
+    );
+    let filler_candidate_readings =
+        build_filler_candidate_readings(archmap, law_policy, &loop_candidates);
+    let architectural_hole_readings =
+        build_architectural_hole_readings(archmap, &loop_candidates, &filler_candidate_readings);
+    let homotopy_holonomy_readings = build_homotopy_holonomy_readings(
+        archmap,
+        law_policy,
+        &loop_candidates,
+        &path_pair_candidates,
+        &filler_candidate_readings,
+        &architectural_hole_readings,
+    );
+    let stokes_style_readings = build_stokes_style_readings(
+        &homotopy_complex_summary,
+        &loop_candidates,
+        &homotopy_holonomy_readings,
+        &filler_candidate_readings,
+        &architectural_hole_readings,
+    );
+    let architecture_homotopy_report = build_architecture_homotopy_report(
+        &homotopy_complex_summary,
+        &loop_candidates,
+        &architectural_hole_readings,
+        &homotopy_holonomy_readings,
+        &stokes_style_readings,
+    );
     let operation_square_candidates = build_operation_square_candidates(archmap, &operation_deltas);
     let path_continuation_traces =
         build_path_continuation_traces(archmap, &operation_square_candidates, &operation_deltas);
@@ -292,6 +354,8 @@ pub fn build_archsig_analysis_packet(
         &spectral_mode_readings,
         &spectral_drilldown_readings,
         &curvature_support_readings,
+        &curvature_transfer_readings,
+        architecture_spectrum_report.as_ref(),
         &transfer_bridge_readings,
         &atom_support_axis_readings,
         &atom_compatibility_readings,
@@ -359,6 +423,8 @@ pub fn build_archsig_analysis_packet(
         spectral_mode_readings,
         spectral_drilldown_readings,
         curvature_support_readings,
+        curvature_transfer_readings,
+        architecture_spectrum_report,
         transfer_bridge_readings,
         atom_support_axis_readings,
         atom_compatibility_readings,
@@ -371,6 +437,14 @@ pub fn build_archsig_analysis_packet(
         axis_forgetting_risk_readings,
         signature_trajectory_homotopy_refutation_readings,
         bridge_split_obstruction_transfer_readings,
+        homotopy_complex_summary: Some(homotopy_complex_summary),
+        path_pair_candidates,
+        loop_candidates,
+        filler_candidate_readings,
+        architectural_hole_readings,
+        homotopy_holonomy_readings,
+        stokes_style_readings,
+        architecture_homotopy_report: Some(architecture_homotopy_report),
         operation_square_candidates,
         path_continuation_traces,
         axis_wise_monodromy_defects,
@@ -3741,6 +3815,275 @@ fn build_curvature_witness_clusters(
         .collect()
 }
 
+fn build_curvature_transfer_readings(
+    curvature_support_readings: &[ArchSigCurvatureSupportReadingV0],
+) -> Vec<ArchSigCurvatureTransferReadingV0> {
+    curvature_support_readings
+        .iter()
+        .map(|support_reading| {
+            let positive_supports = support_reading
+                .witness_supports
+                .iter()
+                .filter(|support| support.curvature_value > 0)
+                .collect::<Vec<_>>();
+            let transfer_edges = build_curvature_transfer_edges(&positive_supports);
+            let spectral_radius_proxy = transfer_edges
+                .iter()
+                .filter(|edge| edge.source_support_ref == edge.target_support_ref)
+                .map(|edge| edge.weight)
+                .max()
+                .unwrap_or_default();
+            let recurrent_obstruction_modes =
+                build_recurrent_obstruction_modes(&transfer_edges, spectral_radius_proxy);
+            let status = if recurrent_obstruction_modes.is_empty() {
+                "nonConclusion"
+            } else {
+                "needsReview"
+            };
+            let reading_id = format!(
+                "curvature-transfer-reading:{}",
+                stable_id(&support_reading.profile_ref)
+            );
+            ArchSigCurvatureTransferReadingV0 {
+                reading_id: reading_id.clone(),
+                profile_ref: support_reading.profile_ref.clone(),
+                status: status.to_string(),
+                transfer_operator: ArchSigCurvatureTransferOperatorV0 {
+                    operator_id: format!("transfer-operator:{}", stable_id(&reading_id)),
+                    row_domain: "curvatureWitnessSupports".to_string(),
+                    column_domain: "curvatureWitnessSupports".to_string(),
+                    row_count: positive_supports.len(),
+                    column_count: positive_supports.len(),
+                    nonzero_edge_count: transfer_edges.len(),
+                    entry_rule:
+                        "entry(i,j) is positive when measured curvature support i can transfer review pressure to support j under shared selected-axis or shared support evidence"
+                            .to_string(),
+                    reading:
+                        "finite nonnegative transfer operator over measured curvature supports; absent edges are unmeasured, not proof of independence"
+                            .to_string(),
+                },
+                transfer_edges,
+                recurrent_obstruction_modes,
+                spectral_radius_reading: spectral_value(
+                    "rho(T^kappa)Proxy",
+                    spectral_radius_proxy,
+                    "positive proxy is read only as recurrent obstruction support in the finite ArchSig transfer operator, not future incident probability",
+                ),
+                coverage_boundary: support_reading.coverage_boundary.clone(),
+                evidence_boundary:
+                    "transfer operator is computed from measured curvature support rows and does not forecast future cost, safety, or amplification"
+                        .to_string(),
+                non_conclusions: vec![
+                    "rho(T^kappa) > 0 is only a bounded recurrent obstruction reading"
+                        .to_string(),
+                    "transfer operator reading does not predict future incidents or empirical cost increase"
+                        .to_string(),
+                    "transfer operator reading does not replace FieldSig forecast".to_string(),
+                    "absence of transfer edges is not proof of future safety".to_string(),
+                ],
+            }
+        })
+        .collect()
+}
+
+fn build_curvature_transfer_edges(
+    positive_supports: &[&ArchSigCurvatureWitnessSupportV0],
+) -> Vec<ArchSigCurvatureTransferEdgeV0> {
+    let mut edges = Vec::new();
+    for source in positive_supports {
+        for target in positive_supports {
+            let shared_support = source
+                .support_refs
+                .iter()
+                .any(|support_ref| target.support_refs.contains(support_ref));
+            let same_axis = source.selected_axis_ref == target.selected_axis_ref;
+            if !same_axis && !shared_support {
+                continue;
+            }
+            let weight = if source.witness_support_id == target.witness_support_id {
+                source.weight.max(1)
+            } else {
+                source.weight.min(target.weight).max(1)
+            };
+            edges.push(ArchSigCurvatureTransferEdgeV0 {
+                edge_id: format!(
+                    "curvature-transfer-edge:{}:{}",
+                    stable_id(&source.witness_support_id),
+                    stable_id(&target.witness_support_id)
+                ),
+                source_support_ref: source.witness_support_id.clone(),
+                source_axis_ref: source.selected_axis_ref.clone(),
+                target_support_ref: target.witness_support_id.clone(),
+                target_axis_ref: target.selected_axis_ref.clone(),
+                witness_refs: unique_strings(
+                    [source.witness_rule_ref.clone(), target.witness_rule_ref.clone()]
+                        .into_iter(),
+                ),
+                defect_value: source.curvature_value + target.curvature_value,
+                weight,
+                source_refs: unique_strings(
+                    source
+                        .source_refs
+                        .iter()
+                        .chain(target.source_refs.iter())
+                        .cloned(),
+                ),
+                reading: if source.witness_support_id == target.witness_support_id {
+                    "positive self-loop records a closed walk in the finite transfer operator"
+                        .to_string()
+                } else if same_axis {
+                    "same-axis transfer edge records repeated curvature support along a selected axis"
+                        .to_string()
+                } else {
+                    "shared-support transfer edge records cross-axis review pressure over observed support"
+                        .to_string()
+                },
+            });
+        }
+    }
+    edges
+}
+
+fn build_recurrent_obstruction_modes(
+    transfer_edges: &[ArchSigCurvatureTransferEdgeV0],
+    spectral_radius_proxy: i64,
+) -> Vec<ArchSigRecurrentObstructionModeV0> {
+    if spectral_radius_proxy <= 0 {
+        return Vec::new();
+    }
+    transfer_edges
+        .iter()
+        .filter(|edge| edge.source_support_ref == edge.target_support_ref && edge.weight > 0)
+        .take(8)
+        .map(|edge| ArchSigRecurrentObstructionModeV0 {
+            mode_id: format!("recurrent-obstruction:{}", stable_id(&edge.edge_id)),
+            transfer_edge_refs: vec![edge.edge_id.clone()],
+            support_refs: vec![edge.source_support_ref.clone()],
+            witness_refs: edge.witness_refs.clone(),
+            spectral_radius_reading: format!(
+                "rho(T^kappa) proxy {spectral_radius_proxy} > 0 over the finite ArchSig transfer operator"
+            ),
+            recurrent_obstruction_reading:
+                "positive closed walk is reported as recurrent obstruction support only"
+                    .to_string(),
+            review_focus: vec![
+                "inspect the witness support behind the positive transfer self-loop".to_string(),
+                "check whether coverage gaps or exactness limits block zero-reflection".to_string(),
+            ],
+            non_conclusions: vec![
+                "recurrent obstruction mode is not future incident prediction".to_string(),
+                "recurrent obstruction mode is not empirical cost amplification".to_string(),
+                "recurrent obstruction mode is not repair safety evidence".to_string(),
+            ],
+        })
+        .collect()
+}
+
+fn build_architecture_spectrum_report(
+    curvature_support_readings: &[ArchSigCurvatureSupportReadingV0],
+    curvature_transfer_readings: &[ArchSigCurvatureTransferReadingV0],
+) -> Option<ArchSigArchitectureSpectrumReportV0> {
+    let support_reading = curvature_support_readings.first()?;
+    let profile_ref = support_reading.profile_ref.clone();
+    let top_hotspots = support_reading
+        .top_curvature_modes
+        .iter()
+        .take(8)
+        .map(|mode| ArchSigArchitectureSpectrumHotspotV0 {
+            hotspot_id: format!("spectrum-hotspot:{}", stable_id(&mode.mode_id)),
+            axis_ref: mode.axis_ref.clone(),
+            curvature_value: mode.curvature_value,
+            support_refs: mode.support_refs.clone(),
+            witness_refs: mode.witness_refs.clone(),
+            coverage_gap_refs: support_reading.missing_evidence.clone(),
+            recommended_next_action: if mode.curvature_value > 0 {
+                "review witness support, selected axis coverage, and transfer recurrence before repair planning"
+                    .to_string()
+            } else {
+                "resolve coverage and exactness gaps before treating this axis as zero".to_string()
+            },
+        })
+        .collect::<Vec<_>>();
+    let top_eigenmodes = support_reading
+        .top_curvature_modes
+        .iter()
+        .take(8)
+        .map(|mode| ArchSigArchitectureSpectrumModeV0 {
+            mode_ref: mode.mode_id.clone(),
+            rank: mode.rank,
+            axis_ref: mode.axis_ref.clone(),
+            curvature_value: mode.curvature_value,
+            support_refs: mode.support_refs.clone(),
+            witness_refs: mode.witness_refs.clone(),
+            reading: mode.reading.clone(),
+        })
+        .collect::<Vec<_>>();
+    let top_witness_clusters = support_reading
+        .witness_clusters
+        .iter()
+        .take(8)
+        .map(|cluster| ArchSigArchitectureSpectrumWitnessClusterV0 {
+            cluster_ref: cluster.cluster_id.clone(),
+            axis_refs: cluster.axis_refs.clone(),
+            witness_refs: cluster.witness_refs.clone(),
+            support_refs: cluster.support_refs.clone(),
+            cluster_weight: cluster.cluster_weight,
+            reading: cluster.reading.clone(),
+        })
+        .collect::<Vec<_>>();
+    let recurrent_obstructions = curvature_transfer_readings
+        .iter()
+        .flat_map(|reading| {
+            reading.recurrent_obstruction_modes.iter().map(|mode| {
+                ArchSigArchitectureSpectrumRecurrentObstructionV0 {
+                    mode_ref: mode.mode_id.clone(),
+                    spectral_radius_reading: mode.spectral_radius_reading.clone(),
+                    transfer_edge_refs: mode.transfer_edge_refs.clone(),
+                    support_refs: mode.support_refs.clone(),
+                    witness_refs: mode.witness_refs.clone(),
+                    reading: mode.recurrent_obstruction_reading.clone(),
+                }
+            })
+        })
+        .collect::<Vec<_>>();
+    let status = if recurrent_obstructions.is_empty() && top_hotspots.is_empty() {
+        "nonConclusion"
+    } else if !support_reading.unmeasured_axis_refs.is_empty()
+        || !support_reading.missing_evidence.is_empty()
+    {
+        "needsReview"
+    } else {
+        "actionable"
+    };
+    Some(ArchSigArchitectureSpectrumReportV0 {
+        report_id: format!("architecture-spectrum-report:{}", stable_id(&profile_ref)),
+        profile_ref,
+        status: status.to_string(),
+        top_hotspots,
+        top_eigenmodes,
+        top_witness_clusters,
+        recurrent_obstructions,
+        coverage_gaps: support_reading.missing_evidence.clone(),
+        measured_boundary:
+            "report is measured from ArchSig curvature support and transfer readings under selected LawPolicy coverage and exactness assumptions"
+                .to_string(),
+        recommended_review_focus: vec![
+            "start from nonzero hotspots with traceable witness and support refs".to_string(),
+            "review recurrent obstruction modes only as current-state bounded diagnostics"
+                .to_string(),
+            "resolve coverage gaps before reading absent support as zero".to_string(),
+        ],
+        non_conclusions: vec![
+            "ArchitectureSpectrumReport is not a single architecture quality score".to_string(),
+            "ArchitectureSpectrumReport does not prove global lawfulness or flatness".to_string(),
+            "ArchitectureSpectrumReport does not predict future incidents or empirical cost increase"
+                .to_string(),
+            "ArchitectureSpectrumReport does not replace FieldSig forecast or governance"
+                .to_string(),
+        ],
+    })
+}
+
 fn spectral_mode_reading(
     spectral_reading: &ArchSigSpectralAnalysisReadingV0,
 ) -> ArchSigSpectralModeReadingV0 {
@@ -6827,6 +7170,726 @@ fn build_path_homotopy_diagram_readings(
     ]
 }
 
+fn build_homotopy_complex_summary(
+    archmap: &ArchMapDocumentV0,
+    law_policy: &LawPolicyDocumentV0,
+) -> ArchSigHomotopyComplexSummaryV0 {
+    let profile = law_policy.homotopy_measurement_profile.as_ref();
+    let profile_ref = profile
+        .map(|profile| profile.profile_id.clone())
+        .unwrap_or_else(|| "homotopy-profile:absent".to_string());
+    let selected_axis_refs = profile
+        .map(|profile| profile.selected_axis_refs.clone())
+        .filter(|refs| !refs.is_empty())
+        .unwrap_or_else(|| {
+            law_policy
+                .measurement_policy
+                .selected_axis_refs
+                .iter()
+                .cloned()
+                .collect()
+        });
+
+    let zero_cells = archmap
+        .atom_observations
+        .iter()
+        .map(|atom| ArchSigHomotopyCellSummaryV0 {
+            cell_id: format!("0-cell:{}", stable_id(&atom.atom_observation_id)),
+            cell_dimension: 0,
+            cell_kind: atom.atom_family.clone(),
+            status: "observed".to_string(),
+            observation_refs: vec![atom.atom_observation_id.clone()],
+            source_refs: atom.source_refs.iter().map(source_ref_label).collect(),
+            reading: "observed Atom is read as a bounded 0-cell candidate".to_string(),
+            non_conclusions: strings(&REQUIRED_HOMOTOPY_NON_CONCLUSIONS),
+        })
+        .collect::<Vec<_>>();
+    let one_cells =
+        archmap
+            .molecule_observations
+            .iter()
+            .map(|molecule| ArchSigHomotopyCellSummaryV0 {
+                cell_id: format!("1-cell:{}", stable_id(&molecule.molecule_observation_id)),
+                cell_dimension: 1,
+                cell_kind: molecule.role_name.clone(),
+                status: "candidate".to_string(),
+                observation_refs: molecule.atom_observation_refs.clone(),
+                source_refs: molecule.source_refs.iter().map(source_ref_label).collect(),
+                reading: "molecule observation is read as a bounded path / relation candidate"
+                    .to_string(),
+                non_conclusions: strings(&REQUIRED_HOMOTOPY_NON_CONCLUSIONS),
+            })
+            .chain(archmap.semantic_observations.iter().map(|semantic| {
+                ArchSigHomotopyCellSummaryV0 {
+                    cell_id: format!("1-cell:{}", stable_id(&semantic.semantic_observation_id)),
+                    cell_dimension: 1,
+                    cell_kind: semantic.semantic_family.clone(),
+                    status: "candidate".to_string(),
+                    observation_refs: vec![semantic.semantic_observation_id.clone()],
+                    source_refs: semantic.source_refs.iter().map(source_ref_label).collect(),
+                    reading:
+                        "semantic observation is read as a selected path continuation candidate"
+                            .to_string(),
+                    non_conclusions: strings(&REQUIRED_HOMOTOPY_NON_CONCLUSIONS),
+                }
+            }))
+            .collect::<Vec<_>>();
+    let mut two_cells = law_policy
+        .obstruction_circuit_definitions
+        .iter()
+        .map(|definition| ArchSigHomotopyCellSummaryV0 {
+            cell_id: format!("2-cell:{}", stable_id(&definition.obstruction_circuit_id)),
+            cell_dimension: 2,
+            cell_kind: definition.circuit_kind.clone(),
+            status: "lawPolicyRequired".to_string(),
+            observation_refs: vec![definition.witness_rule_ref.clone()],
+            source_refs: Vec::new(),
+            reading:
+                "LawPolicy obstruction definition is read as a bounded 2-cell / filler requirement"
+                    .to_string(),
+            non_conclusions: strings(&REQUIRED_HOMOTOPY_NON_CONCLUSIONS),
+        })
+        .collect::<Vec<_>>();
+    if two_cells.is_empty() {
+        two_cells.push(ArchSigHomotopyCellSummaryV0 {
+            cell_id: "2-cell:missing-filler-boundary".to_string(),
+            cell_dimension: 2,
+            cell_kind: "missing-filler-boundary".to_string(),
+            status: "needsReview".to_string(),
+            observation_refs: archmap
+                .observation_gaps
+                .iter()
+                .map(|gap| gap.gap_id.clone())
+                .collect(),
+            source_refs: Vec::new(),
+            reading: "missing filler evidence remains an architectural-hole boundary".to_string(),
+            non_conclusions: strings(&REQUIRED_HOMOTOPY_NON_CONCLUSIONS),
+        });
+    }
+
+    ArchSigHomotopyComplexSummaryV0 {
+        complex_id: format!("homotopy-complex:{}", stable_id(&archmap.map_id)),
+        profile_ref,
+        status: if profile.is_some() {
+            "measuredProfile"
+        } else {
+            "profileAbsent"
+        }
+        .to_string(),
+        selected_axis_refs,
+        zero_cells,
+        one_cells,
+        two_cells,
+        source_refs: all_archmap_source_ref_labels(archmap),
+        coverage_boundary: profile
+            .map(|profile| profile.coverage_boundary.clone())
+            .unwrap_or_else(|| {
+                "homotopy profile absent; path, filler, loop, and zero readings remain blocked"
+                    .to_string()
+            }),
+        exactness_assumptions: profile
+            .map(|profile| profile.exactness_assumption_refs.clone())
+            .filter(|refs| !refs.is_empty())
+            .unwrap_or_else(|| law_policy.exactness_assumptions.clone()),
+        evidence_boundary:
+            "homotopy complex is built from supplied ArchMap evidence and selected LawPolicy recipe"
+                .to_string(),
+        non_conclusions: strings(&REQUIRED_HOMOTOPY_NON_CONCLUSIONS),
+    }
+}
+
+fn build_path_pair_candidates(
+    archmap: &ArchMapDocumentV0,
+    law_policy: &LawPolicyDocumentV0,
+    complex: &ArchSigHomotopyComplexSummaryV0,
+    path_homotopy_diagram_readings: &[ArchSigPathHomotopyDiagramReadingV0],
+) -> Vec<ArchSigPathPairCandidateV0> {
+    let mut observation_refs = all_atom_refs(archmap);
+    observation_refs.extend(
+        archmap
+            .semantic_observations
+            .iter()
+            .map(|semantic| semantic.semantic_observation_id.clone()),
+    );
+    observation_refs.sort();
+    observation_refs.dedup();
+    let source_refs = source_refs_for_observation_refs(archmap, &observation_refs);
+    let p_path_ref = path_homotopy_diagram_readings
+        .first()
+        .map(|reading| reading.reading_id.clone())
+        .unwrap_or_else(|| "path:unresolved".to_string());
+    let q_path_ref = archmap
+        .molecule_observations
+        .first()
+        .map(|molecule| molecule.molecule_observation_id.clone())
+        .unwrap_or_else(|| "path:missing-molecule".to_string());
+
+    let mut candidates = vec![ArchSigPathPairCandidateV0 {
+        candidate_id: "path-pair:semantic-contract-loop".to_string(),
+        candidate_source: "lawPolicyRequired".to_string(),
+        status: if archmap.semantic_observations.is_empty() {
+            "needsReview"
+        } else {
+            "sourceConfirmed"
+        }
+        .to_string(),
+        p_path_ref,
+        q_path_ref,
+        shared_endpoint_refs: archmap
+            .atom_observations
+            .iter()
+            .take(2)
+            .map(|atom| atom.atom_observation_id.clone())
+            .collect(),
+        selected_axis_refs: complex.selected_axis_refs.clone(),
+        source_refs,
+        observation_refs,
+        coverage_boundary: complex.coverage_boundary.clone(),
+        evidence_boundary: "candidate path pair is a bounded review cue, not a path equality proof"
+            .to_string(),
+        non_conclusions: strings(&REQUIRED_HOMOTOPY_NON_CONCLUSIONS),
+    }];
+
+    if let Some(profile) = law_policy.homotopy_measurement_profile.as_ref() {
+        candidates.extend(profile.path_discovery_rules.iter().map(|rule| {
+            ArchSigPathPairCandidateV0 {
+                candidate_id: format!("path-pair:{}", stable_id(&rule.rule_id)),
+                candidate_source: "llmDiscovered".to_string(),
+                status: "needsReview".to_string(),
+                p_path_ref: rule.rule_id.clone(),
+                q_path_ref: rule.path_source_kind.clone(),
+                shared_endpoint_refs: archmap
+                    .atom_observations
+                    .iter()
+                    .take(2)
+                    .map(|atom| atom.atom_observation_id.clone())
+                    .collect(),
+                selected_axis_refs: complex.selected_axis_refs.clone(),
+                source_refs: all_archmap_source_ref_labels(archmap),
+                observation_refs: all_atom_refs(archmap),
+                coverage_boundary: profile.coverage_boundary.clone(),
+                evidence_boundary: rule.evidence_boundary.clone(),
+                non_conclusions: strings(&REQUIRED_HOMOTOPY_NON_CONCLUSIONS),
+            }
+        }));
+    }
+    candidates
+}
+
+fn build_loop_candidates(
+    archmap: &ArchMapDocumentV0,
+    law_policy: &LawPolicyDocumentV0,
+    path_pair_candidates: &[ArchSigPathPairCandidateV0],
+    complex: &ArchSigHomotopyComplexSummaryV0,
+) -> Vec<ArchSigLoopCandidateV0> {
+    let filler_rules = law_policy
+        .homotopy_measurement_profile
+        .as_ref()
+        .map(|profile| profile.filler_rules.clone())
+        .unwrap_or_default();
+    let candidate_gap_ids = path_pair_candidates
+        .iter()
+        .map(|candidate| {
+            let ids = matching_observation_gap_ids(archmap, candidate);
+            (candidate.candidate_id.clone(), ids)
+        })
+        .collect::<BTreeMap<_, _>>();
+    let has_targeted_gap = candidate_gap_ids
+        .values()
+        .any(|gap_ids| !gap_ids.is_empty());
+    path_pair_candidates
+        .iter()
+        .enumerate()
+        .map(|(index, candidate)| {
+            let filler_candidate_refs = filler_rules
+                .iter()
+                .map(|rule| rule.rule_id.clone())
+                .collect::<Vec<_>>();
+            let missing_filler_evidence = candidate_gap_ids
+                .get(&candidate.candidate_id)
+                .cloned()
+                .unwrap_or_default();
+            let missing_filler_evidence = if has_targeted_gap {
+                missing_filler_evidence
+            } else {
+                archmap
+                    .observation_gaps
+                    .iter()
+                    .map(|gap| gap.gap_id.clone())
+                    .collect()
+            };
+            let has_filler_candidates = !filler_candidate_refs.is_empty();
+            let has_missing_filler = !missing_filler_evidence.is_empty();
+            ArchSigLoopCandidateV0 {
+                loop_id: format!(
+                    "loop-candidate:{}-{index}",
+                    stable_id(&candidate.candidate_id)
+                ),
+                path_pair_ref: candidate.candidate_id.clone(),
+                candidate_source: candidate.candidate_source.clone(),
+                status: if has_filler_candidates && !has_missing_filler {
+                    "filledLoop"
+                } else if has_filler_candidates {
+                    "unfilledLoop"
+                } else {
+                    "needsReview"
+                }
+                .to_string(),
+                path_refs: vec![candidate.p_path_ref.clone(), candidate.q_path_ref.clone()],
+                filler_candidate_refs,
+                missing_filler_evidence,
+                selected_axis_refs: complex.selected_axis_refs.clone(),
+                source_refs: candidate.source_refs.clone(),
+                coverage_boundary: complex.coverage_boundary.clone(),
+                evidence_boundary:
+                    "loop candidate is a bounded homotopy review surface, not a violation proof"
+                        .to_string(),
+                non_conclusions: strings(&REQUIRED_HOMOTOPY_NON_CONCLUSIONS),
+            }
+        })
+        .collect()
+}
+
+fn matching_observation_gap_ids(
+    archmap: &ArchMapDocumentV0,
+    candidate: &ArchSigPathPairCandidateV0,
+) -> Vec<String> {
+    archmap
+        .observation_gaps
+        .iter()
+        .filter(|gap| {
+            text_matches_candidate(candidate, [&gap.gap_id, &gap.subject_ref, &gap.reason])
+        })
+        .map(|gap| gap.gap_id.clone())
+        .collect()
+}
+
+fn build_filler_candidate_readings(
+    archmap: &ArchMapDocumentV0,
+    law_policy: &LawPolicyDocumentV0,
+    loop_candidates: &[ArchSigLoopCandidateV0],
+) -> Vec<ArchSigFillerCandidateReadingV0> {
+    let Some(profile) = law_policy.homotopy_measurement_profile.as_ref() else {
+        return Vec::new();
+    };
+    let all_source_refs = all_archmap_source_ref_labels(archmap);
+    loop_candidates
+        .iter()
+        .flat_map(|loop_candidate| {
+            profile.filler_rules.iter().map(|rule| {
+                let docs_refs = rule
+                    .required_source_ref_kinds
+                    .iter()
+                    .filter(|kind| {
+                        let lower = kind.to_ascii_lowercase();
+                        lower.contains("doc") || lower.contains("policy")
+                    })
+                    .map(|kind| format!("required-source-kind:{kind}"))
+                    .collect::<Vec<_>>();
+                let runtime_refs = rule
+                    .required_source_ref_kinds
+                    .iter()
+                    .filter(|kind| kind.to_ascii_lowercase().contains("runtime"))
+                    .map(|kind| format!("required-source-kind:{kind}"))
+                    .collect::<Vec<_>>();
+                let next_check_refs = if rule.required_source_ref_kinds.is_empty() {
+                    vec![format!("find-filler-evidence:{}", rule.rule_id)]
+                } else {
+                    rule.required_source_ref_kinds
+                        .iter()
+                        .map(|kind| format!("check-filler-source-kind:{kind}"))
+                        .collect()
+                };
+                ArchSigFillerCandidateReadingV0 {
+                    reading_id: format!(
+                        "filler-candidate:{}:{}",
+                        stable_id(&loop_candidate.loop_id),
+                        stable_id(&rule.rule_id)
+                    ),
+                    loop_ref: loop_candidate.loop_id.clone(),
+                    filler_rule_ref: rule.rule_id.clone(),
+                    filler_kind: rule.filler_kind.clone(),
+                    status: "candidate".to_string(),
+                    source_refs: all_source_refs.clone(),
+                    docs_refs,
+                    runtime_refs,
+                    next_check_refs,
+                    evidence_boundary: rule.evidence_boundary.clone(),
+                    non_conclusions: strings(&REQUIRED_HOMOTOPY_NON_CONCLUSIONS),
+                }
+            })
+        })
+        .collect()
+}
+
+fn build_architectural_hole_readings(
+    archmap: &ArchMapDocumentV0,
+    loop_candidates: &[ArchSigLoopCandidateV0],
+    filler_candidate_readings: &[ArchSigFillerCandidateReadingV0],
+) -> Vec<ArchSigArchitecturalHoleReadingV0> {
+    let filler_by_loop = filler_candidate_readings
+        .iter()
+        .map(|reading| reading.loop_ref.as_str())
+        .collect::<BTreeSet<_>>();
+    loop_candidates
+        .iter()
+        .filter(|loop_candidate| {
+            !filler_by_loop.contains(loop_candidate.loop_id.as_str())
+                || !loop_candidate.missing_filler_evidence.is_empty()
+                || loop_candidate.status == "unfilledLoop"
+        })
+        .map(|loop_candidate| {
+            let next_check_refs = if loop_candidate.missing_filler_evidence.is_empty() {
+                vec!["search-contract-test-runtime-or-policy-filler".to_string()]
+            } else {
+                loop_candidate
+                    .missing_filler_evidence
+                    .iter()
+                    .map(|gap| format!("resolve-missing-filler:{gap}"))
+                    .collect()
+            };
+            ArchSigArchitecturalHoleReadingV0 {
+                reading_id: format!("architectural-hole:{}", stable_id(&loop_candidate.loop_id)),
+                loop_ref: loop_candidate.loop_id.clone(),
+                status: "architecturalHole".to_string(),
+                missing_filler_evidence: if loop_candidate.missing_filler_evidence.is_empty() {
+                    archmap
+                        .observation_gaps
+                        .iter()
+                        .map(|gap| gap.gap_id.clone())
+                        .collect()
+                } else {
+                    loop_candidate.missing_filler_evidence.clone()
+                },
+                next_check_refs,
+                source_refs: loop_candidate.source_refs.clone(),
+                coverage_boundary: loop_candidate.coverage_boundary.clone(),
+                evidence_boundary:
+                    "architectural hole records missing filler evidence, not violation proof"
+                        .to_string(),
+                non_conclusions: strings(&REQUIRED_HOMOTOPY_NON_CONCLUSIONS),
+            }
+        })
+        .collect()
+}
+
+fn build_homotopy_holonomy_readings(
+    archmap: &ArchMapDocumentV0,
+    law_policy: &LawPolicyDocumentV0,
+    loop_candidates: &[ArchSigLoopCandidateV0],
+    path_pair_candidates: &[ArchSigPathPairCandidateV0],
+    filler_candidate_readings: &[ArchSigFillerCandidateReadingV0],
+    architectural_hole_readings: &[ArchSigArchitecturalHoleReadingV0],
+) -> Vec<ArchSigHomotopyHolonomyReadingV0> {
+    let distance_kind = law_policy
+        .homotopy_measurement_profile
+        .as_ref()
+        .map(|profile| {
+            profile
+                .loop_measurement_policy
+                .holonomy_distance_kind
+                .clone()
+        })
+        .unwrap_or_else(|| "selected-axis-continuation-distance".to_string());
+    let filler_by_loop = filler_candidate_readings.iter().fold(
+        BTreeMap::<String, Vec<String>>::new(),
+        |mut acc, reading| {
+            acc.entry(reading.loop_ref.clone())
+                .or_default()
+                .push(reading.reading_id.clone());
+            acc
+        },
+    );
+    let missing_by_loop = architectural_hole_readings.iter().fold(
+        BTreeMap::<String, Vec<String>>::new(),
+        |mut acc, reading| {
+            acc.entry(reading.loop_ref.clone())
+                .or_default()
+                .extend(reading.missing_filler_evidence.clone());
+            acc
+        },
+    );
+    loop_candidates
+        .iter()
+        .flat_map(|loop_candidate| {
+            let path_pair = path_pair_candidates
+                .iter()
+                .find(|candidate| candidate.candidate_id == loop_candidate.path_pair_ref);
+            let selected_axis_refs = if loop_candidate.selected_axis_refs.is_empty() {
+                vec!["axis:unselected".to_string()]
+            } else {
+                loop_candidate.selected_axis_refs.clone()
+            };
+            selected_axis_refs
+                .into_iter()
+                .map(|axis_ref| {
+                    let missing_filler_refs = missing_by_loop
+                        .get(&loop_candidate.loop_id)
+                        .cloned()
+                        .unwrap_or_default();
+                    let filler_refs = filler_by_loop
+                        .get(&loop_candidate.loop_id)
+                        .cloned()
+                        .unwrap_or_default();
+                    ArchSigHomotopyHolonomyReadingV0 {
+                        reading_id: format!(
+                            "homotopy-holonomy:{}:{}",
+                            stable_id(&loop_candidate.loop_id),
+                            stable_id(&axis_ref)
+                        ),
+                        path_pair_ref: loop_candidate.path_pair_ref.clone(),
+                        loop_ref: loop_candidate.loop_id.clone(),
+                        axis_ref: axis_ref.clone(),
+                        distance_kind: distance_kind.clone(),
+                        value: if missing_filler_refs.is_empty()
+                            && !semantic_observation_matches_path_pair(archmap, path_pair)
+                        {
+                            0
+                        } else {
+                            1
+                        },
+                        compared_continuation_summary: format!(
+                            "{} vs {} on {axis_ref}",
+                            path_pair
+                                .map(|candidate| candidate.p_path_ref.as_str())
+                                .unwrap_or("path:p"),
+                            path_pair
+                                .map(|candidate| candidate.q_path_ref.as_str())
+                                .unwrap_or("path:q")
+                        ),
+                        source_refs: loop_candidate.source_refs.clone(),
+                        observation_refs: path_pair
+                            .map(|candidate| candidate.observation_refs.clone())
+                            .unwrap_or_default(),
+                        filler_refs,
+                        missing_filler_refs,
+                        coverage_boundary: loop_candidate.coverage_boundary.clone(),
+                        exactness_assumption_status:
+                            "bounded selected-axis continuation comparison; not theorem exactness"
+                                .to_string(),
+                        non_conclusions: strings(&REQUIRED_HOMOTOPY_NON_CONCLUSIONS),
+                    }
+                })
+                .collect::<Vec<_>>()
+        })
+        .collect()
+}
+
+fn semantic_observation_matches_path_pair(
+    archmap: &ArchMapDocumentV0,
+    path_pair: Option<&ArchSigPathPairCandidateV0>,
+) -> bool {
+    let Some(path_pair) = path_pair else {
+        return false;
+    };
+    archmap.semantic_observations.iter().any(|semantic| {
+        text_matches_candidate(
+            path_pair,
+            [
+                &semantic.semantic_observation_id,
+                &semantic.semantic_family,
+                &semantic.subject_ref,
+                &semantic.predicate,
+                &semantic.evidence_boundary,
+            ],
+        )
+    })
+}
+
+fn text_matches_candidate<'a>(
+    candidate: &ArchSigPathPairCandidateV0,
+    values: impl IntoIterator<Item = &'a String>,
+) -> bool {
+    let needles = [
+        candidate.candidate_id.as_str(),
+        candidate.p_path_ref.as_str(),
+        candidate.q_path_ref.as_str(),
+    ]
+    .into_iter()
+    .map(|value| value.to_ascii_lowercase())
+    .collect::<Vec<_>>();
+    values.into_iter().any(|value| {
+        let value = value.to_ascii_lowercase();
+        needles
+            .iter()
+            .any(|needle| !needle.is_empty() && value.contains(needle))
+    })
+}
+
+fn build_stokes_style_readings(
+    complex: &ArchSigHomotopyComplexSummaryV0,
+    loop_candidates: &[ArchSigLoopCandidateV0],
+    holonomy_readings: &[ArchSigHomotopyHolonomyReadingV0],
+    filler_candidate_readings: &[ArchSigFillerCandidateReadingV0],
+    architectural_hole_readings: &[ArchSigArchitecturalHoleReadingV0],
+) -> Vec<ArchSigStokesStyleReadingV0> {
+    let filler_by_loop = filler_candidate_readings
+        .iter()
+        .map(|reading| reading.loop_ref.as_str())
+        .collect::<BTreeSet<_>>();
+    let hole_by_loop = architectural_hole_readings
+        .iter()
+        .map(|reading| reading.loop_ref.as_str())
+        .collect::<BTreeSet<_>>();
+    loop_candidates
+        .iter()
+        .map(|loop_candidate| {
+            let refs = holonomy_readings
+                .iter()
+                .filter(|reading| reading.loop_ref == loop_candidate.loop_id)
+                .map(|reading| reading.reading_id.clone())
+                .collect::<Vec<_>>();
+            let has_nonzero = holonomy_readings
+                .iter()
+                .any(|reading| reading.loop_ref == loop_candidate.loop_id && reading.value != 0);
+            let has_filler = filler_by_loop.contains(loop_candidate.loop_id.as_str());
+            let has_hole = hole_by_loop.contains(loop_candidate.loop_id.as_str());
+            let local_curvature_cell_candidates = if has_filler && !has_hole && has_nonzero {
+                complex
+                    .two_cells
+                    .iter()
+                    .map(|cell| cell.cell_id.clone())
+                    .collect()
+            } else {
+                Vec::new()
+            };
+            let review_queue_refs = if local_curvature_cell_candidates.is_empty() {
+                let hole_refs = architectural_hole_readings
+                    .iter()
+                    .filter(|reading| reading.loop_ref == loop_candidate.loop_id)
+                    .map(|reading| reading.reading_id.clone())
+                    .collect::<Vec<_>>();
+                if hole_refs.is_empty() {
+                    refs.clone()
+                } else {
+                    hole_refs
+                }
+            } else {
+                local_curvature_cell_candidates.clone()
+            };
+            ArchSigStokesStyleReadingV0 {
+                reading_id: format!("stokes-style:{}", stable_id(&loop_candidate.loop_id)),
+                loop_ref: loop_candidate.loop_id.clone(),
+                status: match (has_filler, has_hole, has_nonzero) {
+                    (_, true, _) => "blockedByArchitecturalHole",
+                    (true, false, true) => "filledNonzeroHolonomyReview",
+                    (true, false, false) => "measuredZeroWithinBoundary",
+                    _ => "measuredZeroWithinBoundary",
+                }
+                .to_string(),
+                holonomy_reading_refs: refs,
+                local_curvature_cell_candidates,
+                review_queue_refs,
+                coverage_boundary: loop_candidate.coverage_boundary.clone(),
+                evidence_boundary:
+                    "Stokes-style reading is a bounded review queue, not theorem discharge"
+                        .to_string(),
+                non_conclusions: strings(&REQUIRED_HOMOTOPY_NON_CONCLUSIONS),
+            }
+        })
+        .collect()
+}
+
+fn build_architecture_homotopy_report(
+    complex: &ArchSigHomotopyComplexSummaryV0,
+    loop_candidates: &[ArchSigLoopCandidateV0],
+    architectural_hole_readings: &[ArchSigArchitecturalHoleReadingV0],
+    holonomy_readings: &[ArchSigHomotopyHolonomyReadingV0],
+    stokes_style_readings: &[ArchSigStokesStyleReadingV0],
+) -> ArchSigArchitectureHomotopyReportV0 {
+    let unfilled_loops = architectural_hole_readings
+        .iter()
+        .map(|reading| reading.loop_ref.clone())
+        .collect::<BTreeSet<_>>()
+        .into_iter()
+        .collect::<Vec<_>>();
+    let filled_loops = stokes_style_readings
+        .iter()
+        .filter(|reading| {
+            reading.status == "filledNonzeroHolonomyReview"
+                || reading.status == "measuredZeroWithinBoundary"
+        })
+        .map(|reading| reading.loop_ref.clone())
+        .collect::<BTreeSet<_>>()
+        .into_iter()
+        .collect::<Vec<_>>();
+    let nonzero_holonomy_loops = holonomy_readings
+        .iter()
+        .filter(|reading| reading.value != 0)
+        .map(|reading| reading.loop_ref.clone())
+        .collect::<BTreeSet<_>>()
+        .into_iter()
+        .collect::<Vec<_>>();
+    let top_local_curvature_cells = stokes_style_readings
+        .iter()
+        .flat_map(|reading| reading.local_curvature_cell_candidates.clone())
+        .collect::<BTreeSet<_>>()
+        .into_iter()
+        .collect::<Vec<_>>();
+    let coverage_gaps = architectural_hole_readings
+        .iter()
+        .flat_map(|reading| reading.missing_filler_evidence.clone())
+        .collect::<BTreeSet<_>>()
+        .into_iter()
+        .collect::<Vec<_>>();
+    let loop_count = loop_candidates.len() as i64;
+    let filled_count = filled_loops.len() as i64;
+    let unfilled_count = unfilled_loops.len() as i64;
+    let nonzero_count = nonzero_holonomy_loops.len() as i64;
+
+    ArchSigArchitectureHomotopyReportV0 {
+        report_id: format!("architecture-homotopy-report:{}", stable_id(&complex.profile_ref)),
+        profile_ref: complex.profile_ref.clone(),
+        status: if unfilled_count > 0 {
+            "needsReview"
+        } else {
+            "measured"
+        }
+        .to_string(),
+        filled_loops,
+        unfilled_loops,
+        nonzero_holonomy_loops,
+        top_local_curvature_cells,
+        aggregate_readings: vec![
+            ArchSigHomotopyAggregateReadingV0 {
+                aggregate_id: "beta1:bounded-unfilled-loop-count".to_string(),
+                value: unfilled_count,
+                reading: "bounded count of unfilled architectural-hole loops".to_string(),
+                boundary: "selected measured complex only; not topological Betti number".to_string(),
+            },
+            ArchSigHomotopyAggregateReadingV0 {
+                aggregate_id: "hol-mass:nonzero-holonomy-loop-count".to_string(),
+                value: nonzero_count,
+                reading: "bounded count of loops with nonzero selected-axis holonomy".to_string(),
+                boundary: "not future incident or empirical cost prediction".to_string(),
+            },
+            ArchSigHomotopyAggregateReadingV0 {
+                aggregate_id: "fill-ratio:filled-loop-count".to_string(),
+                value: filled_count,
+                reading: format!("filled loop count out of {loop_count} measured loop candidates"),
+                boundary: "count, not normalized quality score".to_string(),
+            },
+        ],
+        coverage_gaps,
+        measured_boundary:
+            "ArchitectureHomotopyReport is bounded to supplied ArchMap, selected LawPolicy, and homotopy measurement profile"
+                .to_string(),
+        recommended_review_focus: vec![
+            "start with nonzero holonomy loops and compare continuation summaries".to_string(),
+            "resolve architectural holes by adding contract, test, runtime, or policy filler evidence"
+                .to_string(),
+            "inspect local curvature cells only for filled nonzero holonomy review queues"
+                .to_string(),
+        ],
+        non_conclusions: vec![
+            "ArchitectureHomotopyReport is not a single architecture quality score".to_string(),
+            "ArchitectureHomotopyReport does not prove global semantic flatness".to_string(),
+            "Unfilled loops are architectural holes, not automatic violations".to_string(),
+            "Stokes-style readings are review queues, not theorem discharge".to_string(),
+        ],
+    }
+}
+
 fn build_bounded_judgements(
     archmap: &ArchMapDocumentV0,
     obstruction_circuits: &[ArchSigObstructionCircuitV0],
@@ -6934,6 +7997,8 @@ fn build_llm_interpretation_packet(
     spectral_mode_readings: &[ArchSigSpectralModeReadingV0],
     spectral_drilldown_readings: &[ArchSigSpectralDrilldownReadingV0],
     curvature_support_readings: &[ArchSigCurvatureSupportReadingV0],
+    curvature_transfer_readings: &[ArchSigCurvatureTransferReadingV0],
+    architecture_spectrum_report: Option<&ArchSigArchitectureSpectrumReportV0>,
     transfer_bridge_readings: &[ArchSigTransferBridgeReadingV0],
     atom_support_axis_readings: &[ArchSigAtomSupportAxisReadingV0],
     atom_compatibility_readings: &[ArchSigAtomCompatibilityReadingV0],
@@ -7063,6 +8128,34 @@ fn build_llm_interpretation_packet(
                 )
             })
             .collect(),
+        curvature_transfer_summary: curvature_transfer_readings
+            .iter()
+            .map(|reading| {
+                format!(
+                    "{} edges={} recurrentModes={} rho={} ({})",
+                    reading.reading_id,
+                    reading.transfer_edges.len(),
+                    reading.recurrent_obstruction_modes.len(),
+                    reading.spectral_radius_reading.value,
+                    reading.status
+                )
+            })
+            .collect(),
+        architecture_spectrum_report_summary: architecture_spectrum_report
+            .map(|report| {
+                vec![
+                    format!(
+                        "{} hotspots={} recurrent={} clusters={} ({})",
+                        report.report_id,
+                        report.top_hotspots.len(),
+                        report.recurrent_obstructions.len(),
+                        report.top_witness_clusters.len(),
+                        report.status
+                    ),
+                    report.measured_boundary.clone(),
+                ]
+            })
+            .unwrap_or_default(),
         transfer_bridge_summary: transfer_bridge_readings
             .iter()
             .map(|reading| {
@@ -7513,6 +8606,10 @@ pub fn validate_archsig_analysis_packet_report(
         check_schema_version(packet),
         check_refs_and_identity(packet),
         check_north_star_aat_surfaces(packet),
+        check_homotopy_complex_candidate_surface(packet),
+        check_filler_architectural_hole_surface(packet),
+        check_homotopy_holonomy_stokes_surface(packet),
+        check_architecture_homotopy_report_surface(packet),
         check_bounded_judgement_surface(packet),
         check_analytic_and_principle_surfaces(packet),
         check_workflow_risk_surface(packet),
@@ -7520,6 +8617,8 @@ pub fn validate_archsig_analysis_packet_report(
         check_spectral_mode_surface(packet),
         check_spectral_drilldown_surface(packet),
         check_curvature_support_surface(packet),
+        check_curvature_transfer_surface(packet),
+        check_architecture_spectrum_report_surface(packet),
         check_transfer_bridge_surface(packet),
         check_aat_structural_reading_surfaces(packet),
         check_current_state_evolution_boundary(packet),
@@ -7554,6 +8653,7 @@ pub fn validate_archsig_analysis_packet_report(
         spectral_mode_reading_count: packet.spectral_mode_readings.len(),
         spectral_drilldown_reading_count: packet.spectral_drilldown_readings.len(),
         curvature_support_reading_count: packet.curvature_support_readings.len(),
+        curvature_transfer_reading_count: packet.curvature_transfer_readings.len(),
         transfer_bridge_reading_count: packet.transfer_bridge_readings.len(),
         atom_support_axis_reading_count: packet.atom_support_axis_readings.len(),
         atom_compatibility_reading_count: packet.atom_compatibility_readings.len(),
@@ -7724,6 +8824,538 @@ fn check_north_star_aat_surfaces(packet: &ArchSigAnalysisPacketV0) -> Validation
     check_from_examples(
         "archsig-analysis-packet-north-star-aat-surfaces",
         "packet represents all AAT concept surfaces required by the North Star PRD",
+        examples,
+        "fail",
+    )
+}
+
+fn check_homotopy_complex_candidate_surface(packet: &ArchSigAnalysisPacketV0) -> ValidationCheck {
+    let mut examples = Vec::new();
+    let Some(complex) = packet.homotopy_complex_summary.as_ref() else {
+        return check_from_examples(
+            "archsig-analysis-packet-homotopy-complex-candidates",
+            "packet exposes bounded homotopy complex, path pair candidates, and loop candidates",
+            vec![generic_validation_example(
+                &packet.analysis_id,
+                "homotopyComplexSummary",
+                "packet must expose a bounded homotopy complex summary",
+            )],
+            "fail",
+        );
+    };
+    push_blank(
+        &mut examples,
+        "homotopyComplexSummary.complexId",
+        &complex.complex_id,
+    );
+    push_blank(
+        &mut examples,
+        "homotopyComplexSummary.profileRef",
+        &complex.profile_ref,
+    );
+    push_blank(
+        &mut examples,
+        "homotopyComplexSummary.status",
+        &complex.status,
+    );
+    if complex.selected_axis_refs.is_empty() || has_blank(&complex.selected_axis_refs) {
+        examples.push(generic_validation_example(
+            &complex.complex_id,
+            "selectedAxisRefs",
+            "homotopy complex must retain selected axes",
+        ));
+    }
+    for (field, cells) in [
+        ("zeroCells", &complex.zero_cells),
+        ("oneCells", &complex.one_cells),
+        ("twoCells", &complex.two_cells),
+    ] {
+        if cells.is_empty() {
+            examples.push(generic_validation_example(
+                &complex.complex_id,
+                field,
+                "homotopy complex must expose 0-cell / 1-cell / 2-cell summaries",
+            ));
+        }
+        for cell in cells.iter() {
+            push_blank(&mut examples, &format!("{field}[].cellId"), &cell.cell_id);
+            push_blank(
+                &mut examples,
+                &format!("{} cellKind", cell.cell_id),
+                &cell.cell_kind,
+            );
+            push_blank(
+                &mut examples,
+                &format!("{} status", cell.cell_id),
+                &cell.status,
+            );
+            if cell.non_conclusions.is_empty() || has_blank(&cell.non_conclusions) {
+                examples.push(generic_validation_example(
+                    &cell.cell_id,
+                    "nonConclusions",
+                    "homotopy cells must keep non-conclusions explicit",
+                ));
+            }
+        }
+    }
+    push_blank(
+        &mut examples,
+        "homotopyComplexSummary.coverageBoundary",
+        &complex.coverage_boundary,
+    );
+    push_blank(
+        &mut examples,
+        "homotopyComplexSummary.evidenceBoundary",
+        &complex.evidence_boundary,
+    );
+    if complex.non_conclusions.is_empty() || has_blank(&complex.non_conclusions) {
+        examples.push(generic_validation_example(
+            &complex.complex_id,
+            "nonConclusions",
+            "homotopy complex must keep non-conclusions explicit",
+        ));
+    }
+    if packet.path_pair_candidates.is_empty() {
+        examples.push(generic_validation_example(
+            &packet.analysis_id,
+            "pathPairCandidates",
+            "packet must expose path pair candidates",
+        ));
+    }
+    for candidate in &packet.path_pair_candidates {
+        push_blank(
+            &mut examples,
+            "pathPairCandidates[].candidateId",
+            &candidate.candidate_id,
+        );
+        push_blank(
+            &mut examples,
+            &format!("{} candidateSource", candidate.candidate_id),
+            &candidate.candidate_source,
+        );
+        push_blank(
+            &mut examples,
+            &format!("{} status", candidate.candidate_id),
+            &candidate.status,
+        );
+        push_blank(
+            &mut examples,
+            &format!("{} pPathRef", candidate.candidate_id),
+            &candidate.p_path_ref,
+        );
+        push_blank(
+            &mut examples,
+            &format!("{} qPathRef", candidate.candidate_id),
+            &candidate.q_path_ref,
+        );
+        if candidate.shared_endpoint_refs.is_empty() || has_blank(&candidate.shared_endpoint_refs) {
+            examples.push(generic_validation_example(
+                &candidate.candidate_id,
+                "sharedEndpointRefs",
+                "path pair candidate must keep endpoint refs traceable",
+            ));
+        }
+        if candidate.source_refs.is_empty() && candidate.observation_refs.is_empty() {
+            examples.push(generic_validation_example(
+                &candidate.candidate_id,
+                "sourceRefs/observationRefs",
+                "path pair candidate must carry traceable refs",
+            ));
+        }
+        push_blank(
+            &mut examples,
+            &format!("{} coverageBoundary", candidate.candidate_id),
+            &candidate.coverage_boundary,
+        );
+        if candidate.non_conclusions.is_empty() || has_blank(&candidate.non_conclusions) {
+            examples.push(generic_validation_example(
+                &candidate.candidate_id,
+                "nonConclusions",
+                "path pair candidate must keep non-conclusions explicit",
+            ));
+        }
+    }
+    if packet.loop_candidates.is_empty() {
+        examples.push(generic_validation_example(
+            &packet.analysis_id,
+            "loopCandidates",
+            "packet must expose loop candidates",
+        ));
+    }
+    for candidate in &packet.loop_candidates {
+        push_blank(&mut examples, "loopCandidates[].loopId", &candidate.loop_id);
+        push_blank(
+            &mut examples,
+            &format!("{} pathPairRef", candidate.loop_id),
+            &candidate.path_pair_ref,
+        );
+        push_blank(
+            &mut examples,
+            &format!("{} status", candidate.loop_id),
+            &candidate.status,
+        );
+        if candidate.path_refs.len() < 2 || has_blank(&candidate.path_refs) {
+            examples.push(generic_validation_example(
+                &candidate.loop_id,
+                "pathRefs",
+                "loop candidate must keep both path refs",
+            ));
+        }
+        if candidate.filler_candidate_refs.is_empty()
+            && candidate.missing_filler_evidence.is_empty()
+        {
+            examples.push(generic_validation_example(
+                &candidate.loop_id,
+                "fillerCandidateRefs/missingFillerEvidence",
+                "loop candidate must distinguish filler candidates from missing filler evidence",
+            ));
+        }
+        push_blank(
+            &mut examples,
+            &format!("{} coverageBoundary", candidate.loop_id),
+            &candidate.coverage_boundary,
+        );
+        if candidate.non_conclusions.is_empty() || has_blank(&candidate.non_conclusions) {
+            examples.push(generic_validation_example(
+                &candidate.loop_id,
+                "nonConclusions",
+                "loop candidate must keep non-conclusions explicit",
+            ));
+        }
+    }
+
+    check_from_examples(
+        "archsig-analysis-packet-homotopy-complex-candidates",
+        "packet exposes bounded homotopy complex, path pair candidates, and loop candidates",
+        examples,
+        "fail",
+    )
+}
+
+fn check_filler_architectural_hole_surface(packet: &ArchSigAnalysisPacketV0) -> ValidationCheck {
+    let loop_ids = packet
+        .loop_candidates
+        .iter()
+        .map(|candidate| candidate.loop_id.as_str())
+        .collect::<BTreeSet<_>>();
+    let mut examples = Vec::new();
+    let profile_absent = packet
+        .homotopy_complex_summary
+        .as_ref()
+        .map(|summary| summary.status == "profileAbsent")
+        .unwrap_or(false);
+    if packet.filler_candidate_readings.is_empty() && !profile_absent {
+        examples.push(generic_validation_example(
+            &packet.analysis_id,
+            "fillerCandidateReadings",
+            "packet must expose filler candidate readings",
+        ));
+    }
+    for reading in &packet.filler_candidate_readings {
+        push_blank(
+            &mut examples,
+            "fillerCandidateReadings[].readingId",
+            &reading.reading_id,
+        );
+        if !loop_ids.contains(reading.loop_ref.as_str()) {
+            examples.push(generic_validation_example(
+                &reading.reading_id,
+                &reading.loop_ref,
+                "filler candidate reading must reference a known loop candidate",
+            ));
+        }
+        push_blank(
+            &mut examples,
+            &format!("{} fillerKind", reading.reading_id),
+            &reading.filler_kind,
+        );
+        push_blank(
+            &mut examples,
+            &format!("{} status", reading.reading_id),
+            &reading.status,
+        );
+        if reading.next_check_refs.is_empty() || has_blank(&reading.next_check_refs) {
+            examples.push(generic_validation_example(
+                &reading.reading_id,
+                "nextCheckRefs",
+                "filler candidate reading must retain next checks",
+            ));
+        }
+        if reading.non_conclusions.is_empty() || has_blank(&reading.non_conclusions) {
+            examples.push(generic_validation_example(
+                &reading.reading_id,
+                "nonConclusions",
+                "filler candidate reading must keep non-conclusions explicit",
+            ));
+        }
+    }
+    if packet.architectural_hole_readings.is_empty() {
+        examples.push(generic_validation_example(
+            &packet.analysis_id,
+            "architecturalHoleReadings",
+            "packet must expose architectural hole readings for unfilled loops",
+        ));
+    }
+    for reading in &packet.architectural_hole_readings {
+        push_blank(
+            &mut examples,
+            "architecturalHoleReadings[].readingId",
+            &reading.reading_id,
+        );
+        if !loop_ids.contains(reading.loop_ref.as_str()) {
+            examples.push(generic_validation_example(
+                &reading.reading_id,
+                &reading.loop_ref,
+                "architectural hole reading must reference a known loop candidate",
+            ));
+        }
+        if reading.missing_filler_evidence.is_empty() || has_blank(&reading.missing_filler_evidence)
+        {
+            examples.push(generic_validation_example(
+                &reading.reading_id,
+                "missingFillerEvidence",
+                "architectural hole reading must retain missing filler evidence",
+            ));
+        }
+        if reading.next_check_refs.is_empty() || has_blank(&reading.next_check_refs) {
+            examples.push(generic_validation_example(
+                &reading.reading_id,
+                "nextCheckRefs",
+                "architectural hole reading must retain next checks",
+            ));
+        }
+        push_blank(
+            &mut examples,
+            &format!("{} coverageBoundary", reading.reading_id),
+            &reading.coverage_boundary,
+        );
+        if reading.non_conclusions.is_empty() || has_blank(&reading.non_conclusions) {
+            examples.push(generic_validation_example(
+                &reading.reading_id,
+                "nonConclusions",
+                "architectural hole reading must keep non-conclusions explicit",
+            ));
+        }
+    }
+
+    check_from_examples(
+        "archsig-analysis-packet-filler-architectural-hole-surface",
+        "packet distinguishes filler candidates from unfilled architectural holes and missing filler evidence",
+        examples,
+        "fail",
+    )
+}
+
+fn check_homotopy_holonomy_stokes_surface(packet: &ArchSigAnalysisPacketV0) -> ValidationCheck {
+    let loop_ids = packet
+        .loop_candidates
+        .iter()
+        .map(|candidate| candidate.loop_id.as_str())
+        .collect::<BTreeSet<_>>();
+    let path_pair_ids = packet
+        .path_pair_candidates
+        .iter()
+        .map(|candidate| candidate.candidate_id.as_str())
+        .collect::<BTreeSet<_>>();
+    let holonomy_ids = packet
+        .homotopy_holonomy_readings
+        .iter()
+        .map(|reading| reading.reading_id.as_str())
+        .collect::<BTreeSet<_>>();
+    let mut examples = Vec::new();
+    if packet.homotopy_holonomy_readings.is_empty() {
+        examples.push(generic_validation_example(
+            &packet.analysis_id,
+            "homotopyHolonomyReadings",
+            "packet must expose selected-axis homotopy holonomy readings",
+        ));
+    }
+    for reading in &packet.homotopy_holonomy_readings {
+        push_blank(
+            &mut examples,
+            "homotopyHolonomyReadings[].readingId",
+            &reading.reading_id,
+        );
+        if !path_pair_ids.contains(reading.path_pair_ref.as_str()) {
+            examples.push(generic_validation_example(
+                &reading.reading_id,
+                &reading.path_pair_ref,
+                "homotopy holonomy reading must reference a known path pair candidate",
+            ));
+        }
+        if !loop_ids.contains(reading.loop_ref.as_str()) {
+            examples.push(generic_validation_example(
+                &reading.reading_id,
+                &reading.loop_ref,
+                "homotopy holonomy reading must reference a known loop candidate",
+            ));
+        }
+        push_blank(
+            &mut examples,
+            &format!("{} axisRef", reading.reading_id),
+            &reading.axis_ref,
+        );
+        push_blank(
+            &mut examples,
+            &format!("{} distanceKind", reading.reading_id),
+            &reading.distance_kind,
+        );
+        push_blank(
+            &mut examples,
+            &format!("{} comparedContinuationSummary", reading.reading_id),
+            &reading.compared_continuation_summary,
+        );
+        if reading.filler_refs.is_empty() && reading.missing_filler_refs.is_empty() {
+            examples.push(generic_validation_example(
+                &reading.reading_id,
+                "fillerRefs/missingFillerRefs",
+                "homotopy holonomy reading must record filler or missing filler refs",
+            ));
+        }
+        if reading.non_conclusions.is_empty() || has_blank(&reading.non_conclusions) {
+            examples.push(generic_validation_example(
+                &reading.reading_id,
+                "nonConclusions",
+                "homotopy holonomy reading must keep non-conclusions explicit",
+            ));
+        }
+    }
+    if packet.stokes_style_readings.is_empty() {
+        examples.push(generic_validation_example(
+            &packet.analysis_id,
+            "stokesStyleReadings",
+            "packet must expose Stokes-style readings",
+        ));
+    }
+    for reading in &packet.stokes_style_readings {
+        push_blank(
+            &mut examples,
+            "stokesStyleReadings[].readingId",
+            &reading.reading_id,
+        );
+        if !loop_ids.contains(reading.loop_ref.as_str()) {
+            examples.push(generic_validation_example(
+                &reading.reading_id,
+                &reading.loop_ref,
+                "Stokes-style reading must reference a known loop candidate",
+            ));
+        }
+        for holonomy_ref in &reading.holonomy_reading_refs {
+            if !holonomy_ids.contains(holonomy_ref.as_str()) {
+                examples.push(generic_validation_example(
+                    &reading.reading_id,
+                    holonomy_ref,
+                    "Stokes-style reading must reference known holonomy readings",
+                ));
+            }
+        }
+        if reading.status == "filledNonzeroHolonomyReview"
+            && reading.local_curvature_cell_candidates.is_empty()
+        {
+            examples.push(generic_validation_example(
+                &reading.reading_id,
+                "localCurvatureCellCandidates",
+                "filled nonzero holonomy readings must provide a local curvature review queue",
+            ));
+        }
+        if reading.review_queue_refs.is_empty() || has_blank(&reading.review_queue_refs) {
+            examples.push(generic_validation_example(
+                &reading.reading_id,
+                "reviewQueueRefs",
+                "Stokes-style reading must provide review queue refs",
+            ));
+        }
+        if reading.non_conclusions.is_empty() || has_blank(&reading.non_conclusions) {
+            examples.push(generic_validation_example(
+                &reading.reading_id,
+                "nonConclusions",
+                "Stokes-style reading must keep non-conclusions explicit",
+            ));
+        }
+    }
+
+    check_from_examples(
+        "archsig-analysis-packet-homotopy-holonomy-stokes-surface",
+        "packet reports selected-axis homotopy holonomy and bounded Stokes-style review queues",
+        examples,
+        "fail",
+    )
+}
+
+fn check_architecture_homotopy_report_surface(packet: &ArchSigAnalysisPacketV0) -> ValidationCheck {
+    let mut examples = Vec::new();
+    let Some(report) = packet.architecture_homotopy_report.as_ref() else {
+        return check_from_examples(
+            "archsig-analysis-packet-architecture-homotopy-report-surface",
+            "packet exposes ArchitectureHomotopyReport with review focus and non-conclusions",
+            vec![generic_validation_example(
+                &packet.analysis_id,
+                "architectureHomotopyReport",
+                "packet with homotopy readings must include ArchitectureHomotopyReport",
+            )],
+            "fail",
+        );
+    };
+    push_blank(
+        &mut examples,
+        "architectureHomotopyReport.reportId",
+        &report.report_id,
+    );
+    push_blank(
+        &mut examples,
+        "architectureHomotopyReport.profileRef",
+        &report.profile_ref,
+    );
+    push_blank(
+        &mut examples,
+        "architectureHomotopyReport.status",
+        &report.status,
+    );
+    if report.filled_loops.is_empty()
+        && report.unfilled_loops.is_empty()
+        && report.nonzero_holonomy_loops.is_empty()
+    {
+        examples.push(generic_validation_example(
+            &report.report_id,
+            "filledLoops/unfilledLoops/nonzeroHolonomyLoops",
+            "ArchitectureHomotopyReport must expose loop reading buckets",
+        ));
+    }
+    if report.aggregate_readings.is_empty() {
+        examples.push(generic_validation_example(
+            &report.report_id,
+            "aggregateReadings",
+            "ArchitectureHomotopyReport must expose bounded aggregate readings",
+        ));
+    }
+    push_blank(
+        &mut examples,
+        "architectureHomotopyReport.measuredBoundary",
+        &report.measured_boundary,
+    );
+    if report.recommended_review_focus.is_empty() || has_blank(&report.recommended_review_focus) {
+        examples.push(generic_validation_example(
+            &report.report_id,
+            "recommendedReviewFocus",
+            "ArchitectureHomotopyReport must provide next action focus",
+        ));
+    }
+    for required in [
+        "ArchitectureHomotopyReport is not a single architecture quality score",
+        "Stokes-style readings are review queues, not theorem discharge",
+    ] {
+        if !report.non_conclusions.iter().any(|value| value == required) {
+            examples.push(generic_validation_example(
+                &report.report_id,
+                required,
+                "ArchitectureHomotopyReport is missing a required non-conclusion",
+            ));
+        }
+    }
+
+    check_from_examples(
+        "archsig-analysis-packet-architecture-homotopy-report-surface",
+        "packet exposes ArchitectureHomotopyReport with review focus and non-conclusions",
         examples,
         "fail",
     )
@@ -8614,6 +10246,331 @@ fn check_curvature_support_surface(packet: &ArchSigAnalysisPacketV0) -> Validati
     check_from_examples(
         "archsig-analysis-packet-curvature-support-surface",
         "packet exposes curvature support rows, top modes, witness clusters, and unmeasured boundaries",
+        examples,
+        "fail",
+    )
+}
+
+fn check_curvature_transfer_surface(packet: &ArchSigAnalysisPacketV0) -> ValidationCheck {
+    let allowed_statuses =
+        BTreeSet::from(["actionable", "needsReview", "blocked", "nonConclusion"]);
+    let support_ids = packet
+        .curvature_support_readings
+        .iter()
+        .flat_map(|reading| reading.witness_supports.iter())
+        .map(|support| support.witness_support_id.as_str())
+        .collect::<BTreeSet<_>>();
+    let mut examples = Vec::new();
+
+    if packet.curvature_transfer_readings.is_empty() {
+        return check_from_examples(
+            "archsig-analysis-packet-curvature-transfer-surface",
+            "optional curvature transfer readings are absent",
+            examples,
+            "fail",
+        );
+    }
+    examples.extend(duplicate_examples(
+        "curvatureTransferReadings[].readingId",
+        duplicates(
+            packet
+                .curvature_transfer_readings
+                .iter()
+                .map(|reading| reading.reading_id.as_str()),
+        ),
+    ));
+    for reading in &packet.curvature_transfer_readings {
+        if !allowed_statuses.contains(reading.status.as_str()) {
+            examples.push(generic_validation_example(
+                &reading.reading_id,
+                &reading.status,
+                "curvature transfer status must be actionable, needsReview, blocked, or nonConclusion",
+            ));
+        }
+        push_blank(
+            &mut examples,
+            &format!("{} profileRef", reading.reading_id),
+            &reading.profile_ref,
+        );
+        if reading.transfer_operator.nonzero_edge_count != reading.transfer_edges.len() {
+            examples.push(generic_validation_example(
+                &reading.reading_id,
+                &reading.transfer_operator.nonzero_edge_count.to_string(),
+                "transfer operator edge count must match transferEdges length",
+            ));
+        }
+        push_blank(
+            &mut examples,
+            &format!("{} transferOperator.entryRule", reading.reading_id),
+            &reading.transfer_operator.entry_rule,
+        );
+        push_blank(
+            &mut examples,
+            &format!("{} transferOperator.reading", reading.reading_id),
+            &reading.transfer_operator.reading,
+        );
+        push_blank(
+            &mut examples,
+            &format!("{} spectralRadiusReading.value", reading.reading_id),
+            &reading.spectral_radius_reading.value,
+        );
+        push_blank(
+            &mut examples,
+            &format!("{} coverageBoundary", reading.reading_id),
+            &reading.coverage_boundary,
+        );
+        push_blank(
+            &mut examples,
+            &format!("{} evidenceBoundary", reading.reading_id),
+            &reading.evidence_boundary,
+        );
+        if reading.non_conclusions.is_empty() || has_blank(&reading.non_conclusions) {
+            examples.push(generic_validation_example(
+                &reading.reading_id,
+                "nonConclusions",
+                "curvature transfer reading must retain amplification and forecast non-conclusions",
+            ));
+        }
+        for required in [
+            "rho(T^kappa) > 0 is only a bounded recurrent obstruction reading",
+            "transfer operator reading does not replace FieldSig forecast",
+        ] {
+            if !reading
+                .non_conclusions
+                .iter()
+                .any(|non_conclusion| non_conclusion == required)
+            {
+                examples.push(generic_validation_example(
+                    &reading.reading_id,
+                    required,
+                    "curvature transfer reading is missing a required non-conclusion",
+                ));
+            }
+        }
+        for edge in &reading.transfer_edges {
+            if !support_ids.contains(edge.source_support_ref.as_str())
+                || !support_ids.contains(edge.target_support_ref.as_str())
+            {
+                examples.push(generic_validation_example(
+                    &edge.edge_id,
+                    "source/target support refs",
+                    "curvature transfer edge must reference known curvature support rows",
+                ));
+            }
+            if edge.weight <= 0 || edge.defect_value <= 0 {
+                examples.push(generic_validation_example(
+                    &edge.edge_id,
+                    &format!("{}:{}", edge.defect_value, edge.weight),
+                    "curvature transfer edge must carry positive defect value and weight",
+                ));
+            }
+            if edge.witness_refs.is_empty() {
+                examples.push(generic_validation_example(
+                    &edge.edge_id,
+                    "witnessRefs",
+                    "curvature transfer edge must keep witness refs traceable",
+                ));
+            }
+            push_blank(
+                &mut examples,
+                &format!("{} reading", edge.edge_id),
+                &edge.reading,
+            );
+        }
+        let edge_ids = reading
+            .transfer_edges
+            .iter()
+            .map(|edge| edge.edge_id.as_str())
+            .collect::<BTreeSet<_>>();
+        for mode in &reading.recurrent_obstruction_modes {
+            if mode.transfer_edge_refs.is_empty()
+                || mode
+                    .transfer_edge_refs
+                    .iter()
+                    .any(|edge_ref| !edge_ids.contains(edge_ref.as_str()))
+            {
+                examples.push(generic_validation_example(
+                    &mode.mode_id,
+                    "transferEdgeRefs",
+                    "recurrent obstruction mode must reference known transfer edges",
+                ));
+            }
+            if mode.support_refs.is_empty() || mode.witness_refs.is_empty() {
+                examples.push(generic_validation_example(
+                    &mode.mode_id,
+                    "supportRefs/witnessRefs",
+                    "recurrent obstruction mode must keep support and witness refs traceable",
+                ));
+            }
+            push_blank(
+                &mut examples,
+                &format!("{} spectralRadiusReading", mode.mode_id),
+                &mode.spectral_radius_reading,
+            );
+            push_blank(
+                &mut examples,
+                &format!("{} recurrentObstructionReading", mode.mode_id),
+                &mode.recurrent_obstruction_reading,
+            );
+            if mode.non_conclusions.is_empty() || has_blank(&mode.non_conclusions) {
+                examples.push(generic_validation_example(
+                    &mode.mode_id,
+                    "nonConclusions",
+                    "recurrent obstruction mode must preserve non-conclusions",
+                ));
+            }
+        }
+        if reading
+            .spectral_radius_reading
+            .value
+            .parse::<i64>()
+            .is_ok_and(|value| value > 0)
+            && reading.recurrent_obstruction_modes.is_empty()
+        {
+            examples.push(generic_validation_example(
+                &reading.reading_id,
+                "recurrentObstructionModes",
+                "positive rho(T^kappa) proxy must be limited to recurrent obstruction modes",
+            ));
+        }
+    }
+    check_from_examples(
+        "archsig-analysis-packet-curvature-transfer-surface",
+        "packet exposes finite transfer operator, recurrent obstruction modes, rho(T^kappa) reading, and forecast non-conclusions",
+        examples,
+        "fail",
+    )
+}
+
+fn check_architecture_spectrum_report_surface(packet: &ArchSigAnalysisPacketV0) -> ValidationCheck {
+    let mut examples = Vec::new();
+    let Some(report) = &packet.architecture_spectrum_report else {
+        if !packet.curvature_support_readings.is_empty()
+            || !packet.curvature_transfer_readings.is_empty()
+        {
+            examples.push(generic_validation_example(
+                &packet.analysis_id,
+                "architectureSpectrumReport",
+                "packet with curvature support or transfer readings must include ArchitectureSpectrumReport",
+            ));
+        }
+        return check_from_examples(
+            "archsig-analysis-packet-architecture-spectrum-report-surface",
+            "optional ArchitectureSpectrumReport is absent",
+            examples,
+            "fail",
+        );
+    };
+
+    push_blank(
+        &mut examples,
+        "architectureSpectrumReport.reportId",
+        &report.report_id,
+    );
+    push_blank(
+        &mut examples,
+        "architectureSpectrumReport.profileRef",
+        &report.profile_ref,
+    );
+    if report.top_hotspots.is_empty() {
+        examples.push(generic_validation_example(
+            &report.report_id,
+            "topHotspots",
+            "ArchitectureSpectrumReport must expose hotspot readings",
+        ));
+    }
+    if report.top_eigenmodes.is_empty() {
+        examples.push(generic_validation_example(
+            &report.report_id,
+            "topEigenmodes",
+            "ArchitectureSpectrumReport must expose top mode source data",
+        ));
+    }
+    if report.top_witness_clusters.is_empty() {
+        examples.push(generic_validation_example(
+            &report.report_id,
+            "topWitnessClusters",
+            "ArchitectureSpectrumReport must expose witness clusters",
+        ));
+    }
+    if report.measured_boundary.trim().is_empty() {
+        examples.push(generic_validation_example(
+            &report.report_id,
+            "measuredBoundary",
+            "ArchitectureSpectrumReport must keep measured boundary explicit",
+        ));
+    }
+    if report.recommended_review_focus.is_empty() || has_blank(&report.recommended_review_focus) {
+        examples.push(generic_validation_example(
+            &report.report_id,
+            "recommendedReviewFocus",
+            "ArchitectureSpectrumReport must provide next review actions",
+        ));
+    }
+    if report.non_conclusions.is_empty() || has_blank(&report.non_conclusions) {
+        examples.push(generic_validation_example(
+            &report.report_id,
+            "nonConclusions",
+            "ArchitectureSpectrumReport must retain report-level non-conclusions",
+        ));
+    }
+    for required in [
+        "ArchitectureSpectrumReport is not a single architecture quality score",
+        "ArchitectureSpectrumReport does not replace FieldSig forecast or governance",
+    ] {
+        if !report
+            .non_conclusions
+            .iter()
+            .any(|non_conclusion| non_conclusion == required)
+        {
+            examples.push(generic_validation_example(
+                &report.report_id,
+                required,
+                "ArchitectureSpectrumReport is missing a required non-conclusion",
+            ));
+        }
+    }
+    for hotspot in &report.top_hotspots {
+        if hotspot.curvature_value < 0 {
+            examples.push(generic_validation_example(
+                &hotspot.hotspot_id,
+                &hotspot.curvature_value.to_string(),
+                "hotspot curvature value must be non-negative",
+            ));
+        }
+        if hotspot.witness_refs.is_empty() {
+            examples.push(generic_validation_example(
+                &hotspot.hotspot_id,
+                "witnessRefs",
+                "hotspot must keep witness refs traceable",
+            ));
+        }
+        push_blank(
+            &mut examples,
+            &format!("{} recommendedNextAction", hotspot.hotspot_id),
+            &hotspot.recommended_next_action,
+        );
+    }
+    for recurrent in &report.recurrent_obstructions {
+        if recurrent.transfer_edge_refs.is_empty()
+            || recurrent.support_refs.is_empty()
+            || recurrent.witness_refs.is_empty()
+        {
+            examples.push(generic_validation_example(
+                &recurrent.mode_ref,
+                "transfer/support/witness refs",
+                "recurrent obstruction report entry must keep transfer, support, and witness refs",
+            ));
+        }
+        push_blank(
+            &mut examples,
+            &format!("{} spectralRadiusReading", recurrent.mode_ref),
+            &recurrent.spectral_radius_reading,
+        );
+    }
+    check_from_examples(
+        "archsig-analysis-packet-architecture-spectrum-report-surface",
+        "packet exposes ArchitectureSpectrumReport hotspots, recurrent obstructions, measured boundary, review focus, and non-conclusions",
         examples,
         "fail",
     )
@@ -11161,6 +13118,14 @@ fn check_llm_interpretation_surface(packet: &ArchSigAnalysisPacketV0) -> Validat
                 .is_empty(),
         ),
         (
+            "llmInterpretationPacket.curvatureSupportSummary",
+            !packet.curvature_support_readings.is_empty()
+                && packet
+                    .llm_interpretation_packet
+                    .curvature_support_summary
+                    .is_empty(),
+        ),
+        (
             "llmInterpretationPacket.featureBoundaryResidualSummary",
             packet
                 .llm_interpretation_packet
@@ -11173,6 +13138,22 @@ fn check_llm_interpretation_surface(packet: &ArchSigAnalysisPacketV0) -> Validat
                 .llm_interpretation_packet
                 .feature_extension_diagnosis_summary
                 .is_empty(),
+        ),
+        (
+            "llmInterpretationPacket.curvatureTransferSummary",
+            !packet.curvature_transfer_readings.is_empty()
+                && packet
+                    .llm_interpretation_packet
+                    .curvature_transfer_summary
+                    .is_empty(),
+        ),
+        (
+            "llmInterpretationPacket.architectureSpectrumReportSummary",
+            packet.architecture_spectrum_report.is_some()
+                && packet
+                    .llm_interpretation_packet
+                    .architecture_spectrum_report_summary
+                    .is_empty(),
         ),
     ] {
         if is_empty {
@@ -11841,6 +13822,41 @@ mod tests {
         assert_eq!(report.summary.result, "fail");
         assert!(report.checks.iter().any(|check| {
             check.id == "archsig-analysis-packet-curvature-support-surface"
+                && check.result == "fail"
+        }));
+    }
+
+    #[test]
+    fn curvature_transfer_without_non_conclusions_fails_validation() {
+        let mut packet = static_archsig_analysis_packet();
+        packet.curvature_transfer_readings[0]
+            .non_conclusions
+            .clear();
+
+        let report = validate_archsig_analysis_packet_report(&packet, "invalid.json");
+
+        assert_eq!(report.summary.result, "fail");
+        assert!(report.checks.iter().any(|check| {
+            check.id == "archsig-analysis-packet-curvature-transfer-surface"
+                && check.result == "fail"
+        }));
+    }
+
+    #[test]
+    fn architecture_spectrum_report_without_focus_fails_validation() {
+        let mut packet = static_archsig_analysis_packet();
+        packet
+            .architecture_spectrum_report
+            .as_mut()
+            .expect("fixture has ArchitectureSpectrumReport")
+            .recommended_review_focus
+            .clear();
+
+        let report = validate_archsig_analysis_packet_report(&packet, "invalid.json");
+
+        assert_eq!(report.summary.result, "fail");
+        assert!(report.checks.iter().any(|check| {
+            check.id == "archsig-analysis-packet-architecture-spectrum-report-surface"
                 && check.result == "fail"
         }));
     }

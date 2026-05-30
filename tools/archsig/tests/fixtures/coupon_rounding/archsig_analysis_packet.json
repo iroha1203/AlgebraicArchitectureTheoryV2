@@ -1769,6 +1769,455 @@
       ]
     }
   ],
+  "curvatureSupportReadings": [
+    {
+      "readingId": "curvature-support-reading:spectrum-profile-curvature-transfer-default",
+      "profileRef": "spectrum-profile:curvature-transfer-default",
+      "status": "needsReview",
+      "measuredAxisRefs": [
+        "axis:semantic-inconsistency"
+      ],
+      "unmeasuredAxisRefs": [
+        "axis:layer-violation",
+        "axis:semantic-inconsistency"
+      ],
+      "witnessSupports": [
+        {
+          "witnessSupportId": "curvature-support:witness-layer-violation:axis-layer-violation",
+          "witnessRuleRef": "witness:layer-violation",
+          "selectedAxisRef": "axis:layer-violation",
+          "signatureAxisRef": "sig-axis:layer-violation",
+          "curvatureValue": 0,
+          "weight": 0,
+          "supportRefs": [],
+          "sourceRefs": [],
+          "observationRefs": [],
+          "missingEvidence": [
+            "gap:coupon-runtime-payment-trace: payment processor and receipt reconciliation traces are not included in the fixture"
+          ],
+          "reading": "unmeasured support is preserved as missing evidence, not measured zero"
+        },
+        {
+          "witnessSupportId": "curvature-support:witness-semantic-contract-mismatch:axis-layer-violation",
+          "witnessRuleRef": "witness:semantic-contract-mismatch",
+          "selectedAxisRef": "axis:layer-violation",
+          "signatureAxisRef": "sig-axis:layer-violation",
+          "curvatureValue": 0,
+          "weight": 0,
+          "supportRefs": [],
+          "sourceRefs": [],
+          "observationRefs": [],
+          "missingEvidence": [
+            "gap:coupon-runtime-payment-trace: payment processor and receipt reconciliation traces are not included in the fixture"
+          ],
+          "reading": "unmeasured support is preserved as missing evidence, not measured zero"
+        },
+        {
+          "witnessSupportId": "curvature-support:witness-layer-violation:axis-semantic-inconsistency",
+          "witnessRuleRef": "witness:layer-violation",
+          "selectedAxisRef": "axis:semantic-inconsistency",
+          "signatureAxisRef": "sig-axis:semantic-inconsistency",
+          "curvatureValue": 0,
+          "weight": 0,
+          "supportRefs": [],
+          "sourceRefs": [],
+          "observationRefs": [],
+          "missingEvidence": [
+            "gap:coupon-runtime-payment-trace: payment processor and receipt reconciliation traces are not included in the fixture"
+          ],
+          "reading": "unmeasured support is preserved as missing evidence, not measured zero"
+        },
+        {
+          "witnessSupportId": "curvature-support:witness-semantic-contract-mismatch:axis-semantic-inconsistency",
+          "witnessRuleRef": "witness:semantic-contract-mismatch",
+          "selectedAxisRef": "axis:semantic-inconsistency",
+          "signatureAxisRef": "sig-axis:semantic-inconsistency",
+          "curvatureValue": 1,
+          "weight": 1,
+          "supportRefs": [
+            "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding",
+            "atom:semantic:PaymentAmount-ReceiptAmount-coupon-tax-rounding-noncommutation",
+            "concern:coupon-semantic-monodromy",
+            "molecule-reading:molecule-coupon-operation-contract",
+            "semantic:coupon-tax-rounding-paths"
+          ],
+          "sourceRefs": [
+            "src-pricing-checkout",
+            "test-coupon-rounding"
+          ],
+          "observationRefs": [
+            "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding",
+            "atom:semantic:PaymentAmount-ReceiptAmount-coupon-tax-rounding-noncommutation",
+            "concern:coupon-semantic-monodromy",
+            "molecule-reading:molecule-coupon-operation-contract",
+            "semantic:coupon-tax-rounding-paths"
+          ],
+          "missingEvidence": [
+            "gap:coupon-runtime-payment-trace: payment processor and receipt reconciliation traces are not included in the fixture"
+          ],
+          "reading": "1 constructed witness support(s) contribute to axis:semantic-inconsistency under spectrum-profile:curvature-transfer-default"
+        }
+      ],
+      "topCurvatureModes": [
+        {
+          "modeId": "curvature-mode:curvature-support-witness-semantic-contract-mismatch-axis-semantic-inconsistency",
+          "rank": 1,
+          "axisRef": "axis:semantic-inconsistency",
+          "curvatureValue": 1,
+          "witnessRefs": [
+            "curvature-support:witness-semantic-contract-mismatch:axis-semantic-inconsistency"
+          ],
+          "supportRefs": [
+            "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding",
+            "atom:semantic:PaymentAmount-ReceiptAmount-coupon-tax-rounding-noncommutation",
+            "concern:coupon-semantic-monodromy",
+            "molecule-reading:molecule-coupon-operation-contract",
+            "semantic:coupon-tax-rounding-paths"
+          ],
+          "reading": "top measured curvature support mode with traceable witness and support refs"
+        },
+        {
+          "modeId": "curvature-mode:curvature-support-witness-layer-violation-axis-layer-violation",
+          "rank": 2,
+          "axisRef": "axis:layer-violation",
+          "curvatureValue": 0,
+          "witnessRefs": [
+            "curvature-support:witness-layer-violation:axis-layer-violation"
+          ],
+          "supportRefs": [],
+          "reading": "unmeasured curvature support mode retained as coverage debt"
+        },
+        {
+          "modeId": "curvature-mode:curvature-support-witness-semantic-contract-mismatch-axis-layer-violation",
+          "rank": 3,
+          "axisRef": "axis:layer-violation",
+          "curvatureValue": 0,
+          "witnessRefs": [
+            "curvature-support:witness-semantic-contract-mismatch:axis-layer-violation"
+          ],
+          "supportRefs": [],
+          "reading": "unmeasured curvature support mode retained as coverage debt"
+        },
+        {
+          "modeId": "curvature-mode:curvature-support-witness-layer-violation-axis-semantic-inconsistency",
+          "rank": 4,
+          "axisRef": "axis:semantic-inconsistency",
+          "curvatureValue": 0,
+          "witnessRefs": [
+            "curvature-support:witness-layer-violation:axis-semantic-inconsistency"
+          ],
+          "supportRefs": [],
+          "reading": "unmeasured curvature support mode retained as coverage debt"
+        }
+      ],
+      "witnessClusters": [
+        {
+          "clusterId": "curvature-cluster:axis-layer-violation",
+          "clusterKind": "axisWitnessSupportCluster",
+          "axisRefs": [
+            "axis:layer-violation"
+          ],
+          "witnessRefs": [
+            "curvature-support:witness-layer-violation:axis-layer-violation",
+            "curvature-support:witness-semantic-contract-mismatch:axis-layer-violation"
+          ],
+          "supportRefs": [],
+          "clusterWeight": 0,
+          "reading": "cluster records unmeasured selected axis support as coverage debt"
+        },
+        {
+          "clusterId": "curvature-cluster:axis-semantic-inconsistency",
+          "clusterKind": "axisWitnessSupportCluster",
+          "axisRefs": [
+            "axis:semantic-inconsistency"
+          ],
+          "witnessRefs": [
+            "curvature-support:witness-layer-violation:axis-semantic-inconsistency",
+            "curvature-support:witness-semantic-contract-mismatch:axis-semantic-inconsistency"
+          ],
+          "supportRefs": [
+            "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding",
+            "atom:semantic:PaymentAmount-ReceiptAmount-coupon-tax-rounding-noncommutation",
+            "concern:coupon-semantic-monodromy",
+            "molecule-reading:molecule-coupon-operation-contract",
+            "semantic:coupon-tax-rounding-paths"
+          ],
+          "clusterWeight": 1,
+          "reading": "cluster groups measured witness supports by selected axis for review ranking"
+        }
+      ],
+      "coverageBoundary": "missing coverage blocks spectrum zero reflection and remains a report gap",
+      "exactnessAssumptionRefs": [
+        "selected LawPolicy exactness assumptions"
+      ],
+      "measurementBoundary": "curvature-transfer spectrum readings are bounded ArchSig diagnostics, not theorem discharge",
+      "missingEvidence": [
+        "gap:coupon-runtime-payment-trace: payment processor and receipt reconciliation traces are not included in the fixture"
+      ],
+      "nonConclusions": [
+        "spectrum measurement profile is a measurement recipe, not a law universe",
+        "profile differences are not law universe differences",
+        "unmeasured axes are not zero",
+        "spectrum zero requires coverage, exactness, and zero-reflection assumptions"
+      ]
+    }
+  ],
+  "curvatureTransferReadings": [
+    {
+      "readingId": "curvature-transfer-reading:spectrum-profile-curvature-transfer-default",
+      "profileRef": "spectrum-profile:curvature-transfer-default",
+      "status": "needsReview",
+      "transferOperator": {
+        "operatorId": "transfer-operator:curvature-transfer-reading-spectrum-profile-curvature-transfer-default",
+        "rowDomain": "curvatureWitnessSupports",
+        "columnDomain": "curvatureWitnessSupports",
+        "rowCount": 1,
+        "columnCount": 1,
+        "nonzeroEdgeCount": 1,
+        "entryRule": "entry(i,j) is positive when measured curvature support i can transfer review pressure to support j under shared selected-axis or shared support evidence",
+        "reading": "finite nonnegative transfer operator over measured curvature supports; absent edges are unmeasured, not proof of independence"
+      },
+      "transferEdges": [
+        {
+          "edgeId": "curvature-transfer-edge:curvature-support-witness-semantic-contract-mismatch-axis-semantic-inconsistency:curvature-support-witness-semantic-contract-mismatch-axis-semantic-inconsistency",
+          "sourceSupportRef": "curvature-support:witness-semantic-contract-mismatch:axis-semantic-inconsistency",
+          "sourceAxisRef": "axis:semantic-inconsistency",
+          "targetSupportRef": "curvature-support:witness-semantic-contract-mismatch:axis-semantic-inconsistency",
+          "targetAxisRef": "axis:semantic-inconsistency",
+          "witnessRefs": [
+            "witness:semantic-contract-mismatch"
+          ],
+          "defectValue": 2,
+          "weight": 1,
+          "sourceRefs": [
+            "src-pricing-checkout",
+            "test-coupon-rounding"
+          ],
+          "reading": "positive self-loop records a closed walk in the finite transfer operator"
+        }
+      ],
+      "recurrentObstructionModes": [
+        {
+          "modeId": "recurrent-obstruction:curvature-transfer-edge-curvature-support-witness-semantic-contract-mismatch-axis-semantic-inconsistency-curvature-support-witness-semantic-contract-mismatch-axis-semantic-inconsistency",
+          "transferEdgeRefs": [
+            "curvature-transfer-edge:curvature-support-witness-semantic-contract-mismatch-axis-semantic-inconsistency:curvature-support-witness-semantic-contract-mismatch-axis-semantic-inconsistency"
+          ],
+          "supportRefs": [
+            "curvature-support:witness-semantic-contract-mismatch:axis-semantic-inconsistency"
+          ],
+          "witnessRefs": [
+            "witness:semantic-contract-mismatch"
+          ],
+          "spectralRadiusReading": "rho(T^kappa) proxy 1 > 0 over the finite ArchSig transfer operator",
+          "recurrentObstructionReading": "positive closed walk is reported as recurrent obstruction support only",
+          "reviewFocus": [
+            "inspect the witness support behind the positive transfer self-loop",
+            "check whether coverage gaps or exactness limits block zero-reflection"
+          ],
+          "nonConclusions": [
+            "recurrent obstruction mode is not future incident prediction",
+            "recurrent obstruction mode is not empirical cost amplification",
+            "recurrent obstruction mode is not repair safety evidence"
+          ]
+        }
+      ],
+      "spectralRadiusReading": {
+        "name": "rho(T^kappa)Proxy",
+        "value": "1",
+        "interpretation": "positive proxy is read only as recurrent obstruction support in the finite ArchSig transfer operator, not future incident probability"
+      },
+      "coverageBoundary": "missing coverage blocks spectrum zero reflection and remains a report gap",
+      "evidenceBoundary": "transfer operator is computed from measured curvature support rows and does not forecast future cost, safety, or amplification",
+      "nonConclusions": [
+        "rho(T^kappa) > 0 is only a bounded recurrent obstruction reading",
+        "transfer operator reading does not predict future incidents or empirical cost increase",
+        "transfer operator reading does not replace FieldSig forecast",
+        "absence of transfer edges is not proof of future safety"
+      ]
+    }
+  ],
+  "architectureSpectrumReport": {
+    "reportId": "architecture-spectrum-report:spectrum-profile-curvature-transfer-default",
+    "profileRef": "spectrum-profile:curvature-transfer-default",
+    "status": "needsReview",
+    "topHotspots": [
+      {
+        "hotspotId": "spectrum-hotspot:curvature-mode-curvature-support-witness-semantic-contract-mismatch-axis-semantic-inconsistency",
+        "axisRef": "axis:semantic-inconsistency",
+        "curvatureValue": 1,
+        "supportRefs": [
+          "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding",
+          "atom:semantic:PaymentAmount-ReceiptAmount-coupon-tax-rounding-noncommutation",
+          "concern:coupon-semantic-monodromy",
+          "molecule-reading:molecule-coupon-operation-contract",
+          "semantic:coupon-tax-rounding-paths"
+        ],
+        "witnessRefs": [
+          "curvature-support:witness-semantic-contract-mismatch:axis-semantic-inconsistency"
+        ],
+        "coverageGapRefs": [
+          "gap:coupon-runtime-payment-trace: payment processor and receipt reconciliation traces are not included in the fixture"
+        ],
+        "recommendedNextAction": "review witness support, selected axis coverage, and transfer recurrence before repair planning"
+      },
+      {
+        "hotspotId": "spectrum-hotspot:curvature-mode-curvature-support-witness-layer-violation-axis-layer-violation",
+        "axisRef": "axis:layer-violation",
+        "curvatureValue": 0,
+        "supportRefs": [],
+        "witnessRefs": [
+          "curvature-support:witness-layer-violation:axis-layer-violation"
+        ],
+        "coverageGapRefs": [
+          "gap:coupon-runtime-payment-trace: payment processor and receipt reconciliation traces are not included in the fixture"
+        ],
+        "recommendedNextAction": "resolve coverage and exactness gaps before treating this axis as zero"
+      },
+      {
+        "hotspotId": "spectrum-hotspot:curvature-mode-curvature-support-witness-semantic-contract-mismatch-axis-layer-violation",
+        "axisRef": "axis:layer-violation",
+        "curvatureValue": 0,
+        "supportRefs": [],
+        "witnessRefs": [
+          "curvature-support:witness-semantic-contract-mismatch:axis-layer-violation"
+        ],
+        "coverageGapRefs": [
+          "gap:coupon-runtime-payment-trace: payment processor and receipt reconciliation traces are not included in the fixture"
+        ],
+        "recommendedNextAction": "resolve coverage and exactness gaps before treating this axis as zero"
+      },
+      {
+        "hotspotId": "spectrum-hotspot:curvature-mode-curvature-support-witness-layer-violation-axis-semantic-inconsistency",
+        "axisRef": "axis:semantic-inconsistency",
+        "curvatureValue": 0,
+        "supportRefs": [],
+        "witnessRefs": [
+          "curvature-support:witness-layer-violation:axis-semantic-inconsistency"
+        ],
+        "coverageGapRefs": [
+          "gap:coupon-runtime-payment-trace: payment processor and receipt reconciliation traces are not included in the fixture"
+        ],
+        "recommendedNextAction": "resolve coverage and exactness gaps before treating this axis as zero"
+      }
+    ],
+    "topEigenmodes": [
+      {
+        "modeRef": "curvature-mode:curvature-support-witness-semantic-contract-mismatch-axis-semantic-inconsistency",
+        "rank": 1,
+        "axisRef": "axis:semantic-inconsistency",
+        "curvatureValue": 1,
+        "supportRefs": [
+          "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding",
+          "atom:semantic:PaymentAmount-ReceiptAmount-coupon-tax-rounding-noncommutation",
+          "concern:coupon-semantic-monodromy",
+          "molecule-reading:molecule-coupon-operation-contract",
+          "semantic:coupon-tax-rounding-paths"
+        ],
+        "witnessRefs": [
+          "curvature-support:witness-semantic-contract-mismatch:axis-semantic-inconsistency"
+        ],
+        "reading": "top measured curvature support mode with traceable witness and support refs"
+      },
+      {
+        "modeRef": "curvature-mode:curvature-support-witness-layer-violation-axis-layer-violation",
+        "rank": 2,
+        "axisRef": "axis:layer-violation",
+        "curvatureValue": 0,
+        "supportRefs": [],
+        "witnessRefs": [
+          "curvature-support:witness-layer-violation:axis-layer-violation"
+        ],
+        "reading": "unmeasured curvature support mode retained as coverage debt"
+      },
+      {
+        "modeRef": "curvature-mode:curvature-support-witness-semantic-contract-mismatch-axis-layer-violation",
+        "rank": 3,
+        "axisRef": "axis:layer-violation",
+        "curvatureValue": 0,
+        "supportRefs": [],
+        "witnessRefs": [
+          "curvature-support:witness-semantic-contract-mismatch:axis-layer-violation"
+        ],
+        "reading": "unmeasured curvature support mode retained as coverage debt"
+      },
+      {
+        "modeRef": "curvature-mode:curvature-support-witness-layer-violation-axis-semantic-inconsistency",
+        "rank": 4,
+        "axisRef": "axis:semantic-inconsistency",
+        "curvatureValue": 0,
+        "supportRefs": [],
+        "witnessRefs": [
+          "curvature-support:witness-layer-violation:axis-semantic-inconsistency"
+        ],
+        "reading": "unmeasured curvature support mode retained as coverage debt"
+      }
+    ],
+    "topWitnessClusters": [
+      {
+        "clusterRef": "curvature-cluster:axis-layer-violation",
+        "axisRefs": [
+          "axis:layer-violation"
+        ],
+        "witnessRefs": [
+          "curvature-support:witness-layer-violation:axis-layer-violation",
+          "curvature-support:witness-semantic-contract-mismatch:axis-layer-violation"
+        ],
+        "supportRefs": [],
+        "clusterWeight": 0,
+        "reading": "cluster records unmeasured selected axis support as coverage debt"
+      },
+      {
+        "clusterRef": "curvature-cluster:axis-semantic-inconsistency",
+        "axisRefs": [
+          "axis:semantic-inconsistency"
+        ],
+        "witnessRefs": [
+          "curvature-support:witness-layer-violation:axis-semantic-inconsistency",
+          "curvature-support:witness-semantic-contract-mismatch:axis-semantic-inconsistency"
+        ],
+        "supportRefs": [
+          "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding",
+          "atom:semantic:PaymentAmount-ReceiptAmount-coupon-tax-rounding-noncommutation",
+          "concern:coupon-semantic-monodromy",
+          "molecule-reading:molecule-coupon-operation-contract",
+          "semantic:coupon-tax-rounding-paths"
+        ],
+        "clusterWeight": 1,
+        "reading": "cluster groups measured witness supports by selected axis for review ranking"
+      }
+    ],
+    "recurrentObstructions": [
+      {
+        "modeRef": "recurrent-obstruction:curvature-transfer-edge-curvature-support-witness-semantic-contract-mismatch-axis-semantic-inconsistency-curvature-support-witness-semantic-contract-mismatch-axis-semantic-inconsistency",
+        "spectralRadiusReading": "rho(T^kappa) proxy 1 > 0 over the finite ArchSig transfer operator",
+        "transferEdgeRefs": [
+          "curvature-transfer-edge:curvature-support-witness-semantic-contract-mismatch-axis-semantic-inconsistency:curvature-support-witness-semantic-contract-mismatch-axis-semantic-inconsistency"
+        ],
+        "supportRefs": [
+          "curvature-support:witness-semantic-contract-mismatch:axis-semantic-inconsistency"
+        ],
+        "witnessRefs": [
+          "witness:semantic-contract-mismatch"
+        ],
+        "reading": "positive closed walk is reported as recurrent obstruction support only"
+      }
+    ],
+    "coverageGaps": [
+      "gap:coupon-runtime-payment-trace: payment processor and receipt reconciliation traces are not included in the fixture"
+    ],
+    "measuredBoundary": "report is measured from ArchSig curvature support and transfer readings under selected LawPolicy coverage and exactness assumptions",
+    "recommendedReviewFocus": [
+      "start from nonzero hotspots with traceable witness and support refs",
+      "review recurrent obstruction modes only as current-state bounded diagnostics",
+      "resolve coverage gaps before reading absent support as zero"
+    ],
+    "nonConclusions": [
+      "ArchitectureSpectrumReport is not a single architecture quality score",
+      "ArchitectureSpectrumReport does not prove global lawfulness or flatness",
+      "ArchitectureSpectrumReport does not predict future incidents or empirical cost increase",
+      "ArchitectureSpectrumReport does not replace FieldSig forecast or governance"
+    ]
+  },
   "transferBridgeReadings": [
     {
       "transferBridgeId": "transfer-bridge:coupon-tax-rounding-archmap",
@@ -2483,6 +2932,965 @@
       ]
     }
   ],
+  "homotopyComplexSummary": {
+    "complexId": "homotopy-complex:coupon-tax-rounding-archmap",
+    "profileRef": "homotopy-profile:bounded-stokes-default",
+    "status": "measuredProfile",
+    "selectedAxisRefs": [
+      "axis:layer-violation",
+      "axis:semantic-inconsistency"
+    ],
+    "zeroCells": [
+      {
+        "cellId": "0-cell:atom-contract-paymentamount-receiptamount-coupon-tax-rounding",
+        "cellDimension": 0,
+        "cellKind": "contractSpecification",
+        "status": "observed",
+        "observationRefs": [
+          "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding"
+        ],
+        "sourceRefs": [
+          "test-coupon-rounding"
+        ],
+        "reading": "observed Atom is read as a bounded 0-cell candidate",
+        "nonConclusions": [
+          "candidate paths and loops are review cues, not path truth",
+          "unfilled loops are architectural holes, not automatic violations",
+          "missing filler evidence is not measured zero",
+          "nonzero holonomy is bounded diagnosis, not future incident prediction",
+          "homotopy complex summary is not source extraction completeness"
+        ]
+      },
+      {
+        "cellId": "0-cell:atom-semantic-paymentamount-receiptamount-coupon-tax-rounding-noncommutation",
+        "cellDimension": 0,
+        "cellKind": "semanticInterpretation",
+        "status": "observed",
+        "observationRefs": [
+          "atom:semantic:PaymentAmount-ReceiptAmount-coupon-tax-rounding-noncommutation"
+        ],
+        "sourceRefs": [
+          "src-pricing-checkout"
+        ],
+        "reading": "observed Atom is read as a bounded 0-cell candidate",
+        "nonConclusions": [
+          "candidate paths and loops are review cues, not path truth",
+          "unfilled loops are architectural holes, not automatic violations",
+          "missing filler evidence is not measured zero",
+          "nonzero holonomy is bounded diagnosis, not future incident prediction",
+          "homotopy complex summary is not source extraction completeness"
+        ]
+      },
+      {
+        "cellId": "0-cell:atom-effect-receipt-boundary",
+        "cellDimension": 0,
+        "cellKind": "effect",
+        "status": "observed",
+        "observationRefs": [
+          "atom:effect:receipt-boundary"
+        ],
+        "sourceRefs": [
+          "src-pricing-checkout"
+        ],
+        "reading": "observed Atom is read as a bounded 0-cell candidate",
+        "nonConclusions": [
+          "candidate paths and loops are review cues, not path truth",
+          "unfilled loops are architectural holes, not automatic violations",
+          "missing filler evidence is not measured zero",
+          "nonzero holonomy is bounded diagnosis, not future incident prediction",
+          "homotopy complex summary is not source extraction completeness"
+        ]
+      }
+    ],
+    "oneCells": [
+      {
+        "cellId": "1-cell:molecule-coupon-operation-contract",
+        "cellDimension": 1,
+        "cellKind": "coupon / tax / rounding operation contract",
+        "status": "candidate",
+        "observationRefs": [
+          "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding",
+          "atom:semantic:PaymentAmount-ReceiptAmount-coupon-tax-rounding-noncommutation",
+          "atom:effect:receipt-boundary"
+        ],
+        "sourceRefs": [
+          "src-pricing-checkout"
+        ],
+        "reading": "molecule observation is read as a bounded path / relation candidate",
+        "nonConclusions": [
+          "candidate paths and loops are review cues, not path truth",
+          "unfilled loops are architectural holes, not automatic violations",
+          "missing filler evidence is not measured zero",
+          "nonzero holonomy is bounded diagnosis, not future incident prediction",
+          "homotopy complex summary is not source extraction completeness"
+        ]
+      },
+      {
+        "cellId": "1-cell:semantic-coupon-tax-rounding-paths",
+        "cellDimension": 1,
+        "cellKind": "semanticInterpretation",
+        "status": "candidate",
+        "observationRefs": [
+          "semantic:coupon-tax-rounding-paths"
+        ],
+        "sourceRefs": [
+          "test-coupon-rounding"
+        ],
+        "reading": "semantic observation is read as a selected path continuation candidate",
+        "nonConclusions": [
+          "candidate paths and loops are review cues, not path truth",
+          "unfilled loops are architectural holes, not automatic violations",
+          "missing filler evidence is not measured zero",
+          "nonzero holonomy is bounded diagnosis, not future incident prediction",
+          "homotopy complex summary is not source extraction completeness"
+        ]
+      }
+    ],
+    "twoCells": [
+      {
+        "cellId": "2-cell:obstruction-layer-violation",
+        "cellDimension": 2,
+        "cellKind": "BoundaryLeakCircuit",
+        "status": "lawPolicyRequired",
+        "observationRefs": [
+          "witness:layer-violation"
+        ],
+        "sourceRefs": [],
+        "reading": "LawPolicy obstruction definition is read as a bounded 2-cell / filler requirement",
+        "nonConclusions": [
+          "candidate paths and loops are review cues, not path truth",
+          "unfilled loops are architectural holes, not automatic violations",
+          "missing filler evidence is not measured zero",
+          "nonzero holonomy is bounded diagnosis, not future incident prediction",
+          "homotopy complex summary is not source extraction completeness"
+        ]
+      },
+      {
+        "cellId": "2-cell:obstruction-semantic-contract-mismatch",
+        "cellDimension": 2,
+        "cellKind": "SemanticMismatchCircuit",
+        "status": "lawPolicyRequired",
+        "observationRefs": [
+          "witness:semantic-contract-mismatch"
+        ],
+        "sourceRefs": [],
+        "reading": "LawPolicy obstruction definition is read as a bounded 2-cell / filler requirement",
+        "nonConclusions": [
+          "candidate paths and loops are review cues, not path truth",
+          "unfilled loops are architectural holes, not automatic violations",
+          "missing filler evidence is not measured zero",
+          "nonzero holonomy is bounded diagnosis, not future incident prediction",
+          "homotopy complex summary is not source extraction completeness"
+        ]
+      }
+    ],
+    "sourceRefs": [
+      "src-pricing-checkout",
+      "test-coupon-rounding"
+    ],
+    "coverageBoundary": "missing path or filler evidence blocks zero and Stokes-style readings",
+    "exactnessAssumptions": [
+      "selected LawPolicy exactness assumptions"
+    ],
+    "evidenceBoundary": "homotopy complex is built from supplied ArchMap evidence and selected LawPolicy recipe",
+    "nonConclusions": [
+      "candidate paths and loops are review cues, not path truth",
+      "unfilled loops are architectural holes, not automatic violations",
+      "missing filler evidence is not measured zero",
+      "nonzero holonomy is bounded diagnosis, not future incident prediction",
+      "homotopy complex summary is not source extraction completeness"
+    ]
+  },
+  "pathPairCandidates": [
+    {
+      "candidateId": "path-pair:semantic-contract-loop",
+      "candidateSource": "lawPolicyRequired",
+      "status": "sourceConfirmed",
+      "pPathRef": "path:semantic-operation-flow",
+      "qPathRef": "molecule:coupon-operation-contract",
+      "sharedEndpointRefs": [
+        "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding",
+        "atom:semantic:PaymentAmount-ReceiptAmount-coupon-tax-rounding-noncommutation"
+      ],
+      "selectedAxisRefs": [
+        "axis:layer-violation",
+        "axis:semantic-inconsistency"
+      ],
+      "sourceRefs": [
+        "src-pricing-checkout",
+        "test-coupon-rounding"
+      ],
+      "observationRefs": [
+        "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding",
+        "atom:effect:receipt-boundary",
+        "atom:semantic:PaymentAmount-ReceiptAmount-coupon-tax-rounding-noncommutation",
+        "semantic:coupon-tax-rounding-paths"
+      ],
+      "coverageBoundary": "missing path or filler evidence blocks zero and Stokes-style readings",
+      "evidenceBoundary": "candidate path pair is a bounded review cue, not a path equality proof",
+      "nonConclusions": [
+        "candidate paths and loops are review cues, not path truth",
+        "unfilled loops are architectural holes, not automatic violations",
+        "missing filler evidence is not measured zero",
+        "nonzero holonomy is bounded diagnosis, not future incident prediction",
+        "homotopy complex summary is not source extraction completeness"
+      ]
+    },
+    {
+      "candidateId": "path-pair:path-rule-interface-implementation",
+      "candidateSource": "llmDiscovered",
+      "status": "needsReview",
+      "pPathRef": "path-rule:interface-implementation",
+      "qPathRef": "interface-implementation-path",
+      "sharedEndpointRefs": [
+        "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding",
+        "atom:semantic:PaymentAmount-ReceiptAmount-coupon-tax-rounding-noncommutation"
+      ],
+      "selectedAxisRefs": [
+        "axis:layer-violation",
+        "axis:semantic-inconsistency"
+      ],
+      "sourceRefs": [
+        "src-pricing-checkout",
+        "test-coupon-rounding"
+      ],
+      "observationRefs": [
+        "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding",
+        "atom:semantic:PaymentAmount-ReceiptAmount-coupon-tax-rounding-noncommutation",
+        "atom:effect:receipt-boundary"
+      ],
+      "coverageBoundary": "missing path or filler evidence blocks zero and Stokes-style readings",
+      "evidenceBoundary": "candidate paths are bounded review cues derived from ArchMap evidence and selected LawPolicy",
+      "nonConclusions": [
+        "candidate paths and loops are review cues, not path truth",
+        "unfilled loops are architectural holes, not automatic violations",
+        "missing filler evidence is not measured zero",
+        "nonzero holonomy is bounded diagnosis, not future incident prediction",
+        "homotopy complex summary is not source extraction completeness"
+      ]
+    },
+    {
+      "candidateId": "path-pair:path-rule-cache-repository",
+      "candidateSource": "llmDiscovered",
+      "status": "needsReview",
+      "pPathRef": "path-rule:cache-repository",
+      "qPathRef": "cache-repository-path",
+      "sharedEndpointRefs": [
+        "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding",
+        "atom:semantic:PaymentAmount-ReceiptAmount-coupon-tax-rounding-noncommutation"
+      ],
+      "selectedAxisRefs": [
+        "axis:layer-violation",
+        "axis:semantic-inconsistency"
+      ],
+      "sourceRefs": [
+        "src-pricing-checkout",
+        "test-coupon-rounding"
+      ],
+      "observationRefs": [
+        "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding",
+        "atom:semantic:PaymentAmount-ReceiptAmount-coupon-tax-rounding-noncommutation",
+        "atom:effect:receipt-boundary"
+      ],
+      "coverageBoundary": "missing path or filler evidence blocks zero and Stokes-style readings",
+      "evidenceBoundary": "absence of a candidate path is not proof that no architectural loop exists",
+      "nonConclusions": [
+        "candidate paths and loops are review cues, not path truth",
+        "unfilled loops are architectural holes, not automatic violations",
+        "missing filler evidence is not measured zero",
+        "nonzero holonomy is bounded diagnosis, not future incident prediction",
+        "homotopy complex summary is not source extraction completeness"
+      ]
+    }
+  ],
+  "loopCandidates": [
+    {
+      "loopId": "loop-candidate:path-pair-semantic-contract-loop-0",
+      "pathPairRef": "path-pair:semantic-contract-loop",
+      "candidateSource": "lawPolicyRequired",
+      "status": "unfilledLoop",
+      "pathRefs": [
+        "path:semantic-operation-flow",
+        "molecule:coupon-operation-contract"
+      ],
+      "fillerCandidateRefs": [
+        "filler-rule:contract-or-test",
+        "filler-rule:authority-or-idempotency"
+      ],
+      "missingFillerEvidence": [
+        "gap:coupon-runtime-payment-trace"
+      ],
+      "selectedAxisRefs": [
+        "axis:layer-violation",
+        "axis:semantic-inconsistency"
+      ],
+      "sourceRefs": [
+        "src-pricing-checkout",
+        "test-coupon-rounding"
+      ],
+      "coverageBoundary": "missing path or filler evidence blocks zero and Stokes-style readings",
+      "evidenceBoundary": "loop candidate is a bounded homotopy review surface, not a violation proof",
+      "nonConclusions": [
+        "candidate paths and loops are review cues, not path truth",
+        "unfilled loops are architectural holes, not automatic violations",
+        "missing filler evidence is not measured zero",
+        "nonzero holonomy is bounded diagnosis, not future incident prediction",
+        "homotopy complex summary is not source extraction completeness"
+      ]
+    },
+    {
+      "loopId": "loop-candidate:path-pair-path-rule-interface-implementation-1",
+      "pathPairRef": "path-pair:path-rule-interface-implementation",
+      "candidateSource": "llmDiscovered",
+      "status": "unfilledLoop",
+      "pathRefs": [
+        "path-rule:interface-implementation",
+        "interface-implementation-path"
+      ],
+      "fillerCandidateRefs": [
+        "filler-rule:contract-or-test",
+        "filler-rule:authority-or-idempotency"
+      ],
+      "missingFillerEvidence": [
+        "gap:coupon-runtime-payment-trace"
+      ],
+      "selectedAxisRefs": [
+        "axis:layer-violation",
+        "axis:semantic-inconsistency"
+      ],
+      "sourceRefs": [
+        "src-pricing-checkout",
+        "test-coupon-rounding"
+      ],
+      "coverageBoundary": "missing path or filler evidence blocks zero and Stokes-style readings",
+      "evidenceBoundary": "loop candidate is a bounded homotopy review surface, not a violation proof",
+      "nonConclusions": [
+        "candidate paths and loops are review cues, not path truth",
+        "unfilled loops are architectural holes, not automatic violations",
+        "missing filler evidence is not measured zero",
+        "nonzero holonomy is bounded diagnosis, not future incident prediction",
+        "homotopy complex summary is not source extraction completeness"
+      ]
+    },
+    {
+      "loopId": "loop-candidate:path-pair-path-rule-cache-repository-2",
+      "pathPairRef": "path-pair:path-rule-cache-repository",
+      "candidateSource": "llmDiscovered",
+      "status": "unfilledLoop",
+      "pathRefs": [
+        "path-rule:cache-repository",
+        "cache-repository-path"
+      ],
+      "fillerCandidateRefs": [
+        "filler-rule:contract-or-test",
+        "filler-rule:authority-or-idempotency"
+      ],
+      "missingFillerEvidence": [
+        "gap:coupon-runtime-payment-trace"
+      ],
+      "selectedAxisRefs": [
+        "axis:layer-violation",
+        "axis:semantic-inconsistency"
+      ],
+      "sourceRefs": [
+        "src-pricing-checkout",
+        "test-coupon-rounding"
+      ],
+      "coverageBoundary": "missing path or filler evidence blocks zero and Stokes-style readings",
+      "evidenceBoundary": "loop candidate is a bounded homotopy review surface, not a violation proof",
+      "nonConclusions": [
+        "candidate paths and loops are review cues, not path truth",
+        "unfilled loops are architectural holes, not automatic violations",
+        "missing filler evidence is not measured zero",
+        "nonzero holonomy is bounded diagnosis, not future incident prediction",
+        "homotopy complex summary is not source extraction completeness"
+      ]
+    }
+  ],
+  "fillerCandidateReadings": [
+    {
+      "readingId": "filler-candidate:loop-candidate-path-pair-semantic-contract-loop-0:filler-rule-contract-or-test",
+      "loopRef": "loop-candidate:path-pair-semantic-contract-loop-0",
+      "fillerRuleRef": "filler-rule:contract-or-test",
+      "fillerKind": "contract-or-test-filler",
+      "status": "candidate",
+      "sourceRefs": [
+        "src-pricing-checkout",
+        "test-coupon-rounding"
+      ],
+      "docsRefs": [
+        "required-source-kind:doc-section"
+      ],
+      "runtimeRefs": [
+        "required-source-kind:runtime-trace"
+      ],
+      "nextCheckRefs": [
+        "check-filler-source-kind:doc-section",
+        "check-filler-source-kind:test",
+        "check-filler-source-kind:runtime-trace"
+      ],
+      "evidenceBoundary": "filler evidence is bounded to supplied source refs, tests, runtime evidence, or user-confirmed policy",
+      "nonConclusions": [
+        "candidate paths and loops are review cues, not path truth",
+        "unfilled loops are architectural holes, not automatic violations",
+        "missing filler evidence is not measured zero",
+        "nonzero holonomy is bounded diagnosis, not future incident prediction",
+        "homotopy complex summary is not source extraction completeness"
+      ]
+    },
+    {
+      "readingId": "filler-candidate:loop-candidate-path-pair-semantic-contract-loop-0:filler-rule-authority-or-idempotency",
+      "loopRef": "loop-candidate:path-pair-semantic-contract-loop-0",
+      "fillerRuleRef": "filler-rule:authority-or-idempotency",
+      "fillerKind": "authority-or-idempotency-filler",
+      "status": "candidate",
+      "sourceRefs": [
+        "src-pricing-checkout",
+        "test-coupon-rounding"
+      ],
+      "docsRefs": [
+        "required-source-kind:policy"
+      ],
+      "runtimeRefs": [
+        "required-source-kind:runtime-trace"
+      ],
+      "nextCheckRefs": [
+        "check-filler-source-kind:policy",
+        "check-filler-source-kind:test",
+        "check-filler-source-kind:runtime-trace"
+      ],
+      "evidenceBoundary": "filler absence blocks Stokes-style local-curvature conclusions",
+      "nonConclusions": [
+        "candidate paths and loops are review cues, not path truth",
+        "unfilled loops are architectural holes, not automatic violations",
+        "missing filler evidence is not measured zero",
+        "nonzero holonomy is bounded diagnosis, not future incident prediction",
+        "homotopy complex summary is not source extraction completeness"
+      ]
+    },
+    {
+      "readingId": "filler-candidate:loop-candidate-path-pair-path-rule-interface-implementation-1:filler-rule-contract-or-test",
+      "loopRef": "loop-candidate:path-pair-path-rule-interface-implementation-1",
+      "fillerRuleRef": "filler-rule:contract-or-test",
+      "fillerKind": "contract-or-test-filler",
+      "status": "candidate",
+      "sourceRefs": [
+        "src-pricing-checkout",
+        "test-coupon-rounding"
+      ],
+      "docsRefs": [
+        "required-source-kind:doc-section"
+      ],
+      "runtimeRefs": [
+        "required-source-kind:runtime-trace"
+      ],
+      "nextCheckRefs": [
+        "check-filler-source-kind:doc-section",
+        "check-filler-source-kind:test",
+        "check-filler-source-kind:runtime-trace"
+      ],
+      "evidenceBoundary": "filler evidence is bounded to supplied source refs, tests, runtime evidence, or user-confirmed policy",
+      "nonConclusions": [
+        "candidate paths and loops are review cues, not path truth",
+        "unfilled loops are architectural holes, not automatic violations",
+        "missing filler evidence is not measured zero",
+        "nonzero holonomy is bounded diagnosis, not future incident prediction",
+        "homotopy complex summary is not source extraction completeness"
+      ]
+    },
+    {
+      "readingId": "filler-candidate:loop-candidate-path-pair-path-rule-interface-implementation-1:filler-rule-authority-or-idempotency",
+      "loopRef": "loop-candidate:path-pair-path-rule-interface-implementation-1",
+      "fillerRuleRef": "filler-rule:authority-or-idempotency",
+      "fillerKind": "authority-or-idempotency-filler",
+      "status": "candidate",
+      "sourceRefs": [
+        "src-pricing-checkout",
+        "test-coupon-rounding"
+      ],
+      "docsRefs": [
+        "required-source-kind:policy"
+      ],
+      "runtimeRefs": [
+        "required-source-kind:runtime-trace"
+      ],
+      "nextCheckRefs": [
+        "check-filler-source-kind:policy",
+        "check-filler-source-kind:test",
+        "check-filler-source-kind:runtime-trace"
+      ],
+      "evidenceBoundary": "filler absence blocks Stokes-style local-curvature conclusions",
+      "nonConclusions": [
+        "candidate paths and loops are review cues, not path truth",
+        "unfilled loops are architectural holes, not automatic violations",
+        "missing filler evidence is not measured zero",
+        "nonzero holonomy is bounded diagnosis, not future incident prediction",
+        "homotopy complex summary is not source extraction completeness"
+      ]
+    },
+    {
+      "readingId": "filler-candidate:loop-candidate-path-pair-path-rule-cache-repository-2:filler-rule-contract-or-test",
+      "loopRef": "loop-candidate:path-pair-path-rule-cache-repository-2",
+      "fillerRuleRef": "filler-rule:contract-or-test",
+      "fillerKind": "contract-or-test-filler",
+      "status": "candidate",
+      "sourceRefs": [
+        "src-pricing-checkout",
+        "test-coupon-rounding"
+      ],
+      "docsRefs": [
+        "required-source-kind:doc-section"
+      ],
+      "runtimeRefs": [
+        "required-source-kind:runtime-trace"
+      ],
+      "nextCheckRefs": [
+        "check-filler-source-kind:doc-section",
+        "check-filler-source-kind:test",
+        "check-filler-source-kind:runtime-trace"
+      ],
+      "evidenceBoundary": "filler evidence is bounded to supplied source refs, tests, runtime evidence, or user-confirmed policy",
+      "nonConclusions": [
+        "candidate paths and loops are review cues, not path truth",
+        "unfilled loops are architectural holes, not automatic violations",
+        "missing filler evidence is not measured zero",
+        "nonzero holonomy is bounded diagnosis, not future incident prediction",
+        "homotopy complex summary is not source extraction completeness"
+      ]
+    },
+    {
+      "readingId": "filler-candidate:loop-candidate-path-pair-path-rule-cache-repository-2:filler-rule-authority-or-idempotency",
+      "loopRef": "loop-candidate:path-pair-path-rule-cache-repository-2",
+      "fillerRuleRef": "filler-rule:authority-or-idempotency",
+      "fillerKind": "authority-or-idempotency-filler",
+      "status": "candidate",
+      "sourceRefs": [
+        "src-pricing-checkout",
+        "test-coupon-rounding"
+      ],
+      "docsRefs": [
+        "required-source-kind:policy"
+      ],
+      "runtimeRefs": [
+        "required-source-kind:runtime-trace"
+      ],
+      "nextCheckRefs": [
+        "check-filler-source-kind:policy",
+        "check-filler-source-kind:test",
+        "check-filler-source-kind:runtime-trace"
+      ],
+      "evidenceBoundary": "filler absence blocks Stokes-style local-curvature conclusions",
+      "nonConclusions": [
+        "candidate paths and loops are review cues, not path truth",
+        "unfilled loops are architectural holes, not automatic violations",
+        "missing filler evidence is not measured zero",
+        "nonzero holonomy is bounded diagnosis, not future incident prediction",
+        "homotopy complex summary is not source extraction completeness"
+      ]
+    }
+  ],
+  "architecturalHoleReadings": [
+    {
+      "readingId": "architectural-hole:loop-candidate-path-pair-semantic-contract-loop-0",
+      "loopRef": "loop-candidate:path-pair-semantic-contract-loop-0",
+      "status": "architecturalHole",
+      "missingFillerEvidence": [
+        "gap:coupon-runtime-payment-trace"
+      ],
+      "nextCheckRefs": [
+        "resolve-missing-filler:gap:coupon-runtime-payment-trace"
+      ],
+      "sourceRefs": [
+        "src-pricing-checkout",
+        "test-coupon-rounding"
+      ],
+      "coverageBoundary": "missing path or filler evidence blocks zero and Stokes-style readings",
+      "evidenceBoundary": "architectural hole records missing filler evidence, not violation proof",
+      "nonConclusions": [
+        "candidate paths and loops are review cues, not path truth",
+        "unfilled loops are architectural holes, not automatic violations",
+        "missing filler evidence is not measured zero",
+        "nonzero holonomy is bounded diagnosis, not future incident prediction",
+        "homotopy complex summary is not source extraction completeness"
+      ]
+    },
+    {
+      "readingId": "architectural-hole:loop-candidate-path-pair-path-rule-interface-implementation-1",
+      "loopRef": "loop-candidate:path-pair-path-rule-interface-implementation-1",
+      "status": "architecturalHole",
+      "missingFillerEvidence": [
+        "gap:coupon-runtime-payment-trace"
+      ],
+      "nextCheckRefs": [
+        "resolve-missing-filler:gap:coupon-runtime-payment-trace"
+      ],
+      "sourceRefs": [
+        "src-pricing-checkout",
+        "test-coupon-rounding"
+      ],
+      "coverageBoundary": "missing path or filler evidence blocks zero and Stokes-style readings",
+      "evidenceBoundary": "architectural hole records missing filler evidence, not violation proof",
+      "nonConclusions": [
+        "candidate paths and loops are review cues, not path truth",
+        "unfilled loops are architectural holes, not automatic violations",
+        "missing filler evidence is not measured zero",
+        "nonzero holonomy is bounded diagnosis, not future incident prediction",
+        "homotopy complex summary is not source extraction completeness"
+      ]
+    },
+    {
+      "readingId": "architectural-hole:loop-candidate-path-pair-path-rule-cache-repository-2",
+      "loopRef": "loop-candidate:path-pair-path-rule-cache-repository-2",
+      "status": "architecturalHole",
+      "missingFillerEvidence": [
+        "gap:coupon-runtime-payment-trace"
+      ],
+      "nextCheckRefs": [
+        "resolve-missing-filler:gap:coupon-runtime-payment-trace"
+      ],
+      "sourceRefs": [
+        "src-pricing-checkout",
+        "test-coupon-rounding"
+      ],
+      "coverageBoundary": "missing path or filler evidence blocks zero and Stokes-style readings",
+      "evidenceBoundary": "architectural hole records missing filler evidence, not violation proof",
+      "nonConclusions": [
+        "candidate paths and loops are review cues, not path truth",
+        "unfilled loops are architectural holes, not automatic violations",
+        "missing filler evidence is not measured zero",
+        "nonzero holonomy is bounded diagnosis, not future incident prediction",
+        "homotopy complex summary is not source extraction completeness"
+      ]
+    }
+  ],
+  "homotopyHolonomyReadings": [
+    {
+      "readingId": "homotopy-holonomy:loop-candidate-path-pair-semantic-contract-loop-0:axis-layer-violation",
+      "pathPairRef": "path-pair:semantic-contract-loop",
+      "loopRef": "loop-candidate:path-pair-semantic-contract-loop-0",
+      "axisRef": "axis:layer-violation",
+      "distanceKind": "selected-axis-continuation-distance",
+      "value": 1,
+      "comparedContinuationSummary": "path:semantic-operation-flow vs molecule:coupon-operation-contract on axis:layer-violation",
+      "sourceRefs": [
+        "src-pricing-checkout",
+        "test-coupon-rounding"
+      ],
+      "observationRefs": [
+        "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding",
+        "atom:effect:receipt-boundary",
+        "atom:semantic:PaymentAmount-ReceiptAmount-coupon-tax-rounding-noncommutation",
+        "semantic:coupon-tax-rounding-paths"
+      ],
+      "fillerRefs": [
+        "filler-candidate:loop-candidate-path-pair-semantic-contract-loop-0:filler-rule-contract-or-test",
+        "filler-candidate:loop-candidate-path-pair-semantic-contract-loop-0:filler-rule-authority-or-idempotency"
+      ],
+      "missingFillerRefs": [
+        "gap:coupon-runtime-payment-trace"
+      ],
+      "coverageBoundary": "missing path or filler evidence blocks zero and Stokes-style readings",
+      "exactnessAssumptionStatus": "bounded selected-axis continuation comparison; not theorem exactness",
+      "nonConclusions": [
+        "candidate paths and loops are review cues, not path truth",
+        "unfilled loops are architectural holes, not automatic violations",
+        "missing filler evidence is not measured zero",
+        "nonzero holonomy is bounded diagnosis, not future incident prediction",
+        "homotopy complex summary is not source extraction completeness"
+      ]
+    },
+    {
+      "readingId": "homotopy-holonomy:loop-candidate-path-pair-semantic-contract-loop-0:axis-semantic-inconsistency",
+      "pathPairRef": "path-pair:semantic-contract-loop",
+      "loopRef": "loop-candidate:path-pair-semantic-contract-loop-0",
+      "axisRef": "axis:semantic-inconsistency",
+      "distanceKind": "selected-axis-continuation-distance",
+      "value": 1,
+      "comparedContinuationSummary": "path:semantic-operation-flow vs molecule:coupon-operation-contract on axis:semantic-inconsistency",
+      "sourceRefs": [
+        "src-pricing-checkout",
+        "test-coupon-rounding"
+      ],
+      "observationRefs": [
+        "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding",
+        "atom:effect:receipt-boundary",
+        "atom:semantic:PaymentAmount-ReceiptAmount-coupon-tax-rounding-noncommutation",
+        "semantic:coupon-tax-rounding-paths"
+      ],
+      "fillerRefs": [
+        "filler-candidate:loop-candidate-path-pair-semantic-contract-loop-0:filler-rule-contract-or-test",
+        "filler-candidate:loop-candidate-path-pair-semantic-contract-loop-0:filler-rule-authority-or-idempotency"
+      ],
+      "missingFillerRefs": [
+        "gap:coupon-runtime-payment-trace"
+      ],
+      "coverageBoundary": "missing path or filler evidence blocks zero and Stokes-style readings",
+      "exactnessAssumptionStatus": "bounded selected-axis continuation comparison; not theorem exactness",
+      "nonConclusions": [
+        "candidate paths and loops are review cues, not path truth",
+        "unfilled loops are architectural holes, not automatic violations",
+        "missing filler evidence is not measured zero",
+        "nonzero holonomy is bounded diagnosis, not future incident prediction",
+        "homotopy complex summary is not source extraction completeness"
+      ]
+    },
+    {
+      "readingId": "homotopy-holonomy:loop-candidate-path-pair-path-rule-interface-implementation-1:axis-layer-violation",
+      "pathPairRef": "path-pair:path-rule-interface-implementation",
+      "loopRef": "loop-candidate:path-pair-path-rule-interface-implementation-1",
+      "axisRef": "axis:layer-violation",
+      "distanceKind": "selected-axis-continuation-distance",
+      "value": 1,
+      "comparedContinuationSummary": "path-rule:interface-implementation vs interface-implementation-path on axis:layer-violation",
+      "sourceRefs": [
+        "src-pricing-checkout",
+        "test-coupon-rounding"
+      ],
+      "observationRefs": [
+        "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding",
+        "atom:semantic:PaymentAmount-ReceiptAmount-coupon-tax-rounding-noncommutation",
+        "atom:effect:receipt-boundary"
+      ],
+      "fillerRefs": [
+        "filler-candidate:loop-candidate-path-pair-path-rule-interface-implementation-1:filler-rule-contract-or-test",
+        "filler-candidate:loop-candidate-path-pair-path-rule-interface-implementation-1:filler-rule-authority-or-idempotency"
+      ],
+      "missingFillerRefs": [
+        "gap:coupon-runtime-payment-trace"
+      ],
+      "coverageBoundary": "missing path or filler evidence blocks zero and Stokes-style readings",
+      "exactnessAssumptionStatus": "bounded selected-axis continuation comparison; not theorem exactness",
+      "nonConclusions": [
+        "candidate paths and loops are review cues, not path truth",
+        "unfilled loops are architectural holes, not automatic violations",
+        "missing filler evidence is not measured zero",
+        "nonzero holonomy is bounded diagnosis, not future incident prediction",
+        "homotopy complex summary is not source extraction completeness"
+      ]
+    },
+    {
+      "readingId": "homotopy-holonomy:loop-candidate-path-pair-path-rule-interface-implementation-1:axis-semantic-inconsistency",
+      "pathPairRef": "path-pair:path-rule-interface-implementation",
+      "loopRef": "loop-candidate:path-pair-path-rule-interface-implementation-1",
+      "axisRef": "axis:semantic-inconsistency",
+      "distanceKind": "selected-axis-continuation-distance",
+      "value": 1,
+      "comparedContinuationSummary": "path-rule:interface-implementation vs interface-implementation-path on axis:semantic-inconsistency",
+      "sourceRefs": [
+        "src-pricing-checkout",
+        "test-coupon-rounding"
+      ],
+      "observationRefs": [
+        "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding",
+        "atom:semantic:PaymentAmount-ReceiptAmount-coupon-tax-rounding-noncommutation",
+        "atom:effect:receipt-boundary"
+      ],
+      "fillerRefs": [
+        "filler-candidate:loop-candidate-path-pair-path-rule-interface-implementation-1:filler-rule-contract-or-test",
+        "filler-candidate:loop-candidate-path-pair-path-rule-interface-implementation-1:filler-rule-authority-or-idempotency"
+      ],
+      "missingFillerRefs": [
+        "gap:coupon-runtime-payment-trace"
+      ],
+      "coverageBoundary": "missing path or filler evidence blocks zero and Stokes-style readings",
+      "exactnessAssumptionStatus": "bounded selected-axis continuation comparison; not theorem exactness",
+      "nonConclusions": [
+        "candidate paths and loops are review cues, not path truth",
+        "unfilled loops are architectural holes, not automatic violations",
+        "missing filler evidence is not measured zero",
+        "nonzero holonomy is bounded diagnosis, not future incident prediction",
+        "homotopy complex summary is not source extraction completeness"
+      ]
+    },
+    {
+      "readingId": "homotopy-holonomy:loop-candidate-path-pair-path-rule-cache-repository-2:axis-layer-violation",
+      "pathPairRef": "path-pair:path-rule-cache-repository",
+      "loopRef": "loop-candidate:path-pair-path-rule-cache-repository-2",
+      "axisRef": "axis:layer-violation",
+      "distanceKind": "selected-axis-continuation-distance",
+      "value": 1,
+      "comparedContinuationSummary": "path-rule:cache-repository vs cache-repository-path on axis:layer-violation",
+      "sourceRefs": [
+        "src-pricing-checkout",
+        "test-coupon-rounding"
+      ],
+      "observationRefs": [
+        "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding",
+        "atom:semantic:PaymentAmount-ReceiptAmount-coupon-tax-rounding-noncommutation",
+        "atom:effect:receipt-boundary"
+      ],
+      "fillerRefs": [
+        "filler-candidate:loop-candidate-path-pair-path-rule-cache-repository-2:filler-rule-contract-or-test",
+        "filler-candidate:loop-candidate-path-pair-path-rule-cache-repository-2:filler-rule-authority-or-idempotency"
+      ],
+      "missingFillerRefs": [
+        "gap:coupon-runtime-payment-trace"
+      ],
+      "coverageBoundary": "missing path or filler evidence blocks zero and Stokes-style readings",
+      "exactnessAssumptionStatus": "bounded selected-axis continuation comparison; not theorem exactness",
+      "nonConclusions": [
+        "candidate paths and loops are review cues, not path truth",
+        "unfilled loops are architectural holes, not automatic violations",
+        "missing filler evidence is not measured zero",
+        "nonzero holonomy is bounded diagnosis, not future incident prediction",
+        "homotopy complex summary is not source extraction completeness"
+      ]
+    },
+    {
+      "readingId": "homotopy-holonomy:loop-candidate-path-pair-path-rule-cache-repository-2:axis-semantic-inconsistency",
+      "pathPairRef": "path-pair:path-rule-cache-repository",
+      "loopRef": "loop-candidate:path-pair-path-rule-cache-repository-2",
+      "axisRef": "axis:semantic-inconsistency",
+      "distanceKind": "selected-axis-continuation-distance",
+      "value": 1,
+      "comparedContinuationSummary": "path-rule:cache-repository vs cache-repository-path on axis:semantic-inconsistency",
+      "sourceRefs": [
+        "src-pricing-checkout",
+        "test-coupon-rounding"
+      ],
+      "observationRefs": [
+        "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding",
+        "atom:semantic:PaymentAmount-ReceiptAmount-coupon-tax-rounding-noncommutation",
+        "atom:effect:receipt-boundary"
+      ],
+      "fillerRefs": [
+        "filler-candidate:loop-candidate-path-pair-path-rule-cache-repository-2:filler-rule-contract-or-test",
+        "filler-candidate:loop-candidate-path-pair-path-rule-cache-repository-2:filler-rule-authority-or-idempotency"
+      ],
+      "missingFillerRefs": [
+        "gap:coupon-runtime-payment-trace"
+      ],
+      "coverageBoundary": "missing path or filler evidence blocks zero and Stokes-style readings",
+      "exactnessAssumptionStatus": "bounded selected-axis continuation comparison; not theorem exactness",
+      "nonConclusions": [
+        "candidate paths and loops are review cues, not path truth",
+        "unfilled loops are architectural holes, not automatic violations",
+        "missing filler evidence is not measured zero",
+        "nonzero holonomy is bounded diagnosis, not future incident prediction",
+        "homotopy complex summary is not source extraction completeness"
+      ]
+    }
+  ],
+  "stokesStyleReadings": [
+    {
+      "readingId": "stokes-style:loop-candidate-path-pair-semantic-contract-loop-0",
+      "loopRef": "loop-candidate:path-pair-semantic-contract-loop-0",
+      "status": "blockedByArchitecturalHole",
+      "holonomyReadingRefs": [
+        "homotopy-holonomy:loop-candidate-path-pair-semantic-contract-loop-0:axis-layer-violation",
+        "homotopy-holonomy:loop-candidate-path-pair-semantic-contract-loop-0:axis-semantic-inconsistency"
+      ],
+      "localCurvatureCellCandidates": [],
+      "reviewQueueRefs": [
+        "architectural-hole:loop-candidate-path-pair-semantic-contract-loop-0"
+      ],
+      "coverageBoundary": "missing path or filler evidence blocks zero and Stokes-style readings",
+      "evidenceBoundary": "Stokes-style reading is a bounded review queue, not theorem discharge",
+      "nonConclusions": [
+        "candidate paths and loops are review cues, not path truth",
+        "unfilled loops are architectural holes, not automatic violations",
+        "missing filler evidence is not measured zero",
+        "nonzero holonomy is bounded diagnosis, not future incident prediction",
+        "homotopy complex summary is not source extraction completeness"
+      ]
+    },
+    {
+      "readingId": "stokes-style:loop-candidate-path-pair-path-rule-interface-implementation-1",
+      "loopRef": "loop-candidate:path-pair-path-rule-interface-implementation-1",
+      "status": "blockedByArchitecturalHole",
+      "holonomyReadingRefs": [
+        "homotopy-holonomy:loop-candidate-path-pair-path-rule-interface-implementation-1:axis-layer-violation",
+        "homotopy-holonomy:loop-candidate-path-pair-path-rule-interface-implementation-1:axis-semantic-inconsistency"
+      ],
+      "localCurvatureCellCandidates": [],
+      "reviewQueueRefs": [
+        "architectural-hole:loop-candidate-path-pair-path-rule-interface-implementation-1"
+      ],
+      "coverageBoundary": "missing path or filler evidence blocks zero and Stokes-style readings",
+      "evidenceBoundary": "Stokes-style reading is a bounded review queue, not theorem discharge",
+      "nonConclusions": [
+        "candidate paths and loops are review cues, not path truth",
+        "unfilled loops are architectural holes, not automatic violations",
+        "missing filler evidence is not measured zero",
+        "nonzero holonomy is bounded diagnosis, not future incident prediction",
+        "homotopy complex summary is not source extraction completeness"
+      ]
+    },
+    {
+      "readingId": "stokes-style:loop-candidate-path-pair-path-rule-cache-repository-2",
+      "loopRef": "loop-candidate:path-pair-path-rule-cache-repository-2",
+      "status": "blockedByArchitecturalHole",
+      "holonomyReadingRefs": [
+        "homotopy-holonomy:loop-candidate-path-pair-path-rule-cache-repository-2:axis-layer-violation",
+        "homotopy-holonomy:loop-candidate-path-pair-path-rule-cache-repository-2:axis-semantic-inconsistency"
+      ],
+      "localCurvatureCellCandidates": [],
+      "reviewQueueRefs": [
+        "architectural-hole:loop-candidate-path-pair-path-rule-cache-repository-2"
+      ],
+      "coverageBoundary": "missing path or filler evidence blocks zero and Stokes-style readings",
+      "evidenceBoundary": "Stokes-style reading is a bounded review queue, not theorem discharge",
+      "nonConclusions": [
+        "candidate paths and loops are review cues, not path truth",
+        "unfilled loops are architectural holes, not automatic violations",
+        "missing filler evidence is not measured zero",
+        "nonzero holonomy is bounded diagnosis, not future incident prediction",
+        "homotopy complex summary is not source extraction completeness"
+      ]
+    }
+  ],
+  "architectureHomotopyReport": {
+    "reportId": "architecture-homotopy-report:homotopy-profile-bounded-stokes-default",
+    "profileRef": "homotopy-profile:bounded-stokes-default",
+    "status": "needsReview",
+    "filledLoops": [],
+    "unfilledLoops": [
+      "loop-candidate:path-pair-path-rule-cache-repository-2",
+      "loop-candidate:path-pair-path-rule-interface-implementation-1",
+      "loop-candidate:path-pair-semantic-contract-loop-0"
+    ],
+    "nonzeroHolonomyLoops": [
+      "loop-candidate:path-pair-path-rule-cache-repository-2",
+      "loop-candidate:path-pair-path-rule-interface-implementation-1",
+      "loop-candidate:path-pair-semantic-contract-loop-0"
+    ],
+    "topLocalCurvatureCells": [],
+    "aggregateReadings": [
+      {
+        "aggregateId": "beta1:bounded-unfilled-loop-count",
+        "value": 3,
+        "reading": "bounded count of unfilled architectural-hole loops",
+        "boundary": "selected measured complex only; not topological Betti number"
+      },
+      {
+        "aggregateId": "hol-mass:nonzero-holonomy-loop-count",
+        "value": 3,
+        "reading": "bounded count of loops with nonzero selected-axis holonomy",
+        "boundary": "not future incident or empirical cost prediction"
+      },
+      {
+        "aggregateId": "fill-ratio:filled-loop-count",
+        "value": 0,
+        "reading": "filled loop count out of 3 measured loop candidates",
+        "boundary": "count, not normalized quality score"
+      }
+    ],
+    "coverageGaps": [
+      "gap:coupon-runtime-payment-trace"
+    ],
+    "measuredBoundary": "ArchitectureHomotopyReport is bounded to supplied ArchMap, selected LawPolicy, and homotopy measurement profile",
+    "recommendedReviewFocus": [
+      "start with nonzero holonomy loops and compare continuation summaries",
+      "resolve architectural holes by adding contract, test, runtime, or policy filler evidence",
+      "inspect local curvature cells only for filled nonzero holonomy review queues"
+    ],
+    "nonConclusions": [
+      "ArchitectureHomotopyReport is not a single architecture quality score",
+      "ArchitectureHomotopyReport does not prove global semantic flatness",
+      "Unfilled loops are architectural holes, not automatic violations",
+      "Stokes-style readings are review queues, not theorem discharge"
+    ]
+  },
   "operationSquareCandidates": [
     {
       "candidateId": "operation-square:operation-delta-repair-obstruction-semantic-contract-mismatch-computed:operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation",
@@ -5685,6 +7093,16 @@
     ],
     "spectralDrilldownSummary": [
       "spectral-drilldown:coupon-tax-rounding-archmap atomFamilies=3 overlapPairs=0 repairAxisDeltas=1 (needsReview)"
+    ],
+    "curvatureSupportSummary": [
+      "curvature-support-reading:spectrum-profile-curvature-transfer-default supports=4 topModes=4 clusters=2 measuredAxes=1 unmeasuredAxes=2 (needsReview)"
+    ],
+    "curvatureTransferSummary": [
+      "curvature-transfer-reading:spectrum-profile-curvature-transfer-default edges=1 recurrentModes=1 rho=1 (needsReview)"
+    ],
+    "architectureSpectrumReportSummary": [
+      "architecture-spectrum-report:spectrum-profile-curvature-transfer-default hotspots=4 recurrent=1 clusters=2 (needsReview)",
+      "report is measured from ArchSig curvature support and transfer readings under selected LawPolicy coverage and exactness assumptions"
     ],
     "transferBridgeSummary": [
       "transfer-bridge:coupon-tax-rounding-archmap transfers=0 bridges=1 repairRanks=1 boundaryRanks=0 (nonConclusion)"

@@ -447,6 +447,8 @@ pub struct LawPolicyDocumentV0 {
     pub measurement_policy: LawPolicyMeasurementPolicyV0,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub spectrum_measurement_profile: Option<LawPolicySpectrumMeasurementProfileV0>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub homotopy_measurement_profile: Option<LawPolicyHomotopyMeasurementProfileV0>,
     pub exactness_assumptions: Vec<String>,
     pub coverage_requirements: Vec<LawPolicyCoverageRequirementV0>,
     #[serde(default)]
@@ -504,6 +506,68 @@ pub struct LawPolicySpectrumMeasurementProfileV0 {
 pub struct LawPolicySpectrumDistanceKindV0 {
     pub axis_ref: String,
     pub distance_kind: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct LawPolicyHomotopyMeasurementProfileV0 {
+    pub profile_id: String,
+    #[serde(default)]
+    pub selected_axis_refs: Vec<String>,
+    #[serde(default)]
+    pub path_discovery_rules: Vec<LawPolicyHomotopyPathDiscoveryRuleV0>,
+    #[serde(default)]
+    pub filler_rules: Vec<LawPolicyHomotopyFillerRuleV0>,
+    pub loop_measurement_policy: LawPolicyHomotopyLoopMeasurementPolicyV0,
+    pub continuation_policy: String,
+    pub distance_policy: String,
+    #[serde(default)]
+    pub coverage_requirement_refs: Vec<String>,
+    pub coverage_boundary: String,
+    #[serde(default)]
+    pub exactness_assumption_refs: Vec<String>,
+    pub measurement_boundary: String,
+    #[serde(default)]
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct LawPolicyHomotopyPathDiscoveryRuleV0 {
+    pub rule_id: String,
+    pub path_source_kind: String,
+    pub endpoint_policy: String,
+    pub candidate_source: String,
+    pub evidence_boundary: String,
+    #[serde(default)]
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct LawPolicyHomotopyFillerRuleV0 {
+    pub rule_id: String,
+    pub filler_kind: String,
+    #[serde(default)]
+    pub required_source_ref_kinds: Vec<String>,
+    pub missing_filler_behavior: String,
+    pub evidence_boundary: String,
+    #[serde(default)]
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct LawPolicyHomotopyLoopMeasurementPolicyV0 {
+    pub policy_id: String,
+    #[serde(default)]
+    pub loop_candidate_sources: Vec<String>,
+    pub filled_loop_reading: String,
+    pub unfilled_loop_reading: String,
+    pub holonomy_distance_kind: String,
+    pub local_curvature_reading_boundary: String,
+    #[serde(default)]
+    pub non_conclusions: Vec<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -677,6 +741,10 @@ pub struct ArchSigAnalysisPacketV0 {
     pub spectral_drilldown_readings: Vec<ArchSigSpectralDrilldownReadingV0>,
     #[serde(default)]
     pub curvature_support_readings: Vec<ArchSigCurvatureSupportReadingV0>,
+    #[serde(default)]
+    pub curvature_transfer_readings: Vec<ArchSigCurvatureTransferReadingV0>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub architecture_spectrum_report: Option<ArchSigArchitectureSpectrumReportV0>,
     pub transfer_bridge_readings: Vec<ArchSigTransferBridgeReadingV0>,
     #[serde(default)]
     pub atom_support_axis_readings: Vec<ArchSigAtomSupportAxisReadingV0>,
@@ -702,6 +770,22 @@ pub struct ArchSigAnalysisPacketV0 {
     #[serde(default)]
     pub bridge_split_obstruction_transfer_readings:
         Vec<ArchSigBridgeSplitObstructionTransferReadingV0>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub homotopy_complex_summary: Option<ArchSigHomotopyComplexSummaryV0>,
+    #[serde(default)]
+    pub path_pair_candidates: Vec<ArchSigPathPairCandidateV0>,
+    #[serde(default)]
+    pub loop_candidates: Vec<ArchSigLoopCandidateV0>,
+    #[serde(default)]
+    pub filler_candidate_readings: Vec<ArchSigFillerCandidateReadingV0>,
+    #[serde(default)]
+    pub architectural_hole_readings: Vec<ArchSigArchitecturalHoleReadingV0>,
+    #[serde(default)]
+    pub homotopy_holonomy_readings: Vec<ArchSigHomotopyHolonomyReadingV0>,
+    #[serde(default)]
+    pub stokes_style_readings: Vec<ArchSigStokesStyleReadingV0>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub architecture_homotopy_report: Option<ArchSigArchitectureHomotopyReportV0>,
     pub operation_square_candidates: Vec<ArchSigOperationSquareCandidateV0>,
     pub path_continuation_traces: Vec<ArchSigPathContinuationTraceV0>,
     pub axis_wise_monodromy_defects: Vec<ArchSigAxisWiseMonodromyDefectV0>,
@@ -1363,6 +1447,124 @@ pub struct ArchSigCurvatureWitnessClusterV0 {
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+pub struct ArchSigCurvatureTransferReadingV0 {
+    pub reading_id: String,
+    pub profile_ref: String,
+    pub status: String,
+    pub transfer_operator: ArchSigCurvatureTransferOperatorV0,
+    pub transfer_edges: Vec<ArchSigCurvatureTransferEdgeV0>,
+    pub recurrent_obstruction_modes: Vec<ArchSigRecurrentObstructionModeV0>,
+    pub spectral_radius_reading: ArchSigSpectralValueV0,
+    pub coverage_boundary: String,
+    pub evidence_boundary: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigCurvatureTransferOperatorV0 {
+    pub operator_id: String,
+    pub row_domain: String,
+    pub column_domain: String,
+    pub row_count: usize,
+    pub column_count: usize,
+    pub nonzero_edge_count: usize,
+    pub entry_rule: String,
+    pub reading: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigCurvatureTransferEdgeV0 {
+    pub edge_id: String,
+    pub source_support_ref: String,
+    pub source_axis_ref: String,
+    pub target_support_ref: String,
+    pub target_axis_ref: String,
+    pub witness_refs: Vec<String>,
+    pub defect_value: i64,
+    pub weight: i64,
+    pub source_refs: Vec<String>,
+    pub reading: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigRecurrentObstructionModeV0 {
+    pub mode_id: String,
+    pub transfer_edge_refs: Vec<String>,
+    pub support_refs: Vec<String>,
+    pub witness_refs: Vec<String>,
+    pub spectral_radius_reading: String,
+    pub recurrent_obstruction_reading: String,
+    pub review_focus: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigArchitectureSpectrumReportV0 {
+    pub report_id: String,
+    pub profile_ref: String,
+    pub status: String,
+    pub top_hotspots: Vec<ArchSigArchitectureSpectrumHotspotV0>,
+    pub top_eigenmodes: Vec<ArchSigArchitectureSpectrumModeV0>,
+    pub top_witness_clusters: Vec<ArchSigArchitectureSpectrumWitnessClusterV0>,
+    pub recurrent_obstructions: Vec<ArchSigArchitectureSpectrumRecurrentObstructionV0>,
+    pub coverage_gaps: Vec<String>,
+    pub measured_boundary: String,
+    pub recommended_review_focus: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigArchitectureSpectrumHotspotV0 {
+    pub hotspot_id: String,
+    pub axis_ref: String,
+    pub curvature_value: i64,
+    pub support_refs: Vec<String>,
+    pub witness_refs: Vec<String>,
+    pub coverage_gap_refs: Vec<String>,
+    pub recommended_next_action: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigArchitectureSpectrumModeV0 {
+    pub mode_ref: String,
+    pub rank: usize,
+    pub axis_ref: String,
+    pub curvature_value: i64,
+    pub support_refs: Vec<String>,
+    pub witness_refs: Vec<String>,
+    pub reading: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigArchitectureSpectrumWitnessClusterV0 {
+    pub cluster_ref: String,
+    pub axis_refs: Vec<String>,
+    pub witness_refs: Vec<String>,
+    pub support_refs: Vec<String>,
+    pub cluster_weight: i64,
+    pub reading: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigArchitectureSpectrumRecurrentObstructionV0 {
+    pub mode_ref: String,
+    pub spectral_radius_reading: String,
+    pub transfer_edge_refs: Vec<String>,
+    pub support_refs: Vec<String>,
+    pub witness_refs: Vec<String>,
+    pub reading: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct ArchSigSpectralModeReadingV0 {
     pub spectral_mode_id: String,
     pub source_spectral_reading_ref: String,
@@ -1785,6 +1987,159 @@ pub struct ArchSigBridgeSplitObstructionTransferReadingV0 {
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+pub struct ArchSigHomotopyComplexSummaryV0 {
+    pub complex_id: String,
+    pub profile_ref: String,
+    pub status: String,
+    pub selected_axis_refs: Vec<String>,
+    pub zero_cells: Vec<ArchSigHomotopyCellSummaryV0>,
+    pub one_cells: Vec<ArchSigHomotopyCellSummaryV0>,
+    pub two_cells: Vec<ArchSigHomotopyCellSummaryV0>,
+    pub source_refs: Vec<String>,
+    pub coverage_boundary: String,
+    pub exactness_assumptions: Vec<String>,
+    pub evidence_boundary: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigHomotopyCellSummaryV0 {
+    pub cell_id: String,
+    pub cell_dimension: u8,
+    pub cell_kind: String,
+    pub status: String,
+    pub observation_refs: Vec<String>,
+    pub source_refs: Vec<String>,
+    pub reading: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigPathPairCandidateV0 {
+    pub candidate_id: String,
+    pub candidate_source: String,
+    pub status: String,
+    pub p_path_ref: String,
+    pub q_path_ref: String,
+    pub shared_endpoint_refs: Vec<String>,
+    pub selected_axis_refs: Vec<String>,
+    pub source_refs: Vec<String>,
+    pub observation_refs: Vec<String>,
+    pub coverage_boundary: String,
+    pub evidence_boundary: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigLoopCandidateV0 {
+    pub loop_id: String,
+    pub path_pair_ref: String,
+    pub candidate_source: String,
+    pub status: String,
+    pub path_refs: Vec<String>,
+    pub filler_candidate_refs: Vec<String>,
+    pub missing_filler_evidence: Vec<String>,
+    pub selected_axis_refs: Vec<String>,
+    pub source_refs: Vec<String>,
+    pub coverage_boundary: String,
+    pub evidence_boundary: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigFillerCandidateReadingV0 {
+    pub reading_id: String,
+    pub loop_ref: String,
+    pub filler_rule_ref: String,
+    pub filler_kind: String,
+    pub status: String,
+    pub source_refs: Vec<String>,
+    pub docs_refs: Vec<String>,
+    pub runtime_refs: Vec<String>,
+    pub next_check_refs: Vec<String>,
+    pub evidence_boundary: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigArchitecturalHoleReadingV0 {
+    pub reading_id: String,
+    pub loop_ref: String,
+    pub status: String,
+    pub missing_filler_evidence: Vec<String>,
+    pub next_check_refs: Vec<String>,
+    pub source_refs: Vec<String>,
+    pub coverage_boundary: String,
+    pub evidence_boundary: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigHomotopyHolonomyReadingV0 {
+    pub reading_id: String,
+    pub path_pair_ref: String,
+    pub loop_ref: String,
+    pub axis_ref: String,
+    pub distance_kind: String,
+    pub value: i64,
+    pub compared_continuation_summary: String,
+    pub source_refs: Vec<String>,
+    pub observation_refs: Vec<String>,
+    pub filler_refs: Vec<String>,
+    pub missing_filler_refs: Vec<String>,
+    pub coverage_boundary: String,
+    pub exactness_assumption_status: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigStokesStyleReadingV0 {
+    pub reading_id: String,
+    pub loop_ref: String,
+    pub status: String,
+    pub holonomy_reading_refs: Vec<String>,
+    pub local_curvature_cell_candidates: Vec<String>,
+    pub review_queue_refs: Vec<String>,
+    pub coverage_boundary: String,
+    pub evidence_boundary: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigArchitectureHomotopyReportV0 {
+    pub report_id: String,
+    pub profile_ref: String,
+    pub status: String,
+    pub filled_loops: Vec<String>,
+    pub unfilled_loops: Vec<String>,
+    pub nonzero_holonomy_loops: Vec<String>,
+    pub top_local_curvature_cells: Vec<String>,
+    pub aggregate_readings: Vec<ArchSigHomotopyAggregateReadingV0>,
+    pub coverage_gaps: Vec<String>,
+    pub measured_boundary: String,
+    pub recommended_review_focus: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigHomotopyAggregateReadingV0 {
+    pub aggregate_id: String,
+    pub value: i64,
+    pub reading: String,
+    pub boundary: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct ArchSigRepresentationStrengthReadingV0 {
     pub reading_id: String,
     pub source_reading_ref: String,
@@ -2065,6 +2420,10 @@ pub struct ArchSigLlmInterpretationPacketV0 {
     pub spectral_drilldown_summary: Vec<String>,
     #[serde(default)]
     pub curvature_support_summary: Vec<String>,
+    #[serde(default)]
+    pub curvature_transfer_summary: Vec<String>,
+    #[serde(default)]
+    pub architecture_spectrum_report_summary: Vec<String>,
     pub transfer_bridge_summary: Vec<String>,
     pub transfer_bridge_edge_summary: Vec<String>,
     #[serde(default)]
@@ -2148,6 +2507,7 @@ pub struct ArchSigAnalysisPacketValidationSummaryV0 {
     pub spectral_mode_reading_count: usize,
     pub spectral_drilldown_reading_count: usize,
     pub curvature_support_reading_count: usize,
+    pub curvature_transfer_reading_count: usize,
     pub transfer_bridge_reading_count: usize,
     pub atom_support_axis_reading_count: usize,
     pub atom_compatibility_reading_count: usize,

@@ -268,6 +268,177 @@
       ]
     }
   ],
+  "measurementPolicy": {
+    "policyId": "measurement:archsig-reader-default",
+    "selectedAxisRefs": [
+      "axis:layer-violation",
+      "axis:semantic-inconsistency"
+    ],
+    "distanceKind": "witness-mismatch-count",
+    "weightPolicy": "unit weights for bundled smoke-test baseline only",
+    "coveragePolicy": "coverage gaps block signature-zero and spectrum-zero reflection",
+    "archMapStoreRefKinds": [
+      "archmap-delta",
+      "archmap-commit",
+      "archmap-snapshot",
+      "archmap-index"
+    ],
+    "measurementBoundary": "finite ArchSig measurement over observed ArchMap atoms and bundled baseline axes, not project-specific architecture diagnosis",
+    "exactnessAssumptionRefs": [
+      "selected LawPolicy exactness assumptions"
+    ],
+    "nonConclusions": [
+      "law policy is selected analysis policy, not AAT itself",
+      "law policy validation does not prove architecture lawfulness",
+      "law policy validation does not certify atom truth",
+      "missing coverage is not measured zero",
+      "signature zero requires ArchSig analysis with declared coverage and exactness assumptions"
+    ]
+  },
+  "spectrumMeasurementProfile": {
+    "profileId": "spectrum-profile:archsig-reader-default",
+    "selectedAxisRefs": [
+      "axis:layer-violation",
+      "axis:semantic-inconsistency"
+    ],
+    "measuredWitnessRuleRefs": [
+      "witness:layer-violation",
+      "witness:semantic-contract-mismatch"
+    ],
+    "distanceKinds": [
+      {
+        "axisRef": "axis:layer-violation",
+        "distanceKind": "boolean-mismatch"
+      },
+      {
+        "axisRef": "axis:semantic-inconsistency",
+        "distanceKind": "semantic-witness-mismatch-count"
+      }
+    ],
+    "weightPolicy": "unit weights for bundled smoke-test baseline only",
+    "supportProjectionRule": "project measured witness support to observed Atom refs and selected axis ids",
+    "transferEdgeRule": "construct transfer edges only from measured witness support overlap under selected axes",
+    "clusteringRankingOptions": [
+      "rank top curvature modes by weighted measured curvature",
+      "rank recurrent modes only inside the selected measured support x axis state space"
+    ],
+    "reportFocusOptions": [
+      "surface top modes with witness refs, source refs, coverage gaps, measured boundary, and non-conclusions"
+    ],
+    "coverageRequirementRefs": [
+      "coverage:layer-atoms",
+      "coverage:semantic-contract-atoms"
+    ],
+    "coverageBoundary": "missing coverage blocks spectrum zero reflection and remains a report gap",
+    "exactnessAssumptionRefs": [
+      "selected LawPolicy exactness assumptions"
+    ],
+    "measurementBoundary": "curvature-transfer spectrum readings are bounded ArchSig smoke-test diagnostics, not project-specific theorem discharge",
+    "nonConclusions": [
+      "spectrum measurement profile is a measurement recipe, not a law universe",
+      "profile differences are not law universe differences",
+      "ArchitectureSpectrumReport is not a single architecture quality score",
+      "unmeasured axes are not zero",
+      "spectrum zero requires coverage, exactness, and zero-reflection assumptions"
+    ]
+  },
+  "homotopyMeasurementProfile": {
+    "profileId": "homotopy-profile:archsig-reader-default",
+    "selectedAxisRefs": [
+      "axis:layer-violation",
+      "axis:semantic-inconsistency"
+    ],
+    "pathDiscoveryRules": [
+      {
+        "ruleId": "path-rule:interface-implementation",
+        "pathSourceKind": "interface-implementation-path",
+        "endpointPolicy": "compare candidate paths only when endpoints are supported by observed Atom refs",
+        "candidateSource": "bundled smoke-test candidates must cite source refs or remain unresolved",
+        "evidenceBoundary": "candidate paths are bounded review cues derived from supplied ArchMap evidence and the bundled baseline LawPolicy",
+        "nonConclusions": [
+          "homotopy measurement profile is a measurement recipe, not a law universe",
+          "candidate paths and loops are review cues, not path truth",
+          "unfilled loops are architectural holes, not automatic violations",
+          "missing filler evidence is not measured zero",
+          "ArchitectureHomotopyReport is not a single architecture quality score"
+        ]
+      },
+      {
+        "ruleId": "path-rule:cache-repository",
+        "pathSourceKind": "cache-repository-path",
+        "endpointPolicy": "compare cache and repository paths only under declared semantic and state axes",
+        "candidateSource": "bundled smoke-test candidates must cite source refs, tests, runtime notes, or remain unresolved",
+        "evidenceBoundary": "absence of a candidate path is not proof that no architectural loop exists",
+        "nonConclusions": [
+          "homotopy measurement profile is a measurement recipe, not a law universe",
+          "candidate paths and loops are review cues, not path truth",
+          "unfilled loops are architectural holes, not automatic violations",
+          "missing filler evidence is not measured zero",
+          "ArchitectureHomotopyReport is not a single architecture quality score"
+        ]
+      }
+    ],
+    "fillerRules": [
+      {
+        "ruleId": "filler-rule:contract-or-test",
+        "fillerKind": "contract-or-test-filler",
+        "requiredSourceRefKinds": [
+          "docSection",
+          "test",
+          "runtimeTrace"
+        ],
+        "missingFillerBehavior": "report architectural hole and missing filler evidence; do not promote to violation",
+        "evidenceBoundary": "filler evidence is bounded to supplied source refs, tests, runtime evidence, or user-confirmed policy",
+        "nonConclusions": [
+          "homotopy measurement profile is a measurement recipe, not a law universe",
+          "candidate paths and loops are review cues, not path truth",
+          "unfilled loops are architectural holes, not automatic violations",
+          "missing filler evidence is not measured zero",
+          "ArchitectureHomotopyReport is not a single architecture quality score"
+        ]
+      }
+    ],
+    "loopMeasurementPolicy": {
+      "policyId": "loop-policy:selected-axis-holonomy",
+      "loopCandidateSources": [
+        "LLM-discovered candidate with source refs",
+        "LawPolicy-required candidate",
+        "ArchMap-supplied candidate",
+        "source-confirmed candidate",
+        "unresolved needsReview candidate"
+      ],
+      "filledLoopReading": "filled loops may localize nonzero holonomy to measured local curvature cells",
+      "unfilledLoopReading": "unfilled loops are architectural holes and missing evidence surfaces",
+      "holonomyDistanceKind": "selected-axis-continuation-distance",
+      "localCurvatureReadingBoundary": "local curvature is read only for measured fillings, not for unfilled loops",
+      "nonConclusions": [
+        "homotopy measurement profile is a measurement recipe, not a law universe",
+        "candidate paths and loops are review cues, not path truth",
+        "unfilled loops are architectural holes, not automatic violations",
+        "missing filler evidence is not measured zero",
+        "ArchitectureHomotopyReport is not a single architecture quality score"
+      ]
+    },
+    "continuationPolicy": "compare selected continuation traces only on axes declared in this profile",
+    "distancePolicy": "bounded distance over selected semantic, state, effect, authority, and runtime axes",
+    "coverageRequirementRefs": [
+      "coverage:layer-atoms",
+      "coverage:semantic-contract-atoms"
+    ],
+    "coverageBoundary": "missing path or filler evidence blocks zero and Stokes-style readings",
+    "exactnessAssumptionRefs": [
+      "selected LawPolicy exactness assumptions"
+    ],
+    "measurementBoundary": "homotopy / holonomy readings are bounded ArchSig smoke-test diagnostics, not project-specific theorem discharge",
+    "nonConclusions": [
+      "homotopy measurement profile is a measurement recipe, not a law universe",
+      "candidate paths and loops are review cues, not path truth",
+      "unfilled loops are architectural holes, not automatic violations",
+      "missing filler evidence is not measured zero",
+      "nonzero holonomy does not prove future incidents or repair unsafety",
+      "ArchitectureHomotopyReport is not a single architecture quality score"
+    ]
+  },
   "exactnessAssumptions": [
     "the selected witness rules cover only policy-declared laws",
     "zero readings are exact only for observed atoms and declared coverage requirements"

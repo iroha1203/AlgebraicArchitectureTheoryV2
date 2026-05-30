@@ -10,7 +10,8 @@ ArchMap
 
 InterpretationProfile
   selects the LawUniverse, witness rules, signature axes, coverage, exactness,
-  and optional spectrum measurement profile.
+  optional spectrum measurement profile, and optional homotopy path / filler /
+  loop measurement profile.
   The current JSON artifact is still named law-policy-v0 for the profile input.
 
 ArchSig Analysis Packet
@@ -21,7 +22,8 @@ ArchSig Analysis Packet
   transfer bridge readings, Atom support / compatibility readings,
   LawUniverse coverage, feature extension formula axes, operation calculus law
   axes, path signature trajectories, homotopy / operation-order sensitivity,
-  diagram fillability, bounded judgements, repair operation candidates,
+  diagram fillability, Homotopy / Holonomy / Stokes readings,
+  ArchitectureHomotopyReport, bounded judgements, repair operation candidates,
   operation deltas, path / homotopy / diagram readings, child-level evidence
   boundaries, ArchMapStore refs, monodromy / boundary holonomy reading family
   policy surfaces, and an LLM interpretation packet.
@@ -31,6 +33,14 @@ ArchSig Analysis Packet
 
 The packet owns structured analysis results. It is not a theorem proof and not
 a single architecture quality score.
+
+`ArchitectureHomotopyReport` is a bounded codebase-inspection surface. It reads
+candidate path pairs, loops, fillers, architectural holes, selected-axis
+holonomy, and Stokes-style review queues under the selected LawPolicy
+`homotopyMeasurementProfile`. It does not prove path equality, global homology,
+global semantic flatness, source extraction completeness, future safety, repair
+safety, or automatic violation findings. Unfilled loops remain architectural
+holes until filler evidence is supplied.
 
 The implemented schema records:
 
@@ -56,6 +66,8 @@ The implemented schema records:
 - `spectralModeReadings`
 - `spectralDrilldownReadings`
 - `curvatureSupportReadings`
+- `curvatureTransferReadings`
+- `architectureSpectrumReport`
 - `transferBridgeReadings`
 - `atomSupportAxisReadings`
 - `atomCompatibilityReadings`
@@ -68,6 +80,14 @@ The implemented schema records:
 - `axisForgettingRiskReadings`
 - `signatureTrajectoryHomotopyRefutationReadings`
 - `bridgeSplitObstructionTransferReadings`
+- `homotopyComplexSummary`
+- `pathPairCandidates`
+- `loopCandidates`
+- `fillerCandidateReadings`
+- `architecturalHoleReadings`
+- `homotopyHolonomyReadings`
+- `stokesStyleReadings`
+- `architectureHomotopyReport`
 - `operationSquareCandidates`
 - `pathContinuationTraces`
 - `axisWiseMonodromyDefects`
@@ -102,14 +122,17 @@ The implemented schema records:
 Packet validation checks identity, ArchMap / interpretation profile references,
 AAT concept coverage, bounded judgement statuses, analytic axes, workflow risk
 readings, spectral analysis readings, spectral mode readings, design principle
-readings, spectral drilldown readings, curvature support readings, transfer
-bridge readings and bridge-edge source refs, v0.3.0 measurement expansion
-readings, AAT structural state
-readings, ArchMapStore delta / commit / snapshot / index refs, operation square
-candidates, axis-wise path continuation traces, monodromy / boundary holonomy
-reading family policy surfaces, law-relative obstruction links, signature /
-flatness references, repair candidate guardrails, LLM interpretation notes,
-evidence boundary, and required non-conclusions.
+readings, spectral drilldown readings, curvature support readings, curvature
+transfer readings, ArchitectureSpectrumReport, transfer bridge readings and
+bridge-edge source refs, v0.3.0 measurement expansion readings, homotopy complex
+summaries, path pair candidates, loop candidates, filler candidate readings,
+architectural hole readings, homotopy holonomy readings, Stokes-style readings,
+ArchitectureHomotopyReport, AAT structural state readings, ArchMapStore delta /
+commit / snapshot / index refs, operation square candidates, axis-wise path
+continuation traces, monodromy / boundary holonomy reading family policy
+surfaces, law-relative obstruction links, signature / flatness references, repair
+candidate guardrails, LLM interpretation notes, evidence boundary, and required
+non-conclusions.
 Each obstruction circuit, signature axis reading, and repair operation candidate
 must carry its own `missingEvidence` and `excludedReadings`. Packet-level
 `excludedReadings` does not stand in for child-record evidence boundaries.
@@ -130,6 +153,7 @@ Validation does not imply:
 
 - `tools/archsig/tests/fixtures/minimal/archsig_analysis_packet.json`
 - `tools/archsig/tests/fixtures/coupon_rounding/archsig_analysis_packet.json`
+- `tools/archsig/tests/fixtures/homotopy_report/archsig_analysis_packet.json`
 
 The fixture is locked against the static Rust builder and the schema catalog
 records both `archsig-analysis-packet-v0` and
@@ -173,6 +197,16 @@ The builder:
   support rows, bounded curvature values, weights, top modes, witness clusters,
   coverage boundaries, exactness refs, and non-conclusions. Unmeasured axes and
   missing support remain explicit missing evidence, not measured zero.
+- curvature transfer readings build a finite nonnegative transfer operator over
+  measured curvature support rows. They report transfer edges, a
+  `rho(T^kappa)` proxy, and recurrent obstruction modes only as bounded
+  current-state diagnostics. They do not conclude future incidents, empirical
+  cost increase, amplification, repair safety, or FieldSig forecast truth.
+- `architectureSpectrumReport` summarizes the ACTS surface for human and LLM
+  review: top hotspots, top bounded mode data, witness clusters, recurrent
+  obstruction entries, coverage gaps, measured boundary, and recommended next
+  actions. It is a primary codebase-inspection reading surface, not a single
+  architecture quality score.
 - transfer bridge readings summarize repair-operation-by-transferred-axis
   matrices, indirect bridge atom families between architecture hubs, and
   evolution risk rankings for repairs and boundary preparation. Each bridge
@@ -190,6 +224,15 @@ The builder:
   transfer. These readings keep source refs, observation refs, coverage
   boundaries, evidence boundaries, and non-conclusions; they are not PR / diff
   evolution analysis.
+- Homotopy / Holonomy / Stokes readings add current-state coordinates for
+  `homotopyComplexSummary`, `pathPairCandidates`, `loopCandidates`,
+  `fillerCandidateReadings`, `architecturalHoleReadings`,
+  `homotopyHolonomyReadings`, `stokesStyleReadings`, and
+  `architectureHomotopyReport`. Filled nonzero holonomy loops point reviewers
+  to measured local curvature cells; unfilled loops point reviewers to missing
+  contract, test, runtime, policy, or semantic filler evidence. Neither case is
+  a theorem discharge, architecture score, future forecast, or automatic
+  violation proof.
 - ArchMapStore is the forward history boundary for PR and longitudinal
   workflows. `ArchMapDelta` and `ArchMapCommit` carry ArchMap-level change
   evidence; `ArchMapSnapshot` and `ArchMapIndex` support large-repository
@@ -200,9 +243,9 @@ The builder:
   provenance to produce `archsig-codebase-inspection-report-v0`. The report is
   a current-state architecture health surface: subsystem boundaries,
   feature-like clusters, operation-like relations, top boundary holonomy, top
-  order-sensitive squares, coverage / exactness boundary, and next action cues.
-  It is not PR / diff evolution analysis and does not prove global lawfulness or
-  safety.
+  order-sensitive squares, ArchitectureSpectrumReport hotspots / recurrent
+  obstructions, coverage / exactness boundary, and next action cues. It is not
+  PR / diff evolution analysis and does not prove global lawfulness or safety.
 - `archMapStoreRefs` records the packet's canonical history substrate:
   `archmap-delta-v0`, `archmap-commit-v0`, `archmap-snapshot-v0`, and
   `archmap-index-v0`. It also records raw-diff and compaction boundaries so

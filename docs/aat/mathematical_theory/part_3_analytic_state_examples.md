@@ -373,6 +373,48 @@ ArchSig の `AMI` や `nonzeroMonodromyWitness` は theorem witness ではなく
 diagnosis である。Lean 側の minimal guardrail は、report が主張してよい安全な読みだけを
 支える。
 
+### 定義 6.6 Architecture Curvature Transfer Spectrum
+
+Architecture Curvature Transfer Spectrum (ACTS) は、selected LawPolicy axis 上の
+curvature support と、その support 間の transfer relation を読む bounded analytic
+surface である。
+
+```text
+support row:
+  (axis, witness support, curvature value, weight)
+
+transfer edge:
+  support_i -> support_j with nonnegative weight
+
+ArchitectureSpectrumReport:
+  top hotspots
+  top bounded modes
+  witness clusters
+  recurrent obstruction supports
+  coverage gaps
+  measured boundary
+  recommended review focus
+```
+
+Lean 側の minimal guardrail は `Formal/Arch/Signature/CurvatureTransferSpectrum.lean`
+に置く。これは finite support family、positive weight、nonempty witness support、
+finite nonnegative transfer relation に相対化される。
+
+```text
+weighted support aggregate = 0
+  + every selected row has positive weight
+  -> every selected measured curvature is 0
+
+positive closed transfer edge
+  -> bounded recurrent obstruction support reading
+```
+
+この reading は ArchSig の実装正しさを証明しない。`ArchitectureSpectrumReport` は
+theorem proof ではなく、codebase-inspection の review surface である。coverage /
+exactness / zero-reflection assumptions が不足する場合、zero spectrum や absent support
+を architecture flatness、future safety、repair safety、empirical cost reduction として
+読んではならない。
+
 ## 7. State Transition Algebra
 
 state Atom と effect Atom は state transition algebra を作る。
