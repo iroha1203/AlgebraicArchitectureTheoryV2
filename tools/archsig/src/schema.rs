@@ -636,6 +636,14 @@ pub struct ArchSigAnalysisPacketV0 {
     pub homotopy_order_sensitivity_readings: Vec<ArchSigHomotopyOrderSensitivityReadingV0>,
     #[serde(default)]
     pub diagram_fillability_readings: Vec<ArchSigDiagramFillabilityReadingV0>,
+    #[serde(default)]
+    pub axis_forgetting_risk_readings: Vec<ArchSigAxisForgettingRiskReadingV0>,
+    #[serde(default)]
+    pub signature_trajectory_homotopy_refutation_readings:
+        Vec<ArchSigSignatureTrajectoryHomotopyRefutationReadingV0>,
+    #[serde(default)]
+    pub bridge_split_obstruction_transfer_readings:
+        Vec<ArchSigBridgeSplitObstructionTransferReadingV0>,
     pub representation_strength_readings: Vec<ArchSigRepresentationStrengthReadingV0>,
     pub local_curvature_diagram_readings: Vec<ArchSigLocalCurvatureDiagramReadingV0>,
     pub three_layer_flatness_readings: Vec<ArchSigThreeLayerFlatnessReadingV0>,
@@ -1341,6 +1349,54 @@ pub struct ArchSigDiagramFillabilityReadingV0 {
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+pub struct ArchSigAxisForgettingRiskReadingV0 {
+    pub reading_id: String,
+    pub source_projection_ref: String,
+    pub source_atom_support_refs: Vec<String>,
+    pub forgotten_axis_refs: Vec<String>,
+    pub mixed_axis_scope_refs: Vec<String>,
+    pub reflection_loss_kind: String,
+    pub zero_reflection_status: String,
+    pub obstruction_reflection_status: String,
+    pub required_assumptions: Vec<String>,
+    pub coverage_boundary: String,
+    pub evidence_boundary: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigSignatureTrajectoryHomotopyRefutationReadingV0 {
+    pub reading_id: String,
+    pub selected_homotopy_ref: String,
+    pub trajectory_reading_refs: Vec<String>,
+    pub path_refs: Vec<String>,
+    pub trajectory_disagreement_refs: Vec<String>,
+    pub trajectory_equivalence_status: String,
+    pub homotopy_refutation_status: String,
+    pub selected_equivalence_boundary: String,
+    pub evidence_boundary: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigBridgeSplitObstructionTransferReadingV0 {
+    pub reading_id: String,
+    pub split_readiness_ref: String,
+    pub bridge_edge_refs: Vec<String>,
+    pub molecule_refs: Vec<String>,
+    pub obstruction_refs: Vec<String>,
+    pub required_boundary_operations: Vec<String>,
+    pub filler_evidence_status: String,
+    pub lifting_evidence_status: String,
+    pub transfer_risk_status: String,
+    pub evidence_boundary: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct ArchSigRepresentationStrengthReadingV0 {
     pub reading_id: String,
     pub source_reading_ref: String,
@@ -1639,6 +1695,12 @@ pub struct ArchSigLlmInterpretationPacketV0 {
     pub homotopy_order_sensitivity_summary: Vec<String>,
     #[serde(default)]
     pub diagram_fillability_summary: Vec<String>,
+    #[serde(default)]
+    pub axis_forgetting_risk_summary: Vec<String>,
+    #[serde(default)]
+    pub signature_trajectory_homotopy_refutation_summary: Vec<String>,
+    #[serde(default)]
+    pub bridge_split_obstruction_transfer_summary: Vec<String>,
     pub representation_strength_summary: Vec<String>,
     pub local_curvature_diagram_summary: Vec<String>,
     pub three_layer_flatness_summary: Vec<String>,
@@ -1698,6 +1760,9 @@ pub struct ArchSigAnalysisPacketValidationSummaryV0 {
     pub path_signature_trajectory_reading_count: usize,
     pub homotopy_order_sensitivity_reading_count: usize,
     pub diagram_fillability_reading_count: usize,
+    pub axis_forgetting_risk_reading_count: usize,
+    pub signature_trajectory_homotopy_refutation_reading_count: usize,
+    pub bridge_split_obstruction_transfer_reading_count: usize,
     pub representation_strength_reading_count: usize,
     pub local_curvature_diagram_reading_count: usize,
     pub three_layer_flatness_reading_count: usize,

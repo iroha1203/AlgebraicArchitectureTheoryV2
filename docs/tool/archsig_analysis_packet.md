@@ -61,6 +61,9 @@ The implemented schema records:
 - `pathSignatureTrajectoryReadings`
 - `homotopyOrderSensitivityReadings`
 - `diagramFillabilityReadings`
+- `axisForgettingRiskReadings`
+- `signatureTrajectoryHomotopyRefutationReadings`
+- `bridgeSplitObstructionTransferReadings`
 - `representationStrengthReadings`
 - `localCurvatureDiagramReadings`
 - `threeLayerFlatnessReadings`
@@ -160,9 +163,24 @@ The builder:
   Atom support / axis restriction, Atom compatibility / conflict, LawUniverse
   coverage / witness exactness, feature extension formula axes, operation
   calculus law axes, path signature trajectory, homotopy / operation-order
-  sensitivity, and diagram fillability. These readings keep source refs,
-  observation refs, coverage boundaries, evidence boundaries, and
-  non-conclusions; they are not PR / diff evolution analysis.
+  sensitivity, diagram fillability, axis-forgetting / projection reflection
+  loss, selected trajectory homotopy refutation, and bridge split obstruction
+  transfer. These readings keep source refs, observation refs, coverage
+  boundaries, evidence boundaries, and non-conclusions; they are not PR / diff
+  evolution analysis.
+- axis-forgetting risk records when a coarse observation projection has
+  forgotten selected axes or collapsed mixed-axis support. It blocks
+  `ZeroReflecting` and `ObstructionReflecting` readings unless explicit axis
+  preservation, witness completeness, and selected LawPolicy coverage are
+  supplied.
+- signature trajectory homotopy refutation records trajectory disagreement
+  separately from endpoint delta. It can refute only a selected
+  signature-preserving homotopy; it does not claim operation commutativity,
+  global path inequivalence, or future repository trajectory.
+- bridge split obstruction transfer connects split readiness, bridge-edge
+  support, interaction obstruction refs, and required boundary operations. It
+  states that filler / lifting / boundary-operation evidence is required before
+  reading a split as obstruction removal.
 - AAT structural state readings expose representation strength, local curvature
   diagrams, three-layer flatness, observation projection loss, state transition
   algebra, operation / invariant Galois-style correspondence, and split

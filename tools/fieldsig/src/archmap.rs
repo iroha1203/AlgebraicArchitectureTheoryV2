@@ -583,6 +583,9 @@ fn archsig_packet_sft_source_refs(packet: &serde_json::Value, input_path: &str) 
         ("pathSignatureTrajectoryReadings", "readingId"),
         ("homotopyOrderSensitivityReadings", "readingId"),
         ("diagramFillabilityReadings", "readingId"),
+        ("axisForgettingRiskReadings", "readingId"),
+        ("signatureTrajectoryHomotopyRefutationReadings", "readingId"),
+        ("bridgeSplitObstructionTransferReadings", "readingId"),
     ] {
         refs.extend(
             json_object_string_array(packet, &[path], key)
@@ -799,6 +802,15 @@ fn archsig_packet_measurement_boundary_refs(packet: &serde_json::Value) -> Vec<S
             "archsigHomotopyOrderSensitivity",
         ),
         ("diagramFillabilityReadings", "archsigDiagramFillability"),
+        ("axisForgettingRiskReadings", "archsigAxisForgettingRisk"),
+        (
+            "signatureTrajectoryHomotopyRefutationReadings",
+            "archsigSignatureTrajectoryHomotopyRefutation",
+        ),
+        (
+            "bridgeSplitObstructionTransferReadings",
+            "archsigBridgeSplitObstructionTransfer",
+        ),
     ] {
         refs.extend(
             json_object_string_array(packet, &[path], "readingId")

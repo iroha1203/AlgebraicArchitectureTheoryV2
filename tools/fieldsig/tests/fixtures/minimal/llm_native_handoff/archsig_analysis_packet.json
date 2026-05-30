@@ -2444,6 +2444,99 @@
       ]
     }
   ],
+  "axisForgettingRiskReadings": [
+    {
+      "readingId": "axis-forgetting-risk:selected-projection",
+      "sourceProjectionRef": "observation-projection:fixture-archmap-atom-observation",
+      "sourceAtomSupportRefs": [
+        "atom-support-axis:fixture-archmap-atom-observation",
+        "atom-support-axis:molecule-user-request-responsibility"
+      ],
+      "forgottenAxisRefs": [
+        "gap-runtime-user-db-trace"
+      ],
+      "mixedAxisScopeRefs": [
+        "atom-support-axis:fixture-archmap-atom-observation",
+        "atom-support-axis:molecule-user-request-responsibility"
+      ],
+      "reflectionLossKind": "selectedAxisOrWitnessLoss",
+      "zeroReflectionStatus": "blockedWithoutAxisPreservationAndWitnessCompleteness",
+      "obstructionReflectionStatus": "blockedWithoutAxisPreservationAndWitnessCompleteness",
+      "requiredAssumptions": [
+        "selected axis preservation",
+        "witness completeness for forgotten coordinates",
+        "coverage boundary matching the selected LawPolicy"
+      ],
+      "coverageBoundary": "projection reflection is read only under explicit axis preservation and witness completeness assumptions",
+      "evidenceBoundary": "axis-forgetting risk is current-state ArchSig telemetry; it is not a proof that every projection loses information",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    }
+  ],
+  "signatureTrajectoryHomotopyRefutationReadings": [
+    {
+      "readingId": "signature-trajectory-homotopy-refutation:selected-trajectory",
+      "selectedHomotopyRef": "homotopy-order-sensitivity:selected-operations",
+      "trajectoryReadingRefs": [
+        "path-signature-trajectory:operation-delta-repair-obstruction-semantic-contract-mismatch-computed"
+      ],
+      "pathRefs": [
+        "operation-delta:repair-obstruction-semantic-contract-mismatch-computed"
+      ],
+      "trajectoryDisagreementRefs": [
+        "path-signature-trajectory:operation-delta-repair-obstruction-semantic-contract-mismatch-computed"
+      ],
+      "trajectoryEquivalenceStatus": "selectedTrajectoryDisagreementObserved",
+      "homotopyRefutationStatus": "refutationCandidate",
+      "selectedEquivalenceBoundary": "trajectory disagreement refutes only homotopy that is selected-signature-preserving",
+      "evidenceBoundary": "endpoint delta and path trajectory are kept separate; this is not an operation-commutativity theorem",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    }
+  ],
+  "bridgeSplitObstructionTransferReadings": [
+    {
+      "readingId": "bridge-split-obstruction-transfer:split-readiness-molecule-user-request-responsibility",
+      "splitReadinessRef": "split-readiness:molecule-user-request-responsibility",
+      "bridgeEdgeRefs": [],
+      "moleculeRefs": [
+        "molecule:user-request-responsibility"
+      ],
+      "obstructionRefs": [
+        "obstruction:semantic-contract-mismatch:computed"
+      ],
+      "requiredBoundaryOperations": [
+        "interface"
+      ],
+      "fillerEvidenceStatus": "requiredOrUnmeasured",
+      "liftingEvidenceStatus": "notBlockedByObservedBridge",
+      "transferRiskStatus": "needsObstructionSupportReview",
+      "evidenceBoundary": "bridge-edge transfer is a split-readiness boundary reading, not proof of automatic obstruction removal",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    }
+  ],
   "representationStrengthReadings": [
     {
       "readingId": "representation-strength:analytic-weighted-adjacency",
@@ -3121,7 +3214,7 @@
   "structuralReadingReviewSurface": {
     "surfaceId": "aat-structural-reading-review-surface",
     "status": "needsReview",
-    "currentStateReading": "ArchSig reads current architecture state across Atom support and compatibility, LawUniverse coverage, feature extension coordinates, operation calculus laws, path signature trajectory, homotopy order sensitivity, diagram fillability, representation strength, local curvature, three-layer flatness, observation projection, state transition algebra, operation-invariant constraints, and split readiness; blockedRepresentations=14, curvatures=1, blockedOperations=1, splitBlockers=1, atomConflicts=0, unmeasuredRequiredLaws=2, blockedDiagrams=1",
+    "currentStateReading": "ArchSig reads current architecture state across Atom support and compatibility, LawUniverse coverage, feature extension coordinates, operation calculus laws, path signature trajectory, homotopy order sensitivity, diagram fillability, axis forgetting risk, trajectory homotopy refutation, bridge split transfer, representation strength, local curvature, three-layer flatness, observation projection, state transition algebra, operation-invariant constraints, and split readiness; blockedRepresentations=14, curvatures=1, blockedOperations=1, splitBlockers=1, atomConflicts=0, unmeasuredRequiredLaws=2, blockedDiagrams=1, axisForgetting=1, homotopyRefutations=1, bridgeTransfers=1",
     "connectedReadingRefs": [
       "representationStrength:weightedAdjacencyMatrix",
       "representationStrength:reachableConeSize",
@@ -3143,12 +3236,18 @@
       "operation-calculus-law:repair-obstruction-semantic-contract-mismatch-computed",
       "path-signature-trajectory:operation-delta-repair-obstruction-semantic-contract-mismatch-computed",
       "homotopy-order-sensitivity:selected-operations",
-      "diagram-fillability:local-curvature-obstruction-semantic-contract-mismatch-computed"
+      "diagram-fillability:local-curvature-obstruction-semantic-contract-mismatch-computed",
+      "axis-forgetting-risk:selected-projection",
+      "signature-trajectory-homotopy-refutation:selected-trajectory",
+      "bridge-split-obstruction-transfer:split-readiness-molecule-user-request-responsibility"
     ],
     "reviewFocus": [
       "read Atom support and compatibility before collapsing mixed state, effect, contract, authority, semantic, or runtime axes",
       "read LawUniverse coverage and witness exactness before treating absence as measured zero",
       "read feature extension, operation law, trajectory, homotopy, and diagram-fillability axes as current-state coordinates, not PR evolution claims",
+      "read axis-forgetting risk before treating a coarse projection as zero-reflecting or obstruction-reflecting",
+      "read selected trajectory disagreement before treating same-endpoint operations as homotopic",
+      "read bridge split transfer before treating a boundary operation as obstruction removal",
       "read representation-strength blockers before treating zero or obstruction absence as exact",
       "read local-curvature diagrams as law-relative state pressure, not as generic lint failures",
       "compare static, runtime, and semantic flatness before relying on source layout",
@@ -4152,7 +4251,7 @@
     ],
     "transferBridgeEdgeSummary": [],
     "measurementExpansionSummary": [
-      "v0.3.0 measurement expansion reads 2 Atom support axes, 1 compatibility surfaces, 1 LawUniverse coverage surfaces, 1 feature-extension formulas, 1 operation-law surfaces, 1 path trajectories, 1 homotopy/order surfaces, and 1 diagram-fillability surfaces"
+      "v0.3.0 measurement expansion reads 2 Atom support axes, 1 compatibility surfaces, 1 LawUniverse coverage surfaces, 1 feature-extension formulas, 1 operation-law surfaces, 1 path trajectories, 1 homotopy/order surfaces, 1 diagram-fillability surfaces, 1 axis-forgetting risks, 1 trajectory homotopy refutations, and 1 bridge split-transfer surfaces"
     ],
     "atomSupportAxisSummary": [
       "fixture-archmap-atom-observation support=4 concentration=maxAxisShare=2/4 pressure=mixedAxisPressurePresent",
@@ -4178,6 +4277,15 @@
     ],
     "diagramFillabilitySummary": [
       "local-curvature:obstruction-semantic-contract-mismatch-computed family=localCurvatureDiagram status=nonFillabilityWitnessed missingFiller=lawRelativeFiller blockers=1"
+    ],
+    "axisForgettingRiskSummary": [
+      "observation-projection:fixture-archmap-atom-observation kind=selectedAxisOrWitnessLoss zeroReflection=blockedWithoutAxisPreservationAndWitnessCompleteness obstructionReflection=blockedWithoutAxisPreservationAndWitnessCompleteness mixedScopes=2"
+    ],
+    "signatureTrajectoryHomotopyRefutationSummary": [
+      "homotopy-order-sensitivity:selected-operations equivalence=selectedTrajectoryDisagreementObserved refutation=refutationCandidate disagreements=1"
+    ],
+    "bridgeSplitObstructionTransferSummary": [
+      "split-readiness:molecule-user-request-responsibility transferRisk=needsObstructionSupportReview bridgeEdges=0 obstructions=1 boundaryOps=1"
     ],
     "representationStrengthSummary": [
       "weightedAdjacencyMatrix zeroReflecting=blockedByCoverageGap obstructionReflecting=blockedByCoverageGap blockedBy=1",
@@ -4214,8 +4322,8 @@
       "molecule:user-request-responsibility status=needsReview score=92 boundaryOp=interface"
     ],
     "structuralReadingReviewSummary": [
-      "aat-structural-reading-review-surface status=needsReview refs=21 focus=9",
-      "ArchSig reads current architecture state across Atom support and compatibility, LawUniverse coverage, feature extension coordinates, operation calculus laws, path signature trajectory, homotopy order sensitivity, diagram fillability, representation strength, local curvature, three-layer flatness, observation projection, state transition algebra, operation-invariant constraints, and split readiness; blockedRepresentations=14, curvatures=1, blockedOperations=1, splitBlockers=1, atomConflicts=0, unmeasuredRequiredLaws=2, blockedDiagrams=1"
+      "aat-structural-reading-review-surface status=needsReview refs=24 focus=12",
+      "ArchSig reads current architecture state across Atom support and compatibility, LawUniverse coverage, feature extension coordinates, operation calculus laws, path signature trajectory, homotopy order sensitivity, diagram fillability, axis forgetting risk, trajectory homotopy refutation, bridge split transfer, representation strength, local curvature, three-layer flatness, observation projection, state transition algebra, operation-invariant constraints, and split readiness; blockedRepresentations=14, curvatures=1, blockedOperations=1, splitBlockers=1, atomConflicts=0, unmeasuredRequiredLaws=2, blockedDiagrams=1, axisForgetting=1, homotopyRefutations=1, bridgeTransfers=1"
     ],
     "currentStateEvolutionBoundarySummary": [
       "ArchSig computes current AAT structural state from ArchMap fixture-archmap-atom-observation and LawPolicy llm-native-aat-law-policy-fixture; it reads atoms, molecules, laws, obstructions, bridge pressure, structural readings, and bounded review focus",
