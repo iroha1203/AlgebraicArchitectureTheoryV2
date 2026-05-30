@@ -3243,6 +3243,37 @@ coupon / discount valuation は selected rounding-order residual に相対化さ
 global semantic completeness、finite universe 外の witness coverage、未測定 semantic axis の
 zero 性、実コード extractor completeness は主張しない。
 
+## Monodromy Measurement Minimal Guardrail
+
+File: `Formal/Arch/Signature/MonodromyMeasurement.lean`
+
+この節は ArchSig の monodromy / boundary-holonomy reading を Lean 側で読むための
+minimal guardrail である。完全な monodromy 理論ではなく、finite family、selected axis、
+axis-local defect、nonnegative weighted aggregate に相対化した bounded theorem package を置く。
+
+| Lean 名 | 種別 | 意味 | Status |
+| --- | --- | --- | --- |
+| `MonodromyMeasurement.MeasuredSquare` | `structure` | 一つの reading が比較する selected path / operation pair。 | `defined only` |
+| `MonodromyMeasurement.SelectedAxis` | `structure` | bounded measurement policy が選んだ observation axis。 | `defined only` |
+| `MonodromyMeasurement.AxisDefect` | `structure` | selected square / axis 上の `Nat` defect と、zero / nonzero の sound reading boundary。 | `defined only` |
+| `MonodromyMeasurement.AxisDefect.observationDiff_of_nonzero` | `theorem` | defect nonzero から selected observation difference を得る。 | `proved` |
+| `MonodromyMeasurement.AxisDefect.observationEq_of_zero` | `theorem` | defect zero から selected observation equality を得る。 | `proved` |
+| `MonodromyMeasurement.WeightedAxisDefect` | `structure` | finite aggregate に入れる selected defect と nonnegative natural weight。 | `defined only` |
+| `MonodromyMeasurement.FiniteMeasuredSquareFamily` | `abbrev` | weighted selected defects の finite list。 | `defined only` |
+| `MonodromyMeasurement.WeightedAxisDefect.contribution` | `def` | `weight * defect.value` としての nonnegative contribution。 | `defined only` |
+| `MonodromyMeasurement.weightedAggregate` | `def` | finite family の nonnegative weighted aggregate。 | `defined only` |
+| `MonodromyMeasurement.localZero_of_weightedAggregate_zero` | `theorem` | aggregate zero から positive-weight entry の local defect zero を得る。 | `proved` |
+| `MonodromyMeasurement.observationEq_of_weightedAggregate_zero` | `theorem` | aggregate zero と positive weight から local selected observation equality を得る。 | `proved` |
+| `MonodromyMeasurement.localSelectedAxis` | `def` | endpoint-indexed `ArchitecturePath` observation を local selected axis として読む wrapper。 | `defined only` |
+| `MonodromyMeasurement.nonzero_refutes_selectedPathHomotopy` | `theorem` | nonzero defect から、既存 `PathHomotopy.observation_eq` API に相対化された selected homotopy refutation を得る。 | `proved` |
+| `MonodromyMeasurement.nonzero_nonFillabilityWitnessFor` | `theorem` | nonzero defect から、既存 `observationDifference_nonFillabilityWitnessFor` API に相対化された non-fillability witness package を得る。 | `proved` |
+| `MonodromyMeasurement.GuardrailBoundary` | `structure` | bounded finite family / selected axis / non-completeness 境界を明示する boundary record。 | `defined only` |
+
+Non-conclusions: all-path homotopy completeness、all-axis semantic completeness、
+extractor completeness、ArchSig measurement correctness in the wild、global safety は
+主張しない。aggregate zero は positive-weight selected entries にだけ local zero を与え、
+zero-weight entry や unmeasured square の zero には読まない。
+
 ## Static / Semantic Counterexample
 
 File: `Formal/Arch/Examples/StaticSemanticCounterexample.lean`

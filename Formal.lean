@@ -33,6 +33,7 @@ import Formal.Arch.Signature.Curvature
 import Formal.Arch.Examples.SolidCounterexample
 import Formal.Arch.Patterns.LocalContractDesignPattern
 import Formal.Arch.Signature.Signature
+import Formal.Arch.Signature.MonodromyMeasurement
 import Formal.Arch.Core.Finite
 import Formal.Arch.Core.Presentation
 import Formal.Arch.Operation.OperationKernel
