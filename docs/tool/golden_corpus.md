@@ -17,6 +17,8 @@ ArchMap observation artifact
 - `tools/archsig/tests/fixtures/minimal/law_policy_layer_only.json`
 - `tools/archsig/tests/fixtures/minimal/archsig_analysis_packet_layer_only.json`
 - `tools/archsig/tests/fixtures/expressiveness/archmap_atom_observation_suite_v0.json`
+- `tools/archsig/tests/fixtures/coupon_rounding/archmap.json`
+- `tools/archsig/tests/fixtures/coupon_rounding/archsig_analysis_packet.json`
 
 The layer-only LawPolicy fixture reuses the same ArchMap and produces a
 different ArchSig packet. This fixes the requirement that ArchMap remains
@@ -27,6 +29,14 @@ The expressiveness fixture is now an Atom observation regression. It locks
 `atomObservations`, `moleculeObservations`, `semanticObservations`,
 `observationGaps`, `projectionInfo`, and `concernHints`. Pre-Atom ArchMap
 root fields are rejected rather than carried as compatibility inputs.
+
+The coupon / tax / rounding fixture is the minimal semantic monodromy and
+boundary holonomy example. It records
+`p = round(tax(discount(subtotal)))` and
+`q = round(discount(tax(subtotal)))`, locks a positive semantic
+`mu_x(sigma)` witness in the golden ArchSig packet, and keeps PaymentAmount /
+ReceiptAmount evidence as fixture-local tooling validation rather than a proof
+theorem or general payment-safety claim.
 
 ## Negative Fixtures
 

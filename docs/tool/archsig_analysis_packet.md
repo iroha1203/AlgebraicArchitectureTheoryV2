@@ -126,6 +126,7 @@ Validation does not imply:
 ## Current Fixture
 
 - `tools/archsig/tests/fixtures/minimal/archsig_analysis_packet.json`
+- `tools/archsig/tests/fixtures/coupon_rounding/archsig_analysis_packet.json`
 
 The fixture is locked against the static Rust builder and the schema catalog
 records both `archsig-analysis-packet-v0` and

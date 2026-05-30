@@ -13,6 +13,10 @@ fn expressiveness_root() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/expressiveness")
 }
 
+fn coupon_rounding_root() -> PathBuf {
+    Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/coupon_rounding")
+}
+
 fn sharded_root() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/sharded")
 }
@@ -383,6 +387,74 @@ fn cli_archsig_analysis_step_outputs_packet_and_validation() {
         "archsig-analysis-packet-validation-report-v0"
     );
     assert_eq!(read_json(&llm_packet), packet_json);
+}
+
+#[test]
+fn coupon_tax_rounding_fixture_locks_semantic_monodromy() {
+    let out_dir = temp_dir("coupon-tax-rounding");
+    let root = coupon_rounding_root();
+    let minimal = fixture_root();
+    let packet = out_dir.join("coupon-packet.json");
+
+    run_sig0(&[
+        "archsig-analysis",
+        "--archmap",
+        root.join("archmap.json")
+            .to_str()
+            .expect("archmap path is utf-8"),
+        "--law-policy",
+        minimal
+            .join("law_policy.json")
+            .to_str()
+            .expect("law policy path is utf-8"),
+        "--out",
+        packet.to_str().expect("packet path is utf-8"),
+    ]);
+
+    let generated = read_json(&packet);
+    let golden = read_json(&root.join("archsig_analysis_packet.json"));
+    assert_eq!(generated["analysisId"], golden["analysisId"]);
+    assert_eq!(
+        generated["axisWiseMonodromyDefects"],
+        golden["axisWiseMonodromyDefects"]
+    );
+    assert!(
+        golden["axisWiseMonodromyDefects"]
+            .as_array()
+            .is_some_and(|defects| defects.iter().any(|defect| {
+                defect["axisFamily"] == "semantic"
+                    && defect["measurementStatus"] == "measured"
+                    && defect["distanceValue"]
+                        .as_i64()
+                        .is_some_and(|value| value > 0)
+                    && defect["observationRefs"].as_array().is_some_and(|refs| {
+                        refs.iter().any(|value| {
+                            value.as_str()
+                                == Some("derived-semantic-order:p=round(tax(discount(subtotal)))")
+                        }) && refs.iter().any(|value| {
+                            value.as_str()
+                                == Some("derived-semantic-order:q=round(discount(tax(subtotal)))")
+                        })
+                    })
+            }))
+    );
+    assert!(
+        golden["nonzeroMonodromyWitnesses"]
+            .as_array()
+            .is_some_and(|witnesses| witnesses.iter().any(|witness| {
+                witness["axisFamily"] == "semantic"
+                    && witness["defectValue"]
+                        .as_i64()
+                        .is_some_and(|value| value > 0)
+            }))
+    );
+    assert!(
+        golden["featureBoundaryResidualReadings"]
+            .as_array()
+            .is_some_and(|readings| !readings.is_empty())
+    );
+    assert!(golden.to_string().contains("PaymentAmount"));
+    assert!(golden.to_string().contains("ReceiptAmount"));
 }
 
 #[test]

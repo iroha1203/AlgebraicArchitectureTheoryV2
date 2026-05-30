@@ -737,7 +737,13 @@ fn build_axis_continuation_traces(
             candidate.shared_atom_support_refs.clone(),
         ),
         ("contract", "contract axis", candidate.contract_refs.clone()),
-        ("semantic", "semantic axis", candidate.semantic_refs.clone()),
+        ("semantic", "semantic axis", {
+            let mut refs = candidate.semantic_refs.clone();
+            if let Some(marker) = semantic_path_order_marker(archmap, path_role) {
+                refs.push(marker);
+            }
+            refs
+        }),
         ("state", "state transition axis", candidate.state_refs.clone()),
         ("effect", "effect ordering / replay / compensation axis", {
             let mut refs = candidate.effect_refs.clone();
@@ -803,8 +809,29 @@ fn build_axis_continuation_traces(
                 "unmeasured axis is retained as missing evidence and is not interpreted as zero defect"
                     .to_string(),
         }
+        })
+        .collect()
+}
+
+fn has_path_order_semantic_evidence(archmap: &ArchMapDocumentV0) -> bool {
+    archmap.semantic_observations.iter().any(|semantic| {
+        let text = format!(
+            "{} {} {}",
+            semantic.semantic_family, semantic.subject_ref, semantic.predicate
+        )
+        .to_ascii_lowercase();
+        text.contains("round(tax(discount")
+            || text.contains("round(discount(tax")
+            || (text.contains("noncommut") && text.contains("coupon") && text.contains("tax"))
     })
-    .collect()
+}
+
+fn semantic_path_order_marker(archmap: &ArchMapDocumentV0, path_role: &str) -> Option<String> {
+    has_path_order_semantic_evidence(archmap).then(|| match path_role {
+        "p" => "derived-semantic-order:p=round(tax(discount(subtotal)))".to_string(),
+        "q" => "derived-semantic-order:q=round(discount(tax(subtotal)))".to_string(),
+        other => format!("derived-semantic-order:{other}"),
+    })
 }
 
 fn build_axis_wise_monodromy_defects(
