@@ -300,12 +300,12 @@ emits only ArchMap validation, LawPolicy validation, the analysis packet, packet
 validation, and the LLM interpretation packet. Pre-Atom projections and review
 surfaces are not current ArchSig CLI surface or compatibility commands.
 
-`pr-review` and `codebase-inspection` are report surfaces over the packet and
-ArchMapStore artifacts:
+`pr-review` and `codebase-inspection` are separate report surfaces:
 
-- `archsig-pr-review-report-v0` reads `archmap-delta-v0`,
-  `archmap-commit-v0`, base/head packets, and optional raw diff scoping hint.
-  It is change-local CI review telemetry.
+- `archsig-pr-review-report-v1` reads base `archmap-observation-map-v0`,
+  PR-local `archmap-delta-v0`, and required `law-policy-v0`. No LawPolicy, no
+  ArchSig judgement. Raw diff, `archmap-commit-v0`, and base/head analysis
+  packets are not PR-review inputs.
 - `archsig-codebase-inspection-report-v0` reads latest
   `archmap-snapshot-v0`, `archmap-index-v0`, optional recent deltas, optional
   LawPolicy provenance, and one packet. It is current-state architecture health

@@ -84,7 +84,7 @@ flatness theorem. `coveragePolicy` keeps unmeasured axes as missing evidence
 instead of treating them as zero.
 
 The same measurement policy is shared by the analysis packet,
-`archsig-pr-review-report-v0`, and `archsig-codebase-inspection-report-v0`.
+`archsig-pr-review-report-v1`, and `archsig-codebase-inspection-report-v0`.
 The policy selects how ArchSig reads structural telemetry; it does not authorize
 FieldSig forecast, governance, calibration, or longitudinal evolution claims.
 FieldSig may consume ArchSig packet chains downstream, but it owns those

@@ -469,7 +469,7 @@ fn build_arch_map_store_refs(archmap: &ArchMapDocumentV0) -> ArchSigArchMapStore
             None,
         ),
         raw_diff_boundary:
-            "raw diffs may scope review, but ArchSig semantic readings use ArchMapStore delta / commit / snapshot / index refs"
+            "raw diffs are not ArchSig semantic inputs; upstream source readers must translate source changes into ArchMapStore delta / commit / snapshot / index refs"
                 .to_string(),
         compaction_boundary:
             "snapshot and index compaction may lose per-change granularity; compaction loss remains explicit evidence boundary"
@@ -561,7 +561,7 @@ fn build_boundary_holonomy_reading_family(
             "records the packet shape for boundary residual and feature-extension diagnosis; concrete attribution is introduced by later issues"
                 .to_string(),
         evidence_boundary:
-            "boundary holonomy readings use ArchMapStore refs and LawPolicy axes; raw diff hunks remain scoping hints only"
+            "boundary holonomy readings use ArchMapStore refs and LawPolicy axes; raw diff hunks are not ArchSig evidence"
                 .to_string(),
         non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
     }

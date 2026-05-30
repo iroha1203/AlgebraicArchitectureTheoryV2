@@ -43,7 +43,7 @@
       "artifactKind": "archmap-index",
       "schemaVersion": "archmap-index-v0"
     },
-    "rawDiffBoundary": "raw diffs may scope review, but ArchSig semantic readings use ArchMapStore delta / commit / snapshot / index refs",
+    "rawDiffBoundary": "raw diffs are not ArchSig semantic inputs; upstream source readers must translate source changes into ArchMapStore delta / commit / snapshot / index refs",
     "compactionBoundary": "snapshot and index compaction may lose per-change granularity; compaction loss remains explicit evidence boundary",
     "nonConclusions": [
       "ArchSig analysis packet is not a Lean theorem proof",
@@ -3729,7 +3729,7 @@
     ],
     "attributionBoundary": "multi-label attribution can name feature, boundary, law, and coverage contributors without claiming a single cause",
     "readingBoundary": "records the packet shape for boundary residual and feature-extension diagnosis; concrete attribution is introduced by later issues",
-    "evidenceBoundary": "boundary holonomy readings use ArchMapStore refs and LawPolicy axes; raw diff hunks remain scoping hints only",
+    "evidenceBoundary": "boundary holonomy readings use ArchMapStore refs and LawPolicy axes; raw diff hunks are not ArchSig evidence",
     "nonConclusions": [
       "ArchSig analysis packet is not a Lean theorem proof",
       "ArchSig analysis packet is not global architecture truth",

@@ -50,24 +50,14 @@ ArchSig CI responsibilities.
 The canonical input for ArchSig PR review mode is not a raw diff.
 
 ```text
-base ArchMapSnapshot or ArchMapCommit
-+ ArchMapDelta or ArchMapCommit for the change
+base ArchMap
++ PR-local ArchMapDelta
 + LawPolicy
 -> ArchSig lightweight PR review
 ```
 
-Raw diffs may be supplied only as scoping hints:
-
-```text
-raw diff
-  -> changed source refs
-  -> optional touched file ranges
-  -> optional adapter hints
-```
-
-ArchSig must not infer semantic, state, effect, authority, or runtime truth
-directly from a raw diff. A language adapter, extractor, LLM reader, or manual
-author supplies ArchMap-level observations and deltas.
+Raw diffs are not ArchSig PR-review inputs. A language adapter, extractor, LLM
+reader, or manual author supplies ArchMap-level observations and deltas.
 
 ## ArchMapDelta
 
@@ -244,9 +234,8 @@ coverage states that the relevant universe is complete.
 ArchSig CI / PR review mode should use:
 
 ```text
-nearest base ArchMapSnapshot or ArchMapCommit
-+ PR ArchMapDelta or ArchMapCommit
-+ optional raw diff scoping hint
+base ArchMap
++ PR-local ArchMapDelta
 + LawPolicy
 -> change-local structural diagnosis
 ```
