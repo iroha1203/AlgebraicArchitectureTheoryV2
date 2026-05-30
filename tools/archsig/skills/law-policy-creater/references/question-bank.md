@@ -44,3 +44,14 @@ Ask only the questions needed for the target scope. Prefer 3-6 high-signal quest
 - What evidence is required for zero-reading to be meaningful?
 - Which evidence is unavailable and must remain an observation gap?
 - Which claims must the policy explicitly exclude?
+
+## ACTS / Spectrum Profile
+
+- Which review decision should `ArchitectureSpectrumReport` support: hotspot triage, split planning, migration planning, release review, or evidence-gap discovery?
+- Which selected axes should enter `spectrumMeasurementProfile.selectedAxisRefs`, and what repo/user-approved law justifies each axis?
+- Which witness rules are measured, and what ArchMap atom families or source refs support those witnesses?
+- Which distance kinds are defensible for each axis: boolean mismatch, witness mismatch count, support overlap, calibrated severity, or another project-defined distance?
+- Are weights unit weights, bounded ordinal weights, or calibrated from repository evidence?
+- What should count as transfer evidence: shared witness support, shared Atom refs, shared molecule support, runtime trace overlap, or an explicitly documented dependency relation?
+- What should the report rank first: nonzero hotspots, recurrent obstruction modes, witness clusters, coverage gaps, or boundary-preparation actions?
+- Which missing docs, tests, traces, logs, or source refs should block zero-reflection and remain unresolved questions?

@@ -11,6 +11,7 @@ Use this reference when deciding what to read first in an `archsig-analysis-pack
 | `signatureAxes[]` | Gives axis-local support refs, missing evidence, exactness assumptions, and excluded readings. |
 | `workflowRiskReadings[]` | Prioritizes molecule-local review pressure such as permission, LLM mediation, state/effect reconciliation, and domain cohesion. |
 | `spectralAnalysisReadings[]` | Shows dominant rows/columns and coupling surfaces across workflows, molecules, obstructions, and operation deltas. |
+| `architectureSpectrumReport` | Primary ACTS codebase-inspection surface: top hotspots, bounded mode data, witness clusters, recurrent obstruction entries, coverage gaps, measured boundary, review focus, and report non-conclusions. |
 | `transferBridgeReadings[]` | Connects repair transfer axes, molecule overlap paths, bridge edge source refs, review focus, and boundary preparation. |
 | `splitReadinessReadings[]` | Shows which molecules are blocked by bridge edges or need boundary preparation before feature extraction or refactoring. |
 | `structuralReadingReviewSurface` | Summarizes AAT structural review surfaces across representation, curvature, projection, state algebra, Galois, and split readiness. |
@@ -22,6 +23,11 @@ Use this reference when deciding what to read first in an `archsig-analysis-pack
 Do not treat LawPolicy as a harmless default. It defines the selected law universe, witness rules, signature axes, exactness assumptions, and coverage requirements. Changing LawPolicy changes what ArchSig can read as obstruction, nonzero axis, flatness pressure, repair candidate, or non-conclusion.
 
 Use a project-specific LawPolicy for real analysis. If only the bundled `default_law_policy.json` is available, use it only as an explicit generic baseline / smoke test and label the result that way. A bundled baseline run can show that the toolchain and packet-reading workflow work; it should not be presented as the repository's intended architecture law analysis.
+
+For ACTS readings, confirm that the selected LawPolicy contains
+`spectrumMeasurementProfile`. If it is absent, report that
+`ArchitectureSpectrumReport` may be absent and do not infer spectrum hotspots
+from generic spectral fields.
 
 ## Interpreting Status
 
@@ -57,6 +63,9 @@ For source comparison in this variant, build the review queue from nonzero axes,
 | `sourceBackedDomainCohesion` | domain identity, source relations, contracts | explicit interface / model relationship audit |
 | high molecule overlap | shared atom refs and source refs | split only after boundary preparation |
 | nonzero operation transfer | operation delta touches non-target axes | avoid local repair that transfers complexity |
+| `architectureSpectrumReport.topHotspots[]` | hotspot witness refs, support refs, coverage gaps | review current-state hotspot before repair planning |
+| `architectureSpectrumReport.recurrentObstructions[]` | transfer edge refs and witness support | inspect recurrence as bounded current-state diagnostic |
+| `architectureSpectrumReport.coverageGaps[]` | missing docs, traces, tests, or source refs | collect evidence before reading absent support as zero |
 
 ## Source Comparison Checklist
 

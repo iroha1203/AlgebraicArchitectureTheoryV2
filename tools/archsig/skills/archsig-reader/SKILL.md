@@ -115,6 +115,10 @@ Read in this order:
    - Treat coverage gaps as unknown remainder, not measured zero.
 
 4. Dominant pressure
+   - Read `architectureSpectrumReport` before building the review queue when present.
+   - Prioritize `topHotspots[]`, `recurrentObstructions[]`, `topWitnessClusters[]`, `coverageGaps[]`, `measuredBoundary`, and `recommendedReviewFocus[]`.
+   - Treat the report as a codebase-inspection surface over current ArchSig measurements, not a quality score, forecast, or repair proof.
+   - Preserve report-level `nonConclusions[]` when summarizing.
    - Read top `workflowRiskReadings[]` by `riskScore`.
    - Read `spectralAnalysisReadings[]`, especially dominant workflow row, dominant axis column, molecule overlap hub, obstruction curvature, and operation delta coupling.
    - If workflow risk or spectral readings are empty, do not force a risk narrative. Shift to `signatureAxes[]`, `obstructionCircuits[]`, `repairOperationCandidates[]`, `operationDeltas[]`, and coverage gaps.
@@ -139,6 +143,9 @@ Read in this order:
 Always compare high-priority readings against real source evidence before proposing changes.
 
 1. Select a small review queue:
+   - top ArchitectureSpectrumReport hotspots with witness refs and coverage gaps
+   - recurrent obstruction entries with transfer edge refs
+   - top witness clusters that connect several axes or support refs
    - top 2-4 workflow risk molecules
    - transfer bridge edges with high `reviewRisk`
    - low split-readiness molecules
@@ -186,6 +193,7 @@ Avoid:
 - "The architecture score is..."
 - "No risk exists because the axis is zero"
 - "ArchSig recommends this refactor automatically"
+- treating `ArchitectureSpectrumReport` as FieldSig forecast, future incident prediction, empirical cost amplification, or repair safety evidence
 
 ## Maintainer Validation
 
