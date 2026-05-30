@@ -9,25 +9,33 @@ use crate::{
     ArchSigAnalysisPacketV0, ArchSigAnalysisPacketValidationInputV0,
     ArchSigAnalysisPacketValidationReportV0, ArchSigAnalysisPacketValidationSummaryV0,
     ArchSigAnalyticRepresentationV0, ArchSigArchitectureObjectProjectionV0,
-    ArchSigArchitectureStateV0, ArchSigAtomConfigurationSummaryV0,
+    ArchSigArchitectureStateV0, ArchSigAtomCompatibilityConflictV0,
+    ArchSigAtomCompatibilityReadingV0, ArchSigAtomConfigurationSummaryV0,
+    ArchSigAtomSupportAxisReadingV0, ArchSigAxisExcursionV0, ArchSigAxisRestrictionCountV0,
     ArchSigBoundaryPreparationRankV0, ArchSigBoundedJudgementV0, ArchSigBridgeAtomFamilyReadingV0,
     ArchSigBridgeEdgeBreakdownV0, ArchSigChangeImpactReadingV0, ArchSigCouplingCohesionReadingV0,
-    ArchSigCurrentStateEvolutionBoundaryV0, ArchSigDesignPressureReadingV0,
-    ArchSigDesignPrincipleReadingV0, ArchSigDominantAtomFamilyCompositionV0,
-    ArchSigEvolutionRiskRankingV0, ArchSigFlatnessReadingV0, ArchSigHighOverlapMoleculePairV0,
-    ArchSigInvariantFamilyReadingV0, ArchSigLawUniverseReadingV0, ArchSigLayerSplitV0,
-    ArchSigLlmInterpretationPacketV0, ArchSigLocalCurvatureDiagramReadingV0,
-    ArchSigMoleculeReadingV0, ArchSigObservationProjectionReadingV0, ArchSigObstructionCircuitV0,
-    ArchSigOperationDeltaReadingV0, ArchSigOperationInvariantGaloisReadingV0,
-    ArchSigPathHomotopyDiagramReadingV0, ArchSigRepairAxisDeltaReadingV0,
+    ArchSigCoverageStatusV0, ArchSigCurrentStateEvolutionBoundaryV0,
+    ArchSigDesignPressureReadingV0, ArchSigDesignPrincipleReadingV0,
+    ArchSigDiagramFillabilityReadingV0, ArchSigDominantAtomFamilyCompositionV0,
+    ArchSigEvolutionRiskRankingV0, ArchSigFeatureExtensionAxisSummaryV0,
+    ArchSigFeatureExtensionFormulaReadingV0, ArchSigFlatnessReadingV0,
+    ArchSigHighOverlapMoleculePairV0, ArchSigHomotopyOrderSensitivityReadingV0,
+    ArchSigInvariantFamilyReadingV0, ArchSigLawUniverseCoverageReadingV0,
+    ArchSigLawUniverseReadingV0, ArchSigLayerSplitV0, ArchSigLlmInterpretationPacketV0,
+    ArchSigLocalCurvatureDiagramReadingV0, ArchSigMoleculeReadingV0,
+    ArchSigObservationProjectionReadingV0, ArchSigObstructionCircuitV0,
+    ArchSigOperationCalculusLawReadingV0, ArchSigOperationDeltaReadingV0,
+    ArchSigOperationInvariantGaloisReadingV0, ArchSigPathHomotopyDiagramReadingV0,
+    ArchSigPathSignatureTrajectoryReadingV0, ArchSigRepairAxisDeltaReadingV0,
     ArchSigRepairOperationCandidateV0, ArchSigRepairTransferRiskRankV0,
     ArchSigRepresentationStrengthReadingV0, ArchSigSignatureAxisReadingV0,
     ArchSigSpectralAnalysisReadingV0, ArchSigSpectralDominantComponentV0,
     ArchSigSpectralDrilldownReadingV0, ArchSigSpectralMatrixShapeV0,
     ArchSigSpectralModeComponentV0, ArchSigSpectralModeReadingV0, ArchSigSpectralValueV0,
     ArchSigSplitReadinessReadingV0, ArchSigStateTransitionAlgebraReadingV0,
-    ArchSigStructuralReadingReviewSurfaceV0, ArchSigThreeLayerFlatnessReadingV0,
-    ArchSigTransferBridgeReadingV0, ArchSigTransferMatrixEntryV0, ArchSigWorkflowAtomFamilyCountV0,
+    ArchSigStructuralReadingReviewSurfaceV0, ArchSigSubjectFamilySpreadV0,
+    ArchSigThreeLayerFlatnessReadingV0, ArchSigTransferBridgeReadingV0,
+    ArchSigTransferMatrixEntryV0, ArchSigWorkflowAtomFamilyCountV0,
     ArchSigWorkflowRiskAxisReadingV0, ArchSigWorkflowRiskReadingV0, LAW_POLICY_SCHEMA_VERSION,
     LawPolicyDocumentV0, LawPolicyObstructionCircuitDefinitionV0,
     LawPolicySignatureAxisDefinitionV0, LawPolicyWitnessRuleV0, ValidationCheck, ValidationExample,
@@ -115,6 +123,10 @@ pub fn build_archsig_analysis_packet(
         &spectral_drilldown_readings,
         &workflow_risk_readings,
     );
+    let atom_support_axis_readings = build_atom_support_axis_readings(archmap, &molecule_readings);
+    let atom_compatibility_readings = build_atom_compatibility_readings(archmap);
+    let law_universe_coverage_readings =
+        build_law_universe_coverage_readings(archmap, law_policy, &signature_axes);
     let path_homotopy_diagram_readings =
         build_path_homotopy_diagram_readings(archmap, &molecule_readings, &obstruction_circuits);
     let layer_split = build_layer_split(archmap);
@@ -140,6 +152,25 @@ pub fn build_archsig_analysis_packet(
         &obstruction_circuits,
         &transfer_bridge_readings,
     );
+    let feature_extension_formula_readings = build_feature_extension_formula_readings(
+        archmap,
+        &obstruction_circuits,
+        &repair_operation_candidates,
+        &split_readiness_readings,
+    );
+    let operation_calculus_law_readings =
+        build_operation_calculus_law_readings(&repair_operation_candidates, &operation_deltas);
+    let path_signature_trajectory_readings =
+        build_path_signature_trajectory_readings(&operation_deltas, &signature_axes);
+    let homotopy_order_sensitivity_readings = build_homotopy_order_sensitivity_readings(
+        &path_homotopy_diagram_readings,
+        &operation_deltas,
+        &repair_operation_candidates,
+    );
+    let diagram_fillability_readings = build_diagram_fillability_readings(
+        &local_curvature_diagram_readings,
+        &feature_extension_formula_readings,
+    );
     let structural_reading_review_surface = build_structural_reading_review_surface(
         &representation_strength_readings,
         &local_curvature_diagram_readings,
@@ -148,6 +179,14 @@ pub fn build_archsig_analysis_packet(
         &state_transition_algebra_readings,
         &operation_invariant_galois_readings,
         &split_readiness_readings,
+        &atom_support_axis_readings,
+        &atom_compatibility_readings,
+        &law_universe_coverage_readings,
+        &feature_extension_formula_readings,
+        &operation_calculus_law_readings,
+        &path_signature_trajectory_readings,
+        &homotopy_order_sensitivity_readings,
+        &diagram_fillability_readings,
     );
     let current_state_evolution_boundary =
         build_current_state_evolution_boundary(archmap, law_policy);
@@ -184,6 +223,14 @@ pub fn build_archsig_analysis_packet(
         &spectral_mode_readings,
         &spectral_drilldown_readings,
         &transfer_bridge_readings,
+        &atom_support_axis_readings,
+        &atom_compatibility_readings,
+        &law_universe_coverage_readings,
+        &feature_extension_formula_readings,
+        &operation_calculus_law_readings,
+        &path_signature_trajectory_readings,
+        &homotopy_order_sensitivity_readings,
+        &diagram_fillability_readings,
         &representation_strength_readings,
         &local_curvature_diagram_readings,
         &three_layer_flatness_readings,
@@ -235,6 +282,14 @@ pub fn build_archsig_analysis_packet(
         spectral_mode_readings,
         spectral_drilldown_readings,
         transfer_bridge_readings,
+        atom_support_axis_readings,
+        atom_compatibility_readings,
+        law_universe_coverage_readings,
+        feature_extension_formula_readings,
+        operation_calculus_law_readings,
+        path_signature_trajectory_readings,
+        homotopy_order_sensitivity_readings,
+        diagram_fillability_readings,
         representation_strength_readings,
         local_curvature_diagram_readings,
         three_layer_flatness_readings,
@@ -3172,6 +3227,14 @@ fn build_representation_strength_readings(
             "signature axis exactness for selected readings".to_string(),
         ])
         .collect::<Vec<_>>();
+    let blocked_reasons = if blockers.is_empty() {
+        vec![
+            "coverage and witness completeness are assumption-relative even without observed gaps"
+                .to_string(),
+        ]
+    } else {
+        blockers.clone()
+    };
 
     analytic_representations
         .iter()
@@ -3209,8 +3272,11 @@ fn build_representation_strength_readings(
             } else {
                 "blockedByCoverageGap".to_string()
             },
+            aggregate_zero_safety: "notAggregate".to_string(),
+            cancellation_risk: "notApplicable".to_string(),
             required_assumptions: required_assumptions.clone(),
             blocked_by: blockers.clone(),
+            blocked_reflection_or_preservation_reasons: blocked_reasons.clone(),
             reading: format!(
                 "{} is a bounded analytic representation; use its zero/obstruction readings only with the recorded strength boundary",
                 representation.representation_family
@@ -3238,8 +3304,11 @@ fn build_representation_strength_readings(
                     "supported".to_string()
                 },
                 obstruction_reflecting: "notAnEigenvalueTheorem".to_string(),
+                aggregate_zero_safety: "proxyOnly".to_string(),
+                cancellation_risk: "boundedProxyMayHideLocalComponents".to_string(),
                 required_assumptions: required_assumptions.clone(),
                 blocked_by: blockers.clone(),
+                blocked_reflection_or_preservation_reasons: blocked_reasons.clone(),
                 reading: format!(
                     "{} is a spectral proxy for review; it preserves selected pressure but does not reflect global architecture truth",
                     reading.representation_family
@@ -3249,6 +3318,325 @@ fn build_representation_strength_readings(
             }
         }))
         .collect()
+}
+
+fn build_atom_support_axis_readings(
+    archmap: &ArchMapDocumentV0,
+    molecule_readings: &[ArchSigMoleculeReadingV0],
+) -> Vec<ArchSigAtomSupportAxisReadingV0> {
+    let atom_by_id = archmap
+        .atom_observations
+        .iter()
+        .map(|atom| (atom.atom_observation_id.as_str(), atom))
+        .collect::<BTreeMap<_, _>>();
+    let build_reading = |scope_ref: String, scope_kind: String, atom_refs: Vec<String>| {
+        let atoms = atom_refs
+            .iter()
+            .filter_map(|atom_ref| atom_by_id.get(atom_ref.as_str()).copied())
+            .collect::<Vec<_>>();
+        let mut subject_map = BTreeMap::<String, Vec<String>>::new();
+        let mut axis_map = BTreeMap::<String, Vec<String>>::new();
+        let mut source_refs = BTreeSet::<String>::new();
+        for atom in &atoms {
+            subject_map
+                .entry(atom.subject_ref.clone())
+                .or_default()
+                .push(atom.atom_family.clone());
+            axis_map
+                .entry(atom.atom_family.clone())
+                .or_default()
+                .push(atom.atom_observation_id.clone());
+            for source_ref in &atom.source_refs {
+                source_refs.insert(source_ref_label(source_ref));
+            }
+        }
+        let mut subject_family_spread = subject_map
+            .into_iter()
+            .map(|(subject_ref, families)| {
+                let unique = unique_strings(families.into_iter());
+                ArchSigSubjectFamilySpreadV0 {
+                    subject_ref,
+                    atom_count: unique.len(),
+                    atom_families: unique,
+                }
+            })
+            .collect::<Vec<_>>();
+        subject_family_spread.sort_by(|a, b| b.atom_count.cmp(&a.atom_count));
+        let axis_restriction_counts = axis_map
+            .into_iter()
+            .map(|(axis, refs)| ArchSigAxisRestrictionCountV0 {
+                axis,
+                atom_count: refs.len(),
+                atom_observation_refs: refs,
+            })
+            .collect::<Vec<_>>();
+        let support_size = atoms
+            .iter()
+            .map(|atom| atom.subject_ref.clone())
+            .collect::<BTreeSet<_>>()
+            .len();
+        let max_axis = axis_restriction_counts
+            .iter()
+            .map(|axis| axis.atom_count)
+            .max()
+            .unwrap_or(0);
+        let axis_total = axis_restriction_counts
+            .iter()
+            .map(|axis| axis.atom_count)
+            .sum::<usize>()
+            .max(1);
+        ArchSigAtomSupportAxisReadingV0 {
+            reading_id: format!("atom-support-axis:{}", stable_id(&scope_ref)),
+            scope_ref,
+            scope_kind,
+            support_size,
+            subject_family_spread,
+            axis_restriction_counts,
+            axis_concentration: format!("maxAxisShare={}/{}", max_axis, axis_total),
+            mixed_axis_molecule_pressure: if max_axis < axis_total {
+                "mixedAxisPressurePresent".to_string()
+            } else {
+                "singleAxisDominant".to_string()
+            },
+            high_support_refs: atoms
+                .iter()
+                .take(12)
+                .map(|atom| atom.atom_observation_id.clone())
+                .collect(),
+            source_refs: source_refs.into_iter().collect(),
+            coverage_boundary:
+                "support and axis restriction are computed from observed ArchMap atoms only"
+                    .to_string(),
+            non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
+        }
+    };
+
+    let mut readings = vec![build_reading(
+        archmap.map_id.clone(),
+        "selectedSourceUniverse".to_string(),
+        all_atom_refs(archmap),
+    )];
+    readings.extend(molecule_readings.iter().map(|molecule| {
+        build_reading(
+            molecule.molecule_observation_ref.clone(),
+            "molecule".to_string(),
+            molecule.atom_observation_refs.clone(),
+        )
+    }));
+    readings
+}
+
+fn build_atom_compatibility_readings(
+    archmap: &ArchMapDocumentV0,
+) -> Vec<ArchSigAtomCompatibilityReadingV0> {
+    let mut slots = BTreeMap::<String, Vec<&crate::ArchMapAtomObservationV0>>::new();
+    for atom in &archmap.atom_observations {
+        slots
+            .entry(format!("{}::{}", atom.subject_ref, atom.predicate))
+            .or_default()
+            .push(atom);
+    }
+    let semantic_by_subject = archmap.semantic_observations.iter().fold(
+        BTreeMap::<String, Vec<String>>::new(),
+        |mut map, semantic| {
+            map.entry(semantic.subject_ref.clone())
+                .or_default()
+                .push(semantic.semantic_observation_id.clone());
+            map
+        },
+    );
+    let conflicts = slots
+        .into_iter()
+        .filter_map(|(slot_ref, atoms)| {
+            let families = atoms
+                .iter()
+                .map(|atom| atom.atom_family.clone())
+                .collect::<BTreeSet<_>>();
+            let statuses = atoms
+                .iter()
+                .map(|atom| atom.observation_status.clone())
+                .collect::<BTreeSet<_>>();
+            if atoms.len() < 2 || (families.len() <= 1 && statuses.len() <= 1) {
+                return None;
+            }
+            let first = atoms[0];
+            Some(ArchSigAtomCompatibilityConflictV0 {
+                slot_ref,
+                subject_ref: first.subject_ref.clone(),
+                predicate: first.predicate.clone(),
+                atom_observation_refs: atoms
+                    .iter()
+                    .map(|atom| atom.atom_observation_id.clone())
+                    .collect(),
+                semantic_observation_refs: semantic_by_subject
+                    .get(&first.subject_ref)
+                    .cloned()
+                    .unwrap_or_default(),
+                inconsistency_kind: if families.len() > 1 {
+                    "familyDivergence".to_string()
+                } else {
+                    "statusDivergence".to_string()
+                },
+                reading: "same subject/predicate slot has divergent observed families or statuses"
+                    .to_string(),
+            })
+        })
+        .collect::<Vec<_>>();
+    let conflicting_atom_observation_refs = conflicts
+        .iter()
+        .flat_map(|conflict| conflict.atom_observation_refs.clone())
+        .collect::<BTreeSet<_>>()
+        .into_iter()
+        .collect::<Vec<_>>();
+    let conflicting_semantic_observation_refs = conflicts
+        .iter()
+        .flat_map(|conflict| conflict.semantic_observation_refs.clone())
+        .collect::<BTreeSet<_>>()
+        .into_iter()
+        .collect::<Vec<_>>();
+    vec![ArchSigAtomCompatibilityReadingV0 {
+        reading_id: format!("atom-compatibility:{}", stable_id(&archmap.map_id)),
+        status: if conflicts.is_empty() {
+            "compatibleWithinObservedSlots".to_string()
+        } else {
+            "conflictNeedsReview".to_string()
+        },
+        same_slot_conflict_count: conflicts.len(),
+        conflicts,
+        conflicting_atom_observation_refs,
+        conflicting_semantic_observation_refs,
+        payload_inconsistency_kinds: vec![
+            "familyDivergence".to_string(),
+            "statusDivergence".to_string(),
+            "semanticDivergence".to_string(),
+        ],
+        confidence_boundary: "compatibility is checked over observed subject/predicate slots only"
+            .to_string(),
+        uncertainty: archmap
+            .observation_gaps
+            .iter()
+            .map(|gap| gap.gap_id.clone())
+            .collect(),
+        evidence_boundary:
+            "compatibility conflict is a review target, not proof of global semantic incorrectness"
+                .to_string(),
+        non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
+    }]
+}
+
+fn build_law_universe_coverage_readings(
+    archmap: &ArchMapDocumentV0,
+    law_policy: &LawPolicyDocumentV0,
+    signature_axes: &[ArchSigSignatureAxisReadingV0],
+) -> Vec<ArchSigLawUniverseCoverageReadingV0> {
+    let observed_families = archmap
+        .atom_observations
+        .iter()
+        .map(|atom| atom.atom_family.as_str())
+        .collect::<Vec<_>>();
+    let gap_refs = archmap
+        .observation_gaps
+        .iter()
+        .map(|gap| gap.gap_id.clone())
+        .collect::<Vec<_>>();
+    let coverage_status = |ref_id: String, required_families: &[String]| {
+        let missing = required_families
+            .iter()
+            .filter(|family| {
+                !observed_families
+                    .iter()
+                    .any(|observed| family_matches(observed, family))
+            })
+            .cloned()
+            .collect::<Vec<_>>();
+        ArchSigCoverageStatusV0 {
+            ref_id,
+            status: if missing.is_empty() {
+                "coveredByObservedAtoms".to_string()
+            } else {
+                "blockedByCoverageGap".to_string()
+            },
+            evidence_refs: required_families.to_vec(),
+            blocker_refs: missing
+                .into_iter()
+                .chain(gap_refs.iter().take(3).cloned())
+                .collect(),
+            reading: "coverage is selected-profile-relative and does not prove lawfulness"
+                .to_string(),
+        }
+    };
+    let required_law_coverage = law_policy
+        .selected_laws
+        .iter()
+        .map(|law| coverage_status(law.law_id.clone(), &law.applies_to_atom_families))
+        .collect::<Vec<_>>();
+    let optional_law_coverage = law_policy
+        .optional_axes
+        .iter()
+        .map(|axis| ArchSigCoverageStatusV0 {
+            ref_id: axis.axis_id.clone(),
+            status: "optionalAxis".to_string(),
+            evidence_refs: axis.evidence_requirements.clone(),
+            blocker_refs: Vec::new(),
+            reading: "optional axis coverage is advisory".to_string(),
+        })
+        .collect::<Vec<_>>();
+    let witness_family_coverage = law_policy
+        .witness_rules
+        .iter()
+        .map(|rule| coverage_status(rule.witness_rule_id.clone(), &rule.required_atom_families))
+        .collect::<Vec<_>>();
+    let signature_axis_coverage = signature_axes
+        .iter()
+        .map(|axis| ArchSigCoverageStatusV0 {
+            ref_id: axis.signature_axis_id.clone(),
+            status: axis.coverage_status.clone(),
+            evidence_refs: axis.source_refs.clone(),
+            blocker_refs: axis.missing_evidence.clone(),
+            reading: axis.evidence_summary.clone(),
+        })
+        .collect::<Vec<_>>();
+    let exactness_assumption_status = law_policy
+        .exactness_assumptions
+        .iter()
+        .map(|assumption| ArchSigCoverageStatusV0 {
+            ref_id: assumption.clone(),
+            status: if gap_refs.is_empty() {
+                "assumptionRelative".to_string()
+            } else {
+                "blockedByCoverageGap".to_string()
+            },
+            evidence_refs: Vec::new(),
+            blocker_refs: gap_refs.clone(),
+            reading: "exactness assumption is not theorem discharge".to_string(),
+        })
+        .collect::<Vec<_>>();
+    let unmeasured_required_law_count = required_law_coverage
+        .iter()
+        .filter(|coverage| coverage.status != "coveredByObservedAtoms")
+        .count();
+    vec![ArchSigLawUniverseCoverageReadingV0 {
+        reading_id: format!(
+            "law-universe-coverage:{}",
+            stable_id(&law_policy.law_policy_id)
+        ),
+        law_universe_ref: law_policy.law_policy_id.clone(),
+        required_law_coverage,
+        optional_law_coverage,
+        witness_family_coverage,
+        signature_axis_coverage,
+        exactness_assumption_status,
+        unmeasured_required_law_count,
+        blocked_witness_refs: law_policy
+            .witness_rules
+            .iter()
+            .filter(|rule| !rule.missing_evidence_behavior.trim().is_empty())
+            .map(|rule| rule.witness_rule_id.clone())
+            .collect(),
+        law_witness_axis_alignment: "selected laws, witness rules, and signature axes are compared by refs only; alignment is profile-relative".to_string(),
+        coverage_boundary: "coverage measures selected profile visibility, not LawUniverse completeness".to_string(),
+        non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
+    }]
 }
 
 fn build_local_curvature_diagram_readings(
@@ -3418,11 +3806,56 @@ fn build_observation_projection_readings(
         .collect::<BTreeSet<_>>()
         .into_iter()
         .collect::<Vec<_>>();
+    let mut slots = BTreeMap::<String, Vec<String>>::new();
+    let mut families_by_subject = BTreeMap::<String, BTreeSet<String>>::new();
+    for atom in &archmap.atom_observations {
+        slots
+            .entry(format!("{}::{}", atom.subject_ref, atom.predicate))
+            .or_default()
+            .push(atom.atom_observation_id.clone());
+        families_by_subject
+            .entry(atom.subject_ref.clone())
+            .or_default()
+            .insert(atom.atom_family.clone());
+    }
+    let observation_collision_pairs = slots
+        .into_iter()
+        .filter(|(_, refs)| refs.len() > 1)
+        .map(|(slot, refs)| format!("{} -> {}", slot, refs.join(",")))
+        .collect::<Vec<_>>();
+    let collapsed_atom_family_candidates = families_by_subject
+        .into_iter()
+        .filter(|(_, families)| families.len() > 1)
+        .map(|(subject, families)| {
+            format!(
+                "{} -> {}",
+                subject,
+                families.into_iter().collect::<Vec<_>>().join(",")
+            )
+        })
+        .collect::<Vec<_>>();
+    let hidden_atom_family_hints = archmap
+        .observation_gaps
+        .iter()
+        .map(|gap| format!("{}: {}", gap.gap_id, gap.reason))
+        .collect::<Vec<_>>();
+    let reconstruction_risk = if forgotten_coordinates.is_empty()
+        && observation_collision_pairs.is_empty()
+        && collapsed_atom_family_candidates.is_empty()
+    {
+        "boundedProjectionNoObservedCollision".to_string()
+    } else {
+        "reconstructionLossPresent".to_string()
+    };
     vec![ArchSigObservationProjectionReadingV0 {
         reading_id: format!("observation-projection:{}", stable_id(&archmap.map_id)),
         observed_atom_family_count: observed_atom_families.len(),
         observed_atom_families,
         forgotten_coordinates: forgotten_coordinates.clone(),
+        observation_collision_pairs,
+        collapsed_atom_family_candidates,
+        hidden_atom_family_hints,
+        reconstruction_risk,
         coarse_projection_risks: vec![
             "coarse observation may merge distinct canonical atoms".to_string(),
             "unobserved source coordinates must not be read as absent atoms".to_string(),
@@ -3690,6 +4123,372 @@ fn build_split_readiness_readings(
         .collect()
 }
 
+fn build_feature_extension_formula_readings(
+    archmap: &ArchMapDocumentV0,
+    obstruction_circuits: &[ArchSigObstructionCircuitV0],
+    repair_candidates: &[ArchSigRepairOperationCandidateV0],
+    split_readiness_readings: &[ArchSigSplitReadinessReadingV0],
+) -> Vec<ArchSigFeatureExtensionFormulaReadingV0> {
+    let obstruction_ids = obstruction_circuits
+        .iter()
+        .map(|obstruction| obstruction.obstruction_circuit_id.clone())
+        .collect::<Vec<_>>();
+    let feature_local = obstruction_circuits
+        .iter()
+        .filter(|obstruction| {
+            let text = format!("{} {}", obstruction.law_ref, obstruction.evidence_summary)
+                .to_ascii_lowercase();
+            text.contains("feature") || text.contains("extension") || text.contains("semantic")
+        })
+        .map(|obstruction| obstruction.obstruction_circuit_id.clone())
+        .collect::<Vec<_>>();
+    let interaction = obstruction_circuits
+        .iter()
+        .filter(|obstruction| {
+            let text = format!("{} {}", obstruction.law_ref, obstruction.evidence_summary)
+                .to_ascii_lowercase();
+            text.contains("interaction")
+                || text.contains("bridge")
+                || text.contains("runtime")
+                || text.contains("effect")
+        })
+        .map(|obstruction| obstruction.obstruction_circuit_id.clone())
+        .collect::<Vec<_>>();
+    let lifting_failure_refs = split_readiness_readings
+        .iter()
+        .filter(|reading| reading.lifting_evidence_status != "observed")
+        .map(|reading| reading.reading_id.clone())
+        .collect::<Vec<_>>();
+    let complexity_transfer_refs = repair_candidates
+        .iter()
+        .flat_map(|candidate| candidate.transfer_risks.clone())
+        .collect::<Vec<_>>();
+    let residual_coverage_gap_refs = archmap
+        .observation_gaps
+        .iter()
+        .map(|gap| gap.gap_id.clone())
+        .collect::<Vec<_>>();
+    let filling_failure_refs = obstruction_circuits
+        .iter()
+        .filter(|obstruction| !obstruction.missing_evidence.is_empty())
+        .map(|obstruction| obstruction.obstruction_circuit_id.clone())
+        .collect::<Vec<_>>();
+    let classification_summary = vec![
+        extension_axis_summary("inheritedCoreObstruction", &obstruction_ids),
+        extension_axis_summary("featureLocalObstruction", &feature_local),
+        extension_axis_summary("interactionObstruction", &interaction),
+        extension_axis_summary("liftingFailure", &lifting_failure_refs),
+        extension_axis_summary("fillingFailure", &filling_failure_refs),
+        extension_axis_summary("complexityTransfer", &complexity_transfer_refs),
+        extension_axis_summary("residualCoverageGap", &residual_coverage_gap_refs),
+    ];
+    vec![ArchSigFeatureExtensionFormulaReadingV0 {
+        reading_id: format!("feature-extension-formula:{}", stable_id(&archmap.map_id)),
+        scope_ref: archmap.map_id.clone(),
+        status: if obstruction_ids.is_empty() && residual_coverage_gap_refs.is_empty() {
+            "needsReview".to_string()
+        } else {
+            "measured".to_string()
+        },
+        inherited_core_obstruction_refs: obstruction_ids,
+        feature_local_obstruction_refs: feature_local,
+        interaction_obstruction_refs: interaction,
+        lifting_failure_refs,
+        filling_failure_refs,
+        complexity_transfer_refs,
+        residual_coverage_gap_refs,
+        classification_summary,
+        evidence_boundary:
+            "extension formula is computed over current ArchMap state, not an actual PR diff"
+                .to_string(),
+        non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
+    }]
+}
+
+fn extension_axis_summary(axis: &str, refs: &[String]) -> ArchSigFeatureExtensionAxisSummaryV0 {
+    ArchSigFeatureExtensionAxisSummaryV0 {
+        axis: axis.to_string(),
+        status: if refs.is_empty() {
+            "unmeasuredOrAbsent".to_string()
+        } else {
+            "observed".to_string()
+        },
+        refs: refs.to_vec(),
+        reading: format!("{axis} is classified as a current-state extension coordinate"),
+    }
+}
+
+fn build_operation_calculus_law_readings(
+    repair_candidates: &[ArchSigRepairOperationCandidateV0],
+    operation_deltas: &[ArchSigOperationDeltaReadingV0],
+) -> Vec<ArchSigOperationCalculusLawReadingV0> {
+    if repair_candidates.is_empty() {
+        return vec![ArchSigOperationCalculusLawReadingV0 {
+            reading_id: "operation-calculus-law:none-observed".to_string(),
+            operation_ref: "repair-operation:none-observed".to_string(),
+            operation_kind: "noneObserved".to_string(),
+            composition_status: "unmeasured".to_string(),
+            associativity_under_observation_status: "unmeasured".to_string(),
+            refinement_abstraction_compatibility: "unmeasured".to_string(),
+            replacement_equivalence: "unmeasured".to_string(),
+            protection_idempotence: "notApplicable".to_string(),
+            runtime_localization: "unmeasured".to_string(),
+            migration_compatibility: "notApplicable".to_string(),
+            reverse_involution: "unmeasured".to_string(),
+            repair_monotonicity: "unmeasured".to_string(),
+            synthesis_no_solution_boundary: "notASynthesisCertificate".to_string(),
+            precondition_refs: Vec::new(),
+            evidence_refs: Vec::new(),
+            evidence_boundary:
+                "no repair candidate was constructed; operation laws are not discharged by absence"
+                    .to_string(),
+            non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
+        }];
+    }
+    let delta_by_kind = operation_deltas
+        .iter()
+        .map(|delta| (delta.operation_kind.as_str(), delta))
+        .collect::<BTreeMap<_, _>>();
+    repair_candidates
+        .iter()
+        .map(|candidate| {
+            let delta = delta_by_kind
+                .get(candidate.operation_kind.as_str())
+                .copied();
+            let transferred = delta
+                .map(|delta| !delta.transferred_obstructions.is_empty())
+                .unwrap_or(false);
+            ArchSigOperationCalculusLawReadingV0 {
+                reading_id: format!(
+                    "operation-calculus-law:{}",
+                    stable_id(&candidate.repair_operation_candidate_id)
+                ),
+                operation_ref: candidate.repair_operation_candidate_id.clone(),
+                operation_kind: candidate.operation_kind.clone(),
+                composition_status: "assumptionRelative".to_string(),
+                associativity_under_observation_status: "selectedObservationOnly".to_string(),
+                refinement_abstraction_compatibility: if candidate.missing_evidence.is_empty() {
+                    "needsReview".to_string()
+                } else {
+                    "blockedByMissingEvidence".to_string()
+                },
+                replacement_equivalence: "unmeasured".to_string(),
+                protection_idempotence: if candidate.operation_kind.contains("protection") {
+                    "needsWitness".to_string()
+                } else {
+                    "notApplicable".to_string()
+                },
+                runtime_localization: if candidate
+                    .preconditions
+                    .iter()
+                    .any(|precondition| precondition.to_ascii_lowercase().contains("runtime"))
+                {
+                    "blockedByCoverageGap".to_string()
+                } else {
+                    "unmeasured".to_string()
+                },
+                migration_compatibility: if candidate.operation_kind.contains("migrate") {
+                    "needsWitness".to_string()
+                } else {
+                    "notApplicable".to_string()
+                },
+                reverse_involution: "unmeasured".to_string(),
+                repair_monotonicity: if transferred {
+                    "selectedAxisOnly".to_string()
+                } else {
+                    "candidateNonIncreasing".to_string()
+                },
+                synthesis_no_solution_boundary: "notASynthesisCertificate".to_string(),
+                precondition_refs: candidate.preconditions.clone(),
+                evidence_refs: candidate
+                    .target_obstruction_refs
+                    .iter()
+                    .chain(candidate.preserved_invariants.iter())
+                    .cloned()
+                    .collect(),
+                evidence_boundary: candidate.evidence_boundary.clone(),
+                non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
+            }
+        })
+        .collect()
+}
+
+fn build_path_signature_trajectory_readings(
+    operation_deltas: &[ArchSigOperationDeltaReadingV0],
+    signature_axes: &[ArchSigSignatureAxisReadingV0],
+) -> Vec<ArchSigPathSignatureTrajectoryReadingV0> {
+    let mut readings = operation_deltas
+        .iter()
+        .map(|delta| {
+            let non_monotone_axis_refs = delta
+                .transferred_obstructions
+                .iter()
+                .chain(
+                    delta
+                        .signature_delta
+                        .iter()
+                        .filter(|value| value.contains("negative")),
+                )
+                .cloned()
+                .collect::<Vec<_>>();
+            ArchSigPathSignatureTrajectoryReadingV0 {
+                reading_id: format!(
+                    "path-signature-trajectory:{}",
+                    stable_id(&delta.operation_delta_id)
+                ),
+                path_ref: delta.operation_delta_id.clone(),
+                status: "candidateTrajectory".to_string(),
+                endpoint_signature_delta: delta.signature_delta.clone(),
+                max_axis_excursion: signature_axes
+                    .iter()
+                    .map(|axis| ArchSigAxisExcursionV0 {
+                        axis_ref: axis.signature_axis_id.clone(),
+                        max_value: axis.value.max(0),
+                        evidence_refs: axis.source_refs.clone(),
+                        reading:
+                            "max excursion is a current-state proxy, not future trajectory proof"
+                                .to_string(),
+                    })
+                    .collect(),
+                non_monotone_axis_refs,
+                path_cost_proxy: format!(
+                    "support={} transferred={}",
+                    delta.support_refs.len(),
+                    delta.transferred_obstructions.len()
+                ),
+                preserved_invariant_trajectory: delta.invariant_preservation_claims.clone(),
+                introduced_obstruction_trajectory: delta.transferred_obstructions.clone(),
+                trajectory_coverage_boundary:
+                    "trajectory is built from candidate operation deltas, not repository evolution"
+                        .to_string(),
+                non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
+            }
+        })
+        .collect::<Vec<_>>();
+    if readings.is_empty() {
+        readings.push(ArchSigPathSignatureTrajectoryReadingV0 {
+            reading_id: "path-signature-trajectory:none-observed".to_string(),
+            path_ref: "operation-delta:none-observed".to_string(),
+            status: "unmeasured".to_string(),
+            endpoint_signature_delta: Vec::new(),
+            max_axis_excursion: Vec::new(),
+            non_monotone_axis_refs: Vec::new(),
+            path_cost_proxy: "unmeasured".to_string(),
+            preserved_invariant_trajectory: Vec::new(),
+            introduced_obstruction_trajectory: Vec::new(),
+            trajectory_coverage_boundary:
+                "no operation deltas are available for trajectory measurement".to_string(),
+            non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
+        });
+    }
+    readings
+}
+
+fn build_homotopy_order_sensitivity_readings(
+    path_homotopy_diagram_readings: &[ArchSigPathHomotopyDiagramReadingV0],
+    operation_deltas: &[ArchSigOperationDeltaReadingV0],
+    repair_candidates: &[ArchSigRepairOperationCandidateV0],
+) -> Vec<ArchSigHomotopyOrderSensitivityReadingV0> {
+    let blockers = operation_deltas
+        .iter()
+        .flat_map(|delta| delta.transferred_obstructions.clone())
+        .chain(
+            repair_candidates
+                .iter()
+                .flat_map(|candidate| candidate.missing_evidence.clone()),
+        )
+        .collect::<Vec<_>>();
+    vec![ArchSigHomotopyOrderSensitivityReadingV0 {
+        reading_id: "homotopy-order-sensitivity:selected-operations".to_string(),
+        status: if blockers.is_empty() {
+            "needsReview".to_string()
+        } else {
+            "sensitive".to_string()
+        },
+        independent_square_candidate_refs: path_homotopy_diagram_readings
+            .iter()
+            .flat_map(|reading| reading.homotopy_refs.clone())
+            .take(12)
+            .collect(),
+        same_contract_replacement_refs: operation_deltas
+            .iter()
+            .filter(|delta| {
+                delta.operation_kind.contains("replace")
+                    || delta.operation_kind.contains("substitut")
+            })
+            .map(|delta| delta.operation_delta_id.clone())
+            .collect(),
+        repair_filler_refs: repair_candidates
+            .iter()
+            .map(|candidate| candidate.repair_operation_candidate_id.clone())
+            .collect(),
+        operation_order_sensitivity: if blockers.is_empty() {
+            "notComparableWithoutGenerators".to_string()
+        } else {
+            "blockedByTransferredObstructionOrMissingEvidence".to_string()
+        },
+        homotopy_blocker_refs: blockers,
+        selected_observation_preservation_status:
+            "selected observation only; same endpoint does not imply same trajectory".to_string(),
+        evidence_boundary:
+            "homotopy reading is generator-relative and does not prove operation commutativity"
+                .to_string(),
+        non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
+    }]
+}
+
+fn build_diagram_fillability_readings(
+    local_curvature_readings: &[ArchSigLocalCurvatureDiagramReadingV0],
+    feature_extension_formula_readings: &[ArchSigFeatureExtensionFormulaReadingV0],
+) -> Vec<ArchSigDiagramFillabilityReadingV0> {
+    let feature_refs = feature_extension_formula_readings
+        .iter()
+        .map(|reading| reading.reading_id.clone())
+        .collect::<Vec<_>>();
+    local_curvature_readings
+        .iter()
+        .map(|reading| ArchSigDiagramFillabilityReadingV0 {
+            reading_id: format!("diagram-fillability:{}", stable_id(&reading.diagram_id)),
+            diagram_ref: reading.diagram_id.clone(),
+            diagram_family: "localCurvatureDiagram".to_string(),
+            status: if reading.curvature_status == "nonConclusion" {
+                "blocked".to_string()
+            } else if reading.curvature_value == 0 {
+                "candidateFillable".to_string()
+            } else {
+                "nonFillabilityWitnessed".to_string()
+            },
+            missing_filler_kind: if reading.curvature_value == 0 {
+                "noneObserved".to_string()
+            } else {
+                "lawRelativeFiller".to_string()
+            },
+            filler_candidate_refs: reading
+                .lhs_path_refs
+                .iter()
+                .chain(reading.rhs_path_refs.iter())
+                .cloned()
+                .collect(),
+            non_fillability_witness_refs: if reading.curvature_value == 0 {
+                Vec::new()
+            } else {
+                vec![reading.obstruction_ref.clone()]
+            },
+            filling_blocker_refs: if reading.filling_boundary.trim().is_empty() {
+                Vec::new()
+            } else {
+                vec![reading.filling_boundary.clone()]
+            },
+            obstruction_refs: vec![reading.obstruction_ref.clone()],
+            feature_extension_refs: feature_refs.clone(),
+            evidence_boundary:
+                "diagram fillability is selected-diagram-relative and not a theorem discharge"
+                    .to_string(),
+            non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
+        })
+        .collect()
+}
+
 fn build_structural_reading_review_surface(
     representation_strength_readings: &[ArchSigRepresentationStrengthReadingV0],
     local_curvature_diagram_readings: &[ArchSigLocalCurvatureDiagramReadingV0],
@@ -3698,6 +4497,14 @@ fn build_structural_reading_review_surface(
     state_transition_algebra_readings: &[ArchSigStateTransitionAlgebraReadingV0],
     operation_invariant_galois_readings: &[ArchSigOperationInvariantGaloisReadingV0],
     split_readiness_readings: &[ArchSigSplitReadinessReadingV0],
+    atom_support_axis_readings: &[ArchSigAtomSupportAxisReadingV0],
+    atom_compatibility_readings: &[ArchSigAtomCompatibilityReadingV0],
+    law_universe_coverage_readings: &[ArchSigLawUniverseCoverageReadingV0],
+    feature_extension_formula_readings: &[ArchSigFeatureExtensionFormulaReadingV0],
+    operation_calculus_law_readings: &[ArchSigOperationCalculusLawReadingV0],
+    path_signature_trajectory_readings: &[ArchSigPathSignatureTrajectoryReadingV0],
+    homotopy_order_sensitivity_readings: &[ArchSigHomotopyOrderSensitivityReadingV0],
+    diagram_fillability_readings: &[ArchSigDiagramFillabilityReadingV0],
 ) -> ArchSigStructuralReadingReviewSurfaceV0 {
     let blocked_representation_count = representation_strength_readings
         .iter()
@@ -3717,6 +4524,18 @@ fn build_structural_reading_review_surface(
     let split_blocker_count = split_readiness_readings
         .iter()
         .filter(|reading| reading.status != "candidateSplitReady")
+        .count();
+    let atom_conflict_count = atom_compatibility_readings
+        .iter()
+        .map(|reading| reading.same_slot_conflict_count)
+        .sum::<usize>();
+    let unmeasured_law_count = law_universe_coverage_readings
+        .iter()
+        .map(|reading| reading.unmeasured_required_law_count)
+        .sum::<usize>();
+    let blocked_diagram_count = diagram_fillability_readings
+        .iter()
+        .filter(|reading| reading.status != "candidateFillable")
         .count();
     let mut connected_reading_refs = Vec::new();
     connected_reading_refs.extend(
@@ -3756,8 +4575,56 @@ fn build_structural_reading_review_surface(
             .take(8)
             .map(|reading| reading.reading_id.clone()),
     );
+    connected_reading_refs.extend(
+        atom_support_axis_readings
+            .iter()
+            .take(8)
+            .map(|reading| reading.reading_id.clone()),
+    );
+    connected_reading_refs.extend(
+        atom_compatibility_readings
+            .iter()
+            .map(|reading| reading.reading_id.clone()),
+    );
+    connected_reading_refs.extend(
+        law_universe_coverage_readings
+            .iter()
+            .map(|reading| reading.reading_id.clone()),
+    );
+    connected_reading_refs.extend(
+        feature_extension_formula_readings
+            .iter()
+            .map(|reading| reading.reading_id.clone()),
+    );
+    connected_reading_refs.extend(
+        operation_calculus_law_readings
+            .iter()
+            .take(8)
+            .map(|reading| reading.reading_id.clone()),
+    );
+    connected_reading_refs.extend(
+        path_signature_trajectory_readings
+            .iter()
+            .map(|reading| reading.reading_id.clone()),
+    );
+    connected_reading_refs.extend(
+        homotopy_order_sensitivity_readings
+            .iter()
+            .map(|reading| reading.reading_id.clone()),
+    );
+    connected_reading_refs.extend(
+        diagram_fillability_readings
+            .iter()
+            .map(|reading| reading.reading_id.clone()),
+    );
 
-    let status = if curvature_count > 0 || blocked_operation_count > 0 || split_blocker_count > 0 {
+    let status = if curvature_count > 0
+        || blocked_operation_count > 0
+        || split_blocker_count > 0
+        || atom_conflict_count > 0
+        || unmeasured_law_count > 0
+        || blocked_diagram_count > 0
+    {
         "needsReview"
     } else if connected_reading_refs.is_empty() {
         "nonConclusion"
@@ -3769,14 +4636,20 @@ fn build_structural_reading_review_surface(
         surface_id: "aat-structural-reading-review-surface".to_string(),
         status: status.to_string(),
         current_state_reading: format!(
-            "ArchSig reads current architecture state across representation strength, local curvature, three-layer flatness, observation projection, state transition algebra, operation-invariant constraints, and split readiness; blockedRepresentations={}, curvatures={}, blockedOperations={}, splitBlockers={}",
+            "ArchSig reads current architecture state across Atom support and compatibility, LawUniverse coverage, feature extension coordinates, operation calculus laws, path signature trajectory, homotopy order sensitivity, diagram fillability, representation strength, local curvature, three-layer flatness, observation projection, state transition algebra, operation-invariant constraints, and split readiness; blockedRepresentations={}, curvatures={}, blockedOperations={}, splitBlockers={}, atomConflicts={}, unmeasuredRequiredLaws={}, blockedDiagrams={}",
             blocked_representation_count,
             curvature_count,
             blocked_operation_count,
-            split_blocker_count
+            split_blocker_count,
+            atom_conflict_count,
+            unmeasured_law_count,
+            blocked_diagram_count
         ),
         connected_reading_refs,
         review_focus: vec![
+            "read Atom support and compatibility before collapsing mixed state, effect, contract, authority, semantic, or runtime axes".to_string(),
+            "read LawUniverse coverage and witness exactness before treating absence as measured zero".to_string(),
+            "read feature extension, operation law, trajectory, homotopy, and diagram-fillability axes as current-state coordinates, not PR evolution claims".to_string(),
             "read representation-strength blockers before treating zero or obstruction absence as exact".to_string(),
             "read local-curvature diagrams as law-relative state pressure, not as generic lint failures".to_string(),
             "compare static, runtime, and semantic flatness before relying on source layout".to_string(),
@@ -4355,6 +5228,14 @@ fn build_llm_interpretation_packet(
     spectral_mode_readings: &[ArchSigSpectralModeReadingV0],
     spectral_drilldown_readings: &[ArchSigSpectralDrilldownReadingV0],
     transfer_bridge_readings: &[ArchSigTransferBridgeReadingV0],
+    atom_support_axis_readings: &[ArchSigAtomSupportAxisReadingV0],
+    atom_compatibility_readings: &[ArchSigAtomCompatibilityReadingV0],
+    law_universe_coverage_readings: &[ArchSigLawUniverseCoverageReadingV0],
+    feature_extension_formula_readings: &[ArchSigFeatureExtensionFormulaReadingV0],
+    operation_calculus_law_readings: &[ArchSigOperationCalculusLawReadingV0],
+    path_signature_trajectory_readings: &[ArchSigPathSignatureTrajectoryReadingV0],
+    homotopy_order_sensitivity_readings: &[ArchSigHomotopyOrderSensitivityReadingV0],
+    diagram_fillability_readings: &[ArchSigDiagramFillabilityReadingV0],
     representation_strength_readings: &[ArchSigRepresentationStrengthReadingV0],
     local_curvature_diagram_readings: &[ArchSigLocalCurvatureDiagramReadingV0],
     three_layer_flatness_readings: &[ArchSigThreeLayerFlatnessReadingV0],
@@ -4491,6 +5372,120 @@ fn build_llm_interpretation_packet(
                         )
                     })
                 })
+            })
+            .collect(),
+        measurement_expansion_summary: vec![format!(
+            "v0.3.0 measurement expansion reads {} Atom support axes, {} compatibility surfaces, {} LawUniverse coverage surfaces, {} feature-extension formulas, {} operation-law surfaces, {} path trajectories, {} homotopy/order surfaces, and {} diagram-fillability surfaces",
+            atom_support_axis_readings.len(),
+            atom_compatibility_readings.len(),
+            law_universe_coverage_readings.len(),
+            feature_extension_formula_readings.len(),
+            operation_calculus_law_readings.len(),
+            path_signature_trajectory_readings.len(),
+            homotopy_order_sensitivity_readings.len(),
+            diagram_fillability_readings.len()
+        )],
+        atom_support_axis_summary: atom_support_axis_readings
+            .iter()
+            .take(12)
+            .map(|reading| {
+                format!(
+                    "{} support={} concentration={} pressure={}",
+                    reading.scope_ref,
+                    reading.support_size,
+                    reading.axis_concentration,
+                    reading.mixed_axis_molecule_pressure
+                )
+            })
+            .collect(),
+        atom_compatibility_summary: atom_compatibility_readings
+            .iter()
+            .map(|reading| {
+                format!(
+                    "{} status={} sameSlotConflicts={} uncertainty={}",
+                    reading.reading_id,
+                    reading.status,
+                    reading.same_slot_conflict_count,
+                    reading.uncertainty.len()
+                )
+            })
+            .collect(),
+        law_universe_coverage_summary: law_universe_coverage_readings
+            .iter()
+            .map(|reading| {
+                format!(
+                    "{} required={} unmeasured={} blockedWitnesses={}",
+                    reading.law_universe_ref,
+                    reading.required_law_coverage.len(),
+                    reading.unmeasured_required_law_count,
+                    reading.blocked_witness_refs.len()
+                )
+            })
+            .collect(),
+        feature_extension_formula_summary: feature_extension_formula_readings
+            .iter()
+            .map(|reading| {
+                format!(
+                    "{} status={} inherited={} featureLocal={} interaction={} residualGaps={}",
+                    reading.reading_id,
+                    reading.status,
+                    reading.inherited_core_obstruction_refs.len(),
+                    reading.feature_local_obstruction_refs.len(),
+                    reading.interaction_obstruction_refs.len(),
+                    reading.residual_coverage_gap_refs.len()
+                )
+            })
+            .collect(),
+        operation_calculus_law_summary: operation_calculus_law_readings
+            .iter()
+            .take(12)
+            .map(|reading| {
+                format!(
+                    "{} kind={} composition={} repairMonotonicity={} boundary={}",
+                    reading.operation_ref,
+                    reading.operation_kind,
+                    reading.composition_status,
+                    reading.repair_monotonicity,
+                    reading.synthesis_no_solution_boundary
+                )
+            })
+            .collect(),
+        path_signature_trajectory_summary: path_signature_trajectory_readings
+            .iter()
+            .map(|reading| {
+                format!(
+                    "{} status={} endpointDeltas={} nonMonotoneAxes={} cost={}",
+                    reading.path_ref,
+                    reading.status,
+                    reading.endpoint_signature_delta.len(),
+                    reading.non_monotone_axis_refs.len(),
+                    reading.path_cost_proxy
+                )
+            })
+            .collect(),
+        homotopy_order_sensitivity_summary: homotopy_order_sensitivity_readings
+            .iter()
+            .map(|reading| {
+                format!(
+                    "{} status={} orderSensitivity={} blockers={}",
+                    reading.reading_id,
+                    reading.status,
+                    reading.operation_order_sensitivity,
+                    reading.homotopy_blocker_refs.len()
+                )
+            })
+            .collect(),
+        diagram_fillability_summary: diagram_fillability_readings
+            .iter()
+            .map(|reading| {
+                format!(
+                    "{} family={} status={} missingFiller={} blockers={}",
+                    reading.diagram_ref,
+                    reading.diagram_family,
+                    reading.status,
+                    reading.missing_filler_kind,
+                    reading.filling_blocker_refs.len()
+                )
             })
             .collect(),
         representation_strength_summary: representation_strength_readings
@@ -4732,6 +5727,14 @@ pub fn validate_archsig_analysis_packet_report(
         spectral_mode_reading_count: packet.spectral_mode_readings.len(),
         spectral_drilldown_reading_count: packet.spectral_drilldown_readings.len(),
         transfer_bridge_reading_count: packet.transfer_bridge_readings.len(),
+        atom_support_axis_reading_count: packet.atom_support_axis_readings.len(),
+        atom_compatibility_reading_count: packet.atom_compatibility_readings.len(),
+        law_universe_coverage_reading_count: packet.law_universe_coverage_readings.len(),
+        feature_extension_formula_reading_count: packet.feature_extension_formula_readings.len(),
+        operation_calculus_law_reading_count: packet.operation_calculus_law_readings.len(),
+        path_signature_trajectory_reading_count: packet.path_signature_trajectory_readings.len(),
+        homotopy_order_sensitivity_reading_count: packet.homotopy_order_sensitivity_readings.len(),
+        diagram_fillability_reading_count: packet.diagram_fillability_readings.len(),
         representation_strength_reading_count: packet.representation_strength_readings.len(),
         local_curvature_diagram_reading_count: packet.local_curvature_diagram_readings.len(),
         three_layer_flatness_reading_count: packet.three_layer_flatness_readings.len(),
@@ -5947,6 +6950,62 @@ fn check_aat_structural_reading_surfaces(packet: &ArchSigAnalysisPacketV0) -> Va
             "packet must expose split readiness readings",
         ));
     }
+    if packet.atom_support_axis_readings.is_empty() {
+        examples.push(generic_validation_example(
+            "atomSupportAxisReadings",
+            "empty",
+            "packet must expose Atom support / axis restriction readings",
+        ));
+    }
+    if packet.atom_compatibility_readings.is_empty() {
+        examples.push(generic_validation_example(
+            "atomCompatibilityReadings",
+            "empty",
+            "packet must expose Atom compatibility readings",
+        ));
+    }
+    if packet.law_universe_coverage_readings.is_empty() {
+        examples.push(generic_validation_example(
+            "lawUniverseCoverageReadings",
+            "empty",
+            "packet must expose LawUniverse coverage readings",
+        ));
+    }
+    if packet.feature_extension_formula_readings.is_empty() {
+        examples.push(generic_validation_example(
+            "featureExtensionFormulaReadings",
+            "empty",
+            "packet must expose feature extension formula readings",
+        ));
+    }
+    if packet.operation_calculus_law_readings.is_empty() {
+        examples.push(generic_validation_example(
+            "operationCalculusLawReadings",
+            "empty",
+            "packet must expose operation calculus law readings",
+        ));
+    }
+    if packet.path_signature_trajectory_readings.is_empty() {
+        examples.push(generic_validation_example(
+            "pathSignatureTrajectoryReadings",
+            "empty",
+            "packet must expose path signature trajectory readings",
+        ));
+    }
+    if packet.homotopy_order_sensitivity_readings.is_empty() {
+        examples.push(generic_validation_example(
+            "homotopyOrderSensitivityReadings",
+            "empty",
+            "packet must expose homotopy / operation-order sensitivity readings",
+        ));
+    }
+    if packet.diagram_fillability_readings.is_empty() {
+        examples.push(generic_validation_example(
+            "diagramFillabilityReadings",
+            "empty",
+            "packet must expose diagram fillability readings",
+        ));
+    }
 
     for reading in &packet.representation_strength_readings {
         push_blank(
@@ -5966,8 +7025,28 @@ fn check_aat_structural_reading_surfaces(packet: &ArchSigAnalysisPacketV0) -> Va
         );
         push_blank(
             &mut examples,
+            &format!("{} zeroPreserving", reading.reading_id),
+            &reading.zero_preserving,
+        );
+        push_blank(
+            &mut examples,
+            &format!("{} obstructionPreserving", reading.reading_id),
+            &reading.obstruction_preserving,
+        );
+        push_blank(
+            &mut examples,
             &format!("{} obstructionReflecting", reading.reading_id),
             &reading.obstruction_reflecting,
+        );
+        push_blank(
+            &mut examples,
+            &format!("{} aggregateZeroSafety", reading.reading_id),
+            &reading.aggregate_zero_safety,
+        );
+        push_blank(
+            &mut examples,
+            &format!("{} cancellationRisk", reading.reading_id),
+            &reading.cancellation_risk,
         );
         if reading.required_assumptions.is_empty() {
             examples.push(generic_validation_example(
@@ -5976,6 +7055,202 @@ fn check_aat_structural_reading_surfaces(packet: &ArchSigAnalysisPacketV0) -> Va
                 "representation strength must record required assumptions",
             ));
         }
+        if reading
+            .blocked_reflection_or_preservation_reasons
+            .is_empty()
+        {
+            examples.push(generic_validation_example(
+                &reading.reading_id,
+                "blockedReflectionOrPreservationReasons",
+                "representation strength must record reflection / preservation blockers",
+            ));
+        }
+        push_blank(
+            &mut examples,
+            &format!("{} evidenceBoundary", reading.reading_id),
+            &reading.evidence_boundary,
+        );
+    }
+    for reading in &packet.atom_support_axis_readings {
+        push_blank(&mut examples, &reading.reading_id, &reading.scope_ref);
+        push_blank(&mut examples, &reading.reading_id, &reading.scope_kind);
+        if reading.axis_restriction_counts.is_empty() {
+            examples.push(generic_validation_example(
+                &reading.reading_id,
+                "axisRestrictionCounts",
+                "Atom support reading must record axis restriction counts",
+            ));
+        }
+        push_blank(
+            &mut examples,
+            &format!("{} axisConcentration", reading.reading_id),
+            &reading.axis_concentration,
+        );
+        push_blank(
+            &mut examples,
+            &format!("{} mixedAxisMoleculePressure", reading.reading_id),
+            &reading.mixed_axis_molecule_pressure,
+        );
+        push_blank(
+            &mut examples,
+            &format!("{} coverageBoundary", reading.reading_id),
+            &reading.coverage_boundary,
+        );
+    }
+    for reading in &packet.atom_compatibility_readings {
+        push_blank(&mut examples, &reading.reading_id, &reading.status);
+        push_blank(
+            &mut examples,
+            &format!("{} confidenceBoundary", reading.reading_id),
+            &reading.confidence_boundary,
+        );
+        push_blank(
+            &mut examples,
+            &format!("{} evidenceBoundary", reading.reading_id),
+            &reading.evidence_boundary,
+        );
+        if reading.payload_inconsistency_kinds.is_empty() {
+            examples.push(generic_validation_example(
+                &reading.reading_id,
+                "payloadInconsistencyKinds",
+                "Atom compatibility reading must enumerate inconsistency kinds",
+            ));
+        }
+    }
+    for reading in &packet.law_universe_coverage_readings {
+        push_blank(
+            &mut examples,
+            &reading.reading_id,
+            &reading.law_universe_ref,
+        );
+        if reading.required_law_coverage.is_empty() {
+            examples.push(generic_validation_example(
+                &reading.reading_id,
+                "requiredLawCoverage",
+                "LawUniverse coverage must record required law coverage",
+            ));
+        }
+        if reading.witness_family_coverage.is_empty() {
+            examples.push(generic_validation_example(
+                &reading.reading_id,
+                "witnessFamilyCoverage",
+                "LawUniverse coverage must record witness family coverage",
+            ));
+        }
+        if reading.signature_axis_coverage.is_empty() {
+            examples.push(generic_validation_example(
+                &reading.reading_id,
+                "signatureAxisCoverage",
+                "LawUniverse coverage must record signature axis coverage",
+            ));
+        }
+        push_blank(
+            &mut examples,
+            &format!("{} lawWitnessAxisAlignment", reading.reading_id),
+            &reading.law_witness_axis_alignment,
+        );
+        push_blank(
+            &mut examples,
+            &format!("{} coverageBoundary", reading.reading_id),
+            &reading.coverage_boundary,
+        );
+    }
+    for reading in &packet.feature_extension_formula_readings {
+        push_blank(&mut examples, &reading.reading_id, &reading.scope_ref);
+        push_blank(&mut examples, &reading.reading_id, &reading.status);
+        if reading.classification_summary.len() < 7 {
+            examples.push(generic_validation_example(
+                &reading.reading_id,
+                "classificationSummary",
+                "feature extension formula must classify all required axes",
+            ));
+        }
+        push_blank(
+            &mut examples,
+            &format!("{} evidenceBoundary", reading.reading_id),
+            &reading.evidence_boundary,
+        );
+    }
+    for reading in &packet.operation_calculus_law_readings {
+        push_blank(&mut examples, &reading.reading_id, &reading.operation_ref);
+        push_blank(&mut examples, &reading.reading_id, &reading.operation_kind);
+        for (field, value) in [
+            ("compositionStatus", &reading.composition_status),
+            (
+                "associativityUnderObservationStatus",
+                &reading.associativity_under_observation_status,
+            ),
+            (
+                "refinementAbstractionCompatibility",
+                &reading.refinement_abstraction_compatibility,
+            ),
+            ("replacementEquivalence", &reading.replacement_equivalence),
+            ("protectionIdempotence", &reading.protection_idempotence),
+            ("runtimeLocalization", &reading.runtime_localization),
+            ("migrationCompatibility", &reading.migration_compatibility),
+            ("reverseInvolution", &reading.reverse_involution),
+            ("repairMonotonicity", &reading.repair_monotonicity),
+            (
+                "synthesisNoSolutionBoundary",
+                &reading.synthesis_no_solution_boundary,
+            ),
+        ] {
+            push_blank(
+                &mut examples,
+                &format!("{} {field}", reading.reading_id),
+                value,
+            );
+        }
+        push_blank(
+            &mut examples,
+            &format!("{} evidenceBoundary", reading.reading_id),
+            &reading.evidence_boundary,
+        );
+    }
+    for reading in &packet.path_signature_trajectory_readings {
+        push_blank(&mut examples, &reading.reading_id, &reading.path_ref);
+        push_blank(&mut examples, &reading.reading_id, &reading.status);
+        push_blank(
+            &mut examples,
+            &format!("{} pathCostProxy", reading.reading_id),
+            &reading.path_cost_proxy,
+        );
+        push_blank(
+            &mut examples,
+            &format!("{} trajectoryCoverageBoundary", reading.reading_id),
+            &reading.trajectory_coverage_boundary,
+        );
+    }
+    for reading in &packet.homotopy_order_sensitivity_readings {
+        push_blank(&mut examples, &reading.reading_id, &reading.status);
+        push_blank(
+            &mut examples,
+            &format!("{} operationOrderSensitivity", reading.reading_id),
+            &reading.operation_order_sensitivity,
+        );
+        push_blank(
+            &mut examples,
+            &format!(
+                "{} selectedObservationPreservationStatus",
+                reading.reading_id
+            ),
+            &reading.selected_observation_preservation_status,
+        );
+        push_blank(
+            &mut examples,
+            &format!("{} evidenceBoundary", reading.reading_id),
+            &reading.evidence_boundary,
+        );
+    }
+    for reading in &packet.diagram_fillability_readings {
+        push_blank(&mut examples, &reading.reading_id, &reading.diagram_ref);
+        push_blank(&mut examples, &reading.reading_id, &reading.diagram_family);
+        push_blank(&mut examples, &reading.reading_id, &reading.status);
+        push_blank(
+            &mut examples,
+            &format!("{} missingFillerKind", reading.reading_id),
+            &reading.missing_filler_kind,
+        );
         push_blank(
             &mut examples,
             &format!("{} evidenceBoundary", reading.reading_id),
@@ -6037,6 +7312,22 @@ fn check_aat_structural_reading_surfaces(packet: &ArchSigAnalysisPacketV0) -> Va
                 &reading.reading_id,
                 "coarseProjectionRisks",
                 "observation projection must record projection loss risks",
+            ));
+        }
+        push_blank(
+            &mut examples,
+            &format!("{} reconstructionRisk", reading.reading_id),
+            &reading.reconstruction_risk,
+        );
+        if reading.forgotten_coordinates.is_empty()
+            && reading.observation_collision_pairs.is_empty()
+            && reading.collapsed_atom_family_candidates.is_empty()
+            && reading.hidden_atom_family_hints.is_empty()
+        {
+            examples.push(generic_validation_example(
+                &reading.reading_id,
+                "observationProjectionExpansion",
+                "observation projection must record collisions, collapsed candidates, hidden hints, or forgotten coordinates",
             ));
         }
         push_blank(&mut examples, &reading.reading_id, &reading.reading);
@@ -6489,6 +7780,79 @@ fn check_llm_interpretation_surface(packet: &ArchSigAnalysisPacketV0) -> Validat
             "llmInterpretationPacket.currentStateEvolutionBoundarySummary",
             "LLM interpretation packet must summarize current-state/evolution boundary",
         ));
+    }
+    for (field, is_empty) in [
+        (
+            "llmInterpretationPacket.measurementExpansionSummary",
+            packet
+                .llm_interpretation_packet
+                .measurement_expansion_summary
+                .is_empty(),
+        ),
+        (
+            "llmInterpretationPacket.atomSupportAxisSummary",
+            packet
+                .llm_interpretation_packet
+                .atom_support_axis_summary
+                .is_empty(),
+        ),
+        (
+            "llmInterpretationPacket.atomCompatibilitySummary",
+            packet
+                .llm_interpretation_packet
+                .atom_compatibility_summary
+                .is_empty(),
+        ),
+        (
+            "llmInterpretationPacket.lawUniverseCoverageSummary",
+            packet
+                .llm_interpretation_packet
+                .law_universe_coverage_summary
+                .is_empty(),
+        ),
+        (
+            "llmInterpretationPacket.featureExtensionFormulaSummary",
+            packet
+                .llm_interpretation_packet
+                .feature_extension_formula_summary
+                .is_empty(),
+        ),
+        (
+            "llmInterpretationPacket.operationCalculusLawSummary",
+            packet
+                .llm_interpretation_packet
+                .operation_calculus_law_summary
+                .is_empty(),
+        ),
+        (
+            "llmInterpretationPacket.pathSignatureTrajectorySummary",
+            packet
+                .llm_interpretation_packet
+                .path_signature_trajectory_summary
+                .is_empty(),
+        ),
+        (
+            "llmInterpretationPacket.homotopyOrderSensitivitySummary",
+            packet
+                .llm_interpretation_packet
+                .homotopy_order_sensitivity_summary
+                .is_empty(),
+        ),
+        (
+            "llmInterpretationPacket.diagramFillabilitySummary",
+            packet
+                .llm_interpretation_packet
+                .diagram_fillability_summary
+                .is_empty(),
+        ),
+    ] {
+        if is_empty {
+            examples.push(generic_validation_example(
+                &packet.analysis_id,
+                field,
+                "LLM interpretation packet must summarize v0.3.0 measurement expansion readings",
+            ));
+        }
     }
     check_from_examples(
         "archsig-analysis-packet-llm-interpretation-surface",

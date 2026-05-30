@@ -1694,6 +1694,501 @@
       ]
     }
   ],
+  "atomSupportAxisReadings": [
+    {
+      "readingId": "atom-support-axis:fixture-archmap-atom-observation",
+      "scopeRef": "fixture-archmap-atom-observation",
+      "scopeKind": "selectedSourceUniverse",
+      "supportSize": 4,
+      "subjectFamilySpread": [
+        {
+          "subjectRef": "contract.createsUser",
+          "atomCount": 1,
+          "atomFamilies": [
+            "contractSpecification"
+          ]
+        },
+        {
+          "subjectRef": "route.users",
+          "atomCount": 1,
+          "atomFamilies": [
+            "existence"
+          ]
+        },
+        {
+          "subjectRef": "semantic.route.users->service.user",
+          "atomCount": 1,
+          "atomFamilies": [
+            "relation"
+          ]
+        },
+        {
+          "subjectRef": "service.user",
+          "atomCount": 1,
+          "atomFamilies": [
+            "existence"
+          ]
+        }
+      ],
+      "axisRestrictionCounts": [
+        {
+          "axis": "contractSpecification",
+          "atomCount": 1,
+          "atomObservationRefs": [
+            "atom:contract:create-user"
+          ]
+        },
+        {
+          "axis": "existence",
+          "atomCount": 2,
+          "atomObservationRefs": [
+            "atom:component:route-users",
+            "atom:component:service-user"
+          ]
+        },
+        {
+          "axis": "relation",
+          "atomCount": 1,
+          "atomObservationRefs": [
+            "atom:relation:route-service"
+          ]
+        }
+      ],
+      "axisConcentration": "maxAxisShare=2/4",
+      "mixedAxisMoleculePressure": "mixedAxisPressurePresent",
+      "highSupportRefs": [
+        "atom:component:route-users",
+        "atom:component:service-user",
+        "atom:relation:route-service",
+        "atom:contract:create-user"
+      ],
+      "sourceRefs": [
+        "src-route-users",
+        "src-service-user",
+        "test-user-contract"
+      ],
+      "coverageBoundary": "support and axis restriction are computed from observed ArchMap atoms only",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    },
+    {
+      "readingId": "atom-support-axis:molecule-user-request-responsibility",
+      "scopeRef": "molecule:user-request-responsibility",
+      "scopeKind": "molecule",
+      "supportSize": 4,
+      "subjectFamilySpread": [
+        {
+          "subjectRef": "contract.createsUser",
+          "atomCount": 1,
+          "atomFamilies": [
+            "contractSpecification"
+          ]
+        },
+        {
+          "subjectRef": "route.users",
+          "atomCount": 1,
+          "atomFamilies": [
+            "existence"
+          ]
+        },
+        {
+          "subjectRef": "semantic.route.users->service.user",
+          "atomCount": 1,
+          "atomFamilies": [
+            "relation"
+          ]
+        },
+        {
+          "subjectRef": "service.user",
+          "atomCount": 1,
+          "atomFamilies": [
+            "existence"
+          ]
+        }
+      ],
+      "axisRestrictionCounts": [
+        {
+          "axis": "contractSpecification",
+          "atomCount": 1,
+          "atomObservationRefs": [
+            "atom:contract:create-user"
+          ]
+        },
+        {
+          "axis": "existence",
+          "atomCount": 2,
+          "atomObservationRefs": [
+            "atom:component:route-users",
+            "atom:component:service-user"
+          ]
+        },
+        {
+          "axis": "relation",
+          "atomCount": 1,
+          "atomObservationRefs": [
+            "atom:relation:route-service"
+          ]
+        }
+      ],
+      "axisConcentration": "maxAxisShare=2/4",
+      "mixedAxisMoleculePressure": "mixedAxisPressurePresent",
+      "highSupportRefs": [
+        "atom:component:route-users",
+        "atom:component:service-user",
+        "atom:relation:route-service",
+        "atom:contract:create-user"
+      ],
+      "sourceRefs": [
+        "src-route-users",
+        "src-service-user",
+        "test-user-contract"
+      ],
+      "coverageBoundary": "support and axis restriction are computed from observed ArchMap atoms only",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    }
+  ],
+  "atomCompatibilityReadings": [
+    {
+      "readingId": "atom-compatibility:fixture-archmap-atom-observation",
+      "status": "compatibleWithinObservedSlots",
+      "sameSlotConflictCount": 0,
+      "conflicts": [],
+      "conflictingAtomObservationRefs": [],
+      "conflictingSemanticObservationRefs": [],
+      "payloadInconsistencyKinds": [
+        "familyDivergence",
+        "statusDivergence",
+        "semanticDivergence"
+      ],
+      "confidenceBoundary": "compatibility is checked over observed subject/predicate slots only",
+      "uncertainty": [
+        "gap-runtime-user-db-trace"
+      ],
+      "evidenceBoundary": "compatibility conflict is a review target, not proof of global semantic incorrectness",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    }
+  ],
+  "lawUniverseCoverageReadings": [
+    {
+      "readingId": "law-universe-coverage:layer-only-law-policy-fixture",
+      "lawUniverseRef": "layer-only-law-policy-fixture",
+      "requiredLawCoverage": [
+        {
+          "refId": "law:layer-respecting",
+          "status": "blockedByCoverageGap",
+          "evidenceRefs": [
+            "relation",
+            "boundaryAuthority"
+          ],
+          "blockerRefs": [
+            "boundaryAuthority",
+            "gap-runtime-user-db-trace"
+          ],
+          "reading": "coverage is selected-profile-relative and does not prove lawfulness"
+        }
+      ],
+      "optionalLawCoverage": [
+        {
+          "refId": "axis:observation-gap",
+          "status": "optionalAxis",
+          "evidenceRefs": [
+            "observation gap records"
+          ],
+          "blockerRefs": [],
+          "reading": "optional axis coverage is advisory"
+        }
+      ],
+      "witnessFamilyCoverage": [
+        {
+          "refId": "witness:layer-violation",
+          "status": "blockedByCoverageGap",
+          "evidenceRefs": [
+            "relation",
+            "boundaryAuthority"
+          ],
+          "blockerRefs": [
+            "boundaryAuthority",
+            "gap-runtime-user-db-trace"
+          ],
+          "reading": "coverage is selected-profile-relative and does not prove lawfulness"
+        }
+      ],
+      "signatureAxisCoverage": [
+        {
+          "refId": "sig-axis:layer-violation",
+          "status": "coverage-gap-preserved",
+          "evidenceRefs": [
+            "atom:relation:route-service"
+          ],
+          "blockerRefs": [
+            "coverage:layer-atoms: report observation gap and block signature-zero reflection",
+            "gap-runtime-user-db-trace: runtime trace was requested but not supplied"
+          ],
+          "reading": "0 obstruction circuit(s) contribute to sig-axis:layer-violation"
+        }
+      ],
+      "exactnessAssumptionStatus": [
+        {
+          "refId": "the selected witness rules cover only policy-declared laws",
+          "status": "blockedByCoverageGap",
+          "evidenceRefs": [],
+          "blockerRefs": [
+            "gap-runtime-user-db-trace"
+          ],
+          "reading": "exactness assumption is not theorem discharge"
+        },
+        {
+          "refId": "zero readings are exact only for observed atoms and declared coverage requirements",
+          "status": "blockedByCoverageGap",
+          "evidenceRefs": [],
+          "blockerRefs": [
+            "gap-runtime-user-db-trace"
+          ],
+          "reading": "exactness assumption is not theorem discharge"
+        }
+      ],
+      "unmeasuredRequiredLawCount": 1,
+      "blockedWitnessRefs": [
+        "witness:layer-violation"
+      ],
+      "lawWitnessAxisAlignment": "selected laws, witness rules, and signature axes are compared by refs only; alignment is profile-relative",
+      "coverageBoundary": "coverage measures selected profile visibility, not LawUniverse completeness",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    }
+  ],
+  "featureExtensionFormulaReadings": [
+    {
+      "readingId": "feature-extension-formula:fixture-archmap-atom-observation",
+      "scopeRef": "fixture-archmap-atom-observation",
+      "status": "measured",
+      "inheritedCoreObstructionRefs": [],
+      "featureLocalObstructionRefs": [],
+      "interactionObstructionRefs": [],
+      "liftingFailureRefs": [
+        "split-readiness:molecule-user-request-responsibility"
+      ],
+      "fillingFailureRefs": [],
+      "complexityTransferRefs": [],
+      "residualCoverageGapRefs": [
+        "gap-runtime-user-db-trace"
+      ],
+      "classificationSummary": [
+        {
+          "axis": "inheritedCoreObstruction",
+          "status": "unmeasuredOrAbsent",
+          "refs": [],
+          "reading": "inheritedCoreObstruction is classified as a current-state extension coordinate"
+        },
+        {
+          "axis": "featureLocalObstruction",
+          "status": "unmeasuredOrAbsent",
+          "refs": [],
+          "reading": "featureLocalObstruction is classified as a current-state extension coordinate"
+        },
+        {
+          "axis": "interactionObstruction",
+          "status": "unmeasuredOrAbsent",
+          "refs": [],
+          "reading": "interactionObstruction is classified as a current-state extension coordinate"
+        },
+        {
+          "axis": "liftingFailure",
+          "status": "observed",
+          "refs": [
+            "split-readiness:molecule-user-request-responsibility"
+          ],
+          "reading": "liftingFailure is classified as a current-state extension coordinate"
+        },
+        {
+          "axis": "fillingFailure",
+          "status": "unmeasuredOrAbsent",
+          "refs": [],
+          "reading": "fillingFailure is classified as a current-state extension coordinate"
+        },
+        {
+          "axis": "complexityTransfer",
+          "status": "unmeasuredOrAbsent",
+          "refs": [],
+          "reading": "complexityTransfer is classified as a current-state extension coordinate"
+        },
+        {
+          "axis": "residualCoverageGap",
+          "status": "observed",
+          "refs": [
+            "gap-runtime-user-db-trace"
+          ],
+          "reading": "residualCoverageGap is classified as a current-state extension coordinate"
+        }
+      ],
+      "evidenceBoundary": "extension formula is computed over current ArchMap state, not an actual PR diff",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    }
+  ],
+  "operationCalculusLawReadings": [
+    {
+      "readingId": "operation-calculus-law:none-observed",
+      "operationRef": "repair-operation:none-observed",
+      "operationKind": "noneObserved",
+      "compositionStatus": "unmeasured",
+      "associativityUnderObservationStatus": "unmeasured",
+      "refinementAbstractionCompatibility": "unmeasured",
+      "replacementEquivalence": "unmeasured",
+      "protectionIdempotence": "notApplicable",
+      "runtimeLocalization": "unmeasured",
+      "migrationCompatibility": "notApplicable",
+      "reverseInvolution": "unmeasured",
+      "repairMonotonicity": "unmeasured",
+      "synthesisNoSolutionBoundary": "notASynthesisCertificate",
+      "preconditionRefs": [],
+      "evidenceRefs": [],
+      "evidenceBoundary": "no repair candidate was constructed; operation laws are not discharged by absence",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    }
+  ],
+  "pathSignatureTrajectoryReadings": [
+    {
+      "readingId": "path-signature-trajectory:operation-delta-observe-before-repair",
+      "pathRef": "operation-delta:observe-before-repair",
+      "status": "candidateTrajectory",
+      "endpointSignatureDelta": [
+        "sig-axis:layer-violation remains 0"
+      ],
+      "maxAxisExcursion": [
+        {
+          "axisRef": "sig-axis:layer-violation",
+          "maxValue": 0,
+          "evidenceRefs": [
+            "atom:relation:route-service"
+          ],
+          "reading": "max excursion is a current-state proxy, not future trajectory proof"
+        }
+      ],
+      "nonMonotoneAxisRefs": [
+        "gap-runtime-user-db-trace"
+      ],
+      "pathCostProxy": "support=4 transferred=1",
+      "preservedInvariantTrajectory": [
+        "preserve all existing source-grounded atom observation refs"
+      ],
+      "introducedObstructionTrajectory": [
+        "gap-runtime-user-db-trace"
+      ],
+      "trajectoryCoverageBoundary": "trajectory is built from candidate operation deltas, not repository evolution",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    }
+  ],
+  "homotopyOrderSensitivityReadings": [
+    {
+      "readingId": "homotopy-order-sensitivity:selected-operations",
+      "status": "sensitive",
+      "independentSquareCandidateRefs": [
+        "molecule-reading:molecule-user-request-responsibility",
+        "molecule-reading:molecule-user-request-responsibility"
+      ],
+      "sameContractReplacementRefs": [],
+      "repairFillerRefs": [],
+      "operationOrderSensitivity": "blockedByTransferredObstructionOrMissingEvidence",
+      "homotopyBlockerRefs": [
+        "gap-runtime-user-db-trace"
+      ],
+      "selectedObservationPreservationStatus": "selected observation only; same endpoint does not imply same trajectory",
+      "evidenceBoundary": "homotopy reading is generator-relative and does not prove operation commutativity",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    }
+  ],
+  "diagramFillabilityReadings": [
+    {
+      "readingId": "diagram-fillability:local-curvature-fixture-archmap-atom-observation-non-conclusion",
+      "diagramRef": "local-curvature:fixture-archmap-atom-observation:non-conclusion",
+      "diagramFamily": "localCurvatureDiagram",
+      "status": "blocked",
+      "missingFillerKind": "noneObserved",
+      "fillerCandidateRefs": [],
+      "nonFillabilityWitnessRefs": [],
+      "fillingBlockerRefs": [
+        "absence of constructed curvature is not proof of global flatness"
+      ],
+      "obstructionRefs": [
+        "obstruction:none-observed"
+      ],
+      "featureExtensionRefs": [
+        "feature-extension-formula:fixture-archmap-atom-observation"
+      ],
+      "evidenceBoundary": "diagram fillability is selected-diagram-relative and not a theorem discharge",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    }
+  ],
   "representationStrengthReadings": [
     {
       "readingId": "representation-strength:analytic-weighted-adjacency",
@@ -1703,12 +2198,17 @@
       "zeroReflecting": "blockedByCoverageGap",
       "obstructionPreserving": "supported",
       "obstructionReflecting": "blockedByCoverageGap",
+      "aggregateZeroSafety": "notAggregate",
+      "cancellationRisk": "notApplicable",
       "requiredAssumptions": [
         "gap-runtime-user-db-trace",
         "witness completeness for selected LawPolicy",
         "signature axis exactness for selected readings"
       ],
       "blockedBy": [
+        "gap-runtime-user-db-trace"
+      ],
+      "blockedReflectionOrPreservationReasons": [
         "gap-runtime-user-db-trace"
       ],
       "reading": "weightedAdjacencyMatrix is a bounded analytic representation; use its zero/obstruction readings only with the recorded strength boundary",
@@ -1731,12 +2231,17 @@
       "zeroReflecting": "blockedByCoverageGap",
       "obstructionPreserving": "supported",
       "obstructionReflecting": "blockedByCoverageGap",
+      "aggregateZeroSafety": "notAggregate",
+      "cancellationRisk": "notApplicable",
       "requiredAssumptions": [
         "gap-runtime-user-db-trace",
         "witness completeness for selected LawPolicy",
         "signature axis exactness for selected readings"
       ],
       "blockedBy": [
+        "gap-runtime-user-db-trace"
+      ],
+      "blockedReflectionOrPreservationReasons": [
         "gap-runtime-user-db-trace"
       ],
       "reading": "reachableConeSize is a bounded analytic representation; use its zero/obstruction readings only with the recorded strength boundary",
@@ -1759,12 +2264,17 @@
       "zeroReflecting": "blockedByCoverageGap",
       "obstructionPreserving": "supported",
       "obstructionReflecting": "blockedByCoverageGap",
+      "aggregateZeroSafety": "notAggregate",
+      "cancellationRisk": "notApplicable",
       "requiredAssumptions": [
         "gap-runtime-user-db-trace",
         "witness completeness for selected LawPolicy",
         "signature axis exactness for selected readings"
       ],
       "blockedBy": [
+        "gap-runtime-user-db-trace"
+      ],
+      "blockedReflectionOrPreservationReasons": [
         "gap-runtime-user-db-trace"
       ],
       "reading": "walkCount is a bounded analytic representation; use its zero/obstruction readings only with the recorded strength boundary",
@@ -1787,12 +2297,17 @@
       "zeroReflecting": "blockedByCoverageGap",
       "obstructionPreserving": "supported",
       "obstructionReflecting": "blockedByCoverageGap",
+      "aggregateZeroSafety": "notAggregate",
+      "cancellationRisk": "notApplicable",
       "requiredAssumptions": [
         "gap-runtime-user-db-trace",
         "witness completeness for selected LawPolicy",
         "signature axis exactness for selected readings"
       ],
       "blockedBy": [
+        "gap-runtime-user-db-trace"
+      ],
+      "blockedReflectionOrPreservationReasons": [
         "gap-runtime-user-db-trace"
       ],
       "reading": "nilpotenceBoundary is a bounded analytic representation; use its zero/obstruction readings only with the recorded strength boundary",
@@ -1815,12 +2330,17 @@
       "zeroReflecting": "blockedByCoverageGap",
       "obstructionPreserving": "supported",
       "obstructionReflecting": "blockedByCoverageGap",
+      "aggregateZeroSafety": "notAggregate",
+      "cancellationRisk": "notApplicable",
       "requiredAssumptions": [
         "gap-runtime-user-db-trace",
         "witness completeness for selected LawPolicy",
         "signature axis exactness for selected readings"
       ],
       "blockedBy": [
+        "gap-runtime-user-db-trace"
+      ],
+      "blockedReflectionOrPreservationReasons": [
         "gap-runtime-user-db-trace"
       ],
       "reading": "selectedSubgraphSpectrum is a bounded analytic representation; use its zero/obstruction readings only with the recorded strength boundary",
@@ -1843,12 +2363,17 @@
       "zeroReflecting": "blockedByCoverageGap",
       "obstructionPreserving": "supported",
       "obstructionReflecting": "blockedByCoverageGap",
+      "aggregateZeroSafety": "notAggregate",
+      "cancellationRisk": "notApplicable",
       "requiredAssumptions": [
         "gap-runtime-user-db-trace",
         "witness completeness for selected LawPolicy",
         "signature axis exactness for selected readings"
       ],
       "blockedBy": [
+        "gap-runtime-user-db-trace"
+      ],
+      "blockedReflectionOrPreservationReasons": [
         "gap-runtime-user-db-trace"
       ],
       "reading": "propagationDepth is a bounded analytic representation; use its zero/obstruction readings only with the recorded strength boundary",
@@ -1871,12 +2396,17 @@
       "zeroReflecting": "blockedByCoverageGap",
       "obstructionPreserving": "supported",
       "obstructionReflecting": "blockedByCoverageGap",
+      "aggregateZeroSafety": "notAggregate",
+      "cancellationRisk": "notApplicable",
       "requiredAssumptions": [
         "gap-runtime-user-db-trace",
         "witness completeness for selected LawPolicy",
         "signature axis exactness for selected readings"
       ],
       "blockedBy": [
+        "gap-runtime-user-db-trace"
+      ],
+      "blockedReflectionOrPreservationReasons": [
         "gap-runtime-user-db-trace"
       ],
       "reading": "spectralRadius is a bounded analytic representation; use its zero/obstruction readings only with the recorded strength boundary",
@@ -1899,12 +2429,17 @@
       "zeroReflecting": "blockedByCoverageGap",
       "obstructionPreserving": "supported",
       "obstructionReflecting": "blockedByCoverageGap",
+      "aggregateZeroSafety": "notAggregate",
+      "cancellationRisk": "notApplicable",
       "requiredAssumptions": [
         "gap-runtime-user-db-trace",
         "witness completeness for selected LawPolicy",
         "signature axis exactness for selected readings"
       ],
       "blockedBy": [
+        "gap-runtime-user-db-trace"
+      ],
+      "blockedReflectionOrPreservationReasons": [
         "gap-runtime-user-db-trace"
       ],
       "reading": "curvatureValuation is a bounded analytic representation; use its zero/obstruction readings only with the recorded strength boundary",
@@ -1927,12 +2462,17 @@
       "zeroReflecting": "blockedByCoverageGap",
       "obstructionPreserving": "supported",
       "obstructionReflecting": "blockedByCoverageGap",
+      "aggregateZeroSafety": "notAggregate",
+      "cancellationRisk": "notApplicable",
       "requiredAssumptions": [
         "gap-runtime-user-db-trace",
         "witness completeness for selected LawPolicy",
         "signature axis exactness for selected readings"
       ],
       "blockedBy": [
+        "gap-runtime-user-db-trace"
+      ],
+      "blockedReflectionOrPreservationReasons": [
         "gap-runtime-user-db-trace"
       ],
       "reading": "stateAlgebra is a bounded analytic representation; use its zero/obstruction readings only with the recorded strength boundary",
@@ -1955,12 +2495,17 @@
       "zeroReflecting": "blockedByCoverageGap",
       "obstructionPreserving": "supported",
       "obstructionReflecting": "blockedByCoverageGap",
+      "aggregateZeroSafety": "notAggregate",
+      "cancellationRisk": "notApplicable",
       "requiredAssumptions": [
         "gap-runtime-user-db-trace",
         "witness completeness for selected LawPolicy",
         "signature axis exactness for selected readings"
       ],
       "blockedBy": [
+        "gap-runtime-user-db-trace"
+      ],
+      "blockedReflectionOrPreservationReasons": [
         "gap-runtime-user-db-trace"
       ],
       "reading": "zeroReflectingAggregateBoundary is a bounded analytic representation; use its zero/obstruction readings only with the recorded strength boundary",
@@ -1983,12 +2528,17 @@
       "zeroReflecting": "blockedByCoverageGap",
       "obstructionPreserving": "supported",
       "obstructionReflecting": "notAnEigenvalueTheorem",
+      "aggregateZeroSafety": "proxyOnly",
+      "cancellationRisk": "boundedProxyMayHideLocalComponents",
       "requiredAssumptions": [
         "gap-runtime-user-db-trace",
         "witness completeness for selected LawPolicy",
         "signature axis exactness for selected readings"
       ],
       "blockedBy": [
+        "gap-runtime-user-db-trace"
+      ],
+      "blockedReflectionOrPreservationReasons": [
         "gap-runtime-user-db-trace"
       ],
       "reading": "workflowRiskAxisPressureMatrix is a spectral proxy for review; it preserves selected pressure but does not reflect global architecture truth",
@@ -2011,12 +2561,17 @@
       "zeroReflecting": "blockedByCoverageGap",
       "obstructionPreserving": "supported",
       "obstructionReflecting": "notAnEigenvalueTheorem",
+      "aggregateZeroSafety": "proxyOnly",
+      "cancellationRisk": "boundedProxyMayHideLocalComponents",
       "requiredAssumptions": [
         "gap-runtime-user-db-trace",
         "witness completeness for selected LawPolicy",
         "signature axis exactness for selected readings"
       ],
       "blockedBy": [
+        "gap-runtime-user-db-trace"
+      ],
+      "blockedReflectionOrPreservationReasons": [
         "gap-runtime-user-db-trace"
       ],
       "reading": "moleculeAtomOverlapCouplingMatrix is a spectral proxy for review; it preserves selected pressure but does not reflect global architecture truth",
@@ -2039,12 +2594,17 @@
       "zeroReflecting": "blockedByCoverageGap",
       "obstructionPreserving": "weak",
       "obstructionReflecting": "notAnEigenvalueTheorem",
+      "aggregateZeroSafety": "proxyOnly",
+      "cancellationRisk": "boundedProxyMayHideLocalComponents",
       "requiredAssumptions": [
         "gap-runtime-user-db-trace",
         "witness completeness for selected LawPolicy",
         "signature axis exactness for selected readings"
       ],
       "blockedBy": [
+        "gap-runtime-user-db-trace"
+      ],
+      "blockedReflectionOrPreservationReasons": [
         "gap-runtime-user-db-trace"
       ],
       "reading": "obstructionAxisCurvatureMatrix is a spectral proxy for review; it preserves selected pressure but does not reflect global architecture truth",
@@ -2067,12 +2627,17 @@
       "zeroReflecting": "blockedByCoverageGap",
       "obstructionPreserving": "supported",
       "obstructionReflecting": "notAnEigenvalueTheorem",
+      "aggregateZeroSafety": "proxyOnly",
+      "cancellationRisk": "boundedProxyMayHideLocalComponents",
       "requiredAssumptions": [
         "gap-runtime-user-db-trace",
         "witness completeness for selected LawPolicy",
         "signature axis exactness for selected readings"
       ],
       "blockedBy": [
+        "gap-runtime-user-db-trace"
+      ],
+      "blockedReflectionOrPreservationReasons": [
         "gap-runtime-user-db-trace"
       ],
       "reading": "operationSignatureDeltaMatrix is a spectral proxy for review; it preserves selected pressure but does not reflect global architecture truth",
@@ -2166,6 +2731,12 @@
       "forgottenCoordinates": [
         "gap-runtime-user-db-trace"
       ],
+      "observationCollisionPairs": [],
+      "collapsedAtomFamilyCandidates": [],
+      "hiddenAtomFamilyHints": [
+        "gap-runtime-user-db-trace: runtime trace was requested but not supplied"
+      ],
+      "reconstructionRisk": "reconstructionLossPresent",
       "coarseProjectionRisks": [
         "coarse observation may merge distinct canonical atoms",
         "unobserved source coordinates must not be read as absent atoms",
@@ -2278,8 +2849,8 @@
   ],
   "structuralReadingReviewSurface": {
     "surfaceId": "aat-structural-reading-review-surface",
-    "status": "actionable",
-    "currentStateReading": "ArchSig reads current architecture state across representation strength, local curvature, three-layer flatness, observation projection, state transition algebra, operation-invariant constraints, and split readiness; blockedRepresentations=14, curvatures=0, blockedOperations=0, splitBlockers=0",
+    "status": "needsReview",
+    "currentStateReading": "ArchSig reads current architecture state across Atom support and compatibility, LawUniverse coverage, feature extension coordinates, operation calculus laws, path signature trajectory, homotopy order sensitivity, diagram fillability, representation strength, local curvature, three-layer flatness, observation projection, state transition algebra, operation-invariant constraints, and split readiness; blockedRepresentations=14, curvatures=0, blockedOperations=0, splitBlockers=0, atomConflicts=0, unmeasuredRequiredLaws=1, blockedDiagrams=1",
     "connectedReadingRefs": [
       "representationStrength:weightedAdjacencyMatrix",
       "representationStrength:reachableConeSize",
@@ -2292,9 +2863,21 @@
       "observation-projection:fixture-archmap-atom-observation",
       "state-transition-algebra:fixture-archmap-atom-observation",
       "operation-invariant-galois:selected-law-policy",
-      "split-readiness:molecule-user-request-responsibility"
+      "split-readiness:molecule-user-request-responsibility",
+      "atom-support-axis:fixture-archmap-atom-observation",
+      "atom-support-axis:molecule-user-request-responsibility",
+      "atom-compatibility:fixture-archmap-atom-observation",
+      "law-universe-coverage:layer-only-law-policy-fixture",
+      "feature-extension-formula:fixture-archmap-atom-observation",
+      "operation-calculus-law:none-observed",
+      "path-signature-trajectory:operation-delta-observe-before-repair",
+      "homotopy-order-sensitivity:selected-operations",
+      "diagram-fillability:local-curvature-fixture-archmap-atom-observation-non-conclusion"
     ],
     "reviewFocus": [
+      "read Atom support and compatibility before collapsing mixed state, effect, contract, authority, semantic, or runtime axes",
+      "read LawUniverse coverage and witness exactness before treating absence as measured zero",
+      "read feature extension, operation law, trajectory, homotopy, and diagram-fillability axes as current-state coordinates, not PR evolution claims",
       "read representation-strength blockers before treating zero or obstruction absence as exact",
       "read local-curvature diagrams as law-relative state pressure, not as generic lint failures",
       "compare static, runtime, and semantic flatness before relying on source layout",
@@ -3128,6 +3711,34 @@
       "transfer-bridge:fixture-archmap-atom-observation transfers=1 bridges=1 repairRanks=1 boundaryRanks=0 (needsReview)"
     ],
     "transferBridgeEdgeSummary": [],
+    "measurementExpansionSummary": [
+      "v0.3.0 measurement expansion reads 2 Atom support axes, 1 compatibility surfaces, 1 LawUniverse coverage surfaces, 1 feature-extension formulas, 1 operation-law surfaces, 1 path trajectories, 1 homotopy/order surfaces, and 1 diagram-fillability surfaces"
+    ],
+    "atomSupportAxisSummary": [
+      "fixture-archmap-atom-observation support=4 concentration=maxAxisShare=2/4 pressure=mixedAxisPressurePresent",
+      "molecule:user-request-responsibility support=4 concentration=maxAxisShare=2/4 pressure=mixedAxisPressurePresent"
+    ],
+    "atomCompatibilitySummary": [
+      "atom-compatibility:fixture-archmap-atom-observation status=compatibleWithinObservedSlots sameSlotConflicts=0 uncertainty=1"
+    ],
+    "lawUniverseCoverageSummary": [
+      "layer-only-law-policy-fixture required=1 unmeasured=1 blockedWitnesses=1"
+    ],
+    "featureExtensionFormulaSummary": [
+      "feature-extension-formula:fixture-archmap-atom-observation status=measured inherited=0 featureLocal=0 interaction=0 residualGaps=1"
+    ],
+    "operationCalculusLawSummary": [
+      "repair-operation:none-observed kind=noneObserved composition=unmeasured repairMonotonicity=unmeasured boundary=notASynthesisCertificate"
+    ],
+    "pathSignatureTrajectorySummary": [
+      "operation-delta:observe-before-repair status=candidateTrajectory endpointDeltas=1 nonMonotoneAxes=1 cost=support=4 transferred=1"
+    ],
+    "homotopyOrderSensitivitySummary": [
+      "homotopy-order-sensitivity:selected-operations status=sensitive orderSensitivity=blockedByTransferredObstructionOrMissingEvidence blockers=1"
+    ],
+    "diagramFillabilitySummary": [
+      "local-curvature:fixture-archmap-atom-observation:non-conclusion family=localCurvatureDiagram status=blocked missingFiller=noneObserved blockers=1"
+    ],
     "representationStrengthSummary": [
       "weightedAdjacencyMatrix zeroReflecting=blockedByCoverageGap obstructionReflecting=blockedByCoverageGap blockedBy=1",
       "reachableConeSize zeroReflecting=blockedByCoverageGap obstructionReflecting=blockedByCoverageGap blockedBy=1",
@@ -3163,8 +3774,8 @@
       "molecule:user-request-responsibility status=candidateSplitReady score=100 boundaryOp=interface"
     ],
     "structuralReadingReviewSummary": [
-      "aat-structural-reading-review-surface status=actionable refs=12 focus=6",
-      "ArchSig reads current architecture state across representation strength, local curvature, three-layer flatness, observation projection, state transition algebra, operation-invariant constraints, and split readiness; blockedRepresentations=14, curvatures=0, blockedOperations=0, splitBlockers=0"
+      "aat-structural-reading-review-surface status=needsReview refs=21 focus=9",
+      "ArchSig reads current architecture state across Atom support and compatibility, LawUniverse coverage, feature extension coordinates, operation calculus laws, path signature trajectory, homotopy order sensitivity, diagram fillability, representation strength, local curvature, three-layer flatness, observation projection, state transition algebra, operation-invariant constraints, and split readiness; blockedRepresentations=14, curvatures=0, blockedOperations=0, splitBlockers=0, atomConflicts=0, unmeasuredRequiredLaws=1, blockedDiagrams=1"
     ],
     "currentStateEvolutionBoundarySummary": [
       "ArchSig computes current AAT structural state from ArchMap fixture-archmap-atom-observation and LawPolicy layer-only-law-policy-fixture; it reads atoms, molecules, laws, obstructions, bridge pressure, structural readings, and bounded review focus",

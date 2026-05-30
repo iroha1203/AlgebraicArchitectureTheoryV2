@@ -1061,6 +1061,14 @@ fn assert_north_star_packet_surfaces(json: &Value) {
         "bridge edge breakdowns must carry molecule refs, source refs, review focus, dependency reading, and cut recommendation"
     );
     for surface in [
+        "atomSupportAxisReadings",
+        "atomCompatibilityReadings",
+        "lawUniverseCoverageReadings",
+        "featureExtensionFormulaReadings",
+        "operationCalculusLawReadings",
+        "pathSignatureTrajectoryReadings",
+        "homotopyOrderSensitivityReadings",
+        "diagramFillabilityReadings",
         "representationStrengthReadings",
         "localCurvatureDiagramReadings",
         "threeLayerFlatnessReadings",
@@ -1077,6 +1085,139 @@ fn assert_north_star_packet_surfaces(json: &Value) {
         );
     }
     assert!(
+        json["atomSupportAxisReadings"]
+            .as_array()
+            .expect("Atom support axis readings are array")
+            .iter()
+            .all(|reading| {
+                reading["supportSize"].as_u64().is_some()
+                    && reading["axisRestrictionCounts"]
+                        .as_array()
+                        .is_some_and(|items| !items.is_empty())
+                    && reading["axisConcentration"].as_str().is_some()
+                    && reading["mixedAxisMoleculePressure"].as_str().is_some()
+                    && reading["coverageBoundary"].as_str().is_some()
+            }),
+        "Atom support readings must carry support, axis restriction, concentration, and boundary"
+    );
+    assert!(
+        json["atomCompatibilityReadings"]
+            .as_array()
+            .expect("Atom compatibility readings are array")
+            .iter()
+            .all(|reading| {
+                reading["status"].as_str().is_some()
+                    && reading["sameSlotConflictCount"].as_u64().is_some()
+                    && reading["payloadInconsistencyKinds"]
+                        .as_array()
+                        .is_some_and(|items| !items.is_empty())
+                    && reading["confidenceBoundary"].as_str().is_some()
+                    && reading["evidenceBoundary"].as_str().is_some()
+            }),
+        "Atom compatibility readings must carry conflict counts, status, and boundaries"
+    );
+    assert!(
+        json["lawUniverseCoverageReadings"]
+            .as_array()
+            .expect("LawUniverse coverage readings are array")
+            .iter()
+            .all(|reading| {
+                reading["requiredLawCoverage"]
+                    .as_array()
+                    .is_some_and(|items| !items.is_empty())
+                    && reading["witnessFamilyCoverage"]
+                        .as_array()
+                        .is_some_and(|items| !items.is_empty())
+                    && reading["signatureAxisCoverage"]
+                        .as_array()
+                        .is_some_and(|items| !items.is_empty())
+                    && reading["exactnessAssumptionStatus"].as_array().is_some()
+                    && reading["coverageBoundary"].as_str().is_some()
+            }),
+        "LawUniverse coverage readings must carry law, witness, axis, exactness, and boundary data"
+    );
+    assert!(
+        json["featureExtensionFormulaReadings"]
+            .as_array()
+            .expect("feature extension readings are array")
+            .iter()
+            .all(|reading| {
+                reading["classificationSummary"]
+                    .as_array()
+                    .is_some_and(|items| items.len() >= 7)
+                    && reading["residualCoverageGapRefs"].as_array().is_some()
+                    && reading["evidenceBoundary"].as_str().is_some()
+            }),
+        "feature extension formula readings must carry required axes and boundary"
+    );
+    assert!(
+        json["operationCalculusLawReadings"]
+            .as_array()
+            .expect("operation calculus readings are array")
+            .iter()
+            .all(|reading| {
+                reading["operationRef"].as_str().is_some()
+                    && reading["compositionStatus"].as_str().is_some()
+                    && reading["associativityUnderObservationStatus"]
+                        .as_str()
+                        .is_some()
+                    && reading["refinementAbstractionCompatibility"]
+                        .as_str()
+                        .is_some()
+                    && reading["protectionIdempotence"].as_str().is_some()
+                    && reading["runtimeLocalization"].as_str().is_some()
+                    && reading["repairMonotonicity"].as_str().is_some()
+                    && reading["synthesisNoSolutionBoundary"].as_str().is_some()
+                    && reading["evidenceBoundary"].as_str().is_some()
+            }),
+        "operation calculus readings must carry operation law axes and boundary"
+    );
+    assert!(
+        json["pathSignatureTrajectoryReadings"]
+            .as_array()
+            .expect("path signature trajectory readings are array")
+            .iter()
+            .all(|reading| {
+                reading["endpointSignatureDelta"].as_array().is_some()
+                    && reading["maxAxisExcursion"].as_array().is_some()
+                    && reading["nonMonotoneAxisRefs"].as_array().is_some()
+                    && reading["pathCostProxy"].as_str().is_some()
+                    && reading["trajectoryCoverageBoundary"].as_str().is_some()
+            }),
+        "path signature trajectory readings must carry endpoint, excursion, non-monotone, cost, and boundary data"
+    );
+    assert!(
+        json["homotopyOrderSensitivityReadings"]
+            .as_array()
+            .expect("homotopy order sensitivity readings are array")
+            .iter()
+            .all(|reading| {
+                reading["operationOrderSensitivity"].as_str().is_some()
+                    && reading["homotopyBlockerRefs"].as_array().is_some()
+                    && reading["selectedObservationPreservationStatus"]
+                        .as_str()
+                        .is_some()
+                    && reading["evidenceBoundary"].as_str().is_some()
+            }),
+        "homotopy / operation-order readings must carry sensitivity, blockers, preservation status, and boundary"
+    );
+    assert!(
+        json["diagramFillabilityReadings"]
+            .as_array()
+            .expect("diagram fillability readings are array")
+            .iter()
+            .all(|reading| {
+                reading["diagramFamily"].as_str().is_some()
+                    && reading["missingFillerKind"].as_str().is_some()
+                    && reading["fillerCandidateRefs"].as_array().is_some()
+                    && reading["nonFillabilityWitnessRefs"].as_array().is_some()
+                    && reading["fillingBlockerRefs"].as_array().is_some()
+                    && reading["featureExtensionRefs"].as_array().is_some()
+                    && reading["evidenceBoundary"].as_str().is_some()
+            }),
+        "diagram fillability readings must carry filler, witness, blocker, feature-extension, and boundary data"
+    );
+    assert!(
         json["representationStrengthReadings"]
             .as_array()
             .expect("representation strength readings are array")
@@ -1084,8 +1225,13 @@ fn assert_north_star_packet_surfaces(json: &Value) {
             .all(|reading| {
                 reading["sourceReadingRef"].as_str().is_some()
                     && reading["representationFamily"].as_str().is_some()
+                    && reading["zeroPreserving"].as_str().is_some()
                     && reading["zeroReflecting"].as_str().is_some()
+                    && reading["obstructionPreserving"].as_str().is_some()
                     && reading["obstructionReflecting"].as_str().is_some()
+                    && reading["blockedReflectionOrPreservationReasons"]
+                        .as_array()
+                        .is_some_and(|items| !items.is_empty())
                     && reading["requiredAssumptions"]
                         .as_array()
                         .is_some_and(|items| !items.is_empty())
@@ -1119,6 +1265,7 @@ fn assert_north_star_packet_surfaces(json: &Value) {
                     && reading["coarseProjectionRisks"]
                         .as_array()
                         .is_some_and(|items| !items.is_empty())
+                    && reading["reconstructionRisk"].as_str().is_some()
                     && reading["evidenceBoundary"].as_str().is_some()
             }),
         "observation projection readings must carry observed families and projection risks"
@@ -1181,8 +1328,17 @@ fn assert_north_star_packet_surfaces(json: &Value) {
             .is_some_and(|items| !items.is_empty())
             && json["llmInterpretationPacket"]["currentStateEvolutionBoundarySummary"]
                 .as_array()
+                .is_some_and(|items| !items.is_empty())
+            && json["llmInterpretationPacket"]["measurementExpansionSummary"]
+                .as_array()
+                .is_some_and(|items| !items.is_empty())
+            && json["llmInterpretationPacket"]["atomSupportAxisSummary"]
+                .as_array()
+                .is_some_and(|items| !items.is_empty())
+            && json["llmInterpretationPacket"]["lawUniverseCoverageSummary"]
+                .as_array()
                 .is_some_and(|items| !items.is_empty()),
-        "LLM interpretation packet must summarize structural readings and current-state/evolution boundary"
+        "LLM interpretation packet must summarize structural readings, measurement expansion, and current-state/evolution boundary"
     );
     assert!(
         json["llmInterpretationPacket"]["recommendedHumanReviewFocus"]
