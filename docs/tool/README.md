@@ -44,5 +44,6 @@ Forward design PRDs:
 - [ArchSig Homotopy / Holonomy Stokes PRD](archsig_homotopy_holonomy_stokes_prd.md)
 - [ArchSig Monodromy / Boundary Holonomy Validation](archsig_monodromy_boundary_holonomy_validation.md)
 - [ArchSig Curvature / Transfer Spectrum Validation](archsig_curvature_transfer_spectrum_validation.md)
+- [ArchSig Homotopy / Holonomy Stokes Validation](archsig_homotopy_holonomy_stokes_validation.md)
 
 New implementation-facing specification documents should be added here only when they match the implementation and keep those boundaries explicit. Forward PRDs should keep future schema and migration work separate from the current source-of-truth boundaries above.
