@@ -41,7 +41,7 @@ jobs:
         run: cargo test --manifest-path tools/fieldsig/Cargo.toml
 
   llm-native-e2e:
-    name: llm-native ArchMap/ArchSig e2e
+    name: ArchSig/FieldSig handoff e2e
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
