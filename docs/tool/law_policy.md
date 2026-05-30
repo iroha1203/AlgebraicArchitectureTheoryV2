@@ -96,6 +96,10 @@ evolution readings separately from this profile.
 `spectrumMeasurementProfile` is an optional subobject inside `law-policy-v0`.
 It is used by the Curvature / Transfer Spectrum reading family. It does not
 select a different law universe and does not make ArchMap law-relative.
+The intended authoring surface is LLM-native: derive the profile from human
+intent, repository evidence, ArchMap evidence, unresolved questions, and
+non-conclusions, then validate it with ArchSig. Do not make humans hand-author a
+large profile without source evidence.
 
 The profile records the measurement recipe for ACTS-style readings:
 
@@ -128,6 +132,9 @@ Important boundaries:
 - unmeasured axes are not zero
 - spectrum zero requires coverage, exactness, and zero-reflection assumptions
 - spectrum readings are bounded ArchSig diagnostics, not Lean theorem discharge
+- ArchitectureSpectrumReport is not a single architecture quality score
+- recurrent obstruction support is not future incident prediction or repair
+  safety evidence
 
 Validation does not imply:
 
