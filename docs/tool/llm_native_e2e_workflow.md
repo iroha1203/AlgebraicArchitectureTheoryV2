@@ -19,6 +19,21 @@ The first three artifacts are ArchSig-owned. The final
 `operation-support-estimate-v0` is FieldSig-owned and reads the ArchSig
 analysis packet as bounded current AAT structural state.
 
+Future PR review and longitudinal workflows should insert ArchMapStore before
+ArchSig analysis:
+
+```text
+source artifacts or raw diff
+  -> language adapter / extractor / LLM reader / manual authoring
+  -> ArchMapDelta / ArchMapCommit
+  -> optional ArchMapSnapshot / ArchMapIndex
+  -> ArchSig lightweight structural diagnosis
+  -> FieldSig batch evolution monitoring
+```
+
+Raw diff is an optional scoping hint in this flow. The canonical semantic input
+is ArchMap-level evidence, not the raw diff itself.
+
 ## Command Transcript
 
 Run the ArchSig workflow:
@@ -83,6 +98,9 @@ The E2E flow must preserve these boundaries:
 - FieldSig accepts `archsig-analysis-packet-v0` as bounded current AAT
   structural state and rejects raw ArchMap JSON as the current handoff input.
   PR / diff / change-vector evolution remains FieldSig territory.
+- Future ArchSig PR review mode reads ArchMapStore deltas / commits as
+  change-local structural evidence for CI. FieldSig reads ArchMapStore and
+  ArchSig packet chains in batch for longitudinal evolution monitoring.
 - Coverage gaps are carried as unknown remainder; they are not rounded to
   absence, measured zero, or forecast truth.
 - ArchSig emits only the current ArchMap validation, profile validation,

@@ -168,6 +168,11 @@ The builder:
   transfer. These readings keep source refs, observation refs, coverage
   boundaries, evidence boundaries, and non-conclusions; they are not PR / diff
   evolution analysis.
+- ArchMapStore is the forward history boundary for PR and longitudinal
+  workflows. `ArchMapDelta` and `ArchMapCommit` carry ArchMap-level change
+  evidence; `ArchMapSnapshot` and `ArchMapIndex` support large-repository
+  current-state inspection. Raw source diffs may narrow source refs, but they
+  are not canonical semantic inputs to this packet.
 - axis-forgetting risk records when a coarse observation projection has
   forgotten selected axes or collapsed mixed-axis support. It blocks
   `ZeroReflecting` and `ObstructionReflecting` readings unless explicit axis
@@ -197,10 +202,12 @@ The builder:
   blockers, curvature, flatness, projection loss, state/effect algebra,
   operation/invariant constraints, and split readiness.
 - `currentStateEvolutionBoundary` records the product boundary: ArchSig computes
-  current AAT structural state from `ArchMap + LawPolicy`; FieldSig studies
-  PR / diff / change-vector evolution over the serialized
-  `archsig-analysis-packet-v0`. The packet must not be read as PR diff
-  analysis, forecast correctness, causal truth, or raw-ArchMap forecast truth.
+  current AAT structural state from `ArchMap + LawPolicy` and future
+  change-local structural cues from ArchMapStore deltas / commits. FieldSig
+  studies PR / diff / change-vector evolution over ArchMapStore and serialized
+  `archsig-analysis-packet-v0` chains. The packet must not be read as forecast
+  correctness, causal truth, raw-diff semantic truth, or raw-ArchMap forecast
+  truth.
 - analytic representations include weighted adjacency, walk count, reachable
   cone size, nilpotence boundary, selected subgraph spectrum, propagation depth,
   spectral radius, curvature valuation, state algebra boundary, and

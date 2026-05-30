@@ -17,6 +17,20 @@ ArchSig
   reads ArchMap + InterpretationProfile and computes the AAT analysis packet.
 ```
 
+Future ArchMapStore workflows keep the same separation:
+
+```text
+ArchMapDelta / ArchMapCommit / ArchMapSnapshot / ArchMapIndex
+  record observation history and lookup structure.
+
+InterpretationProfile
+  selects the laws, axes, coverage, and exactness assumptions used to read that
+  history.
+```
+
+Raw source diffs may help an adapter choose source refs, but they do not select
+LawPolicy and are not canonical semantic inputs to the interpretation profile.
+
 ## Responsibility
 
 The interpretation profile owns the selected analysis policy for a specific

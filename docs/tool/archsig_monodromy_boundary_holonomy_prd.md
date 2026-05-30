@@ -101,6 +101,12 @@ ArchSig は coverage status、exactness assumption status、non-conclusions を 
 この PRD では、FieldSig が担う本格的な PR / diff / change-vector evolution analysis とは別に、
 ArchSig 単体でも使える軽量な PR review mode を追加候補として定義する。
 
+`PR review mode` の canonical input は raw diff ではなく、ArchMapStore の
+`ArchMapDelta` / `ArchMapCommit` / `ArchMapSnapshot` / `ArchMapIndex` である。
+raw diff は changed source refs や touched file ranges を絞る optional scoping hint としてのみ
+扱う。semantic、state、effect、authority、runtime の reading は言語別 adapter、extractor、
+LLM reader、または manual authoring が供給した ArchMap-level evidence から読む。
+
 ```text
 PR review mode
   = change-local diagnosis
@@ -109,8 +115,8 @@ codebase inspection mode
   = current-state architectural diagnosis
 ```
 
-`PR review mode` では、PR / diff / supplied change set に含まれる operation pair、
-feature boundary、touched Atom support を優先して読む。
+`PR review mode` では、PR / supplied change set に対応する ArchMapDelta / ArchMapCommit に
+含まれる operation pair、feature boundary、touched Atom support を優先して読む。
 目的は、merge 前に operation-order sensitivity、boundary holonomy、missing filler /
 lifting evidence、coverage gap を reviewer に示すことである。
 この mode は merge safety を結論しないが、reviewer が確認すべき measured witness と
@@ -120,7 +126,8 @@ change-vector evolution を置き換えない。
 FieldSig ほど大きな evolution analysis が不要で、PR review のための bounded AAT diagnosis だけを
 欲しい利用者のための lightweight surface とする。
 
-`codebase inspection mode` では、現在の repository / ArchMap / analysis packet 全体から、
+`codebase inspection mode` では、現在の repository / ArchMap / analysis packet 全体を、
+latest ArchMapSnapshot、ArchMapIndex、必要なら recent delta window から読む。
 既存の subsystem boundary、feature-like cluster、operation-like relation、semantic / state /
 effect / authority interaction を scan する。
 目的は、どの boundary に measured residual obstruction が溜まっているか、どの subsystem pair や
@@ -383,6 +390,7 @@ boundary holonomy witness を report するものとして扱う。
 - ArchSig に path monodromy measurement を追加する要求。
 - ArchSig に boundary holonomy reading を追加する要求。
 - 現場エンジニアに提供する実用アウトカム。
+- ArchMapStore delta / commit / snapshot / index model を canonical change input として扱う要求。
 - PR review mode と codebase inspection mode の分離。
 - FieldSig の本格的な evolution analysis と ArchSig の lightweight PR review surface の責務分離。
 - ArchSig に lightweight PR review mode を追加する要求。
@@ -399,7 +407,9 @@ boundary holonomy witness を report するものとして扱う。
 実装設計で具体化するものは次である。
 
 - `archsig-analysis-packet-v0` へ追加する monodromy / boundary holonomy reading family。
-- PR / diff / supplied change set を入力として受ける lightweight PR review command または workflow。
+- ArchMapDelta / ArchMapCommit / supplied change set を入力として受ける lightweight PR review command または workflow。
+- raw diff を optional scoping hint として扱う input boundary。
+- codebase inspection mode で使う ArchMapSnapshot / ArchMapIndex boundary。
 - PR review mode 用の change-local report layout。
 - PR review mode で出力する measured witness、recommended review focus、coverage / exactness boundary。
 - schema field 名と validation rule。
@@ -427,6 +437,7 @@ boundary holonomy witness を report するものとして扱う。
 - FieldSig が担う本格的な PR / diff / change-vector evolution analysis を ArchSig の責務にする。
 - ArchSig の lightweight PR review mode から FieldSig の forecast / governance / calibration と同等の
   結論を出す。
+- raw diff を semantic / state / effect / authority / runtime reading の canonical input として扱う。
 - Lean で完全な monodromy / holonomy 理論を形式化する。
 - AAT 数学本文で boundary holonomy を証明済み theorem として扱う。
 - UI / report polish、large repository authoring ergonomics、release packaging を主目的にする。
@@ -439,13 +450,15 @@ boundary holonomy witness を report するものとして扱う。
   static graph では見えにくい semantic / runtime / state / effect の交換不能性検出、
   traceable review evidence、next action cue、coverage / exactness boundary として
   定義されている。
-- 利用形態が、PR / diff / supplied change set を読む `PR review mode` と、
-  repository / ArchMap / analysis packet 全体を読む `codebase inspection mode` に分離され、
-  それぞれ change-local diagnosis と current-state architectural diagnosis として定義されている。
+- 利用形態が、ArchMapDelta / ArchMapCommit / supplied change set を読む `PR review mode` と、
+  repository / ArchMap / analysis packet 全体を ArchMapSnapshot / ArchMapIndex から読む
+  `codebase inspection mode` に分離され、それぞれ change-local diagnosis と
+  current-state architectural diagnosis として定義されている。
+- raw diff は optional scoping hint であり、canonical semantic input ではないことが明記されている。
 - `PR review mode` は現行 ArchSig surface にはまだ存在しない追加要求であり、FieldSig の
   PR / diff / change-vector evolution analysis を置き換えない lightweight surface として
   定義されている。
-- ArchSig の lightweight PR review mode が、PR / diff / supplied change set を入力し、
+- ArchSig の lightweight PR review mode が、ArchMapDelta / ArchMapCommit / supplied change set を入力し、
   operation-order sensitivity、boundary holonomy、missing filler / lifting evidence、
   coverage gap、non-conclusions を change-local report として出す要求として定義されている。
 - operation square candidate が、shared Atom support、state、effect、contract、semantic、
