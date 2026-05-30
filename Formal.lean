@@ -30,6 +30,7 @@ import Formal.Arch.Patterns.ReplicatedLogDesignPattern
 import Formal.Arch.Patterns.ISPDesignPattern
 import Formal.Arch.Patterns.SRPDesignPattern
 import Formal.Arch.Signature.Curvature
+import Formal.Arch.Signature.CurvatureTransferSpectrum
 import Formal.Arch.Examples.SolidCounterexample
 import Formal.Arch.Patterns.LocalContractDesignPattern
 import Formal.Arch.Signature.Signature

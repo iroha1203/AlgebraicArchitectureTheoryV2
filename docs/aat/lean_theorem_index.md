@@ -3274,6 +3274,45 @@ extractor completeness、ArchSig measurement correctness in the wild、global sa
 主張しない。aggregate zero は positive-weight selected entries にだけ local zero を与え、
 zero-weight entry や unmeasured square の zero には読まない。
 
+## ACTS Minimal Theorem Guardrail
+
+File: `Formal/Arch/Signature/CurvatureTransferSpectrum.lean`
+
+この節は Architecture Curvature Transfer Spectrum (ACTS) を Lean 側で読むための
+minimal guardrail である。ArchSig implementation correctness ではなく、finite
+curvature-support family、positive weight、nonempty witness support、finite
+nonnegative transfer relation、positive closed transfer edge に相対化した bounded
+theorem package を置く。
+
+| Lean 名 | 種別 | 意味 | Status |
+| --- | --- | --- | --- |
+| `CurvatureTransferSpectrum.MeasuredCurvatureSupport` | `structure` | selected axis、witness support、nonempty support 証拠、curvature、weight を持つ finite support row。 | `defined only` |
+| `CurvatureTransferSpectrum.MeasuredCurvatureSupport.contribution` | `def` | `weight * curvature` としての nonnegative weighted contribution。 | `defined only` |
+| `CurvatureTransferSpectrum.FiniteCurvatureSupportFamily` | `abbrev` | measured curvature support row の finite list。 | `defined only` |
+| `CurvatureTransferSpectrum.weightedCurvatureSupportAggregate` | `def` | finite support family の weighted aggregate。 | `defined only` |
+| `CurvatureTransferSpectrum.SelectedMeasuredCurvatureZero` | `def` | supplied finite support family のすべての selected measured curvature が zero である predicate。 | `defined only` |
+| `CurvatureTransferSpectrum.localCurvature_zero_of_weightedCurvatureSupportAggregate_zero` | `theorem` | aggregate zero から positive-weight measured support row の local curvature zero を得る。 | `proved` |
+| `CurvatureTransferSpectrum.weightedCurvatureSupportAggregate_zero_of_selectedMeasuredCurvatureZero` | `theorem` | selected measured curvature all zero から aggregate zero を得る。 | `proved` |
+| `CurvatureTransferSpectrum.weightedCurvatureSupportAggregate_zero_iff_selectedMeasuredCurvatureZero` | `theorem` | all rows positive-weight の下で aggregate zero と selected measured curvature all zero が同値。 | `proved` |
+| `CurvatureTransferSpectrum.NonnegativeTransferEdge` | `structure` | finite transfer relation の source / target / nonnegative Nat weight edge。 | `defined only` |
+| `CurvatureTransferSpectrum.FiniteNonnegativeTransferRelation` | `abbrev` | nonnegative transfer edge の finite list。 | `defined only` |
+| `CurvatureTransferSpectrum.PositiveClosedTransferEdge` | `def` | source = target かつ positive weight の transfer edge。 | `defined only` |
+| `CurvatureTransferSpectrum.HasPositiveClosedTransferEdge` | `def` | finite relation が positive closed transfer edge を含む predicate。 | `defined only` |
+| `CurvatureTransferSpectrum.BoundedRecurrentObstructionReading` | `structure` | positive closed transfer edge を current-state recurrent obstruction support として包む bounded reading。 | `defined only` |
+| `CurvatureTransferSpectrum.hasPositiveClosedTransferEdge_of_recurrentReading` | `theorem` | recurrent reading から finite relation 内の positive closed edge 存在を得る。 | `proved` |
+| `CurvatureTransferSpectrum.recurrentReading_of_positiveClosedTransferEdge` | `def` | finite relation 内の positive closed edge を recurrent reading として包む constructor。 | `defined only` |
+| `CurvatureTransferSpectrum.ACTSNonConclusionClause` | `inductive` | ACTS theorem package の non-conclusion clause。 | `defined only` |
+| `CurvatureTransferSpectrum.requiredNonConclusions` | `def` | required non-conclusion clause の finite list。 | `defined only` |
+| `CurvatureTransferSpectrum.ACTSMinimalTheoremGuardrail` | `structure` | support family、transfer relation、non-conclusions を束ねる minimal theorem guardrail package。 | `defined only` |
+| `CurvatureTransferSpectrum.ACTSMinimalTheoremGuardrail.RecordsRequiredNonConclusions` | `def` | package が required non-conclusion clauses を保持する predicate。 | `defined only` |
+| `CurvatureTransferSpectrum.ACTSMinimalTheoremGuardrail.recordsRequiredNonConclusions_of_eq_required` | `theorem` | package の nonConclusions が required list と一致すれば boundary を保持する。 | `proved` |
+
+Non-conclusions: この theorem package は finite supplied support / transfer relation に
+相対化された guardrail であり、ArchSig implementation correctness、global semantic
+flatness、future safety、empirical incident/cost calibration、extractor completeness は
+主張しない。positive closed transfer edge は current-state recurrent obstruction
+support として読むだけで、future incident prediction や repair safety evidence ではない。
+
 ## Static / Semantic Counterexample
 
 File: `Formal/Arch/Examples/StaticSemanticCounterexample.lean`
