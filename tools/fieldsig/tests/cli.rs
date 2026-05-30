@@ -436,6 +436,28 @@ fn cli_projects_archsig_analysis_packet_to_sft_input_boundary() {
         "FieldSig must preserve ArchSig structural review and current-state/evolution boundary refs"
     );
     assert!(
+        descriptor_source_refs.iter().any(|source| {
+            source
+                .as_str()
+                .expect("source ref is string")
+                .starts_with("archsigMeasurementExpansion:")
+        }),
+        "FieldSig must preserve ArchSig v0.3.0 measurement expansion refs"
+    );
+    assert!(
+        estimate_json["evidenceBoundary"]["measurementBoundaryRefs"]
+            .as_array()
+            .expect("measurement boundary refs are array")
+            .iter()
+            .any(|source| {
+                source
+                    .as_str()
+                    .expect("measurement boundary ref is string")
+                    .starts_with("archsigLawUniverseCoverage:")
+            }),
+        "FieldSig handoff must carry v0.3.0 measurement expansion boundaries"
+    );
+    assert!(
         estimate_json["evidenceBoundary"]["assumptions"]
             .as_array()
             .expect("assumptions are array")

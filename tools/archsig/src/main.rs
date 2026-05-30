@@ -496,6 +496,7 @@ fn build_analysis_summary(
         "topWorkflowRisks": top_workflow_risks(packet, limit),
         "spectralAnalysis": spectral_summary(packet),
         "transferBridges": transfer_bridge_summary(packet),
+        "measurementExpansion": measurement_expansion_summary(packet, llm_packet, limit),
         "splitReadiness": split_readiness_summary(packet, limit),
         "llmReviewIndex": {
             "structuralReadingReviewSummary": array_field(llm_packet, "structuralReadingReviewSummary"),
@@ -504,6 +505,34 @@ fn build_analysis_summary(
             "transferBridgeEdgeSummary": array_field(llm_packet, "transferBridgeEdgeSummary")
         },
         "nonConclusions": array_field(packet, "nonConclusions")
+    })
+}
+
+fn measurement_expansion_summary(
+    packet: &serde_json::Value,
+    llm_packet: &serde_json::Value,
+    limit: usize,
+) -> serde_json::Value {
+    serde_json::json!({
+        "summary": array_field(llm_packet, "measurementExpansionSummary"),
+        "atomSupportAxis": limited_array_field(llm_packet, "atomSupportAxisSummary", limit),
+        "atomCompatibility": limited_array_field(llm_packet, "atomCompatibilitySummary", limit),
+        "lawUniverseCoverage": limited_array_field(llm_packet, "lawUniverseCoverageSummary", limit),
+        "featureExtensionFormula": limited_array_field(llm_packet, "featureExtensionFormulaSummary", limit),
+        "operationCalculusLaw": limited_array_field(llm_packet, "operationCalculusLawSummary", limit),
+        "pathSignatureTrajectory": limited_array_field(llm_packet, "pathSignatureTrajectorySummary", limit),
+        "homotopyOrderSensitivity": limited_array_field(llm_packet, "homotopyOrderSensitivitySummary", limit),
+        "diagramFillability": limited_array_field(llm_packet, "diagramFillabilitySummary", limit),
+        "counts": {
+            "atomSupportAxisReadings": array_len(packet, "atomSupportAxisReadings"),
+            "atomCompatibilityReadings": array_len(packet, "atomCompatibilityReadings"),
+            "lawUniverseCoverageReadings": array_len(packet, "lawUniverseCoverageReadings"),
+            "featureExtensionFormulaReadings": array_len(packet, "featureExtensionFormulaReadings"),
+            "operationCalculusLawReadings": array_len(packet, "operationCalculusLawReadings"),
+            "pathSignatureTrajectoryReadings": array_len(packet, "pathSignatureTrajectoryReadings"),
+            "homotopyOrderSensitivityReadings": array_len(packet, "homotopyOrderSensitivityReadings"),
+            "diagramFillabilityReadings": array_len(packet, "diagramFillabilityReadings")
+        }
     })
 }
 

@@ -574,6 +574,22 @@ fn archsig_packet_sft_source_refs(packet: &serde_json::Value, input_path: &str) 
             .filter_map(|axis| axis.get("signatureAxisId")?.as_str())
             .map(|id| format!("archsigSignatureAxis:{id}")),
     );
+    for (path, key) in [
+        ("atomSupportAxisReadings", "readingId"),
+        ("atomCompatibilityReadings", "readingId"),
+        ("lawUniverseCoverageReadings", "readingId"),
+        ("featureExtensionFormulaReadings", "readingId"),
+        ("operationCalculusLawReadings", "readingId"),
+        ("pathSignatureTrajectoryReadings", "readingId"),
+        ("homotopyOrderSensitivityReadings", "readingId"),
+        ("diagramFillabilityReadings", "readingId"),
+    ] {
+        refs.extend(
+            json_object_string_array(packet, &[path], key)
+                .into_iter()
+                .map(|id| format!("archsigMeasurementExpansion:{path}:{id}")),
+        );
+    }
     if let Some(surface_id) = packet
         .get("structuralReadingReviewSurface")
         .and_then(|surface| surface.get("surfaceId"))
@@ -762,6 +778,34 @@ fn archsig_packet_measurement_boundary_refs(packet: &serde_json::Value) -> Vec<S
             .into_iter()
             .map(|remainder| remainder.remainder_id),
     );
+    for (path, prefix) in [
+        ("atomSupportAxisReadings", "archsigAtomSupportAxis"),
+        ("atomCompatibilityReadings", "archsigAtomCompatibility"),
+        ("lawUniverseCoverageReadings", "archsigLawUniverseCoverage"),
+        (
+            "featureExtensionFormulaReadings",
+            "archsigFeatureExtensionFormula",
+        ),
+        (
+            "operationCalculusLawReadings",
+            "archsigOperationCalculusLaw",
+        ),
+        (
+            "pathSignatureTrajectoryReadings",
+            "archsigPathSignatureTrajectory",
+        ),
+        (
+            "homotopyOrderSensitivityReadings",
+            "archsigHomotopyOrderSensitivity",
+        ),
+        ("diagramFillabilityReadings", "archsigDiagramFillability"),
+    ] {
+        refs.extend(
+            json_object_string_array(packet, &[path], "readingId")
+                .into_iter()
+                .map(|id| format!("{prefix}:{id}")),
+        );
+    }
     unique_strings(refs)
 }
 

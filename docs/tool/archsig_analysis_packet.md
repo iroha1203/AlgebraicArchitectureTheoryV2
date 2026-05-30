@@ -17,7 +17,10 @@ ArchSig Analysis Packet
   impact, molecule readings, obstruction circuits, signature axes, analytic
   representations, workflow risk readings, spectral analysis readings, design
   principle readings, spectral mode readings, spectral drilldown readings,
-  transfer bridge readings, bounded judgements, repair operation candidates,
+  transfer bridge readings, Atom support / compatibility readings,
+  LawUniverse coverage, feature extension formula axes, operation calculus law
+  axes, path signature trajectories, homotopy / operation-order sensitivity,
+  diagram fillability, bounded judgements, repair operation candidates,
   operation deltas, path / homotopy / diagram readings, child-level evidence
   boundaries, and an LLM interpretation packet.
 ```
@@ -50,6 +53,14 @@ The implemented schema records:
 - `spectralModeReadings`
 - `spectralDrilldownReadings`
 - `transferBridgeReadings`
+- `atomSupportAxisReadings`
+- `atomCompatibilityReadings`
+- `lawUniverseCoverageReadings`
+- `featureExtensionFormulaReadings`
+- `operationCalculusLawReadings`
+- `pathSignatureTrajectoryReadings`
+- `homotopyOrderSensitivityReadings`
+- `diagramFillabilityReadings`
 - `representationStrengthReadings`
 - `localCurvatureDiagramReadings`
 - `threeLayerFlatnessReadings`
@@ -76,9 +87,10 @@ Packet validation checks identity, ArchMap / interpretation profile references,
 AAT concept coverage, bounded judgement statuses, analytic axes, workflow risk
 readings, spectral analysis readings, spectral mode readings, design principle
 readings, spectral drilldown readings, transfer bridge readings and bridge-edge
-source refs, AAT structural state readings, law-relative obstruction links,
-signature / flatness references, repair candidate guardrails, LLM interpretation
-notes, evidence boundary, and required non-conclusions.
+source refs, v0.3.0 measurement expansion readings, AAT structural state
+readings, law-relative obstruction links, signature / flatness references,
+repair candidate guardrails, LLM interpretation notes, evidence boundary, and
+required non-conclusions.
 Each obstruction circuit, signature axis reading, and repair operation candidate
 must carry its own `missingEvidence` and `excludedReadings`. Packet-level
 `excludedReadings` does not stand in for child-record evidence boundaries.
@@ -144,11 +156,23 @@ The builder:
   focus, explicit-contract / implicit-dependency reading, LLM review summary,
   and a recommended cut kind: interface, policy, transaction boundary, or
   anti-corruption layer.
+- v0.3.0 measurement expansion readings add current-state coordinates for
+  Atom support / axis restriction, Atom compatibility / conflict, LawUniverse
+  coverage / witness exactness, feature extension formula axes, operation
+  calculus law axes, path signature trajectory, homotopy / operation-order
+  sensitivity, and diagram fillability. These readings keep source refs,
+  observation refs, coverage boundaries, evidence boundaries, and
+  non-conclusions; they are not PR / diff evolution analysis.
 - AAT structural state readings expose representation strength, local curvature
   diagrams, three-layer flatness, observation projection loss, state transition
   algebra, operation / invariant Galois-style correspondence, and split
   readiness. These readings describe the current architecture state; PR / diff
   projection remains a FieldSig responsibility.
+- representation strength records `ZeroPreserving`, `ZeroReflecting`,
+  `ObstructionPreserving`, and `ObstructionReflecting` status for analytic,
+  spectral, matrix, curvature, and aggregate readings. Aggregate zero safety is
+  represented as a strength boundary: zero aggregates only reflect local zero
+  under the recorded assumptions and cancellation constraints.
 - `structuralReadingReviewSurface` connects the AAT structural reading families
   into one review guide. It states that ArchSig reads current architecture
   state, not just violations, and lists the review focus for representation

@@ -17,8 +17,9 @@ cargo run --manifest-path tools/fieldsig/Cargo.toml -- fieldsig-run-manifest --f
 
 `archsig-analysis-sft-input` is the current ArchSig handoff. It rejects raw
 ArchMap JSON when supplied as the analysis packet and preserves obstruction
-circuits, signature axes, repair candidates, structural review boundaries, and
-coverage gaps as bounded SFT input refs / unknown remainder. It does not treat
+circuits, signature axes, repair candidates, v0.3.0 measurement expansion
+readings, structural review boundaries, and coverage gaps as bounded SFT input
+refs / unknown remainder. It does not treat
 ArchSig current-state telemetry as forecast correctness or causal truth.
 
 ## Migrated surface
