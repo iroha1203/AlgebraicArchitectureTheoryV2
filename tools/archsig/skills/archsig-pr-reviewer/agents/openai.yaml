@@ -1,0 +1,4 @@
+interface:
+  display_name: "ArchSig PR Reviewer"
+  short_description: "Run PR-local ArchSig review"
+  default_prompt: "Use $archsig-pr-reviewer to derive a PR-local ArchMap delta, run ArchSig pr-review, read the changed code, and explain the review focus in human code-review language."
