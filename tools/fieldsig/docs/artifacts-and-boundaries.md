@@ -11,7 +11,7 @@ non-conclusions を落とさない。
 
 | Surface | Artifact families | Boundary |
 | --- | --- | --- |
-| ArchSig handoff | `archsig-analysis-packet-v0` から生成する `operation-support-estimate-v0`。 | ArchSig analysis state を局所 AAT algebra state として読む。raw ArchMap observation、forecast truth、causal proof ではない。 |
+| ArchSig handoff | `archsig-analysis-packet-v0` から生成する `operation-support-estimate-v0`。 | ArchSig analysis state を current AAT structural state として読む。raw ArchMap observation、PR diff analysis、forecast truth、causal proof ではない。 |
 | Adapter / review refs | Sig0、validation report、snapshot、signature diff、AIR、Feature Extension Report、AAT Observable Bundle。 | historical / bounded review refs として読めるが、FieldSig の現行 handoff source of truth ではない。 |
 | FieldSig SFT | ArtifactDescriptor、OperationSupportEstimate、ForecastConeSkeleton、ConsequenceEnvelope、ForecastCalibrationHook と validation report。 | bounded forecast report projection であり、point prediction、causal proof、forecast correctness ではない。 |
 | FieldSig Operational | PR history dataset、feature extension dataset、outcome linkage、daily ledger、calibration、threshold、ownership、repair adoption、incident correlation、hypothesis refresh。 | empirical / operational feedback であり、correlation を causal theorem にしない。 |
@@ -27,7 +27,7 @@ non-conclusions を落とさない。
 | AIR | `aat-air-v0` | Signature artifact layer を claim / evidence / coverage / extension boundary へ正規化した中間表現。 |
 | ArchMap observation map | `archmap-observation-map-v0` | ArchSig 入力の source-grounded Atom observation map。FieldSig はこれを現行 handoff として直接読まない。 |
 | LawPolicy | `law-policy-v0` | ArchSig analysis 用 selected law / witness / signature-axis policy artifact。AAT theory そのものではない。 |
-| ArchSig analysis packet | `archsig-analysis-packet-v0` | FieldSig の現行 ArchSig handoff。obstruction circuits、signature axes、repair candidates、coverage gaps、non-conclusions を bounded SFT input として読む。 |
+| ArchSig analysis packet | `archsig-analysis-packet-v0` | FieldSig の現行 ArchSig handoff。obstruction circuits、signature axes、repair candidates、structural review boundary、current-state/evolution boundary、coverage gaps、non-conclusions を bounded SFT input として読む。 |
 | ArchMap validation report | `archmap-validation-report-v0` | ArchMap の source refs、claim boundary、semantic coverage、conflict、formal promotion guardrail、atomic observation checks / summary の検査結果。 |
 | AIR validation report | `aat-air-validation-report-v0` | AIR の dangling refs、claim boundary、measured evidence traceability の検査結果。 |
 | Theorem precondition check report | `theorem-precondition-check-report-v0` | AIR claim が `FORMAL_PROVED` へ昇格できるかの検査結果。 |
@@ -103,10 +103,11 @@ non-conclusions を落とさない。
 
 `archsig-analysis-sft-input` は `archsig-analysis-packet-v0` を
 `operation-support-estimate-v0` へ射影する現行 handoff command である。obstruction circuits、
-signature axes、repair candidates、coverage gaps は bounded refs / unknown remainder として残る。
-これは certified universal atoms、zero curvature proof、forecast correctness、future outcome
-probability ではない。`archmap-sft-input` は legacy bounded projection であり、raw ArchMap
-observation を forecast truth へ昇格してはならない。
+signature axes、repair candidates、structural review boundary、current-state/evolution boundary、
+coverage gaps は bounded refs / unknown remainder として残る。これは certified universal atoms、
+zero curvature proof、PR diff analysis、forecast correctness、future outcome probability ではない。
+`archmap-sft-input` は legacy bounded projection であり、raw ArchMap observation を forecast truth へ
+昇格してはならない。
 
 `artifact-descriptor-v0` は B12 SFT forecasting MVP の最初の入力正規化 artifact である。
 後段では `operation-support-estimate-v0`、`forecast-cone-skeleton-v0`、

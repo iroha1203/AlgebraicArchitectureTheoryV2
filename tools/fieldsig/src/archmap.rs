@@ -208,9 +208,9 @@ pub fn build_operation_support_estimate_from_archsig_analysis_packet(
             constraint_kind: "claim-boundary".to_string(),
             applies_to_family_ids: family_ids.clone(),
             source_ref_ids: source_ref_ids.clone(),
-            rule: "ArchSig analysis packet is local AAT algebra state for SFT input, not forecast truth".to_string(),
+            rule: "ArchSig analysis packet is current AAT structural state for SFT evolution input, not forecast truth".to_string(),
             safety_claim_boundary:
-                "SFT consumes selected obstruction, axis, repair, and gap refs as bounded coordinates only"
+                "SFT consumes selected obstruction, axis, repair, structural review, current-state/evolution boundary, and gap refs as bounded coordinates only"
                     .to_string(),
             policy_refs: vec!["policy:archsig-analysis-sft-boundary".to_string()],
             support_disposition: "conditionallyAllowed".to_string(),
@@ -225,7 +225,7 @@ pub fn build_operation_support_estimate_from_archsig_analysis_packet(
                 "constraint:archsig-analysis:no-forecast-truth-promotion".to_string(),
             ],
             reason: "raw ArchMap observations and ArchSig analysis packets do not assert SFT forecast correctness".to_string(),
-            boundary: "FieldSig must keep ArchSig packet refs as bounded local AAT state, not ground truth".to_string(),
+            boundary: "FieldSig must keep ArchSig packet refs as bounded current AAT structural state, not ground truth or diff analysis".to_string(),
             non_conclusions: non_conclusions.clone(),
         }],
         unknown_remainder: archsig_packet_unknown_remainders(packet, &family_ids, &source_ref_ids),
@@ -243,7 +243,8 @@ pub fn build_operation_support_estimate_from_archsig_analysis_packet(
             ],
             unsupported_constructs: json_string_array(packet, &["excludedReadings"]),
             assumptions: vec![
-                "FieldSig reads ArchSig analysis packet refs as local AAT algebra state".to_string(),
+                "FieldSig reads ArchSig analysis packet refs as current AAT structural state".to_string(),
+                "PR, diff, change-vector, forecast, governance, and operational evolution remain FieldSig readings".to_string(),
                 "obstruction circuits are law-policy-relative coordinates, not causal proof".to_string(),
                 "observation gaps remain unknown remainder, not measured zero".to_string(),
             ],
@@ -573,6 +574,24 @@ fn archsig_packet_sft_source_refs(packet: &serde_json::Value, input_path: &str) 
             .filter_map(|axis| axis.get("signatureAxisId")?.as_str())
             .map(|id| format!("archsigSignatureAxis:{id}")),
     );
+    if let Some(surface_id) = packet
+        .get("structuralReadingReviewSurface")
+        .and_then(|surface| surface.get("surfaceId"))
+        .and_then(|value| value.as_str())
+    {
+        refs.push(format!(
+            "archsigStructuralReadingReviewSurface:{surface_id}"
+        ));
+    }
+    if let Some(boundary_id) = packet
+        .get("currentStateEvolutionBoundary")
+        .and_then(|boundary| boundary.get("boundaryId"))
+        .and_then(|value| value.as_str())
+    {
+        refs.push(format!(
+            "archsigCurrentStateEvolutionBoundary:{boundary_id}"
+        ));
+    }
     unique_strings(refs)
 }
 

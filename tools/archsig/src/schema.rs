@@ -627,6 +627,8 @@ pub struct ArchSigAnalysisPacketV0 {
     pub state_transition_algebra_readings: Vec<ArchSigStateTransitionAlgebraReadingV0>,
     pub operation_invariant_galois_readings: Vec<ArchSigOperationInvariantGaloisReadingV0>,
     pub split_readiness_readings: Vec<ArchSigSplitReadinessReadingV0>,
+    pub structural_reading_review_surface: ArchSigStructuralReadingReviewSurfaceV0,
+    pub current_state_evolution_boundary: ArchSigCurrentStateEvolutionBoundaryV0,
     pub design_principle_readings: Vec<ArchSigDesignPrincipleReadingV0>,
     pub flatness_reading: ArchSigFlatnessReadingV0,
     pub static_runtime_semantic_layer_split: ArchSigLayerSplitV0,
@@ -1083,10 +1085,14 @@ pub struct ArchSigBridgeEdgeBreakdownV0 {
     pub shared_atom_refs: Vec<String>,
     pub family_supporting_atom_refs: Vec<String>,
     pub source_refs: Vec<String>,
+    pub source_ref_rationale: String,
     pub dependency_kind: String,
     pub dependency_reading: String,
+    pub review_focus: Vec<String>,
     pub recommended_cut_kind: String,
     pub cut_rationale: String,
+    #[serde(rename = "llmReviewSummary")]
+    pub llm_review_summary: String,
     pub evidence_boundary: String,
     pub non_conclusions: Vec<String>,
 }
@@ -1243,6 +1249,30 @@ pub struct ArchSigSplitReadinessReadingV0 {
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+pub struct ArchSigStructuralReadingReviewSurfaceV0 {
+    pub surface_id: String,
+    pub status: String,
+    pub current_state_reading: String,
+    pub connected_reading_refs: Vec<String>,
+    pub review_focus: Vec<String>,
+    pub evidence_boundary: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigCurrentStateEvolutionBoundaryV0 {
+    pub boundary_id: String,
+    pub archsig_current_state_scope: String,
+    pub fieldsig_evolution_scope: String,
+    pub handoff_artifact_ref: String,
+    pub forbidden_readings: Vec<String>,
+    pub evidence_boundary: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct ArchSigDesignPrincipleReadingV0 {
     pub principle_id: String,
     pub principle: String,
@@ -1374,6 +1404,8 @@ pub struct ArchSigLlmInterpretationPacketV0 {
     pub state_transition_algebra_summary: Vec<String>,
     pub operation_invariant_galois_summary: Vec<String>,
     pub split_readiness_summary: Vec<String>,
+    pub structural_reading_review_summary: Vec<String>,
+    pub current_state_evolution_boundary_summary: Vec<String>,
     pub repair_operation_summary: Vec<String>,
     pub complexity_transfer_notes: Vec<String>,
     pub coverage_gaps_and_exactness_blockers: Vec<String>,

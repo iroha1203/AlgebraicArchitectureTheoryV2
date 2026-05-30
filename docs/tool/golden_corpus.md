@@ -59,5 +59,6 @@ archsig-analysis-packet-v0 -> operation-support-estimate-v0
 ```
 
 The projection keeps obstruction circuits, signature axes, repair candidates,
-and coverage gaps as bounded local AAT state. It does not promote raw ArchMap
+structural review boundaries, current-state / evolution boundary, and coverage
+gaps as bounded current AAT structural state. It does not promote raw ArchMap
 observations to forecast truth.

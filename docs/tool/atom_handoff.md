@@ -34,8 +34,9 @@ source artifacts -> ArchMap Atom observations -> LawPolicy -> ArchSig analysis p
 - `AtomTraceForecastBoundary` attaches `AtomTrace` and law-relative `CircuitTrace` to selected `ForecastCone` membership.
 - FieldSig consumes `archsig-analysis-packet-v0` as the current tooling
   handoff state, not raw ArchMap observations. Obstruction circuits, signature
-  axes, repair candidates, and coverage gaps remain bounded local AAT state or
-  unknown remainder when projected to `operation-support-estimate-v0`.
+  axes, repair candidates, structural review boundaries, current-state /
+  evolution boundary, and coverage gaps remain bounded current AAT structural
+  state or unknown remainder when projected to `operation-support-estimate-v0`.
 - FieldSig validation does not prove forecast correctness, probability, calibration, global future safety, or Lean theorem discharge.
 
 ## Current Fixture Check
