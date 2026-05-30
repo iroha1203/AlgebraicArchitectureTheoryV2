@@ -45,6 +45,20 @@ The command emits only:
 reading. It is not a natural-language judgement, Lean proof, architecture
 lawfulness certificate, or automatic repair instruction.
 
+To emit a compact review summary from an existing packet, run:
+
+```bash
+cargo run --manifest-path tools/archsig/Cargo.toml -- analysis-summary \
+  --packet .archsig/llm-native/archsig-analysis-packet.json \
+  --archmap-validation .archsig/llm-native/archmap-validation.json \
+  --law-policy-validation .archsig/llm-native/law-policy-validation.json \
+  --analysis-validation .archsig/llm-native/archsig-analysis-validation.json \
+  --out .archsig/llm-native/archsig-analysis-summary.json
+```
+
+`summary` is a visible alias. The summary is a reading aid for human / LLM
+review. It does not replace the full packet or validation reports.
+
 ## Sharded ArchMap Authoring
 
 Large ArchMaps may be drafted in a sharded authoring layout documented in
@@ -95,6 +109,10 @@ cargo run --manifest-path tools/archsig/Cargo.toml -- aat-analysis \
   --out .archsig/llm-native/archsig-analysis-packet.json \
   --validation-out .archsig/llm-native/archsig-analysis-validation.json \
   --llm-interpretation-out .archsig/llm-native/llm-interpretation-packet.json
+
+cargo run --manifest-path tools/archsig/Cargo.toml -- analysis-summary \
+  --packet .archsig/llm-native/archsig-analysis-packet.json \
+  --out .archsig/llm-native/archsig-analysis-summary.json
 ```
 
 `law-policy` / `interpretation-profile` validate the selected analysis profile.

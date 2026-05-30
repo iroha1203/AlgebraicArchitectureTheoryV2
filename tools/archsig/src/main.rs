@@ -5,10 +5,11 @@ use std::path::{Path, PathBuf};
 use std::process::ExitCode;
 
 use archsig::{
-    ArchMapDocumentV0, ArchMapSourceInventoryInput, ArchMapSourceInventoryV0,
-    ArchMapValidationReportV0, LawPolicyDocumentV0, SchemaVersionCatalogV0,
-    build_archsig_analysis_packet, static_law_policy, static_schema_version_catalog,
-    validate_archmap_report, validate_archsig_analysis_packet_report, validate_law_policy_report,
+    ARCHSIG_ANALYSIS_PACKET_SCHEMA_VERSION, ArchMapDocumentV0, ArchMapSourceInventoryInput,
+    ArchMapSourceInventoryV0, ArchMapValidationReportV0, LawPolicyDocumentV0,
+    SchemaVersionCatalogV0, build_archsig_analysis_packet, static_law_policy,
+    static_schema_version_catalog, validate_archmap_report,
+    validate_archsig_analysis_packet_report, validate_law_policy_report,
 };
 use clap::{Parser, Subcommand};
 
@@ -73,6 +74,34 @@ enum Command {
         /// Optional LLM interpretation packet output path. This writes the same structured packet for LLM reading.
         #[arg(long = "llm-interpretation-out")]
         llm_interpretation_out: Option<PathBuf>,
+    },
+
+    /// Summarize an archsig-analysis-packet-v0 for human and LLM review.
+    #[command(visible_alias = "summary")]
+    AnalysisSummary {
+        /// Input archsig-analysis-packet-v0 JSON path.
+        #[arg(long)]
+        packet: PathBuf,
+
+        /// Optional ArchMap validation report path.
+        #[arg(long = "archmap-validation")]
+        archmap_validation: Option<PathBuf>,
+
+        /// Optional LawPolicy validation report path.
+        #[arg(long = "law-policy-validation")]
+        law_policy_validation: Option<PathBuf>,
+
+        /// Optional ArchSig analysis validation report path.
+        #[arg(long = "analysis-validation")]
+        analysis_validation: Option<PathBuf>,
+
+        /// Maximum number of ranked readings to include.
+        #[arg(long, default_value_t = 6)]
+        limit: usize,
+
+        /// Output summary JSON path. If omitted, JSON is written to stdout.
+        #[arg(long)]
+        out: Option<PathBuf>,
     },
 
     /// Emit a bounded external-agent protocol for generating ArchMap JSON.
@@ -237,6 +266,39 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                 ExitCode::SUCCESS
             })
         }
+        Some(Command::AnalysisSummary {
+            packet,
+            archmap_validation,
+            law_policy_validation,
+            analysis_validation,
+            limit,
+            out,
+        }) => {
+            let packet_document: serde_json::Value = read_json(&packet)?;
+            if !packet_document.is_object() {
+                return Err("--packet must be a JSON object".into());
+            }
+            if packet_document.get("schemaVersion").and_then(|value| value.as_str())
+                != Some(ARCHSIG_ANALYSIS_PACKET_SCHEMA_VERSION)
+            {
+                return Err(format!(
+                    "--packet must have schemaVersion {ARCHSIG_ANALYSIS_PACKET_SCHEMA_VERSION}"
+                )
+                .into());
+            }
+            let archmap_validation = read_optional_json(archmap_validation.as_ref())?;
+            let law_policy_validation = read_optional_json(law_policy_validation.as_ref())?;
+            let analysis_validation = read_optional_json(analysis_validation.as_ref())?;
+            let summary = build_analysis_summary(
+                &packet_document,
+                archmap_validation.as_ref(),
+                law_policy_validation.as_ref(),
+                analysis_validation.as_ref(),
+                limit,
+            );
+            write_json(out, &summary)?;
+            Ok(ExitCode::SUCCESS)
+        }
         Some(Command::ArchmapGenerate {
             source_inventory,
             prompt_pack,
@@ -391,6 +453,252 @@ fn write_json<T: serde::Serialize>(out: Option<PathBuf>, value: &T) -> Result<()
 
 fn read_json<T: serde::de::DeserializeOwned>(path: &PathBuf) -> Result<T, Box<dyn Error>> {
     Ok(serde_json::from_reader(File::open(path)?)?)
+}
+
+fn read_optional_json(path: Option<&PathBuf>) -> Result<Option<serde_json::Value>, Box<dyn Error>> {
+    path.map(read_json).transpose()
+}
+
+fn build_analysis_summary(
+    packet: &serde_json::Value,
+    archmap_validation: Option<&serde_json::Value>,
+    law_policy_validation: Option<&serde_json::Value>,
+    analysis_validation: Option<&serde_json::Value>,
+    limit: usize,
+) -> serde_json::Value {
+    let flatness = packet
+        .get("flatnessReading")
+        .unwrap_or(&serde_json::Value::Null);
+    let llm_packet = packet
+        .get("llmInterpretationPacket")
+        .unwrap_or(&serde_json::Value::Null);
+
+    serde_json::json!({
+        "packet": {
+            "schemaVersion": json_field(packet, "schemaVersion"),
+            "analysisId": json_field(packet, "analysisId"),
+            "archMapRef": json_field(packet, "archMapRef"),
+            "selectedLawPolicyRef": json_field(packet, "selectedLawPolicyRef"),
+            "generatedAt": json_field(packet, "generatedAt")
+        },
+        "validation": {
+            "archmap": validation_summary(archmap_validation),
+            "lawPolicy": validation_summary(law_policy_validation),
+            "analysis": validation_summary(analysis_validation)
+        },
+        "flatness": {
+            "status": json_field(flatness, "status"),
+            "zeroSignatureAxisRefs": array_field(flatness, "zeroSignatureAxisRefs"),
+            "nonzeroSignatureAxisRefs": array_field(flatness, "nonzeroSignatureAxisRefs"),
+            "blockedByCoverageGaps": array_field(flatness, "blockedByCoverageGaps")
+        },
+        "signatureAxes": signature_axis_summary(packet),
+        "topWorkflowRisks": top_workflow_risks(packet, limit),
+        "spectralAnalysis": spectral_summary(packet),
+        "transferBridges": transfer_bridge_summary(packet),
+        "splitReadiness": split_readiness_summary(packet, limit),
+        "llmReviewIndex": {
+            "structuralReadingReviewSummary": array_field(llm_packet, "structuralReadingReviewSummary"),
+            "currentStateEvolutionBoundarySummary": array_field(llm_packet, "currentStateEvolutionBoundarySummary"),
+            "recommendedHumanReviewFocus": limited_array_field(llm_packet, "recommendedHumanReviewFocus", limit),
+            "transferBridgeEdgeSummary": array_field(llm_packet, "transferBridgeEdgeSummary")
+        },
+        "nonConclusions": array_field(packet, "nonConclusions")
+    })
+}
+
+fn validation_summary(report: Option<&serde_json::Value>) -> serde_json::Value {
+    let Some(report) = report else {
+        return serde_json::Value::Null;
+    };
+    if let Some(summary) = report.get("summary") {
+        return summary.clone();
+    }
+    serde_json::json!({
+        "result": json_field(report, "status"),
+        "failedCheckCount": json_field(report, "failedChecks"),
+        "warningCheckCount": json_field(report, "warningChecks"),
+        "passedCheckCount": json_field(report, "passedChecks")
+    })
+}
+
+fn top_workflow_risks(packet: &serde_json::Value, limit: usize) -> serde_json::Value {
+    let mut readings = array_items(packet, "workflowRiskReadings");
+    readings.sort_by_key(|reading| std::cmp::Reverse(i64_field(reading, "riskScore", 0)));
+    serde_json::Value::Array(
+        readings
+            .into_iter()
+            .take(limit)
+            .map(|reading| {
+                serde_json::json!({
+                    "molecule": json_field(reading, "moleculeObservationRef"),
+                    "roleName": json_field(reading, "roleName"),
+                    "status": json_field(reading, "status"),
+                    "riskScore": json_field(reading, "riskScore"),
+                    "riskTier": json_field(reading, "riskTier"),
+                    "topAxes": top_axis_summary(reading),
+                    "reviewFocus": array_field(reading, "reviewFocus")
+                })
+            })
+            .collect(),
+    )
+}
+
+fn top_axis_summary(reading: &serde_json::Value) -> serde_json::Value {
+    serde_json::Value::Array(
+        array_items(reading, "topAxes")
+            .into_iter()
+            .take(3)
+            .map(|axis| {
+                serde_json::json!({
+                    "axis": json_field(axis, "axis"),
+                    "score": json_field(axis, "score"),
+                    "status": json_field(axis, "status"),
+                    "coverageGapRefs": array_field(axis, "coverageGapRefs")
+                })
+            })
+            .collect(),
+    )
+}
+
+fn spectral_summary(packet: &serde_json::Value) -> serde_json::Value {
+    serde_json::Value::Array(
+        array_items(packet, "spectralAnalysisReadings")
+            .into_iter()
+            .map(|reading| {
+                serde_json::json!({
+                    "id": json_field(reading, "spectralReadingId"),
+                    "family": json_field(reading, "representationFamily"),
+                    "status": json_field(reading, "status"),
+                    "shape": json_field(reading, "matrixShape"),
+                    "values": array_field(reading, "values"),
+                    "dominantComponents": array_field(reading, "dominantComponents"),
+                    "recommendedNextAction": json_field(reading, "recommendedNextAction")
+                })
+            })
+            .collect(),
+    )
+}
+
+fn transfer_bridge_summary(packet: &serde_json::Value) -> serde_json::Value {
+    let mut bridges = Vec::new();
+    for reading in array_items(packet, "transferBridgeReadings") {
+        for bridge in array_items(reading, "bridgeAtomFamilies") {
+            let edges = serde_json::Value::Array(
+                array_items(bridge, "edgeBreakdowns")
+                    .into_iter()
+                    .map(|edge| {
+                        serde_json::json!({
+                            "edgeId": json_field(edge, "edgeId"),
+                            "source": json_field(edge, "sourceMoleculeRef"),
+                            "target": json_field(edge, "targetMoleculeRef"),
+                            "overlapScore": json_field(edge, "overlapScore"),
+                            "sharedAtomFamilies": array_field(edge, "sharedAtomFamilies"),
+                            "dependencyKind": json_field(edge, "dependencyKind"),
+                            "recommendedCutKind": json_field(edge, "recommendedCutKind"),
+                            "sourceRefCount": array_len(edge, "sourceRefs"),
+                            "reviewFocus": array_field(edge, "reviewFocus")
+                        })
+                    })
+                    .collect(),
+            );
+            bridges.push(serde_json::json!({
+                "transferBridgeId": json_field(reading, "transferBridgeId"),
+                "status": json_field(reading, "status"),
+                "bridgeId": json_field(bridge, "bridgeId"),
+                "sourceHub": json_field(bridge, "sourceHubMoleculeRef"),
+                "targetHub": json_field(bridge, "targetHubMoleculeRef"),
+                "intermediateMoleculeRefs": array_field(bridge, "intermediateMoleculeRefs"),
+                "bridgeScore": json_field(bridge, "bridgeScore"),
+                "reviewRisk": json_field(bridge, "reviewRisk"),
+                "sharedAxisRefs": array_field(bridge, "sharedAxisRefs"),
+                "pathPairRefs": array_field(bridge, "pathPairRefs"),
+                "edges": edges
+            }));
+        }
+    }
+    serde_json::Value::Array(bridges)
+}
+
+fn split_readiness_summary(packet: &serde_json::Value, limit: usize) -> serde_json::Value {
+    let mut readings = array_items(packet, "splitReadinessReadings");
+    readings.sort_by_key(|reading| i64_field(reading, "readinessScore", i64::MAX));
+    serde_json::Value::Array(
+        readings
+            .into_iter()
+            .take(limit)
+            .map(|reading| {
+                serde_json::json!({
+                    "molecule": json_field(reading, "moleculeRef"),
+                    "status": json_field(reading, "status"),
+                    "readinessScore": json_field(reading, "readinessScore"),
+                    "liftingEvidenceStatus": json_field(reading, "liftingEvidenceStatus"),
+                    "recommendedBoundaryOperation": json_field(reading, "recommendedBoundaryOperation"),
+                    "bridgeEdgeRefs": array_field(reading, "bridgeEdgeRefs"),
+                    "interactionObstructionRefs": array_field(reading, "interactionObstructionRefs")
+                })
+            })
+            .collect(),
+    )
+}
+
+fn signature_axis_summary(packet: &serde_json::Value) -> serde_json::Value {
+    serde_json::Value::Array(
+        array_items(packet, "signatureAxes")
+            .into_iter()
+            .map(|axis| {
+                serde_json::json!({
+                    "axis": json_field(axis, "signatureAxisId"),
+                    "lawRef": json_field(axis, "lawRef"),
+                    "value": json_field(axis, "value"),
+                    "coverageStatus": json_field(axis, "coverageStatus"),
+                    "missingEvidenceCount": array_len(axis, "missingEvidence"),
+                    "sourceRefCount": array_len(axis, "sourceRefs")
+                })
+            })
+            .collect(),
+    )
+}
+
+fn json_field(value: &serde_json::Value, key: &str) -> serde_json::Value {
+    value.get(key).cloned().unwrap_or(serde_json::Value::Null)
+}
+
+fn array_field(value: &serde_json::Value, key: &str) -> serde_json::Value {
+    serde_json::Value::Array(array_items(value, key).into_iter().cloned().collect())
+}
+
+fn limited_array_field(value: &serde_json::Value, key: &str, limit: usize) -> serde_json::Value {
+    serde_json::Value::Array(
+        array_items(value, key)
+            .into_iter()
+            .take(limit)
+            .cloned()
+            .collect(),
+    )
+}
+
+fn array_items<'a>(value: &'a serde_json::Value, key: &str) -> Vec<&'a serde_json::Value> {
+    value
+        .get(key)
+        .and_then(serde_json::Value::as_array)
+        .map(|items| items.iter().collect())
+        .unwrap_or_default()
+}
+
+fn array_len(value: &serde_json::Value, key: &str) -> usize {
+    value
+        .get(key)
+        .and_then(serde_json::Value::as_array)
+        .map(Vec::len)
+        .unwrap_or_default()
+}
+
+fn i64_field(value: &serde_json::Value, key: &str, default: i64) -> i64 {
+    value
+        .get(key)
+        .and_then(serde_json::Value::as_i64)
+        .unwrap_or(default)
 }
 
 fn resolve_archmap_sidecar_path(archmap_path: &Path, sidecar_path: &str) -> Option<PathBuf> {
