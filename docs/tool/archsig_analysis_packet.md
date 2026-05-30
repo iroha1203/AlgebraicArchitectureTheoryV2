@@ -68,6 +68,8 @@ The implemented schema records:
 - `bridgeSplitObstructionTransferReadings`
 - `operationSquareCandidates`
 - `pathContinuationTraces`
+- `axisWiseMonodromyDefects`
+- `amiAggregateReadings`
 - `monodromyReadingFamily`
 - `boundaryHolonomyReadingFamily`
 - `representationStrengthReadings`
@@ -200,6 +202,16 @@ The builder:
   candidate path and axis family: static, contract, semantic, state, effect,
   authority, runtime, and projection. Unmeasured axes are retained as
   `missingRefs` and must not be read as zero defect.
+- `axisWiseMonodromyDefects` records `mu_x(sigma)` for each selected operation
+  square and axis. Each defect carries distance kind, measured support,
+  witness refs, source / observation / missing refs, coverage boundary,
+  exactness assumption status, zero-reflection assumptions, and cancellation
+  boundary.
+- `amiAggregateReadings` records `AMI_X(A)` as a bounded weighted aggregate for
+  review prioritization. It reports selected square family, selected axis
+  family, weight policy, top contributors, zero-reflection assumptions, and the
+  aggregate-to-local reading boundary. It is not a single architecture quality
+  score, merge gate, or global path-flatness theorem.
 - axis-forgetting risk records when a coarse observation projection has
   forgotten selected axes or collapsed mixed-axis support. It blocks
   `ZeroReflecting` and `ObstructionReflecting` readings unless explicit axis

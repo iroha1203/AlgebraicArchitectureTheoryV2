@@ -2705,6 +2705,557 @@
       ]
     }
   ],
+  "axisWiseMonodromyDefects": [
+    {
+      "defectId": "mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair:authority",
+      "candidateRef": "operation-square:operation-delta-observe-before-repair:operation-delta-observe-before-repair",
+      "axisFamily": "authority",
+      "axisRef": "authority / trust boundary axis",
+      "distanceKind": "weighted-axis-l1",
+      "measurementStatus": "unmeasured",
+      "distanceValue": null,
+      "measuredSupportRefs": [],
+      "witnessRefs": [
+        "missing-evidence:missing authority observation for operation-square:operation-delta-observe-before-repair:operation-delta-observe-before-repair"
+      ],
+      "sourceRefs": [
+        ".lake/runtime-trace.json",
+        "doc-architecture",
+        "src-route-users",
+        "src-service-user",
+        "test-user-contract"
+      ],
+      "observationRefs": [],
+      "missingRefs": [
+        "missing authority observation for operation-square:operation-delta-observe-before-repair:operation-delta-observe-before-repair"
+      ],
+      "coverageBoundary": "coverage gap preserved; unmeasured axis is not zero defect",
+      "exactnessAssumptionStatus": [
+        "selected LawPolicy exactness assumptions",
+        "ArchMapStore compaction boundary"
+      ],
+      "zeroReflectionAssumptions": [
+        "selected LawPolicy exactness assumptions",
+        "ArchMapStore compaction boundary",
+        "all selected operation square candidates and axis traces are measured",
+        "weighted aggregate has no cancellation of local defects",
+        "zero aggregate is not global path flatness"
+      ],
+      "cancellationBoundary": "axis-wise defect avoids aggregate cancellation; AMI zero can reflect local zero only under recorded zero-reflection assumptions",
+      "evidenceBoundary": "mu_x(sigma) is a bounded distance between selected continuation traces, not a theorem about path equality",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    },
+    {
+      "defectId": "mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair:contract",
+      "candidateRef": "operation-square:operation-delta-observe-before-repair:operation-delta-observe-before-repair",
+      "axisFamily": "contract",
+      "axisRef": "contract axis",
+      "distanceKind": "weighted-axis-l1",
+      "measurementStatus": "measured",
+      "distanceValue": 0,
+      "measuredSupportRefs": [
+        "atom:contract:create-user"
+      ],
+      "witnessRefs": [
+        "atom:contract:create-user"
+      ],
+      "sourceRefs": [
+        ".lake/runtime-trace.json",
+        "doc-architecture",
+        "src-route-users",
+        "src-service-user",
+        "test-user-contract"
+      ],
+      "observationRefs": [
+        "atom:contract:create-user"
+      ],
+      "missingRefs": [],
+      "coverageBoundary": "covered for selected trace refs; not complete execution semantics",
+      "exactnessAssumptionStatus": [
+        "selected LawPolicy exactness assumptions",
+        "ArchMapStore compaction boundary"
+      ],
+      "zeroReflectionAssumptions": [
+        "selected LawPolicy exactness assumptions",
+        "ArchMapStore compaction boundary",
+        "all selected operation square candidates and axis traces are measured",
+        "weighted aggregate has no cancellation of local defects",
+        "zero aggregate is not global path flatness"
+      ],
+      "cancellationBoundary": "axis-wise defect avoids aggregate cancellation; AMI zero can reflect local zero only under recorded zero-reflection assumptions",
+      "evidenceBoundary": "mu_x(sigma) is a bounded distance between selected continuation traces, not a theorem about path equality",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    },
+    {
+      "defectId": "mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair:effect",
+      "candidateRef": "operation-square:operation-delta-observe-before-repair:operation-delta-observe-before-repair",
+      "axisFamily": "effect",
+      "axisRef": "effect ordering / replay / compensation axis",
+      "distanceKind": "weighted-axis-l1",
+      "measurementStatus": "measured",
+      "distanceValue": 0,
+      "measuredSupportRefs": [
+        "add or refine ArchMap atom observations before claiming repair",
+        "no constructed obstruction is transported because no repair candidate exists"
+      ],
+      "witnessRefs": [
+        "add or refine ArchMap atom observations before claiming repair",
+        "no constructed obstruction is transported because no repair candidate exists"
+      ],
+      "sourceRefs": [
+        ".lake/runtime-trace.json",
+        "doc-architecture",
+        "src-route-users",
+        "src-service-user",
+        "test-user-contract"
+      ],
+      "observationRefs": [
+        "add or refine ArchMap atom observations before claiming repair",
+        "no constructed obstruction is transported because no repair candidate exists"
+      ],
+      "missingRefs": [],
+      "coverageBoundary": "covered for selected trace refs; not complete execution semantics",
+      "exactnessAssumptionStatus": [
+        "selected LawPolicy exactness assumptions",
+        "ArchMapStore compaction boundary"
+      ],
+      "zeroReflectionAssumptions": [
+        "selected LawPolicy exactness assumptions",
+        "ArchMapStore compaction boundary",
+        "all selected operation square candidates and axis traces are measured",
+        "weighted aggregate has no cancellation of local defects",
+        "zero aggregate is not global path flatness"
+      ],
+      "cancellationBoundary": "axis-wise defect avoids aggregate cancellation; AMI zero can reflect local zero only under recorded zero-reflection assumptions",
+      "evidenceBoundary": "mu_x(sigma) is a bounded distance between selected continuation traces, not a theorem about path equality",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    },
+    {
+      "defectId": "mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair:projection",
+      "candidateRef": "operation-square:operation-delta-observe-before-repair:operation-delta-observe-before-repair",
+      "axisFamily": "projection",
+      "axisRef": "projection / representation axis",
+      "distanceKind": "weighted-axis-l1",
+      "measurementStatus": "measured",
+      "distanceValue": 0,
+      "measuredSupportRefs": [
+        "projection:aat:route-service",
+        "projection:aat:route-users",
+        "projection:sft:create-user"
+      ],
+      "witnessRefs": [
+        "projection:aat:route-service",
+        "projection:aat:route-users",
+        "projection:sft:create-user"
+      ],
+      "sourceRefs": [
+        ".lake/runtime-trace.json",
+        "doc-architecture",
+        "src-route-users",
+        "src-service-user",
+        "test-user-contract"
+      ],
+      "observationRefs": [
+        "projection:aat:route-service",
+        "projection:aat:route-users",
+        "projection:sft:create-user"
+      ],
+      "missingRefs": [],
+      "coverageBoundary": "covered for selected trace refs; not complete execution semantics",
+      "exactnessAssumptionStatus": [
+        "selected LawPolicy exactness assumptions",
+        "ArchMapStore compaction boundary"
+      ],
+      "zeroReflectionAssumptions": [
+        "selected LawPolicy exactness assumptions",
+        "ArchMapStore compaction boundary",
+        "all selected operation square candidates and axis traces are measured",
+        "weighted aggregate has no cancellation of local defects",
+        "zero aggregate is not global path flatness"
+      ],
+      "cancellationBoundary": "axis-wise defect avoids aggregate cancellation; AMI zero can reflect local zero only under recorded zero-reflection assumptions",
+      "evidenceBoundary": "mu_x(sigma) is a bounded distance between selected continuation traces, not a theorem about path equality",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    },
+    {
+      "defectId": "mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair:runtime",
+      "candidateRef": "operation-square:operation-delta-observe-before-repair:operation-delta-observe-before-repair",
+      "axisFamily": "runtime",
+      "axisRef": "runtime interaction axis",
+      "distanceKind": "weighted-axis-l1",
+      "measurementStatus": "measured",
+      "distanceValue": 0,
+      "measuredSupportRefs": [
+        "gap-runtime-user-db-trace"
+      ],
+      "witnessRefs": [
+        "gap-runtime-user-db-trace"
+      ],
+      "sourceRefs": [
+        ".lake/runtime-trace.json",
+        "doc-architecture",
+        "src-route-users",
+        "src-service-user",
+        "test-user-contract"
+      ],
+      "observationRefs": [
+        "gap-runtime-user-db-trace"
+      ],
+      "missingRefs": [],
+      "coverageBoundary": "covered for selected trace refs; not complete execution semantics",
+      "exactnessAssumptionStatus": [
+        "selected LawPolicy exactness assumptions",
+        "ArchMapStore compaction boundary"
+      ],
+      "zeroReflectionAssumptions": [
+        "selected LawPolicy exactness assumptions",
+        "ArchMapStore compaction boundary",
+        "all selected operation square candidates and axis traces are measured",
+        "weighted aggregate has no cancellation of local defects",
+        "zero aggregate is not global path flatness"
+      ],
+      "cancellationBoundary": "axis-wise defect avoids aggregate cancellation; AMI zero can reflect local zero only under recorded zero-reflection assumptions",
+      "evidenceBoundary": "mu_x(sigma) is a bounded distance between selected continuation traces, not a theorem about path equality",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    },
+    {
+      "defectId": "mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair:semantic",
+      "candidateRef": "operation-square:operation-delta-observe-before-repair:operation-delta-observe-before-repair",
+      "axisFamily": "semantic",
+      "axisRef": "semantic axis",
+      "distanceKind": "weighted-axis-l1",
+      "measurementStatus": "measured",
+      "distanceValue": 0,
+      "measuredSupportRefs": [
+        "semantic:create-user-flow"
+      ],
+      "witnessRefs": [
+        "semantic:create-user-flow"
+      ],
+      "sourceRefs": [
+        ".lake/runtime-trace.json",
+        "doc-architecture",
+        "src-route-users",
+        "src-service-user",
+        "test-user-contract"
+      ],
+      "observationRefs": [
+        "semantic:create-user-flow"
+      ],
+      "missingRefs": [],
+      "coverageBoundary": "covered for selected trace refs; not complete execution semantics",
+      "exactnessAssumptionStatus": [
+        "selected LawPolicy exactness assumptions",
+        "ArchMapStore compaction boundary"
+      ],
+      "zeroReflectionAssumptions": [
+        "selected LawPolicy exactness assumptions",
+        "ArchMapStore compaction boundary",
+        "all selected operation square candidates and axis traces are measured",
+        "weighted aggregate has no cancellation of local defects",
+        "zero aggregate is not global path flatness"
+      ],
+      "cancellationBoundary": "axis-wise defect avoids aggregate cancellation; AMI zero can reflect local zero only under recorded zero-reflection assumptions",
+      "evidenceBoundary": "mu_x(sigma) is a bounded distance between selected continuation traces, not a theorem about path equality",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    },
+    {
+      "defectId": "mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair:state",
+      "candidateRef": "operation-square:operation-delta-observe-before-repair:operation-delta-observe-before-repair",
+      "axisFamily": "state",
+      "axisRef": "state transition axis",
+      "distanceKind": "weighted-axis-l1",
+      "measurementStatus": "unmeasured",
+      "distanceValue": null,
+      "measuredSupportRefs": [],
+      "witnessRefs": [
+        "missing-evidence:missing state observation for operation-square:operation-delta-observe-before-repair:operation-delta-observe-before-repair"
+      ],
+      "sourceRefs": [
+        ".lake/runtime-trace.json",
+        "doc-architecture",
+        "src-route-users",
+        "src-service-user",
+        "test-user-contract"
+      ],
+      "observationRefs": [],
+      "missingRefs": [
+        "missing state observation for operation-square:operation-delta-observe-before-repair:operation-delta-observe-before-repair"
+      ],
+      "coverageBoundary": "coverage gap preserved; unmeasured axis is not zero defect",
+      "exactnessAssumptionStatus": [
+        "selected LawPolicy exactness assumptions",
+        "ArchMapStore compaction boundary"
+      ],
+      "zeroReflectionAssumptions": [
+        "selected LawPolicy exactness assumptions",
+        "ArchMapStore compaction boundary",
+        "all selected operation square candidates and axis traces are measured",
+        "weighted aggregate has no cancellation of local defects",
+        "zero aggregate is not global path flatness"
+      ],
+      "cancellationBoundary": "axis-wise defect avoids aggregate cancellation; AMI zero can reflect local zero only under recorded zero-reflection assumptions",
+      "evidenceBoundary": "mu_x(sigma) is a bounded distance between selected continuation traces, not a theorem about path equality",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    },
+    {
+      "defectId": "mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair:static",
+      "candidateRef": "operation-square:operation-delta-observe-before-repair:operation-delta-observe-before-repair",
+      "axisFamily": "static",
+      "axisRef": "static dependency / support axis",
+      "distanceKind": "weighted-axis-l1",
+      "measurementStatus": "measured",
+      "distanceValue": 0,
+      "measuredSupportRefs": [
+        "atom:component:route-users",
+        "atom:component:service-user",
+        "atom:relation:route-service"
+      ],
+      "witnessRefs": [
+        "atom:component:route-users",
+        "atom:component:service-user",
+        "atom:relation:route-service"
+      ],
+      "sourceRefs": [
+        ".lake/runtime-trace.json",
+        "doc-architecture",
+        "src-route-users",
+        "src-service-user",
+        "test-user-contract"
+      ],
+      "observationRefs": [
+        "atom:component:route-users",
+        "atom:component:service-user",
+        "atom:relation:route-service"
+      ],
+      "missingRefs": [],
+      "coverageBoundary": "covered for selected trace refs; not complete execution semantics",
+      "exactnessAssumptionStatus": [
+        "selected LawPolicy exactness assumptions",
+        "ArchMapStore compaction boundary"
+      ],
+      "zeroReflectionAssumptions": [
+        "selected LawPolicy exactness assumptions",
+        "ArchMapStore compaction boundary",
+        "all selected operation square candidates and axis traces are measured",
+        "weighted aggregate has no cancellation of local defects",
+        "zero aggregate is not global path flatness"
+      ],
+      "cancellationBoundary": "axis-wise defect avoids aggregate cancellation; AMI zero can reflect local zero only under recorded zero-reflection assumptions",
+      "evidenceBoundary": "mu_x(sigma) is a bounded distance between selected continuation traces, not a theorem about path equality",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    }
+  ],
+  "amiAggregateReadings": [
+    {
+      "aggregateId": "ami:measurement-policy-monodromy-boundary-holonomy",
+      "selectedSquareFamily": "operationSquareCandidates",
+      "selectedAxisFamily": [
+        "authority",
+        "contract",
+        "effect",
+        "projection",
+        "runtime",
+        "semantic",
+        "state",
+        "static"
+      ],
+      "weightPolicy": "unit weights until repo-specific calibration is declared in a future policy",
+      "distanceKind": "weighted-axis-l1",
+      "measurementStatus": "partial",
+      "aggregateValue": 0,
+      "measuredDefectRefs": [
+        "mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair:contract",
+        "mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair:effect",
+        "mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair:projection",
+        "mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair:runtime",
+        "mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair:semantic",
+        "mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair:static"
+      ],
+      "unmeasuredDefectRefs": [
+        "mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair:authority",
+        "mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair:state"
+      ],
+      "topContributors": [
+        {
+          "defectRef": "mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair:authority",
+          "candidateRef": "operation-square:operation-delta-observe-before-repair:operation-delta-observe-before-repair",
+          "axisFamily": "authority",
+          "contributionWeight": 1,
+          "contributionValue": null,
+          "reviewFocus": "supply missing authority trace evidence before interpreting AMI as zero",
+          "witnessRefs": [
+            "missing-evidence:missing authority observation for operation-square:operation-delta-observe-before-repair:operation-delta-observe-before-repair"
+          ]
+        },
+        {
+          "defectRef": "mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair:state",
+          "candidateRef": "operation-square:operation-delta-observe-before-repair:operation-delta-observe-before-repair",
+          "axisFamily": "state",
+          "contributionWeight": 1,
+          "contributionValue": null,
+          "reviewFocus": "supply missing state trace evidence before interpreting AMI as zero",
+          "witnessRefs": [
+            "missing-evidence:missing state observation for operation-square:operation-delta-observe-before-repair:operation-delta-observe-before-repair"
+          ]
+        },
+        {
+          "defectRef": "mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair:contract",
+          "candidateRef": "operation-square:operation-delta-observe-before-repair:operation-delta-observe-before-repair",
+          "axisFamily": "contract",
+          "contributionWeight": 1,
+          "contributionValue": 0,
+          "reviewFocus": "review contract trace mismatch before treating aggregate value as local agreement",
+          "witnessRefs": [
+            "atom:contract:create-user"
+          ]
+        },
+        {
+          "defectRef": "mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair:effect",
+          "candidateRef": "operation-square:operation-delta-observe-before-repair:operation-delta-observe-before-repair",
+          "axisFamily": "effect",
+          "contributionWeight": 1,
+          "contributionValue": 0,
+          "reviewFocus": "review effect trace mismatch before treating aggregate value as local agreement",
+          "witnessRefs": [
+            "add or refine ArchMap atom observations before claiming repair",
+            "no constructed obstruction is transported because no repair candidate exists"
+          ]
+        },
+        {
+          "defectRef": "mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair:projection",
+          "candidateRef": "operation-square:operation-delta-observe-before-repair:operation-delta-observe-before-repair",
+          "axisFamily": "projection",
+          "contributionWeight": 1,
+          "contributionValue": 0,
+          "reviewFocus": "review projection trace mismatch before treating aggregate value as local agreement",
+          "witnessRefs": [
+            "projection:aat:route-service",
+            "projection:aat:route-users",
+            "projection:sft:create-user"
+          ]
+        },
+        {
+          "defectRef": "mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair:runtime",
+          "candidateRef": "operation-square:operation-delta-observe-before-repair:operation-delta-observe-before-repair",
+          "axisFamily": "runtime",
+          "contributionWeight": 1,
+          "contributionValue": 0,
+          "reviewFocus": "review runtime trace mismatch before treating aggregate value as local agreement",
+          "witnessRefs": [
+            "gap-runtime-user-db-trace"
+          ]
+        },
+        {
+          "defectRef": "mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair:semantic",
+          "candidateRef": "operation-square:operation-delta-observe-before-repair:operation-delta-observe-before-repair",
+          "axisFamily": "semantic",
+          "contributionWeight": 1,
+          "contributionValue": 0,
+          "reviewFocus": "review semantic trace mismatch before treating aggregate value as local agreement",
+          "witnessRefs": [
+            "semantic:create-user-flow"
+          ]
+        },
+        {
+          "defectRef": "mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair:static",
+          "candidateRef": "operation-square:operation-delta-observe-before-repair:operation-delta-observe-before-repair",
+          "axisFamily": "static",
+          "contributionWeight": 1,
+          "contributionValue": 0,
+          "reviewFocus": "review static trace mismatch before treating aggregate value as local agreement",
+          "witnessRefs": [
+            "atom:component:route-users",
+            "atom:component:service-user",
+            "atom:relation:route-service"
+          ]
+        }
+      ],
+      "zeroReflectionAssumptions": [
+        "selected LawPolicy exactness assumptions",
+        "ArchMapStore compaction boundary",
+        "all selected operation square candidates and axis traces are measured",
+        "weighted aggregate has no cancellation of local defects",
+        "zero aggregate is not global path flatness"
+      ],
+      "cancellationBoundary": "weighted aggregate is a review prioritization reading; cancellation can hide local defects, so top contributors remain authoritative",
+      "aggregateToLocalReadingBoundary": "AMI_X(A) summarizes selected local mu_x(sigma) readings and does not replace axis-wise defect review",
+      "reviewPriority": "reviewMissingEvidence",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    }
+  ],
   "monodromyReadingFamily": {
     "readingFamilyId": "monodromy-reading-family:measurement-policy-monodromy-boundary-holonomy",
     "status": "schemaFoundationOnly",
@@ -2722,9 +3273,21 @@
       "path-continuation-trace:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair:p",
       "path-continuation-trace:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair:q"
     ],
-    "axisWiseDefectRefs": [],
-    "aggregateReadingKind": "ami-precondition-surface",
-    "readingBoundary": "records the packet shape for axis-wise defect and AMI readings; concrete defect valuation is introduced by later issues",
+    "axisWiseDefectRefs": [
+      "mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair:authority",
+      "mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair:contract",
+      "mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair:effect",
+      "mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair:projection",
+      "mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair:runtime",
+      "mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair:semantic",
+      "mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair:state",
+      "mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair:static"
+    ],
+    "amiAggregateReadingRefs": [
+      "ami:measurement-policy-monodromy-boundary-holonomy"
+    ],
+    "aggregateReadingKind": "ami-weighted-review-prioritization",
+    "readingBoundary": "records axis-wise defect and AMI aggregate readings as bounded review telemetry, not merge gates or global flatness theorems",
     "evidenceBoundary": "monodromy is measured over ArchMapStore refs and selected LawPolicy axes, not over raw source diffs",
     "nonConclusions": [
       "ArchSig analysis packet is not a Lean theorem proof",

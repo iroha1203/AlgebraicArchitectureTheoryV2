@@ -5,18 +5,19 @@ use crate::{
     ARCHMAP_SCHEMA_VERSION, ARCHSIG_ANALYSIS_PACKET_SCHEMA_VERSION,
     ARCHSIG_ANALYSIS_PACKET_VALIDATION_REPORT_SCHEMA_VERSION, ArchMapConcernHintV0,
     ArchMapDocumentV0, ArchMapMoleculeObservationV0, ArchMapSemanticObservationV0,
-    ArchMapSourceRef, ArchSigAatConceptSurfaceV0, ArchSigAnalysisArtifactRefV0,
-    ArchSigAnalysisPacketV0, ArchSigAnalysisPacketValidationInputV0,
-    ArchSigAnalysisPacketValidationReportV0, ArchSigAnalysisPacketValidationSummaryV0,
-    ArchSigAnalyticRepresentationV0, ArchSigArchMapStoreRefsV0,
-    ArchSigArchitectureObjectProjectionV0, ArchSigArchitectureStateV0,
+    ArchMapSourceRef, ArchSigAatConceptSurfaceV0, ArchSigAmiAggregateReadingV0,
+    ArchSigAmiTopContributorV0, ArchSigAnalysisArtifactRefV0, ArchSigAnalysisPacketV0,
+    ArchSigAnalysisPacketValidationInputV0, ArchSigAnalysisPacketValidationReportV0,
+    ArchSigAnalysisPacketValidationSummaryV0, ArchSigAnalyticRepresentationV0,
+    ArchSigArchMapStoreRefsV0, ArchSigArchitectureObjectProjectionV0, ArchSigArchitectureStateV0,
     ArchSigAtomCompatibilityConflictV0, ArchSigAtomCompatibilityReadingV0,
     ArchSigAtomConfigurationSummaryV0, ArchSigAtomSupportAxisReadingV0,
     ArchSigAxisContinuationTraceV0, ArchSigAxisExcursionV0, ArchSigAxisForgettingRiskReadingV0,
-    ArchSigAxisRestrictionCountV0, ArchSigBoundaryHolonomyReadingFamilyV0,
-    ArchSigBoundaryPreparationRankV0, ArchSigBoundedJudgementV0, ArchSigBridgeAtomFamilyReadingV0,
-    ArchSigBridgeEdgeBreakdownV0, ArchSigBridgeSplitObstructionTransferReadingV0,
-    ArchSigChangeImpactReadingV0, ArchSigCouplingCohesionReadingV0, ArchSigCoverageStatusV0,
+    ArchSigAxisRestrictionCountV0, ArchSigAxisWiseMonodromyDefectV0,
+    ArchSigBoundaryHolonomyReadingFamilyV0, ArchSigBoundaryPreparationRankV0,
+    ArchSigBoundedJudgementV0, ArchSigBridgeAtomFamilyReadingV0, ArchSigBridgeEdgeBreakdownV0,
+    ArchSigBridgeSplitObstructionTransferReadingV0, ArchSigChangeImpactReadingV0,
+    ArchSigCouplingCohesionReadingV0, ArchSigCoverageStatusV0,
     ArchSigCurrentStateEvolutionBoundaryV0, ArchSigDesignPressureReadingV0,
     ArchSigDesignPrincipleReadingV0, ArchSigDiagramFillabilityReadingV0,
     ArchSigDominantAtomFamilyCompositionV0, ArchSigEvolutionRiskRankingV0,
@@ -190,11 +191,20 @@ pub fn build_archsig_analysis_packet(
     let operation_square_candidates = build_operation_square_candidates(archmap, &operation_deltas);
     let path_continuation_traces =
         build_path_continuation_traces(archmap, &operation_square_candidates, &operation_deltas);
+    let axis_wise_monodromy_defects = build_axis_wise_monodromy_defects(
+        law_policy,
+        &operation_square_candidates,
+        &path_continuation_traces,
+    );
+    let ami_aggregate_readings =
+        build_ami_aggregate_readings(law_policy, &axis_wise_monodromy_defects);
     let monodromy_reading_family = build_monodromy_reading_family(
         law_policy,
         &arch_map_store_refs,
         &operation_square_candidates,
         &path_continuation_traces,
+        &axis_wise_monodromy_defects,
+        &ami_aggregate_readings,
     );
     let boundary_holonomy_reading_family = build_boundary_holonomy_reading_family(
         law_policy,
@@ -334,6 +344,8 @@ pub fn build_archsig_analysis_packet(
         bridge_split_obstruction_transfer_readings,
         operation_square_candidates,
         path_continuation_traces,
+        axis_wise_monodromy_defects,
+        ami_aggregate_readings,
         monodromy_reading_family,
         boundary_holonomy_reading_family,
         representation_strength_readings,
@@ -448,6 +460,8 @@ fn build_monodromy_reading_family(
     arch_map_store_refs: &ArchSigArchMapStoreRefsV0,
     operation_square_candidates: &[ArchSigOperationSquareCandidateV0],
     path_continuation_traces: &[ArchSigPathContinuationTraceV0],
+    axis_wise_monodromy_defects: &[ArchSigAxisWiseMonodromyDefectV0],
+    ami_aggregate_readings: &[ArchSigAmiAggregateReadingV0],
 ) -> ArchSigMonodromyReadingFamilyV0 {
     ArchSigMonodromyReadingFamilyV0 {
         reading_family_id: format!(
@@ -468,10 +482,17 @@ fn build_monodromy_reading_family(
             .iter()
             .map(|trace| trace.trace_id.clone())
             .collect(),
-        axis_wise_defect_refs: Vec::new(),
-        aggregate_reading_kind: "ami-precondition-surface".to_string(),
+        axis_wise_defect_refs: axis_wise_monodromy_defects
+            .iter()
+            .map(|defect| defect.defect_id.clone())
+            .collect(),
+        ami_aggregate_reading_refs: ami_aggregate_readings
+            .iter()
+            .map(|aggregate| aggregate.aggregate_id.clone())
+            .collect(),
+        aggregate_reading_kind: "ami-weighted-review-prioritization".to_string(),
         reading_boundary:
-            "records the packet shape for axis-wise defect and AMI readings; concrete defect valuation is introduced by later issues"
+            "records axis-wise defect and AMI aggregate readings as bounded review telemetry, not merge gates or global flatness theorems"
                 .to_string(),
         evidence_boundary:
             "monodromy is measured over ArchMapStore refs and selected LawPolicy axes, not over raw source diffs"
@@ -742,6 +763,249 @@ fn build_axis_continuation_traces(
         }
     })
     .collect()
+}
+
+fn build_axis_wise_monodromy_defects(
+    law_policy: &LawPolicyDocumentV0,
+    operation_square_candidates: &[ArchSigOperationSquareCandidateV0],
+    path_continuation_traces: &[ArchSigPathContinuationTraceV0],
+) -> Vec<ArchSigAxisWiseMonodromyDefectV0> {
+    operation_square_candidates
+        .iter()
+        .flat_map(|candidate| {
+            let p_trace = path_continuation_traces.iter().find(|trace| {
+                trace.candidate_ref == candidate.candidate_id && trace.path_role == "p"
+            });
+            let q_trace = path_continuation_traces.iter().find(|trace| {
+                trace.candidate_ref == candidate.candidate_id && trace.path_role == "q"
+            });
+            let axis_families = p_trace
+                .into_iter()
+                .flat_map(|trace| {
+                    trace
+                        .axis_traces
+                        .iter()
+                        .map(|axis| axis.axis_family.clone())
+                })
+                .chain(q_trace.into_iter().flat_map(|trace| {
+                    trace
+                        .axis_traces
+                        .iter()
+                        .map(|axis| axis.axis_family.clone())
+                }))
+                .collect::<BTreeSet<_>>();
+
+            axis_families.into_iter().map(move |axis_family| {
+                let p_axis = p_trace.and_then(|trace| {
+                    trace
+                        .axis_traces
+                        .iter()
+                        .find(|axis| axis.axis_family == axis_family)
+                });
+                let q_axis = q_trace.and_then(|trace| {
+                    trace
+                        .axis_traces
+                        .iter()
+                        .find(|axis| axis.axis_family == axis_family)
+                });
+                axis_wise_monodromy_defect(law_policy, candidate, &axis_family, p_axis, q_axis)
+            })
+        })
+        .collect()
+}
+
+fn axis_wise_monodromy_defect(
+    law_policy: &LawPolicyDocumentV0,
+    candidate: &ArchSigOperationSquareCandidateV0,
+    axis_family: &str,
+    p_axis: Option<&ArchSigAxisContinuationTraceV0>,
+    q_axis: Option<&ArchSigAxisContinuationTraceV0>,
+) -> ArchSigAxisWiseMonodromyDefectV0 {
+    let p_refs = p_axis
+        .map(|axis| axis.observation_refs.clone())
+        .unwrap_or_default();
+    let q_refs = q_axis
+        .map(|axis| axis.observation_refs.clone())
+        .unwrap_or_default();
+    let p_missing = p_axis
+        .map(|axis| axis.missing_refs.clone())
+        .unwrap_or_else(|| vec![format!("missing p trace for {axis_family}")]);
+    let q_missing = q_axis
+        .map(|axis| axis.missing_refs.clone())
+        .unwrap_or_else(|| vec![format!("missing q trace for {axis_family}")]);
+    let missing_refs = unique_strings(p_missing.into_iter().chain(q_missing));
+    let measured_support_refs = unique_strings(p_refs.iter().chain(q_refs.iter()).cloned());
+    let witness_refs = unique_strings(
+        measured_support_refs.iter().cloned().chain(
+            missing_refs
+                .iter()
+                .map(|missing| format!("missing-evidence:{missing}")),
+        ),
+    );
+    let both_measured = p_axis.is_some_and(|axis| axis.trace_status != "unmeasured")
+        && q_axis.is_some_and(|axis| axis.trace_status != "unmeasured");
+    let distance_value = both_measured.then(|| symmetric_difference_size(&p_refs, &q_refs) as i64);
+    let axis_ref = p_axis
+        .or(q_axis)
+        .map(|axis| axis.axis_ref.clone())
+        .unwrap_or_else(|| axis_family.to_string());
+
+    ArchSigAxisWiseMonodromyDefectV0 {
+        defect_id: format!(
+            "mu:{}:{}",
+            stable_id(&candidate.candidate_id),
+            stable_id(axis_family)
+        ),
+        candidate_ref: candidate.candidate_id.clone(),
+        axis_family: axis_family.to_string(),
+        axis_ref,
+        distance_kind: law_policy.measurement_policy.distance_kind.clone(),
+        measurement_status: if both_measured {
+            "measured".to_string()
+        } else {
+            "unmeasured".to_string()
+        },
+        distance_value,
+        measured_support_refs: measured_support_refs.clone(),
+        witness_refs,
+        source_refs: candidate.source_refs.clone(),
+        observation_refs: measured_support_refs,
+        missing_refs,
+        coverage_boundary: if both_measured {
+            "covered for selected trace refs; not complete execution semantics".to_string()
+        } else {
+            "coverage gap preserved; unmeasured axis is not zero defect".to_string()
+        },
+        exactness_assumption_status: law_policy
+            .measurement_policy
+            .exactness_assumption_refs
+            .clone(),
+        zero_reflection_assumptions: ami_zero_reflection_assumptions(law_policy),
+        cancellation_boundary:
+            "axis-wise defect avoids aggregate cancellation; AMI zero can reflect local zero only under recorded zero-reflection assumptions"
+                .to_string(),
+        evidence_boundary:
+            "mu_x(sigma) is a bounded distance between selected continuation traces, not a theorem about path equality"
+                .to_string(),
+        non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
+    }
+}
+
+fn build_ami_aggregate_readings(
+    law_policy: &LawPolicyDocumentV0,
+    defects: &[ArchSigAxisWiseMonodromyDefectV0],
+) -> Vec<ArchSigAmiAggregateReadingV0> {
+    let measured_defect_refs = defects
+        .iter()
+        .filter(|defect| defect.distance_value.is_some())
+        .map(|defect| defect.defect_id.clone())
+        .collect::<Vec<_>>();
+    let unmeasured_defect_refs = defects
+        .iter()
+        .filter(|defect| defect.distance_value.is_none())
+        .map(|defect| defect.defect_id.clone())
+        .collect::<Vec<_>>();
+    let aggregate_value = defects
+        .iter()
+        .filter_map(|defect| defect.distance_value)
+        .sum::<i64>();
+    let selected_axis_family = defects
+        .iter()
+        .map(|defect| defect.axis_family.clone())
+        .collect::<BTreeSet<_>>()
+        .into_iter()
+        .collect::<Vec<_>>();
+
+    vec![ArchSigAmiAggregateReadingV0 {
+        aggregate_id: format!(
+            "ami:{}",
+            stable_id(&law_policy.measurement_policy.policy_id)
+        ),
+        selected_square_family: "operationSquareCandidates".to_string(),
+        selected_axis_family,
+        weight_policy: law_policy.measurement_policy.weight_policy.clone(),
+        distance_kind: law_policy.measurement_policy.distance_kind.clone(),
+        measurement_status: if unmeasured_defect_refs.is_empty() {
+            "measured".to_string()
+        } else {
+            "partial".to_string()
+        },
+        aggregate_value,
+        measured_defect_refs,
+        unmeasured_defect_refs,
+        top_contributors: ami_top_contributors(defects),
+        zero_reflection_assumptions: ami_zero_reflection_assumptions(law_policy),
+        cancellation_boundary:
+            "weighted aggregate is a review prioritization reading; cancellation can hide local defects, so top contributors remain authoritative"
+                .to_string(),
+        aggregate_to_local_reading_boundary:
+            "AMI_X(A) summarizes selected local mu_x(sigma) readings and does not replace axis-wise defect review"
+                .to_string(),
+        review_priority: ami_review_priority(aggregate_value, defects),
+        non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
+    }]
+}
+
+fn ami_top_contributors(
+    defects: &[ArchSigAxisWiseMonodromyDefectV0],
+) -> Vec<ArchSigAmiTopContributorV0> {
+    let mut ranked = defects.iter().collect::<Vec<_>>();
+    ranked.sort_by(|left, right| {
+        let left_value = left.distance_value.unwrap_or(i64::MAX);
+        let right_value = right.distance_value.unwrap_or(i64::MAX);
+        right_value
+            .cmp(&left_value)
+            .then(left.axis_family.cmp(&right.axis_family))
+            .then(left.defect_id.cmp(&right.defect_id))
+    });
+    ranked
+        .into_iter()
+        .take(8)
+        .map(|defect| ArchSigAmiTopContributorV0 {
+            defect_ref: defect.defect_id.clone(),
+            candidate_ref: defect.candidate_ref.clone(),
+            axis_family: defect.axis_family.clone(),
+            contribution_weight: 1,
+            contribution_value: defect.distance_value,
+            review_focus: if defect.distance_value.is_some() {
+                format!(
+                    "review {} trace mismatch before treating aggregate value as local agreement",
+                    defect.axis_family
+                )
+            } else {
+                format!(
+                    "supply missing {} trace evidence before interpreting AMI as zero",
+                    defect.axis_family
+                )
+            },
+            witness_refs: defect.witness_refs.clone(),
+        })
+        .collect()
+}
+
+fn ami_zero_reflection_assumptions(law_policy: &LawPolicyDocumentV0) -> Vec<String> {
+    let mut assumptions = law_policy
+        .measurement_policy
+        .exactness_assumption_refs
+        .clone();
+    assumptions
+        .push("all selected operation square candidates and axis traces are measured".to_string());
+    assumptions.push("weighted aggregate has no cancellation of local defects".to_string());
+    assumptions.push("zero aggregate is not global path flatness".to_string());
+    assumptions
+}
+
+fn ami_review_priority(
+    aggregate_value: i64,
+    defects: &[ArchSigAxisWiseMonodromyDefectV0],
+) -> String {
+    if defects.iter().any(|defect| defect.distance_value.is_none()) {
+        "reviewMissingEvidence".to_string()
+    } else if aggregate_value > 0 {
+        "reviewTopContributors".to_string()
+    } else {
+        "reviewZeroReflectionAssumptions".to_string()
+    }
 }
 
 fn inferred_shared_atom_support_refs(archmap: &ArchMapDocumentV0) -> Vec<String> {
@@ -6447,6 +6711,7 @@ pub fn validate_archsig_analysis_packet_report(
         check_aat_structural_reading_surfaces(packet),
         check_current_state_evolution_boundary(packet),
         check_operation_square_trace_surface(packet),
+        check_axis_wise_defect_ami_surface(packet),
         check_monodromy_boundary_schema_foundation(packet),
         check_law_relative_analysis(packet),
         check_signature_and_flatness(packet),
@@ -8579,6 +8844,227 @@ fn check_operation_square_trace_surface(packet: &ArchSigAnalysisPacketV0) -> Val
     )
 }
 
+fn check_axis_wise_defect_ami_surface(packet: &ArchSigAnalysisPacketV0) -> ValidationCheck {
+    let candidate_ids = set(packet
+        .operation_square_candidates
+        .iter()
+        .map(|candidate| candidate.candidate_id.as_str()));
+    let defect_ids = set(packet
+        .axis_wise_monodromy_defects
+        .iter()
+        .map(|defect| defect.defect_id.as_str()));
+    let mut examples = Vec::new();
+    if packet.axis_wise_monodromy_defects.is_empty() {
+        examples.push(generic_validation_example(
+            "axisWiseMonodromyDefects",
+            "empty",
+            "packet must compute mu_x(sigma) axis-wise defect surfaces",
+        ));
+    }
+    examples.extend(duplicate_examples(
+        "axisWiseMonodromyDefects[].defectId",
+        duplicates(
+            packet
+                .axis_wise_monodromy_defects
+                .iter()
+                .map(|defect| defect.defect_id.as_str()),
+        ),
+    ));
+    for defect in &packet.axis_wise_monodromy_defects {
+        if !candidate_ids.contains(defect.candidate_ref.as_str()) {
+            examples.push(generic_validation_example(
+                &defect.defect_id,
+                &defect.candidate_ref,
+                "axis-wise defect references an unknown operation square candidate",
+            ));
+        }
+        push_blank(
+            &mut examples,
+            &format!("{} distanceKind", defect.defect_id),
+            &defect.distance_kind,
+        );
+        push_blank(
+            &mut examples,
+            &format!("{} measurementStatus", defect.defect_id),
+            &defect.measurement_status,
+        );
+        if defect.measurement_status == "measured" && defect.distance_value.is_none() {
+            examples.push(generic_validation_example(
+                &defect.defect_id,
+                "distanceValue",
+                "measured axis-wise defect must carry a distance value",
+            ));
+        }
+        if defect.measurement_status == "unmeasured" && defect.missing_refs.is_empty() {
+            examples.push(generic_validation_example(
+                &defect.defect_id,
+                "missingRefs",
+                "unmeasured axis-wise defect must preserve missing evidence instead of reading as zero",
+            ));
+        }
+        if defect.measured_support_refs.is_empty() && defect.missing_refs.is_empty() {
+            examples.push(generic_validation_example(
+                &defect.defect_id,
+                "measuredSupportRefs/missingRefs",
+                "axis-wise defect must carry measured support or missing refs",
+            ));
+        }
+        if defect.witness_refs.is_empty() {
+            examples.push(generic_validation_example(
+                &defect.defect_id,
+                "witnessRefs",
+                "axis-wise defect must carry witness refs for review",
+            ));
+        }
+        push_blank(
+            &mut examples,
+            &format!("{} coverageBoundary", defect.defect_id),
+            &defect.coverage_boundary,
+        );
+        if defect.zero_reflection_assumptions.is_empty()
+            || has_blank(&defect.zero_reflection_assumptions)
+        {
+            examples.push(generic_validation_example(
+                &defect.defect_id,
+                "zeroReflectionAssumptions",
+                "axis-wise defect must record zero-reflection assumptions",
+            ));
+        }
+        push_blank(
+            &mut examples,
+            &format!("{} cancellationBoundary", defect.defect_id),
+            &defect.cancellation_boundary,
+        );
+        push_blank(
+            &mut examples,
+            &format!("{} evidenceBoundary", defect.defect_id),
+            &defect.evidence_boundary,
+        );
+    }
+
+    if packet.ami_aggregate_readings.is_empty() {
+        examples.push(generic_validation_example(
+            "amiAggregateReadings",
+            "empty",
+            "packet must emit AMI aggregate review readings",
+        ));
+    }
+    examples.extend(duplicate_examples(
+        "amiAggregateReadings[].aggregateId",
+        duplicates(
+            packet
+                .ami_aggregate_readings
+                .iter()
+                .map(|aggregate| aggregate.aggregate_id.as_str()),
+        ),
+    ));
+    for aggregate in &packet.ami_aggregate_readings {
+        push_blank(
+            &mut examples,
+            &format!("{} selectedSquareFamily", aggregate.aggregate_id),
+            &aggregate.selected_square_family,
+        );
+        if aggregate.selected_axis_family.is_empty() {
+            examples.push(generic_validation_example(
+                &aggregate.aggregate_id,
+                "selectedAxisFamily",
+                "AMI must report selected axis family",
+            ));
+        }
+        push_blank(
+            &mut examples,
+            &format!("{} weightPolicy", aggregate.aggregate_id),
+            &aggregate.weight_policy,
+        );
+        push_blank(
+            &mut examples,
+            &format!("{} distanceKind", aggregate.aggregate_id),
+            &aggregate.distance_kind,
+        );
+        if aggregate.top_contributors.is_empty() {
+            examples.push(generic_validation_example(
+                &aggregate.aggregate_id,
+                "topContributors",
+                "AMI must expose top contributors for review",
+            ));
+        }
+        for contributor in &aggregate.top_contributors {
+            if !defect_ids.contains(contributor.defect_ref.as_str()) {
+                examples.push(generic_validation_example(
+                    &aggregate.aggregate_id,
+                    &contributor.defect_ref,
+                    "AMI top contributor references an unknown defect",
+                ));
+            }
+            push_blank(
+                &mut examples,
+                &format!("{} topContributors[].reviewFocus", aggregate.aggregate_id),
+                &contributor.review_focus,
+            );
+        }
+        if aggregate.zero_reflection_assumptions.is_empty()
+            || has_blank(&aggregate.zero_reflection_assumptions)
+        {
+            examples.push(generic_validation_example(
+                &aggregate.aggregate_id,
+                "zeroReflectionAssumptions",
+                "AMI must retain zero-reflection assumptions",
+            ));
+        }
+        push_blank(
+            &mut examples,
+            &format!("{} cancellationBoundary", aggregate.aggregate_id),
+            &aggregate.cancellation_boundary,
+        );
+        push_blank(
+            &mut examples,
+            &format!("{} aggregateToLocalReadingBoundary", aggregate.aggregate_id),
+            &aggregate.aggregate_to_local_reading_boundary,
+        );
+        if aggregate
+            .aggregate_to_local_reading_boundary
+            .to_ascii_lowercase()
+            .contains("merge gate")
+        {
+            examples.push(generic_validation_example(
+                &aggregate.aggregate_id,
+                "aggregateToLocalReadingBoundary",
+                "AMI must not be framed as a merge gate",
+            ));
+        }
+    }
+
+    for defect_ref in &packet.monodromy_reading_family.axis_wise_defect_refs {
+        if !defect_ids.contains(defect_ref.as_str()) {
+            examples.push(generic_validation_example(
+                &packet.monodromy_reading_family.reading_family_id,
+                defect_ref,
+                "monodromy reading family references an unknown axis-wise defect",
+            ));
+        }
+    }
+    let aggregate_ids = set(packet
+        .ami_aggregate_readings
+        .iter()
+        .map(|aggregate| aggregate.aggregate_id.as_str()));
+    for aggregate_ref in &packet.monodromy_reading_family.ami_aggregate_reading_refs {
+        if !aggregate_ids.contains(aggregate_ref.as_str()) {
+            examples.push(generic_validation_example(
+                &packet.monodromy_reading_family.reading_family_id,
+                aggregate_ref,
+                "monodromy reading family references an unknown AMI aggregate reading",
+            ));
+        }
+    }
+
+    check_from_examples(
+        "archsig-analysis-packet-axis-defect-ami-surface",
+        "packet carries mu_x(sigma) axis-wise defects and AMI aggregate review readings without theorem or merge-gate conclusions",
+        examples,
+        "fail",
+    )
+}
+
 fn check_monodromy_boundary_schema_foundation(packet: &ArchSigAnalysisPacketV0) -> ValidationCheck {
     let mut examples = Vec::new();
     let store_refs = &packet.arch_map_store_refs;
@@ -9528,6 +10014,12 @@ fn unique_strings(values: impl Iterator<Item = String>) -> Vec<String> {
     values.collect::<BTreeSet<_>>().into_iter().collect()
 }
 
+fn symmetric_difference_size(left: &[String], right: &[String]) -> usize {
+    let left = left.iter().map(String::as_str).collect::<BTreeSet<_>>();
+    let right = right.iter().map(String::as_str).collect::<BTreeSet<_>>();
+    left.symmetric_difference(&right).count()
+}
+
 fn preserved_invariants_for_repair(
     signature_axes: &[ArchSigSignatureAxisReadingV0],
 ) -> Vec<String> {
@@ -9843,6 +10335,19 @@ mod tests {
         assert!(report.checks.iter().any(|check| {
             check.id == "archsig-analysis-packet-operation-square-trace-surface"
                 && check.result == "fail"
+        }));
+    }
+
+    #[test]
+    fn ami_without_top_contributors_fails_validation() {
+        let mut packet = static_archsig_analysis_packet();
+        packet.ami_aggregate_readings[0].top_contributors.clear();
+
+        let report = validate_archsig_analysis_packet_report(&packet, "invalid.json");
+
+        assert_eq!(report.summary.result, "fail");
+        assert!(report.checks.iter().any(|check| {
+            check.id == "archsig-analysis-packet-axis-defect-ami-surface" && check.result == "fail"
         }));
     }
 

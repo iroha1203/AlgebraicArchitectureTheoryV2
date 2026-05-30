@@ -77,6 +77,12 @@ The required `archMapStoreRefKinds` are `archmap-delta`, `archmap-commit`,
 `archmap-snapshot`, and `archmap-index`. Raw diffs may scope changed source
 refs, but they do not choose axes, distance, weight, or coverage policy.
 
+`distanceKind` and `weightPolicy` are used by `mu_x(sigma)` and `AMI_X(A)`.
+They define bounded review telemetry over selected operation squares and axes.
+They do not make `AMI_X(A)` a single quality score, merge gate, or global
+flatness theorem. `coveragePolicy` keeps unmeasured axes as missing evidence
+instead of treating them as zero.
+
 Validation does not imply:
 
 - architecture lawfulness

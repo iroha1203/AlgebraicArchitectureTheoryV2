@@ -1400,6 +1400,51 @@ fn assert_north_star_packet_surfaces(json: &Value) {
         "path continuation traces must expose required axis families and keep unmeasured axes as missing evidence"
     );
     assert!(
+        json["axisWiseMonodromyDefects"]
+            .as_array()
+            .is_some_and(|items| {
+                !items.is_empty()
+                    && items.iter().all(|defect| {
+                        defect["distanceKind"].as_str().is_some()
+                            && defect["measuredSupportRefs"].as_array().is_some()
+                            && defect["witnessRefs"]
+                                .as_array()
+                                .is_some_and(|refs| !refs.is_empty())
+                            && defect["coverageBoundary"].as_str().is_some()
+                            && defect["cancellationBoundary"].as_str().is_some()
+                            && (defect["measurementStatus"].as_str() != Some("unmeasured")
+                                || defect["missingRefs"]
+                                    .as_array()
+                                    .is_some_and(|refs| !refs.is_empty()))
+                    })
+            }),
+        "axis-wise defects must carry distance kind, support, witnesses, coverage, and unmeasured boundaries"
+    );
+    assert!(
+        json["amiAggregateReadings"]
+            .as_array()
+            .is_some_and(|items| {
+                !items.is_empty()
+                    && items.iter().all(|aggregate| {
+                        aggregate["selectedSquareFamily"].as_str().is_some()
+                            && aggregate["selectedAxisFamily"]
+                                .as_array()
+                                .is_some_and(|axes| !axes.is_empty())
+                            && aggregate["weightPolicy"].as_str().is_some()
+                            && aggregate["topContributors"]
+                                .as_array()
+                                .is_some_and(|contributors| !contributors.is_empty())
+                            && aggregate["zeroReflectionAssumptions"]
+                                .as_array()
+                                .is_some_and(|assumptions| !assumptions.is_empty())
+                            && aggregate["aggregateToLocalReadingBoundary"]
+                                .as_str()
+                                .is_some_and(|boundary| boundary.contains("local"))
+                    })
+            }),
+        "AMI aggregate readings must remain bounded review aggregates with local-reading boundaries"
+    );
+    assert!(
         json["llmInterpretationPacket"]["structuralReadingReviewSummary"]
             .as_array()
             .is_some_and(|items| !items.is_empty())

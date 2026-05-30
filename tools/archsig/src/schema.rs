@@ -666,6 +666,8 @@ pub struct ArchSigAnalysisPacketV0 {
         Vec<ArchSigBridgeSplitObstructionTransferReadingV0>,
     pub operation_square_candidates: Vec<ArchSigOperationSquareCandidateV0>,
     pub path_continuation_traces: Vec<ArchSigPathContinuationTraceV0>,
+    pub axis_wise_monodromy_defects: Vec<ArchSigAxisWiseMonodromyDefectV0>,
+    pub ami_aggregate_readings: Vec<ArchSigAmiAggregateReadingV0>,
     pub monodromy_reading_family: ArchSigMonodromyReadingFamilyV0,
     pub boundary_holonomy_reading_family: ArchSigBoundaryHolonomyReadingFamilyV0,
     pub representation_strength_readings: Vec<ArchSigRepresentationStrengthReadingV0>,
@@ -751,6 +753,61 @@ pub struct ArchSigAxisContinuationTraceV0 {
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+pub struct ArchSigAxisWiseMonodromyDefectV0 {
+    pub defect_id: String,
+    pub candidate_ref: String,
+    pub axis_family: String,
+    pub axis_ref: String,
+    pub distance_kind: String,
+    pub measurement_status: String,
+    pub distance_value: Option<i64>,
+    pub measured_support_refs: Vec<String>,
+    pub witness_refs: Vec<String>,
+    pub source_refs: Vec<String>,
+    pub observation_refs: Vec<String>,
+    pub missing_refs: Vec<String>,
+    pub coverage_boundary: String,
+    pub exactness_assumption_status: Vec<String>,
+    pub zero_reflection_assumptions: Vec<String>,
+    pub cancellation_boundary: String,
+    pub evidence_boundary: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigAmiAggregateReadingV0 {
+    pub aggregate_id: String,
+    pub selected_square_family: String,
+    pub selected_axis_family: Vec<String>,
+    pub weight_policy: String,
+    pub distance_kind: String,
+    pub measurement_status: String,
+    pub aggregate_value: i64,
+    pub measured_defect_refs: Vec<String>,
+    pub unmeasured_defect_refs: Vec<String>,
+    pub top_contributors: Vec<ArchSigAmiTopContributorV0>,
+    pub zero_reflection_assumptions: Vec<String>,
+    pub cancellation_boundary: String,
+    pub aggregate_to_local_reading_boundary: String,
+    pub review_priority: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigAmiTopContributorV0 {
+    pub defect_ref: String,
+    pub candidate_ref: String,
+    pub axis_family: String,
+    pub contribution_weight: i64,
+    pub contribution_value: Option<i64>,
+    pub review_focus: String,
+    pub witness_refs: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct ArchSigArchMapStoreRefsV0 {
     pub ref_set_id: String,
     pub arch_map_ref: String,
@@ -776,6 +833,7 @@ pub struct ArchSigMonodromyReadingFamilyV0 {
     pub operation_square_candidate_refs: Vec<String>,
     pub path_continuation_trace_refs: Vec<String>,
     pub axis_wise_defect_refs: Vec<String>,
+    pub ami_aggregate_reading_refs: Vec<String>,
     pub aggregate_reading_kind: String,
     pub reading_boundary: String,
     pub evidence_boundary: String,
