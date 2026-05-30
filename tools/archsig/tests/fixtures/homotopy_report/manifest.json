@@ -1,0 +1,61 @@
+{
+  "schemaVersion": "archsig-homotopy-report-fixture-manifest-v0",
+  "fixtureId": "homotopy-report-fixtures",
+  "purpose": "Lock ArchitectureHomotopyReport cases for filled zero holonomy, filled nonzero holonomy, unfilled architectural holes, and named path families.",
+  "archmapPath": "homotopy_report/archmap.json",
+  "lawPolicyPath": "homotopy_report/law_policy.json",
+  "packetPath": "homotopy_report/archsig_analysis_packet.json",
+  "validationPath": "homotopy_report/validation.json",
+  "cases": [
+    {
+      "caseId": "zero-holonomy-filled-loop",
+      "pathRuleRef": "path-rule:zero-holonomy-filled-loop",
+      "expectedHolonomyValue": 0,
+      "expectedStokesStatus": "measuredZeroWithinBoundary"
+    },
+    {
+      "caseId": "nonzero-holonomy-filled-loop",
+      "pathRuleRef": "path-rule:nonzero-holonomy-filled-loop",
+      "minimumHolonomyValue": 1,
+      "expectedStokesStatus": "filledNonzeroHolonomyReview"
+    },
+    {
+      "caseId": "unfilled-architectural-hole",
+      "pathRuleRef": "path-rule:authorization-bypass-hole",
+      "requiredMissingEvidence": "gap:path-rule:authorization-bypass-hole:missing-policy-test",
+      "expectedStokesStatus": "blockedByArchitecturalHole"
+    },
+    {
+      "caseId": "cache-repository-semantic-loop",
+      "pathRuleRef": "path-rule:cache-repository-semantic-loop",
+      "requiredText": "cache-repository-semantic-loop"
+    },
+    {
+      "caseId": "event-projection-direct-read",
+      "pathRuleRef": "path-rule:event-projection-direct-read",
+      "requiredText": "event-projection-direct-read"
+    },
+    {
+      "caseId": "retry-idempotency-effect",
+      "pathRuleRef": "path-rule:retry-idempotency-effect",
+      "requiredText": "retry-idempotency-effect"
+    },
+    {
+      "caseId": "authorization-bypass-hole",
+      "pathRuleRef": "path-rule:authorization-bypass-hole",
+      "requiredText": "authorization-bypass-hole"
+    },
+    {
+      "caseId": "coupon-tax-rounding-semantic-loop",
+      "pathRuleRef": "path-rule:coupon-tax-rounding-semantic-loop",
+      "requiredText": "coupon-tax-rounding-semantic-loop"
+    }
+  ],
+  "nonConclusions": [
+    "fixture cases are not architecture lawfulness proof",
+    "fixture holonomy readings are bounded ArchSig diagnostics, not global homology",
+    "unfilled architectural holes are not automatic violations",
+    "missing filler evidence is not measured zero",
+    "ArchitectureHomotopyReport is not a single architecture quality score"
+  ]
+}

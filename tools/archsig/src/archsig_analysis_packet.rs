@@ -238,6 +238,7 @@ pub fn build_archsig_analysis_packet(
     let architectural_hole_readings =
         build_architectural_hole_readings(archmap, &loop_candidates, &filler_candidate_readings);
     let homotopy_holonomy_readings = build_homotopy_holonomy_readings(
+        archmap,
         law_policy,
         &loop_candidates,
         &path_pair_candidates,
@@ -7386,6 +7387,16 @@ fn build_loop_candidates(
         .as_ref()
         .map(|profile| profile.filler_rules.clone())
         .unwrap_or_default();
+    let candidate_gap_ids = path_pair_candidates
+        .iter()
+        .map(|candidate| {
+            let ids = matching_observation_gap_ids(archmap, candidate);
+            (candidate.candidate_id.clone(), ids)
+        })
+        .collect::<BTreeMap<_, _>>();
+    let has_targeted_gap = candidate_gap_ids
+        .values()
+        .any(|gap_ids| !gap_ids.is_empty());
     path_pair_candidates
         .iter()
         .enumerate()
@@ -7394,6 +7405,21 @@ fn build_loop_candidates(
                 .iter()
                 .map(|rule| rule.rule_id.clone())
                 .collect::<Vec<_>>();
+            let missing_filler_evidence = candidate_gap_ids
+                .get(&candidate.candidate_id)
+                .cloned()
+                .unwrap_or_default();
+            let missing_filler_evidence = if has_targeted_gap {
+                missing_filler_evidence
+            } else {
+                archmap
+                    .observation_gaps
+                    .iter()
+                    .map(|gap| gap.gap_id.clone())
+                    .collect()
+            };
+            let has_filler_candidates = !filler_candidate_refs.is_empty();
+            let has_missing_filler = !missing_filler_evidence.is_empty();
             ArchSigLoopCandidateV0 {
                 loop_id: format!(
                     "loop-candidate:{}-{index}",
@@ -7401,19 +7427,17 @@ fn build_loop_candidates(
                 ),
                 path_pair_ref: candidate.candidate_id.clone(),
                 candidate_source: candidate.candidate_source.clone(),
-                status: if filler_candidate_refs.is_empty() {
-                    "needsReview"
-                } else {
+                status: if has_filler_candidates && !has_missing_filler {
+                    "filledLoop"
+                } else if has_filler_candidates {
                     "unfilledLoop"
+                } else {
+                    "needsReview"
                 }
                 .to_string(),
                 path_refs: vec![candidate.p_path_ref.clone(), candidate.q_path_ref.clone()],
                 filler_candidate_refs,
-                missing_filler_evidence: archmap
-                    .observation_gaps
-                    .iter()
-                    .map(|gap| gap.gap_id.clone())
-                    .collect(),
+                missing_filler_evidence,
                 selected_axis_refs: complex.selected_axis_refs.clone(),
                 source_refs: candidate.source_refs.clone(),
                 coverage_boundary: complex.coverage_boundary.clone(),
@@ -7423,6 +7447,20 @@ fn build_loop_candidates(
                 non_conclusions: strings(&REQUIRED_HOMOTOPY_NON_CONCLUSIONS),
             }
         })
+        .collect()
+}
+
+fn matching_observation_gap_ids(
+    archmap: &ArchMapDocumentV0,
+    candidate: &ArchSigPathPairCandidateV0,
+) -> Vec<String> {
+    archmap
+        .observation_gaps
+        .iter()
+        .filter(|gap| {
+            text_matches_candidate(candidate, [&gap.gap_id, &gap.subject_ref, &gap.reason])
+        })
+        .map(|gap| gap.gap_id.clone())
         .collect()
 }
 
@@ -7536,6 +7574,7 @@ fn build_architectural_hole_readings(
 }
 
 fn build_homotopy_holonomy_readings(
+    archmap: &ArchMapDocumentV0,
     law_policy: &LawPolicyDocumentV0,
     loop_candidates: &[ArchSigLoopCandidateV0],
     path_pair_candidates: &[ArchSigPathPairCandidateV0],
@@ -7602,7 +7641,13 @@ fn build_homotopy_holonomy_readings(
                         loop_ref: loop_candidate.loop_id.clone(),
                         axis_ref: axis_ref.clone(),
                         distance_kind: distance_kind.clone(),
-                        value: if missing_filler_refs.is_empty() { 0 } else { 1 },
+                        value: if missing_filler_refs.is_empty()
+                            && !semantic_observation_matches_path_pair(archmap, path_pair)
+                        {
+                            0
+                        } else {
+                            1
+                        },
                         compared_continuation_summary: format!(
                             "{} vs {} on {axis_ref}",
                             path_pair
@@ -7628,6 +7673,47 @@ fn build_homotopy_holonomy_readings(
                 .collect::<Vec<_>>()
         })
         .collect()
+}
+
+fn semantic_observation_matches_path_pair(
+    archmap: &ArchMapDocumentV0,
+    path_pair: Option<&ArchSigPathPairCandidateV0>,
+) -> bool {
+    let Some(path_pair) = path_pair else {
+        return false;
+    };
+    archmap.semantic_observations.iter().any(|semantic| {
+        text_matches_candidate(
+            path_pair,
+            [
+                &semantic.semantic_observation_id,
+                &semantic.semantic_family,
+                &semantic.subject_ref,
+                &semantic.predicate,
+                &semantic.evidence_boundary,
+            ],
+        )
+    })
+}
+
+fn text_matches_candidate<'a>(
+    candidate: &ArchSigPathPairCandidateV0,
+    values: impl IntoIterator<Item = &'a String>,
+) -> bool {
+    let needles = [
+        candidate.candidate_id.as_str(),
+        candidate.p_path_ref.as_str(),
+        candidate.q_path_ref.as_str(),
+    ]
+    .into_iter()
+    .map(|value| value.to_ascii_lowercase())
+    .collect::<Vec<_>>();
+    values.into_iter().any(|value| {
+        let value = value.to_ascii_lowercase();
+        needles
+            .iter()
+            .any(|needle| !needle.is_empty() && value.contains(needle))
+    })
 }
 
 fn build_stokes_style_readings(
@@ -7658,7 +7744,7 @@ fn build_stokes_style_readings(
                 .any(|reading| reading.loop_ref == loop_candidate.loop_id && reading.value != 0);
             let has_filler = filler_by_loop.contains(loop_candidate.loop_id.as_str());
             let has_hole = hole_by_loop.contains(loop_candidate.loop_id.as_str());
-            let local_curvature_cell_candidates = if has_filler && has_nonzero {
+            let local_curvature_cell_candidates = if has_filler && !has_hole && has_nonzero {
                 complex
                     .two_cells
                     .iter()
@@ -7668,11 +7754,16 @@ fn build_stokes_style_readings(
                 Vec::new()
             };
             let review_queue_refs = if local_curvature_cell_candidates.is_empty() {
-                architectural_hole_readings
+                let hole_refs = architectural_hole_readings
                     .iter()
                     .filter(|reading| reading.loop_ref == loop_candidate.loop_id)
                     .map(|reading| reading.reading_id.clone())
-                    .collect()
+                    .collect::<Vec<_>>();
+                if hole_refs.is_empty() {
+                    refs.clone()
+                } else {
+                    hole_refs
+                }
             } else {
                 local_curvature_cell_candidates.clone()
             };
@@ -7680,8 +7771,9 @@ fn build_stokes_style_readings(
                 reading_id: format!("stokes-style:{}", stable_id(&loop_candidate.loop_id)),
                 loop_ref: loop_candidate.loop_id.clone(),
                 status: match (has_filler, has_hole, has_nonzero) {
-                    (true, _, true) => "filledNonzeroHolonomyReview",
                     (_, true, _) => "blockedByArchitecturalHole",
+                    (true, false, true) => "filledNonzeroHolonomyReview",
+                    (true, false, false) => "measuredZeroWithinBoundary",
                     _ => "measuredZeroWithinBoundary",
                 }
                 .to_string(),
@@ -7713,7 +7805,10 @@ fn build_architecture_homotopy_report(
         .collect::<Vec<_>>();
     let filled_loops = stokes_style_readings
         .iter()
-        .filter(|reading| reading.status == "filledNonzeroHolonomyReview")
+        .filter(|reading| {
+            reading.status == "filledNonzeroHolonomyReview"
+                || reading.status == "measuredZeroWithinBoundary"
+        })
         .map(|reading| reading.loop_ref.clone())
         .collect::<BTreeSet<_>>()
         .into_iter()

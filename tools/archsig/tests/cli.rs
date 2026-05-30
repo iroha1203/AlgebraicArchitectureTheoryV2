@@ -21,6 +21,10 @@ fn acts_spectrum_root() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/acts_spectrum")
 }
 
+fn homotopy_report_root() -> PathBuf {
+    Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/homotopy_report")
+}
+
 fn inspection_root() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/inspection")
 }
@@ -788,6 +792,109 @@ fn acts_spectrum_fixture_manifest_locks_golden_validation() {
 }
 
 #[test]
+fn homotopy_report_fixture_manifest_locks_golden_validation() {
+    let root = homotopy_report_root();
+    let manifest = read_json(&root.join("manifest.json"));
+    let packet = read_json(&root.join("archsig_analysis_packet.json"));
+    let validation = read_json(&root.join("validation.json"));
+    assert_eq!(
+        manifest["schemaVersion"],
+        "archsig-homotopy-report-fixture-manifest-v0"
+    );
+    assert_eq!(validation["summary"]["result"], "pass");
+    assert!(
+        validation["checks"]
+            .as_array()
+            .expect("validation checks are array")
+            .iter()
+            .any(|check| {
+                check["id"] == "archsig-analysis-packet-architecture-homotopy-report-surface"
+                    && check["result"] == "pass"
+            }),
+        "HomotopyReport fixture must lock ArchitectureHomotopyReport validation"
+    );
+
+    let report = &packet["architectureHomotopyReport"];
+    assert!(
+        report["nonConclusions"].as_array().is_some_and(|items| {
+            items.iter().any(|item| {
+                item.as_str()
+                    .is_some_and(|text| text.contains("single architecture quality score"))
+            })
+        }),
+        "HomotopyReport fixture must preserve report-level non-conclusions"
+    );
+
+    for case in manifest["cases"]
+        .as_array()
+        .expect("manifest cases are array")
+    {
+        let case_id = case["caseId"].as_str().expect("case id is present");
+        let path_rule_ref = case["pathRuleRef"]
+            .as_str()
+            .expect("path rule ref is present");
+        let loop_ref = loop_ref_for_path_rule(&packet, path_rule_ref);
+        let stokes = packet["stokesStyleReadings"]
+            .as_array()
+            .expect("stokes readings are array")
+            .iter()
+            .find(|reading| reading["loopRef"] == loop_ref)
+            .unwrap_or_else(|| panic!("missing Stokes reading for {case_id}"));
+        let holonomy = packet["homotopyHolonomyReadings"]
+            .as_array()
+            .expect("holonomy readings are array")
+            .iter()
+            .find(|reading| reading["loopRef"] == loop_ref)
+            .unwrap_or_else(|| panic!("missing holonomy reading for {case_id}"));
+
+        if let Some(expected) = case["expectedHolonomyValue"].as_i64() {
+            assert_eq!(
+                holonomy["value"], expected,
+                "{case_id} must lock expected holonomy value"
+            );
+        }
+        if let Some(minimum) = case["minimumHolonomyValue"].as_i64() {
+            assert!(
+                holonomy["value"]
+                    .as_i64()
+                    .is_some_and(|value| value >= minimum),
+                "{case_id} must expose nonzero holonomy"
+            );
+        }
+        if let Some(expected_status) = case["expectedStokesStatus"].as_str() {
+            assert_eq!(
+                stokes["status"], expected_status,
+                "{case_id} must lock Stokes status"
+            );
+        }
+        if let Some(required_missing) = case["requiredMissingEvidence"].as_str() {
+            assert!(
+                holonomy["missingFillerRefs"]
+                    .as_array()
+                    .expect("missing filler refs are array")
+                    .iter()
+                    .any(|item| item.as_str() == Some(required_missing)),
+                "{case_id} must keep missing filler evidence"
+            );
+            assert!(
+                report["unfilledLoops"]
+                    .as_array()
+                    .expect("unfilled loops are array")
+                    .iter()
+                    .any(|item| item.as_str() == Some(loop_ref)),
+                "{case_id} must surface as an unfilled loop"
+            );
+        }
+        if let Some(required_text) = case["requiredText"].as_str() {
+            assert!(
+                packet.to_string().contains(required_text),
+                "{case_id} must keep required fixture text {required_text}"
+            );
+        }
+    }
+}
+
+#[test]
 fn cli_pr_review_reads_archmapstore_inputs() {
     let out_dir = temp_dir("pr-review");
     let review = pr_review_root();
@@ -1223,6 +1330,25 @@ fn has_check_result(json: &Value, id: &str, result: &str) -> bool {
             })
         })
     })
+}
+
+fn loop_ref_for_path_rule<'a>(packet: &'a Value, path_rule_ref: &str) -> &'a str {
+    let path_pair = packet["pathPairCandidates"]
+        .as_array()
+        .expect("path pair candidates are array")
+        .iter()
+        .find(|candidate| candidate["pPathRef"].as_str() == Some(path_rule_ref))
+        .unwrap_or_else(|| panic!("missing path pair for {path_rule_ref}"));
+    let path_pair_ref = path_pair["candidateId"]
+        .as_str()
+        .expect("path pair candidate id is present");
+    packet["loopCandidates"]
+        .as_array()
+        .expect("loop candidates are array")
+        .iter()
+        .find(|candidate| candidate["pathPairRef"].as_str() == Some(path_pair_ref))
+        .and_then(|candidate| candidate["loopId"].as_str())
+        .unwrap_or_else(|| panic!("missing loop candidate for {path_rule_ref}"))
 }
 
 fn assert_north_star_packet_surfaces(json: &Value) {

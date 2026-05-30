@@ -3950,18 +3950,14 @@
       {
         "readingId": "stokes-style:loop-candidate-path-pair-semantic-contract-loop-0",
         "loopRef": "loop-candidate:path-pair-semantic-contract-loop-0",
-        "status": "filledNonzeroHolonomyReview",
+        "status": "blockedByArchitecturalHole",
         "holonomyReadingRefs": [
           "homotopy-holonomy:loop-candidate-path-pair-semantic-contract-loop-0:axis-layer-violation",
           "homotopy-holonomy:loop-candidate-path-pair-semantic-contract-loop-0:axis-semantic-inconsistency"
         ],
-        "localCurvatureCellCandidates": [
-          "2-cell:obstruction-layer-violation",
-          "2-cell:obstruction-semantic-contract-mismatch"
-        ],
+        "localCurvatureCellCandidates": [],
         "reviewQueueRefs": [
-          "2-cell:obstruction-layer-violation",
-          "2-cell:obstruction-semantic-contract-mismatch"
+          "architectural-hole:loop-candidate-path-pair-semantic-contract-loop-0"
         ],
         "coverageBoundary": "missing path or filler evidence blocks zero and Stokes-style readings",
         "evidenceBoundary": "Stokes-style reading is a bounded review queue, not theorem discharge",
@@ -3976,18 +3972,14 @@
       {
         "readingId": "stokes-style:loop-candidate-path-pair-path-rule-interface-implementation-1",
         "loopRef": "loop-candidate:path-pair-path-rule-interface-implementation-1",
-        "status": "filledNonzeroHolonomyReview",
+        "status": "blockedByArchitecturalHole",
         "holonomyReadingRefs": [
           "homotopy-holonomy:loop-candidate-path-pair-path-rule-interface-implementation-1:axis-layer-violation",
           "homotopy-holonomy:loop-candidate-path-pair-path-rule-interface-implementation-1:axis-semantic-inconsistency"
         ],
-        "localCurvatureCellCandidates": [
-          "2-cell:obstruction-layer-violation",
-          "2-cell:obstruction-semantic-contract-mismatch"
-        ],
+        "localCurvatureCellCandidates": [],
         "reviewQueueRefs": [
-          "2-cell:obstruction-layer-violation",
-          "2-cell:obstruction-semantic-contract-mismatch"
+          "architectural-hole:loop-candidate-path-pair-path-rule-interface-implementation-1"
         ],
         "coverageBoundary": "missing path or filler evidence blocks zero and Stokes-style readings",
         "evidenceBoundary": "Stokes-style reading is a bounded review queue, not theorem discharge",
@@ -4002,18 +3994,14 @@
       {
         "readingId": "stokes-style:loop-candidate-path-pair-path-rule-cache-repository-2",
         "loopRef": "loop-candidate:path-pair-path-rule-cache-repository-2",
-        "status": "filledNonzeroHolonomyReview",
+        "status": "blockedByArchitecturalHole",
         "holonomyReadingRefs": [
           "homotopy-holonomy:loop-candidate-path-pair-path-rule-cache-repository-2:axis-layer-violation",
           "homotopy-holonomy:loop-candidate-path-pair-path-rule-cache-repository-2:axis-semantic-inconsistency"
         ],
-        "localCurvatureCellCandidates": [
-          "2-cell:obstruction-layer-violation",
-          "2-cell:obstruction-semantic-contract-mismatch"
-        ],
+        "localCurvatureCellCandidates": [],
         "reviewQueueRefs": [
-          "2-cell:obstruction-layer-violation",
-          "2-cell:obstruction-semantic-contract-mismatch"
+          "architectural-hole:loop-candidate-path-pair-path-rule-cache-repository-2"
         ],
         "coverageBoundary": "missing path or filler evidence blocks zero and Stokes-style readings",
         "evidenceBoundary": "Stokes-style reading is a bounded review queue, not theorem discharge",
@@ -4030,11 +4018,7 @@
       "reportId": "architecture-homotopy-report:homotopy-profile-bounded-stokes-default",
       "profileRef": "homotopy-profile:bounded-stokes-default",
       "status": "needsReview",
-      "filledLoops": [
-        "loop-candidate:path-pair-path-rule-cache-repository-2",
-        "loop-candidate:path-pair-path-rule-interface-implementation-1",
-        "loop-candidate:path-pair-semantic-contract-loop-0"
-      ],
+      "filledLoops": [],
       "unfilledLoops": [
         "loop-candidate:path-pair-path-rule-cache-repository-2",
         "loop-candidate:path-pair-path-rule-interface-implementation-1",
@@ -4045,10 +4029,7 @@
         "loop-candidate:path-pair-path-rule-interface-implementation-1",
         "loop-candidate:path-pair-semantic-contract-loop-0"
       ],
-      "topLocalCurvatureCells": [
-        "2-cell:obstruction-layer-violation",
-        "2-cell:obstruction-semantic-contract-mismatch"
-      ],
+      "topLocalCurvatureCells": [],
       "aggregateReadings": [
         {
           "aggregateId": "beta1:bounded-unfilled-loop-count",
@@ -4064,7 +4045,7 @@
         },
         {
           "aggregateId": "fill-ratio:filled-loop-count",
-          "value": 3,
+          "value": 0,
           "reading": "filled loop count out of 3 measured loop candidates",
           "boundary": "count, not normalized quality score"
         }
