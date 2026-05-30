@@ -44,6 +44,11 @@ available. Load these references as needed:
   `archsig-pr-review-report-v1` without source repository docs.
 - `references/human-review-guide.md`: how to turn the report and source
   inspection into human code-review language.
+- `../archmap-creater/references/mapping-guide.md`,
+  `../archmap-creater/references/schema-cheatsheet.md`, and
+  `../archmap-creater/references/examples.md`: atom observation boundaries to
+  read when the PR introduces new architectural facts or when a delta item
+  cannot be mapped confidently to the base ArchMap.
 
 ## Inputs
 

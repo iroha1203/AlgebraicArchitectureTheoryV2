@@ -19,6 +19,23 @@ Collect:
 
 If the base branch range is unknown, ask for it before authoring the delta.
 
+## Atom Observation References
+
+This PR-review skill does not duplicate the full atom observation guide. The
+release bundle includes `archmap-creater`; use its references when the diff
+introduces new architectural facts, when a changed fact is hard to classify, or
+when you need to update the base ArchMap before confident PR review:
+
+- `../archmap-creater/references/mapping-guide.md`: atom family selection and
+  atom-vs-molecule-vs-semantic boundaries.
+- `../archmap-creater/references/schema-cheatsheet.md`: required fields and
+  schema-level boundaries for `atomObservations[]`.
+- `../archmap-creater/references/examples.md`: code-to-atom examples and
+  common bad atom examples.
+
+Use these before inventing a new observation ref or forcing a new fact into an
+unrelated base-map observation.
+
 ## Diff Reading Steps
 
 1. List changed files from the base branch diff.
