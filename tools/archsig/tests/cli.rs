@@ -1197,6 +1197,72 @@ fn assert_north_star_packet_surfaces(json: &Value) {
         }),
         "dominant atom-family composition must carry atom family counts and refs"
     );
+    let curvature_support = json["curvatureSupportReadings"]
+        .as_array()
+        .expect("curvature support readings are array");
+    assert!(
+        !curvature_support.is_empty(),
+        "North Star packet must expose curvature support readings"
+    );
+    assert!(
+        curvature_support.iter().all(|entry| {
+            entry["profileRef"].as_str().is_some()
+                && entry["status"].as_str().is_some()
+                && entry["witnessSupports"]
+                    .as_array()
+                    .is_some_and(|items| !items.is_empty())
+                && entry["topCurvatureModes"]
+                    .as_array()
+                    .is_some_and(|items| !items.is_empty())
+                && entry["witnessClusters"]
+                    .as_array()
+                    .is_some_and(|items| !items.is_empty())
+                && entry["coverageBoundary"].as_str().is_some()
+                && entry["exactnessAssumptionRefs"]
+                    .as_array()
+                    .is_some_and(|items| !items.is_empty())
+                && entry["measurementBoundary"].as_str().is_some()
+                && entry["nonConclusions"]
+                    .as_array()
+                    .is_some_and(|items| !items.is_empty())
+        }),
+        "curvature support readings must carry profile refs, witness rows, modes, clusters, and boundaries"
+    );
+    assert!(
+        curvature_support.iter().all(|entry| {
+            entry["witnessSupports"]
+                .as_array()
+                .expect("curvature witness supports are array")
+                .iter()
+                .all(|support| {
+                    support["witnessRuleRef"].as_str().is_some()
+                        && support["selectedAxisRef"].as_str().is_some()
+                        && support["signatureAxisRef"].as_str().is_some()
+                        && support["curvatureValue"]
+                            .as_i64()
+                            .is_some_and(|value| value >= 0)
+                        && support["weight"].as_i64().is_some_and(|value| value >= 0)
+                        && support["missingEvidence"].as_array().is_some()
+                        && support["reading"].as_str().is_some()
+                })
+        }),
+        "curvature witness support rows must carry witness, axis, curvature, weight, missing evidence, and reading fields"
+    );
+    assert!(
+        curvature_support.iter().any(|entry| {
+            entry["witnessSupports"]
+                .as_array()
+                .expect("curvature witness supports are array")
+                .iter()
+                .any(|support| {
+                    support["curvatureValue"] == 0
+                        && support["missingEvidence"]
+                            .as_array()
+                            .is_some_and(|items| !items.is_empty())
+                })
+        }),
+        "curvature support readings must keep unmeasured support separate from measured zero"
+    );
     let transfer_bridges = json["transferBridgeReadings"]
         .as_array()
         .expect("transfer bridge readings are array");
