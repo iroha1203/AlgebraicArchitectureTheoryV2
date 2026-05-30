@@ -1,6 +1,6 @@
 # FieldSig Commands
 
-FieldSig owns SFT software evolution measurement and workflow-evidence artifacts. The current ArchSig handoff is the serialized `archsig-analysis-packet-v0`: FieldSig reads it as local AAT algebra state, not as forecast truth, causal correctness, or global safety. `archsig-analysis-sft-input` projects that packet into `operation-support-estimate-v0` while preserving obstruction circuits, signature axes, repair candidates, and coverage gaps as bounded refs. `archmap-sft-input` remains a legacy bounded projection and must not promote raw ArchMap observations to forecast truth. FieldSig does not share Rust types with ArchSig as a contract; the stable boundary is the serialized artifact ref.
+FieldSig owns SFT software evolution measurement and workflow-evidence artifacts. The current ArchSig handoff is the serialized `archsig-analysis-packet-v0`: FieldSig reads it as current AAT structural state, not as forecast truth, causal correctness, global safety, or PR diff analysis. `archsig-analysis-sft-input` projects that packet into `operation-support-estimate-v0` while preserving obstruction circuits, signature axes, repair candidates, structural review boundaries, and coverage gaps as bounded refs. `archmap-sft-input` remains a legacy bounded projection and must not promote raw ArchMap observations to forecast truth. FieldSig does not share Rust types with ArchSig as a contract; the stable boundary is the serialized artifact ref.
 
 ## Measurement
 

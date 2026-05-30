@@ -53,7 +53,8 @@
       "ArchSig analysis packet does not prove source extraction completeness",
       "signature axes are law-policy-relative, not universal quality scores",
       "flatness reading is blocked by coverage gaps and exactness assumptions",
-      "repair operation candidates are not automatic safe refactorings"
+      "repair operation candidates are not automatic safe refactorings",
+      "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
     ]
   },
   "designPressure": [
@@ -81,7 +82,8 @@
         "ArchSig analysis packet does not prove source extraction completeness",
         "signature axes are law-policy-relative, not universal quality scores",
         "flatness reading is blocked by coverage gaps and exactness assumptions",
-        "repair operation candidates are not automatic safe refactorings"
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
       ]
     }
   ],
@@ -106,7 +108,8 @@
       "ArchSig analysis packet does not prove source extraction completeness",
       "signature axes are law-policy-relative, not universal quality scores",
       "flatness reading is blocked by coverage gaps and exactness assumptions",
-      "repair operation candidates are not automatic safe refactorings"
+      "repair operation candidates are not automatic safe refactorings",
+      "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
     ]
   },
   "aatConceptSurfaces": [
@@ -128,7 +131,8 @@
         "ArchSig analysis packet does not prove source extraction completeness",
         "signature axes are law-policy-relative, not universal quality scores",
         "flatness reading is blocked by coverage gaps and exactness assumptions",
-        "repair operation candidates are not automatic safe refactorings"
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
       ]
     },
     {
@@ -149,7 +153,8 @@
         "ArchSig analysis packet does not prove source extraction completeness",
         "signature axes are law-policy-relative, not universal quality scores",
         "flatness reading is blocked by coverage gaps and exactness assumptions",
-        "repair operation candidates are not automatic safe refactorings"
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
       ]
     },
     {
@@ -169,7 +174,8 @@
         "ArchSig analysis packet does not prove source extraction completeness",
         "signature axes are law-policy-relative, not universal quality scores",
         "flatness reading is blocked by coverage gaps and exactness assumptions",
-        "repair operation candidates are not automatic safe refactorings"
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
       ]
     },
     {
@@ -188,7 +194,8 @@
         "ArchSig analysis packet does not prove source extraction completeness",
         "signature axes are law-policy-relative, not universal quality scores",
         "flatness reading is blocked by coverage gaps and exactness assumptions",
-        "repair operation candidates are not automatic safe refactorings"
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
       ]
     },
     {
@@ -207,7 +214,8 @@
         "ArchSig analysis packet does not prove source extraction completeness",
         "signature axes are law-policy-relative, not universal quality scores",
         "flatness reading is blocked by coverage gaps and exactness assumptions",
-        "repair operation candidates are not automatic safe refactorings"
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
       ]
     },
     {
@@ -225,7 +233,8 @@
         "ArchSig analysis packet does not prove source extraction completeness",
         "signature axes are law-policy-relative, not universal quality scores",
         "flatness reading is blocked by coverage gaps and exactness assumptions",
-        "repair operation candidates are not automatic safe refactorings"
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
       ]
     },
     {
@@ -244,7 +253,8 @@
         "ArchSig analysis packet does not prove source extraction completeness",
         "signature axes are law-policy-relative, not universal quality scores",
         "flatness reading is blocked by coverage gaps and exactness assumptions",
-        "repair operation candidates are not automatic safe refactorings"
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
       ]
     },
     {
@@ -262,7 +272,8 @@
         "ArchSig analysis packet does not prove source extraction completeness",
         "signature axes are law-policy-relative, not universal quality scores",
         "flatness reading is blocked by coverage gaps and exactness assumptions",
-        "repair operation candidates are not automatic safe refactorings"
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
       ]
     },
     {
@@ -280,7 +291,8 @@
         "ArchSig analysis packet does not prove source extraction completeness",
         "signature axes are law-policy-relative, not universal quality scores",
         "flatness reading is blocked by coverage gaps and exactness assumptions",
-        "repair operation candidates are not automatic safe refactorings"
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
       ]
     },
     {
@@ -298,7 +310,8 @@
         "ArchSig analysis packet does not prove source extraction completeness",
         "signature axes are law-policy-relative, not universal quality scores",
         "flatness reading is blocked by coverage gaps and exactness assumptions",
-        "repair operation candidates are not automatic safe refactorings"
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
       ]
     },
     {
@@ -316,7 +329,8 @@
         "ArchSig analysis packet does not prove source extraction completeness",
         "signature axes are law-policy-relative, not universal quality scores",
         "flatness reading is blocked by coverage gaps and exactness assumptions",
-        "repair operation candidates are not automatic safe refactorings"
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
       ]
     },
     {
@@ -343,7 +357,8 @@
         "ArchSig analysis packet does not prove source extraction completeness",
         "signature axes are law-policy-relative, not universal quality scores",
         "flatness reading is blocked by coverage gaps and exactness assumptions",
-        "repair operation candidates are not automatic safe refactorings"
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
       ]
     }
   ],
@@ -373,7 +388,8 @@
       "ArchSig analysis packet does not prove source extraction completeness",
       "signature axes are law-policy-relative, not universal quality scores",
       "flatness reading is blocked by coverage gaps and exactness assumptions",
-      "repair operation candidates are not automatic safe refactorings"
+      "repair operation candidates are not automatic safe refactorings",
+      "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
     ]
   },
   "architectureObjectProjections": [
@@ -395,7 +411,8 @@
         "ArchSig analysis packet does not prove source extraction completeness",
         "signature axes are law-policy-relative, not universal quality scores",
         "flatness reading is blocked by coverage gaps and exactness assumptions",
-        "repair operation candidates are not automatic safe refactorings"
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
       ]
     },
     {
@@ -416,7 +433,8 @@
         "ArchSig analysis packet does not prove source extraction completeness",
         "signature axes are law-policy-relative, not universal quality scores",
         "flatness reading is blocked by coverage gaps and exactness assumptions",
-        "repair operation candidates are not automatic safe refactorings"
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
       ]
     },
     {
@@ -435,7 +453,8 @@
         "ArchSig analysis packet does not prove source extraction completeness",
         "signature axes are law-policy-relative, not universal quality scores",
         "flatness reading is blocked by coverage gaps and exactness assumptions",
-        "repair operation candidates are not automatic safe refactorings"
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
       ]
     }
   ],
@@ -459,7 +478,8 @@
         "ArchSig analysis packet does not prove source extraction completeness",
         "signature axes are law-policy-relative, not universal quality scores",
         "flatness reading is blocked by coverage gaps and exactness assumptions",
-        "repair operation candidates are not automatic safe refactorings"
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
       ]
     },
     {
@@ -483,7 +503,8 @@
         "ArchSig analysis packet does not prove source extraction completeness",
         "signature axes are law-policy-relative, not universal quality scores",
         "flatness reading is blocked by coverage gaps and exactness assumptions",
-        "repair operation candidates are not automatic safe refactorings"
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
       ]
     }
   ],
@@ -517,7 +538,8 @@
       "ArchSig analysis packet does not prove source extraction completeness",
       "signature axes are law-policy-relative, not universal quality scores",
       "flatness reading is blocked by coverage gaps and exactness assumptions",
-      "repair operation candidates are not automatic safe refactorings"
+      "repair operation candidates are not automatic safe refactorings",
+      "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
     ]
   },
   "moleculeReadings": [
@@ -549,7 +571,8 @@
         "ArchSig analysis packet does not prove source extraction completeness",
         "signature axes are law-policy-relative, not universal quality scores",
         "flatness reading is blocked by coverage gaps and exactness assumptions",
-        "repair operation candidates are not automatic safe refactorings"
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
       ]
     }
   ],
@@ -598,7 +621,8 @@
         "ArchSig analysis packet does not prove source extraction completeness",
         "signature axes are law-policy-relative, not universal quality scores",
         "flatness reading is blocked by coverage gaps and exactness assumptions",
-        "repair operation candidates are not automatic safe refactorings"
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
       ]
     }
   ],
@@ -640,7 +664,8 @@
         "ArchSig analysis packet does not prove source extraction completeness",
         "signature axes are law-policy-relative, not universal quality scores",
         "flatness reading is blocked by coverage gaps and exactness assumptions",
-        "repair operation candidates are not automatic safe refactorings"
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
       ]
     },
     {
@@ -680,7 +705,8 @@
         "ArchSig analysis packet does not prove source extraction completeness",
         "signature axes are law-policy-relative, not universal quality scores",
         "flatness reading is blocked by coverage gaps and exactness assumptions",
-        "repair operation candidates are not automatic safe refactorings"
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
       ]
     }
   ],
@@ -710,7 +736,8 @@
         "ArchSig analysis packet does not prove source extraction completeness",
         "signature axes are law-policy-relative, not universal quality scores",
         "flatness reading is blocked by coverage gaps and exactness assumptions",
-        "repair operation candidates are not automatic safe refactorings"
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
       ]
     },
     {
@@ -738,7 +765,8 @@
         "ArchSig analysis packet does not prove source extraction completeness",
         "signature axes are law-policy-relative, not universal quality scores",
         "flatness reading is blocked by coverage gaps and exactness assumptions",
-        "repair operation candidates are not automatic safe refactorings"
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
       ]
     },
     {
@@ -766,7 +794,8 @@
         "ArchSig analysis packet does not prove source extraction completeness",
         "signature axes are law-policy-relative, not universal quality scores",
         "flatness reading is blocked by coverage gaps and exactness assumptions",
-        "repair operation candidates are not automatic safe refactorings"
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
       ]
     },
     {
@@ -794,7 +823,8 @@
         "ArchSig analysis packet does not prove source extraction completeness",
         "signature axes are law-policy-relative, not universal quality scores",
         "flatness reading is blocked by coverage gaps and exactness assumptions",
-        "repair operation candidates are not automatic safe refactorings"
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
       ]
     },
     {
@@ -822,7 +852,8 @@
         "ArchSig analysis packet does not prove source extraction completeness",
         "signature axes are law-policy-relative, not universal quality scores",
         "flatness reading is blocked by coverage gaps and exactness assumptions",
-        "repair operation candidates are not automatic safe refactorings"
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
       ]
     },
     {
@@ -850,7 +881,8 @@
         "ArchSig analysis packet does not prove source extraction completeness",
         "signature axes are law-policy-relative, not universal quality scores",
         "flatness reading is blocked by coverage gaps and exactness assumptions",
-        "repair operation candidates are not automatic safe refactorings"
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
       ]
     },
     {
@@ -878,7 +910,8 @@
         "ArchSig analysis packet does not prove source extraction completeness",
         "signature axes are law-policy-relative, not universal quality scores",
         "flatness reading is blocked by coverage gaps and exactness assumptions",
-        "repair operation candidates are not automatic safe refactorings"
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
       ]
     },
     {
@@ -903,7 +936,8 @@
         "ArchSig analysis packet does not prove source extraction completeness",
         "signature axes are law-policy-relative, not universal quality scores",
         "flatness reading is blocked by coverage gaps and exactness assumptions",
-        "repair operation candidates are not automatic safe refactorings"
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
       ]
     },
     {
@@ -931,7 +965,8 @@
         "ArchSig analysis packet does not prove source extraction completeness",
         "signature axes are law-policy-relative, not universal quality scores",
         "flatness reading is blocked by coverage gaps and exactness assumptions",
-        "repair operation candidates are not automatic safe refactorings"
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
       ]
     },
     {
@@ -956,7 +991,8 @@
         "ArchSig analysis packet does not prove source extraction completeness",
         "signature axes are law-policy-relative, not universal quality scores",
         "flatness reading is blocked by coverage gaps and exactness assumptions",
-        "repair operation candidates are not automatic safe refactorings"
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
       ]
     }
   ],
@@ -980,7 +1016,8 @@
         "ArchSig analysis packet does not prove source extraction completeness",
         "signature axes are law-policy-relative, not universal quality scores",
         "flatness reading is blocked by coverage gaps and exactness assumptions",
-        "repair operation candidates are not automatic safe refactorings"
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
       ]
     },
     {
@@ -1003,7 +1040,8 @@
         "ArchSig analysis packet does not prove source extraction completeness",
         "signature axes are law-policy-relative, not universal quality scores",
         "flatness reading is blocked by coverage gaps and exactness assumptions",
-        "repair operation candidates are not automatic safe refactorings"
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
       ]
     },
     {
@@ -1027,7 +1065,8 @@
         "ArchSig analysis packet does not prove source extraction completeness",
         "signature axes are law-policy-relative, not universal quality scores",
         "flatness reading is blocked by coverage gaps and exactness assumptions",
-        "repair operation candidates are not automatic safe refactorings"
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
       ]
     },
     {
@@ -1054,7 +1093,8 @@
         "ArchSig analysis packet does not prove source extraction completeness",
         "signature axes are law-policy-relative, not universal quality scores",
         "flatness reading is blocked by coverage gaps and exactness assumptions",
-        "repair operation candidates are not automatic safe refactorings"
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
       ]
     }
   ],
@@ -1106,7 +1146,8 @@
             "ArchSig analysis packet does not prove source extraction completeness",
             "signature axes are law-policy-relative, not universal quality scores",
             "flatness reading is blocked by coverage gaps and exactness assumptions",
-            "repair operation candidates are not automatic safe refactorings"
+            "repair operation candidates are not automatic safe refactorings",
+            "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
           ]
         },
         {
@@ -1126,7 +1167,8 @@
             "ArchSig analysis packet does not prove source extraction completeness",
             "signature axes are law-policy-relative, not universal quality scores",
             "flatness reading is blocked by coverage gaps and exactness assumptions",
-            "repair operation candidates are not automatic safe refactorings"
+            "repair operation candidates are not automatic safe refactorings",
+            "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
           ]
         },
         {
@@ -1146,7 +1188,8 @@
             "ArchSig analysis packet does not prove source extraction completeness",
             "signature axes are law-policy-relative, not universal quality scores",
             "flatness reading is blocked by coverage gaps and exactness assumptions",
-            "repair operation candidates are not automatic safe refactorings"
+            "repair operation candidates are not automatic safe refactorings",
+            "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
           ]
         },
         {
@@ -1166,7 +1209,8 @@
             "ArchSig analysis packet does not prove source extraction completeness",
             "signature axes are law-policy-relative, not universal quality scores",
             "flatness reading is blocked by coverage gaps and exactness assumptions",
-            "repair operation candidates are not automatic safe refactorings"
+            "repair operation candidates are not automatic safe refactorings",
+            "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
           ]
         },
         {
@@ -1186,7 +1230,8 @@
             "ArchSig analysis packet does not prove source extraction completeness",
             "signature axes are law-policy-relative, not universal quality scores",
             "flatness reading is blocked by coverage gaps and exactness assumptions",
-            "repair operation candidates are not automatic safe refactorings"
+            "repair operation candidates are not automatic safe refactorings",
+            "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
           ]
         }
       ],
@@ -1206,7 +1251,8 @@
         "ArchSig analysis packet does not prove source extraction completeness",
         "signature axes are law-policy-relative, not universal quality scores",
         "flatness reading is blocked by coverage gaps and exactness assumptions",
-        "repair operation candidates are not automatic safe refactorings"
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
       ]
     }
   ],
@@ -1273,7 +1319,8 @@
         "ArchSig analysis packet does not prove source extraction completeness",
         "signature axes are law-policy-relative, not universal quality scores",
         "flatness reading is blocked by coverage gaps and exactness assumptions",
-        "repair operation candidates are not automatic safe refactorings"
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
       ]
     },
     {
@@ -1327,7 +1374,8 @@
         "ArchSig analysis packet does not prove source extraction completeness",
         "signature axes are law-policy-relative, not universal quality scores",
         "flatness reading is blocked by coverage gaps and exactness assumptions",
-        "repair operation candidates are not automatic safe refactorings"
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
       ]
     },
     {
@@ -1392,7 +1440,8 @@
         "ArchSig analysis packet does not prove source extraction completeness",
         "signature axes are law-policy-relative, not universal quality scores",
         "flatness reading is blocked by coverage gaps and exactness assumptions",
-        "repair operation candidates are not automatic safe refactorings"
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
       ]
     },
     {
@@ -1457,7 +1506,8 @@
         "ArchSig analysis packet does not prove source extraction completeness",
         "signature axes are law-policy-relative, not universal quality scores",
         "flatness reading is blocked by coverage gaps and exactness assumptions",
-        "repair operation candidates are not automatic safe refactorings"
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
       ]
     }
   ],
@@ -1509,7 +1559,8 @@
         "ArchSig analysis packet does not prove source extraction completeness",
         "signature axes are law-policy-relative, not universal quality scores",
         "flatness reading is blocked by coverage gaps and exactness assumptions",
-        "repair operation candidates are not automatic safe refactorings"
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
       ]
     },
     {
@@ -1552,7 +1603,8 @@
         "ArchSig analysis packet does not prove source extraction completeness",
         "signature axes are law-policy-relative, not universal quality scores",
         "flatness reading is blocked by coverage gaps and exactness assumptions",
-        "repair operation candidates are not automatic safe refactorings"
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
       ]
     },
     {
@@ -1602,7 +1654,8 @@
         "ArchSig analysis packet does not prove source extraction completeness",
         "signature axes are law-policy-relative, not universal quality scores",
         "flatness reading is blocked by coverage gaps and exactness assumptions",
-        "repair operation candidates are not automatic safe refactorings"
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
       ]
     },
     {
@@ -1652,7 +1705,8 @@
         "ArchSig analysis packet does not prove source extraction completeness",
         "signature axes are law-policy-relative, not universal quality scores",
         "flatness reading is blocked by coverage gaps and exactness assumptions",
-        "repair operation candidates are not automatic safe refactorings"
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
       ]
     }
   ],
@@ -1722,7 +1776,8 @@
             "ArchSig analysis packet does not prove source extraction completeness",
             "signature axes are law-policy-relative, not universal quality scores",
             "flatness reading is blocked by coverage gaps and exactness assumptions",
-            "repair operation candidates are not automatic safe refactorings"
+            "repair operation candidates are not automatic safe refactorings",
+            "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
           ]
         }
       ],
@@ -1735,7 +1790,8 @@
         "ArchSig analysis packet does not prove source extraction completeness",
         "signature axes are law-policy-relative, not universal quality scores",
         "flatness reading is blocked by coverage gaps and exactness assumptions",
-        "repair operation candidates are not automatic safe refactorings"
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
       ]
     }
   ],
@@ -1770,7 +1826,8 @@
             "ArchSig analysis packet does not prove source extraction completeness",
             "signature axes are law-policy-relative, not universal quality scores",
             "flatness reading is blocked by coverage gaps and exactness assumptions",
-            "repair operation candidates are not automatic safe refactorings"
+            "repair operation candidates are not automatic safe refactorings",
+            "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
           ]
         }
       ],
@@ -1793,7 +1850,8 @@
           "ArchSig analysis packet does not prove source extraction completeness",
           "signature axes are law-policy-relative, not universal quality scores",
           "flatness reading is blocked by coverage gaps and exactness assumptions",
-          "repair operation candidates are not automatic safe refactorings"
+          "repair operation candidates are not automatic safe refactorings",
+          "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
         ]
       },
       "reading": "transfer bridge reading connects repair transfer axes, bridge atom families, and evolution risk ranking",
@@ -1805,7 +1863,8 @@
         "ArchSig analysis packet does not prove source extraction completeness",
         "signature axes are law-policy-relative, not universal quality scores",
         "flatness reading is blocked by coverage gaps and exactness assumptions",
-        "repair operation candidates are not automatic safe refactorings"
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
       ]
     }
   ],
@@ -1834,7 +1893,8 @@
         "ArchSig analysis packet does not prove source extraction completeness",
         "signature axes are law-policy-relative, not universal quality scores",
         "flatness reading is blocked by coverage gaps and exactness assumptions",
-        "repair operation candidates are not automatic safe refactorings"
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
       ]
     },
     {
@@ -1861,7 +1921,8 @@
         "ArchSig analysis packet does not prove source extraction completeness",
         "signature axes are law-policy-relative, not universal quality scores",
         "flatness reading is blocked by coverage gaps and exactness assumptions",
-        "repair operation candidates are not automatic safe refactorings"
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
       ]
     },
     {
@@ -1888,7 +1949,8 @@
         "ArchSig analysis packet does not prove source extraction completeness",
         "signature axes are law-policy-relative, not universal quality scores",
         "flatness reading is blocked by coverage gaps and exactness assumptions",
-        "repair operation candidates are not automatic safe refactorings"
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
       ]
     },
     {
@@ -1915,7 +1977,8 @@
         "ArchSig analysis packet does not prove source extraction completeness",
         "signature axes are law-policy-relative, not universal quality scores",
         "flatness reading is blocked by coverage gaps and exactness assumptions",
-        "repair operation candidates are not automatic safe refactorings"
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
       ]
     },
     {
@@ -1942,7 +2005,8 @@
         "ArchSig analysis packet does not prove source extraction completeness",
         "signature axes are law-policy-relative, not universal quality scores",
         "flatness reading is blocked by coverage gaps and exactness assumptions",
-        "repair operation candidates are not automatic safe refactorings"
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
       ]
     },
     {
@@ -1969,7 +2033,8 @@
         "ArchSig analysis packet does not prove source extraction completeness",
         "signature axes are law-policy-relative, not universal quality scores",
         "flatness reading is blocked by coverage gaps and exactness assumptions",
-        "repair operation candidates are not automatic safe refactorings"
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
       ]
     },
     {
@@ -1996,7 +2061,8 @@
         "ArchSig analysis packet does not prove source extraction completeness",
         "signature axes are law-policy-relative, not universal quality scores",
         "flatness reading is blocked by coverage gaps and exactness assumptions",
-        "repair operation candidates are not automatic safe refactorings"
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
       ]
     },
     {
@@ -2023,7 +2089,8 @@
         "ArchSig analysis packet does not prove source extraction completeness",
         "signature axes are law-policy-relative, not universal quality scores",
         "flatness reading is blocked by coverage gaps and exactness assumptions",
-        "repair operation candidates are not automatic safe refactorings"
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
       ]
     },
     {
@@ -2050,7 +2117,8 @@
         "ArchSig analysis packet does not prove source extraction completeness",
         "signature axes are law-policy-relative, not universal quality scores",
         "flatness reading is blocked by coverage gaps and exactness assumptions",
-        "repair operation candidates are not automatic safe refactorings"
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
       ]
     },
     {
@@ -2077,7 +2145,8 @@
         "ArchSig analysis packet does not prove source extraction completeness",
         "signature axes are law-policy-relative, not universal quality scores",
         "flatness reading is blocked by coverage gaps and exactness assumptions",
-        "repair operation candidates are not automatic safe refactorings"
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
       ]
     },
     {
@@ -2104,7 +2173,8 @@
         "ArchSig analysis packet does not prove source extraction completeness",
         "signature axes are law-policy-relative, not universal quality scores",
         "flatness reading is blocked by coverage gaps and exactness assumptions",
-        "repair operation candidates are not automatic safe refactorings"
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
       ]
     },
     {
@@ -2131,7 +2201,8 @@
         "ArchSig analysis packet does not prove source extraction completeness",
         "signature axes are law-policy-relative, not universal quality scores",
         "flatness reading is blocked by coverage gaps and exactness assumptions",
-        "repair operation candidates are not automatic safe refactorings"
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
       ]
     },
     {
@@ -2158,7 +2229,8 @@
         "ArchSig analysis packet does not prove source extraction completeness",
         "signature axes are law-policy-relative, not universal quality scores",
         "flatness reading is blocked by coverage gaps and exactness assumptions",
-        "repair operation candidates are not automatic safe refactorings"
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
       ]
     },
     {
@@ -2185,7 +2257,8 @@
         "ArchSig analysis packet does not prove source extraction completeness",
         "signature axes are law-policy-relative, not universal quality scores",
         "flatness reading is blocked by coverage gaps and exactness assumptions",
-        "repair operation candidates are not automatic safe refactorings"
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
       ]
     }
   ],
@@ -2221,7 +2294,8 @@
         "ArchSig analysis packet does not prove source extraction completeness",
         "signature axes are law-policy-relative, not universal quality scores",
         "flatness reading is blocked by coverage gaps and exactness assumptions",
-        "repair operation candidates are not automatic safe refactorings"
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
       ]
     }
   ],
@@ -2255,7 +2329,8 @@
         "ArchSig analysis packet does not prove source extraction completeness",
         "signature axes are law-policy-relative, not universal quality scores",
         "flatness reading is blocked by coverage gaps and exactness assumptions",
-        "repair operation candidates are not automatic safe refactorings"
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
       ]
     }
   ],
@@ -2291,7 +2366,8 @@
         "ArchSig analysis packet does not prove source extraction completeness",
         "signature axes are law-policy-relative, not universal quality scores",
         "flatness reading is blocked by coverage gaps and exactness assumptions",
-        "repair operation candidates are not automatic safe refactorings"
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
       ]
     }
   ],
@@ -2322,7 +2398,8 @@
         "ArchSig analysis packet does not prove source extraction completeness",
         "signature axes are law-policy-relative, not universal quality scores",
         "flatness reading is blocked by coverage gaps and exactness assumptions",
-        "repair operation candidates are not automatic safe refactorings"
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
       ]
     }
   ],
@@ -2357,7 +2434,8 @@
         "ArchSig analysis packet does not prove source extraction completeness",
         "signature axes are law-policy-relative, not universal quality scores",
         "flatness reading is blocked by coverage gaps and exactness assumptions",
-        "repair operation candidates are not automatic safe refactorings"
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
       ]
     }
   ],
@@ -2383,10 +2461,70 @@
         "ArchSig analysis packet does not prove source extraction completeness",
         "signature axes are law-policy-relative, not universal quality scores",
         "flatness reading is blocked by coverage gaps and exactness assumptions",
-        "repair operation candidates are not automatic safe refactorings"
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
       ]
     }
   ],
+  "structuralReadingReviewSurface": {
+    "surfaceId": "aat-structural-reading-review-surface",
+    "status": "needsReview",
+    "currentStateReading": "ArchSig reads current architecture state across representation strength, local curvature, three-layer flatness, observation projection, state transition algebra, operation-invariant constraints, and split readiness; blockedRepresentations=14, curvatures=1, blockedOperations=1, splitBlockers=1",
+    "connectedReadingRefs": [
+      "representationStrength:weightedAdjacencyMatrix",
+      "representationStrength:reachableConeSize",
+      "representationStrength:walkCount",
+      "representationStrength:nilpotenceBoundary",
+      "representationStrength:selectedSubgraphSpectrum",
+      "representationStrength:propagationDepth",
+      "local-curvature:obstruction-semantic-contract-mismatch-computed",
+      "three-layer-flatness:fixture-archmap-atom-observation",
+      "observation-projection:fixture-archmap-atom-observation",
+      "state-transition-algebra:fixture-archmap-atom-observation",
+      "operation-invariant-galois:selected-law-policy",
+      "split-readiness:molecule-user-request-responsibility"
+    ],
+    "reviewFocus": [
+      "read representation-strength blockers before treating zero or obstruction absence as exact",
+      "read local-curvature diagrams as law-relative state pressure, not as generic lint failures",
+      "compare static, runtime, and semantic flatness before relying on source layout",
+      "treat observation projection gaps as lost coordinates that bound the reading",
+      "check state/effect algebra relations before approving local repairs",
+      "read split readiness and bridge edges before separating molecules"
+    ],
+    "evidenceBoundary": "structural readings are computed from the current ArchMap and selected LawPolicy; they are review telemetry, not proof of global architecture truth",
+    "nonConclusions": [
+      "ArchSig analysis packet is not a Lean theorem proof",
+      "ArchSig analysis packet is not global architecture truth",
+      "ArchSig analysis packet does not prove source extraction completeness",
+      "signature axes are law-policy-relative, not universal quality scores",
+      "flatness reading is blocked by coverage gaps and exactness assumptions",
+      "repair operation candidates are not automatic safe refactorings",
+      "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+    ]
+  },
+  "currentStateEvolutionBoundary": {
+    "boundaryId": "archsig-fieldsig-current-state-evolution-boundary",
+    "archsigCurrentStateScope": "ArchSig computes current AAT structural state from ArchMap fixture-archmap-atom-observation and LawPolicy llm-native-aat-law-policy-fixture; it reads atoms, molecules, laws, obstructions, bridge pressure, structural readings, and bounded review focus",
+    "fieldsigEvolutionScope": "FieldSig consumes archsig-analysis-packet-v0 as bounded current AAT structural state and studies PR, diff, change-vector, forecast, governance, calibration, and operational evolution over that state",
+    "handoffArtifactRef": "archsig-analysis-packet-v0",
+    "forbiddenReadings": [
+      "ArchSig packet is not PR diff analysis",
+      "ArchSig packet is not forecast correctness or causal truth",
+      "raw ArchMap observations are not FieldSig forecast truth",
+      "FieldSig evolution readings must not be moved back into ArchMap"
+    ],
+    "evidenceBoundary": "handoff preserves bounded current-state evidence; evolution claims remain downstream FieldSig readings",
+    "nonConclusions": [
+      "ArchSig analysis packet is not a Lean theorem proof",
+      "ArchSig analysis packet is not global architecture truth",
+      "ArchSig analysis packet does not prove source extraction completeness",
+      "signature axes are law-policy-relative, not universal quality scores",
+      "flatness reading is blocked by coverage gaps and exactness assumptions",
+      "repair operation candidates are not automatic safe refactorings",
+      "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+    ]
+  },
   "designPrincipleReadings": [
     {
       "principleId": "principle:informationhiding",
@@ -2421,7 +2559,8 @@
         "ArchSig analysis packet does not prove source extraction completeness",
         "signature axes are law-policy-relative, not universal quality scores",
         "flatness reading is blocked by coverage gaps and exactness assumptions",
-        "repair operation candidates are not automatic safe refactorings"
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
       ]
     },
     {
@@ -2457,7 +2596,8 @@
         "ArchSig analysis packet does not prove source extraction completeness",
         "signature axes are law-policy-relative, not universal quality scores",
         "flatness reading is blocked by coverage gaps and exactness assumptions",
-        "repair operation candidates are not automatic safe refactorings"
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
       ]
     },
     {
@@ -2493,7 +2633,8 @@
         "ArchSig analysis packet does not prove source extraction completeness",
         "signature axes are law-policy-relative, not universal quality scores",
         "flatness reading is blocked by coverage gaps and exactness assumptions",
-        "repair operation candidates are not automatic safe refactorings"
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
       ]
     },
     {
@@ -2529,7 +2670,8 @@
         "ArchSig analysis packet does not prove source extraction completeness",
         "signature axes are law-policy-relative, not universal quality scores",
         "flatness reading is blocked by coverage gaps and exactness assumptions",
-        "repair operation candidates are not automatic safe refactorings"
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
       ]
     },
     {
@@ -2565,7 +2707,8 @@
         "ArchSig analysis packet does not prove source extraction completeness",
         "signature axes are law-policy-relative, not universal quality scores",
         "flatness reading is blocked by coverage gaps and exactness assumptions",
-        "repair operation candidates are not automatic safe refactorings"
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
       ]
     },
     {
@@ -2601,7 +2744,8 @@
         "ArchSig analysis packet does not prove source extraction completeness",
         "signature axes are law-policy-relative, not universal quality scores",
         "flatness reading is blocked by coverage gaps and exactness assumptions",
-        "repair operation candidates are not automatic safe refactorings"
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
       ]
     },
     {
@@ -2637,7 +2781,8 @@
         "ArchSig analysis packet does not prove source extraction completeness",
         "signature axes are law-policy-relative, not universal quality scores",
         "flatness reading is blocked by coverage gaps and exactness assumptions",
-        "repair operation candidates are not automatic safe refactorings"
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
       ]
     },
     {
@@ -2673,7 +2818,8 @@
         "ArchSig analysis packet does not prove source extraction completeness",
         "signature axes are law-policy-relative, not universal quality scores",
         "flatness reading is blocked by coverage gaps and exactness assumptions",
-        "repair operation candidates are not automatic safe refactorings"
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
       ]
     },
     {
@@ -2709,7 +2855,8 @@
         "ArchSig analysis packet does not prove source extraction completeness",
         "signature axes are law-policy-relative, not universal quality scores",
         "flatness reading is blocked by coverage gaps and exactness assumptions",
-        "repair operation candidates are not automatic safe refactorings"
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
       ]
     }
   ],
@@ -2736,7 +2883,8 @@
       "ArchSig analysis packet does not prove source extraction completeness",
       "signature axes are law-policy-relative, not universal quality scores",
       "flatness reading is blocked by coverage gaps and exactness assumptions",
-      "repair operation candidates are not automatic safe refactorings"
+      "repair operation candidates are not automatic safe refactorings",
+      "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
     ]
   },
   "staticRuntimeSemanticLayerSplit": {
@@ -2759,7 +2907,8 @@
       "ArchSig analysis packet does not prove source extraction completeness",
       "signature axes are law-policy-relative, not universal quality scores",
       "flatness reading is blocked by coverage gaps and exactness assumptions",
-      "repair operation candidates are not automatic safe refactorings"
+      "repair operation candidates are not automatic safe refactorings",
+      "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
     ]
   },
   "repairOperationCandidates": [
@@ -2810,7 +2959,8 @@
         "ArchSig analysis packet does not prove source extraction completeness",
         "signature axes are law-policy-relative, not universal quality scores",
         "flatness reading is blocked by coverage gaps and exactness assumptions",
-        "repair operation candidates are not automatic safe refactorings"
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
       ]
     }
   ],
@@ -2863,7 +3013,8 @@
         "ArchSig analysis packet does not prove source extraction completeness",
         "signature axes are law-policy-relative, not universal quality scores",
         "flatness reading is blocked by coverage gaps and exactness assumptions",
-        "repair operation candidates are not automatic safe refactorings"
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
       ]
     }
   ],
@@ -2889,7 +3040,8 @@
         "ArchSig analysis packet does not prove source extraction completeness",
         "signature axes are law-policy-relative, not universal quality scores",
         "flatness reading is blocked by coverage gaps and exactness assumptions",
-        "repair operation candidates are not automatic safe refactorings"
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
       ]
     },
     {
@@ -2916,7 +3068,8 @@
         "ArchSig analysis packet does not prove source extraction completeness",
         "signature axes are law-policy-relative, not universal quality scores",
         "flatness reading is blocked by coverage gaps and exactness assumptions",
-        "repair operation candidates are not automatic safe refactorings"
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
       ]
     }
   ],
@@ -2945,7 +3098,8 @@
         "ArchSig analysis packet does not prove source extraction completeness",
         "signature axes are law-policy-relative, not universal quality scores",
         "flatness reading is blocked by coverage gaps and exactness assumptions",
-        "repair operation candidates are not automatic safe refactorings"
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
       ]
     },
     {
@@ -2973,7 +3127,8 @@
         "ArchSig analysis packet does not prove source extraction completeness",
         "signature axes are law-policy-relative, not universal quality scores",
         "flatness reading is blocked by coverage gaps and exactness assumptions",
-        "repair operation candidates are not automatic safe refactorings"
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
       ]
     },
     {
@@ -2998,7 +3153,8 @@
         "ArchSig analysis packet does not prove source extraction completeness",
         "signature axes are law-policy-relative, not universal quality scores",
         "flatness reading is blocked by coverage gaps and exactness assumptions",
-        "repair operation candidates are not automatic safe refactorings"
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
       ]
     },
     {
@@ -3023,7 +3179,8 @@
         "ArchSig analysis packet does not prove source extraction completeness",
         "signature axes are law-policy-relative, not universal quality scores",
         "flatness reading is blocked by coverage gaps and exactness assumptions",
-        "repair operation candidates are not automatic safe refactorings"
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
       ]
     },
     {
@@ -3050,7 +3207,8 @@
         "ArchSig analysis packet does not prove source extraction completeness",
         "signature axes are law-policy-relative, not universal quality scores",
         "flatness reading is blocked by coverage gaps and exactness assumptions",
-        "repair operation candidates are not automatic safe refactorings"
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
       ]
     },
     {
@@ -3077,7 +3235,8 @@
         "ArchSig analysis packet does not prove source extraction completeness",
         "signature axes are law-policy-relative, not universal quality scores",
         "flatness reading is blocked by coverage gaps and exactness assumptions",
-        "repair operation candidates are not automatic safe refactorings"
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
       ]
     },
     {
@@ -3104,7 +3263,8 @@
         "ArchSig analysis packet does not prove source extraction completeness",
         "signature axes are law-policy-relative, not universal quality scores",
         "flatness reading is blocked by coverage gaps and exactness assumptions",
-        "repair operation candidates are not automatic safe refactorings"
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
       ]
     },
     {
@@ -3131,7 +3291,8 @@
         "ArchSig analysis packet does not prove source extraction completeness",
         "signature axes are law-policy-relative, not universal quality scores",
         "flatness reading is blocked by coverage gaps and exactness assumptions",
-        "repair operation candidates are not automatic safe refactorings"
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
       ]
     },
     {
@@ -3158,7 +3319,8 @@
         "ArchSig analysis packet does not prove source extraction completeness",
         "signature axes are law-policy-relative, not universal quality scores",
         "flatness reading is blocked by coverage gaps and exactness assumptions",
-        "repair operation candidates are not automatic safe refactorings"
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
       ]
     },
     {
@@ -3185,7 +3347,8 @@
         "ArchSig analysis packet does not prove source extraction completeness",
         "signature axes are law-policy-relative, not universal quality scores",
         "flatness reading is blocked by coverage gaps and exactness assumptions",
-        "repair operation candidates are not automatic safe refactorings"
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
       ]
     },
     {
@@ -3212,7 +3375,8 @@
         "ArchSig analysis packet does not prove source extraction completeness",
         "signature axes are law-policy-relative, not universal quality scores",
         "flatness reading is blocked by coverage gaps and exactness assumptions",
-        "repair operation candidates are not automatic safe refactorings"
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
       ]
     },
     {
@@ -3239,7 +3403,8 @@
         "ArchSig analysis packet does not prove source extraction completeness",
         "signature axes are law-policy-relative, not universal quality scores",
         "flatness reading is blocked by coverage gaps and exactness assumptions",
-        "repair operation candidates are not automatic safe refactorings"
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
       ]
     },
     {
@@ -3266,7 +3431,8 @@
         "ArchSig analysis packet does not prove source extraction completeness",
         "signature axes are law-policy-relative, not universal quality scores",
         "flatness reading is blocked by coverage gaps and exactness assumptions",
-        "repair operation candidates are not automatic safe refactorings"
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
       ]
     }
   ],
@@ -3355,6 +3521,15 @@
     "splitReadinessSummary": [
       "molecule:user-request-responsibility status=needsReview score=92 boundaryOp=interface"
     ],
+    "structuralReadingReviewSummary": [
+      "aat-structural-reading-review-surface status=needsReview refs=12 focus=6",
+      "ArchSig reads current architecture state across representation strength, local curvature, three-layer flatness, observation projection, state transition algebra, operation-invariant constraints, and split readiness; blockedRepresentations=14, curvatures=1, blockedOperations=1, splitBlockers=1"
+    ],
+    "currentStateEvolutionBoundarySummary": [
+      "ArchSig computes current AAT structural state from ArchMap fixture-archmap-atom-observation and LawPolicy llm-native-aat-law-policy-fixture; it reads atoms, molecules, laws, obstructions, bridge pressure, structural readings, and bounded review focus",
+      "FieldSig consumes archsig-analysis-packet-v0 as bounded current AAT structural state and studies PR, diff, change-vector, forecast, governance, calibration, and operational evolution over that state",
+      "handoff=archsig-analysis-packet-v0 forbiddenReadings=4"
+    ],
     "repairOperationSummary": [
       "repair:obstruction-semantic-contract-mismatch-computed targets [\"obstruction:semantic-contract-mismatch:computed\"]"
     ],
@@ -3371,7 +3546,8 @@
       "ArchSig analysis packet does not prove source extraction completeness",
       "signature axes are law-policy-relative, not universal quality scores",
       "flatness reading is blocked by coverage gaps and exactness assumptions",
-      "repair operation candidates are not automatic safe refactorings"
+      "repair operation candidates are not automatic safe refactorings",
+      "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
     ],
     "recommendedHumanReviewFocus": [
       "judgement:architecture-state: review nonzero axes and stressed principle readings first",
@@ -3407,6 +3583,7 @@
     "ArchSig analysis packet does not prove source extraction completeness",
     "signature axes are law-policy-relative, not universal quality scores",
     "flatness reading is blocked by coverage gaps and exactness assumptions",
-    "repair operation candidates are not automatic safe refactorings"
+    "repair operation candidates are not automatic safe refactorings",
+    "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
   ]
 }

@@ -17,7 +17,7 @@ source artifacts
 
 The first three artifacts are ArchSig-owned. The final
 `operation-support-estimate-v0` is FieldSig-owned and reads the ArchSig
-analysis packet as bounded local AAT state.
+analysis packet as bounded current AAT structural state.
 
 ## Command Transcript
 
@@ -75,12 +75,14 @@ The E2E flow must preserve these boundaries:
 - ArchSig computes AAT concept surfaces, architecture state, design pressure,
   change impact, law-relative obstruction circuits, signature axes, analytic
   representations, coupling/cohesion readings, design principle readings,
-  bounded judgements, repair candidates, operation deltas, coverage gaps, and
-  non-conclusions.
+  transfer bridge review focus, structural reading review surface, current-state
+  / evolution boundary, bounded judgements, repair candidates, operation deltas,
+  coverage gaps, and non-conclusions.
 - `llm-interpretation-packet.json` is structured analysis input for an LLM, not
   a natural-language judgement, proof, or automatic repair instruction.
-- FieldSig accepts `archsig-analysis-packet-v0` and rejects raw ArchMap JSON as
-  the current handoff input.
+- FieldSig accepts `archsig-analysis-packet-v0` as bounded current AAT
+  structural state and rejects raw ArchMap JSON as the current handoff input.
+  PR / diff / change-vector evolution remains FieldSig territory.
 - Coverage gaps are carried as unknown remainder; they are not rounded to
   absence, measured zero, or forecast truth.
 - ArchSig emits only the current ArchMap validation, profile validation,

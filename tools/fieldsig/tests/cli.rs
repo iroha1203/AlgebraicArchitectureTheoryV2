@@ -418,6 +418,36 @@ fn cli_projects_archsig_analysis_packet_to_sft_input_boundary() {
             .any(|family| family["supportKind"] == "archsig-analysis-repair-candidate"),
         "FieldSig must read repair candidates from ArchSig analysis state"
     );
+    let descriptor_source_refs = estimate_json["descriptorRef"]["sourceRefIds"]
+        .as_array()
+        .expect("descriptor source refs are array");
+    assert!(
+        descriptor_source_refs.iter().any(|source| {
+            source
+                .as_str()
+                .expect("source ref is string")
+                .starts_with("archsigStructuralReadingReviewSurface:")
+        }) && descriptor_source_refs.iter().any(|source| {
+            source
+                .as_str()
+                .expect("source ref is string")
+                .starts_with("archsigCurrentStateEvolutionBoundary:")
+        }),
+        "FieldSig must preserve ArchSig structural review and current-state/evolution boundary refs"
+    );
+    assert!(
+        estimate_json["evidenceBoundary"]["assumptions"]
+            .as_array()
+            .expect("assumptions are array")
+            .iter()
+            .any(|assumption| {
+                assumption
+                    .as_str()
+                    .expect("assumption is string")
+                    .contains("PR, diff, change-vector")
+            }),
+        "FieldSig handoff must keep PR / diff / change-vector evolution on the FieldSig side"
+    );
     assert!(
         estimate_json["knownForbiddenSupport"]
             .as_array()

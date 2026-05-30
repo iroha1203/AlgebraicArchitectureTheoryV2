@@ -954,13 +954,18 @@ fn assert_north_star_packet_surfaces(json: &Value) {
                         && edge["sourceRefs"]
                             .as_array()
                             .is_some_and(|items| !items.is_empty())
+                        && edge["sourceRefRationale"].as_str().is_some()
                         && edge["dependencyKind"].as_str().is_some()
                         && edge["dependencyReading"].as_str().is_some()
+                        && edge["reviewFocus"]
+                            .as_array()
+                            .is_some_and(|items| !items.is_empty())
                         && edge["recommendedCutKind"].as_str().is_some()
                         && edge["cutRationale"].as_str().is_some()
+                        && edge["llmReviewSummary"].as_str().is_some()
                 })
         }),
-        "bridge edge breakdowns must carry molecule refs, source refs, dependency reading, and cut recommendation"
+        "bridge edge breakdowns must carry molecule refs, source refs, review focus, dependency reading, and cut recommendation"
     );
     for surface in [
         "representationStrengthReadings",
@@ -1051,6 +1056,40 @@ fn assert_north_star_packet_surfaces(json: &Value) {
                     && reading["recommendedBoundaryOperation"].as_str().is_some()
             }),
         "split readiness readings must carry molecule refs, score, and boundary operation"
+    );
+    assert!(
+        json["structuralReadingReviewSurface"]["connectedReadingRefs"]
+            .as_array()
+            .is_some_and(|items| !items.is_empty())
+            && json["structuralReadingReviewSurface"]["reviewFocus"]
+                .as_array()
+                .is_some_and(|items| !items.is_empty())
+            && json["structuralReadingReviewSurface"]["currentStateReading"]
+                .as_str()
+                .is_some_and(|reading| reading.contains("current architecture state")),
+        "structural reading review surface must connect AAT readings as current architecture state"
+    );
+    assert!(
+        json["currentStateEvolutionBoundary"]["handoffArtifactRef"] == "archsig-analysis-packet-v0"
+            && json["currentStateEvolutionBoundary"]["archsigCurrentStateScope"]
+                .as_str()
+                .is_some_and(|scope| scope.contains("current AAT structural state"))
+            && json["currentStateEvolutionBoundary"]["fieldsigEvolutionScope"]
+                .as_str()
+                .is_some_and(|scope| scope.contains("PR, diff, change-vector"))
+            && json["currentStateEvolutionBoundary"]["forbiddenReadings"]
+                .as_array()
+                .is_some_and(|items| items.len() >= 3),
+        "current-state/evolution boundary must separate ArchSig and FieldSig responsibilities"
+    );
+    assert!(
+        json["llmInterpretationPacket"]["structuralReadingReviewSummary"]
+            .as_array()
+            .is_some_and(|items| !items.is_empty())
+            && json["llmInterpretationPacket"]["currentStateEvolutionBoundarySummary"]
+                .as_array()
+                .is_some_and(|items| !items.is_empty()),
+        "LLM interpretation packet must summarize structural readings and current-state/evolution boundary"
     );
     assert!(
         json["llmInterpretationPacket"]["recommendedHumanReviewFocus"]

@@ -140,14 +140,25 @@ The builder:
   matrices, indirect bridge atom families between architecture hubs, and
   evolution risk rankings for repairs and boundary preparation. Each bridge
   edge records shared atom families, exact shared atom refs when present,
-  family-supporting atom refs, source refs, explicit-contract / implicit-
-  dependency reading, and a recommended cut kind: interface, policy,
-  transaction boundary, or anti-corruption layer.
+  family-supporting atom refs, source refs, source-ref rationale, reviewer
+  focus, explicit-contract / implicit-dependency reading, LLM review summary,
+  and a recommended cut kind: interface, policy, transaction boundary, or
+  anti-corruption layer.
 - AAT structural state readings expose representation strength, local curvature
   diagrams, three-layer flatness, observation projection loss, state transition
   algebra, operation / invariant Galois-style correspondence, and split
   readiness. These readings describe the current architecture state; PR / diff
   projection remains a FieldSig responsibility.
+- `structuralReadingReviewSurface` connects the AAT structural reading families
+  into one review guide. It states that ArchSig reads current architecture
+  state, not just violations, and lists the review focus for representation
+  blockers, curvature, flatness, projection loss, state/effect algebra,
+  operation/invariant constraints, and split readiness.
+- `currentStateEvolutionBoundary` records the product boundary: ArchSig computes
+  current AAT structural state from `ArchMap + LawPolicy`; FieldSig studies
+  PR / diff / change-vector evolution over the serialized
+  `archsig-analysis-packet-v0`. The packet must not be read as PR diff
+  analysis, forecast correctness, causal truth, or raw-ArchMap forecast truth.
 - analytic representations include weighted adjacency, walk count, reachable
   cone size, nilpotence boundary, selected subgraph spectrum, propagation depth,
   spectral radius, curvature valuation, state algebra boundary, and

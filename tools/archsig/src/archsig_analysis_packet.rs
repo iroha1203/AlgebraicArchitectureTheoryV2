@@ -12,12 +12,12 @@ use crate::{
     ArchSigArchitectureStateV0, ArchSigAtomConfigurationSummaryV0,
     ArchSigBoundaryPreparationRankV0, ArchSigBoundedJudgementV0, ArchSigBridgeAtomFamilyReadingV0,
     ArchSigBridgeEdgeBreakdownV0, ArchSigChangeImpactReadingV0, ArchSigCouplingCohesionReadingV0,
-    ArchSigDesignPressureReadingV0, ArchSigDesignPrincipleReadingV0,
-    ArchSigDominantAtomFamilyCompositionV0, ArchSigEvolutionRiskRankingV0,
-    ArchSigFlatnessReadingV0, ArchSigHighOverlapMoleculePairV0, ArchSigInvariantFamilyReadingV0,
-    ArchSigLawUniverseReadingV0, ArchSigLayerSplitV0, ArchSigLlmInterpretationPacketV0,
-    ArchSigLocalCurvatureDiagramReadingV0, ArchSigMoleculeReadingV0,
-    ArchSigObservationProjectionReadingV0, ArchSigObstructionCircuitV0,
+    ArchSigCurrentStateEvolutionBoundaryV0, ArchSigDesignPressureReadingV0,
+    ArchSigDesignPrincipleReadingV0, ArchSigDominantAtomFamilyCompositionV0,
+    ArchSigEvolutionRiskRankingV0, ArchSigFlatnessReadingV0, ArchSigHighOverlapMoleculePairV0,
+    ArchSigInvariantFamilyReadingV0, ArchSigLawUniverseReadingV0, ArchSigLayerSplitV0,
+    ArchSigLlmInterpretationPacketV0, ArchSigLocalCurvatureDiagramReadingV0,
+    ArchSigMoleculeReadingV0, ArchSigObservationProjectionReadingV0, ArchSigObstructionCircuitV0,
     ArchSigOperationDeltaReadingV0, ArchSigOperationInvariantGaloisReadingV0,
     ArchSigPathHomotopyDiagramReadingV0, ArchSigRepairAxisDeltaReadingV0,
     ArchSigRepairOperationCandidateV0, ArchSigRepairTransferRiskRankV0,
@@ -26,20 +26,21 @@ use crate::{
     ArchSigSpectralDrilldownReadingV0, ArchSigSpectralMatrixShapeV0,
     ArchSigSpectralModeComponentV0, ArchSigSpectralModeReadingV0, ArchSigSpectralValueV0,
     ArchSigSplitReadinessReadingV0, ArchSigStateTransitionAlgebraReadingV0,
-    ArchSigThreeLayerFlatnessReadingV0, ArchSigTransferBridgeReadingV0,
-    ArchSigTransferMatrixEntryV0, ArchSigWorkflowAtomFamilyCountV0,
+    ArchSigStructuralReadingReviewSurfaceV0, ArchSigThreeLayerFlatnessReadingV0,
+    ArchSigTransferBridgeReadingV0, ArchSigTransferMatrixEntryV0, ArchSigWorkflowAtomFamilyCountV0,
     ArchSigWorkflowRiskAxisReadingV0, ArchSigWorkflowRiskReadingV0, LAW_POLICY_SCHEMA_VERSION,
     LawPolicyDocumentV0, LawPolicyObstructionCircuitDefinitionV0,
     LawPolicySignatureAxisDefinitionV0, LawPolicyWitnessRuleV0, ValidationCheck, ValidationExample,
 };
 
-const REQUIRED_NON_CONCLUSIONS: [&str; 6] = [
+const REQUIRED_NON_CONCLUSIONS: [&str; 7] = [
     "ArchSig analysis packet is not a Lean theorem proof",
     "ArchSig analysis packet is not global architecture truth",
     "ArchSig analysis packet does not prove source extraction completeness",
     "signature axes are law-policy-relative, not universal quality scores",
     "flatness reading is blocked by coverage gaps and exactness assumptions",
     "repair operation candidates are not automatic safe refactorings",
+    "ArchSig reads current architecture state and does not replace FieldSig evolution analysis",
 ];
 
 #[cfg(test)]
@@ -139,6 +140,17 @@ pub fn build_archsig_analysis_packet(
         &obstruction_circuits,
         &transfer_bridge_readings,
     );
+    let structural_reading_review_surface = build_structural_reading_review_surface(
+        &representation_strength_readings,
+        &local_curvature_diagram_readings,
+        &three_layer_flatness_readings,
+        &observation_projection_readings,
+        &state_transition_algebra_readings,
+        &operation_invariant_galois_readings,
+        &split_readiness_readings,
+    );
+    let current_state_evolution_boundary =
+        build_current_state_evolution_boundary(archmap, law_policy);
     let bounded_judgements = build_bounded_judgements(
         archmap,
         &obstruction_circuits,
@@ -179,6 +191,8 @@ pub fn build_archsig_analysis_packet(
         &state_transition_algebra_readings,
         &operation_invariant_galois_readings,
         &split_readiness_readings,
+        &structural_reading_review_surface,
+        &current_state_evolution_boundary,
         &repair_operation_candidates,
         &bounded_judgements,
     );
@@ -228,6 +242,8 @@ pub fn build_archsig_analysis_packet(
         state_transition_algebra_readings,
         operation_invariant_galois_readings,
         split_readiness_readings,
+        structural_reading_review_surface,
+        current_state_evolution_boundary,
         design_principle_readings,
         flatness_reading,
         static_runtime_semantic_layer_split: layer_split,
@@ -2960,6 +2976,28 @@ fn build_bridge_edge_breakdown(
         source_molecule_ref,
         target_molecule_ref,
     );
+    let source_ref_count = source_refs.len();
+    let source_ref_rationale = format!(
+        "sourceRefs collect ArchMap atom evidence supporting shared families {:?} across {} and {}; they bound the review evidence for this bridge edge",
+        pair.shared_atom_families, source_molecule_ref, target_molecule_ref
+    );
+    let review_focus = bridge_edge_review_focus(
+        source_molecule_ref,
+        target_molecule_ref,
+        &dependency_kind,
+        &recommended_cut_kind,
+        source_ref_count,
+        &pair.shared_atom_families,
+    );
+    let llm_review_summary = format!(
+        "Review {} -> {} by reading {} source refs, shared families {:?}, dependency kind {}, and cut recommendation {} before treating the molecules as independently changeable.",
+        source_molecule_ref,
+        target_molecule_ref,
+        source_ref_count,
+        pair.shared_atom_families,
+        dependency_kind,
+        recommended_cut_kind
+    );
 
     ArchSigBridgeEdgeBreakdownV0 {
         edge_id: format!(
@@ -2975,15 +3013,61 @@ fn build_bridge_edge_breakdown(
         shared_atom_refs: pair.shared_atom_refs.clone(),
         family_supporting_atom_refs,
         source_refs,
+        source_ref_rationale,
         dependency_kind,
         dependency_reading,
+        review_focus,
         recommended_cut_kind,
         cut_rationale,
+        llm_review_summary,
         evidence_boundary:
             "edge source refs are derived from ArchMap atom observations in the two bridge molecules; classification is a review reading, not proof of runtime dependency"
                 .to_string(),
         non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
     }
+}
+
+fn bridge_edge_review_focus(
+    source_molecule_ref: &str,
+    target_molecule_ref: &str,
+    dependency_kind: &str,
+    recommended_cut_kind: &str,
+    source_ref_count: usize,
+    shared_atom_families: &[String],
+) -> Vec<String> {
+    let mut focus = vec![
+        format!(
+            "read {source_ref_count} source refs before accepting the bridge {} -> {}",
+            source_molecule_ref, target_molecule_ref
+        ),
+        format!(
+            "check shared atom families {:?} to decide whether the edge is structural pressure or incidental overlap",
+            shared_atom_families
+        ),
+        format!(
+            "treat dependency kind {dependency_kind} as review classification, not runtime proof"
+        ),
+        format!(
+            "evaluate whether recommended cut kind {recommended_cut_kind} preserves the relevant invariant families"
+        ),
+    ];
+    match recommended_cut_kind {
+        "policy" => focus.push(
+            "check authority, permission, and contract decisions before moving this boundary"
+                .to_string(),
+        ),
+        "transactionBoundary" => focus.push(
+            "check state commit ownership, idempotency, ordering, and rollback semantics".to_string(),
+        ),
+        "antiCorruptionLayer" => focus.push(
+            "check provider, AI, trust, and external-effect translation before admitting domain facts"
+                .to_string(),
+        ),
+        _ => focus.push(
+            "check interface contract, capability sharing, and hidden semantic coupling".to_string(),
+        ),
+    }
+    focus
 }
 
 fn bridge_edge_dependency_kind(
@@ -3606,6 +3690,134 @@ fn build_split_readiness_readings(
         .collect()
 }
 
+fn build_structural_reading_review_surface(
+    representation_strength_readings: &[ArchSigRepresentationStrengthReadingV0],
+    local_curvature_diagram_readings: &[ArchSigLocalCurvatureDiagramReadingV0],
+    three_layer_flatness_readings: &[ArchSigThreeLayerFlatnessReadingV0],
+    observation_projection_readings: &[ArchSigObservationProjectionReadingV0],
+    state_transition_algebra_readings: &[ArchSigStateTransitionAlgebraReadingV0],
+    operation_invariant_galois_readings: &[ArchSigOperationInvariantGaloisReadingV0],
+    split_readiness_readings: &[ArchSigSplitReadinessReadingV0],
+) -> ArchSigStructuralReadingReviewSurfaceV0 {
+    let blocked_representation_count = representation_strength_readings
+        .iter()
+        .filter(|reading| {
+            reading.zero_reflecting == "blockedByCoverageGap"
+                || reading.obstruction_reflecting == "blockedByCoverageGap"
+        })
+        .count();
+    let curvature_count = local_curvature_diagram_readings
+        .iter()
+        .filter(|reading| reading.curvature_value > 0)
+        .count();
+    let blocked_operation_count = operation_invariant_galois_readings
+        .iter()
+        .map(|reading| reading.blocked_operation_refs.len())
+        .sum::<usize>();
+    let split_blocker_count = split_readiness_readings
+        .iter()
+        .filter(|reading| reading.status != "candidateSplitReady")
+        .count();
+    let mut connected_reading_refs = Vec::new();
+    connected_reading_refs.extend(
+        representation_strength_readings
+            .iter()
+            .take(6)
+            .map(|reading| format!("representationStrength:{}", reading.representation_family)),
+    );
+    connected_reading_refs.extend(
+        local_curvature_diagram_readings
+            .iter()
+            .map(|reading| reading.diagram_id.clone()),
+    );
+    connected_reading_refs.extend(
+        three_layer_flatness_readings
+            .iter()
+            .map(|reading| reading.reading_id.clone()),
+    );
+    connected_reading_refs.extend(
+        observation_projection_readings
+            .iter()
+            .map(|reading| reading.reading_id.clone()),
+    );
+    connected_reading_refs.extend(
+        state_transition_algebra_readings
+            .iter()
+            .map(|reading| reading.reading_id.clone()),
+    );
+    connected_reading_refs.extend(
+        operation_invariant_galois_readings
+            .iter()
+            .map(|reading| reading.reading_id.clone()),
+    );
+    connected_reading_refs.extend(
+        split_readiness_readings
+            .iter()
+            .take(8)
+            .map(|reading| reading.reading_id.clone()),
+    );
+
+    let status = if curvature_count > 0 || blocked_operation_count > 0 || split_blocker_count > 0 {
+        "needsReview"
+    } else if connected_reading_refs.is_empty() {
+        "nonConclusion"
+    } else {
+        "actionable"
+    };
+
+    ArchSigStructuralReadingReviewSurfaceV0 {
+        surface_id: "aat-structural-reading-review-surface".to_string(),
+        status: status.to_string(),
+        current_state_reading: format!(
+            "ArchSig reads current architecture state across representation strength, local curvature, three-layer flatness, observation projection, state transition algebra, operation-invariant constraints, and split readiness; blockedRepresentations={}, curvatures={}, blockedOperations={}, splitBlockers={}",
+            blocked_representation_count,
+            curvature_count,
+            blocked_operation_count,
+            split_blocker_count
+        ),
+        connected_reading_refs,
+        review_focus: vec![
+            "read representation-strength blockers before treating zero or obstruction absence as exact".to_string(),
+            "read local-curvature diagrams as law-relative state pressure, not as generic lint failures".to_string(),
+            "compare static, runtime, and semantic flatness before relying on source layout".to_string(),
+            "treat observation projection gaps as lost coordinates that bound the reading".to_string(),
+            "check state/effect algebra relations before approving local repairs".to_string(),
+            "read split readiness and bridge edges before separating molecules".to_string(),
+        ],
+        evidence_boundary:
+            "structural readings are computed from the current ArchMap and selected LawPolicy; they are review telemetry, not proof of global architecture truth"
+                .to_string(),
+        non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
+    }
+}
+
+fn build_current_state_evolution_boundary(
+    archmap: &ArchMapDocumentV0,
+    law_policy: &LawPolicyDocumentV0,
+) -> ArchSigCurrentStateEvolutionBoundaryV0 {
+    ArchSigCurrentStateEvolutionBoundaryV0 {
+        boundary_id: "archsig-fieldsig-current-state-evolution-boundary".to_string(),
+        archsig_current_state_scope: format!(
+            "ArchSig computes current AAT structural state from ArchMap {} and LawPolicy {}; it reads atoms, molecules, laws, obstructions, bridge pressure, structural readings, and bounded review focus",
+            archmap.map_id, law_policy.law_policy_id
+        ),
+        fieldsig_evolution_scope:
+            "FieldSig consumes archsig-analysis-packet-v0 as bounded current AAT structural state and studies PR, diff, change-vector, forecast, governance, calibration, and operational evolution over that state"
+                .to_string(),
+        handoff_artifact_ref: "archsig-analysis-packet-v0".to_string(),
+        forbidden_readings: vec![
+            "ArchSig packet is not PR diff analysis".to_string(),
+            "ArchSig packet is not forecast correctness or causal truth".to_string(),
+            "raw ArchMap observations are not FieldSig forecast truth".to_string(),
+            "FieldSig evolution readings must not be moved back into ArchMap".to_string(),
+        ],
+        evidence_boundary:
+            "handoff preserves bounded current-state evidence; evolution claims remain downstream FieldSig readings"
+                .to_string(),
+        non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
+    }
+}
+
 fn dominant_mode_component(
     spectral_mode_readings: &[ArchSigSpectralModeReadingV0],
     representation_family: &str,
@@ -4150,6 +4362,8 @@ fn build_llm_interpretation_packet(
     state_transition_algebra_readings: &[ArchSigStateTransitionAlgebraReadingV0],
     operation_invariant_galois_readings: &[ArchSigOperationInvariantGaloisReadingV0],
     split_readiness_readings: &[ArchSigSplitReadinessReadingV0],
+    structural_reading_review_surface: &ArchSigStructuralReadingReviewSurfaceV0,
+    current_state_evolution_boundary: &ArchSigCurrentStateEvolutionBoundaryV0,
     repair_candidates: &[ArchSigRepairOperationCandidateV0],
     bounded_judgements: &[ArchSigBoundedJudgementV0],
 ) -> ArchSigLlmInterpretationPacketV0 {
@@ -4265,14 +4479,15 @@ fn build_llm_interpretation_packet(
                 reading.bridge_atom_families.iter().flat_map(|bridge| {
                     bridge.edge_breakdowns.iter().map(|edge| {
                         format!(
-                            "{} {} -> {} pair={} kind={} cut={} sourceRefs={}",
+                            "{} {} -> {} pair={} kind={} cut={} sourceRefs={} focus={}",
                             edge.edge_id,
                             edge.source_molecule_ref,
                             edge.target_molecule_ref,
                             edge.pair_ref,
                             edge.dependency_kind,
                             edge.recommended_cut_kind,
-                            edge.source_refs.len()
+                            edge.source_refs.len(),
+                            edge.review_focus.len()
                         )
                     })
                 })
@@ -4364,6 +4579,33 @@ fn build_llm_interpretation_packet(
                 )
             })
             .collect(),
+        structural_reading_review_summary: vec![
+            format!(
+                "{} status={} refs={} focus={}",
+                structural_reading_review_surface.surface_id,
+                structural_reading_review_surface.status,
+                structural_reading_review_surface
+                    .connected_reading_refs
+                    .len(),
+                structural_reading_review_surface.review_focus.len()
+            ),
+            structural_reading_review_surface
+                .current_state_reading
+                .clone(),
+        ],
+        current_state_evolution_boundary_summary: vec![
+            current_state_evolution_boundary
+                .archsig_current_state_scope
+                .clone(),
+            current_state_evolution_boundary
+                .fieldsig_evolution_scope
+                .clone(),
+            format!(
+                "handoff={} forbiddenReadings={}",
+                current_state_evolution_boundary.handoff_artifact_ref,
+                current_state_evolution_boundary.forbidden_readings.len()
+            ),
+        ],
         repair_operation_summary: repair_candidates
             .iter()
             .map(|candidate| {
@@ -4464,6 +4706,7 @@ pub fn validate_archsig_analysis_packet_report(
         check_spectral_drilldown_surface(packet),
         check_transfer_bridge_surface(packet),
         check_aat_structural_reading_surfaces(packet),
+        check_current_state_evolution_boundary(packet),
         check_law_relative_analysis(packet),
         check_signature_and_flatness(packet),
         check_repair_candidates(packet),
@@ -5504,6 +5747,37 @@ fn check_transfer_bridge_surface(packet: &ArchSigAnalysisPacketV0) -> Validation
                         "bridge edge breakdown must carry source refs for review",
                     ));
                 }
+                if edge.review_focus.is_empty() {
+                    examples.push(generic_validation_example(
+                        &reading.transfer_bridge_id,
+                        &edge.edge_id,
+                        "bridge edge breakdown must carry reviewer focus items",
+                    ));
+                }
+                if !edge
+                    .review_focus
+                    .iter()
+                    .any(|focus| focus.to_ascii_lowercase().contains("source ref"))
+                {
+                    examples.push(generic_validation_example(
+                        &reading.transfer_bridge_id,
+                        &edge.edge_id,
+                        "bridge edge review focus must connect the edge reading to source refs",
+                    ));
+                }
+                push_blank(
+                    &mut examples,
+                    &format!(
+                        "{} bridgeEdge.sourceRefRationale",
+                        reading.transfer_bridge_id
+                    ),
+                    &edge.source_ref_rationale,
+                );
+                push_blank(
+                    &mut examples,
+                    &format!("{} bridgeEdge.llmReviewSummary", reading.transfer_bridge_id),
+                    &edge.llm_review_summary,
+                );
                 if !allowed_dependency_kinds.contains(edge.dependency_kind.as_str()) {
                     examples.push(generic_validation_example(
                         &reading.transfer_bridge_id,
@@ -5828,9 +6102,110 @@ fn check_aat_structural_reading_surfaces(packet: &ArchSigAnalysisPacketV0) -> Va
             &reading.evidence_boundary,
         );
     }
+    let surface = &packet.structural_reading_review_surface;
+    push_blank(
+        &mut examples,
+        &surface.surface_id,
+        &surface.current_state_reading,
+    );
+    if surface.connected_reading_refs.is_empty() {
+        examples.push(generic_validation_example(
+            &surface.surface_id,
+            "connectedReadingRefs",
+            "structural reading review surface must connect the AAT reading families",
+        ));
+    }
+    if surface.review_focus.len() < 4 {
+        examples.push(generic_validation_example(
+            &surface.surface_id,
+            "reviewFocus",
+            "structural reading review surface must expose a multi-axis review guide",
+        ));
+    }
+    if !surface
+        .current_state_reading
+        .contains("current architecture state")
+    {
+        examples.push(generic_validation_example(
+            &surface.surface_id,
+            &surface.current_state_reading,
+            "structural reading review surface must frame ArchSig as current-state telemetry",
+        ));
+    }
+    push_blank(
+        &mut examples,
+        &format!("{} evidenceBoundary", surface.surface_id),
+        &surface.evidence_boundary,
+    );
     check_from_examples(
         "archsig-analysis-packet-aat-structural-readings",
         "packet exposes representation strength, curvature, layer flatness, projection, transition algebra, Galois, and split readiness readings",
+        examples,
+        "fail",
+    )
+}
+
+fn check_current_state_evolution_boundary(packet: &ArchSigAnalysisPacketV0) -> ValidationCheck {
+    let boundary = &packet.current_state_evolution_boundary;
+    let mut examples = Vec::new();
+    push_blank(
+        &mut examples,
+        &boundary.boundary_id,
+        &boundary.archsig_current_state_scope,
+    );
+    push_blank(
+        &mut examples,
+        &boundary.boundary_id,
+        &boundary.fieldsig_evolution_scope,
+    );
+    if boundary.handoff_artifact_ref != ARCHSIG_ANALYSIS_PACKET_SCHEMA_VERSION {
+        examples.push(generic_validation_example(
+            &boundary.boundary_id,
+            &boundary.handoff_artifact_ref,
+            "current-state/evolution boundary must preserve archsig-analysis-packet-v0 handoff",
+        ));
+    }
+    if !boundary
+        .archsig_current_state_scope
+        .contains("current AAT structural state")
+    {
+        examples.push(generic_validation_example(
+            &boundary.boundary_id,
+            &boundary.archsig_current_state_scope,
+            "ArchSig scope must be current AAT structural state",
+        ));
+    }
+    if !boundary
+        .fieldsig_evolution_scope
+        .contains("PR, diff, change-vector")
+    {
+        examples.push(generic_validation_example(
+            &boundary.boundary_id,
+            &boundary.fieldsig_evolution_scope,
+            "FieldSig scope must retain PR / diff / change-vector evolution",
+        ));
+    }
+    for required in ["PR diff", "forecast correctness", "raw ArchMap"] {
+        if !boundary
+            .forbidden_readings
+            .iter()
+            .any(|reading| reading.contains(required))
+        {
+            examples.push(generic_validation_example(
+                &boundary.boundary_id,
+                required,
+                "current-state/evolution boundary must retain forbidden readings",
+            ));
+        }
+    }
+    push_blank(
+        &mut examples,
+        &format!("{} evidenceBoundary", boundary.boundary_id),
+        &boundary.evidence_boundary,
+    );
+    check_from_examples(
+        "archsig-fieldsig-current-state-evolution-boundary",
+        "packet preserves ArchSig current-state and FieldSig evolution responsibilities",
         examples,
         "fail",
     )
@@ -6091,6 +6466,28 @@ fn check_llm_interpretation_surface(packet: &ArchSigAnalysisPacketV0) -> Validat
             &packet.analysis_id,
             "excludedReadings",
             "packet must retain excluded readings",
+        ));
+    }
+    if packet
+        .llm_interpretation_packet
+        .structural_reading_review_summary
+        .is_empty()
+    {
+        examples.push(generic_validation_example(
+            &packet.analysis_id,
+            "llmInterpretationPacket.structuralReadingReviewSummary",
+            "LLM interpretation packet must summarize structural reading review surface",
+        ));
+    }
+    if packet
+        .llm_interpretation_packet
+        .current_state_evolution_boundary_summary
+        .is_empty()
+    {
+        examples.push(generic_validation_example(
+            &packet.analysis_id,
+            "llmInterpretationPacket.currentStateEvolutionBoundarySummary",
+            "LLM interpretation packet must summarize current-state/evolution boundary",
         ));
     }
     check_from_examples(
