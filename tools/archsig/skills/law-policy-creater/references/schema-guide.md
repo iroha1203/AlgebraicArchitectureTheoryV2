@@ -18,6 +18,7 @@ Use this guide when authoring `law-policy-v0`.
 - `signatureAxisDefinitions[]`
 - `measurementPolicy`
 - `spectrumMeasurementProfile` when ACTS / ArchitectureSpectrumReport readings are requested
+- `homotopyMeasurementProfile` when Homotopy / Holonomy / Stokes readings or ArchitectureHomotopyReport are requested
 - `exactnessAssumptions[]`
 - `coverageRequirements[]`
 - `excludedReadings[]`
@@ -40,6 +41,8 @@ Use this guide when authoring `law-policy-v0`.
 - `spectrumMeasurementProfile.measuredWitnessRuleRefs[]` must resolve to `witnessRules[].witnessRuleId`.
 - `spectrumMeasurementProfile.distanceKinds[].axisRef` must resolve to an axis id.
 - `spectrumMeasurementProfile.coverageRequirementRefs[]` must resolve to `coverageRequirements[].coverageRequirementId`.
+- `homotopyMeasurementProfile.selectedAxisRefs[]` must resolve to axis ids.
+- `homotopyMeasurementProfile.coverageRequirementRefs[]` must resolve to `coverageRequirements[].coverageRequirementId`.
 
 ## Measurement Policy
 
@@ -96,6 +99,50 @@ Keep unresolved questions outside the JSON as delivery notes, and reflect their
 effect inside `coverageBoundary`, `exactnessAssumptionRefs`, `excludedReadings`,
 or `nonConclusions`.
 
+## Homotopy Measurement Profile
+
+Use `homotopyMeasurementProfile` for Homotopy / Holonomy / Stokes readings and
+ArchitectureHomotopyReport. The profile is a measurement recipe over selected
+LawPolicy axes. It is not a chain-complex proof object, not a second law
+universe, and not a requirement for humans to hand-author topology.
+
+Required fields:
+
+- `profileId`
+- `selectedAxisRefs[]`
+- `pathDiscoveryRules[]`: each item has `ruleId`, `pathSourceKind`,
+  `endpointPolicy`, `candidateSource`, `evidenceBoundary`, and
+  `nonConclusions[]`
+- `fillerRules[]`: each item has `ruleId`, `fillerKind`,
+  `requiredSourceRefKinds[]`, `missingFillerBehavior`, `evidenceBoundary`, and
+  `nonConclusions[]`
+- `loopMeasurementPolicy`: includes `policyId`, `loopCandidateSources[]`,
+  `filledLoopReading`, `unfilledLoopReading`, `holonomyDistanceKind`,
+  `localCurvatureReadingBoundary`, and `nonConclusions[]`
+- `continuationPolicy`
+- `distancePolicy`
+- `coverageRequirementRefs[]`
+- `coverageBoundary`
+- `exactnessAssumptionRefs[]`
+- `measurementBoundary`
+- `nonConclusions[]`
+
+Author the profile from human intent, repository evidence, and ArchMap
+evidence. Use conservative defaults when evidence is absent:
+
+- LLM-discovered path candidates must cite source refs or remain unresolved.
+- Filler laws come from contracts, tests, runtime traces, policies, source refs,
+  or explicit user approval.
+- Missing filler evidence becomes an architectural hole and coverage gap, not a
+  violation proof.
+- Nonzero holonomy is a bounded current-state review queue, not forecast,
+  incident prediction, or repair-safety evidence.
+- ArchitectureHomotopyReport is not a single architecture quality score.
+
+Keep unresolved questions outside the JSON as delivery notes, and reflect their
+effect inside `coverageBoundary`, `exactnessAssumptionRefs`, `excludedReadings`,
+or `nonConclusions`.
+
 ## Common Law Families
 
 Use project-specific names when needed, but common families include:
@@ -141,5 +188,10 @@ Keep these ideas in every policy:
 - Profile differences are not law universe differences.
 - ArchitectureSpectrumReport is not a single architecture quality score.
 - Unmeasured axes are not zero.
+- Homotopy measurement profile is a measurement recipe, not a law universe.
+- Candidate paths and loops are review cues, not path truth.
+- Unfilled loops are architectural holes, not automatic violations.
+- Missing filler evidence is not measured zero.
+- ArchitectureHomotopyReport is not a single architecture quality score.
 
 Exact wording may vary, but the boundaries must remain clear.

@@ -119,6 +119,10 @@ Read in this order:
    - Prioritize `topHotspots[]`, `recurrentObstructions[]`, `topWitnessClusters[]`, `coverageGaps[]`, `measuredBoundary`, and `recommendedReviewFocus[]`.
    - Treat the report as a codebase-inspection surface over current ArchSig measurements, not a quality score, forecast, or repair proof.
    - Preserve report-level `nonConclusions[]` when summarizing.
+   - Read `architectureHomotopyReport` next when present.
+   - Prioritize `nonzeroHolonomyLoops[]`, `unfilledLoops[]`, `topLocalCurvatureCells[]`, `aggregateReadings[]`, `coverageGaps[]`, `measuredBoundary`, and `recommendedReviewFocus[]`.
+   - Treat filled/unfilled loops, hole readings, and Stokes-style readings as bounded review queues. Do not turn them into path truth, global homology, a quality score, or violation proof.
+   - Preserve report-level `nonConclusions[]` when summarizing.
    - Read top `workflowRiskReadings[]` by `riskScore`.
    - Read `spectralAnalysisReadings[]`, especially dominant workflow row, dominant axis column, molecule overlap hub, obstruction curvature, and operation delta coupling.
    - If workflow risk or spectral readings are empty, do not force a risk narrative. Shift to `signatureAxes[]`, `obstructionCircuits[]`, `repairOperationCandidates[]`, `operationDeltas[]`, and coverage gaps.
@@ -146,6 +150,7 @@ Always compare high-priority readings against real source evidence before propos
    - top ArchitectureSpectrumReport hotspots with witness refs and coverage gaps
    - recurrent obstruction entries with transfer edge refs
    - top witness clusters that connect several axes or support refs
+   - ArchitectureHomotopyReport nonzero holonomy loops, unfilled loops, missing filler evidence, local curvature cells, and recommended review focus
    - top 2-4 workflow risk molecules
    - transfer bridge edges with high `reviewRisk`
    - low split-readiness molecules
@@ -163,6 +168,7 @@ Always compare high-priority readings against real source evidence before propos
 
 4. Propose improvements:
    - Start with review actions that reduce uncertainty: route audit, runtime trace capture, provider log review, test evidence, model relationship audit.
+   - For homotopy readings, start by resolving source refs for path pairs, checking whether filler evidence exists, and deciding whether missing filler evidence should stay as a coverage gap or become a project law question.
    - Then propose architecture changes only where source evidence supports the pressure: policy boundary, transaction boundary, anti-corruption layer, interface contract, idempotency/retry/status finalization, provider output validation.
    - Keep proposals tied to source refs and ArchSig fields.
 
@@ -184,6 +190,7 @@ Recommended phrasing:
 - "ArchSig reads this as..."
 - "The packet marks this as `needsReview` because..."
 - "Source comparison supports / partially supports / does not yet support this reading..."
+- "This loop remains unfilled because the packet lacks declared filler evidence..."
 - "The next useful improvement is..."
 
 Avoid:
@@ -194,6 +201,7 @@ Avoid:
 - "No risk exists because the axis is zero"
 - "ArchSig recommends this refactor automatically"
 - treating `ArchitectureSpectrumReport` as FieldSig forecast, future incident prediction, empirical cost amplification, or repair safety evidence
+- treating `ArchitectureHomotopyReport` as path truth, global homology, automatic violation proof, a quality score, FieldSig forecast, or repair safety evidence
 
 ## Maintainer Validation
 

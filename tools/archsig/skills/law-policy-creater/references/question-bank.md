@@ -55,3 +55,15 @@ Ask only the questions needed for the target scope. Prefer 3-6 high-signal quest
 - What should count as transfer evidence: shared witness support, shared Atom refs, shared molecule support, runtime trace overlap, or an explicitly documented dependency relation?
 - What should the report rank first: nonzero hotspots, recurrent obstruction modes, witness clusters, coverage gaps, or boundary-preparation actions?
 - Which missing docs, tests, traces, logs, or source refs should block zero-reflection and remain unresolved questions?
+
+## Homotopy / Holonomy / Stokes Profile
+
+- Which path alternatives should `ArchitectureHomotopyReport` compare: interface/implementation, cache/repository, policy/runtime, source/DTO, provider/domain, or another project-specific path pair?
+- Which selected axes justify comparing those paths, and what repo/user-approved law backs each axis?
+- What evidence is required before an LLM may propose a candidate path: ArchMap observations, source refs, docs, tests, runtime traces, or explicit user intent?
+- What endpoint policy should hold for candidate paths: shared source refs, shared Atom refs, same domain object, same operation, same API contract, or another bounded relation?
+- What counts as filler evidence: contract docs, tests, runtime traces, policy docs, source implementations, review notes, or explicit user confirmation?
+- Which missing filler evidence should become an architectural hole instead of a violation finding?
+- Which distance kind is defensible for holonomy: selected-axis continuation distance, boolean mismatch, semantic witness mismatch, state/effect mismatch, or project-defined distance?
+- Which coverage gaps should block zero and Stokes-style local-curvature readings: missing tests, missing runtime traces, missing policy docs, unresolved source refs, or ambiguous endpoints?
+- Which claims must be excluded: path truth, global homology, architecture score, automatic violation proof, future incident prediction, or repair-safety proof?
