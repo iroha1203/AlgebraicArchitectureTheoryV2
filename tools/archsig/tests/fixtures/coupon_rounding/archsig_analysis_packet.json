@@ -3307,6 +3307,262 @@
       ]
     }
   ],
+  "fillerCandidateReadings": [
+    {
+      "readingId": "filler-candidate:loop-candidate-path-pair-semantic-contract-loop-0:filler-rule-contract-or-test",
+      "loopRef": "loop-candidate:path-pair-semantic-contract-loop-0",
+      "fillerRuleRef": "filler-rule:contract-or-test",
+      "fillerKind": "contract-or-test-filler",
+      "status": "candidate",
+      "sourceRefs": [
+        "src-pricing-checkout",
+        "test-coupon-rounding"
+      ],
+      "docsRefs": [
+        "required-source-kind:doc-section"
+      ],
+      "runtimeRefs": [
+        "required-source-kind:runtime-trace"
+      ],
+      "nextCheckRefs": [
+        "check-filler-source-kind:doc-section",
+        "check-filler-source-kind:test",
+        "check-filler-source-kind:runtime-trace"
+      ],
+      "evidenceBoundary": "filler evidence is bounded to supplied source refs, tests, runtime evidence, or user-confirmed policy",
+      "nonConclusions": [
+        "candidate paths and loops are review cues, not path truth",
+        "unfilled loops are architectural holes, not automatic violations",
+        "missing filler evidence is not measured zero",
+        "nonzero holonomy is bounded diagnosis, not future incident prediction",
+        "homotopy complex summary is not source extraction completeness"
+      ]
+    },
+    {
+      "readingId": "filler-candidate:loop-candidate-path-pair-semantic-contract-loop-0:filler-rule-authority-or-idempotency",
+      "loopRef": "loop-candidate:path-pair-semantic-contract-loop-0",
+      "fillerRuleRef": "filler-rule:authority-or-idempotency",
+      "fillerKind": "authority-or-idempotency-filler",
+      "status": "candidate",
+      "sourceRefs": [
+        "src-pricing-checkout",
+        "test-coupon-rounding"
+      ],
+      "docsRefs": [
+        "required-source-kind:policy"
+      ],
+      "runtimeRefs": [
+        "required-source-kind:runtime-trace"
+      ],
+      "nextCheckRefs": [
+        "check-filler-source-kind:policy",
+        "check-filler-source-kind:test",
+        "check-filler-source-kind:runtime-trace"
+      ],
+      "evidenceBoundary": "filler absence blocks Stokes-style local-curvature conclusions",
+      "nonConclusions": [
+        "candidate paths and loops are review cues, not path truth",
+        "unfilled loops are architectural holes, not automatic violations",
+        "missing filler evidence is not measured zero",
+        "nonzero holonomy is bounded diagnosis, not future incident prediction",
+        "homotopy complex summary is not source extraction completeness"
+      ]
+    },
+    {
+      "readingId": "filler-candidate:loop-candidate-path-pair-path-rule-interface-implementation-1:filler-rule-contract-or-test",
+      "loopRef": "loop-candidate:path-pair-path-rule-interface-implementation-1",
+      "fillerRuleRef": "filler-rule:contract-or-test",
+      "fillerKind": "contract-or-test-filler",
+      "status": "candidate",
+      "sourceRefs": [
+        "src-pricing-checkout",
+        "test-coupon-rounding"
+      ],
+      "docsRefs": [
+        "required-source-kind:doc-section"
+      ],
+      "runtimeRefs": [
+        "required-source-kind:runtime-trace"
+      ],
+      "nextCheckRefs": [
+        "check-filler-source-kind:doc-section",
+        "check-filler-source-kind:test",
+        "check-filler-source-kind:runtime-trace"
+      ],
+      "evidenceBoundary": "filler evidence is bounded to supplied source refs, tests, runtime evidence, or user-confirmed policy",
+      "nonConclusions": [
+        "candidate paths and loops are review cues, not path truth",
+        "unfilled loops are architectural holes, not automatic violations",
+        "missing filler evidence is not measured zero",
+        "nonzero holonomy is bounded diagnosis, not future incident prediction",
+        "homotopy complex summary is not source extraction completeness"
+      ]
+    },
+    {
+      "readingId": "filler-candidate:loop-candidate-path-pair-path-rule-interface-implementation-1:filler-rule-authority-or-idempotency",
+      "loopRef": "loop-candidate:path-pair-path-rule-interface-implementation-1",
+      "fillerRuleRef": "filler-rule:authority-or-idempotency",
+      "fillerKind": "authority-or-idempotency-filler",
+      "status": "candidate",
+      "sourceRefs": [
+        "src-pricing-checkout",
+        "test-coupon-rounding"
+      ],
+      "docsRefs": [
+        "required-source-kind:policy"
+      ],
+      "runtimeRefs": [
+        "required-source-kind:runtime-trace"
+      ],
+      "nextCheckRefs": [
+        "check-filler-source-kind:policy",
+        "check-filler-source-kind:test",
+        "check-filler-source-kind:runtime-trace"
+      ],
+      "evidenceBoundary": "filler absence blocks Stokes-style local-curvature conclusions",
+      "nonConclusions": [
+        "candidate paths and loops are review cues, not path truth",
+        "unfilled loops are architectural holes, not automatic violations",
+        "missing filler evidence is not measured zero",
+        "nonzero holonomy is bounded diagnosis, not future incident prediction",
+        "homotopy complex summary is not source extraction completeness"
+      ]
+    },
+    {
+      "readingId": "filler-candidate:loop-candidate-path-pair-path-rule-cache-repository-2:filler-rule-contract-or-test",
+      "loopRef": "loop-candidate:path-pair-path-rule-cache-repository-2",
+      "fillerRuleRef": "filler-rule:contract-or-test",
+      "fillerKind": "contract-or-test-filler",
+      "status": "candidate",
+      "sourceRefs": [
+        "src-pricing-checkout",
+        "test-coupon-rounding"
+      ],
+      "docsRefs": [
+        "required-source-kind:doc-section"
+      ],
+      "runtimeRefs": [
+        "required-source-kind:runtime-trace"
+      ],
+      "nextCheckRefs": [
+        "check-filler-source-kind:doc-section",
+        "check-filler-source-kind:test",
+        "check-filler-source-kind:runtime-trace"
+      ],
+      "evidenceBoundary": "filler evidence is bounded to supplied source refs, tests, runtime evidence, or user-confirmed policy",
+      "nonConclusions": [
+        "candidate paths and loops are review cues, not path truth",
+        "unfilled loops are architectural holes, not automatic violations",
+        "missing filler evidence is not measured zero",
+        "nonzero holonomy is bounded diagnosis, not future incident prediction",
+        "homotopy complex summary is not source extraction completeness"
+      ]
+    },
+    {
+      "readingId": "filler-candidate:loop-candidate-path-pair-path-rule-cache-repository-2:filler-rule-authority-or-idempotency",
+      "loopRef": "loop-candidate:path-pair-path-rule-cache-repository-2",
+      "fillerRuleRef": "filler-rule:authority-or-idempotency",
+      "fillerKind": "authority-or-idempotency-filler",
+      "status": "candidate",
+      "sourceRefs": [
+        "src-pricing-checkout",
+        "test-coupon-rounding"
+      ],
+      "docsRefs": [
+        "required-source-kind:policy"
+      ],
+      "runtimeRefs": [
+        "required-source-kind:runtime-trace"
+      ],
+      "nextCheckRefs": [
+        "check-filler-source-kind:policy",
+        "check-filler-source-kind:test",
+        "check-filler-source-kind:runtime-trace"
+      ],
+      "evidenceBoundary": "filler absence blocks Stokes-style local-curvature conclusions",
+      "nonConclusions": [
+        "candidate paths and loops are review cues, not path truth",
+        "unfilled loops are architectural holes, not automatic violations",
+        "missing filler evidence is not measured zero",
+        "nonzero holonomy is bounded diagnosis, not future incident prediction",
+        "homotopy complex summary is not source extraction completeness"
+      ]
+    }
+  ],
+  "architecturalHoleReadings": [
+    {
+      "readingId": "architectural-hole:loop-candidate-path-pair-semantic-contract-loop-0",
+      "loopRef": "loop-candidate:path-pair-semantic-contract-loop-0",
+      "status": "architecturalHole",
+      "missingFillerEvidence": [
+        "gap:coupon-runtime-payment-trace"
+      ],
+      "nextCheckRefs": [
+        "resolve-missing-filler:gap:coupon-runtime-payment-trace"
+      ],
+      "sourceRefs": [
+        "src-pricing-checkout",
+        "test-coupon-rounding"
+      ],
+      "coverageBoundary": "missing path or filler evidence blocks zero and Stokes-style readings",
+      "evidenceBoundary": "architectural hole records missing filler evidence, not violation proof",
+      "nonConclusions": [
+        "candidate paths and loops are review cues, not path truth",
+        "unfilled loops are architectural holes, not automatic violations",
+        "missing filler evidence is not measured zero",
+        "nonzero holonomy is bounded diagnosis, not future incident prediction",
+        "homotopy complex summary is not source extraction completeness"
+      ]
+    },
+    {
+      "readingId": "architectural-hole:loop-candidate-path-pair-path-rule-interface-implementation-1",
+      "loopRef": "loop-candidate:path-pair-path-rule-interface-implementation-1",
+      "status": "architecturalHole",
+      "missingFillerEvidence": [
+        "gap:coupon-runtime-payment-trace"
+      ],
+      "nextCheckRefs": [
+        "resolve-missing-filler:gap:coupon-runtime-payment-trace"
+      ],
+      "sourceRefs": [
+        "src-pricing-checkout",
+        "test-coupon-rounding"
+      ],
+      "coverageBoundary": "missing path or filler evidence blocks zero and Stokes-style readings",
+      "evidenceBoundary": "architectural hole records missing filler evidence, not violation proof",
+      "nonConclusions": [
+        "candidate paths and loops are review cues, not path truth",
+        "unfilled loops are architectural holes, not automatic violations",
+        "missing filler evidence is not measured zero",
+        "nonzero holonomy is bounded diagnosis, not future incident prediction",
+        "homotopy complex summary is not source extraction completeness"
+      ]
+    },
+    {
+      "readingId": "architectural-hole:loop-candidate-path-pair-path-rule-cache-repository-2",
+      "loopRef": "loop-candidate:path-pair-path-rule-cache-repository-2",
+      "status": "architecturalHole",
+      "missingFillerEvidence": [
+        "gap:coupon-runtime-payment-trace"
+      ],
+      "nextCheckRefs": [
+        "resolve-missing-filler:gap:coupon-runtime-payment-trace"
+      ],
+      "sourceRefs": [
+        "src-pricing-checkout",
+        "test-coupon-rounding"
+      ],
+      "coverageBoundary": "missing path or filler evidence blocks zero and Stokes-style readings",
+      "evidenceBoundary": "architectural hole records missing filler evidence, not violation proof",
+      "nonConclusions": [
+        "candidate paths and loops are review cues, not path truth",
+        "unfilled loops are architectural holes, not automatic violations",
+        "missing filler evidence is not measured zero",
+        "nonzero holonomy is bounded diagnosis, not future incident prediction",
+        "homotopy complex summary is not source extraction completeness"
+      ]
+    }
+  ],
   "operationSquareCandidates": [
     {
       "candidateId": "operation-square:operation-delta-repair-obstruction-semantic-contract-mismatch-computed:operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation",

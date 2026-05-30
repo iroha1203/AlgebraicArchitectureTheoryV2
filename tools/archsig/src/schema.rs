@@ -776,6 +776,10 @@ pub struct ArchSigAnalysisPacketV0 {
     pub path_pair_candidates: Vec<ArchSigPathPairCandidateV0>,
     #[serde(default)]
     pub loop_candidates: Vec<ArchSigLoopCandidateV0>,
+    #[serde(default)]
+    pub filler_candidate_readings: Vec<ArchSigFillerCandidateReadingV0>,
+    #[serde(default)]
+    pub architectural_hole_readings: Vec<ArchSigArchitecturalHoleReadingV0>,
     pub operation_square_candidates: Vec<ArchSigOperationSquareCandidateV0>,
     pub path_continuation_traces: Vec<ArchSigPathContinuationTraceV0>,
     pub axis_wise_monodromy_defects: Vec<ArchSigAxisWiseMonodromyDefectV0>,
@@ -2033,6 +2037,36 @@ pub struct ArchSigLoopCandidateV0 {
     pub filler_candidate_refs: Vec<String>,
     pub missing_filler_evidence: Vec<String>,
     pub selected_axis_refs: Vec<String>,
+    pub source_refs: Vec<String>,
+    pub coverage_boundary: String,
+    pub evidence_boundary: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigFillerCandidateReadingV0 {
+    pub reading_id: String,
+    pub loop_ref: String,
+    pub filler_rule_ref: String,
+    pub filler_kind: String,
+    pub status: String,
+    pub source_refs: Vec<String>,
+    pub docs_refs: Vec<String>,
+    pub runtime_refs: Vec<String>,
+    pub next_check_refs: Vec<String>,
+    pub evidence_boundary: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigArchitecturalHoleReadingV0 {
+    pub reading_id: String,
+    pub loop_ref: String,
+    pub status: String,
+    pub missing_filler_evidence: Vec<String>,
+    pub next_check_refs: Vec<String>,
     pub source_refs: Vec<String>,
     pub coverage_boundary: String,
     pub evidence_boundary: String,

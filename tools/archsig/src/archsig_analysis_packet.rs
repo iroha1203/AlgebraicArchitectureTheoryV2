@@ -9,18 +9,19 @@ use crate::{
     ArchSigAmiTopContributorV0, ArchSigAnalysisArtifactRefV0, ArchSigAnalysisPacketV0,
     ArchSigAnalysisPacketValidationInputV0, ArchSigAnalysisPacketValidationReportV0,
     ArchSigAnalysisPacketValidationSummaryV0, ArchSigAnalyticRepresentationV0,
-    ArchSigArchMapStoreRefsV0, ArchSigArchitectureObjectProjectionV0,
-    ArchSigArchitectureSpectrumHotspotV0, ArchSigArchitectureSpectrumModeV0,
-    ArchSigArchitectureSpectrumRecurrentObstructionV0, ArchSigArchitectureSpectrumReportV0,
-    ArchSigArchitectureSpectrumWitnessClusterV0, ArchSigArchitectureStateV0,
-    ArchSigAtomCompatibilityConflictV0, ArchSigAtomCompatibilityReadingV0,
-    ArchSigAtomConfigurationSummaryV0, ArchSigAtomSupportAxisReadingV0,
-    ArchSigAxisContinuationTraceV0, ArchSigAxisExcursionV0, ArchSigAxisForgettingRiskReadingV0,
-    ArchSigAxisRestrictionCountV0, ArchSigAxisWiseMonodromyDefectV0,
-    ArchSigBoundaryHolonomyAxisResidualV0, ArchSigBoundaryHolonomyReadingFamilyV0,
-    ArchSigBoundaryPreparationRankV0, ArchSigBoundedJudgementV0, ArchSigBridgeAtomFamilyReadingV0,
-    ArchSigBridgeEdgeBreakdownV0, ArchSigBridgeSplitObstructionTransferReadingV0,
-    ArchSigChangeImpactReadingV0, ArchSigCouplingCohesionReadingV0, ArchSigCoverageStatusV0,
+    ArchSigArchMapStoreRefsV0, ArchSigArchitecturalHoleReadingV0,
+    ArchSigArchitectureObjectProjectionV0, ArchSigArchitectureSpectrumHotspotV0,
+    ArchSigArchitectureSpectrumModeV0, ArchSigArchitectureSpectrumRecurrentObstructionV0,
+    ArchSigArchitectureSpectrumReportV0, ArchSigArchitectureSpectrumWitnessClusterV0,
+    ArchSigArchitectureStateV0, ArchSigAtomCompatibilityConflictV0,
+    ArchSigAtomCompatibilityReadingV0, ArchSigAtomConfigurationSummaryV0,
+    ArchSigAtomSupportAxisReadingV0, ArchSigAxisContinuationTraceV0, ArchSigAxisExcursionV0,
+    ArchSigAxisForgettingRiskReadingV0, ArchSigAxisRestrictionCountV0,
+    ArchSigAxisWiseMonodromyDefectV0, ArchSigBoundaryHolonomyAxisResidualV0,
+    ArchSigBoundaryHolonomyReadingFamilyV0, ArchSigBoundaryPreparationRankV0,
+    ArchSigBoundedJudgementV0, ArchSigBridgeAtomFamilyReadingV0, ArchSigBridgeEdgeBreakdownV0,
+    ArchSigBridgeSplitObstructionTransferReadingV0, ArchSigChangeImpactReadingV0,
+    ArchSigCouplingCohesionReadingV0, ArchSigCoverageStatusV0,
     ArchSigCurrentStateEvolutionBoundaryV0, ArchSigCurvatureSupportReadingV0,
     ArchSigCurvatureTopModeV0, ArchSigCurvatureTransferEdgeV0, ArchSigCurvatureTransferOperatorV0,
     ArchSigCurvatureTransferReadingV0, ArchSigCurvatureWitnessClusterV0,
@@ -29,8 +30,8 @@ use crate::{
     ArchSigDominantAtomFamilyCompositionV0, ArchSigEvolutionRiskRankingV0,
     ArchSigFeatureBoundaryResidualReadingV0, ArchSigFeatureExtensionAxisSummaryV0,
     ArchSigFeatureExtensionDiagnosisReadingV0, ArchSigFeatureExtensionFormulaReadingV0,
-    ArchSigFeatureExtensionWitnessAttributionV0, ArchSigFlatnessReadingV0,
-    ArchSigHighOverlapMoleculePairV0, ArchSigHomotopyCellSummaryV0,
+    ArchSigFeatureExtensionWitnessAttributionV0, ArchSigFillerCandidateReadingV0,
+    ArchSigFlatnessReadingV0, ArchSigHighOverlapMoleculePairV0, ArchSigHomotopyCellSummaryV0,
     ArchSigHomotopyComplexSummaryV0, ArchSigHomotopyOrderSensitivityReadingV0,
     ArchSigInvariantFamilyReadingV0, ArchSigLawUniverseCoverageReadingV0,
     ArchSigLawUniverseReadingV0, ArchSigLayerSplitV0, ArchSigLlmInterpretationPacketV0,
@@ -231,6 +232,10 @@ pub fn build_archsig_analysis_packet(
         &path_pair_candidates,
         &homotopy_complex_summary,
     );
+    let filler_candidate_readings =
+        build_filler_candidate_readings(archmap, law_policy, &loop_candidates);
+    let architectural_hole_readings =
+        build_architectural_hole_readings(archmap, &loop_candidates, &filler_candidate_readings);
     let operation_square_candidates = build_operation_square_candidates(archmap, &operation_deltas);
     let path_continuation_traces =
         build_path_continuation_traces(archmap, &operation_square_candidates, &operation_deltas);
@@ -412,6 +417,8 @@ pub fn build_archsig_analysis_packet(
         homotopy_complex_summary: Some(homotopy_complex_summary),
         path_pair_candidates,
         loop_candidates,
+        filler_candidate_readings,
+        architectural_hole_readings,
         operation_square_candidates,
         path_continuation_traces,
         axis_wise_monodromy_defects,
@@ -7394,6 +7401,115 @@ fn build_loop_candidates(
         .collect()
 }
 
+fn build_filler_candidate_readings(
+    archmap: &ArchMapDocumentV0,
+    law_policy: &LawPolicyDocumentV0,
+    loop_candidates: &[ArchSigLoopCandidateV0],
+) -> Vec<ArchSigFillerCandidateReadingV0> {
+    let Some(profile) = law_policy.homotopy_measurement_profile.as_ref() else {
+        return Vec::new();
+    };
+    let all_source_refs = all_archmap_source_ref_labels(archmap);
+    loop_candidates
+        .iter()
+        .flat_map(|loop_candidate| {
+            profile.filler_rules.iter().map(|rule| {
+                let docs_refs = rule
+                    .required_source_ref_kinds
+                    .iter()
+                    .filter(|kind| {
+                        let lower = kind.to_ascii_lowercase();
+                        lower.contains("doc") || lower.contains("policy")
+                    })
+                    .map(|kind| format!("required-source-kind:{kind}"))
+                    .collect::<Vec<_>>();
+                let runtime_refs = rule
+                    .required_source_ref_kinds
+                    .iter()
+                    .filter(|kind| kind.to_ascii_lowercase().contains("runtime"))
+                    .map(|kind| format!("required-source-kind:{kind}"))
+                    .collect::<Vec<_>>();
+                let next_check_refs = if rule.required_source_ref_kinds.is_empty() {
+                    vec![format!("find-filler-evidence:{}", rule.rule_id)]
+                } else {
+                    rule.required_source_ref_kinds
+                        .iter()
+                        .map(|kind| format!("check-filler-source-kind:{kind}"))
+                        .collect()
+                };
+                ArchSigFillerCandidateReadingV0 {
+                    reading_id: format!(
+                        "filler-candidate:{}:{}",
+                        stable_id(&loop_candidate.loop_id),
+                        stable_id(&rule.rule_id)
+                    ),
+                    loop_ref: loop_candidate.loop_id.clone(),
+                    filler_rule_ref: rule.rule_id.clone(),
+                    filler_kind: rule.filler_kind.clone(),
+                    status: "candidate".to_string(),
+                    source_refs: all_source_refs.clone(),
+                    docs_refs,
+                    runtime_refs,
+                    next_check_refs,
+                    evidence_boundary: rule.evidence_boundary.clone(),
+                    non_conclusions: strings(&REQUIRED_HOMOTOPY_NON_CONCLUSIONS),
+                }
+            })
+        })
+        .collect()
+}
+
+fn build_architectural_hole_readings(
+    archmap: &ArchMapDocumentV0,
+    loop_candidates: &[ArchSigLoopCandidateV0],
+    filler_candidate_readings: &[ArchSigFillerCandidateReadingV0],
+) -> Vec<ArchSigArchitecturalHoleReadingV0> {
+    let filler_by_loop = filler_candidate_readings
+        .iter()
+        .map(|reading| reading.loop_ref.as_str())
+        .collect::<BTreeSet<_>>();
+    loop_candidates
+        .iter()
+        .filter(|loop_candidate| {
+            !filler_by_loop.contains(loop_candidate.loop_id.as_str())
+                || !loop_candidate.missing_filler_evidence.is_empty()
+                || loop_candidate.status == "unfilledLoop"
+        })
+        .map(|loop_candidate| {
+            let next_check_refs = if loop_candidate.missing_filler_evidence.is_empty() {
+                vec!["search-contract-test-runtime-or-policy-filler".to_string()]
+            } else {
+                loop_candidate
+                    .missing_filler_evidence
+                    .iter()
+                    .map(|gap| format!("resolve-missing-filler:{gap}"))
+                    .collect()
+            };
+            ArchSigArchitecturalHoleReadingV0 {
+                reading_id: format!("architectural-hole:{}", stable_id(&loop_candidate.loop_id)),
+                loop_ref: loop_candidate.loop_id.clone(),
+                status: "architecturalHole".to_string(),
+                missing_filler_evidence: if loop_candidate.missing_filler_evidence.is_empty() {
+                    archmap
+                        .observation_gaps
+                        .iter()
+                        .map(|gap| gap.gap_id.clone())
+                        .collect()
+                } else {
+                    loop_candidate.missing_filler_evidence.clone()
+                },
+                next_check_refs,
+                source_refs: loop_candidate.source_refs.clone(),
+                coverage_boundary: loop_candidate.coverage_boundary.clone(),
+                evidence_boundary:
+                    "architectural hole records missing filler evidence, not violation proof"
+                        .to_string(),
+                non_conclusions: strings(&REQUIRED_HOMOTOPY_NON_CONCLUSIONS),
+            }
+        })
+        .collect()
+}
+
 fn build_bounded_judgements(
     archmap: &ArchMapDocumentV0,
     obstruction_circuits: &[ArchSigObstructionCircuitV0],
@@ -8111,6 +8227,7 @@ pub fn validate_archsig_analysis_packet_report(
         check_refs_and_identity(packet),
         check_north_star_aat_surfaces(packet),
         check_homotopy_complex_candidate_surface(packet),
+        check_filler_architectural_hole_surface(packet),
         check_bounded_judgement_surface(packet),
         check_analytic_and_principle_surfaces(packet),
         check_workflow_risk_surface(packet),
@@ -8528,6 +8645,120 @@ fn check_homotopy_complex_candidate_surface(packet: &ArchSigAnalysisPacketV0) ->
     check_from_examples(
         "archsig-analysis-packet-homotopy-complex-candidates",
         "packet exposes bounded homotopy complex, path pair candidates, and loop candidates",
+        examples,
+        "fail",
+    )
+}
+
+fn check_filler_architectural_hole_surface(packet: &ArchSigAnalysisPacketV0) -> ValidationCheck {
+    let loop_ids = packet
+        .loop_candidates
+        .iter()
+        .map(|candidate| candidate.loop_id.as_str())
+        .collect::<BTreeSet<_>>();
+    let mut examples = Vec::new();
+    let profile_absent = packet
+        .homotopy_complex_summary
+        .as_ref()
+        .map(|summary| summary.status == "profileAbsent")
+        .unwrap_or(false);
+    if packet.filler_candidate_readings.is_empty() && !profile_absent {
+        examples.push(generic_validation_example(
+            &packet.analysis_id,
+            "fillerCandidateReadings",
+            "packet must expose filler candidate readings",
+        ));
+    }
+    for reading in &packet.filler_candidate_readings {
+        push_blank(
+            &mut examples,
+            "fillerCandidateReadings[].readingId",
+            &reading.reading_id,
+        );
+        if !loop_ids.contains(reading.loop_ref.as_str()) {
+            examples.push(generic_validation_example(
+                &reading.reading_id,
+                &reading.loop_ref,
+                "filler candidate reading must reference a known loop candidate",
+            ));
+        }
+        push_blank(
+            &mut examples,
+            &format!("{} fillerKind", reading.reading_id),
+            &reading.filler_kind,
+        );
+        push_blank(
+            &mut examples,
+            &format!("{} status", reading.reading_id),
+            &reading.status,
+        );
+        if reading.next_check_refs.is_empty() || has_blank(&reading.next_check_refs) {
+            examples.push(generic_validation_example(
+                &reading.reading_id,
+                "nextCheckRefs",
+                "filler candidate reading must retain next checks",
+            ));
+        }
+        if reading.non_conclusions.is_empty() || has_blank(&reading.non_conclusions) {
+            examples.push(generic_validation_example(
+                &reading.reading_id,
+                "nonConclusions",
+                "filler candidate reading must keep non-conclusions explicit",
+            ));
+        }
+    }
+    if packet.architectural_hole_readings.is_empty() {
+        examples.push(generic_validation_example(
+            &packet.analysis_id,
+            "architecturalHoleReadings",
+            "packet must expose architectural hole readings for unfilled loops",
+        ));
+    }
+    for reading in &packet.architectural_hole_readings {
+        push_blank(
+            &mut examples,
+            "architecturalHoleReadings[].readingId",
+            &reading.reading_id,
+        );
+        if !loop_ids.contains(reading.loop_ref.as_str()) {
+            examples.push(generic_validation_example(
+                &reading.reading_id,
+                &reading.loop_ref,
+                "architectural hole reading must reference a known loop candidate",
+            ));
+        }
+        if reading.missing_filler_evidence.is_empty() || has_blank(&reading.missing_filler_evidence)
+        {
+            examples.push(generic_validation_example(
+                &reading.reading_id,
+                "missingFillerEvidence",
+                "architectural hole reading must retain missing filler evidence",
+            ));
+        }
+        if reading.next_check_refs.is_empty() || has_blank(&reading.next_check_refs) {
+            examples.push(generic_validation_example(
+                &reading.reading_id,
+                "nextCheckRefs",
+                "architectural hole reading must retain next checks",
+            ));
+        }
+        push_blank(
+            &mut examples,
+            &format!("{} coverageBoundary", reading.reading_id),
+            &reading.coverage_boundary,
+        );
+        if reading.non_conclusions.is_empty() || has_blank(&reading.non_conclusions) {
+            examples.push(generic_validation_example(
+                &reading.reading_id,
+                "nonConclusions",
+                "architectural hole reading must keep non-conclusions explicit",
+            ));
+        }
+    }
+
+    check_from_examples(
+        "archsig-analysis-packet-filler-architectural-hole-surface",
+        "packet distinguishes filler candidates from unfilled architectural holes and missing filler evidence",
         examples,
         "fail",
     )
