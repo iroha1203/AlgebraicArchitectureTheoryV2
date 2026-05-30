@@ -2014,6 +2014,79 @@
       ]
     }
   ],
+  "curvatureTransferReadings": [
+    {
+      "readingId": "curvature-transfer-reading:spectrum-profile-curvature-transfer-default",
+      "profileRef": "spectrum-profile:curvature-transfer-default",
+      "status": "needsReview",
+      "transferOperator": {
+        "operatorId": "transfer-operator:curvature-transfer-reading-spectrum-profile-curvature-transfer-default",
+        "rowDomain": "curvatureWitnessSupports",
+        "columnDomain": "curvatureWitnessSupports",
+        "rowCount": 1,
+        "columnCount": 1,
+        "nonzeroEdgeCount": 1,
+        "entryRule": "entry(i,j) is positive when measured curvature support i can transfer review pressure to support j under shared selected-axis or shared support evidence",
+        "reading": "finite nonnegative transfer operator over measured curvature supports; absent edges are unmeasured, not proof of independence"
+      },
+      "transferEdges": [
+        {
+          "edgeId": "curvature-transfer-edge:curvature-support-witness-semantic-contract-mismatch-axis-semantic-inconsistency:curvature-support-witness-semantic-contract-mismatch-axis-semantic-inconsistency",
+          "sourceSupportRef": "curvature-support:witness-semantic-contract-mismatch:axis-semantic-inconsistency",
+          "sourceAxisRef": "axis:semantic-inconsistency",
+          "targetSupportRef": "curvature-support:witness-semantic-contract-mismatch:axis-semantic-inconsistency",
+          "targetAxisRef": "axis:semantic-inconsistency",
+          "witnessRefs": [
+            "witness:semantic-contract-mismatch"
+          ],
+          "defectValue": 2,
+          "weight": 1,
+          "sourceRefs": [
+            "test-user-contract"
+          ],
+          "reading": "positive self-loop records a closed walk in the finite transfer operator"
+        }
+      ],
+      "recurrentObstructionModes": [
+        {
+          "modeId": "recurrent-obstruction:curvature-transfer-edge-curvature-support-witness-semantic-contract-mismatch-axis-semantic-inconsistency-curvature-support-witness-semantic-contract-mismatch-axis-semantic-inconsistency",
+          "transferEdgeRefs": [
+            "curvature-transfer-edge:curvature-support-witness-semantic-contract-mismatch-axis-semantic-inconsistency:curvature-support-witness-semantic-contract-mismatch-axis-semantic-inconsistency"
+          ],
+          "supportRefs": [
+            "curvature-support:witness-semantic-contract-mismatch:axis-semantic-inconsistency"
+          ],
+          "witnessRefs": [
+            "witness:semantic-contract-mismatch"
+          ],
+          "spectralRadiusReading": "rho(T^kappa) proxy 1 > 0 over the finite ArchSig transfer operator",
+          "recurrentObstructionReading": "positive closed walk is reported as recurrent obstruction support only",
+          "reviewFocus": [
+            "inspect the witness support behind the positive transfer self-loop",
+            "check whether coverage gaps or exactness limits block zero-reflection"
+          ],
+          "nonConclusions": [
+            "recurrent obstruction mode is not future incident prediction",
+            "recurrent obstruction mode is not empirical cost amplification",
+            "recurrent obstruction mode is not repair safety evidence"
+          ]
+        }
+      ],
+      "spectralRadiusReading": {
+        "name": "rho(T^kappa)Proxy",
+        "value": "1",
+        "interpretation": "positive proxy is read only as recurrent obstruction support in the finite ArchSig transfer operator, not future incident probability"
+      },
+      "coverageBoundary": "missing coverage blocks spectrum zero reflection and remains a report gap",
+      "evidenceBoundary": "transfer operator is computed from measured curvature support rows and does not forecast future cost, safety, or amplification",
+      "nonConclusions": [
+        "rho(T^kappa) > 0 is only a bounded recurrent obstruction reading",
+        "transfer operator reading does not predict future incidents or empirical cost increase",
+        "transfer operator reading does not replace FieldSig forecast",
+        "absence of transfer edges is not proof of future safety"
+      ]
+    }
+  ],
   "transferBridgeReadings": [
     {
       "transferBridgeId": "transfer-bridge:fixture-archmap-atom-observation",
@@ -5978,6 +6051,9 @@
     ],
     "curvatureSupportSummary": [
       "curvature-support-reading:spectrum-profile-curvature-transfer-default supports=4 topModes=4 clusters=2 measuredAxes=1 unmeasuredAxes=2 (needsReview)"
+    ],
+    "curvatureTransferSummary": [
+      "curvature-transfer-reading:spectrum-profile-curvature-transfer-default edges=1 recurrentModes=1 rho=1 (needsReview)"
     ],
     "transferBridgeSummary": [
       "transfer-bridge:fixture-archmap-atom-observation transfers=0 bridges=1 repairRanks=1 boundaryRanks=0 (nonConclusion)"

@@ -677,6 +677,8 @@ pub struct ArchSigAnalysisPacketV0 {
     pub spectral_drilldown_readings: Vec<ArchSigSpectralDrilldownReadingV0>,
     #[serde(default)]
     pub curvature_support_readings: Vec<ArchSigCurvatureSupportReadingV0>,
+    #[serde(default)]
+    pub curvature_transfer_readings: Vec<ArchSigCurvatureTransferReadingV0>,
     pub transfer_bridge_readings: Vec<ArchSigTransferBridgeReadingV0>,
     #[serde(default)]
     pub atom_support_axis_readings: Vec<ArchSigAtomSupportAxisReadingV0>,
@@ -1359,6 +1361,62 @@ pub struct ArchSigCurvatureWitnessClusterV0 {
     pub support_refs: Vec<String>,
     pub cluster_weight: i64,
     pub reading: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigCurvatureTransferReadingV0 {
+    pub reading_id: String,
+    pub profile_ref: String,
+    pub status: String,
+    pub transfer_operator: ArchSigCurvatureTransferOperatorV0,
+    pub transfer_edges: Vec<ArchSigCurvatureTransferEdgeV0>,
+    pub recurrent_obstruction_modes: Vec<ArchSigRecurrentObstructionModeV0>,
+    pub spectral_radius_reading: ArchSigSpectralValueV0,
+    pub coverage_boundary: String,
+    pub evidence_boundary: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigCurvatureTransferOperatorV0 {
+    pub operator_id: String,
+    pub row_domain: String,
+    pub column_domain: String,
+    pub row_count: usize,
+    pub column_count: usize,
+    pub nonzero_edge_count: usize,
+    pub entry_rule: String,
+    pub reading: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigCurvatureTransferEdgeV0 {
+    pub edge_id: String,
+    pub source_support_ref: String,
+    pub source_axis_ref: String,
+    pub target_support_ref: String,
+    pub target_axis_ref: String,
+    pub witness_refs: Vec<String>,
+    pub defect_value: i64,
+    pub weight: i64,
+    pub source_refs: Vec<String>,
+    pub reading: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigRecurrentObstructionModeV0 {
+    pub mode_id: String,
+    pub transfer_edge_refs: Vec<String>,
+    pub support_refs: Vec<String>,
+    pub witness_refs: Vec<String>,
+    pub spectral_radius_reading: String,
+    pub recurrent_obstruction_reading: String,
+    pub review_focus: Vec<String>,
+    pub non_conclusions: Vec<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -2065,6 +2123,8 @@ pub struct ArchSigLlmInterpretationPacketV0 {
     pub spectral_drilldown_summary: Vec<String>,
     #[serde(default)]
     pub curvature_support_summary: Vec<String>,
+    #[serde(default)]
+    pub curvature_transfer_summary: Vec<String>,
     pub transfer_bridge_summary: Vec<String>,
     pub transfer_bridge_edge_summary: Vec<String>,
     #[serde(default)]
@@ -2148,6 +2208,7 @@ pub struct ArchSigAnalysisPacketValidationSummaryV0 {
     pub spectral_mode_reading_count: usize,
     pub spectral_drilldown_reading_count: usize,
     pub curvature_support_reading_count: usize,
+    pub curvature_transfer_reading_count: usize,
     pub transfer_bridge_reading_count: usize,
     pub atom_support_axis_reading_count: usize,
     pub atom_compatibility_reading_count: usize,

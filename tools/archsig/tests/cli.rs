@@ -1263,6 +1263,65 @@ fn assert_north_star_packet_surfaces(json: &Value) {
         }),
         "curvature support readings must keep unmeasured support separate from measured zero"
     );
+    let curvature_transfer = json["curvatureTransferReadings"]
+        .as_array()
+        .expect("curvature transfer readings are array");
+    assert!(
+        !curvature_transfer.is_empty(),
+        "North Star packet must expose curvature transfer readings"
+    );
+    assert!(
+        curvature_transfer.iter().all(|entry| {
+            entry["profileRef"].as_str().is_some()
+                && entry["transferOperator"]["nonzeroEdgeCount"]
+                    .as_u64()
+                    .is_some()
+                && entry["transferOperator"]["entryRule"].as_str().is_some()
+                && entry["transferEdges"]
+                    .as_array()
+                    .is_some_and(|items| !items.is_empty())
+                && entry["recurrentObstructionModes"]
+                    .as_array()
+                    .is_some_and(|items| !items.is_empty())
+                && entry["spectralRadiusReading"]["value"].as_str().is_some()
+                && entry["evidenceBoundary"].as_str().is_some()
+                && entry["nonConclusions"]
+                    .as_array()
+                    .is_some_and(|items| !items.is_empty())
+        }),
+        "curvature transfer readings must carry operator, edges, recurrent modes, rho reading, and non-conclusions"
+    );
+    assert!(
+        curvature_transfer.iter().all(|entry| {
+            entry["transferEdges"]
+                .as_array()
+                .expect("curvature transfer edges are array")
+                .iter()
+                .all(|edge| {
+                    edge["sourceSupportRef"].as_str().is_some()
+                        && edge["targetSupportRef"].as_str().is_some()
+                        && edge["witnessRefs"]
+                            .as_array()
+                            .is_some_and(|items| !items.is_empty())
+                        && edge["defectValue"].as_i64().is_some_and(|value| value > 0)
+                        && edge["weight"].as_i64().is_some_and(|value| value > 0)
+                })
+        }),
+        "curvature transfer edges must carry support refs, witness refs, positive defect value, and positive weight"
+    );
+    assert!(
+        curvature_transfer.iter().all(|entry| {
+            entry["nonConclusions"]
+                .as_array()
+                .expect("curvature transfer non-conclusions are array")
+                .iter()
+                .any(|item| {
+                    item.as_str()
+                        .is_some_and(|text| text.contains("does not replace FieldSig forecast"))
+                })
+        }),
+        "curvature transfer readings must preserve FieldSig forecast boundary"
+    );
     let transfer_bridges = json["transferBridgeReadings"]
         .as_array()
         .expect("transfer bridge readings are array");

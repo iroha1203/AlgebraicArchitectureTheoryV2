@@ -19,28 +19,31 @@ use crate::{
     ArchSigBridgeEdgeBreakdownV0, ArchSigBridgeSplitObstructionTransferReadingV0,
     ArchSigChangeImpactReadingV0, ArchSigCouplingCohesionReadingV0, ArchSigCoverageStatusV0,
     ArchSigCurrentStateEvolutionBoundaryV0, ArchSigCurvatureSupportReadingV0,
-    ArchSigCurvatureTopModeV0, ArchSigCurvatureWitnessClusterV0, ArchSigCurvatureWitnessSupportV0,
-    ArchSigDesignPressureReadingV0, ArchSigDesignPrincipleReadingV0,
-    ArchSigDiagramFillabilityReadingV0, ArchSigDominantAtomFamilyCompositionV0,
-    ArchSigEvolutionRiskRankingV0, ArchSigFeatureBoundaryResidualReadingV0,
-    ArchSigFeatureExtensionAxisSummaryV0, ArchSigFeatureExtensionDiagnosisReadingV0,
-    ArchSigFeatureExtensionFormulaReadingV0, ArchSigFeatureExtensionWitnessAttributionV0,
-    ArchSigFlatnessReadingV0, ArchSigHighOverlapMoleculePairV0,
-    ArchSigHomotopyOrderSensitivityReadingV0, ArchSigInvariantFamilyReadingV0,
-    ArchSigLawUniverseCoverageReadingV0, ArchSigLawUniverseReadingV0, ArchSigLayerSplitV0,
-    ArchSigLlmInterpretationPacketV0, ArchSigLocalCurvatureDiagramReadingV0,
-    ArchSigMoleculeReadingV0, ArchSigMonodromyReadingFamilyV0, ArchSigNonzeroMonodromyWitnessV0,
+    ArchSigCurvatureTopModeV0, ArchSigCurvatureTransferEdgeV0, ArchSigCurvatureTransferOperatorV0,
+    ArchSigCurvatureTransferReadingV0, ArchSigCurvatureWitnessClusterV0,
+    ArchSigCurvatureWitnessSupportV0, ArchSigDesignPressureReadingV0,
+    ArchSigDesignPrincipleReadingV0, ArchSigDiagramFillabilityReadingV0,
+    ArchSigDominantAtomFamilyCompositionV0, ArchSigEvolutionRiskRankingV0,
+    ArchSigFeatureBoundaryResidualReadingV0, ArchSigFeatureExtensionAxisSummaryV0,
+    ArchSigFeatureExtensionDiagnosisReadingV0, ArchSigFeatureExtensionFormulaReadingV0,
+    ArchSigFeatureExtensionWitnessAttributionV0, ArchSigFlatnessReadingV0,
+    ArchSigHighOverlapMoleculePairV0, ArchSigHomotopyOrderSensitivityReadingV0,
+    ArchSigInvariantFamilyReadingV0, ArchSigLawUniverseCoverageReadingV0,
+    ArchSigLawUniverseReadingV0, ArchSigLayerSplitV0, ArchSigLlmInterpretationPacketV0,
+    ArchSigLocalCurvatureDiagramReadingV0, ArchSigMoleculeReadingV0,
+    ArchSigMonodromyReadingFamilyV0, ArchSigNonzeroMonodromyWitnessV0,
     ArchSigObservationProjectionReadingV0, ArchSigObstructionCircuitV0,
     ArchSigOperationCalculusLawReadingV0, ArchSigOperationDeltaReadingV0,
     ArchSigOperationInvariantGaloisReadingV0, ArchSigOperationSquareCandidateV0,
     ArchSigPathContinuationTraceV0, ArchSigPathHomotopyDiagramReadingV0,
-    ArchSigPathSignatureTrajectoryReadingV0, ArchSigRepairAxisDeltaReadingV0,
-    ArchSigRepairOperationCandidateV0, ArchSigRepairTransferRiskRankV0,
-    ArchSigRepresentationStrengthReadingV0, ArchSigSignatureAxisReadingV0,
-    ArchSigSignatureTrajectoryHomotopyRefutationReadingV0, ArchSigSpectralAnalysisReadingV0,
-    ArchSigSpectralDominantComponentV0, ArchSigSpectralDrilldownReadingV0,
-    ArchSigSpectralMatrixShapeV0, ArchSigSpectralModeComponentV0, ArchSigSpectralModeReadingV0,
-    ArchSigSpectralValueV0, ArchSigSplitReadinessReadingV0, ArchSigStateTransitionAlgebraReadingV0,
+    ArchSigPathSignatureTrajectoryReadingV0, ArchSigRecurrentObstructionModeV0,
+    ArchSigRepairAxisDeltaReadingV0, ArchSigRepairOperationCandidateV0,
+    ArchSigRepairTransferRiskRankV0, ArchSigRepresentationStrengthReadingV0,
+    ArchSigSignatureAxisReadingV0, ArchSigSignatureTrajectoryHomotopyRefutationReadingV0,
+    ArchSigSpectralAnalysisReadingV0, ArchSigSpectralDominantComponentV0,
+    ArchSigSpectralDrilldownReadingV0, ArchSigSpectralMatrixShapeV0,
+    ArchSigSpectralModeComponentV0, ArchSigSpectralModeReadingV0, ArchSigSpectralValueV0,
+    ArchSigSplitReadinessReadingV0, ArchSigStateTransitionAlgebraReadingV0,
     ArchSigStructuralReadingReviewSurfaceV0, ArchSigSubjectFamilySpreadV0,
     ArchSigThreeLayerFlatnessReadingV0, ArchSigTransferBridgeReadingV0,
     ArchSigTransferMatrixEntryV0, ArchSigWorkflowAtomFamilyCountV0,
@@ -132,6 +135,8 @@ pub fn build_archsig_analysis_packet(
         &obstruction_circuits,
         &signature_axes,
     );
+    let curvature_transfer_readings =
+        build_curvature_transfer_readings(&curvature_support_readings);
     let transfer_bridge_readings = build_transfer_bridge_readings(
         archmap,
         &spectral_mode_readings,
@@ -292,6 +297,7 @@ pub fn build_archsig_analysis_packet(
         &spectral_mode_readings,
         &spectral_drilldown_readings,
         &curvature_support_readings,
+        &curvature_transfer_readings,
         &transfer_bridge_readings,
         &atom_support_axis_readings,
         &atom_compatibility_readings,
@@ -359,6 +365,7 @@ pub fn build_archsig_analysis_packet(
         spectral_mode_readings,
         spectral_drilldown_readings,
         curvature_support_readings,
+        curvature_transfer_readings,
         transfer_bridge_readings,
         atom_support_axis_readings,
         atom_compatibility_readings,
@@ -3741,6 +3748,170 @@ fn build_curvature_witness_clusters(
         .collect()
 }
 
+fn build_curvature_transfer_readings(
+    curvature_support_readings: &[ArchSigCurvatureSupportReadingV0],
+) -> Vec<ArchSigCurvatureTransferReadingV0> {
+    curvature_support_readings
+        .iter()
+        .map(|support_reading| {
+            let positive_supports = support_reading
+                .witness_supports
+                .iter()
+                .filter(|support| support.curvature_value > 0)
+                .collect::<Vec<_>>();
+            let transfer_edges = build_curvature_transfer_edges(&positive_supports);
+            let spectral_radius_proxy = transfer_edges
+                .iter()
+                .filter(|edge| edge.source_support_ref == edge.target_support_ref)
+                .map(|edge| edge.weight)
+                .max()
+                .unwrap_or_default();
+            let recurrent_obstruction_modes =
+                build_recurrent_obstruction_modes(&transfer_edges, spectral_radius_proxy);
+            let status = if recurrent_obstruction_modes.is_empty() {
+                "nonConclusion"
+            } else {
+                "needsReview"
+            };
+            let reading_id = format!(
+                "curvature-transfer-reading:{}",
+                stable_id(&support_reading.profile_ref)
+            );
+            ArchSigCurvatureTransferReadingV0 {
+                reading_id: reading_id.clone(),
+                profile_ref: support_reading.profile_ref.clone(),
+                status: status.to_string(),
+                transfer_operator: ArchSigCurvatureTransferOperatorV0 {
+                    operator_id: format!("transfer-operator:{}", stable_id(&reading_id)),
+                    row_domain: "curvatureWitnessSupports".to_string(),
+                    column_domain: "curvatureWitnessSupports".to_string(),
+                    row_count: positive_supports.len(),
+                    column_count: positive_supports.len(),
+                    nonzero_edge_count: transfer_edges.len(),
+                    entry_rule:
+                        "entry(i,j) is positive when measured curvature support i can transfer review pressure to support j under shared selected-axis or shared support evidence"
+                            .to_string(),
+                    reading:
+                        "finite nonnegative transfer operator over measured curvature supports; absent edges are unmeasured, not proof of independence"
+                            .to_string(),
+                },
+                transfer_edges,
+                recurrent_obstruction_modes,
+                spectral_radius_reading: spectral_value(
+                    "rho(T^kappa)Proxy",
+                    spectral_radius_proxy,
+                    "positive proxy is read only as recurrent obstruction support in the finite ArchSig transfer operator, not future incident probability",
+                ),
+                coverage_boundary: support_reading.coverage_boundary.clone(),
+                evidence_boundary:
+                    "transfer operator is computed from measured curvature support rows and does not forecast future cost, safety, or amplification"
+                        .to_string(),
+                non_conclusions: vec![
+                    "rho(T^kappa) > 0 is only a bounded recurrent obstruction reading"
+                        .to_string(),
+                    "transfer operator reading does not predict future incidents or empirical cost increase"
+                        .to_string(),
+                    "transfer operator reading does not replace FieldSig forecast".to_string(),
+                    "absence of transfer edges is not proof of future safety".to_string(),
+                ],
+            }
+        })
+        .collect()
+}
+
+fn build_curvature_transfer_edges(
+    positive_supports: &[&ArchSigCurvatureWitnessSupportV0],
+) -> Vec<ArchSigCurvatureTransferEdgeV0> {
+    let mut edges = Vec::new();
+    for source in positive_supports {
+        for target in positive_supports {
+            let shared_support = source
+                .support_refs
+                .iter()
+                .any(|support_ref| target.support_refs.contains(support_ref));
+            let same_axis = source.selected_axis_ref == target.selected_axis_ref;
+            if !same_axis && !shared_support {
+                continue;
+            }
+            let weight = if source.witness_support_id == target.witness_support_id {
+                source.weight.max(1)
+            } else {
+                source.weight.min(target.weight).max(1)
+            };
+            edges.push(ArchSigCurvatureTransferEdgeV0 {
+                edge_id: format!(
+                    "curvature-transfer-edge:{}:{}",
+                    stable_id(&source.witness_support_id),
+                    stable_id(&target.witness_support_id)
+                ),
+                source_support_ref: source.witness_support_id.clone(),
+                source_axis_ref: source.selected_axis_ref.clone(),
+                target_support_ref: target.witness_support_id.clone(),
+                target_axis_ref: target.selected_axis_ref.clone(),
+                witness_refs: unique_strings(
+                    [source.witness_rule_ref.clone(), target.witness_rule_ref.clone()]
+                        .into_iter(),
+                ),
+                defect_value: source.curvature_value + target.curvature_value,
+                weight,
+                source_refs: unique_strings(
+                    source
+                        .source_refs
+                        .iter()
+                        .chain(target.source_refs.iter())
+                        .cloned(),
+                ),
+                reading: if source.witness_support_id == target.witness_support_id {
+                    "positive self-loop records a closed walk in the finite transfer operator"
+                        .to_string()
+                } else if same_axis {
+                    "same-axis transfer edge records repeated curvature support along a selected axis"
+                        .to_string()
+                } else {
+                    "shared-support transfer edge records cross-axis review pressure over observed support"
+                        .to_string()
+                },
+            });
+        }
+    }
+    edges
+}
+
+fn build_recurrent_obstruction_modes(
+    transfer_edges: &[ArchSigCurvatureTransferEdgeV0],
+    spectral_radius_proxy: i64,
+) -> Vec<ArchSigRecurrentObstructionModeV0> {
+    if spectral_radius_proxy <= 0 {
+        return Vec::new();
+    }
+    transfer_edges
+        .iter()
+        .filter(|edge| edge.source_support_ref == edge.target_support_ref && edge.weight > 0)
+        .take(8)
+        .map(|edge| ArchSigRecurrentObstructionModeV0 {
+            mode_id: format!("recurrent-obstruction:{}", stable_id(&edge.edge_id)),
+            transfer_edge_refs: vec![edge.edge_id.clone()],
+            support_refs: vec![edge.source_support_ref.clone()],
+            witness_refs: edge.witness_refs.clone(),
+            spectral_radius_reading: format!(
+                "rho(T^kappa) proxy {spectral_radius_proxy} > 0 over the finite ArchSig transfer operator"
+            ),
+            recurrent_obstruction_reading:
+                "positive closed walk is reported as recurrent obstruction support only"
+                    .to_string(),
+            review_focus: vec![
+                "inspect the witness support behind the positive transfer self-loop".to_string(),
+                "check whether coverage gaps or exactness limits block zero-reflection".to_string(),
+            ],
+            non_conclusions: vec![
+                "recurrent obstruction mode is not future incident prediction".to_string(),
+                "recurrent obstruction mode is not empirical cost amplification".to_string(),
+                "recurrent obstruction mode is not repair safety evidence".to_string(),
+            ],
+        })
+        .collect()
+}
+
 fn spectral_mode_reading(
     spectral_reading: &ArchSigSpectralAnalysisReadingV0,
 ) -> ArchSigSpectralModeReadingV0 {
@@ -6934,6 +7105,7 @@ fn build_llm_interpretation_packet(
     spectral_mode_readings: &[ArchSigSpectralModeReadingV0],
     spectral_drilldown_readings: &[ArchSigSpectralDrilldownReadingV0],
     curvature_support_readings: &[ArchSigCurvatureSupportReadingV0],
+    curvature_transfer_readings: &[ArchSigCurvatureTransferReadingV0],
     transfer_bridge_readings: &[ArchSigTransferBridgeReadingV0],
     atom_support_axis_readings: &[ArchSigAtomSupportAxisReadingV0],
     atom_compatibility_readings: &[ArchSigAtomCompatibilityReadingV0],
@@ -7059,6 +7231,19 @@ fn build_llm_interpretation_packet(
                     reading.witness_clusters.len(),
                     reading.measured_axis_refs.len(),
                     reading.unmeasured_axis_refs.len(),
+                    reading.status
+                )
+            })
+            .collect(),
+        curvature_transfer_summary: curvature_transfer_readings
+            .iter()
+            .map(|reading| {
+                format!(
+                    "{} edges={} recurrentModes={} rho={} ({})",
+                    reading.reading_id,
+                    reading.transfer_edges.len(),
+                    reading.recurrent_obstruction_modes.len(),
+                    reading.spectral_radius_reading.value,
                     reading.status
                 )
             })
@@ -7520,6 +7705,7 @@ pub fn validate_archsig_analysis_packet_report(
         check_spectral_mode_surface(packet),
         check_spectral_drilldown_surface(packet),
         check_curvature_support_surface(packet),
+        check_curvature_transfer_surface(packet),
         check_transfer_bridge_surface(packet),
         check_aat_structural_reading_surfaces(packet),
         check_current_state_evolution_boundary(packet),
@@ -7554,6 +7740,7 @@ pub fn validate_archsig_analysis_packet_report(
         spectral_mode_reading_count: packet.spectral_mode_readings.len(),
         spectral_drilldown_reading_count: packet.spectral_drilldown_readings.len(),
         curvature_support_reading_count: packet.curvature_support_readings.len(),
+        curvature_transfer_reading_count: packet.curvature_transfer_readings.len(),
         transfer_bridge_reading_count: packet.transfer_bridge_readings.len(),
         atom_support_axis_reading_count: packet.atom_support_axis_readings.len(),
         atom_compatibility_reading_count: packet.atom_compatibility_readings.len(),
@@ -8614,6 +8801,197 @@ fn check_curvature_support_surface(packet: &ArchSigAnalysisPacketV0) -> Validati
     check_from_examples(
         "archsig-analysis-packet-curvature-support-surface",
         "packet exposes curvature support rows, top modes, witness clusters, and unmeasured boundaries",
+        examples,
+        "fail",
+    )
+}
+
+fn check_curvature_transfer_surface(packet: &ArchSigAnalysisPacketV0) -> ValidationCheck {
+    let allowed_statuses =
+        BTreeSet::from(["actionable", "needsReview", "blocked", "nonConclusion"]);
+    let support_ids = packet
+        .curvature_support_readings
+        .iter()
+        .flat_map(|reading| reading.witness_supports.iter())
+        .map(|support| support.witness_support_id.as_str())
+        .collect::<BTreeSet<_>>();
+    let mut examples = Vec::new();
+
+    if packet.curvature_transfer_readings.is_empty() {
+        return check_from_examples(
+            "archsig-analysis-packet-curvature-transfer-surface",
+            "optional curvature transfer readings are absent",
+            examples,
+            "fail",
+        );
+    }
+    examples.extend(duplicate_examples(
+        "curvatureTransferReadings[].readingId",
+        duplicates(
+            packet
+                .curvature_transfer_readings
+                .iter()
+                .map(|reading| reading.reading_id.as_str()),
+        ),
+    ));
+    for reading in &packet.curvature_transfer_readings {
+        if !allowed_statuses.contains(reading.status.as_str()) {
+            examples.push(generic_validation_example(
+                &reading.reading_id,
+                &reading.status,
+                "curvature transfer status must be actionable, needsReview, blocked, or nonConclusion",
+            ));
+        }
+        push_blank(
+            &mut examples,
+            &format!("{} profileRef", reading.reading_id),
+            &reading.profile_ref,
+        );
+        if reading.transfer_operator.nonzero_edge_count != reading.transfer_edges.len() {
+            examples.push(generic_validation_example(
+                &reading.reading_id,
+                &reading.transfer_operator.nonzero_edge_count.to_string(),
+                "transfer operator edge count must match transferEdges length",
+            ));
+        }
+        push_blank(
+            &mut examples,
+            &format!("{} transferOperator.entryRule", reading.reading_id),
+            &reading.transfer_operator.entry_rule,
+        );
+        push_blank(
+            &mut examples,
+            &format!("{} transferOperator.reading", reading.reading_id),
+            &reading.transfer_operator.reading,
+        );
+        push_blank(
+            &mut examples,
+            &format!("{} spectralRadiusReading.value", reading.reading_id),
+            &reading.spectral_radius_reading.value,
+        );
+        push_blank(
+            &mut examples,
+            &format!("{} coverageBoundary", reading.reading_id),
+            &reading.coverage_boundary,
+        );
+        push_blank(
+            &mut examples,
+            &format!("{} evidenceBoundary", reading.reading_id),
+            &reading.evidence_boundary,
+        );
+        if reading.non_conclusions.is_empty() || has_blank(&reading.non_conclusions) {
+            examples.push(generic_validation_example(
+                &reading.reading_id,
+                "nonConclusions",
+                "curvature transfer reading must retain amplification and forecast non-conclusions",
+            ));
+        }
+        for required in [
+            "rho(T^kappa) > 0 is only a bounded recurrent obstruction reading",
+            "transfer operator reading does not replace FieldSig forecast",
+        ] {
+            if !reading
+                .non_conclusions
+                .iter()
+                .any(|non_conclusion| non_conclusion == required)
+            {
+                examples.push(generic_validation_example(
+                    &reading.reading_id,
+                    required,
+                    "curvature transfer reading is missing a required non-conclusion",
+                ));
+            }
+        }
+        for edge in &reading.transfer_edges {
+            if !support_ids.contains(edge.source_support_ref.as_str())
+                || !support_ids.contains(edge.target_support_ref.as_str())
+            {
+                examples.push(generic_validation_example(
+                    &edge.edge_id,
+                    "source/target support refs",
+                    "curvature transfer edge must reference known curvature support rows",
+                ));
+            }
+            if edge.weight <= 0 || edge.defect_value <= 0 {
+                examples.push(generic_validation_example(
+                    &edge.edge_id,
+                    &format!("{}:{}", edge.defect_value, edge.weight),
+                    "curvature transfer edge must carry positive defect value and weight",
+                ));
+            }
+            if edge.witness_refs.is_empty() {
+                examples.push(generic_validation_example(
+                    &edge.edge_id,
+                    "witnessRefs",
+                    "curvature transfer edge must keep witness refs traceable",
+                ));
+            }
+            push_blank(
+                &mut examples,
+                &format!("{} reading", edge.edge_id),
+                &edge.reading,
+            );
+        }
+        let edge_ids = reading
+            .transfer_edges
+            .iter()
+            .map(|edge| edge.edge_id.as_str())
+            .collect::<BTreeSet<_>>();
+        for mode in &reading.recurrent_obstruction_modes {
+            if mode.transfer_edge_refs.is_empty()
+                || mode
+                    .transfer_edge_refs
+                    .iter()
+                    .any(|edge_ref| !edge_ids.contains(edge_ref.as_str()))
+            {
+                examples.push(generic_validation_example(
+                    &mode.mode_id,
+                    "transferEdgeRefs",
+                    "recurrent obstruction mode must reference known transfer edges",
+                ));
+            }
+            if mode.support_refs.is_empty() || mode.witness_refs.is_empty() {
+                examples.push(generic_validation_example(
+                    &mode.mode_id,
+                    "supportRefs/witnessRefs",
+                    "recurrent obstruction mode must keep support and witness refs traceable",
+                ));
+            }
+            push_blank(
+                &mut examples,
+                &format!("{} spectralRadiusReading", mode.mode_id),
+                &mode.spectral_radius_reading,
+            );
+            push_blank(
+                &mut examples,
+                &format!("{} recurrentObstructionReading", mode.mode_id),
+                &mode.recurrent_obstruction_reading,
+            );
+            if mode.non_conclusions.is_empty() || has_blank(&mode.non_conclusions) {
+                examples.push(generic_validation_example(
+                    &mode.mode_id,
+                    "nonConclusions",
+                    "recurrent obstruction mode must preserve non-conclusions",
+                ));
+            }
+        }
+        if reading
+            .spectral_radius_reading
+            .value
+            .parse::<i64>()
+            .is_ok_and(|value| value > 0)
+            && reading.recurrent_obstruction_modes.is_empty()
+        {
+            examples.push(generic_validation_example(
+                &reading.reading_id,
+                "recurrentObstructionModes",
+                "positive rho(T^kappa) proxy must be limited to recurrent obstruction modes",
+            ));
+        }
+    }
+    check_from_examples(
+        "archsig-analysis-packet-curvature-transfer-surface",
+        "packet exposes finite transfer operator, recurrent obstruction modes, rho(T^kappa) reading, and forecast non-conclusions",
         examples,
         "fail",
     )
@@ -11161,6 +11539,14 @@ fn check_llm_interpretation_surface(packet: &ArchSigAnalysisPacketV0) -> Validat
                 .is_empty(),
         ),
         (
+            "llmInterpretationPacket.curvatureSupportSummary",
+            !packet.curvature_support_readings.is_empty()
+                && packet
+                    .llm_interpretation_packet
+                    .curvature_support_summary
+                    .is_empty(),
+        ),
+        (
             "llmInterpretationPacket.featureBoundaryResidualSummary",
             packet
                 .llm_interpretation_packet
@@ -11173,6 +11559,14 @@ fn check_llm_interpretation_surface(packet: &ArchSigAnalysisPacketV0) -> Validat
                 .llm_interpretation_packet
                 .feature_extension_diagnosis_summary
                 .is_empty(),
+        ),
+        (
+            "llmInterpretationPacket.curvatureTransferSummary",
+            !packet.curvature_transfer_readings.is_empty()
+                && packet
+                    .llm_interpretation_packet
+                    .curvature_transfer_summary
+                    .is_empty(),
         ),
     ] {
         if is_empty {
@@ -11841,6 +12235,22 @@ mod tests {
         assert_eq!(report.summary.result, "fail");
         assert!(report.checks.iter().any(|check| {
             check.id == "archsig-analysis-packet-curvature-support-surface"
+                && check.result == "fail"
+        }));
+    }
+
+    #[test]
+    fn curvature_transfer_without_non_conclusions_fails_validation() {
+        let mut packet = static_archsig_analysis_packet();
+        packet.curvature_transfer_readings[0]
+            .non_conclusions
+            .clear();
+
+        let report = validate_archsig_analysis_packet_report(&packet, "invalid.json");
+
+        assert_eq!(report.summary.result, "fail");
+        assert!(report.checks.iter().any(|check| {
+            check.id == "archsig-analysis-packet-curvature-transfer-surface"
                 && check.result == "fail"
         }));
     }

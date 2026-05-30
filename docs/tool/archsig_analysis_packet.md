@@ -56,6 +56,7 @@ The implemented schema records:
 - `spectralModeReadings`
 - `spectralDrilldownReadings`
 - `curvatureSupportReadings`
+- `curvatureTransferReadings`
 - `transferBridgeReadings`
 - `atomSupportAxisReadings`
 - `atomCompatibilityReadings`
@@ -102,9 +103,9 @@ The implemented schema records:
 Packet validation checks identity, ArchMap / interpretation profile references,
 AAT concept coverage, bounded judgement statuses, analytic axes, workflow risk
 readings, spectral analysis readings, spectral mode readings, design principle
-readings, spectral drilldown readings, curvature support readings, transfer
-bridge readings and bridge-edge source refs, v0.3.0 measurement expansion
-readings, AAT structural state
+readings, spectral drilldown readings, curvature support readings, curvature
+transfer readings, transfer bridge readings and bridge-edge source refs, v0.3.0
+measurement expansion readings, AAT structural state
 readings, ArchMapStore delta / commit / snapshot / index refs, operation square
 candidates, axis-wise path continuation traces, monodromy / boundary holonomy
 reading family policy surfaces, law-relative obstruction links, signature /
@@ -173,6 +174,11 @@ The builder:
   support rows, bounded curvature values, weights, top modes, witness clusters,
   coverage boundaries, exactness refs, and non-conclusions. Unmeasured axes and
   missing support remain explicit missing evidence, not measured zero.
+- curvature transfer readings build a finite nonnegative transfer operator over
+  measured curvature support rows. They report transfer edges, a
+  `rho(T^kappa)` proxy, and recurrent obstruction modes only as bounded
+  current-state diagnostics. They do not conclude future incidents, empirical
+  cost increase, amplification, repair safety, or FieldSig forecast truth.
 - transfer bridge readings summarize repair-operation-by-transferred-axis
   matrices, indirect bridge atom families between architecture hubs, and
   evolution risk rankings for repairs and boundary preparation. Each bridge
