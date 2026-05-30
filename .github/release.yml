@@ -1,0 +1,36 @@
+changelog:
+  exclude:
+    labels:
+      - duplicate
+      - invalid
+      - question
+      - wontfix
+      - status:blocked
+      - status:needs-design
+  categories:
+    - title: Lean / Formalization
+      labels:
+        - type:definition
+        - type:lean-proof
+        - area:finite-universe
+        - area:layering
+        - area:reachability
+        - area:scc-depth
+        - area:path-matrix
+        - area:projection-observation
+    - title: ArchSig / Tooling
+      labels:
+        - type:tooling
+        - area:signature
+        - area:empirical
+    - title: Research Docs
+      labels:
+        - type:docs
+        - documentation
+        - type:research-hypothesis
+    - title: Fixes
+      labels:
+        - bug
+    - title: Other Changes
+      labels:
+        - "*"
