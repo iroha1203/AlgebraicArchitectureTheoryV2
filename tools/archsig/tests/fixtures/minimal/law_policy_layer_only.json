@@ -171,6 +171,33 @@
       ]
     }
   ],
+  "measurementPolicy": {
+    "policyId": "measurement-policy:monodromy-boundary-holonomy",
+    "selectedAxisRefs": [
+      "axis:layer-violation"
+    ],
+    "distanceKind": "weighted-axis-l1",
+    "weightPolicy": "unit weights until repo-specific calibration is declared in a future policy",
+    "coveragePolicy": "measure only selected axes with declared coverage; missing coverage remains blocked, not zero",
+    "archMapStoreRefKinds": [
+      "archmap-delta",
+      "archmap-commit",
+      "archmap-snapshot",
+      "archmap-index"
+    ],
+    "measurementBoundary": "monodromy and boundary holonomy readings are finite ArchMapStore telemetry over selected axes, not theorem proofs",
+    "exactnessAssumptionRefs": [
+      "selected LawPolicy exactness assumptions",
+      "ArchMapStore compaction boundary"
+    ],
+    "nonConclusions": [
+      "law policy is selected analysis policy, not AAT itself",
+      "law policy validation does not prove architecture lawfulness",
+      "law policy validation does not certify atom truth",
+      "missing coverage is not measured zero",
+      "signature zero requires ArchSig analysis with declared coverage and exactness assumptions"
+    ]
+  },
   "exactnessAssumptions": [
     "the selected witness rules cover only policy-declared laws",
     "zero readings are exact only for observed atoms and declared coverage requirements"

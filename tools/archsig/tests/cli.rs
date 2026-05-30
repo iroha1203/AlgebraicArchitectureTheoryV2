@@ -13,6 +13,18 @@ fn expressiveness_root() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/expressiveness")
 }
 
+fn coupon_rounding_root() -> PathBuf {
+    Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/coupon_rounding")
+}
+
+fn inspection_root() -> PathBuf {
+    Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/inspection")
+}
+
+fn pr_review_root() -> PathBuf {
+    Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/pr_review")
+}
+
 fn sharded_root() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/sharded")
 }
@@ -32,6 +44,8 @@ fn cli_help_exposes_only_llm_atom_archmap_surface() {
         "aat-analysis",
         "analysis-summary",
         "summary",
+        "codebase-inspection",
+        "pr-review",
         "analyze",
         "llm-native-workflow",
         "north-star-workflow",
@@ -99,6 +113,97 @@ fn cli_summarizes_archsig_analysis_packet() {
             .as_array()
             .is_some_and(|non_conclusions| !non_conclusions.is_empty())
     );
+}
+
+#[test]
+fn cli_codebase_inspection_reads_snapshot_index_surface() {
+    let out_dir = temp_dir("codebase-inspection");
+    let inspection = inspection_root();
+    let coupon = coupon_rounding_root();
+    let minimal = fixture_root();
+    let review = pr_review_root();
+    let report = out_dir.join("archsig-codebase-inspection.json");
+
+    run_sig0(&[
+        "codebase-inspection",
+        "--snapshot",
+        inspection
+            .join("archmap_snapshot.json")
+            .to_str()
+            .expect("snapshot path is utf-8"),
+        "--index",
+        inspection
+            .join("archmap_index.json")
+            .to_str()
+            .expect("index path is utf-8"),
+        "--packet",
+        coupon
+            .join("archsig_analysis_packet.json")
+            .to_str()
+            .expect("packet path is utf-8"),
+        "--law-policy",
+        minimal
+            .join("law_policy.json")
+            .to_str()
+            .expect("law policy path is utf-8"),
+        "--recent-delta",
+        review
+            .join("archmap_delta.json")
+            .to_str()
+            .expect("recent delta path is utf-8"),
+        "--limit",
+        "3",
+        "--out",
+        report.to_str().expect("report path is utf-8"),
+    ]);
+
+    let json = read_json(&report);
+    assert_eq!(
+        json["schemaVersion"],
+        "archsig-codebase-inspection-report-v0"
+    );
+    assert_eq!(
+        json["diagnosisKind"],
+        "current-state architectural diagnosis"
+    );
+    assert_eq!(
+        json["canonicalInputs"]["archMapSnapshot"]["schemaVersion"],
+        "archmap-snapshot-v0"
+    );
+    assert_eq!(
+        json["canonicalInputs"]["archMapIndex"]["schemaVersion"],
+        "archmap-index-v0"
+    );
+    assert_eq!(json["inspectionFlow"]["recentDeltaCount"], 1);
+    assert!(
+        json["currentStateDiagnosis"]["topBoundaryHolonomy"]
+            .as_array()
+            .is_some_and(|items| !items.is_empty())
+    );
+    assert!(
+        json["currentStateDiagnosis"]["topOrderSensitiveSquares"]
+            .as_array()
+            .is_some_and(|items| {
+                items
+                    .iter()
+                    .any(|item| item["defectValue"].as_i64().is_some_and(|value| value > 0))
+            })
+    );
+    assert!(
+        json["coverageExactnessBoundary"]["coverageGaps"]
+            .as_array()
+            .is_some_and(|items| !items.is_empty())
+    );
+    assert!(
+        json["surfaceBoundary"]["prReviewMode"]
+            .as_str()
+            .is_some_and(|boundary| boundary.contains("change-local"))
+    );
+    assert!(json["nonConclusions"].as_array().is_some_and(|items| {
+        items
+            .iter()
+            .any(|item| item.as_str().is_some_and(|text| text.contains("FieldSig")))
+    }));
 }
 
 #[test]
@@ -383,6 +488,151 @@ fn cli_archsig_analysis_step_outputs_packet_and_validation() {
         "archsig-analysis-packet-validation-report-v0"
     );
     assert_eq!(read_json(&llm_packet), packet_json);
+}
+
+#[test]
+fn coupon_tax_rounding_fixture_locks_semantic_monodromy() {
+    let out_dir = temp_dir("coupon-tax-rounding");
+    let root = coupon_rounding_root();
+    let minimal = fixture_root();
+    let packet = out_dir.join("coupon-packet.json");
+
+    run_sig0(&[
+        "archsig-analysis",
+        "--archmap",
+        root.join("archmap.json")
+            .to_str()
+            .expect("archmap path is utf-8"),
+        "--law-policy",
+        minimal
+            .join("law_policy.json")
+            .to_str()
+            .expect("law policy path is utf-8"),
+        "--out",
+        packet.to_str().expect("packet path is utf-8"),
+    ]);
+
+    let generated = read_json(&packet);
+    let golden = read_json(&root.join("archsig_analysis_packet.json"));
+    assert_eq!(generated["analysisId"], golden["analysisId"]);
+    assert_eq!(
+        generated["axisWiseMonodromyDefects"],
+        golden["axisWiseMonodromyDefects"]
+    );
+    assert!(
+        golden["axisWiseMonodromyDefects"]
+            .as_array()
+            .is_some_and(|defects| defects.iter().any(|defect| {
+                defect["axisFamily"] == "semantic"
+                    && defect["measurementStatus"] == "measured"
+                    && defect["distanceValue"]
+                        .as_i64()
+                        .is_some_and(|value| value > 0)
+                    && defect["observationRefs"].as_array().is_some_and(|refs| {
+                        refs.iter().any(|value| {
+                            value.as_str()
+                                == Some("derived-semantic-order:p=round(tax(discount(subtotal)))")
+                        }) && refs.iter().any(|value| {
+                            value.as_str()
+                                == Some("derived-semantic-order:q=round(discount(tax(subtotal)))")
+                        })
+                    })
+            }))
+    );
+    assert!(
+        golden["nonzeroMonodromyWitnesses"]
+            .as_array()
+            .is_some_and(|witnesses| witnesses.iter().any(|witness| {
+                witness["axisFamily"] == "semantic"
+                    && witness["defectValue"]
+                        .as_i64()
+                        .is_some_and(|value| value > 0)
+            }))
+    );
+    assert!(
+        golden["featureBoundaryResidualReadings"]
+            .as_array()
+            .is_some_and(|readings| !readings.is_empty())
+    );
+    assert!(golden.to_string().contains("PaymentAmount"));
+    assert!(golden.to_string().contains("ReceiptAmount"));
+}
+
+#[test]
+fn cli_pr_review_reads_archmapstore_inputs() {
+    let out_dir = temp_dir("pr-review");
+    let review = pr_review_root();
+    let minimal = fixture_root();
+    let coupon = coupon_rounding_root();
+    let report = out_dir.join("archsig-pr-review.json");
+
+    run_sig0(&[
+        "pr-review",
+        "--delta",
+        review
+            .join("archmap_delta.json")
+            .to_str()
+            .expect("delta path is utf-8"),
+        "--commit",
+        review
+            .join("archmap_commit.json")
+            .to_str()
+            .expect("commit path is utf-8"),
+        "--base-packet",
+        minimal
+            .join("archsig_analysis_packet.json")
+            .to_str()
+            .expect("base packet path is utf-8"),
+        "--head-packet",
+        coupon
+            .join("archsig_analysis_packet.json")
+            .to_str()
+            .expect("head packet path is utf-8"),
+        "--diff-hint",
+        review
+            .join("raw_diff_hint.diff")
+            .to_str()
+            .expect("diff hint path is utf-8"),
+        "--out",
+        report.to_str().expect("report path is utf-8"),
+    ]);
+
+    let json = read_json(&report);
+    assert_eq!(json["schemaVersion"], "archsig-pr-review-report-v0");
+    assert_eq!(
+        json["canonicalInputs"]["archMapDelta"]["schemaVersion"],
+        "archmap-delta-v0"
+    );
+    assert_eq!(
+        json["canonicalInputs"]["archMapCommit"]["schemaVersion"],
+        "archmap-commit-v0"
+    );
+    assert_eq!(json["rawDiffHint"]["provided"], true);
+    assert!(
+        json["rawDiffHint"]["readingBoundary"]
+            .as_str()
+            .is_some_and(|boundary| boundary.contains("optional scoping hint"))
+    );
+    assert!(
+        json["measuredWitnesses"]
+            .as_array()
+            .is_some_and(|witnesses| witnesses.iter().any(|witness| {
+                witness["axisFamily"] == "semantic"
+                    && witness["defectValue"]
+                        .as_i64()
+                        .is_some_and(|value| value > 0)
+            }))
+    );
+    assert!(
+        json["recommendedReviewFocus"]
+            .as_array()
+            .is_some_and(|focus| !focus.is_empty())
+    );
+    assert!(json["nonConclusions"].as_array().is_some_and(|items| {
+        items
+            .iter()
+            .any(|item| item.as_str().is_some_and(|text| text.contains("FieldSig")))
+    }));
 }
 
 #[test]
@@ -1323,6 +1573,234 @@ fn assert_north_star_packet_surfaces(json: &Value) {
         "current-state/evolution boundary must separate ArchSig and FieldSig responsibilities"
     );
     assert!(
+        json["archMapStoreRefs"]["deltaRef"]["artifactKind"] == "archmap-delta"
+            && json["archMapStoreRefs"]["commitRef"]["artifactKind"] == "archmap-commit"
+            && json["archMapStoreRefs"]["snapshotRef"]["artifactKind"] == "archmap-snapshot"
+            && json["archMapStoreRefs"]["indexRef"]["artifactKind"] == "archmap-index"
+            && json["archMapStoreRefs"]["rawDiffBoundary"]
+                .as_str()
+                .is_some_and(|boundary| boundary.contains("raw diffs")),
+        "ArchMapStore refs must expose delta / commit / snapshot / index and raw diff boundary"
+    );
+    for family in ["monodromyReadingFamily", "boundaryHolonomyReadingFamily"] {
+        assert!(
+            json[family]["archMapStoreRefSetRef"] == json["archMapStoreRefs"]["refSetId"]
+                && json[family]["selectedAxisRefs"]
+                    .as_array()
+                    .is_some_and(|items| !items.is_empty())
+                && json[family]["distanceKind"].as_str().is_some()
+                && json[family]["weightPolicy"].as_str().is_some()
+                && json[family]["coveragePolicy"].as_str().is_some()
+                && json[family]["evidenceBoundary"].as_str().is_some(),
+            "{family} must connect to ArchMapStore refs and carry measurement policy"
+        );
+    }
+    assert!(
+        json["operationSquareCandidates"]
+            .as_array()
+            .is_some_and(|items| {
+                !items.is_empty()
+                    && items.iter().all(|candidate| {
+                        candidate["candidateSource"]
+                            .as_str()
+                            .is_some_and(|source| source == "inferred" || source == "supplied")
+                            && candidate["pPathRef"]
+                                .as_str()
+                                .is_some_and(|path| path.contains(" . "))
+                            && candidate["qPathRef"]
+                                .as_str()
+                                .is_some_and(|path| path.contains(" . "))
+                            && candidate["missingRefs"].as_array().is_some()
+                    })
+            }),
+        "operation square candidates must distinguish inferred/supplied path pairs and preserve missing refs"
+    );
+    assert!(
+        json["pathContinuationTraces"]
+            .as_array()
+            .is_some_and(|items| {
+                !items.is_empty()
+                    && items.iter().all(|trace| {
+                        trace["axisTraces"].as_array().is_some_and(|axes| {
+                            let families = axes
+                                .iter()
+                                .filter_map(|axis| axis["axisFamily"].as_str())
+                                .collect::<std::collections::BTreeSet<_>>();
+                            [
+                                "static",
+                                "contract",
+                                "semantic",
+                                "state",
+                                "effect",
+                                "authority",
+                                "runtime",
+                                "projection",
+                            ]
+                            .iter()
+                            .all(|family| families.contains(family))
+                                && axes.iter().all(|axis| {
+                                    axis["traceStatus"].as_str() != Some("unmeasured")
+                                        || axis["missingRefs"]
+                                            .as_array()
+                                            .is_some_and(|refs| !refs.is_empty())
+                                })
+                        })
+                    })
+            }),
+        "path continuation traces must expose required axis families and keep unmeasured axes as missing evidence"
+    );
+    assert!(
+        json["axisWiseMonodromyDefects"]
+            .as_array()
+            .is_some_and(|items| {
+                !items.is_empty()
+                    && items.iter().all(|defect| {
+                        defect["distanceKind"].as_str().is_some()
+                            && defect["measuredSupportRefs"].as_array().is_some()
+                            && defect["witnessRefs"]
+                                .as_array()
+                                .is_some_and(|refs| !refs.is_empty())
+                            && defect["coverageBoundary"].as_str().is_some()
+                            && defect["cancellationBoundary"].as_str().is_some()
+                            && (defect["measurementStatus"].as_str() != Some("unmeasured")
+                                || defect["missingRefs"]
+                                    .as_array()
+                                    .is_some_and(|refs| !refs.is_empty()))
+                    })
+            }),
+        "axis-wise defects must carry distance kind, support, witnesses, coverage, and unmeasured boundaries"
+    );
+    assert!(
+        json["amiAggregateReadings"]
+            .as_array()
+            .is_some_and(|items| {
+                !items.is_empty()
+                    && items.iter().all(|aggregate| {
+                        aggregate["selectedSquareFamily"].as_str().is_some()
+                            && aggregate["selectedAxisFamily"]
+                                .as_array()
+                                .is_some_and(|axes| !axes.is_empty())
+                            && aggregate["weightPolicy"].as_str().is_some()
+                            && aggregate["topContributors"]
+                                .as_array()
+                                .is_some_and(|contributors| !contributors.is_empty())
+                            && aggregate["zeroReflectionAssumptions"]
+                                .as_array()
+                                .is_some_and(|assumptions| !assumptions.is_empty())
+                            && aggregate["aggregateToLocalReadingBoundary"]
+                                .as_str()
+                                .is_some_and(|boundary| boundary.contains("local"))
+                    })
+            }),
+        "AMI aggregate readings must remain bounded review aggregates with local-reading boundaries"
+    );
+    assert!(
+        json["nonzeroMonodromyWitnesses"]
+            .as_array()
+            .is_some_and(|items| {
+                !items.is_empty()
+                    && items.iter().all(|witness| {
+                        witness["operationPair"]
+                            .as_array()
+                            .is_some_and(|pair| pair.len() == 2)
+                            && witness["pathPair"]
+                                .as_array()
+                                .is_some_and(|pair| pair.len() == 2)
+                            && witness["defectValue"]
+                                .as_i64()
+                                .is_some_and(|value| value > 0)
+                            && witness["affectedAtomRefs"]
+                                .as_array()
+                                .is_some_and(|refs| !refs.is_empty())
+                            && witness["lawRefs"]
+                                .as_array()
+                                .is_some_and(|refs| !refs.is_empty())
+                            && witness["signatureAxisRefs"]
+                                .as_array()
+                                .is_some_and(|refs| !refs.is_empty())
+                            && witness["recommendedReviewFocus"]
+                                .as_array()
+                                .is_some_and(|focus| !focus.is_empty())
+                            && witness["nonConclusions"]
+                                .as_array()
+                                .is_some_and(|items| !items.is_empty())
+                    })
+            }),
+        "nonzero monodromy witnesses must expose operation/path pairs, positive defect value, traceable refs, review focus, and non-conclusions"
+    );
+    assert!(
+        json["featureBoundaryResidualReadings"]
+            .as_array()
+            .is_some_and(|items| {
+                !items.is_empty()
+                    && items.iter().all(|reading| {
+                        reading["mixedSubconfigurationRefs"]
+                            .as_array()
+                            .is_some_and(|refs| !refs.is_empty())
+                            && reading["boundarySupportRefs"]
+                                .as_array()
+                                .is_some_and(|refs| !refs.is_empty())
+                            && reading["holonomyAxes"].as_array().is_some_and(|axes| {
+                                axes.len() == 8
+                                    && axes.iter().all(|axis| {
+                                        axis["holonomyAxisRef"]
+                                            .as_str()
+                                            .is_some_and(|axis_ref| axis_ref.starts_with("Hol_"))
+                                            && axis["supportRefs"]
+                                                .as_array()
+                                                .is_some_and(|refs| !refs.is_empty())
+                                    })
+                            })
+                            && reading["coverageAssumptions"]
+                                .as_array()
+                                .is_some_and(|items| !items.is_empty())
+                            && reading["exactnessAssumptions"]
+                                .as_array()
+                                .is_some_and(|items| !items.is_empty())
+                            && reading["nonConclusions"]
+                                .as_array()
+                                .is_some_and(|items| !items.is_empty())
+                    })
+            }),
+        "feature boundary residual readings must expose mixed support, Hol_* axes, assumptions, and non-conclusions"
+    );
+    assert!(
+        json["featureExtensionDiagnosisReadings"]
+            .as_array()
+            .is_some_and(|items| {
+                !items.is_empty()
+                    && items.iter().all(|reading| {
+                        reading["classificationSummary"]
+                            .as_array()
+                            .is_some_and(|summary| summary.len() == 7)
+                            && reading["attributionRecords"]
+                                .as_array()
+                                .is_some_and(|records| {
+                                    !records.is_empty()
+                                        && records.iter().any(|record| {
+                                            record["labels"]
+                                                .as_array()
+                                                .is_some_and(|labels| labels.len() > 1)
+                                        })
+                                })
+                            && reading["residualCoverageGapRefs"].as_array().is_some()
+                            && reading["liftingFailureRefs"].as_array().is_some()
+                            && reading["fillingFailureRefs"].as_array().is_some()
+                            && reading["complexityTransferRefs"].as_array().is_some()
+                            && reading["classificationBoundary"]
+                                .as_str()
+                                .is_some_and(|boundary| boundary.contains("non-disjoint"))
+                            && reading["fieldsigBoundary"]
+                                .as_str()
+                                .is_some_and(|boundary| boundary.contains("FieldSig"))
+                            && reading["nonConclusions"]
+                                .as_array()
+                                .is_some_and(|items| !items.is_empty())
+                    })
+            }),
+        "feature extension diagnosis readings must expose seven non-disjoint labels, witness attribution, separated failure refs, and FieldSig boundary"
+    );
+    assert!(
         json["llmInterpretationPacket"]["structuralReadingReviewSummary"]
             .as_array()
             .is_some_and(|items| !items.is_empty())
@@ -1330,6 +1808,15 @@ fn assert_north_star_packet_surfaces(json: &Value) {
                 .as_array()
                 .is_some_and(|items| !items.is_empty())
             && json["llmInterpretationPacket"]["measurementExpansionSummary"]
+                .as_array()
+                .is_some_and(|items| !items.is_empty())
+            && json["llmInterpretationPacket"]["nonzeroMonodromyWitnessSummary"]
+                .as_array()
+                .is_some_and(|items| !items.is_empty())
+            && json["llmInterpretationPacket"]["featureBoundaryResidualSummary"]
+                .as_array()
+                .is_some_and(|items| !items.is_empty())
+            && json["llmInterpretationPacket"]["featureExtensionDiagnosisSummary"]
                 .as_array()
                 .is_some_and(|items| !items.is_empty())
             && json["llmInterpretationPacket"]["atomSupportAxisSummary"]

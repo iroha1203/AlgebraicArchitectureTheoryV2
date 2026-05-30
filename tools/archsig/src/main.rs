@@ -120,6 +120,64 @@ enum Command {
         out: Option<PathBuf>,
     },
 
+    /// Produce a current-state architecture inspection report from ArchMapStore artifacts.
+    CodebaseInspection {
+        /// Input archmap-snapshot-v0 JSON path. This is the materialized current-state base.
+        #[arg(long)]
+        snapshot: PathBuf,
+
+        /// Input archmap-index-v0 JSON path. This is the large-repository lookup surface.
+        #[arg(long)]
+        index: PathBuf,
+
+        /// Input archsig-analysis-packet-v0 JSON path for current-state structural readings.
+        #[arg(long)]
+        packet: PathBuf,
+
+        /// Optional law-policy-v0 JSON path retained as selected interpretation provenance.
+        #[arg(long = "law-policy")]
+        law_policy: Option<PathBuf>,
+
+        /// Optional recent archmap-delta-v0 JSON path. May be supplied multiple times.
+        #[arg(long = "recent-delta")]
+        recent_delta: Vec<PathBuf>,
+
+        /// Maximum number of ranked readings to include.
+        #[arg(long, default_value_t = 6)]
+        limit: usize,
+
+        /// Output archsig-codebase-inspection-report-v0 JSON path. If omitted, JSON is written to stdout.
+        #[arg(long)]
+        out: Option<PathBuf>,
+    },
+
+    /// Produce a lightweight ArchSig PR review report from ArchMapStore change artifacts.
+    PrReview {
+        /// Input archmap-delta-v0 JSON path. This is the canonical change-local input.
+        #[arg(long)]
+        delta: PathBuf,
+
+        /// Input archmap-commit-v0 JSON path. This connects the delta to the ArchMapStore chain.
+        #[arg(long)]
+        commit: PathBuf,
+
+        /// Base archsig-analysis-packet-v0 JSON path.
+        #[arg(long = "base-packet")]
+        base_packet: PathBuf,
+
+        /// Head archsig-analysis-packet-v0 JSON path.
+        #[arg(long = "head-packet")]
+        head_packet: PathBuf,
+
+        /// Optional raw diff scoping hint. The file is referenced but not parsed as semantic input.
+        #[arg(long = "diff-hint")]
+        diff_hint: Option<PathBuf>,
+
+        /// Output archsig-pr-review-report-v0 JSON path. If omitted, JSON is written to stdout.
+        #[arg(long)]
+        out: Option<PathBuf>,
+    },
+
     /// Emit a bounded external-agent protocol for generating ArchMap JSON.
     ArchmapGenerate {
         /// Source inventory JSON path used by the external agent.
@@ -299,6 +357,88 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
             write_json(out, &summary)?;
             Ok(ExitCode::SUCCESS)
         }
+        Some(Command::CodebaseInspection {
+            snapshot,
+            index,
+            packet,
+            law_policy,
+            recent_delta,
+            limit,
+            out,
+        }) => {
+            let snapshot_document: serde_json::Value = read_json(&snapshot)?;
+            require_schema(&snapshot_document, "archmap-snapshot-v0", "--snapshot")?;
+            let index_document: serde_json::Value = read_json(&index)?;
+            require_schema(&index_document, "archmap-index-v0", "--index")?;
+            let packet_document: serde_json::Value = read_json(&packet)?;
+            require_schema(
+                &packet_document,
+                ARCHSIG_ANALYSIS_PACKET_SCHEMA_VERSION,
+                "--packet",
+            )?;
+            let law_policy_document = read_optional_json(law_policy.as_ref())?;
+            if let Some(document) = law_policy_document.as_ref() {
+                require_schema(document, "law-policy-v0", "--law-policy")?;
+            }
+            let mut recent_delta_documents = Vec::new();
+            for delta_path in &recent_delta {
+                let delta_document: serde_json::Value = read_json(delta_path)?;
+                require_schema(&delta_document, "archmap-delta-v0", "--recent-delta")?;
+                recent_delta_documents.push((delta_path.clone(), delta_document));
+            }
+            let report = build_codebase_inspection_report(
+                &snapshot,
+                &snapshot_document,
+                &index,
+                &index_document,
+                &packet,
+                &packet_document,
+                law_policy.as_ref(),
+                law_policy_document.as_ref(),
+                &recent_delta_documents,
+                limit,
+            );
+            write_json(out, &report)?;
+            Ok(ExitCode::SUCCESS)
+        }
+        Some(Command::PrReview {
+            delta,
+            commit,
+            base_packet,
+            head_packet,
+            diff_hint,
+            out,
+        }) => {
+            let delta_document: serde_json::Value = read_json(&delta)?;
+            require_schema(&delta_document, "archmap-delta-v0", "--delta")?;
+            let commit_document: serde_json::Value = read_json(&commit)?;
+            require_schema(&commit_document, "archmap-commit-v0", "--commit")?;
+            let base_packet_document: serde_json::Value = read_json(&base_packet)?;
+            require_schema(
+                &base_packet_document,
+                ARCHSIG_ANALYSIS_PACKET_SCHEMA_VERSION,
+                "--base-packet",
+            )?;
+            let head_packet_document: serde_json::Value = read_json(&head_packet)?;
+            require_schema(
+                &head_packet_document,
+                ARCHSIG_ANALYSIS_PACKET_SCHEMA_VERSION,
+                "--head-packet",
+            )?;
+            let report = build_pr_review_report(
+                &delta,
+                &delta_document,
+                &commit,
+                &commit_document,
+                &base_packet,
+                &base_packet_document,
+                &head_packet,
+                &head_packet_document,
+                diff_hint.as_ref(),
+            );
+            write_json(out, &report)?;
+            Ok(ExitCode::SUCCESS)
+        }
         Some(Command::ArchmapGenerate {
             source_inventory,
             prompt_pack,
@@ -459,6 +599,353 @@ fn read_optional_json(path: Option<&PathBuf>) -> Result<Option<serde_json::Value
     path.map(read_json).transpose()
 }
 
+fn require_schema(
+    document: &serde_json::Value,
+    expected: &str,
+    field_name: &str,
+) -> Result<(), Box<dyn Error>> {
+    let actual = document
+        .get("schemaVersion")
+        .or_else(|| document.get("schema"))
+        .and_then(|value| value.as_str());
+    if actual != Some(expected) {
+        return Err(format!("{field_name} must have schemaVersion {expected}").into());
+    }
+    Ok(())
+}
+
+#[allow(clippy::too_many_arguments)]
+fn build_codebase_inspection_report(
+    snapshot_path: &Path,
+    snapshot: &serde_json::Value,
+    index_path: &Path,
+    index: &serde_json::Value,
+    packet_path: &Path,
+    packet: &serde_json::Value,
+    law_policy_path: Option<&PathBuf>,
+    law_policy: Option<&serde_json::Value>,
+    recent_deltas: &[(PathBuf, serde_json::Value)],
+    limit: usize,
+) -> serde_json::Value {
+    let flatness = packet
+        .get("flatnessReading")
+        .unwrap_or(&serde_json::Value::Null);
+    let llm_packet = packet
+        .get("llmInterpretationPacket")
+        .unwrap_or(&serde_json::Value::Null);
+
+    serde_json::json!({
+        "schemaVersion": "archsig-codebase-inspection-report-v0",
+        "mode": "codebase-inspection",
+        "diagnosisKind": "current-state architectural diagnosis",
+        "canonicalInputs": {
+            "archMapSnapshot": {
+                "path": snapshot_path.display().to_string(),
+                "schemaVersion": schema_string(snapshot),
+                "snapshotId": json_field(snapshot, "snapshotId"),
+                "archMapRef": json_field(snapshot, "archMapRef"),
+                "coveredCommitRange": json_field(snapshot, "coveredCommitRange"),
+                "coverageSummary": json_field(snapshot, "coverageSummary"),
+                "compactionReport": json_field(snapshot, "compactionReport")
+            },
+            "archMapIndex": {
+                "path": index_path.display().to_string(),
+                "schemaVersion": schema_string(index),
+                "indexId": json_field(index, "indexId"),
+                "snapshotRef": json_field(index, "snapshotRef"),
+                "sourceRefKeyCount": object_key_count(index, "sourceRefIndex"),
+                "atomRefKeyCount": object_key_count(index, "atomRefIndex"),
+                "boundaryRefKeyCount": object_key_count(index, "boundaryRefIndex"),
+                "axisRefKeyCount": object_key_count(index, "axisRefIndex"),
+                "operationHintKeyCount": object_key_count(index, "operationHintIndex"),
+                "featureHintKeyCount": object_key_count(index, "featureHintIndex"),
+                "coverageGapKeyCount": object_key_count(index, "coverageGapIndex")
+            },
+            "analysisPacket": {
+                "path": packet_path.display().to_string(),
+                "analysisId": json_field(packet, "analysisId"),
+                "archMapRef": json_field(packet, "archMapRef"),
+                "selectedLawPolicyRef": json_field(packet, "selectedLawPolicyRef"),
+                "archMapStoreRefs": json_field(packet, "archMapStoreRefs")
+            },
+            "lawPolicy": law_policy.map(|document| serde_json::json!({
+                "path": law_policy_path.map(|path| path.display().to_string()),
+                "schemaVersion": schema_string(document),
+                "policyId": json_field(document, "policyId"),
+                "profileId": json_field(document, "profileId")
+            })),
+            "recentDeltaWindow": recent_delta_summary(recent_deltas, limit)
+        },
+        "inspectionFlow": {
+            "latestSnapshotRef": json_field(snapshot, "snapshotId"),
+            "indexRef": json_field(index, "indexId"),
+            "recentDeltaCount": recent_deltas.len(),
+            "readingBoundary": "codebase inspection starts from latest ArchMapSnapshot plus ArchMapIndex and optionally narrows current-state context with a recent delta window; it does not replay all historical deltas on every run"
+        },
+        "currentStateDiagnosis": {
+            "subsystemBoundarySummary": {
+                "architectureBoundaryRefs": array_field(packet.get("architectureState").unwrap_or(&serde_json::Value::Null), "boundaryRefs"),
+                "indexBoundaryKeys": object_keys(index, "boundaryRefIndex", limit),
+                "boundaryReadingCount": array_len(packet, "featureBoundaryResidualReadings")
+            },
+            "featureLikeClusterSummary": {
+                "featureIndexKeys": object_keys(index, "featureHintIndex", limit),
+                "featureExtensionDiagnosisCount": array_len(packet, "featureExtensionDiagnosisReadings"),
+                "featureBoundaryResidualCount": array_len(packet, "featureBoundaryResidualReadings"),
+                "summary": limited_array_field(llm_packet, "featureExtensionDiagnosisSummary", limit)
+            },
+            "operationLikeRelationSummary": {
+                "operationIndexKeys": object_keys(index, "operationHintIndex", limit),
+                "operationSquareCandidateCount": array_len(packet, "operationSquareCandidates"),
+                "pathContinuationTraceCount": array_len(packet, "pathContinuationTraces"),
+                "summary": limited_array_field(llm_packet, "homotopyOrderSensitivitySummary", limit)
+            },
+            "topBoundaryHolonomy": top_boundary_holonomy(packet, limit),
+            "topOrderSensitiveSquares": top_order_sensitive_squares(packet, limit),
+            "architectureHealthNextActions": limited_array_field(llm_packet, "recommendedHumanReviewFocus", limit)
+        },
+        "coverageExactnessBoundary": {
+            "flatnessStatus": json_field(flatness, "status"),
+            "coverageGaps": array_field(flatness, "blockedByCoverageGaps"),
+            "flatnessEvidenceBoundary": json_field(flatness, "evidenceBoundary"),
+            "storeCompactionBoundary": json_field(packet.get("archMapStoreRefs").unwrap_or(&serde_json::Value::Null), "compactionBoundary"),
+            "snapshotCompactionReport": json_field(snapshot, "compactionReport")
+        },
+        "surfaceBoundary": {
+            "prReviewMode": "change-local diagnosis over ArchMapDelta / ArchMapCommit",
+            "codebaseInspectionMode": "current-state architectural diagnosis over latest ArchMapSnapshot / ArchMapIndex / analysis packet",
+            "fieldSigBoundary": "FieldSig owns PR / diff / change-vector evolution analysis, forecast, governance, calibration, and longitudinal monitoring"
+        },
+        "nonConclusions": [
+            "ArchSig codebase inspection does not prove repository-wide lawfulness",
+            "ArchSig codebase inspection does not prove global safety",
+            "ArchSig codebase inspection is not PR / diff evolution analysis",
+            "ArchSig codebase inspection does not replace FieldSig longitudinal evolution monitoring",
+            "Missing index entries are not absence evidence unless index coverage states a complete universe"
+        ]
+    })
+}
+
+fn recent_delta_summary(
+    recent_deltas: &[(PathBuf, serde_json::Value)],
+    limit: usize,
+) -> serde_json::Value {
+    serde_json::Value::Array(
+        recent_deltas
+            .iter()
+            .take(limit)
+            .map(|(path, document)| {
+                serde_json::json!({
+                    "path": path.display().to_string(),
+                    "schemaVersion": schema_string(document),
+                    "deltaId": json_field(document, "deltaId"),
+                    "changedObservationRefs": array_field(document, "changedObservationRefs"),
+                    "nonConclusions": array_field(document, "nonConclusions")
+                })
+            })
+            .collect(),
+    )
+}
+
+fn top_boundary_holonomy(packet: &serde_json::Value, limit: usize) -> serde_json::Value {
+    let mut readings = array_items(packet, "featureBoundaryResidualReadings");
+    readings.sort_by_key(|reading| std::cmp::Reverse(boundary_residual_score(reading)));
+    serde_json::Value::Array(
+        readings
+            .into_iter()
+            .take(limit)
+            .map(|reading| {
+                serde_json::json!({
+                    "readingId": json_field(reading, "readingId"),
+                    "boundaryRef": json_field(reading, "boundaryRef"),
+                    "status": json_field(reading, "status"),
+                    "residualScore": boundary_residual_score(reading),
+                    "mixedSubconfigurationRefs": array_field(reading, "mixedSubconfigurationRefs"),
+                    "boundarySupportRefs": array_field(reading, "boundarySupportRefs"),
+                    "topHolonomyAxes": top_holonomy_axes(reading, 4)
+                })
+            })
+            .collect(),
+    )
+}
+
+fn top_holonomy_axes(reading: &serde_json::Value, limit: usize) -> serde_json::Value {
+    let mut axes = array_items(reading, "holonomyAxes");
+    axes.sort_by_key(|axis| std::cmp::Reverse(i64_field(axis, "residualValue", 0)));
+    serde_json::Value::Array(
+        axes.into_iter()
+            .take(limit)
+            .map(|axis| {
+                serde_json::json!({
+                    "axisFamily": json_field(axis, "axisFamily"),
+                    "status": json_field(axis, "status"),
+                    "residualValue": json_field(axis, "residualValue"),
+                    "measuredDefectRefs": array_field(axis, "measuredDefectRefs"),
+                    "missingEvidence": array_field(axis, "missingEvidence")
+                })
+            })
+            .collect(),
+    )
+}
+
+fn boundary_residual_score(reading: &serde_json::Value) -> i64 {
+    array_items(reading, "holonomyAxes")
+        .into_iter()
+        .map(|axis| i64_field(axis, "residualValue", 0))
+        .sum()
+}
+
+fn top_order_sensitive_squares(packet: &serde_json::Value, limit: usize) -> serde_json::Value {
+    let mut witnesses = array_items(packet, "nonzeroMonodromyWitnesses");
+    witnesses.sort_by_key(|witness| std::cmp::Reverse(i64_field(witness, "defectValue", 0)));
+    serde_json::Value::Array(
+        witnesses
+            .into_iter()
+            .take(limit)
+            .map(|witness| {
+                serde_json::json!({
+                    "witnessId": json_field(witness, "witnessId"),
+                    "candidateRef": json_field(witness, "candidateRef"),
+                    "axisFamily": json_field(witness, "axisFamily"),
+                    "defectValue": json_field(witness, "defectValue"),
+                    "operationPair": array_field(witness, "operationPair"),
+                    "pathPair": array_field(witness, "pathPair"),
+                    "coverageBoundary": json_field(witness, "coverageBoundary"),
+                    "recommendedReviewFocus": array_field(witness, "recommendedReviewFocus")
+                })
+            })
+            .collect(),
+    )
+}
+
+#[allow(clippy::too_many_arguments)]
+fn build_pr_review_report(
+    delta_path: &Path,
+    delta: &serde_json::Value,
+    commit_path: &Path,
+    commit: &serde_json::Value,
+    base_packet_path: &Path,
+    base_packet: &serde_json::Value,
+    head_packet_path: &Path,
+    head_packet: &serde_json::Value,
+    diff_hint: Option<&PathBuf>,
+) -> serde_json::Value {
+    let head_llm = head_packet
+        .get("llmInterpretationPacket")
+        .unwrap_or(&serde_json::Value::Null);
+    let base_nonzero_count = array_len(base_packet, "nonzeroMonodromyWitnesses");
+    let head_nonzero_count = array_len(head_packet, "nonzeroMonodromyWitnesses");
+    let measured_witnesses = serde_json::Value::Array(
+        array_items(head_packet, "nonzeroMonodromyWitnesses")
+            .into_iter()
+            .take(8)
+            .map(|witness| {
+                serde_json::json!({
+                    "witnessId": json_field(witness, "witnessId"),
+                    "axisFamily": json_field(witness, "axisFamily"),
+                    "defectValue": json_field(witness, "defectValue"),
+                    "operationPair": array_field(witness, "operationPair"),
+                    "pathPair": array_field(witness, "pathPair"),
+                    "affectedAtomRefs": array_field(witness, "affectedAtomRefs"),
+                    "missingEvidence": array_field(witness, "missingEvidence"),
+                    "recommendedReviewFocus": array_field(witness, "recommendedReviewFocus"),
+                    "nonConclusions": array_field(witness, "nonConclusions")
+                })
+            })
+            .collect(),
+    );
+    let review_focus = serde_json::Value::Array(
+        array_items(head_llm, "recommendedHumanReviewFocus")
+            .into_iter()
+            .take(8)
+            .chain(
+                array_items(head_packet, "nonzeroMonodromyWitnesses")
+                    .into_iter()
+                    .flat_map(|witness| array_items(witness, "recommendedReviewFocus"))
+                    .take(8),
+            )
+            .cloned()
+            .collect(),
+    );
+
+    serde_json::json!({
+        "schemaVersion": "archsig-pr-review-report-v0",
+        "reviewId": format!(
+            "archsig-pr-review:{}:{}",
+            json_string(delta, "deltaId", "delta"),
+            json_string(commit, "commitId", "commit")
+        ),
+        "canonicalInputs": {
+            "archMapDelta": {
+                "path": delta_path.display().to_string(),
+                "schemaVersion": schema_string(delta),
+                "deltaId": json_field(delta, "deltaId"),
+                "changedObservationRefs": array_field(delta, "changedObservationRefs")
+            },
+            "archMapCommit": {
+                "path": commit_path.display().to_string(),
+                "schemaVersion": schema_string(commit),
+                "commitId": json_field(commit, "commitId"),
+                "parentRefs": array_field(commit, "parentRefs"),
+                "deltaRefs": array_field(commit, "deltaRefs")
+            },
+            "basePacket": {
+                "path": base_packet_path.display().to_string(),
+                "analysisId": json_field(base_packet, "analysisId"),
+                "archMapRef": json_field(base_packet, "archMapRef")
+            },
+            "headPacket": {
+                "path": head_packet_path.display().to_string(),
+                "analysisId": json_field(head_packet, "analysisId"),
+                "archMapRef": json_field(head_packet, "archMapRef")
+            }
+        },
+        "rawDiffHint": {
+            "provided": diff_hint.is_some(),
+            "path": diff_hint.map(|path| path.display().to_string()),
+            "readingBoundary": "raw diff is an optional scoping hint and is not parsed as semantic, state, effect, authority, or boundary evidence"
+        },
+        "changeLocalDiagnosis": {
+            "nonzeroWitnessDelta": (head_nonzero_count as i64) - (base_nonzero_count as i64),
+            "operationOrderSensitivity": limited_array_field(head_llm, "homotopyOrderSensitivitySummary", 6),
+            "boundaryHolonomy": {
+                "nonzeroMonodromyWitnessCount": head_nonzero_count,
+                "featureBoundaryResidualCount": array_len(head_packet, "featureBoundaryResidualReadings"),
+                "featureExtensionDiagnosisCount": array_len(head_packet, "featureExtensionDiagnosisReadings"),
+                "summary": limited_array_field(head_llm, "featureBoundaryResidualSummary", 6)
+            },
+            "missingFillerEvidence": limited_array_field(head_llm, "diagramFillabilitySummary", 6),
+            "liftingEvidence": limited_array_field(head_llm, "featureExtensionDiagnosisSummary", 6),
+            "coverageGaps": json_field(head_packet.get("flatnessReading").unwrap_or(&serde_json::Value::Null), "blockedByCoverageGaps")
+        },
+        "measuredWitnesses": measured_witnesses,
+        "recommendedReviewFocus": review_focus,
+        "evidenceBoundary": "ArchSig PR review reads ArchMapDelta / ArchMapCommit and ArchSig packets as change-local structural telemetry; it is not a merge safety decision",
+        "nonConclusions": [
+            "ArchSig PR review does not replace FieldSig PR / diff / change-vector evolution analysis",
+            "ArchSig PR review does not parse raw diff as primary semantic evidence",
+            "ArchSig PR review is not a merge approval or automatic repair safety certificate",
+            "ArchSig PR review is not forecast, governance, calibration, or longitudinal quality monitoring"
+        ]
+    })
+}
+
+fn schema_string(document: &serde_json::Value) -> serde_json::Value {
+    document
+        .get("schemaVersion")
+        .or_else(|| document.get("schema"))
+        .cloned()
+        .unwrap_or(serde_json::Value::Null)
+}
+
+fn json_string(document: &serde_json::Value, field: &str, fallback: &str) -> String {
+    document
+        .get(field)
+        .and_then(|value| value.as_str())
+        .unwrap_or(fallback)
+        .to_string()
+}
+
 fn build_analysis_summary(
     packet: &serde_json::Value,
     archmap_validation: Option<&serde_json::Value>,
@@ -526,6 +1013,9 @@ fn measurement_expansion_summary(
         "axisForgettingRisk": limited_array_field(llm_packet, "axisForgettingRiskSummary", limit),
         "signatureTrajectoryHomotopyRefutation": limited_array_field(llm_packet, "signatureTrajectoryHomotopyRefutationSummary", limit),
         "bridgeSplitObstructionTransfer": limited_array_field(llm_packet, "bridgeSplitObstructionTransferSummary", limit),
+        "nonzeroMonodromyWitness": limited_array_field(llm_packet, "nonzeroMonodromyWitnessSummary", limit),
+        "featureBoundaryResidual": limited_array_field(llm_packet, "featureBoundaryResidualSummary", limit),
+        "featureExtensionDiagnosis": limited_array_field(llm_packet, "featureExtensionDiagnosisSummary", limit),
         "counts": {
             "atomSupportAxisReadings": array_len(packet, "atomSupportAxisReadings"),
             "atomCompatibilityReadings": array_len(packet, "atomCompatibilityReadings"),
@@ -537,7 +1027,10 @@ fn measurement_expansion_summary(
             "diagramFillabilityReadings": array_len(packet, "diagramFillabilityReadings"),
             "axisForgettingRiskReadings": array_len(packet, "axisForgettingRiskReadings"),
             "signatureTrajectoryHomotopyRefutationReadings": array_len(packet, "signatureTrajectoryHomotopyRefutationReadings"),
-            "bridgeSplitObstructionTransferReadings": array_len(packet, "bridgeSplitObstructionTransferReadings")
+            "bridgeSplitObstructionTransferReadings": array_len(packet, "bridgeSplitObstructionTransferReadings"),
+            "nonzeroMonodromyWitnesses": array_len(packet, "nonzeroMonodromyWitnesses"),
+            "featureBoundaryResidualReadings": array_len(packet, "featureBoundaryResidualReadings"),
+            "featureExtensionDiagnosisReadings": array_len(packet, "featureExtensionDiagnosisReadings")
         }
     })
 }
@@ -727,6 +1220,29 @@ fn array_len(value: &serde_json::Value, key: &str) -> usize {
         .and_then(serde_json::Value::as_array)
         .map(Vec::len)
         .unwrap_or_default()
+}
+
+fn object_key_count(value: &serde_json::Value, key: &str) -> usize {
+    value
+        .get(key)
+        .and_then(serde_json::Value::as_object)
+        .map(serde_json::Map::len)
+        .unwrap_or_default()
+}
+
+fn object_keys(value: &serde_json::Value, key: &str, limit: usize) -> serde_json::Value {
+    let mut keys: Vec<_> = value
+        .get(key)
+        .and_then(serde_json::Value::as_object)
+        .map(|object| object.keys().cloned().collect())
+        .unwrap_or_default();
+    keys.sort();
+    serde_json::Value::Array(
+        keys.into_iter()
+            .take(limit)
+            .map(serde_json::Value::String)
+            .collect(),
+    )
 }
 
 fn i64_field(value: &serde_json::Value, key: &str, default: i64) -> i64 {

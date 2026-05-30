@@ -17,6 +17,8 @@ forecast, governance, calibration, and operational feedback under
 | ArchMap validation | `archmap`, `archmap-generate` | ArchMap records source-grounded Atom observations and concern hints. It does not select laws or output obstruction circuits. |
 | Interpretation profile | `law-policy`, `interpretation-profile` | The profile selects the LawUniverse, witness rules, signature axes, coverage requirements, exactness assumptions, and non-conclusions. It is not AAT itself. |
 | ArchSig analysis | `analyze`, `llm-native-workflow`, `north-star-workflow`, `archsig-analysis`, `aat-analysis`, `analysis-summary`, `summary` | `analyze` is the primary workflow from ArchMap + LawPolicy to validation reports, `archsig-analysis-packet-v0`, and the LLM interpretation packet. `llm-native-workflow` and `north-star-workflow` remain compatibility aliases for the same workflow. `archsig-analysis` / `aat-analysis` build a packet from already validated inputs. `analysis-summary` emits a compact review summary from an existing packet. |
+| Codebase inspection | `codebase-inspection` | Reads latest `archmap-snapshot-v0`, `archmap-index-v0`, optional recent deltas, and an `archsig-analysis-packet-v0` to produce current-state architectural diagnosis. It is not PR / diff evolution analysis or global safety. |
+| Lightweight PR review | `pr-review` | Reads `archmap-delta-v0`, `archmap-commit-v0`, and base/head `archsig-analysis-packet-v0` artifacts. Raw diff is only an optional scoping hint, and the report is not merge safety or FieldSig evolution analysis. |
 | Schema | `schema-catalog` | The catalog lists only the current LLM Atom ArchMap artifacts. |
 
 Large ArchMaps may be authored in shards for review and parallel generation,

@@ -17,6 +17,13 @@ ArchMap observation artifact
 - `tools/archsig/tests/fixtures/minimal/law_policy_layer_only.json`
 - `tools/archsig/tests/fixtures/minimal/archsig_analysis_packet_layer_only.json`
 - `tools/archsig/tests/fixtures/expressiveness/archmap_atom_observation_suite_v0.json`
+- `tools/archsig/tests/fixtures/coupon_rounding/archmap.json`
+- `tools/archsig/tests/fixtures/coupon_rounding/archsig_analysis_packet.json`
+- `tools/archsig/tests/fixtures/pr_review/archmap_delta.json`
+- `tools/archsig/tests/fixtures/pr_review/archmap_commit.json`
+- `tools/archsig/tests/fixtures/pr_review/raw_diff_hint.diff`
+- `tools/archsig/tests/fixtures/inspection/archmap_snapshot.json`
+- `tools/archsig/tests/fixtures/inspection/archmap_index.json`
 
 The layer-only LawPolicy fixture reuses the same ArchMap and produces a
 different ArchSig packet. This fixes the requirement that ArchMap remains
@@ -27,6 +34,27 @@ The expressiveness fixture is now an Atom observation regression. It locks
 `atomObservations`, `moleculeObservations`, `semanticObservations`,
 `observationGaps`, `projectionInfo`, and `concernHints`. Pre-Atom ArchMap
 root fields are rejected rather than carried as compatibility inputs.
+
+The coupon / tax / rounding fixture is the minimal semantic monodromy and
+boundary holonomy example. It records
+`p = round(tax(discount(subtotal)))` and
+`q = round(discount(tax(subtotal)))`, locks a positive semantic
+`mu_x(sigma)` witness in the golden ArchSig packet, and keeps PaymentAmount /
+ReceiptAmount evidence as fixture-local tooling validation rather than a proof
+theorem or general payment-safety claim.
+
+The PR review fixtures lock the ArchMapStore change-local surface:
+`archmap-delta-v0`, `archmap-commit-v0`, and an optional raw diff scoping hint.
+The raw diff fixture is intentionally not semantic evidence. The
+`archsig-pr-review-report-v0` test reads semantic / state / effect / boundary
+evidence only from ArchMapStore artifacts and ArchSig packets.
+
+The inspection fixtures lock the current-state surface:
+`archmap-snapshot-v0` and `archmap-index-v0`. The
+`archsig-codebase-inspection-report-v0` test uses them to group subsystem
+boundary cues, feature-like clusters, operation-like relations, top boundary
+holonomy, top order-sensitive squares, and coverage / exactness boundaries
+without replaying all historical deltas.
 
 ## Negative Fixtures
 
@@ -62,3 +90,9 @@ The projection keeps obstruction circuits, signature axes, repair candidates,
 structural review boundaries, current-state / evolution boundary, and coverage
 gaps as bounded current AAT structural state. It does not promote raw ArchMap
 observations to forecast truth.
+
+ArchSig PR review and codebase inspection fixtures are not FieldSig fixtures.
+They exist to keep the CI / lightweight structural diagnosis surface stable.
+FieldSig may later consume ArchMapStore chains and ArchSig packet chains for
+batch evolution monitoring, but forecast, governance, calibration, operational
+feedback, and longitudinal quality drift remain FieldSig responsibilities.

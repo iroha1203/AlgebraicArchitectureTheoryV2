@@ -1,0 +1,16 @@
+{
+  "schemaVersion": "archmap-commit-v0",
+  "commitId": "archmap-commit:coupon-tax-rounding-pr",
+  "parentRefs": [
+    "archmap-snapshot:pricing:base"
+  ],
+  "deltaRefs": [
+    "delta:coupon-tax-rounding-pr"
+  ],
+  "headSnapshotRef": "archmap-snapshot:pricing:head",
+  "commitBoundary": "commit links ArchMapStore artifacts for lightweight ArchSig PR review",
+  "nonConclusions": [
+    "ArchMapCommit is not FieldSig longitudinal evolution analysis",
+    "commit chain does not certify repository safety"
+  ]
+}

@@ -22,7 +22,8 @@ ArchSig Analysis Packet
   axes, path signature trajectories, homotopy / operation-order sensitivity,
   diagram fillability, bounded judgements, repair operation candidates,
   operation deltas, path / homotopy / diagram readings, child-level evidence
-  boundaries, and an LLM interpretation packet.
+  boundaries, ArchMapStore refs, monodromy / boundary holonomy reading family
+  policy surfaces, and an LLM interpretation packet.
 ```
 
 ## Responsibility
@@ -35,6 +36,7 @@ The implemented schema records:
 - `interpretationProfileRef`
 - `selectedLawPolicyRef`
 - `archMapRef`
+- `archMapStoreRefs`
 - `architectureState`
 - `designPressure`
 - `changeImpact`
@@ -64,6 +66,15 @@ The implemented schema records:
 - `axisForgettingRiskReadings`
 - `signatureTrajectoryHomotopyRefutationReadings`
 - `bridgeSplitObstructionTransferReadings`
+- `operationSquareCandidates`
+- `pathContinuationTraces`
+- `axisWiseMonodromyDefects`
+- `amiAggregateReadings`
+- `nonzeroMonodromyWitnesses`
+- `featureBoundaryResidualReadings`
+- `featureExtensionDiagnosisReadings`
+- `monodromyReadingFamily`
+- `boundaryHolonomyReadingFamily`
 - `representationStrengthReadings`
 - `localCurvatureDiagramReadings`
 - `threeLayerFlatnessReadings`
@@ -91,9 +102,11 @@ AAT concept coverage, bounded judgement statuses, analytic axes, workflow risk
 readings, spectral analysis readings, spectral mode readings, design principle
 readings, spectral drilldown readings, transfer bridge readings and bridge-edge
 source refs, v0.3.0 measurement expansion readings, AAT structural state
-readings, law-relative obstruction links, signature / flatness references,
-repair candidate guardrails, LLM interpretation notes, evidence boundary, and
-required non-conclusions.
+readings, ArchMapStore delta / commit / snapshot / index refs, operation square
+candidates, axis-wise path continuation traces, monodromy / boundary holonomy
+reading family policy surfaces, law-relative obstruction links, signature /
+flatness references, repair candidate guardrails, LLM interpretation notes,
+evidence boundary, and required non-conclusions.
 Each obstruction circuit, signature axis reading, and repair operation candidate
 must carry its own `missingEvidence` and `excludedReadings`. Packet-level
 `excludedReadings` does not stand in for child-record evidence boundaries.
@@ -113,6 +126,7 @@ Validation does not imply:
 ## Current Fixture
 
 - `tools/archsig/tests/fixtures/minimal/archsig_analysis_packet.json`
+- `tools/archsig/tests/fixtures/coupon_rounding/archsig_analysis_packet.json`
 
 The fixture is locked against the static Rust builder and the schema catalog
 records both `archsig-analysis-packet-v0` and
@@ -168,6 +182,70 @@ The builder:
   transfer. These readings keep source refs, observation refs, coverage
   boundaries, evidence boundaries, and non-conclusions; they are not PR / diff
   evolution analysis.
+- ArchMapStore is the forward history boundary for PR and longitudinal
+  workflows. `ArchMapDelta` and `ArchMapCommit` carry ArchMap-level change
+  evidence; `ArchMapSnapshot` and `ArchMapIndex` support large-repository
+  current-state inspection. Raw source diffs may narrow source refs, but they
+  are not canonical semantic inputs to this packet.
+- `codebase-inspection` reads the latest `ArchMapSnapshot`, `ArchMapIndex`, an
+  `archsig-analysis-packet-v0`, optional recent deltas, and optional LawPolicy
+  provenance to produce `archsig-codebase-inspection-report-v0`. The report is
+  a current-state architecture health surface: subsystem boundaries,
+  feature-like clusters, operation-like relations, top boundary holonomy, top
+  order-sensitive squares, coverage / exactness boundary, and next action cues.
+  It is not PR / diff evolution analysis and does not prove global lawfulness or
+  safety.
+- `archMapStoreRefs` records the packet's canonical history substrate:
+  `archmap-delta-v0`, `archmap-commit-v0`, `archmap-snapshot-v0`, and
+  `archmap-index-v0`. It also records raw-diff and compaction boundaries so
+  review readers can distinguish change-local evidence from snapshot-level
+  current-state evidence.
+- `monodromyReadingFamily` and `boundaryHolonomyReadingFamily` are schema
+  foundation surfaces. They carry selected axes, distance kind, weight policy,
+  coverage policy, and the ArchMapStore ref set used by later operation-square,
+  axis-wise defect, AMI, boundary residual, and feature-extension attribution
+  readings. They define the shared measurement policy boundary while concrete
+  valuation fields live in the corresponding reading records.
+- `operationSquareCandidates` enumerates supplied or inferred operation pairs as
+  path pairs `p = g . f` and `q = f . g`. Inferred candidates are review cues
+  derived from shared Atom support, state / effect / contract / semantic /
+  authority / runtime / projection evidence; they are not operation truth.
+- `pathContinuationTraces` records the selected continuation trace for each
+  candidate path and axis family: static, contract, semantic, state, effect,
+  authority, runtime, and projection. Unmeasured axes are retained as
+  `missingRefs` and must not be read as zero defect.
+- `axisWiseMonodromyDefects` records `mu_x(sigma)` for each selected operation
+  square and axis. Each defect carries distance kind, measured support,
+  witness refs, source / observation / missing refs, coverage boundary,
+  exactness assumption status, zero-reflection assumptions, and cancellation
+  boundary.
+- `amiAggregateReadings` records `AMI_X(A)` as a bounded weighted aggregate for
+  review prioritization. It reports selected square family, selected axis
+  family, weight policy, top contributors, zero-reflection assumptions, and the
+  aggregate-to-local reading boundary. It is not a single architecture quality
+  score, merge gate, or global path-flatness theorem.
+- `nonzeroMonodromyWitnesses` lifts positive measured `mu_x(sigma)` defects
+  into reviewer-readable witness records. Each witness records operation pair,
+  path pair, axis, defect value, compared trace summary, affected Atom /
+  observation refs, law refs, signature axis refs, suggested filler / lifting /
+  boundary evidence, review focus cues, coverage boundary, and machine-readable
+  non-conclusions. It does not assert repair safety or merge safety.
+- `featureBoundaryResidualReadings` records `Boundary(A, f)` review readings for
+  feature-extension boundaries. Each reading separates core-local,
+  feature-local, and mixed boundary support, exposes `Hol_static`,
+  `Hol_contract`, `Hol_semantic`, `Hol_state`, `Hol_effect`, `Hol_authority`,
+  `Hol_runtime`, and `Hol_projection` residual axes, and keeps support
+  separation, coverage, exactness, attribution policy, evidence boundary, and
+  machine-readable non-conclusions. It does not claim an unconditional
+  `Ob(B) = Ob(A) + Ob(f) + Hol(Boundary(A,f))` theorem or decide feature
+  safety.
+- `featureExtensionDiagnosisReadings` classifies feature-extension witnesses
+  with non-disjoint multi-label attribution. The seven labels are inherited core
+  obstruction, feature-local obstruction, boundary holonomy, lifting failure,
+  filling failure, complexity transfer, and residual coverage gap. A single
+  witness can carry multiple labels; the classifier records this as review
+  attribution, not as a mutually disjoint decomposition, and keeps the ArchSig /
+  FieldSig boundary explicit.
 - axis-forgetting risk records when a coarse observation projection has
   forgotten selected axes or collapsed mixed-axis support. It blocks
   `ZeroReflecting` and `ObstructionReflecting` readings unless explicit axis
@@ -197,10 +275,12 @@ The builder:
   blockers, curvature, flatness, projection loss, state/effect algebra,
   operation/invariant constraints, and split readiness.
 - `currentStateEvolutionBoundary` records the product boundary: ArchSig computes
-  current AAT structural state from `ArchMap + LawPolicy`; FieldSig studies
-  PR / diff / change-vector evolution over the serialized
-  `archsig-analysis-packet-v0`. The packet must not be read as PR diff
-  analysis, forecast correctness, causal truth, or raw-ArchMap forecast truth.
+  current AAT structural state from `ArchMap + LawPolicy` and future
+  change-local structural cues from ArchMapStore deltas / commits. FieldSig
+  studies PR / diff / change-vector evolution over ArchMapStore and serialized
+  `archsig-analysis-packet-v0` chains. The packet must not be read as forecast
+  correctness, causal truth, raw-diff semantic truth, or raw-ArchMap forecast
+  truth.
 - analytic representations include weighted adjacency, walk count, reachable
   cone size, nilpotence boundary, selected subgraph spectrum, propagation depth,
   spectral radius, curvature valuation, state algebra boundary, and
@@ -219,6 +299,22 @@ The builder:
 emits only ArchMap validation, LawPolicy validation, the analysis packet, packet
 validation, and the LLM interpretation packet. Pre-Atom projections and review
 surfaces are not current ArchSig CLI surface or compatibility commands.
+
+`pr-review` and `codebase-inspection` are report surfaces over the packet and
+ArchMapStore artifacts:
+
+- `archsig-pr-review-report-v0` reads `archmap-delta-v0`,
+  `archmap-commit-v0`, base/head packets, and optional raw diff scoping hint.
+  It is change-local CI review telemetry.
+- `archsig-codebase-inspection-report-v0` reads latest
+  `archmap-snapshot-v0`, `archmap-index-v0`, optional recent deltas, optional
+  LawPolicy provenance, and one packet. It is current-state architecture health
+  telemetry.
+
+Both reports preserve measured witnesses, coverage / exactness boundary,
+missing evidence, and non-conclusions. Neither report is a merge approval,
+global lawfulness proof, raw-diff semantic parser, forecast, governance,
+calibration, or longitudinal FieldSig analysis.
 
 FieldSig handoff projects child-level `missingEvidence` / `excludedReadings`
 as unknown remainder and evidence-boundary refs instead of rounding them to
