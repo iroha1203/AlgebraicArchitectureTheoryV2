@@ -18,17 +18,18 @@ use crate::{
     ArchSigBoundaryPreparationRankV0, ArchSigBoundedJudgementV0, ArchSigBridgeAtomFamilyReadingV0,
     ArchSigBridgeEdgeBreakdownV0, ArchSigBridgeSplitObstructionTransferReadingV0,
     ArchSigChangeImpactReadingV0, ArchSigCouplingCohesionReadingV0, ArchSigCoverageStatusV0,
-    ArchSigCurrentStateEvolutionBoundaryV0, ArchSigDesignPressureReadingV0,
-    ArchSigDesignPrincipleReadingV0, ArchSigDiagramFillabilityReadingV0,
-    ArchSigDominantAtomFamilyCompositionV0, ArchSigEvolutionRiskRankingV0,
-    ArchSigFeatureBoundaryResidualReadingV0, ArchSigFeatureExtensionAxisSummaryV0,
-    ArchSigFeatureExtensionDiagnosisReadingV0, ArchSigFeatureExtensionFormulaReadingV0,
-    ArchSigFeatureExtensionWitnessAttributionV0, ArchSigFlatnessReadingV0,
-    ArchSigHighOverlapMoleculePairV0, ArchSigHomotopyOrderSensitivityReadingV0,
-    ArchSigInvariantFamilyReadingV0, ArchSigLawUniverseCoverageReadingV0,
-    ArchSigLawUniverseReadingV0, ArchSigLayerSplitV0, ArchSigLlmInterpretationPacketV0,
-    ArchSigLocalCurvatureDiagramReadingV0, ArchSigMoleculeReadingV0,
-    ArchSigMonodromyReadingFamilyV0, ArchSigNonzeroMonodromyWitnessV0,
+    ArchSigCurrentStateEvolutionBoundaryV0, ArchSigCurvatureSupportReadingV0,
+    ArchSigCurvatureTopModeV0, ArchSigCurvatureWitnessClusterV0, ArchSigCurvatureWitnessSupportV0,
+    ArchSigDesignPressureReadingV0, ArchSigDesignPrincipleReadingV0,
+    ArchSigDiagramFillabilityReadingV0, ArchSigDominantAtomFamilyCompositionV0,
+    ArchSigEvolutionRiskRankingV0, ArchSigFeatureBoundaryResidualReadingV0,
+    ArchSigFeatureExtensionAxisSummaryV0, ArchSigFeatureExtensionDiagnosisReadingV0,
+    ArchSigFeatureExtensionFormulaReadingV0, ArchSigFeatureExtensionWitnessAttributionV0,
+    ArchSigFlatnessReadingV0, ArchSigHighOverlapMoleculePairV0,
+    ArchSigHomotopyOrderSensitivityReadingV0, ArchSigInvariantFamilyReadingV0,
+    ArchSigLawUniverseCoverageReadingV0, ArchSigLawUniverseReadingV0, ArchSigLayerSplitV0,
+    ArchSigLlmInterpretationPacketV0, ArchSigLocalCurvatureDiagramReadingV0,
+    ArchSigMoleculeReadingV0, ArchSigMonodromyReadingFamilyV0, ArchSigNonzeroMonodromyWitnessV0,
     ArchSigObservationProjectionReadingV0, ArchSigObstructionCircuitV0,
     ArchSigOperationCalculusLawReadingV0, ArchSigOperationDeltaReadingV0,
     ArchSigOperationInvariantGaloisReadingV0, ArchSigOperationSquareCandidateV0,
@@ -124,6 +125,12 @@ pub fn build_archsig_analysis_packet(
         &obstruction_circuits,
         &signature_axes,
         &operation_deltas,
+    );
+    let curvature_support_readings = build_curvature_support_readings(
+        archmap,
+        law_policy,
+        &obstruction_circuits,
+        &signature_axes,
     );
     let transfer_bridge_readings = build_transfer_bridge_readings(
         archmap,
@@ -284,6 +291,7 @@ pub fn build_archsig_analysis_packet(
         &spectral_analysis_readings,
         &spectral_mode_readings,
         &spectral_drilldown_readings,
+        &curvature_support_readings,
         &transfer_bridge_readings,
         &atom_support_axis_readings,
         &atom_compatibility_readings,
@@ -350,6 +358,7 @@ pub fn build_archsig_analysis_packet(
         spectral_analysis_readings,
         spectral_mode_readings,
         spectral_drilldown_readings,
+        curvature_support_readings,
         transfer_bridge_readings,
         atom_support_axis_readings,
         atom_compatibility_readings,
@@ -3527,6 +3536,208 @@ fn build_spectral_mode_readings(
     spectral_analysis_readings
         .iter()
         .map(spectral_mode_reading)
+        .collect()
+}
+
+fn build_curvature_support_readings(
+    archmap: &ArchMapDocumentV0,
+    law_policy: &LawPolicyDocumentV0,
+    obstruction_circuits: &[ArchSigObstructionCircuitV0],
+    signature_axes: &[ArchSigSignatureAxisReadingV0],
+) -> Vec<ArchSigCurvatureSupportReadingV0> {
+    let Some(profile) = &law_policy.spectrum_measurement_profile else {
+        return Vec::new();
+    };
+
+    let signature_axis_by_axis_ref = signature_axes
+        .iter()
+        .map(|axis| (axis.axis_ref.as_str(), axis))
+        .collect::<BTreeMap<_, _>>();
+    let missing_evidence_base =
+        boundary_or_no_missing_evidence(archmap_gap_missing_evidence(archmap), &profile.profile_id);
+    let mut witness_supports = Vec::new();
+    let mut measured_axis_refs = BTreeSet::<String>::new();
+    let mut unmeasured_axis_refs = BTreeSet::<String>::new();
+
+    for axis_ref in &profile.selected_axis_refs {
+        let Some(signature_axis) = signature_axis_by_axis_ref.get(axis_ref.as_str()) else {
+            unmeasured_axis_refs.insert(axis_ref.clone());
+            continue;
+        };
+        for witness_rule_ref in &profile.measured_witness_rule_refs {
+            let matching_circuits = obstruction_circuits
+                .iter()
+                .filter(|circuit| {
+                    circuit.witness_rule_ref == *witness_rule_ref
+                        && circuit
+                            .signature_axis_refs
+                            .contains(&signature_axis.signature_axis_id)
+                })
+                .collect::<Vec<_>>();
+            if matching_circuits.is_empty() {
+                unmeasured_axis_refs.insert(axis_ref.clone());
+                witness_supports.push(ArchSigCurvatureWitnessSupportV0 {
+                    witness_support_id: format!(
+                        "curvature-support:{}:{}",
+                        stable_id(witness_rule_ref),
+                        stable_id(axis_ref)
+                    ),
+                    witness_rule_ref: witness_rule_ref.clone(),
+                    selected_axis_ref: axis_ref.clone(),
+                    signature_axis_ref: signature_axis.signature_axis_id.clone(),
+                    curvature_value: 0,
+                    weight: 0,
+                    support_refs: Vec::new(),
+                    source_refs: Vec::new(),
+                    observation_refs: Vec::new(),
+                    missing_evidence: missing_evidence_base.clone(),
+                    reading:
+                        "unmeasured support is preserved as missing evidence, not measured zero"
+                            .to_string(),
+                });
+                continue;
+            }
+
+            measured_axis_refs.insert(axis_ref.clone());
+            let support_refs = unique_strings(matching_circuits.iter().flat_map(|circuit| {
+                circuit
+                    .atom_observation_refs
+                    .iter()
+                    .chain(circuit.molecule_reading_refs.iter())
+                    .chain(circuit.concern_hint_refs.iter())
+                    .cloned()
+            }));
+            let observation_refs = unique_strings(matching_circuits.iter().flat_map(|circuit| {
+                circuit
+                    .atom_observation_refs
+                    .iter()
+                    .chain(circuit.molecule_reading_refs.iter())
+                    .chain(circuit.concern_hint_refs.iter())
+                    .cloned()
+            }));
+            let source_refs = source_refs_for_observation_refs(archmap, &observation_refs);
+            let curvature_value = matching_circuits.len() as i64;
+            witness_supports.push(ArchSigCurvatureWitnessSupportV0 {
+                witness_support_id: format!(
+                    "curvature-support:{}:{}",
+                    stable_id(witness_rule_ref),
+                    stable_id(axis_ref)
+                ),
+                witness_rule_ref: witness_rule_ref.clone(),
+                selected_axis_ref: axis_ref.clone(),
+                signature_axis_ref: signature_axis.signature_axis_id.clone(),
+                curvature_value,
+                weight: curvature_value,
+                support_refs,
+                source_refs,
+                observation_refs,
+                missing_evidence: missing_evidence_base.clone(),
+                reading: format!(
+                    "{curvature_value} constructed witness support(s) contribute to {axis_ref} under {}",
+                    profile.profile_id
+                ),
+            });
+        }
+    }
+
+    let mut sorted_supports = witness_supports.clone();
+    sorted_supports.sort_by(|left, right| {
+        right
+            .curvature_value
+            .cmp(&left.curvature_value)
+            .then(left.selected_axis_ref.cmp(&right.selected_axis_ref))
+            .then(left.witness_rule_ref.cmp(&right.witness_rule_ref))
+    });
+    let top_curvature_modes = sorted_supports
+        .iter()
+        .take(8)
+        .enumerate()
+        .map(|(index, support)| ArchSigCurvatureTopModeV0 {
+            mode_id: format!("curvature-mode:{}", stable_id(&support.witness_support_id)),
+            rank: index + 1,
+            axis_ref: support.selected_axis_ref.clone(),
+            curvature_value: support.curvature_value,
+            witness_refs: vec![support.witness_support_id.clone()],
+            support_refs: support.support_refs.clone(),
+            reading: if support.curvature_value > 0 {
+                "top measured curvature support mode with traceable witness and support refs"
+                    .to_string()
+            } else {
+                "unmeasured curvature support mode retained as coverage debt".to_string()
+            },
+        })
+        .collect::<Vec<_>>();
+    let witness_clusters = build_curvature_witness_clusters(&witness_supports);
+    let status = if witness_supports
+        .iter()
+        .all(|support| support.curvature_value == 0)
+    {
+        "nonConclusion"
+    } else if !unmeasured_axis_refs.is_empty() || !archmap.observation_gaps.is_empty() {
+        "needsReview"
+    } else {
+        "actionable"
+    };
+
+    vec![ArchSigCurvatureSupportReadingV0 {
+        reading_id: format!(
+            "curvature-support-reading:{}",
+            stable_id(&profile.profile_id)
+        ),
+        profile_ref: profile.profile_id.clone(),
+        status: status.to_string(),
+        measured_axis_refs: measured_axis_refs.into_iter().collect(),
+        unmeasured_axis_refs: unmeasured_axis_refs.into_iter().collect(),
+        witness_supports,
+        top_curvature_modes,
+        witness_clusters,
+        coverage_boundary: profile.coverage_boundary.clone(),
+        exactness_assumption_refs: profile.exactness_assumption_refs.clone(),
+        measurement_boundary: profile.measurement_boundary.clone(),
+        missing_evidence: missing_evidence_base,
+        non_conclusions: profile.non_conclusions.clone(),
+    }]
+}
+
+fn build_curvature_witness_clusters(
+    witness_supports: &[ArchSigCurvatureWitnessSupportV0],
+) -> Vec<ArchSigCurvatureWitnessClusterV0> {
+    let mut by_axis = BTreeMap::<String, Vec<&ArchSigCurvatureWitnessSupportV0>>::new();
+    for support in witness_supports {
+        by_axis
+            .entry(support.selected_axis_ref.clone())
+            .or_default()
+            .push(support);
+    }
+    by_axis
+        .into_iter()
+        .map(|(axis_ref, supports)| {
+            let support_refs = unique_strings(
+                supports
+                    .iter()
+                    .flat_map(|support| support.support_refs.iter().cloned()),
+            );
+            let witness_refs = unique_strings(
+                supports
+                    .iter()
+                    .map(|support| support.witness_support_id.clone()),
+            );
+            let cluster_weight = supports.iter().map(|support| support.weight).sum::<i64>();
+            ArchSigCurvatureWitnessClusterV0 {
+                cluster_id: format!("curvature-cluster:{}", stable_id(&axis_ref)),
+                cluster_kind: "axisWitnessSupportCluster".to_string(),
+                axis_refs: vec![axis_ref.clone()],
+                witness_refs,
+                support_refs,
+                cluster_weight,
+                reading: if cluster_weight > 0 {
+                    "cluster groups measured witness supports by selected axis for review ranking"
+                        .to_string()
+                } else {
+                    "cluster records unmeasured selected axis support as coverage debt".to_string()
+                },
+            }
+        })
         .collect()
 }
 
@@ -6722,6 +6933,7 @@ fn build_llm_interpretation_packet(
     spectral_analysis_readings: &[ArchSigSpectralAnalysisReadingV0],
     spectral_mode_readings: &[ArchSigSpectralModeReadingV0],
     spectral_drilldown_readings: &[ArchSigSpectralDrilldownReadingV0],
+    curvature_support_readings: &[ArchSigCurvatureSupportReadingV0],
     transfer_bridge_readings: &[ArchSigTransferBridgeReadingV0],
     atom_support_axis_readings: &[ArchSigAtomSupportAxisReadingV0],
     atom_compatibility_readings: &[ArchSigAtomCompatibilityReadingV0],
@@ -6832,6 +7044,21 @@ fn build_llm_interpretation_packet(
                     reading.dominant_atom_family_composition.len(),
                     reading.high_overlap_molecule_pairs.len(),
                     reading.repair_axis_delta_readings.len(),
+                    reading.status
+                )
+            })
+            .collect(),
+        curvature_support_summary: curvature_support_readings
+            .iter()
+            .map(|reading| {
+                format!(
+                    "{} supports={} topModes={} clusters={} measuredAxes={} unmeasuredAxes={} ({})",
+                    reading.reading_id,
+                    reading.witness_supports.len(),
+                    reading.top_curvature_modes.len(),
+                    reading.witness_clusters.len(),
+                    reading.measured_axis_refs.len(),
+                    reading.unmeasured_axis_refs.len(),
                     reading.status
                 )
             })
@@ -7292,6 +7519,7 @@ pub fn validate_archsig_analysis_packet_report(
         check_spectral_analysis_surface(packet),
         check_spectral_mode_surface(packet),
         check_spectral_drilldown_surface(packet),
+        check_curvature_support_surface(packet),
         check_transfer_bridge_surface(packet),
         check_aat_structural_reading_surfaces(packet),
         check_current_state_evolution_boundary(packet),
@@ -7325,6 +7553,7 @@ pub fn validate_archsig_analysis_packet_report(
         spectral_analysis_reading_count: packet.spectral_analysis_readings.len(),
         spectral_mode_reading_count: packet.spectral_mode_readings.len(),
         spectral_drilldown_reading_count: packet.spectral_drilldown_readings.len(),
+        curvature_support_reading_count: packet.curvature_support_readings.len(),
         transfer_bridge_reading_count: packet.transfer_bridge_readings.len(),
         atom_support_axis_reading_count: packet.atom_support_axis_readings.len(),
         atom_compatibility_reading_count: packet.atom_compatibility_readings.len(),
@@ -8173,6 +8402,218 @@ fn check_spectral_drilldown_surface(packet: &ArchSigAnalysisPacketV0) -> Validat
     check_from_examples(
         "archsig-analysis-packet-spectral-drilldown-surface",
         "packet explains spectral modes through atom families, overlap pairs, and repair axis deltas",
+        examples,
+        "fail",
+    )
+}
+
+fn check_curvature_support_surface(packet: &ArchSigAnalysisPacketV0) -> ValidationCheck {
+    let allowed_statuses =
+        BTreeSet::from(["actionable", "needsReview", "blocked", "nonConclusion"]);
+    let signature_axis_ids = set(packet
+        .signature_axes
+        .iter()
+        .map(|axis| axis.signature_axis_id.as_str()));
+    let axis_refs = set(packet
+        .signature_axes
+        .iter()
+        .map(|axis| axis.axis_ref.as_str()));
+    let support_ids = packet
+        .curvature_support_readings
+        .iter()
+        .flat_map(|reading| reading.witness_supports.iter())
+        .map(|support| support.witness_support_id.as_str())
+        .collect::<BTreeSet<_>>();
+    let mut examples = Vec::new();
+
+    if packet.curvature_support_readings.is_empty() {
+        return check_from_examples(
+            "archsig-analysis-packet-curvature-support-surface",
+            "optional curvature support readings are absent",
+            examples,
+            "fail",
+        );
+    }
+    examples.extend(duplicate_examples(
+        "curvatureSupportReadings[].readingId",
+        duplicates(
+            packet
+                .curvature_support_readings
+                .iter()
+                .map(|reading| reading.reading_id.as_str()),
+        ),
+    ));
+    for reading in &packet.curvature_support_readings {
+        if !allowed_statuses.contains(reading.status.as_str()) {
+            examples.push(generic_validation_example(
+                &reading.reading_id,
+                &reading.status,
+                "curvature support status must be actionable, needsReview, blocked, or nonConclusion",
+            ));
+        }
+        push_blank(
+            &mut examples,
+            &format!("{} profileRef", reading.reading_id),
+            &reading.profile_ref,
+        );
+        if reading.witness_supports.is_empty() {
+            examples.push(generic_validation_example(
+                &reading.reading_id,
+                "witnessSupports",
+                "curvature support reading must keep measured witness / axis rows traceable",
+            ));
+        }
+        if reading.top_curvature_modes.is_empty() {
+            examples.push(generic_validation_example(
+                &reading.reading_id,
+                "topCurvatureModes",
+                "curvature support reading must expose top mode source data",
+            ));
+        }
+        if reading.witness_clusters.is_empty() {
+            examples.push(generic_validation_example(
+                &reading.reading_id,
+                "witnessClusters",
+                "curvature support reading must expose witness cluster source data",
+            ));
+        }
+        push_blank(
+            &mut examples,
+            &format!("{} coverageBoundary", reading.reading_id),
+            &reading.coverage_boundary,
+        );
+        if reading.exactness_assumption_refs.is_empty()
+            || has_blank(&reading.exactness_assumption_refs)
+        {
+            examples.push(generic_validation_example(
+                &reading.reading_id,
+                "exactnessAssumptionRefs",
+                "curvature support reading must keep exactness assumptions explicit",
+            ));
+        }
+        push_blank(
+            &mut examples,
+            &format!("{} measurementBoundary", reading.reading_id),
+            &reading.measurement_boundary,
+        );
+        if reading.missing_evidence.is_empty() || has_blank(&reading.missing_evidence) {
+            examples.push(generic_validation_example(
+                &reading.reading_id,
+                "missingEvidence",
+                "curvature support reading must distinguish unmeasured support from measured zero",
+            ));
+        }
+        if reading.non_conclusions.is_empty() || has_blank(&reading.non_conclusions) {
+            examples.push(generic_validation_example(
+                &reading.reading_id,
+                "nonConclusions",
+                "curvature support reading must retain non-conclusions",
+            ));
+        }
+
+        for support in &reading.witness_supports {
+            push_blank(
+                &mut examples,
+                &format!("{} witnessRuleRef", support.witness_support_id),
+                &support.witness_rule_ref,
+            );
+            if !axis_refs.contains(support.selected_axis_ref.as_str())
+                && !signature_axis_ids.contains(support.selected_axis_ref.as_str())
+            {
+                examples.push(generic_validation_example(
+                    &support.witness_support_id,
+                    &support.selected_axis_ref,
+                    "curvature witness support selectedAxisRef must be known",
+                ));
+            }
+            if !signature_axis_ids.contains(support.signature_axis_ref.as_str()) {
+                examples.push(generic_validation_example(
+                    &support.witness_support_id,
+                    &support.signature_axis_ref,
+                    "curvature witness support signatureAxisRef must be known",
+                ));
+            }
+            if support.curvature_value < 0 || support.weight < 0 {
+                examples.push(generic_validation_example(
+                    &support.witness_support_id,
+                    &format!("{}:{}", support.curvature_value, support.weight),
+                    "curvature value and weight must be non-negative bounded measurements",
+                ));
+            }
+            if support.curvature_value == 0
+                && support.support_refs.is_empty()
+                && support.missing_evidence.is_empty()
+            {
+                examples.push(generic_validation_example(
+                    &support.witness_support_id,
+                    "missingEvidence",
+                    "zero-valued support rows must carry missing evidence rather than imply measured zero",
+                ));
+            }
+            if support.curvature_value > 0 && support.support_refs.is_empty() {
+                examples.push(generic_validation_example(
+                    &support.witness_support_id,
+                    "supportRefs",
+                    "measured curvature support must keep support refs traceable",
+                ));
+            }
+            push_blank(
+                &mut examples,
+                &format!("{} reading", support.witness_support_id),
+                &support.reading,
+            );
+        }
+        for mode in &reading.top_curvature_modes {
+            if mode.rank == 0 {
+                examples.push(generic_validation_example(
+                    &mode.mode_id,
+                    "rank",
+                    "top curvature mode rank must be positive",
+                ));
+            }
+            if mode
+                .witness_refs
+                .iter()
+                .any(|witness_ref| !support_ids.contains(witness_ref.as_str()))
+            {
+                examples.push(generic_validation_example(
+                    &mode.mode_id,
+                    "witnessRefs",
+                    "top curvature mode witness refs must point at witness support rows",
+                ));
+            }
+            push_blank(
+                &mut examples,
+                &format!("{} reading", mode.mode_id),
+                &mode.reading,
+            );
+        }
+        for cluster in &reading.witness_clusters {
+            if cluster.witness_refs.is_empty() || cluster.axis_refs.is_empty() {
+                examples.push(generic_validation_example(
+                    &cluster.cluster_id,
+                    "witnessRefs/axisRefs",
+                    "witness cluster must retain witness and axis refs",
+                ));
+            }
+            if cluster.cluster_weight < 0 {
+                examples.push(generic_validation_example(
+                    &cluster.cluster_id,
+                    &cluster.cluster_weight.to_string(),
+                    "witness cluster weight must be non-negative",
+                ));
+            }
+            push_blank(
+                &mut examples,
+                &format!("{} reading", cluster.cluster_id),
+                &cluster.reading,
+            );
+        }
+    }
+
+    check_from_examples(
+        "archsig-analysis-packet-curvature-support-surface",
+        "packet exposes curvature support rows, top modes, witness clusters, and unmeasured boundaries",
         examples,
         "fail",
     )
@@ -11388,6 +11829,20 @@ mod tests {
             }),
             "validation must reject missing child-level evidence boundaries"
         );
+    }
+
+    #[test]
+    fn curvature_support_without_non_conclusions_fails_validation() {
+        let mut packet = static_archsig_analysis_packet();
+        packet.curvature_support_readings[0].non_conclusions.clear();
+
+        let report = validate_archsig_analysis_packet_report(&packet, "invalid.json");
+
+        assert_eq!(report.summary.result, "fail");
+        assert!(report.checks.iter().any(|check| {
+            check.id == "archsig-analysis-packet-curvature-support-surface"
+                && check.result == "fail"
+        }));
     }
 
     #[test]

@@ -1830,6 +1830,190 @@
       ]
     }
   ],
+  "curvatureSupportReadings": [
+    {
+      "readingId": "curvature-support-reading:spectrum-profile-curvature-transfer-default",
+      "profileRef": "spectrum-profile:curvature-transfer-default",
+      "status": "needsReview",
+      "measuredAxisRefs": [
+        "axis:semantic-inconsistency"
+      ],
+      "unmeasuredAxisRefs": [
+        "axis:layer-violation",
+        "axis:semantic-inconsistency"
+      ],
+      "witnessSupports": [
+        {
+          "witnessSupportId": "curvature-support:witness-layer-violation:axis-layer-violation",
+          "witnessRuleRef": "witness:layer-violation",
+          "selectedAxisRef": "axis:layer-violation",
+          "signatureAxisRef": "sig-axis:layer-violation",
+          "curvatureValue": 0,
+          "weight": 0,
+          "supportRefs": [],
+          "sourceRefs": [],
+          "observationRefs": [],
+          "missingEvidence": [
+            "gap-runtime-user-db-trace: runtime trace was requested but not supplied"
+          ],
+          "reading": "unmeasured support is preserved as missing evidence, not measured zero"
+        },
+        {
+          "witnessSupportId": "curvature-support:witness-semantic-contract-mismatch:axis-layer-violation",
+          "witnessRuleRef": "witness:semantic-contract-mismatch",
+          "selectedAxisRef": "axis:layer-violation",
+          "signatureAxisRef": "sig-axis:layer-violation",
+          "curvatureValue": 0,
+          "weight": 0,
+          "supportRefs": [],
+          "sourceRefs": [],
+          "observationRefs": [],
+          "missingEvidence": [
+            "gap-runtime-user-db-trace: runtime trace was requested but not supplied"
+          ],
+          "reading": "unmeasured support is preserved as missing evidence, not measured zero"
+        },
+        {
+          "witnessSupportId": "curvature-support:witness-layer-violation:axis-semantic-inconsistency",
+          "witnessRuleRef": "witness:layer-violation",
+          "selectedAxisRef": "axis:semantic-inconsistency",
+          "signatureAxisRef": "sig-axis:semantic-inconsistency",
+          "curvatureValue": 0,
+          "weight": 0,
+          "supportRefs": [],
+          "sourceRefs": [],
+          "observationRefs": [],
+          "missingEvidence": [
+            "gap-runtime-user-db-trace: runtime trace was requested but not supplied"
+          ],
+          "reading": "unmeasured support is preserved as missing evidence, not measured zero"
+        },
+        {
+          "witnessSupportId": "curvature-support:witness-semantic-contract-mismatch:axis-semantic-inconsistency",
+          "witnessRuleRef": "witness:semantic-contract-mismatch",
+          "selectedAxisRef": "axis:semantic-inconsistency",
+          "signatureAxisRef": "sig-axis:semantic-inconsistency",
+          "curvatureValue": 1,
+          "weight": 1,
+          "supportRefs": [
+            "atom:contract:create-user",
+            "concern:missing-compensation",
+            "molecule-reading:molecule-user-request-responsibility"
+          ],
+          "sourceRefs": [
+            "test-user-contract"
+          ],
+          "observationRefs": [
+            "atom:contract:create-user",
+            "concern:missing-compensation",
+            "molecule-reading:molecule-user-request-responsibility"
+          ],
+          "missingEvidence": [
+            "gap-runtime-user-db-trace: runtime trace was requested but not supplied"
+          ],
+          "reading": "1 constructed witness support(s) contribute to axis:semantic-inconsistency under spectrum-profile:curvature-transfer-default"
+        }
+      ],
+      "topCurvatureModes": [
+        {
+          "modeId": "curvature-mode:curvature-support-witness-semantic-contract-mismatch-axis-semantic-inconsistency",
+          "rank": 1,
+          "axisRef": "axis:semantic-inconsistency",
+          "curvatureValue": 1,
+          "witnessRefs": [
+            "curvature-support:witness-semantic-contract-mismatch:axis-semantic-inconsistency"
+          ],
+          "supportRefs": [
+            "atom:contract:create-user",
+            "concern:missing-compensation",
+            "molecule-reading:molecule-user-request-responsibility"
+          ],
+          "reading": "top measured curvature support mode with traceable witness and support refs"
+        },
+        {
+          "modeId": "curvature-mode:curvature-support-witness-layer-violation-axis-layer-violation",
+          "rank": 2,
+          "axisRef": "axis:layer-violation",
+          "curvatureValue": 0,
+          "witnessRefs": [
+            "curvature-support:witness-layer-violation:axis-layer-violation"
+          ],
+          "supportRefs": [],
+          "reading": "unmeasured curvature support mode retained as coverage debt"
+        },
+        {
+          "modeId": "curvature-mode:curvature-support-witness-semantic-contract-mismatch-axis-layer-violation",
+          "rank": 3,
+          "axisRef": "axis:layer-violation",
+          "curvatureValue": 0,
+          "witnessRefs": [
+            "curvature-support:witness-semantic-contract-mismatch:axis-layer-violation"
+          ],
+          "supportRefs": [],
+          "reading": "unmeasured curvature support mode retained as coverage debt"
+        },
+        {
+          "modeId": "curvature-mode:curvature-support-witness-layer-violation-axis-semantic-inconsistency",
+          "rank": 4,
+          "axisRef": "axis:semantic-inconsistency",
+          "curvatureValue": 0,
+          "witnessRefs": [
+            "curvature-support:witness-layer-violation:axis-semantic-inconsistency"
+          ],
+          "supportRefs": [],
+          "reading": "unmeasured curvature support mode retained as coverage debt"
+        }
+      ],
+      "witnessClusters": [
+        {
+          "clusterId": "curvature-cluster:axis-layer-violation",
+          "clusterKind": "axisWitnessSupportCluster",
+          "axisRefs": [
+            "axis:layer-violation"
+          ],
+          "witnessRefs": [
+            "curvature-support:witness-layer-violation:axis-layer-violation",
+            "curvature-support:witness-semantic-contract-mismatch:axis-layer-violation"
+          ],
+          "supportRefs": [],
+          "clusterWeight": 0,
+          "reading": "cluster records unmeasured selected axis support as coverage debt"
+        },
+        {
+          "clusterId": "curvature-cluster:axis-semantic-inconsistency",
+          "clusterKind": "axisWitnessSupportCluster",
+          "axisRefs": [
+            "axis:semantic-inconsistency"
+          ],
+          "witnessRefs": [
+            "curvature-support:witness-layer-violation:axis-semantic-inconsistency",
+            "curvature-support:witness-semantic-contract-mismatch:axis-semantic-inconsistency"
+          ],
+          "supportRefs": [
+            "atom:contract:create-user",
+            "concern:missing-compensation",
+            "molecule-reading:molecule-user-request-responsibility"
+          ],
+          "clusterWeight": 1,
+          "reading": "cluster groups measured witness supports by selected axis for review ranking"
+        }
+      ],
+      "coverageBoundary": "missing coverage blocks spectrum zero reflection and remains a report gap",
+      "exactnessAssumptionRefs": [
+        "selected LawPolicy exactness assumptions"
+      ],
+      "measurementBoundary": "curvature-transfer spectrum readings are bounded ArchSig diagnostics, not theorem discharge",
+      "missingEvidence": [
+        "gap-runtime-user-db-trace: runtime trace was requested but not supplied"
+      ],
+      "nonConclusions": [
+        "spectrum measurement profile is a measurement recipe, not a law universe",
+        "profile differences are not law universe differences",
+        "unmeasured axes are not zero",
+        "spectrum zero requires coverage, exactness, and zero-reflection assumptions"
+      ]
+    }
+  ],
   "transferBridgeReadings": [
     {
       "transferBridgeId": "transfer-bridge:fixture-archmap-atom-observation",
@@ -5791,6 +5975,9 @@
     ],
     "spectralDrilldownSummary": [
       "spectral-drilldown:fixture-archmap-atom-observation atomFamilies=3 overlapPairs=0 repairAxisDeltas=1 (needsReview)"
+    ],
+    "curvatureSupportSummary": [
+      "curvature-support-reading:spectrum-profile-curvature-transfer-default supports=4 topModes=4 clusters=2 measuredAxes=1 unmeasuredAxes=2 (needsReview)"
     ],
     "transferBridgeSummary": [
       "transfer-bridge:fixture-archmap-atom-observation transfers=0 bridges=1 repairRanks=1 boundaryRanks=0 (nonConclusion)"
