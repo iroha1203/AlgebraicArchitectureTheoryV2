@@ -578,6 +578,38 @@ ExtensionObstruction
 これは互いに素な分解を無条件に主張しない。同じ witness が複数の分類を持つことがある。
 式の役割は、obstruction の由来を説明可能にすることである。
 
+### 予想 7.6 Boundary Holonomy
+
+Feature extension `ext_f : A -> B` に対し、core と feature の接触部分を
+
+```text
+Boundary(A, f)
+```
+
+と書く。この boundary は、core 側 Atom と feature 側 Atom の間に現れる contract、
+state read/write、effect ordering、authority / trust、runtime interaction、semantic
+interpretation の mixed subconfiguration である。
+
+十分な coverage、witness completeness、axis exactness、semantic / runtime observation
+exactness があるなら、拡張後の obstruction は次の相対式で読めると予想する。
+
+```text
+kappa_U(B)
+  =
+kappa_U(A)
+  + kappa_U(f)
+  + Hol_U(Boundary(A, f))
+```
+
+ここで `Hol_U(Boundary(A, f))` は core と feature の境界を横断する mixed diagram の
+非可換性である。したがって、core も feature-local part も flat であるのに `B` が flat で
+ない場合、残りの witness は boundary holonomy として局在化できる、という読みになる。
+
+これは現在 conjecture であり、証明済み theorem ではない。既存 Lean API が持つのは
+feature-extension attribution、diagram filling、selected observation refutation、そして
+monodromy measurement の minimal guardrail である。`Boundary Holonomy` は、これらを束ねる
+将来の exactness / coverage 仮定付き theorem candidate として扱う。
+
 ## 8. Repair
 
 Repair は obstruction valuation を減らす operation である。
@@ -818,11 +850,120 @@ A_g --f--> A_fg
 は可換 square を作り、`f` の後に `g` を行う path と `g` の後に `f` を行う path は
 homotopic に読める。
 
-## 12. Diagram Filling
+## 12. Architecture Analytic Continuation and Monodromy
+
+Flatness は object `A` 上の selected obstruction が消えていることを読む。一方で、operation
+path を通って `A` から同じ target へ到達する二つの方法は、途中の selected signature
+trajectory や continuation trace を変えることがある。これを architecture analytic
+continuation として読む。
+
+### 定義 12.1 Selected Continuation
+
+Signature axis `x` と operation path `p : A -> B` に対し、`p` に沿って selected observation、
+signature witness、state transition、effect trace、authority trace などを継続して読む写像を
+
+```text
+Cont_x(p)
+```
+
+と書く。`Cont_x` は selected ArchMap / LawPolicy / coverage universe に相対化された bounded
+reading であり、完全な実行意味論や全 source extraction を意味しない。
+
+### 定義 12.2 Monodromy Defect
+
+二つの operation `f, g` が作る square に対し、
+
+```text
+p = g . f
+q = f . g
+```
+
+と置く。axis `x` 上の monodromy defect は次である。
+
+```text
+mu_x(f,g;A)
+  = d_x(Cont_x(p), Cont_x(q))
+```
+
+`d_x` は boolean mismatch、count、edit distance、semantic distance、state transition
+distance、effect replay mismatch count、authorization mismatch count など、axis ごとの bounded
+distance でよい。重要なのは、`mu_x > 0` を selected observation difference として読める
+zero-reflecting / positive-witness boundary を持つことである。
+
+### 定義 12.3 Architecture Monodromy Index
+
+Finite measured square family `S` と selected axes `X` に対し、
+
+```text
+AMI_X(A)
+  = sum_{sigma in S}
+    sum_{x in X}
+      w_{sigma,x} * mu_x(sigma)
+```
+
+と置く。`AMI_X(A)` は architecture quality の単一スコアではない。review prioritization の
+ための aggregate reading であり、selected square family、selected axis family、weight policy、
+coverage boundary、exactness assumption、top contributors を必ず伴う。
+
+### 命題 12.4 Bounded Aggregate Soundness
+
+重みが nonnegative で、positive-weight entry だけを local reading の対象にし、各 `mu_x` が
+selected observation に対して sound であるなら、
+
+```text
+AMI_X(A) = 0
+-----------------------------
+forall positive-weight sigma,x,
+  mu_x(sigma) = 0
+```
+
+が成り立つ。Lean では `MonodromyMeasurement.weightedAggregate` と
+`localZero_of_weightedAggregate_zero` がこの bounded 方向を形式化する。zero-weight entry、
+unmeasured square、coverage gap を zero と読むことはできない。
+
+### 命題 12.5 Path-Monodromy Obstruction Soundness
+
+`mu_x(sigma) > 0` なら、`Cont_x(p) != Cont_x(q)` である。さらに selected homotopy generator が
+`Cont_x` を保存するなら、
+
+```text
+not (p ~ q)
+```
+
+が得られる。diagram filling API と接続すると、同じ selected observation difference は
+non-fillability witness を与える。
+
+Lean では `AxisDefect.observationDiff_of_nonzero`、
+`nonzero_refutes_selectedPathHomotopy`、`nonzero_nonFillabilityWitnessFor` がこの bounded
+soundness 部分を担う。これは path-monodromy obstruction theorem の安全な片方向であり、
+covered operation complex 全体の completeness、all axes semantic completeness、extractor
+completeness、ArchSig measurement correctness in the wild は主張しない。
+
+### 例 12.6 Coupon / Tax / Rounding
+
+`discount` と `tax` が粗い static graph では独立に見えても、selected semantic axis では
+
+```text
+round(tax(discount(subtotal)))
+round(discount(tax(subtotal)))
+```
+
+が異なる場合がある。このとき final dependency graph は同じでも、semantic continuation は
+同じ位置へ戻らない。
+
+```text
+mu_semantic(discount,tax;Checkout) > 0
+```
+
+であり、selected homotopy refutation、non-fillability witness、review focus cue として読める。
+この例は ArchSig が計測できる diagnosis の典型であるが、ArchSig は theorem prover ではない。
+report は measured witness、missing evidence、coverage gap、non-conclusion を運ぶ。
+
+## 13. Diagram Filling
 
 Diagram filling は、部分的に与えられた architecture diagram を完成できるかを問う。
 
-### 定義 12.1 Diagram
+### 定義 13.1 Diagram
 
 Diagram `D` は architecture object と operation からなる図式である。
 
@@ -830,7 +971,7 @@ Diagram `D` は architecture object と operation からなる図式である。
 D : Shape -> Obj
 ```
 
-### 定義 12.2 Filler
+### 定義 13.2 Filler
 
 filler は、欠けた object または operation を補い、図式を可換にするデータである。
 
@@ -838,7 +979,7 @@ filler は、欠けた object または operation を補い、図式を可換に
 Fill(D)
 ```
 
-### 定義 12.3 Non-Fillability
+### 定義 13.3 Non-Fillability
 
 `D` が fill できないとは、要求される可換性や law を同時に満たす filler が存在しないことをいう。
 
@@ -846,7 +987,7 @@ Fill(D)
 not exists fill, Fill(D, fill)
 ```
 
-### 命題 12.4 Obstruction as Non-Fillability
+### 命題 13.4 Obstruction as Non-Fillability
 
 ある law failure が diagram の非可換性として表されるなら、その obstruction は
 non-fillability witness として読める。
@@ -860,7 +1001,7 @@ no filler for D
 任意の split failure が自動的に diagram filling failure へ還元されるわけではない。
 還元するには、selected diagram family、lifting data、filling condition が必要である。
 
-### 定理 12.5 Geometry of AAT
+### 定理 13.5 Geometry of AAT
 
 Atom から生成された architecture object 上で、law、obstruction、operation、path、
 homotopy、diagram filling は一つの幾何を形成する。flatness は obstruction zero、
