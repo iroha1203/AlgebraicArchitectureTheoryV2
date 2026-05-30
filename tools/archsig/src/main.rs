@@ -685,6 +685,7 @@ fn build_codebase_inspection_report(
             "topBoundaryHolonomy": top_boundary_holonomy(packet, limit),
             "topOrderSensitiveSquares": top_order_sensitive_squares(packet, limit),
             "architectureSpectrum": architecture_spectrum_summary(packet, llm_packet, limit),
+            "architectureHomotopy": architecture_homotopy_summary(packet, limit),
             "architectureHealthNextActions": limited_array_field(llm_packet, "recommendedHumanReviewFocus", limit)
         },
         "coverageExactnessBoundary": {
@@ -1127,6 +1128,7 @@ fn build_analysis_summary(
         "topWorkflowRisks": top_workflow_risks(packet, limit),
         "spectralAnalysis": spectral_summary(packet),
         "architectureSpectrum": architecture_spectrum_summary(packet, llm_packet, limit),
+        "architectureHomotopy": architecture_homotopy_summary(packet, limit),
         "transferBridges": transfer_bridge_summary(packet),
         "measurementExpansion": measurement_expansion_summary(packet, llm_packet, limit),
         "splitReadiness": split_readiness_summary(packet, limit),
@@ -1310,6 +1312,26 @@ fn architecture_spectrum_summary(
         "topEigenmodes": limited_array_field(report, "topEigenmodes", limit),
         "witnessClusters": limited_array_field(report, "topWitnessClusters", limit),
         "recurrentObstructions": limited_array_field(report, "recurrentObstructions", limit),
+        "coverageGaps": limited_array_field(report, "coverageGaps", limit),
+        "measuredBoundary": json_field(report, "measuredBoundary"),
+        "recommendedReviewFocus": limited_array_field(report, "recommendedReviewFocus", limit),
+        "nonConclusions": array_field(report, "nonConclusions")
+    })
+}
+
+fn architecture_homotopy_summary(packet: &serde_json::Value, limit: usize) -> serde_json::Value {
+    let report = packet
+        .get("architectureHomotopyReport")
+        .unwrap_or(&serde_json::Value::Null);
+    serde_json::json!({
+        "reportId": json_field(report, "reportId"),
+        "status": json_field(report, "status"),
+        "profileRef": json_field(report, "profileRef"),
+        "filledLoops": limited_array_field(report, "filledLoops", limit),
+        "unfilledLoops": limited_array_field(report, "unfilledLoops", limit),
+        "nonzeroHolonomyLoops": limited_array_field(report, "nonzeroHolonomyLoops", limit),
+        "topLocalCurvatureCells": limited_array_field(report, "topLocalCurvatureCells", limit),
+        "aggregateReadings": limited_array_field(report, "aggregateReadings", limit),
         "coverageGaps": limited_array_field(report, "coverageGaps", limit),
         "measuredBoundary": json_field(report, "measuredBoundary"),
         "recommendedReviewFocus": limited_array_field(report, "recommendedReviewFocus", limit),

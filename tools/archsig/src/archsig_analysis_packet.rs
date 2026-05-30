@@ -10,18 +10,18 @@ use crate::{
     ArchSigAnalysisPacketValidationInputV0, ArchSigAnalysisPacketValidationReportV0,
     ArchSigAnalysisPacketValidationSummaryV0, ArchSigAnalyticRepresentationV0,
     ArchSigArchMapStoreRefsV0, ArchSigArchitecturalHoleReadingV0,
-    ArchSigArchitectureObjectProjectionV0, ArchSigArchitectureSpectrumHotspotV0,
-    ArchSigArchitectureSpectrumModeV0, ArchSigArchitectureSpectrumRecurrentObstructionV0,
-    ArchSigArchitectureSpectrumReportV0, ArchSigArchitectureSpectrumWitnessClusterV0,
-    ArchSigArchitectureStateV0, ArchSigAtomCompatibilityConflictV0,
-    ArchSigAtomCompatibilityReadingV0, ArchSigAtomConfigurationSummaryV0,
-    ArchSigAtomSupportAxisReadingV0, ArchSigAxisContinuationTraceV0, ArchSigAxisExcursionV0,
-    ArchSigAxisForgettingRiskReadingV0, ArchSigAxisRestrictionCountV0,
-    ArchSigAxisWiseMonodromyDefectV0, ArchSigBoundaryHolonomyAxisResidualV0,
-    ArchSigBoundaryHolonomyReadingFamilyV0, ArchSigBoundaryPreparationRankV0,
-    ArchSigBoundedJudgementV0, ArchSigBridgeAtomFamilyReadingV0, ArchSigBridgeEdgeBreakdownV0,
-    ArchSigBridgeSplitObstructionTransferReadingV0, ArchSigChangeImpactReadingV0,
-    ArchSigCouplingCohesionReadingV0, ArchSigCoverageStatusV0,
+    ArchSigArchitectureHomotopyReportV0, ArchSigArchitectureObjectProjectionV0,
+    ArchSigArchitectureSpectrumHotspotV0, ArchSigArchitectureSpectrumModeV0,
+    ArchSigArchitectureSpectrumRecurrentObstructionV0, ArchSigArchitectureSpectrumReportV0,
+    ArchSigArchitectureSpectrumWitnessClusterV0, ArchSigArchitectureStateV0,
+    ArchSigAtomCompatibilityConflictV0, ArchSigAtomCompatibilityReadingV0,
+    ArchSigAtomConfigurationSummaryV0, ArchSigAtomSupportAxisReadingV0,
+    ArchSigAxisContinuationTraceV0, ArchSigAxisExcursionV0, ArchSigAxisForgettingRiskReadingV0,
+    ArchSigAxisRestrictionCountV0, ArchSigAxisWiseMonodromyDefectV0,
+    ArchSigBoundaryHolonomyAxisResidualV0, ArchSigBoundaryHolonomyReadingFamilyV0,
+    ArchSigBoundaryPreparationRankV0, ArchSigBoundedJudgementV0, ArchSigBridgeAtomFamilyReadingV0,
+    ArchSigBridgeEdgeBreakdownV0, ArchSigBridgeSplitObstructionTransferReadingV0,
+    ArchSigChangeImpactReadingV0, ArchSigCouplingCohesionReadingV0, ArchSigCoverageStatusV0,
     ArchSigCurrentStateEvolutionBoundaryV0, ArchSigCurvatureSupportReadingV0,
     ArchSigCurvatureTopModeV0, ArchSigCurvatureTransferEdgeV0, ArchSigCurvatureTransferOperatorV0,
     ArchSigCurvatureTransferReadingV0, ArchSigCurvatureWitnessClusterV0,
@@ -31,25 +31,25 @@ use crate::{
     ArchSigFeatureBoundaryResidualReadingV0, ArchSigFeatureExtensionAxisSummaryV0,
     ArchSigFeatureExtensionDiagnosisReadingV0, ArchSigFeatureExtensionFormulaReadingV0,
     ArchSigFeatureExtensionWitnessAttributionV0, ArchSigFillerCandidateReadingV0,
-    ArchSigFlatnessReadingV0, ArchSigHighOverlapMoleculePairV0, ArchSigHomotopyCellSummaryV0,
-    ArchSigHomotopyComplexSummaryV0, ArchSigHomotopyHolonomyReadingV0,
-    ArchSigHomotopyOrderSensitivityReadingV0, ArchSigInvariantFamilyReadingV0,
-    ArchSigLawUniverseCoverageReadingV0, ArchSigLawUniverseReadingV0, ArchSigLayerSplitV0,
-    ArchSigLlmInterpretationPacketV0, ArchSigLocalCurvatureDiagramReadingV0,
-    ArchSigLoopCandidateV0, ArchSigMoleculeReadingV0, ArchSigMonodromyReadingFamilyV0,
-    ArchSigNonzeroMonodromyWitnessV0, ArchSigObservationProjectionReadingV0,
-    ArchSigObstructionCircuitV0, ArchSigOperationCalculusLawReadingV0,
-    ArchSigOperationDeltaReadingV0, ArchSigOperationInvariantGaloisReadingV0,
-    ArchSigOperationSquareCandidateV0, ArchSigPathContinuationTraceV0,
-    ArchSigPathHomotopyDiagramReadingV0, ArchSigPathPairCandidateV0,
-    ArchSigPathSignatureTrajectoryReadingV0, ArchSigRecurrentObstructionModeV0,
-    ArchSigRepairAxisDeltaReadingV0, ArchSigRepairOperationCandidateV0,
-    ArchSigRepairTransferRiskRankV0, ArchSigRepresentationStrengthReadingV0,
-    ArchSigSignatureAxisReadingV0, ArchSigSignatureTrajectoryHomotopyRefutationReadingV0,
-    ArchSigSpectralAnalysisReadingV0, ArchSigSpectralDominantComponentV0,
-    ArchSigSpectralDrilldownReadingV0, ArchSigSpectralMatrixShapeV0,
-    ArchSigSpectralModeComponentV0, ArchSigSpectralModeReadingV0, ArchSigSpectralValueV0,
-    ArchSigSplitReadinessReadingV0, ArchSigStateTransitionAlgebraReadingV0,
+    ArchSigFlatnessReadingV0, ArchSigHighOverlapMoleculePairV0, ArchSigHomotopyAggregateReadingV0,
+    ArchSigHomotopyCellSummaryV0, ArchSigHomotopyComplexSummaryV0,
+    ArchSigHomotopyHolonomyReadingV0, ArchSigHomotopyOrderSensitivityReadingV0,
+    ArchSigInvariantFamilyReadingV0, ArchSigLawUniverseCoverageReadingV0,
+    ArchSigLawUniverseReadingV0, ArchSigLayerSplitV0, ArchSigLlmInterpretationPacketV0,
+    ArchSigLocalCurvatureDiagramReadingV0, ArchSigLoopCandidateV0, ArchSigMoleculeReadingV0,
+    ArchSigMonodromyReadingFamilyV0, ArchSigNonzeroMonodromyWitnessV0,
+    ArchSigObservationProjectionReadingV0, ArchSigObstructionCircuitV0,
+    ArchSigOperationCalculusLawReadingV0, ArchSigOperationDeltaReadingV0,
+    ArchSigOperationInvariantGaloisReadingV0, ArchSigOperationSquareCandidateV0,
+    ArchSigPathContinuationTraceV0, ArchSigPathHomotopyDiagramReadingV0,
+    ArchSigPathPairCandidateV0, ArchSigPathSignatureTrajectoryReadingV0,
+    ArchSigRecurrentObstructionModeV0, ArchSigRepairAxisDeltaReadingV0,
+    ArchSigRepairOperationCandidateV0, ArchSigRepairTransferRiskRankV0,
+    ArchSigRepresentationStrengthReadingV0, ArchSigSignatureAxisReadingV0,
+    ArchSigSignatureTrajectoryHomotopyRefutationReadingV0, ArchSigSpectralAnalysisReadingV0,
+    ArchSigSpectralDominantComponentV0, ArchSigSpectralDrilldownReadingV0,
+    ArchSigSpectralMatrixShapeV0, ArchSigSpectralModeComponentV0, ArchSigSpectralModeReadingV0,
+    ArchSigSpectralValueV0, ArchSigSplitReadinessReadingV0, ArchSigStateTransitionAlgebraReadingV0,
     ArchSigStokesStyleReadingV0, ArchSigStructuralReadingReviewSurfaceV0,
     ArchSigSubjectFamilySpreadV0, ArchSigThreeLayerFlatnessReadingV0,
     ArchSigTransferBridgeReadingV0, ArchSigTransferMatrixEntryV0, ArchSigWorkflowAtomFamilyCountV0,
@@ -251,6 +251,13 @@ pub fn build_archsig_analysis_packet(
         &filler_candidate_readings,
         &architectural_hole_readings,
     );
+    let architecture_homotopy_report = build_architecture_homotopy_report(
+        &homotopy_complex_summary,
+        &loop_candidates,
+        &architectural_hole_readings,
+        &homotopy_holonomy_readings,
+        &stokes_style_readings,
+    );
     let operation_square_candidates = build_operation_square_candidates(archmap, &operation_deltas);
     let path_continuation_traces =
         build_path_continuation_traces(archmap, &operation_square_candidates, &operation_deltas);
@@ -436,6 +443,7 @@ pub fn build_archsig_analysis_packet(
         architectural_hole_readings,
         homotopy_holonomy_readings,
         stokes_style_readings,
+        architecture_homotopy_report: Some(architecture_homotopy_report),
         operation_square_candidates,
         path_continuation_traces,
         axis_wise_monodromy_defects,
@@ -7690,6 +7698,103 @@ fn build_stokes_style_readings(
         .collect()
 }
 
+fn build_architecture_homotopy_report(
+    complex: &ArchSigHomotopyComplexSummaryV0,
+    loop_candidates: &[ArchSigLoopCandidateV0],
+    architectural_hole_readings: &[ArchSigArchitecturalHoleReadingV0],
+    holonomy_readings: &[ArchSigHomotopyHolonomyReadingV0],
+    stokes_style_readings: &[ArchSigStokesStyleReadingV0],
+) -> ArchSigArchitectureHomotopyReportV0 {
+    let unfilled_loops = architectural_hole_readings
+        .iter()
+        .map(|reading| reading.loop_ref.clone())
+        .collect::<BTreeSet<_>>()
+        .into_iter()
+        .collect::<Vec<_>>();
+    let filled_loops = stokes_style_readings
+        .iter()
+        .filter(|reading| reading.status == "filledNonzeroHolonomyReview")
+        .map(|reading| reading.loop_ref.clone())
+        .collect::<BTreeSet<_>>()
+        .into_iter()
+        .collect::<Vec<_>>();
+    let nonzero_holonomy_loops = holonomy_readings
+        .iter()
+        .filter(|reading| reading.value != 0)
+        .map(|reading| reading.loop_ref.clone())
+        .collect::<BTreeSet<_>>()
+        .into_iter()
+        .collect::<Vec<_>>();
+    let top_local_curvature_cells = stokes_style_readings
+        .iter()
+        .flat_map(|reading| reading.local_curvature_cell_candidates.clone())
+        .collect::<BTreeSet<_>>()
+        .into_iter()
+        .collect::<Vec<_>>();
+    let coverage_gaps = architectural_hole_readings
+        .iter()
+        .flat_map(|reading| reading.missing_filler_evidence.clone())
+        .collect::<BTreeSet<_>>()
+        .into_iter()
+        .collect::<Vec<_>>();
+    let loop_count = loop_candidates.len() as i64;
+    let filled_count = filled_loops.len() as i64;
+    let unfilled_count = unfilled_loops.len() as i64;
+    let nonzero_count = nonzero_holonomy_loops.len() as i64;
+
+    ArchSigArchitectureHomotopyReportV0 {
+        report_id: format!("architecture-homotopy-report:{}", stable_id(&complex.profile_ref)),
+        profile_ref: complex.profile_ref.clone(),
+        status: if unfilled_count > 0 {
+            "needsReview"
+        } else {
+            "measured"
+        }
+        .to_string(),
+        filled_loops,
+        unfilled_loops,
+        nonzero_holonomy_loops,
+        top_local_curvature_cells,
+        aggregate_readings: vec![
+            ArchSigHomotopyAggregateReadingV0 {
+                aggregate_id: "beta1:bounded-unfilled-loop-count".to_string(),
+                value: unfilled_count,
+                reading: "bounded count of unfilled architectural-hole loops".to_string(),
+                boundary: "selected measured complex only; not topological Betti number".to_string(),
+            },
+            ArchSigHomotopyAggregateReadingV0 {
+                aggregate_id: "hol-mass:nonzero-holonomy-loop-count".to_string(),
+                value: nonzero_count,
+                reading: "bounded count of loops with nonzero selected-axis holonomy".to_string(),
+                boundary: "not future incident or empirical cost prediction".to_string(),
+            },
+            ArchSigHomotopyAggregateReadingV0 {
+                aggregate_id: "fill-ratio:filled-loop-count".to_string(),
+                value: filled_count,
+                reading: format!("filled loop count out of {loop_count} measured loop candidates"),
+                boundary: "count, not normalized quality score".to_string(),
+            },
+        ],
+        coverage_gaps,
+        measured_boundary:
+            "ArchitectureHomotopyReport is bounded to supplied ArchMap, selected LawPolicy, and homotopy measurement profile"
+                .to_string(),
+        recommended_review_focus: vec![
+            "start with nonzero holonomy loops and compare continuation summaries".to_string(),
+            "resolve architectural holes by adding contract, test, runtime, or policy filler evidence"
+                .to_string(),
+            "inspect local curvature cells only for filled nonzero holonomy review queues"
+                .to_string(),
+        ],
+        non_conclusions: vec![
+            "ArchitectureHomotopyReport is not a single architecture quality score".to_string(),
+            "ArchitectureHomotopyReport does not prove global semantic flatness".to_string(),
+            "Unfilled loops are architectural holes, not automatic violations".to_string(),
+            "Stokes-style readings are review queues, not theorem discharge".to_string(),
+        ],
+    }
+}
+
 fn build_bounded_judgements(
     archmap: &ArchMapDocumentV0,
     obstruction_circuits: &[ArchSigObstructionCircuitV0],
@@ -8409,6 +8514,7 @@ pub fn validate_archsig_analysis_packet_report(
         check_homotopy_complex_candidate_surface(packet),
         check_filler_architectural_hole_surface(packet),
         check_homotopy_holonomy_stokes_surface(packet),
+        check_architecture_homotopy_report_surface(packet),
         check_bounded_judgement_surface(packet),
         check_analytic_and_principle_surfaces(packet),
         check_workflow_risk_surface(packet),
@@ -9076,6 +9182,85 @@ fn check_homotopy_holonomy_stokes_surface(packet: &ArchSigAnalysisPacketV0) -> V
     check_from_examples(
         "archsig-analysis-packet-homotopy-holonomy-stokes-surface",
         "packet reports selected-axis homotopy holonomy and bounded Stokes-style review queues",
+        examples,
+        "fail",
+    )
+}
+
+fn check_architecture_homotopy_report_surface(packet: &ArchSigAnalysisPacketV0) -> ValidationCheck {
+    let mut examples = Vec::new();
+    let Some(report) = packet.architecture_homotopy_report.as_ref() else {
+        return check_from_examples(
+            "archsig-analysis-packet-architecture-homotopy-report-surface",
+            "packet exposes ArchitectureHomotopyReport with review focus and non-conclusions",
+            vec![generic_validation_example(
+                &packet.analysis_id,
+                "architectureHomotopyReport",
+                "packet with homotopy readings must include ArchitectureHomotopyReport",
+            )],
+            "fail",
+        );
+    };
+    push_blank(
+        &mut examples,
+        "architectureHomotopyReport.reportId",
+        &report.report_id,
+    );
+    push_blank(
+        &mut examples,
+        "architectureHomotopyReport.profileRef",
+        &report.profile_ref,
+    );
+    push_blank(
+        &mut examples,
+        "architectureHomotopyReport.status",
+        &report.status,
+    );
+    if report.filled_loops.is_empty()
+        && report.unfilled_loops.is_empty()
+        && report.nonzero_holonomy_loops.is_empty()
+    {
+        examples.push(generic_validation_example(
+            &report.report_id,
+            "filledLoops/unfilledLoops/nonzeroHolonomyLoops",
+            "ArchitectureHomotopyReport must expose loop reading buckets",
+        ));
+    }
+    if report.aggregate_readings.is_empty() {
+        examples.push(generic_validation_example(
+            &report.report_id,
+            "aggregateReadings",
+            "ArchitectureHomotopyReport must expose bounded aggregate readings",
+        ));
+    }
+    push_blank(
+        &mut examples,
+        "architectureHomotopyReport.measuredBoundary",
+        &report.measured_boundary,
+    );
+    if report.recommended_review_focus.is_empty() || has_blank(&report.recommended_review_focus) {
+        examples.push(generic_validation_example(
+            &report.report_id,
+            "recommendedReviewFocus",
+            "ArchitectureHomotopyReport must provide next action focus",
+        ));
+    }
+    for required in [
+        "ArchitectureHomotopyReport is not a single architecture quality score",
+        "Stokes-style readings are review queues, not theorem discharge",
+    ] {
+        if !report.non_conclusions.iter().any(|value| value == required) {
+            examples.push(generic_validation_example(
+                &report.report_id,
+                required,
+                "ArchitectureHomotopyReport is missing a required non-conclusion",
+            ));
+        }
+    }
+
+    check_from_examples(
+        "archsig-analysis-packet-architecture-homotopy-report-surface",
+        "packet exposes ArchitectureHomotopyReport with review focus and non-conclusions",
         examples,
         "fail",
     )

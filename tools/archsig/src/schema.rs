@@ -784,6 +784,8 @@ pub struct ArchSigAnalysisPacketV0 {
     pub homotopy_holonomy_readings: Vec<ArchSigHomotopyHolonomyReadingV0>,
     #[serde(default)]
     pub stokes_style_readings: Vec<ArchSigStokesStyleReadingV0>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub architecture_homotopy_report: Option<ArchSigArchitectureHomotopyReportV0>,
     pub operation_square_candidates: Vec<ArchSigOperationSquareCandidateV0>,
     pub path_continuation_traces: Vec<ArchSigPathContinuationTraceV0>,
     pub axis_wise_monodromy_defects: Vec<ArchSigAxisWiseMonodromyDefectV0>,
@@ -2108,6 +2110,32 @@ pub struct ArchSigStokesStyleReadingV0 {
     pub coverage_boundary: String,
     pub evidence_boundary: String,
     pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigArchitectureHomotopyReportV0 {
+    pub report_id: String,
+    pub profile_ref: String,
+    pub status: String,
+    pub filled_loops: Vec<String>,
+    pub unfilled_loops: Vec<String>,
+    pub nonzero_holonomy_loops: Vec<String>,
+    pub top_local_curvature_cells: Vec<String>,
+    pub aggregate_readings: Vec<ArchSigHomotopyAggregateReadingV0>,
+    pub coverage_gaps: Vec<String>,
+    pub measured_boundary: String,
+    pub recommended_review_focus: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigHomotopyAggregateReadingV0 {
+    pub aggregate_id: String,
+    pub value: i64,
+    pub reading: String,
+    pub boundary: String,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

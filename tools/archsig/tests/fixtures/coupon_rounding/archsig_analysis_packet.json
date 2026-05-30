@@ -3851,6 +3851,65 @@
       ]
     }
   ],
+  "architectureHomotopyReport": {
+    "reportId": "architecture-homotopy-report:homotopy-profile-bounded-stokes-default",
+    "profileRef": "homotopy-profile:bounded-stokes-default",
+    "status": "needsReview",
+    "filledLoops": [
+      "loop-candidate:path-pair-path-rule-cache-repository-2",
+      "loop-candidate:path-pair-path-rule-interface-implementation-1",
+      "loop-candidate:path-pair-semantic-contract-loop-0"
+    ],
+    "unfilledLoops": [
+      "loop-candidate:path-pair-path-rule-cache-repository-2",
+      "loop-candidate:path-pair-path-rule-interface-implementation-1",
+      "loop-candidate:path-pair-semantic-contract-loop-0"
+    ],
+    "nonzeroHolonomyLoops": [
+      "loop-candidate:path-pair-path-rule-cache-repository-2",
+      "loop-candidate:path-pair-path-rule-interface-implementation-1",
+      "loop-candidate:path-pair-semantic-contract-loop-0"
+    ],
+    "topLocalCurvatureCells": [
+      "2-cell:obstruction-layer-violation",
+      "2-cell:obstruction-semantic-contract-mismatch"
+    ],
+    "aggregateReadings": [
+      {
+        "aggregateId": "beta1:bounded-unfilled-loop-count",
+        "value": 3,
+        "reading": "bounded count of unfilled architectural-hole loops",
+        "boundary": "selected measured complex only; not topological Betti number"
+      },
+      {
+        "aggregateId": "hol-mass:nonzero-holonomy-loop-count",
+        "value": 3,
+        "reading": "bounded count of loops with nonzero selected-axis holonomy",
+        "boundary": "not future incident or empirical cost prediction"
+      },
+      {
+        "aggregateId": "fill-ratio:filled-loop-count",
+        "value": 3,
+        "reading": "filled loop count out of 3 measured loop candidates",
+        "boundary": "count, not normalized quality score"
+      }
+    ],
+    "coverageGaps": [
+      "gap:coupon-runtime-payment-trace"
+    ],
+    "measuredBoundary": "ArchitectureHomotopyReport is bounded to supplied ArchMap, selected LawPolicy, and homotopy measurement profile",
+    "recommendedReviewFocus": [
+      "start with nonzero holonomy loops and compare continuation summaries",
+      "resolve architectural holes by adding contract, test, runtime, or policy filler evidence",
+      "inspect local curvature cells only for filled nonzero holonomy review queues"
+    ],
+    "nonConclusions": [
+      "ArchitectureHomotopyReport is not a single architecture quality score",
+      "ArchitectureHomotopyReport does not prove global semantic flatness",
+      "Unfilled loops are architectural holes, not automatic violations",
+      "Stokes-style readings are review queues, not theorem discharge"
+    ]
+  },
   "operationSquareCandidates": [
     {
       "candidateId": "operation-square:operation-delta-repair-obstruction-semantic-contract-mismatch-computed:operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation",
