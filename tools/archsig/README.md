@@ -16,7 +16,7 @@ forecast, governance, calibration, and operational feedback under
 | --- | --- | --- |
 | ArchMap validation | `archmap`, `archmap-generate` | ArchMap records source-grounded Atom observations and concern hints. It does not select laws or output obstruction circuits. |
 | Interpretation profile | `law-policy`, `interpretation-profile` | The profile selects the LawUniverse, witness rules, signature axes, coverage requirements, exactness assumptions, and non-conclusions. It is not AAT itself. |
-| ArchSig analysis | `archsig-analysis`, `aat-analysis`, `llm-native-workflow`, `north-star-workflow`, `analysis-summary`, `summary` | ArchSig combines ArchMap and the profile into AAT concept surfaces, architecture state, design pressure, change impact, analytic axes, semantic coupling/cohesion, workflow risk readings, spectral analysis readings, spectral mode readings, spectral drilldown readings, transfer bridge readings with edge source refs / review focus / cut recommendations, representation strength, local curvature diagrams, three-layer flatness, observation projection, state transition algebra, operation / invariant Galois readings, split readiness, a structural reading review surface, a current-state/evolution boundary, design principle readings, bounded judgements, repair operation deltas, and an LLM interpretation packet. `analysis-summary` emits a compact review summary from an existing packet. |
+| ArchSig analysis | `analyze`, `llm-native-workflow`, `north-star-workflow`, `archsig-analysis`, `aat-analysis`, `analysis-summary`, `summary` | `analyze` is the primary workflow from ArchMap + LawPolicy to validation reports, `archsig-analysis-packet-v0`, and the LLM interpretation packet. `llm-native-workflow` and `north-star-workflow` remain compatibility aliases for the same workflow. `archsig-analysis` / `aat-analysis` build a packet from already validated inputs. `analysis-summary` emits a compact review summary from an existing packet. |
 | Schema | `schema-catalog` | The catalog lists only the current LLM Atom ArchMap artifacts. |
 
 Large ArchMaps may be authored in shards for review and parallel generation,
@@ -29,21 +29,22 @@ Git history is the archive for those workflows.
 ## Quick Start
 
 ```bash
-cargo run --manifest-path tools/archsig/Cargo.toml -- llm-native-workflow \
+cargo run --manifest-path tools/archsig/Cargo.toml -- analyze \
   --archmap tools/archsig/tests/fixtures/minimal/archmap.json \
   --law-policy tools/archsig/tests/fixtures/minimal/law_policy.json \
-  --out-dir .archsig/llm-native
+  --out-dir .archsig/analyze
 ```
 
-`north-star-workflow` is the same current workflow under the North Star name.
+`llm-native-workflow` and `north-star-workflow` are compatibility aliases for
+the same workflow. Use `analyze` in new docs, scripts, and CI.
 
 This writes:
 
-- `.archsig/llm-native/archmap-validation.json`
-- `.archsig/llm-native/law-policy-validation.json`
-- `.archsig/llm-native/archsig-analysis-packet.json`
-- `.archsig/llm-native/archsig-analysis-validation.json`
-- `.archsig/llm-native/llm-interpretation-packet.json`
+- `.archsig/analyze/archmap-validation.json`
+- `.archsig/analyze/law-policy-validation.json`
+- `.archsig/analyze/archsig-analysis-packet.json`
+- `.archsig/analyze/archsig-analysis-validation.json`
+- `.archsig/analyze/llm-interpretation-packet.json`
 
 `llm-interpretation-packet.json` is the same structured packet written for LLM
 reading. It is not a natural-language judgment, Lean proof, architecture truth,
@@ -70,7 +71,7 @@ Typical use:
 1. Use `archmap-creater` to produce or refine the ArchMap.
 2. Use `law-policy-creater` to produce the selected LawPolicy for the target
    repository or subsystem.
-3. Run `llm-native-workflow`.
+3. Run `analyze`.
 4. Use `archsig-reader` to interpret the packet and compare it with source
    evidence before proposing improvements.
 

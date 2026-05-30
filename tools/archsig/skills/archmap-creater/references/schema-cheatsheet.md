@@ -242,8 +242,8 @@ ${ARCHSIG_BIN:-archsig} archsig-analysis \
   --out .archsig/analysis/packet.json \
   --validation-out .archsig/analysis/validation.json
 
-${ARCHSIG_BIN:-archsig} llm-native-workflow \
+${ARCHSIG_BIN:-archsig} analyze \
   --archmap <archmap.json> \
   --law-policy <law-policy.json> \
-  --out-dir .archsig/llm-native
+  --out-dir .archsig/analyze
 ```

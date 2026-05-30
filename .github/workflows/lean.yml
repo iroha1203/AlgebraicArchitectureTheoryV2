@@ -40,24 +40,24 @@ jobs:
       - name: Test FieldSig
         run: cargo test --manifest-path tools/fieldsig/Cargo.toml
 
-  llm-native-e2e:
-    name: ArchSig/FieldSig handoff e2e
+  archsig-analyze-e2e:
+    name: ArchSig analyze / FieldSig handoff e2e
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Run LLM-native ArchMap to FieldSig handoff
+      - name: Run ArchSig analyze to FieldSig handoff
         shell: bash
         run: |
           set -euo pipefail
 
-          out_dir=".lake/llm-native-e2e"
+          out_dir=".lake/archsig-analyze-e2e"
           archsig_dir="$out_dir/archsig"
           fieldsig_dir="$out_dir/fieldsig"
           mkdir -p "$archsig_dir" "$fieldsig_dir"
 
-          cargo run --manifest-path tools/archsig/Cargo.toml -- llm-native-workflow \
+          cargo run --manifest-path tools/archsig/Cargo.toml -- analyze \
             --archmap tools/archsig/tests/fixtures/minimal/archmap.json \
             --law-policy tools/archsig/tests/fixtures/minimal/law_policy.json \
             --out-dir "$archsig_dir"
@@ -103,8 +103,8 @@ jobs:
             exit 1
           fi
 
-      - name: Upload LLM-native e2e artifacts
+      - name: Upload ArchSig analyze e2e artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: llm-native-e2e-${{ github.run_id }}
-          path: .lake/llm-native-e2e
+          name: archsig-analyze-e2e-${{ github.run_id }}
+          path: .lake/archsig-analyze-e2e

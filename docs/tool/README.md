@@ -1,7 +1,7 @@
 # Tool Docs
 
-`docs/tool/` is built around the LLM-native ArchMap / interpretation profile /
-ArchSig AAT analysis workflow.
+`docs/tool/` is built around the ArchMap / interpretation profile / ArchSig
+`analyze` workflow.
 
 The previous mixed tool documents are archived under:
 
@@ -12,7 +12,7 @@ Current source-of-truth boundaries:
 - ArchMap starts from supplied `archmap-observation-map-v0` evidence read as a source-grounded Atom observation map. It records `atomObservations`, `moleculeObservations`, `semanticObservations`, `observationGaps`, `projectionInfo`, `concernHints`, provenance, and non-conclusions.
 - The selected interpretation profile currently uses the `law-policy-v0` JSON schema. It selects laws, witness rules, molecule patterns, obstruction circuit definitions, signature axes, coverage requirements, and exactness assumptions separately from ArchMap. It is a profile, not AAT itself.
 - ArchSig reads ArchMap + interpretation profile and computes the North Star AAT analysis packet: AAT concept surfaces, architecture state, design pressure, change impact, architecture object projections, invariant family readings, LawUniverse reading, obstruction circuits, signature axes, analytic representations, semantic coupling/cohesion, workflow risk readings, spectral analysis readings, spectral mode readings, spectral drilldown readings, transfer bridge readings with edge source refs / review focus / cut recommendations, representation strength, local curvature diagrams, three-layer flatness, observation projection, state transition algebra, operation / invariant Galois readings, split readiness, structural reading review surface, current-state/evolution boundary, design principle readings, bounded judgements, repair operation deltas, path / homotopy / diagram readings, and LLM interpretation. Obstruction circuits, spectral readings, spectral modes, spectral drilldowns, transfer bridges, structural readings, and zero-curvature readings are not first-class ArchMap outputs.
-- `llm-native-workflow` / `north-star-workflow` and `archsig-analysis` / `aat-analysis` are the normal ArchSig entry points. Removed pre-Atom workflows remain available only through Git history; they are not current ArchSig surface or compatibility inputs.
+- `analyze` is the primary ArchSig workflow entry point. `llm-native-workflow` / `north-star-workflow` remain compatibility aliases for the same workflow, and `archsig-analysis` / `aat-analysis` remain step commands for building a packet from supplied inputs. Removed pre-Atom workflows remain available only through Git history; they are not current ArchSig surface or compatibility inputs.
 - `concernHints` are review cues. They are not obstruction circuits, not law violations, and not theorem evidence.
 - ArchMap validation rejects non-current root fields. Authoring must use the Atom observation fields above; pre-Atom ArchMap shapes are not compatibility inputs.
 - The ArchSig schema catalog contains only ArchMap, interpretation profile (`law-policy-v0`), ArchSig analysis packet, and their validation reports.
@@ -25,7 +25,7 @@ Atom handoff checklist:
 - [LawPolicy](law_policy.md)
 - [ArchSig Analysis Packet](archsig_analysis_packet.md)
 - [LLM-Native Golden Corpus](golden_corpus.md)
-- [LLM-native E2E Workflow](llm_native_e2e_workflow.md)
+- [ArchSig Analyze E2E Workflow](llm_native_e2e_workflow.md)
 
 Forward design PRDs:
 

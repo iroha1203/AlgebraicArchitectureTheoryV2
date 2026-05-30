@@ -76,7 +76,7 @@ ${ARCHSIG_BIN:-archsig} archmap \
 
 ```
 
-5. Build downstream analysis only through the LLM-native path when a LawPolicy is available.
+5. Build downstream analysis through `archsig analyze` when a LawPolicy is available.
 
 ```bash
 ${ARCHSIG_BIN:-archsig} law-policy \
@@ -89,10 +89,10 @@ ${ARCHSIG_BIN:-archsig} archsig-analysis \
   --out .archsig/analysis/packet.json \
   --validation-out .archsig/analysis/validation.json
 
-${ARCHSIG_BIN:-archsig} llm-native-workflow \
+${ARCHSIG_BIN:-archsig} analyze \
   --archmap <archmap.json> \
   --law-policy <law-policy.json> \
-  --out-dir .archsig/llm-native
+  --out-dir .archsig/analyze
 ```
 
 6. Read the validation report before handing the artifact downstream.

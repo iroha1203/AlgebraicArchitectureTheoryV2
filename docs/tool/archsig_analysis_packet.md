@@ -173,7 +173,7 @@ The builder:
 
 ## Downstream Handoff
 
-`llm-native-workflow` treats the analysis packet as the source artifact and
+`analyze` treats the analysis packet as the source artifact and
 emits only ArchMap validation, LawPolicy validation, the analysis packet, packet
 validation, and the LLM interpretation packet. Pre-Atom projections and review
 surfaces are not current ArchSig CLI surface or compatibility commands.

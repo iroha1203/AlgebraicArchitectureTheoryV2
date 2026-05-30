@@ -3,8 +3,8 @@
 This document defines the planned sharded ArchMap authoring format. The current
 runtime artifact remains `archmap-observation-map-v0`; sharding is an authoring
 and review layout that must bundle/export back to the monolithic artifact before
-current `archsig archmap`, `archsig archsig-analysis`, or
-`archsig llm-native-workflow` commands consume it.
+current `archsig archmap`, `archsig archsig-analysis`, or `archsig analyze`
+commands consume it.
 
 The primary sharding model is horizontal: each shard is a bounded observation
 slice over a repository surface, subsystem, package, team-owned area, or
