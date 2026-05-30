@@ -146,6 +146,47 @@ Validation does not imply:
 
 Missing coverage remains a coverage gap. It is not measured zero.
 
+## Homotopy Measurement Profile
+
+`homotopyMeasurementProfile` is an optional subobject inside `law-policy-v0`.
+It is used by the Homotopy / Holonomy Stokes reading family. It records how
+ArchSig should discover candidate paths, distinguish filled loops from
+architectural holes, measure selected-axis holonomy, and preserve missing
+filler evidence. It does not select a different law universe and does not make
+ArchMap law-relative.
+
+The intended authoring surface is LLM-native. A human supplies analysis goal,
+risk focus, source scope, normative evidence, excluded readings, and how
+conservative the zero / filler reading should be. The LLM uses
+`tools/archsig/skills/law-policy-creater` to synthesize the profile from
+repository evidence and user intent, then validates it with ArchSig.
+
+The profile records:
+
+- `profileId`
+- `selectedAxisRefs`
+- `pathDiscoveryRules`
+- `fillerRules`
+- `loopMeasurementPolicy`
+- `continuationPolicy`
+- `distancePolicy`
+- `coverageRequirementRefs`
+- `coverageBoundary`
+- `exactnessAssumptionRefs`
+- `measurementBoundary`
+- `nonConclusions`
+
+Validation checks that selected axes and coverage refs resolve, that path
+discovery / filler / loop rules keep evidence boundaries explicit, and that
+required non-conclusions remain present. Important boundaries:
+
+- profile differences are not law-universe differences
+- candidate paths and loops are review cues, not path truth
+- unfilled loops are architectural holes, not automatic violations
+- missing filler evidence is not measured zero
+- nonzero holonomy is bounded current-state diagnosis, not future incident
+  prediction or repair-safety evidence
+
 ## Current Fixture
 
 - `tools/archsig/tests/fixtures/minimal/law_policy.json`

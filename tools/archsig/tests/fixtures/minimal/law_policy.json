@@ -342,6 +342,120 @@
       "spectrum zero requires coverage, exactness, and zero-reflection assumptions"
     ]
   },
+  "homotopyMeasurementProfile": {
+    "profileId": "homotopy-profile:bounded-stokes-default",
+    "selectedAxisRefs": [
+      "axis:layer-violation",
+      "axis:semantic-inconsistency"
+    ],
+    "pathDiscoveryRules": [
+      {
+        "ruleId": "path-rule:interface-implementation",
+        "pathSourceKind": "interface-implementation-path",
+        "endpointPolicy": "compare candidate paths only when endpoints are supported by observed Atom refs",
+        "candidateSource": "LLM-discovered candidates must cite source refs or remain unresolved",
+        "evidenceBoundary": "candidate paths are bounded review cues derived from ArchMap evidence and selected LawPolicy",
+        "nonConclusions": [
+          "homotopy measurement profile is a measurement recipe, not a law universe",
+          "candidate paths and loops are review cues, not path truth",
+          "unfilled loops are architectural holes, not automatic violations",
+          "missing filler evidence is not measured zero",
+          "nonzero holonomy does not prove future incidents or repair unsafety"
+        ]
+      },
+      {
+        "ruleId": "path-rule:cache-repository",
+        "pathSourceKind": "cache-repository-path",
+        "endpointPolicy": "compare cache and repository paths only under declared semantic and state axes",
+        "candidateSource": "repository evidence, runtime notes, tests, or explicit user intent",
+        "evidenceBoundary": "absence of a candidate path is not proof that no architectural loop exists",
+        "nonConclusions": [
+          "homotopy measurement profile is a measurement recipe, not a law universe",
+          "candidate paths and loops are review cues, not path truth",
+          "unfilled loops are architectural holes, not automatic violations",
+          "missing filler evidence is not measured zero",
+          "nonzero holonomy does not prove future incidents or repair unsafety"
+        ]
+      }
+    ],
+    "fillerRules": [
+      {
+        "ruleId": "filler-rule:contract-or-test",
+        "fillerKind": "contract-or-test-filler",
+        "requiredSourceRefKinds": [
+          "doc-section",
+          "test",
+          "runtime-trace"
+        ],
+        "missingFillerBehavior": "report architectural hole and missing filler evidence; do not promote to violation",
+        "evidenceBoundary": "filler evidence is bounded to supplied source refs, tests, runtime evidence, or user-confirmed policy",
+        "nonConclusions": [
+          "homotopy measurement profile is a measurement recipe, not a law universe",
+          "candidate paths and loops are review cues, not path truth",
+          "unfilled loops are architectural holes, not automatic violations",
+          "missing filler evidence is not measured zero",
+          "nonzero holonomy does not prove future incidents or repair unsafety"
+        ]
+      },
+      {
+        "ruleId": "filler-rule:authority-or-idempotency",
+        "fillerKind": "authority-or-idempotency-filler",
+        "requiredSourceRefKinds": [
+          "policy",
+          "test",
+          "runtime-trace"
+        ],
+        "missingFillerBehavior": "keep missing authority or idempotency evidence as an unfilled loop boundary",
+        "evidenceBoundary": "filler absence blocks Stokes-style local-curvature conclusions",
+        "nonConclusions": [
+          "homotopy measurement profile is a measurement recipe, not a law universe",
+          "candidate paths and loops are review cues, not path truth",
+          "unfilled loops are architectural holes, not automatic violations",
+          "missing filler evidence is not measured zero",
+          "nonzero holonomy does not prove future incidents or repair unsafety"
+        ]
+      }
+    ],
+    "loopMeasurementPolicy": {
+      "policyId": "loop-policy:selected-axis-holonomy",
+      "loopCandidateSources": [
+        "LLM-discovered candidate",
+        "LawPolicy-required candidate",
+        "ArchMap-supplied candidate",
+        "source-confirmed candidate",
+        "unresolved needsReview candidate"
+      ],
+      "filledLoopReading": "filled loops may localize nonzero holonomy to measured local curvature cells",
+      "unfilledLoopReading": "unfilled loops are architectural holes and missing evidence surfaces",
+      "holonomyDistanceKind": "selected-axis-continuation-distance",
+      "localCurvatureReadingBoundary": "local curvature is read only for measured fillings, not for unfilled loops",
+      "nonConclusions": [
+        "homotopy measurement profile is a measurement recipe, not a law universe",
+        "candidate paths and loops are review cues, not path truth",
+        "unfilled loops are architectural holes, not automatic violations",
+        "missing filler evidence is not measured zero",
+        "nonzero holonomy does not prove future incidents or repair unsafety"
+      ]
+    },
+    "continuationPolicy": "compare selected continuation traces only on axes declared in this profile",
+    "distancePolicy": "bounded distance over selected semantic, state, effect, authority, and runtime axes",
+    "coverageRequirementRefs": [
+      "coverage:layer-atoms",
+      "coverage:semantic-contract-atoms"
+    ],
+    "coverageBoundary": "missing path or filler evidence blocks zero and Stokes-style readings",
+    "exactnessAssumptionRefs": [
+      "selected LawPolicy exactness assumptions"
+    ],
+    "measurementBoundary": "homotopy / holonomy readings are bounded ArchSig diagnostics, not theorem discharge",
+    "nonConclusions": [
+      "homotopy measurement profile is a measurement recipe, not a law universe",
+      "candidate paths and loops are review cues, not path truth",
+      "unfilled loops are architectural holes, not automatic violations",
+      "missing filler evidence is not measured zero",
+      "nonzero holonomy does not prove future incidents or repair unsafety"
+    ]
+  },
   "exactnessAssumptions": [
     "the selected witness rules cover only policy-declared laws",
     "zero readings are exact only for observed atoms and declared coverage requirements"

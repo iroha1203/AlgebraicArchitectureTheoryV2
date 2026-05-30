@@ -55,11 +55,12 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                     "docs/tool/llm_native_archmap_archsig_prd.md",
                     "docs/tool/README.md",
                 ],
-                "The law-policy-v0 JSON contract is used as an interpretation profile: it selects laws, witness rules, molecule patterns, obstruction definitions, signature axes, measurement policy, optional spectrum measurement profile, exactness assumptions, coverage requirements, excluded readings, and non-conclusions separately from ArchMap observations. It is not the center of ArchSig output.",
+                "The law-policy-v0 JSON contract is used as an interpretation profile: it selects laws, witness rules, molecule patterns, obstruction definitions, signature axes, measurement policy, optional spectrum measurement profile, optional homotopy measurement profile, exactness assumptions, coverage requirements, excluded readings, and non-conclusions separately from ArchMap observations. It is not the center of ArchSig output.",
                 vec![
                     "Interpretation profile is selected analysis policy, not AAT itself, architecture lawfulness, atom truth, or Lean theorem discharge.",
                     "Adding a law family must preserve missing coverage as distinct from measured zero.",
                     "Changing a spectrum measurement profile changes a measurement recipe, not the selected law universe.",
+                    "Changing a homotopy measurement profile changes a path / filler / loop measurement recipe, not the selected law universe.",
                 ],
             ),
             artifact(
@@ -69,7 +70,7 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 "primary",
                 "LLM Atom ArchMap",
                 vec!["docs/tool/llm_native_archmap_archsig_prd.md"],
-                "LawPolicy validation checks schema support, identity, id uniqueness, law/witness/axis references, measurement policy, optional spectrum measurement profile refs, coverage, exactness, and non-conclusion guardrails.",
+                "LawPolicy validation checks schema support, identity, id uniqueness, law/witness/axis references, measurement policy, optional spectrum measurement profile refs, optional homotopy path / filler / loop measurement profile refs, coverage, exactness, and non-conclusion guardrails.",
                 vec![
                     "Validation pass does not imply architecture lawfulness, certified atom truth, zero curvature, or Lean theorem discharge.",
                     "Policy validation is not a semantic-preservation theorem.",

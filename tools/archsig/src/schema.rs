@@ -447,6 +447,8 @@ pub struct LawPolicyDocumentV0 {
     pub measurement_policy: LawPolicyMeasurementPolicyV0,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub spectrum_measurement_profile: Option<LawPolicySpectrumMeasurementProfileV0>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub homotopy_measurement_profile: Option<LawPolicyHomotopyMeasurementProfileV0>,
     pub exactness_assumptions: Vec<String>,
     pub coverage_requirements: Vec<LawPolicyCoverageRequirementV0>,
     #[serde(default)]
@@ -504,6 +506,68 @@ pub struct LawPolicySpectrumMeasurementProfileV0 {
 pub struct LawPolicySpectrumDistanceKindV0 {
     pub axis_ref: String,
     pub distance_kind: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct LawPolicyHomotopyMeasurementProfileV0 {
+    pub profile_id: String,
+    #[serde(default)]
+    pub selected_axis_refs: Vec<String>,
+    #[serde(default)]
+    pub path_discovery_rules: Vec<LawPolicyHomotopyPathDiscoveryRuleV0>,
+    #[serde(default)]
+    pub filler_rules: Vec<LawPolicyHomotopyFillerRuleV0>,
+    pub loop_measurement_policy: LawPolicyHomotopyLoopMeasurementPolicyV0,
+    pub continuation_policy: String,
+    pub distance_policy: String,
+    #[serde(default)]
+    pub coverage_requirement_refs: Vec<String>,
+    pub coverage_boundary: String,
+    #[serde(default)]
+    pub exactness_assumption_refs: Vec<String>,
+    pub measurement_boundary: String,
+    #[serde(default)]
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct LawPolicyHomotopyPathDiscoveryRuleV0 {
+    pub rule_id: String,
+    pub path_source_kind: String,
+    pub endpoint_policy: String,
+    pub candidate_source: String,
+    pub evidence_boundary: String,
+    #[serde(default)]
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct LawPolicyHomotopyFillerRuleV0 {
+    pub rule_id: String,
+    pub filler_kind: String,
+    #[serde(default)]
+    pub required_source_ref_kinds: Vec<String>,
+    pub missing_filler_behavior: String,
+    pub evidence_boundary: String,
+    #[serde(default)]
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct LawPolicyHomotopyLoopMeasurementPolicyV0 {
+    pub policy_id: String,
+    #[serde(default)]
+    pub loop_candidate_sources: Vec<String>,
+    pub filled_loop_reading: String,
+    pub unfilled_loop_reading: String,
+    pub holonomy_distance_kind: String,
+    pub local_curvature_reading_boundary: String,
+    #[serde(default)]
+    pub non_conclusions: Vec<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

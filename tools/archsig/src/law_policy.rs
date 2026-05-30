@@ -4,6 +4,8 @@ use crate::validation::{count_checks, duplicates, generic_validation_example, va
 use crate::{
     LAW_POLICY_SCHEMA_VERSION, LAW_POLICY_VALIDATION_REPORT_SCHEMA_VERSION,
     LawPolicyAxisDefinitionV0, LawPolicyCoverageRequirementV0, LawPolicyDocumentV0,
+    LawPolicyHomotopyFillerRuleV0, LawPolicyHomotopyLoopMeasurementPolicyV0,
+    LawPolicyHomotopyMeasurementProfileV0, LawPolicyHomotopyPathDiscoveryRuleV0,
     LawPolicyMeasurementPolicyV0, LawPolicyMoleculePatternV0,
     LawPolicyObstructionCircuitDefinitionV0, LawPolicySelectedLawV0,
     LawPolicySignatureAxisDefinitionV0, LawPolicySpectrumDistanceKindV0,
@@ -24,6 +26,14 @@ const REQUIRED_SPECTRUM_PROFILE_NON_CONCLUSIONS: [&str; 4] = [
     "profile differences are not law universe differences",
     "unmeasured axes are not zero",
     "spectrum zero requires coverage, exactness, and zero-reflection assumptions",
+];
+
+const REQUIRED_HOMOTOPY_PROFILE_NON_CONCLUSIONS: [&str; 5] = [
+    "homotopy measurement profile is a measurement recipe, not a law universe",
+    "candidate paths and loops are review cues, not path truth",
+    "unfilled loops are architectural holes, not automatic violations",
+    "missing filler evidence is not measured zero",
+    "nonzero holonomy does not prove future incidents or repair unsafety",
 ];
 
 pub fn static_law_policy() -> LawPolicyDocumentV0 {
@@ -217,6 +227,114 @@ pub fn static_law_policy() -> LawPolicyDocumentV0 {
                     .to_string(),
             non_conclusions: strings(&REQUIRED_SPECTRUM_PROFILE_NON_CONCLUSIONS),
         }),
+        homotopy_measurement_profile: Some(LawPolicyHomotopyMeasurementProfileV0 {
+            profile_id: "homotopy-profile:bounded-stokes-default".to_string(),
+            selected_axis_refs: vec![
+                "axis:layer-violation".to_string(),
+                "axis:semantic-inconsistency".to_string(),
+            ],
+            path_discovery_rules: vec![
+                LawPolicyHomotopyPathDiscoveryRuleV0 {
+                    rule_id: "path-rule:interface-implementation".to_string(),
+                    path_source_kind: "interface-implementation-path".to_string(),
+                    endpoint_policy:
+                        "compare candidate paths only when endpoints are supported by observed Atom refs"
+                            .to_string(),
+                    candidate_source:
+                        "LLM-discovered candidates must cite source refs or remain unresolved"
+                            .to_string(),
+                    evidence_boundary:
+                        "candidate paths are bounded review cues derived from ArchMap evidence and selected LawPolicy"
+                            .to_string(),
+                    non_conclusions: strings(&REQUIRED_HOMOTOPY_PROFILE_NON_CONCLUSIONS),
+                },
+                LawPolicyHomotopyPathDiscoveryRuleV0 {
+                    rule_id: "path-rule:cache-repository".to_string(),
+                    path_source_kind: "cache-repository-path".to_string(),
+                    endpoint_policy:
+                        "compare cache and repository paths only under declared semantic and state axes"
+                            .to_string(),
+                    candidate_source:
+                        "repository evidence, runtime notes, tests, or explicit user intent".to_string(),
+                    evidence_boundary:
+                        "absence of a candidate path is not proof that no architectural loop exists"
+                            .to_string(),
+                    non_conclusions: strings(&REQUIRED_HOMOTOPY_PROFILE_NON_CONCLUSIONS),
+                },
+            ],
+            filler_rules: vec![
+                LawPolicyHomotopyFillerRuleV0 {
+                    rule_id: "filler-rule:contract-or-test".to_string(),
+                    filler_kind: "contract-or-test-filler".to_string(),
+                    required_source_ref_kinds: vec![
+                        "doc-section".to_string(),
+                        "test".to_string(),
+                        "runtime-trace".to_string(),
+                    ],
+                    missing_filler_behavior:
+                        "report architectural hole and missing filler evidence; do not promote to violation"
+                            .to_string(),
+                    evidence_boundary:
+                        "filler evidence is bounded to supplied source refs, tests, runtime evidence, or user-confirmed policy"
+                            .to_string(),
+                    non_conclusions: strings(&REQUIRED_HOMOTOPY_PROFILE_NON_CONCLUSIONS),
+                },
+                LawPolicyHomotopyFillerRuleV0 {
+                    rule_id: "filler-rule:authority-or-idempotency".to_string(),
+                    filler_kind: "authority-or-idempotency-filler".to_string(),
+                    required_source_ref_kinds: vec![
+                        "policy".to_string(),
+                        "test".to_string(),
+                        "runtime-trace".to_string(),
+                    ],
+                    missing_filler_behavior:
+                        "keep missing authority or idempotency evidence as an unfilled loop boundary"
+                            .to_string(),
+                    evidence_boundary:
+                        "filler absence blocks Stokes-style local-curvature conclusions".to_string(),
+                    non_conclusions: strings(&REQUIRED_HOMOTOPY_PROFILE_NON_CONCLUSIONS),
+                },
+            ],
+            loop_measurement_policy: LawPolicyHomotopyLoopMeasurementPolicyV0 {
+                policy_id: "loop-policy:selected-axis-holonomy".to_string(),
+                loop_candidate_sources: vec![
+                    "LLM-discovered candidate".to_string(),
+                    "LawPolicy-required candidate".to_string(),
+                    "ArchMap-supplied candidate".to_string(),
+                    "source-confirmed candidate".to_string(),
+                    "unresolved needsReview candidate".to_string(),
+                ],
+                filled_loop_reading:
+                    "filled loops may localize nonzero holonomy to measured local curvature cells"
+                        .to_string(),
+                unfilled_loop_reading:
+                    "unfilled loops are architectural holes and missing evidence surfaces".to_string(),
+                holonomy_distance_kind: "selected-axis-continuation-distance".to_string(),
+                local_curvature_reading_boundary:
+                    "local curvature is read only for measured fillings, not for unfilled loops"
+                        .to_string(),
+                non_conclusions: strings(&REQUIRED_HOMOTOPY_PROFILE_NON_CONCLUSIONS),
+            },
+            continuation_policy:
+                "compare selected continuation traces only on axes declared in this profile"
+                    .to_string(),
+            distance_policy:
+                "bounded distance over selected semantic, state, effect, authority, and runtime axes"
+                    .to_string(),
+            coverage_requirement_refs: vec![
+                "coverage:layer-atoms".to_string(),
+                "coverage:semantic-contract-atoms".to_string(),
+            ],
+            coverage_boundary:
+                "missing path or filler evidence blocks zero and Stokes-style readings".to_string(),
+            exactness_assumption_refs: vec![
+                "selected LawPolicy exactness assumptions".to_string(),
+            ],
+            measurement_boundary:
+                "homotopy / holonomy readings are bounded ArchSig diagnostics, not theorem discharge"
+                    .to_string(),
+            non_conclusions: strings(&REQUIRED_HOMOTOPY_PROFILE_NON_CONCLUSIONS),
+        }),
         exactness_assumptions: vec![
             "the selected witness rules cover only policy-declared laws".to_string(),
             "zero readings are exact only for observed atoms and declared coverage requirements"
@@ -263,6 +381,7 @@ pub fn validate_law_policy_report(
         check_coverage_and_exactness(policy),
         check_measurement_policy(policy),
         check_spectrum_measurement_profile(policy),
+        check_homotopy_measurement_profile(policy),
         check_non_conclusions(policy),
     ];
     let summary = LawPolicyValidationSummaryV0 {
@@ -556,6 +675,251 @@ fn check_spectrum_measurement_profile(policy: &LawPolicyDocumentV0) -> Validatio
     check_from_examples(
         "law-policy-spectrum-measurement-profile",
         "LawPolicy keeps spectrum measurement recipes separate from the selected law universe",
+        examples,
+        "fail",
+    )
+}
+
+fn check_homotopy_measurement_profile(policy: &LawPolicyDocumentV0) -> ValidationCheck {
+    let Some(profile) = &policy.homotopy_measurement_profile else {
+        return validation_check(
+            "law-policy-homotopy-measurement-profile",
+            "optional homotopy measurement profile is absent; LawPolicy remains valid without homotopy readings",
+            "pass",
+        );
+    };
+
+    let axis_ids = policy
+        .required_zero_axes
+        .iter()
+        .chain(policy.optional_axes.iter())
+        .map(|axis| axis.axis_id.as_str())
+        .collect::<BTreeSet<_>>();
+    let signature_axis_ids = set(policy
+        .signature_axis_definitions
+        .iter()
+        .map(|axis| axis.signature_axis_id.as_str()));
+    let coverage_ids = set(policy
+        .coverage_requirements
+        .iter()
+        .map(|requirement| requirement.coverage_requirement_id.as_str()));
+    let present_non_conclusions = profile
+        .non_conclusions
+        .iter()
+        .map(|value| value.as_str())
+        .collect::<BTreeSet<_>>();
+    let mut examples = Vec::new();
+
+    push_blank(
+        &mut examples,
+        "homotopyMeasurementProfile.profileId",
+        &profile.profile_id,
+    );
+    if profile.selected_axis_refs.is_empty() {
+        examples.push(generic_validation_example(
+            &profile.profile_id,
+            "selectedAxisRefs",
+            "homotopy profile must select axes for continuation and holonomy readings",
+        ));
+    }
+    for axis_ref in &profile.selected_axis_refs {
+        if !axis_ids.contains(axis_ref.as_str()) && !signature_axis_ids.contains(axis_ref.as_str())
+        {
+            examples.push(generic_validation_example(
+                &profile.profile_id,
+                axis_ref,
+                "homotopy profile selectedAxisRefs must reference known axes or signature axes",
+            ));
+        }
+    }
+    if profile.path_discovery_rules.is_empty() {
+        examples.push(generic_validation_example(
+            &profile.profile_id,
+            "pathDiscoveryRules",
+            "homotopy profile must declare path discovery rules",
+        ));
+    }
+    for rule in &profile.path_discovery_rules {
+        push_blank(&mut examples, "pathDiscoveryRules[].ruleId", &rule.rule_id);
+        push_blank(
+            &mut examples,
+            &format!("pathDiscoveryRules[{}].pathSourceKind", rule.rule_id),
+            &rule.path_source_kind,
+        );
+        push_blank(
+            &mut examples,
+            &format!("pathDiscoveryRules[{}].endpointPolicy", rule.rule_id),
+            &rule.endpoint_policy,
+        );
+        push_blank(
+            &mut examples,
+            &format!("pathDiscoveryRules[{}].candidateSource", rule.rule_id),
+            &rule.candidate_source,
+        );
+        push_blank(
+            &mut examples,
+            &format!("pathDiscoveryRules[{}].evidenceBoundary", rule.rule_id),
+            &rule.evidence_boundary,
+        );
+        if rule.non_conclusions.is_empty() || has_blank(&rule.non_conclusions) {
+            examples.push(generic_validation_example(
+                &profile.profile_id,
+                &rule.rule_id,
+                "homotopy path discovery rules must keep non-conclusions explicit",
+            ));
+        }
+    }
+    if profile.filler_rules.is_empty() {
+        examples.push(generic_validation_example(
+            &profile.profile_id,
+            "fillerRules",
+            "homotopy profile must declare filler rules",
+        ));
+    }
+    for rule in &profile.filler_rules {
+        push_blank(&mut examples, "fillerRules[].ruleId", &rule.rule_id);
+        push_blank(
+            &mut examples,
+            &format!("fillerRules[{}].fillerKind", rule.rule_id),
+            &rule.filler_kind,
+        );
+        if rule.required_source_ref_kinds.is_empty() || has_blank(&rule.required_source_ref_kinds) {
+            examples.push(generic_validation_example(
+                &profile.profile_id,
+                &rule.rule_id,
+                "homotopy filler rules must declare required source ref kinds",
+            ));
+        }
+        push_blank(
+            &mut examples,
+            &format!("fillerRules[{}].missingFillerBehavior", rule.rule_id),
+            &rule.missing_filler_behavior,
+        );
+        push_blank(
+            &mut examples,
+            &format!("fillerRules[{}].evidenceBoundary", rule.rule_id),
+            &rule.evidence_boundary,
+        );
+        if rule.non_conclusions.is_empty() || has_blank(&rule.non_conclusions) {
+            examples.push(generic_validation_example(
+                &profile.profile_id,
+                &rule.rule_id,
+                "homotopy filler rules must keep non-conclusions explicit",
+            ));
+        }
+    }
+    push_blank(
+        &mut examples,
+        "homotopyMeasurementProfile.loopMeasurementPolicy.policyId",
+        &profile.loop_measurement_policy.policy_id,
+    );
+    if profile
+        .loop_measurement_policy
+        .loop_candidate_sources
+        .is_empty()
+        || has_blank(&profile.loop_measurement_policy.loop_candidate_sources)
+    {
+        examples.push(generic_validation_example(
+            &profile.profile_id,
+            "loopMeasurementPolicy.loopCandidateSources",
+            "homotopy loop measurement policy must declare candidate sources",
+        ));
+    }
+    push_blank(
+        &mut examples,
+        "loopMeasurementPolicy.filledLoopReading",
+        &profile.loop_measurement_policy.filled_loop_reading,
+    );
+    push_blank(
+        &mut examples,
+        "loopMeasurementPolicy.unfilledLoopReading",
+        &profile.loop_measurement_policy.unfilled_loop_reading,
+    );
+    push_blank(
+        &mut examples,
+        "loopMeasurementPolicy.holonomyDistanceKind",
+        &profile.loop_measurement_policy.holonomy_distance_kind,
+    );
+    push_blank(
+        &mut examples,
+        "loopMeasurementPolicy.localCurvatureReadingBoundary",
+        &profile
+            .loop_measurement_policy
+            .local_curvature_reading_boundary,
+    );
+    if profile.loop_measurement_policy.non_conclusions.is_empty()
+        || has_blank(&profile.loop_measurement_policy.non_conclusions)
+    {
+        examples.push(generic_validation_example(
+            &profile.profile_id,
+            "loopMeasurementPolicy.nonConclusions",
+            "homotopy loop measurement policy must keep non-conclusions explicit",
+        ));
+    }
+    push_blank(
+        &mut examples,
+        "homotopyMeasurementProfile.continuationPolicy",
+        &profile.continuation_policy,
+    );
+    push_blank(
+        &mut examples,
+        "homotopyMeasurementProfile.distancePolicy",
+        &profile.distance_policy,
+    );
+    if profile.coverage_requirement_refs.is_empty() {
+        examples.push(generic_validation_example(
+            &profile.profile_id,
+            "coverageRequirementRefs",
+            "homotopy profile must reference coverage requirements",
+        ));
+    }
+    for coverage_ref in &profile.coverage_requirement_refs {
+        if !coverage_ids.contains(coverage_ref.as_str()) {
+            examples.push(generic_validation_example(
+                &profile.profile_id,
+                coverage_ref,
+                "homotopy profile coverageRequirementRefs must reference known coverage requirements",
+            ));
+        }
+    }
+    push_blank(
+        &mut examples,
+        "homotopyMeasurementProfile.coverageBoundary",
+        &profile.coverage_boundary,
+    );
+    if profile.exactness_assumption_refs.is_empty() || has_blank(&profile.exactness_assumption_refs)
+    {
+        examples.push(generic_validation_example(
+            &profile.profile_id,
+            "exactnessAssumptionRefs",
+            "homotopy profile must record exactness assumption refs",
+        ));
+    }
+    push_blank(
+        &mut examples,
+        "homotopyMeasurementProfile.measurementBoundary",
+        &profile.measurement_boundary,
+    );
+    if profile.non_conclusions.is_empty() || has_blank(&profile.non_conclusions) {
+        examples.push(generic_validation_example(
+            &profile.profile_id,
+            "nonConclusions",
+            "homotopy profile must keep non-conclusions explicit",
+        ));
+    }
+    for required in REQUIRED_HOMOTOPY_PROFILE_NON_CONCLUSIONS {
+        if !present_non_conclusions.contains(required) {
+            examples.push(generic_validation_example(
+                &profile.profile_id,
+                required,
+                "missing required homotopy profile non-conclusion",
+            ));
+        }
+    }
+
+    check_from_examples(
+        "law-policy-homotopy-measurement-profile",
+        "LawPolicy keeps homotopy path, filler, loop, coverage, and non-conclusion recipes separate from the selected law universe",
         examples,
         "fail",
     )
@@ -1254,6 +1618,40 @@ mod tests {
         assert_eq!(report.summary.result, "pass");
         assert!(report.checks.iter().any(|check| {
             check.id == "law-policy-spectrum-measurement-profile" && check.result == "pass"
+        }));
+    }
+
+    #[test]
+    fn invalid_homotopy_measurement_profile_fails() {
+        let mut policy = static_law_policy();
+        let profile = policy
+            .homotopy_measurement_profile
+            .as_mut()
+            .expect("fixture declares a homotopy profile");
+        profile.selected_axis_refs = vec!["axis:missing".to_string()];
+        profile.path_discovery_rules.clear();
+        profile.filler_rules.clear();
+        profile.coverage_requirement_refs = vec!["coverage:missing".to_string()];
+        profile.non_conclusions.clear();
+
+        let report = validate_law_policy_report(&policy, "bad-law-policy.json");
+
+        assert_eq!(report.summary.result, "fail");
+        assert!(report.checks.iter().any(|check| {
+            check.id == "law-policy-homotopy-measurement-profile" && check.result == "fail"
+        }));
+    }
+
+    #[test]
+    fn absent_homotopy_measurement_profile_is_valid() {
+        let mut policy = static_law_policy();
+        policy.homotopy_measurement_profile = None;
+
+        let report = validate_law_policy_report(&policy, "law-policy-without-homotopy.json");
+
+        assert_eq!(report.summary.result, "pass");
+        assert!(report.checks.iter().any(|check| {
+            check.id == "law-policy-homotopy-measurement-profile" && check.result == "pass"
         }));
     }
 
