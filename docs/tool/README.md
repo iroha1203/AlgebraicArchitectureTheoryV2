@@ -31,5 +31,6 @@ Forward design PRDs:
 
 - [LLM-native ArchMap / ArchSig PRD](llm_native_archmap_archsig_prd.md)
 - [ArchSig AAT Analysis Engine PRD](archsig_aat_analysis_engine_prd.md)
+- [ArchSig v0.3.0 Measurement Expansion PRD](archsig_v0_3_0_measurement_expansion_prd.md)
 
 New implementation-facing specification documents should be added here only when they match the implementation and keep those boundaries explicit. Forward PRDs should keep future schema and migration work separate from the current source-of-truth boundaries above.
