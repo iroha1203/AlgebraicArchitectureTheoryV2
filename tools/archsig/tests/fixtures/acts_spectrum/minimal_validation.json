@@ -3014,6 +3014,426 @@
         ]
       }
     ],
+    "homotopyComplexSummary": {
+      "complexId": "homotopy-complex:fixture-archmap-atom-observation",
+      "profileRef": "homotopy-profile:bounded-stokes-default",
+      "status": "measuredProfile",
+      "selectedAxisRefs": [
+        "axis:layer-violation",
+        "axis:semantic-inconsistency"
+      ],
+      "zeroCells": [
+        {
+          "cellId": "0-cell:atom-component-route-users",
+          "cellDimension": 0,
+          "cellKind": "existence",
+          "status": "observed",
+          "observationRefs": [
+            "atom:component:route-users"
+          ],
+          "sourceRefs": [
+            "src-route-users"
+          ],
+          "reading": "observed Atom is read as a bounded 0-cell candidate",
+          "nonConclusions": [
+            "candidate paths and loops are review cues, not path truth",
+            "unfilled loops are architectural holes, not automatic violations",
+            "missing filler evidence is not measured zero",
+            "nonzero holonomy is bounded diagnosis, not future incident prediction",
+            "homotopy complex summary is not source extraction completeness"
+          ]
+        },
+        {
+          "cellId": "0-cell:atom-component-service-user",
+          "cellDimension": 0,
+          "cellKind": "existence",
+          "status": "observed",
+          "observationRefs": [
+            "atom:component:service-user"
+          ],
+          "sourceRefs": [
+            "src-service-user"
+          ],
+          "reading": "observed Atom is read as a bounded 0-cell candidate",
+          "nonConclusions": [
+            "candidate paths and loops are review cues, not path truth",
+            "unfilled loops are architectural holes, not automatic violations",
+            "missing filler evidence is not measured zero",
+            "nonzero holonomy is bounded diagnosis, not future incident prediction",
+            "homotopy complex summary is not source extraction completeness"
+          ]
+        },
+        {
+          "cellId": "0-cell:atom-relation-route-service",
+          "cellDimension": 0,
+          "cellKind": "relation",
+          "status": "observed",
+          "observationRefs": [
+            "atom:relation:route-service"
+          ],
+          "sourceRefs": [
+            "src-route-users",
+            "src-service-user"
+          ],
+          "reading": "observed Atom is read as a bounded 0-cell candidate",
+          "nonConclusions": [
+            "candidate paths and loops are review cues, not path truth",
+            "unfilled loops are architectural holes, not automatic violations",
+            "missing filler evidence is not measured zero",
+            "nonzero holonomy is bounded diagnosis, not future incident prediction",
+            "homotopy complex summary is not source extraction completeness"
+          ]
+        },
+        {
+          "cellId": "0-cell:atom-contract-create-user",
+          "cellDimension": 0,
+          "cellKind": "contractSpecification",
+          "status": "observed",
+          "observationRefs": [
+            "atom:contract:create-user"
+          ],
+          "sourceRefs": [
+            "test-user-contract"
+          ],
+          "reading": "observed Atom is read as a bounded 0-cell candidate",
+          "nonConclusions": [
+            "candidate paths and loops are review cues, not path truth",
+            "unfilled loops are architectural holes, not automatic violations",
+            "missing filler evidence is not measured zero",
+            "nonzero holonomy is bounded diagnosis, not future incident prediction",
+            "homotopy complex summary is not source extraction completeness"
+          ]
+        }
+      ],
+      "oneCells": [
+        {
+          "cellId": "1-cell:molecule-user-request-responsibility",
+          "cellDimension": 1,
+          "cellKind": "user request orchestration",
+          "status": "candidate",
+          "observationRefs": [
+            "atom:component:route-users",
+            "atom:component:service-user",
+            "atom:relation:route-service",
+            "atom:contract:create-user"
+          ],
+          "sourceRefs": [
+            "doc-architecture"
+          ],
+          "reading": "molecule observation is read as a bounded path / relation candidate",
+          "nonConclusions": [
+            "candidate paths and loops are review cues, not path truth",
+            "unfilled loops are architectural holes, not automatic violations",
+            "missing filler evidence is not measured zero",
+            "nonzero holonomy is bounded diagnosis, not future incident prediction",
+            "homotopy complex summary is not source extraction completeness"
+          ]
+        },
+        {
+          "cellId": "1-cell:semantic-create-user-flow",
+          "cellDimension": 1,
+          "cellKind": "operationMeaning",
+          "status": "candidate",
+          "observationRefs": [
+            "semantic:create-user-flow"
+          ],
+          "sourceRefs": [
+            "doc-architecture",
+            "test-user-contract"
+          ],
+          "reading": "semantic observation is read as a selected path continuation candidate",
+          "nonConclusions": [
+            "candidate paths and loops are review cues, not path truth",
+            "unfilled loops are architectural holes, not automatic violations",
+            "missing filler evidence is not measured zero",
+            "nonzero holonomy is bounded diagnosis, not future incident prediction",
+            "homotopy complex summary is not source extraction completeness"
+          ]
+        }
+      ],
+      "twoCells": [
+        {
+          "cellId": "2-cell:obstruction-layer-violation",
+          "cellDimension": 2,
+          "cellKind": "BoundaryLeakCircuit",
+          "status": "lawPolicyRequired",
+          "observationRefs": [
+            "witness:layer-violation"
+          ],
+          "sourceRefs": [],
+          "reading": "LawPolicy obstruction definition is read as a bounded 2-cell / filler requirement",
+          "nonConclusions": [
+            "candidate paths and loops are review cues, not path truth",
+            "unfilled loops are architectural holes, not automatic violations",
+            "missing filler evidence is not measured zero",
+            "nonzero holonomy is bounded diagnosis, not future incident prediction",
+            "homotopy complex summary is not source extraction completeness"
+          ]
+        },
+        {
+          "cellId": "2-cell:obstruction-semantic-contract-mismatch",
+          "cellDimension": 2,
+          "cellKind": "SemanticMismatchCircuit",
+          "status": "lawPolicyRequired",
+          "observationRefs": [
+            "witness:semantic-contract-mismatch"
+          ],
+          "sourceRefs": [],
+          "reading": "LawPolicy obstruction definition is read as a bounded 2-cell / filler requirement",
+          "nonConclusions": [
+            "candidate paths and loops are review cues, not path truth",
+            "unfilled loops are architectural holes, not automatic violations",
+            "missing filler evidence is not measured zero",
+            "nonzero holonomy is bounded diagnosis, not future incident prediction",
+            "homotopy complex summary is not source extraction completeness"
+          ]
+        }
+      ],
+      "sourceRefs": [
+        ".lake/runtime-trace.json",
+        "doc-architecture",
+        "src-route-users",
+        "src-service-user",
+        "test-user-contract"
+      ],
+      "coverageBoundary": "missing path or filler evidence blocks zero and Stokes-style readings",
+      "exactnessAssumptions": [
+        "selected LawPolicy exactness assumptions"
+      ],
+      "evidenceBoundary": "homotopy complex is built from supplied ArchMap evidence and selected LawPolicy recipe",
+      "nonConclusions": [
+        "candidate paths and loops are review cues, not path truth",
+        "unfilled loops are architectural holes, not automatic violations",
+        "missing filler evidence is not measured zero",
+        "nonzero holonomy is bounded diagnosis, not future incident prediction",
+        "homotopy complex summary is not source extraction completeness"
+      ]
+    },
+    "pathPairCandidates": [
+      {
+        "candidateId": "path-pair:semantic-contract-loop",
+        "candidateSource": "lawPolicyRequired",
+        "status": "sourceConfirmed",
+        "pPathRef": "path:semantic-operation-flow",
+        "qPathRef": "molecule:user-request-responsibility",
+        "sharedEndpointRefs": [
+          "atom:component:route-users",
+          "atom:component:service-user"
+        ],
+        "selectedAxisRefs": [
+          "axis:layer-violation",
+          "axis:semantic-inconsistency"
+        ],
+        "sourceRefs": [
+          "doc-architecture",
+          "src-route-users",
+          "src-service-user",
+          "test-user-contract"
+        ],
+        "observationRefs": [
+          "atom:component:route-users",
+          "atom:component:service-user",
+          "atom:contract:create-user",
+          "atom:relation:route-service",
+          "semantic:create-user-flow"
+        ],
+        "coverageBoundary": "missing path or filler evidence blocks zero and Stokes-style readings",
+        "evidenceBoundary": "candidate path pair is a bounded review cue, not a path equality proof",
+        "nonConclusions": [
+          "candidate paths and loops are review cues, not path truth",
+          "unfilled loops are architectural holes, not automatic violations",
+          "missing filler evidence is not measured zero",
+          "nonzero holonomy is bounded diagnosis, not future incident prediction",
+          "homotopy complex summary is not source extraction completeness"
+        ]
+      },
+      {
+        "candidateId": "path-pair:path-rule-interface-implementation",
+        "candidateSource": "llmDiscovered",
+        "status": "needsReview",
+        "pPathRef": "path-rule:interface-implementation",
+        "qPathRef": "interface-implementation-path",
+        "sharedEndpointRefs": [
+          "atom:component:route-users",
+          "atom:component:service-user"
+        ],
+        "selectedAxisRefs": [
+          "axis:layer-violation",
+          "axis:semantic-inconsistency"
+        ],
+        "sourceRefs": [
+          ".lake/runtime-trace.json",
+          "doc-architecture",
+          "src-route-users",
+          "src-service-user",
+          "test-user-contract"
+        ],
+        "observationRefs": [
+          "atom:component:route-users",
+          "atom:component:service-user",
+          "atom:relation:route-service",
+          "atom:contract:create-user"
+        ],
+        "coverageBoundary": "missing path or filler evidence blocks zero and Stokes-style readings",
+        "evidenceBoundary": "candidate paths are bounded review cues derived from ArchMap evidence and selected LawPolicy",
+        "nonConclusions": [
+          "candidate paths and loops are review cues, not path truth",
+          "unfilled loops are architectural holes, not automatic violations",
+          "missing filler evidence is not measured zero",
+          "nonzero holonomy is bounded diagnosis, not future incident prediction",
+          "homotopy complex summary is not source extraction completeness"
+        ]
+      },
+      {
+        "candidateId": "path-pair:path-rule-cache-repository",
+        "candidateSource": "llmDiscovered",
+        "status": "needsReview",
+        "pPathRef": "path-rule:cache-repository",
+        "qPathRef": "cache-repository-path",
+        "sharedEndpointRefs": [
+          "atom:component:route-users",
+          "atom:component:service-user"
+        ],
+        "selectedAxisRefs": [
+          "axis:layer-violation",
+          "axis:semantic-inconsistency"
+        ],
+        "sourceRefs": [
+          ".lake/runtime-trace.json",
+          "doc-architecture",
+          "src-route-users",
+          "src-service-user",
+          "test-user-contract"
+        ],
+        "observationRefs": [
+          "atom:component:route-users",
+          "atom:component:service-user",
+          "atom:relation:route-service",
+          "atom:contract:create-user"
+        ],
+        "coverageBoundary": "missing path or filler evidence blocks zero and Stokes-style readings",
+        "evidenceBoundary": "absence of a candidate path is not proof that no architectural loop exists",
+        "nonConclusions": [
+          "candidate paths and loops are review cues, not path truth",
+          "unfilled loops are architectural holes, not automatic violations",
+          "missing filler evidence is not measured zero",
+          "nonzero holonomy is bounded diagnosis, not future incident prediction",
+          "homotopy complex summary is not source extraction completeness"
+        ]
+      }
+    ],
+    "loopCandidates": [
+      {
+        "loopId": "loop-candidate:path-pair-semantic-contract-loop-0",
+        "pathPairRef": "path-pair:semantic-contract-loop",
+        "candidateSource": "lawPolicyRequired",
+        "status": "unfilledLoop",
+        "pathRefs": [
+          "path:semantic-operation-flow",
+          "molecule:user-request-responsibility"
+        ],
+        "fillerCandidateRefs": [
+          "filler-rule:contract-or-test",
+          "filler-rule:authority-or-idempotency"
+        ],
+        "missingFillerEvidence": [
+          "gap-runtime-user-db-trace"
+        ],
+        "selectedAxisRefs": [
+          "axis:layer-violation",
+          "axis:semantic-inconsistency"
+        ],
+        "sourceRefs": [
+          "doc-architecture",
+          "src-route-users",
+          "src-service-user",
+          "test-user-contract"
+        ],
+        "coverageBoundary": "missing path or filler evidence blocks zero and Stokes-style readings",
+        "evidenceBoundary": "loop candidate is a bounded homotopy review surface, not a violation proof",
+        "nonConclusions": [
+          "candidate paths and loops are review cues, not path truth",
+          "unfilled loops are architectural holes, not automatic violations",
+          "missing filler evidence is not measured zero",
+          "nonzero holonomy is bounded diagnosis, not future incident prediction",
+          "homotopy complex summary is not source extraction completeness"
+        ]
+      },
+      {
+        "loopId": "loop-candidate:path-pair-path-rule-interface-implementation-1",
+        "pathPairRef": "path-pair:path-rule-interface-implementation",
+        "candidateSource": "llmDiscovered",
+        "status": "unfilledLoop",
+        "pathRefs": [
+          "path-rule:interface-implementation",
+          "interface-implementation-path"
+        ],
+        "fillerCandidateRefs": [
+          "filler-rule:contract-or-test",
+          "filler-rule:authority-or-idempotency"
+        ],
+        "missingFillerEvidence": [
+          "gap-runtime-user-db-trace"
+        ],
+        "selectedAxisRefs": [
+          "axis:layer-violation",
+          "axis:semantic-inconsistency"
+        ],
+        "sourceRefs": [
+          ".lake/runtime-trace.json",
+          "doc-architecture",
+          "src-route-users",
+          "src-service-user",
+          "test-user-contract"
+        ],
+        "coverageBoundary": "missing path or filler evidence blocks zero and Stokes-style readings",
+        "evidenceBoundary": "loop candidate is a bounded homotopy review surface, not a violation proof",
+        "nonConclusions": [
+          "candidate paths and loops are review cues, not path truth",
+          "unfilled loops are architectural holes, not automatic violations",
+          "missing filler evidence is not measured zero",
+          "nonzero holonomy is bounded diagnosis, not future incident prediction",
+          "homotopy complex summary is not source extraction completeness"
+        ]
+      },
+      {
+        "loopId": "loop-candidate:path-pair-path-rule-cache-repository-2",
+        "pathPairRef": "path-pair:path-rule-cache-repository",
+        "candidateSource": "llmDiscovered",
+        "status": "unfilledLoop",
+        "pathRefs": [
+          "path-rule:cache-repository",
+          "cache-repository-path"
+        ],
+        "fillerCandidateRefs": [
+          "filler-rule:contract-or-test",
+          "filler-rule:authority-or-idempotency"
+        ],
+        "missingFillerEvidence": [
+          "gap-runtime-user-db-trace"
+        ],
+        "selectedAxisRefs": [
+          "axis:layer-violation",
+          "axis:semantic-inconsistency"
+        ],
+        "sourceRefs": [
+          ".lake/runtime-trace.json",
+          "doc-architecture",
+          "src-route-users",
+          "src-service-user",
+          "test-user-contract"
+        ],
+        "coverageBoundary": "missing path or filler evidence blocks zero and Stokes-style readings",
+        "evidenceBoundary": "loop candidate is a bounded homotopy review surface, not a violation proof",
+        "nonConclusions": [
+          "candidate paths and loops are review cues, not path truth",
+          "unfilled loops are architectural holes, not automatic violations",
+          "missing filler evidence is not measured zero",
+          "nonzero holonomy is bounded diagnosis, not future incident prediction",
+          "homotopy complex summary is not source extraction completeness"
+        ]
+      }
+    ],
     "operationSquareCandidates": [
       {
         "candidateId": "operation-square:operation-delta-repair-obstruction-semantic-contract-mismatch-computed:operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation",
@@ -6449,6 +6869,12 @@
     {
       "id": "archsig-analysis-packet-north-star-aat-surfaces",
       "title": "packet represents all AAT concept surfaces required by the North Star PRD",
+      "result": "pass",
+      "count": 0
+    },
+    {
+      "id": "archsig-analysis-packet-homotopy-complex-candidates",
+      "title": "packet exposes bounded homotopy complex, path pair candidates, and loop candidates",
       "result": "pass",
       "count": 0
     },

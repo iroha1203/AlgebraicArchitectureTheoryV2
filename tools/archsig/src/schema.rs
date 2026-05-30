@@ -770,6 +770,12 @@ pub struct ArchSigAnalysisPacketV0 {
     #[serde(default)]
     pub bridge_split_obstruction_transfer_readings:
         Vec<ArchSigBridgeSplitObstructionTransferReadingV0>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub homotopy_complex_summary: Option<ArchSigHomotopyComplexSummaryV0>,
+    #[serde(default)]
+    pub path_pair_candidates: Vec<ArchSigPathPairCandidateV0>,
+    #[serde(default)]
+    pub loop_candidates: Vec<ArchSigLoopCandidateV0>,
     pub operation_square_candidates: Vec<ArchSigOperationSquareCandidateV0>,
     pub path_continuation_traces: Vec<ArchSigPathContinuationTraceV0>,
     pub axis_wise_monodromy_defects: Vec<ArchSigAxisWiseMonodromyDefectV0>,
@@ -1965,6 +1971,70 @@ pub struct ArchSigBridgeSplitObstructionTransferReadingV0 {
     pub filler_evidence_status: String,
     pub lifting_evidence_status: String,
     pub transfer_risk_status: String,
+    pub evidence_boundary: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigHomotopyComplexSummaryV0 {
+    pub complex_id: String,
+    pub profile_ref: String,
+    pub status: String,
+    pub selected_axis_refs: Vec<String>,
+    pub zero_cells: Vec<ArchSigHomotopyCellSummaryV0>,
+    pub one_cells: Vec<ArchSigHomotopyCellSummaryV0>,
+    pub two_cells: Vec<ArchSigHomotopyCellSummaryV0>,
+    pub source_refs: Vec<String>,
+    pub coverage_boundary: String,
+    pub exactness_assumptions: Vec<String>,
+    pub evidence_boundary: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigHomotopyCellSummaryV0 {
+    pub cell_id: String,
+    pub cell_dimension: u8,
+    pub cell_kind: String,
+    pub status: String,
+    pub observation_refs: Vec<String>,
+    pub source_refs: Vec<String>,
+    pub reading: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigPathPairCandidateV0 {
+    pub candidate_id: String,
+    pub candidate_source: String,
+    pub status: String,
+    pub p_path_ref: String,
+    pub q_path_ref: String,
+    pub shared_endpoint_refs: Vec<String>,
+    pub selected_axis_refs: Vec<String>,
+    pub source_refs: Vec<String>,
+    pub observation_refs: Vec<String>,
+    pub coverage_boundary: String,
+    pub evidence_boundary: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigLoopCandidateV0 {
+    pub loop_id: String,
+    pub path_pair_ref: String,
+    pub candidate_source: String,
+    pub status: String,
+    pub path_refs: Vec<String>,
+    pub filler_candidate_refs: Vec<String>,
+    pub missing_filler_evidence: Vec<String>,
+    pub selected_axis_refs: Vec<String>,
+    pub source_refs: Vec<String>,
+    pub coverage_boundary: String,
     pub evidence_boundary: String,
     pub non_conclusions: Vec<String>,
 }
