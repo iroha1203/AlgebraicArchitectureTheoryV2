@@ -300,6 +300,22 @@ emits only ArchMap validation, LawPolicy validation, the analysis packet, packet
 validation, and the LLM interpretation packet. Pre-Atom projections and review
 surfaces are not current ArchSig CLI surface or compatibility commands.
 
+`pr-review` and `codebase-inspection` are report surfaces over the packet and
+ArchMapStore artifacts:
+
+- `archsig-pr-review-report-v0` reads `archmap-delta-v0`,
+  `archmap-commit-v0`, base/head packets, and optional raw diff scoping hint.
+  It is change-local CI review telemetry.
+- `archsig-codebase-inspection-report-v0` reads latest
+  `archmap-snapshot-v0`, `archmap-index-v0`, optional recent deltas, optional
+  LawPolicy provenance, and one packet. It is current-state architecture health
+  telemetry.
+
+Both reports preserve measured witnesses, coverage / exactness boundary,
+missing evidence, and non-conclusions. Neither report is a merge approval,
+global lawfulness proof, raw-diff semantic parser, forecast, governance,
+calibration, or longitudinal FieldSig analysis.
+
 FieldSig handoff projects child-level `missingEvidence` / `excludedReadings`
 as unknown remainder and evidence-boundary refs instead of rounding them to
 absence, measured zero, forecast truth, or repair safety.

@@ -83,6 +83,13 @@ They do not make `AMI_X(A)` a single quality score, merge gate, or global
 flatness theorem. `coveragePolicy` keeps unmeasured axes as missing evidence
 instead of treating them as zero.
 
+The same measurement policy is shared by the analysis packet,
+`archsig-pr-review-report-v0`, and `archsig-codebase-inspection-report-v0`.
+The policy selects how ArchSig reads structural telemetry; it does not authorize
+FieldSig forecast, governance, calibration, or longitudinal evolution claims.
+FieldSig may consume ArchSig packet chains downstream, but it owns those
+evolution readings separately from this profile.
+
 Validation does not imply:
 
 - architecture lawfulness
