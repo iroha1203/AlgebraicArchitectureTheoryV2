@@ -75,6 +75,8 @@ The implemented schema records:
 - `loopCandidates`
 - `fillerCandidateReadings`
 - `architecturalHoleReadings`
+- `homotopyHolonomyReadings`
+- `stokesStyleReadings`
 - `operationSquareCandidates`
 - `pathContinuationTraces`
 - `axisWiseMonodromyDefects`
@@ -113,12 +115,12 @@ readings, spectral drilldown readings, curvature support readings, curvature
 transfer readings, ArchitectureSpectrumReport, transfer bridge readings and
 bridge-edge source refs, v0.3.0 measurement expansion readings, homotopy complex
 summaries, path pair candidates, loop candidates, filler candidate readings,
-architectural hole readings, AAT structural state readings, ArchMapStore delta /
-commit / snapshot / index refs, operation square candidates, axis-wise path
-continuation traces, monodromy / boundary holonomy reading family policy
-surfaces, law-relative obstruction links, signature / flatness references, repair
-candidate guardrails, LLM interpretation notes, evidence boundary, and required
-non-conclusions.
+architectural hole readings, homotopy holonomy readings, Stokes-style readings,
+AAT structural state readings, ArchMapStore delta / commit / snapshot / index
+refs, operation square candidates, axis-wise path continuation traces, monodromy
+/ boundary holonomy reading family policy surfaces, law-relative obstruction
+links, signature / flatness references, repair candidate guardrails, LLM
+interpretation notes, evidence boundary, and required non-conclusions.
 Each obstruction circuit, signature axis reading, and repair operation candidate
 must carry its own `missingEvidence` and `excludedReadings`. Packet-level
 `excludedReadings` does not stand in for child-record evidence boundaries.

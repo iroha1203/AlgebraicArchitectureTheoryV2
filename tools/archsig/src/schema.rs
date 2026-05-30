@@ -780,6 +780,10 @@ pub struct ArchSigAnalysisPacketV0 {
     pub filler_candidate_readings: Vec<ArchSigFillerCandidateReadingV0>,
     #[serde(default)]
     pub architectural_hole_readings: Vec<ArchSigArchitecturalHoleReadingV0>,
+    #[serde(default)]
+    pub homotopy_holonomy_readings: Vec<ArchSigHomotopyHolonomyReadingV0>,
+    #[serde(default)]
+    pub stokes_style_readings: Vec<ArchSigStokesStyleReadingV0>,
     pub operation_square_candidates: Vec<ArchSigOperationSquareCandidateV0>,
     pub path_continuation_traces: Vec<ArchSigPathContinuationTraceV0>,
     pub axis_wise_monodromy_defects: Vec<ArchSigAxisWiseMonodromyDefectV0>,
@@ -2068,6 +2072,39 @@ pub struct ArchSigArchitecturalHoleReadingV0 {
     pub missing_filler_evidence: Vec<String>,
     pub next_check_refs: Vec<String>,
     pub source_refs: Vec<String>,
+    pub coverage_boundary: String,
+    pub evidence_boundary: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigHomotopyHolonomyReadingV0 {
+    pub reading_id: String,
+    pub path_pair_ref: String,
+    pub loop_ref: String,
+    pub axis_ref: String,
+    pub distance_kind: String,
+    pub value: i64,
+    pub compared_continuation_summary: String,
+    pub source_refs: Vec<String>,
+    pub observation_refs: Vec<String>,
+    pub filler_refs: Vec<String>,
+    pub missing_filler_refs: Vec<String>,
+    pub coverage_boundary: String,
+    pub exactness_assumption_status: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigStokesStyleReadingV0 {
+    pub reading_id: String,
+    pub loop_ref: String,
+    pub status: String,
+    pub holonomy_reading_refs: Vec<String>,
+    pub local_curvature_cell_candidates: Vec<String>,
+    pub review_queue_refs: Vec<String>,
     pub coverage_boundary: String,
     pub evidence_boundary: String,
     pub non_conclusions: Vec<String>,

@@ -32,26 +32,27 @@ use crate::{
     ArchSigFeatureExtensionDiagnosisReadingV0, ArchSigFeatureExtensionFormulaReadingV0,
     ArchSigFeatureExtensionWitnessAttributionV0, ArchSigFillerCandidateReadingV0,
     ArchSigFlatnessReadingV0, ArchSigHighOverlapMoleculePairV0, ArchSigHomotopyCellSummaryV0,
-    ArchSigHomotopyComplexSummaryV0, ArchSigHomotopyOrderSensitivityReadingV0,
-    ArchSigInvariantFamilyReadingV0, ArchSigLawUniverseCoverageReadingV0,
-    ArchSigLawUniverseReadingV0, ArchSigLayerSplitV0, ArchSigLlmInterpretationPacketV0,
-    ArchSigLocalCurvatureDiagramReadingV0, ArchSigLoopCandidateV0, ArchSigMoleculeReadingV0,
-    ArchSigMonodromyReadingFamilyV0, ArchSigNonzeroMonodromyWitnessV0,
-    ArchSigObservationProjectionReadingV0, ArchSigObstructionCircuitV0,
-    ArchSigOperationCalculusLawReadingV0, ArchSigOperationDeltaReadingV0,
-    ArchSigOperationInvariantGaloisReadingV0, ArchSigOperationSquareCandidateV0,
-    ArchSigPathContinuationTraceV0, ArchSigPathHomotopyDiagramReadingV0,
-    ArchSigPathPairCandidateV0, ArchSigPathSignatureTrajectoryReadingV0,
-    ArchSigRecurrentObstructionModeV0, ArchSigRepairAxisDeltaReadingV0,
-    ArchSigRepairOperationCandidateV0, ArchSigRepairTransferRiskRankV0,
-    ArchSigRepresentationStrengthReadingV0, ArchSigSignatureAxisReadingV0,
-    ArchSigSignatureTrajectoryHomotopyRefutationReadingV0, ArchSigSpectralAnalysisReadingV0,
-    ArchSigSpectralDominantComponentV0, ArchSigSpectralDrilldownReadingV0,
-    ArchSigSpectralMatrixShapeV0, ArchSigSpectralModeComponentV0, ArchSigSpectralModeReadingV0,
-    ArchSigSpectralValueV0, ArchSigSplitReadinessReadingV0, ArchSigStateTransitionAlgebraReadingV0,
-    ArchSigStructuralReadingReviewSurfaceV0, ArchSigSubjectFamilySpreadV0,
-    ArchSigThreeLayerFlatnessReadingV0, ArchSigTransferBridgeReadingV0,
-    ArchSigTransferMatrixEntryV0, ArchSigWorkflowAtomFamilyCountV0,
+    ArchSigHomotopyComplexSummaryV0, ArchSigHomotopyHolonomyReadingV0,
+    ArchSigHomotopyOrderSensitivityReadingV0, ArchSigInvariantFamilyReadingV0,
+    ArchSigLawUniverseCoverageReadingV0, ArchSigLawUniverseReadingV0, ArchSigLayerSplitV0,
+    ArchSigLlmInterpretationPacketV0, ArchSigLocalCurvatureDiagramReadingV0,
+    ArchSigLoopCandidateV0, ArchSigMoleculeReadingV0, ArchSigMonodromyReadingFamilyV0,
+    ArchSigNonzeroMonodromyWitnessV0, ArchSigObservationProjectionReadingV0,
+    ArchSigObstructionCircuitV0, ArchSigOperationCalculusLawReadingV0,
+    ArchSigOperationDeltaReadingV0, ArchSigOperationInvariantGaloisReadingV0,
+    ArchSigOperationSquareCandidateV0, ArchSigPathContinuationTraceV0,
+    ArchSigPathHomotopyDiagramReadingV0, ArchSigPathPairCandidateV0,
+    ArchSigPathSignatureTrajectoryReadingV0, ArchSigRecurrentObstructionModeV0,
+    ArchSigRepairAxisDeltaReadingV0, ArchSigRepairOperationCandidateV0,
+    ArchSigRepairTransferRiskRankV0, ArchSigRepresentationStrengthReadingV0,
+    ArchSigSignatureAxisReadingV0, ArchSigSignatureTrajectoryHomotopyRefutationReadingV0,
+    ArchSigSpectralAnalysisReadingV0, ArchSigSpectralDominantComponentV0,
+    ArchSigSpectralDrilldownReadingV0, ArchSigSpectralMatrixShapeV0,
+    ArchSigSpectralModeComponentV0, ArchSigSpectralModeReadingV0, ArchSigSpectralValueV0,
+    ArchSigSplitReadinessReadingV0, ArchSigStateTransitionAlgebraReadingV0,
+    ArchSigStokesStyleReadingV0, ArchSigStructuralReadingReviewSurfaceV0,
+    ArchSigSubjectFamilySpreadV0, ArchSigThreeLayerFlatnessReadingV0,
+    ArchSigTransferBridgeReadingV0, ArchSigTransferMatrixEntryV0, ArchSigWorkflowAtomFamilyCountV0,
     ArchSigWorkflowRiskAxisReadingV0, ArchSigWorkflowRiskReadingV0, LAW_POLICY_SCHEMA_VERSION,
     LawPolicyDocumentV0, LawPolicyObstructionCircuitDefinitionV0,
     LawPolicySignatureAxisDefinitionV0, LawPolicyWitnessRuleV0, ValidationCheck, ValidationExample,
@@ -236,6 +237,20 @@ pub fn build_archsig_analysis_packet(
         build_filler_candidate_readings(archmap, law_policy, &loop_candidates);
     let architectural_hole_readings =
         build_architectural_hole_readings(archmap, &loop_candidates, &filler_candidate_readings);
+    let homotopy_holonomy_readings = build_homotopy_holonomy_readings(
+        law_policy,
+        &loop_candidates,
+        &path_pair_candidates,
+        &filler_candidate_readings,
+        &architectural_hole_readings,
+    );
+    let stokes_style_readings = build_stokes_style_readings(
+        &homotopy_complex_summary,
+        &loop_candidates,
+        &homotopy_holonomy_readings,
+        &filler_candidate_readings,
+        &architectural_hole_readings,
+    );
     let operation_square_candidates = build_operation_square_candidates(archmap, &operation_deltas);
     let path_continuation_traces =
         build_path_continuation_traces(archmap, &operation_square_candidates, &operation_deltas);
@@ -419,6 +434,8 @@ pub fn build_archsig_analysis_packet(
         loop_candidates,
         filler_candidate_readings,
         architectural_hole_readings,
+        homotopy_holonomy_readings,
+        stokes_style_readings,
         operation_square_candidates,
         path_continuation_traces,
         axis_wise_monodromy_defects,
@@ -7510,6 +7527,169 @@ fn build_architectural_hole_readings(
         .collect()
 }
 
+fn build_homotopy_holonomy_readings(
+    law_policy: &LawPolicyDocumentV0,
+    loop_candidates: &[ArchSigLoopCandidateV0],
+    path_pair_candidates: &[ArchSigPathPairCandidateV0],
+    filler_candidate_readings: &[ArchSigFillerCandidateReadingV0],
+    architectural_hole_readings: &[ArchSigArchitecturalHoleReadingV0],
+) -> Vec<ArchSigHomotopyHolonomyReadingV0> {
+    let distance_kind = law_policy
+        .homotopy_measurement_profile
+        .as_ref()
+        .map(|profile| {
+            profile
+                .loop_measurement_policy
+                .holonomy_distance_kind
+                .clone()
+        })
+        .unwrap_or_else(|| "selected-axis-continuation-distance".to_string());
+    let filler_by_loop = filler_candidate_readings.iter().fold(
+        BTreeMap::<String, Vec<String>>::new(),
+        |mut acc, reading| {
+            acc.entry(reading.loop_ref.clone())
+                .or_default()
+                .push(reading.reading_id.clone());
+            acc
+        },
+    );
+    let missing_by_loop = architectural_hole_readings.iter().fold(
+        BTreeMap::<String, Vec<String>>::new(),
+        |mut acc, reading| {
+            acc.entry(reading.loop_ref.clone())
+                .or_default()
+                .extend(reading.missing_filler_evidence.clone());
+            acc
+        },
+    );
+    loop_candidates
+        .iter()
+        .flat_map(|loop_candidate| {
+            let path_pair = path_pair_candidates
+                .iter()
+                .find(|candidate| candidate.candidate_id == loop_candidate.path_pair_ref);
+            let selected_axis_refs = if loop_candidate.selected_axis_refs.is_empty() {
+                vec!["axis:unselected".to_string()]
+            } else {
+                loop_candidate.selected_axis_refs.clone()
+            };
+            selected_axis_refs
+                .into_iter()
+                .map(|axis_ref| {
+                    let missing_filler_refs = missing_by_loop
+                        .get(&loop_candidate.loop_id)
+                        .cloned()
+                        .unwrap_or_default();
+                    let filler_refs = filler_by_loop
+                        .get(&loop_candidate.loop_id)
+                        .cloned()
+                        .unwrap_or_default();
+                    ArchSigHomotopyHolonomyReadingV0 {
+                        reading_id: format!(
+                            "homotopy-holonomy:{}:{}",
+                            stable_id(&loop_candidate.loop_id),
+                            stable_id(&axis_ref)
+                        ),
+                        path_pair_ref: loop_candidate.path_pair_ref.clone(),
+                        loop_ref: loop_candidate.loop_id.clone(),
+                        axis_ref: axis_ref.clone(),
+                        distance_kind: distance_kind.clone(),
+                        value: if missing_filler_refs.is_empty() { 0 } else { 1 },
+                        compared_continuation_summary: format!(
+                            "{} vs {} on {axis_ref}",
+                            path_pair
+                                .map(|candidate| candidate.p_path_ref.as_str())
+                                .unwrap_or("path:p"),
+                            path_pair
+                                .map(|candidate| candidate.q_path_ref.as_str())
+                                .unwrap_or("path:q")
+                        ),
+                        source_refs: loop_candidate.source_refs.clone(),
+                        observation_refs: path_pair
+                            .map(|candidate| candidate.observation_refs.clone())
+                            .unwrap_or_default(),
+                        filler_refs,
+                        missing_filler_refs,
+                        coverage_boundary: loop_candidate.coverage_boundary.clone(),
+                        exactness_assumption_status:
+                            "bounded selected-axis continuation comparison; not theorem exactness"
+                                .to_string(),
+                        non_conclusions: strings(&REQUIRED_HOMOTOPY_NON_CONCLUSIONS),
+                    }
+                })
+                .collect::<Vec<_>>()
+        })
+        .collect()
+}
+
+fn build_stokes_style_readings(
+    complex: &ArchSigHomotopyComplexSummaryV0,
+    loop_candidates: &[ArchSigLoopCandidateV0],
+    holonomy_readings: &[ArchSigHomotopyHolonomyReadingV0],
+    filler_candidate_readings: &[ArchSigFillerCandidateReadingV0],
+    architectural_hole_readings: &[ArchSigArchitecturalHoleReadingV0],
+) -> Vec<ArchSigStokesStyleReadingV0> {
+    let filler_by_loop = filler_candidate_readings
+        .iter()
+        .map(|reading| reading.loop_ref.as_str())
+        .collect::<BTreeSet<_>>();
+    let hole_by_loop = architectural_hole_readings
+        .iter()
+        .map(|reading| reading.loop_ref.as_str())
+        .collect::<BTreeSet<_>>();
+    loop_candidates
+        .iter()
+        .map(|loop_candidate| {
+            let refs = holonomy_readings
+                .iter()
+                .filter(|reading| reading.loop_ref == loop_candidate.loop_id)
+                .map(|reading| reading.reading_id.clone())
+                .collect::<Vec<_>>();
+            let has_nonzero = holonomy_readings
+                .iter()
+                .any(|reading| reading.loop_ref == loop_candidate.loop_id && reading.value != 0);
+            let has_filler = filler_by_loop.contains(loop_candidate.loop_id.as_str());
+            let has_hole = hole_by_loop.contains(loop_candidate.loop_id.as_str());
+            let local_curvature_cell_candidates = if has_filler && has_nonzero {
+                complex
+                    .two_cells
+                    .iter()
+                    .map(|cell| cell.cell_id.clone())
+                    .collect()
+            } else {
+                Vec::new()
+            };
+            let review_queue_refs = if local_curvature_cell_candidates.is_empty() {
+                architectural_hole_readings
+                    .iter()
+                    .filter(|reading| reading.loop_ref == loop_candidate.loop_id)
+                    .map(|reading| reading.reading_id.clone())
+                    .collect()
+            } else {
+                local_curvature_cell_candidates.clone()
+            };
+            ArchSigStokesStyleReadingV0 {
+                reading_id: format!("stokes-style:{}", stable_id(&loop_candidate.loop_id)),
+                loop_ref: loop_candidate.loop_id.clone(),
+                status: match (has_filler, has_hole, has_nonzero) {
+                    (true, _, true) => "filledNonzeroHolonomyReview",
+                    (_, true, _) => "blockedByArchitecturalHole",
+                    _ => "measuredZeroWithinBoundary",
+                }
+                .to_string(),
+                holonomy_reading_refs: refs,
+                local_curvature_cell_candidates,
+                review_queue_refs,
+                coverage_boundary: loop_candidate.coverage_boundary.clone(),
+                evidence_boundary:
+                    "Stokes-style reading is a bounded review queue, not theorem discharge"
+                        .to_string(),
+                non_conclusions: strings(&REQUIRED_HOMOTOPY_NON_CONCLUSIONS),
+            }
+        })
+        .collect()
+}
+
 fn build_bounded_judgements(
     archmap: &ArchMapDocumentV0,
     obstruction_circuits: &[ArchSigObstructionCircuitV0],
@@ -8228,6 +8408,7 @@ pub fn validate_archsig_analysis_packet_report(
         check_north_star_aat_surfaces(packet),
         check_homotopy_complex_candidate_surface(packet),
         check_filler_architectural_hole_surface(packet),
+        check_homotopy_holonomy_stokes_surface(packet),
         check_bounded_judgement_surface(packet),
         check_analytic_and_principle_surfaces(packet),
         check_workflow_risk_surface(packet),
@@ -8759,6 +8940,142 @@ fn check_filler_architectural_hole_surface(packet: &ArchSigAnalysisPacketV0) -> 
     check_from_examples(
         "archsig-analysis-packet-filler-architectural-hole-surface",
         "packet distinguishes filler candidates from unfilled architectural holes and missing filler evidence",
+        examples,
+        "fail",
+    )
+}
+
+fn check_homotopy_holonomy_stokes_surface(packet: &ArchSigAnalysisPacketV0) -> ValidationCheck {
+    let loop_ids = packet
+        .loop_candidates
+        .iter()
+        .map(|candidate| candidate.loop_id.as_str())
+        .collect::<BTreeSet<_>>();
+    let path_pair_ids = packet
+        .path_pair_candidates
+        .iter()
+        .map(|candidate| candidate.candidate_id.as_str())
+        .collect::<BTreeSet<_>>();
+    let holonomy_ids = packet
+        .homotopy_holonomy_readings
+        .iter()
+        .map(|reading| reading.reading_id.as_str())
+        .collect::<BTreeSet<_>>();
+    let mut examples = Vec::new();
+    if packet.homotopy_holonomy_readings.is_empty() {
+        examples.push(generic_validation_example(
+            &packet.analysis_id,
+            "homotopyHolonomyReadings",
+            "packet must expose selected-axis homotopy holonomy readings",
+        ));
+    }
+    for reading in &packet.homotopy_holonomy_readings {
+        push_blank(
+            &mut examples,
+            "homotopyHolonomyReadings[].readingId",
+            &reading.reading_id,
+        );
+        if !path_pair_ids.contains(reading.path_pair_ref.as_str()) {
+            examples.push(generic_validation_example(
+                &reading.reading_id,
+                &reading.path_pair_ref,
+                "homotopy holonomy reading must reference a known path pair candidate",
+            ));
+        }
+        if !loop_ids.contains(reading.loop_ref.as_str()) {
+            examples.push(generic_validation_example(
+                &reading.reading_id,
+                &reading.loop_ref,
+                "homotopy holonomy reading must reference a known loop candidate",
+            ));
+        }
+        push_blank(
+            &mut examples,
+            &format!("{} axisRef", reading.reading_id),
+            &reading.axis_ref,
+        );
+        push_blank(
+            &mut examples,
+            &format!("{} distanceKind", reading.reading_id),
+            &reading.distance_kind,
+        );
+        push_blank(
+            &mut examples,
+            &format!("{} comparedContinuationSummary", reading.reading_id),
+            &reading.compared_continuation_summary,
+        );
+        if reading.filler_refs.is_empty() && reading.missing_filler_refs.is_empty() {
+            examples.push(generic_validation_example(
+                &reading.reading_id,
+                "fillerRefs/missingFillerRefs",
+                "homotopy holonomy reading must record filler or missing filler refs",
+            ));
+        }
+        if reading.non_conclusions.is_empty() || has_blank(&reading.non_conclusions) {
+            examples.push(generic_validation_example(
+                &reading.reading_id,
+                "nonConclusions",
+                "homotopy holonomy reading must keep non-conclusions explicit",
+            ));
+        }
+    }
+    if packet.stokes_style_readings.is_empty() {
+        examples.push(generic_validation_example(
+            &packet.analysis_id,
+            "stokesStyleReadings",
+            "packet must expose Stokes-style readings",
+        ));
+    }
+    for reading in &packet.stokes_style_readings {
+        push_blank(
+            &mut examples,
+            "stokesStyleReadings[].readingId",
+            &reading.reading_id,
+        );
+        if !loop_ids.contains(reading.loop_ref.as_str()) {
+            examples.push(generic_validation_example(
+                &reading.reading_id,
+                &reading.loop_ref,
+                "Stokes-style reading must reference a known loop candidate",
+            ));
+        }
+        for holonomy_ref in &reading.holonomy_reading_refs {
+            if !holonomy_ids.contains(holonomy_ref.as_str()) {
+                examples.push(generic_validation_example(
+                    &reading.reading_id,
+                    holonomy_ref,
+                    "Stokes-style reading must reference known holonomy readings",
+                ));
+            }
+        }
+        if reading.status == "filledNonzeroHolonomyReview"
+            && reading.local_curvature_cell_candidates.is_empty()
+        {
+            examples.push(generic_validation_example(
+                &reading.reading_id,
+                "localCurvatureCellCandidates",
+                "filled nonzero holonomy readings must provide a local curvature review queue",
+            ));
+        }
+        if reading.review_queue_refs.is_empty() || has_blank(&reading.review_queue_refs) {
+            examples.push(generic_validation_example(
+                &reading.reading_id,
+                "reviewQueueRefs",
+                "Stokes-style reading must provide review queue refs",
+            ));
+        }
+        if reading.non_conclusions.is_empty() || has_blank(&reading.non_conclusions) {
+            examples.push(generic_validation_example(
+                &reading.reading_id,
+                "nonConclusions",
+                "Stokes-style reading must keep non-conclusions explicit",
+            ));
+        }
+    }
+
+    check_from_examples(
+        "archsig-analysis-packet-homotopy-holonomy-stokes-surface",
+        "packet reports selected-axis homotopy holonomy and bounded Stokes-style review queues",
         examples,
         "fail",
     )

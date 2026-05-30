@@ -3572,6 +3572,294 @@
         ]
       }
     ],
+    "homotopyHolonomyReadings": [
+      {
+        "readingId": "homotopy-holonomy:loop-candidate-path-pair-semantic-contract-loop-0:axis-layer-violation",
+        "pathPairRef": "path-pair:semantic-contract-loop",
+        "loopRef": "loop-candidate:path-pair-semantic-contract-loop-0",
+        "axisRef": "axis:layer-violation",
+        "distanceKind": "selected-axis-continuation-distance",
+        "value": 1,
+        "comparedContinuationSummary": "path:semantic-operation-flow vs molecule:coupon-operation-contract on axis:layer-violation",
+        "sourceRefs": [
+          "src-pricing-checkout",
+          "test-coupon-rounding"
+        ],
+        "observationRefs": [
+          "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding",
+          "atom:effect:receipt-boundary",
+          "atom:semantic:PaymentAmount-ReceiptAmount-coupon-tax-rounding-noncommutation",
+          "semantic:coupon-tax-rounding-paths"
+        ],
+        "fillerRefs": [
+          "filler-candidate:loop-candidate-path-pair-semantic-contract-loop-0:filler-rule-contract-or-test",
+          "filler-candidate:loop-candidate-path-pair-semantic-contract-loop-0:filler-rule-authority-or-idempotency"
+        ],
+        "missingFillerRefs": [
+          "gap:coupon-runtime-payment-trace"
+        ],
+        "coverageBoundary": "missing path or filler evidence blocks zero and Stokes-style readings",
+        "exactnessAssumptionStatus": "bounded selected-axis continuation comparison; not theorem exactness",
+        "nonConclusions": [
+          "candidate paths and loops are review cues, not path truth",
+          "unfilled loops are architectural holes, not automatic violations",
+          "missing filler evidence is not measured zero",
+          "nonzero holonomy is bounded diagnosis, not future incident prediction",
+          "homotopy complex summary is not source extraction completeness"
+        ]
+      },
+      {
+        "readingId": "homotopy-holonomy:loop-candidate-path-pair-semantic-contract-loop-0:axis-semantic-inconsistency",
+        "pathPairRef": "path-pair:semantic-contract-loop",
+        "loopRef": "loop-candidate:path-pair-semantic-contract-loop-0",
+        "axisRef": "axis:semantic-inconsistency",
+        "distanceKind": "selected-axis-continuation-distance",
+        "value": 1,
+        "comparedContinuationSummary": "path:semantic-operation-flow vs molecule:coupon-operation-contract on axis:semantic-inconsistency",
+        "sourceRefs": [
+          "src-pricing-checkout",
+          "test-coupon-rounding"
+        ],
+        "observationRefs": [
+          "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding",
+          "atom:effect:receipt-boundary",
+          "atom:semantic:PaymentAmount-ReceiptAmount-coupon-tax-rounding-noncommutation",
+          "semantic:coupon-tax-rounding-paths"
+        ],
+        "fillerRefs": [
+          "filler-candidate:loop-candidate-path-pair-semantic-contract-loop-0:filler-rule-contract-or-test",
+          "filler-candidate:loop-candidate-path-pair-semantic-contract-loop-0:filler-rule-authority-or-idempotency"
+        ],
+        "missingFillerRefs": [
+          "gap:coupon-runtime-payment-trace"
+        ],
+        "coverageBoundary": "missing path or filler evidence blocks zero and Stokes-style readings",
+        "exactnessAssumptionStatus": "bounded selected-axis continuation comparison; not theorem exactness",
+        "nonConclusions": [
+          "candidate paths and loops are review cues, not path truth",
+          "unfilled loops are architectural holes, not automatic violations",
+          "missing filler evidence is not measured zero",
+          "nonzero holonomy is bounded diagnosis, not future incident prediction",
+          "homotopy complex summary is not source extraction completeness"
+        ]
+      },
+      {
+        "readingId": "homotopy-holonomy:loop-candidate-path-pair-path-rule-interface-implementation-1:axis-layer-violation",
+        "pathPairRef": "path-pair:path-rule-interface-implementation",
+        "loopRef": "loop-candidate:path-pair-path-rule-interface-implementation-1",
+        "axisRef": "axis:layer-violation",
+        "distanceKind": "selected-axis-continuation-distance",
+        "value": 1,
+        "comparedContinuationSummary": "path-rule:interface-implementation vs interface-implementation-path on axis:layer-violation",
+        "sourceRefs": [
+          "src-pricing-checkout",
+          "test-coupon-rounding"
+        ],
+        "observationRefs": [
+          "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding",
+          "atom:semantic:PaymentAmount-ReceiptAmount-coupon-tax-rounding-noncommutation",
+          "atom:effect:receipt-boundary"
+        ],
+        "fillerRefs": [
+          "filler-candidate:loop-candidate-path-pair-path-rule-interface-implementation-1:filler-rule-contract-or-test",
+          "filler-candidate:loop-candidate-path-pair-path-rule-interface-implementation-1:filler-rule-authority-or-idempotency"
+        ],
+        "missingFillerRefs": [
+          "gap:coupon-runtime-payment-trace"
+        ],
+        "coverageBoundary": "missing path or filler evidence blocks zero and Stokes-style readings",
+        "exactnessAssumptionStatus": "bounded selected-axis continuation comparison; not theorem exactness",
+        "nonConclusions": [
+          "candidate paths and loops are review cues, not path truth",
+          "unfilled loops are architectural holes, not automatic violations",
+          "missing filler evidence is not measured zero",
+          "nonzero holonomy is bounded diagnosis, not future incident prediction",
+          "homotopy complex summary is not source extraction completeness"
+        ]
+      },
+      {
+        "readingId": "homotopy-holonomy:loop-candidate-path-pair-path-rule-interface-implementation-1:axis-semantic-inconsistency",
+        "pathPairRef": "path-pair:path-rule-interface-implementation",
+        "loopRef": "loop-candidate:path-pair-path-rule-interface-implementation-1",
+        "axisRef": "axis:semantic-inconsistency",
+        "distanceKind": "selected-axis-continuation-distance",
+        "value": 1,
+        "comparedContinuationSummary": "path-rule:interface-implementation vs interface-implementation-path on axis:semantic-inconsistency",
+        "sourceRefs": [
+          "src-pricing-checkout",
+          "test-coupon-rounding"
+        ],
+        "observationRefs": [
+          "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding",
+          "atom:semantic:PaymentAmount-ReceiptAmount-coupon-tax-rounding-noncommutation",
+          "atom:effect:receipt-boundary"
+        ],
+        "fillerRefs": [
+          "filler-candidate:loop-candidate-path-pair-path-rule-interface-implementation-1:filler-rule-contract-or-test",
+          "filler-candidate:loop-candidate-path-pair-path-rule-interface-implementation-1:filler-rule-authority-or-idempotency"
+        ],
+        "missingFillerRefs": [
+          "gap:coupon-runtime-payment-trace"
+        ],
+        "coverageBoundary": "missing path or filler evidence blocks zero and Stokes-style readings",
+        "exactnessAssumptionStatus": "bounded selected-axis continuation comparison; not theorem exactness",
+        "nonConclusions": [
+          "candidate paths and loops are review cues, not path truth",
+          "unfilled loops are architectural holes, not automatic violations",
+          "missing filler evidence is not measured zero",
+          "nonzero holonomy is bounded diagnosis, not future incident prediction",
+          "homotopy complex summary is not source extraction completeness"
+        ]
+      },
+      {
+        "readingId": "homotopy-holonomy:loop-candidate-path-pair-path-rule-cache-repository-2:axis-layer-violation",
+        "pathPairRef": "path-pair:path-rule-cache-repository",
+        "loopRef": "loop-candidate:path-pair-path-rule-cache-repository-2",
+        "axisRef": "axis:layer-violation",
+        "distanceKind": "selected-axis-continuation-distance",
+        "value": 1,
+        "comparedContinuationSummary": "path-rule:cache-repository vs cache-repository-path on axis:layer-violation",
+        "sourceRefs": [
+          "src-pricing-checkout",
+          "test-coupon-rounding"
+        ],
+        "observationRefs": [
+          "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding",
+          "atom:semantic:PaymentAmount-ReceiptAmount-coupon-tax-rounding-noncommutation",
+          "atom:effect:receipt-boundary"
+        ],
+        "fillerRefs": [
+          "filler-candidate:loop-candidate-path-pair-path-rule-cache-repository-2:filler-rule-contract-or-test",
+          "filler-candidate:loop-candidate-path-pair-path-rule-cache-repository-2:filler-rule-authority-or-idempotency"
+        ],
+        "missingFillerRefs": [
+          "gap:coupon-runtime-payment-trace"
+        ],
+        "coverageBoundary": "missing path or filler evidence blocks zero and Stokes-style readings",
+        "exactnessAssumptionStatus": "bounded selected-axis continuation comparison; not theorem exactness",
+        "nonConclusions": [
+          "candidate paths and loops are review cues, not path truth",
+          "unfilled loops are architectural holes, not automatic violations",
+          "missing filler evidence is not measured zero",
+          "nonzero holonomy is bounded diagnosis, not future incident prediction",
+          "homotopy complex summary is not source extraction completeness"
+        ]
+      },
+      {
+        "readingId": "homotopy-holonomy:loop-candidate-path-pair-path-rule-cache-repository-2:axis-semantic-inconsistency",
+        "pathPairRef": "path-pair:path-rule-cache-repository",
+        "loopRef": "loop-candidate:path-pair-path-rule-cache-repository-2",
+        "axisRef": "axis:semantic-inconsistency",
+        "distanceKind": "selected-axis-continuation-distance",
+        "value": 1,
+        "comparedContinuationSummary": "path-rule:cache-repository vs cache-repository-path on axis:semantic-inconsistency",
+        "sourceRefs": [
+          "src-pricing-checkout",
+          "test-coupon-rounding"
+        ],
+        "observationRefs": [
+          "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding",
+          "atom:semantic:PaymentAmount-ReceiptAmount-coupon-tax-rounding-noncommutation",
+          "atom:effect:receipt-boundary"
+        ],
+        "fillerRefs": [
+          "filler-candidate:loop-candidate-path-pair-path-rule-cache-repository-2:filler-rule-contract-or-test",
+          "filler-candidate:loop-candidate-path-pair-path-rule-cache-repository-2:filler-rule-authority-or-idempotency"
+        ],
+        "missingFillerRefs": [
+          "gap:coupon-runtime-payment-trace"
+        ],
+        "coverageBoundary": "missing path or filler evidence blocks zero and Stokes-style readings",
+        "exactnessAssumptionStatus": "bounded selected-axis continuation comparison; not theorem exactness",
+        "nonConclusions": [
+          "candidate paths and loops are review cues, not path truth",
+          "unfilled loops are architectural holes, not automatic violations",
+          "missing filler evidence is not measured zero",
+          "nonzero holonomy is bounded diagnosis, not future incident prediction",
+          "homotopy complex summary is not source extraction completeness"
+        ]
+      }
+    ],
+    "stokesStyleReadings": [
+      {
+        "readingId": "stokes-style:loop-candidate-path-pair-semantic-contract-loop-0",
+        "loopRef": "loop-candidate:path-pair-semantic-contract-loop-0",
+        "status": "filledNonzeroHolonomyReview",
+        "holonomyReadingRefs": [
+          "homotopy-holonomy:loop-candidate-path-pair-semantic-contract-loop-0:axis-layer-violation",
+          "homotopy-holonomy:loop-candidate-path-pair-semantic-contract-loop-0:axis-semantic-inconsistency"
+        ],
+        "localCurvatureCellCandidates": [
+          "2-cell:obstruction-layer-violation",
+          "2-cell:obstruction-semantic-contract-mismatch"
+        ],
+        "reviewQueueRefs": [
+          "2-cell:obstruction-layer-violation",
+          "2-cell:obstruction-semantic-contract-mismatch"
+        ],
+        "coverageBoundary": "missing path or filler evidence blocks zero and Stokes-style readings",
+        "evidenceBoundary": "Stokes-style reading is a bounded review queue, not theorem discharge",
+        "nonConclusions": [
+          "candidate paths and loops are review cues, not path truth",
+          "unfilled loops are architectural holes, not automatic violations",
+          "missing filler evidence is not measured zero",
+          "nonzero holonomy is bounded diagnosis, not future incident prediction",
+          "homotopy complex summary is not source extraction completeness"
+        ]
+      },
+      {
+        "readingId": "stokes-style:loop-candidate-path-pair-path-rule-interface-implementation-1",
+        "loopRef": "loop-candidate:path-pair-path-rule-interface-implementation-1",
+        "status": "filledNonzeroHolonomyReview",
+        "holonomyReadingRefs": [
+          "homotopy-holonomy:loop-candidate-path-pair-path-rule-interface-implementation-1:axis-layer-violation",
+          "homotopy-holonomy:loop-candidate-path-pair-path-rule-interface-implementation-1:axis-semantic-inconsistency"
+        ],
+        "localCurvatureCellCandidates": [
+          "2-cell:obstruction-layer-violation",
+          "2-cell:obstruction-semantic-contract-mismatch"
+        ],
+        "reviewQueueRefs": [
+          "2-cell:obstruction-layer-violation",
+          "2-cell:obstruction-semantic-contract-mismatch"
+        ],
+        "coverageBoundary": "missing path or filler evidence blocks zero and Stokes-style readings",
+        "evidenceBoundary": "Stokes-style reading is a bounded review queue, not theorem discharge",
+        "nonConclusions": [
+          "candidate paths and loops are review cues, not path truth",
+          "unfilled loops are architectural holes, not automatic violations",
+          "missing filler evidence is not measured zero",
+          "nonzero holonomy is bounded diagnosis, not future incident prediction",
+          "homotopy complex summary is not source extraction completeness"
+        ]
+      },
+      {
+        "readingId": "stokes-style:loop-candidate-path-pair-path-rule-cache-repository-2",
+        "loopRef": "loop-candidate:path-pair-path-rule-cache-repository-2",
+        "status": "filledNonzeroHolonomyReview",
+        "holonomyReadingRefs": [
+          "homotopy-holonomy:loop-candidate-path-pair-path-rule-cache-repository-2:axis-layer-violation",
+          "homotopy-holonomy:loop-candidate-path-pair-path-rule-cache-repository-2:axis-semantic-inconsistency"
+        ],
+        "localCurvatureCellCandidates": [
+          "2-cell:obstruction-layer-violation",
+          "2-cell:obstruction-semantic-contract-mismatch"
+        ],
+        "reviewQueueRefs": [
+          "2-cell:obstruction-layer-violation",
+          "2-cell:obstruction-semantic-contract-mismatch"
+        ],
+        "coverageBoundary": "missing path or filler evidence blocks zero and Stokes-style readings",
+        "evidenceBoundary": "Stokes-style reading is a bounded review queue, not theorem discharge",
+        "nonConclusions": [
+          "candidate paths and loops are review cues, not path truth",
+          "unfilled loops are architectural holes, not automatic violations",
+          "missing filler evidence is not measured zero",
+          "nonzero holonomy is bounded diagnosis, not future incident prediction",
+          "homotopy complex summary is not source extraction completeness"
+        ]
+      }
+    ],
     "operationSquareCandidates": [
       {
         "candidateId": "operation-square:operation-delta-repair-obstruction-semantic-contract-mismatch-computed:operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation",
@@ -7003,6 +7291,12 @@
     {
       "id": "archsig-analysis-packet-filler-architectural-hole-surface",
       "title": "packet distinguishes filler candidates from unfilled architectural holes and missing filler evidence",
+      "result": "pass",
+      "count": 0
+    },
+    {
+      "id": "archsig-analysis-packet-homotopy-holonomy-stokes-surface",
+      "title": "packet reports selected-axis homotopy holonomy and bounded Stokes-style review queues",
       "result": "pass",
       "count": 0
     },
