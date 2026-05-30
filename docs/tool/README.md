@@ -24,6 +24,7 @@ Current source-of-truth boundaries:
 
 Atom handoff checklist:
 
+- [Tooling Editing Guideline](guideline.md)
 - [Atom Handoff Checklist](atom_handoff.md)
 - [ArchMapStore Delta / Snapshot / Index Model](archmap_store.md)
 - [LawPolicy](law_policy.md)

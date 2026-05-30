@@ -34,6 +34,10 @@ source of truth として扱わない。
 - [AAT directory guide](aat/README.md): AAT 配下の補助文書の読み方。
 - [SFT directory guide](sft/README.md): SFT 配下の補助文書の読み方。
 - [Website operations](website/README.md): 公開されない website 運用メモ、route 索引、設計文書。
+- [AAT / Lean guideline](aat/guideline.md): AAT docs と Lean 形式化の編集方針。
+- [SFT guideline](sft/guideline.md): SFT docs と AAT / SFT 境界の編集方針。
+- [Tooling guideline](tool/guideline.md): ArchMap / LawPolicy / ArchSig / FieldSig の編集方針。
+- [Website guideline](website/guideline.md): website public surface と内部運用メモの編集方針。
 
 ## 層の分担
 
@@ -67,6 +71,13 @@ Lean で証明済みの構造的事実、定義のみの概念、将来の証明
 ## Website
 
 - [Website operations](website/README.md): `website/` 公開ディレクトリには置かない運用メモ、route 索引、設計文書、sitemap 方針。
+
+## 編集ガイドライン
+
+- [AAT / Lean guideline](aat/guideline.md): `Formal/Arch`、AAT 数学本文、Lean status、proof obligation の編集方針。
+- [SFT guideline](sft/guideline.md): SFT 本文、AAT / SFT interface、forecast / governance claim boundary の編集方針。
+- [Tooling guideline](tool/guideline.md): ArchMap、LawPolicy、ArchSig、FieldSig、schema、CLI、fixture の編集方針。
+- [Website guideline](website/guideline.md): Cloudflare Pages 公開面、route、tone、asset path、sitemap の編集方針。
 
 ## Archive
 
