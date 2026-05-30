@@ -9,7 +9,8 @@ ArchMap
   records law-independent Atom observations.
 
 InterpretationProfile
-  selects the LawUniverse, witness rules, signature axes, coverage, and exactness.
+  selects the LawUniverse, witness rules, signature axes, coverage, exactness,
+  and optional spectrum measurement profile.
   The current JSON artifact is still named law-policy-v0 for the profile input.
 
 ArchSig Analysis Packet
@@ -290,8 +291,9 @@ The builder:
 - emits operation deltas and path / homotopy / diagram readings for repair
   planning and review focus
 - fills child-level `missingEvidence` / `excludedReadings` from ArchMap
-  observation gaps, interpretation-profile coverage and exactness assumptions, selected
-  witness rules, and repair-candidate evidence limits
+  observation gaps, interpretation-profile coverage, exactness assumptions,
+  selected witness rules, optional spectrum measurement boundaries, and
+  repair-candidate evidence limits
 
 ## Downstream Handoff
 

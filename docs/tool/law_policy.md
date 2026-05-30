@@ -11,8 +11,8 @@ ArchMap
 
 InterpretationProfile
   selects laws, witness rules, molecule patterns, obstruction definitions,
-  signature axes, monodromy measurement policy, coverage requirements, and
-  exactness assumptions.
+  signature axes, measurement policy, optional spectrum measurement profile,
+  coverage requirements, and exactness assumptions.
 
 ArchSig
   reads ArchMap + InterpretationProfile and computes the AAT analysis packet.
@@ -49,6 +49,7 @@ The implemented schema records:
 - `obstructionCircuitDefinitions`
 - `signatureAxisDefinitions`
 - `measurementPolicy`
+- `spectrumMeasurementProfile` (optional)
 - `exactnessAssumptions`
 - `coverageRequirements`
 - `excludedReadings`
@@ -89,6 +90,44 @@ The policy selects how ArchSig reads structural telemetry; it does not authorize
 FieldSig forecast, governance, calibration, or longitudinal evolution claims.
 FieldSig may consume ArchSig packet chains downstream, but it owns those
 evolution readings separately from this profile.
+
+## Spectrum Measurement Profile
+
+`spectrumMeasurementProfile` is an optional subobject inside `law-policy-v0`.
+It is used by the Curvature / Transfer Spectrum reading family. It does not
+select a different law universe and does not make ArchMap law-relative.
+
+The profile records the measurement recipe for ACTS-style readings:
+
+- `profileId`
+- `selectedAxisRefs`
+- `measuredWitnessRuleRefs`
+- `distanceKinds`
+- `weightPolicy`
+- `supportProjectionRule`
+- `transferEdgeRule`
+- `clusteringRankingOptions`
+- `reportFocusOptions`
+- `coverageRequirementRefs`
+- `coverageBoundary`
+- `exactnessAssumptionRefs`
+- `measurementBoundary`
+- `nonConclusions`
+
+Changing `spectrumMeasurementProfile` changes how ArchSig ranks, clusters, and
+reports selected curvature / transfer telemetry. It does not change which laws
+are selected. If a profile wants to treat a different architecture expectation
+as law, that expectation must be represented in `selectedLaws`, witness rules,
+axes, coverage requirements, and exactness assumptions instead.
+
+Validation checks that profile refs resolve to known axes, witness rules, and
+coverage requirements, and that profile-level non-conclusions remain explicit.
+Important boundaries:
+
+- profile differences are not law-universe differences
+- unmeasured axes are not zero
+- spectrum zero requires coverage, exactness, and zero-reflection assumptions
+- spectrum readings are bounded ArchSig diagnostics, not Lean theorem discharge
 
 Validation does not imply:
 
