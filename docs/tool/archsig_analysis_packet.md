@@ -70,6 +70,7 @@ The implemented schema records:
 - `pathContinuationTraces`
 - `axisWiseMonodromyDefects`
 - `amiAggregateReadings`
+- `nonzeroMonodromyWitnesses`
 - `monodromyReadingFamily`
 - `boundaryHolonomyReadingFamily`
 - `representationStrengthReadings`
@@ -212,6 +213,12 @@ The builder:
   family, weight policy, top contributors, zero-reflection assumptions, and the
   aggregate-to-local reading boundary. It is not a single architecture quality
   score, merge gate, or global path-flatness theorem.
+- `nonzeroMonodromyWitnesses` lifts positive measured `mu_x(sigma)` defects
+  into reviewer-readable witness records. Each witness records operation pair,
+  path pair, axis, defect value, compared trace summary, affected Atom /
+  observation refs, law refs, signature axis refs, suggested filler / lifting /
+  boundary evidence, review focus cues, coverage boundary, and machine-readable
+  non-conclusions. It does not assert repair safety or merge safety.
 - axis-forgetting risk records when a coarse observation projection has
   forgotten selected axes or collapsed mixed-axis support. It blocks
   `ZeroReflecting` and `ObstructionReflecting` readings unless explicit axis

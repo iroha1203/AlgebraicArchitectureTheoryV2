@@ -2317,7 +2317,7 @@
   ],
   "operationSquareCandidates": [
     {
-      "candidateId": "operation-square:operation-delta-observe-before-repair:operation-delta-observe-before-repair",
+      "candidateId": "operation-square:operation-delta-observe-before-repair:operation-delta-observe-before-repair-continuation",
       "candidateSource": "inferred",
       "suppliedPairRef": null,
       "candidateBasis": [
@@ -2329,9 +2329,9 @@
         "projectionSurface"
       ],
       "leftOperationRef": "operation-delta:observe-before-repair",
-      "rightOperationRef": "operation-delta:observe-before-repair",
-      "pPathRef": "operation-delta:observe-before-repair . operation-delta:observe-before-repair",
-      "qPathRef": "operation-delta:observe-before-repair . operation-delta:observe-before-repair",
+      "rightOperationRef": "operation-delta:observe-before-repair:continuation",
+      "pPathRef": "operation-delta:observe-before-repair:continuation . operation-delta:observe-before-repair",
+      "qPathRef": "operation-delta:observe-before-repair . operation-delta:observe-before-repair:continuation",
       "sharedAtomSupportRefs": [
         "atom:component:route-users",
         "atom:component:service-user",
@@ -2393,11 +2393,11 @@
   ],
   "pathContinuationTraces": [
     {
-      "traceId": "path-continuation-trace:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair:p",
-      "candidateRef": "operation-square:operation-delta-observe-before-repair:operation-delta-observe-before-repair",
-      "pathRef": "operation-square:operation-delta-observe-before-repair:operation-delta-observe-before-repair:p",
+      "traceId": "path-continuation-trace:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair-continuation:p",
+      "candidateRef": "operation-square:operation-delta-observe-before-repair:operation-delta-observe-before-repair-continuation",
+      "pathRef": "operation-square:operation-delta-observe-before-repair:operation-delta-observe-before-repair-continuation:p",
       "pathRole": "p",
-      "pathExpression": "operation-delta:observe-before-repair . operation-delta:observe-before-repair",
+      "pathExpression": "operation-delta:observe-before-repair:continuation . operation-delta:observe-before-repair",
       "axisTraces": [
         {
           "axisFamily": "static",
@@ -2453,7 +2453,7 @@
           "observationRefs": [],
           "sourceRefs": [],
           "missingRefs": [
-            "missing state observation for operation-square:operation-delta-observe-before-repair:operation-delta-observe-before-repair"
+            "missing state observation for operation-square:operation-delta-observe-before-repair:operation-delta-observe-before-repair-continuation"
           ],
           "unmeasuredBoundary": "unmeasured axis is retained as missing evidence and is not interpreted as zero defect"
         },
@@ -2461,12 +2461,19 @@
           "axisFamily": "effect",
           "axisRef": "effect ordering / replay / compensation axis",
           "traceStatus": "boundedObservationTrace",
-          "continuationSummary": "effect continuation reads 2 observation ref(s) across 1 operation delta(s)",
+          "continuationSummary": "effect continuation reads 3 observation ref(s) across 1 operation delta(s)",
           "observationRefs": [
             "add or refine ArchMap atom observations before claiming repair",
-            "no constructed obstruction is transported because no repair candidate exists"
+            "no constructed obstruction is transported because no repair candidate exists",
+            "derived-effect-order:p:operation-delta-observe-before-repair-continuation-operation-delta-observe-before-repair"
           ],
-          "sourceRefs": [],
+          "sourceRefs": [
+            ".lake/runtime-trace.json",
+            "doc-architecture",
+            "src-route-users",
+            "src-service-user",
+            "test-user-contract"
+          ],
           "missingRefs": [],
           "unmeasuredBoundary": "unmeasured axis is retained as missing evidence and is not interpreted as zero defect"
         },
@@ -2478,7 +2485,7 @@
           "observationRefs": [],
           "sourceRefs": [],
           "missingRefs": [
-            "missing authority observation for operation-square:operation-delta-observe-before-repair:operation-delta-observe-before-repair"
+            "missing authority observation for operation-square:operation-delta-observe-before-repair:operation-delta-observe-before-repair-continuation"
           ],
           "unmeasuredBoundary": "unmeasured axis is retained as missing evidence and is not interpreted as zero defect"
         },
@@ -2549,11 +2556,11 @@
       ]
     },
     {
-      "traceId": "path-continuation-trace:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair:q",
-      "candidateRef": "operation-square:operation-delta-observe-before-repair:operation-delta-observe-before-repair",
-      "pathRef": "operation-square:operation-delta-observe-before-repair:operation-delta-observe-before-repair:q",
+      "traceId": "path-continuation-trace:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair-continuation:q",
+      "candidateRef": "operation-square:operation-delta-observe-before-repair:operation-delta-observe-before-repair-continuation",
+      "pathRef": "operation-square:operation-delta-observe-before-repair:operation-delta-observe-before-repair-continuation:q",
       "pathRole": "q",
-      "pathExpression": "operation-delta:observe-before-repair . operation-delta:observe-before-repair",
+      "pathExpression": "operation-delta:observe-before-repair . operation-delta:observe-before-repair:continuation",
       "axisTraces": [
         {
           "axisFamily": "static",
@@ -2609,7 +2616,7 @@
           "observationRefs": [],
           "sourceRefs": [],
           "missingRefs": [
-            "missing state observation for operation-square:operation-delta-observe-before-repair:operation-delta-observe-before-repair"
+            "missing state observation for operation-square:operation-delta-observe-before-repair:operation-delta-observe-before-repair-continuation"
           ],
           "unmeasuredBoundary": "unmeasured axis is retained as missing evidence and is not interpreted as zero defect"
         },
@@ -2617,12 +2624,19 @@
           "axisFamily": "effect",
           "axisRef": "effect ordering / replay / compensation axis",
           "traceStatus": "boundedObservationTrace",
-          "continuationSummary": "effect continuation reads 2 observation ref(s) across 1 operation delta(s)",
+          "continuationSummary": "effect continuation reads 3 observation ref(s) across 1 operation delta(s)",
           "observationRefs": [
             "add or refine ArchMap atom observations before claiming repair",
-            "no constructed obstruction is transported because no repair candidate exists"
+            "no constructed obstruction is transported because no repair candidate exists",
+            "derived-effect-order:q:operation-delta-observe-before-repair-operation-delta-observe-before-repair-continuation"
           ],
-          "sourceRefs": [],
+          "sourceRefs": [
+            ".lake/runtime-trace.json",
+            "doc-architecture",
+            "src-route-users",
+            "src-service-user",
+            "test-user-contract"
+          ],
           "missingRefs": [],
           "unmeasuredBoundary": "unmeasured axis is retained as missing evidence and is not interpreted as zero defect"
         },
@@ -2634,7 +2648,7 @@
           "observationRefs": [],
           "sourceRefs": [],
           "missingRefs": [
-            "missing authority observation for operation-square:operation-delta-observe-before-repair:operation-delta-observe-before-repair"
+            "missing authority observation for operation-square:operation-delta-observe-before-repair:operation-delta-observe-before-repair-continuation"
           ],
           "unmeasuredBoundary": "unmeasured axis is retained as missing evidence and is not interpreted as zero defect"
         },
@@ -2707,8 +2721,8 @@
   ],
   "axisWiseMonodromyDefects": [
     {
-      "defectId": "mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair:authority",
-      "candidateRef": "operation-square:operation-delta-observe-before-repair:operation-delta-observe-before-repair",
+      "defectId": "mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair-continuation:authority",
+      "candidateRef": "operation-square:operation-delta-observe-before-repair:operation-delta-observe-before-repair-continuation",
       "axisFamily": "authority",
       "axisRef": "authority / trust boundary axis",
       "distanceKind": "weighted-axis-l1",
@@ -2716,7 +2730,7 @@
       "distanceValue": null,
       "measuredSupportRefs": [],
       "witnessRefs": [
-        "missing-evidence:missing authority observation for operation-square:operation-delta-observe-before-repair:operation-delta-observe-before-repair"
+        "missing-evidence:missing authority observation for operation-square:operation-delta-observe-before-repair:operation-delta-observe-before-repair-continuation"
       ],
       "sourceRefs": [
         ".lake/runtime-trace.json",
@@ -2727,7 +2741,7 @@
       ],
       "observationRefs": [],
       "missingRefs": [
-        "missing authority observation for operation-square:operation-delta-observe-before-repair:operation-delta-observe-before-repair"
+        "missing authority observation for operation-square:operation-delta-observe-before-repair:operation-delta-observe-before-repair-continuation"
       ],
       "coverageBoundary": "coverage gap preserved; unmeasured axis is not zero defect",
       "exactnessAssumptionStatus": [
@@ -2754,8 +2768,8 @@
       ]
     },
     {
-      "defectId": "mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair:contract",
-      "candidateRef": "operation-square:operation-delta-observe-before-repair:operation-delta-observe-before-repair",
+      "defectId": "mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair-continuation:contract",
+      "candidateRef": "operation-square:operation-delta-observe-before-repair:operation-delta-observe-before-repair-continuation",
       "axisFamily": "contract",
       "axisRef": "contract axis",
       "distanceKind": "weighted-axis-l1",
@@ -2803,19 +2817,23 @@
       ]
     },
     {
-      "defectId": "mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair:effect",
-      "candidateRef": "operation-square:operation-delta-observe-before-repair:operation-delta-observe-before-repair",
+      "defectId": "mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair-continuation:effect",
+      "candidateRef": "operation-square:operation-delta-observe-before-repair:operation-delta-observe-before-repair-continuation",
       "axisFamily": "effect",
       "axisRef": "effect ordering / replay / compensation axis",
       "distanceKind": "weighted-axis-l1",
       "measurementStatus": "measured",
-      "distanceValue": 0,
+      "distanceValue": 2,
       "measuredSupportRefs": [
         "add or refine ArchMap atom observations before claiming repair",
+        "derived-effect-order:p:operation-delta-observe-before-repair-continuation-operation-delta-observe-before-repair",
+        "derived-effect-order:q:operation-delta-observe-before-repair-operation-delta-observe-before-repair-continuation",
         "no constructed obstruction is transported because no repair candidate exists"
       ],
       "witnessRefs": [
         "add or refine ArchMap atom observations before claiming repair",
+        "derived-effect-order:p:operation-delta-observe-before-repair-continuation-operation-delta-observe-before-repair",
+        "derived-effect-order:q:operation-delta-observe-before-repair-operation-delta-observe-before-repair-continuation",
         "no constructed obstruction is transported because no repair candidate exists"
       ],
       "sourceRefs": [
@@ -2827,6 +2845,8 @@
       ],
       "observationRefs": [
         "add or refine ArchMap atom observations before claiming repair",
+        "derived-effect-order:p:operation-delta-observe-before-repair-continuation-operation-delta-observe-before-repair",
+        "derived-effect-order:q:operation-delta-observe-before-repair-operation-delta-observe-before-repair-continuation",
         "no constructed obstruction is transported because no repair candidate exists"
       ],
       "missingRefs": [],
@@ -2855,8 +2875,8 @@
       ]
     },
     {
-      "defectId": "mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair:projection",
-      "candidateRef": "operation-square:operation-delta-observe-before-repair:operation-delta-observe-before-repair",
+      "defectId": "mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair-continuation:projection",
+      "candidateRef": "operation-square:operation-delta-observe-before-repair:operation-delta-observe-before-repair-continuation",
       "axisFamily": "projection",
       "axisRef": "projection / representation axis",
       "distanceKind": "weighted-axis-l1",
@@ -2910,8 +2930,8 @@
       ]
     },
     {
-      "defectId": "mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair:runtime",
-      "candidateRef": "operation-square:operation-delta-observe-before-repair:operation-delta-observe-before-repair",
+      "defectId": "mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair-continuation:runtime",
+      "candidateRef": "operation-square:operation-delta-observe-before-repair:operation-delta-observe-before-repair-continuation",
       "axisFamily": "runtime",
       "axisRef": "runtime interaction axis",
       "distanceKind": "weighted-axis-l1",
@@ -2959,8 +2979,8 @@
       ]
     },
     {
-      "defectId": "mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair:semantic",
-      "candidateRef": "operation-square:operation-delta-observe-before-repair:operation-delta-observe-before-repair",
+      "defectId": "mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair-continuation:semantic",
+      "candidateRef": "operation-square:operation-delta-observe-before-repair:operation-delta-observe-before-repair-continuation",
       "axisFamily": "semantic",
       "axisRef": "semantic axis",
       "distanceKind": "weighted-axis-l1",
@@ -3008,8 +3028,8 @@
       ]
     },
     {
-      "defectId": "mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair:state",
-      "candidateRef": "operation-square:operation-delta-observe-before-repair:operation-delta-observe-before-repair",
+      "defectId": "mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair-continuation:state",
+      "candidateRef": "operation-square:operation-delta-observe-before-repair:operation-delta-observe-before-repair-continuation",
       "axisFamily": "state",
       "axisRef": "state transition axis",
       "distanceKind": "weighted-axis-l1",
@@ -3017,7 +3037,7 @@
       "distanceValue": null,
       "measuredSupportRefs": [],
       "witnessRefs": [
-        "missing-evidence:missing state observation for operation-square:operation-delta-observe-before-repair:operation-delta-observe-before-repair"
+        "missing-evidence:missing state observation for operation-square:operation-delta-observe-before-repair:operation-delta-observe-before-repair-continuation"
       ],
       "sourceRefs": [
         ".lake/runtime-trace.json",
@@ -3028,7 +3048,7 @@
       ],
       "observationRefs": [],
       "missingRefs": [
-        "missing state observation for operation-square:operation-delta-observe-before-repair:operation-delta-observe-before-repair"
+        "missing state observation for operation-square:operation-delta-observe-before-repair:operation-delta-observe-before-repair-continuation"
       ],
       "coverageBoundary": "coverage gap preserved; unmeasured axis is not zero defect",
       "exactnessAssumptionStatus": [
@@ -3055,8 +3075,8 @@
       ]
     },
     {
-      "defectId": "mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair:static",
-      "candidateRef": "operation-square:operation-delta-observe-before-repair:operation-delta-observe-before-repair",
+      "defectId": "mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair-continuation:static",
+      "candidateRef": "operation-square:operation-delta-observe-before-repair:operation-delta-observe-before-repair-continuation",
       "axisFamily": "static",
       "axisRef": "static dependency / support axis",
       "distanceKind": "weighted-axis-l1",
@@ -3127,45 +3147,59 @@
       "weightPolicy": "unit weights until repo-specific calibration is declared in a future policy",
       "distanceKind": "weighted-axis-l1",
       "measurementStatus": "partial",
-      "aggregateValue": 0,
+      "aggregateValue": 2,
       "measuredDefectRefs": [
-        "mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair:contract",
-        "mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair:effect",
-        "mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair:projection",
-        "mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair:runtime",
-        "mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair:semantic",
-        "mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair:static"
+        "mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair-continuation:contract",
+        "mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair-continuation:effect",
+        "mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair-continuation:projection",
+        "mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair-continuation:runtime",
+        "mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair-continuation:semantic",
+        "mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair-continuation:static"
       ],
       "unmeasuredDefectRefs": [
-        "mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair:authority",
-        "mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair:state"
+        "mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair-continuation:authority",
+        "mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair-continuation:state"
       ],
       "topContributors": [
         {
-          "defectRef": "mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair:authority",
-          "candidateRef": "operation-square:operation-delta-observe-before-repair:operation-delta-observe-before-repair",
+          "defectRef": "mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair-continuation:authority",
+          "candidateRef": "operation-square:operation-delta-observe-before-repair:operation-delta-observe-before-repair-continuation",
           "axisFamily": "authority",
           "contributionWeight": 1,
           "contributionValue": null,
           "reviewFocus": "supply missing authority trace evidence before interpreting AMI as zero",
           "witnessRefs": [
-            "missing-evidence:missing authority observation for operation-square:operation-delta-observe-before-repair:operation-delta-observe-before-repair"
+            "missing-evidence:missing authority observation for operation-square:operation-delta-observe-before-repair:operation-delta-observe-before-repair-continuation"
           ]
         },
         {
-          "defectRef": "mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair:state",
-          "candidateRef": "operation-square:operation-delta-observe-before-repair:operation-delta-observe-before-repair",
+          "defectRef": "mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair-continuation:state",
+          "candidateRef": "operation-square:operation-delta-observe-before-repair:operation-delta-observe-before-repair-continuation",
           "axisFamily": "state",
           "contributionWeight": 1,
           "contributionValue": null,
           "reviewFocus": "supply missing state trace evidence before interpreting AMI as zero",
           "witnessRefs": [
-            "missing-evidence:missing state observation for operation-square:operation-delta-observe-before-repair:operation-delta-observe-before-repair"
+            "missing-evidence:missing state observation for operation-square:operation-delta-observe-before-repair:operation-delta-observe-before-repair-continuation"
           ]
         },
         {
-          "defectRef": "mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair:contract",
-          "candidateRef": "operation-square:operation-delta-observe-before-repair:operation-delta-observe-before-repair",
+          "defectRef": "mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair-continuation:effect",
+          "candidateRef": "operation-square:operation-delta-observe-before-repair:operation-delta-observe-before-repair-continuation",
+          "axisFamily": "effect",
+          "contributionWeight": 1,
+          "contributionValue": 2,
+          "reviewFocus": "review effect trace mismatch before treating aggregate value as local agreement",
+          "witnessRefs": [
+            "add or refine ArchMap atom observations before claiming repair",
+            "derived-effect-order:p:operation-delta-observe-before-repair-continuation-operation-delta-observe-before-repair",
+            "derived-effect-order:q:operation-delta-observe-before-repair-operation-delta-observe-before-repair-continuation",
+            "no constructed obstruction is transported because no repair candidate exists"
+          ]
+        },
+        {
+          "defectRef": "mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair-continuation:contract",
+          "candidateRef": "operation-square:operation-delta-observe-before-repair:operation-delta-observe-before-repair-continuation",
           "axisFamily": "contract",
           "contributionWeight": 1,
           "contributionValue": 0,
@@ -3175,20 +3209,8 @@
           ]
         },
         {
-          "defectRef": "mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair:effect",
-          "candidateRef": "operation-square:operation-delta-observe-before-repair:operation-delta-observe-before-repair",
-          "axisFamily": "effect",
-          "contributionWeight": 1,
-          "contributionValue": 0,
-          "reviewFocus": "review effect trace mismatch before treating aggregate value as local agreement",
-          "witnessRefs": [
-            "add or refine ArchMap atom observations before claiming repair",
-            "no constructed obstruction is transported because no repair candidate exists"
-          ]
-        },
-        {
-          "defectRef": "mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair:projection",
-          "candidateRef": "operation-square:operation-delta-observe-before-repair:operation-delta-observe-before-repair",
+          "defectRef": "mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair-continuation:projection",
+          "candidateRef": "operation-square:operation-delta-observe-before-repair:operation-delta-observe-before-repair-continuation",
           "axisFamily": "projection",
           "contributionWeight": 1,
           "contributionValue": 0,
@@ -3200,8 +3222,8 @@
           ]
         },
         {
-          "defectRef": "mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair:runtime",
-          "candidateRef": "operation-square:operation-delta-observe-before-repair:operation-delta-observe-before-repair",
+          "defectRef": "mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair-continuation:runtime",
+          "candidateRef": "operation-square:operation-delta-observe-before-repair:operation-delta-observe-before-repair-continuation",
           "axisFamily": "runtime",
           "contributionWeight": 1,
           "contributionValue": 0,
@@ -3211,8 +3233,8 @@
           ]
         },
         {
-          "defectRef": "mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair:semantic",
-          "candidateRef": "operation-square:operation-delta-observe-before-repair:operation-delta-observe-before-repair",
+          "defectRef": "mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair-continuation:semantic",
+          "candidateRef": "operation-square:operation-delta-observe-before-repair:operation-delta-observe-before-repair-continuation",
           "axisFamily": "semantic",
           "contributionWeight": 1,
           "contributionValue": 0,
@@ -3222,8 +3244,8 @@
           ]
         },
         {
-          "defectRef": "mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair:static",
-          "candidateRef": "operation-square:operation-delta-observe-before-repair:operation-delta-observe-before-repair",
+          "defectRef": "mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair-continuation:static",
+          "candidateRef": "operation-square:operation-delta-observe-before-repair:operation-delta-observe-before-repair-continuation",
           "axisFamily": "static",
           "contributionWeight": 1,
           "contributionValue": 0,
@@ -3256,6 +3278,79 @@
       ]
     }
   ],
+  "nonzeroMonodromyWitnesses": [
+    {
+      "witnessId": "nonzero-monodromy-witness:mu-operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair-continuation-effect",
+      "defectRef": "mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair-continuation:effect",
+      "candidateRef": "operation-square:operation-delta-observe-before-repair:operation-delta-observe-before-repair-continuation",
+      "operationPair": [
+        "operation-delta:observe-before-repair",
+        "operation-delta:observe-before-repair:continuation"
+      ],
+      "pathPair": [
+        "operation-delta:observe-before-repair:continuation . operation-delta:observe-before-repair",
+        "operation-delta:observe-before-repair . operation-delta:observe-before-repair:continuation"
+      ],
+      "axisFamily": "effect",
+      "axisRef": "effect ordering / replay / compensation axis",
+      "defectValue": 2,
+      "comparedTraceSummary": [
+        "p: effect continuation reads 3 observation ref(s) across 1 operation delta(s) refs=3 missing=0",
+        "q: effect continuation reads 3 observation ref(s) across 1 operation delta(s) refs=3 missing=0"
+      ],
+      "affectedAtomRefs": [
+        "add or refine ArchMap atom observations before claiming repair",
+        "derived-effect-order:p:operation-delta-observe-before-repair-continuation-operation-delta-observe-before-repair",
+        "derived-effect-order:q:operation-delta-observe-before-repair-operation-delta-observe-before-repair-continuation",
+        "no constructed obstruction is transported because no repair candidate exists"
+      ],
+      "lawRefs": [
+        "law:layer-respecting"
+      ],
+      "signatureAxisRefs": [
+        "sig-axis:layer-violation"
+      ],
+      "sourceRefs": [
+        ".lake/runtime-trace.json",
+        "doc-architecture",
+        "src-route-users",
+        "src-service-user",
+        "test-user-contract"
+      ],
+      "observationRefs": [
+        "add or refine ArchMap atom observations before claiming repair",
+        "derived-effect-order:p:operation-delta-observe-before-repair-continuation-operation-delta-observe-before-repair",
+        "derived-effect-order:q:operation-delta-observe-before-repair-operation-delta-observe-before-repair-continuation",
+        "no constructed obstruction is transported because no repair candidate exists"
+      ],
+      "missingEvidence": [],
+      "coverageBoundary": "covered for selected trace refs; not complete execution semantics",
+      "suggestedFillerEvidence": [
+        "supply filler evidence for effect axis trace disagreement",
+        "record whether the two continuation paths preserve selected observations"
+      ],
+      "suggestedLiftingEvidence": [
+        "check whether the local witness lifts from ArchMap observation refs to the intended boundary operation"
+      ],
+      "suggestedBoundaryEvidence": [
+        "identify the boundary, adapter, authority, or effect surface where the order-sensitive witness appears"
+      ],
+      "recommendedReviewFocus": [
+        "compare operation-delta:observe-before-repair:continuation . operation-delta:observe-before-repair and operation-delta:observe-before-repair . operation-delta:observe-before-repair:continuation before treating the operation pair as order-insensitive",
+        "review effect axis witness refs and missing evidence"
+      ],
+      "evidenceBoundary": "nonzero monodromy witness is a measured review cue; it is not automatic repair safety or merge safety",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    }
+  ],
   "monodromyReadingFamily": {
     "readingFamilyId": "monodromy-reading-family:measurement-policy-monodromy-boundary-holonomy",
     "status": "schemaFoundationOnly",
@@ -3267,21 +3362,21 @@
     "weightPolicy": "unit weights until repo-specific calibration is declared in a future policy",
     "coveragePolicy": "measure only selected axes with declared coverage; missing coverage remains blocked, not zero",
     "operationSquareCandidateRefs": [
-      "operation-square:operation-delta-observe-before-repair:operation-delta-observe-before-repair"
+      "operation-square:operation-delta-observe-before-repair:operation-delta-observe-before-repair-continuation"
     ],
     "pathContinuationTraceRefs": [
-      "path-continuation-trace:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair:p",
-      "path-continuation-trace:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair:q"
+      "path-continuation-trace:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair-continuation:p",
+      "path-continuation-trace:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair-continuation:q"
     ],
     "axisWiseDefectRefs": [
-      "mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair:authority",
-      "mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair:contract",
-      "mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair:effect",
-      "mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair:projection",
-      "mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair:runtime",
-      "mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair:semantic",
-      "mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair:state",
-      "mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair:static"
+      "mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair-continuation:authority",
+      "mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair-continuation:contract",
+      "mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair-continuation:effect",
+      "mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair-continuation:projection",
+      "mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair-continuation:runtime",
+      "mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair-continuation:semantic",
+      "mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair-continuation:state",
+      "mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair-continuation:static"
     ],
     "amiAggregateReadingRefs": [
       "ami:measurement-policy-monodromy-boundary-holonomy"
@@ -3310,7 +3405,7 @@
     "weightPolicy": "unit weights until repo-specific calibration is declared in a future policy",
     "coveragePolicy": "measure only selected axes with declared coverage; missing coverage remains blocked, not zero",
     "nonzeroMonodromyWitnessRefs": [
-      "homotopy-order-sensitivity:selected-operations"
+      "nonzero-monodromy-witness:mu-operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair-continuation-effect"
     ],
     "featureBoundaryResidualRefs": [
       "feature-extension-formula:fixture-archmap-atom-observation"
@@ -4860,7 +4955,7 @@
     ],
     "transferBridgeEdgeSummary": [],
     "measurementExpansionSummary": [
-      "v0.3.0 measurement expansion reads 2 Atom support axes, 1 compatibility surfaces, 1 LawUniverse coverage surfaces, 1 feature-extension formulas, 1 operation-law surfaces, 1 path trajectories, 1 homotopy/order surfaces, 1 diagram-fillability surfaces, 1 axis-forgetting risks, 1 trajectory homotopy refutations, and 1 bridge split-transfer surfaces"
+      "v0.3.0 measurement expansion reads 2 Atom support axes, 1 compatibility surfaces, 1 LawUniverse coverage surfaces, 1 feature-extension formulas, 1 operation-law surfaces, 1 path trajectories, 1 homotopy/order surfaces, 1 diagram-fillability surfaces, 1 axis-forgetting risks, 1 trajectory homotopy refutations, 1 bridge split-transfer surfaces, and 1 nonzero monodromy witnesses"
     ],
     "atomSupportAxisSummary": [
       "fixture-archmap-atom-observation support=4 concentration=maxAxisShare=2/4 pressure=mixedAxisPressurePresent",
@@ -4895,6 +4990,9 @@
     ],
     "bridgeSplitObstructionTransferSummary": [
       "split-readiness:molecule-user-request-responsibility transferRisk=notObserved bridgeEdges=0 obstructions=0 boundaryOps=1"
+    ],
+    "nonzeroMonodromyWitnessSummary": [
+      "nonzero-monodromy-witness:mu-operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair-continuation-effect axis=effect defect=2 affectedAtoms=4 missingEvidence=0 focus=2"
     ],
     "representationStrengthSummary": [
       "weightedAdjacencyMatrix zeroReflecting=blockedByCoverageGap obstructionReflecting=blockedByCoverageGap blockedBy=1",

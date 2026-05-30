@@ -668,6 +668,7 @@ pub struct ArchSigAnalysisPacketV0 {
     pub path_continuation_traces: Vec<ArchSigPathContinuationTraceV0>,
     pub axis_wise_monodromy_defects: Vec<ArchSigAxisWiseMonodromyDefectV0>,
     pub ami_aggregate_readings: Vec<ArchSigAmiAggregateReadingV0>,
+    pub nonzero_monodromy_witnesses: Vec<ArchSigNonzeroMonodromyWitnessV0>,
     pub monodromy_reading_family: ArchSigMonodromyReadingFamilyV0,
     pub boundary_holonomy_reading_family: ArchSigBoundaryHolonomyReadingFamilyV0,
     pub representation_strength_readings: Vec<ArchSigRepresentationStrengthReadingV0>,
@@ -804,6 +805,33 @@ pub struct ArchSigAmiTopContributorV0 {
     pub contribution_value: Option<i64>,
     pub review_focus: String,
     pub witness_refs: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigNonzeroMonodromyWitnessV0 {
+    pub witness_id: String,
+    pub defect_ref: String,
+    pub candidate_ref: String,
+    pub operation_pair: Vec<String>,
+    pub path_pair: Vec<String>,
+    pub axis_family: String,
+    pub axis_ref: String,
+    pub defect_value: i64,
+    pub compared_trace_summary: Vec<String>,
+    pub affected_atom_refs: Vec<String>,
+    pub law_refs: Vec<String>,
+    pub signature_axis_refs: Vec<String>,
+    pub source_refs: Vec<String>,
+    pub observation_refs: Vec<String>,
+    pub missing_evidence: Vec<String>,
+    pub coverage_boundary: String,
+    pub suggested_filler_evidence: Vec<String>,
+    pub suggested_lifting_evidence: Vec<String>,
+    pub suggested_boundary_evidence: Vec<String>,
+    pub recommended_review_focus: Vec<String>,
+    pub evidence_boundary: String,
+    pub non_conclusions: Vec<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -1890,6 +1918,8 @@ pub struct ArchSigLlmInterpretationPacketV0 {
     pub signature_trajectory_homotopy_refutation_summary: Vec<String>,
     #[serde(default)]
     pub bridge_split_obstruction_transfer_summary: Vec<String>,
+    #[serde(default)]
+    pub nonzero_monodromy_witness_summary: Vec<String>,
     pub representation_strength_summary: Vec<String>,
     pub local_curvature_diagram_summary: Vec<String>,
     pub three_layer_flatness_summary: Vec<String>,

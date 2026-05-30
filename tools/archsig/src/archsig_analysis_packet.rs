@@ -26,7 +26,7 @@ use crate::{
     ArchSigHomotopyOrderSensitivityReadingV0, ArchSigInvariantFamilyReadingV0,
     ArchSigLawUniverseCoverageReadingV0, ArchSigLawUniverseReadingV0, ArchSigLayerSplitV0,
     ArchSigLlmInterpretationPacketV0, ArchSigLocalCurvatureDiagramReadingV0,
-    ArchSigMoleculeReadingV0, ArchSigMonodromyReadingFamilyV0,
+    ArchSigMoleculeReadingV0, ArchSigMonodromyReadingFamilyV0, ArchSigNonzeroMonodromyWitnessV0,
     ArchSigObservationProjectionReadingV0, ArchSigObstructionCircuitV0,
     ArchSigOperationCalculusLawReadingV0, ArchSigOperationDeltaReadingV0,
     ArchSigOperationInvariantGaloisReadingV0, ArchSigOperationSquareCandidateV0,
@@ -198,6 +198,12 @@ pub fn build_archsig_analysis_packet(
     );
     let ami_aggregate_readings =
         build_ami_aggregate_readings(law_policy, &axis_wise_monodromy_defects);
+    let nonzero_monodromy_witnesses = build_nonzero_monodromy_witnesses(
+        law_policy,
+        &operation_square_candidates,
+        &path_continuation_traces,
+        &axis_wise_monodromy_defects,
+    );
     let monodromy_reading_family = build_monodromy_reading_family(
         law_policy,
         &arch_map_store_refs,
@@ -209,7 +215,7 @@ pub fn build_archsig_analysis_packet(
     let boundary_holonomy_reading_family = build_boundary_holonomy_reading_family(
         law_policy,
         &arch_map_store_refs,
-        &homotopy_order_sensitivity_readings,
+        &nonzero_monodromy_witnesses,
         &feature_extension_formula_readings,
         &split_readiness_readings,
     );
@@ -286,6 +292,7 @@ pub fn build_archsig_analysis_packet(
         &state_transition_algebra_readings,
         &operation_invariant_galois_readings,
         &split_readiness_readings,
+        &nonzero_monodromy_witnesses,
         &structural_reading_review_surface,
         &current_state_evolution_boundary,
         &repair_operation_candidates,
@@ -346,6 +353,7 @@ pub fn build_archsig_analysis_packet(
         path_continuation_traces,
         axis_wise_monodromy_defects,
         ami_aggregate_readings,
+        nonzero_monodromy_witnesses,
         monodromy_reading_family,
         boundary_holonomy_reading_family,
         representation_strength_readings,
@@ -504,7 +512,7 @@ fn build_monodromy_reading_family(
 fn build_boundary_holonomy_reading_family(
     law_policy: &LawPolicyDocumentV0,
     arch_map_store_refs: &ArchSigArchMapStoreRefsV0,
-    homotopy_order_sensitivity_readings: &[ArchSigHomotopyOrderSensitivityReadingV0],
+    nonzero_monodromy_witnesses: &[ArchSigNonzeroMonodromyWitnessV0],
     feature_extension_formula_readings: &[ArchSigFeatureExtensionFormulaReadingV0],
     split_readiness_readings: &[ArchSigSplitReadinessReadingV0],
 ) -> ArchSigBoundaryHolonomyReadingFamilyV0 {
@@ -519,9 +527,9 @@ fn build_boundary_holonomy_reading_family(
         distance_kind: law_policy.measurement_policy.distance_kind.clone(),
         weight_policy: law_policy.measurement_policy.weight_policy.clone(),
         coverage_policy: law_policy.measurement_policy.coverage_policy.clone(),
-        nonzero_monodromy_witness_refs: homotopy_order_sensitivity_readings
+        nonzero_monodromy_witness_refs: nonzero_monodromy_witnesses
             .iter()
-            .map(|reading| reading.reading_id.clone())
+            .map(|witness| witness.witness_id.clone())
             .collect(),
         feature_boundary_residual_refs: feature_extension_formula_readings
             .iter()
@@ -559,11 +567,16 @@ fn build_operation_square_candidates(
     let mut candidates = Vec::new();
     for left_index in 0..operation_refs.len() {
         for right_index in left_index..operation_refs.len() {
-            let left = &operation_refs[left_index];
+            let left = operation_refs[left_index].clone();
             let right = operation_refs
                 .get(right_index + 1)
-                .unwrap_or_else(|| &operation_refs[right_index]);
-            let candidate_id = format!("operation-square:{}:{}", stable_id(left), stable_id(right));
+                .cloned()
+                .unwrap_or_else(|| format!("{}:continuation", operation_refs[right_index]));
+            let candidate_id = format!(
+                "operation-square:{}:{}",
+                stable_id(&left),
+                stable_id(&right)
+            );
             let shared_atom_support_refs = inferred_shared_atom_support_refs(archmap);
             let state_refs = observation_refs_by_axis_family(archmap, "state");
             let effect_refs = operation_deltas
@@ -681,6 +694,7 @@ fn build_path_continuation_traces(
                         archmap,
                         candidate,
                         operation_deltas,
+                        path_role,
                     ),
                     observation_refs: candidate.observation_refs.clone(),
                     source_refs: candidate.source_refs.clone(),
@@ -699,6 +713,7 @@ fn build_axis_continuation_traces(
     archmap: &ArchMapDocumentV0,
     candidate: &ArchSigOperationSquareCandidateV0,
     operation_deltas: &[ArchSigOperationDeltaReadingV0],
+    path_role: &str,
 ) -> Vec<ArchSigAxisContinuationTraceV0> {
     [
         (
@@ -709,11 +724,19 @@ fn build_axis_continuation_traces(
         ("contract", "contract axis", candidate.contract_refs.clone()),
         ("semantic", "semantic axis", candidate.semantic_refs.clone()),
         ("state", "state transition axis", candidate.state_refs.clone()),
-        (
-            "effect",
-            "effect ordering / replay / compensation axis",
-            candidate.effect_refs.clone(),
-        ),
+        ("effect", "effect ordering / replay / compensation axis", {
+            let mut refs = candidate.effect_refs.clone();
+            refs.push(format!(
+                "derived-effect-order:{}:{}",
+                path_role,
+                stable_id(if path_role == "p" {
+                    &candidate.p_path_ref
+                } else {
+                    &candidate.q_path_ref
+                })
+            ));
+            refs
+        }),
         (
             "authority",
             "authority / trust boundary axis",
@@ -745,6 +768,10 @@ fn build_axis_continuation_traces(
         } else {
             Vec::new()
         };
+        let mut source_refs = source_refs_for_observation_refs(archmap, &observation_refs);
+        if source_refs.is_empty() && !observation_refs.is_empty() {
+            source_refs = candidate.source_refs.clone();
+        }
         ArchSigAxisContinuationTraceV0 {
             axis_family: axis_family.to_string(),
             axis_ref: axis_ref.to_string(),
@@ -754,7 +781,7 @@ fn build_axis_continuation_traces(
                 &observation_refs,
                 operation_deltas,
             ),
-            source_refs: source_refs_for_observation_refs(archmap, &observation_refs),
+            source_refs,
             observation_refs,
             missing_refs,
             unmeasured_boundary:
@@ -979,6 +1006,120 @@ fn ami_top_contributors(
                 )
             },
             witness_refs: defect.witness_refs.clone(),
+        })
+        .collect()
+}
+
+fn build_nonzero_monodromy_witnesses(
+    law_policy: &LawPolicyDocumentV0,
+    operation_square_candidates: &[ArchSigOperationSquareCandidateV0],
+    path_continuation_traces: &[ArchSigPathContinuationTraceV0],
+    defects: &[ArchSigAxisWiseMonodromyDefectV0],
+) -> Vec<ArchSigNonzeroMonodromyWitnessV0> {
+    defects
+        .iter()
+        .filter_map(|defect| {
+            let defect_value = defect.distance_value?;
+            if defect_value <= 0 {
+                return None;
+            }
+            let candidate = operation_square_candidates
+                .iter()
+                .find(|candidate| candidate.candidate_id == defect.candidate_ref)?;
+            let p_trace = path_continuation_traces.iter().find(|trace| {
+                trace.candidate_ref == candidate.candidate_id && trace.path_role == "p"
+            });
+            let q_trace = path_continuation_traces.iter().find(|trace| {
+                trace.candidate_ref == candidate.candidate_id && trace.path_role == "q"
+            });
+            Some(ArchSigNonzeroMonodromyWitnessV0 {
+                witness_id: format!("nonzero-monodromy-witness:{}", stable_id(&defect.defect_id)),
+                defect_ref: defect.defect_id.clone(),
+                candidate_ref: candidate.candidate_id.clone(),
+                operation_pair: vec![
+                    candidate.left_operation_ref.clone(),
+                    candidate.right_operation_ref.clone(),
+                ],
+                path_pair: vec![candidate.p_path_ref.clone(), candidate.q_path_ref.clone()],
+                axis_family: defect.axis_family.clone(),
+                axis_ref: defect.axis_ref.clone(),
+                defect_value,
+                compared_trace_summary: compared_trace_summary(
+                    p_trace,
+                    q_trace,
+                    &defect.axis_family,
+                ),
+                affected_atom_refs: defect.observation_refs.clone(),
+                law_refs: law_policy
+                    .selected_laws
+                    .iter()
+                    .map(|law| law.law_id.clone())
+                    .collect(),
+                signature_axis_refs: law_policy
+                    .signature_axis_definitions
+                    .iter()
+                    .map(|axis| axis.signature_axis_id.clone())
+                    .collect(),
+                source_refs: defect.source_refs.clone(),
+                observation_refs: defect.observation_refs.clone(),
+                missing_evidence: defect.missing_refs.clone(),
+                coverage_boundary: defect.coverage_boundary.clone(),
+                suggested_filler_evidence: vec![
+                    format!(
+                        "supply filler evidence for {} axis trace disagreement",
+                        defect.axis_family
+                    ),
+                    "record whether the two continuation paths preserve selected observations"
+                        .to_string(),
+                ],
+                suggested_lifting_evidence: vec![
+                    "check whether the local witness lifts from ArchMap observation refs to the intended boundary operation"
+                        .to_string(),
+                ],
+                suggested_boundary_evidence: vec![
+                    "identify the boundary, adapter, authority, or effect surface where the order-sensitive witness appears"
+                        .to_string(),
+                ],
+                recommended_review_focus: vec![
+                    format!(
+                        "compare {} and {} before treating the operation pair as order-insensitive",
+                        candidate.p_path_ref, candidate.q_path_ref
+                    ),
+                    format!("review {} axis witness refs and missing evidence", defect.axis_family),
+                ],
+                evidence_boundary:
+                    "nonzero monodromy witness is a measured review cue; it is not automatic repair safety or merge safety"
+                        .to_string(),
+                non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
+            })
+        })
+        .collect()
+}
+
+fn compared_trace_summary(
+    p_trace: Option<&ArchSigPathContinuationTraceV0>,
+    q_trace: Option<&ArchSigPathContinuationTraceV0>,
+    axis_family: &str,
+) -> Vec<String> {
+    [("p", p_trace), ("q", q_trace)]
+        .into_iter()
+        .map(|(role, trace)| {
+            let Some(trace) = trace else {
+                return format!("{role}: missing trace for {axis_family}");
+            };
+            let Some(axis) = trace
+                .axis_traces
+                .iter()
+                .find(|axis| axis.axis_family == axis_family)
+            else {
+                return format!("{role}: missing {axis_family} axis trace");
+            };
+            format!(
+                "{role}: {} refs={} missing={}",
+                axis.continuation_summary,
+                axis.observation_refs.len(),
+                axis.missing_refs.len()
+            )
         })
         .collect()
 }
@@ -6209,6 +6350,7 @@ fn build_llm_interpretation_packet(
     state_transition_algebra_readings: &[ArchSigStateTransitionAlgebraReadingV0],
     operation_invariant_galois_readings: &[ArchSigOperationInvariantGaloisReadingV0],
     split_readiness_readings: &[ArchSigSplitReadinessReadingV0],
+    nonzero_monodromy_witnesses: &[ArchSigNonzeroMonodromyWitnessV0],
     structural_reading_review_surface: &ArchSigStructuralReadingReviewSurfaceV0,
     current_state_evolution_boundary: &ArchSigCurrentStateEvolutionBoundaryV0,
     repair_candidates: &[ArchSigRepairOperationCandidateV0],
@@ -6341,7 +6483,7 @@ fn build_llm_interpretation_packet(
             })
             .collect(),
         measurement_expansion_summary: vec![format!(
-            "v0.3.0 measurement expansion reads {} Atom support axes, {} compatibility surfaces, {} LawUniverse coverage surfaces, {} feature-extension formulas, {} operation-law surfaces, {} path trajectories, {} homotopy/order surfaces, {} diagram-fillability surfaces, {} axis-forgetting risks, {} trajectory homotopy refutations, and {} bridge split-transfer surfaces",
+            "v0.3.0 measurement expansion reads {} Atom support axes, {} compatibility surfaces, {} LawUniverse coverage surfaces, {} feature-extension formulas, {} operation-law surfaces, {} path trajectories, {} homotopy/order surfaces, {} diagram-fillability surfaces, {} axis-forgetting risks, {} trajectory homotopy refutations, {} bridge split-transfer surfaces, and {} nonzero monodromy witnesses",
             atom_support_axis_readings.len(),
             atom_compatibility_readings.len(),
             law_universe_coverage_readings.len(),
@@ -6352,7 +6494,8 @@ fn build_llm_interpretation_packet(
             diagram_fillability_readings.len(),
             axis_forgetting_risk_readings.len(),
             signature_trajectory_homotopy_refutation_readings.len(),
-            bridge_split_obstruction_transfer_readings.len()
+            bridge_split_obstruction_transfer_readings.len(),
+            nonzero_monodromy_witnesses.len()
         )],
         atom_support_axis_summary: atom_support_axis_readings
             .iter()
@@ -6493,6 +6636,20 @@ fn build_llm_interpretation_packet(
                     reading.bridge_edge_refs.len(),
                     reading.obstruction_refs.len(),
                     reading.required_boundary_operations.len()
+                )
+            })
+            .collect(),
+        nonzero_monodromy_witness_summary: nonzero_monodromy_witnesses
+            .iter()
+            .map(|witness| {
+                format!(
+                    "{} axis={} defect={} affectedAtoms={} missingEvidence={} focus={}",
+                    witness.witness_id,
+                    witness.axis_family,
+                    witness.defect_value,
+                    witness.affected_atom_refs.len(),
+                    witness.missing_evidence.len(),
+                    witness.recommended_review_focus.len()
                 )
             })
             .collect(),
@@ -6712,6 +6869,7 @@ pub fn validate_archsig_analysis_packet_report(
         check_current_state_evolution_boundary(packet),
         check_operation_square_trace_surface(packet),
         check_axis_wise_defect_ami_surface(packet),
+        check_nonzero_monodromy_witness_surface(packet),
         check_monodromy_boundary_schema_foundation(packet),
         check_law_relative_analysis(packet),
         check_signature_and_flatness(packet),
@@ -9065,6 +9223,152 @@ fn check_axis_wise_defect_ami_surface(packet: &ArchSigAnalysisPacketV0) -> Valid
     )
 }
 
+fn check_nonzero_monodromy_witness_surface(packet: &ArchSigAnalysisPacketV0) -> ValidationCheck {
+    let defect_ids = set(packet
+        .axis_wise_monodromy_defects
+        .iter()
+        .map(|defect| defect.defect_id.as_str()));
+    let candidate_ids = set(packet
+        .operation_square_candidates
+        .iter()
+        .map(|candidate| candidate.candidate_id.as_str()));
+    let witness_ids = set(packet
+        .nonzero_monodromy_witnesses
+        .iter()
+        .map(|witness| witness.witness_id.as_str()));
+    let mut examples = Vec::new();
+    if packet
+        .axis_wise_monodromy_defects
+        .iter()
+        .any(|defect| defect.distance_value.is_some_and(|value| value > 0))
+        && packet.nonzero_monodromy_witnesses.is_empty()
+    {
+        examples.push(generic_validation_example(
+            "nonzeroMonodromyWitnesses",
+            "empty",
+            "positive measured defects must be surfaced as nonzero monodromy witnesses",
+        ));
+    }
+    examples.extend(duplicate_examples(
+        "nonzeroMonodromyWitnesses[].witnessId",
+        duplicates(
+            packet
+                .nonzero_monodromy_witnesses
+                .iter()
+                .map(|witness| witness.witness_id.as_str()),
+        ),
+    ));
+    for witness in &packet.nonzero_monodromy_witnesses {
+        if !defect_ids.contains(witness.defect_ref.as_str()) {
+            examples.push(generic_validation_example(
+                &witness.witness_id,
+                &witness.defect_ref,
+                "nonzero witness references an unknown axis-wise defect",
+            ));
+        }
+        if !candidate_ids.contains(witness.candidate_ref.as_str()) {
+            examples.push(generic_validation_example(
+                &witness.witness_id,
+                &witness.candidate_ref,
+                "nonzero witness references an unknown operation square candidate",
+            ));
+        }
+        if witness.operation_pair.len() != 2 || witness.path_pair.len() != 2 {
+            examples.push(generic_validation_example(
+                &witness.witness_id,
+                "operationPair/pathPair",
+                "nonzero witness must record operation pair and path pair",
+            ));
+        }
+        if witness.defect_value <= 0 {
+            examples.push(generic_validation_example(
+                &witness.witness_id,
+                &witness.defect_value.to_string(),
+                "nonzero witness must have positive measured defect value",
+            ));
+        }
+        push_blank(
+            &mut examples,
+            &format!("{} axisFamily", witness.witness_id),
+            &witness.axis_family,
+        );
+        if witness.affected_atom_refs.is_empty() {
+            examples.push(generic_validation_example(
+                &witness.witness_id,
+                "affectedAtomRefs",
+                "nonzero witness must keep affected Atom / observation refs traceable",
+            ));
+        }
+        if witness.law_refs.is_empty() || witness.signature_axis_refs.is_empty() {
+            examples.push(generic_validation_example(
+                &witness.witness_id,
+                "lawRefs/signatureAxisRefs",
+                "nonzero witness must keep law and signature axis refs traceable",
+            ));
+        }
+        if witness.compared_trace_summary.is_empty() {
+            examples.push(generic_validation_example(
+                &witness.witness_id,
+                "comparedTraceSummary",
+                "nonzero witness must summarize compared traces",
+            ));
+        }
+        if witness.suggested_filler_evidence.is_empty()
+            || witness.suggested_lifting_evidence.is_empty()
+            || witness.suggested_boundary_evidence.is_empty()
+        {
+            examples.push(generic_validation_example(
+                &witness.witness_id,
+                "suggestedEvidence",
+                "nonzero witness must suggest filler, lifting, and boundary evidence",
+            ));
+        }
+        if witness.recommended_review_focus.is_empty() {
+            examples.push(generic_validation_example(
+                &witness.witness_id,
+                "recommendedReviewFocus",
+                "nonzero witness must provide review cues",
+            ));
+        }
+        push_blank(
+            &mut examples,
+            &format!("{} coverageBoundary", witness.witness_id),
+            &witness.coverage_boundary,
+        );
+        push_blank(
+            &mut examples,
+            &format!("{} evidenceBoundary", witness.witness_id),
+            &witness.evidence_boundary,
+        );
+        if witness.non_conclusions.is_empty() || has_blank(&witness.non_conclusions) {
+            examples.push(generic_validation_example(
+                &witness.witness_id,
+                "nonConclusions",
+                "nonzero witness must retain machine-readable non-conclusions",
+            ));
+        }
+    }
+    for witness_ref in &packet
+        .boundary_holonomy_reading_family
+        .nonzero_monodromy_witness_refs
+    {
+        if !witness_ids.contains(witness_ref.as_str()) {
+            examples.push(generic_validation_example(
+                &packet.boundary_holonomy_reading_family.reading_family_id,
+                witness_ref,
+                "boundary holonomy reading family references an unknown nonzero witness",
+            ));
+        }
+    }
+
+    check_from_examples(
+        "archsig-analysis-packet-nonzero-monodromy-witness-surface",
+        "packet surfaces positive measured mu_x(sigma) defects as reviewer-readable nonzero monodromy witnesses",
+        examples,
+        "fail",
+    )
+}
+
 fn check_monodromy_boundary_schema_foundation(packet: &ArchSigAnalysisPacketV0) -> ValidationCheck {
     let mut examples = Vec::new();
     let store_refs = &packet.arch_map_store_refs;
@@ -10348,6 +10652,22 @@ mod tests {
         assert_eq!(report.summary.result, "fail");
         assert!(report.checks.iter().any(|check| {
             check.id == "archsig-analysis-packet-axis-defect-ami-surface" && check.result == "fail"
+        }));
+    }
+
+    #[test]
+    fn nonzero_witness_without_review_focus_fails_validation() {
+        let mut packet = static_archsig_analysis_packet();
+        packet.nonzero_monodromy_witnesses[0]
+            .recommended_review_focus
+            .clear();
+
+        let report = validate_archsig_analysis_packet_report(&packet, "invalid.json");
+
+        assert_eq!(report.summary.result, "fail");
+        assert!(report.checks.iter().any(|check| {
+            check.id == "archsig-analysis-packet-nonzero-monodromy-witness-surface"
+                && check.result == "fail"
         }));
     }
 

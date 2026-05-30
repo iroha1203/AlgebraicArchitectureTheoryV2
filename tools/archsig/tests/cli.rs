@@ -1445,6 +1445,40 @@ fn assert_north_star_packet_surfaces(json: &Value) {
         "AMI aggregate readings must remain bounded review aggregates with local-reading boundaries"
     );
     assert!(
+        json["nonzeroMonodromyWitnesses"]
+            .as_array()
+            .is_some_and(|items| {
+                !items.is_empty()
+                    && items.iter().all(|witness| {
+                        witness["operationPair"]
+                            .as_array()
+                            .is_some_and(|pair| pair.len() == 2)
+                            && witness["pathPair"]
+                                .as_array()
+                                .is_some_and(|pair| pair.len() == 2)
+                            && witness["defectValue"]
+                                .as_i64()
+                                .is_some_and(|value| value > 0)
+                            && witness["affectedAtomRefs"]
+                                .as_array()
+                                .is_some_and(|refs| !refs.is_empty())
+                            && witness["lawRefs"]
+                                .as_array()
+                                .is_some_and(|refs| !refs.is_empty())
+                            && witness["signatureAxisRefs"]
+                                .as_array()
+                                .is_some_and(|refs| !refs.is_empty())
+                            && witness["recommendedReviewFocus"]
+                                .as_array()
+                                .is_some_and(|focus| !focus.is_empty())
+                            && witness["nonConclusions"]
+                                .as_array()
+                                .is_some_and(|items| !items.is_empty())
+                    })
+            }),
+        "nonzero monodromy witnesses must expose operation/path pairs, positive defect value, traceable refs, review focus, and non-conclusions"
+    );
+    assert!(
         json["llmInterpretationPacket"]["structuralReadingReviewSummary"]
             .as_array()
             .is_some_and(|items| !items.is_empty())
@@ -1452,6 +1486,9 @@ fn assert_north_star_packet_surfaces(json: &Value) {
                 .as_array()
                 .is_some_and(|items| !items.is_empty())
             && json["llmInterpretationPacket"]["measurementExpansionSummary"]
+                .as_array()
+                .is_some_and(|items| !items.is_empty())
+            && json["llmInterpretationPacket"]["nonzeroMonodromyWitnessSummary"]
                 .as_array()
                 .is_some_and(|items| !items.is_empty())
             && json["llmInterpretationPacket"]["atomSupportAxisSummary"]
