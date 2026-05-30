@@ -186,10 +186,13 @@ required non-conclusions remain present. Important boundaries:
 - missing filler evidence is not measured zero
 - nonzero holonomy is bounded current-state diagnosis, not future incident
   prediction or repair-safety evidence
+- ArchitectureHomotopyReport is not a single architecture quality score,
+  theorem proof, path truth, or global homology computation
 
 ## Current Fixture
 
 - `tools/archsig/tests/fixtures/minimal/law_policy.json`
+- `tools/archsig/tests/fixtures/homotopy_report/law_policy.json`
 
 The fixture is locked against the static Rust builder and the schema catalog
 records both `law-policy-v0` and `law-policy-validation-report-v0`. The schema

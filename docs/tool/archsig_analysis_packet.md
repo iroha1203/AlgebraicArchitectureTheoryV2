@@ -10,7 +10,8 @@ ArchMap
 
 InterpretationProfile
   selects the LawUniverse, witness rules, signature axes, coverage, exactness,
-  and optional spectrum measurement profile.
+  optional spectrum measurement profile, and optional homotopy path / filler /
+  loop measurement profile.
   The current JSON artifact is still named law-policy-v0 for the profile input.
 
 ArchSig Analysis Packet
@@ -21,7 +22,8 @@ ArchSig Analysis Packet
   transfer bridge readings, Atom support / compatibility readings,
   LawUniverse coverage, feature extension formula axes, operation calculus law
   axes, path signature trajectories, homotopy / operation-order sensitivity,
-  diagram fillability, bounded judgements, repair operation candidates,
+  diagram fillability, Homotopy / Holonomy / Stokes readings,
+  ArchitectureHomotopyReport, bounded judgements, repair operation candidates,
   operation deltas, path / homotopy / diagram readings, child-level evidence
   boundaries, ArchMapStore refs, monodromy / boundary holonomy reading family
   policy surfaces, and an LLM interpretation packet.
@@ -31,6 +33,14 @@ ArchSig Analysis Packet
 
 The packet owns structured analysis results. It is not a theorem proof and not
 a single architecture quality score.
+
+`ArchitectureHomotopyReport` is a bounded codebase-inspection surface. It reads
+candidate path pairs, loops, fillers, architectural holes, selected-axis
+holonomy, and Stokes-style review queues under the selected LawPolicy
+`homotopyMeasurementProfile`. It does not prove path equality, global homology,
+global semantic flatness, source extraction completeness, future safety, repair
+safety, or automatic violation findings. Unfilled loops remain architectural
+holes until filler evidence is supplied.
 
 The implemented schema records:
 
@@ -143,6 +153,7 @@ Validation does not imply:
 
 - `tools/archsig/tests/fixtures/minimal/archsig_analysis_packet.json`
 - `tools/archsig/tests/fixtures/coupon_rounding/archsig_analysis_packet.json`
+- `tools/archsig/tests/fixtures/homotopy_report/archsig_analysis_packet.json`
 
 The fixture is locked against the static Rust builder and the schema catalog
 records both `archsig-analysis-packet-v0` and
@@ -213,6 +224,15 @@ The builder:
   transfer. These readings keep source refs, observation refs, coverage
   boundaries, evidence boundaries, and non-conclusions; they are not PR / diff
   evolution analysis.
+- Homotopy / Holonomy / Stokes readings add current-state coordinates for
+  `homotopyComplexSummary`, `pathPairCandidates`, `loopCandidates`,
+  `fillerCandidateReadings`, `architecturalHoleReadings`,
+  `homotopyHolonomyReadings`, `stokesStyleReadings`, and
+  `architectureHomotopyReport`. Filled nonzero holonomy loops point reviewers
+  to measured local curvature cells; unfilled loops point reviewers to missing
+  contract, test, runtime, policy, or semantic filler evidence. Neither case is
+  a theorem discharge, architecture score, future forecast, or automatic
+  violation proof.
 - ArchMapStore is the forward history boundary for PR and longitudinal
   workflows. `ArchMapDelta` and `ArchMapCommit` carry ArchMap-level change
   evidence; `ArchMapSnapshot` and `ArchMapIndex` support large-repository
