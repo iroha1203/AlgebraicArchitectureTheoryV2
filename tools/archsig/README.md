@@ -67,6 +67,7 @@ Cargo project, or Git history at runtime.
 | `archmap-creater` | Create bounded `archmap-observation-map-v0` artifacts from repository evidence. It keeps ArchMap as source-grounded Atom observations, molecule observations, semantic readings, concern hints, and gaps, not law-relative analysis. |
 | `law-policy-creater` | Create project-specific `law-policy-v0` interpretation profiles from repository coding conventions, architecture rules, and user decisions. If docs do not define the law universe, ask the user before selecting laws. |
 | `archsig-reader` | Run an ArchMap with a selected LawPolicy, read the `archsig-analysis-packet-v0`, compare high-priority readings with source evidence, and propose bounded improvements. It does not silently use a generic LawPolicy as project analysis. |
+| `archsig-pr-reviewer` | Derive PR-local `archmap-delta-v0` from the base branch diff, run `pr-review` with base ArchMap and LawPolicy, read the changed code, and explain review focus in human code-review language. It stops if the base ArchMap or LawPolicy is missing. |
 
 Typical use:
 
@@ -76,6 +77,12 @@ Typical use:
 3. Run `analyze`.
 4. Use `archsig-reader` to interpret the packet and compare it with source
    evidence before proposing improvements.
+
+For pull requests, use `archsig-pr-reviewer` after a base ArchMap and LawPolicy
+exist. It derives the PR-local `archmap-delta-v0` from the base branch diff,
+runs `pr-review`, then compares the report with source evidence before writing
+human-facing review comments. It treats `archsig-pr-review-report-v1` as review
+focus rather than merge approval.
 
 ## Release Assets
 
