@@ -1,0 +1,184 @@
+{
+  "schemaVersion": "law-policy-v0",
+  "lawPolicyId": "project-law-policy",
+  "policyVersion": "v0",
+  "scope": "Replace with the bounded repository or subsystem scope",
+  "archmapSchemaRef": "archmap-observation-map-v0",
+  "selectedLaws": [
+    {
+      "lawId": "law:project-boundary-example",
+      "lawFamily": "authority-boundary",
+      "description": "Replace with a project-approved architecture rule.",
+      "enforcementBoundary": "ArchSig computes witnesses from observed ArchMap atoms under this selected policy; this policy does not prove architecture lawfulness",
+      "appliesToAtomFamilies": [
+        "authority",
+        "contractSpecification",
+        "relation"
+      ],
+      "requiredWitnessRefs": [
+        "witness:project-boundary-example"
+      ],
+      "requiredAxisRefs": [
+        "axis:project-boundary-example"
+      ],
+      "nonConclusions": [
+        "law policy is selected analysis policy, not AAT itself",
+        "law policy validation does not prove architecture lawfulness",
+        "law policy validation does not certify atom truth",
+        "missing coverage is not measured zero",
+        "signature zero requires ArchSig analysis with declared coverage and exactness assumptions"
+      ]
+    }
+  ],
+  "requiredZeroAxes": [
+    {
+      "axisId": "axis:project-boundary-example",
+      "axisFamily": "authority-boundary",
+      "valueType": "nat",
+      "zeroReading": "zero means no required witness was constructed under this policy and declared coverage",
+      "measurementBoundary": "computedFromObservedAtoms",
+      "evidenceRequirements": [
+        "observed authority atoms",
+        "observed contract atoms",
+        "observed relation atoms"
+      ],
+      "nonConclusions": [
+        "law policy is selected analysis policy, not AAT itself",
+        "law policy validation does not prove architecture lawfulness",
+        "law policy validation does not certify atom truth",
+        "missing coverage is not measured zero",
+        "signature zero requires ArchSig analysis with declared coverage and exactness assumptions"
+      ]
+    }
+  ],
+  "optionalAxes": [],
+  "witnessRules": [
+    {
+      "witnessRuleId": "witness:project-boundary-example",
+      "lawRef": "law:project-boundary-example",
+      "witnessKind": "policy-boundary-review",
+      "atomObservationRefs": [],
+      "requiredAtomFamilies": [
+        "authority",
+        "contractSpecification",
+        "relation"
+      ],
+      "moleculePatternRefs": [
+        "molecule:project-boundary-example"
+      ],
+      "evidenceBoundary": "construct only from observed ArchMap Atom observations; concern hints are not obstruction circuits",
+      "missingEvidenceBehavior": "report observation gap; do not infer measured zero",
+      "nonConclusions": [
+        "law policy is selected analysis policy, not AAT itself",
+        "law policy validation does not prove architecture lawfulness",
+        "law policy validation does not certify atom truth",
+        "missing coverage is not measured zero",
+        "signature zero requires ArchSig analysis with declared coverage and exactness assumptions"
+      ]
+    }
+  ],
+  "moleculePatterns": [
+    {
+      "moleculePatternId": "molecule:project-boundary-example",
+      "roleName": "project boundary example",
+      "requiredAtomFamilies": [
+        "authority",
+        "contractSpecification"
+      ],
+      "optionalAtomFamilies": [
+        "relation",
+        "trust"
+      ],
+      "interpretationBoundary": "molecule pattern is role interpretation over atoms, not a primitive atom",
+      "nonConclusions": [
+        "law policy is selected analysis policy, not AAT itself",
+        "law policy validation does not prove architecture lawfulness",
+        "law policy validation does not certify atom truth",
+        "missing coverage is not measured zero",
+        "signature zero requires ArchSig analysis with declared coverage and exactness assumptions"
+      ]
+    }
+  ],
+  "obstructionCircuitDefinitions": [
+    {
+      "obstructionCircuitId": "obstruction:project-boundary-example",
+      "lawRef": "law:project-boundary-example",
+      "witnessRuleRef": "witness:project-boundary-example",
+      "circuitKind": "PolicyBoundaryCircuit",
+      "minimalityReading": "minimality is evaluated within the selected observed Atom configuration and witness rule",
+      "evidenceBoundary": "law-relative ArchSig witness, not ArchMap observation and not Lean theorem discharge",
+      "signatureAxisRefs": [
+        "axis:project-boundary-example"
+      ],
+      "nonConclusions": [
+        "law policy is selected analysis policy, not AAT itself",
+        "law policy validation does not prove architecture lawfulness",
+        "law policy validation does not certify atom truth",
+        "missing coverage is not measured zero",
+        "signature zero requires ArchSig analysis with declared coverage and exactness assumptions"
+      ]
+    }
+  ],
+  "signatureAxisDefinitions": [
+    {
+      "signatureAxisId": "sig-axis:project-boundary-example",
+      "lawRef": "law:project-boundary-example",
+      "axisRef": "axis:project-boundary-example",
+      "valuationRule": "count constructed project boundary witnesses",
+      "valueType": "nat",
+      "zeroReading": "zero means no matching required witness was constructed under declared coverage and exactness assumptions",
+      "coverageBoundary": "coverage gaps remain observation gaps, not measured zero",
+      "nonConclusions": [
+        "law policy is selected analysis policy, not AAT itself",
+        "law policy validation does not prove architecture lawfulness",
+        "law policy validation does not certify atom truth",
+        "missing coverage is not measured zero",
+        "signature zero requires ArchSig analysis with declared coverage and exactness assumptions"
+      ]
+    }
+  ],
+  "exactnessAssumptions": [
+    "the selected witness rules cover only policy-declared laws",
+    "zero readings are exact only for observed atoms and declared coverage requirements"
+  ],
+  "coverageRequirements": [
+    {
+      "coverageRequirementId": "coverage:project-boundary-example",
+      "appliesToLawRefs": [
+        "law:project-boundary-example"
+      ],
+      "requiredAtomFamilies": [
+        "authority",
+        "contractSpecification",
+        "relation"
+      ],
+      "requiredSourceRefKinds": [
+        "file",
+        "symbol",
+        "docSection",
+        "test"
+      ],
+      "missingCoverageBehavior": "report observation gap and block signature-zero reflection",
+      "nonConclusions": [
+        "law policy is selected analysis policy, not AAT itself",
+        "law policy validation does not prove architecture lawfulness",
+        "law policy validation does not certify atom truth",
+        "missing coverage is not measured zero",
+        "signature zero requires ArchSig analysis with declared coverage and exactness assumptions"
+      ]
+    }
+  ],
+  "excludedReadings": [
+    "global architecture truth",
+    "Lean theorem discharge",
+    "SFT forecast correctness",
+    "automatic repair safety"
+  ],
+  "nonConclusions": [
+    "law policy is selected analysis policy, not AAT itself",
+    "law policy validation does not prove architecture lawfulness",
+    "law policy validation does not certify atom truth",
+    "missing coverage is not measured zero",
+    "signature zero requires ArchSig analysis with declared coverage and exactness assumptions"
+  ]
+}

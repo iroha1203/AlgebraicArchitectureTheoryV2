@@ -825,6 +825,41 @@ mod tests {
     }
 
     #[test]
+    fn duplicate_law_policy_ids_fail() {
+        let mut policy = static_law_policy();
+        policy.selected_laws[1].law_id = policy.selected_laws[0].law_id.clone();
+        policy.witness_rules[1].witness_rule_id = policy.witness_rules[0].witness_rule_id.clone();
+        policy.coverage_requirements[1].coverage_requirement_id = policy.coverage_requirements[0]
+            .coverage_requirement_id
+            .clone();
+
+        let report = validate_law_policy_report(&policy, "bad-law-policy.json");
+
+        assert_eq!(report.summary.result, "fail");
+        let id_check = report
+            .checks
+            .iter()
+            .find(|check| check.id == "law-policy-ids-unique")
+            .expect("ids uniqueness check is emitted");
+        assert_eq!(id_check.result, "fail");
+        assert!(
+            id_check
+                .examples
+                .iter()
+                .any(|example| example.source.as_deref() == Some("selectedLaws[].lawId"))
+        );
+        assert!(
+            id_check
+                .examples
+                .iter()
+                .any(|example| example.source.as_deref() == Some("witnessRules[].witnessRuleId"))
+        );
+        assert!(id_check.examples.iter().any(|example| {
+            example.source.as_deref() == Some("coverageRequirements[].coverageRequirementId")
+        }));
+    }
+
+    #[test]
     fn canonical_fixture_matches_static_law_policy() {
         let fixture: LawPolicyDocumentV0 =
             serde_json::from_str(include_str!("../tests/fixtures/minimal/law_policy.json"))

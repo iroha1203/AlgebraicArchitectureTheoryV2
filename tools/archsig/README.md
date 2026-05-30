@@ -16,7 +16,7 @@ forecast, governance, calibration, and operational feedback under
 | --- | --- | --- |
 | ArchMap validation | `archmap`, `archmap-generate` | ArchMap records source-grounded Atom observations and concern hints. It does not select laws or output obstruction circuits. |
 | Interpretation profile | `law-policy`, `interpretation-profile` | The profile selects the LawUniverse, witness rules, signature axes, coverage requirements, exactness assumptions, and non-conclusions. It is not AAT itself. |
-| ArchSig analysis | `archsig-analysis`, `aat-analysis`, `llm-native-workflow`, `north-star-workflow` | ArchSig combines ArchMap and the profile into AAT concept surfaces, architecture state, design pressure, change impact, analytic axes, semantic coupling/cohesion, workflow risk readings, spectral analysis readings, spectral mode readings, spectral drilldown readings, transfer bridge readings with edge source refs / review focus / cut recommendations, representation strength, local curvature diagrams, three-layer flatness, observation projection, state transition algebra, operation / invariant Galois readings, split readiness, a structural reading review surface, a current-state/evolution boundary, design principle readings, bounded judgements, repair operation deltas, and an LLM interpretation packet. |
+| ArchSig analysis | `archsig-analysis`, `aat-analysis`, `llm-native-workflow`, `north-star-workflow`, `analysis-summary`, `summary` | ArchSig combines ArchMap and the profile into AAT concept surfaces, architecture state, design pressure, change impact, analytic axes, semantic coupling/cohesion, workflow risk readings, spectral analysis readings, spectral mode readings, spectral drilldown readings, transfer bridge readings with edge source refs / review focus / cut recommendations, representation strength, local curvature diagrams, three-layer flatness, observation projection, state transition algebra, operation / invariant Galois readings, split readiness, a structural reading review surface, a current-state/evolution boundary, design principle readings, bounded judgements, repair operation deltas, and an LLM interpretation packet. `analysis-summary` emits a compact review summary from an existing packet. |
 | Schema | `schema-catalog` | The catalog lists only the current LLM Atom ArchMap artifacts. |
 
 Large ArchMaps may be authored in shards for review and parallel generation,
@@ -51,6 +51,28 @@ merge approval, or automatic repair instruction.
 
 Calling `archsig` without a subcommand intentionally fails. The old implicit
 scan-first path is no longer an ArchSig workflow.
+
+## Skills
+
+The `tools/archsig/skills` directory is part of the ArchSig release surface. A
+released ArchSig bundle is expected to work with the binary plus the skills
+directory; the skills do not require the AAT mathematical docs, test fixtures,
+Cargo project, or Git history at runtime.
+
+| Skill | Purpose |
+| --- | --- |
+| `archmap-creater` | Create bounded `archmap-observation-map-v0` artifacts from repository evidence. It keeps ArchMap as source-grounded Atom observations, molecule observations, semantic readings, concern hints, and gaps, not law-relative analysis. |
+| `law-policy-creater` | Create project-specific `law-policy-v0` interpretation profiles from repository coding conventions, architecture rules, and user decisions. If docs do not define the law universe, ask the user before selecting laws. |
+| `archsig-reader` | Run an ArchMap with a selected LawPolicy, read the `archsig-analysis-packet-v0`, compare high-priority readings with source evidence, and propose bounded improvements. It does not silently use a generic LawPolicy as project analysis. |
+
+Typical use:
+
+1. Use `archmap-creater` to produce or refine the ArchMap.
+2. Use `law-policy-creater` to produce the selected LawPolicy for the target
+   repository or subsystem.
+3. Run `llm-native-workflow`.
+4. Use `archsig-reader` to interpret the packet and compare it with source
+   evidence before proposing improvements.
 
 ## Release Assets
 

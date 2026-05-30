@@ -1,0 +1,4 @@
+interface:
+  display_name: "ArchSig Reader"
+  short_description: "Run ArchMap through ArchSig and interpret results"
+  default_prompt: "Use $archsig-reader to run an ArchMap through ArchSig, read the analysis packet, compare findings with source code, and propose improvements."

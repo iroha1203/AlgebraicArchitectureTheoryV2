@@ -1,0 +1,4 @@
+interface:
+  display_name: "LawPolicy Creater"
+  short_description: "Create ArchSig LawPolicy artifacts"
+  default_prompt: "Use $law-policy-creater to derive a law-policy-v0 artifact from repository conventions, ask for missing architecture decisions, and validate the result."

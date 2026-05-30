@@ -30,6 +30,8 @@ fn cli_help_exposes_only_llm_atom_archmap_surface() {
         "interpretation-profile",
         "archsig-analysis",
         "aat-analysis",
+        "analysis-summary",
+        "summary",
         "llm-native-workflow",
         "north-star-workflow",
         "schema-catalog",
@@ -46,6 +48,75 @@ fn cli_help_exposes_only_llm_atom_archmap_surface() {
             "ArchSig help still exposes removed command {removed}\n{stdout}"
         );
     }
+}
+
+#[test]
+fn cli_summarizes_archsig_analysis_packet() {
+    let out_dir = temp_dir("analysis-summary");
+    let root = fixture_root();
+    let summary = out_dir.join("archsig-analysis-summary.json");
+
+    run_sig0(&[
+        "analysis-summary",
+        "--packet",
+        root.join("archsig_analysis_packet.json")
+            .to_str()
+            .expect("packet path is utf-8"),
+        "--limit",
+        "2",
+        "--out",
+        summary.to_str().expect("summary path is utf-8"),
+    ]);
+
+    let json = read_json(&summary);
+    assert_eq!(
+        json["packet"]["schemaVersion"],
+        "archsig-analysis-packet-v0"
+    );
+    assert_eq!(
+        json["packet"]["analysisId"],
+        "archsig-analysis:fixture-archmap-atom-observation:llm-native-aat-law-policy-fixture"
+    );
+    assert_eq!(json["validation"]["archmap"], Value::Null);
+    assert!(
+        json["signatureAxes"]
+            .as_array()
+            .is_some_and(|axes| !axes.is_empty())
+    );
+    assert!(
+        json["topWorkflowRisks"]
+            .as_array()
+            .is_some_and(|risks| risks.len() <= 2)
+    );
+    assert!(
+        json["splitReadiness"]
+            .as_array()
+            .is_some_and(|readings| readings.len() <= 2)
+    );
+    assert!(
+        json["nonConclusions"]
+            .as_array()
+            .is_some_and(|non_conclusions| !non_conclusions.is_empty())
+    );
+}
+
+#[test]
+fn cli_rejects_summary_for_non_analysis_packet() {
+    let root = fixture_root();
+    let output = run_sig0_output(&[
+        "analysis-summary",
+        "--packet",
+        root.join("archmap.json")
+            .to_str()
+            .expect("archmap path is utf-8"),
+    ]);
+
+    assert!(!output.status.success());
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(
+        stderr.contains("--packet must have schemaVersion archsig-analysis-packet-v0"),
+        "{stderr}"
+    );
 }
 
 #[test]
