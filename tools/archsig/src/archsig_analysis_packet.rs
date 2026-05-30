@@ -11,12 +11,12 @@ use crate::{
     ArchSigAnalyticRepresentationV0, ArchSigArchMapStoreRefsV0,
     ArchSigArchitectureObjectProjectionV0, ArchSigArchitectureStateV0,
     ArchSigAtomCompatibilityConflictV0, ArchSigAtomCompatibilityReadingV0,
-    ArchSigAtomConfigurationSummaryV0, ArchSigAtomSupportAxisReadingV0, ArchSigAxisExcursionV0,
-    ArchSigAxisForgettingRiskReadingV0, ArchSigAxisRestrictionCountV0,
-    ArchSigBoundaryHolonomyReadingFamilyV0, ArchSigBoundaryPreparationRankV0,
-    ArchSigBoundedJudgementV0, ArchSigBridgeAtomFamilyReadingV0, ArchSigBridgeEdgeBreakdownV0,
-    ArchSigBridgeSplitObstructionTransferReadingV0, ArchSigChangeImpactReadingV0,
-    ArchSigCouplingCohesionReadingV0, ArchSigCoverageStatusV0,
+    ArchSigAtomConfigurationSummaryV0, ArchSigAtomSupportAxisReadingV0,
+    ArchSigAxisContinuationTraceV0, ArchSigAxisExcursionV0, ArchSigAxisForgettingRiskReadingV0,
+    ArchSigAxisRestrictionCountV0, ArchSigBoundaryHolonomyReadingFamilyV0,
+    ArchSigBoundaryPreparationRankV0, ArchSigBoundedJudgementV0, ArchSigBridgeAtomFamilyReadingV0,
+    ArchSigBridgeEdgeBreakdownV0, ArchSigBridgeSplitObstructionTransferReadingV0,
+    ArchSigChangeImpactReadingV0, ArchSigCouplingCohesionReadingV0, ArchSigCoverageStatusV0,
     ArchSigCurrentStateEvolutionBoundaryV0, ArchSigDesignPressureReadingV0,
     ArchSigDesignPrincipleReadingV0, ArchSigDiagramFillabilityReadingV0,
     ArchSigDominantAtomFamilyCompositionV0, ArchSigEvolutionRiskRankingV0,
@@ -28,7 +28,8 @@ use crate::{
     ArchSigMoleculeReadingV0, ArchSigMonodromyReadingFamilyV0,
     ArchSigObservationProjectionReadingV0, ArchSigObstructionCircuitV0,
     ArchSigOperationCalculusLawReadingV0, ArchSigOperationDeltaReadingV0,
-    ArchSigOperationInvariantGaloisReadingV0, ArchSigPathHomotopyDiagramReadingV0,
+    ArchSigOperationInvariantGaloisReadingV0, ArchSigOperationSquareCandidateV0,
+    ArchSigPathContinuationTraceV0, ArchSigPathHomotopyDiagramReadingV0,
     ArchSigPathSignatureTrajectoryReadingV0, ArchSigRepairAxisDeltaReadingV0,
     ArchSigRepairOperationCandidateV0, ArchSigRepairTransferRiskRankV0,
     ArchSigRepresentationStrengthReadingV0, ArchSigSignatureAxisReadingV0,
@@ -186,11 +187,14 @@ pub fn build_archsig_analysis_packet(
         );
     let bridge_split_obstruction_transfer_readings =
         build_bridge_split_obstruction_transfer_readings(&split_readiness_readings);
+    let operation_square_candidates = build_operation_square_candidates(archmap, &operation_deltas);
+    let path_continuation_traces =
+        build_path_continuation_traces(archmap, &operation_square_candidates, &operation_deltas);
     let monodromy_reading_family = build_monodromy_reading_family(
         law_policy,
         &arch_map_store_refs,
-        &path_homotopy_diagram_readings,
-        &path_signature_trajectory_readings,
+        &operation_square_candidates,
+        &path_continuation_traces,
     );
     let boundary_holonomy_reading_family = build_boundary_holonomy_reading_family(
         law_policy,
@@ -328,6 +332,8 @@ pub fn build_archsig_analysis_packet(
         axis_forgetting_risk_readings,
         signature_trajectory_homotopy_refutation_readings,
         bridge_split_obstruction_transfer_readings,
+        operation_square_candidates,
+        path_continuation_traces,
         monodromy_reading_family,
         boundary_holonomy_reading_family,
         representation_strength_readings,
@@ -440,8 +446,8 @@ fn build_arch_map_store_refs(archmap: &ArchMapDocumentV0) -> ArchSigArchMapStore
 fn build_monodromy_reading_family(
     law_policy: &LawPolicyDocumentV0,
     arch_map_store_refs: &ArchSigArchMapStoreRefsV0,
-    path_homotopy_diagram_readings: &[ArchSigPathHomotopyDiagramReadingV0],
-    path_signature_trajectory_readings: &[ArchSigPathSignatureTrajectoryReadingV0],
+    operation_square_candidates: &[ArchSigOperationSquareCandidateV0],
+    path_continuation_traces: &[ArchSigPathContinuationTraceV0],
 ) -> ArchSigMonodromyReadingFamilyV0 {
     ArchSigMonodromyReadingFamilyV0 {
         reading_family_id: format!(
@@ -454,13 +460,13 @@ fn build_monodromy_reading_family(
         distance_kind: law_policy.measurement_policy.distance_kind.clone(),
         weight_policy: law_policy.measurement_policy.weight_policy.clone(),
         coverage_policy: law_policy.measurement_policy.coverage_policy.clone(),
-        operation_square_candidate_refs: path_homotopy_diagram_readings
+        operation_square_candidate_refs: operation_square_candidates
             .iter()
-            .map(|reading| reading.reading_id.clone())
+            .map(|candidate| candidate.candidate_id.clone())
             .collect(),
-        path_continuation_trace_refs: path_signature_trajectory_readings
+        path_continuation_trace_refs: path_continuation_traces
             .iter()
-            .map(|reading| reading.reading_id.clone())
+            .map(|trace| trace.trace_id.clone())
             .collect(),
         axis_wise_defect_refs: Vec::new(),
         aggregate_reading_kind: "ami-precondition-surface".to_string(),
@@ -515,6 +521,339 @@ fn build_boundary_holonomy_reading_family(
                 .to_string(),
         non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
     }
+}
+
+fn build_operation_square_candidates(
+    archmap: &ArchMapDocumentV0,
+    operation_deltas: &[ArchSigOperationDeltaReadingV0],
+) -> Vec<ArchSigOperationSquareCandidateV0> {
+    let operation_refs = if operation_deltas.is_empty() {
+        vec!["operation-delta:none-observed".to_string()]
+    } else {
+        operation_deltas
+            .iter()
+            .map(|delta| delta.operation_delta_id.clone())
+            .collect()
+    };
+    let mut candidates = Vec::new();
+    for left_index in 0..operation_refs.len() {
+        for right_index in left_index..operation_refs.len() {
+            let left = &operation_refs[left_index];
+            let right = operation_refs
+                .get(right_index + 1)
+                .unwrap_or_else(|| &operation_refs[right_index]);
+            let candidate_id = format!("operation-square:{}:{}", stable_id(left), stable_id(right));
+            let shared_atom_support_refs = inferred_shared_atom_support_refs(archmap);
+            let state_refs = observation_refs_by_axis_family(archmap, "state");
+            let effect_refs = operation_deltas
+                .iter()
+                .flat_map(|delta| {
+                    delta
+                        .atom_transformations
+                        .iter()
+                        .chain(delta.obstruction_transport.iter())
+                        .cloned()
+                })
+                .collect::<BTreeSet<_>>()
+                .into_iter()
+                .collect::<Vec<_>>();
+            let contract_refs = observation_refs_by_axis_family(archmap, "contract");
+            let semantic_refs = archmap
+                .semantic_observations
+                .iter()
+                .map(|semantic| semantic.semantic_observation_id.clone())
+                .collect::<Vec<_>>();
+            let authority_refs = observation_refs_by_axis_family(archmap, "authority");
+            let runtime_refs = archmap
+                .observation_gaps
+                .iter()
+                .filter(|gap| {
+                    gap.gap_kind.to_ascii_lowercase().contains("runtime")
+                        || gap.subject_ref.to_ascii_lowercase().contains("runtime")
+                })
+                .map(|gap| gap.gap_id.clone())
+                .collect::<Vec<_>>();
+            let projection_refs = archmap
+                .projection_info
+                .iter()
+                .map(|projection| projection.projection_id.clone())
+                .collect::<Vec<_>>();
+            let observation_refs = unique_strings(
+                shared_atom_support_refs
+                    .iter()
+                    .chain(state_refs.iter())
+                    .chain(contract_refs.iter())
+                    .chain(semantic_refs.iter())
+                    .chain(authority_refs.iter())
+                    .chain(runtime_refs.iter())
+                    .chain(projection_refs.iter())
+                    .cloned(),
+            );
+            candidates.push(ArchSigOperationSquareCandidateV0 {
+                candidate_id,
+                candidate_source: "inferred".to_string(),
+                supplied_pair_ref: None,
+                candidate_basis: operation_square_candidate_basis(
+                    &shared_atom_support_refs,
+                    &state_refs,
+                    &effect_refs,
+                    &contract_refs,
+                    &semantic_refs,
+                    &authority_refs,
+                    &runtime_refs,
+                    &projection_refs,
+                ),
+                left_operation_ref: left.clone(),
+                right_operation_ref: right.clone(),
+                p_path_ref: format!("{right} . {left}"),
+                q_path_ref: format!("{left} . {right}"),
+                shared_atom_support_refs,
+                state_refs,
+                effect_refs,
+                contract_refs,
+                semantic_refs,
+                authority_refs,
+                runtime_refs,
+                projection_refs,
+                source_refs: all_archmap_source_ref_labels(archmap),
+                observation_refs,
+                missing_refs: operation_square_missing_refs(archmap),
+                evidence_boundary:
+                    "inferred operation square candidate is a review cue over observed ArchMap support, not operation truth"
+                        .to_string(),
+                non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
+            });
+            if candidates.len() >= 12 {
+                return candidates;
+            }
+        }
+    }
+    candidates
+}
+
+fn build_path_continuation_traces(
+    archmap: &ArchMapDocumentV0,
+    operation_square_candidates: &[ArchSigOperationSquareCandidateV0],
+    operation_deltas: &[ArchSigOperationDeltaReadingV0],
+) -> Vec<ArchSigPathContinuationTraceV0> {
+    operation_square_candidates
+        .iter()
+        .flat_map(|candidate| {
+            [
+                ("p", candidate.p_path_ref.as_str()),
+                ("q", candidate.q_path_ref.as_str()),
+            ]
+            .into_iter()
+            .map(|(path_role, path_expression)| {
+                let trace_id = format!(
+                    "path-continuation-trace:{}:{}",
+                    stable_id(&candidate.candidate_id),
+                    path_role
+                );
+                ArchSigPathContinuationTraceV0 {
+                    trace_id,
+                    candidate_ref: candidate.candidate_id.clone(),
+                    path_ref: format!("{}:{path_role}", candidate.candidate_id),
+                    path_role: path_role.to_string(),
+                    path_expression: path_expression.to_string(),
+                    axis_traces: build_axis_continuation_traces(
+                        archmap,
+                        candidate,
+                        operation_deltas,
+                    ),
+                    observation_refs: candidate.observation_refs.clone(),
+                    source_refs: candidate.source_refs.clone(),
+                    missing_refs: candidate.missing_refs.clone(),
+                    evidence_boundary:
+                        "continuation trace is bounded by selected ArchMap observations and does not execute the operations"
+                            .to_string(),
+                    non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
+                }
+            })
+        })
+        .collect()
+}
+
+fn build_axis_continuation_traces(
+    archmap: &ArchMapDocumentV0,
+    candidate: &ArchSigOperationSquareCandidateV0,
+    operation_deltas: &[ArchSigOperationDeltaReadingV0],
+) -> Vec<ArchSigAxisContinuationTraceV0> {
+    [
+        (
+            "static",
+            "static dependency / support axis",
+            candidate.shared_atom_support_refs.clone(),
+        ),
+        ("contract", "contract axis", candidate.contract_refs.clone()),
+        ("semantic", "semantic axis", candidate.semantic_refs.clone()),
+        ("state", "state transition axis", candidate.state_refs.clone()),
+        (
+            "effect",
+            "effect ordering / replay / compensation axis",
+            candidate.effect_refs.clone(),
+        ),
+        (
+            "authority",
+            "authority / trust boundary axis",
+            candidate.authority_refs.clone(),
+        ),
+        (
+            "runtime",
+            "runtime interaction axis",
+            candidate.runtime_refs.clone(),
+        ),
+        (
+            "projection",
+            "projection / representation axis",
+            candidate.projection_refs.clone(),
+        ),
+    ]
+    .into_iter()
+    .map(|(axis_family, axis_ref, observation_refs)| {
+        let trace_status = if observation_refs.is_empty() {
+            "unmeasured"
+        } else {
+            "boundedObservationTrace"
+        };
+        let missing_refs = if observation_refs.is_empty() {
+            vec![format!(
+                "missing {axis_family} observation for {}",
+                candidate.candidate_id
+            )]
+        } else {
+            Vec::new()
+        };
+        ArchSigAxisContinuationTraceV0 {
+            axis_family: axis_family.to_string(),
+            axis_ref: axis_ref.to_string(),
+            trace_status: trace_status.to_string(),
+            continuation_summary: axis_continuation_summary(
+                axis_family,
+                &observation_refs,
+                operation_deltas,
+            ),
+            source_refs: source_refs_for_observation_refs(archmap, &observation_refs),
+            observation_refs,
+            missing_refs,
+            unmeasured_boundary:
+                "unmeasured axis is retained as missing evidence and is not interpreted as zero defect"
+                    .to_string(),
+        }
+    })
+    .collect()
+}
+
+fn inferred_shared_atom_support_refs(archmap: &ArchMapDocumentV0) -> Vec<String> {
+    let molecule_atom_counts = archmap
+        .molecule_observations
+        .iter()
+        .flat_map(|molecule| molecule.atom_observation_refs.iter())
+        .fold(BTreeMap::<String, usize>::new(), |mut counts, atom_ref| {
+            *counts.entry(atom_ref.clone()).or_default() += 1;
+            counts
+        });
+    let mut refs = molecule_atom_counts
+        .into_iter()
+        .filter_map(|(atom_ref, count)| (count > 1).then_some(atom_ref))
+        .collect::<Vec<_>>();
+    if refs.is_empty() {
+        refs = archmap
+            .atom_observations
+            .iter()
+            .filter(|atom| matches!(atom.atom_family.as_str(), "relation" | "existence"))
+            .map(|atom| atom.atom_observation_id.clone())
+            .collect();
+    }
+    refs.sort();
+    refs.dedup();
+    refs
+}
+
+fn observation_refs_by_axis_family(archmap: &ArchMapDocumentV0, axis_family: &str) -> Vec<String> {
+    let axis = axis_family.to_ascii_lowercase();
+    let mut refs = archmap
+        .atom_observations
+        .iter()
+        .filter(|atom| {
+            let atom_family = atom.atom_family.to_ascii_lowercase();
+            let predicate = atom.predicate.to_ascii_lowercase();
+            let subject = atom.subject_ref.to_ascii_lowercase();
+            atom_family.contains(&axis)
+                || predicate.contains(&axis)
+                || subject.contains(&axis)
+                || (axis == "authority" && atom_family.contains("boundary"))
+                || (axis == "contract" && atom_family.contains("specification"))
+        })
+        .map(|atom| atom.atom_observation_id.clone())
+        .collect::<Vec<_>>();
+    refs.sort();
+    refs.dedup();
+    refs
+}
+
+fn operation_square_candidate_basis(
+    shared_atom_support_refs: &[String],
+    state_refs: &[String],
+    effect_refs: &[String],
+    contract_refs: &[String],
+    semantic_refs: &[String],
+    authority_refs: &[String],
+    runtime_refs: &[String],
+    projection_refs: &[String],
+) -> Vec<String> {
+    [
+        (!shared_atom_support_refs.is_empty(), "sharedAtomSupport"),
+        (!state_refs.is_empty(), "stateSubject"),
+        (!effect_refs.is_empty(), "effectFamily"),
+        (!contract_refs.is_empty(), "contractAtom"),
+        (!semantic_refs.is_empty(), "semanticAtom"),
+        (!authority_refs.is_empty(), "authorityBoundary"),
+        (!runtime_refs.is_empty(), "runtimeInteraction"),
+        (!projection_refs.is_empty(), "projectionSurface"),
+    ]
+    .into_iter()
+    .filter_map(|(present, label)| present.then(|| label.to_string()))
+    .collect()
+}
+
+fn operation_square_missing_refs(archmap: &ArchMapDocumentV0) -> Vec<String> {
+    let mut missing = archmap_gap_missing_evidence(archmap);
+    for (axis, refs) in [
+        ("state", observation_refs_by_axis_family(archmap, "state")),
+        (
+            "projection",
+            archmap
+                .projection_info
+                .iter()
+                .map(|projection| projection.projection_id.clone())
+                .collect::<Vec<_>>(),
+        ),
+    ] {
+        if refs.is_empty() {
+            missing.push(format!(
+                "no {axis} observation supplied for operation square candidate"
+            ));
+        }
+    }
+    missing.sort();
+    missing.dedup();
+    missing
+}
+
+fn axis_continuation_summary(
+    axis_family: &str,
+    observation_refs: &[String],
+    operation_deltas: &[ArchSigOperationDeltaReadingV0],
+) -> String {
+    if observation_refs.is_empty() {
+        return format!("{axis_family} continuation is unmeasured under current ArchMap evidence");
+    }
+    format!(
+        "{axis_family} continuation reads {} observation ref(s) across {} operation delta(s)",
+        observation_refs.len(),
+        operation_deltas.len()
+    )
 }
 
 fn build_molecule_readings(
@@ -6107,6 +6446,7 @@ pub fn validate_archsig_analysis_packet_report(
         check_transfer_bridge_surface(packet),
         check_aat_structural_reading_surfaces(packet),
         check_current_state_evolution_boundary(packet),
+        check_operation_square_trace_surface(packet),
         check_monodromy_boundary_schema_foundation(packet),
         check_law_relative_analysis(packet),
         check_signature_and_flatness(packet),
@@ -8032,6 +8372,213 @@ fn check_current_state_evolution_boundary(packet: &ArchSigAnalysisPacketV0) -> V
     )
 }
 
+fn check_operation_square_trace_surface(packet: &ArchSigAnalysisPacketV0) -> ValidationCheck {
+    let candidate_ids = set(packet
+        .operation_square_candidates
+        .iter()
+        .map(|candidate| candidate.candidate_id.as_str()));
+    let trace_ids = set(packet
+        .path_continuation_traces
+        .iter()
+        .map(|trace| trace.trace_id.as_str()));
+    let required_axis_families = BTreeSet::from([
+        "static",
+        "contract",
+        "semantic",
+        "state",
+        "effect",
+        "authority",
+        "runtime",
+        "projection",
+    ]);
+    let mut examples = Vec::new();
+    if packet.operation_square_candidates.is_empty() {
+        examples.push(generic_validation_example(
+            "operationSquareCandidates",
+            "empty",
+            "packet must enumerate operation square candidates",
+        ));
+    }
+    examples.extend(duplicate_examples(
+        "operationSquareCandidates[].candidateId",
+        duplicates(
+            packet
+                .operation_square_candidates
+                .iter()
+                .map(|candidate| candidate.candidate_id.as_str()),
+        ),
+    ));
+    for candidate in &packet.operation_square_candidates {
+        if !matches!(candidate.candidate_source.as_str(), "inferred" | "supplied") {
+            examples.push(generic_validation_example(
+                &candidate.candidate_id,
+                &candidate.candidate_source,
+                "candidateSource must distinguish inferred and supplied operation pairs",
+            ));
+        }
+        push_blank(
+            &mut examples,
+            &format!("{} leftOperationRef", candidate.candidate_id),
+            &candidate.left_operation_ref,
+        );
+        push_blank(
+            &mut examples,
+            &format!("{} rightOperationRef", candidate.candidate_id),
+            &candidate.right_operation_ref,
+        );
+        if !candidate.p_path_ref.contains(" . ") || !candidate.q_path_ref.contains(" . ") {
+            examples.push(generic_validation_example(
+                &candidate.candidate_id,
+                "pPathRef/qPathRef",
+                "candidate must record p = g . f and q = f . g path pair expressions",
+            ));
+        }
+        if candidate.candidate_basis.is_empty() {
+            examples.push(generic_validation_example(
+                &candidate.candidate_id,
+                "candidateBasis",
+                "candidate must record why the operation pair was selected",
+            ));
+        }
+        if candidate.source_refs.is_empty() && candidate.observation_refs.is_empty() {
+            examples.push(generic_validation_example(
+                &candidate.candidate_id,
+                "sourceRefs/observationRefs",
+                "candidate must preserve source or observation refs",
+            ));
+        }
+        if candidate.missing_refs.is_empty() {
+            examples.push(generic_validation_example(
+                &candidate.candidate_id,
+                "missingRefs",
+                "candidate must retain missing refs so unmeasured axes are not read as zero",
+            ));
+        }
+        push_blank(
+            &mut examples,
+            &format!("{} evidenceBoundary", candidate.candidate_id),
+            &candidate.evidence_boundary,
+        );
+    }
+
+    if packet.path_continuation_traces.is_empty() {
+        examples.push(generic_validation_example(
+            "pathContinuationTraces",
+            "empty",
+            "packet must record path continuation traces",
+        ));
+    }
+    examples.extend(duplicate_examples(
+        "pathContinuationTraces[].traceId",
+        duplicates(
+            packet
+                .path_continuation_traces
+                .iter()
+                .map(|trace| trace.trace_id.as_str()),
+        ),
+    ));
+    for trace in &packet.path_continuation_traces {
+        if !candidate_ids.contains(trace.candidate_ref.as_str()) {
+            examples.push(generic_validation_example(
+                &trace.trace_id,
+                &trace.candidate_ref,
+                "path continuation trace references an unknown operation square candidate",
+            ));
+        }
+        if !matches!(trace.path_role.as_str(), "p" | "q") {
+            examples.push(generic_validation_example(
+                &trace.trace_id,
+                &trace.path_role,
+                "pathRole must be p or q",
+            ));
+        }
+        if trace.axis_traces.is_empty() {
+            examples.push(generic_validation_example(
+                &trace.trace_id,
+                "axisTraces",
+                "path continuation trace must carry axis-wise traces",
+            ));
+        }
+        let present_axis_families = trace
+            .axis_traces
+            .iter()
+            .map(|axis| axis.axis_family.as_str())
+            .collect::<BTreeSet<_>>();
+        for required in &required_axis_families {
+            if !present_axis_families.contains(required) {
+                examples.push(generic_validation_example(
+                    &trace.trace_id,
+                    required,
+                    "path continuation trace must include every required axis family",
+                ));
+            }
+        }
+        for axis in &trace.axis_traces {
+            push_blank(
+                &mut examples,
+                &format!("{} axisFamily", trace.trace_id),
+                &axis.axis_family,
+            );
+            push_blank(
+                &mut examples,
+                &format!("{} continuationSummary", trace.trace_id),
+                &axis.continuation_summary,
+            );
+            if axis.trace_status == "unmeasured" && axis.missing_refs.is_empty() {
+                examples.push(generic_validation_example(
+                    &trace.trace_id,
+                    &axis.axis_family,
+                    "unmeasured axis must carry missingRefs and must not be read as zero",
+                ));
+            }
+            push_blank(
+                &mut examples,
+                &format!("{} unmeasuredBoundary", trace.trace_id),
+                &axis.unmeasured_boundary,
+            );
+        }
+        push_blank(
+            &mut examples,
+            &format!("{} evidenceBoundary", trace.trace_id),
+            &trace.evidence_boundary,
+        );
+    }
+
+    for trace_ref in packet
+        .monodromy_reading_family
+        .path_continuation_trace_refs
+        .iter()
+    {
+        if !trace_ids.contains(trace_ref.as_str()) {
+            examples.push(generic_validation_example(
+                &packet.monodromy_reading_family.reading_family_id,
+                trace_ref,
+                "monodromy reading family references an unknown path continuation trace",
+            ));
+        }
+    }
+    for candidate_ref in packet
+        .monodromy_reading_family
+        .operation_square_candidate_refs
+        .iter()
+    {
+        if !candidate_ids.contains(candidate_ref.as_str()) {
+            examples.push(generic_validation_example(
+                &packet.monodromy_reading_family.reading_family_id,
+                candidate_ref,
+                "monodromy reading family references an unknown operation square candidate",
+            ));
+        }
+    }
+
+    check_from_examples(
+        "archsig-analysis-packet-operation-square-trace-surface",
+        "packet enumerates inferred/supplied operation square candidates and axis-wise path continuation traces",
+        examples,
+        "fail",
+    )
+}
+
 fn check_monodromy_boundary_schema_foundation(packet: &ArchSigAnalysisPacketV0) -> ValidationCheck {
     let mut examples = Vec::new();
     let store_refs = &packet.arch_map_store_refs;
@@ -9022,6 +9569,75 @@ fn source_ref_label(source_ref: &ArchMapSourceRef) -> String {
         .unwrap_or_else(|| source_ref.kind.clone())
 }
 
+fn all_archmap_source_ref_labels(archmap: &ArchMapDocumentV0) -> Vec<String> {
+    let mut refs = archmap
+        .atom_observations
+        .iter()
+        .flat_map(|atom| atom.source_refs.iter().map(source_ref_label))
+        .chain(
+            archmap
+                .molecule_observations
+                .iter()
+                .flat_map(|molecule| molecule.source_refs.iter().map(source_ref_label)),
+        )
+        .chain(
+            archmap
+                .semantic_observations
+                .iter()
+                .flat_map(|semantic| semantic.source_refs.iter().map(source_ref_label)),
+        )
+        .chain(
+            archmap
+                .observation_gaps
+                .iter()
+                .flat_map(|gap| gap.source_refs.iter().map(source_ref_label)),
+        )
+        .collect::<Vec<_>>();
+    refs.sort();
+    refs.dedup();
+    refs
+}
+
+fn source_refs_for_observation_refs(
+    archmap: &ArchMapDocumentV0,
+    observation_refs: &[String],
+) -> Vec<String> {
+    let wanted = observation_refs
+        .iter()
+        .map(String::as_str)
+        .collect::<BTreeSet<_>>();
+    let mut refs = archmap
+        .atom_observations
+        .iter()
+        .filter(|atom| wanted.contains(atom.atom_observation_id.as_str()))
+        .flat_map(|atom| atom.source_refs.iter().map(source_ref_label))
+        .chain(
+            archmap
+                .semantic_observations
+                .iter()
+                .filter(|semantic| wanted.contains(semantic.semantic_observation_id.as_str()))
+                .flat_map(|semantic| semantic.source_refs.iter().map(source_ref_label)),
+        )
+        .chain(
+            archmap
+                .observation_gaps
+                .iter()
+                .filter(|gap| wanted.contains(gap.gap_id.as_str()))
+                .flat_map(|gap| gap.source_refs.iter().map(source_ref_label)),
+        )
+        .chain(
+            archmap
+                .projection_info
+                .iter()
+                .filter(|projection| wanted.contains(projection.projection_id.as_str()))
+                .map(|projection| projection.source_observation_ref.clone()),
+        )
+        .collect::<Vec<_>>();
+    refs.sort();
+    refs.dedup();
+    refs
+}
+
 fn family_matches(observed: &str, required: &str) -> bool {
     let observed = observed.to_ascii_lowercase();
     let required = required.to_ascii_lowercase();
@@ -9207,6 +9823,25 @@ mod tests {
         assert_eq!(report.summary.result, "fail");
         assert!(report.checks.iter().any(|check| {
             check.id == "archsig-analysis-packet-monodromy-boundary-foundation"
+                && check.result == "fail"
+        }));
+    }
+
+    #[test]
+    fn unmeasured_trace_axis_without_missing_refs_fails_validation() {
+        let mut packet = static_archsig_analysis_packet();
+        let axis = packet.path_continuation_traces[0]
+            .axis_traces
+            .iter_mut()
+            .find(|axis| axis.trace_status == "unmeasured")
+            .expect("fixture has unmeasured trace axes");
+        axis.missing_refs.clear();
+
+        let report = validate_archsig_analysis_packet_report(&packet, "invalid.json");
+
+        assert_eq!(report.summary.result, "fail");
+        assert!(report.checks.iter().any(|check| {
+            check.id == "archsig-analysis-packet-operation-square-trace-surface"
                 && check.result == "fail"
         }));
     }

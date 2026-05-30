@@ -1346,6 +1346,60 @@ fn assert_north_star_packet_surfaces(json: &Value) {
         );
     }
     assert!(
+        json["operationSquareCandidates"]
+            .as_array()
+            .is_some_and(|items| {
+                !items.is_empty()
+                    && items.iter().all(|candidate| {
+                        candidate["candidateSource"]
+                            .as_str()
+                            .is_some_and(|source| source == "inferred" || source == "supplied")
+                            && candidate["pPathRef"]
+                                .as_str()
+                                .is_some_and(|path| path.contains(" . "))
+                            && candidate["qPathRef"]
+                                .as_str()
+                                .is_some_and(|path| path.contains(" . "))
+                            && candidate["missingRefs"].as_array().is_some()
+                    })
+            }),
+        "operation square candidates must distinguish inferred/supplied path pairs and preserve missing refs"
+    );
+    assert!(
+        json["pathContinuationTraces"]
+            .as_array()
+            .is_some_and(|items| {
+                !items.is_empty()
+                    && items.iter().all(|trace| {
+                        trace["axisTraces"].as_array().is_some_and(|axes| {
+                            let families = axes
+                                .iter()
+                                .filter_map(|axis| axis["axisFamily"].as_str())
+                                .collect::<std::collections::BTreeSet<_>>();
+                            [
+                                "static",
+                                "contract",
+                                "semantic",
+                                "state",
+                                "effect",
+                                "authority",
+                                "runtime",
+                                "projection",
+                            ]
+                            .iter()
+                            .all(|family| families.contains(family))
+                                && axes.iter().all(|axis| {
+                                    axis["traceStatus"].as_str() != Some("unmeasured")
+                                        || axis["missingRefs"]
+                                            .as_array()
+                                            .is_some_and(|refs| !refs.is_empty())
+                                })
+                        })
+                    })
+            }),
+        "path continuation traces must expose required axis families and keep unmeasured axes as missing evidence"
+    );
+    assert!(
         json["llmInterpretationPacket"]["structuralReadingReviewSummary"]
             .as_array()
             .is_some_and(|items| !items.is_empty())

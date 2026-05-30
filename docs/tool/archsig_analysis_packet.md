@@ -66,6 +66,8 @@ The implemented schema records:
 - `axisForgettingRiskReadings`
 - `signatureTrajectoryHomotopyRefutationReadings`
 - `bridgeSplitObstructionTransferReadings`
+- `operationSquareCandidates`
+- `pathContinuationTraces`
 - `monodromyReadingFamily`
 - `boundaryHolonomyReadingFamily`
 - `representationStrengthReadings`
@@ -95,10 +97,11 @@ AAT concept coverage, bounded judgement statuses, analytic axes, workflow risk
 readings, spectral analysis readings, spectral mode readings, design principle
 readings, spectral drilldown readings, transfer bridge readings and bridge-edge
 source refs, v0.3.0 measurement expansion readings, AAT structural state
-readings, ArchMapStore delta / commit / snapshot / index refs, monodromy /
-boundary holonomy reading family policy surfaces, law-relative obstruction
-links, signature / flatness references, repair candidate guardrails, LLM
-interpretation notes, evidence boundary, and required non-conclusions.
+readings, ArchMapStore delta / commit / snapshot / index refs, operation square
+candidates, axis-wise path continuation traces, monodromy / boundary holonomy
+reading family policy surfaces, law-relative obstruction links, signature /
+flatness references, repair candidate guardrails, LLM interpretation notes,
+evidence boundary, and required non-conclusions.
 Each obstruction circuit, signature axis reading, and repair operation candidate
 must carry its own `missingEvidence` and `excludedReadings`. Packet-level
 `excludedReadings` does not stand in for child-record evidence boundaries.
@@ -189,6 +192,14 @@ The builder:
   axis-wise defect, AMI, boundary residual, and feature-extension attribution
   readings. In this issue they define the packet shape and validation boundary;
   later issues fill the concrete valuation fields.
+- `operationSquareCandidates` enumerates supplied or inferred operation pairs as
+  path pairs `p = g . f` and `q = f . g`. Inferred candidates are review cues
+  derived from shared Atom support, state / effect / contract / semantic /
+  authority / runtime / projection evidence; they are not operation truth.
+- `pathContinuationTraces` records the selected continuation trace for each
+  candidate path and axis family: static, contract, semantic, state, effect,
+  authority, runtime, and projection. Unmeasured axes are retained as
+  `missingRefs` and must not be read as zero defect.
 - axis-forgetting risk records when a coarse observation projection has
   forgotten selected axes or collapsed mixed-axis support. It blocks
   `ZeroReflecting` and `ObstructionReflecting` readings unless explicit axis

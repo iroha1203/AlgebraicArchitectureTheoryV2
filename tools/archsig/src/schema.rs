@@ -664,6 +664,8 @@ pub struct ArchSigAnalysisPacketV0 {
     #[serde(default)]
     pub bridge_split_obstruction_transfer_readings:
         Vec<ArchSigBridgeSplitObstructionTransferReadingV0>,
+    pub operation_square_candidates: Vec<ArchSigOperationSquareCandidateV0>,
+    pub path_continuation_traces: Vec<ArchSigPathContinuationTraceV0>,
     pub monodromy_reading_family: ArchSigMonodromyReadingFamilyV0,
     pub boundary_holonomy_reading_family: ArchSigBoundaryHolonomyReadingFamilyV0,
     pub representation_strength_readings: Vec<ArchSigRepresentationStrengthReadingV0>,
@@ -690,6 +692,61 @@ pub struct ArchSigAnalysisPacketV0 {
     #[serde(default)]
     pub excluded_readings: Vec<String>,
     pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigOperationSquareCandidateV0 {
+    pub candidate_id: String,
+    pub candidate_source: String,
+    pub supplied_pair_ref: Option<String>,
+    pub candidate_basis: Vec<String>,
+    pub left_operation_ref: String,
+    pub right_operation_ref: String,
+    pub p_path_ref: String,
+    pub q_path_ref: String,
+    pub shared_atom_support_refs: Vec<String>,
+    pub state_refs: Vec<String>,
+    pub effect_refs: Vec<String>,
+    pub contract_refs: Vec<String>,
+    pub semantic_refs: Vec<String>,
+    pub authority_refs: Vec<String>,
+    pub runtime_refs: Vec<String>,
+    pub projection_refs: Vec<String>,
+    pub source_refs: Vec<String>,
+    pub observation_refs: Vec<String>,
+    pub missing_refs: Vec<String>,
+    pub evidence_boundary: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigPathContinuationTraceV0 {
+    pub trace_id: String,
+    pub candidate_ref: String,
+    pub path_ref: String,
+    pub path_role: String,
+    pub path_expression: String,
+    pub axis_traces: Vec<ArchSigAxisContinuationTraceV0>,
+    pub observation_refs: Vec<String>,
+    pub source_refs: Vec<String>,
+    pub missing_refs: Vec<String>,
+    pub evidence_boundary: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigAxisContinuationTraceV0 {
+    pub axis_family: String,
+    pub axis_ref: String,
+    pub trace_status: String,
+    pub continuation_summary: String,
+    pub observation_refs: Vec<String>,
+    pub source_refs: Vec<String>,
+    pub missing_refs: Vec<String>,
+    pub unmeasured_boundary: String,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

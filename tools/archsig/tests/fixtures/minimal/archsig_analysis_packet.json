@@ -2572,6 +2572,399 @@
       ]
     }
   ],
+  "operationSquareCandidates": [
+    {
+      "candidateId": "operation-square:operation-delta-repair-obstruction-semantic-contract-mismatch-computed:operation-delta-repair-obstruction-semantic-contract-mismatch-computed",
+      "candidateSource": "inferred",
+      "suppliedPairRef": null,
+      "candidateBasis": [
+        "sharedAtomSupport",
+        "effectFamily",
+        "contractAtom",
+        "semanticAtom",
+        "runtimeInteraction",
+        "projectionSurface"
+      ],
+      "leftOperationRef": "operation-delta:repair-obstruction-semantic-contract-mismatch-computed",
+      "rightOperationRef": "operation-delta:repair-obstruction-semantic-contract-mismatch-computed",
+      "pPathRef": "operation-delta:repair-obstruction-semantic-contract-mismatch-computed . operation-delta:repair-obstruction-semantic-contract-mismatch-computed",
+      "qPathRef": "operation-delta:repair-obstruction-semantic-contract-mismatch-computed . operation-delta:repair-obstruction-semantic-contract-mismatch-computed",
+      "sharedAtomSupportRefs": [
+        "atom:component:route-users",
+        "atom:component:service-user",
+        "atom:relation:route-service"
+      ],
+      "stateRefs": [],
+      "effectRefs": [
+        "add observed compensation / authority / effect atoms only after source review",
+        "obstruction:semantic-contract-mismatch:computed may decrease or move to a runtime/state/effect axis",
+        "split or enrich atoms that currently support the target obstruction"
+      ],
+      "contractRefs": [
+        "atom:contract:create-user"
+      ],
+      "semanticRefs": [
+        "semantic:create-user-flow"
+      ],
+      "authorityRefs": [],
+      "runtimeRefs": [
+        "gap-runtime-user-db-trace"
+      ],
+      "projectionRefs": [
+        "projection:aat:route-users",
+        "projection:aat:route-service",
+        "projection:sft:create-user"
+      ],
+      "sourceRefs": [
+        ".lake/runtime-trace.json",
+        "doc-architecture",
+        "src-route-users",
+        "src-service-user",
+        "test-user-contract"
+      ],
+      "observationRefs": [
+        "atom:component:route-users",
+        "atom:component:service-user",
+        "atom:contract:create-user",
+        "atom:relation:route-service",
+        "gap-runtime-user-db-trace",
+        "projection:aat:route-service",
+        "projection:aat:route-users",
+        "projection:sft:create-user",
+        "semantic:create-user-flow"
+      ],
+      "missingRefs": [
+        "gap-runtime-user-db-trace: runtime trace was requested but not supplied",
+        "no state observation supplied for operation square candidate"
+      ],
+      "evidenceBoundary": "inferred operation square candidate is a review cue over observed ArchMap support, not operation truth",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    }
+  ],
+  "pathContinuationTraces": [
+    {
+      "traceId": "path-continuation-trace:operation-square-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-operation-delta-repair-obstruction-semantic-contract-mismatch-computed:p",
+      "candidateRef": "operation-square:operation-delta-repair-obstruction-semantic-contract-mismatch-computed:operation-delta-repair-obstruction-semantic-contract-mismatch-computed",
+      "pathRef": "operation-square:operation-delta-repair-obstruction-semantic-contract-mismatch-computed:operation-delta-repair-obstruction-semantic-contract-mismatch-computed:p",
+      "pathRole": "p",
+      "pathExpression": "operation-delta:repair-obstruction-semantic-contract-mismatch-computed . operation-delta:repair-obstruction-semantic-contract-mismatch-computed",
+      "axisTraces": [
+        {
+          "axisFamily": "static",
+          "axisRef": "static dependency / support axis",
+          "traceStatus": "boundedObservationTrace",
+          "continuationSummary": "static continuation reads 3 observation ref(s) across 1 operation delta(s)",
+          "observationRefs": [
+            "atom:component:route-users",
+            "atom:component:service-user",
+            "atom:relation:route-service"
+          ],
+          "sourceRefs": [
+            "src-route-users",
+            "src-service-user"
+          ],
+          "missingRefs": [],
+          "unmeasuredBoundary": "unmeasured axis is retained as missing evidence and is not interpreted as zero defect"
+        },
+        {
+          "axisFamily": "contract",
+          "axisRef": "contract axis",
+          "traceStatus": "boundedObservationTrace",
+          "continuationSummary": "contract continuation reads 1 observation ref(s) across 1 operation delta(s)",
+          "observationRefs": [
+            "atom:contract:create-user"
+          ],
+          "sourceRefs": [
+            "test-user-contract"
+          ],
+          "missingRefs": [],
+          "unmeasuredBoundary": "unmeasured axis is retained as missing evidence and is not interpreted as zero defect"
+        },
+        {
+          "axisFamily": "semantic",
+          "axisRef": "semantic axis",
+          "traceStatus": "boundedObservationTrace",
+          "continuationSummary": "semantic continuation reads 1 observation ref(s) across 1 operation delta(s)",
+          "observationRefs": [
+            "semantic:create-user-flow"
+          ],
+          "sourceRefs": [
+            "doc-architecture",
+            "test-user-contract"
+          ],
+          "missingRefs": [],
+          "unmeasuredBoundary": "unmeasured axis is retained as missing evidence and is not interpreted as zero defect"
+        },
+        {
+          "axisFamily": "state",
+          "axisRef": "state transition axis",
+          "traceStatus": "unmeasured",
+          "continuationSummary": "state continuation is unmeasured under current ArchMap evidence",
+          "observationRefs": [],
+          "sourceRefs": [],
+          "missingRefs": [
+            "missing state observation for operation-square:operation-delta-repair-obstruction-semantic-contract-mismatch-computed:operation-delta-repair-obstruction-semantic-contract-mismatch-computed"
+          ],
+          "unmeasuredBoundary": "unmeasured axis is retained as missing evidence and is not interpreted as zero defect"
+        },
+        {
+          "axisFamily": "effect",
+          "axisRef": "effect ordering / replay / compensation axis",
+          "traceStatus": "boundedObservationTrace",
+          "continuationSummary": "effect continuation reads 3 observation ref(s) across 1 operation delta(s)",
+          "observationRefs": [
+            "add observed compensation / authority / effect atoms only after source review",
+            "obstruction:semantic-contract-mismatch:computed may decrease or move to a runtime/state/effect axis",
+            "split or enrich atoms that currently support the target obstruction"
+          ],
+          "sourceRefs": [],
+          "missingRefs": [],
+          "unmeasuredBoundary": "unmeasured axis is retained as missing evidence and is not interpreted as zero defect"
+        },
+        {
+          "axisFamily": "authority",
+          "axisRef": "authority / trust boundary axis",
+          "traceStatus": "unmeasured",
+          "continuationSummary": "authority continuation is unmeasured under current ArchMap evidence",
+          "observationRefs": [],
+          "sourceRefs": [],
+          "missingRefs": [
+            "missing authority observation for operation-square:operation-delta-repair-obstruction-semantic-contract-mismatch-computed:operation-delta-repair-obstruction-semantic-contract-mismatch-computed"
+          ],
+          "unmeasuredBoundary": "unmeasured axis is retained as missing evidence and is not interpreted as zero defect"
+        },
+        {
+          "axisFamily": "runtime",
+          "axisRef": "runtime interaction axis",
+          "traceStatus": "boundedObservationTrace",
+          "continuationSummary": "runtime continuation reads 1 observation ref(s) across 1 operation delta(s)",
+          "observationRefs": [
+            "gap-runtime-user-db-trace"
+          ],
+          "sourceRefs": [
+            ".lake/runtime-trace.json"
+          ],
+          "missingRefs": [],
+          "unmeasuredBoundary": "unmeasured axis is retained as missing evidence and is not interpreted as zero defect"
+        },
+        {
+          "axisFamily": "projection",
+          "axisRef": "projection / representation axis",
+          "traceStatus": "boundedObservationTrace",
+          "continuationSummary": "projection continuation reads 3 observation ref(s) across 1 operation delta(s)",
+          "observationRefs": [
+            "projection:aat:route-users",
+            "projection:aat:route-service",
+            "projection:sft:create-user"
+          ],
+          "sourceRefs": [
+            "atom:component:route-users",
+            "atom:relation:route-service",
+            "semantic:create-user-flow"
+          ],
+          "missingRefs": [],
+          "unmeasuredBoundary": "unmeasured axis is retained as missing evidence and is not interpreted as zero defect"
+        }
+      ],
+      "observationRefs": [
+        "atom:component:route-users",
+        "atom:component:service-user",
+        "atom:contract:create-user",
+        "atom:relation:route-service",
+        "gap-runtime-user-db-trace",
+        "projection:aat:route-service",
+        "projection:aat:route-users",
+        "projection:sft:create-user",
+        "semantic:create-user-flow"
+      ],
+      "sourceRefs": [
+        ".lake/runtime-trace.json",
+        "doc-architecture",
+        "src-route-users",
+        "src-service-user",
+        "test-user-contract"
+      ],
+      "missingRefs": [
+        "gap-runtime-user-db-trace: runtime trace was requested but not supplied",
+        "no state observation supplied for operation square candidate"
+      ],
+      "evidenceBoundary": "continuation trace is bounded by selected ArchMap observations and does not execute the operations",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    },
+    {
+      "traceId": "path-continuation-trace:operation-square-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-operation-delta-repair-obstruction-semantic-contract-mismatch-computed:q",
+      "candidateRef": "operation-square:operation-delta-repair-obstruction-semantic-contract-mismatch-computed:operation-delta-repair-obstruction-semantic-contract-mismatch-computed",
+      "pathRef": "operation-square:operation-delta-repair-obstruction-semantic-contract-mismatch-computed:operation-delta-repair-obstruction-semantic-contract-mismatch-computed:q",
+      "pathRole": "q",
+      "pathExpression": "operation-delta:repair-obstruction-semantic-contract-mismatch-computed . operation-delta:repair-obstruction-semantic-contract-mismatch-computed",
+      "axisTraces": [
+        {
+          "axisFamily": "static",
+          "axisRef": "static dependency / support axis",
+          "traceStatus": "boundedObservationTrace",
+          "continuationSummary": "static continuation reads 3 observation ref(s) across 1 operation delta(s)",
+          "observationRefs": [
+            "atom:component:route-users",
+            "atom:component:service-user",
+            "atom:relation:route-service"
+          ],
+          "sourceRefs": [
+            "src-route-users",
+            "src-service-user"
+          ],
+          "missingRefs": [],
+          "unmeasuredBoundary": "unmeasured axis is retained as missing evidence and is not interpreted as zero defect"
+        },
+        {
+          "axisFamily": "contract",
+          "axisRef": "contract axis",
+          "traceStatus": "boundedObservationTrace",
+          "continuationSummary": "contract continuation reads 1 observation ref(s) across 1 operation delta(s)",
+          "observationRefs": [
+            "atom:contract:create-user"
+          ],
+          "sourceRefs": [
+            "test-user-contract"
+          ],
+          "missingRefs": [],
+          "unmeasuredBoundary": "unmeasured axis is retained as missing evidence and is not interpreted as zero defect"
+        },
+        {
+          "axisFamily": "semantic",
+          "axisRef": "semantic axis",
+          "traceStatus": "boundedObservationTrace",
+          "continuationSummary": "semantic continuation reads 1 observation ref(s) across 1 operation delta(s)",
+          "observationRefs": [
+            "semantic:create-user-flow"
+          ],
+          "sourceRefs": [
+            "doc-architecture",
+            "test-user-contract"
+          ],
+          "missingRefs": [],
+          "unmeasuredBoundary": "unmeasured axis is retained as missing evidence and is not interpreted as zero defect"
+        },
+        {
+          "axisFamily": "state",
+          "axisRef": "state transition axis",
+          "traceStatus": "unmeasured",
+          "continuationSummary": "state continuation is unmeasured under current ArchMap evidence",
+          "observationRefs": [],
+          "sourceRefs": [],
+          "missingRefs": [
+            "missing state observation for operation-square:operation-delta-repair-obstruction-semantic-contract-mismatch-computed:operation-delta-repair-obstruction-semantic-contract-mismatch-computed"
+          ],
+          "unmeasuredBoundary": "unmeasured axis is retained as missing evidence and is not interpreted as zero defect"
+        },
+        {
+          "axisFamily": "effect",
+          "axisRef": "effect ordering / replay / compensation axis",
+          "traceStatus": "boundedObservationTrace",
+          "continuationSummary": "effect continuation reads 3 observation ref(s) across 1 operation delta(s)",
+          "observationRefs": [
+            "add observed compensation / authority / effect atoms only after source review",
+            "obstruction:semantic-contract-mismatch:computed may decrease or move to a runtime/state/effect axis",
+            "split or enrich atoms that currently support the target obstruction"
+          ],
+          "sourceRefs": [],
+          "missingRefs": [],
+          "unmeasuredBoundary": "unmeasured axis is retained as missing evidence and is not interpreted as zero defect"
+        },
+        {
+          "axisFamily": "authority",
+          "axisRef": "authority / trust boundary axis",
+          "traceStatus": "unmeasured",
+          "continuationSummary": "authority continuation is unmeasured under current ArchMap evidence",
+          "observationRefs": [],
+          "sourceRefs": [],
+          "missingRefs": [
+            "missing authority observation for operation-square:operation-delta-repair-obstruction-semantic-contract-mismatch-computed:operation-delta-repair-obstruction-semantic-contract-mismatch-computed"
+          ],
+          "unmeasuredBoundary": "unmeasured axis is retained as missing evidence and is not interpreted as zero defect"
+        },
+        {
+          "axisFamily": "runtime",
+          "axisRef": "runtime interaction axis",
+          "traceStatus": "boundedObservationTrace",
+          "continuationSummary": "runtime continuation reads 1 observation ref(s) across 1 operation delta(s)",
+          "observationRefs": [
+            "gap-runtime-user-db-trace"
+          ],
+          "sourceRefs": [
+            ".lake/runtime-trace.json"
+          ],
+          "missingRefs": [],
+          "unmeasuredBoundary": "unmeasured axis is retained as missing evidence and is not interpreted as zero defect"
+        },
+        {
+          "axisFamily": "projection",
+          "axisRef": "projection / representation axis",
+          "traceStatus": "boundedObservationTrace",
+          "continuationSummary": "projection continuation reads 3 observation ref(s) across 1 operation delta(s)",
+          "observationRefs": [
+            "projection:aat:route-users",
+            "projection:aat:route-service",
+            "projection:sft:create-user"
+          ],
+          "sourceRefs": [
+            "atom:component:route-users",
+            "atom:relation:route-service",
+            "semantic:create-user-flow"
+          ],
+          "missingRefs": [],
+          "unmeasuredBoundary": "unmeasured axis is retained as missing evidence and is not interpreted as zero defect"
+        }
+      ],
+      "observationRefs": [
+        "atom:component:route-users",
+        "atom:component:service-user",
+        "atom:contract:create-user",
+        "atom:relation:route-service",
+        "gap-runtime-user-db-trace",
+        "projection:aat:route-service",
+        "projection:aat:route-users",
+        "projection:sft:create-user",
+        "semantic:create-user-flow"
+      ],
+      "sourceRefs": [
+        ".lake/runtime-trace.json",
+        "doc-architecture",
+        "src-route-users",
+        "src-service-user",
+        "test-user-contract"
+      ],
+      "missingRefs": [
+        "gap-runtime-user-db-trace: runtime trace was requested but not supplied",
+        "no state observation supplied for operation square candidate"
+      ],
+      "evidenceBoundary": "continuation trace is bounded by selected ArchMap observations and does not execute the operations",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    }
+  ],
   "monodromyReadingFamily": {
     "readingFamilyId": "monodromy-reading-family:measurement-policy-monodromy-boundary-holonomy",
     "status": "schemaFoundationOnly",
@@ -2584,11 +2977,11 @@
     "weightPolicy": "unit weights until repo-specific calibration is declared in a future policy",
     "coveragePolicy": "measure only selected axes with declared coverage; missing coverage remains blocked, not zero",
     "operationSquareCandidateRefs": [
-      "path:semantic-operation-flow",
-      "diagram:obstruction-filling"
+      "operation-square:operation-delta-repair-obstruction-semantic-contract-mismatch-computed:operation-delta-repair-obstruction-semantic-contract-mismatch-computed"
     ],
     "pathContinuationTraceRefs": [
-      "path-signature-trajectory:operation-delta-repair-obstruction-semantic-contract-mismatch-computed"
+      "path-continuation-trace:operation-square-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-operation-delta-repair-obstruction-semantic-contract-mismatch-computed:p",
+      "path-continuation-trace:operation-square-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-operation-delta-repair-obstruction-semantic-contract-mismatch-computed:q"
     ],
     "axisWiseDefectRefs": [],
     "aggregateReadingKind": "ami-precondition-surface",
