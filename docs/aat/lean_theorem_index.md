@@ -3313,6 +3313,45 @@ flatness、future safety、empirical incident/cost calibration、extractor compl
 主張しない。positive closed transfer edge は current-state recurrent obstruction
 support として読むだけで、future incident prediction や repair safety evidence ではない。
 
+## Homotopy-Holonomy Stokes Minimal Guardrail
+
+File: `Formal/Arch/Signature/HomotopyHolonomyStokes.lean`
+
+この節は Homotopy / Holonomy / Stokes readings を Lean 側で読むための minimal
+guardrail である。ArchSig implementation correctness や一般 homology 理論ではなく、
+finite measured path pair、selected continuation、measured loop、finite measured
+2-cell filling、bounded Stokes-style inequality、unfilled loop non-conclusion に
+相対化した theorem package を置く。
+
+| Lean 名 | 種別 | 意味 | Status |
+| --- | --- | --- | --- |
+| `HomotopyHolonomyStokes.MeasuredPathPair` | `structure` | bounded homotopy reading が比較する path pair。 | `defined only` |
+| `HomotopyHolonomyStokes.SelectedContinuation` | `structure` | LawPolicy profile が選ぶ `Nat` 値 continuation。 | `defined only` |
+| `HomotopyHolonomyStokes.selectedHolonomy` | `def` | selected continuation 上で path pair の holonomy を `0/1` として読む。 | `defined only` |
+| `HomotopyHolonomyStokes.MeasuredLoop` | `structure` | path pair と selected boundary holonomy を束ねる measured loop。 | `defined only` |
+| `HomotopyHolonomyStokes.MeasuredTwoCell` | `structure` | measured boundary path pair、local curvature、weight を持つ finite 2-cell row。 | `defined only` |
+| `HomotopyHolonomyStokes.MeasuredTwoCell.contribution` | `def` | `weight * localCurvature` としての nonnegative contribution。 | `defined only` |
+| `HomotopyHolonomyStokes.FiniteMeasuredTwoCellFamily` | `abbrev` | measured 2-cell row の finite list。 | `defined only` |
+| `HomotopyHolonomyStokes.localCurvatureAggregate` | `def` | finite filling の weighted local curvature aggregate。 | `defined only` |
+| `HomotopyHolonomyStokes.MeasuredFilling` | `structure` | measured loop、finite 2-cell family、bounded Stokes assumption を束ねる filling。 | `defined only` |
+| `HomotopyHolonomyStokes.boundedStokesInequality_of_measuredFilling` | `theorem` | measured filling から boundary holonomy ≤ local curvature aggregate を取り出す。 | `proved` |
+| `HomotopyHolonomyStokes.exists_nonzero_localCurvature_of_aggregate_nonzero` | `theorem` | aggregate nonzero から positive-weight nonzero local curvature cell の存在を得る。 | `proved` |
+| `HomotopyHolonomyStokes.localCurvatureAggregate_nonzero_of_boundaryHolonomy_nonzero` | `theorem` | bounded filling の boundary holonomy nonzero から local curvature aggregate nonzero を得る。 | `proved` |
+| `HomotopyHolonomyStokes.exists_nonzero_localCurvature_of_boundaryHolonomy_nonzero` | `theorem` | measured filling の boundary holonomy nonzero から positive-weight nonzero measured local curvature cell の存在を得る。 | `proved` |
+| `HomotopyHolonomyStokes.UnfilledLoopReading` | `structure` | missing filler evidence と violation conclusion refusal を持つ unfilled loop reading。 | `defined only` |
+| `HomotopyHolonomyStokes.unfilledLoop_not_violationConclusion` | `theorem` | unfilled loop reading は violation conclusion を結論しない。 | `proved` |
+| `HomotopyHolonomyStokes.HomotopyStokesNonConclusionClause` | `inductive` | Homotopy / Holonomy / Stokes theorem package の non-conclusion clause。 | `defined only` |
+| `HomotopyHolonomyStokes.requiredNonConclusions` | `def` | required non-conclusion clause の finite list。 | `defined only` |
+| `HomotopyHolonomyStokes.HomotopyHolonomyStokesGuardrail` | `structure` | measured fillings、unfilled loops、non-conclusions を束ねる minimal theorem guardrail package。 | `defined only` |
+| `HomotopyHolonomyStokes.HomotopyHolonomyStokesGuardrail.RecordsRequiredNonConclusions` | `def` | package が required non-conclusion clauses を保持する predicate。 | `defined only` |
+| `HomotopyHolonomyStokes.HomotopyHolonomyStokesGuardrail.recordsRequiredNonConclusions_of_eq_required` | `theorem` | package の nonConclusions が required list と一致すれば boundary を保持する。 | `proved` |
+
+Non-conclusions: この theorem package は finite measured filling に相対化された
+guardrail であり、ArchSig implementation correctness、global homotopy completeness、
+global homology computation、future safety、empirical calibration、extractor
+completeness は主張しない。unfilled loop は architectural hole / missing filler
+evidence として読むだけで、automatic violation conclusion ではない。
+
 ## Static / Semantic Counterexample
 
 File: `Formal/Arch/Examples/StaticSemanticCounterexample.lean`
