@@ -3164,27 +3164,25 @@
           "refId": "law:layer-respecting",
           "status": "blockedByCoverageGap",
           "evidenceRefs": [
-            "relation",
-            "boundaryAuthority"
+            "atom:relation:route-service"
           ],
           "blockerRefs": [
             "boundaryAuthority",
             "gap-runtime-user-db-trace"
           ],
-          "reading": "coverage is selected-profile-relative and does not prove lawfulness"
+          "reading": "required law coverage is source-backed Atom evidence plus witness/axis alignment, not family presence alone"
         },
         {
           "refId": "law:semantic-contract-alignment",
           "status": "blockedByCoverageGap",
           "evidenceRefs": [
-            "contractSpecification",
-            "semanticInterpretation"
+            "atom:contract:create-user"
           ],
           "blockerRefs": [
             "semanticInterpretation",
             "gap-runtime-user-db-trace"
           ],
-          "reading": "coverage is selected-profile-relative and does not prove lawfulness"
+          "reading": "required law coverage is source-backed Atom evidence plus witness/axis alignment, not family presence alone"
         }
       ],
       "optionalLawCoverage": [
@@ -3203,27 +3201,25 @@
           "refId": "witness:layer-violation",
           "status": "blockedByCoverageGap",
           "evidenceRefs": [
-            "relation",
-            "boundaryAuthority"
+            "atom:relation:route-service"
           ],
           "blockerRefs": [
             "boundaryAuthority",
             "gap-runtime-user-db-trace"
           ],
-          "reading": "coverage is selected-profile-relative and does not prove lawfulness"
+          "reading": "witness rule coverage is evaluated separately from required law coverage"
         },
         {
           "refId": "witness:semantic-contract-mismatch",
           "status": "blockedByCoverageGap",
           "evidenceRefs": [
-            "contractSpecification",
-            "semanticInterpretation"
+            "atom:contract:create-user"
           ],
           "blockerRefs": [
             "semanticInterpretation",
             "gap-runtime-user-db-trace"
           ],
-          "reading": "coverage is selected-profile-relative and does not prove lawfulness"
+          "reading": "witness rule coverage is evaluated separately from required law coverage"
         }
       ],
       "signatureAxisCoverage": [
@@ -3252,24 +3248,142 @@
           "reading": "1 obstruction circuit(s) contribute to sig-axis:semantic-inconsistency"
         }
       ],
+      "coverageRequirementStatus": [
+        {
+          "refId": "coverage:layer-atoms",
+          "status": "blockedByMissingSourceEvidence",
+          "evidenceRefs": [
+            "atom:component:route-users",
+            "atom:component:service-user",
+            "atom:relation:route-service"
+          ],
+          "blockerRefs": [
+            "boundaryAuthority",
+            "gap-runtime-user-db-trace",
+            "symbol"
+          ],
+          "reading": "coverage requirement is checked against source-backed Atom families and required source ref kinds"
+        },
+        {
+          "refId": "coverage:semantic-contract-atoms",
+          "status": "blockedByMissingSourceEvidence",
+          "evidenceRefs": [
+            "atom:contract:create-user"
+          ],
+          "blockerRefs": [
+            "capability",
+            "semanticInterpretation",
+            "gap-runtime-user-db-trace",
+            "doc-section"
+          ],
+          "reading": "coverage requirement is checked against source-backed Atom families and required source ref kinds"
+        }
+      ],
       "exactnessAssumptionStatus": [
         {
           "refId": "the selected witness rules cover only policy-declared laws",
           "status": "blockedByCoverageGap",
-          "evidenceRefs": [],
+          "evidenceRefs": [
+            "atom:contract:create-user",
+            "atom:relation:route-service"
+          ],
           "blockerRefs": [
             "gap-runtime-user-db-trace"
           ],
-          "reading": "exactness assumption is not theorem discharge"
+          "reading": "exactness assumption is tracked separately from coverage and is not theorem discharge"
         },
         {
           "refId": "zero readings are exact only for observed atoms and declared coverage requirements",
           "status": "blockedByCoverageGap",
-          "evidenceRefs": [],
+          "evidenceRefs": [
+            "atom:contract:create-user",
+            "atom:relation:route-service"
+          ],
           "blockerRefs": [
             "gap-runtime-user-db-trace"
           ],
-          "reading": "exactness assumption is not theorem discharge"
+          "reading": "exactness assumption is tracked separately from coverage and is not theorem discharge"
+        }
+      ],
+      "lawWitnessAxisEvaluations": [
+        {
+          "evaluationId": "law-witness-axis-alignment:law-layer-respecting",
+          "lawRef": "law:layer-respecting",
+          "alignmentStatus": "blocked",
+          "coverageStatus": "blocked",
+          "exactnessStatus": "blocked",
+          "requiredWitnessRefs": [
+            "witness:layer-violation"
+          ],
+          "observedWitnessRefs": [],
+          "missingWitnessRefs": [
+            "witness:layer-violation"
+          ],
+          "requiredAxisRefs": [
+            "axis:layer-violation"
+          ],
+          "observedAxisRefs": [
+            "axis:layer-violation"
+          ],
+          "missingAxisRefs": [],
+          "coverageRequirementRefs": [
+            "coverage:layer-atoms"
+          ],
+          "exactnessAssumptionRefs": [
+            "the selected witness rules cover only policy-declared laws",
+            "zero readings are exact only for observed atoms and declared coverage requirements"
+          ],
+          "sourceBackedEvidenceRefs": [
+            "atom:relation:route-service"
+          ],
+          "blockerRefs": [
+            "boundaryAuthority",
+            "gap-runtime-user-db-trace",
+            "symbol",
+            "witness:layer-violation"
+          ],
+          "evaluator": "law-witness-axis-alignment-evaluator-v0",
+          "reading": "required law visibility is evaluated by witness exactness, selected signature-axis alignment, coverage requirements, and exactness assumptions"
+        },
+        {
+          "evaluationId": "law-witness-axis-alignment:law-semantic-contract-alignment",
+          "lawRef": "law:semantic-contract-alignment",
+          "alignmentStatus": "blocked",
+          "coverageStatus": "blocked",
+          "exactnessStatus": "blocked",
+          "requiredWitnessRefs": [
+            "witness:semantic-contract-mismatch"
+          ],
+          "observedWitnessRefs": [],
+          "missingWitnessRefs": [
+            "witness:semantic-contract-mismatch"
+          ],
+          "requiredAxisRefs": [
+            "axis:semantic-inconsistency"
+          ],
+          "observedAxisRefs": [
+            "axis:semantic-inconsistency"
+          ],
+          "missingAxisRefs": [],
+          "coverageRequirementRefs": [
+            "coverage:semantic-contract-atoms"
+          ],
+          "exactnessAssumptionRefs": [
+            "the selected witness rules cover only policy-declared laws",
+            "zero readings are exact only for observed atoms and declared coverage requirements"
+          ],
+          "sourceBackedEvidenceRefs": [
+            "atom:contract:create-user"
+          ],
+          "blockerRefs": [
+            "capability",
+            "doc-section",
+            "gap-runtime-user-db-trace",
+            "semanticInterpretation",
+            "witness:semantic-contract-mismatch"
+          ],
+          "evaluator": "law-witness-axis-alignment-evaluator-v0",
+          "reading": "required law visibility is evaluated by witness exactness, selected signature-axis alignment, coverage requirements, and exactness assumptions"
         }
       ],
       "unmeasuredRequiredLawCount": 2,
@@ -3277,7 +3391,7 @@
         "witness:layer-violation",
         "witness:semantic-contract-mismatch"
       ],
-      "lawWitnessAxisAlignment": "selected laws, witness rules, and signature axes are compared by refs only; alignment is profile-relative",
+      "lawWitnessAxisAlignment": "selected laws, witness rules, signature axes, coverage requirements, and exactness assumptions are evaluated as profile-relative alignment rows",
       "coverageBoundary": "coverage measures selected profile visibility, not LawUniverse completeness",
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",

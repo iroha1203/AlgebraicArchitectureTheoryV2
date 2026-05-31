@@ -40,25 +40,26 @@ use crate::{
     ArchSigHomotopyCellSummaryV0, ArchSigHomotopyComplexSummaryV0,
     ArchSigHomotopyHolonomyReadingV0, ArchSigHomotopyOrderSensitivityReadingV0,
     ArchSigInvariantFamilyReadingV0, ArchSigLawUniverseCoverageReadingV0,
-    ArchSigLawUniverseReadingV0, ArchSigLayerSplitV0, ArchSigLlmInterpretationPacketV0,
-    ArchSigLocalCurvatureDiagramReadingV0, ArchSigLoopCandidateV0,
-    ArchSigMeasurementReadingBoundaryV0, ArchSigMoleculeReadingV0, ArchSigMonodromyReadingFamilyV0,
-    ArchSigNonzeroMonodromyWitnessV0, ArchSigObservationProjectionFidelityReadingV0,
-    ArchSigObservationProjectionReadingV0, ArchSigObstructionCircuitV0,
-    ArchSigOperationCalculusLawReadingV0, ArchSigOperationDeltaReadingV0,
-    ArchSigOperationInvariantGaloisReadingV0, ArchSigOperationLawEvidenceV0,
-    ArchSigOperationPreconditionReadinessReadingV0, ArchSigOperationSquareCandidateV0,
-    ArchSigPathContinuationTraceV0, ArchSigPathHomotopyDiagramReadingV0,
-    ArchSigPathMultiplicityLossReadingV0, ArchSigPathPairCandidateV0,
-    ArchSigPathSignatureTrajectoryReadingV0, ArchSigProjectionCoordinateV0,
-    ArchSigProjectionNonInjectivityCandidateV0, ArchSigProjectionReconstructionBlockerV0,
-    ArchSigRecurrentObstructionModeV0, ArchSigRepairAxisDeltaReadingV0,
-    ArchSigRepairOperationCandidateV0, ArchSigRepairTransferRiskRankV0,
-    ArchSigRepresentationStrengthReadingV0, ArchSigSignatureAxisReadingV0,
-    ArchSigSignatureTrajectoryHomotopyRefutationReadingV0, ArchSigSpectralAnalysisReadingV0,
-    ArchSigSpectralDominantComponentV0, ArchSigSpectralDrilldownReadingV0,
-    ArchSigSpectralMatrixShapeV0, ArchSigSpectralModeComponentV0, ArchSigSpectralModeReadingV0,
-    ArchSigSpectralValueV0, ArchSigSplitReadinessReadingV0, ArchSigStateTransitionAlgebraReadingV0,
+    ArchSigLawUniverseReadingV0, ArchSigLawWitnessAxisAlignmentEvaluationV0, ArchSigLayerSplitV0,
+    ArchSigLlmInterpretationPacketV0, ArchSigLocalCurvatureDiagramReadingV0,
+    ArchSigLoopCandidateV0, ArchSigMeasurementReadingBoundaryV0, ArchSigMoleculeReadingV0,
+    ArchSigMonodromyReadingFamilyV0, ArchSigNonzeroMonodromyWitnessV0,
+    ArchSigObservationProjectionFidelityReadingV0, ArchSigObservationProjectionReadingV0,
+    ArchSigObstructionCircuitV0, ArchSigOperationCalculusLawReadingV0,
+    ArchSigOperationDeltaReadingV0, ArchSigOperationInvariantGaloisReadingV0,
+    ArchSigOperationLawEvidenceV0, ArchSigOperationPreconditionReadinessReadingV0,
+    ArchSigOperationSquareCandidateV0, ArchSigPathContinuationTraceV0,
+    ArchSigPathHomotopyDiagramReadingV0, ArchSigPathMultiplicityLossReadingV0,
+    ArchSigPathPairCandidateV0, ArchSigPathSignatureTrajectoryReadingV0,
+    ArchSigProjectionCoordinateV0, ArchSigProjectionNonInjectivityCandidateV0,
+    ArchSigProjectionReconstructionBlockerV0, ArchSigRecurrentObstructionModeV0,
+    ArchSigRepairAxisDeltaReadingV0, ArchSigRepairOperationCandidateV0,
+    ArchSigRepairTransferRiskRankV0, ArchSigRepresentationStrengthReadingV0,
+    ArchSigSignatureAxisReadingV0, ArchSigSignatureTrajectoryHomotopyRefutationReadingV0,
+    ArchSigSpectralAnalysisReadingV0, ArchSigSpectralDominantComponentV0,
+    ArchSigSpectralDrilldownReadingV0, ArchSigSpectralMatrixShapeV0,
+    ArchSigSpectralModeComponentV0, ArchSigSpectralModeReadingV0, ArchSigSpectralValueV0,
+    ArchSigSplitReadinessReadingV0, ArchSigStateTransitionAlgebraReadingV0,
     ArchSigStateTransitionLawEvaluationV0, ArchSigStateTransitionRelationInputV0,
     ArchSigStokesStyleReadingV0, ArchSigStructuralReadingReviewSurfaceV0,
     ArchSigSubjectFamilySpreadV0, ArchSigSynthesisBlockageReadingV0,
@@ -6716,46 +6717,96 @@ fn build_law_universe_coverage_readings(
     law_policy: &LawPolicyDocumentV0,
     signature_axes: &[ArchSigSignatureAxisReadingV0],
 ) -> Vec<ArchSigLawUniverseCoverageReadingV0> {
-    let observed_families = archmap
+    let mut observed_refs_by_family = BTreeMap::<String, Vec<String>>::new();
+    let mut source_refs_by_family = BTreeMap::<String, Vec<String>>::new();
+    for atom in &archmap.atom_observations {
+        observed_refs_by_family
+            .entry(atom.atom_family.clone())
+            .or_default()
+            .push(atom.atom_observation_id.clone());
+        source_refs_by_family
+            .entry(atom.atom_family.clone())
+            .or_default()
+            .extend(atom.source_refs.iter().map(source_ref_label));
+    }
+    for refs in source_refs_by_family.values_mut() {
+        refs.sort();
+        refs.dedup();
+    }
+    let source_ref_kinds = archmap
         .atom_observations
         .iter()
-        .map(|atom| atom.atom_family.as_str())
-        .collect::<Vec<_>>();
+        .flat_map(|atom| {
+            atom.source_refs
+                .iter()
+                .map(|source_ref| source_ref.kind.clone())
+        })
+        .chain(archmap.semantic_observations.iter().flat_map(|semantic| {
+            semantic
+                .source_refs
+                .iter()
+                .map(|source_ref| source_ref.kind.clone())
+        }))
+        .chain(
+            archmap
+                .operation_square_evidence
+                .iter()
+                .flat_map(|evidence| {
+                    evidence
+                        .source_refs
+                        .iter()
+                        .map(|source_ref| source_ref.kind.clone())
+                }),
+        )
+        .collect::<BTreeSet<_>>();
     let gap_refs = archmap
         .observation_gaps
         .iter()
         .map(|gap| gap.gap_id.clone())
         .collect::<Vec<_>>();
-    let coverage_status = |ref_id: String, required_families: &[String]| {
+    let coverage_status = |ref_id: String, required_families: &[String], reading: &str| {
         let missing = required_families
             .iter()
             .filter(|family| {
-                !observed_families
-                    .iter()
+                !observed_refs_by_family
+                    .keys()
                     .any(|observed| family_matches(observed, family))
             })
             .cloned()
             .collect::<Vec<_>>();
+        let evidence_refs = unique_strings(required_families.iter().flat_map(|family| {
+            observed_refs_by_family
+                .iter()
+                .filter(move |(observed, _)| family_matches(observed, family))
+                .flat_map(|(_, refs)| refs.clone())
+        }));
         ArchSigCoverageStatusV0 {
             ref_id,
-            status: if missing.is_empty() {
-                "coveredByObservedAtoms".to_string()
+            status: if required_families.is_empty() {
+                "notApplicable".to_string()
+            } else if missing.is_empty() && !evidence_refs.is_empty() {
+                "sourceBackedEvidenceObserved".to_string()
             } else {
                 "blockedByCoverageGap".to_string()
             },
-            evidence_refs: required_families.to_vec(),
+            evidence_refs,
             blocker_refs: missing
                 .into_iter()
                 .chain(gap_refs.iter().take(3).cloned())
                 .collect(),
-            reading: "coverage is selected-profile-relative and does not prove lawfulness"
-                .to_string(),
+            reading: reading.to_string(),
         }
     };
     let required_law_coverage = law_policy
         .selected_laws
         .iter()
-        .map(|law| coverage_status(law.law_id.clone(), &law.applies_to_atom_families))
+        .map(|law| {
+            coverage_status(
+                law.law_id.clone(),
+                &law.applies_to_atom_families,
+                "required law coverage is source-backed Atom evidence plus witness/axis alignment, not family presence alone",
+            )
+        })
         .collect::<Vec<_>>();
     let optional_law_coverage = law_policy
         .optional_axes
@@ -6771,7 +6822,23 @@ fn build_law_universe_coverage_readings(
     let witness_family_coverage = law_policy
         .witness_rules
         .iter()
-        .map(|rule| coverage_status(rule.witness_rule_id.clone(), &rule.required_atom_families))
+        .map(|rule| {
+            let mut status = coverage_status(
+                rule.witness_rule_id.clone(),
+                &rule.required_atom_families,
+                "witness rule coverage is evaluated separately from required law coverage",
+            );
+            if status.status == "sourceBackedEvidenceObserved"
+                && !rule.missing_evidence_behavior.trim().is_empty()
+                && rule.atom_observation_refs.is_empty()
+            {
+                status.status = "blockedByMissingWitnessEvidence".to_string();
+                status
+                    .blocker_refs
+                    .push(format!("missingEvidenceBehavior:{}", rule.witness_rule_id));
+            }
+            status
+        })
         .collect::<Vec<_>>();
     let signature_axis_coverage = signature_axes
         .iter()
@@ -6783,25 +6850,66 @@ fn build_law_universe_coverage_readings(
             reading: axis.evidence_summary.clone(),
         })
         .collect::<Vec<_>>();
+    let coverage_requirement_status = law_policy
+        .coverage_requirements
+        .iter()
+        .map(|requirement| {
+            let mut status = coverage_status(
+                requirement.coverage_requirement_id.clone(),
+                &requirement.required_atom_families,
+                "coverage requirement is checked against source-backed Atom families and required source ref kinds",
+            );
+            let missing_source_kinds = requirement
+                .required_source_ref_kinds
+                .iter()
+                .filter(|kind| !source_ref_kinds.contains(kind.as_str()))
+                .cloned()
+                .collect::<Vec<_>>();
+            if !missing_source_kinds.is_empty() {
+                status.status = "blockedByMissingSourceEvidence".to_string();
+                status.blocker_refs.extend(missing_source_kinds);
+            }
+            status
+        })
+        .collect::<Vec<_>>();
     let exactness_assumption_status = law_policy
         .exactness_assumptions
         .iter()
         .map(|assumption| ArchSigCoverageStatusV0 {
             ref_id: assumption.clone(),
             status: if gap_refs.is_empty() {
-                "assumptionRelative".to_string()
+                "sourceBackedAssumptionRelative".to_string()
             } else {
                 "blockedByCoverageGap".to_string()
             },
-            evidence_refs: Vec::new(),
+            evidence_refs: unique_strings(
+                signature_axes
+                    .iter()
+                    .filter(|axis| axis.exactness_assumptions.iter().any(|item| item == assumption))
+                    .flat_map(|axis| axis.source_refs.clone()),
+            ),
             blocker_refs: gap_refs.clone(),
-            reading: "exactness assumption is not theorem discharge".to_string(),
+            reading: "exactness assumption is tracked separately from coverage and is not theorem discharge"
+                .to_string(),
         })
         .collect::<Vec<_>>();
+    let law_witness_axis_evaluations = build_law_witness_axis_alignment_evaluations(
+        law_policy,
+        &required_law_coverage,
+        &witness_family_coverage,
+        &signature_axis_coverage,
+        &coverage_requirement_status,
+        &exactness_assumption_status,
+    );
     let unmeasured_required_law_count = required_law_coverage
         .iter()
-        .filter(|coverage| coverage.status != "coveredByObservedAtoms")
+        .filter(|coverage| coverage.status != "sourceBackedEvidenceObserved")
         .count();
+    let blocked_witness_refs = witness_family_coverage
+        .iter()
+        .filter(|coverage| coverage.status.contains("blocked"))
+        .map(|coverage| coverage.ref_id.clone())
+        .collect::<Vec<_>>();
     vec![ArchSigLawUniverseCoverageReadingV0 {
         reading_id: format!(
             "law-universe-coverage:{}",
@@ -6812,18 +6920,205 @@ fn build_law_universe_coverage_readings(
         optional_law_coverage,
         witness_family_coverage,
         signature_axis_coverage,
+        coverage_requirement_status,
         exactness_assumption_status,
+        law_witness_axis_evaluations,
         unmeasured_required_law_count,
-        blocked_witness_refs: law_policy
-            .witness_rules
-            .iter()
-            .filter(|rule| !rule.missing_evidence_behavior.trim().is_empty())
-            .map(|rule| rule.witness_rule_id.clone())
-            .collect(),
-        law_witness_axis_alignment: "selected laws, witness rules, and signature axes are compared by refs only; alignment is profile-relative".to_string(),
+        blocked_witness_refs,
+        law_witness_axis_alignment: "selected laws, witness rules, signature axes, coverage requirements, and exactness assumptions are evaluated as profile-relative alignment rows".to_string(),
         coverage_boundary: "coverage measures selected profile visibility, not LawUniverse completeness".to_string(),
         non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
     }]
+}
+
+fn build_law_witness_axis_alignment_evaluations(
+    law_policy: &LawPolicyDocumentV0,
+    required_law_coverage: &[ArchSigCoverageStatusV0],
+    witness_family_coverage: &[ArchSigCoverageStatusV0],
+    signature_axis_coverage: &[ArchSigCoverageStatusV0],
+    coverage_requirement_status: &[ArchSigCoverageStatusV0],
+    exactness_assumption_status: &[ArchSigCoverageStatusV0],
+) -> Vec<ArchSigLawWitnessAxisAlignmentEvaluationV0> {
+    let law_coverage_by_ref = coverage_status_by_ref(required_law_coverage);
+    let witness_coverage_by_ref = coverage_status_by_ref(witness_family_coverage);
+    let axis_coverage_by_ref = signature_axis_coverage
+        .iter()
+        .map(|coverage| (coverage.ref_id.as_str(), coverage))
+        .collect::<BTreeMap<_, _>>();
+    let coverage_requirements_by_law = law_policy
+        .selected_laws
+        .iter()
+        .map(|law| {
+            let refs = law_policy
+                .coverage_requirements
+                .iter()
+                .filter(|requirement| {
+                    requirement
+                        .applies_to_law_refs
+                        .iter()
+                        .any(|law_ref| law_ref == &law.law_id)
+                })
+                .map(|requirement| requirement.coverage_requirement_id.clone())
+                .collect::<Vec<_>>();
+            (law.law_id.as_str(), refs)
+        })
+        .collect::<BTreeMap<_, _>>();
+    let coverage_status_by_ref = coverage_status_by_ref(coverage_requirement_status);
+    law_policy
+        .selected_laws
+        .iter()
+        .map(|law| {
+            let observed_witness_refs = law
+                .required_witness_refs
+                .iter()
+                .filter(|witness_ref| {
+                    witness_coverage_by_ref
+                        .get(witness_ref.as_str())
+                        .is_some_and(|coverage| !coverage.status.contains("blocked"))
+                })
+                .cloned()
+                .collect::<Vec<_>>();
+            let missing_witness_refs = law
+                .required_witness_refs
+                .iter()
+                .filter(|witness_ref| {
+                    witness_coverage_by_ref
+                        .get(witness_ref.as_str())
+                        .is_none_or(|coverage| coverage.status.contains("blocked"))
+                })
+                .cloned()
+                .collect::<Vec<_>>();
+            let observed_axis_refs = law
+                .required_axis_refs
+                .iter()
+                .filter(|axis_ref| {
+                    signature_axis_coverage.iter().any(|coverage| {
+                        coverage.ref_id.contains(axis_ref.as_str())
+                            && !coverage.status.contains("blocked")
+                    })
+                })
+                .cloned()
+                .collect::<Vec<_>>();
+            let missing_axis_refs = law
+                .required_axis_refs
+                .iter()
+                .filter(|axis_ref| {
+                    !signature_axis_coverage.iter().any(|coverage| {
+                        coverage.ref_id.contains(axis_ref.as_str())
+                            && !coverage.status.contains("blocked")
+                    })
+                })
+                .cloned()
+                .collect::<Vec<_>>();
+            let coverage_requirement_refs = coverage_requirements_by_law
+                .get(law.law_id.as_str())
+                .cloned()
+                .unwrap_or_default();
+            let coverage_blockers = coverage_requirement_refs
+                .iter()
+                .filter_map(|coverage_ref| coverage_status_by_ref.get(coverage_ref.as_str()))
+                .filter(|coverage| coverage.status.contains("blocked"))
+                .flat_map(|coverage| coverage.blocker_refs.clone())
+                .collect::<Vec<_>>();
+            let exactness_blockers = exactness_assumption_status
+                .iter()
+                .filter(|coverage| coverage.status.contains("blocked"))
+                .flat_map(|coverage| coverage.blocker_refs.clone())
+                .collect::<Vec<_>>();
+            let source_backed_evidence_refs = unique_strings(
+                law_coverage_by_ref
+                    .get(law.law_id.as_str())
+                    .into_iter()
+                    .flat_map(|coverage| coverage.evidence_refs.clone())
+                    .chain(
+                        observed_witness_refs
+                            .iter()
+                            .filter_map(|witness_ref| witness_coverage_by_ref.get(witness_ref.as_str()))
+                            .flat_map(|coverage| coverage.evidence_refs.clone()),
+                    )
+                    .chain(
+                        observed_axis_refs
+                            .iter()
+                            .filter_map(|axis_ref| {
+                                axis_coverage_by_ref
+                                    .iter()
+                                    .find(|(ref_id, _)| ref_id.contains(axis_ref.as_str()))
+                                    .map(|(_, coverage)| *coverage)
+                            })
+                            .flat_map(|coverage| coverage.evidence_refs.clone()),
+                    ),
+            );
+            let blocker_refs = unique_strings(
+                missing_witness_refs
+                    .iter()
+                    .cloned()
+                    .chain(missing_axis_refs.iter().cloned())
+                    .chain(coverage_blockers)
+                    .chain(exactness_blockers),
+            );
+            let coverage_status = if coverage_requirement_refs.is_empty() {
+                "notDeclared".to_string()
+            } else if coverage_requirement_refs.iter().any(|coverage_ref| {
+                coverage_status_by_ref
+                    .get(coverage_ref.as_str())
+                    .is_some_and(|coverage| coverage.status.contains("blocked"))
+            }) {
+                "blocked".to_string()
+            } else {
+                "covered".to_string()
+            };
+            let exactness_status = if exactness_assumption_status
+                .iter()
+                .any(|coverage| coverage.status.contains("blocked"))
+            {
+                "blocked".to_string()
+            } else if exactness_assumption_status.is_empty() {
+                "notDeclared".to_string()
+            } else {
+                "assumptionRelative".to_string()
+            };
+            let alignment_status = if !blocker_refs.is_empty()
+                || missing_witness_refs.len() > 0
+                || missing_axis_refs.len() > 0
+                || coverage_status == "blocked"
+                || exactness_status == "blocked"
+            {
+                "blocked".to_string()
+            } else if observed_witness_refs.is_empty() || observed_axis_refs.is_empty() {
+                "unmeasured".to_string()
+            } else {
+                "aligned".to_string()
+            };
+            ArchSigLawWitnessAxisAlignmentEvaluationV0 {
+                evaluation_id: format!("law-witness-axis-alignment:{}", stable_id(&law.law_id)),
+                law_ref: law.law_id.clone(),
+                alignment_status,
+                coverage_status,
+                exactness_status,
+                required_witness_refs: law.required_witness_refs.clone(),
+                observed_witness_refs,
+                missing_witness_refs,
+                required_axis_refs: law.required_axis_refs.clone(),
+                observed_axis_refs,
+                missing_axis_refs,
+                coverage_requirement_refs,
+                exactness_assumption_refs: law_policy.exactness_assumptions.clone(),
+                source_backed_evidence_refs,
+                blocker_refs,
+                evaluator: "law-witness-axis-alignment-evaluator-v0".to_string(),
+                reading: "required law visibility is evaluated by witness exactness, selected signature-axis alignment, coverage requirements, and exactness assumptions".to_string(),
+            }
+        })
+        .collect()
+}
+
+fn coverage_status_by_ref(
+    statuses: &[ArchSigCoverageStatusV0],
+) -> BTreeMap<&str, &ArchSigCoverageStatusV0> {
+    statuses
+        .iter()
+        .map(|status| (status.ref_id.as_str(), status))
+        .collect()
 }
 
 fn build_local_curvature_diagram_readings(
@@ -15386,6 +15681,40 @@ fn check_aat_structural_reading_surfaces(packet: &ArchSigAnalysisPacketV0) -> Va
                 "LawUniverse coverage must record signature axis coverage",
             ));
         }
+        if reading.coverage_requirement_status.is_empty() {
+            examples.push(generic_validation_example(
+                &reading.reading_id,
+                "coverageRequirementStatus",
+                "LawUniverse coverage must record coverage requirement status separately from law coverage",
+            ));
+        }
+        if reading.law_witness_axis_evaluations.is_empty() {
+            examples.push(generic_validation_example(
+                &reading.reading_id,
+                "lawWitnessAxisEvaluations",
+                "LawUniverse coverage must expose machine-readable law / witness / axis alignment evaluations",
+            ));
+        }
+        for evaluation in &reading.law_witness_axis_evaluations {
+            if evaluation.required_witness_refs.is_empty()
+                || evaluation.required_axis_refs.is_empty()
+                || evaluation.coverage_requirement_refs.is_empty()
+                || evaluation.exactness_assumption_refs.is_empty()
+            {
+                examples.push(generic_validation_example(
+                    &reading.reading_id,
+                    &evaluation.evaluation_id,
+                    "law / witness / axis alignment evaluation must keep required witness, axis, coverage, and exactness refs",
+                ));
+            }
+            if evaluation.alignment_status == "blocked" && evaluation.blocker_refs.is_empty() {
+                examples.push(generic_validation_example(
+                    &reading.reading_id,
+                    &evaluation.evaluation_id,
+                    "blocked law / witness / axis alignment must retain blocker refs",
+                ));
+            }
+        }
         push_blank(
             &mut examples,
             &format!("{} lawWitnessAxisAlignment", reading.reading_id),
@@ -17615,6 +17944,7 @@ fn check_measurement_depth(packet: &ArchSigAnalysisPacketV0) -> ValidationCheck 
             .iter()
             .chain(reading.witness_family_coverage.iter())
             .chain(reading.signature_axis_coverage.iter())
+            .chain(reading.coverage_requirement_status.iter())
             .chain(reading.exactness_assumption_status.iter())
         {
             push_blank(
@@ -17643,11 +17973,39 @@ fn check_measurement_depth(packet: &ArchSigAnalysisPacketV0) -> ValidationCheck 
                         "blocked or unmeasured LawUniverse coverage rows must retain blocker refs",
                     ));
                 }
-            } else if coverage.evidence_refs.is_empty() {
+            } else if coverage.status != "notApplicable" && coverage.evidence_refs.is_empty() {
                 examples.push(generic_validation_example(
                     &reading.reading_id,
                     &coverage.ref_id,
                     "measured LawUniverse coverage rows must retain evidence refs",
+                ));
+            }
+        }
+        for evaluation in &reading.law_witness_axis_evaluations {
+            push_blank(
+                &mut examples,
+                &format!("{} alignmentStatus", reading.reading_id),
+                &evaluation.alignment_status,
+            );
+            push_blank(
+                &mut examples,
+                &format!("{} coverageStatus", reading.reading_id),
+                &evaluation.coverage_status,
+            );
+            push_blank(
+                &mut examples,
+                &format!("{} exactnessStatus", reading.reading_id),
+                &evaluation.exactness_status,
+            );
+            if evaluation.alignment_status == "aligned"
+                && (evaluation.observed_witness_refs.is_empty()
+                    || evaluation.observed_axis_refs.is_empty()
+                    || evaluation.source_backed_evidence_refs.is_empty())
+            {
+                examples.push(generic_validation_example(
+                    &reading.reading_id,
+                    &evaluation.evaluation_id,
+                    "aligned law evaluation must retain observed witness, axis, and source-backed evidence refs",
                 ));
             }
         }
@@ -19482,6 +19840,95 @@ mod tests {
                 .flatness_reading
                 .blocked_by_coverage_gaps
                 .contains(&"gap-runtime-user-db-trace".to_string())
+        );
+    }
+
+    #[test]
+    fn law_coverage_does_not_hide_missing_witness() {
+        let archmap: ArchMapDocumentV0 =
+            serde_json::from_str(include_str!("../tests/fixtures/minimal/archmap.json"))
+                .expect("ArchMap fixture parses");
+        let mut law_policy: LawPolicyDocumentV0 =
+            serde_json::from_str(include_str!("../tests/fixtures/minimal/law_policy.json"))
+                .expect("LawPolicy fixture parses");
+        law_policy.selected_laws[0].applies_to_atom_families = vec!["relation".to_string()];
+        law_policy.witness_rules[0].required_atom_families = vec!["runtimeInteraction".to_string()];
+
+        let packet = build_archsig_analysis_packet(&archmap, &law_policy, None, None);
+        let reading = packet
+            .law_universe_coverage_readings
+            .first()
+            .expect("coverage reading exists");
+        assert_eq!(
+            reading.required_law_coverage[0].status,
+            "sourceBackedEvidenceObserved"
+        );
+        let evaluation = reading
+            .law_witness_axis_evaluations
+            .iter()
+            .find(|evaluation| evaluation.law_ref == "law:layer-respecting")
+            .expect("layer law evaluation exists");
+        assert_eq!(evaluation.alignment_status, "blocked");
+        assert!(
+            evaluation
+                .missing_witness_refs
+                .contains(&"witness:layer-violation".to_string())
+        );
+    }
+
+    #[test]
+    fn law_alignment_blocks_when_witness_exists_but_axis_missing() {
+        let archmap: ArchMapDocumentV0 =
+            serde_json::from_str(include_str!("../tests/fixtures/minimal/archmap.json"))
+                .expect("ArchMap fixture parses");
+        let mut law_policy: LawPolicyDocumentV0 =
+            serde_json::from_str(include_str!("../tests/fixtures/minimal/law_policy.json"))
+                .expect("LawPolicy fixture parses");
+        law_policy.selected_laws[0].applies_to_atom_families = vec!["relation".to_string()];
+        law_policy.witness_rules[0].required_atom_families = vec!["relation".to_string()];
+        law_policy.witness_rules[0].atom_observation_refs =
+            vec!["atom:relation:route-service".to_string()];
+        law_policy
+            .signature_axis_definitions
+            .retain(|axis| axis.law_ref != "law:layer-respecting");
+
+        let packet = build_archsig_analysis_packet(&archmap, &law_policy, None, None);
+        let evaluation = packet.law_universe_coverage_readings[0]
+            .law_witness_axis_evaluations
+            .iter()
+            .find(|evaluation| evaluation.law_ref == "law:layer-respecting")
+            .expect("layer law evaluation exists");
+        assert_eq!(evaluation.alignment_status, "blocked");
+        assert!(
+            evaluation
+                .observed_witness_refs
+                .contains(&"witness:layer-violation".to_string())
+        );
+        assert!(
+            evaluation
+                .missing_axis_refs
+                .contains(&"axis:layer-violation".to_string())
+        );
+    }
+
+    #[test]
+    fn law_universe_exactness_keeps_runtime_gap_blocker() {
+        let packet = static_archsig_analysis_packet();
+        let reading = packet
+            .law_universe_coverage_readings
+            .first()
+            .expect("coverage reading exists");
+        assert!(reading.exactness_assumption_status.iter().all(|status| {
+            status.status == "blockedByCoverageGap"
+                && status
+                    .blocker_refs
+                    .contains(&"gap-runtime-user-db-trace".to_string())
+        }));
+        assert!(
+            reading
+                .law_witness_axis_evaluations
+                .iter()
+                .all(|evaluation| evaluation.exactness_status == "blocked")
         );
     }
 

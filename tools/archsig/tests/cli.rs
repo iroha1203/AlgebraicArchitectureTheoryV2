@@ -2793,7 +2793,33 @@ fn assert_north_star_packet_surfaces(json: &Value) {
                     && reading["signatureAxisCoverage"]
                         .as_array()
                         .is_some_and(|items| !items.is_empty())
+                    && reading["coverageRequirementStatus"]
+                        .as_array()
+                        .is_some_and(|items| !items.is_empty())
                     && reading["exactnessAssumptionStatus"].as_array().is_some()
+                    && reading["lawWitnessAxisEvaluations"]
+                        .as_array()
+                        .is_some_and(|items| {
+                            !items.is_empty()
+                                && items.iter().all(|item| {
+                                    item["lawRef"].as_str().is_some()
+                                        && item["alignmentStatus"].as_str().is_some()
+                                        && item["coverageStatus"].as_str().is_some()
+                                        && item["exactnessStatus"].as_str().is_some()
+                                        && item["requiredWitnessRefs"]
+                                            .as_array()
+                                            .is_some_and(|refs| !refs.is_empty())
+                                        && item["requiredAxisRefs"]
+                                            .as_array()
+                                            .is_some_and(|refs| !refs.is_empty())
+                                        && item["coverageRequirementRefs"]
+                                            .as_array()
+                                            .is_some_and(|refs| !refs.is_empty())
+                                        && item["exactnessAssumptionRefs"]
+                                            .as_array()
+                                            .is_some_and(|refs| !refs.is_empty())
+                                })
+                        })
                     && reading["coverageBoundary"].as_str().is_some()
             }),
         "LawUniverse coverage readings must carry law, witness, axis, exactness, and boundary data"

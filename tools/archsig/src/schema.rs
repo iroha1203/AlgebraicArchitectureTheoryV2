@@ -2100,7 +2100,11 @@ pub struct ArchSigLawUniverseCoverageReadingV0 {
     pub optional_law_coverage: Vec<ArchSigCoverageStatusV0>,
     pub witness_family_coverage: Vec<ArchSigCoverageStatusV0>,
     pub signature_axis_coverage: Vec<ArchSigCoverageStatusV0>,
+    #[serde(default)]
+    pub coverage_requirement_status: Vec<ArchSigCoverageStatusV0>,
     pub exactness_assumption_status: Vec<ArchSigCoverageStatusV0>,
+    #[serde(default)]
+    pub law_witness_axis_evaluations: Vec<ArchSigLawWitnessAxisAlignmentEvaluationV0>,
     pub unmeasured_required_law_count: usize,
     pub blocked_witness_refs: Vec<String>,
     pub law_witness_axis_alignment: String,
@@ -2115,6 +2119,28 @@ pub struct ArchSigCoverageStatusV0 {
     pub status: String,
     pub evidence_refs: Vec<String>,
     pub blocker_refs: Vec<String>,
+    pub reading: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigLawWitnessAxisAlignmentEvaluationV0 {
+    pub evaluation_id: String,
+    pub law_ref: String,
+    pub alignment_status: String,
+    pub coverage_status: String,
+    pub exactness_status: String,
+    pub required_witness_refs: Vec<String>,
+    pub observed_witness_refs: Vec<String>,
+    pub missing_witness_refs: Vec<String>,
+    pub required_axis_refs: Vec<String>,
+    pub observed_axis_refs: Vec<String>,
+    pub missing_axis_refs: Vec<String>,
+    pub coverage_requirement_refs: Vec<String>,
+    pub exactness_assumption_refs: Vec<String>,
+    pub source_backed_evidence_refs: Vec<String>,
+    pub blocker_refs: Vec<String>,
+    pub evaluator: String,
     pub reading: String,
 }
 

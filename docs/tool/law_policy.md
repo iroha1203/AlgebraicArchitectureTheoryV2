@@ -143,6 +143,23 @@ the boundary between measured support rows, bounded transfer proxies, and
 coverage gaps. `transferEdgeRule`, `distanceKinds`, and `weightPolicy` are
 measurement recipes; they are not new laws and not empirical calibration unless
 the selected policy explicitly supplies that evidence.
+
+## Law / Witness / Axis Alignment
+
+ArchSig reads `selectedLaws`, `witnessRules`, `signatureAxisDefinitions`,
+`coverageRequirements`, and `exactnessAssumptions` as one selected visibility
+profile. A law is not treated as covered merely because one required Atom family
+appears in ArchMap. The analysis packet emits `lawWitnessAxisEvaluations[]`
+inside `lawUniverseCoverageReadings[]`; each row records required and observed
+witness refs, required and observed axis refs, coverage requirement refs,
+exactness assumption refs, source-backed evidence refs, blockers, and separate
+coverage / exactness statuses.
+
+Authoring implication: every selected law should point to witness rules for the
+same law and to axes that also have a `signatureAxisDefinitions[]` row for that
+law. Missing witness evidence, missing selected axes, missing source-ref kinds,
+or unresolved exactness assumptions remain blockers, not measured zero and not
+lawfulness proofs.
 Important boundaries:
 
 - profile differences are not law-universe differences

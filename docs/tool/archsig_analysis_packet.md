@@ -367,6 +367,14 @@ The builder:
   transfer. These readings keep source refs, observation refs, coverage
   boundaries, evidence boundaries, and non-conclusions; they are not PR / diff
   evolution analysis.
+- `lawUniverseCoverageReadings[]` separates required law coverage, witness
+  family coverage, signature-axis coverage, coverage-requirement status, and
+  exactness-assumption status. The `lawWitnessAxisEvaluations[]` rows are the
+  machine-readable alignment evaluator: they record required/observed/missing
+  witness refs, required/observed/missing axis refs, coverage requirement refs,
+  exactness assumption refs, source-backed evidence refs, blockers, and
+  separate coverage / exactness statuses. Atom family presence alone is not a
+  covered law claim.
 - Homotopy / Holonomy / Stokes readings add current-state coordinates for
   `homotopyComplexSummary`, `pathPairCandidates`, `loopCandidates`,
   `fillerCandidateReadings`, `architecturalHoleReadings`,

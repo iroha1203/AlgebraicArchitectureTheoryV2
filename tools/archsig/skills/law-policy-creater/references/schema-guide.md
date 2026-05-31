@@ -28,6 +28,8 @@ Use this guide when authoring `law-policy-v0`.
 
 - `selectedLaws[].requiredWitnessRefs[]` must resolve to `witnessRules[].witnessRuleId`.
 - `selectedLaws[].requiredAxisRefs[]` must resolve to `requiredZeroAxes[].axisId` or `optionalAxes[].axisId`.
+- Each selected law's `requiredWitnessRefs[]` should point to witness rules whose `lawRef` is the same law.
+- Each selected law's `requiredAxisRefs[]` should have a `signatureAxisDefinitions[]` row for the same law.
 - `witnessRules[].lawRef` must resolve to `selectedLaws[].lawId`.
 - `witnessRules[].moleculePatternRefs[]` must resolve to `moleculePatterns[].moleculePatternId`.
 - `obstructionCircuitDefinitions[].lawRef` must resolve to `selectedLaws[].lawId`.
@@ -65,6 +67,13 @@ Required fields:
 
 Keep `selectedAxisRefs[]` aligned with selected law-backed axes. Use optional
 axes only when the user explicitly wants auxiliary review surfaces.
+
+ArchSig evaluates LawUniverse visibility with law / witness / axis alignment
+rows. Atom family presence is not enough: a required law needs source-backed
+law evidence, covered witness rules, selected signature axes, coverage
+requirements, and exactness assumptions. Missing witness evidence, missing
+axis alignment, missing required source-ref kinds, and unresolved exactness
+assumptions remain blockers.
 
 ## Spectrum Measurement Profile
 

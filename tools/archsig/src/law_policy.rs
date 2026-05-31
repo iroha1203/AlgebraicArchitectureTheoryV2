@@ -1,4 +1,4 @@
-use std::collections::BTreeSet;
+use std::collections::{BTreeMap, BTreeSet};
 
 use crate::validation::{count_checks, duplicates, generic_validation_example, validation_check};
 use crate::{
@@ -1100,6 +1100,16 @@ fn check_law_refs(policy: &LawPolicyDocumentV0) -> ValidationCheck {
         .witness_rules
         .iter()
         .map(|rule| rule.witness_rule_id.as_str()));
+    let witness_law_by_ref = policy
+        .witness_rules
+        .iter()
+        .map(|rule| (rule.witness_rule_id.as_str(), rule.law_ref.as_str()))
+        .collect::<BTreeMap<_, _>>();
+    let signature_axis_law_by_axis_ref = policy
+        .signature_axis_definitions
+        .iter()
+        .map(|axis| (axis.axis_ref.as_str(), axis.law_ref.as_str()))
+        .collect::<BTreeMap<_, _>>();
     let mut examples = Vec::new();
 
     for law in &policy.selected_laws {
@@ -1124,6 +1134,15 @@ fn check_law_refs(policy: &LawPolicyDocumentV0) -> ValidationCheck {
                     witness_ref,
                     "selected law references an unknown witness rule",
                 ));
+            } else if witness_law_by_ref
+                .get(witness_ref.as_str())
+                .is_some_and(|law_ref| law_ref != &law.law_id.as_str())
+            {
+                examples.push(generic_validation_example(
+                    &law.law_id,
+                    witness_ref,
+                    "selected law requiredWitnessRefs must reference witness rules for the same law",
+                ));
             }
         }
         for axis_ref in &law.required_axis_refs {
@@ -1132,6 +1151,15 @@ fn check_law_refs(policy: &LawPolicyDocumentV0) -> ValidationCheck {
                     &law.law_id,
                     axis_ref,
                     "selected law references an unknown required or optional axis",
+                ));
+            } else if signature_axis_law_by_axis_ref
+                .get(axis_ref.as_str())
+                .is_none_or(|law_ref| law_ref != &law.law_id.as_str())
+            {
+                examples.push(generic_validation_example(
+                    &law.law_id,
+                    axis_ref,
+                    "selected law requiredAxisRefs must have a signature axis definition for the same law",
                 ));
             }
         }
