@@ -3892,6 +3892,99 @@
         "compensation/finalization relation",
         "handler and external provider boundary ownership"
       ],
+      "relationInputs": [
+        {
+          "relationInputId": "effect-relation-input:operation-square-evidence-create-user-route-service",
+          "relationKind": "ordering",
+          "orderingRefs": [
+            "generator:same-contract-replacement",
+            "generator:repair-filler"
+          ],
+          "replayOrIdempotencyRefs": [],
+          "compensationOrFinalizationRefs": [],
+          "authorityRequirementRefs": [],
+          "effectRefs": [],
+          "runtimeOrTraceRefs": [],
+          "sourceRefs": [
+            "src-route-users",
+            "src-service-user",
+            "test-user-contract"
+          ],
+          "reading": "operation-square-evidence:create-user-route-service supplies bounded effect relation evidence for ordering/replay/compensation evaluation"
+        }
+      ],
+      "relationEvaluations": [
+        {
+          "lawAxis": "orderingPreservation",
+          "status": "blocked",
+          "requiredInputRefs": [
+            "effect-relation-input:operation-square-evidence-create-user-route-service"
+          ],
+          "observedInputRefs": [
+            "atom:relation:route-service",
+            "generator:repair-filler",
+            "generator:same-contract-replacement"
+          ],
+          "blockedReasonRefs": [
+            "atom:relation:route-service"
+          ],
+          "evaluator": "effect-relation-law-evaluator-v0",
+          "reading": "effect ordering must be backed by relation input or comparable operation evidence"
+        },
+        {
+          "lawAxis": "replaySafety",
+          "status": "blocked",
+          "requiredInputRefs": [
+            "effect-relation-input:operation-square-evidence-create-user-route-service"
+          ],
+          "observedInputRefs": [],
+          "blockedReasonRefs": [
+            "gap-runtime-user-db-trace"
+          ],
+          "evaluator": "effect-relation-law-evaluator-v0",
+          "reading": "replay safety is blocked when runtime/test/effect evidence is missing"
+        },
+        {
+          "lawAxis": "idempotency",
+          "status": "blocked",
+          "requiredInputRefs": [
+            "effect-relation-input:operation-square-evidence-create-user-route-service"
+          ],
+          "observedInputRefs": [],
+          "blockedReasonRefs": [
+            "gap-runtime-user-db-trace"
+          ],
+          "evaluator": "effect-relation-law-evaluator-v0",
+          "reading": "idempotency requires explicit retry/idempotency effect evidence"
+        },
+        {
+          "lawAxis": "compensationAvailability",
+          "status": "blocked",
+          "requiredInputRefs": [
+            "effect-relation-input:operation-square-evidence-create-user-route-service"
+          ],
+          "observedInputRefs": [],
+          "blockedReasonRefs": [
+            "gap-runtime-user-db-trace"
+          ],
+          "evaluator": "effect-relation-law-evaluator-v0",
+          "reading": "compensation availability requires compensation or finalization relation evidence"
+        },
+        {
+          "lawAxis": "authorityRequirement",
+          "status": "blocked",
+          "requiredInputRefs": [
+            "effect-relation-input:operation-square-evidence-create-user-route-service"
+          ],
+          "observedInputRefs": [],
+          "blockedReasonRefs": [
+            "gap-runtime-user-db-trace"
+          ],
+          "evaluator": "effect-relation-law-evaluator-v0",
+          "reading": "external effects must expose authority or ownership requirements"
+        }
+      ],
+      "relationEvaluatorStatus": "blocked",
       "unresolvedEffectRelations": [
         "gap-runtime-user-db-trace"
       ],
@@ -8633,13 +8726,107 @@
         "compensation or finalization",
         "transaction boundary ownership"
       ],
+      "transitionRelationInputs": [
+        {
+          "transitionInputId": "state-transition-input:fixture-archmap-atom-observation:atom-derived",
+          "fromRefs": [],
+          "eventRefs": [
+            "gap-runtime-user-db-trace"
+          ],
+          "toRefs": [],
+          "operationRefs": [],
+          "invariantRefs": [],
+          "runtimeOrTraceRefs": [],
+          "sourceRefs": [
+            ".lake/runtime-trace.json"
+          ],
+          "reading": "fallback transition input preserves atom-derived evidence but remains blocked without operation/runtime relation evidence"
+        }
+      ],
+      "lawEvaluations": [
+        {
+          "lawAxis": "stateTransitionRelation",
+          "status": "blocked",
+          "requiredInputRefs": [
+            "state-transition-input:fixture-archmap-atom-observation:atom-derived"
+          ],
+          "observedInputRefs": [],
+          "blockedReasonRefs": [
+            "gap-runtime-user-db-trace"
+          ],
+          "evaluator": "state-transition-law-evaluator-v0",
+          "reading": "from/event/to transition relation must be witnessed by operation or runtime evidence"
+        },
+        {
+          "lawAxis": "commutativity",
+          "status": "unmeasured",
+          "requiredInputRefs": [
+            "state-transition-input:fixture-archmap-atom-observation:atom-derived"
+          ],
+          "observedInputRefs": [],
+          "blockedReasonRefs": [],
+          "evaluator": "state-transition-law-evaluator-v0",
+          "reading": "commutativity is observed only when comparable operation-square evidence is available"
+        },
+        {
+          "lawAxis": "idempotency",
+          "status": "blocked",
+          "requiredInputRefs": [
+            "state-transition-input:fixture-archmap-atom-observation:atom-derived"
+          ],
+          "observedInputRefs": [],
+          "blockedReasonRefs": [
+            "gap-runtime-user-db-trace"
+          ],
+          "evaluator": "state-transition-law-evaluator-v0",
+          "reading": "idempotency requires retry/replay/runtime evidence"
+        },
+        {
+          "lawAxis": "replaySafety",
+          "status": "blocked",
+          "requiredInputRefs": [
+            "state-transition-input:fixture-archmap-atom-observation:atom-derived"
+          ],
+          "observedInputRefs": [],
+          "blockedReasonRefs": [
+            "gap-runtime-user-db-trace"
+          ],
+          "evaluator": "state-transition-law-evaluator-v0",
+          "reading": "replay safety requires runtime or test trace evidence"
+        },
+        {
+          "lawAxis": "orderingPreservation",
+          "status": "unmeasured",
+          "requiredInputRefs": [
+            "state-transition-input:fixture-archmap-atom-observation:atom-derived"
+          ],
+          "observedInputRefs": [],
+          "blockedReasonRefs": [],
+          "evaluator": "state-transition-law-evaluator-v0",
+          "reading": "ordering preservation is evaluated from effect and operation relation evidence"
+        },
+        {
+          "lawAxis": "invariantPreservation",
+          "status": "blocked",
+          "requiredInputRefs": [
+            "state-transition-input:fixture-archmap-atom-observation:atom-derived"
+          ],
+          "observedInputRefs": [],
+          "blockedReasonRefs": [
+            "gap-runtime-user-db-trace"
+          ],
+          "evaluator": "state-transition-law-evaluator-v0",
+          "reading": "state invariants must be named before transition preservation is claimed"
+        }
+      ],
+      "lawEvaluatorStatus": "blocked",
       "unresolvedRelations": [
         "gap-runtime-user-db-trace"
       ],
       "obstructionRefs": [],
-      "reading": "state/effect/runtime atoms generate a bounded state transition algebra reading",
-      "evidenceBoundary": "transition algebra is derived from observed atoms only; runtime traces and tests remain required for reflecting laws",
-      "recommendedNextAction": "verify idempotency, replay, ordering, and transaction ownership before claiming state/effect flatness",
+      "reading": "state/effect/runtime algebra is evaluated from 1 explicit transition relation input(s), not atom presence alone",
+      "evidenceBoundary": "transition algebra is law-evaluator output over observed transition inputs; missing runtime traces and tests remain blocked evidence, not measured zero",
+      "recommendedNextAction": "resolve blocked law axes for idempotency, replay, ordering, and transaction ownership before claiming state/effect flatness",
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
