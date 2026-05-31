@@ -1,0 +1,567 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta
+      name="description"
+      content="Obstruction circuits in Algebraic Architecture Theory: law-relative minimal bad molecules and finite witness boundaries."
+    >
+    <meta name="robots" content="noindex">
+    <title>Obstruction Circuits</title>
+    <meta property="og:site_name" content="AAT / SFT Research Notes">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="Obstruction Circuits">
+    <meta property="og:description" content="Obstruction circuits in Algebraic Architecture Theory: law-relative minimal bad molecules and finite witness boundaries.">
+    <meta property="og:url" content="https://iroha1203.dev/aat2/obstruction-circuits/">
+    <meta property="og:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Obstruction Circuits">
+    <meta name="twitter:description" content="Obstruction circuits in Algebraic Architecture Theory: law-relative minimal bad molecules and finite witness boundaries.">
+    <meta name="twitter:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
+    <link rel="icon" href="../../assets/favicon-32.png" sizes="32x32" type="image/png">
+    <link rel="icon" href="../../assets/favicon-16.png" sizes="16x16" type="image/png">
+    <link rel="alternate" hreflang="en" href="./">
+    <link rel="alternate" hreflang="x-default" href="./">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=Inter:wght@400;500;600;700&amp;family=Source+Serif+4:opsz,wght@8..60,400..700&amp;display=swap"
+      rel="stylesheet"
+    >
+    <script>
+      try {
+        const theme = localStorage.getItem("aat-sft-theme");
+        if (theme === "light" || theme === "dark") {
+          document.documentElement.dataset.theme = theme;
+        }
+      } catch {}
+    </script>
+    <link rel="stylesheet" href="../../assets/site.css">
+    <script>
+      window.MathJax = {
+        tex: {
+          inlineMath: [["\\(", "\\)"]],
+          displayMath: [["\\[", "\\]"]]
+        },
+        chtml: {
+          matchFontHeight: false
+        }
+      };
+    </script>
+    <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+    <script defer src="../../assets/site.js"></script>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-YQMFH2FG9V"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-YQMFH2FG9V');
+    </script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <header class="site-header" data-site-header>
+      <div class="site-shell header-inner">
+        <a class="brand" href="../../" aria-label="AAT SFT home">
+          <img class="brand-icon" src="../../assets/favicon-512.png" alt="" width="512" height="512" aria-hidden="true">
+          <span class="brand-mark">AAT/SFT</span>
+          <span class="brand-text">Research Notes</span>
+        </a>
+        <nav class="site-nav" aria-label="Primary navigation">
+          <a href="../../">Home</a>
+          <a class="is-active" href="../../aat/">AAT</a>
+          <a href="../../sft/">SFT</a>
+          <a href="../../archsig/">ArchSig</a>
+          <a href="../../outreach/">Outreach</a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="main">
+      <section class="article-hero section-band">
+        <div class="site-shell">
+          <nav class="breadcrumb" aria-label="Breadcrumb">
+            <a href="../../">Home</a>
+            <a href="../">AAT</a>
+            <span>Obstruction Circuits</span>
+          </nav>
+          <p class="eyebrow">Part I. Atoms, Objects, and Laws</p>
+          <h1>Obstruction Circuits</h1>
+          <p class="lede">
+            An obstruction circuit is a law-relative minimal bad molecule. It
+            turns architectural failure from a vague smell into the smallest
+            selected atom configuration that still violates a design law.
+          </p>
+        </div>
+      </section>
+
+      <section class="section-band">
+        <div class="site-shell article-layout">
+          <aside class="article-sidebar" aria-label="AAT2 page navigation">
+            <nav class="toc-panel" aria-labelledby="toc-title">
+              <h2 id="toc-title">On this page</h2>
+              <ol>
+                <li><a href="#research-question">Research question</a></li>
+                <li><a href="#badness">Badness</a></li>
+                <li><a href="#minimality">Minimality</a></li>
+                <li><a href="#finite-universe">Finite molecule universe</a></li>
+                <li><a href="#lawfulness-bridge">Lawfulness bridge</a></li>
+                <li><a href="#review-reading">Review reading</a></li>
+                <li><a href="#examples">Examples</a></li>
+                <li><a href="#counterexamples">Counterexamples</a></li>
+                <li><a href="#formal-reading">Formal reading</a></li>
+              </ol>
+            </nav>
+            <div class="source-panel" data-sidebar-open="true">
+              <h2>AAT2 chapters</h2>
+              <ul>
+                <li><a href="../">Overview</a></li>
+                <li><a href="../atoms/">Atoms</a></li>
+                <li><a href="../architecture-objects/">Architecture Objects</a></li>
+                <li><a href="../laws/">Design Laws</a></li>
+                <li><a href="./" aria-current="page">Obstruction Circuits</a></li>
+                <li><a href="../zero-curvature/">Zero Curvature</a></li>
+                <li><a href="../architecture-signature/">Architecture Signature</a></li>
+                <li><a href="../design-principle-layers/">Design Principle Layers</a></li>
+                <li><a href="../operations-and-calculus/">Operations and Calculus</a></li>
+                <li><a href="../dynamics-and-geometry/">Dynamics and Geometry</a></li>
+                <li><a href="../representations-and-effects/">Representations and Effects</a></li>
+                <li><a href="../canonical-examples-and-readings/">Examples and Readings</a></li>
+                <li><a href="../related-work/">Related Work</a></li>
+                <li><a href="../status/">Status</a></li>
+                <li><a href="../formal-anchors/">Formal Anchors</a></li>
+              </ul>
+            </div>
+          </aside>
+
+          <div class="article-main">
+            <section id="research-question" class="article-section">
+              <h2>Research question</h2>
+              <p class="research-question">
+                When a design law fails, can AAT identify the smallest
+                architecture fragment responsible for the failure?
+              </p>
+              <p>
+                AAT answers with obstruction circuits. A law failure is not
+                merely a warning label. It becomes a finite molecule whose atom
+                surface is bad for a selected law, and whose proper
+                submolecules are no longer bad. That minimality is what makes
+                the diagnostic useful.
+              </p>
+            </section>
+
+            <section id="badness" class="article-section">
+              <h2>Badness</h2>
+              <p>
+                Badness is always law-relative. A molecule is not bad in the
+                abstract; it is bad for a selected <code>DesignLaw</code>. The
+                same molecule may violate a substitution law, satisfy a
+                layering law, and remain unevaluated by a runtime law.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Law-relative badness</figcaption>
+                <pre><code>DesignLaw law
+  Bad : Molecule -> Prop
+
+law.Bad M
+  means molecule M violates the selected law reading</code></pre>
+              </figure>
+              <p id="definition-1-1" class="statement">
+                <a class="statement-anchor" href="#definition-1-1">Definition 1.1.</a>
+                A bad molecule is a molecule selected by a law's
+                <code>Bad</code> predicate. It is not necessarily a global
+                architecture failure; it is a failure under the selected law
+                and selected molecule boundary.
+              </p>
+              <p id="proposition-1-2" class="statement">
+                <a class="statement-anchor" href="#proposition-1-2">Proposition 1.2.</a>
+                Badness does not create atoms. It evaluates an already-selected
+                atom molecule.
+              </p>
+              <p id="proof-1-2" class="statement-proof">
+                <a class="statement-anchor" href="#proof-1-2">Proof.</a>
+                <code>DesignLaw</code> is defined over molecules from an atom
+                axiom system, and <code>DesignLaw.does_not_create_atoms</code>
+                returns the root non-generation boundary. The law marks
+                selected configurations as bad; it does not change which atoms
+                exist.
+              </p>
+            </section>
+
+            <section id="minimality" class="article-section">
+              <h2>Minimality</h2>
+              <p>
+                Minimality separates an obstruction circuit from an arbitrary
+                failing region. A large subsystem can be bad because it
+                contains a smaller bad molecule. The obstruction circuit is the
+                minimal molecule that still carries the failure.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Minimal bad molecule</figcaption>
+                <pre><code>MinimalBadMolecule law M
+  iff law.Bad M
+  and for every proper submolecule N of M,
+      not law.Bad N
+
+ObstructionCircuit law M
+  = MinimalBadMolecule law M</code></pre>
+              </figure>
+              <p id="definition-2-1" class="statement">
+                <a class="statement-anchor" href="#definition-2-1">Definition 2.1.</a>
+                An <code>ObstructionCircuit</code> is a
+                <code>MinimalBadMolecule</code>: a law-relative bad molecule
+                with no proper bad submolecule.
+              </p>
+              <p id="proposition-2-2" class="statement">
+                <a class="statement-anchor" href="#proposition-2-2">Proposition 2.2.</a>
+                Every obstruction circuit is bad for its selected law, and every
+                proper submolecule is not bad for that law.
+              </p>
+              <p id="proof-2-2" class="statement-proof">
+                <a class="statement-anchor" href="#proof-2-2">Proof.</a>
+                Lean defines <code>ObstructionCircuit law M</code> as
+                <code>MinimalBadMolecule law M</code>. The theorem
+                <code>obstructionCircuit_bad</code> projects the badness
+                component. The theorem <code>obstructionCircuit_minimal</code>
+                projects the minimality component and proves that any proper
+                submolecule is not bad.
+              </p>
+            </section>
+
+            <section id="finite-universe" class="article-section">
+              <h2>Finite molecule universe</h2>
+              <p>
+                A finite molecule universe records the selected search space in
+                which obstruction circuits are found. It does not say that all
+                possible molecules in the world were searched. It says that,
+                inside the selected universe, every selected bad molecule has a
+                selected minimal bad submolecule.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Finite molecule universe</figcaption>
+                <pre><code>FiniteMoleculeUniverse law
+  = selected : Molecule -> Prop
+  + minimalOf :
+      selected M -> law.Bad M ->
+      selected N
+      and ObstructionCircuit law N
+      and MoleculeSubset N M
+  + coverageBoundary
+  + exactnessBoundary
+  + nonConclusions</code></pre>
+              </figure>
+              <p id="definition-3-1" class="statement">
+                <a class="statement-anchor" href="#definition-3-1">Definition 3.1.</a>
+                A <code>FiniteMoleculeUniverse</code> is a selected finite
+                witness universe for bad-molecule search. Its coverage and
+                exactness boundaries are part of the diagnostic claim.
+              </p>
+              <p id="proposition-3-2" class="statement">
+                <a class="statement-anchor" href="#proposition-3-2">Proposition 3.2.</a>
+                In a finite molecule universe, a selected bad molecule contains
+                a selected obstruction circuit below it.
+              </p>
+              <p id="proof-3-2" class="statement-proof">
+                <a class="statement-anchor" href="#proof-3-2">Proof.</a>
+                The theorem <code>FiniteMoleculeUniverse.contains_minimal_bad</code>
+                applies the universe's <code>minimalOf</code> field to a
+                selected bad molecule <code>M</code>. It returns a molecule
+                <code>N</code> that is selected, is an obstruction circuit, and
+                is a submolecule of <code>M</code>.
+              </p>
+              <p id="proposition-3-3" class="statement">
+                <a class="statement-anchor" href="#proposition-3-3">Proposition 3.3.</a>
+                If badness is upward-closed in the selected universe, then a
+                selected molecule is bad exactly when it contains a selected
+                obstruction circuit.
+              </p>
+              <p id="proof-3-3" class="statement-proof">
+                <a class="statement-anchor" href="#proof-3-3">Proof.</a>
+                Lean packages upward closure as <code>BadUpwardClosed law</code>.
+                The theorem
+                <code>FiniteMoleculeUniverse.bad_iff_contains_obstruction_circuit</code>
+                proves both directions: badness yields a minimal bad
+                submolecule by <code>minimalOf</code>, and a contained
+                obstruction circuit yields badness by upward closure.
+              </p>
+            </section>
+
+            <section id="lawfulness-bridge" class="article-section">
+              <h2>Lawfulness bridge</h2>
+              <p>
+                Obstruction absence is not automatically the same as
+                lawfulness. AAT connects them with a bridge: every selected
+                bad molecule must produce a selected obstruction circuit, and
+                every selected obstruction circuit must be bad for the law.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Bridge schema</figcaption>
+                <pre><code>LawfulnessBridge law requiredMolecule
+  = badWitnessComplete
+  + circuitBad
+  + coverageBoundary
+  + exactnessBoundary
+  + nonConclusions
+
+LawfulWithinMoleculeConfiguration
+  <-> NoRequiredObstructionCircuit
+  only under the bridge</code></pre>
+              </figure>
+              <p id="proposition-4-1" class="statement">
+                <a class="statement-anchor" href="#proposition-4-1">Proposition 4.1.</a>
+                Lawfulness over a selected molecule boundary is equivalent to
+                no required obstruction circuit only when the
+                <code>LawfulnessBridge</code> assumptions are supplied.
+              </p>
+              <p id="proof-4-1" class="statement-proof">
+                <a class="statement-anchor" href="#proof-4-1">Proof.</a>
+                <code>LawfulnessBridge.lawful_iff_no_obstructionCircuit</code>
+                proves the equivalence. The forward direction uses
+                <code>circuitBad</code>: a required circuit is bad, contradicting
+                lawfulness. The backward direction uses
+                <code>badWitnessComplete</code>: any bad required molecule
+                yields a required circuit, contradicting no-circuit.
+              </p>
+            </section>
+
+            <section id="review-reading" class="article-section">
+              <h2>Review reading</h2>
+              <p>
+                Obstruction circuits change the shape of design review. A
+                reviewer does not merely say "this smells like a cycle" or
+                "this violates substitution." The AAT reading asks for the law,
+                the molecule, the minimality claim, and the selected universe
+                that makes the witness complete enough to trust.
+              </p>
+              <dl class="term-list definition-list">
+                <div>
+                  <dt>Law</dt>
+                  <dd>Which design law is being evaluated?</dd>
+                </div>
+                <div>
+                  <dt>Bad molecule</dt>
+                  <dd>Which finite atom configuration violates the law?</dd>
+                </div>
+                <div>
+                  <dt>Minimality</dt>
+                  <dd>Which atoms can be removed before the violation disappears?</dd>
+                </div>
+                <div>
+                  <dt>Coverage</dt>
+                  <dd>Which molecule universe was searched for witnesses?</dd>
+                </div>
+                <div>
+                  <dt>Exactness</dt>
+                  <dd>Why does this witness mean the selected law failed?</dd>
+                </div>
+              </dl>
+              <p id="proposition-5-1" class="statement">
+                <a class="statement-anchor" href="#proposition-5-1">Proposition 5.1.</a>
+                A design review finding becomes an AAT obstruction circuit only
+                when it carries law-relative badness, minimality, and selected
+                universe boundaries.
+              </p>
+              <p id="non-conclusion-5-2" class="statement">
+                <a class="statement-anchor" href="#non-conclusion-5-2">Non-conclusion 5.2.</a>
+                A tool warning, linter message, metric spike, or reviewer
+                intuition is not automatically an obstruction circuit. It can
+                become evidence for one after the law, molecule, minimality,
+                coverage, and exactness are supplied.
+              </p>
+            </section>
+
+            <section id="examples" class="article-section">
+              <h2>Examples</h2>
+              <p id="example-6-1" class="statement">
+                <a class="statement-anchor" href="#example-6-1">Example 6.1.</a>
+                A cycle obstruction for <code>NoCycle</code> is a minimal
+                dependency loop:
+              </p>
+              <figure class="code-panel">
+                <figcaption>Cycle circuit</figcaption>
+                <pre><code>relation_depends(A, B)
+relation_depends(B, C)
+relation_depends(C, A)
+
+law = NoCycle
+proper subpaths are not cycles
+the three-edge molecule is bad and minimal</code></pre>
+              </figure>
+              <p id="example-6-2" class="statement">
+                <a class="statement-anchor" href="#example-6-2">Example 6.2.</a>
+                A substitution obstruction is a minimal contract mismatch:
+              </p>
+              <figure class="code-panel">
+                <figcaption>Substitution circuit</figcaption>
+                <pre><code>contract(Base, returns NonNull)
+contract(Impl, returns Nullable)
+relation_substitutes(Impl, Base)
+
+law = SubstitutionCompatible
+removing either contract or the substitution relation
+destroys the witness</code></pre>
+              </figure>
+              <p id="example-6-3" class="statement">
+                <a class="statement-anchor" href="#example-6-3">Example 6.3.</a>
+                A retry obstruction for a payment effect combines runtime,
+                effect, and contract atoms:
+              </p>
+              <figure class="code-panel">
+                <figcaption>Runtime-effect circuit</figcaption>
+                <pre><code>effect(capture_payment)
+runtime_interaction(capture, PaymentGateway.capture, retry)
+contract(PaymentGateway, not_idempotent_capture)
+semantic(capture_payment, charges_customer_once)
+
+law = RetryPreservesPaymentSemantics
+retry + non-idempotent effect + charge-once meaning
+form the selected minimal bad molecule</code></pre>
+              </figure>
+            </section>
+
+            <section id="counterexamples" class="article-section">
+              <h2>Counterexamples and non-conclusions</h2>
+              <p id="counterexample-7-1" class="statement">
+                <a class="statement-anchor" href="#counterexample-7-1">Counterexample 7.1.</a>
+                A large subsystem can be bad without being an obstruction
+                circuit. If a smaller proper submolecule is already bad, the
+                large subsystem is not minimal.
+              </p>
+              <p id="counterexample-7-2" class="statement">
+                <a class="statement-anchor" href="#counterexample-7-2">Counterexample 7.2.</a>
+                A warning about a dependency edge is not a cycle obstruction
+                unless the selected molecule contains a law-relative bad cycle
+                and the proper submolecules fail to be bad.
+              </p>
+              <p id="counterexample-7-3" class="statement">
+                <a class="statement-anchor" href="#counterexample-7-3">Counterexample 7.3.</a>
+                No obstruction circuit found in a selected finite universe does
+                not imply global lawfulness. The witness may lie outside the
+                selected molecule universe or outside the observation coverage.
+              </p>
+              <p id="non-conclusion-7-4" class="statement">
+                <a class="statement-anchor" href="#non-conclusion-7-4">Non-conclusion 7.4.</a>
+                Obstruction circuits do not prove runtime incidents, business
+                harm, user-visible failure, or SFT forecast correctness by
+                themselves. They prove a selected law-relative minimal bad
+                molecule.
+              </p>
+            </section>
+
+            <section id="formal-reading" class="article-section">
+              <h2>Formal reading</h2>
+              <p>
+                The Lean surface for this chapter is in
+                <code>Formal/Arch/AAT/Circuit.lean</code>. It defines
+                obstruction circuits as minimal bad molecules, adds finite
+                molecule universes for selected witness search, and proves the
+                lawfulness / no-obstruction bridge when the bridge assumptions
+                are provided.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Lean anchors</figcaption>
+                <pre><code>Formal/Arch/AAT/Circuit.lean
+  AAT.MinimalBadMolecule
+  AAT.ObstructionCircuit
+  obstructionCircuit_bad
+  obstructionCircuit_minimal
+  AAT.BadUpwardClosed
+  AAT.FiniteMoleculeUniverse
+  FiniteMoleculeUniverse.contains_minimal_bad
+  FiniteMoleculeUniverse.bad_iff_contains_obstruction_circuit
+  AAT.LawfulWithinMoleculeConfiguration
+  AAT.NoRequiredObstructionCircuit
+  AAT.LawfulnessBridge
+  LawfulnessBridge.lawful_iff_no_obstructionCircuit</code></pre>
+              </figure>
+              <p id="formal-status-8-1" class="statement">
+                <a class="statement-anchor" href="#formal-status-8-1">Formal status 8.1.</a>
+                <code>MinimalBadMolecule</code>,
+                <code>ObstructionCircuit</code>,
+                <code>FiniteMoleculeUniverse</code>,
+                <code>LawfulWithinMoleculeConfiguration</code>,
+                <code>NoRequiredObstructionCircuit</code>, and
+                <code>LawfulnessBridge</code> are defined in Lean.
+              </p>
+              <p id="formal-status-8-2" class="statement">
+                <a class="statement-anchor" href="#formal-status-8-2">Formal status 8.2.</a>
+                The accessor theorems for circuit badness and minimality, the
+                finite-universe minimal-bad witness theorem, the upward-closed
+                badness equivalence, and the lawfulness/no-circuit bridge are
+                proved.
+              </p>
+            </section>
+
+            <section id="chapter-summary" class="article-section">
+              <h2>Chapter summary</h2>
+              <p>
+                Obstruction circuits are the diagnostic core of AAT. They
+                identify the smallest selected molecule that still violates a
+                selected design law. This lets architectural review name not
+                only that something is wrong, but which atom configuration is
+                responsible for the failure.
+              </p>
+              <p>
+                The chapter also fixes the boundary. Minimality, selected
+                universe coverage, and exactness are part of the claim. Without
+                them, a warning may be useful evidence, but it is not yet an
+                AAT obstruction circuit.
+              </p>
+              <h3>Terms</h3>
+              <dl class="term-list definition-list">
+                <div>
+                  <dt>Bad molecule</dt>
+                  <dd>A molecule marked bad by a selected design law.</dd>
+                </div>
+                <div>
+                  <dt>MinimalBadMolecule</dt>
+                  <dd>A bad molecule whose proper submolecules are not bad for the selected law.</dd>
+                </div>
+                <div>
+                  <dt>ObstructionCircuit</dt>
+                  <dd>A law-relative minimal bad molecule.</dd>
+                </div>
+                <div>
+                  <dt>FiniteMoleculeUniverse</dt>
+                  <dd>The selected witness universe used to find minimal bad molecules.</dd>
+                </div>
+                <div>
+                  <dt>BadUpwardClosed</dt>
+                  <dd>The condition that badness propagates from a submolecule to a larger molecule.</dd>
+                </div>
+                <div>
+                  <dt>LawfulnessBridge</dt>
+                  <dd>The assumptions connecting selected lawfulness to selected obstruction-circuit absence.</dd>
+                </div>
+              </dl>
+            </section>
+
+            <nav class="page-nav" aria-label="Reading sequence">
+              <a class="page-nav-previous" href="../laws/">
+                <span>Previous</span>
+                <strong>Design Laws and Invariants</strong>
+              </a>
+              <a class="page-nav-next" href="../zero-curvature/">
+                <span>Next</span>
+                <strong>Flatness and Zero Curvature</strong>
+              </a>
+            </nav>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="site-shell footer-inner">
+        <p>&copy; <span data-current-year>2026</span> Hiroyuki Nakahata.</p>
+        <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2" target="_blank" rel="noopener noreferrer">
+          Repository
+        </a>
+      </div>
+    </footer>
+  </body>
+</html>
