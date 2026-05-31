@@ -2229,6 +2229,24 @@ fn assert_north_star_packet_surfaces(json: &Value) {
         );
     }
     assert!(
+        json["designPrincipleReadings"]
+            .as_array()
+            .expect("design principle readings are array")
+            .iter()
+            .all(|entry| {
+                matches!(
+                    entry["status"].as_str(),
+                    Some("preserved" | "stressed" | "unmeasured" | "notApplicable")
+                ) && entry["witnessRuleRef"].as_str().is_some()
+                    && entry["witnessStatus"].as_str().is_some()
+                    && entry["witnessEvidenceRefs"].as_array().is_some()
+                    && entry["recommendedNextAction"]
+                        .as_str()
+                        .is_some_and(|action| !action.contains("turn stressed readings"))
+            }),
+        "design principle readings must use principle-specific witness evaluation"
+    );
+    assert!(
         json["boundedJudgements"]
             .as_array()
             .expect("bounded judgements are array")

@@ -8805,30 +8805,31 @@
     {
       "principleId": "principle:informationhiding",
       "principle": "InformationHiding",
-      "status": "stressed",
-      "aatReading": "InformationHiding is read as invariant preservation / obstruction / operation preservation: representation, state, effect, and provider details stay inside declared boundaries",
+      "status": "unmeasured",
+      "witnessRuleRef": "principle-witness:informationhiding",
+      "witnessStatus": "blockedByMissingWitnessEvidence",
+      "witnessEvidenceRefs": [
+        "gap-runtime-user-db-trace"
+      ],
+      "aatReading": "InformationHiding is read by blockedByMissingWitnessEvidence over invariant / law / obstruction / operation preservation: representation, state, effect, and provider details stay inside declared boundaries",
       "invariantRefs": [
         "invariant:law-layer-respecting",
         "invariant:law-semantic-contract-alignment"
       ],
-      "obstructionRefs": [
-        "obstruction:semantic-contract-mismatch:computed"
-      ],
+      "obstructionRefs": [],
       "operationRefs": [
         "repair:obstruction-semantic-contract-mismatch-computed"
       ],
       "evidenceRefs": [
-        "atom:component:route-users",
-        "atom:component:service-user",
-        "atom:relation:route-service",
-        "atom:contract:create-user"
+        "gap-runtime-user-db-trace"
       ],
-      "confidence": "medium",
+      "sourceRefs": [],
+      "confidence": "low",
       "coverageBoundary": "principle reading uses semantic ArchMap evidence and is not a slogan or static lint rule",
       "exactnessBlockers": [
         "gap-runtime-user-db-trace"
       ],
-      "recommendedNextAction": "turn stressed readings into source review questions or repair preconditions",
+      "recommendedNextAction": "collect state/effect/runtime/projection witness sources for InformationHiding",
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -8842,30 +8843,31 @@
     {
       "principleId": "principle:encapsulation",
       "principle": "Encapsulation",
-      "status": "stressed",
-      "aatReading": "Encapsulation is read as invariant preservation / obstruction / operation preservation: state mutation, effect execution, and authority checks are owned by the selected boundary",
+      "status": "unmeasured",
+      "witnessRuleRef": "principle-witness:encapsulation",
+      "witnessStatus": "blockedByMissingWitnessEvidence",
+      "witnessEvidenceRefs": [
+        "gap-runtime-user-db-trace"
+      ],
+      "aatReading": "Encapsulation is read by blockedByMissingWitnessEvidence over invariant / law / obstruction / operation preservation: state mutation, effect execution, and authority checks are owned by the selected boundary",
       "invariantRefs": [
         "invariant:law-layer-respecting",
         "invariant:law-semantic-contract-alignment"
       ],
-      "obstructionRefs": [
-        "obstruction:semantic-contract-mismatch:computed"
-      ],
+      "obstructionRefs": [],
       "operationRefs": [
         "repair:obstruction-semantic-contract-mismatch-computed"
       ],
       "evidenceRefs": [
-        "atom:component:route-users",
-        "atom:component:service-user",
-        "atom:relation:route-service",
-        "atom:contract:create-user"
+        "gap-runtime-user-db-trace"
       ],
-      "confidence": "medium",
+      "sourceRefs": [],
+      "confidence": "low",
       "coverageBoundary": "principle reading uses semantic ArchMap evidence and is not a slogan or static lint rule",
       "exactnessBlockers": [
         "gap-runtime-user-db-trace"
       ],
-      "recommendedNextAction": "turn stressed readings into source review questions or repair preconditions",
+      "recommendedNextAction": "collect state/effect/authority witness sources for Encapsulation",
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -8879,8 +8881,14 @@
     {
       "principleId": "principle:separationofconcerns",
       "principle": "SeparationOfConcerns",
-      "status": "stressed",
-      "aatReading": "SeparationOfConcerns is read as invariant preservation / obstruction / operation preservation: semantic concern, state transition, effect, policy, and presentation remain unmixed",
+      "status": "unmeasured",
+      "witnessRuleRef": "principle-witness:separationofconcerns",
+      "witnessStatus": "blockedByMissingWitnessEvidence",
+      "witnessEvidenceRefs": [
+        "atom:relation:route-service",
+        "atom:contract:create-user"
+      ],
+      "aatReading": "SeparationOfConcerns is read by blockedByMissingWitnessEvidence over invariant / law / obstruction / operation preservation: semantic concern, state transition, effect, policy, and presentation remain unmixed",
       "invariantRefs": [
         "invariant:law-layer-respecting",
         "invariant:law-semantic-contract-alignment"
@@ -8892,17 +8900,20 @@
         "repair:obstruction-semantic-contract-mismatch-computed"
       ],
       "evidenceRefs": [
-        "atom:component:route-users",
-        "atom:component:service-user",
         "atom:relation:route-service",
         "atom:contract:create-user"
       ],
-      "confidence": "medium",
+      "sourceRefs": [
+        "src-route-users",
+        "src-service-user",
+        "test-user-contract"
+      ],
+      "confidence": "low",
       "coverageBoundary": "principle reading uses semantic ArchMap evidence and is not a slogan or static lint rule",
       "exactnessBlockers": [
         "gap-runtime-user-db-trace"
       ],
-      "recommendedNextAction": "turn stressed readings into source review questions or repair preconditions",
+      "recommendedNextAction": "collect semantic/state/effect/contractSpecification witness sources for SeparationOfConcerns",
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -8916,8 +8927,14 @@
     {
       "principleId": "principle:substitutability",
       "principle": "Substitutability",
-      "status": "stressed",
-      "aatReading": "Substitutability is read as invariant preservation / obstruction / operation preservation: replacement preserves contract, effect, state transition, and semantic reading",
+      "status": "unmeasured",
+      "witnessRuleRef": "principle-witness:substitutability",
+      "witnessStatus": "blockedByMissingWitnessEvidence",
+      "witnessEvidenceRefs": [
+        "atom:relation:route-service",
+        "atom:contract:create-user"
+      ],
+      "aatReading": "Substitutability is read by blockedByMissingWitnessEvidence over invariant / law / obstruction / operation preservation: replacement preserves contract, effect, state transition, and semantic reading",
       "invariantRefs": [
         "invariant:law-layer-respecting",
         "invariant:law-semantic-contract-alignment"
@@ -8929,17 +8946,20 @@
         "repair:obstruction-semantic-contract-mismatch-computed"
       ],
       "evidenceRefs": [
-        "atom:component:route-users",
-        "atom:component:service-user",
         "atom:relation:route-service",
         "atom:contract:create-user"
       ],
-      "confidence": "medium",
+      "sourceRefs": [
+        "src-route-users",
+        "src-service-user",
+        "test-user-contract"
+      ],
+      "confidence": "low",
       "coverageBoundary": "principle reading uses semantic ArchMap evidence and is not a slogan or static lint rule",
       "exactnessBlockers": [
         "gap-runtime-user-db-trace"
       ],
-      "recommendedNextAction": "turn stressed readings into source review questions or repair preconditions",
+      "recommendedNextAction": "collect contractSpecification/effect/state/semantic witness sources for Substitutability",
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -8953,8 +8973,14 @@
     {
       "principleId": "principle:openclosedextension",
       "principle": "OpenClosedExtension",
-      "status": "stressed",
-      "aatReading": "OpenClosedExtension is read as invariant preservation / obstruction / operation preservation: feature extension preserves core invariants without new interaction obstruction",
+      "status": "unmeasured",
+      "witnessRuleRef": "principle-witness:openclosedextension",
+      "witnessStatus": "blockedByMissingWitnessEvidence",
+      "witnessEvidenceRefs": [
+        "atom:relation:route-service",
+        "atom:contract:create-user"
+      ],
+      "aatReading": "OpenClosedExtension is read by blockedByMissingWitnessEvidence over invariant / law / obstruction / operation preservation: feature extension preserves core invariants without new interaction obstruction",
       "invariantRefs": [
         "invariant:law-layer-respecting",
         "invariant:law-semantic-contract-alignment"
@@ -8966,17 +8992,20 @@
         "repair:obstruction-semantic-contract-mismatch-computed"
       ],
       "evidenceRefs": [
-        "atom:component:route-users",
-        "atom:component:service-user",
         "atom:relation:route-service",
         "atom:contract:create-user"
       ],
-      "confidence": "medium",
+      "sourceRefs": [
+        "src-route-users",
+        "src-service-user",
+        "test-user-contract"
+      ],
+      "confidence": "low",
       "coverageBoundary": "principle reading uses semantic ArchMap evidence and is not a slogan or static lint rule",
       "exactnessBlockers": [
         "gap-runtime-user-db-trace"
       ],
-      "recommendedNextAction": "turn stressed readings into source review questions or repair preconditions",
+      "recommendedNextAction": "collect contractSpecification/relation/semantic witness sources for OpenClosedExtension",
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -8991,7 +9020,13 @@
       "principleId": "principle:dependencyinversion",
       "principle": "DependencyInversion",
       "status": "stressed",
-      "aatReading": "DependencyInversion is read as invariant preservation / obstruction / operation preservation: abstract boundary semantics remain aligned with implementation obligations",
+      "witnessRuleRef": "principle-witness:dependencyinversion",
+      "witnessStatus": "witnessStressedBySelectedObstruction",
+      "witnessEvidenceRefs": [
+        "atom:relation:route-service",
+        "atom:contract:create-user"
+      ],
+      "aatReading": "DependencyInversion is read by witnessStressedBySelectedObstruction over invariant / law / obstruction / operation preservation: abstract boundary semantics remain aligned with implementation obligations",
       "invariantRefs": [
         "invariant:law-layer-respecting",
         "invariant:law-semantic-contract-alignment"
@@ -9003,17 +9038,20 @@
         "repair:obstruction-semantic-contract-mismatch-computed"
       ],
       "evidenceRefs": [
-        "atom:component:route-users",
-        "atom:component:service-user",
         "atom:relation:route-service",
         "atom:contract:create-user"
+      ],
+      "sourceRefs": [
+        "src-route-users",
+        "src-service-user",
+        "test-user-contract"
       ],
       "confidence": "medium",
       "coverageBoundary": "principle reading uses semantic ArchMap evidence and is not a slogan or static lint rule",
       "exactnessBlockers": [
         "gap-runtime-user-db-trace"
       ],
-      "recommendedNextAction": "turn stressed readings into source review questions or repair preconditions",
+      "recommendedNextAction": "review DependencyInversion source refs before treating this principle as preserved",
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -9027,8 +9065,13 @@
     {
       "principleId": "principle:representationindependence",
       "principle": "RepresentationIndependence",
-      "status": "unmeasured",
-      "aatReading": "RepresentationIndependence is read as invariant preservation / obstruction / operation preservation: internal representation changes preserve selected observations and contracts",
+      "status": "stressed",
+      "witnessRuleRef": "principle-witness:representationindependence",
+      "witnessStatus": "witnessStressedBySelectedObstruction",
+      "witnessEvidenceRefs": [
+        "atom:contract:create-user"
+      ],
+      "aatReading": "RepresentationIndependence is read by witnessStressedBySelectedObstruction over invariant / law / obstruction / operation preservation: internal representation changes preserve selected observations and contracts",
       "invariantRefs": [
         "invariant:law-layer-respecting",
         "invariant:law-semantic-contract-alignment"
@@ -9040,17 +9083,17 @@
         "repair:obstruction-semantic-contract-mismatch-computed"
       ],
       "evidenceRefs": [
-        "atom:component:route-users",
-        "atom:component:service-user",
-        "atom:relation:route-service",
         "atom:contract:create-user"
       ],
-      "confidence": "low",
+      "sourceRefs": [
+        "test-user-contract"
+      ],
+      "confidence": "medium",
       "coverageBoundary": "principle reading uses semantic ArchMap evidence and is not a slogan or static lint rule",
       "exactnessBlockers": [
         "gap-runtime-user-db-trace"
       ],
-      "recommendedNextAction": "turn stressed readings into source review questions or repair preconditions",
+      "recommendedNextAction": "review RepresentationIndependence source refs before treating this principle as preserved",
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -9065,29 +9108,30 @@
       "principleId": "principle:idempotencyandreplaysafety",
       "principle": "IdempotencyAndReplaySafety",
       "status": "unmeasured",
-      "aatReading": "IdempotencyAndReplaySafety is read as invariant preservation / obstruction / operation preservation: retry, replay, jobs, and external effects preserve selected state transition law",
+      "witnessRuleRef": "principle-witness:idempotencyandreplaysafety",
+      "witnessStatus": "blockedByMissingWitnessEvidence",
+      "witnessEvidenceRefs": [
+        "gap-runtime-user-db-trace"
+      ],
+      "aatReading": "IdempotencyAndReplaySafety is read by blockedByMissingWitnessEvidence over invariant / law / obstruction / operation preservation: retry, replay, jobs, and external effects preserve selected state transition law",
       "invariantRefs": [
         "invariant:law-layer-respecting",
         "invariant:law-semantic-contract-alignment"
       ],
-      "obstructionRefs": [
-        "obstruction:semantic-contract-mismatch:computed"
-      ],
+      "obstructionRefs": [],
       "operationRefs": [
         "repair:obstruction-semantic-contract-mismatch-computed"
       ],
       "evidenceRefs": [
-        "atom:component:route-users",
-        "atom:component:service-user",
-        "atom:relation:route-service",
-        "atom:contract:create-user"
+        "gap-runtime-user-db-trace"
       ],
+      "sourceRefs": [],
       "confidence": "low",
       "coverageBoundary": "principle reading uses semantic ArchMap evidence and is not a slogan or static lint rule",
       "exactnessBlockers": [
         "gap-runtime-user-db-trace"
       ],
-      "recommendedNextAction": "turn stressed readings into source review questions or repair preconditions",
+      "recommendedNextAction": "collect effect/state/runtimeInteraction witness sources for IdempotencyAndReplaySafety",
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -9102,29 +9146,30 @@
       "principleId": "principle:authorityandtrustboundary",
       "principle": "AuthorityAndTrustBoundary",
       "status": "unmeasured",
-      "aatReading": "AuthorityAndTrustBoundary is read as invariant preservation / obstruction / operation preservation: authority labels and trust handoffs survive operation paths",
+      "witnessRuleRef": "principle-witness:authorityandtrustboundary",
+      "witnessStatus": "blockedByMissingWitnessEvidence",
+      "witnessEvidenceRefs": [
+        "gap-runtime-user-db-trace"
+      ],
+      "aatReading": "AuthorityAndTrustBoundary is read by blockedByMissingWitnessEvidence over invariant / law / obstruction / operation preservation: authority labels and trust handoffs survive operation paths",
       "invariantRefs": [
         "invariant:law-layer-respecting",
         "invariant:law-semantic-contract-alignment"
       ],
-      "obstructionRefs": [
-        "obstruction:semantic-contract-mismatch:computed"
-      ],
+      "obstructionRefs": [],
       "operationRefs": [
         "repair:obstruction-semantic-contract-mismatch-computed"
       ],
       "evidenceRefs": [
-        "atom:component:route-users",
-        "atom:component:service-user",
-        "atom:relation:route-service",
-        "atom:contract:create-user"
+        "gap-runtime-user-db-trace"
       ],
+      "sourceRefs": [],
       "confidence": "low",
       "coverageBoundary": "principle reading uses semantic ArchMap evidence and is not a slogan or static lint rule",
       "exactnessBlockers": [
         "gap-runtime-user-db-trace"
       ],
-      "recommendedNextAction": "turn stressed readings into source review questions or repair preconditions",
+      "recommendedNextAction": "collect authority/trust/runtimeInteraction witness sources for AuthorityAndTrustBoundary",
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -9461,22 +9506,19 @@
     },
     {
       "judgementId": "judgement:principle-informationhiding",
-      "status": "actionable",
+      "status": "blocked",
       "aatConcept": "Invariant",
-      "reading": "InformationHiding is read as invariant preservation / obstruction / operation preservation: representation, state, effect, and provider details stay inside declared boundaries",
+      "reading": "InformationHiding is read by blockedByMissingWitnessEvidence over invariant / law / obstruction / operation preservation: representation, state, effect, and provider details stay inside declared boundaries",
       "evidenceRefs": [
-        "atom:component:route-users",
-        "atom:component:service-user",
-        "atom:relation:route-service",
-        "atom:contract:create-user"
+        "gap-runtime-user-db-trace"
       ],
-      "confidence": "medium",
+      "confidence": "low",
       "uncertainty": [
         "gap-runtime-user-db-trace"
       ],
       "coverageBoundary": "principle reading uses semantic ArchMap evidence and is not a slogan or static lint rule",
       "exactnessBoundary": "design principle reading is not static lint and not theorem proof",
-      "recommendedNextAction": "turn stressed readings into source review questions or repair preconditions",
+      "recommendedNextAction": "collect state/effect/runtime/projection witness sources for InformationHiding",
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -9489,22 +9531,19 @@
     },
     {
       "judgementId": "judgement:principle-encapsulation",
-      "status": "actionable",
+      "status": "blocked",
       "aatConcept": "Invariant",
-      "reading": "Encapsulation is read as invariant preservation / obstruction / operation preservation: state mutation, effect execution, and authority checks are owned by the selected boundary",
+      "reading": "Encapsulation is read by blockedByMissingWitnessEvidence over invariant / law / obstruction / operation preservation: state mutation, effect execution, and authority checks are owned by the selected boundary",
       "evidenceRefs": [
-        "atom:component:route-users",
-        "atom:component:service-user",
-        "atom:relation:route-service",
-        "atom:contract:create-user"
+        "gap-runtime-user-db-trace"
       ],
-      "confidence": "medium",
+      "confidence": "low",
       "uncertainty": [
         "gap-runtime-user-db-trace"
       ],
       "coverageBoundary": "principle reading uses semantic ArchMap evidence and is not a slogan or static lint rule",
       "exactnessBoundary": "design principle reading is not static lint and not theorem proof",
-      "recommendedNextAction": "turn stressed readings into source review questions or repair preconditions",
+      "recommendedNextAction": "collect state/effect/authority witness sources for Encapsulation",
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -9517,22 +9556,20 @@
     },
     {
       "judgementId": "judgement:principle-separationofconcerns",
-      "status": "actionable",
+      "status": "blocked",
       "aatConcept": "Invariant",
-      "reading": "SeparationOfConcerns is read as invariant preservation / obstruction / operation preservation: semantic concern, state transition, effect, policy, and presentation remain unmixed",
+      "reading": "SeparationOfConcerns is read by blockedByMissingWitnessEvidence over invariant / law / obstruction / operation preservation: semantic concern, state transition, effect, policy, and presentation remain unmixed",
       "evidenceRefs": [
-        "atom:component:route-users",
-        "atom:component:service-user",
         "atom:relation:route-service",
         "atom:contract:create-user"
       ],
-      "confidence": "medium",
+      "confidence": "low",
       "uncertainty": [
         "gap-runtime-user-db-trace"
       ],
       "coverageBoundary": "principle reading uses semantic ArchMap evidence and is not a slogan or static lint rule",
       "exactnessBoundary": "design principle reading is not static lint and not theorem proof",
-      "recommendedNextAction": "turn stressed readings into source review questions or repair preconditions",
+      "recommendedNextAction": "collect semantic/state/effect/contractSpecification witness sources for SeparationOfConcerns",
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -9545,22 +9582,20 @@
     },
     {
       "judgementId": "judgement:principle-substitutability",
-      "status": "actionable",
+      "status": "blocked",
       "aatConcept": "Invariant",
-      "reading": "Substitutability is read as invariant preservation / obstruction / operation preservation: replacement preserves contract, effect, state transition, and semantic reading",
+      "reading": "Substitutability is read by blockedByMissingWitnessEvidence over invariant / law / obstruction / operation preservation: replacement preserves contract, effect, state transition, and semantic reading",
       "evidenceRefs": [
-        "atom:component:route-users",
-        "atom:component:service-user",
         "atom:relation:route-service",
         "atom:contract:create-user"
       ],
-      "confidence": "medium",
+      "confidence": "low",
       "uncertainty": [
         "gap-runtime-user-db-trace"
       ],
       "coverageBoundary": "principle reading uses semantic ArchMap evidence and is not a slogan or static lint rule",
       "exactnessBoundary": "design principle reading is not static lint and not theorem proof",
-      "recommendedNextAction": "turn stressed readings into source review questions or repair preconditions",
+      "recommendedNextAction": "collect contractSpecification/effect/state/semantic witness sources for Substitutability",
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -9573,22 +9608,20 @@
     },
     {
       "judgementId": "judgement:principle-openclosedextension",
-      "status": "actionable",
+      "status": "blocked",
       "aatConcept": "Invariant",
-      "reading": "OpenClosedExtension is read as invariant preservation / obstruction / operation preservation: feature extension preserves core invariants without new interaction obstruction",
+      "reading": "OpenClosedExtension is read by blockedByMissingWitnessEvidence over invariant / law / obstruction / operation preservation: feature extension preserves core invariants without new interaction obstruction",
       "evidenceRefs": [
-        "atom:component:route-users",
-        "atom:component:service-user",
         "atom:relation:route-service",
         "atom:contract:create-user"
       ],
-      "confidence": "medium",
+      "confidence": "low",
       "uncertainty": [
         "gap-runtime-user-db-trace"
       ],
       "coverageBoundary": "principle reading uses semantic ArchMap evidence and is not a slogan or static lint rule",
       "exactnessBoundary": "design principle reading is not static lint and not theorem proof",
-      "recommendedNextAction": "turn stressed readings into source review questions or repair preconditions",
+      "recommendedNextAction": "collect contractSpecification/relation/semantic witness sources for OpenClosedExtension",
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -9603,10 +9636,8 @@
       "judgementId": "judgement:principle-dependencyinversion",
       "status": "actionable",
       "aatConcept": "Invariant",
-      "reading": "DependencyInversion is read as invariant preservation / obstruction / operation preservation: abstract boundary semantics remain aligned with implementation obligations",
+      "reading": "DependencyInversion is read by witnessStressedBySelectedObstruction over invariant / law / obstruction / operation preservation: abstract boundary semantics remain aligned with implementation obligations",
       "evidenceRefs": [
-        "atom:component:route-users",
-        "atom:component:service-user",
         "atom:relation:route-service",
         "atom:contract:create-user"
       ],
@@ -9616,7 +9647,7 @@
       ],
       "coverageBoundary": "principle reading uses semantic ArchMap evidence and is not a slogan or static lint rule",
       "exactnessBoundary": "design principle reading is not static lint and not theorem proof",
-      "recommendedNextAction": "turn stressed readings into source review questions or repair preconditions",
+      "recommendedNextAction": "review DependencyInversion source refs before treating this principle as preserved",
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -9629,22 +9660,19 @@
     },
     {
       "judgementId": "judgement:principle-representationindependence",
-      "status": "blocked",
+      "status": "actionable",
       "aatConcept": "Invariant",
-      "reading": "RepresentationIndependence is read as invariant preservation / obstruction / operation preservation: internal representation changes preserve selected observations and contracts",
+      "reading": "RepresentationIndependence is read by witnessStressedBySelectedObstruction over invariant / law / obstruction / operation preservation: internal representation changes preserve selected observations and contracts",
       "evidenceRefs": [
-        "atom:component:route-users",
-        "atom:component:service-user",
-        "atom:relation:route-service",
         "atom:contract:create-user"
       ],
-      "confidence": "low",
+      "confidence": "medium",
       "uncertainty": [
         "gap-runtime-user-db-trace"
       ],
       "coverageBoundary": "principle reading uses semantic ArchMap evidence and is not a slogan or static lint rule",
       "exactnessBoundary": "design principle reading is not static lint and not theorem proof",
-      "recommendedNextAction": "turn stressed readings into source review questions or repair preconditions",
+      "recommendedNextAction": "review RepresentationIndependence source refs before treating this principle as preserved",
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -9659,12 +9687,9 @@
       "judgementId": "judgement:principle-idempotencyandreplaysafety",
       "status": "blocked",
       "aatConcept": "Invariant",
-      "reading": "IdempotencyAndReplaySafety is read as invariant preservation / obstruction / operation preservation: retry, replay, jobs, and external effects preserve selected state transition law",
+      "reading": "IdempotencyAndReplaySafety is read by blockedByMissingWitnessEvidence over invariant / law / obstruction / operation preservation: retry, replay, jobs, and external effects preserve selected state transition law",
       "evidenceRefs": [
-        "atom:component:route-users",
-        "atom:component:service-user",
-        "atom:relation:route-service",
-        "atom:contract:create-user"
+        "gap-runtime-user-db-trace"
       ],
       "confidence": "low",
       "uncertainty": [
@@ -9672,7 +9697,7 @@
       ],
       "coverageBoundary": "principle reading uses semantic ArchMap evidence and is not a slogan or static lint rule",
       "exactnessBoundary": "design principle reading is not static lint and not theorem proof",
-      "recommendedNextAction": "turn stressed readings into source review questions or repair preconditions",
+      "recommendedNextAction": "collect effect/state/runtimeInteraction witness sources for IdempotencyAndReplaySafety",
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -9687,12 +9712,9 @@
       "judgementId": "judgement:principle-authorityandtrustboundary",
       "status": "blocked",
       "aatConcept": "Invariant",
-      "reading": "AuthorityAndTrustBoundary is read as invariant preservation / obstruction / operation preservation: authority labels and trust handoffs survive operation paths",
+      "reading": "AuthorityAndTrustBoundary is read by blockedByMissingWitnessEvidence over invariant / law / obstruction / operation preservation: authority labels and trust handoffs survive operation paths",
       "evidenceRefs": [
-        "atom:component:route-users",
-        "atom:component:service-user",
-        "atom:relation:route-service",
-        "atom:contract:create-user"
+        "gap-runtime-user-db-trace"
       ],
       "confidence": "low",
       "uncertainty": [
@@ -9700,7 +9722,7 @@
       ],
       "coverageBoundary": "principle reading uses semantic ArchMap evidence and is not a slogan or static lint rule",
       "exactnessBoundary": "design principle reading is not static lint and not theorem proof",
-      "recommendedNextAction": "turn stressed readings into source review questions or repair preconditions",
+      "recommendedNextAction": "collect authority/trust/runtimeInteraction witness sources for AuthorityAndTrustBoundary",
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -9714,7 +9736,7 @@
   ],
   "llmInterpretationPacket": {
     "packetId": "llm-interpretation:fixture-archmap-atom-observation",
-    "shortDiagnosis": "9 actionable judgement(s), 1 design pressure reading(s), and 1 observation gap(s) require review",
+    "shortDiagnosis": "5 actionable judgement(s), 1 design pressure reading(s), and 1 observation gap(s) require review",
     "aatConceptMap": [
       "Atom -> Configuration -> ArchitectureObject",
       "InvariantFamily -> LawUniverse -> ObstructionCircuit -> ArchitectureSignature",
@@ -9907,15 +9929,15 @@
       "judgement:obstruction-semantic-contract-mismatch-computed: inspect source refs and repair operation preconditions",
       "judgement:sig-axis-layer-violation: use zero axes only with exactness assumptions; review nonzero axes as design pressure",
       "judgement:sig-axis-semantic-inconsistency: use zero axes only with exactness assumptions; review nonzero axes as design pressure",
-      "judgement:principle-informationhiding: turn stressed readings into source review questions or repair preconditions",
-      "judgement:principle-encapsulation: turn stressed readings into source review questions or repair preconditions",
-      "judgement:principle-separationofconcerns: turn stressed readings into source review questions or repair preconditions",
-      "judgement:principle-substitutability: turn stressed readings into source review questions or repair preconditions",
-      "judgement:principle-openclosedextension: turn stressed readings into source review questions or repair preconditions",
-      "judgement:principle-dependencyinversion: turn stressed readings into source review questions or repair preconditions",
-      "judgement:principle-representationindependence: turn stressed readings into source review questions or repair preconditions",
-      "judgement:principle-idempotencyandreplaysafety: turn stressed readings into source review questions or repair preconditions",
-      "judgement:principle-authorityandtrustboundary: turn stressed readings into source review questions or repair preconditions"
+      "judgement:principle-informationhiding: collect state/effect/runtime/projection witness sources for InformationHiding",
+      "judgement:principle-encapsulation: collect state/effect/authority witness sources for Encapsulation",
+      "judgement:principle-separationofconcerns: collect semantic/state/effect/contractSpecification witness sources for SeparationOfConcerns",
+      "judgement:principle-substitutability: collect contractSpecification/effect/state/semantic witness sources for Substitutability",
+      "judgement:principle-openclosedextension: collect contractSpecification/relation/semantic witness sources for OpenClosedExtension",
+      "judgement:principle-dependencyinversion: review DependencyInversion source refs before treating this principle as preserved",
+      "judgement:principle-representationindependence: review RepresentationIndependence source refs before treating this principle as preserved",
+      "judgement:principle-idempotencyandreplaysafety: collect effect/state/runtimeInteraction witness sources for IdempotencyAndReplaySafety",
+      "judgement:principle-authorityandtrustboundary: collect authority/trust/runtimeInteraction witness sources for AuthorityAndTrustBoundary"
     ]
   },
   "evidenceBoundary": "computed from ArchMap fixture-archmap-atom-observation and selected interpretation profile llm-native-aat-law-policy-fixture; concernHints are auxiliary cues only",

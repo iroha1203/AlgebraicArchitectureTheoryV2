@@ -295,7 +295,11 @@ The builder:
   Path, Homotopy, Diagram, and AnalyticRepresentation
 - emits architecture state, design pressure, change impact, bounded judgements,
   LLM interpretation, analytic representation, semantic coupling/cohesion,
-  workflow risk readings, spectral analysis readings, and design principle readings
+  workflow risk readings, spectral analysis readings, and design principle
+  readings. Design principles are principle-specific witness readings with
+  `witnessRuleRef`, `witnessStatus`, witness evidence refs, source refs, and
+  per-principle next actions; they are not global obstruction summaries or
+  static lint rules.
 - workflow risk readings rank molecule-local review pressure using ArchMap
   atoms, molecule roles, semantic observations, concern hints, and observation
   gaps. They are review-prioritization readings, not quality scores.

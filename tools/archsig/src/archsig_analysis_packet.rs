@@ -9415,51 +9415,65 @@ fn build_design_principle_readings(
     repair_candidates: &[ArchSigRepairOperationCandidateV0],
 ) -> Vec<ArchSigDesignPrincipleReadingV0> {
     let specs = [
-        (
+        principle_spec(
             "InformationHiding",
             "representation, state, effect, and provider details stay inside declared boundaries",
+            &["state", "effect", "runtime", "projection"],
+            &["boundary", "private", "provider"],
         ),
-        (
+        principle_spec(
             "Encapsulation",
             "state mutation, effect execution, and authority checks are owned by the selected boundary",
+            &["state", "effect", "authority"],
+            &["ownership", "boundary"],
         ),
-        (
+        principle_spec(
             "SeparationOfConcerns",
             "semantic concern, state transition, effect, policy, and presentation remain unmixed",
+            &["semantic", "state", "effect", "contractSpecification"],
+            &["mixed", "concern", "semantic"],
         ),
-        (
+        principle_spec(
             "Substitutability",
             "replacement preserves contract, effect, state transition, and semantic reading",
+            &["contractSpecification", "effect", "state", "semantic"],
+            &["replacement", "contract", "semantic"],
         ),
-        (
+        principle_spec(
             "OpenClosedExtension",
             "feature extension preserves core invariants without new interaction obstruction",
+            &["contractSpecification", "relation", "semantic"],
+            &["extension", "interaction", "feature"],
         ),
-        (
+        principle_spec(
             "DependencyInversion",
             "abstract boundary semantics remain aligned with implementation obligations",
+            &["relation", "contractSpecification", "semantic"],
+            &["dependency", "abstract", "implementation"],
         ),
-        (
+        principle_spec(
             "RepresentationIndependence",
             "internal representation changes preserve selected observations and contracts",
+            &["state", "contractSpecification", "projection"],
+            &["representation", "projection"],
         ),
-        (
+        principle_spec(
             "IdempotencyAndReplaySafety",
             "retry, replay, jobs, and external effects preserve selected state transition law",
+            &["effect", "state", "runtimeInteraction"],
+            &["retry", "replay", "idempot", "runtime"],
         ),
-        (
+        principle_spec(
             "AuthorityAndTrustBoundary",
             "authority labels and trust handoffs survive operation paths",
+            &["authority", "trust", "runtimeInteraction"],
+            &["authority", "trust", "permission"],
         ),
     ];
     let gap_refs = archmap
         .observation_gaps
         .iter()
         .map(|gap| gap.gap_id.clone())
-        .collect::<Vec<_>>();
-    let obstruction_refs = obstruction_circuits
-        .iter()
-        .map(|circuit| circuit.obstruction_circuit_id.clone())
         .collect::<Vec<_>>();
     let invariant_refs = invariant_readings
         .iter()
@@ -9471,18 +9485,22 @@ fn build_design_principle_readings(
         .collect::<Vec<_>>();
     specs
         .into_iter()
-        .map(|(principle, reading)| {
-            let status = principle_status(principle, archmap, obstruction_circuits);
+        .map(|spec| {
+            let evaluation = evaluate_design_principle(&spec, archmap, obstruction_circuits);
             ArchSigDesignPrincipleReadingV0 {
-                principle_id: format!("principle:{}", stable_id(principle)),
-                principle: principle.to_string(),
-                status: status.to_string(),
-                aat_reading: format!("{principle} is read as invariant preservation / obstruction / operation preservation: {reading}"),
+                principle_id: format!("principle:{}", stable_id(spec.principle)),
+                principle: spec.principle.to_string(),
+                status: evaluation.status.clone(),
+                witness_rule_ref: format!("principle-witness:{}", stable_id(spec.principle)),
+                witness_status: evaluation.witness_status.clone(),
+                witness_evidence_refs: evaluation.evidence_refs.clone(),
+                aat_reading: format!("{} is read by {} over invariant / law / obstruction / operation preservation: {}", spec.principle, evaluation.witness_status, spec.reading),
                 invariant_refs: invariant_refs.clone(),
-                obstruction_refs: obstruction_refs.clone(),
+                obstruction_refs: evaluation.obstruction_refs.clone(),
                 operation_refs: operation_refs.clone(),
-                evidence_refs: all_atom_refs(archmap),
-                confidence: if status == "unmeasured" { "low" } else { "medium" }.to_string(),
+                evidence_refs: evaluation.evidence_refs.clone(),
+                source_refs: evaluation.source_refs.clone(),
+                confidence: if evaluation.status == "unmeasured" { "low" } else { "medium" }.to_string(),
                 coverage_boundary:
                     "principle reading uses semantic ArchMap evidence and is not a slogan or static lint rule"
                         .to_string(),
@@ -9491,34 +9509,160 @@ fn build_design_principle_readings(
                 } else {
                     gap_refs.clone()
                 },
-                recommended_next_action:
-                    "turn stressed readings into source review questions or repair preconditions"
-                        .to_string(),
+                recommended_next_action: evaluation.recommended_next_action,
                 non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
             }
         })
         .collect()
 }
 
-fn principle_status(
-    principle: &str,
+struct PrincipleSpec<'a> {
+    principle: &'a str,
+    reading: &'a str,
+    witness_families: &'a [&'a str],
+    stress_keywords: &'a [&'a str],
+}
+
+fn principle_spec<'a>(
+    principle: &'a str,
+    reading: &'a str,
+    witness_families: &'a [&'a str],
+    stress_keywords: &'a [&'a str],
+) -> PrincipleSpec<'a> {
+    PrincipleSpec {
+        principle,
+        reading,
+        witness_families,
+        stress_keywords,
+    }
+}
+
+struct PrincipleEvaluation {
+    status: String,
+    witness_status: String,
+    evidence_refs: Vec<String>,
+    source_refs: Vec<String>,
+    obstruction_refs: Vec<String>,
+    recommended_next_action: String,
+}
+
+fn evaluate_design_principle(
+    spec: &PrincipleSpec<'_>,
     archmap: &ArchMapDocumentV0,
     obstruction_circuits: &[ArchSigObstructionCircuitV0],
-) -> &'static str {
-    let lower = principle.to_ascii_lowercase();
-    if lower.contains("idempotency")
-        || lower.contains("authority")
-        || lower.contains("representation")
-    {
-        if archmap.observation_gaps.is_empty() {
-            "needsReview"
+) -> PrincipleEvaluation {
+    let evidence_atoms = archmap
+        .atom_observations
+        .iter()
+        .filter(|atom| {
+            spec.witness_families
+                .iter()
+                .any(|family| atom.atom_family == *family)
+                || spec.stress_keywords.iter().any(|keyword| {
+                    atom.predicate.to_ascii_lowercase().contains(keyword)
+                        || atom.subject_ref.to_ascii_lowercase().contains(keyword)
+                })
+        })
+        .collect::<Vec<_>>();
+    let evidence_refs = evidence_atoms
+        .iter()
+        .map(|atom| atom.atom_observation_id.clone())
+        .collect::<Vec<_>>();
+    let source_refs = evidence_atoms
+        .iter()
+        .flat_map(|atom| atom.source_refs.iter().map(source_ref_label))
+        .collect::<BTreeSet<_>>()
+        .into_iter()
+        .collect::<Vec<_>>();
+    let obstruction_refs = obstruction_circuits
+        .iter()
+        .filter(|circuit| {
+            let text = format!(
+                "{} {} {}",
+                circuit.law_ref, circuit.circuit_kind, circuit.evidence_summary
+            )
+            .to_ascii_lowercase();
+            spec.stress_keywords
+                .iter()
+                .any(|keyword| text.contains(keyword))
+                || circuit
+                    .atom_observation_refs
+                    .iter()
+                    .any(|atom_ref| evidence_refs.contains(atom_ref))
+        })
+        .map(|circuit| circuit.obstruction_circuit_id.clone())
+        .collect::<Vec<_>>();
+    let relevant_gaps = archmap
+        .observation_gaps
+        .iter()
+        .filter(|gap| {
+            let text = format!(
+                "{} {} {} {:?}",
+                gap.gap_id, gap.gap_kind, gap.reason, gap.expected_atom_families
+            )
+            .to_ascii_lowercase();
+            spec.stress_keywords
+                .iter()
+                .chain(spec.witness_families.iter())
+                .any(|keyword| text.contains(&keyword.to_ascii_lowercase()))
+        })
+        .map(|gap| gap.gap_id.clone())
+        .collect::<Vec<_>>();
+    let (status, witness_status, recommended_next_action) =
+        if evidence_refs.is_empty() && relevant_gaps.is_empty() {
+            (
+                "notApplicable",
+                "noSelectedWitnessRuleEvidence",
+                format!(
+                    "add source-backed witness evidence before reading {}",
+                    spec.principle
+                ),
+            )
+        } else if evidence_refs.is_empty() || !relevant_gaps.is_empty() {
+            (
+                "unmeasured",
+                "blockedByMissingWitnessEvidence",
+                format!(
+                    "collect {} witness sources for {}",
+                    spec.witness_families.join("/"),
+                    spec.principle
+                ),
+            )
+        } else if obstruction_refs.is_empty() {
+            (
+                "preserved",
+                "witnessPreservedUnderSelectedEvidence",
+                format!(
+                    "keep {} witness refs when planning operation deltas",
+                    spec.principle
+                ),
+            )
         } else {
-            "unmeasured"
+            (
+                "stressed",
+                "witnessStressedBySelectedObstruction",
+                format!(
+                    "review {} source refs before treating this principle as preserved",
+                    spec.principle
+                ),
+            )
+        };
+    let evidence_refs = if evidence_refs.is_empty() {
+        if relevant_gaps.is_empty() {
+            vec![format!("principle-witness:{}:not-applicable", stable_id(spec.principle))]
+        } else {
+            relevant_gaps
         }
-    } else if obstruction_circuits.is_empty() {
-        "preserved"
     } else {
-        "stressed"
+        evidence_refs
+    };
+    PrincipleEvaluation {
+        status: status.to_string(),
+        witness_status: witness_status.to_string(),
+        evidence_refs,
+        source_refs,
+        obstruction_refs,
+        recommended_next_action,
     }
 }
 
@@ -12648,6 +12792,51 @@ fn check_analytic_and_principle_surfaces(packet: &ArchSigAnalysisPacketV0) -> Va
                 "couplingCohesionReadings",
                 required_axis,
                 "packet must expose semantic coupling/cohesion axes",
+            ));
+        }
+    }
+    for reading in &packet.design_principle_readings {
+        if !matches!(
+            reading.status.as_str(),
+            "preserved" | "stressed" | "unmeasured" | "notApplicable"
+        ) {
+            examples.push(generic_validation_example(
+                &reading.principle_id,
+                &reading.status,
+                "design principle status must be preserved / stressed / unmeasured / notApplicable",
+            ));
+        }
+        push_blank(
+            &mut examples,
+            &format!("{} witnessRuleRef", reading.principle_id),
+            &reading.witness_rule_ref,
+        );
+        push_blank(
+            &mut examples,
+            &format!("{} witnessStatus", reading.principle_id),
+            &reading.witness_status,
+        );
+        if reading.status != "notApplicable" && reading.witness_evidence_refs.is_empty() {
+            examples.push(generic_validation_example(
+                &reading.principle_id,
+                "witnessEvidenceRefs",
+                "applicable design principle readings must retain principle-specific witness evidence refs",
+            ));
+        }
+        if reading.status == "stressed" && reading.obstruction_refs.is_empty() {
+            examples.push(generic_validation_example(
+                &reading.principle_id,
+                "obstructionRefs",
+                "stressed design principle readings must point to principle-specific obstruction refs",
+            ));
+        }
+        if reading.recommended_next_action
+            == "turn stressed readings into source review questions or repair preconditions"
+        {
+            examples.push(generic_validation_example(
+                &reading.principle_id,
+                "recommendedNextAction",
+                "design principle next action must be principle-specific",
             ));
         }
     }

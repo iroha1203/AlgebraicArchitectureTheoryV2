@@ -128,6 +128,7 @@ For source comparison in this variant, build the review queue from nonzero axes,
 | `pathPairCandidates[]` and `operationSquareCandidates[]` | operation sequences, endpoint object refs, generator candidate refs | verify the candidate path basis before comparing continuations |
 | `pathContinuationTraces[]` | operation sequence, endpoint refs, continuation step refs | trace how `Cont_x(p)` and `Cont_x(q)` were built |
 | `axisWiseMonodromyDefects[]` | p/q continuation refs, distance input refs, positive witness boundary, weight | read `mu_x=d_x(Cont_x(p), Cont_x(q))` only when distance inputs are present |
+| `designPrincipleReadings[]` | principle-specific witness rule, witness status, evidence refs, source refs, obstruction refs | read principles as invariant / law / obstruction / operation preservation telemetry, not global lint status |
 | `architectureHomotopyReport.nonzeroHolonomyLoops[]` | loop refs, compared continuations, selected axes, source refs | inspect path differences as bounded current-state review queues |
 | `architectureHomotopyReport.unfilledLoops[]` | missing filler evidence, coverage gaps, next check refs | add or confirm contract/test/runtime/policy filler evidence before concluding |
 | `architectureHomotopyReport.topLocalCurvatureCells[]` | filled loop refs and local curvature cell candidates | review local curvature only inside measured fillings, not unfilled holes |
