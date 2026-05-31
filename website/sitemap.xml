@@ -7,34 +7,40 @@
     <loc>https://iroha1203.dev/aat/</loc>
   </url>
   <url>
-    <loc>https://iroha1203.dev/aat/calculus-and-extensions/</loc>
+    <loc>https://iroha1203.dev/aat/atoms/</loc>
   </url>
   <url>
-    <loc>https://iroha1203.dev/aat/canonical-examples-and-readings/</loc>
+    <loc>https://iroha1203.dev/aat/architecture-objects/</loc>
   </url>
   <url>
-    <loc>https://iroha1203.dev/aat/foundations/</loc>
+    <loc>https://iroha1203.dev/aat/laws/</loc>
   </url>
   <url>
-    <loc>https://iroha1203.dev/aat/laws-and-witnesses/</loc>
+    <loc>https://iroha1203.dev/aat/obstruction-circuits/</loc>
   </url>
   <url>
-    <loc>https://iroha1203.dev/aat/local-law-packages/</loc>
+    <loc>https://iroha1203.dev/aat/zero-curvature/</loc>
   </url>
   <url>
-    <loc>https://iroha1203.dev/aat/related-work/</loc>
+    <loc>https://iroha1203.dev/aat/architecture-signature/</loc>
   </url>
   <url>
-    <loc>https://iroha1203.dev/aat/quantifiable-axes/</loc>
+    <loc>https://iroha1203.dev/aat/design-principle-layers/</loc>
   </url>
   <url>
-    <loc>https://iroha1203.dev/aat/repair-and-dynamics/</loc>
+    <loc>https://iroha1203.dev/aat/operations-and-calculus/</loc>
+  </url>
+  <url>
+    <loc>https://iroha1203.dev/aat/dynamics-and-geometry/</loc>
   </url>
   <url>
     <loc>https://iroha1203.dev/aat/representations-and-effects/</loc>
   </url>
   <url>
-    <loc>https://iroha1203.dev/aat/architecture-signature/</loc>
+    <loc>https://iroha1203.dev/aat/canonical-examples-and-readings/</loc>
+  </url>
+  <url>
+    <loc>https://iroha1203.dev/aat/related-work/</loc>
   </url>
   <url>
     <loc>https://iroha1203.dev/aat/status/</loc>

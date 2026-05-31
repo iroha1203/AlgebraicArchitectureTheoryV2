@@ -5,19 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta
       name="description"
-      content="AAT canonical examples and readings: finite feature-extension skeletons, signature readings, semantic obstruction, repair transfer, and SOLID counterexamples."
+      content="Canonical examples and readings in Algebraic Architecture Theory: atom/molecule/law/circuit examples, coupon feature extension, static-flat semantic obstruction, repair transfer, and SOLID counterexamples."
     >
-    <title>AAT Canonical Examples and Readings</title>
-    <link rel="canonical" href="https://iroha1203.dev/aat/canonical-examples-and-readings/">
+    <title>Examples and Readings</title>
     <meta property="og:site_name" content="AAT / SFT Research Notes">
     <meta property="og:type" content="article">
-    <meta property="og:title" content="AAT Canonical Examples and Readings">
-    <meta property="og:description" content="AAT canonical examples and readings: finite feature-extension skeletons, signature readings, semantic obstruction, repair transfer, and SOLID counterexamples.">
+    <meta property="og:title" content="Examples and Readings">
+    <meta property="og:description" content="Canonical examples and readings in Algebraic Architecture Theory: atom/molecule/law/circuit examples, coupon feature extension, static-flat semantic obstruction, repair transfer, and SOLID counterexamples.">
     <meta property="og:url" content="https://iroha1203.dev/aat/canonical-examples-and-readings/">
     <meta property="og:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="AAT Canonical Examples and Readings">
-    <meta name="twitter:description" content="AAT canonical examples and readings: finite feature-extension skeletons, signature readings, semantic obstruction, repair transfer, and SOLID counterexamples.">
+    <meta name="twitter:title" content="Examples and Readings">
+    <meta name="twitter:description" content="Canonical examples and readings in Algebraic Architecture Theory: atom/molecule/law/circuit examples, coupon feature extension, static-flat semantic obstruction, repair transfer, and SOLID counterexamples.">
     <meta name="twitter:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
     <link rel="icon" href="../../assets/favicon-32.png" sizes="32x32" type="image/png">
     <link rel="icon" href="../../assets/favicon-16.png" sizes="16x16" type="image/png">
@@ -38,6 +37,18 @@
       } catch {}
     </script>
     <link rel="stylesheet" href="../../assets/site.css">
+    <script>
+      window.MathJax = {
+        tex: {
+          inlineMath: [["\\(", "\\)"]],
+          displayMath: [["\\[", "\\]"]]
+        },
+        chtml: {
+          matchFontHeight: false
+        }
+      };
+    </script>
+    <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
     <script defer src="../../assets/site.js"></script>
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-YQMFH2FG9V"></script>
@@ -48,7 +59,6 @@
 
       gtag('config', 'G-YQMFH2FG9V');
     </script>
-
   </head>
   <body>
     <a class="skip-link" href="#main">Skip to content</a>
@@ -76,530 +86,518 @@
           <nav class="breadcrumb" aria-label="Breadcrumb">
             <a href="../../">Home</a>
             <a href="../">AAT</a>
-            <span>Canonical Examples and Readings</span>
+            <span>Examples and Readings</span>
           </nav>
-          <p class="eyebrow">AAT Part VIII</p>
-          <h1>Canonical Examples and Readings</h1>
+          <p class="eyebrow">Part III. Geometry and Analytic Connections</p>
+          <h1>Examples and Readings</h1>
           <p class="lede">
-            Canonical examples turn AAT's algebra into something that can be
-            followed line by line: finite skeletons carry witnesses, signatures
-            record axis-local readings, and theorem packages display the
-            evidence behind each architectural judgement.
+            The canonical examples show how AAT should be read: one finite
+            architecture presentation, one selected witness universe, one theorem
+            package, one signature reading, and a counterexample that fixes the
+            conclusion to its evidence.
           </p>
         </div>
       </section>
 
       <section class="section-band">
         <div class="site-shell article-layout">
-          <aside class="article-sidebar" aria-label="Local navigation">
+          <aside class="article-sidebar" aria-label="AAT page navigation">
             <nav class="toc-panel" aria-labelledby="toc-title">
               <h2 id="toc-title">On this page</h2>
               <ol>
-                <li><a href="#canonical-examples">Canonical examples</a></li>
-                <li><a href="#example-template">Example template</a></li>
-                <li><a href="#coupon-case-study">Finite extension skeleton</a></li>
-                <li><a href="#coupon-signature">Signature reading</a></li>
-                <li><a href="#evidence-levels">Evidence levels</a></li>
-                <li><a href="#counterexamples">Counterexamples</a></li>
-                <li><a href="#aat-readings">AAT readings</a></li>
-                <li><a href="#coupon-reading">Layered reading</a></li>
-                <li><a href="#solid-readings">SOLID readings</a></li>
-                <li><a href="#example-summary">Chapter summary</a></li>
+                <li><a href="#reading-template">Reading template</a></li>
+                <li><a href="#small-aat-example">Atom to circuit</a></li>
+                <li><a href="#coupon-extension">Coupon extension</a></li>
+                <li><a href="#static-semantic">Static flat, semantic obstruction</a></li>
+                <li><a href="#repair-transfer">Repair transfer</a></li>
+                <li><a href="#solid-counterexamples">SOLID counterexamples</a></li>
+                <li><a href="#reading-rules">Reading rules</a></li>
+                <li><a href="#formal-reading">Formal reading</a></li>
               </ol>
             </nav>
             <div class="source-panel" data-sidebar-open="true">
               <h2>AAT chapters</h2>
               <ul>
-                <li>
-                  <a href="../">
-                    AAT overview
-                  </a>
-                </li>
-                <li>
-                  <a href="../foundations/">
-                    Foundations
-                  </a>
-                </li>
-                <li>
-                  <a href="../laws-and-witnesses/">
-                    Laws and Witnesses
-                  </a>
-                </li>
-                <li>
-                  <a href="../architecture-signature/">
-                    Architecture Signature
-                  </a>
-                </li>
-                <li>
-                  <a href="../local-law-packages/">
-                    Local Law Packages
-                  </a>
-                </li>
-                <li>
-                  <a href="../calculus-and-extensions/">
-                    Calculus and Extensions
-                  </a>
-                </li>
-                <li>
-                  <a href="../repair-and-dynamics/">
-                    Repair and Dynamics
-                  </a>
-                </li>
-                <li>
-                  <a href="../representations-and-effects/">
-                    Representations and Effects
-                  </a>
-                </li>
-                <li>
-                  <a href="../canonical-examples-and-readings/" aria-current="page">
-                    Canonical Examples and Readings
-                  </a>
-                </li>
-                <li>
-                  <a href="../related-work/">
-                    Related Work and Novelty
-                  </a>
-                </li>
-                <li>
-                  <a href="../quantifiable-axes/">
-                    Quantifiable Axes
-                  </a>
-                </li>
-                <li>
-                  <a href="../status/">
-                    Status
-                  </a>
-                </li>
-                <li>
-                  <a href="../formal-anchors/">
-                    Formal Anchors Audit
-                  </a>
-                </li>
+                <li><a href="../">Overview</a></li>
+                <li><a href="../atoms/">Atoms</a></li>
+                <li><a href="../architecture-objects/">Architecture Objects</a></li>
+                <li><a href="../laws/">Design Laws</a></li>
+                <li><a href="../obstruction-circuits/">Obstruction Circuits</a></li>
+                <li><a href="../zero-curvature/">Zero Curvature</a></li>
+                <li><a href="../architecture-signature/">Architecture Signature</a></li>
+                <li><a href="../design-principle-layers/">Design Principle Layers</a></li>
+                <li><a href="../operations-and-calculus/">Operations and Calculus</a></li>
+                <li><a href="../dynamics-and-geometry/">Dynamics and Geometry</a></li>
+                <li><a href="../representations-and-effects/">Representations and Effects</a></li>
+                <li><a href="./" aria-current="page">Examples and Readings</a></li>
+                <li><a href="../related-work/">Related Work</a></li>
+                <li><a href="../status/">Status</a></li>
+                <li><a href="../formal-anchors/">Formal Anchors</a></li>
               </ul>
             </div>
           </aside>
 
           <div class="article-main">
-            <section id="canonical-examples" class="article-section">
-              <p class="research-question">
-                How do finite skeletons make theorem packages and
-                counterexamples readable?
-              </p>
-              <h2>Canonical examples</h2>
+            <section id="reading-template" class="article-section">
+              <h2>Reading template</h2>
               <p>
-                A canonical AAT example is a finite architecture presentation
-                that exposes one operation, one selected evidence package, and
-                the witnesses read through that package. The component names
-                are intentionally small, so the proof shape can become the
-                main object of attention.
-              </p>
-              <p id="definition-15-0" class="statement">
-                <a class="statement-anchor" href="#definition-15-0">Definition 15.0.</a>
-                A canonical AAT example is a finite presentation consisting of
-                an architecture object, an operation or extension, an invariant
-                family under test, a witness universe, measured signature axes,
-                a theorem package, and recorded counterexamples or
-                non-conclusions.
-              </p>
-              <ul class="term-list">
-                <li>
-                  <strong>Static witness</strong>
-                  <span>A selected direct dependency that bypasses the declared interface route.</span>
-                </li>
-                <li>
-                  <strong>Semantic witness</strong>
-                  <span>A selected observation difference between two paths through the feature.</span>
-                </li>
-              </ul>
-            </section>
-
-            <section id="example-template" class="article-section">
-              <h2>Example template</h2>
-              <p>
-                Each canonical example follows the same proof-relevant shape:
-                an architecture object, an operation, a witness universe, a
-                signature reading, and the conclusions attached to that
-                reading.
+                A canonical example is a small, inspectable model that makes a
+                reading discipline visible. Each example in this chapter says
+                which atoms exist, which molecule is being tested, which law marks
+                it bad, which circuit is minimal, which signature axis was
+                measured, and where the theorem package stops.
               </p>
               <figure class="code-panel">
-                <figcaption>Paper-style example record</figcaption>
-                <pre><code>Example
-  = selected architecture object
-  + selected operation or extension
-  + invariant family under test
-  + witness universe
-  + measured signature axes
-  + theorem package
-  + counterexample or non-conclusion</code></pre>
+                <figcaption>Canonical AAT reading</figcaption>
+                <pre><code>Example reading
+  = finite architecture presentation
+  + selected atom / molecule / law / circuit surface
+  + selected measurement surface
+  + selected theorem package
+  + selected counterexample or non-conclusion
+
+licensed conclusion:
+  exactly the theorem package conclusion
+
+outside scope:
+  any stronger global, semantic, runtime, empirical, or future-safety claim</code></pre>
               </figure>
-              <p>
-                The same template can carry static, semantic, and runtime
-                readings while keeping each axis attached to its own evidence.
+              <p id="definition-1-1" class="statement">
+                <a class="statement-anchor" href="#definition-1-1">Definition 1.1.</a>
+                A canonical AAT example is a finite presentation whose object,
+                law, witness universe, signature axes, theorem package, and
+                non-conclusions can all be named.
+              </p>
+              <p id="principle-1-2" class="statement">
+                <a class="statement-anchor" href="#principle-1-2">Principle 1.2.</a>
+                AAT examples are read axis by axis. A static witness licenses a
+                static conclusion; a semantic witness licenses a semantic
+                conclusion; a runtime witness licenses a runtime conclusion. The
+                signature may place them side by side while keeping their proof
+                boundaries separate.
               </p>
             </section>
 
-            <section id="coupon-case-study" class="article-section">
-              <h2>Finite extension skeleton</h2>
+            <section id="small-aat-example" class="article-section">
+              <h2>Atom to circuit</h2>
               <p>
-                The running finite skeleton uses a feature component, a
-                declared interface, a core service, and an internal adapter
-                endpoint. The example is small enough to inspect, and rich
-                enough to display static, semantic, runtime, and signature
-                readings side by side.
-              </p>
-              <p id="example-15-1" class="statement">
-                <a class="statement-anchor" href="#example-15-1">Example 15.1.</a>
-                The obstructed extension contains the selected hidden static
-                dependency witness
-                <code>CouponService -&gt; PaymentAdapter.internalCache</code>.
-                The repaired extension routes the selected interaction through
-                the declared port and restores the selected static split for
-                that finite skeleton.
-              </p>
-              <p id="proof-15-1" class="statement-proof">
-                <a class="statement-anchor" href="#proof-15-1">Proof idea.</a>
-                The finite skeleton names the core components, the feature
-                component, the declared port, and the internal endpoint. Lean
-                exhibits the hidden edge as a selected witness for the
-                obstructed extension and proves the selected static split
-                obstruction. The repaired extension removes that selected
-                direct edge and supplies the static split package again.
+                The smallest worked example starts with one primitive API atom,
+                forms a singleton molecule around it, chooses a law that marks
+                exactly that molecule as bad, and proves that the molecule is a
+                minimal obstruction circuit for that law.
               </p>
               <figure class="code-panel">
-                <figcaption>Finite extension universe</figcaption>
-                <pre><code>components:
-  CheckoutService
-  CouponService
-  PaymentPort
-  PaymentAdapter
-  PaymentAdapter.internalCache
+                <figcaption>Minimal pure AAT surface</figcaption>
+                <pre><code>atom:
+  apiComponent
 
-declared static route:
-  CheckoutService -&gt; CouponService
-  CouponService -&gt; PaymentPort
-  PaymentPort -&gt; PaymentAdapter
+molecule:
+  { apiComponent }
 
-obstructing static edge:
-  CouponService -&gt; PaymentAdapter.internalCache</code></pre>
+law:
+  Bad(M) iff M = { apiComponent }
+
+circuit:
+  { apiComponent } is bad
+  no proper submolecule is bad</code></pre>
               </figure>
-              <ul class="status-list">
-                <li>
-                  <strong>Object</strong>
-                  <span>A selected finite universe containing a feature component, a declared interface, core components, and selected relations among them.</span>
-                </li>
-                <li>
-                  <strong>Declared route</strong>
-                  <span>The feature interaction passes through the declared interface, with a feature view and selected section laws recording how the feature is observed.</span>
-                </li>
-                <li>
-                  <strong>Static obstruction</strong>
-                  <span>A direct dependency from the feature component into an internal adapter endpoint records the selected static split obstruction.</span>
-                </li>
-                <li>
-                  <strong>Semantic obstruction</strong>
-                  <span>Two implementation paths produce different observations under the selected client context.</span>
-                </li>
-                <li>
-                  <strong>Runtime obstruction</strong>
-                  <span>A retry, callback, invalidation, or protection witness appears on the selected runtime surface.</span>
-                </li>
-                <li>
-                  <strong>Scope</strong>
-                  <span>Static, semantic, runtime, and repository-extraction readings are separate evidence axes.</span>
-                </li>
-              </ul>
-              <figure class="code-panel">
-                <figcaption>Witness list</figcaption>
-                <pre><code>static_hidden_interaction:
-  witness: CouponService -&gt; PaymentAdapter.internalCache
-  status: measured_nonzero(1)
-
-static_hidden_interaction after repair:
-  witness: none in selected static universe
-  status: measured_zero
-
-semantic_curvature:
-  witness: apply coupon ; round != round ; apply coupon
-  status: measured_nonzero(delta) when selected diagram is measured
-
-runtime_exposure:
-  witness: retry / cache / callback appears on selected runtime surface
-  status: unmeasured in the static-only report
-
-global repository completeness:
-  status: out_of_scope</code></pre>
-              </figure>
-              <p>
-                Read as an AAT object, the skeleton has six visible parts.
-                Each part contributes one piece of evidence and names the
-                surface on which that evidence is read.
+              <p id="example-2-1" class="statement">
+                <a class="statement-anchor" href="#example-2-1">Example 2.1.</a>
+                A singleton API molecule can be law-relative minimal bad even
+                when every atom inside it is primitive and the law creates no
+                atoms.
               </p>
-              <ul class="term-list">
-                <li>
-                  <strong><code>ComponentUniverse</code></strong>
-                  <span><code>CheckoutService</code>, <code>CouponService</code>, <code>PaymentPort</code>, selected payment core / adapter components, and selected static / runtime relations form the finite universe.</span>
-                </li>
-                <li>
-                  <strong>Declared static route</strong>
-                  <span><code>CheckoutService -&gt; CouponService</code>, <code>CouponService -&gt; PaymentPort</code>, and <code>PaymentPort -&gt; PaymentAdapter</code> give the interface path under the declared policy.</span>
-                </li>
-                <li>
-                  <strong>Static witness set</strong>
-                  <span>A direct <code>CouponService -&gt; PaymentAdapter</code> or <code>CouponService -&gt; PaymentCache</code> edge supplies the selected witness when it bypasses the interface route.</span>
-                </li>
-                <li>
-                  <strong>Semantic observation</strong>
-                  <span>Total, rounding trace, error result, or discount ordering can be read under selected checkout contexts and observation bridges.</span>
-                </li>
-                <li>
-                  <strong>Runtime surface</strong>
-                  <span>Retry, callback, cache invalidation, or protection evidence lives on the runtime surface and is read through its own package.</span>
-                </li>
-                <li>
-                  <strong>Signature coordinates</strong>
-                  <span>Static obstruction count, semantic witness status, runtime exposure status, and residual coverage gap become axis-local readings.</span>
-                </li>
-              </ul>
-              <p class="formal-audit-link">
-                <span>Audit trail</span>
-                <a href="../formal-anchors/#canonical-examples-and-readings">Formal Anchors Audit</a>
+              <p id="proof-2-1" class="statement-proof">
+                <a class="statement-anchor" href="#proof-2-1">Proof.</a>
+                <code>apiMolecule_atom_primitive</code> reads the contained atom
+                through the root atom axiom system.
+                <code>singletonBadLaw_does_not_create_atoms</code> records law
+                non-generation. <code>singletonBadLaw_obstruction</code> proves
+                that the selected molecule is bad and that no proper submolecule
+                is bad.
+              </p>
+              <p id="counterexample-2-2" class="statement">
+                <a class="statement-anchor" href="#counterexample-2-2">Counterexample 2.2.</a>
+                Minimal bad is law-relative. The atom remains primitive, while
+                badness belongs to the chosen law and molecule surface.
               </p>
             </section>
 
-            <section id="coupon-signature" class="article-section">
-              <h2>Signature reading</h2>
+            <section id="coupon-extension" class="article-section">
+              <h2>Coupon extension</h2>
               <p>
-                The finite skeleton is read as a multi-axis diagnostic. The
-                static axis is measured inside the finite witness universe,
-                while semantic and runtime axes carry their own evidence and
-                measurement status.
-              </p>
-              <p id="signature-reading-15-2" class="statement">
-                <a class="statement-anchor" href="#signature-reading-15-2">Signature reading 15.2.</a>
-                The snapshot separates
-                <code>some 0</code>, <code>some n</code>, and unmeasured
-                <code>none</code> axes. A repaired selected static axis can be
-                available-and-zero while a semantic rounding-order axis is
-                unmeasured or measured nonzero, and while runtime exposure
-                belongs to a runtime evidence package.
-              </p>
-              <ul class="status-list">
-                <li>
-                  <strong><code>static_hidden_interaction</code></strong>
-                  <span>The obstructed extension reads as <code>measured_nonzero(1)</code> for the selected direct cache edge. After repair, the selected static witness universe reads as <code>measured_zero</code>. This is Lean-backed when the finite witness list and theorem package are cited.</span>
-                </li>
-                <li>
-                  <strong><code>semantic_curvature</code></strong>
-                  <span>The static-only report leaves this axis <code>unmeasured</code>. A selected semantic diagram can supply <code>measured_nonzero(delta)</code>, including the rounding-order diagram in the repaired extension.</span>
-                </li>
-                <li>
-                  <strong><code>runtime_exposure</code></strong>
-                  <span>The static-only report leaves runtime exposure <code>unmeasured</code>. Runtime evidence can then supply retry, callback, cache behavior, or protection readings on its own surface.</span>
-                </li>
-                <li>
-                  <strong>Repository completeness</strong>
-                  <span>Repository extraction is recorded as <code>out_of_scope</code> for both snapshots and belongs to a separate evidence problem.</span>
-                </li>
-              </ul>
-            </section>
-
-            <section id="evidence-levels" class="article-section">
-              <h2>Evidence levels</h2>
-              <p>
-                The same finite skeleton supports formal theorems, tooling
-                readings, empirical readings, and exposition. AAT makes those
-                evidence levels part of the example's visible structure.
-              </p>
-              <dl class="term-list definition-list">
-                <div>
-                  <dt>Static hidden dependency</dt>
-                  <dd><code>CouponStaticDependencyExample.hiddenDependencyWitnessExists</code> and <code>bad_not_selectedStaticSplitFeatureExtension</code> prove the selected witness reading for the finite static skeleton.</dd>
-                </div>
-                <div>
-                  <dt>Repaired static split</dt>
-                  <dd><code>CouponStaticDependencyExample.repaired_selectedStaticSplitFeatureExtension</code> and <code>Chapter11AnalyticRepresentation.CouponAnalyticSnapshot.repaired_staticHiddenInteraction_bridge</code> supply the proved / report-facing bridge for the selected static axis.</dd>
-                </div>
-                <div>
-                  <dt>Semantic residual</dt>
-                  <dd><code>CouponDiscountExample.roundingOrderValuation_positive</code> and <code>StaticSemanticCounterexample.canonical_not_semanticFlatWithin</code> give the selected diagram and counterexample package for coupon / discount ordering.</dd>
-                </div>
-                <div>
-                  <dt>Runtime-surface witness</dt>
-                  <dd>Runtime reports, telemetry, and incident evidence supply tooling or empirical readings for retries, callbacks, caches, and protection behavior.</dd>
-                </div>
-              </dl>
-            </section>
-
-            <section id="counterexamples" class="article-section">
-              <h2>Counterexamples</h2>
-              <p>
-                Static repair can satisfy selected static split while a
-                semantic diagram carries a non-commutation witness. A repair
-                can reduce a selected static obstruction while transferring
-                risk to runtime or semantic axes. SOLID-style local contracts
-                can sit beside distinct structural witnesses on the global graph.
+                The coupon extension is the main multi-axis example. It adds a
+                coupon feature to a checkout architecture. The static axis checks
+                whether feature interaction goes through the declared interface.
+                The semantic axis checks whether selected price-calculation paths
+                produce the same observation. The runtime axis may remain
+                unmeasured.
               </p>
               <figure class="code-panel">
-                <figcaption>Separation tests</figcaption>
-                <pre><code>StaticFlatWithin X U
-  separates from
-SemanticFlatWithin X
+                <figcaption>Coupon reading</figcaption>
+                <pre><code>bad static extension:
+  CouponService -&gt; PaymentAdapter.internalCache
+  static_hidden_interaction = some 1
 
-selected obstruction decreases
-  records transfer axis separately</code></pre>
+repaired static extension:
+  CouponService -&gt; PaymentPort -&gt; PaymentAdapter
+  static_hidden_interaction = some 0
+
+semantic rounding-order square:
+  coupon then discount
+  discount then coupon
+  selected semantic curvature = some 1</code></pre>
               </figure>
-              <p id="counterexample-15-3" class="statement">
-                <a class="statement-anchor" href="#counterexample-15-3">Counterexample 15.3.</a>
-                There is a selected repaired static skeleton that satisfies
-                selected static flatness while the selected semantic diagram
-                carries a non-commutation witness. The example separates
-                static flatness from semantic flatness and global architecture
-                flatness.
+              <p id="example-4-1" class="statement">
+                <a class="statement-anchor" href="#example-4-1">Example 4.1.</a>
+                In the bad coupon snapshot, the selected static hidden-interaction
+                axis is measured nonzero and bridges to an actual selected static
+                extension witness.
               </p>
-              <p id="proof-15-3" class="statement-proof">
-                <a class="statement-anchor" href="#proof-15-3">Proof idea.</a>
-                Lean reuses the repaired finite static skeleton for the static
-                side and supplies a selected semantic diagram whose two paths
-                differ under the chosen observation. The static package and
-                the semantic obstruction coexist, displaying the separation
-                between selected static flatness and selected semantic
-                flatness.
+              <p id="proof-4-1" class="statement-proof">
+                <a class="statement-anchor" href="#proof-4-1">Proof.</a>
+                <code>bad_staticHiddenInteraction_bridge</code> combines
+                <code>bad.staticHiddenInteraction.SupportsSelectedAnalyticObstruction</code>
+                with <code>StaticExtensionWitnessExists</code> for the bad
+                extension and declared interface.
               </p>
-              <p id="counterexample-15-4" class="statement">
-                <a class="statement-anchor" href="#counterexample-15-4">Counterexample 15.4.</a>
-                A repair step can decrease the selected static obstruction
-                measure while increasing a runtime or transferred-complexity
-                axis. Repair monotonicity is therefore read at the selected
-                measure; other architecture axes are read separately.
+              <p id="example-4-2" class="statement">
+                <a class="statement-anchor" href="#example-4-2">Example 4.2.</a>
+                In the repaired coupon snapshot, the selected static
+                hidden-interaction axis is measured zero and the selected static
+                witness is absent.
               </p>
-              <p class="formal-audit-link">
-                <span>Audit trail</span>
-                <a href="../formal-anchors/#canonical-examples-and-readings">Formal Anchors Audit</a>
+              <p id="proof-4-2" class="statement-proof">
+                <a class="statement-anchor" href="#proof-4-2">Proof.</a>
+                <code>repaired_staticHiddenInteraction_bridge</code> pairs
+                measured-zero evidence with absence of the selected
+                <code>StaticExtensionWitnessExists</code> witness. This is a
+                static conclusion, not a semantic conclusion.
               </p>
-            </section>
-
-            <section id="aat-readings" class="article-section">
-              <h2>AAT readings</h2>
-              <p>
-                AAT is an algebraic framework for software architecture. The
-                examples on this page show static, semantic, repair, and
-                signature readings as explicit evidence packages that can be
-                inspected, cited, and recombined.
+              <p id="counterexample-4-3" class="statement">
+                <a class="statement-anchor" href="#counterexample-4-3">Counterexample 4.3.</a>
+                Static repair can succeed while semantic curvature remains
+                positive. <code>repairedWithMeasuredSemanticCurvature_roundingOrderValuation_positive</code>
+                records the selected rounding-order residual after static repair.
               </p>
-              <p id="non-conclusion-16-1" class="statement">
-                <a class="statement-anchor" href="#non-conclusion-16-1">Non-conclusion 16.1.</a>
-                The examples on this page prove or illustrate package-aware
-                readings under selected evidence: finite static witnesses,
-                semantic diagrams, runtime observations, repair transfers, and
-                multi-axis signature readings.
+              <p id="non-conclusion-4-4" class="statement">
+                <a class="statement-anchor" href="#non-conclusion-4-4">Non-conclusion 4.4.</a>
+                Runtime exposure and semantic curvature values of
+                <code>none</code> are unmeasured. Zero-reflecting claims require
+                available-zero evidence.
               </p>
             </section>
 
-            <section id="coupon-reading" class="article-section">
-              <h2>Layered reading</h2>
+            <section id="static-semantic" class="article-section">
+              <h2>Static flat, semantic obstruction</h2>
               <p>
-                The finite skeleton exposes the theorem package. A static
-                report measures whether a feature bypasses a declared
-                interface. A semantic report measures whether selected
-                observations commute. A runtime report measures retry, cache,
-                or callback exposure. Together they form connected readings
-                over separate axes.
+                The repaired coupon graph supplies the canonical separation
+                between static and semantic flatness. The static split can be
+                restored, the graph can be walk-acyclic, and the static flatness
+                package can hold, while a selected semantic diagram still fails
+                to commute.
               </p>
               <figure class="code-panel">
-                <figcaption>Layered example reading</figcaption>
-                <pre><code>static direct adapter call
-  -&gt; static obstruction witness
+                <figcaption>Static / semantic separation</figcaption>
+                <pre><code>static side:
+  repaired graph is strictly layered
+  repaired graph is walk-acyclic
+  selected static split holds
+  StaticFlatWithin holds
 
-different rounding trace
-  -&gt; semantic obstruction witness
-
-retry appears on runtime surface
-  -&gt; runtime obstruction witness</code></pre>
+semantic side:
+  couponThenDiscount path
+  discountThenCoupon path
+  selected observations differ
+  SemanticFlatWithin fails</code></pre>
               </figure>
+              <p id="theorem-5-1" class="statement">
+                <a class="statement-anchor" href="#theorem-5-1">Theorem 5.1.</a>
+                Static flatness within the selected finite model and semantic
+                flatness are separate law-package conclusions.
+              </p>
+              <p id="proof-5-1" class="statement-proof">
+                <a class="statement-anchor" href="#proof-5-1">Proof.</a>
+                <code>canonical_staticFlatWithin</code> proves the selected static
+                package for the repaired coupon graph.
+                <code>selectedCouponDiscount_not_commutes</code> proves the
+                selected semantic diagram fails. Therefore
+                <code>staticFlat_with_semanticObstruction</code> holds:
+                static flatness is present and semantic flatness is absent.
+              </p>
+              <p id="counterexample-5-2" class="statement">
+                <a class="statement-anchor" href="#counterexample-5-2">Counterexample 5.2.</a>
+                A dependency graph can be clean while the architecture is not
+                flat under a semantic law package. This is not a caveat to static
+                analysis; it is why AAT separates law axes.
+              </p>
             </section>
 
-            <section id="solid-readings" class="article-section">
-              <h2>SOLID readings</h2>
+            <section id="repair-transfer" class="article-section">
+              <h2>Repair transfer</h2>
               <p>
-                SOLID-style contracts are local law packages. A component can
-                satisfy selected substitution tests and interface separation
-                checks while the abstract dependency layer is cyclic.
-                Conversely, a layered graph can be acyclic while selected LSP
-                observations carry their own witness.
+                Repair examples are read as transfer, not as unconditional
+                improvement. Removing a cycle or hidden dependency may lower a
+                selected static measure while creating or exposing a semantic,
+                runtime, or effect obstruction on another axis.
               </p>
-              <p id="counterexample-15-5" class="statement">
-                <a class="statement-anchor" href="#counterexample-15-5">Counterexample 15.5.</a>
-                There are representative finite components whose selected DIP
-                or strong DIP compatibility and LSP-style observations hold,
-                while the abstract dependency graph is not
-                <code>Decomposable</code>. Local SOLID-style compatibility
-                and global strict layering are different readings.
+              <figure class="code-panel">
+                <figcaption>Repair transfer pattern</figcaption>
+                <pre><code>before:
+  static obstruction count &gt; 0
+  semantic obstruction unmeasured or absent
+
+repair:
+  replace direct dependency
+  route through declared interface
+
+after:
+  selected static obstruction count = 0
+  selected semantic curvature may be positive
+  selected runtime exposure may be unmeasured</code></pre>
+              </figure>
+              <p id="principle-6-1" class="statement">
+                <a class="statement-anchor" href="#principle-6-1">Principle 6.1.</a>
+                A repair operation licenses the measure decrease named by its
+                selected obstruction universe. All-axis monotonicity requires an
+                additional theorem package.
               </p>
-              <ul class="term-list">
-                <li>
-                  <strong>Local success</strong>
-                  <span>A selected client context or interface contract satisfies its observation law.</span>
-                </li>
-                <li>
-                  <strong>Global structure</strong>
-                  <span>Layering, decomposition, or acyclicity can carry a distinct structural witness beyond the local contract.</span>
-                </li>
-                <li>
-                  <strong>Cross-layer bridge</strong>
-                  <span>A theorem package connects one law family to another when such a bridge is available.</span>
-                </li>
-              </ul>
-              <p class="formal-audit-link">
-                <span>Audit trail</span>
-                <a href="../formal-anchors/#canonical-examples-and-readings">Formal Anchors Audit</a>
+              <p id="counterexample-6-2" class="statement">
+                <a class="statement-anchor" href="#counterexample-6-2">Counterexample 6.2.</a>
+                A static repair can transform a visible dependency problem into a
+                semantic contract problem. The architecture has not become worse
+                or better in a scalar sense; its signature support moved.
               </p>
             </section>
 
-            <section id="example-summary" class="article-section">
+            <section id="solid-counterexamples" class="article-section">
+              <h2>SOLID counterexamples</h2>
+              <p>
+                AAT can read design principles as law packages, but the examples
+                prevent slogan-level inference. A design principle is not a magic
+                predicate. It becomes mathematical only after projection,
+                observation, lawfulness, and obstruction conditions are named.
+              </p>
+              <div class="article-table">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Principle-style reading</th>
+                      <th>AAT interpretation</th>
+                      <th>Counterexample</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>Single Responsibility</td>
+                      <td>Selected reasons for change, state transitions, effects, and contracts should not be confused.</td>
+                      <td>A module with multiple effects becomes obstructed when the selected law exposes entangled change, state, effect, or contract support.</td>
+                    </tr>
+                    <tr>
+                      <td>Open / Closed</td>
+                      <td>Extension needs a feature-extension theorem package.</td>
+                      <td>A new feature can preserve static split while breaking a semantic diagram.</td>
+                    </tr>
+                    <tr>
+                      <td>Liskov Substitution</td>
+                      <td>Substitution requires selected observation and contract preservation.</td>
+                      <td>Subtype shape needs selected effect and semantic preservation evidence.</td>
+                    </tr>
+                    <tr>
+                      <td>Dependency Inversion</td>
+                      <td>Projection, representative stability, and abstraction graph laws must be checked.</td>
+                      <td>DIP/LSP compatibility can hold while an abstract-layer cycle blocks decomposition.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <p id="theorem-7-1" class="statement">
+                <a class="statement-anchor" href="#theorem-7-1">Theorem 7.1.</a>
+                In the strong abstract-cycle example, DIP compatibility, exact
+                projection plus representative stability, and LSP-style
+                observation factoring can hold while the graph remains not
+                decomposable.
+              </p>
+              <p id="proof-7-1" class="statement-proof">
+                <a class="statement-anchor" href="#proof-7-1">Proof.</a>
+                <code>StrongAbstractCycleComponent.lspCompatible</code>,
+                <code>projectionExact</code>,
+                <code>representativeStable</code>,
+                <code>dipCompatible</code>, and
+                <code>strongDIPCompatible</code> establish the compatibility
+                side. <code>not_decomposable</code> uses the abstract cycle
+                <code>orderPort -> paymentPort -> orderPort</code> to refute a
+                strict layering.
+              </p>
+              <p id="counterexample-7-2" class="statement">
+                <a class="statement-anchor" href="#counterexample-7-2">Counterexample 7.2.</a>
+                "Depends on abstractions" and "decomposable" name different law
+                packages. The abstraction layer itself may contain the
+                obstruction.
+              </p>
+            </section>
+
+            <section id="reading-rules" class="article-section">
+              <h2>Reading rules</h2>
+              <p>
+                The examples enforce a small set of reading rules that should be
+                used throughout the rest of AAT.
+              </p>
+              <div class="article-table">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>When you see</th>
+                      <th>Read it as</th>
+                      <th>Do not read it as</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><code>some 0</code> on a selected axis</td>
+                      <td>Measured zero for that axis.</td>
+                      <td>Unconditional architecture flatness.</td>
+                    </tr>
+                    <tr>
+                      <td><code>none</code> on an optional axis</td>
+                      <td>Unmeasured.</td>
+                      <td>Zero evidence.</td>
+                    </tr>
+                    <tr>
+                      <td>Static split repaired</td>
+                      <td>Selected static witness removed.</td>
+                      <td>Semantic or runtime safety.</td>
+                    </tr>
+                    <tr>
+                      <td>Design-pattern compatibility</td>
+                      <td>Compatibility under the named law package.</td>
+                      <td>Global decomposability or flatness.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <p id="principle-8-1" class="statement">
+                <a class="statement-anchor" href="#principle-8-1">Principle 8.1.</a>
+                AAT examples are successful when the reader can name the exact
+                conclusion scope carried by the theorem package.
+              </p>
+            </section>
+
+            <section id="formal-reading" class="article-section">
+              <h2>Formal reading</h2>
+              <p>
+                The Lean surface for this chapter is concentrated in canonical
+                examples, static/semantic counterexamples, SOLID-style
+                counterexamples, and the Chapter 11 analytic snapshot package.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Lean anchors</figcaption>
+                <pre><code>Formal/Arch/Examples/AATMoleculeLawExamples.lean
+  apiMolecule
+  apiMolecule_atom_primitive
+  singletonBadLaw
+  singletonBadLaw_does_not_create_atoms
+  singletonBadLaw_obstruction
+  examplePureTheory
+  examplePureTheory_independent_of_observation
+  examplePureTheory_laws_do_not_create_atoms
+  examplePureTheory_circuit_on_surface
+
+Formal/Arch/Evolution/Chapter11AnalyticRepresentation.lean
+  CouponAnalyticSnapshot
+  CouponAnalyticSnapshot.bad
+  CouponAnalyticSnapshot.repaired
+  CouponAnalyticSnapshot.repairedWithMeasuredSemanticCurvature
+  CouponAnalyticSnapshot.bad_staticHiddenInteraction_bridge
+  CouponAnalyticSnapshot.repaired_staticHiddenInteraction_bridge
+  CouponAnalyticSnapshot.runtimeExposure_not_zeroReflectingClaim
+  CouponAnalyticSnapshot.semanticCurvature_unmeasured_not_zeroReflectingClaim
+  CouponAnalyticSnapshot.repairedWithMeasuredSemanticCurvature_roundingOrderValuation_positive
+  CouponHiddenInteractionLiftingBridge.hiddenDependency_liftingFailure_bridge
+
+Formal/Arch/Examples/StaticSemanticCounterexample.lean
+  selectedCouponDiscount_not_commutes
+  repaired_strictLayering
+  repaired_walkAcyclic
+  repaired_staticSplit
+  canonical_staticFlatWithin
+  canonical_not_semanticFlatWithin
+  staticFlat_with_semanticObstruction
+  staticFlat_not_architectureFlat
+
+Formal/Arch/Examples/SolidCounterexample.lean
+  TwoCycleComponent.not_decomposable
+  PaymentComponent.not_decomposable
+  AbstractCycleComponent.not_decomposable
+  StrongAbstractCycleComponent.observation_factors
+  StrongAbstractCycleComponent.lspCompatible
+  StrongAbstractCycleComponent.projectionExact
+  StrongAbstractCycleComponent.representativeStable
+  StrongAbstractCycleComponent.dipCompatible
+  StrongAbstractCycleComponent.strongDIPCompatible
+  StrongAbstractCycleComponent.not_decomposable
+  StrongAbstractCycleComponent.dipCompatible_and_not_decomposable
+  StrongAbstractCycleComponent.strongDIPCompatible_and_not_decomposable</code></pre>
+              </figure>
+              <p id="formal-status-9-1" class="statement">
+                <a class="statement-anchor" href="#formal-status-9-1">Formal status 9.1.</a>
+                The atom/molecule/law/circuit example, coupon analytic snapshot,
+                static-flat semantic obstruction counterexample, and SOLID-style
+                dependency inversion counterexamples are defined in Lean.
+              </p>
+              <p id="formal-status-9-2" class="statement">
+                <a class="statement-anchor" href="#formal-status-9-2">Formal status 9.2.</a>
+                The key claims are proved for their selected premises: law
+                non-generation, static hidden-interaction bridge, repaired static
+                witness absence, unmeasured-axis non-certification, static-flat
+                but semantic-obstructed separation, and DIP-compatible but
+                non-decomposable examples.
+              </p>
+            </section>
+
+            <section id="chapter-summary" class="article-section">
               <h2>Chapter summary</h2>
               <p>
-                The examples show how AAT makes finite architecture skeletons
-                readable. A static witness, semantic diagram, runtime
-                observation, repair measure, or signature coordinate can be
-                placed in its own evidence record and then related to the other
-                readings through explicit bridges.
+                The examples make the theory operational. They show how to move
+                from atoms to molecules, from molecules to law-relative circuits,
+                from feature extension to multi-axis signatures, and from design
+                slogans to theorem-shaped law packages.
               </p>
               <p>
-                This is the practical role of examples in the theory. They
-                demonstrate how selected evidence becomes a theorem-facing
-                object, how counterexamples separate local and global readings,
-                and how architecture quality can be read across several axes
-                while preserving the structure of those axes.
+                The counterexamples are the main teaching device. They keep
+                static flatness, semantic flatness, repair improvement,
+                optional-axis measurement, and design-pattern compatibility in
+                their own theorem packages.
               </p>
               <h3>Terms</h3>
               <dl class="term-list definition-list">
                 <div>
-                  <dt>finite skeleton</dt>
-                  <dd>A small selected architecture object used to expose the theorem package, witness family, or counterexample shape.</dd>
+                  <dt>Canonical example</dt>
+                  <dd>A finite presentation with named object, law, witness universe, signature axes, theorem package, and non-conclusions.</dd>
                 </div>
                 <div>
-                  <dt>layered reading</dt>
-                  <dd>A reading that separates static, semantic, runtime, repair, and signature evidence into distinct axes.</dd>
+                  <dt>Static / semantic separation</dt>
+                  <dd>The fact that selected static flatness can hold while selected semantic flatness fails.</dd>
                 </div>
                 <div>
-                  <dt>local success</dt>
-                  <dd>A selected contract, client context, or interface law satisfies its own observation condition.</dd>
+                  <dt>Repair transfer</dt>
+                  <dd>Movement of obstruction support from one selected axis to another under a repair operation.</dd>
                 </div>
                 <div>
-                  <dt>global structure</dt>
-                  <dd>The selected dependency, layering, decomposition, or structural reading of the architecture object.</dd>
+                  <dt>SOLID counterexample</dt>
+                  <dd>A finite model showing that principle-style compatibility is weaker than global decomposability or flatness.</dd>
                 </div>
               </dl>
             </section>
 
             <nav class="page-nav" aria-label="Reading sequence">
-              <a href="../representations-and-effects/">
+              <a class="page-nav-previous" href="../representations-and-effects/">
                 <span>Previous</span>
                 <strong>Representations and Effects</strong>
               </a>
-              <a href="../related-work/">
+              <a class="page-nav-next" href="../related-work/">
                 <span>Next</span>
-                <strong>Related Work and Novelty</strong>
+                <strong>Related Work</strong>
               </a>
             </nav>
           </div>

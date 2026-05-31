@@ -5,19 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta
       name="description"
-      content="AAT representations and effects: graph, matrix, analytic representation, state-transition algebra, and effect law surfaces."
+      content="Computable representations and effects in Algebraic Architecture Theory: graph, thin category, walk, matrix, analytic representation, state-transition algebra, and effect law surfaces."
     >
-    <title>AAT Representations and Effects</title>
-    <link rel="canonical" href="https://iroha1203.dev/aat/representations-and-effects/">
+    <title>Representations and Effects</title>
     <meta property="og:site_name" content="AAT / SFT Research Notes">
     <meta property="og:type" content="article">
-    <meta property="og:title" content="AAT Representations and Effects">
-    <meta property="og:description" content="AAT representations and effects: graph, matrix, analytic representation, state-transition algebra, and effect law surfaces.">
+    <meta property="og:title" content="Representations and Effects">
+    <meta property="og:description" content="Computable representations and effects in Algebraic Architecture Theory: graph, thin category, walk, matrix, analytic representation, state-transition algebra, and effect law surfaces.">
     <meta property="og:url" content="https://iroha1203.dev/aat/representations-and-effects/">
     <meta property="og:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="AAT Representations and Effects">
-    <meta name="twitter:description" content="AAT representations and effects: graph, matrix, analytic representation, state-transition algebra, and effect law surfaces.">
+    <meta name="twitter:title" content="Representations and Effects">
+    <meta name="twitter:description" content="Computable representations and effects in Algebraic Architecture Theory: graph, thin category, walk, matrix, analytic representation, state-transition algebra, and effect law surfaces.">
     <meta name="twitter:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
     <link rel="icon" href="../../assets/favicon-32.png" sizes="32x32" type="image/png">
     <link rel="icon" href="../../assets/favicon-16.png" sizes="16x16" type="image/png">
@@ -38,6 +37,18 @@
       } catch {}
     </script>
     <link rel="stylesheet" href="../../assets/site.css">
+    <script>
+      window.MathJax = {
+        tex: {
+          inlineMath: [["\\(", "\\)"]],
+          displayMath: [["\\[", "\\]"]]
+        },
+        chtml: {
+          matchFontHeight: false
+        }
+      };
+    </script>
+    <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
     <script defer src="../../assets/site.js"></script>
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-YQMFH2FG9V"></script>
@@ -48,7 +59,6 @@
 
       gtag('config', 'G-YQMFH2FG9V');
     </script>
-
   </head>
   <body>
     <a class="skip-link" href="#main">Skip to content</a>
@@ -78,478 +88,721 @@
             <a href="../">AAT</a>
             <span>Representations and Effects</span>
           </nav>
-          <p class="eyebrow">AAT Part VII</p>
+          <p class="eyebrow">Part III. Geometry and Analytic Connections</p>
           <h1>Representations and Effects</h1>
           <p class="lede">
-            Graphs, matrices, analytic values, state transitions, and effects
-            are representation surfaces for the same architecture object. AAT
-            uses them to transport zeros, obstructions, valuations, and effect
-            laws through preserving and reflecting packages.
+            AAT becomes computable by sending architecture objects into graphs,
+            reachability categories, walk counts, adjacency matrices, analytic
+            signatures, state-transition expressions, and effect-boundary
+            diagrams. Each representation is useful precisely because it states
+            what it preserves, what it reflects, and what it forgets.
           </p>
         </div>
       </section>
 
       <section class="section-band">
         <div class="site-shell article-layout">
-          <aside class="article-sidebar" aria-label="Local navigation">
+          <aside class="article-sidebar" aria-label="AAT page navigation">
             <nav class="toc-panel" aria-labelledby="toc-title">
               <h2 id="toc-title">On this page</h2>
               <ol>
-                <li><a href="#graph-matrix">Graph and matrix</a></li>
+                <li><a href="#research-question">Research question</a></li>
+                <li><a href="#graph-representation">Graph representation</a></li>
+                <li><a href="#category-walk">Category, walk, and path</a></li>
+                <li><a href="#matrix-representation">Matrix representation</a></li>
                 <li><a href="#analytic-representation">Analytic representation</a></li>
-                <li><a href="#representation-pattern">Representation pattern</a></li>
-                <li><a href="#valuation-surface">Valuation surface</a></li>
-                <li><a href="#state-effects">State transitions and effects</a></li>
-                <li><a href="#effect-examples">Effect examples</a></li>
-                <li><a href="#representation-summary">Chapter summary</a></li>
+                <li><a href="#valuation">Valuation and aggregates</a></li>
+                <li><a href="#state-transition">State-transition algebra</a></li>
+                <li><a href="#effects">Effect law surface</a></li>
+                <li><a href="#example">Worked example</a></li>
+                <li><a href="#counterexamples">Counterexamples</a></li>
+                <li><a href="#formal-reading">Formal reading</a></li>
               </ol>
             </nav>
             <div class="source-panel" data-sidebar-open="true">
               <h2>AAT chapters</h2>
               <ul>
-                <li>
-                  <a href="../">
-                    AAT overview
-                  </a>
-                </li>
-                <li>
-                  <a href="../foundations/">
-                    Foundations
-                  </a>
-                </li>
-                <li>
-                  <a href="../laws-and-witnesses/">
-                    Laws and Witnesses
-                  </a>
-                </li>
-                <li>
-                  <a href="../architecture-signature/">
-                    Architecture Signature
-                  </a>
-                </li>
-                <li>
-                  <a href="../local-law-packages/">
-                    Local Law Packages
-                  </a>
-                </li>
-                <li>
-                  <a href="../calculus-and-extensions/">
-                    Calculus and Extensions
-                  </a>
-                </li>
-                <li>
-                  <a href="../repair-and-dynamics/">
-                    Repair and Dynamics
-                  </a>
-                </li>
-                <li>
-                  <a href="../representations-and-effects/" aria-current="page">
-                    Representations and Effects
-                  </a>
-                </li>
-                <li>
-                  <a href="../canonical-examples-and-readings/">
-                    Canonical Examples and Readings
-                  </a>
-                </li>
-                <li>
-                  <a href="../related-work/">
-                    Related Work and Novelty
-                  </a>
-                </li>
-                <li>
-                  <a href="../quantifiable-axes/">
-                    Quantifiable Axes
-                  </a>
-                </li>
-                <li>
-                  <a href="../status/">
-                    Status
-                  </a>
-                </li>
-                <li>
-                  <a href="../formal-anchors/">
-                    Formal Anchors Audit
-                  </a>
-                </li>
+                <li><a href="../">Overview</a></li>
+                <li><a href="../atoms/">Atoms</a></li>
+                <li><a href="../architecture-objects/">Architecture Objects</a></li>
+                <li><a href="../laws/">Design Laws</a></li>
+                <li><a href="../obstruction-circuits/">Obstruction Circuits</a></li>
+                <li><a href="../zero-curvature/">Zero Curvature</a></li>
+                <li><a href="../architecture-signature/">Architecture Signature</a></li>
+                <li><a href="../design-principle-layers/">Design Principle Layers</a></li>
+                <li><a href="../operations-and-calculus/">Operations and Calculus</a></li>
+                <li><a href="../dynamics-and-geometry/">Dynamics and Geometry</a></li>
+                <li><a href="./" aria-current="page">Representations and Effects</a></li>
+                <li><a href="../canonical-examples-and-readings/">Examples and Readings</a></li>
+                <li><a href="../related-work/">Related Work</a></li>
+                <li><a href="../status/">Status</a></li>
+                <li><a href="../formal-anchors/">Formal Anchors</a></li>
               </ul>
             </div>
           </aside>
 
           <div class="article-main">
-            <section id="graph-matrix" class="article-section">
+            <section id="research-question" class="article-section">
+              <h2>Research question</h2>
               <p class="research-question">
-                Can algebraic architecture objects generate graph, matrix,
-                analytic, and effect representations?
+                How can architecture be computed without reducing architecture to
+                a single graph, matrix, score, or runtime trace?
               </p>
-              <h2>Graph and matrix</h2>
               <p>
-                On a finite unweighted universe, acyclicity, closed-walk zero,
-                and nilpotence of the adjacency matrix can express the same
-                static structure. Finite propagation becomes a further reading
-                once a walk universe and propagation model are selected.
+                A representation is a disciplined reading surface. It exposes
+                selected structure to computation: dependencies become graph
+                edges, reachability becomes a category, walks become countable
+                evidence, finite graphs become matrices, signatures become
+                analytic values, and effects become diagrams over histories and
+                boundaries. AAT keeps these surfaces separate from the object
+                itself. A representation may preserve zero, reflect zero under
+                coverage, preserve obstruction, or reflect obstruction under
+                completeness assumptions. These are different strengths.
               </p>
-              <figure class="code-panel">
-                <figcaption>Finite structural bridge</figcaption>
-                <pre><code>acyclic
-  &lt;-&gt; no closed walk
-  &lt;-&gt; nilpotent adjacency matrix</code></pre>
-              </figure>
-              <figure class="code-panel">
-                <figcaption>Representation package</figcaption>
-                <pre><code>finite selected static universe
-  + coverage assumptions
-  -&gt;
-  Acyclic
-    &lt;-&gt; no nonempty closed walk
-    &lt;-&gt; adjacency nilpotence
+            </section>
 
-runtime propagation
-  = runtime graph + propagation model
-  + selected reachability reading</code></pre>
+            <section id="graph-representation" class="article-section">
+              <h2>Graph representation</h2>
+              <p>
+                The first computable representation of an architecture object is
+                a dependency graph. Component atoms become vertices. Dependency
+                relation atoms become directed edges. Other atoms do not
+                disappear; they become labels, annotations, diagrams, state
+                transition expressions, or effect-boundary expressions.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Atom family to graph</figcaption>
+                <pre><code>V(G_F) = { c | component(c) is in F }
+E(G_F) = { (c,d) | depends(c,d) is in F }
+
+labels and annotations:
+  contract atoms
+  state atoms
+  semantic atoms
+  effect atoms
+  evidence handles</code></pre>
               </figure>
-              <p id="definition-13-1" class="statement">
-                <a class="statement-anchor" href="#definition-13-1">Definition 13.1.</a>
-                The graph / matrix bridge is the selected finite structural
-                reading that compares an unweighted dependency graph, its
-                finite walk evidence, and its adjacency matrix. Its input is a
-                proof-carrying finite component universe.
+              <p id="definition-1-1" class="statement">
+                <a class="statement-anchor" href="#definition-1-1">Definition 1.1.</a>
+                A graph representation is the selected dependency projection of
+                an architecture object, enriched by labels or side surfaces for
+                atoms that are not dependency edges.
               </p>
-              <p id="proposition-13-2" class="statement">
-                <a class="statement-anchor" href="#proposition-13-2">Proposition 13.2.</a>
-                For a finite selected unweighted structural universe, the
-                graph and matrix readings are theorem-connected: acyclicity,
-                closed-walk zero, and adjacency nilpotence are the same
-                structural zero package, with the spectral-radius
-                reading living on the corresponding finite complex matrix.
+              <p id="proposition-1-2" class="statement">
+                <a class="statement-anchor" href="#proposition-1-2">Proposition 1.2.</a>
+                Graph representation is not architecture equality. Two
+                architecture objects can have the same dependency graph and
+                differ in contract, state, semantic, effect, evidence, or law
+                interpretation atoms.
               </p>
-              <p id="proof-13-2" class="statement-proof">
-                <a class="statement-anchor" href="#proof-13-2">Proof idea.</a>
-                Powers of the finite adjacency matrix enumerate selected
-                finite walks. If the graph is acyclic, sufficiently long
-                selected walks have zero count, so a positive matrix power is
-                zero. Conversely, a nonempty closed walk repeats past any
-                nilpotence cutoff and refutes matrix nilpotence. The spectral
-                statement is then read through the finite complex adjacency
-                matrix.
+              <p id="non-conclusion-1-3" class="statement">
+                <a class="statement-anchor" href="#non-conclusion-1-3">Non-conclusion 1.3.</a>
+                Dependency acyclicity is a static structural reading. It does not
+                imply semantic correctness, effect safety, replay lawfulness,
+                runtime availability, or future repair success.
               </p>
-              <p id="non-conclusion-13-3" class="statement">
-                <a class="statement-anchor" href="#non-conclusion-13-3">Non-conclusion 13.3.</a>
-                <code>Decomposable</code> remains <code>StrictLayered</code>.
+            </section>
+
+            <section id="category-walk" class="article-section">
+              <h2>Category, walk, and path</h2>
+              <p>
+                Reachability turns the dependency graph into a thin category:
+                there is at most one morphism from one component to another,
+                because the morphism records reachability as a proposition. This
+                is useful, but it forgets path count and walk length. AAT keeps
+                walks and paths as separate computational surfaces when those
+                quantities matter.
+              </p>
+              <div class="article-table">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Surface</th>
+                      <th>What it remembers</th>
+                      <th>What it forgets</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><code>Reachable</code></td>
+                      <td>Whether one component can reach another.</td>
+                      <td>How many walks, which route, and how long.</td>
+                    </tr>
+                    <tr>
+                      <td><code>ComponentCategory</code></td>
+                      <td>Identity and composition of reachability.</td>
+                      <td>Multiplicity of arrows, path weights, and walk history.</td>
+                    </tr>
+                    <tr>
+                      <td><code>Walk</code></td>
+                      <td>Concrete edge-by-edge route and length.</td>
+                      <td>Semantic equality between alternative routes unless added separately.</td>
+                    </tr>
+                    <tr>
+                      <td><code>Path</code></td>
+                      <td>Selected simple or representative route.</td>
+                      <td>All unselected walk variants.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <p id="definition-2-1" class="statement">
+                <a class="statement-anchor" href="#definition-2-1">Definition 2.1.</a>
+                <code>ComponentCategory</code> is the category whose objects are
+                components and whose morphisms are reachability propositions.
+              </p>
+              <p id="proposition-2-2" class="statement">
+                <a class="statement-anchor" href="#proposition-2-2">Proposition 2.2.</a>
+                <code>ComponentCategory</code> is thin: any two morphisms between
+                the same objects are equal.
+              </p>
+              <p id="proof-2-2" class="statement-proof">
+                <a class="statement-anchor" href="#proof-2-2">Proof.</a>
+                Lean represents homs as propositions. Proof irrelevance gives
+                equality of any two reachability witnesses.
+              </p>
+              <p id="proposition-2-3" class="statement">
+                <a class="statement-anchor" href="#proposition-2-3">Proposition 2.3.</a>
+                Walk evidence implies reachability, while reachability can be
+                represented by a selected simple walk.
+              </p>
+              <p id="proof-2-3" class="statement-proof">
+                <a class="statement-anchor" href="#proof-2-3">Proof idea.</a>
+                <code>Reachable.of_walk</code> maps a concrete walk to a
+                reachability witness. <code>Reachable.exists_simpleWalk</code>
+                recovers a simple-walk witness from reachability, choosing a
+                non-repeating representative when a repeated vertex appears.
+              </p>
+            </section>
+
+            <section id="matrix-representation" class="article-section">
+              <h2>Matrix representation</h2>
+              <p>
+                A finite component universe turns a dependency graph into an
+                adjacency matrix. Matrix powers count selected walks. Nilpotence
+                and spectral radius then become analytic readings of the same
+                finite static structure.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Finite matrix bridge</figcaption>
+                <pre><code>adjacencyMatrix(G)[c,d] = 1 if edge(c,d), otherwise 0
+
+(A^k)[c,d] &gt; 0
+  iff there is a selected walk c -&gt; d of length k
+
+AdjacencyNilpotent(U)
+  iff WalkAcyclic(G)
+  iff Acyclic(G)</code></pre>
+              </figure>
+              <p id="definition-3-1" class="statement">
+                <a class="statement-anchor" href="#definition-3-1">Definition 3.1.</a>
+                <code>AdjacencyNilpotent</code> is eventual zero of all powers of
+                the finite adjacency matrix over the selected component universe.
+              </p>
+              <p id="theorem-3-2" class="statement">
+                <a class="statement-anchor" href="#theorem-3-2">Theorem 3.2.</a>
+                For a finite selected dependency graph, adjacency nilpotence,
+                walk acyclicity, and graph acyclicity are equivalent.
+              </p>
+              <p id="proof-3-2" class="statement-proof">
+                <a class="statement-anchor" href="#proof-3-2">Proof idea.</a>
+                <code>adjacencyNilpotent_iff_walkAcyclic</code> and
+                <code>adjacencyNilpotent_iff_acyclic</code> use the finite walk
+                counting interpretation of matrix powers. A closed walk can be
+                repeated past any nilpotence cutoff; an acyclic finite graph has
+                a bound after which no walk remains.
+              </p>
+              <p id="theorem-3-3" class="statement">
+                <a class="statement-anchor" href="#theorem-3-3">Theorem 3.3.</a>
+                Acyclicity forces the finite complex adjacency matrix to have
+                spectral radius zero, while a closed walk forces positive
+                spectral radius.
+              </p>
+              <p id="proof-3-3" class="statement-proof">
+                <a class="statement-anchor" href="#proof-3-3">Proof.</a>
+                <code>spectralRadiusOfAdjacency_eq_zero_of_acyclic</code> reads
+                acyclicity through a nilpotent finite complex adjacency matrix.
+                <code>spectralRadiusOfAdjacency_pos_of_hasClosedWalk</code>
+                uses repeated closed walks to refute nilpotence.
+              </p>
+              <p id="non-conclusion-3-4" class="statement">
+                <a class="statement-anchor" href="#non-conclusion-3-4">Non-conclusion 3.4.</a>
+                <code>Decomposable</code> remains the strict-layering definition.
                 Acyclicity, finite propagation, nilpotence, and spectral
-                conditions appear as structural or analytic representation
-                readings connected to that base definition by theorem packages.
-              </p>
-              <p class="formal-audit-link">
-                <span>Audit trail</span>
-                <a href="../formal-anchors/#representations-and-effects">Formal Anchors Audit</a>
+                conditions are connected representation readings, not extra
+                clauses silently bundled into <code>Decomposable</code>.
               </p>
             </section>
 
             <section id="analytic-representation" class="article-section">
               <h2>Analytic representation</h2>
               <p>
-                <code>AnalyticRepresentation</code> maps a structural
-                architecture object into an analytic domain. The representation
-                can be zero-preserving, zero-reflecting,
-                obstruction-preserving, or obstruction-reflecting. These are
-                different strengths; reflecting directions carry richer
-                evidence packages.
+                An analytic representation maps architecture states into an
+                analytic domain: a signature, curvature value, matrix diagnostic,
+                obstruction valuation, report axis, or other computable object.
+                Its strength is not determined by the map alone. It is determined
+                by the preservation and reflection theorems supplied with it.
               </p>
-              <p id="definition-13-4" class="statement">
-                <a class="statement-anchor" href="#definition-13-4">Definition 13.4.</a>
-                An <code>AnalyticRepresentation</code> consists of a
-                representation map together with focused predicates for
-                preserving and reflecting selected zeros and obstructions. The
-                reflecting predicates carry coverage, witness completeness,
-                semantic contract coverage, and non-conclusion fields.
-              </p>
-              <ul class="term-list">
-                <li>
-                  <strong>ZeroPreserving</strong>
-                  <span>Structural zero implies analytic zero.</span>
-                </li>
-                <li>
-                  <strong>ZeroReflecting</strong>
-                  <span>Analytic zero plus assumptions implies structural zero.</span>
-                </li>
-                <li>
-                  <strong>ObstructionPreserving</strong>
-                  <span>Structural obstruction implies analytic obstruction.</span>
-                </li>
-                <li>
-                  <strong>ObstructionReflecting</strong>
-                  <span>An analytic obstruction can be read back as structural through explicit assumptions.</span>
-                </li>
-              </ul>
               <figure class="code-panel">
-                <figcaption>Representation map</figcaption>
-                <pre><code>rho : Architecture -&gt; AnalyticDomain
+                <figcaption>Representation strength</figcaption>
+                <pre><code>ZeroPreserving:
+  structural zero -&gt; analytic zero
 
-structural zero
-  -[zero preserving]-&gt;
-analytic zero
+ZeroReflecting:
+  analytic zero + coverage + witness completeness + semantic coverage
+    -&gt; structural zero
 
-analytic zero
-  + coverage
-  + witness completeness
-  + semantic contract coverage
-  -[zero reflecting]-&gt;
-structural zero</code></pre>
+ObstructionPreserving:
+  structural obstruction -&gt; analytic obstruction
+
+ObstructionReflecting:
+  analytic obstruction + coverage + witness completeness + semantic coverage
+    -&gt; structural obstruction</code></pre>
               </figure>
+              <p id="definition-4-1" class="statement">
+                <a class="statement-anchor" href="#definition-4-1">Definition 4.1.</a>
+                An <code>AnalyticRepresentation</code> consists of a
+                representation map, structural and analytic zero predicates,
+                structural and analytic obstruction predicates, coverage
+                assumptions, witness-completeness assumptions, semantic-contract
+                coverage assumptions, and non-conclusions.
+              </p>
+              <p id="theorem-4-2" class="statement">
+                <a class="statement-anchor" href="#theorem-4-2">Theorem 4.2.</a>
+                Zero preservation and obstruction preservation are forward
+                readings; zero reflection and obstruction reflection require the
+                recorded coverage, witness completeness, and semantic-contract
+                coverage assumptions.
+              </p>
+              <p id="proof-4-2" class="statement-proof">
+                <a class="statement-anchor" href="#proof-4-2">Proof.</a>
+                Lean exposes the four accessors
+                <code>analyticZero_of_structuralZero</code>,
+                <code>structuralZero_of_analyticZero</code>,
+                <code>analyticObstruction_of_structuralObstruction</code>, and
+                <code>structuralObstruction_of_analyticObstruction</code>. The
+                reflecting accessors require the additional premises explicitly.
+              </p>
+              <p id="example-4-3" class="statement">
+                <a class="statement-anchor" href="#example-4-3">Example 4.3.</a>
+                <code>architectureSignatureAnalyticRepresentation</code> maps an
+                <code>ArchitectureLawModel</code> to its Signature v1 output.
+                Its analytic zero is exactly selected required signature axes
+                being available and zero.
+              </p>
+              <p id="non-conclusion-4-4" class="statement">
+                <a class="statement-anchor" href="#non-conclusion-4-4">Non-conclusion 4.4.</a>
+                An absent optional axis value is not an available zero
+                certificate. <code>none</code> records unmeasured status; it
+                cannot discharge a zero-reflecting theorem package.
+              </p>
             </section>
 
-            <section id="representation-pattern" class="article-section">
-              <h2>Representation pattern</h2>
+            <section id="valuation" class="article-section">
+              <h2>Valuation and aggregates</h2>
               <p>
-                A representation theorem has two directions with different
-                obligations. Preserving sends a structural zero or witness into
-                the representation. Reflecting reads a represented zero or
-                obstruction back into the structural world through stronger
-                assumptions.
+                Numerical readings are useful when they remain witness-relative.
+                An obstruction valuation assigns a natural value to a selected
+                state and selected witness. Zero may rule out that witness only
+                when the valuation package says zero reflects absence. Aggregates
+                are even more delicate: a scalar can help rank hotspots, but it
+                is not a replacement for the signature vector.
               </p>
               <figure class="code-panel">
-                <figcaption>Preserve versus reflect</figcaption>
-                <pre><code>structural zero
-  -[preserving]-&gt;
-analytic zero
-
-analytic zero
-  + coverage
-  + witness completeness
-  + semantic contract coverage
-  -[reflecting]-&gt;
-structural zero</code></pre>
+                <figcaption>Valuation boundary</figcaption>
+                <pre><code>ObstructionValuation
+  = obstruction : State -&gt; Witness -&gt; Prop
+  + value : State -&gt; Witness -&gt; Nat
+  + value = 0 reflects absence of that witness
+  + obstruction gives positive value
+  + coverage assumptions
+  + non-conclusions</code></pre>
               </figure>
-              <p>
-                This pattern gives dashboards and numerical summaries their
-                theorem shape: an aggregate can guide attention, and a
-                reflecting package turns the represented value into structural
+              <p id="definition-5-1" class="statement">
+                <a class="statement-anchor" href="#definition-5-1">Definition 5.1.</a>
+                An <code>ObstructionValuation</code> is a selected numerical
+                reading of selected obstruction witnesses, not a complete
+                architecture quality metric.
+              </p>
+              <p id="proposition-5-2" class="statement">
+                <a class="statement-anchor" href="#proposition-5-2">Proposition 5.2.</a>
+                Zero valuation of an individual selected witness rules out that
+                witness obstruction; a zero-reflecting aggregate rules out all
+                selected witnesses only through its explicit reflection premise.
+              </p>
+              <p id="proof-5-2" class="statement-proof">
+                <a class="statement-anchor" href="#proof-5-2">Proof.</a>
+                <code>no_obstruction_of_value_zero</code> applies the
+                witness-level zero-reflection field.
+                <code>noSelectedObstruction_of_zeroReflectingSum</code> applies
+                a caller-supplied aggregate reflection law.
+              </p>
+              <p id="proposition-5-3" class="statement">
+                <a class="statement-anchor" href="#proposition-5-3">Proposition 5.3.</a>
+                A measured nonzero analytic axis supports a selected analytic
+                obstruction reading; an unmeasured axis blocks zero-reflecting
+                claims.
+              </p>
+              <p id="proof-5-3" class="statement-proof">
+                <a class="statement-anchor" href="#proof-5-3">Proof idea.</a>
+                <code>supportsSelectedAnalyticObstruction_of_measuredNonzero</code>
+                reads <code>some (n + 1)</code> as a selected positive witness.
+                <code>not_canDischargeZeroReflectingClaim_of_unmeasured</code>
+                prevents <code>none</code> from being used as available-zero
                 evidence.
               </p>
-              <p id="proposition-13-5" class="statement">
-                <a class="statement-anchor" href="#proposition-13-5">Proposition 13.5.</a>
-                Preserving and reflecting are independent theorem packages.
-                A preserving representation can transport a structural zero
-                into an analytic zero; a reflecting package additionally
-                carries the recorded assumptions that authorize reading the
-                analytic result back as a selected structural statement.
-              </p>
-              <p id="proof-13-5" class="statement-proof">
-                <a class="statement-anchor" href="#proof-13-5">Proof idea.</a>
-                The Lean API keeps the four predicates distinct. The preserving
-                theorems use the corresponding preserving field; the reflecting
-                theorems use the reflecting field and its assumptions. A report
-                with a represented value still needs the reflecting package to
-                discharge the structural theorem.
-              </p>
-              <p class="formal-audit-link">
-                <span>Audit trail</span>
-                <a href="../formal-anchors/#representations-and-effects">Formal Anchors Audit</a>
-              </p>
             </section>
 
-            <section id="valuation-surface" class="article-section">
-              <h2>Valuation surface</h2>
+            <section id="state-transition" class="article-section">
+              <h2>State-transition algebra</h2>
               <p>
-                <code>ObstructionValuation</code> maps selected witnesses to
-                numeric or ordered values. Aggregates can be useful for
-                dashboards; an aggregate zero reflects witness-level zero
-                through a zero-reflecting value domain and aggregation under
-                the selected assumptions.
+                State atoms and event atoms generate a state-transition surface.
+                A transition law is a required diagram over history, replay,
+                roundtrip, or compensation expressions. Lawfulness means every
+                selected diagram commutes under the selected semantics.
               </p>
               <figure class="code-panel">
-                <figcaption>Zero reflection guard</figcaption>
-                <pre><code>witnesses -&gt; values -&gt; aggregate
+                <figcaption>State-transition expressions</figcaption>
+                <pre><code>StateTransitionExpr
+  = state(s)
+  | history(s, events)
+  | replay(s, events)
+  | roundtrip(s, forward, backward)
+  | compensated(s, events, compensation)
 
-aggregate = 0
-  + zero-reflecting valuation
-  + complete selected witness coverage
-  -&gt; selected witnesses are zero</code></pre>
+required diagrams:
+  history(s, events) = replay(s, events)
+  state(s) = roundtrip(s, forward, backward)
+  state(s) = compensated(s, events, compensation)</code></pre>
               </figure>
-              <p>
-                This is the same representation discipline as matrix and
-                analytic readings: preserving zero transports evidence
-                forward, while reflecting zero carries coverage and semantic
-                contract assumptions back into the structural world.
+              <p id="definition-6-1" class="statement">
+                <a class="statement-anchor" href="#definition-6-1">Definition 6.1.</a>
+                <code>StateTransitionExpr</code> is the expression language for
+                selected state, history, replay, roundtrip, and compensation
+                laws.
               </p>
-              <p id="proposition-13-6" class="statement">
-                <a class="statement-anchor" href="#proposition-13-6">Proposition 13.6.</a>
-                A zero valuation discharges selected witness zero when its
-                zero-reflecting premise is available. Optional omitted values,
-                unavailable axes, and unmeasured report fields have their own
-                measurement status.
+              <p id="theorem-6-2" class="statement">
+                <a class="statement-anchor" href="#theorem-6-2">Theorem 6.2.</a>
+                For finite selected state-transition cases, replay, roundtrip,
+                compensation, and their aggregate law family are lawful exactly
+                when the corresponding obstruction witnesses are absent.
+              </p>
+              <p id="proof-6-2" class="statement-proof">
+                <a class="statement-anchor" href="#proof-6-2">Proof.</a>
+                <code>stateReplayLawful_iff_noStateReplayObstruction</code>,
+                <code>stateRoundtripLawful_iff_noStateRoundtripObstruction</code>,
+                <code>stateCompensationLawful_iff_noStateCompensationObstruction</code>,
+                and <code>stateTransitionLawFamilyLawful_iff_noStateTransitionLawFamilyObstruction</code>
+                are all instances of the generic diagram-lawfulness equivalence.
+              </p>
+              <p id="example-6-3" class="statement">
+                <a class="statement-anchor" href="#example-6-3">Example 6.3.</a>
+                Event sourcing, snapshot consistency, retry safety, migration
+                naturality, and saga compensation can all be read as
+                state-transition diagrams. They are not the same law; each
+                selects its own expressions, cases, and observation semantics.
+              </p>
+            </section>
+
+            <section id="effects" class="article-section">
+              <h2>Effect law surface</h2>
+              <p>
+                Effect atoms represent actions that cross a state, service, or
+                external boundary. Dependency graphs often miss these
+                obstructions. A module can be statically acyclic and still send
+                an effect too early, replay an effect unsafely, lose information
+                across a boundary, or fail to compensate an external action.
               </p>
               <figure class="code-panel">
-                <figcaption>Measured zero versus unmeasured</figcaption>
-                <pre><code>some 0
-  = available measured zero
+                <figcaption>Effect-boundary expressions</figcaption>
+                <pre><code>EffectBoundaryExpr
+  = effect(e)
+  | through(boundary, e)
+  | trace(boundary, effects)
+  | replay(boundary, effects)
+  | roundtrip(boundary, e)
+  | compensated(boundary, e, compensation)
 
-none
-  = unmeasured / unavailable
-  != available measured zero</code></pre>
+law families:
+  EffectReplayLawful
+  EffectRoundtripLawful
+  EffectCompensationLawful</code></pre>
               </figure>
+              <p id="definition-7-1" class="statement">
+                <a class="statement-anchor" href="#definition-7-1">Definition 7.1.</a>
+                <code>EffectBoundaryExpr</code> is the expression language for
+                selected effect, boundary crossing, effect trace, replay,
+                roundtrip, and compensation diagrams.
+              </p>
+              <p id="theorem-7-2" class="statement">
+                <a class="statement-anchor" href="#theorem-7-2">Theorem 7.2.</a>
+                For finite selected effect-boundary cases, effect replay,
+                roundtrip, compensation, and their aggregate law family are
+                lawful exactly when the corresponding obstruction witnesses are
+                absent.
+              </p>
+              <p id="proof-7-2" class="statement-proof">
+                <a class="statement-anchor" href="#proof-7-2">Proof.</a>
+                <code>effectReplayLawful_iff_noEffectReplayObstruction</code>,
+                <code>effectRoundtripLawful_iff_noEffectRoundtripObstruction</code>,
+                <code>effectCompensationLawful_iff_noEffectCompensationObstruction</code>,
+                and <code>effectBoundaryLawFamilyLawful_iff_noEffectBoundaryLawFamilyObstruction</code>
+                use the same finite required-diagram equivalence as the
+                state-transition surface.
+              </p>
+              <p id="non-conclusion-7-3" class="statement">
+                <a class="statement-anchor" href="#non-conclusion-7-3">Non-conclusion 7.3.</a>
+                A statically clean dependency graph does not prove effect
+                lawfulness. Effect laws require their own selected semantics and
+                required diagrams.
+              </p>
             </section>
 
-            <section id="state-effects" class="article-section">
-              <h2>State transitions and effects</h2>
+            <section id="example" class="article-section">
+              <h2>Worked example</h2>
               <p>
-                The state-transition layer treats commands, events, retries,
-                compensations, snapshots, CRUD overwrites, and migrations as
-                generators, with laws expressed as relations. Event Sourcing,
-                Saga, CRUD, retry safety, snapshot consistency, and migration
-                naturality are projections of this algebra.
-              </p>
-              <p>
-                The effect law surface captures obstruction visible through
-                behavior: cross-surface effects, implicit authority, handler
-                gaps, and non-commuting effect pairs.
+                Consider a user-registration feature with a user service, a user
+                repository, and a mail service.
               </p>
               <figure class="code-panel">
-                <figcaption>Example relations</figcaption>
-                <pre><code>f ; f = f
-compensate ; action ~= id
-project(xs ++ ys) = replay(project(xs), ys)
-decode ; encode ~= id
-migrate ; project_old = project_new ; migrateEvents</code></pre>
+                <figcaption>User registration surfaces</figcaption>
+                <pre><code>dependency graph:
+  UserService -&gt; UserRepository
+  UserService -&gt; MailService
+
+state atoms:
+  User.email persisted
+  User.id unique
+
+effect atoms:
+  SendWelcomeMail
+  PublishUserCreated
+
+laws:
+  CreateUser preserves unique UserId
+  User.email is persisted before SendWelcomeMail
+  replay(UserCreated) is idempotent for the selected projection
+  compensation cancels only the selected external effect</code></pre>
               </figure>
-              <p id="definition-14-1" class="statement">
-                <a class="statement-anchor" href="#definition-14-1">Definition 14.1.</a>
-                A state-transition or effect law package is a selected
-                finite family of replay, roundtrip, compensation, projection,
-                migration, or effect relations read against a carrier and
-                observation semantics. Lawfulness is a package statement over
-                those selected relations.
-              </p>
-              <ul class="term-list">
-                <li>
-                  <strong>Event Sourcing</strong>
-                  <span>Replay and projection laws are selected finite law cases that read event histories through observation.</span>
-                </li>
-                <li>
-                  <strong>Saga</strong>
-                  <span>Compensation and weak recovery are selected law packages with explicit recovery relations.</span>
-                </li>
-                <li>
-                  <strong>CRUD</strong>
-                  <span>Overwrite behavior is read against the selected state and observation relation.</span>
-                </li>
-                <li>
-                  <strong>Circuit Breaker</strong>
-                  <span>Runtime protection is read through selected localization and fault-model assumptions.</span>
-                </li>
-                <li>
-                  <strong>Replicated Log</strong>
-                  <span>Convergence travels with selected quorum, ordering, fault model, and entries.</span>
-                </li>
-              </ul>
-            </section>
-
-            <section id="effect-examples" class="article-section">
-              <h2>Effect examples</h2>
               <p>
-                A dependency graph may show checkout through a payment
-                interface, while the effect layer reveals a hidden authority
-                surface: a non-idempotent retry command, a compensation gap, a
-                snapshot with an omitted required event, or a non-commuting
-                migration against the old projection.
+                The dependency graph can be acyclic, the adjacency matrix can be
+                nilpotent, and the spectral radius can be zero while an
+                effect-ordering obstruction remains. Sending the welcome email
+                before the user email is durably persisted is not a dependency
+                cycle. It is a state/effect diagram failure.
               </p>
-              <ul class="term-list">
-                <li>
-                  <strong>Replay law</strong>
-                  <span>Projection after appending events agrees with replaying the prior projection through those events.</span>
-                </li>
-                <li>
-                  <strong>Compensation law</strong>
-                  <span>A compensation sequence is observationally equivalent to the relevant identity behavior.</span>
-                </li>
-                <li>
-                  <strong>Migration naturality</strong>
-                  <span>Old and new projections commute with the migration relation under stated assumptions.</span>
-                </li>
-                <li>
-                  <strong>Effect obstruction</strong>
-                  <span>Handler gaps, implicit authority, or non-commuting effect pairs can be selected obstruction witnesses.</span>
-                </li>
-              </ul>
-              <p id="proposition-14-2" class="statement">
-                <a class="statement-anchor" href="#proposition-14-2">Proposition 14.2.</a>
-                State-transition and effect lawfulness can be connected to
-                selected obstruction zero for the law family and observation
-                semantics supplied to the package.
-              </p>
-              <p id="proof-14-2" class="statement-proof">
-                <a class="statement-anchor" href="#proof-14-2">Proof idea.</a>
-                The law family packages expose the selected laws and their
-                obstruction predicates in the same universe. The bridge theorem
-                states that selected family lawfulness is equivalent to zero
-                selected family obstruction. Runtime traces, hidden effects,
-                and real-code extraction travel through their own evidence
-                packages.
-              </p>
-              <p class="formal-audit-link">
-                <span>Audit trail</span>
-                <a href="../formal-anchors/#representations-and-effects">Formal Anchors Audit</a>
+              <p>
+                AAT therefore reads the system through multiple surfaces. The
+                graph detects static dependency structure. The matrix detects
+                finite walk and nilpotence structure. The signature records
+                selected axes. The state-transition algebra checks replay,
+                roundtrip, and compensation laws. The effect-boundary surface
+                checks boundary effects. No single scalar replaces this product
+                of readings.
               </p>
             </section>
 
-            <section id="representation-summary" class="article-section">
+            <section id="counterexamples" class="article-section">
+              <h2>Counterexamples and non-conclusions</h2>
+              <p id="counterexample-9-1" class="statement">
+                <a class="statement-anchor" href="#counterexample-9-1">Counterexample 9.1.</a>
+                Equal dependency graphs do not imply equal architecture objects.
+                Contract, state, semantic, evidence, and effect atoms may differ.
+              </p>
+              <p id="counterexample-9-2" class="statement">
+                <a class="statement-anchor" href="#counterexample-9-2">Counterexample 9.2.</a>
+                Reachability forgets walk count and walk length. A thin category
+                is the wrong surface for path multiplicity or weighted propagation
+                analysis.
+              </p>
+              <p id="counterexample-9-3" class="statement">
+                <a class="statement-anchor" href="#counterexample-9-3">Counterexample 9.3.</a>
+                A zero aggregate is not a proof of flatness unless the selected
+                aggregate is zero-reflecting for the selected witness universe.
+              </p>
+              <p id="counterexample-9-4" class="statement">
+                <a class="statement-anchor" href="#counterexample-9-4">Counterexample 9.4.</a>
+                An optional axis value of <code>none</code> is not a measured
+                zero. It is unmeasured and cannot discharge a covered zero claim.
+              </p>
+              <p id="counterexample-9-5" class="statement">
+                <a class="statement-anchor" href="#counterexample-9-5">Counterexample 9.5.</a>
+                Static acyclicity and matrix nilpotence do not imply effect
+                replay safety, roundtrip correctness, or compensation lawfulness.
+              </p>
+            </section>
+
+            <section id="formal-reading" class="article-section">
+              <h2>Formal reading</h2>
+              <p>
+                The Lean surface for this chapter is distributed across graph,
+                finite matrix, dependency obstruction, analytic representation,
+                signature lawfulness, and state/effect law modules.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Lean anchors</figcaption>
+                <pre><code>Formal/Arch/Core/Graph.lean
+  Walk
+  Walk.length
+  SimpleWalk
+  Path
+
+Formal/Arch/Core/Reachability.lean
+  Reachable
+  Reachable.of_walk
+  Reachable.of_simpleWalk
+  Reachable.exists_simpleWalk
+
+Formal/Arch/Core/ThinCategory.lean
+  ComponentCategory
+  componentCategory_thin
+
+Formal/Arch/Core/Layering.lean
+  StrictLayered
+  Acyclic
+  HasClosedWalk
+  WalkAcyclic
+  FinitePropagation
+  acyclic_iff_walkAcyclic
+
+Formal/Arch/Core/Decomposable.lean
+  Decomposable
+  decomposable_iff_strictLayered
+  acyclic_of_decomposable
+  finitePropagation_of_decomposable
+
+Formal/Arch/Core/Matrix.lean
+  adjacencyMatrix
+  AdjacencyNilpotent
+  indexedAdjacencyMatrix
+  spectralAdjacencyMatrix
+  spectralRadiusOfAdjacency
+  adjacencyMatrix_pos_iff
+  adjacencyNilpotent_iff_walkAcyclic
+  adjacencyNilpotent_iff_acyclic
+  spectralRadiusOfAdjacency_eq_zero_of_acyclic
+  spectralRadiusOfAdjacency_pos_of_hasClosedWalk
+
+Formal/Arch/Signature/DependencyObstruction.lean
+  ClosedWalkWitness
+  closedWalkViolationCount
+  hasClosedWalk_iff_exists_closedWalkWitness
+  acyclic_iff_no_closedWalkObstruction
+  adjacencyNilpotent_iff_no_closedWalkObstruction
+
+Formal/Arch/Signature/AnalyticRepresentation.lean
+  AnalyticRepresentation
+  AnalyticRepresentation.ZeroPreserving
+  AnalyticRepresentation.ZeroReflecting
+  AnalyticRepresentation.ObstructionPreserving
+  AnalyticRepresentation.ObstructionReflecting
+  ObstructionValuation
+  ObstructionValuation.no_obstruction_of_value_zero
+  ObstructionValuation.noSelectedObstruction_of_zeroReflectingSum
+
+Formal/Arch/Evolution/Chapter11AnalyticRepresentation.lean
+  AnalyticAxisBoundary
+  AnalyticAxisBoundary.boundaryOfOption
+  AnalyticAxisBoundary.supportsSelectedAnalyticObstruction_of_measuredNonzero
+  AnalyticAxisBoundary.not_canDischargeZeroReflectingClaim_of_unmeasured
+  architectureSignatureAnalyticRepresentation
+  architectureSignatureAnalyticRepresentation_zeroPreserving
+  architectureSignatureAnalyticRepresentation_zeroReflecting
+  architectureSignatureAnalyticRepresentation_obstructionPreserving
+  architectureSignatureAnalyticRepresentation_obstructionReflecting
+  AnalyticExtensionFormulaPackage
+  CouponAnalyticSnapshot
+
+Formal/Arch/Law/StateEffect.lean
+  StateTransitionExpr
+  EffectBoundaryExpr
+  DiagramLawful
+  diagramLawful_iff_noDiagramObstruction
+  StateReplayLawful
+  StateRoundtripLawful
+  StateCompensationLawful
+  stateTransitionLawFamilyLawful_iff_noStateTransitionLawFamilyObstruction
+  EffectReplayLawful
+  EffectRoundtripLawful
+  EffectCompensationLawful
+  effectBoundaryLawFamilyLawful_iff_noEffectBoundaryLawFamilyObstruction</code></pre>
+              </figure>
+              <p id="formal-status-10-1" class="statement">
+                <a class="statement-anchor" href="#formal-status-10-1">Formal status 10.1.</a>
+                Walks, simple walks, reachability, the thin component category,
+                strict layering, acyclicity, finite propagation, finite adjacency
+                matrices, adjacency nilpotence, spectral adjacency readings,
+                closed-walk obstruction witnesses, analytic representation,
+                obstruction valuation, analytic axis boundaries, state-transition
+                expressions, effect-boundary expressions, and finite diagram law
+                families are defined in Lean.
+              </p>
+              <p id="formal-status-10-2" class="statement">
+                <a class="statement-anchor" href="#formal-status-10-2">Formal status 10.2.</a>
+                The key theorems are proved for their selected premises:
+                component category thinness, walk/reachability bridges,
+                acyclicity and walk acyclicity equivalence, adjacency nilpotence
+                equivalence, spectral zero/positive readings, closed-walk
+                obstruction equivalence, analytic preservation/reflection
+                accessors, unmeasured-axis non-certification, and finite
+                state/effect diagram lawfulness equivalences.
+              </p>
+            </section>
+
+            <section id="chapter-summary" class="article-section">
               <h2>Chapter summary</h2>
               <p>
-                Representations let AAT move from algebraic architecture
-                objects into graphs, matrices, signature axes, and
-                state-transition law families. Preservation carries selected
-                structure forward; reflection reads represented evidence back
-                through the needed assumptions.
+                Representations make AAT executable. Graphs expose static
+                dependency structure, categories expose reachability, walks expose
+                routes, matrices expose finite walk and spectral readings,
+                signatures expose selected axes, valuations expose selected
+                numerical witnesses, and effect diagrams expose dynamic boundary
+                laws.
               </p>
               <p>
-                The effect layer extends the same discipline to commands,
-                events, replay, compensation, projection, and migration. A
-                static dependency view can therefore be connected to semantic
-                and effect readings while each representation keeps its own
-                assumptions.
+                The representation boundary is the point. A graph is not the
+                whole architecture, a matrix is not a semantic proof, an aggregate
+                is not a signature, and an unmeasured axis is not zero evidence.
+                Computation is trustworthy only when its preservation and
+                reflection assumptions are visible.
               </p>
               <h3>Terms</h3>
               <dl class="term-list definition-list">
                 <div>
-                  <dt>representation</dt>
-                  <dd>A map from selected structural evidence into another domain such as a graph, matrix, signature axis, or state-transition law family.</dd>
+                  <dt>Graph representation</dt>
+                  <dd>The selected dependency projection of an architecture object, with non-dependency atoms kept on other surfaces.</dd>
                 </div>
                 <div>
-                  <dt>preserving direction</dt>
-                  <dd>A structural zero or obstruction is sent into a represented zero or obstruction.</dd>
+                  <dt>Thin component category</dt>
+                  <dd>The reachability category that forgets path count and walk length.</dd>
                 </div>
                 <div>
-                  <dt>reflecting direction</dt>
-                  <dd>A represented zero or obstruction is read back as structural through explicit assumptions.</dd>
+                  <dt>Adjacency nilpotence</dt>
+                  <dd>Eventual zero of finite adjacency matrix powers over a selected component universe.</dd>
                 </div>
                 <div>
-                  <dt>measured zero</dt>
-                  <dd>The selected axis was measured and its in-scope value is zero.</dd>
+                  <dt>AnalyticRepresentation</dt>
+                  <dd>A map from architecture states to an analytic domain with explicit zero, obstruction, coverage, completeness, and non-conclusion fields.</dd>
                 </div>
                 <div>
-                  <dt>unmeasured axis</dt>
-                  <dd>The axis has its own measurement status and is distinct from measured zero.</dd>
+                  <dt>ObstructionValuation</dt>
+                  <dd>A selected numerical reading of selected obstruction witnesses.</dd>
                 </div>
                 <div>
-                  <dt>state-transition algebra</dt>
-                  <dd>The command, event, replay, compensation, projection, and migration laws read as selected finite law cases.</dd>
-                </div>
-                <div>
-                  <dt>effect law surface</dt>
-                  <dd>The selected law surface for effects that enrich the static dependency graph.</dd>
+                  <dt>Effect law surface</dt>
+                  <dd>A required-diagram surface for replay, roundtrip, and compensation laws across selected effect boundaries.</dd>
                 </div>
               </dl>
             </section>
 
             <nav class="page-nav" aria-label="Reading sequence">
-              <a href="../repair-and-dynamics/">
+              <a class="page-nav-previous" href="../dynamics-and-geometry/">
                 <span>Previous</span>
-                <strong>Repair and Dynamics</strong>
+                <strong>Dynamics and Geometry</strong>
               </a>
-              <a href="../canonical-examples-and-readings/">
+              <a class="page-nav-next" href="../canonical-examples-and-readings/">
                 <span>Next</span>
-                <strong>Canonical Examples and Readings</strong>
+                <strong>Examples and Readings</strong>
               </a>
             </nav>
           </div>

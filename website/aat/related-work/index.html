@@ -3,21 +3,17 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta
-      name="description"
-      content="AAT related work and novelty: how AAT combines architecture description, review, metrics, graph analysis, formal methods, and category models into an architecture claim grammar."
-    >
-    <title>AAT Related Work and Novelty</title>
-    <link rel="canonical" href="https://iroha1203.dev/aat/related-work/">
+    <meta name="description" content="Related work and novelty for Algebraic Architecture Theory: architecture description, ATAM, metrics, graph analysis, formal methods, and categorical models read through AAT's atom, law, obstruction, signature, and operation grammar.">
+    <title>Related Work</title>
     <meta property="og:site_name" content="AAT / SFT Research Notes">
     <meta property="og:type" content="article">
-    <meta property="og:title" content="AAT Related Work and Novelty">
-    <meta property="og:description" content="AAT related work and novelty: how AAT combines architecture description, review, metrics, graph analysis, formal methods, and category models into an architecture claim grammar.">
+    <meta property="og:title" content="Related Work">
+    <meta property="og:description" content="Related work and novelty for Algebraic Architecture Theory: architecture description, ATAM, metrics, graph analysis, formal methods, and categorical models read through AAT's atom, law, obstruction, signature, and operation grammar.">
     <meta property="og:url" content="https://iroha1203.dev/aat/related-work/">
     <meta property="og:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="AAT Related Work and Novelty">
-    <meta name="twitter:description" content="AAT related work and novelty: how AAT combines architecture description, review, metrics, graph analysis, formal methods, and category models into an architecture claim grammar.">
+    <meta name="twitter:title" content="Related Work">
+    <meta name="twitter:description" content="Related work and novelty for Algebraic Architecture Theory: architecture description, ATAM, metrics, graph analysis, formal methods, and categorical models read through AAT's atom, law, obstruction, signature, and operation grammar.">
     <meta name="twitter:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
     <link rel="icon" href="../../assets/favicon-32.png" sizes="32x32" type="image/png">
     <link rel="icon" href="../../assets/favicon-16.png" sizes="16x16" type="image/png">
@@ -25,10 +21,7 @@
     <link rel="alternate" hreflang="x-default" href="./">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=Inter:wght@400;500;600;700&amp;family=Source+Serif+4:opsz,wght@8..60,400..700&amp;display=swap"
-      rel="stylesheet"
-    >
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=Inter:wght@400;500;600;700&amp;family=Source+Serif+4:opsz,wght@8..60,400..700&amp;display=swap" rel="stylesheet">
     <script>
       try {
         const theme = localStorage.getItem("aat-sft-theme");
@@ -48,11 +41,9 @@
 
       gtag('config', 'G-YQMFH2FG9V');
     </script>
-
   </head>
   <body>
     <a class="skip-link" href="#main">Skip to content</a>
-
     <header class="site-header" data-site-header>
       <div class="site-shell header-inner">
         <a class="brand" href="../../" aria-label="AAT SFT home">
@@ -79,467 +70,362 @@
             <span>Related Work</span>
           </nav>
           <p class="eyebrow">Appendix</p>
-          <h1>Related Work <br>and Novelty</h1>
+          <h1>Related Work</h1>
           <p class="lede">
-            Related work becomes the positioning map for AAT's contribution.
-            Architecture description, review, metrics, graph analysis, formal
-            methods, and categorical models feed into an architecture claim
-            grammar of operations, invariants, witnesses, signatures, theorem
-            boundaries, and evidence scope.
+            AAT is positioned by the package it adds: atoms as primitive facts,
+            architecture objects as finite presentations, laws as selected
+            invariants, obstruction circuits as minimal bad molecules,
+            signatures as multi-axis readings, and operations as theorem-bearing
+            changes.
           </p>
         </div>
       </section>
 
       <section class="section-band">
         <div class="site-shell article-layout">
-          <aside class="article-sidebar" aria-label="Local navigation">
+          <aside class="article-sidebar" aria-label="AAT page navigation">
             <nav class="toc-panel" aria-labelledby="toc-title">
               <h2 id="toc-title">On this page</h2>
               <ol>
-                <li><a href="#novelty-boundary">Contribution map</a></li>
-                <li><a href="#comparison-contract">Contribution pattern</a></li>
-                <li><a href="#iso-42010">ISO 42010</a></li>
-                <li><a href="#atam">ATAM</a></li>
-                <li><a href="#metrics">Architecture metrics</a></li>
-                <li><a href="#graph-analysis">Graph analysis</a></li>
+                <li><a href="#novelty">Novelty claim</a></li>
+                <li><a href="#contribution">Contribution</a></li>
+                <li><a href="#comparison">Comparison table</a></li>
+                <li><a href="#architecture-description">Architecture description</a></li>
+                <li><a href="#review-methods">Review methods</a></li>
+                <li><a href="#metrics-graphs">Metrics and graphs</a></li>
                 <li><a href="#formal-methods">Formal methods</a></li>
-                <li><a href="#category-models">Category-theoretic models</a></li>
-                <li><a href="#novelty-claim">Novelty claim</a></li>
+                <li><a href="#category-models">Category models</a></li>
+                <li><a href="#reading-rules">Reading rules</a></li>
               </ol>
             </nav>
             <div class="source-panel" data-sidebar-open="true">
               <h2>AAT chapters</h2>
               <ul>
-                <li>
-                  <a href="../">
-                    AAT overview
-                  </a>
-                </li>
-                <li>
-                  <a href="../foundations/">
-                    Foundations
-                  </a>
-                </li>
-                <li>
-                  <a href="../laws-and-witnesses/">
-                    Laws and Witnesses
-                  </a>
-                </li>
-                <li>
-                  <a href="../architecture-signature/">
-                    Architecture Signature
-                  </a>
-                </li>
-                <li>
-                  <a href="../local-law-packages/">
-                    Local Law Packages
-                  </a>
-                </li>
-                <li>
-                  <a href="../calculus-and-extensions/">
-                    Calculus and Extensions
-                  </a>
-                </li>
-                <li>
-                  <a href="../repair-and-dynamics/">
-                    Repair and Dynamics
-                  </a>
-                </li>
-                <li>
-                  <a href="../representations-and-effects/">
-                    Representations and Effects
-                  </a>
-                </li>
-                <li>
-                  <a href="../canonical-examples-and-readings/">
-                    Canonical Examples and Readings
-                  </a>
-                </li>
-                <li>
-                  <a href="../related-work/" aria-current="page">
-                    Related Work and Novelty
-                  </a>
-                </li>
-                <li>
-                  <a href="../quantifiable-axes/">
-                    Quantifiable Axes
-                  </a>
-                </li>
-                <li>
-                  <a href="../status/">
-                    Status
-                  </a>
-                </li>
-                <li>
-                  <a href="../formal-anchors/">
-                    Formal Anchors Audit
-                  </a>
-                </li>
+                <li><a href="../">Overview</a></li>
+                <li><a href="../atoms/">Atoms</a></li>
+                <li><a href="../architecture-objects/">Architecture Objects</a></li>
+                <li><a href="../laws/">Design Laws</a></li>
+                <li><a href="../obstruction-circuits/">Obstruction Circuits</a></li>
+                <li><a href="../zero-curvature/">Zero Curvature</a></li>
+                <li><a href="../architecture-signature/">Architecture Signature</a></li>
+                <li><a href="../design-principle-layers/">Design Principle Layers</a></li>
+                <li><a href="../operations-and-calculus/">Operations and Calculus</a></li>
+                <li><a href="../dynamics-and-geometry/">Dynamics and Geometry</a></li>
+                <li><a href="../representations-and-effects/">Representations and Effects</a></li>
+                <li><a href="../canonical-examples-and-readings/">Examples and Readings</a></li>
+                <li><a href="./" aria-current="page">Related Work</a></li>
+                <li><a href="../status/">Status</a></li>
+                <li><a href="../formal-anchors/">Formal Anchors</a></li>
               </ul>
             </div>
           </aside>
 
           <div class="article-main">
-            <section id="novelty-boundary" class="article-section">
-              <p class="research-question">
-                Can existing architecture methods be organized into one
-                architecture claim grammar?
-              </p>
-              <h2>Contribution map</h2>
+            <section id="novelty" class="article-section">
+              <h2>Novelty claim</h2>
               <p>
-                AAT is built from familiar neighboring tools, but it organizes
-                them around a specific architecture question: which operation
-                preserves which invariant, under which evidence boundary, and
-                with which obstruction signature?
+                AAT's distinctive contribution is the combination of atom root,
+                law-relative obstruction circuit, multi-axis architecture
+                signature, operation calculus, path geometry, analytic
+                representation, and Lean status discipline. The combination turns
+                architecture reasoning into claims whose evidence, scope, and
+                formal status can be inspected.
               </p>
-              <figure class="code-panel">
-                <figcaption>AAT contribution</figcaption>
-                <pre><code>AAT contribution
-  = architecture object
-  + architecture operation
-  + invariant family
-  + obstruction witness universe
-  + multi-axis ArchitectureSignature
-  + theorem boundary
-  + explicit scope</code></pre>
-              </figure>
-              <p id="positioning-a-1" class="statement">
-                <a class="statement-anchor" href="#positioning-a-1">Positioning A.1.</a>
-                AAT's novelty is the architecture claim grammar that ties an
-                architecture operation to invariant families, obstruction
-                witnesses, signature axes, theorem boundaries, and
-                explicit scope. The neighboring methods supply inputs,
-                representations, or proof techniques; AAT supplies the
-                architecture-specific package that reads them together.
+              <p id="novelty-1-1" class="statement">
+                <a class="statement-anchor" href="#novelty-1-1">Novelty 1.1.</a>
+                The central novelty is compositional: AAT joins primitive
+                architectural facts, finite presentations, selected law
+                universes, law-relative minimal bad molecules, multi-axis
+                signatures, operation packages, path geometry, and formal status
+                into one reusable architecture reading discipline.
               </p>
             </section>
 
-            <section id="comparison-contract" class="article-section">
-              <h2>Contribution pattern</h2>
+            <section id="contribution" class="article-section">
+              <h2>Contribution</h2>
+              <p>
+                AAT organizes neighboring architecture methods into a single
+                claim grammar. The grammar asks which atom family is selected,
+                which object is formed, which law family is active, which
+                obstruction witness is minimal, which signature axes carry the
+                reading, and which operation package licenses a change.
+              </p>
+              <figure class="code-panel">
+                <figcaption>AAT package</figcaption>
+                <pre><code>architecture claim
+  = atom root
+  + selected object
+  + law universe
+  + obstruction witness family
+  + multi-axis signature
+  + operation / repair / synthesis package
+  + formal status</code></pre>
+              </figure>
+            </section>
+
+            <section id="comparison" class="article-section">
+              <h2>Comparison table</h2>
               <div class="article-table">
                 <table>
-                  <caption>How to read an adjacent-work comparison</caption>
                   <thead>
                     <tr>
-                      <th>Question</th>
+                      <th>Neighbor</th>
+                      <th>Primary strength</th>
                       <th>AAT reading</th>
-                      <th>Contribution</th>
                     </tr>
                   </thead>
                   <tbody>
                     <tr>
-                      <td>What does the neighbor supply?</td>
-                      <td>A notation, review process, metric, graph fact, model, or proof technique.</td>
-                      <td>AAT keeps the source concept visible and imports it with an explicit role.</td>
+                      <td>Architecture description</td>
+                      <td>Viewpoints, stakeholders, concerns, correspondence rules.</td>
+                      <td>Selected presentations and law universes with explicit judgement boundaries.</td>
                     </tr>
                     <tr>
-                      <td>What does AAT import?</td>
-                      <td>A selected evidence boundary, law family, witness universe, axis, or representation.</td>
-                      <td>The import remains relative to the selected universe and assumptions.</td>
+                      <td>ATAM-style review</td>
+                      <td>Scenario-driven tradeoff and risk discovery.</td>
+                      <td>Scenario evidence becomes selected witness support and signature axes.</td>
                     </tr>
                     <tr>
-                      <td>What does AAT add?</td>
-                      <td>The theorem boundary, obstruction reading, signature status, and explicit scope.</td>
-                      <td>The result is a citable architecture claim package.</td>
+                      <td>Metrics</td>
+                      <td>Comparable numerical surfaces.</td>
+                      <td>Metrics become valuations with preserving or reflecting assumptions.</td>
+                    </tr>
+                    <tr>
+                      <td>Graph analysis</td>
+                      <td>Reachability, cycles, cut sets, centrality, walk structure.</td>
+                      <td>Graphs become one computable representation among semantic and effect surfaces.</td>
+                    </tr>
+                    <tr>
+                      <td>Formal methods</td>
+                      <td>Mechanized definitions and theorem checking.</td>
+                      <td>Lean packages carry the formal subset of the architecture claim grammar.</td>
+                    </tr>
+                    <tr>
+                      <td>Category-theoretic models</td>
+                      <td>Composition, functoriality, commutative diagrams.</td>
+                      <td>AAT uses generated path homotopy, diagram filling, and selected observation invariance.</td>
                     </tr>
                   </tbody>
                 </table>
               </div>
-              <p id="non-replacement-a-2" class="statement">
-                <a class="statement-anchor" href="#non-replacement-a-2">Positioning A.2.</a>
-                AAT is a claim discipline for architecture reasoning. It uses
-                architecture descriptions, ATAM-style scenarios, metrics, graph
-                analyses, theorem proving, and categorical vocabulary as inputs
-                for invariant, witness, signature, and theorem-boundary
-                packages.
-              </p>
             </section>
 
-            <section id="iso-42010" class="article-section">
-              <h2>ISO 42010</h2>
+            <section id="architecture-description" class="article-section">
+              <h2>Architecture description</h2>
               <p>
-                ISO/IEC/IEEE 42010 is the natural neighbor for architecture
-                description: stakeholders, concerns, viewpoints, views, and
-                model kinds organize how an architecture is documented. AAT
-                takes that viewpoint discipline and turns it into a reasoning
-                surface for selected architecture claims.
+                Architecture description standards provide the reader-facing
+                vocabulary of viewpoints and concerns. AAT gives that vocabulary
+                theorem-shaped carriers: a selected presentation, an architecture
+                object, laws over that object, and a boundary around the claim.
               </p>
-              <p>
-                AAT asks a different question. Given a selected architecture
-                object and observation boundary, which invariant family is
-                required, which witness universe can expose a violation, which
-                signature coordinates were measured, and which theorem boundary
-                licenses the result?
+              <p id="position-3-1" class="statement">
+                <a class="statement-anchor" href="#position-3-1">Position 3.1.</a>
+                A viewpoint can be read as a selected projection; a concern can
+                be read as a law family; a correspondence rule can be read as an
+                invariant or diagram that a theorem package may preserve.
               </p>
               <div class="article-table">
                 <table>
                   <thead>
                     <tr>
-                      <th>Neighbor concept</th>
-                      <th>AAT reading</th>
-                      <th>AAT contribution</th>
+                      <th>Description concept</th>
+                      <th>AAT carrier</th>
+                      <th>Reading</th>
                     </tr>
                   </thead>
                   <tbody>
                     <tr>
-                      <td>Viewpoint / view</td>
-                      <td>Selected observation context and evidence boundary.</td>
-                      <td>A theorem or report states the invariant reading for that selected view.</td>
-                    </tr>
-                    <tr>
-                      <td>Model kind</td>
-                      <td>Carrier, graph, diagram, metric, or report shape used by a theorem or tool claim.</td>
-                      <td>Different model kinds require explicit bridge claims.</td>
+                      <td>View</td>
+                      <td><code>SelectedPresentation</code></td>
+                      <td>The finite slice where a judgement is made.</td>
                     </tr>
                     <tr>
                       <td>Concern</td>
-                      <td>Invariant family, required law, or signature axis.</td>
-                      <td>The concern becomes measurable when paired with an axis and evidence boundary.</td>
+                      <td><code>DesignLaw</code> / invariant family</td>
+                      <td>The law package that gives the concern a theorem shape.</td>
+                    </tr>
+                    <tr>
+                      <td>Correspondence</td>
+                      <td>Diagram / bridge theorem</td>
+                      <td>The relation whose commutation, preservation, or reflection is checked.</td>
                     </tr>
                   </tbody>
                 </table>
               </div>
             </section>
 
-            <section id="atam" class="article-section">
-              <h2>ATAM</h2>
+            <section id="review-methods" class="article-section">
+              <h2>Review methods</h2>
               <p>
-                ATAM and related scenario-based methods organize quality
-                attribute reasoning around scenarios, risks, sensitivity
-                points, and tradeoffs. AAT supplies a formal claim discipline
-                for the parts of a review that can be stated as law packages,
-                witnesses, signature axes, and theorem packages.
+                Review methods such as ATAM make risk concrete through scenarios
+                and tradeoffs. AAT preserves that concreteness by turning a
+                scenario into a witness family and a signature axis. The result
+                is a review claim that names its law universe and its evidence.
               </p>
-              <ul class="status-list">
-                <li>
-                  <strong>Quality attribute scenario</strong>
-                  <span>AAT can read a scenario as a selected observation context plus required invariant family when the evidence is precise enough.</span>
-                </li>
-                <li>
-                  <strong>Risk and tradeoff</strong>
-                  <span>AAT represents selected risks as obstruction witnesses or nonzero signature axes; tradeoffs become axis-local movements across a signature.</span>
-                </li>
-                <li>
-                  <strong>Review conclusion</strong>
-                  <span>AAT attaches a theorem boundary or artifact boundary to the conclusion.</span>
-                </li>
-              </ul>
-              <p>
-                This makes AAT complementary to review. A review can identify
-                a risk, sensitivity point, or tradeoff; AAT asks whether that
-                risk has a selected witness, whether the corresponding
-                signature axis was measured, and whether a theorem package or
-                report boundary licenses the proposed conclusion. The result
-                is a review finding that can be read as an architecture claim
-                package.
+              <p id="position-4-1" class="statement">
+                <a class="statement-anchor" href="#position-4-1">Position 4.1.</a>
+                A scenario is an input to AAT when it selects an operation path,
+                an invariant, a witness rule, or a diagram whose filling status
+                can be inspected.
+              </p>
+              <p id="position-4-2" class="statement">
+                <a class="statement-anchor" href="#position-4-2">Position 4.2.</a>
+                A review finding becomes theorem-shaped when it can name its
+                selected object, law universe, witness family, measurement axis,
+                and status label. The review still supplies judgement and
+                prioritization; AAT supplies the claim grammar.
               </p>
             </section>
 
-            <section id="metrics" class="article-section">
-              <h2>Architecture metrics</h2>
+            <section id="metrics-graphs" class="article-section">
+              <h2>Metrics and graphs</h2>
               <p>
-                Architecture metrics often summarize dependency, coupling,
-                complexity, volatility, or risk. <code>ArchitectureSignature</code>
-                reads quality as a multi-axis diagnostic whose coordinates
-                carry measurement status, evidence, universe, and
-                scope.
+                Metrics and graph analysis become computable surfaces inside AAT.
+                Cycle count, violation count, nilpotence, spectral radius,
+                curvature value, and aggregate score all belong to a selected
+                valuation or representation. Their proof strength depends on the
+                preserving and reflecting theorems attached to that surface.
+              </p>
+              <p id="position-5-1" class="statement">
+                <a class="statement-anchor" href="#position-5-1">Position 5.1.</a>
+                The same dependency graph can support a graph reading, matrix
+                reading, signature reading, and obstruction reading. AAT keeps
+                those readings aligned by making their bridges explicit.
               </p>
               <figure class="code-panel">
-                <figcaption>Measurement status boundary</figcaption>
-                <pre><code>MeasurementStatus
-  = measured_zero
-  + measured_nonzero(value)
-  + unmeasured
-  + out_of_scope
-  + private_unavailable
-  + not_applicable</code></pre>
+                <figcaption>Metric translation</figcaption>
+                <pre><code>metric value
+  -&gt; selected axis value
+  -&gt; measurement status
+  -&gt; preserving / reflecting theorem
+  -&gt; architecture conclusion scope</code></pre>
               </figure>
-              <p id="signature-boundary-a-3" class="statement">
-                <a class="statement-anchor" href="#signature-boundary-a-3">Signature boundary A.3.</a>
-                Signature comparison is meaningful on selected axes where both
-                sides are measured and an axis-local order has been declared.
-                The signature keeps static split, semantic commutativity,
-                runtime exposure, projection exactness, and empirical outcomes
-                available as separate coordinates.
-              </p>
-            </section>
-
-            <section id="graph-analysis" class="article-section">
-              <h2>Graph analysis</h2>
-              <p>
-                AAT reuses graph-level dependency analysis for selected static
-                and runtime relations: reachability, layering, acyclicity,
-                paths, adjacency-style representations, and finite metric
-                calculations. The distinctive move is the bridge from graph
-                fact to architecture claim: a selected graph fact becomes
-                evidence for a named invariant, witness, or signature axis.
-              </p>
-              <ul class="term-list">
-                <li>
-                  <strong>Reused</strong>
-                  <span>Directed dependency graphs, finite component universes, reachability, witness counts, path and matrix-style representations.</span>
-                </li>
-                <li>
-                  <strong>Added by AAT</strong>
-                  <span>Law families, obstruction witnesses, signature status, and theorem boundaries that state which graph fact supports which architecture claim.</span>
-                </li>
-                <li>
-                  <strong>Result</strong>
-                  <span>Graph analysis becomes theorem-bound evidence for selected architecture readings.</span>
-                </li>
-              </ul>
-              <p class="formal-audit-link">
-                <span>Audit trail</span>
-                <a href="../formal-anchors/#related-work">Formal Anchors Audit</a>
+              <p id="position-5-2" class="statement">
+                <a class="statement-anchor" href="#position-5-2">Position 5.2.</a>
+                Metrics become strongest when they are read as valuations:
+                nonzero values support selected obstruction readings, measured
+                zero supports selected absence only through zero-reflection
+                assumptions, and aggregate values remain tied to their selected
+                axes.
               </p>
             </section>
 
             <section id="formal-methods" class="article-section">
               <h2>Formal methods</h2>
               <p>
-                Formal methods, model checking, type systems, theorem proving,
-                and refinement techniques provide ways to verify precise
-                specifications. AAT uses theorem proving as an anchor for
-                selected architecture statements and connects checked
-                declarations to public theorem boundaries.
+                Lean gives AAT a checked core for definitions, bridges,
+                equivalences, finite examples, and counterexamples. The formal
+                subset is deliberately stated through status labels: proved,
+                defined only, future proof obligation, and empirical hypothesis.
               </p>
-              <p>
-                The current Lean role is inspectable formal anchoring:
-                selected finite static lawfulness, selected required witnesses,
-                and selected required signature axes under explicit coverage
-                and exactness assumptions. Runtime, semantic, and empirical
-                readings use separate packages when those axes enter the claim.
+              <p id="position-6-1" class="statement">
+                <a class="statement-anchor" href="#position-6-1">Position 6.1.</a>
+                AAT's formal contribution is strongest where a theorem package
+                connects a selected architecture structure to a selected
+                signature, lawfulness, zero-curvature, path, representation, or
+                counterexample reading.
               </p>
-              <p id="formal-anchor-a-4" class="statement">
-                <a class="statement-anchor" href="#formal-anchor-a-4">Formal anchor A.4.</a>
-                The finite static structural core gives AAT a citable formal
-                anchor for selected lawfulness, required signature axes,
-                finite universe, coverage, and exactness assumptions. Runtime,
-                semantic, and empirical readings are organized separately.
-              </p>
-              <p class="formal-audit-link">
-                <span>Audit trail</span>
-                <a href="../formal-anchors/#related-work">Formal Anchors Audit</a>
-              </p>
+              <div class="article-table">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Formal-methods pattern</th>
+                      <th>AAT use</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>Definition</td>
+                      <td>Atom, molecule, law, witness, signature axis, operation, path, representation.</td>
+                    </tr>
+                    <tr>
+                      <td>Soundness theorem</td>
+                      <td>Selected witness, repair, synthesis, path, or representation conclusion.</td>
+                    </tr>
+                    <tr>
+                      <td>Counterexample theorem</td>
+                      <td>Static/semantic separation, endpoint-only trajectory reading, design-pattern overreading.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             </section>
 
             <section id="category-models" class="article-section">
-              <h2>Category-theoretic models</h2>
+              <h2>Category models</h2>
               <p>
-                AAT uses categorical vocabulary where it clarifies structure,
-                composition, projection, lifting, and obstruction. Its current
-                <code>ComponentCategory</code> is intentionally
-                thin: it forgets path counts and walk lengths.
+                Categorical vocabulary is most useful in AAT when it is tied to
+                concrete architectural evidence: reachability as a thin category,
+                paths as endpoint-indexed sequences, homotopy as a generated
+                relation, and diagram filling as selected proof of commutation.
               </p>
-              <p>
-                Quantitative path information belongs to <code>Walk</code>, <code>Path</code>,
-                adjacency matrices, finite metric representations, or future
-                free-category constructions. This separation keeps categorical
-                structure from swallowing measurement semantics.
+              <p id="position-7-1" class="statement">
+                <a class="statement-anchor" href="#position-7-1">Position 7.1.</a>
+                The categorical reading remains architecture-facing: it explains
+                when two change paths can be identified, which square can be
+                filled, and which selected observation is preserved.
               </p>
-              <div class="article-table">
-                <table>
-                  <caption>Category vocabulary boundary</caption>
-                  <thead>
-                    <tr>
-                      <th>Concept</th>
-                      <th>Current AAT use</th>
-                      <th>AAT separation</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td><code>ComponentCategory</code></td>
-                      <td>Thin reachability category over selected components.</td>
-                      <td>Path count, walk length, and weighted propagation live in metric or path representations.</td>
-                    </tr>
-                    <tr>
-                      <td>Projection / lifting</td>
-                      <td>Explicit bridge between concrete and abstract architecture objects or operations.</td>
-                      <td>Exactness is supplied by the selected bridge package.</td>
-                    </tr>
-                    <tr>
-                      <td>Analytic representation</td>
-                      <td>Structure-preserving and reflecting directions under coverage and completeness premises.</td>
-                      <td>Semantic completeness is stated as a separate premise or theorem.</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
+              <p id="position-7-2" class="statement">
+                <a class="statement-anchor" href="#position-7-2">Position 7.2.</a>
+                Thin reachability, endpoint-indexed paths, generated homotopy,
+                and diagram filling give four different levels of structure.
+                AAT keeps the levels separate so path count, route identity,
+                observation equality, and filler evidence each have the right
+                carrier.
+              </p>
             </section>
 
-            <section id="novelty-claim" class="article-section">
-              <h2>Novelty claim</h2>
-              <p>
-                AAT's novelty is the architecture-reasoning discipline
-                that packages architecture views, scenario review, dependency
-                graphs, software metrics, theorem proving, and category theory
-                into one claim grammar. In that grammar, design principles are
-                operations that preserve or improve invariant families, failures
-                are explicit obstruction
-                witnesses, and quality is read as a multi-axis signature under
-                theorem boundaries.
-              </p>
-              <p id="novelty-boundary-a-5" class="statement">
-                <a class="statement-anchor" href="#novelty-boundary-a-5">Novelty claim A.5.</a>
-                AAT contributes an architecture-specific packaging of
-                operation, invariant, obstruction witness, signature axis, and
-                theorem boundary. Its novelty is the disciplined composition of
-                these pieces into a reusable reading discipline for software
-                architecture.
-              </p>
+            <section id="reading-rules" class="article-section">
+              <h2>Reading rules</h2>
               <div class="article-table">
                 <table>
                   <thead>
                     <tr>
-                      <th>Area</th>
-                      <th>What AAT reuses</th>
-                      <th>What AAT contributes</th>
+                      <th>Adjacent method gives</th>
+                      <th>AAT asks</th>
+                      <th>AAT produces</th>
                     </tr>
                   </thead>
                   <tbody>
                     <tr>
-                      <td>Architecture description</td>
-                      <td>Views, model boundaries, and concern separation.</td>
-                      <td>Theorem boundary, witness universe, and signature status attached to claims.</td>
+                      <td>A view or model</td>
+                      <td>Which selected presentation and object?</td>
+                      <td>A bounded architecture judgement.</td>
                     </tr>
                     <tr>
-                      <td>Architecture evaluation</td>
-                      <td>Scenario, risk, and tradeoff vocabulary.</td>
-                      <td>Bounded law and obstruction readings for review conclusions.</td>
+                      <td>A scenario or risk</td>
+                      <td>Which witness family and law axis?</td>
+                      <td>A signature reading and theorem boundary.</td>
                     </tr>
                     <tr>
-                      <td>Metrics</td>
-                      <td>Finite measurements and axis-specific readings.</td>
-                      <td>Multi-axis ArchitectureSignature with measured, unmeasured, out-of-scope, and scoped readings.</td>
+                      <td>A metric or graph fact</td>
+                      <td>Which preservation or reflection theorem?</td>
+                      <td>A computable representation claim.</td>
                     </tr>
                     <tr>
-                      <td>Graphs and formal methods</td>
-                      <td>Dependency graphs, reachability, theorem proving, and bridge lemmas.</td>
-                      <td>Architecture-specific packaging of invariant preservation, witnesses, and proof boundaries.</td>
+                      <td>A formal specification</td>
+                      <td>Which architecture package does it discharge?</td>
+                      <td>A Lean status label and formal anchor.</td>
                     </tr>
                   </tbody>
                 </table>
               </div>
-              <p id="non-conclusion-a-6" class="statement">
-                <a class="statement-anchor" href="#non-conclusion-a-6">Research program A.6.</a>
-                AAT turns adjacent architecture methods into a common algebraic
-                reading surface. Description supplies selected views, review
-                supplies scenarios and risks, metrics supply measured axes,
-                graph analysis supplies finite structural evidence, formal
-                methods supply checked anchors, and categorical models supply
-                composition and lifting vocabulary.
+              <p>
+                This is the reason AAT reads as a synthesis rather than a
+                replacement. The neighboring method supplies the surface; AAT
+                supplies the architecture-specific package that makes the claim
+                inspectable.
               </p>
             </section>
 
             <nav class="page-nav" aria-label="Reading sequence">
-              <a href="../canonical-examples-and-readings/">
+              <a class="page-nav-previous" href="../canonical-examples-and-readings/">
                 <span>Previous</span>
-                <strong>Canonical Examples and Readings</strong>
+                <strong>Examples and Readings</strong>
               </a>
-              <a href="../quantifiable-axes/">
+              <a class="page-nav-next" href="../status/">
                 <span>Next</span>
-                <strong>Quantifiable Axes</strong>
+                <strong>Status</strong>
               </a>
             </nav>
           </div>
@@ -550,9 +436,7 @@
     <footer class="site-footer">
       <div class="site-shell footer-inner">
         <p>&copy; <span data-current-year>2026</span> Hiroyuki Nakahata.</p>
-        <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2" target="_blank" rel="noopener noreferrer">
-          Repository
-        </a>
+        <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2" target="_blank" rel="noopener noreferrer">Repository</a>
       </div>
     </footer>
   </body>
