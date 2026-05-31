@@ -1,6 +1,24 @@
 # ArchSig Output Reading Guide
 
-Use this reference when deciding what to read first in an `archsig-analysis-packet-v0`.
+Use this reference when deciding what to read first in an
+`archsig-analysis-packet-v0` or `archsig-analysis-summary.json`.
+
+## Analysis Summary Reading Order
+
+When `analysis-summary` is available, read it before raw packet details:
+
+1. `verdict`: the measured conclusion for the supplied ArchMap + LawPolicy.
+2. `qualityMeasurement`: counts for nonzero axes, hotspots, recurrent pressure,
+   unfilled architectural holes, nonzero holonomy loops, and coverage gaps.
+3. `actionQueue`: the bounded review queue derived from hotspots, holes,
+   nonzero holonomy, nonzero axes, and workflow pressure.
+4. `measurementBasis`: input refs, profile refs, validation results, coverage
+   gaps, and measured boundaries.
+5. `metadata.nonConclusions`: claim-boundary metadata. Keep it available, but
+   do not lead the user-facing diagnosis with it.
+
+The report posture is: "for this input model, these conclusions were measured."
+Do not turn unmeasured claims into caveats in the main diagnosis.
 
 ## Priority Fields
 
@@ -11,8 +29,8 @@ Use this reference when deciding what to read first in an `archsig-analysis-pack
 | `signatureAxes[]` | Gives axis-local support refs, missing evidence, exactness assumptions, and excluded readings. |
 | `workflowRiskReadings[]` | Prioritizes molecule-local review pressure such as permission, LLM mediation, state/effect reconciliation, and domain cohesion. |
 | `spectralAnalysisReadings[]` | Shows dominant rows/columns and coupling surfaces across workflows, molecules, obstructions, and operation deltas. |
-| `architectureSpectrumReport` | Primary ACTS codebase-inspection surface: top hotspots, bounded mode data, witness clusters, recurrent obstruction entries, coverage gaps, measured boundary, review focus, and report non-conclusions. |
-| `architectureHomotopyReport` | Primary Homotopy / Holonomy / Stokes surface: filled loops, unfilled loops, nonzero holonomy loops, local curvature cells, bounded aggregate readings, coverage gaps, review focus, and report non-conclusions. |
+| `architectureSpectrumReport` | Primary ACTS codebase-inspection surface: top hotspots, bounded mode data, witness clusters, recurrent obstruction entries, coverage gaps, measured boundary, and review focus. |
+| `architectureHomotopyReport` | Primary Homotopy / Holonomy / Stokes surface: filled loops, unfilled loops, nonzero holonomy loops, local curvature cells, bounded aggregate readings, coverage gaps, and review focus. |
 | `transferBridgeReadings[]` | Connects repair transfer axes, molecule overlap paths, bridge edge source refs, review focus, and boundary preparation. |
 | `splitReadinessReadings[]` | Shows which molecules are blocked by bridge edges or need boundary preparation before feature extraction or refactoring. |
 | `structuralReadingReviewSurface` | Summarizes AAT structural review surfaces across representation, curvature, projection, state algebra, Galois, and split readiness. |
@@ -90,9 +108,9 @@ For source comparison in this variant, build the review queue from nonzero axes,
   `homotopyHolonomyReadings[]`, and `stokesStyleReadings[]` before proposing
   code or policy changes.
 
-## Report Boundaries
+## Metadata / Boundaries
 
-Always include:
+Keep these fields available after the verdict and action queue:
 
 - selected LawPolicy
 - coverage gaps that block exactness
@@ -100,7 +118,7 @@ Always include:
 - which source refs were confirmed, stale, missing, or not inspected
 - non-conclusions relevant to the user's decision
 
-For `ArchitectureHomotopyReport`, always preserve:
+For `ArchitectureHomotopyReport`, preserve these as metadata:
 
 - candidate paths and loops are review cues, not path truth
 - unfilled loops are architectural holes, not automatic violations

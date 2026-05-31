@@ -78,6 +78,7 @@ fn cli_summarizes_archsig_analysis_packet() {
     let out_dir = temp_dir("analysis-summary");
     let root = fixture_root();
     let summary = out_dir.join("archsig-analysis-summary.json");
+    let full_summary = out_dir.join("archsig-analysis-summary-full.json");
 
     run_sig0(&[
         "analysis-summary",
@@ -90,8 +91,20 @@ fn cli_summarizes_archsig_analysis_packet() {
         "--out",
         summary.to_str().expect("summary path is utf-8"),
     ]);
+    run_sig0(&[
+        "analysis-summary",
+        "--packet",
+        root.join("archsig_analysis_packet.json")
+            .to_str()
+            .expect("packet path is utf-8"),
+        "--limit",
+        "16",
+        "--out",
+        full_summary.to_str().expect("full summary path is utf-8"),
+    ]);
 
     let json = read_json(&summary);
+    let full_json = read_json(&full_summary);
     assert_eq!(
         json["packet"]["schemaVersion"],
         "archsig-analysis-packet-v0"
@@ -115,6 +128,74 @@ fn cli_summarizes_archsig_analysis_packet() {
         json["splitReadiness"]
             .as_array()
             .is_some_and(|readings| readings.len() <= 2)
+    );
+    assert_eq!(
+        json["verdict"]["flatness"], "nonflatUnderSelectedPolicy",
+        "analysis-summary must put the measured flatness verdict near the top"
+    );
+    assert_eq!(
+        json["verdict"]["qualityState"], "pressureAndArchitecturalHolesDetected",
+        "analysis-summary must state the quality conclusion before caveats"
+    );
+    assert!(
+        json["verdict"]["primaryConclusion"]
+            .as_str()
+            .is_some_and(|text| text.contains("selected law axes are nonzero")),
+        "analysis-summary verdict must say what ArchMap + LawPolicy measured"
+    );
+    assert!(
+        json["qualityMeasurement"]["nonzeroAxisCount"]
+            .as_u64()
+            .is_some_and(|count| count > 0),
+        "qualityMeasurement must count nonzero axes"
+    );
+    assert!(
+        json["qualityMeasurement"]["spectrumHotspotCount"]
+            .as_u64()
+            .is_some_and(|count| count > 0),
+        "qualityMeasurement must count spectrum hotspots"
+    );
+    assert!(
+        json["qualityMeasurement"]["architecturalHoleCount"]
+            .as_u64()
+            .is_some_and(|count| count > 0),
+        "qualityMeasurement must count unfilled architectural holes"
+    );
+    assert!(
+        json["actionQueue"].as_array().is_some_and(|items| {
+            !items.is_empty()
+                && items.len() <= 2
+                && items.iter().any(|item| {
+                    item["conclusion"]
+                        .as_str()
+                        .is_some_and(|text| text == "measuredPressureHotspot")
+                })
+        }),
+        "analysis-summary must expose a bounded conclusion-first action queue"
+    );
+    assert!(
+        full_json["actionQueue"].as_array().is_some_and(|items| {
+            items.iter().any(|item| {
+                item["conclusion"]
+                    .as_str()
+                    .is_some_and(|text| text == "measuredPressureHotspot")
+            }) && items.iter().any(|item| {
+                item["kind"]
+                    .as_str()
+                    .is_some_and(|text| text == "architecturalHole")
+            }) && items.iter().any(|item| {
+                item["kind"]
+                    .as_str()
+                    .is_some_and(|text| text == "nonzeroSignatureAxis")
+            })
+        }),
+        "analysis-summary must put hotspots, holes, and nonzero axes in the action queue"
+    );
+    assert!(
+        json["measurementBasis"]["basisStatement"]
+            .as_str()
+            .is_some_and(|text| text.contains("supplied ArchMap")),
+        "analysis-summary must record the measurement basis without diluting the verdict"
     );
     assert!(
         json["architectureSpectrum"]["hotspots"]
@@ -152,9 +233,20 @@ fn cli_summarizes_archsig_analysis_packet() {
         "analysis-summary must preserve ArchitectureSpectrumReport non-conclusions"
     );
     assert!(
-        json["nonConclusions"]
+        json.get("nonConclusions").is_none(),
+        "analysis-summary must not keep nonConclusions as a top-level main diagnosis"
+    );
+    assert!(
+        json["metadata"]["nonConclusions"]
             .as_array()
             .is_some_and(|non_conclusions| !non_conclusions.is_empty())
+            && json["metadata"]["spectrumNonConclusions"]
+                .as_array()
+                .is_some_and(|non_conclusions| !non_conclusions.is_empty())
+            && json["metadata"]["homotopyNonConclusions"]
+                .as_array()
+                .is_some_and(|non_conclusions| !non_conclusions.is_empty()),
+        "analysis-summary must preserve non-conclusions as metadata"
     );
 }
 

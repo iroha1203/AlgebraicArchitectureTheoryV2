@@ -1118,6 +1118,15 @@ fn build_analysis_summary(
             "lawPolicy": validation_summary(law_policy_validation),
             "analysis": validation_summary(analysis_validation)
         },
+        "verdict": analysis_verdict(packet),
+        "qualityMeasurement": quality_measurement(packet),
+        "actionQueue": action_queue(packet, limit),
+        "measurementBasis": measurement_basis(
+            packet,
+            archmap_validation,
+            law_policy_validation,
+            analysis_validation
+        ),
         "flatness": {
             "status": json_field(flatness, "status"),
             "zeroSignatureAxisRefs": array_field(flatness, "zeroSignatureAxisRefs"),
@@ -1138,8 +1147,274 @@ fn build_analysis_summary(
             "recommendedHumanReviewFocus": limited_array_field(llm_packet, "recommendedHumanReviewFocus", limit),
             "transferBridgeEdgeSummary": array_field(llm_packet, "transferBridgeEdgeSummary")
         },
-        "nonConclusions": array_field(packet, "nonConclusions")
+        "metadata": {
+            "nonConclusions": array_field(packet, "nonConclusions"),
+            "spectrumNonConclusions": array_field(
+                packet.get("architectureSpectrumReport").unwrap_or(&serde_json::Value::Null),
+                "nonConclusions"
+            ),
+            "homotopyNonConclusions": array_field(
+                packet.get("architectureHomotopyReport").unwrap_or(&serde_json::Value::Null),
+                "nonConclusions"
+            ),
+            "excludedReadings": array_field(packet, "excludedReadings")
+        }
     })
+}
+
+fn analysis_verdict(packet: &serde_json::Value) -> serde_json::Value {
+    let flatness = packet
+        .get("flatnessReading")
+        .unwrap_or(&serde_json::Value::Null);
+    let spectrum = packet
+        .get("architectureSpectrumReport")
+        .unwrap_or(&serde_json::Value::Null);
+    let homotopy = packet
+        .get("architectureHomotopyReport")
+        .unwrap_or(&serde_json::Value::Null);
+    let nonzero_axis_count = array_len(flatness, "nonzeroSignatureAxisRefs");
+    let hotspot_count = array_len(spectrum, "topHotspots");
+    let recurrent_count = array_len(spectrum, "recurrentObstructions");
+    let architectural_hole_count = array_len(homotopy, "unfilledLoops");
+    let nonzero_holonomy_count = array_len(homotopy, "nonzeroHolonomyLoops");
+    let coverage_gap_count = coverage_gap_refs(packet).len();
+
+    let flatness_status = flatness
+        .get("status")
+        .and_then(serde_json::Value::as_str)
+        .unwrap_or("unknownUnderSelectedPolicy");
+    let flatness_verdict = if nonzero_axis_count > 0 {
+        "nonflatUnderSelectedPolicy"
+    } else if flatness_status.contains("flat") {
+        "flatUnderSelectedPolicy"
+    } else {
+        "unknownUnderSelectedPolicy"
+    };
+    let pressure_detected = nonzero_axis_count > 0 || hotspot_count > 0 || recurrent_count > 0;
+    let holes_detected = architectural_hole_count > 0 || nonzero_holonomy_count > 0;
+    let quality_state = match (pressure_detected, holes_detected, coverage_gap_count > 0) {
+        (true, true, _) => "pressureAndArchitecturalHolesDetected",
+        (true, false, _) => "architecturePressureDetected",
+        (false, true, _) => "architecturalHolesDetected",
+        (false, false, true) => "coverageGapsDetected",
+        (false, false, false) => "noMeasuredPressureDetected",
+    };
+    let actionability = if pressure_detected || holes_detected || coverage_gap_count > 0 {
+        "reviewRequired"
+    } else {
+        "noImmediateReviewQueue"
+    };
+    let primary_conclusion = if nonzero_axis_count > 0 && architectural_hole_count > 0 {
+        "selected law axes are nonzero and architectural holes were measured from the supplied ArchMap and LawPolicy"
+    } else if nonzero_axis_count > 0 {
+        "selected law axes are nonzero under the supplied ArchMap and LawPolicy"
+    } else if architectural_hole_count > 0 {
+        "architectural holes were measured from unfilled loops under the supplied ArchMap and LawPolicy"
+    } else if coverage_gap_count > 0 {
+        "coverage gaps block a zero reading under the supplied ArchMap and LawPolicy"
+    } else {
+        "no nonzero architecture pressure was measured under the supplied ArchMap and LawPolicy"
+    };
+
+    serde_json::json!({
+        "flatness": flatness_verdict,
+        "qualityState": quality_state,
+        "primaryConclusion": primary_conclusion,
+        "actionability": actionability,
+        "readingMode": "measurementOverSuppliedArchMapAndLawPolicy"
+    })
+}
+
+fn quality_measurement(packet: &serde_json::Value) -> serde_json::Value {
+    let flatness = packet
+        .get("flatnessReading")
+        .unwrap_or(&serde_json::Value::Null);
+    let spectrum = packet
+        .get("architectureSpectrumReport")
+        .unwrap_or(&serde_json::Value::Null);
+    let homotopy = packet
+        .get("architectureHomotopyReport")
+        .unwrap_or(&serde_json::Value::Null);
+    serde_json::json!({
+        "selectedAxisCount": array_len(packet, "signatureAxes"),
+        "nonzeroAxisCount": array_len(flatness, "nonzeroSignatureAxisRefs"),
+        "zeroAxisCount": array_len(flatness, "zeroSignatureAxisRefs"),
+        "spectrumHotspotCount": array_len(spectrum, "topHotspots"),
+        "recurrentObstructionCount": array_len(spectrum, "recurrentObstructions"),
+        "witnessClusterCount": array_len(spectrum, "topWitnessClusters"),
+        "architecturalHoleCount": array_len(homotopy, "unfilledLoops"),
+        "filledLoopCount": array_len(homotopy, "filledLoops"),
+        "nonzeroHolonomyLoopCount": array_len(homotopy, "nonzeroHolonomyLoops"),
+        "localCurvatureCellCount": array_len(homotopy, "topLocalCurvatureCells"),
+        "workflowRiskCount": array_len(packet, "workflowRiskReadings"),
+        "transferBridgeCount": array_len(packet, "transferBridgeReadings"),
+        "coverageGapCount": coverage_gap_refs(packet).len()
+    })
+}
+
+fn action_queue(packet: &serde_json::Value, limit: usize) -> serde_json::Value {
+    let mut actions = Vec::new();
+    let spectrum = packet
+        .get("architectureSpectrumReport")
+        .unwrap_or(&serde_json::Value::Null);
+    let homotopy = packet
+        .get("architectureHomotopyReport")
+        .unwrap_or(&serde_json::Value::Null);
+
+    for hotspot in array_items(spectrum, "topHotspots") {
+        actions.push(serde_json::json!({
+            "kind": "spectrumHotspot",
+            "conclusion": "measuredPressureHotspot",
+            "ref": json_field(hotspot, "hotspotId"),
+            "axisRef": json_field(hotspot, "axisRef"),
+            "value": json_field(hotspot, "curvatureValue"),
+            "witnessRefs": array_field(hotspot, "witnessRefs"),
+            "recommendedAction": json_field(hotspot, "recommendedNextAction")
+        }));
+    }
+    for loop_ref in array_items(homotopy, "unfilledLoops") {
+        actions.push(serde_json::json!({
+            "kind": "architecturalHole",
+            "conclusion": "unfilledLoopMeasured",
+            "ref": loop_ref.clone(),
+            "recommendedAction": "inspect path refs and add contract, test, runtime, policy, or source-backed filler evidence"
+        }));
+    }
+    for loop_ref in array_items(homotopy, "nonzeroHolonomyLoops") {
+        actions.push(serde_json::json!({
+            "kind": "nonzeroHolonomy",
+            "conclusion": "nonzeroSelectedAxisContinuationDistance",
+            "ref": loop_ref.clone(),
+            "recommendedAction": "compare selected path continuations and decide whether the loop needs filler evidence or design change"
+        }));
+    }
+    for axis in array_items(packet, "signatureAxes") {
+        if i64_field(axis, "value", 0) != 0 {
+            actions.push(serde_json::json!({
+                "kind": "nonzeroSignatureAxis",
+                "conclusion": "nonzeroAxisUnderSelectedPolicy",
+                "ref": json_field(axis, "signatureAxisId"),
+                "lawRef": json_field(axis, "lawRef"),
+                "value": json_field(axis, "value"),
+                "coverageStatus": json_field(axis, "coverageStatus"),
+                "sourceRefCount": array_len(axis, "sourceRefs"),
+                "missingEvidenceCount": array_len(axis, "missingEvidence"),
+                "recommendedAction": "inspect source refs and selected law witness support"
+            }));
+        }
+    }
+    let mut workflow_risks = array_items(packet, "workflowRiskReadings");
+    workflow_risks.sort_by_key(|reading| std::cmp::Reverse(i64_field(reading, "riskScore", 0)));
+    for reading in workflow_risks {
+        actions.push(serde_json::json!({
+            "kind": "workflowRisk",
+            "conclusion": "highRankedWorkflowPressure",
+            "ref": json_field(reading, "moleculeObservationRef"),
+            "roleName": json_field(reading, "roleName"),
+            "value": json_field(reading, "riskScore"),
+            "riskTier": json_field(reading, "riskTier"),
+            "recommendedAction": array_field(reading, "reviewFocus")
+        }));
+    }
+
+    serde_json::Value::Array(
+        actions
+            .into_iter()
+            .enumerate()
+            .take(limit)
+            .map(|(index, mut action)| {
+                if let Some(object) = action.as_object_mut() {
+                    object.insert(
+                        "priority".to_string(),
+                        serde_json::Value::Number((index + 1).into()),
+                    );
+                }
+                action
+            })
+            .collect(),
+    )
+}
+
+fn measurement_basis(
+    packet: &serde_json::Value,
+    archmap_validation: Option<&serde_json::Value>,
+    law_policy_validation: Option<&serde_json::Value>,
+    analysis_validation: Option<&serde_json::Value>,
+) -> serde_json::Value {
+    let spectrum = packet
+        .get("architectureSpectrumReport")
+        .unwrap_or(&serde_json::Value::Null);
+    let homotopy = packet
+        .get("architectureHomotopyReport")
+        .unwrap_or(&serde_json::Value::Null);
+    serde_json::json!({
+        "archMapRef": json_field(packet, "archMapRef"),
+        "selectedLawPolicyRef": json_field(packet, "selectedLawPolicyRef"),
+        "spectrumProfileRef": json_field(spectrum, "profileRef"),
+        "homotopyProfileRef": json_field(homotopy, "profileRef"),
+        "validation": {
+            "archmap": validation_result(archmap_validation),
+            "lawPolicy": validation_result(law_policy_validation),
+            "analysis": validation_result(analysis_validation)
+        },
+        "coverageGaps": json_string_array(coverage_gap_refs(packet).iter()),
+        "spectrumMeasuredBoundary": json_field(spectrum, "measuredBoundary"),
+        "homotopyMeasuredBoundary": json_field(homotopy, "measuredBoundary"),
+        "basisStatement": "conclusions are measured from the supplied ArchMap and selected LawPolicy"
+    })
+}
+
+fn validation_result(report: Option<&serde_json::Value>) -> serde_json::Value {
+    validation_summary(report)
+        .get("result")
+        .cloned()
+        .unwrap_or(serde_json::Value::Null)
+}
+
+fn coverage_gap_refs(packet: &serde_json::Value) -> BTreeSet<String> {
+    let mut refs = BTreeSet::new();
+    if let Some(flatness) = packet.get("flatnessReading") {
+        collect_value_labels(array_items(flatness, "blockedByCoverageGaps"), &mut refs);
+    }
+    if let Some(spectrum) = packet.get("architectureSpectrumReport") {
+        collect_value_labels(array_items(spectrum, "coverageGaps"), &mut refs);
+    }
+    if let Some(homotopy) = packet.get("architectureHomotopyReport") {
+        collect_value_labels(array_items(homotopy, "coverageGaps"), &mut refs);
+    }
+    refs
+}
+
+fn collect_value_labels(items: Vec<&serde_json::Value>, refs: &mut BTreeSet<String>) {
+    for item in items {
+        if let Some(label) = value_label(item) {
+            refs.insert(label);
+        }
+    }
+}
+
+fn value_label(value: &serde_json::Value) -> Option<String> {
+    value
+        .as_str()
+        .map(str::to_string)
+        .or_else(|| {
+            value
+                .get("gapId")
+                .and_then(serde_json::Value::as_str)
+                .map(str::to_string)
+        })
+        .or_else(|| {
+            value
+                .get("id")
+                .and_then(serde_json::Value::as_str)
+                .map(str::to_string)
+        })
+        .or_else(|| {
+            value
+                .get("description")
+                .and_then(serde_json::Value::as_str)
+                .map(str::to_string)
+        })
 }
 
 fn measurement_expansion_summary(
