@@ -1230,6 +1230,28 @@ p {
   padding: clamp(54px, 7vw, 92px) 0 clamp(40px, 6vw, 72px);
 }
 
+.article-hero .site-shell {
+  position: relative;
+}
+
+.hero-version-badge {
+  position: absolute;
+  top: 0;
+  right: 0;
+  margin: 0;
+  border: 1px solid var(--rule-strong);
+  border-radius: 999px;
+  color: var(--ink-muted);
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0;
+  line-height: 1;
+  padding: 7px 10px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
 .article-hero + .section-band {
   background: var(--article-body-bg);
 }
@@ -2469,6 +2491,12 @@ p {
 
   .article-layout {
     grid-template-columns: 1fr;
+  }
+
+  .hero-version-badge {
+    position: static;
+    display: inline-flex;
+    margin-bottom: 16px;
   }
 
   .article-sidebar {

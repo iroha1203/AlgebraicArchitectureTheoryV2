@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Manual for reading ArchSig output: analysis-summary, analysis packet, measurement families, coverage gaps, detail refs, and claim boundaries.">
+    <title>ArchSig Manual</title>
+    <link rel="canonical" href="https://iroha1203.dev/archsig/manual/">
+    <meta property="og:site_name" content="AAT / SFT Research Notes">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="ArchSig Manual">
+    <meta property="og:description" content="Manual for reading ArchSig output: analysis-summary, analysis packet, measurement families, coverage gaps, detail refs, and claim boundaries.">
+    <meta property="og:url" content="https://iroha1203.dev/archsig/manual/">
+    <meta property="og:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="ArchSig Manual">
+    <meta name="twitter:description" content="Manual for reading ArchSig output: analysis-summary, analysis packet, measurement families, coverage gaps, detail refs, and claim boundaries.">
+    <meta name="twitter:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
+    <link rel="icon" href="../../assets/favicon-32.png" sizes="32x32" type="image/png">
+    <link rel="icon" href="../../assets/favicon-16.png" sizes="16x16" type="image/png">
+    <link rel="alternate" hreflang="en" href="./">
+    <link rel="alternate" hreflang="x-default" href="./">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=Inter:wght@400;500;600;700&amp;family=Source+Serif+4:opsz,wght@8..60,400..700&amp;display=swap" rel="stylesheet">
+    <script>
+      try {
+        const theme = localStorage.getItem("aat-sft-theme");
+        if (theme === "light" || theme === "dark") {
+          document.documentElement.dataset.theme = theme;
+        }
+      } catch {}
+    </script>
+    <link rel="stylesheet" href="../../assets/site.css">
+    <script defer src="../../assets/site.js"></script>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-YQMFH2FG9V"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-YQMFH2FG9V');
+    </script>
+
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="site-header" data-site-header>
+      <div class="site-shell header-inner">
+        <a class="brand" href="../../" aria-label="AAT SFT home">
+          <img class="brand-icon" src="../../assets/favicon-512.png" alt="" width="512" height="512" aria-hidden="true">
+          <span class="brand-mark">AAT/SFT</span>
+          <span class="brand-text">Research Notes</span>
+        </a>
+        <nav class="site-nav" aria-label="Primary navigation">
+          <a href="../../">Home</a>
+          <a href="../../aat/">AAT</a>
+          <a href="../../sft/">SFT</a>
+          <a class="is-active" href="../">ArchSig</a>
+          <a href="../../outreach/">Outreach</a>
+        </nav>
+      </div>
+    </header>
+    <main id="main">
+      <section class="article-hero section-band">
+        <div class="site-shell">
+          <nav class="breadcrumb" aria-label="Breadcrumb"><a href="../../">Home</a><a href="../">ArchSig</a><span>Manual</span></nav>
+          <p class="eyebrow">Reading ArchSig output</p>
+          <h1>From summary to evidence.</h1>
+          <p class="lede">ArchSig output is structured so an agent can start with a compact summary, then open packet detail only where the review needs evidence, coverage, or exact measurement boundaries.</p>
+        </div>
+      </section>
+      <section class="section-band">
+        <div class="site-shell article-layout">
+          <aside class="article-sidebar" aria-label="ArchSig page navigation">
+            <nav class="toc-panel" aria-labelledby="toc-title"><h2 id="toc-title">On this page</h2><ol><li><a href="#artifacts">Artifacts</a></li><li><a href="#summary">Read summary first</a></li><li><a href="#packet">Open packet detail</a></li><li><a href="#families">Measurement families</a></li><li><a href="#basis">Measurement basis</a></li><li><a href="#statuses">Reading statuses</a></li><li><a href="#boundaries">Measurement scope</a></li></ol></nav>
+            <div class="source-panel" data-sidebar-open="true"><h2>ArchSig</h2><ul><li><a href="../">Overview</a></li><li><a href="../getting-started/">Getting Started</a></li><li><a href="../analyses/">Analyses</a></li><li><a href="../examples/">Examples</a></li><li><a href="./" aria-current="page">Manual</a></li><li><a href="../reference/">Reference</a></li></ul></div>
+          </aside>
+          <div class="article-main">
+            <section id="artifacts" class="article-section">
+              <h2>Artifacts</h2>
+              <p>ArchSig reads observed architecture evidence with a selected interpretation profile, then emits a packet and summary for review.</p>
+              <ul class="status-list">
+                <li><strong><code>archmap-observation-map-v0</code></strong><span>Source-grounded Atom observation evidence: atom observations, molecule observations, semantic observations, concern hints, gaps, provenance, and non-conclusions.</span></li>
+                <li><strong><code>law-policy-v0</code></strong><span>The selected LawUniverse, witness rules, molecule patterns, obstruction definitions, signature axes, coverage requirements, and exactness assumptions.</span></li>
+                <li><strong><code>archsig-analysis-packet-v0</code></strong><span>The full detail store: molecule readings, obstruction circuits, signature axes, flatness, repair candidates, coverage gaps, measurement families, detail refs, and non-conclusions.</span></li>
+                <li><strong><code>analysis-summary</code></strong><span>The compact first reading surface for Skills and human reviewers.</span></li>
+              </ul>
+            </section>
+            <section id="summary" class="article-section">
+              <h2>Read summary first</h2>
+              <p>The summary is designed to keep the review focused. It answers what was measured before the reader opens raw packet detail.</p>
+              <ol class="numbered-status-list">
+                <li><strong><code>verdict</code></strong><span>The measured conclusion for the supplied ArchMap and LawPolicy.</span></li>
+                <li><strong><code>qualityMeasurement</code></strong><span>Counts for nonzero axes, hotspots, recurrent pressure, holes, holonomy loops, workflow risk, transfer bridges, and coverage gaps.</span></li>
+                <li><strong><code>trendDiagnosis</code></strong><span>Where pressure concentrates and which cross-axis insights appear.</span></li>
+                <li><strong><code>dominantFindings</code></strong><span>The compact list of findings worth reading before full packet traversal.</span></li>
+                <li><strong><code>actionQueue</code></strong><span>The prioritized review queue with detail refs.</span></li>
+                <li><strong><code>measurementBasis</code></strong><span>Input refs, validation results, coverage gaps, measured boundaries, and selected policy refs.</span></li>
+              </ol>
+            </section>
+            <section id="packet" class="article-section">
+              <h2>Open packet detail</h2>
+              <p>Open <code>archsig-analysis-packet-v0</code> when a finding needs source refs, witness detail, missing evidence, or an exact packet path.</p>
+              <ul class="status-list">
+                <li><strong><code>detailIndex</code></strong><span>Shows packet sections and <code>packet:&lt;json-pointer&gt;</code> refs for deeper reading.</span></li>
+                <li><strong><code>sourceRefs</code></strong><span>Point the agent back to files, symbols, docs, tests, traces, or other source evidence.</span></li>
+                <li><strong><code>missingEvidence</code> and coverage gaps</strong><span>Keep unknown evidence visible instead of treating absence as zero.</span></li>
+                <li><strong><code>nonConclusions</code></strong><span>State what the packet is not claiming.</span></li>
+              </ul>
+            </section>
+            <section id="families" class="article-section">
+              <h2>Measurement families</h2>
+              <p>Families are different views over the same ArchMap plus LawPolicy analysis. Some rows use exact packet field names; grouped rows collect related readings that currently appear across packet sections rather than as one single top-level field.</p>
+              <div class="article-table">
+                <table>
+                  <thead><tr><th scope="col">Family</th><th scope="col">Read it for</th></tr></thead>
+                  <tbody>
+                    <tr><td><code>signatureAxes</code></td><td>Selected law-axis pressure and zero / nonzero readings.</td></tr>
+                    <tr><td><code>workflowRiskReadings</code></td><td>Permission, authority, state/effect, LLM mediation, and domain-cohesion pressure.</td></tr>
+                    <tr><td><code>architectureSpectrumReport</code></td><td>Hotspots, witness clusters, recurrent obstruction support, coverage gaps, and review focus.</td></tr>
+                    <tr><td><code>transferBridgeReadings</code></td><td>Bridge pressure, overlap paths, split readiness, and boundary preparation.</td></tr>
+                    <tr><td><code>architectureHomotopyReport</code></td><td>Filled loops, unfilled holes, nonzero holonomy loops, local curvature cells, filler evidence, and coverage gaps.</td></tr>
+                    <tr><td>Observation-axis readings</td><td>Projection fidelity, atom origin closure, effect relation pressure, synthesis blockage, operation preconditions, and path multiplicity loss.</td></tr>
+                    <tr><td>Repair / operation readings</td><td>Repair candidates, operation deltas, transferred obstructions, side-effect axes, and readiness.</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </section>
+            <section id="basis" class="article-section">
+              <h2>Measurement basis</h2>
+              <p>Every reading is relative to the supplied evidence and selected policy. Before acting on a finding, check what was measured.</p>
+              <ul class="status-list">
+                <li><strong>Observed source state</strong><span>Which ArchMap was read, which source refs were included, and which observations were source-backed.</span></li>
+                <li><strong>Selected policy</strong><span>Which LawPolicy selected the laws, witness rules, axes, and coverage expectations.</span></li>
+                <li><strong>Validation state</strong><span>Whether ArchMap, LawPolicy, and analysis validation passed, warned, or failed.</span></li>
+                <li><strong>Coverage boundary</strong><span>Which gaps block a zero reading or require more evidence before repair planning.</span></li>
+              </ul>
+            </section>
+            <section id="statuses" class="article-section">
+              <h2>Reading statuses</h2>
+              <ul class="status-list">
+                <li><strong><code>actionable</code></strong><span>The bounded reading has enough evidence for review action.</span></li>
+                <li><strong><code>needsReview</code></strong><span>Human or source review is required before implementation decisions.</span></li>
+                <li><strong><code>blockedByCoverageGap</code></strong><span>Missing evidence must stay visible as an unknown remainder.</span></li>
+                <li><strong><code>nonConclusion</code></strong><span>ArchSig explicitly refuses a conclusion on that surface.</span></li>
+              </ul>
+            </section>
+            <section id="boundaries" class="article-section">
+              <h2>Measurement scope</h2>
+              <p>Read every result as relative to the supplied ArchMap, selected LawPolicy, validation state, and coverage boundary. If the evidence or policy changes, the reading can change too.</p>
+            </section>
+            <nav class="page-nav" aria-label="Reading sequence"><a class="page-nav-prev" href="../examples/"><span>Previous</span><strong>Examples</strong></a><a class="page-nav-next" href="../reference/"><span>Next</span><strong>Reference</strong></a></nav>
+          </div>
+        </div>
+      </section>
+    </main>
+    <footer class="site-footer">
+      <div class="site-shell footer-inner">
+        <p>&copy; <span data-current-year>2026</span> Hiroyuki Nakahata.</p>
+        <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2" target="_blank" rel="noopener noreferrer">Repository</a>
+      </div>
+    </footer>
+  </body>
+</html>

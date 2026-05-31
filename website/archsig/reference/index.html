@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="ArchSig command, schema, artifact, and compatibility reference for reproducible analyze runs.">
+    <title>ArchSig Reference</title>
+    <link rel="canonical" href="https://iroha1203.dev/archsig/reference/">
+    <meta property="og:site_name" content="AAT / SFT Research Notes">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="ArchSig Reference">
+    <meta property="og:description" content="ArchSig command, schema, artifact, and compatibility reference for reproducible analyze runs.">
+    <meta property="og:url" content="https://iroha1203.dev/archsig/reference/">
+    <meta property="og:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="ArchSig Reference">
+    <meta name="twitter:description" content="ArchSig command, schema, artifact, and compatibility reference for reproducible analyze runs.">
+    <meta name="twitter:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
+    <link rel="icon" href="../../assets/favicon-32.png" sizes="32x32" type="image/png">
+    <link rel="icon" href="../../assets/favicon-16.png" sizes="16x16" type="image/png">
+    <link rel="alternate" hreflang="en" href="./">
+    <link rel="alternate" hreflang="x-default" href="./">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=Inter:wght@400;500;600;700&amp;family=Source+Serif+4:opsz,wght@8..60,400..700&amp;display=swap" rel="stylesheet">
+    <script>
+      try {
+        const theme = localStorage.getItem("aat-sft-theme");
+        if (theme === "light" || theme === "dark") {
+          document.documentElement.dataset.theme = theme;
+        }
+      } catch {}
+    </script>
+    <link rel="stylesheet" href="../../assets/site.css">
+    <script defer src="../../assets/site.js"></script>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-YQMFH2FG9V"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-YQMFH2FG9V');
+    </script>
+
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="site-header" data-site-header>
+      <div class="site-shell header-inner">
+        <a class="brand" href="../../" aria-label="AAT SFT home">
+          <img class="brand-icon" src="../../assets/favicon-512.png" alt="" width="512" height="512" aria-hidden="true">
+          <span class="brand-mark">AAT/SFT</span>
+          <span class="brand-text">Research Notes</span>
+        </a>
+        <nav class="site-nav" aria-label="Primary navigation">
+          <a href="../../">Home</a>
+          <a href="../../aat/">AAT</a>
+          <a href="../../sft/">SFT</a>
+          <a class="is-active" href="../">ArchSig</a>
+          <a href="../../outreach/">Outreach</a>
+        </nav>
+      </div>
+    </header>
+    <main id="main">
+      <section class="article-hero section-band">
+        <div class="site-shell">
+          <nav class="breadcrumb" aria-label="Breadcrumb"><a href="../../">Home</a><a href="../">ArchSig</a><span>Reference</span></nav>
+          <p class="eyebrow">Commands and artifacts</p>
+          <h1>Reproduce an ArchSig run.</h1>
+          <p class="lede">Use this page when you need exact commands, artifact names, schema boundaries, or compatibility notes for ArchSig analysis.</p>
+        </div>
+      </section>
+      <section class="section-band">
+        <div class="site-shell article-layout">
+          <aside class="article-sidebar" aria-label="ArchSig page navigation">
+            <nav class="toc-panel" aria-labelledby="toc-title"><h2 id="toc-title">On this page</h2><ol><li><a href="#primary">Primary workflow</a></li><li><a href="#outputs">Workflow outputs</a></li><li><a href="#commands">Command surfaces</a></li><li><a href="#schemas">Artifact schemas</a></li><li><a href="#compatibility">Compatibility aliases</a></li><li><a href="#boundaries">Reference boundaries</a></li></ol></nav>
+            <div class="source-panel" data-sidebar-open="true"><h2>ArchSig</h2><ul><li><a href="../">Overview</a></li><li><a href="../getting-started/">Getting Started</a></li><li><a href="../analyses/">Analyses</a></li><li><a href="../examples/">Examples</a></li><li><a href="../manual/">Manual</a></li><li><a href="./" aria-current="page">Reference</a></li></ul></div>
+          </aside>
+          <div class="article-main">
+            <section id="primary" class="article-section">
+              <h2>Primary workflow</h2>
+              <p><code>analyze</code> is the primary ArchSig workflow entry. It consumes a monolithic ArchMap observation map and a selected LawPolicy, then writes validation reports and the analysis packet.</p>
+              <figure class="code-panel">
+                <figcaption>Run analysis</figcaption>
+                <pre><code>cargo run --manifest-path tools/archsig/Cargo.toml -- analyze \
+  --archmap tools/archsig/tests/fixtures/minimal/archmap.json \
+  --law-policy tools/archsig/tests/fixtures/minimal/law_policy.json \
+  --out-dir .archsig/analyze</code></pre>
+              </figure>
+              <p>Use <code>analysis-summary</code> when you need the compact first reading surface from an existing packet.</p>
+              <figure class="code-panel">
+                <figcaption>Emit summary</figcaption>
+                <pre><code>cargo run --manifest-path tools/archsig/Cargo.toml -- analysis-summary \
+  --packet .archsig/analyze/archsig-analysis-packet.json \
+  --archmap-validation .archsig/analyze/archmap-validation.json \
+  --law-policy-validation .archsig/analyze/law-policy-validation.json \
+  --analysis-validation .archsig/analyze/archsig-analysis-validation.json \
+  --out .archsig/analyze/archsig-analysis-summary.json</code></pre>
+              </figure>
+            </section>
+            <section id="outputs" class="article-section">
+              <h2>Workflow outputs</h2>
+              <ul class="status-list">
+                <li><strong><code>archmap-validation.json</code></strong><span>Validation report for the supplied <code>archmap-observation-map-v0</code>.</span></li>
+                <li><strong><code>law-policy-validation.json</code></strong><span>Validation report for the selected <code>law-policy-v0</code>.</span></li>
+                <li><strong><code>archsig-analysis-packet.json</code></strong><span>The full <code>archsig-analysis-packet-v0</code> detail store.</span></li>
+                <li><strong><code>archsig-analysis-validation.json</code></strong><span>Validation report for the generated analysis packet.</span></li>
+                <li><strong><code>llm-interpretation-packet.json</code></strong><span>The same structured packet serialized for LLM reading. It is not a natural-language review by itself.</span></li>
+              </ul>
+            </section>
+            <section id="commands" class="article-section">
+              <h2>Command surfaces</h2>
+              <div class="article-table">
+                <table>
+                  <thead><tr><th scope="col">Command</th><th scope="col">Use it for</th></tr></thead>
+                  <tbody>
+                    <tr><td><code>archmap</code></td><td>Validate an <code>archmap-observation-map-v0</code>.</td></tr>
+                    <tr><td><code>archmap-generate</code></td><td>Emit a bounded external-agent protocol for producing ArchMap evidence.</td></tr>
+                    <tr><td><code>law-policy</code></td><td>Validate or emit the selected <code>law-policy-v0</code> profile.</td></tr>
+                    <tr><td><code>analyze</code></td><td>Run the primary ArchMap plus LawPolicy analysis workflow.</td></tr>
+                    <tr><td><code>archsig-analysis</code></td><td>Build an analysis packet from supplied inputs as a step command.</td></tr>
+                    <tr><td><code>analysis-summary</code></td><td>Emit a compact review summary from an existing packet and optional validation reports.</td></tr>
+                    <tr><td><code>codebase-inspection</code></td><td>Read current-state ArchMapStore artifacts and packet evidence for architecture health review.</td></tr>
+                    <tr><td><code>pr-review</code></td><td>Read a base ArchMap, PR-local ArchMap delta, and LawPolicy for small PR review.</td></tr>
+                    <tr><td><code>schema-catalog</code></td><td>Emit the current ArchSig schema catalog.</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </section>
+            <section id="schemas" class="article-section">
+              <h2>Artifact schemas</h2>
+              <div class="article-table">
+                <table>
+                  <thead><tr><th scope="col">Schema</th><th scope="col">Role</th></tr></thead>
+                  <tbody>
+                    <tr><td><code>archmap-observation-map-v0</code></td><td>Source-grounded Atom observation evidence. Current analysis consumes the exported monolithic artifact.</td></tr>
+                    <tr><td><code>archmap-shard-manifest-v0</code></td><td>Authoring-side manifest for bounded observation slices. It must bundle/export before analysis.</td></tr>
+                    <tr><td><code>archmap-validation-report-v0</code></td><td>ArchMap shape, identity, source refs, provenance, concern, and gap validation.</td></tr>
+                    <tr><td><code>law-policy-v0</code></td><td>Selected LawUniverse, witness rules, signature axes, coverage requirements, and exactness assumptions.</td></tr>
+                    <tr><td><code>law-policy-validation-report-v0</code></td><td>LawPolicy identity, cross-reference, witness, obstruction, coverage, and exactness validation.</td></tr>
+                    <tr><td><code>archsig-analysis-packet-v0</code></td><td>Current ArchSig source-of-truth output for measurement detail and LLM / human review reading.</td></tr>
+                    <tr><td><code>archsig-analysis-validation-report-v0</code></td><td>Analysis packet validation boundary.</td></tr>
+                    <tr><td><code>archsig-codebase-inspection-report-v0</code></td><td>Current-state architecture health review output from snapshot, index, packet, and optional deltas.</td></tr>
+                    <tr><td><code>archsig-pr-review-report-v1</code></td><td>Change-local PR review output from base ArchMap, PR-local delta, and LawPolicy.</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </section>
+            <section id="compatibility" class="article-section">
+              <h2>Compatibility aliases</h2>
+              <ul class="status-list">
+                <li><strong><code>llm-native-workflow</code> and <code>north-star-workflow</code></strong><span>Visible aliases for <code>analyze</code>. Use <code>analyze</code> in new docs, scripts, and CI.</span></li>
+                <li><strong><code>interpretation-profile</code></strong><span>Visible alias for <code>law-policy</code>. The current JSON schema name remains <code>law-policy-v0</code>.</span></li>
+                <li><strong><code>aat-analysis</code></strong><span>Visible alias for <code>archsig-analysis</code>.</span></li>
+                <li><strong><code>summary</code></strong><span>Visible alias for <code>analysis-summary</code>.</span></li>
+              </ul>
+            </section>
+            <section id="boundaries" class="article-section">
+              <h2>Reference boundaries</h2>
+              <ul class="status-list">
+                <li><strong>Current input contract</strong><span>ArchSig analysis consumes an exported <code>archmap-observation-map-v0</code>, not shard fragments.</span></li>
+                <li><strong>PR input contract</strong><span><code>pr-review</code> reads base ArchMap, PR-local ArchMap delta, and LawPolicy. Raw diff is not an ArchSig PR-review input.</span></li>
+                <li><strong>Validation boundary</strong><span>Validation checks artifact shape and guardrails. It is not a Lean proof, runtime correctness proof, or repair safety certificate.</span></li>
+              </ul>
+            </section>
+            <nav class="page-nav" aria-label="Reading sequence"><a class="page-nav-prev" href="../manual/"><span>Previous</span><strong>Manual</strong></a></nav>
+          </div>
+        </div>
+      </section>
+    </main>
+    <footer class="site-footer">
+      <div class="site-shell footer-inner">
+        <p>&copy; <span data-current-year>2026</span> Hiroyuki Nakahata.</p>
+        <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2" target="_blank" rel="noopener noreferrer">Repository</a>
+      </div>
+    </footer>
+  </body>
+</html>
