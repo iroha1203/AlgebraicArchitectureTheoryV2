@@ -33,28 +33,28 @@ use crate::{
     ArchSigEvolutionRiskRankingV0, ArchSigFeatureBoundaryResidualReadingV0,
     ArchSigFeatureExtensionAxisSummaryV0, ArchSigFeatureExtensionDiagnosisReadingV0,
     ArchSigFeatureExtensionFormulaReadingV0, ArchSigFeatureExtensionWitnessAttributionV0,
-    ArchSigFillerCandidateReadingV0, ArchSigFlatnessReadingV0, ArchSigHighOverlapMoleculePairV0,
-    ArchSigHomotopyAggregateReadingV0, ArchSigHomotopyCellSummaryV0,
-    ArchSigHomotopyComplexSummaryV0, ArchSigHomotopyHolonomyReadingV0,
-    ArchSigHomotopyOrderSensitivityReadingV0, ArchSigInvariantFamilyReadingV0,
-    ArchSigLawUniverseCoverageReadingV0, ArchSigLawUniverseReadingV0, ArchSigLayerSplitV0,
-    ArchSigLlmInterpretationPacketV0, ArchSigLocalCurvatureDiagramReadingV0,
-    ArchSigLoopCandidateV0, ArchSigMeasurementReadingBoundaryV0, ArchSigMoleculeReadingV0,
-    ArchSigMonodromyReadingFamilyV0, ArchSigNonzeroMonodromyWitnessV0,
-    ArchSigObservationProjectionFidelityReadingV0, ArchSigObservationProjectionReadingV0,
-    ArchSigObstructionCircuitV0, ArchSigOperationCalculusLawReadingV0,
-    ArchSigOperationDeltaReadingV0, ArchSigOperationInvariantGaloisReadingV0,
-    ArchSigOperationPreconditionReadinessReadingV0, ArchSigOperationSquareCandidateV0,
-    ArchSigPathContinuationTraceV0, ArchSigPathHomotopyDiagramReadingV0,
-    ArchSigPathMultiplicityLossReadingV0, ArchSigPathPairCandidateV0,
-    ArchSigPathSignatureTrajectoryReadingV0, ArchSigRecurrentObstructionModeV0,
-    ArchSigRepairAxisDeltaReadingV0, ArchSigRepairOperationCandidateV0,
-    ArchSigRepairTransferRiskRankV0, ArchSigRepresentationStrengthReadingV0,
-    ArchSigSignatureAxisReadingV0, ArchSigSignatureTrajectoryHomotopyRefutationReadingV0,
-    ArchSigSpectralAnalysisReadingV0, ArchSigSpectralDominantComponentV0,
-    ArchSigSpectralDrilldownReadingV0, ArchSigSpectralMatrixShapeV0,
-    ArchSigSpectralModeComponentV0, ArchSigSpectralModeReadingV0, ArchSigSpectralValueV0,
-    ArchSigSplitReadinessReadingV0, ArchSigStateTransitionAlgebraReadingV0,
+    ArchSigFeatureExtensionWitnessBasisV0, ArchSigFillerCandidateReadingV0,
+    ArchSigFlatnessReadingV0, ArchSigHighOverlapMoleculePairV0, ArchSigHomotopyAggregateReadingV0,
+    ArchSigHomotopyCellSummaryV0, ArchSigHomotopyComplexSummaryV0,
+    ArchSigHomotopyHolonomyReadingV0, ArchSigHomotopyOrderSensitivityReadingV0,
+    ArchSigInvariantFamilyReadingV0, ArchSigLawUniverseCoverageReadingV0,
+    ArchSigLawUniverseReadingV0, ArchSigLayerSplitV0, ArchSigLlmInterpretationPacketV0,
+    ArchSigLocalCurvatureDiagramReadingV0, ArchSigLoopCandidateV0,
+    ArchSigMeasurementReadingBoundaryV0, ArchSigMoleculeReadingV0, ArchSigMonodromyReadingFamilyV0,
+    ArchSigNonzeroMonodromyWitnessV0, ArchSigObservationProjectionFidelityReadingV0,
+    ArchSigObservationProjectionReadingV0, ArchSigObstructionCircuitV0,
+    ArchSigOperationCalculusLawReadingV0, ArchSigOperationDeltaReadingV0,
+    ArchSigOperationInvariantGaloisReadingV0, ArchSigOperationPreconditionReadinessReadingV0,
+    ArchSigOperationSquareCandidateV0, ArchSigPathContinuationTraceV0,
+    ArchSigPathHomotopyDiagramReadingV0, ArchSigPathMultiplicityLossReadingV0,
+    ArchSigPathPairCandidateV0, ArchSigPathSignatureTrajectoryReadingV0,
+    ArchSigRecurrentObstructionModeV0, ArchSigRepairAxisDeltaReadingV0,
+    ArchSigRepairOperationCandidateV0, ArchSigRepairTransferRiskRankV0,
+    ArchSigRepresentationStrengthReadingV0, ArchSigSignatureAxisReadingV0,
+    ArchSigSignatureTrajectoryHomotopyRefutationReadingV0, ArchSigSpectralAnalysisReadingV0,
+    ArchSigSpectralDominantComponentV0, ArchSigSpectralDrilldownReadingV0,
+    ArchSigSpectralMatrixShapeV0, ArchSigSpectralModeComponentV0, ArchSigSpectralModeReadingV0,
+    ArchSigSpectralValueV0, ArchSigSplitReadinessReadingV0, ArchSigStateTransitionAlgebraReadingV0,
     ArchSigStokesStyleReadingV0, ArchSigStructuralReadingReviewSurfaceV0,
     ArchSigSubjectFamilySpreadV0, ArchSigSynthesisBlockageReadingV0,
     ArchSigThreeLayerFlatnessReadingV0, ArchSigTransferBridgeReadingV0,
@@ -319,6 +319,7 @@ pub fn build_archsig_analysis_packet(
         &axis_wise_monodromy_defects,
     );
     let feature_extension_diagnosis_readings = build_feature_extension_diagnosis_readings(
+        archmap,
         &feature_extension_formula_readings,
         &feature_boundary_residual_readings,
     );
@@ -1918,6 +1919,7 @@ fn boundary_holonomy_axis_residuals(
 }
 
 fn build_feature_extension_diagnosis_readings(
+    archmap: &ArchMapDocumentV0,
     feature_extension_formula_readings: &[ArchSigFeatureExtensionFormulaReadingV0],
     feature_boundary_residual_readings: &[ArchSigFeatureBoundaryResidualReadingV0],
 ) -> Vec<ArchSigFeatureExtensionDiagnosisReadingV0> {
@@ -1927,6 +1929,11 @@ fn build_feature_extension_diagnosis_readings(
             let boundary_residual = feature_boundary_residual_readings
                 .iter()
                 .find(|reading| reading.feature_extension_ref == formula.reading_id);
+            let witness_basis = formula
+                .witness_basis
+                .iter()
+                .map(|basis| (basis.witness_ref.as_str(), basis))
+                .collect::<BTreeMap<_, _>>();
             let mut attributions = BTreeMap::<String, ArchSigFeatureExtensionWitnessAttributionV0>::new();
 
             for witness_ref in &formula.inherited_core_obstruction_refs {
@@ -1988,7 +1995,29 @@ fn build_feature_extension_diagnosis_readings(
 
             let mut attribution_records = attributions.into_values().collect::<Vec<_>>();
             for record in &mut attribution_records {
+                if let Some(basis) = witness_basis.get(record.witness_ref.as_str()) {
+                    record.observation_refs
+                        .extend(basis.observation_refs.iter().cloned());
+                    record.source_refs.extend(basis.source_refs.iter().cloned());
+                }
+                if let Some(boundary_residual) = boundary_residual {
+                    if record
+                        .boundary_holonomy_refs
+                        .iter()
+                        .any(|witness_ref| witness_ref == &record.witness_ref)
+                    {
+                        record
+                            .observation_refs
+                            .extend(boundary_residual.residual_obstruction_refs.iter().cloned());
+                    }
+                }
+                if record.source_refs.is_empty() && !record.observation_refs.is_empty() {
+                    record.source_refs =
+                        source_refs_for_observation_refs(archmap, &record.observation_refs);
+                }
                 record.labels = unique_strings(record.labels.drain(..));
+                record.observation_refs = unique_strings(record.observation_refs.drain(..));
+                record.source_refs = unique_strings(record.source_refs.drain(..));
                 record.inherited_core_refs = unique_strings(record.inherited_core_refs.drain(..));
                 record.feature_local_refs = unique_strings(record.feature_local_refs.drain(..));
                 record.boundary_holonomy_refs =
@@ -2058,6 +2087,8 @@ fn push_feature_extension_attribution(
         .or_insert_with(|| ArchSigFeatureExtensionWitnessAttributionV0 {
             witness_ref: witness_ref.to_string(),
             labels: Vec::new(),
+            observation_refs: Vec::new(),
+            source_refs: Vec::new(),
             inherited_core_refs: Vec::new(),
             feature_local_refs: Vec::new(),
             boundary_holonomy_refs: Vec::new(),
@@ -6928,49 +6959,185 @@ fn build_feature_extension_formula_readings(
     repair_candidates: &[ArchSigRepairOperationCandidateV0],
     split_readiness_readings: &[ArchSigSplitReadinessReadingV0],
 ) -> Vec<ArchSigFeatureExtensionFormulaReadingV0> {
+    let semantic_atom_refs = archmap
+        .semantic_observations
+        .iter()
+        .flat_map(|semantic| semantic.atom_observation_refs.iter().cloned())
+        .collect::<BTreeSet<_>>();
+    let obstruction_observation_refs_by_id = obstruction_circuits
+        .iter()
+        .map(|obstruction| {
+            let refs = unique_strings(
+                obstruction
+                    .atom_observation_refs
+                    .iter()
+                    .chain(obstruction.molecule_reading_refs.iter())
+                    .cloned(),
+            );
+            (obstruction.obstruction_circuit_id.clone(), refs)
+        })
+        .collect::<BTreeMap<_, _>>();
+    let obstruction_source_refs_by_id = obstruction_circuits
+        .iter()
+        .map(|obstruction| {
+            (
+                obstruction.obstruction_circuit_id.clone(),
+                source_refs_for_observation_refs(archmap, &obstruction.atom_observation_refs),
+            )
+        })
+        .collect::<BTreeMap<_, _>>();
+    let interaction_obstruction_refs = split_readiness_readings
+        .iter()
+        .flat_map(|reading| reading.interaction_obstruction_refs.iter().cloned())
+        .collect::<BTreeSet<_>>();
+    let mut witness_basis = BTreeMap::<String, ArchSigFeatureExtensionWitnessBasisV0>::new();
     let obstruction_ids = obstruction_circuits
         .iter()
-        .map(|obstruction| obstruction.obstruction_circuit_id.clone())
+        .map(|obstruction| {
+            push_feature_extension_witness_basis(
+                &mut witness_basis,
+                archmap,
+                &obstruction.obstruction_circuit_id,
+                "inheritedCoreObstruction",
+                obstruction.atom_observation_refs.clone(),
+                source_refs_for_observation_refs(archmap, &obstruction.atom_observation_refs),
+            );
+            obstruction.obstruction_circuit_id.clone()
+        })
         .collect::<Vec<_>>();
     let feature_local = obstruction_circuits
         .iter()
         .filter(|obstruction| {
-            let text = format!("{} {}", obstruction.law_ref, obstruction.evidence_summary)
-                .to_ascii_lowercase();
-            text.contains("feature") || text.contains("extension") || text.contains("semantic")
+            obstruction
+                .atom_observation_refs
+                .iter()
+                .any(|atom_ref| semantic_atom_refs.contains(atom_ref))
         })
-        .map(|obstruction| obstruction.obstruction_circuit_id.clone())
+        .map(|obstruction| {
+            push_feature_extension_witness_basis(
+                &mut witness_basis,
+                archmap,
+                &obstruction.obstruction_circuit_id,
+                "featureLocalObstruction",
+                obstruction.atom_observation_refs.clone(),
+                source_refs_for_observation_refs(archmap, &obstruction.atom_observation_refs),
+            );
+            obstruction.obstruction_circuit_id.clone()
+        })
         .collect::<Vec<_>>();
     let interaction = obstruction_circuits
         .iter()
         .filter(|obstruction| {
-            let text = format!("{} {}", obstruction.law_ref, obstruction.evidence_summary)
-                .to_ascii_lowercase();
-            text.contains("interaction")
-                || text.contains("bridge")
-                || text.contains("runtime")
-                || text.contains("effect")
+            interaction_obstruction_refs.contains(&obstruction.obstruction_circuit_id)
+                || !obstruction.molecule_reading_refs.is_empty()
         })
-        .map(|obstruction| obstruction.obstruction_circuit_id.clone())
+        .map(|obstruction| {
+            let observation_refs = unique_strings(
+                obstruction
+                    .atom_observation_refs
+                    .iter()
+                    .chain(obstruction.molecule_reading_refs.iter())
+                    .cloned(),
+            );
+            push_feature_extension_witness_basis(
+                &mut witness_basis,
+                archmap,
+                &obstruction.obstruction_circuit_id,
+                "interactionObstruction",
+                observation_refs,
+                source_refs_for_observation_refs(archmap, &obstruction.atom_observation_refs),
+            );
+            obstruction.obstruction_circuit_id.clone()
+        })
         .collect::<Vec<_>>();
     let lifting_failure_refs = split_readiness_readings
         .iter()
-        .filter(|reading| reading.lifting_evidence_status != "observed")
-        .map(|reading| reading.reading_id.clone())
+        .filter(|reading| {
+            reading.core_embedding_status == "missingEvidence"
+                || reading.feature_view_section_status != "observed"
+                || reading.lifting_evidence_status == "blockedByBridgeEdge"
+        })
+        .map(|reading| {
+            let observation_refs = unique_strings(
+                std::iter::once(reading.molecule_ref.clone())
+                    .chain(reading.interaction_obstruction_refs.iter().cloned())
+                    .chain(reading.bridge_edge_refs.iter().cloned()),
+            );
+            push_feature_extension_witness_basis(
+                &mut witness_basis,
+                archmap,
+                &reading.reading_id,
+                "liftingFailure",
+                observation_refs,
+                source_refs_for_observation_refs(
+                    archmap,
+                    std::slice::from_ref(&reading.molecule_ref),
+                ),
+            );
+            reading.reading_id.clone()
+        })
         .collect::<Vec<_>>();
     let complexity_transfer_refs = repair_candidates
         .iter()
-        .flat_map(|candidate| candidate.transfer_risks.clone())
+        .filter(|candidate| !candidate.transfer_risks.is_empty())
+        .map(|candidate| {
+            let observation_refs =
+                unique_strings(candidate.target_obstruction_refs.iter().flat_map(
+                    |obstruction_ref| {
+                        obstruction_observation_refs_by_id
+                            .get(obstruction_ref)
+                            .cloned()
+                            .unwrap_or_else(|| vec![obstruction_ref.clone()])
+                    },
+                ));
+            let source_refs = unique_strings(candidate.target_obstruction_refs.iter().flat_map(
+                |obstruction_ref| {
+                    obstruction_source_refs_by_id
+                        .get(obstruction_ref)
+                        .cloned()
+                        .unwrap_or_default()
+                },
+            ));
+            push_feature_extension_witness_basis(
+                &mut witness_basis,
+                archmap,
+                &candidate.repair_operation_candidate_id,
+                "complexityTransfer",
+                observation_refs,
+                source_refs,
+            );
+            candidate.repair_operation_candidate_id.clone()
+        })
         .collect::<Vec<_>>();
     let residual_coverage_gap_refs = archmap
         .observation_gaps
         .iter()
-        .map(|gap| gap.gap_id.clone())
+        .map(|gap| {
+            push_feature_extension_witness_basis(
+                &mut witness_basis,
+                archmap,
+                &gap.gap_id,
+                "residualCoverageGap",
+                vec![gap.gap_id.clone()],
+                gap.source_refs.iter().map(source_ref_label).collect(),
+            );
+            gap.gap_id.clone()
+        })
         .collect::<Vec<_>>();
     let filling_failure_refs = obstruction_circuits
         .iter()
         .filter(|obstruction| !obstruction.missing_evidence.is_empty())
-        .map(|obstruction| obstruction.obstruction_circuit_id.clone())
+        .map(|obstruction| {
+            push_feature_extension_witness_basis(
+                &mut witness_basis,
+                archmap,
+                &obstruction.obstruction_circuit_id,
+                "fillingFailure",
+                obstruction.atom_observation_refs.clone(),
+                source_refs_for_observation_refs(archmap, &obstruction.atom_observation_refs),
+            );
+            obstruction.obstruction_circuit_id.clone()
+        })
         .collect::<Vec<_>>();
     let classification_summary = vec![
         extension_axis_summary("inheritedCoreObstruction", &obstruction_ids),
@@ -6996,12 +7163,44 @@ fn build_feature_extension_formula_readings(
         filling_failure_refs,
         complexity_transfer_refs,
         residual_coverage_gap_refs,
+        witness_basis: witness_basis.into_values().collect(),
         classification_summary,
         evidence_boundary:
-            "extension formula is computed over current ArchMap state, not an actual PR diff"
+            "extension formula is computed from witness refs over current ArchMap state, not text matching or an actual PR diff"
                 .to_string(),
         non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
     }]
+}
+
+fn push_feature_extension_witness_basis(
+    basis: &mut BTreeMap<String, ArchSigFeatureExtensionWitnessBasisV0>,
+    archmap: &ArchMapDocumentV0,
+    witness_ref: &str,
+    label: &str,
+    observation_refs: Vec<String>,
+    source_refs: Vec<String>,
+) {
+    let entry =
+        basis
+            .entry(witness_ref.to_string())
+            .or_insert_with(|| ArchSigFeatureExtensionWitnessBasisV0 {
+                witness_ref: witness_ref.to_string(),
+                labels: Vec::new(),
+                observation_refs: Vec::new(),
+                source_refs: Vec::new(),
+                basis_boundary:
+                    "feature-extension basis is assembled from ArchMap observation refs and ArchSig witness refs, not text classification"
+                        .to_string(),
+            });
+    entry.labels.push(label.to_string());
+    entry.observation_refs.extend(observation_refs);
+    entry.source_refs.extend(source_refs);
+    if entry.source_refs.is_empty() && !entry.observation_refs.is_empty() {
+        entry.source_refs = source_refs_for_observation_refs(archmap, &entry.observation_refs);
+    }
+    entry.labels = unique_strings(entry.labels.drain(..));
+    entry.observation_refs = unique_strings(entry.observation_refs.drain(..));
+    entry.source_refs = unique_strings(entry.source_refs.drain(..));
 }
 
 fn extension_axis_summary(axis: &str, refs: &[String]) -> ArchSigFeatureExtensionAxisSummaryV0 {
@@ -13422,6 +13621,34 @@ fn check_aat_structural_reading_surfaces(packet: &ArchSigAnalysisPacketV0) -> Va
                 "feature extension formula must classify all required axes",
             ));
         }
+        if reading.witness_basis.is_empty() {
+            examples.push(generic_validation_example(
+                &reading.reading_id,
+                "witnessBasis",
+                "feature extension formula must retain witness-driven attribution basis",
+            ));
+        }
+        for basis in &reading.witness_basis {
+            push_blank(
+                &mut examples,
+                &format!("{} witnessBasis.witnessRef", reading.reading_id),
+                &basis.witness_ref,
+            );
+            if basis.labels.is_empty() || has_blank(&basis.labels) {
+                examples.push(generic_validation_example(
+                    &reading.reading_id,
+                    &basis.witness_ref,
+                    "feature extension witness basis must carry labels",
+                ));
+            }
+            if basis.observation_refs.is_empty() && basis.source_refs.is_empty() {
+                examples.push(generic_validation_example(
+                    &reading.reading_id,
+                    &basis.witness_ref,
+                    "feature extension witness basis must connect to observation or source refs",
+                ));
+            }
+        }
         push_blank(
             &mut examples,
             &format!("{} evidenceBoundary", reading.reading_id),
@@ -15000,6 +15227,13 @@ fn check_feature_extension_diagnosis_surface(packet: &ArchSigAnalysisPacketV0) -
                     "witness attribution must carry one or more labels",
                 ));
             }
+            if record.observation_refs.is_empty() && record.source_refs.is_empty() {
+                examples.push(generic_validation_example(
+                    &reading.diagnosis_id,
+                    &record.witness_ref,
+                    "witness attribution must retain source or observation refs",
+                ));
+            }
             for label in &record.labels {
                 if !required_labels.contains(label.as_str()) {
                     examples.push(generic_validation_example(
@@ -16185,6 +16419,13 @@ fn source_refs_for_observation_refs(
         .flat_map(|atom| atom.source_refs.iter().map(source_ref_label))
         .chain(
             archmap
+                .molecule_observations
+                .iter()
+                .filter(|molecule| wanted.contains(molecule.molecule_observation_id.as_str()))
+                .flat_map(|molecule| molecule.source_refs.iter().map(source_ref_label)),
+        )
+        .chain(
+            archmap
                 .semantic_observations
                 .iter()
                 .filter(|semantic| wanted.contains(semantic.semantic_observation_id.as_str()))
@@ -16196,6 +16437,13 @@ fn source_refs_for_observation_refs(
                 .iter()
                 .filter(|gap| wanted.contains(gap.gap_id.as_str()))
                 .flat_map(|gap| gap.source_refs.iter().map(source_ref_label)),
+        )
+        .chain(
+            archmap
+                .operation_square_evidence
+                .iter()
+                .filter(|evidence| wanted.contains(evidence.operation_square_evidence_id.as_str()))
+                .flat_map(|evidence| evidence.source_refs.iter().map(source_ref_label)),
         )
         .chain(
             archmap

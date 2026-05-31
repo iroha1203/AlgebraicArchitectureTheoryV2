@@ -2617,8 +2617,12 @@
       "inheritedCoreObstructionRefs": [
         "obstruction:homotopy-report-fixture:computed"
       ],
-      "featureLocalObstructionRefs": [],
-      "interactionObstructionRefs": [],
+      "featureLocalObstructionRefs": [
+        "obstruction:homotopy-report-fixture:computed"
+      ],
+      "interactionObstructionRefs": [
+        "obstruction:homotopy-report-fixture:computed"
+      ],
       "liftingFailureRefs": [
         "split-readiness:molecule-homotopy-report-fixture"
       ],
@@ -2626,10 +2630,82 @@
         "obstruction:homotopy-report-fixture:computed"
       ],
       "complexityTransferRefs": [
-        "may transfer obstruction into runtime behavior, ownership, or idempotency boundary"
+        "repair:obstruction-homotopy-report-fixture-computed"
       ],
       "residualCoverageGapRefs": [
         "gap:path-rule:authorization-bypass-hole:missing-policy-test"
+      ],
+      "witnessBasis": [
+        {
+          "witnessRef": "gap:path-rule:authorization-bypass-hole:missing-policy-test",
+          "labels": [
+            "residualCoverageGap"
+          ],
+          "observationRefs": [
+            "gap:path-rule:authorization-bypass-hole:missing-policy-test"
+          ],
+          "sourceRefs": [
+            "doc-auth-policy"
+          ],
+          "basisBoundary": "feature-extension basis is assembled from ArchMap observation refs and ArchSig witness refs, not text classification"
+        },
+        {
+          "witnessRef": "obstruction:homotopy-report-fixture:computed",
+          "labels": [
+            "featureLocalObstruction",
+            "fillingFailure",
+            "inheritedCoreObstruction",
+            "interactionObstruction"
+          ],
+          "observationRefs": [
+            "atom:authorization-bypass",
+            "atom:cache-read",
+            "atom:coupon-tax-rounding",
+            "atom:repository-read",
+            "molecule-reading:molecule-homotopy-report-fixture"
+          ],
+          "sourceRefs": [
+            "src-auth-bypass",
+            "src-cache-read",
+            "src-pricing-checkout",
+            "src-repository-read"
+          ],
+          "basisBoundary": "feature-extension basis is assembled from ArchMap observation refs and ArchSig witness refs, not text classification"
+        },
+        {
+          "witnessRef": "repair:obstruction-homotopy-report-fixture-computed",
+          "labels": [
+            "complexityTransfer"
+          ],
+          "observationRefs": [
+            "atom:authorization-bypass",
+            "atom:cache-read",
+            "atom:coupon-tax-rounding",
+            "atom:repository-read",
+            "molecule-reading:molecule-homotopy-report-fixture"
+          ],
+          "sourceRefs": [
+            "src-auth-bypass",
+            "src-cache-read",
+            "src-pricing-checkout",
+            "src-repository-read"
+          ],
+          "basisBoundary": "feature-extension basis is assembled from ArchMap observation refs and ArchSig witness refs, not text classification"
+        },
+        {
+          "witnessRef": "split-readiness:molecule-homotopy-report-fixture",
+          "labels": [
+            "liftingFailure"
+          ],
+          "observationRefs": [
+            "molecule:homotopy-report-fixture",
+            "obstruction:homotopy-report-fixture:computed"
+          ],
+          "sourceRefs": [
+            "test-homotopy-fillers"
+          ],
+          "basisBoundary": "feature-extension basis is assembled from ArchMap observation refs and ArchSig witness refs, not text classification"
+        }
       ],
       "classificationSummary": [
         {
@@ -2642,14 +2718,18 @@
         },
         {
           "axis": "featureLocalObstruction",
-          "status": "unmeasuredOrAbsent",
-          "refs": [],
+          "status": "observed",
+          "refs": [
+            "obstruction:homotopy-report-fixture:computed"
+          ],
           "reading": "featureLocalObstruction is classified as a current-state extension coordinate"
         },
         {
           "axis": "interactionObstruction",
-          "status": "unmeasuredOrAbsent",
-          "refs": [],
+          "status": "observed",
+          "refs": [
+            "obstruction:homotopy-report-fixture:computed"
+          ],
           "reading": "interactionObstruction is classified as a current-state extension coordinate"
         },
         {
@@ -2672,7 +2752,7 @@
           "axis": "complexityTransfer",
           "status": "observed",
           "refs": [
-            "may transfer obstruction into runtime behavior, ownership, or idempotency boundary"
+            "repair:obstruction-homotopy-report-fixture-computed"
           ],
           "reading": "complexityTransfer is classified as a current-state extension coordinate"
         },
@@ -2685,7 +2765,7 @@
           "reading": "residualCoverageGap is classified as a current-state extension coordinate"
         }
       ],
-      "evidenceBoundary": "extension formula is computed over current ArchMap state, not an actual PR diff",
+      "evidenceBoundary": "extension formula is computed from witness refs over current ArchMap state, not text matching or an actual PR diff",
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -3003,6 +3083,8 @@
         "atom:coupon-tax-rounding"
       ],
       "constraintRefs": [
+        "obstruction:homotopy-report-fixture:computed",
+        "obstruction:homotopy-report-fixture:computed",
         "obstruction:homotopy-report-fixture:computed",
         "split-readiness:molecule-homotopy-report-fixture",
         "obstruction:homotopy-report-fixture:computed",
@@ -7646,18 +7728,20 @@
       "featureScopeRef": "homotopy-report-fixture-archmap:feature",
       "mixedSubconfigurationRefs": [
         "gap:path-rule:authorization-bypass-hole:missing-policy-test",
-        "may transfer obstruction into runtime behavior, ownership, or idempotency boundary",
         "obstruction:homotopy-report-fixture:computed",
+        "repair:obstruction-homotopy-report-fixture-computed",
         "split-readiness:molecule-homotopy-report-fixture"
       ],
       "coreLocalReadingRefs": [
         "obstruction:homotopy-report-fixture:computed"
       ],
-      "featureLocalReadingRefs": [],
+      "featureLocalReadingRefs": [
+        "obstruction:homotopy-report-fixture:computed"
+      ],
       "boundarySupportRefs": [
         "gap:path-rule:authorization-bypass-hole:missing-policy-test",
-        "may transfer obstruction into runtime behavior, ownership, or idempotency boundary",
         "obstruction:homotopy-report-fixture:computed",
+        "repair:obstruction-homotopy-report-fixture-computed",
         "split-readiness:molecule-homotopy-report-fixture"
       ],
       "holonomyAxes": [
@@ -7683,8 +7767,8 @@
           "measuredDefectRefs": [],
           "supportRefs": [
             "gap:path-rule:authorization-bypass-hole:missing-policy-test",
-            "may transfer obstruction into runtime behavior, ownership, or idempotency boundary",
             "obstruction:homotopy-report-fixture:computed",
+            "repair:obstruction-homotopy-report-fixture-computed",
             "split-readiness:molecule-homotopy-report-fixture"
           ],
           "missingEvidence": [
@@ -7716,8 +7800,8 @@
           "measuredDefectRefs": [],
           "supportRefs": [
             "gap:path-rule:authorization-bypass-hole:missing-policy-test",
-            "may transfer obstruction into runtime behavior, ownership, or idempotency boundary",
             "obstruction:homotopy-report-fixture:computed",
+            "repair:obstruction-homotopy-report-fixture-computed",
             "split-readiness:molecule-homotopy-report-fixture"
           ],
           "missingEvidence": [
@@ -7749,8 +7833,8 @@
           "measuredDefectRefs": [],
           "supportRefs": [
             "gap:path-rule:authorization-bypass-hole:missing-policy-test",
-            "may transfer obstruction into runtime behavior, ownership, or idempotency boundary",
             "obstruction:homotopy-report-fixture:computed",
+            "repair:obstruction-homotopy-report-fixture-computed",
             "split-readiness:molecule-homotopy-report-fixture"
           ],
           "missingEvidence": [
@@ -7768,8 +7852,8 @@
           "measuredDefectRefs": [],
           "supportRefs": [
             "gap:path-rule:authorization-bypass-hole:missing-policy-test",
-            "may transfer obstruction into runtime behavior, ownership, or idempotency boundary",
             "obstruction:homotopy-report-fixture:computed",
+            "repair:obstruction-homotopy-report-fixture-computed",
             "split-readiness:molecule-homotopy-report-fixture"
           ],
           "missingEvidence": [
@@ -7794,10 +7878,10 @@
       ],
       "residualObstructionRefs": [
         "gap:path-rule:authorization-bypass-hole:missing-policy-test",
-        "may transfer obstruction into runtime behavior, ownership, or idempotency boundary",
         "mu:operation-square-operation-square-evidence-cache-repository-read:effect",
         "mu:operation-square-operation-square-evidence-cache-repository-read:semantic",
         "obstruction:homotopy-report-fixture:computed",
+        "repair:obstruction-homotopy-report-fixture-computed",
         "split-readiness:molecule-homotopy-report-fixture"
       ],
       "supportSeparationPolicy": "core-local, feature-local, and mixed boundary support are separated as review attribution surfaces, not as a proved direct-sum decomposition",
@@ -7809,7 +7893,7 @@
         "selected LawPolicy exactness assumptions"
       ],
       "attributionPolicy": "multi-label attribution may name core, feature, boundary, law, and coverage contributors without selecting a single cause",
-      "coverageBoundary": "extension formula is computed over current ArchMap state, not an actual PR diff",
+      "coverageBoundary": "extension formula is computed from witness refs over current ArchMap state, not text matching or an actual PR diff",
       "exactnessBoundary": "Boundary(A,f) residual is measured over current ArchMap evidence and does not prove Ob(B)=Ob(A)+Ob(f)+Hol(Boundary(A,f))",
       "evidenceBoundary": "feature boundary residual is a bounded ArchSig review reading, not a theorem about feature safety or danger",
       "nonConclusions": [
@@ -7841,8 +7925,10 @@
         },
         {
           "axis": "featureLocalObstruction",
-          "status": "unmeasuredOrAbsent",
-          "refs": [],
+          "status": "observed",
+          "refs": [
+            "obstruction:homotopy-report-fixture:computed"
+          ],
           "reading": "featureLocalObstruction is classified as a current-state extension coordinate"
         },
         {
@@ -7851,10 +7937,10 @@
           "refs": [
             "feature-boundary-residual:homotopy-report-fixture-archmap",
             "gap:path-rule:authorization-bypass-hole:missing-policy-test",
-            "may transfer obstruction into runtime behavior, ownership, or idempotency boundary",
             "mu:operation-square-operation-square-evidence-cache-repository-read:effect",
             "mu:operation-square-operation-square-evidence-cache-repository-read:semantic",
             "obstruction:homotopy-report-fixture:computed",
+            "repair:obstruction-homotopy-report-fixture-computed",
             "split-readiness:molecule-homotopy-report-fixture"
           ],
           "reading": "boundaryHolonomy is classified as a current-state extension coordinate"
@@ -7879,7 +7965,7 @@
           "axis": "complexityTransfer",
           "status": "observed",
           "refs": [
-            "may transfer obstruction into runtime behavior, ownership, or idempotency boundary"
+            "repair:obstruction-homotopy-report-fixture-computed"
           ],
           "reading": "complexityTransfer is classified as a current-state extension coordinate"
         },
@@ -7898,6 +7984,17 @@
           "labels": [
             "boundaryHolonomy"
           ],
+          "observationRefs": [
+            "gap:path-rule:authorization-bypass-hole:missing-policy-test",
+            "mu:operation-square-operation-square-evidence-cache-repository-read:effect",
+            "mu:operation-square-operation-square-evidence-cache-repository-read:semantic",
+            "obstruction:homotopy-report-fixture:computed",
+            "repair:obstruction-homotopy-report-fixture-computed",
+            "split-readiness:molecule-homotopy-report-fixture"
+          ],
+          "sourceRefs": [
+            "doc-auth-policy"
+          ],
           "inheritedCoreRefs": [],
           "featureLocalRefs": [],
           "boundaryHolonomyRefs": [
@@ -7915,6 +8012,17 @@
             "boundaryHolonomy",
             "residualCoverageGap"
           ],
+          "observationRefs": [
+            "gap:path-rule:authorization-bypass-hole:missing-policy-test",
+            "mu:operation-square-operation-square-evidence-cache-repository-read:effect",
+            "mu:operation-square-operation-square-evidence-cache-repository-read:semantic",
+            "obstruction:homotopy-report-fixture:computed",
+            "repair:obstruction-homotopy-report-fixture-computed",
+            "split-readiness:molecule-homotopy-report-fixture"
+          ],
+          "sourceRefs": [
+            "doc-auth-policy"
+          ],
           "inheritedCoreRefs": [],
           "featureLocalRefs": [],
           "boundaryHolonomyRefs": [
@@ -7929,28 +8037,20 @@
           "reading": "gap:path-rule:authorization-bypass-hole:missing-policy-test carries non-disjoint feature-extension labels [\"boundaryHolonomy\", \"residualCoverageGap\"]"
         },
         {
-          "witnessRef": "may transfer obstruction into runtime behavior, ownership, or idempotency boundary",
-          "labels": [
-            "boundaryHolonomy",
-            "complexityTransfer"
-          ],
-          "inheritedCoreRefs": [],
-          "featureLocalRefs": [],
-          "boundaryHolonomyRefs": [
-            "may transfer obstruction into runtime behavior, ownership, or idempotency boundary"
-          ],
-          "liftingFailureRefs": [],
-          "fillingFailureRefs": [],
-          "complexityTransferRefs": [
-            "may transfer obstruction into runtime behavior, ownership, or idempotency boundary"
-          ],
-          "residualCoverageGapRefs": [],
-          "reading": "may transfer obstruction into runtime behavior, ownership, or idempotency boundary carries non-disjoint feature-extension labels [\"boundaryHolonomy\", \"complexityTransfer\"]"
-        },
-        {
           "witnessRef": "mu:operation-square-operation-square-evidence-cache-repository-read:effect",
           "labels": [
             "boundaryHolonomy"
+          ],
+          "observationRefs": [
+            "gap:path-rule:authorization-bypass-hole:missing-policy-test",
+            "mu:operation-square-operation-square-evidence-cache-repository-read:effect",
+            "mu:operation-square-operation-square-evidence-cache-repository-read:semantic",
+            "obstruction:homotopy-report-fixture:computed",
+            "repair:obstruction-homotopy-report-fixture-computed",
+            "split-readiness:molecule-homotopy-report-fixture"
+          ],
+          "sourceRefs": [
+            "doc-auth-policy"
           ],
           "inheritedCoreRefs": [],
           "featureLocalRefs": [],
@@ -7968,6 +8068,17 @@
           "labels": [
             "boundaryHolonomy"
           ],
+          "observationRefs": [
+            "gap:path-rule:authorization-bypass-hole:missing-policy-test",
+            "mu:operation-square-operation-square-evidence-cache-repository-read:effect",
+            "mu:operation-square-operation-square-evidence-cache-repository-read:semantic",
+            "obstruction:homotopy-report-fixture:computed",
+            "repair:obstruction-homotopy-report-fixture-computed",
+            "split-readiness:molecule-homotopy-report-fixture"
+          ],
+          "sourceRefs": [
+            "doc-auth-policy"
+          ],
           "inheritedCoreRefs": [],
           "featureLocalRefs": [],
           "boundaryHolonomyRefs": [
@@ -7983,13 +8094,35 @@
           "witnessRef": "obstruction:homotopy-report-fixture:computed",
           "labels": [
             "boundaryHolonomy",
+            "featureLocalObstruction",
             "fillingFailure",
             "inheritedCoreObstruction"
+          ],
+          "observationRefs": [
+            "atom:authorization-bypass",
+            "atom:cache-read",
+            "atom:coupon-tax-rounding",
+            "atom:repository-read",
+            "gap:path-rule:authorization-bypass-hole:missing-policy-test",
+            "molecule-reading:molecule-homotopy-report-fixture",
+            "mu:operation-square-operation-square-evidence-cache-repository-read:effect",
+            "mu:operation-square-operation-square-evidence-cache-repository-read:semantic",
+            "obstruction:homotopy-report-fixture:computed",
+            "repair:obstruction-homotopy-report-fixture-computed",
+            "split-readiness:molecule-homotopy-report-fixture"
+          ],
+          "sourceRefs": [
+            "src-auth-bypass",
+            "src-cache-read",
+            "src-pricing-checkout",
+            "src-repository-read"
           ],
           "inheritedCoreRefs": [
             "obstruction:homotopy-report-fixture:computed"
           ],
-          "featureLocalRefs": [],
+          "featureLocalRefs": [
+            "obstruction:homotopy-report-fixture:computed"
+          ],
           "boundaryHolonomyRefs": [
             "obstruction:homotopy-report-fixture:computed"
           ],
@@ -7999,13 +8132,63 @@
           ],
           "complexityTransferRefs": [],
           "residualCoverageGapRefs": [],
-          "reading": "obstruction:homotopy-report-fixture:computed carries non-disjoint feature-extension labels [\"boundaryHolonomy\", \"fillingFailure\", \"inheritedCoreObstruction\"]"
+          "reading": "obstruction:homotopy-report-fixture:computed carries non-disjoint feature-extension labels [\"boundaryHolonomy\", \"featureLocalObstruction\", \"fillingFailure\", \"inheritedCoreObstruction\"]"
+        },
+        {
+          "witnessRef": "repair:obstruction-homotopy-report-fixture-computed",
+          "labels": [
+            "boundaryHolonomy",
+            "complexityTransfer"
+          ],
+          "observationRefs": [
+            "atom:authorization-bypass",
+            "atom:cache-read",
+            "atom:coupon-tax-rounding",
+            "atom:repository-read",
+            "gap:path-rule:authorization-bypass-hole:missing-policy-test",
+            "molecule-reading:molecule-homotopy-report-fixture",
+            "mu:operation-square-operation-square-evidence-cache-repository-read:effect",
+            "mu:operation-square-operation-square-evidence-cache-repository-read:semantic",
+            "obstruction:homotopy-report-fixture:computed",
+            "repair:obstruction-homotopy-report-fixture-computed",
+            "split-readiness:molecule-homotopy-report-fixture"
+          ],
+          "sourceRefs": [
+            "src-auth-bypass",
+            "src-cache-read",
+            "src-pricing-checkout",
+            "src-repository-read"
+          ],
+          "inheritedCoreRefs": [],
+          "featureLocalRefs": [],
+          "boundaryHolonomyRefs": [
+            "repair:obstruction-homotopy-report-fixture-computed"
+          ],
+          "liftingFailureRefs": [],
+          "fillingFailureRefs": [],
+          "complexityTransferRefs": [
+            "repair:obstruction-homotopy-report-fixture-computed"
+          ],
+          "residualCoverageGapRefs": [],
+          "reading": "repair:obstruction-homotopy-report-fixture-computed carries non-disjoint feature-extension labels [\"boundaryHolonomy\", \"complexityTransfer\"]"
         },
         {
           "witnessRef": "split-readiness:molecule-homotopy-report-fixture",
           "labels": [
             "boundaryHolonomy",
             "liftingFailure"
+          ],
+          "observationRefs": [
+            "gap:path-rule:authorization-bypass-hole:missing-policy-test",
+            "molecule:homotopy-report-fixture",
+            "mu:operation-square-operation-square-evidence-cache-repository-read:effect",
+            "mu:operation-square-operation-square-evidence-cache-repository-read:semantic",
+            "obstruction:homotopy-report-fixture:computed",
+            "repair:obstruction-homotopy-report-fixture-computed",
+            "split-readiness:molecule-homotopy-report-fixture"
+          ],
+          "sourceRefs": [
+            "test-homotopy-fillers"
           ],
           "inheritedCoreRefs": [],
           "featureLocalRefs": [],
@@ -8031,7 +8214,7 @@
         "obstruction:homotopy-report-fixture:computed"
       ],
       "complexityTransferRefs": [
-        "may transfer obstruction into runtime behavior, ownership, or idempotency boundary"
+        "repair:obstruction-homotopy-report-fixture-computed"
       ],
       "classificationBoundary": "feature-extension labels are intentionally non-disjoint; the same witness may carry inherited-core, feature-local, boundary-holonomy, lifting, filling, complexity-transfer, and coverage-gap labels",
       "fieldsigBoundary": "ArchSig reports current-state feature-extension attribution; FieldSig owns longitudinal evolution quality analysis",
@@ -9904,7 +10087,7 @@
       "homotopy-report-fixture-policy required=1 unmeasured=0 blockedWitnesses=1"
     ],
     "featureExtensionFormulaSummary": [
-      "feature-extension-formula:homotopy-report-fixture-archmap status=measured inherited=1 featureLocal=0 interaction=0 residualGaps=1"
+      "feature-extension-formula:homotopy-report-fixture-archmap status=measured inherited=1 featureLocal=1 interaction=1 residualGaps=1"
     ],
     "operationCalculusLawSummary": [
       "repair:obstruction-homotopy-report-fixture-computed kind=repair-homotopyreportfixturecircuit composition=assumptionRelative repairMonotonicity=selectedAxisOnly boundary=notASynthesisCertificate"
@@ -9931,7 +10114,7 @@
       "effect-relation-algebra:homotopy-report-fixture-archmap pressure=effectRelationPressureObserved generators=4 unresolved=0 externalBoundaries=0"
     ],
     "synthesisBlockageSummary": [
-      "synthesis-blockage:homotopy-report-fixture-archmap status=synthesisBlockedByMissingEvidenceOrConstraints targets=2 constraints=5 missing=5 noSolution=notASolverAndNotAbsenceProof"
+      "synthesis-blockage:homotopy-report-fixture-archmap status=synthesisBlockedByMissingEvidenceOrConstraints targets=2 constraints=7 missing=5 noSolution=notASolverAndNotAbsenceProof"
     ],
     "operationPreconditionReadinessSummary": [
       "repair:obstruction-homotopy-report-fixture-computed kind=repair-homotopyreportfixturecircuit status=blockedByMissingPreconditionEvidence missing=5 witnesses=1"

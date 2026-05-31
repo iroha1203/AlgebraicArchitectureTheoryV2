@@ -419,13 +419,15 @@ The builder:
   machine-readable non-conclusions. It does not claim an unconditional
   `Ob(B) = Ob(A) + Ob(f) + Hol(Boundary(A,f))` theorem or decide feature
   safety.
-- `featureExtensionDiagnosisReadings` classifies feature-extension witnesses
-  with non-disjoint multi-label attribution. The seven labels are inherited core
-  obstruction, feature-local obstruction, boundary holonomy, lifting failure,
-  filling failure, complexity transfer, and residual coverage gap. A single
-  witness can carry multiple labels; the classifier records this as review
-  attribution, not as a mutually disjoint decomposition, and keeps the ArchSig /
-  FieldSig boundary explicit.
+- `featureExtensionFormulaReadings` and `featureExtensionDiagnosisReadings`
+  classify feature-extension witnesses with non-disjoint multi-label
+  attribution. The seven labels are inherited core obstruction, feature-local
+  obstruction, boundary holonomy, lifting failure, filling failure, complexity
+  transfer, and residual coverage gap. Formula readings retain `witnessBasis`
+  entries with observation and source refs; diagnosis records carry those refs
+  into witness-level attribution. The classifier records review attribution, not
+  a mutually disjoint decomposition, and keeps the ArchSig / FieldSig boundary
+  explicit.
 - axis-forgetting risk records when a coarse observation projection has
   forgotten selected axes or collapsed mixed-axis support. It blocks
   `ZeroReflecting` and `ObstructionReflecting` readings unless explicit axis
