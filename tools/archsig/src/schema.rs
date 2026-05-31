@@ -1170,6 +1170,14 @@ pub struct ArchSigArchMapStoreRefsV0 {
 pub struct ArchSigMonodromyReadingFamilyV0 {
     pub reading_family_id: String,
     pub status: String,
+    #[serde(default)]
+    pub measured_axis_count: usize,
+    #[serde(default)]
+    pub unmeasured_axis_count: usize,
+    #[serde(default)]
+    pub positive_witness_count: usize,
+    #[serde(default)]
+    pub coverage_blocker_count: usize,
     pub arch_map_store_ref_set_ref: String,
     pub selected_axis_refs: Vec<String>,
     pub distance_kind: String,
@@ -1190,6 +1198,14 @@ pub struct ArchSigMonodromyReadingFamilyV0 {
 pub struct ArchSigBoundaryHolonomyReadingFamilyV0 {
     pub reading_family_id: String,
     pub status: String,
+    #[serde(default)]
+    pub measured_axis_count: usize,
+    #[serde(default)]
+    pub unmeasured_axis_count: usize,
+    #[serde(default)]
+    pub positive_witness_count: usize,
+    #[serde(default)]
+    pub coverage_blocker_count: usize,
     pub arch_map_store_ref_set_ref: String,
     pub selected_axis_refs: Vec<String>,
     pub distance_kind: String,

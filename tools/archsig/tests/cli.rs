@@ -2922,6 +2922,9 @@ fn assert_north_star_packet_surfaces(json: &Value) {
         "ArchMapStore refs must expose delta / commit / snapshot / index and raw-diff exclusion boundary"
     );
     for family in ["monodromyReadingFamily", "boundaryHolonomyReadingFamily"] {
+        let family_status = json[family]["status"].as_str();
+        let measured_axis_count = json[family]["measuredAxisCount"].as_u64();
+        let coverage_blocker_count = json[family]["coverageBlockerCount"].as_u64();
         assert!(
             json[family]["archMapStoreRefSetRef"] == json["archMapStoreRefs"]["refSetId"]
                 && json[family]["selectedAxisRefs"]
@@ -2930,8 +2933,16 @@ fn assert_north_star_packet_surfaces(json: &Value) {
                 && json[family]["distanceKind"].as_str().is_some()
                 && json[family]["weightPolicy"].as_str().is_some()
                 && json[family]["coveragePolicy"].as_str().is_some()
+                && family_status.is_some_and(|status| status != "schemaFoundationOnly")
+                && measured_axis_count.is_some()
+                && json[family]["unmeasuredAxisCount"].as_u64().is_some()
+                && json[family]["positiveWitnessCount"].as_u64().is_some()
+                && coverage_blocker_count.is_some()
+                && (measured_axis_count.is_some_and(|count| count > 0)
+                    || (family_status == Some("blockedByCoverageGap")
+                        && coverage_blocker_count.is_some_and(|count| count > 0)))
                 && json[family]["evidenceBoundary"].as_str().is_some(),
-            "{family} must connect to ArchMapStore refs and carry measurement policy"
+            "{family} must connect to ArchMapStore refs and carry evidence-derived status counts"
         );
     }
     assert!(

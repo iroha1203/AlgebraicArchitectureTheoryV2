@@ -8049,7 +8049,11 @@
   ],
   "monodromyReadingFamily": {
     "readingFamilyId": "monodromy-reading-family:measurement-homotopy-report-fixture",
-    "status": "schemaFoundationOnly",
+    "status": "partial",
+    "measuredAxisCount": 4,
+    "unmeasuredAxisCount": 4,
+    "positiveWitnessCount": 2,
+    "coverageBlockerCount": 12,
     "archMapStoreRefSetRef": "archmap-store-refs:homotopy-report-fixture-archmap",
     "selectedAxisRefs": [
       "axis:homotopy-report-fixture"
@@ -8092,7 +8096,11 @@
   },
   "boundaryHolonomyReadingFamily": {
     "readingFamilyId": "boundary-holonomy-reading-family:measurement-homotopy-report-fixture",
-    "status": "schemaFoundationOnly",
+    "status": "partial",
+    "measuredAxisCount": 4,
+    "unmeasuredAxisCount": 4,
+    "positiveWitnessCount": 4,
+    "coverageBlockerCount": 13,
     "archMapStoreRefSetRef": "archmap-store-refs:homotopy-report-fixture-archmap",
     "selectedAxisRefs": [
       "axis:homotopy-report-fixture"
