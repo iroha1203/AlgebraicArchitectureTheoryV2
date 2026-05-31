@@ -1280,12 +1280,37 @@ fn homotopy_report_fixture_manifest_locks_golden_validation() {
             .iter()
             .find(|reading| reading["loopRef"] == loop_ref)
             .unwrap_or_else(|| panic!("missing holonomy reading for {case_id}"));
+        assert!(
+            holonomy["distanceInputRefs"]
+                .as_array()
+                .is_some_and(|refs| !refs.is_empty())
+                && holonomy["sourceRefs"]
+                    .as_array()
+                    .is_some_and(|refs| !refs.is_empty()),
+            "{case_id} must compute holonomy from source-backed continuation inputs"
+        );
+        assert!(
+            holonomy["comparedContinuationSummary"]
+                .as_str()
+                .is_some_and(|summary| summary.contains("semanticEvidence=")
+                    && summary.contains("traceAxes=")
+                    && summary.contains("missing=")),
+            "{case_id} must expose measured continuation comparison basis"
+        );
 
         if let Some(expected) = case["expectedHolonomyValue"].as_i64() {
             assert_eq!(
                 holonomy["value"], expected,
                 "{case_id} must lock expected holonomy value"
             );
+            if expected == 0 {
+                assert!(
+                    holonomy["comparedContinuationSummary"]
+                        .as_str()
+                        .is_some_and(|summary| summary.contains("semanticEvidence=0")),
+                    "{case_id} zero holonomy must come from absent source-backed semantic defect, not text fallback"
+                );
+            }
         }
         if let Some(minimum) = case["minimumHolonomyValue"].as_i64() {
             assert!(
@@ -1294,12 +1319,32 @@ fn homotopy_report_fixture_manifest_locks_golden_validation() {
                     .is_some_and(|value| value >= minimum),
                 "{case_id} must expose nonzero holonomy"
             );
+            assert!(
+                holonomy["observationRefs"].as_array().is_some_and(|refs| {
+                    refs.iter().any(|item| {
+                        item.as_str()
+                            .is_some_and(|value| value.starts_with("semantic:"))
+                    })
+                }),
+                "{case_id} nonzero holonomy must be backed by semantic observation refs"
+            );
         }
         if let Some(expected_status) = case["expectedStokesStatus"].as_str() {
             assert_eq!(
                 stokes["status"], expected_status,
                 "{case_id} must lock Stokes status"
             );
+            if expected_status == "filledNonzeroHolonomyReview" {
+                assert!(
+                    stokes["fillingEvidenceRefs"]
+                        .as_array()
+                        .is_some_and(|refs| !refs.is_empty())
+                        && stokes["localCurvatureCellCandidates"]
+                            .as_array()
+                            .is_some_and(|refs| !refs.is_empty()),
+                    "{case_id} Stokes positive reading must require measured filler and local curvature cells"
+                );
+            }
         }
         if let Some(required_missing) = case["requiredMissingEvidence"].as_str() {
             assert!(

@@ -256,6 +256,18 @@ pub fn build_archsig_analysis_packet(
         );
     let bridge_split_obstruction_transfer_readings =
         build_bridge_split_obstruction_transfer_readings(&split_readiness_readings);
+    let operation_square_candidates = build_operation_square_candidates(archmap, &operation_deltas);
+    let path_continuation_traces = build_path_continuation_traces(
+        archmap,
+        law_policy,
+        &operation_square_candidates,
+        &operation_deltas,
+    );
+    let axis_wise_monodromy_defects = build_axis_wise_monodromy_defects(
+        law_policy,
+        &operation_square_candidates,
+        &path_continuation_traces,
+    );
     let homotopy_complex_summary = build_homotopy_complex_summary(archmap, law_policy);
     let path_pair_candidates = build_path_pair_candidates(
         archmap,
@@ -280,6 +292,8 @@ pub fn build_archsig_analysis_packet(
         &path_pair_candidates,
         &filler_candidate_readings,
         &architectural_hole_readings,
+        &path_continuation_traces,
+        &axis_wise_monodromy_defects,
     );
     let stokes_style_readings = build_stokes_style_readings(
         &homotopy_complex_summary,
@@ -294,18 +308,6 @@ pub fn build_archsig_analysis_packet(
         &architectural_hole_readings,
         &homotopy_holonomy_readings,
         &stokes_style_readings,
-    );
-    let operation_square_candidates = build_operation_square_candidates(archmap, &operation_deltas);
-    let path_continuation_traces = build_path_continuation_traces(
-        archmap,
-        law_policy,
-        &operation_square_candidates,
-        &operation_deltas,
-    );
-    let axis_wise_monodromy_defects = build_axis_wise_monodromy_defects(
-        law_policy,
-        &operation_square_candidates,
-        &path_continuation_traces,
     );
     let ami_aggregate_readings =
         build_ami_aggregate_readings(law_policy, &axis_wise_monodromy_defects);
@@ -9697,11 +9699,13 @@ fn build_path_pair_candidates(
 
     if let Some(profile) = law_policy.homotopy_measurement_profile.as_ref() {
         candidates.extend(profile.path_discovery_rules.iter().map(|rule| {
+            let rule_observation_refs = path_rule_observation_refs(archmap, &rule.rule_id);
+            let rule_source_refs =
+                source_refs_for_observation_refs(archmap, &rule_observation_refs);
             let has_rule_gap = archmap.observation_gaps.iter().any(|gap| {
-                text_contains_any(
-                    [&gap.gap_id, &gap.subject_ref, &gap.reason],
-                    [&rule.rule_id, &rule.path_source_kind],
-                )
+                gap.subject_ref == rule.rule_id
+                    || gap.gap_id == rule.rule_id
+                    || gap.subject_ref == rule.path_source_kind
             });
             ArchSigPathPairCandidateV0 {
                 candidate_id: format!("path-pair:{}", stable_id(&rule.rule_id)),
@@ -9741,8 +9745,16 @@ fn build_path_pair_candidates(
                     .map(|atom| atom.atom_observation_id.clone())
                     .collect(),
                 selected_axis_refs: complex.selected_axis_refs.clone(),
-                source_refs: all_archmap_source_ref_labels(archmap),
-                observation_refs: all_atom_refs(archmap),
+                source_refs: if rule_source_refs.is_empty() {
+                    all_archmap_source_ref_labels(archmap)
+                } else {
+                    rule_source_refs
+                },
+                observation_refs: if rule_observation_refs.is_empty() {
+                    vec![rule.rule_id.clone()]
+                } else {
+                    rule_observation_refs
+                },
                 coverage_boundary: profile.coverage_boundary.clone(),
                 evidence_boundary: rule.evidence_boundary.clone(),
                 non_conclusions: strings(&REQUIRED_HOMOTOPY_NON_CONCLUSIONS),
@@ -9750,6 +9762,20 @@ fn build_path_pair_candidates(
         }));
     }
     candidates
+}
+
+fn path_rule_observation_refs(archmap: &ArchMapDocumentV0, rule_id: &str) -> Vec<String> {
+    unique_strings(
+        archmap
+            .semantic_observations
+            .iter()
+            .filter(|semantic| semantic.subject_ref == rule_id)
+            .flat_map(|semantic| {
+                std::iter::once(semantic.semantic_observation_id.clone())
+                    .chain(semantic.atom_observation_refs.iter().cloned())
+                    .chain(semantic.molecule_observation_refs.iter().cloned())
+            }),
+    )
 }
 
 fn build_loop_candidates(
@@ -10022,6 +10048,8 @@ fn build_homotopy_holonomy_readings(
     path_pair_candidates: &[ArchSigPathPairCandidateV0],
     filler_candidate_readings: &[ArchSigFillerCandidateReadingV0],
     architectural_hole_readings: &[ArchSigArchitecturalHoleReadingV0],
+    path_continuation_traces: &[ArchSigPathContinuationTraceV0],
+    axis_wise_monodromy_defects: &[ArchSigAxisWiseMonodromyDefectV0],
 ) -> Vec<ArchSigHomotopyHolonomyReadingV0> {
     let distance_kind = law_policy
         .homotopy_measurement_profile
@@ -10076,6 +10104,17 @@ fn build_homotopy_holonomy_readings(
                     let path_pair_measured = path_pair
                         .map(|candidate| candidate.measurement_status == "measured")
                         .unwrap_or(false);
+                    let comparison = source_backed_continuation_comparison(
+                        archmap,
+                        path_pair,
+                        loop_candidate,
+                        &axis_ref,
+                        &distance_kind,
+                        &filler_refs,
+                        &missing_filler_refs,
+                        path_continuation_traces,
+                        axis_wise_monodromy_defects,
+                    );
                     ArchSigHomotopyHolonomyReadingV0 {
                         reading_id: format!(
                             "homotopy-holonomy:{}:{}",
@@ -10085,65 +10124,34 @@ fn build_homotopy_holonomy_readings(
                         path_pair_ref: loop_candidate.path_pair_ref.clone(),
                         loop_ref: loop_candidate.loop_id.clone(),
                         axis_ref: axis_ref.clone(),
-                        measurement_status: if missing_filler_refs.is_empty()
-                            && path_pair_measured
+                        measurement_status: if !comparison.missing_refs.is_empty()
+                            || !missing_filler_refs.is_empty()
+                        {
+                            "blockedByCoverageGap"
+                        } else if path_pair_measured
                             && loop_candidate.measurement_status == "measured"
+                            && comparison.has_source_backed_inputs
                         {
                             "measured"
-                        } else if missing_filler_refs.is_empty() {
-                            "unmeasured"
                         } else {
-                            "blockedByCoverageGap"
+                            "unmeasured"
                         }
                         .to_string(),
                         reading_boundary: loop_candidate.reading_boundary.clone(),
                         distance_kind: distance_kind.clone(),
-                        value: if missing_filler_refs.is_empty()
-                            && !semantic_observation_matches_path_pair(archmap, path_pair)
-                        {
-                            0
-                        } else {
-                            1
-                        },
-                        compared_continuation_summary: format!(
-                            "{} vs {} on {axis_ref}",
-                            path_pair
-                                .map(|candidate| candidate.p_path_ref.as_str())
-                                .unwrap_or("path:p"),
-                            path_pair
-                                .map(|candidate| candidate.q_path_ref.as_str())
-                                .unwrap_or("path:q")
-                        ),
-                        compared_continuation_refs: path_pair
-                            .map(|candidate| {
-                                vec![
-                                    format!("Cont_{axis_ref}({})", candidate.p_path_ref),
-                                    format!("Cont_{axis_ref}({})", candidate.q_path_ref),
-                                ]
-                            })
-                            .unwrap_or_default(),
-                        distance_input_refs: path_pair
-                            .map(|candidate| {
-                                unique_strings(
-                                    candidate
-                                        .observation_refs
-                                        .iter()
-                                        .chain(loop_candidate.missing_filler_evidence.iter())
-                                        .cloned(),
-                                )
-                            })
-                            .unwrap_or_default(),
-                        mu_defect_refs: vec![format!(
-                            "mu:{}:{}",
-                            stable_id(&loop_candidate.path_pair_ref),
-                            stable_id(&axis_ref)
-                        )],
-                        source_refs: loop_candidate.source_refs.clone(),
-                        observation_refs: path_pair
-                            .map(|candidate| candidate.observation_refs.clone())
-                            .unwrap_or_default(),
+                        value: comparison.value,
+                        compared_continuation_summary: comparison.summary,
+                        compared_continuation_refs: comparison.compared_continuation_refs,
+                        distance_input_refs: comparison.distance_input_refs,
+                        mu_defect_refs: comparison.mu_defect_refs,
+                        source_refs: comparison.source_refs,
+                        observation_refs: comparison.observation_refs,
                         filler_refs,
-                        missing_filler_refs,
+                        missing_filler_refs: unique_strings(
+                            missing_filler_refs
+                                .into_iter()
+                                .chain(comparison.missing_refs.into_iter()),
+                        ),
                         coverage_boundary: loop_candidate.coverage_boundary.clone(),
                         exactness_assumption_status:
                             "bounded selected-axis continuation comparison; not theorem exactness"
@@ -10156,25 +10164,209 @@ fn build_homotopy_holonomy_readings(
         .collect()
 }
 
-fn semantic_observation_matches_path_pair(
+#[derive(Debug, Clone)]
+struct HomotopyContinuationComparison {
+    value: i64,
+    summary: String,
+    compared_continuation_refs: Vec<String>,
+    distance_input_refs: Vec<String>,
+    mu_defect_refs: Vec<String>,
+    source_refs: Vec<String>,
+    observation_refs: Vec<String>,
+    missing_refs: Vec<String>,
+    has_source_backed_inputs: bool,
+}
+
+fn source_backed_continuation_comparison(
     archmap: &ArchMapDocumentV0,
     path_pair: Option<&ArchSigPathPairCandidateV0>,
-) -> bool {
+    loop_candidate: &ArchSigLoopCandidateV0,
+    axis_ref: &str,
+    distance_kind: &str,
+    filler_refs: &[String],
+    missing_filler_refs: &[String],
+    path_continuation_traces: &[ArchSigPathContinuationTraceV0],
+    axis_wise_monodromy_defects: &[ArchSigAxisWiseMonodromyDefectV0],
+) -> HomotopyContinuationComparison {
     let Some(path_pair) = path_pair else {
-        return false;
+        return HomotopyContinuationComparison {
+            value: 0,
+            summary: format!(
+                "missing path pair for {} on {axis_ref}",
+                loop_candidate.loop_id
+            ),
+            compared_continuation_refs: Vec::new(),
+            distance_input_refs: Vec::new(),
+            mu_defect_refs: Vec::new(),
+            source_refs: loop_candidate.source_refs.clone(),
+            observation_refs: Vec::new(),
+            missing_refs: vec![format!(
+                "missing path pair {}",
+                loop_candidate.path_pair_ref
+            )],
+            has_source_backed_inputs: false,
+        };
     };
-    archmap.semantic_observations.iter().any(|semantic| {
-        text_matches_candidate(
-            path_pair,
-            [
-                &semantic.semantic_observation_id,
-                &semantic.semantic_family,
-                &semantic.subject_ref,
-                &semantic.predicate,
-                &semantic.evidence_boundary,
-            ],
-        )
-    })
+
+    let semantic_observations = semantic_observations_for_path_pair(archmap, path_pair);
+    let semantic_refs = semantic_observations
+        .iter()
+        .map(|semantic| semantic.semantic_observation_id.clone())
+        .collect::<Vec<_>>();
+    let semantic_atom_refs = semantic_observations
+        .iter()
+        .flat_map(|semantic| semantic.atom_observation_refs.iter().cloned())
+        .collect::<Vec<_>>();
+    let semantic_source_refs = semantic_observations
+        .iter()
+        .flat_map(|semantic| semantic.source_refs.iter().map(source_ref_label))
+        .collect::<Vec<_>>();
+    let path_observation_set = path_pair
+        .observation_refs
+        .iter()
+        .chain(semantic_refs.iter())
+        .chain(semantic_atom_refs.iter())
+        .map(String::as_str)
+        .collect::<BTreeSet<_>>();
+    let related_trace_axes = path_continuation_traces
+        .iter()
+        .filter(|trace| {
+            trace
+                .observation_refs
+                .iter()
+                .any(|observation| path_observation_set.contains(observation.as_str()))
+        })
+        .flat_map(|trace| {
+            trace.axis_traces.iter().filter(|axis| {
+                axis.axis_ref == axis_ref
+                    || axis_ref.contains(&axis.axis_family)
+                    || axis.axis_family == "semantic"
+            })
+        })
+        .collect::<Vec<_>>();
+    let related_defects = axis_wise_monodromy_defects
+        .iter()
+        .filter(|defect| {
+            defect
+                .observation_refs
+                .iter()
+                .any(|observation| path_observation_set.contains(observation.as_str()))
+        })
+        .collect::<Vec<_>>();
+    let positive_defect_refs = related_defects
+        .iter()
+        .filter(|defect| defect.distance_value.unwrap_or_default() > 0)
+        .map(|defect| defect.defect_id.clone())
+        .collect::<Vec<_>>();
+    let trace_value_refs = related_trace_axes
+        .iter()
+        .flat_map(|axis| axis.comparable_continuation_values.iter().cloned())
+        .map(|value| format!("continuation-value:{}", stable_id(&value)))
+        .collect::<Vec<_>>();
+    let compared_continuation_refs = unique_strings(
+        [
+            format!("Cont_{axis_ref}({})", path_pair.p_path_ref),
+            format!("Cont_{axis_ref}({})", path_pair.q_path_ref),
+        ]
+        .into_iter()
+        .chain(
+            related_trace_axes
+                .iter()
+                .flat_map(|axis| axis.continuation_states.iter().cloned()),
+        ),
+    );
+    let observation_refs = unique_strings(
+        path_pair
+            .observation_refs
+            .iter()
+            .cloned()
+            .chain(semantic_refs.iter().cloned())
+            .chain(semantic_atom_refs.iter().cloned()),
+    );
+    let source_refs = unique_strings(
+        path_pair
+            .source_refs
+            .iter()
+            .cloned()
+            .chain(loop_candidate.source_refs.iter().cloned())
+            .chain(semantic_source_refs)
+            .chain(
+                related_trace_axes
+                    .iter()
+                    .flat_map(|axis| axis.source_refs.iter().cloned()),
+            )
+            .chain(filler_refs.iter().cloned()),
+    );
+    let distance_input_refs = unique_strings(
+        observation_refs
+            .iter()
+            .cloned()
+            .chain(source_refs.iter().cloned())
+            .chain(trace_value_refs)
+            .chain(filler_refs.iter().cloned()),
+    );
+    let missing_refs = if !missing_filler_refs.is_empty() {
+        missing_filler_refs.to_vec()
+    } else if source_refs.is_empty() && related_trace_axes.is_empty() {
+        vec![format!(
+            "missing source-backed continuation input for {}",
+            path_pair.candidate_id
+        )]
+    } else {
+        Vec::new()
+    };
+    let value = if !positive_defect_refs.is_empty() || !semantic_refs.is_empty() {
+        1
+    } else {
+        0
+    };
+    let mu_defect_refs = if positive_defect_refs.is_empty() {
+        vec![format!(
+            "mu:{}:{}",
+            stable_id(&loop_candidate.path_pair_ref),
+            stable_id(axis_ref)
+        )]
+    } else {
+        positive_defect_refs
+    };
+    let summary = format!(
+        "{} vs {} on {axis_ref}; distanceKind={distance_kind}; sourceRefs={}; semanticEvidence={}; traceAxes={}; missing={}",
+        path_pair.p_path_ref,
+        path_pair.q_path_ref,
+        source_refs.len(),
+        semantic_refs.len(),
+        related_trace_axes.len(),
+        missing_refs.len()
+    );
+    let has_source_backed_inputs = !distance_input_refs.is_empty();
+
+    HomotopyContinuationComparison {
+        value,
+        summary,
+        compared_continuation_refs,
+        distance_input_refs,
+        mu_defect_refs,
+        source_refs,
+        observation_refs,
+        missing_refs,
+        has_source_backed_inputs,
+    }
+}
+
+fn semantic_observations_for_path_pair<'a>(
+    archmap: &'a ArchMapDocumentV0,
+    path_pair: &ArchSigPathPairCandidateV0,
+) -> Vec<&'a ArchMapSemanticObservationV0> {
+    archmap
+        .semantic_observations
+        .iter()
+        .filter(|semantic| {
+            semantic.subject_ref == path_pair.p_path_ref
+                || path_pair
+                    .observation_refs
+                    .contains(&semantic.semantic_observation_id)
+        })
+        .collect()
 }
 
 fn text_matches_candidate<'a>(
@@ -10189,22 +10381,6 @@ fn text_matches_candidate<'a>(
     .into_iter()
     .map(|value| value.to_ascii_lowercase())
     .collect::<Vec<_>>();
-    values.into_iter().any(|value| {
-        let value = value.to_ascii_lowercase();
-        needles
-            .iter()
-            .any(|needle| !needle.is_empty() && value.contains(needle))
-    })
-}
-
-fn text_contains_any<'a, 'b>(
-    values: impl IntoIterator<Item = &'a String>,
-    needles: impl IntoIterator<Item = &'b String>,
-) -> bool {
-    let needles = needles
-        .into_iter()
-        .map(|value| value.to_ascii_lowercase())
-        .collect::<Vec<_>>();
     values.into_iter().any(|value| {
         let value = value.to_ascii_lowercase();
         needles
@@ -11883,6 +12059,11 @@ fn check_homotopy_holonomy_stokes_surface(packet: &ArchSigAnalysisPacketV0) -> V
         .iter()
         .map(|reading| reading.reading_id.as_str())
         .collect::<BTreeSet<_>>();
+    let holonomy_by_id = packet
+        .homotopy_holonomy_readings
+        .iter()
+        .map(|reading| (reading.reading_id.as_str(), reading))
+        .collect::<BTreeMap<_, _>>();
     let mut examples = Vec::new();
     if packet.homotopy_holonomy_readings.is_empty() {
         examples.push(generic_validation_example(
@@ -11953,6 +12134,15 @@ fn check_homotopy_holonomy_stokes_surface(packet: &ArchSigAnalysisPacketV0) -> V
                 "homotopy holonomy reading must record filler or missing filler refs",
             ));
         }
+        if reading.measurement_status == "measured"
+            && (reading.source_refs.is_empty() || reading.distance_input_refs.is_empty())
+        {
+            examples.push(generic_validation_example(
+                &reading.reading_id,
+                "sourceRefs/distanceInputRefs",
+                "measured holonomy must be computed from source-backed continuation comparison inputs",
+            ));
+        }
         if reading.non_conclusions.is_empty() || has_blank(&reading.non_conclusions) {
             examples.push(generic_validation_example(
                 &reading.reading_id,
@@ -12004,6 +12194,20 @@ fn check_homotopy_holonomy_stokes_surface(packet: &ArchSigAnalysisPacketV0) -> V
                 "localCurvatureCellCandidates",
                 "filled nonzero holonomy readings must provide a local curvature review queue",
             ));
+        }
+        if reading.status == "filledNonzeroHolonomyReview" {
+            let has_nonzero_holonomy = reading
+                .holonomy_reading_refs
+                .iter()
+                .filter_map(|holonomy_ref| holonomy_by_id.get(holonomy_ref.as_str()).copied())
+                .any(|holonomy| holonomy.value != 0 && holonomy.measurement_status == "measured");
+            if !has_nonzero_holonomy || reading.filling_evidence_refs.is_empty() {
+                examples.push(generic_validation_example(
+                    &reading.reading_id,
+                    "holonomyReadingRefs/fillingEvidenceRefs",
+                    "filled nonzero Stokes-style reading must be limited to measured filler plus measured nonzero holonomy",
+                ));
+            }
         }
         push_blank(
             &mut examples,
