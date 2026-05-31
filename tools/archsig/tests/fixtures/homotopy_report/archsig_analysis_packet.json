@@ -1775,6 +1775,23 @@
       "readingId": "curvature-support-reading:spectrum-profile-homotopy-report-fixture",
       "profileRef": "spectrum-profile:homotopy-report-fixture",
       "status": "needsReview",
+      "measurementStatus": "blockedByCoverageGap",
+      "readingBoundary": {
+        "readingStrength": "boundedMeasuredWithProxyTransfer",
+        "zeroReflectionAssumptions": [
+          "coverage:homotopy-report-fixture",
+          "selected LawPolicy exactness assumptions"
+        ],
+        "obstructionReflectionAssumptions": [
+          "source-backed witness support",
+          "selected axis preservation",
+          "witness completeness for measured rows"
+        ],
+        "coverageRequirementRefs": [
+          "coverage:homotopy-report-fixture"
+        ],
+        "witnessCompletenessBoundary": "zero spectrum reflects only selected measured witness rows with declared coverage; transfer recurrence remains bounded review telemetry"
+      },
       "measuredAxisRefs": [
         "axis:homotopy-report-fixture"
       ],
@@ -1785,6 +1802,44 @@
           "witnessRuleRef": "witness:homotopy-report-fixture",
           "selectedAxisRef": "axis:homotopy-report-fixture",
           "signatureAxisRef": "sig-axis:homotopy-report-fixture",
+          "measurementStatus": "measured",
+          "readingBoundary": {
+            "readingStrength": "boundedMeasuredWithProxyTransfer",
+            "zeroReflectionAssumptions": [
+              "coverage:homotopy-report-fixture",
+              "selected LawPolicy exactness assumptions"
+            ],
+            "obstructionReflectionAssumptions": [
+              "source-backed witness support",
+              "selected axis preservation",
+              "witness completeness for measured rows"
+            ],
+            "coverageRequirementRefs": [
+              "coverage:homotopy-report-fixture"
+            ],
+            "witnessCompletenessBoundary": "zero spectrum reflects only selected measured witness rows with declared coverage; transfer recurrence remains bounded review telemetry"
+          },
+          "localCurvatureRef": "kappa:witness-homotopy-report-fixture:axis-homotopy-report-fixture",
+          "diagramRef": "obstruction:homotopy-report-fixture:computed",
+          "lhsObservationRefs": [
+            "atom:authorization-bypass",
+            "atom:cache-read",
+            "atom:coupon-tax-rounding",
+            "atom:repository-read"
+          ],
+          "rhsObservationRefs": [
+            "molecule-reading:molecule-homotopy-report-fixture"
+          ],
+          "distanceKind": "witness-mismatch-count",
+          "distanceInputRefs": [
+            "atom:authorization-bypass",
+            "atom:cache-read",
+            "atom:coupon-tax-rounding",
+            "atom:repository-read",
+            "molecule-reading:molecule-homotopy-report-fixture"
+          ],
+          "soundnessBoundary": "kappa(D) is measured as nonnegative distance over source-backed lhs/rhs observation refs under the selected witness rule",
+          "coverageStatus": "sourceBackedWitnessSupport",
           "curvatureValue": 1,
           "weight": 1,
           "supportRefs": [
@@ -1817,8 +1872,20 @@
         {
           "modeId": "curvature-mode:curvature-support-witness-homotopy-report-fixture-axis-homotopy-report-fixture",
           "rank": 1,
+          "modeKind": "boundedSupportMode",
           "axisRef": "axis:homotopy-report-fixture",
           "curvatureValue": 1,
+          "operatorComponentRefs": [
+            "curvature-support:witness-homotopy-report-fixture:axis-homotopy-report-fixture"
+          ],
+          "localization": "support=curvature-support:witness-homotopy-report-fixture:axis-homotopy-report-fixture axis=axis:homotopy-report-fixture sourceRefs=4",
+          "sourceRefs": [
+            "src-auth-bypass",
+            "src-cache-read",
+            "src-pricing-checkout",
+            "src-repository-read"
+          ],
+          "recommendedReviewTarget": "inspect curvature-support:witness-homotopy-report-fixture:axis-homotopy-report-fixture and its source-backed local curvature input",
           "witnessRefs": [
             "curvature-support:witness-homotopy-report-fixture:axis-homotopy-report-fixture"
           ],
@@ -1835,7 +1902,11 @@
       "witnessClusters": [
         {
           "clusterId": "curvature-cluster:axis-homotopy-report-fixture",
-          "clusterKind": "axisWitnessSupportCluster",
+          "clusterKind": "evidenceBackedAxisWitnessCluster",
+          "clusterBasis": [
+            "shared-selected-axis",
+            "source-backed-witness-support"
+          ],
           "axisRefs": [
             "axis:homotopy-report-fixture"
           ],
@@ -1849,6 +1920,13 @@
             "atom:repository-read",
             "molecule-reading:molecule-homotopy-report-fixture"
           ],
+          "sourceRefs": [
+            "src-auth-bypass",
+            "src-cache-read",
+            "src-pricing-checkout",
+            "src-repository-read"
+          ],
+          "transferEdgeRefs": [],
           "clusterWeight": 1,
           "reading": "cluster groups measured witness supports by selected axis for review ranking"
         }
@@ -1875,14 +1953,53 @@
       "readingId": "curvature-transfer-reading:spectrum-profile-homotopy-report-fixture",
       "profileRef": "spectrum-profile:homotopy-report-fixture",
       "status": "needsReview",
+      "measurementStatus": "proxy",
+      "readingBoundary": {
+        "readingStrength": "boundedMeasuredWithProxyTransfer",
+        "zeroReflectionAssumptions": [
+          "coverage:homotopy-report-fixture",
+          "selected LawPolicy exactness assumptions"
+        ],
+        "obstructionReflectionAssumptions": [
+          "source-backed witness support",
+          "selected axis preservation",
+          "witness completeness for measured rows"
+        ],
+        "coverageRequirementRefs": [
+          "coverage:homotopy-report-fixture"
+        ],
+        "witnessCompletenessBoundary": "zero spectrum reflects only selected measured witness rows with declared coverage; transfer recurrence remains bounded review telemetry"
+      },
       "transferOperator": {
         "operatorId": "transfer-operator:curvature-transfer-reading-spectrum-profile-homotopy-report-fixture",
         "rowDomain": "curvatureWitnessSupports",
         "columnDomain": "curvatureWitnessSupports",
+        "rowSupportRefs": [
+          "curvature-support:witness-homotopy-report-fixture:axis-homotopy-report-fixture"
+        ],
+        "columnSupportRefs": [
+          "curvature-support:witness-homotopy-report-fixture:axis-homotopy-report-fixture"
+        ],
+        "sparseEntries": [
+          {
+            "rowSupportRef": "curvature-support:witness-homotopy-report-fixture:axis-homotopy-report-fixture",
+            "columnSupportRef": "curvature-support:witness-homotopy-report-fixture:axis-homotopy-report-fixture",
+            "weight": 1,
+            "edgeRef": "curvature-transfer-edge:curvature-support-witness-homotopy-report-fixture-axis-homotopy-report-fixture:curvature-support-witness-homotopy-report-fixture-axis-homotopy-report-fixture",
+            "evidenceRefs": [
+              "atom:authorization-bypass",
+              "atom:cache-read",
+              "atom:coupon-tax-rounding",
+              "atom:repository-read",
+              "molecule-reading:molecule-homotopy-report-fixture"
+            ]
+          }
+        ],
         "rowCount": 1,
         "columnCount": 1,
         "nonzeroEdgeCount": 1,
         "entryRule": "entry(i,j) is positive when measured curvature support i can transfer review pressure to support j under shared selected-axis or shared support evidence",
+        "spectralRadiusKind": "finiteNonnegativeOperatorBoundedClosedWalkRadius",
         "reading": "finite nonnegative transfer operator over measured curvature supports; absent edges are unmeasured, not proof of independence"
       },
       "transferEdges": [
@@ -1903,12 +2020,22 @@
             "src-pricing-checkout",
             "src-repository-read"
           ],
+          "evidenceRefs": [
+            "atom:authorization-bypass",
+            "atom:cache-read",
+            "atom:coupon-tax-rounding",
+            "atom:repository-read",
+            "molecule-reading:molecule-homotopy-report-fixture"
+          ],
+          "extractionRule": "same-selected-axis",
+          "closedWalkKind": "selfLoop",
           "reading": "positive self-loop records a closed walk in the finite transfer operator"
         }
       ],
       "recurrentObstructionModes": [
         {
           "modeId": "recurrent-obstruction:curvature-transfer-edge-curvature-support-witness-homotopy-report-fixture-axis-homotopy-report-fixture-curvature-support-witness-homotopy-report-fixture-axis-homotopy-report-fixture",
+          "recurrenceKind": "selfLoopClosedWalk",
           "transferEdgeRefs": [
             "curvature-transfer-edge:curvature-support-witness-homotopy-report-fixture-axis-homotopy-report-fixture:curvature-support-witness-homotopy-report-fixture-axis-homotopy-report-fixture"
           ],
@@ -1918,7 +2045,8 @@
           "witnessRefs": [
             "witness:homotopy-report-fixture"
           ],
-          "spectralRadiusReading": "rho(T^kappa) proxy 1 > 0 over the finite ArchSig transfer operator",
+          "cycleWeight": 1,
+          "spectralRadiusReading": "rho(T^kappa) proxy bounded closed-walk radius 1 > 0 over the finite ArchSig transfer operator",
           "recurrentObstructionReading": "positive closed walk is reported as recurrent obstruction support only",
           "reviewFocus": [
             "inspect the witness support behind the positive transfer self-loop",
@@ -1950,6 +2078,23 @@
     "reportId": "architecture-spectrum-report:spectrum-profile-homotopy-report-fixture",
     "profileRef": "spectrum-profile:homotopy-report-fixture",
     "status": "needsReview",
+    "measurementStatus": "proxy",
+    "readingBoundary": {
+      "readingStrength": "boundedMeasuredWithProxyTransfer",
+      "zeroReflectionAssumptions": [
+        "coverage:homotopy-report-fixture",
+        "selected LawPolicy exactness assumptions"
+      ],
+      "obstructionReflectionAssumptions": [
+        "source-backed witness support",
+        "selected axis preservation",
+        "witness completeness for measured rows"
+      ],
+      "coverageRequirementRefs": [
+        "coverage:homotopy-report-fixture"
+      ],
+      "witnessCompletenessBoundary": "zero spectrum reflects only selected measured witness rows with declared coverage; transfer recurrence remains bounded review telemetry"
+    },
     "topHotspots": [
       {
         "hotspotId": "spectrum-hotspot:curvature-mode-curvature-support-witness-homotopy-report-fixture-axis-homotopy-report-fixture",
@@ -1975,8 +2120,20 @@
       {
         "modeRef": "curvature-mode:curvature-support-witness-homotopy-report-fixture-axis-homotopy-report-fixture",
         "rank": 1,
+        "modeKind": "boundedSupportMode",
         "axisRef": "axis:homotopy-report-fixture",
         "curvatureValue": 1,
+        "operatorComponentRefs": [
+          "curvature-support:witness-homotopy-report-fixture:axis-homotopy-report-fixture"
+        ],
+        "localization": "support=curvature-support:witness-homotopy-report-fixture:axis-homotopy-report-fixture axis=axis:homotopy-report-fixture sourceRefs=4",
+        "sourceRefs": [
+          "src-auth-bypass",
+          "src-cache-read",
+          "src-pricing-checkout",
+          "src-repository-read"
+        ],
+        "recommendedReviewTarget": "inspect curvature-support:witness-homotopy-report-fixture:axis-homotopy-report-fixture and its source-backed local curvature input",
         "supportRefs": [
           "atom:authorization-bypass",
           "atom:cache-read",
@@ -1993,6 +2150,10 @@
     "topWitnessClusters": [
       {
         "clusterRef": "curvature-cluster:axis-homotopy-report-fixture",
+        "clusterBasis": [
+          "shared-selected-axis",
+          "source-backed-witness-support"
+        ],
         "axisRefs": [
           "axis:homotopy-report-fixture"
         ],
@@ -2006,6 +2167,13 @@
           "atom:repository-read",
           "molecule-reading:molecule-homotopy-report-fixture"
         ],
+        "sourceRefs": [
+          "src-auth-bypass",
+          "src-cache-read",
+          "src-pricing-checkout",
+          "src-repository-read"
+        ],
+        "transferEdgeRefs": [],
         "clusterWeight": 1,
         "reading": "cluster groups measured witness supports by selected axis for review ranking"
       }
@@ -2013,7 +2181,7 @@
     "recurrentObstructions": [
       {
         "modeRef": "recurrent-obstruction:curvature-transfer-edge-curvature-support-witness-homotopy-report-fixture-axis-homotopy-report-fixture-curvature-support-witness-homotopy-report-fixture-axis-homotopy-report-fixture",
-        "spectralRadiusReading": "rho(T^kappa) proxy 1 > 0 over the finite ArchSig transfer operator",
+        "spectralRadiusReading": "rho(T^kappa) proxy bounded closed-walk radius 1 > 0 over the finite ArchSig transfer operator",
         "transferEdgeRefs": [
           "curvature-transfer-edge:curvature-support-witness-homotopy-report-fixture-axis-homotopy-report-fixture:curvature-support-witness-homotopy-report-fixture-axis-homotopy-report-fixture"
         ],
@@ -2773,6 +2941,22 @@
     "complexId": "homotopy-complex:homotopy-report-fixture-archmap",
     "profileRef": "homotopy-profile:homotopy-report-fixture",
     "status": "measuredProfile",
+    "measurementStatus": "measured",
+    "readingBoundary": {
+      "readingStrength": "boundedMeasuredWithCandidatePaths",
+      "zeroReflectionAssumptions": [
+        "coverage:homotopy-report-fixture",
+        "selected path and filler evidence is supplied"
+      ],
+      "obstructionReflectionAssumptions": [
+        "selected continuation traces preserve declared axes",
+        "positive monodromy is backed by source, test, runtime, or policy evidence"
+      ],
+      "coverageRequirementRefs": [
+        "coverage:homotopy-report-fixture"
+      ],
+      "witnessCompletenessBoundary": "homotopy zero reflects only measured path pairs and fillers inside the selected coverage universe; unresolved paths stay coverage gaps"
+    },
     "selectedAxisRefs": [
       "axis:homotopy-report-fixture"
     ],
@@ -3074,8 +3258,38 @@
       "candidateId": "path-pair:semantic-contract-loop",
       "candidateSource": "lawPolicyRequired",
       "status": "sourceConfirmed",
+      "measurementStatus": "measured",
+      "readingBoundary": {
+        "readingStrength": "boundedMeasuredWithCandidatePaths",
+        "zeroReflectionAssumptions": [
+          "coverage:homotopy-report-fixture",
+          "selected path and filler evidence is supplied"
+        ],
+        "obstructionReflectionAssumptions": [
+          "selected continuation traces preserve declared axes",
+          "positive monodromy is backed by source, test, runtime, or policy evidence"
+        ],
+        "coverageRequirementRefs": [
+          "coverage:homotopy-report-fixture"
+        ],
+        "witnessCompletenessBoundary": "homotopy zero reflects only measured path pairs and fillers inside the selected coverage universe; unresolved paths stay coverage gaps"
+      },
       "pPathRef": "path:semantic-operation-flow",
       "qPathRef": "molecule:homotopy-report-fixture",
+      "pOperationSequence": [
+        "operation:path-homotopy-diagram"
+      ],
+      "qOperationSequence": [
+        "operation:molecule-observation-path"
+      ],
+      "endpointObjectRefs": [
+        "aat:homotopy:fixture"
+      ],
+      "generatorCandidateRefs": [
+        "generator:independent-square",
+        "generator:same-contract-replacement",
+        "generator:repair-filler"
+      ],
       "sharedEndpointRefs": [
         "atom:cache-read",
         "atom:repository-read"
@@ -3118,9 +3332,39 @@
     {
       "candidateId": "path-pair:path-rule-zero-holonomy-filled-loop",
       "candidateSource": "llmDiscovered",
-      "status": "needsReview",
+      "status": "sourceConfirmed",
+      "measurementStatus": "measured",
+      "readingBoundary": {
+        "readingStrength": "boundedMeasuredWithCandidatePaths",
+        "zeroReflectionAssumptions": [
+          "coverage:homotopy-report-fixture",
+          "selected path and filler evidence is supplied"
+        ],
+        "obstructionReflectionAssumptions": [
+          "selected continuation traces preserve declared axes",
+          "positive monodromy is backed by source, test, runtime, or policy evidence"
+        ],
+        "coverageRequirementRefs": [
+          "coverage:homotopy-report-fixture"
+        ],
+        "witnessCompletenessBoundary": "homotopy zero reflects only measured path pairs and fillers inside the selected coverage universe; unresolved paths stay coverage gaps"
+      },
       "pPathRef": "path-rule:zero-holonomy-filled-loop",
       "qPathRef": "zero-holonomy-filled-loop-path",
+      "pOperationSequence": [
+        "operation:path-rule:zero-holonomy-filled-loop"
+      ],
+      "qOperationSequence": [
+        "operation:zero-holonomy-filled-loop-path"
+      ],
+      "endpointObjectRefs": [
+        "aat:homotopy:fixture"
+      ],
+      "generatorCandidateRefs": [
+        "generator:identity-insertion-deletion",
+        "generator:associativity-reassociation",
+        "generator:repair-filler"
+      ],
       "sharedEndpointRefs": [
         "atom:cache-read",
         "atom:repository-read"
@@ -3160,9 +3404,39 @@
     {
       "candidateId": "path-pair:path-rule-nonzero-holonomy-filled-loop",
       "candidateSource": "llmDiscovered",
-      "status": "needsReview",
+      "status": "sourceConfirmed",
+      "measurementStatus": "measured",
+      "readingBoundary": {
+        "readingStrength": "boundedMeasuredWithCandidatePaths",
+        "zeroReflectionAssumptions": [
+          "coverage:homotopy-report-fixture",
+          "selected path and filler evidence is supplied"
+        ],
+        "obstructionReflectionAssumptions": [
+          "selected continuation traces preserve declared axes",
+          "positive monodromy is backed by source, test, runtime, or policy evidence"
+        ],
+        "coverageRequirementRefs": [
+          "coverage:homotopy-report-fixture"
+        ],
+        "witnessCompletenessBoundary": "homotopy zero reflects only measured path pairs and fillers inside the selected coverage universe; unresolved paths stay coverage gaps"
+      },
       "pPathRef": "path-rule:nonzero-holonomy-filled-loop",
       "qPathRef": "nonzero-holonomy-filled-loop-path",
+      "pOperationSequence": [
+        "operation:path-rule:nonzero-holonomy-filled-loop"
+      ],
+      "qOperationSequence": [
+        "operation:nonzero-holonomy-filled-loop-path"
+      ],
+      "endpointObjectRefs": [
+        "aat:homotopy:fixture"
+      ],
+      "generatorCandidateRefs": [
+        "generator:identity-insertion-deletion",
+        "generator:associativity-reassociation",
+        "generator:repair-filler"
+      ],
       "sharedEndpointRefs": [
         "atom:cache-read",
         "atom:repository-read"
@@ -3202,9 +3476,39 @@
     {
       "candidateId": "path-pair:path-rule-cache-repository-semantic-loop",
       "candidateSource": "llmDiscovered",
-      "status": "needsReview",
+      "status": "sourceConfirmed",
+      "measurementStatus": "measured",
+      "readingBoundary": {
+        "readingStrength": "boundedMeasuredWithCandidatePaths",
+        "zeroReflectionAssumptions": [
+          "coverage:homotopy-report-fixture",
+          "selected path and filler evidence is supplied"
+        ],
+        "obstructionReflectionAssumptions": [
+          "selected continuation traces preserve declared axes",
+          "positive monodromy is backed by source, test, runtime, or policy evidence"
+        ],
+        "coverageRequirementRefs": [
+          "coverage:homotopy-report-fixture"
+        ],
+        "witnessCompletenessBoundary": "homotopy zero reflects only measured path pairs and fillers inside the selected coverage universe; unresolved paths stay coverage gaps"
+      },
       "pPathRef": "path-rule:cache-repository-semantic-loop",
       "qPathRef": "cache-repository-semantic-loop-path",
+      "pOperationSequence": [
+        "operation:path-rule:cache-repository-semantic-loop"
+      ],
+      "qOperationSequence": [
+        "operation:cache-repository-semantic-loop-path"
+      ],
+      "endpointObjectRefs": [
+        "aat:homotopy:fixture"
+      ],
+      "generatorCandidateRefs": [
+        "generator:identity-insertion-deletion",
+        "generator:associativity-reassociation",
+        "generator:repair-filler"
+      ],
       "sharedEndpointRefs": [
         "atom:cache-read",
         "atom:repository-read"
@@ -3244,9 +3548,39 @@
     {
       "candidateId": "path-pair:path-rule-event-projection-direct-read",
       "candidateSource": "llmDiscovered",
-      "status": "needsReview",
+      "status": "sourceConfirmed",
+      "measurementStatus": "measured",
+      "readingBoundary": {
+        "readingStrength": "boundedMeasuredWithCandidatePaths",
+        "zeroReflectionAssumptions": [
+          "coverage:homotopy-report-fixture",
+          "selected path and filler evidence is supplied"
+        ],
+        "obstructionReflectionAssumptions": [
+          "selected continuation traces preserve declared axes",
+          "positive monodromy is backed by source, test, runtime, or policy evidence"
+        ],
+        "coverageRequirementRefs": [
+          "coverage:homotopy-report-fixture"
+        ],
+        "witnessCompletenessBoundary": "homotopy zero reflects only measured path pairs and fillers inside the selected coverage universe; unresolved paths stay coverage gaps"
+      },
       "pPathRef": "path-rule:event-projection-direct-read",
       "qPathRef": "event-projection-direct-read-path",
+      "pOperationSequence": [
+        "operation:path-rule:event-projection-direct-read"
+      ],
+      "qOperationSequence": [
+        "operation:event-projection-direct-read-path"
+      ],
+      "endpointObjectRefs": [
+        "aat:homotopy:fixture"
+      ],
+      "generatorCandidateRefs": [
+        "generator:identity-insertion-deletion",
+        "generator:associativity-reassociation",
+        "generator:repair-filler"
+      ],
       "sharedEndpointRefs": [
         "atom:cache-read",
         "atom:repository-read"
@@ -3286,9 +3620,39 @@
     {
       "candidateId": "path-pair:path-rule-retry-idempotency-effect",
       "candidateSource": "llmDiscovered",
-      "status": "needsReview",
+      "status": "sourceConfirmed",
+      "measurementStatus": "measured",
+      "readingBoundary": {
+        "readingStrength": "boundedMeasuredWithCandidatePaths",
+        "zeroReflectionAssumptions": [
+          "coverage:homotopy-report-fixture",
+          "selected path and filler evidence is supplied"
+        ],
+        "obstructionReflectionAssumptions": [
+          "selected continuation traces preserve declared axes",
+          "positive monodromy is backed by source, test, runtime, or policy evidence"
+        ],
+        "coverageRequirementRefs": [
+          "coverage:homotopy-report-fixture"
+        ],
+        "witnessCompletenessBoundary": "homotopy zero reflects only measured path pairs and fillers inside the selected coverage universe; unresolved paths stay coverage gaps"
+      },
       "pPathRef": "path-rule:retry-idempotency-effect",
       "qPathRef": "retry-idempotency-effect-path",
+      "pOperationSequence": [
+        "operation:path-rule:retry-idempotency-effect"
+      ],
+      "qOperationSequence": [
+        "operation:retry-idempotency-effect-path"
+      ],
+      "endpointObjectRefs": [
+        "aat:homotopy:fixture"
+      ],
+      "generatorCandidateRefs": [
+        "generator:identity-insertion-deletion",
+        "generator:associativity-reassociation",
+        "generator:repair-filler"
+      ],
       "sharedEndpointRefs": [
         "atom:cache-read",
         "atom:repository-read"
@@ -3329,8 +3693,38 @@
       "candidateId": "path-pair:path-rule-authorization-bypass-hole",
       "candidateSource": "llmDiscovered",
       "status": "needsReview",
+      "measurementStatus": "blockedByCoverageGap",
+      "readingBoundary": {
+        "readingStrength": "boundedMeasuredWithCandidatePaths",
+        "zeroReflectionAssumptions": [
+          "coverage:homotopy-report-fixture",
+          "selected path and filler evidence is supplied"
+        ],
+        "obstructionReflectionAssumptions": [
+          "selected continuation traces preserve declared axes",
+          "positive monodromy is backed by source, test, runtime, or policy evidence"
+        ],
+        "coverageRequirementRefs": [
+          "coverage:homotopy-report-fixture"
+        ],
+        "witnessCompletenessBoundary": "homotopy zero reflects only measured path pairs and fillers inside the selected coverage universe; unresolved paths stay coverage gaps"
+      },
       "pPathRef": "path-rule:authorization-bypass-hole",
       "qPathRef": "authorization-bypass-hole-path",
+      "pOperationSequence": [
+        "operation:path-rule:authorization-bypass-hole"
+      ],
+      "qOperationSequence": [
+        "operation:authorization-bypass-hole-path"
+      ],
+      "endpointObjectRefs": [
+        "aat:homotopy:fixture"
+      ],
+      "generatorCandidateRefs": [
+        "generator:identity-insertion-deletion",
+        "generator:associativity-reassociation",
+        "generator:repair-filler"
+      ],
       "sharedEndpointRefs": [
         "atom:cache-read",
         "atom:repository-read"
@@ -3370,9 +3764,39 @@
     {
       "candidateId": "path-pair:path-rule-coupon-tax-rounding-semantic-loop",
       "candidateSource": "llmDiscovered",
-      "status": "needsReview",
+      "status": "sourceConfirmed",
+      "measurementStatus": "measured",
+      "readingBoundary": {
+        "readingStrength": "boundedMeasuredWithCandidatePaths",
+        "zeroReflectionAssumptions": [
+          "coverage:homotopy-report-fixture",
+          "selected path and filler evidence is supplied"
+        ],
+        "obstructionReflectionAssumptions": [
+          "selected continuation traces preserve declared axes",
+          "positive monodromy is backed by source, test, runtime, or policy evidence"
+        ],
+        "coverageRequirementRefs": [
+          "coverage:homotopy-report-fixture"
+        ],
+        "witnessCompletenessBoundary": "homotopy zero reflects only measured path pairs and fillers inside the selected coverage universe; unresolved paths stay coverage gaps"
+      },
       "pPathRef": "path-rule:coupon-tax-rounding-semantic-loop",
       "qPathRef": "coupon-tax-rounding-semantic-loop-path",
+      "pOperationSequence": [
+        "operation:path-rule:coupon-tax-rounding-semantic-loop"
+      ],
+      "qOperationSequence": [
+        "operation:coupon-tax-rounding-semantic-loop-path"
+      ],
+      "endpointObjectRefs": [
+        "aat:homotopy:fixture"
+      ],
+      "generatorCandidateRefs": [
+        "generator:identity-insertion-deletion",
+        "generator:associativity-reassociation",
+        "generator:repair-filler"
+      ],
       "sharedEndpointRefs": [
         "atom:cache-read",
         "atom:repository-read"
@@ -3416,9 +3840,28 @@
       "pathPairRef": "path-pair:semantic-contract-loop",
       "candidateSource": "lawPolicyRequired",
       "status": "filledLoop",
+      "measurementStatus": "measured",
+      "readingBoundary": {
+        "readingStrength": "boundedMeasuredWithCandidatePaths",
+        "zeroReflectionAssumptions": [
+          "coverage:homotopy-report-fixture",
+          "selected path and filler evidence is supplied"
+        ],
+        "obstructionReflectionAssumptions": [
+          "selected continuation traces preserve declared axes",
+          "positive monodromy is backed by source, test, runtime, or policy evidence"
+        ],
+        "coverageRequirementRefs": [
+          "coverage:homotopy-report-fixture"
+        ],
+        "witnessCompletenessBoundary": "homotopy zero reflects only measured path pairs and fillers inside the selected coverage universe; unresolved paths stay coverage gaps"
+      },
       "pathRefs": [
         "path:semantic-operation-flow",
         "molecule:homotopy-report-fixture"
+      ],
+      "endpointObjectRefs": [
+        "aat:homotopy:fixture"
       ],
       "fillerCandidateRefs": [
         "filler-rule:contract-or-test"
@@ -3451,9 +3894,28 @@
       "pathPairRef": "path-pair:path-rule-zero-holonomy-filled-loop",
       "candidateSource": "llmDiscovered",
       "status": "filledLoop",
+      "measurementStatus": "measured",
+      "readingBoundary": {
+        "readingStrength": "boundedMeasuredWithCandidatePaths",
+        "zeroReflectionAssumptions": [
+          "coverage:homotopy-report-fixture",
+          "selected path and filler evidence is supplied"
+        ],
+        "obstructionReflectionAssumptions": [
+          "selected continuation traces preserve declared axes",
+          "positive monodromy is backed by source, test, runtime, or policy evidence"
+        ],
+        "coverageRequirementRefs": [
+          "coverage:homotopy-report-fixture"
+        ],
+        "witnessCompletenessBoundary": "homotopy zero reflects only measured path pairs and fillers inside the selected coverage universe; unresolved paths stay coverage gaps"
+      },
       "pathRefs": [
         "path-rule:zero-holonomy-filled-loop",
         "zero-holonomy-filled-loop-path"
+      ],
+      "endpointObjectRefs": [
+        "aat:homotopy:fixture"
       ],
       "fillerCandidateRefs": [
         "filler-rule:contract-or-test"
@@ -3488,9 +3950,28 @@
       "pathPairRef": "path-pair:path-rule-nonzero-holonomy-filled-loop",
       "candidateSource": "llmDiscovered",
       "status": "filledLoop",
+      "measurementStatus": "measured",
+      "readingBoundary": {
+        "readingStrength": "boundedMeasuredWithCandidatePaths",
+        "zeroReflectionAssumptions": [
+          "coverage:homotopy-report-fixture",
+          "selected path and filler evidence is supplied"
+        ],
+        "obstructionReflectionAssumptions": [
+          "selected continuation traces preserve declared axes",
+          "positive monodromy is backed by source, test, runtime, or policy evidence"
+        ],
+        "coverageRequirementRefs": [
+          "coverage:homotopy-report-fixture"
+        ],
+        "witnessCompletenessBoundary": "homotopy zero reflects only measured path pairs and fillers inside the selected coverage universe; unresolved paths stay coverage gaps"
+      },
       "pathRefs": [
         "path-rule:nonzero-holonomy-filled-loop",
         "nonzero-holonomy-filled-loop-path"
+      ],
+      "endpointObjectRefs": [
+        "aat:homotopy:fixture"
       ],
       "fillerCandidateRefs": [
         "filler-rule:contract-or-test"
@@ -3525,9 +4006,28 @@
       "pathPairRef": "path-pair:path-rule-cache-repository-semantic-loop",
       "candidateSource": "llmDiscovered",
       "status": "filledLoop",
+      "measurementStatus": "measured",
+      "readingBoundary": {
+        "readingStrength": "boundedMeasuredWithCandidatePaths",
+        "zeroReflectionAssumptions": [
+          "coverage:homotopy-report-fixture",
+          "selected path and filler evidence is supplied"
+        ],
+        "obstructionReflectionAssumptions": [
+          "selected continuation traces preserve declared axes",
+          "positive monodromy is backed by source, test, runtime, or policy evidence"
+        ],
+        "coverageRequirementRefs": [
+          "coverage:homotopy-report-fixture"
+        ],
+        "witnessCompletenessBoundary": "homotopy zero reflects only measured path pairs and fillers inside the selected coverage universe; unresolved paths stay coverage gaps"
+      },
       "pathRefs": [
         "path-rule:cache-repository-semantic-loop",
         "cache-repository-semantic-loop-path"
+      ],
+      "endpointObjectRefs": [
+        "aat:homotopy:fixture"
       ],
       "fillerCandidateRefs": [
         "filler-rule:contract-or-test"
@@ -3562,9 +4062,28 @@
       "pathPairRef": "path-pair:path-rule-event-projection-direct-read",
       "candidateSource": "llmDiscovered",
       "status": "filledLoop",
+      "measurementStatus": "measured",
+      "readingBoundary": {
+        "readingStrength": "boundedMeasuredWithCandidatePaths",
+        "zeroReflectionAssumptions": [
+          "coverage:homotopy-report-fixture",
+          "selected path and filler evidence is supplied"
+        ],
+        "obstructionReflectionAssumptions": [
+          "selected continuation traces preserve declared axes",
+          "positive monodromy is backed by source, test, runtime, or policy evidence"
+        ],
+        "coverageRequirementRefs": [
+          "coverage:homotopy-report-fixture"
+        ],
+        "witnessCompletenessBoundary": "homotopy zero reflects only measured path pairs and fillers inside the selected coverage universe; unresolved paths stay coverage gaps"
+      },
       "pathRefs": [
         "path-rule:event-projection-direct-read",
         "event-projection-direct-read-path"
+      ],
+      "endpointObjectRefs": [
+        "aat:homotopy:fixture"
       ],
       "fillerCandidateRefs": [
         "filler-rule:contract-or-test"
@@ -3599,9 +4118,28 @@
       "pathPairRef": "path-pair:path-rule-retry-idempotency-effect",
       "candidateSource": "llmDiscovered",
       "status": "filledLoop",
+      "measurementStatus": "measured",
+      "readingBoundary": {
+        "readingStrength": "boundedMeasuredWithCandidatePaths",
+        "zeroReflectionAssumptions": [
+          "coverage:homotopy-report-fixture",
+          "selected path and filler evidence is supplied"
+        ],
+        "obstructionReflectionAssumptions": [
+          "selected continuation traces preserve declared axes",
+          "positive monodromy is backed by source, test, runtime, or policy evidence"
+        ],
+        "coverageRequirementRefs": [
+          "coverage:homotopy-report-fixture"
+        ],
+        "witnessCompletenessBoundary": "homotopy zero reflects only measured path pairs and fillers inside the selected coverage universe; unresolved paths stay coverage gaps"
+      },
       "pathRefs": [
         "path-rule:retry-idempotency-effect",
         "retry-idempotency-effect-path"
+      ],
+      "endpointObjectRefs": [
+        "aat:homotopy:fixture"
       ],
       "fillerCandidateRefs": [
         "filler-rule:contract-or-test"
@@ -3636,9 +4174,28 @@
       "pathPairRef": "path-pair:path-rule-authorization-bypass-hole",
       "candidateSource": "llmDiscovered",
       "status": "unfilledLoop",
+      "measurementStatus": "blockedByCoverageGap",
+      "readingBoundary": {
+        "readingStrength": "boundedMeasuredWithCandidatePaths",
+        "zeroReflectionAssumptions": [
+          "coverage:homotopy-report-fixture",
+          "selected path and filler evidence is supplied"
+        ],
+        "obstructionReflectionAssumptions": [
+          "selected continuation traces preserve declared axes",
+          "positive monodromy is backed by source, test, runtime, or policy evidence"
+        ],
+        "coverageRequirementRefs": [
+          "coverage:homotopy-report-fixture"
+        ],
+        "witnessCompletenessBoundary": "homotopy zero reflects only measured path pairs and fillers inside the selected coverage universe; unresolved paths stay coverage gaps"
+      },
       "pathRefs": [
         "path-rule:authorization-bypass-hole",
         "authorization-bypass-hole-path"
+      ],
+      "endpointObjectRefs": [
+        "aat:homotopy:fixture"
       ],
       "fillerCandidateRefs": [
         "filler-rule:contract-or-test"
@@ -3675,9 +4232,28 @@
       "pathPairRef": "path-pair:path-rule-coupon-tax-rounding-semantic-loop",
       "candidateSource": "llmDiscovered",
       "status": "filledLoop",
+      "measurementStatus": "measured",
+      "readingBoundary": {
+        "readingStrength": "boundedMeasuredWithCandidatePaths",
+        "zeroReflectionAssumptions": [
+          "coverage:homotopy-report-fixture",
+          "selected path and filler evidence is supplied"
+        ],
+        "obstructionReflectionAssumptions": [
+          "selected continuation traces preserve declared axes",
+          "positive monodromy is backed by source, test, runtime, or policy evidence"
+        ],
+        "coverageRequirementRefs": [
+          "coverage:homotopy-report-fixture"
+        ],
+        "witnessCompletenessBoundary": "homotopy zero reflects only measured path pairs and fillers inside the selected coverage universe; unresolved paths stay coverage gaps"
+      },
       "pathRefs": [
         "path-rule:coupon-tax-rounding-semantic-loop",
         "coupon-tax-rounding-semantic-loop-path"
+      ],
+      "endpointObjectRefs": [
+        "aat:homotopy:fixture"
       ],
       "fillerCandidateRefs": [
         "filler-rule:contract-or-test"
@@ -3715,6 +4291,43 @@
       "fillerRuleRef": "filler-rule:contract-or-test",
       "fillerKind": "contract-test-runtime-or-policy-filler",
       "status": "candidate",
+      "measurementStatus": "measured",
+      "readingBoundary": {
+        "readingStrength": "boundedMeasuredWithCandidatePaths",
+        "zeroReflectionAssumptions": [
+          "coverage:homotopy-report-fixture",
+          "selected path and filler evidence is supplied"
+        ],
+        "obstructionReflectionAssumptions": [
+          "selected continuation traces preserve declared axes",
+          "positive monodromy is backed by source, test, runtime, or policy evidence"
+        ],
+        "coverageRequirementRefs": [
+          "coverage:homotopy-report-fixture"
+        ],
+        "witnessCompletenessBoundary": "homotopy zero reflects only measured path pairs and fillers inside the selected coverage universe; unresolved paths stay coverage gaps"
+      },
+      "evidenceStatus": "sourceBackedFillerEvidence",
+      "measuredFillerEvidenceRefs": [
+        "doc-auth-policy",
+        "required-source-kind:docSection",
+        "required-source-kind:policy",
+        "required-source-kind:runtimeTrace",
+        "src-auth-bypass",
+        "src-cache-read",
+        "src-direct-read",
+        "src-event-projection",
+        "src-pricing-checkout",
+        "src-repository-read",
+        "src-retry-effect",
+        "test-homotopy-fillers"
+      ],
+      "missingFillerEvidence": [],
+      "fillingConditionRefs": [
+        "loop:loop-candidate:path-pair-semantic-contract-loop-0",
+        "rule:filler-rule:contract-or-test",
+        "commutativity-or-selected-law-filling-condition"
+      ],
       "sourceRefs": [
         "doc-auth-policy",
         "src-auth-bypass",
@@ -3754,6 +4367,43 @@
       "fillerRuleRef": "filler-rule:contract-or-test",
       "fillerKind": "contract-test-runtime-or-policy-filler",
       "status": "candidate",
+      "measurementStatus": "measured",
+      "readingBoundary": {
+        "readingStrength": "boundedMeasuredWithCandidatePaths",
+        "zeroReflectionAssumptions": [
+          "coverage:homotopy-report-fixture",
+          "selected path and filler evidence is supplied"
+        ],
+        "obstructionReflectionAssumptions": [
+          "selected continuation traces preserve declared axes",
+          "positive monodromy is backed by source, test, runtime, or policy evidence"
+        ],
+        "coverageRequirementRefs": [
+          "coverage:homotopy-report-fixture"
+        ],
+        "witnessCompletenessBoundary": "homotopy zero reflects only measured path pairs and fillers inside the selected coverage universe; unresolved paths stay coverage gaps"
+      },
+      "evidenceStatus": "sourceBackedFillerEvidence",
+      "measuredFillerEvidenceRefs": [
+        "doc-auth-policy",
+        "required-source-kind:docSection",
+        "required-source-kind:policy",
+        "required-source-kind:runtimeTrace",
+        "src-auth-bypass",
+        "src-cache-read",
+        "src-direct-read",
+        "src-event-projection",
+        "src-pricing-checkout",
+        "src-repository-read",
+        "src-retry-effect",
+        "test-homotopy-fillers"
+      ],
+      "missingFillerEvidence": [],
+      "fillingConditionRefs": [
+        "loop:loop-candidate:path-pair-path-rule-zero-holonomy-filled-loop-1",
+        "rule:filler-rule:contract-or-test",
+        "commutativity-or-selected-law-filling-condition"
+      ],
       "sourceRefs": [
         "doc-auth-policy",
         "src-auth-bypass",
@@ -3793,6 +4443,43 @@
       "fillerRuleRef": "filler-rule:contract-or-test",
       "fillerKind": "contract-test-runtime-or-policy-filler",
       "status": "candidate",
+      "measurementStatus": "measured",
+      "readingBoundary": {
+        "readingStrength": "boundedMeasuredWithCandidatePaths",
+        "zeroReflectionAssumptions": [
+          "coverage:homotopy-report-fixture",
+          "selected path and filler evidence is supplied"
+        ],
+        "obstructionReflectionAssumptions": [
+          "selected continuation traces preserve declared axes",
+          "positive monodromy is backed by source, test, runtime, or policy evidence"
+        ],
+        "coverageRequirementRefs": [
+          "coverage:homotopy-report-fixture"
+        ],
+        "witnessCompletenessBoundary": "homotopy zero reflects only measured path pairs and fillers inside the selected coverage universe; unresolved paths stay coverage gaps"
+      },
+      "evidenceStatus": "sourceBackedFillerEvidence",
+      "measuredFillerEvidenceRefs": [
+        "doc-auth-policy",
+        "required-source-kind:docSection",
+        "required-source-kind:policy",
+        "required-source-kind:runtimeTrace",
+        "src-auth-bypass",
+        "src-cache-read",
+        "src-direct-read",
+        "src-event-projection",
+        "src-pricing-checkout",
+        "src-repository-read",
+        "src-retry-effect",
+        "test-homotopy-fillers"
+      ],
+      "missingFillerEvidence": [],
+      "fillingConditionRefs": [
+        "loop:loop-candidate:path-pair-path-rule-nonzero-holonomy-filled-loop-2",
+        "rule:filler-rule:contract-or-test",
+        "commutativity-or-selected-law-filling-condition"
+      ],
       "sourceRefs": [
         "doc-auth-policy",
         "src-auth-bypass",
@@ -3832,6 +4519,43 @@
       "fillerRuleRef": "filler-rule:contract-or-test",
       "fillerKind": "contract-test-runtime-or-policy-filler",
       "status": "candidate",
+      "measurementStatus": "measured",
+      "readingBoundary": {
+        "readingStrength": "boundedMeasuredWithCandidatePaths",
+        "zeroReflectionAssumptions": [
+          "coverage:homotopy-report-fixture",
+          "selected path and filler evidence is supplied"
+        ],
+        "obstructionReflectionAssumptions": [
+          "selected continuation traces preserve declared axes",
+          "positive monodromy is backed by source, test, runtime, or policy evidence"
+        ],
+        "coverageRequirementRefs": [
+          "coverage:homotopy-report-fixture"
+        ],
+        "witnessCompletenessBoundary": "homotopy zero reflects only measured path pairs and fillers inside the selected coverage universe; unresolved paths stay coverage gaps"
+      },
+      "evidenceStatus": "sourceBackedFillerEvidence",
+      "measuredFillerEvidenceRefs": [
+        "doc-auth-policy",
+        "required-source-kind:docSection",
+        "required-source-kind:policy",
+        "required-source-kind:runtimeTrace",
+        "src-auth-bypass",
+        "src-cache-read",
+        "src-direct-read",
+        "src-event-projection",
+        "src-pricing-checkout",
+        "src-repository-read",
+        "src-retry-effect",
+        "test-homotopy-fillers"
+      ],
+      "missingFillerEvidence": [],
+      "fillingConditionRefs": [
+        "loop:loop-candidate:path-pair-path-rule-cache-repository-semantic-loop-3",
+        "rule:filler-rule:contract-or-test",
+        "commutativity-or-selected-law-filling-condition"
+      ],
       "sourceRefs": [
         "doc-auth-policy",
         "src-auth-bypass",
@@ -3871,6 +4595,43 @@
       "fillerRuleRef": "filler-rule:contract-or-test",
       "fillerKind": "contract-test-runtime-or-policy-filler",
       "status": "candidate",
+      "measurementStatus": "measured",
+      "readingBoundary": {
+        "readingStrength": "boundedMeasuredWithCandidatePaths",
+        "zeroReflectionAssumptions": [
+          "coverage:homotopy-report-fixture",
+          "selected path and filler evidence is supplied"
+        ],
+        "obstructionReflectionAssumptions": [
+          "selected continuation traces preserve declared axes",
+          "positive monodromy is backed by source, test, runtime, or policy evidence"
+        ],
+        "coverageRequirementRefs": [
+          "coverage:homotopy-report-fixture"
+        ],
+        "witnessCompletenessBoundary": "homotopy zero reflects only measured path pairs and fillers inside the selected coverage universe; unresolved paths stay coverage gaps"
+      },
+      "evidenceStatus": "sourceBackedFillerEvidence",
+      "measuredFillerEvidenceRefs": [
+        "doc-auth-policy",
+        "required-source-kind:docSection",
+        "required-source-kind:policy",
+        "required-source-kind:runtimeTrace",
+        "src-auth-bypass",
+        "src-cache-read",
+        "src-direct-read",
+        "src-event-projection",
+        "src-pricing-checkout",
+        "src-repository-read",
+        "src-retry-effect",
+        "test-homotopy-fillers"
+      ],
+      "missingFillerEvidence": [],
+      "fillingConditionRefs": [
+        "loop:loop-candidate:path-pair-path-rule-event-projection-direct-read-4",
+        "rule:filler-rule:contract-or-test",
+        "commutativity-or-selected-law-filling-condition"
+      ],
       "sourceRefs": [
         "doc-auth-policy",
         "src-auth-bypass",
@@ -3910,6 +4671,43 @@
       "fillerRuleRef": "filler-rule:contract-or-test",
       "fillerKind": "contract-test-runtime-or-policy-filler",
       "status": "candidate",
+      "measurementStatus": "measured",
+      "readingBoundary": {
+        "readingStrength": "boundedMeasuredWithCandidatePaths",
+        "zeroReflectionAssumptions": [
+          "coverage:homotopy-report-fixture",
+          "selected path and filler evidence is supplied"
+        ],
+        "obstructionReflectionAssumptions": [
+          "selected continuation traces preserve declared axes",
+          "positive monodromy is backed by source, test, runtime, or policy evidence"
+        ],
+        "coverageRequirementRefs": [
+          "coverage:homotopy-report-fixture"
+        ],
+        "witnessCompletenessBoundary": "homotopy zero reflects only measured path pairs and fillers inside the selected coverage universe; unresolved paths stay coverage gaps"
+      },
+      "evidenceStatus": "sourceBackedFillerEvidence",
+      "measuredFillerEvidenceRefs": [
+        "doc-auth-policy",
+        "required-source-kind:docSection",
+        "required-source-kind:policy",
+        "required-source-kind:runtimeTrace",
+        "src-auth-bypass",
+        "src-cache-read",
+        "src-direct-read",
+        "src-event-projection",
+        "src-pricing-checkout",
+        "src-repository-read",
+        "src-retry-effect",
+        "test-homotopy-fillers"
+      ],
+      "missingFillerEvidence": [],
+      "fillingConditionRefs": [
+        "loop:loop-candidate:path-pair-path-rule-retry-idempotency-effect-5",
+        "rule:filler-rule:contract-or-test",
+        "commutativity-or-selected-law-filling-condition"
+      ],
       "sourceRefs": [
         "doc-auth-policy",
         "src-auth-bypass",
@@ -3949,6 +4747,32 @@
       "fillerRuleRef": "filler-rule:contract-or-test",
       "fillerKind": "contract-test-runtime-or-policy-filler",
       "status": "candidate",
+      "measurementStatus": "blockedByCoverageGap",
+      "readingBoundary": {
+        "readingStrength": "boundedMeasuredWithCandidatePaths",
+        "zeroReflectionAssumptions": [
+          "coverage:homotopy-report-fixture",
+          "selected path and filler evidence is supplied"
+        ],
+        "obstructionReflectionAssumptions": [
+          "selected continuation traces preserve declared axes",
+          "positive monodromy is backed by source, test, runtime, or policy evidence"
+        ],
+        "coverageRequirementRefs": [
+          "coverage:homotopy-report-fixture"
+        ],
+        "witnessCompletenessBoundary": "homotopy zero reflects only measured path pairs and fillers inside the selected coverage universe; unresolved paths stay coverage gaps"
+      },
+      "evidenceStatus": "candidateNeedsEvidence",
+      "measuredFillerEvidenceRefs": [],
+      "missingFillerEvidence": [
+        "gap:path-rule:authorization-bypass-hole:missing-policy-test"
+      ],
+      "fillingConditionRefs": [
+        "loop:loop-candidate:path-pair-path-rule-authorization-bypass-hole-6",
+        "rule:filler-rule:contract-or-test",
+        "commutativity-or-selected-law-filling-condition"
+      ],
       "sourceRefs": [
         "doc-auth-policy",
         "src-auth-bypass",
@@ -3988,6 +4812,43 @@
       "fillerRuleRef": "filler-rule:contract-or-test",
       "fillerKind": "contract-test-runtime-or-policy-filler",
       "status": "candidate",
+      "measurementStatus": "measured",
+      "readingBoundary": {
+        "readingStrength": "boundedMeasuredWithCandidatePaths",
+        "zeroReflectionAssumptions": [
+          "coverage:homotopy-report-fixture",
+          "selected path and filler evidence is supplied"
+        ],
+        "obstructionReflectionAssumptions": [
+          "selected continuation traces preserve declared axes",
+          "positive monodromy is backed by source, test, runtime, or policy evidence"
+        ],
+        "coverageRequirementRefs": [
+          "coverage:homotopy-report-fixture"
+        ],
+        "witnessCompletenessBoundary": "homotopy zero reflects only measured path pairs and fillers inside the selected coverage universe; unresolved paths stay coverage gaps"
+      },
+      "evidenceStatus": "sourceBackedFillerEvidence",
+      "measuredFillerEvidenceRefs": [
+        "doc-auth-policy",
+        "required-source-kind:docSection",
+        "required-source-kind:policy",
+        "required-source-kind:runtimeTrace",
+        "src-auth-bypass",
+        "src-cache-read",
+        "src-direct-read",
+        "src-event-projection",
+        "src-pricing-checkout",
+        "src-repository-read",
+        "src-retry-effect",
+        "test-homotopy-fillers"
+      ],
+      "missingFillerEvidence": [],
+      "fillingConditionRefs": [
+        "loop:loop-candidate:path-pair-path-rule-coupon-tax-rounding-semantic-loop-7",
+        "rule:filler-rule:contract-or-test",
+        "commutativity-or-selected-law-filling-condition"
+      ],
       "sourceRefs": [
         "doc-auth-policy",
         "src-auth-bypass",
@@ -4027,6 +4888,29 @@
       "readingId": "architectural-hole:loop-candidate-path-pair-path-rule-authorization-bypass-hole-6",
       "loopRef": "loop-candidate:path-pair-path-rule-authorization-bypass-hole-6",
       "status": "architecturalHole",
+      "measurementStatus": "blockedByCoverageGap",
+      "readingBoundary": {
+        "readingStrength": "boundedMeasuredWithCandidatePaths",
+        "zeroReflectionAssumptions": [
+          "coverage:homotopy-report-fixture",
+          "selected path and filler evidence is supplied"
+        ],
+        "obstructionReflectionAssumptions": [
+          "selected continuation traces preserve declared axes",
+          "positive monodromy is backed by source, test, runtime, or policy evidence"
+        ],
+        "coverageRequirementRefs": [
+          "coverage:homotopy-report-fixture"
+        ],
+        "witnessCompletenessBoundary": "homotopy zero reflects only measured path pairs and fillers inside the selected coverage universe; unresolved paths stay coverage gaps"
+      },
+      "selectedDiagramRefs": [
+        "diagram:loop-candidate-path-pair-path-rule-authorization-bypass-hole-6",
+        "path-pair:path-rule-authorization-bypass-hole"
+      ],
+      "nonFillabilityWitnessRefs": [
+        "non-fillability-witness:gap:path-rule:authorization-bypass-hole:missing-policy-test"
+      ],
       "missingFillerEvidence": [
         "gap:path-rule:authorization-bypass-hole:missing-policy-test"
       ],
@@ -4061,9 +4945,45 @@
       "pathPairRef": "path-pair:semantic-contract-loop",
       "loopRef": "loop-candidate:path-pair-semantic-contract-loop-0",
       "axisRef": "axis:homotopy-report-fixture",
+      "measurementStatus": "measured",
+      "readingBoundary": {
+        "readingStrength": "boundedMeasuredWithCandidatePaths",
+        "zeroReflectionAssumptions": [
+          "coverage:homotopy-report-fixture",
+          "selected path and filler evidence is supplied"
+        ],
+        "obstructionReflectionAssumptions": [
+          "selected continuation traces preserve declared axes",
+          "positive monodromy is backed by source, test, runtime, or policy evidence"
+        ],
+        "coverageRequirementRefs": [
+          "coverage:homotopy-report-fixture"
+        ],
+        "witnessCompletenessBoundary": "homotopy zero reflects only measured path pairs and fillers inside the selected coverage universe; unresolved paths stay coverage gaps"
+      },
       "distanceKind": "selected-axis-continuation-distance",
       "value": 0,
       "comparedContinuationSummary": "path:semantic-operation-flow vs molecule:homotopy-report-fixture on axis:homotopy-report-fixture",
+      "comparedContinuationRefs": [
+        "Cont_axis:homotopy-report-fixture(path:semantic-operation-flow)",
+        "Cont_axis:homotopy-report-fixture(molecule:homotopy-report-fixture)"
+      ],
+      "distanceInputRefs": [
+        "atom:authorization-bypass",
+        "atom:cache-read",
+        "atom:coupon-tax-rounding",
+        "atom:event-projection",
+        "atom:repository-read",
+        "atom:retry-idempotency",
+        "semantic:path-rule:cache-repository-semantic-loop",
+        "semantic:path-rule:coupon-tax-rounding-semantic-loop",
+        "semantic:path-rule:event-projection-direct-read",
+        "semantic:path-rule:nonzero-holonomy-filled-loop",
+        "semantic:path-rule:retry-idempotency-effect"
+      ],
+      "muDefectRefs": [
+        "mu:path-pair-semantic-contract-loop:axis-homotopy-report-fixture"
+      ],
       "sourceRefs": [
         "src-auth-bypass",
         "src-cache-read",
@@ -4105,9 +5025,40 @@
       "pathPairRef": "path-pair:path-rule-zero-holonomy-filled-loop",
       "loopRef": "loop-candidate:path-pair-path-rule-zero-holonomy-filled-loop-1",
       "axisRef": "axis:homotopy-report-fixture",
+      "measurementStatus": "measured",
+      "readingBoundary": {
+        "readingStrength": "boundedMeasuredWithCandidatePaths",
+        "zeroReflectionAssumptions": [
+          "coverage:homotopy-report-fixture",
+          "selected path and filler evidence is supplied"
+        ],
+        "obstructionReflectionAssumptions": [
+          "selected continuation traces preserve declared axes",
+          "positive monodromy is backed by source, test, runtime, or policy evidence"
+        ],
+        "coverageRequirementRefs": [
+          "coverage:homotopy-report-fixture"
+        ],
+        "witnessCompletenessBoundary": "homotopy zero reflects only measured path pairs and fillers inside the selected coverage universe; unresolved paths stay coverage gaps"
+      },
       "distanceKind": "selected-axis-continuation-distance",
       "value": 0,
       "comparedContinuationSummary": "path-rule:zero-holonomy-filled-loop vs zero-holonomy-filled-loop-path on axis:homotopy-report-fixture",
+      "comparedContinuationRefs": [
+        "Cont_axis:homotopy-report-fixture(path-rule:zero-holonomy-filled-loop)",
+        "Cont_axis:homotopy-report-fixture(zero-holonomy-filled-loop-path)"
+      ],
+      "distanceInputRefs": [
+        "atom:authorization-bypass",
+        "atom:cache-read",
+        "atom:coupon-tax-rounding",
+        "atom:event-projection",
+        "atom:repository-read",
+        "atom:retry-idempotency"
+      ],
+      "muDefectRefs": [
+        "mu:path-pair-path-rule-zero-holonomy-filled-loop:axis-homotopy-report-fixture"
+      ],
       "sourceRefs": [
         "doc-auth-policy",
         "src-auth-bypass",
@@ -4146,9 +5097,40 @@
       "pathPairRef": "path-pair:path-rule-nonzero-holonomy-filled-loop",
       "loopRef": "loop-candidate:path-pair-path-rule-nonzero-holonomy-filled-loop-2",
       "axisRef": "axis:homotopy-report-fixture",
+      "measurementStatus": "measured",
+      "readingBoundary": {
+        "readingStrength": "boundedMeasuredWithCandidatePaths",
+        "zeroReflectionAssumptions": [
+          "coverage:homotopy-report-fixture",
+          "selected path and filler evidence is supplied"
+        ],
+        "obstructionReflectionAssumptions": [
+          "selected continuation traces preserve declared axes",
+          "positive monodromy is backed by source, test, runtime, or policy evidence"
+        ],
+        "coverageRequirementRefs": [
+          "coverage:homotopy-report-fixture"
+        ],
+        "witnessCompletenessBoundary": "homotopy zero reflects only measured path pairs and fillers inside the selected coverage universe; unresolved paths stay coverage gaps"
+      },
       "distanceKind": "selected-axis-continuation-distance",
       "value": 1,
       "comparedContinuationSummary": "path-rule:nonzero-holonomy-filled-loop vs nonzero-holonomy-filled-loop-path on axis:homotopy-report-fixture",
+      "comparedContinuationRefs": [
+        "Cont_axis:homotopy-report-fixture(path-rule:nonzero-holonomy-filled-loop)",
+        "Cont_axis:homotopy-report-fixture(nonzero-holonomy-filled-loop-path)"
+      ],
+      "distanceInputRefs": [
+        "atom:authorization-bypass",
+        "atom:cache-read",
+        "atom:coupon-tax-rounding",
+        "atom:event-projection",
+        "atom:repository-read",
+        "atom:retry-idempotency"
+      ],
+      "muDefectRefs": [
+        "mu:path-pair-path-rule-nonzero-holonomy-filled-loop:axis-homotopy-report-fixture"
+      ],
       "sourceRefs": [
         "doc-auth-policy",
         "src-auth-bypass",
@@ -4187,9 +5169,40 @@
       "pathPairRef": "path-pair:path-rule-cache-repository-semantic-loop",
       "loopRef": "loop-candidate:path-pair-path-rule-cache-repository-semantic-loop-3",
       "axisRef": "axis:homotopy-report-fixture",
+      "measurementStatus": "measured",
+      "readingBoundary": {
+        "readingStrength": "boundedMeasuredWithCandidatePaths",
+        "zeroReflectionAssumptions": [
+          "coverage:homotopy-report-fixture",
+          "selected path and filler evidence is supplied"
+        ],
+        "obstructionReflectionAssumptions": [
+          "selected continuation traces preserve declared axes",
+          "positive monodromy is backed by source, test, runtime, or policy evidence"
+        ],
+        "coverageRequirementRefs": [
+          "coverage:homotopy-report-fixture"
+        ],
+        "witnessCompletenessBoundary": "homotopy zero reflects only measured path pairs and fillers inside the selected coverage universe; unresolved paths stay coverage gaps"
+      },
       "distanceKind": "selected-axis-continuation-distance",
       "value": 1,
       "comparedContinuationSummary": "path-rule:cache-repository-semantic-loop vs cache-repository-semantic-loop-path on axis:homotopy-report-fixture",
+      "comparedContinuationRefs": [
+        "Cont_axis:homotopy-report-fixture(path-rule:cache-repository-semantic-loop)",
+        "Cont_axis:homotopy-report-fixture(cache-repository-semantic-loop-path)"
+      ],
+      "distanceInputRefs": [
+        "atom:authorization-bypass",
+        "atom:cache-read",
+        "atom:coupon-tax-rounding",
+        "atom:event-projection",
+        "atom:repository-read",
+        "atom:retry-idempotency"
+      ],
+      "muDefectRefs": [
+        "mu:path-pair-path-rule-cache-repository-semantic-loop:axis-homotopy-report-fixture"
+      ],
       "sourceRefs": [
         "doc-auth-policy",
         "src-auth-bypass",
@@ -4228,9 +5241,40 @@
       "pathPairRef": "path-pair:path-rule-event-projection-direct-read",
       "loopRef": "loop-candidate:path-pair-path-rule-event-projection-direct-read-4",
       "axisRef": "axis:homotopy-report-fixture",
+      "measurementStatus": "measured",
+      "readingBoundary": {
+        "readingStrength": "boundedMeasuredWithCandidatePaths",
+        "zeroReflectionAssumptions": [
+          "coverage:homotopy-report-fixture",
+          "selected path and filler evidence is supplied"
+        ],
+        "obstructionReflectionAssumptions": [
+          "selected continuation traces preserve declared axes",
+          "positive monodromy is backed by source, test, runtime, or policy evidence"
+        ],
+        "coverageRequirementRefs": [
+          "coverage:homotopy-report-fixture"
+        ],
+        "witnessCompletenessBoundary": "homotopy zero reflects only measured path pairs and fillers inside the selected coverage universe; unresolved paths stay coverage gaps"
+      },
       "distanceKind": "selected-axis-continuation-distance",
       "value": 1,
       "comparedContinuationSummary": "path-rule:event-projection-direct-read vs event-projection-direct-read-path on axis:homotopy-report-fixture",
+      "comparedContinuationRefs": [
+        "Cont_axis:homotopy-report-fixture(path-rule:event-projection-direct-read)",
+        "Cont_axis:homotopy-report-fixture(event-projection-direct-read-path)"
+      ],
+      "distanceInputRefs": [
+        "atom:authorization-bypass",
+        "atom:cache-read",
+        "atom:coupon-tax-rounding",
+        "atom:event-projection",
+        "atom:repository-read",
+        "atom:retry-idempotency"
+      ],
+      "muDefectRefs": [
+        "mu:path-pair-path-rule-event-projection-direct-read:axis-homotopy-report-fixture"
+      ],
       "sourceRefs": [
         "doc-auth-policy",
         "src-auth-bypass",
@@ -4269,9 +5313,40 @@
       "pathPairRef": "path-pair:path-rule-retry-idempotency-effect",
       "loopRef": "loop-candidate:path-pair-path-rule-retry-idempotency-effect-5",
       "axisRef": "axis:homotopy-report-fixture",
+      "measurementStatus": "measured",
+      "readingBoundary": {
+        "readingStrength": "boundedMeasuredWithCandidatePaths",
+        "zeroReflectionAssumptions": [
+          "coverage:homotopy-report-fixture",
+          "selected path and filler evidence is supplied"
+        ],
+        "obstructionReflectionAssumptions": [
+          "selected continuation traces preserve declared axes",
+          "positive monodromy is backed by source, test, runtime, or policy evidence"
+        ],
+        "coverageRequirementRefs": [
+          "coverage:homotopy-report-fixture"
+        ],
+        "witnessCompletenessBoundary": "homotopy zero reflects only measured path pairs and fillers inside the selected coverage universe; unresolved paths stay coverage gaps"
+      },
       "distanceKind": "selected-axis-continuation-distance",
       "value": 1,
       "comparedContinuationSummary": "path-rule:retry-idempotency-effect vs retry-idempotency-effect-path on axis:homotopy-report-fixture",
+      "comparedContinuationRefs": [
+        "Cont_axis:homotopy-report-fixture(path-rule:retry-idempotency-effect)",
+        "Cont_axis:homotopy-report-fixture(retry-idempotency-effect-path)"
+      ],
+      "distanceInputRefs": [
+        "atom:authorization-bypass",
+        "atom:cache-read",
+        "atom:coupon-tax-rounding",
+        "atom:event-projection",
+        "atom:repository-read",
+        "atom:retry-idempotency"
+      ],
+      "muDefectRefs": [
+        "mu:path-pair-path-rule-retry-idempotency-effect:axis-homotopy-report-fixture"
+      ],
       "sourceRefs": [
         "doc-auth-policy",
         "src-auth-bypass",
@@ -4310,9 +5385,41 @@
       "pathPairRef": "path-pair:path-rule-authorization-bypass-hole",
       "loopRef": "loop-candidate:path-pair-path-rule-authorization-bypass-hole-6",
       "axisRef": "axis:homotopy-report-fixture",
+      "measurementStatus": "blockedByCoverageGap",
+      "readingBoundary": {
+        "readingStrength": "boundedMeasuredWithCandidatePaths",
+        "zeroReflectionAssumptions": [
+          "coverage:homotopy-report-fixture",
+          "selected path and filler evidence is supplied"
+        ],
+        "obstructionReflectionAssumptions": [
+          "selected continuation traces preserve declared axes",
+          "positive monodromy is backed by source, test, runtime, or policy evidence"
+        ],
+        "coverageRequirementRefs": [
+          "coverage:homotopy-report-fixture"
+        ],
+        "witnessCompletenessBoundary": "homotopy zero reflects only measured path pairs and fillers inside the selected coverage universe; unresolved paths stay coverage gaps"
+      },
       "distanceKind": "selected-axis-continuation-distance",
       "value": 1,
       "comparedContinuationSummary": "path-rule:authorization-bypass-hole vs authorization-bypass-hole-path on axis:homotopy-report-fixture",
+      "comparedContinuationRefs": [
+        "Cont_axis:homotopy-report-fixture(path-rule:authorization-bypass-hole)",
+        "Cont_axis:homotopy-report-fixture(authorization-bypass-hole-path)"
+      ],
+      "distanceInputRefs": [
+        "atom:authorization-bypass",
+        "atom:cache-read",
+        "atom:coupon-tax-rounding",
+        "atom:event-projection",
+        "atom:repository-read",
+        "atom:retry-idempotency",
+        "gap:path-rule:authorization-bypass-hole:missing-policy-test"
+      ],
+      "muDefectRefs": [
+        "mu:path-pair-path-rule-authorization-bypass-hole:axis-homotopy-report-fixture"
+      ],
       "sourceRefs": [
         "doc-auth-policy",
         "src-auth-bypass",
@@ -4353,9 +5460,40 @@
       "pathPairRef": "path-pair:path-rule-coupon-tax-rounding-semantic-loop",
       "loopRef": "loop-candidate:path-pair-path-rule-coupon-tax-rounding-semantic-loop-7",
       "axisRef": "axis:homotopy-report-fixture",
+      "measurementStatus": "measured",
+      "readingBoundary": {
+        "readingStrength": "boundedMeasuredWithCandidatePaths",
+        "zeroReflectionAssumptions": [
+          "coverage:homotopy-report-fixture",
+          "selected path and filler evidence is supplied"
+        ],
+        "obstructionReflectionAssumptions": [
+          "selected continuation traces preserve declared axes",
+          "positive monodromy is backed by source, test, runtime, or policy evidence"
+        ],
+        "coverageRequirementRefs": [
+          "coverage:homotopy-report-fixture"
+        ],
+        "witnessCompletenessBoundary": "homotopy zero reflects only measured path pairs and fillers inside the selected coverage universe; unresolved paths stay coverage gaps"
+      },
       "distanceKind": "selected-axis-continuation-distance",
       "value": 1,
       "comparedContinuationSummary": "path-rule:coupon-tax-rounding-semantic-loop vs coupon-tax-rounding-semantic-loop-path on axis:homotopy-report-fixture",
+      "comparedContinuationRefs": [
+        "Cont_axis:homotopy-report-fixture(path-rule:coupon-tax-rounding-semantic-loop)",
+        "Cont_axis:homotopy-report-fixture(coupon-tax-rounding-semantic-loop-path)"
+      ],
+      "distanceInputRefs": [
+        "atom:authorization-bypass",
+        "atom:cache-read",
+        "atom:coupon-tax-rounding",
+        "atom:event-projection",
+        "atom:repository-read",
+        "atom:retry-idempotency"
+      ],
+      "muDefectRefs": [
+        "mu:path-pair-path-rule-coupon-tax-rounding-semantic-loop:axis-homotopy-report-fixture"
+      ],
       "sourceRefs": [
         "doc-auth-policy",
         "src-auth-bypass",
@@ -4395,9 +5533,41 @@
       "readingId": "stokes-style:loop-candidate-path-pair-semantic-contract-loop-0",
       "loopRef": "loop-candidate:path-pair-semantic-contract-loop-0",
       "status": "measuredZeroWithinBoundary",
+      "measurementStatus": "measured",
+      "readingBoundary": {
+        "readingStrength": "boundedMeasuredWithCandidatePaths",
+        "zeroReflectionAssumptions": [
+          "coverage:homotopy-report-fixture",
+          "selected path and filler evidence is supplied"
+        ],
+        "obstructionReflectionAssumptions": [
+          "selected continuation traces preserve declared axes",
+          "positive monodromy is backed by source, test, runtime, or policy evidence"
+        ],
+        "coverageRequirementRefs": [
+          "coverage:homotopy-report-fixture"
+        ],
+        "witnessCompletenessBoundary": "homotopy zero reflects only measured path pairs and fillers inside the selected coverage universe; unresolved paths stay coverage gaps"
+      },
       "holonomyReadingRefs": [
         "homotopy-holonomy:loop-candidate-path-pair-semantic-contract-loop-0:axis-homotopy-report-fixture"
       ],
+      "fillingEvidenceRefs": [
+        "doc-auth-policy",
+        "required-source-kind:docSection",
+        "required-source-kind:policy",
+        "required-source-kind:runtimeTrace",
+        "src-auth-bypass",
+        "src-cache-read",
+        "src-direct-read",
+        "src-event-projection",
+        "src-pricing-checkout",
+        "src-repository-read",
+        "src-retry-effect",
+        "test-homotopy-fillers"
+      ],
+      "nonFillabilityWitnessRefs": [],
+      "localCurvatureCondition": "missing measured filler evidence blocks Stokes-style local curvature conclusion",
       "localCurvatureCellCandidates": [],
       "reviewQueueRefs": [
         "homotopy-holonomy:loop-candidate-path-pair-semantic-contract-loop-0:axis-homotopy-report-fixture"
@@ -4416,9 +5586,41 @@
       "readingId": "stokes-style:loop-candidate-path-pair-path-rule-zero-holonomy-filled-loop-1",
       "loopRef": "loop-candidate:path-pair-path-rule-zero-holonomy-filled-loop-1",
       "status": "measuredZeroWithinBoundary",
+      "measurementStatus": "measured",
+      "readingBoundary": {
+        "readingStrength": "boundedMeasuredWithCandidatePaths",
+        "zeroReflectionAssumptions": [
+          "coverage:homotopy-report-fixture",
+          "selected path and filler evidence is supplied"
+        ],
+        "obstructionReflectionAssumptions": [
+          "selected continuation traces preserve declared axes",
+          "positive monodromy is backed by source, test, runtime, or policy evidence"
+        ],
+        "coverageRequirementRefs": [
+          "coverage:homotopy-report-fixture"
+        ],
+        "witnessCompletenessBoundary": "homotopy zero reflects only measured path pairs and fillers inside the selected coverage universe; unresolved paths stay coverage gaps"
+      },
       "holonomyReadingRefs": [
         "homotopy-holonomy:loop-candidate-path-pair-path-rule-zero-holonomy-filled-loop-1:axis-homotopy-report-fixture"
       ],
+      "fillingEvidenceRefs": [
+        "doc-auth-policy",
+        "required-source-kind:docSection",
+        "required-source-kind:policy",
+        "required-source-kind:runtimeTrace",
+        "src-auth-bypass",
+        "src-cache-read",
+        "src-direct-read",
+        "src-event-projection",
+        "src-pricing-checkout",
+        "src-repository-read",
+        "src-retry-effect",
+        "test-homotopy-fillers"
+      ],
+      "nonFillabilityWitnessRefs": [],
+      "localCurvatureCondition": "missing measured filler evidence blocks Stokes-style local curvature conclusion",
       "localCurvatureCellCandidates": [],
       "reviewQueueRefs": [
         "homotopy-holonomy:loop-candidate-path-pair-path-rule-zero-holonomy-filled-loop-1:axis-homotopy-report-fixture"
@@ -4437,9 +5639,41 @@
       "readingId": "stokes-style:loop-candidate-path-pair-path-rule-nonzero-holonomy-filled-loop-2",
       "loopRef": "loop-candidate:path-pair-path-rule-nonzero-holonomy-filled-loop-2",
       "status": "filledNonzeroHolonomyReview",
+      "measurementStatus": "measured",
+      "readingBoundary": {
+        "readingStrength": "boundedMeasuredWithCandidatePaths",
+        "zeroReflectionAssumptions": [
+          "coverage:homotopy-report-fixture",
+          "selected path and filler evidence is supplied"
+        ],
+        "obstructionReflectionAssumptions": [
+          "selected continuation traces preserve declared axes",
+          "positive monodromy is backed by source, test, runtime, or policy evidence"
+        ],
+        "coverageRequirementRefs": [
+          "coverage:homotopy-report-fixture"
+        ],
+        "witnessCompletenessBoundary": "homotopy zero reflects only measured path pairs and fillers inside the selected coverage universe; unresolved paths stay coverage gaps"
+      },
       "holonomyReadingRefs": [
         "homotopy-holonomy:loop-candidate-path-pair-path-rule-nonzero-holonomy-filled-loop-2:axis-homotopy-report-fixture"
       ],
+      "fillingEvidenceRefs": [
+        "doc-auth-policy",
+        "required-source-kind:docSection",
+        "required-source-kind:policy",
+        "required-source-kind:runtimeTrace",
+        "src-auth-bypass",
+        "src-cache-read",
+        "src-direct-read",
+        "src-event-projection",
+        "src-pricing-checkout",
+        "src-repository-read",
+        "src-retry-effect",
+        "test-homotopy-fillers"
+      ],
+      "nonFillabilityWitnessRefs": [],
+      "localCurvatureCondition": "measured filling plus nonzero holonomy localizes review curvature to selected 2-cells",
       "localCurvatureCellCandidates": [
         "2-cell:obstruction-homotopy-report-fixture"
       ],
@@ -4460,9 +5694,41 @@
       "readingId": "stokes-style:loop-candidate-path-pair-path-rule-cache-repository-semantic-loop-3",
       "loopRef": "loop-candidate:path-pair-path-rule-cache-repository-semantic-loop-3",
       "status": "filledNonzeroHolonomyReview",
+      "measurementStatus": "measured",
+      "readingBoundary": {
+        "readingStrength": "boundedMeasuredWithCandidatePaths",
+        "zeroReflectionAssumptions": [
+          "coverage:homotopy-report-fixture",
+          "selected path and filler evidence is supplied"
+        ],
+        "obstructionReflectionAssumptions": [
+          "selected continuation traces preserve declared axes",
+          "positive monodromy is backed by source, test, runtime, or policy evidence"
+        ],
+        "coverageRequirementRefs": [
+          "coverage:homotopy-report-fixture"
+        ],
+        "witnessCompletenessBoundary": "homotopy zero reflects only measured path pairs and fillers inside the selected coverage universe; unresolved paths stay coverage gaps"
+      },
       "holonomyReadingRefs": [
         "homotopy-holonomy:loop-candidate-path-pair-path-rule-cache-repository-semantic-loop-3:axis-homotopy-report-fixture"
       ],
+      "fillingEvidenceRefs": [
+        "doc-auth-policy",
+        "required-source-kind:docSection",
+        "required-source-kind:policy",
+        "required-source-kind:runtimeTrace",
+        "src-auth-bypass",
+        "src-cache-read",
+        "src-direct-read",
+        "src-event-projection",
+        "src-pricing-checkout",
+        "src-repository-read",
+        "src-retry-effect",
+        "test-homotopy-fillers"
+      ],
+      "nonFillabilityWitnessRefs": [],
+      "localCurvatureCondition": "measured filling plus nonzero holonomy localizes review curvature to selected 2-cells",
       "localCurvatureCellCandidates": [
         "2-cell:obstruction-homotopy-report-fixture"
       ],
@@ -4483,9 +5749,41 @@
       "readingId": "stokes-style:loop-candidate-path-pair-path-rule-event-projection-direct-read-4",
       "loopRef": "loop-candidate:path-pair-path-rule-event-projection-direct-read-4",
       "status": "filledNonzeroHolonomyReview",
+      "measurementStatus": "measured",
+      "readingBoundary": {
+        "readingStrength": "boundedMeasuredWithCandidatePaths",
+        "zeroReflectionAssumptions": [
+          "coverage:homotopy-report-fixture",
+          "selected path and filler evidence is supplied"
+        ],
+        "obstructionReflectionAssumptions": [
+          "selected continuation traces preserve declared axes",
+          "positive monodromy is backed by source, test, runtime, or policy evidence"
+        ],
+        "coverageRequirementRefs": [
+          "coverage:homotopy-report-fixture"
+        ],
+        "witnessCompletenessBoundary": "homotopy zero reflects only measured path pairs and fillers inside the selected coverage universe; unresolved paths stay coverage gaps"
+      },
       "holonomyReadingRefs": [
         "homotopy-holonomy:loop-candidate-path-pair-path-rule-event-projection-direct-read-4:axis-homotopy-report-fixture"
       ],
+      "fillingEvidenceRefs": [
+        "doc-auth-policy",
+        "required-source-kind:docSection",
+        "required-source-kind:policy",
+        "required-source-kind:runtimeTrace",
+        "src-auth-bypass",
+        "src-cache-read",
+        "src-direct-read",
+        "src-event-projection",
+        "src-pricing-checkout",
+        "src-repository-read",
+        "src-retry-effect",
+        "test-homotopy-fillers"
+      ],
+      "nonFillabilityWitnessRefs": [],
+      "localCurvatureCondition": "measured filling plus nonzero holonomy localizes review curvature to selected 2-cells",
       "localCurvatureCellCandidates": [
         "2-cell:obstruction-homotopy-report-fixture"
       ],
@@ -4506,9 +5804,41 @@
       "readingId": "stokes-style:loop-candidate-path-pair-path-rule-retry-idempotency-effect-5",
       "loopRef": "loop-candidate:path-pair-path-rule-retry-idempotency-effect-5",
       "status": "filledNonzeroHolonomyReview",
+      "measurementStatus": "measured",
+      "readingBoundary": {
+        "readingStrength": "boundedMeasuredWithCandidatePaths",
+        "zeroReflectionAssumptions": [
+          "coverage:homotopy-report-fixture",
+          "selected path and filler evidence is supplied"
+        ],
+        "obstructionReflectionAssumptions": [
+          "selected continuation traces preserve declared axes",
+          "positive monodromy is backed by source, test, runtime, or policy evidence"
+        ],
+        "coverageRequirementRefs": [
+          "coverage:homotopy-report-fixture"
+        ],
+        "witnessCompletenessBoundary": "homotopy zero reflects only measured path pairs and fillers inside the selected coverage universe; unresolved paths stay coverage gaps"
+      },
       "holonomyReadingRefs": [
         "homotopy-holonomy:loop-candidate-path-pair-path-rule-retry-idempotency-effect-5:axis-homotopy-report-fixture"
       ],
+      "fillingEvidenceRefs": [
+        "doc-auth-policy",
+        "required-source-kind:docSection",
+        "required-source-kind:policy",
+        "required-source-kind:runtimeTrace",
+        "src-auth-bypass",
+        "src-cache-read",
+        "src-direct-read",
+        "src-event-projection",
+        "src-pricing-checkout",
+        "src-repository-read",
+        "src-retry-effect",
+        "test-homotopy-fillers"
+      ],
+      "nonFillabilityWitnessRefs": [],
+      "localCurvatureCondition": "measured filling plus nonzero holonomy localizes review curvature to selected 2-cells",
       "localCurvatureCellCandidates": [
         "2-cell:obstruction-homotopy-report-fixture"
       ],
@@ -4529,9 +5859,30 @@
       "readingId": "stokes-style:loop-candidate-path-pair-path-rule-authorization-bypass-hole-6",
       "loopRef": "loop-candidate:path-pair-path-rule-authorization-bypass-hole-6",
       "status": "blockedByArchitecturalHole",
+      "measurementStatus": "blockedByCoverageGap",
+      "readingBoundary": {
+        "readingStrength": "boundedMeasuredWithCandidatePaths",
+        "zeroReflectionAssumptions": [
+          "coverage:homotopy-report-fixture",
+          "selected path and filler evidence is supplied"
+        ],
+        "obstructionReflectionAssumptions": [
+          "selected continuation traces preserve declared axes",
+          "positive monodromy is backed by source, test, runtime, or policy evidence"
+        ],
+        "coverageRequirementRefs": [
+          "coverage:homotopy-report-fixture"
+        ],
+        "witnessCompletenessBoundary": "homotopy zero reflects only measured path pairs and fillers inside the selected coverage universe; unresolved paths stay coverage gaps"
+      },
       "holonomyReadingRefs": [
         "homotopy-holonomy:loop-candidate-path-pair-path-rule-authorization-bypass-hole-6:axis-homotopy-report-fixture"
       ],
+      "fillingEvidenceRefs": [],
+      "nonFillabilityWitnessRefs": [
+        "non-fillability-witness:gap:path-rule:authorization-bypass-hole:missing-policy-test"
+      ],
+      "localCurvatureCondition": "architectural hole blocks Stokes-style local curvature conclusion",
       "localCurvatureCellCandidates": [],
       "reviewQueueRefs": [
         "architectural-hole:loop-candidate-path-pair-path-rule-authorization-bypass-hole-6"
@@ -4550,9 +5901,41 @@
       "readingId": "stokes-style:loop-candidate-path-pair-path-rule-coupon-tax-rounding-semantic-loop-7",
       "loopRef": "loop-candidate:path-pair-path-rule-coupon-tax-rounding-semantic-loop-7",
       "status": "filledNonzeroHolonomyReview",
+      "measurementStatus": "measured",
+      "readingBoundary": {
+        "readingStrength": "boundedMeasuredWithCandidatePaths",
+        "zeroReflectionAssumptions": [
+          "coverage:homotopy-report-fixture",
+          "selected path and filler evidence is supplied"
+        ],
+        "obstructionReflectionAssumptions": [
+          "selected continuation traces preserve declared axes",
+          "positive monodromy is backed by source, test, runtime, or policy evidence"
+        ],
+        "coverageRequirementRefs": [
+          "coverage:homotopy-report-fixture"
+        ],
+        "witnessCompletenessBoundary": "homotopy zero reflects only measured path pairs and fillers inside the selected coverage universe; unresolved paths stay coverage gaps"
+      },
       "holonomyReadingRefs": [
         "homotopy-holonomy:loop-candidate-path-pair-path-rule-coupon-tax-rounding-semantic-loop-7:axis-homotopy-report-fixture"
       ],
+      "fillingEvidenceRefs": [
+        "doc-auth-policy",
+        "required-source-kind:docSection",
+        "required-source-kind:policy",
+        "required-source-kind:runtimeTrace",
+        "src-auth-bypass",
+        "src-cache-read",
+        "src-direct-read",
+        "src-event-projection",
+        "src-pricing-checkout",
+        "src-repository-read",
+        "src-retry-effect",
+        "test-homotopy-fillers"
+      ],
+      "nonFillabilityWitnessRefs": [],
+      "localCurvatureCondition": "measured filling plus nonzero holonomy localizes review curvature to selected 2-cells",
       "localCurvatureCellCandidates": [
         "2-cell:obstruction-homotopy-report-fixture"
       ],
@@ -4574,6 +5957,22 @@
     "reportId": "architecture-homotopy-report:homotopy-profile-homotopy-report-fixture",
     "profileRef": "homotopy-profile:homotopy-report-fixture",
     "status": "needsReview",
+    "measurementStatus": "blockedByCoverageGap",
+    "readingBoundary": {
+      "readingStrength": "boundedMeasuredWithCandidatePaths",
+      "zeroReflectionAssumptions": [
+        "coverage:homotopy-report-fixture",
+        "selected path and filler evidence is supplied"
+      ],
+      "obstructionReflectionAssumptions": [
+        "selected continuation traces preserve declared axes",
+        "positive monodromy is backed by source, test, runtime, or policy evidence"
+      ],
+      "coverageRequirementRefs": [
+        "coverage:homotopy-report-fixture"
+      ],
+      "witnessCompletenessBoundary": "homotopy zero reflects only measured path pairs and fillers inside the selected coverage universe; unresolved paths stay coverage gaps"
+    },
     "filledLoops": [
       "loop-candidate:path-pair-path-rule-cache-repository-semantic-loop-3",
       "loop-candidate:path-pair-path-rule-coupon-tax-rounding-semantic-loop-7",
@@ -4650,6 +6049,26 @@
       "rightOperationRef": "operation-delta:repair-obstruction-homotopy-report-fixture-computed:continuation",
       "pPathRef": "operation-delta:repair-obstruction-homotopy-report-fixture-computed:continuation . operation-delta:repair-obstruction-homotopy-report-fixture-computed",
       "qPathRef": "operation-delta:repair-obstruction-homotopy-report-fixture-computed . operation-delta:repair-obstruction-homotopy-report-fixture-computed:continuation",
+      "pOperationSequence": [
+        "operation-delta:repair-obstruction-homotopy-report-fixture-computed",
+        "operation-delta:repair-obstruction-homotopy-report-fixture-computed:continuation"
+      ],
+      "qOperationSequence": [
+        "operation-delta:repair-obstruction-homotopy-report-fixture-computed:continuation",
+        "operation-delta:repair-obstruction-homotopy-report-fixture-computed"
+      ],
+      "endpointObjectRefs": [
+        "aat:homotopy:fixture",
+        "atom:cache-read",
+        "atom:repository-read"
+      ],
+      "generatorCandidateRefs": [
+        "generator:independent-square",
+        "generator:same-contract-replacement",
+        "generator:repair-filler",
+        "generator:identity-insertion-deletion",
+        "generator:associativity-reassociation"
+      ],
       "sharedAtomSupportRefs": [
         "atom:cache-read",
         "atom:repository-read"
@@ -4723,12 +6142,35 @@
       "pathRef": "operation-square:operation-delta-repair-obstruction-homotopy-report-fixture-computed:operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation:p",
       "pathRole": "p",
       "pathExpression": "operation-delta:repair-obstruction-homotopy-report-fixture-computed:continuation . operation-delta:repair-obstruction-homotopy-report-fixture-computed",
+      "operationSequence": [
+        "operation-delta:repair-obstruction-homotopy-report-fixture-computed",
+        "operation-delta:repair-obstruction-homotopy-report-fixture-computed:continuation"
+      ],
+      "endpointObjectRefs": [
+        "aat:homotopy:fixture",
+        "atom:cache-read",
+        "atom:repository-read"
+      ],
+      "continuationStepRefs": [
+        "cont-step:operation-square-operation-delta-repair-obstruction-homotopy-report-fixture-computed-operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation:p:operation-delta-repair-obstruction-homotopy-report-fixture-computed",
+        "cont-step:operation-square-operation-delta-repair-obstruction-homotopy-report-fixture-computed-operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation:p:operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation",
+        "cont-step:operation-square-operation-delta-repair-obstruction-homotopy-report-fixture-computed-operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation:p:endpoint"
+      ],
       "axisTraces": [
         {
           "axisFamily": "static",
           "axisRef": "static dependency / support axis",
           "traceStatus": "boundedObservationTrace",
           "continuationSummary": "static continuation reads 2 observation ref(s) across 1 operation delta(s)",
+          "continuationStates": [
+            "Cont_static[0]=operation-delta:repair-obstruction-homotopy-report-fixture-computed; refs=2",
+            "Cont_static[1]=operation-delta:repair-obstruction-homotopy-report-fixture-computed:continuation; refs=2",
+            "Cont_static[endpoint]=p; endpointRefs=3"
+          ],
+          "distanceInputRefs": [
+            "atom:cache-read",
+            "atom:repository-read"
+          ],
           "observationRefs": [
             "atom:cache-read",
             "atom:repository-read"
@@ -4745,6 +6187,14 @@
           "axisRef": "contract axis",
           "traceStatus": "boundedObservationTrace",
           "continuationSummary": "contract continuation reads 1 observation ref(s) across 1 operation delta(s)",
+          "continuationStates": [
+            "Cont_contract[0]=operation-delta:repair-obstruction-homotopy-report-fixture-computed; refs=1",
+            "Cont_contract[1]=operation-delta:repair-obstruction-homotopy-report-fixture-computed:continuation; refs=1",
+            "Cont_contract[endpoint]=p; endpointRefs=3"
+          ],
+          "distanceInputRefs": [
+            "atom:coupon-tax-rounding"
+          ],
           "observationRefs": [
             "atom:coupon-tax-rounding"
           ],
@@ -4759,6 +6209,18 @@
           "axisRef": "semantic axis",
           "traceStatus": "boundedObservationTrace",
           "continuationSummary": "semantic continuation reads 5 observation ref(s) across 1 operation delta(s)",
+          "continuationStates": [
+            "Cont_semantic[0]=operation-delta:repair-obstruction-homotopy-report-fixture-computed; refs=5",
+            "Cont_semantic[1]=operation-delta:repair-obstruction-homotopy-report-fixture-computed:continuation; refs=5",
+            "Cont_semantic[endpoint]=p; endpointRefs=3"
+          ],
+          "distanceInputRefs": [
+            "semantic:path-rule:nonzero-holonomy-filled-loop",
+            "semantic:path-rule:cache-repository-semantic-loop",
+            "semantic:path-rule:event-projection-direct-read",
+            "semantic:path-rule:retry-idempotency-effect",
+            "semantic:path-rule:coupon-tax-rounding-semantic-loop"
+          ],
           "observationRefs": [
             "semantic:path-rule:nonzero-holonomy-filled-loop",
             "semantic:path-rule:cache-repository-semantic-loop",
@@ -4781,6 +6243,12 @@
           "axisRef": "state transition axis",
           "traceStatus": "unmeasured",
           "continuationSummary": "state continuation is unmeasured under current ArchMap evidence",
+          "continuationStates": [
+            "Cont_state[0]=operation-delta:repair-obstruction-homotopy-report-fixture-computed; refs=0",
+            "Cont_state[1]=operation-delta:repair-obstruction-homotopy-report-fixture-computed:continuation; refs=0",
+            "Cont_state[endpoint]=p; endpointRefs=3"
+          ],
+          "distanceInputRefs": [],
           "observationRefs": [],
           "sourceRefs": [],
           "missingRefs": [
@@ -4793,6 +6261,17 @@
           "axisRef": "effect ordering / replay / compensation axis",
           "traceStatus": "boundedObservationTrace",
           "continuationSummary": "effect continuation reads 4 observation ref(s) across 1 operation delta(s)",
+          "continuationStates": [
+            "Cont_effect[0]=operation-delta:repair-obstruction-homotopy-report-fixture-computed; refs=4",
+            "Cont_effect[1]=operation-delta:repair-obstruction-homotopy-report-fixture-computed:continuation; refs=4",
+            "Cont_effect[endpoint]=p; endpointRefs=3"
+          ],
+          "distanceInputRefs": [
+            "add observed compensation / authority / effect atoms only after source review",
+            "obstruction:homotopy-report-fixture:computed may decrease or move to a runtime/state/effect axis",
+            "split or enrich atoms that currently support the target obstruction",
+            "derived-effect-order:p:operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation-operation-delta-repair-obstruction-homotopy-report-fixture-computed"
+          ],
           "observationRefs": [
             "add observed compensation / authority / effect atoms only after source review",
             "obstruction:homotopy-report-fixture:computed may decrease or move to a runtime/state/effect axis",
@@ -4818,6 +6297,14 @@
           "axisRef": "authority / trust boundary axis",
           "traceStatus": "boundedObservationTrace",
           "continuationSummary": "authority continuation reads 1 observation ref(s) across 1 operation delta(s)",
+          "continuationStates": [
+            "Cont_authority[0]=operation-delta:repair-obstruction-homotopy-report-fixture-computed; refs=1",
+            "Cont_authority[1]=operation-delta:repair-obstruction-homotopy-report-fixture-computed:continuation; refs=1",
+            "Cont_authority[endpoint]=p; endpointRefs=3"
+          ],
+          "distanceInputRefs": [
+            "atom:authorization-bypass"
+          ],
           "observationRefs": [
             "atom:authorization-bypass"
           ],
@@ -4832,6 +6319,12 @@
           "axisRef": "runtime interaction axis",
           "traceStatus": "unmeasured",
           "continuationSummary": "runtime continuation is unmeasured under current ArchMap evidence",
+          "continuationStates": [
+            "Cont_runtime[0]=operation-delta:repair-obstruction-homotopy-report-fixture-computed; refs=0",
+            "Cont_runtime[1]=operation-delta:repair-obstruction-homotopy-report-fixture-computed:continuation; refs=0",
+            "Cont_runtime[endpoint]=p; endpointRefs=3"
+          ],
+          "distanceInputRefs": [],
           "observationRefs": [],
           "sourceRefs": [],
           "missingRefs": [
@@ -4844,6 +6337,14 @@
           "axisRef": "projection / representation axis",
           "traceStatus": "boundedObservationTrace",
           "continuationSummary": "projection continuation reads 1 observation ref(s) across 1 operation delta(s)",
+          "continuationStates": [
+            "Cont_projection[0]=operation-delta:repair-obstruction-homotopy-report-fixture-computed; refs=1",
+            "Cont_projection[1]=operation-delta:repair-obstruction-homotopy-report-fixture-computed:continuation; refs=1",
+            "Cont_projection[endpoint]=p; endpointRefs=3"
+          ],
+          "distanceInputRefs": [
+            "projection:homotopy-report-fixture"
+          ],
           "observationRefs": [
             "projection:homotopy-report-fixture"
           ],
@@ -4898,12 +6399,35 @@
       "pathRef": "operation-square:operation-delta-repair-obstruction-homotopy-report-fixture-computed:operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation:q",
       "pathRole": "q",
       "pathExpression": "operation-delta:repair-obstruction-homotopy-report-fixture-computed . operation-delta:repair-obstruction-homotopy-report-fixture-computed:continuation",
+      "operationSequence": [
+        "operation-delta:repair-obstruction-homotopy-report-fixture-computed:continuation",
+        "operation-delta:repair-obstruction-homotopy-report-fixture-computed"
+      ],
+      "endpointObjectRefs": [
+        "aat:homotopy:fixture",
+        "atom:cache-read",
+        "atom:repository-read"
+      ],
+      "continuationStepRefs": [
+        "cont-step:operation-square-operation-delta-repair-obstruction-homotopy-report-fixture-computed-operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation:q:operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation",
+        "cont-step:operation-square-operation-delta-repair-obstruction-homotopy-report-fixture-computed-operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation:q:operation-delta-repair-obstruction-homotopy-report-fixture-computed",
+        "cont-step:operation-square-operation-delta-repair-obstruction-homotopy-report-fixture-computed-operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation:q:endpoint"
+      ],
       "axisTraces": [
         {
           "axisFamily": "static",
           "axisRef": "static dependency / support axis",
           "traceStatus": "boundedObservationTrace",
           "continuationSummary": "static continuation reads 2 observation ref(s) across 1 operation delta(s)",
+          "continuationStates": [
+            "Cont_static[0]=operation-delta:repair-obstruction-homotopy-report-fixture-computed:continuation; refs=2",
+            "Cont_static[1]=operation-delta:repair-obstruction-homotopy-report-fixture-computed; refs=2",
+            "Cont_static[endpoint]=q; endpointRefs=3"
+          ],
+          "distanceInputRefs": [
+            "atom:cache-read",
+            "atom:repository-read"
+          ],
           "observationRefs": [
             "atom:cache-read",
             "atom:repository-read"
@@ -4920,6 +6444,14 @@
           "axisRef": "contract axis",
           "traceStatus": "boundedObservationTrace",
           "continuationSummary": "contract continuation reads 1 observation ref(s) across 1 operation delta(s)",
+          "continuationStates": [
+            "Cont_contract[0]=operation-delta:repair-obstruction-homotopy-report-fixture-computed:continuation; refs=1",
+            "Cont_contract[1]=operation-delta:repair-obstruction-homotopy-report-fixture-computed; refs=1",
+            "Cont_contract[endpoint]=q; endpointRefs=3"
+          ],
+          "distanceInputRefs": [
+            "atom:coupon-tax-rounding"
+          ],
           "observationRefs": [
             "atom:coupon-tax-rounding"
           ],
@@ -4934,6 +6466,18 @@
           "axisRef": "semantic axis",
           "traceStatus": "boundedObservationTrace",
           "continuationSummary": "semantic continuation reads 5 observation ref(s) across 1 operation delta(s)",
+          "continuationStates": [
+            "Cont_semantic[0]=operation-delta:repair-obstruction-homotopy-report-fixture-computed:continuation; refs=5",
+            "Cont_semantic[1]=operation-delta:repair-obstruction-homotopy-report-fixture-computed; refs=5",
+            "Cont_semantic[endpoint]=q; endpointRefs=3"
+          ],
+          "distanceInputRefs": [
+            "semantic:path-rule:nonzero-holonomy-filled-loop",
+            "semantic:path-rule:cache-repository-semantic-loop",
+            "semantic:path-rule:event-projection-direct-read",
+            "semantic:path-rule:retry-idempotency-effect",
+            "semantic:path-rule:coupon-tax-rounding-semantic-loop"
+          ],
           "observationRefs": [
             "semantic:path-rule:nonzero-holonomy-filled-loop",
             "semantic:path-rule:cache-repository-semantic-loop",
@@ -4956,6 +6500,12 @@
           "axisRef": "state transition axis",
           "traceStatus": "unmeasured",
           "continuationSummary": "state continuation is unmeasured under current ArchMap evidence",
+          "continuationStates": [
+            "Cont_state[0]=operation-delta:repair-obstruction-homotopy-report-fixture-computed:continuation; refs=0",
+            "Cont_state[1]=operation-delta:repair-obstruction-homotopy-report-fixture-computed; refs=0",
+            "Cont_state[endpoint]=q; endpointRefs=3"
+          ],
+          "distanceInputRefs": [],
           "observationRefs": [],
           "sourceRefs": [],
           "missingRefs": [
@@ -4968,6 +6518,17 @@
           "axisRef": "effect ordering / replay / compensation axis",
           "traceStatus": "boundedObservationTrace",
           "continuationSummary": "effect continuation reads 4 observation ref(s) across 1 operation delta(s)",
+          "continuationStates": [
+            "Cont_effect[0]=operation-delta:repair-obstruction-homotopy-report-fixture-computed:continuation; refs=4",
+            "Cont_effect[1]=operation-delta:repair-obstruction-homotopy-report-fixture-computed; refs=4",
+            "Cont_effect[endpoint]=q; endpointRefs=3"
+          ],
+          "distanceInputRefs": [
+            "add observed compensation / authority / effect atoms only after source review",
+            "obstruction:homotopy-report-fixture:computed may decrease or move to a runtime/state/effect axis",
+            "split or enrich atoms that currently support the target obstruction",
+            "derived-effect-order:q:operation-delta-repair-obstruction-homotopy-report-fixture-computed-operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation"
+          ],
           "observationRefs": [
             "add observed compensation / authority / effect atoms only after source review",
             "obstruction:homotopy-report-fixture:computed may decrease or move to a runtime/state/effect axis",
@@ -4993,6 +6554,14 @@
           "axisRef": "authority / trust boundary axis",
           "traceStatus": "boundedObservationTrace",
           "continuationSummary": "authority continuation reads 1 observation ref(s) across 1 operation delta(s)",
+          "continuationStates": [
+            "Cont_authority[0]=operation-delta:repair-obstruction-homotopy-report-fixture-computed:continuation; refs=1",
+            "Cont_authority[1]=operation-delta:repair-obstruction-homotopy-report-fixture-computed; refs=1",
+            "Cont_authority[endpoint]=q; endpointRefs=3"
+          ],
+          "distanceInputRefs": [
+            "atom:authorization-bypass"
+          ],
           "observationRefs": [
             "atom:authorization-bypass"
           ],
@@ -5007,6 +6576,12 @@
           "axisRef": "runtime interaction axis",
           "traceStatus": "unmeasured",
           "continuationSummary": "runtime continuation is unmeasured under current ArchMap evidence",
+          "continuationStates": [
+            "Cont_runtime[0]=operation-delta:repair-obstruction-homotopy-report-fixture-computed:continuation; refs=0",
+            "Cont_runtime[1]=operation-delta:repair-obstruction-homotopy-report-fixture-computed; refs=0",
+            "Cont_runtime[endpoint]=q; endpointRefs=3"
+          ],
+          "distanceInputRefs": [],
           "observationRefs": [],
           "sourceRefs": [],
           "missingRefs": [
@@ -5019,6 +6594,14 @@
           "axisRef": "projection / representation axis",
           "traceStatus": "boundedObservationTrace",
           "continuationSummary": "projection continuation reads 1 observation ref(s) across 1 operation delta(s)",
+          "continuationStates": [
+            "Cont_projection[0]=operation-delta:repair-obstruction-homotopy-report-fixture-computed:continuation; refs=1",
+            "Cont_projection[1]=operation-delta:repair-obstruction-homotopy-report-fixture-computed; refs=1",
+            "Cont_projection[endpoint]=q; endpointRefs=3"
+          ],
+          "distanceInputRefs": [
+            "projection:homotopy-report-fixture"
+          ],
           "observationRefs": [
             "projection:homotopy-report-fixture"
           ],
@@ -5075,6 +6658,13 @@
       "axisFamily": "authority",
       "axisRef": "authority / trust boundary axis",
       "distanceKind": "witness-mismatch-count",
+      "pContinuationRef": "Cont_authority(p):authority / trust boundary axis",
+      "qContinuationRef": "Cont_authority(q):authority / trust boundary axis",
+      "distanceInputRefs": [
+        "atom:authorization-bypass"
+      ],
+      "positiveWitnessBoundary": "mu_x > 0 is read only as selected continuation observation difference with source-backed p/q trace inputs",
+      "weight": 1,
       "measurementStatus": "measured",
       "distanceValue": 0,
       "measuredSupportRefs": [
@@ -5126,6 +6716,13 @@
       "axisFamily": "contract",
       "axisRef": "contract axis",
       "distanceKind": "witness-mismatch-count",
+      "pContinuationRef": "Cont_contract(p):contract axis",
+      "qContinuationRef": "Cont_contract(q):contract axis",
+      "distanceInputRefs": [
+        "atom:coupon-tax-rounding"
+      ],
+      "positiveWitnessBoundary": "mu_x > 0 is read only as selected continuation observation difference with source-backed p/q trace inputs",
+      "weight": 1,
       "measurementStatus": "measured",
       "distanceValue": 0,
       "measuredSupportRefs": [
@@ -5177,6 +6774,17 @@
       "axisFamily": "effect",
       "axisRef": "effect ordering / replay / compensation axis",
       "distanceKind": "witness-mismatch-count",
+      "pContinuationRef": "Cont_effect(p):effect ordering / replay / compensation axis",
+      "qContinuationRef": "Cont_effect(q):effect ordering / replay / compensation axis",
+      "distanceInputRefs": [
+        "add observed compensation / authority / effect atoms only after source review",
+        "derived-effect-order:p:operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation-operation-delta-repair-obstruction-homotopy-report-fixture-computed",
+        "derived-effect-order:q:operation-delta-repair-obstruction-homotopy-report-fixture-computed-operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation",
+        "obstruction:homotopy-report-fixture:computed may decrease or move to a runtime/state/effect axis",
+        "split or enrich atoms that currently support the target obstruction"
+      ],
+      "positiveWitnessBoundary": "mu_x > 0 is read only as selected continuation observation difference with source-backed p/q trace inputs",
+      "weight": 1,
       "measurementStatus": "measured",
       "distanceValue": 2,
       "measuredSupportRefs": [
@@ -5240,6 +6848,13 @@
       "axisFamily": "projection",
       "axisRef": "projection / representation axis",
       "distanceKind": "witness-mismatch-count",
+      "pContinuationRef": "Cont_projection(p):projection / representation axis",
+      "qContinuationRef": "Cont_projection(q):projection / representation axis",
+      "distanceInputRefs": [
+        "projection:homotopy-report-fixture"
+      ],
+      "positiveWitnessBoundary": "mu_x > 0 is read only as selected continuation observation difference with source-backed p/q trace inputs",
+      "weight": 1,
       "measurementStatus": "measured",
       "distanceValue": 0,
       "measuredSupportRefs": [
@@ -5291,6 +6906,11 @@
       "axisFamily": "runtime",
       "axisRef": "runtime interaction axis",
       "distanceKind": "witness-mismatch-count",
+      "pContinuationRef": "Cont_runtime(p):runtime interaction axis",
+      "qContinuationRef": "Cont_runtime(q):runtime interaction axis",
+      "distanceInputRefs": [],
+      "positiveWitnessBoundary": "mu_x > 0 is read only as selected continuation observation difference with source-backed p/q trace inputs",
+      "weight": 0,
       "measurementStatus": "unmeasured",
       "distanceValue": null,
       "measuredSupportRefs": [],
@@ -5340,6 +6960,17 @@
       "axisFamily": "semantic",
       "axisRef": "semantic axis",
       "distanceKind": "witness-mismatch-count",
+      "pContinuationRef": "Cont_semantic(p):semantic axis",
+      "qContinuationRef": "Cont_semantic(q):semantic axis",
+      "distanceInputRefs": [
+        "semantic:path-rule:cache-repository-semantic-loop",
+        "semantic:path-rule:coupon-tax-rounding-semantic-loop",
+        "semantic:path-rule:event-projection-direct-read",
+        "semantic:path-rule:nonzero-holonomy-filled-loop",
+        "semantic:path-rule:retry-idempotency-effect"
+      ],
+      "positiveWitnessBoundary": "mu_x > 0 is read only as selected continuation observation difference with source-backed p/q trace inputs",
+      "weight": 1,
       "measurementStatus": "measured",
       "distanceValue": 0,
       "measuredSupportRefs": [
@@ -5403,6 +7034,11 @@
       "axisFamily": "state",
       "axisRef": "state transition axis",
       "distanceKind": "witness-mismatch-count",
+      "pContinuationRef": "Cont_state(p):state transition axis",
+      "qContinuationRef": "Cont_state(q):state transition axis",
+      "distanceInputRefs": [],
+      "positiveWitnessBoundary": "mu_x > 0 is read only as selected continuation observation difference with source-backed p/q trace inputs",
+      "weight": 0,
       "measurementStatus": "unmeasured",
       "distanceValue": null,
       "measuredSupportRefs": [],
@@ -5452,6 +7088,14 @@
       "axisFamily": "static",
       "axisRef": "static dependency / support axis",
       "distanceKind": "witness-mismatch-count",
+      "pContinuationRef": "Cont_static(p):static dependency / support axis",
+      "qContinuationRef": "Cont_static(q):static dependency / support axis",
+      "distanceInputRefs": [
+        "atom:cache-read",
+        "atom:repository-read"
+      ],
+      "positiveWitnessBoundary": "mu_x > 0 is read only as selected continuation observation difference with source-backed p/q trace inputs",
+      "weight": 1,
       "measurementStatus": "measured",
       "distanceValue": 0,
       "measuredSupportRefs": [
@@ -5515,6 +7159,14 @@
         "state",
         "static"
       ],
+      "selectedMeasuredSquareRefs": [
+        "square-family-entry:mu:operation-square-operation-delta-repair-obstruction-homotopy-report-fixture-computed-operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation:authority",
+        "square-family-entry:mu:operation-square-operation-delta-repair-obstruction-homotopy-report-fixture-computed-operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation:contract",
+        "square-family-entry:mu:operation-square-operation-delta-repair-obstruction-homotopy-report-fixture-computed-operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation:effect",
+        "square-family-entry:mu:operation-square-operation-delta-repair-obstruction-homotopy-report-fixture-computed-operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation:projection",
+        "square-family-entry:mu:operation-square-operation-delta-repair-obstruction-homotopy-report-fixture-computed-operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation:semantic",
+        "square-family-entry:mu:operation-square-operation-delta-repair-obstruction-homotopy-report-fixture-computed-operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation:static"
+      ],
       "weightPolicy": "unit weights until project-specific calibration is declared",
       "distanceKind": "witness-mismatch-count",
       "measurementStatus": "partial",
@@ -5528,6 +7180,18 @@
         "mu:operation-square-operation-delta-repair-obstruction-homotopy-report-fixture-computed-operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation:static"
       ],
       "unmeasuredDefectRefs": [
+        "mu:operation-square-operation-delta-repair-obstruction-homotopy-report-fixture-computed-operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation:runtime",
+        "mu:operation-square-operation-delta-repair-obstruction-homotopy-report-fixture-computed-operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation:state"
+      ],
+      "positiveWeightDefectRefs": [
+        "mu:operation-square-operation-delta-repair-obstruction-homotopy-report-fixture-computed-operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation:authority",
+        "mu:operation-square-operation-delta-repair-obstruction-homotopy-report-fixture-computed-operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation:contract",
+        "mu:operation-square-operation-delta-repair-obstruction-homotopy-report-fixture-computed-operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation:effect",
+        "mu:operation-square-operation-delta-repair-obstruction-homotopy-report-fixture-computed-operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation:projection",
+        "mu:operation-square-operation-delta-repair-obstruction-homotopy-report-fixture-computed-operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation:semantic",
+        "mu:operation-square-operation-delta-repair-obstruction-homotopy-report-fixture-computed-operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation:static"
+      ],
+      "zeroWeightDefectRefs": [
         "mu:operation-square-operation-delta-repair-obstruction-homotopy-report-fixture-computed-operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation:runtime",
         "mu:operation-square-operation-delta-repair-obstruction-homotopy-report-fixture-computed-operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation:state"
       ],

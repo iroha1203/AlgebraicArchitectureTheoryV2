@@ -1571,6 +1571,8 @@ fn architecture_spectrum_summary(
     serde_json::json!({
         "reportId": json_field(report, "reportId"),
         "status": json_field(report, "status"),
+        "measurementStatus": json_field(report, "measurementStatus"),
+        "readingBoundary": json_field(report, "readingBoundary"),
         "profileRef": json_field(report, "profileRef"),
         "summary": array_field_with_limit(llm_packet, "architectureSpectrumReportSummary", limit),
         "hotspots": array_field_with_limit(report, "topHotspots", limit),
@@ -1594,6 +1596,8 @@ fn architecture_homotopy_summary(
     serde_json::json!({
         "reportId": json_field(report, "reportId"),
         "status": json_field(report, "status"),
+        "measurementStatus": json_field(report, "measurementStatus"),
+        "readingBoundary": json_field(report, "readingBoundary"),
         "profileRef": json_field(report, "profileRef"),
         "filledLoops": array_field_with_limit(report, "filledLoops", limit),
         "unfilledLoops": array_field_with_limit(report, "unfilledLoops", limit),

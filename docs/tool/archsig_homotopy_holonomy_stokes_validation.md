@@ -49,6 +49,11 @@ Non-goals remain unchanged:
 | ArchitectureHomotopyReport is represented as schema. | `tools/archsig/src/schema.rs`, `tools/archsig/src/archsig_analysis_packet.rs`, and homotopy golden packet fixture. | implemented |
 | ArchSig generates ArchitectureHomotopyReport from supplied ArchMap + LawPolicy. | `analyze` workflow outputs `architectureHomotopyReport` for `tools/archsig/tests/fixtures/homotopy_report`. | implemented |
 | Report includes selected axes, path pairs, loops, filled loops, unfilled loops, filler candidates, nonzero holonomy loops, local curvature cells, missing filler evidence, and non-conclusions. | Homotopy packet fields and fixture manifest assertions. | implemented |
+| Path pairs and operation squares carry first-class operation sequences, endpoint refs, and generator candidates. | `pathPairCandidates[]`, `operationSquareCandidates[]`, packet validation checks, and homotopy fixtures. | implemented |
+| Continuation is measured step-wise per selected axis. | `pathContinuationTraces[]` records operation sequence and continuation step refs; axis continuation traces carry continuation states and distance input refs. | implemented |
+| Axis-wise holonomy defects measure `mu_x=d_x(Cont_x(p), Cont_x(q))` only when distance inputs are present. | `axisWiseMonodromyDefects[]` records p/q continuation refs, distance input refs, positive witness boundary, weight, and measured/unmeasured status. | implemented / bounded |
+| AMI is an aggregate over selected measured squares and axes, not a quality score. | `amiAggregateReadings[]` records selected measured square refs, positive-weight defect refs, zero-weight defect refs, top contributors, and aggregate-to-local boundary. | implemented / bounded |
+| Filler and Stokes readings distinguish measured fillers from holes. | `fillerCandidateReadings[]`, `architecturalHoleReadings[]`, and `stokesStyleReadings[]` record filler evidence refs, missing filler evidence, non-fillability witness refs, and local-curvature condition. | implemented |
 | Engineers can read selected-axis path differences, architectural holes, missing filler, local curvature candidates, and next actions. | `architectureHomotopyReport`, `llmInterpretationPacket`, `codebase-inspection` projection, public manual reading guide. | implemented / documented |
 | ACTS spectrum report and HomotopyReport responsibilities are separate. | `docs/tool/README.md`, `docs/tool/archsig_analysis_packet.md`, and distinct report fields. | documented / implemented |
 | LawPolicy skill can construct a homotopy measurement profile from intent, repository evidence, and ArchMap. | `tools/archsig/skills/law-policy-creater` emits profile defaults, unresolved questions, warnings, and non-conclusions. | implemented |
@@ -152,8 +157,10 @@ The implemented package supports the following bounded reading:
 supplied ArchMap
 + selected LawPolicy
 + optional homotopyMeasurementProfile
++ readingBoundary for measured / proxy / unmeasured / coverage-blocked rows
 + finite measured path pair / loop / filler family
-+ selected continuation / distance readings
++ operation sequences, endpoint refs, and generator candidates
++ selected step-wise continuation / distance readings
 + explicit coverage / exactness / non-conclusion records
 -> ArchitectureHomotopyReport as a current-state review surface
 ```
@@ -181,6 +188,8 @@ future work unless a later PRD adopts them:
 
 - richer source extraction for path and filler candidates beyond supplied
   ArchMap / LawPolicy evidence;
+- repository-wide enumeration completeness for all possible operation paths,
+  fillers, and homotopy generators;
 - empirical calibration that relates hole / holonomy readings to incidents,
   review cost, or repair effort;
 - FieldSig longitudinal use of HomotopyReport packet history;

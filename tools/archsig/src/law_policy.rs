@@ -7,7 +7,7 @@ use crate::{
     LawPolicyHomotopyFillerRuleV0, LawPolicyHomotopyLoopMeasurementPolicyV0,
     LawPolicyHomotopyMeasurementProfileV0, LawPolicyHomotopyPathDiscoveryRuleV0,
     LawPolicyMeasurementPolicyV0, LawPolicyMoleculePatternV0,
-    LawPolicyObstructionCircuitDefinitionV0, LawPolicySelectedLawV0,
+    LawPolicyObstructionCircuitDefinitionV0, LawPolicyReadingBoundaryV0, LawPolicySelectedLawV0,
     LawPolicySignatureAxisDefinitionV0, LawPolicySpectrumDistanceKindV0,
     LawPolicySpectrumMeasurementProfileV0, LawPolicyValidationInputV0, LawPolicyValidationReportV0,
     LawPolicyValidationSummaryV0, LawPolicyWitnessRuleV0, ValidationCheck, ValidationExample,
@@ -180,6 +180,24 @@ pub fn static_law_policy() -> LawPolicyDocumentV0 {
         },
         spectrum_measurement_profile: Some(LawPolicySpectrumMeasurementProfileV0 {
             profile_id: "spectrum-profile:curvature-transfer-default".to_string(),
+            reading_boundary: reading_boundary(
+                "boundedMeasuredWithProxyTransfer",
+                &[
+                    "coverage:layer-atoms",
+                    "coverage:semantic-contract-atoms",
+                    "selected LawPolicy exactness assumptions",
+                ],
+                &[
+                    "source-backed witness support",
+                    "selected axis preservation",
+                    "witness completeness for measured rows",
+                ],
+                &[
+                    "coverage:layer-atoms",
+                    "coverage:semantic-contract-atoms",
+                ],
+                "zero spectrum reflects only selected measured witness rows with declared coverage; transfer recurrence remains bounded review telemetry",
+            ),
             selected_axis_refs: vec![
                 "axis:layer-violation".to_string(),
                 "axis:semantic-inconsistency".to_string(),
@@ -229,6 +247,23 @@ pub fn static_law_policy() -> LawPolicyDocumentV0 {
         }),
         homotopy_measurement_profile: Some(LawPolicyHomotopyMeasurementProfileV0 {
             profile_id: "homotopy-profile:bounded-stokes-default".to_string(),
+            reading_boundary: reading_boundary(
+                "boundedMeasuredWithCandidatePaths",
+                &[
+                    "coverage:layer-atoms",
+                    "coverage:semantic-contract-atoms",
+                    "selected path and filler evidence is supplied",
+                ],
+                &[
+                    "selected continuation traces preserve declared axes",
+                    "positive monodromy is backed by source, test, runtime, or policy evidence",
+                ],
+                &[
+                    "coverage:layer-atoms",
+                    "coverage:semantic-contract-atoms",
+                ],
+                "homotopy zero reflects only measured path pairs and fillers inside the selected coverage universe; unresolved paths stay coverage gaps",
+            ),
             selected_axis_refs: vec![
                 "axis:layer-violation".to_string(),
                 "axis:semantic-inconsistency".to_string(),
@@ -637,6 +672,13 @@ fn check_spectrum_measurement_profile(policy: &LawPolicyDocumentV0) -> Validatio
             ));
         }
     }
+    validate_reading_boundary(
+        &mut examples,
+        &profile.profile_id,
+        "spectrumMeasurementProfile.readingBoundary",
+        &profile.reading_boundary,
+        &coverage_ids,
+    );
     push_blank(
         &mut examples,
         "spectrumMeasurementProfile.coverageBoundary",
@@ -882,6 +924,13 @@ fn check_homotopy_measurement_profile(policy: &LawPolicyDocumentV0) -> Validatio
             ));
         }
     }
+    validate_reading_boundary(
+        &mut examples,
+        &profile.profile_id,
+        "homotopyMeasurementProfile.readingBoundary",
+        &profile.reading_boundary,
+        &coverage_ids,
+    );
     push_blank(
         &mut examples,
         "homotopyMeasurementProfile.coverageBoundary",
@@ -1315,6 +1364,61 @@ fn check_non_conclusions(policy: &LawPolicyDocumentV0) -> ValidationCheck {
     )
 }
 
+fn validate_reading_boundary(
+    examples: &mut Vec<ValidationExample>,
+    subject: &str,
+    field: &str,
+    boundary: &LawPolicyReadingBoundaryV0,
+    coverage_ids: &BTreeSet<&str>,
+) {
+    push_blank(
+        examples,
+        &format!("{field}.readingStrength"),
+        &boundary.reading_strength,
+    );
+    if boundary.zero_reflection_assumptions.is_empty()
+        || has_blank(&boundary.zero_reflection_assumptions)
+    {
+        examples.push(generic_validation_example(
+            subject,
+            &format!("{field}.zeroReflectionAssumptions"),
+            "reading boundary must declare zero-reflection assumptions",
+        ));
+    }
+    if boundary.obstruction_reflection_assumptions.is_empty()
+        || has_blank(&boundary.obstruction_reflection_assumptions)
+    {
+        examples.push(generic_validation_example(
+            subject,
+            &format!("{field}.obstructionReflectionAssumptions"),
+            "reading boundary must declare obstruction-reflection assumptions",
+        ));
+    }
+    if boundary.coverage_requirement_refs.is_empty()
+        || has_blank(&boundary.coverage_requirement_refs)
+    {
+        examples.push(generic_validation_example(
+            subject,
+            &format!("{field}.coverageRequirementRefs"),
+            "reading boundary must reference coverage requirements",
+        ));
+    }
+    for coverage_ref in &boundary.coverage_requirement_refs {
+        if !coverage_ids.contains(coverage_ref.as_str()) {
+            examples.push(generic_validation_example(
+                subject,
+                coverage_ref,
+                "reading boundary coverageRequirementRefs must reference known coverage requirements",
+            ));
+        }
+    }
+    push_blank(
+        examples,
+        &format!("{field}.witnessCompletenessBoundary"),
+        &boundary.witness_completeness_boundary,
+    );
+}
+
 fn selected_law(
     law_id: &str,
     law_family: &str,
@@ -1351,6 +1455,22 @@ fn axis(
         measurement_boundary: measurement_boundary.to_string(),
         evidence_requirements: strings(evidence_requirements),
         non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
+    }
+}
+
+fn reading_boundary(
+    reading_strength: &str,
+    zero_reflection_assumptions: &[&str],
+    obstruction_reflection_assumptions: &[&str],
+    coverage_requirement_refs: &[&str],
+    witness_completeness_boundary: &str,
+) -> LawPolicyReadingBoundaryV0 {
+    LawPolicyReadingBoundaryV0 {
+        reading_strength: reading_strength.to_string(),
+        zero_reflection_assumptions: strings(zero_reflection_assumptions),
+        obstruction_reflection_assumptions: strings(obstruction_reflection_assumptions),
+        coverage_requirement_refs: strings(coverage_requirement_refs),
+        witness_completeness_boundary: witness_completeness_boundary.to_string(),
     }
 }
 

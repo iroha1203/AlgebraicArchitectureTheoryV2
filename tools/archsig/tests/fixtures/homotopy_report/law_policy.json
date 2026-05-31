@@ -165,6 +165,22 @@
   },
   "spectrumMeasurementProfile": {
     "profileId": "spectrum-profile:homotopy-report-fixture",
+    "readingBoundary": {
+      "readingStrength": "boundedMeasuredWithProxyTransfer",
+      "zeroReflectionAssumptions": [
+        "coverage:homotopy-report-fixture",
+        "selected LawPolicy exactness assumptions"
+      ],
+      "obstructionReflectionAssumptions": [
+        "source-backed witness support",
+        "selected axis preservation",
+        "witness completeness for measured rows"
+      ],
+      "coverageRequirementRefs": [
+        "coverage:homotopy-report-fixture"
+      ],
+      "witnessCompletenessBoundary": "zero spectrum reflects only selected measured witness rows with declared coverage; transfer recurrence remains bounded review telemetry"
+    },
     "selectedAxisRefs": [
       "axis:homotopy-report-fixture"
     ],
@@ -205,6 +221,21 @@
   },
   "homotopyMeasurementProfile": {
     "profileId": "homotopy-profile:homotopy-report-fixture",
+    "readingBoundary": {
+      "readingStrength": "boundedMeasuredWithCandidatePaths",
+      "zeroReflectionAssumptions": [
+        "coverage:homotopy-report-fixture",
+        "selected path and filler evidence is supplied"
+      ],
+      "obstructionReflectionAssumptions": [
+        "selected continuation traces preserve declared axes",
+        "positive monodromy is backed by source, test, runtime, or policy evidence"
+      ],
+      "coverageRequirementRefs": [
+        "coverage:homotopy-report-fixture"
+      ],
+      "witnessCompletenessBoundary": "homotopy zero reflects only measured path pairs and fillers inside the selected coverage universe; unresolved paths stay coverage gaps"
+    },
     "selectedAxisRefs": [
       "axis:homotopy-report-fixture"
     ],

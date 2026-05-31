@@ -12,7 +12,8 @@ ArchMap
 InterpretationProfile
   selects laws, witness rules, molecule patterns, obstruction definitions,
   signature axes, measurement policy, optional spectrum measurement profile,
-  coverage requirements, and exactness assumptions.
+  optional homotopy measurement profile, coverage requirements, and exactness
+  assumptions.
 
 ArchSig
   reads ArchMap + InterpretationProfile and computes the AAT analysis packet.
@@ -50,6 +51,7 @@ The implemented schema records:
 - `signatureAxisDefinitions`
 - `measurementPolicy`
 - `spectrumMeasurementProfile` (optional)
+- `homotopyMeasurementProfile` (optional)
 - `exactnessAssumptions`
 - `coverageRequirements`
 - `excludedReadings`
@@ -116,6 +118,7 @@ The profile records the measurement recipe for ACTS-style readings:
 - `coverageBoundary`
 - `exactnessAssumptionRefs`
 - `measurementBoundary`
+- `readingBoundary`
 - `nonConclusions`
 
 Changing `spectrumMeasurementProfile` changes how ArchSig ranks, clusters, and
@@ -126,6 +129,13 @@ axes, coverage requirements, and exactness assumptions instead.
 
 Validation checks that profile refs resolve to known axes, witness rules, and
 coverage requirements, and that profile-level non-conclusions remain explicit.
+The `readingBoundary` records the measurement strength, zero-reflection
+assumptions, obstruction-reflection assumptions, coverage requirement refs, and
+witness-completeness boundary that ArchSig copies into ACTS report rows. It is
+the boundary between measured support rows, bounded transfer proxies, and
+coverage gaps. `transferEdgeRule`, `distanceKinds`, and `weightPolicy` are
+measurement recipes; they are not new laws and not empirical calibration unless
+the selected policy explicitly supplies that evidence.
 Important boundaries:
 
 - profile differences are not law-universe differences
@@ -174,11 +184,19 @@ The profile records:
 - `coverageBoundary`
 - `exactnessAssumptionRefs`
 - `measurementBoundary`
+- `readingBoundary`
 - `nonConclusions`
 
 Validation checks that selected axes and coverage refs resolve, that path
 discovery / filler / loop rules keep evidence boundaries explicit, and that
-required non-conclusions remain present. Important boundaries:
+required non-conclusions remain present. The `readingBoundary` records the
+measurement strength, zero-reflection assumptions, obstruction-reflection
+assumptions, coverage requirement refs, and witness-completeness boundary that
+ArchSig copies into Homotopy / Holonomy / Stokes records. Path discovery,
+endpoint policy, generator rules, distance policy, and filler rules are
+measurement recipes over selected evidence; they are not a second law universe,
+path truth, or a homology proof.
+Important boundaries:
 
 - profile differences are not law-universe differences
 - candidate paths and loops are review cues, not path truth

@@ -44,6 +44,11 @@ Non-goals remain unchanged:
 | ArchSig reader skill can explain ArchitectureSpectrumReport. | `tools/archsig/skills/archsig-reader` reads hotspots, witness clusters, recurrent support, coverage gaps, measured boundary, next actions, and non-conclusions. | implemented |
 | ArchSig can generate ArchitectureSpectrumReport from supplied ArchMap + LawPolicy. | `analyze` workflow outputs `architectureSpectrumReport` in `.lake/archsig-acts-validation/archsig-analysis-packet.json`; CLI tests assert presence and required fields. | implemented |
 | Report contains selected axes, witness family, distance / weight policy, support summary, transfer summary, top modes, clusters, coverage gaps, and non-conclusions. | `tools/archsig/src/schema.rs`, `tools/archsig/src/archsig_analysis_packet.rs`, minimal and coupon fixtures. | implemented |
+| Support rows measure local curvature as `kappa(D)=distance(Obs(lhs), Obs(rhs))` with explicit lhs/rhs observations, distance inputs, source-backed witness support, weight, and coverage status. | `curvatureSupportReadings[].support[]`, packet validation checks, minimal and coupon fixtures. | implemented |
+| Missing witness support is separated from measured zero. | `measurementStatus` uses `measured`, `proxy`, `unmeasured`, or `blockedByCoverageGap`; support gaps are reported as coverage blockers. | implemented |
+| Transfer spectrum uses a finite nonnegative sparse operator over measured support rows. | `curvatureTransferReadings[].transferOperator` records row support refs, column support refs, sparse entries, transfer edge refs, and `spectralRadiusKind`. | implemented / bounded |
+| Recurrent obstruction support covers self-loop and multi-row closed walks. | `recurrentObstructions[]` records recurrence kind, transfer edge refs, support row refs, and bounded cycle weight. | implemented / bounded |
+| Top modes and witness clusters are derived from operator/support evidence. | `architectureSpectrumReport.topModes[]` carries operator components, localization, source refs, and review targets; `topWitnessClusters[]` carries evidence-backed cluster basis. | implemented |
 | Report supports engineering outcomes: hotspots, semantic deterioration not visible in static dependency graphs, recurrent obstruction, traceable explanation, measured boundary, next action. | `architectureSpectrumReport`, `llmInterpretationPacket` summaries, `codebase-inspection` architecture spectrum projection, public manual reading guide. | implemented / documented |
 | Report is not a single score. | Report-level non-conclusions and docs in `docs/tool/README.md`, `docs/tool/law_policy.md`, `docs/tool/archsig_analysis_packet.md`, website reading output. | implemented |
 | Zero spectrum reading is limited by coverage / exactness / zero-reflection assumptions. | `coverageGaps`, `measuredBoundary`, `exactnessAssumptions`, Lean non-conclusion clauses, AAT Part 3 ACTS text. | implemented / bounded |
@@ -116,8 +121,9 @@ The implemented package supports the following bounded reading:
 supplied ArchMap
 + selected LawPolicy
 + optional spectrumMeasurementProfile
-+ finite measured witness/support family
-+ finite nonnegative transfer relation
++ readingBoundary for measured / proxy / unmeasured / coverage-blocked rows
++ finite measured witness/support family with local curvature inputs
++ finite nonnegative sparse transfer operator over measured support rows
 + explicit coverage / exactness / non-conclusion records
 -> ArchitectureSpectrumReport as a current-state review surface
 ```
@@ -141,8 +147,10 @@ FieldSig forecast replacement
 The following are intentionally outside ACTS PRD closure and should remain
 future work unless a later PRD adopts them:
 
-- richer non-boolean distance functions for semantic, state, effect, runtime,
-  and authority axes;
+- raw-source extraction completeness for every possible witness row in a
+  repository;
+- richer calibrated distance functions for semantic, state, effect, runtime,
+  and authority axes when the selected project supplies calibration evidence;
 - empirical calibration that relates recurrent support to incidents, cost, or
   review effort;
 - extractor-completeness and source-universe completeness proofs;

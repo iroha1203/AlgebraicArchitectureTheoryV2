@@ -127,11 +127,16 @@ Read in this order:
 5. Dominant pressure
    - Read `architectureSpectrumReport` before building the review queue when present.
    - Prioritize `topHotspots[]`, `recurrentObstructions[]`, `topWitnessClusters[]`, `coverageGaps[]`, `measuredBoundary`, and `recommendedReviewFocus[]`.
-   - Treat the report as a current-state architecture quality measurement over the selected axes.
+   - Treat the report as a current-state architecture quality measurement over
+     the selected axes only after checking `measurementStatus` and
+     `readingBoundary`; proxy transfer readings and coverage-blocked rows are
+     not measured zero.
    - Move report-level `nonConclusions[]` to metadata or a short appendix.
    - Read `architectureHomotopyReport` next when present.
    - Prioritize `nonzeroHolonomyLoops[]`, `unfilledLoops[]`, `topLocalCurvatureCells[]`, `aggregateReadings[]`, `coverageGaps[]`, `measuredBoundary`, and `recommendedReviewFocus[]`.
-   - Treat filled/unfilled loops, hole readings, and Stokes-style readings as measured review queues.
+   - Treat filled/unfilled loops, hole readings, and Stokes-style readings as
+     measured review queues only inside their `measurementStatus`,
+     `readingBoundary`, filler evidence, and non-fillability witness boundary.
    - Move report-level `nonConclusions[]` to metadata or a short appendix.
    - Read top `workflowRiskReadings[]` by `riskScore`.
    - Read `spectralAnalysisReadings[]`, especially dominant workflow row, dominant axis column, molecule overlap hub, obstruction curvature, and operation delta coupling.
@@ -160,7 +165,7 @@ Always compare high-priority readings against real source evidence before propos
    - top ArchitectureSpectrumReport hotspots with witness refs and coverage gaps
    - recurrent obstruction entries with transfer edge refs
    - top witness clusters that connect several axes or support refs
-   - ArchitectureHomotopyReport nonzero holonomy loops, unfilled loops, missing filler evidence, local curvature cells, and recommended review focus
+   - ArchitectureHomotopyReport nonzero holonomy loops, unfilled loops, missing filler evidence, local curvature cells, operation sequences, continuation traces, and recommended review focus
    - top 2-4 workflow risk molecules
    - transfer bridge edges with high `reviewRisk`
    - low split-readiness molecules
