@@ -7,9 +7,14 @@ description: Run ArchMap artifacts through ArchSig, read archsig-analysis-packet
 
 ## Purpose
 
-Turn a supplied `archmap-observation-map-v0` into an ArchSig analysis, read the resulting structured packet, verify the packet against source evidence, and propose practical improvements without overclaiming.
+Turn a supplied `archmap-observation-map-v0` into an ArchSig analysis, read the
+resulting structured packet as an architecture quality measurement over the
+supplied `ArchMap + LawPolicy`, and propose practical improvements.
 
-ArchSig reads current AAT structural state from `ArchMap + LawPolicy`. It does not prove source completeness, architecture lawfulness, semantic correctness, zero curvature, forecast correctness, repair safety, or Lean theorem discharge.
+For user-facing reports, state the measured conclusion first. ArchSig should
+read like a static analysis tool: "for this input model, these axes are nonzero,
+these hotspots were measured, and these loops are unfilled." Claim boundaries
+remain available as metadata, but they should not dilute the main verdict.
 
 This skill must work with only:
 
@@ -104,40 +109,45 @@ Read in this order:
    - Stop and report blockers if any failed check exists.
    - Keep warnings visible; warnings are often coverage or projection boundaries, not tool failures.
 
-2. Analysis boundary
-   - Record `archMapRef`, `selectedLawPolicyRef`, `currentStateEvolutionBoundary`, `nonConclusions`, and `excludedReadings`.
-   - Avoid saying "the architecture is bad/good"; say "under this selected LawPolicy and bounded ArchMap, ArchSig reads..."
+2. Verdict and quality measurement
+   - Prefer `archsig-analysis-summary.json` when available.
+   - Read `verdict`, `qualityMeasurement`, `actionQueue`, and `measurementBasis` before detailed packet sections.
+   - Say what the supplied ArchMap + LawPolicy measured: flat/nonflat under selected policy, nonzero axes, hotspots, recurrent pressure, architectural holes, and review action queue.
    - If the bundled baseline LawPolicy was explicitly used, label the output as a generic baseline run and avoid project-specific obstruction conclusions unless source comparison and user context justify them.
 
-3. Flatness and signature axes
-   - Read `flatnessReading.status`, `zeroSignatureAxisRefs`, `nonzeroSignatureAxisRefs`, `blockedByCoverageGaps`, and `signatureAxes[]`.
-   - Treat nonzero axes as review pressure, not defect proof.
-   - Treat coverage gaps as unknown remainder, not measured zero.
+3. Analysis basis
+   - Record `archMapRef`, `selectedLawPolicyRef`, `currentStateEvolutionBoundary`, `excludedReadings`, and `metadata.nonConclusions`.
+   - Treat the basis as input metadata, not as the lead diagnosis.
 
-4. Dominant pressure
+4. Flatness and signature axes
+   - Read `flatnessReading.status`, `zeroSignatureAxisRefs`, `nonzeroSignatureAxisRefs`, `blockedByCoverageGaps`, and `signatureAxes[]`.
+   - Treat nonzero axes as measured architecture pressure under the selected policy.
+   - Treat coverage gaps as measurement basis for why zero was not measured.
+
+5. Dominant pressure
    - Read `architectureSpectrumReport` before building the review queue when present.
    - Prioritize `topHotspots[]`, `recurrentObstructions[]`, `topWitnessClusters[]`, `coverageGaps[]`, `measuredBoundary`, and `recommendedReviewFocus[]`.
-   - Treat the report as a codebase-inspection surface over current ArchSig measurements, not a quality score, forecast, or repair proof.
-   - Preserve report-level `nonConclusions[]` when summarizing.
+   - Treat the report as a current-state architecture quality measurement over the selected axes.
+   - Move report-level `nonConclusions[]` to metadata or a short appendix.
    - Read `architectureHomotopyReport` next when present.
    - Prioritize `nonzeroHolonomyLoops[]`, `unfilledLoops[]`, `topLocalCurvatureCells[]`, `aggregateReadings[]`, `coverageGaps[]`, `measuredBoundary`, and `recommendedReviewFocus[]`.
-   - Treat filled/unfilled loops, hole readings, and Stokes-style readings as bounded review queues. Do not turn them into path truth, global homology, a quality score, or violation proof.
-   - Preserve report-level `nonConclusions[]` when summarizing.
+   - Treat filled/unfilled loops, hole readings, and Stokes-style readings as measured review queues.
+   - Move report-level `nonConclusions[]` to metadata or a short appendix.
    - Read top `workflowRiskReadings[]` by `riskScore`.
    - Read `spectralAnalysisReadings[]`, especially dominant workflow row, dominant axis column, molecule overlap hub, obstruction curvature, and operation delta coupling.
    - If workflow risk or spectral readings are empty, do not force a risk narrative. Shift to `signatureAxes[]`, `obstructionCircuits[]`, `repairOperationCandidates[]`, `operationDeltas[]`, and coverage gaps.
 
-5. Transfer bridge and split readiness
+6. Transfer bridge and split readiness
    - Read `transferBridgeReadings[].bridgeAtomFamilies[].edgeBreakdowns[]`.
    - Surface each edge's `sourceRefs`, `sourceRefRationale`, `dependencyKind`, `recommendedCutKind`, and `reviewFocus`.
    - Read `splitReadinessReadings[]` sorted by low `readinessScore`; low score and `blockedByBridgeEdge` usually means boundary preparation should precede refactoring.
    - If transfer bridge or split readiness readings are empty, report that no bridge/split surface was emitted for this packet variant and prioritize obstruction / repair / coverage evidence instead.
 
-6. LLM interpretation packet
+7. LLM interpretation packet
    - Use `llmInterpretationPacket.recommendedHumanReviewFocus`, `structuralReadingReviewSummary`, `currentStateEvolutionBoundarySummary`, and `transferBridgeEdgeSummary` as a human-review index.
    - Do not treat the LLM packet as a separate source of truth.
 
-7. Packet variant fallback
+8. Packet variant fallback
    - Some valid packets are obstruction/repair/coverage-heavy and have empty `workflowRiskReadings`, `spectralAnalysisReadings`, `transferBridgeReadings`, or `splitReadinessReadings`.
    - In that case, summarize nonzero `signatureAxes[]`, constructed `obstructionCircuits[]`, `repairOperationCandidates[]`, `operationDeltas[]`, `flatnessReading.blockedByCoverageGaps`, and child-level `missingEvidence` / `excludedReadings`.
    - Source comparison should then start from obstruction and repair candidate `sourceRefs`, not from workflow or bridge edges.
@@ -176,21 +186,23 @@ Always compare high-priority readings against real source evidence before propos
 
 For a normal user report, answer in this order:
 
-1. Run result and artifact paths
-2. Validation status
-3. Main architecture readings
-4. Source-code comparison findings
-5. Improvement proposals and next checks
-6. Claim boundary / non-conclusions
+1. Verdict
+2. Quality Measurement
+3. Top Hotspots / Holes
+4. Action Queue
+5. Measurement Basis
+6. Source-code comparison findings, when source comparison was requested
+7. Metadata / non-conclusions, only when useful for the user's decision
 
 Use concise Japanese when working in this repository.
 
 Recommended phrasing:
 
-- "ArchSig reads this as..."
-- "The packet marks this as `needsReview` because..."
+- "ArchSig measured this as..."
+- "For this ArchMap + LawPolicy, the verdict is..."
+- "The selected law axes measured nonzero pressure..."
+- "This loop is an unfilled architectural hole in the supplied model..."
 - "Source comparison supports / partially supports / does not yet support this reading..."
-- "This loop remains unfilled because the packet lacks declared filler evidence..."
 - "The next useful improvement is..."
 
 Avoid:
@@ -200,6 +212,7 @@ Avoid:
 - "The architecture score is..."
 - "No risk exists because the axis is zero"
 - "ArchSig recommends this refactor automatically"
+- leading with long caveats before the measured verdict
 - treating `ArchitectureSpectrumReport` as FieldSig forecast, future incident prediction, empirical cost amplification, or repair safety evidence
 - treating `ArchitectureHomotopyReport` as path truth, global homology, automatic violation proof, a quality score, FieldSig forecast, or repair safety evidence
 

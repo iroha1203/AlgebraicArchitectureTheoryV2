@@ -31,16 +31,33 @@ ArchSig Analysis Packet
 
 ## Responsibility
 
-The packet owns structured analysis results. It is not a theorem proof and not
-a single architecture quality score.
+The packet owns structured analysis results. The user-facing summary should be
+conclusion-first: for the supplied ArchMap and selected LawPolicy, ArchSig
+states the measured verdict, quality measurement counts, and action queue before
+showing metadata boundaries.
+
+`analysis-summary` is the preferred reading surface for humans and LLM agents.
+It exposes:
+
+- `verdict`: selected-policy flatness, quality state, primary conclusion,
+  actionability, and reading mode.
+- `qualityMeasurement`: nonzero axis count, hotspot count, recurrent
+  obstruction count, architectural hole count, nonzero holonomy count, and
+  coverage gap count.
+- `actionQueue`: prioritized hotspots, unfilled loops, nonzero holonomy loops,
+  nonzero signature axes, and workflow pressure.
+- `measurementBasis`: ArchMap / LawPolicy refs, validation results, coverage
+  gaps, and measured boundaries.
+- `metadata`: non-conclusions and excluded readings preserved after the main
+  diagnosis.
 
 `ArchitectureHomotopyReport` is a bounded codebase-inspection surface. It reads
 candidate path pairs, loops, fillers, architectural holes, selected-axis
 holonomy, and Stokes-style review queues under the selected LawPolicy
-`homotopyMeasurementProfile`. It does not prove path equality, global homology,
-global semantic flatness, source extraction completeness, future safety, repair
-safety, or automatic violation findings. Unfilled loops remain architectural
-holes until filler evidence is supplied.
+`homotopyMeasurementProfile`. User-facing summaries should report measured
+unfilled loops and nonzero holonomy as architectural holes / review queues
+first; path truth, global homology, future safety, and repair-safety boundaries
+belong in metadata.
 
 The implemented schema records:
 
@@ -137,7 +154,7 @@ Each obstruction circuit, signature axis reading, and repair operation candidate
 must carry its own `missingEvidence` and `excludedReadings`. Packet-level
 `excludedReadings` does not stand in for child-record evidence boundaries.
 
-Validation does not imply:
+Validation metadata records that validation does not imply:
 
 - Lean theorem proof
 - global architecture truth
@@ -205,8 +222,8 @@ The builder:
 - `architectureSpectrumReport` summarizes the ACTS surface for human and LLM
   review: top hotspots, top bounded mode data, witness clusters, recurrent
   obstruction entries, coverage gaps, measured boundary, and recommended next
-  actions. It is a primary codebase-inspection reading surface, not a single
-  architecture quality score.
+  actions. It is the current-state architecture quality measurement surface for
+  selected-axis pressure.
 - transfer bridge readings summarize repair-operation-by-transferred-axis
   matrices, indirect bridge atom families between architecture hubs, and
   evolution risk rankings for repairs and boundary preparation. Each bridge
