@@ -104,19 +104,30 @@ fn cli_summarizes_archsig_analysis_packet() {
     );
     assert_eq!(json["validation"]["archmap"], Value::Null);
     assert!(
-        json["signatureAxes"]
+        json["axisSummary"]["nonzeroAxes"]
             .as_array()
             .is_some_and(|axes| !axes.is_empty())
     );
-    assert!(json["topWorkflowRisks"].as_array().is_some_and(|risks| {
-        json["qualityMeasurement"]["workflowRiskCount"]
-            .as_u64()
-            .is_some_and(|count| risks.len() as u64 == count)
-    }));
     assert!(
-        json["splitReadiness"]
+        json.get("topWorkflowRisks").is_none()
+            && json["workflowRiskSummary"]["highestRisks"]
+                .as_array()
+                .is_some_and(|risks| {
+                    !risks.is_empty()
+                        && json["qualityMeasurement"]["workflowRiskCount"]
+                            .as_u64()
+                            .is_some_and(|count| risks.len() as u64 <= count)
+                })
+    );
+    assert!(
+        json["bridgeSummary"]["bridgePressure"]
             .as_array()
-            .is_some_and(|readings| !readings.is_empty())
+            .is_some_and(|items| !items.is_empty())
+    );
+    assert!(
+        json["detailIndex"]["sections"]
+            .as_array()
+            .is_some_and(|sections| !sections.is_empty())
     );
     assert_eq!(
         json["verdict"]["flatness"], "nonflatUnderSelectedPolicy",
@@ -158,8 +169,16 @@ fn cli_summarizes_archsig_analysis_packet() {
                         .as_str()
                         .is_some_and(|text| text == "measuredPressureHotspot")
                 })
+                && items.iter().all(|item| {
+                    item["detailRefs"]
+                        .as_array()
+                        .is_some_and(|refs| !refs.is_empty())
+                        && item.get("witnessRefs").is_none()
+                        && item.get("supportRefs").is_none()
+                        && item.get("sourceRefs").is_none()
+                })
         }),
-        "analysis-summary must expose a conclusion-first action queue"
+        "analysis-summary must expose a compact conclusion-first action queue with detail refs"
     );
     assert!(
         json["actionQueue"].as_array().is_some_and(|items| {
@@ -179,9 +198,13 @@ fn cli_summarizes_archsig_analysis_packet() {
                 item["kind"]
                     .as_str()
                     .is_some_and(|text| text == "workflowRisk")
+            }) && items.iter().any(|item| {
+                item["kind"]
+                    .as_str()
+                    .is_some_and(|text| text == "bridgePressure")
             })
         }),
-        "analysis-summary must put hotspots, holes, nonzero axes, and workflow risks in the action queue"
+        "analysis-summary must put hotspots, holes, nonzero axes, workflow risks, and bridge pressure in the action queue"
     );
     assert!(
         json["measurementBasis"]["basisStatement"]
@@ -190,39 +213,51 @@ fn cli_summarizes_archsig_analysis_packet() {
         "analysis-summary must record the measurement basis without diluting the verdict"
     );
     assert!(
-        json["architectureSpectrum"]["hotspots"]
+        json["dominantFindings"]["spectrumHotspots"]
             .as_array()
             .is_some_and(|items| !items.is_empty()),
-        "analysis-summary must expose ArchitectureSpectrumReport hotspots"
+        "analysis-summary must expose compact ArchitectureSpectrumReport hotspots"
     );
     assert!(
-        json["architectureSpectrum"]["recurrentObstructions"]
+        json["dominantFindings"]["recurrentObstructions"]
             .as_array()
             .is_some_and(|items| !items.is_empty()),
-        "analysis-summary must expose recurrent obstruction entries"
+        "analysis-summary must expose compact recurrent obstruction entries"
     );
     assert!(
-        json["architectureSpectrum"]["measuredBoundary"]
+        json["detailIndex"]["sections"]
+            .as_array()
+            .is_some_and(|sections| {
+                sections.iter().any(|section| {
+                    section["name"]
+                        .as_str()
+                        .is_some_and(|name| name == "architectureSpectrumReport.topHotspots")
+                        && section["packetRef"].as_str().is_some_and(|packet_ref| {
+                            packet_ref == "packet:/architectureSpectrumReport/topHotspots"
+                        })
+                })
+            }),
+        "analysis-summary must index ArchitectureSpectrumReport detail"
+    );
+    assert!(
+        json["measurementBasis"]["spectrumMeasuredBoundary"]
             .as_str()
             .is_some_and(|boundary| boundary.contains("ArchSig curvature support")),
         "analysis-summary must keep the ArchitectureSpectrumReport measured boundary"
     );
     assert!(
-        json["architectureSpectrum"]["recommendedReviewFocus"]
+        json["coverageGapSummary"]["gapRefs"]
             .as_array()
             .is_some_and(|items| !items.is_empty()),
-        "analysis-summary must expose next review focus from ArchitectureSpectrumReport"
+        "analysis-summary must expose compact coverage gap refs"
     );
     assert!(
-        json["architectureSpectrum"]["nonConclusions"]
-            .as_array()
-            .is_some_and(|items| {
-                items.iter().any(|item| {
-                    item.as_str()
-                        .is_some_and(|text| text.contains("single architecture quality score"))
-                })
-            }),
-        "analysis-summary must preserve ArchitectureSpectrumReport non-conclusions"
+        json.get("architectureSpectrum").is_none()
+            && json.get("architectureHomotopy").is_none()
+            && json.get("spectralAnalysis").is_none()
+            && json.get("transferBridges").is_none()
+            && json.get("measurementExpansion").is_none(),
+        "analysis-summary must not reprint raw packet detail surfaces"
     );
     assert!(
         json.get("nonConclusions").is_none(),
@@ -239,6 +274,86 @@ fn cli_summarizes_archsig_analysis_packet() {
                 .as_array()
                 .is_some_and(|non_conclusions| !non_conclusions.is_empty()),
         "analysis-summary must preserve non-conclusions as metadata"
+    );
+    assert!(
+        !has_nested_key(&json, "supportRefs")
+            && !has_nested_key(&json, "sourceRefs")
+            && !has_nested_key(&json, "witnessRefs")
+            && !has_nested_key(&json, "topEigenmodes")
+            && !has_nested_key(&json, "witnessClusters")
+            && !has_nested_key(&json, "aggregateReadings"),
+        "compact summary must omit raw evidence arrays and packet detail expansions"
+    );
+}
+
+#[test]
+fn cli_analysis_summary_stays_compact_for_sanitized_large_repo_class_packet() {
+    let out_dir = temp_dir("analysis-summary-large-repo");
+    let root = fixture_root();
+    let manifest = read_json(&root.join("../large_repo_summary/manifest.json"));
+    let packet_path = out_dir.join("sanitized-large-repo-packet.json");
+    let summary_path = out_dir.join("sanitized-large-repo-summary.json");
+    let mut packet = read_json(&root.join("archsig_analysis_packet.json"));
+
+    expand_large_repo_summary_fixture(&mut packet, &manifest);
+    fs::write(
+        &packet_path,
+        serde_json::to_vec_pretty(&packet).expect("large packet serializes"),
+    )
+    .expect("large packet fixture can be written");
+
+    run_sig0(&[
+        "analysis-summary",
+        "--packet",
+        packet_path.to_str().expect("packet path is utf-8"),
+        "--out",
+        summary_path.to_str().expect("summary path is utf-8"),
+    ]);
+
+    let summary_bytes = fs::metadata(&summary_path)
+        .expect("summary metadata can be read")
+        .len();
+    let byte_budget = manifest["summaryByteBudget"]
+        .as_u64()
+        .expect("manifest records summary byte budget");
+    assert!(
+        summary_bytes <= byte_budget,
+        "compact summary exceeded sanitized large-repo budget: {summary_bytes} > {byte_budget}"
+    );
+
+    let summary = read_json(&summary_path);
+    assert!(
+        summary["qualityMeasurement"]["spectrumHotspotCount"]
+            .as_u64()
+            .is_some_and(|count| count >= 64)
+            && summary["qualityMeasurement"]["workflowRiskCount"]
+                .as_u64()
+                .is_some_and(|count| count >= 32)
+            && summary["qualityMeasurement"]["coverageGapCount"] == 1,
+        "large summary must preserve conclusion counts without double-counting equivalent gap labels"
+    );
+    assert!(
+        summary["actionQueue"].as_array().is_some_and(|items| {
+            items.len() >= 96
+                && items.iter().all(|item| {
+                    item["detailRefs"]
+                        .as_array()
+                        .is_some_and(|refs| !refs.is_empty())
+                        && item.get("supportRefs").is_none()
+                        && item.get("sourceRefs").is_none()
+                        && item.get("witnessRefs").is_none()
+                })
+        }),
+        "large summary must keep the full compact action queue"
+    );
+    assert!(
+        !has_nested_key(&summary, "supportRefs")
+            && !has_nested_key(&summary, "sourceRefs")
+            && !has_nested_key(&summary, "witnessRefs")
+            && !has_nested_key(&summary, "topEigenmodes")
+            && !has_nested_key(&summary, "witnessClusters")
+            && !has_nested_key(&summary, "aggregateReadings"),
+        "large summary must omit raw detail copies"
     );
 }
 
@@ -1633,6 +1748,91 @@ fn run_sig0_output(args: &[&str]) -> std::process::Output {
 fn read_json(path: &Path) -> Value {
     serde_json::from_slice(&fs::read(path).expect("json fixture can be read"))
         .expect("json fixture parses")
+}
+
+fn has_nested_key(value: &Value, key: &str) -> bool {
+    match value {
+        Value::Object(object) => {
+            object.contains_key(key) || object.values().any(|value| has_nested_key(value, key))
+        }
+        Value::Array(items) => items.iter().any(|value| has_nested_key(value, key)),
+        _ => false,
+    }
+}
+
+fn expand_large_repo_summary_fixture(packet: &mut Value, manifest: &Value) {
+    let hotspot_count = manifest["hotspotCount"]
+        .as_u64()
+        .expect("manifest hotspotCount is numeric") as usize;
+    let support_refs_per_hotspot = manifest["supportRefsPerHotspot"]
+        .as_u64()
+        .expect("manifest supportRefsPerHotspot is numeric")
+        as usize;
+    let workflow_count = manifest["workflowRiskCount"]
+        .as_u64()
+        .expect("manifest workflowRiskCount is numeric") as usize;
+
+    let spectrum = packet["architectureSpectrumReport"]
+        .as_object_mut()
+        .expect("packet contains ArchitectureSpectrumReport");
+    let base_hotspot = spectrum["topHotspots"][0].clone();
+    let hotspots = (0..hotspot_count)
+        .map(|index| {
+            let mut hotspot = base_hotspot.clone();
+            hotspot["hotspotId"] =
+                serde_json::json!(format!("spectrum-hotspot:sanitized-large-repo-{index}"));
+            hotspot["axisRef"] = serde_json::json!(if index % 2 == 0 {
+                "axis:semantic-inconsistency"
+            } else {
+                "axis:layer-violation"
+            });
+            hotspot["curvatureValue"] = serde_json::json!((index % 5) + 1);
+            hotspot["supportRefs"] = serde_json::Value::Array(
+                (0..support_refs_per_hotspot)
+                    .map(|support_index| {
+                        serde_json::json!(format!("atom:sanitized-support-{index}-{support_index}"))
+                    })
+                    .collect(),
+            );
+            hotspot["witnessRefs"] = serde_json::Value::Array(
+                (0..support_refs_per_hotspot)
+                    .map(|support_index| {
+                        serde_json::json!(format!(
+                            "witness:sanitized-large-repo-{index}-{support_index}"
+                        ))
+                    })
+                    .collect(),
+            );
+            hotspot["coverageGapRefs"] = serde_json::json!([
+                "gap-runtime-user-db-trace: runtime trace was requested but not supplied"
+            ]);
+            hotspot
+        })
+        .collect();
+    spectrum.insert(
+        "topHotspots".to_string(),
+        serde_json::Value::Array(hotspots),
+    );
+
+    let base_workflow = packet["workflowRiskReadings"][0].clone();
+    packet["workflowRiskReadings"] = serde_json::Value::Array(
+        (0..workflow_count)
+            .map(|index| {
+                let mut reading = base_workflow.clone();
+                reading["workflowRiskId"] =
+                    serde_json::json!(format!("workflow-risk:sanitized-large-repo-{index}"));
+                reading["moleculeObservationRef"] =
+                    serde_json::json!(format!("molecule:sanitized-workflow-{index}"));
+                reading["riskScore"] = serde_json::json!(100 - index as i64);
+                reading["reviewFocus"] = serde_json::json!([
+                    "review sanitized workflow boundary",
+                    "confirm source-backed contract evidence",
+                    "inspect packet detail refs"
+                ]);
+                reading
+            })
+            .collect(),
+    );
 }
 
 fn has_check_result(json: &Value, id: &str, result: &str) -> bool {

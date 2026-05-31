@@ -10,15 +10,26 @@ When `analysis-summary` is available, read it before raw packet details:
 1. `verdict`: the measured conclusion for the supplied ArchMap + LawPolicy.
 2. `qualityMeasurement`: counts for nonzero axes, hotspots, recurrent pressure,
    unfilled architectural holes, nonzero holonomy loops, and coverage gaps.
-3. `actionQueue`: the bounded review queue derived from hotspots, holes,
-   nonzero holonomy, nonzero axes, and workflow pressure.
-4. `measurementBasis`: input refs, profile refs, validation results, coverage
+3. `dominantFindings`: compact nonzero axes, hotspots, recurrent pressure,
+   architectural holes, nonzero holonomy, workflow risks, and bridge pressure.
+4. `actionQueue`: the full compact review queue derived from hotspots, holes,
+   nonzero holonomy, nonzero axes, workflow pressure, and bridge pressure.
+   Queue entries use `detailRefs`; they do not carry nested support/source/
+   witness evidence arrays.
+5. `axisSummary`, `workflowRiskSummary`, `architecturalHoleSummary`,
+   `bridgeSummary`, and `coverageGapSummary`: compact counts and examples for
+   the major surfaces.
+6. `detailIndex`: packet sections and `packet:<json-pointer>` refs for reading
+   full evidence in `archsig-analysis-packet.json`.
+7. `measurementBasis`: input refs, profile refs, validation results, coverage
    gaps, and measured boundaries.
-5. `metadata.nonConclusions`: claim-boundary metadata. Keep it available, but
+8. `metadata.nonConclusions`: claim-boundary metadata. Keep it available, but
    do not lead the user-facing diagnosis with it.
 
 The report posture is: "for this input model, these conclusions were measured."
 Do not turn unmeasured claims into caveats in the main diagnosis.
+Use packet detail only after the compact summary identifies which queue item or
+finding needs evidence inspection.
 
 When ArchSig output is being read as part of complete ArchMap authoring, the
 posture is slightly different: keep the measured conclusion first, then turn
@@ -31,13 +42,12 @@ truly unavailable, private, or out of scope.
 | Field | Why it matters |
 | --- | --- |
 | `archMapRef`, `selectedLawPolicyRef` | Identifies the observed source state and selected law universe. |
-| `flatnessReading` | States whether selected signature axes are zero/nonzero and which coverage gaps block exactness. |
-| `signatureAxes[]` | Gives axis-local support refs, missing evidence, exactness assumptions, and excluded readings. |
-| `workflowRiskReadings[]` | Prioritizes molecule-local review pressure such as permission, LLM mediation, state/effect reconciliation, and domain cohesion. |
-| `spectralAnalysisReadings[]` | Shows dominant rows/columns and coupling surfaces across workflows, molecules, obstructions, and operation deltas. |
-| `architectureSpectrumReport` | Primary ACTS codebase-inspection surface: top hotspots, bounded mode data, witness clusters, recurrent obstruction entries, coverage gaps, measured boundary, and review focus. |
-| `architectureHomotopyReport` | Primary Homotopy / Holonomy / Stokes surface: filled loops, unfilled loops, nonzero holonomy loops, local curvature cells, bounded aggregate readings, coverage gaps, and review focus. |
-| `transferBridgeReadings[]` | Connects repair transfer axes, molecule overlap paths, bridge edge source refs, review focus, and boundary preparation. |
+| `axisSummary` / `detailIndex` | States selected/nonzero axis counts and points to `flatnessReading` / `signatureAxes[]` detail when needed. |
+| `workflowRiskSummary` / `actionQueue` | Prioritizes molecule-local review pressure such as permission, LLM mediation, state/effect reconciliation, and domain cohesion, with refs into `workflowRiskReadings[]`. |
+| `dominantFindings` / `detailRefs` | Gives compact hotspots, recurrent pressure, architectural holes, nonzero holonomy, workflow risks, and bridge pressure before raw packet inspection. |
+| `architectureSpectrumReport` | Packet detail surface for ACTS evidence: top hotspots, bounded mode data, witness clusters, recurrent obstruction entries, coverage gaps, measured boundary, and review focus. |
+| `architectureHomotopyReport` | Packet detail surface for Homotopy / Holonomy / Stokes evidence: filled loops, unfilled loops, nonzero holonomy loops, local curvature cells, bounded aggregate readings, coverage gaps, and review focus. |
+| `transferBridgeReadings[]` | Packet detail surface for repair transfer axes, molecule overlap paths, bridge edge source refs, review focus, and boundary preparation. |
 | `splitReadinessReadings[]` | Shows which molecules are blocked by bridge edges or need boundary preparation before feature extraction or refactoring. |
 | `structuralReadingReviewSurface` | Summarizes AAT structural review surfaces across representation, curvature, projection, state algebra, Galois, and split readiness. |
 | `currentStateEvolutionBoundary` | Keeps ArchSig current-state analysis separate from FieldSig evolution / PR / diff / forecast analysis. |

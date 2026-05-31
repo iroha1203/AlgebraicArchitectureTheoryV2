@@ -31,10 +31,12 @@ ArchSig Analysis Packet
 
 ## Responsibility
 
-The packet owns structured analysis results. The user-facing summary should be
-conclusion-first: for the supplied ArchMap and selected LawPolicy, ArchSig
-states the measured verdict, quality measurement counts, and action queue before
-showing metadata boundaries.
+The packet owns structured analysis results. The user-facing summary is a
+compact reading artifact: for the supplied ArchMap and selected LawPolicy,
+ArchSig states the measured verdict, quality measurement counts, dominant
+findings, and action queue before showing metadata boundaries. Summary entries
+do not reprint packet evidence arrays. They point back to packet detail through
+`detailRefs`, `packetRefs`, and `detailIndex`.
 
 For product workflow, ArchMap authoring is complete-first. The intended entry
 experience is not "create a thin map and ask the user to grow it." An LLM-native
@@ -54,19 +56,33 @@ Only evidence that is truly private, unavailable, or out of scope should remain
 as residual `blockedByCoverageGap` in a complete-first handoff.
 
 `analysis-summary` is the preferred reading surface for humans and LLM agents.
-It exposes:
+It is designed to be read whole without jq slicing. It exposes:
 
 - `verdict`: selected-policy flatness, quality state, primary conclusion,
   actionability, and reading mode.
 - `qualityMeasurement`: nonzero axis count, hotspot count, recurrent
   obstruction count, architectural hole count, nonzero holonomy count, and
   coverage gap count.
-- `actionQueue`: prioritized hotspots, unfilled loops, nonzero holonomy loops,
-  nonzero signature axes, and workflow pressure.
+- `dominantFindings`: compact nonzero axes, hotspots, recurrent pressure,
+  architectural holes, nonzero holonomy, workflow risks, and bridge pressure.
+- `actionQueue`: the full prioritized queue for hotspots, unfilled loops,
+  nonzero holonomy loops, nonzero signature axes, workflow pressure, and bridge
+  pressure. Each entry stays compact and carries `detailRefs` instead of nested
+  evidence arrays.
+- `axisSummary`, `workflowRiskSummary`, `architecturalHoleSummary`,
+  `bridgeSummary`, and `coverageGapSummary`: counts plus compact examples or
+  refs for the major reading surfaces.
+- `detailIndex`: packet sections and `packet:<json-pointer>` refs for looking
+  up the full evidence in `archsig-analysis-packet.json`.
 - `measurementBasis`: ArchMap / LawPolicy refs, validation results, coverage
   gaps, and measured boundaries.
 - `metadata`: non-conclusions and excluded readings preserved after the main
   diagnosis.
+
+The full `archsig-analysis-packet.json` remains the evidence store. Raw
+`supportRefs`, `sourceRefs`, witness clusters, spectral rows, homotopy
+aggregate readings, and measurement-expansion detail belong in the packet, not
+in `analysis-summary`.
 
 `ArchitectureHomotopyReport` is a bounded codebase-inspection surface. It reads
 candidate path pairs, loops, fillers, architectural holes, selected-axis
@@ -74,7 +90,7 @@ holonomy, and Stokes-style review queues under the selected LawPolicy
 `homotopyMeasurementProfile`. User-facing summaries should report measured
 unfilled loops and nonzero holonomy as architectural holes / review queues
 first; path truth, global homology, future safety, and repair-safety boundaries
-belong in metadata.
+belong in packet detail and metadata.
 
 Spectrum and Homotopy surfaces expose `measurementStatus` and
 `readingBoundary` so a reader can distinguish measured rows, bounded proxy
