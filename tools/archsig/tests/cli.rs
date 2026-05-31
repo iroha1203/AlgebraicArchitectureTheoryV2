@@ -261,6 +261,36 @@ fn cli_summarizes_archsig_analysis_packet() {
         "analysis-summary must expose compact added AAT observation axis readings"
     );
     assert!(
+        json["trendDiagnosis"]["trendCounts"]["nonzeroAxisCount"]
+            .as_u64()
+            .is_some_and(|count| count > 0)
+            && json["trendDiagnosis"]["pressureConcentration"]["nonzeroAxisRefs"]
+                .as_array()
+                .is_some_and(|items| !items.is_empty())
+            && json["trendDiagnosis"]["pressureConcentration"]["workflowRiskRefs"]
+                .as_array()
+                .is_some_and(|items| !items.is_empty())
+            && json["trendDiagnosis"]["packetRefs"]
+                .as_array()
+                .is_some_and(|items| !items.is_empty()),
+        "trendDiagnosis must expose compact repository-wide tendency refs"
+    );
+    assert!(
+        json["reviewSupport"]["actionQueueCount"]
+            .as_u64()
+            .is_some_and(|count| count > 0)
+            && json["reviewSupport"]["blockerSummary"]["architecturalHoleRefs"]
+                .as_array()
+                .is_some_and(|items| !items.is_empty())
+            && json["reviewSupport"]["blockerSummary"]["operationPreconditionRefs"]
+                .as_array()
+                .is_some_and(|items| !items.is_empty())
+            && json["reviewSupport"]["packetRefs"]
+                .as_array()
+                .is_some_and(|items| !items.is_empty()),
+        "reviewSupport must expose compact review queue and blocker refs"
+    );
+    assert!(
         json["detailIndex"]["sections"]
             .as_array()
             .is_some_and(|sections| {

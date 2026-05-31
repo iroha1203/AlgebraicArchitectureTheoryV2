@@ -65,6 +65,14 @@ It is designed to be read whole without jq slicing. It exposes:
 - `qualityMeasurement`: nonzero axis count, hotspot count, recurrent
   obstruction count, architectural hole count, nonzero holonomy count, and
   coverage gap count.
+- `trendDiagnosis`: the repository-wide tendency view. It keeps compact counts
+  and refs for concentrated law-axis pressure, spectrum hotspots, recurrent
+  obstruction support, workflow risk, bridge pressure, path multiplicity loss,
+  projection fidelity loss, and Atom origin closure debt.
+- `reviewSupport`: the review queue view. It keeps the action queue count,
+  compact blocker refs, coverage gap refs, and packet refs for evidence lookup
+  without turning review support into automatic repair safety or merge
+  approval.
 - `dominantFindings`: compact nonzero axes, hotspots, recurrent pressure,
   architectural holes, nonzero holonomy, workflow risks, bridge pressure, and
   compact AAT observation-axis pressure.

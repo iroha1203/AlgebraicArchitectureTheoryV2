@@ -1106,6 +1106,8 @@ fn build_analysis_summary(
         },
         "verdict": analysis_verdict(packet),
         "qualityMeasurement": quality_measurement(packet),
+        "trendDiagnosis": trend_diagnosis(packet),
+        "reviewSupport": review_support(packet),
         "dominantFindings": dominant_findings(packet),
         "actionQueue": action_queue(packet),
         "axisSummary": axis_summary(packet),
@@ -1172,6 +1174,60 @@ fn dominant_findings(packet: &serde_json::Value) -> serde_json::Value {
         "synthesisBlockage": synthesis_blockage_findings(packet, DOMINANT_FINDING_LIMIT),
         "operationPreconditionReadiness": operation_precondition_findings(packet, DOMINANT_FINDING_LIMIT),
         "pathMultiplicityLoss": path_multiplicity_findings(packet, DOMINANT_FINDING_LIMIT)
+    })
+}
+
+const READING_MODE_FINDING_LIMIT: usize = 1;
+
+fn trend_diagnosis(packet: &serde_json::Value) -> serde_json::Value {
+    let spectrum = packet
+        .get("architectureSpectrumReport")
+        .unwrap_or(&serde_json::Value::Null);
+    serde_json::json!({
+        "verdict": analysis_verdict(packet),
+        "trendCounts": trend_counts(packet),
+        "pressureConcentration": {
+            "nonzeroAxisRefs": nonzero_axis_ref_list(packet, READING_MODE_FINDING_LIMIT),
+            "spectrumHotspotRefs": compact_ref_list(spectrum, "topHotspots", "hotspotId", READING_MODE_FINDING_LIMIT),
+            "recurrentObstructionRefs": compact_ref_list(spectrum, "recurrentObstructions", "modeRef", READING_MODE_FINDING_LIMIT),
+            "workflowRiskRefs": workflow_risk_ref_list(packet, READING_MODE_FINDING_LIMIT),
+            "bridgePressureRefs": bridge_pressure_ref_list(packet, READING_MODE_FINDING_LIMIT),
+            "pathMultiplicityLossRefs": compact_ref_list(packet, "pathMultiplicityLossReadings", "readingId", 1),
+            "projectionFidelityLossRefs": compact_ref_list(packet, "observationProjectionFidelityReadings", "readingId", 1),
+            "atomOriginClosureDebtRefs": compact_ref_list(packet, "atomOriginClosureDebtReadings", "readingId", 1)
+        },
+        "packetRefs": packet_refs(&[
+            "/signatureAxes",
+            "/architectureSpectrumReport",
+            "/workflowRiskReadings",
+            "/transferBridgeReadings",
+            "/pathMultiplicityLossReadings",
+            "/observationProjectionFidelityReadings",
+            "/atomOriginClosureDebtReadings"
+        ])
+    })
+}
+
+fn review_support(packet: &serde_json::Value) -> serde_json::Value {
+    serde_json::json!({
+        "actionQueueCount": array_len_keyless(&action_queue(packet)),
+        "blockerSummary": {
+            "architecturalHoleRefs": homotopy_ref_list(packet, "unfilledLoops", READING_MODE_FINDING_LIMIT),
+            "nonzeroHolonomyRefs": homotopy_ref_list(packet, "nonzeroHolonomyLoops", READING_MODE_FINDING_LIMIT),
+            "operationPreconditionRefs": compact_ref_list(packet, "operationPreconditionReadinessReadings", "operationRef", READING_MODE_FINDING_LIMIT),
+            "synthesisBlockageRefs": compact_ref_list(packet, "synthesisBlockageReadings", "readingId", READING_MODE_FINDING_LIMIT),
+            "effectRelationPressureRefs": compact_ref_list(packet, "effectRelationAlgebraReadings", "readingId", READING_MODE_FINDING_LIMIT),
+            "coverageGapRefs": json_string_array(coverage_gap_refs(packet).iter())
+        },
+        "packetRefs": packet_refs(&[
+            "/architectureHomotopyReport",
+            "/operationPreconditionReadinessReadings",
+            "/synthesisBlockageReadings",
+            "/effectRelationAlgebraReadings",
+            "/flatnessReading/blockedByCoverageGaps",
+            "/architectureSpectrumReport/coverageGaps",
+            "/architectureHomotopyReport/coverageGaps"
+        ])
     })
 }
 
@@ -1267,6 +1323,31 @@ fn quality_measurement(packet: &serde_json::Value) -> serde_json::Value {
         "synthesisBlockageCount": array_len(packet, "synthesisBlockageReadings"),
         "operationPreconditionBlockerCount": array_len(packet, "operationPreconditionReadinessReadings"),
         "pathMultiplicityLossCount": array_len(packet, "pathMultiplicityLossReadings"),
+        "coverageGapCount": coverage_gap_refs(packet).len()
+    })
+}
+
+fn trend_counts(packet: &serde_json::Value) -> serde_json::Value {
+    let flatness = packet
+        .get("flatnessReading")
+        .unwrap_or(&serde_json::Value::Null);
+    let spectrum = packet
+        .get("architectureSpectrumReport")
+        .unwrap_or(&serde_json::Value::Null);
+    let homotopy = packet
+        .get("architectureHomotopyReport")
+        .unwrap_or(&serde_json::Value::Null);
+    serde_json::json!({
+        "nonzeroAxisCount": array_len(flatness, "nonzeroSignatureAxisRefs"),
+        "spectrumHotspotCount": array_len(spectrum, "topHotspots"),
+        "recurrentObstructionCount": array_len(spectrum, "recurrentObstructions"),
+        "workflowRiskCount": array_len(packet, "workflowRiskReadings"),
+        "bridgePressureCount": bridge_pressure_action_count(packet),
+        "architecturalHoleCount": array_len(homotopy, "unfilledLoops"),
+        "nonzeroHolonomyLoopCount": array_len(homotopy, "nonzeroHolonomyLoops"),
+        "pathMultiplicityLossCount": array_len(packet, "pathMultiplicityLossReadings"),
+        "projectionFidelityLossCount": array_len(packet, "observationProjectionFidelityReadings"),
+        "atomOriginClosureDebtCount": array_len(packet, "atomOriginClosureDebtReadings"),
         "coverageGapCount": coverage_gap_refs(packet).len()
     })
 }
@@ -1881,6 +1962,92 @@ fn detail_index_section(name: &str, path: &str, count: usize) -> serde_json::Val
 
 fn detail_refs(section: &str, path: &str) -> serde_json::Value {
     serde_json::json!([format!("{section}:{}", packet_ref(path))])
+}
+
+fn compact_ref_list(
+    container: &serde_json::Value,
+    key: &str,
+    ref_key: &str,
+    limit: usize,
+) -> serde_json::Value {
+    serde_json::Value::Array(
+        array_items(container, key)
+            .into_iter()
+            .take(limit)
+            .filter_map(|item| {
+                item.get(ref_key)
+                    .and_then(serde_json::Value::as_str)
+                    .map(|text| serde_json::Value::String(text.to_string()))
+            })
+            .collect(),
+    )
+}
+
+fn nonzero_axis_ref_list(packet: &serde_json::Value, limit: usize) -> serde_json::Value {
+    serde_json::Value::Array(
+        array_items(packet, "signatureAxes")
+            .into_iter()
+            .filter(|axis| i64_field(axis, "value", 0) != 0)
+            .take(limit)
+            .filter_map(|axis| {
+                axis.get("signatureAxisId")
+                    .and_then(serde_json::Value::as_str)
+                    .map(|text| serde_json::Value::String(text.to_string()))
+            })
+            .collect(),
+    )
+}
+
+fn workflow_risk_ref_list(packet: &serde_json::Value, limit: usize) -> serde_json::Value {
+    let mut readings = array_items(packet, "workflowRiskReadings");
+    readings.sort_by_key(|reading| std::cmp::Reverse(i64_field(reading, "riskScore", 0)));
+    serde_json::Value::Array(
+        readings
+            .into_iter()
+            .take(limit)
+            .filter_map(|reading| {
+                reading
+                    .get("moleculeObservationRef")
+                    .and_then(serde_json::Value::as_str)
+                    .map(|text| serde_json::Value::String(text.to_string()))
+            })
+            .collect(),
+    )
+}
+
+fn bridge_pressure_ref_list(packet: &serde_json::Value, limit: usize) -> serde_json::Value {
+    serde_json::Value::Array(
+        bridge_pressure_actions(packet)
+            .into_iter()
+            .take(limit)
+            .filter_map(|reading| {
+                reading
+                    .get("ref")
+                    .and_then(serde_json::Value::as_str)
+                    .map(|text| serde_json::Value::String(text.to_string()))
+            })
+            .collect(),
+    )
+}
+
+fn homotopy_ref_list(packet: &serde_json::Value, key: &str, limit: usize) -> serde_json::Value {
+    let homotopy = packet
+        .get("architectureHomotopyReport")
+        .unwrap_or(&serde_json::Value::Null);
+    serde_json::Value::Array(
+        array_items(homotopy, key)
+            .into_iter()
+            .take(limit)
+            .filter_map(|item| {
+                item.as_str()
+                    .map(|text| serde_json::Value::String(text.to_string()))
+            })
+            .collect(),
+    )
+}
+
+fn array_len_keyless(value: &serde_json::Value) -> usize {
+    value.as_array().map(Vec::len).unwrap_or_default()
 }
 
 fn packet_refs(paths: &[&str]) -> serde_json::Value {
