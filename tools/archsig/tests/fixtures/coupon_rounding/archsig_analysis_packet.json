@@ -374,7 +374,7 @@
         "analytic:nilpotence-boundary",
         "analytic:selected-subgraph-spectrum",
         "analytic:propagation-depth",
-        "analytic:spectral-radius-proxy",
+        "analytic:spectral-radius",
         "analytic:curvature-valuation",
         "analytic:state-algebra-boundary",
         "analytic:zero-reflecting-aggregate-boundary"
@@ -706,17 +706,17 @@
       "representationFamily": "weightedAdjacencyMatrix",
       "status": "measured",
       "valueType": "matrixShape",
-      "value": "7x7; edgeCount=0",
-      "graphScopeRefs": [
-        "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding",
-        "atom:semantic:PaymentAmount-ReceiptAmount-coupon-tax-rounding-noncommutation",
-        "atom:effect:receipt-boundary"
-      ],
+      "value": "0x0; edgeCount=0",
+      "selectedGraphNodes": [],
+      "selectedGraphEdges": [],
+      "sparseMatrixEntries": [],
+      "walkWitnessRefs": [],
+      "graphScopeRefs": [],
       "axisRefs": [
         "sig-axis:layer-violation",
         "sig-axis:semantic-inconsistency"
       ],
-      "reading": "selected relation atoms induce a bounded weighted adjacency representation",
+      "reading": "selected relation atoms induce a bounded weighted adjacency representation with traceable sparse matrix entries",
       "coverageBoundary": "analytic value is relative to selected graph / matrix representation and is not a quality score",
       "zeroReflectingBoundary": "zero reflects only the selected representation when coverage and exactness assumptions hold",
       "nonConclusions": [
@@ -734,17 +734,17 @@
       "representationFamily": "reachableConeSize",
       "status": "measured",
       "valueType": "nat",
-      "value": "7",
-      "graphScopeRefs": [
-        "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding",
-        "atom:semantic:PaymentAmount-ReceiptAmount-coupon-tax-rounding-noncommutation",
-        "atom:effect:receipt-boundary"
-      ],
+      "value": "0",
+      "selectedGraphNodes": [],
+      "selectedGraphEdges": [],
+      "sparseMatrixEntries": [],
+      "walkWitnessRefs": [],
+      "graphScopeRefs": [],
       "axisRefs": [
         "sig-axis:layer-violation",
         "sig-axis:semantic-inconsistency"
       ],
-      "reading": "reachable cone is a bounded graph proxy over observed object refs and relation atoms",
+      "reading": "reachable cone is computed by finite graph traversal over selected relation atoms",
       "coverageBoundary": "analytic value is relative to selected graph / matrix representation and is not a quality score",
       "zeroReflectingBoundary": "zero reflects only the selected representation when coverage and exactness assumptions hold",
       "nonConclusions": [
@@ -762,17 +762,17 @@
       "representationFamily": "walkCount",
       "status": "measured",
       "valueType": "nat",
-      "value": "1",
-      "graphScopeRefs": [
-        "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding",
-        "atom:semantic:PaymentAmount-ReceiptAmount-coupon-tax-rounding-noncommutation",
-        "atom:effect:receipt-boundary"
-      ],
+      "value": "0",
+      "selectedGraphNodes": [],
+      "selectedGraphEdges": [],
+      "sparseMatrixEntries": [],
+      "walkWitnessRefs": [],
+      "graphScopeRefs": [],
       "axisRefs": [
         "sig-axis:layer-violation",
         "sig-axis:semantic-inconsistency"
       ],
-      "reading": "walk count is a bounded proxy from observed relation atoms and molecule paths",
+      "reading": "walk count enumerates selected relation-graph walks up to length 3",
       "coverageBoundary": "analytic value is relative to selected graph / matrix representation and is not a quality score",
       "zeroReflectingBoundary": "zero reflects only the selected representation when coverage and exactness assumptions hold",
       "nonConclusions": [
@@ -791,16 +791,16 @@
       "status": "needsReview",
       "valueType": "boundaryStatus",
       "value": "blockedByCoverageGap",
-      "graphScopeRefs": [
-        "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding",
-        "atom:semantic:PaymentAmount-ReceiptAmount-coupon-tax-rounding-noncommutation",
-        "atom:effect:receipt-boundary"
-      ],
+      "selectedGraphNodes": [],
+      "selectedGraphEdges": [],
+      "sparseMatrixEntries": [],
+      "walkWitnessRefs": [],
+      "graphScopeRefs": [],
       "axisRefs": [
         "sig-axis:layer-violation",
         "sig-axis:semantic-inconsistency"
       ],
-      "reading": "nilpotence is represented as a boundary condition, not folded into Decomposable or global acyclicity",
+      "reading": "nilpotence is read from cycle detection in the selected finite relation graph, not folded into Decomposable or global acyclicity",
       "coverageBoundary": "analytic value is relative to selected graph / matrix representation and is not a quality score",
       "zeroReflectingBoundary": "zero reflects only the selected representation when coverage and exactness assumptions hold",
       "nonConclusions": [
@@ -818,17 +818,17 @@
       "representationFamily": "selectedSubgraphSpectrum",
       "status": "measured",
       "valueType": "vector",
-      "value": "[0.000]",
-      "graphScopeRefs": [
-        "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding",
-        "atom:semantic:PaymentAmount-ReceiptAmount-coupon-tax-rounding-noncommutation",
-        "atom:effect:receipt-boundary"
-      ],
+      "value": "[unavailable]",
+      "selectedGraphNodes": [],
+      "selectedGraphEdges": [],
+      "sparseMatrixEntries": [],
+      "walkWitnessRefs": [],
+      "graphScopeRefs": [],
       "axisRefs": [
         "sig-axis:layer-violation",
         "sig-axis:semantic-inconsistency"
       ],
-      "reading": "selected subgraph spectrum records the bounded spectrum vector for the observed relation subgraph",
+      "reading": "selected subgraph spectrum is estimated from power iteration over the finite nonnegative adjacency matrix",
       "coverageBoundary": "analytic value is relative to selected graph / matrix representation and is not a quality score",
       "zeroReflectingBoundary": "zero reflects only the selected representation when coverage and exactness assumptions hold",
       "nonConclusions": [
@@ -847,11 +847,11 @@
       "status": "measured",
       "valueType": "nat",
       "value": "0",
-      "graphScopeRefs": [
-        "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding",
-        "atom:semantic:PaymentAmount-ReceiptAmount-coupon-tax-rounding-noncommutation",
-        "atom:effect:receipt-boundary"
-      ],
+      "selectedGraphNodes": [],
+      "selectedGraphEdges": [],
+      "sparseMatrixEntries": [],
+      "walkWitnessRefs": [],
+      "graphScopeRefs": [],
       "axisRefs": [
         "sig-axis:layer-violation",
         "sig-axis:semantic-inconsistency"
@@ -870,21 +870,21 @@
       ]
     },
     {
-      "representationId": "analytic:spectral-radius-proxy",
+      "representationId": "analytic:spectral-radius",
       "representationFamily": "spectralRadius",
-      "status": "measured",
+      "status": "unavailable",
       "valueType": "float",
-      "value": "0.000",
-      "graphScopeRefs": [
-        "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding",
-        "atom:semantic:PaymentAmount-ReceiptAmount-coupon-tax-rounding-noncommutation",
-        "atom:effect:receipt-boundary"
-      ],
+      "value": "unavailable",
+      "selectedGraphNodes": [],
+      "selectedGraphEdges": [],
+      "sparseMatrixEntries": [],
+      "walkWitnessRefs": [],
+      "graphScopeRefs": [],
       "axisRefs": [
         "sig-axis:layer-violation",
         "sig-axis:semantic-inconsistency"
       ],
-      "reading": "spectral radius is represented as a bounded proxy until full matrix extraction is supplied",
+      "reading": "spectral radius is estimated from the selected finite nonnegative adjacency matrix under bounded iteration",
       "coverageBoundary": "analytic value is relative to selected graph / matrix representation and is not a quality score",
       "zeroReflectingBoundary": "zero reflects only the selected representation when coverage and exactness assumptions hold",
       "nonConclusions": [
@@ -903,6 +903,10 @@
       "status": "measured",
       "valueType": "nat",
       "value": "1",
+      "selectedGraphNodes": [],
+      "selectedGraphEdges": [],
+      "sparseMatrixEntries": [],
+      "walkWitnessRefs": [],
       "graphScopeRefs": [
         "obstruction:semantic-contract-mismatch:computed"
       ],
@@ -929,6 +933,10 @@
       "status": "unmeasured",
       "valueType": "boundaryStatus",
       "value": "state/effect algebra requires explicit state transition and runtime/effect atoms",
+      "selectedGraphNodes": [],
+      "selectedGraphEdges": [],
+      "sparseMatrixEntries": [],
+      "walkWitnessRefs": [],
       "graphScopeRefs": [
         "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding",
         "atom:semantic:PaymentAmount-ReceiptAmount-coupon-tax-rounding-noncommutation",
@@ -957,6 +965,10 @@
       "status": "needsReview",
       "valueType": "boundaryStatus",
       "value": "blockedByObservationGaps",
+      "selectedGraphNodes": [],
+      "selectedGraphEdges": [],
+      "sparseMatrixEntries": [],
+      "walkWitnessRefs": [],
       "graphScopeRefs": [
         "gap:coupon-runtime-payment-trace"
       ],
@@ -1233,6 +1245,57 @@
   ],
   "spectralAnalysisReadings": [
     {
+      "spectralReadingId": "spectral:relation-atom-adjacency",
+      "representationFamily": "relationAtomWeightedAdjacencyMatrix",
+      "status": "nonConclusion",
+      "matrixShape": {
+        "rowDomain": "selectedRelationGraphNodes",
+        "columnDomain": "selectedRelationGraphNodes",
+        "rowCount": 0,
+        "columnCount": 0,
+        "nonzeroEntryCount": 0
+      },
+      "entryRule": "entry(i,j) is the number of selected relation atom endpoints from node i to node j",
+      "valueType": "boundedSpectralProxy",
+      "values": [
+        {
+          "name": "maxRowSum",
+          "value": "0",
+          "interpretation": "largest outgoing relation weight"
+        },
+        {
+          "name": "maxColumnSum",
+          "value": "0",
+          "interpretation": "largest incoming relation weight"
+        },
+        {
+          "name": "frobeniusNorm",
+          "value": "0.000",
+          "interpretation": "finite weighted adjacency matrix norm over selected relation atoms"
+        },
+        {
+          "name": "spectralRadius",
+          "value": "0.000",
+          "interpretation": "power-iteration estimate over the finite nonnegative relation adjacency matrix"
+        }
+      ],
+      "dominantComponents": [],
+      "supportRefs": [],
+      "reading": "AAT analytic graph reading is computed from selected relation atom endpoints as a finite weighted adjacency matrix",
+      "coverageBoundary": "observation gaps block measured-zero interpretation for absent relation edges",
+      "zeroReflectingBoundary": "zero entries mean no selected relation atom endpoint under the current ArchMap, not proof of independence",
+      "recommendedNextAction": "inspect dominant source/target nodes, cycle readings, and coverage gaps before selecting repair operations",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    },
+    {
       "spectralReadingId": "spectral:workflow-risk-axis-pressure",
       "representationFamily": "workflowRiskAxisPressureMatrix",
       "status": "needsReview",
@@ -1488,6 +1551,42 @@
   ],
   "spectralModeReadings": [
     {
+      "spectralModeId": "spectral-mode:spectral-relation-atom-adjacency",
+      "sourceSpectralReadingRef": "spectral:relation-atom-adjacency",
+      "representationFamily": "relationAtomWeightedAdjacencyMatrix",
+      "status": "nonConclusion",
+      "modeKind": "boundedSpectralMode",
+      "modeComponents": [],
+      "spectralGapProxy": {
+        "name": "dominantResidualGapProxy",
+        "value": "0.000",
+        "interpretation": "dominant component magnitude minus residual Frobenius mass; bounded proxy, not an eigenvalue gap theorem"
+      },
+      "localizationIndex": {
+        "name": "dominantFrobeniusLocalization",
+        "value": "0.000",
+        "interpretation": "dominant component magnitude divided by Frobenius norm; higher means pressure is more localized"
+      },
+      "matrixDensity": {
+        "name": "nonzeroMatrixDensity",
+        "value": "0.000",
+        "interpretation": "nonzero entries divided by finite matrix capacity; higher means more distributed coupling"
+      },
+      "decomposabilityReading": "mode is delocalized or dense; treat the concern as architecture-wide coupling before attempting local repair",
+      "repairPerturbationReading": "not an operation transition matrix; use this mode to choose review focus before evaluating repair perturbations",
+      "evidenceBoundary": "spectral mode is a bounded proxy computed from ArchSig finite representation summaries, not an exact eigenvector theorem",
+      "recommendedNextAction": "review dominant components and evidence boundaries before drawing architectural conclusions",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    },
+    {
       "spectralModeId": "spectral-mode:spectral-workflow-risk-axis-pressure",
       "sourceSpectralReadingRef": "spectral:workflow-risk-axis-pressure",
       "representationFamily": "workflowRiskAxisPressureMatrix",
@@ -1690,6 +1789,7 @@
       "drilldownId": "spectral-drilldown:coupon-tax-rounding-archmap",
       "status": "needsReview",
       "sourceSpectralModeRefs": [
+        "spectral-mode:spectral-relation-atom-adjacency",
         "spectral-mode:spectral-workflow-risk-axis-pressure",
         "spectral-mode:spectral-molecule-atom-overlap-coupling",
         "spectral-mode:spectral-obstruction-axis-curvature",
@@ -2153,7 +2253,7 @@
       "readingId": "curvature-transfer-reading:spectrum-profile-curvature-transfer-default",
       "profileRef": "spectrum-profile:curvature-transfer-default",
       "status": "needsReview",
-      "measurementStatus": "proxy",
+      "measurementStatus": "measured",
       "readingBoundary": {
         "readingStrength": "boundedMeasuredWithProxyTransfer",
         "zeroReflectionAssumptions": [
@@ -2200,7 +2300,7 @@
         "rowCount": 1,
         "columnCount": 1,
         "nonzeroEdgeCount": 1,
-        "entryRule": "entry(i,j) is positive when measured curvature support i can transfer review pressure to support j under shared selected-axis or shared support evidence",
+        "entryRule": "entry(i,j) is positive when measured curvature support i can transfer review pressure to support j through selected relation-graph evidence or shared selected-axis evidence",
         "spectralRadiusKind": "finiteNonnegativeOperatorBoundedClosedWalkRadius",
         "reading": "finite nonnegative transfer operator over measured curvature supports; absent edges are unmeasured, not proof of independence"
       },
@@ -2246,7 +2346,7 @@
             "witness:semantic-contract-mismatch"
           ],
           "cycleWeight": 1,
-          "spectralRadiusReading": "rho(T^kappa) proxy bounded closed-walk radius 1 > 0 over the finite ArchSig transfer operator",
+          "spectralRadiusReading": "rho(T^kappa) finite-matrix estimate 1.000 > 0 over the finite ArchSig transfer operator",
           "recurrentObstructionReading": "positive closed walk is reported as recurrent obstruction support only",
           "reviewFocus": [
             "inspect the witness support behind the positive transfer self-loop",
@@ -2260,9 +2360,9 @@
         }
       ],
       "spectralRadiusReading": {
-        "name": "rho(T^kappa)Proxy",
-        "value": "1",
-        "interpretation": "positive proxy is read only as recurrent obstruction support in the finite ArchSig transfer operator, not future incident probability"
+        "name": "rho(T^kappa)",
+        "value": "1.000",
+        "interpretation": "positive value is computed from the finite ArchSig transfer operator and read only as recurrent obstruction support, not future incident probability"
       },
       "coverageBoundary": "missing coverage blocks spectrum zero reflection and remains a report gap",
       "evidenceBoundary": "transfer operator is computed from measured curvature support rows and does not forecast future cost, safety, or amplification",
@@ -2492,7 +2592,7 @@
     "recurrentObstructions": [
       {
         "modeRef": "recurrent-obstruction:curvature-transfer-edge-curvature-support-witness-semantic-contract-mismatch-axis-semantic-inconsistency-curvature-support-witness-semantic-contract-mismatch-axis-semantic-inconsistency",
-        "spectralRadiusReading": "rho(T^kappa) proxy bounded closed-walk radius 1 > 0 over the finite ArchSig transfer operator",
+        "spectralRadiusReading": "rho(T^kappa) finite-matrix estimate 1.000 > 0 over the finite ArchSig transfer operator",
         "transferEdgeRefs": [
           "curvature-transfer-edge:curvature-support-witness-semantic-contract-mismatch-axis-semantic-inconsistency:curvature-support-witness-semantic-contract-mismatch-axis-semantic-inconsistency"
         ],
@@ -2907,7 +3007,9 @@
       "featureLocalObstructionRefs": [
         "obstruction:semantic-contract-mismatch:computed"
       ],
-      "interactionObstructionRefs": [],
+      "interactionObstructionRefs": [
+        "obstruction:semantic-contract-mismatch:computed"
+      ],
       "liftingFailureRefs": [
         "split-readiness:molecule-coupon-operation-contract"
       ],
@@ -2915,10 +3017,76 @@
         "obstruction:semantic-contract-mismatch:computed"
       ],
       "complexityTransferRefs": [
-        "may transfer obstruction into runtime behavior, ownership, or idempotency boundary"
+        "repair:obstruction-semantic-contract-mismatch-computed"
       ],
       "residualCoverageGapRefs": [
         "gap:coupon-runtime-payment-trace"
+      ],
+      "witnessBasis": [
+        {
+          "witnessRef": "gap:coupon-runtime-payment-trace",
+          "labels": [
+            "residualCoverageGap"
+          ],
+          "observationRefs": [
+            "gap:coupon-runtime-payment-trace"
+          ],
+          "sourceRefs": [
+            "src-pricing-checkout"
+          ],
+          "basisBoundary": "feature-extension basis is assembled from ArchMap observation refs and ArchSig witness refs, not text classification"
+        },
+        {
+          "witnessRef": "obstruction:semantic-contract-mismatch:computed",
+          "labels": [
+            "featureLocalObstruction",
+            "fillingFailure",
+            "inheritedCoreObstruction",
+            "interactionObstruction"
+          ],
+          "observationRefs": [
+            "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding",
+            "atom:semantic:PaymentAmount-ReceiptAmount-coupon-tax-rounding-noncommutation",
+            "molecule-reading:molecule-coupon-operation-contract",
+            "semantic:coupon-tax-rounding-paths"
+          ],
+          "sourceRefs": [
+            "src-pricing-checkout",
+            "test-coupon-rounding"
+          ],
+          "basisBoundary": "feature-extension basis is assembled from ArchMap observation refs and ArchSig witness refs, not text classification"
+        },
+        {
+          "witnessRef": "repair:obstruction-semantic-contract-mismatch-computed",
+          "labels": [
+            "complexityTransfer"
+          ],
+          "observationRefs": [
+            "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding",
+            "atom:semantic:PaymentAmount-ReceiptAmount-coupon-tax-rounding-noncommutation",
+            "molecule-reading:molecule-coupon-operation-contract",
+            "semantic:coupon-tax-rounding-paths"
+          ],
+          "sourceRefs": [
+            "src-pricing-checkout",
+            "test-coupon-rounding"
+          ],
+          "basisBoundary": "feature-extension basis is assembled from ArchMap observation refs and ArchSig witness refs, not text classification"
+        },
+        {
+          "witnessRef": "split-readiness:molecule-coupon-operation-contract",
+          "labels": [
+            "liftingFailure"
+          ],
+          "observationRefs": [
+            "molecule:coupon-operation-contract",
+            "obstruction:semantic-contract-mismatch:computed"
+          ],
+          "sourceRefs": [
+            "src-pricing-checkout"
+          ],
+          "basisBoundary": "feature-extension basis is assembled from ArchMap observation refs and ArchSig witness refs, not text classification"
+        }
       ],
       "classificationSummary": [
         {
@@ -2939,8 +3107,10 @@
         },
         {
           "axis": "interactionObstruction",
-          "status": "unmeasuredOrAbsent",
-          "refs": [],
+          "status": "observed",
+          "refs": [
+            "obstruction:semantic-contract-mismatch:computed"
+          ],
           "reading": "interactionObstruction is classified as a current-state extension coordinate"
         },
         {
@@ -2963,7 +3133,7 @@
           "axis": "complexityTransfer",
           "status": "observed",
           "refs": [
-            "may transfer obstruction into runtime behavior, ownership, or idempotency boundary"
+            "repair:obstruction-semantic-contract-mismatch-computed"
           ],
           "reading": "complexityTransfer is classified as a current-state extension coordinate"
         },
@@ -2976,7 +3146,7 @@
           "reading": "residualCoverageGap is classified as a current-state extension coordinate"
         }
       ],
-      "evidenceBoundary": "extension formula is computed over current ArchMap state, not an actual PR diff",
+      "evidenceBoundary": "extension formula is computed from witness refs over current ArchMap state, not text matching or an actual PR diff",
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -2993,15 +3163,15 @@
       "readingId": "operation-calculus-law:repair-obstruction-semantic-contract-mismatch-computed",
       "operationRef": "repair:obstruction-semantic-contract-mismatch-computed",
       "operationKind": "repair-semanticmismatchcircuit",
-      "compositionStatus": "assumptionRelative",
-      "associativityUnderObservationStatus": "selectedObservationOnly",
-      "refinementAbstractionCompatibility": "blockedByMissingEvidence",
+      "compositionStatus": "observed",
+      "associativityUnderObservationStatus": "observed",
+      "refinementAbstractionCompatibility": "blocked",
       "replacementEquivalence": "unmeasured",
       "protectionIdempotence": "notApplicable",
-      "runtimeLocalization": "blockedByCoverageGap",
+      "runtimeLocalization": "blocked",
       "migrationCompatibility": "notApplicable",
       "reverseInvolution": "unmeasured",
-      "repairMonotonicity": "selectedAxisOnly",
+      "repairMonotonicity": "blockedByTransferRisk",
       "synthesisNoSolutionBoundary": "notASynthesisCertificate",
       "preconditionRefs": [
         "human review selects a repair operation",
@@ -3010,6 +3180,169 @@
       "evidenceRefs": [
         "obstruction:semantic-contract-mismatch:computed",
         "preserve zero reading for sig-axis:layer-violation"
+      ],
+      "lawEvidence": [
+        {
+          "lawAxis": "composition",
+          "status": "observed",
+          "requiredEvidenceRefs": [
+            "operation support refs",
+            "operation precondition refs"
+          ],
+          "observedEvidenceRefs": [
+            "human review selects a repair operation",
+            "obstruction:semantic-contract-mismatch:computed",
+            "preserve zero reading for sig-axis:layer-violation",
+            "resolve or explicitly accept coverage gap gap:coupon-runtime-payment-trace"
+          ],
+          "blockedReasonRefs": [
+            "coverage:semantic-contract-atoms: report observation gap and block signature-zero reflection",
+            "gap:coupon-runtime-payment-trace: payment processor and receipt reconciliation traces are not included in the fixture",
+            "implementation patch and verification evidence are not supplied by ArchSig analysis",
+            "witness:semantic-contract-mismatch: report observation gap; do not infer measured zero"
+          ],
+          "exactnessAssumptionRefs": [
+            "exactness:operation-preconditions-observed"
+          ],
+          "reading": "composition is observed under selected operation evidence"
+        },
+        {
+          "lawAxis": "associativityUnderObservation",
+          "status": "observed",
+          "requiredEvidenceRefs": [
+            "operation delta support"
+          ],
+          "observedEvidenceRefs": [
+            "obstruction:semantic-contract-mismatch:computed",
+            "preserve zero reading for sig-axis:layer-violation"
+          ],
+          "blockedReasonRefs": [],
+          "exactnessAssumptionRefs": [],
+          "reading": "associativityUnderObservation is observed under selected operation evidence"
+        },
+        {
+          "lawAxis": "refinementAbstractionCompatibility",
+          "status": "blocked",
+          "requiredEvidenceRefs": [
+            "preserved invariant refs"
+          ],
+          "observedEvidenceRefs": [
+            "preserve zero reading for sig-axis:layer-violation"
+          ],
+          "blockedReasonRefs": [
+            "coverage:semantic-contract-atoms: report observation gap and block signature-zero reflection",
+            "gap:coupon-runtime-payment-trace: payment processor and receipt reconciliation traces are not included in the fixture",
+            "implementation patch and verification evidence are not supplied by ArchSig analysis",
+            "witness:semantic-contract-mismatch: report observation gap; do not infer measured zero"
+          ],
+          "exactnessAssumptionRefs": [
+            "exactness:operation-preconditions-observed"
+          ],
+          "reading": "refinementAbstractionCompatibility is blocked under selected operation evidence"
+        },
+        {
+          "lawAxis": "replacementEquivalence",
+          "status": "unmeasured",
+          "requiredEvidenceRefs": [
+            "before/after equivalence witness"
+          ],
+          "observedEvidenceRefs": [
+            "obstruction:semantic-contract-mismatch:computed"
+          ],
+          "blockedReasonRefs": [
+            "replacement-equivalence:witness-not-supplied"
+          ],
+          "exactnessAssumptionRefs": [
+            "exactness:replacement-equivalence"
+          ],
+          "reading": "replacementEquivalence is unmeasured under selected operation evidence"
+        },
+        {
+          "lawAxis": "protectionIdempotence",
+          "status": "notApplicable",
+          "requiredEvidenceRefs": [
+            "repeat protection witness"
+          ],
+          "observedEvidenceRefs": [
+            "human review selects a repair operation",
+            "resolve or explicitly accept coverage gap gap:coupon-runtime-payment-trace"
+          ],
+          "blockedReasonRefs": [],
+          "exactnessAssumptionRefs": [],
+          "reading": "protectionIdempotence is notApplicable under selected operation evidence"
+        },
+        {
+          "lawAxis": "runtimeLocalization",
+          "status": "blocked",
+          "requiredEvidenceRefs": [
+            "runtime/effect localization witness"
+          ],
+          "observedEvidenceRefs": [
+            "human review selects a repair operation",
+            "resolve or explicitly accept coverage gap gap:coupon-runtime-payment-trace"
+          ],
+          "blockedReasonRefs": [
+            "coverage:semantic-contract-atoms: report observation gap and block signature-zero reflection",
+            "gap:coupon-runtime-payment-trace: payment processor and receipt reconciliation traces are not included in the fixture",
+            "implementation patch and verification evidence are not supplied by ArchSig analysis",
+            "witness:semantic-contract-mismatch: report observation gap; do not infer measured zero"
+          ],
+          "exactnessAssumptionRefs": [
+            "exactness:operation-preconditions-observed"
+          ],
+          "reading": "runtimeLocalization is blocked under selected operation evidence"
+        },
+        {
+          "lawAxis": "migrationCompatibility",
+          "status": "notApplicable",
+          "requiredEvidenceRefs": [
+            "migration compatibility witness"
+          ],
+          "observedEvidenceRefs": [
+            "obstruction:semantic-contract-mismatch:computed",
+            "preserve zero reading for sig-axis:layer-violation"
+          ],
+          "blockedReasonRefs": [],
+          "exactnessAssumptionRefs": [],
+          "reading": "migrationCompatibility is notApplicable under selected operation evidence"
+        },
+        {
+          "lawAxis": "reverseInvolution",
+          "status": "unmeasured",
+          "requiredEvidenceRefs": [
+            "reverse operation witness"
+          ],
+          "observedEvidenceRefs": [
+            "obstruction:semantic-contract-mismatch:computed",
+            "preserve zero reading for sig-axis:layer-violation"
+          ],
+          "blockedReasonRefs": [
+            "reverse-involution:witness-not-supplied"
+          ],
+          "exactnessAssumptionRefs": [
+            "exactness:reverse-operation"
+          ],
+          "reading": "reverseInvolution is unmeasured under selected operation evidence"
+        },
+        {
+          "lawAxis": "repairMonotonicity",
+          "status": "blocked",
+          "requiredEvidenceRefs": [
+            "selected obstruction valuation",
+            "transfer risk refs"
+          ],
+          "observedEvidenceRefs": [
+            "obstruction:semantic-contract-mismatch:computed",
+            "sig-axis:semantic-inconsistency"
+          ],
+          "blockedReasonRefs": [
+            "may transfer obstruction into runtime behavior, ownership, or idempotency boundary"
+          ],
+          "exactnessAssumptionRefs": [
+            "exactness:selected-axis-only"
+          ],
+          "reading": "repairMonotonicity is blocked under selected operation evidence"
+        }
       ],
       "evidenceBoundary": "repair candidate is derived from ArchSig packet evidence, not an automatic patch",
       "nonConclusions": [
@@ -3297,6 +3630,7 @@
       "constraintRefs": [
         "obstruction:semantic-contract-mismatch:computed",
         "obstruction:semantic-contract-mismatch:computed",
+        "obstruction:semantic-contract-mismatch:computed",
         "split-readiness:molecule-coupon-operation-contract",
         "obstruction:semantic-contract-mismatch:computed",
         "gap:coupon-runtime-payment-trace",
@@ -3342,8 +3676,10 @@
         "coverage:semantic-contract-atoms: report observation gap and block signature-zero reflection",
         "gap:coupon-runtime-payment-trace: payment processor and receipt reconciliation traces are not included in the fixture",
         "implementation patch and verification evidence are not supplied by ArchSig analysis",
-        "witness:semantic-contract-mismatch: report observation gap; do not infer measured zero",
-        "resolve or explicitly accept coverage gap gap:coupon-runtime-payment-trace"
+        "may transfer obstruction into runtime behavior, ownership, or idempotency boundary",
+        "replacement-equivalence:witness-not-supplied",
+        "reverse-involution:witness-not-supplied",
+        "witness:semantic-contract-mismatch: report observation gap; do not infer measured zero"
       ],
       "coverageGapRefs": [
         "gap:coupon-runtime-payment-trace",
@@ -6572,8 +6908,8 @@
       "featureScopeRef": "coupon-tax-rounding-archmap:feature",
       "mixedSubconfigurationRefs": [
         "gap:coupon-runtime-payment-trace",
-        "may transfer obstruction into runtime behavior, ownership, or idempotency boundary",
         "obstruction:semantic-contract-mismatch:computed",
+        "repair:obstruction-semantic-contract-mismatch-computed",
         "split-readiness:molecule-coupon-operation-contract"
       ],
       "coreLocalReadingRefs": [
@@ -6584,8 +6920,8 @@
       ],
       "boundarySupportRefs": [
         "gap:coupon-runtime-payment-trace",
-        "may transfer obstruction into runtime behavior, ownership, or idempotency boundary",
         "obstruction:semantic-contract-mismatch:computed",
+        "repair:obstruction-semantic-contract-mismatch-computed",
         "split-readiness:molecule-coupon-operation-contract"
       ],
       "holonomyAxes": [
@@ -6637,8 +6973,8 @@
           "measuredDefectRefs": [],
           "supportRefs": [
             "gap:coupon-runtime-payment-trace",
-            "may transfer obstruction into runtime behavior, ownership, or idempotency boundary",
             "obstruction:semantic-contract-mismatch:computed",
+            "repair:obstruction-semantic-contract-mismatch-computed",
             "split-readiness:molecule-coupon-operation-contract"
           ],
           "missingEvidence": [
@@ -6670,8 +7006,8 @@
           "measuredDefectRefs": [],
           "supportRefs": [
             "gap:coupon-runtime-payment-trace",
-            "may transfer obstruction into runtime behavior, ownership, or idempotency boundary",
             "obstruction:semantic-contract-mismatch:computed",
+            "repair:obstruction-semantic-contract-mismatch-computed",
             "split-readiness:molecule-coupon-operation-contract"
           ],
           "missingEvidence": [
@@ -6689,8 +7025,8 @@
           "measuredDefectRefs": [],
           "supportRefs": [
             "gap:coupon-runtime-payment-trace",
-            "may transfer obstruction into runtime behavior, ownership, or idempotency boundary",
             "obstruction:semantic-contract-mismatch:computed",
+            "repair:obstruction-semantic-contract-mismatch-computed",
             "split-readiness:molecule-coupon-operation-contract"
           ],
           "missingEvidence": [
@@ -6715,10 +7051,10 @@
       ],
       "residualObstructionRefs": [
         "gap:coupon-runtime-payment-trace",
-        "may transfer obstruction into runtime behavior, ownership, or idempotency boundary",
         "mu:operation-square-operation-square-evidence-coupon-tax-rounding:effect",
         "mu:operation-square-operation-square-evidence-coupon-tax-rounding:semantic",
         "obstruction:semantic-contract-mismatch:computed",
+        "repair:obstruction-semantic-contract-mismatch-computed",
         "split-readiness:molecule-coupon-operation-contract"
       ],
       "supportSeparationPolicy": "core-local, feature-local, and mixed boundary support are separated as review attribution surfaces, not as a proved direct-sum decomposition",
@@ -6731,7 +7067,7 @@
         "ArchMapStore compaction boundary"
       ],
       "attributionPolicy": "multi-label attribution may name core, feature, boundary, law, and coverage contributors without selecting a single cause",
-      "coverageBoundary": "extension formula is computed over current ArchMap state, not an actual PR diff",
+      "coverageBoundary": "extension formula is computed from witness refs over current ArchMap state, not text matching or an actual PR diff",
       "exactnessBoundary": "Boundary(A,f) residual is measured over current ArchMap evidence and does not prove Ob(B)=Ob(A)+Ob(f)+Hol(Boundary(A,f))",
       "evidenceBoundary": "feature boundary residual is a bounded ArchSig review reading, not a theorem about feature safety or danger",
       "nonConclusions": [
@@ -6775,10 +7111,10 @@
           "refs": [
             "feature-boundary-residual:coupon-tax-rounding-archmap",
             "gap:coupon-runtime-payment-trace",
-            "may transfer obstruction into runtime behavior, ownership, or idempotency boundary",
             "mu:operation-square-operation-square-evidence-coupon-tax-rounding:effect",
             "mu:operation-square-operation-square-evidence-coupon-tax-rounding:semantic",
             "obstruction:semantic-contract-mismatch:computed",
+            "repair:obstruction-semantic-contract-mismatch-computed",
             "split-readiness:molecule-coupon-operation-contract"
           ],
           "reading": "boundaryHolonomy is classified as a current-state extension coordinate"
@@ -6803,7 +7139,7 @@
           "axis": "complexityTransfer",
           "status": "observed",
           "refs": [
-            "may transfer obstruction into runtime behavior, ownership, or idempotency boundary"
+            "repair:obstruction-semantic-contract-mismatch-computed"
           ],
           "reading": "complexityTransfer is classified as a current-state extension coordinate"
         },
@@ -6822,6 +7158,17 @@
           "labels": [
             "boundaryHolonomy"
           ],
+          "observationRefs": [
+            "gap:coupon-runtime-payment-trace",
+            "mu:operation-square-operation-square-evidence-coupon-tax-rounding:effect",
+            "mu:operation-square-operation-square-evidence-coupon-tax-rounding:semantic",
+            "obstruction:semantic-contract-mismatch:computed",
+            "repair:obstruction-semantic-contract-mismatch-computed",
+            "split-readiness:molecule-coupon-operation-contract"
+          ],
+          "sourceRefs": [
+            "src-pricing-checkout"
+          ],
           "inheritedCoreRefs": [],
           "featureLocalRefs": [],
           "boundaryHolonomyRefs": [
@@ -6839,6 +7186,17 @@
             "boundaryHolonomy",
             "residualCoverageGap"
           ],
+          "observationRefs": [
+            "gap:coupon-runtime-payment-trace",
+            "mu:operation-square-operation-square-evidence-coupon-tax-rounding:effect",
+            "mu:operation-square-operation-square-evidence-coupon-tax-rounding:semantic",
+            "obstruction:semantic-contract-mismatch:computed",
+            "repair:obstruction-semantic-contract-mismatch-computed",
+            "split-readiness:molecule-coupon-operation-contract"
+          ],
+          "sourceRefs": [
+            "src-pricing-checkout"
+          ],
           "inheritedCoreRefs": [],
           "featureLocalRefs": [],
           "boundaryHolonomyRefs": [
@@ -6853,28 +7211,20 @@
           "reading": "gap:coupon-runtime-payment-trace carries non-disjoint feature-extension labels [\"boundaryHolonomy\", \"residualCoverageGap\"]"
         },
         {
-          "witnessRef": "may transfer obstruction into runtime behavior, ownership, or idempotency boundary",
-          "labels": [
-            "boundaryHolonomy",
-            "complexityTransfer"
-          ],
-          "inheritedCoreRefs": [],
-          "featureLocalRefs": [],
-          "boundaryHolonomyRefs": [
-            "may transfer obstruction into runtime behavior, ownership, or idempotency boundary"
-          ],
-          "liftingFailureRefs": [],
-          "fillingFailureRefs": [],
-          "complexityTransferRefs": [
-            "may transfer obstruction into runtime behavior, ownership, or idempotency boundary"
-          ],
-          "residualCoverageGapRefs": [],
-          "reading": "may transfer obstruction into runtime behavior, ownership, or idempotency boundary carries non-disjoint feature-extension labels [\"boundaryHolonomy\", \"complexityTransfer\"]"
-        },
-        {
           "witnessRef": "mu:operation-square-operation-square-evidence-coupon-tax-rounding:effect",
           "labels": [
             "boundaryHolonomy"
+          ],
+          "observationRefs": [
+            "gap:coupon-runtime-payment-trace",
+            "mu:operation-square-operation-square-evidence-coupon-tax-rounding:effect",
+            "mu:operation-square-operation-square-evidence-coupon-tax-rounding:semantic",
+            "obstruction:semantic-contract-mismatch:computed",
+            "repair:obstruction-semantic-contract-mismatch-computed",
+            "split-readiness:molecule-coupon-operation-contract"
+          ],
+          "sourceRefs": [
+            "src-pricing-checkout"
           ],
           "inheritedCoreRefs": [],
           "featureLocalRefs": [],
@@ -6891,6 +7241,17 @@
           "witnessRef": "mu:operation-square-operation-square-evidence-coupon-tax-rounding:semantic",
           "labels": [
             "boundaryHolonomy"
+          ],
+          "observationRefs": [
+            "gap:coupon-runtime-payment-trace",
+            "mu:operation-square-operation-square-evidence-coupon-tax-rounding:effect",
+            "mu:operation-square-operation-square-evidence-coupon-tax-rounding:semantic",
+            "obstruction:semantic-contract-mismatch:computed",
+            "repair:obstruction-semantic-contract-mismatch-computed",
+            "split-readiness:molecule-coupon-operation-contract"
+          ],
+          "sourceRefs": [
+            "src-pricing-checkout"
           ],
           "inheritedCoreRefs": [],
           "featureLocalRefs": [],
@@ -6911,6 +7272,22 @@
             "fillingFailure",
             "inheritedCoreObstruction"
           ],
+          "observationRefs": [
+            "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding",
+            "atom:semantic:PaymentAmount-ReceiptAmount-coupon-tax-rounding-noncommutation",
+            "gap:coupon-runtime-payment-trace",
+            "molecule-reading:molecule-coupon-operation-contract",
+            "mu:operation-square-operation-square-evidence-coupon-tax-rounding:effect",
+            "mu:operation-square-operation-square-evidence-coupon-tax-rounding:semantic",
+            "obstruction:semantic-contract-mismatch:computed",
+            "repair:obstruction-semantic-contract-mismatch-computed",
+            "semantic:coupon-tax-rounding-paths",
+            "split-readiness:molecule-coupon-operation-contract"
+          ],
+          "sourceRefs": [
+            "src-pricing-checkout",
+            "test-coupon-rounding"
+          ],
           "inheritedCoreRefs": [
             "obstruction:semantic-contract-mismatch:computed"
           ],
@@ -6929,10 +7306,57 @@
           "reading": "obstruction:semantic-contract-mismatch:computed carries non-disjoint feature-extension labels [\"boundaryHolonomy\", \"featureLocalObstruction\", \"fillingFailure\", \"inheritedCoreObstruction\"]"
         },
         {
+          "witnessRef": "repair:obstruction-semantic-contract-mismatch-computed",
+          "labels": [
+            "boundaryHolonomy",
+            "complexityTransfer"
+          ],
+          "observationRefs": [
+            "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding",
+            "atom:semantic:PaymentAmount-ReceiptAmount-coupon-tax-rounding-noncommutation",
+            "gap:coupon-runtime-payment-trace",
+            "molecule-reading:molecule-coupon-operation-contract",
+            "mu:operation-square-operation-square-evidence-coupon-tax-rounding:effect",
+            "mu:operation-square-operation-square-evidence-coupon-tax-rounding:semantic",
+            "obstruction:semantic-contract-mismatch:computed",
+            "repair:obstruction-semantic-contract-mismatch-computed",
+            "semantic:coupon-tax-rounding-paths",
+            "split-readiness:molecule-coupon-operation-contract"
+          ],
+          "sourceRefs": [
+            "src-pricing-checkout",
+            "test-coupon-rounding"
+          ],
+          "inheritedCoreRefs": [],
+          "featureLocalRefs": [],
+          "boundaryHolonomyRefs": [
+            "repair:obstruction-semantic-contract-mismatch-computed"
+          ],
+          "liftingFailureRefs": [],
+          "fillingFailureRefs": [],
+          "complexityTransferRefs": [
+            "repair:obstruction-semantic-contract-mismatch-computed"
+          ],
+          "residualCoverageGapRefs": [],
+          "reading": "repair:obstruction-semantic-contract-mismatch-computed carries non-disjoint feature-extension labels [\"boundaryHolonomy\", \"complexityTransfer\"]"
+        },
+        {
           "witnessRef": "split-readiness:molecule-coupon-operation-contract",
           "labels": [
             "boundaryHolonomy",
             "liftingFailure"
+          ],
+          "observationRefs": [
+            "gap:coupon-runtime-payment-trace",
+            "molecule:coupon-operation-contract",
+            "mu:operation-square-operation-square-evidence-coupon-tax-rounding:effect",
+            "mu:operation-square-operation-square-evidence-coupon-tax-rounding:semantic",
+            "obstruction:semantic-contract-mismatch:computed",
+            "repair:obstruction-semantic-contract-mismatch-computed",
+            "split-readiness:molecule-coupon-operation-contract"
+          ],
+          "sourceRefs": [
+            "src-pricing-checkout"
           ],
           "inheritedCoreRefs": [],
           "featureLocalRefs": [],
@@ -6958,7 +7382,7 @@
         "obstruction:semantic-contract-mismatch:computed"
       ],
       "complexityTransferRefs": [
-        "may transfer obstruction into runtime behavior, ownership, or idempotency boundary"
+        "repair:obstruction-semantic-contract-mismatch-computed"
       ],
       "classificationBoundary": "feature-extension labels are intentionally non-disjoint; the same witness may carry inherited-core, feature-local, boundary-holonomy, lifting, filling, complexity-transfer, and coverage-gap labels",
       "fieldsigBoundary": "ArchSig reports current-state feature-extension attribution; FieldSig owns longitudinal evolution quality analysis",
@@ -6976,7 +7400,11 @@
   ],
   "monodromyReadingFamily": {
     "readingFamilyId": "monodromy-reading-family:measurement-policy-monodromy-boundary-holonomy",
-    "status": "schemaFoundationOnly",
+    "status": "partial",
+    "measuredAxisCount": 5,
+    "unmeasuredAxisCount": 3,
+    "positiveWitnessCount": 2,
+    "coverageBlockerCount": 9,
     "archMapStoreRefSetRef": "archmap-store-refs:coupon-tax-rounding-archmap",
     "selectedAxisRefs": [
       "axis:layer-violation",
@@ -7020,7 +7448,11 @@
   },
   "boundaryHolonomyReadingFamily": {
     "readingFamilyId": "boundary-holonomy-reading-family:measurement-policy-monodromy-boundary-holonomy",
-    "status": "schemaFoundationOnly",
+    "status": "partial",
+    "measuredAxisCount": 5,
+    "unmeasuredAxisCount": 3,
+    "positiveWitnessCount": 4,
+    "coverageBlockerCount": 10,
     "archMapStoreRefSetRef": "archmap-store-refs:coupon-tax-rounding-archmap",
     "selectedAxisRefs": [
       "axis:layer-violation",
@@ -7252,10 +7684,10 @@
       ]
     },
     {
-      "readingId": "representation-strength:analytic-spectral-radius-proxy",
-      "sourceReadingRef": "analytic:spectral-radius-proxy",
+      "readingId": "representation-strength:analytic-spectral-radius",
+      "sourceReadingRef": "analytic:spectral-radius",
       "representationFamily": "spectralRadius",
-      "zeroPreserving": "supported",
+      "zeroPreserving": "bounded",
       "zeroReflecting": "blockedByCoverageGap",
       "obstructionPreserving": "supported",
       "obstructionReflecting": "blockedByCoverageGap",
@@ -7373,6 +7805,39 @@
       ],
       "reading": "zeroReflectingAggregateBoundary is a bounded analytic representation; use its zero/obstruction readings only with the recorded strength boundary",
       "evidenceBoundary": "analytic value is relative to selected graph / matrix representation and is not a quality score",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    },
+    {
+      "readingId": "representation-strength:spectral-relation-atom-adjacency",
+      "sourceReadingRef": "spectral:relation-atom-adjacency",
+      "representationFamily": "relationAtomWeightedAdjacencyMatrix",
+      "zeroPreserving": "supported",
+      "zeroReflecting": "blockedByCoverageGap",
+      "obstructionPreserving": "weak",
+      "obstructionReflecting": "notAnEigenvalueTheorem",
+      "aggregateZeroSafety": "notAggregate",
+      "cancellationRisk": "finiteMatrixMayHideUnobservedComponents",
+      "requiredAssumptions": [
+        "gap:coupon-runtime-payment-trace",
+        "witness completeness for selected LawPolicy",
+        "signature axis exactness for selected readings"
+      ],
+      "blockedBy": [
+        "gap:coupon-runtime-payment-trace"
+      ],
+      "blockedReflectionOrPreservationReasons": [
+        "gap:coupon-runtime-payment-trace"
+      ],
+      "reading": "relationAtomWeightedAdjacencyMatrix is a finite selected relation-graph matrix reading; it preserves observed relation edges but does not reflect global architecture truth",
+      "evidenceBoundary": "observation gaps block measured-zero interpretation for absent relation edges",
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -7732,7 +8197,7 @@
   "structuralReadingReviewSurface": {
     "surfaceId": "aat-structural-reading-review-surface",
     "status": "needsReview",
-    "currentStateReading": "ArchSig reads current architecture state across Atom support and compatibility, LawUniverse coverage, feature extension coordinates, operation calculus laws, path signature trajectory, homotopy order sensitivity, diagram fillability, axis forgetting/projection fidelity, Atom origin closure, effect relation algebra, synthesis blockage, operation preconditions, path multiplicity, trajectory homotopy refutation, bridge split transfer, representation strength, local curvature, three-layer flatness, observation projection, state transition algebra, operation-invariant constraints, and split readiness; blockedRepresentations=14, curvatures=1, blockedOperations=1, splitBlockers=1, atomConflicts=0, unmeasuredRequiredLaws=1, blockedDiagrams=1, axisForgetting=1, projectionLoss=1, atomOriginDebt=1, effectRelationPressure=1, synthesisBlockage=1, operationPreconditionBlockers=1, pathMultiplicityLoss=1, homotopyRefutations=1, bridgeTransfers=1",
+    "currentStateReading": "ArchSig reads current architecture state across Atom support and compatibility, LawUniverse coverage, feature extension coordinates, operation calculus laws, path signature trajectory, homotopy order sensitivity, diagram fillability, axis forgetting/projection fidelity, Atom origin closure, effect relation algebra, synthesis blockage, operation preconditions, path multiplicity, trajectory homotopy refutation, bridge split transfer, representation strength, local curvature, three-layer flatness, observation projection, state transition algebra, operation-invariant constraints, and split readiness; blockedRepresentations=15, curvatures=1, blockedOperations=1, splitBlockers=1, atomConflicts=0, unmeasuredRequiredLaws=1, blockedDiagrams=1, axisForgetting=1, projectionLoss=1, atomOriginDebt=1, effectRelationPressure=1, synthesisBlockage=1, operationPreconditionBlockers=1, pathMultiplicityLoss=1, homotopyRefutations=1, bridgeTransfers=1",
     "connectedReadingRefs": [
       "representationStrength:weightedAdjacencyMatrix",
       "representationStrength:reachableConeSize",
@@ -8728,24 +9193,26 @@
       "sig-axis:semantic-inconsistency=1 (coverage-gap-preserved)"
     ],
     "analyticReadingsSummary": [
-      "weightedAdjacencyMatrix=7x7; edgeCount=0 (measured)",
-      "reachableConeSize=7 (measured)",
-      "walkCount=1 (measured)",
+      "weightedAdjacencyMatrix=0x0; edgeCount=0 (measured)",
+      "reachableConeSize=0 (measured)",
+      "walkCount=0 (measured)",
       "nilpotenceBoundary=blockedByCoverageGap (needsReview)",
-      "selectedSubgraphSpectrum=[0.000] (measured)",
+      "selectedSubgraphSpectrum=[unavailable] (measured)",
       "propagationDepth=0 (measured)",
-      "spectralRadius=0.000 (measured)",
+      "spectralRadius=unavailable (unavailable)",
       "curvatureValuation=1 (measured)",
       "stateAlgebra=state/effect algebra requires explicit state transition and runtime/effect atoms (unmeasured)",
       "zeroReflectingAggregateBoundary=blockedByObservationGaps (needsReview)"
     ],
     "spectralReadingsSummary": [
+      "relationAtomWeightedAdjacencyMatrix upperBound=unmeasured shape=0x0 (nonConclusion)",
       "workflowRiskAxisPressureMatrix upperBound=9.220 shape=1x5 (needsReview)",
       "moleculeAtomOverlapCouplingMatrix upperBound=3.000 shape=1x1 (needsReview)",
       "obstructionAxisCurvatureMatrix upperBound=1.000 shape=1x2 (actionable)",
       "operationSignatureDeltaMatrix upperBound=1.000 shape=1x2 (actionable)"
     ],
     "spectralModeSummary": [
+      "relationAtomWeightedAdjacencyMatrix boundedSpectralMode gap=0.000 localization=0.000 density=0.000 (nonConclusion)",
       "workflowRiskAxisPressureMatrix distributedPressureMode gap=8.185 localization=1.000 density=1.000 (needsReview)",
       "moleculeAtomOverlapCouplingMatrix delocalizedCouplingMode gap=3.000 localization=1.000 density=1.000 (needsReview)",
       "obstructionAxisCurvatureMatrix curvatureMode gap=1.000 localization=1.000 density=0.500 (actionable)",
@@ -8758,7 +9225,7 @@
       "curvature-support-reading:spectrum-profile-curvature-transfer-default supports=4 topModes=4 clusters=2 measuredAxes=1 unmeasuredAxes=2 (needsReview)"
     ],
     "curvatureTransferSummary": [
-      "curvature-transfer-reading:spectrum-profile-curvature-transfer-default edges=1 recurrentModes=1 rho=1 (needsReview)"
+      "curvature-transfer-reading:spectrum-profile-curvature-transfer-default edges=1 recurrentModes=1 rho=1.000 (needsReview)"
     ],
     "architectureSpectrumReportSummary": [
       "architecture-spectrum-report:spectrum-profile-curvature-transfer-default hotspots=4 recurrent=1 clusters=2 (needsReview)",
@@ -8782,10 +9249,10 @@
       "llm-native-aat-law-policy-fixture required=2 unmeasured=1 blockedWitnesses=2"
     ],
     "featureExtensionFormulaSummary": [
-      "feature-extension-formula:coupon-tax-rounding-archmap status=measured inherited=1 featureLocal=1 interaction=0 residualGaps=1"
+      "feature-extension-formula:coupon-tax-rounding-archmap status=measured inherited=1 featureLocal=1 interaction=1 residualGaps=1"
     ],
     "operationCalculusLawSummary": [
-      "repair:obstruction-semantic-contract-mismatch-computed kind=repair-semanticmismatchcircuit composition=assumptionRelative repairMonotonicity=selectedAxisOnly boundary=notASynthesisCertificate"
+      "repair:obstruction-semantic-contract-mismatch-computed kind=repair-semanticmismatchcircuit composition=observed repairMonotonicity=blockedByTransferRisk boundary=notASynthesisCertificate"
     ],
     "pathSignatureTrajectorySummary": [
       "operation-delta:repair-obstruction-semantic-contract-mismatch-computed status=candidateTrajectory endpointDeltas=1 nonMonotoneAxes=1 cost=support=1 transferred=1"
@@ -8809,10 +9276,10 @@
       "effect-relation-algebra:coupon-tax-rounding-archmap pressure=effectRelationPressureObserved generators=2 unresolved=1 externalBoundaries=0"
     ],
     "synthesisBlockageSummary": [
-      "synthesis-blockage:coupon-tax-rounding-archmap status=synthesisBlockedByMissingEvidenceOrConstraints targets=2 constraints=6 missing=5 noSolution=notASolverAndNotAbsenceProof"
+      "synthesis-blockage:coupon-tax-rounding-archmap status=synthesisBlockedByMissingEvidenceOrConstraints targets=2 constraints=7 missing=5 noSolution=notASolverAndNotAbsenceProof"
     ],
     "operationPreconditionReadinessSummary": [
-      "repair:obstruction-semantic-contract-mismatch-computed kind=repair-semanticmismatchcircuit status=blockedByMissingPreconditionEvidence missing=5 witnesses=2"
+      "repair:obstruction-semantic-contract-mismatch-computed kind=repair-semanticmismatchcircuit status=blockedByMissingPreconditionEvidence missing=7 witnesses=2"
     ],
     "pathMultiplicityLossSummary": [
       "coupon-tax-rounding-archmap status=reachabilityMultiplicityLossObserved paths=1 alternatePressure=8 fanIn=0 forgotten=1"
@@ -8844,6 +9311,7 @@
       "curvatureValuation zeroReflecting=blockedByCoverageGap obstructionReflecting=blockedByCoverageGap blockedBy=1",
       "stateAlgebra zeroReflecting=blockedByCoverageGap obstructionReflecting=blockedByCoverageGap blockedBy=1",
       "zeroReflectingAggregateBoundary zeroReflecting=blockedByCoverageGap obstructionReflecting=blockedByCoverageGap blockedBy=1",
+      "relationAtomWeightedAdjacencyMatrix zeroReflecting=blockedByCoverageGap obstructionReflecting=notAnEigenvalueTheorem blockedBy=1",
       "workflowRiskAxisPressureMatrix zeroReflecting=blockedByCoverageGap obstructionReflecting=notAnEigenvalueTheorem blockedBy=1",
       "moleculeAtomOverlapCouplingMatrix zeroReflecting=blockedByCoverageGap obstructionReflecting=notAnEigenvalueTheorem blockedBy=1",
       "obstructionAxisCurvatureMatrix zeroReflecting=blockedByCoverageGap obstructionReflecting=notAnEigenvalueTheorem blockedBy=1",
@@ -8869,7 +9337,7 @@
     ],
     "structuralReadingReviewSummary": [
       "aat-structural-reading-review-surface status=needsReview refs=30 focus=16",
-      "ArchSig reads current architecture state across Atom support and compatibility, LawUniverse coverage, feature extension coordinates, operation calculus laws, path signature trajectory, homotopy order sensitivity, diagram fillability, axis forgetting/projection fidelity, Atom origin closure, effect relation algebra, synthesis blockage, operation preconditions, path multiplicity, trajectory homotopy refutation, bridge split transfer, representation strength, local curvature, three-layer flatness, observation projection, state transition algebra, operation-invariant constraints, and split readiness; blockedRepresentations=14, curvatures=1, blockedOperations=1, splitBlockers=1, atomConflicts=0, unmeasuredRequiredLaws=1, blockedDiagrams=1, axisForgetting=1, projectionLoss=1, atomOriginDebt=1, effectRelationPressure=1, synthesisBlockage=1, operationPreconditionBlockers=1, pathMultiplicityLoss=1, homotopyRefutations=1, bridgeTransfers=1"
+      "ArchSig reads current architecture state across Atom support and compatibility, LawUniverse coverage, feature extension coordinates, operation calculus laws, path signature trajectory, homotopy order sensitivity, diagram fillability, axis forgetting/projection fidelity, Atom origin closure, effect relation algebra, synthesis blockage, operation preconditions, path multiplicity, trajectory homotopy refutation, bridge split transfer, representation strength, local curvature, three-layer flatness, observation projection, state transition algebra, operation-invariant constraints, and split readiness; blockedRepresentations=15, curvatures=1, blockedOperations=1, splitBlockers=1, atomConflicts=0, unmeasuredRequiredLaws=1, blockedDiagrams=1, axisForgetting=1, projectionLoss=1, atomOriginDebt=1, effectRelationPressure=1, synthesisBlockage=1, operationPreconditionBlockers=1, pathMultiplicityLoss=1, homotopyRefutations=1, bridgeTransfers=1"
     ],
     "currentStateEvolutionBoundarySummary": [
       "ArchSig computes current AAT structural state from ArchMap coupon-tax-rounding-archmap and LawPolicy llm-native-aat-law-policy-fixture; it reads atoms, molecules, laws, obstructions, bridge pressure, structural readings, and bounded review focus",

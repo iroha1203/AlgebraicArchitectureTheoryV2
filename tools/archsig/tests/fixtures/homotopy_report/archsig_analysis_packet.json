@@ -386,7 +386,7 @@
         "analytic:nilpotence-boundary",
         "analytic:selected-subgraph-spectrum",
         "analytic:propagation-depth",
-        "analytic:spectral-radius-proxy",
+        "analytic:spectral-radius",
         "analytic:curvature-valuation",
         "analytic:state-algebra-boundary",
         "analytic:zero-reflecting-aggregate-boundary"
@@ -656,19 +656,66 @@
       "representationFamily": "weightedAdjacencyMatrix",
       "status": "measured",
       "valueType": "matrixShape",
-      "value": "9x9; edgeCount=2",
+      "value": "3x3; edgeCount=2",
+      "selectedGraphNodes": [
+        "CacheOrder",
+        "OrderView",
+        "RepositoryOrder"
+      ],
+      "selectedGraphEdges": [
+        {
+          "edgeRef": "relation-edge:atom-cache-read:cacheorder:orderview",
+          "sourceRef": "CacheOrder",
+          "targetRef": "OrderView",
+          "weight": 1,
+          "relationAtomRef": "atom:cache-read",
+          "sourceRefs": [
+            "src-cache-read"
+          ]
+        },
+        {
+          "edgeRef": "relation-edge:atom-repository-read:repositoryorder:orderview",
+          "sourceRef": "RepositoryOrder",
+          "targetRef": "OrderView",
+          "weight": 1,
+          "relationAtomRef": "atom:repository-read",
+          "sourceRefs": [
+            "src-repository-read"
+          ]
+        }
+      ],
+      "sparseMatrixEntries": [
+        {
+          "rowRef": "CacheOrder",
+          "columnRef": "OrderView",
+          "value": 1,
+          "evidenceRefs": [
+            "atom:cache-read",
+            "src-cache-read"
+          ]
+        },
+        {
+          "rowRef": "RepositoryOrder",
+          "columnRef": "OrderView",
+          "value": 1,
+          "evidenceRefs": [
+            "atom:repository-read",
+            "src-repository-read"
+          ]
+        }
+      ],
+      "walkWitnessRefs": [
+        "walk:cacheorder:1:orderview",
+        "walk:repositoryorder:1:orderview"
+      ],
       "graphScopeRefs": [
         "atom:cache-read",
-        "atom:repository-read",
-        "atom:event-projection",
-        "atom:retry-idempotency",
-        "atom:authorization-bypass",
-        "atom:coupon-tax-rounding"
+        "atom:repository-read"
       ],
       "axisRefs": [
         "sig-axis:homotopy-report-fixture"
       ],
-      "reading": "selected relation atoms induce a bounded weighted adjacency representation",
+      "reading": "selected relation atoms induce a bounded weighted adjacency representation with traceable sparse matrix entries",
       "coverageBoundary": "analytic value is relative to selected graph / matrix representation and is not a quality score",
       "zeroReflectingBoundary": "zero reflects only the selected representation when coverage and exactness assumptions hold",
       "nonConclusions": [
@@ -686,19 +733,66 @@
       "representationFamily": "reachableConeSize",
       "status": "measured",
       "valueType": "nat",
-      "value": "11",
+      "value": "2",
+      "selectedGraphNodes": [
+        "CacheOrder",
+        "OrderView",
+        "RepositoryOrder"
+      ],
+      "selectedGraphEdges": [
+        {
+          "edgeRef": "relation-edge:atom-cache-read:cacheorder:orderview",
+          "sourceRef": "CacheOrder",
+          "targetRef": "OrderView",
+          "weight": 1,
+          "relationAtomRef": "atom:cache-read",
+          "sourceRefs": [
+            "src-cache-read"
+          ]
+        },
+        {
+          "edgeRef": "relation-edge:atom-repository-read:repositoryorder:orderview",
+          "sourceRef": "RepositoryOrder",
+          "targetRef": "OrderView",
+          "weight": 1,
+          "relationAtomRef": "atom:repository-read",
+          "sourceRefs": [
+            "src-repository-read"
+          ]
+        }
+      ],
+      "sparseMatrixEntries": [
+        {
+          "rowRef": "CacheOrder",
+          "columnRef": "OrderView",
+          "value": 1,
+          "evidenceRefs": [
+            "atom:cache-read",
+            "src-cache-read"
+          ]
+        },
+        {
+          "rowRef": "RepositoryOrder",
+          "columnRef": "OrderView",
+          "value": 1,
+          "evidenceRefs": [
+            "atom:repository-read",
+            "src-repository-read"
+          ]
+        }
+      ],
+      "walkWitnessRefs": [
+        "walk:cacheorder:1:orderview",
+        "walk:repositoryorder:1:orderview"
+      ],
       "graphScopeRefs": [
         "atom:cache-read",
-        "atom:repository-read",
-        "atom:event-projection",
-        "atom:retry-idempotency",
-        "atom:authorization-bypass",
-        "atom:coupon-tax-rounding"
+        "atom:repository-read"
       ],
       "axisRefs": [
         "sig-axis:homotopy-report-fixture"
       ],
-      "reading": "reachable cone is a bounded graph proxy over observed object refs and relation atoms",
+      "reading": "reachable cone is computed by finite graph traversal over selected relation atoms",
       "coverageBoundary": "analytic value is relative to selected graph / matrix representation and is not a quality score",
       "zeroReflectingBoundary": "zero reflects only the selected representation when coverage and exactness assumptions hold",
       "nonConclusions": [
@@ -716,19 +810,66 @@
       "representationFamily": "walkCount",
       "status": "measured",
       "valueType": "nat",
-      "value": "3",
+      "value": "2",
+      "selectedGraphNodes": [
+        "CacheOrder",
+        "OrderView",
+        "RepositoryOrder"
+      ],
+      "selectedGraphEdges": [
+        {
+          "edgeRef": "relation-edge:atom-cache-read:cacheorder:orderview",
+          "sourceRef": "CacheOrder",
+          "targetRef": "OrderView",
+          "weight": 1,
+          "relationAtomRef": "atom:cache-read",
+          "sourceRefs": [
+            "src-cache-read"
+          ]
+        },
+        {
+          "edgeRef": "relation-edge:atom-repository-read:repositoryorder:orderview",
+          "sourceRef": "RepositoryOrder",
+          "targetRef": "OrderView",
+          "weight": 1,
+          "relationAtomRef": "atom:repository-read",
+          "sourceRefs": [
+            "src-repository-read"
+          ]
+        }
+      ],
+      "sparseMatrixEntries": [
+        {
+          "rowRef": "CacheOrder",
+          "columnRef": "OrderView",
+          "value": 1,
+          "evidenceRefs": [
+            "atom:cache-read",
+            "src-cache-read"
+          ]
+        },
+        {
+          "rowRef": "RepositoryOrder",
+          "columnRef": "OrderView",
+          "value": 1,
+          "evidenceRefs": [
+            "atom:repository-read",
+            "src-repository-read"
+          ]
+        }
+      ],
+      "walkWitnessRefs": [
+        "walk:cacheorder:1:orderview",
+        "walk:repositoryorder:1:orderview"
+      ],
       "graphScopeRefs": [
         "atom:cache-read",
-        "atom:repository-read",
-        "atom:event-projection",
-        "atom:retry-idempotency",
-        "atom:authorization-bypass",
-        "atom:coupon-tax-rounding"
+        "atom:repository-read"
       ],
       "axisRefs": [
         "sig-axis:homotopy-report-fixture"
       ],
-      "reading": "walk count is a bounded proxy from observed relation atoms and molecule paths",
+      "reading": "walk count enumerates selected relation-graph walks up to length 3",
       "coverageBoundary": "analytic value is relative to selected graph / matrix representation and is not a quality score",
       "zeroReflectingBoundary": "zero reflects only the selected representation when coverage and exactness assumptions hold",
       "nonConclusions": [
@@ -747,18 +888,62 @@
       "status": "needsReview",
       "valueType": "boundaryStatus",
       "value": "blockedByCoverageGap",
-      "graphScopeRefs": [
-        "atom:cache-read",
-        "atom:repository-read",
-        "atom:event-projection",
-        "atom:retry-idempotency",
-        "atom:authorization-bypass",
-        "atom:coupon-tax-rounding"
+      "selectedGraphNodes": [
+        "CacheOrder",
+        "OrderView",
+        "RepositoryOrder"
       ],
+      "selectedGraphEdges": [
+        {
+          "edgeRef": "relation-edge:atom-cache-read:cacheorder:orderview",
+          "sourceRef": "CacheOrder",
+          "targetRef": "OrderView",
+          "weight": 1,
+          "relationAtomRef": "atom:cache-read",
+          "sourceRefs": [
+            "src-cache-read"
+          ]
+        },
+        {
+          "edgeRef": "relation-edge:atom-repository-read:repositoryorder:orderview",
+          "sourceRef": "RepositoryOrder",
+          "targetRef": "OrderView",
+          "weight": 1,
+          "relationAtomRef": "atom:repository-read",
+          "sourceRefs": [
+            "src-repository-read"
+          ]
+        }
+      ],
+      "sparseMatrixEntries": [
+        {
+          "rowRef": "CacheOrder",
+          "columnRef": "OrderView",
+          "value": 1,
+          "evidenceRefs": [
+            "atom:cache-read",
+            "src-cache-read"
+          ]
+        },
+        {
+          "rowRef": "RepositoryOrder",
+          "columnRef": "OrderView",
+          "value": 1,
+          "evidenceRefs": [
+            "atom:repository-read",
+            "src-repository-read"
+          ]
+        }
+      ],
+      "walkWitnessRefs": [
+        "walk:cacheorder:1:orderview",
+        "walk:repositoryorder:1:orderview"
+      ],
+      "graphScopeRefs": [],
       "axisRefs": [
         "sig-axis:homotopy-report-fixture"
       ],
-      "reading": "nilpotence is represented as a boundary condition, not folded into Decomposable or global acyclicity",
+      "reading": "nilpotence is read from cycle detection in the selected finite relation graph, not folded into Decomposable or global acyclicity",
       "coverageBoundary": "analytic value is relative to selected graph / matrix representation and is not a quality score",
       "zeroReflectingBoundary": "zero reflects only the selected representation when coverage and exactness assumptions hold",
       "nonConclusions": [
@@ -776,19 +961,66 @@
       "representationFamily": "selectedSubgraphSpectrum",
       "status": "measured",
       "valueType": "vector",
-      "value": "[0.222]",
+      "value": "[0.000]",
+      "selectedGraphNodes": [
+        "CacheOrder",
+        "OrderView",
+        "RepositoryOrder"
+      ],
+      "selectedGraphEdges": [
+        {
+          "edgeRef": "relation-edge:atom-cache-read:cacheorder:orderview",
+          "sourceRef": "CacheOrder",
+          "targetRef": "OrderView",
+          "weight": 1,
+          "relationAtomRef": "atom:cache-read",
+          "sourceRefs": [
+            "src-cache-read"
+          ]
+        },
+        {
+          "edgeRef": "relation-edge:atom-repository-read:repositoryorder:orderview",
+          "sourceRef": "RepositoryOrder",
+          "targetRef": "OrderView",
+          "weight": 1,
+          "relationAtomRef": "atom:repository-read",
+          "sourceRefs": [
+            "src-repository-read"
+          ]
+        }
+      ],
+      "sparseMatrixEntries": [
+        {
+          "rowRef": "CacheOrder",
+          "columnRef": "OrderView",
+          "value": 1,
+          "evidenceRefs": [
+            "atom:cache-read",
+            "src-cache-read"
+          ]
+        },
+        {
+          "rowRef": "RepositoryOrder",
+          "columnRef": "OrderView",
+          "value": 1,
+          "evidenceRefs": [
+            "atom:repository-read",
+            "src-repository-read"
+          ]
+        }
+      ],
+      "walkWitnessRefs": [
+        "walk:cacheorder:1:orderview",
+        "walk:repositoryorder:1:orderview"
+      ],
       "graphScopeRefs": [
         "atom:cache-read",
-        "atom:repository-read",
-        "atom:event-projection",
-        "atom:retry-idempotency",
-        "atom:authorization-bypass",
-        "atom:coupon-tax-rounding"
+        "atom:repository-read"
       ],
       "axisRefs": [
         "sig-axis:homotopy-report-fixture"
       ],
-      "reading": "selected subgraph spectrum records the bounded spectrum vector for the observed relation subgraph",
+      "reading": "selected subgraph spectrum is estimated from power iteration over the finite nonnegative adjacency matrix",
       "coverageBoundary": "analytic value is relative to selected graph / matrix representation and is not a quality score",
       "zeroReflectingBoundary": "zero reflects only the selected representation when coverage and exactness assumptions hold",
       "nonConclusions": [
@@ -807,13 +1039,60 @@
       "status": "measured",
       "valueType": "nat",
       "value": "1",
+      "selectedGraphNodes": [
+        "CacheOrder",
+        "OrderView",
+        "RepositoryOrder"
+      ],
+      "selectedGraphEdges": [
+        {
+          "edgeRef": "relation-edge:atom-cache-read:cacheorder:orderview",
+          "sourceRef": "CacheOrder",
+          "targetRef": "OrderView",
+          "weight": 1,
+          "relationAtomRef": "atom:cache-read",
+          "sourceRefs": [
+            "src-cache-read"
+          ]
+        },
+        {
+          "edgeRef": "relation-edge:atom-repository-read:repositoryorder:orderview",
+          "sourceRef": "RepositoryOrder",
+          "targetRef": "OrderView",
+          "weight": 1,
+          "relationAtomRef": "atom:repository-read",
+          "sourceRefs": [
+            "src-repository-read"
+          ]
+        }
+      ],
+      "sparseMatrixEntries": [
+        {
+          "rowRef": "CacheOrder",
+          "columnRef": "OrderView",
+          "value": 1,
+          "evidenceRefs": [
+            "atom:cache-read",
+            "src-cache-read"
+          ]
+        },
+        {
+          "rowRef": "RepositoryOrder",
+          "columnRef": "OrderView",
+          "value": 1,
+          "evidenceRefs": [
+            "atom:repository-read",
+            "src-repository-read"
+          ]
+        }
+      ],
+      "walkWitnessRefs": [
+        "walk:cacheorder:1:orderview",
+        "walk:repositoryorder:1:orderview"
+      ],
       "graphScopeRefs": [
         "atom:cache-read",
-        "atom:repository-read",
-        "atom:event-projection",
-        "atom:retry-idempotency",
-        "atom:authorization-bypass",
-        "atom:coupon-tax-rounding"
+        "atom:repository-read"
       ],
       "axisRefs": [
         "sig-axis:homotopy-report-fixture"
@@ -832,23 +1111,70 @@
       ]
     },
     {
-      "representationId": "analytic:spectral-radius-proxy",
+      "representationId": "analytic:spectral-radius",
       "representationFamily": "spectralRadius",
       "status": "measured",
       "valueType": "float",
-      "value": "0.222",
+      "value": "0.000",
+      "selectedGraphNodes": [
+        "CacheOrder",
+        "OrderView",
+        "RepositoryOrder"
+      ],
+      "selectedGraphEdges": [
+        {
+          "edgeRef": "relation-edge:atom-cache-read:cacheorder:orderview",
+          "sourceRef": "CacheOrder",
+          "targetRef": "OrderView",
+          "weight": 1,
+          "relationAtomRef": "atom:cache-read",
+          "sourceRefs": [
+            "src-cache-read"
+          ]
+        },
+        {
+          "edgeRef": "relation-edge:atom-repository-read:repositoryorder:orderview",
+          "sourceRef": "RepositoryOrder",
+          "targetRef": "OrderView",
+          "weight": 1,
+          "relationAtomRef": "atom:repository-read",
+          "sourceRefs": [
+            "src-repository-read"
+          ]
+        }
+      ],
+      "sparseMatrixEntries": [
+        {
+          "rowRef": "CacheOrder",
+          "columnRef": "OrderView",
+          "value": 1,
+          "evidenceRefs": [
+            "atom:cache-read",
+            "src-cache-read"
+          ]
+        },
+        {
+          "rowRef": "RepositoryOrder",
+          "columnRef": "OrderView",
+          "value": 1,
+          "evidenceRefs": [
+            "atom:repository-read",
+            "src-repository-read"
+          ]
+        }
+      ],
+      "walkWitnessRefs": [
+        "walk:cacheorder:1:orderview",
+        "walk:repositoryorder:1:orderview"
+      ],
       "graphScopeRefs": [
         "atom:cache-read",
-        "atom:repository-read",
-        "atom:event-projection",
-        "atom:retry-idempotency",
-        "atom:authorization-bypass",
-        "atom:coupon-tax-rounding"
+        "atom:repository-read"
       ],
       "axisRefs": [
         "sig-axis:homotopy-report-fixture"
       ],
-      "reading": "spectral radius is represented as a bounded proxy until full matrix extraction is supplied",
+      "reading": "spectral radius is estimated from the selected finite nonnegative adjacency matrix under bounded iteration",
       "coverageBoundary": "analytic value is relative to selected graph / matrix representation and is not a quality score",
       "zeroReflectingBoundary": "zero reflects only the selected representation when coverage and exactness assumptions hold",
       "nonConclusions": [
@@ -867,6 +1193,10 @@
       "status": "measured",
       "valueType": "nat",
       "value": "1",
+      "selectedGraphNodes": [],
+      "selectedGraphEdges": [],
+      "sparseMatrixEntries": [],
+      "walkWitnessRefs": [],
       "graphScopeRefs": [
         "obstruction:homotopy-report-fixture:computed"
       ],
@@ -892,6 +1222,10 @@
       "status": "needsReview",
       "valueType": "boundaryStatus",
       "value": "state/effect algebra requires explicit state transition and runtime/effect atoms",
+      "selectedGraphNodes": [],
+      "selectedGraphEdges": [],
+      "sparseMatrixEntries": [],
+      "walkWitnessRefs": [],
       "graphScopeRefs": [
         "atom:cache-read",
         "atom:repository-read",
@@ -922,6 +1256,10 @@
       "status": "needsReview",
       "valueType": "boundaryStatus",
       "value": "blockedByObservationGaps",
+      "selectedGraphNodes": [],
+      "selectedGraphEdges": [],
+      "sparseMatrixEntries": [],
+      "walkWitnessRefs": [],
       "graphScopeRefs": [
         "gap:path-rule:authorization-bypass-hole:missing-policy-test"
       ],
@@ -1224,6 +1562,73 @@
   ],
   "spectralAnalysisReadings": [
     {
+      "spectralReadingId": "spectral:relation-atom-adjacency",
+      "representationFamily": "relationAtomWeightedAdjacencyMatrix",
+      "status": "needsReview",
+      "matrixShape": {
+        "rowDomain": "selectedRelationGraphNodes",
+        "columnDomain": "selectedRelationGraphNodes",
+        "rowCount": 3,
+        "columnCount": 3,
+        "nonzeroEntryCount": 2
+      },
+      "entryRule": "entry(i,j) is the number of selected relation atom endpoints from node i to node j",
+      "valueType": "boundedSpectralProxy",
+      "values": [
+        {
+          "name": "maxRowSum",
+          "value": "1",
+          "interpretation": "largest outgoing relation weight"
+        },
+        {
+          "name": "maxColumnSum",
+          "value": "2",
+          "interpretation": "largest incoming relation weight"
+        },
+        {
+          "name": "frobeniusNorm",
+          "value": "1.414",
+          "interpretation": "finite weighted adjacency matrix norm over selected relation atoms"
+        },
+        {
+          "name": "spectralRadius",
+          "value": "0.000",
+          "interpretation": "power-iteration estimate over the finite nonnegative relation adjacency matrix"
+        }
+      ],
+      "dominantComponents": [
+        {
+          "componentRef": "RepositoryOrder",
+          "componentKind": "relationGraphSourceNode",
+          "value": "1",
+          "reading": "largest outgoing weighted adjacency row in the selected relation graph"
+        },
+        {
+          "componentRef": "OrderView",
+          "componentKind": "relationGraphTargetNode",
+          "value": "2",
+          "reading": "largest incoming weighted adjacency column in the selected relation graph"
+        }
+      ],
+      "supportRefs": [
+        "atom:cache-read",
+        "atom:repository-read"
+      ],
+      "reading": "AAT analytic graph reading is computed from selected relation atom endpoints as a finite weighted adjacency matrix",
+      "coverageBoundary": "observation gaps block measured-zero interpretation for absent relation edges",
+      "zeroReflectingBoundary": "zero entries mean no selected relation atom endpoint under the current ArchMap, not proof of independence",
+      "recommendedNextAction": "inspect dominant source/target nodes, cycle readings, and coverage gaps before selecting repair operations",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    },
+    {
       "spectralReadingId": "spectral:workflow-risk-axis-pressure",
       "representationFamily": "workflowRiskAxisPressureMatrix",
       "status": "needsReview",
@@ -1479,6 +1884,57 @@
   ],
   "spectralModeReadings": [
     {
+      "spectralModeId": "spectral-mode:spectral-relation-atom-adjacency",
+      "sourceSpectralReadingRef": "spectral:relation-atom-adjacency",
+      "representationFamily": "relationAtomWeightedAdjacencyMatrix",
+      "status": "needsReview",
+      "modeKind": "boundedSpectralMode",
+      "modeComponents": [
+        {
+          "componentRef": "RepositoryOrder",
+          "componentKind": "relationGraphSourceNode",
+          "weight": "1",
+          "role": "primaryDominantComponent",
+          "reading": "largest outgoing weighted adjacency row in the selected relation graph"
+        },
+        {
+          "componentRef": "OrderView",
+          "componentKind": "relationGraphTargetNode",
+          "weight": "2",
+          "role": "coupledDominantComponent",
+          "reading": "largest incoming weighted adjacency column in the selected relation graph"
+        }
+      ],
+      "spectralGapProxy": {
+        "name": "dominantResidualGapProxy",
+        "value": "0.000",
+        "interpretation": "dominant component magnitude minus residual Frobenius mass; bounded proxy, not an eigenvalue gap theorem"
+      },
+      "localizationIndex": {
+        "name": "dominantFrobeniusLocalization",
+        "value": "0.707",
+        "interpretation": "dominant component magnitude divided by Frobenius norm; higher means pressure is more localized"
+      },
+      "matrixDensity": {
+        "name": "nonzeroMatrixDensity",
+        "value": "0.222",
+        "interpretation": "nonzero entries divided by finite matrix capacity; higher means more distributed coupling"
+      },
+      "decomposabilityReading": "mode is relatively localized; decomposition or targeted repair may be reviewable as a local operation",
+      "repairPerturbationReading": "not an operation transition matrix; use this mode to choose review focus before evaluating repair perturbations",
+      "evidenceBoundary": "spectral mode is a bounded proxy computed from ArchSig finite representation summaries, not an exact eigenvector theorem",
+      "recommendedNextAction": "review dominant components and evidence boundaries before drawing architectural conclusions",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    },
+    {
       "spectralModeId": "spectral-mode:spectral-workflow-risk-axis-pressure",
       "sourceSpectralReadingRef": "spectral:workflow-risk-axis-pressure",
       "representationFamily": "workflowRiskAxisPressureMatrix",
@@ -1681,6 +2137,7 @@
       "drilldownId": "spectral-drilldown:homotopy-report-fixture-archmap",
       "status": "needsReview",
       "sourceSpectralModeRefs": [
+        "spectral-mode:spectral-relation-atom-adjacency",
         "spectral-mode:spectral-workflow-risk-axis-pressure",
         "spectral-mode:spectral-molecule-atom-overlap-coupling",
         "spectral-mode:spectral-obstruction-axis-curvature",
@@ -1953,7 +2410,7 @@
       "readingId": "curvature-transfer-reading:spectrum-profile-homotopy-report-fixture",
       "profileRef": "spectrum-profile:homotopy-report-fixture",
       "status": "needsReview",
-      "measurementStatus": "proxy",
+      "measurementStatus": "measured",
       "readingBoundary": {
         "readingStrength": "boundedMeasuredWithProxyTransfer",
         "zeroReflectionAssumptions": [
@@ -1991,14 +2448,18 @@
               "atom:cache-read",
               "atom:coupon-tax-rounding",
               "atom:repository-read",
-              "molecule-reading:molecule-homotopy-report-fixture"
+              "molecule-reading:molecule-homotopy-report-fixture",
+              "relation-edge:atom-cache-read:cacheorder:orderview",
+              "relation-edge:atom-repository-read:repositoryorder:orderview",
+              "src-cache-read",
+              "src-repository-read"
             ]
           }
         ],
         "rowCount": 1,
         "columnCount": 1,
         "nonzeroEdgeCount": 1,
-        "entryRule": "entry(i,j) is positive when measured curvature support i can transfer review pressure to support j under shared selected-axis or shared support evidence",
+        "entryRule": "entry(i,j) is positive when measured curvature support i can transfer review pressure to support j through selected relation-graph evidence or shared selected-axis evidence",
         "spectralRadiusKind": "finiteNonnegativeOperatorBoundedClosedWalkRadius",
         "reading": "finite nonnegative transfer operator over measured curvature supports; absent edges are unmeasured, not proof of independence"
       },
@@ -2025,9 +2486,13 @@
             "atom:cache-read",
             "atom:coupon-tax-rounding",
             "atom:repository-read",
-            "molecule-reading:molecule-homotopy-report-fixture"
+            "molecule-reading:molecule-homotopy-report-fixture",
+            "relation-edge:atom-cache-read:cacheorder:orderview",
+            "relation-edge:atom-repository-read:repositoryorder:orderview",
+            "src-cache-read",
+            "src-repository-read"
           ],
-          "extractionRule": "same-selected-axis",
+          "extractionRule": "selected-relation-graph",
           "closedWalkKind": "selfLoop",
           "reading": "positive self-loop records a closed walk in the finite transfer operator"
         }
@@ -2046,7 +2511,7 @@
             "witness:homotopy-report-fixture"
           ],
           "cycleWeight": 1,
-          "spectralRadiusReading": "rho(T^kappa) proxy bounded closed-walk radius 1 > 0 over the finite ArchSig transfer operator",
+          "spectralRadiusReading": "rho(T^kappa) finite-matrix estimate 1.000 > 0 over the finite ArchSig transfer operator",
           "recurrentObstructionReading": "positive closed walk is reported as recurrent obstruction support only",
           "reviewFocus": [
             "inspect the witness support behind the positive transfer self-loop",
@@ -2060,9 +2525,9 @@
         }
       ],
       "spectralRadiusReading": {
-        "name": "rho(T^kappa)Proxy",
-        "value": "1",
-        "interpretation": "positive proxy is read only as recurrent obstruction support in the finite ArchSig transfer operator, not future incident probability"
+        "name": "rho(T^kappa)",
+        "value": "1.000",
+        "interpretation": "positive value is computed from the finite ArchSig transfer operator and read only as recurrent obstruction support, not future incident probability"
       },
       "coverageBoundary": "missing coverage blocks spectrum zero reflection and remains a report gap",
       "evidenceBoundary": "transfer operator is computed from measured curvature support rows and does not forecast future cost, safety, or amplification",
@@ -2181,7 +2646,7 @@
     "recurrentObstructions": [
       {
         "modeRef": "recurrent-obstruction:curvature-transfer-edge-curvature-support-witness-homotopy-report-fixture-axis-homotopy-report-fixture-curvature-support-witness-homotopy-report-fixture-axis-homotopy-report-fixture",
-        "spectralRadiusReading": "rho(T^kappa) proxy bounded closed-walk radius 1 > 0 over the finite ArchSig transfer operator",
+        "spectralRadiusReading": "rho(T^kappa) finite-matrix estimate 1.000 > 0 over the finite ArchSig transfer operator",
         "transferEdgeRefs": [
           "curvature-transfer-edge:curvature-support-witness-homotopy-report-fixture-axis-homotopy-report-fixture:curvature-support-witness-homotopy-report-fixture-axis-homotopy-report-fixture"
         ],
@@ -8677,8 +9142,8 @@
       ]
     },
     {
-      "readingId": "representation-strength:analytic-spectral-radius-proxy",
-      "sourceReadingRef": "analytic:spectral-radius-proxy",
+      "readingId": "representation-strength:analytic-spectral-radius",
+      "sourceReadingRef": "analytic:spectral-radius",
       "representationFamily": "spectralRadius",
       "zeroPreserving": "supported",
       "zeroReflecting": "blockedByCoverageGap",
@@ -8798,6 +9263,39 @@
       ],
       "reading": "zeroReflectingAggregateBoundary is a bounded analytic representation; use its zero/obstruction readings only with the recorded strength boundary",
       "evidenceBoundary": "analytic value is relative to selected graph / matrix representation and is not a quality score",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    },
+    {
+      "readingId": "representation-strength:spectral-relation-atom-adjacency",
+      "sourceReadingRef": "spectral:relation-atom-adjacency",
+      "representationFamily": "relationAtomWeightedAdjacencyMatrix",
+      "zeroPreserving": "supported",
+      "zeroReflecting": "blockedByCoverageGap",
+      "obstructionPreserving": "supported",
+      "obstructionReflecting": "notAnEigenvalueTheorem",
+      "aggregateZeroSafety": "notAggregate",
+      "cancellationRisk": "finiteMatrixMayHideUnobservedComponents",
+      "requiredAssumptions": [
+        "gap:path-rule:authorization-bypass-hole:missing-policy-test",
+        "witness completeness for selected LawPolicy",
+        "signature axis exactness for selected readings"
+      ],
+      "blockedBy": [
+        "gap:path-rule:authorization-bypass-hole:missing-policy-test"
+      ],
+      "blockedReflectionOrPreservationReasons": [
+        "gap:path-rule:authorization-bypass-hole:missing-policy-test"
+      ],
+      "reading": "relationAtomWeightedAdjacencyMatrix is a finite selected relation-graph matrix reading; it preserves observed relation edges but does not reflect global architecture truth",
+      "evidenceBoundary": "observation gaps block measured-zero interpretation for absent relation edges",
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -9167,7 +9665,7 @@
   "structuralReadingReviewSurface": {
     "surfaceId": "aat-structural-reading-review-surface",
     "status": "needsReview",
-    "currentStateReading": "ArchSig reads current architecture state across Atom support and compatibility, LawUniverse coverage, feature extension coordinates, operation calculus laws, path signature trajectory, homotopy order sensitivity, diagram fillability, axis forgetting/projection fidelity, Atom origin closure, effect relation algebra, synthesis blockage, operation preconditions, path multiplicity, trajectory homotopy refutation, bridge split transfer, representation strength, local curvature, three-layer flatness, observation projection, state transition algebra, operation-invariant constraints, and split readiness; blockedRepresentations=14, curvatures=1, blockedOperations=1, splitBlockers=1, atomConflicts=0, unmeasuredRequiredLaws=0, blockedDiagrams=1, axisForgetting=1, projectionLoss=1, atomOriginDebt=1, effectRelationPressure=1, synthesisBlockage=1, operationPreconditionBlockers=1, pathMultiplicityLoss=1, homotopyRefutations=1, bridgeTransfers=1",
+    "currentStateReading": "ArchSig reads current architecture state across Atom support and compatibility, LawUniverse coverage, feature extension coordinates, operation calculus laws, path signature trajectory, homotopy order sensitivity, diagram fillability, axis forgetting/projection fidelity, Atom origin closure, effect relation algebra, synthesis blockage, operation preconditions, path multiplicity, trajectory homotopy refutation, bridge split transfer, representation strength, local curvature, three-layer flatness, observation projection, state transition algebra, operation-invariant constraints, and split readiness; blockedRepresentations=15, curvatures=1, blockedOperations=1, splitBlockers=1, atomConflicts=0, unmeasuredRequiredLaws=0, blockedDiagrams=1, axisForgetting=1, projectionLoss=1, atomOriginDebt=1, effectRelationPressure=1, synthesisBlockage=1, operationPreconditionBlockers=1, pathMultiplicityLoss=1, homotopyRefutations=1, bridgeTransfers=1",
     "connectedReadingRefs": [
       "representationStrength:weightedAdjacencyMatrix",
       "representationStrength:reachableConeSize",
@@ -10196,24 +10694,26 @@
       "sig-axis:homotopy-report-fixture=1 (coverage-gap-preserved)"
     ],
     "analyticReadingsSummary": [
-      "weightedAdjacencyMatrix=9x9; edgeCount=2 (measured)",
-      "reachableConeSize=11 (measured)",
-      "walkCount=3 (measured)",
+      "weightedAdjacencyMatrix=3x3; edgeCount=2 (measured)",
+      "reachableConeSize=2 (measured)",
+      "walkCount=2 (measured)",
       "nilpotenceBoundary=blockedByCoverageGap (needsReview)",
-      "selectedSubgraphSpectrum=[0.222] (measured)",
+      "selectedSubgraphSpectrum=[0.000] (measured)",
       "propagationDepth=1 (measured)",
-      "spectralRadius=0.222 (measured)",
+      "spectralRadius=0.000 (measured)",
       "curvatureValuation=1 (measured)",
       "stateAlgebra=state/effect algebra requires explicit state transition and runtime/effect atoms (needsReview)",
       "zeroReflectingAggregateBoundary=blockedByObservationGaps (needsReview)"
     ],
     "spectralReadingsSummary": [
+      "relationAtomWeightedAdjacencyMatrix upperBound=unmeasured shape=3x3 (needsReview)",
       "workflowRiskAxisPressureMatrix upperBound=26.458 shape=1x5 (needsReview)",
       "moleculeAtomOverlapCouplingMatrix upperBound=6.000 shape=1x1 (needsReview)",
       "obstructionAxisCurvatureMatrix upperBound=1.000 shape=1x1 (actionable)",
       "operationSignatureDeltaMatrix upperBound=1.000 shape=1x1 (actionable)"
     ],
     "spectralModeSummary": [
+      "relationAtomWeightedAdjacencyMatrix boundedSpectralMode gap=0.000 localization=0.707 density=0.222 (needsReview)",
       "workflowRiskAxisPressureMatrix distributedPressureMode gap=23.195 localization=1.000 density=1.000 (needsReview)",
       "moleculeAtomOverlapCouplingMatrix delocalizedCouplingMode gap=6.000 localization=1.000 density=1.000 (needsReview)",
       "obstructionAxisCurvatureMatrix curvatureMode gap=1.000 localization=1.000 density=1.000 (needsReview)",
@@ -10226,7 +10726,7 @@
       "curvature-support-reading:spectrum-profile-homotopy-report-fixture supports=1 topModes=1 clusters=1 measuredAxes=1 unmeasuredAxes=0 (needsReview)"
     ],
     "curvatureTransferSummary": [
-      "curvature-transfer-reading:spectrum-profile-homotopy-report-fixture edges=1 recurrentModes=1 rho=1 (needsReview)"
+      "curvature-transfer-reading:spectrum-profile-homotopy-report-fixture edges=1 recurrentModes=1 rho=1.000 (needsReview)"
     ],
     "architectureSpectrumReportSummary": [
       "architecture-spectrum-report:spectrum-profile-homotopy-report-fixture hotspots=1 recurrent=1 clusters=1 (needsReview)",
@@ -10312,6 +10812,7 @@
       "curvatureValuation zeroReflecting=blockedByCoverageGap obstructionReflecting=blockedByCoverageGap blockedBy=1",
       "stateAlgebra zeroReflecting=blockedByCoverageGap obstructionReflecting=blockedByCoverageGap blockedBy=1",
       "zeroReflectingAggregateBoundary zeroReflecting=blockedByCoverageGap obstructionReflecting=blockedByCoverageGap blockedBy=1",
+      "relationAtomWeightedAdjacencyMatrix zeroReflecting=blockedByCoverageGap obstructionReflecting=notAnEigenvalueTheorem blockedBy=1",
       "workflowRiskAxisPressureMatrix zeroReflecting=blockedByCoverageGap obstructionReflecting=notAnEigenvalueTheorem blockedBy=1",
       "moleculeAtomOverlapCouplingMatrix zeroReflecting=blockedByCoverageGap obstructionReflecting=notAnEigenvalueTheorem blockedBy=1",
       "obstructionAxisCurvatureMatrix zeroReflecting=blockedByCoverageGap obstructionReflecting=notAnEigenvalueTheorem blockedBy=1",
@@ -10337,7 +10838,7 @@
     ],
     "structuralReadingReviewSummary": [
       "aat-structural-reading-review-surface status=needsReview refs=30 focus=16",
-      "ArchSig reads current architecture state across Atom support and compatibility, LawUniverse coverage, feature extension coordinates, operation calculus laws, path signature trajectory, homotopy order sensitivity, diagram fillability, axis forgetting/projection fidelity, Atom origin closure, effect relation algebra, synthesis blockage, operation preconditions, path multiplicity, trajectory homotopy refutation, bridge split transfer, representation strength, local curvature, three-layer flatness, observation projection, state transition algebra, operation-invariant constraints, and split readiness; blockedRepresentations=14, curvatures=1, blockedOperations=1, splitBlockers=1, atomConflicts=0, unmeasuredRequiredLaws=0, blockedDiagrams=1, axisForgetting=1, projectionLoss=1, atomOriginDebt=1, effectRelationPressure=1, synthesisBlockage=1, operationPreconditionBlockers=1, pathMultiplicityLoss=1, homotopyRefutations=1, bridgeTransfers=1"
+      "ArchSig reads current architecture state across Atom support and compatibility, LawUniverse coverage, feature extension coordinates, operation calculus laws, path signature trajectory, homotopy order sensitivity, diagram fillability, axis forgetting/projection fidelity, Atom origin closure, effect relation algebra, synthesis blockage, operation preconditions, path multiplicity, trajectory homotopy refutation, bridge split transfer, representation strength, local curvature, three-layer flatness, observation projection, state transition algebra, operation-invariant constraints, and split readiness; blockedRepresentations=15, curvatures=1, blockedOperations=1, splitBlockers=1, atomConflicts=0, unmeasuredRequiredLaws=0, blockedDiagrams=1, axisForgetting=1, projectionLoss=1, atomOriginDebt=1, effectRelationPressure=1, synthesisBlockage=1, operationPreconditionBlockers=1, pathMultiplicityLoss=1, homotopyRefutations=1, bridgeTransfers=1"
     ],
     "currentStateEvolutionBoundarySummary": [
       "ArchSig computes current AAT structural state from ArchMap homotopy-report-fixture-archmap and LawPolicy homotopy-report-fixture-policy; it reads atoms, molecules, laws, obstructions, bridge pressure, structural readings, and bounded review focus",

@@ -308,11 +308,13 @@ The builder:
   observation refs, distance kind and inputs, soundness boundary, and coverage
   status. Missing support is `blockedByCoverageGap`, not zero.
 - curvature transfer readings build a finite nonnegative transfer operator over
-  measured curvature support rows. They report row/column support refs, sparse
-  matrix entries, source-backed transfer edges, a `rho(T^kappa)` proxy, and
-  self-loop or multi-row recurrent obstruction modes only as bounded
-  current-state diagnostics. They do not conclude future incidents, empirical
-  cost increase, amplification, repair safety, or FieldSig forecast truth.
+  measured curvature support rows. Transfer entries are backed by selected
+  relation-graph evidence or shared selected-axis support, and report row/column
+  support refs, sparse matrix entries, source-backed transfer edges, a
+  `rho(T^kappa)` reading, and self-loop or multi-row recurrent obstruction modes
+  only as bounded current-state diagnostics. They do not conclude future
+  incidents, empirical cost increase, amplification, repair safety, or FieldSig
+  forecast truth.
 - `architectureSpectrumReport` summarizes the ACTS surface for human and LLM
   review: top hotspots, top bounded mode data, witness clusters, recurrent
   obstruction entries, coverage gaps, measured boundary, and recommended next
@@ -473,7 +475,16 @@ The builder:
 - analytic representations include weighted adjacency, walk count, reachable
   cone size, nilpotence boundary, selected subgraph spectrum, propagation depth,
   spectral radius, curvature valuation, state algebra boundary, and
-  zero-reflecting aggregate boundary
+  zero-reflecting aggregate boundary. The graph and matrix readings expose
+  selected graph nodes, source-backed relation edges, sparse matrix entries, and
+  bounded walk witnesses; spectral radius is a bounded finite-matrix estimate
+  over that selected relation graph, not a global architecture score.
+- spectral analysis readings now include
+  `relationAtomWeightedAdjacencyMatrix`, which constructs a finite weighted
+  adjacency matrix directly from selected relation atom endpoints and reports
+  row/column pressure, Frobenius norm, and a bounded `spectralRadius` estimate.
+  The older workflow / molecule / obstruction / operation matrices remain
+  bounded review representations over their own measured surfaces.
 - emits repair operation candidates with preserved invariants, preconditions,
   transfer risks, evidence boundaries, and non-conclusions
 - emits operation deltas and path / homotopy / diagram readings for repair

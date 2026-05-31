@@ -9,7 +9,8 @@ use crate::{
     ArchSigAmiAggregateReadingV0, ArchSigAmiTopContributorV0, ArchSigAnalysisArtifactRefV0,
     ArchSigAnalysisPacketV0, ArchSigAnalysisPacketValidationInputV0,
     ArchSigAnalysisPacketValidationReportV0, ArchSigAnalysisPacketValidationSummaryV0,
-    ArchSigAnalyticRepresentationV0, ArchSigArchMapStoreRefsV0, ArchSigArchitecturalHoleReadingV0,
+    ArchSigAnalyticGraphEdgeV0, ArchSigAnalyticMatrixEntryV0, ArchSigAnalyticRepresentationV0,
+    ArchSigArchMapStoreRefsV0, ArchSigArchitecturalHoleReadingV0,
     ArchSigArchitectureHomotopyReportV0, ArchSigArchitectureObjectProjectionV0,
     ArchSigArchitectureSpectrumHotspotV0, ArchSigArchitectureSpectrumModeV0,
     ArchSigArchitectureSpectrumRecurrentObstructionV0, ArchSigArchitectureSpectrumReportV0,
@@ -157,7 +158,7 @@ pub fn build_archsig_analysis_packet(
         &signature_axes,
     );
     let curvature_transfer_readings =
-        build_curvature_transfer_readings(&curvature_support_readings);
+        build_curvature_transfer_readings(archmap, &curvature_support_readings);
     let architecture_spectrum_report = build_architecture_spectrum_report(
         &curvature_support_readings,
         &curvature_transfer_readings,
@@ -3056,107 +3057,120 @@ fn build_analytic_representations(
     signature_axes: &[ArchSigSignatureAxisReadingV0],
     obstruction_circuits: &[ArchSigObstructionCircuitV0],
 ) -> Vec<ArchSigAnalyticRepresentationV0> {
-    let relation_count = archmap
-        .atom_observations
-        .iter()
-        .filter(|atom| atom.atom_family.to_ascii_lowercase().contains("relation"))
-        .count();
-    let node_count = unique_strings(
-        archmap
-            .atom_observations
-            .iter()
-            .flat_map(|atom| atom.object_refs.clone()),
-    )
-    .len()
-    .max(archmap.atom_observations.len());
-    let reachable_cone_size = node_count + relation_count;
-    let walk_count = relation_count + archmap.molecule_observations.len();
-    let propagation_depth = if relation_count == 0 { 0 } else { 1 };
-    let nilpotence_boundary = if archmap.observation_gaps.is_empty() {
+    let graph = selected_relation_graph(archmap);
+    let node_count = graph.nodes.len();
+    let edge_count = graph.edges.len();
+    let reachable_cone_size = graph.reachable_pairs.len();
+    let walk_count = graph.walk_count_len_le_3;
+    let propagation_depth = graph.max_shortest_path_len;
+    let nilpotence_boundary = if graph.cycle_refs.is_empty() && archmap.observation_gaps.is_empty()
+    {
         "candidateNilpotentForSelectedStaticGraph"
+    } else if !graph.cycle_refs.is_empty() {
+        "cycleObservedInSelectedRelationGraph"
     } else {
         "blockedByCoverageGap"
     };
-    let spectral_proxy = if node_count == 0 {
+    let spectral_radius = graph.spectral_radius_estimate;
+    let spectral_value = if node_count == 0 {
         "unavailable".to_string()
     } else {
-        format!("{:.3}", relation_count as f64 / node_count as f64)
+        format!("{spectral_radius:.3}")
     };
+    let graph_scope_refs = graph
+        .edges
+        .iter()
+        .map(|edge| edge.relation_atom_ref.clone())
+        .collect::<Vec<_>>();
+    let mut weighted_adjacency = analytic_representation(
+        "analytic:weighted-adjacency",
+        "weightedAdjacencyMatrix",
+        "measured",
+        "matrixShape",
+        &format!("{node_count}x{node_count}; edgeCount={edge_count}"),
+        graph_scope_refs.clone(),
+        signature_axes,
+        "selected relation atoms induce a bounded weighted adjacency representation with traceable sparse matrix entries",
+    );
+    attach_relation_graph(&mut weighted_adjacency, &graph);
+    let mut reachable = analytic_representation(
+        "analytic:reachable-cone-size",
+        "reachableConeSize",
+        "measured",
+        "nat",
+        &reachable_cone_size.to_string(),
+        graph_scope_refs.clone(),
+        signature_axes,
+        "reachable cone is computed by finite graph traversal over selected relation atoms",
+    );
+    attach_relation_graph(&mut reachable, &graph);
+    let mut walks = analytic_representation(
+        "analytic:walk-count",
+        "walkCount",
+        "measured",
+        "nat",
+        &walk_count.to_string(),
+        graph_scope_refs.clone(),
+        signature_axes,
+        "walk count enumerates selected relation-graph walks up to length 3",
+    );
+    attach_relation_graph(&mut walks, &graph);
+    let mut nilpotence = analytic_representation(
+        "analytic:nilpotence-boundary",
+        "nilpotenceBoundary",
+        "needsReview",
+        "boundaryStatus",
+        nilpotence_boundary,
+        graph.cycle_refs.clone(),
+        signature_axes,
+        "nilpotence is read from cycle detection in the selected finite relation graph, not folded into Decomposable or global acyclicity",
+    );
+    attach_relation_graph(&mut nilpotence, &graph);
+    let mut spectrum = analytic_representation(
+        "analytic:selected-subgraph-spectrum",
+        "selectedSubgraphSpectrum",
+        "measured",
+        "vector",
+        &format!("[{spectral_value}]"),
+        graph_scope_refs.clone(),
+        signature_axes,
+        "selected subgraph spectrum is estimated from power iteration over the finite nonnegative adjacency matrix",
+    );
+    attach_relation_graph(&mut spectrum, &graph);
+    let mut propagation = analytic_representation(
+        "analytic:propagation-depth",
+        "propagationDepth",
+        "measured",
+        "nat",
+        &propagation_depth.to_string(),
+        graph_scope_refs.clone(),
+        signature_axes,
+        "propagation depth is computed over observed relation atoms only",
+    );
+    attach_relation_graph(&mut propagation, &graph);
+    let mut spectral_radius_repr = analytic_representation(
+        "analytic:spectral-radius",
+        "spectralRadius",
+        if spectral_value == "unavailable" {
+            "unavailable"
+        } else {
+            "measured"
+        },
+        "float",
+        &spectral_value,
+        graph_scope_refs.clone(),
+        signature_axes,
+        "spectral radius is estimated from the selected finite nonnegative adjacency matrix under bounded iteration",
+    );
+    attach_relation_graph(&mut spectral_radius_repr, &graph);
     vec![
-        analytic_representation(
-            "analytic:weighted-adjacency",
-            "weightedAdjacencyMatrix",
-            "measured",
-            "matrixShape",
-            &format!("{node_count}x{node_count}; edgeCount={relation_count}"),
-            all_atom_refs(archmap),
-            signature_axes,
-            "selected relation atoms induce a bounded weighted adjacency representation",
-        ),
-        analytic_representation(
-            "analytic:reachable-cone-size",
-            "reachableConeSize",
-            "measured",
-            "nat",
-            &reachable_cone_size.to_string(),
-            all_atom_refs(archmap),
-            signature_axes,
-            "reachable cone is a bounded graph proxy over observed object refs and relation atoms",
-        ),
-        analytic_representation(
-            "analytic:walk-count",
-            "walkCount",
-            "measured",
-            "nat",
-            &walk_count.to_string(),
-            all_atom_refs(archmap),
-            signature_axes,
-            "walk count is a bounded proxy from observed relation atoms and molecule paths",
-        ),
-        analytic_representation(
-            "analytic:nilpotence-boundary",
-            "nilpotenceBoundary",
-            "needsReview",
-            "boundaryStatus",
-            nilpotence_boundary,
-            all_atom_refs(archmap),
-            signature_axes,
-            "nilpotence is represented as a boundary condition, not folded into Decomposable or global acyclicity",
-        ),
-        analytic_representation(
-            "analytic:selected-subgraph-spectrum",
-            "selectedSubgraphSpectrum",
-            "measured",
-            "vector",
-            &format!("[{spectral_proxy}]"),
-            all_atom_refs(archmap),
-            signature_axes,
-            "selected subgraph spectrum records the bounded spectrum vector for the observed relation subgraph",
-        ),
-        analytic_representation(
-            "analytic:propagation-depth",
-            "propagationDepth",
-            "measured",
-            "nat",
-            &propagation_depth.to_string(),
-            all_atom_refs(archmap),
-            signature_axes,
-            "propagation depth is computed over observed relation atoms only",
-        ),
-        analytic_representation(
-            "analytic:spectral-radius-proxy",
-            "spectralRadius",
-            if spectral_proxy == "unavailable" {
-                "unavailable"
-            } else {
-                "measured"
-            },
-            "float",
-            &spectral_proxy,
-            all_atom_refs(archmap),
-            signature_axes,
-            "spectral radius is represented as a bounded proxy until full matrix extraction is supplied",
-        ),
+        weighted_adjacency,
+        reachable,
+        walks,
+        nilpotence,
+        spectrum,
+        propagation,
+        spectral_radius_repr,
         analytic_representation(
             "analytic:curvature-valuation",
             "curvatureValuation",
@@ -3225,6 +3239,10 @@ fn analytic_representation(
         status: status.to_string(),
         value_type: value_type.to_string(),
         value: value.to_string(),
+        selected_graph_nodes: Vec::new(),
+        selected_graph_edges: Vec::new(),
+        sparse_matrix_entries: Vec::new(),
+        walk_witness_refs: Vec::new(),
         graph_scope_refs,
         axis_refs: signature_axes
             .iter()
@@ -3239,6 +3257,229 @@ fn analytic_representation(
                 .to_string(),
         non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
     }
+}
+
+#[derive(Debug, Clone)]
+struct SelectedRelationGraph {
+    nodes: Vec<String>,
+    edges: Vec<ArchSigAnalyticGraphEdgeV0>,
+    matrix_entries: Vec<ArchSigAnalyticMatrixEntryV0>,
+    reachable_pairs: Vec<String>,
+    walk_witness_refs: Vec<String>,
+    cycle_refs: Vec<String>,
+    walk_count_len_le_3: usize,
+    max_shortest_path_len: usize,
+    spectral_radius_estimate: f64,
+}
+
+fn selected_relation_graph(archmap: &ArchMapDocumentV0) -> SelectedRelationGraph {
+    let relation_atoms = archmap
+        .atom_observations
+        .iter()
+        .filter(|atom| atom.atom_family.to_ascii_lowercase().contains("relation"))
+        .collect::<Vec<_>>();
+    let mut nodes = BTreeSet::<String>::new();
+    let mut edge_weights = BTreeMap::<(String, String), (i64, Vec<String>, Vec<String>)>::new();
+    let mut edges = Vec::new();
+    for atom in relation_atoms {
+        let source = if atom.object_refs.len() >= 2 {
+            atom.object_refs[0].clone()
+        } else if atom.subject_ref.trim().is_empty() {
+            continue;
+        } else {
+            atom.subject_ref.clone()
+        };
+        nodes.insert(source.clone());
+        let targets = if atom.object_refs.len() >= 2 {
+            atom.object_refs.iter().skip(1).cloned().collect::<Vec<_>>()
+        } else if atom.object_refs.len() == 1 {
+            atom.object_refs.clone()
+        } else {
+            Vec::new()
+        };
+        for target in targets {
+            nodes.insert(target.clone());
+            let source_refs = atom
+                .source_refs
+                .iter()
+                .map(source_ref_label)
+                .collect::<Vec<_>>();
+            edges.push(ArchSigAnalyticGraphEdgeV0 {
+                edge_ref: format!(
+                    "relation-edge:{}:{}:{}",
+                    stable_id(&atom.atom_observation_id),
+                    stable_id(&source),
+                    stable_id(&target)
+                ),
+                source_ref: source.clone(),
+                target_ref: target.clone(),
+                weight: 1,
+                relation_atom_ref: atom.atom_observation_id.clone(),
+                source_refs: source_refs.clone(),
+            });
+            let entry = edge_weights
+                .entry((source.clone(), target.clone()))
+                .or_insert_with(|| (0, Vec::new(), Vec::new()));
+            entry.0 += 1;
+            entry.1.push(atom.atom_observation_id.clone());
+            entry.2.extend(source_refs);
+        }
+    }
+    let nodes = nodes.into_iter().collect::<Vec<_>>();
+    let matrix_entries = edge_weights
+        .iter()
+        .map(|((source, target), (weight, evidence_refs, source_refs))| {
+            let evidence_refs =
+                unique_strings(evidence_refs.iter().chain(source_refs.iter()).cloned());
+            ArchSigAnalyticMatrixEntryV0 {
+                row_ref: source.clone(),
+                column_ref: target.clone(),
+                value: *weight,
+                evidence_refs,
+            }
+        })
+        .collect::<Vec<_>>();
+    let adjacency = matrix_entries
+        .iter()
+        .map(|entry| {
+            (
+                (entry.row_ref.as_str(), entry.column_ref.as_str()),
+                entry.value,
+            )
+        })
+        .collect::<BTreeMap<_, _>>();
+    let mut reachable_pairs = BTreeSet::<String>::new();
+    let mut walk_witness_refs = Vec::new();
+    let mut cycle_refs = BTreeSet::<String>::new();
+    let mut walk_count_len_le_3 = 0_usize;
+    let mut max_shortest_path_len = 0_usize;
+    for start in &nodes {
+        let mut frontier = BTreeSet::from([start.as_str()]);
+        let mut seen = BTreeSet::from([start.as_str()]);
+        for depth in 1..=3 {
+            let mut next = BTreeSet::new();
+            for node in &frontier {
+                for target in nodes.iter().map(String::as_str) {
+                    if let Some(weight) = adjacency.get(&(*node, target)) {
+                        walk_count_len_le_3 += *weight as usize;
+                        next.insert(target);
+                        walk_witness_refs.push(format!(
+                            "walk:{}:{}:{}",
+                            stable_id(start),
+                            depth,
+                            stable_id(target)
+                        ));
+                        reachable_pairs.insert(format!("{start}->{target}"));
+                        if target == start.as_str() {
+                            cycle_refs.insert(format!("cycle:{start}:length-{depth}"));
+                        }
+                        if seen.insert(target) {
+                            max_shortest_path_len = max_shortest_path_len.max(depth);
+                        }
+                    }
+                }
+            }
+            frontier = next;
+            if frontier.is_empty() {
+                break;
+            }
+        }
+    }
+    let spectral_radius_estimate = spectral_radius_power_iteration(&matrix_entries);
+    SelectedRelationGraph {
+        nodes,
+        edges,
+        matrix_entries,
+        reachable_pairs: reachable_pairs.into_iter().collect(),
+        walk_witness_refs: unique_strings(walk_witness_refs.into_iter()),
+        cycle_refs: cycle_refs.into_iter().collect(),
+        walk_count_len_le_3,
+        max_shortest_path_len,
+        spectral_radius_estimate,
+    }
+}
+
+fn attach_relation_graph(
+    representation: &mut ArchSigAnalyticRepresentationV0,
+    graph: &SelectedRelationGraph,
+) {
+    representation.selected_graph_nodes = graph.nodes.clone();
+    representation.selected_graph_edges = graph.edges.clone();
+    representation.sparse_matrix_entries = graph.matrix_entries.clone();
+    representation.walk_witness_refs = graph.walk_witness_refs.clone();
+}
+
+fn relation_graph_evidence_between(
+    graph: &SelectedRelationGraph,
+    source_support_refs: &[String],
+    target_support_refs: &[String],
+) -> Vec<String> {
+    let source_refs = source_support_refs
+        .iter()
+        .map(String::as_str)
+        .collect::<BTreeSet<_>>();
+    let target_refs = target_support_refs
+        .iter()
+        .map(String::as_str)
+        .collect::<BTreeSet<_>>();
+    graph
+        .edges
+        .iter()
+        .filter(|edge| {
+            let source_matches = source_refs.contains(edge.source_ref.as_str())
+                || source_refs.contains(edge.relation_atom_ref.as_str());
+            let target_matches = target_refs.contains(edge.target_ref.as_str())
+                || target_refs.contains(edge.relation_atom_ref.as_str());
+            source_matches && target_matches
+        })
+        .flat_map(|edge| {
+            std::iter::once(edge.edge_ref.clone())
+                .chain(std::iter::once(edge.relation_atom_ref.clone()))
+                .chain(edge.source_refs.iter().cloned())
+        })
+        .collect::<BTreeSet<_>>()
+        .into_iter()
+        .collect()
+}
+
+fn spectral_radius_power_iteration(entries: &[ArchSigAnalyticMatrixEntryV0]) -> f64 {
+    let nodes = entries
+        .iter()
+        .flat_map(|entry| [entry.row_ref.clone(), entry.column_ref.clone()])
+        .collect::<BTreeSet<_>>()
+        .into_iter()
+        .collect::<Vec<_>>();
+    if nodes.is_empty() {
+        return 0.0;
+    }
+    let index = nodes
+        .iter()
+        .enumerate()
+        .map(|(idx, node)| (node.as_str(), idx))
+        .collect::<BTreeMap<_, _>>();
+    let mut vector = vec![1.0 / nodes.len() as f64; nodes.len()];
+    let mut lambda = 0.0;
+    for _ in 0..16 {
+        let mut next = vec![0.0; nodes.len()];
+        for entry in entries {
+            if let (Some(row), Some(column)) = (
+                index.get(entry.row_ref.as_str()),
+                index.get(entry.column_ref.as_str()),
+            ) {
+                next[*column] += vector[*row] * entry.value as f64;
+            }
+        }
+        let norm = next.iter().copied().fold(0.0_f64, f64::max);
+        if norm == 0.0 {
+            return 0.0;
+        }
+        lambda = norm;
+        for value in &mut next {
+            *value /= norm;
+        }
+        vector = next;
+    }
+    lambda
 }
 
 fn build_coupling_cohesion_readings(
@@ -3770,11 +4011,94 @@ fn build_spectral_analysis_readings(
     operation_deltas: &[ArchSigOperationDeltaReadingV0],
 ) -> Vec<ArchSigSpectralAnalysisReadingV0> {
     vec![
+        relation_atom_adjacency_spectrum(archmap),
         workflow_risk_axis_pressure_spectrum(workflow_risk_readings),
         molecule_atom_overlap_spectrum(archmap),
         obstruction_axis_curvature_spectrum(obstruction_circuits, signature_axes),
         operation_signature_delta_spectrum(operation_deltas, signature_axes),
     ]
+}
+
+fn relation_atom_adjacency_spectrum(
+    archmap: &ArchMapDocumentV0,
+) -> ArchSigSpectralAnalysisReadingV0 {
+    let graph = selected_relation_graph(archmap);
+    let mut row_sums = BTreeMap::<String, i64>::new();
+    let mut col_sums = BTreeMap::<String, i64>::new();
+    let mut squared_sum = 0_f64;
+    for entry in &graph.matrix_entries {
+        *row_sums.entry(entry.row_ref.clone()).or_default() += entry.value;
+        *col_sums.entry(entry.column_ref.clone()).or_default() += entry.value;
+        squared_sum += (entry.value as f64).powi(2);
+    }
+    let max_row = row_sums.values().copied().max().unwrap_or_default();
+    let max_col = col_sums.values().copied().max().unwrap_or_default();
+    let mut dominant_components = Vec::new();
+    if let Some((node, value)) = row_sums
+        .iter()
+        .max_by(|left, right| left.1.cmp(right.1).then(left.0.cmp(right.0)))
+    {
+        dominant_components.push(spectral_component(
+            node,
+            "relationGraphSourceNode",
+            value.to_string(),
+            "largest outgoing weighted adjacency row in the selected relation graph",
+        ));
+    }
+    if let Some((node, value)) = col_sums
+        .iter()
+        .max_by(|left, right| left.1.cmp(right.1).then(left.0.cmp(right.0)))
+    {
+        dominant_components.push(spectral_component(
+            node,
+            "relationGraphTargetNode",
+            value.to_string(),
+            "largest incoming weighted adjacency column in the selected relation graph",
+        ));
+    }
+
+    spectral_reading(
+        "spectral:relation-atom-adjacency",
+        "relationAtomWeightedAdjacencyMatrix",
+        spectral_status(
+            graph.matrix_entries.len(),
+            !archmap.observation_gaps.is_empty(),
+        ),
+        spectral_shape(
+            "selectedRelationGraphNodes",
+            "selectedRelationGraphNodes",
+            graph.nodes.len(),
+            graph.nodes.len(),
+            graph.matrix_entries.len(),
+        ),
+        "entry(i,j) is the number of selected relation atom endpoints from node i to node j",
+        vec![
+            spectral_value("maxRowSum", max_row, "largest outgoing relation weight"),
+            spectral_value("maxColumnSum", max_col, "largest incoming relation weight"),
+            spectral_float_value(
+                "frobeniusNorm",
+                squared_sum.sqrt(),
+                "finite weighted adjacency matrix norm over selected relation atoms",
+            ),
+            spectral_float_value(
+                "spectralRadius",
+                graph.spectral_radius_estimate,
+                "power-iteration estimate over the finite nonnegative relation adjacency matrix",
+            ),
+        ],
+        dominant_components,
+        graph
+            .edges
+            .iter()
+            .map(|edge| edge.relation_atom_ref.clone())
+            .collect::<BTreeSet<_>>()
+            .into_iter()
+            .collect(),
+        "AAT analytic graph reading is computed from selected relation atom endpoints as a finite weighted adjacency matrix",
+        "observation gaps block measured-zero interpretation for absent relation edges",
+        "zero entries mean no selected relation atom endpoint under the current ArchMap, not proof of independence",
+        "inspect dominant source/target nodes, cycle readings, and coverage gaps before selecting repair operations",
+    )
 }
 
 fn workflow_risk_axis_pressure_spectrum(
@@ -4370,7 +4694,7 @@ fn build_curvature_support_readings(
         boundary_or_no_missing_evidence(archmap_gap_missing_evidence(archmap), &profile.profile_id);
     let reading_boundary = measurement_boundary_from_policy_or_fallback(
         &profile.reading_boundary,
-        "boundedMeasuredWithProxyTransfer",
+        "boundedMeasuredWithFiniteTransfer",
         &profile.coverage_requirement_refs,
         "zero spectrum reflects only selected measured witness rows with declared coverage; transfer recurrence remains bounded review telemetry",
     );
@@ -4672,8 +4996,10 @@ fn build_curvature_witness_clusters(
 }
 
 fn build_curvature_transfer_readings(
+    archmap: &ArchMapDocumentV0,
     curvature_support_readings: &[ArchSigCurvatureSupportReadingV0],
 ) -> Vec<ArchSigCurvatureTransferReadingV0> {
+    let relation_graph = selected_relation_graph(archmap);
     curvature_support_readings
         .iter()
         .map(|support_reading| {
@@ -4682,10 +5008,10 @@ fn build_curvature_transfer_readings(
                 .iter()
                 .filter(|support| support.curvature_value > 0)
                 .collect::<Vec<_>>();
-            let transfer_edges = build_curvature_transfer_edges(&positive_supports);
-            let spectral_radius_proxy = recurrent_transfer_weight_bound(&transfer_edges);
+            let transfer_edges = build_curvature_transfer_edges(&positive_supports, &relation_graph);
+            let spectral_radius = recurrent_transfer_spectral_radius(&transfer_edges);
             let recurrent_obstruction_modes =
-                build_recurrent_obstruction_modes(&transfer_edges, spectral_radius_proxy);
+                build_recurrent_obstruction_modes(&transfer_edges, spectral_radius);
             let status = if recurrent_obstruction_modes.is_empty() {
                 "nonConclusion"
             } else {
@@ -4699,7 +5025,7 @@ fn build_curvature_transfer_readings(
                 reading_id: reading_id.clone(),
                 profile_ref: support_reading.profile_ref.clone(),
                 status: status.to_string(),
-                measurement_status: "proxy".to_string(),
+                measurement_status: "measured".to_string(),
                 reading_boundary: support_reading.reading_boundary.clone(),
                 transfer_operator: ArchSigCurvatureTransferOperatorV0 {
                     operator_id: format!("transfer-operator:{}", stable_id(&reading_id)),
@@ -4727,7 +5053,7 @@ fn build_curvature_transfer_readings(
                     column_count: positive_supports.len(),
                     nonzero_edge_count: transfer_edges.len(),
                     entry_rule:
-                        "entry(i,j) is positive when measured curvature support i can transfer review pressure to support j under shared selected-axis or shared support evidence"
+                        "entry(i,j) is positive when measured curvature support i can transfer review pressure to support j through selected relation-graph evidence or shared selected-axis evidence"
                             .to_string(),
                     spectral_radius_kind:
                         "finiteNonnegativeOperatorBoundedClosedWalkRadius".to_string(),
@@ -4737,10 +5063,10 @@ fn build_curvature_transfer_readings(
                 },
                 transfer_edges,
                 recurrent_obstruction_modes,
-                spectral_radius_reading: spectral_value(
-                    "rho(T^kappa)Proxy",
-                    spectral_radius_proxy,
-                    "positive proxy is read only as recurrent obstruction support in the finite ArchSig transfer operator, not future incident probability",
+                spectral_radius_reading: spectral_float_value(
+                    "rho(T^kappa)",
+                    spectral_radius,
+                    "positive value is computed from the finite ArchSig transfer operator and read only as recurrent obstruction support, not future incident probability",
                 ),
                 coverage_boundary: support_reading.coverage_boundary.clone(),
                 evidence_boundary:
@@ -4761,6 +5087,7 @@ fn build_curvature_transfer_readings(
 
 fn build_curvature_transfer_edges(
     positive_supports: &[&ArchSigCurvatureWitnessSupportV0],
+    relation_graph: &SelectedRelationGraph,
 ) -> Vec<ArchSigCurvatureTransferEdgeV0> {
     let mut edges = Vec::new();
     for source in positive_supports {
@@ -4769,8 +5096,13 @@ fn build_curvature_transfer_edges(
                 .support_refs
                 .iter()
                 .any(|support_ref| target.support_refs.contains(support_ref));
+            let graph_evidence = relation_graph_evidence_between(
+                relation_graph,
+                &source.support_refs,
+                &target.support_refs,
+            );
             let same_axis = source.selected_axis_ref == target.selected_axis_ref;
-            if !same_axis && !shared_support {
+            if !same_axis && !shared_support && graph_evidence.is_empty() {
                 continue;
             }
             let weight = if source.witness_support_id == target.witness_support_id {
@@ -4806,11 +5138,14 @@ fn build_curvature_transfer_edges(
                         .support_refs
                         .iter()
                         .chain(target.support_refs.iter())
+                        .chain(graph_evidence.iter())
                         .chain(source.observation_refs.iter())
                         .chain(target.observation_refs.iter())
                         .cloned(),
                 ),
-                extraction_rule: if same_axis {
+                extraction_rule: if !graph_evidence.is_empty() {
+                    "selected-relation-graph"
+                } else if same_axis {
                     "same-selected-axis"
                 } else {
                     "shared-source-backed-support"
@@ -4828,6 +5163,9 @@ fn build_curvature_transfer_edges(
                 } else if same_axis {
                     "same-axis transfer edge records repeated curvature support along a selected axis"
                         .to_string()
+                } else if !graph_evidence.is_empty() {
+                    "relation-graph transfer edge records source-backed finite graph connectivity between supports"
+                        .to_string()
                 } else {
                     "shared-support transfer edge records cross-axis review pressure over observed support"
                         .to_string()
@@ -4840,9 +5178,9 @@ fn build_curvature_transfer_edges(
 
 fn build_recurrent_obstruction_modes(
     transfer_edges: &[ArchSigCurvatureTransferEdgeV0],
-    spectral_radius_proxy: i64,
+    spectral_radius: f64,
 ) -> Vec<ArchSigRecurrentObstructionModeV0> {
-    if spectral_radius_proxy <= 0 {
+    if spectral_radius <= 0.0 {
         return Vec::new();
     }
     let reciprocal_pairs = transfer_edges
@@ -4873,7 +5211,7 @@ fn build_recurrent_obstruction_modes(
             ),
             cycle_weight: edge.weight.min(reverse.weight).max(1),
             spectral_radius_reading: format!(
-                "rho(T^kappa) proxy bounded closed-walk radius {spectral_radius_proxy} over the finite ArchSig transfer operator"
+                "rho(T^kappa) finite-matrix estimate {spectral_radius:.3} over the finite ArchSig transfer operator"
             ),
             recurrent_obstruction_reading:
                 "positive multi-node closed walk is reported as recurrent obstruction support only"
@@ -4901,7 +5239,7 @@ fn build_recurrent_obstruction_modes(
             witness_refs: edge.witness_refs.clone(),
             cycle_weight: edge.weight,
             spectral_radius_reading: format!(
-                "rho(T^kappa) proxy bounded closed-walk radius {spectral_radius_proxy} > 0 over the finite ArchSig transfer operator"
+                "rho(T^kappa) finite-matrix estimate {spectral_radius:.3} > 0 over the finite ArchSig transfer operator"
             ),
             recurrent_obstruction_reading:
                 "positive closed walk is reported as recurrent obstruction support only"
@@ -4920,26 +5258,17 @@ fn build_recurrent_obstruction_modes(
         .collect()
 }
 
-fn recurrent_transfer_weight_bound(transfer_edges: &[ArchSigCurvatureTransferEdgeV0]) -> i64 {
-    let self_loop_weight = transfer_edges
+fn recurrent_transfer_spectral_radius(transfer_edges: &[ArchSigCurvatureTransferEdgeV0]) -> f64 {
+    let entries = transfer_edges
         .iter()
-        .filter(|edge| edge.source_support_ref == edge.target_support_ref)
-        .map(|edge| edge.weight)
-        .max()
-        .unwrap_or_default();
-    let reciprocal_weight = transfer_edges
-        .iter()
-        .filter(|edge| edge.source_support_ref != edge.target_support_ref)
-        .filter_map(|edge| {
-            let reverse = transfer_edges.iter().find(|candidate| {
-                candidate.source_support_ref == edge.target_support_ref
-                    && candidate.target_support_ref == edge.source_support_ref
-            })?;
-            Some(edge.weight.min(reverse.weight))
+        .map(|edge| ArchSigAnalyticMatrixEntryV0 {
+            row_ref: edge.source_support_ref.clone(),
+            column_ref: edge.target_support_ref.clone(),
+            value: edge.weight,
+            evidence_refs: edge.evidence_refs.clone(),
         })
-        .max()
-        .unwrap_or_default();
-    self_loop_weight.max(reciprocal_weight)
+        .collect::<Vec<_>>();
+    spectral_radius_power_iteration(&entries)
 }
 
 fn build_architecture_spectrum_report(
@@ -6116,6 +6445,8 @@ fn build_representation_strength_readings(
             non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
         })
         .chain(spectral_analysis_readings.iter().map(|reading| {
+            let is_relation_adjacency =
+                reading.representation_family == "relationAtomWeightedAdjacencyMatrix";
             ArchSigRepresentationStrengthReadingV0 {
                 reading_id: format!(
                     "representation-strength:{}",
@@ -6123,7 +6454,11 @@ fn build_representation_strength_readings(
                 ),
                 source_reading_ref: reading.spectral_reading_id.clone(),
                 representation_family: reading.representation_family.clone(),
-                zero_preserving: "boundedProxy".to_string(),
+                zero_preserving: if is_relation_adjacency {
+                    "supported".to_string()
+                } else {
+                    "boundedProxy".to_string()
+                },
                 zero_reflecting: if blockers.is_empty() {
                     "assumptionRelative".to_string()
                 } else {
@@ -6135,15 +6470,30 @@ fn build_representation_strength_readings(
                     "supported".to_string()
                 },
                 obstruction_reflecting: "notAnEigenvalueTheorem".to_string(),
-                aggregate_zero_safety: "proxyOnly".to_string(),
-                cancellation_risk: "boundedProxyMayHideLocalComponents".to_string(),
+                aggregate_zero_safety: if is_relation_adjacency {
+                    "notAggregate".to_string()
+                } else {
+                    "proxyOnly".to_string()
+                },
+                cancellation_risk: if is_relation_adjacency {
+                    "finiteMatrixMayHideUnobservedComponents".to_string()
+                } else {
+                    "boundedProxyMayHideLocalComponents".to_string()
+                },
                 required_assumptions: required_assumptions.clone(),
                 blocked_by: blockers.clone(),
                 blocked_reflection_or_preservation_reasons: blocked_reasons.clone(),
-                reading: format!(
-                    "{} is a spectral proxy for review; it preserves selected pressure but does not reflect global architecture truth",
-                    reading.representation_family
-                ),
+                reading: if is_relation_adjacency {
+                    format!(
+                        "{} is a finite selected relation-graph matrix reading; it preserves observed relation edges but does not reflect global architecture truth",
+                        reading.representation_family
+                    )
+                } else {
+                    format!(
+                        "{} is a spectral proxy for review; it preserves selected pressure but does not reflect global architecture truth",
+                        reading.representation_family
+                    )
+                },
                 evidence_boundary: reading.coverage_boundary.clone(),
                 non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
             }
@@ -12133,7 +12483,7 @@ fn check_spectral_analysis_surface(packet: &ArchSigAnalysisPacketV0) -> Validati
     }
     check_from_examples(
         "archsig-analysis-packet-spectral-analysis-surface",
-        "packet exposes AAT spectral readings as bounded finite-representation proxies",
+        "packet exposes AAT spectral readings as bounded finite relation and measurement representations",
         examples,
         "fail",
     )
@@ -13001,14 +13351,14 @@ fn check_curvature_transfer_surface(packet: &ArchSigAnalysisPacketV0) -> Validat
         if reading
             .spectral_radius_reading
             .value
-            .parse::<i64>()
-            .is_ok_and(|value| value > 0)
+            .parse::<f64>()
+            .is_ok_and(|value| value > 0.0)
             && reading.recurrent_obstruction_modes.is_empty()
         {
             examples.push(generic_validation_example(
                 &reading.reading_id,
                 "recurrentObstructionModes",
-                "positive rho(T^kappa) proxy must be limited to recurrent obstruction modes",
+                "positive rho(T^kappa) finite transfer reading must be limited to recurrent obstruction modes",
             ));
         }
     }
@@ -16821,6 +17171,139 @@ fn strings(values: &[&str]) -> Vec<String> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    fn relation_atom(
+        atom_observation_id: &str,
+        source_ref: &str,
+        target_ref: &str,
+    ) -> crate::ArchMapAtomObservationV0 {
+        crate::ArchMapAtomObservationV0 {
+            atom_observation_id: atom_observation_id.to_string(),
+            atom_family: "relation".to_string(),
+            predicate: format!("{source_ref} relates to {target_ref}"),
+            subject_ref: format!("{source_ref}->{target_ref}"),
+            object_refs: vec![source_ref.to_string(), target_ref.to_string()],
+            source_refs: vec![crate::ArchMapSourceRef {
+                artifact_id: Some(format!("fixture:{atom_observation_id}")),
+                kind: "fixture".to_string(),
+                path: Some("tests/fixtures/analytic_graph.json".to_string()),
+                symbol: Some(atom_observation_id.to_string()),
+                line: Some(1),
+                section: None,
+            }],
+            observation_status: "observed".to_string(),
+            evidence_boundary: "testFixture".to_string(),
+            confidence: "high".to_string(),
+            uncertainty: Vec::new(),
+            projection_refs: Vec::new(),
+            non_conclusions: vec![
+                "relation graph fixture is not runtime dependency proof".to_string(),
+            ],
+        }
+    }
+
+    fn curvature_support(
+        witness_support_id: &str,
+        axis_ref: &str,
+        weight: i64,
+    ) -> ArchSigCurvatureWitnessSupportV0 {
+        ArchSigCurvatureWitnessSupportV0 {
+            witness_support_id: witness_support_id.to_string(),
+            witness_rule_ref: format!("witness:{witness_support_id}"),
+            selected_axis_ref: axis_ref.to_string(),
+            signature_axis_ref: axis_ref.to_string(),
+            measurement_status: "measured".to_string(),
+            reading_boundary: ArchSigMeasurementReadingBoundaryV0::default(),
+            local_curvature_ref: String::new(),
+            diagram_ref: String::new(),
+            lhs_observation_refs: Vec::new(),
+            rhs_observation_refs: Vec::new(),
+            distance_kind: "fixture".to_string(),
+            distance_input_refs: vec![witness_support_id.to_string()],
+            soundness_boundary: "test fixture".to_string(),
+            coverage_status: "measured".to_string(),
+            curvature_value: 1,
+            weight,
+            support_refs: vec![witness_support_id.to_string()],
+            source_refs: vec![format!("source:{witness_support_id}")],
+            observation_refs: vec![format!("observation:{witness_support_id}")],
+            missing_evidence: Vec::new(),
+            reading: "fixture curvature support".to_string(),
+        }
+    }
+
+    #[test]
+    fn selected_relation_graph_acyclic_fixture_computes_walks_without_cycle() {
+        let mut archmap: ArchMapDocumentV0 =
+            serde_json::from_str(include_str!("../tests/fixtures/minimal/archmap.json"))
+                .expect("ArchMap fixture parses");
+        archmap.observation_gaps.clear();
+        archmap.atom_observations = vec![
+            relation_atom("atom:relation:a-b", "A", "B"),
+            relation_atom("atom:relation:b-c", "B", "C"),
+        ];
+
+        let graph = selected_relation_graph(&archmap);
+
+        assert_eq!(graph.nodes, vec!["A", "B", "C"]);
+        assert_eq!(graph.matrix_entries.len(), 2);
+        assert_eq!(graph.reachable_pairs.len(), 3);
+        assert_eq!(graph.max_shortest_path_len, 2);
+        assert!(graph.cycle_refs.is_empty());
+        assert_eq!(graph.spectral_radius_estimate, 0.0);
+    }
+
+    #[test]
+    fn selected_relation_graph_multi_node_cycle_fixture_detects_cycle_and_radius() {
+        let mut archmap: ArchMapDocumentV0 =
+            serde_json::from_str(include_str!("../tests/fixtures/minimal/archmap.json"))
+                .expect("ArchMap fixture parses");
+        archmap.observation_gaps.clear();
+        archmap.atom_observations = vec![
+            relation_atom("atom:relation:a-b", "A", "B"),
+            relation_atom("atom:relation:b-a", "B", "A"),
+        ];
+
+        let graph = selected_relation_graph(&archmap);
+
+        assert_eq!(graph.matrix_entries.len(), 2);
+        assert!(
+            graph
+                .cycle_refs
+                .iter()
+                .any(|cycle| cycle.contains("length-2")),
+            "{:?}",
+            graph.cycle_refs
+        );
+        assert!((graph.spectral_radius_estimate - 1.0).abs() < 0.001);
+    }
+
+    #[test]
+    fn curvature_transfer_weighted_fixture_uses_finite_matrix_radius() {
+        let first = curvature_support("support:a", "axis:semantic", 2);
+        let second = curvature_support("support:b", "axis:semantic", 3);
+        let supports = vec![&first, &second];
+        let graph = SelectedRelationGraph {
+            nodes: Vec::new(),
+            edges: Vec::new(),
+            matrix_entries: Vec::new(),
+            reachable_pairs: Vec::new(),
+            walk_witness_refs: Vec::new(),
+            cycle_refs: Vec::new(),
+            walk_count_len_le_3: 0,
+            max_shortest_path_len: 0,
+            spectral_radius_estimate: 0.0,
+        };
+
+        let transfer_edges = build_curvature_transfer_edges(&supports, &graph);
+        let radius = recurrent_transfer_spectral_radius(&transfer_edges);
+
+        assert_eq!(transfer_edges.len(), 4);
+        assert!(
+            radius > 4.0,
+            "finite matrix radius should exceed the old max-self-loop bound: {radius}"
+        );
+    }
 
     #[test]
     fn static_archsig_analysis_packet_validates() {

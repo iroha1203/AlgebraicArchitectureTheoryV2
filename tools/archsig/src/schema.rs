@@ -1414,12 +1414,40 @@ pub struct ArchSigAnalyticRepresentationV0 {
     pub status: String,
     pub value_type: String,
     pub value: String,
+    #[serde(default)]
+    pub selected_graph_nodes: Vec<String>,
+    #[serde(default)]
+    pub selected_graph_edges: Vec<ArchSigAnalyticGraphEdgeV0>,
+    #[serde(default)]
+    pub sparse_matrix_entries: Vec<ArchSigAnalyticMatrixEntryV0>,
+    #[serde(default)]
+    pub walk_witness_refs: Vec<String>,
     pub graph_scope_refs: Vec<String>,
     pub axis_refs: Vec<String>,
     pub reading: String,
     pub coverage_boundary: String,
     pub zero_reflecting_boundary: String,
     pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigAnalyticGraphEdgeV0 {
+    pub edge_ref: String,
+    pub source_ref: String,
+    pub target_ref: String,
+    pub weight: i64,
+    pub relation_atom_ref: String,
+    pub source_refs: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigAnalyticMatrixEntryV0 {
+    pub row_ref: String,
+    pub column_ref: String,
+    pub value: i64,
+    pub evidence_refs: Vec<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

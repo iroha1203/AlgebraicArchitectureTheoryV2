@@ -1180,9 +1180,9 @@ fn acts_spectrum_fixture_manifest_locks_golden_validation() {
                             mode["transferEdgeRefs"]
                                 .as_array()
                                 .is_some_and(|refs| !refs.is_empty())
-                                && mode["spectralRadiusReading"]
-                                    .as_str()
-                                    .is_some_and(|text| text.contains("rho(T^kappa) proxy"))
+                                && mode["spectralRadiusReading"].as_str().is_some_and(|text| {
+                                    text.contains("rho(T^kappa) finite-matrix estimate")
+                                })
                         }),
                     "transfer cycle must surface as recurrent obstruction support"
                 );
@@ -2122,6 +2122,34 @@ fn assert_north_star_packet_surfaces(json: &Value) {
             "North Star packet must expose analytic representation {family}"
         );
     }
+    let weighted_adjacency = json["analyticRepresentations"]
+        .as_array()
+        .expect("analytic representations are array")
+        .iter()
+        .find(|entry| entry["representationFamily"] == "weightedAdjacencyMatrix")
+        .expect("weighted adjacency representation exists");
+    assert!(
+        weighted_adjacency["selectedGraphNodes"]
+            .as_array()
+            .is_some_and(|items| !items.is_empty())
+            && weighted_adjacency["selectedGraphEdges"]
+                .as_array()
+                .is_some_and(|items| !items.is_empty())
+            && weighted_adjacency["sparseMatrixEntries"]
+                .as_array()
+                .is_some_and(|items| {
+                    !items.is_empty()
+                        && items.iter().all(|entry| {
+                            entry["rowRef"].as_str().is_some()
+                                && entry["columnRef"].as_str().is_some()
+                                && entry["value"].as_i64().is_some_and(|value| value > 0)
+                                && entry["evidenceRefs"]
+                                    .as_array()
+                                    .is_some_and(|refs| !refs.is_empty())
+                        })
+                }),
+        "weighted adjacency must expose source-backed selected graph nodes, edges, and sparse matrix entries"
+    );
     for principle in [
         "InformationHiding",
         "Encapsulation",
@@ -2179,6 +2207,7 @@ fn assert_north_star_packet_surfaces(json: &Value) {
         "North Star packet must expose spectral analysis readings"
     );
     for family in [
+        "relationAtomWeightedAdjacencyMatrix",
         "workflowRiskAxisPressureMatrix",
         "moleculeAtomOverlapCouplingMatrix",
         "obstructionAxisCurvatureMatrix",
