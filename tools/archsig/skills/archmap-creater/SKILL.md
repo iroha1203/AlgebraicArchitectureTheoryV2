@@ -13,6 +13,17 @@ ArchMap is an observation map, not an extractor result and not architecture trut
 
 ArchMap does not prove Atom truth, architecture lawfulness, zero curvature, obstruction circuits, Lean theorem discharge, forecast correctness, or causal diagnosis.
 
+The default authoring contract is complete-first. There is one user-facing
+workflow: produce the fullest source-grounded ArchMap that the selected source
+universe supports, validate it, run ArchSig when a LawPolicy is available, and
+repair missing evidence before handoff. Do not offer a shortened or partial
+ArchMap path as the normal product experience. Partial evidence may exist
+internally while the workflow is running, but the handoff artifact should
+already include source inventory, primitive atoms, molecules, semantic
+observations, projection hints, concern hints, spectrum support, homotopy path
+candidates, filler evidence, non-fillability witnesses, and explicit gaps for
+truly unavailable evidence.
+
 ## Inputs
 
 Collect only evidence the user allows and record the boundary explicitly:
@@ -24,6 +35,13 @@ Collect only evidence the user allows and record the boundary explicitly:
   endpoint evidence, lhs/rhs observation support, source-backed witness support,
   filler evidence, runtime/test/policy refs, and known missing evidence
 - any prompt pack or model provenance needed for reproducibility
+
+Before publishing or handing off public artifacts, scrub private repository
+names, private paths, real service names, customer names, internal artifact
+names, and local smoke paths. Use masked labels such as `private large-repo`,
+`sanitized fixture`, or `private local artifact` in public Issues, docs, and
+fixtures. Run a targeted text search for known private names before creating or
+editing public GitHub Issues / PRs / docs.
 
 This skill must work with only the skill bundle and a built `archsig` executable. Do not require
 the ArchSig source repository, legacy `docs/tool` documents, or test fixtures to be present.
@@ -121,7 +139,10 @@ Workflow-first exploration is allowed: you may read a workflow to discover atoms
 
 ## Parallel Exploration Protocol
 
-For large repositories, use parallel agents to survey bounded surfaces. The integrator owns the final ArchMap; sub-agent output is candidate evidence, not final artifact truth.
+For large repositories, use parallel agents to survey bounded surfaces. Parallel
+survey is part of the complete-first workflow, not a reduced output mode. The
+integrator owns the final ArchMap; sub-agent output is candidate evidence, not
+final artifact truth.
 
 Recommended independent surfaces:
 
@@ -151,6 +172,55 @@ Integration rules:
 - Split coarse candidates before promotion; responsibilities, workflows, policy readings, and concerns do not become atoms.
 - Preserve each agent's blind spots and excluded readings in `sourceUniverse`, `provenance`, `observationGaps[]`, or `nonConclusions[]`.
 - Do not merge all candidates mechanically. The final ArchMap is an integrated bounded observation map.
+- Integrate every surface needed by the requested ArchSig measurement before
+  handoff. If ACTS or Homotopy is requested, the final pass must check that
+  spectrum support, path candidates, continuations, filler evidence, and
+  non-fillability witnesses are present or explicitly unavailable.
+
+## Complete-First Measurement Checklist
+
+Before handoff, check the artifact against the measurement surface the user
+expects to see.
+
+For every complete ArchMap:
+
+- Source inventory names included, excluded, unavailable, and private refs.
+- All observed atoms cite source refs that resolve to
+  `sourceUniverse.includedRefs[]`.
+- Molecules compose existing atom refs; responsibilities are not primitive
+  atoms.
+- Semantic observations record workflow, contract, policy, operation, or
+  commutation readings over atoms / molecules.
+- Projection info declares every atom `projectionRefs[]` entry.
+- Concern hints remain review cues and never become law violations.
+- Observation gaps are targeted to the missing subject when possible. Avoid
+  global gaps that accidentally block unrelated loops.
+
+For ACTS / Spectrum readiness:
+
+- Record lhs/rhs observation support for selected diagrams.
+- Record witness-support refs and selected-axis hints.
+- Preserve distance input evidence and source-backed transfer-edge cues.
+- Keep missing support as `observationGaps[]`; never read it as zero
+  curvature.
+
+For Homotopy / Holonomy / Stokes readiness:
+
+- Record path-pair candidates as semantic or projection readings backed by
+  source, test, runtime, policy, or explicit user evidence.
+- Record endpoint object refs, operation sequence cues, generator candidates,
+  and continuation evidence where source supports them.
+- Record filler evidence from contracts, tests, runtime traces, source
+  implementation, policy docs, or explicit user evidence.
+- Record non-fillability witnesses as targeted gaps when filler evidence is
+  private, unavailable, or out of scope.
+- Confirm that a measured filler plus nonzero holonomy can reach local
+  curvature review cells, while targeted missing filler remains
+  `blockedByCoverageGap`.
+
+An Atom alone is not Stokes-ready. The ArchMap must contain or explicitly lack
+the filler / non-fillability evidence needed by ArchSig to distinguish filled
+loops from architectural holes.
 
 ## Sharded ArchMap Authoring
 
@@ -299,6 +369,20 @@ ${ARCHSIG_BIN:-archsig} analyze \
    - Treat failures as schema or boundary problems to fix.
    - Treat warnings as review cues, not automatic rejection.
    - Check `summary`, `sourceInventoryChecks`, `sourceRefChecks`, `claimBoundaryChecks`, `semanticCoverageChecks`, `formalPromotionGuardrailChecks`, `leanPreservationPreconditionChecklist`, `atomicObservationChecks`, `atomicObservationSummary`, `responsibilityChecks`, and `nonConclusions`.
+
+8. Repair evidence blockers before handoff.
+   - If ArchSig `analyze` was run, read `llm-interpretation-packet.json` and
+     `analysis-summary` when available.
+   - Build a missing-evidence queue from `blockedByCoverageGap`, unfilled
+     loops, missing filler evidence, unmeasured spectrum support, unresolved
+     source refs, and validation warnings.
+   - Re-open the selected source inventory and search code, docs, tests,
+     runtime traces, policy files, and supplied user evidence for each blocker.
+   - Add source-backed atoms, semantic observations, projection info, filler
+     evidence, or targeted gaps as appropriate.
+   - Stop only when validation passes and remaining gaps are truly private,
+     unavailable, or out of scope. Document those residual gaps with subject
+     refs and non-conclusions.
 
 ## Minimal ArchMap Skeleton
 

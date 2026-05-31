@@ -103,6 +103,13 @@ intent, repository evidence, ArchMap evidence, unresolved questions, and
 non-conclusions, then validate it with ArchSig. Do not make humans hand-author a
 large profile without source evidence.
 
+In the complete-first ArchMap workflow, the profile is authored alongside the
+ArchMap evidence. `readingBoundary.coverageRequirementRefs` should point to the
+same coverage universe the ArchMap can actually support, and missing support
+should drive an authoring repair pass before user handoff. A residual coverage
+gap is acceptable only when the needed evidence is private, unavailable, or
+out of scope.
+
 The profile records the measurement recipe for ACTS-style readings:
 
 - `profileId`
@@ -171,6 +178,14 @@ conservative the zero / filler reading should be. The LLM uses
 `tools/archsig/skills/law-policy-creater` to synthesize the profile from
 repository evidence and user intent, then validates it with ArchSig.
 
+The LawPolicy should not make the user compensate for an incomplete ArchMap.
+For complete-first authoring, path discovery rules, filler rules, coverage
+requirements, and reading boundaries are checked against the ArchMap before
+handoff. If a loop is blocked, the authoring pass should either add
+contract/test/runtime/source/policy filler evidence or leave a targeted
+non-fillability gap whose subject names the affected path rule or operation
+square.
+
 The profile records:
 
 - `profileId`
@@ -211,9 +226,15 @@ Important boundaries:
 
 - `tools/archsig/tests/fixtures/minimal/law_policy.json`
 - `tools/archsig/tests/fixtures/homotopy_report/law_policy.json`
+- `tools/archsig/tests/fixtures/complete_archmap_acceptance/law_policy.json`
 
 The fixture is locked against the static Rust builder and the schema catalog
 records both `law-policy-v0` and `law-policy-validation-report-v0`. The schema
 name remains historical; the current ArchSig output treats it as
 `interpretationProfileRef`, while preserving `selectedLawPolicyRef` as
 provenance for existing profile content.
+
+`complete_archmap_acceptance/law_policy.json` is the sanitized acceptance
+profile for complete-first authoring. Its spectrum and homotopy reading
+boundaries validate without warnings and are exercised by the ArchSig CLI test
+against the sanitized large-repo class ArchMap fixture.

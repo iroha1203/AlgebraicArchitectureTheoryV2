@@ -61,7 +61,7 @@ Non-goals remain unchanged:
 | Engineers do not need to design chain complex, homology, distance, or exactness details by hand. | PRD R2, LawPolicy docs, and skill authoring flow keep human input to goal, risk focus, scope, normative evidence, and exclusions. | documented |
 | Filled-loop nonzero holonomy is limited to measured filling and Stokes-style assumptions. | Report fields, Lean theorem guardrail, AAT proof obligations, and non-conclusions. | implemented / bounded |
 | Unfilled loop is architectural hole / missing filler evidence, not violation proof. | `unfilledLoops`, `architecturalHoleReadings`, report non-conclusions, and Lean `unfilledLoop_not_violationConclusion`. | implemented / proved |
-| Required homotopy fixtures are covered. | `tools/archsig/tests/fixtures/homotopy_report/manifest.json` covers zero holonomy, nonzero filled loop, unfilled hole, cache / repository, event projection, retry / idempotency, authorization, and coupon / tax / rounding readings. | implemented |
+| Required homotopy fixtures are covered. | `tools/archsig/tests/fixtures/homotopy_report/manifest.json` covers zero holonomy, nonzero filled loop, unfilled hole, cache / repository, event projection, retry / idempotency, authorization, and coupon / tax / rounding readings. `tools/archsig/tests/fixtures/complete_archmap_acceptance/manifest.json` locks a sanitized large-repo class complete-first fixture with measured Stokes positive local curvature and one targeted blocked gap. | implemented |
 | Validation checks schema shape, refs, coverage boundary, and non-conclusions. | `homotopy_report_fixture_manifest_locks_golden_validation`, packet validation, and locked fixture validation artifact. | implemented |
 | Lean minimal theorem guardrail exists and builds. | `Formal/Arch/Signature/HomotopyHolonomyStokes.lean`, imported by `Formal.lean`; local and CI `lake build`. | proved / bounded |
 | Proof obligations and theorem index reflect Lean additions and claim boundary. | `docs/aat/proof_obligations.md`, `docs/aat/lean_theorem_index.md`. | documented |
@@ -107,6 +107,20 @@ archsig-analysis-validation: pass
 The ArchMap warning is expected for this fixture: it records one observation gap
 and zero failed checks. That warning is part of the measured boundary, not a
 validation failure.
+
+Complete-first acceptance is additionally covered by:
+
+```bash
+cargo test --manifest-path tools/archsig/Cargo.toml \
+  complete_archmap_acceptance_fixture_runs_full_measurement_without_private_names
+```
+
+That test runs `analyze` on
+`tools/archsig/tests/fixtures/complete_archmap_acceptance/archmap.json` and
+`law_policy.json`, asserts ArchMap / LawPolicy / analysis validation pass, checks
+that no private repo identifier is present, and verifies filled loops, nonzero
+holonomy, local curvature cells, a `filledNonzeroHolonomyReview` reading, and
+one targeted `blockedByCoverageGap` loop.
 
 The resulting analysis summary exposes:
 

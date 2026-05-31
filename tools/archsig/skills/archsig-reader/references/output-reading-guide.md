@@ -20,6 +20,12 @@ When `analysis-summary` is available, read it before raw packet details:
 The report posture is: "for this input model, these conclusions were measured."
 Do not turn unmeasured claims into caveats in the main diagnosis.
 
+When ArchSig output is being read as part of complete ArchMap authoring, the
+posture is slightly different: keep the measured conclusion first, then turn
+coverage blockers into authoring repair work. `blockedByCoverageGap` should
+mean "go find or explicitly bound the missing evidence" unless the evidence is
+truly unavailable, private, or out of scope.
+
 ## Priority Fields
 
 | Field | Why it matters |
@@ -67,6 +73,16 @@ as zero curvature, zero holonomy, or path equality.
 - `needsReview` means human/source review is required before conclusions or implementation decisions.
 - `blockedByCoverageGap` means missing evidence must be carried as unknown remainder.
 - `nonConclusion` means ArchSig explicitly refuses a conclusion on that surface.
+
+For complete-first authoring, split `blockedByCoverageGap` into:
+
+- repairable blocker: source, docs, tests, runtime trace, policy, or explicit
+  user evidence can still be read and added to the ArchMap
+- residual blocker: evidence is private, unavailable, or out of scope and must
+  remain as a targeted gap with non-conclusions
+
+Do not hand a repairable blocker to the user as if it were an expected manual
+workflow step.
 
 ## Packet Variant Fallback
 
@@ -119,6 +135,10 @@ For source comparison in this variant, build the review queue from nonzero axes,
   `pathPairCandidates[]`, `architecturalHoleReadings[]`,
   `homotopyHolonomyReadings[]`, and `stokesStyleReadings[]` before proposing
   code or policy changes.
+- For complete ArchMap authoring, feed those resolved refs back into
+  `archmap-creater`: add measured filler evidence when source/test/runtime/
+  policy evidence exists, or add a targeted non-fillability gap when it does
+  not.
 
 ## Metadata / Boundaries
 

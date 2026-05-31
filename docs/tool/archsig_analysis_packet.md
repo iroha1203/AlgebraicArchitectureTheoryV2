@@ -36,6 +36,23 @@ conclusion-first: for the supplied ArchMap and selected LawPolicy, ArchSig
 states the measured verdict, quality measurement counts, and action queue before
 showing metadata boundaries.
 
+For product workflow, ArchMap authoring is complete-first. The intended entry
+experience is not "create a thin map and ask the user to grow it." An LLM-native
+ArchMap authoring pass should collect source inventory, atoms, molecules,
+semantic observations, path candidates, endpoint / continuation evidence,
+filler evidence, non-fillability witnesses, projection hints, and targeted gaps
+before presenting ArchSig results. `analysis-summary` and
+`llm-interpretation-packet` then serve two readers:
+
+- user-facing diagnosis: measured verdict, quality counts, hotspots, holes,
+  and action queue first
+- authoring feedback: coverage blockers, unfilled loops, missing filler
+  evidence, and unmeasured spectrum support become a repair queue before final
+  handoff
+
+Only evidence that is truly private, unavailable, or out of scope should remain
+as residual `blockedByCoverageGap` in a complete-first handoff.
+
 `analysis-summary` is the preferred reading surface for humans and LLM agents.
 It exposes:
 
@@ -179,10 +196,17 @@ Validation metadata records that validation does not imply:
 - `tools/archsig/tests/fixtures/minimal/archsig_analysis_packet.json`
 - `tools/archsig/tests/fixtures/coupon_rounding/archsig_analysis_packet.json`
 - `tools/archsig/tests/fixtures/homotopy_report/archsig_analysis_packet.json`
+- `tools/archsig/tests/fixtures/complete_archmap_acceptance/`
 
 The fixture is locked against the static Rust builder and the schema catalog
 records both `archsig-analysis-packet-v0` and
 `archsig-analysis-packet-validation-report-v0`.
+
+`complete_archmap_acceptance` is a sanitized large-repo class fixture. It
+validates the complete-first workflow without private identifiers: ArchMap
+validation, LawPolicy validation, and packet validation pass; spectrum emits
+hotspots / recurrent pressure; homotopy emits filled loops, nonzero holonomy,
+one targeted unfilled loop, and Stokes-style local curvature cells.
 
 ## Builder
 

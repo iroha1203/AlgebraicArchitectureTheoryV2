@@ -12,9 +12,16 @@ resulting structured packet as an architecture quality measurement over the
 supplied `ArchMap + LawPolicy`, and propose practical improvements.
 
 For user-facing reports, state the measured conclusion first. ArchSig should
-read like a static analysis tool: "for this input model, these axes are nonzero,
-these hotspots were measured, and these loops are unfilled." Claim boundaries
-remain available as metadata, but they should not dilute the main verdict.
+read as a structural measurement over the supplied ArchMap + LawPolicy: "for
+this input model, these axes are nonzero, these hotspots were measured, and
+these loops are unfilled." Claim boundaries remain available as metadata, but
+they should not dilute the main verdict.
+
+When the reader is used during ArchMap authoring, treat the output as a
+complete-first feedback source. `blockedByCoverageGap`, unfilled loops,
+missing filler evidence, and unmeasured spectrum support are repair targets for
+the authoring pass, not final user homework. Report only truly
+unavailable/private/out-of-scope evidence as residual gaps.
 
 This skill must work with only:
 
@@ -113,6 +120,9 @@ Read in this order:
    - Prefer `archsig-analysis-summary.json` when available.
    - Read `verdict`, `qualityMeasurement`, `actionQueue`, and `measurementBasis` before detailed packet sections.
    - Say what the supplied ArchMap + LawPolicy measured: flat/nonflat under selected policy, nonzero axes, hotspots, recurrent pressure, architectural holes, and review action queue.
+   - If the run is part of complete ArchMap authoring, convert coverage
+     blockers into a missing-evidence queue before handing the artifact to the
+     user.
    - If the bundled baseline LawPolicy was explicitly used, label the output as a generic baseline run and avoid project-specific obstruction conclusions unless source comparison and user context justify them.
 
 3. Analysis basis
@@ -182,7 +192,13 @@ Always compare high-priority readings against real source evidence before propos
    - Distinguish confirmed source evidence, plausible but unverified interpretation, and contradicted/stale evidence.
 
 4. Propose improvements:
-   - Start with review actions that reduce uncertainty: route audit, runtime trace capture, provider log review, test evidence, model relationship audit.
+   - During complete ArchMap authoring, start with evidence repair: read or add
+     source refs, docs, tests, runtime traces, policy files, filler evidence,
+     or targeted non-fillability gaps. Do this before proposing product or code
+     refactors.
+   - For user-facing architecture review after the ArchMap is complete, start
+     with review actions that reduce uncertainty: route audit, runtime trace
+     capture, provider log review, test evidence, model relationship audit.
    - For homotopy readings, start by resolving source refs for path pairs, checking whether filler evidence exists, and deciding whether missing filler evidence should stay as a coverage gap or become a project law question.
    - Then propose architecture changes only where source evidence supports the pressure: policy boundary, transaction boundary, anti-corruption layer, interface contract, idempotency/retry/status finalization, provider output validation.
    - Keep proposals tied to source refs and ArchSig fields.

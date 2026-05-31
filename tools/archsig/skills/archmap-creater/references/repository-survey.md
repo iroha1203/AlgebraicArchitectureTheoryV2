@@ -4,6 +4,13 @@ Use this guide before drafting ArchMap for an unfamiliar repository or unfamilia
 
 For large repositories, split the survey across parallel agents. Parallelism is for source discovery and bounded candidate evidence; the final ArchMap still needs one integration pass that checks primitive atom boundaries, source refs, duplicate candidates, confidence, uncertainty, and gaps.
 
+The final user-facing workflow is complete-first. A survey may begin with
+scratch notes and candidate packets, but the delivered ArchMap should not be a
+thin static inventory that expects the user to discover ArchSig's value later.
+Before handoff, integrate all source-backed evidence needed by the requested
+spectrum, homotopy, filler, and Stokes readings, or preserve a targeted gap for
+evidence that is genuinely unavailable.
+
 ## Survey Order
 
 1. Read entry documents.
@@ -132,7 +139,12 @@ Create a compact inventory with these groups:
 - `knownBlindSpots`: dynamic/framework/runtime areas that may affect interpretation
 - `selectionBoundary`: one sentence explaining the bounded slice
 
-Prefer 5-20 high-value included refs for an initial ArchMap. A small accurate ArchMap is better than a large speculative one.
+For the first source selection pass, prefer high-value refs over broad
+speculative coverage. For final handoff, expand the inventory enough to support
+the requested ArchSig readings across authority, state, effects, provider,
+domain, runtime, docs, tests, and policy surfaces. If a surface cannot be read,
+make that boundary explicit as an unavailable/private/out-of-scope ref and a
+targeted observation gap.
 
 ## Reading Depth
 
@@ -157,6 +169,10 @@ Draft observations in this order:
 4. `observationGaps[]` for runtime, framework convention, generated code, dynamic loading, private, unavailable, or unsupported evidence.
 5. `projectionInfo[]` for downstream AAT/SFT handoff hints such as `operationCandidate`, `workflowCandidate`, `stateTransitionCandidate`, or `testOracleCandidate`.
 6. `concernHints[]` for review cues over observations, never for obstruction circuits.
+7. ACTS / Spectrum support for selected diagrams: lhs/rhs refs, witness refs,
+   source-backed transfer-edge cues, and missing support gaps.
+8. Homotopy / Stokes support: path candidates, endpoint refs, continuation
+   evidence, filler evidence, and non-fillability witnesses.
 
 After drafting, revise coverage:
 
@@ -164,6 +180,9 @@ After drafting, revise coverage:
 - runtime atom observations require runtime evidence, otherwise record a gap
 - policy readings require assumed or measured policy source support
 - dynamic/framework boundaries should not become measured zero
+- projection refs declared by atoms should have matching `projectionInfo[]`
+- gaps should target the relevant path rule, operation square, atom, or source
+  boundary instead of acting as global blockers
 
 ## Stop Conditions
 
