@@ -796,6 +796,20 @@ pub struct ArchSigAnalysisPacketV0 {
     #[serde(default)]
     pub axis_forgetting_risk_readings: Vec<ArchSigAxisForgettingRiskReadingV0>,
     #[serde(default)]
+    pub observation_projection_fidelity_readings:
+        Vec<ArchSigObservationProjectionFidelityReadingV0>,
+    #[serde(default)]
+    pub atom_origin_closure_debt_readings: Vec<ArchSigAtomOriginClosureDebtReadingV0>,
+    #[serde(default)]
+    pub effect_relation_algebra_readings: Vec<ArchSigEffectRelationAlgebraReadingV0>,
+    #[serde(default)]
+    pub synthesis_blockage_readings: Vec<ArchSigSynthesisBlockageReadingV0>,
+    #[serde(default)]
+    pub operation_precondition_readiness_readings:
+        Vec<ArchSigOperationPreconditionReadinessReadingV0>,
+    #[serde(default)]
+    pub path_multiplicity_loss_readings: Vec<ArchSigPathMultiplicityLossReadingV0>,
+    #[serde(default)]
     pub signature_trajectory_homotopy_refutation_readings:
         Vec<ArchSigSignatureTrajectoryHomotopyRefutationReadingV0>,
     #[serde(default)]
@@ -2140,6 +2154,112 @@ pub struct ArchSigAxisForgettingRiskReadingV0 {
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+pub struct ArchSigObservationProjectionFidelityReadingV0 {
+    pub reading_id: String,
+    pub source_projection_ref: String,
+    pub source_axis_forgetting_ref: String,
+    pub fidelity_status: String,
+    pub observed_atom_family_count: usize,
+    pub forgotten_coordinate_count: usize,
+    pub observation_collision_count: usize,
+    pub collapsed_atom_family_candidate_count: usize,
+    pub hidden_atom_family_hint_count: usize,
+    pub projection_lost_atom_family_refs: Vec<String>,
+    pub projection_loss_axes: Vec<String>,
+    pub reflection_status: String,
+    pub measurement_boundary: String,
+    pub recommended_next_action: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigAtomOriginClosureDebtReadingV0 {
+    pub reading_id: String,
+    pub source_backed_atom_count: usize,
+    pub derived_or_inferred_atom_count: usize,
+    pub expected_missing_atom_count: usize,
+    pub source_backed_atom_family_refs: Vec<String>,
+    pub derived_or_inferred_refs: Vec<String>,
+    pub missing_expected_atom_refs: Vec<String>,
+    pub closure_status: String,
+    pub weakens_zero_or_repair_claims: Vec<String>,
+    pub evidence_boundary: String,
+    pub recommended_next_action: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigEffectRelationAlgebraReadingV0 {
+    pub reading_id: String,
+    pub generator_refs: Vec<String>,
+    pub effect_atom_refs: Vec<String>,
+    pub relation_atom_refs: Vec<String>,
+    pub external_boundary_refs: Vec<String>,
+    pub required_effect_relations: Vec<String>,
+    pub unresolved_effect_relations: Vec<String>,
+    pub effect_ordering_pressure: String,
+    pub state_transition_ref: String,
+    pub evidence_boundary: String,
+    pub recommended_next_action: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigSynthesisBlockageReadingV0 {
+    pub reading_id: String,
+    pub target_construction_refs: Vec<String>,
+    pub required_atom_refs: Vec<String>,
+    pub constraint_refs: Vec<String>,
+    pub missing_evidence_refs: Vec<String>,
+    pub decision_boundary_refs: Vec<String>,
+    pub candidate_solution_refs: Vec<String>,
+    pub blockage_status: String,
+    pub no_solution_certificate_status: String,
+    pub synthesis_boundary: String,
+    pub recommended_next_action: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigOperationPreconditionReadinessReadingV0 {
+    pub reading_id: String,
+    pub operation_ref: String,
+    pub operation_kind: String,
+    pub readiness_status: String,
+    pub precondition_refs: Vec<String>,
+    pub missing_precondition_refs: Vec<String>,
+    pub coverage_gap_refs: Vec<String>,
+    pub exactness_gap_refs: Vec<String>,
+    pub witness_gap_refs: Vec<String>,
+    pub candidate_boundary: String,
+    pub recommended_next_action: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigPathMultiplicityLossReadingV0 {
+    pub reading_id: String,
+    pub scope_ref: String,
+    pub path_reading_refs: Vec<String>,
+    pub observed_path_count: usize,
+    pub alternate_path_pressure: usize,
+    pub max_walk_length_proxy: usize,
+    pub reachability_forgotten_refs: Vec<String>,
+    pub fan_in_boundary_refs: Vec<String>,
+    pub multiplicity_loss_status: String,
+    pub homotopy_boundary: String,
+    pub evidence_boundary: String,
+    pub recommended_next_action: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct ArchSigSignatureTrajectoryHomotopyRefutationReadingV0 {
     pub reading_id: String,
     pub selected_homotopy_ref: String,
@@ -2697,6 +2817,18 @@ pub struct ArchSigLlmInterpretationPacketV0 {
     #[serde(default)]
     pub axis_forgetting_risk_summary: Vec<String>,
     #[serde(default)]
+    pub observation_projection_fidelity_summary: Vec<String>,
+    #[serde(default)]
+    pub atom_origin_closure_debt_summary: Vec<String>,
+    #[serde(default)]
+    pub effect_relation_algebra_summary: Vec<String>,
+    #[serde(default)]
+    pub synthesis_blockage_summary: Vec<String>,
+    #[serde(default)]
+    pub operation_precondition_readiness_summary: Vec<String>,
+    #[serde(default)]
+    pub path_multiplicity_loss_summary: Vec<String>,
+    #[serde(default)]
     pub signature_trajectory_homotopy_refutation_summary: Vec<String>,
     #[serde(default)]
     pub bridge_split_obstruction_transfer_summary: Vec<String>,
@@ -2768,6 +2900,12 @@ pub struct ArchSigAnalysisPacketValidationSummaryV0 {
     pub homotopy_order_sensitivity_reading_count: usize,
     pub diagram_fillability_reading_count: usize,
     pub axis_forgetting_risk_reading_count: usize,
+    pub observation_projection_fidelity_reading_count: usize,
+    pub atom_origin_closure_debt_reading_count: usize,
+    pub effect_relation_algebra_reading_count: usize,
+    pub synthesis_blockage_reading_count: usize,
+    pub operation_precondition_readiness_reading_count: usize,
+    pub path_multiplicity_loss_reading_count: usize,
     pub signature_trajectory_homotopy_refutation_reading_count: usize,
     pub bridge_split_obstruction_transfer_reading_count: usize,
     pub representation_strength_reading_count: usize,

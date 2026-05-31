@@ -3239,6 +3239,224 @@
       ]
     }
   ],
+  "observationProjectionFidelityReadings": [
+    {
+      "readingId": "observation-projection-fidelity:observation-projection-fixture-archmap-atom-observation",
+      "sourceProjectionRef": "observation-projection:fixture-archmap-atom-observation",
+      "sourceAxisForgettingRef": "axis-forgetting-risk:selected-projection",
+      "fidelityStatus": "projectionLossObserved",
+      "observedAtomFamilyCount": 3,
+      "forgottenCoordinateCount": 1,
+      "observationCollisionCount": 0,
+      "collapsedAtomFamilyCandidateCount": 0,
+      "hiddenAtomFamilyHintCount": 1,
+      "projectionLostAtomFamilyRefs": [
+        "gap-runtime-user-db-trace: runtime trace was requested but not supplied"
+      ],
+      "projectionLossAxes": [
+        "gap-runtime-user-db-trace"
+      ],
+      "reflectionStatus": "blockedWithoutAxisPreservationAndWitnessCompleteness",
+      "measurementBoundary": "projection loss is separated from zero/lawfulness; missing coordinates are not measured absent atoms",
+      "recommendedNextAction": "review projection-lost families and forgotten coordinates before treating the ArchMap as a faithful Atom observation",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    }
+  ],
+  "atomOriginClosureDebtReadings": [
+    {
+      "readingId": "atom-origin-closure-debt:fixture-archmap-atom-observation",
+      "sourceBackedAtomCount": 4,
+      "derivedOrInferredAtomCount": 0,
+      "expectedMissingAtomCount": 1,
+      "sourceBackedAtomFamilyRefs": [
+        "contractSpecification",
+        "existence",
+        "relation"
+      ],
+      "derivedOrInferredRefs": [],
+      "missingExpectedAtomRefs": [
+        "gap-runtime-user-db-trace"
+      ],
+      "closureStatus": "originClosureDebtObserved",
+      "weakensZeroOrRepairClaims": [
+        "zero readings need source-backed Atom closure or explicit coverage boundary",
+        "repair and synthesis candidates remain bounded when expected atoms are missing",
+        "derived or inferred atoms must not be promoted to source-backed evidence"
+      ],
+      "evidenceBoundary": "Atom origin closure debt is read from sourceRefs and observation gaps; it is not complete source extraction validation",
+      "recommendedNextAction": "separate source-backed, derived/inferred, and expected-missing Atom evidence before using the packet for repair or synthesis claims",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    }
+  ],
+  "effectRelationAlgebraReadings": [
+    {
+      "readingId": "effect-relation-algebra:fixture-archmap-atom-observation",
+      "generatorRefs": [
+        "atom:relation:route-service"
+      ],
+      "effectAtomRefs": [],
+      "relationAtomRefs": [
+        "atom:relation:route-service"
+      ],
+      "externalBoundaryRefs": [],
+      "requiredEffectRelations": [
+        "effect ordering",
+        "replay or roundtrip stability",
+        "compensation/finalization relation",
+        "handler and external provider boundary ownership"
+      ],
+      "unresolvedEffectRelations": [
+        "gap-runtime-user-db-trace"
+      ],
+      "effectOrderingPressure": "effectRelationPressureObserved",
+      "stateTransitionRef": "state-transition-algebra:fixture-archmap-atom-observation",
+      "evidenceBoundary": "effect relation algebra is kept separate from state transition pressure and only reads observed effect/relation/runtime evidence",
+      "recommendedNextAction": "review async job, provider, event handler, replay, roundtrip, and compensation relations before approving state/effect repairs",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    }
+  ],
+  "synthesisBlockageReadings": [
+    {
+      "readingId": "synthesis-blockage:fixture-archmap-atom-observation",
+      "targetConstructionRefs": [
+        "repair:obstruction-semantic-contract-mismatch-computed",
+        "feature-extension-formula:fixture-archmap-atom-observation"
+      ],
+      "requiredAtomRefs": [
+        "atom:component:route-users",
+        "atom:component:service-user",
+        "atom:relation:route-service",
+        "atom:contract:create-user"
+      ],
+      "constraintRefs": [
+        "obstruction:semantic-contract-mismatch:computed",
+        "obstruction:semantic-contract-mismatch:computed",
+        "split-readiness:molecule-user-request-responsibility",
+        "obstruction:semantic-contract-mismatch:computed",
+        "gap-runtime-user-db-trace",
+        "diagram filling is LawPolicy-relative and requires selected witness completeness"
+      ],
+      "missingEvidenceRefs": [
+        "coverage:semantic-contract-atoms: report observation gap and block signature-zero reflection",
+        "gap-runtime-user-db-trace: runtime trace was requested but not supplied",
+        "implementation patch and verification evidence are not supplied by ArchSig analysis",
+        "witness:semantic-contract-mismatch: report observation gap; do not infer measured zero",
+        "gap-runtime-user-db-trace"
+      ],
+      "decisionBoundaryRefs": [
+        "diagram-fillability:local-curvature-obstruction-semantic-contract-mismatch-computed"
+      ],
+      "candidateSolutionRefs": [],
+      "blockageStatus": "synthesisBlockedByMissingEvidenceOrConstraints",
+      "noSolutionCertificateStatus": "notASolverAndNotAbsenceProof",
+      "synthesisBoundary": "candidate absence, missing evidence, and no-solution certificates are distinct; ArchSig does not run a synthesis solver",
+      "recommendedNextAction": "resolve Atom, constraint, evidence, and decision-boundary blockers before reading a repair candidate as constructible",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    }
+  ],
+  "operationPreconditionReadinessReadings": [
+    {
+      "readingId": "operation-precondition-readiness:repair-obstruction-semantic-contract-mismatch-computed",
+      "operationRef": "repair:obstruction-semantic-contract-mismatch-computed",
+      "operationKind": "repair-semanticmismatchcircuit",
+      "readinessStatus": "blockedByMissingPreconditionEvidence",
+      "preconditionRefs": [
+        "human review selects a repair operation",
+        "resolve or explicitly accept coverage gap gap-runtime-user-db-trace"
+      ],
+      "missingPreconditionRefs": [
+        "coverage:semantic-contract-atoms: report observation gap and block signature-zero reflection",
+        "gap-runtime-user-db-trace: runtime trace was requested but not supplied",
+        "implementation patch and verification evidence are not supplied by ArchSig analysis",
+        "witness:semantic-contract-mismatch: report observation gap; do not infer measured zero",
+        "resolve or explicitly accept coverage gap gap-runtime-user-db-trace"
+      ],
+      "coverageGapRefs": [
+        "gap-runtime-user-db-trace",
+        "gap-runtime-user-db-trace"
+      ],
+      "exactnessGapRefs": [
+        "gap-runtime-user-db-trace",
+        "gap-runtime-user-db-trace"
+      ],
+      "witnessGapRefs": [
+        "witness:layer-violation",
+        "witness:semantic-contract-mismatch"
+      ],
+      "candidateBoundary": "repair/split/migration/protection candidates are review cues until precondition evidence is observed",
+      "recommendedNextAction": "supply coverage, exactness, witness, and runtime precondition evidence before treating the operation as safe",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    }
+  ],
+  "pathMultiplicityLossReadings": [
+    {
+      "readingId": "path-multiplicity-loss:fixture-archmap-atom-observation",
+      "scopeRef": "fixture-archmap-atom-observation",
+      "pathReadingRefs": [
+        "path-signature-trajectory:operation-delta-repair-obstruction-semantic-contract-mismatch-computed"
+      ],
+      "observedPathCount": 1,
+      "alternatePathPressure": 8,
+      "maxWalkLengthProxy": 3,
+      "reachabilityForgottenRefs": [
+        "gap-runtime-user-db-trace"
+      ],
+      "fanInBoundaryRefs": [],
+      "multiplicityLossStatus": "reachabilityMultiplicityLossObserved",
+      "homotopyBoundary": "path multiplicity is a reachability and homotopy review signal, not proof of all paths",
+      "evidenceBoundary": "alternate-path pressure is bounded by observed operation trajectories, homotopy sensitivity, workflow risk, and gaps",
+      "recommendedNextAction": "inspect high fan-in and alternate path boundaries before treating one observed path as complete reachability",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    }
+  ],
   "signatureTrajectoryHomotopyRefutationReadings": [
     {
       "readingId": "signature-trajectory-homotopy-refutation:selected-trajectory",
@@ -7511,7 +7729,7 @@
   "structuralReadingReviewSurface": {
     "surfaceId": "aat-structural-reading-review-surface",
     "status": "needsReview",
-    "currentStateReading": "ArchSig reads current architecture state across Atom support and compatibility, LawUniverse coverage, feature extension coordinates, operation calculus laws, path signature trajectory, homotopy order sensitivity, diagram fillability, axis forgetting risk, trajectory homotopy refutation, bridge split transfer, representation strength, local curvature, three-layer flatness, observation projection, state transition algebra, operation-invariant constraints, and split readiness; blockedRepresentations=14, curvatures=1, blockedOperations=1, splitBlockers=1, atomConflicts=0, unmeasuredRequiredLaws=2, blockedDiagrams=1, axisForgetting=1, homotopyRefutations=1, bridgeTransfers=1",
+    "currentStateReading": "ArchSig reads current architecture state across Atom support and compatibility, LawUniverse coverage, feature extension coordinates, operation calculus laws, path signature trajectory, homotopy order sensitivity, diagram fillability, axis forgetting/projection fidelity, Atom origin closure, effect relation algebra, synthesis blockage, operation preconditions, path multiplicity, trajectory homotopy refutation, bridge split transfer, representation strength, local curvature, three-layer flatness, observation projection, state transition algebra, operation-invariant constraints, and split readiness; blockedRepresentations=14, curvatures=1, blockedOperations=1, splitBlockers=1, atomConflicts=0, unmeasuredRequiredLaws=2, blockedDiagrams=1, axisForgetting=1, projectionLoss=1, atomOriginDebt=1, effectRelationPressure=1, synthesisBlockage=1, operationPreconditionBlockers=1, pathMultiplicityLoss=1, homotopyRefutations=1, bridgeTransfers=1",
     "connectedReadingRefs": [
       "representationStrength:weightedAdjacencyMatrix",
       "representationStrength:reachableConeSize",
@@ -7535,6 +7753,12 @@
       "homotopy-order-sensitivity:selected-operations",
       "diagram-fillability:local-curvature-obstruction-semantic-contract-mismatch-computed",
       "axis-forgetting-risk:selected-projection",
+      "observation-projection-fidelity:observation-projection-fixture-archmap-atom-observation",
+      "atom-origin-closure-debt:fixture-archmap-atom-observation",
+      "effect-relation-algebra:fixture-archmap-atom-observation",
+      "synthesis-blockage:fixture-archmap-atom-observation",
+      "operation-precondition-readiness:repair-obstruction-semantic-contract-mismatch-computed",
+      "path-multiplicity-loss:fixture-archmap-atom-observation",
       "signature-trajectory-homotopy-refutation:selected-trajectory",
       "bridge-split-obstruction-transfer:split-readiness-molecule-user-request-responsibility"
     ],
@@ -7543,6 +7767,10 @@
       "read LawUniverse coverage and witness exactness before treating absence as measured zero",
       "read feature extension, operation law, trajectory, homotopy, and diagram-fillability axes as current-state coordinates, not PR evolution claims",
       "read axis-forgetting risk before treating a coarse projection as zero-reflecting or obstruction-reflecting",
+      "read projection fidelity and Atom origin closure before using summaries for zero, repair, or synthesis claims",
+      "read effect relation algebra separately from state transition pressure before approving replay, provider, event, or handler boundaries",
+      "read synthesis blockage and operation precondition readiness before treating candidates as constructible or safe",
+      "read path multiplicity loss before treating one observed route as complete reachability",
       "read selected trajectory disagreement before treating same-endpoint operations as homotopic",
       "read bridge split transfer before treating a boundary operation as obstruction removal",
       "read representation-strength blockers before treating zero or obstruction absence as exact",
@@ -8558,7 +8786,7 @@
     ],
     "transferBridgeEdgeSummary": [],
     "measurementExpansionSummary": [
-      "v0.3.0 measurement expansion reads 2 Atom support axes, 1 compatibility surfaces, 1 LawUniverse coverage surfaces, 1 feature-extension formulas, 1 operation-law surfaces, 1 path trajectories, 1 homotopy/order surfaces, 1 diagram-fillability surfaces, 1 axis-forgetting risks, 1 trajectory homotopy refutations, 1 bridge split-transfer surfaces, and 1 nonzero monodromy witnesses"
+      "v0.3.0 measurement expansion reads 2 Atom support axes, 1 compatibility surfaces, 1 LawUniverse coverage surfaces, 1 feature-extension formulas, 1 operation-law surfaces, 1 path trajectories, 1 homotopy/order surfaces, 1 diagram-fillability surfaces, 1 axis-forgetting risks, 1 projection-fidelity surfaces, 1 Atom origin-closure debts, 1 effect-relation algebras, 1 synthesis blockers, 1 operation-precondition readings, 1 path-multiplicity readings, 1 trajectory homotopy refutations, 1 bridge split-transfer surfaces, and 1 nonzero monodromy witnesses"
     ],
     "atomSupportAxisSummary": [
       "fixture-archmap-atom-observation support=4 concentration=maxAxisShare=2/4 pressure=mixedAxisPressurePresent",
@@ -8587,6 +8815,24 @@
     ],
     "axisForgettingRiskSummary": [
       "observation-projection:fixture-archmap-atom-observation kind=selectedAxisOrWitnessLoss zeroReflection=blockedWithoutAxisPreservationAndWitnessCompleteness obstructionReflection=blockedWithoutAxisPreservationAndWitnessCompleteness mixedScopes=2"
+    ],
+    "observationProjectionFidelitySummary": [
+      "observation-projection:fixture-archmap-atom-observation status=projectionLossObserved forgotten=1 collisions=0 reflection=blockedWithoutAxisPreservationAndWitnessCompleteness"
+    ],
+    "atomOriginClosureDebtSummary": [
+      "atom-origin-closure-debt:fixture-archmap-atom-observation status=originClosureDebtObserved sourceBacked=4 inferred=0 missingExpected=1"
+    ],
+    "effectRelationAlgebraSummary": [
+      "effect-relation-algebra:fixture-archmap-atom-observation pressure=effectRelationPressureObserved generators=1 unresolved=1 externalBoundaries=0"
+    ],
+    "synthesisBlockageSummary": [
+      "synthesis-blockage:fixture-archmap-atom-observation status=synthesisBlockedByMissingEvidenceOrConstraints targets=2 constraints=6 missing=5 noSolution=notASolverAndNotAbsenceProof"
+    ],
+    "operationPreconditionReadinessSummary": [
+      "repair:obstruction-semantic-contract-mismatch-computed kind=repair-semanticmismatchcircuit status=blockedByMissingPreconditionEvidence missing=5 witnesses=2"
+    ],
+    "pathMultiplicityLossSummary": [
+      "fixture-archmap-atom-observation status=reachabilityMultiplicityLossObserved paths=1 alternatePressure=8 fanIn=0 forgotten=1"
     ],
     "signatureTrajectoryHomotopyRefutationSummary": [
       "homotopy-order-sensitivity:selected-operations equivalence=selectedTrajectoryDisagreementObserved refutation=refutationCandidate disagreements=1"
@@ -8638,8 +8884,8 @@
       "molecule:user-request-responsibility status=needsReview score=92 boundaryOp=interface"
     ],
     "structuralReadingReviewSummary": [
-      "aat-structural-reading-review-surface status=needsReview refs=24 focus=12",
-      "ArchSig reads current architecture state across Atom support and compatibility, LawUniverse coverage, feature extension coordinates, operation calculus laws, path signature trajectory, homotopy order sensitivity, diagram fillability, axis forgetting risk, trajectory homotopy refutation, bridge split transfer, representation strength, local curvature, three-layer flatness, observation projection, state transition algebra, operation-invariant constraints, and split readiness; blockedRepresentations=14, curvatures=1, blockedOperations=1, splitBlockers=1, atomConflicts=0, unmeasuredRequiredLaws=2, blockedDiagrams=1, axisForgetting=1, homotopyRefutations=1, bridgeTransfers=1"
+      "aat-structural-reading-review-surface status=needsReview refs=30 focus=16",
+      "ArchSig reads current architecture state across Atom support and compatibility, LawUniverse coverage, feature extension coordinates, operation calculus laws, path signature trajectory, homotopy order sensitivity, diagram fillability, axis forgetting/projection fidelity, Atom origin closure, effect relation algebra, synthesis blockage, operation preconditions, path multiplicity, trajectory homotopy refutation, bridge split transfer, representation strength, local curvature, three-layer flatness, observation projection, state transition algebra, operation-invariant constraints, and split readiness; blockedRepresentations=14, curvatures=1, blockedOperations=1, splitBlockers=1, atomConflicts=0, unmeasuredRequiredLaws=2, blockedDiagrams=1, axisForgetting=1, projectionLoss=1, atomOriginDebt=1, effectRelationPressure=1, synthesisBlockage=1, operationPreconditionBlockers=1, pathMultiplicityLoss=1, homotopyRefutations=1, bridgeTransfers=1"
     ],
     "currentStateEvolutionBoundarySummary": [
       "ArchSig computes current AAT structural state from ArchMap fixture-archmap-atom-observation and LawPolicy llm-native-aat-law-policy-fixture; it reads atoms, molecules, laws, obstructions, bridge pressure, structural readings, and bounded review focus",

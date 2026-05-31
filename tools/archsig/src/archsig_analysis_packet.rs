@@ -15,35 +15,38 @@ use crate::{
     ArchSigArchitectureSpectrumRecurrentObstructionV0, ArchSigArchitectureSpectrumReportV0,
     ArchSigArchitectureSpectrumWitnessClusterV0, ArchSigArchitectureStateV0,
     ArchSigAtomCompatibilityConflictV0, ArchSigAtomCompatibilityReadingV0,
-    ArchSigAtomConfigurationSummaryV0, ArchSigAtomSupportAxisReadingV0,
-    ArchSigAxisContinuationTraceV0, ArchSigAxisExcursionV0, ArchSigAxisForgettingRiskReadingV0,
-    ArchSigAxisRestrictionCountV0, ArchSigAxisWiseMonodromyDefectV0,
-    ArchSigBoundaryHolonomyAxisResidualV0, ArchSigBoundaryHolonomyReadingFamilyV0,
-    ArchSigBoundaryPreparationRankV0, ArchSigBoundedJudgementV0, ArchSigBridgeAtomFamilyReadingV0,
-    ArchSigBridgeEdgeBreakdownV0, ArchSigBridgeSplitObstructionTransferReadingV0,
-    ArchSigChangeImpactReadingV0, ArchSigCouplingCohesionReadingV0, ArchSigCoverageStatusV0,
+    ArchSigAtomConfigurationSummaryV0, ArchSigAtomOriginClosureDebtReadingV0,
+    ArchSigAtomSupportAxisReadingV0, ArchSigAxisContinuationTraceV0, ArchSigAxisExcursionV0,
+    ArchSigAxisForgettingRiskReadingV0, ArchSigAxisRestrictionCountV0,
+    ArchSigAxisWiseMonodromyDefectV0, ArchSigBoundaryHolonomyAxisResidualV0,
+    ArchSigBoundaryHolonomyReadingFamilyV0, ArchSigBoundaryPreparationRankV0,
+    ArchSigBoundedJudgementV0, ArchSigBridgeAtomFamilyReadingV0, ArchSigBridgeEdgeBreakdownV0,
+    ArchSigBridgeSplitObstructionTransferReadingV0, ArchSigChangeImpactReadingV0,
+    ArchSigCouplingCohesionReadingV0, ArchSigCoverageStatusV0,
     ArchSigCurrentStateEvolutionBoundaryV0, ArchSigCurvatureSupportReadingV0,
     ArchSigCurvatureTopModeV0, ArchSigCurvatureTransferEdgeV0,
     ArchSigCurvatureTransferMatrixEntryV0, ArchSigCurvatureTransferOperatorV0,
     ArchSigCurvatureTransferReadingV0, ArchSigCurvatureWitnessClusterV0,
     ArchSigCurvatureWitnessSupportV0, ArchSigDesignPressureReadingV0,
     ArchSigDesignPrincipleReadingV0, ArchSigDiagramFillabilityReadingV0,
-    ArchSigDominantAtomFamilyCompositionV0, ArchSigEvolutionRiskRankingV0,
-    ArchSigFeatureBoundaryResidualReadingV0, ArchSigFeatureExtensionAxisSummaryV0,
-    ArchSigFeatureExtensionDiagnosisReadingV0, ArchSigFeatureExtensionFormulaReadingV0,
-    ArchSigFeatureExtensionWitnessAttributionV0, ArchSigFillerCandidateReadingV0,
-    ArchSigFlatnessReadingV0, ArchSigHighOverlapMoleculePairV0, ArchSigHomotopyAggregateReadingV0,
-    ArchSigHomotopyCellSummaryV0, ArchSigHomotopyComplexSummaryV0,
-    ArchSigHomotopyHolonomyReadingV0, ArchSigHomotopyOrderSensitivityReadingV0,
-    ArchSigInvariantFamilyReadingV0, ArchSigLawUniverseCoverageReadingV0,
-    ArchSigLawUniverseReadingV0, ArchSigLayerSplitV0, ArchSigLlmInterpretationPacketV0,
-    ArchSigLocalCurvatureDiagramReadingV0, ArchSigLoopCandidateV0,
-    ArchSigMeasurementReadingBoundaryV0, ArchSigMoleculeReadingV0, ArchSigMonodromyReadingFamilyV0,
-    ArchSigNonzeroMonodromyWitnessV0, ArchSigObservationProjectionReadingV0,
+    ArchSigDominantAtomFamilyCompositionV0, ArchSigEffectRelationAlgebraReadingV0,
+    ArchSigEvolutionRiskRankingV0, ArchSigFeatureBoundaryResidualReadingV0,
+    ArchSigFeatureExtensionAxisSummaryV0, ArchSigFeatureExtensionDiagnosisReadingV0,
+    ArchSigFeatureExtensionFormulaReadingV0, ArchSigFeatureExtensionWitnessAttributionV0,
+    ArchSigFillerCandidateReadingV0, ArchSigFlatnessReadingV0, ArchSigHighOverlapMoleculePairV0,
+    ArchSigHomotopyAggregateReadingV0, ArchSigHomotopyCellSummaryV0,
+    ArchSigHomotopyComplexSummaryV0, ArchSigHomotopyHolonomyReadingV0,
+    ArchSigHomotopyOrderSensitivityReadingV0, ArchSigInvariantFamilyReadingV0,
+    ArchSigLawUniverseCoverageReadingV0, ArchSigLawUniverseReadingV0, ArchSigLayerSplitV0,
+    ArchSigLlmInterpretationPacketV0, ArchSigLocalCurvatureDiagramReadingV0,
+    ArchSigLoopCandidateV0, ArchSigMeasurementReadingBoundaryV0, ArchSigMoleculeReadingV0,
+    ArchSigMonodromyReadingFamilyV0, ArchSigNonzeroMonodromyWitnessV0,
+    ArchSigObservationProjectionFidelityReadingV0, ArchSigObservationProjectionReadingV0,
     ArchSigObstructionCircuitV0, ArchSigOperationCalculusLawReadingV0,
     ArchSigOperationDeltaReadingV0, ArchSigOperationInvariantGaloisReadingV0,
-    ArchSigOperationSquareCandidateV0, ArchSigPathContinuationTraceV0,
-    ArchSigPathHomotopyDiagramReadingV0, ArchSigPathPairCandidateV0,
+    ArchSigOperationPreconditionReadinessReadingV0, ArchSigOperationSquareCandidateV0,
+    ArchSigPathContinuationTraceV0, ArchSigPathHomotopyDiagramReadingV0,
+    ArchSigPathMultiplicityLossReadingV0, ArchSigPathPairCandidateV0,
     ArchSigPathSignatureTrajectoryReadingV0, ArchSigRecurrentObstructionModeV0,
     ArchSigRepairAxisDeltaReadingV0, ArchSigRepairOperationCandidateV0,
     ArchSigRepairTransferRiskRankV0, ArchSigRepresentationStrengthReadingV0,
@@ -53,8 +56,9 @@ use crate::{
     ArchSigSpectralModeComponentV0, ArchSigSpectralModeReadingV0, ArchSigSpectralValueV0,
     ArchSigSplitReadinessReadingV0, ArchSigStateTransitionAlgebraReadingV0,
     ArchSigStokesStyleReadingV0, ArchSigStructuralReadingReviewSurfaceV0,
-    ArchSigSubjectFamilySpreadV0, ArchSigThreeLayerFlatnessReadingV0,
-    ArchSigTransferBridgeReadingV0, ArchSigTransferMatrixEntryV0, ArchSigWorkflowAtomFamilyCountV0,
+    ArchSigSubjectFamilySpreadV0, ArchSigSynthesisBlockageReadingV0,
+    ArchSigThreeLayerFlatnessReadingV0, ArchSigTransferBridgeReadingV0,
+    ArchSigTransferMatrixEntryV0, ArchSigWorkflowAtomFamilyCountV0,
     ArchSigWorkflowRiskAxisReadingV0, ArchSigWorkflowRiskReadingV0, LAW_POLICY_SCHEMA_VERSION,
     LawPolicyDocumentV0, LawPolicyObstructionCircuitDefinitionV0, LawPolicyReadingBoundaryV0,
     LawPolicySignatureAxisDefinitionV0, LawPolicyWitnessRuleV0, ValidationCheck, ValidationExample,
@@ -215,6 +219,34 @@ pub fn build_archsig_analysis_packet(
         &atom_support_axis_readings,
         &observation_projection_readings,
     );
+    let observation_projection_fidelity_readings = build_observation_projection_fidelity_readings(
+        &observation_projection_readings,
+        &axis_forgetting_risk_readings,
+    );
+    let atom_origin_closure_debt_readings = build_atom_origin_closure_debt_readings(archmap);
+    let effect_relation_algebra_readings = build_effect_relation_algebra_readings(
+        archmap,
+        &state_transition_algebra_readings,
+        &workflow_risk_readings,
+        &obstruction_circuits,
+    );
+    let synthesis_blockage_readings = build_synthesis_blockage_readings(
+        archmap,
+        &repair_operation_candidates,
+        &feature_extension_formula_readings,
+        &diagram_fillability_readings,
+    );
+    let operation_precondition_readiness_readings = build_operation_precondition_readiness_readings(
+        &repair_operation_candidates,
+        &operation_calculus_law_readings,
+        &law_universe_coverage_readings,
+    );
+    let path_multiplicity_loss_readings = build_path_multiplicity_loss_readings(
+        archmap,
+        &path_signature_trajectory_readings,
+        &homotopy_order_sensitivity_readings,
+        &workflow_risk_readings,
+    );
     let signature_trajectory_homotopy_refutation_readings =
         build_signature_trajectory_homotopy_refutation_readings(
             &path_signature_trajectory_readings,
@@ -318,6 +350,12 @@ pub fn build_archsig_analysis_packet(
         &homotopy_order_sensitivity_readings,
         &diagram_fillability_readings,
         &axis_forgetting_risk_readings,
+        &observation_projection_fidelity_readings,
+        &atom_origin_closure_debt_readings,
+        &effect_relation_algebra_readings,
+        &synthesis_blockage_readings,
+        &operation_precondition_readiness_readings,
+        &path_multiplicity_loss_readings,
         &signature_trajectory_homotopy_refutation_readings,
         &bridge_split_obstruction_transfer_readings,
     );
@@ -368,6 +406,12 @@ pub fn build_archsig_analysis_packet(
         &homotopy_order_sensitivity_readings,
         &diagram_fillability_readings,
         &axis_forgetting_risk_readings,
+        &observation_projection_fidelity_readings,
+        &atom_origin_closure_debt_readings,
+        &effect_relation_algebra_readings,
+        &synthesis_blockage_readings,
+        &operation_precondition_readiness_readings,
+        &path_multiplicity_loss_readings,
         &signature_trajectory_homotopy_refutation_readings,
         &bridge_split_obstruction_transfer_readings,
         &representation_strength_readings,
@@ -437,6 +481,12 @@ pub fn build_archsig_analysis_packet(
         homotopy_order_sensitivity_readings,
         diagram_fillability_readings,
         axis_forgetting_risk_readings,
+        observation_projection_fidelity_readings,
+        atom_origin_closure_debt_readings,
+        effect_relation_algebra_readings,
+        synthesis_blockage_readings,
+        operation_precondition_readiness_readings,
+        path_multiplicity_loss_readings,
         signature_trajectory_homotopy_refutation_readings,
         bridge_split_obstruction_transfer_readings,
         homotopy_complex_summary: Some(homotopy_complex_summary),
@@ -6790,6 +6840,505 @@ fn build_axis_forgetting_risk_readings(
     }]
 }
 
+fn build_observation_projection_fidelity_readings(
+    observation_projection_readings: &[ArchSigObservationProjectionReadingV0],
+    axis_forgetting_risk_readings: &[ArchSigAxisForgettingRiskReadingV0],
+) -> Vec<ArchSigObservationProjectionFidelityReadingV0> {
+    observation_projection_readings
+        .iter()
+        .map(|projection| {
+            let axis_forgetting = axis_forgetting_risk_readings.first();
+            let projection_loss_axes = unique_strings(
+                projection
+                    .forgotten_coordinates
+                    .iter()
+                    .chain(
+                        axis_forgetting
+                            .into_iter()
+                            .flat_map(|reading| reading.forgotten_axis_refs.iter()),
+                    )
+                    .cloned(),
+            );
+            let lost_family_refs = projection
+                .collapsed_atom_family_candidates
+                .iter()
+                .chain(projection.hidden_atom_family_hints.iter())
+                .cloned()
+                .collect::<Vec<_>>();
+            let loss_count = projection.forgotten_coordinates.len()
+                + projection.observation_collision_pairs.len()
+                + projection.collapsed_atom_family_candidates.len()
+                + projection.hidden_atom_family_hints.len()
+                + axis_forgetting
+                    .map(|reading| reading.mixed_axis_scope_refs.len())
+                    .unwrap_or_default();
+            ArchSigObservationProjectionFidelityReadingV0 {
+                reading_id: format!(
+                    "observation-projection-fidelity:{}",
+                    stable_id(&projection.reading_id)
+                ),
+                source_projection_ref: projection.reading_id.clone(),
+                source_axis_forgetting_ref: axis_forgetting
+                    .map(|reading| reading.reading_id.clone())
+                    .unwrap_or_else(|| "axis-forgetting-risk:none-observed".to_string()),
+                fidelity_status: if loss_count == 0 {
+                    "boundedProjectionNoObservedLoss".to_string()
+                } else {
+                    "projectionLossObserved".to_string()
+                },
+                observed_atom_family_count: projection.observed_atom_family_count,
+                forgotten_coordinate_count: projection.forgotten_coordinates.len(),
+                observation_collision_count: projection.observation_collision_pairs.len(),
+                collapsed_atom_family_candidate_count: projection
+                    .collapsed_atom_family_candidates
+                    .len(),
+                hidden_atom_family_hint_count: projection.hidden_atom_family_hints.len(),
+                projection_lost_atom_family_refs: lost_family_refs,
+                projection_loss_axes,
+                reflection_status: axis_forgetting
+                    .map(|reading| reading.zero_reflection_status.clone())
+                    .unwrap_or_else(|| "notClaimed".to_string()),
+                measurement_boundary:
+                    "projection loss is separated from zero/lawfulness; missing coordinates are not measured absent atoms"
+                        .to_string(),
+                recommended_next_action:
+                    "review projection-lost families and forgotten coordinates before treating the ArchMap as a faithful Atom observation"
+                        .to_string(),
+                non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
+            }
+        })
+        .collect()
+}
+
+fn build_atom_origin_closure_debt_readings(
+    archmap: &ArchMapDocumentV0,
+) -> Vec<ArchSigAtomOriginClosureDebtReadingV0> {
+    let source_backed_atom_family_refs = unique_strings(
+        archmap
+            .atom_observations
+            .iter()
+            .filter(|atom| !atom.source_refs.is_empty())
+            .map(|atom| atom.atom_family.clone()),
+    );
+    let derived_or_inferred_refs = archmap
+        .atom_observations
+        .iter()
+        .filter(|atom| atom.source_refs.is_empty())
+        .map(|atom| atom.atom_observation_id.clone())
+        .collect::<Vec<_>>();
+    let missing_expected_atom_refs = archmap
+        .observation_gaps
+        .iter()
+        .map(|gap| gap.gap_id.clone())
+        .collect::<Vec<_>>();
+    let debt_count = derived_or_inferred_refs.len() + missing_expected_atom_refs.len();
+    vec![ArchSigAtomOriginClosureDebtReadingV0 {
+        reading_id: format!("atom-origin-closure-debt:{}", stable_id(&archmap.map_id)),
+        source_backed_atom_count: archmap
+            .atom_observations
+            .iter()
+            .filter(|atom| !atom.source_refs.is_empty())
+            .count(),
+        derived_or_inferred_atom_count: derived_or_inferred_refs.len(),
+        expected_missing_atom_count: missing_expected_atom_refs.len(),
+        source_backed_atom_family_refs,
+        derived_or_inferred_refs,
+        missing_expected_atom_refs,
+        closure_status: if debt_count == 0 {
+            "sourceBackedUnderCurrentArchMap".to_string()
+        } else {
+            "originClosureDebtObserved".to_string()
+        },
+        weakens_zero_or_repair_claims: vec![
+            "zero readings need source-backed Atom closure or explicit coverage boundary".to_string(),
+            "repair and synthesis candidates remain bounded when expected atoms are missing".to_string(),
+            "derived or inferred atoms must not be promoted to source-backed evidence".to_string(),
+        ],
+        evidence_boundary:
+            "Atom origin closure debt is read from sourceRefs and observation gaps; it is not complete source extraction validation"
+                .to_string(),
+        recommended_next_action:
+            "separate source-backed, derived/inferred, and expected-missing Atom evidence before using the packet for repair or synthesis claims"
+                .to_string(),
+        non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
+    }]
+}
+
+fn build_effect_relation_algebra_readings(
+    archmap: &ArchMapDocumentV0,
+    state_transition_algebra_readings: &[ArchSigStateTransitionAlgebraReadingV0],
+    workflow_risk_readings: &[ArchSigWorkflowRiskReadingV0],
+    obstruction_circuits: &[ArchSigObstructionCircuitV0],
+) -> Vec<ArchSigEffectRelationAlgebraReadingV0> {
+    let effect_atom_refs = archmap
+        .atom_observations
+        .iter()
+        .filter(|atom| {
+            let text = format!("{} {}", atom.atom_family, atom.predicate).to_ascii_lowercase();
+            text.contains("effect")
+                || text.contains("event")
+                || text.contains("provider")
+                || text.contains("job")
+                || text.contains("handler")
+        })
+        .map(|atom| atom.atom_observation_id.clone())
+        .collect::<Vec<_>>();
+    let relation_atom_refs = archmap
+        .atom_observations
+        .iter()
+        .filter(|atom| {
+            let text = format!("{} {}", atom.atom_family, atom.predicate).to_ascii_lowercase();
+            text.contains("relation")
+                || text.contains("order")
+                || text.contains("replay")
+                || text.contains("roundtrip")
+                || text.contains("compensat")
+        })
+        .map(|atom| atom.atom_observation_id.clone())
+        .collect::<Vec<_>>();
+    let external_boundary_refs = workflow_risk_readings
+        .iter()
+        .filter(|reading| {
+            let text = format!(
+                "{} {} {}",
+                reading.role_name, reading.risk_tier, reading.status
+            )
+            .to_ascii_lowercase();
+            text.contains("async") || text.contains("external") || text.contains("runtime")
+        })
+        .take(16)
+        .map(|reading| reading.molecule_observation_ref.clone())
+        .collect::<Vec<_>>();
+    let unresolved_effect_relations = archmap
+        .observation_gaps
+        .iter()
+        .filter(|gap| {
+            let text = format!("{} {}", gap.gap_id, gap.reason).to_ascii_lowercase();
+            text.contains("effect")
+                || text.contains("event")
+                || text.contains("runtime")
+                || text.contains("provider")
+                || text.contains("replay")
+        })
+        .map(|gap| gap.gap_id.clone())
+        .collect::<Vec<_>>();
+    let obstruction_refs = obstruction_circuits
+        .iter()
+        .filter(|obstruction| {
+            let text = format!(
+                "{} {} {}",
+                obstruction.law_ref, obstruction.circuit_kind, obstruction.evidence_summary
+            )
+            .to_ascii_lowercase();
+            text.contains("effect")
+                || text.contains("event")
+                || text.contains("runtime")
+                || text.contains("replay")
+                || text.contains("compensat")
+        })
+        .map(|obstruction| obstruction.obstruction_circuit_id.clone());
+    let mut generator_refs = effect_atom_refs
+        .iter()
+        .chain(relation_atom_refs.iter())
+        .take(48)
+        .cloned()
+        .collect::<Vec<_>>();
+    generator_refs.extend(obstruction_refs);
+    generator_refs.sort();
+    generator_refs.dedup();
+    let pressure_count =
+        relation_atom_refs.len() + unresolved_effect_relations.len() + external_boundary_refs.len();
+    vec![ArchSigEffectRelationAlgebraReadingV0 {
+        reading_id: format!("effect-relation-algebra:{}", stable_id(&archmap.map_id)),
+        generator_refs,
+        effect_atom_refs,
+        relation_atom_refs,
+        external_boundary_refs,
+        required_effect_relations: vec![
+            "effect ordering".to_string(),
+            "replay or roundtrip stability".to_string(),
+            "compensation/finalization relation".to_string(),
+            "handler and external provider boundary ownership".to_string(),
+        ],
+        unresolved_effect_relations,
+        effect_ordering_pressure: if pressure_count == 0 {
+            "notObserved".to_string()
+        } else {
+            "effectRelationPressureObserved".to_string()
+        },
+        state_transition_ref: state_transition_algebra_readings
+            .first()
+            .map(|reading| reading.reading_id.clone())
+            .unwrap_or_else(|| "state-transition-algebra:none-observed".to_string()),
+        evidence_boundary:
+            "effect relation algebra is kept separate from state transition pressure and only reads observed effect/relation/runtime evidence"
+                .to_string(),
+        recommended_next_action:
+            "review async job, provider, event handler, replay, roundtrip, and compensation relations before approving state/effect repairs"
+                .to_string(),
+        non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
+    }]
+}
+
+fn build_synthesis_blockage_readings(
+    archmap: &ArchMapDocumentV0,
+    repair_candidates: &[ArchSigRepairOperationCandidateV0],
+    feature_extension_formula_readings: &[ArchSigFeatureExtensionFormulaReadingV0],
+    diagram_fillability_readings: &[ArchSigDiagramFillabilityReadingV0],
+) -> Vec<ArchSigSynthesisBlockageReadingV0> {
+    let target_construction_refs = repair_candidates
+        .iter()
+        .map(|candidate| candidate.repair_operation_candidate_id.clone())
+        .chain(
+            feature_extension_formula_readings
+                .iter()
+                .map(|reading| reading.reading_id.clone()),
+        )
+        .collect::<Vec<_>>();
+    let constraint_refs = feature_extension_formula_readings
+        .iter()
+        .flat_map(|reading| {
+            reading
+                .inherited_core_obstruction_refs
+                .iter()
+                .chain(reading.feature_local_obstruction_refs.iter())
+                .chain(reading.interaction_obstruction_refs.iter())
+                .chain(reading.lifting_failure_refs.iter())
+                .chain(reading.filling_failure_refs.iter())
+                .chain(reading.residual_coverage_gap_refs.iter())
+                .cloned()
+        })
+        .chain(
+            diagram_fillability_readings
+                .iter()
+                .flat_map(|reading| reading.filling_blocker_refs.clone()),
+        )
+        .collect::<Vec<_>>();
+    let missing_evidence_refs = repair_candidates
+        .iter()
+        .flat_map(|candidate| candidate.missing_evidence.clone())
+        .chain(
+            archmap
+                .observation_gaps
+                .iter()
+                .map(|gap| gap.gap_id.clone()),
+        )
+        .collect::<Vec<_>>();
+    let decision_boundary_refs = diagram_fillability_readings
+        .iter()
+        .filter(|reading| reading.status != "candidateFillable")
+        .map(|reading| reading.reading_id.clone())
+        .collect::<Vec<_>>();
+    let candidate_solution_refs = repair_candidates
+        .iter()
+        .filter(|candidate| candidate.missing_evidence.is_empty())
+        .map(|candidate| candidate.repair_operation_candidate_id.clone())
+        .collect::<Vec<_>>();
+    let blockage_count =
+        constraint_refs.len() + missing_evidence_refs.len() + decision_boundary_refs.len();
+    vec![ArchSigSynthesisBlockageReadingV0 {
+        reading_id: format!("synthesis-blockage:{}", stable_id(&archmap.map_id)),
+        target_construction_refs,
+        required_atom_refs: all_atom_refs(archmap).into_iter().take(64).collect(),
+        constraint_refs,
+        missing_evidence_refs,
+        decision_boundary_refs,
+        candidate_solution_refs,
+        blockage_status: if blockage_count == 0 {
+            "candidateConstructionNotBlockedByCurrentReading".to_string()
+        } else {
+            "synthesisBlockedByMissingEvidenceOrConstraints".to_string()
+        },
+        no_solution_certificate_status: "notASolverAndNotAbsenceProof".to_string(),
+        synthesis_boundary:
+            "candidate absence, missing evidence, and no-solution certificates are distinct; ArchSig does not run a synthesis solver"
+                .to_string(),
+        recommended_next_action:
+            "resolve Atom, constraint, evidence, and decision-boundary blockers before reading a repair candidate as constructible"
+                .to_string(),
+        non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
+    }]
+}
+
+fn build_operation_precondition_readiness_readings(
+    repair_candidates: &[ArchSigRepairOperationCandidateV0],
+    operation_calculus_law_readings: &[ArchSigOperationCalculusLawReadingV0],
+    law_universe_coverage_readings: &[ArchSigLawUniverseCoverageReadingV0],
+) -> Vec<ArchSigOperationPreconditionReadinessReadingV0> {
+    let law_blockers = law_universe_coverage_readings
+        .iter()
+        .flat_map(|reading| reading.blocked_witness_refs.clone())
+        .collect::<Vec<_>>();
+    let coverage_gap_refs = law_universe_coverage_readings
+        .iter()
+        .flat_map(|reading| {
+            reading
+                .exactness_assumption_status
+                .iter()
+                .filter(|status| !status.blocker_refs.is_empty())
+                .flat_map(|status| status.blocker_refs.clone())
+        })
+        .collect::<Vec<_>>();
+    let mut readings = repair_candidates
+        .iter()
+        .map(|candidate| {
+            let law_reading = operation_calculus_law_readings
+                .iter()
+                .find(|reading| reading.operation_ref == candidate.repair_operation_candidate_id);
+            let precondition_refs = law_reading
+                .map(|reading| reading.precondition_refs.clone())
+                .unwrap_or_else(|| candidate.preconditions.clone());
+            let missing_precondition_refs = candidate
+                .missing_evidence
+                .iter()
+                .chain(
+                    precondition_refs
+                        .iter()
+                        .filter(|precondition| {
+                            let text = precondition.to_ascii_lowercase();
+                            text.contains("gap")
+                                || text.contains("missing")
+                                || text.contains("runtime")
+                                || text.contains("witness")
+                        }),
+                )
+                .cloned()
+                .collect::<Vec<_>>();
+            let witness_gap_refs = law_blockers.clone();
+            let exactness_gap_refs = coverage_gap_refs.clone();
+            let readiness_status = if missing_precondition_refs.is_empty()
+                && witness_gap_refs.is_empty()
+                && exactness_gap_refs.is_empty()
+            {
+                "candidatePreconditionsObserved"
+            } else {
+                "blockedByMissingPreconditionEvidence"
+            };
+            ArchSigOperationPreconditionReadinessReadingV0 {
+                reading_id: format!(
+                    "operation-precondition-readiness:{}",
+                    stable_id(&candidate.repair_operation_candidate_id)
+                ),
+                operation_ref: candidate.repair_operation_candidate_id.clone(),
+                operation_kind: candidate.operation_kind.clone(),
+                readiness_status: readiness_status.to_string(),
+                precondition_refs,
+                missing_precondition_refs,
+                coverage_gap_refs: exactness_gap_refs.clone(),
+                exactness_gap_refs,
+                witness_gap_refs,
+                candidate_boundary:
+                    "repair/split/migration/protection candidates are review cues until precondition evidence is observed"
+                        .to_string(),
+                recommended_next_action:
+                    "supply coverage, exactness, witness, and runtime precondition evidence before treating the operation as safe"
+                        .to_string(),
+                non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
+            }
+        })
+        .collect::<Vec<_>>();
+    if readings.is_empty() {
+        readings.push(ArchSigOperationPreconditionReadinessReadingV0 {
+            reading_id: "operation-precondition-readiness:none-observed".to_string(),
+            operation_ref: "repair-operation:none-observed".to_string(),
+            operation_kind: "noneObserved".to_string(),
+            readiness_status: "noCandidateOperationObserved".to_string(),
+            precondition_refs: Vec::new(),
+            missing_precondition_refs: Vec::new(),
+            coverage_gap_refs,
+            exactness_gap_refs: Vec::new(),
+            witness_gap_refs: law_blockers,
+            candidate_boundary:
+                "absence of operation candidates is not evidence of safe refactoring".to_string(),
+            recommended_next_action:
+                "construct candidate operations and record precondition evidence before planning repair"
+                    .to_string(),
+            non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
+        });
+    }
+    readings
+}
+
+fn build_path_multiplicity_loss_readings(
+    archmap: &ArchMapDocumentV0,
+    path_signature_trajectory_readings: &[ArchSigPathSignatureTrajectoryReadingV0],
+    homotopy_order_sensitivity_readings: &[ArchSigHomotopyOrderSensitivityReadingV0],
+    workflow_risk_readings: &[ArchSigWorkflowRiskReadingV0],
+) -> Vec<ArchSigPathMultiplicityLossReadingV0> {
+    let path_reading_refs = path_signature_trajectory_readings
+        .iter()
+        .map(|reading| reading.reading_id.clone())
+        .collect::<Vec<_>>();
+    let observed_path_count = path_signature_trajectory_readings
+        .iter()
+        .filter(|reading| reading.status != "unmeasured")
+        .count();
+    let alternate_path_pressure = homotopy_order_sensitivity_readings
+        .iter()
+        .map(|reading| {
+            reading.independent_square_candidate_refs.len()
+                + reading.same_contract_replacement_refs.len()
+                + reading.repair_filler_refs.len()
+                + reading.homotopy_blocker_refs.len()
+        })
+        .sum::<usize>();
+    let max_walk_length_proxy = path_signature_trajectory_readings
+        .iter()
+        .map(|reading| {
+            reading.endpoint_signature_delta.len()
+                + reading.non_monotone_axis_refs.len()
+                + reading.introduced_obstruction_trajectory.len()
+        })
+        .max()
+        .unwrap_or_default();
+    let reachability_forgotten_refs = archmap
+        .observation_gaps
+        .iter()
+        .filter(|gap| {
+            let text = format!("{} {}", gap.gap_id, gap.reason).to_ascii_lowercase();
+            text.contains("path")
+                || text.contains("route")
+                || text.contains("runtime")
+                || text.contains("workflow")
+                || text.contains("test")
+        })
+        .map(|gap| gap.gap_id.clone())
+        .collect::<Vec<_>>();
+    let fan_in_boundary_refs = workflow_risk_readings
+        .iter()
+        .filter(|reading| reading.risk_score >= 20)
+        .take(16)
+        .map(|reading| reading.molecule_observation_ref.clone())
+        .collect::<Vec<_>>();
+    let pressure_count =
+        alternate_path_pressure + reachability_forgotten_refs.len() + fan_in_boundary_refs.len();
+    vec![ArchSigPathMultiplicityLossReadingV0 {
+        reading_id: format!("path-multiplicity-loss:{}", stable_id(&archmap.map_id)),
+        scope_ref: archmap.map_id.clone(),
+        path_reading_refs,
+        observed_path_count,
+        alternate_path_pressure,
+        max_walk_length_proxy,
+        reachability_forgotten_refs,
+        fan_in_boundary_refs,
+        multiplicity_loss_status: if pressure_count == 0 {
+            "noMultiplicityLossObserved".to_string()
+        } else {
+            "reachabilityMultiplicityLossObserved".to_string()
+        },
+        homotopy_boundary:
+            "path multiplicity is a reachability and homotopy review signal, not proof of all paths"
+                .to_string(),
+        evidence_boundary:
+            "alternate-path pressure is bounded by observed operation trajectories, homotopy sensitivity, workflow risk, and gaps"
+                .to_string(),
+        recommended_next_action:
+            "inspect high fan-in and alternate path boundaries before treating one observed path as complete reachability"
+                .to_string(),
+        non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
+    }]
+}
+
 fn build_signature_trajectory_homotopy_refutation_readings(
     path_signature_trajectory_readings: &[ArchSigPathSignatureTrajectoryReadingV0],
     homotopy_order_sensitivity_readings: &[ArchSigHomotopyOrderSensitivityReadingV0],
@@ -6906,6 +7455,12 @@ fn build_structural_reading_review_surface(
     homotopy_order_sensitivity_readings: &[ArchSigHomotopyOrderSensitivityReadingV0],
     diagram_fillability_readings: &[ArchSigDiagramFillabilityReadingV0],
     axis_forgetting_risk_readings: &[ArchSigAxisForgettingRiskReadingV0],
+    observation_projection_fidelity_readings: &[ArchSigObservationProjectionFidelityReadingV0],
+    atom_origin_closure_debt_readings: &[ArchSigAtomOriginClosureDebtReadingV0],
+    effect_relation_algebra_readings: &[ArchSigEffectRelationAlgebraReadingV0],
+    synthesis_blockage_readings: &[ArchSigSynthesisBlockageReadingV0],
+    operation_precondition_readiness_readings: &[ArchSigOperationPreconditionReadinessReadingV0],
+    path_multiplicity_loss_readings: &[ArchSigPathMultiplicityLossReadingV0],
     signature_trajectory_homotopy_refutation_readings:
         &[ArchSigSignatureTrajectoryHomotopyRefutationReadingV0],
     bridge_split_obstruction_transfer_readings: &[ArchSigBridgeSplitObstructionTransferReadingV0],
@@ -6944,6 +7499,32 @@ fn build_structural_reading_review_surface(
     let axis_forgetting_count = axis_forgetting_risk_readings
         .iter()
         .filter(|reading| reading.reflection_loss_kind != "notObserved")
+        .count();
+    let projection_loss_count = observation_projection_fidelity_readings
+        .iter()
+        .filter(|reading| reading.fidelity_status == "projectionLossObserved")
+        .count();
+    let atom_origin_debt_count = atom_origin_closure_debt_readings
+        .iter()
+        .filter(|reading| reading.closure_status == "originClosureDebtObserved")
+        .count();
+    let effect_relation_pressure_count = effect_relation_algebra_readings
+        .iter()
+        .filter(|reading| reading.effect_ordering_pressure != "notObserved")
+        .count();
+    let synthesis_blockage_count = synthesis_blockage_readings
+        .iter()
+        .filter(|reading| {
+            reading.blockage_status != "candidateConstructionNotBlockedByCurrentReading"
+        })
+        .count();
+    let operation_precondition_blocker_count = operation_precondition_readiness_readings
+        .iter()
+        .filter(|reading| reading.readiness_status != "candidatePreconditionsObserved")
+        .count();
+    let path_multiplicity_loss_count = path_multiplicity_loss_readings
+        .iter()
+        .filter(|reading| reading.multiplicity_loss_status != "noMultiplicityLossObserved")
         .count();
     let homotopy_refutation_count = signature_trajectory_homotopy_refutation_readings
         .iter()
@@ -7039,6 +7620,37 @@ fn build_structural_reading_review_surface(
             .map(|reading| reading.reading_id.clone()),
     );
     connected_reading_refs.extend(
+        observation_projection_fidelity_readings
+            .iter()
+            .map(|reading| reading.reading_id.clone()),
+    );
+    connected_reading_refs.extend(
+        atom_origin_closure_debt_readings
+            .iter()
+            .map(|reading| reading.reading_id.clone()),
+    );
+    connected_reading_refs.extend(
+        effect_relation_algebra_readings
+            .iter()
+            .map(|reading| reading.reading_id.clone()),
+    );
+    connected_reading_refs.extend(
+        synthesis_blockage_readings
+            .iter()
+            .map(|reading| reading.reading_id.clone()),
+    );
+    connected_reading_refs.extend(
+        operation_precondition_readiness_readings
+            .iter()
+            .take(8)
+            .map(|reading| reading.reading_id.clone()),
+    );
+    connected_reading_refs.extend(
+        path_multiplicity_loss_readings
+            .iter()
+            .map(|reading| reading.reading_id.clone()),
+    );
+    connected_reading_refs.extend(
         signature_trajectory_homotopy_refutation_readings
             .iter()
             .map(|reading| reading.reading_id.clone()),
@@ -7057,6 +7669,12 @@ fn build_structural_reading_review_surface(
         || unmeasured_law_count > 0
         || blocked_diagram_count > 0
         || axis_forgetting_count > 0
+        || projection_loss_count > 0
+        || atom_origin_debt_count > 0
+        || effect_relation_pressure_count > 0
+        || synthesis_blockage_count > 0
+        || operation_precondition_blocker_count > 0
+        || path_multiplicity_loss_count > 0
         || homotopy_refutation_count > 0
         || bridge_transfer_count > 0
     {
@@ -7071,7 +7689,7 @@ fn build_structural_reading_review_surface(
         surface_id: "aat-structural-reading-review-surface".to_string(),
         status: status.to_string(),
         current_state_reading: format!(
-            "ArchSig reads current architecture state across Atom support and compatibility, LawUniverse coverage, feature extension coordinates, operation calculus laws, path signature trajectory, homotopy order sensitivity, diagram fillability, axis forgetting risk, trajectory homotopy refutation, bridge split transfer, representation strength, local curvature, three-layer flatness, observation projection, state transition algebra, operation-invariant constraints, and split readiness; blockedRepresentations={}, curvatures={}, blockedOperations={}, splitBlockers={}, atomConflicts={}, unmeasuredRequiredLaws={}, blockedDiagrams={}, axisForgetting={}, homotopyRefutations={}, bridgeTransfers={}",
+            "ArchSig reads current architecture state across Atom support and compatibility, LawUniverse coverage, feature extension coordinates, operation calculus laws, path signature trajectory, homotopy order sensitivity, diagram fillability, axis forgetting/projection fidelity, Atom origin closure, effect relation algebra, synthesis blockage, operation preconditions, path multiplicity, trajectory homotopy refutation, bridge split transfer, representation strength, local curvature, three-layer flatness, observation projection, state transition algebra, operation-invariant constraints, and split readiness; blockedRepresentations={}, curvatures={}, blockedOperations={}, splitBlockers={}, atomConflicts={}, unmeasuredRequiredLaws={}, blockedDiagrams={}, axisForgetting={}, projectionLoss={}, atomOriginDebt={}, effectRelationPressure={}, synthesisBlockage={}, operationPreconditionBlockers={}, pathMultiplicityLoss={}, homotopyRefutations={}, bridgeTransfers={}",
             blocked_representation_count,
             curvature_count,
             blocked_operation_count,
@@ -7080,6 +7698,12 @@ fn build_structural_reading_review_surface(
             unmeasured_law_count,
             blocked_diagram_count,
             axis_forgetting_count,
+            projection_loss_count,
+            atom_origin_debt_count,
+            effect_relation_pressure_count,
+            synthesis_blockage_count,
+            operation_precondition_blocker_count,
+            path_multiplicity_loss_count,
             homotopy_refutation_count,
             bridge_transfer_count
         ),
@@ -7089,6 +7713,10 @@ fn build_structural_reading_review_surface(
             "read LawUniverse coverage and witness exactness before treating absence as measured zero".to_string(),
             "read feature extension, operation law, trajectory, homotopy, and diagram-fillability axes as current-state coordinates, not PR evolution claims".to_string(),
             "read axis-forgetting risk before treating a coarse projection as zero-reflecting or obstruction-reflecting".to_string(),
+            "read projection fidelity and Atom origin closure before using summaries for zero, repair, or synthesis claims".to_string(),
+            "read effect relation algebra separately from state transition pressure before approving replay, provider, event, or handler boundaries".to_string(),
+            "read synthesis blockage and operation precondition readiness before treating candidates as constructible or safe".to_string(),
+            "read path multiplicity loss before treating one observed route as complete reachability".to_string(),
             "read selected trajectory disagreement before treating same-endpoint operations as homotopic".to_string(),
             "read bridge split transfer before treating a boundary operation as obstruction removal".to_string(),
             "read representation-strength blockers before treating zero or obstruction absence as exact".to_string(),
@@ -8633,6 +9261,12 @@ fn build_llm_interpretation_packet(
     homotopy_order_sensitivity_readings: &[ArchSigHomotopyOrderSensitivityReadingV0],
     diagram_fillability_readings: &[ArchSigDiagramFillabilityReadingV0],
     axis_forgetting_risk_readings: &[ArchSigAxisForgettingRiskReadingV0],
+    observation_projection_fidelity_readings: &[ArchSigObservationProjectionFidelityReadingV0],
+    atom_origin_closure_debt_readings: &[ArchSigAtomOriginClosureDebtReadingV0],
+    effect_relation_algebra_readings: &[ArchSigEffectRelationAlgebraReadingV0],
+    synthesis_blockage_readings: &[ArchSigSynthesisBlockageReadingV0],
+    operation_precondition_readiness_readings: &[ArchSigOperationPreconditionReadinessReadingV0],
+    path_multiplicity_loss_readings: &[ArchSigPathMultiplicityLossReadingV0],
     signature_trajectory_homotopy_refutation_readings:
         &[ArchSigSignatureTrajectoryHomotopyRefutationReadingV0],
     bridge_split_obstruction_transfer_readings: &[ArchSigBridgeSplitObstructionTransferReadingV0],
@@ -8821,7 +9455,7 @@ fn build_llm_interpretation_packet(
             })
             .collect(),
         measurement_expansion_summary: vec![format!(
-            "v0.3.0 measurement expansion reads {} Atom support axes, {} compatibility surfaces, {} LawUniverse coverage surfaces, {} feature-extension formulas, {} operation-law surfaces, {} path trajectories, {} homotopy/order surfaces, {} diagram-fillability surfaces, {} axis-forgetting risks, {} trajectory homotopy refutations, {} bridge split-transfer surfaces, and {} nonzero monodromy witnesses",
+            "v0.3.0 measurement expansion reads {} Atom support axes, {} compatibility surfaces, {} LawUniverse coverage surfaces, {} feature-extension formulas, {} operation-law surfaces, {} path trajectories, {} homotopy/order surfaces, {} diagram-fillability surfaces, {} axis-forgetting risks, {} projection-fidelity surfaces, {} Atom origin-closure debts, {} effect-relation algebras, {} synthesis blockers, {} operation-precondition readings, {} path-multiplicity readings, {} trajectory homotopy refutations, {} bridge split-transfer surfaces, and {} nonzero monodromy witnesses",
             atom_support_axis_readings.len(),
             atom_compatibility_readings.len(),
             law_universe_coverage_readings.len(),
@@ -8831,6 +9465,12 @@ fn build_llm_interpretation_packet(
             homotopy_order_sensitivity_readings.len(),
             diagram_fillability_readings.len(),
             axis_forgetting_risk_readings.len(),
+            observation_projection_fidelity_readings.len(),
+            atom_origin_closure_debt_readings.len(),
+            effect_relation_algebra_readings.len(),
+            synthesis_blockage_readings.len(),
+            operation_precondition_readiness_readings.len(),
+            path_multiplicity_loss_readings.len(),
             signature_trajectory_homotopy_refutation_readings.len(),
             bridge_split_obstruction_transfer_readings.len(),
             nonzero_monodromy_witnesses.len()
@@ -8948,6 +9588,87 @@ fn build_llm_interpretation_packet(
                     reading.zero_reflection_status,
                     reading.obstruction_reflection_status,
                     reading.mixed_axis_scope_refs.len()
+                )
+            })
+            .collect(),
+        observation_projection_fidelity_summary: observation_projection_fidelity_readings
+            .iter()
+            .map(|reading| {
+                format!(
+                    "{} status={} forgotten={} collisions={} reflection={}",
+                    reading.source_projection_ref,
+                    reading.fidelity_status,
+                    reading.forgotten_coordinate_count,
+                    reading.observation_collision_count,
+                    reading.reflection_status
+                )
+            })
+            .collect(),
+        atom_origin_closure_debt_summary: atom_origin_closure_debt_readings
+            .iter()
+            .map(|reading| {
+                format!(
+                    "{} status={} sourceBacked={} inferred={} missingExpected={}",
+                    reading.reading_id,
+                    reading.closure_status,
+                    reading.source_backed_atom_count,
+                    reading.derived_or_inferred_atom_count,
+                    reading.expected_missing_atom_count
+                )
+            })
+            .collect(),
+        effect_relation_algebra_summary: effect_relation_algebra_readings
+            .iter()
+            .map(|reading| {
+                format!(
+                    "{} pressure={} generators={} unresolved={} externalBoundaries={}",
+                    reading.reading_id,
+                    reading.effect_ordering_pressure,
+                    reading.generator_refs.len(),
+                    reading.unresolved_effect_relations.len(),
+                    reading.external_boundary_refs.len()
+                )
+            })
+            .collect(),
+        synthesis_blockage_summary: synthesis_blockage_readings
+            .iter()
+            .map(|reading| {
+                format!(
+                    "{} status={} targets={} constraints={} missing={} noSolution={}",
+                    reading.reading_id,
+                    reading.blockage_status,
+                    reading.target_construction_refs.len(),
+                    reading.constraint_refs.len(),
+                    reading.missing_evidence_refs.len(),
+                    reading.no_solution_certificate_status
+                )
+            })
+            .collect(),
+        operation_precondition_readiness_summary: operation_precondition_readiness_readings
+            .iter()
+            .take(12)
+            .map(|reading| {
+                format!(
+                    "{} kind={} status={} missing={} witnesses={}",
+                    reading.operation_ref,
+                    reading.operation_kind,
+                    reading.readiness_status,
+                    reading.missing_precondition_refs.len(),
+                    reading.witness_gap_refs.len()
+                )
+            })
+            .collect(),
+        path_multiplicity_loss_summary: path_multiplicity_loss_readings
+            .iter()
+            .map(|reading| {
+                format!(
+                    "{} status={} paths={} alternatePressure={} fanIn={} forgotten={}",
+                    reading.scope_ref,
+                    reading.multiplicity_loss_status,
+                    reading.observed_path_count,
+                    reading.alternate_path_pressure,
+                    reading.fan_in_boundary_refs.len(),
+                    reading.reachability_forgotten_refs.len()
                 )
             })
             .collect(),
@@ -9288,6 +10009,16 @@ pub fn validate_archsig_analysis_packet_report(
         homotopy_order_sensitivity_reading_count: packet.homotopy_order_sensitivity_readings.len(),
         diagram_fillability_reading_count: packet.diagram_fillability_readings.len(),
         axis_forgetting_risk_reading_count: packet.axis_forgetting_risk_readings.len(),
+        observation_projection_fidelity_reading_count: packet
+            .observation_projection_fidelity_readings
+            .len(),
+        atom_origin_closure_debt_reading_count: packet.atom_origin_closure_debt_readings.len(),
+        effect_relation_algebra_reading_count: packet.effect_relation_algebra_readings.len(),
+        synthesis_blockage_reading_count: packet.synthesis_blockage_readings.len(),
+        operation_precondition_readiness_reading_count: packet
+            .operation_precondition_readiness_readings
+            .len(),
+        path_multiplicity_loss_reading_count: packet.path_multiplicity_loss_readings.len(),
         signature_trajectory_homotopy_refutation_reading_count: packet
             .signature_trajectory_homotopy_refutation_readings
             .len(),
@@ -11965,6 +12696,48 @@ fn check_aat_structural_reading_surfaces(packet: &ArchSigAnalysisPacketV0) -> Va
             "packet must expose axis-forgetting / projection reflection loss readings",
         ));
     }
+    if packet.observation_projection_fidelity_readings.is_empty() {
+        examples.push(generic_validation_example(
+            "observationProjectionFidelityReadings",
+            "empty",
+            "packet must expose observation projection fidelity readings",
+        ));
+    }
+    if packet.atom_origin_closure_debt_readings.is_empty() {
+        examples.push(generic_validation_example(
+            "atomOriginClosureDebtReadings",
+            "empty",
+            "packet must expose Atom origin closure debt readings",
+        ));
+    }
+    if packet.effect_relation_algebra_readings.is_empty() {
+        examples.push(generic_validation_example(
+            "effectRelationAlgebraReadings",
+            "empty",
+            "packet must expose effect relation algebra readings",
+        ));
+    }
+    if packet.synthesis_blockage_readings.is_empty() {
+        examples.push(generic_validation_example(
+            "synthesisBlockageReadings",
+            "empty",
+            "packet must expose synthesis blockage readings",
+        ));
+    }
+    if packet.operation_precondition_readiness_readings.is_empty() {
+        examples.push(generic_validation_example(
+            "operationPreconditionReadinessReadings",
+            "empty",
+            "packet must expose operation precondition readiness readings",
+        ));
+    }
+    if packet.path_multiplicity_loss_readings.is_empty() {
+        examples.push(generic_validation_example(
+            "pathMultiplicityLossReadings",
+            "empty",
+            "packet must expose path multiplicity loss readings",
+        ));
+    }
     if packet
         .signature_trajectory_homotopy_refutation_readings
         .is_empty()
@@ -12270,6 +13043,145 @@ fn check_aat_structural_reading_surfaces(packet: &ArchSigAnalysisPacketV0) -> Va
             &mut examples,
             &format!("{} evidenceBoundary", reading.reading_id),
             &reading.evidence_boundary,
+        );
+    }
+    for reading in &packet.observation_projection_fidelity_readings {
+        push_blank(
+            &mut examples,
+            &reading.reading_id,
+            &reading.source_projection_ref,
+        );
+        push_blank(
+            &mut examples,
+            &format!("{} fidelityStatus", reading.reading_id),
+            &reading.fidelity_status,
+        );
+        push_blank(
+            &mut examples,
+            &format!("{} reflectionStatus", reading.reading_id),
+            &reading.reflection_status,
+        );
+        push_blank(
+            &mut examples,
+            &format!("{} measurementBoundary", reading.reading_id),
+            &reading.measurement_boundary,
+        );
+        push_blank(
+            &mut examples,
+            &format!("{} recommendedNextAction", reading.reading_id),
+            &reading.recommended_next_action,
+        );
+    }
+    for reading in &packet.atom_origin_closure_debt_readings {
+        push_blank(&mut examples, &reading.reading_id, &reading.closure_status);
+        if reading.weakens_zero_or_repair_claims.is_empty() {
+            examples.push(generic_validation_example(
+                &reading.reading_id,
+                "weakensZeroOrRepairClaims",
+                "Atom origin closure debt must state affected zero/repair/synthesis claim boundaries",
+            ));
+        }
+        push_blank(
+            &mut examples,
+            &format!("{} evidenceBoundary", reading.reading_id),
+            &reading.evidence_boundary,
+        );
+        push_blank(
+            &mut examples,
+            &format!("{} recommendedNextAction", reading.reading_id),
+            &reading.recommended_next_action,
+        );
+    }
+    for reading in &packet.effect_relation_algebra_readings {
+        if reading.required_effect_relations.is_empty() {
+            examples.push(generic_validation_example(
+                &reading.reading_id,
+                "requiredEffectRelations",
+                "effect relation algebra must enumerate effect/replay/compensation relations",
+            ));
+        }
+        push_blank(
+            &mut examples,
+            &format!("{} effectOrderingPressure", reading.reading_id),
+            &reading.effect_ordering_pressure,
+        );
+        push_blank(
+            &mut examples,
+            &format!("{} stateTransitionRef", reading.reading_id),
+            &reading.state_transition_ref,
+        );
+        push_blank(
+            &mut examples,
+            &format!("{} evidenceBoundary", reading.reading_id),
+            &reading.evidence_boundary,
+        );
+        push_blank(
+            &mut examples,
+            &format!("{} recommendedNextAction", reading.reading_id),
+            &reading.recommended_next_action,
+        );
+    }
+    for reading in &packet.synthesis_blockage_readings {
+        push_blank(
+            &mut examples,
+            &format!("{} blockageStatus", reading.reading_id),
+            &reading.blockage_status,
+        );
+        push_blank(
+            &mut examples,
+            &format!("{} noSolutionCertificateStatus", reading.reading_id),
+            &reading.no_solution_certificate_status,
+        );
+        push_blank(
+            &mut examples,
+            &format!("{} synthesisBoundary", reading.reading_id),
+            &reading.synthesis_boundary,
+        );
+        push_blank(
+            &mut examples,
+            &format!("{} recommendedNextAction", reading.reading_id),
+            &reading.recommended_next_action,
+        );
+    }
+    for reading in &packet.operation_precondition_readiness_readings {
+        push_blank(&mut examples, &reading.reading_id, &reading.operation_ref);
+        push_blank(
+            &mut examples,
+            &format!("{} readinessStatus", reading.reading_id),
+            &reading.readiness_status,
+        );
+        push_blank(
+            &mut examples,
+            &format!("{} candidateBoundary", reading.reading_id),
+            &reading.candidate_boundary,
+        );
+        push_blank(
+            &mut examples,
+            &format!("{} recommendedNextAction", reading.reading_id),
+            &reading.recommended_next_action,
+        );
+    }
+    for reading in &packet.path_multiplicity_loss_readings {
+        push_blank(&mut examples, &reading.reading_id, &reading.scope_ref);
+        push_blank(
+            &mut examples,
+            &format!("{} multiplicityLossStatus", reading.reading_id),
+            &reading.multiplicity_loss_status,
+        );
+        push_blank(
+            &mut examples,
+            &format!("{} homotopyBoundary", reading.reading_id),
+            &reading.homotopy_boundary,
+        );
+        push_blank(
+            &mut examples,
+            &format!("{} evidenceBoundary", reading.reading_id),
+            &reading.evidence_boundary,
+        );
+        push_blank(
+            &mut examples,
+            &format!("{} recommendedNextAction", reading.reading_id),
+            &reading.recommended_next_action,
         );
     }
     for reading in &packet.signature_trajectory_homotopy_refutation_readings {
