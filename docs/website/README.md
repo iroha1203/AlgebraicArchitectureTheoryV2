@@ -13,6 +13,7 @@
 - [DESIGN.md](DESIGN.md): website の設計方針、読者導線、ページネーション、本文成熟度、source mapping を管理する。
 - [AAT_RENEWAL_PLAN.md](AAT_RENEWAL_PLAN.md): Atom refoundation 後の AAT website を web-native monograph として再構成するための計画書。
 - [SFT_REWRITE_PLAN.md](SFT_REWRITE_PLAN.md): SFT website を既存 Part 構成から削除して三部構成で書き直すための複数セッション向け計画書。
+- [ARCHSIG_RENEWAL_PLAN.md](ARCHSIG_RENEWAL_PLAN.md): ArchSig website を LLM Skill-first の Web PR 面 & マニュアルとして章立てから書き直すための計画書。
 - [archsig_website_improvement_policy.md](archsig_website_improvement_policy.md): ArchSig website を公開製品マニュアルとして改善するための方針メモ。
 
 ## 公開サイトの位置づけ
