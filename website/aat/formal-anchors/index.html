@@ -3,21 +3,17 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta
-      name="description"
-      content="AAT Formal Anchors Audit: representative Lean declarations, status, theorem-index links, and claim boundaries gathered from the AAT chapters."
-    >
-    <title>AAT Formal Anchors Audit</title>
-    <link rel="canonical" href="https://iroha1203.dev/aat/formal-anchors/">
+    <meta name="description" content="Formal anchors for Algebraic Architecture Theory: representative Lean declarations, status labels, theorem-index links, and claim boundaries gathered from the chapters.">
+    <title>Formal Anchors</title>
     <meta property="og:site_name" content="AAT / SFT Research Notes">
     <meta property="og:type" content="article">
-    <meta property="og:title" content="AAT Formal Anchors Audit">
-    <meta property="og:description" content="Representative Lean declarations, status, theorem-index links, and claim boundaries gathered from the AAT chapters.">
+    <meta property="og:title" content="Formal Anchors">
+    <meta property="og:description" content="Representative Lean declarations, status labels, theorem-index links, and claim boundaries gathered from the chapters.">
     <meta property="og:url" content="https://iroha1203.dev/aat/formal-anchors/">
     <meta property="og:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="AAT Formal Anchors Audit">
-    <meta name="twitter:description" content="Representative Lean declarations, status, theorem-index links, and claim boundaries gathered from the AAT chapters.">
+    <meta name="twitter:title" content="Formal Anchors">
+    <meta name="twitter:description" content="Representative Lean declarations, status labels, theorem-index links, and claim boundaries gathered from the chapters.">
     <meta name="twitter:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
     <link rel="icon" href="../../assets/favicon-32.png" sizes="32x32" type="image/png">
     <link rel="icon" href="../../assets/favicon-16.png" sizes="16x16" type="image/png">
@@ -76,15 +72,14 @@
           <nav class="breadcrumb" aria-label="Breadcrumb">
             <a href="../../">Home</a>
             <a href="../">AAT</a>
-            <span>Formal Anchors Audit</span>
+          <span>Formal Anchors</span>
           </nav>
-          <p class="eyebrow">AAT audit trail</p>
-          <h1>Formal Anchors Audit</h1>
+          <p class="eyebrow">Audit Trail</p>
+          <h1>Formal Anchors</h1>
           <p class="lede">
             Representative Lean declarations, current status phrases,
             theorem-index links, and boundary notes are gathered here as a
-            chapter-by-chapter audit surface for the public mathematical
-            reading.
+            chapter-by-chapter audit surface for the mathematical reading.
           </p>
         </div>
       </section>
@@ -95,6 +90,7 @@
             <nav class="toc-panel" aria-labelledby="toc-title">
               <h2 id="toc-title">On this page</h2>
               <ol>
+                <li><a href="#atom-root">Atom root</a></li>
                 <li><a href="#foundations">Foundations</a></li>
                 <li><a href="#laws-and-witnesses">Laws and Witnesses</a></li>
                 <li><a href="#architecture-signature">Architecture Signature</a></li>
@@ -109,19 +105,21 @@
             <div class="source-panel" data-sidebar-open="true">
               <h2>AAT chapters</h2>
               <ul>
-                <li><a href="../">AAT overview</a></li>
-                <li><a href="../foundations/">Foundations</a></li>
-                <li><a href="../laws-and-witnesses/">Laws and Witnesses</a></li>
+                <li><a href="../">Overview</a></li>
+                <li><a href="../atoms/">Atoms</a></li>
+                <li><a href="../architecture-objects/">Architecture Objects</a></li>
+                <li><a href="../laws/">Design Laws</a></li>
+                <li><a href="../obstruction-circuits/">Obstruction Circuits</a></li>
+                <li><a href="../zero-curvature/">Zero Curvature</a></li>
                 <li><a href="../architecture-signature/">Architecture Signature</a></li>
-                <li><a href="../local-law-packages/">Local Law Packages</a></li>
-                <li><a href="../calculus-and-extensions/">Calculus and Extensions</a></li>
-                <li><a href="../repair-and-dynamics/">Repair and Dynamics</a></li>
+                <li><a href="../design-principle-layers/">Design Principle Layers</a></li>
+                <li><a href="../operations-and-calculus/">Operations and Calculus</a></li>
+                <li><a href="../dynamics-and-geometry/">Dynamics and Geometry</a></li>
                 <li><a href="../representations-and-effects/">Representations and Effects</a></li>
-                <li><a href="../canonical-examples-and-readings/">Canonical Examples and Readings</a></li>
-                <li><a href="../related-work/">Related Work and Novelty</a></li>
-                <li><a href="../quantifiable-axes/">Quantifiable Axes</a></li>
+                <li><a href="../canonical-examples-and-readings/">Examples and Readings</a></li>
+                <li><a href="../related-work/">Related Work</a></li>
                 <li><a href="../status/">Status</a></li>
-                <li><a href="./" aria-current="page">Formal Anchors Audit</a></li>
+                <li><a href="./" aria-current="page">Formal Anchors</a></li>
               </ul>
             </div>
           </aside>
@@ -130,11 +128,117 @@
             <section id="audit-scope" class="article-section">
               <h2>Audit scope</h2>
               <p>
-                This page is an audit index, not a replacement for the theorem
-                index. Each card points back to the chapter statement it audits
-                and to the primary Lean or documentation index that records the
-                source declarations and boundary.
+                This page is an audit index for the public reading surface.
+                Each card records the chapter surface, representative Lean
+                declarations, status phrase, theorem-index reference, and claim
+                boundary used by that chapter.
               </p>
+            </section>
+
+            <section id="atom-root" class="article-section">
+              <h2>Atom root</h2>
+              <p>
+                AAT begins its audit trail at the atom layer. The atom page
+                treats primitive architectural facts as generators: typed facts
+                that exist before observation, review tooling, law packages, or
+                diagrammatic organization select them for a reading.
+              </p>
+              <div class="formal-anchor-cards" aria-label="Atom root formal-anchor audit trail">
+                <article class="formal-anchor-card">
+                  <header class="formal-anchor-card-header">
+                    <div>
+                      <span class="formal-anchor-card-label">Claim group</span>
+                      <h3>Primitive architectural fact system</h3>
+                    </div>
+                    <span class="status-badge status-badge-proved">defined / proved</span>
+                  </header>
+                  <p class="formal-anchor-audits">
+                    Audits the atom chapter's definition of atoms,
+                    primitive status, atom families, and non-generation reading.
+                  </p>
+                  <dl class="formal-anchor-grid">
+                    <div>
+                      <dt>Representative anchors</dt>
+                      <dd><code>AtomAxiomSystem</code>, <code>AtomKind</code>, <code>Primitive</code>, and atom non-generation accessors.</dd>
+                    </div>
+                    <div>
+                      <dt>Current Lean status</dt>
+                      <dd><code>defined only</code> for the atom vocabulary; primitive and non-generation accessors are read at their theorem status in the Lean index.</dd>
+                    </div>
+                    <div>
+                      <dt>Boundary</dt>
+                      <dd>Atom status is the generator layer. Laws, observations, signatures, diagrams, and tools may select or read atoms; they are later packages over the atom root.</dd>
+                    </div>
+                    <div>
+                      <dt>Primary index</dt>
+                      <dd><code>docs/aat/lean_theorem_index.md</code> and the atom-related declarations under <code>Formal/Arch</code>.</dd>
+                    </div>
+                  </dl>
+                  <details class="formal-anchor-details">
+                    <summary>Full Lean anchor set</summary>
+                    <ul class="formal-anchor-code-list">
+                      <li><code>AtomAxiomSystem</code></li>
+                      <li><code>AtomKind</code></li>
+                      <li><code>Primitive</code></li>
+                      <li><code>AtomKind.component</code></li>
+                      <li><code>AtomKind.interface</code></li>
+                      <li><code>AtomKind.dependency</code></li>
+                      <li><code>AtomKind.data</code></li>
+                      <li><code>AtomKind.behavior</code></li>
+                      <li><code>AtomKind.resource</code></li>
+                      <li><code>AtomKind.policy</code></li>
+                      <li><code>AtomKind.environment</code></li>
+                      <li><code>AtomKind.evidence</code></li>
+                    </ul>
+                  </details>
+                </article>
+
+                <article class="formal-anchor-card">
+                  <header class="formal-anchor-card-header">
+                    <div>
+                      <span class="formal-anchor-card-label">Claim group</span>
+                      <h3>Atom families and object formation</h3>
+                    </div>
+                    <span class="status-badge status-badge-defined">defined / proved</span>
+                  </header>
+                  <p class="formal-anchor-audits">
+                    Audits the passage from atom families to molecules,
+                    architecture objects, selected presentations, and law-ready
+                    finite universes.
+                  </p>
+                  <dl class="formal-anchor-grid">
+                    <div>
+                      <dt>Representative anchors</dt>
+                      <dd><code>AAT.Molecule</code>, <code>AAT.PureTheory</code>, <code>SelectedPresentation</code>, and <code>ArchitectureCore</code>.</dd>
+                    </div>
+                    <div>
+                      <dt>Current Lean status</dt>
+                      <dd><code>defined only</code> for object vocabulary; selected-presentation and finite-universe bridges are audited in the foundation cards below.</dd>
+                    </div>
+                    <div>
+                      <dt>Boundary</dt>
+                      <dd>A molecule is a finite composition over atoms. Lawfulness, obstruction, flatness, and signature readings arrive after a law universe and witness family are selected.</dd>
+                    </div>
+                    <div>
+                      <dt>Primary index</dt>
+                      <dd><code>docs/aat/lean_theorem_index.md</code>, selected presentation entries, and architecture-core entries.</dd>
+                    </div>
+                  </dl>
+                  <details class="formal-anchor-details">
+                    <summary>Full Lean anchor set</summary>
+                    <ul class="formal-anchor-code-list">
+                      <li><code>AAT.Molecule</code></li>
+                      <li><code>AAT.PureTheory</code></li>
+                      <li><code>SelectedPresentation</code></li>
+                      <li><code>AATJudgement</code></li>
+                      <li><code>ArchitectureCore</code></li>
+                      <li><code>ArchitectureCore.selectedPresentation</code></li>
+                      <li><code>ArchitectureCore.SelectedClaimBoundary</code></li>
+                      <li><code>ArchitectureCore.selectedClaimBoundary</code></li>
+                    </ul>
+                  </details>
+                </article>
+              </div>
             </section>
 
 
@@ -150,12 +254,12 @@
                     <span class="status-badge status-badge-proved">defined / proved</span>
                   </header>
                   <p class="formal-anchor-audits">
-                    Audits <a href="../foundations/#proposition-1-2">Proposition 1.2</a>,
-                    <a href="../foundations/#proof-1-2">Proof 1.2</a>,
-                    <a href="../foundations/#definition-2-0">Definition 2.0</a>,
-                    <a href="../foundations/#proposition-2-1">Proposition 2.1</a>,
-                    <a href="../foundations/#proof-2-1">Proof 2.1</a>, and
-                    <a href="../foundations/#counterexample-2-2">Counterexample 2.2</a>.
+                    Audits <a href="../architecture-objects/">Proposition 1.2</a>,
+                    <a href="../architecture-objects/">Proof 1.2</a>,
+                    <a href="../architecture-objects/">Definition 2.0</a>,
+                    <a href="../architecture-objects/">Proposition 2.1</a>,
+                    <a href="../architecture-objects/">Proof 2.1</a>, and
+                    <a href="../architecture-objects/">Counterexample 2.2</a>.
                   </p>
                   <dl class="formal-anchor-grid">
                     <div>
@@ -199,11 +303,11 @@
                     <span class="status-badge status-badge-proved">defined / proved</span>
                   </header>
                   <p class="formal-anchor-audits">
-                    Audits <a href="../foundations/#definition-1-1">Definition 1.1</a>,
-                    <a href="../foundations/#proposition-2-1">Proposition 2.1</a>,
-                    <a href="../foundations/#proof-2-1">Proof 2.1</a>,
-                    <a href="../foundations/#counterexample-2-2">Counterexample 2.2</a>, and
-                    <a href="../foundations/#non-conclusion-2-3">Non-conclusion 2.3</a>.
+                    Audits <a href="../architecture-objects/">Definition 1.1</a>,
+                    <a href="../architecture-objects/">Proposition 2.1</a>,
+                    <a href="../architecture-objects/">Proof 2.1</a>,
+                    <a href="../architecture-objects/">Counterexample 2.2</a>, and
+                    <a href="../architecture-objects/">Non-conclusion 2.3</a>.
                   </p>
                   <dl class="formal-anchor-grid">
                     <div>
@@ -252,10 +356,10 @@
                     <span class="status-badge status-badge-proved">defined / proved</span>
                   </header>
                   <p class="formal-anchor-audits">
-                    Audits <a href="../foundations/#definition-3-1">Definition 3.1</a>,
-                    <a href="../foundations/#proposition-3-2">Proposition 3.2</a>,
-                    <a href="../foundations/#proof-3-2">Proof idea 3.2</a>, and
-                    <a href="../foundations/#counterexample-3-3">Counterexample 3.3</a>.
+                    Audits <a href="../architecture-objects/">Definition 3.1</a>,
+                    <a href="../architecture-objects/">Proposition 3.2</a>,
+                    <a href="../architecture-objects/">Proof idea 3.2</a>, and
+                    <a href="../architecture-objects/">Counterexample 3.3</a>.
                   </p>
                   <dl class="formal-anchor-grid">
                     <div>
@@ -296,7 +400,7 @@
                     <span class="status-badge status-badge-defined">defined / proved</span>
                   </header>
                   <p class="formal-anchor-audits">
-                    Audits <a href="../foundations/#remark-3-4">Remark 3.4</a> and the
+                    Audits <a href="../architecture-objects/">Remark 3.4</a> and the
                     boundary vocabulary used by the bridge claims.
                   </p>
                   <dl class="formal-anchor-grid">
@@ -349,7 +453,7 @@
                     <span class="status-badge status-badge-proved">proved anchors</span>
                   </header>
                   <p class="formal-anchor-audits">
-                    Audits <a href="../laws-and-witnesses/#lemma-sequence">Lemma sequence</a>.
+                    Audits <a href="../laws/">Lemma sequence</a>.
                   </p>
                   <dl class="formal-anchor-grid">
                     <div>
@@ -380,7 +484,7 @@
                     <span class="status-badge status-badge-future">schema</span>
                   </header>
                   <p class="formal-anchor-audits">
-                    Audits <a href="../laws-and-witnesses/#main-theorem">Required theorem schema</a>.
+                    Audits <a href="../laws/">Required theorem schema</a>.
                   </p>
                   <dl class="formal-anchor-grid">
                     <div>
@@ -416,9 +520,9 @@
                     <span class="status-badge status-badge-proved">defined / proved</span>
                   </header>
                   <p class="formal-anchor-audits">
-                    Audits <a href="../architecture-signature/#definition-5-1">Definition 5.1</a> and
-                    <a href="../architecture-signature/#proposition-5-2">Proposition 5.2</a> /
-                    <a href="../architecture-signature/#proof-5-2">Proof idea</a>.
+                    Audits <a href="../architecture-signature/">Definition 5.1</a> and
+                    <a href="../architecture-signature/">Proposition 5.2</a> /
+                    <a href="../architecture-signature/">Proof idea</a>.
                   </p>
                   <dl class="formal-anchor-grid">
                     <div>
@@ -462,8 +566,8 @@
                     <span class="status-badge status-badge-proved">proved anchor</span>
                   </header>
                   <p class="formal-anchor-audits">
-                    Audits <a href="../architecture-signature/#proposition-5-2">Proposition 5.2</a> and
-                    <a href="../architecture-signature/#proof-5-2">Proof idea 5.2</a>,
+                    Audits <a href="../architecture-signature/">Proposition 5.2</a> and
+                    <a href="../architecture-signature/">Proof idea 5.2</a>,
                     and the finite static theorem boundary.
                   </p>
                   <dl class="formal-anchor-grid">
@@ -510,10 +614,10 @@
                     <span class="status-badge status-badge-proved">defined / proved</span>
                   </header>
                   <p class="formal-anchor-audits">
-                    Audits <a href="../architecture-signature/#definition-5-3">Definition 5.3</a>,
-                    <a href="../architecture-signature/#proposition-5-4">Proposition 5.4</a>,
-                    <a href="../architecture-signature/#proof-5-4">Proof 5.4</a>, and
-                    <a href="../architecture-signature/#definition-5-5">Definition 5.5</a>.
+                    Audits <a href="../architecture-signature/">Definition 5.3</a>,
+                    <a href="../architecture-signature/">Proposition 5.4</a>,
+                    <a href="../architecture-signature/">Proof 5.4</a>, and
+                    <a href="../architecture-signature/">Definition 5.5</a>.
                   </p>
                   <dl class="formal-anchor-grid">
                     <div>
@@ -558,13 +662,13 @@
                     <span class="status-badge status-badge-proved">defined / proved</span>
                   </header>
                   <p class="formal-anchor-audits">
-                    Audits <a href="../architecture-signature/#definition-6-1">Definition 6.1</a>,
-                    <a href="../architecture-signature/#proposition-6-2">Proposition 6.2</a>,
-                    <a href="../architecture-signature/#proof-6-2">Proof idea 6.2</a>,
-                    <a href="../architecture-signature/#proposition-6-4">Proposition 6.4</a>,
-                    <a href="../architecture-signature/#proof-6-4">Proof idea 6.4</a>,
-                    <a href="../architecture-signature/#definition-6-3">Definition 6.3</a>, and
-                    <a href="../architecture-signature/#signature-summary">the chapter summary</a>.
+                    Audits <a href="../architecture-signature/">Definition 6.1</a>,
+                    <a href="../architecture-signature/">Proposition 6.2</a>,
+                    <a href="../architecture-signature/">Proof idea 6.2</a>,
+                    <a href="../architecture-signature/">Proposition 6.4</a>,
+                    <a href="../architecture-signature/">Proof idea 6.4</a>,
+                    <a href="../architecture-signature/">Definition 6.3</a>, and
+                    <a href="../architecture-signature/">the chapter summary</a>.
                   </p>
                   <dl class="formal-anchor-grid">
                     <div>
@@ -623,12 +727,12 @@
                     <span class="status-badge status-badge-proved">proved anchors</span>
                   </header>
                   <p class="formal-anchor-audits">
-                    Audits <a href="../local-law-packages/#definition-7-1">Definition 7.1</a>,
-                    <a href="../local-law-packages/#proposition-7-2">Proposition 7.2</a>,
-                    <a href="../local-law-packages/#proof-7-2">Proof idea 7.2</a>,
-                    <a href="../local-law-packages/#definition-7-3">Definition 7.3</a>,
-                    <a href="../local-law-packages/#proposition-7-4">Proposition 7.4</a>, and
-                    <a href="../local-law-packages/#proof-7-4">Proof idea 7.4</a>.
+                    Audits <a href="../design-principle-layers/">Definition 7.1</a>,
+                    <a href="../design-principle-layers/">Proposition 7.2</a>,
+                    <a href="../design-principle-layers/">Proof idea 7.2</a>,
+                    <a href="../design-principle-layers/">Definition 7.3</a>,
+                    <a href="../design-principle-layers/">Proposition 7.4</a>, and
+                    <a href="../design-principle-layers/">Proof idea 7.4</a>.
                   </p>
                   <dl class="formal-anchor-grid">
                     <div>
@@ -676,10 +780,10 @@
                     <span class="status-badge status-badge-proved">proved anchors</span>
                   </header>
                   <p class="formal-anchor-audits">
-                    Audits <a href="../local-law-packages/#definition-7-5">Definition 7.5</a>,
-                    <a href="../local-law-packages/#proposition-7-6">Proposition 7.6</a>, and
-                    <a href="../local-law-packages/#proposition-7-7">Proposition 7.7</a> /
-                    <a href="../local-law-packages/#proof-7-7">Proof idea</a>.
+                    Audits <a href="../design-principle-layers/">Definition 7.5</a>,
+                    <a href="../design-principle-layers/">Proposition 7.6</a>, and
+                    <a href="../design-principle-layers/">Proposition 7.7</a> /
+                    <a href="../design-principle-layers/">Proof idea</a>.
                   </p>
                   <dl class="formal-anchor-grid">
                     <div>
@@ -726,7 +830,7 @@
                     <span class="status-badge status-badge-proved">defined / proved</span>
                   </header>
                   <p class="formal-anchor-audits">
-                    Audits <a href="../local-law-packages/#local-contract-packages">Local contract packages</a>.
+                    Audits <a href="../design-principle-layers/">Local contract packages</a>.
                   </p>
                   <dl class="formal-anchor-grid">
                     <div>
@@ -776,9 +880,9 @@
                     <span class="status-badge status-badge-proved">defined / proved</span>
                   </header>
                   <p class="formal-anchor-audits">
-                    Audits <a href="../local-law-packages/#definition-8-1">Definition 8.1</a>,
-                    <a href="../local-law-packages/#proposition-8-2">Proposition 8.2</a>, and
-                    <a href="../local-law-packages/#non-conclusion-8-3">Non-conclusion 8.3</a>.
+                    Audits <a href="../design-principle-layers/">Definition 8.1</a>,
+                    <a href="../design-principle-layers/">Proposition 8.2</a>, and
+                    <a href="../design-principle-layers/">Non-conclusion 8.3</a>.
                   </p>
                   <dl class="formal-anchor-grid">
                     <div>
@@ -828,7 +932,7 @@
                     <span class="status-badge status-badge-proved">proved</span>
                   </header>
                   <p class="formal-anchor-audits">
-                    Audits <a href="../local-law-packages/#counterexample-8-5">Counterexample 8.5</a>.
+                    Audits <a href="../design-principle-layers/">Counterexample 8.5</a>.
                   </p>
                   <dl class="formal-anchor-grid">
                     <div>
@@ -882,9 +986,9 @@
                     <span class="status-badge status-badge-defined">defined / proved</span>
                   </div>
                   <p class="formal-anchor-audits">
-                    Audits <a href="../calculus-and-extensions/#definition-9-1">Definition 9.1</a>,
-                    <a href="../calculus-and-extensions/#proposition-9-2">Proposition 9.2</a>,
-                    and <a href="../calculus-and-extensions/#proof-9-2">Proof idea 9.2</a>.
+                    Audits <a href="../operations-and-calculus/">Definition 9.1</a>,
+                    <a href="../operations-and-calculus/">Proposition 9.2</a>,
+                    and <a href="../operations-and-calculus/">Proof idea 9.2</a>.
                   </p>
                   <dl class="formal-anchor-grid">
                     <div>
@@ -953,9 +1057,9 @@
                     <span class="status-badge status-badge-proved">defined / proved</span>
                   </div>
                   <p class="formal-anchor-audits">
-                    Audits <a href="../calculus-and-extensions/#definition-10-1">Definition 10.1</a>,
-                    <a href="../calculus-and-extensions/#proposition-10-2">Proposition 10.2</a>,
-                    and <a href="../calculus-and-extensions/#proof-10-2">Proof idea 10.2</a>.
+                    Audits <a href="../operations-and-calculus/">Definition 10.1</a>,
+                    <a href="../operations-and-calculus/">Proposition 10.2</a>,
+                    and <a href="../operations-and-calculus/">Proof idea 10.2</a>.
                   </p>
                   <dl class="formal-anchor-grid">
                     <div>
@@ -1031,10 +1135,10 @@
                     <span class="status-badge status-badge-proved">proved anchors</span>
                   </div>
                   <p class="formal-anchor-audits">
-                    Audits <a href="../repair-and-dynamics/#proposition-11-2">Proposition 11.2</a> /
-                    <a href="../repair-and-dynamics/#proof-11-2">Proof idea</a> and
-                    <a href="../repair-and-dynamics/#proposition-11-3">Proposition 11.3</a> /
-                    <a href="../repair-and-dynamics/#proof-11-3">Proof idea</a>.
+                    Audits <a href="../dynamics-and-geometry/">Proposition 11.2</a> /
+                    <a href="../dynamics-and-geometry/">Proof idea</a> and
+                    <a href="../dynamics-and-geometry/">Proposition 11.3</a> /
+                    <a href="../dynamics-and-geometry/">Proof idea</a>.
                   </p>
                   <dl class="formal-anchor-grid">
                     <div>
@@ -1065,8 +1169,8 @@
                     <span class="status-badge status-badge-proved">proved anchors</span>
                   </div>
                   <p class="formal-anchor-audits">
-                    Audits <a href="../repair-and-dynamics/#counterexample-11-4">Counterexample 11.4</a>
-                    and <a href="../repair-and-dynamics/#proof-11-4">Proof idea 11.4</a>.
+                    Audits <a href="../dynamics-and-geometry/">Counterexample 11.4</a>
+                    and <a href="../dynamics-and-geometry/">Proof idea 11.4</a>.
                   </p>
                   <dl class="formal-anchor-grid">
                     <div>
@@ -1097,10 +1201,10 @@
                     <span class="status-badge status-badge-proved">proved anchors</span>
                   </div>
                   <p class="formal-anchor-audits">
-                    Audits <a href="../repair-and-dynamics/#proposition-12-2">Proposition 12.2</a> /
-                    <a href="../repair-and-dynamics/#proof-12-2">Proof idea</a> and
-                    <a href="../repair-and-dynamics/#proposition-12-3">Proposition 12.3</a> /
-                    <a href="../repair-and-dynamics/#proof-12-3">Proof idea</a>.
+                    Audits <a href="../dynamics-and-geometry/">Proposition 12.2</a> /
+                    <a href="../dynamics-and-geometry/">Proof idea</a> and
+                    <a href="../dynamics-and-geometry/">Proposition 12.3</a> /
+                    <a href="../dynamics-and-geometry/">Proof idea</a>.
                   </p>
                   <dl class="formal-anchor-grid">
                     <div>
@@ -1137,8 +1241,8 @@
                     <span class="status-badge status-badge-proved">proved anchors</span>
                   </div>
                   <p class="formal-anchor-audits">
-                    Audits <a href="../representations-and-effects/#proposition-13-2">Proposition 13.2</a>
-                    and <a href="../representations-and-effects/#proof-13-2">Proof idea 13.2</a>.
+                    Audits <a href="../representations-and-effects/">Proposition 13.2</a>
+                    and <a href="../representations-and-effects/">Proof idea 13.2</a>.
                   </p>
                   <dl class="formal-anchor-grid">
                     <div>
@@ -1169,8 +1273,8 @@
                     <span class="status-badge status-badge-proved">proved accessors</span>
                   </div>
                   <p class="formal-anchor-audits">
-                    Audits <a href="../representations-and-effects/#proposition-13-5">Proposition 13.5</a>
-                    and <a href="../representations-and-effects/#proof-13-5">Proof idea 13.5</a>.
+                    Audits <a href="../representations-and-effects/">Proposition 13.5</a>
+                    and <a href="../representations-and-effects/">Proof idea 13.5</a>.
                   </p>
                   <dl class="formal-anchor-grid">
                     <div>
@@ -1201,8 +1305,8 @@
                     <span class="status-badge status-badge-proved">proved bridges</span>
                   </div>
                   <p class="formal-anchor-audits">
-                    Audits <a href="../representations-and-effects/#proposition-14-2">Proposition 14.2</a>
-                    and <a href="../representations-and-effects/#proof-14-2">Proof idea 14.2</a>.
+                    Audits <a href="../representations-and-effects/">Proposition 14.2</a>
+                    and <a href="../representations-and-effects/">Proof idea 14.2</a>.
                   </p>
                   <dl class="formal-anchor-grid">
                     <div>
@@ -1239,9 +1343,9 @@
                     <span class="status-badge status-badge-proved">defined / proved</span>
                   </header>
                   <p class="formal-anchor-audits">
-                    Audits <a href="../canonical-examples-and-readings/#example-15-1">Example 15.1</a>,
-                    <a href="../canonical-examples-and-readings/#proof-15-1">Proof idea 15.1</a>, and
-                    the static part of <a href="../canonical-examples-and-readings/#signature-reading-15-2">Signature
+                    Audits <a href="../canonical-examples-and-readings/">Example 15.1</a>,
+                    <a href="../canonical-examples-and-readings/">Proof idea 15.1</a>, and
+                    the static part of <a href="../canonical-examples-and-readings/">Signature
                     reading 15.2</a>.
                   </p>
                   <dl class="formal-anchor-grid">
@@ -1288,9 +1392,9 @@
                     <span class="status-badge status-badge-proved">defined / proved</span>
                   </header>
                   <p class="formal-anchor-audits">
-                    Audits <a href="../canonical-examples-and-readings/#signature-reading-15-2">Signature reading
-                      15.2</a> and <a href="../canonical-examples-and-readings/#counterexample-15-3">Counterexample
-                      15.3</a> / <a href="../canonical-examples-and-readings/#proof-15-3">Proof idea</a>.
+                    Audits <a href="../canonical-examples-and-readings/">Signature reading
+                      15.2</a> and <a href="../canonical-examples-and-readings/">Counterexample
+                      15.3</a> / <a href="../canonical-examples-and-readings/">Proof idea</a>.
                   </p>
                   <dl class="formal-anchor-grid">
                     <div>
@@ -1336,7 +1440,7 @@
                     <span class="status-badge status-badge-proved">proved</span>
                   </header>
                   <p class="formal-anchor-audits">
-                    Audits <a href="../canonical-examples-and-readings/#counterexample-15-4">Counterexample
+                    Audits <a href="../canonical-examples-and-readings/">Counterexample
                       15.4</a>.
                   </p>
                   <dl class="formal-anchor-grid">
@@ -1380,7 +1484,7 @@
                     <span class="status-badge status-badge-proved">proved</span>
                   </header>
                   <p class="formal-anchor-audits">
-                    Audits <a href="../canonical-examples-and-readings/#counterexample-15-5">Counterexample
+                    Audits <a href="../canonical-examples-and-readings/">Counterexample
                       15.5</a>.
                   </p>
                   <dl class="formal-anchor-grid">
@@ -1479,7 +1583,7 @@
                     <span class="status-badge status-badge-defined">defined / proved</span>
                   </header>
                   <p class="formal-anchor-audits">
-                    Audits <a href="../related-work/#signature-boundary-a-3">Signature boundary A.3</a>.
+                    Audits <a href="../related-work/">Signature boundary A.3</a>.
                   </p>
                   <dl class="formal-anchor-grid">
                     <div>
@@ -1542,7 +1646,7 @@
                     <span class="status-badge status-badge-proved">proved anchor</span>
                   </header>
                   <p class="formal-anchor-audits">
-                    Audits <a href="../related-work/#formal-anchor-a-4">Formal anchor A.4</a>.
+                    Audits <a href="../related-work/">Formal anchor A.4</a>.
                   </p>
                   <dl class="formal-anchor-grid">
                     <div>

@@ -1,0 +1,630 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta
+      name="description"
+      content="Design laws and invariants in Algebraic Architecture Theory: laws evaluate atom molecules without creating atoms."
+    >
+    <title>Design Laws and Invariants</title>
+    <meta property="og:site_name" content="AAT / SFT Research Notes">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="Design Laws and Invariants">
+    <meta property="og:description" content="Design laws and invariants in Algebraic Architecture Theory: laws evaluate atom molecules without creating atoms.">
+    <meta property="og:url" content="https://iroha1203.dev/aat/laws/">
+    <meta property="og:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Design Laws and Invariants">
+    <meta name="twitter:description" content="Design laws and invariants in Algebraic Architecture Theory: laws evaluate atom molecules without creating atoms.">
+    <meta name="twitter:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
+    <link rel="icon" href="../../assets/favicon-32.png" sizes="32x32" type="image/png">
+    <link rel="icon" href="../../assets/favicon-16.png" sizes="16x16" type="image/png">
+    <link rel="alternate" hreflang="en" href="./">
+    <link rel="alternate" hreflang="x-default" href="./">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=Inter:wght@400;500;600;700&amp;family=Source+Serif+4:opsz,wght@8..60,400..700&amp;display=swap"
+      rel="stylesheet"
+    >
+    <script>
+      try {
+        const theme = localStorage.getItem("aat-sft-theme");
+        if (theme === "light" || theme === "dark") {
+          document.documentElement.dataset.theme = theme;
+        }
+      } catch {}
+    </script>
+    <link rel="stylesheet" href="../../assets/site.css">
+    <script>
+      window.MathJax = {
+        tex: {
+          inlineMath: [["\\(", "\\)"]],
+          displayMath: [["\\[", "\\]"]]
+        },
+        chtml: {
+          matchFontHeight: false
+        }
+      };
+    </script>
+    <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+    <script defer src="../../assets/site.js"></script>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-YQMFH2FG9V"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-YQMFH2FG9V');
+    </script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <header class="site-header" data-site-header>
+      <div class="site-shell header-inner">
+        <a class="brand" href="../../" aria-label="AAT SFT home">
+          <img class="brand-icon" src="../../assets/favicon-512.png" alt="" width="512" height="512" aria-hidden="true">
+          <span class="brand-mark">AAT/SFT</span>
+          <span class="brand-text">Research Notes</span>
+        </a>
+        <nav class="site-nav" aria-label="Primary navigation">
+          <a href="../../">Home</a>
+          <a class="is-active" href="../">AAT</a>
+          <a href="../../sft/">SFT</a>
+          <a href="../../archsig/">ArchSig</a>
+          <a href="../../outreach/">Outreach</a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="main">
+      <section class="article-hero section-band">
+        <div class="site-shell">
+          <nav class="breadcrumb" aria-label="Breadcrumb">
+            <a href="../../">Home</a>
+            <a href="../">AAT</a>
+            <span>Design Laws</span>
+          </nav>
+          <p class="eyebrow">Part I. Foundations</p>
+          <h1>Design Laws and Invariants</h1>
+          <p class="lede">
+            A design law is not a slogan and not an atom. It is a selected
+            predicate over molecules: it evaluates finite configurations of
+            already-existing atoms, marks bad configurations, and lets
+            lawfulness be stated relative to a law universe.
+          </p>
+        </div>
+      </section>
+
+      <section class="section-band">
+        <div class="site-shell article-layout">
+          <aside class="article-sidebar" aria-label="AAT page navigation">
+            <nav class="toc-panel" aria-labelledby="toc-title">
+              <h2 id="toc-title">On this page</h2>
+              <ol>
+                <li><a href="#research-question">Research question</a></li>
+                <li><a href="#law-definition">Law definition</a></li>
+                <li><a href="#law-universe">Law universe</a></li>
+                <li><a href="#invariants">Invariants</a></li>
+                <li><a href="#design-principle-layers">Design principle layers</a></li>
+                <li><a href="#patterns-as-laws">Patterns as law packages</a></li>
+                <li><a href="#lawfulness">Lawfulness</a></li>
+                <li><a href="#example">Worked example</a></li>
+                <li><a href="#counterexamples">Counterexamples</a></li>
+                <li><a href="#formal-reading">Formal reading</a></li>
+              </ol>
+            </nav>
+            <div class="source-panel" data-sidebar-open="true">
+              <h2>AAT chapters</h2>
+              <ul>
+                <li><a href="../">Overview</a></li>
+                <li><a href="../atoms/">Atoms</a></li>
+                <li><a href="../architecture-objects/">Architecture Objects</a></li>
+                <li><a href="./" aria-current="page">Design Laws</a></li>
+                <li><a href="../obstruction-circuits/">Obstruction Circuits</a></li>
+                <li><a href="../zero-curvature/">Zero Curvature</a></li>
+                <li><a href="../architecture-signature/">Architecture Signature</a></li>
+                <li><a href="../design-principle-layers/">Design Principle Layers</a></li>
+                <li><a href="../operations-and-calculus/">Operations and Calculus</a></li>
+                <li><a href="../dynamics-and-geometry/">Dynamics and Geometry</a></li>
+                <li><a href="../representations-and-effects/">Representations and Effects</a></li>
+                <li><a href="../canonical-examples-and-readings/">Examples and Readings</a></li>
+                <li><a href="../related-work/">Related Work</a></li>
+                <li><a href="../status/">Status</a></li>
+                <li><a href="../formal-anchors/">Formal Anchors</a></li>
+              </ul>
+            </div>
+          </aside>
+
+          <div class="article-main">
+            <section id="research-question" class="article-section">
+              <h2>Research question</h2>
+              <p class="research-question">
+                How can design principles be stated precisely enough to test an
+                architecture without turning them into universal slogans?
+              </p>
+              <p>
+                AAT treats a design principle as a law only after selecting the
+                molecules, invariants, witness family, coverage, and exactness
+                assumptions needed to evaluate it. A law is therefore not the
+                principle's name. It is the theorem-shaped condition that says
+                which finite atom configurations are acceptable under a chosen
+                reading.
+              </p>
+            </section>
+
+            <section id="law-definition" class="article-section">
+              <h2>Law definition</h2>
+              <p>
+                A design law evaluates molecules. In the pure Lean surface, a
+                law marks selected molecules as bad; a molecule is lawful for
+                that law exactly when it is not marked bad.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Design law schema</figcaption>
+                <pre><code>DesignLaw
+  = Bad : Molecule -> Prop
+  + evaluationBoundary
+  + nonConclusions
+
+Lawful law M
+  = not (law.Bad M)</code></pre>
+              </figure>
+              <p id="definition-1-1" class="statement">
+                <a class="statement-anchor" href="#definition-1-1">Definition 1.1.</a>
+                A <code>DesignLaw</code> is a predicate-level evaluator for
+                atom molecules. It classifies selected configurations; it does
+                not add atoms, remove atoms, or define the atom ontology.
+              </p>
+              <p id="proposition-1-2" class="statement">
+                <a class="statement-anchor" href="#proposition-1-2">Proposition 1.2.</a>
+                Law evaluation is downstream from Atom and Molecule. A law can
+                say that a molecule is bad, but it cannot make a primitive fact
+                exist.
+              </p>
+              <p id="proof-1-2" class="statement-proof">
+                <a class="statement-anchor" href="#proof-1-2">Proof.</a>
+                Lean exposes this through
+                <code>AAT.DesignLaw.does_not_create_atoms</code>, which returns
+                <code>system.noLawCreatesAtoms</code>. It also proves
+                <code>AAT.DesignLaw.atom_law_independent</code>, showing that
+                selected design laws do not change the law-independence of
+                root atoms.
+              </p>
+            </section>
+
+            <section id="law-universe" class="article-section">
+              <h2>Law universe</h2>
+              <p>
+                A single law rarely captures a design principle. A law universe
+                is a selected family of laws together with the assumptions that
+                make them readable: required laws, optional laws, derived laws,
+                witness families, selected readings, coverage assumptions, and
+                exactness assumptions.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Law universe schema</figcaption>
+                <pre><code>LawUniverse U
+  = required laws
+  + optional laws
+  + derived laws
+  + witness family
+  + selected reading
+  + coverage assumptions
+  + exactness assumptions</code></pre>
+              </figure>
+              <p id="definition-2-1" class="statement">
+                <a class="statement-anchor" href="#definition-2-1">Definition 2.1.</a>
+                A law universe is the selected family of law predicates used to
+                read an architecture object. It is relative to a molecule
+                boundary, a witness boundary, and the evidence that covers that
+                boundary.
+              </p>
+              <p id="non-conclusion-2-2" class="statement">
+                <a class="statement-anchor" href="#non-conclusion-2-2">Non-conclusion 2.2.</a>
+                A law universe is not "all good design." It is a declared
+                package. Passing one package does not automatically discharge
+                laws outside that package.
+              </p>
+            </section>
+
+            <section id="invariants" class="article-section">
+              <h2>Invariants</h2>
+              <p>
+                Invariants are the quantities or predicates that a law
+                protects. A design law may require an invariant to be preserved,
+                a forbidden witness count to remain zero, a projection to be
+                sound, a substitution to preserve a contract, or an operation
+                to improve a selected measure.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Invariant readings</figcaption>
+                <pre><code>Invariant as predicate:
+  P : Obj -> Prop
+
+Invariant as quantity:
+  I : Obj -> Value
+
+Preservation:
+  I(A) = I(B)
+
+Improvement:
+  I(B) <= I(A)</code></pre>
+              </figure>
+              <p id="definition-3-1" class="statement">
+                <a class="statement-anchor" href="#definition-3-1">Definition 3.1.</a>
+                An invariant family is a selected collection of properties or
+                quantities that a law package preserves, tests, reflects, or
+                improves.
+              </p>
+              <p id="proposition-3-2" class="statement">
+                <a class="statement-anchor" href="#proposition-3-2">Proposition 3.2.</a>
+                Invariants are law-relative. Cycle count, contract mismatch
+                count, projection violation count, replay failure count, and
+                semantic inconsistency count are different quantities, not one
+                universal quality score.
+              </p>
+              <p id="proof-3-2" class="statement-proof">
+                <a class="statement-anchor" href="#proof-3-2">Proof idea.</a>
+                Each invariant reads a different projection of the architecture
+                object. A static dependency invariant can be preserved while an
+                effect-ordering invariant fails. A local substitution invariant
+                can hold while a global layering invariant fails. Therefore
+                AAT keeps invariant families separated by law package.
+              </p>
+            </section>
+
+            <section id="design-principle-layers" class="article-section">
+              <h2>Design principle layers</h2>
+              <p>
+                Design principles become useful in AAT when their layer is made
+                explicit. SOLID-style principles usually live in local contract
+                and substitution layers. Layered and Clean Architecture live in
+                global structure layers. Event Sourcing, Saga, and CRUD live in
+                state-transition algebra layers. Circuit Breaker lives in
+                runtime dependency layers. Replicated Log lives in distributed
+                convergence layers.
+              </p>
+              <dl class="term-list definition-list">
+                <div>
+                  <dt>SOLID</dt>
+                  <dd>Local contracts, abstraction, substitutability, interface separation, dependency inversion.</dd>
+                </div>
+                <div>
+                  <dt>Layered / Clean Architecture</dt>
+                  <dd>Ranking, dependency direction, inner/outer separation, abstraction consistency, global structure.</dd>
+                </div>
+                <div>
+                  <dt>Event Sourcing / Saga / CRUD</dt>
+                  <dd>Replay, projection, compensation, overwrite, history, state-transition algebra.</dd>
+                </div>
+                <div>
+                  <dt>Circuit Breaker</dt>
+                  <dd>Runtime protection, failure locality, timeout, retry, bulkhead and fallback behavior.</dd>
+                </div>
+                <div>
+                  <dt>Replicated Log</dt>
+                  <dd>Ordering, quorum, failure model, conditional convergence, distributed consistency.</dd>
+                </div>
+              </dl>
+              <p id="proposition-4-1" class="statement">
+                <a class="statement-anchor" href="#proposition-4-1">Proposition 4.1.</a>
+                Design principle layers do not automatically imply one another.
+                Local contract success does not imply global decomposability,
+                state-transition safety, runtime resilience, or distributed
+                convergence.
+              </p>
+              <p id="proof-4-1" class="statement-proof">
+                <a class="statement-anchor" href="#proof-4-1">Proof idea.</a>
+                Each layer evaluates different atom families and different
+                invariants. A class can satisfy a local interface contract while
+                its dependencies violate a layer ranking. A saga can preserve a
+                compensation invariant while a replicated log fails a quorum
+                condition. The layers can interact, but an explicit theorem is
+                needed to move from one to another.
+              </p>
+            </section>
+
+            <section id="patterns-as-laws" class="article-section">
+              <h2>Patterns as law packages</h2>
+              <p>
+                AAT does not read SOLID, GoF patterns, DDD patterns, or
+                resilience patterns as badges attached to code. It reads them
+                as compact names for law packages: selected atom families,
+                invariants, allowed operations, forbidden molecules, and
+                witness rules. The familiar pattern name is useful, but the AAT
+                object is the law package behind it.
+              </p>
+              <p>
+                This changes how pattern discussion works. Instead of asking
+                whether a design "uses Strategy" or "follows DIP", AAT asks
+                which molecules the pattern selects, which invariants it
+                preserves, which substitutions or dependencies are forbidden,
+                and which counterexample would witness failure.
+              </p>
+              <dl class="term-list definition-list">
+                <div>
+                  <dt>Single Responsibility Principle</dt>
+                  <dd>A law package over change reasons, capability grouping, state ownership, and effect locality. A failure witness is not "a large class" but a molecule where independent change axes are forced through the same subject.</dd>
+                </div>
+                <div>
+                  <dt>Open/Closed Principle</dt>
+                  <dd>A preservation law for extension operations. The selected invariant is that new behavior factors through declared extension points without rewriting protected molecules.</dd>
+                </div>
+                <div>
+                  <dt>Liskov Substitution Principle</dt>
+                  <dd>A contract and semantic preservation law. Type compatibility is only one atom family; substitution also has to preserve contract, effect, authority, and semantic atoms selected by the law package.</dd>
+                </div>
+                <div>
+                  <dt>Interface Segregation Principle</dt>
+                  <dd>A projection law over capability and dependency atoms. A client should depend on the capability molecule it actually uses, not on an unrelated bundle of capabilities.</dd>
+                </div>
+                <div>
+                  <dt>Dependency Inversion Principle</dt>
+                  <dd>A relation and contract factoring law. Concrete dependencies should factor through selected abstraction atoms, and the abstraction must carry the contract atoms required by the client.</dd>
+                </div>
+                <div>
+                  <dt>Strategy / Adapter / Facade</dt>
+                  <dd>Role interpretations over molecules. Strategy emphasizes substitutable behavior contracts, Adapter emphasizes translation between contract surfaces, and Facade emphasizes projection of a larger molecule into a smaller capability surface.</dd>
+                </div>
+                <div>
+                  <dt>Repository</dt>
+                  <dd>A state and contract law package. It hides persistence details behind selected capability and contract atoms, but it does not automatically prove transaction safety, query semantics, or consistency.</dd>
+                </div>
+                <div>
+                  <dt>Saga</dt>
+                  <dd>A state-transition and effect-compensation law package. Its witnesses live in ordering, compensation, idempotence, and semantic completion atoms, not merely in the presence of event handlers.</dd>
+                </div>
+                <div>
+                  <dt>Circuit Breaker</dt>
+                  <dd>A runtime interaction law package. It reads timeout, failure count, open/half-open state, fallback, and effect-locality atoms. It does not by itself prove semantic correctness of the fallback.</dd>
+                </div>
+              </dl>
+              <p id="proposition-5-1" class="statement">
+                <a class="statement-anchor" href="#proposition-5-1">Proposition 5.1.</a>
+                A design pattern becomes theorem-shaped in AAT when its pattern
+                name is replaced by a selected law package: atom support,
+                invariant family, allowed operations, forbidden molecules, and
+                witness criteria.
+              </p>
+              <p id="proof-5-1" class="statement-proof">
+                <a class="statement-anchor" href="#proof-5-1">Proof idea.</a>
+                A pattern name alone has no truth value over an architecture
+                object. The truth value appears only after selecting the
+                molecules and predicates it evaluates. Once those are selected,
+                the pattern can be read as a <code>DesignLaw</code>, a family
+                of invariants, or a law universe with explicit witness rules.
+              </p>
+              <p id="non-conclusion-5-2" class="statement">
+                <a class="statement-anchor" href="#non-conclusion-5-2">Non-conclusion 5.2.</a>
+                AAT does not turn famous patterns into universal laws. It turns
+                them into explicit selected laws whose scope, evidence, and
+                failure witnesses can be checked.
+              </p>
+            </section>
+
+            <section id="lawfulness" class="article-section">
+              <h2>Lawfulness</h2>
+              <p>
+                Lawfulness is selected. An architecture object is lawful
+                relative to a selected law universe when every required law in
+                that universe holds on the selected molecule boundary. AAT does
+                not identify lawfulness with zero obstruction until the
+                required witness family, coverage, exactness, and bridge
+                assumptions have been supplied.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Lawfulness readings</figcaption>
+                <pre><code>Lawful_U(A)
+  iff for every required L in U, L(A)
+
+LawfulWithinMoleculeConfiguration law requiredMolecule
+  iff every required molecule is not bad for law
+
+NoRequiredObstructionCircuit law requiredMolecule
+  iff no required molecule is a law-relative obstruction circuit</code></pre>
+              </figure>
+              <p id="proposition-6-1" class="statement">
+                <a class="statement-anchor" href="#proposition-6-1">Proposition 6.1.</a>
+                Lawfulness and obstruction absence require a bridge. They are
+                equivalent only when bad-witness completeness and circuit
+                soundness are supplied for the selected molecule boundary.
+              </p>
+              <p id="proof-6-1" class="statement-proof">
+                <a class="statement-anchor" href="#proof-6-1">Proof.</a>
+                Lean packages this as <code>AAT.LawfulnessBridge</code>. The
+                theorem <code>LawfulnessBridge.lawful_iff_no_obstructionCircuit</code>
+                proves equivalence between
+                <code>LawfulWithinMoleculeConfiguration</code> and
+                <code>NoRequiredObstructionCircuit</code> using
+                <code>badWitnessComplete</code> and <code>circuitBad</code>.
+                Without those bridge assumptions, the equivalence is not
+                licensed.
+              </p>
+            </section>
+
+            <section id="example" class="article-section">
+              <h2>Worked example</h2>
+              <p>
+                Consider the payment molecule from the previous chapter. A
+                payment law package may select several laws over the same atom
+                surface.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Payment law package</figcaption>
+                <pre><code>M_payment contains:
+  relation_calls(CheckoutService, PaymentGateway)
+  capability(PaymentGateway, capture_payment)
+  effect(capture_payment)
+  authority(CheckoutService, capture, PaymentGateway)
+  contract(PaymentGateway, idempotent_capture)
+  runtime_interaction(CheckoutService, PaymentGateway, retry)
+  semantic(capture_payment, charges_customer_once)
+
+Selected laws:
+  L_authority:
+    capture_payment requires authority
+
+  L_contract:
+    capture_payment satisfies idempotent_capture
+
+  L_runtime:
+    retry does not duplicate non-idempotent effect
+
+  L_semantic:
+    capture_payment preserves charges_customer_once</code></pre>
+              </figure>
+              <p>
+                A static graph reading of this molecule may pass even when the
+                runtime retry law fails. A contract law may pass while the
+                authority law fails. AAT keeps those results separate until a
+                selected law universe states exactly which laws are required
+                together.
+              </p>
+            </section>
+
+            <section id="counterexamples" class="article-section">
+              <h2>Counterexamples and non-conclusions</h2>
+              <p id="counterexample-7-1" class="statement">
+                <a class="statement-anchor" href="#counterexample-7-1">Counterexample 7.1.</a>
+                A module can satisfy an interface segregation law and still
+                participate in a forbidden dependency cycle. Local contract
+                lawfulness does not imply global structure lawfulness.
+              </p>
+              <p id="counterexample-7-2" class="statement">
+                <a class="statement-anchor" href="#counterexample-7-2">Counterexample 7.2.</a>
+                A payment effect can have an authority atom and still fail an
+                idempotence contract under retry. Authority lawfulness does not
+                imply effect replay lawfulness.
+              </p>
+              <p id="counterexample-7-3" class="statement">
+                <a class="statement-anchor" href="#counterexample-7-3">Counterexample 7.3.</a>
+                A law can mark no selected molecule bad because the selected
+                universe omitted the relevant witness. That is not global
+                lawfulness; it is a coverage limitation.
+              </p>
+              <p id="non-conclusion-7-4" class="statement">
+                <a class="statement-anchor" href="#non-conclusion-7-4">Non-conclusion 7.4.</a>
+                Passing SOLID-style local laws does not prove Clean
+                Architecture, Event Sourcing correctness, Saga compensation,
+                Circuit Breaker resilience, replicated-log convergence, or
+                semantic correctness unless those laws are included and bridged.
+              </p>
+            </section>
+
+            <section id="formal-reading" class="article-section">
+              <h2>Formal reading</h2>
+              <p>
+                The pure Lean surface for this chapter is small and deliberate:
+                <code>AAT.DesignLaw</code> evaluates molecules by a
+                <code>Bad</code> predicate, <code>DesignLaw.Lawful</code> means
+                not bad, and accessors record that laws do not create atom
+                existence. The obstruction bridge lives in
+                <code>Formal/Arch/AAT/Circuit.lean</code> and is developed in
+                the next chapter.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Lean anchors</figcaption>
+                <pre><code>Formal/Arch/AAT/Law.lean
+  AAT.DesignLaw
+  AAT.DesignLaw.Lawful
+  AAT.DesignLaw.does_not_create_atoms
+  AAT.DesignLaw.atom_law_independent
+
+Formal/Arch/AAT/Circuit.lean
+  AAT.LawfulWithinMoleculeConfiguration
+  AAT.NoRequiredObstructionCircuit
+  AAT.LawfulnessBridge
+  LawfulnessBridge.lawful_iff_no_obstructionCircuit</code></pre>
+              </figure>
+              <p id="formal-status-8-1" class="statement">
+                <a class="statement-anchor" href="#formal-status-8-1">Formal status 8.1.</a>
+                <code>DesignLaw</code> and <code>DesignLaw.Lawful</code> are
+                defined in Lean. The accessors proving law non-generation and
+                atom law-independence are proved.
+              </p>
+              <p id="formal-status-8-2" class="statement">
+                <a class="statement-anchor" href="#formal-status-8-2">Formal status 8.2.</a>
+                The lawfulness-to-obstruction bridge is proved when the bridge
+                assumptions are supplied. The concrete catalog of SOLID,
+                layered architecture, saga, circuit breaker, and replicated log
+                laws remains a law-package formalization target.
+              </p>
+            </section>
+
+            <section id="chapter-summary" class="article-section">
+              <h2>Chapter summary</h2>
+              <p>
+                AAT turns design principles into selected law packages over
+                atom molecules. A law evaluates an existing molecule; it does
+                not generate atoms. Invariants say what the law protects, and
+                law universes say which laws are being considered together.
+              </p>
+              <p>
+                The key discipline is layer separation. Local contract laws,
+                global structure laws, state-transition laws, runtime
+                dependency laws, and distributed convergence laws can support
+                each other only through explicit theorems. Without those
+                theorems, success in one layer is not success in another.
+              </p>
+              <h3>Terms</h3>
+              <dl class="term-list definition-list">
+                <div>
+                  <dt>DesignLaw</dt>
+                  <dd>A molecule evaluator that marks selected configurations as bad.</dd>
+                </div>
+                <div>
+                  <dt>Lawful</dt>
+                  <dd>The selected molecule is not bad for the selected law.</dd>
+                </div>
+                <div>
+                  <dt>Law universe</dt>
+                  <dd>A selected package of required, optional, and derived laws with witness and evidence boundaries.</dd>
+                </div>
+                <div>
+                  <dt>Invariant family</dt>
+                  <dd>The selected quantities or predicates a law preserves, tests, reflects, or improves.</dd>
+                </div>
+                <div>
+                  <dt>Coverage</dt>
+                  <dd>The evidence includes the molecules or witnesses needed by the law package.</dd>
+                </div>
+                <div>
+                  <dt>Exactness</dt>
+                  <dd>The measured witness or value is the intended in-scope law reading.</dd>
+                </div>
+                <div>
+                  <dt>Lawfulness bridge</dt>
+                  <dd>The assumptions connecting selected lawfulness to selected obstruction-circuit absence.</dd>
+                </div>
+              </dl>
+            </section>
+
+            <nav class="page-nav" aria-label="Reading sequence">
+              <a class="page-nav-previous" href="../architecture-objects/">
+                <span>Previous</span>
+                <strong>Molecules and Architecture Objects</strong>
+              </a>
+              <a class="page-nav-next" href="../obstruction-circuits/">
+                <span>Next</span>
+                <strong>Obstruction Circuits</strong>
+              </a>
+            </nav>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="site-shell footer-inner">
+        <p>&copy; <span data-current-year>2026</span> Hiroyuki Nakahata.</p>
+        <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2" target="_blank" rel="noopener noreferrer">
+          Repository
+        </a>
+      </div>
+    </footer>
+  </body>
+</html>

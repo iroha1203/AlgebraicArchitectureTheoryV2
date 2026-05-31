@@ -5,19 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta
       name="description"
-      content="Algebraic Architecture Theory abstract and chapter index."
+      content="Algebraic Architecture Theory: an Atom-first reading of software architecture as algebra."
     >
     <title>Algebraic Architecture Theory</title>
-    <link rel="canonical" href="https://iroha1203.dev/aat/">
     <meta property="og:site_name" content="AAT / SFT Research Notes">
     <meta property="og:type" content="article">
     <meta property="og:title" content="Algebraic Architecture Theory">
-    <meta property="og:description" content="Algebraic Architecture Theory abstract and chapter index.">
+    <meta property="og:description" content="Algebraic Architecture Theory: an Atom-first reading of software architecture as algebra.">
     <meta property="og:url" content="https://iroha1203.dev/aat/">
     <meta property="og:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Algebraic Architecture Theory">
-    <meta name="twitter:description" content="Algebraic Architecture Theory abstract and chapter index.">
+    <meta name="twitter:description" content="Algebraic Architecture Theory: an Atom-first reading of software architecture as algebra.">
     <meta name="twitter:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
     <link rel="icon" href="../assets/favicon-32.png" sizes="32x32" type="image/png">
     <link rel="icon" href="../assets/favicon-16.png" sizes="16x16" type="image/png">
@@ -60,7 +59,6 @@
 
       gtag('config', 'G-YQMFH2FG9V');
     </script>
-
   </head>
   <body>
     <a class="skip-link" href="#main">Skip to content</a>
@@ -90,12 +88,13 @@
             <span>AAT</span>
           </nav>
           <p class="eyebrow">Algebraic Architecture Theory</p>
-          <h1>Algebraic Architecture Theory.</h1>
+          <h1>Algebraic Architecture Theory</h1>
           <p class="lede">
-            AAT studies architecture as an algebra of change:
-            operations act on invariant families, obstruction witnesses expose
-            where preservation fails, and Architecture Signature records the
-            result as a multi-axis diagnostic.
+            AAT studies software architecture as an algebra of primitive
+            architectural facts: atoms assemble into molecules and architecture
+            objects, laws evaluate those configurations, obstruction circuits
+            locate minimal failures, and signatures record the resulting
+            multi-axis reading.
           </p>
         </div>
       </section>
@@ -106,8 +105,9 @@
             <nav class="toc-panel" aria-labelledby="toc-title">
               <h2 id="toc-title">On this page</h2>
               <ol>
-                <li><a href="#abstract">Abstract</a></li>
-                <li><a href="#chapters">Chapters</a></li>
+                <li><a href="#thesis">Thesis</a></li>
+                <li><a href="#reading-order">Reading order</a></li>
+                <li><a href="#what-this-gives">What this gives</a></li>
               </ol>
             </nav>
             <div class="source-panel" data-sidebar-open="true">
@@ -115,157 +115,153 @@
               <ul>
                 <li>
                   <a href="./" aria-current="page">
-                    AAT overview
+                    Overview
                   </a>
                 </li>
-                <li>
-                  <a href="foundations/">
-                    Foundations
-                  </a>
-                </li>
-                <li>
-                  <a href="laws-and-witnesses/">
-                    Laws and Witnesses
-                  </a>
-                </li>
-                <li>
-                  <a href="architecture-signature/">
-                    Architecture Signature
-                  </a>
-                </li>
-                <li>
-                  <a href="local-law-packages/">
-                    Local Law Packages
-                  </a>
-                </li>
-                <li>
-                  <a href="calculus-and-extensions/">
-                    Calculus and Extensions
-                  </a>
-                </li>
-                <li>
-                  <a href="repair-and-dynamics/">
-                    Repair and Dynamics
-                  </a>
-                </li>
-                <li>
-                  <a href="representations-and-effects/">
-                    Representations and Effects
-                  </a>
-                </li>
-                <li>
-                  <a href="canonical-examples-and-readings/">
-                    Canonical Examples and Readings
-                  </a>
-                </li>
-                <li>
-                  <a href="related-work/">
-                    Related Work and Novelty
-                  </a>
-                </li>
-                <li>
-                  <a href="quantifiable-axes/">
-                    Quantifiable Axes
-                  </a>
-                </li>
-                <li>
-                  <a href="status/">
-                    Status
-                  </a>
-                </li>
-                <li>
-                  <a href="formal-anchors/">
-                    Formal Anchors Audit
-                  </a>
-                </li>
+                <li><a href="atoms/">Atoms</a></li>
+                <li><a href="architecture-objects/">Architecture Objects</a></li>
+                <li><a href="laws/">Design Laws</a></li>
+                <li><a href="obstruction-circuits/">Obstruction Circuits</a></li>
+                <li><a href="zero-curvature/">Zero Curvature</a></li>
+                <li><a href="architecture-signature/">Architecture Signature</a></li>
+                <li><a href="design-principle-layers/">Design Principle Layers</a></li>
+                <li><a href="operations-and-calculus/">Operations and Calculus</a></li>
+                <li><a href="dynamics-and-geometry/">Dynamics and Geometry</a></li>
+                <li><a href="representations-and-effects/">Representations and Effects</a></li>
+                <li><a href="canonical-examples-and-readings/">Examples and Readings</a></li>
+                <li><a href="related-work/">Related Work</a></li>
+                <li><a href="status/">Status</a></li>
+                <li><a href="formal-anchors/">Formal Anchors</a></li>
               </ul>
             </div>
           </aside>
 
           <div class="article-main">
-            <section id="abstract" class="article-section">
-              <h2>Abstract</h2>
+            <section id="thesis" class="article-section">
+              <h2>Thesis</h2>
               <p>
-                Algebraic Architecture Theory formalizes software architecture
-                through objects, operations, invariant families, obstruction
-                witnesses, signature axes, and theorem boundaries. It gives
-                architecture review a mathematical grammar: design principles
-                become operations on invariants, failures become explicit
-                witnesses, and quality becomes a multi-axis signature.
+                Software architecture is usually described through components,
+                layers, services, diagrams, design principles, reviews, and
+                operational symptoms. AAT gives those readings a smaller
+                mathematical root. It begins with typed architectural facts,
+                then studies how facts assemble, which laws evaluate them, and
+                where failures become minimal witnesses.
               </p>
               <p>
-                Claims in AAT carry their scope explicitly: the selected
-                universe, observation context, coverage boundary, and exactness
-                assumptions are part of the statement. This makes architectural
-                reasoning composable: a review can state which invariant is
-                preserved, which obstruction is witnessed, which axes are
-                measured, and which theorem package licenses the conclusion.
+                The central progression is:
+                Atom, AtomAxiomSystem, Molecule, ArchitectureObject, DesignLaw,
+                ObstructionCircuit, ZeroCurvaturePackage, ArchitectureSignature,
+                and ArchitectureOperation. Each step adds structure without
+                turning architecture into a single metric or a catalog of
+                informal smells.
               </p>
             </section>
 
-            <section id="chapters" class="article-section">
-              <h2>Chapters</h2>
+            <section id="reading-order" class="article-section">
+              <h2>Reading order</h2>
               <p>
-                Read AAT as a progression from architectural objects and laws
-                to signatures, operations, repair, representations, and formal
-                anchors.
+                Read AAT in four layers. Part I gives the foundation: atoms,
+                architecture objects, and laws. Part II develops the central
+                concepts: obstruction circuits, zero curvature, signatures,
+                design-principle layers, and operations. Part III connects the
+                theory to geometry, computable representations, and worked
+                readings. References collect related work, Lean status, and
+                formal anchors.
               </p>
               <ul class="chapter-list">
-                <li>
-                  <a href="foundations/">Foundations</a>
-                  <span>ArchitectureObject, ArchitectureCore, observation contexts, and architectural judgement.</span>
+                <li class="chapter-list-parent">
+                  <span>Part I. Foundations</span>
                 </li>
-                <li>
-                  <a href="laws-and-witnesses/">Laws and Witnesses</a>
-                  <span>Invariant families, law universes, obstruction witnesses, and zero-curvature reading.</span>
+                <li class="chapter-list-child">
+                  <a href="atoms/">Atoms and Primitive Architectural Facts</a>
+                  <span>Atom, Axis, AtomKind, AtomPredicate, AtomAxiomSystem, and the observation boundary.</span>
                 </li>
-                <li>
+                <li class="chapter-list-child">
+                  <a href="architecture-objects/">Molecules and Architecture Objects</a>
+                  <span>Molecule, ArchitectureObject, selected presentations, finite universes, coverage, and exactness.</span>
+                </li>
+                <li class="chapter-list-child">
+                  <a href="laws/">Design Laws and Invariants</a>
+                  <span>DesignLaw, Lawful, invariant families, preservation, reflection, and law-relative reading.</span>
+                </li>
+                <li class="chapter-list-parent">
+                  <span>Part II. Key Concepts</span>
+                </li>
+                <li class="chapter-list-child">
+                  <a href="obstruction-circuits/">Obstruction Circuits</a>
+                  <span>MinimalBadMolecule, FiniteMoleculeUniverse, LawfulnessBridge, badness, and minimality.</span>
+                </li>
+                <li class="chapter-list-child">
+                  <a href="zero-curvature/">Flatness and Zero Curvature</a>
+                  <span>LawfulWithinMoleculeConfiguration, NoRequiredObstructionCircuit, and selected theorem packages.</span>
+                </li>
+                <li class="chapter-list-child">
                   <a href="architecture-signature/">Architecture Signature</a>
-                  <span>ArchitectureSignature, measurement status, available evidence, and theorem boundary.</span>
+                  <span>Required zero axes, measured axes, unmeasured axes, claim levels, and available evidence.</span>
                 </li>
-                <li>
-                  <a href="local-law-packages/">Local Law Packages</a>
-                  <span>Projection, observation, LSP, DIP, local contracts, and flatness readings.</span>
+                <li class="chapter-list-child">
+                  <a href="design-principle-layers/">Local and Global Law Packages</a>
+                  <span>SOLID, layered architecture, state-transition patterns, runtime dependency, and distributed convergence layers.</span>
                 </li>
-                <li>
-                  <a href="calculus-and-extensions/">Calculus and Extensions</a>
-                  <span>ArchitectureOperation, operation laws, feature extension, and extension obstruction.</span>
+                <li class="chapter-list-child">
+                  <a href="operations-and-calculus/">Operations, Repair, and Synthesis</a>
+                  <span>ArchitectureOperation, preservation, improvement, strict repair, feature extension, and synthesis packages.</span>
                 </li>
-                <li>
-                  <a href="repair-and-dynamics/">Repair and Dynamics</a>
-                  <span>Repair, synthesis, complexity transfer, paths, homotopy, and diagram filling.</span>
+                <li class="chapter-list-parent">
+                  <span>Part III. Geometry and Analytic Connections</span>
                 </li>
-                <li>
-                  <a href="representations-and-effects/">Representations and Effects</a>
-                  <span>Graph, matrix, analytic representation, state-transition algebra, and effect boundary.</span>
+                <li class="chapter-list-child">
+                  <a href="dynamics-and-geometry/">Paths, Homotopy, and Diagram Filling</a>
+                  <span>Architecture paths, signature trajectories, homotopy, diagram filling, continuation, and non-fillability.</span>
                 </li>
-                <li>
-                  <a href="canonical-examples-and-readings/">Canonical Examples and Readings</a>
-                  <span>Finite skeletons, signature readings, counterexamples, and evidence levels.</span>
+                <li class="chapter-list-child">
+                  <a href="representations-and-effects/">Computable Representations and Effects</a>
+                  <span>Graph, category, matrix, analytic representation, state-transition algebra, and effect law surfaces.</span>
                 </li>
-                <li>
+                <li class="chapter-list-child">
+                  <a href="canonical-examples-and-readings/">Examples, Counterexamples, and Readings</a>
+                  <span>Worked Atom-to-circuit examples, coupon extension, semantic obstruction, repair transfer, and SOLID counterexamples.</span>
+                </li>
+                <li class="chapter-list-parent">
+                  <span>References</span>
+                </li>
+                <li class="chapter-list-child">
                   <a href="related-work/">Related Work and Novelty</a>
-                  <span>Adjacent methods and the algebraic claim grammar AAT adds.</span>
+                  <span>Architecture description, ATAM, metrics, graph analysis, formal methods, and category-theoretic models.</span>
                 </li>
-                <li>
-                  <a href="quantifiable-axes/">Quantifiable Axes</a>
-                  <span>Structural, boundary, semantic, runtime, operational, analytic, and theorem-boundary coordinates.</span>
+                <li class="chapter-list-child">
+                  <a href="status/">Lean Status</a>
+                  <span>Proved, defined only, future proof obligation, empirical hypothesis, and Atom refoundation snapshot.</span>
                 </li>
-                <li>
-                  <a href="status/">Status</a>
-                  <span>Current snapshot, checked surface, formal core, and open edges.</span>
-                </li>
-                <li>
+                <li class="chapter-list-child">
                   <a href="formal-anchors/">Formal Anchors Audit</a>
-                  <span>Chapter-level Lean anchors, theorem packages, and checked definitions.</span>
+                  <span>Website claims mapped to Lean declarations, theorem-index anchors, and source documents.</span>
                 </li>
               </ul>
             </section>
 
+            <section id="what-this-gives" class="article-section">
+              <h2>What this gives</h2>
+              <p>
+                AAT changes the shape of architectural reasoning. A design
+                principle becomes a law over a selected configuration. A failure
+                becomes an obstruction circuit when it is minimal relative to
+                that law and universe. A repair becomes an operation whose
+                preservation and improvement claims can be stated explicitly.
+              </p>
+              <p>
+                This makes architecture review more precise without pretending
+                that every architectural fact is globally observed or every
+                design principle is universal. The theory is useful because it
+                keeps the selected facts, laws, witnesses, signatures, and
+                operations visible in the same grammar.
+              </p>
+            </section>
+
             <nav class="page-nav" aria-label="Reading sequence">
-              <a class="page-nav-next" href="foundations/">
+              <a class="page-nav-next" href="atoms/">
                 <span>Next</span>
-                <strong>Foundations</strong>
+                <strong>Atoms and Primitive Architectural Facts</strong>
               </a>
             </nav>
           </div>

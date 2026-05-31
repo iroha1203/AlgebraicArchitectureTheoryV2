@@ -43,7 +43,20 @@ policy analysis, and review support, not as a proof system.
 
 - Home: https://iroha1203.dev/
 - AAT overview: https://iroha1203.dev/aat/
-- AAT Quantifiable Axes: https://iroha1203.dev/aat/quantifiable-axes/
+- AAT Atoms: https://iroha1203.dev/aat/atoms/
+- AAT Architecture Objects: https://iroha1203.dev/aat/architecture-objects/
+- AAT Design Laws: https://iroha1203.dev/aat/laws/
+- AAT Obstruction Circuits: https://iroha1203.dev/aat/obstruction-circuits/
+- AAT Zero Curvature: https://iroha1203.dev/aat/zero-curvature/
+- AAT Architecture Signature: https://iroha1203.dev/aat/architecture-signature/
+- AAT Design Principle Layers: https://iroha1203.dev/aat/design-principle-layers/
+- AAT Operations and Calculus: https://iroha1203.dev/aat/operations-and-calculus/
+- AAT Dynamics and Geometry: https://iroha1203.dev/aat/dynamics-and-geometry/
+- AAT Representations and Effects: https://iroha1203.dev/aat/representations-and-effects/
+- AAT Canonical Examples and Readings: https://iroha1203.dev/aat/canonical-examples-and-readings/
+- AAT Related Work: https://iroha1203.dev/aat/related-work/
+- AAT Lean Status: https://iroha1203.dev/aat/status/
+- AAT Formal Anchors: https://iroha1203.dev/aat/formal-anchors/
 - SFT overview: https://iroha1203.dev/sft/
 - SFT Part 1, Field and Force: https://iroha1203.dev/sft/field-and-force/
 - SFT 1-1, Field: https://iroha1203.dev/sft/field-and-force/field/
