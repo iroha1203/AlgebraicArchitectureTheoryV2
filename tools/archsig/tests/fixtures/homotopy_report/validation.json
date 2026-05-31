@@ -2,7 +2,7 @@
   "schemaVersion": "archsig-analysis-packet-validation-report-v0",
   "input": {
     "schemaVersion": "archsig-analysis-packet-v0",
-    "path": "/private/tmp/archsig1599-homotopy-final/archsig-analysis-packet.json",
+    "path": "/private/tmp/archsig1600-homotopy-final/archsig-analysis-packet.json",
     "analysisId": "archsig-analysis:homotopy-report-fixture-archmap:homotopy-report-fixture-policy",
     "archMapRef": "homotopy-report-fixture-archmap",
     "selectedLawPolicyRef": "homotopy-report-fixture-policy"
@@ -4330,12 +4330,7 @@
           "test-homotopy-fillers"
         ],
         "observationRefs": [
-          "atom:cache-read",
-          "atom:repository-read",
-          "atom:event-projection",
-          "atom:retry-idempotency",
-          "atom:authorization-bypass",
-          "atom:coupon-tax-rounding"
+          "path-rule:zero-holonomy-filled-loop"
         ],
         "coverageBoundary": "missing path or filler evidence blocks zero and Stokes-style readings",
         "evidenceBoundary": "zero holonomy fixture path is a bounded review cue, not path truth",
@@ -4391,23 +4386,15 @@
           "axis:homotopy-report-fixture"
         ],
         "sourceRefs": [
-          "doc-auth-policy",
-          "src-auth-bypass",
-          "src-cache-read",
-          "src-direct-read",
           "src-event-projection",
-          "src-pricing-checkout",
           "src-repository-read",
-          "src-retry-effect",
           "test-homotopy-fillers"
         ],
         "observationRefs": [
-          "atom:cache-read",
-          "atom:repository-read",
           "atom:event-projection",
-          "atom:retry-idempotency",
-          "atom:authorization-bypass",
-          "atom:coupon-tax-rounding"
+          "atom:repository-read",
+          "molecule:homotopy-report-fixture",
+          "semantic:path-rule:nonzero-holonomy-filled-loop"
         ],
         "coverageBoundary": "missing path or filler evidence blocks zero and Stokes-style readings",
         "evidenceBoundary": "nonzero holonomy fixture path is bounded to supplied semantic observation",
@@ -4463,23 +4450,15 @@
           "axis:homotopy-report-fixture"
         ],
         "sourceRefs": [
-          "doc-auth-policy",
-          "src-auth-bypass",
           "src-cache-read",
-          "src-direct-read",
-          "src-event-projection",
-          "src-pricing-checkout",
           "src-repository-read",
-          "src-retry-effect",
           "test-homotopy-fillers"
         ],
         "observationRefs": [
           "atom:cache-read",
           "atom:repository-read",
-          "atom:event-projection",
-          "atom:retry-idempotency",
-          "atom:authorization-bypass",
-          "atom:coupon-tax-rounding"
+          "molecule:homotopy-report-fixture",
+          "semantic:path-rule:cache-repository-semantic-loop"
         ],
         "coverageBoundary": "missing path or filler evidence blocks zero and Stokes-style readings",
         "evidenceBoundary": "cache / repository fixture path is bounded to source refs and selected law policy",
@@ -4535,23 +4514,16 @@
           "axis:homotopy-report-fixture"
         ],
         "sourceRefs": [
-          "doc-auth-policy",
-          "src-auth-bypass",
-          "src-cache-read",
           "src-direct-read",
           "src-event-projection",
-          "src-pricing-checkout",
           "src-repository-read",
-          "src-retry-effect",
           "test-homotopy-fillers"
         ],
         "observationRefs": [
-          "atom:cache-read",
-          "atom:repository-read",
           "atom:event-projection",
-          "atom:retry-idempotency",
-          "atom:authorization-bypass",
-          "atom:coupon-tax-rounding"
+          "atom:repository-read",
+          "molecule:homotopy-report-fixture",
+          "semantic:path-rule:event-projection-direct-read"
         ],
         "coverageBoundary": "missing path or filler evidence blocks zero and Stokes-style readings",
         "evidenceBoundary": "event projection fixture path is bounded to supplied source refs",
@@ -4607,23 +4579,13 @@
           "axis:homotopy-report-fixture"
         ],
         "sourceRefs": [
-          "doc-auth-policy",
-          "src-auth-bypass",
-          "src-cache-read",
-          "src-direct-read",
-          "src-event-projection",
-          "src-pricing-checkout",
-          "src-repository-read",
           "src-retry-effect",
           "test-homotopy-fillers"
         ],
         "observationRefs": [
-          "atom:cache-read",
-          "atom:repository-read",
-          "atom:event-projection",
           "atom:retry-idempotency",
-          "atom:authorization-bypass",
-          "atom:coupon-tax-rounding"
+          "molecule:homotopy-report-fixture",
+          "semantic:path-rule:retry-idempotency-effect"
         ],
         "coverageBoundary": "missing path or filler evidence blocks zero and Stokes-style readings",
         "evidenceBoundary": "retry fixture path is bounded to supplied test and runtime trace expectations",
@@ -4690,12 +4652,7 @@
           "test-homotopy-fillers"
         ],
         "observationRefs": [
-          "atom:cache-read",
-          "atom:repository-read",
-          "atom:event-projection",
-          "atom:retry-idempotency",
-          "atom:authorization-bypass",
-          "atom:coupon-tax-rounding"
+          "path-rule:authorization-bypass-hole"
         ],
         "coverageBoundary": "missing path or filler evidence blocks zero and Stokes-style readings",
         "evidenceBoundary": "authorization bypass fixture path remains a hole until policy/test filler evidence is supplied",
@@ -4751,23 +4708,13 @@
           "axis:homotopy-report-fixture"
         ],
         "sourceRefs": [
-          "doc-auth-policy",
-          "src-auth-bypass",
-          "src-cache-read",
-          "src-direct-read",
-          "src-event-projection",
           "src-pricing-checkout",
-          "src-repository-read",
-          "src-retry-effect",
           "test-homotopy-fillers"
         ],
         "observationRefs": [
-          "atom:cache-read",
-          "atom:repository-read",
-          "atom:event-projection",
-          "atom:retry-idempotency",
-          "atom:authorization-bypass",
-          "atom:coupon-tax-rounding"
+          "atom:coupon-tax-rounding",
+          "molecule:homotopy-report-fixture",
+          "semantic:path-rule:coupon-tax-rounding-semantic-loop"
         ],
         "coverageBoundary": "missing path or filler evidence blocks zero and Stokes-style readings",
         "evidenceBoundary": "coupon fixture path is bounded to selected examples, not global pricing correctness",
@@ -4927,14 +4874,8 @@
           "axis:homotopy-report-fixture"
         ],
         "sourceRefs": [
-          "doc-auth-policy",
-          "src-auth-bypass",
-          "src-cache-read",
-          "src-direct-read",
           "src-event-projection",
-          "src-pricing-checkout",
           "src-repository-read",
-          "src-retry-effect",
           "test-homotopy-fillers"
         ],
         "coverageBoundary": "missing path or filler evidence blocks zero and Stokes-style readings",
@@ -4983,14 +4924,8 @@
           "axis:homotopy-report-fixture"
         ],
         "sourceRefs": [
-          "doc-auth-policy",
-          "src-auth-bypass",
           "src-cache-read",
-          "src-direct-read",
-          "src-event-projection",
-          "src-pricing-checkout",
           "src-repository-read",
-          "src-retry-effect",
           "test-homotopy-fillers"
         ],
         "coverageBoundary": "missing path or filler evidence blocks zero and Stokes-style readings",
@@ -5039,14 +4974,9 @@
           "axis:homotopy-report-fixture"
         ],
         "sourceRefs": [
-          "doc-auth-policy",
-          "src-auth-bypass",
-          "src-cache-read",
           "src-direct-read",
           "src-event-projection",
-          "src-pricing-checkout",
           "src-repository-read",
-          "src-retry-effect",
           "test-homotopy-fillers"
         ],
         "coverageBoundary": "missing path or filler evidence blocks zero and Stokes-style readings",
@@ -5095,13 +5025,6 @@
           "axis:homotopy-report-fixture"
         ],
         "sourceRefs": [
-          "doc-auth-policy",
-          "src-auth-bypass",
-          "src-cache-read",
-          "src-direct-read",
-          "src-event-projection",
-          "src-pricing-checkout",
-          "src-repository-read",
           "src-retry-effect",
           "test-homotopy-fillers"
         ],
@@ -5209,14 +5132,7 @@
           "axis:homotopy-report-fixture"
         ],
         "sourceRefs": [
-          "doc-auth-policy",
-          "src-auth-bypass",
-          "src-cache-read",
-          "src-direct-read",
-          "src-event-projection",
           "src-pricing-checkout",
-          "src-repository-read",
-          "src-retry-effect",
           "test-homotopy-fillers"
         ],
         "coverageBoundary": "missing path or filler evidence blocks zero and Stokes-style readings",
@@ -5908,11 +5824,16 @@
           "witnessCompletenessBoundary": "homotopy zero reflects only measured path pairs and fillers inside the selected coverage universe; unresolved paths stay coverage gaps"
         },
         "distanceKind": "selected-axis-continuation-distance",
-        "value": 0,
-        "comparedContinuationSummary": "path:semantic-operation-flow vs molecule:homotopy-report-fixture on axis:homotopy-report-fixture",
+        "value": 1,
+        "comparedContinuationSummary": "path:semantic-operation-flow vs molecule:homotopy-report-fixture on axis:homotopy-report-fixture; distanceKind=selected-axis-continuation-distance; sourceRefs=8; semanticEvidence=5; traceAxes=2; missing=0",
         "comparedContinuationRefs": [
+          "Cont_axis:homotopy-report-fixture(molecule:homotopy-report-fixture)",
           "Cont_axis:homotopy-report-fixture(path:semantic-operation-flow)",
-          "Cont_axis:homotopy-report-fixture(molecule:homotopy-report-fixture)"
+          "Cont_semantic[0]=operation:read-from-repository; comparableValues=2",
+          "Cont_semantic[0]=operation:read-through-cache; comparableValues=2",
+          "Cont_semantic[1]=operation:project-order-event; comparableValues=2",
+          "Cont_semantic[endpoint]=p; endpointRefs=1; evaluator=witness-mismatch-count:semantic-sequence-mismatch",
+          "Cont_semantic[endpoint]=q; endpointRefs=1; evaluator=witness-mismatch-count:semantic-sequence-mismatch"
         ],
         "distanceInputRefs": [
           "atom:authorization-bypass",
@@ -5921,16 +5842,29 @@
           "atom:event-projection",
           "atom:repository-read",
           "atom:retry-idempotency",
+          "continuation-value:semantic-endpoints-orderview",
+          "continuation-value:semantic-path-p-operation-read-through-cache-operation-project-order-event",
+          "continuation-value:semantic-path-q-operation-read-from-repository-operation-project-order-event",
+          "filler-candidate:loop-candidate-path-pair-semantic-contract-loop-0:filler-rule-contract-or-test",
           "semantic:path-rule:cache-repository-semantic-loop",
           "semantic:path-rule:coupon-tax-rounding-semantic-loop",
           "semantic:path-rule:event-projection-direct-read",
           "semantic:path-rule:nonzero-holonomy-filled-loop",
-          "semantic:path-rule:retry-idempotency-effect"
+          "semantic:path-rule:retry-idempotency-effect",
+          "src-auth-bypass",
+          "src-cache-read",
+          "src-direct-read",
+          "src-event-projection",
+          "src-pricing-checkout",
+          "src-repository-read",
+          "src-retry-effect"
         ],
         "muDefectRefs": [
-          "mu:path-pair-semantic-contract-loop:axis-homotopy-report-fixture"
+          "mu:operation-square-operation-square-evidence-cache-repository-read:effect",
+          "mu:operation-square-operation-square-evidence-cache-repository-read:semantic"
         ],
         "sourceRefs": [
+          "filler-candidate:loop-candidate-path-pair-semantic-contract-loop-0:filler-rule-contract-or-test",
           "src-auth-bypass",
           "src-cache-read",
           "src-direct-read",
@@ -5989,24 +5923,30 @@
         },
         "distanceKind": "selected-axis-continuation-distance",
         "value": 0,
-        "comparedContinuationSummary": "path-rule:zero-holonomy-filled-loop vs zero-holonomy-filled-loop-path on axis:homotopy-report-fixture",
+        "comparedContinuationSummary": "path-rule:zero-holonomy-filled-loop vs zero-holonomy-filled-loop-path on axis:homotopy-report-fixture; distanceKind=selected-axis-continuation-distance; sourceRefs=10; semanticEvidence=0; traceAxes=0; missing=0",
         "comparedContinuationRefs": [
           "Cont_axis:homotopy-report-fixture(path-rule:zero-holonomy-filled-loop)",
           "Cont_axis:homotopy-report-fixture(zero-holonomy-filled-loop-path)"
         ],
         "distanceInputRefs": [
-          "atom:authorization-bypass",
-          "atom:cache-read",
-          "atom:coupon-tax-rounding",
-          "atom:event-projection",
-          "atom:repository-read",
-          "atom:retry-idempotency"
+          "doc-auth-policy",
+          "filler-candidate:loop-candidate-path-pair-path-rule-zero-holonomy-filled-loop-1:filler-rule-contract-or-test",
+          "path-rule:zero-holonomy-filled-loop",
+          "src-auth-bypass",
+          "src-cache-read",
+          "src-direct-read",
+          "src-event-projection",
+          "src-pricing-checkout",
+          "src-repository-read",
+          "src-retry-effect",
+          "test-homotopy-fillers"
         ],
         "muDefectRefs": [
           "mu:path-pair-path-rule-zero-holonomy-filled-loop:axis-homotopy-report-fixture"
         ],
         "sourceRefs": [
           "doc-auth-policy",
+          "filler-candidate:loop-candidate-path-pair-path-rule-zero-holonomy-filled-loop-1:filler-rule-contract-or-test",
           "src-auth-bypass",
           "src-cache-read",
           "src-direct-read",
@@ -6017,12 +5957,7 @@
           "test-homotopy-fillers"
         ],
         "observationRefs": [
-          "atom:cache-read",
-          "atom:repository-read",
-          "atom:event-projection",
-          "atom:retry-idempotency",
-          "atom:authorization-bypass",
-          "atom:coupon-tax-rounding"
+          "path-rule:zero-holonomy-filled-loop"
         ],
         "fillerRefs": [
           "filler-candidate:loop-candidate-path-pair-path-rule-zero-holonomy-filled-loop-1:filler-rule-contract-or-test"
@@ -6061,40 +5996,45 @@
         },
         "distanceKind": "selected-axis-continuation-distance",
         "value": 1,
-        "comparedContinuationSummary": "path-rule:nonzero-holonomy-filled-loop vs nonzero-holonomy-filled-loop-path on axis:homotopy-report-fixture",
+        "comparedContinuationSummary": "path-rule:nonzero-holonomy-filled-loop vs nonzero-holonomy-filled-loop-path on axis:homotopy-report-fixture; distanceKind=selected-axis-continuation-distance; sourceRefs=5; semanticEvidence=1; traceAxes=2; missing=0",
         "comparedContinuationRefs": [
+          "Cont_axis:homotopy-report-fixture(nonzero-holonomy-filled-loop-path)",
           "Cont_axis:homotopy-report-fixture(path-rule:nonzero-holonomy-filled-loop)",
-          "Cont_axis:homotopy-report-fixture(nonzero-holonomy-filled-loop-path)"
+          "Cont_semantic[0]=operation:read-from-repository; comparableValues=2",
+          "Cont_semantic[0]=operation:read-through-cache; comparableValues=2",
+          "Cont_semantic[1]=operation:project-order-event; comparableValues=2",
+          "Cont_semantic[endpoint]=p; endpointRefs=1; evaluator=witness-mismatch-count:semantic-sequence-mismatch",
+          "Cont_semantic[endpoint]=q; endpointRefs=1; evaluator=witness-mismatch-count:semantic-sequence-mismatch"
         ],
         "distanceInputRefs": [
-          "atom:authorization-bypass",
-          "atom:cache-read",
-          "atom:coupon-tax-rounding",
           "atom:event-projection",
           "atom:repository-read",
-          "atom:retry-idempotency"
+          "continuation-value:semantic-endpoints-orderview",
+          "continuation-value:semantic-path-p-operation-read-through-cache-operation-project-order-event",
+          "continuation-value:semantic-path-q-operation-read-from-repository-operation-project-order-event",
+          "filler-candidate:loop-candidate-path-pair-path-rule-nonzero-holonomy-filled-loop-2:filler-rule-contract-or-test",
+          "molecule:homotopy-report-fixture",
+          "semantic:path-rule:nonzero-holonomy-filled-loop",
+          "src-cache-read",
+          "src-event-projection",
+          "src-repository-read",
+          "test-homotopy-fillers"
         ],
         "muDefectRefs": [
-          "mu:path-pair-path-rule-nonzero-holonomy-filled-loop:axis-homotopy-report-fixture"
+          "mu:operation-square-operation-square-evidence-cache-repository-read:effect"
         ],
         "sourceRefs": [
-          "doc-auth-policy",
-          "src-auth-bypass",
+          "filler-candidate:loop-candidate-path-pair-path-rule-nonzero-holonomy-filled-loop-2:filler-rule-contract-or-test",
           "src-cache-read",
-          "src-direct-read",
           "src-event-projection",
-          "src-pricing-checkout",
           "src-repository-read",
-          "src-retry-effect",
           "test-homotopy-fillers"
         ],
         "observationRefs": [
-          "atom:cache-read",
-          "atom:repository-read",
           "atom:event-projection",
-          "atom:retry-idempotency",
-          "atom:authorization-bypass",
-          "atom:coupon-tax-rounding"
+          "atom:repository-read",
+          "molecule:homotopy-report-fixture",
+          "semantic:path-rule:nonzero-holonomy-filled-loop"
         ],
         "fillerRefs": [
           "filler-candidate:loop-candidate-path-pair-path-rule-nonzero-holonomy-filled-loop-2:filler-rule-contract-or-test"
@@ -6133,40 +6073,43 @@
         },
         "distanceKind": "selected-axis-continuation-distance",
         "value": 1,
-        "comparedContinuationSummary": "path-rule:cache-repository-semantic-loop vs cache-repository-semantic-loop-path on axis:homotopy-report-fixture",
+        "comparedContinuationSummary": "path-rule:cache-repository-semantic-loop vs cache-repository-semantic-loop-path on axis:homotopy-report-fixture; distanceKind=selected-axis-continuation-distance; sourceRefs=4; semanticEvidence=1; traceAxes=2; missing=0",
         "comparedContinuationRefs": [
+          "Cont_axis:homotopy-report-fixture(cache-repository-semantic-loop-path)",
           "Cont_axis:homotopy-report-fixture(path-rule:cache-repository-semantic-loop)",
-          "Cont_axis:homotopy-report-fixture(cache-repository-semantic-loop-path)"
+          "Cont_semantic[0]=operation:read-from-repository; comparableValues=2",
+          "Cont_semantic[0]=operation:read-through-cache; comparableValues=2",
+          "Cont_semantic[1]=operation:project-order-event; comparableValues=2",
+          "Cont_semantic[endpoint]=p; endpointRefs=1; evaluator=witness-mismatch-count:semantic-sequence-mismatch",
+          "Cont_semantic[endpoint]=q; endpointRefs=1; evaluator=witness-mismatch-count:semantic-sequence-mismatch"
         ],
         "distanceInputRefs": [
-          "atom:authorization-bypass",
           "atom:cache-read",
-          "atom:coupon-tax-rounding",
-          "atom:event-projection",
           "atom:repository-read",
-          "atom:retry-idempotency"
+          "continuation-value:semantic-endpoints-orderview",
+          "continuation-value:semantic-path-p-operation-read-through-cache-operation-project-order-event",
+          "continuation-value:semantic-path-q-operation-read-from-repository-operation-project-order-event",
+          "filler-candidate:loop-candidate-path-pair-path-rule-cache-repository-semantic-loop-3:filler-rule-contract-or-test",
+          "molecule:homotopy-report-fixture",
+          "semantic:path-rule:cache-repository-semantic-loop",
+          "src-cache-read",
+          "src-repository-read",
+          "test-homotopy-fillers"
         ],
         "muDefectRefs": [
-          "mu:path-pair-path-rule-cache-repository-semantic-loop:axis-homotopy-report-fixture"
+          "mu:operation-square-operation-square-evidence-cache-repository-read:semantic"
         ],
         "sourceRefs": [
-          "doc-auth-policy",
-          "src-auth-bypass",
+          "filler-candidate:loop-candidate-path-pair-path-rule-cache-repository-semantic-loop-3:filler-rule-contract-or-test",
           "src-cache-read",
-          "src-direct-read",
-          "src-event-projection",
-          "src-pricing-checkout",
           "src-repository-read",
-          "src-retry-effect",
           "test-homotopy-fillers"
         ],
         "observationRefs": [
           "atom:cache-read",
           "atom:repository-read",
-          "atom:event-projection",
-          "atom:retry-idempotency",
-          "atom:authorization-bypass",
-          "atom:coupon-tax-rounding"
+          "molecule:homotopy-report-fixture",
+          "semantic:path-rule:cache-repository-semantic-loop"
         ],
         "fillerRefs": [
           "filler-candidate:loop-candidate-path-pair-path-rule-cache-repository-semantic-loop-3:filler-rule-contract-or-test"
@@ -6205,40 +6148,47 @@
         },
         "distanceKind": "selected-axis-continuation-distance",
         "value": 1,
-        "comparedContinuationSummary": "path-rule:event-projection-direct-read vs event-projection-direct-read-path on axis:homotopy-report-fixture",
+        "comparedContinuationSummary": "path-rule:event-projection-direct-read vs event-projection-direct-read-path on axis:homotopy-report-fixture; distanceKind=selected-axis-continuation-distance; sourceRefs=6; semanticEvidence=1; traceAxes=2; missing=0",
         "comparedContinuationRefs": [
+          "Cont_axis:homotopy-report-fixture(event-projection-direct-read-path)",
           "Cont_axis:homotopy-report-fixture(path-rule:event-projection-direct-read)",
-          "Cont_axis:homotopy-report-fixture(event-projection-direct-read-path)"
+          "Cont_semantic[0]=operation:read-from-repository; comparableValues=2",
+          "Cont_semantic[0]=operation:read-through-cache; comparableValues=2",
+          "Cont_semantic[1]=operation:project-order-event; comparableValues=2",
+          "Cont_semantic[endpoint]=p; endpointRefs=1; evaluator=witness-mismatch-count:semantic-sequence-mismatch",
+          "Cont_semantic[endpoint]=q; endpointRefs=1; evaluator=witness-mismatch-count:semantic-sequence-mismatch"
         ],
         "distanceInputRefs": [
-          "atom:authorization-bypass",
-          "atom:cache-read",
-          "atom:coupon-tax-rounding",
           "atom:event-projection",
           "atom:repository-read",
-          "atom:retry-idempotency"
-        ],
-        "muDefectRefs": [
-          "mu:path-pair-path-rule-event-projection-direct-read:axis-homotopy-report-fixture"
-        ],
-        "sourceRefs": [
-          "doc-auth-policy",
-          "src-auth-bypass",
+          "continuation-value:semantic-endpoints-orderview",
+          "continuation-value:semantic-path-p-operation-read-through-cache-operation-project-order-event",
+          "continuation-value:semantic-path-q-operation-read-from-repository-operation-project-order-event",
+          "filler-candidate:loop-candidate-path-pair-path-rule-event-projection-direct-read-4:filler-rule-contract-or-test",
+          "molecule:homotopy-report-fixture",
+          "semantic:path-rule:event-projection-direct-read",
           "src-cache-read",
           "src-direct-read",
           "src-event-projection",
-          "src-pricing-checkout",
           "src-repository-read",
-          "src-retry-effect",
+          "test-homotopy-fillers"
+        ],
+        "muDefectRefs": [
+          "mu:operation-square-operation-square-evidence-cache-repository-read:effect"
+        ],
+        "sourceRefs": [
+          "filler-candidate:loop-candidate-path-pair-path-rule-event-projection-direct-read-4:filler-rule-contract-or-test",
+          "src-cache-read",
+          "src-direct-read",
+          "src-event-projection",
+          "src-repository-read",
           "test-homotopy-fillers"
         ],
         "observationRefs": [
-          "atom:cache-read",
-          "atom:repository-read",
           "atom:event-projection",
-          "atom:retry-idempotency",
-          "atom:authorization-bypass",
-          "atom:coupon-tax-rounding"
+          "atom:repository-read",
+          "molecule:homotopy-report-fixture",
+          "semantic:path-rule:event-projection-direct-read"
         ],
         "fillerRefs": [
           "filler-candidate:loop-candidate-path-pair-path-rule-event-projection-direct-read-4:filler-rule-contract-or-test"
@@ -6277,40 +6227,41 @@
         },
         "distanceKind": "selected-axis-continuation-distance",
         "value": 1,
-        "comparedContinuationSummary": "path-rule:retry-idempotency-effect vs retry-idempotency-effect-path on axis:homotopy-report-fixture",
+        "comparedContinuationSummary": "path-rule:retry-idempotency-effect vs retry-idempotency-effect-path on axis:homotopy-report-fixture; distanceKind=selected-axis-continuation-distance; sourceRefs=4; semanticEvidence=1; traceAxes=2; missing=0",
         "comparedContinuationRefs": [
           "Cont_axis:homotopy-report-fixture(path-rule:retry-idempotency-effect)",
-          "Cont_axis:homotopy-report-fixture(retry-idempotency-effect-path)"
+          "Cont_axis:homotopy-report-fixture(retry-idempotency-effect-path)",
+          "Cont_semantic[0]=operation:read-from-repository; comparableValues=2",
+          "Cont_semantic[0]=operation:read-through-cache; comparableValues=2",
+          "Cont_semantic[1]=operation:project-order-event; comparableValues=2",
+          "Cont_semantic[endpoint]=p; endpointRefs=1; evaluator=witness-mismatch-count:semantic-sequence-mismatch",
+          "Cont_semantic[endpoint]=q; endpointRefs=1; evaluator=witness-mismatch-count:semantic-sequence-mismatch"
         ],
         "distanceInputRefs": [
-          "atom:authorization-bypass",
-          "atom:cache-read",
-          "atom:coupon-tax-rounding",
-          "atom:event-projection",
-          "atom:repository-read",
-          "atom:retry-idempotency"
+          "atom:retry-idempotency",
+          "continuation-value:semantic-endpoints-orderview",
+          "continuation-value:semantic-path-p-operation-read-through-cache-operation-project-order-event",
+          "continuation-value:semantic-path-q-operation-read-from-repository-operation-project-order-event",
+          "filler-candidate:loop-candidate-path-pair-path-rule-retry-idempotency-effect-5:filler-rule-contract-or-test",
+          "molecule:homotopy-report-fixture",
+          "semantic:path-rule:retry-idempotency-effect",
+          "src-cache-read",
+          "src-retry-effect",
+          "test-homotopy-fillers"
         ],
         "muDefectRefs": [
           "mu:path-pair-path-rule-retry-idempotency-effect:axis-homotopy-report-fixture"
         ],
         "sourceRefs": [
-          "doc-auth-policy",
-          "src-auth-bypass",
+          "filler-candidate:loop-candidate-path-pair-path-rule-retry-idempotency-effect-5:filler-rule-contract-or-test",
           "src-cache-read",
-          "src-direct-read",
-          "src-event-projection",
-          "src-pricing-checkout",
-          "src-repository-read",
           "src-retry-effect",
           "test-homotopy-fillers"
         ],
         "observationRefs": [
-          "atom:cache-read",
-          "atom:repository-read",
-          "atom:event-projection",
           "atom:retry-idempotency",
-          "atom:authorization-bypass",
-          "atom:coupon-tax-rounding"
+          "molecule:homotopy-report-fixture",
+          "semantic:path-rule:retry-idempotency-effect"
         ],
         "fillerRefs": [
           "filler-candidate:loop-candidate-path-pair-path-rule-retry-idempotency-effect-5:filler-rule-contract-or-test"
@@ -6348,26 +6299,31 @@
           "witnessCompletenessBoundary": "homotopy zero reflects only measured path pairs and fillers inside the selected coverage universe; unresolved paths stay coverage gaps"
         },
         "distanceKind": "selected-axis-continuation-distance",
-        "value": 1,
-        "comparedContinuationSummary": "path-rule:authorization-bypass-hole vs authorization-bypass-hole-path on axis:homotopy-report-fixture",
+        "value": 0,
+        "comparedContinuationSummary": "path-rule:authorization-bypass-hole vs authorization-bypass-hole-path on axis:homotopy-report-fixture; distanceKind=selected-axis-continuation-distance; sourceRefs=10; semanticEvidence=0; traceAxes=0; missing=1",
         "comparedContinuationRefs": [
-          "Cont_axis:homotopy-report-fixture(path-rule:authorization-bypass-hole)",
-          "Cont_axis:homotopy-report-fixture(authorization-bypass-hole-path)"
+          "Cont_axis:homotopy-report-fixture(authorization-bypass-hole-path)",
+          "Cont_axis:homotopy-report-fixture(path-rule:authorization-bypass-hole)"
         ],
         "distanceInputRefs": [
-          "atom:authorization-bypass",
-          "atom:cache-read",
-          "atom:coupon-tax-rounding",
-          "atom:event-projection",
-          "atom:repository-read",
-          "atom:retry-idempotency",
-          "gap:path-rule:authorization-bypass-hole:missing-policy-test"
+          "doc-auth-policy",
+          "filler-candidate:loop-candidate-path-pair-path-rule-authorization-bypass-hole-6:filler-rule-contract-or-test",
+          "path-rule:authorization-bypass-hole",
+          "src-auth-bypass",
+          "src-cache-read",
+          "src-direct-read",
+          "src-event-projection",
+          "src-pricing-checkout",
+          "src-repository-read",
+          "src-retry-effect",
+          "test-homotopy-fillers"
         ],
         "muDefectRefs": [
           "mu:path-pair-path-rule-authorization-bypass-hole:axis-homotopy-report-fixture"
         ],
         "sourceRefs": [
           "doc-auth-policy",
+          "filler-candidate:loop-candidate-path-pair-path-rule-authorization-bypass-hole-6:filler-rule-contract-or-test",
           "src-auth-bypass",
           "src-cache-read",
           "src-direct-read",
@@ -6378,12 +6334,7 @@
           "test-homotopy-fillers"
         ],
         "observationRefs": [
-          "atom:cache-read",
-          "atom:repository-read",
-          "atom:event-projection",
-          "atom:retry-idempotency",
-          "atom:authorization-bypass",
-          "atom:coupon-tax-rounding"
+          "path-rule:authorization-bypass-hole"
         ],
         "fillerRefs": [
           "filler-candidate:loop-candidate-path-pair-path-rule-authorization-bypass-hole-6:filler-rule-contract-or-test"
@@ -6424,40 +6375,41 @@
         },
         "distanceKind": "selected-axis-continuation-distance",
         "value": 1,
-        "comparedContinuationSummary": "path-rule:coupon-tax-rounding-semantic-loop vs coupon-tax-rounding-semantic-loop-path on axis:homotopy-report-fixture",
+        "comparedContinuationSummary": "path-rule:coupon-tax-rounding-semantic-loop vs coupon-tax-rounding-semantic-loop-path on axis:homotopy-report-fixture; distanceKind=selected-axis-continuation-distance; sourceRefs=4; semanticEvidence=1; traceAxes=2; missing=0",
         "comparedContinuationRefs": [
+          "Cont_axis:homotopy-report-fixture(coupon-tax-rounding-semantic-loop-path)",
           "Cont_axis:homotopy-report-fixture(path-rule:coupon-tax-rounding-semantic-loop)",
-          "Cont_axis:homotopy-report-fixture(coupon-tax-rounding-semantic-loop-path)"
+          "Cont_semantic[0]=operation:read-from-repository; comparableValues=2",
+          "Cont_semantic[0]=operation:read-through-cache; comparableValues=2",
+          "Cont_semantic[1]=operation:project-order-event; comparableValues=2",
+          "Cont_semantic[endpoint]=p; endpointRefs=1; evaluator=witness-mismatch-count:semantic-sequence-mismatch",
+          "Cont_semantic[endpoint]=q; endpointRefs=1; evaluator=witness-mismatch-count:semantic-sequence-mismatch"
         ],
         "distanceInputRefs": [
-          "atom:authorization-bypass",
-          "atom:cache-read",
           "atom:coupon-tax-rounding",
-          "atom:event-projection",
-          "atom:repository-read",
-          "atom:retry-idempotency"
+          "continuation-value:semantic-endpoints-orderview",
+          "continuation-value:semantic-path-p-operation-read-through-cache-operation-project-order-event",
+          "continuation-value:semantic-path-q-operation-read-from-repository-operation-project-order-event",
+          "filler-candidate:loop-candidate-path-pair-path-rule-coupon-tax-rounding-semantic-loop-7:filler-rule-contract-or-test",
+          "molecule:homotopy-report-fixture",
+          "semantic:path-rule:coupon-tax-rounding-semantic-loop",
+          "src-cache-read",
+          "src-pricing-checkout",
+          "test-homotopy-fillers"
         ],
         "muDefectRefs": [
           "mu:path-pair-path-rule-coupon-tax-rounding-semantic-loop:axis-homotopy-report-fixture"
         ],
         "sourceRefs": [
-          "doc-auth-policy",
-          "src-auth-bypass",
+          "filler-candidate:loop-candidate-path-pair-path-rule-coupon-tax-rounding-semantic-loop-7:filler-rule-contract-or-test",
           "src-cache-read",
-          "src-direct-read",
-          "src-event-projection",
           "src-pricing-checkout",
-          "src-repository-read",
-          "src-retry-effect",
           "test-homotopy-fillers"
         ],
         "observationRefs": [
-          "atom:cache-read",
-          "atom:repository-read",
-          "atom:event-projection",
-          "atom:retry-idempotency",
-          "atom:authorization-bypass",
-          "atom:coupon-tax-rounding"
+          "atom:coupon-tax-rounding",
+          "molecule:homotopy-report-fixture",
+          "semantic:path-rule:coupon-tax-rounding-semantic-loop"
         ],
         "fillerRefs": [
           "filler-candidate:loop-candidate-path-pair-path-rule-coupon-tax-rounding-semantic-loop-7:filler-rule-contract-or-test"
@@ -6478,7 +6430,7 @@
       {
         "readingId": "stokes-style:loop-candidate-path-pair-semantic-contract-loop-0",
         "loopRef": "loop-candidate:path-pair-semantic-contract-loop-0",
-        "status": "measuredZeroWithinBoundary",
+        "status": "filledNonzeroHolonomyReview",
         "measurementStatus": "measured",
         "readingBoundary": {
           "readingStrength": "boundedMeasuredWithCandidatePaths",
@@ -6513,10 +6465,12 @@
           "test-homotopy-fillers"
         ],
         "nonFillabilityWitnessRefs": [],
-        "localCurvatureCondition": "missing measured filler evidence blocks Stokes-style local curvature conclusion",
-        "localCurvatureCellCandidates": [],
+        "localCurvatureCondition": "measured filling plus nonzero holonomy localizes review curvature to selected 2-cells",
+        "localCurvatureCellCandidates": [
+          "2-cell:obstruction-homotopy-report-fixture"
+        ],
         "reviewQueueRefs": [
-          "homotopy-holonomy:loop-candidate-path-pair-semantic-contract-loop-0:axis-homotopy-report-fixture"
+          "2-cell:obstruction-homotopy-report-fixture"
         ],
         "coverageBoundary": "missing path or filler evidence blocks zero and Stokes-style readings",
         "evidenceBoundary": "Stokes-style reading is a bounded review queue, not theorem discharge",
@@ -6932,12 +6886,12 @@
         "loop-candidate:path-pair-path-rule-authorization-bypass-hole-6"
       ],
       "nonzeroHolonomyLoops": [
-        "loop-candidate:path-pair-path-rule-authorization-bypass-hole-6",
         "loop-candidate:path-pair-path-rule-cache-repository-semantic-loop-3",
         "loop-candidate:path-pair-path-rule-coupon-tax-rounding-semantic-loop-7",
         "loop-candidate:path-pair-path-rule-event-projection-direct-read-4",
         "loop-candidate:path-pair-path-rule-nonzero-holonomy-filled-loop-2",
-        "loop-candidate:path-pair-path-rule-retry-idempotency-effect-5"
+        "loop-candidate:path-pair-path-rule-retry-idempotency-effect-5",
+        "loop-candidate:path-pair-semantic-contract-loop-0"
       ],
       "topLocalCurvatureCells": [
         "2-cell:obstruction-homotopy-report-fixture"

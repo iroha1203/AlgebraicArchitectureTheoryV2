@@ -2,7 +2,7 @@
   "schemaVersion": "archsig-analysis-packet-validation-report-v0",
   "input": {
     "schemaVersion": "archsig-analysis-packet-v0",
-    "path": "/private/tmp/archsig1599-minimal-final/archsig-analysis-packet.json",
+    "path": "/private/tmp/archsig1600-minimal-final/archsig-analysis-packet.json",
     "analysisId": "archsig-analysis:fixture-archmap-atom-observation:llm-native-aat-law-policy-fixture",
     "archMapRef": "fixture-archmap-atom-observation",
     "selectedLawPolicyRef": "llm-native-aat-law-policy-fixture"
@@ -4423,10 +4423,7 @@
           "test-user-contract"
         ],
         "observationRefs": [
-          "atom:component:route-users",
-          "atom:component:service-user",
-          "atom:relation:route-service",
-          "atom:contract:create-user"
+          "path-rule:interface-implementation"
         ],
         "coverageBoundary": "missing path or filler evidence blocks zero and Stokes-style readings",
         "evidenceBoundary": "candidate paths are bounded review cues derived from ArchMap evidence and selected LawPolicy",
@@ -4493,10 +4490,7 @@
           "test-user-contract"
         ],
         "observationRefs": [
-          "atom:component:route-users",
-          "atom:component:service-user",
-          "atom:relation:route-service",
-          "atom:contract:create-user"
+          "path-rule:cache-repository"
         ],
         "coverageBoundary": "missing path or filler evidence blocks zero and Stokes-style readings",
         "evidenceBoundary": "absence of a candidate path is not proof that no architectural loop exists",
@@ -5238,24 +5232,40 @@
         },
         "distanceKind": "selected-axis-continuation-distance",
         "value": 1,
-        "comparedContinuationSummary": "path:semantic-operation-flow vs molecule:user-request-responsibility on axis:layer-violation",
+        "comparedContinuationSummary": "path:semantic-operation-flow vs molecule:user-request-responsibility on axis:layer-violation; distanceKind=selected-axis-continuation-distance; sourceRefs=6; semanticEvidence=1; traceAxes=2; missing=1",
         "comparedContinuationRefs": [
+          "Cont_axis:layer-violation(molecule:user-request-responsibility)",
           "Cont_axis:layer-violation(path:semantic-operation-flow)",
-          "Cont_axis:layer-violation(molecule:user-request-responsibility)"
+          "Cont_semantic[0]=operation:route-create-user; comparableValues=2",
+          "Cont_semantic[0]=operation:service-create-user; comparableValues=2",
+          "Cont_semantic[1]=operation:route-create-user; comparableValues=2",
+          "Cont_semantic[1]=operation:service-create-user; comparableValues=2",
+          "Cont_semantic[endpoint]=p; endpointRefs=2; evaluator=weighted-axis-l1:semantic-sequence-mismatch",
+          "Cont_semantic[endpoint]=q; endpointRefs=2; evaluator=weighted-axis-l1:semantic-sequence-mismatch"
         ],
         "distanceInputRefs": [
           "atom:component:route-users",
           "atom:component:service-user",
           "atom:contract:create-user",
           "atom:relation:route-service",
-          "gap-runtime-user-db-trace",
-          "semantic:create-user-flow"
+          "continuation-value:semantic-endpoints-route-users-service-user",
+          "continuation-value:semantic-path-p-operation-route-create-user-operation-service-create-user",
+          "continuation-value:semantic-path-q-operation-service-create-user-operation-route-create-user",
+          "doc-architecture",
+          "filler-candidate:loop-candidate-path-pair-semantic-contract-loop-0:filler-rule-authority-or-idempotency",
+          "filler-candidate:loop-candidate-path-pair-semantic-contract-loop-0:filler-rule-contract-or-test",
+          "semantic:create-user-flow",
+          "src-route-users",
+          "src-service-user",
+          "test-user-contract"
         ],
         "muDefectRefs": [
-          "mu:path-pair-semantic-contract-loop:axis-layer-violation"
+          "mu:operation-square-operation-square-evidence-create-user-route-service:semantic"
         ],
         "sourceRefs": [
           "doc-architecture",
+          "filler-candidate:loop-candidate-path-pair-semantic-contract-loop-0:filler-rule-authority-or-idempotency",
+          "filler-candidate:loop-candidate-path-pair-semantic-contract-loop-0:filler-rule-contract-or-test",
           "src-route-users",
           "src-service-user",
           "test-user-contract"
@@ -5309,24 +5319,40 @@
         },
         "distanceKind": "selected-axis-continuation-distance",
         "value": 1,
-        "comparedContinuationSummary": "path:semantic-operation-flow vs molecule:user-request-responsibility on axis:semantic-inconsistency",
+        "comparedContinuationSummary": "path:semantic-operation-flow vs molecule:user-request-responsibility on axis:semantic-inconsistency; distanceKind=selected-axis-continuation-distance; sourceRefs=6; semanticEvidence=1; traceAxes=2; missing=1",
         "comparedContinuationRefs": [
+          "Cont_axis:semantic-inconsistency(molecule:user-request-responsibility)",
           "Cont_axis:semantic-inconsistency(path:semantic-operation-flow)",
-          "Cont_axis:semantic-inconsistency(molecule:user-request-responsibility)"
+          "Cont_semantic[0]=operation:route-create-user; comparableValues=2",
+          "Cont_semantic[0]=operation:service-create-user; comparableValues=2",
+          "Cont_semantic[1]=operation:route-create-user; comparableValues=2",
+          "Cont_semantic[1]=operation:service-create-user; comparableValues=2",
+          "Cont_semantic[endpoint]=p; endpointRefs=2; evaluator=weighted-axis-l1:semantic-sequence-mismatch",
+          "Cont_semantic[endpoint]=q; endpointRefs=2; evaluator=weighted-axis-l1:semantic-sequence-mismatch"
         ],
         "distanceInputRefs": [
           "atom:component:route-users",
           "atom:component:service-user",
           "atom:contract:create-user",
           "atom:relation:route-service",
-          "gap-runtime-user-db-trace",
-          "semantic:create-user-flow"
+          "continuation-value:semantic-endpoints-route-users-service-user",
+          "continuation-value:semantic-path-p-operation-route-create-user-operation-service-create-user",
+          "continuation-value:semantic-path-q-operation-service-create-user-operation-route-create-user",
+          "doc-architecture",
+          "filler-candidate:loop-candidate-path-pair-semantic-contract-loop-0:filler-rule-authority-or-idempotency",
+          "filler-candidate:loop-candidate-path-pair-semantic-contract-loop-0:filler-rule-contract-or-test",
+          "semantic:create-user-flow",
+          "src-route-users",
+          "src-service-user",
+          "test-user-contract"
         ],
         "muDefectRefs": [
-          "mu:path-pair-semantic-contract-loop:axis-semantic-inconsistency"
+          "mu:operation-square-operation-square-evidence-create-user-route-service:semantic"
         ],
         "sourceRefs": [
           "doc-architecture",
+          "filler-candidate:loop-candidate-path-pair-semantic-contract-loop-0:filler-rule-authority-or-idempotency",
+          "filler-candidate:loop-candidate-path-pair-semantic-contract-loop-0:filler-rule-contract-or-test",
           "src-route-users",
           "src-service-user",
           "test-user-contract"
@@ -5379,18 +5405,21 @@
           "witnessCompletenessBoundary": "homotopy zero reflects only measured path pairs and fillers inside the selected coverage universe; unresolved paths stay coverage gaps"
         },
         "distanceKind": "selected-axis-continuation-distance",
-        "value": 1,
-        "comparedContinuationSummary": "path-rule:interface-implementation vs interface-implementation-path on axis:layer-violation",
+        "value": 0,
+        "comparedContinuationSummary": "path-rule:interface-implementation vs interface-implementation-path on axis:layer-violation; distanceKind=selected-axis-continuation-distance; sourceRefs=7; semanticEvidence=0; traceAxes=0; missing=1",
         "comparedContinuationRefs": [
-          "Cont_axis:layer-violation(path-rule:interface-implementation)",
-          "Cont_axis:layer-violation(interface-implementation-path)"
+          "Cont_axis:layer-violation(interface-implementation-path)",
+          "Cont_axis:layer-violation(path-rule:interface-implementation)"
         ],
         "distanceInputRefs": [
-          "atom:component:route-users",
-          "atom:component:service-user",
-          "atom:contract:create-user",
-          "atom:relation:route-service",
-          "gap-runtime-user-db-trace"
+          ".lake/runtime-trace.json",
+          "doc-architecture",
+          "filler-candidate:loop-candidate-path-pair-path-rule-interface-implementation-1:filler-rule-authority-or-idempotency",
+          "filler-candidate:loop-candidate-path-pair-path-rule-interface-implementation-1:filler-rule-contract-or-test",
+          "path-rule:interface-implementation",
+          "src-route-users",
+          "src-service-user",
+          "test-user-contract"
         ],
         "muDefectRefs": [
           "mu:path-pair-path-rule-interface-implementation:axis-layer-violation"
@@ -5398,15 +5427,14 @@
         "sourceRefs": [
           ".lake/runtime-trace.json",
           "doc-architecture",
+          "filler-candidate:loop-candidate-path-pair-path-rule-interface-implementation-1:filler-rule-authority-or-idempotency",
+          "filler-candidate:loop-candidate-path-pair-path-rule-interface-implementation-1:filler-rule-contract-or-test",
           "src-route-users",
           "src-service-user",
           "test-user-contract"
         ],
         "observationRefs": [
-          "atom:component:route-users",
-          "atom:component:service-user",
-          "atom:relation:route-service",
-          "atom:contract:create-user"
+          "path-rule:interface-implementation"
         ],
         "fillerRefs": [
           "filler-candidate:loop-candidate-path-pair-path-rule-interface-implementation-1:filler-rule-contract-or-test",
@@ -5449,18 +5477,21 @@
           "witnessCompletenessBoundary": "homotopy zero reflects only measured path pairs and fillers inside the selected coverage universe; unresolved paths stay coverage gaps"
         },
         "distanceKind": "selected-axis-continuation-distance",
-        "value": 1,
-        "comparedContinuationSummary": "path-rule:interface-implementation vs interface-implementation-path on axis:semantic-inconsistency",
+        "value": 0,
+        "comparedContinuationSummary": "path-rule:interface-implementation vs interface-implementation-path on axis:semantic-inconsistency; distanceKind=selected-axis-continuation-distance; sourceRefs=7; semanticEvidence=0; traceAxes=0; missing=1",
         "comparedContinuationRefs": [
-          "Cont_axis:semantic-inconsistency(path-rule:interface-implementation)",
-          "Cont_axis:semantic-inconsistency(interface-implementation-path)"
+          "Cont_axis:semantic-inconsistency(interface-implementation-path)",
+          "Cont_axis:semantic-inconsistency(path-rule:interface-implementation)"
         ],
         "distanceInputRefs": [
-          "atom:component:route-users",
-          "atom:component:service-user",
-          "atom:contract:create-user",
-          "atom:relation:route-service",
-          "gap-runtime-user-db-trace"
+          ".lake/runtime-trace.json",
+          "doc-architecture",
+          "filler-candidate:loop-candidate-path-pair-path-rule-interface-implementation-1:filler-rule-authority-or-idempotency",
+          "filler-candidate:loop-candidate-path-pair-path-rule-interface-implementation-1:filler-rule-contract-or-test",
+          "path-rule:interface-implementation",
+          "src-route-users",
+          "src-service-user",
+          "test-user-contract"
         ],
         "muDefectRefs": [
           "mu:path-pair-path-rule-interface-implementation:axis-semantic-inconsistency"
@@ -5468,15 +5499,14 @@
         "sourceRefs": [
           ".lake/runtime-trace.json",
           "doc-architecture",
+          "filler-candidate:loop-candidate-path-pair-path-rule-interface-implementation-1:filler-rule-authority-or-idempotency",
+          "filler-candidate:loop-candidate-path-pair-path-rule-interface-implementation-1:filler-rule-contract-or-test",
           "src-route-users",
           "src-service-user",
           "test-user-contract"
         ],
         "observationRefs": [
-          "atom:component:route-users",
-          "atom:component:service-user",
-          "atom:relation:route-service",
-          "atom:contract:create-user"
+          "path-rule:interface-implementation"
         ],
         "fillerRefs": [
           "filler-candidate:loop-candidate-path-pair-path-rule-interface-implementation-1:filler-rule-contract-or-test",
@@ -5519,18 +5549,21 @@
           "witnessCompletenessBoundary": "homotopy zero reflects only measured path pairs and fillers inside the selected coverage universe; unresolved paths stay coverage gaps"
         },
         "distanceKind": "selected-axis-continuation-distance",
-        "value": 1,
-        "comparedContinuationSummary": "path-rule:cache-repository vs cache-repository-path on axis:layer-violation",
+        "value": 0,
+        "comparedContinuationSummary": "path-rule:cache-repository vs cache-repository-path on axis:layer-violation; distanceKind=selected-axis-continuation-distance; sourceRefs=7; semanticEvidence=0; traceAxes=0; missing=1",
         "comparedContinuationRefs": [
-          "Cont_axis:layer-violation(path-rule:cache-repository)",
-          "Cont_axis:layer-violation(cache-repository-path)"
+          "Cont_axis:layer-violation(cache-repository-path)",
+          "Cont_axis:layer-violation(path-rule:cache-repository)"
         ],
         "distanceInputRefs": [
-          "atom:component:route-users",
-          "atom:component:service-user",
-          "atom:contract:create-user",
-          "atom:relation:route-service",
-          "gap-runtime-user-db-trace"
+          ".lake/runtime-trace.json",
+          "doc-architecture",
+          "filler-candidate:loop-candidate-path-pair-path-rule-cache-repository-2:filler-rule-authority-or-idempotency",
+          "filler-candidate:loop-candidate-path-pair-path-rule-cache-repository-2:filler-rule-contract-or-test",
+          "path-rule:cache-repository",
+          "src-route-users",
+          "src-service-user",
+          "test-user-contract"
         ],
         "muDefectRefs": [
           "mu:path-pair-path-rule-cache-repository:axis-layer-violation"
@@ -5538,15 +5571,14 @@
         "sourceRefs": [
           ".lake/runtime-trace.json",
           "doc-architecture",
+          "filler-candidate:loop-candidate-path-pair-path-rule-cache-repository-2:filler-rule-authority-or-idempotency",
+          "filler-candidate:loop-candidate-path-pair-path-rule-cache-repository-2:filler-rule-contract-or-test",
           "src-route-users",
           "src-service-user",
           "test-user-contract"
         ],
         "observationRefs": [
-          "atom:component:route-users",
-          "atom:component:service-user",
-          "atom:relation:route-service",
-          "atom:contract:create-user"
+          "path-rule:cache-repository"
         ],
         "fillerRefs": [
           "filler-candidate:loop-candidate-path-pair-path-rule-cache-repository-2:filler-rule-contract-or-test",
@@ -5589,18 +5621,21 @@
           "witnessCompletenessBoundary": "homotopy zero reflects only measured path pairs and fillers inside the selected coverage universe; unresolved paths stay coverage gaps"
         },
         "distanceKind": "selected-axis-continuation-distance",
-        "value": 1,
-        "comparedContinuationSummary": "path-rule:cache-repository vs cache-repository-path on axis:semantic-inconsistency",
+        "value": 0,
+        "comparedContinuationSummary": "path-rule:cache-repository vs cache-repository-path on axis:semantic-inconsistency; distanceKind=selected-axis-continuation-distance; sourceRefs=7; semanticEvidence=0; traceAxes=0; missing=1",
         "comparedContinuationRefs": [
-          "Cont_axis:semantic-inconsistency(path-rule:cache-repository)",
-          "Cont_axis:semantic-inconsistency(cache-repository-path)"
+          "Cont_axis:semantic-inconsistency(cache-repository-path)",
+          "Cont_axis:semantic-inconsistency(path-rule:cache-repository)"
         ],
         "distanceInputRefs": [
-          "atom:component:route-users",
-          "atom:component:service-user",
-          "atom:contract:create-user",
-          "atom:relation:route-service",
-          "gap-runtime-user-db-trace"
+          ".lake/runtime-trace.json",
+          "doc-architecture",
+          "filler-candidate:loop-candidate-path-pair-path-rule-cache-repository-2:filler-rule-authority-or-idempotency",
+          "filler-candidate:loop-candidate-path-pair-path-rule-cache-repository-2:filler-rule-contract-or-test",
+          "path-rule:cache-repository",
+          "src-route-users",
+          "src-service-user",
+          "test-user-contract"
         ],
         "muDefectRefs": [
           "mu:path-pair-path-rule-cache-repository:axis-semantic-inconsistency"
@@ -5608,15 +5643,14 @@
         "sourceRefs": [
           ".lake/runtime-trace.json",
           "doc-architecture",
+          "filler-candidate:loop-candidate-path-pair-path-rule-cache-repository-2:filler-rule-authority-or-idempotency",
+          "filler-candidate:loop-candidate-path-pair-path-rule-cache-repository-2:filler-rule-contract-or-test",
           "src-route-users",
           "src-service-user",
           "test-user-contract"
         ],
         "observationRefs": [
-          "atom:component:route-users",
-          "atom:component:service-user",
-          "atom:relation:route-service",
-          "atom:contract:create-user"
+          "path-rule:cache-repository"
         ],
         "fillerRefs": [
           "filler-candidate:loop-candidate-path-pair-path-rule-cache-repository-2:filler-rule-contract-or-test",
@@ -5802,8 +5836,6 @@
         "loop-candidate:path-pair-semantic-contract-loop-0"
       ],
       "nonzeroHolonomyLoops": [
-        "loop-candidate:path-pair-path-rule-cache-repository-2",
-        "loop-candidate:path-pair-path-rule-interface-implementation-1",
         "loop-candidate:path-pair-semantic-contract-loop-0"
       ],
       "topLocalCurvatureCells": [],
@@ -5816,7 +5848,7 @@
         },
         {
           "aggregateId": "hol-mass:nonzero-holonomy-loop-count",
-          "value": 3,
+          "value": 1,
           "reading": "bounded count of loops with nonzero selected-axis holonomy",
           "boundary": "not future incident or empirical cost prediction"
         },

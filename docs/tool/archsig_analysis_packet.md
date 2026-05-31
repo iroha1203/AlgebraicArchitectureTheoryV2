@@ -345,14 +345,19 @@ The builder:
   `homotopyHolonomyReadings`, `stokesStyleReadings`, and
   `architectureHomotopyReport`. Path-pair and operation-square candidates carry
   first-class operation sequences, endpoint object refs, and generator
-  candidate refs. Continuation traces carry step refs and selected-axis
+  candidate refs. Holonomy value is computed from source-backed continuation
+  comparison inputs: exact path-rule semantic observations, supplied p/q
+  continuation traces, axis-wise `mu_x` defects, filler evidence, and explicit
+  missing filler refs. Path-pair id / path ref string containment is not the
+  value calculator. Continuation traces carry step refs and selected-axis
   continuation states. Axis-wise defects record `mu_x` distance inputs and
   positive witness boundaries, and AMI aggregates name the selected measured
   squares, positive contributors, and zero-weight defects. Filled nonzero
   holonomy loops point reviewers to measured local curvature cells; unfilled
   loops point reviewers to missing contract, test, runtime, policy, or semantic
-  filler evidence. Stokes-style local curvature is measured only when filler
-  evidence is present; holes preserve non-fillability witness refs instead.
+  filler evidence. Stokes-style local curvature is measured only when measured
+  filler evidence and measured nonzero holonomy are present; holes preserve
+  non-fillability witness refs instead.
   Neither case is a theorem discharge, architecture score, future forecast, or
   automatic violation proof.
 - ArchMapStore is the forward history boundary for PR and longitudinal
