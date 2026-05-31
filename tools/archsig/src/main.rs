@@ -112,10 +112,6 @@ enum Command {
         #[arg(long = "analysis-validation")]
         analysis_validation: Option<PathBuf>,
 
-        /// Maximum number of ranked readings to include.
-        #[arg(long, default_value_t = 6)]
-        limit: usize,
-
         /// Output summary JSON path. If omitted, JSON is written to stdout.
         #[arg(long)]
         out: Option<PathBuf>,
@@ -322,7 +318,6 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
             archmap_validation,
             law_policy_validation,
             analysis_validation,
-            limit,
             out,
         }) => {
             let packet_document: serde_json::Value = read_json(&packet)?;
@@ -345,7 +340,6 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                 archmap_validation.as_ref(),
                 law_policy_validation.as_ref(),
                 analysis_validation.as_ref(),
-                limit,
             );
             write_json(out, &summary)?;
             Ok(ExitCode::SUCCESS)
@@ -684,8 +678,8 @@ fn build_codebase_inspection_report(
             },
             "topBoundaryHolonomy": top_boundary_holonomy(packet, limit),
             "topOrderSensitiveSquares": top_order_sensitive_squares(packet, limit),
-            "architectureSpectrum": architecture_spectrum_summary(packet, llm_packet, limit),
-            "architectureHomotopy": architecture_homotopy_summary(packet, limit),
+            "architectureSpectrum": architecture_spectrum_summary(packet, llm_packet, Some(limit)),
+            "architectureHomotopy": architecture_homotopy_summary(packet, Some(limit)),
             "architectureHealthNextActions": limited_array_field(llm_packet, "recommendedHumanReviewFocus", limit)
         },
         "coverageExactnessBoundary": {
@@ -1096,7 +1090,6 @@ fn build_analysis_summary(
     archmap_validation: Option<&serde_json::Value>,
     law_policy_validation: Option<&serde_json::Value>,
     analysis_validation: Option<&serde_json::Value>,
-    limit: usize,
 ) -> serde_json::Value {
     let flatness = packet
         .get("flatnessReading")
@@ -1120,7 +1113,7 @@ fn build_analysis_summary(
         },
         "verdict": analysis_verdict(packet),
         "qualityMeasurement": quality_measurement(packet),
-        "actionQueue": action_queue(packet, limit),
+        "actionQueue": action_queue(packet),
         "measurementBasis": measurement_basis(
             packet,
             archmap_validation,
@@ -1134,17 +1127,17 @@ fn build_analysis_summary(
             "blockedByCoverageGaps": array_field(flatness, "blockedByCoverageGaps")
         },
         "signatureAxes": signature_axis_summary(packet),
-        "topWorkflowRisks": top_workflow_risks(packet, limit),
+        "topWorkflowRisks": top_workflow_risks(packet),
         "spectralAnalysis": spectral_summary(packet),
-        "architectureSpectrum": architecture_spectrum_summary(packet, llm_packet, limit),
-        "architectureHomotopy": architecture_homotopy_summary(packet, limit),
+        "architectureSpectrum": architecture_spectrum_summary(packet, llm_packet, None),
+        "architectureHomotopy": architecture_homotopy_summary(packet, None),
         "transferBridges": transfer_bridge_summary(packet),
-        "measurementExpansion": measurement_expansion_summary(packet, llm_packet, limit),
-        "splitReadiness": split_readiness_summary(packet, limit),
+        "measurementExpansion": measurement_expansion_summary(packet, llm_packet),
+        "splitReadiness": split_readiness_summary(packet),
         "llmReviewIndex": {
             "structuralReadingReviewSummary": array_field(llm_packet, "structuralReadingReviewSummary"),
             "currentStateEvolutionBoundarySummary": array_field(llm_packet, "currentStateEvolutionBoundarySummary"),
-            "recommendedHumanReviewFocus": limited_array_field(llm_packet, "recommendedHumanReviewFocus", limit),
+            "recommendedHumanReviewFocus": array_field(llm_packet, "recommendedHumanReviewFocus"),
             "transferBridgeEdgeSummary": array_field(llm_packet, "transferBridgeEdgeSummary")
         },
         "metadata": {
@@ -1252,7 +1245,7 @@ fn quality_measurement(packet: &serde_json::Value) -> serde_json::Value {
     })
 }
 
-fn action_queue(packet: &serde_json::Value, limit: usize) -> serde_json::Value {
+fn action_queue(packet: &serde_json::Value) -> serde_json::Value {
     let mut actions = Vec::new();
     let spectrum = packet
         .get("architectureSpectrumReport")
@@ -1321,7 +1314,6 @@ fn action_queue(packet: &serde_json::Value, limit: usize) -> serde_json::Value {
         actions
             .into_iter()
             .enumerate()
-            .take(limit)
             .map(|(index, mut action)| {
                 if let Some(object) = action.as_object_mut() {
                     object.insert(
@@ -1420,24 +1412,23 @@ fn value_label(value: &serde_json::Value) -> Option<String> {
 fn measurement_expansion_summary(
     packet: &serde_json::Value,
     llm_packet: &serde_json::Value,
-    limit: usize,
 ) -> serde_json::Value {
     serde_json::json!({
         "summary": array_field(llm_packet, "measurementExpansionSummary"),
-        "atomSupportAxis": limited_array_field(llm_packet, "atomSupportAxisSummary", limit),
-        "atomCompatibility": limited_array_field(llm_packet, "atomCompatibilitySummary", limit),
-        "lawUniverseCoverage": limited_array_field(llm_packet, "lawUniverseCoverageSummary", limit),
-        "featureExtensionFormula": limited_array_field(llm_packet, "featureExtensionFormulaSummary", limit),
-        "operationCalculusLaw": limited_array_field(llm_packet, "operationCalculusLawSummary", limit),
-        "pathSignatureTrajectory": limited_array_field(llm_packet, "pathSignatureTrajectorySummary", limit),
-        "homotopyOrderSensitivity": limited_array_field(llm_packet, "homotopyOrderSensitivitySummary", limit),
-        "diagramFillability": limited_array_field(llm_packet, "diagramFillabilitySummary", limit),
-        "axisForgettingRisk": limited_array_field(llm_packet, "axisForgettingRiskSummary", limit),
-        "signatureTrajectoryHomotopyRefutation": limited_array_field(llm_packet, "signatureTrajectoryHomotopyRefutationSummary", limit),
-        "bridgeSplitObstructionTransfer": limited_array_field(llm_packet, "bridgeSplitObstructionTransferSummary", limit),
-        "nonzeroMonodromyWitness": limited_array_field(llm_packet, "nonzeroMonodromyWitnessSummary", limit),
-        "featureBoundaryResidual": limited_array_field(llm_packet, "featureBoundaryResidualSummary", limit),
-        "featureExtensionDiagnosis": limited_array_field(llm_packet, "featureExtensionDiagnosisSummary", limit),
+        "atomSupportAxis": array_field(llm_packet, "atomSupportAxisSummary"),
+        "atomCompatibility": array_field(llm_packet, "atomCompatibilitySummary"),
+        "lawUniverseCoverage": array_field(llm_packet, "lawUniverseCoverageSummary"),
+        "featureExtensionFormula": array_field(llm_packet, "featureExtensionFormulaSummary"),
+        "operationCalculusLaw": array_field(llm_packet, "operationCalculusLawSummary"),
+        "pathSignatureTrajectory": array_field(llm_packet, "pathSignatureTrajectorySummary"),
+        "homotopyOrderSensitivity": array_field(llm_packet, "homotopyOrderSensitivitySummary"),
+        "diagramFillability": array_field(llm_packet, "diagramFillabilitySummary"),
+        "axisForgettingRisk": array_field(llm_packet, "axisForgettingRiskSummary"),
+        "signatureTrajectoryHomotopyRefutation": array_field(llm_packet, "signatureTrajectoryHomotopyRefutationSummary"),
+        "bridgeSplitObstructionTransfer": array_field(llm_packet, "bridgeSplitObstructionTransferSummary"),
+        "nonzeroMonodromyWitness": array_field(llm_packet, "nonzeroMonodromyWitnessSummary"),
+        "featureBoundaryResidual": array_field(llm_packet, "featureBoundaryResidualSummary"),
+        "featureExtensionDiagnosis": array_field(llm_packet, "featureExtensionDiagnosisSummary"),
         "counts": {
             "atomSupportAxisReadings": array_len(packet, "atomSupportAxisReadings"),
             "atomCompatibilityReadings": array_len(packet, "atomCompatibilityReadings"),
@@ -1472,13 +1463,12 @@ fn validation_summary(report: Option<&serde_json::Value>) -> serde_json::Value {
     })
 }
 
-fn top_workflow_risks(packet: &serde_json::Value, limit: usize) -> serde_json::Value {
+fn top_workflow_risks(packet: &serde_json::Value) -> serde_json::Value {
     let mut readings = array_items(packet, "workflowRiskReadings");
     readings.sort_by_key(|reading| std::cmp::Reverse(i64_field(reading, "riskScore", 0)));
     serde_json::Value::Array(
         readings
             .into_iter()
-            .take(limit)
             .map(|reading| {
                 serde_json::json!({
                     "molecule": json_field(reading, "moleculeObservationRef"),
@@ -1573,7 +1563,7 @@ fn transfer_bridge_summary(packet: &serde_json::Value) -> serde_json::Value {
 fn architecture_spectrum_summary(
     packet: &serde_json::Value,
     llm_packet: &serde_json::Value,
-    limit: usize,
+    limit: Option<usize>,
 ) -> serde_json::Value {
     let report = packet
         .get("architectureSpectrumReport")
@@ -1582,19 +1572,22 @@ fn architecture_spectrum_summary(
         "reportId": json_field(report, "reportId"),
         "status": json_field(report, "status"),
         "profileRef": json_field(report, "profileRef"),
-        "summary": limited_array_field(llm_packet, "architectureSpectrumReportSummary", limit),
-        "hotspots": limited_array_field(report, "topHotspots", limit),
-        "topEigenmodes": limited_array_field(report, "topEigenmodes", limit),
-        "witnessClusters": limited_array_field(report, "topWitnessClusters", limit),
-        "recurrentObstructions": limited_array_field(report, "recurrentObstructions", limit),
-        "coverageGaps": limited_array_field(report, "coverageGaps", limit),
+        "summary": array_field_with_limit(llm_packet, "architectureSpectrumReportSummary", limit),
+        "hotspots": array_field_with_limit(report, "topHotspots", limit),
+        "topEigenmodes": array_field_with_limit(report, "topEigenmodes", limit),
+        "witnessClusters": array_field_with_limit(report, "topWitnessClusters", limit),
+        "recurrentObstructions": array_field_with_limit(report, "recurrentObstructions", limit),
+        "coverageGaps": array_field_with_limit(report, "coverageGaps", limit),
         "measuredBoundary": json_field(report, "measuredBoundary"),
-        "recommendedReviewFocus": limited_array_field(report, "recommendedReviewFocus", limit),
+        "recommendedReviewFocus": array_field_with_limit(report, "recommendedReviewFocus", limit),
         "nonConclusions": array_field(report, "nonConclusions")
     })
 }
 
-fn architecture_homotopy_summary(packet: &serde_json::Value, limit: usize) -> serde_json::Value {
+fn architecture_homotopy_summary(
+    packet: &serde_json::Value,
+    limit: Option<usize>,
+) -> serde_json::Value {
     let report = packet
         .get("architectureHomotopyReport")
         .unwrap_or(&serde_json::Value::Null);
@@ -1602,25 +1595,24 @@ fn architecture_homotopy_summary(packet: &serde_json::Value, limit: usize) -> se
         "reportId": json_field(report, "reportId"),
         "status": json_field(report, "status"),
         "profileRef": json_field(report, "profileRef"),
-        "filledLoops": limited_array_field(report, "filledLoops", limit),
-        "unfilledLoops": limited_array_field(report, "unfilledLoops", limit),
-        "nonzeroHolonomyLoops": limited_array_field(report, "nonzeroHolonomyLoops", limit),
-        "topLocalCurvatureCells": limited_array_field(report, "topLocalCurvatureCells", limit),
-        "aggregateReadings": limited_array_field(report, "aggregateReadings", limit),
-        "coverageGaps": limited_array_field(report, "coverageGaps", limit),
+        "filledLoops": array_field_with_limit(report, "filledLoops", limit),
+        "unfilledLoops": array_field_with_limit(report, "unfilledLoops", limit),
+        "nonzeroHolonomyLoops": array_field_with_limit(report, "nonzeroHolonomyLoops", limit),
+        "topLocalCurvatureCells": array_field_with_limit(report, "topLocalCurvatureCells", limit),
+        "aggregateReadings": array_field_with_limit(report, "aggregateReadings", limit),
+        "coverageGaps": array_field_with_limit(report, "coverageGaps", limit),
         "measuredBoundary": json_field(report, "measuredBoundary"),
-        "recommendedReviewFocus": limited_array_field(report, "recommendedReviewFocus", limit),
+        "recommendedReviewFocus": array_field_with_limit(report, "recommendedReviewFocus", limit),
         "nonConclusions": array_field(report, "nonConclusions")
     })
 }
 
-fn split_readiness_summary(packet: &serde_json::Value, limit: usize) -> serde_json::Value {
+fn split_readiness_summary(packet: &serde_json::Value) -> serde_json::Value {
     let mut readings = array_items(packet, "splitReadinessReadings");
     readings.sort_by_key(|reading| i64_field(reading, "readinessScore", i64::MAX));
     serde_json::Value::Array(
         readings
             .into_iter()
-            .take(limit)
             .map(|reading| {
                 serde_json::json!({
                     "molecule": json_field(reading, "moleculeRef"),
@@ -1660,6 +1652,18 @@ fn json_field(value: &serde_json::Value, key: &str) -> serde_json::Value {
 
 fn array_field(value: &serde_json::Value, key: &str) -> serde_json::Value {
     serde_json::Value::Array(array_items(value, key).into_iter().cloned().collect())
+}
+
+fn array_field_with_limit(
+    value: &serde_json::Value,
+    key: &str,
+    limit: Option<usize>,
+) -> serde_json::Value {
+    let items = array_items(value, key).into_iter();
+    match limit {
+        Some(limit) => serde_json::Value::Array(items.take(limit).cloned().collect()),
+        None => serde_json::Value::Array(items.cloned().collect()),
+    }
 }
 
 fn limited_array_field(value: &serde_json::Value, key: &str, limit: usize) -> serde_json::Value {

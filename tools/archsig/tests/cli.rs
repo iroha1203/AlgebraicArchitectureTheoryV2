@@ -78,7 +78,6 @@ fn cli_summarizes_archsig_analysis_packet() {
     let out_dir = temp_dir("analysis-summary");
     let root = fixture_root();
     let summary = out_dir.join("archsig-analysis-summary.json");
-    let full_summary = out_dir.join("archsig-analysis-summary-full.json");
 
     run_sig0(&[
         "analysis-summary",
@@ -86,25 +85,11 @@ fn cli_summarizes_archsig_analysis_packet() {
         root.join("archsig_analysis_packet.json")
             .to_str()
             .expect("packet path is utf-8"),
-        "--limit",
-        "2",
         "--out",
         summary.to_str().expect("summary path is utf-8"),
     ]);
-    run_sig0(&[
-        "analysis-summary",
-        "--packet",
-        root.join("archsig_analysis_packet.json")
-            .to_str()
-            .expect("packet path is utf-8"),
-        "--limit",
-        "16",
-        "--out",
-        full_summary.to_str().expect("full summary path is utf-8"),
-    ]);
 
     let json = read_json(&summary);
-    let full_json = read_json(&full_summary);
     assert_eq!(
         json["packet"]["schemaVersion"],
         "archsig-analysis-packet-v0"
@@ -119,15 +104,15 @@ fn cli_summarizes_archsig_analysis_packet() {
             .as_array()
             .is_some_and(|axes| !axes.is_empty())
     );
-    assert!(
-        json["topWorkflowRisks"]
-            .as_array()
-            .is_some_and(|risks| risks.len() <= 2)
-    );
+    assert!(json["topWorkflowRisks"].as_array().is_some_and(|risks| {
+        json["qualityMeasurement"]["workflowRiskCount"]
+            .as_u64()
+            .is_some_and(|count| risks.len() as u64 == count)
+    }));
     assert!(
         json["splitReadiness"]
             .as_array()
-            .is_some_and(|readings| readings.len() <= 2)
+            .is_some_and(|readings| !readings.is_empty())
     );
     assert_eq!(
         json["verdict"]["flatness"], "nonflatUnderSelectedPolicy",
@@ -164,17 +149,16 @@ fn cli_summarizes_archsig_analysis_packet() {
     assert!(
         json["actionQueue"].as_array().is_some_and(|items| {
             !items.is_empty()
-                && items.len() <= 2
                 && items.iter().any(|item| {
                     item["conclusion"]
                         .as_str()
                         .is_some_and(|text| text == "measuredPressureHotspot")
                 })
         }),
-        "analysis-summary must expose a bounded conclusion-first action queue"
+        "analysis-summary must expose a conclusion-first action queue"
     );
     assert!(
-        full_json["actionQueue"].as_array().is_some_and(|items| {
+        json["actionQueue"].as_array().is_some_and(|items| {
             items.iter().any(|item| {
                 item["conclusion"]
                     .as_str()
@@ -187,9 +171,13 @@ fn cli_summarizes_archsig_analysis_packet() {
                 item["kind"]
                     .as_str()
                     .is_some_and(|text| text == "nonzeroSignatureAxis")
+            }) && items.iter().any(|item| {
+                item["kind"]
+                    .as_str()
+                    .is_some_and(|text| text == "workflowRisk")
             })
         }),
-        "analysis-summary must put hotspots, holes, and nonzero axes in the action queue"
+        "analysis-summary must put hotspots, holes, nonzero axes, and workflow risks in the action queue"
     );
     assert!(
         json["measurementBasis"]["basisStatement"]
@@ -200,13 +188,13 @@ fn cli_summarizes_archsig_analysis_packet() {
     assert!(
         json["architectureSpectrum"]["hotspots"]
             .as_array()
-            .is_some_and(|items| !items.is_empty() && items.len() <= 2),
-        "analysis-summary must expose bounded ArchitectureSpectrumReport hotspots"
+            .is_some_and(|items| !items.is_empty()),
+        "analysis-summary must expose ArchitectureSpectrumReport hotspots"
     );
     assert!(
         json["architectureSpectrum"]["recurrentObstructions"]
             .as_array()
-            .is_some_and(|items| !items.is_empty() && items.len() <= 2),
+            .is_some_and(|items| !items.is_empty()),
         "analysis-summary must expose recurrent obstruction entries"
     );
     assert!(
@@ -247,6 +235,30 @@ fn cli_summarizes_archsig_analysis_packet() {
                 .as_array()
                 .is_some_and(|non_conclusions| !non_conclusions.is_empty()),
         "analysis-summary must preserve non-conclusions as metadata"
+    );
+}
+
+#[test]
+fn cli_analysis_summary_rejects_removed_limit_option() {
+    let root = fixture_root();
+    let output = run_sig0_output(&[
+        "analysis-summary",
+        "--packet",
+        root.join("archsig_analysis_packet.json")
+            .to_str()
+            .expect("packet path is utf-8"),
+        "--limit",
+        "2",
+    ]);
+
+    assert!(
+        !output.status.success(),
+        "analysis-summary must remove --limit"
+    );
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(
+        stderr.contains("unexpected argument '--limit'"),
+        "analysis-summary --limit should be rejected\n{stderr}"
     );
 }
 
