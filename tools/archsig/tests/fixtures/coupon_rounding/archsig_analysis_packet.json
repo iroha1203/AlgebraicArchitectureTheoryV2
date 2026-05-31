@@ -3178,6 +3178,227 @@
       ]
     }
   ],
+  "observationProjectionFidelityReadings": [
+    {
+      "readingId": "observation-projection-fidelity:observation-projection-coupon-tax-rounding-archmap",
+      "sourceProjectionRef": "observation-projection:coupon-tax-rounding-archmap",
+      "sourceAxisForgettingRef": "axis-forgetting-risk:selected-projection",
+      "fidelityStatus": "projectionLossObserved",
+      "observedAtomFamilyCount": 3,
+      "forgottenCoordinateCount": 1,
+      "observationCollisionCount": 0,
+      "collapsedAtomFamilyCandidateCount": 1,
+      "hiddenAtomFamilyHintCount": 1,
+      "projectionLostAtomFamilyRefs": [
+        "pricing.checkoutTotal -> contractSpecification,semanticInterpretation",
+        "gap:coupon-runtime-payment-trace: payment processor and receipt reconciliation traces are not included in the fixture"
+      ],
+      "projectionLossAxes": [
+        "gap:coupon-runtime-payment-trace"
+      ],
+      "reflectionStatus": "blockedWithoutAxisPreservationAndWitnessCompleteness",
+      "measurementBoundary": "projection loss is separated from zero/lawfulness; missing coordinates are not measured absent atoms",
+      "recommendedNextAction": "review projection-lost families and forgotten coordinates before treating the ArchMap as a faithful Atom observation",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    }
+  ],
+  "atomOriginClosureDebtReadings": [
+    {
+      "readingId": "atom-origin-closure-debt:coupon-tax-rounding-archmap",
+      "sourceBackedAtomCount": 3,
+      "derivedOrInferredAtomCount": 0,
+      "expectedMissingAtomCount": 1,
+      "sourceBackedAtomFamilyRefs": [
+        "contractSpecification",
+        "effect",
+        "semanticInterpretation"
+      ],
+      "derivedOrInferredRefs": [],
+      "missingExpectedAtomRefs": [
+        "gap:coupon-runtime-payment-trace"
+      ],
+      "closureStatus": "originClosureDebtObserved",
+      "weakensZeroOrRepairClaims": [
+        "zero readings need source-backed Atom closure or explicit coverage boundary",
+        "repair and synthesis candidates remain bounded when expected atoms are missing",
+        "derived or inferred atoms must not be promoted to source-backed evidence"
+      ],
+      "evidenceBoundary": "Atom origin closure debt is read from sourceRefs and observation gaps; it is not complete source extraction validation",
+      "recommendedNextAction": "separate source-backed, derived/inferred, and expected-missing Atom evidence before using the packet for repair or synthesis claims",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    }
+  ],
+  "effectRelationAlgebraReadings": [
+    {
+      "readingId": "effect-relation-algebra:coupon-tax-rounding-archmap",
+      "generatorRefs": [
+        "atom:effect:receipt-boundary",
+        "atom:semantic:PaymentAmount-ReceiptAmount-coupon-tax-rounding-noncommutation"
+      ],
+      "effectAtomRefs": [
+        "atom:effect:receipt-boundary"
+      ],
+      "relationAtomRefs": [
+        "atom:semantic:PaymentAmount-ReceiptAmount-coupon-tax-rounding-noncommutation"
+      ],
+      "externalBoundaryRefs": [],
+      "requiredEffectRelations": [
+        "effect ordering",
+        "replay or roundtrip stability",
+        "compensation/finalization relation",
+        "handler and external provider boundary ownership"
+      ],
+      "unresolvedEffectRelations": [
+        "gap:coupon-runtime-payment-trace"
+      ],
+      "effectOrderingPressure": "effectRelationPressureObserved",
+      "stateTransitionRef": "state-transition-algebra:coupon-tax-rounding-archmap",
+      "evidenceBoundary": "effect relation algebra is kept separate from state transition pressure and only reads observed effect/relation/runtime evidence",
+      "recommendedNextAction": "review async job, provider, event handler, replay, roundtrip, and compensation relations before approving state/effect repairs",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    }
+  ],
+  "synthesisBlockageReadings": [
+    {
+      "readingId": "synthesis-blockage:coupon-tax-rounding-archmap",
+      "targetConstructionRefs": [
+        "repair:obstruction-semantic-contract-mismatch-computed",
+        "feature-extension-formula:coupon-tax-rounding-archmap"
+      ],
+      "requiredAtomRefs": [
+        "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding",
+        "atom:semantic:PaymentAmount-ReceiptAmount-coupon-tax-rounding-noncommutation",
+        "atom:effect:receipt-boundary"
+      ],
+      "constraintRefs": [
+        "obstruction:semantic-contract-mismatch:computed",
+        "obstruction:semantic-contract-mismatch:computed",
+        "split-readiness:molecule-coupon-operation-contract",
+        "obstruction:semantic-contract-mismatch:computed",
+        "gap:coupon-runtime-payment-trace",
+        "diagram filling is LawPolicy-relative and requires selected witness completeness"
+      ],
+      "missingEvidenceRefs": [
+        "coverage:semantic-contract-atoms: report observation gap and block signature-zero reflection",
+        "gap:coupon-runtime-payment-trace: payment processor and receipt reconciliation traces are not included in the fixture",
+        "implementation patch and verification evidence are not supplied by ArchSig analysis",
+        "witness:semantic-contract-mismatch: report observation gap; do not infer measured zero",
+        "gap:coupon-runtime-payment-trace"
+      ],
+      "decisionBoundaryRefs": [
+        "diagram-fillability:local-curvature-obstruction-semantic-contract-mismatch-computed"
+      ],
+      "candidateSolutionRefs": [],
+      "blockageStatus": "synthesisBlockedByMissingEvidenceOrConstraints",
+      "noSolutionCertificateStatus": "notASolverAndNotAbsenceProof",
+      "synthesisBoundary": "candidate absence, missing evidence, and no-solution certificates are distinct; ArchSig does not run a synthesis solver",
+      "recommendedNextAction": "resolve Atom, constraint, evidence, and decision-boundary blockers before reading a repair candidate as constructible",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    }
+  ],
+  "operationPreconditionReadinessReadings": [
+    {
+      "readingId": "operation-precondition-readiness:repair-obstruction-semantic-contract-mismatch-computed",
+      "operationRef": "repair:obstruction-semantic-contract-mismatch-computed",
+      "operationKind": "repair-semanticmismatchcircuit",
+      "readinessStatus": "blockedByMissingPreconditionEvidence",
+      "preconditionRefs": [
+        "human review selects a repair operation",
+        "resolve or explicitly accept coverage gap gap:coupon-runtime-payment-trace"
+      ],
+      "missingPreconditionRefs": [
+        "coverage:semantic-contract-atoms: report observation gap and block signature-zero reflection",
+        "gap:coupon-runtime-payment-trace: payment processor and receipt reconciliation traces are not included in the fixture",
+        "implementation patch and verification evidence are not supplied by ArchSig analysis",
+        "witness:semantic-contract-mismatch: report observation gap; do not infer measured zero",
+        "resolve or explicitly accept coverage gap gap:coupon-runtime-payment-trace"
+      ],
+      "coverageGapRefs": [
+        "gap:coupon-runtime-payment-trace",
+        "gap:coupon-runtime-payment-trace"
+      ],
+      "exactnessGapRefs": [
+        "gap:coupon-runtime-payment-trace",
+        "gap:coupon-runtime-payment-trace"
+      ],
+      "witnessGapRefs": [
+        "witness:layer-violation",
+        "witness:semantic-contract-mismatch"
+      ],
+      "candidateBoundary": "repair/split/migration/protection candidates are review cues until precondition evidence is observed",
+      "recommendedNextAction": "supply coverage, exactness, witness, and runtime precondition evidence before treating the operation as safe",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    }
+  ],
+  "pathMultiplicityLossReadings": [
+    {
+      "readingId": "path-multiplicity-loss:coupon-tax-rounding-archmap",
+      "scopeRef": "coupon-tax-rounding-archmap",
+      "pathReadingRefs": [
+        "path-signature-trajectory:operation-delta-repair-obstruction-semantic-contract-mismatch-computed"
+      ],
+      "observedPathCount": 1,
+      "alternatePathPressure": 8,
+      "maxWalkLengthProxy": 3,
+      "reachabilityForgottenRefs": [
+        "gap:coupon-runtime-payment-trace"
+      ],
+      "fanInBoundaryRefs": [],
+      "multiplicityLossStatus": "reachabilityMultiplicityLossObserved",
+      "homotopyBoundary": "path multiplicity is a reachability and homotopy review signal, not proof of all paths",
+      "evidenceBoundary": "alternate-path pressure is bounded by observed operation trajectories, homotopy sensitivity, workflow risk, and gaps",
+      "recommendedNextAction": "inspect high fan-in and alternate path boundaries before treating one observed path as complete reachability",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    }
+  ],
   "signatureTrajectoryHomotopyRefutationReadings": [
     {
       "readingId": "signature-trajectory-homotopy-refutation:selected-trajectory",
@@ -4891,44 +5112,60 @@
   },
   "operationSquareCandidates": [
     {
-      "candidateId": "operation-square:operation-delta-repair-obstruction-semantic-contract-mismatch-computed:operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation",
-      "candidateSource": "inferred",
-      "suppliedPairRef": null,
+      "candidateId": "operation-square:operation-square-evidence-coupon-tax-rounding",
+      "candidateSource": "supplied",
+      "suppliedPairRef": "operation-square-evidence:coupon-tax-rounding",
       "candidateBasis": [
-        "effectFamily",
-        "contractAtom",
-        "semanticAtom",
-        "runtimeInteraction",
-        "projectionSurface"
+        "sourceBackedOperationPair",
+        "suppliedPathPair",
+        "sharedEndpoint",
+        "generatorCandidate",
+        "atomSupport",
+        "semanticSupport",
+        "projectionSupport"
       ],
-      "leftOperationRef": "operation-delta:repair-obstruction-semantic-contract-mismatch-computed",
-      "rightOperationRef": "operation-delta:repair-obstruction-semantic-contract-mismatch-computed:continuation",
-      "pPathRef": "operation-delta:repair-obstruction-semantic-contract-mismatch-computed:continuation . operation-delta:repair-obstruction-semantic-contract-mismatch-computed",
-      "qPathRef": "operation-delta:repair-obstruction-semantic-contract-mismatch-computed . operation-delta:repair-obstruction-semantic-contract-mismatch-computed:continuation",
+      "candidateBasisRefs": [
+        "PaymentAmount",
+        "ReceiptAmount",
+        "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding",
+        "atom:effect:receipt-boundary",
+        "atom:semantic:PaymentAmount-ReceiptAmount-coupon-tax-rounding-noncommutation",
+        "molecule:coupon-operation-contract",
+        "projection:coupon-payment-receipt",
+        "semantic:coupon-tax-rounding-paths",
+        "src-pricing-checkout",
+        "test-coupon-rounding"
+      ],
+      "leftOperationRef": "operation:discount",
+      "rightOperationRef": "operation:tax-round",
+      "pPathRef": "operation:round . operation:tax . operation:discount",
+      "qPathRef": "operation:round . operation:discount . operation:tax",
       "pOperationSequence": [
-        "operation-delta:repair-obstruction-semantic-contract-mismatch-computed",
-        "operation-delta:repair-obstruction-semantic-contract-mismatch-computed:continuation"
+        "operation:discount",
+        "operation:tax",
+        "operation:round"
       ],
       "qOperationSequence": [
-        "operation-delta:repair-obstruction-semantic-contract-mismatch-computed:continuation",
-        "operation-delta:repair-obstruction-semantic-contract-mismatch-computed"
+        "operation:tax",
+        "operation:discount",
+        "operation:round"
       ],
       "endpointObjectRefs": [
-        "PaymentAmount / ReceiptAmount"
+        "PaymentAmount",
+        "ReceiptAmount"
       ],
       "generatorCandidateRefs": [
         "generator:independent-square",
-        "generator:same-contract-replacement",
-        "generator:repair-filler",
-        "generator:identity-insertion-deletion",
-        "generator:associativity-reassociation"
+        "generator:same-contract-replacement"
       ],
-      "sharedAtomSupportRefs": [],
+      "sharedAtomSupportRefs": [
+        "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding",
+        "atom:semantic:PaymentAmount-ReceiptAmount-coupon-tax-rounding-noncommutation",
+        "atom:effect:receipt-boundary"
+      ],
       "stateRefs": [],
       "effectRefs": [
-        "add observed compensation / authority / effect atoms only after source review",
-        "obstruction:semantic-contract-mismatch:computed may decrease or move to a runtime/state/effect axis",
-        "split or enrich atoms that currently support the target obstruction"
+        "atom:effect:receipt-boundary"
       ],
       "contractRefs": [
         "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding"
@@ -4937,9 +5174,7 @@
         "semantic:coupon-tax-rounding-paths"
       ],
       "authorityRefs": [],
-      "runtimeRefs": [
-        "gap:coupon-runtime-payment-trace"
-      ],
+      "runtimeRefs": [],
       "projectionRefs": [
         "projection:coupon-payment-receipt"
       ],
@@ -4949,15 +5184,14 @@
       ],
       "observationRefs": [
         "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding",
-        "gap:coupon-runtime-payment-trace",
+        "atom:effect:receipt-boundary",
+        "atom:semantic:PaymentAmount-ReceiptAmount-coupon-tax-rounding-noncommutation",
+        "molecule:coupon-operation-contract",
         "projection:coupon-payment-receipt",
         "semantic:coupon-tax-rounding-paths"
       ],
-      "missingRefs": [
-        "gap:coupon-runtime-payment-trace: payment processor and receipt reconciliation traces are not included in the fixture",
-        "no state observation supplied for operation square candidate"
-      ],
-      "evidenceBoundary": "inferred operation square candidate is a review cue over observed ArchMap support, not operation truth",
+      "missingRefs": [],
+      "evidenceBoundary": "supplied operation square evidence is first-class ArchMap input with p/q paths, endpoints, and source-backed basis refs: fixture supplies p/q operation sequences and shared payment/receipt endpoints for AAT operation square measurement",
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -4971,40 +5205,53 @@
   ],
   "pathContinuationTraces": [
     {
-      "traceId": "path-continuation-trace:operation-square-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation:p",
-      "candidateRef": "operation-square:operation-delta-repair-obstruction-semantic-contract-mismatch-computed:operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation",
-      "pathRef": "operation-square:operation-delta-repair-obstruction-semantic-contract-mismatch-computed:operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation:p",
+      "traceId": "path-continuation-trace:operation-square-operation-square-evidence-coupon-tax-rounding:p",
+      "candidateRef": "operation-square:operation-square-evidence-coupon-tax-rounding",
+      "pathRef": "operation-square:operation-square-evidence-coupon-tax-rounding:p",
       "pathRole": "p",
-      "pathExpression": "operation-delta:repair-obstruction-semantic-contract-mismatch-computed:continuation . operation-delta:repair-obstruction-semantic-contract-mismatch-computed",
+      "pathExpression": "operation:round . operation:tax . operation:discount",
       "operationSequence": [
-        "operation-delta:repair-obstruction-semantic-contract-mismatch-computed",
-        "operation-delta:repair-obstruction-semantic-contract-mismatch-computed:continuation"
+        "operation:discount",
+        "operation:tax",
+        "operation:round"
       ],
       "endpointObjectRefs": [
-        "PaymentAmount / ReceiptAmount"
+        "PaymentAmount",
+        "ReceiptAmount"
       ],
       "continuationStepRefs": [
-        "cont-step:operation-square-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation:p:operation-delta-repair-obstruction-semantic-contract-mismatch-computed",
-        "cont-step:operation-square-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation:p:operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation",
-        "cont-step:operation-square-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation:p:endpoint"
+        "cont-step:operation-square-operation-square-evidence-coupon-tax-rounding:p:operation-discount",
+        "cont-step:operation-square-operation-square-evidence-coupon-tax-rounding:p:operation-tax",
+        "cont-step:operation-square-operation-square-evidence-coupon-tax-rounding:p:operation-round",
+        "cont-step:operation-square-operation-square-evidence-coupon-tax-rounding:p:endpoint"
       ],
       "axisTraces": [
         {
           "axisFamily": "static",
           "axisRef": "static dependency / support axis",
-          "traceStatus": "unmeasured",
-          "continuationSummary": "static continuation is unmeasured under current ArchMap evidence",
+          "traceStatus": "boundedObservationTrace",
+          "continuationSummary": "static continuation reads 3 observation ref(s) across 1 operation delta(s)",
           "continuationStates": [
-            "Cont_static[0]=operation-delta:repair-obstruction-semantic-contract-mismatch-computed; refs=0",
-            "Cont_static[1]=operation-delta:repair-obstruction-semantic-contract-mismatch-computed:continuation; refs=0",
-            "Cont_static[endpoint]=p; endpointRefs=1"
+            "Cont_static[0]=operation:discount; refs=3",
+            "Cont_static[1]=operation:tax; refs=3",
+            "Cont_static[2]=operation:round; refs=3",
+            "Cont_static[endpoint]=p; endpointRefs=2"
           ],
-          "distanceInputRefs": [],
-          "observationRefs": [],
-          "sourceRefs": [],
-          "missingRefs": [
-            "missing static observation for operation-square:operation-delta-repair-obstruction-semantic-contract-mismatch-computed:operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation"
+          "distanceInputRefs": [
+            "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding",
+            "atom:semantic:PaymentAmount-ReceiptAmount-coupon-tax-rounding-noncommutation",
+            "atom:effect:receipt-boundary"
           ],
+          "observationRefs": [
+            "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding",
+            "atom:semantic:PaymentAmount-ReceiptAmount-coupon-tax-rounding-noncommutation",
+            "atom:effect:receipt-boundary"
+          ],
+          "sourceRefs": [
+            "src-pricing-checkout",
+            "test-coupon-rounding"
+          ],
+          "missingRefs": [],
           "unmeasuredBoundary": "unmeasured axis is retained as missing evidence and is not interpreted as zero defect"
         },
         {
@@ -5013,9 +5260,10 @@
           "traceStatus": "boundedObservationTrace",
           "continuationSummary": "contract continuation reads 1 observation ref(s) across 1 operation delta(s)",
           "continuationStates": [
-            "Cont_contract[0]=operation-delta:repair-obstruction-semantic-contract-mismatch-computed; refs=1",
-            "Cont_contract[1]=operation-delta:repair-obstruction-semantic-contract-mismatch-computed:continuation; refs=1",
-            "Cont_contract[endpoint]=p; endpointRefs=1"
+            "Cont_contract[0]=operation:discount; refs=1",
+            "Cont_contract[1]=operation:tax; refs=1",
+            "Cont_contract[2]=operation:round; refs=1",
+            "Cont_contract[endpoint]=p; endpointRefs=2"
           ],
           "distanceInputRefs": [
             "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding"
@@ -5035,9 +5283,10 @@
           "traceStatus": "boundedObservationTrace",
           "continuationSummary": "semantic continuation reads 2 observation ref(s) across 1 operation delta(s)",
           "continuationStates": [
-            "Cont_semantic[0]=operation-delta:repair-obstruction-semantic-contract-mismatch-computed; refs=2",
-            "Cont_semantic[1]=operation-delta:repair-obstruction-semantic-contract-mismatch-computed:continuation; refs=2",
-            "Cont_semantic[endpoint]=p; endpointRefs=1"
+            "Cont_semantic[0]=operation:discount; refs=2",
+            "Cont_semantic[1]=operation:tax; refs=2",
+            "Cont_semantic[2]=operation:round; refs=2",
+            "Cont_semantic[endpoint]=p; endpointRefs=2"
           ],
           "distanceInputRefs": [
             "semantic:coupon-tax-rounding-paths",
@@ -5059,15 +5308,16 @@
           "traceStatus": "unmeasured",
           "continuationSummary": "state continuation is unmeasured under current ArchMap evidence",
           "continuationStates": [
-            "Cont_state[0]=operation-delta:repair-obstruction-semantic-contract-mismatch-computed; refs=0",
-            "Cont_state[1]=operation-delta:repair-obstruction-semantic-contract-mismatch-computed:continuation; refs=0",
-            "Cont_state[endpoint]=p; endpointRefs=1"
+            "Cont_state[0]=operation:discount; refs=0",
+            "Cont_state[1]=operation:tax; refs=0",
+            "Cont_state[2]=operation:round; refs=0",
+            "Cont_state[endpoint]=p; endpointRefs=2"
           ],
           "distanceInputRefs": [],
           "observationRefs": [],
           "sourceRefs": [],
           "missingRefs": [
-            "missing state observation for operation-square:operation-delta-repair-obstruction-semantic-contract-mismatch-computed:operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation"
+            "missing state observation for operation-square:operation-square-evidence-coupon-tax-rounding"
           ],
           "unmeasuredBoundary": "unmeasured axis is retained as missing evidence and is not interpreted as zero defect"
         },
@@ -5075,27 +5325,23 @@
           "axisFamily": "effect",
           "axisRef": "effect ordering / replay / compensation axis",
           "traceStatus": "boundedObservationTrace",
-          "continuationSummary": "effect continuation reads 4 observation ref(s) across 1 operation delta(s)",
+          "continuationSummary": "effect continuation reads 2 observation ref(s) across 1 operation delta(s)",
           "continuationStates": [
-            "Cont_effect[0]=operation-delta:repair-obstruction-semantic-contract-mismatch-computed; refs=4",
-            "Cont_effect[1]=operation-delta:repair-obstruction-semantic-contract-mismatch-computed:continuation; refs=4",
-            "Cont_effect[endpoint]=p; endpointRefs=1"
+            "Cont_effect[0]=operation:discount; refs=2",
+            "Cont_effect[1]=operation:tax; refs=2",
+            "Cont_effect[2]=operation:round; refs=2",
+            "Cont_effect[endpoint]=p; endpointRefs=2"
           ],
           "distanceInputRefs": [
-            "add observed compensation / authority / effect atoms only after source review",
-            "obstruction:semantic-contract-mismatch:computed may decrease or move to a runtime/state/effect axis",
-            "split or enrich atoms that currently support the target obstruction",
-            "derived-effect-order:p:operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation-operation-delta-repair-obstruction-semantic-contract-mismatch-computed"
+            "atom:effect:receipt-boundary",
+            "derived-effect-order:p:operation-round-operation-tax-operation-discount"
           ],
           "observationRefs": [
-            "add observed compensation / authority / effect atoms only after source review",
-            "obstruction:semantic-contract-mismatch:computed may decrease or move to a runtime/state/effect axis",
-            "split or enrich atoms that currently support the target obstruction",
-            "derived-effect-order:p:operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation-operation-delta-repair-obstruction-semantic-contract-mismatch-computed"
+            "atom:effect:receipt-boundary",
+            "derived-effect-order:p:operation-round-operation-tax-operation-discount"
           ],
           "sourceRefs": [
-            "src-pricing-checkout",
-            "test-coupon-rounding"
+            "src-pricing-checkout"
           ],
           "missingRefs": [],
           "unmeasuredBoundary": "unmeasured axis is retained as missing evidence and is not interpreted as zero defect"
@@ -5106,38 +5352,36 @@
           "traceStatus": "unmeasured",
           "continuationSummary": "authority continuation is unmeasured under current ArchMap evidence",
           "continuationStates": [
-            "Cont_authority[0]=operation-delta:repair-obstruction-semantic-contract-mismatch-computed; refs=0",
-            "Cont_authority[1]=operation-delta:repair-obstruction-semantic-contract-mismatch-computed:continuation; refs=0",
-            "Cont_authority[endpoint]=p; endpointRefs=1"
+            "Cont_authority[0]=operation:discount; refs=0",
+            "Cont_authority[1]=operation:tax; refs=0",
+            "Cont_authority[2]=operation:round; refs=0",
+            "Cont_authority[endpoint]=p; endpointRefs=2"
           ],
           "distanceInputRefs": [],
           "observationRefs": [],
           "sourceRefs": [],
           "missingRefs": [
-            "missing authority observation for operation-square:operation-delta-repair-obstruction-semantic-contract-mismatch-computed:operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation"
+            "missing authority observation for operation-square:operation-square-evidence-coupon-tax-rounding"
           ],
           "unmeasuredBoundary": "unmeasured axis is retained as missing evidence and is not interpreted as zero defect"
         },
         {
           "axisFamily": "runtime",
           "axisRef": "runtime interaction axis",
-          "traceStatus": "boundedObservationTrace",
-          "continuationSummary": "runtime continuation reads 1 observation ref(s) across 1 operation delta(s)",
+          "traceStatus": "unmeasured",
+          "continuationSummary": "runtime continuation is unmeasured under current ArchMap evidence",
           "continuationStates": [
-            "Cont_runtime[0]=operation-delta:repair-obstruction-semantic-contract-mismatch-computed; refs=1",
-            "Cont_runtime[1]=operation-delta:repair-obstruction-semantic-contract-mismatch-computed:continuation; refs=1",
-            "Cont_runtime[endpoint]=p; endpointRefs=1"
+            "Cont_runtime[0]=operation:discount; refs=0",
+            "Cont_runtime[1]=operation:tax; refs=0",
+            "Cont_runtime[2]=operation:round; refs=0",
+            "Cont_runtime[endpoint]=p; endpointRefs=2"
           ],
-          "distanceInputRefs": [
-            "gap:coupon-runtime-payment-trace"
+          "distanceInputRefs": [],
+          "observationRefs": [],
+          "sourceRefs": [],
+          "missingRefs": [
+            "missing runtime observation for operation-square:operation-square-evidence-coupon-tax-rounding"
           ],
-          "observationRefs": [
-            "gap:coupon-runtime-payment-trace"
-          ],
-          "sourceRefs": [
-            "src-pricing-checkout"
-          ],
-          "missingRefs": [],
           "unmeasuredBoundary": "unmeasured axis is retained as missing evidence and is not interpreted as zero defect"
         },
         {
@@ -5146,9 +5390,10 @@
           "traceStatus": "boundedObservationTrace",
           "continuationSummary": "projection continuation reads 1 observation ref(s) across 1 operation delta(s)",
           "continuationStates": [
-            "Cont_projection[0]=operation-delta:repair-obstruction-semantic-contract-mismatch-computed; refs=1",
-            "Cont_projection[1]=operation-delta:repair-obstruction-semantic-contract-mismatch-computed:continuation; refs=1",
-            "Cont_projection[endpoint]=p; endpointRefs=1"
+            "Cont_projection[0]=operation:discount; refs=1",
+            "Cont_projection[1]=operation:tax; refs=1",
+            "Cont_projection[2]=operation:round; refs=1",
+            "Cont_projection[endpoint]=p; endpointRefs=2"
           ],
           "distanceInputRefs": [
             "projection:coupon-payment-receipt"
@@ -5165,7 +5410,9 @@
       ],
       "observationRefs": [
         "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding",
-        "gap:coupon-runtime-payment-trace",
+        "atom:effect:receipt-boundary",
+        "atom:semantic:PaymentAmount-ReceiptAmount-coupon-tax-rounding-noncommutation",
+        "molecule:coupon-operation-contract",
         "projection:coupon-payment-receipt",
         "semantic:coupon-tax-rounding-paths"
       ],
@@ -5173,10 +5420,7 @@
         "src-pricing-checkout",
         "test-coupon-rounding"
       ],
-      "missingRefs": [
-        "gap:coupon-runtime-payment-trace: payment processor and receipt reconciliation traces are not included in the fixture",
-        "no state observation supplied for operation square candidate"
-      ],
+      "missingRefs": [],
       "evidenceBoundary": "continuation trace is bounded by selected ArchMap observations and does not execute the operations",
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
@@ -5189,40 +5433,53 @@
       ]
     },
     {
-      "traceId": "path-continuation-trace:operation-square-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation:q",
-      "candidateRef": "operation-square:operation-delta-repair-obstruction-semantic-contract-mismatch-computed:operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation",
-      "pathRef": "operation-square:operation-delta-repair-obstruction-semantic-contract-mismatch-computed:operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation:q",
+      "traceId": "path-continuation-trace:operation-square-operation-square-evidence-coupon-tax-rounding:q",
+      "candidateRef": "operation-square:operation-square-evidence-coupon-tax-rounding",
+      "pathRef": "operation-square:operation-square-evidence-coupon-tax-rounding:q",
       "pathRole": "q",
-      "pathExpression": "operation-delta:repair-obstruction-semantic-contract-mismatch-computed . operation-delta:repair-obstruction-semantic-contract-mismatch-computed:continuation",
+      "pathExpression": "operation:round . operation:discount . operation:tax",
       "operationSequence": [
-        "operation-delta:repair-obstruction-semantic-contract-mismatch-computed:continuation",
-        "operation-delta:repair-obstruction-semantic-contract-mismatch-computed"
+        "operation:tax",
+        "operation:discount",
+        "operation:round"
       ],
       "endpointObjectRefs": [
-        "PaymentAmount / ReceiptAmount"
+        "PaymentAmount",
+        "ReceiptAmount"
       ],
       "continuationStepRefs": [
-        "cont-step:operation-square-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation:q:operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation",
-        "cont-step:operation-square-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation:q:operation-delta-repair-obstruction-semantic-contract-mismatch-computed",
-        "cont-step:operation-square-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation:q:endpoint"
+        "cont-step:operation-square-operation-square-evidence-coupon-tax-rounding:q:operation-tax",
+        "cont-step:operation-square-operation-square-evidence-coupon-tax-rounding:q:operation-discount",
+        "cont-step:operation-square-operation-square-evidence-coupon-tax-rounding:q:operation-round",
+        "cont-step:operation-square-operation-square-evidence-coupon-tax-rounding:q:endpoint"
       ],
       "axisTraces": [
         {
           "axisFamily": "static",
           "axisRef": "static dependency / support axis",
-          "traceStatus": "unmeasured",
-          "continuationSummary": "static continuation is unmeasured under current ArchMap evidence",
+          "traceStatus": "boundedObservationTrace",
+          "continuationSummary": "static continuation reads 3 observation ref(s) across 1 operation delta(s)",
           "continuationStates": [
-            "Cont_static[0]=operation-delta:repair-obstruction-semantic-contract-mismatch-computed:continuation; refs=0",
-            "Cont_static[1]=operation-delta:repair-obstruction-semantic-contract-mismatch-computed; refs=0",
-            "Cont_static[endpoint]=q; endpointRefs=1"
+            "Cont_static[0]=operation:tax; refs=3",
+            "Cont_static[1]=operation:discount; refs=3",
+            "Cont_static[2]=operation:round; refs=3",
+            "Cont_static[endpoint]=q; endpointRefs=2"
           ],
-          "distanceInputRefs": [],
-          "observationRefs": [],
-          "sourceRefs": [],
-          "missingRefs": [
-            "missing static observation for operation-square:operation-delta-repair-obstruction-semantic-contract-mismatch-computed:operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation"
+          "distanceInputRefs": [
+            "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding",
+            "atom:semantic:PaymentAmount-ReceiptAmount-coupon-tax-rounding-noncommutation",
+            "atom:effect:receipt-boundary"
           ],
+          "observationRefs": [
+            "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding",
+            "atom:semantic:PaymentAmount-ReceiptAmount-coupon-tax-rounding-noncommutation",
+            "atom:effect:receipt-boundary"
+          ],
+          "sourceRefs": [
+            "src-pricing-checkout",
+            "test-coupon-rounding"
+          ],
+          "missingRefs": [],
           "unmeasuredBoundary": "unmeasured axis is retained as missing evidence and is not interpreted as zero defect"
         },
         {
@@ -5231,9 +5488,10 @@
           "traceStatus": "boundedObservationTrace",
           "continuationSummary": "contract continuation reads 1 observation ref(s) across 1 operation delta(s)",
           "continuationStates": [
-            "Cont_contract[0]=operation-delta:repair-obstruction-semantic-contract-mismatch-computed:continuation; refs=1",
-            "Cont_contract[1]=operation-delta:repair-obstruction-semantic-contract-mismatch-computed; refs=1",
-            "Cont_contract[endpoint]=q; endpointRefs=1"
+            "Cont_contract[0]=operation:tax; refs=1",
+            "Cont_contract[1]=operation:discount; refs=1",
+            "Cont_contract[2]=operation:round; refs=1",
+            "Cont_contract[endpoint]=q; endpointRefs=2"
           ],
           "distanceInputRefs": [
             "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding"
@@ -5253,9 +5511,10 @@
           "traceStatus": "boundedObservationTrace",
           "continuationSummary": "semantic continuation reads 2 observation ref(s) across 1 operation delta(s)",
           "continuationStates": [
-            "Cont_semantic[0]=operation-delta:repair-obstruction-semantic-contract-mismatch-computed:continuation; refs=2",
-            "Cont_semantic[1]=operation-delta:repair-obstruction-semantic-contract-mismatch-computed; refs=2",
-            "Cont_semantic[endpoint]=q; endpointRefs=1"
+            "Cont_semantic[0]=operation:tax; refs=2",
+            "Cont_semantic[1]=operation:discount; refs=2",
+            "Cont_semantic[2]=operation:round; refs=2",
+            "Cont_semantic[endpoint]=q; endpointRefs=2"
           ],
           "distanceInputRefs": [
             "semantic:coupon-tax-rounding-paths",
@@ -5277,15 +5536,16 @@
           "traceStatus": "unmeasured",
           "continuationSummary": "state continuation is unmeasured under current ArchMap evidence",
           "continuationStates": [
-            "Cont_state[0]=operation-delta:repair-obstruction-semantic-contract-mismatch-computed:continuation; refs=0",
-            "Cont_state[1]=operation-delta:repair-obstruction-semantic-contract-mismatch-computed; refs=0",
-            "Cont_state[endpoint]=q; endpointRefs=1"
+            "Cont_state[0]=operation:tax; refs=0",
+            "Cont_state[1]=operation:discount; refs=0",
+            "Cont_state[2]=operation:round; refs=0",
+            "Cont_state[endpoint]=q; endpointRefs=2"
           ],
           "distanceInputRefs": [],
           "observationRefs": [],
           "sourceRefs": [],
           "missingRefs": [
-            "missing state observation for operation-square:operation-delta-repair-obstruction-semantic-contract-mismatch-computed:operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation"
+            "missing state observation for operation-square:operation-square-evidence-coupon-tax-rounding"
           ],
           "unmeasuredBoundary": "unmeasured axis is retained as missing evidence and is not interpreted as zero defect"
         },
@@ -5293,27 +5553,23 @@
           "axisFamily": "effect",
           "axisRef": "effect ordering / replay / compensation axis",
           "traceStatus": "boundedObservationTrace",
-          "continuationSummary": "effect continuation reads 4 observation ref(s) across 1 operation delta(s)",
+          "continuationSummary": "effect continuation reads 2 observation ref(s) across 1 operation delta(s)",
           "continuationStates": [
-            "Cont_effect[0]=operation-delta:repair-obstruction-semantic-contract-mismatch-computed:continuation; refs=4",
-            "Cont_effect[1]=operation-delta:repair-obstruction-semantic-contract-mismatch-computed; refs=4",
-            "Cont_effect[endpoint]=q; endpointRefs=1"
+            "Cont_effect[0]=operation:tax; refs=2",
+            "Cont_effect[1]=operation:discount; refs=2",
+            "Cont_effect[2]=operation:round; refs=2",
+            "Cont_effect[endpoint]=q; endpointRefs=2"
           ],
           "distanceInputRefs": [
-            "add observed compensation / authority / effect atoms only after source review",
-            "obstruction:semantic-contract-mismatch:computed may decrease or move to a runtime/state/effect axis",
-            "split or enrich atoms that currently support the target obstruction",
-            "derived-effect-order:q:operation-delta-repair-obstruction-semantic-contract-mismatch-computed-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation"
+            "atom:effect:receipt-boundary",
+            "derived-effect-order:q:operation-round-operation-discount-operation-tax"
           ],
           "observationRefs": [
-            "add observed compensation / authority / effect atoms only after source review",
-            "obstruction:semantic-contract-mismatch:computed may decrease or move to a runtime/state/effect axis",
-            "split or enrich atoms that currently support the target obstruction",
-            "derived-effect-order:q:operation-delta-repair-obstruction-semantic-contract-mismatch-computed-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation"
+            "atom:effect:receipt-boundary",
+            "derived-effect-order:q:operation-round-operation-discount-operation-tax"
           ],
           "sourceRefs": [
-            "src-pricing-checkout",
-            "test-coupon-rounding"
+            "src-pricing-checkout"
           ],
           "missingRefs": [],
           "unmeasuredBoundary": "unmeasured axis is retained as missing evidence and is not interpreted as zero defect"
@@ -5324,38 +5580,36 @@
           "traceStatus": "unmeasured",
           "continuationSummary": "authority continuation is unmeasured under current ArchMap evidence",
           "continuationStates": [
-            "Cont_authority[0]=operation-delta:repair-obstruction-semantic-contract-mismatch-computed:continuation; refs=0",
-            "Cont_authority[1]=operation-delta:repair-obstruction-semantic-contract-mismatch-computed; refs=0",
-            "Cont_authority[endpoint]=q; endpointRefs=1"
+            "Cont_authority[0]=operation:tax; refs=0",
+            "Cont_authority[1]=operation:discount; refs=0",
+            "Cont_authority[2]=operation:round; refs=0",
+            "Cont_authority[endpoint]=q; endpointRefs=2"
           ],
           "distanceInputRefs": [],
           "observationRefs": [],
           "sourceRefs": [],
           "missingRefs": [
-            "missing authority observation for operation-square:operation-delta-repair-obstruction-semantic-contract-mismatch-computed:operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation"
+            "missing authority observation for operation-square:operation-square-evidence-coupon-tax-rounding"
           ],
           "unmeasuredBoundary": "unmeasured axis is retained as missing evidence and is not interpreted as zero defect"
         },
         {
           "axisFamily": "runtime",
           "axisRef": "runtime interaction axis",
-          "traceStatus": "boundedObservationTrace",
-          "continuationSummary": "runtime continuation reads 1 observation ref(s) across 1 operation delta(s)",
+          "traceStatus": "unmeasured",
+          "continuationSummary": "runtime continuation is unmeasured under current ArchMap evidence",
           "continuationStates": [
-            "Cont_runtime[0]=operation-delta:repair-obstruction-semantic-contract-mismatch-computed:continuation; refs=1",
-            "Cont_runtime[1]=operation-delta:repair-obstruction-semantic-contract-mismatch-computed; refs=1",
-            "Cont_runtime[endpoint]=q; endpointRefs=1"
+            "Cont_runtime[0]=operation:tax; refs=0",
+            "Cont_runtime[1]=operation:discount; refs=0",
+            "Cont_runtime[2]=operation:round; refs=0",
+            "Cont_runtime[endpoint]=q; endpointRefs=2"
           ],
-          "distanceInputRefs": [
-            "gap:coupon-runtime-payment-trace"
+          "distanceInputRefs": [],
+          "observationRefs": [],
+          "sourceRefs": [],
+          "missingRefs": [
+            "missing runtime observation for operation-square:operation-square-evidence-coupon-tax-rounding"
           ],
-          "observationRefs": [
-            "gap:coupon-runtime-payment-trace"
-          ],
-          "sourceRefs": [
-            "src-pricing-checkout"
-          ],
-          "missingRefs": [],
           "unmeasuredBoundary": "unmeasured axis is retained as missing evidence and is not interpreted as zero defect"
         },
         {
@@ -5364,9 +5618,10 @@
           "traceStatus": "boundedObservationTrace",
           "continuationSummary": "projection continuation reads 1 observation ref(s) across 1 operation delta(s)",
           "continuationStates": [
-            "Cont_projection[0]=operation-delta:repair-obstruction-semantic-contract-mismatch-computed:continuation; refs=1",
-            "Cont_projection[1]=operation-delta:repair-obstruction-semantic-contract-mismatch-computed; refs=1",
-            "Cont_projection[endpoint]=q; endpointRefs=1"
+            "Cont_projection[0]=operation:tax; refs=1",
+            "Cont_projection[1]=operation:discount; refs=1",
+            "Cont_projection[2]=operation:round; refs=1",
+            "Cont_projection[endpoint]=q; endpointRefs=2"
           ],
           "distanceInputRefs": [
             "projection:coupon-payment-receipt"
@@ -5383,7 +5638,9 @@
       ],
       "observationRefs": [
         "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding",
-        "gap:coupon-runtime-payment-trace",
+        "atom:effect:receipt-boundary",
+        "atom:semantic:PaymentAmount-ReceiptAmount-coupon-tax-rounding-noncommutation",
+        "molecule:coupon-operation-contract",
         "projection:coupon-payment-receipt",
         "semantic:coupon-tax-rounding-paths"
       ],
@@ -5391,10 +5648,7 @@
         "src-pricing-checkout",
         "test-coupon-rounding"
       ],
-      "missingRefs": [
-        "gap:coupon-runtime-payment-trace: payment processor and receipt reconciliation traces are not included in the fixture",
-        "no state observation supplied for operation square candidate"
-      ],
+      "missingRefs": [],
       "evidenceBoundary": "continuation trace is bounded by selected ArchMap observations and does not execute the operations",
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
@@ -5409,8 +5663,8 @@
   ],
   "axisWiseMonodromyDefects": [
     {
-      "defectId": "mu:operation-square-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation:authority",
-      "candidateRef": "operation-square:operation-delta-repair-obstruction-semantic-contract-mismatch-computed:operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation",
+      "defectId": "mu:operation-square-operation-square-evidence-coupon-tax-rounding:authority",
+      "candidateRef": "operation-square:operation-square-evidence-coupon-tax-rounding",
       "axisFamily": "authority",
       "axisRef": "authority / trust boundary axis",
       "distanceKind": "weighted-axis-l1",
@@ -5423,7 +5677,7 @@
       "distanceValue": null,
       "measuredSupportRefs": [],
       "witnessRefs": [
-        "missing-evidence:missing authority observation for operation-square:operation-delta-repair-obstruction-semantic-contract-mismatch-computed:operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation"
+        "missing-evidence:missing authority observation for operation-square:operation-square-evidence-coupon-tax-rounding"
       ],
       "sourceRefs": [
         "src-pricing-checkout",
@@ -5431,7 +5685,7 @@
       ],
       "observationRefs": [],
       "missingRefs": [
-        "missing authority observation for operation-square:operation-delta-repair-obstruction-semantic-contract-mismatch-computed:operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation"
+        "missing authority observation for operation-square:operation-square-evidence-coupon-tax-rounding"
       ],
       "coverageBoundary": "coverage gap preserved; unmeasured axis is not zero defect",
       "exactnessAssumptionStatus": [
@@ -5458,8 +5712,8 @@
       ]
     },
     {
-      "defectId": "mu:operation-square-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation:contract",
-      "candidateRef": "operation-square:operation-delta-repair-obstruction-semantic-contract-mismatch-computed:operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation",
+      "defectId": "mu:operation-square-operation-square-evidence-coupon-tax-rounding:contract",
+      "candidateRef": "operation-square:operation-square-evidence-coupon-tax-rounding",
       "axisFamily": "contract",
       "axisRef": "contract axis",
       "distanceKind": "weighted-axis-l1",
@@ -5511,48 +5765,40 @@
       ]
     },
     {
-      "defectId": "mu:operation-square-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation:effect",
-      "candidateRef": "operation-square:operation-delta-repair-obstruction-semantic-contract-mismatch-computed:operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation",
+      "defectId": "mu:operation-square-operation-square-evidence-coupon-tax-rounding:effect",
+      "candidateRef": "operation-square:operation-square-evidence-coupon-tax-rounding",
       "axisFamily": "effect",
       "axisRef": "effect ordering / replay / compensation axis",
       "distanceKind": "weighted-axis-l1",
       "pContinuationRef": "Cont_effect(p):effect ordering / replay / compensation axis",
       "qContinuationRef": "Cont_effect(q):effect ordering / replay / compensation axis",
       "distanceInputRefs": [
-        "add observed compensation / authority / effect atoms only after source review",
-        "derived-effect-order:p:operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation-operation-delta-repair-obstruction-semantic-contract-mismatch-computed",
-        "derived-effect-order:q:operation-delta-repair-obstruction-semantic-contract-mismatch-computed-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation",
-        "obstruction:semantic-contract-mismatch:computed may decrease or move to a runtime/state/effect axis",
-        "split or enrich atoms that currently support the target obstruction"
+        "atom:effect:receipt-boundary",
+        "derived-effect-order:p:operation-round-operation-tax-operation-discount",
+        "derived-effect-order:q:operation-round-operation-discount-operation-tax"
       ],
       "positiveWitnessBoundary": "mu_x > 0 is read only as selected continuation observation difference with source-backed p/q trace inputs",
       "weight": 1,
       "measurementStatus": "measured",
       "distanceValue": 2,
       "measuredSupportRefs": [
-        "add observed compensation / authority / effect atoms only after source review",
-        "derived-effect-order:p:operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation-operation-delta-repair-obstruction-semantic-contract-mismatch-computed",
-        "derived-effect-order:q:operation-delta-repair-obstruction-semantic-contract-mismatch-computed-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation",
-        "obstruction:semantic-contract-mismatch:computed may decrease or move to a runtime/state/effect axis",
-        "split or enrich atoms that currently support the target obstruction"
+        "atom:effect:receipt-boundary",
+        "derived-effect-order:p:operation-round-operation-tax-operation-discount",
+        "derived-effect-order:q:operation-round-operation-discount-operation-tax"
       ],
       "witnessRefs": [
-        "add observed compensation / authority / effect atoms only after source review",
-        "derived-effect-order:p:operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation-operation-delta-repair-obstruction-semantic-contract-mismatch-computed",
-        "derived-effect-order:q:operation-delta-repair-obstruction-semantic-contract-mismatch-computed-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation",
-        "obstruction:semantic-contract-mismatch:computed may decrease or move to a runtime/state/effect axis",
-        "split or enrich atoms that currently support the target obstruction"
+        "atom:effect:receipt-boundary",
+        "derived-effect-order:p:operation-round-operation-tax-operation-discount",
+        "derived-effect-order:q:operation-round-operation-discount-operation-tax"
       ],
       "sourceRefs": [
         "src-pricing-checkout",
         "test-coupon-rounding"
       ],
       "observationRefs": [
-        "add observed compensation / authority / effect atoms only after source review",
-        "derived-effect-order:p:operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation-operation-delta-repair-obstruction-semantic-contract-mismatch-computed",
-        "derived-effect-order:q:operation-delta-repair-obstruction-semantic-contract-mismatch-computed-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation",
-        "obstruction:semantic-contract-mismatch:computed may decrease or move to a runtime/state/effect axis",
-        "split or enrich atoms that currently support the target obstruction"
+        "atom:effect:receipt-boundary",
+        "derived-effect-order:p:operation-round-operation-tax-operation-discount",
+        "derived-effect-order:q:operation-round-operation-discount-operation-tax"
       ],
       "missingRefs": [],
       "coverageBoundary": "covered for selected trace refs; not complete execution semantics",
@@ -5580,8 +5826,8 @@
       ]
     },
     {
-      "defectId": "mu:operation-square-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation:projection",
-      "candidateRef": "operation-square:operation-delta-repair-obstruction-semantic-contract-mismatch-computed:operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation",
+      "defectId": "mu:operation-square-operation-square-evidence-coupon-tax-rounding:projection",
+      "candidateRef": "operation-square:operation-square-evidence-coupon-tax-rounding",
       "axisFamily": "projection",
       "axisRef": "projection / representation axis",
       "distanceKind": "weighted-axis-l1",
@@ -5633,35 +5879,31 @@
       ]
     },
     {
-      "defectId": "mu:operation-square-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation:runtime",
-      "candidateRef": "operation-square:operation-delta-repair-obstruction-semantic-contract-mismatch-computed:operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation",
+      "defectId": "mu:operation-square-operation-square-evidence-coupon-tax-rounding:runtime",
+      "candidateRef": "operation-square:operation-square-evidence-coupon-tax-rounding",
       "axisFamily": "runtime",
       "axisRef": "runtime interaction axis",
       "distanceKind": "weighted-axis-l1",
       "pContinuationRef": "Cont_runtime(p):runtime interaction axis",
       "qContinuationRef": "Cont_runtime(q):runtime interaction axis",
-      "distanceInputRefs": [
-        "gap:coupon-runtime-payment-trace"
-      ],
+      "distanceInputRefs": [],
       "positiveWitnessBoundary": "mu_x > 0 is read only as selected continuation observation difference with source-backed p/q trace inputs",
-      "weight": 1,
-      "measurementStatus": "measured",
-      "distanceValue": 0,
-      "measuredSupportRefs": [
-        "gap:coupon-runtime-payment-trace"
-      ],
+      "weight": 0,
+      "measurementStatus": "unmeasured",
+      "distanceValue": null,
+      "measuredSupportRefs": [],
       "witnessRefs": [
-        "gap:coupon-runtime-payment-trace"
+        "missing-evidence:missing runtime observation for operation-square:operation-square-evidence-coupon-tax-rounding"
       ],
       "sourceRefs": [
         "src-pricing-checkout",
         "test-coupon-rounding"
       ],
-      "observationRefs": [
-        "gap:coupon-runtime-payment-trace"
+      "observationRefs": [],
+      "missingRefs": [
+        "missing runtime observation for operation-square:operation-square-evidence-coupon-tax-rounding"
       ],
-      "missingRefs": [],
-      "coverageBoundary": "covered for selected trace refs; not complete execution semantics",
+      "coverageBoundary": "coverage gap preserved; unmeasured axis is not zero defect",
       "exactnessAssumptionStatus": [
         "selected LawPolicy exactness assumptions",
         "ArchMapStore compaction boundary"
@@ -5686,8 +5928,8 @@
       ]
     },
     {
-      "defectId": "mu:operation-square-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation:semantic",
-      "candidateRef": "operation-square:operation-delta-repair-obstruction-semantic-contract-mismatch-computed:operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation",
+      "defectId": "mu:operation-square-operation-square-evidence-coupon-tax-rounding:semantic",
+      "candidateRef": "operation-square:operation-square-evidence-coupon-tax-rounding",
       "axisFamily": "semantic",
       "axisRef": "semantic axis",
       "distanceKind": "weighted-axis-l1",
@@ -5747,8 +5989,8 @@
       ]
     },
     {
-      "defectId": "mu:operation-square-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation:state",
-      "candidateRef": "operation-square:operation-delta-repair-obstruction-semantic-contract-mismatch-computed:operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation",
+      "defectId": "mu:operation-square-operation-square-evidence-coupon-tax-rounding:state",
+      "candidateRef": "operation-square:operation-square-evidence-coupon-tax-rounding",
       "axisFamily": "state",
       "axisRef": "state transition axis",
       "distanceKind": "weighted-axis-l1",
@@ -5761,7 +6003,7 @@
       "distanceValue": null,
       "measuredSupportRefs": [],
       "witnessRefs": [
-        "missing-evidence:missing state observation for operation-square:operation-delta-repair-obstruction-semantic-contract-mismatch-computed:operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation"
+        "missing-evidence:missing state observation for operation-square:operation-square-evidence-coupon-tax-rounding"
       ],
       "sourceRefs": [
         "src-pricing-checkout",
@@ -5769,7 +6011,7 @@
       ],
       "observationRefs": [],
       "missingRefs": [
-        "missing state observation for operation-square:operation-delta-repair-obstruction-semantic-contract-mismatch-computed:operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation"
+        "missing state observation for operation-square:operation-square-evidence-coupon-tax-rounding"
       ],
       "coverageBoundary": "coverage gap preserved; unmeasured axis is not zero defect",
       "exactnessAssumptionStatus": [
@@ -5796,31 +6038,43 @@
       ]
     },
     {
-      "defectId": "mu:operation-square-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation:static",
-      "candidateRef": "operation-square:operation-delta-repair-obstruction-semantic-contract-mismatch-computed:operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation",
+      "defectId": "mu:operation-square-operation-square-evidence-coupon-tax-rounding:static",
+      "candidateRef": "operation-square:operation-square-evidence-coupon-tax-rounding",
       "axisFamily": "static",
       "axisRef": "static dependency / support axis",
       "distanceKind": "weighted-axis-l1",
       "pContinuationRef": "Cont_static(p):static dependency / support axis",
       "qContinuationRef": "Cont_static(q):static dependency / support axis",
-      "distanceInputRefs": [],
+      "distanceInputRefs": [
+        "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding",
+        "atom:effect:receipt-boundary",
+        "atom:semantic:PaymentAmount-ReceiptAmount-coupon-tax-rounding-noncommutation"
+      ],
       "positiveWitnessBoundary": "mu_x > 0 is read only as selected continuation observation difference with source-backed p/q trace inputs",
-      "weight": 0,
-      "measurementStatus": "unmeasured",
-      "distanceValue": null,
-      "measuredSupportRefs": [],
+      "weight": 1,
+      "measurementStatus": "measured",
+      "distanceValue": 0,
+      "measuredSupportRefs": [
+        "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding",
+        "atom:effect:receipt-boundary",
+        "atom:semantic:PaymentAmount-ReceiptAmount-coupon-tax-rounding-noncommutation"
+      ],
       "witnessRefs": [
-        "missing-evidence:missing static observation for operation-square:operation-delta-repair-obstruction-semantic-contract-mismatch-computed:operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation"
+        "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding",
+        "atom:effect:receipt-boundary",
+        "atom:semantic:PaymentAmount-ReceiptAmount-coupon-tax-rounding-noncommutation"
       ],
       "sourceRefs": [
         "src-pricing-checkout",
         "test-coupon-rounding"
       ],
-      "observationRefs": [],
-      "missingRefs": [
-        "missing static observation for operation-square:operation-delta-repair-obstruction-semantic-contract-mismatch-computed:operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation"
+      "observationRefs": [
+        "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding",
+        "atom:effect:receipt-boundary",
+        "atom:semantic:PaymentAmount-ReceiptAmount-coupon-tax-rounding-noncommutation"
       ],
-      "coverageBoundary": "coverage gap preserved; unmeasured axis is not zero defect",
+      "missingRefs": [],
+      "coverageBoundary": "covered for selected trace refs; not complete execution semantics",
       "exactnessAssumptionStatus": [
         "selected LawPolicy exactness assumptions",
         "ArchMapStore compaction boundary"
@@ -5860,92 +6114,90 @@
         "static"
       ],
       "selectedMeasuredSquareRefs": [
-        "square-family-entry:mu:operation-square-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation:contract",
-        "square-family-entry:mu:operation-square-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation:effect",
-        "square-family-entry:mu:operation-square-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation:projection",
-        "square-family-entry:mu:operation-square-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation:runtime",
-        "square-family-entry:mu:operation-square-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation:semantic"
+        "square-family-entry:mu:operation-square-operation-square-evidence-coupon-tax-rounding:contract",
+        "square-family-entry:mu:operation-square-operation-square-evidence-coupon-tax-rounding:effect",
+        "square-family-entry:mu:operation-square-operation-square-evidence-coupon-tax-rounding:projection",
+        "square-family-entry:mu:operation-square-operation-square-evidence-coupon-tax-rounding:semantic",
+        "square-family-entry:mu:operation-square-operation-square-evidence-coupon-tax-rounding:static"
       ],
       "weightPolicy": "unit weights until repo-specific calibration is declared in a future policy",
       "distanceKind": "weighted-axis-l1",
       "measurementStatus": "partial",
       "aggregateValue": 4,
       "measuredDefectRefs": [
-        "mu:operation-square-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation:contract",
-        "mu:operation-square-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation:effect",
-        "mu:operation-square-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation:projection",
-        "mu:operation-square-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation:runtime",
-        "mu:operation-square-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation:semantic"
+        "mu:operation-square-operation-square-evidence-coupon-tax-rounding:contract",
+        "mu:operation-square-operation-square-evidence-coupon-tax-rounding:effect",
+        "mu:operation-square-operation-square-evidence-coupon-tax-rounding:projection",
+        "mu:operation-square-operation-square-evidence-coupon-tax-rounding:semantic",
+        "mu:operation-square-operation-square-evidence-coupon-tax-rounding:static"
       ],
       "unmeasuredDefectRefs": [
-        "mu:operation-square-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation:authority",
-        "mu:operation-square-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation:state",
-        "mu:operation-square-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation:static"
+        "mu:operation-square-operation-square-evidence-coupon-tax-rounding:authority",
+        "mu:operation-square-operation-square-evidence-coupon-tax-rounding:runtime",
+        "mu:operation-square-operation-square-evidence-coupon-tax-rounding:state"
       ],
       "positiveWeightDefectRefs": [
-        "mu:operation-square-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation:contract",
-        "mu:operation-square-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation:effect",
-        "mu:operation-square-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation:projection",
-        "mu:operation-square-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation:runtime",
-        "mu:operation-square-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation:semantic"
+        "mu:operation-square-operation-square-evidence-coupon-tax-rounding:contract",
+        "mu:operation-square-operation-square-evidence-coupon-tax-rounding:effect",
+        "mu:operation-square-operation-square-evidence-coupon-tax-rounding:projection",
+        "mu:operation-square-operation-square-evidence-coupon-tax-rounding:semantic",
+        "mu:operation-square-operation-square-evidence-coupon-tax-rounding:static"
       ],
       "zeroWeightDefectRefs": [
-        "mu:operation-square-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation:authority",
-        "mu:operation-square-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation:state",
-        "mu:operation-square-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation:static"
+        "mu:operation-square-operation-square-evidence-coupon-tax-rounding:authority",
+        "mu:operation-square-operation-square-evidence-coupon-tax-rounding:runtime",
+        "mu:operation-square-operation-square-evidence-coupon-tax-rounding:state"
       ],
       "topContributors": [
         {
-          "defectRef": "mu:operation-square-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation:authority",
-          "candidateRef": "operation-square:operation-delta-repair-obstruction-semantic-contract-mismatch-computed:operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation",
+          "defectRef": "mu:operation-square-operation-square-evidence-coupon-tax-rounding:authority",
+          "candidateRef": "operation-square:operation-square-evidence-coupon-tax-rounding",
           "axisFamily": "authority",
           "contributionWeight": 1,
           "contributionValue": null,
           "reviewFocus": "supply missing authority trace evidence before interpreting AMI as zero",
           "witnessRefs": [
-            "missing-evidence:missing authority observation for operation-square:operation-delta-repair-obstruction-semantic-contract-mismatch-computed:operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation"
+            "missing-evidence:missing authority observation for operation-square:operation-square-evidence-coupon-tax-rounding"
           ]
         },
         {
-          "defectRef": "mu:operation-square-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation:state",
-          "candidateRef": "operation-square:operation-delta-repair-obstruction-semantic-contract-mismatch-computed:operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation",
+          "defectRef": "mu:operation-square-operation-square-evidence-coupon-tax-rounding:runtime",
+          "candidateRef": "operation-square:operation-square-evidence-coupon-tax-rounding",
+          "axisFamily": "runtime",
+          "contributionWeight": 1,
+          "contributionValue": null,
+          "reviewFocus": "supply missing runtime trace evidence before interpreting AMI as zero",
+          "witnessRefs": [
+            "missing-evidence:missing runtime observation for operation-square:operation-square-evidence-coupon-tax-rounding"
+          ]
+        },
+        {
+          "defectRef": "mu:operation-square-operation-square-evidence-coupon-tax-rounding:state",
+          "candidateRef": "operation-square:operation-square-evidence-coupon-tax-rounding",
           "axisFamily": "state",
           "contributionWeight": 1,
           "contributionValue": null,
           "reviewFocus": "supply missing state trace evidence before interpreting AMI as zero",
           "witnessRefs": [
-            "missing-evidence:missing state observation for operation-square:operation-delta-repair-obstruction-semantic-contract-mismatch-computed:operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation"
+            "missing-evidence:missing state observation for operation-square:operation-square-evidence-coupon-tax-rounding"
           ]
         },
         {
-          "defectRef": "mu:operation-square-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation:static",
-          "candidateRef": "operation-square:operation-delta-repair-obstruction-semantic-contract-mismatch-computed:operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation",
-          "axisFamily": "static",
-          "contributionWeight": 1,
-          "contributionValue": null,
-          "reviewFocus": "supply missing static trace evidence before interpreting AMI as zero",
-          "witnessRefs": [
-            "missing-evidence:missing static observation for operation-square:operation-delta-repair-obstruction-semantic-contract-mismatch-computed:operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation"
-          ]
-        },
-        {
-          "defectRef": "mu:operation-square-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation:effect",
-          "candidateRef": "operation-square:operation-delta-repair-obstruction-semantic-contract-mismatch-computed:operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation",
+          "defectRef": "mu:operation-square-operation-square-evidence-coupon-tax-rounding:effect",
+          "candidateRef": "operation-square:operation-square-evidence-coupon-tax-rounding",
           "axisFamily": "effect",
           "contributionWeight": 1,
           "contributionValue": 2,
           "reviewFocus": "review effect trace mismatch before treating aggregate value as local agreement",
           "witnessRefs": [
-            "add observed compensation / authority / effect atoms only after source review",
-            "derived-effect-order:p:operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation-operation-delta-repair-obstruction-semantic-contract-mismatch-computed",
-            "derived-effect-order:q:operation-delta-repair-obstruction-semantic-contract-mismatch-computed-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation",
-            "obstruction:semantic-contract-mismatch:computed may decrease or move to a runtime/state/effect axis",
-            "split or enrich atoms that currently support the target obstruction"
+            "atom:effect:receipt-boundary",
+            "derived-effect-order:p:operation-round-operation-tax-operation-discount",
+            "derived-effect-order:q:operation-round-operation-discount-operation-tax"
           ]
         },
         {
-          "defectRef": "mu:operation-square-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation:semantic",
-          "candidateRef": "operation-square:operation-delta-repair-obstruction-semantic-contract-mismatch-computed:operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation",
+          "defectRef": "mu:operation-square-operation-square-evidence-coupon-tax-rounding:semantic",
+          "candidateRef": "operation-square:operation-square-evidence-coupon-tax-rounding",
           "axisFamily": "semantic",
           "contributionWeight": 1,
           "contributionValue": 2,
@@ -5957,8 +6209,8 @@
           ]
         },
         {
-          "defectRef": "mu:operation-square-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation:contract",
-          "candidateRef": "operation-square:operation-delta-repair-obstruction-semantic-contract-mismatch-computed:operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation",
+          "defectRef": "mu:operation-square-operation-square-evidence-coupon-tax-rounding:contract",
+          "candidateRef": "operation-square:operation-square-evidence-coupon-tax-rounding",
           "axisFamily": "contract",
           "contributionWeight": 1,
           "contributionValue": 0,
@@ -5968,8 +6220,8 @@
           ]
         },
         {
-          "defectRef": "mu:operation-square-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation:projection",
-          "candidateRef": "operation-square:operation-delta-repair-obstruction-semantic-contract-mismatch-computed:operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation",
+          "defectRef": "mu:operation-square-operation-square-evidence-coupon-tax-rounding:projection",
+          "candidateRef": "operation-square:operation-square-evidence-coupon-tax-rounding",
           "axisFamily": "projection",
           "contributionWeight": 1,
           "contributionValue": 0,
@@ -5979,14 +6231,16 @@
           ]
         },
         {
-          "defectRef": "mu:operation-square-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation:runtime",
-          "candidateRef": "operation-square:operation-delta-repair-obstruction-semantic-contract-mismatch-computed:operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation",
-          "axisFamily": "runtime",
+          "defectRef": "mu:operation-square-operation-square-evidence-coupon-tax-rounding:static",
+          "candidateRef": "operation-square:operation-square-evidence-coupon-tax-rounding",
+          "axisFamily": "static",
           "contributionWeight": 1,
           "contributionValue": 0,
-          "reviewFocus": "review runtime trace mismatch before treating aggregate value as local agreement",
+          "reviewFocus": "review static trace mismatch before treating aggregate value as local agreement",
           "witnessRefs": [
-            "gap:coupon-runtime-payment-trace"
+            "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding",
+            "atom:effect:receipt-boundary",
+            "atom:semantic:PaymentAmount-ReceiptAmount-coupon-tax-rounding-noncommutation"
           ]
         }
       ],
@@ -6013,30 +6267,28 @@
   ],
   "nonzeroMonodromyWitnesses": [
     {
-      "witnessId": "nonzero-monodromy-witness:mu-operation-square-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation-effect",
-      "defectRef": "mu:operation-square-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation:effect",
-      "candidateRef": "operation-square:operation-delta-repair-obstruction-semantic-contract-mismatch-computed:operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation",
+      "witnessId": "nonzero-monodromy-witness:mu-operation-square-operation-square-evidence-coupon-tax-rounding-effect",
+      "defectRef": "mu:operation-square-operation-square-evidence-coupon-tax-rounding:effect",
+      "candidateRef": "operation-square:operation-square-evidence-coupon-tax-rounding",
       "operationPair": [
-        "operation-delta:repair-obstruction-semantic-contract-mismatch-computed",
-        "operation-delta:repair-obstruction-semantic-contract-mismatch-computed:continuation"
+        "operation:discount",
+        "operation:tax-round"
       ],
       "pathPair": [
-        "operation-delta:repair-obstruction-semantic-contract-mismatch-computed:continuation . operation-delta:repair-obstruction-semantic-contract-mismatch-computed",
-        "operation-delta:repair-obstruction-semantic-contract-mismatch-computed . operation-delta:repair-obstruction-semantic-contract-mismatch-computed:continuation"
+        "operation:round . operation:tax . operation:discount",
+        "operation:round . operation:discount . operation:tax"
       ],
       "axisFamily": "effect",
       "axisRef": "effect ordering / replay / compensation axis",
       "defectValue": 2,
       "comparedTraceSummary": [
-        "p: effect continuation reads 4 observation ref(s) across 1 operation delta(s) refs=4 missing=0",
-        "q: effect continuation reads 4 observation ref(s) across 1 operation delta(s) refs=4 missing=0"
+        "p: effect continuation reads 2 observation ref(s) across 1 operation delta(s) refs=2 missing=0",
+        "q: effect continuation reads 2 observation ref(s) across 1 operation delta(s) refs=2 missing=0"
       ],
       "affectedAtomRefs": [
-        "add observed compensation / authority / effect atoms only after source review",
-        "derived-effect-order:p:operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation-operation-delta-repair-obstruction-semantic-contract-mismatch-computed",
-        "derived-effect-order:q:operation-delta-repair-obstruction-semantic-contract-mismatch-computed-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation",
-        "obstruction:semantic-contract-mismatch:computed may decrease or move to a runtime/state/effect axis",
-        "split or enrich atoms that currently support the target obstruction"
+        "atom:effect:receipt-boundary",
+        "derived-effect-order:p:operation-round-operation-tax-operation-discount",
+        "derived-effect-order:q:operation-round-operation-discount-operation-tax"
       ],
       "lawRefs": [
         "law:layer-respecting",
@@ -6051,11 +6303,9 @@
         "test-coupon-rounding"
       ],
       "observationRefs": [
-        "add observed compensation / authority / effect atoms only after source review",
-        "derived-effect-order:p:operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation-operation-delta-repair-obstruction-semantic-contract-mismatch-computed",
-        "derived-effect-order:q:operation-delta-repair-obstruction-semantic-contract-mismatch-computed-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation",
-        "obstruction:semantic-contract-mismatch:computed may decrease or move to a runtime/state/effect axis",
-        "split or enrich atoms that currently support the target obstruction"
+        "atom:effect:receipt-boundary",
+        "derived-effect-order:p:operation-round-operation-tax-operation-discount",
+        "derived-effect-order:q:operation-round-operation-discount-operation-tax"
       ],
       "missingEvidence": [],
       "coverageBoundary": "covered for selected trace refs; not complete execution semantics",
@@ -6070,7 +6320,7 @@
         "identify the boundary, adapter, authority, or effect surface where the order-sensitive witness appears"
       ],
       "recommendedReviewFocus": [
-        "compare operation-delta:repair-obstruction-semantic-contract-mismatch-computed:continuation . operation-delta:repair-obstruction-semantic-contract-mismatch-computed and operation-delta:repair-obstruction-semantic-contract-mismatch-computed . operation-delta:repair-obstruction-semantic-contract-mismatch-computed:continuation before treating the operation pair as order-insensitive",
+        "compare operation:round . operation:tax . operation:discount and operation:round . operation:discount . operation:tax before treating the operation pair as order-insensitive",
         "review effect axis witness refs and missing evidence"
       ],
       "evidenceBoundary": "nonzero monodromy witness is a measured review cue; it is not automatic repair safety or merge safety",
@@ -6085,16 +6335,16 @@
       ]
     },
     {
-      "witnessId": "nonzero-monodromy-witness:mu-operation-square-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation-semantic",
-      "defectRef": "mu:operation-square-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation:semantic",
-      "candidateRef": "operation-square:operation-delta-repair-obstruction-semantic-contract-mismatch-computed:operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation",
+      "witnessId": "nonzero-monodromy-witness:mu-operation-square-operation-square-evidence-coupon-tax-rounding-semantic",
+      "defectRef": "mu:operation-square-operation-square-evidence-coupon-tax-rounding:semantic",
+      "candidateRef": "operation-square:operation-square-evidence-coupon-tax-rounding",
       "operationPair": [
-        "operation-delta:repair-obstruction-semantic-contract-mismatch-computed",
-        "operation-delta:repair-obstruction-semantic-contract-mismatch-computed:continuation"
+        "operation:discount",
+        "operation:tax-round"
       ],
       "pathPair": [
-        "operation-delta:repair-obstruction-semantic-contract-mismatch-computed:continuation . operation-delta:repair-obstruction-semantic-contract-mismatch-computed",
-        "operation-delta:repair-obstruction-semantic-contract-mismatch-computed . operation-delta:repair-obstruction-semantic-contract-mismatch-computed:continuation"
+        "operation:round . operation:tax . operation:discount",
+        "operation:round . operation:discount . operation:tax"
       ],
       "axisFamily": "semantic",
       "axisRef": "semantic axis",
@@ -6138,7 +6388,7 @@
         "identify the boundary, adapter, authority, or effect surface where the order-sensitive witness appears"
       ],
       "recommendedReviewFocus": [
-        "compare operation-delta:repair-obstruction-semantic-contract-mismatch-computed:continuation . operation-delta:repair-obstruction-semantic-contract-mismatch-computed and operation-delta:repair-obstruction-semantic-contract-mismatch-computed . operation-delta:repair-obstruction-semantic-contract-mismatch-computed:continuation before treating the operation pair as order-insensitive",
+        "compare operation:round . operation:tax . operation:discount and operation:round . operation:discount . operation:tax before treating the operation pair as order-insensitive",
         "review semantic axis witness refs and missing evidence"
       ],
       "evidenceBoundary": "nonzero monodromy witness is a measured review cue; it is not automatic repair safety or merge safety",
@@ -6183,18 +6433,15 @@
         {
           "holonomyAxisRef": "Hol_static",
           "axisFamily": "static",
-          "status": "coverageBlocked",
+          "status": "coveredZeroResidual",
           "residualValue": 0,
           "measuredDefectRefs": [],
           "supportRefs": [
-            "gap:coupon-runtime-payment-trace",
-            "may transfer obstruction into runtime behavior, ownership, or idempotency boundary",
-            "obstruction:semantic-contract-mismatch:computed",
-            "split-readiness:molecule-coupon-operation-contract"
+            "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding",
+            "atom:effect:receipt-boundary",
+            "atom:semantic:PaymentAmount-ReceiptAmount-coupon-tax-rounding-noncommutation"
           ],
-          "missingEvidence": [
-            "missing static observation for operation-square:operation-delta-repair-obstruction-semantic-contract-mismatch-computed:operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation"
-          ],
+          "missingEvidence": [],
           "reading": "Hol_static records boundary-local residual obstruction on the static axis"
         },
         {
@@ -6215,7 +6462,7 @@
           "status": "measuredResidual",
           "residualValue": 2,
           "measuredDefectRefs": [
-            "mu:operation-square-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation:semantic"
+            "mu:operation-square-operation-square-evidence-coupon-tax-rounding:semantic"
           ],
           "supportRefs": [
             "derived-semantic-order:p=round(tax(discount(subtotal)))",
@@ -6238,7 +6485,7 @@
             "split-readiness:molecule-coupon-operation-contract"
           ],
           "missingEvidence": [
-            "missing state observation for operation-square:operation-delta-repair-obstruction-semantic-contract-mismatch-computed:operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation"
+            "missing state observation for operation-square:operation-square-evidence-coupon-tax-rounding"
           ],
           "reading": "Hol_state records boundary-local residual obstruction on the state axis"
         },
@@ -6248,14 +6495,12 @@
           "status": "measuredResidual",
           "residualValue": 2,
           "measuredDefectRefs": [
-            "mu:operation-square-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation:effect"
+            "mu:operation-square-operation-square-evidence-coupon-tax-rounding:effect"
           ],
           "supportRefs": [
-            "add observed compensation / authority / effect atoms only after source review",
-            "derived-effect-order:p:operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation-operation-delta-repair-obstruction-semantic-contract-mismatch-computed",
-            "derived-effect-order:q:operation-delta-repair-obstruction-semantic-contract-mismatch-computed-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation",
-            "obstruction:semantic-contract-mismatch:computed may decrease or move to a runtime/state/effect axis",
-            "split or enrich atoms that currently support the target obstruction"
+            "atom:effect:receipt-boundary",
+            "derived-effect-order:p:operation-round-operation-tax-operation-discount",
+            "derived-effect-order:q:operation-round-operation-discount-operation-tax"
           ],
           "missingEvidence": [],
           "reading": "Hol_effect records boundary-local residual obstruction on the effect axis"
@@ -6273,20 +6518,25 @@
             "split-readiness:molecule-coupon-operation-contract"
           ],
           "missingEvidence": [
-            "missing authority observation for operation-square:operation-delta-repair-obstruction-semantic-contract-mismatch-computed:operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation"
+            "missing authority observation for operation-square:operation-square-evidence-coupon-tax-rounding"
           ],
           "reading": "Hol_authority records boundary-local residual obstruction on the authority axis"
         },
         {
           "holonomyAxisRef": "Hol_runtime",
           "axisFamily": "runtime",
-          "status": "coveredZeroResidual",
+          "status": "coverageBlocked",
           "residualValue": 0,
           "measuredDefectRefs": [],
           "supportRefs": [
-            "gap:coupon-runtime-payment-trace"
+            "gap:coupon-runtime-payment-trace",
+            "may transfer obstruction into runtime behavior, ownership, or idempotency boundary",
+            "obstruction:semantic-contract-mismatch:computed",
+            "split-readiness:molecule-coupon-operation-contract"
           ],
-          "missingEvidence": [],
+          "missingEvidence": [
+            "missing runtime observation for operation-square:operation-square-evidence-coupon-tax-rounding"
+          ],
           "reading": "Hol_runtime records boundary-local residual obstruction on the runtime axis"
         },
         {
@@ -6305,8 +6555,8 @@
       "residualObstructionRefs": [
         "gap:coupon-runtime-payment-trace",
         "may transfer obstruction into runtime behavior, ownership, or idempotency boundary",
-        "mu:operation-square-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation:effect",
-        "mu:operation-square-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation:semantic",
+        "mu:operation-square-operation-square-evidence-coupon-tax-rounding:effect",
+        "mu:operation-square-operation-square-evidence-coupon-tax-rounding:semantic",
         "obstruction:semantic-contract-mismatch:computed",
         "split-readiness:molecule-coupon-operation-contract"
       ],
@@ -6365,8 +6615,8 @@
             "feature-boundary-residual:coupon-tax-rounding-archmap",
             "gap:coupon-runtime-payment-trace",
             "may transfer obstruction into runtime behavior, ownership, or idempotency boundary",
-            "mu:operation-square-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation:effect",
-            "mu:operation-square-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation:semantic",
+            "mu:operation-square-operation-square-evidence-coupon-tax-rounding:effect",
+            "mu:operation-square-operation-square-evidence-coupon-tax-rounding:semantic",
             "obstruction:semantic-contract-mismatch:computed",
             "split-readiness:molecule-coupon-operation-contract"
           ],
@@ -6461,36 +6711,36 @@
           "reading": "may transfer obstruction into runtime behavior, ownership, or idempotency boundary carries non-disjoint feature-extension labels [\"boundaryHolonomy\", \"complexityTransfer\"]"
         },
         {
-          "witnessRef": "mu:operation-square-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation:effect",
+          "witnessRef": "mu:operation-square-operation-square-evidence-coupon-tax-rounding:effect",
           "labels": [
             "boundaryHolonomy"
           ],
           "inheritedCoreRefs": [],
           "featureLocalRefs": [],
           "boundaryHolonomyRefs": [
-            "mu:operation-square-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation:effect"
+            "mu:operation-square-operation-square-evidence-coupon-tax-rounding:effect"
           ],
           "liftingFailureRefs": [],
           "fillingFailureRefs": [],
           "complexityTransferRefs": [],
           "residualCoverageGapRefs": [],
-          "reading": "mu:operation-square-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation:effect carries non-disjoint feature-extension labels [\"boundaryHolonomy\"]"
+          "reading": "mu:operation-square-operation-square-evidence-coupon-tax-rounding:effect carries non-disjoint feature-extension labels [\"boundaryHolonomy\"]"
         },
         {
-          "witnessRef": "mu:operation-square-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation:semantic",
+          "witnessRef": "mu:operation-square-operation-square-evidence-coupon-tax-rounding:semantic",
           "labels": [
             "boundaryHolonomy"
           ],
           "inheritedCoreRefs": [],
           "featureLocalRefs": [],
           "boundaryHolonomyRefs": [
-            "mu:operation-square-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation:semantic"
+            "mu:operation-square-operation-square-evidence-coupon-tax-rounding:semantic"
           ],
           "liftingFailureRefs": [],
           "fillingFailureRefs": [],
           "complexityTransferRefs": [],
           "residualCoverageGapRefs": [],
-          "reading": "mu:operation-square-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation:semantic carries non-disjoint feature-extension labels [\"boundaryHolonomy\"]"
+          "reading": "mu:operation-square-operation-square-evidence-coupon-tax-rounding:semantic carries non-disjoint feature-extension labels [\"boundaryHolonomy\"]"
         },
         {
           "witnessRef": "obstruction:semantic-contract-mismatch:computed",
@@ -6575,21 +6825,21 @@
     "weightPolicy": "unit weights until repo-specific calibration is declared in a future policy",
     "coveragePolicy": "measure only selected axes with declared coverage; missing coverage remains blocked, not zero",
     "operationSquareCandidateRefs": [
-      "operation-square:operation-delta-repair-obstruction-semantic-contract-mismatch-computed:operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation"
+      "operation-square:operation-square-evidence-coupon-tax-rounding"
     ],
     "pathContinuationTraceRefs": [
-      "path-continuation-trace:operation-square-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation:p",
-      "path-continuation-trace:operation-square-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation:q"
+      "path-continuation-trace:operation-square-operation-square-evidence-coupon-tax-rounding:p",
+      "path-continuation-trace:operation-square-operation-square-evidence-coupon-tax-rounding:q"
     ],
     "axisWiseDefectRefs": [
-      "mu:operation-square-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation:authority",
-      "mu:operation-square-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation:contract",
-      "mu:operation-square-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation:effect",
-      "mu:operation-square-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation:projection",
-      "mu:operation-square-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation:runtime",
-      "mu:operation-square-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation:semantic",
-      "mu:operation-square-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation:state",
-      "mu:operation-square-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation:static"
+      "mu:operation-square-operation-square-evidence-coupon-tax-rounding:authority",
+      "mu:operation-square-operation-square-evidence-coupon-tax-rounding:contract",
+      "mu:operation-square-operation-square-evidence-coupon-tax-rounding:effect",
+      "mu:operation-square-operation-square-evidence-coupon-tax-rounding:projection",
+      "mu:operation-square-operation-square-evidence-coupon-tax-rounding:runtime",
+      "mu:operation-square-operation-square-evidence-coupon-tax-rounding:semantic",
+      "mu:operation-square-operation-square-evidence-coupon-tax-rounding:state",
+      "mu:operation-square-operation-square-evidence-coupon-tax-rounding:static"
     ],
     "amiAggregateReadingRefs": [
       "ami:measurement-policy-monodromy-boundary-holonomy"
@@ -6619,8 +6869,8 @@
     "weightPolicy": "unit weights until repo-specific calibration is declared in a future policy",
     "coveragePolicy": "measure only selected axes with declared coverage; missing coverage remains blocked, not zero",
     "nonzeroMonodromyWitnessRefs": [
-      "nonzero-monodromy-witness:mu-operation-square-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation-effect",
-      "nonzero-monodromy-witness:mu-operation-square-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation-semantic"
+      "nonzero-monodromy-witness:mu-operation-square-operation-square-evidence-coupon-tax-rounding-effect",
+      "nonzero-monodromy-witness:mu-operation-square-operation-square-evidence-coupon-tax-rounding-semantic"
     ],
     "featureBoundaryResidualRefs": [
       "feature-boundary-residual:coupon-tax-rounding-archmap"
@@ -7321,7 +7571,7 @@
   "structuralReadingReviewSurface": {
     "surfaceId": "aat-structural-reading-review-surface",
     "status": "needsReview",
-    "currentStateReading": "ArchSig reads current architecture state across Atom support and compatibility, LawUniverse coverage, feature extension coordinates, operation calculus laws, path signature trajectory, homotopy order sensitivity, diagram fillability, axis forgetting risk, trajectory homotopy refutation, bridge split transfer, representation strength, local curvature, three-layer flatness, observation projection, state transition algebra, operation-invariant constraints, and split readiness; blockedRepresentations=14, curvatures=1, blockedOperations=1, splitBlockers=1, atomConflicts=0, unmeasuredRequiredLaws=1, blockedDiagrams=1, axisForgetting=1, homotopyRefutations=1, bridgeTransfers=1",
+    "currentStateReading": "ArchSig reads current architecture state across Atom support and compatibility, LawUniverse coverage, feature extension coordinates, operation calculus laws, path signature trajectory, homotopy order sensitivity, diagram fillability, axis forgetting/projection fidelity, Atom origin closure, effect relation algebra, synthesis blockage, operation preconditions, path multiplicity, trajectory homotopy refutation, bridge split transfer, representation strength, local curvature, three-layer flatness, observation projection, state transition algebra, operation-invariant constraints, and split readiness; blockedRepresentations=14, curvatures=1, blockedOperations=1, splitBlockers=1, atomConflicts=0, unmeasuredRequiredLaws=1, blockedDiagrams=1, axisForgetting=1, projectionLoss=1, atomOriginDebt=1, effectRelationPressure=1, synthesisBlockage=1, operationPreconditionBlockers=1, pathMultiplicityLoss=1, homotopyRefutations=1, bridgeTransfers=1",
     "connectedReadingRefs": [
       "representationStrength:weightedAdjacencyMatrix",
       "representationStrength:reachableConeSize",
@@ -7345,6 +7595,12 @@
       "homotopy-order-sensitivity:selected-operations",
       "diagram-fillability:local-curvature-obstruction-semantic-contract-mismatch-computed",
       "axis-forgetting-risk:selected-projection",
+      "observation-projection-fidelity:observation-projection-coupon-tax-rounding-archmap",
+      "atom-origin-closure-debt:coupon-tax-rounding-archmap",
+      "effect-relation-algebra:coupon-tax-rounding-archmap",
+      "synthesis-blockage:coupon-tax-rounding-archmap",
+      "operation-precondition-readiness:repair-obstruction-semantic-contract-mismatch-computed",
+      "path-multiplicity-loss:coupon-tax-rounding-archmap",
       "signature-trajectory-homotopy-refutation:selected-trajectory",
       "bridge-split-obstruction-transfer:split-readiness-molecule-coupon-operation-contract"
     ],
@@ -7353,6 +7609,10 @@
       "read LawUniverse coverage and witness exactness before treating absence as measured zero",
       "read feature extension, operation law, trajectory, homotopy, and diagram-fillability axes as current-state coordinates, not PR evolution claims",
       "read axis-forgetting risk before treating a coarse projection as zero-reflecting or obstruction-reflecting",
+      "read projection fidelity and Atom origin closure before using summaries for zero, repair, or synthesis claims",
+      "read effect relation algebra separately from state transition pressure before approving replay, provider, event, or handler boundaries",
+      "read synthesis blockage and operation precondition readiness before treating candidates as constructible or safe",
+      "read path multiplicity loss before treating one observed route as complete reachability",
       "read selected trajectory disagreement before treating same-endpoint operations as homotopic",
       "read bridge split transfer before treating a boundary operation as obstruction removal",
       "read representation-strength blockers before treating zero or obstruction absence as exact",
@@ -8348,7 +8608,7 @@
     ],
     "transferBridgeEdgeSummary": [],
     "measurementExpansionSummary": [
-      "v0.3.0 measurement expansion reads 2 Atom support axes, 1 compatibility surfaces, 1 LawUniverse coverage surfaces, 1 feature-extension formulas, 1 operation-law surfaces, 1 path trajectories, 1 homotopy/order surfaces, 1 diagram-fillability surfaces, 1 axis-forgetting risks, 1 trajectory homotopy refutations, 1 bridge split-transfer surfaces, and 2 nonzero monodromy witnesses"
+      "v0.3.0 measurement expansion reads 2 Atom support axes, 1 compatibility surfaces, 1 LawUniverse coverage surfaces, 1 feature-extension formulas, 1 operation-law surfaces, 1 path trajectories, 1 homotopy/order surfaces, 1 diagram-fillability surfaces, 1 axis-forgetting risks, 1 projection-fidelity surfaces, 1 Atom origin-closure debts, 1 effect-relation algebras, 1 synthesis blockers, 1 operation-precondition readings, 1 path-multiplicity readings, 1 trajectory homotopy refutations, 1 bridge split-transfer surfaces, and 2 nonzero monodromy witnesses"
     ],
     "atomSupportAxisSummary": [
       "coupon-tax-rounding-archmap support=2 concentration=maxAxisShare=1/3 pressure=mixedAxisPressurePresent",
@@ -8378,6 +8638,24 @@
     "axisForgettingRiskSummary": [
       "observation-projection:coupon-tax-rounding-archmap kind=selectedAxisOrWitnessLoss zeroReflection=blockedWithoutAxisPreservationAndWitnessCompleteness obstructionReflection=blockedWithoutAxisPreservationAndWitnessCompleteness mixedScopes=2"
     ],
+    "observationProjectionFidelitySummary": [
+      "observation-projection:coupon-tax-rounding-archmap status=projectionLossObserved forgotten=1 collisions=0 reflection=blockedWithoutAxisPreservationAndWitnessCompleteness"
+    ],
+    "atomOriginClosureDebtSummary": [
+      "atom-origin-closure-debt:coupon-tax-rounding-archmap status=originClosureDebtObserved sourceBacked=3 inferred=0 missingExpected=1"
+    ],
+    "effectRelationAlgebraSummary": [
+      "effect-relation-algebra:coupon-tax-rounding-archmap pressure=effectRelationPressureObserved generators=2 unresolved=1 externalBoundaries=0"
+    ],
+    "synthesisBlockageSummary": [
+      "synthesis-blockage:coupon-tax-rounding-archmap status=synthesisBlockedByMissingEvidenceOrConstraints targets=2 constraints=6 missing=5 noSolution=notASolverAndNotAbsenceProof"
+    ],
+    "operationPreconditionReadinessSummary": [
+      "repair:obstruction-semantic-contract-mismatch-computed kind=repair-semanticmismatchcircuit status=blockedByMissingPreconditionEvidence missing=5 witnesses=2"
+    ],
+    "pathMultiplicityLossSummary": [
+      "coupon-tax-rounding-archmap status=reachabilityMultiplicityLossObserved paths=1 alternatePressure=8 fanIn=0 forgotten=1"
+    ],
     "signatureTrajectoryHomotopyRefutationSummary": [
       "homotopy-order-sensitivity:selected-operations equivalence=selectedTrajectoryDisagreementObserved refutation=refutationCandidate disagreements=1"
     ],
@@ -8385,8 +8663,8 @@
       "split-readiness:molecule-coupon-operation-contract transferRisk=needsObstructionSupportReview bridgeEdges=0 obstructions=1 boundaryOps=1"
     ],
     "nonzeroMonodromyWitnessSummary": [
-      "nonzero-monodromy-witness:mu-operation-square-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation-effect axis=effect defect=2 affectedAtoms=5 missingEvidence=0 focus=2",
-      "nonzero-monodromy-witness:mu-operation-square-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-operation-delta-repair-obstruction-semantic-contract-mismatch-computed-continuation-semantic axis=semantic defect=2 affectedAtoms=3 missingEvidence=0 focus=2"
+      "nonzero-monodromy-witness:mu-operation-square-operation-square-evidence-coupon-tax-rounding-effect axis=effect defect=2 affectedAtoms=3 missingEvidence=0 focus=2",
+      "nonzero-monodromy-witness:mu-operation-square-operation-square-evidence-coupon-tax-rounding-semantic axis=semantic defect=2 affectedAtoms=3 missingEvidence=0 focus=2"
     ],
     "featureBoundaryResidualSummary": [
       "feature-boundary-residual:coupon-tax-rounding-archmap boundary=Boundary(coupon-tax-rounding-archmap, feature-extension) status=measuredResidual axes=8 residualRefs=6"
@@ -8429,8 +8707,8 @@
       "molecule:coupon-operation-contract status=needsReview score=92 boundaryOp=interface"
     ],
     "structuralReadingReviewSummary": [
-      "aat-structural-reading-review-surface status=needsReview refs=24 focus=12",
-      "ArchSig reads current architecture state across Atom support and compatibility, LawUniverse coverage, feature extension coordinates, operation calculus laws, path signature trajectory, homotopy order sensitivity, diagram fillability, axis forgetting risk, trajectory homotopy refutation, bridge split transfer, representation strength, local curvature, three-layer flatness, observation projection, state transition algebra, operation-invariant constraints, and split readiness; blockedRepresentations=14, curvatures=1, blockedOperations=1, splitBlockers=1, atomConflicts=0, unmeasuredRequiredLaws=1, blockedDiagrams=1, axisForgetting=1, homotopyRefutations=1, bridgeTransfers=1"
+      "aat-structural-reading-review-surface status=needsReview refs=30 focus=16",
+      "ArchSig reads current architecture state across Atom support and compatibility, LawUniverse coverage, feature extension coordinates, operation calculus laws, path signature trajectory, homotopy order sensitivity, diagram fillability, axis forgetting/projection fidelity, Atom origin closure, effect relation algebra, synthesis blockage, operation preconditions, path multiplicity, trajectory homotopy refutation, bridge split transfer, representation strength, local curvature, three-layer flatness, observation projection, state transition algebra, operation-invariant constraints, and split readiness; blockedRepresentations=14, curvatures=1, blockedOperations=1, splitBlockers=1, atomConflicts=0, unmeasuredRequiredLaws=1, blockedDiagrams=1, axisForgetting=1, projectionLoss=1, atomOriginDebt=1, effectRelationPressure=1, synthesisBlockage=1, operationPreconditionBlockers=1, pathMultiplicityLoss=1, homotopyRefutations=1, bridgeTransfers=1"
     ],
     "currentStateEvolutionBoundarySummary": [
       "ArchSig computes current AAT structural state from ArchMap coupon-tax-rounding-archmap and LawPolicy llm-native-aat-law-policy-fixture; it reads atoms, molecules, laws, obstructions, bridge pressure, structural readings, and bounded review focus",

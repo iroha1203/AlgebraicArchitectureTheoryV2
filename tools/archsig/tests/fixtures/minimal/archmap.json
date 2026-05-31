@@ -348,6 +348,74 @@
       "nonConclusions": ["projection is not a forecast correctness claim"]
     }
   ],
+  "operationSquareEvidence": [
+    {
+      "operationSquareEvidenceId": "operation-square-evidence:create-user-route-service",
+      "evidenceKind": "supplied-operation-pair",
+      "leftOperationRef": "operation:route-create-user",
+      "rightOperationRef": "operation:service-create-user",
+      "pOperationSequence": [
+        "operation:route-create-user",
+        "operation:service-create-user"
+      ],
+      "qOperationSequence": [
+        "operation:service-create-user",
+        "operation:route-create-user"
+      ],
+      "endpointObjectRefs": [
+        "route.users",
+        "service.user"
+      ],
+      "generatorCandidateRefs": [
+        "generator:same-contract-replacement",
+        "generator:repair-filler"
+      ],
+      "sharedEndpointRefs": [
+        "service.user"
+      ],
+      "atomObservationRefs": [
+        "atom:relation:route-service",
+        "atom:contract:create-user"
+      ],
+      "moleculeObservationRefs": [
+        "molecule:user-request-responsibility"
+      ],
+      "semanticObservationRefs": [
+        "semantic:create-user-flow"
+      ],
+      "projectionRefs": [
+        "projection:aat:route-service",
+        "projection:sft:create-user"
+      ],
+      "sourceRefs": [
+        {
+          "artifactId": "src-route-users",
+          "kind": "file",
+          "path": "src/routes/users.ts",
+          "symbol": "createUserRoute",
+          "line": 42
+        },
+        {
+          "artifactId": "src-service-user",
+          "kind": "file",
+          "path": "src/services/user.ts",
+          "symbol": "UserService",
+          "line": 12
+        },
+        {
+          "artifactId": "test-user-contract",
+          "kind": "test",
+          "path": "tests/user_contract.test.ts",
+          "symbol": "createsUser"
+        }
+      ],
+      "observationStatus": "observed",
+      "evidenceBoundary": "fixture supplies p/q route-service operation sequences and service endpoint for operation square analysis",
+      "nonConclusions": [
+        "supplied operation square is fixture evidence and not a global create-user correctness proof"
+      ]
+    }
+  ],
   "concernHints": [
     {
       "concernHintId": "concern:missing-compensation",

@@ -275,6 +275,70 @@
       ]
     }
   ],
+  "operationSquareEvidence": [
+    {
+      "operationSquareEvidenceId": "operation-square-evidence:coupon-tax-rounding",
+      "evidenceKind": "supplied-operation-pair",
+      "leftOperationRef": "operation:discount",
+      "rightOperationRef": "operation:tax-round",
+      "pOperationSequence": [
+        "operation:discount",
+        "operation:tax",
+        "operation:round"
+      ],
+      "qOperationSequence": [
+        "operation:tax",
+        "operation:discount",
+        "operation:round"
+      ],
+      "endpointObjectRefs": [
+        "PaymentAmount",
+        "ReceiptAmount"
+      ],
+      "generatorCandidateRefs": [
+        "generator:independent-square",
+        "generator:same-contract-replacement"
+      ],
+      "sharedEndpointRefs": [
+        "PaymentAmount",
+        "ReceiptAmount"
+      ],
+      "atomObservationRefs": [
+        "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding",
+        "atom:semantic:PaymentAmount-ReceiptAmount-coupon-tax-rounding-noncommutation",
+        "atom:effect:receipt-boundary"
+      ],
+      "moleculeObservationRefs": [
+        "molecule:coupon-operation-contract"
+      ],
+      "semanticObservationRefs": [
+        "semantic:coupon-tax-rounding-paths"
+      ],
+      "projectionRefs": [
+        "projection:coupon-payment-receipt"
+      ],
+      "sourceRefs": [
+        {
+          "artifactId": "src-pricing-checkout",
+          "kind": "file",
+          "path": "src/pricing/checkout.ts",
+          "symbol": "checkoutTotal",
+          "line": 18
+        },
+        {
+          "artifactId": "test-coupon-rounding",
+          "kind": "test",
+          "path": "tests/pricing/coupon_rounding.test.ts",
+          "symbol": "couponTaxRoundingOrder"
+        }
+      ],
+      "observationStatus": "observed",
+      "evidenceBoundary": "fixture supplies p/q operation sequences and shared payment/receipt endpoints for AAT operation square measurement",
+      "nonConclusions": [
+        "supplied operation square is fixture-local and not global pricing lawfulness"
+      ]
+    }
+  ],
   "concernHints": [
     {
       "concernHintId": "concern:coupon-semantic-monodromy",

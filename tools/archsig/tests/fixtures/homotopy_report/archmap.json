@@ -474,6 +474,73 @@
       "nonConclusions": ["projection is not a Lean theorem"]
     }
   ],
+  "operationSquareEvidence": [
+    {
+      "operationSquareEvidenceId": "operation-square-evidence:cache-repository-read",
+      "evidenceKind": "supplied-operation-pair",
+      "leftOperationRef": "operation:read-through-cache",
+      "rightOperationRef": "operation:read-from-repository",
+      "pOperationSequence": [
+        "operation:read-through-cache",
+        "operation:project-order-event"
+      ],
+      "qOperationSequence": [
+        "operation:read-from-repository",
+        "operation:project-order-event"
+      ],
+      "endpointObjectRefs": [
+        "OrderView"
+      ],
+      "generatorCandidateRefs": [
+        "generator:contract-filler",
+        "generator:runtime-filler"
+      ],
+      "sharedEndpointRefs": [
+        "OrderView"
+      ],
+      "atomObservationRefs": [
+        "atom:cache-read",
+        "atom:repository-read",
+        "atom:event-projection"
+      ],
+      "moleculeObservationRefs": [
+        "molecule:homotopy-report-fixture"
+      ],
+      "semanticObservationRefs": [
+        "semantic:path-rule:cache-repository-semantic-loop"
+      ],
+      "projectionRefs": [
+        "projection:homotopy-report-fixture"
+      ],
+      "sourceRefs": [
+        {
+          "artifactId": "src-cache-read",
+          "kind": "file",
+          "path": "src/cache/read.ts",
+          "symbol": "readThroughCache",
+          "line": 10
+        },
+        {
+          "artifactId": "src-repository-read",
+          "kind": "file",
+          "path": "src/repository/read.ts",
+          "symbol": "readFromRepository",
+          "line": 12
+        },
+        {
+          "artifactId": "test-homotopy-fillers",
+          "kind": "test",
+          "path": "tests/architecture/homotopy_fillers.test.ts",
+          "symbol": "contractOrRuntimeFillers"
+        }
+      ],
+      "observationStatus": "observed",
+      "evidenceBoundary": "fixture supplies p/q read-model operation sequences and OrderView endpoint for homotopy continuation measurement",
+      "nonConclusions": [
+        "supplied operation square is bounded fixture evidence, not global homotopy proof"
+      ]
+    }
+  ],
   "nonConclusions": [
     "ArchMap fixture is law-independent observation evidence",
     "HomotopyReport fixture is not architecture lawfulness proof",

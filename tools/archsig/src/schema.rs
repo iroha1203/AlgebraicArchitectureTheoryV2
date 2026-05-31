@@ -127,6 +127,8 @@ pub struct ArchMapDocumentV0 {
     #[serde(default)]
     pub projection_info: Vec<ArchMapProjectionInfoV0>,
     #[serde(default)]
+    pub operation_square_evidence: Vec<ArchMapOperationSquareEvidenceV0>,
+    #[serde(default)]
     pub concern_hints: Vec<ArchMapConcernHintV0>,
     #[serde(default)]
     pub non_conclusions: Vec<String>,
@@ -313,6 +315,39 @@ pub struct ArchMapProjectionInfoV0 {
     pub target_surface: String,
     pub reading: String,
     pub projection_boundary: String,
+    #[serde(default)]
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchMapOperationSquareEvidenceV0 {
+    pub operation_square_evidence_id: String,
+    pub evidence_kind: String,
+    pub left_operation_ref: String,
+    pub right_operation_ref: String,
+    #[serde(default)]
+    pub p_operation_sequence: Vec<String>,
+    #[serde(default)]
+    pub q_operation_sequence: Vec<String>,
+    #[serde(default)]
+    pub endpoint_object_refs: Vec<String>,
+    #[serde(default)]
+    pub generator_candidate_refs: Vec<String>,
+    #[serde(default)]
+    pub shared_endpoint_refs: Vec<String>,
+    #[serde(default)]
+    pub atom_observation_refs: Vec<String>,
+    #[serde(default)]
+    pub molecule_observation_refs: Vec<String>,
+    #[serde(default)]
+    pub semantic_observation_refs: Vec<String>,
+    #[serde(default)]
+    pub projection_refs: Vec<String>,
+    #[serde(default)]
+    pub source_refs: Vec<ArchMapSourceRef>,
+    pub observation_status: String,
+    pub evidence_boundary: String,
     #[serde(default)]
     pub non_conclusions: Vec<String>,
 }
@@ -873,6 +908,8 @@ pub struct ArchSigOperationSquareCandidateV0 {
     pub candidate_source: String,
     pub supplied_pair_ref: Option<String>,
     pub candidate_basis: Vec<String>,
+    #[serde(default)]
+    pub candidate_basis_refs: Vec<String>,
     pub left_operation_ref: String,
     pub right_operation_ref: String,
     pub p_path_ref: String,

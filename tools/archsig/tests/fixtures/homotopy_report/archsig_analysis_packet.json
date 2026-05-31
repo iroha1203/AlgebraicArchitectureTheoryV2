@@ -2880,6 +2880,233 @@
       ]
     }
   ],
+  "observationProjectionFidelityReadings": [
+    {
+      "readingId": "observation-projection-fidelity:observation-projection-homotopy-report-fixture-archmap",
+      "sourceProjectionRef": "observation-projection:homotopy-report-fixture-archmap",
+      "sourceAxisForgettingRef": "axis-forgetting-risk:selected-projection",
+      "fidelityStatus": "projectionLossObserved",
+      "observedAtomFamilyCount": 4,
+      "forgottenCoordinateCount": 1,
+      "observationCollisionCount": 0,
+      "collapsedAtomFamilyCandidateCount": 0,
+      "hiddenAtomFamilyHintCount": 1,
+      "projectionLostAtomFamilyRefs": [
+        "gap:path-rule:authorization-bypass-hole:missing-policy-test: authorization bypass path lacks policy or test filler evidence"
+      ],
+      "projectionLossAxes": [
+        "gap:path-rule:authorization-bypass-hole:missing-policy-test"
+      ],
+      "reflectionStatus": "blockedWithoutAxisPreservationAndWitnessCompleteness",
+      "measurementBoundary": "projection loss is separated from zero/lawfulness; missing coordinates are not measured absent atoms",
+      "recommendedNextAction": "review projection-lost families and forgotten coordinates before treating the ArchMap as a faithful Atom observation",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    }
+  ],
+  "atomOriginClosureDebtReadings": [
+    {
+      "readingId": "atom-origin-closure-debt:homotopy-report-fixture-archmap",
+      "sourceBackedAtomCount": 6,
+      "derivedOrInferredAtomCount": 0,
+      "expectedMissingAtomCount": 1,
+      "sourceBackedAtomFamilyRefs": [
+        "authority",
+        "contractSpecification",
+        "effect",
+        "relation"
+      ],
+      "derivedOrInferredRefs": [],
+      "missingExpectedAtomRefs": [
+        "gap:path-rule:authorization-bypass-hole:missing-policy-test"
+      ],
+      "closureStatus": "originClosureDebtObserved",
+      "weakensZeroOrRepairClaims": [
+        "zero readings need source-backed Atom closure or explicit coverage boundary",
+        "repair and synthesis candidates remain bounded when expected atoms are missing",
+        "derived or inferred atoms must not be promoted to source-backed evidence"
+      ],
+      "evidenceBoundary": "Atom origin closure debt is read from sourceRefs and observation gaps; it is not complete source extraction validation",
+      "recommendedNextAction": "separate source-backed, derived/inferred, and expected-missing Atom evidence before using the packet for repair or synthesis claims",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    }
+  ],
+  "effectRelationAlgebraReadings": [
+    {
+      "readingId": "effect-relation-algebra:homotopy-report-fixture-archmap",
+      "generatorRefs": [
+        "atom:cache-read",
+        "atom:event-projection",
+        "atom:repository-read",
+        "atom:retry-idempotency"
+      ],
+      "effectAtomRefs": [
+        "atom:event-projection",
+        "atom:retry-idempotency"
+      ],
+      "relationAtomRefs": [
+        "atom:cache-read",
+        "atom:repository-read",
+        "atom:event-projection"
+      ],
+      "externalBoundaryRefs": [],
+      "requiredEffectRelations": [
+        "effect ordering",
+        "replay or roundtrip stability",
+        "compensation/finalization relation",
+        "handler and external provider boundary ownership"
+      ],
+      "unresolvedEffectRelations": [],
+      "effectOrderingPressure": "effectRelationPressureObserved",
+      "stateTransitionRef": "state-transition-algebra:homotopy-report-fixture-archmap",
+      "evidenceBoundary": "effect relation algebra is kept separate from state transition pressure and only reads observed effect/relation/runtime evidence",
+      "recommendedNextAction": "review async job, provider, event handler, replay, roundtrip, and compensation relations before approving state/effect repairs",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    }
+  ],
+  "synthesisBlockageReadings": [
+    {
+      "readingId": "synthesis-blockage:homotopy-report-fixture-archmap",
+      "targetConstructionRefs": [
+        "repair:obstruction-homotopy-report-fixture-computed",
+        "feature-extension-formula:homotopy-report-fixture-archmap"
+      ],
+      "requiredAtomRefs": [
+        "atom:cache-read",
+        "atom:repository-read",
+        "atom:event-projection",
+        "atom:retry-idempotency",
+        "atom:authorization-bypass",
+        "atom:coupon-tax-rounding"
+      ],
+      "constraintRefs": [
+        "obstruction:homotopy-report-fixture:computed",
+        "split-readiness:molecule-homotopy-report-fixture",
+        "obstruction:homotopy-report-fixture:computed",
+        "gap:path-rule:authorization-bypass-hole:missing-policy-test",
+        "diagram filling is LawPolicy-relative and requires selected witness completeness"
+      ],
+      "missingEvidenceRefs": [
+        "coverage:homotopy-report-fixture: report observation gap and block signature-zero reflection",
+        "gap:path-rule:authorization-bypass-hole:missing-policy-test: authorization bypass path lacks policy or test filler evidence",
+        "implementation patch and verification evidence are not supplied by ArchSig analysis",
+        "witness:homotopy-report-fixture: report observation gap; do not infer measured zero",
+        "gap:path-rule:authorization-bypass-hole:missing-policy-test"
+      ],
+      "decisionBoundaryRefs": [
+        "diagram-fillability:local-curvature-obstruction-homotopy-report-fixture-computed"
+      ],
+      "candidateSolutionRefs": [],
+      "blockageStatus": "synthesisBlockedByMissingEvidenceOrConstraints",
+      "noSolutionCertificateStatus": "notASolverAndNotAbsenceProof",
+      "synthesisBoundary": "candidate absence, missing evidence, and no-solution certificates are distinct; ArchSig does not run a synthesis solver",
+      "recommendedNextAction": "resolve Atom, constraint, evidence, and decision-boundary blockers before reading a repair candidate as constructible",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    }
+  ],
+  "operationPreconditionReadinessReadings": [
+    {
+      "readingId": "operation-precondition-readiness:repair-obstruction-homotopy-report-fixture-computed",
+      "operationRef": "repair:obstruction-homotopy-report-fixture-computed",
+      "operationKind": "repair-homotopyreportfixturecircuit",
+      "readinessStatus": "blockedByMissingPreconditionEvidence",
+      "preconditionRefs": [
+        "human review selects a repair operation",
+        "resolve or explicitly accept coverage gap gap:path-rule:authorization-bypass-hole:missing-policy-test"
+      ],
+      "missingPreconditionRefs": [
+        "coverage:homotopy-report-fixture: report observation gap and block signature-zero reflection",
+        "gap:path-rule:authorization-bypass-hole:missing-policy-test: authorization bypass path lacks policy or test filler evidence",
+        "implementation patch and verification evidence are not supplied by ArchSig analysis",
+        "witness:homotopy-report-fixture: report observation gap; do not infer measured zero",
+        "resolve or explicitly accept coverage gap gap:path-rule:authorization-bypass-hole:missing-policy-test"
+      ],
+      "coverageGapRefs": [
+        "gap:path-rule:authorization-bypass-hole:missing-policy-test",
+        "gap:path-rule:authorization-bypass-hole:missing-policy-test"
+      ],
+      "exactnessGapRefs": [
+        "gap:path-rule:authorization-bypass-hole:missing-policy-test",
+        "gap:path-rule:authorization-bypass-hole:missing-policy-test"
+      ],
+      "witnessGapRefs": [
+        "witness:homotopy-report-fixture"
+      ],
+      "candidateBoundary": "repair/split/migration/protection candidates are review cues until precondition evidence is observed",
+      "recommendedNextAction": "supply coverage, exactness, witness, and runtime precondition evidence before treating the operation as safe",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    }
+  ],
+  "pathMultiplicityLossReadings": [
+    {
+      "readingId": "path-multiplicity-loss:homotopy-report-fixture-archmap",
+      "scopeRef": "homotopy-report-fixture-archmap",
+      "pathReadingRefs": [
+        "path-signature-trajectory:operation-delta-repair-obstruction-homotopy-report-fixture-computed"
+      ],
+      "observedPathCount": 1,
+      "alternatePathPressure": 8,
+      "maxWalkLengthProxy": 3,
+      "reachabilityForgottenRefs": [
+        "gap:path-rule:authorization-bypass-hole:missing-policy-test"
+      ],
+      "fanInBoundaryRefs": [
+        "molecule:homotopy-report-fixture"
+      ],
+      "multiplicityLossStatus": "reachabilityMultiplicityLossObserved",
+      "homotopyBoundary": "path multiplicity is a reachability and homotopy review signal, not proof of all paths",
+      "evidenceBoundary": "alternate-path pressure is bounded by observed operation trajectories, homotopy sensitivity, workflow risk, and gaps",
+      "recommendedNextAction": "inspect high fan-in and alternate path boundaries before treating one observed path as complete reachability",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    }
+  ],
   "signatureTrajectoryHomotopyRefutationReadings": [
     {
       "readingId": "signature-trajectory-homotopy-refutation:selected-trajectory",
@@ -6034,96 +6261,82 @@
   },
   "operationSquareCandidates": [
     {
-      "candidateId": "operation-square:operation-delta-repair-obstruction-homotopy-report-fixture-computed:operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation",
-      "candidateSource": "inferred",
-      "suppliedPairRef": null,
+      "candidateId": "operation-square:operation-square-evidence-cache-repository-read",
+      "candidateSource": "supplied",
+      "suppliedPairRef": "operation-square-evidence:cache-repository-read",
       "candidateBasis": [
-        "sharedAtomSupport",
-        "effectFamily",
-        "contractAtom",
-        "semanticAtom",
-        "authorityBoundary",
-        "projectionSurface"
+        "sourceBackedOperationPair",
+        "suppliedPathPair",
+        "sharedEndpoint",
+        "generatorCandidate",
+        "atomSupport",
+        "semanticSupport",
+        "projectionSupport"
       ],
-      "leftOperationRef": "operation-delta:repair-obstruction-homotopy-report-fixture-computed",
-      "rightOperationRef": "operation-delta:repair-obstruction-homotopy-report-fixture-computed:continuation",
-      "pPathRef": "operation-delta:repair-obstruction-homotopy-report-fixture-computed:continuation . operation-delta:repair-obstruction-homotopy-report-fixture-computed",
-      "qPathRef": "operation-delta:repair-obstruction-homotopy-report-fixture-computed . operation-delta:repair-obstruction-homotopy-report-fixture-computed:continuation",
+      "candidateBasisRefs": [
+        "OrderView",
+        "atom:cache-read",
+        "atom:event-projection",
+        "atom:repository-read",
+        "molecule:homotopy-report-fixture",
+        "projection:homotopy-report-fixture",
+        "semantic:path-rule:cache-repository-semantic-loop",
+        "src-cache-read",
+        "src-repository-read",
+        "test-homotopy-fillers"
+      ],
+      "leftOperationRef": "operation:read-through-cache",
+      "rightOperationRef": "operation:read-from-repository",
+      "pPathRef": "operation:project-order-event . operation:read-through-cache",
+      "qPathRef": "operation:project-order-event . operation:read-from-repository",
       "pOperationSequence": [
-        "operation-delta:repair-obstruction-homotopy-report-fixture-computed",
-        "operation-delta:repair-obstruction-homotopy-report-fixture-computed:continuation"
+        "operation:read-through-cache",
+        "operation:project-order-event"
       ],
       "qOperationSequence": [
-        "operation-delta:repair-obstruction-homotopy-report-fixture-computed:continuation",
-        "operation-delta:repair-obstruction-homotopy-report-fixture-computed"
+        "operation:read-from-repository",
+        "operation:project-order-event"
       ],
       "endpointObjectRefs": [
-        "aat:homotopy:fixture",
-        "atom:cache-read",
-        "atom:repository-read"
+        "OrderView"
       ],
       "generatorCandidateRefs": [
-        "generator:independent-square",
-        "generator:same-contract-replacement",
-        "generator:repair-filler",
-        "generator:identity-insertion-deletion",
-        "generator:associativity-reassociation"
+        "generator:contract-filler",
+        "generator:runtime-filler"
       ],
       "sharedAtomSupportRefs": [
         "atom:cache-read",
-        "atom:repository-read"
+        "atom:repository-read",
+        "atom:event-projection"
       ],
       "stateRefs": [],
       "effectRefs": [
-        "add observed compensation / authority / effect atoms only after source review",
-        "obstruction:homotopy-report-fixture:computed may decrease or move to a runtime/state/effect axis",
-        "split or enrich atoms that currently support the target obstruction"
+        "atom:event-projection"
       ],
-      "contractRefs": [
-        "atom:coupon-tax-rounding"
-      ],
+      "contractRefs": [],
       "semanticRefs": [
-        "semantic:path-rule:nonzero-holonomy-filled-loop",
-        "semantic:path-rule:cache-repository-semantic-loop",
-        "semantic:path-rule:event-projection-direct-read",
-        "semantic:path-rule:retry-idempotency-effect",
-        "semantic:path-rule:coupon-tax-rounding-semantic-loop"
+        "semantic:path-rule:cache-repository-semantic-loop"
       ],
-      "authorityRefs": [
-        "atom:authorization-bypass"
-      ],
+      "authorityRefs": [],
       "runtimeRefs": [],
       "projectionRefs": [
         "projection:homotopy-report-fixture"
       ],
       "sourceRefs": [
-        "doc-auth-policy",
-        "src-auth-bypass",
         "src-cache-read",
-        "src-direct-read",
-        "src-event-projection",
-        "src-pricing-checkout",
         "src-repository-read",
-        "src-retry-effect",
         "test-homotopy-fillers"
       ],
       "observationRefs": [
-        "atom:authorization-bypass",
         "atom:cache-read",
-        "atom:coupon-tax-rounding",
+        "atom:event-projection",
         "atom:repository-read",
+        "molecule:homotopy-report-fixture",
         "projection:homotopy-report-fixture",
-        "semantic:path-rule:cache-repository-semantic-loop",
-        "semantic:path-rule:coupon-tax-rounding-semantic-loop",
-        "semantic:path-rule:event-projection-direct-read",
-        "semantic:path-rule:nonzero-holonomy-filled-loop",
-        "semantic:path-rule:retry-idempotency-effect"
+        "semantic:path-rule:cache-repository-semantic-loop"
       ],
-      "missingRefs": [
-        "gap:path-rule:authorization-bypass-hole:missing-policy-test: authorization bypass path lacks policy or test filler evidence",
-        "no state observation supplied for operation square candidate"
-      ],
-      "evidenceBoundary": "inferred operation square candidate is a review cue over observed ArchMap support, not operation truth",
+      "missingRefs": [],
+      "evidenceBoundary": "supplied operation square evidence is first-class ArchMap input with p/q paths, endpoints, and source-backed basis refs: fixture supplies p/q read-model operation sequences and OrderView endpoint for homotopy continuation measurement",
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -6137,46 +6350,47 @@
   ],
   "pathContinuationTraces": [
     {
-      "traceId": "path-continuation-trace:operation-square-operation-delta-repair-obstruction-homotopy-report-fixture-computed-operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation:p",
-      "candidateRef": "operation-square:operation-delta-repair-obstruction-homotopy-report-fixture-computed:operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation",
-      "pathRef": "operation-square:operation-delta-repair-obstruction-homotopy-report-fixture-computed:operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation:p",
+      "traceId": "path-continuation-trace:operation-square-operation-square-evidence-cache-repository-read:p",
+      "candidateRef": "operation-square:operation-square-evidence-cache-repository-read",
+      "pathRef": "operation-square:operation-square-evidence-cache-repository-read:p",
       "pathRole": "p",
-      "pathExpression": "operation-delta:repair-obstruction-homotopy-report-fixture-computed:continuation . operation-delta:repair-obstruction-homotopy-report-fixture-computed",
+      "pathExpression": "operation:project-order-event . operation:read-through-cache",
       "operationSequence": [
-        "operation-delta:repair-obstruction-homotopy-report-fixture-computed",
-        "operation-delta:repair-obstruction-homotopy-report-fixture-computed:continuation"
+        "operation:read-through-cache",
+        "operation:project-order-event"
       ],
       "endpointObjectRefs": [
-        "aat:homotopy:fixture",
-        "atom:cache-read",
-        "atom:repository-read"
+        "OrderView"
       ],
       "continuationStepRefs": [
-        "cont-step:operation-square-operation-delta-repair-obstruction-homotopy-report-fixture-computed-operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation:p:operation-delta-repair-obstruction-homotopy-report-fixture-computed",
-        "cont-step:operation-square-operation-delta-repair-obstruction-homotopy-report-fixture-computed-operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation:p:operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation",
-        "cont-step:operation-square-operation-delta-repair-obstruction-homotopy-report-fixture-computed-operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation:p:endpoint"
+        "cont-step:operation-square-operation-square-evidence-cache-repository-read:p:operation-read-through-cache",
+        "cont-step:operation-square-operation-square-evidence-cache-repository-read:p:operation-project-order-event",
+        "cont-step:operation-square-operation-square-evidence-cache-repository-read:p:endpoint"
       ],
       "axisTraces": [
         {
           "axisFamily": "static",
           "axisRef": "static dependency / support axis",
           "traceStatus": "boundedObservationTrace",
-          "continuationSummary": "static continuation reads 2 observation ref(s) across 1 operation delta(s)",
+          "continuationSummary": "static continuation reads 3 observation ref(s) across 1 operation delta(s)",
           "continuationStates": [
-            "Cont_static[0]=operation-delta:repair-obstruction-homotopy-report-fixture-computed; refs=2",
-            "Cont_static[1]=operation-delta:repair-obstruction-homotopy-report-fixture-computed:continuation; refs=2",
-            "Cont_static[endpoint]=p; endpointRefs=3"
+            "Cont_static[0]=operation:read-through-cache; refs=3",
+            "Cont_static[1]=operation:project-order-event; refs=3",
+            "Cont_static[endpoint]=p; endpointRefs=1"
           ],
           "distanceInputRefs": [
             "atom:cache-read",
-            "atom:repository-read"
+            "atom:repository-read",
+            "atom:event-projection"
           ],
           "observationRefs": [
             "atom:cache-read",
-            "atom:repository-read"
+            "atom:repository-read",
+            "atom:event-projection"
           ],
           "sourceRefs": [
             "src-cache-read",
+            "src-event-projection",
             "src-repository-read"
           ],
           "missingRefs": [],
@@ -6185,55 +6399,39 @@
         {
           "axisFamily": "contract",
           "axisRef": "contract axis",
-          "traceStatus": "boundedObservationTrace",
-          "continuationSummary": "contract continuation reads 1 observation ref(s) across 1 operation delta(s)",
+          "traceStatus": "unmeasured",
+          "continuationSummary": "contract continuation is unmeasured under current ArchMap evidence",
           "continuationStates": [
-            "Cont_contract[0]=operation-delta:repair-obstruction-homotopy-report-fixture-computed; refs=1",
-            "Cont_contract[1]=operation-delta:repair-obstruction-homotopy-report-fixture-computed:continuation; refs=1",
-            "Cont_contract[endpoint]=p; endpointRefs=3"
+            "Cont_contract[0]=operation:read-through-cache; refs=0",
+            "Cont_contract[1]=operation:project-order-event; refs=0",
+            "Cont_contract[endpoint]=p; endpointRefs=1"
           ],
-          "distanceInputRefs": [
-            "atom:coupon-tax-rounding"
+          "distanceInputRefs": [],
+          "observationRefs": [],
+          "sourceRefs": [],
+          "missingRefs": [
+            "missing contract observation for operation-square:operation-square-evidence-cache-repository-read"
           ],
-          "observationRefs": [
-            "atom:coupon-tax-rounding"
-          ],
-          "sourceRefs": [
-            "src-pricing-checkout"
-          ],
-          "missingRefs": [],
           "unmeasuredBoundary": "unmeasured axis is retained as missing evidence and is not interpreted as zero defect"
         },
         {
           "axisFamily": "semantic",
           "axisRef": "semantic axis",
           "traceStatus": "boundedObservationTrace",
-          "continuationSummary": "semantic continuation reads 5 observation ref(s) across 1 operation delta(s)",
+          "continuationSummary": "semantic continuation reads 1 observation ref(s) across 1 operation delta(s)",
           "continuationStates": [
-            "Cont_semantic[0]=operation-delta:repair-obstruction-homotopy-report-fixture-computed; refs=5",
-            "Cont_semantic[1]=operation-delta:repair-obstruction-homotopy-report-fixture-computed:continuation; refs=5",
-            "Cont_semantic[endpoint]=p; endpointRefs=3"
+            "Cont_semantic[0]=operation:read-through-cache; refs=1",
+            "Cont_semantic[1]=operation:project-order-event; refs=1",
+            "Cont_semantic[endpoint]=p; endpointRefs=1"
           ],
           "distanceInputRefs": [
-            "semantic:path-rule:nonzero-holonomy-filled-loop",
-            "semantic:path-rule:cache-repository-semantic-loop",
-            "semantic:path-rule:event-projection-direct-read",
-            "semantic:path-rule:retry-idempotency-effect",
-            "semantic:path-rule:coupon-tax-rounding-semantic-loop"
+            "semantic:path-rule:cache-repository-semantic-loop"
           ],
           "observationRefs": [
-            "semantic:path-rule:nonzero-holonomy-filled-loop",
-            "semantic:path-rule:cache-repository-semantic-loop",
-            "semantic:path-rule:event-projection-direct-read",
-            "semantic:path-rule:retry-idempotency-effect",
-            "semantic:path-rule:coupon-tax-rounding-semantic-loop"
+            "semantic:path-rule:cache-repository-semantic-loop"
           ],
           "sourceRefs": [
-            "src-cache-read",
-            "src-direct-read",
-            "src-event-projection",
-            "src-pricing-checkout",
-            "src-retry-effect"
+            "src-cache-read"
           ],
           "missingRefs": [],
           "unmeasuredBoundary": "unmeasured axis is retained as missing evidence and is not interpreted as zero defect"
@@ -6244,15 +6442,15 @@
           "traceStatus": "unmeasured",
           "continuationSummary": "state continuation is unmeasured under current ArchMap evidence",
           "continuationStates": [
-            "Cont_state[0]=operation-delta:repair-obstruction-homotopy-report-fixture-computed; refs=0",
-            "Cont_state[1]=operation-delta:repair-obstruction-homotopy-report-fixture-computed:continuation; refs=0",
-            "Cont_state[endpoint]=p; endpointRefs=3"
+            "Cont_state[0]=operation:read-through-cache; refs=0",
+            "Cont_state[1]=operation:project-order-event; refs=0",
+            "Cont_state[endpoint]=p; endpointRefs=1"
           ],
           "distanceInputRefs": [],
           "observationRefs": [],
           "sourceRefs": [],
           "missingRefs": [
-            "missing state observation for operation-square:operation-delta-repair-obstruction-homotopy-report-fixture-computed:operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation"
+            "missing state observation for operation-square:operation-square-evidence-cache-repository-read"
           ],
           "unmeasuredBoundary": "unmeasured axis is retained as missing evidence and is not interpreted as zero defect"
         },
@@ -6260,34 +6458,22 @@
           "axisFamily": "effect",
           "axisRef": "effect ordering / replay / compensation axis",
           "traceStatus": "boundedObservationTrace",
-          "continuationSummary": "effect continuation reads 4 observation ref(s) across 1 operation delta(s)",
+          "continuationSummary": "effect continuation reads 2 observation ref(s) across 1 operation delta(s)",
           "continuationStates": [
-            "Cont_effect[0]=operation-delta:repair-obstruction-homotopy-report-fixture-computed; refs=4",
-            "Cont_effect[1]=operation-delta:repair-obstruction-homotopy-report-fixture-computed:continuation; refs=4",
-            "Cont_effect[endpoint]=p; endpointRefs=3"
+            "Cont_effect[0]=operation:read-through-cache; refs=2",
+            "Cont_effect[1]=operation:project-order-event; refs=2",
+            "Cont_effect[endpoint]=p; endpointRefs=1"
           ],
           "distanceInputRefs": [
-            "add observed compensation / authority / effect atoms only after source review",
-            "obstruction:homotopy-report-fixture:computed may decrease or move to a runtime/state/effect axis",
-            "split or enrich atoms that currently support the target obstruction",
-            "derived-effect-order:p:operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation-operation-delta-repair-obstruction-homotopy-report-fixture-computed"
+            "atom:event-projection",
+            "derived-effect-order:p:operation-project-order-event-operation-read-through-cache"
           ],
           "observationRefs": [
-            "add observed compensation / authority / effect atoms only after source review",
-            "obstruction:homotopy-report-fixture:computed may decrease or move to a runtime/state/effect axis",
-            "split or enrich atoms that currently support the target obstruction",
-            "derived-effect-order:p:operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation-operation-delta-repair-obstruction-homotopy-report-fixture-computed"
+            "atom:event-projection",
+            "derived-effect-order:p:operation-project-order-event-operation-read-through-cache"
           ],
           "sourceRefs": [
-            "doc-auth-policy",
-            "src-auth-bypass",
-            "src-cache-read",
-            "src-direct-read",
-            "src-event-projection",
-            "src-pricing-checkout",
-            "src-repository-read",
-            "src-retry-effect",
-            "test-homotopy-fillers"
+            "src-event-projection"
           ],
           "missingRefs": [],
           "unmeasuredBoundary": "unmeasured axis is retained as missing evidence and is not interpreted as zero defect"
@@ -6295,23 +6481,19 @@
         {
           "axisFamily": "authority",
           "axisRef": "authority / trust boundary axis",
-          "traceStatus": "boundedObservationTrace",
-          "continuationSummary": "authority continuation reads 1 observation ref(s) across 1 operation delta(s)",
+          "traceStatus": "unmeasured",
+          "continuationSummary": "authority continuation is unmeasured under current ArchMap evidence",
           "continuationStates": [
-            "Cont_authority[0]=operation-delta:repair-obstruction-homotopy-report-fixture-computed; refs=1",
-            "Cont_authority[1]=operation-delta:repair-obstruction-homotopy-report-fixture-computed:continuation; refs=1",
-            "Cont_authority[endpoint]=p; endpointRefs=3"
+            "Cont_authority[0]=operation:read-through-cache; refs=0",
+            "Cont_authority[1]=operation:project-order-event; refs=0",
+            "Cont_authority[endpoint]=p; endpointRefs=1"
           ],
-          "distanceInputRefs": [
-            "atom:authorization-bypass"
+          "distanceInputRefs": [],
+          "observationRefs": [],
+          "sourceRefs": [],
+          "missingRefs": [
+            "missing authority observation for operation-square:operation-square-evidence-cache-repository-read"
           ],
-          "observationRefs": [
-            "atom:authorization-bypass"
-          ],
-          "sourceRefs": [
-            "src-auth-bypass"
-          ],
-          "missingRefs": [],
           "unmeasuredBoundary": "unmeasured axis is retained as missing evidence and is not interpreted as zero defect"
         },
         {
@@ -6320,15 +6502,15 @@
           "traceStatus": "unmeasured",
           "continuationSummary": "runtime continuation is unmeasured under current ArchMap evidence",
           "continuationStates": [
-            "Cont_runtime[0]=operation-delta:repair-obstruction-homotopy-report-fixture-computed; refs=0",
-            "Cont_runtime[1]=operation-delta:repair-obstruction-homotopy-report-fixture-computed:continuation; refs=0",
-            "Cont_runtime[endpoint]=p; endpointRefs=3"
+            "Cont_runtime[0]=operation:read-through-cache; refs=0",
+            "Cont_runtime[1]=operation:project-order-event; refs=0",
+            "Cont_runtime[endpoint]=p; endpointRefs=1"
           ],
           "distanceInputRefs": [],
           "observationRefs": [],
           "sourceRefs": [],
           "missingRefs": [
-            "missing runtime observation for operation-square:operation-delta-repair-obstruction-homotopy-report-fixture-computed:operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation"
+            "missing runtime observation for operation-square:operation-square-evidence-cache-repository-read"
           ],
           "unmeasuredBoundary": "unmeasured axis is retained as missing evidence and is not interpreted as zero defect"
         },
@@ -6338,9 +6520,9 @@
           "traceStatus": "boundedObservationTrace",
           "continuationSummary": "projection continuation reads 1 observation ref(s) across 1 operation delta(s)",
           "continuationStates": [
-            "Cont_projection[0]=operation-delta:repair-obstruction-homotopy-report-fixture-computed; refs=1",
-            "Cont_projection[1]=operation-delta:repair-obstruction-homotopy-report-fixture-computed:continuation; refs=1",
-            "Cont_projection[endpoint]=p; endpointRefs=3"
+            "Cont_projection[0]=operation:read-through-cache; refs=1",
+            "Cont_projection[1]=operation:project-order-event; refs=1",
+            "Cont_projection[endpoint]=p; endpointRefs=1"
           ],
           "distanceInputRefs": [
             "projection:homotopy-report-fixture"
@@ -6356,32 +6538,19 @@
         }
       ],
       "observationRefs": [
-        "atom:authorization-bypass",
         "atom:cache-read",
-        "atom:coupon-tax-rounding",
+        "atom:event-projection",
         "atom:repository-read",
+        "molecule:homotopy-report-fixture",
         "projection:homotopy-report-fixture",
-        "semantic:path-rule:cache-repository-semantic-loop",
-        "semantic:path-rule:coupon-tax-rounding-semantic-loop",
-        "semantic:path-rule:event-projection-direct-read",
-        "semantic:path-rule:nonzero-holonomy-filled-loop",
-        "semantic:path-rule:retry-idempotency-effect"
+        "semantic:path-rule:cache-repository-semantic-loop"
       ],
       "sourceRefs": [
-        "doc-auth-policy",
-        "src-auth-bypass",
         "src-cache-read",
-        "src-direct-read",
-        "src-event-projection",
-        "src-pricing-checkout",
         "src-repository-read",
-        "src-retry-effect",
         "test-homotopy-fillers"
       ],
-      "missingRefs": [
-        "gap:path-rule:authorization-bypass-hole:missing-policy-test: authorization bypass path lacks policy or test filler evidence",
-        "no state observation supplied for operation square candidate"
-      ],
+      "missingRefs": [],
       "evidenceBoundary": "continuation trace is bounded by selected ArchMap observations and does not execute the operations",
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
@@ -6394,46 +6563,47 @@
       ]
     },
     {
-      "traceId": "path-continuation-trace:operation-square-operation-delta-repair-obstruction-homotopy-report-fixture-computed-operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation:q",
-      "candidateRef": "operation-square:operation-delta-repair-obstruction-homotopy-report-fixture-computed:operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation",
-      "pathRef": "operation-square:operation-delta-repair-obstruction-homotopy-report-fixture-computed:operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation:q",
+      "traceId": "path-continuation-trace:operation-square-operation-square-evidence-cache-repository-read:q",
+      "candidateRef": "operation-square:operation-square-evidence-cache-repository-read",
+      "pathRef": "operation-square:operation-square-evidence-cache-repository-read:q",
       "pathRole": "q",
-      "pathExpression": "operation-delta:repair-obstruction-homotopy-report-fixture-computed . operation-delta:repair-obstruction-homotopy-report-fixture-computed:continuation",
+      "pathExpression": "operation:project-order-event . operation:read-from-repository",
       "operationSequence": [
-        "operation-delta:repair-obstruction-homotopy-report-fixture-computed:continuation",
-        "operation-delta:repair-obstruction-homotopy-report-fixture-computed"
+        "operation:read-from-repository",
+        "operation:project-order-event"
       ],
       "endpointObjectRefs": [
-        "aat:homotopy:fixture",
-        "atom:cache-read",
-        "atom:repository-read"
+        "OrderView"
       ],
       "continuationStepRefs": [
-        "cont-step:operation-square-operation-delta-repair-obstruction-homotopy-report-fixture-computed-operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation:q:operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation",
-        "cont-step:operation-square-operation-delta-repair-obstruction-homotopy-report-fixture-computed-operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation:q:operation-delta-repair-obstruction-homotopy-report-fixture-computed",
-        "cont-step:operation-square-operation-delta-repair-obstruction-homotopy-report-fixture-computed-operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation:q:endpoint"
+        "cont-step:operation-square-operation-square-evidence-cache-repository-read:q:operation-read-from-repository",
+        "cont-step:operation-square-operation-square-evidence-cache-repository-read:q:operation-project-order-event",
+        "cont-step:operation-square-operation-square-evidence-cache-repository-read:q:endpoint"
       ],
       "axisTraces": [
         {
           "axisFamily": "static",
           "axisRef": "static dependency / support axis",
           "traceStatus": "boundedObservationTrace",
-          "continuationSummary": "static continuation reads 2 observation ref(s) across 1 operation delta(s)",
+          "continuationSummary": "static continuation reads 3 observation ref(s) across 1 operation delta(s)",
           "continuationStates": [
-            "Cont_static[0]=operation-delta:repair-obstruction-homotopy-report-fixture-computed:continuation; refs=2",
-            "Cont_static[1]=operation-delta:repair-obstruction-homotopy-report-fixture-computed; refs=2",
-            "Cont_static[endpoint]=q; endpointRefs=3"
+            "Cont_static[0]=operation:read-from-repository; refs=3",
+            "Cont_static[1]=operation:project-order-event; refs=3",
+            "Cont_static[endpoint]=q; endpointRefs=1"
           ],
           "distanceInputRefs": [
             "atom:cache-read",
-            "atom:repository-read"
+            "atom:repository-read",
+            "atom:event-projection"
           ],
           "observationRefs": [
             "atom:cache-read",
-            "atom:repository-read"
+            "atom:repository-read",
+            "atom:event-projection"
           ],
           "sourceRefs": [
             "src-cache-read",
+            "src-event-projection",
             "src-repository-read"
           ],
           "missingRefs": [],
@@ -6442,55 +6612,39 @@
         {
           "axisFamily": "contract",
           "axisRef": "contract axis",
-          "traceStatus": "boundedObservationTrace",
-          "continuationSummary": "contract continuation reads 1 observation ref(s) across 1 operation delta(s)",
+          "traceStatus": "unmeasured",
+          "continuationSummary": "contract continuation is unmeasured under current ArchMap evidence",
           "continuationStates": [
-            "Cont_contract[0]=operation-delta:repair-obstruction-homotopy-report-fixture-computed:continuation; refs=1",
-            "Cont_contract[1]=operation-delta:repair-obstruction-homotopy-report-fixture-computed; refs=1",
-            "Cont_contract[endpoint]=q; endpointRefs=3"
+            "Cont_contract[0]=operation:read-from-repository; refs=0",
+            "Cont_contract[1]=operation:project-order-event; refs=0",
+            "Cont_contract[endpoint]=q; endpointRefs=1"
           ],
-          "distanceInputRefs": [
-            "atom:coupon-tax-rounding"
+          "distanceInputRefs": [],
+          "observationRefs": [],
+          "sourceRefs": [],
+          "missingRefs": [
+            "missing contract observation for operation-square:operation-square-evidence-cache-repository-read"
           ],
-          "observationRefs": [
-            "atom:coupon-tax-rounding"
-          ],
-          "sourceRefs": [
-            "src-pricing-checkout"
-          ],
-          "missingRefs": [],
           "unmeasuredBoundary": "unmeasured axis is retained as missing evidence and is not interpreted as zero defect"
         },
         {
           "axisFamily": "semantic",
           "axisRef": "semantic axis",
           "traceStatus": "boundedObservationTrace",
-          "continuationSummary": "semantic continuation reads 5 observation ref(s) across 1 operation delta(s)",
+          "continuationSummary": "semantic continuation reads 1 observation ref(s) across 1 operation delta(s)",
           "continuationStates": [
-            "Cont_semantic[0]=operation-delta:repair-obstruction-homotopy-report-fixture-computed:continuation; refs=5",
-            "Cont_semantic[1]=operation-delta:repair-obstruction-homotopy-report-fixture-computed; refs=5",
-            "Cont_semantic[endpoint]=q; endpointRefs=3"
+            "Cont_semantic[0]=operation:read-from-repository; refs=1",
+            "Cont_semantic[1]=operation:project-order-event; refs=1",
+            "Cont_semantic[endpoint]=q; endpointRefs=1"
           ],
           "distanceInputRefs": [
-            "semantic:path-rule:nonzero-holonomy-filled-loop",
-            "semantic:path-rule:cache-repository-semantic-loop",
-            "semantic:path-rule:event-projection-direct-read",
-            "semantic:path-rule:retry-idempotency-effect",
-            "semantic:path-rule:coupon-tax-rounding-semantic-loop"
+            "semantic:path-rule:cache-repository-semantic-loop"
           ],
           "observationRefs": [
-            "semantic:path-rule:nonzero-holonomy-filled-loop",
-            "semantic:path-rule:cache-repository-semantic-loop",
-            "semantic:path-rule:event-projection-direct-read",
-            "semantic:path-rule:retry-idempotency-effect",
-            "semantic:path-rule:coupon-tax-rounding-semantic-loop"
+            "semantic:path-rule:cache-repository-semantic-loop"
           ],
           "sourceRefs": [
-            "src-cache-read",
-            "src-direct-read",
-            "src-event-projection",
-            "src-pricing-checkout",
-            "src-retry-effect"
+            "src-cache-read"
           ],
           "missingRefs": [],
           "unmeasuredBoundary": "unmeasured axis is retained as missing evidence and is not interpreted as zero defect"
@@ -6501,15 +6655,15 @@
           "traceStatus": "unmeasured",
           "continuationSummary": "state continuation is unmeasured under current ArchMap evidence",
           "continuationStates": [
-            "Cont_state[0]=operation-delta:repair-obstruction-homotopy-report-fixture-computed:continuation; refs=0",
-            "Cont_state[1]=operation-delta:repair-obstruction-homotopy-report-fixture-computed; refs=0",
-            "Cont_state[endpoint]=q; endpointRefs=3"
+            "Cont_state[0]=operation:read-from-repository; refs=0",
+            "Cont_state[1]=operation:project-order-event; refs=0",
+            "Cont_state[endpoint]=q; endpointRefs=1"
           ],
           "distanceInputRefs": [],
           "observationRefs": [],
           "sourceRefs": [],
           "missingRefs": [
-            "missing state observation for operation-square:operation-delta-repair-obstruction-homotopy-report-fixture-computed:operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation"
+            "missing state observation for operation-square:operation-square-evidence-cache-repository-read"
           ],
           "unmeasuredBoundary": "unmeasured axis is retained as missing evidence and is not interpreted as zero defect"
         },
@@ -6517,34 +6671,22 @@
           "axisFamily": "effect",
           "axisRef": "effect ordering / replay / compensation axis",
           "traceStatus": "boundedObservationTrace",
-          "continuationSummary": "effect continuation reads 4 observation ref(s) across 1 operation delta(s)",
+          "continuationSummary": "effect continuation reads 2 observation ref(s) across 1 operation delta(s)",
           "continuationStates": [
-            "Cont_effect[0]=operation-delta:repair-obstruction-homotopy-report-fixture-computed:continuation; refs=4",
-            "Cont_effect[1]=operation-delta:repair-obstruction-homotopy-report-fixture-computed; refs=4",
-            "Cont_effect[endpoint]=q; endpointRefs=3"
+            "Cont_effect[0]=operation:read-from-repository; refs=2",
+            "Cont_effect[1]=operation:project-order-event; refs=2",
+            "Cont_effect[endpoint]=q; endpointRefs=1"
           ],
           "distanceInputRefs": [
-            "add observed compensation / authority / effect atoms only after source review",
-            "obstruction:homotopy-report-fixture:computed may decrease or move to a runtime/state/effect axis",
-            "split or enrich atoms that currently support the target obstruction",
-            "derived-effect-order:q:operation-delta-repair-obstruction-homotopy-report-fixture-computed-operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation"
+            "atom:event-projection",
+            "derived-effect-order:q:operation-project-order-event-operation-read-from-repository"
           ],
           "observationRefs": [
-            "add observed compensation / authority / effect atoms only after source review",
-            "obstruction:homotopy-report-fixture:computed may decrease or move to a runtime/state/effect axis",
-            "split or enrich atoms that currently support the target obstruction",
-            "derived-effect-order:q:operation-delta-repair-obstruction-homotopy-report-fixture-computed-operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation"
+            "atom:event-projection",
+            "derived-effect-order:q:operation-project-order-event-operation-read-from-repository"
           ],
           "sourceRefs": [
-            "doc-auth-policy",
-            "src-auth-bypass",
-            "src-cache-read",
-            "src-direct-read",
-            "src-event-projection",
-            "src-pricing-checkout",
-            "src-repository-read",
-            "src-retry-effect",
-            "test-homotopy-fillers"
+            "src-event-projection"
           ],
           "missingRefs": [],
           "unmeasuredBoundary": "unmeasured axis is retained as missing evidence and is not interpreted as zero defect"
@@ -6552,23 +6694,19 @@
         {
           "axisFamily": "authority",
           "axisRef": "authority / trust boundary axis",
-          "traceStatus": "boundedObservationTrace",
-          "continuationSummary": "authority continuation reads 1 observation ref(s) across 1 operation delta(s)",
+          "traceStatus": "unmeasured",
+          "continuationSummary": "authority continuation is unmeasured under current ArchMap evidence",
           "continuationStates": [
-            "Cont_authority[0]=operation-delta:repair-obstruction-homotopy-report-fixture-computed:continuation; refs=1",
-            "Cont_authority[1]=operation-delta:repair-obstruction-homotopy-report-fixture-computed; refs=1",
-            "Cont_authority[endpoint]=q; endpointRefs=3"
+            "Cont_authority[0]=operation:read-from-repository; refs=0",
+            "Cont_authority[1]=operation:project-order-event; refs=0",
+            "Cont_authority[endpoint]=q; endpointRefs=1"
           ],
-          "distanceInputRefs": [
-            "atom:authorization-bypass"
+          "distanceInputRefs": [],
+          "observationRefs": [],
+          "sourceRefs": [],
+          "missingRefs": [
+            "missing authority observation for operation-square:operation-square-evidence-cache-repository-read"
           ],
-          "observationRefs": [
-            "atom:authorization-bypass"
-          ],
-          "sourceRefs": [
-            "src-auth-bypass"
-          ],
-          "missingRefs": [],
           "unmeasuredBoundary": "unmeasured axis is retained as missing evidence and is not interpreted as zero defect"
         },
         {
@@ -6577,15 +6715,15 @@
           "traceStatus": "unmeasured",
           "continuationSummary": "runtime continuation is unmeasured under current ArchMap evidence",
           "continuationStates": [
-            "Cont_runtime[0]=operation-delta:repair-obstruction-homotopy-report-fixture-computed:continuation; refs=0",
-            "Cont_runtime[1]=operation-delta:repair-obstruction-homotopy-report-fixture-computed; refs=0",
-            "Cont_runtime[endpoint]=q; endpointRefs=3"
+            "Cont_runtime[0]=operation:read-from-repository; refs=0",
+            "Cont_runtime[1]=operation:project-order-event; refs=0",
+            "Cont_runtime[endpoint]=q; endpointRefs=1"
           ],
           "distanceInputRefs": [],
           "observationRefs": [],
           "sourceRefs": [],
           "missingRefs": [
-            "missing runtime observation for operation-square:operation-delta-repair-obstruction-homotopy-report-fixture-computed:operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation"
+            "missing runtime observation for operation-square:operation-square-evidence-cache-repository-read"
           ],
           "unmeasuredBoundary": "unmeasured axis is retained as missing evidence and is not interpreted as zero defect"
         },
@@ -6595,9 +6733,9 @@
           "traceStatus": "boundedObservationTrace",
           "continuationSummary": "projection continuation reads 1 observation ref(s) across 1 operation delta(s)",
           "continuationStates": [
-            "Cont_projection[0]=operation-delta:repair-obstruction-homotopy-report-fixture-computed:continuation; refs=1",
-            "Cont_projection[1]=operation-delta:repair-obstruction-homotopy-report-fixture-computed; refs=1",
-            "Cont_projection[endpoint]=q; endpointRefs=3"
+            "Cont_projection[0]=operation:read-from-repository; refs=1",
+            "Cont_projection[1]=operation:project-order-event; refs=1",
+            "Cont_projection[endpoint]=q; endpointRefs=1"
           ],
           "distanceInputRefs": [
             "projection:homotopy-report-fixture"
@@ -6613,32 +6751,19 @@
         }
       ],
       "observationRefs": [
-        "atom:authorization-bypass",
         "atom:cache-read",
-        "atom:coupon-tax-rounding",
+        "atom:event-projection",
         "atom:repository-read",
+        "molecule:homotopy-report-fixture",
         "projection:homotopy-report-fixture",
-        "semantic:path-rule:cache-repository-semantic-loop",
-        "semantic:path-rule:coupon-tax-rounding-semantic-loop",
-        "semantic:path-rule:event-projection-direct-read",
-        "semantic:path-rule:nonzero-holonomy-filled-loop",
-        "semantic:path-rule:retry-idempotency-effect"
+        "semantic:path-rule:cache-repository-semantic-loop"
       ],
       "sourceRefs": [
-        "doc-auth-policy",
-        "src-auth-bypass",
         "src-cache-read",
-        "src-direct-read",
-        "src-event-projection",
-        "src-pricing-checkout",
         "src-repository-read",
-        "src-retry-effect",
         "test-homotopy-fillers"
       ],
-      "missingRefs": [
-        "gap:path-rule:authorization-bypass-hole:missing-policy-test: authorization bypass path lacks policy or test filler evidence",
-        "no state observation supplied for operation square candidate"
-      ],
+      "missingRefs": [],
       "evidenceBoundary": "continuation trace is bounded by selected ArchMap observations and does not execute the operations",
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
@@ -6653,42 +6778,32 @@
   ],
   "axisWiseMonodromyDefects": [
     {
-      "defectId": "mu:operation-square-operation-delta-repair-obstruction-homotopy-report-fixture-computed-operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation:authority",
-      "candidateRef": "operation-square:operation-delta-repair-obstruction-homotopy-report-fixture-computed:operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation",
+      "defectId": "mu:operation-square-operation-square-evidence-cache-repository-read:authority",
+      "candidateRef": "operation-square:operation-square-evidence-cache-repository-read",
       "axisFamily": "authority",
       "axisRef": "authority / trust boundary axis",
       "distanceKind": "witness-mismatch-count",
       "pContinuationRef": "Cont_authority(p):authority / trust boundary axis",
       "qContinuationRef": "Cont_authority(q):authority / trust boundary axis",
-      "distanceInputRefs": [
-        "atom:authorization-bypass"
-      ],
+      "distanceInputRefs": [],
       "positiveWitnessBoundary": "mu_x > 0 is read only as selected continuation observation difference with source-backed p/q trace inputs",
-      "weight": 1,
-      "measurementStatus": "measured",
-      "distanceValue": 0,
-      "measuredSupportRefs": [
-        "atom:authorization-bypass"
-      ],
+      "weight": 0,
+      "measurementStatus": "unmeasured",
+      "distanceValue": null,
+      "measuredSupportRefs": [],
       "witnessRefs": [
-        "atom:authorization-bypass"
+        "missing-evidence:missing authority observation for operation-square:operation-square-evidence-cache-repository-read"
       ],
       "sourceRefs": [
-        "doc-auth-policy",
-        "src-auth-bypass",
         "src-cache-read",
-        "src-direct-read",
-        "src-event-projection",
-        "src-pricing-checkout",
         "src-repository-read",
-        "src-retry-effect",
         "test-homotopy-fillers"
       ],
-      "observationRefs": [
-        "atom:authorization-bypass"
+      "observationRefs": [],
+      "missingRefs": [
+        "missing authority observation for operation-square:operation-square-evidence-cache-repository-read"
       ],
-      "missingRefs": [],
-      "coverageBoundary": "covered for selected trace refs; not complete execution semantics",
+      "coverageBoundary": "coverage gap preserved; unmeasured axis is not zero defect",
       "exactnessAssumptionStatus": [
         "selected LawPolicy exactness assumptions"
       ],
@@ -6711,42 +6826,32 @@
       ]
     },
     {
-      "defectId": "mu:operation-square-operation-delta-repair-obstruction-homotopy-report-fixture-computed-operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation:contract",
-      "candidateRef": "operation-square:operation-delta-repair-obstruction-homotopy-report-fixture-computed:operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation",
+      "defectId": "mu:operation-square-operation-square-evidence-cache-repository-read:contract",
+      "candidateRef": "operation-square:operation-square-evidence-cache-repository-read",
       "axisFamily": "contract",
       "axisRef": "contract axis",
       "distanceKind": "witness-mismatch-count",
       "pContinuationRef": "Cont_contract(p):contract axis",
       "qContinuationRef": "Cont_contract(q):contract axis",
-      "distanceInputRefs": [
-        "atom:coupon-tax-rounding"
-      ],
+      "distanceInputRefs": [],
       "positiveWitnessBoundary": "mu_x > 0 is read only as selected continuation observation difference with source-backed p/q trace inputs",
-      "weight": 1,
-      "measurementStatus": "measured",
-      "distanceValue": 0,
-      "measuredSupportRefs": [
-        "atom:coupon-tax-rounding"
-      ],
+      "weight": 0,
+      "measurementStatus": "unmeasured",
+      "distanceValue": null,
+      "measuredSupportRefs": [],
       "witnessRefs": [
-        "atom:coupon-tax-rounding"
+        "missing-evidence:missing contract observation for operation-square:operation-square-evidence-cache-repository-read"
       ],
       "sourceRefs": [
-        "doc-auth-policy",
-        "src-auth-bypass",
         "src-cache-read",
-        "src-direct-read",
-        "src-event-projection",
-        "src-pricing-checkout",
         "src-repository-read",
-        "src-retry-effect",
         "test-homotopy-fillers"
       ],
-      "observationRefs": [
-        "atom:coupon-tax-rounding"
+      "observationRefs": [],
+      "missingRefs": [
+        "missing contract observation for operation-square:operation-square-evidence-cache-repository-read"
       ],
-      "missingRefs": [],
-      "coverageBoundary": "covered for selected trace refs; not complete execution semantics",
+      "coverageBoundary": "coverage gap preserved; unmeasured axis is not zero defect",
       "exactnessAssumptionStatus": [
         "selected LawPolicy exactness assumptions"
       ],
@@ -6769,55 +6874,41 @@
       ]
     },
     {
-      "defectId": "mu:operation-square-operation-delta-repair-obstruction-homotopy-report-fixture-computed-operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation:effect",
-      "candidateRef": "operation-square:operation-delta-repair-obstruction-homotopy-report-fixture-computed:operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation",
+      "defectId": "mu:operation-square-operation-square-evidence-cache-repository-read:effect",
+      "candidateRef": "operation-square:operation-square-evidence-cache-repository-read",
       "axisFamily": "effect",
       "axisRef": "effect ordering / replay / compensation axis",
       "distanceKind": "witness-mismatch-count",
       "pContinuationRef": "Cont_effect(p):effect ordering / replay / compensation axis",
       "qContinuationRef": "Cont_effect(q):effect ordering / replay / compensation axis",
       "distanceInputRefs": [
-        "add observed compensation / authority / effect atoms only after source review",
-        "derived-effect-order:p:operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation-operation-delta-repair-obstruction-homotopy-report-fixture-computed",
-        "derived-effect-order:q:operation-delta-repair-obstruction-homotopy-report-fixture-computed-operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation",
-        "obstruction:homotopy-report-fixture:computed may decrease or move to a runtime/state/effect axis",
-        "split or enrich atoms that currently support the target obstruction"
+        "atom:event-projection",
+        "derived-effect-order:p:operation-project-order-event-operation-read-through-cache",
+        "derived-effect-order:q:operation-project-order-event-operation-read-from-repository"
       ],
       "positiveWitnessBoundary": "mu_x > 0 is read only as selected continuation observation difference with source-backed p/q trace inputs",
       "weight": 1,
       "measurementStatus": "measured",
       "distanceValue": 2,
       "measuredSupportRefs": [
-        "add observed compensation / authority / effect atoms only after source review",
-        "derived-effect-order:p:operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation-operation-delta-repair-obstruction-homotopy-report-fixture-computed",
-        "derived-effect-order:q:operation-delta-repair-obstruction-homotopy-report-fixture-computed-operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation",
-        "obstruction:homotopy-report-fixture:computed may decrease or move to a runtime/state/effect axis",
-        "split or enrich atoms that currently support the target obstruction"
+        "atom:event-projection",
+        "derived-effect-order:p:operation-project-order-event-operation-read-through-cache",
+        "derived-effect-order:q:operation-project-order-event-operation-read-from-repository"
       ],
       "witnessRefs": [
-        "add observed compensation / authority / effect atoms only after source review",
-        "derived-effect-order:p:operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation-operation-delta-repair-obstruction-homotopy-report-fixture-computed",
-        "derived-effect-order:q:operation-delta-repair-obstruction-homotopy-report-fixture-computed-operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation",
-        "obstruction:homotopy-report-fixture:computed may decrease or move to a runtime/state/effect axis",
-        "split or enrich atoms that currently support the target obstruction"
+        "atom:event-projection",
+        "derived-effect-order:p:operation-project-order-event-operation-read-through-cache",
+        "derived-effect-order:q:operation-project-order-event-operation-read-from-repository"
       ],
       "sourceRefs": [
-        "doc-auth-policy",
-        "src-auth-bypass",
         "src-cache-read",
-        "src-direct-read",
-        "src-event-projection",
-        "src-pricing-checkout",
         "src-repository-read",
-        "src-retry-effect",
         "test-homotopy-fillers"
       ],
       "observationRefs": [
-        "add observed compensation / authority / effect atoms only after source review",
-        "derived-effect-order:p:operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation-operation-delta-repair-obstruction-homotopy-report-fixture-computed",
-        "derived-effect-order:q:operation-delta-repair-obstruction-homotopy-report-fixture-computed-operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation",
-        "obstruction:homotopy-report-fixture:computed may decrease or move to a runtime/state/effect axis",
-        "split or enrich atoms that currently support the target obstruction"
+        "atom:event-projection",
+        "derived-effect-order:p:operation-project-order-event-operation-read-through-cache",
+        "derived-effect-order:q:operation-project-order-event-operation-read-from-repository"
       ],
       "missingRefs": [],
       "coverageBoundary": "covered for selected trace refs; not complete execution semantics",
@@ -6843,8 +6934,8 @@
       ]
     },
     {
-      "defectId": "mu:operation-square-operation-delta-repair-obstruction-homotopy-report-fixture-computed-operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation:projection",
-      "candidateRef": "operation-square:operation-delta-repair-obstruction-homotopy-report-fixture-computed:operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation",
+      "defectId": "mu:operation-square-operation-square-evidence-cache-repository-read:projection",
+      "candidateRef": "operation-square:operation-square-evidence-cache-repository-read",
       "axisFamily": "projection",
       "axisRef": "projection / representation axis",
       "distanceKind": "witness-mismatch-count",
@@ -6864,14 +6955,8 @@
         "projection:homotopy-report-fixture"
       ],
       "sourceRefs": [
-        "doc-auth-policy",
-        "src-auth-bypass",
         "src-cache-read",
-        "src-direct-read",
-        "src-event-projection",
-        "src-pricing-checkout",
         "src-repository-read",
-        "src-retry-effect",
         "test-homotopy-fillers"
       ],
       "observationRefs": [
@@ -6901,8 +6986,8 @@
       ]
     },
     {
-      "defectId": "mu:operation-square-operation-delta-repair-obstruction-homotopy-report-fixture-computed-operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation:runtime",
-      "candidateRef": "operation-square:operation-delta-repair-obstruction-homotopy-report-fixture-computed:operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation",
+      "defectId": "mu:operation-square-operation-square-evidence-cache-repository-read:runtime",
+      "candidateRef": "operation-square:operation-square-evidence-cache-repository-read",
       "axisFamily": "runtime",
       "axisRef": "runtime interaction axis",
       "distanceKind": "witness-mismatch-count",
@@ -6915,22 +7000,16 @@
       "distanceValue": null,
       "measuredSupportRefs": [],
       "witnessRefs": [
-        "missing-evidence:missing runtime observation for operation-square:operation-delta-repair-obstruction-homotopy-report-fixture-computed:operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation"
+        "missing-evidence:missing runtime observation for operation-square:operation-square-evidence-cache-repository-read"
       ],
       "sourceRefs": [
-        "doc-auth-policy",
-        "src-auth-bypass",
         "src-cache-read",
-        "src-direct-read",
-        "src-event-projection",
-        "src-pricing-checkout",
         "src-repository-read",
-        "src-retry-effect",
         "test-homotopy-fillers"
       ],
       "observationRefs": [],
       "missingRefs": [
-        "missing runtime observation for operation-square:operation-delta-repair-obstruction-homotopy-report-fixture-computed:operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation"
+        "missing runtime observation for operation-square:operation-square-evidence-cache-repository-read"
       ],
       "coverageBoundary": "coverage gap preserved; unmeasured axis is not zero defect",
       "exactnessAssumptionStatus": [
@@ -6955,55 +7034,33 @@
       ]
     },
     {
-      "defectId": "mu:operation-square-operation-delta-repair-obstruction-homotopy-report-fixture-computed-operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation:semantic",
-      "candidateRef": "operation-square:operation-delta-repair-obstruction-homotopy-report-fixture-computed:operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation",
+      "defectId": "mu:operation-square-operation-square-evidence-cache-repository-read:semantic",
+      "candidateRef": "operation-square:operation-square-evidence-cache-repository-read",
       "axisFamily": "semantic",
       "axisRef": "semantic axis",
       "distanceKind": "witness-mismatch-count",
       "pContinuationRef": "Cont_semantic(p):semantic axis",
       "qContinuationRef": "Cont_semantic(q):semantic axis",
       "distanceInputRefs": [
-        "semantic:path-rule:cache-repository-semantic-loop",
-        "semantic:path-rule:coupon-tax-rounding-semantic-loop",
-        "semantic:path-rule:event-projection-direct-read",
-        "semantic:path-rule:nonzero-holonomy-filled-loop",
-        "semantic:path-rule:retry-idempotency-effect"
+        "semantic:path-rule:cache-repository-semantic-loop"
       ],
       "positiveWitnessBoundary": "mu_x > 0 is read only as selected continuation observation difference with source-backed p/q trace inputs",
       "weight": 1,
       "measurementStatus": "measured",
       "distanceValue": 0,
       "measuredSupportRefs": [
-        "semantic:path-rule:cache-repository-semantic-loop",
-        "semantic:path-rule:coupon-tax-rounding-semantic-loop",
-        "semantic:path-rule:event-projection-direct-read",
-        "semantic:path-rule:nonzero-holonomy-filled-loop",
-        "semantic:path-rule:retry-idempotency-effect"
+        "semantic:path-rule:cache-repository-semantic-loop"
       ],
       "witnessRefs": [
-        "semantic:path-rule:cache-repository-semantic-loop",
-        "semantic:path-rule:coupon-tax-rounding-semantic-loop",
-        "semantic:path-rule:event-projection-direct-read",
-        "semantic:path-rule:nonzero-holonomy-filled-loop",
-        "semantic:path-rule:retry-idempotency-effect"
+        "semantic:path-rule:cache-repository-semantic-loop"
       ],
       "sourceRefs": [
-        "doc-auth-policy",
-        "src-auth-bypass",
         "src-cache-read",
-        "src-direct-read",
-        "src-event-projection",
-        "src-pricing-checkout",
         "src-repository-read",
-        "src-retry-effect",
         "test-homotopy-fillers"
       ],
       "observationRefs": [
-        "semantic:path-rule:cache-repository-semantic-loop",
-        "semantic:path-rule:coupon-tax-rounding-semantic-loop",
-        "semantic:path-rule:event-projection-direct-read",
-        "semantic:path-rule:nonzero-holonomy-filled-loop",
-        "semantic:path-rule:retry-idempotency-effect"
+        "semantic:path-rule:cache-repository-semantic-loop"
       ],
       "missingRefs": [],
       "coverageBoundary": "covered for selected trace refs; not complete execution semantics",
@@ -7029,8 +7086,8 @@
       ]
     },
     {
-      "defectId": "mu:operation-square-operation-delta-repair-obstruction-homotopy-report-fixture-computed-operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation:state",
-      "candidateRef": "operation-square:operation-delta-repair-obstruction-homotopy-report-fixture-computed:operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation",
+      "defectId": "mu:operation-square-operation-square-evidence-cache-repository-read:state",
+      "candidateRef": "operation-square:operation-square-evidence-cache-repository-read",
       "axisFamily": "state",
       "axisRef": "state transition axis",
       "distanceKind": "witness-mismatch-count",
@@ -7043,22 +7100,16 @@
       "distanceValue": null,
       "measuredSupportRefs": [],
       "witnessRefs": [
-        "missing-evidence:missing state observation for operation-square:operation-delta-repair-obstruction-homotopy-report-fixture-computed:operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation"
+        "missing-evidence:missing state observation for operation-square:operation-square-evidence-cache-repository-read"
       ],
       "sourceRefs": [
-        "doc-auth-policy",
-        "src-auth-bypass",
         "src-cache-read",
-        "src-direct-read",
-        "src-event-projection",
-        "src-pricing-checkout",
         "src-repository-read",
-        "src-retry-effect",
         "test-homotopy-fillers"
       ],
       "observationRefs": [],
       "missingRefs": [
-        "missing state observation for operation-square:operation-delta-repair-obstruction-homotopy-report-fixture-computed:operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation"
+        "missing state observation for operation-square:operation-square-evidence-cache-repository-read"
       ],
       "coverageBoundary": "coverage gap preserved; unmeasured axis is not zero defect",
       "exactnessAssumptionStatus": [
@@ -7083,8 +7134,8 @@
       ]
     },
     {
-      "defectId": "mu:operation-square-operation-delta-repair-obstruction-homotopy-report-fixture-computed-operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation:static",
-      "candidateRef": "operation-square:operation-delta-repair-obstruction-homotopy-report-fixture-computed:operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation",
+      "defectId": "mu:operation-square-operation-square-evidence-cache-repository-read:static",
+      "candidateRef": "operation-square:operation-square-evidence-cache-repository-read",
       "axisFamily": "static",
       "axisRef": "static dependency / support axis",
       "distanceKind": "witness-mismatch-count",
@@ -7092,6 +7143,7 @@
       "qContinuationRef": "Cont_static(q):static dependency / support axis",
       "distanceInputRefs": [
         "atom:cache-read",
+        "atom:event-projection",
         "atom:repository-read"
       ],
       "positiveWitnessBoundary": "mu_x > 0 is read only as selected continuation observation difference with source-backed p/q trace inputs",
@@ -7100,25 +7152,22 @@
       "distanceValue": 0,
       "measuredSupportRefs": [
         "atom:cache-read",
+        "atom:event-projection",
         "atom:repository-read"
       ],
       "witnessRefs": [
         "atom:cache-read",
+        "atom:event-projection",
         "atom:repository-read"
       ],
       "sourceRefs": [
-        "doc-auth-policy",
-        "src-auth-bypass",
         "src-cache-read",
-        "src-direct-read",
-        "src-event-projection",
-        "src-pricing-checkout",
         "src-repository-read",
-        "src-retry-effect",
         "test-homotopy-fillers"
       ],
       "observationRefs": [
         "atom:cache-read",
+        "atom:event-projection",
         "atom:repository-read"
       ],
       "missingRefs": [],
@@ -7160,104 +7209,100 @@
         "static"
       ],
       "selectedMeasuredSquareRefs": [
-        "square-family-entry:mu:operation-square-operation-delta-repair-obstruction-homotopy-report-fixture-computed-operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation:authority",
-        "square-family-entry:mu:operation-square-operation-delta-repair-obstruction-homotopy-report-fixture-computed-operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation:contract",
-        "square-family-entry:mu:operation-square-operation-delta-repair-obstruction-homotopy-report-fixture-computed-operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation:effect",
-        "square-family-entry:mu:operation-square-operation-delta-repair-obstruction-homotopy-report-fixture-computed-operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation:projection",
-        "square-family-entry:mu:operation-square-operation-delta-repair-obstruction-homotopy-report-fixture-computed-operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation:semantic",
-        "square-family-entry:mu:operation-square-operation-delta-repair-obstruction-homotopy-report-fixture-computed-operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation:static"
+        "square-family-entry:mu:operation-square-operation-square-evidence-cache-repository-read:effect",
+        "square-family-entry:mu:operation-square-operation-square-evidence-cache-repository-read:projection",
+        "square-family-entry:mu:operation-square-operation-square-evidence-cache-repository-read:semantic",
+        "square-family-entry:mu:operation-square-operation-square-evidence-cache-repository-read:static"
       ],
       "weightPolicy": "unit weights until project-specific calibration is declared",
       "distanceKind": "witness-mismatch-count",
       "measurementStatus": "partial",
       "aggregateValue": 2,
       "measuredDefectRefs": [
-        "mu:operation-square-operation-delta-repair-obstruction-homotopy-report-fixture-computed-operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation:authority",
-        "mu:operation-square-operation-delta-repair-obstruction-homotopy-report-fixture-computed-operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation:contract",
-        "mu:operation-square-operation-delta-repair-obstruction-homotopy-report-fixture-computed-operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation:effect",
-        "mu:operation-square-operation-delta-repair-obstruction-homotopy-report-fixture-computed-operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation:projection",
-        "mu:operation-square-operation-delta-repair-obstruction-homotopy-report-fixture-computed-operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation:semantic",
-        "mu:operation-square-operation-delta-repair-obstruction-homotopy-report-fixture-computed-operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation:static"
+        "mu:operation-square-operation-square-evidence-cache-repository-read:effect",
+        "mu:operation-square-operation-square-evidence-cache-repository-read:projection",
+        "mu:operation-square-operation-square-evidence-cache-repository-read:semantic",
+        "mu:operation-square-operation-square-evidence-cache-repository-read:static"
       ],
       "unmeasuredDefectRefs": [
-        "mu:operation-square-operation-delta-repair-obstruction-homotopy-report-fixture-computed-operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation:runtime",
-        "mu:operation-square-operation-delta-repair-obstruction-homotopy-report-fixture-computed-operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation:state"
+        "mu:operation-square-operation-square-evidence-cache-repository-read:authority",
+        "mu:operation-square-operation-square-evidence-cache-repository-read:contract",
+        "mu:operation-square-operation-square-evidence-cache-repository-read:runtime",
+        "mu:operation-square-operation-square-evidence-cache-repository-read:state"
       ],
       "positiveWeightDefectRefs": [
-        "mu:operation-square-operation-delta-repair-obstruction-homotopy-report-fixture-computed-operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation:authority",
-        "mu:operation-square-operation-delta-repair-obstruction-homotopy-report-fixture-computed-operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation:contract",
-        "mu:operation-square-operation-delta-repair-obstruction-homotopy-report-fixture-computed-operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation:effect",
-        "mu:operation-square-operation-delta-repair-obstruction-homotopy-report-fixture-computed-operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation:projection",
-        "mu:operation-square-operation-delta-repair-obstruction-homotopy-report-fixture-computed-operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation:semantic",
-        "mu:operation-square-operation-delta-repair-obstruction-homotopy-report-fixture-computed-operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation:static"
+        "mu:operation-square-operation-square-evidence-cache-repository-read:effect",
+        "mu:operation-square-operation-square-evidence-cache-repository-read:projection",
+        "mu:operation-square-operation-square-evidence-cache-repository-read:semantic",
+        "mu:operation-square-operation-square-evidence-cache-repository-read:static"
       ],
       "zeroWeightDefectRefs": [
-        "mu:operation-square-operation-delta-repair-obstruction-homotopy-report-fixture-computed-operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation:runtime",
-        "mu:operation-square-operation-delta-repair-obstruction-homotopy-report-fixture-computed-operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation:state"
+        "mu:operation-square-operation-square-evidence-cache-repository-read:authority",
+        "mu:operation-square-operation-square-evidence-cache-repository-read:contract",
+        "mu:operation-square-operation-square-evidence-cache-repository-read:runtime",
+        "mu:operation-square-operation-square-evidence-cache-repository-read:state"
       ],
       "topContributors": [
         {
-          "defectRef": "mu:operation-square-operation-delta-repair-obstruction-homotopy-report-fixture-computed-operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation:runtime",
-          "candidateRef": "operation-square:operation-delta-repair-obstruction-homotopy-report-fixture-computed:operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation",
+          "defectRef": "mu:operation-square-operation-square-evidence-cache-repository-read:authority",
+          "candidateRef": "operation-square:operation-square-evidence-cache-repository-read",
+          "axisFamily": "authority",
+          "contributionWeight": 1,
+          "contributionValue": null,
+          "reviewFocus": "supply missing authority trace evidence before interpreting AMI as zero",
+          "witnessRefs": [
+            "missing-evidence:missing authority observation for operation-square:operation-square-evidence-cache-repository-read"
+          ]
+        },
+        {
+          "defectRef": "mu:operation-square-operation-square-evidence-cache-repository-read:contract",
+          "candidateRef": "operation-square:operation-square-evidence-cache-repository-read",
+          "axisFamily": "contract",
+          "contributionWeight": 1,
+          "contributionValue": null,
+          "reviewFocus": "supply missing contract trace evidence before interpreting AMI as zero",
+          "witnessRefs": [
+            "missing-evidence:missing contract observation for operation-square:operation-square-evidence-cache-repository-read"
+          ]
+        },
+        {
+          "defectRef": "mu:operation-square-operation-square-evidence-cache-repository-read:runtime",
+          "candidateRef": "operation-square:operation-square-evidence-cache-repository-read",
           "axisFamily": "runtime",
           "contributionWeight": 1,
           "contributionValue": null,
           "reviewFocus": "supply missing runtime trace evidence before interpreting AMI as zero",
           "witnessRefs": [
-            "missing-evidence:missing runtime observation for operation-square:operation-delta-repair-obstruction-homotopy-report-fixture-computed:operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation"
+            "missing-evidence:missing runtime observation for operation-square:operation-square-evidence-cache-repository-read"
           ]
         },
         {
-          "defectRef": "mu:operation-square-operation-delta-repair-obstruction-homotopy-report-fixture-computed-operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation:state",
-          "candidateRef": "operation-square:operation-delta-repair-obstruction-homotopy-report-fixture-computed:operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation",
+          "defectRef": "mu:operation-square-operation-square-evidence-cache-repository-read:state",
+          "candidateRef": "operation-square:operation-square-evidence-cache-repository-read",
           "axisFamily": "state",
           "contributionWeight": 1,
           "contributionValue": null,
           "reviewFocus": "supply missing state trace evidence before interpreting AMI as zero",
           "witnessRefs": [
-            "missing-evidence:missing state observation for operation-square:operation-delta-repair-obstruction-homotopy-report-fixture-computed:operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation"
+            "missing-evidence:missing state observation for operation-square:operation-square-evidence-cache-repository-read"
           ]
         },
         {
-          "defectRef": "mu:operation-square-operation-delta-repair-obstruction-homotopy-report-fixture-computed-operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation:effect",
-          "candidateRef": "operation-square:operation-delta-repair-obstruction-homotopy-report-fixture-computed:operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation",
+          "defectRef": "mu:operation-square-operation-square-evidence-cache-repository-read:effect",
+          "candidateRef": "operation-square:operation-square-evidence-cache-repository-read",
           "axisFamily": "effect",
           "contributionWeight": 1,
           "contributionValue": 2,
           "reviewFocus": "review effect trace mismatch before treating aggregate value as local agreement",
           "witnessRefs": [
-            "add observed compensation / authority / effect atoms only after source review",
-            "derived-effect-order:p:operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation-operation-delta-repair-obstruction-homotopy-report-fixture-computed",
-            "derived-effect-order:q:operation-delta-repair-obstruction-homotopy-report-fixture-computed-operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation",
-            "obstruction:homotopy-report-fixture:computed may decrease or move to a runtime/state/effect axis",
-            "split or enrich atoms that currently support the target obstruction"
+            "atom:event-projection",
+            "derived-effect-order:p:operation-project-order-event-operation-read-through-cache",
+            "derived-effect-order:q:operation-project-order-event-operation-read-from-repository"
           ]
         },
         {
-          "defectRef": "mu:operation-square-operation-delta-repair-obstruction-homotopy-report-fixture-computed-operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation:authority",
-          "candidateRef": "operation-square:operation-delta-repair-obstruction-homotopy-report-fixture-computed:operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation",
-          "axisFamily": "authority",
-          "contributionWeight": 1,
-          "contributionValue": 0,
-          "reviewFocus": "review authority trace mismatch before treating aggregate value as local agreement",
-          "witnessRefs": [
-            "atom:authorization-bypass"
-          ]
-        },
-        {
-          "defectRef": "mu:operation-square-operation-delta-repair-obstruction-homotopy-report-fixture-computed-operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation:contract",
-          "candidateRef": "operation-square:operation-delta-repair-obstruction-homotopy-report-fixture-computed:operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation",
-          "axisFamily": "contract",
-          "contributionWeight": 1,
-          "contributionValue": 0,
-          "reviewFocus": "review contract trace mismatch before treating aggregate value as local agreement",
-          "witnessRefs": [
-            "atom:coupon-tax-rounding"
-          ]
-        },
-        {
-          "defectRef": "mu:operation-square-operation-delta-repair-obstruction-homotopy-report-fixture-computed-operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation:projection",
-          "candidateRef": "operation-square:operation-delta-repair-obstruction-homotopy-report-fixture-computed:operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation",
+          "defectRef": "mu:operation-square-operation-square-evidence-cache-repository-read:projection",
+          "candidateRef": "operation-square:operation-square-evidence-cache-repository-read",
           "axisFamily": "projection",
           "contributionWeight": 1,
           "contributionValue": 0,
@@ -7267,29 +7312,26 @@
           ]
         },
         {
-          "defectRef": "mu:operation-square-operation-delta-repair-obstruction-homotopy-report-fixture-computed-operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation:semantic",
-          "candidateRef": "operation-square:operation-delta-repair-obstruction-homotopy-report-fixture-computed:operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation",
+          "defectRef": "mu:operation-square-operation-square-evidence-cache-repository-read:semantic",
+          "candidateRef": "operation-square:operation-square-evidence-cache-repository-read",
           "axisFamily": "semantic",
           "contributionWeight": 1,
           "contributionValue": 0,
           "reviewFocus": "review semantic trace mismatch before treating aggregate value as local agreement",
           "witnessRefs": [
-            "semantic:path-rule:cache-repository-semantic-loop",
-            "semantic:path-rule:coupon-tax-rounding-semantic-loop",
-            "semantic:path-rule:event-projection-direct-read",
-            "semantic:path-rule:nonzero-holonomy-filled-loop",
-            "semantic:path-rule:retry-idempotency-effect"
+            "semantic:path-rule:cache-repository-semantic-loop"
           ]
         },
         {
-          "defectRef": "mu:operation-square-operation-delta-repair-obstruction-homotopy-report-fixture-computed-operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation:static",
-          "candidateRef": "operation-square:operation-delta-repair-obstruction-homotopy-report-fixture-computed:operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation",
+          "defectRef": "mu:operation-square-operation-square-evidence-cache-repository-read:static",
+          "candidateRef": "operation-square:operation-square-evidence-cache-repository-read",
           "axisFamily": "static",
           "contributionWeight": 1,
           "contributionValue": 0,
           "reviewFocus": "review static trace mismatch before treating aggregate value as local agreement",
           "witnessRefs": [
             "atom:cache-read",
+            "atom:event-projection",
             "atom:repository-read"
           ]
         }
@@ -7316,30 +7358,28 @@
   ],
   "nonzeroMonodromyWitnesses": [
     {
-      "witnessId": "nonzero-monodromy-witness:mu-operation-square-operation-delta-repair-obstruction-homotopy-report-fixture-computed-operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation-effect",
-      "defectRef": "mu:operation-square-operation-delta-repair-obstruction-homotopy-report-fixture-computed-operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation:effect",
-      "candidateRef": "operation-square:operation-delta-repair-obstruction-homotopy-report-fixture-computed:operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation",
+      "witnessId": "nonzero-monodromy-witness:mu-operation-square-operation-square-evidence-cache-repository-read-effect",
+      "defectRef": "mu:operation-square-operation-square-evidence-cache-repository-read:effect",
+      "candidateRef": "operation-square:operation-square-evidence-cache-repository-read",
       "operationPair": [
-        "operation-delta:repair-obstruction-homotopy-report-fixture-computed",
-        "operation-delta:repair-obstruction-homotopy-report-fixture-computed:continuation"
+        "operation:read-through-cache",
+        "operation:read-from-repository"
       ],
       "pathPair": [
-        "operation-delta:repair-obstruction-homotopy-report-fixture-computed:continuation . operation-delta:repair-obstruction-homotopy-report-fixture-computed",
-        "operation-delta:repair-obstruction-homotopy-report-fixture-computed . operation-delta:repair-obstruction-homotopy-report-fixture-computed:continuation"
+        "operation:project-order-event . operation:read-through-cache",
+        "operation:project-order-event . operation:read-from-repository"
       ],
       "axisFamily": "effect",
       "axisRef": "effect ordering / replay / compensation axis",
       "defectValue": 2,
       "comparedTraceSummary": [
-        "p: effect continuation reads 4 observation ref(s) across 1 operation delta(s) refs=4 missing=0",
-        "q: effect continuation reads 4 observation ref(s) across 1 operation delta(s) refs=4 missing=0"
+        "p: effect continuation reads 2 observation ref(s) across 1 operation delta(s) refs=2 missing=0",
+        "q: effect continuation reads 2 observation ref(s) across 1 operation delta(s) refs=2 missing=0"
       ],
       "affectedAtomRefs": [
-        "add observed compensation / authority / effect atoms only after source review",
-        "derived-effect-order:p:operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation-operation-delta-repair-obstruction-homotopy-report-fixture-computed",
-        "derived-effect-order:q:operation-delta-repair-obstruction-homotopy-report-fixture-computed-operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation",
-        "obstruction:homotopy-report-fixture:computed may decrease or move to a runtime/state/effect axis",
-        "split or enrich atoms that currently support the target obstruction"
+        "atom:event-projection",
+        "derived-effect-order:p:operation-project-order-event-operation-read-through-cache",
+        "derived-effect-order:q:operation-project-order-event-operation-read-from-repository"
       ],
       "lawRefs": [
         "law:homotopy-report-fixture"
@@ -7348,22 +7388,14 @@
         "sig-axis:homotopy-report-fixture"
       ],
       "sourceRefs": [
-        "doc-auth-policy",
-        "src-auth-bypass",
         "src-cache-read",
-        "src-direct-read",
-        "src-event-projection",
-        "src-pricing-checkout",
         "src-repository-read",
-        "src-retry-effect",
         "test-homotopy-fillers"
       ],
       "observationRefs": [
-        "add observed compensation / authority / effect atoms only after source review",
-        "derived-effect-order:p:operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation-operation-delta-repair-obstruction-homotopy-report-fixture-computed",
-        "derived-effect-order:q:operation-delta-repair-obstruction-homotopy-report-fixture-computed-operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation",
-        "obstruction:homotopy-report-fixture:computed may decrease or move to a runtime/state/effect axis",
-        "split or enrich atoms that currently support the target obstruction"
+        "atom:event-projection",
+        "derived-effect-order:p:operation-project-order-event-operation-read-through-cache",
+        "derived-effect-order:q:operation-project-order-event-operation-read-from-repository"
       ],
       "missingEvidence": [],
       "coverageBoundary": "covered for selected trace refs; not complete execution semantics",
@@ -7378,7 +7410,7 @@
         "identify the boundary, adapter, authority, or effect surface where the order-sensitive witness appears"
       ],
       "recommendedReviewFocus": [
-        "compare operation-delta:repair-obstruction-homotopy-report-fixture-computed:continuation . operation-delta:repair-obstruction-homotopy-report-fixture-computed and operation-delta:repair-obstruction-homotopy-report-fixture-computed . operation-delta:repair-obstruction-homotopy-report-fixture-computed:continuation before treating the operation pair as order-insensitive",
+        "compare operation:project-order-event . operation:read-through-cache and operation:project-order-event . operation:read-from-repository before treating the operation pair as order-insensitive",
         "review effect axis witness refs and missing evidence"
       ],
       "evidenceBoundary": "nonzero monodromy witness is a measured review cue; it is not automatic repair safety or merge safety",
@@ -7426,6 +7458,7 @@
           "measuredDefectRefs": [],
           "supportRefs": [
             "atom:cache-read",
+            "atom:event-projection",
             "atom:repository-read"
           ],
           "missingEvidence": [],
@@ -7434,13 +7467,18 @@
         {
           "holonomyAxisRef": "Hol_contract",
           "axisFamily": "contract",
-          "status": "coveredZeroResidual",
+          "status": "coverageBlocked",
           "residualValue": 0,
           "measuredDefectRefs": [],
           "supportRefs": [
-            "atom:coupon-tax-rounding"
+            "gap:path-rule:authorization-bypass-hole:missing-policy-test",
+            "may transfer obstruction into runtime behavior, ownership, or idempotency boundary",
+            "obstruction:homotopy-report-fixture:computed",
+            "split-readiness:molecule-homotopy-report-fixture"
           ],
-          "missingEvidence": [],
+          "missingEvidence": [
+            "missing contract observation for operation-square:operation-square-evidence-cache-repository-read"
+          ],
           "reading": "Hol_contract records boundary-local residual obstruction on the contract axis"
         },
         {
@@ -7450,11 +7488,7 @@
           "residualValue": 0,
           "measuredDefectRefs": [],
           "supportRefs": [
-            "semantic:path-rule:cache-repository-semantic-loop",
-            "semantic:path-rule:coupon-tax-rounding-semantic-loop",
-            "semantic:path-rule:event-projection-direct-read",
-            "semantic:path-rule:nonzero-holonomy-filled-loop",
-            "semantic:path-rule:retry-idempotency-effect"
+            "semantic:path-rule:cache-repository-semantic-loop"
           ],
           "missingEvidence": [],
           "reading": "Hol_semantic records boundary-local residual obstruction on the semantic axis"
@@ -7472,7 +7506,7 @@
             "split-readiness:molecule-homotopy-report-fixture"
           ],
           "missingEvidence": [
-            "missing state observation for operation-square:operation-delta-repair-obstruction-homotopy-report-fixture-computed:operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation"
+            "missing state observation for operation-square:operation-square-evidence-cache-repository-read"
           ],
           "reading": "Hol_state records boundary-local residual obstruction on the state axis"
         },
@@ -7482,14 +7516,12 @@
           "status": "measuredResidual",
           "residualValue": 2,
           "measuredDefectRefs": [
-            "mu:operation-square-operation-delta-repair-obstruction-homotopy-report-fixture-computed-operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation:effect"
+            "mu:operation-square-operation-square-evidence-cache-repository-read:effect"
           ],
           "supportRefs": [
-            "add observed compensation / authority / effect atoms only after source review",
-            "derived-effect-order:p:operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation-operation-delta-repair-obstruction-homotopy-report-fixture-computed",
-            "derived-effect-order:q:operation-delta-repair-obstruction-homotopy-report-fixture-computed-operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation",
-            "obstruction:homotopy-report-fixture:computed may decrease or move to a runtime/state/effect axis",
-            "split or enrich atoms that currently support the target obstruction"
+            "atom:event-projection",
+            "derived-effect-order:p:operation-project-order-event-operation-read-through-cache",
+            "derived-effect-order:q:operation-project-order-event-operation-read-from-repository"
           ],
           "missingEvidence": [],
           "reading": "Hol_effect records boundary-local residual obstruction on the effect axis"
@@ -7497,13 +7529,18 @@
         {
           "holonomyAxisRef": "Hol_authority",
           "axisFamily": "authority",
-          "status": "coveredZeroResidual",
+          "status": "coverageBlocked",
           "residualValue": 0,
           "measuredDefectRefs": [],
           "supportRefs": [
-            "atom:authorization-bypass"
+            "gap:path-rule:authorization-bypass-hole:missing-policy-test",
+            "may transfer obstruction into runtime behavior, ownership, or idempotency boundary",
+            "obstruction:homotopy-report-fixture:computed",
+            "split-readiness:molecule-homotopy-report-fixture"
           ],
-          "missingEvidence": [],
+          "missingEvidence": [
+            "missing authority observation for operation-square:operation-square-evidence-cache-repository-read"
+          ],
           "reading": "Hol_authority records boundary-local residual obstruction on the authority axis"
         },
         {
@@ -7519,7 +7556,7 @@
             "split-readiness:molecule-homotopy-report-fixture"
           ],
           "missingEvidence": [
-            "missing runtime observation for operation-square:operation-delta-repair-obstruction-homotopy-report-fixture-computed:operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation"
+            "missing runtime observation for operation-square:operation-square-evidence-cache-repository-read"
           ],
           "reading": "Hol_runtime records boundary-local residual obstruction on the runtime axis"
         },
@@ -7539,7 +7576,7 @@
       "residualObstructionRefs": [
         "gap:path-rule:authorization-bypass-hole:missing-policy-test",
         "may transfer obstruction into runtime behavior, ownership, or idempotency boundary",
-        "mu:operation-square-operation-delta-repair-obstruction-homotopy-report-fixture-computed-operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation:effect",
+        "mu:operation-square-operation-square-evidence-cache-repository-read:effect",
         "obstruction:homotopy-report-fixture:computed",
         "split-readiness:molecule-homotopy-report-fixture"
       ],
@@ -7595,7 +7632,7 @@
             "feature-boundary-residual:homotopy-report-fixture-archmap",
             "gap:path-rule:authorization-bypass-hole:missing-policy-test",
             "may transfer obstruction into runtime behavior, ownership, or idempotency boundary",
-            "mu:operation-square-operation-delta-repair-obstruction-homotopy-report-fixture-computed-operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation:effect",
+            "mu:operation-square-operation-square-evidence-cache-repository-read:effect",
             "obstruction:homotopy-report-fixture:computed",
             "split-readiness:molecule-homotopy-report-fixture"
           ],
@@ -7690,20 +7727,20 @@
           "reading": "may transfer obstruction into runtime behavior, ownership, or idempotency boundary carries non-disjoint feature-extension labels [\"boundaryHolonomy\", \"complexityTransfer\"]"
         },
         {
-          "witnessRef": "mu:operation-square-operation-delta-repair-obstruction-homotopy-report-fixture-computed-operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation:effect",
+          "witnessRef": "mu:operation-square-operation-square-evidence-cache-repository-read:effect",
           "labels": [
             "boundaryHolonomy"
           ],
           "inheritedCoreRefs": [],
           "featureLocalRefs": [],
           "boundaryHolonomyRefs": [
-            "mu:operation-square-operation-delta-repair-obstruction-homotopy-report-fixture-computed-operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation:effect"
+            "mu:operation-square-operation-square-evidence-cache-repository-read:effect"
           ],
           "liftingFailureRefs": [],
           "fillingFailureRefs": [],
           "complexityTransferRefs": [],
           "residualCoverageGapRefs": [],
-          "reading": "mu:operation-square-operation-delta-repair-obstruction-homotopy-report-fixture-computed-operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation:effect carries non-disjoint feature-extension labels [\"boundaryHolonomy\"]"
+          "reading": "mu:operation-square-operation-square-evidence-cache-repository-read:effect carries non-disjoint feature-extension labels [\"boundaryHolonomy\"]"
         },
         {
           "witnessRef": "obstruction:homotopy-report-fixture:computed",
@@ -7784,21 +7821,21 @@
     "weightPolicy": "unit weights until project-specific calibration is declared",
     "coveragePolicy": "coverage gaps block signature-zero and spectrum-zero reflection",
     "operationSquareCandidateRefs": [
-      "operation-square:operation-delta-repair-obstruction-homotopy-report-fixture-computed:operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation"
+      "operation-square:operation-square-evidence-cache-repository-read"
     ],
     "pathContinuationTraceRefs": [
-      "path-continuation-trace:operation-square-operation-delta-repair-obstruction-homotopy-report-fixture-computed-operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation:p",
-      "path-continuation-trace:operation-square-operation-delta-repair-obstruction-homotopy-report-fixture-computed-operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation:q"
+      "path-continuation-trace:operation-square-operation-square-evidence-cache-repository-read:p",
+      "path-continuation-trace:operation-square-operation-square-evidence-cache-repository-read:q"
     ],
     "axisWiseDefectRefs": [
-      "mu:operation-square-operation-delta-repair-obstruction-homotopy-report-fixture-computed-operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation:authority",
-      "mu:operation-square-operation-delta-repair-obstruction-homotopy-report-fixture-computed-operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation:contract",
-      "mu:operation-square-operation-delta-repair-obstruction-homotopy-report-fixture-computed-operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation:effect",
-      "mu:operation-square-operation-delta-repair-obstruction-homotopy-report-fixture-computed-operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation:projection",
-      "mu:operation-square-operation-delta-repair-obstruction-homotopy-report-fixture-computed-operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation:runtime",
-      "mu:operation-square-operation-delta-repair-obstruction-homotopy-report-fixture-computed-operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation:semantic",
-      "mu:operation-square-operation-delta-repair-obstruction-homotopy-report-fixture-computed-operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation:state",
-      "mu:operation-square-operation-delta-repair-obstruction-homotopy-report-fixture-computed-operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation:static"
+      "mu:operation-square-operation-square-evidence-cache-repository-read:authority",
+      "mu:operation-square-operation-square-evidence-cache-repository-read:contract",
+      "mu:operation-square-operation-square-evidence-cache-repository-read:effect",
+      "mu:operation-square-operation-square-evidence-cache-repository-read:projection",
+      "mu:operation-square-operation-square-evidence-cache-repository-read:runtime",
+      "mu:operation-square-operation-square-evidence-cache-repository-read:semantic",
+      "mu:operation-square-operation-square-evidence-cache-repository-read:state",
+      "mu:operation-square-operation-square-evidence-cache-repository-read:static"
     ],
     "amiAggregateReadingRefs": [
       "ami:measurement-homotopy-report-fixture"
@@ -7827,7 +7864,7 @@
     "weightPolicy": "unit weights until project-specific calibration is declared",
     "coveragePolicy": "coverage gaps block signature-zero and spectrum-zero reflection",
     "nonzeroMonodromyWitnessRefs": [
-      "nonzero-monodromy-witness:mu-operation-square-operation-delta-repair-obstruction-homotopy-report-fixture-computed-operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation-effect"
+      "nonzero-monodromy-witness:mu-operation-square-operation-square-evidence-cache-repository-read-effect"
     ],
     "featureBoundaryResidualRefs": [
       "feature-boundary-residual:homotopy-report-fixture-archmap"
@@ -8538,7 +8575,7 @@
   "structuralReadingReviewSurface": {
     "surfaceId": "aat-structural-reading-review-surface",
     "status": "needsReview",
-    "currentStateReading": "ArchSig reads current architecture state across Atom support and compatibility, LawUniverse coverage, feature extension coordinates, operation calculus laws, path signature trajectory, homotopy order sensitivity, diagram fillability, axis forgetting risk, trajectory homotopy refutation, bridge split transfer, representation strength, local curvature, three-layer flatness, observation projection, state transition algebra, operation-invariant constraints, and split readiness; blockedRepresentations=14, curvatures=1, blockedOperations=1, splitBlockers=1, atomConflicts=0, unmeasuredRequiredLaws=0, blockedDiagrams=1, axisForgetting=1, homotopyRefutations=1, bridgeTransfers=1",
+    "currentStateReading": "ArchSig reads current architecture state across Atom support and compatibility, LawUniverse coverage, feature extension coordinates, operation calculus laws, path signature trajectory, homotopy order sensitivity, diagram fillability, axis forgetting/projection fidelity, Atom origin closure, effect relation algebra, synthesis blockage, operation preconditions, path multiplicity, trajectory homotopy refutation, bridge split transfer, representation strength, local curvature, three-layer flatness, observation projection, state transition algebra, operation-invariant constraints, and split readiness; blockedRepresentations=14, curvatures=1, blockedOperations=1, splitBlockers=1, atomConflicts=0, unmeasuredRequiredLaws=0, blockedDiagrams=1, axisForgetting=1, projectionLoss=1, atomOriginDebt=1, effectRelationPressure=1, synthesisBlockage=1, operationPreconditionBlockers=1, pathMultiplicityLoss=1, homotopyRefutations=1, bridgeTransfers=1",
     "connectedReadingRefs": [
       "representationStrength:weightedAdjacencyMatrix",
       "representationStrength:reachableConeSize",
@@ -8562,6 +8599,12 @@
       "homotopy-order-sensitivity:selected-operations",
       "diagram-fillability:local-curvature-obstruction-homotopy-report-fixture-computed",
       "axis-forgetting-risk:selected-projection",
+      "observation-projection-fidelity:observation-projection-homotopy-report-fixture-archmap",
+      "atom-origin-closure-debt:homotopy-report-fixture-archmap",
+      "effect-relation-algebra:homotopy-report-fixture-archmap",
+      "synthesis-blockage:homotopy-report-fixture-archmap",
+      "operation-precondition-readiness:repair-obstruction-homotopy-report-fixture-computed",
+      "path-multiplicity-loss:homotopy-report-fixture-archmap",
       "signature-trajectory-homotopy-refutation:selected-trajectory",
       "bridge-split-obstruction-transfer:split-readiness-molecule-homotopy-report-fixture"
     ],
@@ -8570,6 +8613,10 @@
       "read LawUniverse coverage and witness exactness before treating absence as measured zero",
       "read feature extension, operation law, trajectory, homotopy, and diagram-fillability axes as current-state coordinates, not PR evolution claims",
       "read axis-forgetting risk before treating a coarse projection as zero-reflecting or obstruction-reflecting",
+      "read projection fidelity and Atom origin closure before using summaries for zero, repair, or synthesis claims",
+      "read effect relation algebra separately from state transition pressure before approving replay, provider, event, or handler boundaries",
+      "read synthesis blockage and operation precondition readiness before treating candidates as constructible or safe",
+      "read path multiplicity loss before treating one observed route as complete reachability",
       "read selected trajectory disagreement before treating same-endpoint operations as homotopic",
       "read bridge split transfer before treating a boundary operation as obstruction removal",
       "read representation-strength blockers before treating zero or obstruction absence as exact",
@@ -9598,7 +9645,7 @@
     ],
     "transferBridgeEdgeSummary": [],
     "measurementExpansionSummary": [
-      "v0.3.0 measurement expansion reads 2 Atom support axes, 1 compatibility surfaces, 1 LawUniverse coverage surfaces, 1 feature-extension formulas, 1 operation-law surfaces, 1 path trajectories, 1 homotopy/order surfaces, 1 diagram-fillability surfaces, 1 axis-forgetting risks, 1 trajectory homotopy refutations, 1 bridge split-transfer surfaces, and 1 nonzero monodromy witnesses"
+      "v0.3.0 measurement expansion reads 2 Atom support axes, 1 compatibility surfaces, 1 LawUniverse coverage surfaces, 1 feature-extension formulas, 1 operation-law surfaces, 1 path trajectories, 1 homotopy/order surfaces, 1 diagram-fillability surfaces, 1 axis-forgetting risks, 1 projection-fidelity surfaces, 1 Atom origin-closure debts, 1 effect-relation algebras, 1 synthesis blockers, 1 operation-precondition readings, 1 path-multiplicity readings, 1 trajectory homotopy refutations, 1 bridge split-transfer surfaces, and 1 nonzero monodromy witnesses"
     ],
     "atomSupportAxisSummary": [
       "homotopy-report-fixture-archmap support=5 concentration=maxAxisShare=2/6 pressure=mixedAxisPressurePresent",
@@ -9628,6 +9675,24 @@
     "axisForgettingRiskSummary": [
       "observation-projection:homotopy-report-fixture-archmap kind=selectedAxisOrWitnessLoss zeroReflection=blockedWithoutAxisPreservationAndWitnessCompleteness obstructionReflection=blockedWithoutAxisPreservationAndWitnessCompleteness mixedScopes=2"
     ],
+    "observationProjectionFidelitySummary": [
+      "observation-projection:homotopy-report-fixture-archmap status=projectionLossObserved forgotten=1 collisions=0 reflection=blockedWithoutAxisPreservationAndWitnessCompleteness"
+    ],
+    "atomOriginClosureDebtSummary": [
+      "atom-origin-closure-debt:homotopy-report-fixture-archmap status=originClosureDebtObserved sourceBacked=6 inferred=0 missingExpected=1"
+    ],
+    "effectRelationAlgebraSummary": [
+      "effect-relation-algebra:homotopy-report-fixture-archmap pressure=effectRelationPressureObserved generators=4 unresolved=0 externalBoundaries=0"
+    ],
+    "synthesisBlockageSummary": [
+      "synthesis-blockage:homotopy-report-fixture-archmap status=synthesisBlockedByMissingEvidenceOrConstraints targets=2 constraints=5 missing=5 noSolution=notASolverAndNotAbsenceProof"
+    ],
+    "operationPreconditionReadinessSummary": [
+      "repair:obstruction-homotopy-report-fixture-computed kind=repair-homotopyreportfixturecircuit status=blockedByMissingPreconditionEvidence missing=5 witnesses=1"
+    ],
+    "pathMultiplicityLossSummary": [
+      "homotopy-report-fixture-archmap status=reachabilityMultiplicityLossObserved paths=1 alternatePressure=8 fanIn=1 forgotten=1"
+    ],
     "signatureTrajectoryHomotopyRefutationSummary": [
       "homotopy-order-sensitivity:selected-operations equivalence=selectedTrajectoryDisagreementObserved refutation=refutationCandidate disagreements=1"
     ],
@@ -9635,7 +9700,7 @@
       "split-readiness:molecule-homotopy-report-fixture transferRisk=needsObstructionSupportReview bridgeEdges=0 obstructions=1 boundaryOps=1"
     ],
     "nonzeroMonodromyWitnessSummary": [
-      "nonzero-monodromy-witness:mu-operation-square-operation-delta-repair-obstruction-homotopy-report-fixture-computed-operation-delta-repair-obstruction-homotopy-report-fixture-computed-continuation-effect axis=effect defect=2 affectedAtoms=5 missingEvidence=0 focus=2"
+      "nonzero-monodromy-witness:mu-operation-square-operation-square-evidence-cache-repository-read-effect axis=effect defect=2 affectedAtoms=3 missingEvidence=0 focus=2"
     ],
     "featureBoundaryResidualSummary": [
       "feature-boundary-residual:homotopy-report-fixture-archmap boundary=Boundary(homotopy-report-fixture-archmap, feature-extension) status=measuredResidual axes=8 residualRefs=5"
@@ -9678,8 +9743,8 @@
       "molecule:homotopy-report-fixture status=needsReview score=92 boundaryOp=interface"
     ],
     "structuralReadingReviewSummary": [
-      "aat-structural-reading-review-surface status=needsReview refs=24 focus=12",
-      "ArchSig reads current architecture state across Atom support and compatibility, LawUniverse coverage, feature extension coordinates, operation calculus laws, path signature trajectory, homotopy order sensitivity, diagram fillability, axis forgetting risk, trajectory homotopy refutation, bridge split transfer, representation strength, local curvature, three-layer flatness, observation projection, state transition algebra, operation-invariant constraints, and split readiness; blockedRepresentations=14, curvatures=1, blockedOperations=1, splitBlockers=1, atomConflicts=0, unmeasuredRequiredLaws=0, blockedDiagrams=1, axisForgetting=1, homotopyRefutations=1, bridgeTransfers=1"
+      "aat-structural-reading-review-surface status=needsReview refs=30 focus=16",
+      "ArchSig reads current architecture state across Atom support and compatibility, LawUniverse coverage, feature extension coordinates, operation calculus laws, path signature trajectory, homotopy order sensitivity, diagram fillability, axis forgetting/projection fidelity, Atom origin closure, effect relation algebra, synthesis blockage, operation preconditions, path multiplicity, trajectory homotopy refutation, bridge split transfer, representation strength, local curvature, three-layer flatness, observation projection, state transition algebra, operation-invariant constraints, and split readiness; blockedRepresentations=14, curvatures=1, blockedOperations=1, splitBlockers=1, atomConflicts=0, unmeasuredRequiredLaws=0, blockedDiagrams=1, axisForgetting=1, projectionLoss=1, atomOriginDebt=1, effectRelationPressure=1, synthesisBlockage=1, operationPreconditionBlockers=1, pathMultiplicityLoss=1, homotopyRefutations=1, bridgeTransfers=1"
     ],
     "currentStateEvolutionBoundarySummary": [
       "ArchSig computes current AAT structural state from ArchMap homotopy-report-fixture-archmap and LawPolicy homotopy-report-fixture-policy; it reads atoms, molecules, laws, obstructions, bridge pressure, structural readings, and bounded review focus",

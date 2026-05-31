@@ -150,6 +150,10 @@ evidence. Use conservative defaults when evidence is absent:
 - Operation sequences, endpoint refs, generator candidates, continuation
   distance inputs, and filler evidence determine what is measured. Missing
   inputs stay unmeasured or coverage-blocked.
+- `candidateSource` should distinguish supplied operation-square evidence from
+  inferred review cues. A LawPolicy may say which supplied / inferred sources
+  are eligible, but source-backed operation sequences and endpoints belong in
+  ArchMap `operationSquareEvidence[]`, not in the policy.
 - ArchitectureHomotopyReport is not a single architecture quality score.
 
 Keep unresolved questions outside the JSON as delivery notes, and reflect their
