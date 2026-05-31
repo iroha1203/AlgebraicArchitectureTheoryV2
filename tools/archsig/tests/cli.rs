@@ -966,6 +966,61 @@ fn coupon_tax_rounding_fixture_locks_semantic_monodromy() {
 }
 
 #[test]
+fn supplied_operation_square_missing_endpoint_is_blocked_not_synthesized() {
+    let out_dir = temp_dir("operation-square-missing-endpoint");
+    let root = fixture_root();
+    let mut archmap = read_json(&root.join("archmap.json"));
+    archmap["operationSquareEvidence"][0]["endpointObjectRefs"] = Value::Array(Vec::new());
+    archmap["operationSquareEvidence"][0]["sharedEndpointRefs"] = Value::Array(Vec::new());
+    let archmap_path = out_dir.join("archmap-missing-endpoint.json");
+    fs::write(
+        &archmap_path,
+        serde_json::to_vec_pretty(&archmap).expect("archmap json serializes"),
+    )
+    .expect("temporary archmap fixture can be written");
+    let packet = out_dir.join("packet.json");
+
+    run_sig0(&[
+        "archsig-analysis",
+        "--archmap",
+        archmap_path.to_str().expect("archmap path is utf-8"),
+        "--law-policy",
+        root.join("law_policy.json")
+            .to_str()
+            .expect("law policy path is utf-8"),
+        "--out",
+        packet.to_str().expect("packet path is utf-8"),
+    ]);
+
+    let json = read_json(&packet);
+    let candidates = json["operationSquareCandidates"]
+        .as_array()
+        .expect("operation square candidates are array");
+    assert_eq!(candidates.len(), 1);
+    assert_eq!(candidates[0]["candidateSource"], "blocked");
+    assert!(
+        candidates[0]["missingRefs"]
+            .as_array()
+            .is_some_and(|refs| refs.iter().any(|value| {
+                value
+                    .as_str()
+                    .is_some_and(|text| text.contains("endpointObjectRefs"))
+            })),
+        "missing endpoint evidence must be preserved on the blocked candidate"
+    );
+    assert!(
+        json["pathContinuationTraces"]
+            .as_array()
+            .is_some_and(|items| items.is_empty()),
+        "blocked operation square must not produce measured continuation traces"
+    );
+    assert!(
+        !json.to_string().contains(":continuation"),
+        "ArchSig must not synthesize a fake :continuation operation"
+    );
+}
+
+#[test]
 fn acts_spectrum_fixture_manifest_locks_golden_validation() {
     let fixtures_root = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures");
     let manifest = read_json(&acts_spectrum_root().join("manifest.json"));
@@ -2846,25 +2901,41 @@ fn assert_north_star_packet_surfaces(json: &Value) {
             .is_some_and(|items| {
                 !items.is_empty()
                     && items.iter().all(|candidate| {
-                        candidate["candidateSource"]
-                            .as_str()
-                            .is_some_and(|source| source == "inferred" || source == "supplied")
-                            && candidate["pPathRef"]
-                                .as_str()
-                                .is_some_and(|path| path.contains(" . "))
-                            && candidate["qPathRef"]
-                                .as_str()
-                                .is_some_and(|path| path.contains(" . "))
+                        candidate["candidateSource"].as_str().is_some_and(|source| {
+                            source == "inferred" || source == "supplied" || source == "blocked"
+                        }) && candidate["candidateBasisRefs"]
+                            .as_array()
+                            .is_some_and(|refs| !refs.is_empty())
+                            && candidate["pPathRef"].as_str().is_some_and(|path| {
+                                candidate["candidateSource"] == "blocked" || path.contains(" . ")
+                            })
+                            && candidate["qPathRef"].as_str().is_some_and(|path| {
+                                candidate["candidateSource"] == "blocked" || path.contains(" . ")
+                            })
                             && candidate["missingRefs"].as_array().is_some()
+                            && (candidate["candidateSource"] != "inferred"
+                                || candidate["evidenceBoundary"]
+                                    .as_str()
+                                    .is_some_and(|boundary| boundary.contains("reviewCueOnly")))
+                            && (candidate["candidateSource"] != "supplied"
+                                || candidate["suppliedPairRef"].as_str().is_some())
                     })
             }),
-        "operation square candidates must distinguish inferred/supplied path pairs and preserve missing refs"
+        "operation square candidates must distinguish supplied/inferred/blocked path pairs and preserve source-backed basis refs"
     );
     assert!(
         json["pathContinuationTraces"]
             .as_array()
             .is_some_and(|items| {
-                !items.is_empty()
+                let all_candidates_blocked = json["operationSquareCandidates"]
+                    .as_array()
+                    .is_some_and(|candidates| {
+                        !candidates.is_empty()
+                            && candidates.iter().all(|candidate| {
+                                candidate["candidateSource"].as_str() == Some("blocked")
+                            })
+                    });
+                (all_candidates_blocked || !items.is_empty())
                     && items.iter().all(|trace| {
                         trace["axisTraces"].as_array().is_some_and(|axes| {
                             let families = axes
@@ -2898,7 +2969,15 @@ fn assert_north_star_packet_surfaces(json: &Value) {
         json["axisWiseMonodromyDefects"]
             .as_array()
             .is_some_and(|items| {
-                !items.is_empty()
+                let all_candidates_blocked = json["operationSquareCandidates"]
+                    .as_array()
+                    .is_some_and(|candidates| {
+                        !candidates.is_empty()
+                            && candidates.iter().all(|candidate| {
+                                candidate["candidateSource"].as_str() == Some("blocked")
+                            })
+                    });
+                (all_candidates_blocked || !items.is_empty())
                     && items.iter().all(|defect| {
                         defect["distanceKind"].as_str().is_some()
                             && defect["measuredSupportRefs"].as_array().is_some()
@@ -2919,16 +2998,26 @@ fn assert_north_star_packet_surfaces(json: &Value) {
         json["amiAggregateReadings"]
             .as_array()
             .is_some_and(|items| {
+                let all_candidates_blocked = json["operationSquareCandidates"]
+                    .as_array()
+                    .is_some_and(|candidates| {
+                        !candidates.is_empty()
+                            && candidates.iter().all(|candidate| {
+                                candidate["candidateSource"].as_str() == Some("blocked")
+                            })
+                    });
                 !items.is_empty()
                     && items.iter().all(|aggregate| {
                         aggregate["selectedSquareFamily"].as_str().is_some()
-                            && aggregate["selectedAxisFamily"]
-                                .as_array()
-                                .is_some_and(|axes| !axes.is_empty())
+                            && (all_candidates_blocked
+                                || aggregate["selectedAxisFamily"]
+                                    .as_array()
+                                    .is_some_and(|axes| !axes.is_empty()))
                             && aggregate["weightPolicy"].as_str().is_some()
-                            && aggregate["topContributors"]
-                                .as_array()
-                                .is_some_and(|contributors| !contributors.is_empty())
+                            && (all_candidates_blocked
+                                || aggregate["topContributors"]
+                                    .as_array()
+                                    .is_some_and(|contributors| !contributors.is_empty()))
                             && aggregate["zeroReflectionAssumptions"]
                                 .as_array()
                                 .is_some_and(|assumptions| !assumptions.is_empty())
@@ -2943,7 +3032,15 @@ fn assert_north_star_packet_surfaces(json: &Value) {
         json["nonzeroMonodromyWitnesses"]
             .as_array()
             .is_some_and(|items| {
-                !items.is_empty()
+                let all_candidates_blocked = json["operationSquareCandidates"]
+                    .as_array()
+                    .is_some_and(|candidates| {
+                        !candidates.is_empty()
+                            && candidates.iter().all(|candidate| {
+                                candidate["candidateSource"].as_str() == Some("blocked")
+                            })
+                    });
+                (all_candidates_blocked || !items.is_empty())
                     && items.iter().all(|witness| {
                         witness["operationPair"]
                             .as_array()
@@ -3046,30 +3143,42 @@ fn assert_north_star_packet_surfaces(json: &Value) {
         "feature extension diagnosis readings must expose seven non-disjoint labels, witness attribution, separated failure refs, and FieldSig boundary"
     );
     assert!(
-        json["llmInterpretationPacket"]["structuralReadingReviewSummary"]
-            .as_array()
-            .is_some_and(|items| !items.is_empty())
-            && json["llmInterpretationPacket"]["currentStateEvolutionBoundarySummary"]
+        {
+            let all_candidates_blocked =
+                json["operationSquareCandidates"]
+                    .as_array()
+                    .is_some_and(|candidates| {
+                        !candidates.is_empty()
+                            && candidates.iter().all(|candidate| {
+                                candidate["candidateSource"].as_str() == Some("blocked")
+                            })
+                    });
+            json["llmInterpretationPacket"]["structuralReadingReviewSummary"]
                 .as_array()
                 .is_some_and(|items| !items.is_empty())
-            && json["llmInterpretationPacket"]["measurementExpansionSummary"]
-                .as_array()
-                .is_some_and(|items| !items.is_empty())
-            && json["llmInterpretationPacket"]["nonzeroMonodromyWitnessSummary"]
-                .as_array()
-                .is_some_and(|items| !items.is_empty())
-            && json["llmInterpretationPacket"]["featureBoundaryResidualSummary"]
-                .as_array()
-                .is_some_and(|items| !items.is_empty())
-            && json["llmInterpretationPacket"]["featureExtensionDiagnosisSummary"]
-                .as_array()
-                .is_some_and(|items| !items.is_empty())
-            && json["llmInterpretationPacket"]["atomSupportAxisSummary"]
-                .as_array()
-                .is_some_and(|items| !items.is_empty())
-            && json["llmInterpretationPacket"]["lawUniverseCoverageSummary"]
-                .as_array()
-                .is_some_and(|items| !items.is_empty()),
+                && json["llmInterpretationPacket"]["currentStateEvolutionBoundarySummary"]
+                    .as_array()
+                    .is_some_and(|items| !items.is_empty())
+                && json["llmInterpretationPacket"]["measurementExpansionSummary"]
+                    .as_array()
+                    .is_some_and(|items| !items.is_empty())
+                && (all_candidates_blocked
+                    || json["llmInterpretationPacket"]["nonzeroMonodromyWitnessSummary"]
+                        .as_array()
+                        .is_some_and(|items| !items.is_empty()))
+                && json["llmInterpretationPacket"]["featureBoundaryResidualSummary"]
+                    .as_array()
+                    .is_some_and(|items| !items.is_empty())
+                && json["llmInterpretationPacket"]["featureExtensionDiagnosisSummary"]
+                    .as_array()
+                    .is_some_and(|items| !items.is_empty())
+                && json["llmInterpretationPacket"]["atomSupportAxisSummary"]
+                    .as_array()
+                    .is_some_and(|items| !items.is_empty())
+                && json["llmInterpretationPacket"]["lawUniverseCoverageSummary"]
+                    .as_array()
+                    .is_some_and(|items| !items.is_empty())
+        },
         "LLM interpretation packet must summarize structural readings, measurement expansion, and current-state/evolution boundary"
     );
     assert!(

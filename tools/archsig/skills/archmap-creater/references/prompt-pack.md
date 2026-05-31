@@ -82,6 +82,14 @@ filler gaps. Candidate paths and loops are review cues, not path truth; filler
 evidence must come from selected source, contract, test, runtime, policy, or
 explicit user evidence.
 
+When an operation pair is meant to be measured as `p = g . f` versus
+`q = f . g`, write it as `operationSquareEvidence[]`. The entry must carry
+`pOperationSequence`, `qOperationSequence`, `endpointObjectRefs` or
+`sharedEndpointRefs`, `generatorCandidateRefs`, observation refs, and source
+refs. Do not rely on a later ArchSig inferred candidate as measurement truth;
+inferred candidates are review cues, and missing endpoints should remain
+blocked.
+
 If filler evidence is unavailable, record a targeted `observationGaps[]` entry
 whose `subjectRef` names the affected path rule, operation square, or loop
 candidate. Avoid global gaps that block unrelated measured loops. Never turn

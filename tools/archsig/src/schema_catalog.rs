@@ -25,7 +25,7 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                     "docs/tool/llm_native_archmap_archsig_prd.md",
                     "docs/tool/atom_handoff.md",
                 ],
-                "ArchMap records source-grounded atomObservations, moleculeObservations, semanticObservations, observationGaps, projectionInfo, concernHints, provenance, and nonConclusions without selecting laws or constructing obstruction circuits.",
+                "ArchMap records source-grounded atomObservations, moleculeObservations, semanticObservations, observationGaps, projectionInfo, operationSquareEvidence, concernHints, provenance, and nonConclusions without selecting laws or constructing obstruction circuits.",
                 vec![
                     "ArchMap does not prove architecture lawfulness, obstruction existence, zero curvature, or certified atom truth.",
                     "ArchMap concern hints are review cues until ArchSig combines them with a selected LawPolicy.",

@@ -4,12 +4,12 @@ use crate::validation::{count_checks, duplicates, generic_validation_example, va
 use crate::{
     ARCHMAP_SCHEMA_VERSION, ARCHSIG_ANALYSIS_PACKET_SCHEMA_VERSION,
     ARCHSIG_ANALYSIS_PACKET_VALIDATION_REPORT_SCHEMA_VERSION, ArchMapConcernHintV0,
-    ArchMapDocumentV0, ArchMapMoleculeObservationV0, ArchMapSemanticObservationV0,
-    ArchMapSourceRef, ArchSigAatConceptSurfaceV0, ArchSigAmiAggregateReadingV0,
-    ArchSigAmiTopContributorV0, ArchSigAnalysisArtifactRefV0, ArchSigAnalysisPacketV0,
-    ArchSigAnalysisPacketValidationInputV0, ArchSigAnalysisPacketValidationReportV0,
-    ArchSigAnalysisPacketValidationSummaryV0, ArchSigAnalyticRepresentationV0,
-    ArchSigArchMapStoreRefsV0, ArchSigArchitecturalHoleReadingV0,
+    ArchMapDocumentV0, ArchMapMoleculeObservationV0, ArchMapOperationSquareEvidenceV0,
+    ArchMapSemanticObservationV0, ArchMapSourceRef, ArchSigAatConceptSurfaceV0,
+    ArchSigAmiAggregateReadingV0, ArchSigAmiTopContributorV0, ArchSigAnalysisArtifactRefV0,
+    ArchSigAnalysisPacketV0, ArchSigAnalysisPacketValidationInputV0,
+    ArchSigAnalysisPacketValidationReportV0, ArchSigAnalysisPacketValidationSummaryV0,
+    ArchSigAnalyticRepresentationV0, ArchSigArchMapStoreRefsV0, ArchSigArchitecturalHoleReadingV0,
     ArchSigArchitectureHomotopyReportV0, ArchSigArchitectureObjectProjectionV0,
     ArchSigArchitectureSpectrumHotspotV0, ArchSigArchitectureSpectrumModeV0,
     ArchSigArchitectureSpectrumRecurrentObstructionV0, ArchSigArchitectureSpectrumReportV0,
@@ -706,22 +706,35 @@ fn build_operation_square_candidates(
     archmap: &ArchMapDocumentV0,
     operation_deltas: &[ArchSigOperationDeltaReadingV0],
 ) -> Vec<ArchSigOperationSquareCandidateV0> {
-    let operation_refs = if operation_deltas.is_empty() {
-        vec!["operation-delta:none-observed".to_string()]
-    } else {
-        operation_deltas
-            .iter()
-            .map(|delta| delta.operation_delta_id.clone())
-            .collect()
-    };
+    let supplied = archmap
+        .operation_square_evidence
+        .iter()
+        .map(|evidence| operation_square_candidate_from_supplied_evidence(archmap, evidence))
+        .collect::<Vec<_>>();
+    if !supplied.is_empty() {
+        return supplied;
+    }
+
+    let operation_refs = operation_deltas
+        .iter()
+        .map(|delta| delta.operation_delta_id.clone())
+        .collect::<Vec<_>>();
+    if operation_refs.len() < 2 {
+        return vec![blocked_operation_square_candidate(
+            archmap,
+            operation_refs
+                .first()
+                .cloned()
+                .unwrap_or_else(|| "operation-delta:none-observed".to_string()),
+            "operation-square evidence requires two source-backed operations; no :continuation operation is synthesized",
+        )];
+    }
+
     let mut candidates = Vec::new();
     for left_index in 0..operation_refs.len() {
-        for right_index in left_index..operation_refs.len() {
+        for right_index in (left_index + 1)..operation_refs.len() {
             let left = operation_refs[left_index].clone();
-            let right = operation_refs
-                .get(right_index + 1)
-                .cloned()
-                .unwrap_or_else(|| format!("{}:continuation", operation_refs[right_index]));
+            let right = operation_refs[right_index].clone();
             let candidate_id = format!(
                 "operation-square:{}:{}",
                 stable_id(&left),
@@ -773,6 +786,27 @@ fn build_operation_square_candidates(
                     .chain(projection_refs.iter())
                     .cloned(),
             );
+            let candidate_basis = operation_square_candidate_basis(
+                &shared_atom_support_refs,
+                &state_refs,
+                &effect_refs,
+                &contract_refs,
+                &semantic_refs,
+                &authority_refs,
+                &runtime_refs,
+                &projection_refs,
+            );
+            let candidate_basis_refs = unique_strings(
+                observation_refs
+                    .iter()
+                    .chain(effect_refs.iter())
+                    .chain(
+                        operation_deltas
+                            .iter()
+                            .flat_map(|delta| delta.support_refs.iter()),
+                    )
+                    .cloned(),
+            );
             let p_operation_sequence = vec![left.clone(), right.clone()];
             let q_operation_sequence = vec![right.clone(), left.clone()];
             let endpoint_object_refs = unique_strings(
@@ -786,16 +820,8 @@ fn build_operation_square_candidates(
                 candidate_id,
                 candidate_source: "inferred".to_string(),
                 supplied_pair_ref: None,
-                candidate_basis: operation_square_candidate_basis(
-                    &shared_atom_support_refs,
-                    &state_refs,
-                    &effect_refs,
-                    &contract_refs,
-                    &semantic_refs,
-                    &authority_refs,
-                    &runtime_refs,
-                    &projection_refs,
-                ),
+                candidate_basis,
+                candidate_basis_refs,
                 left_operation_ref: left.clone(),
                 right_operation_ref: right.clone(),
                 p_path_ref: format!("{right} . {left}"),
@@ -822,7 +848,7 @@ fn build_operation_square_candidates(
                 observation_refs,
                 missing_refs: operation_square_missing_refs(archmap),
                 evidence_boundary:
-                    "inferred operation square candidate is a review cue over observed ArchMap support, not operation truth"
+                    "inferred operation square candidate is reviewCueOnly over source-backed ArchMap support, not measurement truth"
                         .to_string(),
                 non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
             });
@@ -834,6 +860,135 @@ fn build_operation_square_candidates(
     candidates
 }
 
+fn operation_square_candidate_from_supplied_evidence(
+    archmap: &ArchMapDocumentV0,
+    evidence: &ArchMapOperationSquareEvidenceV0,
+) -> ArchSigOperationSquareCandidateV0 {
+    let source_refs = unique_strings(evidence.source_refs.iter().map(source_ref_label));
+    let observation_refs = supplied_operation_square_observation_refs(evidence);
+    let candidate_basis_refs = unique_strings(
+        observation_refs
+            .iter()
+            .chain(source_refs.iter())
+            .chain(evidence.shared_endpoint_refs.iter())
+            .cloned(),
+    );
+    let missing_refs = supplied_operation_square_missing_refs(evidence, &candidate_basis_refs);
+    let candidate_source = if missing_refs.iter().any(|missing| {
+        missing.contains("pOperationSequence")
+            || missing.contains("qOperationSequence")
+            || missing.contains("endpointObjectRefs")
+            || missing.contains("source-backed")
+    }) {
+        "blocked"
+    } else {
+        "supplied"
+    };
+    let p_operation_sequence = if evidence.p_operation_sequence.is_empty() {
+        vec![
+            evidence.left_operation_ref.clone(),
+            evidence.right_operation_ref.clone(),
+        ]
+    } else {
+        evidence.p_operation_sequence.clone()
+    };
+    let q_operation_sequence = if evidence.q_operation_sequence.is_empty() {
+        vec![
+            evidence.right_operation_ref.clone(),
+            evidence.left_operation_ref.clone(),
+        ]
+    } else {
+        evidence.q_operation_sequence.clone()
+    };
+    let endpoint_object_refs = unique_strings(
+        evidence
+            .endpoint_object_refs
+            .iter()
+            .chain(evidence.shared_endpoint_refs.iter())
+            .cloned(),
+    );
+
+    ArchSigOperationSquareCandidateV0 {
+        candidate_id: format!(
+            "operation-square:{}",
+            stable_id(&evidence.operation_square_evidence_id)
+        ),
+        candidate_source: candidate_source.to_string(),
+        supplied_pair_ref: Some(evidence.operation_square_evidence_id.clone()),
+        candidate_basis: supplied_operation_square_candidate_basis(evidence),
+        candidate_basis_refs,
+        left_operation_ref: evidence.left_operation_ref.clone(),
+        right_operation_ref: evidence.right_operation_ref.clone(),
+        p_path_ref: path_expression(&p_operation_sequence),
+        q_path_ref: path_expression(&q_operation_sequence),
+        p_operation_sequence,
+        q_operation_sequence,
+        endpoint_object_refs,
+        generator_candidate_refs: evidence.generator_candidate_refs.clone(),
+        shared_atom_support_refs: evidence.atom_observation_refs.clone(),
+        state_refs: supplied_axis_refs(archmap, evidence, "state"),
+        effect_refs: supplied_axis_refs(archmap, evidence, "effect"),
+        contract_refs: supplied_axis_refs(archmap, evidence, "contract"),
+        semantic_refs: evidence.semantic_observation_refs.clone(),
+        authority_refs: supplied_axis_refs(archmap, evidence, "authority"),
+        runtime_refs: supplied_axis_refs(archmap, evidence, "runtime"),
+        projection_refs: evidence.projection_refs.clone(),
+        source_refs,
+        observation_refs,
+        missing_refs,
+        evidence_boundary: if candidate_source == "blocked" {
+            format!(
+                "supplied operation square evidence is blocked until required endpoint, path, and source-backed basis refs are supplied: {}",
+                evidence.evidence_boundary
+            )
+        } else {
+            format!(
+                "supplied operation square evidence is first-class ArchMap input with p/q paths, endpoints, and source-backed basis refs: {}",
+                evidence.evidence_boundary
+            )
+        },
+        non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
+    }
+}
+
+fn blocked_operation_square_candidate(
+    archmap: &ArchMapDocumentV0,
+    operation_ref: String,
+    reason: &str,
+) -> ArchSigOperationSquareCandidateV0 {
+    let source_refs = all_archmap_source_ref_labels(archmap);
+    ArchSigOperationSquareCandidateV0 {
+        candidate_id: format!("operation-square-blocked:{}", stable_id(&operation_ref)),
+        candidate_source: "blocked".to_string(),
+        supplied_pair_ref: None,
+        candidate_basis: vec!["blockedNoOperationPairEvidence".to_string()],
+        candidate_basis_refs: source_refs.clone(),
+        left_operation_ref: operation_ref,
+        right_operation_ref: String::new(),
+        p_path_ref: "blocked:no supplied p path".to_string(),
+        q_path_ref: "blocked:no supplied q path".to_string(),
+        p_operation_sequence: Vec::new(),
+        q_operation_sequence: Vec::new(),
+        endpoint_object_refs: Vec::new(),
+        generator_candidate_refs: Vec::new(),
+        shared_atom_support_refs: Vec::new(),
+        state_refs: Vec::new(),
+        effect_refs: Vec::new(),
+        contract_refs: Vec::new(),
+        semantic_refs: Vec::new(),
+        authority_refs: Vec::new(),
+        runtime_refs: Vec::new(),
+        projection_refs: Vec::new(),
+        source_refs,
+        observation_refs: Vec::new(),
+        missing_refs: vec![reason.to_string()],
+        evidence_boundary:
+            "blocked operation square is a missing-evidence record; ArchSig does not synthesize a continuation operation"
+                .to_string(),
+        non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
+    }
+}
+
 fn build_path_continuation_traces(
     archmap: &ArchMapDocumentV0,
     operation_square_candidates: &[ArchSigOperationSquareCandidateV0],
@@ -841,6 +996,7 @@ fn build_path_continuation_traces(
 ) -> Vec<ArchSigPathContinuationTraceV0> {
     operation_square_candidates
         .iter()
+        .filter(|candidate| candidate.candidate_source != "blocked")
         .flat_map(|candidate| {
             [
                 ("p", candidate.p_path_ref.as_str()),
@@ -1840,6 +1996,148 @@ fn operation_square_candidate_basis(
     .into_iter()
     .filter_map(|(present, label)| present.then(|| label.to_string()))
     .collect()
+}
+
+fn supplied_operation_square_candidate_basis(
+    evidence: &ArchMapOperationSquareEvidenceV0,
+) -> Vec<String> {
+    let mut basis = Vec::new();
+    if !evidence.source_refs.is_empty() {
+        basis.push("sourceBackedOperationPair".to_string());
+    }
+    if !evidence.p_operation_sequence.is_empty() && !evidence.q_operation_sequence.is_empty() {
+        basis.push("suppliedPathPair".to_string());
+    }
+    if !evidence.endpoint_object_refs.is_empty() || !evidence.shared_endpoint_refs.is_empty() {
+        basis.push("sharedEndpoint".to_string());
+    }
+    if !evidence.generator_candidate_refs.is_empty() {
+        basis.push("generatorCandidate".to_string());
+    }
+    if !evidence.atom_observation_refs.is_empty() {
+        basis.push("atomSupport".to_string());
+    }
+    if !evidence.semantic_observation_refs.is_empty() {
+        basis.push("semanticSupport".to_string());
+    }
+    if !evidence.projection_refs.is_empty() {
+        basis.push("projectionSupport".to_string());
+    }
+    if basis.is_empty() {
+        basis.push("blockedMissingOperationEvidence".to_string());
+    }
+    basis
+}
+
+fn supplied_operation_square_observation_refs(
+    evidence: &ArchMapOperationSquareEvidenceV0,
+) -> Vec<String> {
+    unique_strings(
+        evidence
+            .atom_observation_refs
+            .iter()
+            .chain(evidence.molecule_observation_refs.iter())
+            .chain(evidence.semantic_observation_refs.iter())
+            .chain(evidence.projection_refs.iter())
+            .cloned(),
+    )
+}
+
+fn supplied_operation_square_missing_refs(
+    evidence: &ArchMapOperationSquareEvidenceV0,
+    candidate_basis_refs: &[String],
+) -> Vec<String> {
+    let mut missing = Vec::new();
+    if evidence.left_operation_ref.trim().is_empty() {
+        missing.push(format!(
+            "{} missing leftOperationRef",
+            evidence.operation_square_evidence_id
+        ));
+    }
+    if evidence.right_operation_ref.trim().is_empty() {
+        missing.push(format!(
+            "{} missing rightOperationRef",
+            evidence.operation_square_evidence_id
+        ));
+    }
+    if evidence.p_operation_sequence.is_empty() {
+        missing.push(format!(
+            "{} missing pOperationSequence",
+            evidence.operation_square_evidence_id
+        ));
+    }
+    if evidence.q_operation_sequence.is_empty() {
+        missing.push(format!(
+            "{} missing qOperationSequence",
+            evidence.operation_square_evidence_id
+        ));
+    }
+    if evidence.endpoint_object_refs.is_empty() && evidence.shared_endpoint_refs.is_empty() {
+        missing.push(format!(
+            "{} missing endpointObjectRefs/sharedEndpointRefs",
+            evidence.operation_square_evidence_id
+        ));
+    }
+    if evidence.generator_candidate_refs.is_empty() {
+        missing.push(format!(
+            "{} missing generatorCandidateRefs",
+            evidence.operation_square_evidence_id
+        ));
+    }
+    if candidate_basis_refs.is_empty() {
+        missing.push(format!(
+            "{} missing source-backed candidate basis refs",
+            evidence.operation_square_evidence_id
+        ));
+    }
+    missing
+}
+
+fn supplied_axis_refs(
+    archmap: &ArchMapDocumentV0,
+    evidence: &ArchMapOperationSquareEvidenceV0,
+    axis: &str,
+) -> Vec<String> {
+    let supplied = evidence
+        .atom_observation_refs
+        .iter()
+        .filter(|ref_id| atom_observation_matches_axis(archmap, ref_id, axis))
+        .cloned()
+        .collect::<Vec<_>>();
+    if !supplied.is_empty() {
+        return supplied;
+    }
+    if axis == "semantic" {
+        return evidence.semantic_observation_refs.clone();
+    }
+    Vec::new()
+}
+
+fn atom_observation_matches_axis(archmap: &ArchMapDocumentV0, ref_id: &str, axis: &str) -> bool {
+    let axis = axis.to_ascii_lowercase();
+    archmap
+        .atom_observations
+        .iter()
+        .find(|atom| atom.atom_observation_id == ref_id)
+        .is_some_and(|atom| {
+            let family = atom.atom_family.to_ascii_lowercase();
+            let predicate = atom.predicate.to_ascii_lowercase();
+            let subject = atom.subject_ref.to_ascii_lowercase();
+            family.contains(&axis) || predicate.contains(&axis) || subject.contains(&axis)
+        })
+}
+
+fn path_expression(operation_sequence: &[String]) -> String {
+    if operation_sequence.is_empty() {
+        "blocked:no operation sequence".to_string()
+    } else {
+        operation_sequence
+            .iter()
+            .rev()
+            .cloned()
+            .collect::<Vec<_>>()
+            .join(" . ")
+    }
 }
 
 fn operation_square_missing_refs(archmap: &ArchMapDocumentV0) -> Vec<String> {
@@ -13502,6 +13800,10 @@ fn check_operation_square_trace_surface(packet: &ArchSigAnalysisPacketV0) -> Val
         "runtime",
         "projection",
     ]);
+    let has_measurable_operation_square = packet
+        .operation_square_candidates
+        .iter()
+        .any(|candidate| candidate.candidate_source != "blocked");
     let mut examples = Vec::new();
     if packet.operation_square_candidates.is_empty() {
         examples.push(generic_validation_example(
@@ -13520,24 +13822,32 @@ fn check_operation_square_trace_surface(packet: &ArchSigAnalysisPacketV0) -> Val
         ),
     ));
     for candidate in &packet.operation_square_candidates {
-        if !matches!(candidate.candidate_source.as_str(), "inferred" | "supplied") {
+        if !matches!(
+            candidate.candidate_source.as_str(),
+            "inferred" | "supplied" | "blocked"
+        ) {
             examples.push(generic_validation_example(
                 &candidate.candidate_id,
                 &candidate.candidate_source,
-                "candidateSource must distinguish inferred and supplied operation pairs",
+                "candidateSource must distinguish supplied, inferred, and blocked operation pairs",
             ));
         }
+        let is_blocked = candidate.candidate_source == "blocked";
         push_blank(
             &mut examples,
             &format!("{} leftOperationRef", candidate.candidate_id),
             &candidate.left_operation_ref,
         );
-        push_blank(
-            &mut examples,
-            &format!("{} rightOperationRef", candidate.candidate_id),
-            &candidate.right_operation_ref,
-        );
-        if !candidate.p_path_ref.contains(" . ") || !candidate.q_path_ref.contains(" . ") {
+        if !is_blocked {
+            push_blank(
+                &mut examples,
+                &format!("{} rightOperationRef", candidate.candidate_id),
+                &candidate.right_operation_ref,
+            );
+        }
+        if !is_blocked
+            && (!candidate.p_path_ref.contains(" . ") || !candidate.q_path_ref.contains(" . "))
+        {
             examples.push(generic_validation_example(
                 &candidate.candidate_id,
                 "pPathRef/qPathRef",
@@ -13551,6 +13861,13 @@ fn check_operation_square_trace_surface(packet: &ArchSigAnalysisPacketV0) -> Val
                 "candidate must record why the operation pair was selected",
             ));
         }
+        if candidate.candidate_basis_refs.is_empty() {
+            examples.push(generic_validation_example(
+                &candidate.candidate_id,
+                "candidateBasisRefs",
+                "candidate basis must be backed by source, observation, or endpoint refs",
+            ));
+        }
         if candidate.source_refs.is_empty() && candidate.observation_refs.is_empty() {
             examples.push(generic_validation_example(
                 &candidate.candidate_id,
@@ -13558,11 +13875,30 @@ fn check_operation_square_trace_surface(packet: &ArchSigAnalysisPacketV0) -> Val
                 "candidate must preserve source or observation refs",
             ));
         }
-        if candidate.missing_refs.is_empty() {
+        if candidate.candidate_source == "blocked" && candidate.missing_refs.is_empty() {
             examples.push(generic_validation_example(
                 &candidate.candidate_id,
                 "missingRefs",
-                "candidate must retain missing refs so unmeasured axes are not read as zero",
+                "blocked candidate must retain missing refs so absent operation evidence is not read as zero",
+            ));
+        }
+        if candidate.candidate_source == "inferred"
+            && !candidate
+                .evidence_boundary
+                .to_ascii_lowercase()
+                .contains("reviewcueonly")
+        {
+            examples.push(generic_validation_example(
+                &candidate.candidate_id,
+                "evidenceBoundary",
+                "inferred candidate must be explicitly marked reviewCueOnly, not measurement truth",
+            ));
+        }
+        if candidate.candidate_source == "supplied" && candidate.supplied_pair_ref.is_none() {
+            examples.push(generic_validation_example(
+                &candidate.candidate_id,
+                "suppliedPairRef",
+                "supplied candidate must point back to first-class ArchMap operation square evidence",
             ));
         }
         push_blank(
@@ -13570,21 +13906,24 @@ fn check_operation_square_trace_surface(packet: &ArchSigAnalysisPacketV0) -> Val
             &format!("{} evidenceBoundary", candidate.candidate_id),
             &candidate.evidence_boundary,
         );
-        if candidate.p_operation_sequence.is_empty() || candidate.q_operation_sequence.is_empty() {
+        if !is_blocked
+            && (candidate.p_operation_sequence.is_empty()
+                || candidate.q_operation_sequence.is_empty())
+        {
             examples.push(generic_validation_example(
                 &candidate.candidate_id,
                 "pOperationSequence/qOperationSequence",
                 "operation square candidate must carry first-class operation sequences",
             ));
         }
-        if candidate.endpoint_object_refs.is_empty() {
+        if !is_blocked && candidate.endpoint_object_refs.is_empty() {
             examples.push(generic_validation_example(
                 &candidate.candidate_id,
                 "endpointObjectRefs",
                 "operation square candidate must keep endpoint object refs traceable",
             ));
         }
-        if candidate.generator_candidate_refs.is_empty() {
+        if !is_blocked && candidate.generator_candidate_refs.is_empty() {
             examples.push(generic_validation_example(
                 &candidate.candidate_id,
                 "generatorCandidateRefs",
@@ -13593,7 +13932,7 @@ fn check_operation_square_trace_surface(packet: &ArchSigAnalysisPacketV0) -> Val
         }
     }
 
-    if packet.path_continuation_traces.is_empty() {
+    if has_measurable_operation_square && packet.path_continuation_traces.is_empty() {
         examples.push(generic_validation_example(
             "pathContinuationTraces",
             "empty",
@@ -13732,12 +14071,16 @@ fn check_axis_wise_defect_ami_surface(packet: &ArchSigAnalysisPacketV0) -> Valid
         .operation_square_candidates
         .iter()
         .map(|candidate| candidate.candidate_id.as_str()));
+    let has_measurable_operation_square = packet
+        .operation_square_candidates
+        .iter()
+        .any(|candidate| candidate.candidate_source != "blocked");
     let defect_ids = set(packet
         .axis_wise_monodromy_defects
         .iter()
         .map(|defect| defect.defect_id.as_str()));
     let mut examples = Vec::new();
-    if packet.axis_wise_monodromy_defects.is_empty() {
+    if has_measurable_operation_square && packet.axis_wise_monodromy_defects.is_empty() {
         examples.push(generic_validation_example(
             "axisWiseMonodromyDefects",
             "empty",
@@ -13869,15 +14212,16 @@ fn check_axis_wise_defect_ami_surface(packet: &ArchSigAnalysisPacketV0) -> Valid
             &format!("{} selectedSquareFamily", aggregate.aggregate_id),
             &aggregate.selected_square_family,
         );
-        if aggregate.selected_axis_family.is_empty() {
+        if has_measurable_operation_square && aggregate.selected_axis_family.is_empty() {
             examples.push(generic_validation_example(
                 &aggregate.aggregate_id,
                 "selectedAxisFamily",
                 "AMI must report selected axis family",
             ));
         }
-        if aggregate.measured_defect_refs.is_empty()
-            || aggregate.positive_weight_defect_refs.is_empty()
+        if has_measurable_operation_square
+            && (aggregate.measured_defect_refs.is_empty()
+                || aggregate.positive_weight_defect_refs.is_empty())
         {
             examples.push(generic_validation_example(
                 &aggregate.aggregate_id,
@@ -13895,7 +14239,7 @@ fn check_axis_wise_defect_ami_surface(packet: &ArchSigAnalysisPacketV0) -> Valid
             &format!("{} distanceKind", aggregate.aggregate_id),
             &aggregate.distance_kind,
         );
-        if aggregate.top_contributors.is_empty() {
+        if has_measurable_operation_square && aggregate.top_contributors.is_empty() {
             examples.push(generic_validation_example(
                 &aggregate.aggregate_id,
                 "topContributors",
@@ -15040,10 +15384,11 @@ fn check_llm_interpretation_surface(packet: &ArchSigAnalysisPacketV0) -> Validat
         ),
         (
             "llmInterpretationPacket.nonzeroMonodromyWitnessSummary",
-            packet
-                .llm_interpretation_packet
-                .nonzero_monodromy_witness_summary
-                .is_empty(),
+            !packet.nonzero_monodromy_witnesses.is_empty()
+                && packet
+                    .llm_interpretation_packet
+                    .nonzero_monodromy_witness_summary
+                    .is_empty(),
         ),
         (
             "llmInterpretationPacket.curvatureSupportSummary",
@@ -15534,6 +15879,12 @@ fn all_archmap_source_ref_labels(archmap: &ArchMapDocumentV0) -> Vec<String> {
                 .observation_gaps
                 .iter()
                 .flat_map(|gap| gap.source_refs.iter().map(source_ref_label)),
+        )
+        .chain(
+            archmap
+                .operation_square_evidence
+                .iter()
+                .flat_map(|evidence| evidence.source_refs.iter().map(source_ref_label)),
         )
         .collect::<Vec<_>>();
     refs.sort();

@@ -257,6 +257,12 @@ fn check_unique_observation_ids(document: &ArchMapDocumentV0) -> ValidationCheck
     );
     ids.extend(
         document
+            .operation_square_evidence
+            .iter()
+            .map(|evidence| evidence.operation_square_evidence_id.as_str()),
+    );
+    ids.extend(
+        document
             .concern_hints
             .iter()
             .map(|hint| hint.concern_hint_id.as_str()),
@@ -894,6 +900,15 @@ fn observation_source_refs(document: &ArchMapDocumentV0) -> Vec<(String, &[ArchM
         refs.push((
             format!("observationGaps[{}].sourceRefs", gap.gap_id),
             gap.source_refs.as_slice(),
+        ));
+    }
+    for evidence in &document.operation_square_evidence {
+        refs.push((
+            format!(
+                "operationSquareEvidence[{}].sourceRefs",
+                evidence.operation_square_evidence_id
+            ),
+            evidence.source_refs.as_slice(),
         ));
     }
     for hint in &document.concern_hints {

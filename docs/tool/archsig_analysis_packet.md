@@ -377,10 +377,15 @@ The builder:
   axis-wise defect, AMI, boundary residual, and feature-extension attribution
   readings. They define the shared measurement policy boundary while concrete
   valuation fields live in the corresponding reading records.
-- `operationSquareCandidates` enumerates supplied or inferred operation pairs as
-  path pairs `p = g . f` and `q = f . g`. Inferred candidates are review cues
-  derived from shared Atom support, state / effect / contract / semantic /
-  authority / runtime / projection evidence; they are not operation truth.
+- `operationSquareCandidates` enumerates supplied, inferred, or blocked
+  operation pairs as path pairs `p = g . f` and `q = f . g`. Supplied
+  candidates are read from first-class ArchMap `operationSquareEvidence[]` and
+  carry `pOperationSequence`, `qOperationSequence`, endpoint refs, generator
+  candidates, and source-backed `candidateBasisRefs`. Inferred candidates are
+  review cues derived from shared Atom support, state / effect / contract /
+  semantic / authority / runtime / projection evidence; they are not operation
+  truth. Blocked candidates preserve missing operation-pair or endpoint
+  evidence instead of synthesizing a `:continuation` operation.
 - `pathContinuationTraces` records the selected continuation trace for each
   candidate path and axis family: static, contract, semantic, state, effect,
   authority, runtime, and projection. Unmeasured axes are retained as
