@@ -44,17 +44,18 @@ use crate::{
     ArchSigNonzeroMonodromyWitnessV0, ArchSigObservationProjectionFidelityReadingV0,
     ArchSigObservationProjectionReadingV0, ArchSigObstructionCircuitV0,
     ArchSigOperationCalculusLawReadingV0, ArchSigOperationDeltaReadingV0,
-    ArchSigOperationInvariantGaloisReadingV0, ArchSigOperationPreconditionReadinessReadingV0,
-    ArchSigOperationSquareCandidateV0, ArchSigPathContinuationTraceV0,
-    ArchSigPathHomotopyDiagramReadingV0, ArchSigPathMultiplicityLossReadingV0,
-    ArchSigPathPairCandidateV0, ArchSigPathSignatureTrajectoryReadingV0,
-    ArchSigRecurrentObstructionModeV0, ArchSigRepairAxisDeltaReadingV0,
-    ArchSigRepairOperationCandidateV0, ArchSigRepairTransferRiskRankV0,
-    ArchSigRepresentationStrengthReadingV0, ArchSigSignatureAxisReadingV0,
-    ArchSigSignatureTrajectoryHomotopyRefutationReadingV0, ArchSigSpectralAnalysisReadingV0,
-    ArchSigSpectralDominantComponentV0, ArchSigSpectralDrilldownReadingV0,
-    ArchSigSpectralMatrixShapeV0, ArchSigSpectralModeComponentV0, ArchSigSpectralModeReadingV0,
-    ArchSigSpectralValueV0, ArchSigSplitReadinessReadingV0, ArchSigStateTransitionAlgebraReadingV0,
+    ArchSigOperationInvariantGaloisReadingV0, ArchSigOperationLawEvidenceV0,
+    ArchSigOperationPreconditionReadinessReadingV0, ArchSigOperationSquareCandidateV0,
+    ArchSigPathContinuationTraceV0, ArchSigPathHomotopyDiagramReadingV0,
+    ArchSigPathMultiplicityLossReadingV0, ArchSigPathPairCandidateV0,
+    ArchSigPathSignatureTrajectoryReadingV0, ArchSigRecurrentObstructionModeV0,
+    ArchSigRepairAxisDeltaReadingV0, ArchSigRepairOperationCandidateV0,
+    ArchSigRepairTransferRiskRankV0, ArchSigRepresentationStrengthReadingV0,
+    ArchSigSignatureAxisReadingV0, ArchSigSignatureTrajectoryHomotopyRefutationReadingV0,
+    ArchSigSpectralAnalysisReadingV0, ArchSigSpectralDominantComponentV0,
+    ArchSigSpectralDrilldownReadingV0, ArchSigSpectralMatrixShapeV0,
+    ArchSigSpectralModeComponentV0, ArchSigSpectralModeReadingV0, ArchSigSpectralValueV0,
+    ArchSigSplitReadinessReadingV0, ArchSigStateTransitionAlgebraReadingV0,
     ArchSigStokesStyleReadingV0, ArchSigStructuralReadingReviewSurfaceV0,
     ArchSigSubjectFamilySpreadV0, ArchSigSynthesisBlockageReadingV0,
     ArchSigThreeLayerFlatnessReadingV0, ArchSigTransferBridgeReadingV0,
@@ -7237,6 +7238,7 @@ fn build_operation_calculus_law_readings(
             synthesis_no_solution_boundary: "notASynthesisCertificate".to_string(),
             precondition_refs: Vec::new(),
             evidence_refs: Vec::new(),
+            law_evidence: operation_law_none_observed_evidence(),
             evidence_boundary:
                 "no repair candidate was constructed; operation laws are not discharged by absence"
                     .to_string(),
@@ -7256,6 +7258,14 @@ fn build_operation_calculus_law_readings(
             let transferred = delta
                 .map(|delta| !delta.transferred_obstructions.is_empty())
                 .unwrap_or(false);
+            let law_evidence = operation_law_evidence(candidate, delta);
+            let status_for = |axis: &str| {
+                law_evidence
+                    .iter()
+                    .find(|evidence| evidence.law_axis == axis)
+                    .map(|evidence| evidence.status.clone())
+                    .unwrap_or_else(|| "unmeasured".to_string())
+            };
             ArchSigOperationCalculusLawReadingV0 {
                 reading_id: format!(
                     "operation-calculus-law:{}",
@@ -7263,38 +7273,22 @@ fn build_operation_calculus_law_readings(
                 ),
                 operation_ref: candidate.repair_operation_candidate_id.clone(),
                 operation_kind: candidate.operation_kind.clone(),
-                composition_status: "assumptionRelative".to_string(),
-                associativity_under_observation_status: "selectedObservationOnly".to_string(),
-                refinement_abstraction_compatibility: if candidate.missing_evidence.is_empty() {
-                    "needsReview".to_string()
-                } else {
-                    "blockedByMissingEvidence".to_string()
-                },
-                replacement_equivalence: "unmeasured".to_string(),
-                protection_idempotence: if candidate.operation_kind.contains("protection") {
-                    "needsWitness".to_string()
-                } else {
-                    "notApplicable".to_string()
-                },
-                runtime_localization: if candidate
-                    .preconditions
-                    .iter()
-                    .any(|precondition| precondition.to_ascii_lowercase().contains("runtime"))
-                {
-                    "blockedByCoverageGap".to_string()
+                composition_status: status_for("composition"),
+                associativity_under_observation_status: status_for("associativityUnderObservation"),
+                refinement_abstraction_compatibility: status_for(
+                    "refinementAbstractionCompatibility",
+                ),
+                replacement_equivalence: status_for("replacementEquivalence"),
+                protection_idempotence: status_for("protectionIdempotence"),
+                runtime_localization: status_for("runtimeLocalization"),
+                migration_compatibility: status_for("migrationCompatibility"),
+                reverse_involution: status_for("reverseInvolution"),
+                repair_monotonicity: if transferred {
+                    "blockedByTransferRisk".to_string()
+                } else if delta.is_some_and(|delta| !delta.decreased_axes.is_empty()) {
+                    status_for("repairMonotonicity")
                 } else {
                     "unmeasured".to_string()
-                },
-                migration_compatibility: if candidate.operation_kind.contains("migrate") {
-                    "needsWitness".to_string()
-                } else {
-                    "notApplicable".to_string()
-                },
-                reverse_involution: "unmeasured".to_string(),
-                repair_monotonicity: if transferred {
-                    "selectedAxisOnly".to_string()
-                } else {
-                    "candidateNonIncreasing".to_string()
                 },
                 synthesis_no_solution_boundary: "notASynthesisCertificate".to_string(),
                 precondition_refs: candidate.preconditions.clone(),
@@ -7304,11 +7298,238 @@ fn build_operation_calculus_law_readings(
                     .chain(candidate.preserved_invariants.iter())
                     .cloned()
                     .collect(),
+                law_evidence,
                 evidence_boundary: candidate.evidence_boundary.clone(),
                 non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
             }
         })
         .collect()
+}
+
+fn operation_law_none_observed_evidence() -> Vec<ArchSigOperationLawEvidenceV0> {
+    [
+        "composition",
+        "associativityUnderObservation",
+        "refinementAbstractionCompatibility",
+        "replacementEquivalence",
+        "protectionIdempotence",
+        "runtimeLocalization",
+        "migrationCompatibility",
+        "reverseInvolution",
+        "repairMonotonicity",
+    ]
+    .into_iter()
+    .map(|axis| ArchSigOperationLawEvidenceV0 {
+        law_axis: axis.to_string(),
+        status: if matches!(axis, "protectionIdempotence" | "migrationCompatibility") {
+            "notApplicable".to_string()
+        } else {
+            "unmeasured".to_string()
+        },
+        required_evidence_refs: vec![format!("operation-law-evidence:{axis}")],
+        observed_evidence_refs: Vec::new(),
+        blocked_reason_refs: vec!["operation-candidate:none-observed".to_string()],
+        exactness_assumption_refs: Vec::new(),
+        reading: format!("{axis} cannot be evaluated without a source-backed operation candidate"),
+    })
+    .collect()
+}
+
+fn operation_law_evidence(
+    candidate: &ArchSigRepairOperationCandidateV0,
+    delta: Option<&ArchSigOperationDeltaReadingV0>,
+) -> Vec<ArchSigOperationLawEvidenceV0> {
+    let delta_support = delta
+        .map(|delta| delta.support_refs.clone())
+        .unwrap_or_default();
+    let transferred = delta
+        .map(|delta| delta.transferred_obstructions.clone())
+        .unwrap_or_default();
+    let decreased_axes = delta
+        .map(|delta| delta.decreased_axes.clone())
+        .unwrap_or_default();
+    let observed_base = unique_strings(
+        candidate
+            .target_obstruction_refs
+            .iter()
+            .chain(candidate.preserved_invariants.iter())
+            .chain(delta_support.iter())
+            .cloned(),
+    );
+    let missing = candidate.missing_evidence.clone();
+    let exactness = if missing.is_empty() {
+        Vec::new()
+    } else {
+        vec!["exactness:operation-preconditions-observed".to_string()]
+    };
+    let mut evidence = Vec::new();
+    evidence.push(operation_law_axis_evidence(
+        "composition",
+        "observed",
+        vec![
+            "operation support refs".to_string(),
+            "operation precondition refs".to_string(),
+        ],
+        observed_base
+            .iter()
+            .chain(candidate.preconditions.iter())
+            .cloned()
+            .collect(),
+        missing.clone(),
+        exactness.clone(),
+    ));
+    evidence.push(operation_law_axis_evidence(
+        "associativityUnderObservation",
+        if delta.is_some() && !observed_base.is_empty() {
+            "observed"
+        } else {
+            "unmeasured"
+        },
+        vec!["operation delta support".to_string()],
+        observed_base.clone(),
+        Vec::new(),
+        Vec::new(),
+    ));
+    evidence.push(operation_law_axis_evidence(
+        "refinementAbstractionCompatibility",
+        if missing.is_empty() {
+            "observed"
+        } else {
+            "blocked"
+        },
+        vec!["preserved invariant refs".to_string()],
+        candidate.preserved_invariants.clone(),
+        missing.clone(),
+        exactness.clone(),
+    ));
+    evidence.push(operation_law_axis_evidence(
+        "replacementEquivalence",
+        "unmeasured",
+        vec!["before/after equivalence witness".to_string()],
+        candidate.target_obstruction_refs.clone(),
+        vec!["replacement-equivalence:witness-not-supplied".to_string()],
+        vec!["exactness:replacement-equivalence".to_string()],
+    ));
+    let protection_applicable = operation_axis_applicable(candidate, "protection");
+    evidence.push(operation_law_axis_evidence(
+        "protectionIdempotence",
+        if protection_applicable {
+            "blocked"
+        } else {
+            "notApplicable"
+        },
+        vec!["repeat protection witness".to_string()],
+        candidate.preconditions.clone(),
+        if protection_applicable {
+            vec!["protection-idempotence:witness-not-supplied".to_string()]
+        } else {
+            Vec::new()
+        },
+        Vec::new(),
+    ));
+    let runtime_observed = candidate
+        .preconditions
+        .iter()
+        .chain(candidate.missing_evidence.iter())
+        .any(|value| operation_ref_mentions(value, &["runtime", "trace", "effect"]));
+    evidence.push(operation_law_axis_evidence(
+        "runtimeLocalization",
+        if runtime_observed && missing.is_empty() {
+            "observed"
+        } else if runtime_observed {
+            "blocked"
+        } else {
+            "unmeasured"
+        },
+        vec!["runtime/effect localization witness".to_string()],
+        candidate.preconditions.clone(),
+        if runtime_observed {
+            missing.clone()
+        } else {
+            vec!["runtime-localization:witness-not-supplied".to_string()]
+        },
+        exactness.clone(),
+    ));
+    let migration_applicable = operation_axis_applicable(candidate, "migration")
+        || operation_axis_applicable(candidate, "migrate");
+    evidence.push(operation_law_axis_evidence(
+        "migrationCompatibility",
+        if migration_applicable {
+            "blocked"
+        } else {
+            "notApplicable"
+        },
+        vec!["migration compatibility witness".to_string()],
+        observed_base.clone(),
+        if migration_applicable {
+            vec!["migration-compatibility:witness-not-supplied".to_string()]
+        } else {
+            Vec::new()
+        },
+        Vec::new(),
+    ));
+    evidence.push(operation_law_axis_evidence(
+        "reverseInvolution",
+        "unmeasured",
+        vec!["reverse operation witness".to_string()],
+        observed_base.clone(),
+        vec!["reverse-involution:witness-not-supplied".to_string()],
+        vec!["exactness:reverse-operation".to_string()],
+    ));
+    evidence.push(operation_law_axis_evidence(
+        "repairMonotonicity",
+        if !transferred.is_empty() {
+            "blocked"
+        } else if !decreased_axes.is_empty() {
+            "observed"
+        } else {
+            "unmeasured"
+        },
+        vec![
+            "selected obstruction valuation".to_string(),
+            "transfer risk refs".to_string(),
+        ],
+        decreased_axes
+            .iter()
+            .chain(candidate.target_obstruction_refs.iter())
+            .cloned()
+            .collect(),
+        transferred,
+        vec!["exactness:selected-axis-only".to_string()],
+    ));
+    evidence
+}
+
+fn operation_law_axis_evidence(
+    law_axis: &str,
+    status: &str,
+    required_evidence_refs: Vec<String>,
+    observed_evidence_refs: Vec<String>,
+    blocked_reason_refs: Vec<String>,
+    exactness_assumption_refs: Vec<String>,
+) -> ArchSigOperationLawEvidenceV0 {
+    ArchSigOperationLawEvidenceV0 {
+        law_axis: law_axis.to_string(),
+        status: status.to_string(),
+        required_evidence_refs,
+        observed_evidence_refs: unique_strings(observed_evidence_refs.into_iter()),
+        blocked_reason_refs: unique_strings(blocked_reason_refs.into_iter()),
+        exactness_assumption_refs,
+        reading: format!("{law_axis} is {status} under selected operation evidence"),
+    }
+}
+
+fn operation_axis_applicable(candidate: &ArchSigRepairOperationCandidateV0, needle: &str) -> bool {
+    operation_ref_mentions(&candidate.operation_kind, &[needle])
+        || candidate
+            .preconditions
+            .iter()
+            .any(|value| operation_ref_mentions(value, &[needle]))
+}
+
+fn operation_ref_mentions(value: &str, needles: &[&str]) -> bool {
+    let value = value.to_ascii_lowercase();
+    needles.iter().any(|needle| value.contains(needle))
 }
 
 fn build_path_signature_trajectory_readings(
@@ -7895,22 +8116,22 @@ fn build_operation_precondition_readiness_readings(
             let precondition_refs = law_reading
                 .map(|reading| reading.precondition_refs.clone())
                 .unwrap_or_else(|| candidate.preconditions.clone());
-            let missing_precondition_refs = candidate
-                .missing_evidence
-                .iter()
-                .chain(
-                    precondition_refs
+            let law_blocked_reason_refs = law_reading
+                .map(|reading| {
+                    reading
+                        .law_evidence
                         .iter()
-                        .filter(|precondition| {
-                            let text = precondition.to_ascii_lowercase();
-                            text.contains("gap")
-                                || text.contains("missing")
-                                || text.contains("runtime")
-                                || text.contains("witness")
-                        }),
-                )
-                .cloned()
-                .collect::<Vec<_>>();
+                        .flat_map(|evidence| evidence.blocked_reason_refs.clone())
+                        .collect::<Vec<_>>()
+                })
+                .unwrap_or_default();
+            let missing_precondition_refs = unique_strings(
+                candidate
+                    .missing_evidence
+                    .iter()
+                    .chain(law_blocked_reason_refs.iter())
+                    .cloned(),
+            );
             let witness_gap_refs = law_blockers.clone();
             let exactness_gap_refs = coverage_gap_refs.clone();
             let readiness_status = if missing_precondition_refs.is_empty()
@@ -13690,6 +13911,58 @@ fn check_aat_structural_reading_surfaces(packet: &ArchSigAnalysisPacketV0) -> Va
             &format!("{} evidenceBoundary", reading.reading_id),
             &reading.evidence_boundary,
         );
+        if reading.law_evidence.len() < 9 {
+            examples.push(generic_validation_example(
+                &reading.reading_id,
+                "lawEvidence",
+                "operation calculus reading must expose evidence for each law axis",
+            ));
+        }
+        for evidence in &reading.law_evidence {
+            push_blank(
+                &mut examples,
+                &format!("{} lawEvidence.lawAxis", reading.reading_id),
+                &evidence.law_axis,
+            );
+            push_blank(
+                &mut examples,
+                &format!("{} lawEvidence.status", reading.reading_id),
+                &evidence.status,
+            );
+            if !matches!(
+                evidence.status.as_str(),
+                "observed" | "unmeasured" | "blocked" | "notApplicable"
+            ) {
+                examples.push(generic_validation_example(
+                    &reading.reading_id,
+                    &evidence.status,
+                    "operation law axis status must be observed / unmeasured / blocked / notApplicable",
+                ));
+            }
+            if evidence.required_evidence_refs.is_empty()
+                && evidence.status.as_str() != "notApplicable"
+            {
+                examples.push(generic_validation_example(
+                    &reading.reading_id,
+                    &evidence.law_axis,
+                    "operation law axis must name required evidence refs",
+                ));
+            }
+            if evidence.status == "observed" && evidence.observed_evidence_refs.is_empty() {
+                examples.push(generic_validation_example(
+                    &reading.reading_id,
+                    &evidence.law_axis,
+                    "observed operation law axis must retain observed evidence refs",
+                ));
+            }
+            if evidence.status == "blocked" && evidence.blocked_reason_refs.is_empty() {
+                examples.push(generic_validation_example(
+                    &reading.reading_id,
+                    &evidence.law_axis,
+                    "blocked operation law axis must retain blocked reason refs",
+                ));
+            }
+        }
     }
     for reading in &packet.path_signature_trajectory_readings {
         push_blank(&mut examples, &reading.reading_id, &reading.path_ref);

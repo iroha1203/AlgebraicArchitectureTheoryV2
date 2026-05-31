@@ -3120,15 +3120,15 @@
       "readingId": "operation-calculus-law:repair-obstruction-semantic-contract-mismatch-computed",
       "operationRef": "repair:obstruction-semantic-contract-mismatch-computed",
       "operationKind": "repair-semanticmismatchcircuit",
-      "compositionStatus": "assumptionRelative",
-      "associativityUnderObservationStatus": "selectedObservationOnly",
-      "refinementAbstractionCompatibility": "blockedByMissingEvidence",
+      "compositionStatus": "observed",
+      "associativityUnderObservationStatus": "observed",
+      "refinementAbstractionCompatibility": "blocked",
       "replacementEquivalence": "unmeasured",
       "protectionIdempotence": "notApplicable",
-      "runtimeLocalization": "blockedByCoverageGap",
+      "runtimeLocalization": "blocked",
       "migrationCompatibility": "notApplicable",
       "reverseInvolution": "unmeasured",
-      "repairMonotonicity": "selectedAxisOnly",
+      "repairMonotonicity": "blockedByTransferRisk",
       "synthesisNoSolutionBoundary": "notASynthesisCertificate",
       "preconditionRefs": [
         "human review selects a repair operation",
@@ -3137,6 +3137,169 @@
       "evidenceRefs": [
         "obstruction:semantic-contract-mismatch:computed",
         "preserve zero reading for sig-axis:layer-violation"
+      ],
+      "lawEvidence": [
+        {
+          "lawAxis": "composition",
+          "status": "observed",
+          "requiredEvidenceRefs": [
+            "operation support refs",
+            "operation precondition refs"
+          ],
+          "observedEvidenceRefs": [
+            "human review selects a repair operation",
+            "obstruction:semantic-contract-mismatch:computed",
+            "preserve zero reading for sig-axis:layer-violation",
+            "resolve or explicitly accept coverage gap gap-runtime-user-db-trace"
+          ],
+          "blockedReasonRefs": [
+            "coverage:semantic-contract-atoms: report observation gap and block signature-zero reflection",
+            "gap-runtime-user-db-trace: runtime trace was requested but not supplied",
+            "implementation patch and verification evidence are not supplied by ArchSig analysis",
+            "witness:semantic-contract-mismatch: report observation gap; do not infer measured zero"
+          ],
+          "exactnessAssumptionRefs": [
+            "exactness:operation-preconditions-observed"
+          ],
+          "reading": "composition is observed under selected operation evidence"
+        },
+        {
+          "lawAxis": "associativityUnderObservation",
+          "status": "observed",
+          "requiredEvidenceRefs": [
+            "operation delta support"
+          ],
+          "observedEvidenceRefs": [
+            "obstruction:semantic-contract-mismatch:computed",
+            "preserve zero reading for sig-axis:layer-violation"
+          ],
+          "blockedReasonRefs": [],
+          "exactnessAssumptionRefs": [],
+          "reading": "associativityUnderObservation is observed under selected operation evidence"
+        },
+        {
+          "lawAxis": "refinementAbstractionCompatibility",
+          "status": "blocked",
+          "requiredEvidenceRefs": [
+            "preserved invariant refs"
+          ],
+          "observedEvidenceRefs": [
+            "preserve zero reading for sig-axis:layer-violation"
+          ],
+          "blockedReasonRefs": [
+            "coverage:semantic-contract-atoms: report observation gap and block signature-zero reflection",
+            "gap-runtime-user-db-trace: runtime trace was requested but not supplied",
+            "implementation patch and verification evidence are not supplied by ArchSig analysis",
+            "witness:semantic-contract-mismatch: report observation gap; do not infer measured zero"
+          ],
+          "exactnessAssumptionRefs": [
+            "exactness:operation-preconditions-observed"
+          ],
+          "reading": "refinementAbstractionCompatibility is blocked under selected operation evidence"
+        },
+        {
+          "lawAxis": "replacementEquivalence",
+          "status": "unmeasured",
+          "requiredEvidenceRefs": [
+            "before/after equivalence witness"
+          ],
+          "observedEvidenceRefs": [
+            "obstruction:semantic-contract-mismatch:computed"
+          ],
+          "blockedReasonRefs": [
+            "replacement-equivalence:witness-not-supplied"
+          ],
+          "exactnessAssumptionRefs": [
+            "exactness:replacement-equivalence"
+          ],
+          "reading": "replacementEquivalence is unmeasured under selected operation evidence"
+        },
+        {
+          "lawAxis": "protectionIdempotence",
+          "status": "notApplicable",
+          "requiredEvidenceRefs": [
+            "repeat protection witness"
+          ],
+          "observedEvidenceRefs": [
+            "human review selects a repair operation",
+            "resolve or explicitly accept coverage gap gap-runtime-user-db-trace"
+          ],
+          "blockedReasonRefs": [],
+          "exactnessAssumptionRefs": [],
+          "reading": "protectionIdempotence is notApplicable under selected operation evidence"
+        },
+        {
+          "lawAxis": "runtimeLocalization",
+          "status": "blocked",
+          "requiredEvidenceRefs": [
+            "runtime/effect localization witness"
+          ],
+          "observedEvidenceRefs": [
+            "human review selects a repair operation",
+            "resolve or explicitly accept coverage gap gap-runtime-user-db-trace"
+          ],
+          "blockedReasonRefs": [
+            "coverage:semantic-contract-atoms: report observation gap and block signature-zero reflection",
+            "gap-runtime-user-db-trace: runtime trace was requested but not supplied",
+            "implementation patch and verification evidence are not supplied by ArchSig analysis",
+            "witness:semantic-contract-mismatch: report observation gap; do not infer measured zero"
+          ],
+          "exactnessAssumptionRefs": [
+            "exactness:operation-preconditions-observed"
+          ],
+          "reading": "runtimeLocalization is blocked under selected operation evidence"
+        },
+        {
+          "lawAxis": "migrationCompatibility",
+          "status": "notApplicable",
+          "requiredEvidenceRefs": [
+            "migration compatibility witness"
+          ],
+          "observedEvidenceRefs": [
+            "obstruction:semantic-contract-mismatch:computed",
+            "preserve zero reading for sig-axis:layer-violation"
+          ],
+          "blockedReasonRefs": [],
+          "exactnessAssumptionRefs": [],
+          "reading": "migrationCompatibility is notApplicable under selected operation evidence"
+        },
+        {
+          "lawAxis": "reverseInvolution",
+          "status": "unmeasured",
+          "requiredEvidenceRefs": [
+            "reverse operation witness"
+          ],
+          "observedEvidenceRefs": [
+            "obstruction:semantic-contract-mismatch:computed",
+            "preserve zero reading for sig-axis:layer-violation"
+          ],
+          "blockedReasonRefs": [
+            "reverse-involution:witness-not-supplied"
+          ],
+          "exactnessAssumptionRefs": [
+            "exactness:reverse-operation"
+          ],
+          "reading": "reverseInvolution is unmeasured under selected operation evidence"
+        },
+        {
+          "lawAxis": "repairMonotonicity",
+          "status": "blocked",
+          "requiredEvidenceRefs": [
+            "selected obstruction valuation",
+            "transfer risk refs"
+          ],
+          "observedEvidenceRefs": [
+            "obstruction:semantic-contract-mismatch:computed",
+            "sig-axis:semantic-inconsistency"
+          ],
+          "blockedReasonRefs": [
+            "may transfer obstruction into runtime behavior, ownership, or idempotency boundary"
+          ],
+          "exactnessAssumptionRefs": [
+            "exactness:selected-axis-only"
+          ],
+          "reading": "repairMonotonicity is blocked under selected operation evidence"
+        }
       ],
       "evidenceBoundary": "repair candidate is derived from ArchSig packet evidence, not an automatic patch",
       "nonConclusions": [
@@ -3465,8 +3628,10 @@
         "coverage:semantic-contract-atoms: report observation gap and block signature-zero reflection",
         "gap-runtime-user-db-trace: runtime trace was requested but not supplied",
         "implementation patch and verification evidence are not supplied by ArchSig analysis",
-        "witness:semantic-contract-mismatch: report observation gap; do not infer measured zero",
-        "resolve or explicitly accept coverage gap gap-runtime-user-db-trace"
+        "may transfer obstruction into runtime behavior, ownership, or idempotency boundary",
+        "replacement-equivalence:witness-not-supplied",
+        "reverse-involution:witness-not-supplied",
+        "witness:semantic-contract-mismatch: report observation gap; do not infer measured zero"
       ],
       "coverageGapRefs": [
         "gap-runtime-user-db-trace",
@@ -9007,7 +9172,7 @@
       "feature-extension-formula:fixture-archmap-atom-observation status=measured inherited=1 featureLocal=1 interaction=1 residualGaps=1"
     ],
     "operationCalculusLawSummary": [
-      "repair:obstruction-semantic-contract-mismatch-computed kind=repair-semanticmismatchcircuit composition=assumptionRelative repairMonotonicity=selectedAxisOnly boundary=notASynthesisCertificate"
+      "repair:obstruction-semantic-contract-mismatch-computed kind=repair-semanticmismatchcircuit composition=observed repairMonotonicity=blockedByTransferRisk boundary=notASynthesisCertificate"
     ],
     "pathSignatureTrajectorySummary": [
       "operation-delta:repair-obstruction-semantic-contract-mismatch-computed status=candidateTrajectory endpointDeltas=1 nonMonotoneAxes=1 cost=support=1 transferred=1"
@@ -9034,7 +9199,7 @@
       "synthesis-blockage:fixture-archmap-atom-observation status=synthesisBlockedByMissingEvidenceOrConstraints targets=2 constraints=7 missing=5 noSolution=notASolverAndNotAbsenceProof"
     ],
     "operationPreconditionReadinessSummary": [
-      "repair:obstruction-semantic-contract-mismatch-computed kind=repair-semanticmismatchcircuit status=blockedByMissingPreconditionEvidence missing=5 witnesses=2"
+      "repair:obstruction-semantic-contract-mismatch-computed kind=repair-semanticmismatchcircuit status=blockedByMissingPreconditionEvidence missing=7 witnesses=2"
     ],
     "pathMultiplicityLossSummary": [
       "fixture-archmap-atom-observation status=reachabilityMultiplicityLossObserved paths=1 alternatePressure=8 fanIn=0 forgotten=1"

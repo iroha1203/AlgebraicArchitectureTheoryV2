@@ -2682,10 +2682,26 @@ fn assert_north_star_packet_surfaces(json: &Value) {
                     && reading["protectionIdempotence"].as_str().is_some()
                     && reading["runtimeLocalization"].as_str().is_some()
                     && reading["repairMonotonicity"].as_str().is_some()
+                    && reading["lawEvidence"].as_array().is_some_and(|items| {
+                        items.len() >= 9
+                            && items.iter().all(|evidence| {
+                                evidence["lawAxis"].as_str().is_some()
+                                    && matches!(
+                                        evidence["status"].as_str(),
+                                        Some("observed")
+                                            | Some("unmeasured")
+                                            | Some("blocked")
+                                            | Some("notApplicable")
+                                    )
+                                    && evidence["requiredEvidenceRefs"].as_array().is_some()
+                                    && evidence["observedEvidenceRefs"].as_array().is_some()
+                                    && evidence["blockedReasonRefs"].as_array().is_some()
+                            })
+                    })
                     && reading["synthesisNoSolutionBoundary"].as_str().is_some()
                     && reading["evidenceBoundary"].as_str().is_some()
             }),
-        "operation calculus readings must carry operation law axes and boundary"
+        "operation calculus readings must carry operation law axes, evidence status, and boundary"
     );
     assert!(
         json["pathSignatureTrajectoryReadings"]
