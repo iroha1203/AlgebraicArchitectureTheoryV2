@@ -11,7 +11,7 @@ There is one user-facing authoring contract: the output should be the fullest
 bounded ArchMap the selected evidence supports. Do not produce a deliberately
 thin, quick, or staged map as the final answer. Internal drafts are allowed
 while reading, but the handoff artifact should already contain source
-inventory, primitive atoms, molecules, semantic readings, projection hints,
+inventory, primitive atoms, molecules, semantic readings, canonical Atom projection hints,
 concern hints, spectrum support, homotopy path candidates, filler evidence,
 non-fillability witnesses, and explicit gaps for genuinely unavailable
 evidence.

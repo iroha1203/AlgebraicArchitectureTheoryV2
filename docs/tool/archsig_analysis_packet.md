@@ -453,11 +453,16 @@ The builder:
   an axis applicable, but they do not by themselves discharge an observed law;
   repair monotonicity is tied to selected obstruction valuation and transfer
   risk refs.
+- observation projection readings now use canonical Atom projection rows rather
+  than treating subject / predicate slot collision as the whole signal. They
+  separate source coordinates, observed coordinates, forgotten expected
+  coordinates, typed non-injectivity candidates, hidden atom family hints, and
+  typed reconstruction blockers with evidence refs.
 - axis-forgetting risk records when a coarse observation projection has
-  forgotten selected axes or collapsed mixed-axis support. It blocks
-  `ZeroReflecting` and `ObstructionReflecting` readings unless explicit axis
-  preservation, witness completeness, and selected LawPolicy coverage are
-  supplied.
+  forgotten selected axes, collapsed mixed-axis support, or reconstruction
+  blockers connected to selected signature axes. It blocks `ZeroReflecting` and
+  `ObstructionReflecting` readings unless explicit axis preservation, witness
+  completeness, and selected LawPolicy coverage are supplied.
 - signature trajectory homotopy refutation records trajectory disagreement
   separately from endpoint delta. It can refute only a selected
   signature-preserving homotopy; it does not claim operation commutativity,

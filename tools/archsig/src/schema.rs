@@ -2257,6 +2257,10 @@ pub struct ArchSigAxisForgettingRiskReadingV0 {
     pub source_projection_ref: String,
     pub source_atom_support_refs: Vec<String>,
     pub forgotten_axis_refs: Vec<String>,
+    #[serde(default)]
+    pub selected_signature_axis_refs: Vec<String>,
+    #[serde(default)]
+    pub blocked_signature_axis_refs: Vec<String>,
     pub mixed_axis_scope_refs: Vec<String>,
     pub reflection_loss_kind: String,
     pub zero_reflection_status: String,
@@ -2281,6 +2285,8 @@ pub struct ArchSigObservationProjectionFidelityReadingV0 {
     pub hidden_atom_family_hint_count: usize,
     pub projection_lost_atom_family_refs: Vec<String>,
     pub projection_loss_axes: Vec<String>,
+    #[serde(default)]
+    pub reconstruction_blocker_refs: Vec<String>,
     pub reflection_status: String,
     pub measurement_boundary: String,
     pub recommended_next_action: String,
@@ -2688,7 +2694,17 @@ pub struct ArchSigObservationProjectionReadingV0 {
     pub reading_id: String,
     pub observed_atom_families: Vec<String>,
     pub observed_atom_family_count: usize,
+    #[serde(default)]
+    pub source_coordinates: Vec<ArchSigProjectionCoordinateV0>,
+    #[serde(default)]
+    pub observed_coordinates: Vec<ArchSigProjectionCoordinateV0>,
     pub forgotten_coordinates: Vec<String>,
+    #[serde(default)]
+    pub forgotten_coordinate_evidence: Vec<ArchSigProjectionCoordinateV0>,
+    #[serde(default)]
+    pub non_injectivity_candidates: Vec<ArchSigProjectionNonInjectivityCandidateV0>,
+    #[serde(default)]
+    pub reconstruction_blocker_evidence: Vec<ArchSigProjectionReconstructionBlockerV0>,
     #[serde(default)]
     pub observation_collision_pairs: Vec<String>,
     #[serde(default)]
@@ -2703,6 +2719,45 @@ pub struct ArchSigObservationProjectionReadingV0 {
     pub reading: String,
     pub evidence_boundary: String,
     pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigProjectionCoordinateV0 {
+    pub coordinate_id: String,
+    pub coordinate_kind: String,
+    pub atom_family: String,
+    pub subject_ref: String,
+    pub predicate: String,
+    pub atom_observation_refs: Vec<String>,
+    pub source_refs: Vec<String>,
+    pub status: String,
+    pub reading: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigProjectionNonInjectivityCandidateV0 {
+    pub candidate_id: String,
+    pub candidate_kind: String,
+    pub coordinate_refs: Vec<String>,
+    pub atom_observation_refs: Vec<String>,
+    pub evidence_refs: Vec<String>,
+    pub reading: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigProjectionReconstructionBlockerV0 {
+    pub blocker_id: String,
+    pub blocker_kind: String,
+    pub coordinate_refs: Vec<String>,
+    pub gap_refs: Vec<String>,
+    pub expected_atom_families: Vec<String>,
+    pub source_refs: Vec<String>,
+    pub blocked_axis_refs: Vec<String>,
+    pub evidence_refs: Vec<String>,
+    pub reading: String,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

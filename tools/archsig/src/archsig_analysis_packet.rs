@@ -49,14 +49,15 @@ use crate::{
     ArchSigOperationPreconditionReadinessReadingV0, ArchSigOperationSquareCandidateV0,
     ArchSigPathContinuationTraceV0, ArchSigPathHomotopyDiagramReadingV0,
     ArchSigPathMultiplicityLossReadingV0, ArchSigPathPairCandidateV0,
-    ArchSigPathSignatureTrajectoryReadingV0, ArchSigRecurrentObstructionModeV0,
-    ArchSigRepairAxisDeltaReadingV0, ArchSigRepairOperationCandidateV0,
-    ArchSigRepairTransferRiskRankV0, ArchSigRepresentationStrengthReadingV0,
-    ArchSigSignatureAxisReadingV0, ArchSigSignatureTrajectoryHomotopyRefutationReadingV0,
-    ArchSigSpectralAnalysisReadingV0, ArchSigSpectralDominantComponentV0,
-    ArchSigSpectralDrilldownReadingV0, ArchSigSpectralMatrixShapeV0,
-    ArchSigSpectralModeComponentV0, ArchSigSpectralModeReadingV0, ArchSigSpectralValueV0,
-    ArchSigSplitReadinessReadingV0, ArchSigStateTransitionAlgebraReadingV0,
+    ArchSigPathSignatureTrajectoryReadingV0, ArchSigProjectionCoordinateV0,
+    ArchSigProjectionNonInjectivityCandidateV0, ArchSigProjectionReconstructionBlockerV0,
+    ArchSigRecurrentObstructionModeV0, ArchSigRepairAxisDeltaReadingV0,
+    ArchSigRepairOperationCandidateV0, ArchSigRepairTransferRiskRankV0,
+    ArchSigRepresentationStrengthReadingV0, ArchSigSignatureAxisReadingV0,
+    ArchSigSignatureTrajectoryHomotopyRefutationReadingV0, ArchSigSpectralAnalysisReadingV0,
+    ArchSigSpectralDominantComponentV0, ArchSigSpectralDrilldownReadingV0,
+    ArchSigSpectralMatrixShapeV0, ArchSigSpectralModeComponentV0, ArchSigSpectralModeReadingV0,
+    ArchSigSpectralValueV0, ArchSigSplitReadinessReadingV0, ArchSigStateTransitionAlgebraReadingV0,
     ArchSigStokesStyleReadingV0, ArchSigStructuralReadingReviewSurfaceV0,
     ArchSigSubjectFamilySpreadV0, ArchSigSynthesisBlockageReadingV0,
     ArchSigThreeLayerFlatnessReadingV0, ArchSigTransferBridgeReadingV0,
@@ -220,6 +221,7 @@ pub fn build_archsig_analysis_packet(
     let axis_forgetting_risk_readings = build_axis_forgetting_risk_readings(
         &atom_support_axis_readings,
         &observation_projection_readings,
+        &signature_axes,
     );
     let observation_projection_fidelity_readings = build_observation_projection_fidelity_readings(
         &observation_projection_readings,
@@ -6989,8 +6991,81 @@ fn build_observation_projection_readings(
         .collect::<BTreeSet<_>>()
         .into_iter()
         .collect::<Vec<_>>();
+    let observed_coordinates = archmap
+        .atom_observations
+        .iter()
+        .map(|atom| {
+            let source_refs = atom
+                .source_refs
+                .iter()
+                .map(source_ref_label)
+                .collect::<Vec<_>>();
+            ArchSigProjectionCoordinateV0 {
+                coordinate_id: format!(
+                    "projection-coordinate:observed:{}",
+                    stable_id(&atom.atom_observation_id)
+                ),
+                coordinate_kind: "observedAtomCoordinate".to_string(),
+                atom_family: atom.atom_family.clone(),
+                subject_ref: atom.subject_ref.clone(),
+                predicate: atom.predicate.clone(),
+                atom_observation_refs: vec![atom.atom_observation_id.clone()],
+                source_refs,
+                status: "observed".to_string(),
+                reading: "observed ArchMap atom coordinate in the canonical projection boundary"
+                    .to_string(),
+            }
+        })
+        .collect::<Vec<_>>();
+    let mut source_coordinates = observed_coordinates.clone();
+    let forgotten_coordinate_evidence = archmap
+        .observation_gaps
+        .iter()
+        .flat_map(|gap| {
+            let families = if gap.expected_atom_families.is_empty() {
+                vec!["unknownAtomFamily".to_string()]
+            } else {
+                gap.expected_atom_families.clone()
+            };
+            families.into_iter().map(move |family| {
+                let source_refs = gap
+                    .source_refs
+                    .iter()
+                    .map(source_ref_label)
+                    .collect::<Vec<_>>();
+                ArchSigProjectionCoordinateV0 {
+                    coordinate_id: format!(
+                        "projection-coordinate:forgotten:{}:{}",
+                        stable_id(&gap.gap_id),
+                        stable_id(&family)
+                    ),
+                    coordinate_kind: "forgottenExpectedCoordinate".to_string(),
+                    atom_family: family,
+                    subject_ref: gap.subject_ref.clone(),
+                    predicate: gap.gap_kind.clone(),
+                    atom_observation_refs: Vec::new(),
+                    source_refs,
+                    status: gap.evidence_status.clone(),
+                    reading: format!(
+                        "{} is an expected coordinate blocked by observation gap {}",
+                        gap.subject_ref, gap.gap_id
+                    ),
+                }
+            })
+        })
+        .collect::<Vec<_>>();
+    source_coordinates.extend(forgotten_coordinate_evidence.iter().cloned());
     let mut slots = BTreeMap::<String, Vec<String>>::new();
     let mut families_by_subject = BTreeMap::<String, BTreeSet<String>>::new();
+    let coordinate_by_atom = observed_coordinates
+        .iter()
+        .flat_map(|coordinate| {
+            coordinate
+                .atom_observation_refs
+                .iter()
+                .map(|atom_ref| (atom_ref.clone(), coordinate.coordinate_id.clone()))
+        })
+        .collect::<BTreeMap<_, _>>();
     for atom in &archmap.atom_observations {
         slots
             .entry(format!("{}::{}", atom.subject_ref, atom.predicate))
@@ -7001,19 +7076,60 @@ fn build_observation_projection_readings(
             .or_default()
             .insert(atom.atom_family.clone());
     }
+    let mut non_injectivity_candidates = Vec::new();
     let observation_collision_pairs = slots
         .into_iter()
         .filter(|(_, refs)| refs.len() > 1)
-        .map(|(slot, refs)| format!("{} -> {}", slot, refs.join(",")))
+        .map(|(slot, refs)| {
+            let coordinate_refs = refs
+                .iter()
+                .filter_map(|atom_ref| coordinate_by_atom.get(atom_ref).cloned())
+                .collect::<Vec<_>>();
+            non_injectivity_candidates.push(ArchSigProjectionNonInjectivityCandidateV0 {
+                candidate_id: format!("projection-non-injectivity:slot:{}", stable_id(&slot)),
+                candidate_kind: "sameSubjectPredicateSlot".to_string(),
+                coordinate_refs,
+                atom_observation_refs: refs.clone(),
+                evidence_refs: refs.clone(),
+                reading:
+                    "multiple observed Atom coordinates share a subject/predicate slot; review canonical projection injectivity"
+                        .to_string(),
+            });
+            format!("{} -> {}", slot, refs.join(","))
+        })
         .collect::<Vec<_>>();
     let collapsed_atom_family_candidates = families_by_subject
         .into_iter()
         .filter(|(_, families)| families.len() > 1)
         .map(|(subject, families)| {
+            let family_list = families.into_iter().collect::<Vec<_>>();
+            let atom_refs = archmap
+                .atom_observations
+                .iter()
+                .filter(|atom| atom.subject_ref == subject && family_list.contains(&atom.atom_family))
+                .map(|atom| atom.atom_observation_id.clone())
+                .collect::<Vec<_>>();
+            let coordinate_refs = atom_refs
+                .iter()
+                .filter_map(|atom_ref| coordinate_by_atom.get(atom_ref).cloned())
+                .collect::<Vec<_>>();
+            non_injectivity_candidates.push(ArchSigProjectionNonInjectivityCandidateV0 {
+                candidate_id: format!(
+                    "projection-non-injectivity:family-spread:{}",
+                    stable_id(&subject)
+                ),
+                candidate_kind: "subjectFamilySpread".to_string(),
+                coordinate_refs,
+                atom_observation_refs: atom_refs.clone(),
+                evidence_refs: atom_refs,
+                reading:
+                    "one subject spreads across multiple Atom families; canonical projection may be non-injective"
+                        .to_string(),
+            });
             format!(
                 "{} -> {}",
                 subject,
-                families.into_iter().collect::<Vec<_>>().join(",")
+                family_list.join(",")
             )
         })
         .collect::<Vec<_>>();
@@ -7030,11 +7146,58 @@ fn build_observation_projection_readings(
     } else {
         "reconstructionLossPresent".to_string()
     };
+    let reconstruction_blocker_evidence = archmap
+        .observation_gaps
+        .iter()
+        .map(|gap| {
+            let source_refs = gap
+                .source_refs
+                .iter()
+                .map(source_ref_label)
+                .collect::<Vec<_>>();
+            let coordinate_refs = forgotten_coordinate_evidence
+                .iter()
+                .filter(|coordinate| coordinate.subject_ref == gap.subject_ref)
+                .map(|coordinate| coordinate.coordinate_id.clone())
+                .collect::<Vec<_>>();
+            let evidence_refs = if source_refs.is_empty() {
+                vec![gap.gap_id.clone()]
+            } else {
+                source_refs.clone()
+            };
+            ArchSigProjectionReconstructionBlockerV0 {
+                blocker_id: format!(
+                    "projection-reconstruction-blocker:{}",
+                    stable_id(&gap.gap_id)
+                ),
+                blocker_kind: gap.gap_kind.clone(),
+                coordinate_refs,
+                gap_refs: vec![gap.gap_id.clone()],
+                expected_atom_families: gap.expected_atom_families.clone(),
+                source_refs,
+                blocked_axis_refs: gap
+                    .expected_atom_families
+                    .iter()
+                    .map(|family| format!("axis-forgotten-family:{}", stable_id(family)))
+                    .collect(),
+                evidence_refs,
+                reading: format!(
+                    "{} blocks reconstruction of expected Atom coordinates for {}",
+                    gap.gap_id, gap.subject_ref
+                ),
+            }
+        })
+        .collect::<Vec<_>>();
     vec![ArchSigObservationProjectionReadingV0 {
         reading_id: format!("observation-projection:{}", stable_id(&archmap.map_id)),
         observed_atom_family_count: observed_atom_families.len(),
         observed_atom_families,
+        source_coordinates,
+        observed_coordinates,
         forgotten_coordinates: forgotten_coordinates.clone(),
+        forgotten_coordinate_evidence,
+        non_injectivity_candidates,
+        reconstruction_blocker_evidence,
         observation_collision_pairs,
         collapsed_atom_family_candidates,
         hidden_atom_family_hints,
@@ -8063,6 +8226,7 @@ fn build_diagram_fillability_readings(
 fn build_axis_forgetting_risk_readings(
     atom_support_axis_readings: &[ArchSigAtomSupportAxisReadingV0],
     observation_projection_readings: &[ArchSigObservationProjectionReadingV0],
+    signature_axes: &[ArchSigSignatureAxisReadingV0],
 ) -> Vec<ArchSigAxisForgettingRiskReadingV0> {
     let forgotten_axis_refs = unique_strings(
         observation_projection_readings
@@ -8083,12 +8247,30 @@ fn build_axis_forgetting_risk_readings(
         .first()
         .map(|reading| reading.reading_id.clone())
         .unwrap_or_else(|| "observation-projection:none-observed".to_string());
-    let has_loss = !forgotten_axis_refs.is_empty() || !mixed_axis_scope_refs.is_empty();
+    let selected_signature_axis_refs = signature_axes
+        .iter()
+        .map(|axis| axis.signature_axis_id.clone())
+        .collect::<Vec<_>>();
+    let blocked_signature_axis_refs = signature_axes
+        .iter()
+        .filter(|axis| {
+            axis.coverage_status.contains("blocked")
+                || axis.coverage_status.contains("gap")
+                || !axis.missing_evidence.is_empty()
+                || !forgotten_axis_refs.is_empty()
+        })
+        .map(|axis| axis.signature_axis_id.clone())
+        .collect::<Vec<_>>();
+    let has_loss = !forgotten_axis_refs.is_empty()
+        || !mixed_axis_scope_refs.is_empty()
+        || !blocked_signature_axis_refs.is_empty();
     vec![ArchSigAxisForgettingRiskReadingV0 {
         reading_id: "axis-forgetting-risk:selected-projection".to_string(),
         source_projection_ref,
         source_atom_support_refs,
         forgotten_axis_refs,
+        selected_signature_axis_refs,
+        blocked_signature_axis_refs,
         mixed_axis_scope_refs,
         reflection_loss_kind: if has_loss {
             "selectedAxisOrWitnessLoss".to_string()
@@ -8133,6 +8315,12 @@ fn build_observation_projection_fidelity_readings(
                     .forgotten_coordinates
                     .iter()
                     .chain(
+                        projection
+                            .reconstruction_blocker_evidence
+                            .iter()
+                            .flat_map(|blocker| blocker.blocked_axis_refs.iter()),
+                    )
+                    .chain(
                         axis_forgetting
                             .into_iter()
                             .flat_map(|reading| reading.forgotten_axis_refs.iter()),
@@ -8152,6 +8340,11 @@ fn build_observation_projection_fidelity_readings(
                 + axis_forgetting
                     .map(|reading| reading.mixed_axis_scope_refs.len())
                     .unwrap_or_default();
+            let reconstruction_blocker_refs = projection
+                .reconstruction_blocker_evidence
+                .iter()
+                .map(|blocker| blocker.blocker_id.clone())
+                .collect::<Vec<_>>();
             ArchSigObservationProjectionFidelityReadingV0 {
                 reading_id: format!(
                     "observation-projection-fidelity:{}",
@@ -8175,6 +8368,7 @@ fn build_observation_projection_fidelity_readings(
                 hidden_atom_family_hint_count: projection.hidden_atom_family_hints.len(),
                 projection_lost_atom_family_refs: lost_family_refs,
                 projection_loss_axes,
+                reconstruction_blocker_refs,
                 reflection_status: axis_forgetting
                     .map(|reading| reading.zero_reflection_status.clone())
                     .unwrap_or_else(|| "notClaimed".to_string()),
@@ -14601,6 +14795,22 @@ fn check_aat_structural_reading_surfaces(packet: &ArchSigAnalysisPacketV0) -> Va
                 "axis-forgetting risk must record reflection assumptions",
             ));
         }
+        if reading.selected_signature_axis_refs.is_empty() {
+            examples.push(generic_validation_example(
+                &reading.reading_id,
+                "selectedSignatureAxisRefs",
+                "axis-forgetting risk must connect projection loss to selected signature axes",
+            ));
+        }
+        if reading.zero_reflection_status.contains("blocked")
+            && reading.blocked_signature_axis_refs.is_empty()
+        {
+            examples.push(generic_validation_example(
+                &reading.reading_id,
+                "blockedSignatureAxisRefs",
+                "blocked zero reflection must name affected signature axes",
+            ));
+        }
         push_blank(
             &mut examples,
             &format!("{} coverageBoundary", reading.reading_id),
@@ -14633,6 +14843,15 @@ fn check_aat_structural_reading_surfaces(packet: &ArchSigAnalysisPacketV0) -> Va
             &format!("{} measurementBoundary", reading.reading_id),
             &reading.measurement_boundary,
         );
+        if reading.fidelity_status == "projectionLossObserved"
+            && reading.reconstruction_blocker_refs.is_empty()
+        {
+            examples.push(generic_validation_example(
+                &reading.reading_id,
+                "reconstructionBlockerRefs",
+                "projection fidelity loss must retain typed reconstruction blocker refs",
+            ));
+        }
         push_blank(
             &mut examples,
             &format!("{} recommendedNextAction", reading.reading_id),
@@ -14862,6 +15081,44 @@ fn check_aat_structural_reading_surfaces(packet: &ArchSigAnalysisPacketV0) -> Va
                 "observation projection must record projection loss risks",
             ));
         }
+        if reading.source_coordinates.is_empty() || reading.observed_coordinates.is_empty() {
+            examples.push(generic_validation_example(
+                &reading.reading_id,
+                "sourceCoordinates/observedCoordinates",
+                "observation projection must expose canonical source and observed coordinate rows",
+            ));
+        }
+        for coordinate in reading
+            .source_coordinates
+            .iter()
+            .chain(reading.observed_coordinates.iter())
+            .chain(reading.forgotten_coordinate_evidence.iter())
+        {
+            push_blank(
+                &mut examples,
+                &format!("{} coordinateId", reading.reading_id),
+                &coordinate.coordinate_id,
+            );
+            push_blank(
+                &mut examples,
+                &format!("{} coordinateKind", reading.reading_id),
+                &coordinate.coordinate_kind,
+            );
+            push_blank(
+                &mut examples,
+                &format!("{} coordinate.atomFamily", reading.reading_id),
+                &coordinate.atom_family,
+            );
+            if coordinate.coordinate_kind == "observedAtomCoordinate"
+                && coordinate.atom_observation_refs.is_empty()
+            {
+                examples.push(generic_validation_example(
+                    &reading.reading_id,
+                    &coordinate.coordinate_id,
+                    "observed projection coordinates must retain atom observation refs",
+                ));
+            }
+        }
         push_blank(
             &mut examples,
             &format!("{} reconstructionRisk", reading.reading_id),
@@ -14877,6 +15134,39 @@ fn check_aat_structural_reading_surfaces(packet: &ArchSigAnalysisPacketV0) -> Va
                 "observationProjectionExpansion",
                 "observation projection must record collisions, collapsed candidates, hidden hints, or forgotten coordinates",
             ));
+        }
+        for candidate in &reading.non_injectivity_candidates {
+            if candidate.coordinate_refs.is_empty()
+                || candidate.atom_observation_refs.is_empty()
+                || candidate.evidence_refs.is_empty()
+            {
+                examples.push(generic_validation_example(
+                    &reading.reading_id,
+                    &candidate.candidate_id,
+                    "non-injectivity candidates must carry coordinate, atom, and evidence refs",
+                ));
+            }
+        }
+        if !reading.forgotten_coordinates.is_empty()
+            && reading.reconstruction_blocker_evidence.is_empty()
+        {
+            examples.push(generic_validation_example(
+                &reading.reading_id,
+                "reconstructionBlockerEvidence",
+                "forgotten coordinates must be backed by typed reconstruction blockers",
+            ));
+        }
+        for blocker in &reading.reconstruction_blocker_evidence {
+            if blocker.gap_refs.is_empty()
+                || blocker.evidence_refs.is_empty()
+                || blocker.expected_atom_families.is_empty()
+            {
+                examples.push(generic_validation_example(
+                    &reading.reading_id,
+                    &blocker.blocker_id,
+                    "reconstruction blockers must carry gap refs, expected atom families, and evidence refs",
+                ));
+            }
         }
         push_blank(&mut examples, &reading.reading_id, &reading.reading);
         push_blank(
