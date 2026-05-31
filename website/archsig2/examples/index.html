@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Short ArchSig examples showing Skill requests and the review findings they can return for boundary erosion, feature extension, operation order sensitivity, and coverage repair.">
+    <meta name="robots" content="noindex, nofollow">
+    <title>ArchSig Examples</title>
+    <link rel="canonical" href="https://iroha1203.dev/archsig2/examples/">
+    <meta property="og:site_name" content="AAT / SFT Research Notes">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="ArchSig Examples">
+    <meta property="og:description" content="Short ArchSig examples showing Skill requests and the review findings they can return for boundary erosion, feature extension, operation order sensitivity, and coverage repair.">
+    <meta property="og:url" content="https://iroha1203.dev/archsig2/examples/">
+    <meta property="og:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="ArchSig Examples">
+    <meta name="twitter:description" content="Short ArchSig examples showing Skill requests and the review findings they can return for boundary erosion, feature extension, operation order sensitivity, and coverage repair.">
+    <meta name="twitter:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
+    <link rel="icon" href="../../assets/favicon-32.png" sizes="32x32" type="image/png">
+    <link rel="icon" href="../../assets/favicon-16.png" sizes="16x16" type="image/png">
+    <link rel="alternate" hreflang="en" href="./">
+    <link rel="alternate" hreflang="x-default" href="./">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=Inter:wght@400;500;600;700&amp;family=Source+Serif+4:opsz,wght@8..60,400..700&amp;display=swap" rel="stylesheet">
+    <script>
+      try {
+        const theme = localStorage.getItem("aat-sft-theme");
+        if (theme === "light" || theme === "dark") {
+          document.documentElement.dataset.theme = theme;
+        }
+      } catch {}
+    </script>
+    <link rel="stylesheet" href="../../assets/site.css">
+    <script defer src="../../assets/site.js"></script>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-YQMFH2FG9V"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-YQMFH2FG9V');
+    </script>
+
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="site-header" data-site-header>
+      <div class="site-shell header-inner">
+        <a class="brand" href="../../" aria-label="AAT SFT home">
+          <img class="brand-icon" src="../../assets/favicon-512.png" alt="" width="512" height="512" aria-hidden="true">
+          <span class="brand-mark">AAT/SFT</span>
+          <span class="brand-text">Research Notes</span>
+        </a>
+        <nav class="site-nav" aria-label="Primary navigation">
+          <a href="../../">Home</a>
+          <a href="../../aat/">AAT</a>
+          <a href="../../sft/">SFT</a>
+          <a class="is-active" href="../">ArchSig</a>
+          <a href="../../outreach/">Outreach</a>
+        </nav>
+      </div>
+    </header>
+    <main id="main">
+      <section class="article-hero section-band">
+        <div class="site-shell">
+          <nav class="breadcrumb" aria-label="Breadcrumb"><a href="../../">Home</a><a href="../">ArchSig</a><span>Examples</span></nav>
+          <p class="eyebrow">Requests and returned readings</p>
+          <h1>What an ArchSig review can look like.</h1>
+          <p class="lede">These examples show the shape of a Skill request and the kind of review output ArchSig can support. They are short by design: enough to show the workflow without turning the page into a packet manual.</p>
+        </div>
+      </section>
+      <section class="section-band">
+        <div class="site-shell article-layout">
+          <aside class="article-sidebar" aria-label="ArchSig page navigation">
+            <nav class="toc-panel" aria-labelledby="toc-title"><h2 id="toc-title">On this page</h2><ol><li><a href="#payment">Payment boundary erosion</a></li><li><a href="#coupon">Coupon feature extension</a></li><li><a href="#order">Operation order sensitivity</a></li><li><a href="#coverage">Coverage repair queue</a></li></ol></nav>
+            <div class="source-panel" data-sidebar-open="true"><h2>ArchSig</h2><ul><li><a href="../">Overview</a></li><li><a href="../getting-started/">Getting Started</a></li><li><a href="../analyses/">Analyses</a></li><li><a href="./" aria-current="page">Examples</a></li><li><a aria-disabled="true">Manual</a></li><li><a aria-disabled="true">Reference</a></li></ul></div>
+          </aside>
+          <div class="article-main">
+            <section id="payment" class="article-section">
+              <h2>Payment boundary erosion</h2>
+              <figure class="code-panel">
+                <figcaption>Skill request</figcaption>
+                <pre><code>Run the ArchSig Skills on this PR.
+Check whether the checkout change weakens the payment boundary.
+Focus on cache access, provider details, and payment contract ownership.</code></pre>
+              </figure>
+              <ul class="status-list">
+                <li><strong>Returned finding</strong><span>The change makes checkout code depend on payment adapter internals instead of the public payment contract.</span></li>
+                <li><strong>Review action</strong><span>Inspect the checkout call path, payment adapter cache access, and the contract that should own payment state.</span></li>
+                <li><strong>Repair candidate</strong><span>Move cache access behind a PaymentPort-style boundary or add an explicit payment-state query contract.</span></li>
+                <li><strong>Confirmation check</strong><span>Verify tests or traces that show checkout behavior does not depend on provider-specific cache state.</span></li>
+              </ul>
+            </section>
+            <section id="coupon" class="article-section">
+              <h2>Coupon feature extension</h2>
+              <figure class="code-panel">
+                <figcaption>Skill request</figcaption>
+                <pre><code>Run the ArchSig Skills for this coupon feature.
+Tell me whether it extends checkout through the intended interface
+or reaches into payment and pricing internals.</code></pre>
+              </figure>
+              <ul class="status-list">
+                <li><strong>Returned finding</strong><span>The coupon feature is locally correct, but it shares rounding and eligibility assumptions with payment and pricing code.</span></li>
+                <li><strong>Review action</strong><span>Inspect the feature extension path, shared semantic assumptions, and source refs for pricing and payment behavior.</span></li>
+                <li><strong>Repair candidate</strong><span>Introduce an explicit coupon/pricing contract before letting coupon logic read payment internals directly.</span></li>
+                <li><strong>Confirmation check</strong><span>Add or inspect tests that fix rounding order, discount eligibility, and payment finalization behavior.</span></li>
+              </ul>
+            </section>
+            <section id="order" class="article-section">
+              <h2>Operation order sensitivity</h2>
+              <figure class="code-panel">
+                <figcaption>Skill request</figcaption>
+                <pre><code>Run the ArchSig Skills on these two implementation paths.
+Do they preserve the same visible behavior, or does operation order matter?
+Focus on reserve, charge, apply discount, and finalize state.</code></pre>
+              </figure>
+              <ul class="status-list">
+                <li><strong>Returned finding</strong><span>The paths reach similar endpoints in local code, but selected continuation readings differ on state finalization and retry behavior.</span></li>
+                <li><strong>Review action</strong><span>Compare the operation sequence, endpoint state, retry path, and compensation behavior before treating the paths as equivalent.</span></li>
+                <li><strong>Repair candidate</strong><span>Make ordering constraints explicit in the workflow contract or split operations that should not commute.</span></li>
+                <li><strong>Confirmation check</strong><span>Collect source, test, or runtime evidence that the intended operation order is enforced.</span></li>
+              </ul>
+            </section>
+            <section id="coverage" class="article-section">
+              <h2>Coverage repair queue</h2>
+              <figure class="code-panel">
+                <figcaption>Skill request</figcaption>
+                <pre><code>Run the ArchSig Skills on the current checkout architecture.
+If the analysis is blocked, return the missing evidence queue
+instead of forcing a conclusion.</code></pre>
+              </figure>
+              <ul class="status-list">
+                <li><strong>Returned finding</strong><span>ArchSig cannot read several zero or nonzero conclusions because route coverage, provider traces, or ownership evidence is missing.</span></li>
+                <li><strong>Review action</strong><span>Collect the missing source refs, tests, docs, traces, or policy decisions before using the reading for repair planning.</span></li>
+                <li><strong>Repair candidate</strong><span>Repair the ArchMap first: add measured evidence or record explicit unavailable/private/out-of-scope gaps.</span></li>
+                <li><strong>Confirmation check</strong><span>Rerun the Skills after evidence repair and compare the summary's coverage gaps and action queue.</span></li>
+              </ul>
+            </section>
+            <nav class="page-nav" aria-label="Reading sequence"><a class="page-nav-prev" href="../analyses/"><span>Previous</span><strong>Analyses</strong></a></nav>
+          </div>
+        </div>
+      </section>
+    </main>
+    <footer class="site-footer">
+      <div class="site-shell footer-inner">
+        <p>&copy; <span data-current-year>2026</span> Hiroyuki Nakahata.</p>
+        <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2" target="_blank" rel="noopener noreferrer">Repository</a>
+      </div>
+    </footer>
+  </body>
+</html>
