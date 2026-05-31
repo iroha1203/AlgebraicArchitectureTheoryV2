@@ -96,6 +96,7 @@ SEO 用の公開 `sitemap.xml` は `website/sitemap.xml` であり、この文�
 | `/aat2/operations-and-calculus/` | `website/aat2/operations-and-calculus/index.html` | `/aat/operations-and-calculus/` | AAT renewal preview Part II。ArchitectureOperation、operation law、feature extension、selected repair、synthesis soundness の章。 |
 | `/aat2/dynamics-and-geometry/` | `website/aat2/dynamics-and-geometry/index.html` | `/aat/dynamics-and-geometry/` | AAT renewal preview Part II。ArchitecturePath、signature trajectory、PathHomotopy、DiagramFiller、selected monodromy / continuation の章。 |
 | `/aat2/representations-and-effects/` | `website/aat2/representations-and-effects/index.html` | `/aat/representations-and-effects/` | AAT renewal preview Part III。graph、thin category、walk / matrix、analytic representation、state-transition algebra、effect law surface の章。 |
+| `/aat2/canonical-examples-and-readings/` | `website/aat2/canonical-examples-and-readings/index.html` | `/aat/canonical-examples-and-readings/` | AAT renewal preview Part III。atom / molecule / law / circuit、coupon extension、static-flat semantic obstruction、repair transfer、SOLID counterexamples の章。 |
 
 ## sitemap 対応ルール
 
