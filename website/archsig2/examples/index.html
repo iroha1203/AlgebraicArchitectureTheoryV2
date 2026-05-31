@@ -69,74 +69,74 @@
           <nav class="breadcrumb" aria-label="Breadcrumb"><a href="../../">Home</a><a href="../">ArchSig</a><span>Examples</span></nav>
           <p class="eyebrow">Requests and returned readings</p>
           <h1>What an ArchSig review can look like.</h1>
-          <p class="lede">These examples show the shape of a Skill request and the kind of review output ArchSig can support. They are short by design: enough to show the workflow without turning the page into a packet manual.</p>
+          <p class="lede">These examples show the shape of a Skill request and the kind of review output ArchSig can support: findings, repair candidates, confirmation checks, and the evidence reviewers should inspect first.</p>
         </div>
       </section>
       <section class="section-band">
         <div class="site-shell article-layout">
           <aside class="article-sidebar" aria-label="ArchSig page navigation">
-            <nav class="toc-panel" aria-labelledby="toc-title"><h2 id="toc-title">On this page</h2><ol><li><a href="#payment">Payment boundary erosion</a></li><li><a href="#coupon">Coupon feature extension</a></li><li><a href="#order">Operation order sensitivity</a></li><li><a href="#coverage">Coverage repair queue</a></li></ol></nav>
+            <nav class="toc-panel" aria-labelledby="toc-title"><h2 id="toc-title">On this page</h2><ol><li><a href="#hidden">Hidden dependency witness</a></li><li><a href="#semantic">Static-flat, semantic obstruction</a></li><li><a href="#transfer">Repair transfer risk</a></li><li><a href="#coverage">Coverage and filler repair</a></li></ol></nav>
             <div class="source-panel" data-sidebar-open="true"><h2>ArchSig</h2><ul><li><a href="../">Overview</a></li><li><a href="../getting-started/">Getting Started</a></li><li><a href="../analyses/">Analyses</a></li><li><a href="./" aria-current="page">Examples</a></li><li><a aria-disabled="true">Manual</a></li><li><a aria-disabled="true">Reference</a></li></ul></div>
           </aside>
           <div class="article-main">
-            <section id="payment" class="article-section">
-              <h2>Payment boundary erosion</h2>
+            <section id="hidden" class="article-section">
+              <h2>Hidden dependency witness</h2>
               <figure class="code-panel">
                 <figcaption>Skill request</figcaption>
-                <pre><code>Run the ArchSig Skills on this PR.
-Check whether the checkout change weakens the payment boundary.
-Focus on cache access, provider details, and payment contract ownership.</code></pre>
+                <pre><code>Run the ArchSig Skills on this coupon extension.
+Check whether CouponService extends payment through the declared port
+or reaches into PaymentAdapter internals.</code></pre>
               </figure>
               <ul class="status-list">
-                <li><strong>Returned finding</strong><span>The change makes checkout code depend on payment adapter internals instead of the public payment contract.</span></li>
-                <li><strong>Review action</strong><span>Inspect the checkout call path, payment adapter cache access, and the contract that should own payment state.</span></li>
-                <li><strong>Repair candidate</strong><span>Move cache access behind a PaymentPort-style boundary or add an explicit payment-state query contract.</span></li>
-                <li><strong>Confirmation check</strong><span>Verify tests or traces that show checkout behavior does not depend on provider-specific cache state.</span></li>
+                <li><strong>Returned finding</strong><span>The clean path is <code>CouponService -> declaredPaymentPort -> PaymentApi</code>. The risky path adds <code>CouponService -> PaymentAdapter.internalCache</code>, which is a hidden dependency witness.</span></li>
+                <li><strong>Why ArchSig sees it</strong><span>The signal is not just an import edge. It is a feature extension that no longer factors through the declared payment interface under the selected LawPolicy.</span></li>
+                <li><strong>Review action</strong><span>Open the coupon service, declared payment port, payment adapter, and internal cache refs before approving the extension.</span></li>
+                <li><strong>Repair candidate</strong><span>Route the needed cache-backed behavior through the declared port or add a new explicit payment query contract.</span></li>
               </ul>
             </section>
-            <section id="coupon" class="article-section">
-              <h2>Coupon feature extension</h2>
+            <section id="semantic" class="article-section">
+              <h2>Static-flat, semantic obstruction</h2>
               <figure class="code-panel">
                 <figcaption>Skill request</figcaption>
-                <pre><code>Run the ArchSig Skills for this coupon feature.
-Tell me whether it extends checkout through the intended interface
-or reaches into payment and pricing internals.</code></pre>
+                <pre><code>Run the ArchSig Skills on this pricing change.
+The static dependency shape looks repaired.
+Check whether coupon, tax, rounding, and receipt semantics still commute.</code></pre>
               </figure>
               <ul class="status-list">
-                <li><strong>Returned finding</strong><span>The coupon feature is locally correct, but it shares rounding and eligibility assumptions with payment and pricing code.</span></li>
-                <li><strong>Review action</strong><span>Inspect the feature extension path, shared semantic assumptions, and source refs for pricing and payment behavior.</span></li>
-                <li><strong>Repair candidate</strong><span>Introduce an explicit coupon/pricing contract before letting coupon logic read payment internals directly.</span></li>
-                <li><strong>Confirmation check</strong><span>Add or inspect tests that fix rounding order, discount eligibility, and payment finalization behavior.</span></li>
+                <li><strong>Returned finding</strong><span>The static skeleton can be split while the semantic reading remains nonzero: <code>round(tax(discount(subtotal)))</code> and <code>round(discount(tax(subtotal)))</code> do not necessarily preserve the same amount or receipt behavior.</span></li>
+                <li><strong>Why ArchSig sees it</strong><span>ArchSig can carry semantic observations alongside source refs, so the review is not limited to whether the dependency graph looks clean.</span></li>
+                <li><strong>Review action</strong><span>Inspect pricing, coupon, tax, rounding, receipt amount, and payment finalization tests together.</span></li>
+                <li><strong>Confirmation check</strong><span>Record exact rounding and tax-order evidence before treating the repaired static shape as architecture-flat.</span></li>
               </ul>
             </section>
-            <section id="order" class="article-section">
-              <h2>Operation order sensitivity</h2>
+            <section id="transfer" class="article-section">
+              <h2>Repair transfer risk</h2>
               <figure class="code-panel">
                 <figcaption>Skill request</figcaption>
-                <pre><code>Run the ArchSig Skills on these two implementation paths.
-Do they preserve the same visible behavior, or does operation order matter?
-Focus on reserve, charge, apply discount, and finalize state.</code></pre>
+                <pre><code>Run the ArchSig Skills before we accept this refactor.
+It reduces the selected static dependency issue.
+Check whether it transfers pressure to runtime, retries, or state finalization.</code></pre>
               </figure>
               <ul class="status-list">
-                <li><strong>Returned finding</strong><span>The paths reach similar endpoints in local code, but selected continuation readings differ on state finalization and retry behavior.</span></li>
-                <li><strong>Review action</strong><span>Compare the operation sequence, endpoint state, retry path, and compensation behavior before treating the paths as equivalent.</span></li>
-                <li><strong>Repair candidate</strong><span>Make ordering constraints explicit in the workflow contract or split operations that should not commute.</span></li>
-                <li><strong>Confirmation check</strong><span>Collect source, test, or runtime evidence that the intended operation order is enforced.</span></li>
+                <li><strong>Returned finding</strong><span>The repair decreases one selected axis, but an operation delta shows transferred pressure on another axis such as runtime ordering, retry behavior, or state reconciliation.</span></li>
+                <li><strong>Why ArchSig sees it</strong><span>The packet includes repair candidates, operation deltas, decreased axes, transferred obstructions, side-effect axes, and operation readiness readings.</span></li>
+                <li><strong>Review action</strong><span>Do not merge the refactor as a pure cleanup until the target axis and transferred axis are both inspected.</span></li>
+                <li><strong>Confirmation check</strong><span>Ask for tests or traces that cover the side-effect axis, not only the dependency that the repair removed.</span></li>
               </ul>
             </section>
             <section id="coverage" class="article-section">
-              <h2>Coverage repair queue</h2>
+              <h2>Coverage and filler repair</h2>
               <figure class="code-panel">
                 <figcaption>Skill request</figcaption>
-                <pre><code>Run the ArchSig Skills on the current checkout architecture.
-If the analysis is blocked, return the missing evidence queue
-instead of forcing a conclusion.</code></pre>
+                <pre><code>Run the ArchSig Skills on the checkout architecture.
+If a loop or boundary reading is unfilled,
+return the missing filler and coverage repair queue.</code></pre>
               </figure>
               <ul class="status-list">
-                <li><strong>Returned finding</strong><span>ArchSig cannot read several zero or nonzero conclusions because route coverage, provider traces, or ownership evidence is missing.</span></li>
-                <li><strong>Review action</strong><span>Collect the missing source refs, tests, docs, traces, or policy decisions before using the reading for repair planning.</span></li>
-                <li><strong>Repair candidate</strong><span>Repair the ArchMap first: add measured evidence or record explicit unavailable/private/out-of-scope gaps.</span></li>
-                <li><strong>Confirmation check</strong><span>Rerun the Skills after evidence repair and compare the summary's coverage gaps and action queue.</span></li>
+                <li><strong>Returned finding</strong><span>The agent cannot read the loop as zero or nonzero because contract, test, runtime, or policy filler evidence is missing.</span></li>
+                <li><strong>Why ArchSig sees it</strong><span>Homotopy and coverage readings keep unfilled loops, missing filler evidence, coverage gaps, and measured boundaries visible instead of smoothing them into a score.</span></li>
+                <li><strong>Review action</strong><span>Repair the ArchMap first: add measured source refs, tests, traces, docs, or explicit unavailable/private/out-of-scope gaps.</span></li>
+                <li><strong>Confirmation check</strong><span>Rerun the Skills and compare architectural holes, nonzero holonomy loops, coverage gaps, and the action queue.</span></li>
               </ul>
             </section>
             <nav class="page-nav" aria-label="Reading sequence"><a class="page-nav-prev" href="../analyses/"><span>Previous</span><strong>Analyses</strong></a></nav>
