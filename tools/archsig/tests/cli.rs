@@ -237,6 +237,19 @@ fn cli_summarizes_archsig_analysis_packet() {
         "analysis-summary must record the measurement basis without diluting the verdict"
     );
     assert!(
+        json["measurementStatusSummary"]["measuredCount"]
+            .as_u64()
+            .is_some_and(|count| count > 0)
+            && json["measurementStatusSummary"]["proxyCount"]
+                .as_u64()
+                .is_some()
+            && json["measurementStatusSummary"]["schemaFoundationOnlyCount"] == 0
+            && json["measurementStatusSummary"]["claimBoundary"]
+                .as_str()
+                .is_some_and(|text| text.contains("not measured claims")),
+        "analysis-summary must distinguish measured, proxy, partial, and schema-only status compactly"
+    );
+    assert!(
         json["dominantFindings"]["spectrumHotspots"]
             .as_array()
             .is_some_and(|items| !items.is_empty()),
