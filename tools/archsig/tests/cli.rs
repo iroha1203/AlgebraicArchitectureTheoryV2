@@ -275,6 +275,48 @@ fn cli_summarizes_archsig_analysis_packet() {
                 .is_some_and(|items| !items.is_empty()),
         "trendDiagnosis must expose compact repository-wide tendency refs"
     );
+    let trend_insights = json["trendDiagnosis"]["trendInsights"]["items"]
+        .as_array()
+        .expect("trendInsights items must be an array");
+    for kind in [
+        "crossAxisCooccurrence",
+        "operationFreedomLoss",
+        "pathContinuationDefect",
+        "boundaryResidualLocalization",
+        "repairTransferRisk",
+    ] {
+        assert!(
+            trend_insights.iter().any(|item| {
+                item["kind"].as_str().is_some_and(|actual| actual == kind)
+                    && item["whyNontrivial"]
+                        .as_str()
+                        .is_some_and(|text| !text.is_empty())
+                    && item["packetRefs"]
+                        .as_array()
+                        .is_some_and(|refs| !refs.is_empty())
+            }),
+            "trendInsights must expose compact nontrivial {kind} measurement"
+        );
+    }
+    assert!(
+        trend_insights.iter().any(|item| {
+            item["kind"].as_str() == Some("pathContinuationDefect")
+                && item["measurement"]["positiveDefectCount"]
+                    .as_u64()
+                    .is_some_and(|count| count > 0)
+        }) && trend_insights.iter().any(|item| {
+            item["kind"].as_str() == Some("operationFreedomLoss")
+                && item["measurement"]["blockedOperationCount"]
+                    .as_u64()
+                    .is_some_and(|count| count > 0)
+        }) && trend_insights.iter().any(|item| {
+            item["kind"].as_str() == Some("repairTransferRisk")
+                && item["measurement"]["transferRiskCount"]
+                    .as_u64()
+                    .is_some_and(|count| count > 0)
+        }),
+        "trendInsights must be backed by concrete operation, path, and transfer measurements"
+    );
     assert!(
         json["reviewSupport"]["actionQueueCount"]
             .as_u64()
