@@ -1648,6 +1648,8 @@
       ]
     }
   ],
+  "curvatureSupportReadings": [],
+  "curvatureTransferReadings": [],
   "transferBridgeReadings": [
     {
       "transferBridgeId": "transfer-bridge:fixture-archmap-atom-observation",
@@ -2260,6 +2262,203 @@
       ]
     }
   ],
+  "observationProjectionFidelityReadings": [
+    {
+      "readingId": "observation-projection-fidelity:observation-projection-fixture-archmap-atom-observation",
+      "sourceProjectionRef": "observation-projection:fixture-archmap-atom-observation",
+      "sourceAxisForgettingRef": "axis-forgetting-risk:selected-projection",
+      "fidelityStatus": "projectionLossObserved",
+      "observedAtomFamilyCount": 3,
+      "forgottenCoordinateCount": 1,
+      "observationCollisionCount": 0,
+      "collapsedAtomFamilyCandidateCount": 0,
+      "hiddenAtomFamilyHintCount": 1,
+      "projectionLostAtomFamilyRefs": [
+        "gap-runtime-user-db-trace: runtime trace was requested but not supplied"
+      ],
+      "projectionLossAxes": [
+        "gap-runtime-user-db-trace"
+      ],
+      "reflectionStatus": "blockedWithoutAxisPreservationAndWitnessCompleteness",
+      "measurementBoundary": "projection loss is separated from zero/lawfulness; missing coordinates are not measured absent atoms",
+      "recommendedNextAction": "review projection-lost families and forgotten coordinates before treating the ArchMap as a faithful Atom observation",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    }
+  ],
+  "atomOriginClosureDebtReadings": [
+    {
+      "readingId": "atom-origin-closure-debt:fixture-archmap-atom-observation",
+      "sourceBackedAtomCount": 4,
+      "derivedOrInferredAtomCount": 0,
+      "expectedMissingAtomCount": 1,
+      "sourceBackedAtomFamilyRefs": [
+        "contractSpecification",
+        "existence",
+        "relation"
+      ],
+      "derivedOrInferredRefs": [],
+      "missingExpectedAtomRefs": [
+        "gap-runtime-user-db-trace"
+      ],
+      "closureStatus": "originClosureDebtObserved",
+      "weakensZeroOrRepairClaims": [
+        "zero readings need source-backed Atom closure or explicit coverage boundary",
+        "repair and synthesis candidates remain bounded when expected atoms are missing",
+        "derived or inferred atoms must not be promoted to source-backed evidence"
+      ],
+      "evidenceBoundary": "Atom origin closure debt is read from sourceRefs and observation gaps; it is not complete source extraction validation",
+      "recommendedNextAction": "separate source-backed, derived/inferred, and expected-missing Atom evidence before using the packet for repair or synthesis claims",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    }
+  ],
+  "effectRelationAlgebraReadings": [
+    {
+      "readingId": "effect-relation-algebra:fixture-archmap-atom-observation",
+      "generatorRefs": [
+        "atom:relation:route-service"
+      ],
+      "effectAtomRefs": [],
+      "relationAtomRefs": [
+        "atom:relation:route-service"
+      ],
+      "externalBoundaryRefs": [],
+      "requiredEffectRelations": [
+        "effect ordering",
+        "replay or roundtrip stability",
+        "compensation/finalization relation",
+        "handler and external provider boundary ownership"
+      ],
+      "unresolvedEffectRelations": [
+        "gap-runtime-user-db-trace"
+      ],
+      "effectOrderingPressure": "effectRelationPressureObserved",
+      "stateTransitionRef": "state-transition-algebra:fixture-archmap-atom-observation",
+      "evidenceBoundary": "effect relation algebra is kept separate from state transition pressure and only reads observed effect/relation/runtime evidence",
+      "recommendedNextAction": "review async job, provider, event handler, replay, roundtrip, and compensation relations before approving state/effect repairs",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    }
+  ],
+  "synthesisBlockageReadings": [
+    {
+      "readingId": "synthesis-blockage:fixture-archmap-atom-observation",
+      "targetConstructionRefs": [
+        "feature-extension-formula:fixture-archmap-atom-observation"
+      ],
+      "requiredAtomRefs": [
+        "atom:component:route-users",
+        "atom:component:service-user",
+        "atom:relation:route-service",
+        "atom:contract:create-user"
+      ],
+      "constraintRefs": [
+        "split-readiness:molecule-user-request-responsibility",
+        "gap-runtime-user-db-trace",
+        "absence of constructed curvature is not proof of global flatness"
+      ],
+      "missingEvidenceRefs": [
+        "gap-runtime-user-db-trace"
+      ],
+      "decisionBoundaryRefs": [
+        "diagram-fillability:local-curvature-fixture-archmap-atom-observation-non-conclusion"
+      ],
+      "candidateSolutionRefs": [],
+      "blockageStatus": "synthesisBlockedByMissingEvidenceOrConstraints",
+      "noSolutionCertificateStatus": "notASolverAndNotAbsenceProof",
+      "synthesisBoundary": "candidate absence, missing evidence, and no-solution certificates are distinct; ArchSig does not run a synthesis solver",
+      "recommendedNextAction": "resolve Atom, constraint, evidence, and decision-boundary blockers before reading a repair candidate as constructible",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    }
+  ],
+  "operationPreconditionReadinessReadings": [
+    {
+      "readingId": "operation-precondition-readiness:none-observed",
+      "operationRef": "repair-operation:none-observed",
+      "operationKind": "noneObserved",
+      "readinessStatus": "noCandidateOperationObserved",
+      "preconditionRefs": [],
+      "missingPreconditionRefs": [],
+      "coverageGapRefs": [
+        "gap-runtime-user-db-trace",
+        "gap-runtime-user-db-trace"
+      ],
+      "exactnessGapRefs": [],
+      "witnessGapRefs": [
+        "witness:layer-violation"
+      ],
+      "candidateBoundary": "absence of operation candidates is not evidence of safe refactoring",
+      "recommendedNextAction": "construct candidate operations and record precondition evidence before planning repair",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    }
+  ],
+  "pathMultiplicityLossReadings": [
+    {
+      "readingId": "path-multiplicity-loss:fixture-archmap-atom-observation",
+      "scopeRef": "fixture-archmap-atom-observation",
+      "pathReadingRefs": [
+        "path-signature-trajectory:operation-delta-observe-before-repair"
+      ],
+      "observedPathCount": 1,
+      "alternatePathPressure": 3,
+      "maxWalkLengthProxy": 3,
+      "reachabilityForgottenRefs": [
+        "gap-runtime-user-db-trace"
+      ],
+      "fanInBoundaryRefs": [],
+      "multiplicityLossStatus": "reachabilityMultiplicityLossObserved",
+      "homotopyBoundary": "path multiplicity is a reachability and homotopy review signal, not proof of all paths",
+      "evidenceBoundary": "alternate-path pressure is bounded by observed operation trajectories, homotopy sensitivity, workflow risk, and gaps",
+      "recommendedNextAction": "inspect high fan-in and alternate path boundaries before treating one observed path as complete reachability",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    }
+  ],
   "signatureTrajectoryHomotopyRefutationReadings": [
     {
       "readingId": "signature-trajectory-homotopy-refutation:selected-trajectory",
@@ -2315,6 +2514,550 @@
       ]
     }
   ],
+  "homotopyComplexSummary": {
+    "complexId": "homotopy-complex:fixture-archmap-atom-observation",
+    "profileRef": "homotopy-profile:absent",
+    "status": "profileAbsent",
+    "measurementStatus": "unmeasured",
+    "readingBoundary": {
+      "readingStrength": "profileAbsent",
+      "zeroReflectionAssumptions": [
+        "selected coverage requirements are satisfied",
+        "missing evidence has not been promoted to measured zero"
+      ],
+      "obstructionReflectionAssumptions": [
+        "positive witness has traceable observation refs",
+        "selected LawPolicy exactness assumptions hold"
+      ],
+      "coverageRequirementRefs": [
+        "coverage:layer-atoms"
+      ],
+      "witnessCompletenessBoundary": "homotopy profile absent; no path, filler, or continuation completeness is claimed"
+    },
+    "selectedAxisRefs": [
+      "axis:layer-violation"
+    ],
+    "zeroCells": [
+      {
+        "cellId": "0-cell:atom-component-route-users",
+        "cellDimension": 0,
+        "cellKind": "existence",
+        "status": "observed",
+        "observationRefs": [
+          "atom:component:route-users"
+        ],
+        "sourceRefs": [
+          "src-route-users"
+        ],
+        "reading": "observed Atom is read as a bounded 0-cell candidate",
+        "nonConclusions": [
+          "candidate paths and loops are review cues, not path truth",
+          "unfilled loops are architectural holes, not automatic violations",
+          "missing filler evidence is not measured zero",
+          "nonzero holonomy is bounded diagnosis, not future incident prediction",
+          "homotopy complex summary is not source extraction completeness"
+        ]
+      },
+      {
+        "cellId": "0-cell:atom-component-service-user",
+        "cellDimension": 0,
+        "cellKind": "existence",
+        "status": "observed",
+        "observationRefs": [
+          "atom:component:service-user"
+        ],
+        "sourceRefs": [
+          "src-service-user"
+        ],
+        "reading": "observed Atom is read as a bounded 0-cell candidate",
+        "nonConclusions": [
+          "candidate paths and loops are review cues, not path truth",
+          "unfilled loops are architectural holes, not automatic violations",
+          "missing filler evidence is not measured zero",
+          "nonzero holonomy is bounded diagnosis, not future incident prediction",
+          "homotopy complex summary is not source extraction completeness"
+        ]
+      },
+      {
+        "cellId": "0-cell:atom-relation-route-service",
+        "cellDimension": 0,
+        "cellKind": "relation",
+        "status": "observed",
+        "observationRefs": [
+          "atom:relation:route-service"
+        ],
+        "sourceRefs": [
+          "src-route-users",
+          "src-service-user"
+        ],
+        "reading": "observed Atom is read as a bounded 0-cell candidate",
+        "nonConclusions": [
+          "candidate paths and loops are review cues, not path truth",
+          "unfilled loops are architectural holes, not automatic violations",
+          "missing filler evidence is not measured zero",
+          "nonzero holonomy is bounded diagnosis, not future incident prediction",
+          "homotopy complex summary is not source extraction completeness"
+        ]
+      },
+      {
+        "cellId": "0-cell:atom-contract-create-user",
+        "cellDimension": 0,
+        "cellKind": "contractSpecification",
+        "status": "observed",
+        "observationRefs": [
+          "atom:contract:create-user"
+        ],
+        "sourceRefs": [
+          "test-user-contract"
+        ],
+        "reading": "observed Atom is read as a bounded 0-cell candidate",
+        "nonConclusions": [
+          "candidate paths and loops are review cues, not path truth",
+          "unfilled loops are architectural holes, not automatic violations",
+          "missing filler evidence is not measured zero",
+          "nonzero holonomy is bounded diagnosis, not future incident prediction",
+          "homotopy complex summary is not source extraction completeness"
+        ]
+      }
+    ],
+    "oneCells": [
+      {
+        "cellId": "1-cell:molecule-user-request-responsibility",
+        "cellDimension": 1,
+        "cellKind": "user request orchestration",
+        "status": "candidate",
+        "observationRefs": [
+          "atom:component:route-users",
+          "atom:component:service-user",
+          "atom:relation:route-service",
+          "atom:contract:create-user"
+        ],
+        "sourceRefs": [
+          "doc-architecture"
+        ],
+        "reading": "molecule observation is read as a bounded path / relation candidate",
+        "nonConclusions": [
+          "candidate paths and loops are review cues, not path truth",
+          "unfilled loops are architectural holes, not automatic violations",
+          "missing filler evidence is not measured zero",
+          "nonzero holonomy is bounded diagnosis, not future incident prediction",
+          "homotopy complex summary is not source extraction completeness"
+        ]
+      },
+      {
+        "cellId": "1-cell:semantic-create-user-flow",
+        "cellDimension": 1,
+        "cellKind": "operationMeaning",
+        "status": "candidate",
+        "observationRefs": [
+          "semantic:create-user-flow"
+        ],
+        "sourceRefs": [
+          "doc-architecture",
+          "test-user-contract"
+        ],
+        "reading": "semantic observation is read as a selected path continuation candidate",
+        "nonConclusions": [
+          "candidate paths and loops are review cues, not path truth",
+          "unfilled loops are architectural holes, not automatic violations",
+          "missing filler evidence is not measured zero",
+          "nonzero holonomy is bounded diagnosis, not future incident prediction",
+          "homotopy complex summary is not source extraction completeness"
+        ]
+      }
+    ],
+    "twoCells": [
+      {
+        "cellId": "2-cell:obstruction-layer-violation",
+        "cellDimension": 2,
+        "cellKind": "BoundaryLeakCircuit",
+        "status": "lawPolicyRequired",
+        "observationRefs": [
+          "witness:layer-violation"
+        ],
+        "sourceRefs": [],
+        "reading": "LawPolicy obstruction definition is read as a bounded 2-cell / filler requirement",
+        "nonConclusions": [
+          "candidate paths and loops are review cues, not path truth",
+          "unfilled loops are architectural holes, not automatic violations",
+          "missing filler evidence is not measured zero",
+          "nonzero holonomy is bounded diagnosis, not future incident prediction",
+          "homotopy complex summary is not source extraction completeness"
+        ]
+      }
+    ],
+    "sourceRefs": [
+      ".lake/runtime-trace.json",
+      "doc-architecture",
+      "src-route-users",
+      "src-service-user",
+      "test-user-contract"
+    ],
+    "coverageBoundary": "homotopy profile absent; path, filler, loop, and zero readings remain blocked",
+    "exactnessAssumptions": [
+      "the selected witness rules cover only policy-declared laws",
+      "zero readings are exact only for observed atoms and declared coverage requirements"
+    ],
+    "evidenceBoundary": "homotopy complex is built from supplied ArchMap evidence and selected LawPolicy recipe",
+    "nonConclusions": [
+      "candidate paths and loops are review cues, not path truth",
+      "unfilled loops are architectural holes, not automatic violations",
+      "missing filler evidence is not measured zero",
+      "nonzero holonomy is bounded diagnosis, not future incident prediction",
+      "homotopy complex summary is not source extraction completeness"
+    ]
+  },
+  "pathPairCandidates": [
+    {
+      "candidateId": "path-pair:semantic-contract-loop",
+      "candidateSource": "lawPolicyRequired",
+      "status": "sourceConfirmed",
+      "measurementStatus": "measured",
+      "readingBoundary": {
+        "readingStrength": "profileAbsent",
+        "zeroReflectionAssumptions": [
+          "selected coverage requirements are satisfied",
+          "missing evidence has not been promoted to measured zero"
+        ],
+        "obstructionReflectionAssumptions": [
+          "positive witness has traceable observation refs",
+          "selected LawPolicy exactness assumptions hold"
+        ],
+        "coverageRequirementRefs": [
+          "coverage:layer-atoms"
+        ],
+        "witnessCompletenessBoundary": "homotopy profile absent; no path, filler, or continuation completeness is claimed"
+      },
+      "pPathRef": "path:semantic-operation-flow",
+      "qPathRef": "molecule:user-request-responsibility",
+      "pOperationSequence": [
+        "operation:path-homotopy-diagram"
+      ],
+      "qOperationSequence": [
+        "operation:molecule-observation-path"
+      ],
+      "endpointObjectRefs": [
+        "aat:object:route.users",
+        "aat:relation:route.users->service.user"
+      ],
+      "generatorCandidateRefs": [
+        "generator:independent-square",
+        "generator:same-contract-replacement",
+        "generator:repair-filler"
+      ],
+      "sharedEndpointRefs": [
+        "atom:component:route-users",
+        "atom:component:service-user"
+      ],
+      "selectedAxisRefs": [
+        "axis:layer-violation"
+      ],
+      "sourceRefs": [
+        "doc-architecture",
+        "src-route-users",
+        "src-service-user",
+        "test-user-contract"
+      ],
+      "observationRefs": [
+        "atom:component:route-users",
+        "atom:component:service-user",
+        "atom:contract:create-user",
+        "atom:relation:route-service",
+        "semantic:create-user-flow"
+      ],
+      "coverageBoundary": "homotopy profile absent; path, filler, loop, and zero readings remain blocked",
+      "evidenceBoundary": "candidate path pair is a bounded review cue, not a path equality proof",
+      "nonConclusions": [
+        "candidate paths and loops are review cues, not path truth",
+        "unfilled loops are architectural holes, not automatic violations",
+        "missing filler evidence is not measured zero",
+        "nonzero holonomy is bounded diagnosis, not future incident prediction",
+        "homotopy complex summary is not source extraction completeness"
+      ]
+    }
+  ],
+  "loopCandidates": [
+    {
+      "loopId": "loop-candidate:path-pair-semantic-contract-loop-0",
+      "pathPairRef": "path-pair:semantic-contract-loop",
+      "candidateSource": "lawPolicyRequired",
+      "status": "needsReview",
+      "measurementStatus": "blockedByCoverageGap",
+      "readingBoundary": {
+        "readingStrength": "profileAbsent",
+        "zeroReflectionAssumptions": [
+          "selected coverage requirements are satisfied",
+          "missing evidence has not been promoted to measured zero"
+        ],
+        "obstructionReflectionAssumptions": [
+          "positive witness has traceable observation refs",
+          "selected LawPolicy exactness assumptions hold"
+        ],
+        "coverageRequirementRefs": [
+          "coverage:layer-atoms"
+        ],
+        "witnessCompletenessBoundary": "homotopy profile absent; no path, filler, or continuation completeness is claimed"
+      },
+      "pathRefs": [
+        "path:semantic-operation-flow",
+        "molecule:user-request-responsibility"
+      ],
+      "endpointObjectRefs": [
+        "aat:object:route.users",
+        "aat:relation:route.users->service.user"
+      ],
+      "fillerCandidateRefs": [],
+      "missingFillerEvidence": [
+        "gap-runtime-user-db-trace"
+      ],
+      "selectedAxisRefs": [
+        "axis:layer-violation"
+      ],
+      "sourceRefs": [
+        "doc-architecture",
+        "src-route-users",
+        "src-service-user",
+        "test-user-contract"
+      ],
+      "coverageBoundary": "homotopy profile absent; path, filler, loop, and zero readings remain blocked",
+      "evidenceBoundary": "loop candidate is a bounded homotopy review surface, not a violation proof",
+      "nonConclusions": [
+        "candidate paths and loops are review cues, not path truth",
+        "unfilled loops are architectural holes, not automatic violations",
+        "missing filler evidence is not measured zero",
+        "nonzero holonomy is bounded diagnosis, not future incident prediction",
+        "homotopy complex summary is not source extraction completeness"
+      ]
+    }
+  ],
+  "fillerCandidateReadings": [],
+  "architecturalHoleReadings": [
+    {
+      "readingId": "architectural-hole:loop-candidate-path-pair-semantic-contract-loop-0",
+      "loopRef": "loop-candidate:path-pair-semantic-contract-loop-0",
+      "status": "architecturalHole",
+      "measurementStatus": "blockedByCoverageGap",
+      "readingBoundary": {
+        "readingStrength": "profileAbsent",
+        "zeroReflectionAssumptions": [
+          "selected coverage requirements are satisfied",
+          "missing evidence has not been promoted to measured zero"
+        ],
+        "obstructionReflectionAssumptions": [
+          "positive witness has traceable observation refs",
+          "selected LawPolicy exactness assumptions hold"
+        ],
+        "coverageRequirementRefs": [
+          "coverage:layer-atoms"
+        ],
+        "witnessCompletenessBoundary": "homotopy profile absent; no path, filler, or continuation completeness is claimed"
+      },
+      "selectedDiagramRefs": [
+        "diagram:loop-candidate-path-pair-semantic-contract-loop-0",
+        "path-pair:semantic-contract-loop"
+      ],
+      "nonFillabilityWitnessRefs": [
+        "non-fillability-witness:gap-runtime-user-db-trace"
+      ],
+      "missingFillerEvidence": [
+        "gap-runtime-user-db-trace"
+      ],
+      "nextCheckRefs": [
+        "resolve-missing-filler:gap-runtime-user-db-trace"
+      ],
+      "sourceRefs": [
+        "doc-architecture",
+        "src-route-users",
+        "src-service-user",
+        "test-user-contract"
+      ],
+      "coverageBoundary": "homotopy profile absent; path, filler, loop, and zero readings remain blocked",
+      "evidenceBoundary": "architectural hole records missing filler evidence, not violation proof",
+      "nonConclusions": [
+        "candidate paths and loops are review cues, not path truth",
+        "unfilled loops are architectural holes, not automatic violations",
+        "missing filler evidence is not measured zero",
+        "nonzero holonomy is bounded diagnosis, not future incident prediction",
+        "homotopy complex summary is not source extraction completeness"
+      ]
+    }
+  ],
+  "homotopyHolonomyReadings": [
+    {
+      "readingId": "homotopy-holonomy:loop-candidate-path-pair-semantic-contract-loop-0:axis-layer-violation",
+      "pathPairRef": "path-pair:semantic-contract-loop",
+      "loopRef": "loop-candidate:path-pair-semantic-contract-loop-0",
+      "axisRef": "axis:layer-violation",
+      "measurementStatus": "blockedByCoverageGap",
+      "readingBoundary": {
+        "readingStrength": "profileAbsent",
+        "zeroReflectionAssumptions": [
+          "selected coverage requirements are satisfied",
+          "missing evidence has not been promoted to measured zero"
+        ],
+        "obstructionReflectionAssumptions": [
+          "positive witness has traceable observation refs",
+          "selected LawPolicy exactness assumptions hold"
+        ],
+        "coverageRequirementRefs": [
+          "coverage:layer-atoms"
+        ],
+        "witnessCompletenessBoundary": "homotopy profile absent; no path, filler, or continuation completeness is claimed"
+      },
+      "distanceKind": "selected-axis-continuation-distance",
+      "value": 1,
+      "comparedContinuationSummary": "path:semantic-operation-flow vs molecule:user-request-responsibility on axis:layer-violation",
+      "comparedContinuationRefs": [
+        "Cont_axis:layer-violation(path:semantic-operation-flow)",
+        "Cont_axis:layer-violation(molecule:user-request-responsibility)"
+      ],
+      "distanceInputRefs": [
+        "atom:component:route-users",
+        "atom:component:service-user",
+        "atom:contract:create-user",
+        "atom:relation:route-service",
+        "gap-runtime-user-db-trace",
+        "semantic:create-user-flow"
+      ],
+      "muDefectRefs": [
+        "mu:path-pair-semantic-contract-loop:axis-layer-violation"
+      ],
+      "sourceRefs": [
+        "doc-architecture",
+        "src-route-users",
+        "src-service-user",
+        "test-user-contract"
+      ],
+      "observationRefs": [
+        "atom:component:route-users",
+        "atom:component:service-user",
+        "atom:contract:create-user",
+        "atom:relation:route-service",
+        "semantic:create-user-flow"
+      ],
+      "fillerRefs": [],
+      "missingFillerRefs": [
+        "gap-runtime-user-db-trace"
+      ],
+      "coverageBoundary": "homotopy profile absent; path, filler, loop, and zero readings remain blocked",
+      "exactnessAssumptionStatus": "bounded selected-axis continuation comparison; not theorem exactness",
+      "nonConclusions": [
+        "candidate paths and loops are review cues, not path truth",
+        "unfilled loops are architectural holes, not automatic violations",
+        "missing filler evidence is not measured zero",
+        "nonzero holonomy is bounded diagnosis, not future incident prediction",
+        "homotopy complex summary is not source extraction completeness"
+      ]
+    }
+  ],
+  "stokesStyleReadings": [
+    {
+      "readingId": "stokes-style:loop-candidate-path-pair-semantic-contract-loop-0",
+      "loopRef": "loop-candidate:path-pair-semantic-contract-loop-0",
+      "status": "blockedByArchitecturalHole",
+      "measurementStatus": "blockedByCoverageGap",
+      "readingBoundary": {
+        "readingStrength": "profileAbsent",
+        "zeroReflectionAssumptions": [
+          "selected coverage requirements are satisfied",
+          "missing evidence has not been promoted to measured zero"
+        ],
+        "obstructionReflectionAssumptions": [
+          "positive witness has traceable observation refs",
+          "selected LawPolicy exactness assumptions hold"
+        ],
+        "coverageRequirementRefs": [
+          "coverage:layer-atoms"
+        ],
+        "witnessCompletenessBoundary": "homotopy profile absent; no path, filler, or continuation completeness is claimed"
+      },
+      "holonomyReadingRefs": [
+        "homotopy-holonomy:loop-candidate-path-pair-semantic-contract-loop-0:axis-layer-violation"
+      ],
+      "fillingEvidenceRefs": [],
+      "nonFillabilityWitnessRefs": [
+        "non-fillability-witness:gap-runtime-user-db-trace"
+      ],
+      "localCurvatureCondition": "architectural hole blocks Stokes-style local curvature conclusion",
+      "localCurvatureCellCandidates": [],
+      "reviewQueueRefs": [
+        "architectural-hole:loop-candidate-path-pair-semantic-contract-loop-0"
+      ],
+      "coverageBoundary": "homotopy profile absent; path, filler, loop, and zero readings remain blocked",
+      "evidenceBoundary": "Stokes-style reading is a bounded review queue, not theorem discharge",
+      "nonConclusions": [
+        "candidate paths and loops are review cues, not path truth",
+        "unfilled loops are architectural holes, not automatic violations",
+        "missing filler evidence is not measured zero",
+        "nonzero holonomy is bounded diagnosis, not future incident prediction",
+        "homotopy complex summary is not source extraction completeness"
+      ]
+    }
+  ],
+  "architectureHomotopyReport": {
+    "reportId": "architecture-homotopy-report:homotopy-profile-absent",
+    "profileRef": "homotopy-profile:absent",
+    "status": "needsReview",
+    "measurementStatus": "blockedByCoverageGap",
+    "readingBoundary": {
+      "readingStrength": "profileAbsent",
+      "zeroReflectionAssumptions": [
+        "selected coverage requirements are satisfied",
+        "missing evidence has not been promoted to measured zero"
+      ],
+      "obstructionReflectionAssumptions": [
+        "positive witness has traceable observation refs",
+        "selected LawPolicy exactness assumptions hold"
+      ],
+      "coverageRequirementRefs": [
+        "coverage:layer-atoms"
+      ],
+      "witnessCompletenessBoundary": "homotopy profile absent; no path, filler, or continuation completeness is claimed"
+    },
+    "filledLoops": [],
+    "unfilledLoops": [
+      "loop-candidate:path-pair-semantic-contract-loop-0"
+    ],
+    "nonzeroHolonomyLoops": [
+      "loop-candidate:path-pair-semantic-contract-loop-0"
+    ],
+    "topLocalCurvatureCells": [],
+    "aggregateReadings": [
+      {
+        "aggregateId": "beta1:bounded-unfilled-loop-count",
+        "value": 1,
+        "reading": "bounded count of unfilled architectural-hole loops",
+        "boundary": "selected measured complex only; not topological Betti number"
+      },
+      {
+        "aggregateId": "hol-mass:nonzero-holonomy-loop-count",
+        "value": 1,
+        "reading": "bounded count of loops with nonzero selected-axis holonomy",
+        "boundary": "not future incident or empirical cost prediction"
+      },
+      {
+        "aggregateId": "fill-ratio:filled-loop-count",
+        "value": 0,
+        "reading": "filled loop count out of 1 measured loop candidates",
+        "boundary": "count, not normalized quality score"
+      }
+    ],
+    "coverageGaps": [
+      "gap-runtime-user-db-trace"
+    ],
+    "measuredBoundary": "ArchitectureHomotopyReport is bounded to supplied ArchMap, selected LawPolicy, and homotopy measurement profile",
+    "recommendedReviewFocus": [
+      "start with nonzero holonomy loops and compare continuation summaries",
+      "resolve architectural holes by adding contract, test, runtime, or policy filler evidence",
+      "inspect local curvature cells only for filled nonzero holonomy review queues"
+    ],
+    "nonConclusions": [
+      "ArchitectureHomotopyReport is not a single architecture quality score",
+      "ArchitectureHomotopyReport does not prove global semantic flatness",
+      "Unfilled loops are architectural holes, not automatic violations",
+      "Stokes-style readings are review queues, not theorem discharge"
+    ]
+  },
   "operationSquareCandidates": [
     {
       "candidateId": "operation-square:operation-delta-observe-before-repair:operation-delta-observe-before-repair-continuation",
@@ -2332,6 +3075,28 @@
       "rightOperationRef": "operation-delta:observe-before-repair:continuation",
       "pPathRef": "operation-delta:observe-before-repair:continuation . operation-delta:observe-before-repair",
       "qPathRef": "operation-delta:observe-before-repair . operation-delta:observe-before-repair:continuation",
+      "pOperationSequence": [
+        "operation-delta:observe-before-repair",
+        "operation-delta:observe-before-repair:continuation"
+      ],
+      "qOperationSequence": [
+        "operation-delta:observe-before-repair:continuation",
+        "operation-delta:observe-before-repair"
+      ],
+      "endpointObjectRefs": [
+        "aat:object:route.users",
+        "aat:relation:route.users->service.user",
+        "atom:component:route-users",
+        "atom:component:service-user",
+        "sft:observation:create-user-flow"
+      ],
+      "generatorCandidateRefs": [
+        "generator:independent-square",
+        "generator:same-contract-replacement",
+        "generator:repair-filler",
+        "generator:identity-insertion-deletion",
+        "generator:associativity-reassociation"
+      ],
       "sharedAtomSupportRefs": [
         "atom:component:route-users",
         "atom:component:service-user",
@@ -2398,12 +3163,38 @@
       "pathRef": "operation-square:operation-delta-observe-before-repair:operation-delta-observe-before-repair-continuation:p",
       "pathRole": "p",
       "pathExpression": "operation-delta:observe-before-repair:continuation . operation-delta:observe-before-repair",
+      "operationSequence": [
+        "operation-delta:observe-before-repair",
+        "operation-delta:observe-before-repair:continuation"
+      ],
+      "endpointObjectRefs": [
+        "aat:object:route.users",
+        "aat:relation:route.users->service.user",
+        "atom:component:route-users",
+        "atom:component:service-user",
+        "sft:observation:create-user-flow"
+      ],
+      "continuationStepRefs": [
+        "cont-step:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair-continuation:p:operation-delta-observe-before-repair",
+        "cont-step:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair-continuation:p:operation-delta-observe-before-repair-continuation",
+        "cont-step:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair-continuation:p:endpoint"
+      ],
       "axisTraces": [
         {
           "axisFamily": "static",
           "axisRef": "static dependency / support axis",
           "traceStatus": "boundedObservationTrace",
           "continuationSummary": "static continuation reads 3 observation ref(s) across 1 operation delta(s)",
+          "continuationStates": [
+            "Cont_static[0]=operation-delta:observe-before-repair; refs=3",
+            "Cont_static[1]=operation-delta:observe-before-repair:continuation; refs=3",
+            "Cont_static[endpoint]=p; endpointRefs=5"
+          ],
+          "distanceInputRefs": [
+            "atom:component:route-users",
+            "atom:component:service-user",
+            "atom:relation:route-service"
+          ],
           "observationRefs": [
             "atom:component:route-users",
             "atom:component:service-user",
@@ -2421,6 +3212,14 @@
           "axisRef": "contract axis",
           "traceStatus": "boundedObservationTrace",
           "continuationSummary": "contract continuation reads 1 observation ref(s) across 1 operation delta(s)",
+          "continuationStates": [
+            "Cont_contract[0]=operation-delta:observe-before-repair; refs=1",
+            "Cont_contract[1]=operation-delta:observe-before-repair:continuation; refs=1",
+            "Cont_contract[endpoint]=p; endpointRefs=5"
+          ],
+          "distanceInputRefs": [
+            "atom:contract:create-user"
+          ],
           "observationRefs": [
             "atom:contract:create-user"
           ],
@@ -2435,6 +3234,14 @@
           "axisRef": "semantic axis",
           "traceStatus": "boundedObservationTrace",
           "continuationSummary": "semantic continuation reads 1 observation ref(s) across 1 operation delta(s)",
+          "continuationStates": [
+            "Cont_semantic[0]=operation-delta:observe-before-repair; refs=1",
+            "Cont_semantic[1]=operation-delta:observe-before-repair:continuation; refs=1",
+            "Cont_semantic[endpoint]=p; endpointRefs=5"
+          ],
+          "distanceInputRefs": [
+            "semantic:create-user-flow"
+          ],
           "observationRefs": [
             "semantic:create-user-flow"
           ],
@@ -2450,6 +3257,12 @@
           "axisRef": "state transition axis",
           "traceStatus": "unmeasured",
           "continuationSummary": "state continuation is unmeasured under current ArchMap evidence",
+          "continuationStates": [
+            "Cont_state[0]=operation-delta:observe-before-repair; refs=0",
+            "Cont_state[1]=operation-delta:observe-before-repair:continuation; refs=0",
+            "Cont_state[endpoint]=p; endpointRefs=5"
+          ],
+          "distanceInputRefs": [],
           "observationRefs": [],
           "sourceRefs": [],
           "missingRefs": [
@@ -2462,6 +3275,16 @@
           "axisRef": "effect ordering / replay / compensation axis",
           "traceStatus": "boundedObservationTrace",
           "continuationSummary": "effect continuation reads 3 observation ref(s) across 1 operation delta(s)",
+          "continuationStates": [
+            "Cont_effect[0]=operation-delta:observe-before-repair; refs=3",
+            "Cont_effect[1]=operation-delta:observe-before-repair:continuation; refs=3",
+            "Cont_effect[endpoint]=p; endpointRefs=5"
+          ],
+          "distanceInputRefs": [
+            "add or refine ArchMap atom observations before claiming repair",
+            "no constructed obstruction is transported because no repair candidate exists",
+            "derived-effect-order:p:operation-delta-observe-before-repair-continuation-operation-delta-observe-before-repair"
+          ],
           "observationRefs": [
             "add or refine ArchMap atom observations before claiming repair",
             "no constructed obstruction is transported because no repair candidate exists",
@@ -2482,6 +3305,12 @@
           "axisRef": "authority / trust boundary axis",
           "traceStatus": "unmeasured",
           "continuationSummary": "authority continuation is unmeasured under current ArchMap evidence",
+          "continuationStates": [
+            "Cont_authority[0]=operation-delta:observe-before-repair; refs=0",
+            "Cont_authority[1]=operation-delta:observe-before-repair:continuation; refs=0",
+            "Cont_authority[endpoint]=p; endpointRefs=5"
+          ],
+          "distanceInputRefs": [],
           "observationRefs": [],
           "sourceRefs": [],
           "missingRefs": [
@@ -2494,6 +3323,14 @@
           "axisRef": "runtime interaction axis",
           "traceStatus": "boundedObservationTrace",
           "continuationSummary": "runtime continuation reads 1 observation ref(s) across 1 operation delta(s)",
+          "continuationStates": [
+            "Cont_runtime[0]=operation-delta:observe-before-repair; refs=1",
+            "Cont_runtime[1]=operation-delta:observe-before-repair:continuation; refs=1",
+            "Cont_runtime[endpoint]=p; endpointRefs=5"
+          ],
+          "distanceInputRefs": [
+            "gap-runtime-user-db-trace"
+          ],
           "observationRefs": [
             "gap-runtime-user-db-trace"
           ],
@@ -2508,6 +3345,16 @@
           "axisRef": "projection / representation axis",
           "traceStatus": "boundedObservationTrace",
           "continuationSummary": "projection continuation reads 3 observation ref(s) across 1 operation delta(s)",
+          "continuationStates": [
+            "Cont_projection[0]=operation-delta:observe-before-repair; refs=3",
+            "Cont_projection[1]=operation-delta:observe-before-repair:continuation; refs=3",
+            "Cont_projection[endpoint]=p; endpointRefs=5"
+          ],
+          "distanceInputRefs": [
+            "projection:aat:route-users",
+            "projection:aat:route-service",
+            "projection:sft:create-user"
+          ],
           "observationRefs": [
             "projection:aat:route-users",
             "projection:aat:route-service",
@@ -2561,12 +3408,38 @@
       "pathRef": "operation-square:operation-delta-observe-before-repair:operation-delta-observe-before-repair-continuation:q",
       "pathRole": "q",
       "pathExpression": "operation-delta:observe-before-repair . operation-delta:observe-before-repair:continuation",
+      "operationSequence": [
+        "operation-delta:observe-before-repair:continuation",
+        "operation-delta:observe-before-repair"
+      ],
+      "endpointObjectRefs": [
+        "aat:object:route.users",
+        "aat:relation:route.users->service.user",
+        "atom:component:route-users",
+        "atom:component:service-user",
+        "sft:observation:create-user-flow"
+      ],
+      "continuationStepRefs": [
+        "cont-step:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair-continuation:q:operation-delta-observe-before-repair-continuation",
+        "cont-step:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair-continuation:q:operation-delta-observe-before-repair",
+        "cont-step:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair-continuation:q:endpoint"
+      ],
       "axisTraces": [
         {
           "axisFamily": "static",
           "axisRef": "static dependency / support axis",
           "traceStatus": "boundedObservationTrace",
           "continuationSummary": "static continuation reads 3 observation ref(s) across 1 operation delta(s)",
+          "continuationStates": [
+            "Cont_static[0]=operation-delta:observe-before-repair:continuation; refs=3",
+            "Cont_static[1]=operation-delta:observe-before-repair; refs=3",
+            "Cont_static[endpoint]=q; endpointRefs=5"
+          ],
+          "distanceInputRefs": [
+            "atom:component:route-users",
+            "atom:component:service-user",
+            "atom:relation:route-service"
+          ],
           "observationRefs": [
             "atom:component:route-users",
             "atom:component:service-user",
@@ -2584,6 +3457,14 @@
           "axisRef": "contract axis",
           "traceStatus": "boundedObservationTrace",
           "continuationSummary": "contract continuation reads 1 observation ref(s) across 1 operation delta(s)",
+          "continuationStates": [
+            "Cont_contract[0]=operation-delta:observe-before-repair:continuation; refs=1",
+            "Cont_contract[1]=operation-delta:observe-before-repair; refs=1",
+            "Cont_contract[endpoint]=q; endpointRefs=5"
+          ],
+          "distanceInputRefs": [
+            "atom:contract:create-user"
+          ],
           "observationRefs": [
             "atom:contract:create-user"
           ],
@@ -2598,6 +3479,14 @@
           "axisRef": "semantic axis",
           "traceStatus": "boundedObservationTrace",
           "continuationSummary": "semantic continuation reads 1 observation ref(s) across 1 operation delta(s)",
+          "continuationStates": [
+            "Cont_semantic[0]=operation-delta:observe-before-repair:continuation; refs=1",
+            "Cont_semantic[1]=operation-delta:observe-before-repair; refs=1",
+            "Cont_semantic[endpoint]=q; endpointRefs=5"
+          ],
+          "distanceInputRefs": [
+            "semantic:create-user-flow"
+          ],
           "observationRefs": [
             "semantic:create-user-flow"
           ],
@@ -2613,6 +3502,12 @@
           "axisRef": "state transition axis",
           "traceStatus": "unmeasured",
           "continuationSummary": "state continuation is unmeasured under current ArchMap evidence",
+          "continuationStates": [
+            "Cont_state[0]=operation-delta:observe-before-repair:continuation; refs=0",
+            "Cont_state[1]=operation-delta:observe-before-repair; refs=0",
+            "Cont_state[endpoint]=q; endpointRefs=5"
+          ],
+          "distanceInputRefs": [],
           "observationRefs": [],
           "sourceRefs": [],
           "missingRefs": [
@@ -2625,6 +3520,16 @@
           "axisRef": "effect ordering / replay / compensation axis",
           "traceStatus": "boundedObservationTrace",
           "continuationSummary": "effect continuation reads 3 observation ref(s) across 1 operation delta(s)",
+          "continuationStates": [
+            "Cont_effect[0]=operation-delta:observe-before-repair:continuation; refs=3",
+            "Cont_effect[1]=operation-delta:observe-before-repair; refs=3",
+            "Cont_effect[endpoint]=q; endpointRefs=5"
+          ],
+          "distanceInputRefs": [
+            "add or refine ArchMap atom observations before claiming repair",
+            "no constructed obstruction is transported because no repair candidate exists",
+            "derived-effect-order:q:operation-delta-observe-before-repair-operation-delta-observe-before-repair-continuation"
+          ],
           "observationRefs": [
             "add or refine ArchMap atom observations before claiming repair",
             "no constructed obstruction is transported because no repair candidate exists",
@@ -2645,6 +3550,12 @@
           "axisRef": "authority / trust boundary axis",
           "traceStatus": "unmeasured",
           "continuationSummary": "authority continuation is unmeasured under current ArchMap evidence",
+          "continuationStates": [
+            "Cont_authority[0]=operation-delta:observe-before-repair:continuation; refs=0",
+            "Cont_authority[1]=operation-delta:observe-before-repair; refs=0",
+            "Cont_authority[endpoint]=q; endpointRefs=5"
+          ],
+          "distanceInputRefs": [],
           "observationRefs": [],
           "sourceRefs": [],
           "missingRefs": [
@@ -2657,6 +3568,14 @@
           "axisRef": "runtime interaction axis",
           "traceStatus": "boundedObservationTrace",
           "continuationSummary": "runtime continuation reads 1 observation ref(s) across 1 operation delta(s)",
+          "continuationStates": [
+            "Cont_runtime[0]=operation-delta:observe-before-repair:continuation; refs=1",
+            "Cont_runtime[1]=operation-delta:observe-before-repair; refs=1",
+            "Cont_runtime[endpoint]=q; endpointRefs=5"
+          ],
+          "distanceInputRefs": [
+            "gap-runtime-user-db-trace"
+          ],
           "observationRefs": [
             "gap-runtime-user-db-trace"
           ],
@@ -2671,6 +3590,16 @@
           "axisRef": "projection / representation axis",
           "traceStatus": "boundedObservationTrace",
           "continuationSummary": "projection continuation reads 3 observation ref(s) across 1 operation delta(s)",
+          "continuationStates": [
+            "Cont_projection[0]=operation-delta:observe-before-repair:continuation; refs=3",
+            "Cont_projection[1]=operation-delta:observe-before-repair; refs=3",
+            "Cont_projection[endpoint]=q; endpointRefs=5"
+          ],
+          "distanceInputRefs": [
+            "projection:aat:route-users",
+            "projection:aat:route-service",
+            "projection:sft:create-user"
+          ],
           "observationRefs": [
             "projection:aat:route-users",
             "projection:aat:route-service",
@@ -2726,6 +3655,11 @@
       "axisFamily": "authority",
       "axisRef": "authority / trust boundary axis",
       "distanceKind": "weighted-axis-l1",
+      "pContinuationRef": "Cont_authority(p):authority / trust boundary axis",
+      "qContinuationRef": "Cont_authority(q):authority / trust boundary axis",
+      "distanceInputRefs": [],
+      "positiveWitnessBoundary": "mu_x > 0 is read only as selected continuation observation difference with source-backed p/q trace inputs",
+      "weight": 0,
       "measurementStatus": "unmeasured",
       "distanceValue": null,
       "measuredSupportRefs": [],
@@ -2773,6 +3707,13 @@
       "axisFamily": "contract",
       "axisRef": "contract axis",
       "distanceKind": "weighted-axis-l1",
+      "pContinuationRef": "Cont_contract(p):contract axis",
+      "qContinuationRef": "Cont_contract(q):contract axis",
+      "distanceInputRefs": [
+        "atom:contract:create-user"
+      ],
+      "positiveWitnessBoundary": "mu_x > 0 is read only as selected continuation observation difference with source-backed p/q trace inputs",
+      "weight": 1,
       "measurementStatus": "measured",
       "distanceValue": 0,
       "measuredSupportRefs": [
@@ -2822,6 +3763,16 @@
       "axisFamily": "effect",
       "axisRef": "effect ordering / replay / compensation axis",
       "distanceKind": "weighted-axis-l1",
+      "pContinuationRef": "Cont_effect(p):effect ordering / replay / compensation axis",
+      "qContinuationRef": "Cont_effect(q):effect ordering / replay / compensation axis",
+      "distanceInputRefs": [
+        "add or refine ArchMap atom observations before claiming repair",
+        "derived-effect-order:p:operation-delta-observe-before-repair-continuation-operation-delta-observe-before-repair",
+        "derived-effect-order:q:operation-delta-observe-before-repair-operation-delta-observe-before-repair-continuation",
+        "no constructed obstruction is transported because no repair candidate exists"
+      ],
+      "positiveWitnessBoundary": "mu_x > 0 is read only as selected continuation observation difference with source-backed p/q trace inputs",
+      "weight": 1,
       "measurementStatus": "measured",
       "distanceValue": 2,
       "measuredSupportRefs": [
@@ -2880,6 +3831,15 @@
       "axisFamily": "projection",
       "axisRef": "projection / representation axis",
       "distanceKind": "weighted-axis-l1",
+      "pContinuationRef": "Cont_projection(p):projection / representation axis",
+      "qContinuationRef": "Cont_projection(q):projection / representation axis",
+      "distanceInputRefs": [
+        "projection:aat:route-service",
+        "projection:aat:route-users",
+        "projection:sft:create-user"
+      ],
+      "positiveWitnessBoundary": "mu_x > 0 is read only as selected continuation observation difference with source-backed p/q trace inputs",
+      "weight": 1,
       "measurementStatus": "measured",
       "distanceValue": 0,
       "measuredSupportRefs": [
@@ -2935,6 +3895,13 @@
       "axisFamily": "runtime",
       "axisRef": "runtime interaction axis",
       "distanceKind": "weighted-axis-l1",
+      "pContinuationRef": "Cont_runtime(p):runtime interaction axis",
+      "qContinuationRef": "Cont_runtime(q):runtime interaction axis",
+      "distanceInputRefs": [
+        "gap-runtime-user-db-trace"
+      ],
+      "positiveWitnessBoundary": "mu_x > 0 is read only as selected continuation observation difference with source-backed p/q trace inputs",
+      "weight": 1,
       "measurementStatus": "measured",
       "distanceValue": 0,
       "measuredSupportRefs": [
@@ -2984,6 +3951,13 @@
       "axisFamily": "semantic",
       "axisRef": "semantic axis",
       "distanceKind": "weighted-axis-l1",
+      "pContinuationRef": "Cont_semantic(p):semantic axis",
+      "qContinuationRef": "Cont_semantic(q):semantic axis",
+      "distanceInputRefs": [
+        "semantic:create-user-flow"
+      ],
+      "positiveWitnessBoundary": "mu_x > 0 is read only as selected continuation observation difference with source-backed p/q trace inputs",
+      "weight": 1,
       "measurementStatus": "measured",
       "distanceValue": 0,
       "measuredSupportRefs": [
@@ -3033,6 +4007,11 @@
       "axisFamily": "state",
       "axisRef": "state transition axis",
       "distanceKind": "weighted-axis-l1",
+      "pContinuationRef": "Cont_state(p):state transition axis",
+      "qContinuationRef": "Cont_state(q):state transition axis",
+      "distanceInputRefs": [],
+      "positiveWitnessBoundary": "mu_x > 0 is read only as selected continuation observation difference with source-backed p/q trace inputs",
+      "weight": 0,
       "measurementStatus": "unmeasured",
       "distanceValue": null,
       "measuredSupportRefs": [],
@@ -3080,6 +4059,15 @@
       "axisFamily": "static",
       "axisRef": "static dependency / support axis",
       "distanceKind": "weighted-axis-l1",
+      "pContinuationRef": "Cont_static(p):static dependency / support axis",
+      "qContinuationRef": "Cont_static(q):static dependency / support axis",
+      "distanceInputRefs": [
+        "atom:component:route-users",
+        "atom:component:service-user",
+        "atom:relation:route-service"
+      ],
+      "positiveWitnessBoundary": "mu_x > 0 is read only as selected continuation observation difference with source-backed p/q trace inputs",
+      "weight": 1,
       "measurementStatus": "measured",
       "distanceValue": 0,
       "measuredSupportRefs": [
@@ -3144,6 +4132,14 @@
         "state",
         "static"
       ],
+      "selectedMeasuredSquareRefs": [
+        "square-family-entry:mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair-continuation:contract",
+        "square-family-entry:mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair-continuation:effect",
+        "square-family-entry:mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair-continuation:projection",
+        "square-family-entry:mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair-continuation:runtime",
+        "square-family-entry:mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair-continuation:semantic",
+        "square-family-entry:mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair-continuation:static"
+      ],
       "weightPolicy": "unit weights until repo-specific calibration is declared in a future policy",
       "distanceKind": "weighted-axis-l1",
       "measurementStatus": "partial",
@@ -3157,6 +4153,18 @@
         "mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair-continuation:static"
       ],
       "unmeasuredDefectRefs": [
+        "mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair-continuation:authority",
+        "mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair-continuation:state"
+      ],
+      "positiveWeightDefectRefs": [
+        "mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair-continuation:contract",
+        "mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair-continuation:effect",
+        "mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair-continuation:projection",
+        "mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair-continuation:runtime",
+        "mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair-continuation:semantic",
+        "mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair-continuation:static"
+      ],
+      "zeroWeightDefectRefs": [
         "mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair-continuation:authority",
         "mu:operation-square-operation-delta-observe-before-repair-operation-delta-observe-before-repair-continuation:state"
       ],
@@ -4401,7 +5409,7 @@
   "structuralReadingReviewSurface": {
     "surfaceId": "aat-structural-reading-review-surface",
     "status": "needsReview",
-    "currentStateReading": "ArchSig reads current architecture state across Atom support and compatibility, LawUniverse coverage, feature extension coordinates, operation calculus laws, path signature trajectory, homotopy order sensitivity, diagram fillability, axis forgetting risk, trajectory homotopy refutation, bridge split transfer, representation strength, local curvature, three-layer flatness, observation projection, state transition algebra, operation-invariant constraints, and split readiness; blockedRepresentations=14, curvatures=0, blockedOperations=0, splitBlockers=0, atomConflicts=0, unmeasuredRequiredLaws=1, blockedDiagrams=1, axisForgetting=1, homotopyRefutations=1, bridgeTransfers=0",
+    "currentStateReading": "ArchSig reads current architecture state across Atom support and compatibility, LawUniverse coverage, feature extension coordinates, operation calculus laws, path signature trajectory, homotopy order sensitivity, diagram fillability, axis forgetting/projection fidelity, Atom origin closure, effect relation algebra, synthesis blockage, operation preconditions, path multiplicity, trajectory homotopy refutation, bridge split transfer, representation strength, local curvature, three-layer flatness, observation projection, state transition algebra, operation-invariant constraints, and split readiness; blockedRepresentations=14, curvatures=0, blockedOperations=0, splitBlockers=0, atomConflicts=0, unmeasuredRequiredLaws=1, blockedDiagrams=1, axisForgetting=1, projectionLoss=1, atomOriginDebt=1, effectRelationPressure=1, synthesisBlockage=1, operationPreconditionBlockers=1, pathMultiplicityLoss=1, homotopyRefutations=1, bridgeTransfers=0",
     "connectedReadingRefs": [
       "representationStrength:weightedAdjacencyMatrix",
       "representationStrength:reachableConeSize",
@@ -4425,6 +5433,12 @@
       "homotopy-order-sensitivity:selected-operations",
       "diagram-fillability:local-curvature-fixture-archmap-atom-observation-non-conclusion",
       "axis-forgetting-risk:selected-projection",
+      "observation-projection-fidelity:observation-projection-fixture-archmap-atom-observation",
+      "atom-origin-closure-debt:fixture-archmap-atom-observation",
+      "effect-relation-algebra:fixture-archmap-atom-observation",
+      "synthesis-blockage:fixture-archmap-atom-observation",
+      "operation-precondition-readiness:none-observed",
+      "path-multiplicity-loss:fixture-archmap-atom-observation",
       "signature-trajectory-homotopy-refutation:selected-trajectory",
       "bridge-split-obstruction-transfer:split-readiness-molecule-user-request-responsibility"
     ],
@@ -4433,6 +5447,10 @@
       "read LawUniverse coverage and witness exactness before treating absence as measured zero",
       "read feature extension, operation law, trajectory, homotopy, and diagram-fillability axes as current-state coordinates, not PR evolution claims",
       "read axis-forgetting risk before treating a coarse projection as zero-reflecting or obstruction-reflecting",
+      "read projection fidelity and Atom origin closure before using summaries for zero, repair, or synthesis claims",
+      "read effect relation algebra separately from state transition pressure before approving replay, provider, event, or handler boundaries",
+      "read synthesis blockage and operation precondition readiness before treating candidates as constructible or safe",
+      "read path multiplicity loss before treating one observed route as complete reachability",
       "read selected trajectory disagreement before treating same-endpoint operations as homotopic",
       "read bridge split transfer before treating a boundary operation as obstruction removal",
       "read representation-strength blockers before treating zero or obstruction absence as exact",
@@ -5264,12 +6282,15 @@
     "spectralDrilldownSummary": [
       "spectral-drilldown:fixture-archmap-atom-observation atomFamilies=3 overlapPairs=0 repairAxisDeltas=1 (needsReview)"
     ],
+    "curvatureSupportSummary": [],
+    "curvatureTransferSummary": [],
+    "architectureSpectrumReportSummary": [],
     "transferBridgeSummary": [
       "transfer-bridge:fixture-archmap-atom-observation transfers=1 bridges=1 repairRanks=1 boundaryRanks=0 (needsReview)"
     ],
     "transferBridgeEdgeSummary": [],
     "measurementExpansionSummary": [
-      "v0.3.0 measurement expansion reads 2 Atom support axes, 1 compatibility surfaces, 1 LawUniverse coverage surfaces, 1 feature-extension formulas, 1 operation-law surfaces, 1 path trajectories, 1 homotopy/order surfaces, 1 diagram-fillability surfaces, 1 axis-forgetting risks, 1 trajectory homotopy refutations, 1 bridge split-transfer surfaces, and 1 nonzero monodromy witnesses"
+      "v0.3.0 measurement expansion reads 2 Atom support axes, 1 compatibility surfaces, 1 LawUniverse coverage surfaces, 1 feature-extension formulas, 1 operation-law surfaces, 1 path trajectories, 1 homotopy/order surfaces, 1 diagram-fillability surfaces, 1 axis-forgetting risks, 1 projection-fidelity surfaces, 1 Atom origin-closure debts, 1 effect-relation algebras, 1 synthesis blockers, 1 operation-precondition readings, 1 path-multiplicity readings, 1 trajectory homotopy refutations, 1 bridge split-transfer surfaces, and 1 nonzero monodromy witnesses"
     ],
     "atomSupportAxisSummary": [
       "fixture-archmap-atom-observation support=4 concentration=maxAxisShare=2/4 pressure=mixedAxisPressurePresent",
@@ -5298,6 +6319,24 @@
     ],
     "axisForgettingRiskSummary": [
       "observation-projection:fixture-archmap-atom-observation kind=selectedAxisOrWitnessLoss zeroReflection=blockedWithoutAxisPreservationAndWitnessCompleteness obstructionReflection=blockedWithoutAxisPreservationAndWitnessCompleteness mixedScopes=2"
+    ],
+    "observationProjectionFidelitySummary": [
+      "observation-projection:fixture-archmap-atom-observation status=projectionLossObserved forgotten=1 collisions=0 reflection=blockedWithoutAxisPreservationAndWitnessCompleteness"
+    ],
+    "atomOriginClosureDebtSummary": [
+      "atom-origin-closure-debt:fixture-archmap-atom-observation status=originClosureDebtObserved sourceBacked=4 inferred=0 missingExpected=1"
+    ],
+    "effectRelationAlgebraSummary": [
+      "effect-relation-algebra:fixture-archmap-atom-observation pressure=effectRelationPressureObserved generators=1 unresolved=1 externalBoundaries=0"
+    ],
+    "synthesisBlockageSummary": [
+      "synthesis-blockage:fixture-archmap-atom-observation status=synthesisBlockedByMissingEvidenceOrConstraints targets=1 constraints=3 missing=1 noSolution=notASolverAndNotAbsenceProof"
+    ],
+    "operationPreconditionReadinessSummary": [
+      "repair-operation:none-observed kind=noneObserved status=noCandidateOperationObserved missing=0 witnesses=1"
+    ],
+    "pathMultiplicityLossSummary": [
+      "fixture-archmap-atom-observation status=reachabilityMultiplicityLossObserved paths=1 alternatePressure=3 fanIn=0 forgotten=1"
     ],
     "signatureTrajectoryHomotopyRefutationSummary": [
       "homotopy-order-sensitivity:selected-operations equivalence=selectedTrajectoryDisagreementObserved refutation=refutationCandidate disagreements=1"
@@ -5349,8 +6388,8 @@
       "molecule:user-request-responsibility status=candidateSplitReady score=100 boundaryOp=interface"
     ],
     "structuralReadingReviewSummary": [
-      "aat-structural-reading-review-surface status=needsReview refs=24 focus=12",
-      "ArchSig reads current architecture state across Atom support and compatibility, LawUniverse coverage, feature extension coordinates, operation calculus laws, path signature trajectory, homotopy order sensitivity, diagram fillability, axis forgetting risk, trajectory homotopy refutation, bridge split transfer, representation strength, local curvature, three-layer flatness, observation projection, state transition algebra, operation-invariant constraints, and split readiness; blockedRepresentations=14, curvatures=0, blockedOperations=0, splitBlockers=0, atomConflicts=0, unmeasuredRequiredLaws=1, blockedDiagrams=1, axisForgetting=1, homotopyRefutations=1, bridgeTransfers=0"
+      "aat-structural-reading-review-surface status=needsReview refs=30 focus=16",
+      "ArchSig reads current architecture state across Atom support and compatibility, LawUniverse coverage, feature extension coordinates, operation calculus laws, path signature trajectory, homotopy order sensitivity, diagram fillability, axis forgetting/projection fidelity, Atom origin closure, effect relation algebra, synthesis blockage, operation preconditions, path multiplicity, trajectory homotopy refutation, bridge split transfer, representation strength, local curvature, three-layer flatness, observation projection, state transition algebra, operation-invariant constraints, and split readiness; blockedRepresentations=14, curvatures=0, blockedOperations=0, splitBlockers=0, atomConflicts=0, unmeasuredRequiredLaws=1, blockedDiagrams=1, axisForgetting=1, projectionLoss=1, atomOriginDebt=1, effectRelationPressure=1, synthesisBlockage=1, operationPreconditionBlockers=1, pathMultiplicityLoss=1, homotopyRefutations=1, bridgeTransfers=0"
     ],
     "currentStateEvolutionBoundarySummary": [
       "ArchSig computes current AAT structural state from ArchMap fixture-archmap-atom-observation and LawPolicy layer-only-law-policy-fixture; it reads atoms, molecules, laws, obstructions, bridge pressure, structural readings, and bounded review focus",

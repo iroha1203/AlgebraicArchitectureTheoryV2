@@ -1109,6 +1109,7 @@ fn build_analysis_summary(
         "dominantFindings": dominant_findings(packet),
         "actionQueue": action_queue(packet),
         "axisSummary": axis_summary(packet),
+        "aatObservationAxisSummary": aat_observation_axis_summary(packet),
         "workflowRiskSummary": workflow_risk_summary(packet),
         "architecturalHoleSummary": architectural_hole_summary(packet),
         "bridgeSummary": bridge_summary(packet),
@@ -1164,7 +1165,13 @@ fn dominant_findings(packet: &serde_json::Value) -> serde_json::Value {
             DOMINANT_FINDING_LIMIT
         ),
         "workflowRisks": workflow_risk_findings(packet, DOMINANT_FINDING_LIMIT),
-        "bridgePressure": bridge_pressure_findings(packet, DOMINANT_FINDING_LIMIT)
+        "bridgePressure": bridge_pressure_findings(packet, DOMINANT_FINDING_LIMIT),
+        "projectionFidelityLoss": projection_fidelity_findings(packet, DOMINANT_FINDING_LIMIT),
+        "atomOriginClosureDebt": atom_origin_closure_findings(packet, DOMINANT_FINDING_LIMIT),
+        "effectRelationPressure": effect_relation_findings(packet, DOMINANT_FINDING_LIMIT),
+        "synthesisBlockage": synthesis_blockage_findings(packet, DOMINANT_FINDING_LIMIT),
+        "operationPreconditionReadiness": operation_precondition_findings(packet, DOMINANT_FINDING_LIMIT),
+        "pathMultiplicityLoss": path_multiplicity_findings(packet, DOMINANT_FINDING_LIMIT)
     })
 }
 
@@ -1254,6 +1261,12 @@ fn quality_measurement(packet: &serde_json::Value) -> serde_json::Value {
         "localCurvatureCellCount": array_len(homotopy, "topLocalCurvatureCells"),
         "workflowRiskCount": array_len(packet, "workflowRiskReadings"),
         "transferBridgeCount": array_len(packet, "transferBridgeReadings"),
+        "projectionFidelityLossCount": array_len(packet, "observationProjectionFidelityReadings"),
+        "atomOriginClosureDebtCount": array_len(packet, "atomOriginClosureDebtReadings"),
+        "effectRelationPressureCount": array_len(packet, "effectRelationAlgebraReadings"),
+        "synthesisBlockageCount": array_len(packet, "synthesisBlockageReadings"),
+        "operationPreconditionBlockerCount": array_len(packet, "operationPreconditionReadinessReadings"),
+        "pathMultiplicityLossCount": array_len(packet, "pathMultiplicityLossReadings"),
         "coverageGapCount": coverage_gap_refs(packet).len()
     })
 }
@@ -1336,6 +1349,9 @@ fn action_queue(packet: &serde_json::Value) -> serde_json::Value {
             "detailRefs": detail_refs("workflowRiskReadings", &format!("/workflowRiskReadings/{index}"))
         }));
     }
+    for action in aat_observation_axis_actions(packet) {
+        actions.push(action);
+    }
     for bridge in bridge_pressure_actions(packet) {
         actions.push(bridge);
     }
@@ -1355,6 +1371,90 @@ fn action_queue(packet: &serde_json::Value) -> serde_json::Value {
             })
             .collect(),
     )
+}
+
+fn aat_observation_axis_actions(packet: &serde_json::Value) -> Vec<serde_json::Value> {
+    let mut actions = Vec::new();
+    for (index, reading) in array_items(packet, "observationProjectionFidelityReadings")
+        .into_iter()
+        .enumerate()
+    {
+        actions.push(serde_json::json!({
+            "kind": "projectionFidelityLoss",
+            "conclusion": json_field(reading, "fidelityStatus"),
+            "ref": json_field(reading, "readingId"),
+            "score": array_len(reading, "projectionLossAxes") + i64_field(reading, "forgottenCoordinateCount", 0).max(0) as usize,
+            "recommendedAction": json_field(reading, "recommendedNextAction"),
+            "detailRefs": detail_refs("observationProjectionFidelityReadings", &format!("/observationProjectionFidelityReadings/{index}"))
+        }));
+    }
+    for (index, reading) in array_items(packet, "atomOriginClosureDebtReadings")
+        .into_iter()
+        .enumerate()
+    {
+        actions.push(serde_json::json!({
+            "kind": "atomOriginClosureDebt",
+            "conclusion": json_field(reading, "closureStatus"),
+            "ref": json_field(reading, "readingId"),
+            "score": i64_field(reading, "derivedOrInferredAtomCount", 0).max(0) as usize
+                + i64_field(reading, "expectedMissingAtomCount", 0).max(0) as usize,
+            "recommendedAction": json_field(reading, "recommendedNextAction"),
+            "detailRefs": detail_refs("atomOriginClosureDebtReadings", &format!("/atomOriginClosureDebtReadings/{index}"))
+        }));
+    }
+    for (index, reading) in array_items(packet, "effectRelationAlgebraReadings")
+        .into_iter()
+        .enumerate()
+    {
+        actions.push(serde_json::json!({
+            "kind": "effectRelationPressure",
+            "conclusion": json_field(reading, "effectOrderingPressure"),
+            "ref": json_field(reading, "readingId"),
+            "score": array_len(reading, "unresolvedEffectRelations") + array_len(reading, "externalBoundaryRefs"),
+            "recommendedAction": json_field(reading, "recommendedNextAction"),
+            "detailRefs": detail_refs("effectRelationAlgebraReadings", &format!("/effectRelationAlgebraReadings/{index}"))
+        }));
+    }
+    for (index, reading) in array_items(packet, "synthesisBlockageReadings")
+        .into_iter()
+        .enumerate()
+    {
+        actions.push(serde_json::json!({
+            "kind": "synthesisBlockage",
+            "conclusion": json_field(reading, "blockageStatus"),
+            "ref": json_field(reading, "readingId"),
+            "score": array_len(reading, "constraintRefs") + array_len(reading, "missingEvidenceRefs"),
+            "recommendedAction": json_field(reading, "recommendedNextAction"),
+            "detailRefs": detail_refs("synthesisBlockageReadings", &format!("/synthesisBlockageReadings/{index}"))
+        }));
+    }
+    for (index, reading) in array_items(packet, "operationPreconditionReadinessReadings")
+        .into_iter()
+        .enumerate()
+    {
+        actions.push(serde_json::json!({
+            "kind": "operationPreconditionReadiness",
+            "conclusion": json_field(reading, "readinessStatus"),
+            "ref": json_field(reading, "operationRef"),
+            "score": array_len(reading, "missingPreconditionRefs") + array_len(reading, "coverageGapRefs") + array_len(reading, "witnessGapRefs"),
+            "recommendedAction": json_field(reading, "recommendedNextAction"),
+            "detailRefs": detail_refs("operationPreconditionReadinessReadings", &format!("/operationPreconditionReadinessReadings/{index}"))
+        }));
+    }
+    for (index, reading) in array_items(packet, "pathMultiplicityLossReadings")
+        .into_iter()
+        .enumerate()
+    {
+        actions.push(serde_json::json!({
+            "kind": "pathMultiplicityLoss",
+            "conclusion": json_field(reading, "multiplicityLossStatus"),
+            "ref": json_field(reading, "readingId"),
+            "score": i64_field(reading, "alternatePathPressure", 0).max(0) as usize + array_len(reading, "fanInBoundaryRefs"),
+            "recommendedAction": json_field(reading, "recommendedNextAction"),
+            "detailRefs": detail_refs("pathMultiplicityLossReadings", &format!("/pathMultiplicityLossReadings/{index}"))
+        }));
+    }
+    actions
 }
 
 fn bridge_pressure_actions(packet: &serde_json::Value) -> Vec<serde_json::Value> {
@@ -1401,6 +1501,25 @@ fn axis_summary(packet: &serde_json::Value) -> serde_json::Value {
         "zeroAxisCount": array_len(flatness, "zeroSignatureAxisRefs"),
         "nonzeroAxes": nonzero_axis_findings(packet, usize::MAX),
         "packetRefs": packet_refs(&["/signatureAxes", "/flatnessReading"])
+    })
+}
+
+fn aat_observation_axis_summary(packet: &serde_json::Value) -> serde_json::Value {
+    serde_json::json!({
+        "projectionFidelityLossCount": array_len(packet, "observationProjectionFidelityReadings"),
+        "atomOriginClosureDebtCount": array_len(packet, "atomOriginClosureDebtReadings"),
+        "effectRelationPressureCount": array_len(packet, "effectRelationAlgebraReadings"),
+        "synthesisBlockageCount": array_len(packet, "synthesisBlockageReadings"),
+        "operationPreconditionReadinessCount": array_len(packet, "operationPreconditionReadinessReadings"),
+        "pathMultiplicityLossCount": array_len(packet, "pathMultiplicityLossReadings"),
+        "packetRefs": packet_refs(&[
+            "/observationProjectionFidelityReadings",
+            "/atomOriginClosureDebtReadings",
+            "/effectRelationAlgebraReadings",
+            "/synthesisBlockageReadings",
+            "/operationPreconditionReadinessReadings",
+            "/pathMultiplicityLossReadings"
+        ])
     })
 }
 
@@ -1583,6 +1702,140 @@ fn recurrent_obstruction_findings(spectrum: &serde_json::Value, limit: usize) ->
     )
 }
 
+fn projection_fidelity_findings(packet: &serde_json::Value, limit: usize) -> serde_json::Value {
+    serde_json::Value::Array(
+        array_items(packet, "observationProjectionFidelityReadings")
+            .into_iter()
+            .enumerate()
+            .take(limit)
+            .map(|(index, reading)| {
+                serde_json::json!({
+                    "ref": json_field(reading, "readingId"),
+                    "conclusion": json_field(reading, "fidelityStatus"),
+                    "forgottenCoordinateCount": json_field(reading, "forgottenCoordinateCount"),
+                    "collisionCount": json_field(reading, "observationCollisionCount"),
+                    "reflectionStatus": json_field(reading, "reflectionStatus"),
+                    "recommendedAction": json_field(reading, "recommendedNextAction"),
+                    "detailRefs": detail_refs("observationProjectionFidelityReadings", &format!("/observationProjectionFidelityReadings/{index}")),
+                    "packetRefs": packet_refs(&[&format!("/observationProjectionFidelityReadings/{index}")])
+                })
+            })
+            .collect(),
+    )
+}
+
+fn atom_origin_closure_findings(packet: &serde_json::Value, limit: usize) -> serde_json::Value {
+    serde_json::Value::Array(
+        array_items(packet, "atomOriginClosureDebtReadings")
+            .into_iter()
+            .enumerate()
+            .take(limit)
+            .map(|(index, reading)| {
+                serde_json::json!({
+                    "ref": json_field(reading, "readingId"),
+                    "conclusion": json_field(reading, "closureStatus"),
+                    "sourceBackedAtomCount": json_field(reading, "sourceBackedAtomCount"),
+                    "derivedOrInferredAtomCount": json_field(reading, "derivedOrInferredAtomCount"),
+                    "expectedMissingAtomCount": json_field(reading, "expectedMissingAtomCount"),
+                    "recommendedAction": json_field(reading, "recommendedNextAction"),
+                    "detailRefs": detail_refs("atomOriginClosureDebtReadings", &format!("/atomOriginClosureDebtReadings/{index}")),
+                    "packetRefs": packet_refs(&[&format!("/atomOriginClosureDebtReadings/{index}")])
+                })
+            })
+            .collect(),
+    )
+}
+
+fn effect_relation_findings(packet: &serde_json::Value, limit: usize) -> serde_json::Value {
+    serde_json::Value::Array(
+        array_items(packet, "effectRelationAlgebraReadings")
+            .into_iter()
+            .enumerate()
+            .take(limit)
+            .map(|(index, reading)| {
+                serde_json::json!({
+                    "ref": json_field(reading, "readingId"),
+                    "conclusion": json_field(reading, "effectOrderingPressure"),
+                    "requiredRelationCount": array_len(reading, "requiredEffectRelations"),
+                    "unresolvedRelationCount": array_len(reading, "unresolvedEffectRelations"),
+                    "externalBoundaryCount": array_len(reading, "externalBoundaryRefs"),
+                    "recommendedAction": json_field(reading, "recommendedNextAction"),
+                    "detailRefs": detail_refs("effectRelationAlgebraReadings", &format!("/effectRelationAlgebraReadings/{index}")),
+                    "packetRefs": packet_refs(&[&format!("/effectRelationAlgebraReadings/{index}")])
+                })
+            })
+            .collect(),
+    )
+}
+
+fn synthesis_blockage_findings(packet: &serde_json::Value, limit: usize) -> serde_json::Value {
+    serde_json::Value::Array(
+        array_items(packet, "synthesisBlockageReadings")
+            .into_iter()
+            .enumerate()
+            .take(limit)
+            .map(|(index, reading)| {
+                serde_json::json!({
+                    "ref": json_field(reading, "readingId"),
+                    "conclusion": json_field(reading, "blockageStatus"),
+                    "targetConstructionCount": array_len(reading, "targetConstructionRefs"),
+                    "constraintCount": array_len(reading, "constraintRefs"),
+                    "missingEvidenceCount": array_len(reading, "missingEvidenceRefs"),
+                    "noSolutionCertificateStatus": json_field(reading, "noSolutionCertificateStatus"),
+                    "recommendedAction": json_field(reading, "recommendedNextAction"),
+                    "detailRefs": detail_refs("synthesisBlockageReadings", &format!("/synthesisBlockageReadings/{index}")),
+                    "packetRefs": packet_refs(&[&format!("/synthesisBlockageReadings/{index}")])
+                })
+            })
+            .collect(),
+    )
+}
+
+fn operation_precondition_findings(packet: &serde_json::Value, limit: usize) -> serde_json::Value {
+    serde_json::Value::Array(
+        array_items(packet, "operationPreconditionReadinessReadings")
+            .into_iter()
+            .enumerate()
+            .take(limit)
+            .map(|(index, reading)| {
+                serde_json::json!({
+                    "ref": json_field(reading, "operationRef"),
+                    "conclusion": json_field(reading, "readinessStatus"),
+                    "operationKind": json_field(reading, "operationKind"),
+                    "missingPreconditionCount": array_len(reading, "missingPreconditionRefs"),
+                    "coverageGapCount": array_len(reading, "coverageGapRefs"),
+                    "witnessGapCount": array_len(reading, "witnessGapRefs"),
+                    "recommendedAction": json_field(reading, "recommendedNextAction"),
+                    "detailRefs": detail_refs("operationPreconditionReadinessReadings", &format!("/operationPreconditionReadinessReadings/{index}")),
+                    "packetRefs": packet_refs(&[&format!("/operationPreconditionReadinessReadings/{index}")])
+                })
+            })
+            .collect(),
+    )
+}
+
+fn path_multiplicity_findings(packet: &serde_json::Value, limit: usize) -> serde_json::Value {
+    serde_json::Value::Array(
+        array_items(packet, "pathMultiplicityLossReadings")
+            .into_iter()
+            .enumerate()
+            .take(limit)
+            .map(|(index, reading)| {
+                serde_json::json!({
+                    "ref": json_field(reading, "readingId"),
+                    "conclusion": json_field(reading, "multiplicityLossStatus"),
+                    "observedPathCount": json_field(reading, "observedPathCount"),
+                    "alternatePathPressure": json_field(reading, "alternatePathPressure"),
+                    "fanInBoundaryCount": array_len(reading, "fanInBoundaryRefs"),
+                    "recommendedAction": json_field(reading, "recommendedNextAction"),
+                    "detailRefs": detail_refs("pathMultiplicityLossReadings", &format!("/pathMultiplicityLossReadings/{index}")),
+                    "packetRefs": packet_refs(&[&format!("/pathMultiplicityLossReadings/{index}")])
+                })
+            })
+            .collect(),
+    )
+}
+
 fn coverage_gap_summary(packet: &serde_json::Value) -> serde_json::Value {
     let refs = coverage_gap_refs(packet);
     serde_json::json!({
@@ -1607,6 +1860,12 @@ fn detail_index(packet: &serde_json::Value) -> serde_json::Value {
             detail_index_section("architectureHomotopyReport.unfilledLoops", "/architectureHomotopyReport/unfilledLoops", array_len(packet.get("architectureHomotopyReport").unwrap_or(&serde_json::Value::Null), "unfilledLoops")),
             detail_index_section("architectureHomotopyReport.nonzeroHolonomyLoops", "/architectureHomotopyReport/nonzeroHolonomyLoops", array_len(packet.get("architectureHomotopyReport").unwrap_or(&serde_json::Value::Null), "nonzeroHolonomyLoops")),
             detail_index_section("transferBridgeReadings", "/transferBridgeReadings", array_len(packet, "transferBridgeReadings")),
+            detail_index_section("observationProjectionFidelityReadings", "/observationProjectionFidelityReadings", array_len(packet, "observationProjectionFidelityReadings")),
+            detail_index_section("atomOriginClosureDebtReadings", "/atomOriginClosureDebtReadings", array_len(packet, "atomOriginClosureDebtReadings")),
+            detail_index_section("effectRelationAlgebraReadings", "/effectRelationAlgebraReadings", array_len(packet, "effectRelationAlgebraReadings")),
+            detail_index_section("synthesisBlockageReadings", "/synthesisBlockageReadings", array_len(packet, "synthesisBlockageReadings")),
+            detail_index_section("operationPreconditionReadinessReadings", "/operationPreconditionReadinessReadings", array_len(packet, "operationPreconditionReadinessReadings")),
+            detail_index_section("pathMultiplicityLossReadings", "/pathMultiplicityLossReadings", array_len(packet, "pathMultiplicityLossReadings")),
             detail_index_section("llmInterpretationPacket", "/llmInterpretationPacket", object_key_count(packet, "llmInterpretationPacket"))
         ]
     })
@@ -1681,8 +1940,28 @@ fn measurement_basis(
         "coverageGaps": json_string_array(coverage_gap_refs(packet).iter()),
         "spectrumMeasuredBoundary": json_field(spectrum, "measuredBoundary"),
         "homotopyMeasuredBoundary": json_field(homotopy, "measuredBoundary"),
+        "projectionFidelityBoundary": first_string_field(packet, "observationProjectionFidelityReadings", "measurementBoundary"),
+        "atomOriginBoundary": first_string_field(packet, "atomOriginClosureDebtReadings", "evidenceBoundary"),
+        "effectRelationBoundary": first_string_field(packet, "effectRelationAlgebraReadings", "evidenceBoundary"),
+        "synthesisBoundary": first_string_field(packet, "synthesisBlockageReadings", "synthesisBoundary"),
+        "operationPreconditionBoundary": first_string_field(packet, "operationPreconditionReadinessReadings", "candidateBoundary"),
+        "pathMultiplicityBoundary": first_string_field(packet, "pathMultiplicityLossReadings", "homotopyBoundary"),
         "basisStatement": "conclusions are measured from the supplied ArchMap and selected LawPolicy"
     })
+}
+
+fn first_string_field(
+    packet: &serde_json::Value,
+    array_key: &str,
+    field_key: &str,
+) -> serde_json::Value {
+    packet
+        .get(array_key)
+        .and_then(serde_json::Value::as_array)
+        .and_then(|items| items.first())
+        .and_then(|item| item.get(field_key))
+        .cloned()
+        .unwrap_or(serde_json::Value::Null)
 }
 
 fn validation_result(report: Option<&serde_json::Value>) -> serde_json::Value {

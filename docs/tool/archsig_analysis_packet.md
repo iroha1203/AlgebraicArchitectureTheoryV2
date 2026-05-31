@@ -22,7 +22,9 @@ ArchSig Analysis Packet
   transfer bridge readings, Atom support / compatibility readings,
   LawUniverse coverage, feature extension formula axes, operation calculus law
   axes, path signature trajectories, homotopy / operation-order sensitivity,
-  diagram fillability, Homotopy / Holonomy / Stokes readings,
+  diagram fillability, observation projection fidelity, Atom origin closure
+  debt, effect relation algebra, synthesis blockage, operation precondition
+  readiness, path multiplicity loss, Homotopy / Holonomy / Stokes readings,
   ArchitectureHomotopyReport, bounded judgements, repair operation candidates,
   operation deltas, path / homotopy / diagram readings, child-level evidence
   boundaries, ArchMapStore refs, monodromy / boundary holonomy reading family
@@ -64,12 +66,16 @@ It is designed to be read whole without jq slicing. It exposes:
   obstruction count, architectural hole count, nonzero holonomy count, and
   coverage gap count.
 - `dominantFindings`: compact nonzero axes, hotspots, recurrent pressure,
-  architectural holes, nonzero holonomy, workflow risks, and bridge pressure.
+  architectural holes, nonzero holonomy, workflow risks, bridge pressure, and
+  compact AAT observation-axis pressure.
 - `actionQueue`: the full prioritized queue for hotspots, unfilled loops,
-  nonzero holonomy loops, nonzero signature axes, workflow pressure, and bridge
-  pressure. Each entry stays compact and carries `detailRefs` instead of nested
-  evidence arrays.
-- `axisSummary`, `workflowRiskSummary`, `architecturalHoleSummary`,
+  nonzero holonomy loops, nonzero signature axes, workflow pressure, bridge
+  pressure, projection fidelity loss, Atom origin closure debt, effect relation
+  pressure, synthesis blockage, operation precondition readiness, and path
+  multiplicity loss. Each entry stays compact and carries `detailRefs` instead
+  of nested evidence arrays.
+- `axisSummary`, `aatObservationAxisSummary`, `workflowRiskSummary`,
+  `architecturalHoleSummary`,
   `bridgeSummary`, and `coverageGapSummary`: counts plus compact examples or
   refs for the major reading surfaces.
 - `detailIndex`: packet sections and `packet:<json-pointer>` refs for looking
@@ -135,6 +141,12 @@ The implemented schema records:
 - `homotopyOrderSensitivityReadings`
 - `diagramFillabilityReadings`
 - `axisForgettingRiskReadings`
+- `observationProjectionFidelityReadings`
+- `atomOriginClosureDebtReadings`
+- `effectRelationAlgebraReadings`
+- `synthesisBlockageReadings`
+- `operationPreconditionReadinessReadings`
+- `pathMultiplicityLossReadings`
 - `signatureTrajectoryHomotopyRefutationReadings`
 - `bridgeSplitObstructionTransferReadings`
 - `homotopyComplexSummary`
@@ -181,8 +193,9 @@ AAT concept coverage, bounded judgement statuses, analytic axes, workflow risk
 readings, spectral analysis readings, spectral mode readings, design principle
 readings, spectral drilldown readings, curvature support readings, curvature
 transfer readings, ArchitectureSpectrumReport, transfer bridge readings and
-bridge-edge source refs, v0.3.0 measurement expansion readings, homotopy complex
-summaries, path pair candidates, loop candidates, filler candidate readings,
+bridge-edge source refs, v0.3.0 measurement expansion readings, AAT
+observation-axis readings, homotopy complex summaries, path pair candidates,
+loop candidates, filler candidate readings,
 architectural hole readings, homotopy holonomy readings, Stokes-style readings,
 ArchitectureHomotopyReport, AAT structural state readings, ArchMapStore delta /
 commit / snapshot / index refs, operation square candidates, axis-wise path

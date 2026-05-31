@@ -162,6 +162,18 @@ fn cli_summarizes_archsig_analysis_packet() {
         "qualityMeasurement must count unfilled architectural holes"
     );
     assert!(
+        json["qualityMeasurement"]["projectionFidelityLossCount"]
+            .as_u64()
+            .is_some_and(|count| count > 0)
+            && json["qualityMeasurement"]["operationPreconditionBlockerCount"]
+                .as_u64()
+                .is_some_and(|count| count > 0)
+            && json["qualityMeasurement"]["pathMultiplicityLossCount"]
+                .as_u64()
+                .is_some_and(|count| count > 0),
+        "qualityMeasurement must count added AAT observation axes"
+    );
+    assert!(
         json["actionQueue"].as_array().is_some_and(|items| {
             !items.is_empty()
                 && items.iter().any(|item| {
@@ -202,9 +214,21 @@ fn cli_summarizes_archsig_analysis_packet() {
                 item["kind"]
                     .as_str()
                     .is_some_and(|text| text == "bridgePressure")
+            }) && items.iter().any(|item| {
+                item["kind"]
+                    .as_str()
+                    .is_some_and(|text| text == "projectionFidelityLoss")
+            }) && items.iter().any(|item| {
+                item["kind"]
+                    .as_str()
+                    .is_some_and(|text| text == "operationPreconditionReadiness")
+            }) && items.iter().any(|item| {
+                item["kind"]
+                    .as_str()
+                    .is_some_and(|text| text == "pathMultiplicityLoss")
             })
         }),
-        "analysis-summary must put hotspots, holes, nonzero axes, workflow risks, and bridge pressure in the action queue"
+        "analysis-summary must put hotspots, holes, nonzero axes, workflow risks, bridge pressure, and added AAT axes in the action queue"
     );
     assert!(
         json["measurementBasis"]["basisStatement"]
@@ -223,6 +247,18 @@ fn cli_summarizes_archsig_analysis_packet() {
             .as_array()
             .is_some_and(|items| !items.is_empty()),
         "analysis-summary must expose compact recurrent obstruction entries"
+    );
+    assert!(
+        json["dominantFindings"]["projectionFidelityLoss"]
+            .as_array()
+            .is_some_and(|items| !items.is_empty())
+            && json["dominantFindings"]["synthesisBlockage"]
+                .as_array()
+                .is_some_and(|items| !items.is_empty())
+            && json["aatObservationAxisSummary"]["packetRefs"]
+                .as_array()
+                .is_some_and(|items| !items.is_empty()),
+        "analysis-summary must expose compact added AAT observation axis readings"
     );
     assert!(
         json["detailIndex"]["sections"]
@@ -244,6 +280,15 @@ fn cli_summarizes_archsig_analysis_packet() {
             .as_str()
             .is_some_and(|boundary| boundary.contains("ArchSig curvature support")),
         "analysis-summary must keep the ArchitectureSpectrumReport measured boundary"
+    );
+    assert!(
+        json["measurementBasis"]["projectionFidelityBoundary"]
+            .as_str()
+            .is_some_and(|boundary| boundary.contains("projection loss"))
+            && json["measurementBasis"]["synthesisBoundary"]
+                .as_str()
+                .is_some_and(|boundary| boundary.contains("synthesis solver")),
+        "analysis-summary must keep added AAT observation axis measurement boundaries"
     );
     assert!(
         json["coverageGapSummary"]["gapRefs"]
@@ -2353,6 +2398,12 @@ fn assert_north_star_packet_surfaces(json: &Value) {
         "pathSignatureTrajectoryReadings",
         "homotopyOrderSensitivityReadings",
         "diagramFillabilityReadings",
+        "observationProjectionFidelityReadings",
+        "atomOriginClosureDebtReadings",
+        "effectRelationAlgebraReadings",
+        "synthesisBlockageReadings",
+        "operationPreconditionReadinessReadings",
+        "pathMultiplicityLossReadings",
         "representationStrengthReadings",
         "localCurvatureDiagramReadings",
         "threeLayerFlatnessReadings",
@@ -2500,6 +2551,94 @@ fn assert_north_star_packet_surfaces(json: &Value) {
                     && reading["evidenceBoundary"].as_str().is_some()
             }),
         "diagram fillability readings must carry filler, witness, blocker, feature-extension, and boundary data"
+    );
+    assert!(
+        json["observationProjectionFidelityReadings"]
+            .as_array()
+            .expect("observation projection fidelity readings are array")
+            .iter()
+            .all(|reading| {
+                reading["sourceProjectionRef"].as_str().is_some()
+                    && reading["fidelityStatus"].as_str().is_some()
+                    && reading["forgottenCoordinateCount"].as_u64().is_some()
+                    && reading["reflectionStatus"].as_str().is_some()
+                    && reading["measurementBoundary"].as_str().is_some()
+            }),
+        "observation projection fidelity readings must keep projection loss separate from zero/lawfulness"
+    );
+    assert!(
+        json["atomOriginClosureDebtReadings"]
+            .as_array()
+            .expect("Atom origin closure debt readings are array")
+            .iter()
+            .all(|reading| {
+                reading["sourceBackedAtomCount"].as_u64().is_some()
+                    && reading["derivedOrInferredAtomCount"].as_u64().is_some()
+                    && reading["expectedMissingAtomCount"].as_u64().is_some()
+                    && reading["closureStatus"].as_str().is_some()
+                    && reading["weakensZeroOrRepairClaims"]
+                        .as_array()
+                        .is_some_and(|items| !items.is_empty())
+            }),
+        "Atom origin closure debt readings must distinguish source-backed, inferred, and missing expected atoms"
+    );
+    assert!(
+        json["effectRelationAlgebraReadings"]
+            .as_array()
+            .expect("effect relation algebra readings are array")
+            .iter()
+            .all(|reading| {
+                reading["requiredEffectRelations"]
+                    .as_array()
+                    .is_some_and(|items| !items.is_empty())
+                    && reading["effectOrderingPressure"].as_str().is_some()
+                    && reading["stateTransitionRef"].as_str().is_some()
+                    && reading["evidenceBoundary"].as_str().is_some()
+            }),
+        "effect relation algebra readings must be separate from state transition pressure"
+    );
+    assert!(
+        json["synthesisBlockageReadings"]
+            .as_array()
+            .expect("synthesis blockage readings are array")
+            .iter()
+            .all(|reading| {
+                reading["targetConstructionRefs"].as_array().is_some()
+                    && reading["constraintRefs"].as_array().is_some()
+                    && reading["missingEvidenceRefs"].as_array().is_some()
+                    && reading["blockageStatus"].as_str().is_some()
+                    && reading["noSolutionCertificateStatus"].as_str().is_some()
+                    && reading["synthesisBoundary"].as_str().is_some()
+            }),
+        "synthesis blockage readings must distinguish candidate absence from no-solution certification"
+    );
+    assert!(
+        json["operationPreconditionReadinessReadings"]
+            .as_array()
+            .expect("operation precondition readiness readings are array")
+            .iter()
+            .all(|reading| {
+                reading["operationRef"].as_str().is_some()
+                    && reading["readinessStatus"].as_str().is_some()
+                    && reading["preconditionRefs"].as_array().is_some()
+                    && reading["missingPreconditionRefs"].as_array().is_some()
+                    && reading["candidateBoundary"].as_str().is_some()
+            }),
+        "operation precondition readiness readings must keep repair candidates bounded by precondition evidence"
+    );
+    assert!(
+        json["pathMultiplicityLossReadings"]
+            .as_array()
+            .expect("path multiplicity loss readings are array")
+            .iter()
+            .all(|reading| {
+                reading["observedPathCount"].as_u64().is_some()
+                    && reading["alternatePathPressure"].as_u64().is_some()
+                    && reading["reachabilityForgottenRefs"].as_array().is_some()
+                    && reading["multiplicityLossStatus"].as_str().is_some()
+                    && reading["homotopyBoundary"].as_str().is_some()
+            }),
+        "path multiplicity loss readings must expose reachability and homotopy review pressure"
     );
     assert!(
         json["representationStrengthReadings"]
