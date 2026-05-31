@@ -2773,6 +2773,20 @@ fn assert_north_star_packet_surfaces(json: &Value) {
                     && reading["payloadInconsistencyKinds"]
                         .as_array()
                         .is_some_and(|items| !items.is_empty())
+                    && reading["payloadComparisonPolicy"]
+                        .as_array()
+                        .is_some_and(|items| !items.is_empty())
+                    && reading["conflicts"].as_array().is_some_and(|items| {
+                        items.iter().all(|conflict| {
+                            conflict["payloadComparisonPolicy"].as_str().is_some()
+                                && conflict["comparedPayloadRefs"].as_array().is_some()
+                                && conflict["sourceRefs"].as_array().is_some()
+                                && conflict["confidenceRefs"].as_array().is_some()
+                                && conflict["semanticConflictRelationRefs"]
+                                    .as_array()
+                                    .is_some()
+                        })
+                    })
                     && reading["confidenceBoundary"].as_str().is_some()
                     && reading["evidenceBoundary"].as_str().is_some()
             }),

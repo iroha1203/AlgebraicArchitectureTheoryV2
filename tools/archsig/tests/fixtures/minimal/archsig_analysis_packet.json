@@ -3135,11 +3135,22 @@
       "conflictingAtomObservationRefs": [],
       "conflictingSemanticObservationRefs": [],
       "payloadInconsistencyKinds": [
+        "payloadEquality",
+        "incompatibleObjectRefs",
+        "contradictoryBooleanClaim",
+        "incompatibleSemanticClaim",
         "familyDivergence",
         "statusDivergence",
-        "semanticDivergence"
+        "confidenceDivergence"
       ],
-      "confidenceBoundary": "compatibility is checked over observed subject/predicate slots only",
+      "payloadComparisonPolicy": [
+        "compare same subject/predicate slots pairwise",
+        "treat differing non-empty object refs as incompatible payload refs",
+        "treat yes/no or true/false payload tokens as contradictory boolean claims",
+        "link semantic divergence only through semantic observations that reference conflicting atom refs",
+        "preserve confidence, uncertainty, and source refs for reviewer judgement"
+      ],
+      "confidenceBoundary": "compatibility is checked over observed subject/predicate payload slots only",
       "uncertainty": [
         "gap-runtime-user-db-trace"
       ],

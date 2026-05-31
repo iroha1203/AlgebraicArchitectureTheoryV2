@@ -92,11 +92,18 @@ v0.3.0 では、少なくとも次を計測対象にする。
 - conflicting atom observation refs
 - conflicting semantic observation refs
 - payload inconsistency kind
+- payload comparison policy
 - compatibility status
 - confidence / uncertainty boundary
 
 この reading は、LLM 観測の不一致、docs / code のズレ、同じ概念への異なる semantic reading を
 単なる曖昧さとして潰さず、Atom compatibility boundary として扱う。
+
+`payload` は ArchMap の Atom observation では `objectRefs`, `observationStatus`,
+`confidence`, `uncertainty`, `sourceRefs`, and referenced semantic observations
+として観測される。ArchSig は same subject / predicate slot を pairwise に比較し、
+incompatible object refs、contradictory boolean claim、status / confidence
+divergence、semantic observation divergence を別 kind として残す。
 
 Compatibility conflict は、global semantic incorrectness の証明ではない。
 ArchSig は、conflict を source-grounded review target として出力する。
