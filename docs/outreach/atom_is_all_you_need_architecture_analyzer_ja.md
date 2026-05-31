@@ -1,4 +1,4 @@
-# Atom is all you need: AI時代のアーキテクチャ解析機
+# Atom is all you need: コードベースを依存グラフではなくAtomの地図として読む
 
 ## TL;DR
 
@@ -20,6 +20,10 @@ codebase
 この流れを実際に扱うために、私たちは [ArchSig](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/tree/main/tools/archsig) という新しいツールを開発しました。リポジトリは公開されており、MIT ライセンスなので、どなたでも試せます。
 
 この記事では、まず `Atom` という観測単位から入り、`ArchMap` と AAT によって ArchSig がどのように設計上の圧、意味論的な結びつき、修復前に見るべき gap を読むのかを紹介します。
+
+AI時代のアーキテクチャ解析で必要なのは、巨大な自然言語要約ではありません。
+
+必要なのは、観測単位を間違えないことです。
 
 ## なぜアーキテクチャ解析機が必要なのか
 
