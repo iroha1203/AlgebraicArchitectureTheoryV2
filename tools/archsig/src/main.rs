@@ -1,4 +1,4 @@
-use std::collections::BTreeSet;
+use std::collections::{BTreeMap, BTreeSet};
 use std::error::Error;
 use std::fs::File;
 use std::io::{self, Write};
@@ -1196,6 +1196,7 @@ fn trend_diagnosis(packet: &serde_json::Value) -> serde_json::Value {
             "projectionFidelityLossRefs": compact_ref_list(packet, "observationProjectionFidelityReadings", "readingId", 1),
             "atomOriginClosureDebtRefs": compact_ref_list(packet, "atomOriginClosureDebtReadings", "readingId", 1)
         },
+        "trendInsights": trend_insights(packet),
         "packetRefs": packet_refs(&[
             "/signatureAxes",
             "/architectureSpectrumReport",
@@ -1960,8 +1961,420 @@ fn detail_index_section(name: &str, path: &str, count: usize) -> serde_json::Val
     })
 }
 
-fn detail_refs(section: &str, path: &str) -> serde_json::Value {
-    serde_json::json!([format!("{section}:{}", packet_ref(path))])
+fn detail_refs(_section: &str, path: &str) -> serde_json::Value {
+    serde_json::json!([packet_ref(path)])
+}
+
+fn trend_insights(packet: &serde_json::Value) -> serde_json::Value {
+    serde_json::json!({
+        "insightCount": 5,
+        "items": [
+            cross_axis_cooccurrence_insight(packet),
+            operation_freedom_loss_insight(packet),
+            path_continuation_defect_insight(packet),
+            boundary_residual_localization_insight(packet),
+            repair_transfer_risk_insight(packet)
+        ]
+    })
+}
+
+fn cross_axis_cooccurrence_insight(packet: &serde_json::Value) -> serde_json::Value {
+    let mut clusters = support_contribution_clusters(packet);
+    clusters.sort_by(|left, right| {
+        right
+            .kind_count
+            .cmp(&left.kind_count)
+            .then(right.evidence_count.cmp(&left.evidence_count))
+            .then(left.support_ref.cmp(&right.support_ref))
+    });
+    let cluster = clusters.first();
+    serde_json::json!({
+        "kind": "crossAxisCooccurrence",
+        "claim": if cluster.is_some() {
+            "multiple readings concentrate on one architecture support"
+        } else {
+            "no cross-axis support cluster was measured"
+        },
+        "whyNontrivial": "Intersects law-axis, workflow, spectrum, homotopy, and bridge support.",
+        "measurement": {
+            "clusterCount": clusters.len(),
+            "maxReadingKindCount": cluster.map(|cluster| cluster.kind_count).unwrap_or_default()
+        },
+        "packetRefs": packet_refs(&["/workflowRiskReadings"])
+    })
+}
+
+#[derive(Debug)]
+struct SupportCluster {
+    support_ref: String,
+    reading_kinds: BTreeSet<String>,
+    evidence_refs: BTreeSet<String>,
+    kind_count: usize,
+    evidence_count: usize,
+}
+
+fn support_contribution_clusters(packet: &serde_json::Value) -> Vec<SupportCluster> {
+    let mut clusters = BTreeMap::<String, SupportCluster>::new();
+    for (index, axis) in array_items(packet, "signatureAxes").into_iter().enumerate() {
+        if i64_field(axis, "value", 0) == 0 {
+            continue;
+        }
+        let evidence_ref = format!("packet:/signatureAxes/{index}");
+        for support in string_array(axis, "sourceRefs")
+            .into_iter()
+            .chain(optional_string(axis, "axisRef"))
+            .chain(optional_string(axis, "lawRef"))
+        {
+            push_support_contribution(
+                &mut clusters,
+                "nonzeroSignatureAxis",
+                &support,
+                &evidence_ref,
+            );
+        }
+    }
+
+    for (index, reading) in array_items(packet, "workflowRiskReadings")
+        .into_iter()
+        .enumerate()
+    {
+        let evidence_ref = format!("packet:/workflowRiskReadings/{index}");
+        for support in optional_string(reading, "moleculeObservationRef")
+            .chain(string_array(reading, "semanticRefs"))
+            .chain(string_array(reading, "concernRefs"))
+            .chain(
+                array_items(reading, "topAxes")
+                    .into_iter()
+                    .filter_map(|axis| axis.get("axis").and_then(serde_json::Value::as_str))
+                    .map(|axis| format!("axis:{axis}")),
+            )
+        {
+            push_support_contribution(&mut clusters, "workflowRisk", &support, &evidence_ref);
+        }
+    }
+
+    let spectrum = packet
+        .get("architectureSpectrumReport")
+        .unwrap_or(&serde_json::Value::Null);
+    for (index, hotspot) in array_items(spectrum, "topHotspots").into_iter().enumerate() {
+        let evidence_ref = format!("packet:/architectureSpectrumReport/topHotspots/{index}");
+        for support in string_array(hotspot, "supportRefs")
+            .into_iter()
+            .chain(string_array(hotspot, "witnessRefs"))
+            .chain(optional_string(hotspot, "axisRef"))
+        {
+            push_support_contribution(&mut clusters, "spectrumHotspot", &support, &evidence_ref);
+        }
+    }
+    for (index, recurrent) in array_items(spectrum, "recurrentObstructions")
+        .into_iter()
+        .enumerate()
+    {
+        let evidence_ref = format!("/architectureSpectrumReport/recurrentObstructions/{index}");
+        for support in string_array(recurrent, "supportRefs")
+            .into_iter()
+            .chain(string_array(recurrent, "witnessRefs"))
+            .chain(optional_string(recurrent, "modeRef"))
+        {
+            push_support_contribution(
+                &mut clusters,
+                "recurrentObstruction",
+                &support,
+                &format!("packet:{evidence_ref}"),
+            );
+        }
+    }
+
+    let homotopy = packet
+        .get("architectureHomotopyReport")
+        .unwrap_or(&serde_json::Value::Null);
+    for (index, loop_ref) in array_items(homotopy, "unfilledLoops")
+        .into_iter()
+        .enumerate()
+    {
+        if let Some(support) = loop_ref.as_str() {
+            push_support_contribution(
+                &mut clusters,
+                "architecturalHole",
+                support,
+                &format!("packet:/architectureHomotopyReport/unfilledLoops/{index}"),
+            );
+        }
+    }
+    for (index, loop_ref) in array_items(homotopy, "nonzeroHolonomyLoops")
+        .into_iter()
+        .enumerate()
+    {
+        if let Some(support) = loop_ref.as_str() {
+            push_support_contribution(
+                &mut clusters,
+                "nonzeroHolonomy",
+                support,
+                &format!("packet:/architectureHomotopyReport/nonzeroHolonomyLoops/{index}"),
+            );
+        }
+    }
+
+    for (reading_index, reading) in array_items(packet, "transferBridgeReadings")
+        .into_iter()
+        .enumerate()
+    {
+        for (bridge_index, bridge) in array_items(reading, "bridgeAtomFamilies")
+            .into_iter()
+            .enumerate()
+        {
+            let evidence_ref = format!(
+                "packet:/transferBridgeReadings/{reading_index}/bridgeAtomFamilies/{bridge_index}"
+            );
+            for support in optional_string(bridge, "sourceHubMoleculeRef")
+                .chain(optional_string(bridge, "targetHubMoleculeRef"))
+                .chain(string_array(bridge, "intermediateMoleculeRefs"))
+                .chain(
+                    string_array(bridge, "sharedAxisRefs")
+                        .into_iter()
+                        .map(|axis| format!("axis:{axis}")),
+                )
+            {
+                push_support_contribution(&mut clusters, "bridgePressure", &support, &evidence_ref);
+            }
+        }
+    }
+
+    clusters
+        .into_values()
+        .filter_map(|mut cluster| {
+            cluster.kind_count = cluster.reading_kinds.len();
+            cluster.evidence_count = cluster.evidence_refs.len();
+            (cluster.kind_count >= 2 && cluster.evidence_count >= 2).then_some(cluster)
+        })
+        .collect()
+}
+
+fn push_support_contribution(
+    clusters: &mut BTreeMap<String, SupportCluster>,
+    kind: &str,
+    support_ref: &str,
+    evidence_ref: &str,
+) {
+    let normalized = normalize_support_ref(support_ref);
+    if normalized.is_empty() {
+        return;
+    }
+    let cluster = clusters
+        .entry(normalized.clone())
+        .or_insert(SupportCluster {
+            support_ref: normalized,
+            reading_kinds: BTreeSet::new(),
+            evidence_refs: BTreeSet::new(),
+            kind_count: 0,
+            evidence_count: 0,
+        });
+    cluster.reading_kinds.insert(kind.to_string());
+    cluster.evidence_refs.insert(evidence_ref.to_string());
+}
+
+fn normalize_support_ref(value: &str) -> String {
+    let trimmed = value.trim();
+    let normalized = trimmed
+        .strip_prefix("molecule-reading:")
+        .map(|value| format!("molecule:{value}"))
+        .unwrap_or_else(|| trimmed.to_string());
+    normalized
+        .replace("axis-", "axis:")
+        .replace("law-", "law:")
+        .to_ascii_lowercase()
+}
+
+fn operation_freedom_loss_insight(packet: &serde_json::Value) -> serde_json::Value {
+    let galois = array_items(packet, "operationInvariantGaloisReadings")
+        .into_iter()
+        .next();
+    let blocked_operation_refs = galois
+        .map(|reading| string_array(reading, "blockedOperationRefs"))
+        .unwrap_or_default();
+    let blocked_operations = blocked_operation_refs
+        .iter()
+        .map(String::as_str)
+        .collect::<BTreeSet<_>>();
+    let blocked_preconditions = array_items(packet, "operationPreconditionReadinessReadings")
+        .into_iter()
+        .filter(|reading| {
+            reading
+                .get("operationRef")
+                .and_then(serde_json::Value::as_str)
+                .is_some_and(|operation| blocked_operations.contains(operation))
+                || json_field(reading, "readinessStatus")
+                    .as_str()
+                    .is_some_and(|status| status.contains("blocked"))
+        })
+        .collect::<Vec<_>>();
+    let missing_precondition_count = blocked_preconditions
+        .iter()
+        .map(|reading| array_len(reading, "missingPreconditionRefs"))
+        .sum::<usize>();
+    serde_json::json!({
+        "kind": "operationFreedomLoss",
+        "claim": if blocked_operation_refs.is_empty() && missing_precondition_count == 0 {
+            "no operation freedom loss was measured for the selected invariant family"
+        } else {
+            "selected invariants narrow the observed operation family"
+        },
+        "whyNontrivial": "Intersects Galois reading, preconditions, and transfer evidence.",
+        "measurement": {
+            "blockedOperationCount": blocked_operation_refs.len(),
+            "missingPreconditionCount": missing_precondition_count
+        },
+        "packetRefs": packet_refs(&["/operationInvariantGaloisReadings"])
+    })
+}
+
+fn path_continuation_defect_insight(packet: &serde_json::Value) -> serde_json::Value {
+    let mut defects = array_items(packet, "axisWiseMonodromyDefects");
+    defects.sort_by_key(|defect| {
+        std::cmp::Reverse(
+            defect
+                .get("distanceValue")
+                .and_then(serde_json::Value::as_i64)
+                .unwrap_or(-1),
+        )
+    });
+    let top_defect = defects.iter().find(|defect| {
+        defect
+            .get("distanceValue")
+            .and_then(serde_json::Value::as_i64)
+            .is_some_and(|value| value > 0)
+    });
+    let positive_defect_count = defects
+        .iter()
+        .filter(|defect| {
+            defect
+                .get("distanceValue")
+                .and_then(serde_json::Value::as_i64)
+                .is_some_and(|value| value > 0)
+        })
+        .count();
+    let unmeasured_defect_count = defects
+        .iter()
+        .filter(|defect| json_field(defect, "measurementStatus").as_str() == Some("unmeasured"))
+        .count();
+    serde_json::json!({
+        "kind": "pathContinuationDefect",
+        "claim": if top_defect.is_some() {
+            "same-endpoint candidates diverge on a selected continuation axis"
+        } else if unmeasured_defect_count > 0 {
+            "path continuation cannot be read as zero because selected axes remain unmeasured"
+        } else {
+            "no nonzero selected-axis continuation defect was measured"
+        },
+        "whyNontrivial": "Compares p/q continuation traces axis by axis.",
+        "measurement": {
+            "positiveDefectCount": positive_defect_count,
+            "unmeasuredDefectCount": unmeasured_defect_count,
+            "topAxisFamily": top_defect.and_then(|defect| defect.get("axisFamily").and_then(serde_json::Value::as_str)).unwrap_or("none")
+        },
+        "packetRefs": packet_refs(&["/axisWiseMonodromyDefects"])
+    })
+}
+
+fn boundary_residual_localization_insight(packet: &serde_json::Value) -> serde_json::Value {
+    let residual = array_items(packet, "featureBoundaryResidualReadings")
+        .into_iter()
+        .max_by_key(|reading| {
+            array_items(reading, "holonomyAxes")
+                .into_iter()
+                .filter_map(|axis| {
+                    axis.get("residualValue")
+                        .and_then(serde_json::Value::as_i64)
+                })
+                .sum::<i64>()
+        });
+    let measured_axis_refs = residual
+        .map(|reading| {
+            array_items(reading, "holonomyAxes")
+                .into_iter()
+                .filter(|axis| json_field(axis, "status").as_str() == Some("measuredResidual"))
+                .filter_map(|axis| {
+                    axis.get("holonomyAxisRef")
+                        .and_then(serde_json::Value::as_str)
+                })
+                .map(str::to_string)
+                .collect::<Vec<_>>()
+        })
+        .unwrap_or_default();
+    let coverage_blocked_count = residual
+        .map(|reading| {
+            array_items(reading, "holonomyAxes")
+                .into_iter()
+                .filter(|axis| json_field(axis, "status").as_str() == Some("coverageBlocked"))
+                .count()
+        })
+        .unwrap_or_default();
+    let boundary_support_count = residual
+        .map(|reading| array_len(reading, "boundarySupportRefs"))
+        .unwrap_or_default();
+    serde_json::json!({
+        "kind": "boundaryResidualLocalization",
+        "claim": if !measured_axis_refs.is_empty() {
+            "residual obstruction localizes on boundary holonomy axes"
+        } else if coverage_blocked_count > 0 {
+            "boundary residual localization is blocked by missing selected-axis evidence"
+        } else {
+            "no boundary-local residual obstruction was measured"
+        },
+        "whyNontrivial": "Separates core, feature, boundary support, residual axes, and coverage.",
+        "measurement": {
+            "measuredBoundaryAxisCount": measured_axis_refs.len(),
+            "coverageBlockedBoundaryAxisCount": coverage_blocked_count,
+            "boundarySupportCount": boundary_support_count
+        },
+        "packetRefs": packet_refs(&["/featureBoundaryResidualReadings"])
+    })
+}
+
+fn repair_transfer_risk_insight(packet: &serde_json::Value) -> serde_json::Value {
+    let mut deltas = array_items(packet, "operationDeltas");
+    deltas.sort_by_key(|delta| std::cmp::Reverse(array_len(delta, "transferredObstructions")));
+    let delta = deltas.first().copied();
+    let transfer_refs = delta
+        .map(|delta| string_array(delta, "transferredObstructions"))
+        .unwrap_or_default();
+    let decreased_axes = delta
+        .map(|delta| string_array(delta, "decreasedAxes"))
+        .unwrap_or_default();
+    let bridge_refs = array_items(packet, "bridgeSplitObstructionTransferReadings")
+        .into_iter()
+        .flat_map(|reading| {
+            optional_string(reading, "readingId")
+                .chain(string_array(reading, "bridgeEdgeRefs"))
+                .chain(string_array(reading, "obstructionRefs"))
+        })
+        .collect::<Vec<_>>();
+    serde_json::json!({
+        "kind": "repairTransferRisk",
+        "claim": if !transfer_refs.is_empty() {
+            "candidate repair carries explicit transfer risk"
+        } else if !bridge_refs.is_empty() {
+            "repair planning depends on bridge-split obstruction transfer evidence"
+        } else {
+            "no repair transfer risk was measured"
+        },
+        "whyNontrivial": "Pairs decreased axes with transfer, invariants, bridges, and missing evidence.",
+        "measurement": {
+            "decreasesAxisCount": decreased_axes.len(),
+            "transferRiskCount": transfer_refs.len(),
+            "bridgeEvidenceCount": bridge_refs.len()
+        },
+        "packetRefs": packet_refs(&["/operationDeltas"])
+    })
+}
+
+fn optional_string(value: &serde_json::Value, key: &str) -> std::vec::IntoIter<String> {
+    value
+        .get(key)
+        .and_then(serde_json::Value::as_str)
+        .map(|text| vec![text.to_string()])
+        .unwrap_or_default()
+        .into_iter()
 }
 
 fn compact_ref_list(

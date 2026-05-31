@@ -68,7 +68,11 @@ It is designed to be read whole without jq slicing. It exposes:
 - `trendDiagnosis`: the repository-wide tendency view. It keeps compact counts
   and refs for concentrated law-axis pressure, spectrum hotspots, recurrent
   obstruction support, workflow risk, bridge pressure, path multiplicity loss,
-  projection fidelity loss, and Atom origin closure debt.
+  projection fidelity loss, and Atom origin closure debt. It also carries
+  `trendInsights`, a compact second-order diagnosis surface that intersects
+  packet readings instead of recounting them: cross-axis co-occurrence,
+  operation freedom loss, selected path continuation defects, boundary
+  residual localization, and repair transfer risk.
 - `reviewSupport`: the review queue view. It keeps the action queue count,
   compact blocker refs, coverage gap refs, and packet refs for evidence lookup
   without turning review support into automatic repair safety or merge
@@ -97,6 +101,24 @@ The full `archsig-analysis-packet.json` remains the evidence store. Raw
 `supportRefs`, `sourceRefs`, witness clusters, spectral rows, homotopy
 aggregate readings, and measurement-expansion detail belong in the packet, not
 in `analysis-summary`.
+
+`trendInsights` is intentionally short. Each item reports a bounded claim, why
+the claim is nontrivial, a small measurement summary, and packet refs. The full
+evidence remains in the packet. The insights are concrete ArchSig measurements
+because they cross-check existing packet readings:
+
+- `crossAxisCooccurrence` normalizes packet support refs and measures when
+  law-axis, workflow, spectrum, homotopy, and bridge readings concentrate on
+  the same support.
+- `operationFreedomLoss` reads the operation / invariant Galois surface
+  together with precondition readiness and transfer evidence.
+- `pathContinuationDefect` reads axis-wise monodromy defects instead of
+  treating same-endpoint paths as homotopy-equivalent.
+- `boundaryResidualLocalization` reads feature-boundary residuals by separating
+  core-local, feature-local, boundary, residual-axis, and coverage-blocked
+  support.
+- `repairTransferRisk` pairs decreased selected axes with transferred
+  obstruction, bridge-split, and precondition evidence.
 
 `ArchitectureHomotopyReport` is a bounded codebase-inspection surface. It reads
 candidate path pairs, loops, fillers, architectural holes, selected-axis

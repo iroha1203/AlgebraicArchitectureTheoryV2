@@ -473,6 +473,11 @@ boundary holonomy witness を report するものとして扱う。
   要求されている。
 - boundary holonomy が、core / feature boundary の measured residual obstruction reading として
   要求されている。
+- `analysis-summary.trendDiagnosis.trendInsights` が、path continuation defect と boundary residual
+  localization を compact な二次診断として読む。これは packet の axis-wise defect /
+  nonzero monodromy witness / feature-boundary residual を交差参照する reading であり、
+  same endpoint を homotopy equivalence として扱ったり、boundary holonomy を theorem として
+  主張したりしない。
 - feature extension diagnosis が、inherited core obstruction、feature-local obstruction、
   boundary holonomy、lifting failure、filling failure、complexity transfer、residual coverage gap の
   multi-label attribution として要求されている。
