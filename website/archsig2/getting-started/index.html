@@ -100,7 +100,7 @@ Summarize the architecture tendencies and list the first files reviewers should 
               <p>The ArchSig workflow is built around three Skills.</p>
               <ul class="status-list">
                 <li><strong><code>archmap-creater</code></strong><span>Creates the source-backed architecture map: observed atoms, molecule readings, semantic observations, concern hints, gaps, and provenance.</span></li>
-                <li><strong><code>law-policy-creater</code></strong><span>Creates the selected LawPolicy for the repository or subsystem: which architecture rules, witness rules, axes, and coverage expectations should guide this review.</span></li>
+                <li><strong><code>law-policy-creater</code></strong><span>Creates the selected LawPolicy for the repository or subsystem: which architecture rules, witness rules, axes, and coverage expectations should guide this review. If the repository evidence does not define the law universe, the Skill should keep unresolved questions visible instead of silently choosing a generic policy.</span></li>
                 <li><strong><code>archsig-reader</code></strong><span>Runs ArchSig, reads the summary and packet detail, checks the relevant source again, and returns review findings, repair candidates, and confirmation points.</span></li>
               </ul>
             </section>

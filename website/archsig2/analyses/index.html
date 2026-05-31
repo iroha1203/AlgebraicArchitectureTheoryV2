@@ -3,19 +3,19 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="A practical catalog of ArchSig analyses: boundary movement, responsibility drift, semantic coupling, order sensitivity, hotspots, missing evidence, and FieldSig handoff.">
+    <meta name="description" content="A practical catalog of ArchSig analyses: boundary movement, responsibility drift, semantic coupling, order sensitivity, hotspots, and missing evidence.">
     <meta name="robots" content="noindex, nofollow">
     <title>ArchSig Analyses</title>
     <link rel="canonical" href="https://iroha1203.dev/archsig2/analyses/">
     <meta property="og:site_name" content="AAT / SFT Research Notes">
     <meta property="og:type" content="article">
     <meta property="og:title" content="ArchSig Analyses">
-    <meta property="og:description" content="A practical catalog of ArchSig analyses: boundary movement, responsibility drift, semantic coupling, order sensitivity, hotspots, missing evidence, and FieldSig handoff.">
+    <meta property="og:description" content="A practical catalog of ArchSig analyses: boundary movement, responsibility drift, semantic coupling, order sensitivity, hotspots, and missing evidence.">
     <meta property="og:url" content="https://iroha1203.dev/archsig2/analyses/">
     <meta property="og:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="ArchSig Analyses">
-    <meta name="twitter:description" content="A practical catalog of ArchSig analyses: boundary movement, responsibility drift, semantic coupling, order sensitivity, hotspots, missing evidence, and FieldSig handoff.">
+    <meta name="twitter:description" content="A practical catalog of ArchSig analyses: boundary movement, responsibility drift, semantic coupling, order sensitivity, hotspots, and missing evidence.">
     <meta name="twitter:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
     <link rel="icon" href="../../assets/favicon-32.png" sizes="32x32" type="image/png">
     <link rel="icon" href="../../assets/favicon-16.png" sizes="16x16" type="image/png">
@@ -75,7 +75,7 @@
       <section class="section-band">
         <div class="site-shell article-layout">
           <aside class="article-sidebar" aria-label="ArchSig page navigation">
-            <nav class="toc-panel" aria-labelledby="toc-title"><h2 id="toc-title">On this page</h2><ol><li><a href="#catalog">Analysis catalog</a></li><li><a href="#summary">What the summary reads</a></li><li><a href="#families">Reading families</a></li><li><a href="#ai-code">AI-assisted code review</a></li><li><a href="#tools">How it fits with other tools</a></li><li><a href="#handoff">FieldSig handoff</a></li></ol></nav>
+            <nav class="toc-panel" aria-labelledby="toc-title"><h2 id="toc-title">On this page</h2><ol><li><a href="#catalog">Analysis catalog</a></li><li><a href="#summary">What the summary reads</a></li><li><a href="#families">Reading families</a></li><li><a href="#ai-code">AI-assisted code review</a></li><li><a href="#tools">How it fits with other tools</a></li></ol></nav>
             <div class="source-panel" data-sidebar-open="true"><h2>ArchSig</h2><ul><li><a href="../">Overview</a></li><li><a href="../getting-started/">Getting Started</a></li><li><a href="./" aria-current="page">Analyses</a></li><li><a href="../examples/">Examples</a></li><li><a href="../manual/">Manual</a></li><li><a href="../reference/">Reference</a></li></ul></div>
           </aside>
           <div class="article-main">
@@ -94,13 +94,12 @@
             </section>
             <section id="summary" class="article-section">
               <h2>What the summary reads</h2>
-              <p>The agent should start from <code>analysis-summary</code>. It is the compact surface that turns the full packet into a reviewable diagnosis.</p>
+              <p>The agent starts from <code>analysis-summary</code> to choose what to inspect next. On this page, the point is not the field list itself; it is the review work those fields help prioritize.</p>
               <ul class="status-list">
-                <li><strong>Verdict</strong><span>Whether the supplied ArchMap and LawPolicy measured selected architecture pressure, architectural holes, coverage gaps, or no immediate review queue.</span></li>
-                <li><strong>Quality measurement</strong><span>Counts for selected axes, nonzero axes, hotspots, recurrent obstruction support, workflow risk, transfer bridges, unfilled loops, nonzero holonomy loops, local curvature cells, and coverage gaps.</span></li>
-                <li><strong>Trend diagnosis</strong><span>Where pressure concentrates across axes, hotspots, workflow risk, bridge pressure, path multiplicity loss, projection loss, and atom-origin closure debt.</span></li>
-                <li><strong>Dominant findings</strong><span>The compact list of nonzero axes, hotspots, recurrent pressure, architectural holes, workflow risk, bridge pressure, projection fidelity loss, effect-order pressure, synthesis blockage, operation readiness, and path multiplicity loss.</span></li>
-                <li><strong>Action queue</strong><span>The prioritized review queue the agent follows back into packet detail and source evidence before returning comments or repair candidates.</span></li>
+                <li><strong>Review priority</strong><span>Which boundary, module, workflow, or evidence gap should be opened first.</span></li>
+                <li><strong>Architecture tendency</strong><span>Where pressure is concentrating across axes, hotspots, workflow risk, bridges, path readings, and observation gaps.</span></li>
+                <li><strong>Source follow-up</strong><span>Which packet refs and source refs the agent should check before turning a reading into a finding.</span></li>
+                <li><strong>Action queue</strong><span>The review queue the agent follows back into packet detail and source evidence before returning comments or repair candidates.</span></li>
               </ul>
             </section>
             <section id="families" class="article-section">
@@ -148,10 +147,6 @@
                   </tbody>
                 </table>
               </div>
-            </section>
-            <section id="handoff" class="article-section">
-              <h2>FieldSig handoff</h2>
-              <p>ArchSig reads current architecture state. When the question becomes evolution, governance, operational feedback, or longitudinal monitoring, the bounded ArchSig packet can be handed to FieldSig instead of treating raw observations as forecast truth.</p>
             </section>
             <nav class="page-nav" aria-label="Reading sequence"><a class="page-nav-prev" href="../getting-started/"><span>Previous</span><strong>Getting Started</strong></a><a class="page-nav-next" href="../examples/"><span>Next</span><strong>Examples</strong></a></nav>
           </div>
