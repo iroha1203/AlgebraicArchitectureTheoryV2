@@ -65,6 +65,10 @@ It is designed to be read whole without jq slicing. It exposes:
 - `qualityMeasurement`: nonzero axis count, hotspot count, recurrent
   obstruction count, architectural hole count, nonzero holonomy count, and
   coverage gap count.
+- `measurementStatusSummary`: compact measured / partial / proxy /
+  unmeasured / blocked / `schemaFoundationOnly` counts. This is the first
+  summary-level guardrail against reading proxy or schema-only rows as measured
+  AAT analysis.
 - `trendDiagnosis`: the repository-wide tendency view. It keeps compact counts
   and refs for concentrated law-axis pressure, spectrum hotspots, recurrent
   obstruction support, workflow risk, bridge pressure, path multiplicity loss,
@@ -218,14 +222,21 @@ The implemented schema records:
 
 ## Validation Boundary
 
-Packet validation checks identity, ArchMap / interpretation profile references,
-AAT concept coverage, bounded judgement statuses, analytic axes, workflow risk
-readings, spectral analysis readings, spectral mode readings, design principle
-readings, spectral drilldown readings, curvature support readings, curvature
-transfer readings, ArchitectureSpectrumReport, transfer bridge readings and
-bridge-edge source refs, v0.3.0 measurement expansion readings, AAT
-observation-axis readings, homotopy complex summaries, path pair candidates,
-loop candidates, filler candidate readings,
+Packet validation has separate JSON surface, measurement-depth, and
+proxy-regression checks. Surface checks confirm the packet contract and
+cross-references; measurement-depth checks require evaluator input refs,
+distance value provenance, witness rule / law / axis alignment, and coverage
+blockers for measured or blocked readings and reject hard-coded fixture markers
+as measured provenance; proxy-regression checks reject `schemaFoundationOnly`
+or bounded proxy rows when they masquerade as measured analysis. Packet
+validation checks identity, ArchMap / interpretation profile
+references, AAT concept coverage, bounded judgement statuses, analytic axes,
+workflow risk readings, spectral analysis readings, spectral mode readings,
+design principle readings, spectral drilldown readings, curvature support
+readings, curvature transfer readings, ArchitectureSpectrumReport, transfer
+bridge readings and bridge-edge source refs, v0.3.0 measurement expansion
+readings, AAT observation-axis readings, homotopy complex summaries, path pair
+candidates, loop candidates, filler candidate readings,
 architectural hole readings, homotopy holonomy readings, Stokes-style readings,
 ArchitectureHomotopyReport, AAT structural state readings, ArchMapStore delta /
 commit / snapshot / index refs, operation square candidates, axis-wise path

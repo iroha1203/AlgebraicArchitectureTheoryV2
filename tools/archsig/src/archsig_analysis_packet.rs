@@ -11427,6 +11427,8 @@ pub fn validate_archsig_analysis_packet_report(
         check_feature_boundary_residual_surface(packet),
         check_feature_extension_diagnosis_surface(packet),
         check_monodromy_boundary_schema_foundation(packet),
+        check_measurement_depth(packet),
+        check_proxy_regression_guardrails(packet),
         check_law_relative_analysis(packet),
         check_signature_and_flatness(packet),
         check_repair_candidates(packet),
@@ -11490,6 +11492,9 @@ pub fn validate_archsig_analysis_packet_report(
         repair_operation_candidate_count: packet.repair_operation_candidates.len(),
         operation_delta_count: packet.operation_deltas.len(),
         bounded_judgement_count: packet.bounded_judgements.len(),
+        surface_check_count: count_check_kind(&checks, "surface"),
+        measurement_depth_check_count: count_check_kind(&checks, "measurement-depth"),
+        proxy_regression_check_count: count_check_kind(&checks, "proxy-regression"),
         failed_check_count: count_checks(&checks, "fail"),
         warning_check_count: count_checks(&checks, "warn"),
     };
@@ -16357,6 +16362,343 @@ fn check_monodromy_family(
     }
 }
 
+fn check_measurement_depth(packet: &ArchSigAnalysisPacketV0) -> ValidationCheck {
+    let mut examples = Vec::new();
+
+    for reading in &packet.law_universe_coverage_readings {
+        if reading.exactness_assumption_status.is_empty() {
+            examples.push(generic_validation_example(
+                &reading.reading_id,
+                "exactnessAssumptionStatus",
+                "LawUniverse coverage must preserve exactness-assumption status, not only law family presence",
+            ));
+        }
+        if reading.blocked_witness_refs.is_empty() && reading.unmeasured_required_law_count > 0 {
+            examples.push(generic_validation_example(
+                &reading.reading_id,
+                "blockedWitnessRefs",
+                "unmeasured required laws must expose blocked witness refs",
+            ));
+        }
+        for coverage in reading
+            .required_law_coverage
+            .iter()
+            .chain(reading.witness_family_coverage.iter())
+            .chain(reading.signature_axis_coverage.iter())
+            .chain(reading.exactness_assumption_status.iter())
+        {
+            push_blank(
+                &mut examples,
+                &format!("{} coverage.refId", reading.reading_id),
+                &coverage.ref_id,
+            );
+            push_blank(
+                &mut examples,
+                &format!("{} coverage.status", reading.reading_id),
+                &coverage.status,
+            );
+            push_blank(
+                &mut examples,
+                &format!("{} coverage.reading", reading.reading_id),
+                &coverage.reading,
+            );
+            if coverage.status.contains("blocked")
+                || coverage.status.contains("gap")
+                || coverage.status.contains("unmeasured")
+            {
+                if coverage.blocker_refs.is_empty() {
+                    examples.push(generic_validation_example(
+                        &reading.reading_id,
+                        &coverage.ref_id,
+                        "blocked or unmeasured LawUniverse coverage rows must retain blocker refs",
+                    ));
+                }
+            } else if coverage.evidence_refs.is_empty() {
+                examples.push(generic_validation_example(
+                    &reading.reading_id,
+                    &coverage.ref_id,
+                    "measured LawUniverse coverage rows must retain evidence refs",
+                ));
+            }
+        }
+        if !reading.law_witness_axis_alignment.contains("laws")
+            || !reading.law_witness_axis_alignment.contains("witness")
+            || !reading.law_witness_axis_alignment.contains("axes")
+        {
+            examples.push(generic_validation_example(
+                &reading.reading_id,
+                "lawWitnessAxisAlignment",
+                "LawUniverse coverage must explicitly align laws, witness rules, and signature axes",
+            ));
+        }
+    }
+
+    for defect in &packet.axis_wise_monodromy_defects {
+        if defect.measurement_status == "measured" {
+            if defect.distance_value.is_none() {
+                examples.push(generic_validation_example(
+                    &defect.defect_id,
+                    "distanceValue",
+                    "measured monodromy defects must retain the computed distance value",
+                ));
+            }
+            if defect.distance_input_refs.is_empty() {
+                examples.push(generic_validation_example(
+                    &defect.defect_id,
+                    "distanceInputRefs",
+                    "measured monodromy defects must retain distance evaluator input refs",
+                ));
+            }
+            if contains_hard_coded_marker(&defect.distance_input_refs)
+                || contains_hard_coded_marker(&defect.source_refs)
+                || contains_hard_coded_marker(&defect.observation_refs)
+            {
+                examples.push(generic_validation_example(
+                    &defect.defect_id,
+                    "hard-coded fixture marker",
+                    "measured monodromy defects must not be backed by hard-coded fixture markers",
+                ));
+            }
+            if defect.measured_support_refs.is_empty() {
+                examples.push(generic_validation_example(
+                    &defect.defect_id,
+                    "measuredSupportRefs",
+                    "measured monodromy defects must retain measured support refs",
+                ));
+            }
+            if defect.source_refs.is_empty() && defect.observation_refs.is_empty() {
+                examples.push(generic_validation_example(
+                    &defect.defect_id,
+                    "sourceRefs/observationRefs",
+                    "measured monodromy defects must retain source or observation refs",
+                ));
+            }
+            if defect.distance_value.is_some_and(|value| value != 0)
+                && defect.witness_refs.is_empty()
+            {
+                examples.push(generic_validation_example(
+                    &defect.defect_id,
+                    "witnessRefs",
+                    "nonzero measured monodromy defects must retain witness refs",
+                ));
+            }
+        }
+        if defect.measurement_status == "unmeasured" && defect.missing_refs.is_empty() {
+            examples.push(generic_validation_example(
+                &defect.defect_id,
+                "missingRefs",
+                "unmeasured monodromy defects must retain missing refs so absence is not read as zero",
+            ));
+        }
+    }
+
+    for holonomy in &packet.homotopy_holonomy_readings {
+        if holonomy.measurement_status == "measured" {
+            if holonomy.compared_continuation_refs.is_empty() {
+                examples.push(generic_validation_example(
+                    &holonomy.reading_id,
+                    "comparedContinuationRefs",
+                    "measured holonomy must retain compared continuation refs",
+                ));
+            }
+            if holonomy.distance_input_refs.is_empty() {
+                examples.push(generic_validation_example(
+                    &holonomy.reading_id,
+                    "distanceInputRefs",
+                    "measured holonomy must retain distance evaluator input refs",
+                ));
+            }
+            if contains_hard_coded_marker(&holonomy.distance_input_refs)
+                || contains_hard_coded_marker(&holonomy.source_refs)
+                || contains_hard_coded_marker(&holonomy.observation_refs)
+            {
+                examples.push(generic_validation_example(
+                    &holonomy.reading_id,
+                    "hard-coded fixture marker",
+                    "measured holonomy must not be backed by hard-coded fixture markers",
+                ));
+            }
+            if holonomy.source_refs.is_empty()
+                && holonomy.observation_refs.is_empty()
+                && holonomy.mu_defect_refs.is_empty()
+            {
+                examples.push(generic_validation_example(
+                    &holonomy.reading_id,
+                    "sourceRefs/observationRefs/muDefectRefs",
+                    "measured holonomy must retain source, observation, or monodromy defect refs",
+                ));
+            }
+            if holonomy.value != 0
+                && holonomy.observation_refs.is_empty()
+                && holonomy.mu_defect_refs.is_empty()
+            {
+                examples.push(generic_validation_example(
+                    &holonomy.reading_id,
+                    "muDefectRefs/observationRefs",
+                    "nonzero holonomy must be backed by semantic evidence or positive monodromy defects",
+                ));
+            }
+        }
+        if holonomy.measurement_status != "measured" && holonomy.missing_filler_refs.is_empty() {
+            examples.push(generic_validation_example(
+                &holonomy.reading_id,
+                "missingFillerRefs",
+                "unmeasured or blocked holonomy must retain missing filler refs",
+            ));
+        }
+    }
+
+    for reading in &packet.operation_calculus_law_readings {
+        if reading.law_evidence.len() < 9 {
+            examples.push(generic_validation_example(
+                &reading.reading_id,
+                "lawEvidence",
+                "operation calculus laws must keep one evaluator row per selected law axis",
+            ));
+        }
+        for evidence in &reading.law_evidence {
+            if evidence.status == "observed" && evidence.observed_evidence_refs.is_empty() {
+                examples.push(generic_validation_example(
+                    &reading.reading_id,
+                    &evidence.law_axis,
+                    "observed operation law evidence must retain observed evidence refs",
+                ));
+            }
+            if evidence.status == "blocked" && evidence.blocked_reason_refs.is_empty() {
+                examples.push(generic_validation_example(
+                    &reading.reading_id,
+                    &evidence.law_axis,
+                    "blocked operation law evidence must retain blocked reason refs",
+                ));
+            }
+            if evidence.status != "notApplicable" && evidence.required_evidence_refs.is_empty() {
+                examples.push(generic_validation_example(
+                    &reading.reading_id,
+                    &evidence.law_axis,
+                    "operation law evidence must retain required evidence refs",
+                ));
+            }
+        }
+    }
+
+    check_from_examples(
+        "archsig-analysis-packet-measurement-depth",
+        "measurement-depth pass: measured readings retain evaluator inputs, distance provenance, witness alignment, and coverage blockers",
+        examples,
+        "fail",
+    )
+}
+
+fn contains_hard_coded_marker(values: &[String]) -> bool {
+    values.iter().any(|value| {
+        let normalized = value.to_ascii_lowercase();
+        normalized.contains("hard-coded")
+            || normalized.contains("hardcoded")
+            || normalized.contains("fixture-marker")
+    })
+}
+
+fn check_proxy_regression_guardrails(packet: &ArchSigAnalysisPacketV0) -> ValidationCheck {
+    let mut examples = Vec::new();
+
+    for (family_id, status, measured_axis_count, coverage_blocker_count) in [
+        (
+            packet.monodromy_reading_family.reading_family_id.as_str(),
+            packet.monodromy_reading_family.status.as_str(),
+            packet.monodromy_reading_family.measured_axis_count,
+            packet.monodromy_reading_family.coverage_blocker_count,
+        ),
+        (
+            packet
+                .boundary_holonomy_reading_family
+                .reading_family_id
+                .as_str(),
+            packet.boundary_holonomy_reading_family.status.as_str(),
+            packet.boundary_holonomy_reading_family.measured_axis_count,
+            packet
+                .boundary_holonomy_reading_family
+                .coverage_blocker_count,
+        ),
+    ] {
+        if status == "schemaFoundationOnly" {
+            examples.push(generic_validation_example(
+                family_id,
+                status,
+                "schemaFoundationOnly is a schema surface and must fail measurement validation",
+            ));
+        }
+        if status == "measured" && measured_axis_count == 0 {
+            examples.push(generic_validation_example(
+                family_id,
+                "measuredAxisCount",
+                "measured family status requires at least one measured axis",
+            ));
+        }
+        if status == "measured" && coverage_blocker_count > 0 {
+            examples.push(generic_validation_example(
+                family_id,
+                "coverageBlockerCount",
+                "measured family status cannot hide coverage blockers",
+            ));
+        }
+    }
+
+    for reading in &packet.representation_strength_readings {
+        let proxy_marked = [
+            reading.zero_preserving.as_str(),
+            reading.zero_reflecting.as_str(),
+            reading.obstruction_preserving.as_str(),
+            reading.obstruction_reflecting.as_str(),
+            reading.aggregate_zero_safety.as_str(),
+            reading.cancellation_risk.as_str(),
+        ]
+        .iter()
+        .any(|value| value.to_ascii_lowercase().contains("proxy"));
+        let boundary = reading.evidence_boundary.to_ascii_lowercase();
+        if proxy_marked
+            && (boundary.contains("measured claim") || boundary.contains("measurement truth"))
+        {
+            examples.push(generic_validation_example(
+                &reading.reading_id,
+                "evidenceBoundary",
+                "bounded proxy representation strength cannot be promoted to a measured claim",
+            ));
+        }
+    }
+
+    for reading in &packet.axis_wise_monodromy_defects {
+        if reading.measurement_status == "measured"
+            && (reading.distance_input_refs.is_empty()
+                || (reading.source_refs.is_empty() && reading.observation_refs.is_empty()))
+        {
+            examples.push(generic_validation_example(
+                &reading.defect_id,
+                "measurementStatus",
+                "monodromy defect cannot be measured without distance provenance and source-backed support",
+            ));
+        }
+    }
+    for reading in &packet.homotopy_holonomy_readings {
+        if reading.measurement_status == "measured"
+            && (reading.distance_input_refs.is_empty()
+                || reading.compared_continuation_refs.is_empty())
+        {
+            examples.push(generic_validation_example(
+                &reading.reading_id,
+                "measurementStatus",
+                "holonomy cannot be measured without continuation comparison and distance provenance",
+            ));
+        }
+    }
+
+    check_from_examples(
+        "archsig-analysis-packet-proxy-regression-guardrails",
+        "proxy-regression pass: proxy/schema-only readings cannot masquerade as measured analysis",
+        examples,
+        "fail",
+    )
+}
+
 fn check_law_relative_analysis(packet: &ArchSigAnalysisPacketV0) -> ValidationCheck {
     let axis_ids = set(packet
         .signature_axes
@@ -17343,6 +17685,13 @@ fn check_from_examples(
     check
 }
 
+fn count_check_kind(checks: &[ValidationCheck], kind: &str) -> usize {
+    checks
+        .iter()
+        .filter(|check| check.id.contains(kind) || check.title.contains(kind))
+        .count()
+}
+
 fn duplicate_examples(field: &str, duplicates: Vec<String>) -> Vec<ValidationExample> {
     duplicates
         .into_iter()
@@ -17734,6 +18083,124 @@ mod tests {
             check.id == "archsig-analysis-packet-feature-extension-diagnosis-surface"
                 && check.result == "fail"
         }));
+    }
+
+    #[test]
+    fn proxy_negative_fixture_schema_only_family_fails_validation() {
+        let mut packet = static_archsig_analysis_packet();
+        packet.monodromy_reading_family.status = "schemaFoundationOnly".to_string();
+        packet.monodromy_reading_family.measured_axis_count = 0;
+
+        let report = validate_archsig_analysis_packet_report(
+            &packet,
+            "negative-fixture-schema-foundation-only.json",
+        );
+
+        assert_eq!(report.summary.result, "fail");
+        assert_eq!(report.summary.proxy_regression_check_count, 1);
+        assert!(report.checks.iter().any(|check| {
+            check.id == "archsig-analysis-packet-proxy-regression-guardrails"
+                && check.result == "fail"
+                && check
+                    .examples
+                    .iter()
+                    .any(|example| example.target.as_deref() == Some("schemaFoundationOnly"))
+        }));
+    }
+
+    #[test]
+    fn proxy_negative_fixture_measured_defect_without_provenance_fails_validation() {
+        let mut packet = static_archsig_analysis_packet();
+        let defect = packet
+            .axis_wise_monodromy_defects
+            .iter_mut()
+            .find(|defect| defect.measurement_status == "measured")
+            .expect("static fixture has measured monodromy defects");
+        defect.distance_input_refs.clear();
+        defect.source_refs.clear();
+        defect.observation_refs.clear();
+
+        let report = validate_archsig_analysis_packet_report(
+            &packet,
+            "negative-fixture-measured-defect-without-provenance.json",
+        );
+
+        assert_eq!(report.summary.result, "fail");
+        assert_eq!(report.summary.measurement_depth_check_count, 1);
+        assert!(report.checks.iter().any(|check| {
+            check.id == "archsig-analysis-packet-measurement-depth" && check.result == "fail"
+        }));
+        assert!(report.checks.iter().any(|check| {
+            check.id == "archsig-analysis-packet-proxy-regression-guardrails"
+                && check.result == "fail"
+        }));
+    }
+
+    #[test]
+    fn proxy_negative_fixture_bounded_proxy_promotion_fails_validation() {
+        let mut packet = static_archsig_analysis_packet();
+        packet.representation_strength_readings[0].zero_preserving = "boundedProxy".to_string();
+        packet.representation_strength_readings[0].evidence_boundary =
+            "bounded proxy is a measured claim".to_string();
+
+        let report = validate_archsig_analysis_packet_report(
+            &packet,
+            "negative-fixture-bounded-proxy-promotion.json",
+        );
+
+        assert_eq!(report.summary.result, "fail");
+        assert!(report.checks.iter().any(|check| {
+            check.id == "archsig-analysis-packet-proxy-regression-guardrails"
+                && check.result == "fail"
+                && check.examples.iter().any(|example| {
+                    example
+                        .evidence
+                        .as_deref()
+                        .is_some_and(|evidence| evidence.contains("bounded proxy"))
+                })
+        }));
+    }
+
+    #[test]
+    fn proxy_negative_fixture_hard_coded_marker_fails_validation() {
+        let mut packet = static_archsig_analysis_packet();
+        let defect = packet
+            .axis_wise_monodromy_defects
+            .iter_mut()
+            .find(|defect| defect.measurement_status == "measured")
+            .expect("static fixture has measured monodromy defects");
+        defect
+            .distance_input_refs
+            .push("hard-coded-fixture-marker:coupon-rounding".to_string());
+
+        let report = validate_archsig_analysis_packet_report(
+            &packet,
+            "negative-fixture-hard-coded-marker.json",
+        );
+
+        assert_eq!(report.summary.result, "fail");
+        assert!(report.checks.iter().any(|check| {
+            check.id == "archsig-analysis-packet-measurement-depth"
+                && check.result == "fail"
+                && check
+                    .examples
+                    .iter()
+                    .any(|example| example.target.as_deref() == Some("hard-coded fixture marker"))
+        }));
+    }
+
+    #[test]
+    fn measurement_depth_summary_distinguishes_surface_checks() {
+        let packet = static_archsig_analysis_packet();
+        let report = validate_archsig_analysis_packet_report(&packet, "archsig-analysis.json");
+
+        assert_eq!(report.summary.result, "pass");
+        assert!(
+            report.summary.surface_check_count > report.summary.measurement_depth_check_count,
+            "surface and measurement-depth checks must be counted separately"
+        );
+        assert_eq!(report.summary.measurement_depth_check_count, 1);
+        assert_eq!(report.summary.proxy_regression_check_count, 1);
     }
 
     #[test]

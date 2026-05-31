@@ -3034,6 +3034,9 @@ pub struct ArchSigAnalysisPacketValidationSummaryV0 {
     pub repair_operation_candidate_count: usize,
     pub operation_delta_count: usize,
     pub bounded_judgement_count: usize,
+    pub surface_check_count: usize,
+    pub measurement_depth_check_count: usize,
+    pub proxy_regression_check_count: usize,
     pub failed_check_count: usize,
     pub warning_check_count: usize,
 }

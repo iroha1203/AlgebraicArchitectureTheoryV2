@@ -1108,6 +1108,7 @@ fn build_analysis_summary(
         },
         "verdict": analysis_verdict(packet),
         "qualityMeasurement": quality_measurement(packet),
+        "measurementStatusSummary": measurement_status_summary(packet),
         "trendDiagnosis": trend_diagnosis(packet),
         "reviewSupport": review_support(packet),
         "dominantFindings": dominant_findings(packet),
@@ -1328,6 +1329,132 @@ fn quality_measurement(packet: &serde_json::Value) -> serde_json::Value {
         "pathMultiplicityLossCount": array_len(packet, "pathMultiplicityLossReadings"),
         "coverageGapCount": coverage_gap_refs(packet).len()
     })
+}
+
+fn measurement_status_summary(packet: &serde_json::Value) -> serde_json::Value {
+    let mut measured = 0usize;
+    let mut partial = 0usize;
+    let mut proxy = 0usize;
+    let mut unmeasured = 0usize;
+    let mut blocked = 0usize;
+    let mut schema_foundation_only = 0usize;
+
+    for value in [
+        json_field(packet, "architectureSpectrumReport"),
+        json_field(packet, "architectureHomotopyReport"),
+    ] {
+        classify_measurement_status(
+            json_field(&value, "measurementStatus").as_str(),
+            &mut measured,
+            &mut partial,
+            &mut proxy,
+            &mut unmeasured,
+            &mut blocked,
+            &mut schema_foundation_only,
+        );
+    }
+    for family_key in ["monodromyReadingFamily", "boundaryHolonomyReadingFamily"] {
+        let family = packet.get(family_key).unwrap_or(&serde_json::Value::Null);
+        classify_measurement_status(
+            json_field(family, "status").as_str(),
+            &mut measured,
+            &mut partial,
+            &mut proxy,
+            &mut unmeasured,
+            &mut blocked,
+            &mut schema_foundation_only,
+        );
+    }
+    for array_key in [
+        "curvatureSupportReadings",
+        "curvatureTransferReadings",
+        "fillerCandidateReadings",
+        "architecturalHoleReadings",
+        "homotopyHolonomyReadings",
+        "stokesStyleReadings",
+        "axisWiseMonodromyDefects",
+        "amiAggregateReadings",
+    ] {
+        for item in array_items(packet, array_key) {
+            classify_measurement_status(
+                json_field(item, "measurementStatus").as_str(),
+                &mut measured,
+                &mut partial,
+                &mut proxy,
+                &mut unmeasured,
+                &mut blocked,
+                &mut schema_foundation_only,
+            );
+            classify_measurement_status(
+                json_field(&json_field(item, "readingBoundary"), "readingStrength").as_str(),
+                &mut measured,
+                &mut partial,
+                &mut proxy,
+                &mut unmeasured,
+                &mut blocked,
+                &mut schema_foundation_only,
+            );
+        }
+    }
+    for item in array_items(packet, "representationStrengthReadings") {
+        for field in [
+            "zeroPreserving",
+            "zeroReflecting",
+            "obstructionPreserving",
+            "obstructionReflecting",
+            "aggregateZeroSafety",
+            "cancellationRisk",
+        ] {
+            classify_measurement_status(
+                json_field(item, field).as_str(),
+                &mut measured,
+                &mut partial,
+                &mut proxy,
+                &mut unmeasured,
+                &mut blocked,
+                &mut schema_foundation_only,
+            );
+        }
+    }
+
+    serde_json::json!({
+        "measuredCount": measured,
+        "partialCount": partial,
+        "proxyCount": proxy,
+        "unmeasuredCount": unmeasured,
+        "blockedCount": blocked,
+        "schemaFoundationOnlyCount": schema_foundation_only,
+        "claimBoundary": "measured counts require evaluator/source refs; proxy and schema-only rows are not measured claims"
+    })
+}
+
+#[allow(clippy::too_many_arguments)]
+fn classify_measurement_status(
+    value: Option<&str>,
+    measured: &mut usize,
+    partial: &mut usize,
+    proxy: &mut usize,
+    unmeasured: &mut usize,
+    blocked: &mut usize,
+    schema_foundation_only: &mut usize,
+) {
+    let Some(value) = value else {
+        return;
+    };
+    let normalized = value.to_ascii_lowercase();
+    if normalized == "measured" || normalized.starts_with("boundedmeasured") {
+        *measured += 1;
+    } else if normalized == "partial" {
+        *partial += 1;
+    } else if normalized == "schemafoundationonly" {
+        *schema_foundation_only += 1;
+    } else if normalized.contains("proxy") {
+        *proxy += 1;
+    } else if normalized.contains("unmeasured") {
+        *unmeasured += 1;
+    } else if normalized.contains("blocked") || normalized.contains("gap") {
+        *blocked += 1;
+    }
 }
 
 fn trend_counts(packet: &serde_json::Value) -> serde_json::Value {
