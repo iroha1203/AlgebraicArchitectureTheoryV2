@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="ArchSig is an architecture analysis surface used through LLM Skills: inspect a repo, build ArchMap evidence and LawPolicy, run ArchSig, then return findings engineers can act on.">
+    <meta name="robots" content="noindex, nofollow">
+    <title>ArchSig Skill-First Architecture Analysis</title>
+    <link rel="canonical" href="https://iroha1203.dev/archsig2/">
+    <meta property="og:site_name" content="AAT / SFT Research Notes">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="ArchSig Skill-First Architecture Analysis">
+    <meta property="og:description" content="ArchSig is an architecture analysis surface used through LLM Skills: inspect a repo, build ArchMap evidence and LawPolicy, run ArchSig, then return findings engineers can act on.">
+    <meta property="og:url" content="https://iroha1203.dev/archsig2/">
+    <meta property="og:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="ArchSig Skill-First Architecture Analysis">
+    <meta name="twitter:description" content="ArchSig is an architecture analysis surface used through LLM Skills: inspect a repo, build ArchMap evidence and LawPolicy, run ArchSig, then return findings engineers can act on.">
+    <meta name="twitter:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
+    <link rel="icon" href="../assets/favicon-32.png" sizes="32x32" type="image/png">
+    <link rel="icon" href="../assets/favicon-16.png" sizes="16x16" type="image/png">
+    <link rel="alternate" hreflang="en" href="./">
+    <link rel="alternate" hreflang="x-default" href="./">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=Inter:wght@400;500;600;700&amp;family=Source+Serif+4:opsz,wght@8..60,400..700&amp;display=swap" rel="stylesheet">
+    <script>
+      try {
+        const theme = localStorage.getItem("aat-sft-theme");
+        if (theme === "light" || theme === "dark") {
+          document.documentElement.dataset.theme = theme;
+        }
+      } catch {}
+    </script>
+    <link rel="stylesheet" href="../assets/site.css">
+    <script defer src="../assets/site.js"></script>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-YQMFH2FG9V"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-YQMFH2FG9V');
+    </script>
+
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="site-header" data-site-header>
+      <div class="site-shell header-inner">
+        <a class="brand" href="../" aria-label="AAT SFT home">
+          <img class="brand-icon" src="../assets/favicon-512.png" alt="" width="512" height="512" aria-hidden="true">
+          <span class="brand-mark">AAT/SFT</span>
+          <span class="brand-text">Research Notes</span>
+        </a>
+        <nav class="site-nav" aria-label="Primary navigation">
+          <a href="../">Home</a>
+          <a href="../aat/">AAT</a>
+          <a href="../sft/">SFT</a>
+          <a class="is-active" href="./">ArchSig</a>
+          <a href="../outreach/">Outreach</a>
+        </nav>
+      </div>
+    </header>
+    <main id="main">
+      <section class="article-hero section-band">
+        <div class="site-shell">
+          <nav class="breadcrumb" aria-label="Breadcrumb"><a href="../">Home</a><span>ArchSig</span></nav>
+          <p class="eyebrow">Architecture review for fast-moving code</p>
+          <h1>Architecture analysis through LLM Skills.</h1>
+          <p class="lede">When code changes fast, ArchSig helps an AI reviewer see what the change is doing to the design: which responsibilities are drifting, which boundaries are weakening, and where engineers should inspect next.</p>
+        </div>
+      </section>
+      <section class="section-band">
+        <div class="site-shell article-layout">
+          <aside class="article-sidebar" aria-label="ArchSig page navigation">
+            <nav class="toc-panel" aria-labelledby="toc-title"><h2 id="toc-title">On this page</h2><ol><li><a href="#start">Three-step start</a></li><li><a href="#strengths">Three strengths</a></li><li><a href="#returns">What you get back</a></li><li><a href="#next">Where to go next</a></li></ol></nav>
+            <div class="source-panel" data-sidebar-open="true"><h2>ArchSig</h2><ul><li><a href="./" aria-current="page">Overview</a></li><li><a aria-disabled="true">Getting Started</a></li><li><a aria-disabled="true">Analyses</a></li><li><a aria-disabled="true">Examples</a></li><li><a aria-disabled="true">Manual</a></li><li><a aria-disabled="true">Reference</a></li></ul></div>
+          </aside>
+          <div class="article-main">
+            <section id="start" class="article-section">
+              <h2>Three-step start</h2>
+              <p>Ask the question you would ask a senior reviewer: what did this change do to the design, and where should we look first?</p>
+              <ol class="numbered-status-list">
+                <li><strong>Choose the scope</strong><span>Point the Skill at a repository, PR, branch, feature area, or architectural concern.</span></li>
+                <li><strong>Let the Skills build the reading</strong><span><code>archmap-creater</code>, <code>law-policy-creater</code>, and <code>archsig-reader</code> turn the selected source evidence into an architecture review surface.</span></li>
+                <li><strong>Act on the review queue</strong><span>Use the returned findings, repair candidates, code refs, and confirmation points to decide what to inspect or change next.</span></li>
+              </ol>
+              <figure class="code-panel">
+                <figcaption>Skill request shape</figcaption>
+                <pre><code>Inspect this PR for architecture boundary movement.
+Use ArchSig Skills.
+Focus on payment, coupon, and workflow responsibility changes.
+Return review findings with code refs and repair candidates.</code></pre>
+              </figure>
+            </section>
+            <section id="strengths" class="article-section">
+              <h2>Three strengths</h2>
+              <p>ArchSig is strongest where ordinary tools go quiet: the code compiles, tests pass, and the dependency graph has edges, but the design still feels like it is moving.</p>
+              <ul class="status-list">
+                <li><strong>It reads design signals, not just edges</strong><span>Imports and calls show contact. ArchSig helps read whether that contact is crossing a boundary, moving responsibility, hiding a workflow assumption, or creating coupling that a graph alone does not explain.</span></li>
+                <li><strong>It finds the pressure points</strong><span>ArchSig can surface hotspots, repeated boundary stress, workflow risk, transfer paths, missing evidence, and architectural holes as one reviewable picture instead of scattered hints.</span></li>
+                <li><strong>It turns diagnosis into review work</strong><span>The Skill can move from summary to source evidence, then return comments, repair candidates, and confirmation checks that engineers can use in a PR or architecture review.</span></li>
+              </ul>
+            </section>
+            <section id="returns" class="article-section">
+              <h2>What you get back</h2>
+              <p>The output is meant to be read by engineers, not decoded like a metrics dump. It tells you what looks structurally important, why it matters, and what evidence should be checked next.</p>
+              <ul class="status-list">
+                <li><strong>Findings reviewers can inspect</strong><span>Architecture-relevant issues with the code paths, evidence, and context reviewers should open first.</span></li>
+                <li><strong>Architecture tendencies</strong><span>Where coupling concentrates, which boundaries keep getting crossed, which responsibilities keep moving, and what kind of drift is starting to appear.</span></li>
+                <li><strong>Deeper structural readings</strong><span>Responsibility pressure, semantic coupling, order sensitivity, path-like change patterns, repeated stress on the same support, and the evidence needed before repair decisions.</span></li>
+                <li><strong>Repair candidates</strong><span>Concrete moves such as restoring a port boundary, moving cache access behind an adapter, or making a workflow contract explicit.</span></li>
+                <li><strong>Confirmation points</strong><span>Checks the team should perform before acting on a reading, including missing tests, docs, traces, ownership evidence, or policy decisions.</span></li>
+                <li><strong>Traceable detail</strong><span>References back to the summary, packet detail, validation output, and coverage repair queue when someone needs to reproduce or challenge the reading.</span></li>
+              </ul>
+            </section>
+            <section id="next" class="article-section">
+              <h2>Where to go next</h2>
+              <p>The rest of the ArchSig surface separates first use, analysis examples, output reading, and command reference so the landing page can stay focused on the review story.</p>
+              <ul class="chapter-list">
+                <li><strong>Getting Started</strong><span>Skill-first onboarding, prompt examples, and what to hand to the Skill.</span></li>
+                <li><strong>Analyses</strong><span>Boundary crossing, responsibility movement, semantic coupling, operation order sensitivity, hotspots, missing evidence, and FieldSig handoff.</span></li>
+                <li><strong>Examples</strong><span>Short Skill request to output examples for payment boundary erosion, coupon extension, operation order sensitivity, and coverage repair.</span></li>
+                <li><strong>Manual</strong><span>How Skills read <code>analysis-summary</code>, packet refs, measurement families, coverage, and repair queues.</span></li>
+                <li><strong>Reference</strong><span>Command, schema, compatibility, and artifact details with <code>analyze</code> as the primary workflow entry.</span></li>
+              </ul>
+            </section>
+            <nav class="page-nav" aria-label="Reading sequence"><a class="page-nav-next" href="#start"><span>Start</span><strong>Use the Skill path</strong></a></nav>
+          </div>
+        </div>
+      </section>
+    </main>
+    <footer class="site-footer">
+      <div class="site-shell footer-inner">
+        <p>&copy; <span data-current-year>2026</span> Hiroyuki Nakahata.</p>
+        <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2" target="_blank" rel="noopener noreferrer">Repository</a>
+      </div>
+    </footer>
+  </body>
+</html>
