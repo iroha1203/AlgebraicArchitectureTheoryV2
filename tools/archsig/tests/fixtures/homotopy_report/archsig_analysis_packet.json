@@ -2782,15 +2782,15 @@
       "readingId": "operation-calculus-law:repair-obstruction-homotopy-report-fixture-computed",
       "operationRef": "repair:obstruction-homotopy-report-fixture-computed",
       "operationKind": "repair-homotopyreportfixturecircuit",
-      "compositionStatus": "assumptionRelative",
-      "associativityUnderObservationStatus": "selectedObservationOnly",
-      "refinementAbstractionCompatibility": "blockedByMissingEvidence",
+      "compositionStatus": "observed",
+      "associativityUnderObservationStatus": "observed",
+      "refinementAbstractionCompatibility": "blocked",
       "replacementEquivalence": "unmeasured",
       "protectionIdempotence": "notApplicable",
       "runtimeLocalization": "unmeasured",
       "migrationCompatibility": "notApplicable",
       "reverseInvolution": "unmeasured",
-      "repairMonotonicity": "selectedAxisOnly",
+      "repairMonotonicity": "blockedByTransferRisk",
       "synthesisNoSolutionBoundary": "notASynthesisCertificate",
       "preconditionRefs": [
         "human review selects a repair operation",
@@ -2799,6 +2799,166 @@
       "evidenceRefs": [
         "obstruction:homotopy-report-fixture:computed",
         "preserve existing observed atom configuration boundaries"
+      ],
+      "lawEvidence": [
+        {
+          "lawAxis": "composition",
+          "status": "observed",
+          "requiredEvidenceRefs": [
+            "operation support refs",
+            "operation precondition refs"
+          ],
+          "observedEvidenceRefs": [
+            "human review selects a repair operation",
+            "obstruction:homotopy-report-fixture:computed",
+            "preserve existing observed atom configuration boundaries",
+            "resolve or explicitly accept coverage gap gap:path-rule:authorization-bypass-hole:missing-policy-test"
+          ],
+          "blockedReasonRefs": [
+            "coverage:homotopy-report-fixture: report observation gap and block signature-zero reflection",
+            "gap:path-rule:authorization-bypass-hole:missing-policy-test: authorization bypass path lacks policy or test filler evidence",
+            "implementation patch and verification evidence are not supplied by ArchSig analysis",
+            "witness:homotopy-report-fixture: report observation gap; do not infer measured zero"
+          ],
+          "exactnessAssumptionRefs": [
+            "exactness:operation-preconditions-observed"
+          ],
+          "reading": "composition is observed under selected operation evidence"
+        },
+        {
+          "lawAxis": "associativityUnderObservation",
+          "status": "observed",
+          "requiredEvidenceRefs": [
+            "operation delta support"
+          ],
+          "observedEvidenceRefs": [
+            "obstruction:homotopy-report-fixture:computed",
+            "preserve existing observed atom configuration boundaries"
+          ],
+          "blockedReasonRefs": [],
+          "exactnessAssumptionRefs": [],
+          "reading": "associativityUnderObservation is observed under selected operation evidence"
+        },
+        {
+          "lawAxis": "refinementAbstractionCompatibility",
+          "status": "blocked",
+          "requiredEvidenceRefs": [
+            "preserved invariant refs"
+          ],
+          "observedEvidenceRefs": [
+            "preserve existing observed atom configuration boundaries"
+          ],
+          "blockedReasonRefs": [
+            "coverage:homotopy-report-fixture: report observation gap and block signature-zero reflection",
+            "gap:path-rule:authorization-bypass-hole:missing-policy-test: authorization bypass path lacks policy or test filler evidence",
+            "implementation patch and verification evidence are not supplied by ArchSig analysis",
+            "witness:homotopy-report-fixture: report observation gap; do not infer measured zero"
+          ],
+          "exactnessAssumptionRefs": [
+            "exactness:operation-preconditions-observed"
+          ],
+          "reading": "refinementAbstractionCompatibility is blocked under selected operation evidence"
+        },
+        {
+          "lawAxis": "replacementEquivalence",
+          "status": "unmeasured",
+          "requiredEvidenceRefs": [
+            "before/after equivalence witness"
+          ],
+          "observedEvidenceRefs": [
+            "obstruction:homotopy-report-fixture:computed"
+          ],
+          "blockedReasonRefs": [
+            "replacement-equivalence:witness-not-supplied"
+          ],
+          "exactnessAssumptionRefs": [
+            "exactness:replacement-equivalence"
+          ],
+          "reading": "replacementEquivalence is unmeasured under selected operation evidence"
+        },
+        {
+          "lawAxis": "protectionIdempotence",
+          "status": "notApplicable",
+          "requiredEvidenceRefs": [
+            "repeat protection witness"
+          ],
+          "observedEvidenceRefs": [
+            "human review selects a repair operation",
+            "resolve or explicitly accept coverage gap gap:path-rule:authorization-bypass-hole:missing-policy-test"
+          ],
+          "blockedReasonRefs": [],
+          "exactnessAssumptionRefs": [],
+          "reading": "protectionIdempotence is notApplicable under selected operation evidence"
+        },
+        {
+          "lawAxis": "runtimeLocalization",
+          "status": "unmeasured",
+          "requiredEvidenceRefs": [
+            "runtime/effect localization witness"
+          ],
+          "observedEvidenceRefs": [
+            "human review selects a repair operation",
+            "resolve or explicitly accept coverage gap gap:path-rule:authorization-bypass-hole:missing-policy-test"
+          ],
+          "blockedReasonRefs": [
+            "runtime-localization:witness-not-supplied"
+          ],
+          "exactnessAssumptionRefs": [
+            "exactness:operation-preconditions-observed"
+          ],
+          "reading": "runtimeLocalization is unmeasured under selected operation evidence"
+        },
+        {
+          "lawAxis": "migrationCompatibility",
+          "status": "notApplicable",
+          "requiredEvidenceRefs": [
+            "migration compatibility witness"
+          ],
+          "observedEvidenceRefs": [
+            "obstruction:homotopy-report-fixture:computed",
+            "preserve existing observed atom configuration boundaries"
+          ],
+          "blockedReasonRefs": [],
+          "exactnessAssumptionRefs": [],
+          "reading": "migrationCompatibility is notApplicable under selected operation evidence"
+        },
+        {
+          "lawAxis": "reverseInvolution",
+          "status": "unmeasured",
+          "requiredEvidenceRefs": [
+            "reverse operation witness"
+          ],
+          "observedEvidenceRefs": [
+            "obstruction:homotopy-report-fixture:computed",
+            "preserve existing observed atom configuration boundaries"
+          ],
+          "blockedReasonRefs": [
+            "reverse-involution:witness-not-supplied"
+          ],
+          "exactnessAssumptionRefs": [
+            "exactness:reverse-operation"
+          ],
+          "reading": "reverseInvolution is unmeasured under selected operation evidence"
+        },
+        {
+          "lawAxis": "repairMonotonicity",
+          "status": "blocked",
+          "requiredEvidenceRefs": [
+            "selected obstruction valuation",
+            "transfer risk refs"
+          ],
+          "observedEvidenceRefs": [
+            "obstruction:homotopy-report-fixture:computed",
+            "sig-axis:homotopy-report-fixture"
+          ],
+          "blockedReasonRefs": [
+            "may transfer obstruction into runtime behavior, ownership, or idempotency boundary"
+          ],
+          "exactnessAssumptionRefs": [
+            "exactness:selected-axis-only"
+          ],
+          "reading": "repairMonotonicity is blocked under selected operation evidence"
+        }
       ],
       "evidenceBoundary": "repair candidate is derived from ArchSig packet evidence, not an automatic patch",
       "nonConclusions": [
@@ -3131,8 +3291,11 @@
         "coverage:homotopy-report-fixture: report observation gap and block signature-zero reflection",
         "gap:path-rule:authorization-bypass-hole:missing-policy-test: authorization bypass path lacks policy or test filler evidence",
         "implementation patch and verification evidence are not supplied by ArchSig analysis",
-        "witness:homotopy-report-fixture: report observation gap; do not infer measured zero",
-        "resolve or explicitly accept coverage gap gap:path-rule:authorization-bypass-hole:missing-policy-test"
+        "may transfer obstruction into runtime behavior, ownership, or idempotency boundary",
+        "replacement-equivalence:witness-not-supplied",
+        "reverse-involution:witness-not-supplied",
+        "runtime-localization:witness-not-supplied",
+        "witness:homotopy-report-fixture: report observation gap; do not infer measured zero"
       ],
       "coverageGapRefs": [
         "gap:path-rule:authorization-bypass-hole:missing-policy-test",
@@ -10090,7 +10253,7 @@
       "feature-extension-formula:homotopy-report-fixture-archmap status=measured inherited=1 featureLocal=1 interaction=1 residualGaps=1"
     ],
     "operationCalculusLawSummary": [
-      "repair:obstruction-homotopy-report-fixture-computed kind=repair-homotopyreportfixturecircuit composition=assumptionRelative repairMonotonicity=selectedAxisOnly boundary=notASynthesisCertificate"
+      "repair:obstruction-homotopy-report-fixture-computed kind=repair-homotopyreportfixturecircuit composition=observed repairMonotonicity=blockedByTransferRisk boundary=notASynthesisCertificate"
     ],
     "pathSignatureTrajectorySummary": [
       "operation-delta:repair-obstruction-homotopy-report-fixture-computed status=candidateTrajectory endpointDeltas=1 nonMonotoneAxes=1 cost=support=1 transferred=1"
@@ -10117,7 +10280,7 @@
       "synthesis-blockage:homotopy-report-fixture-archmap status=synthesisBlockedByMissingEvidenceOrConstraints targets=2 constraints=7 missing=5 noSolution=notASolverAndNotAbsenceProof"
     ],
     "operationPreconditionReadinessSummary": [
-      "repair:obstruction-homotopy-report-fixture-computed kind=repair-homotopyreportfixturecircuit status=blockedByMissingPreconditionEvidence missing=5 witnesses=1"
+      "repair:obstruction-homotopy-report-fixture-computed kind=repair-homotopyreportfixturecircuit status=blockedByMissingPreconditionEvidence missing=8 witnesses=1"
     ],
     "pathMultiplicityLossSummary": [
       "homotopy-report-fixture-archmap status=reachabilityMultiplicityLossObserved paths=1 alternatePressure=8 fanIn=1 forgotten=1"

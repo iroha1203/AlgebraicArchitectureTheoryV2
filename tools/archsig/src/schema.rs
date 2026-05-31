@@ -2147,8 +2147,22 @@ pub struct ArchSigOperationCalculusLawReadingV0 {
     pub synthesis_no_solution_boundary: String,
     pub precondition_refs: Vec<String>,
     pub evidence_refs: Vec<String>,
+    #[serde(default)]
+    pub law_evidence: Vec<ArchSigOperationLawEvidenceV0>,
     pub evidence_boundary: String,
     pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigOperationLawEvidenceV0 {
+    pub law_axis: String,
+    pub status: String,
+    pub required_evidence_refs: Vec<String>,
+    pub observed_evidence_refs: Vec<String>,
+    pub blocked_reason_refs: Vec<String>,
+    pub exactness_assumption_refs: Vec<String>,
+    pub reading: String,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

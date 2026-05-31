@@ -428,6 +428,13 @@ The builder:
   into witness-level attribution. The classifier records review attribution, not
   a mutually disjoint decomposition, and keeps the ArchSig / FieldSig boundary
   explicit.
+- `operationCalculusLawReadings` evaluates operation law axes as
+  evidence-relative readings. Each axis reports `observed`, `unmeasured`,
+  `blocked`, or `notApplicable` with required evidence refs, observed evidence
+  refs, blocked reasons, and exactness assumptions. Operation kind tags may make
+  an axis applicable, but they do not by themselves discharge an observed law;
+  repair monotonicity is tied to selected obstruction valuation and transfer
+  risk refs.
 - axis-forgetting risk records when a coarse observation projection has
   forgotten selected axes or collapsed mixed-axis support. It blocks
   `ZeroReflecting` and `ObstructionReflecting` readings unless explicit axis
