@@ -96,6 +96,13 @@ the two paths comparable. ArchSig will derive comparable continuation values
 from the supplied operation sequences, endpoint refs, and selected axis evidence;
 it will not execute runtime semantics or treat missing comparable input as zero.
 
+For state/effect law evidence, prefer first-class `operationSquareEvidence[]`
+when source, tests, or runtime traces identify from/event/to state transitions
+or comparable effect orderings. Keep replay/idempotency, compensation or
+finalization, and authority requirements as separate refs. If those traces or
+tests are private or unavailable, create targeted `observationGaps[]`; do not
+promote atom presence to a law claim.
+
 If filler evidence is unavailable, record a targeted `observationGaps[]` entry
 whose `subjectRef` names the affected path rule, operation square, or loop
 candidate. Avoid global gaps that block unrelated measured loops. Never turn

@@ -1009,12 +1009,68 @@ fn coupon_tax_rounding_fixture_locks_semantic_monodromy() {
         "coupon fixture must lock effect replay mismatch through comparable continuation values"
     );
     assert!(
+        generated["effectRelationAlgebraReadings"]
+            .as_array()
+            .is_some_and(|readings| readings.iter().any(|reading| {
+                reading["relationEvaluations"]
+                    .as_array()
+                    .is_some_and(|evaluations| {
+                        evaluations.iter().any(|evaluation| {
+                            evaluation["lawAxis"] == "replaySafety"
+                                && evaluation["status"] == "blocked"
+                                && evaluation["blockedReasonRefs"]
+                                    .as_array()
+                                    .is_some_and(|refs| !refs.is_empty())
+                        })
+                    })
+            })),
+        "effect replay mismatch fixture must expose replay safety as a law evaluation axis"
+    );
+    assert!(
         golden["featureBoundaryResidualReadings"]
             .as_array()
             .is_some_and(|readings| !readings.is_empty())
     );
     assert!(golden.to_string().contains("PaymentAmount"));
     assert!(golden.to_string().contains("ReceiptAmount"));
+}
+
+#[test]
+fn state_effect_law_evaluators_keep_missing_runtime_blocked() {
+    let root = fixture_root();
+    let packet = read_json(&root.join("archsig_analysis_packet.json"));
+    let state_reading = packet["stateTransitionAlgebraReadings"]
+        .as_array()
+        .expect("state transition readings are array")
+        .first()
+        .expect("minimal fixture has state transition reading");
+    assert_eq!(state_reading["lawEvaluatorStatus"], "blocked");
+    assert!(
+        state_reading["transitionRelationInputs"]
+            .as_array()
+            .is_some_and(|inputs| inputs.iter().any(|input| {
+                input["eventRefs"].as_array().is_some_and(|refs| {
+                    refs.iter()
+                        .any(|value| value.as_str() == Some("gap-runtime-user-db-trace"))
+                })
+            })),
+        "missing runtime trace must remain a transition input blocker"
+    );
+    assert!(
+        state_reading["lawEvaluations"]
+            .as_array()
+            .is_some_and(|evaluations| evaluations.iter().any(|evaluation| {
+                evaluation["lawAxis"] == "replaySafety"
+                    && evaluation["status"] == "blocked"
+                    && evaluation["blockedReasonRefs"]
+                        .as_array()
+                        .is_some_and(|refs| {
+                            refs.iter()
+                                .any(|value| value.as_str() == Some("gap-runtime-user-db-trace"))
+                        })
+            })),
+        "missing runtime trace must block replay safety rather than become measured zero"
+    );
 }
 
 #[test]
@@ -2908,6 +2964,31 @@ fn assert_north_star_packet_surfaces(json: &Value) {
                 reading["requiredEffectRelations"]
                     .as_array()
                     .is_some_and(|items| !items.is_empty())
+                    && reading["relationInputs"]
+                        .as_array()
+                        .is_some_and(|items| !items.is_empty())
+                    && reading["relationEvaluations"]
+                        .as_array()
+                        .is_some_and(|items| {
+                            let axes = items
+                                .iter()
+                                .filter_map(|item| item["lawAxis"].as_str())
+                                .collect::<std::collections::BTreeSet<_>>();
+                            axes.contains("orderingPreservation")
+                                && axes.contains("replaySafety")
+                                && axes.contains("idempotency")
+                                && axes.contains("compensationAvailability")
+                                && axes.contains("authorityRequirement")
+                                && items.iter().all(|item| {
+                                    item["status"].as_str().is_some_and(|status| {
+                                        matches!(
+                                            status,
+                                            "observed" | "blocked" | "unmeasured" | "notApplicable"
+                                        )
+                                    }) && item["requiredInputRefs"].as_array().is_some()
+                                })
+                        })
+                    && reading["relationEvaluatorStatus"].as_str().is_some()
                     && reading["effectOrderingPressure"].as_str().is_some()
                     && reading["stateTransitionRef"].as_str().is_some()
                     && reading["evidenceBoundary"].as_str().is_some()
@@ -3030,6 +3111,30 @@ fn assert_north_star_packet_surfaces(json: &Value) {
                 reading["requiredRelations"]
                     .as_array()
                     .is_some_and(|items| !items.is_empty())
+                    && reading["transitionRelationInputs"]
+                        .as_array()
+                        .is_some_and(|items| !items.is_empty())
+                    && reading["lawEvaluations"].as_array().is_some_and(|items| {
+                        let axes = items
+                            .iter()
+                            .filter_map(|item| item["lawAxis"].as_str())
+                            .collect::<std::collections::BTreeSet<_>>();
+                        axes.contains("stateTransitionRelation")
+                            && axes.contains("commutativity")
+                            && axes.contains("idempotency")
+                            && axes.contains("replaySafety")
+                            && axes.contains("orderingPreservation")
+                            && axes.contains("invariantPreservation")
+                            && items.iter().all(|item| {
+                                item["status"].as_str().is_some_and(|status| {
+                                    matches!(
+                                        status,
+                                        "observed" | "blocked" | "unmeasured" | "notApplicable"
+                                    )
+                                }) && item["requiredInputRefs"].as_array().is_some()
+                            })
+                    })
+                    && reading["lawEvaluatorStatus"].as_str().is_some()
                     && reading["reading"].as_str().is_some()
                     && reading["recommendedNextAction"].as_str().is_some()
             }),

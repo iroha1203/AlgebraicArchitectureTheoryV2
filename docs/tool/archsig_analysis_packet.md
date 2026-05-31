@@ -213,6 +213,19 @@ The implemented schema records:
 - `repairOperationCandidates`
 - `operationDeltas`
 - `pathHomotopyDiagramReadings`
+
+`stateTransitionAlgebraReadings[]` is not an Atom-family presence summary.
+It now carries `transitionRelationInputs[]` rows with from/event/to,
+operation, invariant, runtime/trace, and source refs, plus `lawEvaluations[]`
+for transition relation, commutativity, idempotency, replay safety, ordering
+preservation, and invariant preservation. Missing runtime or test evidence is
+kept as `blocked`, not interpreted as measured zero.
+
+`effectRelationAlgebraReadings[]` similarly exposes `relationInputs[]` and
+`relationEvaluations[]` for ordering preservation, replay safety, idempotency,
+compensation availability, and authority requirements. This keeps effect
+ordering / replay / compensation separate from general state transition
+pressure and from raw effect Atom presence.
 - `boundedJudgements`
 - `llmInterpretationPacket`
 - `evidenceBoundary`

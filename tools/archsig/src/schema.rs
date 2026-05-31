@@ -2319,12 +2319,42 @@ pub struct ArchSigEffectRelationAlgebraReadingV0 {
     pub relation_atom_refs: Vec<String>,
     pub external_boundary_refs: Vec<String>,
     pub required_effect_relations: Vec<String>,
+    pub relation_inputs: Vec<ArchSigEffectRelationInputV0>,
+    pub relation_evaluations: Vec<ArchSigEffectRelationLawEvaluationV0>,
+    pub relation_evaluator_status: String,
     pub unresolved_effect_relations: Vec<String>,
     pub effect_ordering_pressure: String,
     pub state_transition_ref: String,
     pub evidence_boundary: String,
     pub recommended_next_action: String,
     pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigEffectRelationInputV0 {
+    pub relation_input_id: String,
+    pub relation_kind: String,
+    pub ordering_refs: Vec<String>,
+    pub replay_or_idempotency_refs: Vec<String>,
+    pub compensation_or_finalization_refs: Vec<String>,
+    pub authority_requirement_refs: Vec<String>,
+    pub effect_refs: Vec<String>,
+    pub runtime_or_trace_refs: Vec<String>,
+    pub source_refs: Vec<String>,
+    pub reading: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigEffectRelationLawEvaluationV0 {
+    pub law_axis: String,
+    pub status: String,
+    pub required_input_refs: Vec<String>,
+    pub observed_input_refs: Vec<String>,
+    pub blocked_reason_refs: Vec<String>,
+    pub evaluator: String,
+    pub reading: String,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -2769,12 +2799,41 @@ pub struct ArchSigStateTransitionAlgebraReadingV0 {
     pub effect_atom_refs: Vec<String>,
     pub runtime_atom_refs: Vec<String>,
     pub required_relations: Vec<String>,
+    pub transition_relation_inputs: Vec<ArchSigStateTransitionRelationInputV0>,
+    pub law_evaluations: Vec<ArchSigStateTransitionLawEvaluationV0>,
+    pub law_evaluator_status: String,
     pub unresolved_relations: Vec<String>,
     pub obstruction_refs: Vec<String>,
     pub reading: String,
     pub evidence_boundary: String,
     pub recommended_next_action: String,
     pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigStateTransitionRelationInputV0 {
+    pub transition_input_id: String,
+    pub from_refs: Vec<String>,
+    pub event_refs: Vec<String>,
+    pub to_refs: Vec<String>,
+    pub operation_refs: Vec<String>,
+    pub invariant_refs: Vec<String>,
+    pub runtime_or_trace_refs: Vec<String>,
+    pub source_refs: Vec<String>,
+    pub reading: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigStateTransitionLawEvaluationV0 {
+    pub law_axis: String,
+    pub status: String,
+    pub required_input_refs: Vec<String>,
+    pub observed_input_refs: Vec<String>,
+    pub blocked_reason_refs: Vec<String>,
+    pub evaluator: String,
+    pub reading: String,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

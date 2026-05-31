@@ -31,6 +31,7 @@ use crate::{
     ArchSigCurvatureWitnessSupportV0, ArchSigDesignPressureReadingV0,
     ArchSigDesignPrincipleReadingV0, ArchSigDiagramFillabilityReadingV0,
     ArchSigDominantAtomFamilyCompositionV0, ArchSigEffectRelationAlgebraReadingV0,
+    ArchSigEffectRelationInputV0, ArchSigEffectRelationLawEvaluationV0,
     ArchSigEvolutionRiskRankingV0, ArchSigFeatureBoundaryResidualReadingV0,
     ArchSigFeatureExtensionAxisSummaryV0, ArchSigFeatureExtensionDiagnosisReadingV0,
     ArchSigFeatureExtensionFormulaReadingV0, ArchSigFeatureExtensionWitnessAttributionV0,
@@ -58,6 +59,7 @@ use crate::{
     ArchSigSpectralDominantComponentV0, ArchSigSpectralDrilldownReadingV0,
     ArchSigSpectralMatrixShapeV0, ArchSigSpectralModeComponentV0, ArchSigSpectralModeReadingV0,
     ArchSigSpectralValueV0, ArchSigSplitReadinessReadingV0, ArchSigStateTransitionAlgebraReadingV0,
+    ArchSigStateTransitionLawEvaluationV0, ArchSigStateTransitionRelationInputV0,
     ArchSigStokesStyleReadingV0, ArchSigStructuralReadingReviewSurfaceV0,
     ArchSigSubjectFamilySpreadV0, ArchSigSynthesisBlockageReadingV0,
     ArchSigThreeLayerFlatnessReadingV0, ArchSigTransferBridgeReadingV0,
@@ -7269,6 +7271,41 @@ fn build_state_transition_algebra_readings(
         })
         .map(|obstruction| obstruction.obstruction_circuit_id.clone())
         .collect::<Vec<_>>();
+    let state_effect_gap_refs = archmap
+        .observation_gaps
+        .iter()
+        .filter(|gap| {
+            let text = format!("{} {}", gap.gap_id, gap.reason).to_ascii_lowercase();
+            text.contains("runtime")
+                || text.contains("test")
+                || text.contains("trace")
+                || text.contains("replay")
+                || text.contains("idempot")
+                || text.contains("effect")
+                || text.contains("state")
+        })
+        .map(|gap| gap.gap_id.clone())
+        .collect::<Vec<_>>();
+    let transition_relation_inputs = build_state_transition_relation_inputs(
+        archmap,
+        &state_atom_refs,
+        &effect_atom_refs,
+        &runtime_atom_refs,
+        &state_effect_gap_refs,
+    );
+    let transition_input_refs = transition_relation_inputs
+        .iter()
+        .map(|input| input.transition_input_id.clone())
+        .collect::<Vec<_>>();
+    let law_evaluations = build_state_transition_law_evaluations(
+        &transition_relation_inputs,
+        &state_atom_refs,
+        &effect_atom_refs,
+        &runtime_atom_refs,
+        &obstruction_refs,
+        &state_effect_gap_refs,
+    );
+    let law_evaluator_status = aggregate_law_evaluator_status(&law_evaluations);
     vec![ArchSigStateTransitionAlgebraReadingV0 {
         reading_id: format!("state-transition-algebra:{}", stable_id(&archmap.map_id)),
         generator_refs,
@@ -7282,6 +7319,9 @@ fn build_state_transition_algebra_readings(
             "compensation or finalization".to_string(),
             "transaction boundary ownership".to_string(),
         ],
+        transition_relation_inputs,
+        law_evaluations,
+        law_evaluator_status,
         unresolved_relations: archmap
             .observation_gaps
             .iter()
@@ -7295,17 +7335,265 @@ fn build_state_transition_algebra_readings(
             .map(|gap| gap.gap_id.clone())
             .collect(),
         obstruction_refs,
-        reading:
-            "state/effect/runtime atoms generate a bounded state transition algebra reading"
-                .to_string(),
+        reading: format!(
+            "state/effect/runtime algebra is evaluated from {} explicit transition relation input(s), not atom presence alone",
+            transition_input_refs.len()
+        ),
         evidence_boundary:
-            "transition algebra is derived from observed atoms only; runtime traces and tests remain required for reflecting laws"
+            "transition algebra is law-evaluator output over observed transition inputs; missing runtime traces and tests remain blocked evidence, not measured zero"
                 .to_string(),
         recommended_next_action:
-            "verify idempotency, replay, ordering, and transaction ownership before claiming state/effect flatness"
+            "resolve blocked law axes for idempotency, replay, ordering, and transaction ownership before claiming state/effect flatness"
                 .to_string(),
         non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
     }]
+}
+
+fn build_state_transition_relation_inputs(
+    archmap: &ArchMapDocumentV0,
+    state_atom_refs: &[String],
+    effect_atom_refs: &[String],
+    runtime_atom_refs: &[String],
+    gap_refs: &[String],
+) -> Vec<ArchSigStateTransitionRelationInputV0> {
+    let state_ref_set = state_atom_refs
+        .iter()
+        .map(String::as_str)
+        .collect::<BTreeSet<_>>();
+    let effect_ref_set = effect_atom_refs
+        .iter()
+        .map(String::as_str)
+        .collect::<BTreeSet<_>>();
+    let runtime_ref_set = runtime_atom_refs
+        .iter()
+        .map(String::as_str)
+        .collect::<BTreeSet<_>>();
+    let mut inputs = archmap
+        .operation_square_evidence
+        .iter()
+        .filter(|evidence| {
+            evidence.atom_observation_refs.iter().any(|atom_ref| {
+                state_ref_set.contains(atom_ref.as_str())
+                    || effect_ref_set.contains(atom_ref.as_str())
+                    || runtime_ref_set.contains(atom_ref.as_str())
+            }) || operation_ref_mentions(
+                &format!(
+                    "{} {} {} {}",
+                    evidence.evidence_kind,
+                    evidence.left_operation_ref,
+                    evidence.right_operation_ref,
+                    evidence.evidence_boundary
+                ),
+                &["state", "effect", "runtime", "replay", "idempot"],
+            )
+        })
+        .map(|evidence| {
+            let event_refs = unique_strings(
+                evidence
+                    .atom_observation_refs
+                    .iter()
+                    .filter(|atom_ref| {
+                        effect_ref_set.contains(atom_ref.as_str())
+                            || runtime_ref_set.contains(atom_ref.as_str())
+                    })
+                    .cloned()
+                    .chain(evidence.generator_candidate_refs.iter().cloned()),
+            );
+            let invariant_refs = unique_strings(
+                evidence
+                    .atom_observation_refs
+                    .iter()
+                    .filter(|atom_ref| state_ref_set.contains(atom_ref.as_str()))
+                    .cloned()
+                    .chain(evidence.semantic_observation_refs.iter().cloned()),
+            );
+            ArchSigStateTransitionRelationInputV0 {
+                transition_input_id: format!(
+                    "state-transition-input:{}",
+                    stable_id(&evidence.operation_square_evidence_id)
+                ),
+                from_refs: if evidence.endpoint_object_refs.is_empty() {
+                    evidence.shared_endpoint_refs.clone()
+                } else {
+                    evidence.endpoint_object_refs.clone()
+                },
+                event_refs,
+                to_refs: unique_strings(
+                    evidence
+                        .shared_endpoint_refs
+                        .iter()
+                        .chain(evidence.endpoint_object_refs.iter())
+                        .cloned(),
+                ),
+                operation_refs: unique_strings(
+                    std::iter::once(evidence.left_operation_ref.clone())
+                        .chain(std::iter::once(evidence.right_operation_ref.clone()))
+                        .chain(evidence.p_operation_sequence.iter().cloned())
+                        .chain(evidence.q_operation_sequence.iter().cloned()),
+                ),
+                invariant_refs,
+                runtime_or_trace_refs: evidence
+                    .atom_observation_refs
+                    .iter()
+                    .filter(|atom_ref| runtime_ref_set.contains(atom_ref.as_str()))
+                    .cloned()
+                    .collect(),
+                source_refs: source_refs_for_observation_refs(
+                    archmap,
+                    std::slice::from_ref(&evidence.operation_square_evidence_id),
+                ),
+                reading: format!(
+                    "{} supplies bounded transition relation evidence between selected operations",
+                    evidence.operation_square_evidence_id
+                ),
+            }
+        })
+        .collect::<Vec<_>>();
+    if inputs.is_empty()
+        && (!state_atom_refs.is_empty() || !effect_atom_refs.is_empty() || !gap_refs.is_empty())
+    {
+        inputs.push(ArchSigStateTransitionRelationInputV0 {
+            transition_input_id: format!(
+                "state-transition-input:{}:atom-derived",
+                stable_id(&archmap.map_id)
+            ),
+            from_refs: state_atom_refs.iter().take(8).cloned().collect(),
+            event_refs: effect_atom_refs
+                .iter()
+                .chain(runtime_atom_refs.iter())
+                .chain(gap_refs.iter())
+                .take(12)
+                .cloned()
+                .collect(),
+            to_refs: state_atom_refs.iter().skip(1).take(8).cloned().collect(),
+            operation_refs: Vec::new(),
+            invariant_refs: state_atom_refs.iter().take(12).cloned().collect(),
+            runtime_or_trace_refs: runtime_atom_refs.iter().take(12).cloned().collect(),
+            source_refs: source_refs_for_observation_refs(
+                archmap,
+                &unique_strings(state_atom_refs.iter().cloned().chain(gap_refs.iter().cloned())),
+            ),
+            reading: "fallback transition input preserves atom-derived evidence but remains blocked without operation/runtime relation evidence".to_string(),
+        });
+    }
+    inputs
+}
+
+fn build_state_transition_law_evaluations(
+    inputs: &[ArchSigStateTransitionRelationInputV0],
+    state_atom_refs: &[String],
+    effect_atom_refs: &[String],
+    runtime_atom_refs: &[String],
+    obstruction_refs: &[String],
+    gap_refs: &[String],
+) -> Vec<ArchSigStateTransitionLawEvaluationV0> {
+    let input_refs = inputs
+        .iter()
+        .map(|input| input.transition_input_id.clone())
+        .collect::<Vec<_>>();
+    let operation_refs =
+        unique_strings(inputs.iter().flat_map(|input| input.operation_refs.clone()));
+    let invariant_refs =
+        unique_strings(inputs.iter().flat_map(|input| input.invariant_refs.clone()));
+    let runtime_refs = unique_strings(
+        inputs
+            .iter()
+            .flat_map(|input| input.runtime_or_trace_refs.clone()),
+    );
+    let event_refs = unique_strings(inputs.iter().flat_map(|input| input.event_refs.clone()));
+    vec![
+        state_transition_law_evaluation(
+            "stateTransitionRelation",
+            &input_refs,
+            unique_strings(
+                state_atom_refs
+                    .iter()
+                    .cloned()
+                    .chain(operation_refs.iter().cloned()),
+            ),
+            gap_refs.to_vec(),
+            "from/event/to transition relation must be witnessed by operation or runtime evidence",
+        ),
+        state_transition_law_evaluation(
+            "commutativity",
+            &input_refs,
+            operation_refs.clone(),
+            obstruction_refs.to_vec(),
+            "commutativity is observed only when comparable operation-square evidence is available",
+        ),
+        state_transition_law_evaluation(
+            "idempotency",
+            &input_refs,
+            unique_strings(
+                event_refs
+                    .iter()
+                    .chain(runtime_refs.iter())
+                    .filter(|value| {
+                        let text = value.to_ascii_lowercase();
+                        text.contains("idempot")
+                            || text.contains("retry")
+                            || text.contains("replay")
+                    })
+                    .cloned(),
+            ),
+            gap_refs.to_vec(),
+            "idempotency requires retry/replay/runtime evidence",
+        ),
+        state_transition_law_evaluation(
+            "replaySafety",
+            &input_refs,
+            unique_strings(
+                runtime_refs
+                    .clone()
+                    .into_iter()
+                    .chain(runtime_atom_refs.iter().cloned()),
+            ),
+            gap_refs.to_vec(),
+            "replay safety requires runtime or test trace evidence",
+        ),
+        state_transition_law_evaluation(
+            "orderingPreservation",
+            &input_refs,
+            unique_strings(
+                effect_atom_refs
+                    .iter()
+                    .cloned()
+                    .chain(operation_refs.iter().cloned()),
+            ),
+            obstruction_refs.to_vec(),
+            "ordering preservation is evaluated from effect and operation relation evidence",
+        ),
+        state_transition_law_evaluation(
+            "invariantPreservation",
+            &input_refs,
+            invariant_refs,
+            gap_refs.to_vec(),
+            "state invariants must be named before transition preservation is claimed",
+        ),
+    ]
+}
+
+fn state_transition_law_evaluation(
+    law_axis: &str,
+    required_input_refs: &[String],
+    observed_input_refs: Vec<String>,
+    blocked_reason_refs: Vec<String>,
+    reading: &str,
+) -> ArchSigStateTransitionLawEvaluationV0 {
+    let status = law_axis_status(
+        !required_input_refs.is_empty(),
+        &observed_input_refs,
+        &blocked_reason_refs,
+    );
+    ArchSigStateTransitionLawEvaluationV0 {
+        law_axis: law_axis.to_string(),
+        status,
+        required_input_refs: required_input_refs.to_vec(),
+        observed_input_refs,
+        blocked_reason_refs,
+        evaluator: "state-transition-law-evaluator-v0".to_string(),
+        reading: reading.to_string(),
+    }
 }
 
 fn build_operation_invariant_galois_readings(
@@ -8520,6 +8808,21 @@ fn build_effect_relation_algebra_readings(
     generator_refs.extend(obstruction_refs);
     generator_refs.sort();
     generator_refs.dedup();
+    let relation_inputs = build_effect_relation_inputs(
+        archmap,
+        &effect_atom_refs,
+        &relation_atom_refs,
+        &external_boundary_refs,
+    );
+    let relation_evaluations = build_effect_relation_law_evaluations(
+        &relation_inputs,
+        &effect_atom_refs,
+        &relation_atom_refs,
+        &external_boundary_refs,
+        &unresolved_effect_relations,
+        &generator_refs,
+    );
+    let relation_evaluator_status = aggregate_law_evaluator_status(&relation_evaluations);
     let pressure_count =
         relation_atom_refs.len() + unresolved_effect_relations.len() + external_boundary_refs.len();
     vec![ArchSigEffectRelationAlgebraReadingV0 {
@@ -8534,6 +8837,9 @@ fn build_effect_relation_algebra_readings(
             "compensation/finalization relation".to_string(),
             "handler and external provider boundary ownership".to_string(),
         ],
+        relation_inputs,
+        relation_evaluations,
+        relation_evaluator_status,
         unresolved_effect_relations,
         effect_ordering_pressure: if pressure_count == 0 {
             "notObserved".to_string()
@@ -8552,6 +8858,320 @@ fn build_effect_relation_algebra_readings(
                 .to_string(),
         non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
     }]
+}
+
+fn build_effect_relation_inputs(
+    archmap: &ArchMapDocumentV0,
+    effect_atom_refs: &[String],
+    relation_atom_refs: &[String],
+    external_boundary_refs: &[String],
+) -> Vec<ArchSigEffectRelationInputV0> {
+    let effect_ref_set = effect_atom_refs
+        .iter()
+        .map(String::as_str)
+        .collect::<BTreeSet<_>>();
+    let relation_ref_set = relation_atom_refs
+        .iter()
+        .map(String::as_str)
+        .collect::<BTreeSet<_>>();
+    let mut inputs = archmap
+        .operation_square_evidence
+        .iter()
+        .filter(|evidence| {
+            evidence
+                .atom_observation_refs
+                .iter()
+                .any(|atom_ref| {
+                    effect_ref_set.contains(atom_ref.as_str())
+                        || relation_ref_set.contains(atom_ref.as_str())
+                })
+                || operation_ref_mentions(
+                    &format!(
+                        "{} {} {} {}",
+                        evidence.evidence_kind,
+                        evidence.left_operation_ref,
+                        evidence.right_operation_ref,
+                        evidence.evidence_boundary
+                    ),
+                    &["effect", "event", "replay", "roundtrip", "compensat", "authority"],
+                )
+        })
+        .map(|evidence| {
+            let evidence_text = format!(
+                "{} {} {} {}",
+                evidence.evidence_kind,
+                evidence.left_operation_ref,
+                evidence.right_operation_ref,
+                evidence.evidence_boundary
+            )
+            .to_ascii_lowercase();
+            let atom_refs = evidence.atom_observation_refs.clone();
+            ArchSigEffectRelationInputV0 {
+                relation_input_id: format!(
+                    "effect-relation-input:{}",
+                    stable_id(&evidence.operation_square_evidence_id)
+                ),
+                relation_kind: if evidence_text.contains("compensat") {
+                    "compensation".to_string()
+                } else if evidence_text.contains("replay") || evidence_text.contains("idempot") {
+                    "replayOrIdempotency".to_string()
+                } else if evidence_text.contains("authority") {
+                    "authorityRequirement".to_string()
+                } else {
+                    "ordering".to_string()
+                },
+                ordering_refs: if evidence_text.contains("order") || evidence_text.contains("sequence") {
+                    evidence.generator_candidate_refs.clone()
+                } else {
+                    Vec::new()
+                },
+                replay_or_idempotency_refs: atom_refs
+                    .iter()
+                    .filter(|atom_ref| {
+                        let text = atom_ref.to_ascii_lowercase();
+                        text.contains("replay")
+                            || text.contains("retry")
+                            || text.contains("idempot")
+                            || evidence_text.contains("replay")
+                            || evidence_text.contains("idempot")
+                    })
+                    .cloned()
+                    .collect(),
+                compensation_or_finalization_refs: atom_refs
+                    .iter()
+                    .filter(|atom_ref| {
+                        let text = atom_ref.to_ascii_lowercase();
+                        text.contains("compensat")
+                            || text.contains("final")
+                            || evidence_text.contains("compensat")
+                            || evidence_text.contains("final")
+                    })
+                    .cloned()
+                    .collect(),
+                authority_requirement_refs: evidence
+                    .atom_observation_refs
+                    .iter()
+                    .filter(|atom_ref| {
+                        let text = atom_ref.to_ascii_lowercase();
+                        text.contains("authority")
+                            || text.contains("trust")
+                            || evidence_text.contains("authority")
+                    })
+                    .cloned()
+                    .collect(),
+                effect_refs: atom_refs
+                    .iter()
+                    .filter(|atom_ref| effect_ref_set.contains(atom_ref.as_str()))
+                    .cloned()
+                    .collect(),
+                runtime_or_trace_refs: atom_refs
+                    .iter()
+                    .filter(|atom_ref| {
+                        let text = atom_ref.to_ascii_lowercase();
+                        text.contains("runtime") || text.contains("trace")
+                    })
+                    .cloned()
+                    .collect(),
+                source_refs: source_refs_for_observation_refs(
+                    archmap,
+                    std::slice::from_ref(&evidence.operation_square_evidence_id),
+                ),
+                reading: format!(
+                    "{} supplies bounded effect relation evidence for ordering/replay/compensation evaluation",
+                    evidence.operation_square_evidence_id
+                ),
+            }
+        })
+        .collect::<Vec<_>>();
+    if inputs.is_empty() && (!effect_atom_refs.is_empty() || !relation_atom_refs.is_empty()) {
+        inputs.push(ArchSigEffectRelationInputV0 {
+            relation_input_id: format!(
+                "effect-relation-input:{}:atom-derived",
+                stable_id(&archmap.map_id)
+            ),
+            relation_kind: "atomDerivedBlockedInput".to_string(),
+            ordering_refs: relation_atom_refs.iter().take(16).cloned().collect(),
+            replay_or_idempotency_refs: relation_atom_refs
+                .iter()
+                .chain(effect_atom_refs.iter())
+                .filter(|atom_ref| operation_ref_mentions(atom_ref, &["replay", "retry", "idempot"]))
+                .cloned()
+                .collect(),
+            compensation_or_finalization_refs: relation_atom_refs
+                .iter()
+                .chain(effect_atom_refs.iter())
+                .filter(|atom_ref| operation_ref_mentions(atom_ref, &["compensat", "final"]))
+                .cloned()
+                .collect(),
+            authority_requirement_refs: relation_atom_refs
+                .iter()
+                .chain(effect_atom_refs.iter())
+                .filter(|atom_ref| operation_ref_mentions(atom_ref, &["authority", "trust"]))
+                .cloned()
+                .collect(),
+            effect_refs: effect_atom_refs.iter().take(16).cloned().collect(),
+            runtime_or_trace_refs: external_boundary_refs.iter().take(16).cloned().collect(),
+            source_refs: source_refs_for_observation_refs(archmap, effect_atom_refs),
+            reading: "fallback effect relation input preserves observed effect/relation refs but blocks law claims without relation evidence".to_string(),
+        });
+    }
+    inputs
+}
+
+fn build_effect_relation_law_evaluations(
+    inputs: &[ArchSigEffectRelationInputV0],
+    effect_atom_refs: &[String],
+    relation_atom_refs: &[String],
+    external_boundary_refs: &[String],
+    unresolved_effect_relations: &[String],
+    generator_refs: &[String],
+) -> Vec<ArchSigEffectRelationLawEvaluationV0> {
+    let input_refs = inputs
+        .iter()
+        .map(|input| input.relation_input_id.clone())
+        .collect::<Vec<_>>();
+    let ordering_refs = unique_strings(inputs.iter().flat_map(|input| input.ordering_refs.clone()));
+    let replay_refs = unique_strings(
+        inputs
+            .iter()
+            .flat_map(|input| input.replay_or_idempotency_refs.clone()),
+    );
+    let compensation_refs = unique_strings(
+        inputs
+            .iter()
+            .flat_map(|input| input.compensation_or_finalization_refs.clone()),
+    );
+    let authority_refs = unique_strings(
+        inputs
+            .iter()
+            .flat_map(|input| input.authority_requirement_refs.clone())
+            .chain(external_boundary_refs.iter().cloned()),
+    );
+    vec![
+        effect_relation_law_evaluation(
+            "orderingPreservation",
+            &input_refs,
+            unique_strings(
+                ordering_refs
+                    .into_iter()
+                    .chain(relation_atom_refs.iter().cloned()),
+            ),
+            generator_refs.to_vec(),
+            "effect ordering must be backed by relation input or comparable operation evidence",
+        ),
+        effect_relation_law_evaluation(
+            "replaySafety",
+            &input_refs,
+            replay_refs,
+            unresolved_effect_relations.to_vec(),
+            "replay safety is blocked when runtime/test/effect evidence is missing",
+        ),
+        effect_relation_law_evaluation(
+            "idempotency",
+            &input_refs,
+            unique_strings(
+                relation_atom_refs
+                    .iter()
+                    .chain(effect_atom_refs.iter())
+                    .filter(|atom_ref| {
+                        operation_ref_mentions(atom_ref, &["idempot", "retry", "replay"])
+                    })
+                    .cloned(),
+            ),
+            unresolved_effect_relations.to_vec(),
+            "idempotency requires explicit retry/idempotency effect evidence",
+        ),
+        effect_relation_law_evaluation(
+            "compensationAvailability",
+            &input_refs,
+            compensation_refs,
+            unresolved_effect_relations.to_vec(),
+            "compensation availability requires compensation or finalization relation evidence",
+        ),
+        effect_relation_law_evaluation(
+            "authorityRequirement",
+            &input_refs,
+            authority_refs,
+            unresolved_effect_relations.to_vec(),
+            "external effects must expose authority or ownership requirements",
+        ),
+    ]
+}
+
+fn effect_relation_law_evaluation(
+    law_axis: &str,
+    required_input_refs: &[String],
+    observed_input_refs: Vec<String>,
+    blocked_reason_refs: Vec<String>,
+    reading: &str,
+) -> ArchSigEffectRelationLawEvaluationV0 {
+    let status = law_axis_status(
+        !required_input_refs.is_empty(),
+        &observed_input_refs,
+        &blocked_reason_refs,
+    );
+    ArchSigEffectRelationLawEvaluationV0 {
+        law_axis: law_axis.to_string(),
+        status,
+        required_input_refs: required_input_refs.to_vec(),
+        observed_input_refs,
+        blocked_reason_refs,
+        evaluator: "effect-relation-law-evaluator-v0".to_string(),
+        reading: reading.to_string(),
+    }
+}
+
+fn law_axis_status(
+    has_required_inputs: bool,
+    observed_input_refs: &[String],
+    blocked_reason_refs: &[String],
+) -> String {
+    if !blocked_reason_refs.is_empty() {
+        "blocked".to_string()
+    } else if !observed_input_refs.is_empty() {
+        "observed".to_string()
+    } else if has_required_inputs {
+        "unmeasured".to_string()
+    } else {
+        "notApplicable".to_string()
+    }
+}
+
+trait LawEvaluationStatus {
+    fn status(&self) -> &str;
+}
+
+impl LawEvaluationStatus for ArchSigStateTransitionLawEvaluationV0 {
+    fn status(&self) -> &str {
+        &self.status
+    }
+}
+
+impl LawEvaluationStatus for ArchSigEffectRelationLawEvaluationV0 {
+    fn status(&self) -> &str {
+        &self.status
+    }
+}
+
+fn aggregate_law_evaluator_status<T: LawEvaluationStatus>(evaluations: &[T]) -> String {
+    if evaluations
+        .iter()
+        .any(|evaluation| evaluation.status() == "blocked")
+    {
+        "blocked".to_string()
+    } else if evaluations
+        .iter()
+        .any(|evaluation| evaluation.status() == "unmeasured")
+    {
+        "unmeasured".to_string()
+    } else if evaluations
+        .iter()
+        .any(|evaluation| evaluation.status() == "observed")
+    {
+        "observed".to_string()
+    } else {
+        "notApplicable".to_string()
+    }
 }
 
 fn build_synthesis_blockage_readings(
@@ -9649,7 +10269,10 @@ fn evaluate_design_principle(
         };
     let evidence_refs = if evidence_refs.is_empty() {
         if relevant_gaps.is_empty() {
-            vec![format!("principle-witness:{}:not-applicable", stable_id(spec.principle))]
+            vec![format!(
+                "principle-witness:{}:not-applicable",
+                stable_id(spec.principle)
+            )]
         } else {
             relevant_gaps
         }
@@ -15075,6 +15698,71 @@ fn check_aat_structural_reading_surfaces(packet: &ArchSigAnalysisPacketV0) -> Va
                 "effect relation algebra must enumerate effect/replay/compensation relations",
             ));
         }
+        if reading.relation_inputs.is_empty() {
+            examples.push(generic_validation_example(
+                &reading.reading_id,
+                "relationInputs",
+                "effect relation algebra must retain relation input rows",
+            ));
+        }
+        if reading.relation_evaluations.is_empty() {
+            examples.push(generic_validation_example(
+                &reading.reading_id,
+                "relationEvaluations",
+                "effect relation algebra must evaluate ordering/replay/idempotency/compensation/authority axes",
+            ));
+        }
+        push_blank(
+            &mut examples,
+            &format!("{} relationEvaluatorStatus", reading.reading_id),
+            &reading.relation_evaluator_status,
+        );
+        for input in &reading.relation_inputs {
+            push_blank(
+                &mut examples,
+                &format!("{} relationInputId", reading.reading_id),
+                &input.relation_input_id,
+            );
+            if input.effect_refs.is_empty()
+                && input.ordering_refs.is_empty()
+                && input.replay_or_idempotency_refs.is_empty()
+                && input.compensation_or_finalization_refs.is_empty()
+                && input.authority_requirement_refs.is_empty()
+                && input.runtime_or_trace_refs.is_empty()
+            {
+                examples.push(generic_validation_example(
+                    &reading.reading_id,
+                    &input.relation_input_id,
+                    "effect relation input must retain effect, ordering, replay, compensation, authority, or runtime refs",
+                ));
+            }
+        }
+        for evaluation in &reading.relation_evaluations {
+            if !matches!(
+                evaluation.status.as_str(),
+                "observed" | "blocked" | "unmeasured" | "notApplicable"
+            ) {
+                examples.push(generic_validation_example(
+                    &reading.reading_id,
+                    &evaluation.status,
+                    "effect relation law evaluation status must be observed / blocked / unmeasured / notApplicable",
+                ));
+            }
+            if evaluation.status == "blocked" && evaluation.blocked_reason_refs.is_empty() {
+                examples.push(generic_validation_example(
+                    &reading.reading_id,
+                    &evaluation.law_axis,
+                    "blocked effect relation law evaluation must retain blocker refs",
+                ));
+            }
+            if evaluation.status == "observed" && evaluation.observed_input_refs.is_empty() {
+                examples.push(generic_validation_example(
+                    &reading.reading_id,
+                    &evaluation.law_axis,
+                    "observed effect relation law evaluation must retain observed input refs",
+                ));
+            }
+        }
         push_blank(
             &mut examples,
             &format!("{} effectOrderingPressure", reading.reading_id),
@@ -15371,6 +16059,69 @@ fn check_aat_structural_reading_surfaces(packet: &ArchSigAnalysisPacketV0) -> Va
                 "requiredRelations",
                 "state transition algebra must record required relations",
             ));
+        }
+        if reading.transition_relation_inputs.is_empty() {
+            examples.push(generic_validation_example(
+                &reading.reading_id,
+                "transitionRelationInputs",
+                "state transition algebra must retain from/event/to transition relation input rows",
+            ));
+        }
+        if reading.law_evaluations.is_empty() {
+            examples.push(generic_validation_example(
+                &reading.reading_id,
+                "lawEvaluations",
+                "state transition algebra must evaluate transition, commutativity, idempotency, replay, ordering, and invariant axes",
+            ));
+        }
+        push_blank(
+            &mut examples,
+            &format!("{} lawEvaluatorStatus", reading.reading_id),
+            &reading.law_evaluator_status,
+        );
+        for input in &reading.transition_relation_inputs {
+            push_blank(
+                &mut examples,
+                &format!("{} transitionInputId", reading.reading_id),
+                &input.transition_input_id,
+            );
+            if input.from_refs.is_empty()
+                && input.event_refs.is_empty()
+                && input.to_refs.is_empty()
+                && input.operation_refs.is_empty()
+            {
+                examples.push(generic_validation_example(
+                    &reading.reading_id,
+                    &input.transition_input_id,
+                    "state transition input must retain from, event, to, or operation refs",
+                ));
+            }
+        }
+        for evaluation in &reading.law_evaluations {
+            if !matches!(
+                evaluation.status.as_str(),
+                "observed" | "blocked" | "unmeasured" | "notApplicable"
+            ) {
+                examples.push(generic_validation_example(
+                    &reading.reading_id,
+                    &evaluation.status,
+                    "state transition law evaluation status must be observed / blocked / unmeasured / notApplicable",
+                ));
+            }
+            if evaluation.status == "blocked" && evaluation.blocked_reason_refs.is_empty() {
+                examples.push(generic_validation_example(
+                    &reading.reading_id,
+                    &evaluation.law_axis,
+                    "blocked state transition law evaluation must retain blocker refs",
+                ));
+            }
+            if evaluation.status == "observed" && evaluation.observed_input_refs.is_empty() {
+                examples.push(generic_validation_example(
+                    &reading.reading_id,
+                    &evaluation.law_axis,
+                    "observed state transition law evaluation must retain observed input refs",
+                ));
+            }
         }
         push_blank(&mut examples, &reading.reading_id, &reading.reading);
         push_blank(
