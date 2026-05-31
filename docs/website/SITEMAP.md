@@ -95,6 +95,7 @@ SEO 用の公開 `sitemap.xml` は `website/sitemap.xml` であり、この文�
 | `/aat2/design-principle-layers/` | `website/aat2/design-principle-layers/index.html` | `/aat/design-principle-layers/` | AAT renewal preview Part II。SOLID、Layered / Clean Architecture、Event Sourcing、Saga、Circuit Breaker、Replicated Log を law package layer として読む章。 |
 | `/aat2/operations-and-calculus/` | `website/aat2/operations-and-calculus/index.html` | `/aat/operations-and-calculus/` | AAT renewal preview Part II。ArchitectureOperation、operation law、feature extension、selected repair、synthesis soundness の章。 |
 | `/aat2/dynamics-and-geometry/` | `website/aat2/dynamics-and-geometry/index.html` | `/aat/dynamics-and-geometry/` | AAT renewal preview Part II。ArchitecturePath、signature trajectory、PathHomotopy、DiagramFiller、selected monodromy / continuation の章。 |
+| `/aat2/representations-and-effects/` | `website/aat2/representations-and-effects/index.html` | `/aat/representations-and-effects/` | AAT renewal preview Part III。graph、thin category、walk / matrix、analytic representation、state-transition algebra、effect law surface の章。 |
 
 ## sitemap 対応ルール
 
