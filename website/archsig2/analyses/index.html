@@ -68,14 +68,14 @@
         <div class="site-shell">
           <nav class="breadcrumb" aria-label="Breadcrumb"><a href="../../">Home</a><a href="../">ArchSig</a><span>Analyses</span></nav>
           <p class="eyebrow">What ArchSig can inspect</p>
-          <h1>Use ArchSig when local facts do not explain the design movement.</h1>
-          <p class="lede">Linters, tests, and dependency graphs show important facts. ArchSig helps an LLM agent read what those facts mean for architecture: which boundaries are bending, which responsibilities are moving, and which evidence is still missing.</p>
+          <h1>See the structure behind the architecture.</h1>
+          <p class="lede">Linters, tests, and dependency graphs show important facts. ArchSig reads what those facts mean for architecture: which boundaries are bending, which responsibilities are moving, and which evidence is still missing.</p>
         </div>
       </section>
       <section class="section-band">
         <div class="site-shell article-layout">
           <aside class="article-sidebar" aria-label="ArchSig page navigation">
-            <nav class="toc-panel" aria-labelledby="toc-title"><h2 id="toc-title">On this page</h2><ol><li><a href="#catalog">Analysis catalog</a></li><li><a href="#ai-code">AI-assisted code review</a></li><li><a href="#tools">How it fits with other tools</a></li><li><a href="#handoff">FieldSig handoff</a></li></ol></nav>
+            <nav class="toc-panel" aria-labelledby="toc-title"><h2 id="toc-title">On this page</h2><ol><li><a href="#catalog">Analysis catalog</a></li><li><a href="#summary">What the summary reads</a></li><li><a href="#families">Reading families</a></li><li><a href="#ai-code">AI-assisted code review</a></li><li><a href="#tools">How it fits with other tools</a></li><li><a href="#handoff">FieldSig handoff</a></li></ol></nav>
             <div class="source-panel" data-sidebar-open="true"><h2>ArchSig</h2><ul><li><a href="../">Overview</a></li><li><a href="../getting-started/">Getting Started</a></li><li><a href="./" aria-current="page">Analyses</a></li><li><a aria-disabled="true">Examples</a></li><li><a aria-disabled="true">Manual</a></li><li><a aria-disabled="true">Reference</a></li></ul></div>
           </aside>
           <div class="article-main">
@@ -91,6 +91,38 @@
                 <li><strong>Hotspots and recurrent pressure</strong><span>Which supports keep attracting nonzero readings, repeated review focus, architectural holes, or missing evidence?</span></li>
                 <li><strong>Evidence gaps</strong><span>Which docs, tests, traces, policy decisions, ownership rules, or source refs are missing before the team should trust a reading?</span></li>
               </ul>
+            </section>
+            <section id="summary" class="article-section">
+              <h2>What the summary reads</h2>
+              <p>The agent should start from <code>analysis-summary</code>. It is the compact surface that turns the full packet into a reviewable diagnosis.</p>
+              <ul class="status-list">
+                <li><strong>Verdict</strong><span>Whether the supplied ArchMap and LawPolicy measured selected architecture pressure, architectural holes, coverage gaps, or no immediate review queue.</span></li>
+                <li><strong>Quality measurement</strong><span>Counts for selected axes, nonzero axes, hotspots, recurrent obstruction support, workflow risk, transfer bridges, unfilled loops, nonzero holonomy loops, local curvature cells, and coverage gaps.</span></li>
+                <li><strong>Trend diagnosis</strong><span>Where pressure concentrates across axes, hotspots, workflow risk, bridge pressure, path multiplicity loss, projection loss, and atom-origin closure debt.</span></li>
+                <li><strong>Dominant findings</strong><span>The compact list of nonzero axes, hotspots, recurrent pressure, architectural holes, workflow risk, bridge pressure, projection fidelity loss, effect-order pressure, synthesis blockage, operation readiness, and path multiplicity loss.</span></li>
+                <li><strong>Action queue</strong><span>The prioritized review queue the agent follows back into packet detail and source evidence before returning comments or repair candidates.</span></li>
+              </ul>
+            </section>
+            <section id="families" class="article-section">
+              <h2>Reading families</h2>
+              <p>ArchSig's implementation groups structural readings into several families. They are not separate products; they are different views over the same ArchMap plus LawPolicy analysis.</p>
+              <div class="article-table">
+                <table>
+                  <thead><tr><th scope="col">Family</th><th scope="col">What it helps read</th><th scope="col">Review question</th></tr></thead>
+                  <tbody>
+                    <tr><td>Signature axes</td><td>Nonzero law-relative architecture pressure.</td><td>Which selected architecture expectations are being stressed?</td></tr>
+                    <tr><td>Workflow risk</td><td>Permission, authority, state/effect, LLM mediation, and domain-cohesion pressure around observed molecules.</td><td>Which workflow responsibilities need source review first?</td></tr>
+                    <tr><td>Spectrum and hotspots</td><td>Concentrated support, recurrent obstruction patterns, witness clusters, and coverage gaps.</td><td>Where is review pressure accumulating across the codebase?</td></tr>
+                    <tr><td>Transfer bridges</td><td>Bridge atom families, overlap paths, split readiness, and boundary preparation needs.</td><td>What should be prepared before a refactor, extraction, or repair?</td></tr>
+                    <tr><td>Homotopy and holes</td><td>Path candidates, unfilled loops, nonzero holonomy loops, local curvature cells, and missing filler evidence.</td><td>Do two implementation paths really behave the same under the selected reading?</td></tr>
+                    <tr><td>Observation axes</td><td>Projection fidelity loss, atom origin closure debt, effect relation pressure, synthesis blockage, operation preconditions, and path multiplicity loss.</td><td>Is the observation strong enough, and what evidence is still missing?</td></tr>
+                    <tr><td>Repair and operation deltas</td><td>Repair candidates, decreased axes, transferred obstructions, side-effect axes, and operation readiness.</td><td>Could a local fix move pressure somewhere else?</td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="claim-strip">
+                <p>Changing the LawPolicy changes the reading. ArchSig analysis is policy-relative: laws, witness rules, axes, and coverage expectations define what the packet can measure.</p>
+              </div>
             </section>
             <section id="ai-code" class="article-section">
               <h2>AI-assisted code review</h2>

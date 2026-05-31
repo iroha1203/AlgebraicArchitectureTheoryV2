@@ -75,7 +75,7 @@
       <section class="section-band">
         <div class="site-shell article-layout">
           <aside class="article-sidebar" aria-label="ArchSig page navigation">
-            <nav class="toc-panel" aria-labelledby="toc-title"><h2 id="toc-title">On this page</h2><ol><li><a href="#request">Ask the agent</a></li><li><a href="#skills">Three Skills</a></li><li><a href="#scope">Tell it what to inspect</a></li><li><a href="#builds">What the Skills build</a></li><li><a href="#returns">What the agent returns</a></li><li><a href="#improve">Improve the request</a></li><li><a href="#manual">When to open the manual</a></li></ol></nav>
+            <nav class="toc-panel" aria-labelledby="toc-title"><h2 id="toc-title">On this page</h2><ol><li><a href="#request">Ask the agent</a></li><li><a href="#skills">Three Skills</a></li><li><a href="#how">How ArchSig works</a></li><li><a href="#scope">Tell it what to inspect</a></li><li><a href="#builds">What the Skills build</a></li><li><a href="#returns">What the agent returns</a></li><li><a href="#improve">Improve the request</a></li><li><a href="#manual">When to open the manual</a></li></ol></nav>
             <div class="source-panel" data-sidebar-open="true"><h2>ArchSig</h2><ul><li><a href="../">Overview</a></li><li><a href="./" aria-current="page">Getting Started</a></li><li><a href="../analyses/">Analyses</a></li><li><a aria-disabled="true">Examples</a></li><li><a aria-disabled="true">Manual</a></li><li><a aria-disabled="true">Reference</a></li></ul></div>
           </aside>
           <div class="article-main">
@@ -103,6 +103,25 @@ Summarize the architecture tendencies and list the first files reviewers should 
                 <li><strong><code>law-policy-creater</code></strong><span>Creates the selected LawPolicy for the repository or subsystem: which architecture rules, witness rules, axes, and coverage expectations should guide this review.</span></li>
                 <li><strong><code>archsig-reader</code></strong><span>Runs ArchSig, reads the summary and packet detail, checks the relevant source again, and returns review findings, repair candidates, and confirmation points.</span></li>
               </ul>
+            </section>
+            <section id="how" class="article-section">
+              <h2>How ArchSig works</h2>
+              <p>Behind the Skill workflow, ArchSig has a simple shape: feed an ArchMap and a LawPolicy into the CLI, then read the analysis packet and compact summary.</p>
+              <ol class="numbered-status-list">
+                <li><strong>ArchMap records observed atoms</strong><span>An ArchMap is a source-backed observation record. It captures architecture atoms, molecule readings, semantic observations, review cues, gaps, and provenance from the codebase. It is evidence, not a verdict.</span></li>
+                <li><strong>LawPolicy selects the interpretation</strong><span>A LawPolicy says which architecture laws, witness rules, axes, and coverage expectations should be used for this review. Changing the policy changes what ArchSig can read.</span></li>
+                <li><strong>The CLI runs AAT-based analysis</strong><span>The agent passes the ArchMap and LawPolicy to ArchSig <code>analyze</code>. ArchSig uses AAT-based structural concepts to compute readings such as nonzero axes, obstruction support, hotspots, architectural holes, repair candidates, and coverage gaps.</span></li>
+                <li><strong>The summary becomes the review surface</strong><span><code>analysis-summary</code> turns the packet into a compact review surface: verdict, quality measurement, trend diagnosis, dominant findings, action queue, detail refs, and measurement basis.</span></li>
+              </ol>
+              <figure class="code-panel">
+                <figcaption>Core shape</figcaption>
+                <pre><code>ArchMap observation record
+  + LawPolicy
+  -> archsig analyze
+  -> archsig-analysis-packet
+  -> analysis-summary
+  -> LLM agent review findings</code></pre>
+              </figure>
             </section>
             <section id="scope" class="article-section">
               <h2>Tell it what to inspect</h2>
