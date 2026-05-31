@@ -371,12 +371,11 @@ The builder:
   `archmap-index-v0`. It also records raw-diff and compaction boundaries so
   review readers can distinguish change-local evidence from snapshot-level
   current-state evidence.
-- `monodromyReadingFamily` and `boundaryHolonomyReadingFamily` are schema
-  foundation surfaces. They carry selected axes, distance kind, weight policy,
-  coverage policy, and the ArchMapStore ref set used by later operation-square,
-  axis-wise defect, AMI, boundary residual, and feature-extension attribution
-  readings. They define the shared measurement policy boundary while concrete
-  valuation fields live in the corresponding reading records.
+- `monodromyReadingFamily` and `boundaryHolonomyReadingFamily` carry
+  evidence-derived status, not just schema presence. Their `status` is derived
+  from measured axis count, unmeasured axis count, positive witness count, and
+  coverage blocker count. `schemaFoundationOnly` means the family has no
+  measurable inputs yet and must not be read as completed measurement.
 - `operationSquareCandidates` enumerates supplied, inferred, or blocked
   operation pairs as path pairs `p = g . f` and `q = f . g`. Supplied
   candidates are read from first-class ArchMap `operationSquareEvidence[]` and

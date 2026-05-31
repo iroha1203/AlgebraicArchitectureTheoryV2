@@ -625,12 +625,43 @@ fn build_monodromy_reading_family(
     axis_wise_monodromy_defects: &[ArchSigAxisWiseMonodromyDefectV0],
     ami_aggregate_readings: &[ArchSigAmiAggregateReadingV0],
 ) -> ArchSigMonodromyReadingFamilyV0 {
+    let measured_axis_count = axis_wise_monodromy_defects
+        .iter()
+        .filter(|defect| defect.measurement_status == "measured")
+        .count();
+    let unmeasured_axis_count = axis_wise_monodromy_defects
+        .iter()
+        .filter(|defect| defect.measurement_status != "measured")
+        .count();
+    let positive_witness_count = axis_wise_monodromy_defects
+        .iter()
+        .filter(|defect| defect.distance_value.is_some_and(|value| value > 0))
+        .count();
+    let coverage_blocker_count = axis_wise_monodromy_defects
+        .iter()
+        .map(|defect| defect.missing_refs.len())
+        .sum::<usize>()
+        + operation_square_candidates
+            .iter()
+            .filter(|candidate| candidate.candidate_source == "blocked")
+            .count();
+    let status = reading_family_status(
+        measured_axis_count,
+        unmeasured_axis_count,
+        positive_witness_count,
+        coverage_blocker_count,
+        !operation_square_candidates.is_empty() || !path_continuation_traces.is_empty(),
+    );
     ArchSigMonodromyReadingFamilyV0 {
         reading_family_id: format!(
             "monodromy-reading-family:{}",
             stable_id(&law_policy.measurement_policy.policy_id)
         ),
-        status: "schemaFoundationOnly".to_string(),
+        status,
+        measured_axis_count,
+        unmeasured_axis_count,
+        positive_witness_count,
+        coverage_blocker_count,
         arch_map_store_ref_set_ref: arch_map_store_refs.ref_set_id.clone(),
         selected_axis_refs: law_policy.measurement_policy.selected_axis_refs.clone(),
         distance_kind: law_policy.measurement_policy.distance_kind.clone(),
@@ -670,12 +701,49 @@ fn build_boundary_holonomy_reading_family(
     feature_boundary_residual_readings: &[ArchSigFeatureBoundaryResidualReadingV0],
     feature_extension_diagnosis_readings: &[ArchSigFeatureExtensionDiagnosisReadingV0],
 ) -> ArchSigBoundaryHolonomyReadingFamilyV0 {
+    let measured_axis_count = feature_boundary_residual_readings
+        .iter()
+        .flat_map(|reading| reading.holonomy_axes.iter())
+        .filter(|axis| axis.status != "coverageBlocked")
+        .count();
+    let unmeasured_axis_count = feature_boundary_residual_readings
+        .iter()
+        .flat_map(|reading| reading.holonomy_axes.iter())
+        .filter(|axis| axis.status == "coverageBlocked")
+        .count();
+    let positive_witness_count = nonzero_monodromy_witnesses.len()
+        + feature_boundary_residual_readings
+            .iter()
+            .flat_map(|reading| reading.holonomy_axes.iter())
+            .filter(|axis| axis.residual_value > 0)
+            .count();
+    let coverage_blocker_count = feature_boundary_residual_readings
+        .iter()
+        .flat_map(|reading| reading.holonomy_axes.iter())
+        .map(|axis| axis.missing_evidence.len())
+        .sum::<usize>()
+        + feature_extension_diagnosis_readings
+            .iter()
+            .map(|reading| reading.residual_coverage_gap_refs.len())
+            .sum::<usize>();
+    let status = reading_family_status(
+        measured_axis_count,
+        unmeasured_axis_count,
+        positive_witness_count,
+        coverage_blocker_count,
+        !feature_boundary_residual_readings.is_empty()
+            || !feature_extension_diagnosis_readings.is_empty(),
+    );
     ArchSigBoundaryHolonomyReadingFamilyV0 {
         reading_family_id: format!(
             "boundary-holonomy-reading-family:{}",
             stable_id(&law_policy.measurement_policy.policy_id)
         ),
-        status: "schemaFoundationOnly".to_string(),
+        status,
+        measured_axis_count,
+        unmeasured_axis_count,
+        positive_witness_count,
+        coverage_blocker_count,
         arch_map_store_ref_set_ref: arch_map_store_refs.ref_set_id.clone(),
         selected_axis_refs: law_policy.measurement_policy.selected_axis_refs.clone(),
         distance_kind: law_policy.measurement_policy.distance_kind.clone(),
@@ -704,6 +772,28 @@ fn build_boundary_holonomy_reading_family(
                 .to_string(),
         non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
     }
+}
+
+fn reading_family_status(
+    measured_axis_count: usize,
+    unmeasured_axis_count: usize,
+    positive_witness_count: usize,
+    coverage_blocker_count: usize,
+    has_family_inputs: bool,
+) -> String {
+    if !has_family_inputs {
+        return "schemaFoundationOnly".to_string();
+    }
+    if measured_axis_count == 0 {
+        return "blockedByCoverageGap".to_string();
+    }
+    if coverage_blocker_count > 0 || unmeasured_axis_count > 0 {
+        return "partial".to_string();
+    }
+    if positive_witness_count > 0 {
+        return "measured".to_string();
+    }
+    "measuredZeroUnderSelectedAxes".to_string()
 }
 
 fn build_operation_square_candidates(
@@ -15034,6 +15124,10 @@ fn check_monodromy_boundary_schema_foundation(packet: &ArchSigAnalysisPacketV0) 
         &packet.monodromy_reading_family.distance_kind,
         &packet.monodromy_reading_family.weight_policy,
         &packet.monodromy_reading_family.coverage_policy,
+        packet.monodromy_reading_family.measured_axis_count,
+        packet.monodromy_reading_family.unmeasured_axis_count,
+        packet.monodromy_reading_family.positive_witness_count,
+        packet.monodromy_reading_family.coverage_blocker_count,
         &packet.monodromy_reading_family.reading_boundary,
         &packet.monodromy_reading_family.evidence_boundary,
         &packet.monodromy_reading_family.non_conclusions,
@@ -15052,6 +15146,16 @@ fn check_monodromy_boundary_schema_foundation(packet: &ArchSigAnalysisPacketV0) 
         &packet.boundary_holonomy_reading_family.distance_kind,
         &packet.boundary_holonomy_reading_family.weight_policy,
         &packet.boundary_holonomy_reading_family.coverage_policy,
+        packet.boundary_holonomy_reading_family.measured_axis_count,
+        packet
+            .boundary_holonomy_reading_family
+            .unmeasured_axis_count,
+        packet
+            .boundary_holonomy_reading_family
+            .positive_witness_count,
+        packet
+            .boundary_holonomy_reading_family
+            .coverage_blocker_count,
         &packet.boundary_holonomy_reading_family.reading_boundary,
         &packet.boundary_holonomy_reading_family.evidence_boundary,
         &packet.boundary_holonomy_reading_family.non_conclusions,
@@ -15088,6 +15192,10 @@ fn check_monodromy_family(
     distance_kind: &str,
     weight_policy: &str,
     coverage_policy: &str,
+    measured_axis_count: usize,
+    unmeasured_axis_count: usize,
+    positive_witness_count: usize,
+    coverage_blocker_count: usize,
     reading_boundary: &str,
     evidence_boundary: &str,
     non_conclusions: &[String],
@@ -15101,6 +15209,44 @@ fn check_monodromy_family(
         reading_family_id,
     );
     push_blank(examples, &format!("{field}.status"), status);
+    if status == "schemaFoundationOnly" {
+        examples.push(generic_validation_example(
+            reading_family_id,
+            status,
+            "reading family still has schema-only status; measured, partial, or blocked status must be derived from evidence counts",
+        ));
+    }
+    if !matches!(
+        status,
+        "measured" | "partial" | "blockedByCoverageGap" | "measuredZeroUnderSelectedAxes"
+    ) {
+        examples.push(generic_validation_example(
+            reading_family_id,
+            status,
+            "reading family status must be evidence-derived",
+        ));
+    }
+    if measured_axis_count == 0 && status != "blockedByCoverageGap" {
+        examples.push(generic_validation_example(
+            reading_family_id,
+            "measuredAxisCount",
+            "status must be blocked when no measured axes exist",
+        ));
+    }
+    if status == "measured" && (positive_witness_count == 0 || coverage_blocker_count > 0) {
+        examples.push(generic_validation_example(
+            reading_family_id,
+            "positiveWitnessCount/coverageBlockerCount",
+            "measured status requires positive witnesses and no coverage blockers",
+        ));
+    }
+    if status == "partial" && unmeasured_axis_count == 0 && coverage_blocker_count == 0 {
+        examples.push(generic_validation_example(
+            reading_family_id,
+            "unmeasuredAxisCount/coverageBlockerCount",
+            "partial status must be backed by unmeasured axes or coverage blockers",
+        ));
+    }
     if arch_map_store_ref_set_ref != expected_ref_set_id {
         examples.push(generic_validation_example(
             reading_family_id,

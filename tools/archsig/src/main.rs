@@ -674,6 +674,8 @@ fn build_codebase_inspection_report(
                 "operationIndexKeys": object_keys(index, "operationHintIndex", limit),
                 "operationSquareCandidateCount": array_len(packet, "operationSquareCandidates"),
                 "pathContinuationTraceCount": array_len(packet, "pathContinuationTraces"),
+                "monodromyFamilyStatus": reading_family_status_summary(packet, "monodromyReadingFamily"),
+                "boundaryHolonomyFamilyStatus": reading_family_status_summary(packet, "boundaryHolonomyReadingFamily"),
                 "summary": limited_array_field(llm_packet, "homotopyOrderSensitivitySummary", limit)
             },
             "topBoundaryHolonomy": top_boundary_holonomy(packet, limit),
@@ -2518,6 +2520,8 @@ fn measurement_basis(
             "analysis": validation_result(analysis_validation)
         },
         "coverageGaps": json_string_array(coverage_gap_refs(packet).iter()),
+        "monodromyFamily": reading_family_status_summary(packet, "monodromyReadingFamily"),
+        "boundaryHolonomyFamily": reading_family_status_summary(packet, "boundaryHolonomyReadingFamily"),
         "spectrumMeasuredBoundary": json_field(spectrum, "measuredBoundary"),
         "homotopyMeasuredBoundary": json_field(homotopy, "measuredBoundary"),
         "projectionFidelityBoundary": first_string_field(packet, "observationProjectionFidelityReadings", "measurementBoundary"),
@@ -2527,6 +2531,20 @@ fn measurement_basis(
         "operationPreconditionBoundary": first_string_field(packet, "operationPreconditionReadinessReadings", "candidateBoundary"),
         "pathMultiplicityBoundary": first_string_field(packet, "pathMultiplicityLossReadings", "homotopyBoundary"),
         "basisStatement": "conclusions are measured from the supplied ArchMap and selected LawPolicy"
+    })
+}
+
+fn reading_family_status_summary(
+    packet: &serde_json::Value,
+    family_key: &str,
+) -> serde_json::Value {
+    let family = packet.get(family_key).unwrap_or(&serde_json::Value::Null);
+    serde_json::json!({
+        "status": json_field(family, "status"),
+        "measuredAxisCount": json_field(family, "measuredAxisCount"),
+        "unmeasuredAxisCount": json_field(family, "unmeasuredAxisCount"),
+        "positiveWitnessCount": json_field(family, "positiveWitnessCount"),
+        "coverageBlockerCount": json_field(family, "coverageBlockerCount")
     })
 }
 
