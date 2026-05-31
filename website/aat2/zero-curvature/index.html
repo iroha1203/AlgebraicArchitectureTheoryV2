@@ -1,0 +1,536 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta
+      name="description"
+      content="Flatness and zero curvature in Algebraic Architecture Theory: selected lawfulness, obstruction absence, and theorem package boundaries."
+    >
+    <meta name="robots" content="noindex">
+    <title>Flatness and Zero Curvature</title>
+    <meta property="og:site_name" content="AAT / SFT Research Notes">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="Flatness and Zero Curvature">
+    <meta property="og:description" content="Flatness and zero curvature in Algebraic Architecture Theory: selected lawfulness, obstruction absence, and theorem package boundaries.">
+    <meta property="og:url" content="https://iroha1203.dev/aat2/zero-curvature/">
+    <meta property="og:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Flatness and Zero Curvature">
+    <meta name="twitter:description" content="Flatness and zero curvature in Algebraic Architecture Theory: selected lawfulness, obstruction absence, and theorem package boundaries.">
+    <meta name="twitter:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
+    <link rel="icon" href="../../assets/favicon-32.png" sizes="32x32" type="image/png">
+    <link rel="icon" href="../../assets/favicon-16.png" sizes="16x16" type="image/png">
+    <link rel="alternate" hreflang="en" href="./">
+    <link rel="alternate" hreflang="x-default" href="./">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=Inter:wght@400;500;600;700&amp;family=Source+Serif+4:opsz,wght@8..60,400..700&amp;display=swap"
+      rel="stylesheet"
+    >
+    <script>
+      try {
+        const theme = localStorage.getItem("aat-sft-theme");
+        if (theme === "light" || theme === "dark") {
+          document.documentElement.dataset.theme = theme;
+        }
+      } catch {}
+    </script>
+    <link rel="stylesheet" href="../../assets/site.css">
+    <script>
+      window.MathJax = {
+        tex: {
+          inlineMath: [["\\(", "\\)"]],
+          displayMath: [["\\[", "\\]"]]
+        },
+        chtml: {
+          matchFontHeight: false
+        }
+      };
+    </script>
+    <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+    <script defer src="../../assets/site.js"></script>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-YQMFH2FG9V"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-YQMFH2FG9V');
+    </script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <header class="site-header" data-site-header>
+      <div class="site-shell header-inner">
+        <a class="brand" href="../../" aria-label="AAT SFT home">
+          <img class="brand-icon" src="../../assets/favicon-512.png" alt="" width="512" height="512" aria-hidden="true">
+          <span class="brand-mark">AAT/SFT</span>
+          <span class="brand-text">Research Notes</span>
+        </a>
+        <nav class="site-nav" aria-label="Primary navigation">
+          <a href="../../">Home</a>
+          <a class="is-active" href="../../aat/">AAT</a>
+          <a href="../../sft/">SFT</a>
+          <a href="../../archsig/">ArchSig</a>
+          <a href="../../outreach/">Outreach</a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="main">
+      <section class="article-hero section-band">
+        <div class="site-shell">
+          <nav class="breadcrumb" aria-label="Breadcrumb">
+            <a href="../../">Home</a>
+            <a href="../">AAT</a>
+            <span>Zero Curvature</span>
+          </nav>
+          <p class="eyebrow">Part II. Flatness, Calculus, and Geometry</p>
+          <h1>Flatness and Zero Curvature</h1>
+          <p class="lede">
+            Flatness says that the selected obstruction valuation is zero.
+            Zero curvature is the theorem-package reading of that condition:
+            no required law-relative obstruction circuit remains in the
+            selected molecule boundary.
+          </p>
+        </div>
+      </section>
+
+      <section class="section-band">
+        <div class="site-shell article-layout">
+          <aside class="article-sidebar" aria-label="AAT2 page navigation">
+            <nav class="toc-panel" aria-labelledby="toc-title">
+              <h2 id="toc-title">On this page</h2>
+              <ol>
+                <li><a href="#research-question">Research question</a></li>
+                <li><a href="#flatness">Flatness</a></li>
+                <li><a href="#zero-curvature">Zero curvature</a></li>
+                <li><a href="#theorem-package">Theorem package</a></li>
+                <li><a href="#lawfulness">Lawfulness inside a core</a></li>
+                <li><a href="#multi-reading">Static, runtime, semantic readings</a></li>
+                <li><a href="#example">Worked example</a></li>
+                <li><a href="#counterexamples">Counterexamples</a></li>
+                <li><a href="#formal-reading">Formal reading</a></li>
+              </ol>
+            </nav>
+            <div class="source-panel" data-sidebar-open="true">
+              <h2>AAT2 chapters</h2>
+              <ul>
+                <li><a href="../">Overview</a></li>
+                <li><a href="../atoms/">Atoms</a></li>
+                <li><a href="../architecture-objects/">Architecture Objects</a></li>
+                <li><a href="../laws/">Design Laws</a></li>
+                <li><a href="../obstruction-circuits/">Obstruction Circuits</a></li>
+                <li><a href="./" aria-current="page">Zero Curvature</a></li>
+                <li><a href="../architecture-signature/">Architecture Signature</a></li>
+                <li><a href="../design-principle-layers/">Design Principle Layers</a></li>
+                <li><a href="../operations-and-calculus/">Operations and Calculus</a></li>
+                <li><a href="../dynamics-and-geometry/">Dynamics and Geometry</a></li>
+                <li><a href="../representations-and-effects/">Representations and Effects</a></li>
+                <li><a href="../canonical-examples-and-readings/">Examples and Readings</a></li>
+                <li><a href="../related-work/">Related Work</a></li>
+                <li><a href="../status/">Status</a></li>
+                <li><a href="../formal-anchors/">Formal Anchors</a></li>
+              </ul>
+            </div>
+          </aside>
+
+          <div class="article-main">
+            <section id="research-question" class="article-section">
+              <h2>Research question</h2>
+              <p class="research-question">
+                When do lawfulness, absence of required obstructions, and a
+                zero diagnostic reading become the same statement?
+              </p>
+              <p>
+                AAT does not answer "whenever a tool says zero." It answers:
+                when a selected law, required molecule family, witness family,
+                coverage boundary, exactness boundary, and lawfulness bridge
+                are packaged together. Zero curvature is a theorem-bound
+                statement, not a global score.
+              </p>
+            </section>
+
+            <section id="flatness" class="article-section">
+              <h2>Flatness</h2>
+              <p>
+                Flatness is the obstruction-valued reading of lawfulness. A
+                flatness model selects architecture objects, a law universe,
+                obstruction circuits, and an obstruction valuation. An object is
+                flat when the selected valuation is zero.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Flatness model</figcaption>
+                <pre><code>FlatnessModel
+  = Obj
+  + LawUniverse U
+  + Obstruction circuits Ob
+  + valuation omega
+
+Flat_U(A)
+  iff omega_U(A) = 0</code></pre>
+              </figure>
+              <p id="definition-1-1" class="statement">
+                <a class="statement-anchor" href="#definition-1-1">Definition 1.1.</a>
+                A selected object is flat for a flatness model when the
+                selected obstruction valuation is zero.
+              </p>
+              <p id="proposition-1-2" class="statement">
+                <a class="statement-anchor" href="#proposition-1-2">Proposition 1.2.</a>
+                Flatness implies lawfulness only when the obstruction valuation
+                is sound for the selected law universe.
+              </p>
+              <p id="proof-1-2" class="statement-proof">
+                <a class="statement-anchor" href="#proof-1-2">Proof idea.</a>
+                Soundness says that a zero valuation cannot hide a selected law
+                failure. Without soundness, <code>omega(A) = 0</code> may only
+                mean that the selected measurement did not see a witness.
+              </p>
+              <p id="proposition-1-3" class="statement">
+                <a class="statement-anchor" href="#proposition-1-3">Proposition 1.3.</a>
+                Lawfulness implies flatness only when the obstruction valuation
+                is complete for the selected law universe.
+              </p>
+              <p id="proof-1-3" class="statement-proof">
+                <a class="statement-anchor" href="#proof-1-3">Proof idea.</a>
+                Completeness says that every selected law failure would be
+                reflected by a nonzero obstruction valuation. Without
+                completeness, a lawful object may not be recognizable as flat
+                by the selected valuation.
+              </p>
+            </section>
+
+            <section id="zero-curvature" class="article-section">
+              <h2>Zero curvature</h2>
+              <p>
+                Zero curvature is the geometric name for selected
+                obstruction-free lawfulness. A law failure can be read as a
+                non-commuting diagram, a dependency cycle, a projection failure,
+                a substitution failure, a state-transition mismatch, an effect
+                replay defect, or a semantic inconsistency. Curvature is the
+                selected valuation of that failure surface.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Zero curvature theorem shape</figcaption>
+                <pre><code>Lawful_U(A)
+  <-> NoRequiredObstruction_W(A)
+  <-> RequiredSignatureAxesZero_S(A)
+  <-> ZeroCurvature_U(A)</code></pre>
+              </figure>
+              <p id="definition-2-1" class="statement">
+                <a class="statement-anchor" href="#definition-2-1">Definition 2.1.</a>
+                In the pure Atom-AAT Lean surface,
+                <code>ZeroCurvature law requiredMolecule</code> is exactly
+                <code>NoRequiredObstructionCircuit law requiredMolecule</code>.
+              </p>
+              <p id="proof-2-1" class="statement-proof">
+                <a class="statement-anchor" href="#proof-2-1">Proof.</a>
+                Lean proves
+                <code>zeroCurvature_iff_noRequiredObstructionCircuit</code> by
+                reflexivity: the pure definition of zero curvature is the
+                absence of required obstruction circuits.
+              </p>
+              <p id="non-conclusion-2-2" class="statement">
+                <a class="statement-anchor" href="#non-conclusion-2-2">Non-conclusion 2.2.</a>
+                Zero curvature is not a universal "architecture is good" claim.
+                It is relative to the selected law, required molecules, witness
+                coverage, exactness, and theorem package.
+              </p>
+            </section>
+
+            <section id="theorem-package" class="article-section">
+              <h2>Theorem package</h2>
+              <p>
+                A <code>ZeroCurvaturePackage</code> is the complete selected
+                package that turns no required obstruction circuits into
+                lawfulness inside the same Atom-generated core. It carries the
+                core, law, required molecule family, circuit-on-core evidence,
+                lawfulness bridge, zero-curvature proof, coverage boundary,
+                exactness boundary, theorem-package boundary, and
+                non-conclusions.
+              </p>
+              <figure class="code-panel">
+                <figcaption>ZeroCurvaturePackage</figcaption>
+                <pre><code>ZeroCurvaturePackage core
+  = law
+  + requiredMolecule
+  + lawOnCore
+  + requiredMoleculesOnCore
+  + requiredCircuitsOnCore
+  + lawfulnessBridge
+  + zeroCurvature
+  + coverageBoundary
+  + exactnessBoundary
+  + theoremPackageBoundary
+  + nonConclusions</code></pre>
+              </figure>
+              <p id="proposition-3-1" class="statement">
+                <a class="statement-anchor" href="#proposition-3-1">Proposition 3.1.</a>
+                A zero-curvature package exposes no required obstruction circuit
+                directly.
+              </p>
+              <p id="proof-3-1" class="statement-proof">
+                <a class="statement-anchor" href="#proof-3-1">Proof.</a>
+                <code>ZeroCurvaturePackage.noRequiredObstructionCircuit</code>
+                applies <code>zeroCurvature_iff_noRequiredObstructionCircuit</code>
+                to the package's <code>zeroCurvature</code> field.
+              </p>
+              <p id="proposition-3-2" class="statement">
+                <a class="statement-anchor" href="#proposition-3-2">Proposition 3.2.</a>
+                A zero-curvature package gives lawfulness over the selected
+                required molecule family.
+              </p>
+              <p id="proof-3-2" class="statement-proof">
+                <a class="statement-anchor" href="#proof-3-2">Proof.</a>
+                <code>ZeroCurvaturePackage.lawfulWithinMoleculeConfiguration</code>
+                uses <code>LawfulnessBridge.lawful_iff_no_obstructionCircuit</code>
+                and the package's no-required-circuit theorem. The bridge is
+                essential: it supplies the soundness/completeness connection
+                between bad molecules and obstruction circuits.
+              </p>
+            </section>
+
+            <section id="lawfulness" class="article-section">
+              <h2>Lawfulness inside a core</h2>
+              <p>
+                Zero curvature is not detached from the architecture object. In
+                Lean, the package proves lawfulness inside the same selected
+                <code>AATCore</code> that supplied the law, required molecules,
+                and circuit evidence.
+              </p>
+              <p id="proposition-4-1" class="statement">
+                <a class="statement-anchor" href="#proposition-4-1">Proposition 4.1.</a>
+                Zero curvature gives <code>LawfulWithinAATCore</code> for the
+                selected core, law, and required molecule family.
+              </p>
+              <p id="proof-4-1" class="statement-proof">
+                <a class="statement-anchor" href="#proof-4-1">Proof.</a>
+                <code>ZeroCurvaturePackage.lawfulWithinAATCore</code> constructs
+                a <code>LawfulWithinAATCore</code> record from the package's
+                <code>lawOnCore</code>, <code>requiredMoleculesOnCore</code>,
+                and the derived
+                <code>lawfulWithinMoleculeConfiguration</code>.
+              </p>
+              <p id="proposition-4-2" class="statement">
+                <a class="statement-anchor" href="#proposition-4-2">Proposition 4.2.</a>
+                Required molecules in a zero-curvature package still contain
+                primitive atoms from the root atom axiom system.
+              </p>
+              <p id="proof-4-2" class="statement-proof">
+                <a class="statement-anchor" href="#proof-4-2">Proof.</a>
+                <code>ZeroCurvaturePackage.atom_of_requiredMolecule</code> uses
+                the core's <code>atom_of_selected_molecule</code> theorem. The
+                zero-curvature package never replaces the Atom root with a
+                score or report.
+              </p>
+            </section>
+
+            <section id="multi-reading" class="article-section">
+              <h2>Static, runtime, semantic readings</h2>
+              <p>
+                AAT distinguishes the reading in which flatness is claimed.
+                Static flatness concerns dependency, import, module, type, or
+                call relations. Runtime flatness concerns processes, messages,
+                retries, timeouts, locks, and resource interactions. Semantic
+                flatness concerns contracts, meanings, domain invariants, and
+                effect interpretations.
+              </p>
+              <dl class="term-list definition-list">
+                <div>
+                  <dt>Static flatness</dt>
+                  <dd>No selected static obstruction remains, such as a cycle, hidden coupling, or forbidden dependency direction.</dd>
+                </div>
+                <div>
+                  <dt>Runtime flatness</dt>
+                  <dd>No selected runtime obstruction remains, such as unsafe retry, missing timeout, non-localized failure, or transaction mismatch.</dd>
+                </div>
+                <div>
+                  <dt>Semantic flatness</dt>
+                  <dd>No selected semantic obstruction remains, such as contract mismatch, meaning-changing substitution, or non-commuting domain diagram.</dd>
+                </div>
+              </dl>
+              <p id="non-conclusion-5-1" class="statement">
+                <a class="statement-anchor" href="#non-conclusion-5-1">Non-conclusion 5.1.</a>
+                Static zero curvature does not imply runtime or semantic zero
+                curvature unless a theorem package connects those readings.
+              </p>
+            </section>
+
+            <section id="example" class="article-section">
+              <h2>Worked example</h2>
+              <p>
+                Consider a selected law package for payment capture:
+              </p>
+              <figure class="code-panel">
+                <figcaption>Payment zero-curvature package</figcaption>
+                <pre><code>core:
+  selected payment AATCore
+
+law:
+  RetryPreservesPaymentSemantics
+
+requiredMolecule:
+  payment capture molecules
+
+required obstruction circuits:
+  retry + non-idempotent effect + charge-once meaning
+
+zeroCurvature:
+  no required payment retry obstruction circuit remains
+
+derived lawfulness:
+  selected payment retry molecules are lawful
+  for RetryPreservesPaymentSemantics</code></pre>
+              </figure>
+              <p>
+                The claim is not that all payment behavior is correct. It is
+                that the selected required molecules in the selected core have
+                no required obstruction circuit for the selected retry law, and
+                that the bridge assumptions license lawfulness for that package.
+              </p>
+            </section>
+
+            <section id="counterexamples" class="article-section">
+              <h2>Counterexamples and non-conclusions</h2>
+              <p id="counterexample-7-1" class="statement">
+                <a class="statement-anchor" href="#counterexample-7-1">Counterexample 7.1.</a>
+                A static dependency graph can be acyclic while a retry effect
+                violates payment semantics. Static zero curvature does not
+                discharge runtime-effect lawfulness.
+              </p>
+              <p id="counterexample-7-2" class="statement">
+                <a class="statement-anchor" href="#counterexample-7-2">Counterexample 7.2.</a>
+                A tool report can show zero selected warnings while the selected
+                witness family is incomplete. The zero report is not a
+                zero-curvature theorem package.
+              </p>
+              <p id="counterexample-7-3" class="statement">
+                <a class="statement-anchor" href="#counterexample-7-3">Counterexample 7.3.</a>
+                A zero-curvature package for one law does not prove flatness
+                for another law. A substitution law package can pass while a
+                state-transition law package fails.
+              </p>
+              <p id="non-conclusion-7-4" class="statement">
+                <a class="statement-anchor" href="#non-conclusion-7-4">Non-conclusion 7.4.</a>
+                Zero curvature does not imply empirical safety, incident
+                absence, forecast correctness, global semantic completeness, or
+                extractor completeness unless those claims are explicitly part
+                of a larger theorem package.
+              </p>
+            </section>
+
+            <section id="formal-reading" class="article-section">
+              <h2>Formal reading</h2>
+              <p>
+                The Lean surface for this chapter is
+                <code>Formal/Arch/AAT/ZeroCurvature.lean</code>. It defines
+                selected core lawfulness, pure zero curvature, and the theorem
+                package that derives lawfulness inside the selected
+                Atom-generated core.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Lean anchors</figcaption>
+                <pre><code>Formal/Arch/AAT/ZeroCurvature.lean
+  AAT.LawfulWithinAATCore
+  AAT.ZeroCurvature
+  zeroCurvature_iff_noRequiredObstructionCircuit
+  AAT.ZeroCurvaturePackage
+  ZeroCurvaturePackage.noRequiredObstructionCircuit
+  ZeroCurvaturePackage.lawfulWithinMoleculeConfiguration
+  ZeroCurvaturePackage.lawfulWithinAATCore
+  ZeroCurvaturePackage.requiredMolecule_on_core
+  ZeroCurvaturePackage.requiredCircuit_on_core
+  ZeroCurvaturePackage.atom_of_requiredMolecule
+  ZeroCurvaturePackage.core_independent_of_observation
+  ZeroCurvaturePackage.law_does_not_create_atoms</code></pre>
+              </figure>
+              <p id="formal-status-8-1" class="statement">
+                <a class="statement-anchor" href="#formal-status-8-1">Formal status 8.1.</a>
+                <code>LawfulWithinAATCore</code>,
+                <code>ZeroCurvature</code>, and
+                <code>ZeroCurvaturePackage</code> are defined in Lean.
+              </p>
+              <p id="formal-status-8-2" class="statement">
+                <a class="statement-anchor" href="#formal-status-8-2">Formal status 8.2.</a>
+                The equivalence between pure zero curvature and no required
+                obstruction circuit is proved. The package accessors deriving
+                no required obstruction circuit, lawfulness over molecules,
+                lawfulness inside the selected core, atom origin, observation
+                independence, and law non-generation are proved.
+              </p>
+            </section>
+
+            <section id="chapter-summary" class="article-section">
+              <h2>Chapter summary</h2>
+              <p>
+                Flatness is the zero reading of selected obstruction valuation.
+                Zero curvature is the theorem-package version of that reading:
+                no required law-relative obstruction circuit remains in the
+                selected molecule boundary, and the bridge assumptions turn
+                that absence into selected lawfulness.
+              </p>
+              <p>
+                The boundary matters. Zero curvature is relative to a selected
+                core, law, required molecule family, coverage boundary,
+                exactness boundary, and theorem-package boundary. A zero score
+                or clean report is evidence only after those conditions are
+                made explicit.
+              </p>
+              <h3>Terms</h3>
+              <dl class="term-list definition-list">
+                <div>
+                  <dt>Flatness</dt>
+                  <dd>The selected obstruction valuation is zero.</dd>
+                </div>
+                <div>
+                  <dt>ZeroCurvature</dt>
+                  <dd>In pure Atom-AAT, no required obstruction circuit remains for the selected law and required molecule family.</dd>
+                </div>
+                <div>
+                  <dt>ZeroCurvaturePackage</dt>
+                  <dd>The theorem package carrying core, law, required molecules, bridge, zero-curvature proof, coverage, exactness, and non-conclusions.</dd>
+                </div>
+                <div>
+                  <dt>LawfulWithinAATCore</dt>
+                  <dd>Lawfulness over required molecules inside the same selected Atom-generated core.</dd>
+                </div>
+                <div>
+                  <dt>Coverage boundary</dt>
+                  <dd>The selected witness and molecule space covered by the theorem package.</dd>
+                </div>
+                <div>
+                  <dt>Exactness boundary</dt>
+                  <dd>The reason the selected zero reading corresponds to the intended law failure surface.</dd>
+                </div>
+              </dl>
+            </section>
+
+            <nav class="page-nav" aria-label="Reading sequence">
+              <a class="page-nav-previous" href="../obstruction-circuits/">
+                <span>Previous</span>
+                <strong>Obstruction Circuits</strong>
+              </a>
+              <a class="page-nav-next" href="../architecture-signature/">
+                <span>Next</span>
+                <strong>Architecture Signature</strong>
+              </a>
+            </nav>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="site-shell footer-inner">
+        <p>&copy; <span data-current-year>2026</span> Hiroyuki Nakahata.</p>
+        <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2" target="_blank" rel="noopener noreferrer">
+          Repository
+        </a>
+      </div>
+    </footer>
+  </body>
+</html>
