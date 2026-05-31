@@ -90,6 +90,12 @@ refs. Do not rely on a later ArchSig inferred candidate as measurement truth;
 inferred candidates are review cues, and missing endpoints should remain
 blocked.
 
+For semantic, effect, state, runtime, authority, projection, contract, or
+static continuation distance, preserve the source-backed observations that make
+the two paths comparable. ArchSig will derive comparable continuation values
+from the supplied operation sequences, endpoint refs, and selected axis evidence;
+it will not execute runtime semantics or treat missing comparable input as zero.
+
 If filler evidence is unavailable, record a targeted `observationGaps[]` entry
 whose `subjectRef` names the affected path rule, operation square, or loop
 candidate. Avoid global gaps that block unrelated measured loops. Never turn

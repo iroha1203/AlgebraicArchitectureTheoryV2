@@ -965,9 +965,13 @@ pub struct ArchSigAxisContinuationTraceV0 {
     pub axis_family: String,
     pub axis_ref: String,
     pub trace_status: String,
+    #[serde(default)]
+    pub distance_evaluator_kind: String,
     pub continuation_summary: String,
     #[serde(default)]
     pub continuation_states: Vec<String>,
+    #[serde(default)]
+    pub comparable_continuation_values: Vec<String>,
     #[serde(default)]
     pub distance_input_refs: Vec<String>,
     pub observation_refs: Vec<String>,

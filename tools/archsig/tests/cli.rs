@@ -935,13 +935,27 @@ fn coupon_tax_rounding_fixture_locks_semantic_monodromy() {
                     && defect["distanceValue"]
                         .as_i64()
                         .is_some_and(|value| value > 0)
+                    && defect["distanceKind"]
+                        .as_str()
+                        .is_some_and(|kind| kind.contains("semantic-sequence-mismatch"))
                     && defect["observationRefs"].as_array().is_some_and(|refs| {
                         refs.iter().any(|value| {
-                            value.as_str()
-                                == Some("derived-semantic-order:p=round(tax(discount(subtotal)))")
+                            value.as_str() == Some("semantic:coupon-tax-rounding-paths")
+                        }) && refs.iter().all(|value| {
+                            value
+                                .as_str()
+                                .is_none_or(|text| !text.contains("derived-semantic-order"))
+                        })
+                    })
+                    && defect["witnessRefs"].as_array().is_some_and(|refs| {
+                        refs.iter().any(|value| {
+                            value.as_str().is_some_and(|text| {
+                                text.contains("semantic-path-p-operation-discount")
+                            })
                         }) && refs.iter().any(|value| {
-                            value.as_str()
-                                == Some("derived-semantic-order:q=round(discount(tax(subtotal)))")
+                            value
+                                .as_str()
+                                .is_some_and(|text| text.contains("semantic-path-q-operation-tax"))
                         })
                     })
             }))
@@ -955,6 +969,31 @@ fn coupon_tax_rounding_fixture_locks_semantic_monodromy() {
                         .as_i64()
                         .is_some_and(|value| value > 0)
             }))
+    );
+    assert!(
+        golden["axisWiseMonodromyDefects"]
+            .as_array()
+            .is_some_and(|defects| defects.iter().any(|defect| {
+                defect["axisFamily"] == "effect"
+                    && defect["distanceKind"]
+                        .as_str()
+                        .is_some_and(|kind| kind.contains("effect-replay-order-mismatch"))
+                    && defect["distanceValue"]
+                        .as_i64()
+                        .is_some_and(|value| value > 0)
+                    && defect["witnessRefs"].as_array().is_some_and(|refs| {
+                        refs.iter().any(|value| {
+                            value.as_str().is_some_and(|text| {
+                                text.contains("effect-path-p-operation-discount")
+                            })
+                        }) && refs.iter().any(|value| {
+                            value
+                                .as_str()
+                                .is_some_and(|text| text.contains("effect-path-q-operation-tax"))
+                        })
+                    })
+            })),
+        "coupon fixture must lock effect replay mismatch through comparable continuation values"
     );
     assert!(
         golden["featureBoundaryResidualReadings"]

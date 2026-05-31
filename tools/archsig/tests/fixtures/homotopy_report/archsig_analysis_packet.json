@@ -6372,16 +6372,25 @@
           "axisFamily": "static",
           "axisRef": "static dependency / support axis",
           "traceStatus": "boundedObservationTrace",
+          "distanceEvaluatorKind": "witness-mismatch-count:static-support-value-mismatch",
           "continuationSummary": "static continuation reads 3 observation ref(s) across 1 operation delta(s)",
           "continuationStates": [
-            "Cont_static[0]=operation:read-through-cache; refs=3",
-            "Cont_static[1]=operation:project-order-event; refs=3",
-            "Cont_static[endpoint]=p; endpointRefs=1"
+            "Cont_static[0]=operation:read-through-cache; comparableValues=2",
+            "Cont_static[1]=operation:project-order-event; comparableValues=2",
+            "Cont_static[endpoint]=p; endpointRefs=1; evaluator=witness-mismatch-count:static-support-value-mismatch"
+          ],
+          "comparableContinuationValues": [
+            "static:endpoints:OrderView",
+            "static:support:atom-cache-read|atom-repository-read|atom-event-projection"
           ],
           "distanceInputRefs": [
+            "OrderView",
             "atom:cache-read",
+            "atom:event-projection",
             "atom:repository-read",
-            "atom:event-projection"
+            "src-cache-read",
+            "src-event-projection",
+            "src-repository-read"
           ],
           "observationRefs": [
             "atom:cache-read",
@@ -6400,13 +6409,17 @@
           "axisFamily": "contract",
           "axisRef": "contract axis",
           "traceStatus": "unmeasured",
+          "distanceEvaluatorKind": "witness-mismatch-count:contract-obligation-value-mismatch",
           "continuationSummary": "contract continuation is unmeasured under current ArchMap evidence",
           "continuationStates": [
-            "Cont_contract[0]=operation:read-through-cache; refs=0",
-            "Cont_contract[1]=operation:project-order-event; refs=0",
-            "Cont_contract[endpoint]=p; endpointRefs=1"
+            "Cont_contract[0]=operation:read-through-cache; comparableValues=0",
+            "Cont_contract[1]=operation:project-order-event; comparableValues=0",
+            "Cont_contract[endpoint]=p; endpointRefs=1; evaluator=witness-mismatch-count:contract-obligation-value-mismatch"
           ],
-          "distanceInputRefs": [],
+          "comparableContinuationValues": [],
+          "distanceInputRefs": [
+            "OrderView"
+          ],
           "observationRefs": [],
           "sourceRefs": [],
           "missingRefs": [
@@ -6418,14 +6431,21 @@
           "axisFamily": "semantic",
           "axisRef": "semantic axis",
           "traceStatus": "boundedObservationTrace",
+          "distanceEvaluatorKind": "witness-mismatch-count:semantic-sequence-mismatch",
           "continuationSummary": "semantic continuation reads 1 observation ref(s) across 1 operation delta(s)",
           "continuationStates": [
-            "Cont_semantic[0]=operation:read-through-cache; refs=1",
-            "Cont_semantic[1]=operation:project-order-event; refs=1",
-            "Cont_semantic[endpoint]=p; endpointRefs=1"
+            "Cont_semantic[0]=operation:read-through-cache; comparableValues=2",
+            "Cont_semantic[1]=operation:project-order-event; comparableValues=2",
+            "Cont_semantic[endpoint]=p; endpointRefs=1; evaluator=witness-mismatch-count:semantic-sequence-mismatch"
+          ],
+          "comparableContinuationValues": [
+            "semantic:path:p:operation:read-through-cache -> operation:project-order-event",
+            "semantic:endpoints:OrderView"
           ],
           "distanceInputRefs": [
-            "semantic:path-rule:cache-repository-semantic-loop"
+            "OrderView",
+            "semantic:path-rule:cache-repository-semantic-loop",
+            "src-cache-read"
           ],
           "observationRefs": [
             "semantic:path-rule:cache-repository-semantic-loop"
@@ -6440,13 +6460,17 @@
           "axisFamily": "state",
           "axisRef": "state transition axis",
           "traceStatus": "unmeasured",
+          "distanceEvaluatorKind": "witness-mismatch-count:state-transition-value-mismatch",
           "continuationSummary": "state continuation is unmeasured under current ArchMap evidence",
           "continuationStates": [
-            "Cont_state[0]=operation:read-through-cache; refs=0",
-            "Cont_state[1]=operation:project-order-event; refs=0",
-            "Cont_state[endpoint]=p; endpointRefs=1"
+            "Cont_state[0]=operation:read-through-cache; comparableValues=0",
+            "Cont_state[1]=operation:project-order-event; comparableValues=0",
+            "Cont_state[endpoint]=p; endpointRefs=1; evaluator=witness-mismatch-count:state-transition-value-mismatch"
           ],
-          "distanceInputRefs": [],
+          "comparableContinuationValues": [],
+          "distanceInputRefs": [
+            "OrderView"
+          ],
           "observationRefs": [],
           "sourceRefs": [],
           "missingRefs": [
@@ -6458,19 +6482,24 @@
           "axisFamily": "effect",
           "axisRef": "effect ordering / replay / compensation axis",
           "traceStatus": "boundedObservationTrace",
-          "continuationSummary": "effect continuation reads 2 observation ref(s) across 1 operation delta(s)",
+          "distanceEvaluatorKind": "witness-mismatch-count:effect-replay-order-mismatch",
+          "continuationSummary": "effect continuation reads 1 observation ref(s) across 1 operation delta(s)",
           "continuationStates": [
-            "Cont_effect[0]=operation:read-through-cache; refs=2",
-            "Cont_effect[1]=operation:project-order-event; refs=2",
-            "Cont_effect[endpoint]=p; endpointRefs=1"
+            "Cont_effect[0]=operation:read-through-cache; comparableValues=2",
+            "Cont_effect[1]=operation:project-order-event; comparableValues=2",
+            "Cont_effect[endpoint]=p; endpointRefs=1; evaluator=witness-mismatch-count:effect-replay-order-mismatch"
+          ],
+          "comparableContinuationValues": [
+            "effect:path:p:operation:read-through-cache -> operation:project-order-event",
+            "effect:endpoints:OrderView"
           ],
           "distanceInputRefs": [
+            "OrderView",
             "atom:event-projection",
-            "derived-effect-order:p:operation-project-order-event-operation-read-through-cache"
+            "src-event-projection"
           ],
           "observationRefs": [
-            "atom:event-projection",
-            "derived-effect-order:p:operation-project-order-event-operation-read-through-cache"
+            "atom:event-projection"
           ],
           "sourceRefs": [
             "src-event-projection"
@@ -6482,13 +6511,17 @@
           "axisFamily": "authority",
           "axisRef": "authority / trust boundary axis",
           "traceStatus": "unmeasured",
+          "distanceEvaluatorKind": "witness-mismatch-count:authority-boundary-value-mismatch",
           "continuationSummary": "authority continuation is unmeasured under current ArchMap evidence",
           "continuationStates": [
-            "Cont_authority[0]=operation:read-through-cache; refs=0",
-            "Cont_authority[1]=operation:project-order-event; refs=0",
-            "Cont_authority[endpoint]=p; endpointRefs=1"
+            "Cont_authority[0]=operation:read-through-cache; comparableValues=0",
+            "Cont_authority[1]=operation:project-order-event; comparableValues=0",
+            "Cont_authority[endpoint]=p; endpointRefs=1; evaluator=witness-mismatch-count:authority-boundary-value-mismatch"
           ],
-          "distanceInputRefs": [],
+          "comparableContinuationValues": [],
+          "distanceInputRefs": [
+            "OrderView"
+          ],
           "observationRefs": [],
           "sourceRefs": [],
           "missingRefs": [
@@ -6500,13 +6533,17 @@
           "axisFamily": "runtime",
           "axisRef": "runtime interaction axis",
           "traceStatus": "unmeasured",
+          "distanceEvaluatorKind": "witness-mismatch-count:runtime-interaction-value-mismatch",
           "continuationSummary": "runtime continuation is unmeasured under current ArchMap evidence",
           "continuationStates": [
-            "Cont_runtime[0]=operation:read-through-cache; refs=0",
-            "Cont_runtime[1]=operation:project-order-event; refs=0",
-            "Cont_runtime[endpoint]=p; endpointRefs=1"
+            "Cont_runtime[0]=operation:read-through-cache; comparableValues=0",
+            "Cont_runtime[1]=operation:project-order-event; comparableValues=0",
+            "Cont_runtime[endpoint]=p; endpointRefs=1; evaluator=witness-mismatch-count:runtime-interaction-value-mismatch"
           ],
-          "distanceInputRefs": [],
+          "comparableContinuationValues": [],
+          "distanceInputRefs": [
+            "OrderView"
+          ],
           "observationRefs": [],
           "sourceRefs": [],
           "missingRefs": [
@@ -6518,13 +6555,20 @@
           "axisFamily": "projection",
           "axisRef": "projection / representation axis",
           "traceStatus": "boundedObservationTrace",
+          "distanceEvaluatorKind": "witness-mismatch-count:projection-target-value-mismatch",
           "continuationSummary": "projection continuation reads 1 observation ref(s) across 1 operation delta(s)",
           "continuationStates": [
-            "Cont_projection[0]=operation:read-through-cache; refs=1",
-            "Cont_projection[1]=operation:project-order-event; refs=1",
-            "Cont_projection[endpoint]=p; endpointRefs=1"
+            "Cont_projection[0]=operation:read-through-cache; comparableValues=2",
+            "Cont_projection[1]=operation:project-order-event; comparableValues=2",
+            "Cont_projection[endpoint]=p; endpointRefs=1; evaluator=witness-mismatch-count:projection-target-value-mismatch"
+          ],
+          "comparableContinuationValues": [
+            "projection:endpoints:OrderView",
+            "projection:support:projection-homotopy-report-fixture"
           ],
           "distanceInputRefs": [
+            "OrderView",
+            "molecule:homotopy-report-fixture",
             "projection:homotopy-report-fixture"
           ],
           "observationRefs": [
@@ -6585,16 +6629,25 @@
           "axisFamily": "static",
           "axisRef": "static dependency / support axis",
           "traceStatus": "boundedObservationTrace",
+          "distanceEvaluatorKind": "witness-mismatch-count:static-support-value-mismatch",
           "continuationSummary": "static continuation reads 3 observation ref(s) across 1 operation delta(s)",
           "continuationStates": [
-            "Cont_static[0]=operation:read-from-repository; refs=3",
-            "Cont_static[1]=operation:project-order-event; refs=3",
-            "Cont_static[endpoint]=q; endpointRefs=1"
+            "Cont_static[0]=operation:read-from-repository; comparableValues=2",
+            "Cont_static[1]=operation:project-order-event; comparableValues=2",
+            "Cont_static[endpoint]=q; endpointRefs=1; evaluator=witness-mismatch-count:static-support-value-mismatch"
+          ],
+          "comparableContinuationValues": [
+            "static:endpoints:OrderView",
+            "static:support:atom-cache-read|atom-repository-read|atom-event-projection"
           ],
           "distanceInputRefs": [
+            "OrderView",
             "atom:cache-read",
+            "atom:event-projection",
             "atom:repository-read",
-            "atom:event-projection"
+            "src-cache-read",
+            "src-event-projection",
+            "src-repository-read"
           ],
           "observationRefs": [
             "atom:cache-read",
@@ -6613,13 +6666,17 @@
           "axisFamily": "contract",
           "axisRef": "contract axis",
           "traceStatus": "unmeasured",
+          "distanceEvaluatorKind": "witness-mismatch-count:contract-obligation-value-mismatch",
           "continuationSummary": "contract continuation is unmeasured under current ArchMap evidence",
           "continuationStates": [
-            "Cont_contract[0]=operation:read-from-repository; refs=0",
-            "Cont_contract[1]=operation:project-order-event; refs=0",
-            "Cont_contract[endpoint]=q; endpointRefs=1"
+            "Cont_contract[0]=operation:read-from-repository; comparableValues=0",
+            "Cont_contract[1]=operation:project-order-event; comparableValues=0",
+            "Cont_contract[endpoint]=q; endpointRefs=1; evaluator=witness-mismatch-count:contract-obligation-value-mismatch"
           ],
-          "distanceInputRefs": [],
+          "comparableContinuationValues": [],
+          "distanceInputRefs": [
+            "OrderView"
+          ],
           "observationRefs": [],
           "sourceRefs": [],
           "missingRefs": [
@@ -6631,14 +6688,21 @@
           "axisFamily": "semantic",
           "axisRef": "semantic axis",
           "traceStatus": "boundedObservationTrace",
+          "distanceEvaluatorKind": "witness-mismatch-count:semantic-sequence-mismatch",
           "continuationSummary": "semantic continuation reads 1 observation ref(s) across 1 operation delta(s)",
           "continuationStates": [
-            "Cont_semantic[0]=operation:read-from-repository; refs=1",
-            "Cont_semantic[1]=operation:project-order-event; refs=1",
-            "Cont_semantic[endpoint]=q; endpointRefs=1"
+            "Cont_semantic[0]=operation:read-from-repository; comparableValues=2",
+            "Cont_semantic[1]=operation:project-order-event; comparableValues=2",
+            "Cont_semantic[endpoint]=q; endpointRefs=1; evaluator=witness-mismatch-count:semantic-sequence-mismatch"
+          ],
+          "comparableContinuationValues": [
+            "semantic:path:q:operation:read-from-repository -> operation:project-order-event",
+            "semantic:endpoints:OrderView"
           ],
           "distanceInputRefs": [
-            "semantic:path-rule:cache-repository-semantic-loop"
+            "OrderView",
+            "semantic:path-rule:cache-repository-semantic-loop",
+            "src-cache-read"
           ],
           "observationRefs": [
             "semantic:path-rule:cache-repository-semantic-loop"
@@ -6653,13 +6717,17 @@
           "axisFamily": "state",
           "axisRef": "state transition axis",
           "traceStatus": "unmeasured",
+          "distanceEvaluatorKind": "witness-mismatch-count:state-transition-value-mismatch",
           "continuationSummary": "state continuation is unmeasured under current ArchMap evidence",
           "continuationStates": [
-            "Cont_state[0]=operation:read-from-repository; refs=0",
-            "Cont_state[1]=operation:project-order-event; refs=0",
-            "Cont_state[endpoint]=q; endpointRefs=1"
+            "Cont_state[0]=operation:read-from-repository; comparableValues=0",
+            "Cont_state[1]=operation:project-order-event; comparableValues=0",
+            "Cont_state[endpoint]=q; endpointRefs=1; evaluator=witness-mismatch-count:state-transition-value-mismatch"
           ],
-          "distanceInputRefs": [],
+          "comparableContinuationValues": [],
+          "distanceInputRefs": [
+            "OrderView"
+          ],
           "observationRefs": [],
           "sourceRefs": [],
           "missingRefs": [
@@ -6671,19 +6739,24 @@
           "axisFamily": "effect",
           "axisRef": "effect ordering / replay / compensation axis",
           "traceStatus": "boundedObservationTrace",
-          "continuationSummary": "effect continuation reads 2 observation ref(s) across 1 operation delta(s)",
+          "distanceEvaluatorKind": "witness-mismatch-count:effect-replay-order-mismatch",
+          "continuationSummary": "effect continuation reads 1 observation ref(s) across 1 operation delta(s)",
           "continuationStates": [
-            "Cont_effect[0]=operation:read-from-repository; refs=2",
-            "Cont_effect[1]=operation:project-order-event; refs=2",
-            "Cont_effect[endpoint]=q; endpointRefs=1"
+            "Cont_effect[0]=operation:read-from-repository; comparableValues=2",
+            "Cont_effect[1]=operation:project-order-event; comparableValues=2",
+            "Cont_effect[endpoint]=q; endpointRefs=1; evaluator=witness-mismatch-count:effect-replay-order-mismatch"
+          ],
+          "comparableContinuationValues": [
+            "effect:path:q:operation:read-from-repository -> operation:project-order-event",
+            "effect:endpoints:OrderView"
           ],
           "distanceInputRefs": [
+            "OrderView",
             "atom:event-projection",
-            "derived-effect-order:q:operation-project-order-event-operation-read-from-repository"
+            "src-event-projection"
           ],
           "observationRefs": [
-            "atom:event-projection",
-            "derived-effect-order:q:operation-project-order-event-operation-read-from-repository"
+            "atom:event-projection"
           ],
           "sourceRefs": [
             "src-event-projection"
@@ -6695,13 +6768,17 @@
           "axisFamily": "authority",
           "axisRef": "authority / trust boundary axis",
           "traceStatus": "unmeasured",
+          "distanceEvaluatorKind": "witness-mismatch-count:authority-boundary-value-mismatch",
           "continuationSummary": "authority continuation is unmeasured under current ArchMap evidence",
           "continuationStates": [
-            "Cont_authority[0]=operation:read-from-repository; refs=0",
-            "Cont_authority[1]=operation:project-order-event; refs=0",
-            "Cont_authority[endpoint]=q; endpointRefs=1"
+            "Cont_authority[0]=operation:read-from-repository; comparableValues=0",
+            "Cont_authority[1]=operation:project-order-event; comparableValues=0",
+            "Cont_authority[endpoint]=q; endpointRefs=1; evaluator=witness-mismatch-count:authority-boundary-value-mismatch"
           ],
-          "distanceInputRefs": [],
+          "comparableContinuationValues": [],
+          "distanceInputRefs": [
+            "OrderView"
+          ],
           "observationRefs": [],
           "sourceRefs": [],
           "missingRefs": [
@@ -6713,13 +6790,17 @@
           "axisFamily": "runtime",
           "axisRef": "runtime interaction axis",
           "traceStatus": "unmeasured",
+          "distanceEvaluatorKind": "witness-mismatch-count:runtime-interaction-value-mismatch",
           "continuationSummary": "runtime continuation is unmeasured under current ArchMap evidence",
           "continuationStates": [
-            "Cont_runtime[0]=operation:read-from-repository; refs=0",
-            "Cont_runtime[1]=operation:project-order-event; refs=0",
-            "Cont_runtime[endpoint]=q; endpointRefs=1"
+            "Cont_runtime[0]=operation:read-from-repository; comparableValues=0",
+            "Cont_runtime[1]=operation:project-order-event; comparableValues=0",
+            "Cont_runtime[endpoint]=q; endpointRefs=1; evaluator=witness-mismatch-count:runtime-interaction-value-mismatch"
           ],
-          "distanceInputRefs": [],
+          "comparableContinuationValues": [],
+          "distanceInputRefs": [
+            "OrderView"
+          ],
           "observationRefs": [],
           "sourceRefs": [],
           "missingRefs": [
@@ -6731,13 +6812,20 @@
           "axisFamily": "projection",
           "axisRef": "projection / representation axis",
           "traceStatus": "boundedObservationTrace",
+          "distanceEvaluatorKind": "witness-mismatch-count:projection-target-value-mismatch",
           "continuationSummary": "projection continuation reads 1 observation ref(s) across 1 operation delta(s)",
           "continuationStates": [
-            "Cont_projection[0]=operation:read-from-repository; refs=1",
-            "Cont_projection[1]=operation:project-order-event; refs=1",
-            "Cont_projection[endpoint]=q; endpointRefs=1"
+            "Cont_projection[0]=operation:read-from-repository; comparableValues=2",
+            "Cont_projection[1]=operation:project-order-event; comparableValues=2",
+            "Cont_projection[endpoint]=q; endpointRefs=1; evaluator=witness-mismatch-count:projection-target-value-mismatch"
+          ],
+          "comparableContinuationValues": [
+            "projection:endpoints:OrderView",
+            "projection:support:projection-homotopy-report-fixture"
           ],
           "distanceInputRefs": [
+            "OrderView",
+            "molecule:homotopy-report-fixture",
             "projection:homotopy-report-fixture"
           ],
           "observationRefs": [
@@ -6782,17 +6870,21 @@
       "candidateRef": "operation-square:operation-square-evidence-cache-repository-read",
       "axisFamily": "authority",
       "axisRef": "authority / trust boundary axis",
-      "distanceKind": "witness-mismatch-count",
+      "distanceKind": "witness-mismatch-count:authority-boundary-value-mismatch",
       "pContinuationRef": "Cont_authority(p):authority / trust boundary axis",
       "qContinuationRef": "Cont_authority(q):authority / trust boundary axis",
-      "distanceInputRefs": [],
-      "positiveWitnessBoundary": "mu_x > 0 is read only as selected continuation observation difference with source-backed p/q trace inputs",
+      "distanceInputRefs": [
+        "OrderView"
+      ],
+      "positiveWitnessBoundary": "mu_x > 0 is read by an axis-specific distance evaluator over comparable continuation values with source-backed p/q trace inputs",
       "weight": 0,
       "measurementStatus": "unmeasured",
       "distanceValue": null,
       "measuredSupportRefs": [],
       "witnessRefs": [
-        "missing-evidence:missing authority observation for operation-square:operation-square-evidence-cache-repository-read"
+        "missing-evidence:missing authority observation for operation-square:operation-square-evidence-cache-repository-read",
+        "missing-evidence:missing comparable p continuation value for authority",
+        "missing-evidence:missing comparable q continuation value for authority"
       ],
       "sourceRefs": [
         "src-cache-read",
@@ -6801,9 +6893,11 @@
       ],
       "observationRefs": [],
       "missingRefs": [
-        "missing authority observation for operation-square:operation-square-evidence-cache-repository-read"
+        "missing authority observation for operation-square:operation-square-evidence-cache-repository-read",
+        "missing comparable p continuation value for authority",
+        "missing comparable q continuation value for authority"
       ],
-      "coverageBoundary": "coverage gap preserved; unmeasured axis is not zero defect",
+      "coverageBoundary": "coverage gap or missing comparable continuation input preserved; unmeasured axis is not zero defect",
       "exactnessAssumptionStatus": [
         "selected LawPolicy exactness assumptions"
       ],
@@ -6814,7 +6908,7 @@
         "zero aggregate is not global path flatness"
       ],
       "cancellationBoundary": "axis-wise defect avoids aggregate cancellation; AMI zero can reflect local zero only under recorded zero-reflection assumptions",
-      "evidenceBoundary": "mu_x(sigma) is a bounded distance between selected continuation traces, not a theorem about path equality",
+      "evidenceBoundary": "mu_x(sigma) is a bounded axis-distance evaluation between selected continuation values, not a theorem about path equality",
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -6830,16 +6924,20 @@
       "candidateRef": "operation-square:operation-square-evidence-cache-repository-read",
       "axisFamily": "contract",
       "axisRef": "contract axis",
-      "distanceKind": "witness-mismatch-count",
+      "distanceKind": "witness-mismatch-count:contract-obligation-value-mismatch",
       "pContinuationRef": "Cont_contract(p):contract axis",
       "qContinuationRef": "Cont_contract(q):contract axis",
-      "distanceInputRefs": [],
-      "positiveWitnessBoundary": "mu_x > 0 is read only as selected continuation observation difference with source-backed p/q trace inputs",
+      "distanceInputRefs": [
+        "OrderView"
+      ],
+      "positiveWitnessBoundary": "mu_x > 0 is read by an axis-specific distance evaluator over comparable continuation values with source-backed p/q trace inputs",
       "weight": 0,
       "measurementStatus": "unmeasured",
       "distanceValue": null,
       "measuredSupportRefs": [],
       "witnessRefs": [
+        "missing-evidence:missing comparable p continuation value for contract",
+        "missing-evidence:missing comparable q continuation value for contract",
         "missing-evidence:missing contract observation for operation-square:operation-square-evidence-cache-repository-read"
       ],
       "sourceRefs": [
@@ -6849,9 +6947,11 @@
       ],
       "observationRefs": [],
       "missingRefs": [
+        "missing comparable p continuation value for contract",
+        "missing comparable q continuation value for contract",
         "missing contract observation for operation-square:operation-square-evidence-cache-repository-read"
       ],
-      "coverageBoundary": "coverage gap preserved; unmeasured axis is not zero defect",
+      "coverageBoundary": "coverage gap or missing comparable continuation input preserved; unmeasured axis is not zero defect",
       "exactnessAssumptionStatus": [
         "selected LawPolicy exactness assumptions"
       ],
@@ -6862,7 +6962,7 @@
         "zero aggregate is not global path flatness"
       ],
       "cancellationBoundary": "axis-wise defect avoids aggregate cancellation; AMI zero can reflect local zero only under recorded zero-reflection assumptions",
-      "evidenceBoundary": "mu_x(sigma) is a bounded distance between selected continuation traces, not a theorem about path equality",
+      "evidenceBoundary": "mu_x(sigma) is a bounded axis-distance evaluation between selected continuation values, not a theorem about path equality",
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -6878,27 +6978,27 @@
       "candidateRef": "operation-square:operation-square-evidence-cache-repository-read",
       "axisFamily": "effect",
       "axisRef": "effect ordering / replay / compensation axis",
-      "distanceKind": "witness-mismatch-count",
+      "distanceKind": "witness-mismatch-count:effect-replay-order-mismatch",
       "pContinuationRef": "Cont_effect(p):effect ordering / replay / compensation axis",
       "qContinuationRef": "Cont_effect(q):effect ordering / replay / compensation axis",
       "distanceInputRefs": [
+        "OrderView",
         "atom:event-projection",
-        "derived-effect-order:p:operation-project-order-event-operation-read-through-cache",
-        "derived-effect-order:q:operation-project-order-event-operation-read-from-repository"
+        "src-event-projection"
       ],
-      "positiveWitnessBoundary": "mu_x > 0 is read only as selected continuation observation difference with source-backed p/q trace inputs",
+      "positiveWitnessBoundary": "mu_x > 0 is read by an axis-specific distance evaluator over comparable continuation values with source-backed p/q trace inputs",
       "weight": 1,
       "measurementStatus": "measured",
-      "distanceValue": 2,
+      "distanceValue": 1,
       "measuredSupportRefs": [
-        "atom:event-projection",
-        "derived-effect-order:p:operation-project-order-event-operation-read-through-cache",
-        "derived-effect-order:q:operation-project-order-event-operation-read-from-repository"
+        "atom:event-projection"
       ],
       "witnessRefs": [
         "atom:event-projection",
-        "derived-effect-order:p:operation-project-order-event-operation-read-through-cache",
-        "derived-effect-order:q:operation-project-order-event-operation-read-from-repository"
+        "p-value:effect-endpoints-orderview",
+        "p-value:effect-path-p-operation-read-through-cache-operation-project-order-event",
+        "q-value:effect-endpoints-orderview",
+        "q-value:effect-path-q-operation-read-from-repository-operation-project-order-event"
       ],
       "sourceRefs": [
         "src-cache-read",
@@ -6906,12 +7006,10 @@
         "test-homotopy-fillers"
       ],
       "observationRefs": [
-        "atom:event-projection",
-        "derived-effect-order:p:operation-project-order-event-operation-read-through-cache",
-        "derived-effect-order:q:operation-project-order-event-operation-read-from-repository"
+        "atom:event-projection"
       ],
       "missingRefs": [],
-      "coverageBoundary": "covered for selected trace refs; not complete execution semantics",
+      "coverageBoundary": "covered for selected comparable continuation values; not complete execution semantics",
       "exactnessAssumptionStatus": [
         "selected LawPolicy exactness assumptions"
       ],
@@ -6922,7 +7020,7 @@
         "zero aggregate is not global path flatness"
       ],
       "cancellationBoundary": "axis-wise defect avoids aggregate cancellation; AMI zero can reflect local zero only under recorded zero-reflection assumptions",
-      "evidenceBoundary": "mu_x(sigma) is a bounded distance between selected continuation traces, not a theorem about path equality",
+      "evidenceBoundary": "mu_x(sigma) is a bounded axis-distance evaluation between selected continuation values, not a theorem about path equality",
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -6938,13 +7036,15 @@
       "candidateRef": "operation-square:operation-square-evidence-cache-repository-read",
       "axisFamily": "projection",
       "axisRef": "projection / representation axis",
-      "distanceKind": "witness-mismatch-count",
+      "distanceKind": "witness-mismatch-count:projection-target-value-mismatch",
       "pContinuationRef": "Cont_projection(p):projection / representation axis",
       "qContinuationRef": "Cont_projection(q):projection / representation axis",
       "distanceInputRefs": [
+        "OrderView",
+        "molecule:homotopy-report-fixture",
         "projection:homotopy-report-fixture"
       ],
-      "positiveWitnessBoundary": "mu_x > 0 is read only as selected continuation observation difference with source-backed p/q trace inputs",
+      "positiveWitnessBoundary": "mu_x > 0 is read by an axis-specific distance evaluator over comparable continuation values with source-backed p/q trace inputs",
       "weight": 1,
       "measurementStatus": "measured",
       "distanceValue": 0,
@@ -6952,7 +7052,11 @@
         "projection:homotopy-report-fixture"
       ],
       "witnessRefs": [
-        "projection:homotopy-report-fixture"
+        "p-value:projection-endpoints-orderview",
+        "p-value:projection-support-projection-homotopy-report-fixture",
+        "projection:homotopy-report-fixture",
+        "q-value:projection-endpoints-orderview",
+        "q-value:projection-support-projection-homotopy-report-fixture"
       ],
       "sourceRefs": [
         "src-cache-read",
@@ -6963,7 +7067,7 @@
         "projection:homotopy-report-fixture"
       ],
       "missingRefs": [],
-      "coverageBoundary": "covered for selected trace refs; not complete execution semantics",
+      "coverageBoundary": "covered for selected comparable continuation values; not complete execution semantics",
       "exactnessAssumptionStatus": [
         "selected LawPolicy exactness assumptions"
       ],
@@ -6974,7 +7078,7 @@
         "zero aggregate is not global path flatness"
       ],
       "cancellationBoundary": "axis-wise defect avoids aggregate cancellation; AMI zero can reflect local zero only under recorded zero-reflection assumptions",
-      "evidenceBoundary": "mu_x(sigma) is a bounded distance between selected continuation traces, not a theorem about path equality",
+      "evidenceBoundary": "mu_x(sigma) is a bounded axis-distance evaluation between selected continuation values, not a theorem about path equality",
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -6990,16 +7094,20 @@
       "candidateRef": "operation-square:operation-square-evidence-cache-repository-read",
       "axisFamily": "runtime",
       "axisRef": "runtime interaction axis",
-      "distanceKind": "witness-mismatch-count",
+      "distanceKind": "witness-mismatch-count:runtime-interaction-value-mismatch",
       "pContinuationRef": "Cont_runtime(p):runtime interaction axis",
       "qContinuationRef": "Cont_runtime(q):runtime interaction axis",
-      "distanceInputRefs": [],
-      "positiveWitnessBoundary": "mu_x > 0 is read only as selected continuation observation difference with source-backed p/q trace inputs",
+      "distanceInputRefs": [
+        "OrderView"
+      ],
+      "positiveWitnessBoundary": "mu_x > 0 is read by an axis-specific distance evaluator over comparable continuation values with source-backed p/q trace inputs",
       "weight": 0,
       "measurementStatus": "unmeasured",
       "distanceValue": null,
       "measuredSupportRefs": [],
       "witnessRefs": [
+        "missing-evidence:missing comparable p continuation value for runtime",
+        "missing-evidence:missing comparable q continuation value for runtime",
         "missing-evidence:missing runtime observation for operation-square:operation-square-evidence-cache-repository-read"
       ],
       "sourceRefs": [
@@ -7009,9 +7117,11 @@
       ],
       "observationRefs": [],
       "missingRefs": [
+        "missing comparable p continuation value for runtime",
+        "missing comparable q continuation value for runtime",
         "missing runtime observation for operation-square:operation-square-evidence-cache-repository-read"
       ],
-      "coverageBoundary": "coverage gap preserved; unmeasured axis is not zero defect",
+      "coverageBoundary": "coverage gap or missing comparable continuation input preserved; unmeasured axis is not zero defect",
       "exactnessAssumptionStatus": [
         "selected LawPolicy exactness assumptions"
       ],
@@ -7022,7 +7132,7 @@
         "zero aggregate is not global path flatness"
       ],
       "cancellationBoundary": "axis-wise defect avoids aggregate cancellation; AMI zero can reflect local zero only under recorded zero-reflection assumptions",
-      "evidenceBoundary": "mu_x(sigma) is a bounded distance between selected continuation traces, not a theorem about path equality",
+      "evidenceBoundary": "mu_x(sigma) is a bounded axis-distance evaluation between selected continuation values, not a theorem about path equality",
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -7038,20 +7148,26 @@
       "candidateRef": "operation-square:operation-square-evidence-cache-repository-read",
       "axisFamily": "semantic",
       "axisRef": "semantic axis",
-      "distanceKind": "witness-mismatch-count",
+      "distanceKind": "witness-mismatch-count:semantic-sequence-mismatch",
       "pContinuationRef": "Cont_semantic(p):semantic axis",
       "qContinuationRef": "Cont_semantic(q):semantic axis",
       "distanceInputRefs": [
-        "semantic:path-rule:cache-repository-semantic-loop"
+        "OrderView",
+        "semantic:path-rule:cache-repository-semantic-loop",
+        "src-cache-read"
       ],
-      "positiveWitnessBoundary": "mu_x > 0 is read only as selected continuation observation difference with source-backed p/q trace inputs",
+      "positiveWitnessBoundary": "mu_x > 0 is read by an axis-specific distance evaluator over comparable continuation values with source-backed p/q trace inputs",
       "weight": 1,
       "measurementStatus": "measured",
-      "distanceValue": 0,
+      "distanceValue": 1,
       "measuredSupportRefs": [
         "semantic:path-rule:cache-repository-semantic-loop"
       ],
       "witnessRefs": [
+        "p-value:semantic-endpoints-orderview",
+        "p-value:semantic-path-p-operation-read-through-cache-operation-project-order-event",
+        "q-value:semantic-endpoints-orderview",
+        "q-value:semantic-path-q-operation-read-from-repository-operation-project-order-event",
         "semantic:path-rule:cache-repository-semantic-loop"
       ],
       "sourceRefs": [
@@ -7063,7 +7179,7 @@
         "semantic:path-rule:cache-repository-semantic-loop"
       ],
       "missingRefs": [],
-      "coverageBoundary": "covered for selected trace refs; not complete execution semantics",
+      "coverageBoundary": "covered for selected comparable continuation values; not complete execution semantics",
       "exactnessAssumptionStatus": [
         "selected LawPolicy exactness assumptions"
       ],
@@ -7074,7 +7190,7 @@
         "zero aggregate is not global path flatness"
       ],
       "cancellationBoundary": "axis-wise defect avoids aggregate cancellation; AMI zero can reflect local zero only under recorded zero-reflection assumptions",
-      "evidenceBoundary": "mu_x(sigma) is a bounded distance between selected continuation traces, not a theorem about path equality",
+      "evidenceBoundary": "mu_x(sigma) is a bounded axis-distance evaluation between selected continuation values, not a theorem about path equality",
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -7090,16 +7206,20 @@
       "candidateRef": "operation-square:operation-square-evidence-cache-repository-read",
       "axisFamily": "state",
       "axisRef": "state transition axis",
-      "distanceKind": "witness-mismatch-count",
+      "distanceKind": "witness-mismatch-count:state-transition-value-mismatch",
       "pContinuationRef": "Cont_state(p):state transition axis",
       "qContinuationRef": "Cont_state(q):state transition axis",
-      "distanceInputRefs": [],
-      "positiveWitnessBoundary": "mu_x > 0 is read only as selected continuation observation difference with source-backed p/q trace inputs",
+      "distanceInputRefs": [
+        "OrderView"
+      ],
+      "positiveWitnessBoundary": "mu_x > 0 is read by an axis-specific distance evaluator over comparable continuation values with source-backed p/q trace inputs",
       "weight": 0,
       "measurementStatus": "unmeasured",
       "distanceValue": null,
       "measuredSupportRefs": [],
       "witnessRefs": [
+        "missing-evidence:missing comparable p continuation value for state",
+        "missing-evidence:missing comparable q continuation value for state",
         "missing-evidence:missing state observation for operation-square:operation-square-evidence-cache-repository-read"
       ],
       "sourceRefs": [
@@ -7109,9 +7229,11 @@
       ],
       "observationRefs": [],
       "missingRefs": [
+        "missing comparable p continuation value for state",
+        "missing comparable q continuation value for state",
         "missing state observation for operation-square:operation-square-evidence-cache-repository-read"
       ],
-      "coverageBoundary": "coverage gap preserved; unmeasured axis is not zero defect",
+      "coverageBoundary": "coverage gap or missing comparable continuation input preserved; unmeasured axis is not zero defect",
       "exactnessAssumptionStatus": [
         "selected LawPolicy exactness assumptions"
       ],
@@ -7122,7 +7244,7 @@
         "zero aggregate is not global path flatness"
       ],
       "cancellationBoundary": "axis-wise defect avoids aggregate cancellation; AMI zero can reflect local zero only under recorded zero-reflection assumptions",
-      "evidenceBoundary": "mu_x(sigma) is a bounded distance between selected continuation traces, not a theorem about path equality",
+      "evidenceBoundary": "mu_x(sigma) is a bounded axis-distance evaluation between selected continuation values, not a theorem about path equality",
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -7138,15 +7260,19 @@
       "candidateRef": "operation-square:operation-square-evidence-cache-repository-read",
       "axisFamily": "static",
       "axisRef": "static dependency / support axis",
-      "distanceKind": "witness-mismatch-count",
+      "distanceKind": "witness-mismatch-count:static-support-value-mismatch",
       "pContinuationRef": "Cont_static(p):static dependency / support axis",
       "qContinuationRef": "Cont_static(q):static dependency / support axis",
       "distanceInputRefs": [
+        "OrderView",
         "atom:cache-read",
         "atom:event-projection",
-        "atom:repository-read"
+        "atom:repository-read",
+        "src-cache-read",
+        "src-event-projection",
+        "src-repository-read"
       ],
-      "positiveWitnessBoundary": "mu_x > 0 is read only as selected continuation observation difference with source-backed p/q trace inputs",
+      "positiveWitnessBoundary": "mu_x > 0 is read by an axis-specific distance evaluator over comparable continuation values with source-backed p/q trace inputs",
       "weight": 1,
       "measurementStatus": "measured",
       "distanceValue": 0,
@@ -7158,7 +7284,11 @@
       "witnessRefs": [
         "atom:cache-read",
         "atom:event-projection",
-        "atom:repository-read"
+        "atom:repository-read",
+        "p-value:static-endpoints-orderview",
+        "p-value:static-support-atom-cache-read-atom-repository-read-atom-event-projection",
+        "q-value:static-endpoints-orderview",
+        "q-value:static-support-atom-cache-read-atom-repository-read-atom-event-projection"
       ],
       "sourceRefs": [
         "src-cache-read",
@@ -7171,7 +7301,7 @@
         "atom:repository-read"
       ],
       "missingRefs": [],
-      "coverageBoundary": "covered for selected trace refs; not complete execution semantics",
+      "coverageBoundary": "covered for selected comparable continuation values; not complete execution semantics",
       "exactnessAssumptionStatus": [
         "selected LawPolicy exactness assumptions"
       ],
@@ -7182,7 +7312,7 @@
         "zero aggregate is not global path flatness"
       ],
       "cancellationBoundary": "axis-wise defect avoids aggregate cancellation; AMI zero can reflect local zero only under recorded zero-reflection assumptions",
-      "evidenceBoundary": "mu_x(sigma) is a bounded distance between selected continuation traces, not a theorem about path equality",
+      "evidenceBoundary": "mu_x(sigma) is a bounded axis-distance evaluation between selected continuation values, not a theorem about path equality",
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -7251,7 +7381,9 @@
           "contributionValue": null,
           "reviewFocus": "supply missing authority trace evidence before interpreting AMI as zero",
           "witnessRefs": [
-            "missing-evidence:missing authority observation for operation-square:operation-square-evidence-cache-repository-read"
+            "missing-evidence:missing authority observation for operation-square:operation-square-evidence-cache-repository-read",
+            "missing-evidence:missing comparable p continuation value for authority",
+            "missing-evidence:missing comparable q continuation value for authority"
           ]
         },
         {
@@ -7262,6 +7394,8 @@
           "contributionValue": null,
           "reviewFocus": "supply missing contract trace evidence before interpreting AMI as zero",
           "witnessRefs": [
+            "missing-evidence:missing comparable p continuation value for contract",
+            "missing-evidence:missing comparable q continuation value for contract",
             "missing-evidence:missing contract observation for operation-square:operation-square-evidence-cache-repository-read"
           ]
         },
@@ -7273,6 +7407,8 @@
           "contributionValue": null,
           "reviewFocus": "supply missing runtime trace evidence before interpreting AMI as zero",
           "witnessRefs": [
+            "missing-evidence:missing comparable p continuation value for runtime",
+            "missing-evidence:missing comparable q continuation value for runtime",
             "missing-evidence:missing runtime observation for operation-square:operation-square-evidence-cache-repository-read"
           ]
         },
@@ -7284,6 +7420,8 @@
           "contributionValue": null,
           "reviewFocus": "supply missing state trace evidence before interpreting AMI as zero",
           "witnessRefs": [
+            "missing-evidence:missing comparable p continuation value for state",
+            "missing-evidence:missing comparable q continuation value for state",
             "missing-evidence:missing state observation for operation-square:operation-square-evidence-cache-repository-read"
           ]
         },
@@ -7292,12 +7430,29 @@
           "candidateRef": "operation-square:operation-square-evidence-cache-repository-read",
           "axisFamily": "effect",
           "contributionWeight": 1,
-          "contributionValue": 2,
+          "contributionValue": 1,
           "reviewFocus": "review effect trace mismatch before treating aggregate value as local agreement",
           "witnessRefs": [
             "atom:event-projection",
-            "derived-effect-order:p:operation-project-order-event-operation-read-through-cache",
-            "derived-effect-order:q:operation-project-order-event-operation-read-from-repository"
+            "p-value:effect-endpoints-orderview",
+            "p-value:effect-path-p-operation-read-through-cache-operation-project-order-event",
+            "q-value:effect-endpoints-orderview",
+            "q-value:effect-path-q-operation-read-from-repository-operation-project-order-event"
+          ]
+        },
+        {
+          "defectRef": "mu:operation-square-operation-square-evidence-cache-repository-read:semantic",
+          "candidateRef": "operation-square:operation-square-evidence-cache-repository-read",
+          "axisFamily": "semantic",
+          "contributionWeight": 1,
+          "contributionValue": 1,
+          "reviewFocus": "review semantic trace mismatch before treating aggregate value as local agreement",
+          "witnessRefs": [
+            "p-value:semantic-endpoints-orderview",
+            "p-value:semantic-path-p-operation-read-through-cache-operation-project-order-event",
+            "q-value:semantic-endpoints-orderview",
+            "q-value:semantic-path-q-operation-read-from-repository-operation-project-order-event",
+            "semantic:path-rule:cache-repository-semantic-loop"
           ]
         },
         {
@@ -7308,18 +7463,11 @@
           "contributionValue": 0,
           "reviewFocus": "review projection trace mismatch before treating aggregate value as local agreement",
           "witnessRefs": [
-            "projection:homotopy-report-fixture"
-          ]
-        },
-        {
-          "defectRef": "mu:operation-square-operation-square-evidence-cache-repository-read:semantic",
-          "candidateRef": "operation-square:operation-square-evidence-cache-repository-read",
-          "axisFamily": "semantic",
-          "contributionWeight": 1,
-          "contributionValue": 0,
-          "reviewFocus": "review semantic trace mismatch before treating aggregate value as local agreement",
-          "witnessRefs": [
-            "semantic:path-rule:cache-repository-semantic-loop"
+            "p-value:projection-endpoints-orderview",
+            "p-value:projection-support-projection-homotopy-report-fixture",
+            "projection:homotopy-report-fixture",
+            "q-value:projection-endpoints-orderview",
+            "q-value:projection-support-projection-homotopy-report-fixture"
           ]
         },
         {
@@ -7332,7 +7480,11 @@
           "witnessRefs": [
             "atom:cache-read",
             "atom:event-projection",
-            "atom:repository-read"
+            "atom:repository-read",
+            "p-value:static-endpoints-orderview",
+            "p-value:static-support-atom-cache-read-atom-repository-read-atom-event-projection",
+            "q-value:static-endpoints-orderview",
+            "q-value:static-support-atom-cache-read-atom-repository-read-atom-event-projection"
           ]
         }
       ],
@@ -7371,15 +7523,13 @@
       ],
       "axisFamily": "effect",
       "axisRef": "effect ordering / replay / compensation axis",
-      "defectValue": 2,
+      "defectValue": 1,
       "comparedTraceSummary": [
-        "p: effect continuation reads 2 observation ref(s) across 1 operation delta(s) refs=2 missing=0",
-        "q: effect continuation reads 2 observation ref(s) across 1 operation delta(s) refs=2 missing=0"
+        "p: effect continuation reads 1 observation ref(s) across 1 operation delta(s) refs=1 missing=0",
+        "q: effect continuation reads 1 observation ref(s) across 1 operation delta(s) refs=1 missing=0"
       ],
       "affectedAtomRefs": [
-        "atom:event-projection",
-        "derived-effect-order:p:operation-project-order-event-operation-read-through-cache",
-        "derived-effect-order:q:operation-project-order-event-operation-read-from-repository"
+        "atom:event-projection"
       ],
       "lawRefs": [
         "law:homotopy-report-fixture"
@@ -7393,12 +7543,10 @@
         "test-homotopy-fillers"
       ],
       "observationRefs": [
-        "atom:event-projection",
-        "derived-effect-order:p:operation-project-order-event-operation-read-through-cache",
-        "derived-effect-order:q:operation-project-order-event-operation-read-from-repository"
+        "atom:event-projection"
       ],
       "missingEvidence": [],
-      "coverageBoundary": "covered for selected trace refs; not complete execution semantics",
+      "coverageBoundary": "covered for selected comparable continuation values; not complete execution semantics",
       "suggestedFillerEvidence": [
         "supply filler evidence for effect axis trace disagreement",
         "record whether the two continuation paths preserve selected observations"
@@ -7412,6 +7560,69 @@
       "recommendedReviewFocus": [
         "compare operation:project-order-event . operation:read-through-cache and operation:project-order-event . operation:read-from-repository before treating the operation pair as order-insensitive",
         "review effect axis witness refs and missing evidence"
+      ],
+      "evidenceBoundary": "nonzero monodromy witness is a measured review cue; it is not automatic repair safety or merge safety",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    },
+    {
+      "witnessId": "nonzero-monodromy-witness:mu-operation-square-operation-square-evidence-cache-repository-read-semantic",
+      "defectRef": "mu:operation-square-operation-square-evidence-cache-repository-read:semantic",
+      "candidateRef": "operation-square:operation-square-evidence-cache-repository-read",
+      "operationPair": [
+        "operation:read-through-cache",
+        "operation:read-from-repository"
+      ],
+      "pathPair": [
+        "operation:project-order-event . operation:read-through-cache",
+        "operation:project-order-event . operation:read-from-repository"
+      ],
+      "axisFamily": "semantic",
+      "axisRef": "semantic axis",
+      "defectValue": 1,
+      "comparedTraceSummary": [
+        "p: semantic continuation reads 1 observation ref(s) across 1 operation delta(s) refs=1 missing=0",
+        "q: semantic continuation reads 1 observation ref(s) across 1 operation delta(s) refs=1 missing=0"
+      ],
+      "affectedAtomRefs": [
+        "semantic:path-rule:cache-repository-semantic-loop"
+      ],
+      "lawRefs": [
+        "law:homotopy-report-fixture"
+      ],
+      "signatureAxisRefs": [
+        "sig-axis:homotopy-report-fixture"
+      ],
+      "sourceRefs": [
+        "src-cache-read",
+        "src-repository-read",
+        "test-homotopy-fillers"
+      ],
+      "observationRefs": [
+        "semantic:path-rule:cache-repository-semantic-loop"
+      ],
+      "missingEvidence": [],
+      "coverageBoundary": "covered for selected comparable continuation values; not complete execution semantics",
+      "suggestedFillerEvidence": [
+        "supply filler evidence for semantic axis trace disagreement",
+        "record whether the two continuation paths preserve selected observations"
+      ],
+      "suggestedLiftingEvidence": [
+        "check whether the local witness lifts from ArchMap observation refs to the intended boundary operation"
+      ],
+      "suggestedBoundaryEvidence": [
+        "identify the boundary, adapter, authority, or effect surface where the order-sensitive witness appears"
+      ],
+      "recommendedReviewFocus": [
+        "compare operation:project-order-event . operation:read-through-cache and operation:project-order-event . operation:read-from-repository before treating the operation pair as order-insensitive",
+        "review semantic axis witness refs and missing evidence"
       ],
       "evidenceBoundary": "nonzero monodromy witness is a measured review cue; it is not automatic repair safety or merge safety",
       "nonConclusions": [
@@ -7477,6 +7688,8 @@
             "split-readiness:molecule-homotopy-report-fixture"
           ],
           "missingEvidence": [
+            "missing comparable p continuation value for contract",
+            "missing comparable q continuation value for contract",
             "missing contract observation for operation-square:operation-square-evidence-cache-repository-read"
           ],
           "reading": "Hol_contract records boundary-local residual obstruction on the contract axis"
@@ -7484,9 +7697,11 @@
         {
           "holonomyAxisRef": "Hol_semantic",
           "axisFamily": "semantic",
-          "status": "coveredZeroResidual",
-          "residualValue": 0,
-          "measuredDefectRefs": [],
+          "status": "measuredResidual",
+          "residualValue": 1,
+          "measuredDefectRefs": [
+            "mu:operation-square-operation-square-evidence-cache-repository-read:semantic"
+          ],
           "supportRefs": [
             "semantic:path-rule:cache-repository-semantic-loop"
           ],
@@ -7506,6 +7721,8 @@
             "split-readiness:molecule-homotopy-report-fixture"
           ],
           "missingEvidence": [
+            "missing comparable p continuation value for state",
+            "missing comparable q continuation value for state",
             "missing state observation for operation-square:operation-square-evidence-cache-repository-read"
           ],
           "reading": "Hol_state records boundary-local residual obstruction on the state axis"
@@ -7514,14 +7731,12 @@
           "holonomyAxisRef": "Hol_effect",
           "axisFamily": "effect",
           "status": "measuredResidual",
-          "residualValue": 2,
+          "residualValue": 1,
           "measuredDefectRefs": [
             "mu:operation-square-operation-square-evidence-cache-repository-read:effect"
           ],
           "supportRefs": [
-            "atom:event-projection",
-            "derived-effect-order:p:operation-project-order-event-operation-read-through-cache",
-            "derived-effect-order:q:operation-project-order-event-operation-read-from-repository"
+            "atom:event-projection"
           ],
           "missingEvidence": [],
           "reading": "Hol_effect records boundary-local residual obstruction on the effect axis"
@@ -7539,7 +7754,9 @@
             "split-readiness:molecule-homotopy-report-fixture"
           ],
           "missingEvidence": [
-            "missing authority observation for operation-square:operation-square-evidence-cache-repository-read"
+            "missing authority observation for operation-square:operation-square-evidence-cache-repository-read",
+            "missing comparable p continuation value for authority",
+            "missing comparable q continuation value for authority"
           ],
           "reading": "Hol_authority records boundary-local residual obstruction on the authority axis"
         },
@@ -7556,6 +7773,8 @@
             "split-readiness:molecule-homotopy-report-fixture"
           ],
           "missingEvidence": [
+            "missing comparable p continuation value for runtime",
+            "missing comparable q continuation value for runtime",
             "missing runtime observation for operation-square:operation-square-evidence-cache-repository-read"
           ],
           "reading": "Hol_runtime records boundary-local residual obstruction on the runtime axis"
@@ -7577,6 +7796,7 @@
         "gap:path-rule:authorization-bypass-hole:missing-policy-test",
         "may transfer obstruction into runtime behavior, ownership, or idempotency boundary",
         "mu:operation-square-operation-square-evidence-cache-repository-read:effect",
+        "mu:operation-square-operation-square-evidence-cache-repository-read:semantic",
         "obstruction:homotopy-report-fixture:computed",
         "split-readiness:molecule-homotopy-report-fixture"
       ],
@@ -7633,6 +7853,7 @@
             "gap:path-rule:authorization-bypass-hole:missing-policy-test",
             "may transfer obstruction into runtime behavior, ownership, or idempotency boundary",
             "mu:operation-square-operation-square-evidence-cache-repository-read:effect",
+            "mu:operation-square-operation-square-evidence-cache-repository-read:semantic",
             "obstruction:homotopy-report-fixture:computed",
             "split-readiness:molecule-homotopy-report-fixture"
           ],
@@ -7741,6 +7962,22 @@
           "complexityTransferRefs": [],
           "residualCoverageGapRefs": [],
           "reading": "mu:operation-square-operation-square-evidence-cache-repository-read:effect carries non-disjoint feature-extension labels [\"boundaryHolonomy\"]"
+        },
+        {
+          "witnessRef": "mu:operation-square-operation-square-evidence-cache-repository-read:semantic",
+          "labels": [
+            "boundaryHolonomy"
+          ],
+          "inheritedCoreRefs": [],
+          "featureLocalRefs": [],
+          "boundaryHolonomyRefs": [
+            "mu:operation-square-operation-square-evidence-cache-repository-read:semantic"
+          ],
+          "liftingFailureRefs": [],
+          "fillingFailureRefs": [],
+          "complexityTransferRefs": [],
+          "residualCoverageGapRefs": [],
+          "reading": "mu:operation-square-operation-square-evidence-cache-repository-read:semantic carries non-disjoint feature-extension labels [\"boundaryHolonomy\"]"
         },
         {
           "witnessRef": "obstruction:homotopy-report-fixture:computed",
@@ -7864,7 +8101,8 @@
     "weightPolicy": "unit weights until project-specific calibration is declared",
     "coveragePolicy": "coverage gaps block signature-zero and spectrum-zero reflection",
     "nonzeroMonodromyWitnessRefs": [
-      "nonzero-monodromy-witness:mu-operation-square-operation-square-evidence-cache-repository-read-effect"
+      "nonzero-monodromy-witness:mu-operation-square-operation-square-evidence-cache-repository-read-effect",
+      "nonzero-monodromy-witness:mu-operation-square-operation-square-evidence-cache-repository-read-semantic"
     ],
     "featureBoundaryResidualRefs": [
       "feature-boundary-residual:homotopy-report-fixture-archmap"
@@ -9645,7 +9883,7 @@
     ],
     "transferBridgeEdgeSummary": [],
     "measurementExpansionSummary": [
-      "v0.3.0 measurement expansion reads 2 Atom support axes, 1 compatibility surfaces, 1 LawUniverse coverage surfaces, 1 feature-extension formulas, 1 operation-law surfaces, 1 path trajectories, 1 homotopy/order surfaces, 1 diagram-fillability surfaces, 1 axis-forgetting risks, 1 projection-fidelity surfaces, 1 Atom origin-closure debts, 1 effect-relation algebras, 1 synthesis blockers, 1 operation-precondition readings, 1 path-multiplicity readings, 1 trajectory homotopy refutations, 1 bridge split-transfer surfaces, and 1 nonzero monodromy witnesses"
+      "v0.3.0 measurement expansion reads 2 Atom support axes, 1 compatibility surfaces, 1 LawUniverse coverage surfaces, 1 feature-extension formulas, 1 operation-law surfaces, 1 path trajectories, 1 homotopy/order surfaces, 1 diagram-fillability surfaces, 1 axis-forgetting risks, 1 projection-fidelity surfaces, 1 Atom origin-closure debts, 1 effect-relation algebras, 1 synthesis blockers, 1 operation-precondition readings, 1 path-multiplicity readings, 1 trajectory homotopy refutations, 1 bridge split-transfer surfaces, and 2 nonzero monodromy witnesses"
     ],
     "atomSupportAxisSummary": [
       "homotopy-report-fixture-archmap support=5 concentration=maxAxisShare=2/6 pressure=mixedAxisPressurePresent",
@@ -9700,13 +9938,14 @@
       "split-readiness:molecule-homotopy-report-fixture transferRisk=needsObstructionSupportReview bridgeEdges=0 obstructions=1 boundaryOps=1"
     ],
     "nonzeroMonodromyWitnessSummary": [
-      "nonzero-monodromy-witness:mu-operation-square-operation-square-evidence-cache-repository-read-effect axis=effect defect=2 affectedAtoms=3 missingEvidence=0 focus=2"
+      "nonzero-monodromy-witness:mu-operation-square-operation-square-evidence-cache-repository-read-effect axis=effect defect=1 affectedAtoms=1 missingEvidence=0 focus=2",
+      "nonzero-monodromy-witness:mu-operation-square-operation-square-evidence-cache-repository-read-semantic axis=semantic defect=1 affectedAtoms=1 missingEvidence=0 focus=2"
     ],
     "featureBoundaryResidualSummary": [
-      "feature-boundary-residual:homotopy-report-fixture-archmap boundary=Boundary(homotopy-report-fixture-archmap, feature-extension) status=measuredResidual axes=8 residualRefs=5"
+      "feature-boundary-residual:homotopy-report-fixture-archmap boundary=Boundary(homotopy-report-fixture-archmap, feature-extension) status=measuredResidual axes=8 residualRefs=6"
     ],
     "featureExtensionDiagnosisSummary": [
-      "feature-extension-diagnosis:feature-extension-formula-homotopy-report-fixture-archmap status=multiLabelAttributed attributions=6 multiLabel=4 coverageGaps=1 lifting=1 filling=1 complexity=1"
+      "feature-extension-diagnosis:feature-extension-formula-homotopy-report-fixture-archmap status=multiLabelAttributed attributions=7 multiLabel=4 coverageGaps=1 lifting=1 filling=1 complexity=1"
     ],
     "representationStrengthSummary": [
       "weightedAdjacencyMatrix zeroReflecting=blockedByCoverageGap obstructionReflecting=blockedByCoverageGap blockedBy=1",
