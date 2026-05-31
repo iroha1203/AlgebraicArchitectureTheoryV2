@@ -11,6 +11,8 @@ tags: softwarearchitecture, ai, softwareengineering, opensource
 >
 > We need to observe the smallest units that carry architectural meaning. I call those units `Atom`s.
 >
+> By extracting Atoms from a codebase and reading the algebraic structure they generate, we can analyze architecture beyond ordinary dependency relationships.
+>
 > The workflow looks like this:
 >
 > ```text
