@@ -99,6 +99,9 @@ evidence. Use conservative defaults when evidence is absent:
 - witness mismatch counts before severity scores
 - transfer edges from measured witness support overlap, not source proximity alone
 - report focus on top modes, witness refs, source refs, coverage gaps, and non-conclusions
+- design principle readings should have principle-specific witness evidence;
+  do not rely on global obstruction presence to read a principle as preserved
+  or stressed
 - reading strength that distinguishes measured support rows from bounded
   transfer proxies and coverage-blocked rows
 

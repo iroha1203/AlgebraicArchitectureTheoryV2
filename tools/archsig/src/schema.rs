@@ -2840,11 +2840,19 @@ pub struct ArchSigDesignPrincipleReadingV0 {
     pub principle_id: String,
     pub principle: String,
     pub status: String,
+    #[serde(default)]
+    pub witness_rule_ref: String,
+    #[serde(default)]
+    pub witness_status: String,
+    #[serde(default)]
+    pub witness_evidence_refs: Vec<String>,
     pub aat_reading: String,
     pub invariant_refs: Vec<String>,
     pub obstruction_refs: Vec<String>,
     pub operation_refs: Vec<String>,
     pub evidence_refs: Vec<String>,
+    #[serde(default)]
+    pub source_refs: Vec<String>,
     pub confidence: String,
     pub coverage_boundary: String,
     pub exactness_blockers: Vec<String>,

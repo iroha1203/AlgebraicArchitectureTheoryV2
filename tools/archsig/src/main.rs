@@ -1116,6 +1116,7 @@ fn build_analysis_summary(
         "axisSummary": axis_summary(packet),
         "aatObservationAxisSummary": aat_observation_axis_summary(packet),
         "workflowRiskSummary": workflow_risk_summary(packet),
+        "designPrincipleSummary": design_principle_summary(packet),
         "architecturalHoleSummary": architectural_hole_summary(packet),
         "bridgeSummary": bridge_summary(packet),
         "coverageGapSummary": coverage_gap_summary(packet),
@@ -1790,6 +1791,35 @@ fn workflow_risk_findings(packet: &serde_json::Value, limit: usize) -> serde_jso
             })
             .collect(),
     )
+}
+
+fn design_principle_summary(packet: &serde_json::Value) -> serde_json::Value {
+    let mut status_counts = BTreeMap::<String, usize>::new();
+    let items = array_items(packet, "designPrincipleReadings")
+        .into_iter()
+        .map(|reading| {
+            let status = json_field(reading, "status")
+                .as_str()
+                .unwrap_or("unknown")
+                .to_string();
+            *status_counts.entry(status.clone()).or_default() += 1;
+            serde_json::json!({
+                "principle": json_field(reading, "principle"),
+                "status": status,
+                "witnessRuleRef": json_field(reading, "witnessRuleRef"),
+                "witnessStatus": json_field(reading, "witnessStatus"),
+                "evidenceRefCount": array_len(reading, "witnessEvidenceRefs"),
+                "sourceRefCount": array_len(reading, "sourceRefs"),
+                "obstructionRefCount": array_len(reading, "obstructionRefs"),
+                "recommendedNextAction": json_field(reading, "recommendedNextAction")
+            })
+        })
+        .collect::<Vec<_>>();
+    serde_json::json!({
+        "statusCounts": status_counts,
+        "items": items,
+        "claimBoundary": "design principles are principle-specific witness readings, not static lint rules or theorem proofs"
+    })
 }
 
 fn architectural_hole_summary(packet: &serde_json::Value) -> serde_json::Value {
