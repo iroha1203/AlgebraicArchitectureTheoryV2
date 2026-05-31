@@ -158,6 +158,25 @@ Each `observationGaps[]` entry should include:
 
 Do not use `measuredZero` for unavailable evidence. Use measured absence only when the selected measurement actually observed absence.
 
+For Homotopy / Holonomy / Stokes readiness, prefer targeted gap ids and
+subjects:
+
+```json
+{
+  "gapId": "gap:path-rule:<name>:missing-filler",
+  "gapKind": "MissingFillerEvidence",
+  "subjectRef": "path-rule:<name>",
+  "evidenceStatus": "unavailable",
+  "reason": "selected contract / test / runtime / policy filler evidence was not supplied",
+  "expectedAtomFamilies": ["contractSpecification", "runtimeInteraction"],
+  "sourceRefs": [],
+  "nonConclusions": ["missing filler evidence is not measured zero"]
+}
+```
+
+Targeted gaps let ArchSig keep one loop as `blockedByCoverageGap` without
+turning unrelated measured loops into holes.
+
 ## Projection Info
 
 Each `projectionInfo[]` entry should include:
@@ -218,6 +237,12 @@ Before validation:
 - missing evidence is not represented as measured zero
 - semantic observations have source support
 - SFT-facing projection hints are not presented as forecast results
+- every atom `projectionRefs[]` entry has a matching `projectionInfo[]` entry
+- ACTS / Spectrum requests have lhs/rhs support, witness support, transfer
+  support, or targeted missing-support gaps
+- Homotopy / Stokes requests have path candidates, endpoint refs, continuation
+  evidence, filler evidence, or targeted non-fillability gaps
+- residual `blockedByCoverageGap` entries are genuine unavailable/private/out-of-scope evidence, not skipped source reading
 - atom observations are source-grounded observations, not certified atoms
 - responsibility is represented through molecule observations
 - concern hints are not represented as obstruction circuits

@@ -17,6 +17,30 @@ Static analysis artifacts can speed up source selection, but they are not ArchMa
 
 After a navigation aid identifies a candidate, read the cited source and record the directly supported primitive fact. If the source is unavailable or outside scope, use `observationGaps[]` or a low-confidence `concernHints[]` review cue.
 
+## Complete-First Authoring Boundary
+
+The user-facing ArchMap authoring workflow is complete-first. Do not ask the
+user to first accept a thin static map and then manually grow it until ArchSig
+becomes useful. Use partial notes only as internal scratch state while reading
+the repository. The handoff artifact should already contain the evidence needed
+for the requested ArchSig measurement, plus targeted gaps only for evidence
+that is genuinely unavailable, private, or out of scope.
+
+For large repositories, split the reading work across surfaces, then integrate
+the result into one bounded ArchMap:
+
+- authority / authentication
+- state / model
+- effects / jobs
+- provider / trust
+- domain / contracts
+- runtime / framework
+- docs / governance
+
+The integrator must turn those surface packets into primitive atoms, molecules,
+semantic observations, projection hints, concern hints, and targeted gaps. A
+surface packet is not a user-facing reduced ArchMap.
+
 ## Source Cues To Observations
 
 | Source cue | Preferred ArchMap reading | Primary field | Notes |
@@ -30,6 +54,7 @@ After a navigation aid identifies a candidate, read the cited source and record 
 | Two operation sequences that should be compared by ArchSig Homotopy | Semantic path / commutation cue plus primitive operation atoms | `semanticObservations[]`, `projectionInfo[]`, `concernHints[]` | Record operation steps, endpoint evidence, generator candidates, and missing continuation evidence. Do not claim path truth. |
 | Lhs/rhs observations for a selected law diagram | Primitive atoms plus semantic diagram cue | `atomObservations[]`, `semanticObservations[]`, `projectionInfo[]` | Preserve source refs for both sides so ArchSig can compute local curvature inputs. Missing side evidence remains a gap. |
 | Contract, test, runtime trace, policy, or source implementation that fills a loop | Filler evidence cue over observed facts | `semanticObservations[]`, `projectionInfo[]` | Record the evidence source and boundary. If absent or private, create an observation gap instead of a measured filler. |
+| Missing filler for one path rule or operation square | Targeted non-fillability witness | `observationGaps[]`, `concernHints[]` | Use the path-rule or square ref as `subjectRef` so unrelated loops are not blocked by a global gap. |
 | Component with multiple responsibility regions or reasons to change | Responsibility molecule / SRP review cue | `moleculeObservations[]`, `concernHints[]` | Treat responsibility as a molecule over atoms, not a primitive atom. Treat SOLID as local contract-layer evidence, not a universal theorem. |
 | Event stream to read model, replay projection, CQRS projection | Event-sourcing semantic observation | `semanticObservations[]` | Forget event-log completeness unless log evidence was supplied. |
 | Saga branch, rollback path, compensation handler | Compensation observation or missing-compensation concern | `semanticObservations[]`, `concernHints[]` | Keep incident causality out of ArchMap. |
@@ -139,6 +164,30 @@ For every `atomObservations[]` entry:
 - `nonConclusions[]` should prevent promotion to architecture truth, global correctness, lawfulness, or proof discharge.
 
 Move the candidate to `observationGaps[]` when the relevant evidence exists only as a private credential, provider log, runtime trace, generated file, framework expansion, production database row, or unreviewed test suite.
+
+## Spectrum And Homotopy Evidence Patterns
+
+For ACTS / Spectrum readiness, record:
+
+- local lhs/rhs observations as primitive atoms or semantic diagram cues
+- witness-support refs for the selected axis
+- distance input refs and source-backed transfer-edge cues
+- coverage gaps for missing rows, not zero-valued rows
+
+For Homotopy / Holonomy / Stokes readiness, record:
+
+- path-pair candidates as source-backed semantic observations or projection hints
+- endpoint object refs through atom / molecule support
+- operation sequence and generator-candidate cues when source supports them
+- continuation evidence from source, tests, runtime traces, policy, or explicit user evidence
+- filler evidence from contracts, tests, runtime traces, source implementation, policy docs, or explicit user evidence
+- non-fillability witnesses as targeted `observationGaps[]`
+
+Adding an atom is not enough to make a loop Stokes-ready. ArchSig can read
+local curvature only when the ArchMap gives a measured filler boundary and the
+selected LawPolicy can compare nonzero holonomy. If filler evidence is missing,
+preserve it as a targeted gap so the feedback loop can repair exactly that
+blocker.
 
 ## Concern Hints
 

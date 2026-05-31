@@ -1,0 +1,3167 @@
+{
+  "schemaVersion": "archmap-observation-map-v0",
+  "mapId": "complete-archmap-acceptance-sanitized-large-repo",
+  "architectureId": "sanitized-large-repo-architecture",
+  "generatedAt": "2026-05-31T00:00:00Z",
+  "generator": {
+    "kind": "supplied-json",
+    "tool": "archsig",
+    "provider": "human-reviewed-fixture",
+    "modelId": "not-applicable"
+  },
+  "promptRefs": [
+    {
+      "artifactId": "prompt-homotopy-report-fixture",
+      "kind": "prompt",
+      "path": "docs/note/homotopy_holonomy_stokes.md"
+    }
+  ],
+  "sourceInventoryRef": {
+    "artifactId": "complete-archmap-acceptance-source-inventory",
+    "kind": "source_inventory",
+    "path": "tools/archsig/tests/fixtures/complete_archmap_acceptance/source_inventory.json",
+    "contentHash": "sha256-complete-archmap-acceptance-fixture"
+  },
+  "generationBoundary": {
+    "tokenBudget": "fixture",
+    "scope": [
+      "src/sanitized/authority",
+      "src/sanitized/state",
+      "src/sanitized/effects",
+      "src/sanitized/provider",
+      "src/sanitized/domain",
+      "src/sanitized/runtime",
+      "src/sanitized/docs"
+    ],
+    "excludedRefs": [],
+    "privateRefs": [],
+    "unavailableRefs": [
+      {
+        "kind": "runtimeTrace",
+        "path": "traces/sanitized/missing-authorization-policy-runtime.json"
+      }
+    ],
+    "nonConclusions": [
+      "complete ArchMap acceptance fixture is synthetic and sanitized",
+      "fixture does not claim complete repository discovery"
+    ]
+  },
+  "sourceUniverse": {
+    "root": ".",
+    "includedRefs": [
+      {
+        "artifactId": "src-cache-read",
+        "kind": "file",
+        "path": "src/cache/read.ts",
+        "symbol": "readThroughCache",
+        "line": 10
+      },
+      {
+        "artifactId": "src-repository-read",
+        "kind": "file",
+        "path": "src/repository/read.ts",
+        "symbol": "readFromRepository",
+        "line": 12
+      },
+      {
+        "artifactId": "src-event-projection",
+        "kind": "file",
+        "path": "src/events/project_order.ts",
+        "symbol": "projectOrderEvent",
+        "line": 22
+      },
+      {
+        "artifactId": "src-direct-read",
+        "kind": "file",
+        "path": "src/read-model/order.ts",
+        "symbol": "readOrderDirectly",
+        "line": 18
+      },
+      {
+        "artifactId": "src-retry-effect",
+        "kind": "file",
+        "path": "src/retry/charge.ts",
+        "symbol": "chargeWithRetry",
+        "line": 31
+      },
+      {
+        "artifactId": "src-auth-bypass",
+        "kind": "file",
+        "path": "src/auth/admin_bypass.ts",
+        "symbol": "adminBypassRead",
+        "line": 7
+      },
+      {
+        "artifactId": "src-pricing-checkout",
+        "kind": "file",
+        "path": "src/pricing/checkout.ts",
+        "symbol": "checkoutTotal",
+        "line": 18
+      },
+      {
+        "artifactId": "test-homotopy-fillers",
+        "kind": "test",
+        "path": "tests/architecture/homotopy_fillers.test.ts",
+        "symbol": "contractOrRuntimeFillers"
+      },
+      {
+        "artifactId": "doc-auth-policy",
+        "kind": "docSection",
+        "path": "docs/architecture/auth.md",
+        "section": "Authorization boundary"
+      },
+      {
+        "artifactId": "test-complete-first-fillers",
+        "kind": "test",
+        "path": "tests/architecture/complete_first_fillers.test.ts",
+        "symbol": "completeFirstFillerEvidence"
+      },
+      {
+        "artifactId": "policy-complete-first-boundary",
+        "kind": "policy",
+        "path": "docs/architecture/complete-first-policy.md",
+        "section": "Complete ArchMap acceptance boundary"
+      },
+      {
+        "artifactId": "sanitized-authority-01",
+        "kind": "file",
+        "path": "src/sanitized/authority/authority-01.ts",
+        "symbol": "authorityObservation1",
+        "line": 11
+      },
+      {
+        "artifactId": "sanitized-authority-02",
+        "kind": "file",
+        "path": "src/sanitized/authority/authority-02.ts",
+        "symbol": "authorityObservation2",
+        "line": 12
+      },
+      {
+        "artifactId": "sanitized-authority-03",
+        "kind": "file",
+        "path": "src/sanitized/authority/authority-03.ts",
+        "symbol": "authorityObservation3",
+        "line": 13
+      },
+      {
+        "artifactId": "sanitized-authority-04",
+        "kind": "file",
+        "path": "src/sanitized/authority/authority-04.ts",
+        "symbol": "authorityObservation4",
+        "line": 14
+      },
+      {
+        "artifactId": "sanitized-authority-05",
+        "kind": "file",
+        "path": "src/sanitized/authority/authority-05.ts",
+        "symbol": "authorityObservation5",
+        "line": 15
+      },
+      {
+        "artifactId": "sanitized-authority-06",
+        "kind": "file",
+        "path": "src/sanitized/authority/authority-06.ts",
+        "symbol": "authorityObservation6",
+        "line": 16
+      },
+      {
+        "artifactId": "sanitized-authority-07",
+        "kind": "file",
+        "path": "src/sanitized/authority/authority-07.ts",
+        "symbol": "authorityObservation7",
+        "line": 17
+      },
+      {
+        "artifactId": "sanitized-state-01",
+        "kind": "file",
+        "path": "src/sanitized/state/state-01.ts",
+        "symbol": "stateObservation1",
+        "line": 11
+      },
+      {
+        "artifactId": "sanitized-state-02",
+        "kind": "file",
+        "path": "src/sanitized/state/state-02.ts",
+        "symbol": "stateObservation2",
+        "line": 12
+      },
+      {
+        "artifactId": "sanitized-state-03",
+        "kind": "file",
+        "path": "src/sanitized/state/state-03.ts",
+        "symbol": "stateObservation3",
+        "line": 13
+      },
+      {
+        "artifactId": "sanitized-state-04",
+        "kind": "file",
+        "path": "src/sanitized/state/state-04.ts",
+        "symbol": "stateObservation4",
+        "line": 14
+      },
+      {
+        "artifactId": "sanitized-state-05",
+        "kind": "file",
+        "path": "src/sanitized/state/state-05.ts",
+        "symbol": "stateObservation5",
+        "line": 15
+      },
+      {
+        "artifactId": "sanitized-state-06",
+        "kind": "file",
+        "path": "src/sanitized/state/state-06.ts",
+        "symbol": "stateObservation6",
+        "line": 16
+      },
+      {
+        "artifactId": "sanitized-state-07",
+        "kind": "file",
+        "path": "src/sanitized/state/state-07.ts",
+        "symbol": "stateObservation7",
+        "line": 17
+      },
+      {
+        "artifactId": "sanitized-effects-01",
+        "kind": "file",
+        "path": "src/sanitized/effects/effects-01.ts",
+        "symbol": "effectsObservation1",
+        "line": 11
+      },
+      {
+        "artifactId": "sanitized-effects-02",
+        "kind": "file",
+        "path": "src/sanitized/effects/effects-02.ts",
+        "symbol": "effectsObservation2",
+        "line": 12
+      },
+      {
+        "artifactId": "sanitized-effects-03",
+        "kind": "file",
+        "path": "src/sanitized/effects/effects-03.ts",
+        "symbol": "effectsObservation3",
+        "line": 13
+      },
+      {
+        "artifactId": "sanitized-effects-04",
+        "kind": "file",
+        "path": "src/sanitized/effects/effects-04.ts",
+        "symbol": "effectsObservation4",
+        "line": 14
+      },
+      {
+        "artifactId": "sanitized-effects-05",
+        "kind": "file",
+        "path": "src/sanitized/effects/effects-05.ts",
+        "symbol": "effectsObservation5",
+        "line": 15
+      },
+      {
+        "artifactId": "sanitized-effects-06",
+        "kind": "file",
+        "path": "src/sanitized/effects/effects-06.ts",
+        "symbol": "effectsObservation6",
+        "line": 16
+      },
+      {
+        "artifactId": "sanitized-effects-07",
+        "kind": "file",
+        "path": "src/sanitized/effects/effects-07.ts",
+        "symbol": "effectsObservation7",
+        "line": 17
+      },
+      {
+        "artifactId": "sanitized-provider-01",
+        "kind": "file",
+        "path": "src/sanitized/provider/provider-01.ts",
+        "symbol": "providerObservation1",
+        "line": 11
+      },
+      {
+        "artifactId": "sanitized-provider-02",
+        "kind": "file",
+        "path": "src/sanitized/provider/provider-02.ts",
+        "symbol": "providerObservation2",
+        "line": 12
+      },
+      {
+        "artifactId": "sanitized-provider-03",
+        "kind": "file",
+        "path": "src/sanitized/provider/provider-03.ts",
+        "symbol": "providerObservation3",
+        "line": 13
+      },
+      {
+        "artifactId": "sanitized-provider-04",
+        "kind": "file",
+        "path": "src/sanitized/provider/provider-04.ts",
+        "symbol": "providerObservation4",
+        "line": 14
+      },
+      {
+        "artifactId": "sanitized-provider-05",
+        "kind": "file",
+        "path": "src/sanitized/provider/provider-05.ts",
+        "symbol": "providerObservation5",
+        "line": 15
+      },
+      {
+        "artifactId": "sanitized-provider-06",
+        "kind": "file",
+        "path": "src/sanitized/provider/provider-06.ts",
+        "symbol": "providerObservation6",
+        "line": 16
+      },
+      {
+        "artifactId": "sanitized-provider-07",
+        "kind": "file",
+        "path": "src/sanitized/provider/provider-07.ts",
+        "symbol": "providerObservation7",
+        "line": 17
+      },
+      {
+        "artifactId": "sanitized-domain-01",
+        "kind": "file",
+        "path": "src/sanitized/domain/domain-01.ts",
+        "symbol": "domainObservation1",
+        "line": 11
+      },
+      {
+        "artifactId": "sanitized-domain-02",
+        "kind": "file",
+        "path": "src/sanitized/domain/domain-02.ts",
+        "symbol": "domainObservation2",
+        "line": 12
+      },
+      {
+        "artifactId": "sanitized-domain-03",
+        "kind": "file",
+        "path": "src/sanitized/domain/domain-03.ts",
+        "symbol": "domainObservation3",
+        "line": 13
+      },
+      {
+        "artifactId": "sanitized-domain-04",
+        "kind": "file",
+        "path": "src/sanitized/domain/domain-04.ts",
+        "symbol": "domainObservation4",
+        "line": 14
+      },
+      {
+        "artifactId": "sanitized-domain-05",
+        "kind": "file",
+        "path": "src/sanitized/domain/domain-05.ts",
+        "symbol": "domainObservation5",
+        "line": 15
+      },
+      {
+        "artifactId": "sanitized-domain-06",
+        "kind": "file",
+        "path": "src/sanitized/domain/domain-06.ts",
+        "symbol": "domainObservation6",
+        "line": 16
+      },
+      {
+        "artifactId": "sanitized-domain-07",
+        "kind": "file",
+        "path": "src/sanitized/domain/domain-07.ts",
+        "symbol": "domainObservation7",
+        "line": 17
+      },
+      {
+        "artifactId": "sanitized-runtime-01",
+        "kind": "runtimeTrace",
+        "path": "traces/sanitized/runtime-1.json",
+        "symbol": "runtimeObservation1",
+        "line": 11
+      },
+      {
+        "artifactId": "sanitized-runtime-02",
+        "kind": "runtimeTrace",
+        "path": "traces/sanitized/runtime-2.json",
+        "symbol": "runtimeObservation2",
+        "line": 12
+      },
+      {
+        "artifactId": "sanitized-runtime-03",
+        "kind": "runtimeTrace",
+        "path": "traces/sanitized/runtime-3.json",
+        "symbol": "runtimeObservation3",
+        "line": 13
+      },
+      {
+        "artifactId": "sanitized-runtime-04",
+        "kind": "runtimeTrace",
+        "path": "traces/sanitized/runtime-4.json",
+        "symbol": "runtimeObservation4",
+        "line": 14
+      },
+      {
+        "artifactId": "sanitized-runtime-05",
+        "kind": "runtimeTrace",
+        "path": "traces/sanitized/runtime-5.json",
+        "symbol": "runtimeObservation5",
+        "line": 15
+      },
+      {
+        "artifactId": "sanitized-runtime-06",
+        "kind": "runtimeTrace",
+        "path": "traces/sanitized/runtime-6.json",
+        "symbol": "runtimeObservation6",
+        "line": 16
+      },
+      {
+        "artifactId": "sanitized-runtime-07",
+        "kind": "runtimeTrace",
+        "path": "traces/sanitized/runtime-7.json",
+        "symbol": "runtimeObservation7",
+        "line": 17
+      },
+      {
+        "artifactId": "sanitized-docs-01",
+        "kind": "docSection",
+        "path": "docs/architecture/docs-1.md",
+        "section": "architecture policy and governance docs 1"
+      },
+      {
+        "artifactId": "sanitized-docs-02",
+        "kind": "docSection",
+        "path": "docs/architecture/docs-2.md",
+        "section": "architecture policy and governance docs 2"
+      },
+      {
+        "artifactId": "sanitized-docs-03",
+        "kind": "docSection",
+        "path": "docs/architecture/docs-3.md",
+        "section": "architecture policy and governance docs 3"
+      },
+      {
+        "artifactId": "sanitized-docs-04",
+        "kind": "docSection",
+        "path": "docs/architecture/docs-4.md",
+        "section": "architecture policy and governance docs 4"
+      },
+      {
+        "artifactId": "sanitized-docs-05",
+        "kind": "docSection",
+        "path": "docs/architecture/docs-5.md",
+        "section": "architecture policy and governance docs 5"
+      },
+      {
+        "artifactId": "sanitized-docs-06",
+        "kind": "docSection",
+        "path": "docs/architecture/docs-6.md",
+        "section": "architecture policy and governance docs 6"
+      },
+      {
+        "artifactId": "sanitized-docs-07",
+        "kind": "docSection",
+        "path": "docs/architecture/docs-7.md",
+        "section": "architecture policy and governance docs 7"
+      }
+    ],
+    "excludedRefs": [],
+    "unavailableRefs": [
+      {
+        "kind": "runtimeTrace",
+        "path": "traces/sanitized/missing-authorization-policy-runtime.json"
+      }
+    ],
+    "privateRefs": [],
+    "hashes": [
+      {
+        "artifactId": "sanitized-authority-01",
+        "path": "src/sanitized/authority/authority-01.ts",
+        "contentHash": "sha256-sanitized-authority-01"
+      },
+      {
+        "artifactId": "sanitized-authority-02",
+        "path": "src/sanitized/authority/authority-02.ts",
+        "contentHash": "sha256-sanitized-authority-02"
+      },
+      {
+        "artifactId": "sanitized-authority-03",
+        "path": "src/sanitized/authority/authority-03.ts",
+        "contentHash": "sha256-sanitized-authority-03"
+      },
+      {
+        "artifactId": "sanitized-authority-04",
+        "path": "src/sanitized/authority/authority-04.ts",
+        "contentHash": "sha256-sanitized-authority-04"
+      },
+      {
+        "artifactId": "sanitized-authority-05",
+        "path": "src/sanitized/authority/authority-05.ts",
+        "contentHash": "sha256-sanitized-authority-05"
+      },
+      {
+        "artifactId": "sanitized-authority-06",
+        "path": "src/sanitized/authority/authority-06.ts",
+        "contentHash": "sha256-sanitized-authority-06"
+      },
+      {
+        "artifactId": "sanitized-authority-07",
+        "path": "src/sanitized/authority/authority-07.ts",
+        "contentHash": "sha256-sanitized-authority-07"
+      },
+      {
+        "artifactId": "sanitized-state-01",
+        "path": "src/sanitized/state/state-01.ts",
+        "contentHash": "sha256-sanitized-state-01"
+      },
+      {
+        "artifactId": "sanitized-state-02",
+        "path": "src/sanitized/state/state-02.ts",
+        "contentHash": "sha256-sanitized-state-02"
+      },
+      {
+        "artifactId": "sanitized-state-03",
+        "path": "src/sanitized/state/state-03.ts",
+        "contentHash": "sha256-sanitized-state-03"
+      }
+    ],
+    "knownBlindSpots": [
+      "one targeted authorization filler trace is intentionally unavailable",
+      "framework expansion is represented only as sanitized fixture evidence"
+    ],
+    "selectionBoundary": "sanitized large-repo class fixture covering authority, state, effects, provider, domain, runtime, docs, path, filler, and Stokes evidence"
+  },
+  "provenance": {
+    "observer": "human-reviewed-sanitized-fixture",
+    "observationMethod": "complete-first ArchMap acceptance fixture",
+    "sourceRoot": ".",
+    "observationBoundary": "source-grounded synthetic observations only; no private repository identifiers or paths",
+    "reviewedRefs": [
+      {
+        "artifactId": "src-cache-read",
+        "kind": "file",
+        "path": "src/cache/read.ts",
+        "symbol": "readThroughCache",
+        "line": 10
+      },
+      {
+        "artifactId": "src-repository-read",
+        "kind": "file",
+        "path": "src/repository/read.ts",
+        "symbol": "readFromRepository",
+        "line": 12
+      },
+      {
+        "artifactId": "src-event-projection",
+        "kind": "file",
+        "path": "src/events/project_order.ts",
+        "symbol": "projectOrderEvent",
+        "line": 22
+      },
+      {
+        "artifactId": "src-direct-read",
+        "kind": "file",
+        "path": "src/read-model/order.ts",
+        "symbol": "readOrderDirectly",
+        "line": 18
+      },
+      {
+        "artifactId": "test-complete-first-fillers",
+        "kind": "test",
+        "path": "tests/architecture/complete_first_fillers.test.ts",
+        "symbol": "completeFirstFillerEvidence"
+      },
+      {
+        "artifactId": "policy-complete-first-boundary",
+        "kind": "policy",
+        "path": "docs/architecture/complete-first-policy.md",
+        "section": "Complete ArchMap acceptance boundary"
+      },
+      {
+        "artifactId": "sanitized-authority-01",
+        "kind": "file",
+        "path": "src/sanitized/authority/authority-01.ts",
+        "symbol": "authorityObservation1",
+        "line": 11
+      },
+      {
+        "artifactId": "sanitized-authority-02",
+        "kind": "file",
+        "path": "src/sanitized/authority/authority-02.ts",
+        "symbol": "authorityObservation2",
+        "line": 12
+      },
+      {
+        "artifactId": "sanitized-authority-03",
+        "kind": "file",
+        "path": "src/sanitized/authority/authority-03.ts",
+        "symbol": "authorityObservation3",
+        "line": 13
+      },
+      {
+        "artifactId": "sanitized-authority-04",
+        "kind": "file",
+        "path": "src/sanitized/authority/authority-04.ts",
+        "symbol": "authorityObservation4",
+        "line": 14
+      },
+      {
+        "artifactId": "sanitized-authority-05",
+        "kind": "file",
+        "path": "src/sanitized/authority/authority-05.ts",
+        "symbol": "authorityObservation5",
+        "line": 15
+      },
+      {
+        "artifactId": "sanitized-authority-06",
+        "kind": "file",
+        "path": "src/sanitized/authority/authority-06.ts",
+        "symbol": "authorityObservation6",
+        "line": 16
+      },
+      {
+        "artifactId": "sanitized-authority-07",
+        "kind": "file",
+        "path": "src/sanitized/authority/authority-07.ts",
+        "symbol": "authorityObservation7",
+        "line": 17
+      },
+      {
+        "artifactId": "sanitized-state-01",
+        "kind": "file",
+        "path": "src/sanitized/state/state-01.ts",
+        "symbol": "stateObservation1",
+        "line": 11
+      },
+      {
+        "artifactId": "sanitized-state-02",
+        "kind": "file",
+        "path": "src/sanitized/state/state-02.ts",
+        "symbol": "stateObservation2",
+        "line": 12
+      },
+      {
+        "artifactId": "sanitized-state-03",
+        "kind": "file",
+        "path": "src/sanitized/state/state-03.ts",
+        "symbol": "stateObservation3",
+        "line": 13
+      },
+      {
+        "artifactId": "sanitized-state-04",
+        "kind": "file",
+        "path": "src/sanitized/state/state-04.ts",
+        "symbol": "stateObservation4",
+        "line": 14
+      },
+      {
+        "artifactId": "sanitized-state-05",
+        "kind": "file",
+        "path": "src/sanitized/state/state-05.ts",
+        "symbol": "stateObservation5",
+        "line": 15
+      }
+    ],
+    "excludedReadings": [
+      "global architecture truth",
+      "private repository identity",
+      "architecture score",
+      "incident prediction"
+    ],
+    "nonConclusions": [
+      "fixture provenance records selected sanitized evidence, not extraction completeness"
+    ]
+  },
+  "atomObservations": [
+    {
+      "atomObservationId": "atom:cache-read",
+      "atomFamily": "relation",
+      "predicate": "cache read path can return an order view",
+      "subjectRef": "order.read",
+      "objectRefs": [
+        "CacheOrder",
+        "OrderView"
+      ],
+      "sourceRefs": [
+        {
+          "artifactId": "src-cache-read",
+          "kind": "file",
+          "path": "src/cache/read.ts",
+          "symbol": "readThroughCache",
+          "line": 10
+        }
+      ],
+      "observationStatus": "observed",
+      "evidenceBoundary": "fixtureSourceObserved",
+      "confidence": "high",
+      "uncertainty": [],
+      "projectionRefs": [
+        "projection:cache-read"
+      ],
+      "nonConclusions": [
+        "cache atom is not complete cache correctness"
+      ]
+    },
+    {
+      "atomObservationId": "atom:repository-read",
+      "atomFamily": "relation",
+      "predicate": "repository read path can return an order view",
+      "subjectRef": "order.read",
+      "objectRefs": [
+        "RepositoryOrder",
+        "OrderView"
+      ],
+      "sourceRefs": [
+        {
+          "artifactId": "src-repository-read",
+          "kind": "file",
+          "path": "src/repository/read.ts",
+          "symbol": "readFromRepository",
+          "line": 12
+        }
+      ],
+      "observationStatus": "observed",
+      "evidenceBoundary": "fixtureSourceObserved",
+      "confidence": "high",
+      "uncertainty": [],
+      "projectionRefs": [
+        "projection:repository-read"
+      ],
+      "nonConclusions": [
+        "repository atom is not complete persistence correctness"
+      ]
+    },
+    {
+      "atomObservationId": "atom:event-projection",
+      "atomFamily": "effect",
+      "predicate": "event projection updates order read model",
+      "subjectRef": "order.projection",
+      "objectRefs": [
+        "OrderEvent",
+        "OrderView"
+      ],
+      "sourceRefs": [
+        {
+          "artifactId": "src-event-projection",
+          "kind": "file",
+          "path": "src/events/project_order.ts",
+          "symbol": "projectOrderEvent",
+          "line": 22
+        }
+      ],
+      "observationStatus": "observed",
+      "evidenceBoundary": "fixtureSourceObserved",
+      "confidence": "medium",
+      "uncertainty": [
+        "runtime projection lag not supplied"
+      ],
+      "projectionRefs": [
+        "projection:event-read"
+      ],
+      "nonConclusions": [
+        "projection atom is not runtime convergence proof"
+      ]
+    },
+    {
+      "atomObservationId": "atom:retry-idempotency",
+      "atomFamily": "effect",
+      "predicate": "retry path should preserve idempotent charge effect",
+      "subjectRef": "payment.charge",
+      "objectRefs": [
+        "RetryCharge",
+        "SingleCharge"
+      ],
+      "sourceRefs": [
+        {
+          "artifactId": "src-retry-effect",
+          "kind": "file",
+          "path": "src/retry/charge.ts",
+          "symbol": "chargeWithRetry",
+          "line": 31
+        }
+      ],
+      "observationStatus": "observed",
+      "evidenceBoundary": "fixtureSourceObserved",
+      "confidence": "medium",
+      "uncertainty": [
+        "processor idempotency trace not supplied"
+      ],
+      "projectionRefs": [
+        "projection:retry-idempotency"
+      ],
+      "nonConclusions": [
+        "retry atom is not payment safety proof"
+      ]
+    },
+    {
+      "atomObservationId": "atom:authorization-bypass",
+      "atomFamily": "authority",
+      "predicate": "admin bypass read requires explicit policy or test filler evidence",
+      "subjectRef": "auth.adminBypassRead",
+      "objectRefs": [
+        "AdminBypass",
+        "OrderView"
+      ],
+      "sourceRefs": [
+        {
+          "artifactId": "src-auth-bypass",
+          "kind": "file",
+          "path": "src/auth/admin_bypass.ts",
+          "symbol": "adminBypassRead",
+          "line": 7
+        }
+      ],
+      "observationStatus": "observed",
+      "evidenceBoundary": "fixtureSourceObserved",
+      "confidence": "medium",
+      "uncertainty": [
+        "authorization policy filler missing"
+      ],
+      "projectionRefs": [
+        "projection:authorization-bypass"
+      ],
+      "nonConclusions": [
+        "authorization atom is not proof of bypass violation"
+      ]
+    },
+    {
+      "atomObservationId": "atom:coupon-tax-rounding",
+      "atomFamily": "contractSpecification",
+      "predicate": "coupon tax rounding paths compare PaymentAmount and ReceiptAmount",
+      "subjectRef": "pricing.checkoutTotal",
+      "objectRefs": [
+        "PaymentAmount",
+        "ReceiptAmount"
+      ],
+      "sourceRefs": [
+        {
+          "artifactId": "src-pricing-checkout",
+          "kind": "file",
+          "path": "src/pricing/checkout.ts",
+          "symbol": "checkoutTotal",
+          "line": 18
+        }
+      ],
+      "observationStatus": "observed",
+      "evidenceBoundary": "fixtureSourceObserved",
+      "confidence": "high",
+      "uncertainty": [
+        "tax compliance is out of scope"
+      ],
+      "projectionRefs": [
+        "projection:coupon-tax-rounding"
+      ],
+      "nonConclusions": [
+        "coupon atom is not tax law proof"
+      ]
+    },
+    {
+      "atomObservationId": "atom:sanitized:authority-01",
+      "atomFamily": "existence",
+      "predicate": "access policy and ownership checks source evidence 1 is observed for complete ArchMap authoring",
+      "subjectRef": "sanitized.authority.subject.1",
+      "objectRefs": [
+        "sanitized.authority.object.1",
+        "sanitized.boundary.authority"
+      ],
+      "sourceRefs": [
+        {
+          "artifactId": "sanitized-authority-01",
+          "kind": "file",
+          "path": "src/sanitized/authority/authority-01.ts",
+          "symbol": "authorityObservation1",
+          "line": 11
+        }
+      ],
+      "observationStatus": "observed",
+      "evidenceBoundary": "sanitizedSourceObserved",
+      "confidence": "high",
+      "uncertainty": [],
+      "projectionRefs": [
+        "projection:sanitized:authority"
+      ],
+      "nonConclusions": [
+        "synthetic large fixture evidence is not private repository truth"
+      ]
+    },
+    {
+      "atomObservationId": "atom:sanitized:authority-02",
+      "atomFamily": "relation",
+      "predicate": "access policy and ownership checks source evidence 2 is observed for complete ArchMap authoring",
+      "subjectRef": "sanitized.authority.subject.2",
+      "objectRefs": [
+        "sanitized.authority.object.2",
+        "sanitized.boundary.authority"
+      ],
+      "sourceRefs": [
+        {
+          "artifactId": "sanitized-authority-02",
+          "kind": "file",
+          "path": "src/sanitized/authority/authority-02.ts",
+          "symbol": "authorityObservation2",
+          "line": 12
+        }
+      ],
+      "observationStatus": "observed",
+      "evidenceBoundary": "sanitizedSourceObserved",
+      "confidence": "high",
+      "uncertainty": [],
+      "projectionRefs": [
+        "projection:sanitized:authority"
+      ],
+      "nonConclusions": [
+        "synthetic large fixture evidence is not private repository truth"
+      ]
+    },
+    {
+      "atomObservationId": "atom:sanitized:authority-03",
+      "atomFamily": "capability",
+      "predicate": "access policy and ownership checks source evidence 3 is observed for complete ArchMap authoring",
+      "subjectRef": "sanitized.authority.subject.3",
+      "objectRefs": [
+        "sanitized.authority.object.3",
+        "sanitized.boundary.authority"
+      ],
+      "sourceRefs": [
+        {
+          "artifactId": "sanitized-authority-03",
+          "kind": "file",
+          "path": "src/sanitized/authority/authority-03.ts",
+          "symbol": "authorityObservation3",
+          "line": 13
+        }
+      ],
+      "observationStatus": "observed",
+      "evidenceBoundary": "sanitizedSourceObserved",
+      "confidence": "medium",
+      "uncertainty": [],
+      "projectionRefs": [
+        "projection:sanitized:authority"
+      ],
+      "nonConclusions": [
+        "synthetic large fixture evidence is not private repository truth"
+      ]
+    },
+    {
+      "atomObservationId": "atom:sanitized:authority-04",
+      "atomFamily": "state",
+      "predicate": "access policy and ownership checks source evidence 4 is observed for complete ArchMap authoring",
+      "subjectRef": "sanitized.authority.subject.4",
+      "objectRefs": [
+        "sanitized.authority.object.4",
+        "sanitized.boundary.authority"
+      ],
+      "sourceRefs": [
+        {
+          "artifactId": "sanitized-authority-04",
+          "kind": "file",
+          "path": "src/sanitized/authority/authority-04.ts",
+          "symbol": "authorityObservation4",
+          "line": 14
+        }
+      ],
+      "observationStatus": "observed",
+      "evidenceBoundary": "sanitizedSourceObserved",
+      "confidence": "high",
+      "uncertainty": [
+        "authority surface is sampled for fixture scale"
+      ],
+      "projectionRefs": [
+        "projection:sanitized:authority"
+      ],
+      "nonConclusions": [
+        "synthetic large fixture evidence is not private repository truth"
+      ]
+    },
+    {
+      "atomObservationId": "atom:sanitized:authority-05",
+      "atomFamily": "effect",
+      "predicate": "access policy and ownership checks source evidence 5 is observed for complete ArchMap authoring",
+      "subjectRef": "sanitized.authority.subject.5",
+      "objectRefs": [
+        "sanitized.authority.object.5",
+        "sanitized.boundary.authority"
+      ],
+      "sourceRefs": [
+        {
+          "artifactId": "sanitized-authority-05",
+          "kind": "file",
+          "path": "src/sanitized/authority/authority-05.ts",
+          "symbol": "authorityObservation5",
+          "line": 15
+        }
+      ],
+      "observationStatus": "observed",
+      "evidenceBoundary": "sanitizedSourceObserved",
+      "confidence": "high",
+      "uncertainty": [],
+      "projectionRefs": [
+        "projection:sanitized:authority"
+      ],
+      "nonConclusions": [
+        "synthetic large fixture evidence is not private repository truth"
+      ]
+    },
+    {
+      "atomObservationId": "atom:sanitized:authority-06",
+      "atomFamily": "authority",
+      "predicate": "access policy and ownership checks source evidence 6 is observed for complete ArchMap authoring",
+      "subjectRef": "sanitized.authority.subject.6",
+      "objectRefs": [
+        "sanitized.authority.object.6",
+        "sanitized.boundary.authority"
+      ],
+      "sourceRefs": [
+        {
+          "artifactId": "sanitized-authority-06",
+          "kind": "file",
+          "path": "src/sanitized/authority/authority-06.ts",
+          "symbol": "authorityObservation6",
+          "line": 16
+        }
+      ],
+      "observationStatus": "observed",
+      "evidenceBoundary": "sanitizedSourceObserved",
+      "confidence": "medium",
+      "uncertainty": [],
+      "projectionRefs": [
+        "projection:sanitized:authority"
+      ],
+      "nonConclusions": [
+        "synthetic large fixture evidence is not private repository truth"
+      ]
+    },
+    {
+      "atomObservationId": "atom:sanitized:authority-07",
+      "atomFamily": "trust",
+      "predicate": "access policy and ownership checks source evidence 7 is observed for complete ArchMap authoring",
+      "subjectRef": "sanitized.authority.subject.7",
+      "objectRefs": [
+        "sanitized.authority.object.7",
+        "sanitized.boundary.authority"
+      ],
+      "sourceRefs": [
+        {
+          "artifactId": "sanitized-authority-07",
+          "kind": "file",
+          "path": "src/sanitized/authority/authority-07.ts",
+          "symbol": "authorityObservation7",
+          "line": 17
+        }
+      ],
+      "observationStatus": "observed",
+      "evidenceBoundary": "sanitizedSourceObserved",
+      "confidence": "high",
+      "uncertainty": [],
+      "projectionRefs": [
+        "projection:sanitized:authority"
+      ],
+      "nonConclusions": [
+        "synthetic large fixture evidence is not private repository truth"
+      ]
+    },
+    {
+      "atomObservationId": "atom:sanitized:state-01",
+      "atomFamily": "trust",
+      "predicate": "persisted state and lifecycle markers source evidence 1 is observed for complete ArchMap authoring",
+      "subjectRef": "sanitized.state.subject.1",
+      "objectRefs": [
+        "sanitized.state.object.1",
+        "sanitized.boundary.state"
+      ],
+      "sourceRefs": [
+        {
+          "artifactId": "sanitized-state-01",
+          "kind": "file",
+          "path": "src/sanitized/state/state-01.ts",
+          "symbol": "stateObservation1",
+          "line": 11
+        }
+      ],
+      "observationStatus": "observed",
+      "evidenceBoundary": "sanitizedSourceObserved",
+      "confidence": "high",
+      "uncertainty": [],
+      "projectionRefs": [
+        "projection:sanitized:state"
+      ],
+      "nonConclusions": [
+        "synthetic large fixture evidence is not private repository truth"
+      ]
+    },
+    {
+      "atomObservationId": "atom:sanitized:state-02",
+      "atomFamily": "contractSpecification",
+      "predicate": "persisted state and lifecycle markers source evidence 2 is observed for complete ArchMap authoring",
+      "subjectRef": "sanitized.state.subject.2",
+      "objectRefs": [
+        "sanitized.state.object.2",
+        "sanitized.boundary.state"
+      ],
+      "sourceRefs": [
+        {
+          "artifactId": "sanitized-state-02",
+          "kind": "file",
+          "path": "src/sanitized/state/state-02.ts",
+          "symbol": "stateObservation2",
+          "line": 12
+        }
+      ],
+      "observationStatus": "observed",
+      "evidenceBoundary": "sanitizedSourceObserved",
+      "confidence": "high",
+      "uncertainty": [],
+      "projectionRefs": [
+        "projection:sanitized:state"
+      ],
+      "nonConclusions": [
+        "synthetic large fixture evidence is not private repository truth"
+      ]
+    },
+    {
+      "atomObservationId": "atom:sanitized:state-03",
+      "atomFamily": "semantic",
+      "predicate": "persisted state and lifecycle markers source evidence 3 is observed for complete ArchMap authoring",
+      "subjectRef": "sanitized.state.subject.3",
+      "objectRefs": [
+        "sanitized.state.object.3",
+        "sanitized.boundary.state"
+      ],
+      "sourceRefs": [
+        {
+          "artifactId": "sanitized-state-03",
+          "kind": "file",
+          "path": "src/sanitized/state/state-03.ts",
+          "symbol": "stateObservation3",
+          "line": 13
+        }
+      ],
+      "observationStatus": "observed",
+      "evidenceBoundary": "sanitizedSourceObserved",
+      "confidence": "medium",
+      "uncertainty": [],
+      "projectionRefs": [
+        "projection:sanitized:state"
+      ],
+      "nonConclusions": [
+        "synthetic large fixture evidence is not private repository truth"
+      ]
+    },
+    {
+      "atomObservationId": "atom:sanitized:state-04",
+      "atomFamily": "runtimeInteraction",
+      "predicate": "persisted state and lifecycle markers source evidence 4 is observed for complete ArchMap authoring",
+      "subjectRef": "sanitized.state.subject.4",
+      "objectRefs": [
+        "sanitized.state.object.4",
+        "sanitized.boundary.state"
+      ],
+      "sourceRefs": [
+        {
+          "artifactId": "sanitized-state-04",
+          "kind": "file",
+          "path": "src/sanitized/state/state-04.ts",
+          "symbol": "stateObservation4",
+          "line": 14
+        }
+      ],
+      "observationStatus": "observed",
+      "evidenceBoundary": "sanitizedSourceObserved",
+      "confidence": "high",
+      "uncertainty": [
+        "state surface is sampled for fixture scale"
+      ],
+      "projectionRefs": [
+        "projection:sanitized:state"
+      ],
+      "nonConclusions": [
+        "synthetic large fixture evidence is not private repository truth"
+      ]
+    },
+    {
+      "atomObservationId": "atom:sanitized:state-05",
+      "atomFamily": "existence",
+      "predicate": "persisted state and lifecycle markers source evidence 5 is observed for complete ArchMap authoring",
+      "subjectRef": "sanitized.state.subject.5",
+      "objectRefs": [
+        "sanitized.state.object.5",
+        "sanitized.boundary.state"
+      ],
+      "sourceRefs": [
+        {
+          "artifactId": "sanitized-state-05",
+          "kind": "file",
+          "path": "src/sanitized/state/state-05.ts",
+          "symbol": "stateObservation5",
+          "line": 15
+        }
+      ],
+      "observationStatus": "observed",
+      "evidenceBoundary": "sanitizedSourceObserved",
+      "confidence": "high",
+      "uncertainty": [],
+      "projectionRefs": [
+        "projection:sanitized:state"
+      ],
+      "nonConclusions": [
+        "synthetic large fixture evidence is not private repository truth"
+      ]
+    },
+    {
+      "atomObservationId": "atom:sanitized:state-06",
+      "atomFamily": "relation",
+      "predicate": "persisted state and lifecycle markers source evidence 6 is observed for complete ArchMap authoring",
+      "subjectRef": "sanitized.state.subject.6",
+      "objectRefs": [
+        "sanitized.state.object.6",
+        "sanitized.boundary.state"
+      ],
+      "sourceRefs": [
+        {
+          "artifactId": "sanitized-state-06",
+          "kind": "file",
+          "path": "src/sanitized/state/state-06.ts",
+          "symbol": "stateObservation6",
+          "line": 16
+        }
+      ],
+      "observationStatus": "observed",
+      "evidenceBoundary": "sanitizedSourceObserved",
+      "confidence": "medium",
+      "uncertainty": [],
+      "projectionRefs": [
+        "projection:sanitized:state"
+      ],
+      "nonConclusions": [
+        "synthetic large fixture evidence is not private repository truth"
+      ]
+    },
+    {
+      "atomObservationId": "atom:sanitized:state-07",
+      "atomFamily": "capability",
+      "predicate": "persisted state and lifecycle markers source evidence 7 is observed for complete ArchMap authoring",
+      "subjectRef": "sanitized.state.subject.7",
+      "objectRefs": [
+        "sanitized.state.object.7",
+        "sanitized.boundary.state"
+      ],
+      "sourceRefs": [
+        {
+          "artifactId": "sanitized-state-07",
+          "kind": "file",
+          "path": "src/sanitized/state/state-07.ts",
+          "symbol": "stateObservation7",
+          "line": 17
+        }
+      ],
+      "observationStatus": "observed",
+      "evidenceBoundary": "sanitizedSourceObserved",
+      "confidence": "high",
+      "uncertainty": [],
+      "projectionRefs": [
+        "projection:sanitized:state"
+      ],
+      "nonConclusions": [
+        "synthetic large fixture evidence is not private repository truth"
+      ]
+    },
+    {
+      "atomObservationId": "atom:sanitized:effects-01",
+      "atomFamily": "semantic",
+      "predicate": "writes, jobs, and side effects source evidence 1 is observed for complete ArchMap authoring",
+      "subjectRef": "sanitized.effects.subject.1",
+      "objectRefs": [
+        "sanitized.effects.object.1",
+        "sanitized.boundary.effects"
+      ],
+      "sourceRefs": [
+        {
+          "artifactId": "sanitized-effects-01",
+          "kind": "file",
+          "path": "src/sanitized/effects/effects-01.ts",
+          "symbol": "effectsObservation1",
+          "line": 11
+        }
+      ],
+      "observationStatus": "observed",
+      "evidenceBoundary": "sanitizedSourceObserved",
+      "confidence": "high",
+      "uncertainty": [],
+      "projectionRefs": [
+        "projection:sanitized:effects"
+      ],
+      "nonConclusions": [
+        "synthetic large fixture evidence is not private repository truth"
+      ]
+    },
+    {
+      "atomObservationId": "atom:sanitized:effects-02",
+      "atomFamily": "runtimeInteraction",
+      "predicate": "writes, jobs, and side effects source evidence 2 is observed for complete ArchMap authoring",
+      "subjectRef": "sanitized.effects.subject.2",
+      "objectRefs": [
+        "sanitized.effects.object.2",
+        "sanitized.boundary.effects"
+      ],
+      "sourceRefs": [
+        {
+          "artifactId": "sanitized-effects-02",
+          "kind": "file",
+          "path": "src/sanitized/effects/effects-02.ts",
+          "symbol": "effectsObservation2",
+          "line": 12
+        }
+      ],
+      "observationStatus": "observed",
+      "evidenceBoundary": "sanitizedSourceObserved",
+      "confidence": "high",
+      "uncertainty": [],
+      "projectionRefs": [
+        "projection:sanitized:effects"
+      ],
+      "nonConclusions": [
+        "synthetic large fixture evidence is not private repository truth"
+      ]
+    },
+    {
+      "atomObservationId": "atom:sanitized:effects-03",
+      "atomFamily": "existence",
+      "predicate": "writes, jobs, and side effects source evidence 3 is observed for complete ArchMap authoring",
+      "subjectRef": "sanitized.effects.subject.3",
+      "objectRefs": [
+        "sanitized.effects.object.3",
+        "sanitized.boundary.effects"
+      ],
+      "sourceRefs": [
+        {
+          "artifactId": "sanitized-effects-03",
+          "kind": "file",
+          "path": "src/sanitized/effects/effects-03.ts",
+          "symbol": "effectsObservation3",
+          "line": 13
+        }
+      ],
+      "observationStatus": "observed",
+      "evidenceBoundary": "sanitizedSourceObserved",
+      "confidence": "medium",
+      "uncertainty": [],
+      "projectionRefs": [
+        "projection:sanitized:effects"
+      ],
+      "nonConclusions": [
+        "synthetic large fixture evidence is not private repository truth"
+      ]
+    },
+    {
+      "atomObservationId": "atom:sanitized:effects-04",
+      "atomFamily": "relation",
+      "predicate": "writes, jobs, and side effects source evidence 4 is observed for complete ArchMap authoring",
+      "subjectRef": "sanitized.effects.subject.4",
+      "objectRefs": [
+        "sanitized.effects.object.4",
+        "sanitized.boundary.effects"
+      ],
+      "sourceRefs": [
+        {
+          "artifactId": "sanitized-effects-04",
+          "kind": "file",
+          "path": "src/sanitized/effects/effects-04.ts",
+          "symbol": "effectsObservation4",
+          "line": 14
+        }
+      ],
+      "observationStatus": "observed",
+      "evidenceBoundary": "sanitizedSourceObserved",
+      "confidence": "high",
+      "uncertainty": [
+        "effects surface is sampled for fixture scale"
+      ],
+      "projectionRefs": [
+        "projection:sanitized:effects"
+      ],
+      "nonConclusions": [
+        "synthetic large fixture evidence is not private repository truth"
+      ]
+    },
+    {
+      "atomObservationId": "atom:sanitized:effects-05",
+      "atomFamily": "capability",
+      "predicate": "writes, jobs, and side effects source evidence 5 is observed for complete ArchMap authoring",
+      "subjectRef": "sanitized.effects.subject.5",
+      "objectRefs": [
+        "sanitized.effects.object.5",
+        "sanitized.boundary.effects"
+      ],
+      "sourceRefs": [
+        {
+          "artifactId": "sanitized-effects-05",
+          "kind": "file",
+          "path": "src/sanitized/effects/effects-05.ts",
+          "symbol": "effectsObservation5",
+          "line": 15
+        }
+      ],
+      "observationStatus": "observed",
+      "evidenceBoundary": "sanitizedSourceObserved",
+      "confidence": "high",
+      "uncertainty": [],
+      "projectionRefs": [
+        "projection:sanitized:effects"
+      ],
+      "nonConclusions": [
+        "synthetic large fixture evidence is not private repository truth"
+      ]
+    },
+    {
+      "atomObservationId": "atom:sanitized:effects-06",
+      "atomFamily": "state",
+      "predicate": "writes, jobs, and side effects source evidence 6 is observed for complete ArchMap authoring",
+      "subjectRef": "sanitized.effects.subject.6",
+      "objectRefs": [
+        "sanitized.effects.object.6",
+        "sanitized.boundary.effects"
+      ],
+      "sourceRefs": [
+        {
+          "artifactId": "sanitized-effects-06",
+          "kind": "file",
+          "path": "src/sanitized/effects/effects-06.ts",
+          "symbol": "effectsObservation6",
+          "line": 16
+        }
+      ],
+      "observationStatus": "observed",
+      "evidenceBoundary": "sanitizedSourceObserved",
+      "confidence": "medium",
+      "uncertainty": [],
+      "projectionRefs": [
+        "projection:sanitized:effects"
+      ],
+      "nonConclusions": [
+        "synthetic large fixture evidence is not private repository truth"
+      ]
+    },
+    {
+      "atomObservationId": "atom:sanitized:effects-07",
+      "atomFamily": "effect",
+      "predicate": "writes, jobs, and side effects source evidence 7 is observed for complete ArchMap authoring",
+      "subjectRef": "sanitized.effects.subject.7",
+      "objectRefs": [
+        "sanitized.effects.object.7",
+        "sanitized.boundary.effects"
+      ],
+      "sourceRefs": [
+        {
+          "artifactId": "sanitized-effects-07",
+          "kind": "file",
+          "path": "src/sanitized/effects/effects-07.ts",
+          "symbol": "effectsObservation7",
+          "line": 17
+        }
+      ],
+      "observationStatus": "observed",
+      "evidenceBoundary": "sanitizedSourceObserved",
+      "confidence": "high",
+      "uncertainty": [],
+      "projectionRefs": [
+        "projection:sanitized:effects"
+      ],
+      "nonConclusions": [
+        "synthetic large fixture evidence is not private repository truth"
+      ]
+    },
+    {
+      "atomObservationId": "atom:sanitized:provider-01",
+      "atomFamily": "runtimeInteraction",
+      "predicate": "provider trust and output mediation source evidence 1 is observed for complete ArchMap authoring",
+      "subjectRef": "sanitized.provider.subject.1",
+      "objectRefs": [
+        "sanitized.provider.object.1",
+        "sanitized.boundary.provider"
+      ],
+      "sourceRefs": [
+        {
+          "artifactId": "sanitized-provider-01",
+          "kind": "file",
+          "path": "src/sanitized/provider/provider-01.ts",
+          "symbol": "providerObservation1",
+          "line": 11
+        }
+      ],
+      "observationStatus": "observed",
+      "evidenceBoundary": "sanitizedSourceObserved",
+      "confidence": "high",
+      "uncertainty": [],
+      "projectionRefs": [
+        "projection:sanitized:provider"
+      ],
+      "nonConclusions": [
+        "synthetic large fixture evidence is not private repository truth"
+      ]
+    },
+    {
+      "atomObservationId": "atom:sanitized:provider-02",
+      "atomFamily": "existence",
+      "predicate": "provider trust and output mediation source evidence 2 is observed for complete ArchMap authoring",
+      "subjectRef": "sanitized.provider.subject.2",
+      "objectRefs": [
+        "sanitized.provider.object.2",
+        "sanitized.boundary.provider"
+      ],
+      "sourceRefs": [
+        {
+          "artifactId": "sanitized-provider-02",
+          "kind": "file",
+          "path": "src/sanitized/provider/provider-02.ts",
+          "symbol": "providerObservation2",
+          "line": 12
+        }
+      ],
+      "observationStatus": "observed",
+      "evidenceBoundary": "sanitizedSourceObserved",
+      "confidence": "high",
+      "uncertainty": [],
+      "projectionRefs": [
+        "projection:sanitized:provider"
+      ],
+      "nonConclusions": [
+        "synthetic large fixture evidence is not private repository truth"
+      ]
+    },
+    {
+      "atomObservationId": "atom:sanitized:provider-03",
+      "atomFamily": "relation",
+      "predicate": "provider trust and output mediation source evidence 3 is observed for complete ArchMap authoring",
+      "subjectRef": "sanitized.provider.subject.3",
+      "objectRefs": [
+        "sanitized.provider.object.3",
+        "sanitized.boundary.provider"
+      ],
+      "sourceRefs": [
+        {
+          "artifactId": "sanitized-provider-03",
+          "kind": "file",
+          "path": "src/sanitized/provider/provider-03.ts",
+          "symbol": "providerObservation3",
+          "line": 13
+        }
+      ],
+      "observationStatus": "observed",
+      "evidenceBoundary": "sanitizedSourceObserved",
+      "confidence": "medium",
+      "uncertainty": [],
+      "projectionRefs": [
+        "projection:sanitized:provider"
+      ],
+      "nonConclusions": [
+        "synthetic large fixture evidence is not private repository truth"
+      ]
+    },
+    {
+      "atomObservationId": "atom:sanitized:provider-04",
+      "atomFamily": "capability",
+      "predicate": "provider trust and output mediation source evidence 4 is observed for complete ArchMap authoring",
+      "subjectRef": "sanitized.provider.subject.4",
+      "objectRefs": [
+        "sanitized.provider.object.4",
+        "sanitized.boundary.provider"
+      ],
+      "sourceRefs": [
+        {
+          "artifactId": "sanitized-provider-04",
+          "kind": "file",
+          "path": "src/sanitized/provider/provider-04.ts",
+          "symbol": "providerObservation4",
+          "line": 14
+        }
+      ],
+      "observationStatus": "observed",
+      "evidenceBoundary": "sanitizedSourceObserved",
+      "confidence": "high",
+      "uncertainty": [
+        "provider surface is sampled for fixture scale"
+      ],
+      "projectionRefs": [
+        "projection:sanitized:provider"
+      ],
+      "nonConclusions": [
+        "synthetic large fixture evidence is not private repository truth"
+      ]
+    },
+    {
+      "atomObservationId": "atom:sanitized:provider-05",
+      "atomFamily": "state",
+      "predicate": "provider trust and output mediation source evidence 5 is observed for complete ArchMap authoring",
+      "subjectRef": "sanitized.provider.subject.5",
+      "objectRefs": [
+        "sanitized.provider.object.5",
+        "sanitized.boundary.provider"
+      ],
+      "sourceRefs": [
+        {
+          "artifactId": "sanitized-provider-05",
+          "kind": "file",
+          "path": "src/sanitized/provider/provider-05.ts",
+          "symbol": "providerObservation5",
+          "line": 15
+        }
+      ],
+      "observationStatus": "observed",
+      "evidenceBoundary": "sanitizedSourceObserved",
+      "confidence": "high",
+      "uncertainty": [],
+      "projectionRefs": [
+        "projection:sanitized:provider"
+      ],
+      "nonConclusions": [
+        "synthetic large fixture evidence is not private repository truth"
+      ]
+    },
+    {
+      "atomObservationId": "atom:sanitized:provider-06",
+      "atomFamily": "effect",
+      "predicate": "provider trust and output mediation source evidence 6 is observed for complete ArchMap authoring",
+      "subjectRef": "sanitized.provider.subject.6",
+      "objectRefs": [
+        "sanitized.provider.object.6",
+        "sanitized.boundary.provider"
+      ],
+      "sourceRefs": [
+        {
+          "artifactId": "sanitized-provider-06",
+          "kind": "file",
+          "path": "src/sanitized/provider/provider-06.ts",
+          "symbol": "providerObservation6",
+          "line": 16
+        }
+      ],
+      "observationStatus": "observed",
+      "evidenceBoundary": "sanitizedSourceObserved",
+      "confidence": "medium",
+      "uncertainty": [],
+      "projectionRefs": [
+        "projection:sanitized:provider"
+      ],
+      "nonConclusions": [
+        "synthetic large fixture evidence is not private repository truth"
+      ]
+    },
+    {
+      "atomObservationId": "atom:sanitized:provider-07",
+      "atomFamily": "authority",
+      "predicate": "provider trust and output mediation source evidence 7 is observed for complete ArchMap authoring",
+      "subjectRef": "sanitized.provider.subject.7",
+      "objectRefs": [
+        "sanitized.provider.object.7",
+        "sanitized.boundary.provider"
+      ],
+      "sourceRefs": [
+        {
+          "artifactId": "sanitized-provider-07",
+          "kind": "file",
+          "path": "src/sanitized/provider/provider-07.ts",
+          "symbol": "providerObservation7",
+          "line": 17
+        }
+      ],
+      "observationStatus": "observed",
+      "evidenceBoundary": "sanitizedSourceObserved",
+      "confidence": "high",
+      "uncertainty": [],
+      "projectionRefs": [
+        "projection:sanitized:provider"
+      ],
+      "nonConclusions": [
+        "synthetic large fixture evidence is not private repository truth"
+      ]
+    },
+    {
+      "atomObservationId": "atom:sanitized:domain-01",
+      "atomFamily": "contractSpecification",
+      "predicate": "domain contracts and identities source evidence 1 is observed for complete ArchMap authoring",
+      "subjectRef": "sanitized.domain.subject.1",
+      "objectRefs": [
+        "sanitized.domain.object.1",
+        "sanitized.boundary.domain"
+      ],
+      "sourceRefs": [
+        {
+          "artifactId": "sanitized-domain-01",
+          "kind": "file",
+          "path": "src/sanitized/domain/domain-01.ts",
+          "symbol": "domainObservation1",
+          "line": 11
+        }
+      ],
+      "observationStatus": "observed",
+      "evidenceBoundary": "sanitizedSourceObserved",
+      "confidence": "high",
+      "uncertainty": [],
+      "projectionRefs": [
+        "projection:sanitized:domain"
+      ],
+      "nonConclusions": [
+        "synthetic large fixture evidence is not private repository truth"
+      ]
+    },
+    {
+      "atomObservationId": "atom:sanitized:domain-02",
+      "atomFamily": "semantic",
+      "predicate": "domain contracts and identities source evidence 2 is observed for complete ArchMap authoring",
+      "subjectRef": "sanitized.domain.subject.2",
+      "objectRefs": [
+        "sanitized.domain.object.2",
+        "sanitized.boundary.domain"
+      ],
+      "sourceRefs": [
+        {
+          "artifactId": "sanitized-domain-02",
+          "kind": "file",
+          "path": "src/sanitized/domain/domain-02.ts",
+          "symbol": "domainObservation2",
+          "line": 12
+        }
+      ],
+      "observationStatus": "observed",
+      "evidenceBoundary": "sanitizedSourceObserved",
+      "confidence": "high",
+      "uncertainty": [],
+      "projectionRefs": [
+        "projection:sanitized:domain"
+      ],
+      "nonConclusions": [
+        "synthetic large fixture evidence is not private repository truth"
+      ]
+    },
+    {
+      "atomObservationId": "atom:sanitized:domain-03",
+      "atomFamily": "runtimeInteraction",
+      "predicate": "domain contracts and identities source evidence 3 is observed for complete ArchMap authoring",
+      "subjectRef": "sanitized.domain.subject.3",
+      "objectRefs": [
+        "sanitized.domain.object.3",
+        "sanitized.boundary.domain"
+      ],
+      "sourceRefs": [
+        {
+          "artifactId": "sanitized-domain-03",
+          "kind": "file",
+          "path": "src/sanitized/domain/domain-03.ts",
+          "symbol": "domainObservation3",
+          "line": 13
+        }
+      ],
+      "observationStatus": "observed",
+      "evidenceBoundary": "sanitizedSourceObserved",
+      "confidence": "medium",
+      "uncertainty": [],
+      "projectionRefs": [
+        "projection:sanitized:domain"
+      ],
+      "nonConclusions": [
+        "synthetic large fixture evidence is not private repository truth"
+      ]
+    },
+    {
+      "atomObservationId": "atom:sanitized:domain-04",
+      "atomFamily": "existence",
+      "predicate": "domain contracts and identities source evidence 4 is observed for complete ArchMap authoring",
+      "subjectRef": "sanitized.domain.subject.4",
+      "objectRefs": [
+        "sanitized.domain.object.4",
+        "sanitized.boundary.domain"
+      ],
+      "sourceRefs": [
+        {
+          "artifactId": "sanitized-domain-04",
+          "kind": "file",
+          "path": "src/sanitized/domain/domain-04.ts",
+          "symbol": "domainObservation4",
+          "line": 14
+        }
+      ],
+      "observationStatus": "observed",
+      "evidenceBoundary": "sanitizedSourceObserved",
+      "confidence": "high",
+      "uncertainty": [
+        "domain surface is sampled for fixture scale"
+      ],
+      "projectionRefs": [
+        "projection:sanitized:domain"
+      ],
+      "nonConclusions": [
+        "synthetic large fixture evidence is not private repository truth"
+      ]
+    },
+    {
+      "atomObservationId": "atom:sanitized:domain-05",
+      "atomFamily": "relation",
+      "predicate": "domain contracts and identities source evidence 5 is observed for complete ArchMap authoring",
+      "subjectRef": "sanitized.domain.subject.5",
+      "objectRefs": [
+        "sanitized.domain.object.5",
+        "sanitized.boundary.domain"
+      ],
+      "sourceRefs": [
+        {
+          "artifactId": "sanitized-domain-05",
+          "kind": "file",
+          "path": "src/sanitized/domain/domain-05.ts",
+          "symbol": "domainObservation5",
+          "line": 15
+        }
+      ],
+      "observationStatus": "observed",
+      "evidenceBoundary": "sanitizedSourceObserved",
+      "confidence": "high",
+      "uncertainty": [],
+      "projectionRefs": [
+        "projection:sanitized:domain"
+      ],
+      "nonConclusions": [
+        "synthetic large fixture evidence is not private repository truth"
+      ]
+    },
+    {
+      "atomObservationId": "atom:sanitized:domain-06",
+      "atomFamily": "capability",
+      "predicate": "domain contracts and identities source evidence 6 is observed for complete ArchMap authoring",
+      "subjectRef": "sanitized.domain.subject.6",
+      "objectRefs": [
+        "sanitized.domain.object.6",
+        "sanitized.boundary.domain"
+      ],
+      "sourceRefs": [
+        {
+          "artifactId": "sanitized-domain-06",
+          "kind": "file",
+          "path": "src/sanitized/domain/domain-06.ts",
+          "symbol": "domainObservation6",
+          "line": 16
+        }
+      ],
+      "observationStatus": "observed",
+      "evidenceBoundary": "sanitizedSourceObserved",
+      "confidence": "medium",
+      "uncertainty": [],
+      "projectionRefs": [
+        "projection:sanitized:domain"
+      ],
+      "nonConclusions": [
+        "synthetic large fixture evidence is not private repository truth"
+      ]
+    },
+    {
+      "atomObservationId": "atom:sanitized:domain-07",
+      "atomFamily": "state",
+      "predicate": "domain contracts and identities source evidence 7 is observed for complete ArchMap authoring",
+      "subjectRef": "sanitized.domain.subject.7",
+      "objectRefs": [
+        "sanitized.domain.object.7",
+        "sanitized.boundary.domain"
+      ],
+      "sourceRefs": [
+        {
+          "artifactId": "sanitized-domain-07",
+          "kind": "file",
+          "path": "src/sanitized/domain/domain-07.ts",
+          "symbol": "domainObservation7",
+          "line": 17
+        }
+      ],
+      "observationStatus": "observed",
+      "evidenceBoundary": "sanitizedSourceObserved",
+      "confidence": "high",
+      "uncertainty": [],
+      "projectionRefs": [
+        "projection:sanitized:domain"
+      ],
+      "nonConclusions": [
+        "synthetic large fixture evidence is not private repository truth"
+      ]
+    },
+    {
+      "atomObservationId": "atom:sanitized:runtime-01",
+      "atomFamily": "semantic",
+      "predicate": "runtime traces and framework boundaries source evidence 1 is observed for complete ArchMap authoring",
+      "subjectRef": "sanitized.runtime.subject.1",
+      "objectRefs": [
+        "sanitized.runtime.object.1",
+        "sanitized.boundary.runtime"
+      ],
+      "sourceRefs": [
+        {
+          "artifactId": "sanitized-runtime-01",
+          "kind": "runtimeTrace",
+          "path": "traces/sanitized/runtime-1.json",
+          "symbol": "runtimeObservation1",
+          "line": 11
+        }
+      ],
+      "observationStatus": "observed",
+      "evidenceBoundary": "sanitizedSourceObserved",
+      "confidence": "high",
+      "uncertainty": [],
+      "projectionRefs": [
+        "projection:sanitized:runtime"
+      ],
+      "nonConclusions": [
+        "synthetic large fixture evidence is not private repository truth"
+      ]
+    },
+    {
+      "atomObservationId": "atom:sanitized:runtime-02",
+      "atomFamily": "runtimeInteraction",
+      "predicate": "runtime traces and framework boundaries source evidence 2 is observed for complete ArchMap authoring",
+      "subjectRef": "sanitized.runtime.subject.2",
+      "objectRefs": [
+        "sanitized.runtime.object.2",
+        "sanitized.boundary.runtime"
+      ],
+      "sourceRefs": [
+        {
+          "artifactId": "sanitized-runtime-02",
+          "kind": "runtimeTrace",
+          "path": "traces/sanitized/runtime-2.json",
+          "symbol": "runtimeObservation2",
+          "line": 12
+        }
+      ],
+      "observationStatus": "observed",
+      "evidenceBoundary": "sanitizedSourceObserved",
+      "confidence": "high",
+      "uncertainty": [],
+      "projectionRefs": [
+        "projection:sanitized:runtime"
+      ],
+      "nonConclusions": [
+        "synthetic large fixture evidence is not private repository truth"
+      ]
+    },
+    {
+      "atomObservationId": "atom:sanitized:runtime-03",
+      "atomFamily": "existence",
+      "predicate": "runtime traces and framework boundaries source evidence 3 is observed for complete ArchMap authoring",
+      "subjectRef": "sanitized.runtime.subject.3",
+      "objectRefs": [
+        "sanitized.runtime.object.3",
+        "sanitized.boundary.runtime"
+      ],
+      "sourceRefs": [
+        {
+          "artifactId": "sanitized-runtime-03",
+          "kind": "runtimeTrace",
+          "path": "traces/sanitized/runtime-3.json",
+          "symbol": "runtimeObservation3",
+          "line": 13
+        }
+      ],
+      "observationStatus": "observed",
+      "evidenceBoundary": "sanitizedSourceObserved",
+      "confidence": "medium",
+      "uncertainty": [],
+      "projectionRefs": [
+        "projection:sanitized:runtime"
+      ],
+      "nonConclusions": [
+        "synthetic large fixture evidence is not private repository truth"
+      ]
+    },
+    {
+      "atomObservationId": "atom:sanitized:runtime-04",
+      "atomFamily": "relation",
+      "predicate": "runtime traces and framework boundaries source evidence 4 is observed for complete ArchMap authoring",
+      "subjectRef": "sanitized.runtime.subject.4",
+      "objectRefs": [
+        "sanitized.runtime.object.4",
+        "sanitized.boundary.runtime"
+      ],
+      "sourceRefs": [
+        {
+          "artifactId": "sanitized-runtime-04",
+          "kind": "runtimeTrace",
+          "path": "traces/sanitized/runtime-4.json",
+          "symbol": "runtimeObservation4",
+          "line": 14
+        }
+      ],
+      "observationStatus": "observed",
+      "evidenceBoundary": "sanitizedSourceObserved",
+      "confidence": "high",
+      "uncertainty": [
+        "runtime surface is sampled for fixture scale"
+      ],
+      "projectionRefs": [
+        "projection:sanitized:runtime"
+      ],
+      "nonConclusions": [
+        "synthetic large fixture evidence is not private repository truth"
+      ]
+    },
+    {
+      "atomObservationId": "atom:sanitized:runtime-05",
+      "atomFamily": "capability",
+      "predicate": "runtime traces and framework boundaries source evidence 5 is observed for complete ArchMap authoring",
+      "subjectRef": "sanitized.runtime.subject.5",
+      "objectRefs": [
+        "sanitized.runtime.object.5",
+        "sanitized.boundary.runtime"
+      ],
+      "sourceRefs": [
+        {
+          "artifactId": "sanitized-runtime-05",
+          "kind": "runtimeTrace",
+          "path": "traces/sanitized/runtime-5.json",
+          "symbol": "runtimeObservation5",
+          "line": 15
+        }
+      ],
+      "observationStatus": "observed",
+      "evidenceBoundary": "sanitizedSourceObserved",
+      "confidence": "high",
+      "uncertainty": [],
+      "projectionRefs": [
+        "projection:sanitized:runtime"
+      ],
+      "nonConclusions": [
+        "synthetic large fixture evidence is not private repository truth"
+      ]
+    },
+    {
+      "atomObservationId": "atom:sanitized:runtime-06",
+      "atomFamily": "state",
+      "predicate": "runtime traces and framework boundaries source evidence 6 is observed for complete ArchMap authoring",
+      "subjectRef": "sanitized.runtime.subject.6",
+      "objectRefs": [
+        "sanitized.runtime.object.6",
+        "sanitized.boundary.runtime"
+      ],
+      "sourceRefs": [
+        {
+          "artifactId": "sanitized-runtime-06",
+          "kind": "runtimeTrace",
+          "path": "traces/sanitized/runtime-6.json",
+          "symbol": "runtimeObservation6",
+          "line": 16
+        }
+      ],
+      "observationStatus": "observed",
+      "evidenceBoundary": "sanitizedSourceObserved",
+      "confidence": "medium",
+      "uncertainty": [],
+      "projectionRefs": [
+        "projection:sanitized:runtime"
+      ],
+      "nonConclusions": [
+        "synthetic large fixture evidence is not private repository truth"
+      ]
+    },
+    {
+      "atomObservationId": "atom:sanitized:runtime-07",
+      "atomFamily": "effect",
+      "predicate": "runtime traces and framework boundaries source evidence 7 is observed for complete ArchMap authoring",
+      "subjectRef": "sanitized.runtime.subject.7",
+      "objectRefs": [
+        "sanitized.runtime.object.7",
+        "sanitized.boundary.runtime"
+      ],
+      "sourceRefs": [
+        {
+          "artifactId": "sanitized-runtime-07",
+          "kind": "runtimeTrace",
+          "path": "traces/sanitized/runtime-7.json",
+          "symbol": "runtimeObservation7",
+          "line": 17
+        }
+      ],
+      "observationStatus": "observed",
+      "evidenceBoundary": "sanitizedSourceObserved",
+      "confidence": "high",
+      "uncertainty": [],
+      "projectionRefs": [
+        "projection:sanitized:runtime"
+      ],
+      "nonConclusions": [
+        "synthetic large fixture evidence is not private repository truth"
+      ]
+    },
+    {
+      "atomObservationId": "atom:sanitized:docs-01",
+      "atomFamily": "authority",
+      "predicate": "architecture policy and governance docs source evidence 1 is observed for complete ArchMap authoring",
+      "subjectRef": "sanitized.docs.subject.1",
+      "objectRefs": [
+        "sanitized.docs.object.1",
+        "sanitized.boundary.docs"
+      ],
+      "sourceRefs": [
+        {
+          "artifactId": "sanitized-docs-01",
+          "kind": "docSection",
+          "path": "docs/architecture/docs-1.md",
+          "section": "architecture policy and governance docs 1"
+        }
+      ],
+      "observationStatus": "observed",
+      "evidenceBoundary": "sanitizedSourceObserved",
+      "confidence": "high",
+      "uncertainty": [],
+      "projectionRefs": [
+        "projection:sanitized:docs"
+      ],
+      "nonConclusions": [
+        "synthetic large fixture evidence is not private repository truth"
+      ]
+    },
+    {
+      "atomObservationId": "atom:sanitized:docs-02",
+      "atomFamily": "trust",
+      "predicate": "architecture policy and governance docs source evidence 2 is observed for complete ArchMap authoring",
+      "subjectRef": "sanitized.docs.subject.2",
+      "objectRefs": [
+        "sanitized.docs.object.2",
+        "sanitized.boundary.docs"
+      ],
+      "sourceRefs": [
+        {
+          "artifactId": "sanitized-docs-02",
+          "kind": "docSection",
+          "path": "docs/architecture/docs-2.md",
+          "section": "architecture policy and governance docs 2"
+        }
+      ],
+      "observationStatus": "observed",
+      "evidenceBoundary": "sanitizedSourceObserved",
+      "confidence": "high",
+      "uncertainty": [],
+      "projectionRefs": [
+        "projection:sanitized:docs"
+      ],
+      "nonConclusions": [
+        "synthetic large fixture evidence is not private repository truth"
+      ]
+    },
+    {
+      "atomObservationId": "atom:sanitized:docs-03",
+      "atomFamily": "contractSpecification",
+      "predicate": "architecture policy and governance docs source evidence 3 is observed for complete ArchMap authoring",
+      "subjectRef": "sanitized.docs.subject.3",
+      "objectRefs": [
+        "sanitized.docs.object.3",
+        "sanitized.boundary.docs"
+      ],
+      "sourceRefs": [
+        {
+          "artifactId": "sanitized-docs-03",
+          "kind": "docSection",
+          "path": "docs/architecture/docs-3.md",
+          "section": "architecture policy and governance docs 3"
+        }
+      ],
+      "observationStatus": "observed",
+      "evidenceBoundary": "sanitizedSourceObserved",
+      "confidence": "medium",
+      "uncertainty": [],
+      "projectionRefs": [
+        "projection:sanitized:docs"
+      ],
+      "nonConclusions": [
+        "synthetic large fixture evidence is not private repository truth"
+      ]
+    },
+    {
+      "atomObservationId": "atom:sanitized:docs-04",
+      "atomFamily": "semantic",
+      "predicate": "architecture policy and governance docs source evidence 4 is observed for complete ArchMap authoring",
+      "subjectRef": "sanitized.docs.subject.4",
+      "objectRefs": [
+        "sanitized.docs.object.4",
+        "sanitized.boundary.docs"
+      ],
+      "sourceRefs": [
+        {
+          "artifactId": "sanitized-docs-04",
+          "kind": "docSection",
+          "path": "docs/architecture/docs-4.md",
+          "section": "architecture policy and governance docs 4"
+        }
+      ],
+      "observationStatus": "observed",
+      "evidenceBoundary": "sanitizedSourceObserved",
+      "confidence": "high",
+      "uncertainty": [
+        "docs surface is sampled for fixture scale"
+      ],
+      "projectionRefs": [
+        "projection:sanitized:docs"
+      ],
+      "nonConclusions": [
+        "synthetic large fixture evidence is not private repository truth"
+      ]
+    },
+    {
+      "atomObservationId": "atom:sanitized:docs-05",
+      "atomFamily": "runtimeInteraction",
+      "predicate": "architecture policy and governance docs source evidence 5 is observed for complete ArchMap authoring",
+      "subjectRef": "sanitized.docs.subject.5",
+      "objectRefs": [
+        "sanitized.docs.object.5",
+        "sanitized.boundary.docs"
+      ],
+      "sourceRefs": [
+        {
+          "artifactId": "sanitized-docs-05",
+          "kind": "docSection",
+          "path": "docs/architecture/docs-5.md",
+          "section": "architecture policy and governance docs 5"
+        }
+      ],
+      "observationStatus": "observed",
+      "evidenceBoundary": "sanitizedSourceObserved",
+      "confidence": "high",
+      "uncertainty": [],
+      "projectionRefs": [
+        "projection:sanitized:docs"
+      ],
+      "nonConclusions": [
+        "synthetic large fixture evidence is not private repository truth"
+      ]
+    },
+    {
+      "atomObservationId": "atom:sanitized:docs-06",
+      "atomFamily": "existence",
+      "predicate": "architecture policy and governance docs source evidence 6 is observed for complete ArchMap authoring",
+      "subjectRef": "sanitized.docs.subject.6",
+      "objectRefs": [
+        "sanitized.docs.object.6",
+        "sanitized.boundary.docs"
+      ],
+      "sourceRefs": [
+        {
+          "artifactId": "sanitized-docs-06",
+          "kind": "docSection",
+          "path": "docs/architecture/docs-6.md",
+          "section": "architecture policy and governance docs 6"
+        }
+      ],
+      "observationStatus": "observed",
+      "evidenceBoundary": "sanitizedSourceObserved",
+      "confidence": "medium",
+      "uncertainty": [],
+      "projectionRefs": [
+        "projection:sanitized:docs"
+      ],
+      "nonConclusions": [
+        "synthetic large fixture evidence is not private repository truth"
+      ]
+    },
+    {
+      "atomObservationId": "atom:sanitized:docs-07",
+      "atomFamily": "relation",
+      "predicate": "architecture policy and governance docs source evidence 7 is observed for complete ArchMap authoring",
+      "subjectRef": "sanitized.docs.subject.7",
+      "objectRefs": [
+        "sanitized.docs.object.7",
+        "sanitized.boundary.docs"
+      ],
+      "sourceRefs": [
+        {
+          "artifactId": "sanitized-docs-07",
+          "kind": "docSection",
+          "path": "docs/architecture/docs-7.md",
+          "section": "architecture policy and governance docs 7"
+        }
+      ],
+      "observationStatus": "observed",
+      "evidenceBoundary": "sanitizedSourceObserved",
+      "confidence": "high",
+      "uncertainty": [],
+      "projectionRefs": [
+        "projection:sanitized:docs"
+      ],
+      "nonConclusions": [
+        "synthetic large fixture evidence is not private repository truth"
+      ]
+    }
+  ],
+  "moleculeObservations": [
+    {
+      "moleculeObservationId": "molecule:homotopy-report-fixture",
+      "moleculeFamily": "operation-contract",
+      "roleName": "homotopy report path and filler fixture",
+      "atomObservationRefs": [
+        "atom:cache-read",
+        "atom:repository-read",
+        "atom:event-projection",
+        "atom:retry-idempotency",
+        "atom:authorization-bypass",
+        "atom:coupon-tax-rounding"
+      ],
+      "sourceRefs": [
+        {
+          "artifactId": "test-homotopy-fillers",
+          "kind": "test",
+          "path": "tests/architecture/homotopy_fillers.test.ts",
+          "symbol": "contractOrRuntimeFillers"
+        }
+      ],
+      "observationStatus": "observed",
+      "evidenceBoundary": "fixtureMoleculeObserved",
+      "confidence": "high",
+      "nonConclusions": [
+        "molecule groups fixture observations only"
+      ]
+    },
+    {
+      "moleculeObservationId": "molecule:sanitized:authority",
+      "moleculeFamily": "authority-surface",
+      "roleName": "authority complete-first observation slice",
+      "atomObservationRefs": [
+        "atom:sanitized:authority-01",
+        "atom:sanitized:authority-02",
+        "atom:sanitized:authority-03",
+        "atom:sanitized:authority-04",
+        "atom:sanitized:authority-05",
+        "atom:sanitized:authority-06",
+        "atom:sanitized:authority-07"
+      ],
+      "sourceRefs": [
+        {
+          "artifactId": "test-complete-first-fillers",
+          "kind": "test",
+          "path": "tests/architecture/complete_first_fillers.test.ts",
+          "symbol": "completeFirstFillerEvidence"
+        }
+      ],
+      "observationStatus": "observed",
+      "evidenceBoundary": "sanitizedMoleculeObserved",
+      "confidence": "high",
+      "nonConclusions": [
+        "molecule groups sanitized fixture observations only"
+      ]
+    },
+    {
+      "moleculeObservationId": "molecule:sanitized:state",
+      "moleculeFamily": "state-surface",
+      "roleName": "state complete-first observation slice",
+      "atomObservationRefs": [
+        "atom:sanitized:state-01",
+        "atom:sanitized:state-02",
+        "atom:sanitized:state-03",
+        "atom:sanitized:state-04",
+        "atom:sanitized:state-05",
+        "atom:sanitized:state-06",
+        "atom:sanitized:state-07"
+      ],
+      "sourceRefs": [
+        {
+          "artifactId": "test-complete-first-fillers",
+          "kind": "test",
+          "path": "tests/architecture/complete_first_fillers.test.ts",
+          "symbol": "completeFirstFillerEvidence"
+        }
+      ],
+      "observationStatus": "observed",
+      "evidenceBoundary": "sanitizedMoleculeObserved",
+      "confidence": "high",
+      "nonConclusions": [
+        "molecule groups sanitized fixture observations only"
+      ]
+    },
+    {
+      "moleculeObservationId": "molecule:sanitized:effects",
+      "moleculeFamily": "effects-surface",
+      "roleName": "effects complete-first observation slice",
+      "atomObservationRefs": [
+        "atom:sanitized:effects-01",
+        "atom:sanitized:effects-02",
+        "atom:sanitized:effects-03",
+        "atom:sanitized:effects-04",
+        "atom:sanitized:effects-05",
+        "atom:sanitized:effects-06",
+        "atom:sanitized:effects-07"
+      ],
+      "sourceRefs": [
+        {
+          "artifactId": "test-complete-first-fillers",
+          "kind": "test",
+          "path": "tests/architecture/complete_first_fillers.test.ts",
+          "symbol": "completeFirstFillerEvidence"
+        }
+      ],
+      "observationStatus": "observed",
+      "evidenceBoundary": "sanitizedMoleculeObserved",
+      "confidence": "high",
+      "nonConclusions": [
+        "molecule groups sanitized fixture observations only"
+      ]
+    },
+    {
+      "moleculeObservationId": "molecule:sanitized:provider",
+      "moleculeFamily": "provider-surface",
+      "roleName": "provider complete-first observation slice",
+      "atomObservationRefs": [
+        "atom:sanitized:provider-01",
+        "atom:sanitized:provider-02",
+        "atom:sanitized:provider-03",
+        "atom:sanitized:provider-04",
+        "atom:sanitized:provider-05",
+        "atom:sanitized:provider-06",
+        "atom:sanitized:provider-07"
+      ],
+      "sourceRefs": [
+        {
+          "artifactId": "test-complete-first-fillers",
+          "kind": "test",
+          "path": "tests/architecture/complete_first_fillers.test.ts",
+          "symbol": "completeFirstFillerEvidence"
+        }
+      ],
+      "observationStatus": "observed",
+      "evidenceBoundary": "sanitizedMoleculeObserved",
+      "confidence": "high",
+      "nonConclusions": [
+        "molecule groups sanitized fixture observations only"
+      ]
+    },
+    {
+      "moleculeObservationId": "molecule:sanitized:domain",
+      "moleculeFamily": "domain-surface",
+      "roleName": "domain complete-first observation slice",
+      "atomObservationRefs": [
+        "atom:sanitized:domain-01",
+        "atom:sanitized:domain-02",
+        "atom:sanitized:domain-03",
+        "atom:sanitized:domain-04",
+        "atom:sanitized:domain-05",
+        "atom:sanitized:domain-06",
+        "atom:sanitized:domain-07"
+      ],
+      "sourceRefs": [
+        {
+          "artifactId": "test-complete-first-fillers",
+          "kind": "test",
+          "path": "tests/architecture/complete_first_fillers.test.ts",
+          "symbol": "completeFirstFillerEvidence"
+        }
+      ],
+      "observationStatus": "observed",
+      "evidenceBoundary": "sanitizedMoleculeObserved",
+      "confidence": "high",
+      "nonConclusions": [
+        "molecule groups sanitized fixture observations only"
+      ]
+    },
+    {
+      "moleculeObservationId": "molecule:sanitized:runtime",
+      "moleculeFamily": "runtime-surface",
+      "roleName": "runtime complete-first observation slice",
+      "atomObservationRefs": [
+        "atom:sanitized:runtime-01",
+        "atom:sanitized:runtime-02",
+        "atom:sanitized:runtime-03",
+        "atom:sanitized:runtime-04",
+        "atom:sanitized:runtime-05",
+        "atom:sanitized:runtime-06",
+        "atom:sanitized:runtime-07"
+      ],
+      "sourceRefs": [
+        {
+          "artifactId": "test-complete-first-fillers",
+          "kind": "test",
+          "path": "tests/architecture/complete_first_fillers.test.ts",
+          "symbol": "completeFirstFillerEvidence"
+        }
+      ],
+      "observationStatus": "observed",
+      "evidenceBoundary": "sanitizedMoleculeObserved",
+      "confidence": "high",
+      "nonConclusions": [
+        "molecule groups sanitized fixture observations only"
+      ]
+    },
+    {
+      "moleculeObservationId": "molecule:sanitized:docs",
+      "moleculeFamily": "docs-surface",
+      "roleName": "docs complete-first observation slice",
+      "atomObservationRefs": [
+        "atom:sanitized:docs-01",
+        "atom:sanitized:docs-02",
+        "atom:sanitized:docs-03",
+        "atom:sanitized:docs-04",
+        "atom:sanitized:docs-05",
+        "atom:sanitized:docs-06",
+        "atom:sanitized:docs-07"
+      ],
+      "sourceRefs": [
+        {
+          "artifactId": "test-complete-first-fillers",
+          "kind": "test",
+          "path": "tests/architecture/complete_first_fillers.test.ts",
+          "symbol": "completeFirstFillerEvidence"
+        }
+      ],
+      "observationStatus": "observed",
+      "evidenceBoundary": "sanitizedMoleculeObserved",
+      "confidence": "high",
+      "nonConclusions": [
+        "molecule groups sanitized fixture observations only"
+      ]
+    }
+  ],
+  "semanticObservations": [
+    {
+      "semanticObservationId": "semantic:path-rule:nonzero-holonomy-filled-loop",
+      "semanticFamily": "semanticInterpretation",
+      "subjectRef": "path-rule:nonzero-holonomy-filled-loop",
+      "predicate": "nonzero-holonomy-filled-loop paths differ on selected continuation axis",
+      "atomObservationRefs": [
+        "atom:event-projection",
+        "atom:repository-read"
+      ],
+      "moleculeObservationRefs": [
+        "molecule:homotopy-report-fixture"
+      ],
+      "sourceRefs": [
+        {
+          "artifactId": "src-event-projection",
+          "kind": "file",
+          "path": "src/events/project_order.ts",
+          "symbol": "projectOrderEvent",
+          "line": 22
+        }
+      ],
+      "observationStatus": "observed",
+      "evidenceBoundary": "fixtureSemanticObserved",
+      "nonConclusions": [
+        "nonzero semantic observation is not global path inequality proof"
+      ]
+    },
+    {
+      "semanticObservationId": "semantic:path-rule:cache-repository-semantic-loop",
+      "semanticFamily": "semanticInterpretation",
+      "subjectRef": "path-rule:cache-repository-semantic-loop",
+      "predicate": "cache / repository semantic loop can disagree when cache staleness is not filled",
+      "atomObservationRefs": [
+        "atom:cache-read",
+        "atom:repository-read"
+      ],
+      "moleculeObservationRefs": [
+        "molecule:homotopy-report-fixture"
+      ],
+      "sourceRefs": [
+        {
+          "artifactId": "src-cache-read",
+          "kind": "file",
+          "path": "src/cache/read.ts",
+          "symbol": "readThroughCache",
+          "line": 10
+        }
+      ],
+      "observationStatus": "observed",
+      "evidenceBoundary": "fixtureSemanticObserved",
+      "nonConclusions": [
+        "cache semantic observation is not cache correctness proof"
+      ]
+    },
+    {
+      "semanticObservationId": "semantic:path-rule:event-projection-direct-read",
+      "semanticFamily": "semanticInterpretation",
+      "subjectRef": "path-rule:event-projection-direct-read",
+      "predicate": "event projection and direct read paths may expose different order view timing",
+      "atomObservationRefs": [
+        "atom:event-projection",
+        "atom:repository-read"
+      ],
+      "moleculeObservationRefs": [
+        "molecule:homotopy-report-fixture"
+      ],
+      "sourceRefs": [
+        {
+          "artifactId": "src-direct-read",
+          "kind": "file",
+          "path": "src/read-model/order.ts",
+          "symbol": "readOrderDirectly",
+          "line": 18
+        }
+      ],
+      "observationStatus": "observed",
+      "evidenceBoundary": "fixtureSemanticObserved",
+      "nonConclusions": [
+        "projection semantic observation is not runtime convergence proof"
+      ]
+    },
+    {
+      "semanticObservationId": "semantic:path-rule:retry-idempotency-effect",
+      "semanticFamily": "semanticInterpretation",
+      "subjectRef": "path-rule:retry-idempotency-effect",
+      "predicate": "retry and single-shot effect paths require idempotency filler evidence",
+      "atomObservationRefs": [
+        "atom:retry-idempotency"
+      ],
+      "moleculeObservationRefs": [
+        "molecule:homotopy-report-fixture"
+      ],
+      "sourceRefs": [
+        {
+          "artifactId": "src-retry-effect",
+          "kind": "file",
+          "path": "src/retry/charge.ts",
+          "symbol": "chargeWithRetry",
+          "line": 31
+        }
+      ],
+      "observationStatus": "observed",
+      "evidenceBoundary": "fixtureSemanticObserved",
+      "nonConclusions": [
+        "retry semantic observation is not payment safety proof"
+      ]
+    },
+    {
+      "semanticObservationId": "semantic:path-rule:coupon-tax-rounding-semantic-loop",
+      "semanticFamily": "semanticInterpretation",
+      "subjectRef": "path-rule:coupon-tax-rounding-semantic-loop",
+      "predicate": "coupon / tax / rounding paths can produce distinct PaymentAmount and ReceiptAmount readings",
+      "atomObservationRefs": [
+        "atom:coupon-tax-rounding"
+      ],
+      "moleculeObservationRefs": [
+        "molecule:homotopy-report-fixture"
+      ],
+      "sourceRefs": [
+        {
+          "artifactId": "src-pricing-checkout",
+          "kind": "file",
+          "path": "src/pricing/checkout.ts",
+          "symbol": "checkoutTotal",
+          "line": 18
+        }
+      ],
+      "observationStatus": "observed",
+      "evidenceBoundary": "fixtureSemanticObserved",
+      "nonConclusions": [
+        "coupon semantic observation is not tax compliance proof"
+      ]
+    },
+    {
+      "semanticObservationId": "semantic:complete-first:authority",
+      "semanticFamily": "workflow",
+      "subjectRef": "complete-first:authority",
+      "predicate": "authority evidence is integrated before ArchSig analysis instead of left for manual staged repair",
+      "atomObservationRefs": [
+        "atom:sanitized:authority-01",
+        "atom:sanitized:authority-02",
+        "atom:sanitized:authority-03",
+        "atom:sanitized:authority-04"
+      ],
+      "moleculeObservationRefs": [
+        "molecule:sanitized:authority"
+      ],
+      "sourceRefs": [
+        {
+          "artifactId": "policy-complete-first-boundary",
+          "kind": "policy",
+          "path": "docs/architecture/complete-first-policy.md",
+          "section": "Complete ArchMap acceptance boundary"
+        }
+      ],
+      "observationStatus": "observed",
+      "evidenceBoundary": "sanitizedSemanticObserved",
+      "nonConclusions": [
+        "complete-first semantic observation is authoring guidance, not lawfulness proof"
+      ]
+    },
+    {
+      "semanticObservationId": "semantic:complete-first:state",
+      "semanticFamily": "workflow",
+      "subjectRef": "complete-first:state",
+      "predicate": "state evidence is integrated before ArchSig analysis instead of left for manual staged repair",
+      "atomObservationRefs": [
+        "atom:sanitized:state-01",
+        "atom:sanitized:state-02",
+        "atom:sanitized:state-03",
+        "atom:sanitized:state-04"
+      ],
+      "moleculeObservationRefs": [
+        "molecule:sanitized:state"
+      ],
+      "sourceRefs": [
+        {
+          "artifactId": "policy-complete-first-boundary",
+          "kind": "policy",
+          "path": "docs/architecture/complete-first-policy.md",
+          "section": "Complete ArchMap acceptance boundary"
+        }
+      ],
+      "observationStatus": "observed",
+      "evidenceBoundary": "sanitizedSemanticObserved",
+      "nonConclusions": [
+        "complete-first semantic observation is authoring guidance, not lawfulness proof"
+      ]
+    },
+    {
+      "semanticObservationId": "semantic:complete-first:effects",
+      "semanticFamily": "workflow",
+      "subjectRef": "complete-first:effects",
+      "predicate": "effects evidence is integrated before ArchSig analysis instead of left for manual staged repair",
+      "atomObservationRefs": [
+        "atom:sanitized:effects-01",
+        "atom:sanitized:effects-02",
+        "atom:sanitized:effects-03",
+        "atom:sanitized:effects-04"
+      ],
+      "moleculeObservationRefs": [
+        "molecule:sanitized:effects"
+      ],
+      "sourceRefs": [
+        {
+          "artifactId": "policy-complete-first-boundary",
+          "kind": "policy",
+          "path": "docs/architecture/complete-first-policy.md",
+          "section": "Complete ArchMap acceptance boundary"
+        }
+      ],
+      "observationStatus": "observed",
+      "evidenceBoundary": "sanitizedSemanticObserved",
+      "nonConclusions": [
+        "complete-first semantic observation is authoring guidance, not lawfulness proof"
+      ]
+    },
+    {
+      "semanticObservationId": "semantic:complete-first:provider",
+      "semanticFamily": "workflow",
+      "subjectRef": "complete-first:provider",
+      "predicate": "provider evidence is integrated before ArchSig analysis instead of left for manual staged repair",
+      "atomObservationRefs": [
+        "atom:sanitized:provider-01",
+        "atom:sanitized:provider-02",
+        "atom:sanitized:provider-03",
+        "atom:sanitized:provider-04"
+      ],
+      "moleculeObservationRefs": [
+        "molecule:sanitized:provider"
+      ],
+      "sourceRefs": [
+        {
+          "artifactId": "policy-complete-first-boundary",
+          "kind": "policy",
+          "path": "docs/architecture/complete-first-policy.md",
+          "section": "Complete ArchMap acceptance boundary"
+        }
+      ],
+      "observationStatus": "observed",
+      "evidenceBoundary": "sanitizedSemanticObserved",
+      "nonConclusions": [
+        "complete-first semantic observation is authoring guidance, not lawfulness proof"
+      ]
+    },
+    {
+      "semanticObservationId": "semantic:complete-first:domain",
+      "semanticFamily": "workflow",
+      "subjectRef": "complete-first:domain",
+      "predicate": "domain evidence is integrated before ArchSig analysis instead of left for manual staged repair",
+      "atomObservationRefs": [
+        "atom:sanitized:domain-01",
+        "atom:sanitized:domain-02",
+        "atom:sanitized:domain-03",
+        "atom:sanitized:domain-04"
+      ],
+      "moleculeObservationRefs": [
+        "molecule:sanitized:domain"
+      ],
+      "sourceRefs": [
+        {
+          "artifactId": "policy-complete-first-boundary",
+          "kind": "policy",
+          "path": "docs/architecture/complete-first-policy.md",
+          "section": "Complete ArchMap acceptance boundary"
+        }
+      ],
+      "observationStatus": "observed",
+      "evidenceBoundary": "sanitizedSemanticObserved",
+      "nonConclusions": [
+        "complete-first semantic observation is authoring guidance, not lawfulness proof"
+      ]
+    },
+    {
+      "semanticObservationId": "semantic:complete-first:runtime",
+      "semanticFamily": "workflow",
+      "subjectRef": "complete-first:runtime",
+      "predicate": "runtime evidence is integrated before ArchSig analysis instead of left for manual staged repair",
+      "atomObservationRefs": [
+        "atom:sanitized:runtime-01",
+        "atom:sanitized:runtime-02",
+        "atom:sanitized:runtime-03",
+        "atom:sanitized:runtime-04"
+      ],
+      "moleculeObservationRefs": [
+        "molecule:sanitized:runtime"
+      ],
+      "sourceRefs": [
+        {
+          "artifactId": "policy-complete-first-boundary",
+          "kind": "policy",
+          "path": "docs/architecture/complete-first-policy.md",
+          "section": "Complete ArchMap acceptance boundary"
+        }
+      ],
+      "observationStatus": "observed",
+      "evidenceBoundary": "sanitizedSemanticObserved",
+      "nonConclusions": [
+        "complete-first semantic observation is authoring guidance, not lawfulness proof"
+      ]
+    },
+    {
+      "semanticObservationId": "semantic:complete-first:docs",
+      "semanticFamily": "workflow",
+      "subjectRef": "complete-first:docs",
+      "predicate": "docs evidence is integrated before ArchSig analysis instead of left for manual staged repair",
+      "atomObservationRefs": [
+        "atom:sanitized:docs-01",
+        "atom:sanitized:docs-02",
+        "atom:sanitized:docs-03",
+        "atom:sanitized:docs-04"
+      ],
+      "moleculeObservationRefs": [
+        "molecule:sanitized:docs"
+      ],
+      "sourceRefs": [
+        {
+          "artifactId": "policy-complete-first-boundary",
+          "kind": "policy",
+          "path": "docs/architecture/complete-first-policy.md",
+          "section": "Complete ArchMap acceptance boundary"
+        }
+      ],
+      "observationStatus": "observed",
+      "evidenceBoundary": "sanitizedSemanticObserved",
+      "nonConclusions": [
+        "complete-first semantic observation is authoring guidance, not lawfulness proof"
+      ]
+    }
+  ],
+  "observationGaps": [
+    {
+      "gapId": "gap:path-rule:authorization-bypass-hole:missing-policy-test",
+      "gapKind": "MissingFillerEvidence",
+      "subjectRef": "path-rule:authorization-bypass-hole",
+      "evidenceStatus": "unavailable",
+      "reason": "authorization bypass path lacks policy or test filler evidence",
+      "expectedAtomFamilies": [
+        "authority",
+        "contractSpecification"
+      ],
+      "sourceRefs": [
+        {
+          "artifactId": "doc-auth-policy",
+          "kind": "docSection",
+          "path": "docs/architecture/auth.md",
+          "section": "Authorization boundary"
+        }
+      ],
+      "nonConclusions": [
+        "missing authorization filler is not an automatic violation"
+      ]
+    }
+  ],
+  "concernHints": [
+    {
+      "concernHintId": "concern:authorization-bypass-hole",
+      "concernFamily": "missingAuthorizationFiller",
+      "subjectRef": "path-rule:authorization-bypass-hole",
+      "atomObservationRefs": [
+        "atom:authorization-bypass"
+      ],
+      "moleculeObservationRefs": [
+        "molecule:homotopy-report-fixture"
+      ],
+      "semanticObservationRefs": [],
+      "sourceRefs": [
+        {
+          "artifactId": "src-auth-bypass",
+          "kind": "file",
+          "path": "src/auth/admin_bypass.ts",
+          "symbol": "adminBypassRead",
+          "line": 7
+        }
+      ],
+      "evidenceBoundary": "authorization bypass path should remain a review queue until filler evidence is supplied",
+      "analysisBoundary": "not an obstruction circuit; ArchSig must combine this ArchMap with LawPolicy before constructing obstruction witnesses",
+      "nonConclusions": [
+        "concern hint is not an obstruction circuit"
+      ]
+    },
+    {
+      "concernHintId": "concern:complete-first-targeted-gap-boundary",
+      "concernFamily": "targetedGapBoundary",
+      "subjectRef": "path-rule:authorization-bypass-hole",
+      "atomObservationRefs": [
+        "atom:authorization-bypass"
+      ],
+      "moleculeObservationRefs": [
+        "molecule:homotopy-report-fixture",
+        "molecule:sanitized:authority"
+      ],
+      "semanticObservationRefs": [
+        "semantic:complete-first:authority"
+      ],
+      "sourceRefs": [
+        {
+          "artifactId": "policy-complete-first-boundary",
+          "kind": "policy",
+          "path": "docs/architecture/complete-first-policy.md",
+          "section": "Complete ArchMap acceptance boundary"
+        }
+      ],
+      "evidenceBoundary": "targeted unavailable filler remains a repair target and does not globally block unrelated loops",
+      "analysisBoundary": "ArchSig must keep this as coverage gap evidence, not a violation proof",
+      "nonConclusions": [
+        "targeted gap concern is not an obstruction circuit"
+      ]
+    }
+  ],
+  "projectionInfo": [
+    {
+      "projectionId": "projection:homotopy-report-fixture",
+      "projectionFamily": "pathHomotopy",
+      "sourceObservationRef": "molecule:homotopy-report-fixture",
+      "targetSurface": "aat:homotopy:fixture",
+      "reading": "fixture observations can be read as bounded path / filler / loop review evidence",
+      "projectionBoundary": "projection is fixture-local and does not claim extractor completeness",
+      "nonConclusions": [
+        "projection is not a Lean theorem"
+      ]
+    },
+    {
+      "projectionId": "projection:cache-read",
+      "projectionFamily": "operationCandidate",
+      "sourceObservationRef": "atom:cache-read",
+      "targetSurface": "aat:complete-first:cache-read",
+      "reading": "atom:cache-read is available as a sanitized complete-first projection hint",
+      "projectionBoundary": "projection is fixture-local and does not claim lawfulness",
+      "nonConclusions": [
+        "projection is not a Lean theorem"
+      ]
+    },
+    {
+      "projectionId": "projection:repository-read",
+      "projectionFamily": "operationCandidate",
+      "sourceObservationRef": "atom:repository-read",
+      "targetSurface": "aat:complete-first:repository-read",
+      "reading": "atom:repository-read is available as a sanitized complete-first projection hint",
+      "projectionBoundary": "projection is fixture-local and does not claim lawfulness",
+      "nonConclusions": [
+        "projection is not a Lean theorem"
+      ]
+    },
+    {
+      "projectionId": "projection:event-read",
+      "projectionFamily": "operationCandidate",
+      "sourceObservationRef": "atom:event-projection",
+      "targetSurface": "aat:complete-first:event-read",
+      "reading": "atom:event-projection is available as a sanitized complete-first projection hint",
+      "projectionBoundary": "projection is fixture-local and does not claim lawfulness",
+      "nonConclusions": [
+        "projection is not a Lean theorem"
+      ]
+    },
+    {
+      "projectionId": "projection:retry-idempotency",
+      "projectionFamily": "operationCandidate",
+      "sourceObservationRef": "atom:retry-idempotency",
+      "targetSurface": "aat:complete-first:retry-idempotency",
+      "reading": "atom:retry-idempotency is available as a sanitized complete-first projection hint",
+      "projectionBoundary": "projection is fixture-local and does not claim lawfulness",
+      "nonConclusions": [
+        "projection is not a Lean theorem"
+      ]
+    },
+    {
+      "projectionId": "projection:authorization-bypass",
+      "projectionFamily": "operationCandidate",
+      "sourceObservationRef": "atom:authorization-bypass",
+      "targetSurface": "aat:complete-first:authorization-bypass",
+      "reading": "atom:authorization-bypass is available as a sanitized complete-first projection hint",
+      "projectionBoundary": "projection is fixture-local and does not claim lawfulness",
+      "nonConclusions": [
+        "projection is not a Lean theorem"
+      ]
+    },
+    {
+      "projectionId": "projection:coupon-tax-rounding",
+      "projectionFamily": "operationCandidate",
+      "sourceObservationRef": "atom:coupon-tax-rounding",
+      "targetSurface": "aat:complete-first:coupon-tax-rounding",
+      "reading": "atom:coupon-tax-rounding is available as a sanitized complete-first projection hint",
+      "projectionBoundary": "projection is fixture-local and does not claim lawfulness",
+      "nonConclusions": [
+        "projection is not a Lean theorem"
+      ]
+    },
+    {
+      "projectionId": "projection:sanitized:authority",
+      "projectionFamily": "operationCandidate",
+      "sourceObservationRef": "atom:sanitized:authority-01",
+      "targetSurface": "aat:complete-first:sanitized:authority",
+      "reading": "atom:sanitized:authority-01 is available as a sanitized complete-first projection hint",
+      "projectionBoundary": "projection is fixture-local and does not claim lawfulness",
+      "nonConclusions": [
+        "projection is not a Lean theorem"
+      ]
+    },
+    {
+      "projectionId": "projection:sanitized:state",
+      "projectionFamily": "operationCandidate",
+      "sourceObservationRef": "atom:sanitized:state-01",
+      "targetSurface": "aat:complete-first:sanitized:state",
+      "reading": "atom:sanitized:state-01 is available as a sanitized complete-first projection hint",
+      "projectionBoundary": "projection is fixture-local and does not claim lawfulness",
+      "nonConclusions": [
+        "projection is not a Lean theorem"
+      ]
+    },
+    {
+      "projectionId": "projection:sanitized:effects",
+      "projectionFamily": "operationCandidate",
+      "sourceObservationRef": "atom:sanitized:effects-01",
+      "targetSurface": "aat:complete-first:sanitized:effects",
+      "reading": "atom:sanitized:effects-01 is available as a sanitized complete-first projection hint",
+      "projectionBoundary": "projection is fixture-local and does not claim lawfulness",
+      "nonConclusions": [
+        "projection is not a Lean theorem"
+      ]
+    },
+    {
+      "projectionId": "projection:sanitized:provider",
+      "projectionFamily": "operationCandidate",
+      "sourceObservationRef": "atom:sanitized:provider-01",
+      "targetSurface": "aat:complete-first:sanitized:provider",
+      "reading": "atom:sanitized:provider-01 is available as a sanitized complete-first projection hint",
+      "projectionBoundary": "projection is fixture-local and does not claim lawfulness",
+      "nonConclusions": [
+        "projection is not a Lean theorem"
+      ]
+    },
+    {
+      "projectionId": "projection:sanitized:domain",
+      "projectionFamily": "operationCandidate",
+      "sourceObservationRef": "atom:sanitized:domain-01",
+      "targetSurface": "aat:complete-first:sanitized:domain",
+      "reading": "atom:sanitized:domain-01 is available as a sanitized complete-first projection hint",
+      "projectionBoundary": "projection is fixture-local and does not claim lawfulness",
+      "nonConclusions": [
+        "projection is not a Lean theorem"
+      ]
+    },
+    {
+      "projectionId": "projection:sanitized:runtime",
+      "projectionFamily": "operationCandidate",
+      "sourceObservationRef": "atom:sanitized:runtime-01",
+      "targetSurface": "aat:complete-first:sanitized:runtime",
+      "reading": "atom:sanitized:runtime-01 is available as a sanitized complete-first projection hint",
+      "projectionBoundary": "projection is fixture-local and does not claim lawfulness",
+      "nonConclusions": [
+        "projection is not a Lean theorem"
+      ]
+    },
+    {
+      "projectionId": "projection:sanitized:docs",
+      "projectionFamily": "operationCandidate",
+      "sourceObservationRef": "atom:sanitized:docs-01",
+      "targetSurface": "aat:complete-first:sanitized:docs",
+      "reading": "atom:sanitized:docs-01 is available as a sanitized complete-first projection hint",
+      "projectionBoundary": "projection is fixture-local and does not claim lawfulness",
+      "nonConclusions": [
+        "projection is not a Lean theorem"
+      ]
+    },
+    {
+      "projectionId": "projection:sanitized:authority",
+      "projectionFamily": "operationCandidate",
+      "sourceObservationRef": "molecule:sanitized:authority",
+      "targetSurface": "aat:complete-first:authority",
+      "reading": "authority slice is available to spectrum, homotopy, and repair feedback readers",
+      "projectionBoundary": "projection is fixture-local and sanitized",
+      "nonConclusions": [
+        "projection is not a Lean theorem"
+      ]
+    },
+    {
+      "projectionId": "projection:sanitized:state",
+      "projectionFamily": "operationCandidate",
+      "sourceObservationRef": "molecule:sanitized:state",
+      "targetSurface": "aat:complete-first:state",
+      "reading": "state slice is available to spectrum, homotopy, and repair feedback readers",
+      "projectionBoundary": "projection is fixture-local and sanitized",
+      "nonConclusions": [
+        "projection is not a Lean theorem"
+      ]
+    },
+    {
+      "projectionId": "projection:sanitized:effects",
+      "projectionFamily": "operationCandidate",
+      "sourceObservationRef": "molecule:sanitized:effects",
+      "targetSurface": "aat:complete-first:effects",
+      "reading": "effects slice is available to spectrum, homotopy, and repair feedback readers",
+      "projectionBoundary": "projection is fixture-local and sanitized",
+      "nonConclusions": [
+        "projection is not a Lean theorem"
+      ]
+    },
+    {
+      "projectionId": "projection:sanitized:provider",
+      "projectionFamily": "operationCandidate",
+      "sourceObservationRef": "molecule:sanitized:provider",
+      "targetSurface": "aat:complete-first:provider",
+      "reading": "provider slice is available to spectrum, homotopy, and repair feedback readers",
+      "projectionBoundary": "projection is fixture-local and sanitized",
+      "nonConclusions": [
+        "projection is not a Lean theorem"
+      ]
+    },
+    {
+      "projectionId": "projection:sanitized:domain",
+      "projectionFamily": "operationCandidate",
+      "sourceObservationRef": "molecule:sanitized:domain",
+      "targetSurface": "aat:complete-first:domain",
+      "reading": "domain slice is available to spectrum, homotopy, and repair feedback readers",
+      "projectionBoundary": "projection is fixture-local and sanitized",
+      "nonConclusions": [
+        "projection is not a Lean theorem"
+      ]
+    },
+    {
+      "projectionId": "projection:sanitized:runtime",
+      "projectionFamily": "operationCandidate",
+      "sourceObservationRef": "molecule:sanitized:runtime",
+      "targetSurface": "aat:complete-first:runtime",
+      "reading": "runtime slice is available to spectrum, homotopy, and repair feedback readers",
+      "projectionBoundary": "projection is fixture-local and sanitized",
+      "nonConclusions": [
+        "projection is not a Lean theorem"
+      ]
+    },
+    {
+      "projectionId": "projection:sanitized:docs",
+      "projectionFamily": "operationCandidate",
+      "sourceObservationRef": "molecule:sanitized:docs",
+      "targetSurface": "aat:complete-first:docs",
+      "reading": "docs slice is available to spectrum, homotopy, and repair feedback readers",
+      "projectionBoundary": "projection is fixture-local and sanitized",
+      "nonConclusions": [
+        "projection is not a Lean theorem"
+      ]
+    },
+    {
+      "projectionId": "projection:complete-first-acceptance",
+      "projectionFamily": "pathHomotopy",
+      "sourceObservationRef": "molecule:homotopy-report-fixture",
+      "targetSurface": "aat:homotopy:complete-first-acceptance",
+      "reading": "complete-first fixture supplies path, filler, non-fillability, and local curvature review evidence before user handoff",
+      "projectionBoundary": "fixture-local acceptance projection; no private repository identity",
+      "nonConclusions": [
+        "projection is not architecture lawfulness proof"
+      ]
+    }
+  ],
+  "nonConclusions": [
+    "complete ArchMap acceptance fixture is sanitized synthetic evidence",
+    "fixture contains no private repository names, private paths, or domain-specific private identifiers",
+    "missing filler evidence is not measured zero",
+    "ArchitectureHomotopyReport is not a single architecture quality score"
+  ]
+}

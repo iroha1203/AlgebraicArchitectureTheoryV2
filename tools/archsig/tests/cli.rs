@@ -25,6 +25,10 @@ fn homotopy_report_root() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/homotopy_report")
 }
 
+fn complete_archmap_acceptance_root() -> PathBuf {
+    Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/complete_archmap_acceptance")
+}
+
 fn inspection_root() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/inspection")
 }
@@ -996,6 +1000,213 @@ fn homotopy_report_fixture_manifest_locks_golden_validation() {
             );
         }
     }
+}
+
+#[test]
+fn complete_archmap_acceptance_fixture_runs_full_measurement_without_private_names() {
+    let root = complete_archmap_acceptance_root();
+    let manifest = read_json(&root.join("manifest.json"));
+    let archmap = read_json(&root.join("archmap.json"));
+    let law_policy = read_json(&root.join("law_policy.json"));
+    let out_dir = temp_dir("complete-archmap-acceptance");
+
+    assert_eq!(
+        manifest["schemaVersion"],
+        "complete-archmap-acceptance-fixture-manifest-v0"
+    );
+    let minimum_counts = &manifest["minimumCounts"];
+    for (field, minimum) in [
+        ("atomObservations", "atomObservations"),
+        ("moleculeObservations", "moleculeObservations"),
+        ("semanticObservations", "semanticObservations"),
+        ("projectionInfo", "projectionInfo"),
+    ] {
+        let count = archmap[field]
+            .as_array()
+            .unwrap_or_else(|| panic!("{field} must be an array"))
+            .len() as u64;
+        let minimum = minimum_counts[minimum]
+            .as_u64()
+            .unwrap_or_else(|| panic!("{field} minimum is present"));
+        assert!(
+            count >= minimum,
+            "complete ArchMap acceptance fixture must keep enough {field}: {count} < {minimum}"
+        );
+    }
+
+    let public_fixture_text = format!("{}\n{}\n{}", manifest, archmap, law_policy);
+    for forbidden in [
+        "private_repo_name",
+        "private/repo/path",
+        ".archsig/private-repo",
+    ] {
+        assert!(
+            !public_fixture_text.contains(forbidden),
+            "sanitized acceptance fixture must not expose private identifier {forbidden}"
+        );
+    }
+
+    run_sig0(&[
+        "analyze",
+        "--archmap",
+        root.join("archmap.json")
+            .to_str()
+            .expect("archmap path is utf-8"),
+        "--law-policy",
+        root.join("law_policy.json")
+            .to_str()
+            .expect("law policy path is utf-8"),
+        "--out-dir",
+        out_dir.to_str().expect("output directory path is utf-8"),
+    ]);
+
+    for (file, label) in [
+        ("archmap-validation.json", "ArchMap validation"),
+        ("law-policy-validation.json", "LawPolicy validation"),
+        (
+            "archsig-analysis-validation.json",
+            "ArchSig analysis validation",
+        ),
+    ] {
+        let validation = read_json(&out_dir.join(file));
+        assert_eq!(
+            validation["summary"]["result"], "pass",
+            "{label} must pass for complete-first acceptance fixture"
+        );
+    }
+
+    let packet = read_json(&out_dir.join("archsig-analysis-packet.json"));
+    let spectrum = &packet["architectureSpectrumReport"];
+    assert!(
+        spectrum["topHotspots"]
+            .as_array()
+            .is_some_and(|items| !items.is_empty())
+            && spectrum["recurrentObstructions"]
+                .as_array()
+                .is_some_and(|items| !items.is_empty()),
+        "complete ArchMap acceptance fixture must expose meaningful spectrum readings"
+    );
+
+    let expected = &manifest["expectedReadings"];
+    let homotopy = &packet["architectureHomotopyReport"];
+    for (field, minimum_field) in [
+        ("filledLoops", "minFilledLoops"),
+        ("nonzeroHolonomyLoops", "minNonzeroHolonomyLoops"),
+        ("topLocalCurvatureCells", "minLocalCurvatureCells"),
+    ] {
+        let count = homotopy[field]
+            .as_array()
+            .unwrap_or_else(|| panic!("{field} must be an array"))
+            .len() as u64;
+        let minimum = expected[minimum_field]
+            .as_u64()
+            .unwrap_or_else(|| panic!("{minimum_field} is present"));
+        assert!(
+            count >= minimum,
+            "complete ArchMap acceptance fixture must keep {field}: {count} < {minimum}"
+        );
+    }
+
+    let required_stokes_status = expected["requiredStokesStatus"]
+        .as_str()
+        .expect("required Stokes status is present");
+    assert!(
+        packet["stokesStyleReadings"]
+            .as_array()
+            .expect("Stokes readings are array")
+            .iter()
+            .any(|reading| reading["status"] == required_stokes_status
+                && reading["measurementStatus"] == "measured"
+                && reading["localCurvatureCellCandidates"]
+                    .as_array()
+                    .is_some_and(|items| !items.is_empty())),
+        "complete ArchMap acceptance fixture must include measured Stokes positive local curvature"
+    );
+
+    let required_gap = expected["requiredBlockedGap"]
+        .as_str()
+        .expect("required blocked gap is present");
+    let blocked_hole = packet["architecturalHoleReadings"]
+        .as_array()
+        .expect("architectural hole readings are array")
+        .iter()
+        .find(|reading| {
+            reading["missingFillerEvidence"]
+                .as_array()
+                .is_some_and(|items| items.iter().any(|item| item.as_str() == Some(required_gap)))
+        })
+        .expect("targeted gap must remain an architectural hole");
+    let blocked_loop = blocked_hole["loopRef"]
+        .as_str()
+        .expect("blocked hole loop ref is present");
+    assert!(
+        homotopy["unfilledLoops"]
+            .as_array()
+            .expect("unfilled loops are array")
+            .iter()
+            .any(|item| item.as_str() == Some(blocked_loop)),
+        "targeted missing filler must stay in unfilled loops"
+    );
+    assert!(
+        packet["stokesStyleReadings"]
+            .as_array()
+            .expect("Stokes readings are array")
+            .iter()
+            .any(|reading| reading["loopRef"] == blocked_loop
+                && reading["status"] == "blockedByArchitecturalHole"
+                && reading["measurementStatus"] == "blockedByCoverageGap"),
+        "targeted gap loop must remain blocked while unrelated filled loops are measured"
+    );
+
+    let summary_path = out_dir.join("archsig-analysis-summary.json");
+    run_sig0(&[
+        "analysis-summary",
+        "--packet",
+        out_dir
+            .join("archsig-analysis-packet.json")
+            .to_str()
+            .expect("packet path is utf-8"),
+        "--archmap-validation",
+        out_dir
+            .join("archmap-validation.json")
+            .to_str()
+            .expect("ArchMap validation path is utf-8"),
+        "--law-policy-validation",
+        out_dir
+            .join("law-policy-validation.json")
+            .to_str()
+            .expect("LawPolicy validation path is utf-8"),
+        "--analysis-validation",
+        out_dir
+            .join("archsig-analysis-validation.json")
+            .to_str()
+            .expect("analysis validation path is utf-8"),
+        "--out",
+        summary_path.to_str().expect("summary path is utf-8"),
+    ]);
+    let summary = read_json(&summary_path);
+    assert_eq!(
+        summary["verdict"]["readingMode"], "measurementOverSuppliedArchMapAndLawPolicy",
+        "summary must lead with measured ArchMap + LawPolicy verdict"
+    );
+    assert!(
+        summary["qualityMeasurement"]["spectrumHotspotCount"]
+            .as_u64()
+            .is_some_and(|count| count >= 1)
+            && summary["qualityMeasurement"]["nonzeroHolonomyLoopCount"]
+                .as_u64()
+                .is_some_and(|count| count >= 1)
+            && summary["qualityMeasurement"]["localCurvatureCellCount"]
+                .as_u64()
+                .is_some_and(|count| count >= 1),
+        "summary must expose spectrum, homotopy, and Stokes power before metadata"
+    );
+    assert!(
+        summary["actionQueue"]
+            .as_array()
+            .is_some_and(|items| !items.is_empty()),
+        "summary must keep a repair/review action queue"
+    );
 }
 
 #[test]

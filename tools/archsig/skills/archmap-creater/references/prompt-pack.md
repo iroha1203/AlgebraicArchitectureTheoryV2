@@ -4,7 +4,17 @@ Use this prompt pack with `archsig archmap-generate` or as the instruction sourc
 
 ## Task
 
-Create an `archmap-observation-map-v0` JSON artifact from the supplied bounded source inventory and inspected source evidence.
+Create a complete-first `archmap-observation-map-v0` JSON artifact from the
+supplied bounded source inventory and inspected source evidence.
+
+There is one user-facing authoring contract: the output should be the fullest
+bounded ArchMap the selected evidence supports. Do not produce a deliberately
+thin, quick, or staged map as the final answer. Internal drafts are allowed
+while reading, but the handoff artifact should already contain source
+inventory, primitive atoms, molecules, semantic readings, projection hints,
+concern hints, spectrum support, homotopy path candidates, filler evidence,
+non-fillability witnesses, and explicit gaps for genuinely unavailable
+evidence.
 
 ## Required Boundary
 
@@ -72,6 +82,11 @@ filler gaps. Candidate paths and loops are review cues, not path truth; filler
 evidence must come from selected source, contract, test, runtime, policy, or
 explicit user evidence.
 
+If filler evidence is unavailable, record a targeted `observationGaps[]` entry
+whose `subjectRef` names the affected path rule, operation square, or loop
+candidate. Avoid global gaps that block unrelated measured loops. Never turn
+missing filler evidence into measured zero.
+
 ## Parallel Agent Mode
 
 For large codebases, multiple agents may survey separate surfaces such as authority/authentication, state/model, effects/jobs, provider/trust, domain/contracts, runtime/framework, and docs/governance. A surface agent must output candidates, not a final ArchMap. The final integrator decides which candidates are accepted.
@@ -88,6 +103,36 @@ Surface-agent candidate packets should include:
 
 The integrator must deduplicate by predicate, subject/object refs, and source refs; resolve accepted source refs into `sourceUniverse.includedRefs[]`; lower confidence or create gaps when agents disagree; and keep coarse responsibility, workflow, policy, and concern readings out of `atomObservations[]`.
 
+The integrated output must include every surface needed by the requested
+ArchSig measurement or an explicit, targeted residual gap. Parallel agents are
+survey workers, not an excuse to hand users an incomplete ArchMap.
+
+## Analyze Feedback Loop
+
+When a LawPolicy is available, run ArchSig before handoff:
+
+```bash
+${ARCHSIG_BIN:-archsig} analyze \
+  --archmap .archsig/archmap/archmap.json \
+  --law-policy <law-policy.json> \
+  --out-dir .archsig/analyze
+```
+
+Read validation outputs, `llm-interpretation-packet.json`, and
+`analysis-summary` when available. Build a missing-evidence queue from:
+
+- `blockedByCoverageGap`
+- unfilled loops
+- missing filler evidence
+- unmeasured spectrum support
+- unresolved source refs
+- projection or semantic coverage warnings
+
+Then re-read source, docs, tests, runtime traces, policy files, and supplied
+user evidence to add measured evidence or targeted gaps. Stop only when
+validation passes and remaining blockers are truly unavailable, private, or out
+of scope.
+
 ## Output Requirements
 
 - Output valid JSON only when asked for the artifact.
@@ -96,4 +141,6 @@ The integrator must deduplicate by predicate, subject/object refs, and source re
 - Ensure observed claims cite `sourceRefs[]`.
 - Ensure source refs resolve to `sourceUniverse.includedRefs[]` when they support observations.
 - Keep confidence qualitative: `high`, `medium`, or `low`. Do not read it as probability.
-- Prefer a small accurate map over broad speculative coverage.
+- Prefer a complete source-grounded map over broad speculative coverage. If the
+  selected source universe cannot support a surface, record a targeted gap
+  rather than omitting it silently.
