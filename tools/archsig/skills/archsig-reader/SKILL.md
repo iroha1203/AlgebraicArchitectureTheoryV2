@@ -118,48 +118,55 @@ Read in this order:
 
 2. Verdict and quality measurement
    - Prefer `archsig-analysis-summary.json` when available.
-   - Read `verdict`, `qualityMeasurement`, `actionQueue`, and `measurementBasis` before detailed packet sections.
-   - Say what the supplied ArchMap + LawPolicy measured: flat/nonflat under selected policy, nonzero axes, hotspots, recurrent pressure, architectural holes, and review action queue.
+   - Read the whole summary before opening raw packet details. Start with
+     `verdict`, `qualityMeasurement`, `dominantFindings`, `actionQueue`,
+     `axisSummary`, `workflowRiskSummary`, `architecturalHoleSummary`,
+     `bridgeSummary`, `coverageGapSummary`, `detailIndex`, and
+     `measurementBasis`.
+   - Say what the supplied ArchMap + LawPolicy measured: flat/nonflat under selected policy, nonzero axes, hotspots, recurrent pressure, architectural holes, workflow risk, bridge pressure, and review action queue.
+   - Treat `actionQueue` as the full compact queue. Its entries should carry
+     `detailRefs`; do not expect nested support/source/witness evidence arrays
+     in the summary.
    - If the run is part of complete ArchMap authoring, convert coverage
      blockers into a missing-evidence queue before handing the artifact to the
      user.
    - If the bundled baseline LawPolicy was explicitly used, label the output as a generic baseline run and avoid project-specific obstruction conclusions unless source comparison and user context justify them.
 
 3. Analysis basis
-   - Record `archMapRef`, `selectedLawPolicyRef`, `currentStateEvolutionBoundary`, `excludedReadings`, and `metadata.nonConclusions`.
+   - Record `archMapRef`, `selectedLawPolicyRef`, `currentStateEvolutionBoundary`, `excludedReadings`, `metadata.nonConclusions`, and the `detailIndex`.
    - Treat the basis as input metadata, not as the lead diagnosis.
 
 4. Flatness and signature axes
-   - Read `flatnessReading.status`, `zeroSignatureAxisRefs`, `nonzeroSignatureAxisRefs`, `blockedByCoverageGaps`, and `signatureAxes[]`.
+   - Prefer `axisSummary` and `coverageGapSummary` in the summary.
+   - Use `detailRefs` / `detailIndex` to inspect `flatnessReading.status`, `zeroSignatureAxisRefs`, `nonzeroSignatureAxisRefs`, `blockedByCoverageGaps`, and `signatureAxes[]` in the packet only when source-level detail is needed.
    - Treat nonzero axes as measured architecture pressure under the selected policy.
    - Treat coverage gaps as measurement basis for why zero was not measured.
 
 5. Dominant pressure
-   - Read `architectureSpectrumReport` before building the review queue when present.
-   - Prioritize `topHotspots[]`, `recurrentObstructions[]`, `topWitnessClusters[]`, `coverageGaps[]`, `measuredBoundary`, and `recommendedReviewFocus[]`.
+   - Use `dominantFindings`, `actionQueue`, `workflowRiskSummary`, `architecturalHoleSummary`, and `bridgeSummary` before opening raw packet sections.
+   - Follow summary `detailRefs` into `architectureSpectrumReport` when the review needs full hotspot, recurrent obstruction, witness cluster, coverage gap, measured boundary, or review focus detail.
    - Treat the report as a current-state architecture quality measurement over
      the selected axes only after checking `measurementStatus` and
      `readingBoundary`; proxy transfer readings and coverage-blocked rows are
      not measured zero.
    - Move report-level `nonConclusions[]` to metadata or a short appendix.
-   - Read `architectureHomotopyReport` next when present.
-   - Prioritize `nonzeroHolonomyLoops[]`, `unfilledLoops[]`, `topLocalCurvatureCells[]`, `aggregateReadings[]`, `coverageGaps[]`, `measuredBoundary`, and `recommendedReviewFocus[]`.
+   - Follow summary `detailRefs` into `architectureHomotopyReport` when the review needs full nonzero holonomy loop, unfilled loop, local curvature, aggregate reading, coverage gap, measured boundary, or review focus detail.
    - Treat filled/unfilled loops, hole readings, and Stokes-style readings as
      measured review queues only inside their `measurementStatus`,
      `readingBoundary`, filler evidence, and non-fillability witness boundary.
    - Move report-level `nonConclusions[]` to metadata or a short appendix.
-   - Read top `workflowRiskReadings[]` by `riskScore`.
-   - Read `spectralAnalysisReadings[]`, especially dominant workflow row, dominant axis column, molecule overlap hub, obstruction curvature, and operation delta coupling.
+   - Follow summary `detailRefs` into `workflowRiskReadings[]` by `riskScore` when needed.
+   - Read `spectralAnalysisReadings[]` only as packet detail when the compact summary points to spectral pressure or when source comparison needs dominant workflow rows, dominant axis columns, molecule overlap hubs, obstruction curvature, or operation delta coupling.
    - If workflow risk or spectral readings are empty, do not force a risk narrative. Shift to `signatureAxes[]`, `obstructionCircuits[]`, `repairOperationCandidates[]`, `operationDeltas[]`, and coverage gaps.
 
 6. Transfer bridge and split readiness
-   - Read `transferBridgeReadings[].bridgeAtomFamilies[].edgeBreakdowns[]`.
-   - Surface each edge's `sourceRefs`, `sourceRefRationale`, `dependencyKind`, `recommendedCutKind`, and `reviewFocus`.
+   - Start from `bridgeSummary` and `actionQueue` bridge-pressure entries.
+   - Follow their `detailRefs` into `transferBridgeReadings[].bridgeAtomFamilies[]` and `edgeBreakdowns[]` before surfacing edge source refs, source ref rationale, dependency kind, cut kind, or review focus.
    - Read `splitReadinessReadings[]` sorted by low `readinessScore`; low score and `blockedByBridgeEdge` usually means boundary preparation should precede refactoring.
    - If transfer bridge or split readiness readings are empty, report that no bridge/split surface was emitted for this packet variant and prioritize obstruction / repair / coverage evidence instead.
 
 7. LLM interpretation packet
-   - Use `llmInterpretationPacket.recommendedHumanReviewFocus`, `structuralReadingReviewSummary`, `currentStateEvolutionBoundarySummary`, and `transferBridgeEdgeSummary` as a human-review index.
+   - Use `detailIndex` to reach `llmInterpretationPacket.recommendedHumanReviewFocus`, `structuralReadingReviewSummary`, `currentStateEvolutionBoundarySummary`, and `transferBridgeEdgeSummary` when the compact summary is not enough.
    - Do not treat the LLM packet as a separate source of truth.
 
 8. Packet variant fallback
