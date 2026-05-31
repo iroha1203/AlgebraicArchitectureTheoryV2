@@ -18,11 +18,10 @@ signature trajectories, and bounded software evolution.
   Hiroyuki Nakahata. It models software evolution as field-shaped
   computation over field state, operation support, policy, forecast
   cones, consequence envelopes, governance interventions, and feedback.
-- Architecture Signature (ArchSig) is an AI-native Architecture Evidence
-  Layer connected to AAT and SFT. It reads source-grounded ArchMap
-  observations with a selected LawPolicy, emits LLM-readable architecture
-  analysis packets, and does not treat review artifacts as proofs of
-  architecture correctness.
+- Architecture Signature (ArchSig) is a Skill-first architecture analysis
+  surface. An LLM agent can author source-grounded ArchMap evidence, select
+  a LawPolicy, run ArchSig, read the resulting packet and summary, inspect
+  the code again, and return review findings or repair candidates.
 
 ## Relationship between AAT and SFT
 
@@ -77,13 +76,12 @@ policy analysis, and review support, not as a proof system.
 - SFT Formal Core and Anchors: https://iroha1203.dev/sft/references/formal-anchors/
 - SFT Research Program and Boundaries: https://iroha1203.dev/sft/references/research-program/
 - SFT Glossary: https://iroha1203.dev/sft/references/glossary/
-- ArchSig manual: https://iroha1203.dev/archsig/
-- ArchSig Why: https://iroha1203.dev/archsig/why/
+- ArchSig overview: https://iroha1203.dev/archsig/
 - ArchSig Getting Started: https://iroha1203.dev/archsig/getting-started/
-- ArchSig CI and PR Review: https://iroha1203.dev/archsig/ci/
-- ArchSig Signal Anatomy: https://iroha1203.dev/archsig/anatomy/
-- ArchSig ArchMap: https://iroha1203.dev/archsig/archmap/
-- ArchSig Semantic AIR: https://iroha1203.dev/archsig/semantic-air/
+- ArchSig Analyses: https://iroha1203.dev/archsig/analyses/
+- ArchSig Examples: https://iroha1203.dev/archsig/examples/
+- ArchSig Manual: https://iroha1203.dev/archsig/manual/
+- ArchSig Reference: https://iroha1203.dev/archsig/reference/
 - Outreach: https://iroha1203.dev/outreach/
 
 ## Reading order
@@ -94,8 +92,8 @@ policy analysis, and review support, not as a proof system.
 3. Read SFT for the field-shaped model of software evolution,
    forecast cones, consequence envelopes, governance interventions,
    and feedback updates.
-4. Read ArchSig for the ArchMap / LawPolicy / analysis packet workflow,
-   report artifacts, FieldSig handoff, and measurement boundaries.
+4. Read ArchSig for Skill-first architecture analysis, ArchMap / LawPolicy
+   workflow, analysis packets, review findings, and measurement boundaries.
 
 ## Outreach
 

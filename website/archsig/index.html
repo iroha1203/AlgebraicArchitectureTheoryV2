@@ -3,18 +3,18 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="ArchSig reads source-grounded ArchMap observations with a selected LawPolicy and emits LLM-readable architecture analysis packets for review.">
-    <title>ArchSig</title>
+    <meta name="description" content="ArchSig is an architecture analysis surface used through LLM Skills: inspect a repo, build ArchMap evidence and LawPolicy, run ArchSig, then return findings engineers can act on.">
+    <title>ArchSig Skill-First Architecture Analysis</title>
     <link rel="canonical" href="https://iroha1203.dev/archsig/">
     <meta property="og:site_name" content="AAT / SFT Research Notes">
     <meta property="og:type" content="article">
-    <meta property="og:title" content="ArchSig">
-    <meta property="og:description" content="ArchSig reads source-grounded ArchMap observations with a selected LawPolicy and emits LLM-readable architecture analysis packets for review.">
+    <meta property="og:title" content="ArchSig Skill-First Architecture Analysis">
+    <meta property="og:description" content="ArchSig is an architecture analysis surface used through LLM Skills: inspect a repo, build ArchMap evidence and LawPolicy, run ArchSig, then return findings engineers can act on.">
     <meta property="og:url" content="https://iroha1203.dev/archsig/">
     <meta property="og:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="ArchSig">
-    <meta name="twitter:description" content="ArchSig reads source-grounded ArchMap observations with a selected LawPolicy and emits LLM-readable architecture analysis packets for review.">
+    <meta name="twitter:title" content="ArchSig Skill-First Architecture Analysis">
+    <meta name="twitter:description" content="ArchSig is an architecture analysis surface used through LLM Skills: inspect a repo, build ArchMap evidence and LawPolicy, run ArchSig, then return findings engineers can act on.">
     <meta name="twitter:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
     <link rel="icon" href="../assets/favicon-32.png" sizes="32x32" type="image/png">
     <link rel="icon" href="../assets/favicon-16.png" sizes="16x16" type="image/png">
@@ -66,33 +66,77 @@
       <section class="article-hero section-band">
         <div class="site-shell">
           <nav class="breadcrumb" aria-label="Breadcrumb"><a href="../">Home</a><span>ArchSig</span></nav>
-          <p class="eyebrow">Architecture Evidence Layer</p>
-          <h1>Architecture change, made legible.</h1>
-          <p class="lede">ArchSig reads source-grounded ArchMap observations with a selected LawPolicy, computes law-relative obstruction and signature readings, and emits structured analysis packets that LLMs and reviewers can inspect.</p>
+          <p class="hero-version-badge">Target v0.3.0</p>
+          <p class="eyebrow">Architecture review for fast-moving code</p>
+          <h1>Architecture analysis through LLM Skills.</h1>
+          <p class="lede">When code changes fast, ask your LLM agent to run the ArchSig Skills. The agent can inspect what the change is doing to the design: which responsibilities are drifting, which boundaries are weakening, and where engineers should look next.</p>
         </div>
       </section>
       <section class="section-band">
         <div class="site-shell article-layout">
           <aside class="article-sidebar" aria-label="ArchSig page navigation">
-            <nav class="toc-panel" aria-labelledby="toc-title"><h2 id="toc-title">On this page</h2><ol><li><a href="#what-you-can-do">What you can do</a></li><li><a href="#five-minute-path">5-minute path</a></li><li><a href="#choose-your-path">Choose your path</a></li><li><a href="#manual-map">Manual map</a></li><li><a href="#before-after">Before / after</a></li><li><a href="#product-position">Product position</a></li></ol></nav>
-            <div class="source-panel" data-sidebar-open="true"><h2>ArchSig manual</h2><ul><li><a href="./" aria-current="page">Overview</a></li><li><a href="why/">Why ArchSig?</a></li><li><a href="getting-started/">Getting Started</a></li><li><a href="ci/">CI / PR Review</a></li><li><a href="inputs/">Inputs</a></li><li><a href="workflows/">Workflows</a></li><li><a href="artifacts/">Artifacts</a></li><li><a href="reading-output/">Reading Output</a></li><li><a href="anatomy/">Signal Anatomy</a></li><li><a href="examples/">Examples</a></li><li><a href="boundaries/">Evidence Model</a></li><li><a href="air/">AIR</a></li><li><a href="archmap/">ArchMap</a></li><li><a href="semantic-air/">Semantic AIR</a></li><li><a href="commands/">Commands</a></li><li><a href="schemas/">Schemas</a></li><li><a href="operational-feedback/">Operational Feedback</a></li></ul></div>
+            <nav class="toc-panel" aria-labelledby="toc-title"><h2 id="toc-title">On this page</h2><ol><li><a href="#start">Three-step start</a></li><li><a href="#install">Install</a></li><li><a href="#strengths">Three strengths</a></li><li><a href="#returns">What you get back</a></li><li><a href="#next">Where to go next</a></li></ol></nav>
+            <div class="source-panel" data-sidebar-open="true"><h2>ArchSig</h2><ul><li><a href="./" aria-current="page">Overview</a></li><li><a href="getting-started/">Getting Started</a></li><li><a href="analyses/">Analyses</a></li><li><a href="examples/">Examples</a></li><li><a href="manual/">Manual</a></li><li><a href="reference/">Reference</a></li></ul></div>
           </aside>
           <div class="article-main">
-            <section id="what-you-can-do" class="article-section"><h2>What you can do with ArchSig</h2><p>ArchSig is built for architecture review where the important evidence is not only in imports. It separates observation, policy, analysis, and SFT handoff so each artifact can be read without turning tooling output into theorem truth.</p><ul class="status-list"><li><strong>Record source-grounded architecture observations</strong><span><a href="archmap/">ArchMap</a> stores atom, molecule, semantic observation, concern, gap, provenance, and non-conclusion records read from code, docs, tests, config, traces, or PR context.</span></li><li><strong>Select the law universe explicitly</strong><span>LawPolicy chooses witness rules, molecule patterns, obstruction definitions, signature axes, coverage requirements, exactness assumptions, optional ACTS spectrum measurement profiles, and optional homotopy path / filler / loop profiles for one review context.</span></li><li><strong>Compute law-relative analysis</strong><span>ArchSig emits an <code>archsig-analysis-packet-v0</code> with molecule readings, obstruction circuits, signature axes, flatness reading, ArchitectureSpectrumReport hotspots, ArchitectureHomotopyReport loop / hole / holonomy readings, repair candidates, coverage gaps, and LLM interpretation notes.</span></li><li><strong>Hand off bounded state to FieldSig</strong><span>FieldSig reads the analysis packet as local AAT algebra state, not as forecast truth or global safety.</span></li></ul></section>
-<section id="five-minute-path" class="article-section"><h2>5-minute path</h2><p>The first successful session should run the LLM-native workflow on a fixture, then inspect the analysis packet before reading downstream report projections.</p><ol class="numbered-status-list"><li><strong>Validate ArchMap observation</strong><span>Check source refs, atom observations, molecule observations, semantic observations, concern hints, gaps, and non-conclusions.</span></li><li><strong>Validate LawPolicy</strong><span>Check the selected law universe, witness rules, obstruction definitions, signature axes, coverage requirements, and exactness assumptions.</span></li><li><strong>Build the analysis packet</strong><span>Read law-relative obstruction circuits, signature axis values, flatness reading, repair candidates, and coverage gaps.</span></li><li><strong>Read projections second</strong><span>AIR, theorem checks, feature reports, and observable bundles are downstream review projections from the analysis packet.</span></li><li><strong>Send only bounded state to FieldSig</strong><span>Use FieldSig for operation support and forecast surfaces; do not read raw ArchMap as SFT truth.</span></li></ol></section>
-<section id="choose-your-path" class="article-section"><h2>Choose your path</h2><ul class="chapter-list"><li><a href="getting-started/">New to ArchSig</a><span>Run the LLM-native workflow and learn the shape of ArchMap, LawPolicy, and the analysis packet.</span></li><li><a href="ci/">Reviewing a PR</a><span>Wire analysis packet generation and bounded report projections into CI.</span></li><li><a href="archmap/">Using ArchMap</a><span>Read source-grounded Atom observations without promoting them to lawfulness or obstruction truth.</span></li><li><a href="reading-output/">Reading JSON output</a><span>Read analysis packets and report projections as review maps, not raw data dumps.</span></li><li><a href="workflows/">Setting up team workflows</a><span>Adopt ArchSig for LLM observation, selected policy analysis, generated changes, and FieldSig handoff.</span></li><li><a href="air/">Using AIR</a><span>Read AIR as a bounded projection from analysis state into existing review surfaces.</span></li><li><a href="commands/">Looking for commands</a><span>Use the reference index when you already know the artifact you need.</span></li></ul></section>
-<section id="manual-map" class="article-section"><h2>Manual map</h2><p>The manual is organized by reader task. The front half gets a working engineer to a useful review. The middle explains daily use, reports, workflows, and feedback. The back half covers AIR, ArchMap, semantic analysis, commands, schemas, and artifact formats.</p><ul class="status-list"><li><strong>Start Here</strong><span><a href="why/">Why ArchSig?</a>, <a href="getting-started/">Quick Start</a>, and <a href="ci/">First PR Review</a>.</span></li><li><strong>Use ArchSig</strong><span><a href="inputs/">Inputs</a>, <a href="workflows/">Workflows</a>, <a href="artifacts/">Artifacts</a>, and <a href="operational-feedback/">Operational Feedback</a>.</span></li><li><strong>Read ArchSig</strong><span><a href="anatomy/">Signal anatomy</a>, <a href="reading-output/">Reading Output</a>, and <a href="examples/">Examples</a>.</span></li><li><strong>Interpret Results</strong><span><a href="air/">AIR</a>, <a href="archmap/">ArchMap</a>, <a href="semantic-air/">Semantic AIR</a>, and report reading.</span></li><li><strong>Reference</strong><span><a href="commands/">Commands</a>, <a href="schemas/">Schemas</a>, artifact formats, and validation output.</span></li></ul></section>
-<section id="before-after" class="article-section"><h2>Before / after</h2><div class="article-table"><table><thead><tr><th scope="col">Before</th><th scope="col">After ArchSig</th></tr></thead><tbody><tr><td>A PR makes <code>CouponService</code> call <code>PaymentAdapter.internalCache</code>. The reviewer may notice it only if they read the whole change with architecture context.</td><td>ArchSig reports a non-split coupon extension witness, connects it to dependency and semantic evidence, and asks the reviewer to inspect payment contract ownership.</td></tr><tr><td>The team says the change feels risky, but the reason remains implicit.</td><td>The report says what changed, why it matters, where the signal comes from, and what the reviewer should inspect next.</td></tr></tbody></table></div><figure class="code-panel"><figcaption>Review signal example</figcaption><pre><code>ArchSig found a non-split coupon extension.
-
-Reason:
-- CouponService reaches PaymentAdapter.internalCache.
-- The selected semantic diagram also shows rounding-order mismatch.
-
-Suggested review action:
-- Move cache access behind a PaymentPort contract.
-- Confirm an explicit coupon/payment semantic contract.</code></pre></figure></section>
-<section id="product-position" class="article-section"><h2>Product position</h2><p>ArchSig is an AI-native Architecture Evidence Layer for PR review. It turns source-grounded observations and selected laws into structured analysis packets, then projects them into review artifacts without claiming global architecture truth.</p><div class="claim-strip"><p>ArchSig helps reviewers see what was observed, which laws were selected, what obstruction or signature readings appear, and where to inspect next.</p></div></section>
-            <nav class="page-nav" aria-label="Reading sequence"><a class="page-nav-next" href="why/"><span>Next</span><strong>Why ArchSig?</strong></a></nav>
+            <section id="start" class="article-section">
+              <h2>Three-step start</h2>
+              <p>Ask your LLM agent the question you would ask a senior reviewer: what did this change do to the design, and where should we look first?</p>
+              <ol class="numbered-status-list">
+                <li><strong>Choose the scope</strong><span>Tell the LLM agent which repository, PR, branch, feature area, or architectural concern the Skills should inspect.</span></li>
+                <li><strong>Have the agent run the Skills</strong><span>The agent uses <code>archmap-creater</code>, <code>law-policy-creater</code>, and <code>archsig-reader</code> to turn selected source evidence into an architecture review surface.</span></li>
+                <li><strong>Act on the review queue</strong><span>Use the returned findings, repair candidates, code refs, and confirmation points to decide what to inspect or change next.</span></li>
+              </ol>
+              <figure class="code-panel">
+                <figcaption>Skill request shape</figcaption>
+                <pre><code>Run the ArchSig Skills on this PR.
+Inspect it for architecture boundary movement.
+Focus on payment, coupon, and workflow responsibility changes.
+Return review findings with code refs and repair candidates.</code></pre>
+              </figure>
+            </section>
+            <section id="install" class="article-section">
+              <h2>Install</h2>
+              <p>Install ArchSig from the project release page. The release bundle is the distribution surface for the ArchSig CLI and Skills used by the workflow above.</p>
+              <ul class="chapter-list">
+                <li><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/releases" target="_blank" rel="noopener noreferrer">GitHub Releases</a><span>Download the current ArchSig release bundle, then follow the bundled Skill and CLI files for local setup.</span></li>
+                <li><a href="getting-started/">Getting Started</a><span>Use the installed Skills to run the first repository or PR inspection.</span></li>
+                <li><a href="reference/">Reference</a><span>Use the command reference when you need to reproduce an <code>analyze</code> run directly.</span></li>
+              </ul>
+            </section>
+            <section id="strengths" class="article-section">
+              <h2>Three strengths</h2>
+              <p>ArchSig is strongest where ordinary tools go quiet: the code compiles, tests pass, and the dependency graph has edges, but the design still feels like it is moving.</p>
+              <ul class="status-list">
+                <li><strong>It reads design signals, not just edges</strong><span>Imports and calls show contact. ArchSig helps read whether that contact is crossing a boundary, moving responsibility, hiding a workflow assumption, or creating coupling that a graph alone does not explain.</span></li>
+                <li><strong>It finds the pressure points</strong><span>ArchSig can surface hotspots, repeated boundary stress, workflow risk, transfer paths, missing evidence, and architectural holes as one reviewable picture instead of scattered hints.</span></li>
+                <li><strong>It turns diagnosis into review work</strong><span>The LLM agent follows the Skill output back to source evidence, then returns comments, repair candidates, and confirmation checks that engineers can use in a PR or architecture review.</span></li>
+              </ul>
+            </section>
+            <section id="returns" class="article-section">
+              <h2>What you get back</h2>
+              <p>The output is meant to be read by engineers, not decoded like a metrics dump. It tells you what looks structurally important, why it matters, and what evidence should be checked next.</p>
+              <ul class="status-list">
+                <li><strong>Findings reviewers can inspect</strong><span>Architecture-relevant issues with the code paths, evidence, and context reviewers should open first.</span></li>
+                <li><strong>Architecture tendencies</strong><span>Where coupling concentrates, which boundaries keep getting crossed, which responsibilities keep moving, and what kind of drift is starting to appear.</span></li>
+                <li><strong>Deeper structural readings</strong><span>Responsibility pressure, semantic coupling, order sensitivity, path-like change patterns, repeated stress on the same support, and the evidence needed before repair decisions.</span></li>
+                <li><strong>Repair candidates</strong><span>Concrete moves such as restoring a port boundary, moving cache access behind an adapter, or making a workflow contract explicit.</span></li>
+                <li><strong>Confirmation points</strong><span>Checks the team should perform before acting on a reading, including missing tests, docs, traces, ownership evidence, or policy decisions.</span></li>
+                <li><strong>Traceable detail</strong><span>References back to the summary, packet detail, validation output, and coverage repair queue when someone needs to reproduce or challenge the reading.</span></li>
+              </ul>
+            </section>
+            <section id="next" class="article-section">
+              <h2>Where to go next</h2>
+              <p>The rest of the ArchSig surface separates first use, analysis examples, output reading, and command reference so the landing page can stay focused on the review story.</p>
+              <ul class="chapter-list">
+                <li><a href="getting-started/">Getting Started</a><span>Skill-first onboarding, prompt examples, and what to hand to the Skill.</span></li>
+                <li><a href="analyses/">Analyses</a><span>Boundary crossing, responsibility movement, semantic coupling, operation order sensitivity, hotspots, and missing evidence.</span></li>
+                <li><a href="examples/">Examples</a><span>Short Skill request to output examples for payment boundary erosion, coupon extension, operation order sensitivity, and coverage repair.</span></li>
+                <li><a href="manual/">Manual</a><span>How Skills read <code>analysis-summary</code>, packet refs, measurement families, coverage, and repair queues.</span></li>
+                <li><a href="reference/">Reference</a><span>Command, schema, compatibility, and artifact details with <code>analyze</code> as the primary workflow entry.</span></li>
+              </ul>
+            </section>
+            <nav class="page-nav" aria-label="Reading sequence"><a class="page-nav-next" href="getting-started/"><span>Next</span><strong>Getting Started</strong></a></nav>
           </div>
         </div>
       </section>

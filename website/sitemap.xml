@@ -52,52 +52,19 @@
     <loc>https://iroha1203.dev/archsig/</loc>
   </url>
   <url>
-    <loc>https://iroha1203.dev/archsig/air/</loc>
+    <loc>https://iroha1203.dev/archsig/getting-started/</loc>
   </url>
   <url>
-    <loc>https://iroha1203.dev/archsig/archmap/</loc>
-  </url>
-  <url>
-    <loc>https://iroha1203.dev/archsig/anatomy/</loc>
-  </url>
-  <url>
-    <loc>https://iroha1203.dev/archsig/artifacts/</loc>
-  </url>
-  <url>
-    <loc>https://iroha1203.dev/archsig/boundaries/</loc>
-  </url>
-  <url>
-    <loc>https://iroha1203.dev/archsig/ci/</loc>
-  </url>
-  <url>
-    <loc>https://iroha1203.dev/archsig/commands/</loc>
+    <loc>https://iroha1203.dev/archsig/analyses/</loc>
   </url>
   <url>
     <loc>https://iroha1203.dev/archsig/examples/</loc>
   </url>
   <url>
-    <loc>https://iroha1203.dev/archsig/getting-started/</loc>
+    <loc>https://iroha1203.dev/archsig/manual/</loc>
   </url>
   <url>
-    <loc>https://iroha1203.dev/archsig/inputs/</loc>
-  </url>
-  <url>
-    <loc>https://iroha1203.dev/archsig/reading-output/</loc>
-  </url>
-  <url>
-    <loc>https://iroha1203.dev/archsig/semantic-air/</loc>
-  </url>
-  <url>
-    <loc>https://iroha1203.dev/archsig/operational-feedback/</loc>
-  </url>
-  <url>
-    <loc>https://iroha1203.dev/archsig/schemas/</loc>
-  </url>
-  <url>
-    <loc>https://iroha1203.dev/archsig/workflows/</loc>
-  </url>
-  <url>
-    <loc>https://iroha1203.dev/archsig/why/</loc>
+    <loc>https://iroha1203.dev/archsig/reference/</loc>
   </url>
   <url>
     <loc>https://iroha1203.dev/outreach/</loc>
