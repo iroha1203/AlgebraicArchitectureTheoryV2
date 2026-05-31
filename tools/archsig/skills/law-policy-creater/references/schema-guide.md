@@ -154,6 +154,11 @@ evidence. Use conservative defaults when evidence is absent:
   inferred review cues. A LawPolicy may say which supplied / inferred sources
   are eligible, but source-backed operation sequences and endpoints belong in
   ArchMap `operationSquareEvidence[]`, not in the policy.
+- `distanceKind` is dispatched by ArchSig together with the selected axis
+  family. Semantic and effect axes compare ordered continuation values; static,
+  contract, projection, authority, runtime, and state axes keep their own
+  bounded comparable values. Missing comparable values must remain unmeasured,
+  not zero.
 - ArchitectureHomotopyReport is not a single architecture quality score.
 
 Keep unresolved questions outside the JSON as delivery notes, and reflect their

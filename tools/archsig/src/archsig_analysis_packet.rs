@@ -294,8 +294,12 @@ pub fn build_archsig_analysis_packet(
         &stokes_style_readings,
     );
     let operation_square_candidates = build_operation_square_candidates(archmap, &operation_deltas);
-    let path_continuation_traces =
-        build_path_continuation_traces(archmap, &operation_square_candidates, &operation_deltas);
+    let path_continuation_traces = build_path_continuation_traces(
+        archmap,
+        law_policy,
+        &operation_square_candidates,
+        &operation_deltas,
+    );
     let axis_wise_monodromy_defects = build_axis_wise_monodromy_defects(
         law_policy,
         &operation_square_candidates,
@@ -991,6 +995,7 @@ fn blocked_operation_square_candidate(
 
 fn build_path_continuation_traces(
     archmap: &ArchMapDocumentV0,
+    law_policy: &LawPolicyDocumentV0,
     operation_square_candidates: &[ArchSigOperationSquareCandidateV0],
     operation_deltas: &[ArchSigOperationDeltaReadingV0],
 ) -> Vec<ArchSigPathContinuationTraceV0> {
@@ -1041,6 +1046,7 @@ fn build_path_continuation_traces(
                     endpoint_object_refs: candidate.endpoint_object_refs.clone(),
                     axis_traces: build_axis_continuation_traces(
                         archmap,
+                        law_policy,
                         candidate,
                         operation_deltas,
                         path_role,
@@ -1060,6 +1066,7 @@ fn build_path_continuation_traces(
 
 fn build_axis_continuation_traces(
     archmap: &ArchMapDocumentV0,
+    law_policy: &LawPolicyDocumentV0,
     candidate: &ArchSigOperationSquareCandidateV0,
     operation_deltas: &[ArchSigOperationDeltaReadingV0],
     path_role: &str,
@@ -1071,27 +1078,13 @@ fn build_axis_continuation_traces(
             candidate.shared_atom_support_refs.clone(),
         ),
         ("contract", "contract axis", candidate.contract_refs.clone()),
-        ("semantic", "semantic axis", {
-            let mut refs = candidate.semantic_refs.clone();
-            if let Some(marker) = semantic_path_order_marker(archmap, path_role) {
-                refs.push(marker);
-            }
-            refs
-        }),
+        ("semantic", "semantic axis", candidate.semantic_refs.clone()),
         ("state", "state transition axis", candidate.state_refs.clone()),
-        ("effect", "effect ordering / replay / compensation axis", {
-            let mut refs = candidate.effect_refs.clone();
-            refs.push(format!(
-                "derived-effect-order:{}:{}",
-                path_role,
-                stable_id(if path_role == "p" {
-                    &candidate.p_path_ref
-                } else {
-                    &candidate.q_path_ref
-                })
-            ));
-            refs
-        }),
+        (
+            "effect",
+            "effect ordering / replay / compensation axis",
+            candidate.effect_refs.clone(),
+        ),
         (
             "authority",
             "authority / trust boundary axis",
@@ -1110,6 +1103,10 @@ fn build_axis_continuation_traces(
     ]
     .into_iter()
     .map(|(axis_family, axis_ref, observation_refs)| {
+        let distance_evaluator_kind = axis_distance_evaluator_kind(
+            &law_policy.measurement_policy.distance_kind,
+            axis_family,
+        );
         let trace_status = if observation_refs.is_empty() {
             "unmeasured"
         } else {
@@ -1132,32 +1129,49 @@ fn build_axis_continuation_traces(
         } else {
             &candidate.q_operation_sequence
         };
+        let comparable_continuation_values = comparable_continuation_values(
+            axis_family,
+            path_role,
+            operation_sequence,
+            &observation_refs,
+            candidate,
+        );
         let continuation_states = operation_sequence
             .iter()
             .enumerate()
             .map(|(index, operation_ref)| {
                 format!(
-                    "Cont_{axis_family}[{index}]={operation_ref}; refs={}",
-                    observation_refs.len()
+                    "Cont_{axis_family}[{index}]={operation_ref}; comparableValues={}",
+                    comparable_continuation_values.len()
                 )
             })
             .chain(std::iter::once(format!(
-                "Cont_{axis_family}[endpoint]={}; endpointRefs={}",
+                "Cont_{axis_family}[endpoint]={}; endpointRefs={}; evaluator={}",
                 path_role,
-                candidate.endpoint_object_refs.len()
+                candidate.endpoint_object_refs.len(),
+                distance_evaluator_kind
             )))
             .collect::<Vec<_>>();
+        let distance_input_refs = unique_strings(
+            observation_refs
+                .iter()
+                .chain(source_refs.iter())
+                .chain(candidate.endpoint_object_refs.iter())
+                .cloned(),
+        );
         ArchSigAxisContinuationTraceV0 {
             axis_family: axis_family.to_string(),
             axis_ref: axis_ref.to_string(),
             trace_status: trace_status.to_string(),
+            distance_evaluator_kind,
             continuation_summary: axis_continuation_summary(
                 axis_family,
                 &observation_refs,
                 operation_deltas,
             ),
             continuation_states,
-            distance_input_refs: observation_refs.clone(),
+            comparable_continuation_values,
+            distance_input_refs,
             source_refs,
             observation_refs,
             missing_refs,
@@ -1169,25 +1183,53 @@ fn build_axis_continuation_traces(
         .collect()
 }
 
-fn has_path_order_semantic_evidence(archmap: &ArchMapDocumentV0) -> bool {
-    archmap.semantic_observations.iter().any(|semantic| {
-        let text = format!(
-            "{} {} {}",
-            semantic.semantic_family, semantic.subject_ref, semantic.predicate
-        )
-        .to_ascii_lowercase();
-        text.contains("round(tax(discount")
-            || text.contains("round(discount(tax")
-            || (text.contains("noncommut") && text.contains("coupon") && text.contains("tax"))
-    })
+fn axis_distance_evaluator_kind(distance_kind: &str, axis_family: &str) -> String {
+    match axis_family {
+        "semantic" => format!("{distance_kind}:semantic-sequence-mismatch"),
+        "effect" => format!("{distance_kind}:effect-replay-order-mismatch"),
+        "state" => format!("{distance_kind}:state-transition-value-mismatch"),
+        "authority" => format!("{distance_kind}:authority-boundary-value-mismatch"),
+        "runtime" => format!("{distance_kind}:runtime-interaction-value-mismatch"),
+        "projection" => format!("{distance_kind}:projection-target-value-mismatch"),
+        "contract" => format!("{distance_kind}:contract-obligation-value-mismatch"),
+        "static" => format!("{distance_kind}:static-support-value-mismatch"),
+        other => format!("{distance_kind}:{other}-value-mismatch"),
+    }
 }
 
-fn semantic_path_order_marker(archmap: &ArchMapDocumentV0, path_role: &str) -> Option<String> {
-    has_path_order_semantic_evidence(archmap).then(|| match path_role {
-        "p" => "derived-semantic-order:p=round(tax(discount(subtotal)))".to_string(),
-        "q" => "derived-semantic-order:q=round(discount(tax(subtotal)))".to_string(),
-        other => format!("derived-semantic-order:{other}"),
-    })
+fn comparable_continuation_values(
+    axis_family: &str,
+    path_role: &str,
+    operation_sequence: &[String],
+    observation_refs: &[String],
+    candidate: &ArchSigOperationSquareCandidateV0,
+) -> Vec<String> {
+    if observation_refs.is_empty() {
+        return Vec::new();
+    }
+    let path_value = format!(
+        "{axis_family}:path:{path_role}:{}",
+        operation_sequence.join(" -> ")
+    );
+    let endpoint_value = format!(
+        "{axis_family}:endpoints:{}",
+        candidate.endpoint_object_refs.join("|")
+    );
+    match axis_family {
+        "semantic" | "effect" | "state" | "runtime" => vec![path_value, endpoint_value],
+        "authority" | "contract" | "projection" | "static" => {
+            let support_value = format!(
+                "{axis_family}:support:{}",
+                observation_refs
+                    .iter()
+                    .map(|value| stable_id(value))
+                    .collect::<Vec<_>>()
+                    .join("|")
+            );
+            vec![endpoint_value, support_value]
+        }
+        _ => vec![path_value, endpoint_value],
+    }
 }
 
 fn build_axis_wise_monodromy_defects(
@@ -1260,21 +1302,61 @@ fn axis_wise_monodromy_defect(
         .unwrap_or_else(|| vec![format!("missing q trace for {axis_family}")]);
     let missing_refs = unique_strings(p_missing.into_iter().chain(q_missing));
     let measured_support_refs = unique_strings(p_refs.iter().chain(q_refs.iter()).cloned());
+    let p_values = p_axis
+        .map(|axis| axis.comparable_continuation_values.clone())
+        .unwrap_or_default();
+    let q_values = q_axis
+        .map(|axis| axis.comparable_continuation_values.clone())
+        .unwrap_or_default();
+    let comparable_missing_refs = comparable_value_missing_refs(axis_family, &p_values, &q_values);
+    let missing_refs = unique_strings(missing_refs.into_iter().chain(comparable_missing_refs));
+    let evaluator_kind = p_axis
+        .or(q_axis)
+        .map(|axis| axis.distance_evaluator_kind.clone())
+        .unwrap_or_else(|| {
+            axis_distance_evaluator_kind(&law_policy.measurement_policy.distance_kind, axis_family)
+        });
     let witness_refs = unique_strings(
-        measured_support_refs.iter().cloned().chain(
-            missing_refs
-                .iter()
-                .map(|missing| format!("missing-evidence:{missing}")),
-        ),
+        measured_support_refs
+            .iter()
+            .cloned()
+            .chain(
+                p_values
+                    .iter()
+                    .map(|value| format!("p-value:{}", stable_id(value))),
+            )
+            .chain(
+                q_values
+                    .iter()
+                    .map(|value| format!("q-value:{}", stable_id(value))),
+            )
+            .chain(
+                missing_refs
+                    .iter()
+                    .map(|missing| format!("missing-evidence:{missing}")),
+            ),
     );
     let both_measured = p_axis.is_some_and(|axis| axis.trace_status != "unmeasured")
-        && q_axis.is_some_and(|axis| axis.trace_status != "unmeasured");
-    let distance_value = both_measured.then(|| symmetric_difference_size(&p_refs, &q_refs) as i64);
+        && q_axis.is_some_and(|axis| axis.trace_status != "unmeasured")
+        && !p_values.is_empty()
+        && !q_values.is_empty();
+    let distance_value =
+        both_measured.then(|| evaluate_axis_distance(&evaluator_kind, &p_values, &q_values));
     let axis_ref = p_axis
         .or(q_axis)
         .map(|axis| axis.axis_ref.clone())
         .unwrap_or_else(|| axis_family.to_string());
-    let distance_input_refs = unique_strings(p_refs.iter().chain(q_refs.iter()).cloned());
+    let distance_input_refs = unique_strings(
+        p_axis
+            .into_iter()
+            .flat_map(|axis| axis.distance_input_refs.iter())
+            .chain(
+                q_axis
+                    .into_iter()
+                    .flat_map(|axis| axis.distance_input_refs.iter()),
+            )
+            .cloned(),
+    );
 
     ArchSigAxisWiseMonodromyDefectV0 {
         defect_id: format!(
@@ -1285,7 +1367,7 @@ fn axis_wise_monodromy_defect(
         candidate_ref: candidate.candidate_id.clone(),
         axis_family: axis_family.to_string(),
         axis_ref,
-        distance_kind: law_policy.measurement_policy.distance_kind.clone(),
+        distance_kind: evaluator_kind,
         p_continuation_ref: p_axis
             .map(|axis| format!("Cont_{}(p):{}", axis.axis_family, axis.axis_ref))
             .unwrap_or_else(|| format!("Cont_{axis_family}(p):missing")),
@@ -1294,7 +1376,7 @@ fn axis_wise_monodromy_defect(
             .unwrap_or_else(|| format!("Cont_{axis_family}(q):missing")),
         distance_input_refs,
         positive_witness_boundary:
-            "mu_x > 0 is read only as selected continuation observation difference with source-backed p/q trace inputs"
+            "mu_x > 0 is read by an axis-specific distance evaluator over comparable continuation values with source-backed p/q trace inputs"
                 .to_string(),
         weight: if both_measured { 1 } else { 0 },
         measurement_status: if both_measured {
@@ -1309,9 +1391,10 @@ fn axis_wise_monodromy_defect(
         observation_refs: measured_support_refs,
         missing_refs,
         coverage_boundary: if both_measured {
-            "covered for selected trace refs; not complete execution semantics".to_string()
+            "covered for selected comparable continuation values; not complete execution semantics"
+                .to_string()
         } else {
-            "coverage gap preserved; unmeasured axis is not zero defect".to_string()
+            "coverage gap or missing comparable continuation input preserved; unmeasured axis is not zero defect".to_string()
         },
         exactness_assumption_status: law_policy
             .measurement_policy
@@ -1322,10 +1405,47 @@ fn axis_wise_monodromy_defect(
             "axis-wise defect avoids aggregate cancellation; AMI zero can reflect local zero only under recorded zero-reflection assumptions"
                 .to_string(),
         evidence_boundary:
-            "mu_x(sigma) is a bounded distance between selected continuation traces, not a theorem about path equality"
+            "mu_x(sigma) is a bounded axis-distance evaluation between selected continuation values, not a theorem about path equality"
                 .to_string(),
         non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
     }
+}
+
+fn comparable_value_missing_refs(
+    axis_family: &str,
+    p_values: &[String],
+    q_values: &[String],
+) -> Vec<String> {
+    let mut missing = Vec::new();
+    if p_values.is_empty() {
+        missing.push(format!(
+            "missing comparable p continuation value for {axis_family}"
+        ));
+    }
+    if q_values.is_empty() {
+        missing.push(format!(
+            "missing comparable q continuation value for {axis_family}"
+        ));
+    }
+    missing
+}
+
+fn evaluate_axis_distance(evaluator_kind: &str, p_values: &[String], q_values: &[String]) -> i64 {
+    if evaluator_kind.contains("sequence-mismatch")
+        || evaluator_kind.contains("replay-order-mismatch")
+        || evaluator_kind.contains("transition-value-mismatch")
+        || evaluator_kind.contains("interaction-value-mismatch")
+    {
+        return ordered_value_mismatch_count(p_values, q_values) as i64;
+    }
+    symmetric_difference_size(p_values, q_values) as i64
+}
+
+fn ordered_value_mismatch_count(left: &[String], right: &[String]) -> usize {
+    let max_len = left.len().max(right.len());
+    (0..max_len)
+        .filter(|index| left.get(*index) != right.get(*index))
+        .count()
 }
 
 fn build_ami_aggregate_readings(
@@ -13999,6 +14119,11 @@ fn check_operation_square_trace_surface(packet: &ArchSigAnalysisPacketV0) -> Val
             );
             push_blank(
                 &mut examples,
+                &format!("{} distanceEvaluatorKind", trace.trace_id),
+                &axis.distance_evaluator_kind,
+            );
+            push_blank(
+                &mut examples,
                 &format!("{} continuationSummary", trace.trace_id),
                 &axis.continuation_summary,
             );
@@ -14009,6 +14134,13 @@ fn check_operation_square_trace_surface(packet: &ArchSigAnalysisPacketV0) -> Val
                     &trace.trace_id,
                     &axis.axis_family,
                     "measured continuation axes must carry continuation states and distance input refs",
+                ));
+            }
+            if axis.trace_status != "unmeasured" && axis.comparable_continuation_values.is_empty() {
+                examples.push(generic_validation_example(
+                    &trace.trace_id,
+                    &axis.axis_family,
+                    "measured continuation axes must carry comparable continuation values for d_x(Cont_x(p), Cont_x(q))",
                 ));
             }
             if axis.trace_status == "unmeasured" && axis.missing_refs.is_empty() {

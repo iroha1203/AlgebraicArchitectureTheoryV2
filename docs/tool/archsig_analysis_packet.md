@@ -388,11 +388,16 @@ The builder:
   evidence instead of synthesizing a `:continuation` operation.
 - `pathContinuationTraces` records the selected continuation trace for each
   candidate path and axis family: static, contract, semantic, state, effect,
-  authority, runtime, and projection. Unmeasured axes are retained as
-  `missingRefs` and must not be read as zero defect.
+  authority, runtime, and projection. Each axis trace carries a
+  `distanceEvaluatorKind`, source-backed `distanceInputRefs`, and
+  `comparableContinuationValues` used as the bounded input to
+  `d_x(Cont_x(p), Cont_x(q))`. Unmeasured axes are retained as `missingRefs`
+  and must not be read as zero defect.
 - `axisWiseMonodromyDefects` records `mu_x(sigma)` for each selected operation
-  square and axis. Each defect carries distance kind, measured support,
-  witness refs, source / observation / missing refs, coverage boundary,
+  square and axis. Each defect dispatches on the LawPolicy distance kind plus
+  axis family, then compares the p/q comparable continuation values rather than
+  using observation-ref symmetric difference alone. Defects carry measured
+  support, witness refs, source / observation / missing refs, coverage boundary,
   exactness assumption status, zero-reflection assumptions, and cancellation
   boundary.
 - `amiAggregateReadings` records `AMI_X(A)` as a bounded weighted aggregate for

@@ -5230,17 +5230,26 @@
           "axisFamily": "static",
           "axisRef": "static dependency / support axis",
           "traceStatus": "boundedObservationTrace",
+          "distanceEvaluatorKind": "weighted-axis-l1:static-support-value-mismatch",
           "continuationSummary": "static continuation reads 3 observation ref(s) across 1 operation delta(s)",
           "continuationStates": [
-            "Cont_static[0]=operation:discount; refs=3",
-            "Cont_static[1]=operation:tax; refs=3",
-            "Cont_static[2]=operation:round; refs=3",
-            "Cont_static[endpoint]=p; endpointRefs=2"
+            "Cont_static[0]=operation:discount; comparableValues=2",
+            "Cont_static[1]=operation:tax; comparableValues=2",
+            "Cont_static[2]=operation:round; comparableValues=2",
+            "Cont_static[endpoint]=p; endpointRefs=2; evaluator=weighted-axis-l1:static-support-value-mismatch"
+          ],
+          "comparableContinuationValues": [
+            "static:endpoints:PaymentAmount|ReceiptAmount",
+            "static:support:atom-contract-paymentamount-receiptamount-coupon-tax-rounding|atom-semantic-paymentamount-receiptamount-coupon-tax-rounding-noncommutation|atom-effect-receipt-boundary"
           ],
           "distanceInputRefs": [
+            "PaymentAmount",
+            "ReceiptAmount",
             "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding",
+            "atom:effect:receipt-boundary",
             "atom:semantic:PaymentAmount-ReceiptAmount-coupon-tax-rounding-noncommutation",
-            "atom:effect:receipt-boundary"
+            "src-pricing-checkout",
+            "test-coupon-rounding"
           ],
           "observationRefs": [
             "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding",
@@ -5258,15 +5267,23 @@
           "axisFamily": "contract",
           "axisRef": "contract axis",
           "traceStatus": "boundedObservationTrace",
+          "distanceEvaluatorKind": "weighted-axis-l1:contract-obligation-value-mismatch",
           "continuationSummary": "contract continuation reads 1 observation ref(s) across 1 operation delta(s)",
           "continuationStates": [
-            "Cont_contract[0]=operation:discount; refs=1",
-            "Cont_contract[1]=operation:tax; refs=1",
-            "Cont_contract[2]=operation:round; refs=1",
-            "Cont_contract[endpoint]=p; endpointRefs=2"
+            "Cont_contract[0]=operation:discount; comparableValues=2",
+            "Cont_contract[1]=operation:tax; comparableValues=2",
+            "Cont_contract[2]=operation:round; comparableValues=2",
+            "Cont_contract[endpoint]=p; endpointRefs=2; evaluator=weighted-axis-l1:contract-obligation-value-mismatch"
+          ],
+          "comparableContinuationValues": [
+            "contract:endpoints:PaymentAmount|ReceiptAmount",
+            "contract:support:atom-contract-paymentamount-receiptamount-coupon-tax-rounding"
           ],
           "distanceInputRefs": [
-            "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding"
+            "PaymentAmount",
+            "ReceiptAmount",
+            "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding",
+            "test-coupon-rounding"
           ],
           "observationRefs": [
             "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding"
@@ -5281,20 +5298,26 @@
           "axisFamily": "semantic",
           "axisRef": "semantic axis",
           "traceStatus": "boundedObservationTrace",
-          "continuationSummary": "semantic continuation reads 2 observation ref(s) across 1 operation delta(s)",
+          "distanceEvaluatorKind": "weighted-axis-l1:semantic-sequence-mismatch",
+          "continuationSummary": "semantic continuation reads 1 observation ref(s) across 1 operation delta(s)",
           "continuationStates": [
-            "Cont_semantic[0]=operation:discount; refs=2",
-            "Cont_semantic[1]=operation:tax; refs=2",
-            "Cont_semantic[2]=operation:round; refs=2",
-            "Cont_semantic[endpoint]=p; endpointRefs=2"
+            "Cont_semantic[0]=operation:discount; comparableValues=2",
+            "Cont_semantic[1]=operation:tax; comparableValues=2",
+            "Cont_semantic[2]=operation:round; comparableValues=2",
+            "Cont_semantic[endpoint]=p; endpointRefs=2; evaluator=weighted-axis-l1:semantic-sequence-mismatch"
+          ],
+          "comparableContinuationValues": [
+            "semantic:path:p:operation:discount -> operation:tax -> operation:round",
+            "semantic:endpoints:PaymentAmount|ReceiptAmount"
           ],
           "distanceInputRefs": [
+            "PaymentAmount",
+            "ReceiptAmount",
             "semantic:coupon-tax-rounding-paths",
-            "derived-semantic-order:p=round(tax(discount(subtotal)))"
+            "test-coupon-rounding"
           ],
           "observationRefs": [
-            "semantic:coupon-tax-rounding-paths",
-            "derived-semantic-order:p=round(tax(discount(subtotal)))"
+            "semantic:coupon-tax-rounding-paths"
           ],
           "sourceRefs": [
             "test-coupon-rounding"
@@ -5306,14 +5329,19 @@
           "axisFamily": "state",
           "axisRef": "state transition axis",
           "traceStatus": "unmeasured",
+          "distanceEvaluatorKind": "weighted-axis-l1:state-transition-value-mismatch",
           "continuationSummary": "state continuation is unmeasured under current ArchMap evidence",
           "continuationStates": [
-            "Cont_state[0]=operation:discount; refs=0",
-            "Cont_state[1]=operation:tax; refs=0",
-            "Cont_state[2]=operation:round; refs=0",
-            "Cont_state[endpoint]=p; endpointRefs=2"
+            "Cont_state[0]=operation:discount; comparableValues=0",
+            "Cont_state[1]=operation:tax; comparableValues=0",
+            "Cont_state[2]=operation:round; comparableValues=0",
+            "Cont_state[endpoint]=p; endpointRefs=2; evaluator=weighted-axis-l1:state-transition-value-mismatch"
           ],
-          "distanceInputRefs": [],
+          "comparableContinuationValues": [],
+          "distanceInputRefs": [
+            "PaymentAmount",
+            "ReceiptAmount"
+          ],
           "observationRefs": [],
           "sourceRefs": [],
           "missingRefs": [
@@ -5325,20 +5353,26 @@
           "axisFamily": "effect",
           "axisRef": "effect ordering / replay / compensation axis",
           "traceStatus": "boundedObservationTrace",
-          "continuationSummary": "effect continuation reads 2 observation ref(s) across 1 operation delta(s)",
+          "distanceEvaluatorKind": "weighted-axis-l1:effect-replay-order-mismatch",
+          "continuationSummary": "effect continuation reads 1 observation ref(s) across 1 operation delta(s)",
           "continuationStates": [
-            "Cont_effect[0]=operation:discount; refs=2",
-            "Cont_effect[1]=operation:tax; refs=2",
-            "Cont_effect[2]=operation:round; refs=2",
-            "Cont_effect[endpoint]=p; endpointRefs=2"
+            "Cont_effect[0]=operation:discount; comparableValues=2",
+            "Cont_effect[1]=operation:tax; comparableValues=2",
+            "Cont_effect[2]=operation:round; comparableValues=2",
+            "Cont_effect[endpoint]=p; endpointRefs=2; evaluator=weighted-axis-l1:effect-replay-order-mismatch"
+          ],
+          "comparableContinuationValues": [
+            "effect:path:p:operation:discount -> operation:tax -> operation:round",
+            "effect:endpoints:PaymentAmount|ReceiptAmount"
           ],
           "distanceInputRefs": [
+            "PaymentAmount",
+            "ReceiptAmount",
             "atom:effect:receipt-boundary",
-            "derived-effect-order:p:operation-round-operation-tax-operation-discount"
+            "src-pricing-checkout"
           ],
           "observationRefs": [
-            "atom:effect:receipt-boundary",
-            "derived-effect-order:p:operation-round-operation-tax-operation-discount"
+            "atom:effect:receipt-boundary"
           ],
           "sourceRefs": [
             "src-pricing-checkout"
@@ -5350,14 +5384,19 @@
           "axisFamily": "authority",
           "axisRef": "authority / trust boundary axis",
           "traceStatus": "unmeasured",
+          "distanceEvaluatorKind": "weighted-axis-l1:authority-boundary-value-mismatch",
           "continuationSummary": "authority continuation is unmeasured under current ArchMap evidence",
           "continuationStates": [
-            "Cont_authority[0]=operation:discount; refs=0",
-            "Cont_authority[1]=operation:tax; refs=0",
-            "Cont_authority[2]=operation:round; refs=0",
-            "Cont_authority[endpoint]=p; endpointRefs=2"
+            "Cont_authority[0]=operation:discount; comparableValues=0",
+            "Cont_authority[1]=operation:tax; comparableValues=0",
+            "Cont_authority[2]=operation:round; comparableValues=0",
+            "Cont_authority[endpoint]=p; endpointRefs=2; evaluator=weighted-axis-l1:authority-boundary-value-mismatch"
           ],
-          "distanceInputRefs": [],
+          "comparableContinuationValues": [],
+          "distanceInputRefs": [
+            "PaymentAmount",
+            "ReceiptAmount"
+          ],
           "observationRefs": [],
           "sourceRefs": [],
           "missingRefs": [
@@ -5369,14 +5408,19 @@
           "axisFamily": "runtime",
           "axisRef": "runtime interaction axis",
           "traceStatus": "unmeasured",
+          "distanceEvaluatorKind": "weighted-axis-l1:runtime-interaction-value-mismatch",
           "continuationSummary": "runtime continuation is unmeasured under current ArchMap evidence",
           "continuationStates": [
-            "Cont_runtime[0]=operation:discount; refs=0",
-            "Cont_runtime[1]=operation:tax; refs=0",
-            "Cont_runtime[2]=operation:round; refs=0",
-            "Cont_runtime[endpoint]=p; endpointRefs=2"
+            "Cont_runtime[0]=operation:discount; comparableValues=0",
+            "Cont_runtime[1]=operation:tax; comparableValues=0",
+            "Cont_runtime[2]=operation:round; comparableValues=0",
+            "Cont_runtime[endpoint]=p; endpointRefs=2; evaluator=weighted-axis-l1:runtime-interaction-value-mismatch"
           ],
-          "distanceInputRefs": [],
+          "comparableContinuationValues": [],
+          "distanceInputRefs": [
+            "PaymentAmount",
+            "ReceiptAmount"
+          ],
           "observationRefs": [],
           "sourceRefs": [],
           "missingRefs": [
@@ -5388,15 +5432,23 @@
           "axisFamily": "projection",
           "axisRef": "projection / representation axis",
           "traceStatus": "boundedObservationTrace",
+          "distanceEvaluatorKind": "weighted-axis-l1:projection-target-value-mismatch",
           "continuationSummary": "projection continuation reads 1 observation ref(s) across 1 operation delta(s)",
           "continuationStates": [
-            "Cont_projection[0]=operation:discount; refs=1",
-            "Cont_projection[1]=operation:tax; refs=1",
-            "Cont_projection[2]=operation:round; refs=1",
-            "Cont_projection[endpoint]=p; endpointRefs=2"
+            "Cont_projection[0]=operation:discount; comparableValues=2",
+            "Cont_projection[1]=operation:tax; comparableValues=2",
+            "Cont_projection[2]=operation:round; comparableValues=2",
+            "Cont_projection[endpoint]=p; endpointRefs=2; evaluator=weighted-axis-l1:projection-target-value-mismatch"
+          ],
+          "comparableContinuationValues": [
+            "projection:endpoints:PaymentAmount|ReceiptAmount",
+            "projection:support:projection-coupon-payment-receipt"
           ],
           "distanceInputRefs": [
-            "projection:coupon-payment-receipt"
+            "PaymentAmount",
+            "ReceiptAmount",
+            "projection:coupon-payment-receipt",
+            "semantic:coupon-tax-rounding-paths"
           ],
           "observationRefs": [
             "projection:coupon-payment-receipt"
@@ -5458,17 +5510,26 @@
           "axisFamily": "static",
           "axisRef": "static dependency / support axis",
           "traceStatus": "boundedObservationTrace",
+          "distanceEvaluatorKind": "weighted-axis-l1:static-support-value-mismatch",
           "continuationSummary": "static continuation reads 3 observation ref(s) across 1 operation delta(s)",
           "continuationStates": [
-            "Cont_static[0]=operation:tax; refs=3",
-            "Cont_static[1]=operation:discount; refs=3",
-            "Cont_static[2]=operation:round; refs=3",
-            "Cont_static[endpoint]=q; endpointRefs=2"
+            "Cont_static[0]=operation:tax; comparableValues=2",
+            "Cont_static[1]=operation:discount; comparableValues=2",
+            "Cont_static[2]=operation:round; comparableValues=2",
+            "Cont_static[endpoint]=q; endpointRefs=2; evaluator=weighted-axis-l1:static-support-value-mismatch"
+          ],
+          "comparableContinuationValues": [
+            "static:endpoints:PaymentAmount|ReceiptAmount",
+            "static:support:atom-contract-paymentamount-receiptamount-coupon-tax-rounding|atom-semantic-paymentamount-receiptamount-coupon-tax-rounding-noncommutation|atom-effect-receipt-boundary"
           ],
           "distanceInputRefs": [
+            "PaymentAmount",
+            "ReceiptAmount",
             "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding",
+            "atom:effect:receipt-boundary",
             "atom:semantic:PaymentAmount-ReceiptAmount-coupon-tax-rounding-noncommutation",
-            "atom:effect:receipt-boundary"
+            "src-pricing-checkout",
+            "test-coupon-rounding"
           ],
           "observationRefs": [
             "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding",
@@ -5486,15 +5547,23 @@
           "axisFamily": "contract",
           "axisRef": "contract axis",
           "traceStatus": "boundedObservationTrace",
+          "distanceEvaluatorKind": "weighted-axis-l1:contract-obligation-value-mismatch",
           "continuationSummary": "contract continuation reads 1 observation ref(s) across 1 operation delta(s)",
           "continuationStates": [
-            "Cont_contract[0]=operation:tax; refs=1",
-            "Cont_contract[1]=operation:discount; refs=1",
-            "Cont_contract[2]=operation:round; refs=1",
-            "Cont_contract[endpoint]=q; endpointRefs=2"
+            "Cont_contract[0]=operation:tax; comparableValues=2",
+            "Cont_contract[1]=operation:discount; comparableValues=2",
+            "Cont_contract[2]=operation:round; comparableValues=2",
+            "Cont_contract[endpoint]=q; endpointRefs=2; evaluator=weighted-axis-l1:contract-obligation-value-mismatch"
+          ],
+          "comparableContinuationValues": [
+            "contract:endpoints:PaymentAmount|ReceiptAmount",
+            "contract:support:atom-contract-paymentamount-receiptamount-coupon-tax-rounding"
           ],
           "distanceInputRefs": [
-            "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding"
+            "PaymentAmount",
+            "ReceiptAmount",
+            "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding",
+            "test-coupon-rounding"
           ],
           "observationRefs": [
             "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding"
@@ -5509,20 +5578,26 @@
           "axisFamily": "semantic",
           "axisRef": "semantic axis",
           "traceStatus": "boundedObservationTrace",
-          "continuationSummary": "semantic continuation reads 2 observation ref(s) across 1 operation delta(s)",
+          "distanceEvaluatorKind": "weighted-axis-l1:semantic-sequence-mismatch",
+          "continuationSummary": "semantic continuation reads 1 observation ref(s) across 1 operation delta(s)",
           "continuationStates": [
-            "Cont_semantic[0]=operation:tax; refs=2",
-            "Cont_semantic[1]=operation:discount; refs=2",
-            "Cont_semantic[2]=operation:round; refs=2",
-            "Cont_semantic[endpoint]=q; endpointRefs=2"
+            "Cont_semantic[0]=operation:tax; comparableValues=2",
+            "Cont_semantic[1]=operation:discount; comparableValues=2",
+            "Cont_semantic[2]=operation:round; comparableValues=2",
+            "Cont_semantic[endpoint]=q; endpointRefs=2; evaluator=weighted-axis-l1:semantic-sequence-mismatch"
+          ],
+          "comparableContinuationValues": [
+            "semantic:path:q:operation:tax -> operation:discount -> operation:round",
+            "semantic:endpoints:PaymentAmount|ReceiptAmount"
           ],
           "distanceInputRefs": [
+            "PaymentAmount",
+            "ReceiptAmount",
             "semantic:coupon-tax-rounding-paths",
-            "derived-semantic-order:q=round(discount(tax(subtotal)))"
+            "test-coupon-rounding"
           ],
           "observationRefs": [
-            "semantic:coupon-tax-rounding-paths",
-            "derived-semantic-order:q=round(discount(tax(subtotal)))"
+            "semantic:coupon-tax-rounding-paths"
           ],
           "sourceRefs": [
             "test-coupon-rounding"
@@ -5534,14 +5609,19 @@
           "axisFamily": "state",
           "axisRef": "state transition axis",
           "traceStatus": "unmeasured",
+          "distanceEvaluatorKind": "weighted-axis-l1:state-transition-value-mismatch",
           "continuationSummary": "state continuation is unmeasured under current ArchMap evidence",
           "continuationStates": [
-            "Cont_state[0]=operation:tax; refs=0",
-            "Cont_state[1]=operation:discount; refs=0",
-            "Cont_state[2]=operation:round; refs=0",
-            "Cont_state[endpoint]=q; endpointRefs=2"
+            "Cont_state[0]=operation:tax; comparableValues=0",
+            "Cont_state[1]=operation:discount; comparableValues=0",
+            "Cont_state[2]=operation:round; comparableValues=0",
+            "Cont_state[endpoint]=q; endpointRefs=2; evaluator=weighted-axis-l1:state-transition-value-mismatch"
           ],
-          "distanceInputRefs": [],
+          "comparableContinuationValues": [],
+          "distanceInputRefs": [
+            "PaymentAmount",
+            "ReceiptAmount"
+          ],
           "observationRefs": [],
           "sourceRefs": [],
           "missingRefs": [
@@ -5553,20 +5633,26 @@
           "axisFamily": "effect",
           "axisRef": "effect ordering / replay / compensation axis",
           "traceStatus": "boundedObservationTrace",
-          "continuationSummary": "effect continuation reads 2 observation ref(s) across 1 operation delta(s)",
+          "distanceEvaluatorKind": "weighted-axis-l1:effect-replay-order-mismatch",
+          "continuationSummary": "effect continuation reads 1 observation ref(s) across 1 operation delta(s)",
           "continuationStates": [
-            "Cont_effect[0]=operation:tax; refs=2",
-            "Cont_effect[1]=operation:discount; refs=2",
-            "Cont_effect[2]=operation:round; refs=2",
-            "Cont_effect[endpoint]=q; endpointRefs=2"
+            "Cont_effect[0]=operation:tax; comparableValues=2",
+            "Cont_effect[1]=operation:discount; comparableValues=2",
+            "Cont_effect[2]=operation:round; comparableValues=2",
+            "Cont_effect[endpoint]=q; endpointRefs=2; evaluator=weighted-axis-l1:effect-replay-order-mismatch"
+          ],
+          "comparableContinuationValues": [
+            "effect:path:q:operation:tax -> operation:discount -> operation:round",
+            "effect:endpoints:PaymentAmount|ReceiptAmount"
           ],
           "distanceInputRefs": [
+            "PaymentAmount",
+            "ReceiptAmount",
             "atom:effect:receipt-boundary",
-            "derived-effect-order:q:operation-round-operation-discount-operation-tax"
+            "src-pricing-checkout"
           ],
           "observationRefs": [
-            "atom:effect:receipt-boundary",
-            "derived-effect-order:q:operation-round-operation-discount-operation-tax"
+            "atom:effect:receipt-boundary"
           ],
           "sourceRefs": [
             "src-pricing-checkout"
@@ -5578,14 +5664,19 @@
           "axisFamily": "authority",
           "axisRef": "authority / trust boundary axis",
           "traceStatus": "unmeasured",
+          "distanceEvaluatorKind": "weighted-axis-l1:authority-boundary-value-mismatch",
           "continuationSummary": "authority continuation is unmeasured under current ArchMap evidence",
           "continuationStates": [
-            "Cont_authority[0]=operation:tax; refs=0",
-            "Cont_authority[1]=operation:discount; refs=0",
-            "Cont_authority[2]=operation:round; refs=0",
-            "Cont_authority[endpoint]=q; endpointRefs=2"
+            "Cont_authority[0]=operation:tax; comparableValues=0",
+            "Cont_authority[1]=operation:discount; comparableValues=0",
+            "Cont_authority[2]=operation:round; comparableValues=0",
+            "Cont_authority[endpoint]=q; endpointRefs=2; evaluator=weighted-axis-l1:authority-boundary-value-mismatch"
           ],
-          "distanceInputRefs": [],
+          "comparableContinuationValues": [],
+          "distanceInputRefs": [
+            "PaymentAmount",
+            "ReceiptAmount"
+          ],
           "observationRefs": [],
           "sourceRefs": [],
           "missingRefs": [
@@ -5597,14 +5688,19 @@
           "axisFamily": "runtime",
           "axisRef": "runtime interaction axis",
           "traceStatus": "unmeasured",
+          "distanceEvaluatorKind": "weighted-axis-l1:runtime-interaction-value-mismatch",
           "continuationSummary": "runtime continuation is unmeasured under current ArchMap evidence",
           "continuationStates": [
-            "Cont_runtime[0]=operation:tax; refs=0",
-            "Cont_runtime[1]=operation:discount; refs=0",
-            "Cont_runtime[2]=operation:round; refs=0",
-            "Cont_runtime[endpoint]=q; endpointRefs=2"
+            "Cont_runtime[0]=operation:tax; comparableValues=0",
+            "Cont_runtime[1]=operation:discount; comparableValues=0",
+            "Cont_runtime[2]=operation:round; comparableValues=0",
+            "Cont_runtime[endpoint]=q; endpointRefs=2; evaluator=weighted-axis-l1:runtime-interaction-value-mismatch"
           ],
-          "distanceInputRefs": [],
+          "comparableContinuationValues": [],
+          "distanceInputRefs": [
+            "PaymentAmount",
+            "ReceiptAmount"
+          ],
           "observationRefs": [],
           "sourceRefs": [],
           "missingRefs": [
@@ -5616,15 +5712,23 @@
           "axisFamily": "projection",
           "axisRef": "projection / representation axis",
           "traceStatus": "boundedObservationTrace",
+          "distanceEvaluatorKind": "weighted-axis-l1:projection-target-value-mismatch",
           "continuationSummary": "projection continuation reads 1 observation ref(s) across 1 operation delta(s)",
           "continuationStates": [
-            "Cont_projection[0]=operation:tax; refs=1",
-            "Cont_projection[1]=operation:discount; refs=1",
-            "Cont_projection[2]=operation:round; refs=1",
-            "Cont_projection[endpoint]=q; endpointRefs=2"
+            "Cont_projection[0]=operation:tax; comparableValues=2",
+            "Cont_projection[1]=operation:discount; comparableValues=2",
+            "Cont_projection[2]=operation:round; comparableValues=2",
+            "Cont_projection[endpoint]=q; endpointRefs=2; evaluator=weighted-axis-l1:projection-target-value-mismatch"
+          ],
+          "comparableContinuationValues": [
+            "projection:endpoints:PaymentAmount|ReceiptAmount",
+            "projection:support:projection-coupon-payment-receipt"
           ],
           "distanceInputRefs": [
-            "projection:coupon-payment-receipt"
+            "PaymentAmount",
+            "ReceiptAmount",
+            "projection:coupon-payment-receipt",
+            "semantic:coupon-tax-rounding-paths"
           ],
           "observationRefs": [
             "projection:coupon-payment-receipt"
@@ -5667,17 +5771,22 @@
       "candidateRef": "operation-square:operation-square-evidence-coupon-tax-rounding",
       "axisFamily": "authority",
       "axisRef": "authority / trust boundary axis",
-      "distanceKind": "weighted-axis-l1",
+      "distanceKind": "weighted-axis-l1:authority-boundary-value-mismatch",
       "pContinuationRef": "Cont_authority(p):authority / trust boundary axis",
       "qContinuationRef": "Cont_authority(q):authority / trust boundary axis",
-      "distanceInputRefs": [],
-      "positiveWitnessBoundary": "mu_x > 0 is read only as selected continuation observation difference with source-backed p/q trace inputs",
+      "distanceInputRefs": [
+        "PaymentAmount",
+        "ReceiptAmount"
+      ],
+      "positiveWitnessBoundary": "mu_x > 0 is read by an axis-specific distance evaluator over comparable continuation values with source-backed p/q trace inputs",
       "weight": 0,
       "measurementStatus": "unmeasured",
       "distanceValue": null,
       "measuredSupportRefs": [],
       "witnessRefs": [
-        "missing-evidence:missing authority observation for operation-square:operation-square-evidence-coupon-tax-rounding"
+        "missing-evidence:missing authority observation for operation-square:operation-square-evidence-coupon-tax-rounding",
+        "missing-evidence:missing comparable p continuation value for authority",
+        "missing-evidence:missing comparable q continuation value for authority"
       ],
       "sourceRefs": [
         "src-pricing-checkout",
@@ -5685,9 +5794,11 @@
       ],
       "observationRefs": [],
       "missingRefs": [
-        "missing authority observation for operation-square:operation-square-evidence-coupon-tax-rounding"
+        "missing authority observation for operation-square:operation-square-evidence-coupon-tax-rounding",
+        "missing comparable p continuation value for authority",
+        "missing comparable q continuation value for authority"
       ],
-      "coverageBoundary": "coverage gap preserved; unmeasured axis is not zero defect",
+      "coverageBoundary": "coverage gap or missing comparable continuation input preserved; unmeasured axis is not zero defect",
       "exactnessAssumptionStatus": [
         "selected LawPolicy exactness assumptions",
         "ArchMapStore compaction boundary"
@@ -5700,7 +5811,7 @@
         "zero aggregate is not global path flatness"
       ],
       "cancellationBoundary": "axis-wise defect avoids aggregate cancellation; AMI zero can reflect local zero only under recorded zero-reflection assumptions",
-      "evidenceBoundary": "mu_x(sigma) is a bounded distance between selected continuation traces, not a theorem about path equality",
+      "evidenceBoundary": "mu_x(sigma) is a bounded axis-distance evaluation between selected continuation values, not a theorem about path equality",
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -5716,13 +5827,16 @@
       "candidateRef": "operation-square:operation-square-evidence-coupon-tax-rounding",
       "axisFamily": "contract",
       "axisRef": "contract axis",
-      "distanceKind": "weighted-axis-l1",
+      "distanceKind": "weighted-axis-l1:contract-obligation-value-mismatch",
       "pContinuationRef": "Cont_contract(p):contract axis",
       "qContinuationRef": "Cont_contract(q):contract axis",
       "distanceInputRefs": [
-        "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding"
+        "PaymentAmount",
+        "ReceiptAmount",
+        "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding",
+        "test-coupon-rounding"
       ],
-      "positiveWitnessBoundary": "mu_x > 0 is read only as selected continuation observation difference with source-backed p/q trace inputs",
+      "positiveWitnessBoundary": "mu_x > 0 is read by an axis-specific distance evaluator over comparable continuation values with source-backed p/q trace inputs",
       "weight": 1,
       "measurementStatus": "measured",
       "distanceValue": 0,
@@ -5730,7 +5844,11 @@
         "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding"
       ],
       "witnessRefs": [
-        "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding"
+        "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding",
+        "p-value:contract-endpoints-paymentamount-receiptamount",
+        "p-value:contract-support-atom-contract-paymentamount-receiptamount-coupon-tax-rounding",
+        "q-value:contract-endpoints-paymentamount-receiptamount",
+        "q-value:contract-support-atom-contract-paymentamount-receiptamount-coupon-tax-rounding"
       ],
       "sourceRefs": [
         "src-pricing-checkout",
@@ -5740,7 +5858,7 @@
         "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding"
       ],
       "missingRefs": [],
-      "coverageBoundary": "covered for selected trace refs; not complete execution semantics",
+      "coverageBoundary": "covered for selected comparable continuation values; not complete execution semantics",
       "exactnessAssumptionStatus": [
         "selected LawPolicy exactness assumptions",
         "ArchMapStore compaction boundary"
@@ -5753,7 +5871,7 @@
         "zero aggregate is not global path flatness"
       ],
       "cancellationBoundary": "axis-wise defect avoids aggregate cancellation; AMI zero can reflect local zero only under recorded zero-reflection assumptions",
-      "evidenceBoundary": "mu_x(sigma) is a bounded distance between selected continuation traces, not a theorem about path equality",
+      "evidenceBoundary": "mu_x(sigma) is a bounded axis-distance evaluation between selected continuation values, not a theorem about path equality",
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -5769,39 +5887,38 @@
       "candidateRef": "operation-square:operation-square-evidence-coupon-tax-rounding",
       "axisFamily": "effect",
       "axisRef": "effect ordering / replay / compensation axis",
-      "distanceKind": "weighted-axis-l1",
+      "distanceKind": "weighted-axis-l1:effect-replay-order-mismatch",
       "pContinuationRef": "Cont_effect(p):effect ordering / replay / compensation axis",
       "qContinuationRef": "Cont_effect(q):effect ordering / replay / compensation axis",
       "distanceInputRefs": [
+        "PaymentAmount",
+        "ReceiptAmount",
         "atom:effect:receipt-boundary",
-        "derived-effect-order:p:operation-round-operation-tax-operation-discount",
-        "derived-effect-order:q:operation-round-operation-discount-operation-tax"
+        "src-pricing-checkout"
       ],
-      "positiveWitnessBoundary": "mu_x > 0 is read only as selected continuation observation difference with source-backed p/q trace inputs",
+      "positiveWitnessBoundary": "mu_x > 0 is read by an axis-specific distance evaluator over comparable continuation values with source-backed p/q trace inputs",
       "weight": 1,
       "measurementStatus": "measured",
-      "distanceValue": 2,
+      "distanceValue": 1,
       "measuredSupportRefs": [
-        "atom:effect:receipt-boundary",
-        "derived-effect-order:p:operation-round-operation-tax-operation-discount",
-        "derived-effect-order:q:operation-round-operation-discount-operation-tax"
+        "atom:effect:receipt-boundary"
       ],
       "witnessRefs": [
         "atom:effect:receipt-boundary",
-        "derived-effect-order:p:operation-round-operation-tax-operation-discount",
-        "derived-effect-order:q:operation-round-operation-discount-operation-tax"
+        "p-value:effect-endpoints-paymentamount-receiptamount",
+        "p-value:effect-path-p-operation-discount-operation-tax-operation-round",
+        "q-value:effect-endpoints-paymentamount-receiptamount",
+        "q-value:effect-path-q-operation-tax-operation-discount-operation-round"
       ],
       "sourceRefs": [
         "src-pricing-checkout",
         "test-coupon-rounding"
       ],
       "observationRefs": [
-        "atom:effect:receipt-boundary",
-        "derived-effect-order:p:operation-round-operation-tax-operation-discount",
-        "derived-effect-order:q:operation-round-operation-discount-operation-tax"
+        "atom:effect:receipt-boundary"
       ],
       "missingRefs": [],
-      "coverageBoundary": "covered for selected trace refs; not complete execution semantics",
+      "coverageBoundary": "covered for selected comparable continuation values; not complete execution semantics",
       "exactnessAssumptionStatus": [
         "selected LawPolicy exactness assumptions",
         "ArchMapStore compaction boundary"
@@ -5814,7 +5931,7 @@
         "zero aggregate is not global path flatness"
       ],
       "cancellationBoundary": "axis-wise defect avoids aggregate cancellation; AMI zero can reflect local zero only under recorded zero-reflection assumptions",
-      "evidenceBoundary": "mu_x(sigma) is a bounded distance between selected continuation traces, not a theorem about path equality",
+      "evidenceBoundary": "mu_x(sigma) is a bounded axis-distance evaluation between selected continuation values, not a theorem about path equality",
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -5830,13 +5947,16 @@
       "candidateRef": "operation-square:operation-square-evidence-coupon-tax-rounding",
       "axisFamily": "projection",
       "axisRef": "projection / representation axis",
-      "distanceKind": "weighted-axis-l1",
+      "distanceKind": "weighted-axis-l1:projection-target-value-mismatch",
       "pContinuationRef": "Cont_projection(p):projection / representation axis",
       "qContinuationRef": "Cont_projection(q):projection / representation axis",
       "distanceInputRefs": [
-        "projection:coupon-payment-receipt"
+        "PaymentAmount",
+        "ReceiptAmount",
+        "projection:coupon-payment-receipt",
+        "semantic:coupon-tax-rounding-paths"
       ],
-      "positiveWitnessBoundary": "mu_x > 0 is read only as selected continuation observation difference with source-backed p/q trace inputs",
+      "positiveWitnessBoundary": "mu_x > 0 is read by an axis-specific distance evaluator over comparable continuation values with source-backed p/q trace inputs",
       "weight": 1,
       "measurementStatus": "measured",
       "distanceValue": 0,
@@ -5844,7 +5964,11 @@
         "projection:coupon-payment-receipt"
       ],
       "witnessRefs": [
-        "projection:coupon-payment-receipt"
+        "p-value:projection-endpoints-paymentamount-receiptamount",
+        "p-value:projection-support-projection-coupon-payment-receipt",
+        "projection:coupon-payment-receipt",
+        "q-value:projection-endpoints-paymentamount-receiptamount",
+        "q-value:projection-support-projection-coupon-payment-receipt"
       ],
       "sourceRefs": [
         "src-pricing-checkout",
@@ -5854,7 +5978,7 @@
         "projection:coupon-payment-receipt"
       ],
       "missingRefs": [],
-      "coverageBoundary": "covered for selected trace refs; not complete execution semantics",
+      "coverageBoundary": "covered for selected comparable continuation values; not complete execution semantics",
       "exactnessAssumptionStatus": [
         "selected LawPolicy exactness assumptions",
         "ArchMapStore compaction boundary"
@@ -5867,7 +5991,7 @@
         "zero aggregate is not global path flatness"
       ],
       "cancellationBoundary": "axis-wise defect avoids aggregate cancellation; AMI zero can reflect local zero only under recorded zero-reflection assumptions",
-      "evidenceBoundary": "mu_x(sigma) is a bounded distance between selected continuation traces, not a theorem about path equality",
+      "evidenceBoundary": "mu_x(sigma) is a bounded axis-distance evaluation between selected continuation values, not a theorem about path equality",
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -5883,16 +6007,21 @@
       "candidateRef": "operation-square:operation-square-evidence-coupon-tax-rounding",
       "axisFamily": "runtime",
       "axisRef": "runtime interaction axis",
-      "distanceKind": "weighted-axis-l1",
+      "distanceKind": "weighted-axis-l1:runtime-interaction-value-mismatch",
       "pContinuationRef": "Cont_runtime(p):runtime interaction axis",
       "qContinuationRef": "Cont_runtime(q):runtime interaction axis",
-      "distanceInputRefs": [],
-      "positiveWitnessBoundary": "mu_x > 0 is read only as selected continuation observation difference with source-backed p/q trace inputs",
+      "distanceInputRefs": [
+        "PaymentAmount",
+        "ReceiptAmount"
+      ],
+      "positiveWitnessBoundary": "mu_x > 0 is read by an axis-specific distance evaluator over comparable continuation values with source-backed p/q trace inputs",
       "weight": 0,
       "measurementStatus": "unmeasured",
       "distanceValue": null,
       "measuredSupportRefs": [],
       "witnessRefs": [
+        "missing-evidence:missing comparable p continuation value for runtime",
+        "missing-evidence:missing comparable q continuation value for runtime",
         "missing-evidence:missing runtime observation for operation-square:operation-square-evidence-coupon-tax-rounding"
       ],
       "sourceRefs": [
@@ -5901,9 +6030,11 @@
       ],
       "observationRefs": [],
       "missingRefs": [
+        "missing comparable p continuation value for runtime",
+        "missing comparable q continuation value for runtime",
         "missing runtime observation for operation-square:operation-square-evidence-coupon-tax-rounding"
       ],
-      "coverageBoundary": "coverage gap preserved; unmeasured axis is not zero defect",
+      "coverageBoundary": "coverage gap or missing comparable continuation input preserved; unmeasured axis is not zero defect",
       "exactnessAssumptionStatus": [
         "selected LawPolicy exactness assumptions",
         "ArchMapStore compaction boundary"
@@ -5916,7 +6047,7 @@
         "zero aggregate is not global path flatness"
       ],
       "cancellationBoundary": "axis-wise defect avoids aggregate cancellation; AMI zero can reflect local zero only under recorded zero-reflection assumptions",
-      "evidenceBoundary": "mu_x(sigma) is a bounded distance between selected continuation traces, not a theorem about path equality",
+      "evidenceBoundary": "mu_x(sigma) is a bounded axis-distance evaluation between selected continuation values, not a theorem about path equality",
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -5932,26 +6063,27 @@
       "candidateRef": "operation-square:operation-square-evidence-coupon-tax-rounding",
       "axisFamily": "semantic",
       "axisRef": "semantic axis",
-      "distanceKind": "weighted-axis-l1",
+      "distanceKind": "weighted-axis-l1:semantic-sequence-mismatch",
       "pContinuationRef": "Cont_semantic(p):semantic axis",
       "qContinuationRef": "Cont_semantic(q):semantic axis",
       "distanceInputRefs": [
-        "derived-semantic-order:p=round(tax(discount(subtotal)))",
-        "derived-semantic-order:q=round(discount(tax(subtotal)))",
-        "semantic:coupon-tax-rounding-paths"
+        "PaymentAmount",
+        "ReceiptAmount",
+        "semantic:coupon-tax-rounding-paths",
+        "test-coupon-rounding"
       ],
-      "positiveWitnessBoundary": "mu_x > 0 is read only as selected continuation observation difference with source-backed p/q trace inputs",
+      "positiveWitnessBoundary": "mu_x > 0 is read by an axis-specific distance evaluator over comparable continuation values with source-backed p/q trace inputs",
       "weight": 1,
       "measurementStatus": "measured",
-      "distanceValue": 2,
+      "distanceValue": 1,
       "measuredSupportRefs": [
-        "derived-semantic-order:p=round(tax(discount(subtotal)))",
-        "derived-semantic-order:q=round(discount(tax(subtotal)))",
         "semantic:coupon-tax-rounding-paths"
       ],
       "witnessRefs": [
-        "derived-semantic-order:p=round(tax(discount(subtotal)))",
-        "derived-semantic-order:q=round(discount(tax(subtotal)))",
+        "p-value:semantic-endpoints-paymentamount-receiptamount",
+        "p-value:semantic-path-p-operation-discount-operation-tax-operation-round",
+        "q-value:semantic-endpoints-paymentamount-receiptamount",
+        "q-value:semantic-path-q-operation-tax-operation-discount-operation-round",
         "semantic:coupon-tax-rounding-paths"
       ],
       "sourceRefs": [
@@ -5959,12 +6091,10 @@
         "test-coupon-rounding"
       ],
       "observationRefs": [
-        "derived-semantic-order:p=round(tax(discount(subtotal)))",
-        "derived-semantic-order:q=round(discount(tax(subtotal)))",
         "semantic:coupon-tax-rounding-paths"
       ],
       "missingRefs": [],
-      "coverageBoundary": "covered for selected trace refs; not complete execution semantics",
+      "coverageBoundary": "covered for selected comparable continuation values; not complete execution semantics",
       "exactnessAssumptionStatus": [
         "selected LawPolicy exactness assumptions",
         "ArchMapStore compaction boundary"
@@ -5977,7 +6107,7 @@
         "zero aggregate is not global path flatness"
       ],
       "cancellationBoundary": "axis-wise defect avoids aggregate cancellation; AMI zero can reflect local zero only under recorded zero-reflection assumptions",
-      "evidenceBoundary": "mu_x(sigma) is a bounded distance between selected continuation traces, not a theorem about path equality",
+      "evidenceBoundary": "mu_x(sigma) is a bounded axis-distance evaluation between selected continuation values, not a theorem about path equality",
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -5993,16 +6123,21 @@
       "candidateRef": "operation-square:operation-square-evidence-coupon-tax-rounding",
       "axisFamily": "state",
       "axisRef": "state transition axis",
-      "distanceKind": "weighted-axis-l1",
+      "distanceKind": "weighted-axis-l1:state-transition-value-mismatch",
       "pContinuationRef": "Cont_state(p):state transition axis",
       "qContinuationRef": "Cont_state(q):state transition axis",
-      "distanceInputRefs": [],
-      "positiveWitnessBoundary": "mu_x > 0 is read only as selected continuation observation difference with source-backed p/q trace inputs",
+      "distanceInputRefs": [
+        "PaymentAmount",
+        "ReceiptAmount"
+      ],
+      "positiveWitnessBoundary": "mu_x > 0 is read by an axis-specific distance evaluator over comparable continuation values with source-backed p/q trace inputs",
       "weight": 0,
       "measurementStatus": "unmeasured",
       "distanceValue": null,
       "measuredSupportRefs": [],
       "witnessRefs": [
+        "missing-evidence:missing comparable p continuation value for state",
+        "missing-evidence:missing comparable q continuation value for state",
         "missing-evidence:missing state observation for operation-square:operation-square-evidence-coupon-tax-rounding"
       ],
       "sourceRefs": [
@@ -6011,9 +6146,11 @@
       ],
       "observationRefs": [],
       "missingRefs": [
+        "missing comparable p continuation value for state",
+        "missing comparable q continuation value for state",
         "missing state observation for operation-square:operation-square-evidence-coupon-tax-rounding"
       ],
-      "coverageBoundary": "coverage gap preserved; unmeasured axis is not zero defect",
+      "coverageBoundary": "coverage gap or missing comparable continuation input preserved; unmeasured axis is not zero defect",
       "exactnessAssumptionStatus": [
         "selected LawPolicy exactness assumptions",
         "ArchMapStore compaction boundary"
@@ -6026,7 +6163,7 @@
         "zero aggregate is not global path flatness"
       ],
       "cancellationBoundary": "axis-wise defect avoids aggregate cancellation; AMI zero can reflect local zero only under recorded zero-reflection assumptions",
-      "evidenceBoundary": "mu_x(sigma) is a bounded distance between selected continuation traces, not a theorem about path equality",
+      "evidenceBoundary": "mu_x(sigma) is a bounded axis-distance evaluation between selected continuation values, not a theorem about path equality",
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -6042,15 +6179,19 @@
       "candidateRef": "operation-square:operation-square-evidence-coupon-tax-rounding",
       "axisFamily": "static",
       "axisRef": "static dependency / support axis",
-      "distanceKind": "weighted-axis-l1",
+      "distanceKind": "weighted-axis-l1:static-support-value-mismatch",
       "pContinuationRef": "Cont_static(p):static dependency / support axis",
       "qContinuationRef": "Cont_static(q):static dependency / support axis",
       "distanceInputRefs": [
+        "PaymentAmount",
+        "ReceiptAmount",
         "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding",
         "atom:effect:receipt-boundary",
-        "atom:semantic:PaymentAmount-ReceiptAmount-coupon-tax-rounding-noncommutation"
+        "atom:semantic:PaymentAmount-ReceiptAmount-coupon-tax-rounding-noncommutation",
+        "src-pricing-checkout",
+        "test-coupon-rounding"
       ],
-      "positiveWitnessBoundary": "mu_x > 0 is read only as selected continuation observation difference with source-backed p/q trace inputs",
+      "positiveWitnessBoundary": "mu_x > 0 is read by an axis-specific distance evaluator over comparable continuation values with source-backed p/q trace inputs",
       "weight": 1,
       "measurementStatus": "measured",
       "distanceValue": 0,
@@ -6062,7 +6203,11 @@
       "witnessRefs": [
         "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding",
         "atom:effect:receipt-boundary",
-        "atom:semantic:PaymentAmount-ReceiptAmount-coupon-tax-rounding-noncommutation"
+        "atom:semantic:PaymentAmount-ReceiptAmount-coupon-tax-rounding-noncommutation",
+        "p-value:static-endpoints-paymentamount-receiptamount",
+        "p-value:static-support-atom-contract-paymentamount-receiptamount-coupon-tax-rounding-atom-semantic-paymentamount-receiptamount-coupon-tax-rounding-noncommutation-atom-effect-receipt-boundary",
+        "q-value:static-endpoints-paymentamount-receiptamount",
+        "q-value:static-support-atom-contract-paymentamount-receiptamount-coupon-tax-rounding-atom-semantic-paymentamount-receiptamount-coupon-tax-rounding-noncommutation-atom-effect-receipt-boundary"
       ],
       "sourceRefs": [
         "src-pricing-checkout",
@@ -6074,7 +6219,7 @@
         "atom:semantic:PaymentAmount-ReceiptAmount-coupon-tax-rounding-noncommutation"
       ],
       "missingRefs": [],
-      "coverageBoundary": "covered for selected trace refs; not complete execution semantics",
+      "coverageBoundary": "covered for selected comparable continuation values; not complete execution semantics",
       "exactnessAssumptionStatus": [
         "selected LawPolicy exactness assumptions",
         "ArchMapStore compaction boundary"
@@ -6087,7 +6232,7 @@
         "zero aggregate is not global path flatness"
       ],
       "cancellationBoundary": "axis-wise defect avoids aggregate cancellation; AMI zero can reflect local zero only under recorded zero-reflection assumptions",
-      "evidenceBoundary": "mu_x(sigma) is a bounded distance between selected continuation traces, not a theorem about path equality",
+      "evidenceBoundary": "mu_x(sigma) is a bounded axis-distance evaluation between selected continuation values, not a theorem about path equality",
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -6123,7 +6268,7 @@
       "weightPolicy": "unit weights until repo-specific calibration is declared in a future policy",
       "distanceKind": "weighted-axis-l1",
       "measurementStatus": "partial",
-      "aggregateValue": 4,
+      "aggregateValue": 2,
       "measuredDefectRefs": [
         "mu:operation-square-operation-square-evidence-coupon-tax-rounding:contract",
         "mu:operation-square-operation-square-evidence-coupon-tax-rounding:effect",
@@ -6157,7 +6302,9 @@
           "contributionValue": null,
           "reviewFocus": "supply missing authority trace evidence before interpreting AMI as zero",
           "witnessRefs": [
-            "missing-evidence:missing authority observation for operation-square:operation-square-evidence-coupon-tax-rounding"
+            "missing-evidence:missing authority observation for operation-square:operation-square-evidence-coupon-tax-rounding",
+            "missing-evidence:missing comparable p continuation value for authority",
+            "missing-evidence:missing comparable q continuation value for authority"
           ]
         },
         {
@@ -6168,6 +6315,8 @@
           "contributionValue": null,
           "reviewFocus": "supply missing runtime trace evidence before interpreting AMI as zero",
           "witnessRefs": [
+            "missing-evidence:missing comparable p continuation value for runtime",
+            "missing-evidence:missing comparable q continuation value for runtime",
             "missing-evidence:missing runtime observation for operation-square:operation-square-evidence-coupon-tax-rounding"
           ]
         },
@@ -6179,6 +6328,8 @@
           "contributionValue": null,
           "reviewFocus": "supply missing state trace evidence before interpreting AMI as zero",
           "witnessRefs": [
+            "missing-evidence:missing comparable p continuation value for state",
+            "missing-evidence:missing comparable q continuation value for state",
             "missing-evidence:missing state observation for operation-square:operation-square-evidence-coupon-tax-rounding"
           ]
         },
@@ -6187,12 +6338,14 @@
           "candidateRef": "operation-square:operation-square-evidence-coupon-tax-rounding",
           "axisFamily": "effect",
           "contributionWeight": 1,
-          "contributionValue": 2,
+          "contributionValue": 1,
           "reviewFocus": "review effect trace mismatch before treating aggregate value as local agreement",
           "witnessRefs": [
             "atom:effect:receipt-boundary",
-            "derived-effect-order:p:operation-round-operation-tax-operation-discount",
-            "derived-effect-order:q:operation-round-operation-discount-operation-tax"
+            "p-value:effect-endpoints-paymentamount-receiptamount",
+            "p-value:effect-path-p-operation-discount-operation-tax-operation-round",
+            "q-value:effect-endpoints-paymentamount-receiptamount",
+            "q-value:effect-path-q-operation-tax-operation-discount-operation-round"
           ]
         },
         {
@@ -6200,11 +6353,13 @@
           "candidateRef": "operation-square:operation-square-evidence-coupon-tax-rounding",
           "axisFamily": "semantic",
           "contributionWeight": 1,
-          "contributionValue": 2,
+          "contributionValue": 1,
           "reviewFocus": "review semantic trace mismatch before treating aggregate value as local agreement",
           "witnessRefs": [
-            "derived-semantic-order:p=round(tax(discount(subtotal)))",
-            "derived-semantic-order:q=round(discount(tax(subtotal)))",
+            "p-value:semantic-endpoints-paymentamount-receiptamount",
+            "p-value:semantic-path-p-operation-discount-operation-tax-operation-round",
+            "q-value:semantic-endpoints-paymentamount-receiptamount",
+            "q-value:semantic-path-q-operation-tax-operation-discount-operation-round",
             "semantic:coupon-tax-rounding-paths"
           ]
         },
@@ -6216,7 +6371,11 @@
           "contributionValue": 0,
           "reviewFocus": "review contract trace mismatch before treating aggregate value as local agreement",
           "witnessRefs": [
-            "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding"
+            "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding",
+            "p-value:contract-endpoints-paymentamount-receiptamount",
+            "p-value:contract-support-atom-contract-paymentamount-receiptamount-coupon-tax-rounding",
+            "q-value:contract-endpoints-paymentamount-receiptamount",
+            "q-value:contract-support-atom-contract-paymentamount-receiptamount-coupon-tax-rounding"
           ]
         },
         {
@@ -6227,7 +6386,11 @@
           "contributionValue": 0,
           "reviewFocus": "review projection trace mismatch before treating aggregate value as local agreement",
           "witnessRefs": [
-            "projection:coupon-payment-receipt"
+            "p-value:projection-endpoints-paymentamount-receiptamount",
+            "p-value:projection-support-projection-coupon-payment-receipt",
+            "projection:coupon-payment-receipt",
+            "q-value:projection-endpoints-paymentamount-receiptamount",
+            "q-value:projection-support-projection-coupon-payment-receipt"
           ]
         },
         {
@@ -6240,7 +6403,11 @@
           "witnessRefs": [
             "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding",
             "atom:effect:receipt-boundary",
-            "atom:semantic:PaymentAmount-ReceiptAmount-coupon-tax-rounding-noncommutation"
+            "atom:semantic:PaymentAmount-ReceiptAmount-coupon-tax-rounding-noncommutation",
+            "p-value:static-endpoints-paymentamount-receiptamount",
+            "p-value:static-support-atom-contract-paymentamount-receiptamount-coupon-tax-rounding-atom-semantic-paymentamount-receiptamount-coupon-tax-rounding-noncommutation-atom-effect-receipt-boundary",
+            "q-value:static-endpoints-paymentamount-receiptamount",
+            "q-value:static-support-atom-contract-paymentamount-receiptamount-coupon-tax-rounding-atom-semantic-paymentamount-receiptamount-coupon-tax-rounding-noncommutation-atom-effect-receipt-boundary"
           ]
         }
       ],
@@ -6280,15 +6447,13 @@
       ],
       "axisFamily": "effect",
       "axisRef": "effect ordering / replay / compensation axis",
-      "defectValue": 2,
+      "defectValue": 1,
       "comparedTraceSummary": [
-        "p: effect continuation reads 2 observation ref(s) across 1 operation delta(s) refs=2 missing=0",
-        "q: effect continuation reads 2 observation ref(s) across 1 operation delta(s) refs=2 missing=0"
+        "p: effect continuation reads 1 observation ref(s) across 1 operation delta(s) refs=1 missing=0",
+        "q: effect continuation reads 1 observation ref(s) across 1 operation delta(s) refs=1 missing=0"
       ],
       "affectedAtomRefs": [
-        "atom:effect:receipt-boundary",
-        "derived-effect-order:p:operation-round-operation-tax-operation-discount",
-        "derived-effect-order:q:operation-round-operation-discount-operation-tax"
+        "atom:effect:receipt-boundary"
       ],
       "lawRefs": [
         "law:layer-respecting",
@@ -6303,12 +6468,10 @@
         "test-coupon-rounding"
       ],
       "observationRefs": [
-        "atom:effect:receipt-boundary",
-        "derived-effect-order:p:operation-round-operation-tax-operation-discount",
-        "derived-effect-order:q:operation-round-operation-discount-operation-tax"
+        "atom:effect:receipt-boundary"
       ],
       "missingEvidence": [],
-      "coverageBoundary": "covered for selected trace refs; not complete execution semantics",
+      "coverageBoundary": "covered for selected comparable continuation values; not complete execution semantics",
       "suggestedFillerEvidence": [
         "supply filler evidence for effect axis trace disagreement",
         "record whether the two continuation paths preserve selected observations"
@@ -6348,14 +6511,12 @@
       ],
       "axisFamily": "semantic",
       "axisRef": "semantic axis",
-      "defectValue": 2,
+      "defectValue": 1,
       "comparedTraceSummary": [
-        "p: semantic continuation reads 2 observation ref(s) across 1 operation delta(s) refs=2 missing=0",
-        "q: semantic continuation reads 2 observation ref(s) across 1 operation delta(s) refs=2 missing=0"
+        "p: semantic continuation reads 1 observation ref(s) across 1 operation delta(s) refs=1 missing=0",
+        "q: semantic continuation reads 1 observation ref(s) across 1 operation delta(s) refs=1 missing=0"
       ],
       "affectedAtomRefs": [
-        "derived-semantic-order:p=round(tax(discount(subtotal)))",
-        "derived-semantic-order:q=round(discount(tax(subtotal)))",
         "semantic:coupon-tax-rounding-paths"
       ],
       "lawRefs": [
@@ -6371,12 +6532,10 @@
         "test-coupon-rounding"
       ],
       "observationRefs": [
-        "derived-semantic-order:p=round(tax(discount(subtotal)))",
-        "derived-semantic-order:q=round(discount(tax(subtotal)))",
         "semantic:coupon-tax-rounding-paths"
       ],
       "missingEvidence": [],
-      "coverageBoundary": "covered for selected trace refs; not complete execution semantics",
+      "coverageBoundary": "covered for selected comparable continuation values; not complete execution semantics",
       "suggestedFillerEvidence": [
         "supply filler evidence for semantic axis trace disagreement",
         "record whether the two continuation paths preserve selected observations"
@@ -6460,13 +6619,11 @@
           "holonomyAxisRef": "Hol_semantic",
           "axisFamily": "semantic",
           "status": "measuredResidual",
-          "residualValue": 2,
+          "residualValue": 1,
           "measuredDefectRefs": [
             "mu:operation-square-operation-square-evidence-coupon-tax-rounding:semantic"
           ],
           "supportRefs": [
-            "derived-semantic-order:p=round(tax(discount(subtotal)))",
-            "derived-semantic-order:q=round(discount(tax(subtotal)))",
             "semantic:coupon-tax-rounding-paths"
           ],
           "missingEvidence": [],
@@ -6485,6 +6642,8 @@
             "split-readiness:molecule-coupon-operation-contract"
           ],
           "missingEvidence": [
+            "missing comparable p continuation value for state",
+            "missing comparable q continuation value for state",
             "missing state observation for operation-square:operation-square-evidence-coupon-tax-rounding"
           ],
           "reading": "Hol_state records boundary-local residual obstruction on the state axis"
@@ -6493,14 +6652,12 @@
           "holonomyAxisRef": "Hol_effect",
           "axisFamily": "effect",
           "status": "measuredResidual",
-          "residualValue": 2,
+          "residualValue": 1,
           "measuredDefectRefs": [
             "mu:operation-square-operation-square-evidence-coupon-tax-rounding:effect"
           ],
           "supportRefs": [
-            "atom:effect:receipt-boundary",
-            "derived-effect-order:p:operation-round-operation-tax-operation-discount",
-            "derived-effect-order:q:operation-round-operation-discount-operation-tax"
+            "atom:effect:receipt-boundary"
           ],
           "missingEvidence": [],
           "reading": "Hol_effect records boundary-local residual obstruction on the effect axis"
@@ -6518,7 +6675,9 @@
             "split-readiness:molecule-coupon-operation-contract"
           ],
           "missingEvidence": [
-            "missing authority observation for operation-square:operation-square-evidence-coupon-tax-rounding"
+            "missing authority observation for operation-square:operation-square-evidence-coupon-tax-rounding",
+            "missing comparable p continuation value for authority",
+            "missing comparable q continuation value for authority"
           ],
           "reading": "Hol_authority records boundary-local residual obstruction on the authority axis"
         },
@@ -6535,6 +6694,8 @@
             "split-readiness:molecule-coupon-operation-contract"
           ],
           "missingEvidence": [
+            "missing comparable p continuation value for runtime",
+            "missing comparable q continuation value for runtime",
             "missing runtime observation for operation-square:operation-square-evidence-coupon-tax-rounding"
           ],
           "reading": "Hol_runtime records boundary-local residual obstruction on the runtime axis"
@@ -8663,8 +8824,8 @@
       "split-readiness:molecule-coupon-operation-contract transferRisk=needsObstructionSupportReview bridgeEdges=0 obstructions=1 boundaryOps=1"
     ],
     "nonzeroMonodromyWitnessSummary": [
-      "nonzero-monodromy-witness:mu-operation-square-operation-square-evidence-coupon-tax-rounding-effect axis=effect defect=2 affectedAtoms=3 missingEvidence=0 focus=2",
-      "nonzero-monodromy-witness:mu-operation-square-operation-square-evidence-coupon-tax-rounding-semantic axis=semantic defect=2 affectedAtoms=3 missingEvidence=0 focus=2"
+      "nonzero-monodromy-witness:mu-operation-square-operation-square-evidence-coupon-tax-rounding-effect axis=effect defect=1 affectedAtoms=1 missingEvidence=0 focus=2",
+      "nonzero-monodromy-witness:mu-operation-square-operation-square-evidence-coupon-tax-rounding-semantic axis=semantic defect=1 affectedAtoms=1 missingEvidence=0 focus=2"
     ],
     "featureBoundaryResidualSummary": [
       "feature-boundary-residual:coupon-tax-rounding-archmap boundary=Boundary(coupon-tax-rounding-archmap, feature-extension) status=measuredResidual axes=8 residualRefs=6"

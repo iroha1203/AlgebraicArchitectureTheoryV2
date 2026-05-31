@@ -5388,15 +5388,25 @@
           "axisFamily": "static",
           "axisRef": "static dependency / support axis",
           "traceStatus": "boundedObservationTrace",
+          "distanceEvaluatorKind": "weighted-axis-l1:static-support-value-mismatch",
           "continuationSummary": "static continuation reads 2 observation ref(s) across 1 operation delta(s)",
           "continuationStates": [
-            "Cont_static[0]=operation:route-create-user; refs=2",
-            "Cont_static[1]=operation:service-create-user; refs=2",
-            "Cont_static[endpoint]=p; endpointRefs=2"
+            "Cont_static[0]=operation:route-create-user; comparableValues=2",
+            "Cont_static[1]=operation:service-create-user; comparableValues=2",
+            "Cont_static[endpoint]=p; endpointRefs=2; evaluator=weighted-axis-l1:static-support-value-mismatch"
+          ],
+          "comparableContinuationValues": [
+            "static:endpoints:route.users|service.user",
+            "static:support:atom-relation-route-service|atom-contract-create-user"
           ],
           "distanceInputRefs": [
+            "atom:contract:create-user",
             "atom:relation:route-service",
-            "atom:contract:create-user"
+            "route.users",
+            "service.user",
+            "src-route-users",
+            "src-service-user",
+            "test-user-contract"
           ],
           "observationRefs": [
             "atom:relation:route-service",
@@ -5414,14 +5424,22 @@
           "axisFamily": "contract",
           "axisRef": "contract axis",
           "traceStatus": "boundedObservationTrace",
+          "distanceEvaluatorKind": "weighted-axis-l1:contract-obligation-value-mismatch",
           "continuationSummary": "contract continuation reads 1 observation ref(s) across 1 operation delta(s)",
           "continuationStates": [
-            "Cont_contract[0]=operation:route-create-user; refs=1",
-            "Cont_contract[1]=operation:service-create-user; refs=1",
-            "Cont_contract[endpoint]=p; endpointRefs=2"
+            "Cont_contract[0]=operation:route-create-user; comparableValues=2",
+            "Cont_contract[1]=operation:service-create-user; comparableValues=2",
+            "Cont_contract[endpoint]=p; endpointRefs=2; evaluator=weighted-axis-l1:contract-obligation-value-mismatch"
+          ],
+          "comparableContinuationValues": [
+            "contract:endpoints:route.users|service.user",
+            "contract:support:atom-contract-create-user"
           ],
           "distanceInputRefs": [
-            "atom:contract:create-user"
+            "atom:contract:create-user",
+            "route.users",
+            "service.user",
+            "test-user-contract"
           ],
           "observationRefs": [
             "atom:contract:create-user"
@@ -5436,14 +5454,23 @@
           "axisFamily": "semantic",
           "axisRef": "semantic axis",
           "traceStatus": "boundedObservationTrace",
+          "distanceEvaluatorKind": "weighted-axis-l1:semantic-sequence-mismatch",
           "continuationSummary": "semantic continuation reads 1 observation ref(s) across 1 operation delta(s)",
           "continuationStates": [
-            "Cont_semantic[0]=operation:route-create-user; refs=1",
-            "Cont_semantic[1]=operation:service-create-user; refs=1",
-            "Cont_semantic[endpoint]=p; endpointRefs=2"
+            "Cont_semantic[0]=operation:route-create-user; comparableValues=2",
+            "Cont_semantic[1]=operation:service-create-user; comparableValues=2",
+            "Cont_semantic[endpoint]=p; endpointRefs=2; evaluator=weighted-axis-l1:semantic-sequence-mismatch"
+          ],
+          "comparableContinuationValues": [
+            "semantic:path:p:operation:route-create-user -> operation:service-create-user",
+            "semantic:endpoints:route.users|service.user"
           ],
           "distanceInputRefs": [
-            "semantic:create-user-flow"
+            "doc-architecture",
+            "route.users",
+            "semantic:create-user-flow",
+            "service.user",
+            "test-user-contract"
           ],
           "observationRefs": [
             "semantic:create-user-flow"
@@ -5459,13 +5486,18 @@
           "axisFamily": "state",
           "axisRef": "state transition axis",
           "traceStatus": "unmeasured",
+          "distanceEvaluatorKind": "weighted-axis-l1:state-transition-value-mismatch",
           "continuationSummary": "state continuation is unmeasured under current ArchMap evidence",
           "continuationStates": [
-            "Cont_state[0]=operation:route-create-user; refs=0",
-            "Cont_state[1]=operation:service-create-user; refs=0",
-            "Cont_state[endpoint]=p; endpointRefs=2"
+            "Cont_state[0]=operation:route-create-user; comparableValues=0",
+            "Cont_state[1]=operation:service-create-user; comparableValues=0",
+            "Cont_state[endpoint]=p; endpointRefs=2; evaluator=weighted-axis-l1:state-transition-value-mismatch"
           ],
-          "distanceInputRefs": [],
+          "comparableContinuationValues": [],
+          "distanceInputRefs": [
+            "route.users",
+            "service.user"
+          ],
           "observationRefs": [],
           "sourceRefs": [],
           "missingRefs": [
@@ -5476,38 +5508,42 @@
         {
           "axisFamily": "effect",
           "axisRef": "effect ordering / replay / compensation axis",
-          "traceStatus": "boundedObservationTrace",
-          "continuationSummary": "effect continuation reads 1 observation ref(s) across 1 operation delta(s)",
+          "traceStatus": "unmeasured",
+          "distanceEvaluatorKind": "weighted-axis-l1:effect-replay-order-mismatch",
+          "continuationSummary": "effect continuation is unmeasured under current ArchMap evidence",
           "continuationStates": [
-            "Cont_effect[0]=operation:route-create-user; refs=1",
-            "Cont_effect[1]=operation:service-create-user; refs=1",
-            "Cont_effect[endpoint]=p; endpointRefs=2"
+            "Cont_effect[0]=operation:route-create-user; comparableValues=0",
+            "Cont_effect[1]=operation:service-create-user; comparableValues=0",
+            "Cont_effect[endpoint]=p; endpointRefs=2; evaluator=weighted-axis-l1:effect-replay-order-mismatch"
           ],
+          "comparableContinuationValues": [],
           "distanceInputRefs": [
-            "derived-effect-order:p:operation-service-create-user-operation-route-create-user"
+            "route.users",
+            "service.user"
           ],
-          "observationRefs": [
-            "derived-effect-order:p:operation-service-create-user-operation-route-create-user"
+          "observationRefs": [],
+          "sourceRefs": [],
+          "missingRefs": [
+            "missing effect observation for operation-square:operation-square-evidence-create-user-route-service"
           ],
-          "sourceRefs": [
-            "src-route-users",
-            "src-service-user",
-            "test-user-contract"
-          ],
-          "missingRefs": [],
           "unmeasuredBoundary": "unmeasured axis is retained as missing evidence and is not interpreted as zero defect"
         },
         {
           "axisFamily": "authority",
           "axisRef": "authority / trust boundary axis",
           "traceStatus": "unmeasured",
+          "distanceEvaluatorKind": "weighted-axis-l1:authority-boundary-value-mismatch",
           "continuationSummary": "authority continuation is unmeasured under current ArchMap evidence",
           "continuationStates": [
-            "Cont_authority[0]=operation:route-create-user; refs=0",
-            "Cont_authority[1]=operation:service-create-user; refs=0",
-            "Cont_authority[endpoint]=p; endpointRefs=2"
+            "Cont_authority[0]=operation:route-create-user; comparableValues=0",
+            "Cont_authority[1]=operation:service-create-user; comparableValues=0",
+            "Cont_authority[endpoint]=p; endpointRefs=2; evaluator=weighted-axis-l1:authority-boundary-value-mismatch"
           ],
-          "distanceInputRefs": [],
+          "comparableContinuationValues": [],
+          "distanceInputRefs": [
+            "route.users",
+            "service.user"
+          ],
           "observationRefs": [],
           "sourceRefs": [],
           "missingRefs": [
@@ -5519,13 +5555,18 @@
           "axisFamily": "runtime",
           "axisRef": "runtime interaction axis",
           "traceStatus": "unmeasured",
+          "distanceEvaluatorKind": "weighted-axis-l1:runtime-interaction-value-mismatch",
           "continuationSummary": "runtime continuation is unmeasured under current ArchMap evidence",
           "continuationStates": [
-            "Cont_runtime[0]=operation:route-create-user; refs=0",
-            "Cont_runtime[1]=operation:service-create-user; refs=0",
-            "Cont_runtime[endpoint]=p; endpointRefs=2"
+            "Cont_runtime[0]=operation:route-create-user; comparableValues=0",
+            "Cont_runtime[1]=operation:service-create-user; comparableValues=0",
+            "Cont_runtime[endpoint]=p; endpointRefs=2; evaluator=weighted-axis-l1:runtime-interaction-value-mismatch"
           ],
-          "distanceInputRefs": [],
+          "comparableContinuationValues": [],
+          "distanceInputRefs": [
+            "route.users",
+            "service.user"
+          ],
           "observationRefs": [],
           "sourceRefs": [],
           "missingRefs": [
@@ -5537,15 +5578,24 @@
           "axisFamily": "projection",
           "axisRef": "projection / representation axis",
           "traceStatus": "boundedObservationTrace",
+          "distanceEvaluatorKind": "weighted-axis-l1:projection-target-value-mismatch",
           "continuationSummary": "projection continuation reads 2 observation ref(s) across 1 operation delta(s)",
           "continuationStates": [
-            "Cont_projection[0]=operation:route-create-user; refs=2",
-            "Cont_projection[1]=operation:service-create-user; refs=2",
-            "Cont_projection[endpoint]=p; endpointRefs=2"
+            "Cont_projection[0]=operation:route-create-user; comparableValues=2",
+            "Cont_projection[1]=operation:service-create-user; comparableValues=2",
+            "Cont_projection[endpoint]=p; endpointRefs=2; evaluator=weighted-axis-l1:projection-target-value-mismatch"
+          ],
+          "comparableContinuationValues": [
+            "projection:endpoints:route.users|service.user",
+            "projection:support:projection-aat-route-service|projection-sft-create-user"
           ],
           "distanceInputRefs": [
+            "atom:relation:route-service",
             "projection:aat:route-service",
-            "projection:sft:create-user"
+            "projection:sft:create-user",
+            "route.users",
+            "semantic:create-user-flow",
+            "service.user"
           ],
           "observationRefs": [
             "projection:aat:route-service",
@@ -5608,15 +5658,25 @@
           "axisFamily": "static",
           "axisRef": "static dependency / support axis",
           "traceStatus": "boundedObservationTrace",
+          "distanceEvaluatorKind": "weighted-axis-l1:static-support-value-mismatch",
           "continuationSummary": "static continuation reads 2 observation ref(s) across 1 operation delta(s)",
           "continuationStates": [
-            "Cont_static[0]=operation:service-create-user; refs=2",
-            "Cont_static[1]=operation:route-create-user; refs=2",
-            "Cont_static[endpoint]=q; endpointRefs=2"
+            "Cont_static[0]=operation:service-create-user; comparableValues=2",
+            "Cont_static[1]=operation:route-create-user; comparableValues=2",
+            "Cont_static[endpoint]=q; endpointRefs=2; evaluator=weighted-axis-l1:static-support-value-mismatch"
+          ],
+          "comparableContinuationValues": [
+            "static:endpoints:route.users|service.user",
+            "static:support:atom-relation-route-service|atom-contract-create-user"
           ],
           "distanceInputRefs": [
+            "atom:contract:create-user",
             "atom:relation:route-service",
-            "atom:contract:create-user"
+            "route.users",
+            "service.user",
+            "src-route-users",
+            "src-service-user",
+            "test-user-contract"
           ],
           "observationRefs": [
             "atom:relation:route-service",
@@ -5634,14 +5694,22 @@
           "axisFamily": "contract",
           "axisRef": "contract axis",
           "traceStatus": "boundedObservationTrace",
+          "distanceEvaluatorKind": "weighted-axis-l1:contract-obligation-value-mismatch",
           "continuationSummary": "contract continuation reads 1 observation ref(s) across 1 operation delta(s)",
           "continuationStates": [
-            "Cont_contract[0]=operation:service-create-user; refs=1",
-            "Cont_contract[1]=operation:route-create-user; refs=1",
-            "Cont_contract[endpoint]=q; endpointRefs=2"
+            "Cont_contract[0]=operation:service-create-user; comparableValues=2",
+            "Cont_contract[1]=operation:route-create-user; comparableValues=2",
+            "Cont_contract[endpoint]=q; endpointRefs=2; evaluator=weighted-axis-l1:contract-obligation-value-mismatch"
+          ],
+          "comparableContinuationValues": [
+            "contract:endpoints:route.users|service.user",
+            "contract:support:atom-contract-create-user"
           ],
           "distanceInputRefs": [
-            "atom:contract:create-user"
+            "atom:contract:create-user",
+            "route.users",
+            "service.user",
+            "test-user-contract"
           ],
           "observationRefs": [
             "atom:contract:create-user"
@@ -5656,14 +5724,23 @@
           "axisFamily": "semantic",
           "axisRef": "semantic axis",
           "traceStatus": "boundedObservationTrace",
+          "distanceEvaluatorKind": "weighted-axis-l1:semantic-sequence-mismatch",
           "continuationSummary": "semantic continuation reads 1 observation ref(s) across 1 operation delta(s)",
           "continuationStates": [
-            "Cont_semantic[0]=operation:service-create-user; refs=1",
-            "Cont_semantic[1]=operation:route-create-user; refs=1",
-            "Cont_semantic[endpoint]=q; endpointRefs=2"
+            "Cont_semantic[0]=operation:service-create-user; comparableValues=2",
+            "Cont_semantic[1]=operation:route-create-user; comparableValues=2",
+            "Cont_semantic[endpoint]=q; endpointRefs=2; evaluator=weighted-axis-l1:semantic-sequence-mismatch"
+          ],
+          "comparableContinuationValues": [
+            "semantic:path:q:operation:service-create-user -> operation:route-create-user",
+            "semantic:endpoints:route.users|service.user"
           ],
           "distanceInputRefs": [
-            "semantic:create-user-flow"
+            "doc-architecture",
+            "route.users",
+            "semantic:create-user-flow",
+            "service.user",
+            "test-user-contract"
           ],
           "observationRefs": [
             "semantic:create-user-flow"
@@ -5679,13 +5756,18 @@
           "axisFamily": "state",
           "axisRef": "state transition axis",
           "traceStatus": "unmeasured",
+          "distanceEvaluatorKind": "weighted-axis-l1:state-transition-value-mismatch",
           "continuationSummary": "state continuation is unmeasured under current ArchMap evidence",
           "continuationStates": [
-            "Cont_state[0]=operation:service-create-user; refs=0",
-            "Cont_state[1]=operation:route-create-user; refs=0",
-            "Cont_state[endpoint]=q; endpointRefs=2"
+            "Cont_state[0]=operation:service-create-user; comparableValues=0",
+            "Cont_state[1]=operation:route-create-user; comparableValues=0",
+            "Cont_state[endpoint]=q; endpointRefs=2; evaluator=weighted-axis-l1:state-transition-value-mismatch"
           ],
-          "distanceInputRefs": [],
+          "comparableContinuationValues": [],
+          "distanceInputRefs": [
+            "route.users",
+            "service.user"
+          ],
           "observationRefs": [],
           "sourceRefs": [],
           "missingRefs": [
@@ -5696,38 +5778,42 @@
         {
           "axisFamily": "effect",
           "axisRef": "effect ordering / replay / compensation axis",
-          "traceStatus": "boundedObservationTrace",
-          "continuationSummary": "effect continuation reads 1 observation ref(s) across 1 operation delta(s)",
+          "traceStatus": "unmeasured",
+          "distanceEvaluatorKind": "weighted-axis-l1:effect-replay-order-mismatch",
+          "continuationSummary": "effect continuation is unmeasured under current ArchMap evidence",
           "continuationStates": [
-            "Cont_effect[0]=operation:service-create-user; refs=1",
-            "Cont_effect[1]=operation:route-create-user; refs=1",
-            "Cont_effect[endpoint]=q; endpointRefs=2"
+            "Cont_effect[0]=operation:service-create-user; comparableValues=0",
+            "Cont_effect[1]=operation:route-create-user; comparableValues=0",
+            "Cont_effect[endpoint]=q; endpointRefs=2; evaluator=weighted-axis-l1:effect-replay-order-mismatch"
           ],
+          "comparableContinuationValues": [],
           "distanceInputRefs": [
-            "derived-effect-order:q:operation-route-create-user-operation-service-create-user"
+            "route.users",
+            "service.user"
           ],
-          "observationRefs": [
-            "derived-effect-order:q:operation-route-create-user-operation-service-create-user"
+          "observationRefs": [],
+          "sourceRefs": [],
+          "missingRefs": [
+            "missing effect observation for operation-square:operation-square-evidence-create-user-route-service"
           ],
-          "sourceRefs": [
-            "src-route-users",
-            "src-service-user",
-            "test-user-contract"
-          ],
-          "missingRefs": [],
           "unmeasuredBoundary": "unmeasured axis is retained as missing evidence and is not interpreted as zero defect"
         },
         {
           "axisFamily": "authority",
           "axisRef": "authority / trust boundary axis",
           "traceStatus": "unmeasured",
+          "distanceEvaluatorKind": "weighted-axis-l1:authority-boundary-value-mismatch",
           "continuationSummary": "authority continuation is unmeasured under current ArchMap evidence",
           "continuationStates": [
-            "Cont_authority[0]=operation:service-create-user; refs=0",
-            "Cont_authority[1]=operation:route-create-user; refs=0",
-            "Cont_authority[endpoint]=q; endpointRefs=2"
+            "Cont_authority[0]=operation:service-create-user; comparableValues=0",
+            "Cont_authority[1]=operation:route-create-user; comparableValues=0",
+            "Cont_authority[endpoint]=q; endpointRefs=2; evaluator=weighted-axis-l1:authority-boundary-value-mismatch"
           ],
-          "distanceInputRefs": [],
+          "comparableContinuationValues": [],
+          "distanceInputRefs": [
+            "route.users",
+            "service.user"
+          ],
           "observationRefs": [],
           "sourceRefs": [],
           "missingRefs": [
@@ -5739,13 +5825,18 @@
           "axisFamily": "runtime",
           "axisRef": "runtime interaction axis",
           "traceStatus": "unmeasured",
+          "distanceEvaluatorKind": "weighted-axis-l1:runtime-interaction-value-mismatch",
           "continuationSummary": "runtime continuation is unmeasured under current ArchMap evidence",
           "continuationStates": [
-            "Cont_runtime[0]=operation:service-create-user; refs=0",
-            "Cont_runtime[1]=operation:route-create-user; refs=0",
-            "Cont_runtime[endpoint]=q; endpointRefs=2"
+            "Cont_runtime[0]=operation:service-create-user; comparableValues=0",
+            "Cont_runtime[1]=operation:route-create-user; comparableValues=0",
+            "Cont_runtime[endpoint]=q; endpointRefs=2; evaluator=weighted-axis-l1:runtime-interaction-value-mismatch"
           ],
-          "distanceInputRefs": [],
+          "comparableContinuationValues": [],
+          "distanceInputRefs": [
+            "route.users",
+            "service.user"
+          ],
           "observationRefs": [],
           "sourceRefs": [],
           "missingRefs": [
@@ -5757,15 +5848,24 @@
           "axisFamily": "projection",
           "axisRef": "projection / representation axis",
           "traceStatus": "boundedObservationTrace",
+          "distanceEvaluatorKind": "weighted-axis-l1:projection-target-value-mismatch",
           "continuationSummary": "projection continuation reads 2 observation ref(s) across 1 operation delta(s)",
           "continuationStates": [
-            "Cont_projection[0]=operation:service-create-user; refs=2",
-            "Cont_projection[1]=operation:route-create-user; refs=2",
-            "Cont_projection[endpoint]=q; endpointRefs=2"
+            "Cont_projection[0]=operation:service-create-user; comparableValues=2",
+            "Cont_projection[1]=operation:route-create-user; comparableValues=2",
+            "Cont_projection[endpoint]=q; endpointRefs=2; evaluator=weighted-axis-l1:projection-target-value-mismatch"
+          ],
+          "comparableContinuationValues": [
+            "projection:endpoints:route.users|service.user",
+            "projection:support:projection-aat-route-service|projection-sft-create-user"
           ],
           "distanceInputRefs": [
+            "atom:relation:route-service",
             "projection:aat:route-service",
-            "projection:sft:create-user"
+            "projection:sft:create-user",
+            "route.users",
+            "semantic:create-user-flow",
+            "service.user"
           ],
           "observationRefs": [
             "projection:aat:route-service",
@@ -5811,17 +5911,22 @@
       "candidateRef": "operation-square:operation-square-evidence-create-user-route-service",
       "axisFamily": "authority",
       "axisRef": "authority / trust boundary axis",
-      "distanceKind": "weighted-axis-l1",
+      "distanceKind": "weighted-axis-l1:authority-boundary-value-mismatch",
       "pContinuationRef": "Cont_authority(p):authority / trust boundary axis",
       "qContinuationRef": "Cont_authority(q):authority / trust boundary axis",
-      "distanceInputRefs": [],
-      "positiveWitnessBoundary": "mu_x > 0 is read only as selected continuation observation difference with source-backed p/q trace inputs",
+      "distanceInputRefs": [
+        "route.users",
+        "service.user"
+      ],
+      "positiveWitnessBoundary": "mu_x > 0 is read by an axis-specific distance evaluator over comparable continuation values with source-backed p/q trace inputs",
       "weight": 0,
       "measurementStatus": "unmeasured",
       "distanceValue": null,
       "measuredSupportRefs": [],
       "witnessRefs": [
-        "missing-evidence:missing authority observation for operation-square:operation-square-evidence-create-user-route-service"
+        "missing-evidence:missing authority observation for operation-square:operation-square-evidence-create-user-route-service",
+        "missing-evidence:missing comparable p continuation value for authority",
+        "missing-evidence:missing comparable q continuation value for authority"
       ],
       "sourceRefs": [
         "src-route-users",
@@ -5830,9 +5935,11 @@
       ],
       "observationRefs": [],
       "missingRefs": [
-        "missing authority observation for operation-square:operation-square-evidence-create-user-route-service"
+        "missing authority observation for operation-square:operation-square-evidence-create-user-route-service",
+        "missing comparable p continuation value for authority",
+        "missing comparable q continuation value for authority"
       ],
-      "coverageBoundary": "coverage gap preserved; unmeasured axis is not zero defect",
+      "coverageBoundary": "coverage gap or missing comparable continuation input preserved; unmeasured axis is not zero defect",
       "exactnessAssumptionStatus": [
         "selected LawPolicy exactness assumptions",
         "ArchMapStore compaction boundary"
@@ -5845,7 +5952,7 @@
         "zero aggregate is not global path flatness"
       ],
       "cancellationBoundary": "axis-wise defect avoids aggregate cancellation; AMI zero can reflect local zero only under recorded zero-reflection assumptions",
-      "evidenceBoundary": "mu_x(sigma) is a bounded distance between selected continuation traces, not a theorem about path equality",
+      "evidenceBoundary": "mu_x(sigma) is a bounded axis-distance evaluation between selected continuation values, not a theorem about path equality",
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -5861,13 +5968,16 @@
       "candidateRef": "operation-square:operation-square-evidence-create-user-route-service",
       "axisFamily": "contract",
       "axisRef": "contract axis",
-      "distanceKind": "weighted-axis-l1",
+      "distanceKind": "weighted-axis-l1:contract-obligation-value-mismatch",
       "pContinuationRef": "Cont_contract(p):contract axis",
       "qContinuationRef": "Cont_contract(q):contract axis",
       "distanceInputRefs": [
-        "atom:contract:create-user"
+        "atom:contract:create-user",
+        "route.users",
+        "service.user",
+        "test-user-contract"
       ],
-      "positiveWitnessBoundary": "mu_x > 0 is read only as selected continuation observation difference with source-backed p/q trace inputs",
+      "positiveWitnessBoundary": "mu_x > 0 is read by an axis-specific distance evaluator over comparable continuation values with source-backed p/q trace inputs",
       "weight": 1,
       "measurementStatus": "measured",
       "distanceValue": 0,
@@ -5875,7 +5985,11 @@
         "atom:contract:create-user"
       ],
       "witnessRefs": [
-        "atom:contract:create-user"
+        "atom:contract:create-user",
+        "p-value:contract-endpoints-route-users-service-user",
+        "p-value:contract-support-atom-contract-create-user",
+        "q-value:contract-endpoints-route-users-service-user",
+        "q-value:contract-support-atom-contract-create-user"
       ],
       "sourceRefs": [
         "src-route-users",
@@ -5886,7 +6000,7 @@
         "atom:contract:create-user"
       ],
       "missingRefs": [],
-      "coverageBoundary": "covered for selected trace refs; not complete execution semantics",
+      "coverageBoundary": "covered for selected comparable continuation values; not complete execution semantics",
       "exactnessAssumptionStatus": [
         "selected LawPolicy exactness assumptions",
         "ArchMapStore compaction boundary"
@@ -5899,7 +6013,7 @@
         "zero aggregate is not global path flatness"
       ],
       "cancellationBoundary": "axis-wise defect avoids aggregate cancellation; AMI zero can reflect local zero only under recorded zero-reflection assumptions",
-      "evidenceBoundary": "mu_x(sigma) is a bounded distance between selected continuation traces, not a theorem about path equality",
+      "evidenceBoundary": "mu_x(sigma) is a bounded axis-distance evaluation between selected continuation values, not a theorem about path equality",
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -5915,36 +6029,35 @@
       "candidateRef": "operation-square:operation-square-evidence-create-user-route-service",
       "axisFamily": "effect",
       "axisRef": "effect ordering / replay / compensation axis",
-      "distanceKind": "weighted-axis-l1",
+      "distanceKind": "weighted-axis-l1:effect-replay-order-mismatch",
       "pContinuationRef": "Cont_effect(p):effect ordering / replay / compensation axis",
       "qContinuationRef": "Cont_effect(q):effect ordering / replay / compensation axis",
       "distanceInputRefs": [
-        "derived-effect-order:p:operation-service-create-user-operation-route-create-user",
-        "derived-effect-order:q:operation-route-create-user-operation-service-create-user"
+        "route.users",
+        "service.user"
       ],
-      "positiveWitnessBoundary": "mu_x > 0 is read only as selected continuation observation difference with source-backed p/q trace inputs",
-      "weight": 1,
-      "measurementStatus": "measured",
-      "distanceValue": 2,
-      "measuredSupportRefs": [
-        "derived-effect-order:p:operation-service-create-user-operation-route-create-user",
-        "derived-effect-order:q:operation-route-create-user-operation-service-create-user"
-      ],
+      "positiveWitnessBoundary": "mu_x > 0 is read by an axis-specific distance evaluator over comparable continuation values with source-backed p/q trace inputs",
+      "weight": 0,
+      "measurementStatus": "unmeasured",
+      "distanceValue": null,
+      "measuredSupportRefs": [],
       "witnessRefs": [
-        "derived-effect-order:p:operation-service-create-user-operation-route-create-user",
-        "derived-effect-order:q:operation-route-create-user-operation-service-create-user"
+        "missing-evidence:missing comparable p continuation value for effect",
+        "missing-evidence:missing comparable q continuation value for effect",
+        "missing-evidence:missing effect observation for operation-square:operation-square-evidence-create-user-route-service"
       ],
       "sourceRefs": [
         "src-route-users",
         "src-service-user",
         "test-user-contract"
       ],
-      "observationRefs": [
-        "derived-effect-order:p:operation-service-create-user-operation-route-create-user",
-        "derived-effect-order:q:operation-route-create-user-operation-service-create-user"
+      "observationRefs": [],
+      "missingRefs": [
+        "missing comparable p continuation value for effect",
+        "missing comparable q continuation value for effect",
+        "missing effect observation for operation-square:operation-square-evidence-create-user-route-service"
       ],
-      "missingRefs": [],
-      "coverageBoundary": "covered for selected trace refs; not complete execution semantics",
+      "coverageBoundary": "coverage gap or missing comparable continuation input preserved; unmeasured axis is not zero defect",
       "exactnessAssumptionStatus": [
         "selected LawPolicy exactness assumptions",
         "ArchMapStore compaction boundary"
@@ -5957,7 +6070,7 @@
         "zero aggregate is not global path flatness"
       ],
       "cancellationBoundary": "axis-wise defect avoids aggregate cancellation; AMI zero can reflect local zero only under recorded zero-reflection assumptions",
-      "evidenceBoundary": "mu_x(sigma) is a bounded distance between selected continuation traces, not a theorem about path equality",
+      "evidenceBoundary": "mu_x(sigma) is a bounded axis-distance evaluation between selected continuation values, not a theorem about path equality",
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -5973,14 +6086,18 @@
       "candidateRef": "operation-square:operation-square-evidence-create-user-route-service",
       "axisFamily": "projection",
       "axisRef": "projection / representation axis",
-      "distanceKind": "weighted-axis-l1",
+      "distanceKind": "weighted-axis-l1:projection-target-value-mismatch",
       "pContinuationRef": "Cont_projection(p):projection / representation axis",
       "qContinuationRef": "Cont_projection(q):projection / representation axis",
       "distanceInputRefs": [
+        "atom:relation:route-service",
         "projection:aat:route-service",
-        "projection:sft:create-user"
+        "projection:sft:create-user",
+        "route.users",
+        "semantic:create-user-flow",
+        "service.user"
       ],
-      "positiveWitnessBoundary": "mu_x > 0 is read only as selected continuation observation difference with source-backed p/q trace inputs",
+      "positiveWitnessBoundary": "mu_x > 0 is read by an axis-specific distance evaluator over comparable continuation values with source-backed p/q trace inputs",
       "weight": 1,
       "measurementStatus": "measured",
       "distanceValue": 0,
@@ -5989,8 +6106,12 @@
         "projection:sft:create-user"
       ],
       "witnessRefs": [
+        "p-value:projection-endpoints-route-users-service-user",
+        "p-value:projection-support-projection-aat-route-service-projection-sft-create-user",
         "projection:aat:route-service",
-        "projection:sft:create-user"
+        "projection:sft:create-user",
+        "q-value:projection-endpoints-route-users-service-user",
+        "q-value:projection-support-projection-aat-route-service-projection-sft-create-user"
       ],
       "sourceRefs": [
         "src-route-users",
@@ -6002,7 +6123,7 @@
         "projection:sft:create-user"
       ],
       "missingRefs": [],
-      "coverageBoundary": "covered for selected trace refs; not complete execution semantics",
+      "coverageBoundary": "covered for selected comparable continuation values; not complete execution semantics",
       "exactnessAssumptionStatus": [
         "selected LawPolicy exactness assumptions",
         "ArchMapStore compaction boundary"
@@ -6015,7 +6136,7 @@
         "zero aggregate is not global path flatness"
       ],
       "cancellationBoundary": "axis-wise defect avoids aggregate cancellation; AMI zero can reflect local zero only under recorded zero-reflection assumptions",
-      "evidenceBoundary": "mu_x(sigma) is a bounded distance between selected continuation traces, not a theorem about path equality",
+      "evidenceBoundary": "mu_x(sigma) is a bounded axis-distance evaluation between selected continuation values, not a theorem about path equality",
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -6031,16 +6152,21 @@
       "candidateRef": "operation-square:operation-square-evidence-create-user-route-service",
       "axisFamily": "runtime",
       "axisRef": "runtime interaction axis",
-      "distanceKind": "weighted-axis-l1",
+      "distanceKind": "weighted-axis-l1:runtime-interaction-value-mismatch",
       "pContinuationRef": "Cont_runtime(p):runtime interaction axis",
       "qContinuationRef": "Cont_runtime(q):runtime interaction axis",
-      "distanceInputRefs": [],
-      "positiveWitnessBoundary": "mu_x > 0 is read only as selected continuation observation difference with source-backed p/q trace inputs",
+      "distanceInputRefs": [
+        "route.users",
+        "service.user"
+      ],
+      "positiveWitnessBoundary": "mu_x > 0 is read by an axis-specific distance evaluator over comparable continuation values with source-backed p/q trace inputs",
       "weight": 0,
       "measurementStatus": "unmeasured",
       "distanceValue": null,
       "measuredSupportRefs": [],
       "witnessRefs": [
+        "missing-evidence:missing comparable p continuation value for runtime",
+        "missing-evidence:missing comparable q continuation value for runtime",
         "missing-evidence:missing runtime observation for operation-square:operation-square-evidence-create-user-route-service"
       ],
       "sourceRefs": [
@@ -6050,9 +6176,11 @@
       ],
       "observationRefs": [],
       "missingRefs": [
+        "missing comparable p continuation value for runtime",
+        "missing comparable q continuation value for runtime",
         "missing runtime observation for operation-square:operation-square-evidence-create-user-route-service"
       ],
-      "coverageBoundary": "coverage gap preserved; unmeasured axis is not zero defect",
+      "coverageBoundary": "coverage gap or missing comparable continuation input preserved; unmeasured axis is not zero defect",
       "exactnessAssumptionStatus": [
         "selected LawPolicy exactness assumptions",
         "ArchMapStore compaction boundary"
@@ -6065,7 +6193,7 @@
         "zero aggregate is not global path flatness"
       ],
       "cancellationBoundary": "axis-wise defect avoids aggregate cancellation; AMI zero can reflect local zero only under recorded zero-reflection assumptions",
-      "evidenceBoundary": "mu_x(sigma) is a bounded distance between selected continuation traces, not a theorem about path equality",
+      "evidenceBoundary": "mu_x(sigma) is a bounded axis-distance evaluation between selected continuation values, not a theorem about path equality",
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -6081,20 +6209,28 @@
       "candidateRef": "operation-square:operation-square-evidence-create-user-route-service",
       "axisFamily": "semantic",
       "axisRef": "semantic axis",
-      "distanceKind": "weighted-axis-l1",
+      "distanceKind": "weighted-axis-l1:semantic-sequence-mismatch",
       "pContinuationRef": "Cont_semantic(p):semantic axis",
       "qContinuationRef": "Cont_semantic(q):semantic axis",
       "distanceInputRefs": [
-        "semantic:create-user-flow"
+        "doc-architecture",
+        "route.users",
+        "semantic:create-user-flow",
+        "service.user",
+        "test-user-contract"
       ],
-      "positiveWitnessBoundary": "mu_x > 0 is read only as selected continuation observation difference with source-backed p/q trace inputs",
+      "positiveWitnessBoundary": "mu_x > 0 is read by an axis-specific distance evaluator over comparable continuation values with source-backed p/q trace inputs",
       "weight": 1,
       "measurementStatus": "measured",
-      "distanceValue": 0,
+      "distanceValue": 1,
       "measuredSupportRefs": [
         "semantic:create-user-flow"
       ],
       "witnessRefs": [
+        "p-value:semantic-endpoints-route-users-service-user",
+        "p-value:semantic-path-p-operation-route-create-user-operation-service-create-user",
+        "q-value:semantic-endpoints-route-users-service-user",
+        "q-value:semantic-path-q-operation-service-create-user-operation-route-create-user",
         "semantic:create-user-flow"
       ],
       "sourceRefs": [
@@ -6106,7 +6242,7 @@
         "semantic:create-user-flow"
       ],
       "missingRefs": [],
-      "coverageBoundary": "covered for selected trace refs; not complete execution semantics",
+      "coverageBoundary": "covered for selected comparable continuation values; not complete execution semantics",
       "exactnessAssumptionStatus": [
         "selected LawPolicy exactness assumptions",
         "ArchMapStore compaction boundary"
@@ -6119,7 +6255,7 @@
         "zero aggregate is not global path flatness"
       ],
       "cancellationBoundary": "axis-wise defect avoids aggregate cancellation; AMI zero can reflect local zero only under recorded zero-reflection assumptions",
-      "evidenceBoundary": "mu_x(sigma) is a bounded distance between selected continuation traces, not a theorem about path equality",
+      "evidenceBoundary": "mu_x(sigma) is a bounded axis-distance evaluation between selected continuation values, not a theorem about path equality",
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -6135,16 +6271,21 @@
       "candidateRef": "operation-square:operation-square-evidence-create-user-route-service",
       "axisFamily": "state",
       "axisRef": "state transition axis",
-      "distanceKind": "weighted-axis-l1",
+      "distanceKind": "weighted-axis-l1:state-transition-value-mismatch",
       "pContinuationRef": "Cont_state(p):state transition axis",
       "qContinuationRef": "Cont_state(q):state transition axis",
-      "distanceInputRefs": [],
-      "positiveWitnessBoundary": "mu_x > 0 is read only as selected continuation observation difference with source-backed p/q trace inputs",
+      "distanceInputRefs": [
+        "route.users",
+        "service.user"
+      ],
+      "positiveWitnessBoundary": "mu_x > 0 is read by an axis-specific distance evaluator over comparable continuation values with source-backed p/q trace inputs",
       "weight": 0,
       "measurementStatus": "unmeasured",
       "distanceValue": null,
       "measuredSupportRefs": [],
       "witnessRefs": [
+        "missing-evidence:missing comparable p continuation value for state",
+        "missing-evidence:missing comparable q continuation value for state",
         "missing-evidence:missing state observation for operation-square:operation-square-evidence-create-user-route-service"
       ],
       "sourceRefs": [
@@ -6154,9 +6295,11 @@
       ],
       "observationRefs": [],
       "missingRefs": [
+        "missing comparable p continuation value for state",
+        "missing comparable q continuation value for state",
         "missing state observation for operation-square:operation-square-evidence-create-user-route-service"
       ],
-      "coverageBoundary": "coverage gap preserved; unmeasured axis is not zero defect",
+      "coverageBoundary": "coverage gap or missing comparable continuation input preserved; unmeasured axis is not zero defect",
       "exactnessAssumptionStatus": [
         "selected LawPolicy exactness assumptions",
         "ArchMapStore compaction boundary"
@@ -6169,7 +6312,7 @@
         "zero aggregate is not global path flatness"
       ],
       "cancellationBoundary": "axis-wise defect avoids aggregate cancellation; AMI zero can reflect local zero only under recorded zero-reflection assumptions",
-      "evidenceBoundary": "mu_x(sigma) is a bounded distance between selected continuation traces, not a theorem about path equality",
+      "evidenceBoundary": "mu_x(sigma) is a bounded axis-distance evaluation between selected continuation values, not a theorem about path equality",
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -6185,14 +6328,19 @@
       "candidateRef": "operation-square:operation-square-evidence-create-user-route-service",
       "axisFamily": "static",
       "axisRef": "static dependency / support axis",
-      "distanceKind": "weighted-axis-l1",
+      "distanceKind": "weighted-axis-l1:static-support-value-mismatch",
       "pContinuationRef": "Cont_static(p):static dependency / support axis",
       "qContinuationRef": "Cont_static(q):static dependency / support axis",
       "distanceInputRefs": [
         "atom:contract:create-user",
-        "atom:relation:route-service"
+        "atom:relation:route-service",
+        "route.users",
+        "service.user",
+        "src-route-users",
+        "src-service-user",
+        "test-user-contract"
       ],
-      "positiveWitnessBoundary": "mu_x > 0 is read only as selected continuation observation difference with source-backed p/q trace inputs",
+      "positiveWitnessBoundary": "mu_x > 0 is read by an axis-specific distance evaluator over comparable continuation values with source-backed p/q trace inputs",
       "weight": 1,
       "measurementStatus": "measured",
       "distanceValue": 0,
@@ -6202,7 +6350,11 @@
       ],
       "witnessRefs": [
         "atom:contract:create-user",
-        "atom:relation:route-service"
+        "atom:relation:route-service",
+        "p-value:static-endpoints-route-users-service-user",
+        "p-value:static-support-atom-relation-route-service-atom-contract-create-user",
+        "q-value:static-endpoints-route-users-service-user",
+        "q-value:static-support-atom-relation-route-service-atom-contract-create-user"
       ],
       "sourceRefs": [
         "src-route-users",
@@ -6214,7 +6366,7 @@
         "atom:relation:route-service"
       ],
       "missingRefs": [],
-      "coverageBoundary": "covered for selected trace refs; not complete execution semantics",
+      "coverageBoundary": "covered for selected comparable continuation values; not complete execution semantics",
       "exactnessAssumptionStatus": [
         "selected LawPolicy exactness assumptions",
         "ArchMapStore compaction boundary"
@@ -6227,7 +6379,7 @@
         "zero aggregate is not global path flatness"
       ],
       "cancellationBoundary": "axis-wise defect avoids aggregate cancellation; AMI zero can reflect local zero only under recorded zero-reflection assumptions",
-      "evidenceBoundary": "mu_x(sigma) is a bounded distance between selected continuation traces, not a theorem about path equality",
+      "evidenceBoundary": "mu_x(sigma) is a bounded axis-distance evaluation between selected continuation values, not a theorem about path equality",
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -6255,7 +6407,6 @@
       ],
       "selectedMeasuredSquareRefs": [
         "square-family-entry:mu:operation-square-operation-square-evidence-create-user-route-service:contract",
-        "square-family-entry:mu:operation-square-operation-square-evidence-create-user-route-service:effect",
         "square-family-entry:mu:operation-square-operation-square-evidence-create-user-route-service:projection",
         "square-family-entry:mu:operation-square-operation-square-evidence-create-user-route-service:semantic",
         "square-family-entry:mu:operation-square-operation-square-evidence-create-user-route-service:static"
@@ -6263,28 +6414,28 @@
       "weightPolicy": "unit weights until repo-specific calibration is declared in a future policy",
       "distanceKind": "weighted-axis-l1",
       "measurementStatus": "partial",
-      "aggregateValue": 2,
+      "aggregateValue": 1,
       "measuredDefectRefs": [
         "mu:operation-square-operation-square-evidence-create-user-route-service:contract",
-        "mu:operation-square-operation-square-evidence-create-user-route-service:effect",
         "mu:operation-square-operation-square-evidence-create-user-route-service:projection",
         "mu:operation-square-operation-square-evidence-create-user-route-service:semantic",
         "mu:operation-square-operation-square-evidence-create-user-route-service:static"
       ],
       "unmeasuredDefectRefs": [
         "mu:operation-square-operation-square-evidence-create-user-route-service:authority",
+        "mu:operation-square-operation-square-evidence-create-user-route-service:effect",
         "mu:operation-square-operation-square-evidence-create-user-route-service:runtime",
         "mu:operation-square-operation-square-evidence-create-user-route-service:state"
       ],
       "positiveWeightDefectRefs": [
         "mu:operation-square-operation-square-evidence-create-user-route-service:contract",
-        "mu:operation-square-operation-square-evidence-create-user-route-service:effect",
         "mu:operation-square-operation-square-evidence-create-user-route-service:projection",
         "mu:operation-square-operation-square-evidence-create-user-route-service:semantic",
         "mu:operation-square-operation-square-evidence-create-user-route-service:static"
       ],
       "zeroWeightDefectRefs": [
         "mu:operation-square-operation-square-evidence-create-user-route-service:authority",
+        "mu:operation-square-operation-square-evidence-create-user-route-service:effect",
         "mu:operation-square-operation-square-evidence-create-user-route-service:runtime",
         "mu:operation-square-operation-square-evidence-create-user-route-service:state"
       ],
@@ -6297,7 +6448,22 @@
           "contributionValue": null,
           "reviewFocus": "supply missing authority trace evidence before interpreting AMI as zero",
           "witnessRefs": [
-            "missing-evidence:missing authority observation for operation-square:operation-square-evidence-create-user-route-service"
+            "missing-evidence:missing authority observation for operation-square:operation-square-evidence-create-user-route-service",
+            "missing-evidence:missing comparable p continuation value for authority",
+            "missing-evidence:missing comparable q continuation value for authority"
+          ]
+        },
+        {
+          "defectRef": "mu:operation-square-operation-square-evidence-create-user-route-service:effect",
+          "candidateRef": "operation-square:operation-square-evidence-create-user-route-service",
+          "axisFamily": "effect",
+          "contributionWeight": 1,
+          "contributionValue": null,
+          "reviewFocus": "supply missing effect trace evidence before interpreting AMI as zero",
+          "witnessRefs": [
+            "missing-evidence:missing comparable p continuation value for effect",
+            "missing-evidence:missing comparable q continuation value for effect",
+            "missing-evidence:missing effect observation for operation-square:operation-square-evidence-create-user-route-service"
           ]
         },
         {
@@ -6308,6 +6474,8 @@
           "contributionValue": null,
           "reviewFocus": "supply missing runtime trace evidence before interpreting AMI as zero",
           "witnessRefs": [
+            "missing-evidence:missing comparable p continuation value for runtime",
+            "missing-evidence:missing comparable q continuation value for runtime",
             "missing-evidence:missing runtime observation for operation-square:operation-square-evidence-create-user-route-service"
           ]
         },
@@ -6319,19 +6487,24 @@
           "contributionValue": null,
           "reviewFocus": "supply missing state trace evidence before interpreting AMI as zero",
           "witnessRefs": [
+            "missing-evidence:missing comparable p continuation value for state",
+            "missing-evidence:missing comparable q continuation value for state",
             "missing-evidence:missing state observation for operation-square:operation-square-evidence-create-user-route-service"
           ]
         },
         {
-          "defectRef": "mu:operation-square-operation-square-evidence-create-user-route-service:effect",
+          "defectRef": "mu:operation-square-operation-square-evidence-create-user-route-service:semantic",
           "candidateRef": "operation-square:operation-square-evidence-create-user-route-service",
-          "axisFamily": "effect",
+          "axisFamily": "semantic",
           "contributionWeight": 1,
-          "contributionValue": 2,
-          "reviewFocus": "review effect trace mismatch before treating aggregate value as local agreement",
+          "contributionValue": 1,
+          "reviewFocus": "review semantic trace mismatch before treating aggregate value as local agreement",
           "witnessRefs": [
-            "derived-effect-order:p:operation-service-create-user-operation-route-create-user",
-            "derived-effect-order:q:operation-route-create-user-operation-service-create-user"
+            "p-value:semantic-endpoints-route-users-service-user",
+            "p-value:semantic-path-p-operation-route-create-user-operation-service-create-user",
+            "q-value:semantic-endpoints-route-users-service-user",
+            "q-value:semantic-path-q-operation-service-create-user-operation-route-create-user",
+            "semantic:create-user-flow"
           ]
         },
         {
@@ -6342,7 +6515,11 @@
           "contributionValue": 0,
           "reviewFocus": "review contract trace mismatch before treating aggregate value as local agreement",
           "witnessRefs": [
-            "atom:contract:create-user"
+            "atom:contract:create-user",
+            "p-value:contract-endpoints-route-users-service-user",
+            "p-value:contract-support-atom-contract-create-user",
+            "q-value:contract-endpoints-route-users-service-user",
+            "q-value:contract-support-atom-contract-create-user"
           ]
         },
         {
@@ -6353,19 +6530,12 @@
           "contributionValue": 0,
           "reviewFocus": "review projection trace mismatch before treating aggregate value as local agreement",
           "witnessRefs": [
+            "p-value:projection-endpoints-route-users-service-user",
+            "p-value:projection-support-projection-aat-route-service-projection-sft-create-user",
             "projection:aat:route-service",
-            "projection:sft:create-user"
-          ]
-        },
-        {
-          "defectRef": "mu:operation-square-operation-square-evidence-create-user-route-service:semantic",
-          "candidateRef": "operation-square:operation-square-evidence-create-user-route-service",
-          "axisFamily": "semantic",
-          "contributionWeight": 1,
-          "contributionValue": 0,
-          "reviewFocus": "review semantic trace mismatch before treating aggregate value as local agreement",
-          "witnessRefs": [
-            "semantic:create-user-flow"
+            "projection:sft:create-user",
+            "q-value:projection-endpoints-route-users-service-user",
+            "q-value:projection-support-projection-aat-route-service-projection-sft-create-user"
           ]
         },
         {
@@ -6377,7 +6547,11 @@
           "reviewFocus": "review static trace mismatch before treating aggregate value as local agreement",
           "witnessRefs": [
             "atom:contract:create-user",
-            "atom:relation:route-service"
+            "atom:relation:route-service",
+            "p-value:static-endpoints-route-users-service-user",
+            "p-value:static-support-atom-relation-route-service-atom-contract-create-user",
+            "q-value:static-endpoints-route-users-service-user",
+            "q-value:static-support-atom-relation-route-service-atom-contract-create-user"
           ]
         }
       ],
@@ -6404,8 +6578,8 @@
   ],
   "nonzeroMonodromyWitnesses": [
     {
-      "witnessId": "nonzero-monodromy-witness:mu-operation-square-operation-square-evidence-create-user-route-service-effect",
-      "defectRef": "mu:operation-square-operation-square-evidence-create-user-route-service:effect",
+      "witnessId": "nonzero-monodromy-witness:mu-operation-square-operation-square-evidence-create-user-route-service-semantic",
+      "defectRef": "mu:operation-square-operation-square-evidence-create-user-route-service:semantic",
       "candidateRef": "operation-square:operation-square-evidence-create-user-route-service",
       "operationPair": [
         "operation:route-create-user",
@@ -6415,16 +6589,15 @@
         "operation:service-create-user . operation:route-create-user",
         "operation:route-create-user . operation:service-create-user"
       ],
-      "axisFamily": "effect",
-      "axisRef": "effect ordering / replay / compensation axis",
-      "defectValue": 2,
+      "axisFamily": "semantic",
+      "axisRef": "semantic axis",
+      "defectValue": 1,
       "comparedTraceSummary": [
-        "p: effect continuation reads 1 observation ref(s) across 1 operation delta(s) refs=1 missing=0",
-        "q: effect continuation reads 1 observation ref(s) across 1 operation delta(s) refs=1 missing=0"
+        "p: semantic continuation reads 1 observation ref(s) across 1 operation delta(s) refs=1 missing=0",
+        "q: semantic continuation reads 1 observation ref(s) across 1 operation delta(s) refs=1 missing=0"
       ],
       "affectedAtomRefs": [
-        "derived-effect-order:p:operation-service-create-user-operation-route-create-user",
-        "derived-effect-order:q:operation-route-create-user-operation-service-create-user"
+        "semantic:create-user-flow"
       ],
       "lawRefs": [
         "law:layer-respecting",
@@ -6440,13 +6613,12 @@
         "test-user-contract"
       ],
       "observationRefs": [
-        "derived-effect-order:p:operation-service-create-user-operation-route-create-user",
-        "derived-effect-order:q:operation-route-create-user-operation-service-create-user"
+        "semantic:create-user-flow"
       ],
       "missingEvidence": [],
-      "coverageBoundary": "covered for selected trace refs; not complete execution semantics",
+      "coverageBoundary": "covered for selected comparable continuation values; not complete execution semantics",
       "suggestedFillerEvidence": [
-        "supply filler evidence for effect axis trace disagreement",
+        "supply filler evidence for semantic axis trace disagreement",
         "record whether the two continuation paths preserve selected observations"
       ],
       "suggestedLiftingEvidence": [
@@ -6457,7 +6629,7 @@
       ],
       "recommendedReviewFocus": [
         "compare operation:service-create-user . operation:route-create-user and operation:route-create-user . operation:service-create-user before treating the operation pair as order-insensitive",
-        "review effect axis witness refs and missing evidence"
+        "review semantic axis witness refs and missing evidence"
       ],
       "evidenceBoundary": "nonzero monodromy witness is a measured review cue; it is not automatic repair safety or merge safety",
       "nonConclusions": [
@@ -6526,9 +6698,11 @@
         {
           "holonomyAxisRef": "Hol_semantic",
           "axisFamily": "semantic",
-          "status": "coveredZeroResidual",
-          "residualValue": 0,
-          "measuredDefectRefs": [],
+          "status": "measuredResidual",
+          "residualValue": 1,
+          "measuredDefectRefs": [
+            "mu:operation-square-operation-square-evidence-create-user-route-service:semantic"
+          ],
           "supportRefs": [
             "semantic:create-user-flow"
           ],
@@ -6548,6 +6722,8 @@
             "split-readiness:molecule-user-request-responsibility"
           ],
           "missingEvidence": [
+            "missing comparable p continuation value for state",
+            "missing comparable q continuation value for state",
             "missing state observation for operation-square:operation-square-evidence-create-user-route-service"
           ],
           "reading": "Hol_state records boundary-local residual obstruction on the state axis"
@@ -6555,16 +6731,20 @@
         {
           "holonomyAxisRef": "Hol_effect",
           "axisFamily": "effect",
-          "status": "measuredResidual",
-          "residualValue": 2,
-          "measuredDefectRefs": [
-            "mu:operation-square-operation-square-evidence-create-user-route-service:effect"
-          ],
+          "status": "coverageBlocked",
+          "residualValue": 0,
+          "measuredDefectRefs": [],
           "supportRefs": [
-            "derived-effect-order:p:operation-service-create-user-operation-route-create-user",
-            "derived-effect-order:q:operation-route-create-user-operation-service-create-user"
+            "gap-runtime-user-db-trace",
+            "may transfer obstruction into runtime behavior, ownership, or idempotency boundary",
+            "obstruction:semantic-contract-mismatch:computed",
+            "split-readiness:molecule-user-request-responsibility"
           ],
-          "missingEvidence": [],
+          "missingEvidence": [
+            "missing comparable p continuation value for effect",
+            "missing comparable q continuation value for effect",
+            "missing effect observation for operation-square:operation-square-evidence-create-user-route-service"
+          ],
           "reading": "Hol_effect records boundary-local residual obstruction on the effect axis"
         },
         {
@@ -6580,7 +6760,9 @@
             "split-readiness:molecule-user-request-responsibility"
           ],
           "missingEvidence": [
-            "missing authority observation for operation-square:operation-square-evidence-create-user-route-service"
+            "missing authority observation for operation-square:operation-square-evidence-create-user-route-service",
+            "missing comparable p continuation value for authority",
+            "missing comparable q continuation value for authority"
           ],
           "reading": "Hol_authority records boundary-local residual obstruction on the authority axis"
         },
@@ -6597,6 +6779,8 @@
             "split-readiness:molecule-user-request-responsibility"
           ],
           "missingEvidence": [
+            "missing comparable p continuation value for runtime",
+            "missing comparable q continuation value for runtime",
             "missing runtime observation for operation-square:operation-square-evidence-create-user-route-service"
           ],
           "reading": "Hol_runtime records boundary-local residual obstruction on the runtime axis"
@@ -6618,7 +6802,7 @@
       "residualObstructionRefs": [
         "gap-runtime-user-db-trace",
         "may transfer obstruction into runtime behavior, ownership, or idempotency boundary",
-        "mu:operation-square-operation-square-evidence-create-user-route-service:effect",
+        "mu:operation-square-operation-square-evidence-create-user-route-service:semantic",
         "obstruction:semantic-contract-mismatch:computed",
         "split-readiness:molecule-user-request-responsibility"
       ],
@@ -6677,7 +6861,7 @@
             "feature-boundary-residual:fixture-archmap-atom-observation",
             "gap-runtime-user-db-trace",
             "may transfer obstruction into runtime behavior, ownership, or idempotency boundary",
-            "mu:operation-square-operation-square-evidence-create-user-route-service:effect",
+            "mu:operation-square-operation-square-evidence-create-user-route-service:semantic",
             "obstruction:semantic-contract-mismatch:computed",
             "split-readiness:molecule-user-request-responsibility"
           ],
@@ -6772,20 +6956,20 @@
           "reading": "may transfer obstruction into runtime behavior, ownership, or idempotency boundary carries non-disjoint feature-extension labels [\"boundaryHolonomy\", \"complexityTransfer\"]"
         },
         {
-          "witnessRef": "mu:operation-square-operation-square-evidence-create-user-route-service:effect",
+          "witnessRef": "mu:operation-square-operation-square-evidence-create-user-route-service:semantic",
           "labels": [
             "boundaryHolonomy"
           ],
           "inheritedCoreRefs": [],
           "featureLocalRefs": [],
           "boundaryHolonomyRefs": [
-            "mu:operation-square-operation-square-evidence-create-user-route-service:effect"
+            "mu:operation-square-operation-square-evidence-create-user-route-service:semantic"
           ],
           "liftingFailureRefs": [],
           "fillingFailureRefs": [],
           "complexityTransferRefs": [],
           "residualCoverageGapRefs": [],
-          "reading": "mu:operation-square-operation-square-evidence-create-user-route-service:effect carries non-disjoint feature-extension labels [\"boundaryHolonomy\"]"
+          "reading": "mu:operation-square-operation-square-evidence-create-user-route-service:semantic carries non-disjoint feature-extension labels [\"boundaryHolonomy\"]"
         },
         {
           "witnessRef": "obstruction:semantic-contract-mismatch:computed",
@@ -6914,7 +7098,7 @@
     "weightPolicy": "unit weights until repo-specific calibration is declared in a future policy",
     "coveragePolicy": "measure only selected axes with declared coverage; missing coverage remains blocked, not zero",
     "nonzeroMonodromyWitnessRefs": [
-      "nonzero-monodromy-witness:mu-operation-square-operation-square-evidence-create-user-route-service-effect"
+      "nonzero-monodromy-witness:mu-operation-square-operation-square-evidence-create-user-route-service-semantic"
     ],
     "featureBoundaryResidualRefs": [
       "feature-boundary-residual:fixture-archmap-atom-observation"
@@ -8724,7 +8908,7 @@
       "split-readiness:molecule-user-request-responsibility transferRisk=needsObstructionSupportReview bridgeEdges=0 obstructions=1 boundaryOps=1"
     ],
     "nonzeroMonodromyWitnessSummary": [
-      "nonzero-monodromy-witness:mu-operation-square-operation-square-evidence-create-user-route-service-effect axis=effect defect=2 affectedAtoms=2 missingEvidence=0 focus=2"
+      "nonzero-monodromy-witness:mu-operation-square-operation-square-evidence-create-user-route-service-semantic axis=semantic defect=1 affectedAtoms=1 missingEvidence=0 focus=2"
     ],
     "featureBoundaryResidualSummary": [
       "feature-boundary-residual:fixture-archmap-atom-observation boundary=Boundary(fixture-archmap-atom-observation, feature-extension) status=measuredResidual axes=8 residualRefs=5"
