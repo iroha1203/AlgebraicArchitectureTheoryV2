@@ -69,7 +69,7 @@
           <nav class="breadcrumb" aria-label="Breadcrumb"><a href="../">Home</a><span>ArchSig</span></nav>
           <p class="eyebrow">Architecture review for fast-moving code</p>
           <h1>Architecture analysis through LLM Skills.</h1>
-          <p class="lede">When code changes fast, ArchSig helps an AI reviewer see what the change is doing to the design: which responsibilities are drifting, which boundaries are weakening, and where engineers should inspect next.</p>
+          <p class="lede">When code changes fast, ask your LLM agent to run the ArchSig Skills. The agent can inspect what the change is doing to the design: which responsibilities are drifting, which boundaries are weakening, and where engineers should look next.</p>
         </div>
       </section>
       <section class="section-band">
@@ -81,16 +81,16 @@
           <div class="article-main">
             <section id="start" class="article-section">
               <h2>Three-step start</h2>
-              <p>Ask the question you would ask a senior reviewer: what did this change do to the design, and where should we look first?</p>
+              <p>Ask your LLM agent the question you would ask a senior reviewer: what did this change do to the design, and where should we look first?</p>
               <ol class="numbered-status-list">
-                <li><strong>Choose the scope</strong><span>Point the Skill at a repository, PR, branch, feature area, or architectural concern.</span></li>
-                <li><strong>Let the Skills build the reading</strong><span><code>archmap-creater</code>, <code>law-policy-creater</code>, and <code>archsig-reader</code> turn the selected source evidence into an architecture review surface.</span></li>
+                <li><strong>Choose the scope</strong><span>Tell the LLM agent which repository, PR, branch, feature area, or architectural concern the Skills should inspect.</span></li>
+                <li><strong>Have the agent run the Skills</strong><span>The agent uses <code>archmap-creater</code>, <code>law-policy-creater</code>, and <code>archsig-reader</code> to turn selected source evidence into an architecture review surface.</span></li>
                 <li><strong>Act on the review queue</strong><span>Use the returned findings, repair candidates, code refs, and confirmation points to decide what to inspect or change next.</span></li>
               </ol>
               <figure class="code-panel">
                 <figcaption>Skill request shape</figcaption>
-                <pre><code>Inspect this PR for architecture boundary movement.
-Use ArchSig Skills.
+                <pre><code>Run the ArchSig Skills on this PR.
+Inspect it for architecture boundary movement.
 Focus on payment, coupon, and workflow responsibility changes.
 Return review findings with code refs and repair candidates.</code></pre>
               </figure>
@@ -101,7 +101,7 @@ Return review findings with code refs and repair candidates.</code></pre>
               <ul class="status-list">
                 <li><strong>It reads design signals, not just edges</strong><span>Imports and calls show contact. ArchSig helps read whether that contact is crossing a boundary, moving responsibility, hiding a workflow assumption, or creating coupling that a graph alone does not explain.</span></li>
                 <li><strong>It finds the pressure points</strong><span>ArchSig can surface hotspots, repeated boundary stress, workflow risk, transfer paths, missing evidence, and architectural holes as one reviewable picture instead of scattered hints.</span></li>
-                <li><strong>It turns diagnosis into review work</strong><span>The Skill can move from summary to source evidence, then return comments, repair candidates, and confirmation checks that engineers can use in a PR or architecture review.</span></li>
+                <li><strong>It turns diagnosis into review work</strong><span>The LLM agent follows the Skill output back to source evidence, then returns comments, repair candidates, and confirmation checks that engineers can use in a PR or architecture review.</span></li>
               </ul>
             </section>
             <section id="returns" class="article-section">

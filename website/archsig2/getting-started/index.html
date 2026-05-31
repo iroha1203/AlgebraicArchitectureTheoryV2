@@ -67,37 +67,37 @@
       <section class="article-hero section-band">
         <div class="site-shell">
           <nav class="breadcrumb" aria-label="Breadcrumb"><a href="../../">Home</a><a href="../">ArchSig</a><span>Getting Started</span></nav>
-          <p class="eyebrow">Start with a review question</p>
-          <h1>Ask ArchSig what the change did to the design.</h1>
-          <p class="lede">Give the Skill a repo, a PR, or a feature area. It builds the architecture reading, checks the relevant source, and returns what reviewers should inspect next.</p>
+          <p class="eyebrow">Run ArchSig through an LLM Skill</p>
+          <h1>Ask your LLM agent to review the design impact.</h1>
+          <p class="lede">Give the agent a repo, a PR, or a feature area, then have it run the ArchSig Skills. The agent builds the architecture reading, checks the relevant source, and returns what reviewers should inspect next.</p>
         </div>
       </section>
       <section class="section-band">
         <div class="site-shell article-layout">
           <aside class="article-sidebar" aria-label="ArchSig page navigation">
-            <nav class="toc-panel" aria-labelledby="toc-title"><h2 id="toc-title">On this page</h2><ol><li><a href="#request">Start with a Skill request</a></li><li><a href="#scope">Tell it what to inspect</a></li><li><a href="#builds">What the Skill builds</a></li><li><a href="#returns">What the Skill returns</a></li><li><a href="#improve">Improve the request</a></li><li><a href="#manual">When to open the manual</a></li></ol></nav>
+            <nav class="toc-panel" aria-labelledby="toc-title"><h2 id="toc-title">On this page</h2><ol><li><a href="#request">Ask the agent</a></li><li><a href="#scope">Tell it what to inspect</a></li><li><a href="#builds">What the Skills build</a></li><li><a href="#returns">What the agent returns</a></li><li><a href="#improve">Improve the request</a></li><li><a href="#manual">When to open the manual</a></li></ol></nav>
             <div class="source-panel" data-sidebar-open="true"><h2>ArchSig</h2><ul><li><a href="../">Overview</a></li><li><a href="./" aria-current="page">Getting Started</a></li><li><a aria-disabled="true">Analyses</a></li><li><a aria-disabled="true">Examples</a></li><li><a aria-disabled="true">Manual</a></li><li><a aria-disabled="true">Reference</a></li></ul></div>
           </aside>
           <div class="article-main">
             <section id="request" class="article-section">
-              <h2>Start with a Skill request</h2>
-              <p>You do not need to begin with commands or schema names. Start with the architecture worry you want reviewed.</p>
+              <h2>Ask the agent to run the Skills</h2>
+              <p>You do not need to begin with commands or schema names. Ask your LLM agent to use the ArchSig Skills, then state the architecture worry you want reviewed.</p>
               <figure class="code-panel">
                 <figcaption>PR review request</figcaption>
-                <pre><code>Use ArchSig Skills to review this PR.
+                <pre><code>Run the ArchSig Skills to review this PR.
 The code passes tests, but I want to know whether it weakens the payment boundary.
 Return findings with source refs, repair candidates, and checks I should run before approving.</code></pre>
               </figure>
               <figure class="code-panel">
                 <figcaption>Codebase inspection request</figcaption>
-                <pre><code>Use ArchSig Skills to inspect the checkout codebase.
+                <pre><code>Run the ArchSig Skills to inspect the checkout codebase.
 Find where workflow responsibility and provider coupling are concentrating.
 Summarize the architecture tendencies and list the first files reviewers should open.</code></pre>
               </figure>
             </section>
             <section id="scope" class="article-section">
               <h2>Tell it what to inspect</h2>
-              <p>A good request gives the Skill enough context to avoid a generic review. Name the scope, the design concern, and the evidence that should or should not count.</p>
+              <p>A good request gives the agent enough context to avoid a generic review. Name the scope, the design concern, and the evidence that should or should not count.</p>
               <ul class="status-list">
                 <li><strong>Scope</strong><span>Repository, PR, branch, subsystem, package, service, feature area, or release window.</span></li>
                 <li><strong>Goal</strong><span>Boundary review, architecture drift check, feature extension review, repair planning, evidence audit, or current-state inspection.</span></li>
@@ -107,17 +107,17 @@ Summarize the architecture tendencies and list the first files reviewers should 
               </ul>
             </section>
             <section id="builds" class="article-section">
-              <h2>What the Skill builds</h2>
-              <p>The Skill turns the request into bounded analysis artifacts. You normally read the result, not every intermediate file.</p>
+              <h2>What the Skills build</h2>
+              <p>The LLM agent uses the Skills to turn the request into bounded analysis artifacts. You normally read the result, not every intermediate file.</p>
               <ul class="status-list">
                 <li><strong>ArchMap</strong><span>A source-backed map of architecture observations, semantic readings, review cues, gaps, and provenance.</span></li>
                 <li><strong>LawPolicy</strong><span>The selected architecture interpretation for this review: which laws, witness rules, axes, and coverage expectations apply.</span></li>
                 <li><strong>ArchSig output</strong><span>An analysis packet and compact summary that expose findings, trends, holes, coverage gaps, and detail references.</span></li>
-                <li><strong>Source comparison</strong><span>The Skill reopens the relevant code paths before turning packet readings into human-facing review work.</span></li>
+                <li><strong>Source comparison</strong><span>The agent reopens the relevant code paths before turning packet readings into human-facing review work.</span></li>
               </ul>
             </section>
             <section id="returns" class="article-section">
-              <h2>What the Skill returns</h2>
+              <h2>What the agent returns</h2>
               <p>The useful result is not a raw score. It is a review queue that says what changed structurally, why it matters, and what should happen next.</p>
               <ul class="status-list">
                 <li><strong>Findings</strong><span>Architecture issues or pressure points with code refs and the reason they matter for the selected review.</span></li>
