@@ -1,0 +1,732 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta
+      name="description"
+      content="Operations, repair, and synthesis in Algebraic Architecture Theory: architecture operations, invariant preservation, feature extension, selected repair, and synthesis soundness."
+    >
+    <meta name="robots" content="noindex">
+    <title>Operations and Calculus</title>
+    <meta property="og:site_name" content="AAT / SFT Research Notes">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="Operations and Calculus">
+    <meta property="og:description" content="Operations, repair, and synthesis in Algebraic Architecture Theory: architecture operations, invariant preservation, feature extension, selected repair, and synthesis soundness.">
+    <meta property="og:url" content="https://iroha1203.dev/aat2/operations-and-calculus/">
+    <meta property="og:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Operations and Calculus">
+    <meta name="twitter:description" content="Operations, repair, and synthesis in Algebraic Architecture Theory: architecture operations, invariant preservation, feature extension, selected repair, and synthesis soundness.">
+    <meta name="twitter:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
+    <link rel="icon" href="../../assets/favicon-32.png" sizes="32x32" type="image/png">
+    <link rel="icon" href="../../assets/favicon-16.png" sizes="16x16" type="image/png">
+    <link rel="alternate" hreflang="en" href="./">
+    <link rel="alternate" hreflang="x-default" href="./">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=Inter:wght@400;500;600;700&amp;family=Source+Serif+4:opsz,wght@8..60,400..700&amp;display=swap"
+      rel="stylesheet"
+    >
+    <script>
+      try {
+        const theme = localStorage.getItem("aat-sft-theme");
+        if (theme === "light" || theme === "dark") {
+          document.documentElement.dataset.theme = theme;
+        }
+      } catch {}
+    </script>
+    <link rel="stylesheet" href="../../assets/site.css">
+    <script>
+      window.MathJax = {
+        tex: {
+          inlineMath: [["\\(", "\\)"]],
+          displayMath: [["\\[", "\\]"]]
+        },
+        chtml: {
+          matchFontHeight: false
+        }
+      };
+    </script>
+    <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+    <script defer src="../../assets/site.js"></script>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-YQMFH2FG9V"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-YQMFH2FG9V');
+    </script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <header class="site-header" data-site-header>
+      <div class="site-shell header-inner">
+        <a class="brand" href="../../" aria-label="AAT SFT home">
+          <img class="brand-icon" src="../../assets/favicon-512.png" alt="" width="512" height="512" aria-hidden="true">
+          <span class="brand-mark">AAT/SFT</span>
+          <span class="brand-text">Research Notes</span>
+        </a>
+        <nav class="site-nav" aria-label="Primary navigation">
+          <a href="../../">Home</a>
+          <a class="is-active" href="../../aat/">AAT</a>
+          <a href="../../sft/">SFT</a>
+          <a href="../../archsig/">ArchSig</a>
+          <a href="../../outreach/">Outreach</a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="main">
+      <section class="article-hero section-band">
+        <div class="site-shell">
+          <nav class="breadcrumb" aria-label="Breadcrumb">
+            <a href="../../">Home</a>
+            <a href="../">AAT</a>
+            <span>Operations and Calculus</span>
+          </nav>
+          <p class="eyebrow">Part II. Flatness, Calculus, and Geometry</p>
+          <h1>Operations and Calculus</h1>
+          <p class="lede">
+            Architecture changes become mathematical only when they state their
+            source, target, preconditions, preserved invariants, witness
+            transport, repair measure, or synthesis certificate. AAT treats
+            design work as bounded operations, not as unconditional improvement.
+          </p>
+        </div>
+      </section>
+
+      <section class="section-band">
+        <div class="site-shell article-layout">
+          <aside class="article-sidebar" aria-label="AAT2 page navigation">
+            <nav class="toc-panel" aria-labelledby="toc-title">
+              <h2 id="toc-title">On this page</h2>
+              <ol>
+                <li><a href="#research-question">Research question</a></li>
+                <li><a href="#architecture-operation">Architecture operation</a></li>
+                <li><a href="#operation-roles">Kinds and roles</a></li>
+                <li><a href="#operation-laws">Operation laws</a></li>
+                <li><a href="#invariant-correspondence">Invariant correspondence</a></li>
+                <li><a href="#feature-extension">Feature extension</a></li>
+                <li><a href="#repair">Repair</a></li>
+                <li><a href="#synthesis">Synthesis</a></li>
+                <li><a href="#example">Worked example</a></li>
+                <li><a href="#formal-reading">Formal reading</a></li>
+              </ol>
+            </nav>
+            <div class="source-panel" data-sidebar-open="true">
+              <h2>AAT2 chapters</h2>
+              <ul>
+                <li><a href="../">Overview</a></li>
+                <li><a href="../atoms/">Atoms</a></li>
+                <li><a href="../architecture-objects/">Architecture Objects</a></li>
+                <li><a href="../laws/">Design Laws</a></li>
+                <li><a href="../obstruction-circuits/">Obstruction Circuits</a></li>
+                <li><a href="../zero-curvature/">Zero Curvature</a></li>
+                <li><a href="../architecture-signature/">Architecture Signature</a></li>
+                <li><a href="../design-principle-layers/">Design Principle Layers</a></li>
+                <li><a href="./" aria-current="page">Operations and Calculus</a></li>
+                <li><a href="../dynamics-and-geometry/">Dynamics and Geometry</a></li>
+                <li><a href="../representations-and-effects/">Representations and Effects</a></li>
+                <li><a href="../canonical-examples-and-readings/">Examples and Readings</a></li>
+                <li><a href="../related-work/">Related Work</a></li>
+                <li><a href="../status/">Status</a></li>
+                <li><a href="../formal-anchors/">Formal Anchors</a></li>
+              </ul>
+            </div>
+          </aside>
+
+          <div class="article-main">
+            <section id="research-question" class="article-section">
+              <h2>Research question</h2>
+              <p class="research-question">
+                When is an architecture change a theorem-bearing operation rather
+                than an informal refactoring story?
+              </p>
+              <p>
+                AAT answers by demanding an operation package. The package records
+                which architecture state changes, which preconditions are visible,
+                which invariant or obstruction family is selected, how witnesses
+                are transported, which conclusion is licensed, and which readings
+                are excluded. The operation name is only a tag until that evidence
+                is supplied.
+              </p>
+            </section>
+
+            <section id="architecture-operation" class="article-section">
+              <h2>Architecture operation</h2>
+              <p>
+                An architecture operation is a selected move from a source
+                architecture state to a target architecture state. It may be a
+                replacement, split, merge, protection step, migration, repair, or
+                synthesis action. The operation becomes mathematical when its
+                precondition and proof obligation say what the move preserves,
+                reflects, improves, localizes, translates, or assumes.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Operation schema</figcaption>
+                <pre><code>ArchitectureOperation
+  = kind
+  + source
+  + target
+  + precondition
+  + generated proof obligation
+  + source witness predicate
+  + target witness predicate
+  + target-to-source witness map
+  + witness mapping soundness
+  + non-conclusions</code></pre>
+              </figure>
+              <p id="definition-1-1" class="statement">
+                <a class="statement-anchor" href="#definition-1-1">Definition 1.1.</a>
+                An <code>ArchitectureOperation</code> is an evidence-indexed
+                partial architecture-state move carrying source and target states,
+                an operation kind, a precondition, a generated proof obligation,
+                witness predicates before and after the move, a target-to-source
+                witness map, a soundness proof for that map, and recorded
+                non-conclusions.
+              </p>
+              <p id="proposition-1-2" class="statement">
+                <a class="statement-anchor" href="#proposition-1-2">Proposition 1.2.</a>
+                The operation schema exposes a one-way witness bridge: every
+                selected target witness can be transported back to a selected
+                source witness through the stored witness map.
+              </p>
+              <p id="proof-1-2" class="statement-proof">
+                <a class="statement-anchor" href="#proof-1-2">Proof.</a>
+                Lean stores <code>witnessMap</code> and
+                <code>witnessMappingSound</code> as fields of
+                <code>ArchitectureOperation</code>. The accessor theorem
+                <code>exists_sourceWitness_of_targetWitness</code> packages the
+                transported source witness existentially.
+              </p>
+            </section>
+
+            <section id="operation-roles" class="article-section">
+              <h2>Kinds and roles</h2>
+              <p>
+                Operation kinds classify the move. Operation roles classify how a
+                theorem package reads the move. This separation matters: a
+                <code>repair</code> tag does not prove repair, and a
+                <code>preserve</code> role tag does not prove preservation. The
+                proof obligation supplies the conclusion.
+              </p>
+              <div class="article-table">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Vocabulary</th>
+                      <th>Examples</th>
+                      <th>What it does not prove by itself</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>Operation kind</td>
+                      <td><code>compose</code>, <code>refine</code>, <code>abstract</code>, <code>replace</code>, <code>split</code>, <code>merge</code>, <code>isolate</code>, <code>protect</code>, <code>migrate</code>, <code>reverse</code>, <code>contract</code>, <code>repair</code>, <code>synthesize</code></td>
+                      <td>Preservation, improvement, safety, or solvability.</td>
+                    </tr>
+                    <tr>
+                      <td>Operation role</td>
+                      <td><code>preserve</code>, <code>reflect</code>, <code>improve</code>, <code>localize</code>, <code>translate</code>, <code>transfer</code>, <code>assume</code></td>
+                      <td>The selected role conclusion until the proof package is discharged.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <p id="proposition-2-1" class="statement">
+                <a class="statement-anchor" href="#proposition-2-1">Proposition 2.1.</a>
+                A discharged preserve-role package yields selected invariant
+                preservation only when its bounded conclusion is exactly the
+                source-to-target preservation statement.
+              </p>
+              <p id="proof-2-1" class="statement-proof">
+                <a class="statement-anchor" href="#proof-2-1">Proof.</a>
+                <code>preservesInvariant_of_discharged_preserve</code> requires
+                the role tag, the conclusion-shape equality, a discharged role
+                package, and visible assumptions. The tag alone is not enough.
+              </p>
+              <p id="proposition-2-2" class="statement">
+                <a class="statement-anchor" href="#proposition-2-2">Proposition 2.2.</a>
+                A discharged improve-role package yields only the selected
+                improvement relation named by that package.
+              </p>
+              <p id="proof-2-2" class="statement-proof">
+                <a class="statement-anchor" href="#proof-2-2">Proof idea.</a>
+                <code>selectedImprovement_of_discharged_improve</code> reads the
+                conclusion through a caller-supplied relation
+                <code>improves : State -> State -> Prop</code>. No all-axis
+                monotonicity follows.
+              </p>
+            </section>
+
+            <section id="operation-laws" class="article-section">
+              <h2>Operation laws</h2>
+              <p>
+                AAT names calculus laws such as identity, associativity,
+                edge-union composition, refinement / abstraction compatibility,
+                edge equivalence, protection idempotence, runtime localization,
+                migration compatibility, reverse involution, witness mapping,
+                synthesis soundness, and no-solution soundness. Each is a bounded
+                theorem package with visible assumptions.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Calculus law package</figcaption>
+                <pre><code>ArchitectureCalculusLaw
+  = law kind
+  + operation kind
+  + bounded universe
+  + compatibility assumptions
+  + coverage assumptions
+  + exactness assumptions
+  + observation equivalence
+  + conclusion
+  + soundness proof
+  + non-conclusions</code></pre>
+              </figure>
+              <p id="proposition-3-1" class="statement">
+                <a class="statement-anchor" href="#proposition-3-1">Proposition 3.1.</a>
+                A bounded calculus law yields its recorded conclusion from its
+                recorded assumptions.
+              </p>
+              <p id="proof-3-1" class="statement-proof">
+                <a class="statement-anchor" href="#proof-3-1">Proof.</a>
+                <code>ArchitectureCalculusLaw.conclusion_of_assumptions</code>
+                applies the law package's <code>sound</code> field to
+                <code>boundedUniverse</code>, compatibility, coverage, exactness,
+                and observation-equivalence assumptions.
+              </p>
+              <p id="example-3-2" class="statement">
+                <a class="statement-anchor" href="#example-3-2">Example 3.2.</a>
+                <code>finiteComposeEdgeUnionLaw</code> proves a concrete
+                edge-union statement for finite graph composition. It is not an
+                unconditional associativity or flatness-preservation theorem.
+              </p>
+              <p id="example-3-3" class="statement">
+                <a class="statement-anchor" href="#example-3-3">Example 3.3.</a>
+                <code>localReplacementPreservationLaw</code> reads a
+                <code>LocalReplacementContract</code> as projection soundness and
+                LSP compatibility. This is separate from graph-level edge
+                equivalence replacement.
+              </p>
+            </section>
+
+            <section id="invariant-correspondence" class="article-section">
+              <h2>Invariant correspondence</h2>
+              <p>
+                The calculus links operation families and invariant families. For
+                selected invariants \(S\), <code>Ops(S)</code> is the family of
+                operations that preserve every invariant in \(S\). For selected
+                operations \(T\), <code>Inv(T)</code> is the family of invariants
+                preserved by every operation in \(T\).
+              </p>
+              <figure class="code-panel">
+                <figcaption>Weak Galois correspondence</figcaption>
+                <pre><code>Ops(S) = { op | for all I in S, op preserves I }
+Inv(T) = { I  | for all op in T, op preserves I }
+
+T subset Ops(S)  iff  S subset Inv(T)</code></pre>
+              </figure>
+              <p id="theorem-4-1" class="statement">
+                <a class="statement-anchor" href="#theorem-4-1">Theorem 4.1.</a>
+                Operation families and invariant families form a weak
+                preservation correspondence: <code>T subset Ops(S)</code> iff
+                <code>S subset Inv(T)</code>.
+              </p>
+              <p id="proof-4-1" class="statement-proof">
+                <a class="statement-anchor" href="#proof-4-1">Proof.</a>
+                Lean proves <code>operationInvariant_galois</code> directly from
+                the definitions of <code>Ops</code>, <code>Inv</code>, and
+                predicate-family inclusion. The antitone and closure theorems make
+                the design tradeoff explicit: stronger invariant requirements
+                reduce allowed operations; broader operation families reduce the
+                invariants preserved by all operations.
+              </p>
+            </section>
+
+            <section id="feature-extension" class="article-section">
+              <h2>Feature extension</h2>
+              <p>
+                Feature extension is the software-evolution operation in which an
+                existing core is embedded into an extended architecture and a
+                feature view is added. It is not automatically safe. Static split,
+                feature-view soundness, lifting, runtime coverage, semantic
+                coverage, and obstruction classification are separate evidence
+                packages.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Extension evidence layers</figcaption>
+                <pre><code>FeatureExtension
+  = core embedding
+  + feature embedding
+  + feature view
+
+StaticSplitFeatureExtension
+  = core edge preservation
+  + declared interface discipline
+  + no forbidden static crossing
+
+SplitFeatureExtensionWithin
+  = selected universe
+  + static evidence
+  + runtime evidence
+  + semantic evidence
+  + coverage and non-conclusions</code></pre>
+              </figure>
+              <p id="definition-5-1" class="statement">
+                <a class="statement-anchor" href="#definition-5-1">Definition 5.1.</a>
+                A feature extension is a bounded operation that expands a core by
+                adding feature-owned atoms, relations, views, and interaction
+                evidence while keeping the selected core embedding visible.
+              </p>
+              <p id="proposition-5-2" class="statement">
+                <a class="statement-anchor" href="#proposition-5-2">Proposition 5.2.</a>
+                Extension obstruction classification is explanatory and may be
+                multi-label: inherited core obstruction, feature-local
+                obstruction, interaction obstruction, lifting failure, filling
+                failure, complexity transfer, and residual coverage gap are not
+                required to be disjoint.
+              </p>
+              <p id="proof-5-2" class="statement-proof">
+                <a class="statement-anchor" href="#proof-5-2">Proof idea.</a>
+                Lean defines <code>ExtensionObstructionClass</code>,
+                <code>ExtensionObstructionWitness</code>, and
+                <code>MultiLabelExtensionObstructionWitness</code>. The
+                conversion <code>toMultiLabel</code> preserves the selected
+                classification without asserting an exhaustive disjoint
+                decomposition of reality.
+              </p>
+            </section>
+
+            <section id="repair" class="article-section">
+              <h2>Repair</h2>
+              <p>
+                Repair is an operation read through a selected obstruction
+                universe and selected measure. A strict repair step decreases
+                that selected measure. It does not claim all-axis improvement,
+                runtime safety, semantic safety, or global flatness unless those
+                are additional package conclusions.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Selected repair</figcaption>
+                <pre><code>SelectedObstructionUniverse
+  = selected witness predicate
+  + witnessAt : State -&gt; Witness -&gt; Prop
+  + measure : State -&gt; Nat
+
+RepairStepDecreases U source target
+  iff measure_U(target) &lt; measure_U(source)</code></pre>
+              </figure>
+              <p id="definition-6-1" class="statement">
+                <a class="statement-anchor" href="#definition-6-1">Definition 6.1.</a>
+                A repair step is strict for a selected obstruction universe when
+                the target's selected obstruction measure is strictly smaller than
+                the source's selected obstruction measure.
+              </p>
+              <p id="proposition-6-2" class="statement">
+                <a class="statement-anchor" href="#proposition-6-2">Proposition 6.2.</a>
+                An admissible repair rule decreases the selected obstruction
+                measure for the selected witness, rule, and step.
+              </p>
+              <p id="proof-6-2" class="statement-proof">
+                <a class="statement-anchor" href="#proof-6-2">Proof.</a>
+                <code>repairStepDecreases_of_admissible</code> applies the
+                <code>decreasesSelectedMeasure</code> field of an
+                <code>AdmissibleRepairRule</code>. The law-package entrypoint
+                <code>repairStepDecreasesLaw_conclusion</code> exposes the same
+                selected-measure decrease through the bounded calculus-law
+                interface.
+              </p>
+              <p id="proposition-6-3" class="statement">
+                <a class="statement-anchor" href="#proposition-6-3">Proposition 6.3.</a>
+                A finite repair package clears only the selected obstruction
+                universe at the target.
+              </p>
+              <p id="proof-6-3" class="statement-proof">
+                <a class="statement-anchor" href="#proof-6-3">Proof.</a>
+                <code>BoundedRepairPlan.selectedObstructionsCleared</code> uses
+                the package's zero-measure-to-clearing bridge.
+                <code>FiniteRepairPackage.selectedObstructionsCleared</code>
+                exposes that selected conclusion. The package still records
+                non-conclusions separately.
+              </p>
+              <p id="non-conclusion-6-4" class="statement">
+                <a class="statement-anchor" href="#non-conclusion-6-4">Non-conclusion 6.4.</a>
+                Selected repair can transfer complexity or obstruction to another
+                axis. Decreasing one measure is not proof of total architecture
+                improvement.
+              </p>
+            </section>
+
+            <section id="synthesis" class="article-section">
+              <h2>Synthesis</h2>
+              <p>
+                Synthesis is the operation of producing an architecture candidate
+                that satisfies a selected constraint system. AAT separates
+                candidate soundness from no-solution soundness. A candidate is
+                useful when a soundness package proves it satisfies every
+                required constraint. Failure to produce a candidate is not a
+                proof that no solution exists.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Synthesis package</figcaption>
+                <pre><code>SynthesisConstraintSystem
+  = required : Constraint -&gt; Prop
+  + satisfies : State -&gt; Constraint -&gt; Prop
+
+SynthesisSoundnessPackage
+  = candidate
+  + proof candidate satisfies all required constraints
+  + coverage / exactness / non-conclusions
+
+NoSolutionCertificate
+  = certificate
+  + validity predicate
+  + proof valid certificate implies no satisfying architecture</code></pre>
+              </figure>
+              <p id="proposition-7-1" class="statement">
+                <a class="statement-anchor" href="#proposition-7-1">Proposition 7.1.</a>
+                A sound synthesis package proves that its produced candidate
+                satisfies the selected constraint system.
+              </p>
+              <p id="proof-7-1" class="statement-proof">
+                <a class="statement-anchor" href="#proof-7-1">Proof.</a>
+                <code>SynthesisSoundnessPackage.candidate_satisfies</code>
+                returns <code>ArchitectureSatisfies C candidate</code>. The
+                calculus entrypoint
+                <code>synthesisCandidateSoundnessLaw_conclusion</code> exposes
+                that conclusion as a bounded synthesis law.
+              </p>
+              <p id="proposition-7-2" class="statement">
+                <a class="statement-anchor" href="#proposition-7-2">Proposition 7.2.</a>
+                A no-solution statement requires a valid no-solution certificate.
+              </p>
+              <p id="proof-7-2" class="statement-proof">
+                <a class="statement-anchor" href="#proof-7-2">Proof.</a>
+                <code>NoSolutionCertificate.sound_of_valid</code> requires
+                <code>ValidNoSolutionCertificate</code>. The bounded law
+                <code>noSolutionCertificateSoundnessLaw_conclusion</code> keeps
+                that validity premise visible as its bounded-universe assumption.
+              </p>
+            </section>
+
+            <section id="example" class="article-section">
+              <h2>Worked example</h2>
+              <p>
+                Consider adding coupons to a payment service. The feature
+                extension adds discount policy, coupon validation, rounding, tax,
+                ledger update, and receipt effects. AAT does not ask whether the
+                feature "looks clean." It asks which operation package is being
+                claimed.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Coupon operation reading</figcaption>
+                <pre><code>extension:
+  core payment object -&gt; coupon-extended payment object
+
+selected invariants:
+  declared payment interface route
+  selected amount observation
+  selected static split policy
+
+obstruction:
+  direct dependency from coupon code to internal payment implementation
+  semantic rounding mismatch after discount
+
+repair:
+  replace direct internal dependency with declared interface route
+  selected static obstruction measure decreases
+
+not concluded:
+  all semantic diagrams commute
+  runtime retries are safe
+  every future coupon rule is covered</code></pre>
+              </figure>
+              <p>
+                The repair may clear the selected static hidden-dependency
+                witness while leaving a semantic rounding diagram non-commuting.
+                That is not a failure of the calculus. It is exactly the point of
+                the calculus: each operation reports the axis it changes and the
+                axes it does not claim.
+              </p>
+            </section>
+
+            <section id="counterexamples" class="article-section">
+              <h2>Counterexamples and non-conclusions</h2>
+              <p id="counterexample-9-1" class="statement">
+                <a class="statement-anchor" href="#counterexample-9-1">Counterexample 9.1.</a>
+                A <code>repair</code> operation kind without an admissible repair
+                rule is only a tag. It does not decrease any obstruction measure.
+              </p>
+              <p id="counterexample-9-2" class="statement">
+                <a class="statement-anchor" href="#counterexample-9-2">Counterexample 9.2.</a>
+                A selected repair can decrease a static hidden-dependency measure
+                while increasing semantic mismatch or runtime exposure.
+              </p>
+              <p id="counterexample-9-3" class="statement">
+                <a class="statement-anchor" href="#counterexample-9-3">Counterexample 9.3.</a>
+                A solver returning no candidate is not a no-solution certificate.
+                No-solution soundness requires a valid certificate package.
+              </p>
+              <p id="counterexample-9-4" class="statement">
+                <a class="statement-anchor" href="#counterexample-9-4">Counterexample 9.4.</a>
+                A feature extension can preserve a static split policy while
+                introducing an effect-ordering or rounding-law obstruction.
+              </p>
+            </section>
+
+            <section id="formal-reading" class="article-section">
+              <h2>Formal reading</h2>
+              <p>
+                The Lean surface for this chapter is concentrated in
+                <code>Formal/Arch/Operation</code>,
+                <code>Formal/Arch/Extension</code>, and
+                <code>Formal/Arch/Repair</code>. The important boundary is that
+                operation tags, law tags, and repair suggestions are not theorem
+                conclusions until the corresponding package assumptions are
+                visible.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Lean anchors</figcaption>
+                <pre><code>Formal/Arch/Operation/Operation.lean
+  ArchitectureOperationKind
+  ArchitectureOperationRole
+  ProofObligation
+  OperationProofObligation
+  ArchitectureOperation
+  ArchitectureOperation.exists_sourceWitness_of_targetWitness
+
+Formal/Arch/Operation/OperationInvariant.lean
+  PreservesInvariant
+  Ops
+  Inv
+  operationInvariant_galois
+  preservesInvariant_of_discharged_preserve
+  selectedImprovement_of_discharged_improve
+
+Formal/Arch/Operation/OperationLaws.lean
+  ArchitectureCalculusLaw
+  ArchitectureCalculusLaw.conclusion_of_assumptions
+  finiteComposeEdgeUnionLaw
+  interfaceMediatedComposeAssociativityLaw
+  finiteReplaceEdgeEquivalenceLaw
+  localReplacementPreservationLaw
+  localReplacementViolationZeroLaw
+  repairStepDecreasesLaw
+  synthesisCandidateSoundnessLaw
+  noSolutionCertificateSoundnessLaw
+
+Formal/Arch/Extension/FeatureExtension.lean
+  FeatureExtension
+  StaticSplitFeatureExtension
+  SplitFeatureExtensionWithin
+
+Formal/Arch/Extension/ArchitectureExtensionFormula.lean
+  ExtensionObstructionClass
+  ExtensionObstructionWitness
+  MultiLabelExtensionObstructionWitness
+
+Formal/Arch/Repair/Repair.lean
+  SelectedObstructionUniverse
+  RepairStep
+  AdmissibleRepairRule
+  repairStepDecreases_of_admissible
+
+Formal/Arch/Repair/RepairSynthesis.lean
+  BoundedRepairPlan
+  FiniteRepairPackage
+  SynthesisConstraintSystem
+  SynthesisSoundnessPackage
+  NoSolutionCertificate</code></pre>
+              </figure>
+              <p id="formal-status-10-1" class="statement">
+                <a class="statement-anchor" href="#formal-status-10-1">Formal status 10.1.</a>
+                Operation kind, operation role, proof obligation, architecture
+                operation, operation-invariant correspondence, bounded calculus
+                laws, selected repair, finite repair, synthesis soundness, and
+                no-solution certificate schemas are defined in Lean.
+              </p>
+              <p id="formal-status-10-2" class="statement">
+                <a class="statement-anchor" href="#formal-status-10-2">Formal status 10.2.</a>
+                The key bridge theorems are proved: witness reflection from
+                target to source, operation-invariant Galois correspondence,
+                bounded calculus-law conclusion extraction, selected repair
+                measure decrease, selected obstruction clearing for finite repair,
+                synthesis candidate satisfaction, and valid no-solution
+                certificate soundness.
+              </p>
+            </section>
+
+            <section id="chapter-summary" class="article-section">
+              <h2>Chapter summary</h2>
+              <p>
+                Operations are the algebra of architecture change. They let AAT
+                ask what a change preserves, what it reflects, what measure it
+                improves, which witness family it repairs, and which constraints
+                a synthesized candidate satisfies.
+              </p>
+              <p>
+                The claim discipline is the main result. Operation tags do not
+                imply improvement, repair does not imply all-axis monotonicity,
+                feature extension does not imply safety, and solver failure does
+                not imply no solution. Each conclusion belongs to a bounded
+                theorem package.
+              </p>
+              <h3>Terms</h3>
+              <dl class="term-list definition-list">
+                <div>
+                  <dt>ArchitectureOperation</dt>
+                  <dd>A source-to-target architecture-state move carrying precondition, proof obligation, witness transport, and non-conclusions.</dd>
+                </div>
+                <div>
+                  <dt>Operation role</dt>
+                  <dd>The selected reading of an operation: preserve, reflect, improve, localize, translate, transfer, or assume.</dd>
+                </div>
+                <div>
+                  <dt>ArchitectureCalculusLaw</dt>
+                  <dd>A bounded theorem package for an operation law under explicit compatibility, coverage, exactness, and observation assumptions.</dd>
+                </div>
+                <div>
+                  <dt>Feature extension</dt>
+                  <dd>A local evolution operation embedding a core into an extended architecture with a selected feature view and evidence packages.</dd>
+                </div>
+                <div>
+                  <dt>Selected repair</dt>
+                  <dd>A repair claim relative to a chosen obstruction universe, selected witness, rule, and measure.</dd>
+                </div>
+                <div>
+                  <dt>Synthesis soundness</dt>
+                  <dd>A theorem package proving a produced candidate satisfies the selected constraint system.</dd>
+                </div>
+              </dl>
+            </section>
+
+            <nav class="page-nav" aria-label="Reading sequence">
+              <a class="page-nav-previous" href="../design-principle-layers/">
+                <span>Previous</span>
+                <strong>Design Principle Layers</strong>
+              </a>
+              <a class="page-nav-next" href="../dynamics-and-geometry/">
+                <span>Next</span>
+                <strong>Dynamics and Geometry</strong>
+              </a>
+            </nav>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="site-shell footer-inner">
+        <p>&copy; <span data-current-year>2026</span> Hiroyuki Nakahata.</p>
+        <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2" target="_blank" rel="noopener noreferrer">
+          Repository
+        </a>
+      </div>
+    </footer>
+  </body>
+</html>
