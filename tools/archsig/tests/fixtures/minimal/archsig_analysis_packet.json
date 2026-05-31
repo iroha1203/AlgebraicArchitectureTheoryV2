@@ -3772,6 +3772,14 @@
       "forgottenAxisRefs": [
         "gap-runtime-user-db-trace"
       ],
+      "selectedSignatureAxisRefs": [
+        "sig-axis:layer-violation",
+        "sig-axis:semantic-inconsistency"
+      ],
+      "blockedSignatureAxisRefs": [
+        "sig-axis:layer-violation",
+        "sig-axis:semantic-inconsistency"
+      ],
       "mixedAxisScopeRefs": [
         "atom-support-axis:fixture-archmap-atom-observation",
         "atom-support-axis:molecule-user-request-responsibility"
@@ -3812,7 +3820,12 @@
         "gap-runtime-user-db-trace: runtime trace was requested but not supplied"
       ],
       "projectionLossAxes": [
+        "axis-forgotten-family:effect",
+        "axis-forgotten-family:runtimeinteraction",
         "gap-runtime-user-db-trace"
+      ],
+      "reconstructionBlockerRefs": [
+        "projection-reconstruction-blocker:gap-runtime-user-db-trace"
       ],
       "reflectionStatus": "blockedWithoutAxisPreservationAndWitnessCompleteness",
       "measurementBoundary": "projection loss is separated from zero/lawfulness; missing coordinates are not measured absent atoms",
@@ -8363,8 +8376,217 @@
         "relation"
       ],
       "observedAtomFamilyCount": 3,
+      "sourceCoordinates": [
+        {
+          "coordinateId": "projection-coordinate:observed:atom-component-route-users",
+          "coordinateKind": "observedAtomCoordinate",
+          "atomFamily": "existence",
+          "subjectRef": "route.users",
+          "predicate": "component route.users exists",
+          "atomObservationRefs": [
+            "atom:component:route-users"
+          ],
+          "sourceRefs": [
+            "src-route-users"
+          ],
+          "status": "observed",
+          "reading": "observed ArchMap atom coordinate in the canonical projection boundary"
+        },
+        {
+          "coordinateId": "projection-coordinate:observed:atom-component-service-user",
+          "coordinateKind": "observedAtomCoordinate",
+          "atomFamily": "existence",
+          "subjectRef": "service.user",
+          "predicate": "component service.user exists",
+          "atomObservationRefs": [
+            "atom:component:service-user"
+          ],
+          "sourceRefs": [
+            "src-service-user"
+          ],
+          "status": "observed",
+          "reading": "observed ArchMap atom coordinate in the canonical projection boundary"
+        },
+        {
+          "coordinateId": "projection-coordinate:observed:atom-relation-route-service",
+          "coordinateKind": "observedAtomCoordinate",
+          "atomFamily": "relation",
+          "subjectRef": "semantic.route.users->service.user",
+          "predicate": "route.users delegates user creation to service.user",
+          "atomObservationRefs": [
+            "atom:relation:route-service"
+          ],
+          "sourceRefs": [
+            "src-route-users",
+            "src-service-user"
+          ],
+          "status": "observed",
+          "reading": "observed ArchMap atom coordinate in the canonical projection boundary"
+        },
+        {
+          "coordinateId": "projection-coordinate:observed:atom-contract-create-user",
+          "coordinateKind": "observedAtomCoordinate",
+          "atomFamily": "contractSpecification",
+          "subjectRef": "contract.createsUser",
+          "predicate": "contract test observes create-user success",
+          "atomObservationRefs": [
+            "atom:contract:create-user"
+          ],
+          "sourceRefs": [
+            "test-user-contract"
+          ],
+          "status": "observed",
+          "reading": "observed ArchMap atom coordinate in the canonical projection boundary"
+        },
+        {
+          "coordinateId": "projection-coordinate:forgotten:gap-runtime-user-db-trace:runtimeinteraction",
+          "coordinateKind": "forgottenExpectedCoordinate",
+          "atomFamily": "runtimeInteraction",
+          "subjectRef": "runtime.service.user->db.users",
+          "predicate": "UnavailableRuntimeTrace",
+          "atomObservationRefs": [],
+          "sourceRefs": [
+            ".lake/runtime-trace.json"
+          ],
+          "status": "unavailable",
+          "reading": "runtime.service.user->db.users is an expected coordinate blocked by observation gap gap-runtime-user-db-trace"
+        },
+        {
+          "coordinateId": "projection-coordinate:forgotten:gap-runtime-user-db-trace:effect",
+          "coordinateKind": "forgottenExpectedCoordinate",
+          "atomFamily": "effect",
+          "subjectRef": "runtime.service.user->db.users",
+          "predicate": "UnavailableRuntimeTrace",
+          "atomObservationRefs": [],
+          "sourceRefs": [
+            ".lake/runtime-trace.json"
+          ],
+          "status": "unavailable",
+          "reading": "runtime.service.user->db.users is an expected coordinate blocked by observation gap gap-runtime-user-db-trace"
+        }
+      ],
+      "observedCoordinates": [
+        {
+          "coordinateId": "projection-coordinate:observed:atom-component-route-users",
+          "coordinateKind": "observedAtomCoordinate",
+          "atomFamily": "existence",
+          "subjectRef": "route.users",
+          "predicate": "component route.users exists",
+          "atomObservationRefs": [
+            "atom:component:route-users"
+          ],
+          "sourceRefs": [
+            "src-route-users"
+          ],
+          "status": "observed",
+          "reading": "observed ArchMap atom coordinate in the canonical projection boundary"
+        },
+        {
+          "coordinateId": "projection-coordinate:observed:atom-component-service-user",
+          "coordinateKind": "observedAtomCoordinate",
+          "atomFamily": "existence",
+          "subjectRef": "service.user",
+          "predicate": "component service.user exists",
+          "atomObservationRefs": [
+            "atom:component:service-user"
+          ],
+          "sourceRefs": [
+            "src-service-user"
+          ],
+          "status": "observed",
+          "reading": "observed ArchMap atom coordinate in the canonical projection boundary"
+        },
+        {
+          "coordinateId": "projection-coordinate:observed:atom-relation-route-service",
+          "coordinateKind": "observedAtomCoordinate",
+          "atomFamily": "relation",
+          "subjectRef": "semantic.route.users->service.user",
+          "predicate": "route.users delegates user creation to service.user",
+          "atomObservationRefs": [
+            "atom:relation:route-service"
+          ],
+          "sourceRefs": [
+            "src-route-users",
+            "src-service-user"
+          ],
+          "status": "observed",
+          "reading": "observed ArchMap atom coordinate in the canonical projection boundary"
+        },
+        {
+          "coordinateId": "projection-coordinate:observed:atom-contract-create-user",
+          "coordinateKind": "observedAtomCoordinate",
+          "atomFamily": "contractSpecification",
+          "subjectRef": "contract.createsUser",
+          "predicate": "contract test observes create-user success",
+          "atomObservationRefs": [
+            "atom:contract:create-user"
+          ],
+          "sourceRefs": [
+            "test-user-contract"
+          ],
+          "status": "observed",
+          "reading": "observed ArchMap atom coordinate in the canonical projection boundary"
+        }
+      ],
       "forgottenCoordinates": [
         "gap-runtime-user-db-trace"
+      ],
+      "forgottenCoordinateEvidence": [
+        {
+          "coordinateId": "projection-coordinate:forgotten:gap-runtime-user-db-trace:runtimeinteraction",
+          "coordinateKind": "forgottenExpectedCoordinate",
+          "atomFamily": "runtimeInteraction",
+          "subjectRef": "runtime.service.user->db.users",
+          "predicate": "UnavailableRuntimeTrace",
+          "atomObservationRefs": [],
+          "sourceRefs": [
+            ".lake/runtime-trace.json"
+          ],
+          "status": "unavailable",
+          "reading": "runtime.service.user->db.users is an expected coordinate blocked by observation gap gap-runtime-user-db-trace"
+        },
+        {
+          "coordinateId": "projection-coordinate:forgotten:gap-runtime-user-db-trace:effect",
+          "coordinateKind": "forgottenExpectedCoordinate",
+          "atomFamily": "effect",
+          "subjectRef": "runtime.service.user->db.users",
+          "predicate": "UnavailableRuntimeTrace",
+          "atomObservationRefs": [],
+          "sourceRefs": [
+            ".lake/runtime-trace.json"
+          ],
+          "status": "unavailable",
+          "reading": "runtime.service.user->db.users is an expected coordinate blocked by observation gap gap-runtime-user-db-trace"
+        }
+      ],
+      "nonInjectivityCandidates": [],
+      "reconstructionBlockerEvidence": [
+        {
+          "blockerId": "projection-reconstruction-blocker:gap-runtime-user-db-trace",
+          "blockerKind": "UnavailableRuntimeTrace",
+          "coordinateRefs": [
+            "projection-coordinate:forgotten:gap-runtime-user-db-trace:runtimeinteraction",
+            "projection-coordinate:forgotten:gap-runtime-user-db-trace:effect"
+          ],
+          "gapRefs": [
+            "gap-runtime-user-db-trace"
+          ],
+          "expectedAtomFamilies": [
+            "runtimeInteraction",
+            "effect"
+          ],
+          "sourceRefs": [
+            ".lake/runtime-trace.json"
+          ],
+          "blockedAxisRefs": [
+            "axis-forgotten-family:runtimeinteraction",
+            "axis-forgotten-family:effect"
+          ],
+          "evidenceRefs": [
+            ".lake/runtime-trace.json"
+          ],
+          "reading": "gap-runtime-user-db-trace blocks reconstruction of expected Atom coordinates for runtime.service.user->db.users"
+        }
       ],
       "observationCollisionPairs": [],
       "collapsedAtomFamilyCandidates": [],

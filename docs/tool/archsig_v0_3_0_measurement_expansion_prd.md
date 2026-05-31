@@ -122,6 +122,8 @@ v0.3.0 では、少なくとも次を計測対象にする。
 - coarse projection refs
 - hidden atom family hints
 - reconstruction blockers
+- source / observed / forgotten projection coordinates
+- typed non-injectivity candidates and reconstruction blocker evidence refs
 - reconstruction risk
 - forgotten coordinate count
 

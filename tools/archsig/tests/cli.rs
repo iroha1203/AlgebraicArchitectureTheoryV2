@@ -2844,10 +2844,26 @@ fn assert_north_star_packet_surfaces(json: &Value) {
                 reading["sourceProjectionRef"].as_str().is_some()
                     && reading["fidelityStatus"].as_str().is_some()
                     && reading["forgottenCoordinateCount"].as_u64().is_some()
+                    && reading["reconstructionBlockerRefs"].as_array().is_some()
                     && reading["reflectionStatus"].as_str().is_some()
                     && reading["measurementBoundary"].as_str().is_some()
             }),
         "observation projection fidelity readings must keep projection loss separate from zero/lawfulness"
+    );
+    assert!(
+        json["axisForgettingRiskReadings"]
+            .as_array()
+            .expect("axis forgetting risk readings are array")
+            .iter()
+            .all(|reading| {
+                reading["selectedSignatureAxisRefs"]
+                    .as_array()
+                    .is_some_and(|items| !items.is_empty())
+                    && reading["blockedSignatureAxisRefs"].as_array().is_some()
+                    && reading["zeroReflectionStatus"].as_str().is_some()
+                    && reading["obstructionReflectionStatus"].as_str().is_some()
+            }),
+        "axis forgetting risk must connect projection loss to selected signature axes"
     );
     assert!(
         json["atomOriginClosureDebtReadings"]
@@ -2971,10 +2987,21 @@ fn assert_north_star_packet_surfaces(json: &Value) {
                     && reading["coarseProjectionRisks"]
                         .as_array()
                         .is_some_and(|items| !items.is_empty())
+                    && reading["sourceCoordinates"]
+                        .as_array()
+                        .is_some_and(|items| !items.is_empty())
+                    && reading["observedCoordinates"]
+                        .as_array()
+                        .is_some_and(|items| !items.is_empty())
+                    && reading["forgottenCoordinateEvidence"].as_array().is_some()
+                    && reading["nonInjectivityCandidates"].as_array().is_some()
+                    && reading["reconstructionBlockerEvidence"]
+                        .as_array()
+                        .is_some()
                     && reading["reconstructionRisk"].as_str().is_some()
                     && reading["evidenceBoundary"].as_str().is_some()
             }),
-        "observation projection readings must carry observed families and projection risks"
+        "observation projection readings must carry canonical coordinates, typed blockers, and projection risks"
     );
     assert!(
         json["stateTransitionAlgebraReadings"]
