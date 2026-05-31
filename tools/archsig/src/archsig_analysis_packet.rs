@@ -3,11 +3,11 @@ use std::collections::{BTreeMap, BTreeSet};
 use crate::validation::{count_checks, duplicates, generic_validation_example, validation_check};
 use crate::{
     ARCHMAP_SCHEMA_VERSION, ARCHSIG_ANALYSIS_PACKET_SCHEMA_VERSION,
-    ARCHSIG_ANALYSIS_PACKET_VALIDATION_REPORT_SCHEMA_VERSION, ArchMapConcernHintV0,
-    ArchMapDocumentV0, ArchMapMoleculeObservationV0, ArchMapOperationSquareEvidenceV0,
-    ArchMapSemanticObservationV0, ArchMapSourceRef, ArchSigAatConceptSurfaceV0,
-    ArchSigAmiAggregateReadingV0, ArchSigAmiTopContributorV0, ArchSigAnalysisArtifactRefV0,
-    ArchSigAnalysisPacketV0, ArchSigAnalysisPacketValidationInputV0,
+    ARCHSIG_ANALYSIS_PACKET_VALIDATION_REPORT_SCHEMA_VERSION, ArchMapAtomObservationV0,
+    ArchMapConcernHintV0, ArchMapDocumentV0, ArchMapMoleculeObservationV0,
+    ArchMapOperationSquareEvidenceV0, ArchMapSemanticObservationV0, ArchMapSourceRef,
+    ArchSigAatConceptSurfaceV0, ArchSigAmiAggregateReadingV0, ArchSigAmiTopContributorV0,
+    ArchSigAnalysisArtifactRefV0, ArchSigAnalysisPacketV0, ArchSigAnalysisPacketValidationInputV0,
     ArchSigAnalysisPacketValidationReportV0, ArchSigAnalysisPacketValidationSummaryV0,
     ArchSigAnalyticGraphEdgeV0, ArchSigAnalyticMatrixEntryV0, ArchSigAnalyticRepresentationV0,
     ArchSigArchMapStoreRefsV0, ArchSigArchitecturalHoleReadingV0,
@@ -6617,57 +6617,23 @@ fn build_atom_support_axis_readings(
 fn build_atom_compatibility_readings(
     archmap: &ArchMapDocumentV0,
 ) -> Vec<ArchSigAtomCompatibilityReadingV0> {
-    let mut slots = BTreeMap::<String, Vec<&crate::ArchMapAtomObservationV0>>::new();
+    let mut slots = BTreeMap::<String, Vec<&ArchMapAtomObservationV0>>::new();
     for atom in &archmap.atom_observations {
         slots
             .entry(format!("{}::{}", atom.subject_ref, atom.predicate))
             .or_default()
             .push(atom);
     }
-    let semantic_by_subject = archmap.semantic_observations.iter().fold(
-        BTreeMap::<String, Vec<String>>::new(),
-        |mut map, semantic| {
-            map.entry(semantic.subject_ref.clone())
-                .or_default()
-                .push(semantic.semantic_observation_id.clone());
-            map
-        },
-    );
+    let semantic_by_atom_ref = semantic_refs_by_atom_ref(archmap);
     let conflicts = slots
         .into_iter()
-        .filter_map(|(slot_ref, atoms)| {
-            let families = atoms
-                .iter()
-                .map(|atom| atom.atom_family.clone())
-                .collect::<BTreeSet<_>>();
-            let statuses = atoms
-                .iter()
-                .map(|atom| atom.observation_status.clone())
-                .collect::<BTreeSet<_>>();
-            if atoms.len() < 2 || (families.len() <= 1 && statuses.len() <= 1) {
-                return None;
-            }
-            let first = atoms[0];
-            Some(ArchSigAtomCompatibilityConflictV0 {
-                slot_ref,
-                subject_ref: first.subject_ref.clone(),
-                predicate: first.predicate.clone(),
-                atom_observation_refs: atoms
-                    .iter()
-                    .map(|atom| atom.atom_observation_id.clone())
-                    .collect(),
-                semantic_observation_refs: semantic_by_subject
-                    .get(&first.subject_ref)
-                    .cloned()
-                    .unwrap_or_default(),
-                inconsistency_kind: if families.len() > 1 {
-                    "familyDivergence".to_string()
-                } else {
-                    "statusDivergence".to_string()
-                },
-                reading: "same subject/predicate slot has divergent observed families or statuses"
-                    .to_string(),
-            })
+        .flat_map(|(slot_ref, atoms)| {
+            atom_slot_conflicts(
+                &slot_ref,
+                &atoms,
+                &semantic_by_atom_ref,
+                &archmap.semantic_observations,
+            )
         })
         .collect::<Vec<_>>();
     let conflicting_atom_observation_refs = conflicts
@@ -6694,12 +6660,23 @@ fn build_atom_compatibility_readings(
         conflicting_atom_observation_refs,
         conflicting_semantic_observation_refs,
         payload_inconsistency_kinds: vec![
+            "payloadEquality".to_string(),
+            "incompatibleObjectRefs".to_string(),
+            "contradictoryBooleanClaim".to_string(),
+            "incompatibleSemanticClaim".to_string(),
             "familyDivergence".to_string(),
             "statusDivergence".to_string(),
-            "semanticDivergence".to_string(),
+            "confidenceDivergence".to_string(),
         ],
-        confidence_boundary: "compatibility is checked over observed subject/predicate slots only"
-            .to_string(),
+        payload_comparison_policy: vec![
+            "compare same subject/predicate slots pairwise".to_string(),
+            "treat differing non-empty object refs as incompatible payload refs".to_string(),
+            "treat yes/no or true/false payload tokens as contradictory boolean claims".to_string(),
+            "link semantic divergence only through semantic observations that reference conflicting atom refs".to_string(),
+            "preserve confidence, uncertainty, and source refs for reviewer judgement".to_string(),
+        ],
+        confidence_boundary:
+            "compatibility is checked over observed subject/predicate payload slots only".to_string(),
         uncertainty: archmap
             .observation_gaps
             .iter()
@@ -6710,6 +6687,197 @@ fn build_atom_compatibility_readings(
                 .to_string(),
         non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
     }]
+}
+
+fn semantic_refs_by_atom_ref(archmap: &ArchMapDocumentV0) -> BTreeMap<String, Vec<String>> {
+    let mut refs = BTreeMap::<String, Vec<String>>::new();
+    for semantic in &archmap.semantic_observations {
+        for atom_ref in &semantic.atom_observation_refs {
+            refs.entry(atom_ref.clone())
+                .or_default()
+                .push(semantic.semantic_observation_id.clone());
+        }
+    }
+    refs
+}
+
+fn atom_slot_conflicts(
+    slot_ref: &str,
+    atoms: &[&ArchMapAtomObservationV0],
+    semantic_by_atom_ref: &BTreeMap<String, Vec<String>>,
+    semantic_observations: &[ArchMapSemanticObservationV0],
+) -> Vec<ArchSigAtomCompatibilityConflictV0> {
+    if atoms.len() < 2 {
+        return Vec::new();
+    }
+    let mut conflicts = Vec::new();
+    for left_index in 0..atoms.len() {
+        for right_index in (left_index + 1)..atoms.len() {
+            let left = atoms[left_index];
+            let right = atoms[right_index];
+            let kinds = atom_payload_inconsistency_kinds(left, right);
+            let semantic_refs =
+                semantic_conflict_refs(left, right, semantic_by_atom_ref, semantic_observations);
+            let has_semantic_conflict = !semantic_refs.is_empty();
+            if kinds.is_empty() && !has_semantic_conflict {
+                continue;
+            }
+            let mut inconsistency_kinds = kinds;
+            if has_semantic_conflict {
+                inconsistency_kinds.push("incompatibleSemanticClaim".to_string());
+            }
+            conflicts.push(ArchSigAtomCompatibilityConflictV0 {
+                slot_ref: slot_ref.to_string(),
+                subject_ref: left.subject_ref.clone(),
+                predicate: left.predicate.clone(),
+                atom_observation_refs: vec![
+                    left.atom_observation_id.clone(),
+                    right.atom_observation_id.clone(),
+                ],
+                semantic_observation_refs: semantic_refs.clone(),
+                inconsistency_kind: inconsistency_kinds.join("+"),
+                payload_comparison_policy: "same-slot pairwise payload comparison".to_string(),
+                compared_payload_refs: unique_strings(
+                    left.object_refs
+                        .iter()
+                        .chain(right.object_refs.iter())
+                        .cloned()
+                        .chain(std::iter::once(left.observation_status.clone()))
+                        .chain(std::iter::once(right.observation_status.clone()))
+                        .chain(std::iter::once(left.confidence.clone()))
+                        .chain(std::iter::once(right.confidence.clone())),
+                ),
+                source_refs: unique_strings(
+                    left.source_refs
+                        .iter()
+                        .chain(right.source_refs.iter())
+                        .map(source_ref_label),
+                ),
+                confidence_refs: vec![
+                    format!("{}:{}", left.atom_observation_id, left.confidence),
+                    format!("{}:{}", right.atom_observation_id, right.confidence),
+                ],
+                uncertainty_refs: unique_strings(
+                    left.uncertainty
+                        .iter()
+                        .chain(right.uncertainty.iter())
+                        .cloned(),
+                ),
+                semantic_conflict_relation_refs: semantic_refs,
+                reading: format!(
+                    "{} and {} have incompatible same-slot Atom payload evidence ({})",
+                    left.atom_observation_id,
+                    right.atom_observation_id,
+                    inconsistency_kinds.join(", ")
+                ),
+            });
+        }
+    }
+    conflicts
+}
+
+fn atom_payload_inconsistency_kinds(
+    left: &ArchMapAtomObservationV0,
+    right: &ArchMapAtomObservationV0,
+) -> Vec<String> {
+    let mut kinds = Vec::new();
+    if left.atom_family != right.atom_family {
+        kinds.push("familyDivergence".to_string());
+    }
+    if left.observation_status != right.observation_status {
+        kinds.push("statusDivergence".to_string());
+    }
+    if left.confidence != right.confidence {
+        kinds.push("confidenceDivergence".to_string());
+    }
+    if !left.object_refs.is_empty()
+        && !right.object_refs.is_empty()
+        && left.object_refs.iter().collect::<BTreeSet<_>>()
+            != right.object_refs.iter().collect::<BTreeSet<_>>()
+    {
+        kinds.push("incompatibleObjectRefs".to_string());
+    }
+    if contradictory_payload_tokens(left) != contradictory_payload_tokens(right)
+        && !contradictory_payload_tokens(left).is_empty()
+        && !contradictory_payload_tokens(right).is_empty()
+    {
+        kinds.push("contradictoryBooleanClaim".to_string());
+    }
+    kinds
+}
+
+fn contradictory_payload_tokens(atom: &ArchMapAtomObservationV0) -> BTreeSet<&'static str> {
+    let payload = format!(
+        "{} {} {}",
+        atom.predicate,
+        atom.object_refs.join(" "),
+        atom.observation_status
+    )
+    .to_ascii_lowercase();
+    let mut tokens = BTreeSet::new();
+    if payload.contains(" no ")
+        || payload.contains(" not ")
+        || payload.contains("none")
+        || payload.contains("false")
+        || payload.contains("disabled")
+        || payload.contains("forbidden")
+    {
+        tokens.insert("negative");
+    }
+    if payload.contains(" yes ")
+        || payload.contains(" true")
+        || payload.contains("enabled")
+        || payload.contains("allowed")
+        || payload.contains("observed")
+        || payload.contains("required")
+    {
+        tokens.insert("positive");
+    }
+    tokens
+}
+
+fn semantic_conflict_refs(
+    left: &ArchMapAtomObservationV0,
+    right: &ArchMapAtomObservationV0,
+    semantic_by_atom_ref: &BTreeMap<String, Vec<String>>,
+    semantic_observations: &[ArchMapSemanticObservationV0],
+) -> Vec<String> {
+    let left_refs = semantic_by_atom_ref
+        .get(&left.atom_observation_id)
+        .cloned()
+        .unwrap_or_default();
+    let right_refs = semantic_by_atom_ref
+        .get(&right.atom_observation_id)
+        .cloned()
+        .unwrap_or_default();
+    if left_refs.is_empty() || right_refs.is_empty() {
+        return Vec::new();
+    }
+    let semantic_by_id = semantic_observations
+        .iter()
+        .map(|semantic| (semantic.semantic_observation_id.as_str(), semantic))
+        .collect::<BTreeMap<_, _>>();
+    let mut refs = Vec::new();
+    for left_ref in &left_refs {
+        for right_ref in &right_refs {
+            if left_ref == right_ref {
+                continue;
+            }
+            let Some(left_semantic) = semantic_by_id.get(left_ref.as_str()) else {
+                continue;
+            };
+            let Some(right_semantic) = semantic_by_id.get(right_ref.as_str()) else {
+                continue;
+            };
+            if left_semantic.semantic_family != right_semantic.semantic_family
+                || left_semantic.predicate != right_semantic.predicate
+            {
+                refs.push(left_ref.clone());
+                refs.push(right_ref.clone());
+            }
+        }
+    }
+    unique_strings(refs.into_iter())
 }
 
 fn build_law_universe_coverage_readings(
@@ -15653,6 +15821,35 @@ fn check_aat_structural_reading_surfaces(packet: &ArchSigAnalysisPacketV0) -> Va
                 "Atom compatibility reading must enumerate inconsistency kinds",
             ));
         }
+        if reading.payload_comparison_policy.is_empty() {
+            examples.push(generic_validation_example(
+                &reading.reading_id,
+                "payloadComparisonPolicy",
+                "Atom compatibility reading must expose the payload comparison policy",
+            ));
+        }
+        for conflict in &reading.conflicts {
+            if conflict.compared_payload_refs.is_empty()
+                || conflict.payload_comparison_policy.trim().is_empty()
+                || conflict.source_refs.is_empty()
+                || conflict.confidence_refs.is_empty()
+            {
+                examples.push(generic_validation_example(
+                    &reading.reading_id,
+                    &conflict.slot_ref,
+                    "Atom compatibility conflicts must retain payload refs, comparison policy, source refs, and confidence refs",
+                ));
+            }
+            if conflict.inconsistency_kind.contains("Semantic")
+                && conflict.semantic_conflict_relation_refs.is_empty()
+            {
+                examples.push(generic_validation_example(
+                    &reading.reading_id,
+                    &conflict.slot_ref,
+                    "semantic Atom compatibility conflicts must link semantic conflict relation refs",
+                ));
+            }
+        }
     }
     for reading in &packet.law_universe_coverage_readings {
         push_blank(
@@ -19930,6 +20127,97 @@ mod tests {
                 .iter()
                 .all(|evaluation| evaluation.exactness_status == "blocked")
         );
+    }
+
+    #[test]
+    fn atom_compatibility_allows_same_slot_equal_payload() {
+        let mut archmap: ArchMapDocumentV0 =
+            serde_json::from_str(include_str!("../tests/fixtures/minimal/archmap.json"))
+                .expect("ArchMap fixture parses");
+        let mut duplicate = archmap.atom_observations[2].clone();
+        duplicate.atom_observation_id = "atom:relation:route-service:duplicate".to_string();
+        archmap.atom_observations.push(duplicate);
+
+        let packet = build_archsig_analysis_packet(
+            &archmap,
+            &crate::law_policy::static_law_policy(),
+            Some("archmap.json"),
+            Some("law_policy.json"),
+        );
+        let reading = &packet.atom_compatibility_readings[0];
+        assert_eq!(reading.same_slot_conflict_count, 0);
+        assert_eq!(reading.status, "compatibleWithinObservedSlots");
+    }
+
+    #[test]
+    fn atom_compatibility_detects_same_slot_payload_conflict() {
+        let mut archmap: ArchMapDocumentV0 =
+            serde_json::from_str(include_str!("../tests/fixtures/minimal/archmap.json"))
+                .expect("ArchMap fixture parses");
+        let mut conflicting = archmap.atom_observations[2].clone();
+        conflicting.atom_observation_id =
+            "atom:relation:route-service:conflicting-target".to_string();
+        conflicting.object_refs = vec!["route.users".to_string(), "service.billing".to_string()];
+        archmap.atom_observations.push(conflicting);
+
+        let packet = build_archsig_analysis_packet(
+            &archmap,
+            &crate::law_policy::static_law_policy(),
+            Some("archmap.json"),
+            Some("law_policy.json"),
+        );
+        let reading = &packet.atom_compatibility_readings[0];
+        assert_eq!(reading.status, "conflictNeedsReview");
+        assert!(reading.conflicts.iter().any(|conflict| {
+            conflict
+                .inconsistency_kind
+                .contains("incompatibleObjectRefs")
+                && conflict
+                    .compared_payload_refs
+                    .contains(&"service.billing".to_string())
+        }));
+    }
+
+    #[test]
+    fn atom_compatibility_links_semantic_divergence_to_conflict_relation() {
+        let mut archmap: ArchMapDocumentV0 =
+            serde_json::from_str(include_str!("../tests/fixtures/minimal/archmap.json"))
+                .expect("ArchMap fixture parses");
+        let mut alternate = archmap.atom_observations[2].clone();
+        alternate.atom_observation_id =
+            "atom:relation:route-service:semantic-alternate".to_string();
+        archmap.atom_observations.push(alternate);
+        let mut semantic_left = archmap.semantic_observations[0].clone();
+        semantic_left.semantic_observation_id = "semantic:route-service:create-user".to_string();
+        semantic_left.atom_observation_refs = vec!["atom:relation:route-service".to_string()];
+        semantic_left.predicate = "route delegates user creation to user service".to_string();
+        let mut semantic_right = archmap.semantic_observations[0].clone();
+        semantic_right.semantic_observation_id = "semantic:route-service:billing-user".to_string();
+        semantic_right.atom_observation_refs =
+            vec!["atom:relation:route-service:semantic-alternate".to_string()];
+        semantic_right.predicate =
+            "route delegates billing user creation to billing service".to_string();
+        archmap.semantic_observations.push(semantic_left);
+        archmap.semantic_observations.push(semantic_right);
+
+        let packet = build_archsig_analysis_packet(
+            &archmap,
+            &crate::law_policy::static_law_policy(),
+            Some("archmap.json"),
+            Some("law_policy.json"),
+        );
+        let reading = &packet.atom_compatibility_readings[0];
+        assert!(reading.conflicts.iter().any(|conflict| {
+            conflict
+                .inconsistency_kind
+                .contains("incompatibleSemanticClaim")
+                && conflict
+                    .semantic_conflict_relation_refs
+                    .contains(&"semantic:route-service:create-user".to_string())
+                && conflict
+                    .semantic_conflict_relation_refs
+                    .contains(&"semantic:route-service:billing-user".to_string())
+        }));
     }
 
     #[test]

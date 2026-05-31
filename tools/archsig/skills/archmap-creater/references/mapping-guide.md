@@ -86,6 +86,13 @@ non-atom surface.
 | `trust` | Source verifies webhook signatures, JWT/JWKS, provider identity, delegated credentials, or treats LLM/provider output as untrusted until validation. | Any external API call is treated as trust evidence without an observed trust decision. | `concernHints[]` for provider trust review cues; `observationGaps[]` for missing provider logs. |
 | `contractSpecification` | DTO validation, precondition, postcondition, error mapping, idempotency key, retry rule, invariant, or bounded return shape is visible. | A passing test is generalized into universal correctness. | `semanticObservations[]` for behavior reading; `projectionInfo[]` for downstream handoff. |
 | `semantic` | Source names a domain identity, ownership meaning, unit, status meaning, or bounded business term. | A long process narrative combines many atoms and roles. | `semanticObservations[]` for larger meaning/workflow readings. |
+
+For Atom compatibility, keep same subject / predicate slots precise. If two
+observations intentionally describe alternatives, separate them by predicate or
+subject. If they describe the same slot, preserve the actual payload evidence in
+`objectRefs[]`, `observationStatus`, `confidence`, `uncertainty`, and
+`sourceRefs[]`; ArchSig will compare those payloads and link semantic divergence
+only through `semanticObservations[].atomObservationRefs[]`.
 | `runtimeInteraction` | Supplied trace or log directly shows runtime call, edge, message, or effect. | Runtime behavior is expected from source code but no trace/log was supplied. | `observationGaps[]`; never measured-zero. |
 
 Anti-patterns:

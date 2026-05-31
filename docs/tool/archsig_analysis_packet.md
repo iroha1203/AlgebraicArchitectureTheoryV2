@@ -375,6 +375,11 @@ The builder:
   exactness assumption refs, source-backed evidence refs, blockers, and
   separate coverage / exactness statuses. Atom family presence alone is not a
   covered law claim.
+- `atomCompatibilityReadings[]` evaluates same subject / predicate slots with a
+  payload comparison policy. It compares object refs, observation status,
+  confidence, uncertainty, source refs, and semantic observations that reference
+  the conflicting atom refs. A no-conflict status is bounded to observed slots;
+  it is not global Atom ontology consistency.
 - Homotopy / Holonomy / Stokes readings add current-state coordinates for
   `homotopyComplexSummary`, `pathPairCandidates`, `loopCandidates`,
   `fillerCandidateReadings`, `architecturalHoleReadings`,

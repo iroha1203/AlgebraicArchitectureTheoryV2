@@ -2073,6 +2073,8 @@ pub struct ArchSigAtomCompatibilityReadingV0 {
     pub conflicting_atom_observation_refs: Vec<String>,
     pub conflicting_semantic_observation_refs: Vec<String>,
     pub payload_inconsistency_kinds: Vec<String>,
+    #[serde(default)]
+    pub payload_comparison_policy: Vec<String>,
     pub confidence_boundary: String,
     pub uncertainty: Vec<String>,
     pub evidence_boundary: String,
@@ -2088,6 +2090,18 @@ pub struct ArchSigAtomCompatibilityConflictV0 {
     pub atom_observation_refs: Vec<String>,
     pub semantic_observation_refs: Vec<String>,
     pub inconsistency_kind: String,
+    #[serde(default)]
+    pub payload_comparison_policy: String,
+    #[serde(default)]
+    pub compared_payload_refs: Vec<String>,
+    #[serde(default)]
+    pub source_refs: Vec<String>,
+    #[serde(default)]
+    pub confidence_refs: Vec<String>,
+    #[serde(default)]
+    pub uncertainty_refs: Vec<String>,
+    #[serde(default)]
+    pub semantic_conflict_relation_refs: Vec<String>,
     pub reading: String,
 }
 
