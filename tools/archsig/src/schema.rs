@@ -1141,6 +1141,10 @@ pub struct ArchSigFeatureExtensionDiagnosisReadingV0 {
 pub struct ArchSigFeatureExtensionWitnessAttributionV0 {
     pub witness_ref: String,
     pub labels: Vec<String>,
+    #[serde(default)]
+    pub observation_refs: Vec<String>,
+    #[serde(default)]
+    pub source_refs: Vec<String>,
     pub inherited_core_refs: Vec<String>,
     pub feature_local_refs: Vec<String>,
     pub boundary_holonomy_refs: Vec<String>,
@@ -2099,9 +2103,21 @@ pub struct ArchSigFeatureExtensionFormulaReadingV0 {
     pub filling_failure_refs: Vec<String>,
     pub complexity_transfer_refs: Vec<String>,
     pub residual_coverage_gap_refs: Vec<String>,
+    #[serde(default)]
+    pub witness_basis: Vec<ArchSigFeatureExtensionWitnessBasisV0>,
     pub classification_summary: Vec<ArchSigFeatureExtensionAxisSummaryV0>,
     pub evidence_boundary: String,
     pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigFeatureExtensionWitnessBasisV0 {
+    pub witness_ref: String,
+    pub labels: Vec<String>,
+    pub observation_refs: Vec<String>,
+    pub source_refs: Vec<String>,
+    pub basis_boundary: String,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

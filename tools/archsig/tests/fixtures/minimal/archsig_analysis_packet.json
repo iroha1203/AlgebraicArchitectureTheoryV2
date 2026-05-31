@@ -2970,7 +2970,9 @@
       "featureLocalObstructionRefs": [
         "obstruction:semantic-contract-mismatch:computed"
       ],
-      "interactionObstructionRefs": [],
+      "interactionObstructionRefs": [
+        "obstruction:semantic-contract-mismatch:computed"
+      ],
       "liftingFailureRefs": [
         "split-readiness:molecule-user-request-responsibility"
       ],
@@ -2978,10 +2980,70 @@
         "obstruction:semantic-contract-mismatch:computed"
       ],
       "complexityTransferRefs": [
-        "may transfer obstruction into runtime behavior, ownership, or idempotency boundary"
+        "repair:obstruction-semantic-contract-mismatch-computed"
       ],
       "residualCoverageGapRefs": [
         "gap-runtime-user-db-trace"
+      ],
+      "witnessBasis": [
+        {
+          "witnessRef": "gap-runtime-user-db-trace",
+          "labels": [
+            "residualCoverageGap"
+          ],
+          "observationRefs": [
+            "gap-runtime-user-db-trace"
+          ],
+          "sourceRefs": [
+            ".lake/runtime-trace.json"
+          ],
+          "basisBoundary": "feature-extension basis is assembled from ArchMap observation refs and ArchSig witness refs, not text classification"
+        },
+        {
+          "witnessRef": "obstruction:semantic-contract-mismatch:computed",
+          "labels": [
+            "featureLocalObstruction",
+            "fillingFailure",
+            "inheritedCoreObstruction",
+            "interactionObstruction"
+          ],
+          "observationRefs": [
+            "atom:contract:create-user",
+            "molecule-reading:molecule-user-request-responsibility"
+          ],
+          "sourceRefs": [
+            "test-user-contract"
+          ],
+          "basisBoundary": "feature-extension basis is assembled from ArchMap observation refs and ArchSig witness refs, not text classification"
+        },
+        {
+          "witnessRef": "repair:obstruction-semantic-contract-mismatch-computed",
+          "labels": [
+            "complexityTransfer"
+          ],
+          "observationRefs": [
+            "atom:contract:create-user",
+            "molecule-reading:molecule-user-request-responsibility"
+          ],
+          "sourceRefs": [
+            "test-user-contract"
+          ],
+          "basisBoundary": "feature-extension basis is assembled from ArchMap observation refs and ArchSig witness refs, not text classification"
+        },
+        {
+          "witnessRef": "split-readiness:molecule-user-request-responsibility",
+          "labels": [
+            "liftingFailure"
+          ],
+          "observationRefs": [
+            "molecule:user-request-responsibility",
+            "obstruction:semantic-contract-mismatch:computed"
+          ],
+          "sourceRefs": [
+            "doc-architecture"
+          ],
+          "basisBoundary": "feature-extension basis is assembled from ArchMap observation refs and ArchSig witness refs, not text classification"
+        }
       ],
       "classificationSummary": [
         {
@@ -3002,8 +3064,10 @@
         },
         {
           "axis": "interactionObstruction",
-          "status": "unmeasuredOrAbsent",
-          "refs": [],
+          "status": "observed",
+          "refs": [
+            "obstruction:semantic-contract-mismatch:computed"
+          ],
           "reading": "interactionObstruction is classified as a current-state extension coordinate"
         },
         {
@@ -3026,7 +3090,7 @@
           "axis": "complexityTransfer",
           "status": "observed",
           "refs": [
-            "may transfer obstruction into runtime behavior, ownership, or idempotency boundary"
+            "repair:obstruction-semantic-contract-mismatch-computed"
           ],
           "reading": "complexityTransfer is classified as a current-state extension coordinate"
         },
@@ -3039,7 +3103,7 @@
           "reading": "residualCoverageGap is classified as a current-state extension coordinate"
         }
       ],
-      "evidenceBoundary": "extension formula is computed over current ArchMap state, not an actual PR diff",
+      "evidenceBoundary": "extension formula is computed from witness refs over current ArchMap state, not text matching or an actual PR diff",
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -3353,6 +3417,7 @@
         "atom:contract:create-user"
       ],
       "constraintRefs": [
+        "obstruction:semantic-contract-mismatch:computed",
         "obstruction:semantic-contract-mismatch:computed",
         "obstruction:semantic-contract-mismatch:computed",
         "split-readiness:molecule-user-request-responsibility",
@@ -6653,8 +6718,8 @@
       "featureScopeRef": "fixture-archmap-atom-observation:feature",
       "mixedSubconfigurationRefs": [
         "gap-runtime-user-db-trace",
-        "may transfer obstruction into runtime behavior, ownership, or idempotency boundary",
         "obstruction:semantic-contract-mismatch:computed",
+        "repair:obstruction-semantic-contract-mismatch-computed",
         "split-readiness:molecule-user-request-responsibility"
       ],
       "coreLocalReadingRefs": [
@@ -6665,8 +6730,8 @@
       ],
       "boundarySupportRefs": [
         "gap-runtime-user-db-trace",
-        "may transfer obstruction into runtime behavior, ownership, or idempotency boundary",
         "obstruction:semantic-contract-mismatch:computed",
+        "repair:obstruction-semantic-contract-mismatch-computed",
         "split-readiness:molecule-user-request-responsibility"
       ],
       "holonomyAxes": [
@@ -6717,8 +6782,8 @@
           "measuredDefectRefs": [],
           "supportRefs": [
             "gap-runtime-user-db-trace",
-            "may transfer obstruction into runtime behavior, ownership, or idempotency boundary",
             "obstruction:semantic-contract-mismatch:computed",
+            "repair:obstruction-semantic-contract-mismatch-computed",
             "split-readiness:molecule-user-request-responsibility"
           ],
           "missingEvidence": [
@@ -6736,8 +6801,8 @@
           "measuredDefectRefs": [],
           "supportRefs": [
             "gap-runtime-user-db-trace",
-            "may transfer obstruction into runtime behavior, ownership, or idempotency boundary",
             "obstruction:semantic-contract-mismatch:computed",
+            "repair:obstruction-semantic-contract-mismatch-computed",
             "split-readiness:molecule-user-request-responsibility"
           ],
           "missingEvidence": [
@@ -6755,8 +6820,8 @@
           "measuredDefectRefs": [],
           "supportRefs": [
             "gap-runtime-user-db-trace",
-            "may transfer obstruction into runtime behavior, ownership, or idempotency boundary",
             "obstruction:semantic-contract-mismatch:computed",
+            "repair:obstruction-semantic-contract-mismatch-computed",
             "split-readiness:molecule-user-request-responsibility"
           ],
           "missingEvidence": [
@@ -6774,8 +6839,8 @@
           "measuredDefectRefs": [],
           "supportRefs": [
             "gap-runtime-user-db-trace",
-            "may transfer obstruction into runtime behavior, ownership, or idempotency boundary",
             "obstruction:semantic-contract-mismatch:computed",
+            "repair:obstruction-semantic-contract-mismatch-computed",
             "split-readiness:molecule-user-request-responsibility"
           ],
           "missingEvidence": [
@@ -6801,9 +6866,9 @@
       ],
       "residualObstructionRefs": [
         "gap-runtime-user-db-trace",
-        "may transfer obstruction into runtime behavior, ownership, or idempotency boundary",
         "mu:operation-square-operation-square-evidence-create-user-route-service:semantic",
         "obstruction:semantic-contract-mismatch:computed",
+        "repair:obstruction-semantic-contract-mismatch-computed",
         "split-readiness:molecule-user-request-responsibility"
       ],
       "supportSeparationPolicy": "core-local, feature-local, and mixed boundary support are separated as review attribution surfaces, not as a proved direct-sum decomposition",
@@ -6816,7 +6881,7 @@
         "ArchMapStore compaction boundary"
       ],
       "attributionPolicy": "multi-label attribution may name core, feature, boundary, law, and coverage contributors without selecting a single cause",
-      "coverageBoundary": "extension formula is computed over current ArchMap state, not an actual PR diff",
+      "coverageBoundary": "extension formula is computed from witness refs over current ArchMap state, not text matching or an actual PR diff",
       "exactnessBoundary": "Boundary(A,f) residual is measured over current ArchMap evidence and does not prove Ob(B)=Ob(A)+Ob(f)+Hol(Boundary(A,f))",
       "evidenceBoundary": "feature boundary residual is a bounded ArchSig review reading, not a theorem about feature safety or danger",
       "nonConclusions": [
@@ -6860,9 +6925,9 @@
           "refs": [
             "feature-boundary-residual:fixture-archmap-atom-observation",
             "gap-runtime-user-db-trace",
-            "may transfer obstruction into runtime behavior, ownership, or idempotency boundary",
             "mu:operation-square-operation-square-evidence-create-user-route-service:semantic",
             "obstruction:semantic-contract-mismatch:computed",
+            "repair:obstruction-semantic-contract-mismatch-computed",
             "split-readiness:molecule-user-request-responsibility"
           ],
           "reading": "boundaryHolonomy is classified as a current-state extension coordinate"
@@ -6887,7 +6952,7 @@
           "axis": "complexityTransfer",
           "status": "observed",
           "refs": [
-            "may transfer obstruction into runtime behavior, ownership, or idempotency boundary"
+            "repair:obstruction-semantic-contract-mismatch-computed"
           ],
           "reading": "complexityTransfer is classified as a current-state extension coordinate"
         },
@@ -6906,6 +6971,16 @@
           "labels": [
             "boundaryHolonomy"
           ],
+          "observationRefs": [
+            "gap-runtime-user-db-trace",
+            "mu:operation-square-operation-square-evidence-create-user-route-service:semantic",
+            "obstruction:semantic-contract-mismatch:computed",
+            "repair:obstruction-semantic-contract-mismatch-computed",
+            "split-readiness:molecule-user-request-responsibility"
+          ],
+          "sourceRefs": [
+            ".lake/runtime-trace.json"
+          ],
           "inheritedCoreRefs": [],
           "featureLocalRefs": [],
           "boundaryHolonomyRefs": [
@@ -6923,6 +6998,16 @@
             "boundaryHolonomy",
             "residualCoverageGap"
           ],
+          "observationRefs": [
+            "gap-runtime-user-db-trace",
+            "mu:operation-square-operation-square-evidence-create-user-route-service:semantic",
+            "obstruction:semantic-contract-mismatch:computed",
+            "repair:obstruction-semantic-contract-mismatch-computed",
+            "split-readiness:molecule-user-request-responsibility"
+          ],
+          "sourceRefs": [
+            ".lake/runtime-trace.json"
+          ],
           "inheritedCoreRefs": [],
           "featureLocalRefs": [],
           "boundaryHolonomyRefs": [
@@ -6937,28 +7022,19 @@
           "reading": "gap-runtime-user-db-trace carries non-disjoint feature-extension labels [\"boundaryHolonomy\", \"residualCoverageGap\"]"
         },
         {
-          "witnessRef": "may transfer obstruction into runtime behavior, ownership, or idempotency boundary",
-          "labels": [
-            "boundaryHolonomy",
-            "complexityTransfer"
-          ],
-          "inheritedCoreRefs": [],
-          "featureLocalRefs": [],
-          "boundaryHolonomyRefs": [
-            "may transfer obstruction into runtime behavior, ownership, or idempotency boundary"
-          ],
-          "liftingFailureRefs": [],
-          "fillingFailureRefs": [],
-          "complexityTransferRefs": [
-            "may transfer obstruction into runtime behavior, ownership, or idempotency boundary"
-          ],
-          "residualCoverageGapRefs": [],
-          "reading": "may transfer obstruction into runtime behavior, ownership, or idempotency boundary carries non-disjoint feature-extension labels [\"boundaryHolonomy\", \"complexityTransfer\"]"
-        },
-        {
           "witnessRef": "mu:operation-square-operation-square-evidence-create-user-route-service:semantic",
           "labels": [
             "boundaryHolonomy"
+          ],
+          "observationRefs": [
+            "gap-runtime-user-db-trace",
+            "mu:operation-square-operation-square-evidence-create-user-route-service:semantic",
+            "obstruction:semantic-contract-mismatch:computed",
+            "repair:obstruction-semantic-contract-mismatch-computed",
+            "split-readiness:molecule-user-request-responsibility"
+          ],
+          "sourceRefs": [
+            ".lake/runtime-trace.json"
           ],
           "inheritedCoreRefs": [],
           "featureLocalRefs": [],
@@ -6979,6 +7055,18 @@
             "fillingFailure",
             "inheritedCoreObstruction"
           ],
+          "observationRefs": [
+            "atom:contract:create-user",
+            "gap-runtime-user-db-trace",
+            "molecule-reading:molecule-user-request-responsibility",
+            "mu:operation-square-operation-square-evidence-create-user-route-service:semantic",
+            "obstruction:semantic-contract-mismatch:computed",
+            "repair:obstruction-semantic-contract-mismatch-computed",
+            "split-readiness:molecule-user-request-responsibility"
+          ],
+          "sourceRefs": [
+            "test-user-contract"
+          ],
           "inheritedCoreRefs": [
             "obstruction:semantic-contract-mismatch:computed"
           ],
@@ -6997,10 +7085,52 @@
           "reading": "obstruction:semantic-contract-mismatch:computed carries non-disjoint feature-extension labels [\"boundaryHolonomy\", \"featureLocalObstruction\", \"fillingFailure\", \"inheritedCoreObstruction\"]"
         },
         {
+          "witnessRef": "repair:obstruction-semantic-contract-mismatch-computed",
+          "labels": [
+            "boundaryHolonomy",
+            "complexityTransfer"
+          ],
+          "observationRefs": [
+            "atom:contract:create-user",
+            "gap-runtime-user-db-trace",
+            "molecule-reading:molecule-user-request-responsibility",
+            "mu:operation-square-operation-square-evidence-create-user-route-service:semantic",
+            "obstruction:semantic-contract-mismatch:computed",
+            "repair:obstruction-semantic-contract-mismatch-computed",
+            "split-readiness:molecule-user-request-responsibility"
+          ],
+          "sourceRefs": [
+            "test-user-contract"
+          ],
+          "inheritedCoreRefs": [],
+          "featureLocalRefs": [],
+          "boundaryHolonomyRefs": [
+            "repair:obstruction-semantic-contract-mismatch-computed"
+          ],
+          "liftingFailureRefs": [],
+          "fillingFailureRefs": [],
+          "complexityTransferRefs": [
+            "repair:obstruction-semantic-contract-mismatch-computed"
+          ],
+          "residualCoverageGapRefs": [],
+          "reading": "repair:obstruction-semantic-contract-mismatch-computed carries non-disjoint feature-extension labels [\"boundaryHolonomy\", \"complexityTransfer\"]"
+        },
+        {
           "witnessRef": "split-readiness:molecule-user-request-responsibility",
           "labels": [
             "boundaryHolonomy",
             "liftingFailure"
+          ],
+          "observationRefs": [
+            "gap-runtime-user-db-trace",
+            "molecule:user-request-responsibility",
+            "mu:operation-square-operation-square-evidence-create-user-route-service:semantic",
+            "obstruction:semantic-contract-mismatch:computed",
+            "repair:obstruction-semantic-contract-mismatch-computed",
+            "split-readiness:molecule-user-request-responsibility"
+          ],
+          "sourceRefs": [
+            "doc-architecture"
           ],
           "inheritedCoreRefs": [],
           "featureLocalRefs": [],
@@ -7026,7 +7156,7 @@
         "obstruction:semantic-contract-mismatch:computed"
       ],
       "complexityTransferRefs": [
-        "may transfer obstruction into runtime behavior, ownership, or idempotency boundary"
+        "repair:obstruction-semantic-contract-mismatch-computed"
       ],
       "classificationBoundary": "feature-extension labels are intentionally non-disjoint; the same witness may carry inherited-core, feature-local, boundary-holonomy, lifting, filling, complexity-transfer, and coverage-gap labels",
       "fieldsigBoundary": "ArchSig reports current-state feature-extension attribution; FieldSig owns longitudinal evolution quality analysis",
@@ -8874,7 +9004,7 @@
       "llm-native-aat-law-policy-fixture required=2 unmeasured=2 blockedWitnesses=2"
     ],
     "featureExtensionFormulaSummary": [
-      "feature-extension-formula:fixture-archmap-atom-observation status=measured inherited=1 featureLocal=1 interaction=0 residualGaps=1"
+      "feature-extension-formula:fixture-archmap-atom-observation status=measured inherited=1 featureLocal=1 interaction=1 residualGaps=1"
     ],
     "operationCalculusLawSummary": [
       "repair:obstruction-semantic-contract-mismatch-computed kind=repair-semanticmismatchcircuit composition=assumptionRelative repairMonotonicity=selectedAxisOnly boundary=notASynthesisCertificate"
@@ -8901,7 +9031,7 @@
       "effect-relation-algebra:fixture-archmap-atom-observation pressure=effectRelationPressureObserved generators=1 unresolved=1 externalBoundaries=0"
     ],
     "synthesisBlockageSummary": [
-      "synthesis-blockage:fixture-archmap-atom-observation status=synthesisBlockedByMissingEvidenceOrConstraints targets=2 constraints=6 missing=5 noSolution=notASolverAndNotAbsenceProof"
+      "synthesis-blockage:fixture-archmap-atom-observation status=synthesisBlockedByMissingEvidenceOrConstraints targets=2 constraints=7 missing=5 noSolution=notASolverAndNotAbsenceProof"
     ],
     "operationPreconditionReadinessSummary": [
       "repair:obstruction-semantic-contract-mismatch-computed kind=repair-semanticmismatchcircuit status=blockedByMissingPreconditionEvidence missing=5 witnesses=2"

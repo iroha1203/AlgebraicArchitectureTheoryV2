@@ -2647,9 +2647,23 @@ fn assert_north_star_packet_surfaces(json: &Value) {
                     .as_array()
                     .is_some_and(|items| items.len() >= 7)
                     && reading["residualCoverageGapRefs"].as_array().is_some()
+                    && reading["witnessBasis"].as_array().is_some_and(|items| {
+                        !items.is_empty()
+                            && items.iter().all(|basis| {
+                                basis["labels"]
+                                    .as_array()
+                                    .is_some_and(|labels| !labels.is_empty())
+                                    && (basis["observationRefs"]
+                                        .as_array()
+                                        .is_some_and(|refs| !refs.is_empty())
+                                        || basis["sourceRefs"]
+                                            .as_array()
+                                            .is_some_and(|refs| !refs.is_empty()))
+                            })
+                    })
                     && reading["evidenceBoundary"].as_str().is_some()
             }),
-        "feature extension formula readings must carry required axes and boundary"
+        "feature extension formula readings must carry required axes, witness basis, and boundary"
     );
     assert!(
         json["operationCalculusLawReadings"]
@@ -3174,6 +3188,14 @@ fn assert_north_star_packet_surfaces(json: &Value) {
                                                 .as_array()
                                                 .is_some_and(|labels| labels.len() > 1)
                                         })
+                                        && records.iter().all(|record| {
+                                            record["observationRefs"]
+                                                .as_array()
+                                                .is_some_and(|refs| !refs.is_empty())
+                                                || record["sourceRefs"]
+                                                    .as_array()
+                                                    .is_some_and(|refs| !refs.is_empty())
+                                        })
                                 })
                             && reading["residualCoverageGapRefs"].as_array().is_some()
                             && reading["liftingFailureRefs"].as_array().is_some()
@@ -3190,7 +3212,7 @@ fn assert_north_star_packet_surfaces(json: &Value) {
                                 .is_some_and(|items| !items.is_empty())
                     })
             }),
-        "feature extension diagnosis readings must expose seven non-disjoint labels, witness attribution, separated failure refs, and FieldSig boundary"
+        "feature extension diagnosis readings must expose seven non-disjoint labels, witness-backed attribution refs, separated failure refs, and FieldSig boundary"
     );
     assert!(
         {
