@@ -20,6 +20,9 @@ Collect only evidence the user allows and record the boundary explicitly:
 - source inventory paths, included refs, excluded refs, private refs, unavailable refs, known blind spots
 - code, docs, tests, PR context, runtime hints, framework convention notes, generated artifacts, or policy files
 - the requested architecture scope and target representation
+- when spectrum or homotopy analysis is requested: operation path candidates,
+  endpoint evidence, lhs/rhs observation support, source-backed witness support,
+  filler evidence, runtime/test/policy refs, and known missing evidence
 - any prompt pack or model provenance needed for reproducibility
 
 This skill must work with only the skill bundle and a built `archsig` executable. Do not require
@@ -254,6 +257,13 @@ If this skill bundle is copied outside the ArchSig repository, use the local pat
    - Keep `sourceRefs`, `observationStatus`, `evidenceBoundary`, `confidence`, `uncertainty`, `projectionRefs`, and `nonConclusions` explicit.
    - Separate AAT-facing observations from SFT-facing projection hints. Shared source refs are allowed; proof claims and forecast inputs must not be conflated.
    - Include semantic structure only when evidence supports it.
+   - For ACTS / Spectrum analysis, preserve source-backed lhs/rhs observation
+     refs, witness-support refs, selected-axis hints, distance input evidence,
+     and missing support gaps. Do not round a missing witness row to zero.
+   - For Homotopy / Holonomy / Stokes analysis, preserve operation sequences,
+     endpoint object refs, generator candidate refs, continuation evidence,
+     filler evidence, non-fillability evidence, and missing filler gaps. Do not
+     infer filled loops or path equality from intent alone.
 
 5. Validate the result.
    - `archsig archmap` reads `sourceInventoryRef.path` from the ArchMap JSON when present.

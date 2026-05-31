@@ -479,6 +479,8 @@ pub struct LawPolicyMeasurementPolicyV0 {
 pub struct LawPolicySpectrumMeasurementProfileV0 {
     pub profile_id: String,
     #[serde(default)]
+    pub reading_boundary: LawPolicyReadingBoundaryV0,
+    #[serde(default)]
     pub selected_axis_refs: Vec<String>,
     #[serde(default)]
     pub measured_witness_rule_refs: Vec<String>,
@@ -513,6 +515,8 @@ pub struct LawPolicySpectrumDistanceKindV0 {
 pub struct LawPolicyHomotopyMeasurementProfileV0 {
     pub profile_id: String,
     #[serde(default)]
+    pub reading_boundary: LawPolicyReadingBoundaryV0,
+    #[serde(default)]
     pub selected_axis_refs: Vec<String>,
     #[serde(default)]
     pub path_discovery_rules: Vec<LawPolicyHomotopyPathDiscoveryRuleV0>,
@@ -529,6 +533,33 @@ pub struct LawPolicyHomotopyMeasurementProfileV0 {
     pub measurement_boundary: String,
     #[serde(default)]
     pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct LawPolicyReadingBoundaryV0 {
+    #[serde(default)]
+    pub reading_strength: String,
+    #[serde(default)]
+    pub zero_reflection_assumptions: Vec<String>,
+    #[serde(default)]
+    pub obstruction_reflection_assumptions: Vec<String>,
+    #[serde(default)]
+    pub coverage_requirement_refs: Vec<String>,
+    #[serde(default)]
+    pub witness_completeness_boundary: String,
+}
+
+impl Default for LawPolicyReadingBoundaryV0 {
+    fn default() -> Self {
+        Self {
+            reading_strength: String::new(),
+            zero_reflection_assumptions: Vec::new(),
+            obstruction_reflection_assumptions: Vec::new(),
+            coverage_requirement_refs: Vec::new(),
+            witness_completeness_boundary: String::new(),
+        }
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -832,6 +863,14 @@ pub struct ArchSigOperationSquareCandidateV0 {
     pub right_operation_ref: String,
     pub p_path_ref: String,
     pub q_path_ref: String,
+    #[serde(default)]
+    pub p_operation_sequence: Vec<String>,
+    #[serde(default)]
+    pub q_operation_sequence: Vec<String>,
+    #[serde(default)]
+    pub endpoint_object_refs: Vec<String>,
+    #[serde(default)]
+    pub generator_candidate_refs: Vec<String>,
     pub shared_atom_support_refs: Vec<String>,
     pub state_refs: Vec<String>,
     pub effect_refs: Vec<String>,
@@ -855,6 +894,12 @@ pub struct ArchSigPathContinuationTraceV0 {
     pub path_ref: String,
     pub path_role: String,
     pub path_expression: String,
+    #[serde(default)]
+    pub operation_sequence: Vec<String>,
+    #[serde(default)]
+    pub endpoint_object_refs: Vec<String>,
+    #[serde(default)]
+    pub continuation_step_refs: Vec<String>,
     pub axis_traces: Vec<ArchSigAxisContinuationTraceV0>,
     pub observation_refs: Vec<String>,
     pub source_refs: Vec<String>,
@@ -870,6 +915,10 @@ pub struct ArchSigAxisContinuationTraceV0 {
     pub axis_ref: String,
     pub trace_status: String,
     pub continuation_summary: String,
+    #[serde(default)]
+    pub continuation_states: Vec<String>,
+    #[serde(default)]
+    pub distance_input_refs: Vec<String>,
     pub observation_refs: Vec<String>,
     pub source_refs: Vec<String>,
     pub missing_refs: Vec<String>,
@@ -884,6 +933,16 @@ pub struct ArchSigAxisWiseMonodromyDefectV0 {
     pub axis_family: String,
     pub axis_ref: String,
     pub distance_kind: String,
+    #[serde(default)]
+    pub p_continuation_ref: String,
+    #[serde(default)]
+    pub q_continuation_ref: String,
+    #[serde(default)]
+    pub distance_input_refs: Vec<String>,
+    #[serde(default)]
+    pub positive_witness_boundary: String,
+    #[serde(default)]
+    pub weight: i64,
     pub measurement_status: String,
     pub distance_value: Option<i64>,
     pub measured_support_refs: Vec<String>,
@@ -905,12 +964,18 @@ pub struct ArchSigAmiAggregateReadingV0 {
     pub aggregate_id: String,
     pub selected_square_family: String,
     pub selected_axis_family: Vec<String>,
+    #[serde(default)]
+    pub selected_measured_square_refs: Vec<String>,
     pub weight_policy: String,
     pub distance_kind: String,
     pub measurement_status: String,
     pub aggregate_value: i64,
     pub measured_defect_refs: Vec<String>,
     pub unmeasured_defect_refs: Vec<String>,
+    #[serde(default)]
+    pub positive_weight_defect_refs: Vec<String>,
+    #[serde(default)]
+    pub zero_weight_defect_refs: Vec<String>,
     pub top_contributors: Vec<ArchSigAmiTopContributorV0>,
     pub zero_reflection_assumptions: Vec<String>,
     pub cancellation_boundary: String,
@@ -1389,10 +1454,41 @@ pub struct ArchSigSpectralDominantComponentV0 {
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+pub struct ArchSigMeasurementReadingBoundaryV0 {
+    #[serde(default)]
+    pub reading_strength: String,
+    #[serde(default)]
+    pub zero_reflection_assumptions: Vec<String>,
+    #[serde(default)]
+    pub obstruction_reflection_assumptions: Vec<String>,
+    #[serde(default)]
+    pub coverage_requirement_refs: Vec<String>,
+    #[serde(default)]
+    pub witness_completeness_boundary: String,
+}
+
+impl Default for ArchSigMeasurementReadingBoundaryV0 {
+    fn default() -> Self {
+        Self {
+            reading_strength: String::new(),
+            zero_reflection_assumptions: Vec::new(),
+            obstruction_reflection_assumptions: Vec::new(),
+            coverage_requirement_refs: Vec::new(),
+            witness_completeness_boundary: String::new(),
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct ArchSigCurvatureSupportReadingV0 {
     pub reading_id: String,
     pub profile_ref: String,
     pub status: String,
+    #[serde(default)]
+    pub measurement_status: String,
+    #[serde(default)]
+    pub reading_boundary: ArchSigMeasurementReadingBoundaryV0,
     pub measured_axis_refs: Vec<String>,
     pub unmeasured_axis_refs: Vec<String>,
     pub witness_supports: Vec<ArchSigCurvatureWitnessSupportV0>,
@@ -1412,6 +1508,26 @@ pub struct ArchSigCurvatureWitnessSupportV0 {
     pub witness_rule_ref: String,
     pub selected_axis_ref: String,
     pub signature_axis_ref: String,
+    #[serde(default)]
+    pub measurement_status: String,
+    #[serde(default)]
+    pub reading_boundary: ArchSigMeasurementReadingBoundaryV0,
+    #[serde(default)]
+    pub local_curvature_ref: String,
+    #[serde(default)]
+    pub diagram_ref: String,
+    #[serde(default)]
+    pub lhs_observation_refs: Vec<String>,
+    #[serde(default)]
+    pub rhs_observation_refs: Vec<String>,
+    #[serde(default)]
+    pub distance_kind: String,
+    #[serde(default)]
+    pub distance_input_refs: Vec<String>,
+    #[serde(default)]
+    pub soundness_boundary: String,
+    #[serde(default)]
+    pub coverage_status: String,
     pub curvature_value: i64,
     pub weight: i64,
     pub support_refs: Vec<String>,
@@ -1426,8 +1542,18 @@ pub struct ArchSigCurvatureWitnessSupportV0 {
 pub struct ArchSigCurvatureTopModeV0 {
     pub mode_id: String,
     pub rank: usize,
+    #[serde(default)]
+    pub mode_kind: String,
     pub axis_ref: String,
     pub curvature_value: i64,
+    #[serde(default)]
+    pub operator_component_refs: Vec<String>,
+    #[serde(default)]
+    pub localization: String,
+    #[serde(default)]
+    pub source_refs: Vec<String>,
+    #[serde(default)]
+    pub recommended_review_target: String,
     pub witness_refs: Vec<String>,
     pub support_refs: Vec<String>,
     pub reading: String,
@@ -1438,9 +1564,15 @@ pub struct ArchSigCurvatureTopModeV0 {
 pub struct ArchSigCurvatureWitnessClusterV0 {
     pub cluster_id: String,
     pub cluster_kind: String,
+    #[serde(default)]
+    pub cluster_basis: Vec<String>,
     pub axis_refs: Vec<String>,
     pub witness_refs: Vec<String>,
     pub support_refs: Vec<String>,
+    #[serde(default)]
+    pub source_refs: Vec<String>,
+    #[serde(default)]
+    pub transfer_edge_refs: Vec<String>,
     pub cluster_weight: i64,
     pub reading: String,
 }
@@ -1451,6 +1583,10 @@ pub struct ArchSigCurvatureTransferReadingV0 {
     pub reading_id: String,
     pub profile_ref: String,
     pub status: String,
+    #[serde(default)]
+    pub measurement_status: String,
+    #[serde(default)]
+    pub reading_boundary: ArchSigMeasurementReadingBoundaryV0,
     pub transfer_operator: ArchSigCurvatureTransferOperatorV0,
     pub transfer_edges: Vec<ArchSigCurvatureTransferEdgeV0>,
     pub recurrent_obstruction_modes: Vec<ArchSigRecurrentObstructionModeV0>,
@@ -1466,11 +1602,29 @@ pub struct ArchSigCurvatureTransferOperatorV0 {
     pub operator_id: String,
     pub row_domain: String,
     pub column_domain: String,
+    #[serde(default)]
+    pub row_support_refs: Vec<String>,
+    #[serde(default)]
+    pub column_support_refs: Vec<String>,
+    #[serde(default)]
+    pub sparse_entries: Vec<ArchSigCurvatureTransferMatrixEntryV0>,
     pub row_count: usize,
     pub column_count: usize,
     pub nonzero_edge_count: usize,
     pub entry_rule: String,
+    #[serde(default)]
+    pub spectral_radius_kind: String,
     pub reading: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigCurvatureTransferMatrixEntryV0 {
+    pub row_support_ref: String,
+    pub column_support_ref: String,
+    pub weight: i64,
+    pub edge_ref: String,
+    pub evidence_refs: Vec<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -1485,6 +1639,12 @@ pub struct ArchSigCurvatureTransferEdgeV0 {
     pub defect_value: i64,
     pub weight: i64,
     pub source_refs: Vec<String>,
+    #[serde(default)]
+    pub evidence_refs: Vec<String>,
+    #[serde(default)]
+    pub extraction_rule: String,
+    #[serde(default)]
+    pub closed_walk_kind: String,
     pub reading: String,
 }
 
@@ -1492,9 +1652,13 @@ pub struct ArchSigCurvatureTransferEdgeV0 {
 #[serde(rename_all = "camelCase")]
 pub struct ArchSigRecurrentObstructionModeV0 {
     pub mode_id: String,
+    #[serde(default)]
+    pub recurrence_kind: String,
     pub transfer_edge_refs: Vec<String>,
     pub support_refs: Vec<String>,
     pub witness_refs: Vec<String>,
+    #[serde(default)]
+    pub cycle_weight: i64,
     pub spectral_radius_reading: String,
     pub recurrent_obstruction_reading: String,
     pub review_focus: Vec<String>,
@@ -1507,6 +1671,10 @@ pub struct ArchSigArchitectureSpectrumReportV0 {
     pub report_id: String,
     pub profile_ref: String,
     pub status: String,
+    #[serde(default)]
+    pub measurement_status: String,
+    #[serde(default)]
+    pub reading_boundary: ArchSigMeasurementReadingBoundaryV0,
     pub top_hotspots: Vec<ArchSigArchitectureSpectrumHotspotV0>,
     pub top_eigenmodes: Vec<ArchSigArchitectureSpectrumModeV0>,
     pub top_witness_clusters: Vec<ArchSigArchitectureSpectrumWitnessClusterV0>,
@@ -1534,8 +1702,18 @@ pub struct ArchSigArchitectureSpectrumHotspotV0 {
 pub struct ArchSigArchitectureSpectrumModeV0 {
     pub mode_ref: String,
     pub rank: usize,
+    #[serde(default)]
+    pub mode_kind: String,
     pub axis_ref: String,
     pub curvature_value: i64,
+    #[serde(default)]
+    pub operator_component_refs: Vec<String>,
+    #[serde(default)]
+    pub localization: String,
+    #[serde(default)]
+    pub source_refs: Vec<String>,
+    #[serde(default)]
+    pub recommended_review_target: String,
     pub support_refs: Vec<String>,
     pub witness_refs: Vec<String>,
     pub reading: String,
@@ -1545,9 +1723,15 @@ pub struct ArchSigArchitectureSpectrumModeV0 {
 #[serde(rename_all = "camelCase")]
 pub struct ArchSigArchitectureSpectrumWitnessClusterV0 {
     pub cluster_ref: String,
+    #[serde(default)]
+    pub cluster_basis: Vec<String>,
     pub axis_refs: Vec<String>,
     pub witness_refs: Vec<String>,
     pub support_refs: Vec<String>,
+    #[serde(default)]
+    pub source_refs: Vec<String>,
+    #[serde(default)]
+    pub transfer_edge_refs: Vec<String>,
     pub cluster_weight: i64,
     pub reading: String,
 }
@@ -1991,6 +2175,10 @@ pub struct ArchSigHomotopyComplexSummaryV0 {
     pub complex_id: String,
     pub profile_ref: String,
     pub status: String,
+    #[serde(default)]
+    pub measurement_status: String,
+    #[serde(default)]
+    pub reading_boundary: ArchSigMeasurementReadingBoundaryV0,
     pub selected_axis_refs: Vec<String>,
     pub zero_cells: Vec<ArchSigHomotopyCellSummaryV0>,
     pub one_cells: Vec<ArchSigHomotopyCellSummaryV0>,
@@ -2021,8 +2209,20 @@ pub struct ArchSigPathPairCandidateV0 {
     pub candidate_id: String,
     pub candidate_source: String,
     pub status: String,
+    #[serde(default)]
+    pub measurement_status: String,
+    #[serde(default)]
+    pub reading_boundary: ArchSigMeasurementReadingBoundaryV0,
     pub p_path_ref: String,
     pub q_path_ref: String,
+    #[serde(default)]
+    pub p_operation_sequence: Vec<String>,
+    #[serde(default)]
+    pub q_operation_sequence: Vec<String>,
+    #[serde(default)]
+    pub endpoint_object_refs: Vec<String>,
+    #[serde(default)]
+    pub generator_candidate_refs: Vec<String>,
     pub shared_endpoint_refs: Vec<String>,
     pub selected_axis_refs: Vec<String>,
     pub source_refs: Vec<String>,
@@ -2039,7 +2239,13 @@ pub struct ArchSigLoopCandidateV0 {
     pub path_pair_ref: String,
     pub candidate_source: String,
     pub status: String,
+    #[serde(default)]
+    pub measurement_status: String,
+    #[serde(default)]
+    pub reading_boundary: ArchSigMeasurementReadingBoundaryV0,
     pub path_refs: Vec<String>,
+    #[serde(default)]
+    pub endpoint_object_refs: Vec<String>,
     pub filler_candidate_refs: Vec<String>,
     pub missing_filler_evidence: Vec<String>,
     pub selected_axis_refs: Vec<String>,
@@ -2057,6 +2263,18 @@ pub struct ArchSigFillerCandidateReadingV0 {
     pub filler_rule_ref: String,
     pub filler_kind: String,
     pub status: String,
+    #[serde(default)]
+    pub measurement_status: String,
+    #[serde(default)]
+    pub reading_boundary: ArchSigMeasurementReadingBoundaryV0,
+    #[serde(default)]
+    pub evidence_status: String,
+    #[serde(default)]
+    pub measured_filler_evidence_refs: Vec<String>,
+    #[serde(default)]
+    pub missing_filler_evidence: Vec<String>,
+    #[serde(default)]
+    pub filling_condition_refs: Vec<String>,
     pub source_refs: Vec<String>,
     pub docs_refs: Vec<String>,
     pub runtime_refs: Vec<String>,
@@ -2071,6 +2289,14 @@ pub struct ArchSigArchitecturalHoleReadingV0 {
     pub reading_id: String,
     pub loop_ref: String,
     pub status: String,
+    #[serde(default)]
+    pub measurement_status: String,
+    #[serde(default)]
+    pub reading_boundary: ArchSigMeasurementReadingBoundaryV0,
+    #[serde(default)]
+    pub selected_diagram_refs: Vec<String>,
+    #[serde(default)]
+    pub non_fillability_witness_refs: Vec<String>,
     pub missing_filler_evidence: Vec<String>,
     pub next_check_refs: Vec<String>,
     pub source_refs: Vec<String>,
@@ -2086,9 +2312,19 @@ pub struct ArchSigHomotopyHolonomyReadingV0 {
     pub path_pair_ref: String,
     pub loop_ref: String,
     pub axis_ref: String,
+    #[serde(default)]
+    pub measurement_status: String,
+    #[serde(default)]
+    pub reading_boundary: ArchSigMeasurementReadingBoundaryV0,
     pub distance_kind: String,
     pub value: i64,
     pub compared_continuation_summary: String,
+    #[serde(default)]
+    pub compared_continuation_refs: Vec<String>,
+    #[serde(default)]
+    pub distance_input_refs: Vec<String>,
+    #[serde(default)]
+    pub mu_defect_refs: Vec<String>,
     pub source_refs: Vec<String>,
     pub observation_refs: Vec<String>,
     pub filler_refs: Vec<String>,
@@ -2104,7 +2340,17 @@ pub struct ArchSigStokesStyleReadingV0 {
     pub reading_id: String,
     pub loop_ref: String,
     pub status: String,
+    #[serde(default)]
+    pub measurement_status: String,
+    #[serde(default)]
+    pub reading_boundary: ArchSigMeasurementReadingBoundaryV0,
     pub holonomy_reading_refs: Vec<String>,
+    #[serde(default)]
+    pub filling_evidence_refs: Vec<String>,
+    #[serde(default)]
+    pub non_fillability_witness_refs: Vec<String>,
+    #[serde(default)]
+    pub local_curvature_condition: String,
     pub local_curvature_cell_candidates: Vec<String>,
     pub review_queue_refs: Vec<String>,
     pub coverage_boundary: String,
@@ -2118,6 +2364,10 @@ pub struct ArchSigArchitectureHomotopyReportV0 {
     pub report_id: String,
     pub profile_ref: String,
     pub status: String,
+    #[serde(default)]
+    pub measurement_status: String,
+    #[serde(default)]
+    pub reading_boundary: ArchSigMeasurementReadingBoundaryV0,
     pub filled_loops: Vec<String>,
     pub unfilled_loops: Vec<String>,
     pub nonzero_holonomy_loops: Vec<String>,

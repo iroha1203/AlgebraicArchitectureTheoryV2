@@ -53,6 +53,13 @@ contains `homotopyMeasurementProfile`. If it is absent, report that
 `ArchitectureHomotopyReport` may be absent and do not infer loop, filler,
 holonomy, or local-curvature readings from generic obstruction fields.
 
+For both reports, read `measurementStatus` and `readingBoundary` before
+interpreting values. `measured` means the selected evidence needed by that
+record is present. `proxy` means the record is a bounded computational proxy,
+such as `rho(T^kappa)` over measured support rows. `unmeasured` and
+`blockedByCoverageGap` must stay in the review queue as missing evidence, not
+as zero curvature, zero holonomy, or path equality.
+
 ## Interpreting Status
 
 - `pass` in validation means packet shape and guardrails passed; it is not architecture lawfulness.
@@ -88,12 +95,17 @@ For source comparison in this variant, build the review queue from nonzero axes,
 | high molecule overlap | shared atom refs and source refs | split only after boundary preparation |
 | nonzero operation transfer | operation delta touches non-target axes | avoid local repair that transfers complexity |
 | `architectureSpectrumReport.topHotspots[]` | hotspot witness refs, support refs, coverage gaps | review current-state hotspot before repair planning |
-| `architectureSpectrumReport.recurrentObstructions[]` | transfer edge refs and witness support | inspect recurrence as bounded current-state diagnostic |
+| `curvatureSupportReadings[].support[]` | lhs/rhs observation refs, local curvature ref, distance inputs, source refs, measurement status | confirm what was actually measured before reading curvature as zero or nonzero |
+| `curvatureTransferReadings[].transferOperator` | row/column support refs, sparse entries, transfer edge refs, spectral radius kind | inspect `rho(T^kappa)` as a bounded finite-operator proxy, not empirical amplification |
+| `architectureSpectrumReport.recurrentObstructions[]` | transfer edge refs, recurrence kind, cycle weight, witness support | inspect recurrence as bounded current-state diagnostic |
 | `architectureSpectrumReport.coverageGaps[]` | missing docs, traces, tests, or source refs | collect evidence before reading absent support as zero |
+| `pathPairCandidates[]` and `operationSquareCandidates[]` | operation sequences, endpoint object refs, generator candidate refs | verify the candidate path basis before comparing continuations |
+| `pathContinuationTraces[]` | operation sequence, endpoint refs, continuation step refs | trace how `Cont_x(p)` and `Cont_x(q)` were built |
+| `axisWiseMonodromyDefects[]` | p/q continuation refs, distance input refs, positive witness boundary, weight | read `mu_x=d_x(Cont_x(p), Cont_x(q))` only when distance inputs are present |
 | `architectureHomotopyReport.nonzeroHolonomyLoops[]` | loop refs, compared continuations, selected axes, source refs | inspect path differences as bounded current-state review queues |
 | `architectureHomotopyReport.unfilledLoops[]` | missing filler evidence, coverage gaps, next check refs | add or confirm contract/test/runtime/policy filler evidence before concluding |
 | `architectureHomotopyReport.topLocalCurvatureCells[]` | filled loop refs and local curvature cell candidates | review local curvature only inside measured fillings, not unfilled holes |
-| `architectureHomotopyReport.aggregateReadings[]` | selected measured complex boundary | use as prioritization counts, not quality score or global homology |
+| `architectureHomotopyReport.aggregateReadings[]` | selected measured square refs, positive contributors, zero-weight defects | use as prioritization counts, not quality score or global homology |
 
 ## Source Comparison Checklist
 
@@ -121,7 +133,11 @@ Keep these fields available after the verdict and action queue:
 For `ArchitectureHomotopyReport`, preserve these as metadata:
 
 - candidate paths and loops are review cues, not path truth
+- `mu_x` and AMI are selected-axis measurements over recorded continuation
+  evidence, not global homotopy or homology computations
 - unfilled loops are architectural holes, not automatic violations
 - missing filler evidence is not measured zero
+- Stokes-style local curvature requires measured filler evidence; holes carry
+  non-fillability witness refs instead
 - nonzero holonomy is not future incident prediction or repair-safety evidence
 - ArchitectureHomotopyReport is not a single architecture quality score

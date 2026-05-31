@@ -64,6 +64,9 @@ For ACTS / spectrum work, do not ask the user to hand-author a large JSON profil
 - selected laws and axes: only repo/user-approved rules become law obligations
 - inferred measurement fields: selected axis refs, measured witness rule refs, distance kinds, weight policy, support projection, transfer edge rule, clustering/ranking, report focus
 - unresolved questions: missing law approval, missing source evidence, missing runtime traces, uncalibrated weights, or ambiguous zero-reflection assumptions
+- reading boundary: measurement strength, zero-reflection assumptions,
+  obstruction-reflection assumptions, coverage requirement refs, and
+  witness-completeness boundary
 
 Keep these as explicit authoring notes in the delivery, and encode them in the LawPolicy fields that carry scope, descriptions, coverage boundaries, exactness assumptions, excluded readings, and non-conclusions. Do not add ad hoc top-level JSON fields outside `law-policy-v0`.
 
@@ -76,6 +79,9 @@ For Homotopy / Holonomy / Stokes work, also do not ask the user to author chain-
 - filler rules: which contract, test, runtime trace, policy, or user-confirmed evidence can fill a loop
 - loop measurement policy: how filled loops, unfilled loops, nonzero holonomy, and local curvature readings should be reported
 - unresolved questions: candidate paths without source refs, missing filler evidence, ambiguous endpoint policy, uncalibrated distances, or coverage gaps
+- reading boundary: measurement strength, zero-reflection assumptions,
+  obstruction-reflection assumptions, coverage requirement refs, and
+  witness-completeness boundary
 
 Encode the profile inside `homotopyMeasurementProfile`; keep open questions as delivery notes and reflect their effect through coverage boundaries, exactness assumptions, excluded readings, and non-conclusions.
 
@@ -133,6 +139,7 @@ Record user answers as source evidence in the LawPolicy scope or in an accompany
    - Use `supportProjectionRule` to explain how witness support is projected to Atom refs and selected axes.
    - Use `transferEdgeRule` to explain when transfer edges may be constructed. Do not use source proximity alone as transfer evidence unless the user/repo selected that rule.
    - Use `clusteringRankingOptions` and `reportFocusOptions` to state how ArchSig should surface top modes, witness clusters, coverage gaps, and review focus.
+   - Use `readingBoundary` to state whether rows are measured, proxy-backed, or coverage-blocked, and which assumptions allow zero or obstruction reflection.
    - Preserve unmeasured axes and missing evidence as coverage gaps. Do not treat absent support as zero.
 
 8. Define homotopy measurement profile when requested.
@@ -141,6 +148,7 @@ Record user answers as source evidence in the LawPolicy scope or in an accompany
    - Use `pathDiscoveryRules[]` to state how candidate paths may be proposed from human intent, ArchMap observations, source refs, docs, tests, traces, or explicit unresolved questions.
    - Use `fillerRules[]` to state what counts as filler evidence: contracts, tests, runtime traces, policies, source refs, or user-confirmed architecture rules.
    - Use `loopMeasurementPolicy` to preserve the difference between filled loops, unfilled loops, nonzero holonomy, local curvature readings, and missing filler evidence.
+   - Use `readingBoundary` to state when operation paths, continuation traces, fillers, local curvature cells, and Stokes-style readings are measured versus unmeasured or blocked.
    - Do not invent selected laws, path endpoints, or filler laws without repo evidence, ArchMap evidence, or explicit user intent.
    - Missing filler evidence becomes an architectural hole / coverage gap, not a violation proof and not measured zero.
 
@@ -181,8 +189,8 @@ When delivering a LawPolicy, include:
 3. Intent summary: review decision, ACTS measurement goal, and excluded claims
 4. Selected laws and why they are in scope
 5. Signature axes and zero-reading boundaries
-6. `spectrumMeasurementProfile`: selected axes, witness rules, distance kinds, support projection, transfer edge rule, ranking/report focus, coverage boundary
-7. `homotopyMeasurementProfile` when requested: selected axes, path discovery rules, filler rules, loop measurement policy, coverage boundary, and non-conclusions
+6. `spectrumMeasurementProfile`: selected axes, witness rules, distance kinds, support projection, transfer edge rule, ranking/report focus, coverage boundary, reading boundary, and non-conclusions
+7. `homotopyMeasurementProfile` when requested: selected axes, path discovery rules, filler rules, loop measurement policy, coverage boundary, reading boundary, and non-conclusions
 8. Inferred fields and evidence used for each inference
 9. Coverage requirements and exactness assumptions
 10. Open questions / unresolved policy decisions

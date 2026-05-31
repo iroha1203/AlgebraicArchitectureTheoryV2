@@ -59,6 +59,19 @@ Before emitting an observed atom:
 
 Workflow-first reading is allowed for discovery, but the output must not contain coarse workflow atoms. Split primitive source facts into `atomObservations[]`, compose responsibilities in `moleculeObservations[]`, and put workflow or behavior readings in `semanticObservations[]`.
 
+When the requested downstream analysis includes ACTS / Spectrum, preserve the
+evidence that ArchSig needs to measure local curvature: lhs/rhs observation
+support, witness-support refs, selected-axis hints, distance input evidence,
+and explicit missing support gaps. Do not turn missing witness support into
+zero curvature.
+
+When the requested downstream analysis includes Homotopy / Holonomy / Stokes,
+preserve operation sequences, endpoint object refs, generator candidates,
+continuation evidence, filler evidence, non-fillability evidence, and missing
+filler gaps. Candidate paths and loops are review cues, not path truth; filler
+evidence must come from selected source, contract, test, runtime, policy, or
+explicit user evidence.
+
 ## Parallel Agent Mode
 
 For large codebases, multiple agents may survey separate surfaces such as authority/authentication, state/model, effects/jobs, provider/trust, domain/contracts, runtime/framework, and docs/governance. A surface agent must output candidates, not a final ArchMap. The final integrator decides which candidates are accepted.

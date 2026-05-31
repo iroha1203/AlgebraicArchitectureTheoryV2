@@ -59,6 +59,13 @@ unfilled loops and nonzero holonomy as architectural holes / review queues
 first; path truth, global homology, future safety, and repair-safety boundaries
 belong in metadata.
 
+Spectrum and Homotopy surfaces expose `measurementStatus` and
+`readingBoundary` so a reader can distinguish measured rows, bounded proxy
+operators, unmeasured candidates, and readings blocked by coverage gaps. A
+zero reading is meaningful only inside the recorded zero-reflection
+assumptions, obstruction-reflection assumptions, coverage requirements, and
+witness-completeness boundary.
+
 The implemented schema records:
 
 - `interpretationProfileRef`
@@ -146,10 +153,11 @@ summaries, path pair candidates, loop candidates, filler candidate readings,
 architectural hole readings, homotopy holonomy readings, Stokes-style readings,
 ArchitectureHomotopyReport, AAT structural state readings, ArchMapStore delta /
 commit / snapshot / index refs, operation square candidates, axis-wise path
-continuation traces, monodromy / boundary holonomy reading family policy
-surfaces, law-relative obstruction links, signature / flatness references, repair
-candidate guardrails, LLM interpretation notes, evidence boundary, and required
-non-conclusions.
+continuation traces, `measurementStatus` and `readingBoundary` fields for ACTS
+and Homotopy measurement records, monodromy / boundary holonomy reading family
+policy surfaces, law-relative obstruction links, signature / flatness
+references, repair candidate guardrails, LLM interpretation notes, evidence
+boundary, and required non-conclusions.
 Each obstruction circuit, signature axis reading, and repair operation candidate
 must carry its own `missingEvidence` and `excludedReadings`. Packet-level
 `excludedReadings` does not stand in for child-record evidence boundaries.
@@ -212,17 +220,22 @@ The builder:
 - curvature support readings use the optional LawPolicy
   `spectrumMeasurementProfile` to report selected-axis / measured-witness
   support rows, bounded curvature values, weights, top modes, witness clusters,
-  coverage boundaries, exactness refs, and non-conclusions. Unmeasured axes and
-  missing support remain explicit missing evidence, not measured zero.
+  coverage boundaries, exactness refs, and non-conclusions. Each support row
+  records the local curvature reference `kappa(D)`, diagram reference, lhs/rhs
+  observation refs, distance kind and inputs, soundness boundary, and coverage
+  status. Missing support is `blockedByCoverageGap`, not zero.
 - curvature transfer readings build a finite nonnegative transfer operator over
-  measured curvature support rows. They report transfer edges, a
-  `rho(T^kappa)` proxy, and recurrent obstruction modes only as bounded
+  measured curvature support rows. They report row/column support refs, sparse
+  matrix entries, source-backed transfer edges, a `rho(T^kappa)` proxy, and
+  self-loop or multi-row recurrent obstruction modes only as bounded
   current-state diagnostics. They do not conclude future incidents, empirical
   cost increase, amplification, repair safety, or FieldSig forecast truth.
 - `architectureSpectrumReport` summarizes the ACTS surface for human and LLM
   review: top hotspots, top bounded mode data, witness clusters, recurrent
   obstruction entries, coverage gaps, measured boundary, and recommended next
-  actions. It is the current-state architecture quality measurement surface for
+  actions. Top modes carry operator component refs, localization, source refs,
+  and a recommended review target; witness clusters carry evidence-backed basis
+  refs. It is the current-state architecture quality measurement surface for
   selected-axis pressure.
 - transfer bridge readings summarize repair-operation-by-transferred-axis
   matrices, indirect bridge atom families between architecture hubs, and
@@ -245,11 +258,18 @@ The builder:
   `homotopyComplexSummary`, `pathPairCandidates`, `loopCandidates`,
   `fillerCandidateReadings`, `architecturalHoleReadings`,
   `homotopyHolonomyReadings`, `stokesStyleReadings`, and
-  `architectureHomotopyReport`. Filled nonzero holonomy loops point reviewers
-  to measured local curvature cells; unfilled loops point reviewers to missing
-  contract, test, runtime, policy, or semantic filler evidence. Neither case is
-  a theorem discharge, architecture score, future forecast, or automatic
-  violation proof.
+  `architectureHomotopyReport`. Path-pair and operation-square candidates carry
+  first-class operation sequences, endpoint object refs, and generator
+  candidate refs. Continuation traces carry step refs and selected-axis
+  continuation states. Axis-wise defects record `mu_x` distance inputs and
+  positive witness boundaries, and AMI aggregates name the selected measured
+  squares, positive contributors, and zero-weight defects. Filled nonzero
+  holonomy loops point reviewers to measured local curvature cells; unfilled
+  loops point reviewers to missing contract, test, runtime, policy, or semantic
+  filler evidence. Stokes-style local curvature is measured only when filler
+  evidence is present; holes preserve non-fillability witness refs instead.
+  Neither case is a theorem discharge, architecture score, future forecast, or
+  automatic violation proof.
 - ArchMapStore is the forward history boundary for PR and longitudinal
   workflows. `ArchMapDelta` and `ArchMapCommit` carry ArchMap-level change
   evidence; `ArchMapSnapshot` and `ArchMapIndex` support large-repository

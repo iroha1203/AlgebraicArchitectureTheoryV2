@@ -298,6 +298,24 @@
   },
   "spectrumMeasurementProfile": {
     "profileId": "spectrum-profile:curvature-transfer-default",
+    "readingBoundary": {
+      "readingStrength": "boundedMeasuredWithProxyTransfer",
+      "zeroReflectionAssumptions": [
+        "coverage:layer-atoms",
+        "coverage:semantic-contract-atoms",
+        "selected LawPolicy exactness assumptions"
+      ],
+      "obstructionReflectionAssumptions": [
+        "source-backed witness support",
+        "selected axis preservation",
+        "witness completeness for measured rows"
+      ],
+      "coverageRequirementRefs": [
+        "coverage:layer-atoms",
+        "coverage:semantic-contract-atoms"
+      ],
+      "witnessCompletenessBoundary": "zero spectrum reflects only selected measured witness rows with declared coverage; transfer recurrence remains bounded review telemetry"
+    },
     "selectedAxisRefs": [
       "axis:layer-violation",
       "axis:semantic-inconsistency"
@@ -344,6 +362,23 @@
   },
   "homotopyMeasurementProfile": {
     "profileId": "homotopy-profile:bounded-stokes-default",
+    "readingBoundary": {
+      "readingStrength": "boundedMeasuredWithCandidatePaths",
+      "zeroReflectionAssumptions": [
+        "coverage:layer-atoms",
+        "coverage:semantic-contract-atoms",
+        "selected path and filler evidence is supplied"
+      ],
+      "obstructionReflectionAssumptions": [
+        "selected continuation traces preserve declared axes",
+        "positive monodromy is backed by source, test, runtime, or policy evidence"
+      ],
+      "coverageRequirementRefs": [
+        "coverage:layer-atoms",
+        "coverage:semantic-contract-atoms"
+      ],
+      "witnessCompletenessBoundary": "homotopy zero reflects only measured path pairs and fillers inside the selected coverage universe; unresolved paths stay coverage gaps"
+    },
     "selectedAxisRefs": [
       "axis:layer-violation",
       "axis:semantic-inconsistency"

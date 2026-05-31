@@ -41,8 +41,10 @@ Use this guide when authoring `law-policy-v0`.
 - `spectrumMeasurementProfile.measuredWitnessRuleRefs[]` must resolve to `witnessRules[].witnessRuleId`.
 - `spectrumMeasurementProfile.distanceKinds[].axisRef` must resolve to an axis id.
 - `spectrumMeasurementProfile.coverageRequirementRefs[]` must resolve to `coverageRequirements[].coverageRequirementId`.
+- `spectrumMeasurementProfile.readingBoundary.coverageRequirementRefs[]` must resolve to `coverageRequirements[].coverageRequirementId`.
 - `homotopyMeasurementProfile.selectedAxisRefs[]` must resolve to axis ids.
 - `homotopyMeasurementProfile.coverageRequirementRefs[]` must resolve to `coverageRequirements[].coverageRequirementId`.
+- `homotopyMeasurementProfile.readingBoundary.coverageRequirementRefs[]` must resolve to `coverageRequirements[].coverageRequirementId`.
 
 ## Measurement Policy
 
@@ -85,6 +87,9 @@ Required fields:
 - `coverageBoundary`
 - `exactnessAssumptionRefs[]`
 - `measurementBoundary`
+- `readingBoundary`: includes `readingStrength`,
+  `zeroReflectionAssumptions[]`, `obstructionReflectionAssumptions[]`,
+  `coverageRequirementRefs[]`, and `witnessCompletenessBoundary`
 - `nonConclusions[]`
 
 Author the profile from human intent, repository evidence, and ArchMap
@@ -94,6 +99,8 @@ evidence. Use conservative defaults when evidence is absent:
 - witness mismatch counts before severity scores
 - transfer edges from measured witness support overlap, not source proximity alone
 - report focus on top modes, witness refs, source refs, coverage gaps, and non-conclusions
+- reading strength that distinguishes measured support rows from bounded
+  transfer proxies and coverage-blocked rows
 
 Keep unresolved questions outside the JSON as delivery notes, and reflect their
 effect inside `coverageBoundary`, `exactnessAssumptionRefs`, `excludedReadings`,
@@ -125,6 +132,9 @@ Required fields:
 - `coverageBoundary`
 - `exactnessAssumptionRefs[]`
 - `measurementBoundary`
+- `readingBoundary`: includes `readingStrength`,
+  `zeroReflectionAssumptions[]`, `obstructionReflectionAssumptions[]`,
+  `coverageRequirementRefs[]`, and `witnessCompletenessBoundary`
 - `nonConclusions[]`
 
 Author the profile from human intent, repository evidence, and ArchMap
@@ -137,6 +147,9 @@ evidence. Use conservative defaults when evidence is absent:
   violation proof.
 - Nonzero holonomy is a bounded current-state review queue, not forecast,
   incident prediction, or repair-safety evidence.
+- Operation sequences, endpoint refs, generator candidates, continuation
+  distance inputs, and filler evidence determine what is measured. Missing
+  inputs stay unmeasured or coverage-blocked.
 - ArchitectureHomotopyReport is not a single architecture quality score.
 
 Keep unresolved questions outside the JSON as delivery notes, and reflect their

@@ -55,6 +55,11 @@ Ask only the questions needed for the target scope. Prefer 3-6 high-signal quest
 - What should count as transfer evidence: shared witness support, shared Atom refs, shared molecule support, runtime trace overlap, or an explicitly documented dependency relation?
 - What should the report rank first: nonzero hotspots, recurrent obstruction modes, witness clusters, coverage gaps, or boundary-preparation actions?
 - Which missing docs, tests, traces, logs, or source refs should block zero-reflection and remain unresolved questions?
+- Which rows may be reported as measured support, which transfer readings are
+  only bounded proxies, and which missing witness rows must be
+  `blockedByCoverageGap`?
+- What assumptions, if any, make a zero spectrum reading reflect selected
+  local curvature zero rather than only absence of observed support?
 
 ## Homotopy / Holonomy / Stokes Profile
 
@@ -65,5 +70,11 @@ Ask only the questions needed for the target scope. Prefer 3-6 high-signal quest
 - What counts as filler evidence: contract docs, tests, runtime traces, policy docs, source implementations, review notes, or explicit user confirmation?
 - Which missing filler evidence should become an architectural hole instead of a violation finding?
 - Which distance kind is defensible for holonomy: selected-axis continuation distance, boolean mismatch, semantic witness mismatch, state/effect mismatch, or project-defined distance?
+- Which operation sequences, endpoint object refs, and generator candidates must
+  be present before a path pair is considered measured?
+- Which continuation states and distance input refs must be present before
+  `mu_x=d_x(Cont_x(p), Cont_x(q))` is measured?
 - Which coverage gaps should block zero and Stokes-style local-curvature readings: missing tests, missing runtime traces, missing policy docs, unresolved source refs, or ambiguous endpoints?
+- Which Stokes-style readings require measured filler evidence, and which loops
+  should instead preserve non-fillability witness refs?
 - Which claims must be excluded: path truth, global homology, architecture score, automatic violation proof, future incident prediction, or repair-safety proof?
