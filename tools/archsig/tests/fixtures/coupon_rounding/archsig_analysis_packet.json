@@ -1089,160 +1089,6 @@
       ]
     }
   ],
-  "workflowRiskReadings": [
-    {
-      "workflowRiskId": "workflow-risk:molecule-coupon-operation-contract",
-      "moleculeObservationRef": "molecule:coupon-operation-contract",
-      "moleculeFamily": "operation-contract",
-      "roleName": "coupon / tax / rounding operation contract",
-      "status": "needsReview",
-      "riskScore": 17,
-      "riskTier": "low",
-      "atomCount": 3,
-      "atomFamilyCounts": [
-        {
-          "atomFamily": "contractSpecification",
-          "count": 1
-        },
-        {
-          "atomFamily": "effect",
-          "count": 1
-        },
-        {
-          "atomFamily": "semanticInterpretation",
-          "count": 1
-        }
-      ],
-      "semanticRefs": [
-        "semantic:coupon-tax-rounding-paths"
-      ],
-      "concernRefs": [
-        "concern:coupon-semantic-monodromy"
-      ],
-      "topAxes": [
-        {
-          "axis": "llmOutputMediation",
-          "status": "needsReview",
-          "score": 5,
-          "familyScore": 4,
-          "keywordHits": [],
-          "concernRefs": [],
-          "coverageGapRefs": [
-            "gap:coupon-runtime-payment-trace"
-          ],
-          "reading": "prompt/context validation, LLM/provider output, filtering, and persistence gates concentrate in this workflow",
-          "nonConclusions": [
-            "ArchSig analysis packet is not a Lean theorem proof",
-            "ArchSig analysis packet is not global architecture truth",
-            "ArchSig analysis packet does not prove source extraction completeness",
-            "signature axes are law-policy-relative, not universal quality scores",
-            "flatness reading is blocked by coverage gaps and exactness assumptions",
-            "repair operation candidates are not automatic safe refactorings",
-            "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
-          ]
-        },
-        {
-          "axis": "stateEffectReconciliation",
-          "status": "needsReview",
-          "score": 5,
-          "familyScore": 4,
-          "keywordHits": [],
-          "concernRefs": [],
-          "coverageGapRefs": [
-            "gap:coupon-runtime-payment-trace"
-          ],
-          "reading": "durable state, external effects, retry, and status-finalization pressure concentrate in this workflow",
-          "nonConclusions": [
-            "ArchSig analysis packet is not a Lean theorem proof",
-            "ArchSig analysis packet is not global architecture truth",
-            "ArchSig analysis packet does not prove source extraction completeness",
-            "signature axes are law-policy-relative, not universal quality scores",
-            "flatness reading is blocked by coverage gaps and exactness assumptions",
-            "repair operation candidates are not automatic safe refactorings",
-            "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
-          ]
-        },
-        {
-          "axis": "authorityTrustBoundary",
-          "status": "needsReview",
-          "score": 3,
-          "familyScore": 2,
-          "keywordHits": [],
-          "concernRefs": [],
-          "coverageGapRefs": [
-            "gap:coupon-runtime-payment-trace"
-          ],
-          "reading": "authority labels, trust handoffs, provider output, and boundary checks concentrate in this workflow",
-          "nonConclusions": [
-            "ArchSig analysis packet is not a Lean theorem proof",
-            "ArchSig analysis packet is not global architecture truth",
-            "ArchSig analysis packet does not prove source extraction completeness",
-            "signature axes are law-policy-relative, not universal quality scores",
-            "flatness reading is blocked by coverage gaps and exactness assumptions",
-            "repair operation candidates are not automatic safe refactorings",
-            "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
-          ]
-        },
-        {
-          "axis": "permissionCoverage",
-          "status": "actionable",
-          "score": 2,
-          "familyScore": 2,
-          "keywordHits": [],
-          "concernRefs": [],
-          "coverageGapRefs": [],
-          "reading": "route/session/admin authority coverage concentrates in this workflow",
-          "nonConclusions": [
-            "ArchSig analysis packet is not a Lean theorem proof",
-            "ArchSig analysis packet is not global architecture truth",
-            "ArchSig analysis packet does not prove source extraction completeness",
-            "signature axes are law-policy-relative, not universal quality scores",
-            "flatness reading is blocked by coverage gaps and exactness assumptions",
-            "repair operation candidates are not automatic safe refactorings",
-            "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
-          ]
-        },
-        {
-          "axis": "sourceBackedDomainCohesion",
-          "status": "actionable",
-          "score": 2,
-          "familyScore": 2,
-          "keywordHits": [],
-          "concernRefs": [],
-          "coverageGapRefs": [],
-          "reading": "source-backed domain identity, relation, and contract cohesion concentrate in this workflow",
-          "nonConclusions": [
-            "ArchSig analysis packet is not a Lean theorem proof",
-            "ArchSig analysis packet is not global architecture truth",
-            "ArchSig analysis packet does not prove source extraction completeness",
-            "signature axes are law-policy-relative, not universal quality scores",
-            "flatness reading is blocked by coverage gaps and exactness assumptions",
-            "repair operation candidates are not automatic safe refactorings",
-            "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
-          ]
-        }
-      ],
-      "reviewFocus": [
-        "authority label, trust handoff, provider output, and boundary checks",
-        "prompt/context validation, LLM output filtering, persistence gate",
-        "retry / duplicate / partial failure / status finalization"
-      ],
-      "coverageGapRefs": [
-        "gap:coupon-runtime-payment-trace"
-      ],
-      "evidenceBoundary": "workflow risk is a molecule-local ArchMap reading for review prioritization, not a quality score or proof",
-      "recommendedNextAction": "review the top axes, source refs, concern hints, and coverage gaps before planning repair",
-      "nonConclusions": [
-        "ArchSig analysis packet is not a Lean theorem proof",
-        "ArchSig analysis packet is not global architecture truth",
-        "ArchSig analysis packet does not prove source extraction completeness",
-        "signature axes are law-policy-relative, not universal quality scores",
-        "flatness reading is blocked by coverage gaps and exactness assumptions",
-        "repair operation candidates are not automatic safe refactorings",
-        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
-      ]
-    }
-  ],
   "spectralAnalysisReadings": [
     {
       "spectralReadingId": "spectral:relation-atom-adjacency",
@@ -1285,72 +1131,6 @@
       "coverageBoundary": "observation gaps block measured-zero interpretation for absent relation edges",
       "zeroReflectingBoundary": "zero entries mean no selected relation atom endpoint under the current ArchMap, not proof of independence",
       "recommendedNextAction": "inspect dominant source/target nodes, cycle readings, and coverage gaps before selecting repair operations",
-      "nonConclusions": [
-        "ArchSig analysis packet is not a Lean theorem proof",
-        "ArchSig analysis packet is not global architecture truth",
-        "ArchSig analysis packet does not prove source extraction completeness",
-        "signature axes are law-policy-relative, not universal quality scores",
-        "flatness reading is blocked by coverage gaps and exactness assumptions",
-        "repair operation candidates are not automatic safe refactorings",
-        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
-      ]
-    },
-    {
-      "spectralReadingId": "spectral:workflow-risk-axis-pressure",
-      "representationFamily": "workflowRiskAxisPressureMatrix",
-      "status": "needsReview",
-      "matrixShape": {
-        "rowDomain": "workflowRiskReadings",
-        "columnDomain": "workflowRiskAxes",
-        "rowCount": 1,
-        "columnCount": 5,
-        "nonzeroEntryCount": 5
-      },
-      "entryRule": "entry(i,j) is the workflow risk axis score for workflow i and risk axis j",
-      "valueType": "boundedSpectralProxy",
-      "values": [
-        {
-          "name": "maxRowSum",
-          "value": "17",
-          "interpretation": "largest molecule-local review pressure"
-        },
-        {
-          "name": "maxColumnSum",
-          "value": "5",
-          "interpretation": "largest accumulated axis pressure"
-        },
-        {
-          "name": "frobeniusNorm",
-          "value": "8.185",
-          "interpretation": "global pressure magnitude of the observed finite matrix"
-        },
-        {
-          "name": "spectralRadiusUpperBound",
-          "value": "9.220",
-          "interpretation": "nonnegative-matrix upper bound, not an exact eigen theorem"
-        }
-      ],
-      "dominantComponents": [
-        {
-          "componentRef": "molecule:coupon-operation-contract",
-          "componentKind": "workflow",
-          "value": "17",
-          "reading": "dominant row pressure in the workflow-by-axis matrix"
-        },
-        {
-          "componentRef": "stateEffectReconciliation",
-          "componentKind": "workflowRiskAxis",
-          "value": "5",
-          "reading": "dominant column pressure accumulated across workflows"
-        }
-      ],
-      "supportRefs": [
-        "workflow-risk:molecule-coupon-operation-contract"
-      ],
-      "reading": "workflow risk pressure is concentrated by rows and axes; use the dominant row and column before treating local risk as isolated",
-      "coverageBoundary": "coverage gaps on workflow axes block measured-zero interpretation for absent entries",
-      "zeroReflectingBoundary": "zero entries mean no observed risk-axis evidence under current ArchMap and heuristics, not absence of architectural pressure",
-      "recommendedNextAction": "review the dominant workflow row, dominant axis column, and coverage gaps before selecting repair operations",
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -1587,57 +1367,6 @@
       ]
     },
     {
-      "spectralModeId": "spectral-mode:spectral-workflow-risk-axis-pressure",
-      "sourceSpectralReadingRef": "spectral:workflow-risk-axis-pressure",
-      "representationFamily": "workflowRiskAxisPressureMatrix",
-      "status": "needsReview",
-      "modeKind": "distributedPressureMode",
-      "modeComponents": [
-        {
-          "componentRef": "molecule:coupon-operation-contract",
-          "componentKind": "workflow",
-          "weight": "17",
-          "role": "primaryDominantComponent",
-          "reading": "dominant row pressure in the workflow-by-axis matrix"
-        },
-        {
-          "componentRef": "stateEffectReconciliation",
-          "componentKind": "workflowRiskAxis",
-          "weight": "5",
-          "role": "coupledDominantComponent",
-          "reading": "dominant column pressure accumulated across workflows"
-        }
-      ],
-      "spectralGapProxy": {
-        "name": "dominantResidualGapProxy",
-        "value": "8.185",
-        "interpretation": "dominant component magnitude minus residual Frobenius mass; bounded proxy, not an eigenvalue gap theorem"
-      },
-      "localizationIndex": {
-        "name": "dominantFrobeniusLocalization",
-        "value": "1.000",
-        "interpretation": "dominant component magnitude divided by Frobenius norm; higher means pressure is more localized"
-      },
-      "matrixDensity": {
-        "name": "nonzeroMatrixDensity",
-        "value": "1.000",
-        "interpretation": "nonzero entries divided by finite matrix capacity; higher means more distributed coupling"
-      },
-      "decomposabilityReading": "mode is delocalized or dense; treat the concern as architecture-wide coupling before attempting local repair",
-      "repairPerturbationReading": "not an operation transition matrix; use this mode to choose review focus before evaluating repair perturbations",
-      "evidenceBoundary": "spectral mode is a bounded proxy computed from ArchSig finite representation summaries, not an exact eigenvector theorem",
-      "recommendedNextAction": "start review from the dominant workflow and dominant risk axis, then verify coverage gaps",
-      "nonConclusions": [
-        "ArchSig analysis packet is not a Lean theorem proof",
-        "ArchSig analysis packet is not global architecture truth",
-        "ArchSig analysis packet does not prove source extraction completeness",
-        "signature axes are law-policy-relative, not universal quality scores",
-        "flatness reading is blocked by coverage gaps and exactness assumptions",
-        "repair operation candidates are not automatic safe refactorings",
-        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
-      ]
-    },
-    {
       "spectralModeId": "spectral-mode:spectral-molecule-atom-overlap-coupling",
       "sourceSpectralReadingRef": "spectral:molecule-atom-overlap-coupling",
       "representationFamily": "moleculeAtomOverlapCouplingMatrix",
@@ -1787,10 +1516,9 @@
   "spectralDrilldownReadings": [
     {
       "drilldownId": "spectral-drilldown:coupon-tax-rounding-archmap",
-      "status": "needsReview",
+      "status": "actionable",
       "sourceSpectralModeRefs": [
         "spectral-mode:spectral-relation-atom-adjacency",
-        "spectral-mode:spectral-workflow-risk-axis-pressure",
         "spectral-mode:spectral-molecule-atom-overlap-coupling",
         "spectral-mode:spectral-obstruction-axis-curvature",
         "spectral-mode:spectral-operation-signature-delta"
@@ -1798,7 +1526,7 @@
       "dominantAtomFamilyComposition": [
         {
           "sourceComponentRef": "molecule:coupon-operation-contract",
-          "sourceComponentKind": "workflow",
+          "sourceComponentKind": "molecule",
           "atomFamily": "contractSpecification",
           "count": 1,
           "atomObservationRefs": [
@@ -1808,7 +1536,7 @@
         },
         {
           "sourceComponentRef": "molecule:coupon-operation-contract",
-          "sourceComponentKind": "workflow",
+          "sourceComponentKind": "molecule",
           "atomFamily": "effect",
           "count": 1,
           "atomObservationRefs": [
@@ -1818,7 +1546,7 @@
         },
         {
           "sourceComponentRef": "molecule:coupon-operation-contract",
-          "sourceComponentKind": "workflow",
+          "sourceComponentKind": "molecule",
           "atomFamily": "semanticInterpretation",
           "count": 1,
           "atomObservationRefs": [
@@ -2624,7 +2352,7 @@
   "transferBridgeReadings": [
     {
       "transferBridgeId": "transfer-bridge:coupon-tax-rounding-archmap",
-      "status": "nonConclusion",
+      "status": "needsReview",
       "transferMatrixEntries": [],
       "bridgeAtomFamilies": [
         {
@@ -2632,16 +2360,18 @@
           "sourceHubMoleculeRef": "molecule:coupon-operation-contract",
           "targetHubMoleculeRef": "molecule:coupon-operation-contract",
           "intermediateMoleculeRefs": [],
-          "bridgeAtomFamilies": [],
-          "bridgeScore": 0,
+          "bridgeAtomFamilies": [
+            "contractSpecification",
+            "effect",
+            "semanticInterpretation"
+          ],
+          "bridgeScore": 3,
           "pathPairRefs": [],
           "edgeBreakdowns": [],
           "sharedAxisRefs": [
-            "authorityTrustBoundary",
-            "llmOutputMediation",
-            "permissionCoverage",
-            "sourceBackedDomainCohesion",
-            "stateEffectReconciliation"
+            "contractSpecification",
+            "effect",
+            "semanticInterpretation"
           ],
           "reviewRisk": "high",
           "recommendedBoundaryPreparation": "review bridge atom families before assuming molecule:coupon-operation-contract and molecule:coupon-operation-contract are independent architecture hubs",
@@ -2839,11 +2569,22 @@
       "conflictingAtomObservationRefs": [],
       "conflictingSemanticObservationRefs": [],
       "payloadInconsistencyKinds": [
+        "payloadEquality",
+        "incompatibleObjectRefs",
+        "contradictoryBooleanClaim",
+        "incompatibleSemanticClaim",
         "familyDivergence",
         "statusDivergence",
-        "semanticDivergence"
+        "confidenceDivergence"
       ],
-      "confidenceBoundary": "compatibility is checked over observed subject/predicate slots only",
+      "payloadComparisonPolicy": [
+        "compare same subject/predicate slots pairwise",
+        "treat differing non-empty object refs as incompatible payload refs",
+        "treat yes/no or true/false payload tokens as contradictory boolean claims",
+        "link semantic divergence only through semantic observations that reference conflicting atom refs",
+        "preserve confidence, uncertainty, and source refs for reviewer judgement"
+      ],
+      "confidenceBoundary": "compatibility is checked over observed subject/predicate payload slots only",
       "uncertainty": [
         "gap:coupon-runtime-payment-trace"
       ],
@@ -2867,28 +2608,25 @@
         {
           "refId": "law:layer-respecting",
           "status": "blockedByCoverageGap",
-          "evidenceRefs": [
-            "relation",
-            "boundaryAuthority"
-          ],
+          "evidenceRefs": [],
           "blockerRefs": [
             "relation",
             "boundaryAuthority",
             "gap:coupon-runtime-payment-trace"
           ],
-          "reading": "coverage is selected-profile-relative and does not prove lawfulness"
+          "reading": "required law coverage is source-backed Atom evidence plus witness/axis alignment, not family presence alone"
         },
         {
           "refId": "law:semantic-contract-alignment",
-          "status": "coveredByObservedAtoms",
+          "status": "sourceBackedEvidenceObserved",
           "evidenceRefs": [
-            "contractSpecification",
-            "semanticInterpretation"
+            "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding",
+            "atom:semantic:PaymentAmount-ReceiptAmount-coupon-tax-rounding-noncommutation"
           ],
           "blockerRefs": [
             "gap:coupon-runtime-payment-trace"
           ],
-          "reading": "coverage is selected-profile-relative and does not prove lawfulness"
+          "reading": "required law coverage is source-backed Atom evidence plus witness/axis alignment, not family presence alone"
         }
       ],
       "optionalLawCoverage": [
@@ -2906,28 +2644,26 @@
         {
           "refId": "witness:layer-violation",
           "status": "blockedByCoverageGap",
-          "evidenceRefs": [
-            "relation",
-            "boundaryAuthority"
-          ],
+          "evidenceRefs": [],
           "blockerRefs": [
             "relation",
             "boundaryAuthority",
             "gap:coupon-runtime-payment-trace"
           ],
-          "reading": "coverage is selected-profile-relative and does not prove lawfulness"
+          "reading": "witness rule coverage is evaluated separately from required law coverage"
         },
         {
           "refId": "witness:semantic-contract-mismatch",
-          "status": "coveredByObservedAtoms",
+          "status": "blockedByMissingWitnessEvidence",
           "evidenceRefs": [
-            "contractSpecification",
-            "semanticInterpretation"
+            "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding",
+            "atom:semantic:PaymentAmount-ReceiptAmount-coupon-tax-rounding-noncommutation"
           ],
           "blockerRefs": [
-            "gap:coupon-runtime-payment-trace"
+            "gap:coupon-runtime-payment-trace",
+            "missingEvidenceBehavior:witness:semantic-contract-mismatch"
           ],
-          "reading": "coverage is selected-profile-relative and does not prove lawfulness"
+          "reading": "witness rule coverage is evaluated separately from required law coverage"
         }
       ],
       "signatureAxisCoverage": [
@@ -2958,24 +2694,147 @@
           "reading": "1 obstruction circuit(s) contribute to sig-axis:semantic-inconsistency"
         }
       ],
+      "coverageRequirementStatus": [
+        {
+          "refId": "coverage:layer-atoms",
+          "status": "blockedByMissingSourceEvidence",
+          "evidenceRefs": [],
+          "blockerRefs": [
+            "existence",
+            "relation",
+            "boundaryAuthority",
+            "gap:coupon-runtime-payment-trace",
+            "symbol"
+          ],
+          "reading": "coverage requirement is checked against source-backed Atom families and required source ref kinds"
+        },
+        {
+          "refId": "coverage:semantic-contract-atoms",
+          "status": "blockedByMissingSourceEvidence",
+          "evidenceRefs": [
+            "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding",
+            "atom:semantic:PaymentAmount-ReceiptAmount-coupon-tax-rounding-noncommutation"
+          ],
+          "blockerRefs": [
+            "capability",
+            "gap:coupon-runtime-payment-trace",
+            "doc-section"
+          ],
+          "reading": "coverage requirement is checked against source-backed Atom families and required source ref kinds"
+        }
+      ],
       "exactnessAssumptionStatus": [
         {
           "refId": "the selected witness rules cover only policy-declared laws",
           "status": "blockedByCoverageGap",
-          "evidenceRefs": [],
+          "evidenceRefs": [
+            "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding",
+            "atom:semantic:PaymentAmount-ReceiptAmount-coupon-tax-rounding-noncommutation",
+            "semantic:coupon-tax-rounding-paths",
+            "sig-axis:layer-violation: no direct source refs under selected coverage"
+          ],
           "blockerRefs": [
             "gap:coupon-runtime-payment-trace"
           ],
-          "reading": "exactness assumption is not theorem discharge"
+          "reading": "exactness assumption is tracked separately from coverage and is not theorem discharge"
         },
         {
           "refId": "zero readings are exact only for observed atoms and declared coverage requirements",
           "status": "blockedByCoverageGap",
-          "evidenceRefs": [],
+          "evidenceRefs": [
+            "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding",
+            "atom:semantic:PaymentAmount-ReceiptAmount-coupon-tax-rounding-noncommutation",
+            "semantic:coupon-tax-rounding-paths",
+            "sig-axis:layer-violation: no direct source refs under selected coverage"
+          ],
           "blockerRefs": [
             "gap:coupon-runtime-payment-trace"
           ],
-          "reading": "exactness assumption is not theorem discharge"
+          "reading": "exactness assumption is tracked separately from coverage and is not theorem discharge"
+        }
+      ],
+      "lawWitnessAxisEvaluations": [
+        {
+          "evaluationId": "law-witness-axis-alignment:law-layer-respecting",
+          "lawRef": "law:layer-respecting",
+          "alignmentStatus": "blocked",
+          "coverageStatus": "blocked",
+          "exactnessStatus": "blocked",
+          "requiredWitnessRefs": [
+            "witness:layer-violation"
+          ],
+          "observedWitnessRefs": [],
+          "missingWitnessRefs": [
+            "witness:layer-violation"
+          ],
+          "requiredAxisRefs": [
+            "axis:layer-violation"
+          ],
+          "observedAxisRefs": [
+            "axis:layer-violation"
+          ],
+          "missingAxisRefs": [],
+          "coverageRequirementRefs": [
+            "coverage:layer-atoms"
+          ],
+          "exactnessAssumptionRefs": [
+            "the selected witness rules cover only policy-declared laws",
+            "zero readings are exact only for observed atoms and declared coverage requirements"
+          ],
+          "sourceBackedEvidenceRefs": [
+            "sig-axis:layer-violation: no direct source refs under selected coverage"
+          ],
+          "blockerRefs": [
+            "boundaryAuthority",
+            "existence",
+            "gap:coupon-runtime-payment-trace",
+            "relation",
+            "symbol",
+            "witness:layer-violation"
+          ],
+          "evaluator": "law-witness-axis-alignment-evaluator-v0",
+          "reading": "required law visibility is evaluated by witness exactness, selected signature-axis alignment, coverage requirements, and exactness assumptions"
+        },
+        {
+          "evaluationId": "law-witness-axis-alignment:law-semantic-contract-alignment",
+          "lawRef": "law:semantic-contract-alignment",
+          "alignmentStatus": "blocked",
+          "coverageStatus": "blocked",
+          "exactnessStatus": "blocked",
+          "requiredWitnessRefs": [
+            "witness:semantic-contract-mismatch"
+          ],
+          "observedWitnessRefs": [],
+          "missingWitnessRefs": [
+            "witness:semantic-contract-mismatch"
+          ],
+          "requiredAxisRefs": [
+            "axis:semantic-inconsistency"
+          ],
+          "observedAxisRefs": [
+            "axis:semantic-inconsistency"
+          ],
+          "missingAxisRefs": [],
+          "coverageRequirementRefs": [
+            "coverage:semantic-contract-atoms"
+          ],
+          "exactnessAssumptionRefs": [
+            "the selected witness rules cover only policy-declared laws",
+            "zero readings are exact only for observed atoms and declared coverage requirements"
+          ],
+          "sourceBackedEvidenceRefs": [
+            "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding",
+            "atom:semantic:PaymentAmount-ReceiptAmount-coupon-tax-rounding-noncommutation",
+            "semantic:coupon-tax-rounding-paths"
+          ],
+          "blockerRefs": [
+            "capability",
+            "doc-section",
+            "gap:coupon-runtime-payment-trace",
+            "witness:semantic-contract-mismatch"
+          ],
+          "evaluator": "law-witness-axis-alignment-evaluator-v0",
+          "reading": "required law visibility is evaluated by witness exactness, selected signature-axis alignment, coverage requirements, and exactness assumptions"
         }
       ],
       "unmeasuredRequiredLawCount": 1,
@@ -2983,7 +2842,7 @@
         "witness:layer-violation",
         "witness:semantic-contract-mismatch"
       ],
-      "lawWitnessAxisAlignment": "selected laws, witness rules, and signature axes are compared by refs only; alignment is profile-relative",
+      "lawWitnessAxisAlignment": "selected laws, witness rules, signature axes, coverage requirements, and exactness assumptions are evaluated as profile-relative alignment rows",
       "coverageBoundary": "coverage measures selected profile visibility, not LawUniverse completeness",
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
@@ -3486,6 +3345,14 @@
       "forgottenAxisRefs": [
         "gap:coupon-runtime-payment-trace"
       ],
+      "selectedSignatureAxisRefs": [
+        "sig-axis:layer-violation",
+        "sig-axis:semantic-inconsistency"
+      ],
+      "blockedSignatureAxisRefs": [
+        "sig-axis:layer-violation",
+        "sig-axis:semantic-inconsistency"
+      ],
       "mixedAxisScopeRefs": [
         "atom-support-axis:coupon-tax-rounding-archmap",
         "atom-support-axis:molecule-coupon-operation-contract"
@@ -3527,7 +3394,13 @@
         "gap:coupon-runtime-payment-trace: payment processor and receipt reconciliation traces are not included in the fixture"
       ],
       "projectionLossAxes": [
+        "axis-forgotten-family:effect",
+        "axis-forgotten-family:runtime",
+        "axis-forgotten-family:state",
         "gap:coupon-runtime-payment-trace"
+      ],
+      "reconstructionBlockerRefs": [
+        "projection-reconstruction-blocker:gap-coupon-runtime-payment-trace"
       ],
       "reflectionStatus": "blockedWithoutAxisPreservationAndWitnessCompleteness",
       "measurementBoundary": "projection loss is separated from zero/lawfulness; missing coordinates are not measured absent atoms",
@@ -3597,6 +3470,101 @@
         "compensation/finalization relation",
         "handler and external provider boundary ownership"
       ],
+      "relationInputs": [
+        {
+          "relationInputId": "effect-relation-input:operation-square-evidence-coupon-tax-rounding",
+          "relationKind": "ordering",
+          "orderingRefs": [
+            "generator:independent-square",
+            "generator:same-contract-replacement"
+          ],
+          "replayOrIdempotencyRefs": [],
+          "compensationOrFinalizationRefs": [],
+          "authorityRequirementRefs": [],
+          "effectRefs": [
+            "atom:effect:receipt-boundary"
+          ],
+          "runtimeOrTraceRefs": [],
+          "sourceRefs": [
+            "src-pricing-checkout",
+            "test-coupon-rounding"
+          ],
+          "reading": "operation-square-evidence:coupon-tax-rounding supplies bounded effect relation evidence for ordering/replay/compensation evaluation"
+        }
+      ],
+      "relationEvaluations": [
+        {
+          "lawAxis": "orderingPreservation",
+          "status": "blocked",
+          "requiredInputRefs": [
+            "effect-relation-input:operation-square-evidence-coupon-tax-rounding"
+          ],
+          "observedInputRefs": [
+            "atom:semantic:PaymentAmount-ReceiptAmount-coupon-tax-rounding-noncommutation",
+            "generator:independent-square",
+            "generator:same-contract-replacement"
+          ],
+          "blockedReasonRefs": [
+            "atom:effect:receipt-boundary",
+            "atom:semantic:PaymentAmount-ReceiptAmount-coupon-tax-rounding-noncommutation"
+          ],
+          "evaluator": "effect-relation-law-evaluator-v0",
+          "reading": "effect ordering must be backed by relation input or comparable operation evidence"
+        },
+        {
+          "lawAxis": "replaySafety",
+          "status": "blocked",
+          "requiredInputRefs": [
+            "effect-relation-input:operation-square-evidence-coupon-tax-rounding"
+          ],
+          "observedInputRefs": [],
+          "blockedReasonRefs": [
+            "gap:coupon-runtime-payment-trace"
+          ],
+          "evaluator": "effect-relation-law-evaluator-v0",
+          "reading": "replay safety is blocked when runtime/test/effect evidence is missing"
+        },
+        {
+          "lawAxis": "idempotency",
+          "status": "blocked",
+          "requiredInputRefs": [
+            "effect-relation-input:operation-square-evidence-coupon-tax-rounding"
+          ],
+          "observedInputRefs": [],
+          "blockedReasonRefs": [
+            "gap:coupon-runtime-payment-trace"
+          ],
+          "evaluator": "effect-relation-law-evaluator-v0",
+          "reading": "idempotency requires explicit retry/idempotency effect evidence"
+        },
+        {
+          "lawAxis": "compensationAvailability",
+          "status": "blocked",
+          "requiredInputRefs": [
+            "effect-relation-input:operation-square-evidence-coupon-tax-rounding"
+          ],
+          "observedInputRefs": [],
+          "blockedReasonRefs": [
+            "gap:coupon-runtime-payment-trace"
+          ],
+          "evaluator": "effect-relation-law-evaluator-v0",
+          "reading": "compensation availability requires compensation or finalization relation evidence"
+        },
+        {
+          "lawAxis": "authorityRequirement",
+          "status": "blocked",
+          "requiredInputRefs": [
+            "effect-relation-input:operation-square-evidence-coupon-tax-rounding"
+          ],
+          "observedInputRefs": [],
+          "blockedReasonRefs": [
+            "gap:coupon-runtime-payment-trace"
+          ],
+          "evaluator": "effect-relation-law-evaluator-v0",
+          "reading": "external effects must expose authority or ownership requirements"
+        }
+      ],
+      "relationEvaluatorStatus": "blocked",
       "unresolvedEffectRelations": [
         "gap:coupon-runtime-payment-trace"
       ],
@@ -3719,10 +3687,12 @@
       "reachabilityForgottenRefs": [
         "gap:coupon-runtime-payment-trace"
       ],
-      "fanInBoundaryRefs": [],
+      "fanInBoundaryRefs": [
+        "molecule:coupon-operation-contract"
+      ],
       "multiplicityLossStatus": "reachabilityMultiplicityLossObserved",
       "homotopyBoundary": "path multiplicity is a reachability and homotopy review signal, not proof of all paths",
-      "evidenceBoundary": "alternate-path pressure is bounded by observed operation trajectories, homotopy sensitivity, workflow risk, and gaps",
+      "evidenceBoundary": "alternate-path pressure is bounded by observed operation trajectories, homotopy sensitivity, molecule fan-in, and gaps",
       "recommendedNextAction": "inspect high fan-in and alternate path boundaries before treating one observed path as complete reachability",
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
@@ -7879,39 +7849,6 @@
       ]
     },
     {
-      "readingId": "representation-strength:spectral-workflow-risk-axis-pressure",
-      "sourceReadingRef": "spectral:workflow-risk-axis-pressure",
-      "representationFamily": "workflowRiskAxisPressureMatrix",
-      "zeroPreserving": "boundedProxy",
-      "zeroReflecting": "blockedByCoverageGap",
-      "obstructionPreserving": "supported",
-      "obstructionReflecting": "notAnEigenvalueTheorem",
-      "aggregateZeroSafety": "proxyOnly",
-      "cancellationRisk": "boundedProxyMayHideLocalComponents",
-      "requiredAssumptions": [
-        "gap:coupon-runtime-payment-trace",
-        "witness completeness for selected LawPolicy",
-        "signature axis exactness for selected readings"
-      ],
-      "blockedBy": [
-        "gap:coupon-runtime-payment-trace"
-      ],
-      "blockedReflectionOrPreservationReasons": [
-        "gap:coupon-runtime-payment-trace"
-      ],
-      "reading": "workflowRiskAxisPressureMatrix is a spectral proxy for review; it preserves selected pressure but does not reflect global architecture truth",
-      "evidenceBoundary": "coverage gaps on workflow axes block measured-zero interpretation for absent entries",
-      "nonConclusions": [
-        "ArchSig analysis packet is not a Lean theorem proof",
-        "ArchSig analysis packet is not global architecture truth",
-        "ArchSig analysis packet does not prove source extraction completeness",
-        "signature axes are law-policy-relative, not universal quality scores",
-        "flatness reading is blocked by coverage gaps and exactness assumptions",
-        "repair operation candidates are not automatic safe refactorings",
-        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
-      ]
-    },
-    {
       "readingId": "representation-strength:spectral-molecule-atom-overlap-coupling",
       "sourceReadingRef": "spectral:molecule-atom-overlap-coupling",
       "representationFamily": "moleculeAtomOverlapCouplingMatrix",
@@ -8090,8 +8027,232 @@
         "semanticInterpretation"
       ],
       "observedAtomFamilyCount": 3,
+      "sourceCoordinates": [
+        {
+          "coordinateId": "projection-coordinate:observed:atom-contract-paymentamount-receiptamount-coupon-tax-rounding",
+          "coordinateKind": "observedAtomCoordinate",
+          "atomFamily": "contractSpecification",
+          "subjectRef": "pricing.checkoutTotal",
+          "predicate": "pricing contract exposes p = round(tax(discount(subtotal))) and q = round(discount(tax(subtotal)))",
+          "atomObservationRefs": [
+            "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding"
+          ],
+          "sourceRefs": [
+            "test-coupon-rounding"
+          ],
+          "status": "observed",
+          "reading": "observed ArchMap atom coordinate in the canonical projection boundary"
+        },
+        {
+          "coordinateId": "projection-coordinate:observed:atom-semantic-paymentamount-receiptamount-coupon-tax-rounding-noncommutation",
+          "coordinateKind": "observedAtomCoordinate",
+          "atomFamily": "semanticInterpretation",
+          "subjectRef": "pricing.checkoutTotal",
+          "predicate": "coupon, tax, and rounding order is semantically noncommutative for PaymentAmount and ReceiptAmount",
+          "atomObservationRefs": [
+            "atom:semantic:PaymentAmount-ReceiptAmount-coupon-tax-rounding-noncommutation"
+          ],
+          "sourceRefs": [
+            "src-pricing-checkout"
+          ],
+          "status": "observed",
+          "reading": "observed ArchMap atom coordinate in the canonical projection boundary"
+        },
+        {
+          "coordinateId": "projection-coordinate:observed:atom-effect-receipt-boundary",
+          "coordinateKind": "observedAtomCoordinate",
+          "atomFamily": "effect",
+          "subjectRef": "pricing.receipt",
+          "predicate": "ReceiptAmount is emitted after PaymentAmount calculation crosses checkout boundary",
+          "atomObservationRefs": [
+            "atom:effect:receipt-boundary"
+          ],
+          "sourceRefs": [
+            "src-pricing-checkout"
+          ],
+          "status": "observed",
+          "reading": "observed ArchMap atom coordinate in the canonical projection boundary"
+        },
+        {
+          "coordinateId": "projection-coordinate:forgotten:gap-coupon-runtime-payment-trace:runtime",
+          "coordinateKind": "forgottenExpectedCoordinate",
+          "atomFamily": "runtime",
+          "subjectRef": "pricing.checkoutTotal",
+          "predicate": "runtimeTrace",
+          "atomObservationRefs": [],
+          "sourceRefs": [
+            "src-pricing-checkout"
+          ],
+          "status": "unavailable",
+          "reading": "pricing.checkoutTotal is an expected coordinate blocked by observation gap gap:coupon-runtime-payment-trace"
+        },
+        {
+          "coordinateId": "projection-coordinate:forgotten:gap-coupon-runtime-payment-trace:state",
+          "coordinateKind": "forgottenExpectedCoordinate",
+          "atomFamily": "state",
+          "subjectRef": "pricing.checkoutTotal",
+          "predicate": "runtimeTrace",
+          "atomObservationRefs": [],
+          "sourceRefs": [
+            "src-pricing-checkout"
+          ],
+          "status": "unavailable",
+          "reading": "pricing.checkoutTotal is an expected coordinate blocked by observation gap gap:coupon-runtime-payment-trace"
+        },
+        {
+          "coordinateId": "projection-coordinate:forgotten:gap-coupon-runtime-payment-trace:effect",
+          "coordinateKind": "forgottenExpectedCoordinate",
+          "atomFamily": "effect",
+          "subjectRef": "pricing.checkoutTotal",
+          "predicate": "runtimeTrace",
+          "atomObservationRefs": [],
+          "sourceRefs": [
+            "src-pricing-checkout"
+          ],
+          "status": "unavailable",
+          "reading": "pricing.checkoutTotal is an expected coordinate blocked by observation gap gap:coupon-runtime-payment-trace"
+        }
+      ],
+      "observedCoordinates": [
+        {
+          "coordinateId": "projection-coordinate:observed:atom-contract-paymentamount-receiptamount-coupon-tax-rounding",
+          "coordinateKind": "observedAtomCoordinate",
+          "atomFamily": "contractSpecification",
+          "subjectRef": "pricing.checkoutTotal",
+          "predicate": "pricing contract exposes p = round(tax(discount(subtotal))) and q = round(discount(tax(subtotal)))",
+          "atomObservationRefs": [
+            "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding"
+          ],
+          "sourceRefs": [
+            "test-coupon-rounding"
+          ],
+          "status": "observed",
+          "reading": "observed ArchMap atom coordinate in the canonical projection boundary"
+        },
+        {
+          "coordinateId": "projection-coordinate:observed:atom-semantic-paymentamount-receiptamount-coupon-tax-rounding-noncommutation",
+          "coordinateKind": "observedAtomCoordinate",
+          "atomFamily": "semanticInterpretation",
+          "subjectRef": "pricing.checkoutTotal",
+          "predicate": "coupon, tax, and rounding order is semantically noncommutative for PaymentAmount and ReceiptAmount",
+          "atomObservationRefs": [
+            "atom:semantic:PaymentAmount-ReceiptAmount-coupon-tax-rounding-noncommutation"
+          ],
+          "sourceRefs": [
+            "src-pricing-checkout"
+          ],
+          "status": "observed",
+          "reading": "observed ArchMap atom coordinate in the canonical projection boundary"
+        },
+        {
+          "coordinateId": "projection-coordinate:observed:atom-effect-receipt-boundary",
+          "coordinateKind": "observedAtomCoordinate",
+          "atomFamily": "effect",
+          "subjectRef": "pricing.receipt",
+          "predicate": "ReceiptAmount is emitted after PaymentAmount calculation crosses checkout boundary",
+          "atomObservationRefs": [
+            "atom:effect:receipt-boundary"
+          ],
+          "sourceRefs": [
+            "src-pricing-checkout"
+          ],
+          "status": "observed",
+          "reading": "observed ArchMap atom coordinate in the canonical projection boundary"
+        }
+      ],
       "forgottenCoordinates": [
         "gap:coupon-runtime-payment-trace"
+      ],
+      "forgottenCoordinateEvidence": [
+        {
+          "coordinateId": "projection-coordinate:forgotten:gap-coupon-runtime-payment-trace:runtime",
+          "coordinateKind": "forgottenExpectedCoordinate",
+          "atomFamily": "runtime",
+          "subjectRef": "pricing.checkoutTotal",
+          "predicate": "runtimeTrace",
+          "atomObservationRefs": [],
+          "sourceRefs": [
+            "src-pricing-checkout"
+          ],
+          "status": "unavailable",
+          "reading": "pricing.checkoutTotal is an expected coordinate blocked by observation gap gap:coupon-runtime-payment-trace"
+        },
+        {
+          "coordinateId": "projection-coordinate:forgotten:gap-coupon-runtime-payment-trace:state",
+          "coordinateKind": "forgottenExpectedCoordinate",
+          "atomFamily": "state",
+          "subjectRef": "pricing.checkoutTotal",
+          "predicate": "runtimeTrace",
+          "atomObservationRefs": [],
+          "sourceRefs": [
+            "src-pricing-checkout"
+          ],
+          "status": "unavailable",
+          "reading": "pricing.checkoutTotal is an expected coordinate blocked by observation gap gap:coupon-runtime-payment-trace"
+        },
+        {
+          "coordinateId": "projection-coordinate:forgotten:gap-coupon-runtime-payment-trace:effect",
+          "coordinateKind": "forgottenExpectedCoordinate",
+          "atomFamily": "effect",
+          "subjectRef": "pricing.checkoutTotal",
+          "predicate": "runtimeTrace",
+          "atomObservationRefs": [],
+          "sourceRefs": [
+            "src-pricing-checkout"
+          ],
+          "status": "unavailable",
+          "reading": "pricing.checkoutTotal is an expected coordinate blocked by observation gap gap:coupon-runtime-payment-trace"
+        }
+      ],
+      "nonInjectivityCandidates": [
+        {
+          "candidateId": "projection-non-injectivity:family-spread:pricing-checkouttotal",
+          "candidateKind": "subjectFamilySpread",
+          "coordinateRefs": [
+            "projection-coordinate:observed:atom-contract-paymentamount-receiptamount-coupon-tax-rounding",
+            "projection-coordinate:observed:atom-semantic-paymentamount-receiptamount-coupon-tax-rounding-noncommutation"
+          ],
+          "atomObservationRefs": [
+            "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding",
+            "atom:semantic:PaymentAmount-ReceiptAmount-coupon-tax-rounding-noncommutation"
+          ],
+          "evidenceRefs": [
+            "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding",
+            "atom:semantic:PaymentAmount-ReceiptAmount-coupon-tax-rounding-noncommutation"
+          ],
+          "reading": "one subject spreads across multiple Atom families; canonical projection may be non-injective"
+        }
+      ],
+      "reconstructionBlockerEvidence": [
+        {
+          "blockerId": "projection-reconstruction-blocker:gap-coupon-runtime-payment-trace",
+          "blockerKind": "runtimeTrace",
+          "coordinateRefs": [
+            "projection-coordinate:forgotten:gap-coupon-runtime-payment-trace:runtime",
+            "projection-coordinate:forgotten:gap-coupon-runtime-payment-trace:state",
+            "projection-coordinate:forgotten:gap-coupon-runtime-payment-trace:effect"
+          ],
+          "gapRefs": [
+            "gap:coupon-runtime-payment-trace"
+          ],
+          "expectedAtomFamilies": [
+            "runtime",
+            "state",
+            "effect"
+          ],
+          "sourceRefs": [
+            "src-pricing-checkout"
+          ],
+          "blockedAxisRefs": [
+            "axis-forgotten-family:runtime",
+            "axis-forgotten-family:state",
+            "axis-forgotten-family:effect"
+          ],
+          "evidenceRefs": [
+            "src-pricing-checkout"
+          ],
+          "reading": "gap:coupon-runtime-payment-trace blocks reconstruction of expected Atom coordinates for pricing.checkoutTotal"
+        }
       ],
       "observationCollisionPairs": [],
       "collapsedAtomFamilyCandidates": [
@@ -8143,13 +8304,141 @@
         "compensation or finalization",
         "transaction boundary ownership"
       ],
+      "transitionRelationInputs": [
+        {
+          "transitionInputId": "state-transition-input:operation-square-evidence-coupon-tax-rounding",
+          "fromRefs": [
+            "PaymentAmount",
+            "ReceiptAmount"
+          ],
+          "eventRefs": [
+            "atom:effect:receipt-boundary",
+            "generator:independent-square",
+            "generator:same-contract-replacement"
+          ],
+          "toRefs": [
+            "PaymentAmount",
+            "ReceiptAmount"
+          ],
+          "operationRefs": [
+            "operation:discount",
+            "operation:round",
+            "operation:tax",
+            "operation:tax-round"
+          ],
+          "invariantRefs": [
+            "semantic:coupon-tax-rounding-paths"
+          ],
+          "runtimeOrTraceRefs": [],
+          "sourceRefs": [
+            "src-pricing-checkout",
+            "test-coupon-rounding"
+          ],
+          "reading": "operation-square-evidence:coupon-tax-rounding supplies bounded transition relation evidence between selected operations"
+        }
+      ],
+      "lawEvaluations": [
+        {
+          "lawAxis": "stateTransitionRelation",
+          "status": "blocked",
+          "requiredInputRefs": [
+            "state-transition-input:operation-square-evidence-coupon-tax-rounding"
+          ],
+          "observedInputRefs": [
+            "operation:discount",
+            "operation:round",
+            "operation:tax",
+            "operation:tax-round"
+          ],
+          "blockedReasonRefs": [
+            "gap:coupon-runtime-payment-trace"
+          ],
+          "evaluator": "state-transition-law-evaluator-v0",
+          "reading": "from/event/to transition relation must be witnessed by operation or runtime evidence"
+        },
+        {
+          "lawAxis": "commutativity",
+          "status": "observed",
+          "requiredInputRefs": [
+            "state-transition-input:operation-square-evidence-coupon-tax-rounding"
+          ],
+          "observedInputRefs": [
+            "operation:discount",
+            "operation:round",
+            "operation:tax",
+            "operation:tax-round"
+          ],
+          "blockedReasonRefs": [],
+          "evaluator": "state-transition-law-evaluator-v0",
+          "reading": "commutativity is observed only when comparable operation-square evidence is available"
+        },
+        {
+          "lawAxis": "idempotency",
+          "status": "blocked",
+          "requiredInputRefs": [
+            "state-transition-input:operation-square-evidence-coupon-tax-rounding"
+          ],
+          "observedInputRefs": [],
+          "blockedReasonRefs": [
+            "gap:coupon-runtime-payment-trace"
+          ],
+          "evaluator": "state-transition-law-evaluator-v0",
+          "reading": "idempotency requires retry/replay/runtime evidence"
+        },
+        {
+          "lawAxis": "replaySafety",
+          "status": "blocked",
+          "requiredInputRefs": [
+            "state-transition-input:operation-square-evidence-coupon-tax-rounding"
+          ],
+          "observedInputRefs": [],
+          "blockedReasonRefs": [
+            "gap:coupon-runtime-payment-trace"
+          ],
+          "evaluator": "state-transition-law-evaluator-v0",
+          "reading": "replay safety requires runtime or test trace evidence"
+        },
+        {
+          "lawAxis": "orderingPreservation",
+          "status": "observed",
+          "requiredInputRefs": [
+            "state-transition-input:operation-square-evidence-coupon-tax-rounding"
+          ],
+          "observedInputRefs": [
+            "atom:effect:receipt-boundary",
+            "operation:discount",
+            "operation:round",
+            "operation:tax",
+            "operation:tax-round"
+          ],
+          "blockedReasonRefs": [],
+          "evaluator": "state-transition-law-evaluator-v0",
+          "reading": "ordering preservation is evaluated from effect and operation relation evidence"
+        },
+        {
+          "lawAxis": "invariantPreservation",
+          "status": "blocked",
+          "requiredInputRefs": [
+            "state-transition-input:operation-square-evidence-coupon-tax-rounding"
+          ],
+          "observedInputRefs": [
+            "semantic:coupon-tax-rounding-paths"
+          ],
+          "blockedReasonRefs": [
+            "gap:coupon-runtime-payment-trace"
+          ],
+          "evaluator": "state-transition-law-evaluator-v0",
+          "reading": "state invariants must be named before transition preservation is claimed"
+        }
+      ],
+      "lawEvaluatorStatus": "blocked",
       "unresolvedRelations": [
         "gap:coupon-runtime-payment-trace"
       ],
       "obstructionRefs": [],
-      "reading": "state/effect/runtime atoms generate a bounded state transition algebra reading",
-      "evidenceBoundary": "transition algebra is derived from observed atoms only; runtime traces and tests remain required for reflecting laws",
-      "recommendedNextAction": "verify idempotency, replay, ordering, and transaction ownership before claiming state/effect flatness",
+      "reading": "state/effect/runtime algebra is evaluated from 1 explicit transition relation input(s), not atom presence alone",
+      "evidenceBoundary": "transition algebra is law-evaluator output over observed transition inputs; missing runtime traces and tests remain blocked evidence, not measured zero",
+      "recommendedNextAction": "resolve blocked law axes for idempotency, replay, ordering, and transaction ownership before claiming state/effect flatness",
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -8227,7 +8516,7 @@
   "structuralReadingReviewSurface": {
     "surfaceId": "aat-structural-reading-review-surface",
     "status": "needsReview",
-    "currentStateReading": "ArchSig reads current architecture state across Atom support and compatibility, LawUniverse coverage, feature extension coordinates, operation calculus laws, path signature trajectory, homotopy order sensitivity, diagram fillability, axis forgetting/projection fidelity, Atom origin closure, effect relation algebra, synthesis blockage, operation preconditions, path multiplicity, trajectory homotopy refutation, bridge split transfer, representation strength, local curvature, three-layer flatness, observation projection, state transition algebra, operation-invariant constraints, and split readiness; blockedRepresentations=15, curvatures=1, blockedOperations=1, splitBlockers=1, atomConflicts=0, unmeasuredRequiredLaws=1, blockedDiagrams=1, axisForgetting=1, projectionLoss=1, atomOriginDebt=1, effectRelationPressure=1, synthesisBlockage=1, operationPreconditionBlockers=1, pathMultiplicityLoss=1, homotopyRefutations=1, bridgeTransfers=1",
+    "currentStateReading": "ArchSig reads current architecture state across Atom support and compatibility, LawUniverse coverage, feature extension coordinates, operation calculus laws, path signature trajectory, homotopy order sensitivity, diagram fillability, axis forgetting/projection fidelity, Atom origin closure, effect relation algebra, synthesis blockage, operation preconditions, path multiplicity, trajectory homotopy refutation, bridge split transfer, representation strength, local curvature, three-layer flatness, observation projection, state transition algebra, operation-invariant constraints, and split readiness; blockedRepresentations=14, curvatures=1, blockedOperations=1, splitBlockers=1, atomConflicts=0, unmeasuredRequiredLaws=1, blockedDiagrams=1, axisForgetting=1, projectionLoss=1, atomOriginDebt=1, effectRelationPressure=1, synthesisBlockage=1, operationPreconditionBlockers=1, pathMultiplicityLoss=1, homotopyRefutations=1, bridgeTransfers=1",
     "connectedReadingRefs": [
       "representationStrength:weightedAdjacencyMatrix",
       "representationStrength:reachableConeSize",
@@ -8315,29 +8604,33 @@
     {
       "principleId": "principle:informationhiding",
       "principle": "InformationHiding",
-      "status": "stressed",
-      "aatReading": "InformationHiding is read as invariant preservation / obstruction / operation preservation: representation, state, effect, and provider details stay inside declared boundaries",
+      "status": "unmeasured",
+      "witnessRuleRef": "principle-witness:informationhiding",
+      "witnessStatus": "blockedByMissingWitnessEvidence",
+      "witnessEvidenceRefs": [
+        "atom:effect:receipt-boundary"
+      ],
+      "aatReading": "InformationHiding is read by blockedByMissingWitnessEvidence over invariant / law / obstruction / operation preservation: representation, state, effect, and provider details stay inside declared boundaries",
       "invariantRefs": [
         "invariant:law-layer-respecting",
         "invariant:law-semantic-contract-alignment"
       ],
-      "obstructionRefs": [
-        "obstruction:semantic-contract-mismatch:computed"
-      ],
+      "obstructionRefs": [],
       "operationRefs": [
         "repair:obstruction-semantic-contract-mismatch-computed"
       ],
       "evidenceRefs": [
-        "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding",
-        "atom:semantic:PaymentAmount-ReceiptAmount-coupon-tax-rounding-noncommutation",
         "atom:effect:receipt-boundary"
       ],
-      "confidence": "medium",
+      "sourceRefs": [
+        "src-pricing-checkout"
+      ],
+      "confidence": "low",
       "coverageBoundary": "principle reading uses semantic ArchMap evidence and is not a slogan or static lint rule",
       "exactnessBlockers": [
         "gap:coupon-runtime-payment-trace"
       ],
-      "recommendedNextAction": "turn stressed readings into source review questions or repair preconditions",
+      "recommendedNextAction": "collect state/effect/runtime/projection witness sources for InformationHiding",
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -8351,29 +8644,33 @@
     {
       "principleId": "principle:encapsulation",
       "principle": "Encapsulation",
-      "status": "stressed",
-      "aatReading": "Encapsulation is read as invariant preservation / obstruction / operation preservation: state mutation, effect execution, and authority checks are owned by the selected boundary",
+      "status": "unmeasured",
+      "witnessRuleRef": "principle-witness:encapsulation",
+      "witnessStatus": "blockedByMissingWitnessEvidence",
+      "witnessEvidenceRefs": [
+        "atom:effect:receipt-boundary"
+      ],
+      "aatReading": "Encapsulation is read by blockedByMissingWitnessEvidence over invariant / law / obstruction / operation preservation: state mutation, effect execution, and authority checks are owned by the selected boundary",
       "invariantRefs": [
         "invariant:law-layer-respecting",
         "invariant:law-semantic-contract-alignment"
       ],
-      "obstructionRefs": [
-        "obstruction:semantic-contract-mismatch:computed"
-      ],
+      "obstructionRefs": [],
       "operationRefs": [
         "repair:obstruction-semantic-contract-mismatch-computed"
       ],
       "evidenceRefs": [
-        "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding",
-        "atom:semantic:PaymentAmount-ReceiptAmount-coupon-tax-rounding-noncommutation",
         "atom:effect:receipt-boundary"
       ],
-      "confidence": "medium",
+      "sourceRefs": [
+        "src-pricing-checkout"
+      ],
+      "confidence": "low",
       "coverageBoundary": "principle reading uses semantic ArchMap evidence and is not a slogan or static lint rule",
       "exactnessBlockers": [
         "gap:coupon-runtime-payment-trace"
       ],
-      "recommendedNextAction": "turn stressed readings into source review questions or repair preconditions",
+      "recommendedNextAction": "collect state/effect/authority witness sources for Encapsulation",
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -8387,8 +8684,15 @@
     {
       "principleId": "principle:separationofconcerns",
       "principle": "SeparationOfConcerns",
-      "status": "stressed",
-      "aatReading": "SeparationOfConcerns is read as invariant preservation / obstruction / operation preservation: semantic concern, state transition, effect, policy, and presentation remain unmixed",
+      "status": "unmeasured",
+      "witnessRuleRef": "principle-witness:separationofconcerns",
+      "witnessStatus": "blockedByMissingWitnessEvidence",
+      "witnessEvidenceRefs": [
+        "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding",
+        "atom:semantic:PaymentAmount-ReceiptAmount-coupon-tax-rounding-noncommutation",
+        "atom:effect:receipt-boundary"
+      ],
+      "aatReading": "SeparationOfConcerns is read by blockedByMissingWitnessEvidence over invariant / law / obstruction / operation preservation: semantic concern, state transition, effect, policy, and presentation remain unmixed",
       "invariantRefs": [
         "invariant:law-layer-respecting",
         "invariant:law-semantic-contract-alignment"
@@ -8404,12 +8708,16 @@
         "atom:semantic:PaymentAmount-ReceiptAmount-coupon-tax-rounding-noncommutation",
         "atom:effect:receipt-boundary"
       ],
-      "confidence": "medium",
+      "sourceRefs": [
+        "src-pricing-checkout",
+        "test-coupon-rounding"
+      ],
+      "confidence": "low",
       "coverageBoundary": "principle reading uses semantic ArchMap evidence and is not a slogan or static lint rule",
       "exactnessBlockers": [
         "gap:coupon-runtime-payment-trace"
       ],
-      "recommendedNextAction": "turn stressed readings into source review questions or repair preconditions",
+      "recommendedNextAction": "collect semantic/state/effect/contractSpecification witness sources for SeparationOfConcerns",
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -8423,8 +8731,15 @@
     {
       "principleId": "principle:substitutability",
       "principle": "Substitutability",
-      "status": "stressed",
-      "aatReading": "Substitutability is read as invariant preservation / obstruction / operation preservation: replacement preserves contract, effect, state transition, and semantic reading",
+      "status": "unmeasured",
+      "witnessRuleRef": "principle-witness:substitutability",
+      "witnessStatus": "blockedByMissingWitnessEvidence",
+      "witnessEvidenceRefs": [
+        "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding",
+        "atom:semantic:PaymentAmount-ReceiptAmount-coupon-tax-rounding-noncommutation",
+        "atom:effect:receipt-boundary"
+      ],
+      "aatReading": "Substitutability is read by blockedByMissingWitnessEvidence over invariant / law / obstruction / operation preservation: replacement preserves contract, effect, state transition, and semantic reading",
       "invariantRefs": [
         "invariant:law-layer-respecting",
         "invariant:law-semantic-contract-alignment"
@@ -8440,12 +8755,16 @@
         "atom:semantic:PaymentAmount-ReceiptAmount-coupon-tax-rounding-noncommutation",
         "atom:effect:receipt-boundary"
       ],
-      "confidence": "medium",
+      "sourceRefs": [
+        "src-pricing-checkout",
+        "test-coupon-rounding"
+      ],
+      "confidence": "low",
       "coverageBoundary": "principle reading uses semantic ArchMap evidence and is not a slogan or static lint rule",
       "exactnessBlockers": [
         "gap:coupon-runtime-payment-trace"
       ],
-      "recommendedNextAction": "turn stressed readings into source review questions or repair preconditions",
+      "recommendedNextAction": "collect contractSpecification/effect/state/semantic witness sources for Substitutability",
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -8460,7 +8779,12 @@
       "principleId": "principle:openclosedextension",
       "principle": "OpenClosedExtension",
       "status": "stressed",
-      "aatReading": "OpenClosedExtension is read as invariant preservation / obstruction / operation preservation: feature extension preserves core invariants without new interaction obstruction",
+      "witnessRuleRef": "principle-witness:openclosedextension",
+      "witnessStatus": "witnessStressedBySelectedObstruction",
+      "witnessEvidenceRefs": [
+        "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding"
+      ],
+      "aatReading": "OpenClosedExtension is read by witnessStressedBySelectedObstruction over invariant / law / obstruction / operation preservation: feature extension preserves core invariants without new interaction obstruction",
       "invariantRefs": [
         "invariant:law-layer-respecting",
         "invariant:law-semantic-contract-alignment"
@@ -8472,16 +8796,17 @@
         "repair:obstruction-semantic-contract-mismatch-computed"
       ],
       "evidenceRefs": [
-        "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding",
-        "atom:semantic:PaymentAmount-ReceiptAmount-coupon-tax-rounding-noncommutation",
-        "atom:effect:receipt-boundary"
+        "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding"
+      ],
+      "sourceRefs": [
+        "test-coupon-rounding"
       ],
       "confidence": "medium",
       "coverageBoundary": "principle reading uses semantic ArchMap evidence and is not a slogan or static lint rule",
       "exactnessBlockers": [
         "gap:coupon-runtime-payment-trace"
       ],
-      "recommendedNextAction": "turn stressed readings into source review questions or repair preconditions",
+      "recommendedNextAction": "review OpenClosedExtension source refs before treating this principle as preserved",
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -8496,7 +8821,12 @@
       "principleId": "principle:dependencyinversion",
       "principle": "DependencyInversion",
       "status": "stressed",
-      "aatReading": "DependencyInversion is read as invariant preservation / obstruction / operation preservation: abstract boundary semantics remain aligned with implementation obligations",
+      "witnessRuleRef": "principle-witness:dependencyinversion",
+      "witnessStatus": "witnessStressedBySelectedObstruction",
+      "witnessEvidenceRefs": [
+        "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding"
+      ],
+      "aatReading": "DependencyInversion is read by witnessStressedBySelectedObstruction over invariant / law / obstruction / operation preservation: abstract boundary semantics remain aligned with implementation obligations",
       "invariantRefs": [
         "invariant:law-layer-respecting",
         "invariant:law-semantic-contract-alignment"
@@ -8508,16 +8838,17 @@
         "repair:obstruction-semantic-contract-mismatch-computed"
       ],
       "evidenceRefs": [
-        "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding",
-        "atom:semantic:PaymentAmount-ReceiptAmount-coupon-tax-rounding-noncommutation",
-        "atom:effect:receipt-boundary"
+        "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding"
+      ],
+      "sourceRefs": [
+        "test-coupon-rounding"
       ],
       "confidence": "medium",
       "coverageBoundary": "principle reading uses semantic ArchMap evidence and is not a slogan or static lint rule",
       "exactnessBlockers": [
         "gap:coupon-runtime-payment-trace"
       ],
-      "recommendedNextAction": "turn stressed readings into source review questions or repair preconditions",
+      "recommendedNextAction": "review DependencyInversion source refs before treating this principle as preserved",
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -8532,7 +8863,12 @@
       "principleId": "principle:representationindependence",
       "principle": "RepresentationIndependence",
       "status": "unmeasured",
-      "aatReading": "RepresentationIndependence is read as invariant preservation / obstruction / operation preservation: internal representation changes preserve selected observations and contracts",
+      "witnessRuleRef": "principle-witness:representationindependence",
+      "witnessStatus": "blockedByMissingWitnessEvidence",
+      "witnessEvidenceRefs": [
+        "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding"
+      ],
+      "aatReading": "RepresentationIndependence is read by blockedByMissingWitnessEvidence over invariant / law / obstruction / operation preservation: internal representation changes preserve selected observations and contracts",
       "invariantRefs": [
         "invariant:law-layer-respecting",
         "invariant:law-semantic-contract-alignment"
@@ -8544,16 +8880,17 @@
         "repair:obstruction-semantic-contract-mismatch-computed"
       ],
       "evidenceRefs": [
-        "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding",
-        "atom:semantic:PaymentAmount-ReceiptAmount-coupon-tax-rounding-noncommutation",
-        "atom:effect:receipt-boundary"
+        "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding"
+      ],
+      "sourceRefs": [
+        "test-coupon-rounding"
       ],
       "confidence": "low",
       "coverageBoundary": "principle reading uses semantic ArchMap evidence and is not a slogan or static lint rule",
       "exactnessBlockers": [
         "gap:coupon-runtime-payment-trace"
       ],
-      "recommendedNextAction": "turn stressed readings into source review questions or repair preconditions",
+      "recommendedNextAction": "collect state/contractSpecification/projection witness sources for RepresentationIndependence",
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -8568,28 +8905,32 @@
       "principleId": "principle:idempotencyandreplaysafety",
       "principle": "IdempotencyAndReplaySafety",
       "status": "unmeasured",
-      "aatReading": "IdempotencyAndReplaySafety is read as invariant preservation / obstruction / operation preservation: retry, replay, jobs, and external effects preserve selected state transition law",
+      "witnessRuleRef": "principle-witness:idempotencyandreplaysafety",
+      "witnessStatus": "blockedByMissingWitnessEvidence",
+      "witnessEvidenceRefs": [
+        "atom:effect:receipt-boundary"
+      ],
+      "aatReading": "IdempotencyAndReplaySafety is read by blockedByMissingWitnessEvidence over invariant / law / obstruction / operation preservation: retry, replay, jobs, and external effects preserve selected state transition law",
       "invariantRefs": [
         "invariant:law-layer-respecting",
         "invariant:law-semantic-contract-alignment"
       ],
-      "obstructionRefs": [
-        "obstruction:semantic-contract-mismatch:computed"
-      ],
+      "obstructionRefs": [],
       "operationRefs": [
         "repair:obstruction-semantic-contract-mismatch-computed"
       ],
       "evidenceRefs": [
-        "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding",
-        "atom:semantic:PaymentAmount-ReceiptAmount-coupon-tax-rounding-noncommutation",
         "atom:effect:receipt-boundary"
+      ],
+      "sourceRefs": [
+        "src-pricing-checkout"
       ],
       "confidence": "low",
       "coverageBoundary": "principle reading uses semantic ArchMap evidence and is not a slogan or static lint rule",
       "exactnessBlockers": [
         "gap:coupon-runtime-payment-trace"
       ],
-      "recommendedNextAction": "turn stressed readings into source review questions or repair preconditions",
+      "recommendedNextAction": "collect effect/state/runtimeInteraction witness sources for IdempotencyAndReplaySafety",
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -8603,29 +8944,31 @@
     {
       "principleId": "principle:authorityandtrustboundary",
       "principle": "AuthorityAndTrustBoundary",
-      "status": "unmeasured",
-      "aatReading": "AuthorityAndTrustBoundary is read as invariant preservation / obstruction / operation preservation: authority labels and trust handoffs survive operation paths",
+      "status": "notApplicable",
+      "witnessRuleRef": "principle-witness:authorityandtrustboundary",
+      "witnessStatus": "noSelectedWitnessRuleEvidence",
+      "witnessEvidenceRefs": [
+        "principle-witness:authorityandtrustboundary:not-applicable"
+      ],
+      "aatReading": "AuthorityAndTrustBoundary is read by noSelectedWitnessRuleEvidence over invariant / law / obstruction / operation preservation: authority labels and trust handoffs survive operation paths",
       "invariantRefs": [
         "invariant:law-layer-respecting",
         "invariant:law-semantic-contract-alignment"
       ],
-      "obstructionRefs": [
-        "obstruction:semantic-contract-mismatch:computed"
-      ],
+      "obstructionRefs": [],
       "operationRefs": [
         "repair:obstruction-semantic-contract-mismatch-computed"
       ],
       "evidenceRefs": [
-        "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding",
-        "atom:semantic:PaymentAmount-ReceiptAmount-coupon-tax-rounding-noncommutation",
-        "atom:effect:receipt-boundary"
+        "principle-witness:authorityandtrustboundary:not-applicable"
       ],
-      "confidence": "low",
+      "sourceRefs": [],
+      "confidence": "medium",
       "coverageBoundary": "principle reading uses semantic ArchMap evidence and is not a slogan or static lint rule",
       "exactnessBlockers": [
         "gap:coupon-runtime-payment-trace"
       ],
-      "recommendedNextAction": "turn stressed readings into source review questions or repair preconditions",
+      "recommendedNextAction": "add source-backed witness evidence before reading AuthorityAndTrustBoundary",
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -8960,21 +9303,19 @@
     },
     {
       "judgementId": "judgement:principle-informationhiding",
-      "status": "actionable",
+      "status": "blocked",
       "aatConcept": "Invariant",
-      "reading": "InformationHiding is read as invariant preservation / obstruction / operation preservation: representation, state, effect, and provider details stay inside declared boundaries",
+      "reading": "InformationHiding is read by blockedByMissingWitnessEvidence over invariant / law / obstruction / operation preservation: representation, state, effect, and provider details stay inside declared boundaries",
       "evidenceRefs": [
-        "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding",
-        "atom:semantic:PaymentAmount-ReceiptAmount-coupon-tax-rounding-noncommutation",
         "atom:effect:receipt-boundary"
       ],
-      "confidence": "medium",
+      "confidence": "low",
       "uncertainty": [
         "gap:coupon-runtime-payment-trace"
       ],
       "coverageBoundary": "principle reading uses semantic ArchMap evidence and is not a slogan or static lint rule",
       "exactnessBoundary": "design principle reading is not static lint and not theorem proof",
-      "recommendedNextAction": "turn stressed readings into source review questions or repair preconditions",
+      "recommendedNextAction": "collect state/effect/runtime/projection witness sources for InformationHiding",
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -8987,21 +9328,19 @@
     },
     {
       "judgementId": "judgement:principle-encapsulation",
-      "status": "actionable",
+      "status": "blocked",
       "aatConcept": "Invariant",
-      "reading": "Encapsulation is read as invariant preservation / obstruction / operation preservation: state mutation, effect execution, and authority checks are owned by the selected boundary",
+      "reading": "Encapsulation is read by blockedByMissingWitnessEvidence over invariant / law / obstruction / operation preservation: state mutation, effect execution, and authority checks are owned by the selected boundary",
       "evidenceRefs": [
-        "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding",
-        "atom:semantic:PaymentAmount-ReceiptAmount-coupon-tax-rounding-noncommutation",
         "atom:effect:receipt-boundary"
       ],
-      "confidence": "medium",
+      "confidence": "low",
       "uncertainty": [
         "gap:coupon-runtime-payment-trace"
       ],
       "coverageBoundary": "principle reading uses semantic ArchMap evidence and is not a slogan or static lint rule",
       "exactnessBoundary": "design principle reading is not static lint and not theorem proof",
-      "recommendedNextAction": "turn stressed readings into source review questions or repair preconditions",
+      "recommendedNextAction": "collect state/effect/authority witness sources for Encapsulation",
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -9014,21 +9353,21 @@
     },
     {
       "judgementId": "judgement:principle-separationofconcerns",
-      "status": "actionable",
+      "status": "blocked",
       "aatConcept": "Invariant",
-      "reading": "SeparationOfConcerns is read as invariant preservation / obstruction / operation preservation: semantic concern, state transition, effect, policy, and presentation remain unmixed",
+      "reading": "SeparationOfConcerns is read by blockedByMissingWitnessEvidence over invariant / law / obstruction / operation preservation: semantic concern, state transition, effect, policy, and presentation remain unmixed",
       "evidenceRefs": [
         "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding",
         "atom:semantic:PaymentAmount-ReceiptAmount-coupon-tax-rounding-noncommutation",
         "atom:effect:receipt-boundary"
       ],
-      "confidence": "medium",
+      "confidence": "low",
       "uncertainty": [
         "gap:coupon-runtime-payment-trace"
       ],
       "coverageBoundary": "principle reading uses semantic ArchMap evidence and is not a slogan or static lint rule",
       "exactnessBoundary": "design principle reading is not static lint and not theorem proof",
-      "recommendedNextAction": "turn stressed readings into source review questions or repair preconditions",
+      "recommendedNextAction": "collect semantic/state/effect/contractSpecification witness sources for SeparationOfConcerns",
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -9041,21 +9380,21 @@
     },
     {
       "judgementId": "judgement:principle-substitutability",
-      "status": "actionable",
+      "status": "blocked",
       "aatConcept": "Invariant",
-      "reading": "Substitutability is read as invariant preservation / obstruction / operation preservation: replacement preserves contract, effect, state transition, and semantic reading",
+      "reading": "Substitutability is read by blockedByMissingWitnessEvidence over invariant / law / obstruction / operation preservation: replacement preserves contract, effect, state transition, and semantic reading",
       "evidenceRefs": [
         "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding",
         "atom:semantic:PaymentAmount-ReceiptAmount-coupon-tax-rounding-noncommutation",
         "atom:effect:receipt-boundary"
       ],
-      "confidence": "medium",
+      "confidence": "low",
       "uncertainty": [
         "gap:coupon-runtime-payment-trace"
       ],
       "coverageBoundary": "principle reading uses semantic ArchMap evidence and is not a slogan or static lint rule",
       "exactnessBoundary": "design principle reading is not static lint and not theorem proof",
-      "recommendedNextAction": "turn stressed readings into source review questions or repair preconditions",
+      "recommendedNextAction": "collect contractSpecification/effect/state/semantic witness sources for Substitutability",
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -9070,11 +9409,9 @@
       "judgementId": "judgement:principle-openclosedextension",
       "status": "actionable",
       "aatConcept": "Invariant",
-      "reading": "OpenClosedExtension is read as invariant preservation / obstruction / operation preservation: feature extension preserves core invariants without new interaction obstruction",
+      "reading": "OpenClosedExtension is read by witnessStressedBySelectedObstruction over invariant / law / obstruction / operation preservation: feature extension preserves core invariants without new interaction obstruction",
       "evidenceRefs": [
-        "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding",
-        "atom:semantic:PaymentAmount-ReceiptAmount-coupon-tax-rounding-noncommutation",
-        "atom:effect:receipt-boundary"
+        "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding"
       ],
       "confidence": "medium",
       "uncertainty": [
@@ -9082,7 +9419,7 @@
       ],
       "coverageBoundary": "principle reading uses semantic ArchMap evidence and is not a slogan or static lint rule",
       "exactnessBoundary": "design principle reading is not static lint and not theorem proof",
-      "recommendedNextAction": "turn stressed readings into source review questions or repair preconditions",
+      "recommendedNextAction": "review OpenClosedExtension source refs before treating this principle as preserved",
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -9097,11 +9434,9 @@
       "judgementId": "judgement:principle-dependencyinversion",
       "status": "actionable",
       "aatConcept": "Invariant",
-      "reading": "DependencyInversion is read as invariant preservation / obstruction / operation preservation: abstract boundary semantics remain aligned with implementation obligations",
+      "reading": "DependencyInversion is read by witnessStressedBySelectedObstruction over invariant / law / obstruction / operation preservation: abstract boundary semantics remain aligned with implementation obligations",
       "evidenceRefs": [
-        "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding",
-        "atom:semantic:PaymentAmount-ReceiptAmount-coupon-tax-rounding-noncommutation",
-        "atom:effect:receipt-boundary"
+        "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding"
       ],
       "confidence": "medium",
       "uncertainty": [
@@ -9109,7 +9444,7 @@
       ],
       "coverageBoundary": "principle reading uses semantic ArchMap evidence and is not a slogan or static lint rule",
       "exactnessBoundary": "design principle reading is not static lint and not theorem proof",
-      "recommendedNextAction": "turn stressed readings into source review questions or repair preconditions",
+      "recommendedNextAction": "review DependencyInversion source refs before treating this principle as preserved",
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -9124,11 +9459,9 @@
       "judgementId": "judgement:principle-representationindependence",
       "status": "blocked",
       "aatConcept": "Invariant",
-      "reading": "RepresentationIndependence is read as invariant preservation / obstruction / operation preservation: internal representation changes preserve selected observations and contracts",
+      "reading": "RepresentationIndependence is read by blockedByMissingWitnessEvidence over invariant / law / obstruction / operation preservation: internal representation changes preserve selected observations and contracts",
       "evidenceRefs": [
-        "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding",
-        "atom:semantic:PaymentAmount-ReceiptAmount-coupon-tax-rounding-noncommutation",
-        "atom:effect:receipt-boundary"
+        "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding"
       ],
       "confidence": "low",
       "uncertainty": [
@@ -9136,7 +9469,7 @@
       ],
       "coverageBoundary": "principle reading uses semantic ArchMap evidence and is not a slogan or static lint rule",
       "exactnessBoundary": "design principle reading is not static lint and not theorem proof",
-      "recommendedNextAction": "turn stressed readings into source review questions or repair preconditions",
+      "recommendedNextAction": "collect state/contractSpecification/projection witness sources for RepresentationIndependence",
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -9151,10 +9484,8 @@
       "judgementId": "judgement:principle-idempotencyandreplaysafety",
       "status": "blocked",
       "aatConcept": "Invariant",
-      "reading": "IdempotencyAndReplaySafety is read as invariant preservation / obstruction / operation preservation: retry, replay, jobs, and external effects preserve selected state transition law",
+      "reading": "IdempotencyAndReplaySafety is read by blockedByMissingWitnessEvidence over invariant / law / obstruction / operation preservation: retry, replay, jobs, and external effects preserve selected state transition law",
       "evidenceRefs": [
-        "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding",
-        "atom:semantic:PaymentAmount-ReceiptAmount-coupon-tax-rounding-noncommutation",
         "atom:effect:receipt-boundary"
       ],
       "confidence": "low",
@@ -9163,7 +9494,7 @@
       ],
       "coverageBoundary": "principle reading uses semantic ArchMap evidence and is not a slogan or static lint rule",
       "exactnessBoundary": "design principle reading is not static lint and not theorem proof",
-      "recommendedNextAction": "turn stressed readings into source review questions or repair preconditions",
+      "recommendedNextAction": "collect effect/state/runtimeInteraction witness sources for IdempotencyAndReplaySafety",
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -9176,21 +9507,19 @@
     },
     {
       "judgementId": "judgement:principle-authorityandtrustboundary",
-      "status": "blocked",
+      "status": "needsReview",
       "aatConcept": "Invariant",
-      "reading": "AuthorityAndTrustBoundary is read as invariant preservation / obstruction / operation preservation: authority labels and trust handoffs survive operation paths",
+      "reading": "AuthorityAndTrustBoundary is read by noSelectedWitnessRuleEvidence over invariant / law / obstruction / operation preservation: authority labels and trust handoffs survive operation paths",
       "evidenceRefs": [
-        "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding",
-        "atom:semantic:PaymentAmount-ReceiptAmount-coupon-tax-rounding-noncommutation",
-        "atom:effect:receipt-boundary"
+        "principle-witness:authorityandtrustboundary:not-applicable"
       ],
-      "confidence": "low",
+      "confidence": "medium",
       "uncertainty": [
         "gap:coupon-runtime-payment-trace"
       ],
       "coverageBoundary": "principle reading uses semantic ArchMap evidence and is not a slogan or static lint rule",
       "exactnessBoundary": "design principle reading is not static lint and not theorem proof",
-      "recommendedNextAction": "turn stressed readings into source review questions or repair preconditions",
+      "recommendedNextAction": "add source-backed witness evidence before reading AuthorityAndTrustBoundary",
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -9204,7 +9533,7 @@
   ],
   "llmInterpretationPacket": {
     "packetId": "llm-interpretation:coupon-tax-rounding-archmap",
-    "shortDiagnosis": "9 actionable judgement(s), 1 design pressure reading(s), and 1 observation gap(s) require review",
+    "shortDiagnosis": "5 actionable judgement(s), 1 design pressure reading(s), and 1 observation gap(s) require review",
     "aatConceptMap": [
       "Atom -> Configuration -> ArchitectureObject",
       "InvariantFamily -> LawUniverse -> ObstructionCircuit -> ArchitectureSignature",
@@ -9236,20 +9565,18 @@
     ],
     "spectralReadingsSummary": [
       "relationAtomWeightedAdjacencyMatrix upperBound=unmeasured shape=0x0 (nonConclusion)",
-      "workflowRiskAxisPressureMatrix upperBound=9.220 shape=1x5 (needsReview)",
       "moleculeAtomOverlapCouplingMatrix upperBound=3.000 shape=1x1 (needsReview)",
       "obstructionAxisCurvatureMatrix upperBound=1.000 shape=1x2 (actionable)",
       "operationSignatureDeltaMatrix upperBound=1.000 shape=1x2 (actionable)"
     ],
     "spectralModeSummary": [
       "relationAtomWeightedAdjacencyMatrix boundedSpectralMode gap=0.000 localization=0.000 density=0.000 (nonConclusion)",
-      "workflowRiskAxisPressureMatrix distributedPressureMode gap=8.185 localization=1.000 density=1.000 (needsReview)",
       "moleculeAtomOverlapCouplingMatrix delocalizedCouplingMode gap=3.000 localization=1.000 density=1.000 (needsReview)",
       "obstructionAxisCurvatureMatrix curvatureMode gap=1.000 localization=1.000 density=0.500 (actionable)",
       "operationSignatureDeltaMatrix localizedPerturbationMode gap=1.000 localization=1.000 density=0.500 (actionable)"
     ],
     "spectralDrilldownSummary": [
-      "spectral-drilldown:coupon-tax-rounding-archmap atomFamilies=3 overlapPairs=0 repairAxisDeltas=1 (needsReview)"
+      "spectral-drilldown:coupon-tax-rounding-archmap atomFamilies=3 overlapPairs=0 repairAxisDeltas=1 (actionable)"
     ],
     "curvatureSupportSummary": [
       "curvature-support-reading:spectrum-profile-curvature-transfer-default supports=4 topModes=4 clusters=2 measuredAxes=1 unmeasuredAxes=2 (needsReview)"
@@ -9262,7 +9589,7 @@
       "report is measured from ArchSig curvature support and transfer readings under selected LawPolicy coverage and exactness assumptions"
     ],
     "transferBridgeSummary": [
-      "transfer-bridge:coupon-tax-rounding-archmap transfers=0 bridges=1 repairRanks=1 boundaryRanks=0 (nonConclusion)"
+      "transfer-bridge:coupon-tax-rounding-archmap transfers=0 bridges=1 repairRanks=1 boundaryRanks=0 (needsReview)"
     ],
     "transferBridgeEdgeSummary": [],
     "measurementExpansionSummary": [
@@ -9312,7 +9639,7 @@
       "repair:obstruction-semantic-contract-mismatch-computed kind=repair-semanticmismatchcircuit status=blockedByMissingPreconditionEvidence missing=7 witnesses=2"
     ],
     "pathMultiplicityLossSummary": [
-      "coupon-tax-rounding-archmap status=reachabilityMultiplicityLossObserved paths=1 alternatePressure=8 fanIn=0 forgotten=1"
+      "coupon-tax-rounding-archmap status=reachabilityMultiplicityLossObserved paths=1 alternatePressure=8 fanIn=1 forgotten=1"
     ],
     "signatureTrajectoryHomotopyRefutationSummary": [
       "homotopy-order-sensitivity:selected-operations equivalence=selectedTrajectoryDisagreementObserved refutation=refutationCandidate disagreements=1"
@@ -9342,7 +9669,6 @@
       "stateAlgebra zeroReflecting=blockedByCoverageGap obstructionReflecting=blockedByCoverageGap blockedBy=1",
       "zeroReflectingAggregateBoundary zeroReflecting=blockedByCoverageGap obstructionReflecting=blockedByCoverageGap blockedBy=1",
       "relationAtomWeightedAdjacencyMatrix zeroReflecting=blockedByCoverageGap obstructionReflecting=notAnEigenvalueTheorem blockedBy=1",
-      "workflowRiskAxisPressureMatrix zeroReflecting=blockedByCoverageGap obstructionReflecting=notAnEigenvalueTheorem blockedBy=1",
       "moleculeAtomOverlapCouplingMatrix zeroReflecting=blockedByCoverageGap obstructionReflecting=notAnEigenvalueTheorem blockedBy=1",
       "obstructionAxisCurvatureMatrix zeroReflecting=blockedByCoverageGap obstructionReflecting=notAnEigenvalueTheorem blockedBy=1",
       "operationSignatureDeltaMatrix zeroReflecting=blockedByCoverageGap obstructionReflecting=notAnEigenvalueTheorem blockedBy=1"
@@ -9367,7 +9693,7 @@
     ],
     "structuralReadingReviewSummary": [
       "aat-structural-reading-review-surface status=needsReview refs=30 focus=16",
-      "ArchSig reads current architecture state across Atom support and compatibility, LawUniverse coverage, feature extension coordinates, operation calculus laws, path signature trajectory, homotopy order sensitivity, diagram fillability, axis forgetting/projection fidelity, Atom origin closure, effect relation algebra, synthesis blockage, operation preconditions, path multiplicity, trajectory homotopy refutation, bridge split transfer, representation strength, local curvature, three-layer flatness, observation projection, state transition algebra, operation-invariant constraints, and split readiness; blockedRepresentations=15, curvatures=1, blockedOperations=1, splitBlockers=1, atomConflicts=0, unmeasuredRequiredLaws=1, blockedDiagrams=1, axisForgetting=1, projectionLoss=1, atomOriginDebt=1, effectRelationPressure=1, synthesisBlockage=1, operationPreconditionBlockers=1, pathMultiplicityLoss=1, homotopyRefutations=1, bridgeTransfers=1"
+      "ArchSig reads current architecture state across Atom support and compatibility, LawUniverse coverage, feature extension coordinates, operation calculus laws, path signature trajectory, homotopy order sensitivity, diagram fillability, axis forgetting/projection fidelity, Atom origin closure, effect relation algebra, synthesis blockage, operation preconditions, path multiplicity, trajectory homotopy refutation, bridge split transfer, representation strength, local curvature, three-layer flatness, observation projection, state transition algebra, operation-invariant constraints, and split readiness; blockedRepresentations=14, curvatures=1, blockedOperations=1, splitBlockers=1, atomConflicts=0, unmeasuredRequiredLaws=1, blockedDiagrams=1, axisForgetting=1, projectionLoss=1, atomOriginDebt=1, effectRelationPressure=1, synthesisBlockage=1, operationPreconditionBlockers=1, pathMultiplicityLoss=1, homotopyRefutations=1, bridgeTransfers=1"
     ],
     "currentStateEvolutionBoundarySummary": [
       "ArchSig computes current AAT structural state from ArchMap coupon-tax-rounding-archmap and LawPolicy llm-native-aat-law-policy-fixture; it reads atoms, molecules, laws, obstructions, bridge pressure, structural readings, and bounded review focus",
@@ -9378,8 +9704,7 @@
       "repair:obstruction-semantic-contract-mismatch-computed targets [\"obstruction:semantic-contract-mismatch:computed\"]"
     ],
     "complexityTransferNotes": [
-      "may transfer obstruction into runtime behavior, ownership, or idempotency boundary",
-      "molecule:coupon-operation-contract: review low (llmOutputMediation, stateEffectReconciliation, authorityTrustBoundary)"
+      "may transfer obstruction into runtime behavior, ownership, or idempotency boundary"
     ],
     "coverageGapsAndExactnessBlockers": [
       "gap:coupon-runtime-payment-trace: payment processor and receipt reconciliation traces are not included in the fixture"
@@ -9398,15 +9723,15 @@
       "judgement:obstruction-semantic-contract-mismatch-computed: inspect source refs and repair operation preconditions",
       "judgement:sig-axis-layer-violation: use zero axes only with exactness assumptions; review nonzero axes as design pressure",
       "judgement:sig-axis-semantic-inconsistency: use zero axes only with exactness assumptions; review nonzero axes as design pressure",
-      "judgement:principle-informationhiding: turn stressed readings into source review questions or repair preconditions",
-      "judgement:principle-encapsulation: turn stressed readings into source review questions or repair preconditions",
-      "judgement:principle-separationofconcerns: turn stressed readings into source review questions or repair preconditions",
-      "judgement:principle-substitutability: turn stressed readings into source review questions or repair preconditions",
-      "judgement:principle-openclosedextension: turn stressed readings into source review questions or repair preconditions",
-      "judgement:principle-dependencyinversion: turn stressed readings into source review questions or repair preconditions",
-      "judgement:principle-representationindependence: turn stressed readings into source review questions or repair preconditions",
-      "judgement:principle-idempotencyandreplaysafety: turn stressed readings into source review questions or repair preconditions",
-      "judgement:principle-authorityandtrustboundary: turn stressed readings into source review questions or repair preconditions"
+      "judgement:principle-informationhiding: collect state/effect/runtime/projection witness sources for InformationHiding",
+      "judgement:principle-encapsulation: collect state/effect/authority witness sources for Encapsulation",
+      "judgement:principle-separationofconcerns: collect semantic/state/effect/contractSpecification witness sources for SeparationOfConcerns",
+      "judgement:principle-substitutability: collect contractSpecification/effect/state/semantic witness sources for Substitutability",
+      "judgement:principle-openclosedextension: review OpenClosedExtension source refs before treating this principle as preserved",
+      "judgement:principle-dependencyinversion: review DependencyInversion source refs before treating this principle as preserved",
+      "judgement:principle-representationindependence: collect state/contractSpecification/projection witness sources for RepresentationIndependence",
+      "judgement:principle-idempotencyandreplaysafety: collect effect/state/runtimeInteraction witness sources for IdempotencyAndReplaySafety",
+      "judgement:principle-authorityandtrustboundary: add source-backed witness evidence before reading AuthorityAndTrustBoundary"
     ]
   },
   "evidenceBoundary": "computed from ArchMap coupon-tax-rounding-archmap and selected interpretation profile llm-native-aat-law-policy-fixture; concernHints are auxiliary cues only",

@@ -109,15 +109,11 @@ fn cli_summarizes_archsig_analysis_packet() {
             .is_some_and(|axes| !axes.is_empty())
     );
     assert!(
-        json.get("topWorkflowRisks").is_none()
-            && json["workflowRiskSummary"]["highestRisks"]
-                .as_array()
-                .is_some_and(|risks| {
-                    !risks.is_empty()
-                        && json["qualityMeasurement"]["workflowRiskCount"]
-                            .as_u64()
-                            .is_some_and(|count| risks.len() as u64 <= count)
-                })
+        json.get("workflowSignalSummary").is_none()
+            && !has_nested_key(&json, "signalDensityScore")
+            && !has_nested_key(&json, "highestSignalDensity")
+            && !has_nested_key(&json, "affectedWorkflows"),
+        "analysis-summary must not surface density-ranked workflow signals"
     );
     assert!(
         json["bridgeSummary"]["bridgePressure"]
@@ -173,6 +169,34 @@ fn cli_summarizes_archsig_analysis_packet() {
                 .is_some_and(|count| count > 0),
         "qualityMeasurement must count added AAT observation axes"
     );
+    assert_eq!(
+        json["analysisUsefulness"]["mode"], "gapQualifiedActionableAnalysis",
+        "analysis-summary must not collapse coverage-qualified analysis into no-value gap reporting"
+    );
+    assert!(
+        json["analysisUsefulness"]["valueStatement"]
+            .as_str()
+            .is_some_and(|text| {
+                text.contains("do not block structural pressure localization")
+                    && text.contains("review prioritization")
+            })
+            && json["analysisUsefulness"]["usableNow"]
+                .as_array()
+                .is_some_and(|items| {
+                    items
+                        .iter()
+                        .any(|item| item["kind"] == "selectedLawPressure")
+                        && items.iter().any(|item| item["kind"] == "curvatureHotspots")
+                        && items.iter().any(|item| item["kind"] == "repairReviewQueue")
+                })
+            && json["analysisUsefulness"]["blockedByGaps"]["claims"]
+                .as_array()
+                .is_some_and(|claims| !claims.is_empty())
+            && json["analysisUsefulness"]["evidenceToUpgradeConfidence"]
+                .as_array()
+                .is_some_and(|items| !items.is_empty()),
+        "analysisUsefulness must separate usable findings from claims blocked by gaps"
+    );
     assert!(
         json["actionQueue"].as_array().is_some_and(|items| {
             !items.is_empty()
@@ -209,10 +233,6 @@ fn cli_summarizes_archsig_analysis_packet() {
             }) && items.iter().any(|item| {
                 item["kind"]
                     .as_str()
-                    .is_some_and(|text| text == "workflowRisk")
-            }) && items.iter().any(|item| {
-                item["kind"]
-                    .as_str()
                     .is_some_and(|text| text == "bridgePressure")
             }) && items.iter().any(|item| {
                 item["kind"]
@@ -228,7 +248,7 @@ fn cli_summarizes_archsig_analysis_packet() {
                     .is_some_and(|text| text == "pathMultiplicityLoss")
             })
         }),
-        "analysis-summary must put hotspots, holes, nonzero axes, workflow risks, bridge pressure, and added AAT axes in the action queue"
+        "analysis-summary must put hotspots, holes, nonzero axes, bridge pressure, and added AAT axes in the action queue"
     );
     assert!(
         json["measurementBasis"]["basisStatement"]
@@ -280,9 +300,6 @@ fn cli_summarizes_archsig_analysis_packet() {
             && json["trendDiagnosis"]["pressureConcentration"]["nonzeroAxisRefs"]
                 .as_array()
                 .is_some_and(|items| !items.is_empty())
-            && json["trendDiagnosis"]["pressureConcentration"]["workflowRiskRefs"]
-                .as_array()
-                .is_some_and(|items| !items.is_empty())
             && json["trendDiagnosis"]["packetRefs"]
                 .as_array()
                 .is_some_and(|items| !items.is_empty()),
@@ -329,6 +346,100 @@ fn cli_summarizes_archsig_analysis_packet() {
                     .is_some_and(|count| count > 0)
         }),
         "trendInsights must be backed by concrete operation, path, and transfer measurements"
+    );
+    assert!(
+        json["architectureInsightSummary"]["primaryPressureClusters"]
+            .as_array()
+            .is_some_and(|clusters| {
+                !clusters.is_empty()
+                    && clusters.iter().any(|cluster| {
+                        cluster["signalCounts"]["nonzeroAxisCount"]
+                            .as_u64()
+                            .is_some_and(|count| count > 0)
+                            && cluster["recommendedReview"]
+                                .as_str()
+                                .is_some_and(|text| !text.is_empty())
+                            && cluster["detailRefs"]
+                                .as_array()
+                                .is_some_and(|refs| !refs.is_empty())
+                    })
+            }),
+        "architectureInsightSummary must group structural pressure across AAT-computed surfaces"
+    );
+    assert!(
+        json["architectureInsightSummary"]["insightCards"]
+            .as_array()
+            .is_some_and(|cards| {
+                !cards.is_empty()
+                    && cards.iter().any(|card| {
+                        card["claim"].as_str().is_some_and(|text| !text.is_empty())
+                            && card["whyItMatters"]
+                                .as_str()
+                                .is_some_and(|text| !text.is_empty())
+                            && card["aatEvidence"]["nonzeroAxisRefs"].as_array().is_some()
+                            && card["aatEvidence"]["spectrumHotspotRefs"]
+                                .as_array()
+                                .is_some()
+                            && card["aatEvidence"]["operationPreconditionRefs"]
+                                .as_array()
+                                .is_some()
+                            && card["observedSignals"]
+                                .as_array()
+                                .is_some_and(|items| !items.is_empty())
+                            && card["nextValidation"]
+                                .as_array()
+                                .is_some_and(|items| !items.is_empty())
+                            && card["notBlockedByGaps"]
+                                .as_str()
+                                .is_some_and(|text| text.contains("usable review signals"))
+                            && card.get("sourceRefs").is_none()
+                            && card.get("supportRefs").is_none()
+                            && card.get("witnessRefs").is_none()
+                    })
+            }),
+        "architectureInsightSummary must expose evidence-backed insight cards, not only ranked refs"
+    );
+    assert!(
+        json["architectureInsightSummary"]["coverageBlockers"]["items"]
+            .as_array()
+            .is_some_and(|items| {
+                !items.is_empty()
+                    && items.iter().any(|item| {
+                        item["gapRef"]
+                            .as_str()
+                            .is_some_and(|gap| gap == "gap-runtime-user-db-trace")
+                            && item["impactCount"].as_u64().is_some()
+                            && item["detailRefs"]
+                                .as_array()
+                                .is_some_and(|refs| !refs.is_empty())
+                    })
+            }),
+        "architectureInsightSummary must expose compact coverage blockers with impact refs"
+    );
+    assert!(
+        json["architectureInsightSummary"]["repairPlanning"]["candidateOperations"]
+            .as_array()
+            .is_some_and(|items| {
+                !items.is_empty()
+                    && items.iter().any(|item| {
+                        item["preconditionCount"]
+                            .as_u64()
+                            .is_some_and(|count| count > 0)
+                            && item["transferRiskCount"].as_u64().is_some()
+                            && item["readiness"]
+                                .as_str()
+                                .is_some_and(|text| text.contains("review"))
+                    })
+            })
+            && json["architectureInsightSummary"]["readNext"]
+                .as_array()
+                .is_some_and(|items| {
+                    items.len() >= 3
+                        && items[0]["focus"]
+                            .as_str()
+                            .is_some_and(|focus| focus != "coverage blockers")
+                }),
+        "architectureInsightSummary must lead with useful structural reading before coverage qualification"
     );
     assert!(
         json["reviewSupport"]["actionQueueCount"]
@@ -456,15 +567,13 @@ fn cli_analysis_summary_stays_compact_for_sanitized_large_repo_class_packet() {
         summary["qualityMeasurement"]["spectrumHotspotCount"]
             .as_u64()
             .is_some_and(|count| count >= 64)
-            && summary["qualityMeasurement"]["workflowRiskCount"]
-                .as_u64()
-                .is_some_and(|count| count >= 32)
             && summary["qualityMeasurement"]["coverageGapCount"] == 1,
         "large summary must preserve conclusion counts without double-counting equivalent gap labels"
     );
     assert!(
         summary["actionQueue"].as_array().is_some_and(|items| {
-            items.len() >= 96
+            !items.is_empty()
+                && items.len() <= 48
                 && items.iter().all(|item| {
                     item["detailRefs"]
                         .as_array()
@@ -850,6 +959,40 @@ fn cli_runs_primary_archmap_lawpolicy_archsig_analyze_workflow() {
     assert!(
         analysis_validation.get("packet").is_none(),
         "analysis validation must not embed the full analysis packet"
+    );
+}
+
+#[test]
+fn cli_analyze_reports_failed_validation_checks_to_stderr() {
+    let out_dir = temp_dir("analyze-workflow-validation-failure");
+    let root = fixture_root();
+    let archmap = root.join("archmap_invalid_gap_measured_zero.json");
+    let law_policy = root.join("law_policy.json");
+
+    let output = run_sig0_output(&[
+        "analyze",
+        "--archmap",
+        archmap.to_str().expect("archmap path is utf-8"),
+        "--law-policy",
+        law_policy.to_str().expect("law policy path is utf-8"),
+        "--out-dir",
+        out_dir.to_str().expect("output directory path is utf-8"),
+    ]);
+
+    assert!(
+        !output.status.success(),
+        "invalid analyze input must return a validation failure"
+    );
+    assert!(
+        out_dir.join("archsig-analysis-packet.json").is_file(),
+        "analyze should still write inspection artifacts before returning validation failure"
+    );
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(
+        stderr.contains("archsig analyze produced artifacts")
+            && stderr.contains("archmap-validation.json: fail")
+            && stderr.contains("archmap-observation-gaps-not-measured-zero"),
+        "analyze failure should identify the failed validation report and check\n{stderr}"
     );
 }
 
@@ -2118,10 +2261,6 @@ fn expand_large_repo_summary_fixture(packet: &mut Value, manifest: &Value) {
         .as_u64()
         .expect("manifest supportRefsPerHotspot is numeric")
         as usize;
-    let workflow_count = manifest["workflowRiskCount"]
-        .as_u64()
-        .expect("manifest workflowRiskCount is numeric") as usize;
-
     let spectrum = packet["architectureSpectrumReport"]
         .as_object_mut()
         .expect("packet contains ArchitectureSpectrumReport");
@@ -2162,26 +2301,6 @@ fn expand_large_repo_summary_fixture(packet: &mut Value, manifest: &Value) {
     spectrum.insert(
         "topHotspots".to_string(),
         serde_json::Value::Array(hotspots),
-    );
-
-    let base_workflow = packet["workflowRiskReadings"][0].clone();
-    packet["workflowRiskReadings"] = serde_json::Value::Array(
-        (0..workflow_count)
-            .map(|index| {
-                let mut reading = base_workflow.clone();
-                reading["workflowRiskId"] =
-                    serde_json::json!(format!("workflow-risk:sanitized-large-repo-{index}"));
-                reading["moleculeObservationRef"] =
-                    serde_json::json!(format!("molecule:sanitized-workflow-{index}"));
-                reading["riskScore"] = serde_json::json!(100 - index as i64);
-                reading["reviewFocus"] = serde_json::json!([
-                    "review sanitized workflow boundary",
-                    "confirm source-backed contract evidence",
-                    "inspect packet detail refs"
-                ]);
-                reading
-            })
-            .collect(),
     );
 }
 
@@ -2335,26 +2454,9 @@ fn assert_north_star_packet_surfaces(json: &Value) {
             .any(|entry| entry["status"] == "actionable"),
         "bounded judgements must include actionable readings"
     );
-    let workflow_risks = json["workflowRiskReadings"]
-        .as_array()
-        .expect("workflow risk readings are array");
     assert!(
-        !workflow_risks.is_empty(),
-        "North Star packet must expose workflow risk readings"
-    );
-    assert!(
-        workflow_risks.iter().all(|entry| {
-            entry["moleculeObservationRef"].as_str().is_some()
-                && entry["riskScore"].as_i64().is_some_and(|score| score >= 0)
-                && entry["topAxes"]
-                    .as_array()
-                    .is_some_and(|axes| !axes.is_empty())
-                && entry["reviewFocus"]
-                    .as_array()
-                    .is_some_and(|focus| !focus.is_empty())
-                && entry["evidenceBoundary"].as_str().is_some()
-        }),
-        "workflow risk readings must carry molecule refs, non-negative scores, axes, review focus, and evidence boundaries"
+        json.get("workflowSignalReadings").is_none() && !has_nested_key(json, "signalDensityScore"),
+        "North Star packet must not expose workflow-signal density proxy readings"
     );
     let spectral_readings = json["spectralAnalysisReadings"]
         .as_array()
@@ -2365,7 +2467,6 @@ fn assert_north_star_packet_surfaces(json: &Value) {
     );
     for family in [
         "relationAtomWeightedAdjacencyMatrix",
-        "workflowRiskAxisPressureMatrix",
         "moleculeAtomOverlapCouplingMatrix",
         "obstructionAxisCurvatureMatrix",
         "operationSignatureDeltaMatrix",
@@ -2399,7 +2500,6 @@ fn assert_north_star_packet_surfaces(json: &Value) {
         "North Star packet must expose spectral mode readings"
     );
     for family in [
-        "workflowRiskAxisPressureMatrix",
         "moleculeAtomOverlapCouplingMatrix",
         "obstructionAxisCurvatureMatrix",
         "operationSignatureDeltaMatrix",

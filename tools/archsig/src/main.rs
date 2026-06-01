@@ -9,10 +9,10 @@ use std::process::ExitCode;
 
 use archsig::{
     ARCHSIG_ANALYSIS_PACKET_SCHEMA_VERSION, ArchMapDocumentV0, ArchMapSourceInventoryInput,
-    ArchMapSourceInventoryV0, ArchMapValidationReportV0, LawPolicyDocumentV0,
-    SchemaVersionCatalogV0, build_archsig_analysis_packet, static_law_policy,
-    static_schema_version_catalog, validate_archmap_report,
-    validate_archsig_analysis_packet_report, validate_law_policy_report,
+    ArchMapSourceInventoryV0, ArchMapValidationReportV0, ArchSigAnalysisPacketValidationReportV0,
+    LawPolicyDocumentV0, LawPolicyValidationReportV0, SchemaVersionCatalogV0,
+    build_archsig_analysis_packet, static_law_policy, static_schema_version_catalog,
+    validate_archmap_report, validate_archsig_analysis_packet_report, validate_law_policy_report,
 };
 use clap::{Parser, Subcommand};
 
@@ -308,7 +308,7 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
             if let Some(path) = llm_interpretation_out {
                 write_json(Some(path), &packet.llm_interpretation_packet)?;
             }
-            write_analysis_packet_artifacts(out, &packet, None)?;
+            write_json(out, &packet)?;
             Ok(if failed {
                 ExitCode::from(1)
             } else {
@@ -537,6 +537,13 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
             );
             let analysis_failed = analysis_validation.summary.result == "fail";
             write_json(Some(analysis_validation_path), &analysis_validation)?;
+
+            report_analyze_validation_failures(
+                out_dir.as_path(),
+                &archmap_validation,
+                &law_policy_validation,
+                &analysis_validation,
+            );
 
             Ok(if archmap_failed || law_policy_failed || analysis_failed {
                 ExitCode::from(1)
@@ -840,6 +847,109 @@ fn write_json_minified<T: serde::Serialize>(
 
 fn read_json<T: serde::de::DeserializeOwned>(path: &PathBuf) -> Result<T, Box<dyn Error>> {
     Ok(serde_json::from_reader(File::open(path)?)?)
+}
+
+fn report_analyze_validation_failures(
+    out_dir: &Path,
+    archmap_validation: &ArchMapValidationReportV0,
+    law_policy_validation: &LawPolicyValidationReportV0,
+    analysis_validation: &ArchSigAnalysisPacketValidationReportV0,
+) {
+    if archmap_validation.summary.result != "fail"
+        && law_policy_validation.summary.result != "fail"
+        && analysis_validation.summary.result != "fail"
+    {
+        return;
+    }
+
+    eprintln!(
+        "archsig analyze produced artifacts in {} but validation failed:",
+        out_dir.display()
+    );
+
+    if archmap_validation.summary.result == "fail" {
+        eprintln!(
+            "  archmap-validation.json: fail ({} failed check(s))",
+            archmap_validation.summary.failed_check_count
+        );
+        let archmap_groups = [
+            (
+                "sourceInventoryChecks",
+                archmap_validation.source_inventory_checks.as_slice(),
+            ),
+            (
+                "sourceRefChecks",
+                archmap_validation.source_ref_checks.as_slice(),
+            ),
+            (
+                "claimBoundaryChecks",
+                archmap_validation.claim_boundary_checks.as_slice(),
+            ),
+            (
+                "semanticCoverageChecks",
+                archmap_validation.semantic_coverage_checks.as_slice(),
+            ),
+            (
+                "formalPromotionGuardrailChecks",
+                archmap_validation
+                    .formal_promotion_guardrail_checks
+                    .as_slice(),
+            ),
+            (
+                "atomicObservationChecks",
+                archmap_validation.atomic_observation_checks.as_slice(),
+            ),
+            (
+                "responsibilityChecks",
+                archmap_validation.responsibility_checks.as_slice(),
+            ),
+        ];
+        for (group, checks) in archmap_groups {
+            for check in checks.iter().filter(|check| check.result == "fail") {
+                eprintln!(
+                    "    - {group}/{}: {}",
+                    check.id,
+                    check.reason.as_deref().unwrap_or(&check.title)
+                );
+            }
+        }
+    }
+
+    if law_policy_validation.summary.result == "fail" {
+        eprintln!(
+            "  law-policy-validation.json: fail ({} failed check(s))",
+            law_policy_validation.summary.failed_check_count
+        );
+        for check in law_policy_validation
+            .checks
+            .iter()
+            .filter(|check| check.result == "fail")
+        {
+            eprintln!(
+                "    - checks/{}: {}",
+                check.id,
+                check.reason.as_deref().unwrap_or(&check.title)
+            );
+        }
+    }
+
+    if analysis_validation.summary.result == "fail" {
+        eprintln!(
+            "  archsig-analysis-validation.json: fail ({} failed check(s))",
+            analysis_validation.summary.failed_check_count
+        );
+        for check in analysis_validation
+            .checks
+            .iter()
+            .filter(|check| check.result == "fail")
+        {
+            eprintln!(
+                "    - checks/{}: {}",
+                check.id,
+                check.reason.as_deref().unwrap_or(&check.title)
+            );
+        }
+    }
 }
 
 fn read_optional_json(path: Option<&PathBuf>) -> Result<Option<serde_json::Value>, Box<dyn Error>> {
@@ -1378,15 +1488,16 @@ fn build_analysis_summary(
             "analysis": validation_summary(analysis_validation)
         },
         "verdict": analysis_verdict(packet),
+        "analysisUsefulness": analysis_usefulness(packet),
         "qualityMeasurement": quality_measurement(packet),
         "measurementStatusSummary": measurement_status_summary(packet),
         "trendDiagnosis": trend_diagnosis(packet),
+        "architectureInsightSummary": architecture_insight_summary(packet),
         "reviewSupport": review_support(packet),
         "dominantFindings": dominant_findings(packet),
         "actionQueue": action_queue(packet),
         "axisSummary": axis_summary(packet),
         "aatObservationAxisSummary": aat_observation_axis_summary(packet),
-        "workflowRiskSummary": workflow_risk_summary(packet),
         "designPrincipleSummary": design_principle_summary(packet),
         "architecturalHoleSummary": architectural_hole_summary(packet),
         "bridgeSummary": bridge_summary(packet),
@@ -1441,7 +1552,6 @@ fn dominant_findings(packet: &serde_json::Value) -> serde_json::Value {
             "nonzeroSelectedAxisContinuationDistance",
             DOMINANT_FINDING_LIMIT
         ),
-        "workflowRisks": workflow_risk_findings(packet, DOMINANT_FINDING_LIMIT),
         "bridgePressure": bridge_pressure_findings(packet, DOMINANT_FINDING_LIMIT),
         "projectionFidelityLoss": projection_fidelity_findings(packet, DOMINANT_FINDING_LIMIT),
         "atomOriginClosureDebt": atom_origin_closure_findings(packet, DOMINANT_FINDING_LIMIT),
@@ -1465,7 +1575,6 @@ fn trend_diagnosis(packet: &serde_json::Value) -> serde_json::Value {
             "nonzeroAxisRefs": nonzero_axis_ref_list(packet, READING_MODE_FINDING_LIMIT),
             "spectrumHotspotRefs": compact_ref_list(spectrum, "topHotspots", "hotspotId", READING_MODE_FINDING_LIMIT),
             "recurrentObstructionRefs": compact_ref_list(spectrum, "recurrentObstructions", "modeRef", READING_MODE_FINDING_LIMIT),
-            "workflowRiskRefs": workflow_risk_ref_list(packet, READING_MODE_FINDING_LIMIT),
             "bridgePressureRefs": bridge_pressure_ref_list(packet, READING_MODE_FINDING_LIMIT),
             "pathMultiplicityLossRefs": compact_ref_list(packet, "pathMultiplicityLossReadings", "readingId", 1),
             "projectionFidelityLossRefs": compact_ref_list(packet, "observationProjectionFidelityReadings", "readingId", 1),
@@ -1475,7 +1584,6 @@ fn trend_diagnosis(packet: &serde_json::Value) -> serde_json::Value {
         "packetRefs": packet_refs(&[
             "/signatureAxes",
             "/architectureSpectrumReport",
-            "/workflowRiskReadings",
             "/transferBridgeReadings",
             "/pathMultiplicityLossReadings",
             "/observationProjectionFidelityReadings",
@@ -1505,6 +1613,921 @@ fn review_support(packet: &serde_json::Value) -> serde_json::Value {
             "/architectureHomotopyReport/coverageGaps"
         ])
     })
+}
+
+fn analysis_usefulness(packet: &serde_json::Value) -> serde_json::Value {
+    let flatness = packet
+        .get("flatnessReading")
+        .unwrap_or(&serde_json::Value::Null);
+    let spectrum = packet
+        .get("architectureSpectrumReport")
+        .unwrap_or(&serde_json::Value::Null);
+    let homotopy = packet
+        .get("architectureHomotopyReport")
+        .unwrap_or(&serde_json::Value::Null);
+    let coverage_gap_count = coverage_gap_refs(packet).len();
+    let nonzero_axis_count = array_len(flatness, "nonzeroSignatureAxisRefs");
+    let hotspot_count = array_len(spectrum, "topHotspots");
+    let architectural_hole_count = array_len(homotopy, "unfilledLoops");
+    let repair_candidate_count = array_len(packet, "repairOperationCandidates");
+
+    serde_json::json!({
+        "mode": if coverage_gap_count > 0 {
+            "gapQualifiedActionableAnalysis"
+        } else {
+            "closedCoverageActionableAnalysis"
+        },
+        "valueStatement": if coverage_gap_count > 0 {
+            "coverage gaps qualify zero, flatness, completeness, and repair-safety claims, but they do not block structural pressure localization or review prioritization"
+        } else {
+            "no coverage gap was recorded in the selected coverage universe; pressure and zero readings can be read against the supplied ArchMap and LawPolicy"
+        },
+        "usableNow": usable_now_findings(
+            nonzero_axis_count,
+            hotspot_count,
+            architectural_hole_count,
+            repair_candidate_count,
+        ),
+        "blockedByGaps": blocked_claims_by_gaps(coverage_gap_count),
+        "evidenceToUpgradeConfidence": evidence_to_upgrade_confidence(packet),
+        "packetRefs": packet_refs(&[
+            "/signatureAxes",
+            "/architectureSpectrumReport/topHotspots",
+            "/architectureHomotopyReport/unfilledLoops",
+            "/repairOperationCandidates",
+            "/flatnessReading/blockedByCoverageGaps"
+        ])
+    })
+}
+
+fn usable_now_findings(
+    nonzero_axis_count: usize,
+    hotspot_count: usize,
+    architectural_hole_count: usize,
+    repair_candidate_count: usize,
+) -> serde_json::Value {
+    let mut findings = Vec::new();
+    if nonzero_axis_count > 0 {
+        findings.push(serde_json::json!({
+            "kind": "selectedLawPressure",
+            "claim": format!("{nonzero_axis_count} selected LawPolicy axis/axes have nonzero observed support"),
+            "use": "prioritize architecture review around selected law pressure rather than treating the repo as uniformly unknown"
+        }));
+    }
+    if hotspot_count > 0 {
+        findings.push(serde_json::json!({
+            "kind": "curvatureHotspots",
+            "claim": format!("{hotspot_count} spectrum hotspot(s) localize repeated obstruction support"),
+            "use": "start review from the highest hotspot detail refs"
+        }));
+    }
+    if architectural_hole_count > 0 {
+        findings.push(serde_json::json!({
+            "kind": "architecturalHoles",
+            "claim": format!("{architectural_hole_count} unfilled loop(s) were measured"),
+            "use": "identify contract, runtime, policy, or source-backed filler evidence to inspect next"
+        }));
+    }
+    if repair_candidate_count > 0 {
+        findings.push(serde_json::json!({
+            "kind": "repairReviewQueue",
+            "claim": format!("{repair_candidate_count} repair candidate(s) were derived as review cues"),
+            "use": "turn candidates into implementation tasks only after preconditions and transfer risk are checked"
+        }));
+    }
+    serde_json::Value::Array(findings)
+}
+
+fn blocked_claims_by_gaps(coverage_gap_count: usize) -> serde_json::Value {
+    if coverage_gap_count == 0 {
+        return serde_json::json!({
+            "coverageGapCount": 0,
+            "claims": []
+        });
+    }
+    serde_json::json!({
+        "coverageGapCount": coverage_gap_count,
+        "claims": [
+            {
+                "claim": "global architecture flatness or lawfulness",
+                "reason": "selected coverage gaps prevent promoting absent evidence to zero"
+            },
+            {
+                "claim": "automatic repair safety",
+                "reason": "repair candidates still need precondition, runtime, and transfer-risk evidence"
+            },
+            {
+                "claim": "source extraction completeness",
+                "reason": "ArchMap observation gaps explicitly bound the supplied source universe"
+            }
+        ]
+    })
+}
+
+fn evidence_to_upgrade_confidence(packet: &serde_json::Value) -> serde_json::Value {
+    let mut refs = coverage_gap_refs(packet).into_iter().collect::<Vec<_>>();
+    refs.sort();
+    serde_json::Value::Array(
+        refs.into_iter()
+            .take(ARCHITECTURE_INSIGHT_REF_LIMIT + 1)
+            .map(|gap_ref| {
+                let evidence_kind = if gap_ref.contains("runtime") {
+                    "runtime traces, request logs, queue traces, or provider execution logs"
+                } else if gap_ref.contains("openapi") || gap_ref.contains("framework") {
+                    "expanded framework registry, route table, dependency graph, or generated contract"
+                } else if gap_ref.contains("provider") || gap_ref.contains("credentials") {
+                    "provider policy, credential scope, webhook headers, or provider response samples"
+                } else if gap_ref.contains("db") || gap_ref.contains("rls") {
+                    "database migration, RLS policy, and deployed tenant-policy evidence"
+                } else {
+                    "source-backed evidence for the named coverage gap"
+                };
+                serde_json::json!({
+                    "gapRef": gap_ref,
+                    "evidenceKind": evidence_kind
+                })
+            })
+            .collect(),
+    )
+}
+
+const ARCHITECTURE_INSIGHT_LIMIT: usize = 3;
+const ARCHITECTURE_INSIGHT_REF_LIMIT: usize = 2;
+
+fn architecture_insight_summary(packet: &serde_json::Value) -> serde_json::Value {
+    let clusters = architecture_pressure_clusters(packet);
+    serde_json::json!({
+        "topInsight": architecture_top_insight(packet, &clusters),
+        "insightCards": architecture_insight_cards(packet, &clusters, ARCHITECTURE_INSIGHT_LIMIT),
+        "primaryPressureClusters": cluster_summaries(&clusters, ARCHITECTURE_INSIGHT_LIMIT),
+        "coverageBlockers": coverage_blocker_insights(packet, ARCHITECTURE_INSIGHT_LIMIT),
+        "repairPlanning": repair_planning_summary(packet, ARCHITECTURE_INSIGHT_LIMIT),
+        "readNext": architecture_read_next(&clusters),
+        "claimBoundary": "insights are structural reading aids over the supplied ArchMap and LawPolicy; they are not a proof, forecast, or automatic repair plan",
+        "packetRefs": packet_refs(&[
+            "/signatureAxes",
+            "/architectureSpectrumReport/topHotspots",
+            "/repairOperationCandidates",
+            "/operationPreconditionReadinessReadings",
+            "/operationDeltas"
+        ])
+    })
+}
+
+fn architecture_top_insight(
+    packet: &serde_json::Value,
+    clusters: &[ArchitectureInsightCluster],
+) -> serde_json::Value {
+    let top_cluster = clusters.first();
+    let top_cluster_title = top_cluster
+        .map(|cluster| concern_metadata(&cluster.concern).0)
+        .unwrap_or("no dominant pressure cluster");
+    let coverage_gap_count = coverage_gap_refs(packet).len();
+    let repair_candidate_count = array_len(packet, "repairOperationCandidates");
+    serde_json::json!({
+        "headline": if top_cluster.is_some() {
+            format!("{top_cluster_title} is the dominant structural pressure cluster under the selected LawPolicy")
+        } else {
+            "no dominant structural pressure cluster was measured under the selected LawPolicy".to_string()
+        },
+        "whyItMatters": "The useful reading is not a flat count: prioritize places where law axes, spectrum hotspots, coverage blockers, repair candidates, and operation preconditions overlap.",
+        "coveragePosture": if coverage_gap_count > 0 {
+            "coverage gaps qualify zero/flatness/repair-safety claims; measured pressure localization remains usable"
+        } else {
+            "no coverage blocker was recorded for the selected coverage universe"
+        },
+        "repairPosture": if repair_candidate_count > 0 {
+            "repair candidates exist, but their preconditions and transfer risks must be reviewed before implementation"
+        } else {
+            "no repair candidate was emitted for this packet"
+        }
+    })
+}
+
+#[derive(Debug, Default)]
+struct ArchitectureInsightCluster {
+    concern: String,
+    pressure_score: i64,
+    nonzero_axis_refs: BTreeSet<String>,
+    hotspot_refs: BTreeSet<String>,
+    repair_refs: BTreeSet<String>,
+    precondition_refs: BTreeSet<String>,
+    coverage_gap_refs: BTreeSet<String>,
+    detail_refs: BTreeSet<String>,
+}
+
+fn architecture_pressure_clusters(packet: &serde_json::Value) -> Vec<ArchitectureInsightCluster> {
+    let mut clusters = BTreeMap::<String, ArchitectureInsightCluster>::new();
+    let spectrum = packet
+        .get("architectureSpectrumReport")
+        .unwrap_or(&serde_json::Value::Null);
+
+    for (index, axis) in array_items(packet, "signatureAxes").into_iter().enumerate() {
+        if i64_field(axis, "value", 0) == 0 {
+            continue;
+        }
+        let text = architecture_signal_text(
+            axis,
+            &["signatureAxisId", "axisRef", "lawRef", "coverageStatus"],
+            &[],
+        );
+        for concern in concern_keys_for_text(&text) {
+            record_architecture_signal(
+                &mut clusters,
+                concern,
+                "nonzeroSignatureAxis",
+                json_field(axis, "signatureAxisId")
+                    .as_str()
+                    .unwrap_or("unknown"),
+                &format!("packet:/signatureAxes/{index}"),
+                i64_field(axis, "value", 1).max(1) * 100,
+                coverage_refs_from_signal(axis),
+            );
+        }
+    }
+
+    for (index, hotspot) in array_items(spectrum, "topHotspots").into_iter().enumerate() {
+        let text = architecture_signal_text(
+            hotspot,
+            &["hotspotId", "axisRef", "recommendedNextAction"],
+            &[],
+        );
+        for concern in concern_keys_for_text(&text) {
+            record_architecture_signal(
+                &mut clusters,
+                concern,
+                "spectrumHotspot",
+                json_field(hotspot, "hotspotId")
+                    .as_str()
+                    .unwrap_or("unknown"),
+                &format!("packet:/architectureSpectrumReport/topHotspots/{index}"),
+                i64_field(hotspot, "curvatureValue", 1).max(1) * 50,
+                coverage_refs_from_signal(hotspot),
+            );
+        }
+    }
+
+    for (index, candidate) in array_items(packet, "repairOperationCandidates")
+        .into_iter()
+        .enumerate()
+    {
+        let text = architecture_signal_text(
+            candidate,
+            &[
+                "repairOperationCandidateId",
+                "operationKind",
+                "evidenceBoundary",
+            ],
+            &[
+                "expectedSignatureAxisEffects",
+                "transferRisks",
+                "targetObstructionRefs",
+            ],
+        );
+        for concern in concern_keys_for_text(&text) {
+            record_architecture_signal(
+                &mut clusters,
+                concern,
+                "repairCandidate",
+                json_field(candidate, "repairOperationCandidateId")
+                    .as_str()
+                    .unwrap_or("unknown"),
+                &format!("packet:/repairOperationCandidates/{index}"),
+                75,
+                coverage_refs_from_signal(candidate),
+            );
+        }
+    }
+
+    for (index, reading) in array_items(packet, "operationPreconditionReadinessReadings")
+        .into_iter()
+        .enumerate()
+    {
+        let text = architecture_signal_text(
+            reading,
+            &[
+                "operationRef",
+                "operationKind",
+                "readinessStatus",
+                "recommendedNextAction",
+            ],
+            &[],
+        );
+        let precondition_score = (array_len(reading, "missingPreconditionRefs")
+            + array_len(reading, "coverageGapRefs")
+            + array_len(reading, "witnessGapRefs"))
+        .max(1) as i64;
+        for concern in concern_keys_for_text(&text) {
+            record_architecture_signal(
+                &mut clusters,
+                concern,
+                "operationPrecondition",
+                json_field(reading, "operationRef")
+                    .as_str()
+                    .unwrap_or("unknown"),
+                &format!("packet:/operationPreconditionReadinessReadings/{index}"),
+                precondition_score * 10,
+                coverage_refs_from_signal(reading),
+            );
+        }
+    }
+
+    let mut values = clusters.into_values().collect::<Vec<_>>();
+    values.sort_by(|left, right| {
+        right
+            .pressure_score
+            .cmp(&left.pressure_score)
+            .then(left.concern.cmp(&right.concern))
+    });
+    values
+}
+
+fn record_architecture_signal(
+    clusters: &mut BTreeMap<String, ArchitectureInsightCluster>,
+    concern: &str,
+    kind: &str,
+    reference: &str,
+    detail_ref: &str,
+    score: i64,
+    coverage_refs: BTreeSet<String>,
+) {
+    let cluster =
+        clusters
+            .entry(concern.to_string())
+            .or_insert_with(|| ArchitectureInsightCluster {
+                concern: concern.to_string(),
+                ..ArchitectureInsightCluster::default()
+            });
+    cluster.pressure_score += score;
+    match kind {
+        "nonzeroSignatureAxis" => {
+            cluster.nonzero_axis_refs.insert(reference.to_string());
+        }
+        "spectrumHotspot" => {
+            cluster.hotspot_refs.insert(reference.to_string());
+        }
+        "repairCandidate" => {
+            cluster.repair_refs.insert(reference.to_string());
+        }
+        "operationPrecondition" => {
+            cluster.precondition_refs.insert(reference.to_string());
+        }
+        _ => {}
+    }
+    cluster.detail_refs.insert(detail_ref.to_string());
+    cluster.coverage_gap_refs.extend(coverage_refs);
+}
+
+fn cluster_summaries(clusters: &[ArchitectureInsightCluster], limit: usize) -> serde_json::Value {
+    serde_json::Value::Array(
+        clusters
+            .iter()
+            .take(limit)
+            .map(|cluster| {
+                let (title, why, recommended_review) = concern_metadata(&cluster.concern);
+                serde_json::json!({
+                    "concern": cluster.concern,
+                    "title": title,
+                    "reading": why,
+                    "pressureScore": cluster.pressure_score,
+                    "signalCounts": {
+                        "nonzeroAxisCount": cluster.nonzero_axis_refs.len(),
+                        "spectrumHotspotCount": cluster.hotspot_refs.len(),
+                        "repairCandidateCount": cluster.repair_refs.len(),
+                        "operationPreconditionBlockerCount": cluster.precondition_refs.len(),
+                        "coverageBlockerCount": cluster.coverage_gap_refs.len()
+                    },
+                    "recommendedReview": recommended_review,
+                    "detailRefs": limited_string_set_values(&cluster.detail_refs, ARCHITECTURE_INSIGHT_REF_LIMIT)
+                })
+            })
+            .collect(),
+    )
+}
+
+fn architecture_insight_cards(
+    _packet: &serde_json::Value,
+    clusters: &[ArchitectureInsightCluster],
+    limit: usize,
+) -> serde_json::Value {
+    serde_json::Value::Array(
+        clusters
+            .iter()
+            .take(limit)
+            .enumerate()
+            .map(|(index, cluster)| {
+                let observed = observed_signal_sentences(cluster);
+                let missing = insight_card_missing_evidence(cluster);
+                let (claim, why_it_matters, next_validation) =
+                    insight_card_language(&cluster.concern);
+                serde_json::json!({
+                    "cardId": format!("insight-card:{}", index + 1),
+                    "concern": cluster.concern,
+                    "claim": claim,
+                    "whyItMatters": why_it_matters,
+                    "aatEvidence": {
+                        "nonzeroAxisRefs": limited_string_set_values(&cluster.nonzero_axis_refs, ARCHITECTURE_INSIGHT_REF_LIMIT + 1),
+                        "spectrumHotspotRefs": limited_string_set_values(&cluster.hotspot_refs, ARCHITECTURE_INSIGHT_REF_LIMIT + 1),
+                        "repairCandidateRefs": limited_string_set_values(&cluster.repair_refs, ARCHITECTURE_INSIGHT_REF_LIMIT + 1),
+                        "operationPreconditionRefs": limited_string_set_values(&cluster.precondition_refs, ARCHITECTURE_INSIGHT_REF_LIMIT + 1),
+                        "coverageGapRefs": limited_string_set_values(&cluster.coverage_gap_refs, ARCHITECTURE_INSIGHT_REF_LIMIT + 1)
+                    },
+                    "observedSignals": observed,
+                    "missingEvidence": missing,
+                    "notBlockedByGaps": "measured nonzero axes, spectrum hotspots, repair cues, and precondition blockers are usable review signals even when gaps block zero, global flatness, and repair-safety claims",
+                    "blockedClaims": [
+                        "global lawfulness or flatness",
+                        "automatic repair safety",
+                        "source extraction completeness"
+                    ],
+                    "nextValidation": next_validation,
+                    "detailRefs": limited_string_set_values(&cluster.detail_refs, ARCHITECTURE_INSIGHT_REF_LIMIT + 1)
+                })
+            })
+            .collect(),
+    )
+}
+
+fn insight_card_missing_evidence(cluster: &ArchitectureInsightCluster) -> serde_json::Value {
+    limited_string_set_values(
+        &cluster.coverage_gap_refs,
+        ARCHITECTURE_INSIGHT_REF_LIMIT + 1,
+    )
+}
+
+fn observed_signal_sentences(cluster: &ArchitectureInsightCluster) -> serde_json::Value {
+    let mut signals = Vec::new();
+    if !cluster.nonzero_axis_refs.is_empty()
+        || !cluster.hotspot_refs.is_empty()
+        || !cluster.repair_refs.is_empty()
+    {
+        signals.push(format!(
+            "cluster combines {} nonzero axis ref(s), {} hotspot ref(s), {} repair cue(s), and {} precondition blocker ref(s)",
+            cluster.nonzero_axis_refs.len(),
+            cluster.hotspot_refs.len(),
+            cluster.repair_refs.len(),
+            cluster.precondition_refs.len()
+        ));
+    }
+    serde_json::Value::Array(signals.into_iter().map(serde_json::Value::String).collect())
+}
+
+fn insight_card_language(concern: &str) -> (&'static str, &'static str, serde_json::Value) {
+    match concern {
+        "authorityTrustBoundary" => (
+            "authority and trust checks should be reviewed as one boundary across provider ingress and tenant-scoped routes",
+            "The packet shows authority, tenant, role, trust, and permission signals overlapping in the same architecture boundary; reviewing them separately can miss handoff failures.",
+            serde_json::json!([
+                "trace the selected routes from request identity to tenant or workspace scope",
+                "compare provider trust evidence with route/session authority evidence",
+                "decide which gaps must be resolved before making a zero or repair-safety claim"
+            ]),
+        ),
+        "stateEffectLifecycle" => (
+            "state/effect pressure is concentrated where durable status, retry, external effects, and finalization meet",
+            "The relevant risk is not just an async implementation detail; it is the boundary where effect ordering and state-machine ownership must agree.",
+            serde_json::json!([
+                "review retry, idempotency, compensation, and terminal status evidence together",
+                "check whether commit/enqueue or provider-effect paths have an explicit recovery story",
+                "separate missing runtime traces from observed source-backed pressure"
+            ]),
+        ),
+        "llmOutputGovernance" => (
+            "LLM and generated-output pressure is a cross-boundary architecture property, not a single chat-agent concern",
+            "Prompt/context validation, provider output, generated artifacts, and persistence gates appear together; treating them as isolated code paths weakens review.",
+            serde_json::json!([
+                "follow generated content from prompt inputs through provider response to persistence",
+                "check output filtering and tenant/workspace authority at the persistence boundary",
+                "collect provider response samples or runtime traces before claiming the boundary is safe"
+            ]),
+        ),
+        "providerIntegrationBoundary" => (
+            "external provider ingress participates in the same pressure as authority, output mediation, and retry/finalization",
+            "Provider boundaries are carrying trust, authority, runtime, and effect-ordering assumptions at once, so credential or webhook review alone is too narrow.",
+            serde_json::json!([
+                "review webhook verification, credential scope, provider response evidence, and retry behavior together",
+                "map provider-originated data into the paths that persist or generate downstream artifacts",
+                "resolve provider policy and response-sample gaps before promoting absence to zero"
+            ]),
+        ),
+        "layerContractBoundary" => (
+            "layer/contract pressure is concentrated where API, service, repository, and schema responsibilities converge",
+            "The packet points to boundary responsibilities that must preserve contracts across layers, not just files with many dependencies.",
+            serde_json::json!([
+                "compare API route contracts with service and repository ownership",
+                "check whether schema, persistence, and dependency boundaries have one owner",
+                "use source refs to distinguish boundary design pressure from mere surface size"
+            ]),
+        ),
+        "sourceProjectionBoundary" => (
+            "source-backed projection pressure means domain cohesion and evidence fidelity are part of the same review surface",
+            "The useful question is whether the ArchMap projection preserved the coordinates needed for law-relative reading, not whether every missing atom is absent.",
+            serde_json::json!([
+                "review projection-lost families and forgotten coordinates before repair planning",
+                "connect domain cohesion readings back to concrete source-backed atoms",
+                "decide which expected-missing evidence is out of scope versus required for confidence"
+            ]),
+        ),
+        _ => (
+            "multiple structural readings overlap, but the selected policy did not label a narrower concern",
+            "This still gives a review starting point, but the LawPolicy may need a more specific axis to turn the cluster into a sharper architectural claim.",
+            serde_json::json!([
+                "inspect the packet detail refs for the cluster",
+                "decide whether a more specific LawPolicy axis should be introduced",
+                "separate observed support from missing evidence before planning repair"
+            ]),
+        ),
+    }
+}
+
+fn coverage_blocker_insights(packet: &serde_json::Value, limit: usize) -> serde_json::Value {
+    let mut blockers = BTreeMap::<String, CoverageBlockerInsight>::new();
+    for gap in coverage_gap_refs(packet) {
+        let blocker = blockers
+            .entry(gap.clone())
+            .or_insert_with(|| CoverageBlockerInsight::new(&gap));
+        blocker
+            .detail_refs
+            .insert("packet:/flatnessReading/blockedByCoverageGaps".to_string());
+        blocker
+            .detail_refs
+            .insert("packet:/architectureSpectrumReport/coverageGaps".to_string());
+        blocker
+            .detail_refs
+            .insert("packet:/architectureHomotopyReport/coverageGaps".to_string());
+    }
+    for (index, axis) in array_items(packet, "signatureAxes").into_iter().enumerate() {
+        for gap in coverage_refs_from_signal(axis) {
+            blockers
+                .entry(gap.clone())
+                .or_insert_with(|| CoverageBlockerInsight::new(&gap))
+                .axis_refs
+                .insert(
+                    json_field(axis, "signatureAxisId")
+                        .as_str()
+                        .unwrap_or("unknown")
+                        .to_string(),
+                );
+            blockers
+                .get_mut(&gap)
+                .expect("coverage blocker exists")
+                .detail_refs
+                .insert(format!("packet:/signatureAxes/{index}"));
+        }
+    }
+    for (index, candidate) in array_items(packet, "repairOperationCandidates")
+        .into_iter()
+        .enumerate()
+    {
+        for gap in coverage_refs_from_signal(candidate) {
+            blockers
+                .entry(gap.clone())
+                .or_insert_with(|| CoverageBlockerInsight::new(&gap))
+                .repair_refs
+                .insert(
+                    json_field(candidate, "repairOperationCandidateId")
+                        .as_str()
+                        .unwrap_or("unknown")
+                        .to_string(),
+                );
+            blockers
+                .get_mut(&gap)
+                .expect("coverage blocker exists")
+                .detail_refs
+                .insert(format!("packet:/repairOperationCandidates/{index}"));
+        }
+    }
+
+    let mut values = blockers.into_values().collect::<Vec<_>>();
+    values.sort_by(|left, right| {
+        right
+            .impact_count()
+            .cmp(&left.impact_count())
+            .then(left.gap_ref.cmp(&right.gap_ref))
+    });
+
+    serde_json::json!({
+        "coverageBlockerCount": values.len(),
+        "items": values
+            .into_iter()
+            .take(limit)
+            .map(|blocker| blocker.to_json())
+            .collect::<Vec<_>>(),
+        "recommendedReview": "resolve or explicitly accept the highest-impact gaps before reading selected axes as zero or planning repair safety",
+        "packetRefs": packet_refs(&[
+            "/flatnessReading/blockedByCoverageGaps",
+            "/architectureSpectrumReport/coverageGaps",
+            "/architectureHomotopyReport/coverageGaps"
+        ])
+    })
+}
+
+#[derive(Debug)]
+struct CoverageBlockerInsight {
+    gap_ref: String,
+    axis_refs: BTreeSet<String>,
+    repair_refs: BTreeSet<String>,
+    detail_refs: BTreeSet<String>,
+}
+
+impl CoverageBlockerInsight {
+    fn new(gap_ref: &str) -> Self {
+        Self {
+            gap_ref: gap_ref.to_string(),
+            axis_refs: BTreeSet::new(),
+            repair_refs: BTreeSet::new(),
+            detail_refs: BTreeSet::new(),
+        }
+    }
+
+    fn impact_count(&self) -> usize {
+        self.axis_refs.len() + self.repair_refs.len()
+    }
+
+    fn to_json(&self) -> serde_json::Value {
+        serde_json::json!({
+            "gapRef": self.gap_ref,
+            "impactCount": self.impact_count(),
+            "affectedAxisCount": self.axis_refs.len(),
+            "affectedRepairCandidateCount": self.repair_refs.len(),
+            "detailRefs": limited_string_set_values(&self.detail_refs, ARCHITECTURE_INSIGHT_REF_LIMIT)
+        })
+    }
+}
+
+fn repair_planning_summary(packet: &serde_json::Value, limit: usize) -> serde_json::Value {
+    let mut candidates = array_items(packet, "repairOperationCandidates")
+        .into_iter()
+        .enumerate()
+        .map(|(index, candidate)| {
+            let missing_evidence_count = coverage_refs_from_signal(candidate).len()
+                + array_len(candidate, "missingEvidence");
+            let transfer_risk_count = array_len(candidate, "transferRisks");
+            serde_json::json!({
+                "ref": json_field(candidate, "repairOperationCandidateId"),
+                "operationKind": json_field(candidate, "operationKind"),
+                "targetObstructionCount": array_len(candidate, "targetObstructionRefs"),
+                "expectedAxisEffectCount": array_len(candidate, "expectedSignatureAxisEffects"),
+                "preconditionCount": array_len(candidate, "preconditions"),
+                "coverageBlockerCount": coverage_refs_from_signal(candidate).len(),
+                "transferRiskCount": transfer_risk_count,
+                "missingEvidenceCount": missing_evidence_count,
+                "readiness": if missing_evidence_count > 0 || transfer_risk_count > 0 {
+                    "reviewPreconditionsBeforeImplementation"
+                } else {
+                    "candidateReadyForHumanSelection"
+                },
+                "detailRefs": detail_refs("repairOperationCandidates", &format!("/repairOperationCandidates/{index}"))
+            })
+        })
+        .collect::<Vec<_>>();
+    candidates.sort_by_key(|candidate| {
+        std::cmp::Reverse(
+            candidate["missingEvidenceCount"]
+                .as_u64()
+                .unwrap_or_default()
+                + candidate["transferRiskCount"].as_u64().unwrap_or_default(),
+        )
+    });
+    serde_json::json!({
+        "candidateCount": array_len(packet, "repairOperationCandidates"),
+        "candidateOperations": candidates.into_iter().take(limit).collect::<Vec<_>>(),
+        "operationDeltaCount": array_len(packet, "operationDeltas"),
+        "recommendedReview": "check target obstruction, expected axis effects, missing evidence, and transfer risk before turning a candidate into an implementation task",
+        "packetRefs": packet_refs(&["/repairOperationCandidates", "/operationDeltas"])
+    })
+}
+
+fn architecture_read_next(clusters: &[ArchitectureInsightCluster]) -> serde_json::Value {
+    let cluster = clusters.first();
+    let mut items = Vec::new();
+    if let Some(cluster) = cluster {
+        items.push(serde_json::json!({
+            "step": 1,
+            "focus": concern_metadata(&cluster.concern).0,
+            "reason": "start with the highest combined structural pressure; gaps qualify completeness, not the existence of this review signal",
+            "detailRefs": limited_string_set_values(&cluster.detail_refs, ARCHITECTURE_INSIGHT_REF_LIMIT)
+        }));
+    }
+    items.extend([
+        serde_json::json!({
+            "step": 2,
+            "focus": "spectrum and selected law overlap",
+            "reason": "spectrum hotspots and nonzero signature axes show where selected law pressure concentrates",
+            "packetRefs": packet_refs(&["/architectureSpectrumReport/topHotspots", "/signatureAxes"])
+        }),
+        serde_json::json!({
+            "step": 3,
+            "focus": "coverage blockers",
+            "reason": "use coverage gaps to qualify zero/flatness and choose confidence-upgrade evidence, not to discard structural pressure findings",
+            "packetRefs": packet_refs(&[
+                "/flatnessReading/blockedByCoverageGaps",
+                "/architectureSpectrumReport/coverageGaps",
+                "/architectureHomotopyReport/coverageGaps"
+            ])
+        }),
+        serde_json::json!({
+            "step": 4,
+            "focus": "repair preconditions and transfer",
+            "reason": "repair candidates are useful only after missing evidence, preconditions, and transferred obstruction risk are visible",
+            "packetRefs": packet_refs(&["/repairOperationCandidates", "/operationPreconditionReadinessReadings", "/operationDeltas"])
+        }),
+    ]);
+    serde_json::Value::Array(items)
+}
+
+fn architecture_signal_text(
+    value: &serde_json::Value,
+    scalar_fields: &[&str],
+    array_fields: &[&str],
+) -> String {
+    let mut parts = Vec::new();
+    for field in scalar_fields {
+        if let Some(text) = value.get(field).and_then(serde_json::Value::as_str) {
+            parts.push(text.to_string());
+        }
+    }
+    for field in array_fields {
+        parts.extend(string_array(value, field));
+    }
+    parts.join(" ")
+}
+
+fn concern_keys_for_text(text: &str) -> BTreeSet<&'static str> {
+    let normalized = text.to_ascii_lowercase();
+    let mut concerns = BTreeSet::new();
+    if contains_any(
+        &normalized,
+        &[
+            "authority",
+            "permission",
+            "tenant",
+            "role",
+            "jwt",
+            "auth",
+            "trust",
+            "session",
+            "rls",
+            "token",
+        ],
+    ) {
+        concerns.insert("authorityTrustBoundary");
+    }
+    if contains_any(
+        &normalized,
+        &[
+            "state",
+            "status",
+            "job",
+            "retry",
+            "idempot",
+            "event",
+            "effect",
+            "commit",
+            "flush",
+            "compensation",
+            "transition",
+            "upload",
+        ],
+    ) {
+        concerns.insert("stateEffectLifecycle");
+    }
+    if contains_any(
+        &normalized,
+        &[
+            "prompt",
+            "llm",
+            "ai",
+            "model",
+            "provider output",
+            "context",
+            "embedding",
+            "agent",
+            "generated",
+        ],
+    ) {
+        concerns.insert("llmOutputGovernance");
+    }
+    if contains_any(
+        &normalized,
+        &[
+            "provider",
+            "webhook",
+            "slack",
+            "zoom",
+            "salesforce",
+            "external",
+            "ingress",
+            "s3",
+            "email",
+        ],
+    ) {
+        concerns.insert("providerIntegrationBoundary");
+    }
+    if contains_any(
+        &normalized,
+        &[
+            "layer",
+            "repository",
+            "service",
+            "api",
+            "route",
+            "contract",
+            "schema",
+            "dependency",
+            "interface",
+        ],
+    ) {
+        concerns.insert("layerContractBoundary");
+    }
+    if contains_any(
+        &normalized,
+        &[
+            "source",
+            "projection",
+            "domain",
+            "cohesion",
+            "origin",
+            "inventory",
+            "atom",
+        ],
+    ) {
+        concerns.insert("sourceProjectionBoundary");
+    }
+    if concerns.is_empty() {
+        concerns.insert("generalStructuralPressure");
+    }
+    concerns
+}
+
+fn contains_any(value: &str, needles: &[&str]) -> bool {
+    needles.iter().any(|needle| value.contains(needle))
+}
+
+fn concern_metadata(concern: &str) -> (&'static str, &'static str, &'static str) {
+    match concern {
+        "authorityTrustBoundary" => (
+            "authority / trust boundary",
+            "authority, tenant, role, trust, and permission signals are overlapping in selected law, spectrum, and operation readings",
+            "review route/session authority, tenant scope, trust handoff, and policy evidence together",
+        ),
+        "stateEffectLifecycle" => (
+            "state / effect lifecycle",
+            "state transitions, durable effects, retries, events, and status finalization are coupled with selected structural pressure",
+            "review state machine ownership, effect ordering, retry/idempotency, and terminal status evidence together",
+        ),
+        "llmOutputGovernance" => (
+            "LLM / output governance",
+            "prompt, model, provider output, generated artifact, and persistence boundaries participate in the same pressure cluster",
+            "review prompt/context validation, output filtering, persistence gates, and source-backed projection evidence together",
+        ),
+        "providerIntegrationBoundary" => (
+            "provider integration boundary",
+            "external provider ingress, webhook, credential, and response surfaces appear in the same structural pressure cluster",
+            "review provider trust assumptions, webhook verification, credential policy, and provider response evidence together",
+        ),
+        "layerContractBoundary" => (
+            "layer / contract boundary",
+            "API, service, repository, schema, route, and dependency boundaries are carrying selected law pressure",
+            "review layer responsibility, contract ownership, API/service/repository split, and schema dependency evidence together",
+        ),
+        "sourceProjectionBoundary" => (
+            "source projection boundary",
+            "source-backed domain identity, projection, Atom origin, and cohesion readings affect the same architecture surface",
+            "review source inventory, domain projection, Atom origin closure, and projection fidelity together",
+        ),
+        _ => (
+            "general structural pressure",
+            "multiple structural readings overlap without a narrower concern label",
+            "review the linked packet details and decide whether a more specific LawPolicy axis is needed",
+        ),
+    }
+}
+
+fn coverage_refs_from_signal(value: &serde_json::Value) -> BTreeSet<String> {
+    let mut refs = BTreeSet::new();
+    for key in [
+        "coverageGapRefs",
+        "missingEvidence",
+        "preconditions",
+        "witnessGapRefs",
+        "exactnessAssumptions",
+    ] {
+        collect_value_labels(array_items(value, key), &mut refs);
+    }
+    refs.into_iter()
+        .filter(|reference| reference.starts_with("gap:") || reference.starts_with("coverage:"))
+        .collect()
+}
+
+fn limited_string_set_values(values: &BTreeSet<String>, limit: usize) -> serde_json::Value {
+    serde_json::Value::Array(
+        values
+            .iter()
+            .take(limit)
+            .map(|value| serde_json::Value::String(value.clone()))
+            .collect(),
+    )
 }
 
 fn analysis_verdict(packet: &serde_json::Value) -> serde_json::Value {
@@ -1591,7 +2614,6 @@ fn quality_measurement(packet: &serde_json::Value) -> serde_json::Value {
         "filledLoopCount": array_len(homotopy, "filledLoops"),
         "nonzeroHolonomyLoopCount": array_len(homotopy, "nonzeroHolonomyLoops"),
         "localCurvatureCellCount": array_len(homotopy, "topLocalCurvatureCells"),
-        "workflowRiskCount": array_len(packet, "workflowRiskReadings"),
         "transferBridgeCount": array_len(packet, "transferBridgeReadings"),
         "projectionFidelityLossCount": array_len(packet, "observationProjectionFidelityReadings"),
         "atomOriginClosureDebtCount": array_len(packet, "atomOriginClosureDebtReadings"),
@@ -1743,7 +2765,6 @@ fn trend_counts(packet: &serde_json::Value) -> serde_json::Value {
         "nonzeroAxisCount": array_len(flatness, "nonzeroSignatureAxisRefs"),
         "spectrumHotspotCount": array_len(spectrum, "topHotspots"),
         "recurrentObstructionCount": array_len(spectrum, "recurrentObstructions"),
-        "workflowRiskCount": array_len(packet, "workflowRiskReadings"),
         "bridgePressureCount": bridge_pressure_action_count(packet),
         "architecturalHoleCount": array_len(homotopy, "unfilledLoops"),
         "nonzeroHolonomyLoopCount": array_len(homotopy, "nonzeroHolonomyLoops"),
@@ -1754,6 +2775,11 @@ fn trend_counts(packet: &serde_json::Value) -> serde_json::Value {
     })
 }
 
+const ACTION_QUEUE_HOTSPOT_LIMIT: usize = 8;
+const ACTION_QUEUE_HOMOTOPY_LIMIT: usize = 4;
+const ACTION_QUEUE_AXIS_LIMIT: usize = 8;
+const ACTION_QUEUE_BRIDGE_LIMIT: usize = 4;
+
 fn action_queue(packet: &serde_json::Value) -> serde_json::Value {
     let mut actions = Vec::new();
     let spectrum = packet
@@ -1763,7 +2789,11 @@ fn action_queue(packet: &serde_json::Value) -> serde_json::Value {
         .get("architectureHomotopyReport")
         .unwrap_or(&serde_json::Value::Null);
 
-    for (index, hotspot) in array_items(spectrum, "topHotspots").into_iter().enumerate() {
+    for (index, hotspot) in array_items(spectrum, "topHotspots")
+        .into_iter()
+        .enumerate()
+        .take(ACTION_QUEUE_HOTSPOT_LIMIT)
+    {
         actions.push(serde_json::json!({
             "kind": "spectrumHotspot",
             "conclusion": "measuredPressureHotspot",
@@ -1777,6 +2807,7 @@ fn action_queue(packet: &serde_json::Value) -> serde_json::Value {
     for (index, loop_ref) in array_items(homotopy, "unfilledLoops")
         .into_iter()
         .enumerate()
+        .take(ACTION_QUEUE_HOMOTOPY_LIMIT)
     {
         actions.push(serde_json::json!({
             "kind": "architecturalHole",
@@ -1789,6 +2820,7 @@ fn action_queue(packet: &serde_json::Value) -> serde_json::Value {
     for (index, loop_ref) in array_items(homotopy, "nonzeroHolonomyLoops")
         .into_iter()
         .enumerate()
+        .take(ACTION_QUEUE_HOMOTOPY_LIMIT)
     {
         actions.push(serde_json::json!({
             "kind": "nonzeroHolonomy",
@@ -1798,44 +2830,32 @@ fn action_queue(packet: &serde_json::Value) -> serde_json::Value {
             "detailRefs": detail_refs("architectureHomotopyReport.nonzeroHolonomyLoops", &format!("/architectureHomotopyReport/nonzeroHolonomyLoops/{index}"))
         }));
     }
-    for (index, axis) in array_items(packet, "signatureAxes").into_iter().enumerate() {
-        if i64_field(axis, "value", 0) != 0 {
-            actions.push(serde_json::json!({
-                "kind": "nonzeroSignatureAxis",
-                "conclusion": "nonzeroAxisUnderSelectedPolicy",
-                "ref": json_field(axis, "signatureAxisId"),
-                "lawRef": json_field(axis, "lawRef"),
-                "score": json_field(axis, "value"),
-                "coverageStatus": json_field(axis, "coverageStatus"),
-                "sourceRefCount": array_len(axis, "sourceRefs"),
-                "missingEvidenceCount": array_len(axis, "missingEvidence"),
-                "recommendedAction": "inspect packet detail for source refs and selected law witness support",
-                "detailRefs": detail_refs("signatureAxes", &format!("/signatureAxes/{index}"))
-            }));
-        }
-    }
-    let mut workflow_risks: Vec<_> = array_items(packet, "workflowRiskReadings")
+    for (index, axis) in array_items(packet, "signatureAxes")
         .into_iter()
         .enumerate()
-        .collect();
-    workflow_risks
-        .sort_by_key(|(_, reading)| std::cmp::Reverse(i64_field(reading, "riskScore", 0)));
-    for (index, reading) in workflow_risks {
+        .filter(|(_, axis)| i64_field(axis, "value", 0) != 0)
+        .take(ACTION_QUEUE_AXIS_LIMIT)
+    {
         actions.push(serde_json::json!({
-            "kind": "workflowRisk",
-            "conclusion": "highRankedWorkflowPressure",
-            "ref": json_field(reading, "moleculeObservationRef"),
-            "roleName": json_field(reading, "roleName"),
-            "score": json_field(reading, "riskScore"),
-            "riskTier": json_field(reading, "riskTier"),
-            "recommendedAction": compact_recommended_action(reading, "reviewFocus", "review workflow risk packet detail before planning repair"),
-            "detailRefs": detail_refs("workflowRiskReadings", &format!("/workflowRiskReadings/{index}"))
+            "kind": "nonzeroSignatureAxis",
+            "conclusion": "nonzeroAxisUnderSelectedPolicy",
+            "ref": json_field(axis, "signatureAxisId"),
+            "lawRef": json_field(axis, "lawRef"),
+            "score": json_field(axis, "value"),
+            "coverageStatus": json_field(axis, "coverageStatus"),
+            "sourceRefCount": ref_count(axis, "sourceRefs"),
+            "missingEvidenceCount": array_len(axis, "missingEvidence"),
+            "recommendedAction": "inspect packet detail for source refs and selected law witness support",
+            "detailRefs": detail_refs("signatureAxes", &format!("/signatureAxes/{index}"))
         }));
     }
     for action in aat_observation_axis_actions(packet) {
         actions.push(action);
     }
-    for bridge in bridge_pressure_actions(packet) {
+    for bridge in bridge_pressure_actions(packet)
+        .into_iter()
+        .take(ACTION_QUEUE_BRIDGE_LIMIT)
+    {
         actions.push(bridge);
     }
 
@@ -2021,43 +3041,9 @@ fn nonzero_axis_findings(packet: &serde_json::Value, limit: usize) -> serde_json
                     "score": json_field(axis, "value"),
                     "coverageStatus": json_field(axis, "coverageStatus"),
                     "missingEvidenceCount": array_len(axis, "missingEvidence"),
-                    "sourceRefCount": array_len(axis, "sourceRefs"),
+                    "sourceRefCount": ref_count(axis, "sourceRefs"),
                     "detailRefs": detail_refs("signatureAxes", &format!("/signatureAxes/{index}")),
                     "packetRefs": packet_refs(&[&format!("/signatureAxes/{index}")])
-                })
-            })
-            .collect(),
-    )
-}
-
-fn workflow_risk_summary(packet: &serde_json::Value) -> serde_json::Value {
-    serde_json::json!({
-        "workflowRiskCount": array_len(packet, "workflowRiskReadings"),
-        "highestRisks": workflow_risk_findings(packet, DOMINANT_FINDING_LIMIT),
-        "packetRefs": packet_refs(&["/workflowRiskReadings"])
-    })
-}
-
-fn workflow_risk_findings(packet: &serde_json::Value, limit: usize) -> serde_json::Value {
-    let mut readings: Vec<_> = array_items(packet, "workflowRiskReadings")
-        .into_iter()
-        .enumerate()
-        .collect();
-    readings.sort_by_key(|(_, reading)| std::cmp::Reverse(i64_field(reading, "riskScore", 0)));
-    serde_json::Value::Array(
-        readings
-            .into_iter()
-            .take(limit)
-            .map(|(index, reading)| {
-                serde_json::json!({
-                    "ref": json_field(reading, "moleculeObservationRef"),
-                    "roleName": json_field(reading, "roleName"),
-                    "status": json_field(reading, "status"),
-                    "score": json_field(reading, "riskScore"),
-                    "riskTier": json_field(reading, "riskTier"),
-                    "recommendedAction": compact_recommended_action(reading, "reviewFocus", "review workflow risk packet detail before planning repair"),
-                    "detailRefs": detail_refs("workflowRiskReadings", &format!("/workflowRiskReadings/{index}")),
-                    "packetRefs": packet_refs(&[&format!("/workflowRiskReadings/{index}")])
                 })
             })
             .collect(),
@@ -2080,7 +3066,7 @@ fn design_principle_summary(packet: &serde_json::Value) -> serde_json::Value {
                 "witnessRuleRef": json_field(reading, "witnessRuleRef"),
                 "witnessStatus": json_field(reading, "witnessStatus"),
                 "evidenceRefCount": array_len(reading, "witnessEvidenceRefs"),
-                "sourceRefCount": array_len(reading, "sourceRefs"),
+                "sourceRefCount": ref_count(reading, "sourceRefs"),
                 "obstructionRefCount": array_len(reading, "obstructionRefs"),
                 "recommendedNextAction": json_field(reading, "recommendedNextAction")
             })
@@ -2366,7 +3352,6 @@ fn detail_index(packet: &serde_json::Value) -> serde_json::Value {
         "packetRefSyntax": "packet:<json-pointer>",
         "sections": [
             detail_index_section("signatureAxes", "/signatureAxes", array_len(packet, "signatureAxes")),
-            detail_index_section("workflowRiskReadings", "/workflowRiskReadings", array_len(packet, "workflowRiskReadings")),
             detail_index_section("architectureSpectrumReport.topHotspots", "/architectureSpectrumReport/topHotspots", array_len(packet.get("architectureSpectrumReport").unwrap_or(&serde_json::Value::Null), "topHotspots")),
             detail_index_section("architectureSpectrumReport.recurrentObstructions", "/architectureSpectrumReport/recurrentObstructions", array_len(packet.get("architectureSpectrumReport").unwrap_or(&serde_json::Value::Null), "recurrentObstructions")),
             detail_index_section("architectureHomotopyReport.unfilledLoops", "/architectureHomotopyReport/unfilledLoops", array_len(packet.get("architectureHomotopyReport").unwrap_or(&serde_json::Value::Null), "unfilledLoops")),
@@ -2425,12 +3410,17 @@ fn cross_axis_cooccurrence_insight(packet: &serde_json::Value) -> serde_json::Va
         } else {
             "no cross-axis support cluster was measured"
         },
-        "whyNontrivial": "Intersects law-axis, workflow, spectrum, homotopy, and bridge support.",
+        "whyNontrivial": "Intersects law-axis, spectrum, homotopy, bridge, and operation support.",
         "measurement": {
             "clusterCount": clusters.len(),
             "maxReadingKindCount": cluster.map(|cluster| cluster.kind_count).unwrap_or_default()
         },
-        "packetRefs": packet_refs(&["/workflowRiskReadings"])
+        "packetRefs": packet_refs(&[
+            "/signatureAxes",
+            "/architectureSpectrumReport/topHotspots",
+            "/architectureHomotopyReport",
+            "/transferBridgeReadings"
+        ])
     })
 }
 
@@ -2461,25 +3451,6 @@ fn support_contribution_clusters(packet: &serde_json::Value) -> Vec<SupportClust
                 &support,
                 &evidence_ref,
             );
-        }
-    }
-
-    for (index, reading) in array_items(packet, "workflowRiskReadings")
-        .into_iter()
-        .enumerate()
-    {
-        let evidence_ref = format!("packet:/workflowRiskReadings/{index}");
-        for support in optional_string(reading, "moleculeObservationRef")
-            .chain(string_array(reading, "semanticRefs"))
-            .chain(string_array(reading, "concernRefs"))
-            .chain(
-                array_items(reading, "topAxes")
-                    .into_iter()
-                    .filter_map(|axis| axis.get("axis").and_then(serde_json::Value::as_str))
-                    .map(|axis| format!("axis:{axis}")),
-            )
-        {
-            push_support_contribution(&mut clusters, "workflowRisk", &support, &evidence_ref);
         }
     }
 
@@ -2841,23 +3812,6 @@ fn nonzero_axis_ref_list(packet: &serde_json::Value, limit: usize) -> serde_json
     )
 }
 
-fn workflow_risk_ref_list(packet: &serde_json::Value, limit: usize) -> serde_json::Value {
-    let mut readings = array_items(packet, "workflowRiskReadings");
-    readings.sort_by_key(|reading| std::cmp::Reverse(i64_field(reading, "riskScore", 0)));
-    serde_json::Value::Array(
-        readings
-            .into_iter()
-            .take(limit)
-            .filter_map(|reading| {
-                reading
-                    .get("moleculeObservationRef")
-                    .and_then(serde_json::Value::as_str)
-                    .map(|text| serde_json::Value::String(text.to_string()))
-            })
-            .collect(),
-    )
-}
-
 fn bridge_pressure_ref_list(packet: &serde_json::Value, limit: usize) -> serde_json::Value {
     serde_json::Value::Array(
         bridge_pressure_actions(packet)
@@ -2904,25 +3858,6 @@ fn packet_refs(paths: &[&str]) -> serde_json::Value {
 
 fn packet_ref(path: &str) -> String {
     format!("packet:{path}")
-}
-
-fn compact_recommended_action(
-    value: &serde_json::Value,
-    key: &str,
-    fallback: &str,
-) -> serde_json::Value {
-    let items = array_items(value, key);
-    if items.is_empty() {
-        return serde_json::Value::String(fallback.to_string());
-    }
-    serde_json::Value::String(
-        items
-            .into_iter()
-            .filter_map(serde_json::Value::as_str)
-            .take(3)
-            .collect::<Vec<_>>()
-            .join("; "),
-    )
 }
 
 fn measurement_basis(
@@ -3045,6 +3980,18 @@ fn value_label(value: &serde_json::Value) -> Option<String> {
 
 fn normalize_gap_label(value: &str) -> String {
     let trimmed = value.trim();
+    if let Some(rest) = trimmed.strip_prefix("gap:") {
+        let parts = rest.split(':').take(2).collect::<Vec<_>>();
+        if parts.len() == 2 && parts.iter().all(|part| !part.trim().is_empty()) {
+            return format!("gap:{}:{}", parts[0].trim(), parts[1].trim());
+        }
+    }
+    if let Some(rest) = trimmed.strip_prefix("coverage:") {
+        let label = rest.split(':').next().unwrap_or("").trim();
+        if !label.is_empty() {
+            return format!("coverage:{label}");
+        }
+    }
     if let Some((id, _)) = trimmed.split_once(':') {
         let id = id.trim();
         if !id.contains(' ') && !id.is_empty() {
@@ -3163,6 +4110,22 @@ fn array_len(value: &serde_json::Value, key: &str) -> usize {
         .get(key)
         .and_then(serde_json::Value::as_array)
         .map(Vec::len)
+        .unwrap_or_default()
+}
+
+fn ref_count(value: &serde_json::Value, key: &str) -> usize {
+    let Some(value) = value.get(key) else {
+        return 0;
+    };
+    value
+        .as_array()
+        .map(Vec::len)
+        .or_else(|| {
+            value
+                .get("refCount")
+                .and_then(serde_json::Value::as_u64)
+                .map(|count| count as usize)
+        })
         .unwrap_or_default()
 }
 

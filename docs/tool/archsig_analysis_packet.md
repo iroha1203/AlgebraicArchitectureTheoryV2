@@ -17,8 +17,8 @@ InterpretationProfile
 ArchSig Analysis Packet
   records AAT concept surfaces, architecture state, design pressure, change
   impact, molecule readings, obstruction circuits, signature axes, analytic
-  representations, workflow risk readings, spectral analysis readings, design
-  principle readings, spectral mode readings, spectral drilldown readings,
+  representations, spectral analysis readings, design principle readings,
+  spectral mode readings, spectral drilldown readings,
   transfer bridge readings, Atom support / compatibility readings,
   LawUniverse coverage, feature extension formula axes, operation calculus law
   axes, path signature trajectories, homotopy / operation-order sensitivity,
@@ -71,7 +71,7 @@ It is designed to be read whole without jq slicing. It exposes:
   AAT analysis.
 - `trendDiagnosis`: the repository-wide tendency view. It keeps compact counts
   and refs for concentrated law-axis pressure, spectrum hotspots, recurrent
-  obstruction support, workflow risk, bridge pressure, path multiplicity loss,
+  obstruction support, bridge pressure, path multiplicity loss,
   projection fidelity loss, and Atom origin closure debt. It also carries
   `trendInsights`, a compact second-order diagnosis surface that intersects
   packet readings instead of recounting them: cross-axis co-occurrence,
@@ -82,7 +82,7 @@ It is designed to be read whole without jq slicing. It exposes:
   without turning review support into automatic repair safety or merge
   approval.
 - `dominantFindings`: compact nonzero axes, hotspots, recurrent pressure,
-  architectural holes, nonzero holonomy, workflow risks, bridge pressure, and
+  architectural holes, nonzero holonomy, bridge pressure, and
   compact AAT observation-axis pressure.
 - `actionQueue`: the full prioritized queue for hotspots, unfilled loops,
   nonzero holonomy loops, nonzero signature axes, workflow pressure, bridge
@@ -90,8 +90,7 @@ It is designed to be read whole without jq slicing. It exposes:
   pressure, synthesis blockage, operation precondition readiness, and path
   multiplicity loss. Each entry stays compact and carries `detailRefs` instead
   of nested evidence arrays.
-- `axisSummary`, `aatObservationAxisSummary`, `workflowRiskSummary`,
-  `architecturalHoleSummary`,
+- `axisSummary`, `aatObservationAxisSummary`, `architecturalHoleSummary`,
   `bridgeSummary`, and `coverageGapSummary`: counts plus compact examples or
   refs for the major reading surfaces.
 - `detailIndex`: packet sections and `packet:<json-pointer>` refs for looking
@@ -158,7 +157,6 @@ The implemented schema records:
 - `signatureAxes`
 - `analyticRepresentations`
 - `couplingCohesionReadings`
-- `workflowRiskReadings`
 - `spectralAnalysisReadings`
 - `spectralModeReadings`
 - `spectralDrilldownReadings`
@@ -244,7 +242,7 @@ as measured provenance; proxy-regression checks reject `schemaFoundationOnly`
 or bounded proxy rows when they masquerade as measured analysis. Packet
 validation checks identity, ArchMap / interpretation profile
 references, AAT concept coverage, bounded judgement statuses, analytic axes,
-workflow risk readings, spectral analysis readings, spectral mode readings,
+spectral analysis readings, spectral mode readings,
 design principle readings, spectral drilldown readings, curvature support
 readings, curvature transfer readings, ArchitectureSpectrumReport, transfer
 bridge readings and bridge-edge source refs, v0.3.0 measurement expansion
@@ -308,17 +306,14 @@ The builder:
   Path, Homotopy, Diagram, and AnalyticRepresentation
 - emits architecture state, design pressure, change impact, bounded judgements,
   LLM interpretation, analytic representation, semantic coupling/cohesion,
-  workflow risk readings, spectral analysis readings, and design principle
+  spectral analysis readings, and design principle
   readings. Design principles are principle-specific witness readings with
   `witnessRuleRef`, `witnessStatus`, witness evidence refs, source refs, and
   per-principle next actions; they are not global obstruction summaries or
   static lint rules.
-- workflow risk readings rank molecule-local review pressure using ArchMap
-  atoms, molecule roles, semantic observations, concern hints, and observation
-  gaps. They are review-prioritization readings, not quality scores.
 - spectral analysis readings build finite matrix-like AAT representations for
-  workflow-risk axis pressure, molecule atom/family overlap coupling,
-  obstruction-to-axis curvature, and operation-to-signature delta. They record
+  molecule atom/family overlap coupling, obstruction-to-axis curvature, and
+  operation-to-signature delta. They record
   matrix shape, entry rule, bounded values, dominant components, coverage
   boundary, and zero-reflecting boundary. They are spectral proxies for review,
   not exact eigenvalue theorems or quality scores.

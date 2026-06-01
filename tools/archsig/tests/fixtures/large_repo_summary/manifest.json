@@ -4,6 +4,5 @@
   "basePacket": "../minimal/archsig_analysis_packet.json",
   "hotspotCount": 64,
   "supportRefsPerHotspot": 48,
-  "workflowRiskCount": 32,
   "summaryByteBudget": 90000
 }
