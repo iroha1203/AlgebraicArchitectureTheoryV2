@@ -2036,9 +2036,8 @@ fn cli_locks_archmap_atom_observation_regression() {
         full["obstructionCircuits"]
             .as_array()
             .expect("full obstruction circuits are array")
-            .iter()
-            .any(|entry| entry["lawRef"] == "law:semantic-contract-alignment"),
-        "semantic LawPolicy should construct law-relative obstruction from the same ArchMap"
+            .is_empty(),
+        "expressiveness ArchMap lacks complete witness families and must not construct concern-only obstruction"
     );
 
     let layer_packet = out_dir.join("archsig-analysis-layer-only.json");
@@ -2639,6 +2638,9 @@ fn assert_north_star_packet_surfaces(json: &Value) {
     );
     assert!(
         curvature_transfer.iter().all(|entry| {
+            let nonzero_edge_count = entry["transferOperator"]["nonzeroEdgeCount"]
+                .as_u64()
+                .unwrap_or_default();
             entry["profileRef"].as_str().is_some()
                 && entry["transferOperator"]["nonzeroEdgeCount"]
                     .as_u64()
@@ -2646,10 +2648,10 @@ fn assert_north_star_packet_surfaces(json: &Value) {
                 && entry["transferOperator"]["entryRule"].as_str().is_some()
                 && entry["transferEdges"]
                     .as_array()
-                    .is_some_and(|items| !items.is_empty())
+                    .is_some_and(|items| nonzero_edge_count == 0 || !items.is_empty())
                 && entry["recurrentObstructionModes"]
                     .as_array()
-                    .is_some_and(|items| !items.is_empty())
+                    .is_some_and(|items| nonzero_edge_count == 0 || !items.is_empty())
                 && entry["spectralRadiusReading"]["value"].as_str().is_some()
                 && entry["evidenceBoundary"].as_str().is_some()
                 && entry["nonConclusions"]
@@ -2692,6 +2694,11 @@ fn assert_north_star_packet_surfaces(json: &Value) {
     let architecture_spectrum_report = json["architectureSpectrumReport"]
         .as_object()
         .expect("North Star packet must expose ArchitectureSpectrumReport");
+    let has_positive_transfer_edges = curvature_transfer.iter().any(|entry| {
+        entry["transferOperator"]["nonzeroEdgeCount"]
+            .as_u64()
+            .is_some_and(|count| count > 0)
+    });
     assert!(
         architecture_spectrum_report["topHotspots"]
             .as_array()
@@ -2713,7 +2720,7 @@ fn assert_north_star_packet_surfaces(json: &Value) {
     assert!(
         architecture_spectrum_report["recurrentObstructions"]
             .as_array()
-            .is_some_and(|items| !items.is_empty()),
+            .is_some_and(|items| !has_positive_transfer_edges || !items.is_empty()),
         "ArchitectureSpectrumReport must expose recurrent obstruction entries"
     );
     assert!(

@@ -254,8 +254,9 @@ commit / snapshot / index refs, operation square candidates, axis-wise path
 continuation traces, `measurementStatus` and `readingBoundary` fields for ACTS
 and Homotopy measurement records, monodromy / boundary holonomy reading family
 policy surfaces, law-relative obstruction links, signature / flatness
-references, repair candidate guardrails, LLM interpretation notes, evidence
-boundary, and required non-conclusions.
+references, repair candidate guardrails, selected-axis continuation defect refs
+for nonzero homotopy holonomy, LLM interpretation notes, evidence boundary,
+and required non-conclusions.
 Each obstruction circuit, signature axis reading, and repair operation candidate
 must carry its own `missingEvidence` and `excludedReadings`. Packet-level
 `excludedReadings` does not stand in for child-record evidence boundaries.
@@ -298,8 +299,12 @@ The builder:
 
 - evaluates selected interpretation-profile witness rules over ArchMap atom and semantic observations
 - uses `concernHints` only as auxiliary evidence
-- constructs obstruction circuits only as ArchSig outputs
-- values required signature axes from constructed obstruction circuits
+- constructs obstruction circuits only from family-complete witness rules whose
+  required atom families and `moleculePatternRefs` are observed under the
+  selected LawPolicy
+- values required signature axes from constructed obstruction circuits; a
+  nonzero signature axis must not be emitted from concern hints, blocked
+  witnesses, incomplete molecule patterns, or policy text alone
 - preserves observation gaps as flatness blockers, not measured zero
 - emits AAT concept surfaces for Atom, Configuration, ArchitectureObject,
   Invariant, LawUniverse, ObstructionCircuit, ArchitectureSignature, Operation,

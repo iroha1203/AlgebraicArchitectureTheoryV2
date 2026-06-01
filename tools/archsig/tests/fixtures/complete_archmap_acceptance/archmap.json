@@ -2858,6 +2858,64 @@
       ]
     }
   ],
+  "operationSquareEvidence": [
+    {
+      "operationSquareEvidenceId": "operation-square:path-rule-nonzero-holonomy-filled-loop",
+      "evidenceKind": "supplied-operation-pair",
+      "leftOperationRef": "operation:direct-projection-read",
+      "rightOperationRef": "operation:event-projection-read",
+      "pOperationSequence": [
+        "operation:direct-projection-read",
+        "operation:event-projection-read"
+      ],
+      "qOperationSequence": [
+        "operation:event-projection-read",
+        "operation:direct-projection-read"
+      ],
+      "endpointObjectRefs": [
+        "order.read-model",
+        "order.event-stream"
+      ],
+      "generatorCandidateRefs": [
+        "generator:projection-filler"
+      ],
+      "sharedEndpointRefs": [
+        "order.read-model"
+      ],
+      "atomObservationRefs": [
+        "atom:event-projection",
+        "atom:repository-read"
+      ],
+      "moleculeObservationRefs": [
+        "molecule:homotopy-report-fixture"
+      ],
+      "semanticObservationRefs": [
+        "semantic:path-rule:nonzero-holonomy-filled-loop"
+      ],
+      "projectionRefs": [],
+      "sourceRefs": [
+        {
+          "artifactId": "src-event-projection",
+          "kind": "file",
+          "path": "src/events/project_order.ts",
+          "symbol": "projectOrderEvent",
+          "line": 22
+        },
+        {
+          "artifactId": "src-direct-read",
+          "kind": "file",
+          "path": "src/read-model/order.ts",
+          "symbol": "readOrderDirectly",
+          "line": 18
+        }
+      ],
+      "observationStatus": "observed",
+      "evidenceBoundary": "fixture supplies p/q event projection and direct-read operation sequences for selected-axis continuation distance",
+      "nonConclusions": [
+        "supplied operation square is fixture evidence and not global read-model correctness proof"
+      ]
+    }
+  ],
   "concernHints": [
     {
       "concernHintId": "concern:authorization-bypass-hole",
