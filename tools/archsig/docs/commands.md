@@ -68,7 +68,18 @@ cargo run --manifest-path tools/archsig/Cargo.toml -- analysis-summary \
 ```
 
 `summary` is a visible alias. The summary is a reading aid for human / LLM
-review. It does not replace the full packet or validation reports.
+review. Read `verdict`, `analysisUsefulness`, `qualityMeasurement`, and
+`architectureInsightSummary` first. `analysisUsefulness` separates findings
+usable now from claims still blocked by coverage gaps, so gap-qualified output
+does not collapse into "nothing can be said." `architectureInsightSummary`
+groups selected law-axis pressure, spectrum hotspots, coverage blockers, repair
+candidates, and operation preconditions into a small structural review plan. Its
+`insightCards` field turns the measured AAT surfaces into structural review
+hypotheses with a claim, `whyItMatters`, AAT evidence refs, observed signals,
+missing evidence, and next validation steps. `actionQueue` is intentionally
+capped to representative AAT-computed items; use `detailRefs` and `detailIndex`
+to inspect the full packet. The summary does not replace the full packet or
+validation reports.
 
 ## Codebase Inspection
 

@@ -1389,177 +1389,6 @@
       ]
     }
   ],
-  "workflowRiskReadings": [
-    {
-      "workflowRiskId": "workflow-risk:molecule-homotopy-report-fixture",
-      "moleculeObservationRef": "molecule:homotopy-report-fixture",
-      "moleculeFamily": "operation-contract",
-      "roleName": "homotopy report path and filler fixture",
-      "status": "needsReview",
-      "riskScore": 50,
-      "riskTier": "medium",
-      "atomCount": 6,
-      "atomFamilyCounts": [
-        {
-          "atomFamily": "authority",
-          "count": 1
-        },
-        {
-          "atomFamily": "contractSpecification",
-          "count": 1
-        },
-        {
-          "atomFamily": "effect",
-          "count": 2
-        },
-        {
-          "atomFamily": "relation",
-          "count": 2
-        }
-      ],
-      "semanticRefs": [
-        "semantic:path-rule:nonzero-holonomy-filled-loop",
-        "semantic:path-rule:cache-repository-semantic-loop",
-        "semantic:path-rule:event-projection-direct-read",
-        "semantic:path-rule:retry-idempotency-effect",
-        "semantic:path-rule:coupon-tax-rounding-semantic-loop"
-      ],
-      "concernRefs": [
-        "concern:authorization-bypass-hole"
-      ],
-      "topAxes": [
-        {
-          "axis": "stateEffectReconciliation",
-          "status": "needsReview",
-          "score": 14,
-          "familyScore": 7,
-          "keywordHits": [
-            "effect",
-            "event",
-            "retry"
-          ],
-          "concernRefs": [],
-          "coverageGapRefs": [
-            "gap:path-rule:authorization-bypass-hole:missing-policy-test"
-          ],
-          "reading": "durable state, external effects, retry, and status-finalization pressure concentrate in this workflow",
-          "nonConclusions": [
-            "ArchSig analysis packet is not a Lean theorem proof",
-            "ArchSig analysis packet is not global architecture truth",
-            "ArchSig analysis packet does not prove source extraction completeness",
-            "signature axes are law-policy-relative, not universal quality scores",
-            "flatness reading is blocked by coverage gaps and exactness assumptions",
-            "repair operation candidates are not automatic safe refactorings",
-            "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
-          ]
-        },
-        {
-          "axis": "permissionCoverage",
-          "status": "actionable",
-          "score": 12,
-          "familyScore": 10,
-          "keywordHits": [
-            "admin"
-          ],
-          "concernRefs": [],
-          "coverageGapRefs": [],
-          "reading": "route/session/admin authority coverage concentrates in this workflow",
-          "nonConclusions": [
-            "ArchSig analysis packet is not a Lean theorem proof",
-            "ArchSig analysis packet is not global architecture truth",
-            "ArchSig analysis packet does not prove source extraction completeness",
-            "signature axes are law-policy-relative, not universal quality scores",
-            "flatness reading is blocked by coverage gaps and exactness assumptions",
-            "repair operation candidates are not automatic safe refactorings",
-            "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
-          ]
-        },
-        {
-          "axis": "authorityTrustBoundary",
-          "status": "actionable",
-          "score": 10,
-          "familyScore": 6,
-          "keywordHits": [
-            "admin",
-            "auth"
-          ],
-          "concernRefs": [],
-          "coverageGapRefs": [],
-          "reading": "authority labels, trust handoffs, provider output, and boundary checks concentrate in this workflow",
-          "nonConclusions": [
-            "ArchSig analysis packet is not a Lean theorem proof",
-            "ArchSig analysis packet is not global architecture truth",
-            "ArchSig analysis packet does not prove source extraction completeness",
-            "signature axes are law-policy-relative, not universal quality scores",
-            "flatness reading is blocked by coverage gaps and exactness assumptions",
-            "repair operation candidates are not automatic safe refactorings",
-            "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
-          ]
-        },
-        {
-          "axis": "llmOutputMediation",
-          "status": "needsReview",
-          "score": 7,
-          "familyScore": 6,
-          "keywordHits": [],
-          "concernRefs": [],
-          "coverageGapRefs": [
-            "gap:path-rule:authorization-bypass-hole:missing-policy-test"
-          ],
-          "reading": "prompt/context validation, LLM/provider output, filtering, and persistence gates concentrate in this workflow",
-          "nonConclusions": [
-            "ArchSig analysis packet is not a Lean theorem proof",
-            "ArchSig analysis packet is not global architecture truth",
-            "ArchSig analysis packet does not prove source extraction completeness",
-            "signature axes are law-policy-relative, not universal quality scores",
-            "flatness reading is blocked by coverage gaps and exactness assumptions",
-            "repair operation candidates are not automatic safe refactorings",
-            "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
-          ]
-        },
-        {
-          "axis": "sourceBackedDomainCohesion",
-          "status": "needsReview",
-          "score": 7,
-          "familyScore": 6,
-          "keywordHits": [],
-          "concernRefs": [],
-          "coverageGapRefs": [
-            "gap:path-rule:authorization-bypass-hole:missing-policy-test"
-          ],
-          "reading": "source-backed domain identity, relation, and contract cohesion concentrate in this workflow",
-          "nonConclusions": [
-            "ArchSig analysis packet is not a Lean theorem proof",
-            "ArchSig analysis packet is not global architecture truth",
-            "ArchSig analysis packet does not prove source extraction completeness",
-            "signature axes are law-policy-relative, not universal quality scores",
-            "flatness reading is blocked by coverage gaps and exactness assumptions",
-            "repair operation candidates are not automatic safe refactorings",
-            "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
-          ]
-        }
-      ],
-      "reviewFocus": [
-        "authority label, trust handoff, provider output, and boundary checks",
-        "retry / duplicate / partial failure / status finalization",
-        "route-by-route permission dependency and tenant/workspace scope"
-      ],
-      "coverageGapRefs": [
-        "gap:path-rule:authorization-bypass-hole:missing-policy-test"
-      ],
-      "evidenceBoundary": "workflow risk is a molecule-local ArchMap reading for review prioritization, not a quality score or proof",
-      "recommendedNextAction": "review the top axes, source refs, concern hints, and coverage gaps before planning repair",
-      "nonConclusions": [
-        "ArchSig analysis packet is not a Lean theorem proof",
-        "ArchSig analysis packet is not global architecture truth",
-        "ArchSig analysis packet does not prove source extraction completeness",
-        "signature axes are law-policy-relative, not universal quality scores",
-        "flatness reading is blocked by coverage gaps and exactness assumptions",
-        "repair operation candidates are not automatic safe refactorings",
-        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
-      ]
-    }
-  ],
   "spectralAnalysisReadings": [
     {
       "spectralReadingId": "spectral:relation-atom-adjacency",
@@ -1618,72 +1447,6 @@
       "coverageBoundary": "observation gaps block measured-zero interpretation for absent relation edges",
       "zeroReflectingBoundary": "zero entries mean no selected relation atom endpoint under the current ArchMap, not proof of independence",
       "recommendedNextAction": "inspect dominant source/target nodes, cycle readings, and coverage gaps before selecting repair operations",
-      "nonConclusions": [
-        "ArchSig analysis packet is not a Lean theorem proof",
-        "ArchSig analysis packet is not global architecture truth",
-        "ArchSig analysis packet does not prove source extraction completeness",
-        "signature axes are law-policy-relative, not universal quality scores",
-        "flatness reading is blocked by coverage gaps and exactness assumptions",
-        "repair operation candidates are not automatic safe refactorings",
-        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
-      ]
-    },
-    {
-      "spectralReadingId": "spectral:workflow-risk-axis-pressure",
-      "representationFamily": "workflowRiskAxisPressureMatrix",
-      "status": "needsReview",
-      "matrixShape": {
-        "rowDomain": "workflowRiskReadings",
-        "columnDomain": "workflowRiskAxes",
-        "rowCount": 1,
-        "columnCount": 5,
-        "nonzeroEntryCount": 5
-      },
-      "entryRule": "entry(i,j) is the workflow risk axis score for workflow i and risk axis j",
-      "valueType": "boundedSpectralProxy",
-      "values": [
-        {
-          "name": "maxRowSum",
-          "value": "50",
-          "interpretation": "largest molecule-local review pressure"
-        },
-        {
-          "name": "maxColumnSum",
-          "value": "14",
-          "interpretation": "largest accumulated axis pressure"
-        },
-        {
-          "name": "frobeniusNorm",
-          "value": "23.195",
-          "interpretation": "global pressure magnitude of the observed finite matrix"
-        },
-        {
-          "name": "spectralRadiusUpperBound",
-          "value": "26.458",
-          "interpretation": "nonnegative-matrix upper bound, not an exact eigen theorem"
-        }
-      ],
-      "dominantComponents": [
-        {
-          "componentRef": "molecule:homotopy-report-fixture",
-          "componentKind": "workflow",
-          "value": "50",
-          "reading": "dominant row pressure in the workflow-by-axis matrix"
-        },
-        {
-          "componentRef": "stateEffectReconciliation",
-          "componentKind": "workflowRiskAxis",
-          "value": "14",
-          "reading": "dominant column pressure accumulated across workflows"
-        }
-      ],
-      "supportRefs": [
-        "workflow-risk:molecule-homotopy-report-fixture"
-      ],
-      "reading": "workflow risk pressure is concentrated by rows and axes; use the dominant row and column before treating local risk as isolated",
-      "coverageBoundary": "coverage gaps on workflow axes block measured-zero interpretation for absent entries",
-      "zeroReflectingBoundary": "zero entries mean no observed risk-axis evidence under current ArchMap and heuristics, not absence of architectural pressure",
-      "recommendedNextAction": "review the dominant workflow row, dominant axis column, and coverage gaps before selecting repair operations",
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -1935,57 +1698,6 @@
       ]
     },
     {
-      "spectralModeId": "spectral-mode:spectral-workflow-risk-axis-pressure",
-      "sourceSpectralReadingRef": "spectral:workflow-risk-axis-pressure",
-      "representationFamily": "workflowRiskAxisPressureMatrix",
-      "status": "needsReview",
-      "modeKind": "distributedPressureMode",
-      "modeComponents": [
-        {
-          "componentRef": "molecule:homotopy-report-fixture",
-          "componentKind": "workflow",
-          "weight": "50",
-          "role": "primaryDominantComponent",
-          "reading": "dominant row pressure in the workflow-by-axis matrix"
-        },
-        {
-          "componentRef": "stateEffectReconciliation",
-          "componentKind": "workflowRiskAxis",
-          "weight": "14",
-          "role": "coupledDominantComponent",
-          "reading": "dominant column pressure accumulated across workflows"
-        }
-      ],
-      "spectralGapProxy": {
-        "name": "dominantResidualGapProxy",
-        "value": "23.195",
-        "interpretation": "dominant component magnitude minus residual Frobenius mass; bounded proxy, not an eigenvalue gap theorem"
-      },
-      "localizationIndex": {
-        "name": "dominantFrobeniusLocalization",
-        "value": "1.000",
-        "interpretation": "dominant component magnitude divided by Frobenius norm; higher means pressure is more localized"
-      },
-      "matrixDensity": {
-        "name": "nonzeroMatrixDensity",
-        "value": "1.000",
-        "interpretation": "nonzero entries divided by finite matrix capacity; higher means more distributed coupling"
-      },
-      "decomposabilityReading": "mode is delocalized or dense; treat the concern as architecture-wide coupling before attempting local repair",
-      "repairPerturbationReading": "not an operation transition matrix; use this mode to choose review focus before evaluating repair perturbations",
-      "evidenceBoundary": "spectral mode is a bounded proxy computed from ArchSig finite representation summaries, not an exact eigenvector theorem",
-      "recommendedNextAction": "start review from the dominant workflow and dominant risk axis, then verify coverage gaps",
-      "nonConclusions": [
-        "ArchSig analysis packet is not a Lean theorem proof",
-        "ArchSig analysis packet is not global architecture truth",
-        "ArchSig analysis packet does not prove source extraction completeness",
-        "signature axes are law-policy-relative, not universal quality scores",
-        "flatness reading is blocked by coverage gaps and exactness assumptions",
-        "repair operation candidates are not automatic safe refactorings",
-        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
-      ]
-    },
-    {
       "spectralModeId": "spectral-mode:spectral-molecule-atom-overlap-coupling",
       "sourceSpectralReadingRef": "spectral:molecule-atom-overlap-coupling",
       "representationFamily": "moleculeAtomOverlapCouplingMatrix",
@@ -2135,10 +1847,9 @@
   "spectralDrilldownReadings": [
     {
       "drilldownId": "spectral-drilldown:homotopy-report-fixture-archmap",
-      "status": "needsReview",
+      "status": "actionable",
       "sourceSpectralModeRefs": [
         "spectral-mode:spectral-relation-atom-adjacency",
-        "spectral-mode:spectral-workflow-risk-axis-pressure",
         "spectral-mode:spectral-molecule-atom-overlap-coupling",
         "spectral-mode:spectral-obstruction-axis-curvature",
         "spectral-mode:spectral-operation-signature-delta"
@@ -2146,7 +1857,7 @@
       "dominantAtomFamilyComposition": [
         {
           "sourceComponentRef": "molecule:homotopy-report-fixture",
-          "sourceComponentKind": "workflow",
+          "sourceComponentKind": "molecule",
           "atomFamily": "effect",
           "count": 2,
           "atomObservationRefs": [
@@ -2157,7 +1868,7 @@
         },
         {
           "sourceComponentRef": "molecule:homotopy-report-fixture",
-          "sourceComponentKind": "workflow",
+          "sourceComponentKind": "molecule",
           "atomFamily": "relation",
           "count": 2,
           "atomObservationRefs": [
@@ -2168,7 +1879,7 @@
         },
         {
           "sourceComponentRef": "molecule:homotopy-report-fixture",
-          "sourceComponentKind": "workflow",
+          "sourceComponentKind": "molecule",
           "atomFamily": "authority",
           "count": 1,
           "atomObservationRefs": [
@@ -2178,7 +1889,7 @@
         },
         {
           "sourceComponentRef": "molecule:homotopy-report-fixture",
-          "sourceComponentKind": "workflow",
+          "sourceComponentKind": "molecule",
           "atomFamily": "contractSpecification",
           "count": 1,
           "atomObservationRefs": [
@@ -2678,7 +2389,7 @@
   "transferBridgeReadings": [
     {
       "transferBridgeId": "transfer-bridge:homotopy-report-fixture-archmap",
-      "status": "nonConclusion",
+      "status": "needsReview",
       "transferMatrixEntries": [],
       "bridgeAtomFamilies": [
         {
@@ -2686,16 +2397,20 @@
           "sourceHubMoleculeRef": "molecule:homotopy-report-fixture",
           "targetHubMoleculeRef": "molecule:homotopy-report-fixture",
           "intermediateMoleculeRefs": [],
-          "bridgeAtomFamilies": [],
-          "bridgeScore": 0,
+          "bridgeAtomFamilies": [
+            "authority",
+            "contractSpecification",
+            "effect",
+            "relation"
+          ],
+          "bridgeScore": 4,
           "pathPairRefs": [],
           "edgeBreakdowns": [],
           "sharedAxisRefs": [
-            "authorityTrustBoundary",
-            "llmOutputMediation",
-            "permissionCoverage",
-            "sourceBackedDomainCohesion",
-            "stateEffectReconciliation"
+            "authority",
+            "contractSpecification",
+            "effect",
+            "relation"
           ],
           "reviewRisk": "high",
           "recommendedBoundaryPreparation": "review bridge atom families before assuming molecule:homotopy-report-fixture and molecule:homotopy-report-fixture are independent architecture hubs",
@@ -2965,11 +2680,22 @@
       "conflictingAtomObservationRefs": [],
       "conflictingSemanticObservationRefs": [],
       "payloadInconsistencyKinds": [
+        "payloadEquality",
+        "incompatibleObjectRefs",
+        "contradictoryBooleanClaim",
+        "incompatibleSemanticClaim",
         "familyDivergence",
         "statusDivergence",
-        "semanticDivergence"
+        "confidenceDivergence"
       ],
-      "confidenceBoundary": "compatibility is checked over observed subject/predicate slots only",
+      "payloadComparisonPolicy": [
+        "compare same subject/predicate slots pairwise",
+        "treat differing non-empty object refs as incompatible payload refs",
+        "treat yes/no or true/false payload tokens as contradictory boolean claims",
+        "link semantic divergence only through semantic observations that reference conflicting atom refs",
+        "preserve confidence, uncertainty, and source refs for reviewer judgement"
+      ],
+      "confidenceBoundary": "compatibility is checked over observed subject/predicate payload slots only",
       "uncertainty": [
         "gap:path-rule:authorization-bypass-hole:missing-policy-test"
       ],
@@ -2992,32 +2718,35 @@
       "requiredLawCoverage": [
         {
           "refId": "law:homotopy-report-fixture",
-          "status": "coveredByObservedAtoms",
+          "status": "sourceBackedEvidenceObserved",
           "evidenceRefs": [
-            "authority",
-            "contractSpecification",
-            "relation"
+            "atom:authorization-bypass",
+            "atom:cache-read",
+            "atom:coupon-tax-rounding",
+            "atom:repository-read"
           ],
           "blockerRefs": [
             "gap:path-rule:authorization-bypass-hole:missing-policy-test"
           ],
-          "reading": "coverage is selected-profile-relative and does not prove lawfulness"
+          "reading": "required law coverage is source-backed Atom evidence plus witness/axis alignment, not family presence alone"
         }
       ],
       "optionalLawCoverage": [],
       "witnessFamilyCoverage": [
         {
           "refId": "witness:homotopy-report-fixture",
-          "status": "coveredByObservedAtoms",
+          "status": "blockedByMissingWitnessEvidence",
           "evidenceRefs": [
-            "authority",
-            "contractSpecification",
-            "relation"
+            "atom:authorization-bypass",
+            "atom:cache-read",
+            "atom:coupon-tax-rounding",
+            "atom:repository-read"
           ],
           "blockerRefs": [
-            "gap:path-rule:authorization-bypass-hole:missing-policy-test"
+            "gap:path-rule:authorization-bypass-hole:missing-policy-test",
+            "missingEvidenceBehavior:witness:homotopy-report-fixture"
           ],
-          "reading": "coverage is selected-profile-relative and does not prove lawfulness"
+          "reading": "witness rule coverage is evaluated separately from required law coverage"
         }
       ],
       "signatureAxisCoverage": [
@@ -3037,31 +2766,103 @@
           "reading": "1 obstruction circuit(s) contribute to sig-axis:homotopy-report-fixture"
         }
       ],
+      "coverageRequirementStatus": [
+        {
+          "refId": "coverage:homotopy-report-fixture",
+          "status": "blockedByMissingSourceEvidence",
+          "evidenceRefs": [
+            "atom:authorization-bypass",
+            "atom:cache-read",
+            "atom:coupon-tax-rounding",
+            "atom:repository-read"
+          ],
+          "blockerRefs": [
+            "gap:path-rule:authorization-bypass-hole:missing-policy-test",
+            "symbol",
+            "docSection"
+          ],
+          "reading": "coverage requirement is checked against source-backed Atom families and required source ref kinds"
+        }
+      ],
       "exactnessAssumptionStatus": [
         {
           "refId": "the selected witness rules cover only policy-declared laws",
           "status": "blockedByCoverageGap",
-          "evidenceRefs": [],
+          "evidenceRefs": [
+            "atom:authorization-bypass",
+            "atom:cache-read",
+            "atom:coupon-tax-rounding",
+            "atom:repository-read"
+          ],
           "blockerRefs": [
             "gap:path-rule:authorization-bypass-hole:missing-policy-test"
           ],
-          "reading": "exactness assumption is not theorem discharge"
+          "reading": "exactness assumption is tracked separately from coverage and is not theorem discharge"
         },
         {
           "refId": "zero readings are exact only for observed atoms and declared coverage requirements",
           "status": "blockedByCoverageGap",
-          "evidenceRefs": [],
+          "evidenceRefs": [
+            "atom:authorization-bypass",
+            "atom:cache-read",
+            "atom:coupon-tax-rounding",
+            "atom:repository-read"
+          ],
           "blockerRefs": [
             "gap:path-rule:authorization-bypass-hole:missing-policy-test"
           ],
-          "reading": "exactness assumption is not theorem discharge"
+          "reading": "exactness assumption is tracked separately from coverage and is not theorem discharge"
+        }
+      ],
+      "lawWitnessAxisEvaluations": [
+        {
+          "evaluationId": "law-witness-axis-alignment:law-homotopy-report-fixture",
+          "lawRef": "law:homotopy-report-fixture",
+          "alignmentStatus": "blocked",
+          "coverageStatus": "blocked",
+          "exactnessStatus": "blocked",
+          "requiredWitnessRefs": [
+            "witness:homotopy-report-fixture"
+          ],
+          "observedWitnessRefs": [],
+          "missingWitnessRefs": [
+            "witness:homotopy-report-fixture"
+          ],
+          "requiredAxisRefs": [
+            "axis:homotopy-report-fixture"
+          ],
+          "observedAxisRefs": [
+            "axis:homotopy-report-fixture"
+          ],
+          "missingAxisRefs": [],
+          "coverageRequirementRefs": [
+            "coverage:homotopy-report-fixture"
+          ],
+          "exactnessAssumptionRefs": [
+            "the selected witness rules cover only policy-declared laws",
+            "zero readings are exact only for observed atoms and declared coverage requirements"
+          ],
+          "sourceBackedEvidenceRefs": [
+            "atom:authorization-bypass",
+            "atom:cache-read",
+            "atom:coupon-tax-rounding",
+            "atom:repository-read"
+          ],
+          "blockerRefs": [
+            "docSection",
+            "gap:path-rule:authorization-bypass-hole:missing-policy-test",
+            "symbol",
+            "witness:homotopy-report-fixture"
+          ],
+          "evaluator": "law-witness-axis-alignment-evaluator-v0",
+          "reading": "required law visibility is evaluated by witness exactness, selected signature-axis alignment, coverage requirements, and exactness assumptions"
         }
       ],
       "unmeasuredRequiredLawCount": 0,
       "blockedWitnessRefs": [
         "witness:homotopy-report-fixture"
       ],
-      "lawWitnessAxisAlignment": "selected laws, witness rules, and signature axes are compared by refs only; alignment is profile-relative",
+      "lawWitnessAxisAlignment": "selected laws, witness rules, signature axes, coverage requirements, and exactness assumptions are evaluated as profile-relative alignment rows",
       "coverageBoundary": "coverage measures selected profile visibility, not LawUniverse completeness",
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
@@ -3560,6 +3361,12 @@
       "forgottenAxisRefs": [
         "gap:path-rule:authorization-bypass-hole:missing-policy-test"
       ],
+      "selectedSignatureAxisRefs": [
+        "sig-axis:homotopy-report-fixture"
+      ],
+      "blockedSignatureAxisRefs": [
+        "sig-axis:homotopy-report-fixture"
+      ],
       "mixedAxisScopeRefs": [
         "atom-support-axis:homotopy-report-fixture-archmap",
         "atom-support-axis:molecule-homotopy-report-fixture"
@@ -3600,7 +3407,12 @@
         "gap:path-rule:authorization-bypass-hole:missing-policy-test: authorization bypass path lacks policy or test filler evidence"
       ],
       "projectionLossAxes": [
+        "axis-forgotten-family:authority",
+        "axis-forgotten-family:contractspecification",
         "gap:path-rule:authorization-bypass-hole:missing-policy-test"
+      ],
+      "reconstructionBlockerRefs": [
+        "projection-reconstruction-blocker:gap-path-rule-authorization-bypass-hole-missing-policy-test"
       ],
       "reflectionStatus": "blockedWithoutAxisPreservationAndWitnessCompleteness",
       "measurementBoundary": "projection loss is separated from zero/lawfulness; missing coordinates are not measured absent atoms",
@@ -3676,6 +3488,100 @@
         "compensation/finalization relation",
         "handler and external provider boundary ownership"
       ],
+      "relationInputs": [
+        {
+          "relationInputId": "effect-relation-input:operation-square-evidence-cache-repository-read",
+          "relationKind": "ordering",
+          "orderingRefs": [
+            "generator:contract-filler",
+            "generator:runtime-filler"
+          ],
+          "replayOrIdempotencyRefs": [],
+          "compensationOrFinalizationRefs": [],
+          "authorityRequirementRefs": [],
+          "effectRefs": [
+            "atom:event-projection"
+          ],
+          "runtimeOrTraceRefs": [],
+          "sourceRefs": [
+            "src-cache-read",
+            "src-repository-read",
+            "test-homotopy-fillers"
+          ],
+          "reading": "operation-square-evidence:cache-repository-read supplies bounded effect relation evidence for ordering/replay/compensation evaluation"
+        }
+      ],
+      "relationEvaluations": [
+        {
+          "lawAxis": "orderingPreservation",
+          "status": "blocked",
+          "requiredInputRefs": [
+            "effect-relation-input:operation-square-evidence-cache-repository-read"
+          ],
+          "observedInputRefs": [
+            "atom:cache-read",
+            "atom:event-projection",
+            "atom:repository-read",
+            "generator:contract-filler",
+            "generator:runtime-filler"
+          ],
+          "blockedReasonRefs": [
+            "atom:cache-read",
+            "atom:event-projection",
+            "atom:repository-read",
+            "atom:retry-idempotency"
+          ],
+          "evaluator": "effect-relation-law-evaluator-v0",
+          "reading": "effect ordering must be backed by relation input or comparable operation evidence"
+        },
+        {
+          "lawAxis": "replaySafety",
+          "status": "unmeasured",
+          "requiredInputRefs": [
+            "effect-relation-input:operation-square-evidence-cache-repository-read"
+          ],
+          "observedInputRefs": [],
+          "blockedReasonRefs": [],
+          "evaluator": "effect-relation-law-evaluator-v0",
+          "reading": "replay safety is blocked when runtime/test/effect evidence is missing"
+        },
+        {
+          "lawAxis": "idempotency",
+          "status": "observed",
+          "requiredInputRefs": [
+            "effect-relation-input:operation-square-evidence-cache-repository-read"
+          ],
+          "observedInputRefs": [
+            "atom:retry-idempotency"
+          ],
+          "blockedReasonRefs": [],
+          "evaluator": "effect-relation-law-evaluator-v0",
+          "reading": "idempotency requires explicit retry/idempotency effect evidence"
+        },
+        {
+          "lawAxis": "compensationAvailability",
+          "status": "unmeasured",
+          "requiredInputRefs": [
+            "effect-relation-input:operation-square-evidence-cache-repository-read"
+          ],
+          "observedInputRefs": [],
+          "blockedReasonRefs": [],
+          "evaluator": "effect-relation-law-evaluator-v0",
+          "reading": "compensation availability requires compensation or finalization relation evidence"
+        },
+        {
+          "lawAxis": "authorityRequirement",
+          "status": "unmeasured",
+          "requiredInputRefs": [
+            "effect-relation-input:operation-square-evidence-cache-repository-read"
+          ],
+          "observedInputRefs": [],
+          "blockedReasonRefs": [],
+          "evaluator": "effect-relation-law-evaluator-v0",
+          "reading": "external effects must expose authority or ownership requirements"
+        }
+      ],
+      "relationEvaluatorStatus": "blocked",
       "unresolvedEffectRelations": [],
       "effectOrderingPressure": "effectRelationPressureObserved",
       "stateTransitionRef": "state-transition-algebra:homotopy-report-fixture-archmap",
@@ -3804,7 +3710,7 @@
       ],
       "multiplicityLossStatus": "reachabilityMultiplicityLossObserved",
       "homotopyBoundary": "path multiplicity is a reachability and homotopy review signal, not proof of all paths",
-      "evidenceBoundary": "alternate-path pressure is bounded by observed operation trajectories, homotopy sensitivity, workflow risk, and gaps",
+      "evidenceBoundary": "alternate-path pressure is bounded by observed operation trajectories, homotopy sensitivity, molecule fan-in, and gaps",
       "recommendedNextAction": "inspect high fan-in and alternate path boundaries before treating one observed path as complete reachability",
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
@@ -9261,39 +9167,6 @@
       ]
     },
     {
-      "readingId": "representation-strength:spectral-workflow-risk-axis-pressure",
-      "sourceReadingRef": "spectral:workflow-risk-axis-pressure",
-      "representationFamily": "workflowRiskAxisPressureMatrix",
-      "zeroPreserving": "boundedProxy",
-      "zeroReflecting": "blockedByCoverageGap",
-      "obstructionPreserving": "supported",
-      "obstructionReflecting": "notAnEigenvalueTheorem",
-      "aggregateZeroSafety": "proxyOnly",
-      "cancellationRisk": "boundedProxyMayHideLocalComponents",
-      "requiredAssumptions": [
-        "gap:path-rule:authorization-bypass-hole:missing-policy-test",
-        "witness completeness for selected LawPolicy",
-        "signature axis exactness for selected readings"
-      ],
-      "blockedBy": [
-        "gap:path-rule:authorization-bypass-hole:missing-policy-test"
-      ],
-      "blockedReflectionOrPreservationReasons": [
-        "gap:path-rule:authorization-bypass-hole:missing-policy-test"
-      ],
-      "reading": "workflowRiskAxisPressureMatrix is a spectral proxy for review; it preserves selected pressure but does not reflect global architecture truth",
-      "evidenceBoundary": "coverage gaps on workflow axes block measured-zero interpretation for absent entries",
-      "nonConclusions": [
-        "ArchSig analysis packet is not a Lean theorem proof",
-        "ArchSig analysis packet is not global architecture truth",
-        "ArchSig analysis packet does not prove source extraction completeness",
-        "signature axes are law-policy-relative, not universal quality scores",
-        "flatness reading is blocked by coverage gaps and exactness assumptions",
-        "repair operation candidates are not automatic safe refactorings",
-        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
-      ]
-    },
-    {
       "readingId": "representation-strength:spectral-molecule-atom-overlap-coupling",
       "sourceReadingRef": "spectral:molecule-atom-overlap-coupling",
       "representationFamily": "moleculeAtomOverlapCouplingMatrix",
@@ -9482,8 +9355,275 @@
         "relation"
       ],
       "observedAtomFamilyCount": 4,
+      "sourceCoordinates": [
+        {
+          "coordinateId": "projection-coordinate:observed:atom-cache-read",
+          "coordinateKind": "observedAtomCoordinate",
+          "atomFamily": "relation",
+          "subjectRef": "order.read",
+          "predicate": "cache read path can return an order view",
+          "atomObservationRefs": [
+            "atom:cache-read"
+          ],
+          "sourceRefs": [
+            "src-cache-read"
+          ],
+          "status": "observed",
+          "reading": "observed ArchMap atom coordinate in the canonical projection boundary"
+        },
+        {
+          "coordinateId": "projection-coordinate:observed:atom-repository-read",
+          "coordinateKind": "observedAtomCoordinate",
+          "atomFamily": "relation",
+          "subjectRef": "order.read",
+          "predicate": "repository read path can return an order view",
+          "atomObservationRefs": [
+            "atom:repository-read"
+          ],
+          "sourceRefs": [
+            "src-repository-read"
+          ],
+          "status": "observed",
+          "reading": "observed ArchMap atom coordinate in the canonical projection boundary"
+        },
+        {
+          "coordinateId": "projection-coordinate:observed:atom-event-projection",
+          "coordinateKind": "observedAtomCoordinate",
+          "atomFamily": "effect",
+          "subjectRef": "order.projection",
+          "predicate": "event projection updates order read model",
+          "atomObservationRefs": [
+            "atom:event-projection"
+          ],
+          "sourceRefs": [
+            "src-event-projection"
+          ],
+          "status": "observed",
+          "reading": "observed ArchMap atom coordinate in the canonical projection boundary"
+        },
+        {
+          "coordinateId": "projection-coordinate:observed:atom-retry-idempotency",
+          "coordinateKind": "observedAtomCoordinate",
+          "atomFamily": "effect",
+          "subjectRef": "payment.charge",
+          "predicate": "retry path should preserve idempotent charge effect",
+          "atomObservationRefs": [
+            "atom:retry-idempotency"
+          ],
+          "sourceRefs": [
+            "src-retry-effect"
+          ],
+          "status": "observed",
+          "reading": "observed ArchMap atom coordinate in the canonical projection boundary"
+        },
+        {
+          "coordinateId": "projection-coordinate:observed:atom-authorization-bypass",
+          "coordinateKind": "observedAtomCoordinate",
+          "atomFamily": "authority",
+          "subjectRef": "auth.adminBypassRead",
+          "predicate": "admin bypass read requires explicit policy or test filler evidence",
+          "atomObservationRefs": [
+            "atom:authorization-bypass"
+          ],
+          "sourceRefs": [
+            "src-auth-bypass"
+          ],
+          "status": "observed",
+          "reading": "observed ArchMap atom coordinate in the canonical projection boundary"
+        },
+        {
+          "coordinateId": "projection-coordinate:observed:atom-coupon-tax-rounding",
+          "coordinateKind": "observedAtomCoordinate",
+          "atomFamily": "contractSpecification",
+          "subjectRef": "pricing.checkoutTotal",
+          "predicate": "coupon tax rounding paths compare PaymentAmount and ReceiptAmount",
+          "atomObservationRefs": [
+            "atom:coupon-tax-rounding"
+          ],
+          "sourceRefs": [
+            "src-pricing-checkout"
+          ],
+          "status": "observed",
+          "reading": "observed ArchMap atom coordinate in the canonical projection boundary"
+        },
+        {
+          "coordinateId": "projection-coordinate:forgotten:gap-path-rule-authorization-bypass-hole-missing-policy-test:authority",
+          "coordinateKind": "forgottenExpectedCoordinate",
+          "atomFamily": "authority",
+          "subjectRef": "path-rule:authorization-bypass-hole",
+          "predicate": "MissingFillerEvidence",
+          "atomObservationRefs": [],
+          "sourceRefs": [
+            "doc-auth-policy"
+          ],
+          "status": "unavailable",
+          "reading": "path-rule:authorization-bypass-hole is an expected coordinate blocked by observation gap gap:path-rule:authorization-bypass-hole:missing-policy-test"
+        },
+        {
+          "coordinateId": "projection-coordinate:forgotten:gap-path-rule-authorization-bypass-hole-missing-policy-test:contractspecification",
+          "coordinateKind": "forgottenExpectedCoordinate",
+          "atomFamily": "contractSpecification",
+          "subjectRef": "path-rule:authorization-bypass-hole",
+          "predicate": "MissingFillerEvidence",
+          "atomObservationRefs": [],
+          "sourceRefs": [
+            "doc-auth-policy"
+          ],
+          "status": "unavailable",
+          "reading": "path-rule:authorization-bypass-hole is an expected coordinate blocked by observation gap gap:path-rule:authorization-bypass-hole:missing-policy-test"
+        }
+      ],
+      "observedCoordinates": [
+        {
+          "coordinateId": "projection-coordinate:observed:atom-cache-read",
+          "coordinateKind": "observedAtomCoordinate",
+          "atomFamily": "relation",
+          "subjectRef": "order.read",
+          "predicate": "cache read path can return an order view",
+          "atomObservationRefs": [
+            "atom:cache-read"
+          ],
+          "sourceRefs": [
+            "src-cache-read"
+          ],
+          "status": "observed",
+          "reading": "observed ArchMap atom coordinate in the canonical projection boundary"
+        },
+        {
+          "coordinateId": "projection-coordinate:observed:atom-repository-read",
+          "coordinateKind": "observedAtomCoordinate",
+          "atomFamily": "relation",
+          "subjectRef": "order.read",
+          "predicate": "repository read path can return an order view",
+          "atomObservationRefs": [
+            "atom:repository-read"
+          ],
+          "sourceRefs": [
+            "src-repository-read"
+          ],
+          "status": "observed",
+          "reading": "observed ArchMap atom coordinate in the canonical projection boundary"
+        },
+        {
+          "coordinateId": "projection-coordinate:observed:atom-event-projection",
+          "coordinateKind": "observedAtomCoordinate",
+          "atomFamily": "effect",
+          "subjectRef": "order.projection",
+          "predicate": "event projection updates order read model",
+          "atomObservationRefs": [
+            "atom:event-projection"
+          ],
+          "sourceRefs": [
+            "src-event-projection"
+          ],
+          "status": "observed",
+          "reading": "observed ArchMap atom coordinate in the canonical projection boundary"
+        },
+        {
+          "coordinateId": "projection-coordinate:observed:atom-retry-idempotency",
+          "coordinateKind": "observedAtomCoordinate",
+          "atomFamily": "effect",
+          "subjectRef": "payment.charge",
+          "predicate": "retry path should preserve idempotent charge effect",
+          "atomObservationRefs": [
+            "atom:retry-idempotency"
+          ],
+          "sourceRefs": [
+            "src-retry-effect"
+          ],
+          "status": "observed",
+          "reading": "observed ArchMap atom coordinate in the canonical projection boundary"
+        },
+        {
+          "coordinateId": "projection-coordinate:observed:atom-authorization-bypass",
+          "coordinateKind": "observedAtomCoordinate",
+          "atomFamily": "authority",
+          "subjectRef": "auth.adminBypassRead",
+          "predicate": "admin bypass read requires explicit policy or test filler evidence",
+          "atomObservationRefs": [
+            "atom:authorization-bypass"
+          ],
+          "sourceRefs": [
+            "src-auth-bypass"
+          ],
+          "status": "observed",
+          "reading": "observed ArchMap atom coordinate in the canonical projection boundary"
+        },
+        {
+          "coordinateId": "projection-coordinate:observed:atom-coupon-tax-rounding",
+          "coordinateKind": "observedAtomCoordinate",
+          "atomFamily": "contractSpecification",
+          "subjectRef": "pricing.checkoutTotal",
+          "predicate": "coupon tax rounding paths compare PaymentAmount and ReceiptAmount",
+          "atomObservationRefs": [
+            "atom:coupon-tax-rounding"
+          ],
+          "sourceRefs": [
+            "src-pricing-checkout"
+          ],
+          "status": "observed",
+          "reading": "observed ArchMap atom coordinate in the canonical projection boundary"
+        }
+      ],
       "forgottenCoordinates": [
         "gap:path-rule:authorization-bypass-hole:missing-policy-test"
+      ],
+      "forgottenCoordinateEvidence": [
+        {
+          "coordinateId": "projection-coordinate:forgotten:gap-path-rule-authorization-bypass-hole-missing-policy-test:authority",
+          "coordinateKind": "forgottenExpectedCoordinate",
+          "atomFamily": "authority",
+          "subjectRef": "path-rule:authorization-bypass-hole",
+          "predicate": "MissingFillerEvidence",
+          "atomObservationRefs": [],
+          "sourceRefs": [
+            "doc-auth-policy"
+          ],
+          "status": "unavailable",
+          "reading": "path-rule:authorization-bypass-hole is an expected coordinate blocked by observation gap gap:path-rule:authorization-bypass-hole:missing-policy-test"
+        },
+        {
+          "coordinateId": "projection-coordinate:forgotten:gap-path-rule-authorization-bypass-hole-missing-policy-test:contractspecification",
+          "coordinateKind": "forgottenExpectedCoordinate",
+          "atomFamily": "contractSpecification",
+          "subjectRef": "path-rule:authorization-bypass-hole",
+          "predicate": "MissingFillerEvidence",
+          "atomObservationRefs": [],
+          "sourceRefs": [
+            "doc-auth-policy"
+          ],
+          "status": "unavailable",
+          "reading": "path-rule:authorization-bypass-hole is an expected coordinate blocked by observation gap gap:path-rule:authorization-bypass-hole:missing-policy-test"
+        }
+      ],
+      "nonInjectivityCandidates": [],
+      "reconstructionBlockerEvidence": [
+        {
+          "blockerId": "projection-reconstruction-blocker:gap-path-rule-authorization-bypass-hole-missing-policy-test",
+          "blockerKind": "MissingFillerEvidence",
+          "coordinateRefs": [
+            "projection-coordinate:forgotten:gap-path-rule-authorization-bypass-hole-missing-policy-test:authority",
+            "projection-coordinate:forgotten:gap-path-rule-authorization-bypass-hole-missing-policy-test:contractspecification"
+          ],
+          "gapRefs": [
+            "gap:path-rule:authorization-bypass-hole:missing-policy-test"
+          ],
+          "expectedAtomFamilies": [
+            "authority",
+            "contractSpecification"
+          ],
+          "sourceRefs": [
+            "doc-auth-policy"
+          ],
+          "blockedAxisRefs": [
+            "axis-forgotten-family:authority",
+            "axis-forgotten-family:contractspecification"
+          ],
+          "evidenceRefs": [
+            "doc-auth-policy"
+          ],
+          "reading": "gap:path-rule:authorization-bypass-hole:missing-policy-test blocks reconstruction of expected Atom coordinates for path-rule:authorization-bypass-hole"
+        }
       ],
       "observationCollisionPairs": [],
       "collapsedAtomFamilyCandidates": [],
@@ -9539,13 +9679,139 @@
         "compensation or finalization",
         "transaction boundary ownership"
       ],
+      "transitionRelationInputs": [
+        {
+          "transitionInputId": "state-transition-input:operation-square-evidence-cache-repository-read",
+          "fromRefs": [
+            "OrderView"
+          ],
+          "eventRefs": [
+            "atom:event-projection",
+            "generator:contract-filler",
+            "generator:runtime-filler"
+          ],
+          "toRefs": [
+            "OrderView"
+          ],
+          "operationRefs": [
+            "operation:project-order-event",
+            "operation:read-from-repository",
+            "operation:read-through-cache"
+          ],
+          "invariantRefs": [
+            "semantic:path-rule:cache-repository-semantic-loop"
+          ],
+          "runtimeOrTraceRefs": [],
+          "sourceRefs": [
+            "src-cache-read",
+            "src-repository-read",
+            "test-homotopy-fillers"
+          ],
+          "reading": "operation-square-evidence:cache-repository-read supplies bounded transition relation evidence between selected operations"
+        }
+      ],
+      "lawEvaluations": [
+        {
+          "lawAxis": "stateTransitionRelation",
+          "status": "blocked",
+          "requiredInputRefs": [
+            "state-transition-input:operation-square-evidence-cache-repository-read"
+          ],
+          "observedInputRefs": [
+            "operation:project-order-event",
+            "operation:read-from-repository",
+            "operation:read-through-cache"
+          ],
+          "blockedReasonRefs": [
+            "gap:path-rule:authorization-bypass-hole:missing-policy-test"
+          ],
+          "evaluator": "state-transition-law-evaluator-v0",
+          "reading": "from/event/to transition relation must be witnessed by operation or runtime evidence"
+        },
+        {
+          "lawAxis": "commutativity",
+          "status": "observed",
+          "requiredInputRefs": [
+            "state-transition-input:operation-square-evidence-cache-repository-read"
+          ],
+          "observedInputRefs": [
+            "operation:project-order-event",
+            "operation:read-from-repository",
+            "operation:read-through-cache"
+          ],
+          "blockedReasonRefs": [],
+          "evaluator": "state-transition-law-evaluator-v0",
+          "reading": "commutativity is observed only when comparable operation-square evidence is available"
+        },
+        {
+          "lawAxis": "idempotency",
+          "status": "blocked",
+          "requiredInputRefs": [
+            "state-transition-input:operation-square-evidence-cache-repository-read"
+          ],
+          "observedInputRefs": [],
+          "blockedReasonRefs": [
+            "gap:path-rule:authorization-bypass-hole:missing-policy-test"
+          ],
+          "evaluator": "state-transition-law-evaluator-v0",
+          "reading": "idempotency requires retry/replay/runtime evidence"
+        },
+        {
+          "lawAxis": "replaySafety",
+          "status": "blocked",
+          "requiredInputRefs": [
+            "state-transition-input:operation-square-evidence-cache-repository-read"
+          ],
+          "observedInputRefs": [
+            "atom:retry-idempotency"
+          ],
+          "blockedReasonRefs": [
+            "gap:path-rule:authorization-bypass-hole:missing-policy-test"
+          ],
+          "evaluator": "state-transition-law-evaluator-v0",
+          "reading": "replay safety requires runtime or test trace evidence"
+        },
+        {
+          "lawAxis": "orderingPreservation",
+          "status": "observed",
+          "requiredInputRefs": [
+            "state-transition-input:operation-square-evidence-cache-repository-read"
+          ],
+          "observedInputRefs": [
+            "atom:event-projection",
+            "atom:retry-idempotency",
+            "operation:project-order-event",
+            "operation:read-from-repository",
+            "operation:read-through-cache"
+          ],
+          "blockedReasonRefs": [],
+          "evaluator": "state-transition-law-evaluator-v0",
+          "reading": "ordering preservation is evaluated from effect and operation relation evidence"
+        },
+        {
+          "lawAxis": "invariantPreservation",
+          "status": "blocked",
+          "requiredInputRefs": [
+            "state-transition-input:operation-square-evidence-cache-repository-read"
+          ],
+          "observedInputRefs": [
+            "semantic:path-rule:cache-repository-semantic-loop"
+          ],
+          "blockedReasonRefs": [
+            "gap:path-rule:authorization-bypass-hole:missing-policy-test"
+          ],
+          "evaluator": "state-transition-law-evaluator-v0",
+          "reading": "state invariants must be named before transition preservation is claimed"
+        }
+      ],
+      "lawEvaluatorStatus": "blocked",
       "unresolvedRelations": [
         "gap:path-rule:authorization-bypass-hole:missing-policy-test"
       ],
       "obstructionRefs": [],
-      "reading": "state/effect/runtime atoms generate a bounded state transition algebra reading",
-      "evidenceBoundary": "transition algebra is derived from observed atoms only; runtime traces and tests remain required for reflecting laws",
-      "recommendedNextAction": "verify idempotency, replay, ordering, and transaction ownership before claiming state/effect flatness",
+      "reading": "state/effect/runtime algebra is evaluated from 1 explicit transition relation input(s), not atom presence alone",
+      "evidenceBoundary": "transition algebra is law-evaluator output over observed transition inputs; missing runtime traces and tests remain blocked evidence, not measured zero",
+      "recommendedNextAction": "resolve blocked law axes for idempotency, replay, ordering, and transaction ownership before claiming state/effect flatness",
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -9619,7 +9885,7 @@
   "structuralReadingReviewSurface": {
     "surfaceId": "aat-structural-reading-review-surface",
     "status": "needsReview",
-    "currentStateReading": "ArchSig reads current architecture state across Atom support and compatibility, LawUniverse coverage, feature extension coordinates, operation calculus laws, path signature trajectory, homotopy order sensitivity, diagram fillability, axis forgetting/projection fidelity, Atom origin closure, effect relation algebra, synthesis blockage, operation preconditions, path multiplicity, trajectory homotopy refutation, bridge split transfer, representation strength, local curvature, three-layer flatness, observation projection, state transition algebra, operation-invariant constraints, and split readiness; blockedRepresentations=15, curvatures=1, blockedOperations=1, splitBlockers=1, atomConflicts=0, unmeasuredRequiredLaws=0, blockedDiagrams=1, axisForgetting=1, projectionLoss=1, atomOriginDebt=1, effectRelationPressure=1, synthesisBlockage=1, operationPreconditionBlockers=1, pathMultiplicityLoss=1, homotopyRefutations=1, bridgeTransfers=1",
+    "currentStateReading": "ArchSig reads current architecture state across Atom support and compatibility, LawUniverse coverage, feature extension coordinates, operation calculus laws, path signature trajectory, homotopy order sensitivity, diagram fillability, axis forgetting/projection fidelity, Atom origin closure, effect relation algebra, synthesis blockage, operation preconditions, path multiplicity, trajectory homotopy refutation, bridge split transfer, representation strength, local curvature, three-layer flatness, observation projection, state transition algebra, operation-invariant constraints, and split readiness; blockedRepresentations=14, curvatures=1, blockedOperations=1, splitBlockers=1, atomConflicts=0, unmeasuredRequiredLaws=0, blockedDiagrams=1, axisForgetting=1, projectionLoss=1, atomOriginDebt=1, effectRelationPressure=1, synthesisBlockage=1, operationPreconditionBlockers=1, pathMultiplicityLoss=1, homotopyRefutations=1, bridgeTransfers=1",
     "connectedReadingRefs": [
       "representationStrength:weightedAdjacencyMatrix",
       "representationStrength:reachableConeSize",
@@ -9707,31 +9973,35 @@
     {
       "principleId": "principle:informationhiding",
       "principle": "InformationHiding",
-      "status": "stressed",
-      "aatReading": "InformationHiding is read as invariant preservation / obstruction / operation preservation: representation, state, effect, and provider details stay inside declared boundaries",
+      "status": "preserved",
+      "witnessRuleRef": "principle-witness:informationhiding",
+      "witnessStatus": "witnessPreservedUnderSelectedEvidence",
+      "witnessEvidenceRefs": [
+        "atom:event-projection",
+        "atom:retry-idempotency"
+      ],
+      "aatReading": "InformationHiding is read by witnessPreservedUnderSelectedEvidence over invariant / law / obstruction / operation preservation: representation, state, effect, and provider details stay inside declared boundaries",
       "invariantRefs": [
         "invariant:law-homotopy-report-fixture"
       ],
-      "obstructionRefs": [
-        "obstruction:homotopy-report-fixture:computed"
-      ],
+      "obstructionRefs": [],
       "operationRefs": [
         "repair:obstruction-homotopy-report-fixture-computed"
       ],
       "evidenceRefs": [
-        "atom:cache-read",
-        "atom:repository-read",
         "atom:event-projection",
-        "atom:retry-idempotency",
-        "atom:authorization-bypass",
-        "atom:coupon-tax-rounding"
+        "atom:retry-idempotency"
+      ],
+      "sourceRefs": [
+        "src-event-projection",
+        "src-retry-effect"
       ],
       "confidence": "medium",
       "coverageBoundary": "principle reading uses semantic ArchMap evidence and is not a slogan or static lint rule",
       "exactnessBlockers": [
         "gap:path-rule:authorization-bypass-hole:missing-policy-test"
       ],
-      "recommendedNextAction": "turn stressed readings into source review questions or repair preconditions",
+      "recommendedNextAction": "keep InformationHiding witness refs when planning operation deltas",
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -9745,8 +10015,15 @@
     {
       "principleId": "principle:encapsulation",
       "principle": "Encapsulation",
-      "status": "stressed",
-      "aatReading": "Encapsulation is read as invariant preservation / obstruction / operation preservation: state mutation, effect execution, and authority checks are owned by the selected boundary",
+      "status": "unmeasured",
+      "witnessRuleRef": "principle-witness:encapsulation",
+      "witnessStatus": "blockedByMissingWitnessEvidence",
+      "witnessEvidenceRefs": [
+        "atom:event-projection",
+        "atom:retry-idempotency",
+        "atom:authorization-bypass"
+      ],
+      "aatReading": "Encapsulation is read by blockedByMissingWitnessEvidence over invariant / law / obstruction / operation preservation: state mutation, effect execution, and authority checks are owned by the selected boundary",
       "invariantRefs": [
         "invariant:law-homotopy-report-fixture"
       ],
@@ -9757,19 +10034,21 @@
         "repair:obstruction-homotopy-report-fixture-computed"
       ],
       "evidenceRefs": [
-        "atom:cache-read",
-        "atom:repository-read",
         "atom:event-projection",
         "atom:retry-idempotency",
-        "atom:authorization-bypass",
-        "atom:coupon-tax-rounding"
+        "atom:authorization-bypass"
       ],
-      "confidence": "medium",
+      "sourceRefs": [
+        "src-auth-bypass",
+        "src-event-projection",
+        "src-retry-effect"
+      ],
+      "confidence": "low",
       "coverageBoundary": "principle reading uses semantic ArchMap evidence and is not a slogan or static lint rule",
       "exactnessBlockers": [
         "gap:path-rule:authorization-bypass-hole:missing-policy-test"
       ],
-      "recommendedNextAction": "turn stressed readings into source review questions or repair preconditions",
+      "recommendedNextAction": "collect state/effect/authority witness sources for Encapsulation",
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -9783,8 +10062,15 @@
     {
       "principleId": "principle:separationofconcerns",
       "principle": "SeparationOfConcerns",
-      "status": "stressed",
-      "aatReading": "SeparationOfConcerns is read as invariant preservation / obstruction / operation preservation: semantic concern, state transition, effect, policy, and presentation remain unmixed",
+      "status": "unmeasured",
+      "witnessRuleRef": "principle-witness:separationofconcerns",
+      "witnessStatus": "blockedByMissingWitnessEvidence",
+      "witnessEvidenceRefs": [
+        "atom:event-projection",
+        "atom:retry-idempotency",
+        "atom:coupon-tax-rounding"
+      ],
+      "aatReading": "SeparationOfConcerns is read by blockedByMissingWitnessEvidence over invariant / law / obstruction / operation preservation: semantic concern, state transition, effect, policy, and presentation remain unmixed",
       "invariantRefs": [
         "invariant:law-homotopy-report-fixture"
       ],
@@ -9795,19 +10081,21 @@
         "repair:obstruction-homotopy-report-fixture-computed"
       ],
       "evidenceRefs": [
-        "atom:cache-read",
-        "atom:repository-read",
         "atom:event-projection",
         "atom:retry-idempotency",
-        "atom:authorization-bypass",
         "atom:coupon-tax-rounding"
       ],
-      "confidence": "medium",
+      "sourceRefs": [
+        "src-event-projection",
+        "src-pricing-checkout",
+        "src-retry-effect"
+      ],
+      "confidence": "low",
       "coverageBoundary": "principle reading uses semantic ArchMap evidence and is not a slogan or static lint rule",
       "exactnessBlockers": [
         "gap:path-rule:authorization-bypass-hole:missing-policy-test"
       ],
-      "recommendedNextAction": "turn stressed readings into source review questions or repair preconditions",
+      "recommendedNextAction": "collect semantic/state/effect/contractSpecification witness sources for SeparationOfConcerns",
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -9821,8 +10109,15 @@
     {
       "principleId": "principle:substitutability",
       "principle": "Substitutability",
-      "status": "stressed",
-      "aatReading": "Substitutability is read as invariant preservation / obstruction / operation preservation: replacement preserves contract, effect, state transition, and semantic reading",
+      "status": "unmeasured",
+      "witnessRuleRef": "principle-witness:substitutability",
+      "witnessStatus": "blockedByMissingWitnessEvidence",
+      "witnessEvidenceRefs": [
+        "atom:event-projection",
+        "atom:retry-idempotency",
+        "atom:coupon-tax-rounding"
+      ],
+      "aatReading": "Substitutability is read by blockedByMissingWitnessEvidence over invariant / law / obstruction / operation preservation: replacement preserves contract, effect, state transition, and semantic reading",
       "invariantRefs": [
         "invariant:law-homotopy-report-fixture"
       ],
@@ -9833,19 +10128,21 @@
         "repair:obstruction-homotopy-report-fixture-computed"
       ],
       "evidenceRefs": [
-        "atom:cache-read",
-        "atom:repository-read",
         "atom:event-projection",
         "atom:retry-idempotency",
-        "atom:authorization-bypass",
         "atom:coupon-tax-rounding"
       ],
-      "confidence": "medium",
+      "sourceRefs": [
+        "src-event-projection",
+        "src-pricing-checkout",
+        "src-retry-effect"
+      ],
+      "confidence": "low",
       "coverageBoundary": "principle reading uses semantic ArchMap evidence and is not a slogan or static lint rule",
       "exactnessBlockers": [
         "gap:path-rule:authorization-bypass-hole:missing-policy-test"
       ],
-      "recommendedNextAction": "turn stressed readings into source review questions or repair preconditions",
+      "recommendedNextAction": "collect contractSpecification/effect/state/semantic witness sources for Substitutability",
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -9859,8 +10156,15 @@
     {
       "principleId": "principle:openclosedextension",
       "principle": "OpenClosedExtension",
-      "status": "stressed",
-      "aatReading": "OpenClosedExtension is read as invariant preservation / obstruction / operation preservation: feature extension preserves core invariants without new interaction obstruction",
+      "status": "unmeasured",
+      "witnessRuleRef": "principle-witness:openclosedextension",
+      "witnessStatus": "blockedByMissingWitnessEvidence",
+      "witnessEvidenceRefs": [
+        "atom:cache-read",
+        "atom:repository-read",
+        "atom:coupon-tax-rounding"
+      ],
+      "aatReading": "OpenClosedExtension is read by blockedByMissingWitnessEvidence over invariant / law / obstruction / operation preservation: feature extension preserves core invariants without new interaction obstruction",
       "invariantRefs": [
         "invariant:law-homotopy-report-fixture"
       ],
@@ -9873,17 +10177,19 @@
       "evidenceRefs": [
         "atom:cache-read",
         "atom:repository-read",
-        "atom:event-projection",
-        "atom:retry-idempotency",
-        "atom:authorization-bypass",
         "atom:coupon-tax-rounding"
       ],
-      "confidence": "medium",
+      "sourceRefs": [
+        "src-cache-read",
+        "src-pricing-checkout",
+        "src-repository-read"
+      ],
+      "confidence": "low",
       "coverageBoundary": "principle reading uses semantic ArchMap evidence and is not a slogan or static lint rule",
       "exactnessBlockers": [
         "gap:path-rule:authorization-bypass-hole:missing-policy-test"
       ],
-      "recommendedNextAction": "turn stressed readings into source review questions or repair preconditions",
+      "recommendedNextAction": "collect contractSpecification/relation/semantic witness sources for OpenClosedExtension",
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -9897,8 +10203,15 @@
     {
       "principleId": "principle:dependencyinversion",
       "principle": "DependencyInversion",
-      "status": "stressed",
-      "aatReading": "DependencyInversion is read as invariant preservation / obstruction / operation preservation: abstract boundary semantics remain aligned with implementation obligations",
+      "status": "unmeasured",
+      "witnessRuleRef": "principle-witness:dependencyinversion",
+      "witnessStatus": "blockedByMissingWitnessEvidence",
+      "witnessEvidenceRefs": [
+        "atom:cache-read",
+        "atom:repository-read",
+        "atom:coupon-tax-rounding"
+      ],
+      "aatReading": "DependencyInversion is read by blockedByMissingWitnessEvidence over invariant / law / obstruction / operation preservation: abstract boundary semantics remain aligned with implementation obligations",
       "invariantRefs": [
         "invariant:law-homotopy-report-fixture"
       ],
@@ -9911,17 +10224,19 @@
       "evidenceRefs": [
         "atom:cache-read",
         "atom:repository-read",
-        "atom:event-projection",
-        "atom:retry-idempotency",
-        "atom:authorization-bypass",
         "atom:coupon-tax-rounding"
       ],
-      "confidence": "medium",
+      "sourceRefs": [
+        "src-cache-read",
+        "src-pricing-checkout",
+        "src-repository-read"
+      ],
+      "confidence": "low",
       "coverageBoundary": "principle reading uses semantic ArchMap evidence and is not a slogan or static lint rule",
       "exactnessBlockers": [
         "gap:path-rule:authorization-bypass-hole:missing-policy-test"
       ],
-      "recommendedNextAction": "turn stressed readings into source review questions or repair preconditions",
+      "recommendedNextAction": "collect relation/contractSpecification/semantic witness sources for DependencyInversion",
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -9936,7 +10251,13 @@
       "principleId": "principle:representationindependence",
       "principle": "RepresentationIndependence",
       "status": "unmeasured",
-      "aatReading": "RepresentationIndependence is read as invariant preservation / obstruction / operation preservation: internal representation changes preserve selected observations and contracts",
+      "witnessRuleRef": "principle-witness:representationindependence",
+      "witnessStatus": "blockedByMissingWitnessEvidence",
+      "witnessEvidenceRefs": [
+        "atom:event-projection",
+        "atom:coupon-tax-rounding"
+      ],
+      "aatReading": "RepresentationIndependence is read by blockedByMissingWitnessEvidence over invariant / law / obstruction / operation preservation: internal representation changes preserve selected observations and contracts",
       "invariantRefs": [
         "invariant:law-homotopy-report-fixture"
       ],
@@ -9947,19 +10268,19 @@
         "repair:obstruction-homotopy-report-fixture-computed"
       ],
       "evidenceRefs": [
-        "atom:cache-read",
-        "atom:repository-read",
         "atom:event-projection",
-        "atom:retry-idempotency",
-        "atom:authorization-bypass",
         "atom:coupon-tax-rounding"
+      ],
+      "sourceRefs": [
+        "src-event-projection",
+        "src-pricing-checkout"
       ],
       "confidence": "low",
       "coverageBoundary": "principle reading uses semantic ArchMap evidence and is not a slogan or static lint rule",
       "exactnessBlockers": [
         "gap:path-rule:authorization-bypass-hole:missing-policy-test"
       ],
-      "recommendedNextAction": "turn stressed readings into source review questions or repair preconditions",
+      "recommendedNextAction": "collect state/contractSpecification/projection witness sources for RepresentationIndependence",
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -9973,31 +10294,35 @@
     {
       "principleId": "principle:idempotencyandreplaysafety",
       "principle": "IdempotencyAndReplaySafety",
-      "status": "unmeasured",
-      "aatReading": "IdempotencyAndReplaySafety is read as invariant preservation / obstruction / operation preservation: retry, replay, jobs, and external effects preserve selected state transition law",
+      "status": "preserved",
+      "witnessRuleRef": "principle-witness:idempotencyandreplaysafety",
+      "witnessStatus": "witnessPreservedUnderSelectedEvidence",
+      "witnessEvidenceRefs": [
+        "atom:event-projection",
+        "atom:retry-idempotency"
+      ],
+      "aatReading": "IdempotencyAndReplaySafety is read by witnessPreservedUnderSelectedEvidence over invariant / law / obstruction / operation preservation: retry, replay, jobs, and external effects preserve selected state transition law",
       "invariantRefs": [
         "invariant:law-homotopy-report-fixture"
       ],
-      "obstructionRefs": [
-        "obstruction:homotopy-report-fixture:computed"
-      ],
+      "obstructionRefs": [],
       "operationRefs": [
         "repair:obstruction-homotopy-report-fixture-computed"
       ],
       "evidenceRefs": [
-        "atom:cache-read",
-        "atom:repository-read",
         "atom:event-projection",
-        "atom:retry-idempotency",
-        "atom:authorization-bypass",
-        "atom:coupon-tax-rounding"
+        "atom:retry-idempotency"
       ],
-      "confidence": "low",
+      "sourceRefs": [
+        "src-event-projection",
+        "src-retry-effect"
+      ],
+      "confidence": "medium",
       "coverageBoundary": "principle reading uses semantic ArchMap evidence and is not a slogan or static lint rule",
       "exactnessBlockers": [
         "gap:path-rule:authorization-bypass-hole:missing-policy-test"
       ],
-      "recommendedNextAction": "turn stressed readings into source review questions or repair preconditions",
+      "recommendedNextAction": "keep IdempotencyAndReplaySafety witness refs when planning operation deltas",
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -10012,7 +10337,12 @@
       "principleId": "principle:authorityandtrustboundary",
       "principle": "AuthorityAndTrustBoundary",
       "status": "unmeasured",
-      "aatReading": "AuthorityAndTrustBoundary is read as invariant preservation / obstruction / operation preservation: authority labels and trust handoffs survive operation paths",
+      "witnessRuleRef": "principle-witness:authorityandtrustboundary",
+      "witnessStatus": "blockedByMissingWitnessEvidence",
+      "witnessEvidenceRefs": [
+        "atom:authorization-bypass"
+      ],
+      "aatReading": "AuthorityAndTrustBoundary is read by blockedByMissingWitnessEvidence over invariant / law / obstruction / operation preservation: authority labels and trust handoffs survive operation paths",
       "invariantRefs": [
         "invariant:law-homotopy-report-fixture"
       ],
@@ -10023,19 +10353,17 @@
         "repair:obstruction-homotopy-report-fixture-computed"
       ],
       "evidenceRefs": [
-        "atom:cache-read",
-        "atom:repository-read",
-        "atom:event-projection",
-        "atom:retry-idempotency",
-        "atom:authorization-bypass",
-        "atom:coupon-tax-rounding"
+        "atom:authorization-bypass"
+      ],
+      "sourceRefs": [
+        "src-auth-bypass"
       ],
       "confidence": "low",
       "coverageBoundary": "principle reading uses semantic ArchMap evidence and is not a slogan or static lint rule",
       "exactnessBlockers": [
         "gap:path-rule:authorization-bypass-hole:missing-policy-test"
       ],
-      "recommendedNextAction": "turn stressed readings into source review questions or repair preconditions",
+      "recommendedNextAction": "collect authority/trust/runtimeInteraction witness sources for AuthorityAndTrustBoundary",
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -10358,16 +10686,12 @@
     },
     {
       "judgementId": "judgement:principle-informationhiding",
-      "status": "actionable",
+      "status": "needsReview",
       "aatConcept": "Invariant",
-      "reading": "InformationHiding is read as invariant preservation / obstruction / operation preservation: representation, state, effect, and provider details stay inside declared boundaries",
+      "reading": "InformationHiding is read by witnessPreservedUnderSelectedEvidence over invariant / law / obstruction / operation preservation: representation, state, effect, and provider details stay inside declared boundaries",
       "evidenceRefs": [
-        "atom:cache-read",
-        "atom:repository-read",
         "atom:event-projection",
-        "atom:retry-idempotency",
-        "atom:authorization-bypass",
-        "atom:coupon-tax-rounding"
+        "atom:retry-idempotency"
       ],
       "confidence": "medium",
       "uncertainty": [
@@ -10375,7 +10699,7 @@
       ],
       "coverageBoundary": "principle reading uses semantic ArchMap evidence and is not a slogan or static lint rule",
       "exactnessBoundary": "design principle reading is not static lint and not theorem proof",
-      "recommendedNextAction": "turn stressed readings into source review questions or repair preconditions",
+      "recommendedNextAction": "keep InformationHiding witness refs when planning operation deltas",
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -10388,24 +10712,21 @@
     },
     {
       "judgementId": "judgement:principle-encapsulation",
-      "status": "actionable",
+      "status": "blocked",
       "aatConcept": "Invariant",
-      "reading": "Encapsulation is read as invariant preservation / obstruction / operation preservation: state mutation, effect execution, and authority checks are owned by the selected boundary",
+      "reading": "Encapsulation is read by blockedByMissingWitnessEvidence over invariant / law / obstruction / operation preservation: state mutation, effect execution, and authority checks are owned by the selected boundary",
       "evidenceRefs": [
-        "atom:cache-read",
-        "atom:repository-read",
         "atom:event-projection",
         "atom:retry-idempotency",
-        "atom:authorization-bypass",
-        "atom:coupon-tax-rounding"
+        "atom:authorization-bypass"
       ],
-      "confidence": "medium",
+      "confidence": "low",
       "uncertainty": [
         "gap:path-rule:authorization-bypass-hole:missing-policy-test"
       ],
       "coverageBoundary": "principle reading uses semantic ArchMap evidence and is not a slogan or static lint rule",
       "exactnessBoundary": "design principle reading is not static lint and not theorem proof",
-      "recommendedNextAction": "turn stressed readings into source review questions or repair preconditions",
+      "recommendedNextAction": "collect state/effect/authority witness sources for Encapsulation",
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -10418,24 +10739,21 @@
     },
     {
       "judgementId": "judgement:principle-separationofconcerns",
-      "status": "actionable",
+      "status": "blocked",
       "aatConcept": "Invariant",
-      "reading": "SeparationOfConcerns is read as invariant preservation / obstruction / operation preservation: semantic concern, state transition, effect, policy, and presentation remain unmixed",
+      "reading": "SeparationOfConcerns is read by blockedByMissingWitnessEvidence over invariant / law / obstruction / operation preservation: semantic concern, state transition, effect, policy, and presentation remain unmixed",
       "evidenceRefs": [
-        "atom:cache-read",
-        "atom:repository-read",
         "atom:event-projection",
         "atom:retry-idempotency",
-        "atom:authorization-bypass",
         "atom:coupon-tax-rounding"
       ],
-      "confidence": "medium",
+      "confidence": "low",
       "uncertainty": [
         "gap:path-rule:authorization-bypass-hole:missing-policy-test"
       ],
       "coverageBoundary": "principle reading uses semantic ArchMap evidence and is not a slogan or static lint rule",
       "exactnessBoundary": "design principle reading is not static lint and not theorem proof",
-      "recommendedNextAction": "turn stressed readings into source review questions or repair preconditions",
+      "recommendedNextAction": "collect semantic/state/effect/contractSpecification witness sources for SeparationOfConcerns",
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -10448,24 +10766,21 @@
     },
     {
       "judgementId": "judgement:principle-substitutability",
-      "status": "actionable",
+      "status": "blocked",
       "aatConcept": "Invariant",
-      "reading": "Substitutability is read as invariant preservation / obstruction / operation preservation: replacement preserves contract, effect, state transition, and semantic reading",
+      "reading": "Substitutability is read by blockedByMissingWitnessEvidence over invariant / law / obstruction / operation preservation: replacement preserves contract, effect, state transition, and semantic reading",
       "evidenceRefs": [
-        "atom:cache-read",
-        "atom:repository-read",
         "atom:event-projection",
         "atom:retry-idempotency",
-        "atom:authorization-bypass",
         "atom:coupon-tax-rounding"
       ],
-      "confidence": "medium",
+      "confidence": "low",
       "uncertainty": [
         "gap:path-rule:authorization-bypass-hole:missing-policy-test"
       ],
       "coverageBoundary": "principle reading uses semantic ArchMap evidence and is not a slogan or static lint rule",
       "exactnessBoundary": "design principle reading is not static lint and not theorem proof",
-      "recommendedNextAction": "turn stressed readings into source review questions or repair preconditions",
+      "recommendedNextAction": "collect contractSpecification/effect/state/semantic witness sources for Substitutability",
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -10478,24 +10793,21 @@
     },
     {
       "judgementId": "judgement:principle-openclosedextension",
-      "status": "actionable",
+      "status": "blocked",
       "aatConcept": "Invariant",
-      "reading": "OpenClosedExtension is read as invariant preservation / obstruction / operation preservation: feature extension preserves core invariants without new interaction obstruction",
+      "reading": "OpenClosedExtension is read by blockedByMissingWitnessEvidence over invariant / law / obstruction / operation preservation: feature extension preserves core invariants without new interaction obstruction",
       "evidenceRefs": [
         "atom:cache-read",
         "atom:repository-read",
-        "atom:event-projection",
-        "atom:retry-idempotency",
-        "atom:authorization-bypass",
         "atom:coupon-tax-rounding"
       ],
-      "confidence": "medium",
+      "confidence": "low",
       "uncertainty": [
         "gap:path-rule:authorization-bypass-hole:missing-policy-test"
       ],
       "coverageBoundary": "principle reading uses semantic ArchMap evidence and is not a slogan or static lint rule",
       "exactnessBoundary": "design principle reading is not static lint and not theorem proof",
-      "recommendedNextAction": "turn stressed readings into source review questions or repair preconditions",
+      "recommendedNextAction": "collect contractSpecification/relation/semantic witness sources for OpenClosedExtension",
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -10508,24 +10820,21 @@
     },
     {
       "judgementId": "judgement:principle-dependencyinversion",
-      "status": "actionable",
+      "status": "blocked",
       "aatConcept": "Invariant",
-      "reading": "DependencyInversion is read as invariant preservation / obstruction / operation preservation: abstract boundary semantics remain aligned with implementation obligations",
+      "reading": "DependencyInversion is read by blockedByMissingWitnessEvidence over invariant / law / obstruction / operation preservation: abstract boundary semantics remain aligned with implementation obligations",
       "evidenceRefs": [
         "atom:cache-read",
         "atom:repository-read",
-        "atom:event-projection",
-        "atom:retry-idempotency",
-        "atom:authorization-bypass",
         "atom:coupon-tax-rounding"
       ],
-      "confidence": "medium",
+      "confidence": "low",
       "uncertainty": [
         "gap:path-rule:authorization-bypass-hole:missing-policy-test"
       ],
       "coverageBoundary": "principle reading uses semantic ArchMap evidence and is not a slogan or static lint rule",
       "exactnessBoundary": "design principle reading is not static lint and not theorem proof",
-      "recommendedNextAction": "turn stressed readings into source review questions or repair preconditions",
+      "recommendedNextAction": "collect relation/contractSpecification/semantic witness sources for DependencyInversion",
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -10540,13 +10849,9 @@
       "judgementId": "judgement:principle-representationindependence",
       "status": "blocked",
       "aatConcept": "Invariant",
-      "reading": "RepresentationIndependence is read as invariant preservation / obstruction / operation preservation: internal representation changes preserve selected observations and contracts",
+      "reading": "RepresentationIndependence is read by blockedByMissingWitnessEvidence over invariant / law / obstruction / operation preservation: internal representation changes preserve selected observations and contracts",
       "evidenceRefs": [
-        "atom:cache-read",
-        "atom:repository-read",
         "atom:event-projection",
-        "atom:retry-idempotency",
-        "atom:authorization-bypass",
         "atom:coupon-tax-rounding"
       ],
       "confidence": "low",
@@ -10555,7 +10860,7 @@
       ],
       "coverageBoundary": "principle reading uses semantic ArchMap evidence and is not a slogan or static lint rule",
       "exactnessBoundary": "design principle reading is not static lint and not theorem proof",
-      "recommendedNextAction": "turn stressed readings into source review questions or repair preconditions",
+      "recommendedNextAction": "collect state/contractSpecification/projection witness sources for RepresentationIndependence",
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -10568,24 +10873,20 @@
     },
     {
       "judgementId": "judgement:principle-idempotencyandreplaysafety",
-      "status": "blocked",
+      "status": "needsReview",
       "aatConcept": "Invariant",
-      "reading": "IdempotencyAndReplaySafety is read as invariant preservation / obstruction / operation preservation: retry, replay, jobs, and external effects preserve selected state transition law",
+      "reading": "IdempotencyAndReplaySafety is read by witnessPreservedUnderSelectedEvidence over invariant / law / obstruction / operation preservation: retry, replay, jobs, and external effects preserve selected state transition law",
       "evidenceRefs": [
-        "atom:cache-read",
-        "atom:repository-read",
         "atom:event-projection",
-        "atom:retry-idempotency",
-        "atom:authorization-bypass",
-        "atom:coupon-tax-rounding"
+        "atom:retry-idempotency"
       ],
-      "confidence": "low",
+      "confidence": "medium",
       "uncertainty": [
         "gap:path-rule:authorization-bypass-hole:missing-policy-test"
       ],
       "coverageBoundary": "principle reading uses semantic ArchMap evidence and is not a slogan or static lint rule",
       "exactnessBoundary": "design principle reading is not static lint and not theorem proof",
-      "recommendedNextAction": "turn stressed readings into source review questions or repair preconditions",
+      "recommendedNextAction": "keep IdempotencyAndReplaySafety witness refs when planning operation deltas",
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -10600,14 +10901,9 @@
       "judgementId": "judgement:principle-authorityandtrustboundary",
       "status": "blocked",
       "aatConcept": "Invariant",
-      "reading": "AuthorityAndTrustBoundary is read as invariant preservation / obstruction / operation preservation: authority labels and trust handoffs survive operation paths",
+      "reading": "AuthorityAndTrustBoundary is read by blockedByMissingWitnessEvidence over invariant / law / obstruction / operation preservation: authority labels and trust handoffs survive operation paths",
       "evidenceRefs": [
-        "atom:cache-read",
-        "atom:repository-read",
-        "atom:event-projection",
-        "atom:retry-idempotency",
-        "atom:authorization-bypass",
-        "atom:coupon-tax-rounding"
+        "atom:authorization-bypass"
       ],
       "confidence": "low",
       "uncertainty": [
@@ -10615,7 +10911,7 @@
       ],
       "coverageBoundary": "principle reading uses semantic ArchMap evidence and is not a slogan or static lint rule",
       "exactnessBoundary": "design principle reading is not static lint and not theorem proof",
-      "recommendedNextAction": "turn stressed readings into source review questions or repair preconditions",
+      "recommendedNextAction": "collect authority/trust/runtimeInteraction witness sources for AuthorityAndTrustBoundary",
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -10629,7 +10925,7 @@
   ],
   "llmInterpretationPacket": {
     "packetId": "llm-interpretation:homotopy-report-fixture-archmap",
-    "shortDiagnosis": "9 actionable judgement(s), 1 design pressure reading(s), and 1 observation gap(s) require review",
+    "shortDiagnosis": "3 actionable judgement(s), 1 design pressure reading(s), and 1 observation gap(s) require review",
     "aatConceptMap": [
       "Atom -> Configuration -> ArchitectureObject",
       "InvariantFamily -> LawUniverse -> ObstructionCircuit -> ArchitectureSignature",
@@ -10661,20 +10957,18 @@
     ],
     "spectralReadingsSummary": [
       "relationAtomWeightedAdjacencyMatrix upperBound=unmeasured shape=3x3 (needsReview)",
-      "workflowRiskAxisPressureMatrix upperBound=26.458 shape=1x5 (needsReview)",
       "moleculeAtomOverlapCouplingMatrix upperBound=6.000 shape=1x1 (needsReview)",
       "obstructionAxisCurvatureMatrix upperBound=1.000 shape=1x1 (actionable)",
       "operationSignatureDeltaMatrix upperBound=1.000 shape=1x1 (actionable)"
     ],
     "spectralModeSummary": [
       "relationAtomWeightedAdjacencyMatrix boundedSpectralMode gap=0.000 localization=0.707 density=0.222 (needsReview)",
-      "workflowRiskAxisPressureMatrix distributedPressureMode gap=23.195 localization=1.000 density=1.000 (needsReview)",
       "moleculeAtomOverlapCouplingMatrix delocalizedCouplingMode gap=6.000 localization=1.000 density=1.000 (needsReview)",
       "obstructionAxisCurvatureMatrix curvatureMode gap=1.000 localization=1.000 density=1.000 (needsReview)",
       "operationSignatureDeltaMatrix broadPerturbationMode gap=1.000 localization=1.000 density=1.000 (needsReview)"
     ],
     "spectralDrilldownSummary": [
-      "spectral-drilldown:homotopy-report-fixture-archmap atomFamilies=4 overlapPairs=0 repairAxisDeltas=1 (needsReview)"
+      "spectral-drilldown:homotopy-report-fixture-archmap atomFamilies=4 overlapPairs=0 repairAxisDeltas=1 (actionable)"
     ],
     "curvatureSupportSummary": [
       "curvature-support-reading:spectrum-profile-homotopy-report-fixture supports=1 topModes=1 clusters=1 measuredAxes=1 unmeasuredAxes=0 (needsReview)"
@@ -10687,7 +10981,7 @@
       "report is measured from ArchSig curvature support and transfer readings under selected LawPolicy coverage and exactness assumptions"
     ],
     "transferBridgeSummary": [
-      "transfer-bridge:homotopy-report-fixture-archmap transfers=0 bridges=1 repairRanks=1 boundaryRanks=0 (nonConclusion)"
+      "transfer-bridge:homotopy-report-fixture-archmap transfers=0 bridges=1 repairRanks=1 boundaryRanks=0 (needsReview)"
     ],
     "transferBridgeEdgeSummary": [],
     "measurementExpansionSummary": [
@@ -10767,7 +11061,6 @@
       "stateAlgebra zeroReflecting=blockedByCoverageGap obstructionReflecting=blockedByCoverageGap blockedBy=1",
       "zeroReflectingAggregateBoundary zeroReflecting=blockedByCoverageGap obstructionReflecting=blockedByCoverageGap blockedBy=1",
       "relationAtomWeightedAdjacencyMatrix zeroReflecting=blockedByCoverageGap obstructionReflecting=notAnEigenvalueTheorem blockedBy=1",
-      "workflowRiskAxisPressureMatrix zeroReflecting=blockedByCoverageGap obstructionReflecting=notAnEigenvalueTheorem blockedBy=1",
       "moleculeAtomOverlapCouplingMatrix zeroReflecting=blockedByCoverageGap obstructionReflecting=notAnEigenvalueTheorem blockedBy=1",
       "obstructionAxisCurvatureMatrix zeroReflecting=blockedByCoverageGap obstructionReflecting=notAnEigenvalueTheorem blockedBy=1",
       "operationSignatureDeltaMatrix zeroReflecting=blockedByCoverageGap obstructionReflecting=notAnEigenvalueTheorem blockedBy=1"
@@ -10792,7 +11085,7 @@
     ],
     "structuralReadingReviewSummary": [
       "aat-structural-reading-review-surface status=needsReview refs=30 focus=16",
-      "ArchSig reads current architecture state across Atom support and compatibility, LawUniverse coverage, feature extension coordinates, operation calculus laws, path signature trajectory, homotopy order sensitivity, diagram fillability, axis forgetting/projection fidelity, Atom origin closure, effect relation algebra, synthesis blockage, operation preconditions, path multiplicity, trajectory homotopy refutation, bridge split transfer, representation strength, local curvature, three-layer flatness, observation projection, state transition algebra, operation-invariant constraints, and split readiness; blockedRepresentations=15, curvatures=1, blockedOperations=1, splitBlockers=1, atomConflicts=0, unmeasuredRequiredLaws=0, blockedDiagrams=1, axisForgetting=1, projectionLoss=1, atomOriginDebt=1, effectRelationPressure=1, synthesisBlockage=1, operationPreconditionBlockers=1, pathMultiplicityLoss=1, homotopyRefutations=1, bridgeTransfers=1"
+      "ArchSig reads current architecture state across Atom support and compatibility, LawUniverse coverage, feature extension coordinates, operation calculus laws, path signature trajectory, homotopy order sensitivity, diagram fillability, axis forgetting/projection fidelity, Atom origin closure, effect relation algebra, synthesis blockage, operation preconditions, path multiplicity, trajectory homotopy refutation, bridge split transfer, representation strength, local curvature, three-layer flatness, observation projection, state transition algebra, operation-invariant constraints, and split readiness; blockedRepresentations=14, curvatures=1, blockedOperations=1, splitBlockers=1, atomConflicts=0, unmeasuredRequiredLaws=0, blockedDiagrams=1, axisForgetting=1, projectionLoss=1, atomOriginDebt=1, effectRelationPressure=1, synthesisBlockage=1, operationPreconditionBlockers=1, pathMultiplicityLoss=1, homotopyRefutations=1, bridgeTransfers=1"
     ],
     "currentStateEvolutionBoundarySummary": [
       "ArchSig computes current AAT structural state from ArchMap homotopy-report-fixture-archmap and LawPolicy homotopy-report-fixture-policy; it reads atoms, molecules, laws, obstructions, bridge pressure, structural readings, and bounded review focus",
@@ -10803,8 +11096,7 @@
       "repair:obstruction-homotopy-report-fixture-computed targets [\"obstruction:homotopy-report-fixture:computed\"]"
     ],
     "complexityTransferNotes": [
-      "may transfer obstruction into runtime behavior, ownership, or idempotency boundary",
-      "molecule:homotopy-report-fixture: review medium (stateEffectReconciliation, permissionCoverage, authorityTrustBoundary)"
+      "may transfer obstruction into runtime behavior, ownership, or idempotency boundary"
     ],
     "coverageGapsAndExactnessBlockers": [
       "gap:path-rule:authorization-bypass-hole:missing-policy-test: authorization bypass path lacks policy or test filler evidence"
@@ -10822,15 +11114,15 @@
       "judgement:architecture-state: review nonzero axes and stressed principle readings first",
       "judgement:obstruction-homotopy-report-fixture-computed: inspect source refs and repair operation preconditions",
       "judgement:sig-axis-homotopy-report-fixture: use zero axes only with exactness assumptions; review nonzero axes as design pressure",
-      "judgement:principle-informationhiding: turn stressed readings into source review questions or repair preconditions",
-      "judgement:principle-encapsulation: turn stressed readings into source review questions or repair preconditions",
-      "judgement:principle-separationofconcerns: turn stressed readings into source review questions or repair preconditions",
-      "judgement:principle-substitutability: turn stressed readings into source review questions or repair preconditions",
-      "judgement:principle-openclosedextension: turn stressed readings into source review questions or repair preconditions",
-      "judgement:principle-dependencyinversion: turn stressed readings into source review questions or repair preconditions",
-      "judgement:principle-representationindependence: turn stressed readings into source review questions or repair preconditions",
-      "judgement:principle-idempotencyandreplaysafety: turn stressed readings into source review questions or repair preconditions",
-      "judgement:principle-authorityandtrustboundary: turn stressed readings into source review questions or repair preconditions"
+      "judgement:principle-informationhiding: keep InformationHiding witness refs when planning operation deltas",
+      "judgement:principle-encapsulation: collect state/effect/authority witness sources for Encapsulation",
+      "judgement:principle-separationofconcerns: collect semantic/state/effect/contractSpecification witness sources for SeparationOfConcerns",
+      "judgement:principle-substitutability: collect contractSpecification/effect/state/semantic witness sources for Substitutability",
+      "judgement:principle-openclosedextension: collect contractSpecification/relation/semantic witness sources for OpenClosedExtension",
+      "judgement:principle-dependencyinversion: collect relation/contractSpecification/semantic witness sources for DependencyInversion",
+      "judgement:principle-representationindependence: collect state/contractSpecification/projection witness sources for RepresentationIndependence",
+      "judgement:principle-idempotencyandreplaysafety: keep IdempotencyAndReplaySafety witness refs when planning operation deltas",
+      "judgement:principle-authorityandtrustboundary: collect authority/trust/runtimeInteraction witness sources for AuthorityAndTrustBoundary"
     ]
   },
   "evidenceBoundary": "computed from ArchMap homotopy-report-fixture-archmap and selected interpretation profile homotopy-report-fixture-policy; concernHints are auxiliary cues only",
