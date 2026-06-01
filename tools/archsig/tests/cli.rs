@@ -759,6 +759,7 @@ fn cli_runs_primary_archmap_lawpolicy_archsig_analyze_workflow() {
         "archmap-validation.json",
         "law-policy-validation.json",
         "archsig-analysis-packet.json",
+        "archsig-analysis-detail-index.json",
         "archsig-analysis-validation.json",
         "llm-interpretation-packet.json",
     ];
@@ -797,6 +798,15 @@ fn cli_runs_primary_archmap_lawpolicy_archsig_analyze_workflow() {
         analysis_packet["schemaVersion"],
         "archsig-analysis-packet-v0"
     );
+    let detail_index = read_json(&out_dir.join("archsig-analysis-detail-index.json"));
+    assert_eq!(
+        detail_index["schemaVersion"],
+        "archsig-analysis-detail-index-v0"
+    );
+    assert_eq!(
+        analysis_packet["detailIndexRef"]["artifactKind"],
+        "archsig-analysis-detail-index"
+    );
     assert!(
         analysis_packet["obstructionCircuits"]
             .as_array()
@@ -832,7 +842,15 @@ fn cli_runs_primary_archmap_lawpolicy_archsig_analyze_workflow() {
         "validation summary must count bounded judgements"
     );
     let llm_packet = read_json(&out_dir.join("llm-interpretation-packet.json"));
-    assert_eq!(llm_packet, analysis_packet);
+    assert_eq!(llm_packet, analysis_packet["llmInterpretationPacket"]);
+    assert!(
+        llm_packet.get("obstructionCircuits").is_none(),
+        "LLM interpretation artifact must not duplicate the full analysis packet"
+    );
+    assert!(
+        analysis_validation.get("packet").is_none(),
+        "analysis validation must not embed the full analysis packet"
+    );
 }
 
 #[test]
@@ -907,7 +925,14 @@ fn cli_archsig_analysis_step_outputs_packet_and_validation() {
         validation_json["schemaVersion"],
         "archsig-analysis-packet-validation-report-v0"
     );
-    assert_eq!(read_json(&llm_packet), packet_json);
+    assert_eq!(
+        read_json(&llm_packet),
+        packet_json["llmInterpretationPacket"]
+    );
+    assert!(
+        validation_json.get("packet").is_none(),
+        "analysis validation must not embed the full analysis packet"
+    );
 }
 
 #[test]

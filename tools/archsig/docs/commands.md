@@ -41,12 +41,20 @@ The command emits only:
 - `archmap-validation.json`
 - `law-policy-validation.json`
 - `archsig-analysis-packet.json`
+- `archsig-analysis-detail-index.json`
 - `archsig-analysis-validation.json`
 - `llm-interpretation-packet.json`
 
-`llm-interpretation-packet.json` is the same structured packet written for LLM
-reading. It is not a natural-language judgement, Lean proof, architecture
-lawfulness certificate, or automatic repair instruction.
+`archsig-analysis-packet.json` is compact-first: large repeated string ref sets
+are replaced by `archsig-detail-ref-v0` objects with counts, samples, and detail
+refs. Full ref sets are stored through a dictionary-backed
+`archsig-analysis-detail-index.json`. For large ArchMaps, run `analyze` with
+`cargo run --release`.
+
+`llm-interpretation-packet.json` contains the compact
+`llmInterpretationPacket` reading surface from the analysis packet. It is not a
+natural-language judgement, Lean proof, architecture lawfulness certificate, or
+automatic repair instruction.
 
 To emit a compact review summary from an existing packet, run:
 
