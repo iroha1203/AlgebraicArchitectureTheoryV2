@@ -2473,10 +2473,23 @@ fn build_obstruction_circuits(
                 .witness_rules
                 .iter()
                 .find(|rule| rule.witness_rule_id == definition.witness_rule_ref)?;
-            let atom_refs = matching_atom_refs_for_witness(archmap, witness_rule);
+            let atom_family_refs = matching_atom_family_refs_for_witness(archmap, witness_rule);
+            let atom_refs = unique_strings(
+                atom_family_refs
+                    .iter()
+                    .flat_map(|family| family.observation_refs.iter().cloned()),
+            );
             let molecule_refs = molecule_readings
                 .iter()
-                .filter(|reading| reading.law_refs.contains(&definition.law_ref))
+                .filter(|reading| {
+                    reading.law_refs.contains(&definition.law_ref)
+                        && molecule_reading_satisfies_witness_patterns(
+                            archmap,
+                            law_policy,
+                            reading,
+                            witness_rule,
+                        )
+                })
                 .map(|reading| reading.molecule_reading_id.clone())
                 .collect::<Vec<_>>();
             let concern_refs = archmap
@@ -2486,7 +2499,7 @@ fn build_obstruction_circuits(
                 .map(|hint| hint.concern_hint_id.clone())
                 .collect::<Vec<_>>();
 
-            if !witness_constructible(witness_rule, &atom_refs, &molecule_refs, &concern_refs) {
+            if !witness_constructible(witness_rule, &atom_family_refs, &molecule_refs) {
                 return None;
             }
 
@@ -11224,20 +11237,12 @@ fn source_backed_continuation_comparison(
     } else {
         Vec::new()
     };
-    let value = if !positive_defect_refs.is_empty() || !semantic_refs.is_empty() {
-        1
-    } else {
-        0
-    };
-    let mu_defect_refs = if positive_defect_refs.is_empty() {
-        vec![format!(
-            "mu:{}:{}",
-            stable_id(&loop_candidate.path_pair_ref),
-            stable_id(axis_ref)
-        )]
-    } else {
-        positive_defect_refs
-    };
+    let value = related_defects
+        .iter()
+        .filter_map(|defect| defect.distance_value)
+        .filter(|value| *value > 0)
+        .sum::<i64>();
+    let mu_defect_refs = positive_defect_refs;
     let summary = format!(
         "{} vs {} on {axis_ref}; distanceKind={distance_kind}; sourceRefs={}; semanticEvidence={}; traceAxes={}; missing={}",
         path_pair.p_path_ref,
@@ -13017,11 +13022,11 @@ fn check_homotopy_holonomy_stokes_surface(packet: &ArchSigAnalysisPacketV0) -> V
                 "homotopy holonomy reading must connect mu_x to compared continuation refs and distance inputs",
             ));
         }
-        if reading.mu_defect_refs.is_empty() {
+        if reading.value != 0 && reading.mu_defect_refs.is_empty() {
             examples.push(generic_validation_example(
                 &reading.reading_id,
                 "muDefectRefs",
-                "homotopy holonomy reading must expose mu_x defect refs",
+                "nonzero homotopy holonomy reading must expose positive mu_x defect refs",
             ));
         }
         if reading.filler_refs.is_empty() && reading.missing_filler_refs.is_empty() {
@@ -17685,14 +17690,11 @@ fn check_measurement_depth(packet: &ArchSigAnalysisPacketV0) -> ValidationCheck 
                     "measured holonomy must retain source, observation, or monodromy defect refs",
                 ));
             }
-            if holonomy.value != 0
-                && holonomy.observation_refs.is_empty()
-                && holonomy.mu_defect_refs.is_empty()
-            {
+            if holonomy.value != 0 && holonomy.mu_defect_refs.is_empty() {
                 examples.push(generic_validation_example(
                     &holonomy.reading_id,
-                    "muDefectRefs/observationRefs",
-                    "nonzero holonomy must be backed by semantic evidence or positive monodromy defects",
+                    "muDefectRefs",
+                    "nonzero holonomy must be backed by positive selected-axis continuation defects, not semantic evidence alone",
                 ));
             }
         }
@@ -17893,6 +17895,23 @@ fn check_law_relative_analysis(packet: &ArchSigAnalysisPacketV0) -> ValidationCh
                 "obstruction circuit must declare affected signature axes",
             ));
         }
+        if circuit.atom_observation_refs.is_empty() {
+            examples.push(generic_validation_example(
+                &circuit.obstruction_circuit_id,
+                "atomObservationRefs",
+                "obstruction circuit must be backed by required witness atom families, not policy text or concern cues",
+            ));
+        }
+        if !circuit.concern_hint_refs.is_empty()
+            && (circuit.atom_observation_refs.is_empty()
+                || circuit.molecule_reading_refs.is_empty())
+        {
+            examples.push(generic_validation_example(
+                &circuit.obstruction_circuit_id,
+                "concernHintRefs",
+                "concernHints may only be auxiliary context after atom and molecule witness support are present",
+            ));
+        }
         for axis_ref in &circuit.signature_axis_refs {
             if !axis_ids.contains(axis_ref.as_str()) {
                 examples.push(generic_validation_example(
@@ -17960,12 +17979,28 @@ fn check_signature_and_flatness(packet: &ArchSigAnalysisPacketV0) -> ValidationC
         ),
     ));
     for axis in &packet.signature_axes {
+        let constructed_value = packet
+            .obstruction_circuits
+            .iter()
+            .filter(|circuit| {
+                circuit
+                    .signature_axis_refs
+                    .contains(&axis.signature_axis_id)
+            })
+            .count() as i64;
         push_blank(&mut examples, &axis.signature_axis_id, &axis.law_ref);
         push_blank(
             &mut examples,
             &format!("{} axisRef", axis.signature_axis_id),
             &axis.axis_ref,
         );
+        if axis.value != constructed_value {
+            examples.push(generic_validation_example(
+                &axis.signature_axis_id,
+                "value",
+                "signature axis value must equal constructed obstruction circuit count for that axis",
+            ));
+        }
         if axis.exactness_assumptions.is_empty() || has_blank(&axis.exactness_assumptions) {
             examples.push(generic_validation_example(
                 &axis.signature_axis_id,
@@ -18349,36 +18384,78 @@ fn selected_laws_for_atom_refs(
     law_refs
 }
 
-fn matching_atom_refs_for_witness(
+#[derive(Debug, Clone)]
+struct WitnessFamilySupport {
+    family_ref: String,
+    observation_refs: Vec<String>,
+}
+
+fn matching_atom_family_refs_for_witness(
     archmap: &ArchMapDocumentV0,
     witness_rule: &LawPolicyWitnessRuleV0,
-) -> Vec<String> {
-    let mut refs = archmap
-        .atom_observations
+) -> Vec<WitnessFamilySupport> {
+    witness_rule
+        .required_atom_families
         .iter()
-        .filter(|atom| {
-            witness_rule
-                .required_atom_families
-                .iter()
-                .any(|family| family_matches(atom.atom_family.as_str(), family.as_str()))
+        .map(|family| WitnessFamilySupport {
+            family_ref: family.clone(),
+            observation_refs: matching_observation_refs_for_family(archmap, family),
         })
-        .map(|atom| atom.atom_observation_id.clone())
-        .collect::<Vec<_>>();
-    refs.extend(
+        .collect()
+}
+
+fn matching_observation_refs_for_family(archmap: &ArchMapDocumentV0, family: &str) -> Vec<String> {
+    unique_strings(
         archmap
-            .semantic_observations
+            .atom_observations
             .iter()
-            .filter(|semantic| {
-                witness_rule.required_atom_families.iter().any(|family| {
-                    family_matches(semantic.semantic_family.as_str(), family.as_str())
-                        || family_matches(semantic.predicate.as_str(), family.as_str())
+            .filter(|atom| family_matches(atom.atom_family.as_str(), family))
+            .map(|atom| atom.atom_observation_id.clone())
+            .chain(
+                archmap
+                    .semantic_observations
+                    .iter()
+                    .filter(|semantic| {
+                        family_matches(semantic.semantic_family.as_str(), family)
+                            || family_matches(semantic.predicate.as_str(), family)
+                    })
+                    .map(|semantic| semantic.semantic_observation_id.clone()),
+            ),
+    )
+}
+
+fn molecule_reading_satisfies_witness_patterns(
+    archmap: &ArchMapDocumentV0,
+    law_policy: &LawPolicyDocumentV0,
+    reading: &ArchSigMoleculeReadingV0,
+    witness_rule: &LawPolicyWitnessRuleV0,
+) -> bool {
+    if witness_rule.molecule_pattern_refs.is_empty() {
+        return true;
+    }
+
+    witness_rule
+        .molecule_pattern_refs
+        .iter()
+        .all(|pattern_ref| {
+            law_policy
+                .molecule_patterns
+                .iter()
+                .find(|pattern| pattern.molecule_pattern_id == *pattern_ref)
+                .is_some_and(|pattern| {
+                    pattern.required_atom_families.iter().all(|family| {
+                        reading.atom_observation_refs.iter().any(|atom_ref| {
+                            archmap
+                                .atom_observations
+                                .iter()
+                                .find(|atom| atom.atom_observation_id == *atom_ref)
+                                .is_some_and(|atom| {
+                                    family_matches(atom.atom_family.as_str(), family)
+                                })
+                        })
+                    })
                 })
-            })
-            .map(|semantic| semantic.semantic_observation_id.clone()),
-    );
-    refs.sort();
-    refs.dedup();
-    refs
+        })
 }
 
 fn concern_supports_witness(concern_family: &str, witness_rule: &LawPolicyWitnessRuleV0) -> bool {
@@ -18395,21 +18472,17 @@ fn concern_supports_witness(concern_family: &str, witness_rule: &LawPolicyWitnes
 
 fn witness_constructible(
     witness_rule: &LawPolicyWitnessRuleV0,
-    atom_refs: &[String],
+    atom_family_refs: &[WitnessFamilySupport],
     molecule_refs: &[String],
-    concern_refs: &[String],
 ) -> bool {
-    if witness_rule.required_atom_families.is_empty() {
-        return !molecule_refs.is_empty() || !concern_refs.is_empty();
-    }
-    let required_count = witness_rule.required_atom_families.len();
-    atom_refs.len() >= required_count
-        || (!atom_refs.is_empty() && !molecule_refs.is_empty() && !concern_refs.is_empty())
-        || (witness_rule
-            .witness_kind
-            .to_ascii_lowercase()
-            .contains("mismatch")
-            && !concern_refs.is_empty())
+    let required_atom_families_observed = witness_rule.required_atom_families.is_empty()
+        || atom_family_refs.iter().all(|family| {
+            !family.family_ref.trim().is_empty() && !family.observation_refs.is_empty()
+        });
+    let required_molecule_patterns_observed =
+        witness_rule.molecule_pattern_refs.is_empty() || !molecule_refs.is_empty();
+
+    required_atom_families_observed && required_molecule_patterns_observed
 }
 
 fn obstruction_circuit(
@@ -18882,6 +18955,10 @@ fn strings(values: &[&str]) -> Vec<String> {
 mod tests {
     use super::*;
 
+    fn constructible_obstruction_packet() -> ArchSigAnalysisPacketV0 {
+        static_archsig_analysis_packet()
+    }
+
     fn relation_atom(
         atom_observation_id: &str,
         source_ref: &str,
@@ -19043,7 +19120,7 @@ mod tests {
 
     #[test]
     fn repair_without_preconditions_fails() {
-        let mut packet = static_archsig_analysis_packet();
+        let mut packet = constructible_obstruction_packet();
         packet.repair_operation_candidates[0].preconditions.clear();
         let report = validate_archsig_analysis_packet_report(&packet, "bad-analysis.json");
         assert_eq!(report.summary.result, "fail");
@@ -19055,7 +19132,7 @@ mod tests {
 
     #[test]
     fn child_boundary_absence_fails_validation() {
-        let mut packet = static_archsig_analysis_packet();
+        let mut packet = constructible_obstruction_packet();
         packet.obstruction_circuits[0].missing_evidence.clear();
         packet.signature_axes[0].excluded_readings.clear();
         packet.repair_operation_candidates[0]
@@ -19388,6 +19465,8 @@ mod tests {
         assert!(
             packet.obstruction_circuits.iter().any(|circuit| {
                 circuit.law_ref == "law:semantic-contract-alignment"
+                    && !circuit.atom_observation_refs.is_empty()
+                    && !circuit.molecule_reading_refs.is_empty()
                     && circuit
                         .concern_hint_refs
                         .contains(&"concern:missing-compensation".to_string())
@@ -19395,21 +19474,114 @@ mod tests {
             "{:?}",
             packet.obstruction_circuits
         );
-        assert!(
-            packet
-                .signature_axes
-                .iter()
-                .any(
-                    |axis| axis.signature_axis_id == "sig-axis:semantic-inconsistency"
-                        && axis.value == 1
-                )
-        );
+        assert!(packet.signature_axes.iter().any(|axis| {
+            axis.signature_axis_id == "sig-axis:semantic-inconsistency" && axis.value == 1
+        }));
         assert!(
             packet
                 .flatness_reading
                 .blocked_by_coverage_gaps
                 .contains(&"gap-runtime-user-db-trace".to_string())
         );
+    }
+
+    #[test]
+    fn obstruction_requires_family_complete_atom_and_molecule_witnesses() {
+        let packet = constructible_obstruction_packet();
+        let report = validate_archsig_analysis_packet_report(&packet, "computed-analysis.json");
+
+        assert_eq!(report.summary.result, "pass", "{:?}", report.checks);
+        assert_eq!(packet.obstruction_circuits.len(), 1);
+        let circuit = &packet.obstruction_circuits[0];
+        assert_eq!(circuit.law_ref, "law:semantic-contract-alignment");
+        assert!(
+            circuit
+                .atom_observation_refs
+                .contains(&"atom:contract:create-user".to_string())
+        );
+        assert!(
+            circuit
+                .atom_observation_refs
+                .contains(&"semantic:interpretation:create-user".to_string())
+        );
+        assert!(!circuit.molecule_reading_refs.is_empty());
+        assert!(
+            circuit
+                .concern_hint_refs
+                .contains(&"concern:missing-compensation".to_string()),
+            "concern hints may remain auxiliary once the real witness is constructible"
+        );
+    }
+
+    #[test]
+    fn concern_only_obstruction_and_signature_axis_fail_validation() {
+        let mut packet = constructible_obstruction_packet();
+        packet.obstruction_circuits[0].atom_observation_refs.clear();
+        packet.obstruction_circuits[0].molecule_reading_refs.clear();
+        packet.signature_axes[1].value = 1;
+        packet.obstruction_circuits.clear();
+
+        let report = validate_archsig_analysis_packet_report(&packet, "invalid.json");
+
+        assert_eq!(report.summary.result, "fail");
+        assert!(report.checks.iter().any(|check| {
+            check.id == "archsig-analysis-packet-signature-and-flatness"
+                && check.result == "fail"
+                && check.examples.iter().any(|example| {
+                    example.target.as_deref() == Some("value")
+                        && example
+                            .evidence
+                            .as_deref()
+                            .is_some_and(|evidence| evidence.contains("constructed obstruction"))
+                })
+        }));
+    }
+
+    #[test]
+    fn malformed_concern_backed_obstruction_fails_validation() {
+        let mut packet = constructible_obstruction_packet();
+        packet.obstruction_circuits[0].atom_observation_refs.clear();
+        packet.obstruction_circuits[0].molecule_reading_refs.clear();
+
+        let report = validate_archsig_analysis_packet_report(&packet, "invalid.json");
+
+        assert_eq!(report.summary.result, "fail");
+        assert!(report.checks.iter().any(|check| {
+            check.id == "archsig-analysis-packet-law-relative-obstructions"
+                && check.result == "fail"
+                && check
+                    .examples
+                    .iter()
+                    .any(|example| example.target.as_deref() == Some("concernHintRefs"))
+        }));
+    }
+
+    #[test]
+    fn semantic_only_holonomy_nonzero_fails_validation() {
+        let mut packet = static_archsig_analysis_packet();
+        let holonomy = packet
+            .homotopy_holonomy_readings
+            .iter_mut()
+            .find(|reading| !reading.observation_refs.is_empty())
+            .expect("fixture has holonomy with semantic observation refs");
+        holonomy.measurement_status = "measured".to_string();
+        holonomy.value = 1;
+        holonomy.mu_defect_refs.clear();
+
+        let report = validate_archsig_analysis_packet_report(&packet, "invalid.json");
+
+        assert_eq!(report.summary.result, "fail");
+        assert!(report.checks.iter().any(|check| {
+            check.id == "archsig-analysis-packet-measurement-depth"
+                && check.result == "fail"
+                && check.examples.iter().any(|example| {
+                    example.target.as_deref() == Some("muDefectRefs")
+                        && example
+                            .evidence
+                            .as_deref()
+                            .is_some_and(|evidence| evidence.contains("semantic evidence alone"))
+                })
+        }));
     }
 
     #[test]

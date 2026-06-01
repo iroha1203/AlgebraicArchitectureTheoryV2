@@ -241,6 +241,29 @@
       "nonConclusions": [
         "contract atom observation is not global semantic completeness"
       ]
+    },
+    {
+      "atomObservationId": "atom:capability:create-user",
+      "atomFamily": "capability",
+      "predicate": "create-user capability is observed",
+      "subjectRef": "operation.createUser",
+      "objectRefs": ["service.user"],
+      "sourceRefs": [
+        {
+          "artifactId": "test-user-contract",
+          "kind": "test",
+          "path": "tests/user_contract.test.ts",
+          "symbol": "createsUser"
+        }
+      ],
+      "observationStatus": "observed",
+      "evidenceBoundary": "sourceObserved",
+      "confidence": "medium",
+      "uncertainty": ["production traces not supplied"],
+      "projectionRefs": ["projection:aat:create-user-contract"],
+      "nonConclusions": [
+        "capability atom observation is not complete operation semantics"
+      ]
     }
   ],
   "moleculeObservations": [
@@ -252,7 +275,8 @@
         "atom:component:route-users",
         "atom:component:service-user",
         "atom:relation:route-service",
-        "atom:contract:create-user"
+        "atom:contract:create-user",
+        "atom:capability:create-user"
       ],
       "sourceRefs": [
         {
@@ -299,6 +323,36 @@
       "evidenceBoundary": "sourceObserved",
       "nonConclusions": [
         "semantic observation is not a proof of global semantic correctness"
+      ]
+    },
+    {
+      "semanticObservationId": "semantic:interpretation:create-user",
+      "semanticFamily": "semanticInterpretation",
+      "subjectRef": "operation.createUser",
+      "predicate": "create-user operation has a selected semantic interpretation",
+      "atomObservationRefs": [
+        "atom:relation:route-service",
+        "atom:contract:create-user"
+      ],
+      "moleculeObservationRefs": ["molecule:user-request-responsibility"],
+      "sourceRefs": [
+        {
+          "artifactId": "doc-architecture",
+          "kind": "docSection",
+          "path": "docs/architecture.md",
+          "section": "Layer policy"
+        },
+        {
+          "artifactId": "test-user-contract",
+          "kind": "test",
+          "path": "tests/user_contract.test.ts",
+          "symbol": "createsUser"
+        }
+      ],
+      "observationStatus": "observed",
+      "evidenceBoundary": "sourceObserved",
+      "nonConclusions": [
+        "semantic interpretation observation is not a proof of global semantic correctness"
       ]
     }
   ],
