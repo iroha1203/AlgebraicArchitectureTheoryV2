@@ -65,10 +65,9 @@ jobs:
           test -s "$archsig_dir/archmap-validation.json"
           test -s "$archsig_dir/law-policy-validation.json"
           test -s "$archsig_dir/archsig-analysis-packet.json"
+          test -s "$archsig_dir/archsig-analysis-detail-index.json"
           test -s "$archsig_dir/archsig-analysis-validation.json"
           test -s "$archsig_dir/llm-interpretation-packet.json"
-
-          cmp "$archsig_dir/archsig-analysis-packet.json" "$archsig_dir/llm-interpretation-packet.json"
 
           jq -e '
             .schemaVersion == "archsig-analysis-packet-v0"
@@ -78,6 +77,17 @@ jobs:
             and ((.signatureAxes | length) > 0)
             and ([.nonConclusions[] | contains("not a Lean theorem proof")] | any)
           ' "$archsig_dir/archsig-analysis-packet.json"
+
+          jq -e '
+            .schemaVersion == "archsig-analysis-detail-index-v0"
+            and .indexKind == "deduplicated-string-ref-set-dictionary"
+            and (.refDictionary | type == "array")
+            and (.refSets | type == "array")
+          ' "$archsig_dir/archsig-analysis-detail-index.json"
+
+          jq -e --slurpfile packet "$archsig_dir/archsig-analysis-packet.json" '
+            . == $packet[0].llmInterpretationPacket
+          ' "$archsig_dir/llm-interpretation-packet.json"
 
           jq -e '
             .summary.result == "pass"
