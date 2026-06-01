@@ -56,18 +56,19 @@ Expected ArchSig outputs:
 .lake/archsig-analyze-e2e/archsig/archmap-validation.json
 .lake/archsig-analyze-e2e/archsig/law-policy-validation.json
 .lake/archsig-analyze-e2e/archsig/archsig-analysis-packet.json
+.lake/archsig-analyze-e2e/archsig/archsig-analysis-detail-index.json
 .lake/archsig-analyze-e2e/archsig/archsig-analysis-validation.json
 .lake/archsig-analyze-e2e/archsig/llm-interpretation-packet.json
 ```
 
-The LLM interpretation packet is byte-for-byte the same structured analysis
-packet:
+The analysis packet is compact-first. Large repeated string ref sets are
+replaced by `archsig-detail-ref-v0` objects in the packet and stored through a
+dictionary-backed `archsig-analysis-detail-index.json`. For large ArchMaps, run
+the workflow with `cargo run --release`.
 
-```bash
-cmp \
-  .lake/archsig-analyze-e2e/archsig/archsig-analysis-packet.json \
-  .lake/archsig-analyze-e2e/archsig/llm-interpretation-packet.json
-```
+The LLM interpretation packet is the compact `llmInterpretationPacket` reading
+surface from `archsig-analysis-packet.json`; it is intentionally not a
+byte-for-byte copy of the full analysis packet.
 
 Project the ArchSig analysis packet into FieldSig:
 

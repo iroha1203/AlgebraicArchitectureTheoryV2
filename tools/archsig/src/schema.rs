@@ -3136,7 +3136,8 @@ pub struct ArchSigLlmInterpretationPacketV0 {
 pub struct ArchSigAnalysisPacketValidationReportV0 {
     pub schema_version: String,
     pub input: ArchSigAnalysisPacketValidationInputV0,
-    pub packet: ArchSigAnalysisPacketV0,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub packet: Option<ArchSigAnalysisPacketV0>,
     pub summary: ArchSigAnalysisPacketValidationSummaryV0,
     pub checks: Vec<ValidationCheck>,
 }

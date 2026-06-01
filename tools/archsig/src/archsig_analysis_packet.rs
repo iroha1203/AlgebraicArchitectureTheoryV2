@@ -3346,15 +3346,13 @@ fn selected_relation_graph(archmap: &ArchMapDocumentV0) -> SelectedRelationGraph
             }
         })
         .collect::<Vec<_>>();
-    let adjacency = matrix_entries
-        .iter()
-        .map(|entry| {
-            (
-                (entry.row_ref.as_str(), entry.column_ref.as_str()),
-                entry.value,
-            )
-        })
-        .collect::<BTreeMap<_, _>>();
+    let mut adjacency_by_source = BTreeMap::<&str, Vec<(&str, i64)>>::new();
+    for entry in &matrix_entries {
+        adjacency_by_source
+            .entry(entry.row_ref.as_str())
+            .or_default()
+            .push((entry.column_ref.as_str(), entry.value));
+    }
     let mut reachable_pairs = BTreeSet::<String>::new();
     let mut walk_witness_refs = Vec::new();
     let mut cycle_refs = BTreeSet::<String>::new();
@@ -3366,10 +3364,10 @@ fn selected_relation_graph(archmap: &ArchMapDocumentV0) -> SelectedRelationGraph
         for depth in 1..=3 {
             let mut next = BTreeSet::new();
             for node in &frontier {
-                for target in nodes.iter().map(String::as_str) {
-                    if let Some(weight) = adjacency.get(&(*node, target)) {
+                if let Some(outgoing_edges) = adjacency_by_source.get(*node) {
+                    for (target, weight) in outgoing_edges {
                         walk_count_len_le_3 += *weight as usize;
-                        next.insert(target);
+                        next.insert(*target);
                         walk_witness_refs.push(format!(
                             "walk:{}:{}:{}",
                             stable_id(start),
@@ -3377,10 +3375,10 @@ fn selected_relation_graph(archmap: &ArchMapDocumentV0) -> SelectedRelationGraph
                             stable_id(target)
                         ));
                         reachable_pairs.insert(format!("{start}->{target}"));
-                        if target == start.as_str() {
+                        if *target == start.as_str() {
                             cycle_refs.insert(format!("cycle:{start}:length-{depth}"));
                         }
-                        if seen.insert(target) {
+                        if seen.insert(*target) {
                             max_shortest_path_len = max_shortest_path_len.max(depth);
                         }
                     }
@@ -12932,7 +12930,7 @@ pub fn validate_archsig_analysis_packet_report(
             arch_map_ref: packet.arch_map_ref.artifact_id.clone(),
             selected_law_policy_ref: packet.selected_law_policy_ref.artifact_id.clone(),
         },
-        packet: packet.clone(),
+        packet: None,
         summary,
         checks,
     }

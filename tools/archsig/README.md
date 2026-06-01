@@ -115,12 +115,28 @@ This writes:
 - `.archsig/analyze/archmap-validation.json`
 - `.archsig/analyze/law-policy-validation.json`
 - `.archsig/analyze/archsig-analysis-packet.json`
+- `.archsig/analyze/archsig-analysis-detail-index.json`
 - `.archsig/analyze/archsig-analysis-validation.json`
 - `.archsig/analyze/llm-interpretation-packet.json`
 
-`llm-interpretation-packet.json` is the same structured packet written for LLM
-reading. Treat it as structured review evidence with explicit measurement
-bounds, not as a standalone decision record or automatic repair instruction.
+`archsig-analysis-packet.json` is compact-first: large repeated string ref
+sets are replaced by `archsig-detail-ref-v0` objects with counts, samples, and
+detail refs. Full ref sets are stored through a dictionary-backed
+`archsig-analysis-detail-index.json`.
+
+For large ArchMaps, prefer the optimized binary:
+
+```bash
+cargo run --release --manifest-path tools/archsig/Cargo.toml -- analyze \
+  --archmap .archsig/hilda/archmap.json \
+  --law-policy .archsig/hilda/hilda-law-policy.json \
+  --out-dir .archsig/analyze
+```
+
+`llm-interpretation-packet.json` contains the compact
+`llmInterpretationPacket` reading surface from the analysis packet. Treat it as
+structured review evidence with explicit measurement bounds, not as a
+standalone decision record or automatic repair instruction.
 
 To write the compact reading surface from those artifacts:
 
