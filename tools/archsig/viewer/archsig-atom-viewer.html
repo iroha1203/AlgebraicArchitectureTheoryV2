@@ -242,6 +242,40 @@
       background: var(--muted);
     }
 
+    .axis-hud {
+      position: absolute;
+      z-index: 5;
+      top: 88px;
+      right: 12px;
+      width: min(340px, calc(100vw - 24px));
+      padding: 10px;
+      border: 1px solid rgba(238, 242, 246, 0.14);
+      border-radius: var(--radius);
+      background: rgba(16, 19, 24, 0.86);
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.4;
+      pointer-events: none;
+      backdrop-filter: blur(10px);
+    }
+
+    .axis-hud strong {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--text);
+      font-size: 12px;
+    }
+
+    .axis-hud div {
+      display: grid;
+      grid-template-columns: 20px minmax(0, 1fr);
+      gap: 6px;
+    }
+
+    .axis-hud b {
+      color: var(--accent);
+    }
+
     .drop {
       position: absolute;
       inset: 0;
@@ -420,6 +454,13 @@
         display: none;
       }
 
+      .axis-hud {
+        top: auto;
+        right: 12px;
+        bottom: 48px;
+        width: min(360px, calc(100vw - 24px));
+      }
+
       .detail {
         position: static;
         width: auto;
@@ -455,7 +496,6 @@
           <label class="toggle"><input id="toggle-atoms" type="checkbox" checked>Atoms</label>
           <label class="toggle"><input id="toggle-groups" type="checkbox" checked>Molecules</label>
           <label class="toggle"><input id="toggle-edges" type="checkbox" checked>Edges</label>
-          <label class="toggle"><input id="toggle-overlays" type="checkbox" checked>Overlays</label>
         </div>
         <div class="toolbar-group">
           <select id="view-mode" title="View mode">
@@ -479,6 +519,9 @@
           <select id="status-filter" title="Observation status">
             <option value="">All statuses</option>
           </select>
+          <select id="molecule-filter" title="Molecule">
+            <option value="">All molecules</option>
+          </select>
           <select id="focus-filter" title="Focus filter">
             <option value="">All atoms</option>
             <option value="authorityTrustPermission">Authority / trust / permission</option>
@@ -490,6 +533,7 @@
         </div>
       </div>
       <div id="legend" class="legend"></div>
+      <div id="axis-hud" class="axis-hud"></div>
       <aside id="detail" class="detail" hidden aria-label="Selected visual detail"></aside>
       <div id="status" class="status">Loading default viewer data</div>
     </section>
@@ -547,16 +591,17 @@
     const resetEl = document.getElementById("reset");
     const detailEl = document.getElementById("detail");
     const legendEl = document.getElementById("legend");
+    const axisHudEl = document.getElementById("axis-hud");
     const viewModeEl = document.getElementById("view-mode");
     const familyFilterEl = document.getElementById("family-filter");
     const statusFilterEl = document.getElementById("status-filter");
+    const moleculeFilterEl = document.getElementById("molecule-filter");
     const focusFilterEl = document.getElementById("focus-filter");
     const searchEl = document.getElementById("search");
     const toggles = {
       atoms: document.getElementById("toggle-atoms"),
       groups: document.getElementById("toggle-groups"),
-      edges: document.getElementById("toggle-edges"),
-      overlays: document.getElementById("toggle-overlays")
+      edges: document.getElementById("toggle-edges")
     };
 
     const scene = new THREE.Scene();
@@ -565,8 +610,7 @@
     const atomGroup = new THREE.Group();
     const moleculeGroup = new THREE.Group();
     const edgeGroup = new THREE.Group();
-    const overlayGroup = new THREE.Group();
-    scene.add(atomGroup, moleculeGroup, edgeGroup, overlayGroup);
+    scene.add(atomGroup, moleculeGroup, edgeGroup);
     scene.add(new THREE.AmbientLight(0xffffff, 0.76));
     const light = new THREE.DirectionalLight(0xffffff, 1.2);
     light.position.set(70, 120, 90);
@@ -587,9 +631,8 @@
     let currentCompanions = {};
     let renderedAtoms = [];
     let renderedGroups = [];
-    let renderedOverlays = [];
+    let renderedEdgeCount = 0;
     let atomInstanceMesh = null;
-    let overlayInstanceMesh = null;
     let selectedAtomKey = null;
     let activeLayoutContext = null;
 
@@ -698,9 +741,7 @@
       clearGroup(atomGroup);
       clearGroup(moleculeGroup);
       clearGroup(edgeGroup);
-      clearGroup(overlayGroup);
       atomInstanceMesh = null;
-      overlayInstanceMesh = null;
       selectedAtomKey = null;
       detailEl.hidden = true;
 
@@ -708,17 +749,17 @@
       const allGroups = Array.isArray(currentData.moleculeGroups) ? currentData.moleculeGroups : [];
       const edges = Array.isArray(currentData.atomEdges) ? currentData.atomEdges : [];
       renderedAtoms = filterNodes(allNodes);
-      renderedGroups = allGroups;
-      renderedOverlays = overlayItems(currentData);
+      renderedGroups = filterGroups(allGroups);
+      renderedEdgeCount = 0;
 
       const positions = new Map();
       activeLayoutContext = buildLayoutContext(renderedAtoms, renderedGroups, currentData);
       renderedAtoms.forEach((node, index) => positions.set(node.nodeId, nodePosition(node, index, renderedAtoms.length, activeLayoutContext)));
       renderAtomInstances(renderedAtoms, positions);
       renderMoleculeGroups(renderedGroups, positions, activeLayoutContext);
-      renderEdges(edges, positions);
-      renderOverlayInstances(renderedOverlays);
+      renderedEdgeCount = renderEdges(edges, positions);
       renderLegend();
+      renderAxisHud();
       updateVisibility();
       statusText(allNodes, edges);
     }
@@ -743,6 +784,9 @@
     }
 
     function renderMoleculeGroups(groups, positions, layoutContext) {
+      const vertices = [];
+      const colors = [];
+      const centroids = [];
       groups.forEach((group, index) => {
         const refs = Array.isArray(group.atomObservationRefs) ? group.atomObservationRefs : [];
         const points = refs.map((ref) => positions.get(ref)).filter(Boolean);
@@ -751,16 +795,51 @@
           ? layoutContext.moleculeCenters.get(group.groupId)
           : points.length ? centroid(points) : groupPosition(index, groups.length);
         positions.set(group.groupId, p);
-        const geometry = new THREE.SphereGeometry(7 + Math.min(points.length || refs.length, 18) * 0.72, 18, 8);
-        const material = new THREE.MeshStandardMaterial({
+        appendMoleculeBonds(group, points, p, index, vertices, colors);
+        if (viewModeEl.value === "molecules" && points.length) {
+          centroids.push({ group, center: p, index, count: points.length });
+        }
+      });
+      renderMoleculeBondBuffer(vertices, colors);
+      renderMoleculeCentroids(centroids);
+    }
+
+    function appendMoleculeBonds(group, points, center, index, vertices, colors) {
+      if (!points.length) return;
+      const color = scratchColor.setHex(0xe0b84e);
+      for (const point of points) {
+        vertices.push(center.x, center.y, center.z, point.x, point.y, point.z);
+        colors.push(color.r, color.g, color.b, color.r, color.g, color.b);
+      }
+    }
+
+    function renderMoleculeBondBuffer(vertices, colors) {
+      if (!vertices.length) return;
+      const geometry = new THREE.BufferGeometry();
+      geometry.setAttribute("position", new THREE.Float32BufferAttribute(vertices, 3));
+      geometry.setAttribute("color", new THREE.Float32BufferAttribute(colors, 3));
+      const material = new THREE.LineBasicMaterial({
+        vertexColors: true,
+        transparent: true,
+        opacity: viewModeEl.value === "molecules" ? 0.36 : 0.2
+      });
+      const bonds = new THREE.LineSegments(geometry, material);
+      bonds.userData = { kind: "moleculeBonds" };
+      moleculeGroup.add(bonds);
+    }
+
+    function renderMoleculeCentroids(centroids) {
+      centroids.forEach(({ group, center, index, count }) => {
+        const centroidGeometry = new THREE.SphereGeometry(2.4 + Math.min(count, 80) * 0.025, 12, 8);
+        const centroidMaterial = new THREE.MeshStandardMaterial({
           color: 0xe0b84e,
           transparent: true,
-          opacity: 0.2,
-          roughness: 0.72
+          opacity: 0.7,
+          roughness: 0.55
         });
-        const mesh = new THREE.Mesh(geometry, material);
-        mesh.position.copy(p);
-        mesh.userData = { kind: "molecule", item: group };
+        const mesh = new THREE.Mesh(centroidGeometry, centroidMaterial);
+        mesh.position.copy(center);
+        mesh.userData = { kind: "moleculeCenter", item: group };
         moleculeGroup.add(mesh);
       });
     }
@@ -773,30 +852,12 @@
         if (!source || !target) return;
         points.push(source.x, source.y, source.z, target.x, target.y, target.z);
       });
-      if (!points.length) return;
+      if (!points.length) return 0;
       const geometry = new THREE.BufferGeometry();
       geometry.setAttribute("position", new THREE.Float32BufferAttribute(points, 3));
       const material = new THREE.LineBasicMaterial({ color: 0x5f6f86, transparent: true, opacity: points.length > 9000 ? 0.22 : 0.42 });
       edgeGroup.add(new THREE.LineSegments(geometry, material));
-    }
-
-    function renderOverlayInstances(overlays) {
-      if (!overlays.length) return;
-      const geometry = new THREE.BoxGeometry(1, 1, 1);
-      const material = new THREE.MeshStandardMaterial({ roughness: 0.5 });
-      overlayInstanceMesh = new THREE.InstancedMesh(geometry, material, overlays.length);
-      overlayInstanceMesh.userData.kind = "overlayInstances";
-      const scale = new THREE.Vector3();
-      overlays.forEach((item, index) => {
-        const p = overlayPosition(item, index, overlays.length);
-        const size = 6 + Math.min(Number(item.score || item.sourceRefCount || item.coverageGapCount || 1), 18) * 0.5;
-        scratchMatrix.compose(p, new THREE.Quaternion(), scale.set(size, size, size));
-        overlayInstanceMesh.setMatrixAt(index, scratchMatrix);
-        overlayInstanceMesh.setColorAt(index, scratchColor.setHex(overlayColor(item)));
-      });
-      overlayInstanceMesh.instanceMatrix.needsUpdate = true;
-      if (overlayInstanceMesh.instanceColor) overlayInstanceMesh.instanceColor.needsUpdate = true;
-      overlayGroup.add(overlayInstanceMesh);
+      return points.length / 6;
     }
 
     function buildLayoutContext(nodes, groups, data) {
@@ -987,6 +1048,48 @@
       return refs.length ? Math.min(refs.length, 60) / 10 : 0;
     }
 
+    function geometryMemberships(node, layoutContext) {
+      const aat = layoutContext.aat;
+      return {
+        axes: aat.atomToAxes.get(node.nodeId) || [],
+        curvature: aat.atomToCurvature.get(node.nodeId) || [],
+        holonomy: aat.atomToHolonomy.get(node.nodeId) || [],
+        obstructions: aat.atomToObstructionLoops.get(node.nodeId) || [],
+        spectrum: aat.atomToSpectrum.get(node.nodeId) || []
+      };
+    }
+
+    function aatGeometryBase(node, index, layoutContext, salt) {
+      const memberships = geometryMemberships(node, layoutContext);
+      const weighted = [
+        ...memberships.curvature.map((item) => ({ ...item, weight: 1.45 })),
+        ...memberships.holonomy.map((item) => ({ ...item, weight: 1.25 })),
+        ...memberships.obstructions.map((item) => ({ ...item, weight: 1.35 })),
+        ...memberships.spectrum.map((item) => ({ ...item, weight: 1.1 })),
+        ...memberships.axes.map((item) => ({ ...item, value: 0, weight: 0.65 }))
+      ];
+      if (!weighted.length) return outsideAnalysisPosition(node, index, `${salt}-geometry-boundary`, -86);
+      const p = new THREE.Vector3();
+      let totalWeight = 0;
+      weighted.slice(0, 14).forEach((item) => {
+        const value = Math.min(Math.abs(Number(item.value || 0)), 12);
+        const weight = item.weight + value * 0.08;
+        p.addScaledVector(item.center, weight);
+        totalWeight += weight;
+      });
+      p.divideScalar(Math.max(totalWeight, 1));
+      const spread = weighted.length;
+      const localAngle = (index + hashText(`${salt}:${node.nodeId}`)) * 2.399963229728653;
+      const jitter = 5 + Math.sqrt((index % 233) + 1) * 1.15 + Math.min(spread, 8) * 2.2;
+      const familyLift = (familyRank(node.atomFamily) - 4) * 2.1;
+      return new THREE.Vector3(p.x + Math.cos(localAngle) * jitter, familyLift, p.z + Math.sin(localAngle) * jitter);
+    }
+
+    function geometryScalar(items, fallback = 0) {
+      if (!items.length) return fallback;
+      return items.reduce((sum, item) => sum + Math.abs(Number(item.value || 0)), 0) / items.length;
+    }
+
     function nodePosition(node, index, total, layoutContext) {
       const mode = viewModeEl.value;
       const familyHash = hashText(node.atomFamily || "atom");
@@ -1045,70 +1148,89 @@
     }
 
     function obstructionPosition(node, index, layoutContext) {
+      const memberships = geometryMemberships(node, layoutContext);
       const obstructions = viewModeEl.value === "obstructionLoops"
-        ? layoutContext.aat.atomToObstructionLoops.get(node.nodeId) || []
+        ? memberships.obstructions
         : layoutContext.aat.atomToObstructions.get(node.nodeId) || [];
       if (!obstructions.length) return outsideAnalysisPosition(node, index, "obstruction-none", -76);
+      const base = viewModeEl.value === "obstructionLoops"
+        ? aatGeometryBase(node, index, layoutContext, "obstruction")
+        : (() => {
+          const primary = obstructions[0];
+          const center = obstructions.length === 1 ? primary.center : centroid(obstructions.map((item) => item.center));
+          const localAngle = (index + primary.index * 23) * 2.399963229728653;
+          const localRadius = 8 + Math.sqrt((index % 233) + 1) * 1.9 + obstructions.length * 5;
+          return new THREE.Vector3(center.x + Math.cos(localAngle) * localRadius, 0, center.z + Math.sin(localAngle) * localRadius);
+        })();
       const primary = obstructions[0];
-      const center = obstructions.length === 1 ? primary.center : centroid(obstructions.map((item) => item.center));
-      const localAngle = (index + primary.index * 23) * 2.399963229728653;
       const obstruction = primary.obstruction || primary.item || {};
       const witnessLift = String(obstruction.witnessRuleRef || obstruction.obstructionRef || "").length ? 26 : 12;
       const missing = Array.isArray(obstruction.missingEvidence) ? obstruction.missingEvidence.length : 0;
       const valueLift = Math.min(Math.abs(Number(primary.value || 0)), 8) * 5;
-      const localRadius = 8 + Math.sqrt((index % 233) + 1) * 1.9 + obstructions.length * 5;
-      return new THREE.Vector3(center.x + Math.cos(localAngle) * localRadius, witnessLift + missing * 2.5 + valueLift, center.z + Math.sin(localAngle) * localRadius);
+      const phase = ((hashText(node.nodeId) % 360) / 360) * Math.PI * 2;
+      const loopRadius = viewModeEl.value === "obstructionLoops" ? 8 + obstructions.length * 4 : 0;
+      base.x += Math.cos(phase) * loopRadius;
+      base.z += Math.sin(phase) * loopRadius;
+      base.y = witnessLift + missing * 2.5 + valueLift + memberships.curvature.length * 5;
+      return base;
     }
 
     function curvatureFieldPosition(node, index, layoutContext) {
-      const readings = layoutContext.aat.atomToCurvature.get(node.nodeId) || [];
-      if (!readings.length) return outsideAnalysisPosition(node, index, "curvature-none", -84);
-      const primary = readings[0];
-      const center = readings.length === 1 ? primary.center : centroid(readings.map((item) => item.center));
-      const localAngle = (index + primary.index * 31) * 2.399963229728653;
-      const magnitude = Math.min(Math.abs(Number(primary.value || 0)), 12);
-      const refWeight = Math.min(atomRefs(primary.item).length, 80);
-      const localRadius = 7 + Math.sqrt((index % 397) + 1) * 1.7 + readings.length * 4 + refWeight * 0.18;
-      const y = 8 + magnitude * 10 + readings.length * 5;
-      return new THREE.Vector3(center.x + Math.cos(localAngle) * localRadius, y, center.z + Math.sin(localAngle) * localRadius);
+      const memberships = geometryMemberships(node, layoutContext);
+      const base = aatGeometryBase(node, index, layoutContext, "curvature");
+      if (!memberships.curvature.length) return base;
+      const magnitude = Math.min(geometryScalar(memberships.curvature), 12);
+      const holonomyPull = Math.min(memberships.holonomy.length, 8) * 3.2;
+      const obstructionPull = Math.min(memberships.obstructions.length, 8) * 4.4;
+      base.y = 8 + magnitude * 12 + memberships.curvature.length * 4 + holonomyPull + obstructionPull;
+      const radial = 1 + magnitude * 0.018;
+      base.x *= radial;
+      base.z *= radial;
+      return base;
     }
 
     function holonomyPathPosition(node, index, layoutContext) {
-      const readings = layoutContext.aat.atomToHolonomy.get(node.nodeId) || [];
-      if (!readings.length) return outsideAnalysisPosition(node, index, "holonomy-none", -86);
-      const primary = readings[0];
-      const center = readings.length === 1 ? primary.center : centroid(readings.map((item) => item.center));
-      const localAngle = (index + primary.index * 37) * 2.399963229728653;
-      const value = Math.min(Math.abs(Number(primary.value || 0)), 12);
-      const loopBias = hasKey(primary.item, "loop") || hasKey(primary.item, "path") ? 18 : 0;
-      const localRadius = 16 + Math.sqrt((index % 293) + 1) * 1.95 + readings.length * 6 + loopBias;
-      const y = 4 + value * 9 + readings.length * 6;
-      return new THREE.Vector3(center.x + Math.cos(localAngle) * localRadius, y, center.z + Math.sin(localAngle) * localRadius);
+      const memberships = geometryMemberships(node, layoutContext);
+      const base = aatGeometryBase(node, index, layoutContext, "holonomy");
+      if (!memberships.holonomy.length) return base;
+      const value = Math.min(geometryScalar(memberships.holonomy), 12);
+      const loopCount = memberships.holonomy.length;
+      const phase = ((hashText(node.nodeId) % 360) / 360) * Math.PI * 2;
+      const twist = 10 + Math.min(loopCount, 8) * 3 + value * 1.5;
+      base.x += Math.cos(phase) * twist;
+      base.z += Math.sin(phase) * twist;
+      base.y = 6 + value * 11 + loopCount * 5 + Math.min(memberships.curvature.length, 6) * 4;
+      return base;
     }
 
     function flatnessPosition(node, index, layoutContext) {
-      const axes = layoutContext.aat.atomToAxes.get(node.nodeId) || [];
+      const memberships = geometryMemberships(node, layoutContext);
+      const axes = memberships.axes;
       const obstructions = layoutContext.aat.atomToObstructions.get(node.nodeId) || [];
-      const curvature = layoutContext.aat.atomToCurvature.get(node.nodeId) || [];
-      const holonomy = layoutContext.aat.atomToHolonomy.get(node.nodeId) || [];
+      const curvature = memberships.curvature;
+      const holonomy = memberships.holonomy;
       const gapAxes = axes.filter((item) => String(item.axis.coverageStatus || "").includes("gap"));
       const missing = axes.reduce((sum, item) => sum + (Array.isArray(item.axis.missingEvidence) ? item.axis.missingEvidence.length : 0), 0);
-      const obstructionWeight = obstructions.length * 18 + curvature.length * 10 + holonomy.length * 7;
-      const angle = index * 2.399963229728653;
-      const radius = 24 + Math.sqrt(index + 1) * 4.4 + gapAxes.length * 18 + obstructionWeight;
-      const y = -38 + gapAxes.length * 26 + Math.min(missing, 24) * 2.2 + obstructionWeight;
-      return new THREE.Vector3(Math.cos(angle) * radius, y, Math.sin(angle) * radius);
+      const obstructionWeight = obstructions.length * 18 + curvature.length * 10 + holonomy.length * 7 + memberships.obstructions.length * 9;
+      const base = aatGeometryBase(node, index, layoutContext, "flatness");
+      const radius = 1 + (gapAxes.length * 18 + obstructionWeight) * 0.006;
+      base.x *= radius;
+      base.z *= radius;
+      base.y = -38 + gapAxes.length * 26 + Math.min(missing, 24) * 2.2 + obstructionWeight;
+      return base;
     }
 
     function spectrumPosition(node, index, layoutContext) {
-      const spectral = layoutContext.aat.atomToSpectrum.get(node.nodeId) || [];
+      const memberships = geometryMemberships(node, layoutContext);
+      const spectral = memberships.spectrum;
       if (spectral.length) {
-        const primary = spectral[0];
-        const center = spectral.length === 1 ? primary.center : centroid(spectral.map((item) => item.center));
-        const score = Math.min(Math.abs(Number(primary.value || 0)), 20);
-        const localAngle = (index + primary.index * 41) * 2.399963229728653;
-        const localRadius = 10 + Math.sqrt((index % 307) + 1) * 2.1 + score * 2 + spectral.length * 4;
-        return new THREE.Vector3(center.x + Math.cos(localAngle) * localRadius, 18 + score * 6 + spectral.length * 7, center.z + Math.sin(localAngle) * localRadius);
+        const base = aatGeometryBase(node, index, layoutContext, "spectrum");
+        const score = Math.min(geometryScalar(spectral), 20);
+        const phase = Math.sin((hashText(node.nodeId) % 628) / 100);
+        base.y = 14 + score * 7 + spectral.length * 6 + phase * 8;
+        base.x *= 1 + score * 0.012;
+        base.z *= 1 + score * 0.012;
+        return base;
       }
       const axes = layoutContext.aat.atomToAxes.get(node.nodeId) || [];
       const hotAxes = axes
@@ -1229,13 +1351,6 @@
       return `${key}:${index}`;
     }
 
-    function overlayPosition(item, index, total) {
-      const angle = index * 2.399963229728653;
-      const family = hashText(item.axisRef || item.lawRef || item.kind || item.ref || "overlay") % 9;
-      const radius = 95 + Math.sqrt(index + 1) * 5;
-      return new THREE.Vector3(Math.cos(angle) * radius, 45 + (family - 4) * 6, Math.sin(angle) * radius);
-    }
-
     function centroid(points) {
       const p = new THREE.Vector3();
       points.forEach((point) => p.add(point));
@@ -1249,64 +1364,6 @@
     }
 
     function nodeColor(node) {
-      if (viewModeEl.value === "aatAxes") {
-        const axes = currentAatContext().atomToAxes.get(node.nodeId) || [];
-        if (!axes.length) return 0x36404f;
-        if (axes.some((item) => String(item.axis.coverageStatus || "").includes("gap"))) return 0xef6767;
-        return paletteColor(hashText(axes[0].axis.axisRef || axes[0].axis.lawRef || "axis"));
-      }
-      if (viewModeEl.value === "curvature") {
-        const readings = currentAatContext().atomToCurvature.get(node.nodeId) || [];
-        if (!readings.length) return 0x36404f;
-        if (readings.some((item) => Math.abs(Number(item.value || 0)) > 0)) return 0xef6767;
-        return readings.length > 1 ? 0xe0b84e : 0x66a6ff;
-      }
-      if (viewModeEl.value === "holonomy") {
-        const readings = currentAatContext().atomToHolonomy.get(node.nodeId) || [];
-        if (!readings.length) return 0x36404f;
-        if (readings.some((item) => Math.abs(Number(item.value || 0)) > 0)) return 0xef6767;
-        return readings.length > 1 ? 0xb087ff : 0x4cc3a7;
-      }
-      if (viewModeEl.value === "obstructionLoops" || viewModeEl.value === "obstructions") {
-        const obstructions = viewModeEl.value === "obstructionLoops"
-          ? currentAatContext().atomToObstructionLoops.get(node.nodeId) || []
-          : currentAatContext().atomToObstructions.get(node.nodeId) || [];
-        if (!obstructions.length) return 0x36404f;
-        return obstructions.length > 1 ? 0xef6767 : 0xe0b84e;
-      }
-      if (viewModeEl.value === "flatness") {
-        const aat = currentAatContext();
-        const axes = aat.atomToAxes.get(node.nodeId) || [];
-        const obstructions = aat.atomToObstructions.get(node.nodeId) || [];
-        const curvature = aat.atomToCurvature.get(node.nodeId) || [];
-        const holonomy = aat.atomToHolonomy.get(node.nodeId) || [];
-        if (curvature.length || holonomy.length) return 0xef6767;
-        if (obstructions.length) return 0xef6767;
-        if (axes.some((item) => String(item.axis.coverageStatus || "").includes("gap"))) return 0xe0b84e;
-        if (axes.length) return 0x66a6ff;
-        return 0x36404f;
-      }
-      if (viewModeEl.value === "spectrum") {
-        const aat = currentAatContext();
-        const spectral = aat.atomToSpectrum.get(node.nodeId) || [];
-        if (spectral.length) return spectral.some((item) => Math.abs(Number(item.value || 0)) > 0) ? 0xef6767 : 0xe0b84e;
-        const hot = (aat.atomToAxes.get(node.nodeId) || []).some((item) => aat.hotspotByAxis.has(item.axis.axisRef));
-        return hot ? 0xef6767 : 0x36404f;
-      }
-      if (viewModeEl.value === "risk") {
-        const score = riskScore(node);
-        return score >= 4 ? 0xef6767 : score >= 3 ? 0xe0b84e : score >= 2 ? 0x66a6ff : 0x9aa8b8;
-      }
-      if (viewModeEl.value === "density" || viewModeEl.value === "evidence") {
-        const refs = Number(node.sourceRefCount || 0);
-        return refs >= 8 ? 0xef6767 : refs >= 4 ? 0xe0b84e : refs >= 2 ? 0x4cc3a7 : 0x9aa8b8;
-      }
-      if (viewModeEl.value === "sources") {
-        return paletteColor(hashText(sourceBucket(node)));
-      }
-      if (viewModeEl.value === "projection") {
-        return paletteColor(hashText(projectionBucket(node)));
-      }
       return colorByFamily[node.atomFamily] || colorByStatus[node.observationStatus] || 0xb087ff;
     }
 
@@ -1317,13 +1374,6 @@
     function paletteColor(hash) {
       const palette = [0x4cc3a7, 0x66a6ff, 0xb087ff, 0xe0b84e, 0xef6767, 0x8bd46e, 0xff8f5a, 0xd8dee9];
       return palette[Math.abs(hash) % palette.length];
-    }
-
-    function overlayColor(item) {
-      const text = `${item.kind || ""} ${item.conclusion || ""} ${item.coverageStatus || ""}`.toLowerCase();
-      if (text.includes("gap") || text.includes("blocked")) return 0xef6767;
-      if (text.includes("hotspot") || text.includes("pressure")) return 0xe0b84e;
-      return 0xb087ff;
     }
 
     function riskScore(node) {
@@ -1339,9 +1389,11 @@
     function filterNodes(nodes) {
       const family = familyFilterEl.value;
       const statusValue = statusFilterEl.value;
+      const moleculeRefs = selectedMoleculeRefs();
       const focus = focusFilterEl.value;
       const query = searchEl.value.trim().toLowerCase();
       return nodes.filter((node) => {
+        if (moleculeRefs && !moleculeRefs.has(node.nodeId)) return false;
         if (family && node.atomFamily !== family) return false;
         if (statusValue && node.observationStatus !== statusValue) return false;
         if (focus === "authorityTrustPermission" && !["authority", "trust", "permission"].includes(node.atomFamily)) return false;
@@ -1360,10 +1412,30 @@
       });
     }
 
+    function filterGroups(groups) {
+      const selected = moleculeFilterEl.value;
+      if (!selected) return groups;
+      return groups.filter((group) => group.groupId === selected);
+    }
+
+    function selectedMoleculeRefs() {
+      const selected = moleculeFilterEl.value;
+      if (!selected || !currentData) return null;
+      const groups = Array.isArray(currentData.moleculeGroups) ? currentData.moleculeGroups : [];
+      const group = groups.find((item) => item.groupId === selected);
+      if (!group) return null;
+      return new Set(Array.isArray(group.atomObservationRefs) ? group.atomObservationRefs : []);
+    }
+
     function populateFilters(data) {
       const nodes = Array.isArray(data.atomNodes) ? data.atomNodes : [];
+      const groups = Array.isArray(data.moleculeGroups) ? data.moleculeGroups : [];
       fillSelect(familyFilterEl, "All families", uniqueSorted(nodes.map((node) => node.atomFamily)));
       fillSelect(statusFilterEl, "All statuses", uniqueSorted(nodes.map((node) => node.observationStatus)));
+      fillSelectWithOptions(moleculeFilterEl, "All molecules", groups.map((group) => ({
+        value: group.groupId,
+        label: moleculeLabel(group)
+      })));
     }
 
     function fillSelect(select, label, values) {
@@ -1371,6 +1443,22 @@
       select.innerHTML = `<option value="">${escapeHtml(label)}</option>` +
         values.map((value) => `<option value="${escapeAttr(value)}">${escapeHtml(value)}</option>`).join("");
       select.value = values.includes(current) ? current : "";
+    }
+
+    function fillSelectWithOptions(select, label, options) {
+      const current = select.value;
+      const normalized = options.filter((option) => option.value).map((option) => ({
+        value: String(option.value),
+        label: String(option.label || option.value)
+      }));
+      select.innerHTML = `<option value="">${escapeHtml(label)}</option>` +
+        normalized.map((option) => `<option value="${escapeAttr(option.value)}">${escapeHtml(option.label)}</option>`).join("");
+      select.value = normalized.some((option) => option.value === current) ? current : "";
+    }
+
+    function moleculeLabel(group) {
+      const refs = Array.isArray(group.atomObservationRefs) ? group.atomObservationRefs.length : 0;
+      return `${group.groupId || "molecule"} (${refs})`;
     }
 
     function uniqueSorted(values) {
@@ -1381,7 +1469,8 @@
       const omitted = currentData.omittedDetailCounts || {};
       const omittedText = Number(omitted.atomNodes || 0) > 0 ? `, ${omitted.atomNodes} atoms omitted by projection` : "";
       const modeText = aatModeStatusText();
-      status(`${renderedAtoms.length}/${allNodes.length} atoms, ${renderedGroups.length} molecules, ${allEdges.length} edges${modeText}${omittedText}`);
+      const edgeText = renderedEdgeCount === allEdges.length ? `${allEdges.length}` : `${renderedEdgeCount}/${allEdges.length}`;
+      status(`${renderedAtoms.length}/${allNodes.length} atoms, ${renderedGroups.length} molecules, ${edgeText} edges${modeText}${omittedText}`);
     }
 
     function aatModeStatusText() {
@@ -1415,34 +1504,102 @@
     }
 
     function renderLegend() {
-      const items = viewModeEl.value === "aatAxes"
-        ? [["law-axis support", 0x66a6ff], ["coverage gap preserved", 0xef6767], ["outside selected axes", 0x36404f]]
-        : viewModeEl.value === "curvature"
-          ? [["nonzero curvature support", 0xef6767], ["multi-reading support", 0xe0b84e], ["curvature support", 0x66a6ff], ["outside curvature reading", 0x36404f]]
-        : viewModeEl.value === "holonomy"
-          ? [["nonzero holonomy distance", 0xef6767], ["multi-path support", 0xb087ff], ["path support", 0x4cc3a7], ["outside path reading", 0x36404f]]
-        : viewModeEl.value === "obstructionLoops" || viewModeEl.value === "obstructions"
-          ? [["loop / obstruction support", 0xe0b84e], ["multi-loop support", 0xef6767], ["outside loops", 0x36404f]]
-          : viewModeEl.value === "flatness"
-            ? [["curvature / holonomy boundary", 0xef6767], ["coverage boundary", 0xe0b84e], ["selected axis", 0x66a6ff], ["outside AAT reading", 0x36404f]]
-            : viewModeEl.value === "spectrum"
-              ? [["spectral reading support", 0xef6767], ["zero-valued spectral support", 0xe0b84e], ["outside spectrum", 0x36404f], ["height: computed value", 0x66a6ff]]
-        : viewModeEl.value === "risk"
-        ? [["authority/trust/permission", 0xef6767], ["contract boundary", 0xe0b84e], ["state/effect", 0x66a6ff], ["ordinary", 0x9aa8b8]]
-        : viewModeEl.value === "sources"
-          ? [["cluster: source kind/path", 0x66a6ff], ["height: source weight", 0xe0b84e], ["color: source bucket", 0x4cc3a7]]
-          : viewModeEl.value === "projection"
-            ? [["cluster: projection ref prefix", 0xb087ff], ["height: projection count", 0xe0b84e], ["color: projection bucket", 0x66a6ff]]
-            : viewModeEl.value === "evidence"
-              ? [["x: priority", 0xef6767], ["z: source refs", 0xe0b84e], ["y: atom family", 0x66a6ff], ["height bump: projection refs", 0xb087ff]]
-              : viewModeEl.value === "molecules"
-                ? [["cluster: molecule membership", 0xe0b84e], ["between clusters: multi-molecule atoms", 0xb087ff], ["below: unassigned", 0x9aa8b8]]
-        : viewModeEl.value === "density"
-          ? [["8+ refs", 0xef6767], ["4-7 refs", 0xe0b84e], ["2-3 refs", 0x4cc3a7], ["1 ref", 0x9aa8b8]]
-          : Object.entries(colorByFamily).map(([label, color]) => [label, color]);
+      const items = Object.entries(colorByFamily);
       legendEl.innerHTML = items.slice(0, 12).map(([label, color]) =>
         `<span class="legend-item"><span class="swatch" style="background:#${Number(color).toString(16).padStart(6, "0")}"></span>${escapeHtml(label)}</span>`
       ).join("");
+    }
+
+    function renderAxisHud() {
+      const layout = axisHudText(viewModeEl.value);
+      axisHudEl.innerHTML = `<strong>${escapeHtml(layout.title)}</strong>` +
+        ["x", "y", "z"].map((axis) =>
+          `<div><b>${axis.toUpperCase()}</b><span>${escapeHtml(layout[axis])}</span></div>`
+        ).join("");
+    }
+
+    function axisHudText(mode) {
+      const layouts = {
+        families: {
+          title: "Family spiral",
+          x: "spiral radius",
+          y: "atom family band",
+          z: "spiral phase"
+        },
+        curvature: {
+          title: "Curvature field",
+          x: "AAT geometry support",
+          y: "curvature value / shared pressure",
+          z: "AAT geometry support"
+        },
+        holonomy: {
+          title: "Holonomy paths",
+          x: "path support + loop phase",
+          y: "holonomy distance",
+          z: "path support + loop phase"
+        },
+        obstructionLoops: {
+          title: "Obstruction loops",
+          x: "cycle support + atom phase",
+          y: "witness / defect lift",
+          z: "cycle support + atom phase"
+        },
+        flatness: {
+          title: "Flatness surface",
+          x: "AAT geometry support spread",
+          y: "non-flatness pressure",
+          z: "AAT geometry support spread"
+        },
+        spectrum: {
+          title: "Spectrum landscape",
+          x: "spectral support",
+          y: "spectral value + wave phase",
+          z: "spectral support"
+        },
+        aatAxes: {
+          title: "AAT law axes",
+          x: "selected law axis cluster",
+          y: "coverage gap / support",
+          z: "selected law axis cluster"
+        },
+        molecules: {
+          title: "Molecule map",
+          x: "membership bond layout",
+          y: "atom family / multi-membership",
+          z: "membership bond layout"
+        },
+        sources: {
+          title: "Source map",
+          x: "source bucket",
+          y: "source weight",
+          z: "source bucket"
+        },
+        projection: {
+          title: "Projection map",
+          x: "projection ref bucket",
+          y: "projection count",
+          z: "projection ref bucket"
+        },
+        evidence: {
+          title: "Evidence map",
+          x: "priority score",
+          y: "atom family + projection refs",
+          z: "source refs"
+        },
+        risk: {
+          title: "Boundary review",
+          x: "boundary score radius",
+          y: "boundary score",
+          z: "boundary score radius"
+        },
+        density: {
+          title: "Density",
+          x: "compact source-density spiral",
+          y: "atom family band",
+          z: "compact source-density spiral"
+        }
+      };
+      return layouts[mode] || layouts.families;
     }
 
     function hashText(text) {
@@ -1450,16 +1607,6 @@
       let hash = 0;
       for (let i = 0; i < text.length; i += 1) hash = ((hash << 5) - hash + text.charCodeAt(i)) | 0;
       return Math.abs(hash);
-    }
-
-    function overlayItems(data) {
-      const overlays = data.analysisOverlays || {};
-      return [
-        ...(Array.isArray(overlays.signatureAxes) ? overlays.signatureAxes : []),
-        ...(Array.isArray(overlays.obstructionCircuits) ? overlays.obstructionCircuits : []),
-        ...flattenReportItems(overlays.dominantFindings).slice(0, 40),
-        ...flattenReportItems(overlays.actionQueue).slice(0, 40)
-      ].slice(0, data.layoutSettings?.overlayLimit || 80);
     }
 
     function flattenReportItems(value) {
@@ -1475,11 +1622,10 @@
       atomGroup.visible = toggles.atoms.checked;
       moleculeGroup.visible = toggles.groups.checked;
       edgeGroup.visible = toggles.edges.checked;
-      overlayGroup.visible = toggles.overlays.checked;
     }
 
     Object.values(toggles).forEach((input) => input.addEventListener("change", updateVisibility));
-    [viewModeEl, familyFilterEl, statusFilterEl, focusFilterEl].forEach((input) => input.addEventListener("change", renderScene));
+    [viewModeEl, familyFilterEl, statusFilterEl, moleculeFilterEl, focusFilterEl].forEach((input) => input.addEventListener("change", renderScene));
     searchEl.addEventListener("input", debounce(renderScene, 90));
     resetEl.addEventListener("click", resetCamera);
     renderer.domElement.addEventListener("pointerdown", selectVisual);
@@ -1526,7 +1672,7 @@
       pointer.x = ((event.clientX - rect.left) / Math.max(rect.width, 1)) * 2 - 1;
       pointer.y = -(((event.clientY - rect.top) / Math.max(rect.height, 1)) * 2 - 1);
       raycaster.setFromCamera(pointer, camera);
-      const hits = raycaster.intersectObjects([atomInstanceMesh, overlayInstanceMesh].filter(Boolean), false);
+      const hits = raycaster.intersectObjects([atomInstanceMesh].filter(Boolean), false);
       if (!hits.length) {
         detailEl.hidden = true;
         selectedAtomKey = null;
@@ -1537,8 +1683,6 @@
         const node = renderedAtoms[hit.instanceId];
         selectedAtomKey = node?.nodeId || null;
         renderDetail("Atom", node);
-      } else if (hit.object === overlayInstanceMesh) {
-        renderDetail("Overlay", renderedOverlays[hit.instanceId]);
       }
     }
 
