@@ -951,11 +951,25 @@ fn cli_runs_primary_archmap_lawpolicy_archsig_analyze_workflow() {
         viewer_data["layoutSettings"]["nodeLimit"].as_u64(),
         Some(250)
     );
+    assert_eq!(
+        viewer_data["layoutSettings"]["edgeLimit"].as_u64(),
+        Some(500)
+    );
+    assert_eq!(
+        viewer_data["layoutSettings"]["sourceRefSampleLimit"].as_u64(),
+        Some(3)
+    );
     assert!(
         viewer_data["moleculeGroups"]
             .as_array()
             .is_some_and(|items| !items.is_empty()),
         "viewer data must project ArchMap molecule groups"
+    );
+    assert!(
+        viewer_data["atomEdges"]
+            .as_array()
+            .is_some_and(|items| !items.is_empty()),
+        "viewer data must project bounded molecule-to-atom edges"
     );
     assert!(
         viewer_data["analysisOverlays"]["signatureAxes"]
@@ -1008,6 +1022,7 @@ fn cli_runs_primary_archmap_lawpolicy_archsig_analyze_workflow() {
             && viewer_data.get("layoutSettings").is_some()
             && viewer_data.get("atomNodes").is_some()
             && viewer_data.get("moleculeGroups").is_some()
+            && viewer_data.get("atomEdges").is_some()
             && viewer_data.get("analysisOverlays").is_some()
             && viewer_data.get("reportPane").is_some()
             && viewer_data.get("omittedDetailCounts").is_some(),
@@ -1029,6 +1044,132 @@ fn cli_runs_primary_archmap_lawpolicy_archsig_analyze_workflow() {
     assert!(
         analysis_validation.get("packet").is_none(),
         "analysis validation must not embed the full analysis packet"
+    );
+}
+
+#[test]
+fn cli_analyze_bounds_atom_viewer_data_for_large_repo_projection() {
+    let out_dir = temp_dir("analyze-large-viewer-data");
+    let root = fixture_root();
+    let archmap_path = out_dir.join("large-archmap.json");
+    let mut archmap = read_json(&root.join("archmap.json"));
+    expand_large_archmap_for_viewer_projection(&mut archmap);
+    fs::write(
+        &archmap_path,
+        serde_json::to_vec_pretty(&archmap).expect("large archmap serializes"),
+    )
+    .expect("large archmap can be written");
+
+    run_sig0(&[
+        "analyze",
+        "--archmap",
+        archmap_path.to_str().expect("archmap path is utf-8"),
+        "--law-policy",
+        root.join("law_policy.json")
+            .to_str()
+            .expect("law policy path is utf-8"),
+        "--out-dir",
+        out_dir.to_str().expect("output directory path is utf-8"),
+    ]);
+
+    let viewer_data = read_json(&out_dir.join("archsig-atom-viewer-data.json"));
+    let node_limit = viewer_data["layoutSettings"]["nodeLimit"]
+        .as_u64()
+        .expect("node limit is number") as usize;
+    let molecule_limit = viewer_data["layoutSettings"]["moleculeGroupLimit"]
+        .as_u64()
+        .expect("molecule limit is number") as usize;
+    let edge_limit = viewer_data["layoutSettings"]["edgeLimit"]
+        .as_u64()
+        .expect("edge limit is number") as usize;
+    let source_ref_sample_limit = viewer_data["layoutSettings"]["sourceRefSampleLimit"]
+        .as_u64()
+        .expect("source ref sample limit is number") as usize;
+    let label_limit = viewer_data["layoutSettings"]["labelLimit"]
+        .as_u64()
+        .expect("label limit is number") as usize;
+
+    let atom_nodes = viewer_data["atomNodes"]
+        .as_array()
+        .expect("atom nodes are array");
+    let molecule_groups = viewer_data["moleculeGroups"]
+        .as_array()
+        .expect("molecule groups are array");
+    let atom_edges = viewer_data["atomEdges"]
+        .as_array()
+        .expect("atom edges are array");
+
+    assert_eq!(node_limit, 250);
+    assert_eq!(molecule_limit, 120);
+    assert_eq!(edge_limit, 500);
+    assert_eq!(atom_nodes.len(), node_limit);
+    assert_eq!(molecule_groups.len(), molecule_limit);
+    assert!(atom_edges.len() <= edge_limit);
+    assert!(
+        atom_nodes
+            .iter()
+            .any(|node| node["nodeId"] == "atom:synthetic:late-hotspot"),
+        "top-N priority selection must retain high-priority late atoms instead of taking only the first N"
+    );
+
+    for node in atom_nodes {
+        assert!(
+            node["sourceRefSamples"]
+                .as_array()
+                .is_some_and(|samples| samples.len() <= source_ref_sample_limit),
+            "atom source refs must be bounded samples"
+        );
+        assert!(
+            node["sourceRefCount"].as_u64().is_some_and(
+                |count| count >= node["sourceRefSamples"].as_array().unwrap().len() as u64
+            ),
+            "atom source ref count must preserve omitted source ref context"
+        );
+        assert!(
+            node["labels"]
+                .as_array()
+                .is_some_and(|labels| labels.len() <= label_limit),
+            "atom labels must be bounded"
+        );
+    }
+    for group in molecule_groups {
+        assert!(
+            group["sourceRefSamples"]
+                .as_array()
+                .is_some_and(|samples| samples.len() <= source_ref_sample_limit),
+            "molecule source refs must be bounded samples"
+        );
+        assert!(
+            group["labels"]
+                .as_array()
+                .is_some_and(|labels| labels.len() <= label_limit),
+            "molecule labels must be bounded"
+        );
+    }
+
+    assert!(
+        viewer_data["omittedDetailCounts"]["atomNodes"]
+            .as_u64()
+            .is_some_and(|count| count > 0),
+        "viewer data must record omitted atom node count"
+    );
+    assert!(
+        viewer_data["omittedDetailCounts"]["moleculeGroups"]
+            .as_u64()
+            .is_some_and(|count| count > 0),
+        "viewer data must record omitted molecule group count"
+    );
+    assert!(
+        viewer_data["omittedDetailCounts"]["sourceRefs"]
+            .as_u64()
+            .is_some_and(|count| count > 0),
+        "viewer data must record omitted source ref count"
+    );
+    assert!(
+        viewer_data["omittedDetailCounts"]["omittedReasons"]
+            .as_array()
+            .is_some_and(|reasons| !reasons.is_empty()),
+        "viewer data must explain why detail was omitted"
     );
 }
 
@@ -2423,6 +2564,118 @@ fn has_nested_key(value: &Value, key: &str) -> bool {
         Value::Array(items) => items.iter().any(|value| has_nested_key(value, key)),
         _ => false,
     }
+}
+
+fn expand_large_archmap_for_viewer_projection(archmap: &mut Value) {
+    archmap["sourceInventoryRef"] = Value::Null;
+    let base_atom = archmap["atomObservations"][0].clone();
+    let base_molecule = archmap["moleculeObservations"][0].clone();
+    let mut declared_source_refs = Vec::new();
+    let mut atoms = archmap["atomObservations"]
+        .as_array()
+        .expect("fixture atom observations are array")
+        .clone();
+    for index in 0..319 {
+        let mut atom = base_atom.clone();
+        atom["atomObservationId"] = Value::String(format!("atom:synthetic:{index:03}"));
+        atom["atomFamily"] = Value::String(if index % 5 == 0 {
+            "boundary".to_string()
+        } else {
+            "existence".to_string()
+        });
+        atom["subjectRef"] = Value::String(format!("component.synthetic.{index:03}"));
+        atom["predicate"] = Value::String(format!("synthetic component {index:03} exists"));
+        atom["objectRefs"] = serde_json::json!([format!("component.synthetic.{index:03}")]);
+        atom["confidence"] = Value::String("low".to_string());
+        let source_refs = synthetic_source_refs(index, 5);
+        append_declared_source_refs(&mut declared_source_refs, &source_refs);
+        atom["sourceRefs"] = source_refs;
+        atom["projectionRefs"] = serde_json::json!([format!("projection:synthetic:{index:03}")]);
+        atoms.push(atom);
+    }
+    let mut late_hotspot = base_atom;
+    late_hotspot["atomObservationId"] = Value::String("atom:synthetic:late-hotspot".to_string());
+    late_hotspot["atomFamily"] = Value::String("boundary".to_string());
+    late_hotspot["subjectRef"] = Value::String("component.synthetic.late-hotspot".to_string());
+    late_hotspot["predicate"] =
+        Value::String("late hotspot component crosses key boundary".to_string());
+    late_hotspot["objectRefs"] = serde_json::json!([
+        "component.synthetic.late-hotspot",
+        "boundary.synthetic.hotspot"
+    ]);
+    late_hotspot["confidence"] = Value::String("high".to_string());
+    let hotspot_source_refs = synthetic_source_refs(999, 12);
+    append_declared_source_refs(&mut declared_source_refs, &hotspot_source_refs);
+    late_hotspot["sourceRefs"] = hotspot_source_refs;
+    late_hotspot["projectionRefs"] = serde_json::json!([
+        "projection:synthetic:late-hotspot",
+        "projection:synthetic:boundary"
+    ]);
+    atoms.push(late_hotspot);
+    archmap["atomObservations"] = Value::Array(atoms);
+
+    let mut molecules = archmap["moleculeObservations"]
+        .as_array()
+        .expect("fixture molecule observations are array")
+        .clone();
+    for index in 0..160 {
+        let mut molecule = base_molecule.clone();
+        molecule["moleculeObservationId"] = Value::String(format!("molecule:synthetic:{index:03}"));
+        molecule["moleculeFamily"] = Value::String(if index % 4 == 0 {
+            "boundary-subsystem".to_string()
+        } else {
+            "responsibility".to_string()
+        });
+        molecule["roleName"] = Value::String(format!("synthetic subsystem {index:03}"));
+        let first = (index * 2) % 319;
+        molecule["atomObservationRefs"] = serde_json::json!([
+            format!("atom:synthetic:{first:03}"),
+            format!("atom:synthetic:{:03}", (first + 1) % 319),
+            format!("atom:synthetic:{:03}", (first + 2) % 319),
+            "atom:synthetic:late-hotspot"
+        ]);
+        molecule["confidence"] = Value::String(if index % 4 == 0 {
+            "high".to_string()
+        } else {
+            "medium".to_string()
+        });
+        let source_refs = synthetic_source_refs(index + 500, 6);
+        append_declared_source_refs(&mut declared_source_refs, &source_refs);
+        molecule["sourceRefs"] = source_refs;
+        molecules.push(molecule);
+    }
+    archmap["moleculeObservations"] = Value::Array(molecules);
+
+    archmap["sourceUniverse"]["includedRefs"]
+        .as_array_mut()
+        .expect("source universe included refs are array")
+        .extend(declared_source_refs);
+}
+
+fn synthetic_source_refs(seed: usize, count: usize) -> Value {
+    Value::Array(
+        (0..count)
+            .map(|offset| {
+                serde_json::json!({
+                    "artifactId": format!("synthetic-src-{seed}-{offset}"),
+                    "kind": "file",
+                    "path": format!("src/synthetic/{seed}/{offset}.ts"),
+                    "symbol": format!("symbol_{seed}_{offset}"),
+                    "line": offset + 1
+                })
+            })
+            .collect(),
+    )
+}
+
+fn append_declared_source_refs(target: &mut Vec<Value>, source_refs: &Value) {
+    target.extend(
+        source_refs
+            .as_array()
+            .expect("synthetic source refs are array")
+            .iter()
+            .cloned(),
+    );
 }
 
 fn expand_large_repo_summary_fixture(packet: &mut Value, manifest: &Value) {

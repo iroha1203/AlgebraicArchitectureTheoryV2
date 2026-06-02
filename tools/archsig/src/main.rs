@@ -12,7 +12,7 @@ use archsig::{
     ARCHSIG_RUN_MANIFEST_SCHEMA_VERSION, ArchMapDocumentV0, ArchMapSourceInventoryInput,
     ArchMapSourceInventoryV0, ArchMapValidationReportV0, ArchSigAnalysisPacketValidationReportV0,
     ArchSigArtifactValidationResultV0, ArchSigAtomViewerAtomNodeV0, ArchSigAtomViewerDataV0,
-    ArchSigAtomViewerLayoutSettingsV0, ArchSigAtomViewerMoleculeGroupV0,
+    ArchSigAtomViewerEdgeV0, ArchSigAtomViewerLayoutSettingsV0, ArchSigAtomViewerMoleculeGroupV0,
     ArchSigAtomViewerOmittedDetailCountsV0, ArchSigAtomViewerSourceArtifactRefsV0,
     ArchSigAtomViewerTruncationPolicyV0, ArchSigAtomViewerVisualV0,
     ArchSigRunManifestRawArtifactPathsV0, ArchSigRunManifestV0,
@@ -753,57 +753,185 @@ fn build_atom_viewer_data(
 ) -> ArchSigAtomViewerDataV0 {
     const ATOM_NODE_LIMIT: usize = 250;
     const MOLECULE_GROUP_LIMIT: usize = 120;
+    const EDGE_LIMIT: usize = 500;
     const OVERLAY_LIMIT: usize = 80;
+    const LABEL_LIMIT: usize = 3;
+    const SOURCE_REF_SAMPLE_LIMIT: usize = 3;
 
+    let mut atom_molecule_ref_counts: BTreeMap<&str, usize> = BTreeMap::new();
+    for molecule in &archmap.molecule_observations {
+        for atom_ref in &molecule.atom_observation_refs {
+            *atom_molecule_ref_counts
+                .entry(atom_ref.as_str())
+                .or_default() += 1;
+        }
+    }
     let atom_nodes = archmap
         .atom_observations
         .iter()
-        .take(ATOM_NODE_LIMIT)
-        .map(|atom| ArchSigAtomViewerAtomNodeV0 {
-            node_id: atom.atom_observation_id.clone(),
-            atom_family: atom.atom_family.clone(),
-            subject_ref: atom.subject_ref.clone(),
-            predicate: atom.predicate.clone(),
-            observation_status: atom.observation_status.clone(),
-            confidence: atom.confidence.clone(),
-            object_ref_count: atom.object_refs.len(),
-            source_ref_samples: source_ref_samples(&atom.source_refs),
-            projection_refs: atom.projection_refs.clone(),
-            visual: ArchSigAtomViewerVisualV0 {
-                kind: "atom".to_string(),
-                color_by: Some("observationStatus".to_string()),
-                size_by: Some("sourceRefCount".to_string()),
-                hull_by: None,
-            },
+        .map(|atom| {
+            (
+                atom_priority_score(
+                    atom,
+                    atom_molecule_ref_counts
+                        .get(atom.atom_observation_id.as_str())
+                        .copied()
+                        .unwrap_or_default(),
+                ),
+                atom,
+            )
         })
         .collect::<Vec<_>>();
-    let molecule_groups = archmap
-        .molecule_observations
+    let mut atom_candidates = atom_nodes;
+    atom_candidates.sort_by(|(left_score, left), (right_score, right)| {
+        right_score
+            .cmp(left_score)
+            .then_with(|| left.atom_observation_id.cmp(&right.atom_observation_id))
+    });
+    let selected_atom_ids = atom_candidates
         .iter()
-        .take(MOLECULE_GROUP_LIMIT)
-        .map(|molecule| ArchSigAtomViewerMoleculeGroupV0 {
-            group_id: molecule.molecule_observation_id.clone(),
-            molecule_family: molecule.molecule_family.clone(),
-            role_name: molecule.role_name.clone(),
-            atom_observation_refs: molecule.atom_observation_refs.clone(),
-            observation_status: molecule.observation_status.clone(),
-            confidence: molecule.confidence.clone(),
-            source_ref_samples: source_ref_samples(&molecule.source_refs),
-            visual: ArchSigAtomViewerVisualV0 {
-                kind: "moleculeGroup".to_string(),
-                color_by: None,
-                size_by: None,
-                hull_by: Some("atomObservationRefs".to_string()),
-            },
+        .take(ATOM_NODE_LIMIT)
+        .map(|(_, atom)| atom.atom_observation_id.as_str())
+        .collect::<BTreeSet<_>>();
+    let atom_nodes = atom_candidates
+        .into_iter()
+        .take(ATOM_NODE_LIMIT)
+        .map(|(priority_score, atom)| {
+            let molecule_ref_count = atom_molecule_ref_counts
+                .get(atom.atom_observation_id.as_str())
+                .copied()
+                .unwrap_or_default();
+            ArchSigAtomViewerAtomNodeV0 {
+                node_id: atom.atom_observation_id.clone(),
+                atom_family: atom.atom_family.clone(),
+                subject_ref: atom.subject_ref.clone(),
+                predicate: atom.predicate.clone(),
+                observation_status: atom.observation_status.clone(),
+                confidence: atom.confidence.clone(),
+                object_ref_count: atom.object_refs.len(),
+                source_ref_count: atom.source_refs.len(),
+                source_ref_samples: source_ref_samples(&atom.source_refs, SOURCE_REF_SAMPLE_LIMIT),
+                labels: atom_labels(atom, LABEL_LIMIT),
+                projection_refs: atom.projection_refs.clone(),
+                selection_reason: format!(
+                    "topNPriority: status={} confidence={} sourceRefs={} moleculeRefs={}",
+                    atom.observation_status,
+                    atom.confidence,
+                    atom.source_refs.len(),
+                    molecule_ref_count
+                ),
+                priority_score,
+                visual: ArchSigAtomViewerVisualV0 {
+                    kind: "atom".to_string(),
+                    color_by: Some("observationStatus".to_string()),
+                    size_by: Some("sourceRefCount".to_string()),
+                    hull_by: None,
+                },
+            }
         })
         .collect::<Vec<_>>();
 
+    let molecule_groups = archmap
+        .molecule_observations
+        .iter()
+        .map(|molecule| (molecule_priority_score(molecule), molecule))
+        .collect::<Vec<_>>();
+    let mut molecule_groups = molecule_groups;
+    molecule_groups.sort_by(|(left_score, left), (right_score, right)| {
+        right_score.cmp(left_score).then_with(|| {
+            left.molecule_observation_id
+                .cmp(&right.molecule_observation_id)
+        })
+    });
+    let molecule_groups = molecule_groups
+        .into_iter()
+        .take(MOLECULE_GROUP_LIMIT)
+        .map(|(priority_score, molecule)| {
+            let selected_refs = molecule
+                .atom_observation_refs
+                .iter()
+                .filter(|atom_ref| selected_atom_ids.contains(atom_ref.as_str()))
+                .cloned()
+                .collect::<Vec<_>>();
+            ArchSigAtomViewerMoleculeGroupV0 {
+                group_id: molecule.molecule_observation_id.clone(),
+                molecule_family: molecule.molecule_family.clone(),
+                role_name: molecule.role_name.clone(),
+                atom_observation_refs: selected_refs.clone(),
+                observation_status: molecule.observation_status.clone(),
+                confidence: molecule.confidence.clone(),
+                source_ref_count: molecule.source_refs.len(),
+                source_ref_samples: source_ref_samples(
+                    &molecule.source_refs,
+                    SOURCE_REF_SAMPLE_LIMIT,
+                ),
+                labels: molecule_labels(molecule, LABEL_LIMIT),
+                omitted_atom_observation_ref_count: molecule
+                    .atom_observation_refs
+                    .len()
+                    .saturating_sub(selected_refs.len()),
+                selection_reason: format!(
+                    "topNPriority: status={} confidence={} sourceRefs={} atomRefs={}",
+                    molecule.observation_status,
+                    molecule.confidence,
+                    molecule.source_refs.len(),
+                    molecule.atom_observation_refs.len()
+                ),
+                priority_score,
+                visual: ArchSigAtomViewerVisualV0 {
+                    kind: "moleculeGroup".to_string(),
+                    color_by: None,
+                    size_by: None,
+                    hull_by: Some("atomObservationRefs".to_string()),
+                },
+            }
+        })
+        .collect::<Vec<_>>();
+
+    let mut atom_edges = Vec::new();
+    let mut omitted_edge_count = 0usize;
+    for molecule in &molecule_groups {
+        for atom_ref in &molecule.atom_observation_refs {
+            if atom_edges.len() >= EDGE_LIMIT {
+                omitted_edge_count += 1;
+                continue;
+            }
+            atom_edges.push(ArchSigAtomViewerEdgeV0 {
+                edge_id: format!("edge:{}:{}", molecule.group_id, atom_ref),
+                source_node_ref: molecule.group_id.clone(),
+                target_node_ref: atom_ref.clone(),
+                edge_kind: "moleculeContainsAtom".to_string(),
+                relation_ref: Some(molecule.group_id.clone()),
+                visual: ArchSigAtomViewerVisualV0 {
+                    kind: "moleculeAtomEdge".to_string(),
+                    color_by: Some("edgeKind".to_string()),
+                    size_by: None,
+                    hull_by: None,
+                },
+            });
+        }
+    }
+
+    let signature_axes = array_field_with_limit(packet, "signatureAxes", Some(OVERLAY_LIMIT));
+    let obstruction_circuits =
+        array_field_with_limit(packet, "obstructionCircuits", Some(OVERLAY_LIMIT));
+    let signature_axis_omissions = omitted_array_count(packet, "signatureAxes", OVERLAY_LIMIT);
+    let obstruction_circuit_omissions =
+        omitted_array_count(packet, "obstructionCircuits", OVERLAY_LIMIT);
     let overlays = serde_json::json!({
-        "signatureAxes": array_field_with_limit(packet, "signatureAxes", Some(OVERLAY_LIMIT)),
-        "obstructionCircuits": array_field_with_limit(packet, "obstructionCircuits", Some(OVERLAY_LIMIT)),
+        "signatureAxes": signature_axes,
+        "obstructionCircuits": obstruction_circuits,
         "coverageGaps": json_field(summary, "coverageGapSummary"),
         "dominantFindings": json_field(summary, "dominantFindings"),
-        "actionQueue": json_field(summary, "actionQueue")
+        "actionQueue": json_field(summary, "actionQueue"),
+        "omittedOverlayCounts": {
+            "signatureAxes": signature_axis_omissions,
+            "obstructionCircuits": obstruction_circuit_omissions
+        },
+        "focusFilterDefaults": {
+            "families": ["obstructionCircuits", "coverageGaps", "repairFocus", "moleculeGroups"],
+            "policy": "viewer UI may filter this bounded projection without loading raw packet detail"
+        }
     });
     let report_pane = serde_json::json!({
         "overview": {
@@ -841,12 +969,16 @@ fn build_atom_viewer_data(
             layout_kind: "aat-bounded-force-3d".to_string(),
             node_limit: ATOM_NODE_LIMIT,
             molecule_group_limit: MOLECULE_GROUP_LIMIT,
+            edge_limit: EDGE_LIMIT,
             overlay_limit: OVERLAY_LIMIT,
+            label_limit: LABEL_LIMIT,
+            source_ref_sample_limit: SOURCE_REF_SAMPLE_LIMIT,
             distance_boundary:
                 "3D distance is a visual projection, not an AAT theorem metric".to_string(),
         },
         atom_nodes,
         molecule_groups,
+        atom_edges,
         law_axis_overlays: overlays["signatureAxes"].clone(),
         analysis_overlays: overlays,
         report_pane,
@@ -856,14 +988,27 @@ fn build_atom_viewer_data(
                 .molecule_observations
                 .len()
                 .saturating_sub(MOLECULE_GROUP_LIMIT),
+            atom_edges: omitted_edge_count,
+            source_refs: omitted_source_ref_count(archmap, SOURCE_REF_SAMPLE_LIMIT),
+            labels: omitted_label_count(archmap, LABEL_LIMIT),
+            overlay_items: signature_axis_omissions + obstruction_circuit_omissions,
             raw_packet_detail: "raw packet is not embedded in viewer data".to_string(),
+            omitted_reasons: vec![
+                "atom nodes are selected by deterministic top-N priority over observation status, confidence, source refs, object refs, projection refs, and molecule refs".to_string(),
+                "molecule groups are selected by deterministic top-N priority over observation status, confidence, source refs, and atom refs".to_string(),
+                "source refs and labels are represented by count plus bounded samples".to_string(),
+                "raw packet detail is intentionally omitted from browser viewer data".to_string(),
+            ],
         },
         truncation_policy: ArchSigAtomViewerTruncationPolicyV0 {
-            atom_nodes: format!("first {ATOM_NODE_LIMIT} ArchMap atom observations"),
-            molecule_groups: format!("first {MOLECULE_GROUP_LIMIT} ArchMap molecule observations"),
-            overlays: format!("first {OVERLAY_LIMIT} items per selected overlay family"),
-            future_work: "Issue #1638 owns priority selection, aggregation, and focus filters"
-                .to_string(),
+            atom_nodes: format!("top {ATOM_NODE_LIMIT} ArchMap atom observations by viewer priority"),
+            molecule_groups: format!(
+                "top {MOLECULE_GROUP_LIMIT} ArchMap molecule observations by viewer priority"
+            ),
+            overlays: format!("top {OVERLAY_LIMIT} items per selected overlay family"),
+            future_work:
+                "Viewer UI can add focus filters over this bounded projection without reading raw packet detail"
+                    .to_string(),
         },
         non_conclusions: vec![
             "viewer data is a bounded visual projection, not a replacement for the analysis packet"
@@ -876,8 +1021,98 @@ fn build_atom_viewer_data(
     }
 }
 
-fn source_ref_samples(refs: &[archsig::ArchMapSourceRef]) -> Vec<archsig::ArchMapSourceRef> {
-    refs.iter().take(3).cloned().collect()
+fn source_ref_samples(
+    refs: &[archsig::ArchMapSourceRef],
+    limit: usize,
+) -> Vec<archsig::ArchMapSourceRef> {
+    refs.iter().take(limit).cloned().collect()
+}
+
+fn atom_priority_score(atom: &archsig::ArchMapAtomObservationV0, molecule_ref_count: usize) -> i64 {
+    status_score(&atom.observation_status)
+        + confidence_score(&atom.confidence)
+        + (atom.source_refs.len() as i64 * 20)
+        + (atom.object_refs.len() as i64 * 10)
+        + (atom.projection_refs.len() as i64 * 10)
+        + (molecule_ref_count as i64 * 50)
+}
+
+fn molecule_priority_score(molecule: &archsig::ArchMapMoleculeObservationV0) -> i64 {
+    status_score(&molecule.observation_status)
+        + confidence_score(&molecule.confidence)
+        + (molecule.source_refs.len() as i64 * 20)
+        + (molecule.atom_observation_refs.len() as i64 * 15)
+}
+
+fn status_score(status: &str) -> i64 {
+    match status {
+        "observed" => 1_000,
+        "inferred" => 500,
+        "partial" => 250,
+        _ => 0,
+    }
+}
+
+fn confidence_score(confidence: &str) -> i64 {
+    match confidence {
+        "high" => 300,
+        "medium" => 150,
+        "low" => 25,
+        _ => 0,
+    }
+}
+
+fn atom_labels(atom: &archsig::ArchMapAtomObservationV0, limit: usize) -> Vec<String> {
+    [
+        atom.atom_family.as_str(),
+        atom.subject_ref.as_str(),
+        atom.predicate.as_str(),
+    ]
+    .into_iter()
+    .take(limit)
+    .map(str::to_string)
+    .collect()
+}
+
+fn molecule_labels(molecule: &archsig::ArchMapMoleculeObservationV0, limit: usize) -> Vec<String> {
+    [
+        molecule.molecule_family.as_str(),
+        molecule.role_name.as_str(),
+        molecule.observation_status.as_str(),
+    ]
+    .into_iter()
+    .take(limit)
+    .map(str::to_string)
+    .collect()
+}
+
+fn omitted_array_count(value: &serde_json::Value, field: &str, limit: usize) -> usize {
+    value
+        .get(field)
+        .and_then(|items| items.as_array())
+        .map(|items| items.len().saturating_sub(limit))
+        .unwrap_or_default()
+}
+
+fn omitted_source_ref_count(archmap: &ArchMapDocumentV0, sample_limit: usize) -> usize {
+    let atom_omissions = archmap
+        .atom_observations
+        .iter()
+        .map(|atom| atom.source_refs.len().saturating_sub(sample_limit))
+        .sum::<usize>();
+    let molecule_omissions = archmap
+        .molecule_observations
+        .iter()
+        .map(|molecule| molecule.source_refs.len().saturating_sub(sample_limit))
+        .sum::<usize>();
+    atom_omissions + molecule_omissions
+}
+
+fn omitted_label_count(archmap: &ArchMapDocumentV0, label_limit: usize) -> usize {
+    let atom_label_count = archmap.atom_observations.len() * 3;
+    let molecule_label_count = archmap.molecule_observations.len() * 3;
+    atom_label_count.saturating_sub(archmap.atom_observations.len() * label_limit)
+        + molecule_label_count.saturating_sub(archmap.molecule_observations.len() * label_limit)
 }
 
 fn default_detail_index_path(packet_path: &Path) -> PathBuf {
