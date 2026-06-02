@@ -800,6 +800,7 @@ fn cli_accepts_analysis_command_aliases() {
             .expect("profile path is utf-8"),
         "--out-dir",
         workflow_dir.to_str().expect("workflow dir is utf-8"),
+        "--emit-raw-artifacts",
     ]);
     assert!(workflow_dir.join("archsig-analysis-packet.json").is_file());
 
@@ -816,6 +817,7 @@ fn cli_accepts_analysis_command_aliases() {
             .expect("profile path is utf-8"),
         "--out-dir",
         llm_native_dir.to_str().expect("workflow dir is utf-8"),
+        "--emit-raw-artifacts",
     ]);
     assert!(
         llm_native_dir
@@ -867,15 +869,25 @@ fn cli_runs_primary_archmap_lawpolicy_archsig_analyze_workflow() {
     let expected = [
         "archmap-validation.json",
         "law-policy-validation.json",
-        "archsig-analysis-packet.json",
-        "archsig-analysis-detail-index.json",
         "archsig-analysis-validation.json",
-        "llm-interpretation-packet.json",
+        "archsig-analysis-summary.json",
+        "archsig-atom-viewer-data.json",
+        "archsig-run-manifest.json",
     ];
     for file in expected {
         assert!(
             out_dir.join(file).is_file(),
             "analyze workflow must write {file}"
+        );
+    }
+    for omitted_file in [
+        "archsig-analysis-packet.json",
+        "archsig-analysis-detail-index.json",
+        "llm-interpretation-packet.json",
+    ] {
+        assert!(
+            !out_dir.join(omitted_file).exists(),
+            "analyze workflow must omit raw artifact {omitted_file} by default"
         );
     }
     for removed_file in [
@@ -902,6 +914,90 @@ fn cli_runs_primary_archmap_lawpolicy_archsig_analyze_workflow() {
         law_policy_validation["schemaVersion"],
         "law-policy-validation-report-v0"
     );
+    let analysis_validation = read_json(&out_dir.join("archsig-analysis-validation.json"));
+    assert_eq!(
+        analysis_validation["summary"]["result"].as_str(),
+        Some("pass")
+    );
+    let analysis_summary = read_json(&out_dir.join("archsig-analysis-summary.json"));
+    assert_eq!(
+        analysis_summary["packet"]["schemaVersion"].as_str(),
+        Some("archsig-analysis-packet-v0")
+    );
+    assert_eq!(
+        analysis_summary["validation"]["analysis"]["result"].as_str(),
+        Some("pass")
+    );
+    let viewer_data = read_json(&out_dir.join("archsig-atom-viewer-data.json"));
+    assert_eq!(
+        viewer_data["schemaVersion"].as_str(),
+        Some("archsig-atom-viewer-data-v0")
+    );
+    assert!(
+        viewer_data["atomNodes"]
+            .as_array()
+            .is_some_and(|items| !items.is_empty()),
+        "viewer data must project ArchMap atom observations"
+    );
+    assert_eq!(
+        viewer_data["reportPane"]["overview"]["summaryVerdict"]["readingMode"].as_str(),
+        Some("measurementOverSuppliedArchMapAndLawPolicy")
+    );
+    assert_eq!(
+        viewer_data["omittedDetailCounts"]["rawPacketDetail"].as_str(),
+        Some("raw packet is not embedded in viewer data")
+    );
+    let run_manifest = read_json(&out_dir.join("archsig-run-manifest.json"));
+    assert_eq!(
+        run_manifest["schemaVersion"].as_str(),
+        Some("archsig-run-manifest-v0")
+    );
+    assert_eq!(
+        run_manifest["rawArtifactRetention"].as_str(),
+        Some("omitted")
+    );
+    assert!(
+        run_manifest["omittedArtifacts"]
+            .as_array()
+            .expect("omitted artifacts are array")
+            .iter()
+            .any(|artifact| artifact == "archsig-analysis-packet.json"),
+        "manifest must record omitted raw analysis packet"
+    );
+    assert!(
+        analysis_validation.get("packet").is_none(),
+        "analysis validation must not embed the full analysis packet"
+    );
+}
+
+#[test]
+fn cli_analyze_emit_raw_artifacts_writes_field_sig_handoff_packet() {
+    let out_dir = temp_dir("analyze-workflow-raw-artifacts");
+    let root = fixture_root();
+    let archmap = root.join("archmap.json");
+    let law_policy = root.join("law_policy.json");
+
+    run_sig0(&[
+        "analyze",
+        "--archmap",
+        archmap.to_str().expect("archmap path is utf-8"),
+        "--law-policy",
+        law_policy.to_str().expect("law policy path is utf-8"),
+        "--out-dir",
+        out_dir.to_str().expect("output directory path is utf-8"),
+        "--emit-raw-artifacts",
+    ]);
+
+    for file in [
+        "archsig-analysis-packet.json",
+        "archsig-analysis-detail-index.json",
+        "llm-interpretation-packet.json",
+    ] {
+        assert!(
+            out_dir.join(file).is_file(),
+            "--emit-raw-artifacts must write {file}"
+        );
+    }
     let analysis_packet = read_json(&out_dir.join("archsig-analysis-packet.json"));
     assert_eq!(
         analysis_packet["schemaVersion"],
@@ -935,10 +1031,6 @@ fn cli_runs_primary_archmap_lawpolicy_archsig_analyze_workflow() {
     );
     assert_north_star_packet_surfaces(&analysis_packet);
     let analysis_validation = read_json(&out_dir.join("archsig-analysis-validation.json"));
-    assert_eq!(
-        analysis_validation["summary"]["result"].as_str(),
-        Some("pass")
-    );
     assert_eq!(analysis_validation["summary"]["aatConceptSurfaceCount"], 12);
     assert_eq!(
         analysis_validation["summary"]["designPrincipleReadingCount"],
@@ -960,6 +1052,8 @@ fn cli_runs_primary_archmap_lawpolicy_archsig_analyze_workflow() {
         analysis_validation.get("packet").is_none(),
         "analysis validation must not embed the full analysis packet"
     );
+    let run_manifest = read_json(&out_dir.join("archsig-run-manifest.json"));
+    assert_eq!(run_manifest["rawArtifactRetention"].as_str(), Some("full"));
 }
 
 #[test]
@@ -983,9 +1077,19 @@ fn cli_analyze_reports_failed_validation_checks_to_stderr() {
         !output.status.success(),
         "invalid analyze input must return a validation failure"
     );
+    for file in [
+        "archsig-analysis-summary.json",
+        "archsig-atom-viewer-data.json",
+        "archsig-run-manifest.json",
+    ] {
+        assert!(
+            out_dir.join(file).is_file(),
+            "analyze should still write {file} before returning validation failure"
+        );
+    }
     assert!(
-        out_dir.join("archsig-analysis-packet.json").is_file(),
-        "analyze should still write inspection artifacts before returning validation failure"
+        !out_dir.join("archsig-analysis-packet.json").exists(),
+        "analyze should still omit raw packet by default on validation failure"
     );
     let stderr = String::from_utf8_lossy(&output.stderr);
     assert!(
@@ -1666,6 +1770,7 @@ fn complete_archmap_acceptance_fixture_runs_full_measurement_without_private_nam
             .expect("law policy path is utf-8"),
         "--out-dir",
         out_dir.to_str().expect("output directory path is utf-8"),
+        "--emit-raw-artifacts",
     ]);
 
     for (file, label) in [
