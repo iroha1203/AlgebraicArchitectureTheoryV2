@@ -57,7 +57,11 @@ The release bundle includes a fixed `archsig-atom-viewer.html`. The page loads
 CDN Three.js, tries WebGPU first when the browser exposes it, falls back to
 WebGL, and reads `archsig-atom-viewer-data.json` through a file picker,
 drag-and-drop, or same-directory default fetch. It does not read the raw
-analysis packet.
+analysis packet. Its report pane also reads same-directory
+`archsig-analysis-summary.json` and `archsig-run-manifest.json` when available
+to show the verdict, top findings, action queue, coverage boundaries,
+validation status, generated / omitted artifacts, and relative links to raw
+packet / detail-index files when raw artifacts were emitted.
 
 Raw evidence artifacts are opt-in:
 

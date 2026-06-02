@@ -50,7 +50,11 @@ fragments.
 
 Release archives include a fixed `archsig-atom-viewer.html` at the package root
 and under `viewer/`. The app reads `archsig-atom-viewer-data-v0` projection
-data, not raw packet detail.
+data, not raw packet detail. Its report pane uses the projection data first and
+then same-directory `archsig-analysis-summary.json` / `archsig-run-manifest.json`
+when available to display verdict, findings, action queue, coverage,
+validation failures, generated / omitted artifacts, and relative raw artifact
+links.
 
 ## Removed Surfaces
 

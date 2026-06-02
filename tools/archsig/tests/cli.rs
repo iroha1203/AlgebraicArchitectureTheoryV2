@@ -981,6 +981,21 @@ fn cli_runs_primary_archmap_lawpolicy_archsig_analyze_workflow() {
         viewer_data["reportPane"]["overview"]["summaryVerdict"]["readingMode"].as_str(),
         Some("measurementOverSuppliedArchMapAndLawPolicy")
     );
+    assert!(
+        viewer_data["reportPane"]["topFindings"].is_object()
+            && viewer_data["reportPane"]["actionQueue"].is_array()
+            && viewer_data["reportPane"]["coverageAndBoundaries"].is_object()
+            && viewer_data["reportPane"]["artifacts"].is_object(),
+        "viewer data report pane must carry overview, top findings, action queue, coverage, and artifact sections"
+    );
+    assert_eq!(
+        viewer_data["reportPane"]["artifacts"]["summary"].as_str(),
+        Some("archsig-analysis-summary.json")
+    );
+    assert_eq!(
+        viewer_data["reportPane"]["artifacts"]["manifest"].as_str(),
+        Some("archsig-run-manifest.json")
+    );
     assert_eq!(
         viewer_data["omittedDetailCounts"]["rawPacketDetail"].as_str(),
         Some("raw packet is not embedded in viewer data")
@@ -2508,6 +2523,27 @@ fn archsig_atom_viewer_static_app_is_packaged_asset() {
             && html.contains("./archsig-atom-viewer-data.json"),
         "viewer must support file picker, drag-and-drop, and default viewer data loading"
     );
+    assert!(
+        html.contains("./archsig-analysis-summary.json")
+            && html.contains("./archsig-run-manifest.json")
+            && html.contains("rawArtifactPaths")
+            && html.contains("analysisDetailIndex"),
+        "viewer report pane must integrate summary, manifest, and raw artifact links when present"
+    );
+    for section in [
+        "Overview",
+        "Top Findings",
+        "Action Queue",
+        "Coverage And Boundaries",
+        "Artifacts",
+        "Validation Status",
+        "Omitted Detail",
+    ] {
+        assert!(
+            html.contains(section),
+            "viewer report pane must render {section}"
+        );
+    }
     assert!(
         html.contains("atomEdges")
             && html.contains("moleculeGroups")
