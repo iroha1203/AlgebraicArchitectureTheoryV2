@@ -40,7 +40,7 @@ are not measured zeros.
 | --- | --- | --- |
 | ArchMap validation and authoring | `archmap`, `archmap-generate` | ArchMap records source-grounded Atom observations, molecule observations, semantic readings, projection hints, concern hints, and gaps. Complete-first authoring should collect spectrum support, homotopy candidates, filler evidence, non-fillability witnesses, and targeted gaps before handoff. It does not select laws or output obstruction circuits. |
 | Interpretation profile | `law-policy`, `interpretation-profile` | The profile selects the LawUniverse, witness rules, molecule patterns, obstruction circuit definitions, signature axes, coverage requirements, exactness assumptions, optional ACTS spectrum profile, optional homotopy measurement profile, and non-conclusions. It is not AAT itself. |
-| ArchSig analysis | `analyze`, `llm-native-workflow`, `north-star-workflow`, `archsig-analysis`, `aat-analysis`, `analysis-summary`, `summary` | `analyze` is the primary workflow from ArchMap + LawPolicy to validation reports, `archsig-analysis-packet-v0`, and the LLM interpretation packet. `llm-native-workflow` and `north-star-workflow` remain compatibility aliases for the same workflow. `archsig-analysis` / `aat-analysis` build a packet from already validated inputs. `analysis-summary` emits the compact human / LLM reading surface from an existing packet. |
+| ArchSig analysis | `analyze`, `llm-native-workflow`, `north-star-workflow`, `archsig-analysis`, `aat-analysis`, `analysis-summary`, `summary` | `analyze` is the primary workflow from ArchMap + LawPolicy to validation reports, `archsig-analysis-summary.json`, `archsig-atom-viewer-data.json`, and `archsig-run-manifest.json`. Raw packet artifacts for FieldSig handoff are emitted only with `--emit-raw-artifacts`. `llm-native-workflow` and `north-star-workflow` remain compatibility aliases for the same workflow. `archsig-analysis` / `aat-analysis` build a packet from already validated inputs. `analysis-summary` emits the compact LLM reading surface from an existing packet. |
 | Codebase inspection | `codebase-inspection` | Reads latest `archmap-snapshot-v0`, `archmap-index-v0`, optional recent deltas, optional LawPolicy provenance, and an `archsig-analysis-packet-v0` to produce current-state architectural diagnosis. It is not PR / diff evolution analysis or global safety. |
 | Lightweight PR review | `pr-review` | Reads base `archmap-observation-map-v0`, PR-local `archmap-delta-v0`, and required `law-policy-v0`. It does not accept raw diff, ArchMapCommit, or base/head analysis packets as PR-review inputs. |
 | Schema | `schema-catalog` | The catalog lists the current ArchMap, LawPolicy, ArchSig analysis packet, and validation report artifacts. |
@@ -58,7 +58,7 @@ not first-class ArchMap outputs.
 measured verdict, quality counts, measurement-status counts, dominant findings,
 action queue, trend diagnosis, review support, compact section summaries,
 detail index, measurement basis, and metadata. The full evidence remains in
-`archsig-analysis-packet.json`.
+`archsig-analysis-packet.json` when raw artifacts are emitted.
 
 Large ArchMaps may be authored in shards for review and parallel generation,
 but current commands consume the exported monolithic
@@ -114,15 +114,14 @@ This writes:
 
 - `.archsig/analyze/archmap-validation.json`
 - `.archsig/analyze/law-policy-validation.json`
-- `.archsig/analyze/archsig-analysis-packet.json`
-- `.archsig/analyze/archsig-analysis-detail-index.json`
 - `.archsig/analyze/archsig-analysis-validation.json`
-- `.archsig/analyze/llm-interpretation-packet.json`
+- `.archsig/analyze/archsig-analysis-summary.json`
+- `.archsig/analyze/archsig-atom-viewer-data.json`
+- `.archsig/analyze/archsig-run-manifest.json`
 
-`archsig-analysis-packet.json` is compact-first: large repeated string ref
-sets are replaced by `archsig-detail-ref-v0` objects with counts, samples, and
-detail refs. Full ref sets are stored through a dictionary-backed
-`archsig-analysis-detail-index.json`.
+Use `archsig-analysis-summary.json` as the LLM-readable first pass and
+`archsig-atom-viewer-data.json` with the fixed Atom Viewer app for human visual
+review. `archsig-run-manifest.json` records generated and omitted artifacts.
 
 For large ArchMaps, prefer the optimized binary:
 
@@ -132,6 +131,27 @@ cargo run --release --manifest-path tools/archsig/Cargo.toml -- analyze \
   --law-policy .archsig/hilda/hilda-law-policy.json \
   --out-dir .archsig/analyze
 ```
+
+For FieldSig handoff or deep evidence lookup, emit raw artifacts explicitly:
+
+```bash
+cargo run --manifest-path tools/archsig/Cargo.toml -- analyze \
+  --archmap tools/archsig/tests/fixtures/minimal/archmap.json \
+  --law-policy tools/archsig/tests/fixtures/minimal/law_policy.json \
+  --out-dir .archsig/analyze \
+  --emit-raw-artifacts
+```
+
+This additionally writes:
+
+- `.archsig/analyze/archsig-analysis-packet.json`
+- `.archsig/analyze/archsig-analysis-detail-index.json`
+- `.archsig/analyze/llm-interpretation-packet.json`
+
+`archsig-analysis-packet.json` is compact-first when emitted: large repeated
+string ref sets are replaced by `archsig-detail-ref-v0` objects with counts,
+samples, and detail refs. Full ref sets are stored through a dictionary-backed
+`archsig-analysis-detail-index.json`.
 
 `llm-interpretation-packet.json` contains the compact
 `llmInterpretationPacket` reading surface from the analysis packet. Treat it as

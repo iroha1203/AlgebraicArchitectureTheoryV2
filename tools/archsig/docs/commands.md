@@ -40,21 +40,36 @@ The command emits only:
 
 - `archmap-validation.json`
 - `law-policy-validation.json`
+- `archsig-analysis-validation.json`
+- `archsig-analysis-summary.json`
+- `archsig-atom-viewer-data.json`
+- `archsig-run-manifest.json`
+
+`archsig-analysis-summary.json` is the LLM-readable compact reading surface.
+`archsig-atom-viewer-data.json` is a bounded visual projection for the fixed
+Atom Viewer app. `archsig-run-manifest.json` records generated and omitted
+artifacts. For large ArchMaps, run `analyze` with `cargo run --release`.
+
+Raw evidence artifacts are opt-in:
+
+```bash
+cargo run --manifest-path tools/archsig/Cargo.toml -- analyze \
+  --archmap tools/archsig/tests/fixtures/minimal/archmap.json \
+  --law-policy tools/archsig/tests/fixtures/minimal/law_policy.json \
+  --out-dir .archsig/analyze \
+  --emit-raw-artifacts
+```
+
+This additionally writes:
+
 - `archsig-analysis-packet.json`
 - `archsig-analysis-detail-index.json`
-- `archsig-analysis-validation.json`
 - `llm-interpretation-packet.json`
 
-`archsig-analysis-packet.json` is compact-first: large repeated string ref sets
-are replaced by `archsig-detail-ref-v0` objects with counts, samples, and detail
-refs. Full ref sets are stored through a dictionary-backed
-`archsig-analysis-detail-index.json`. For large ArchMaps, run `analyze` with
-`cargo run --release`.
-
-`llm-interpretation-packet.json` contains the compact
-`llmInterpretationPacket` reading surface from the analysis packet. It is not a
-natural-language judgement, Lean proof, architecture lawfulness certificate, or
-automatic repair instruction.
+`archsig-analysis-packet.json` is compact-first when emitted: large repeated
+string ref sets are replaced by `archsig-detail-ref-v0` objects with counts,
+samples, and detail refs. Full ref sets are stored through a dictionary-backed
+`archsig-analysis-detail-index.json`.
 
 To emit a compact review summary from an existing packet, run:
 

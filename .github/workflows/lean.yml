@@ -52,10 +52,11 @@ jobs:
         run: |
           set -euo pipefail
 
-          out_dir=".lake/archsig-analyze-e2e"
+          out_dir=".tmp/archsig-analyze-e2e"
           archsig_dir="$out_dir/archsig"
+          archsig_raw_dir="$out_dir/archsig-raw"
           fieldsig_dir="$out_dir/fieldsig"
-          mkdir -p "$archsig_dir" "$fieldsig_dir"
+          mkdir -p "$archsig_dir" "$archsig_raw_dir" "$fieldsig_dir"
 
           cargo run --manifest-path tools/archsig/Cargo.toml -- analyze \
             --archmap tools/archsig/tests/fixtures/minimal/archmap.json \
@@ -64,10 +65,51 @@ jobs:
 
           test -s "$archsig_dir/archmap-validation.json"
           test -s "$archsig_dir/law-policy-validation.json"
-          test -s "$archsig_dir/archsig-analysis-packet.json"
-          test -s "$archsig_dir/archsig-analysis-detail-index.json"
           test -s "$archsig_dir/archsig-analysis-validation.json"
-          test -s "$archsig_dir/llm-interpretation-packet.json"
+          test -s "$archsig_dir/archsig-analysis-summary.json"
+          test -s "$archsig_dir/archsig-atom-viewer-data.json"
+          test -s "$archsig_dir/archsig-run-manifest.json"
+          test ! -e "$archsig_dir/archsig-analysis-packet.json"
+          test ! -e "$archsig_dir/archsig-analysis-detail-index.json"
+          test ! -e "$archsig_dir/llm-interpretation-packet.json"
+
+          jq -e '
+            .schemaVersion == "archsig-run-manifest-v0"
+            and .rawArtifactRetention == "omitted"
+            and ([.generatedArtifacts[]] | index("archsig-analysis-summary.json") != null)
+            and ([.generatedArtifacts[]] | index("archsig-atom-viewer-data.json") != null)
+            and ([.omittedArtifacts[]] | index("archsig-analysis-packet.json") != null)
+          ' "$archsig_dir/archsig-run-manifest.json"
+
+          jq -e '
+            .schemaVersion == "archsig-atom-viewer-data-v0"
+            and .dataKind == "bounded-atom-viewer-projection"
+            and ((.atomNodes | length) > 0)
+            and .reportPane.overview.summaryVerdict.readingMode == "measurementOverSuppliedArchMapAndLawPolicy"
+          ' "$archsig_dir/archsig-atom-viewer-data.json"
+
+          cargo run --manifest-path tools/archsig/Cargo.toml -- analyze \
+            --archmap tools/archsig/tests/fixtures/minimal/archmap.json \
+            --law-policy tools/archsig/tests/fixtures/minimal/law_policy.json \
+            --out-dir "$archsig_raw_dir" \
+            --emit-raw-artifacts
+
+          test -s "$archsig_raw_dir/archmap-validation.json"
+          test -s "$archsig_raw_dir/law-policy-validation.json"
+          test -s "$archsig_raw_dir/archsig-analysis-validation.json"
+          test -s "$archsig_raw_dir/archsig-analysis-summary.json"
+          test -s "$archsig_raw_dir/archsig-atom-viewer-data.json"
+          test -s "$archsig_raw_dir/archsig-run-manifest.json"
+          test -s "$archsig_raw_dir/archsig-analysis-packet.json"
+          test -s "$archsig_raw_dir/archsig-analysis-detail-index.json"
+          test -s "$archsig_raw_dir/llm-interpretation-packet.json"
+
+          jq -e '
+            .schemaVersion == "archsig-run-manifest-v0"
+            and .rawArtifactRetention == "full"
+            and ([.generatedArtifacts[]] | index("archsig-analysis-packet.json") != null)
+            and (.omittedArtifacts | length) == 0
+          ' "$archsig_raw_dir/archsig-run-manifest.json"
 
           jq -e '
             .schemaVersion == "archsig-analysis-packet-v0"
@@ -76,26 +118,26 @@ jobs:
             and ((.obstructionCircuits | length) > 0)
             and ((.signatureAxes | length) > 0)
             and ([.nonConclusions[] | contains("not a Lean theorem proof")] | any)
-          ' "$archsig_dir/archsig-analysis-packet.json"
+          ' "$archsig_raw_dir/archsig-analysis-packet.json"
 
           jq -e '
             .schemaVersion == "archsig-analysis-detail-index-v0"
             and .indexKind == "deduplicated-string-ref-set-dictionary"
             and (.refDictionary | type == "array")
             and (.refSets | type == "array")
-          ' "$archsig_dir/archsig-analysis-detail-index.json"
+          ' "$archsig_raw_dir/archsig-analysis-detail-index.json"
 
-          jq -e --slurpfile packet "$archsig_dir/archsig-analysis-packet.json" '
+          jq -e --slurpfile packet "$archsig_raw_dir/archsig-analysis-packet.json" '
             . == $packet[0].llmInterpretationPacket
-          ' "$archsig_dir/llm-interpretation-packet.json"
+          ' "$archsig_raw_dir/llm-interpretation-packet.json"
 
           jq -e '
             .summary.result == "pass"
             and ([.checks[]?.id] | index("archsig-analysis-packet-non-conclusion-boundary") != null)
-          ' "$archsig_dir/archsig-analysis-validation.json"
+          ' "$archsig_raw_dir/archsig-analysis-validation.json"
 
           cargo run --manifest-path tools/fieldsig/Cargo.toml -- archsig-analysis-sft-input \
-            --analysis-packet "$archsig_dir/archsig-analysis-packet.json" \
+            --analysis-packet "$archsig_raw_dir/archsig-analysis-packet.json" \
             --out "$fieldsig_dir/operation-support-estimate.json"
 
           jq -e '
@@ -117,4 +159,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: archsig-analyze-e2e-${{ github.run_id }}
-          path: .lake/archsig-analyze-e2e
+          path: .tmp/archsig-analyze-e2e
