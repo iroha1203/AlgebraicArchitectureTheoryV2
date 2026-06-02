@@ -7,17 +7,21 @@
   <style>
     :root {
       color-scheme: dark;
-      --bg: #101318;
-      --surface: #171b22;
-      --surface-2: #202632;
-      --line: #36404f;
-      --text: #eef2f6;
-      --muted: #aab4c2;
-      --accent: #4cc3a7;
-      --accent-2: #e0b84e;
-      --danger: #ef6767;
-      --blue: #66a6ff;
-      --violet: #b087ff;
+      --bg: #07090d;
+      --surface: #10151d;
+      --surface-2: #17202d;
+      --line: #334155;
+      --line-hot: rgba(100, 214, 190, 0.42);
+      --glass: rgba(7, 10, 15, 0.66);
+      --glass-strong: rgba(10, 15, 24, 0.9);
+      --text: #f3f7fb;
+      --muted: #a7b7c8;
+      --accent: #64d6be;
+      --accent-2: #f2c15f;
+      --danger: #ff6b74;
+      --blue: #73b7ff;
+      --violet: #c49cff;
+      --ember: #ff9468;
       --radius: 8px;
       font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     }
@@ -43,30 +47,81 @@
       min-height: 32px;
       max-width: 190px;
       padding: 0 8px;
-      border: 1px solid var(--line);
+      border: 1px solid rgba(138, 160, 184, 0.28);
       border-radius: 6px;
-      background: var(--surface);
+      background: rgba(13, 19, 29, 0.88);
       color: var(--text);
       font: inherit;
       font-size: 12px;
+      outline: none;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
     }
 
     .app {
-      display: grid;
-      grid-template-rows: minmax(340px, 58vh) minmax(260px, 42vh);
+      position: relative;
       height: 100vh;
+      overflow: hidden;
+    }
+
+    .app::before {
+      position: absolute;
+      inset: 0;
+      z-index: 3;
+      content: "";
+      background:
+        repeating-linear-gradient(
+          180deg,
+          rgba(255, 255, 255, 0.018) 0,
+          rgba(255, 255, 255, 0.018) 1px,
+          transparent 1px,
+          transparent 9px
+        );
+      mix-blend-mode: screen;
+      opacity: 0.32;
+      pointer-events: none;
     }
 
     .viewer {
       position: relative;
-      min-height: 0;
-      border-bottom: 1px solid var(--line);
-      background: #0d1015;
+      width: 100vw;
+      height: 100vh;
+      background:
+        linear-gradient(180deg, rgba(7, 9, 13, 0.18), rgba(7, 9, 13, 0.54)),
+        #090d13;
+    }
+
+    .viewer::before,
+    .viewer::after {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      content: "";
+      pointer-events: none;
+    }
+
+    .viewer::before {
+      opacity: 0.42;
+      background:
+        linear-gradient(rgba(115, 183, 255, 0.08) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(100, 214, 190, 0.08) 1px, transparent 1px),
+        linear-gradient(135deg, transparent 0 48%, rgba(242, 193, 95, 0.08) 49%, transparent 50% 100%);
+      background-size: 72px 72px, 72px 72px, 360px 360px;
+      mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.78), transparent 70%);
+    }
+
+    .viewer::after {
+      background:
+        linear-gradient(90deg, rgba(7, 9, 13, 0.52), transparent 18%, transparent 82%, rgba(7, 9, 13, 0.52)),
+        linear-gradient(180deg, rgba(7, 9, 13, 0.2), transparent 34%, rgba(7, 9, 13, 0.56));
     }
 
     #scene {
       position: absolute;
       inset: 0;
+    }
+
+    #scene canvas {
+      filter: saturate(1.08) contrast(1.05);
     }
 
     .toolbar {
@@ -89,11 +144,56 @@
       align-items: center;
       min-width: 0;
       padding: 6px;
-      border: 1px solid rgba(238, 242, 246, 0.14);
+      border: 1px solid rgba(167, 183, 200, 0.18);
       border-radius: var(--radius);
-      background: rgba(16, 19, 24, 0.86);
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.012)),
+        var(--glass);
+      box-shadow:
+        0 18px 48px rgba(0, 0, 0, 0.36),
+        inset 0 1px 0 rgba(255, 255, 255, 0.06);
       pointer-events: auto;
-      backdrop-filter: blur(10px);
+      backdrop-filter: blur(18px) saturate(1.2);
+      clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+      position: relative;
+    }
+
+    .toolbar-group::before {
+      position: absolute;
+      top: 0;
+      left: 14px;
+      right: 14px;
+      height: 1px;
+      content: "";
+      background: linear-gradient(90deg, transparent, rgba(100, 214, 190, 0.58), transparent);
+      pointer-events: none;
+    }
+
+    .toolbar-group.primary {
+      max-width: min(160px, calc(100vw - 24px));
+    }
+
+    .toolbar-group.layers {
+      margin-left: auto;
+    }
+
+    .toolbar-group.filters {
+      flex-basis: auto;
+      width: max-content;
+      max-width: calc(100vw - 24px);
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      margin-left: auto;
+    }
+
+    .toolbar-label {
+      align-self: center;
+      padding: 0 4px;
+      color: var(--accent);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
     }
 
     .title {
@@ -102,8 +202,77 @@
       text-overflow: ellipsis;
       white-space: nowrap;
       padding: 0 8px;
-      color: var(--muted);
+      color: #c7d4e2;
       font-size: 13px;
+    }
+
+    .app:not(.data-loaded) .toolbar-group,
+    .app:not(.data-loaded) .legend,
+    .app:not(.data-loaded) .axis-hud,
+    .app:not(.data-loaded) .status,
+    .app:not(.data-loaded) .report-toggle {
+      display: none;
+    }
+
+    .launch-panel {
+      position: absolute;
+      z-index: 6;
+      left: 50%;
+      top: 50%;
+      display: grid;
+      gap: 10px;
+      justify-items: center;
+      width: min(360px, calc(100vw - 32px));
+      padding: 18px;
+      border: 1px solid rgba(100, 214, 190, 0.28);
+      border-radius: var(--radius);
+      background:
+        linear-gradient(180deg, rgba(100, 214, 190, 0.12), transparent 120px),
+        var(--glass-strong);
+      box-shadow:
+        0 28px 90px rgba(0, 0, 0, 0.54),
+        0 0 40px rgba(100, 214, 190, 0.12),
+        inset 0 1px 0 rgba(255, 255, 255, 0.06);
+      transform: translate(-50%, -50%);
+      pointer-events: auto;
+      backdrop-filter: blur(20px) saturate(1.2);
+      clip-path: polygon(16px 0, 100% 0, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0 100%, 0 16px);
+    }
+
+    .launch-panel::before {
+      position: absolute;
+      top: 0;
+      left: 24px;
+      right: 24px;
+      height: 1px;
+      content: "";
+      background: linear-gradient(90deg, transparent, rgba(100, 214, 190, 0.68), transparent);
+      pointer-events: none;
+    }
+
+    .launch-title {
+      color: #dce7f3;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .launch-panel .file-button {
+      min-height: 44px;
+      min-width: 148px;
+      border-color: rgba(242, 193, 95, 0.38);
+      background:
+        linear-gradient(180deg, rgba(242, 193, 95, 0.2), rgba(255, 255, 255, 0.02)),
+        rgba(18, 24, 34, 0.94);
+      box-shadow:
+        0 0 34px rgba(242, 193, 95, 0.18),
+        inset 0 1px 0 rgba(255, 255, 255, 0.08);
+      font-weight: 800;
+    }
+
+    .app.data-loaded .launch-panel {
+      display: none;
     }
 
     .button,
@@ -113,11 +282,16 @@
       min-height: 32px;
       min-width: 32px;
       padding: 0 10px;
-      border: 1px solid var(--line);
+      border: 1px solid rgba(138, 160, 184, 0.3);
       border-radius: 6px;
-      background: var(--surface-2);
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02)),
+        rgba(19, 27, 40, 0.92);
       color: var(--text);
       cursor: pointer;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+      clip-path: polygon(7px 0, 100% 0, 100% calc(100% - 7px), calc(100% - 7px) 100%, 0 100%, 0 7px);
+      font-weight: 700;
     }
 
     .file-button input {
@@ -125,8 +299,12 @@
     }
 
     .button:hover,
-    .file-button:hover {
+    .file-button:hover,
+    .toggle:hover {
       border-color: var(--accent);
+      box-shadow:
+        0 0 0 1px rgba(100, 214, 190, 0.08),
+        0 0 22px rgba(100, 214, 190, 0.16);
     }
 
     .toggle {
@@ -135,12 +313,13 @@
       align-items: center;
       min-height: 32px;
       padding: 0 8px;
-      border: 1px solid var(--line);
+      border: 1px solid rgba(138, 160, 184, 0.26);
       border-radius: 6px;
-      background: var(--surface);
-      color: var(--muted);
+      background: rgba(11, 18, 28, 0.76);
+      color: #c6d2df;
       font-size: 12px;
       cursor: pointer;
+      clip-path: polygon(7px 0, 100% 0, 100% calc(100% - 7px), calc(100% - 7px) 100%, 0 100%, 0 7px);
     }
 
     .toggle input {
@@ -151,11 +330,19 @@
       min-height: 32px;
       width: min(260px, 24vw);
       padding: 0 10px;
-      border: 1px solid var(--line);
+      border: 1px solid rgba(138, 160, 184, 0.28);
       border-radius: 6px;
-      background: var(--surface);
+      background: rgba(11, 18, 28, 0.82);
       color: var(--text);
       font-size: 12px;
+      outline: none;
+      clip-path: polygon(7px 0, 100% 0, 100% calc(100% - 7px), calc(100% - 7px) 100%, 0 100%, 0 7px);
+    }
+
+    select:focus,
+    .search:focus {
+      border-color: rgba(100, 214, 190, 0.72);
+      box-shadow: 0 0 0 2px rgba(100, 214, 190, 0.12);
     }
 
     .search::placeholder {
@@ -169,27 +356,39 @@
       bottom: 12px;
       max-width: min(680px, calc(100vw - 24px));
       padding: 8px 10px;
-      border: 1px solid rgba(238, 242, 246, 0.14);
+      border: 1px solid rgba(100, 214, 190, 0.22);
       border-radius: var(--radius);
-      background: rgba(16, 19, 24, 0.86);
-      color: var(--muted);
+      background:
+        linear-gradient(90deg, rgba(100, 214, 190, 0.14), transparent 18%),
+        var(--glass);
+      color: #cbd7e4;
       font-size: 12px;
       pointer-events: none;
+      box-shadow: 0 12px 34px rgba(0, 0, 0, 0.28);
+      backdrop-filter: blur(18px);
+      clip-path: polygon(9px 0, 100% 0, 100% calc(100% - 9px), calc(100% - 9px) 100%, 0 100%, 0 9px);
     }
 
     .detail {
       position: absolute;
       z-index: 5;
       right: 12px;
-      bottom: 12px;
+      top: 188px;
+      bottom: auto;
       width: min(420px, calc(100vw - 24px));
-      max-height: min(42vh, 360px);
+      max-height: min(46vh, 420px);
       overflow: auto;
       padding: 12px;
-      border: 1px solid rgba(238, 242, 246, 0.14);
+      border: 1px solid rgba(115, 183, 255, 0.26);
       border-radius: var(--radius);
-      background: rgba(16, 19, 24, 0.9);
-      backdrop-filter: blur(10px);
+      background:
+        linear-gradient(180deg, rgba(115, 183, 255, 0.12), transparent 90px),
+        var(--glass-strong);
+      box-shadow:
+        0 20px 58px rgba(0, 0, 0, 0.42),
+        inset 0 1px 0 rgba(255, 255, 255, 0.06);
+      backdrop-filter: blur(18px);
+      clip-path: polygon(12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%, 0 12px);
     }
 
     .detail h2 {
@@ -220,18 +419,20 @@
       gap: 6px;
       max-width: min(760px, calc(100vw - 460px));
       padding: 8px;
-      border: 1px solid rgba(238, 242, 246, 0.14);
+      border: 1px solid rgba(167, 183, 200, 0.16);
       border-radius: var(--radius);
-      background: rgba(16, 19, 24, 0.86);
+      background: rgba(7, 10, 15, 0.62);
       pointer-events: none;
-      backdrop-filter: blur(10px);
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.28);
+      backdrop-filter: blur(18px);
+      clip-path: polygon(9px 0, 100% 0, 100% calc(100% - 9px), calc(100% - 9px) 100%, 0 100%, 0 9px);
     }
 
     .legend-item {
       display: inline-flex;
       gap: 6px;
       align-items: center;
-      color: var(--muted);
+      color: #cbd7e4;
       font-size: 11px;
     }
 
@@ -245,18 +446,25 @@
     .axis-hud {
       position: absolute;
       z-index: 5;
-      top: 88px;
+      top: auto;
       right: 12px;
-      width: min(340px, calc(100vw - 24px));
-      padding: 10px;
-      border: 1px solid rgba(238, 242, 246, 0.14);
+      bottom: 62px;
+      width: min(300px, calc(100vw - 24px));
+      padding: 10px 12px;
+      border: 1px solid rgba(100, 214, 190, 0.24);
       border-radius: var(--radius);
-      background: rgba(16, 19, 24, 0.86);
+      background:
+        linear-gradient(180deg, rgba(100, 214, 190, 0.1), transparent 72px),
+        var(--glass);
       color: var(--muted);
       font-size: 11px;
       line-height: 1.4;
       pointer-events: none;
-      backdrop-filter: blur(10px);
+      box-shadow:
+        0 18px 48px rgba(0, 0, 0, 0.36),
+        inset 3px 0 0 rgba(100, 214, 190, 0.48);
+      backdrop-filter: blur(18px);
+      clip-path: polygon(12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%, 0 12px);
     }
 
     .axis-hud strong {
@@ -264,6 +472,7 @@
       margin-bottom: 6px;
       color: var(--text);
       font-size: 12px;
+      letter-spacing: 0.03em;
     }
 
     .axis-hud div {
@@ -274,6 +483,7 @@
 
     .axis-hud b {
       color: var(--accent);
+      text-shadow: 0 0 10px rgba(100, 214, 190, 0.34);
     }
 
     .drop {
@@ -293,19 +503,92 @@
       display: grid;
     }
 
+    .report-toggle {
+      position: absolute;
+      z-index: 8;
+      right: 12px;
+      bottom: 12px;
+      min-height: 36px;
+      padding: 0 14px;
+      border: 1px solid rgba(242, 193, 95, 0.34);
+      border-radius: var(--radius);
+      background:
+        linear-gradient(180deg, rgba(242, 193, 95, 0.18), rgba(255, 255, 255, 0.02)),
+        rgba(18, 24, 34, 0.92);
+      color: var(--text);
+      cursor: pointer;
+      box-shadow:
+        0 18px 48px rgba(0, 0, 0, 0.38),
+        0 0 28px rgba(242, 193, 95, 0.16);
+      backdrop-filter: blur(18px);
+      clip-path: polygon(9px 0, 100% 0, 100% calc(100% - 9px), calc(100% - 9px) 100%, 0 100%, 0 9px);
+      font-weight: 700;
+    }
+
+    .report-toggle:hover {
+      border-color: var(--accent-2);
+      box-shadow:
+        0 18px 48px rgba(0, 0, 0, 0.38),
+        0 0 36px rgba(242, 193, 95, 0.24);
+    }
+
+    .app.report-open .report-toggle {
+      bottom: min(58vh, 620px);
+      transform: translateY(-12px);
+    }
+
+    .app.report-open .axis-hud {
+      bottom: calc(min(58vh, 620px) + 62px);
+    }
+
     .report {
+      position: absolute;
+      z-index: 7;
+      left: 12px;
+      right: 12px;
+      bottom: 12px;
       display: grid;
       grid-template-columns: 1.2fr 1fr;
       gap: 1px;
       min-height: 0;
-      background: var(--line);
+      height: min(58vh, 620px);
+      overflow: hidden;
+      border: 1px solid rgba(115, 183, 255, 0.22);
+      border-radius: var(--radius);
+      background: rgba(115, 183, 255, 0.16);
+      box-shadow:
+        0 28px 96px rgba(0, 0, 0, 0.56),
+        0 0 0 1px rgba(100, 214, 190, 0.08),
+        inset 0 1px 0 rgba(255, 255, 255, 0.06);
+      transform: translateY(calc(100% + 24px));
+      transition: transform 180ms ease;
+      backdrop-filter: blur(18px);
+      clip-path: polygon(16px 0, 100% 0, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0 100%, 0 16px);
+    }
+
+    .app.report-open .report {
+      transform: translateY(0);
     }
 
     .panel {
       min-height: 0;
       overflow: auto;
-      background: var(--surface);
+      background:
+        linear-gradient(180deg, rgba(115, 183, 255, 0.08), transparent 140px),
+        rgba(9, 14, 22, 0.96);
       padding: 18px;
+      position: relative;
+    }
+
+    .panel::before {
+      position: absolute;
+      top: 0;
+      left: 18px;
+      right: 18px;
+      height: 1px;
+      content: "";
+      background: linear-gradient(90deg, transparent, rgba(115, 183, 255, 0.42), transparent);
+      pointer-events: none;
     }
 
     .panel h1,
@@ -313,7 +596,16 @@
       margin: 0 0 12px;
       font-size: 16px;
       font-weight: 700;
-      letter-spacing: 0;
+      letter-spacing: 0.01em;
+    }
+
+    .panel h1 {
+      color: #f7fbff;
+      text-shadow: 0 0 22px rgba(115, 183, 255, 0.18);
+    }
+
+    .panel h2 {
+      color: #dce7f3;
     }
 
     .metric-row {
@@ -326,14 +618,22 @@
     .metric {
       min-height: 68px;
       padding: 10px;
-      border: 1px solid var(--line);
+      border: 1px solid rgba(138, 160, 184, 0.22);
       border-radius: var(--radius);
-      background: #141820;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.012)),
+        rgba(12, 18, 28, 0.9);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.05),
+        inset 0 -1px 0 rgba(100, 214, 190, 0.08);
+      clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
     }
 
     .metric .label {
-      color: var(--muted);
+      color: #9fb3c8;
       font-size: 11px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
     }
 
     .metric .value {
@@ -343,6 +643,7 @@
       font-weight: 700;
       line-height: 1.18;
       overflow-wrap: anywhere;
+      color: #f7fbff;
     }
 
     .metric .value span {
@@ -361,21 +662,26 @@
 
     .item {
       padding: 10px;
-      border: 1px solid var(--line);
+      border: 1px solid rgba(138, 160, 184, 0.18);
       border-radius: var(--radius);
-      background: #141820;
+      background:
+        linear-gradient(90deg, rgba(115, 183, 255, 0.06), transparent 42%),
+        rgba(12, 18, 28, 0.82);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.035);
+      clip-path: polygon(9px 0, 100% 0, 100% calc(100% - 9px), calc(100% - 9px) 100%, 0 100%, 0 9px);
     }
 
     .item strong {
       display: block;
       margin-bottom: 4px;
       font-size: 13px;
+      color: #f0f6fc;
     }
 
     .item span,
     .item p {
       margin: 0;
-      color: var(--muted);
+      color: #aebed0;
       font-size: 12px;
       line-height: 1.45;
       overflow-wrap: anywhere;
@@ -392,41 +698,51 @@
       align-items: center;
       min-height: 24px;
       padding: 0 8px;
-      border: 1px solid var(--line);
+      border: 1px solid rgba(100, 214, 190, 0.22);
       border-radius: 999px;
-      color: var(--muted);
+      background: rgba(100, 214, 190, 0.06);
+      color: #c8d7e6;
       font-size: 11px;
       overflow-wrap: anywhere;
+      clip-path: polygon(7px 0, 100% 0, 100% calc(100% - 7px), calc(100% - 7px) 100%, 0 100%, 0 7px);
     }
 
     .ok {
       color: var(--accent);
+      text-shadow: 0 0 14px rgba(100, 214, 190, 0.22);
     }
 
     .warn {
       color: var(--accent-2);
+      text-shadow: 0 0 14px rgba(242, 193, 95, 0.18);
     }
 
     .fail {
       color: var(--danger);
+      text-shadow: 0 0 14px rgba(255, 107, 116, 0.18);
     }
 
     a {
       color: var(--blue);
+      text-decoration-color: rgba(115, 183, 255, 0.42);
     }
 
     @media (max-width: 820px) {
       body {
-        overflow: auto;
+        overflow: hidden;
       }
 
       .app {
-        grid-template-rows: 58vh auto;
         min-height: 100vh;
       }
 
       .report {
         grid-template-columns: 1fr;
+        height: min(78vh, 680px);
+      }
+
+      .app.report-open .report-toggle {
+        bottom: min(78vh, 680px);
       }
 
       .toolbar {
@@ -435,6 +751,10 @@
 
       .toolbar-group {
         flex-wrap: wrap;
+      }
+
+      .toolbar-group.filters {
+        justify-content: flex-start;
       }
 
       .search {
@@ -455,17 +775,24 @@
       }
 
       .axis-hud {
-        top: auto;
         right: 12px;
-        bottom: 48px;
+        bottom: 64px;
         width: min(360px, calc(100vw - 24px));
       }
 
+      .app.report-open .axis-hud {
+        bottom: calc(min(78vh, 680px) + 62px);
+      }
+
       .detail {
-        position: static;
-        width: auto;
-        max-height: none;
-        margin: 8px 12px;
+        top: auto;
+        right: 12px;
+        bottom: 104px;
+        max-height: min(34vh, 300px);
+      }
+
+      .status {
+        max-width: calc(100vw - 168px);
       }
     }
   </style>
@@ -484,20 +811,17 @@
       <div id="scene"></div>
       <div id="drop" class="drop">Drop viewer data</div>
       <div class="toolbar">
-        <div class="toolbar-group">
-          <label class="file-button" title="Load viewer data">
-            Open
-            <input id="file" type="file" accept="application/json,.json">
-          </label>
+        <div class="toolbar-group primary">
           <button id="reset" class="button" type="button" title="Reset camera">Reset</button>
-          <span id="title" class="title">archsig-atom-viewer-data.json</span>
         </div>
-        <div class="toolbar-group">
+        <div class="toolbar-group layers">
+          <span class="toolbar-label">Layers</span>
           <label class="toggle"><input id="toggle-atoms" type="checkbox" checked>Atoms</label>
           <label class="toggle"><input id="toggle-groups" type="checkbox" checked>Molecules</label>
           <label class="toggle"><input id="toggle-edges" type="checkbox" checked>Edges</label>
         </div>
-        <div class="toolbar-group">
+        <div class="toolbar-group filters">
+          <span class="toolbar-label">View</span>
           <select id="view-mode" title="View mode">
             <option value="families">Families</option>
             <option value="curvature">Curvature field</option>
@@ -522,22 +846,23 @@
           <select id="molecule-filter" title="Molecule">
             <option value="">All molecules</option>
           </select>
-          <select id="focus-filter" title="Focus filter">
-            <option value="">All atoms</option>
-            <option value="authorityTrustPermission">Authority / trust / permission</option>
-            <option value="sourceHeavy">Source-heavy</option>
-            <option value="topPriority">Top priority</option>
-            <option value="withProjectionRefs">Projection refs</option>
-          </select>
           <input id="search" class="search" type="search" placeholder="Search atom, subject, predicate">
         </div>
       </div>
       <div id="legend" class="legend"></div>
       <div id="axis-hud" class="axis-hud"></div>
       <aside id="detail" class="detail" hidden aria-label="Selected visual detail"></aside>
+      <div id="launch-panel" class="launch-panel">
+        <div class="launch-title">Atom Viewer Data</div>
+        <label class="file-button" title="Load viewer data">
+          Open
+          <input id="file" type="file" accept="application/json,.json">
+        </label>
+      </div>
       <div id="status" class="status">Loading default viewer data</div>
+      <button id="report-toggle" class="report-toggle" type="button" aria-controls="report" aria-expanded="false">Show report</button>
     </section>
-    <section class="report" aria-label="Analysis report">
+    <section id="report" class="report" aria-label="Analysis report">
       <div class="panel">
         <h1 id="report-title">ArchSig Atom Viewer</h1>
         <div class="metric-row">
@@ -584,11 +909,13 @@
     import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 
     const container = document.getElementById("scene");
+    const appEl = document.querySelector(".app");
     const statusEl = document.getElementById("status");
     const titleEl = document.getElementById("title");
     const dropEl = document.getElementById("drop");
     const fileEl = document.getElementById("file");
     const resetEl = document.getElementById("reset");
+    const reportToggleEl = document.getElementById("report-toggle");
     const detailEl = document.getElementById("detail");
     const legendEl = document.getElementById("legend");
     const axisHudEl = document.getElementById("axis-hud");
@@ -596,7 +923,6 @@
     const familyFilterEl = document.getElementById("family-filter");
     const statusFilterEl = document.getElementById("status-filter");
     const moleculeFilterEl = document.getElementById("molecule-filter");
-    const focusFilterEl = document.getElementById("focus-filter");
     const searchEl = document.getElementById("search");
     const toggles = {
       atoms: document.getElementById("toggle-atoms"),
@@ -729,11 +1055,16 @@
       currentData = data || {};
       currentLabel = label;
       currentCompanions = companions || {};
-      titleEl.textContent = label;
+      if (titleEl) titleEl.textContent = label;
+      appEl.classList.toggle("data-loaded", hasViewerContent(currentData));
       populateFilters(currentData);
       renderScene();
       renderReport(currentData, currentCompanions);
       resize();
+    }
+
+    function hasViewerContent(data) {
+      return Array.isArray(data?.atomNodes) && data.atomNodes.length > 0;
     }
 
     function renderScene() {
@@ -1390,16 +1721,11 @@
       const family = familyFilterEl.value;
       const statusValue = statusFilterEl.value;
       const moleculeRefs = selectedMoleculeRefs();
-      const focus = focusFilterEl.value;
       const query = searchEl.value.trim().toLowerCase();
       return nodes.filter((node) => {
         if (moleculeRefs && !moleculeRefs.has(node.nodeId)) return false;
         if (family && node.atomFamily !== family) return false;
         if (statusValue && node.observationStatus !== statusValue) return false;
-        if (focus === "authorityTrustPermission" && !["authority", "trust", "permission"].includes(node.atomFamily)) return false;
-        if (focus === "sourceHeavy" && Number(node.sourceRefCount || 0) < 4) return false;
-        if (focus === "topPriority" && Number(node.priorityScore || 0) < 40) return false;
-        if (focus === "withProjectionRefs" && !(Array.isArray(node.projectionRefs) && node.projectionRefs.length)) return false;
         if (!query) return true;
         const haystack = [
           node.nodeId,
@@ -1625,9 +1951,10 @@
     }
 
     Object.values(toggles).forEach((input) => input.addEventListener("change", updateVisibility));
-    [viewModeEl, familyFilterEl, statusFilterEl, moleculeFilterEl, focusFilterEl].forEach((input) => input.addEventListener("change", renderScene));
+    [viewModeEl, familyFilterEl, statusFilterEl, moleculeFilterEl].forEach((input) => input.addEventListener("change", renderScene));
     searchEl.addEventListener("input", debounce(renderScene, 90));
     resetEl.addEventListener("click", resetCamera);
+    reportToggleEl.addEventListener("click", toggleReport);
     renderer.domElement.addEventListener("pointerdown", selectVisual);
 
     fileEl.addEventListener("change", async (event) => {
@@ -1664,6 +1991,13 @@
         window.clearTimeout(timer);
         timer = window.setTimeout(fn, wait);
       };
+    }
+
+    function toggleReport() {
+      const isOpen = appEl.classList.toggle("report-open");
+      reportToggleEl.textContent = isOpen ? "Hide report" : "Show report";
+      reportToggleEl.setAttribute("aria-expanded", String(isOpen));
+      window.setTimeout(resize, 190);
     }
 
     function selectVisual(event) {
