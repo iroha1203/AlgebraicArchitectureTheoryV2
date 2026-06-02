@@ -1,4 +1,5 @@
 .lake/
+.tmp/
 .archsig/
 build/
 target/
