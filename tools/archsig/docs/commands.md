@@ -53,6 +53,12 @@ source refs to count plus samples, and records omitted counts / reasons.
 `archsig-run-manifest.json` records generated and omitted artifacts. For large
 ArchMaps, run `analyze` with `cargo run --release`.
 
+The release bundle includes a fixed `archsig-atom-viewer.html`. The page loads
+CDN Three.js, tries WebGPU first when the browser exposes it, falls back to
+WebGL, and reads `archsig-atom-viewer-data.json` through a file picker,
+drag-and-drop, or same-directory default fetch. It does not read the raw
+analysis packet.
+
 Raw evidence artifacts are opt-in:
 
 ```bash

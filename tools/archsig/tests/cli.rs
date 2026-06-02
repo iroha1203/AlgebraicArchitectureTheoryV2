@@ -2489,6 +2489,37 @@ fn cli_schema_catalog_is_primary_archsig_surface_only() {
     }
 }
 
+#[test]
+fn archsig_atom_viewer_static_app_is_packaged_asset() {
+    let viewer_path = Path::new(env!("CARGO_MANIFEST_DIR")).join("viewer/archsig-atom-viewer.html");
+    let html = fs::read_to_string(&viewer_path).expect("atom viewer static html can be read");
+    assert!(viewer_path.is_file(), "fixed Atom Viewer app must exist");
+    assert!(
+        html.contains("https://unpkg.com/three@"),
+        "viewer must load CDN Three.js runtime"
+    );
+    assert!(
+        html.contains("WebGPURenderer.js") && html.contains("WebGLRenderer"),
+        "viewer must prefer WebGPU and keep a WebGL fallback"
+    );
+    assert!(
+        html.contains("type=\"file\"")
+            && html.contains("dragover")
+            && html.contains("./archsig-atom-viewer-data.json"),
+        "viewer must support file picker, drag-and-drop, and default viewer data loading"
+    );
+    assert!(
+        html.contains("atomEdges")
+            && html.contains("moleculeGroups")
+            && html.contains("analysisOverlays"),
+        "viewer must render atoms, molecules, edges, and overlays"
+    );
+    assert!(
+        !html.contains("archsig-analysis-packet.json"),
+        "viewer must not embed or load the raw analysis packet"
+    );
+}
+
 fn removed_commands() -> &'static [&'static str] {
     &[
         "adapter-scan",

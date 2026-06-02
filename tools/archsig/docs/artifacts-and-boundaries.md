@@ -48,6 +48,10 @@ fragments.
 | ArchSig analysis validation report | `archsig-analysis-packet-validation-report-v0` | Checks the analysis packet boundary without proving lawfulness, source completeness, flatness, or repair safety. |
 | LLM interpretation packet | `archsig-analysis-packet-v0` | Optional raw artifact: a second serialization of the packet's structured LLM interpretation surface. |
 
+Release archives include a fixed `archsig-atom-viewer.html` at the package root
+and under `viewer/`. The app reads `archsig-atom-viewer-data-v0` projection
+data, not raw packet detail.
+
 ## Removed Surfaces
 
 The current CLI and schema catalog expose only the current artifacts above.
