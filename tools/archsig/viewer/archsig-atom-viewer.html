@@ -1,0 +1,749 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ArchSig Atom Viewer</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #101318;
+      --surface: #171b22;
+      --surface-2: #202632;
+      --line: #36404f;
+      --text: #eef2f6;
+      --muted: #aab4c2;
+      --accent: #4cc3a7;
+      --accent-2: #e0b84e;
+      --danger: #ef6767;
+      --blue: #66a6ff;
+      --violet: #b087ff;
+      --radius: 8px;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      overflow: hidden;
+    }
+
+    button,
+    input {
+      font: inherit;
+    }
+
+    .app {
+      display: grid;
+      grid-template-rows: minmax(340px, 58vh) minmax(260px, 42vh);
+      height: 100vh;
+    }
+
+    .viewer {
+      position: relative;
+      min-height: 0;
+      border-bottom: 1px solid var(--line);
+      background: #0d1015;
+    }
+
+    #scene {
+      position: absolute;
+      inset: 0;
+    }
+
+    .toolbar {
+      position: absolute;
+      z-index: 5;
+      top: 12px;
+      left: 12px;
+      right: 12px;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      justify-content: space-between;
+      pointer-events: none;
+    }
+
+    .toolbar-group {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      min-width: 0;
+      padding: 6px;
+      border: 1px solid rgba(238, 242, 246, 0.14);
+      border-radius: var(--radius);
+      background: rgba(16, 19, 24, 0.86);
+      pointer-events: auto;
+      backdrop-filter: blur(10px);
+    }
+
+    .title {
+      max-width: 38vw;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      padding: 0 8px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .button,
+    .file-button {
+      display: inline-grid;
+      place-items: center;
+      min-height: 32px;
+      min-width: 32px;
+      padding: 0 10px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: var(--surface-2);
+      color: var(--text);
+      cursor: pointer;
+    }
+
+    .file-button input {
+      display: none;
+    }
+
+    .button:hover,
+    .file-button:hover {
+      border-color: var(--accent);
+    }
+
+    .toggle {
+      display: inline-flex;
+      gap: 6px;
+      align-items: center;
+      min-height: 32px;
+      padding: 0 8px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: var(--surface);
+      color: var(--muted);
+      font-size: 12px;
+      cursor: pointer;
+    }
+
+    .toggle input {
+      accent-color: var(--accent);
+    }
+
+    .status {
+      position: absolute;
+      z-index: 5;
+      left: 12px;
+      bottom: 12px;
+      max-width: min(680px, calc(100vw - 24px));
+      padding: 8px 10px;
+      border: 1px solid rgba(238, 242, 246, 0.14);
+      border-radius: var(--radius);
+      background: rgba(16, 19, 24, 0.86);
+      color: var(--muted);
+      font-size: 12px;
+      pointer-events: none;
+    }
+
+    .drop {
+      position: absolute;
+      inset: 0;
+      z-index: 4;
+      display: none;
+      place-items: center;
+      border: 2px solid var(--accent);
+      background: rgba(76, 195, 167, 0.12);
+      color: var(--text);
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .drop.active {
+      display: grid;
+    }
+
+    .report {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 1px;
+      min-height: 0;
+      background: var(--line);
+    }
+
+    .panel {
+      min-height: 0;
+      overflow: auto;
+      background: var(--surface);
+      padding: 18px;
+    }
+
+    .panel h1,
+    .panel h2 {
+      margin: 0 0 12px;
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: 0;
+    }
+
+    .metric-row {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .metric {
+      min-height: 68px;
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #141820;
+    }
+
+    .metric .label {
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .metric .value {
+      margin-top: 6px;
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    .section {
+      margin-top: 16px;
+    }
+
+    .list {
+      display: grid;
+      gap: 8px;
+    }
+
+    .item {
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #141820;
+    }
+
+    .item strong {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 13px;
+    }
+
+    .item span,
+    .item p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+      overflow-wrap: anywhere;
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      min-height: 24px;
+      padding: 0 8px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: var(--muted);
+      font-size: 11px;
+      overflow-wrap: anywhere;
+    }
+
+    .ok {
+      color: var(--accent);
+    }
+
+    .warn {
+      color: var(--accent-2);
+    }
+
+    .fail {
+      color: var(--danger);
+    }
+
+    a {
+      color: var(--blue);
+    }
+
+    @media (max-width: 820px) {
+      body {
+        overflow: auto;
+      }
+
+      .app {
+        grid-template-rows: 58vh auto;
+        min-height: 100vh;
+      }
+
+      .report {
+        grid-template-columns: 1fr;
+      }
+
+      .toolbar {
+        align-items: flex-start;
+      }
+
+      .toolbar-group {
+        flex-wrap: wrap;
+      }
+
+      .title {
+        max-width: 72vw;
+        flex-basis: 100%;
+      }
+
+      .metric-row {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+  </style>
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.164.1/build/three.module.js",
+        "three/addons/": "https://unpkg.com/three@0.164.1/examples/jsm/"
+      }
+    }
+  </script>
+</head>
+<body>
+  <main class="app">
+    <section class="viewer" aria-label="3D Atom Viewer">
+      <div id="scene"></div>
+      <div id="drop" class="drop">Drop viewer data</div>
+      <div class="toolbar">
+        <div class="toolbar-group">
+          <label class="file-button" title="Load viewer data">
+            Open
+            <input id="file" type="file" accept="application/json,.json">
+          </label>
+          <button id="reset" class="button" type="button" title="Reset camera">Reset</button>
+          <span id="title" class="title">archsig-atom-viewer-data.json</span>
+        </div>
+        <div class="toolbar-group">
+          <label class="toggle"><input id="toggle-atoms" type="checkbox" checked>Atoms</label>
+          <label class="toggle"><input id="toggle-groups" type="checkbox" checked>Molecules</label>
+          <label class="toggle"><input id="toggle-edges" type="checkbox" checked>Edges</label>
+          <label class="toggle"><input id="toggle-overlays" type="checkbox" checked>Overlays</label>
+        </div>
+      </div>
+      <div id="status" class="status">Loading default viewer data</div>
+    </section>
+    <section class="report" aria-label="Analysis report">
+      <div class="panel">
+        <h1 id="report-title">ArchSig Atom Viewer</h1>
+        <div class="metric-row">
+          <div class="metric"><div class="label">Atoms</div><div id="metric-atoms" class="value">0</div></div>
+          <div class="metric"><div class="label">Molecules</div><div id="metric-groups" class="value">0</div></div>
+          <div class="metric"><div class="label">Edges</div><div id="metric-edges" class="value">0</div></div>
+          <div class="metric"><div class="label">Validation</div><div id="metric-validation" class="value">-</div></div>
+        </div>
+        <div class="section">
+          <h2>Top Findings</h2>
+          <div id="findings" class="list"></div>
+        </div>
+        <div class="section">
+          <h2>Action Queue</h2>
+          <div id="actions" class="list"></div>
+        </div>
+      </div>
+      <div class="panel">
+        <h2>Coverage And Boundaries</h2>
+        <div id="coverage" class="list"></div>
+        <div class="section">
+          <h2>Artifacts</h2>
+          <div id="artifacts" class="list"></div>
+        </div>
+        <div class="section">
+          <h2>Omitted Detail</h2>
+          <div id="omitted" class="list"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script type="module">
+    import * as THREE from "three";
+    import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+
+    const container = document.getElementById("scene");
+    const statusEl = document.getElementById("status");
+    const titleEl = document.getElementById("title");
+    const dropEl = document.getElementById("drop");
+    const fileEl = document.getElementById("file");
+    const resetEl = document.getElementById("reset");
+    const toggles = {
+      atoms: document.getElementById("toggle-atoms"),
+      groups: document.getElementById("toggle-groups"),
+      edges: document.getElementById("toggle-edges"),
+      overlays: document.getElementById("toggle-overlays")
+    };
+
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x0d1015);
+    const camera = new THREE.PerspectiveCamera(48, 1, 0.1, 4000);
+    const atomGroup = new THREE.Group();
+    const moleculeGroup = new THREE.Group();
+    const edgeGroup = new THREE.Group();
+    const overlayGroup = new THREE.Group();
+    scene.add(atomGroup, moleculeGroup, edgeGroup, overlayGroup);
+    scene.add(new THREE.AmbientLight(0xffffff, 0.76));
+    const light = new THREE.DirectionalLight(0xffffff, 1.2);
+    light.position.set(70, 120, 90);
+    scene.add(light);
+
+    let renderer = await createRenderer();
+    container.appendChild(renderer.domElement);
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    resetCamera();
+
+    const colorByStatus = {
+      observed: 0x4cc3a7,
+      inferred: 0x66a6ff,
+      partial: 0xe0b84e,
+      missing: 0xef6767,
+      blocked: 0xef6767
+    };
+
+    async function createRenderer() {
+      if (navigator.gpu) {
+        try {
+          const module = await import("three/addons/renderers/webgpu/WebGPURenderer.js");
+          const webgpu = new module.default({ antialias: true });
+          await webgpu.init();
+          status("WebGPU renderer");
+          return webgpu;
+        } catch (error) {
+          status("WebGL renderer");
+        }
+      }
+      const webgl = new THREE.WebGLRenderer({ antialias: true });
+      webgl.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+      status("WebGL renderer");
+      return webgl;
+    }
+
+    function status(text) {
+      statusEl.textContent = text;
+    }
+
+    function resize() {
+      const rect = container.getBoundingClientRect();
+      renderer.setSize(rect.width, rect.height, false);
+      camera.aspect = Math.max(rect.width, 1) / Math.max(rect.height, 1);
+      camera.updateProjectionMatrix();
+    }
+
+    function resetCamera() {
+      camera.position.set(180, 130, 220);
+      camera.lookAt(0, 0, 0);
+      controls.target.set(0, 0, 0);
+      controls.update();
+    }
+
+    function animate() {
+      requestAnimationFrame(animate);
+      controls.update();
+      renderer.render(scene, camera);
+    }
+
+    function clearGroup(group) {
+      while (group.children.length) {
+        const child = group.children.pop();
+        if (child.geometry) child.geometry.dispose();
+        if (child.material) child.material.dispose();
+      }
+    }
+
+    function renderData(data, label = "archsig-atom-viewer-data.json") {
+      titleEl.textContent = label;
+      clearGroup(atomGroup);
+      clearGroup(moleculeGroup);
+      clearGroup(edgeGroup);
+      clearGroup(overlayGroup);
+
+      const nodes = Array.isArray(data.atomNodes) ? data.atomNodes : [];
+      const groups = Array.isArray(data.moleculeGroups) ? data.moleculeGroups : [];
+      const edges = Array.isArray(data.atomEdges) ? data.atomEdges : [];
+      const positions = new Map();
+
+      nodes.forEach((node, index) => {
+        const p = nodePosition(node, index, nodes.length);
+        positions.set(node.nodeId, p);
+        const geometry = new THREE.SphereGeometry(nodeRadius(node), 16, 10);
+        const material = new THREE.MeshStandardMaterial({
+          color: colorByStatus[node.observationStatus] || 0xb087ff,
+          roughness: 0.5,
+          metalness: 0.05
+        });
+        const mesh = new THREE.Mesh(geometry, material);
+        mesh.position.copy(p);
+        mesh.userData = node;
+        atomGroup.add(mesh);
+      });
+
+      groups.forEach((group, index) => {
+        const refs = Array.isArray(group.atomObservationRefs) ? group.atomObservationRefs : [];
+        const points = refs.map((ref) => positions.get(ref)).filter(Boolean);
+        const p = points.length ? centroid(points) : groupPosition(index, groups.length);
+        positions.set(group.groupId, p);
+        const geometry = new THREE.SphereGeometry(7 + Math.min(refs.length, 10), 20, 10);
+        const material = new THREE.MeshStandardMaterial({
+          color: 0xe0b84e,
+          transparent: true,
+          opacity: 0.22,
+          roughness: 0.7
+        });
+        const mesh = new THREE.Mesh(geometry, material);
+        mesh.position.copy(p);
+        moleculeGroup.add(mesh);
+      });
+
+      edges.forEach((edge) => {
+        const source = positions.get(edge.sourceNodeRef);
+        const target = positions.get(edge.targetNodeRef);
+        if (!source || !target) return;
+        const geometry = new THREE.BufferGeometry().setFromPoints([source, target]);
+        const material = new THREE.LineBasicMaterial({ color: 0x5f6f86, transparent: true, opacity: 0.45 });
+        edgeGroup.add(new THREE.Line(geometry, material));
+      });
+
+      const overlays = overlayItems(data);
+      overlays.forEach((item, index) => {
+        const p = groupPosition(index, Math.max(overlays.length, 1), 90);
+        const geometry = new THREE.BoxGeometry(7, 7, 7);
+        const material = new THREE.MeshStandardMaterial({ color: 0xef6767, roughness: 0.5 });
+        const mesh = new THREE.Mesh(geometry, material);
+        mesh.position.copy(p);
+        mesh.userData = item;
+        overlayGroup.add(mesh);
+      });
+
+      updateVisibility();
+      renderReport(data);
+      resize();
+      status(`${nodes.length} atoms, ${groups.length} molecules, ${edges.length} edges`);
+    }
+
+    function nodePosition(node, index, total) {
+      const family = hashText(node.atomFamily || "atom") % 11;
+      const angle = index * 2.399963229728653;
+      const radius = 22 + Math.sqrt(index + 1) * 11;
+      const y = (family - 5) * 12 + ((index % 7) - 3) * 2;
+      return new THREE.Vector3(Math.cos(angle) * radius, y, Math.sin(angle) * radius);
+    }
+
+    function groupPosition(index, total, scale = 70) {
+      const angle = index * 2.399963229728653;
+      const radius = scale + Math.sqrt(index + 1) * 3;
+      return new THREE.Vector3(Math.cos(angle) * radius, 0, Math.sin(angle) * radius);
+    }
+
+    function centroid(points) {
+      const p = new THREE.Vector3();
+      points.forEach((point) => p.add(point));
+      return p.divideScalar(points.length);
+    }
+
+    function nodeRadius(node) {
+      const count = Number(node.sourceRefCount || node.objectRefCount || 1);
+      return 3.5 + Math.min(count, 12) * 0.45;
+    }
+
+    function hashText(text) {
+      let hash = 0;
+      for (let i = 0; i < text.length; i += 1) hash = ((hash << 5) - hash + text.charCodeAt(i)) | 0;
+      return Math.abs(hash);
+    }
+
+    function overlayItems(data) {
+      const overlays = data.analysisOverlays || {};
+      return [
+        ...(Array.isArray(overlays.signatureAxes) ? overlays.signatureAxes : []),
+        ...(Array.isArray(overlays.obstructionCircuits) ? overlays.obstructionCircuits : [])
+      ].slice(0, data.layoutSettings?.overlayLimit || 80);
+    }
+
+    function updateVisibility() {
+      atomGroup.visible = toggles.atoms.checked;
+      moleculeGroup.visible = toggles.groups.checked;
+      edgeGroup.visible = toggles.edges.checked;
+      overlayGroup.visible = toggles.overlays.checked;
+    }
+
+    Object.values(toggles).forEach((input) => input.addEventListener("change", updateVisibility));
+    resetEl.addEventListener("click", resetCamera);
+
+    fileEl.addEventListener("change", async (event) => {
+      const file = event.target.files?.[0];
+      if (!file) return;
+      const data = JSON.parse(await file.text());
+      renderData(data, file.name);
+    });
+
+    window.addEventListener("dragover", (event) => {
+      event.preventDefault();
+      dropEl.classList.add("active");
+    });
+    window.addEventListener("dragleave", () => dropEl.classList.remove("active"));
+    window.addEventListener("drop", async (event) => {
+      event.preventDefault();
+      dropEl.classList.remove("active");
+      const file = event.dataTransfer?.files?.[0];
+      if (!file) return;
+      const data = JSON.parse(await file.text());
+      renderData(data, file.name);
+    });
+
+    function renderReport(data) {
+      const report = data.reportPane || {};
+      const overview = report.overview || {};
+      const verdict = overview.summaryVerdict || {};
+      const validation = overview.validation || {};
+
+      document.getElementById("report-title").textContent =
+        overview.architectureId || overview.mapId || "ArchSig Atom Viewer";
+      document.getElementById("metric-atoms").textContent = count(data.atomNodes);
+      document.getElementById("metric-groups").textContent = count(data.moleculeGroups);
+      document.getElementById("metric-edges").textContent = count(data.atomEdges);
+      document.getElementById("metric-validation").innerHTML = validationBadge(validation);
+
+      renderItems("findings", report.topFindings || data.analysisOverlays?.dominantFindings, "finding");
+      renderItems("actions", report.actionQueue || data.analysisOverlays?.actionQueue, "action");
+      renderCoverage(report.coverageAndBoundaries || {}, verdict);
+      renderArtifacts(report.artifacts || {}, data.sourceArtifactRefs || {});
+      renderOmitted(data.omittedDetailCounts || {}, data.truncationPolicy || {});
+    }
+
+    function count(value) {
+      return Array.isArray(value) ? String(value.length) : "0";
+    }
+
+    function validationBadge(validation) {
+      const values = [];
+      for (const [key, value] of Object.entries(validation || {})) {
+        if (value && typeof value === "object" && "result" in value) values.push(`${key}:${value.result}`);
+      }
+      const result = values.join(" ");
+      const klass = result.includes("fail") ? "fail" : result.includes("warn") ? "warn" : "ok";
+      return `<span class="${klass}">${escapeHtml(result || "-")}</span>`;
+    }
+
+    function renderItems(id, value, fallbackLabel) {
+      const root = document.getElementById(id);
+      const items = Array.isArray(value) ? value.slice(0, 8) : [];
+      root.innerHTML = items.length ? items.map((item, index) => itemHtml(item, fallbackLabel, index)).join("") : emptyItem();
+    }
+
+    function itemHtml(item, fallbackLabel, index) {
+      if (item && typeof item === "object") {
+        const title = item.title || item.kind || item.conclusion || item.id || `${fallbackLabel} ${index + 1}`;
+        const text = item.summary || item.description || item.reading || item.reason || item.recommendedNextAction || JSON.stringify(item).slice(0, 240);
+        return `<div class="item"><strong>${escapeHtml(String(title))}</strong><p>${escapeHtml(String(text))}</p></div>`;
+      }
+      return `<div class="item"><strong>${escapeHtml(`${fallbackLabel} ${index + 1}`)}</strong><p>${escapeHtml(String(item))}</p></div>`;
+    }
+
+    function renderCoverage(boundaries, verdict) {
+      const root = document.getElementById("coverage");
+      const coverage = boundaries.coverageGaps || {};
+      const chips = [
+        verdict.flatness && `flatness: ${verdict.flatness}`,
+        verdict.qualityState && `quality: ${verdict.qualityState}`,
+        coverage.gapCount != null && `coverage gaps: ${coverage.gapCount}`,
+        boundaries.measurementBasis?.basis && `basis: ${boundaries.measurementBasis.basis}`
+      ].filter(Boolean);
+      root.innerHTML = chips.length
+        ? `<div class="item"><div class="chips">${chips.map((chip) => `<span class="chip">${escapeHtml(chip)}</span>`).join("")}</div></div>`
+        : emptyItem();
+    }
+
+    function renderArtifacts(artifacts, sourceRefs) {
+      const root = document.getElementById("artifacts");
+      const pairs = [
+        ["viewer data", "archsig-atom-viewer-data.json"],
+        ["summary", artifacts.summary || sourceRefs.summary],
+        ["manifest", artifacts.manifest || sourceRefs.manifest],
+        ["raw artifacts", artifacts.rawArtifacts || "see manifest"]
+      ].filter(([, value]) => value);
+      root.innerHTML = pairs.map(([label, value]) => {
+        const text = String(value);
+        const link = text.endsWith(".json") ? `<a href="${escapeAttr(text)}">${escapeHtml(text)}</a>` : escapeHtml(text);
+        return `<div class="item"><strong>${escapeHtml(label)}</strong><p>${link}</p></div>`;
+      }).join("");
+    }
+
+    function renderOmitted(counts, policy) {
+      const root = document.getElementById("omitted");
+      const rows = Object.entries(counts)
+        .filter(([key]) => key !== "omittedReasons" && key !== "rawPacketDetail")
+        .map(([key, value]) => `${key}: ${value}`);
+      const reasons = Array.isArray(counts.omittedReasons) ? counts.omittedReasons : [];
+      const policyText = [policy.atomNodes, policy.moleculeGroups, policy.overlays].filter(Boolean);
+      const items = [...rows, counts.rawPacketDetail, ...reasons, ...policyText].filter(Boolean);
+      root.innerHTML = items.length
+        ? items.slice(0, 12).map((item) => `<div class="item"><p>${escapeHtml(String(item))}</p></div>`).join("")
+        : emptyItem();
+    }
+
+    function emptyItem() {
+      return `<div class="item"><p>No data loaded</p></div>`;
+    }
+
+    function escapeHtml(value) {
+      return value
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;");
+    }
+
+    function escapeAttr(value) {
+      return escapeHtml(value).replaceAll("'", "&#39;");
+    }
+
+    window.addEventListener("resize", resize);
+    resize();
+    animate();
+
+    try {
+      const response = await fetch("./archsig-atom-viewer-data.json");
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      renderData(await response.json());
+    } catch (error) {
+      renderData({
+        schemaVersion: "archsig-atom-viewer-data-v0",
+        atomNodes: [],
+        moleculeGroups: [],
+        atomEdges: [],
+        reportPane: {
+          overview: {
+            architectureId: "No viewer data loaded",
+            validation: {}
+          }
+        },
+        omittedDetailCounts: {
+          rawPacketDetail: "raw packet detail is not loaded by this viewer"
+        }
+      });
+      status("Open archsig-atom-viewer-data.json");
+    }
+  </script>
+</body>
+</html>

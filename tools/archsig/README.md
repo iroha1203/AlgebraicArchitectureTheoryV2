@@ -126,6 +126,12 @@ labels, and source refs are priority-selected or sampled, with omitted counts
 and reasons recorded. `archsig-run-manifest.json` records generated and omitted
 artifacts.
 
+Release archives include `archsig-atom-viewer.html` as a fixed viewer app. Open
+it in a browser and load `archsig-atom-viewer-data.json` with the file picker,
+drag-and-drop, or the same-directory default fetch. The viewer uses CDN Three.js,
+tries the WebGPU renderer first when available, and falls back to WebGL. It
+does not load `archsig-analysis-packet.json`.
+
 For large ArchMaps, prefer the optimized binary:
 
 ```bash
