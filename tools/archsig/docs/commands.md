@@ -47,8 +47,11 @@ The command emits only:
 
 `archsig-analysis-summary.json` is the LLM-readable compact reading surface.
 `archsig-atom-viewer-data.json` is a bounded visual projection for the fixed
-Atom Viewer app. `archsig-run-manifest.json` records generated and omitted
-artifacts. For large ArchMaps, run `analyze` with `cargo run --release`.
+Atom Viewer app. It uses deterministic top-N priority selection for atom nodes
+and molecule groups, emits bounded molecule-to-atom edges, limits labels and
+source refs to count plus samples, and records omitted counts / reasons.
+`archsig-run-manifest.json` records generated and omitted artifacts. For large
+ArchMaps, run `analyze` with `cargo run --release`.
 
 Raw evidence artifacts are opt-in:
 

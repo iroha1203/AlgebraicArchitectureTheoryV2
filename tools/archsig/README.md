@@ -121,7 +121,10 @@ This writes:
 
 Use `archsig-analysis-summary.json` as the LLM-readable first pass and
 `archsig-atom-viewer-data.json` with the fixed Atom Viewer app for human visual
-review. `archsig-run-manifest.json` records generated and omitted artifacts.
+review. Viewer data is bounded: atom nodes, molecule groups, edges, overlays,
+labels, and source refs are priority-selected or sampled, with omitted counts
+and reasons recorded. `archsig-run-manifest.json` records generated and omitted
+artifacts.
 
 For large ArchMaps, prefer the optimized binary:
 
