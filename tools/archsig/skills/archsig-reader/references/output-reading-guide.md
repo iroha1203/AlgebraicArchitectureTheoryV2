@@ -1,11 +1,14 @@
 # ArchSig Output Reading Guide
 
-Use this reference when deciding what to read first in an
-`archsig-analysis-packet-v0` or `archsig-analysis-summary.json`.
+Use this reference when deciding what to read first in ArchSig output. The
+default first surfaces are `archsig-analysis-summary.json` for LLM/structured
+reading and the Atom Viewer report pane for human visual reading. Raw
+`archsig-analysis-packet-v0` artifacts are optional evidence-store and FieldSig
+handoff files.
 
 ## Analysis Summary Reading Order
 
-When `analysis-summary` is available, read it before raw packet details:
+Read `archsig-analysis-summary.json` before raw packet details:
 
 1. `verdict`: the measured conclusion for the supplied ArchMap + LawPolicy.
 2. `qualityMeasurement`: counts for nonzero axes, hotspots, recurrent pressure,
@@ -20,7 +23,8 @@ When `analysis-summary` is available, read it before raw packet details:
    `bridgeSummary`, and `coverageGapSummary`: compact counts and examples for
    the major surfaces.
 6. `detailIndex`: packet sections and `packet:<json-pointer>` refs for reading
-   full evidence in `archsig-analysis-packet.json`.
+   full evidence in `archsig-analysis-packet.json` when raw artifacts were
+   emitted.
 7. `measurementBasis`: input refs, profile refs, validation results, coverage
    gaps, and measured boundaries.
 8. `metadata.nonConclusions`: claim-boundary metadata. Keep it available, but
@@ -30,6 +34,12 @@ The report posture is: "for this input model, these conclusions were measured."
 Do not turn unmeasured claims into caveats in the main diagnosis.
 Use packet detail only after the compact summary identifies which queue item or
 finding needs evidence inspection.
+
+For human review, open the bundled `archsig-atom-viewer.html` and load
+`archsig-atom-viewer-data.json`. Its report pane should show the same verdict,
+top findings, action queue, coverage boundaries, validation status, artifact
+list, generated / omitted artifact state, and optional packet / detail-index
+links without parsing the raw packet in the browser.
 
 When ArchSig output is being read as part of complete ArchMap authoring, the
 posture is slightly different: keep the measured conclusion first, then turn
