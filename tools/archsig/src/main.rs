@@ -8,8 +8,15 @@ use std::path::{Path, PathBuf};
 use std::process::ExitCode;
 
 use archsig::{
-    ARCHSIG_ANALYSIS_PACKET_SCHEMA_VERSION, ArchMapDocumentV0, ArchMapSourceInventoryInput,
+    ARCHSIG_ANALYSIS_PACKET_SCHEMA_VERSION, ARCHSIG_ATOM_VIEWER_DATA_SCHEMA_VERSION,
+    ARCHSIG_RUN_MANIFEST_SCHEMA_VERSION, ArchMapDocumentV0, ArchMapSourceInventoryInput,
     ArchMapSourceInventoryV0, ArchMapValidationReportV0, ArchSigAnalysisPacketValidationReportV0,
+    ArchSigArtifactValidationResultV0, ArchSigAtomViewerAtomNodeV0, ArchSigAtomViewerDataV0,
+    ArchSigAtomViewerLayoutSettingsV0, ArchSigAtomViewerMoleculeGroupV0,
+    ArchSigAtomViewerOmittedDetailCountsV0, ArchSigAtomViewerSourceArtifactRefsV0,
+    ArchSigAtomViewerTruncationPolicyV0, ArchSigAtomViewerVisualV0,
+    ArchSigRunManifestRawArtifactPathsV0, ArchSigRunManifestV0,
+    ArchSigRunManifestValidationReportPathsV0, ArchSigRunManifestValidationResultSummaryV0,
     LawPolicyDocumentV0, LawPolicyValidationReportV0, SchemaVersionCatalogV0,
     build_archsig_analysis_packet, static_law_policy, static_schema_version_catalog,
     validate_archmap_report, validate_archsig_analysis_packet_report, validate_law_policy_report,
@@ -552,7 +559,7 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                 &analysis_summary,
                 &archmap,
                 &law_policy,
-            )?;
+            );
             write_json(Some(atom_viewer_data_path.clone()), &atom_viewer_data)?;
 
             let analysis_detail_index_path = out_dir.join("archsig-analysis-detail-index.json");
@@ -660,7 +667,7 @@ fn build_analyze_run_manifest(
     archmap_validation: &ArchMapValidationReportV0,
     law_policy_validation: &LawPolicyValidationReportV0,
     analysis_validation: &ArchSigAnalysisPacketValidationReportV0,
-) -> serde_json::Value {
+) -> ArchSigRunManifestV0 {
     let mut generated_artifacts = vec![
         "archmap-validation.json",
         "law-policy-validation.json",
@@ -684,58 +691,57 @@ fn build_analyze_run_manifest(
         ]);
     }
 
-    serde_json::json!({
-        "schemaVersion": "archsig-run-manifest-v0",
-        "commandName": "analyze",
-        "archmapInputPath": archmap.display().to_string(),
-        "lawPolicyInputPath": law_policy.display().to_string(),
-        "outputMode": if emit_raw_artifacts {
+    ArchSigRunManifestV0 {
+        schema_version: ARCHSIG_RUN_MANIFEST_SCHEMA_VERSION.to_string(),
+        command_name: "analyze".to_string(),
+        archmap_input_path: archmap.display().to_string(),
+        law_policy_input_path: law_policy.display().to_string(),
+        output_mode: if emit_raw_artifacts {
             "summary-viewer-manifest-with-raw-artifacts"
         } else {
             "summary-viewer-manifest"
+        }
+        .to_string(),
+        raw_artifact_retention: if emit_raw_artifacts { "full" } else { "omitted" }.to_string(),
+        generated_artifacts: generated_artifacts.into_iter().map(str::to_string).collect(),
+        omitted_artifacts: omitted_artifacts.into_iter().map(str::to_string).collect(),
+        summary_path: "archsig-analysis-summary.json".to_string(),
+        atom_viewer_data_path: "archsig-atom-viewer-data.json".to_string(),
+        validation_reports: ArchSigRunManifestValidationReportPathsV0 {
+            archmap: "archmap-validation.json".to_string(),
+            law_policy: "law-policy-validation.json".to_string(),
+            analysis: "archsig-analysis-validation.json".to_string(),
         },
-        "rawArtifactRetention": if emit_raw_artifacts { "full" } else { "omitted" },
-        "generatedArtifacts": generated_artifacts,
-        "omittedArtifacts": omitted_artifacts,
-        "summaryPath": "archsig-analysis-summary.json",
-        "atomViewerDataPath": "archsig-atom-viewer-data.json",
-        "validationReports": {
-            "archmap": "archmap-validation.json",
-            "lawPolicy": "law-policy-validation.json",
-            "analysis": "archsig-analysis-validation.json"
-        },
-        "rawArtifactPaths": if emit_raw_artifacts {
-            serde_json::json!({
-                "analysisPacket": "archsig-analysis-packet.json",
-                "analysisDetailIndex": "archsig-analysis-detail-index.json",
-                "llmInterpretationPacket": "llm-interpretation-packet.json"
-            })
-        } else {
-            serde_json::Value::Null
-        },
-        "validationResultSummary": {
-            "archmap": {
-                "result": &archmap_validation.summary.result,
-                "failedCheckCount": archmap_validation.summary.failed_check_count,
-                "warningCheckCount": archmap_validation.summary.warning_check_count
+        raw_artifact_paths: emit_raw_artifacts.then(|| ArchSigRunManifestRawArtifactPathsV0 {
+            analysis_packet: "archsig-analysis-packet.json".to_string(),
+            analysis_detail_index: "archsig-analysis-detail-index.json".to_string(),
+            llm_interpretation_packet: "llm-interpretation-packet.json".to_string(),
+        }),
+        validation_result_summary: ArchSigRunManifestValidationResultSummaryV0 {
+            archmap: ArchSigArtifactValidationResultV0 {
+                result: archmap_validation.summary.result.clone(),
+                failed_check_count: archmap_validation.summary.failed_check_count,
+                warning_check_count: archmap_validation.summary.warning_check_count,
             },
-            "lawPolicy": {
-                "result": &law_policy_validation.summary.result,
-                "failedCheckCount": law_policy_validation.summary.failed_check_count,
-                "warningCheckCount": law_policy_validation.summary.warning_check_count
+            law_policy: ArchSigArtifactValidationResultV0 {
+                result: law_policy_validation.summary.result.clone(),
+                failed_check_count: law_policy_validation.summary.failed_check_count,
+                warning_check_count: law_policy_validation.summary.warning_check_count,
             },
-            "analysis": {
-                "result": &analysis_validation.summary.result,
-                "failedCheckCount": analysis_validation.summary.failed_check_count,
-                "warningCheckCount": analysis_validation.summary.warning_check_count
-            }
+            analysis: ArchSigArtifactValidationResultV0 {
+                result: analysis_validation.summary.result.clone(),
+                failed_check_count: analysis_validation.summary.failed_check_count,
+                warning_check_count: analysis_validation.summary.warning_check_count,
+            },
         },
-        "nonConclusions": [
-            "run manifest records generated and omitted artifacts for this ArchSig analyze run",
-            "omitted raw artifacts can be regenerated by rerunning analyze with --emit-raw-artifacts",
-            "manifest paths are artifact navigation aids, not source completeness proof"
-        ]
-    })
+        non_conclusions: vec![
+            "run manifest records generated and omitted artifacts for this ArchSig analyze run"
+                .to_string(),
+            "omitted raw artifacts can be regenerated by rerunning analyze with --emit-raw-artifacts"
+                .to_string(),
+            "manifest paths are artifact navigation aids, not source completeness proof".to_string(),
+        ],
+    }
 }
 
 fn build_atom_viewer_data(
@@ -744,7 +750,7 @@ fn build_atom_viewer_data(
     summary: &serde_json::Value,
     archmap_path: &Path,
     law_policy_path: &Path,
-) -> Result<serde_json::Value, Box<dyn Error>> {
+) -> ArchSigAtomViewerDataV0 {
     const ATOM_NODE_LIMIT: usize = 250;
     const MOLECULE_GROUP_LIMIT: usize = 120;
     const OVERLAY_LIMIT: usize = 80;
@@ -753,45 +759,44 @@ fn build_atom_viewer_data(
         .atom_observations
         .iter()
         .take(ATOM_NODE_LIMIT)
-        .map(|atom| {
-            Ok(serde_json::json!({
-                "nodeId": &atom.atom_observation_id,
-                "atomFamily": &atom.atom_family,
-                "subjectRef": &atom.subject_ref,
-                "predicate": &atom.predicate,
-                "observationStatus": &atom.observation_status,
-                "confidence": &atom.confidence,
-                "objectRefCount": atom.object_refs.len(),
-                "sourceRefSamples": source_ref_samples(&atom.source_refs)?,
-                "projectionRefs": &atom.projection_refs,
-                "visual": {
-                    "kind": "atom",
-                    "colorBy": "observationStatus",
-                    "sizeBy": "sourceRefCount"
-                }
-            }))
+        .map(|atom| ArchSigAtomViewerAtomNodeV0 {
+            node_id: atom.atom_observation_id.clone(),
+            atom_family: atom.atom_family.clone(),
+            subject_ref: atom.subject_ref.clone(),
+            predicate: atom.predicate.clone(),
+            observation_status: atom.observation_status.clone(),
+            confidence: atom.confidence.clone(),
+            object_ref_count: atom.object_refs.len(),
+            source_ref_samples: source_ref_samples(&atom.source_refs),
+            projection_refs: atom.projection_refs.clone(),
+            visual: ArchSigAtomViewerVisualV0 {
+                kind: "atom".to_string(),
+                color_by: Some("observationStatus".to_string()),
+                size_by: Some("sourceRefCount".to_string()),
+                hull_by: None,
+            },
         })
-        .collect::<Result<Vec<_>, Box<dyn Error>>>()?;
+        .collect::<Vec<_>>();
     let molecule_groups = archmap
         .molecule_observations
         .iter()
         .take(MOLECULE_GROUP_LIMIT)
-        .map(|molecule| {
-            Ok(serde_json::json!({
-                "groupId": &molecule.molecule_observation_id,
-                "moleculeFamily": &molecule.molecule_family,
-                "roleName": &molecule.role_name,
-                "atomObservationRefs": &molecule.atom_observation_refs,
-                "observationStatus": &molecule.observation_status,
-                "confidence": &molecule.confidence,
-                "sourceRefSamples": source_ref_samples(&molecule.source_refs)?,
-                "visual": {
-                    "kind": "moleculeGroup",
-                    "hullBy": "atomObservationRefs"
-                }
-            }))
+        .map(|molecule| ArchSigAtomViewerMoleculeGroupV0 {
+            group_id: molecule.molecule_observation_id.clone(),
+            molecule_family: molecule.molecule_family.clone(),
+            role_name: molecule.role_name.clone(),
+            atom_observation_refs: molecule.atom_observation_refs.clone(),
+            observation_status: molecule.observation_status.clone(),
+            confidence: molecule.confidence.clone(),
+            source_ref_samples: source_ref_samples(&molecule.source_refs),
+            visual: ArchSigAtomViewerVisualV0 {
+                kind: "moleculeGroup".to_string(),
+                color_by: None,
+                size_by: None,
+                hull_by: Some("atomObservationRefs".to_string()),
+            },
         })
-        .collect::<Result<Vec<_>, Box<dyn Error>>>()?;
+        .collect::<Vec<_>>();
 
     let overlays = serde_json::json!({
         "signatureAxes": array_field_with_limit(packet, "signatureAxes", Some(OVERLAY_LIMIT)),
@@ -823,55 +828,56 @@ fn build_atom_viewer_data(
         }
     });
 
-    Ok(serde_json::json!({
-        "schemaVersion": "archsig-atom-viewer-data-v0",
-        "dataKind": "bounded-atom-viewer-projection",
-        "sourceArtifactRefs": {
-            "archmap": archmap_path.display().to_string(),
-            "lawPolicy": law_policy_path.display().to_string(),
-            "summary": "archsig-analysis-summary.json",
-            "manifest": "archsig-run-manifest.json"
+    ArchSigAtomViewerDataV0 {
+        schema_version: ARCHSIG_ATOM_VIEWER_DATA_SCHEMA_VERSION.to_string(),
+        data_kind: "bounded-atom-viewer-projection".to_string(),
+        source_artifact_refs: ArchSigAtomViewerSourceArtifactRefsV0 {
+            archmap: archmap_path.display().to_string(),
+            law_policy: law_policy_path.display().to_string(),
+            summary: "archsig-analysis-summary.json".to_string(),
+            manifest: "archsig-run-manifest.json".to_string(),
         },
-        "layoutSettings": {
-            "layoutKind": "aat-bounded-force-3d",
-            "nodeLimit": ATOM_NODE_LIMIT,
-            "moleculeGroupLimit": MOLECULE_GROUP_LIMIT,
-            "overlayLimit": OVERLAY_LIMIT,
-            "distanceBoundary": "3D distance is a visual projection, not an AAT theorem metric"
+        layout_settings: ArchSigAtomViewerLayoutSettingsV0 {
+            layout_kind: "aat-bounded-force-3d".to_string(),
+            node_limit: ATOM_NODE_LIMIT,
+            molecule_group_limit: MOLECULE_GROUP_LIMIT,
+            overlay_limit: OVERLAY_LIMIT,
+            distance_boundary:
+                "3D distance is a visual projection, not an AAT theorem metric".to_string(),
         },
-        "atomNodes": atom_nodes,
-        "moleculeGroups": molecule_groups,
-        "lawAxisOverlays": overlays["signatureAxes"],
-        "analysisOverlays": overlays,
-        "reportPane": report_pane,
-        "omittedDetailCounts": {
-            "atomNodes": archmap.atom_observations.len().saturating_sub(ATOM_NODE_LIMIT),
-            "moleculeGroups": archmap.molecule_observations.len().saturating_sub(MOLECULE_GROUP_LIMIT),
-            "rawPacketDetail": "raw packet is not embedded in viewer data"
+        atom_nodes,
+        molecule_groups,
+        law_axis_overlays: overlays["signatureAxes"].clone(),
+        analysis_overlays: overlays,
+        report_pane,
+        omitted_detail_counts: ArchSigAtomViewerOmittedDetailCountsV0 {
+            atom_nodes: archmap.atom_observations.len().saturating_sub(ATOM_NODE_LIMIT),
+            molecule_groups: archmap
+                .molecule_observations
+                .len()
+                .saturating_sub(MOLECULE_GROUP_LIMIT),
+            raw_packet_detail: "raw packet is not embedded in viewer data".to_string(),
         },
-        "truncationPolicy": {
-            "atomNodes": format!("first {ATOM_NODE_LIMIT} ArchMap atom observations"),
-            "moleculeGroups": format!("first {MOLECULE_GROUP_LIMIT} ArchMap molecule observations"),
-            "overlays": format!("first {OVERLAY_LIMIT} items per selected overlay family"),
-            "futureWork": "Issue #1638 owns priority selection, aggregation, and focus filters"
+        truncation_policy: ArchSigAtomViewerTruncationPolicyV0 {
+            atom_nodes: format!("first {ATOM_NODE_LIMIT} ArchMap atom observations"),
+            molecule_groups: format!("first {MOLECULE_GROUP_LIMIT} ArchMap molecule observations"),
+            overlays: format!("first {OVERLAY_LIMIT} items per selected overlay family"),
+            future_work: "Issue #1638 owns priority selection, aggregation, and focus filters"
+                .to_string(),
         },
-        "nonConclusions": [
-            "viewer data is a bounded visual projection, not a replacement for the analysis packet",
-            "3D layout distance is not a theorem metric, semantic equivalence, or causal relation",
+        non_conclusions: vec![
+            "viewer data is a bounded visual projection, not a replacement for the analysis packet"
+                .to_string(),
+            "3D layout distance is not a theorem metric, semantic equivalence, or causal relation"
+                .to_string(),
             "raw packet detail is intentionally omitted unless analyze is rerun with --emit-raw-artifacts"
-        ]
-    }))
+                .to_string(),
+        ],
+    }
 }
 
-fn source_ref_samples<T: serde::Serialize>(
-    refs: &[T],
-) -> Result<serde_json::Value, Box<dyn Error>> {
-    Ok(serde_json::Value::Array(
-        refs.iter()
-            .take(3)
-            .map(serde_json::to_value)
-            .collect::<Result<Vec<_>, _>>()?,
-    ))
+fn source_ref_samples(refs: &[archsig::ArchMapSourceRef]) -> Vec<archsig::ArchMapSourceRef> {
+    refs.iter().take(3).cloned().collect()
 }
 
 fn default_detail_index_path(packet_path: &Path) -> PathBuf {

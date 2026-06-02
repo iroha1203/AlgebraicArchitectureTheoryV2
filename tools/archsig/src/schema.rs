@@ -8,8 +8,155 @@ pub const LAW_POLICY_VALIDATION_REPORT_SCHEMA_VERSION: &str = "law-policy-valida
 pub const ARCHSIG_ANALYSIS_PACKET_SCHEMA_VERSION: &str = "archsig-analysis-packet-v0";
 pub const ARCHSIG_ANALYSIS_PACKET_VALIDATION_REPORT_SCHEMA_VERSION: &str =
     "archsig-analysis-packet-validation-report-v0";
+pub const ARCHSIG_RUN_MANIFEST_SCHEMA_VERSION: &str = "archsig-run-manifest-v0";
+pub const ARCHSIG_ATOM_VIEWER_DATA_SCHEMA_VERSION: &str = "archsig-atom-viewer-data-v0";
 pub const SCHEMA_VERSION_CATALOG_SCHEMA_VERSION: &str = "schema-version-catalog-v0";
 pub const SCHEMA_COMPATIBILITY_POLICY_SCHEMA_VERSION: &str = "schema-compatibility-policy-v0";
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigRunManifestV0 {
+    pub schema_version: String,
+    pub command_name: String,
+    pub archmap_input_path: String,
+    pub law_policy_input_path: String,
+    pub output_mode: String,
+    pub raw_artifact_retention: String,
+    pub generated_artifacts: Vec<String>,
+    pub omitted_artifacts: Vec<String>,
+    pub summary_path: String,
+    pub atom_viewer_data_path: String,
+    pub validation_reports: ArchSigRunManifestValidationReportPathsV0,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub raw_artifact_paths: Option<ArchSigRunManifestRawArtifactPathsV0>,
+    pub validation_result_summary: ArchSigRunManifestValidationResultSummaryV0,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigRunManifestValidationReportPathsV0 {
+    pub archmap: String,
+    pub law_policy: String,
+    pub analysis: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigRunManifestRawArtifactPathsV0 {
+    pub analysis_packet: String,
+    pub analysis_detail_index: String,
+    pub llm_interpretation_packet: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigRunManifestValidationResultSummaryV0 {
+    pub archmap: ArchSigArtifactValidationResultV0,
+    pub law_policy: ArchSigArtifactValidationResultV0,
+    pub analysis: ArchSigArtifactValidationResultV0,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigArtifactValidationResultV0 {
+    pub result: String,
+    pub failed_check_count: usize,
+    pub warning_check_count: usize,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigAtomViewerDataV0 {
+    pub schema_version: String,
+    pub data_kind: String,
+    pub source_artifact_refs: ArchSigAtomViewerSourceArtifactRefsV0,
+    pub layout_settings: ArchSigAtomViewerLayoutSettingsV0,
+    pub atom_nodes: Vec<ArchSigAtomViewerAtomNodeV0>,
+    pub molecule_groups: Vec<ArchSigAtomViewerMoleculeGroupV0>,
+    pub law_axis_overlays: serde_json::Value,
+    pub analysis_overlays: serde_json::Value,
+    pub report_pane: serde_json::Value,
+    pub omitted_detail_counts: ArchSigAtomViewerOmittedDetailCountsV0,
+    pub truncation_policy: ArchSigAtomViewerTruncationPolicyV0,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigAtomViewerSourceArtifactRefsV0 {
+    pub archmap: String,
+    pub law_policy: String,
+    pub summary: String,
+    pub manifest: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigAtomViewerLayoutSettingsV0 {
+    pub layout_kind: String,
+    pub node_limit: usize,
+    pub molecule_group_limit: usize,
+    pub overlay_limit: usize,
+    pub distance_boundary: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigAtomViewerAtomNodeV0 {
+    pub node_id: String,
+    pub atom_family: String,
+    pub subject_ref: String,
+    pub predicate: String,
+    pub observation_status: String,
+    pub confidence: String,
+    pub object_ref_count: usize,
+    pub source_ref_samples: Vec<ArchMapSourceRef>,
+    pub projection_refs: Vec<String>,
+    pub visual: ArchSigAtomViewerVisualV0,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigAtomViewerMoleculeGroupV0 {
+    pub group_id: String,
+    pub molecule_family: String,
+    pub role_name: String,
+    pub atom_observation_refs: Vec<String>,
+    pub observation_status: String,
+    pub confidence: String,
+    pub source_ref_samples: Vec<ArchMapSourceRef>,
+    pub visual: ArchSigAtomViewerVisualV0,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigAtomViewerVisualV0 {
+    pub kind: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub color_by: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub size_by: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub hull_by: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigAtomViewerOmittedDetailCountsV0 {
+    pub atom_nodes: usize,
+    pub molecule_groups: usize,
+    pub raw_packet_detail: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigAtomViewerTruncationPolicyV0 {
+    pub atom_nodes: String,
+    pub molecule_groups: String,
+    pub overlays: String,
+    pub future_work: String,
+}
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]

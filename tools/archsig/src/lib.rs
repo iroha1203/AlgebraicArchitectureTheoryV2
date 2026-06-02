@@ -14,10 +14,17 @@ pub(crate) use schema::*;
 pub use schema::{
     ARCHMAP_SCHEMA_VERSION, ARCHMAP_SOURCE_INVENTORY_SCHEMA_VERSION,
     ARCHMAP_VALIDATION_REPORT_SCHEMA_VERSION, ARCHSIG_ANALYSIS_PACKET_SCHEMA_VERSION,
-    ARCHSIG_ANALYSIS_PACKET_VALIDATION_REPORT_SCHEMA_VERSION, ArchMapDocumentV0,
-    ArchMapSourceInventoryV0, ArchMapValidationReportV0, ArchSigAnalysisPacketV0,
-    ArchSigAnalysisPacketValidationReportV0, LAW_POLICY_SCHEMA_VERSION,
-    LAW_POLICY_VALIDATION_REPORT_SCHEMA_VERSION, LawPolicyDocumentV0, LawPolicyValidationReportV0,
-    SCHEMA_VERSION_CATALOG_SCHEMA_VERSION, SchemaVersionCatalogV0,
+    ARCHSIG_ANALYSIS_PACKET_VALIDATION_REPORT_SCHEMA_VERSION,
+    ARCHSIG_ATOM_VIEWER_DATA_SCHEMA_VERSION, ARCHSIG_RUN_MANIFEST_SCHEMA_VERSION,
+    ArchMapDocumentV0, ArchMapSourceInventoryV0, ArchMapSourceRef, ArchMapValidationReportV0,
+    ArchSigAnalysisPacketV0, ArchSigAnalysisPacketValidationReportV0,
+    ArchSigArtifactValidationResultV0, ArchSigAtomViewerAtomNodeV0, ArchSigAtomViewerDataV0,
+    ArchSigAtomViewerLayoutSettingsV0, ArchSigAtomViewerMoleculeGroupV0,
+    ArchSigAtomViewerOmittedDetailCountsV0, ArchSigAtomViewerSourceArtifactRefsV0,
+    ArchSigAtomViewerTruncationPolicyV0, ArchSigAtomViewerVisualV0,
+    ArchSigRunManifestRawArtifactPathsV0, ArchSigRunManifestV0,
+    ArchSigRunManifestValidationReportPathsV0, ArchSigRunManifestValidationResultSummaryV0,
+    LAW_POLICY_SCHEMA_VERSION, LAW_POLICY_VALIDATION_REPORT_SCHEMA_VERSION, LawPolicyDocumentV0,
+    LawPolicyValidationReportV0, SCHEMA_VERSION_CATALOG_SCHEMA_VERSION, SchemaVersionCatalogV0,
 };
 pub use schema_catalog::static_schema_version_catalog;

@@ -1,11 +1,12 @@
 use crate::{
     ARCHMAP_SCHEMA_VERSION, ARCHMAP_VALIDATION_REPORT_SCHEMA_VERSION,
     ARCHSIG_ANALYSIS_PACKET_SCHEMA_VERSION,
-    ARCHSIG_ANALYSIS_PACKET_VALIDATION_REPORT_SCHEMA_VERSION, LAW_POLICY_SCHEMA_VERSION,
-    LAW_POLICY_VALIDATION_REPORT_SCHEMA_VERSION, SCHEMA_COMPATIBILITY_POLICY_SCHEMA_VERSION,
-    SCHEMA_VERSION_CATALOG_SCHEMA_VERSION, SchemaCompatibilityBoundaryV0,
-    SchemaCompatibilityDimensionV0, SchemaCompatibilityPolicyV0, SchemaVersionCatalogEntryV0,
-    SchemaVersionCatalogV0,
+    ARCHSIG_ANALYSIS_PACKET_VALIDATION_REPORT_SCHEMA_VERSION,
+    ARCHSIG_ATOM_VIEWER_DATA_SCHEMA_VERSION, ARCHSIG_RUN_MANIFEST_SCHEMA_VERSION,
+    LAW_POLICY_SCHEMA_VERSION, LAW_POLICY_VALIDATION_REPORT_SCHEMA_VERSION,
+    SCHEMA_COMPATIBILITY_POLICY_SCHEMA_VERSION, SCHEMA_VERSION_CATALOG_SCHEMA_VERSION,
+    SchemaCompatibilityBoundaryV0, SchemaCompatibilityDimensionV0, SchemaCompatibilityPolicyV0,
+    SchemaVersionCatalogEntryV0, SchemaVersionCatalogV0,
 };
 
 pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
@@ -104,6 +105,39 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 vec![
                     "Validation pass does not imply architecture lawfulness, source completeness, flatness proof, or repair safety.",
                     "Validation report compatibility is not a semantic-preservation theorem.",
+                ],
+            ),
+            artifact(
+                "archsig-run-manifest",
+                "ArchSig analyze run manifest",
+                ARCHSIG_RUN_MANIFEST_SCHEMA_VERSION,
+                "primary",
+                "ArchSig Output / Viewer workflow",
+                vec![
+                    "docs/tool/archsig_output_report_prd.md",
+                    "tools/archsig/docs/commands.md",
+                ],
+                "Run manifest records the analyze command name, input artifact paths, output mode, generated and omitted artifact lists, validation report paths, optional raw artifact paths, and validation result summary for one ArchSig analyze run.",
+                vec![
+                    "Run manifest is artifact navigation metadata, not source completeness proof, architecture lawfulness, or Lean theorem discharge.",
+                    "Generated and omitted artifact lists describe this run only; omitted raw artifacts can be regenerated with explicit raw retention.",
+                ],
+            ),
+            artifact(
+                "archsig-atom-viewer-data",
+                "ArchSig Atom Viewer bounded projection data",
+                ARCHSIG_ATOM_VIEWER_DATA_SCHEMA_VERSION,
+                "primary",
+                "ArchSig Output / Viewer workflow",
+                vec![
+                    "docs/tool/archsig_output_report_prd.md",
+                    "tools/archsig/docs/commands.md",
+                ],
+                "Atom Viewer data records source artifact refs, bounded layout settings, atom nodes, molecule groups, selected law-axis overlays, analysis overlays, report pane sections, omitted detail counts, truncation policy, and non-conclusions for browser visualization without embedding the raw analysis packet.",
+                vec![
+                    "Viewer data is a bounded visual projection, not a replacement for archsig-analysis-packet-v0 evidence lookup.",
+                    "3D layout distance is not an AAT theorem metric, semantic equivalence, or causal relation.",
+                    "Viewer data must not treat raw packet detail as browser input.",
                 ],
             ),
         ],
@@ -222,6 +256,8 @@ mod tests {
                 "law-policy-validation-report",
                 "archsig-analysis-packet",
                 "archsig-analysis-packet-validation-report",
+                "archsig-run-manifest",
+                "archsig-atom-viewer-data",
             ])
         );
         for legacy in [

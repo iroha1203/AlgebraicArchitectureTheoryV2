@@ -172,6 +172,63 @@
           "Validation report compatibility is not a semantic-preservation theorem."
         ]
       }
+    },
+    {
+      "artifactId": "archsig-run-manifest",
+      "artifactName": "ArchSig analyze run manifest",
+      "schemaVersionName": "archsig-run-manifest-v0",
+      "artifactRole": "primary",
+      "ownerPhase": "ArchSig Output / Viewer workflow",
+      "status": "implemented",
+      "primaryDocs": [
+        "docs/tool/archsig_output_report_prd.md",
+        "tools/archsig/docs/commands.md"
+      ],
+      "downstreamIssues": [],
+      "compatibilityBoundary": {
+        "fieldMappingPolicy": "Run manifest records the analyze command name, input artifact paths, output mode, generated and omitted artifact lists, validation report paths, optional raw artifact paths, and validation result summary for one ArchSig analyze run.",
+        "deprecatedFields": [],
+        "newRequiredAssumptions": [
+          "Required fields, observation families, law refs, or analysis axes change.",
+          "Evidence boundaries or non-conclusions are removed or weakened."
+        ],
+        "coverageExactnessBoundary": [
+          "Coverage and exactness are artifact-local and do not imply semantic completeness."
+        ],
+        "nonConclusions": [
+          "Run manifest is artifact navigation metadata, not source completeness proof, architecture lawfulness, or Lean theorem discharge.",
+          "Generated and omitted artifact lists describe this run only; omitted raw artifacts can be regenerated with explicit raw retention."
+        ]
+      }
+    },
+    {
+      "artifactId": "archsig-atom-viewer-data",
+      "artifactName": "ArchSig Atom Viewer bounded projection data",
+      "schemaVersionName": "archsig-atom-viewer-data-v0",
+      "artifactRole": "primary",
+      "ownerPhase": "ArchSig Output / Viewer workflow",
+      "status": "implemented",
+      "primaryDocs": [
+        "docs/tool/archsig_output_report_prd.md",
+        "tools/archsig/docs/commands.md"
+      ],
+      "downstreamIssues": [],
+      "compatibilityBoundary": {
+        "fieldMappingPolicy": "Atom Viewer data records source artifact refs, bounded layout settings, atom nodes, molecule groups, selected law-axis overlays, analysis overlays, report pane sections, omitted detail counts, truncation policy, and non-conclusions for browser visualization without embedding the raw analysis packet.",
+        "deprecatedFields": [],
+        "newRequiredAssumptions": [
+          "Required fields, observation families, law refs, or analysis axes change.",
+          "Evidence boundaries or non-conclusions are removed or weakened."
+        ],
+        "coverageExactnessBoundary": [
+          "Coverage and exactness are artifact-local and do not imply semantic completeness."
+        ],
+        "nonConclusions": [
+          "Viewer data is a bounded visual projection, not a replacement for archsig-analysis-packet-v0 evidence lookup.",
+          "3D layout distance is not an AAT theorem metric, semantic equivalence, or causal relation.",
+          "Viewer data must not treat raw packet detail as browser input."
+        ]
+      }
     }
   ],
   "compatibilityPolicy": {

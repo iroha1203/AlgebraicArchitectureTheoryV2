@@ -5,9 +5,10 @@ ArchSig owns the LLM Atom ArchMap analysis surface:
 ```text
 archmap-observation-map-v0
   + law-policy-v0
-  -> archsig-analysis-packet-v0
-  -> LLM / human review packet
-  -> FieldSig handoff
+  -> archsig-analysis-summary.json
+  -> archsig-atom-viewer-data-v0
+  -> archsig-run-manifest-v0
+  -> optional archsig-analysis-packet-v0 for FieldSig handoff
 ```
 
 Git history is the archive for pre-Atom scan, projection, report, and PR-review
@@ -40,9 +41,12 @@ fragments.
 | ArchMap validation report | `archmap-validation-report-v0` | Checks schema support, identity, references, provenance, source refs, observation / concern guardrails, projection separation, gap boundaries, and formal-promotion non-conclusions. |
 | LawPolicy | `law-policy-v0` | Selected LawUniverse / witness-rule / molecule-pattern / obstruction-definition / signature-axis policy for one review context. |
 | LawPolicy validation report | `law-policy-validation-report-v0` | Checks LawPolicy identity, uniqueness, cross references, witness / obstruction guardrails, coverage requirements, exactness assumptions, and non-conclusions. |
-| ArchSig analysis packet | `archsig-analysis-packet-v0` | Current ArchSig source-of-truth output. It records molecule readings, law-relative obstruction circuits, signature axes, flatness reading, repair candidates, coverage gaps, child-level `missingEvidence` / `excludedReadings`, evidence boundaries, LLM interpretation notes, and non-conclusions. |
-| ArchSig analysis validation report | `archsig-analysis-validation-report-v0` | Checks the analysis packet boundary without proving lawfulness, source completeness, flatness, or repair safety. |
-| LLM interpretation packet | `archsig-analysis-packet-v0` | A second serialization of the same structured packet for LLM reading. |
+| ArchSig analysis summary | `archsig-analysis-summary.json` | LLM-readable compact reading surface emitted by default from `analyze`. It summarizes verdict, validation, measurement status, findings, action queue, coverage, measurement basis, and artifact metadata without reprinting raw packet detail. |
+| ArchSig Atom Viewer data | `archsig-atom-viewer-data-v0` | Bounded browser projection emitted by default from `analyze`. It records source refs, layout settings, atom nodes, molecule groups, overlays, report pane sections, omitted counts, truncation policy, and non-conclusions. It is not a raw packet copy. |
+| ArchSig run manifest | `archsig-run-manifest-v0` | Run navigation artifact emitted by default from `analyze`. It records command name, input paths, output mode, generated / omitted artifacts, validation report paths, optional raw artifact paths, and validation result summary. |
+| ArchSig analysis packet | `archsig-analysis-packet-v0` | Raw evidence artifact emitted only when raw artifact retention is requested. It records molecule readings, law-relative obstruction circuits, signature axes, flatness reading, repair candidates, coverage gaps, child-level `missingEvidence` / `excludedReadings`, evidence boundaries, LLM interpretation notes, and non-conclusions. |
+| ArchSig analysis validation report | `archsig-analysis-packet-validation-report-v0` | Checks the analysis packet boundary without proving lawfulness, source completeness, flatness, or repair safety. |
+| LLM interpretation packet | `archsig-analysis-packet-v0` | Optional raw artifact: a second serialization of the packet's structured LLM interpretation surface. |
 
 ## Removed Surfaces
 
@@ -57,7 +61,9 @@ FieldSig consumes the serialized `archsig-analysis-packet-v0` through
 `fieldsig archsig-analysis-sft-input`. FieldSig projects obstruction circuits,
 signature axes, repair candidates, and coverage gaps into
 `operation-support-estimate-v0` as bounded refs and unknown remainder. Raw
-ArchMap observation files are not the current FieldSig handoff.
+ArchMap observation files are not the current FieldSig handoff. When `analyze`
+runs in the default summary / viewer / manifest mode, rerun it with explicit raw
+artifact retention before invoking FieldSig handoff.
 
 ArchSig does not own SFT forecast, IntentMap, workflow evidence, operational
 feedback, dynamics, governance, or calibration.
