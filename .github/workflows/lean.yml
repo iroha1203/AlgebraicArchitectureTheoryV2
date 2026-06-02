@@ -86,6 +86,11 @@ jobs:
             and .dataKind == "bounded-atom-viewer-projection"
             and ((.atomNodes | length) > 0)
             and .reportPane.overview.summaryVerdict.readingMode == "measurementOverSuppliedArchMapAndLawPolicy"
+            and .reportPane.artifacts.summary == "archsig-analysis-summary.json"
+            and .reportPane.artifacts.manifest == "archsig-run-manifest.json"
+            and (.reportPane.actionQueue | type == "array")
+            and (.reportPane.coverageAndBoundaries | type == "object")
+            and (.omittedDetailCounts.rawPacketDetail | contains("raw packet is not embedded"))
           ' "$archsig_dir/archsig-atom-viewer-data.json"
 
           cargo run --manifest-path tools/archsig/Cargo.toml -- analyze \
@@ -108,6 +113,9 @@ jobs:
             .schemaVersion == "archsig-run-manifest-v0"
             and .rawArtifactRetention == "full"
             and ([.generatedArtifacts[]] | index("archsig-analysis-packet.json") != null)
+            and .rawArtifactPaths.analysisPacket == "archsig-analysis-packet.json"
+            and .rawArtifactPaths.analysisDetailIndex == "archsig-analysis-detail-index.json"
+            and .rawArtifactPaths.llmInterpretationPacket == "llm-interpretation-packet.json"
             and (.omittedArtifacts | length) == 0
           ' "$archsig_raw_dir/archsig-run-manifest.json"
 

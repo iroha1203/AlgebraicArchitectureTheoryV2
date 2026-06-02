@@ -108,6 +108,7 @@ jobs:
           cp LICENSE package/LICENSE
           cp tools/archsig/README.md package/README.md
           cp tools/archsig/docs/commands.md package/docs/commands.md
+          cp tools/archsig/docs/artifacts-and-boundaries.md package/docs/artifacts-and-boundaries.md
           cp -R tools/archsig/skills package/skills
           cp tools/archsig/viewer/archsig-atom-viewer.html package/archsig-atom-viewer.html
           cp tools/archsig/viewer/archsig-atom-viewer.html package/viewer/archsig-atom-viewer.html

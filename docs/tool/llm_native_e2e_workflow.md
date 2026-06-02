@@ -10,14 +10,18 @@ theory document.
 source artifacts
   -> supplied archmap-observation-map-v0
   -> selected interpretation profile (law-policy-v0 JSON)
-  -> archsig-analysis-packet-v0
-  -> llm-interpretation-packet.json
+  -> archsig-analysis-summary.json
+  -> archsig-atom-viewer-data.json + fixed archsig-atom-viewer.html
+  -> archsig-run-manifest.json
+  -> optional archsig-analysis-packet-v0 raw artifacts
   -> operation-support-estimate-v0
 ```
 
-The first three artifacts are ArchSig-owned. The final
+The ArchMap, LawPolicy, summary, viewer data, manifest, and optional raw
+analysis artifacts are ArchSig-owned. The final
 `operation-support-estimate-v0` is FieldSig-owned and reads the ArchSig
-analysis packet as bounded current AAT structural state.
+analysis packet as bounded current AAT structural state only when raw artifacts
+were explicitly emitted.
 
 Future PR review and longitudinal workflows should insert ArchMapStore before
 ArchSig analysis:
@@ -55,26 +59,49 @@ Expected ArchSig outputs:
 ```text
 .lake/archsig-analyze-e2e/archsig/archmap-validation.json
 .lake/archsig-analyze-e2e/archsig/law-policy-validation.json
-.lake/archsig-analyze-e2e/archsig/archsig-analysis-packet.json
-.lake/archsig-analyze-e2e/archsig/archsig-analysis-detail-index.json
 .lake/archsig-analyze-e2e/archsig/archsig-analysis-validation.json
-.lake/archsig-analyze-e2e/archsig/llm-interpretation-packet.json
+.lake/archsig-analyze-e2e/archsig/archsig-analysis-summary.json
+.lake/archsig-analyze-e2e/archsig/archsig-atom-viewer-data.json
+.lake/archsig-analyze-e2e/archsig/archsig-run-manifest.json
 ```
 
-The analysis packet is compact-first. Large repeated string ref sets are
-replaced by `archsig-detail-ref-v0` objects in the packet and stored through a
-dictionary-backed `archsig-analysis-detail-index.json`. For large ArchMaps, run
-the workflow with `cargo run --release`.
+Default `analyze` does not save the raw analysis packet, detail index, or LLM
+interpretation packet. Read `archsig-analysis-summary.json` as the LLM first
+surface and open the fixed release-bundled `archsig-atom-viewer.html` with
+`archsig-atom-viewer-data.json` as the human first surface. The Viewer report
+pane also reads the same-directory summary and manifest when available.
 
-The LLM interpretation packet is the compact `llmInterpretationPacket` reading
-surface from `archsig-analysis-packet.json`; it is intentionally not a
-byte-for-byte copy of the full analysis packet.
+Use raw artifacts only when FieldSig handoff or detailed evidence lookup needs
+the packet:
+
+```bash
+cargo run --manifest-path tools/archsig/Cargo.toml -- analyze \
+  --archmap tools/archsig/tests/fixtures/minimal/archmap.json \
+  --law-policy tools/archsig/tests/fixtures/minimal/law_policy.json \
+  --out-dir .lake/archsig-analyze-e2e/archsig-raw \
+  --emit-raw-artifacts
+```
+
+Raw-mode ArchSig outputs also include:
+
+```text
+.lake/archsig-analyze-e2e/archsig-raw/archsig-analysis-packet.json
+.lake/archsig-analyze-e2e/archsig-raw/archsig-analysis-detail-index.json
+.lake/archsig-analyze-e2e/archsig-raw/llm-interpretation-packet.json
+```
+
+The raw analysis packet is compact-first. Large repeated string ref sets are
+replaced by `archsig-detail-ref-v0` objects in the packet and stored through a
+dictionary-backed `archsig-analysis-detail-index.json`. The LLM interpretation
+packet is the compact `llmInterpretationPacket` reading surface from the raw
+analysis packet; it is intentionally not a byte-for-byte copy of the full
+analysis packet. For large ArchMaps, run the workflow with `cargo run --release`.
 
 Project the ArchSig analysis packet into FieldSig:
 
 ```bash
 cargo run --manifest-path tools/fieldsig/Cargo.toml -- archsig-analysis-sft-input \
-  --analysis-packet .lake/archsig-analyze-e2e/archsig/archsig-analysis-packet.json \
+  --analysis-packet .lake/archsig-analyze-e2e/archsig-raw/archsig-analysis-packet.json \
   --out .lake/archsig-analyze-e2e/fieldsig/operation-support-estimate.json
 ```
 
@@ -94,8 +121,14 @@ The E2E flow must preserve these boundaries:
   transfer bridge review focus, structural reading review surface, current-state
   / evolution boundary, bounded judgements, repair candidates, operation deltas,
   coverage gaps, and non-conclusions.
-- `llm-interpretation-packet.json` is structured analysis input for an LLM, not
-  a natural-language judgement, proof, or automatic repair instruction.
+- `archsig-analysis-summary.json` is the LLM first reading surface. It is
+  structured analysis input, not a natural-language judgement, proof, or
+  automatic repair instruction.
+- `archsig-atom-viewer-data.json` plus fixed `archsig-atom-viewer.html` is the
+  human visual/report surface. It is a bounded projection and does not parse
+  raw packet detail in the browser.
+- `llm-interpretation-packet.json` is emitted only in raw mode and remains a
+  compact packet sub-surface, not a separate source of truth.
 - FieldSig accepts `archsig-analysis-packet-v0` as bounded current AAT
   structural state and rejects raw ArchMap JSON as the current handoff input.
   PR / diff / change-vector evolution remains FieldSig territory.
@@ -112,13 +145,15 @@ The E2E flow must preserve these boundaries:
   is separate from change-local PR review and from FieldSig evolution analysis.
 - Coverage gaps are carried as unknown remainder; they are not rounded to
   absence, measured zero, or forecast truth.
-- ArchSig emits only the current ArchMap validation, profile validation,
-  analysis packet, analysis validation, and LLM interpretation packet in the
-  current E2E route. Pre-Atom artifacts are not compatibility outputs.
+- ArchSig default `analyze` emits only the current validation reports, summary,
+  Atom Viewer data, and run manifest. Raw packet, detail index, and LLM
+  interpretation packet are opt-in through `--emit-raw-artifacts`.
+  Pre-Atom artifacts are not compatibility outputs.
 
 ## CI
 
 `.github/workflows/lean.yml` contains the ArchSig analyze e2e job.
-The job runs the transcript above, validates key schema and boundary fields with
+The job runs default summary/viewer/manifest output checks, then a raw-artifact
+handoff run for FieldSig. It validates key schema and boundary fields with
 `jq`, rejects raw ArchMap handoff to FieldSig, and uploads
 `.lake/archsig-analyze-e2e` as an artifact.

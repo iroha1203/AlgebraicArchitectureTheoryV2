@@ -1,6 +1,6 @@
 ---
 name: archsig-reader
-description: Run ArchMap artifacts through ArchSig, read archsig-analysis-packet-v0 outputs, compare the findings against source code evidence, and propose bounded architecture improvements. Use when Codex is asked to analyze an ArchMap with ArchSig, interpret ArchSig output, review workflow risk / spectral / transfer bridge / split readiness readings, validate ArchSig artifacts, or turn ArchSig analysis into concrete source-review and improvement proposals.
+description: Run ArchMap artifacts through ArchSig, read the summary and Atom Viewer report pane first, use optional raw analysis packet artifacts for detailed evidence, compare findings against source code evidence, and propose bounded architecture improvements. Use when Codex is asked to analyze an ArchMap with ArchSig, interpret ArchSig output, review workflow risk / spectral / transfer bridge / split readiness readings, validate ArchSig artifacts, or turn ArchSig analysis into concrete source-review and improvement proposals.
 ---
 
 # ArchSig Reader
@@ -8,8 +8,10 @@ description: Run ArchMap artifacts through ArchSig, read archsig-analysis-packet
 ## Purpose
 
 Turn a supplied `archmap-observation-map-v0` into an ArchSig analysis, read the
-resulting structured packet as an architecture quality measurement over the
-supplied `ArchMap + LawPolicy`, and propose practical improvements.
+resulting summary and Atom Viewer report pane as the first architecture quality
+measurement over the supplied `ArchMap + LawPolicy`, and propose practical
+improvements. Use raw packet artifacts only when detailed evidence lookup,
+FieldSig handoff, or fixture maintenance requires them.
 
 For user-facing reports, state the measured conclusion first. ArchSig should
 read as a structural measurement over the supplied ArchMap + LawPolicy: "for
@@ -78,32 +80,49 @@ ARCHSIG_BIN=${ARCHSIG_BIN:-archsig}
   --out-dir <out-dir>
 ```
 
-Expected files:
+Expected default files:
 
 - `archmap-validation.json`
 - `law-policy-validation.json`
-- `archsig-analysis-packet.json`
 - `archsig-analysis-validation.json`
-- `llm-interpretation-packet.json`
+- `archsig-analysis-summary.json`
+- `archsig-atom-viewer-data.json`
+- `archsig-run-manifest.json`
 
-Then summarize the packet with ArchSig:
+The fixed `archsig-atom-viewer.html` app is shipped in the release bundle. Open
+it near the run output or load `archsig-atom-viewer-data.json` with the file
+picker / drag-and-drop; the lower report pane reads the viewer data plus
+same-directory summary and manifest when available.
+
+For FieldSig handoff, detailed evidence store, or packet validation fixture
+updates, rerun with raw artifacts explicitly enabled:
 
 ```bash
-"$ARCHSIG_BIN" analysis-summary \
-  --packet <out-dir>/archsig-analysis-packet.json \
-  --archmap-validation <out-dir>/archmap-validation.json \
-  --law-policy-validation <out-dir>/law-policy-validation.json \
-  --analysis-validation <out-dir>/archsig-analysis-validation.json \
-  --out <out-dir>/archsig-analysis-summary.json
+"$ARCHSIG_BIN" analyze \
+  --archmap <archmap.json> \
+  --law-policy "$LAW_POLICY" \
+  --out-dir <out-dir> \
+  --emit-raw-artifacts
 ```
 
-Read `references/output-reading-guide.md` from this skill directory for the field priority.
+Raw mode also writes:
+
+- `archsig-analysis-packet.json`
+- `archsig-analysis-detail-index.json`
+- `llm-interpretation-packet.json`
+
+Read `references/output-reading-guide.md` from this skill directory for field
+priority when the compact summary or viewer report pane points to raw detail.
 
 ## Standalone Resource Checklist
 
 Before assuming a path exists, check whether it is part of the release bundle:
 
 - `analysis-summary` is provided by the `archsig` binary.
+- `archsig-analysis-summary.json`, `archsig-atom-viewer-data.json`, and
+  `archsig-run-manifest.json` are emitted by `analyze` by default.
+- Raw packet artifacts are not emitted by default; use `--emit-raw-artifacts`
+  only for FieldSig handoff, detailed evidence store, or fixture maintenance.
 - `references/output-reading-guide.md` is bundled and may be read for packet interpretation.
 - `references/default_law_policy.json` is bundled only for explicit generic baseline / smoke-test runs. Do not silently use it for project analysis.
 - Repository docs, fixtures, and source-code tests are not bundled; never make them required for this skill to operate.
@@ -123,6 +142,10 @@ Read in this order:
      `axisSummary`, `workflowRiskSummary`, `architecturalHoleSummary`,
      `bridgeSummary`, `coverageGapSummary`, `detailIndex`, and
      `measurementBasis`.
+   - When a human visual reading is useful, open the fixed Atom Viewer and use
+     its report pane as the human first surface for overview, top findings,
+     action queue, coverage boundaries, validation status, artifacts, and
+     omitted raw detail.
    - Say what the supplied ArchMap + LawPolicy measured: flat/nonflat under selected policy, nonzero axes, hotspots, recurrent pressure, architectural holes, workflow risk, bridge pressure, and review action queue.
    - Treat `actionQueue` as the full compact queue. Its entries should carry
      `detailRefs`; do not expect nested support/source/witness evidence arrays
@@ -133,7 +156,10 @@ Read in this order:
    - If the bundled baseline LawPolicy was explicitly used, label the output as a generic baseline run and avoid project-specific obstruction conclusions unless source comparison and user context justify them.
 
 3. Analysis basis
-   - Record `archMapRef`, `selectedLawPolicyRef`, `currentStateEvolutionBoundary`, `excludedReadings`, `metadata.nonConclusions`, and the `detailIndex`.
+   - Record `archMapRef`, `selectedLawPolicyRef`,
+     `currentStateEvolutionBoundary`, `excludedReadings`,
+     `metadata.nonConclusions`, the run manifest, and the `detailIndex` if raw
+     artifacts were emitted.
    - Treat the basis as input metadata, not as the lead diagnosis.
 
 4. Flatness and signature axes
@@ -166,7 +192,7 @@ Read in this order:
    - If transfer bridge or split readiness readings are empty, report that no bridge/split surface was emitted for this packet variant and prioritize obstruction / repair / coverage evidence instead.
 
 7. LLM interpretation packet
-   - Use `detailIndex` to reach `llmInterpretationPacket.recommendedHumanReviewFocus`, `structuralReadingReviewSummary`, `currentStateEvolutionBoundarySummary`, and `transferBridgeEdgeSummary` when the compact summary is not enough.
+   - Use `detailIndex` to reach `llmInterpretationPacket.recommendedHumanReviewFocus`, `structuralReadingReviewSummary`, `currentStateEvolutionBoundarySummary`, and `transferBridgeEdgeSummary` only when raw artifacts were emitted and the compact summary is not enough.
    - Do not treat the LLM packet as a separate source of truth.
 
 8. Packet variant fallback
