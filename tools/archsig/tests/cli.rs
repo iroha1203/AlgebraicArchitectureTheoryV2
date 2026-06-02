@@ -940,6 +940,30 @@ fn cli_runs_primary_archmap_lawpolicy_archsig_analyze_workflow() {
         "viewer data must project ArchMap atom observations"
     );
     assert_eq!(
+        viewer_data["sourceArtifactRefs"]["archmap"].as_str(),
+        archmap.to_str()
+    );
+    assert_eq!(
+        viewer_data["sourceArtifactRefs"]["lawPolicy"].as_str(),
+        law_policy.to_str()
+    );
+    assert_eq!(
+        viewer_data["layoutSettings"]["nodeLimit"].as_u64(),
+        Some(250)
+    );
+    assert!(
+        viewer_data["moleculeGroups"]
+            .as_array()
+            .is_some_and(|items| !items.is_empty()),
+        "viewer data must project ArchMap molecule groups"
+    );
+    assert!(
+        viewer_data["analysisOverlays"]["signatureAxes"]
+            .as_array()
+            .is_some_and(|items| !items.is_empty()),
+        "viewer data must carry selected analysis overlays"
+    );
+    assert_eq!(
         viewer_data["reportPane"]["overview"]["summaryVerdict"]["readingMode"].as_str(),
         Some("measurementOverSuppliedArchMapAndLawPolicy")
     );
@@ -956,6 +980,16 @@ fn cli_runs_primary_archmap_lawpolicy_archsig_analyze_workflow() {
         run_manifest["rawArtifactRetention"].as_str(),
         Some("omitted")
     );
+    assert_eq!(run_manifest["commandName"].as_str(), Some("analyze"));
+    assert_eq!(run_manifest["archmapInputPath"].as_str(), archmap.to_str());
+    assert_eq!(
+        run_manifest["lawPolicyInputPath"].as_str(),
+        law_policy.to_str()
+    );
+    assert_eq!(
+        run_manifest["validationResultSummary"]["analysis"]["result"].as_str(),
+        Some("pass")
+    );
     assert!(
         run_manifest["omittedArtifacts"]
             .as_array()
@@ -964,6 +998,34 @@ fn cli_runs_primary_archmap_lawpolicy_archsig_analyze_workflow() {
             .any(|artifact| artifact == "archsig-analysis-packet.json"),
         "manifest must record omitted raw analysis packet"
     );
+    assert!(
+        run_manifest.get("rawArtifactPaths").is_none(),
+        "manifest must not advertise raw artifact paths when raw retention is omitted"
+    );
+    assert!(
+        viewer_data.get("schemaVersion").is_some()
+            && viewer_data.get("sourceArtifactRefs").is_some()
+            && viewer_data.get("layoutSettings").is_some()
+            && viewer_data.get("atomNodes").is_some()
+            && viewer_data.get("moleculeGroups").is_some()
+            && viewer_data.get("analysisOverlays").is_some()
+            && viewer_data.get("reportPane").is_some()
+            && viewer_data.get("omittedDetailCounts").is_some(),
+        "viewer data shape must contain the schema sections owned by archsig-atom-viewer-data-v0"
+    );
+    for raw_packet_field in [
+        "aatConcepts",
+        "architectureState",
+        "moleculeReadings",
+        "obstructionCircuits",
+        "signatureAxes",
+        "llmInterpretationPacket",
+    ] {
+        assert!(
+            viewer_data.get(raw_packet_field).is_none(),
+            "viewer data must not copy raw packet field {raw_packet_field}"
+        );
+    }
     assert!(
         analysis_validation.get("packet").is_none(),
         "analysis validation must not embed the full analysis packet"
@@ -1054,6 +1116,10 @@ fn cli_analyze_emit_raw_artifacts_writes_field_sig_handoff_packet() {
     );
     let run_manifest = read_json(&out_dir.join("archsig-run-manifest.json"));
     assert_eq!(run_manifest["rawArtifactRetention"].as_str(), Some("full"));
+    assert_eq!(
+        run_manifest["rawArtifactPaths"]["analysisPacket"].as_str(),
+        Some("archsig-analysis-packet.json")
+    );
 }
 
 #[test]
@@ -2273,6 +2339,8 @@ fn cli_schema_catalog_is_primary_archsig_surface_only() {
             "law-policy-validation-report",
             "archsig-analysis-packet",
             "archsig-analysis-packet-validation-report",
+            "archsig-run-manifest",
+            "archsig-atom-viewer-data",
         ]
     );
     for entry in artifacts {
