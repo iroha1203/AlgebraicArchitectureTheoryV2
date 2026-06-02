@@ -751,9 +751,9 @@ fn build_atom_viewer_data(
     archmap_path: &Path,
     law_policy_path: &Path,
 ) -> ArchSigAtomViewerDataV0 {
-    const ATOM_NODE_LIMIT: usize = 250;
+    const ATOM_NODE_LIMIT: usize = 20_000;
     const MOLECULE_GROUP_LIMIT: usize = 120;
-    const EDGE_LIMIT: usize = 500;
+    const EDGE_LIMIT: usize = 30_000;
     const OVERLAY_LIMIT: usize = 80;
     const LABEL_LIMIT: usize = 3;
     const SOURCE_REF_SAMPLE_LIMIT: usize = 3;
@@ -933,6 +933,7 @@ fn build_atom_viewer_data(
             "policy": "viewer UI may filter this bounded projection without loading raw packet detail"
         }
     });
+    let aat_geometry_overlays = build_aat_geometry_overlays(packet, OVERLAY_LIMIT);
     let report_pane = serde_json::json!({
         "overview": {
             "mapId": &archmap.map_id,
@@ -981,6 +982,7 @@ fn build_atom_viewer_data(
         atom_edges,
         law_axis_overlays: overlays["signatureAxes"].clone(),
         analysis_overlays: overlays,
+        aat_geometry_overlays,
         report_pane,
         omitted_detail_counts: ArchSigAtomViewerOmittedDetailCountsV0 {
             atom_nodes: archmap.atom_observations.len().saturating_sub(ATOM_NODE_LIMIT),
@@ -1092,6 +1094,204 @@ fn omitted_array_count(value: &serde_json::Value, field: &str, limit: usize) -> 
         .and_then(|items| items.as_array())
         .map(|items| items.len().saturating_sub(limit))
         .unwrap_or_default()
+}
+
+fn build_aat_geometry_overlays(packet: &serde_json::Value, limit: usize) -> serde_json::Value {
+    const GEOMETRY_ATOM_REF_SAMPLE_LIMIT: usize = 5000;
+    let spectrum_report = packet
+        .get("architectureSpectrumReport")
+        .map(|report| compact_geometry_report(report, limit, GEOMETRY_ATOM_REF_SAMPLE_LIMIT))
+        .unwrap_or_else(|| serde_json::Value::Array(Vec::new()));
+    serde_json::json!({
+        "schemaVersion": "archsig-aat-geometry-overlays-v0",
+        "projectionBoundary": "bounded projection of computed ArchSig AAT geometry readings; not a theorem metric and not a raw packet copy",
+        "curvatureSupports": compact_geometry_array(packet, "curvatureSupportReadings", limit, GEOMETRY_ATOM_REF_SAMPLE_LIMIT),
+        "curvatureTransfers": compact_geometry_array(packet, "curvatureTransferReadings", limit, GEOMETRY_ATOM_REF_SAMPLE_LIMIT),
+        "spectrumReport": spectrum_report,
+        "pathPairs": compact_geometry_array(packet, "pathPairCandidates", limit, GEOMETRY_ATOM_REF_SAMPLE_LIMIT),
+        "loops": compact_geometry_array(packet, "loopCandidates", limit, GEOMETRY_ATOM_REF_SAMPLE_LIMIT),
+        "holonomyReadings": compact_geometry_array(packet, "homotopyHolonomyReadings", limit, GEOMETRY_ATOM_REF_SAMPLE_LIMIT),
+        "stokesReadings": compact_geometry_array(packet, "stokesStyleReadings", limit, GEOMETRY_ATOM_REF_SAMPLE_LIMIT),
+        "homotopyReport": packet
+            .get("architectureHomotopyReport")
+            .map(|report| compact_geometry_report(report, limit, GEOMETRY_ATOM_REF_SAMPLE_LIMIT))
+            .unwrap_or_else(|| serde_json::Value::Array(Vec::new())),
+        "nonzeroMonodromyWitnesses": compact_geometry_array(packet, "nonzeroMonodromyWitnesses", limit, GEOMETRY_ATOM_REF_SAMPLE_LIMIT),
+        "localCurvatureDiagrams": compact_geometry_array(packet, "localCurvatureDiagramReadings", limit, GEOMETRY_ATOM_REF_SAMPLE_LIMIT),
+        "pathHomotopyDiagrams": compact_geometry_array(packet, "pathHomotopyDiagramReadings", limit, GEOMETRY_ATOM_REF_SAMPLE_LIMIT),
+        "flatnessReading": json_field(packet, "flatnessReading"),
+        "omittedGeometryCounts": {
+            "curvatureSupports": omitted_array_count(packet, "curvatureSupportReadings", limit),
+            "curvatureTransfers": omitted_array_count(packet, "curvatureTransferReadings", limit),
+            "pathPairs": omitted_array_count(packet, "pathPairCandidates", limit),
+            "loops": omitted_array_count(packet, "loopCandidates", limit),
+            "holonomyReadings": omitted_array_count(packet, "homotopyHolonomyReadings", limit),
+            "stokesReadings": omitted_array_count(packet, "stokesStyleReadings", limit),
+            "nonzeroMonodromyWitnesses": omitted_array_count(packet, "nonzeroMonodromyWitnesses", limit),
+            "localCurvatureDiagrams": omitted_array_count(packet, "localCurvatureDiagramReadings", limit),
+            "pathHomotopyDiagrams": omitted_array_count(packet, "pathHomotopyDiagramReadings", limit)
+        }
+    })
+}
+
+fn compact_geometry_array(
+    value: &serde_json::Value,
+    field: &str,
+    limit: usize,
+    atom_ref_limit: usize,
+) -> serde_json::Value {
+    serde_json::Value::Array(
+        array_items(value, field)
+            .into_iter()
+            .take(limit)
+            .map(|item| compact_geometry_item(item, atom_ref_limit))
+            .collect(),
+    )
+}
+
+fn compact_geometry_report(
+    value: &serde_json::Value,
+    limit: usize,
+    atom_ref_limit: usize,
+) -> serde_json::Value {
+    if value.is_null() {
+        return serde_json::Value::Array(Vec::new());
+    }
+    if let Some(items) = value.as_array() {
+        return serde_json::Value::Array(
+            items
+                .iter()
+                .take(limit)
+                .map(|item| compact_geometry_item(item, atom_ref_limit))
+                .collect(),
+        );
+    }
+    let mut compact_items = Vec::new();
+    collect_compact_geometry_report_items(value, limit, atom_ref_limit, &mut compact_items);
+    serde_json::Value::Array(compact_items)
+}
+
+fn collect_compact_geometry_report_items(
+    value: &serde_json::Value,
+    limit: usize,
+    atom_ref_limit: usize,
+    out: &mut Vec<serde_json::Value>,
+) {
+    if out.len() >= limit {
+        return;
+    }
+    match value {
+        serde_json::Value::Array(items) => {
+            for item in items {
+                if out.len() >= limit {
+                    return;
+                }
+                if item.is_object() {
+                    let compact = compact_geometry_item(item, atom_ref_limit);
+                    if compact
+                        .get("atomRefCount")
+                        .and_then(serde_json::Value::as_u64)
+                        .unwrap_or_default()
+                        > 0
+                    {
+                        out.push(compact);
+                    }
+                }
+            }
+        }
+        serde_json::Value::Object(map) => {
+            for item in map.values() {
+                collect_compact_geometry_report_items(item, limit, atom_ref_limit, out);
+            }
+        }
+        _ => {}
+    }
+}
+
+fn compact_geometry_item(value: &serde_json::Value, atom_ref_limit: usize) -> serde_json::Value {
+    let mut atom_refs = BTreeSet::new();
+    collect_atom_refs(value, &mut atom_refs);
+    let sampled_atom_refs = atom_refs
+        .iter()
+        .take(atom_ref_limit)
+        .cloned()
+        .collect::<Vec<_>>();
+    serde_json::json!({
+        "id": compact_first_string_field(value, &[
+            "ref",
+            "readingRef",
+            "readingId",
+            "obstructionRef",
+            "obstructionCircuitId",
+            "pathRef",
+            "loopRef",
+            "axisRef"
+        ]),
+        "kind": compact_first_string_field(value, &[
+            "kind",
+            "readingKind",
+            "curvatureKind",
+            "holonomyKind",
+            "status",
+            "curvatureStatus"
+        ]),
+        "status": compact_first_string_field(value, &[
+            "status",
+            "coverageStatus",
+            "curvatureStatus",
+            "holonomyStatus",
+            "flatnessStatus"
+        ]),
+        "value": compact_first_number_field(value, &[
+            "curvatureValue",
+            "value",
+            "score",
+            "defectValue",
+            "cycleWeight",
+            "coverageGapCount",
+            "refCount",
+            "sourceRefCount"
+        ]),
+        "atomRefs": sampled_atom_refs,
+        "atomRefCount": atom_refs.len(),
+        "omittedAtomRefs": atom_refs.len().saturating_sub(atom_ref_limit)
+    })
+}
+
+fn collect_atom_refs(value: &serde_json::Value, refs: &mut BTreeSet<String>) {
+    match value {
+        serde_json::Value::String(text) => {
+            if text.starts_with("atom:") {
+                refs.insert(text.clone());
+            }
+        }
+        serde_json::Value::Array(items) => {
+            for item in items {
+                collect_atom_refs(item, refs);
+            }
+        }
+        serde_json::Value::Object(map) => {
+            for item in map.values() {
+                collect_atom_refs(item, refs);
+            }
+        }
+        _ => {}
+    }
+}
+
+fn compact_first_string_field(value: &serde_json::Value, keys: &[&str]) -> serde_json::Value {
+    keys.iter()
+        .find_map(|key| value.get(*key).and_then(serde_json::Value::as_str))
+        .map(|text| serde_json::Value::String(text.to_string()))
+        .unwrap_or(serde_json::Value::Null)
+}
+
+fn compact_first_number_field(value: &serde_json::Value, keys: &[&str]) -> serde_json::Value {
+    keys.iter()
+        .find_map(|key| value.get(*key).and_then(serde_json::Value::as_f64))
+        .and_then(serde_json::Number::from_f64)
+        .map(serde_json::Value::Number)
+        .unwrap_or(serde_json::Value::Null)
 }
 
 fn omitted_source_ref_count(archmap: &ArchMapDocumentV0, sample_limit: usize) -> usize {

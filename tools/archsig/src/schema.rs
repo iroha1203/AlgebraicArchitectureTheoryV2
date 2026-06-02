@@ -77,6 +77,8 @@ pub struct ArchSigAtomViewerDataV0 {
     pub atom_edges: Vec<ArchSigAtomViewerEdgeV0>,
     pub law_axis_overlays: serde_json::Value,
     pub analysis_overlays: serde_json::Value,
+    #[serde(default)]
+    pub aat_geometry_overlays: serde_json::Value,
     pub report_pane: serde_json::Value,
     pub omitted_detail_counts: ArchSigAtomViewerOmittedDetailCountsV0,
     pub truncation_policy: ArchSigAtomViewerTruncationPolicyV0,

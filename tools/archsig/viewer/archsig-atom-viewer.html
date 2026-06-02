@@ -39,6 +39,18 @@
       font: inherit;
     }
 
+    select {
+      min-height: 32px;
+      max-width: 190px;
+      padding: 0 8px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: var(--surface);
+      color: var(--text);
+      font: inherit;
+      font-size: 12px;
+    }
+
     .app {
       display: grid;
       grid-template-rows: minmax(340px, 58vh) minmax(260px, 42vh);
@@ -64,8 +76,9 @@
       left: 12px;
       right: 12px;
       display: flex;
+      flex-wrap: wrap;
       gap: 8px;
-      align-items: center;
+      align-items: flex-start;
       justify-content: space-between;
       pointer-events: none;
     }
@@ -134,6 +147,21 @@
       accent-color: var(--accent);
     }
 
+    .search {
+      min-height: 32px;
+      width: min(260px, 24vw);
+      padding: 0 10px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: var(--surface);
+      color: var(--text);
+      font-size: 12px;
+    }
+
+    .search::placeholder {
+      color: var(--muted);
+    }
+
     .status {
       position: absolute;
       z-index: 5;
@@ -147,6 +175,105 @@
       color: var(--muted);
       font-size: 12px;
       pointer-events: none;
+    }
+
+    .detail {
+      position: absolute;
+      z-index: 5;
+      right: 12px;
+      bottom: 12px;
+      width: min(420px, calc(100vw - 24px));
+      max-height: min(42vh, 360px);
+      overflow: auto;
+      padding: 12px;
+      border: 1px solid rgba(238, 242, 246, 0.14);
+      border-radius: var(--radius);
+      background: rgba(16, 19, 24, 0.9);
+      backdrop-filter: blur(10px);
+    }
+
+    .detail h2 {
+      margin: 0 0 8px;
+      font-size: 13px;
+      line-height: 1.3;
+    }
+
+    .detail p {
+      margin: 0 0 8px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+      overflow-wrap: anywhere;
+    }
+
+    .detail[hidden] {
+      display: none;
+    }
+
+    .legend {
+      position: absolute;
+      z-index: 5;
+      left: 12px;
+      bottom: 48px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      max-width: min(760px, calc(100vw - 460px));
+      padding: 8px;
+      border: 1px solid rgba(238, 242, 246, 0.14);
+      border-radius: var(--radius);
+      background: rgba(16, 19, 24, 0.86);
+      pointer-events: none;
+      backdrop-filter: blur(10px);
+    }
+
+    .legend-item {
+      display: inline-flex;
+      gap: 6px;
+      align-items: center;
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .swatch {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--muted);
+    }
+
+    .axis-hud {
+      position: absolute;
+      z-index: 5;
+      top: 88px;
+      right: 12px;
+      width: min(340px, calc(100vw - 24px));
+      padding: 10px;
+      border: 1px solid rgba(238, 242, 246, 0.14);
+      border-radius: var(--radius);
+      background: rgba(16, 19, 24, 0.86);
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.4;
+      pointer-events: none;
+      backdrop-filter: blur(10px);
+    }
+
+    .axis-hud strong {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--text);
+      font-size: 12px;
+    }
+
+    .axis-hud div {
+      display: grid;
+      grid-template-columns: 20px minmax(0, 1fr);
+      gap: 6px;
+    }
+
+    .axis-hud b {
+      color: var(--accent);
     }
 
     .drop {
@@ -211,8 +338,16 @@
 
     .metric .value {
       margin-top: 6px;
-      font-size: 20px;
+      min-width: 0;
+      font-size: 16px;
       font-weight: 700;
+      line-height: 1.18;
+      overflow-wrap: anywhere;
+    }
+
+    .metric .value span {
+      overflow-wrap: anywhere;
+      word-break: break-word;
     }
 
     .section {
@@ -302,6 +437,10 @@
         flex-wrap: wrap;
       }
 
+      .search {
+        width: 68vw;
+      }
+
       .title {
         max-width: 72vw;
         flex-basis: 100%;
@@ -309,6 +448,24 @@
 
       .metric-row {
         grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .legend {
+        display: none;
+      }
+
+      .axis-hud {
+        top: auto;
+        right: 12px;
+        bottom: 48px;
+        width: min(360px, calc(100vw - 24px));
+      }
+
+      .detail {
+        position: static;
+        width: auto;
+        max-height: none;
+        margin: 8px 12px;
       }
     }
   </style>
@@ -339,9 +496,45 @@
           <label class="toggle"><input id="toggle-atoms" type="checkbox" checked>Atoms</label>
           <label class="toggle"><input id="toggle-groups" type="checkbox" checked>Molecules</label>
           <label class="toggle"><input id="toggle-edges" type="checkbox" checked>Edges</label>
-          <label class="toggle"><input id="toggle-overlays" type="checkbox" checked>Overlays</label>
+        </div>
+        <div class="toolbar-group">
+          <select id="view-mode" title="View mode">
+            <option value="families">Families</option>
+            <option value="curvature">Curvature field</option>
+            <option value="holonomy">Holonomy paths</option>
+            <option value="obstructionLoops">Obstruction loops</option>
+            <option value="spectrum">Spectrum landscape</option>
+            <option value="flatness">Flatness surface</option>
+            <option value="aatAxes">AAT law axes</option>
+            <option value="molecules">Molecule map</option>
+            <option value="sources">Source map</option>
+            <option value="projection">Projection map</option>
+            <option value="evidence">Evidence map</option>
+            <option value="risk">Boundary review</option>
+            <option value="density">Density</option>
+          </select>
+          <select id="family-filter" title="Atom family">
+            <option value="">All families</option>
+          </select>
+          <select id="status-filter" title="Observation status">
+            <option value="">All statuses</option>
+          </select>
+          <select id="molecule-filter" title="Molecule">
+            <option value="">All molecules</option>
+          </select>
+          <select id="focus-filter" title="Focus filter">
+            <option value="">All atoms</option>
+            <option value="authorityTrustPermission">Authority / trust / permission</option>
+            <option value="sourceHeavy">Source-heavy</option>
+            <option value="topPriority">Top priority</option>
+            <option value="withProjectionRefs">Projection refs</option>
+          </select>
+          <input id="search" class="search" type="search" placeholder="Search atom, subject, predicate">
         </div>
       </div>
+      <div id="legend" class="legend"></div>
+      <div id="axis-hud" class="axis-hud"></div>
+      <aside id="detail" class="detail" hidden aria-label="Selected visual detail"></aside>
       <div id="status" class="status">Loading default viewer data</div>
     </section>
     <section class="report" aria-label="Analysis report">
@@ -396,11 +589,19 @@
     const dropEl = document.getElementById("drop");
     const fileEl = document.getElementById("file");
     const resetEl = document.getElementById("reset");
+    const detailEl = document.getElementById("detail");
+    const legendEl = document.getElementById("legend");
+    const axisHudEl = document.getElementById("axis-hud");
+    const viewModeEl = document.getElementById("view-mode");
+    const familyFilterEl = document.getElementById("family-filter");
+    const statusFilterEl = document.getElementById("status-filter");
+    const moleculeFilterEl = document.getElementById("molecule-filter");
+    const focusFilterEl = document.getElementById("focus-filter");
+    const searchEl = document.getElementById("search");
     const toggles = {
       atoms: document.getElementById("toggle-atoms"),
       groups: document.getElementById("toggle-groups"),
-      edges: document.getElementById("toggle-edges"),
-      overlays: document.getElementById("toggle-overlays")
+      edges: document.getElementById("toggle-edges")
     };
 
     const scene = new THREE.Scene();
@@ -409,8 +610,7 @@
     const atomGroup = new THREE.Group();
     const moleculeGroup = new THREE.Group();
     const edgeGroup = new THREE.Group();
-    const overlayGroup = new THREE.Group();
-    scene.add(atomGroup, moleculeGroup, edgeGroup, overlayGroup);
+    scene.add(atomGroup, moleculeGroup, edgeGroup);
     scene.add(new THREE.AmbientLight(0xffffff, 0.76));
     const light = new THREE.DirectionalLight(0xffffff, 1.2);
     light.position.set(70, 120, 90);
@@ -422,12 +622,39 @@
     controls.enableDamping = true;
     resetCamera();
 
+    const raycaster = new THREE.Raycaster();
+    const pointer = new THREE.Vector2();
+    const scratchMatrix = new THREE.Matrix4();
+    const scratchColor = new THREE.Color();
+    let currentData = null;
+    let currentLabel = "archsig-atom-viewer-data.json";
+    let currentCompanions = {};
+    let renderedAtoms = [];
+    let renderedGroups = [];
+    let renderedEdgeCount = 0;
+    let atomInstanceMesh = null;
+    let selectedAtomKey = null;
+    let activeLayoutContext = null;
+
     const colorByStatus = {
       observed: 0x4cc3a7,
       inferred: 0x66a6ff,
       partial: 0xe0b84e,
       missing: 0xef6767,
       blocked: 0xef6767
+    };
+
+    const colorByFamily = {
+      authority: 0xef6767,
+      trust: 0xe0b84e,
+      permission: 0xff8f5a,
+      state: 0x66a6ff,
+      effect: 0x4cc3a7,
+      relation: 0xb087ff,
+      semantic: 0xd8dee9,
+      capability: 0x8bd46e,
+      existence: 0x9aa8b8,
+      contractSpecification: 0xf2cf66
     };
 
     async function createRenderer() {
@@ -499,87 +726,629 @@
     }
 
     function renderData(data, label = "archsig-atom-viewer-data.json", companions = {}) {
+      currentData = data || {};
+      currentLabel = label;
+      currentCompanions = companions || {};
       titleEl.textContent = label;
+      populateFilters(currentData);
+      renderScene();
+      renderReport(currentData, currentCompanions);
+      resize();
+    }
+
+    function renderScene() {
+      if (!currentData) return;
       clearGroup(atomGroup);
       clearGroup(moleculeGroup);
       clearGroup(edgeGroup);
-      clearGroup(overlayGroup);
+      atomInstanceMesh = null;
+      selectedAtomKey = null;
+      detailEl.hidden = true;
 
-      const nodes = Array.isArray(data.atomNodes) ? data.atomNodes : [];
-      const groups = Array.isArray(data.moleculeGroups) ? data.moleculeGroups : [];
-      const edges = Array.isArray(data.atomEdges) ? data.atomEdges : [];
+      const allNodes = Array.isArray(currentData.atomNodes) ? currentData.atomNodes : [];
+      const allGroups = Array.isArray(currentData.moleculeGroups) ? currentData.moleculeGroups : [];
+      const edges = Array.isArray(currentData.atomEdges) ? currentData.atomEdges : [];
+      renderedAtoms = filterNodes(allNodes);
+      renderedGroups = filterGroups(allGroups);
+      renderedEdgeCount = 0;
+
       const positions = new Map();
+      activeLayoutContext = buildLayoutContext(renderedAtoms, renderedGroups, currentData);
+      renderedAtoms.forEach((node, index) => positions.set(node.nodeId, nodePosition(node, index, renderedAtoms.length, activeLayoutContext)));
+      renderAtomInstances(renderedAtoms, positions);
+      renderMoleculeGroups(renderedGroups, positions, activeLayoutContext);
+      renderedEdgeCount = renderEdges(edges, positions);
+      renderLegend();
+      renderAxisHud();
+      updateVisibility();
+      statusText(allNodes, edges);
+    }
 
+    function renderAtomInstances(nodes, positions) {
+      if (!nodes.length) return;
+      const geometry = new THREE.SphereGeometry(1, nodes.length > 8000 ? 8 : 12, nodes.length > 8000 ? 6 : 8);
+      const material = new THREE.MeshStandardMaterial({ roughness: 0.56, metalness: 0.04 });
+      atomInstanceMesh = new THREE.InstancedMesh(geometry, material, nodes.length);
+      atomInstanceMesh.userData.kind = "atomInstances";
+      const scale = new THREE.Vector3();
       nodes.forEach((node, index) => {
-        const p = nodePosition(node, index, nodes.length);
-        positions.set(node.nodeId, p);
-        const geometry = new THREE.SphereGeometry(nodeRadius(node), 16, 10);
-        const material = new THREE.MeshStandardMaterial({
-          color: colorByStatus[node.observationStatus] || 0xb087ff,
-          roughness: 0.5,
-          metalness: 0.05
-        });
-        const mesh = new THREE.Mesh(geometry, material);
-        mesh.position.copy(p);
-        mesh.userData = node;
-        atomGroup.add(mesh);
+        const radius = nodeRadius(node);
+        const p = positions.get(node.nodeId);
+        scratchMatrix.compose(p, new THREE.Quaternion(), scale.set(radius, radius, radius));
+        atomInstanceMesh.setMatrixAt(index, scratchMatrix);
+        atomInstanceMesh.setColorAt(index, scratchColor.setHex(nodeColor(node)));
       });
+      atomInstanceMesh.instanceMatrix.needsUpdate = true;
+      if (atomInstanceMesh.instanceColor) atomInstanceMesh.instanceColor.needsUpdate = true;
+      atomGroup.add(atomInstanceMesh);
+    }
 
+    function renderMoleculeGroups(groups, positions, layoutContext) {
+      const vertices = [];
+      const colors = [];
+      const centroids = [];
       groups.forEach((group, index) => {
         const refs = Array.isArray(group.atomObservationRefs) ? group.atomObservationRefs : [];
         const points = refs.map((ref) => positions.get(ref)).filter(Boolean);
-        const p = points.length ? centroid(points) : groupPosition(index, groups.length);
+        if (!points.length && familyFilterEl.value) return;
+        const p = viewModeEl.value === "molecules" && layoutContext.moleculeCenters.has(group.groupId)
+          ? layoutContext.moleculeCenters.get(group.groupId)
+          : points.length ? centroid(points) : groupPosition(index, groups.length);
         positions.set(group.groupId, p);
-        const geometry = new THREE.SphereGeometry(7 + Math.min(refs.length, 10), 20, 10);
-        const material = new THREE.MeshStandardMaterial({
+        appendMoleculeBonds(group, points, p, index, vertices, colors);
+        if (viewModeEl.value === "molecules" && points.length) {
+          centroids.push({ group, center: p, index, count: points.length });
+        }
+      });
+      renderMoleculeBondBuffer(vertices, colors);
+      renderMoleculeCentroids(centroids);
+    }
+
+    function appendMoleculeBonds(group, points, center, index, vertices, colors) {
+      if (!points.length) return;
+      const color = scratchColor.setHex(0xe0b84e);
+      for (const point of points) {
+        vertices.push(center.x, center.y, center.z, point.x, point.y, point.z);
+        colors.push(color.r, color.g, color.b, color.r, color.g, color.b);
+      }
+    }
+
+    function renderMoleculeBondBuffer(vertices, colors) {
+      if (!vertices.length) return;
+      const geometry = new THREE.BufferGeometry();
+      geometry.setAttribute("position", new THREE.Float32BufferAttribute(vertices, 3));
+      geometry.setAttribute("color", new THREE.Float32BufferAttribute(colors, 3));
+      const material = new THREE.LineBasicMaterial({
+        vertexColors: true,
+        transparent: true,
+        opacity: viewModeEl.value === "molecules" ? 0.36 : 0.2
+      });
+      const bonds = new THREE.LineSegments(geometry, material);
+      bonds.userData = { kind: "moleculeBonds" };
+      moleculeGroup.add(bonds);
+    }
+
+    function renderMoleculeCentroids(centroids) {
+      centroids.forEach(({ group, center, index, count }) => {
+        const centroidGeometry = new THREE.SphereGeometry(2.4 + Math.min(count, 80) * 0.025, 12, 8);
+        const centroidMaterial = new THREE.MeshStandardMaterial({
           color: 0xe0b84e,
           transparent: true,
-          opacity: 0.22,
-          roughness: 0.7
+          opacity: 0.7,
+          roughness: 0.55
         });
-        const mesh = new THREE.Mesh(geometry, material);
-        mesh.position.copy(p);
+        const mesh = new THREE.Mesh(centroidGeometry, centroidMaterial);
+        mesh.position.copy(center);
+        mesh.userData = { kind: "moleculeCenter", item: group };
         moleculeGroup.add(mesh);
       });
+    }
 
+    function renderEdges(edges, positions) {
+      const points = [];
       edges.forEach((edge) => {
         const source = positions.get(edge.sourceNodeRef);
         const target = positions.get(edge.targetNodeRef);
         if (!source || !target) return;
-        const geometry = new THREE.BufferGeometry().setFromPoints([source, target]);
-        const material = new THREE.LineBasicMaterial({ color: 0x5f6f86, transparent: true, opacity: 0.45 });
-        edgeGroup.add(new THREE.Line(geometry, material));
+        points.push(source.x, source.y, source.z, target.x, target.y, target.z);
       });
-
-      const overlays = overlayItems(data);
-      overlays.forEach((item, index) => {
-        const p = groupPosition(index, Math.max(overlays.length, 1), 90);
-        const geometry = new THREE.BoxGeometry(7, 7, 7);
-        const material = new THREE.MeshStandardMaterial({ color: 0xef6767, roughness: 0.5 });
-        const mesh = new THREE.Mesh(geometry, material);
-        mesh.position.copy(p);
-        mesh.userData = item;
-        overlayGroup.add(mesh);
-      });
-
-      updateVisibility();
-      renderReport(data, companions);
-      resize();
-      status(`${nodes.length} atoms, ${groups.length} molecules, ${edges.length} edges`);
+      if (!points.length) return 0;
+      const geometry = new THREE.BufferGeometry();
+      geometry.setAttribute("position", new THREE.Float32BufferAttribute(points, 3));
+      const material = new THREE.LineBasicMaterial({ color: 0x5f6f86, transparent: true, opacity: points.length > 9000 ? 0.22 : 0.42 });
+      edgeGroup.add(new THREE.LineSegments(geometry, material));
+      return points.length / 6;
     }
 
-    function nodePosition(node, index, total) {
-      const family = hashText(node.atomFamily || "atom") % 11;
+    function buildLayoutContext(nodes, groups, data) {
+      const atomIndex = new Map(nodes.map((node, index) => [node.nodeId, index]));
+      const membership = new Map();
+      const moleculeCenters = new Map();
+      groups.forEach((group, index) => {
+        const center = groupPosition(index, Math.max(groups.length, 1), 54);
+        moleculeCenters.set(group.groupId, center);
+        const refs = Array.isArray(group.atomObservationRefs) ? group.atomObservationRefs : [];
+        refs.forEach((ref, refIndex) => {
+          if (!atomIndex.has(ref)) return;
+          if (!membership.has(ref)) membership.set(ref, []);
+          membership.get(ref).push({ group, groupIndex: index, refIndex, center });
+        });
+      });
+      return {
+        atomIndex,
+        membership,
+        moleculeCenters,
+        aat: buildAatContext(atomIndex, data),
+        sourceBuckets: bucketRanks(nodes.map(sourceBucket)),
+        projectionBuckets: bucketRanks(nodes.map(projectionBucket)),
+        familyBuckets: bucketRanks(nodes.map((node) => node.atomFamily || "unknown"))
+      };
+    }
+
+    function buildAatContext(atomIndex, data) {
+      const overlays = data.analysisOverlays || {};
+      const geometry = data.aatGeometryOverlays || {};
+      const axes = Array.isArray(overlays.signatureAxes) ? overlays.signatureAxes : [];
+      const obstructions = Array.isArray(overlays.obstructionCircuits) ? overlays.obstructionCircuits : [];
+      const findings = overlays.dominantFindings || {};
+      const hotspots = Array.isArray(findings.spectrumHotspots) ? findings.spectrumHotspots : [];
+      const curvatureItems = geometryItems([
+        ...(Array.isArray(geometry.curvatureSupports) ? geometry.curvatureSupports : []),
+        ...(Array.isArray(geometry.curvatureTransfers) ? geometry.curvatureTransfers : []),
+        ...(Array.isArray(geometry.localCurvatureDiagrams) ? geometry.localCurvatureDiagrams : [])
+      ]);
+      const holonomyItems = geometryItems([
+        ...(Array.isArray(geometry.pathPairs) ? geometry.pathPairs : []),
+        ...(Array.isArray(geometry.loops) ? geometry.loops : []),
+        ...(Array.isArray(geometry.holonomyReadings) ? geometry.holonomyReadings : []),
+        ...(Array.isArray(geometry.stokesReadings) ? geometry.stokesReadings : []),
+        ...(Array.isArray(geometry.pathHomotopyDiagrams) ? geometry.pathHomotopyDiagrams : [])
+      ]);
+      const obstructionLoopItems = geometryItems([
+        ...obstructions,
+        ...(Array.isArray(geometry.localCurvatureDiagrams) ? geometry.localCurvatureDiagrams : []),
+        ...(Array.isArray(geometry.nonzeroMonodromyWitnesses) ? geometry.nonzeroMonodromyWitnesses : [])
+      ]);
+      const spectrumItems = geometryItems([
+        ...hotspots,
+        ...flattenReportItems(geometry.spectrumReport),
+        ...(Array.isArray(geometry.curvatureTransfers) ? geometry.curvatureTransfers : [])
+      ]);
+      const atomToAxes = new Map();
+      const atomToObstructions = new Map();
+      const atomToCurvature = new Map();
+      const atomToHolonomy = new Map();
+      const atomToObstructionLoops = new Map();
+      const atomToSpectrum = new Map();
+      const axisByRef = new Map();
+      const axisCenters = new Map();
+      const obstructionCenters = new Map();
+      const hotspotByAxis = new Map();
+
+      axes.forEach((axis, index) => {
+        const keys = axisKeys(axis);
+        const center = groupPosition(index, Math.max(axes.length, 1), 62);
+        keys.forEach((key) => {
+          axisByRef.set(key, { axis, index, center });
+          axisCenters.set(key, center);
+        });
+        atomRefs(axis).forEach((atomRef) => {
+          if (!atomIndex.has(atomRef)) return;
+          if (!atomToAxes.has(atomRef)) atomToAxes.set(atomRef, []);
+          atomToAxes.get(atomRef).push({ axis, index, center });
+        });
+      });
+
+      obstructions.forEach((obstruction, index) => {
+        const center = groupPosition(index, Math.max(obstructions.length, 1), 78);
+        obstructionCenters.set(obstruction.obstructionCircuitId || obstruction.ref || `obstruction:${index}`, center);
+        atomRefs(obstruction).forEach((atomRef) => {
+          if (!atomIndex.has(atomRef)) return;
+          if (!atomToObstructions.has(atomRef)) atomToObstructions.set(atomRef, []);
+          atomToObstructions.get(atomRef).push({ obstruction, index, center });
+        });
+      });
+
+      hotspots.forEach((hotspot, index) => {
+        if (!hotspot.axisRef) return;
+        hotspotByAxis.set(hotspot.axisRef, { hotspot, index });
+      });
+
+      indexGeometryItems(curvatureItems, atomIndex, atomToCurvature, 66);
+      indexGeometryItems(holonomyItems, atomIndex, atomToHolonomy, 86);
+      indexGeometryItems(obstructionLoopItems, atomIndex, atomToObstructionLoops, 92);
+      indexGeometryItems(spectrumItems, atomIndex, atomToSpectrum, 74);
+
+      return {
+        geometry,
+        axes,
+        obstructions,
+        hotspots,
+        curvatureItems,
+        holonomyItems,
+        obstructionLoopItems,
+        spectrumItems,
+        atomToAxes,
+        atomToObstructions,
+        atomToCurvature,
+        atomToHolonomy,
+        atomToObstructionLoops,
+        atomToSpectrum,
+        axisByRef,
+        axisCenters,
+        obstructionCenters,
+        hotspotByAxis
+      };
+    }
+
+    function axisKeys(axis) {
+      return [axis.axisRef, axis.signatureAxisId, axis.ref, axis.lawRef].filter(Boolean).map(String);
+    }
+
+    function atomRefs(item) {
+      const refs = [];
+      collectAtomRefs(item, refs);
+      return [...new Set(refs)];
+    }
+
+    function collectAtomRefs(value, refs) {
+      if (typeof value === "string") {
+        if (value.startsWith("atom:")) refs.push(value);
+        return;
+      }
+      if (Array.isArray(value)) {
+        value.forEach((item) => collectAtomRefs(item, refs));
+        return;
+      }
+      if (!value || typeof value !== "object") return;
+      Object.values(value).forEach((item) => collectAtomRefs(item, refs));
+    }
+
+    function geometryItems(items) {
+      return items.flatMap((item) => flattenGeometryItem(item)).filter((item) => atomRefs(item).length);
+    }
+
+    function flattenGeometryItem(item) {
+      if (!item || typeof item !== "object") return [];
+      const nestedKeys = [
+        "topCurvatureModes",
+        "witnessSupports",
+        "witnessClusters",
+        "transferEdges",
+        "topHotspots",
+        "topEigenmodes",
+        "recurrentObstructions",
+        "pathPairs",
+        "loopCandidates",
+        "readings"
+      ];
+      const nested = nestedKeys.flatMap((key) => Array.isArray(item[key])
+        ? item[key].map((child) => ({ ...child, parentKind: item.kind || item.readingKind || key }))
+        : []);
+      return [item, ...nested];
+    }
+
+    function indexGeometryItems(items, atomIndex, target, scale) {
+      items.forEach((item, index) => {
+        const center = groupPosition(index, Math.max(items.length, 1), scale);
+        atomRefs(item).forEach((atomRef) => {
+          if (!atomIndex.has(atomRef)) return;
+          if (!target.has(atomRef)) target.set(atomRef, []);
+          target.get(atomRef).push({ item, index, center, value: geometryValue(item) });
+        });
+      });
+    }
+
+    function geometryValue(item) {
+      for (const key of ["curvatureValue", "value", "score", "defectValue", "cycleWeight", "coverageGapCount", "refCount", "sourceRefCount"]) {
+        const value = Number(item?.[key]);
+        if (Number.isFinite(value)) return value;
+      }
+      const refs = atomRefs(item);
+      return refs.length ? Math.min(refs.length, 60) / 10 : 0;
+    }
+
+    function geometryMemberships(node, layoutContext) {
+      const aat = layoutContext.aat;
+      return {
+        axes: aat.atomToAxes.get(node.nodeId) || [],
+        curvature: aat.atomToCurvature.get(node.nodeId) || [],
+        holonomy: aat.atomToHolonomy.get(node.nodeId) || [],
+        obstructions: aat.atomToObstructionLoops.get(node.nodeId) || [],
+        spectrum: aat.atomToSpectrum.get(node.nodeId) || []
+      };
+    }
+
+    function aatGeometryBase(node, index, layoutContext, salt) {
+      const memberships = geometryMemberships(node, layoutContext);
+      const weighted = [
+        ...memberships.curvature.map((item) => ({ ...item, weight: 1.45 })),
+        ...memberships.holonomy.map((item) => ({ ...item, weight: 1.25 })),
+        ...memberships.obstructions.map((item) => ({ ...item, weight: 1.35 })),
+        ...memberships.spectrum.map((item) => ({ ...item, weight: 1.1 })),
+        ...memberships.axes.map((item) => ({ ...item, value: 0, weight: 0.65 }))
+      ];
+      if (!weighted.length) return outsideAnalysisPosition(node, index, `${salt}-geometry-boundary`, -86);
+      const p = new THREE.Vector3();
+      let totalWeight = 0;
+      weighted.slice(0, 14).forEach((item) => {
+        const value = Math.min(Math.abs(Number(item.value || 0)), 12);
+        const weight = item.weight + value * 0.08;
+        p.addScaledVector(item.center, weight);
+        totalWeight += weight;
+      });
+      p.divideScalar(Math.max(totalWeight, 1));
+      const spread = weighted.length;
+      const localAngle = (index + hashText(`${salt}:${node.nodeId}`)) * 2.399963229728653;
+      const jitter = 5 + Math.sqrt((index % 233) + 1) * 1.15 + Math.min(spread, 8) * 2.2;
+      const familyLift = (familyRank(node.atomFamily) - 4) * 2.1;
+      return new THREE.Vector3(p.x + Math.cos(localAngle) * jitter, familyLift, p.z + Math.sin(localAngle) * jitter);
+    }
+
+    function geometryScalar(items, fallback = 0) {
+      if (!items.length) return fallback;
+      return items.reduce((sum, item) => sum + Math.abs(Number(item.value || 0)), 0) / items.length;
+    }
+
+    function nodePosition(node, index, total, layoutContext) {
+      const mode = viewModeEl.value;
+      const familyHash = hashText(node.atomFamily || "atom");
+      const family = familyHash % 11;
       const angle = index * 2.399963229728653;
-      const radius = 22 + Math.sqrt(index + 1) * 11;
+      const radius = mode === "density" ? 18 + Math.sqrt(index + 1) * 2.8 : 22 + Math.sqrt(index + 1) * 6.8;
+      if (mode === "molecules") {
+        return moleculePosition(node, index, layoutContext);
+      }
+      if (mode === "aatAxes") {
+        return aatAxisPosition(node, index, layoutContext);
+      }
+      if (mode === "curvature") {
+        return curvatureFieldPosition(node, index, layoutContext);
+      }
+      if (mode === "holonomy") {
+        return holonomyPathPosition(node, index, layoutContext);
+      }
+      if (mode === "obstructionLoops" || mode === "obstructions") {
+        return obstructionPosition(node, index, layoutContext);
+      }
+      if (mode === "flatness") {
+        return flatnessPosition(node, index, layoutContext);
+      }
+      if (mode === "spectrum") {
+        return spectrumPosition(node, index, layoutContext);
+      }
+      if (mode === "sources") {
+        return bucketedPosition(sourceBucket(node), index, layoutContext.sourceBuckets, 52, sourceWeight(node));
+      }
+      if (mode === "projection") {
+        return bucketedPosition(projectionBucket(node), index, layoutContext.projectionBuckets, 48, Number(node.projectionRefs?.length || 0));
+      }
+      if (mode === "evidence") {
+        return evidencePosition(node, index, layoutContext);
+      }
+      if (mode === "risk") {
+        const risk = riskScore(node);
+        const riskRadius = 28 + risk * 18 + Math.sqrt(index + 1) * 2.5;
+        return new THREE.Vector3(Math.cos(angle) * riskRadius, (risk - 2) * 22 + ((index % 5) - 2) * 2, Math.sin(angle) * riskRadius);
+      }
       const y = (family - 5) * 12 + ((index % 7) - 3) * 2;
       return new THREE.Vector3(Math.cos(angle) * radius, y, Math.sin(angle) * radius);
+    }
+
+    function aatAxisPosition(node, index, layoutContext) {
+      const axes = layoutContext.aat.atomToAxes.get(node.nodeId) || [];
+      if (!axes.length) return outsideAnalysisPosition(node, index, "axis-none", -82);
+      const primary = axes[0];
+      const center = axes.length === 1 ? primary.center : centroid(axes.map((item) => item.center));
+      const localAngle = (index + primary.index * 17) * 2.399963229728653;
+      const support = Math.min(Number(primary.axis.sourceRefs?.length || 0), 6000);
+      const localRadius = 10 + Math.sqrt((index % 377) + 1) * 1.8 + axes.length * 4;
+      const gapLift = String(primary.axis.coverageStatus || "").includes("gap") ? 24 : 0;
+      return new THREE.Vector3(center.x + Math.cos(localAngle) * localRadius, gapLift + axes.length * 9 + support / 420, center.z + Math.sin(localAngle) * localRadius);
+    }
+
+    function obstructionPosition(node, index, layoutContext) {
+      const memberships = geometryMemberships(node, layoutContext);
+      const obstructions = viewModeEl.value === "obstructionLoops"
+        ? memberships.obstructions
+        : layoutContext.aat.atomToObstructions.get(node.nodeId) || [];
+      if (!obstructions.length) return outsideAnalysisPosition(node, index, "obstruction-none", -76);
+      const base = viewModeEl.value === "obstructionLoops"
+        ? aatGeometryBase(node, index, layoutContext, "obstruction")
+        : (() => {
+          const primary = obstructions[0];
+          const center = obstructions.length === 1 ? primary.center : centroid(obstructions.map((item) => item.center));
+          const localAngle = (index + primary.index * 23) * 2.399963229728653;
+          const localRadius = 8 + Math.sqrt((index % 233) + 1) * 1.9 + obstructions.length * 5;
+          return new THREE.Vector3(center.x + Math.cos(localAngle) * localRadius, 0, center.z + Math.sin(localAngle) * localRadius);
+        })();
+      const primary = obstructions[0];
+      const obstruction = primary.obstruction || primary.item || {};
+      const witnessLift = String(obstruction.witnessRuleRef || obstruction.obstructionRef || "").length ? 26 : 12;
+      const missing = Array.isArray(obstruction.missingEvidence) ? obstruction.missingEvidence.length : 0;
+      const valueLift = Math.min(Math.abs(Number(primary.value || 0)), 8) * 5;
+      const phase = ((hashText(node.nodeId) % 360) / 360) * Math.PI * 2;
+      const loopRadius = viewModeEl.value === "obstructionLoops" ? 8 + obstructions.length * 4 : 0;
+      base.x += Math.cos(phase) * loopRadius;
+      base.z += Math.sin(phase) * loopRadius;
+      base.y = witnessLift + missing * 2.5 + valueLift + memberships.curvature.length * 5;
+      return base;
+    }
+
+    function curvatureFieldPosition(node, index, layoutContext) {
+      const memberships = geometryMemberships(node, layoutContext);
+      const base = aatGeometryBase(node, index, layoutContext, "curvature");
+      if (!memberships.curvature.length) return base;
+      const magnitude = Math.min(geometryScalar(memberships.curvature), 12);
+      const holonomyPull = Math.min(memberships.holonomy.length, 8) * 3.2;
+      const obstructionPull = Math.min(memberships.obstructions.length, 8) * 4.4;
+      base.y = 8 + magnitude * 12 + memberships.curvature.length * 4 + holonomyPull + obstructionPull;
+      const radial = 1 + magnitude * 0.018;
+      base.x *= radial;
+      base.z *= radial;
+      return base;
+    }
+
+    function holonomyPathPosition(node, index, layoutContext) {
+      const memberships = geometryMemberships(node, layoutContext);
+      const base = aatGeometryBase(node, index, layoutContext, "holonomy");
+      if (!memberships.holonomy.length) return base;
+      const value = Math.min(geometryScalar(memberships.holonomy), 12);
+      const loopCount = memberships.holonomy.length;
+      const phase = ((hashText(node.nodeId) % 360) / 360) * Math.PI * 2;
+      const twist = 10 + Math.min(loopCount, 8) * 3 + value * 1.5;
+      base.x += Math.cos(phase) * twist;
+      base.z += Math.sin(phase) * twist;
+      base.y = 6 + value * 11 + loopCount * 5 + Math.min(memberships.curvature.length, 6) * 4;
+      return base;
+    }
+
+    function flatnessPosition(node, index, layoutContext) {
+      const memberships = geometryMemberships(node, layoutContext);
+      const axes = memberships.axes;
+      const obstructions = layoutContext.aat.atomToObstructions.get(node.nodeId) || [];
+      const curvature = memberships.curvature;
+      const holonomy = memberships.holonomy;
+      const gapAxes = axes.filter((item) => String(item.axis.coverageStatus || "").includes("gap"));
+      const missing = axes.reduce((sum, item) => sum + (Array.isArray(item.axis.missingEvidence) ? item.axis.missingEvidence.length : 0), 0);
+      const obstructionWeight = obstructions.length * 18 + curvature.length * 10 + holonomy.length * 7 + memberships.obstructions.length * 9;
+      const base = aatGeometryBase(node, index, layoutContext, "flatness");
+      const radius = 1 + (gapAxes.length * 18 + obstructionWeight) * 0.006;
+      base.x *= radius;
+      base.z *= radius;
+      base.y = -38 + gapAxes.length * 26 + Math.min(missing, 24) * 2.2 + obstructionWeight;
+      return base;
+    }
+
+    function spectrumPosition(node, index, layoutContext) {
+      const memberships = geometryMemberships(node, layoutContext);
+      const spectral = memberships.spectrum;
+      if (spectral.length) {
+        const base = aatGeometryBase(node, index, layoutContext, "spectrum");
+        const score = Math.min(geometryScalar(spectral), 20);
+        const phase = Math.sin((hashText(node.nodeId) % 628) / 100);
+        base.y = 14 + score * 7 + spectral.length * 6 + phase * 8;
+        base.x *= 1 + score * 0.012;
+        base.z *= 1 + score * 0.012;
+        return base;
+      }
+      const axes = layoutContext.aat.atomToAxes.get(node.nodeId) || [];
+      const hotAxes = axes
+        .map((item) => ({ ...item, hotspot: layoutContext.aat.hotspotByAxis.get(item.axis.axisRef) }))
+        .filter((item) => item.hotspot);
+      if (!hotAxes.length) return outsideAnalysisPosition(node, index, "spectrum-none", -68);
+      const primary = hotAxes[0];
+      const center = primary.center;
+      const score = Number(primary.hotspot.hotspot.score || 0);
+      const gapCount = Number(primary.hotspot.hotspot.coverageGapCount || 0);
+      const localAngle = (index + primary.hotspot.index * 29) * 2.399963229728653;
+      const localRadius = 12 + Math.sqrt((index % 307) + 1) * 2.2 + score * 18;
+      return new THREE.Vector3(center.x + Math.cos(localAngle) * localRadius, 20 + score * 24 + gapCount * 4, center.z + Math.sin(localAngle) * localRadius);
+    }
+
+    function hasKey(item, needle) {
+      const text = JSON.stringify(item || {}).toLowerCase();
+      return text.includes(String(needle).toLowerCase());
+    }
+
+    function outsideAnalysisPosition(node, index, salt, y) {
+      const angle = (index + hashText(salt)) * 2.399963229728653;
+      const radius = 115 + Math.sqrt(index + 1) * 2.5;
+      return new THREE.Vector3(Math.cos(angle) * radius, y + (familyRank(node.atomFamily) - 4) * 3, Math.sin(angle) * radius);
+    }
+
+    function moleculePosition(node, index, layoutContext) {
+      const memberships = layoutContext.membership.get(node.nodeId) || [];
+      if (!memberships.length) {
+        const fallback = bucketedPosition(node.atomFamily || "unassigned", index, layoutContext.familyBuckets, 50, 0);
+        fallback.y -= 62;
+        return fallback;
+      }
+      const primary = memberships[0];
+      const center = memberships.length === 1 ? primary.center : centroid(memberships.map((item) => item.center));
+      const localAngle = (primary.refIndex + hashText(node.nodeId) % 13) * 2.399963229728653;
+      const localRadius = 8 + Math.sqrt(primary.refIndex + 1) * 2.3 + Math.min(memberships.length, 4) * 3;
+      return new THREE.Vector3(
+        center.x + Math.cos(localAngle) * localRadius,
+        center.y + (familyRank(node.atomFamily) - 4) * 4 + memberships.length * 3,
+        center.z + Math.sin(localAngle) * localRadius
+      );
+    }
+
+    function bucketedPosition(key, index, ranks, baseRadius, weight) {
+      const rank = ranks.get(key) || 0;
+      const bucketCount = Math.max(ranks.size, 1);
+      const bucketAngle = rank / bucketCount * Math.PI * 2;
+      const centerRadius = 34 + Math.floor(rank / 14) * 64;
+      const center = new THREE.Vector3(Math.cos(bucketAngle) * centerRadius, 0, Math.sin(bucketAngle) * centerRadius);
+      const localAngle = (index + hashText(key)) * 2.399963229728653;
+      const localRadius = 8 + Math.sqrt((hashText(nodeKeySalt(key, index)) % 180) + 1) * 0.75 + Math.min(Number(weight || 0), 20) * 0.45;
+      const y = (rank % 9 - 4) * 8 + Math.min(Number(weight || 0), 20) * 1.2;
+      return new THREE.Vector3(center.x + Math.cos(localAngle) * (baseRadius + localRadius), y, center.z + Math.sin(localAngle) * (baseRadius + localRadius));
+    }
+
+    function evidencePosition(node, index, layoutContext) {
+      const priority = Math.min(Math.max(Number(node.priorityScore || 0), 0), 120);
+      const sourceRefs = Math.min(Number(node.sourceRefCount || 0), 24);
+      const projectionRefs = Math.min(Number(node.projectionRefs?.length || 0), 10);
+      const family = familyRank(node.atomFamily);
+      const jitter = hashText(node.nodeId || index);
+      return new THREE.Vector3(
+        (priority - 42) * 3.2 + (jitter % 17 - 8) * 1.2,
+        (family - 4) * 13 + projectionRefs * 5,
+        (sourceRefs - 5) * 11 + ((jitter >> 4) % 17 - 8) * 1.4
+      );
     }
 
     function groupPosition(index, total, scale = 70) {
       const angle = index * 2.399963229728653;
       const radius = scale + Math.sqrt(index + 1) * 3;
       return new THREE.Vector3(Math.cos(angle) * radius, 0, Math.sin(angle) * radius);
+    }
+
+    function bucketRanks(values) {
+      return [...new Set(values.filter(Boolean).map(String))]
+        .sort((left, right) => left.localeCompare(right))
+        .reduce((map, value, index) => map.set(value, index), new Map());
+    }
+
+    function sourceBucket(node) {
+      const ref = Array.isArray(node.sourceRefSamples) ? node.sourceRefSamples[0] : null;
+      if (!ref || typeof ref !== "object") return "source:unknown";
+      const kind = ref.sourceKind || ref.kind || "source";
+      const path = ref.path || ref.artifactPath || ref.sourceRef || ref.ref || "unknown";
+      return `${kind}:${String(path).split(/[?#]/)[0]}`;
+    }
+
+    function projectionBucket(node) {
+      const refs = Array.isArray(node.projectionRefs) ? node.projectionRefs : [];
+      if (!refs.length) return "projection:none";
+      return String(refs[0]).split(":").slice(0, 3).join(":");
+    }
+
+    function sourceWeight(node) {
+      return Number(node.sourceRefCount || 0) + Number(node.objectRefCount || 0);
+    }
+
+    function familyRank(family) {
+      const ordered = [
+        "authority",
+        "trust",
+        "permission",
+        "state",
+        "effect",
+        "contractSpecification",
+        "relation",
+        "capability",
+        "semantic",
+        "existence"
+      ];
+      const index = ordered.indexOf(String(family || ""));
+      return index >= 0 ? index : hashText(family || "atom") % ordered.length;
+    }
+
+    function nodeKeySalt(key, index) {
+      return `${key}:${index}`;
     }
 
     function centroid(points) {
@@ -590,38 +1359,281 @@
 
     function nodeRadius(node) {
       const count = Number(node.sourceRefCount || node.objectRefCount || 1);
-      return 3.5 + Math.min(count, 12) * 0.45;
+      const priority = Math.max(0, Number(node.priorityScore || 0));
+      return 1.8 + Math.min(count, 12) * 0.18 + Math.min(priority, 60) * 0.018;
+    }
+
+    function nodeColor(node) {
+      return colorByFamily[node.atomFamily] || colorByStatus[node.observationStatus] || 0xb087ff;
+    }
+
+    function currentAatContext() {
+      return activeLayoutContext?.aat || buildAatContext(new Map(), currentData || {});
+    }
+
+    function paletteColor(hash) {
+      const palette = [0x4cc3a7, 0x66a6ff, 0xb087ff, 0xe0b84e, 0xef6767, 0x8bd46e, 0xff8f5a, 0xd8dee9];
+      return palette[Math.abs(hash) % palette.length];
+    }
+
+    function riskScore(node) {
+      const family = String(node.atomFamily || "");
+      let score = 0;
+      if (["authority", "trust", "permission"].includes(family)) score += 4;
+      if (["state", "effect", "contractSpecification"].includes(family)) score += 2;
+      if (Number(node.sourceRefCount || 0) >= 4) score += 1;
+      if (Number(node.priorityScore || 0) >= 40) score += 1;
+      return score;
+    }
+
+    function filterNodes(nodes) {
+      const family = familyFilterEl.value;
+      const statusValue = statusFilterEl.value;
+      const moleculeRefs = selectedMoleculeRefs();
+      const focus = focusFilterEl.value;
+      const query = searchEl.value.trim().toLowerCase();
+      return nodes.filter((node) => {
+        if (moleculeRefs && !moleculeRefs.has(node.nodeId)) return false;
+        if (family && node.atomFamily !== family) return false;
+        if (statusValue && node.observationStatus !== statusValue) return false;
+        if (focus === "authorityTrustPermission" && !["authority", "trust", "permission"].includes(node.atomFamily)) return false;
+        if (focus === "sourceHeavy" && Number(node.sourceRefCount || 0) < 4) return false;
+        if (focus === "topPriority" && Number(node.priorityScore || 0) < 40) return false;
+        if (focus === "withProjectionRefs" && !(Array.isArray(node.projectionRefs) && node.projectionRefs.length)) return false;
+        if (!query) return true;
+        const haystack = [
+          node.nodeId,
+          node.atomFamily,
+          node.subjectRef,
+          node.predicate,
+          ...(Array.isArray(node.labels) ? node.labels : [])
+        ].join(" ").toLowerCase();
+        return haystack.includes(query);
+      });
+    }
+
+    function filterGroups(groups) {
+      const selected = moleculeFilterEl.value;
+      if (!selected) return groups;
+      return groups.filter((group) => group.groupId === selected);
+    }
+
+    function selectedMoleculeRefs() {
+      const selected = moleculeFilterEl.value;
+      if (!selected || !currentData) return null;
+      const groups = Array.isArray(currentData.moleculeGroups) ? currentData.moleculeGroups : [];
+      const group = groups.find((item) => item.groupId === selected);
+      if (!group) return null;
+      return new Set(Array.isArray(group.atomObservationRefs) ? group.atomObservationRefs : []);
+    }
+
+    function populateFilters(data) {
+      const nodes = Array.isArray(data.atomNodes) ? data.atomNodes : [];
+      const groups = Array.isArray(data.moleculeGroups) ? data.moleculeGroups : [];
+      fillSelect(familyFilterEl, "All families", uniqueSorted(nodes.map((node) => node.atomFamily)));
+      fillSelect(statusFilterEl, "All statuses", uniqueSorted(nodes.map((node) => node.observationStatus)));
+      fillSelectWithOptions(moleculeFilterEl, "All molecules", groups.map((group) => ({
+        value: group.groupId,
+        label: moleculeLabel(group)
+      })));
+    }
+
+    function fillSelect(select, label, values) {
+      const current = select.value;
+      select.innerHTML = `<option value="">${escapeHtml(label)}</option>` +
+        values.map((value) => `<option value="${escapeAttr(value)}">${escapeHtml(value)}</option>`).join("");
+      select.value = values.includes(current) ? current : "";
+    }
+
+    function fillSelectWithOptions(select, label, options) {
+      const current = select.value;
+      const normalized = options.filter((option) => option.value).map((option) => ({
+        value: String(option.value),
+        label: String(option.label || option.value)
+      }));
+      select.innerHTML = `<option value="">${escapeHtml(label)}</option>` +
+        normalized.map((option) => `<option value="${escapeAttr(option.value)}">${escapeHtml(option.label)}</option>`).join("");
+      select.value = normalized.some((option) => option.value === current) ? current : "";
+    }
+
+    function moleculeLabel(group) {
+      const refs = Array.isArray(group.atomObservationRefs) ? group.atomObservationRefs.length : 0;
+      return `${group.groupId || "molecule"} (${refs})`;
+    }
+
+    function uniqueSorted(values) {
+      return [...new Set(values.filter(Boolean).map(String))].sort((a, b) => a.localeCompare(b));
+    }
+
+    function statusText(allNodes, allEdges) {
+      const omitted = currentData.omittedDetailCounts || {};
+      const omittedText = Number(omitted.atomNodes || 0) > 0 ? `, ${omitted.atomNodes} atoms omitted by projection` : "";
+      const modeText = aatModeStatusText();
+      const edgeText = renderedEdgeCount === allEdges.length ? `${allEdges.length}` : `${renderedEdgeCount}/${allEdges.length}`;
+      status(`${renderedAtoms.length}/${allNodes.length} atoms, ${renderedGroups.length} molecules, ${edgeText} edges${modeText}${omittedText}`);
+    }
+
+    function aatModeStatusText() {
+      if (!activeLayoutContext) return "";
+      const aat = activeLayoutContext.aat;
+      if (viewModeEl.value === "aatAxes") {
+        return `, ${aat.atomToAxes.size} axis-support atoms, ${aat.axes.length} axes`;
+      }
+      if (viewModeEl.value === "curvature") {
+        return `, ${aat.atomToCurvature.size} curvature-support atoms, ${aat.curvatureItems.length} curvature readings`;
+      }
+      if (viewModeEl.value === "holonomy") {
+        return `, ${aat.atomToHolonomy.size} path/holonomy atoms, ${aat.holonomyItems.length} path readings`;
+      }
+      if (viewModeEl.value === "obstructionLoops" || viewModeEl.value === "obstructions") {
+        return `, ${aat.atomToObstructionLoops.size || aat.atomToObstructions.size} loop-support atoms, ${aat.obstructionLoopItems.length || aat.obstructions.length} loop readings`;
+      }
+      if (viewModeEl.value === "flatness") {
+        const boundaryAtoms = renderedAtoms.filter((node) =>
+          (aat.atomToAxes.get(node.nodeId) || []).some((item) => String(item.axis.coverageStatus || "").includes("gap")) ||
+          (aat.atomToCurvature.get(node.nodeId) || []).length ||
+          (aat.atomToHolonomy.get(node.nodeId) || []).length
+        ).length;
+        return `, ${boundaryAtoms} flatness-boundary atoms`;
+      }
+      if (viewModeEl.value === "spectrum") {
+        const hotAtoms = renderedAtoms.filter((node) => (aat.atomToSpectrum.get(node.nodeId) || []).length || (aat.atomToAxes.get(node.nodeId) || []).some((item) => aat.hotspotByAxis.has(item.axis.axisRef))).length;
+        return `, ${hotAtoms} spectrum-support atoms, ${aat.spectrumItems.length || aat.hotspots.length} spectral readings`;
+      }
+      return "";
+    }
+
+    function renderLegend() {
+      const items = Object.entries(colorByFamily);
+      legendEl.innerHTML = items.slice(0, 12).map(([label, color]) =>
+        `<span class="legend-item"><span class="swatch" style="background:#${Number(color).toString(16).padStart(6, "0")}"></span>${escapeHtml(label)}</span>`
+      ).join("");
+    }
+
+    function renderAxisHud() {
+      const layout = axisHudText(viewModeEl.value);
+      axisHudEl.innerHTML = `<strong>${escapeHtml(layout.title)}</strong>` +
+        ["x", "y", "z"].map((axis) =>
+          `<div><b>${axis.toUpperCase()}</b><span>${escapeHtml(layout[axis])}</span></div>`
+        ).join("");
+    }
+
+    function axisHudText(mode) {
+      const layouts = {
+        families: {
+          title: "Family spiral",
+          x: "spiral radius",
+          y: "atom family band",
+          z: "spiral phase"
+        },
+        curvature: {
+          title: "Curvature field",
+          x: "AAT geometry support",
+          y: "curvature value / shared pressure",
+          z: "AAT geometry support"
+        },
+        holonomy: {
+          title: "Holonomy paths",
+          x: "path support + loop phase",
+          y: "holonomy distance",
+          z: "path support + loop phase"
+        },
+        obstructionLoops: {
+          title: "Obstruction loops",
+          x: "cycle support + atom phase",
+          y: "witness / defect lift",
+          z: "cycle support + atom phase"
+        },
+        flatness: {
+          title: "Flatness surface",
+          x: "AAT geometry support spread",
+          y: "non-flatness pressure",
+          z: "AAT geometry support spread"
+        },
+        spectrum: {
+          title: "Spectrum landscape",
+          x: "spectral support",
+          y: "spectral value + wave phase",
+          z: "spectral support"
+        },
+        aatAxes: {
+          title: "AAT law axes",
+          x: "selected law axis cluster",
+          y: "coverage gap / support",
+          z: "selected law axis cluster"
+        },
+        molecules: {
+          title: "Molecule map",
+          x: "membership bond layout",
+          y: "atom family / multi-membership",
+          z: "membership bond layout"
+        },
+        sources: {
+          title: "Source map",
+          x: "source bucket",
+          y: "source weight",
+          z: "source bucket"
+        },
+        projection: {
+          title: "Projection map",
+          x: "projection ref bucket",
+          y: "projection count",
+          z: "projection ref bucket"
+        },
+        evidence: {
+          title: "Evidence map",
+          x: "priority score",
+          y: "atom family + projection refs",
+          z: "source refs"
+        },
+        risk: {
+          title: "Boundary review",
+          x: "boundary score radius",
+          y: "boundary score",
+          z: "boundary score radius"
+        },
+        density: {
+          title: "Density",
+          x: "compact source-density spiral",
+          y: "atom family band",
+          z: "compact source-density spiral"
+        }
+      };
+      return layouts[mode] || layouts.families;
     }
 
     function hashText(text) {
+      text = String(text);
       let hash = 0;
       for (let i = 0; i < text.length; i += 1) hash = ((hash << 5) - hash + text.charCodeAt(i)) | 0;
       return Math.abs(hash);
     }
 
-    function overlayItems(data) {
-      const overlays = data.analysisOverlays || {};
-      return [
-        ...(Array.isArray(overlays.signatureAxes) ? overlays.signatureAxes : []),
-        ...(Array.isArray(overlays.obstructionCircuits) ? overlays.obstructionCircuits : [])
-      ].slice(0, data.layoutSettings?.overlayLimit || 80);
+    function flattenReportItems(value) {
+      if (Array.isArray(value)) return value;
+      if (!value || typeof value !== "object") return [];
+      return Object.entries(value).flatMap(([kind, items]) => {
+        const array = Array.isArray(items) ? items : [items];
+        return array.filter((item) => item && typeof item === "object").map((item) => ({ kind, ...item }));
+      });
     }
 
     function updateVisibility() {
       atomGroup.visible = toggles.atoms.checked;
       moleculeGroup.visible = toggles.groups.checked;
       edgeGroup.visible = toggles.edges.checked;
-      overlayGroup.visible = toggles.overlays.checked;
     }
 
     Object.values(toggles).forEach((input) => input.addEventListener("change", updateVisibility));
+    [viewModeEl, familyFilterEl, statusFilterEl, moleculeFilterEl, focusFilterEl].forEach((input) => input.addEventListener("change", renderScene));
+    searchEl.addEventListener("input", debounce(renderScene, 90));
     resetEl.addEventListener("click", resetCamera);
+    renderer.domElement.addEventListener("pointerdown", selectVisual);
 
     fileEl.addEventListener("change", async (event) => {
       const file = event.target.files?.[0];
       if (!file) return;
-      const data = JSON.parse(await file.text());
-      renderData(data, file.name, await loadCompanionReports());
+      await loadUserFile(file);
     });
 
     window.addEventListener("dragover", (event) => {
@@ -634,9 +1646,73 @@
       dropEl.classList.remove("active");
       const file = event.dataTransfer?.files?.[0];
       if (!file) return;
-      const data = JSON.parse(await file.text());
-      renderData(data, file.name, await loadCompanionReports());
+      await loadUserFile(file);
     });
+
+    async function loadUserFile(file) {
+      try {
+        const data = JSON.parse(await file.text());
+        renderData(data, file.name, await loadCompanionReports());
+      } catch (error) {
+        status(`Could not load ${file.name}: ${error.message}`);
+      }
+    }
+
+    function debounce(fn, wait) {
+      let timer = 0;
+      return () => {
+        window.clearTimeout(timer);
+        timer = window.setTimeout(fn, wait);
+      };
+    }
+
+    function selectVisual(event) {
+      if (!currentData) return;
+      const rect = renderer.domElement.getBoundingClientRect();
+      pointer.x = ((event.clientX - rect.left) / Math.max(rect.width, 1)) * 2 - 1;
+      pointer.y = -(((event.clientY - rect.top) / Math.max(rect.height, 1)) * 2 - 1);
+      raycaster.setFromCamera(pointer, camera);
+      const hits = raycaster.intersectObjects([atomInstanceMesh].filter(Boolean), false);
+      if (!hits.length) {
+        detailEl.hidden = true;
+        selectedAtomKey = null;
+        return;
+      }
+      const hit = hits[0];
+      if (hit.object === atomInstanceMesh) {
+        const node = renderedAtoms[hit.instanceId];
+        selectedAtomKey = node?.nodeId || null;
+        renderDetail("Atom", node);
+      }
+    }
+
+    function renderDetail(kind, item) {
+      if (!item) return;
+      const sourceRefs = Array.isArray(item.sourceRefSamples) ? item.sourceRefSamples : [];
+      const detailRefs = Array.isArray(item.detailRefs) ? item.detailRefs : Array.isArray(item.packetRefs) ? item.packetRefs : [];
+      const labels = Array.isArray(item.labels) ? item.labels : [];
+      const rows = [
+        item.nodeId || item.groupId || item.ref || item.axisRef || item.lawRef,
+        item.atomFamily && `family: ${item.atomFamily}`,
+        item.observationStatus && `status: ${item.observationStatus}`,
+        item.confidence && `confidence: ${item.confidence}`,
+        item.subjectRef && `subject: ${item.subjectRef}`,
+        item.predicate && `predicate: ${item.predicate}`,
+        item.conclusion && `conclusion: ${item.conclusion}`,
+        item.recommendedAction && `next: ${item.recommendedAction}`,
+        item.recommendedNextAction && `next: ${item.recommendedNextAction}`,
+        labels.length && `labels: ${labels.join(", ")}`,
+        sourceRefs.length && `source refs: ${sourceRefs.map(sourceRefLabel).join(", ")}`,
+        detailRefs.length && `detail refs: ${detailRefs.join(", ")}`
+      ].filter(Boolean);
+      detailEl.innerHTML = `<h2>${escapeHtml(kind)}</h2>${rows.map((row) => `<p>${escapeHtml(String(row))}</p>`).join("")}`;
+      detailEl.hidden = false;
+    }
+
+    function sourceRefLabel(ref) {
+      if (!ref || typeof ref !== "object") return String(ref);
+      return [ref.sourceKind, ref.path, ref.symbol, ref.ref].filter(Boolean).join(":") || JSON.stringify(ref);
+    }
 
     function renderReport(data, companions = {}) {
       const report = data.reportPane || {};
@@ -688,11 +1764,12 @@
     function renderOverview(overview, verdict, summary, nonConclusions) {
       const root = document.getElementById("overview");
       const rows = [
+        overview.mapId && ["archmap", overview.mapId],
         overview.analysisId && ["analysis", overview.analysisId],
         verdict.readingMode && ["reading mode", verdict.readingMode],
         verdict.flatness && ["flatness", verdict.flatness],
         verdict.qualityState && ["quality", verdict.qualityState],
-        summary.measurementStatusSummary && ["measurement", compactJson(summary.measurementStatusSummary)],
+        (overview.measurementStatusSummary || summary.measurementStatusSummary) && ["measurement", compactJson(overview.measurementStatusSummary || summary.measurementStatusSummary)],
         Array.isArray(nonConclusions) && nonConclusions.length && ["non-conclusion", nonConclusions[0]]
       ].filter(Boolean);
       root.innerHTML = rows.length
@@ -702,15 +1779,21 @@
 
     function renderItems(id, value, fallbackLabel) {
       const root = document.getElementById(id);
-      const items = Array.isArray(value) ? value.slice(0, 8) : [];
+      const items = flattenReportItems(value).slice(0, 12);
       root.innerHTML = items.length ? items.map((item, index) => itemHtml(item, fallbackLabel, index)).join("") : emptyItem();
     }
 
     function itemHtml(item, fallbackLabel, index) {
       if (item && typeof item === "object") {
         const title = item.title || item.kind || item.conclusion || item.id || `${fallbackLabel} ${index + 1}`;
-        const text = item.summary || item.description || item.reading || item.reason || item.recommendedNextAction || JSON.stringify(item).slice(0, 240);
-        return `<div class="item"><strong>${escapeHtml(String(title))}</strong><p>${escapeHtml(String(text))}</p></div>`;
+        const text = item.summary || item.description || item.reading || item.reason || item.recommendedAction || item.recommendedNextAction || JSON.stringify(item).slice(0, 240);
+        const refs = [
+          item.ref,
+          item.axisRef,
+          item.lawRef,
+          Array.isArray(item.detailRefs) && item.detailRefs.length ? `detail: ${item.detailRefs.slice(0, 2).join(", ")}` : null
+        ].filter(Boolean).join(" / ");
+        return `<div class="item"><strong>${escapeHtml(String(title))}</strong><p>${escapeHtml(String(text))}</p>${refs ? `<p>${escapeHtml(refs)}</p>` : ""}</div>`;
       }
       return `<div class="item"><strong>${escapeHtml(`${fallbackLabel} ${index + 1}`)}</strong><p>${escapeHtml(String(item))}</p></div>`;
     }
@@ -791,7 +1874,7 @@
     }
 
     function escapeHtml(value) {
-      return value
+      return String(value)
         .replaceAll("&", "&amp;")
         .replaceAll("<", "&lt;")
         .replaceAll(">", "&gt;")

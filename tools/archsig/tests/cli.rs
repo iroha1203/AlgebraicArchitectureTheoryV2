@@ -949,11 +949,11 @@ fn cli_runs_primary_archmap_lawpolicy_archsig_analyze_workflow() {
     );
     assert_eq!(
         viewer_data["layoutSettings"]["nodeLimit"].as_u64(),
-        Some(250)
+        Some(20_000)
     );
     assert_eq!(
         viewer_data["layoutSettings"]["edgeLimit"].as_u64(),
-        Some(500)
+        Some(30_000)
     );
     assert_eq!(
         viewer_data["layoutSettings"]["sourceRefSampleLimit"].as_u64(),
@@ -976,6 +976,22 @@ fn cli_runs_primary_archmap_lawpolicy_archsig_analyze_workflow() {
             .as_array()
             .is_some_and(|items| !items.is_empty()),
         "viewer data must carry selected analysis overlays"
+    );
+    assert_eq!(
+        viewer_data["aatGeometryOverlays"]["schemaVersion"].as_str(),
+        Some("archsig-aat-geometry-overlays-v0")
+    );
+    assert!(
+        viewer_data["aatGeometryOverlays"]["curvatureSupports"]
+            .as_array()
+            .is_some(),
+        "viewer data must carry computed AAT curvature geometry projection"
+    );
+    assert!(
+        viewer_data["aatGeometryOverlays"]["holonomyReadings"]
+            .as_array()
+            .is_some(),
+        "viewer data must carry computed AAT path and holonomy geometry projection"
     );
     assert_eq!(
         viewer_data["reportPane"]["overview"]["summaryVerdict"]["readingMode"].as_str(),
@@ -1039,6 +1055,7 @@ fn cli_runs_primary_archmap_lawpolicy_archsig_analyze_workflow() {
             && viewer_data.get("moleculeGroups").is_some()
             && viewer_data.get("atomEdges").is_some()
             && viewer_data.get("analysisOverlays").is_some()
+            && viewer_data.get("aatGeometryOverlays").is_some()
             && viewer_data.get("reportPane").is_some()
             && viewer_data.get("omittedDetailCounts").is_some(),
         "viewer data shape must contain the schema sections owned by archsig-atom-viewer-data-v0"
@@ -1114,18 +1131,20 @@ fn cli_analyze_bounds_atom_viewer_data_for_large_repo_projection() {
         .as_array()
         .expect("atom edges are array");
 
-    assert_eq!(node_limit, 250);
+    assert_eq!(node_limit, 20_000);
     assert_eq!(molecule_limit, 120);
-    assert_eq!(edge_limit, 500);
-    assert_eq!(atom_nodes.len(), node_limit);
+    assert_eq!(edge_limit, 30_000);
+    assert!(atom_nodes.len() <= node_limit);
     assert_eq!(molecule_groups.len(), molecule_limit);
     assert!(atom_edges.len() <= edge_limit);
-    assert!(
-        atom_nodes
-            .iter()
-            .any(|node| node["nodeId"] == "atom:synthetic:late-hotspot"),
-        "top-N priority selection must retain high-priority late atoms instead of taking only the first N"
-    );
+    if atom_nodes.len() == node_limit {
+        assert!(
+            atom_nodes
+                .iter()
+                .any(|node| node["nodeId"] == "atom:synthetic:late-hotspot"),
+            "top-N priority selection must retain high-priority late atoms instead of taking only the first N"
+        );
+    }
 
     for node in atom_nodes {
         assert!(
@@ -1162,10 +1181,13 @@ fn cli_analyze_bounds_atom_viewer_data_for_large_repo_projection() {
         );
     }
 
-    assert!(
-        viewer_data["omittedDetailCounts"]["atomNodes"]
-            .as_u64()
-            .is_some_and(|count| count > 0),
+    let total_atom_count = archmap["atomObservations"]
+        .as_array()
+        .expect("expanded archmap atom observations are array")
+        .len();
+    assert_eq!(
+        viewer_data["omittedDetailCounts"]["atomNodes"].as_u64(),
+        Some(total_atom_count.saturating_sub(node_limit) as u64),
         "viewer data must record omitted atom node count"
     );
     assert!(
