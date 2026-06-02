@@ -21,6 +21,7 @@
 - PR 本文には対象 Issue を `Closes #N` 形式で明記し、`.github/pull_request_template.md` に沿って書く。
 - 既存の未コミット変更はユーザーの変更として扱い、勝手に戻さない。
 - `git reset --hard` や `git checkout --` のような破壊的操作は、明示的な依頼なしに実行しない。
+- `.lake` は Lake の build / dependency cache 専用として扱い、検証出力、PR / Issue 下書き、一時 JSON などの temp 置き場に使わない。一時出力は `.tmp/` または `/private/tmp` などに置く。
 
 ## モノレポの地図
 
@@ -76,7 +77,7 @@ ArchSig の現行一次 workflow は `analyze` である。
 cargo run --manifest-path tools/archsig/Cargo.toml -- analyze \
   --archmap tools/archsig/tests/fixtures/minimal/archmap.json \
   --law-policy tools/archsig/tests/fixtures/minimal/law_policy.json \
-  --out-dir .lake/archsig-analyze
+  --out-dir .tmp/archsig-analyze
 ```
 
 website は no-build static stack として扱う。directory route、asset path、`sitemap.xml`、`robots.txt` を確認する場合は local server で preview する。
