@@ -2556,6 +2556,27 @@ fn archsig_atom_viewer_static_app_is_packaged_asset() {
     );
 }
 
+#[test]
+fn archsig_release_workflow_packages_output_viewer_contract() {
+    let repo_root = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .and_then(Path::parent)
+        .expect("repo root");
+    let release_workflow = fs::read_to_string(repo_root.join(".github/workflows/archsig-release.yml"))
+        .expect("release workflow can be read");
+    assert!(
+        release_workflow.contains("package/archsig-atom-viewer.html")
+            && release_workflow.contains("package/viewer/archsig-atom-viewer.html")
+            && release_workflow.contains("test -s package/archsig-atom-viewer.html"),
+        "release workflow must package and verify the fixed Atom Viewer app"
+    );
+    assert!(
+        release_workflow.contains("package/docs/artifacts-and-boundaries.md")
+            && release_workflow.contains("package/skills"),
+        "release workflow must ship docs and skills that describe the output contract"
+    );
+}
+
 fn removed_commands() -> &'static [&'static str] {
     &[
         "adapter-scan",
