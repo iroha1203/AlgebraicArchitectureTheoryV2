@@ -130,7 +130,12 @@ Release archives include `archsig-atom-viewer.html` as a fixed viewer app. Open
 it in a browser and load `archsig-atom-viewer-data.json` with the file picker,
 drag-and-drop, or the same-directory default fetch. The viewer uses CDN Three.js,
 tries the WebGPU renderer first when available, and falls back to WebGL. It
-does not load `archsig-analysis-packet.json`.
+does not load `archsig-analysis-packet.json`. Its lower report pane reads the
+bounded viewer data plus same-directory `archsig-analysis-summary.json` and
+`archsig-run-manifest.json` when present, so the human surface can show verdict,
+top findings, action queue, coverage boundaries, validation status, generated /
+omitted artifacts, and relative raw artifact links without embedding raw packet
+detail.
 
 For large ArchMaps, prefer the optimized binary:
 

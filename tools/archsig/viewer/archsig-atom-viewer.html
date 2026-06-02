@@ -191,7 +191,7 @@
 
     .metric-row {
       display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
+      grid-template-columns: repeat(5, minmax(0, 1fr));
       gap: 8px;
       margin-bottom: 16px;
     }
@@ -351,7 +351,12 @@
           <div class="metric"><div class="label">Atoms</div><div id="metric-atoms" class="value">0</div></div>
           <div class="metric"><div class="label">Molecules</div><div id="metric-groups" class="value">0</div></div>
           <div class="metric"><div class="label">Edges</div><div id="metric-edges" class="value">0</div></div>
+          <div class="metric"><div class="label">Verdict</div><div id="metric-verdict" class="value">-</div></div>
           <div class="metric"><div class="label">Validation</div><div id="metric-validation" class="value">-</div></div>
+        </div>
+        <div class="section">
+          <h2>Overview</h2>
+          <div id="overview" class="list"></div>
         </div>
         <div class="section">
           <h2>Top Findings</h2>
@@ -368,6 +373,10 @@
         <div class="section">
           <h2>Artifacts</h2>
           <div id="artifacts" class="list"></div>
+        </div>
+        <div class="section">
+          <h2>Validation Status</h2>
+          <div id="validation-status" class="list"></div>
         </div>
         <div class="section">
           <h2>Omitted Detail</h2>
@@ -471,7 +480,25 @@
       }
     }
 
-    function renderData(data, label = "archsig-atom-viewer-data.json") {
+    async function loadCompanionReports() {
+      const [summary, manifest] = await Promise.all([
+        fetchJsonIfAvailable("./archsig-analysis-summary.json"),
+        fetchJsonIfAvailable("./archsig-run-manifest.json")
+      ]);
+      return { summary, manifest };
+    }
+
+    async function fetchJsonIfAvailable(path) {
+      try {
+        const response = await fetch(path);
+        if (!response.ok) return null;
+        return await response.json();
+      } catch (_error) {
+        return null;
+      }
+    }
+
+    function renderData(data, label = "archsig-atom-viewer-data.json", companions = {}) {
       titleEl.textContent = label;
       clearGroup(atomGroup);
       clearGroup(moleculeGroup);
@@ -536,7 +563,7 @@
       });
 
       updateVisibility();
-      renderReport(data);
+      renderReport(data, companions);
       resize();
       status(`${nodes.length} atoms, ${groups.length} molecules, ${edges.length} edges`);
     }
@@ -594,7 +621,7 @@
       const file = event.target.files?.[0];
       if (!file) return;
       const data = JSON.parse(await file.text());
-      renderData(data, file.name);
+      renderData(data, file.name, await loadCompanionReports());
     });
 
     window.addEventListener("dragover", (event) => {
@@ -608,26 +635,31 @@
       const file = event.dataTransfer?.files?.[0];
       if (!file) return;
       const data = JSON.parse(await file.text());
-      renderData(data, file.name);
+      renderData(data, file.name, await loadCompanionReports());
     });
 
-    function renderReport(data) {
+    function renderReport(data, companions = {}) {
       const report = data.reportPane || {};
+      const summary = companions.summary || {};
+      const manifest = companions.manifest || {};
       const overview = report.overview || {};
-      const verdict = overview.summaryVerdict || {};
-      const validation = overview.validation || {};
+      const verdict = overview.summaryVerdict || summary.verdict || {};
+      const validation = overview.validation || summary.validation || manifest.validationResultSummary || {};
 
       document.getElementById("report-title").textContent =
         overview.architectureId || overview.mapId || "ArchSig Atom Viewer";
       document.getElementById("metric-atoms").textContent = count(data.atomNodes);
       document.getElementById("metric-groups").textContent = count(data.moleculeGroups);
       document.getElementById("metric-edges").textContent = count(data.atomEdges);
+      document.getElementById("metric-verdict").innerHTML = verdictBadge(verdict);
       document.getElementById("metric-validation").innerHTML = validationBadge(validation);
 
-      renderItems("findings", report.topFindings || data.analysisOverlays?.dominantFindings, "finding");
-      renderItems("actions", report.actionQueue || data.analysisOverlays?.actionQueue, "action");
-      renderCoverage(report.coverageAndBoundaries || {}, verdict);
-      renderArtifacts(report.artifacts || {}, data.sourceArtifactRefs || {});
+      renderOverview(overview, verdict, summary, data.nonConclusions || []);
+      renderItems("findings", report.topFindings || summary.dominantFindings || data.analysisOverlays?.dominantFindings, "finding");
+      renderItems("actions", report.actionQueue || summary.actionQueue || data.analysisOverlays?.actionQueue, "action");
+      renderCoverage(report.coverageAndBoundaries || {}, verdict, summary);
+      renderArtifacts(report.artifacts || {}, data.sourceArtifactRefs || {}, manifest);
+      renderValidationStatus(validation);
       renderOmitted(data.omittedDetailCounts || {}, data.truncationPolicy || {});
     }
 
@@ -645,6 +677,29 @@
       return `<span class="${klass}">${escapeHtml(result || "-")}</span>`;
     }
 
+    function verdictBadge(verdict) {
+      const value = verdict.qualityState || verdict.flatness || verdict.readingMode || "-";
+      const klass = String(value).includes("fail") || String(value).includes("blocked") ? "fail"
+        : String(value).includes("warn") || String(value).includes("gap") ? "warn"
+          : "ok";
+      return `<span class="${klass}">${escapeHtml(String(value))}</span>`;
+    }
+
+    function renderOverview(overview, verdict, summary, nonConclusions) {
+      const root = document.getElementById("overview");
+      const rows = [
+        overview.analysisId && ["analysis", overview.analysisId],
+        verdict.readingMode && ["reading mode", verdict.readingMode],
+        verdict.flatness && ["flatness", verdict.flatness],
+        verdict.qualityState && ["quality", verdict.qualityState],
+        summary.measurementStatusSummary && ["measurement", compactJson(summary.measurementStatusSummary)],
+        Array.isArray(nonConclusions) && nonConclusions.length && ["non-conclusion", nonConclusions[0]]
+      ].filter(Boolean);
+      root.innerHTML = rows.length
+        ? rows.map(([label, value]) => `<div class="item"><strong>${escapeHtml(String(label))}</strong><p>${escapeHtml(String(value))}</p></div>`).join("")
+        : emptyItem();
+    }
+
     function renderItems(id, value, fallbackLabel) {
       const root = document.getElementById(id);
       const items = Array.isArray(value) ? value.slice(0, 8) : [];
@@ -660,33 +715,58 @@
       return `<div class="item"><strong>${escapeHtml(`${fallbackLabel} ${index + 1}`)}</strong><p>${escapeHtml(String(item))}</p></div>`;
     }
 
-    function renderCoverage(boundaries, verdict) {
+    function renderCoverage(boundaries, verdict, summary) {
       const root = document.getElementById("coverage");
-      const coverage = boundaries.coverageGaps || {};
+      const coverage = boundaries.coverageGaps || summary.coverageGapSummary || {};
       const chips = [
         verdict.flatness && `flatness: ${verdict.flatness}`,
         verdict.qualityState && `quality: ${verdict.qualityState}`,
         coverage.gapCount != null && `coverage gaps: ${coverage.gapCount}`,
-        boundaries.measurementBasis?.basis && `basis: ${boundaries.measurementBasis.basis}`
+        boundaries.measurementBasis?.basis && `basis: ${boundaries.measurementBasis.basis}`,
+        summary.measurementBasis?.basis && `basis: ${summary.measurementBasis.basis}`
       ].filter(Boolean);
       root.innerHTML = chips.length
         ? `<div class="item"><div class="chips">${chips.map((chip) => `<span class="chip">${escapeHtml(chip)}</span>`).join("")}</div></div>`
         : emptyItem();
     }
 
-    function renderArtifacts(artifacts, sourceRefs) {
+    function renderArtifacts(artifacts, sourceRefs, manifest) {
       const root = document.getElementById("artifacts");
+      const rawPaths = manifest.rawArtifactPaths || {};
+      const generated = Array.isArray(manifest.generatedArtifacts) ? manifest.generatedArtifacts : [];
+      const omitted = Array.isArray(manifest.omittedArtifacts) ? manifest.omittedArtifacts : [];
       const pairs = [
         ["viewer data", "archsig-atom-viewer-data.json"],
         ["summary", artifacts.summary || sourceRefs.summary],
         ["manifest", artifacts.manifest || sourceRefs.manifest],
-        ["raw artifacts", artifacts.rawArtifacts || "see manifest"]
+        ["packet", rawPaths.analysisPacket],
+        ["detail-index", rawPaths.analysisDetailIndex],
+        ["llm interpretation", rawPaths.llmInterpretationPacket],
+        ["generated", generated.length ? generated.join(", ") : null],
+        ["omitted", omitted.length ? omitted.join(", ") : null],
+        ["raw artifacts", artifacts.rawArtifacts || (manifest.rawArtifactRetention ? `retention: ${manifest.rawArtifactRetention}` : "see manifest")]
       ].filter(([, value]) => value);
       root.innerHTML = pairs.map(([label, value]) => {
         const text = String(value);
         const link = text.endsWith(".json") ? `<a href="${escapeAttr(text)}">${escapeHtml(text)}</a>` : escapeHtml(text);
         return `<div class="item"><strong>${escapeHtml(label)}</strong><p>${link}</p></div>`;
       }).join("");
+    }
+
+    function renderValidationStatus(validation) {
+      const root = document.getElementById("validation-status");
+      const rows = Object.entries(validation || {})
+        .filter(([, value]) => value && typeof value === "object")
+        .map(([key, value]) => {
+          const result = value.result || "unknown";
+          const counts = [
+            value.failedCheckCount != null && `failed: ${value.failedCheckCount}`,
+            value.warningCheckCount != null && `warnings: ${value.warningCheckCount}`
+          ].filter(Boolean).join(", ");
+          const klass = result === "fail" ? "fail" : result === "warn" ? "warn" : "ok";
+          return `<div class="item"><strong>${escapeHtml(key)}</strong><p><span class="${klass}">${escapeHtml(String(result))}</span>${counts ? ` ${escapeHtml(counts)}` : ""}</p></div>`;
+        });
+      root.innerHTML = rows.length ? rows.join("") : emptyItem();
     }
 
     function renderOmitted(counts, policy) {
@@ -704,6 +784,10 @@
 
     function emptyItem() {
       return `<div class="item"><p>No data loaded</p></div>`;
+    }
+
+    function compactJson(value) {
+      return JSON.stringify(value).slice(0, 260);
     }
 
     function escapeHtml(value) {
@@ -725,7 +809,7 @@
     try {
       const response = await fetch("./archsig-atom-viewer-data.json");
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      renderData(await response.json());
+      renderData(await response.json(), "archsig-atom-viewer-data.json", await loadCompanionReports());
     } catch (error) {
       renderData({
         schemaVersion: "archsig-atom-viewer-data-v0",
@@ -741,7 +825,7 @@
         omittedDetailCounts: {
           rawPacketDetail: "raw packet detail is not loaded by this viewer"
         }
-      });
+      }, "archsig-atom-viewer-data.json", {});
       status("Open archsig-atom-viewer-data.json");
     }
   </script>
