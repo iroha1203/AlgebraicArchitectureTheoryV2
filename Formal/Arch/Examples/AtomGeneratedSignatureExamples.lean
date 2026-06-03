@@ -571,4 +571,102 @@ theorem atomGeneratedSignature_fieldsig_forecast_correctness_boundary :
     atomGeneratedSignature_generatedFieldSigAnalysis
       |>.forecast_correctness_remains_boundary
 
+/--
+Positive acceptance: generated operation transport can be read as an AATCore
+transport transition, without collapsing transport into preservation.
+-/
+def atomGeneratedSignature_aatCoreTransportTransition :
+    AATCoreTransportTransition
+      generatedComponentLawModel.generatedAATCore
+      generatedComponentLawModel.generatedAATCore where
+  transportPackage := generatedComponentIdentityOperationTransportPackage
+  atomDelta := atomGeneratedSignature_atomDelta
+  semanticDelta := atomGeneratedSignature_semanticDelta
+  circuitDelta := atomGeneratedSignature_circuitDelta
+  transitionBoundary := True
+  fieldSigBoundary := True
+  nonConclusions := True
+
+theorem atomGeneratedSignature_transport_transition_does_not_create_atoms :
+    componentSystem.noToolOutputCreatesAtoms := by
+  exact
+    atomGeneratedSignature_aatCoreTransportTransition
+      |>.operation_does_not_create_atoms
+
+theorem atomGeneratedSignature_transport_moves_molecule :
+    ∃ targetMolecule,
+      (atomGeneratedSignature_aatCoreTransportTransition.transportPackage
+        |>.selectedTargetMolecule targetMolecule) ∧
+      generatedComponentLawModel.generatedAATCore.molecules targetMolecule := by
+  exact generatedComponentIdentityOperation_transports_molecule
+
+theorem atomGeneratedSignature_transport_moves_law :
+    ∃ targetLaw,
+      (atomGeneratedSignature_aatCoreTransportTransition.transportPackage
+        |>.selectedTargetLaw targetLaw) ∧
+      generatedComponentLawModel.generatedAATCore.laws targetLaw := by
+  exact generatedComponentIdentityOperation_transports_law
+
+noncomputable def atomGeneratedSignature_generatedArchSigTransportTransition :
+    GeneratedArchSigAATCoreTransportTransition
+      generatedComponentLawModel
+      generatedComponentLawModel where
+  transportTransition := atomGeneratedSignature_aatCoreTransportTransition
+  analyzesUsingAAT := True
+  analyzesUsingAATEvidence := trivial
+  transitionBoundary := True
+  transitionBoundaryEvidence := trivial
+  archsigDoesNotDefineAAT := True
+  archsigDoesNotDefineAATEvidence := trivial
+  fieldSigAnalysisBoundary := True
+  fieldSigAnalysisBoundaryEvidence := trivial
+  unknownRejectedUnmeasuredSeparated := True
+  unknownRejectedUnmeasuredSeparatedEvidence := trivial
+  measuredZeroBoundary := True
+  validationIsNotTheoremDischarge := True
+  nonConclusions := True
+
+theorem atomGeneratedSignature_generatedArchSigTransport_sourceLawful :
+    ArchitectureSignature.ArchitectureLawful
+      generatedComponentLawModel.toArchitectureLawModel := by
+  exact
+    atomGeneratedSignature_generatedArchSigTransportTransition
+      |>.source_bridge_architectureLawful
+
+theorem atomGeneratedSignature_generatedArchSigTransport_targetLawful :
+    ArchitectureSignature.ArchitectureLawful
+      generatedComponentLawModel.toArchitectureLawModel := by
+  exact
+    atomGeneratedSignature_generatedArchSigTransportTransition
+      |>.target_bridge_architectureLawful
+
+def atomGeneratedSignature_generatedFieldSigTransportAnalysis :
+    GeneratedFieldSigAATCoreTransportTransitionAnalysis
+      atomGeneratedSignature_generatedArchSigTransportTransition
+      atomGeneratedSignature_generatedArchSigSFTReport
+      atomGeneratedSignature_generatedSoftwareFieldEstimate
+      atomGeneratedSignature_sftForecastStatus where
+  reportBoundary := atomGeneratedSignature_generatedReportEstimateBoundary
+  readsGeneratedArchSigTransitionAsSFTAnalysisEvidence := trivial
+  fieldSigDoesNotDefineAATEvidence := trivial
+  transitionDoesNotCreateAtoms :=
+    atomGeneratedSignature_aatCoreTransportTransition
+      |>.operation_does_not_create_atoms
+  forecastBoundary := trivial
+  theoremBoundary := trivial
+  nonConclusions := trivial
+
+theorem atomGeneratedSignature_fieldsig_reads_generated_transport_transition :
+    atomGeneratedSignature_generatedArchSigTransportTransition
+      |>.fieldSigAnalysisBoundary := by
+  exact
+    atomGeneratedSignature_generatedFieldSigTransportAnalysis
+      |>.fieldsig_reads_generated_archsig_transport_transition_as_sft_analysis
+
+theorem atomGeneratedSignature_fieldsig_transport_forecast_correctness_boundary :
+    atomGeneratedSignature_sftForecastStatus.RecordsForecastBoundary := by
+  exact
+    atomGeneratedSignature_generatedFieldSigTransportAnalysis
+      |>.forecast_correctness_remains_boundary
+
 end Formal.Arch.AtomGeneratedSignatureExamples

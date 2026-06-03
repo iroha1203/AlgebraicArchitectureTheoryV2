@@ -383,6 +383,67 @@ theorem circuit_delta_does_not_create_atoms
 end AATCoreTransition
 
 /--
+SFT-visible transport transition between two Atom-axiomatized AAT cores.
+
+This is the transition shape used by generated operations whose selected
+source molecule/law is transported to a selected target molecule/law.  It keeps
+the same atom, semantic, and circuit delta surfaces as `AATCoreTransition`,
+but consumes an `OperationTransportPackage` rather than forcing preservation of
+the same molecule and law.
+-/
+structure AATCoreTransportTransition
+    {system : AtomAxiomSystem.{u, v}}
+    (source target : AAT.AATCore system) where
+  transportPackage : AAT.OperationTransportPackage source target
+  atomDelta : AATCoreAtomDelta source target
+  semanticDelta : AATCoreSemanticDelta atomDelta
+  circuitDelta : AATCoreCircuitDelta source target
+  transitionBoundary : Prop
+  fieldSigBoundary : Prop
+  nonConclusions : Prop
+
+namespace AATCoreTransportTransition
+
+variable {system : AtomAxiomSystem.{u, v}}
+variable {source target : AAT.AATCore system}
+
+/-- The selected transport-transition boundary remains explicit. -/
+def RecordsTransitionBoundary
+    (transition : AATCoreTransportTransition source target) : Prop :=
+  transition.transitionBoundary
+
+/-- FieldSig-related transport data remains an analysis boundary. -/
+def RecordsFieldSigBoundary
+    (transition : AATCoreTransportTransition source target) : Prop :=
+  transition.fieldSigBoundary
+
+/-- The underlying AAT transport package does not create atom existence. -/
+theorem operation_does_not_create_atoms
+    (transition : AATCoreTransportTransition source target) :
+    system.noToolOutputCreatesAtoms :=
+  transition.transportPackage.operation_does_not_create_atoms
+
+/-- The atom delta does not create atom existence. -/
+theorem atom_delta_does_not_create_atoms
+    (transition : AATCoreTransportTransition source target) :
+    system.noSFTEventCreatesAtoms :=
+  transition.atomDelta.delta_does_not_create_atoms
+
+/-- The semantic delta does not create atom existence. -/
+theorem semantic_delta_does_not_create_atoms
+    (transition : AATCoreTransportTransition source target) :
+    system.noSFTEventCreatesAtoms :=
+  transition.semanticDelta.semantic_delta_does_not_create_atoms
+
+/-- The circuit delta does not create atom existence. -/
+theorem circuit_delta_does_not_create_atoms
+    (transition : AATCoreTransportTransition source target) :
+    system.noSFTEventCreatesAtoms :=
+  transition.circuitDelta.circuit_delta_does_not_create_atoms
+
+end AATCoreTransportTransition
+
+/--
 SFT-side forecast status exposed at the AAT/SFT interface.
 
 The fields are intentionally proposition-valued. They track what an SFT
