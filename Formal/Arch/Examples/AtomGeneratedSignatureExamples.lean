@@ -1,6 +1,7 @@
 import Formal.Arch.AAT.GeneratedAnalyticRepresentation
 import Formal.Arch.AAT.GeneratedFeatureExtension
 import Formal.Arch.AAT.GeneratedSFT
+import Formal.Arch.Evolution.Chapter10ArchitectureExtensionFormula
 import Formal.Arch.Examples.AtomGeneratedMoleculeExamples
 
 namespace Formal.Arch.AtomGeneratedSignatureExamples
@@ -111,6 +112,78 @@ theorem atomGeneratedSignature_featureExtension_flatWithin :
       generatedComponentObject.generatedIdentityExtensionFlatnessModel
       generatedComponentObject.generatedIdentityExtensionComponentUniverse := by
   exact generatedComponentLawModel.generatedFeatureExtension_architectureFlatWithin
+
+def atomGeneratedSignature_extensionWitness :
+    ExtensionObstructionWitness
+      generatedComponentObject.generatedIdentityFeatureExtension Unit where
+  witness := ()
+  classifiesAs := ExtensionObstructionClass.residualCoverageGap
+
+theorem atomGeneratedSignature_extensionFormula_structural :
+    ClassifiedAsInheritedCore
+        generatedComponentObject.generatedIdentityFeatureExtension
+        generatedComponentObject.generatedIdentityExtensionComponentUniverse
+        atomGeneratedSignature_extensionWitness ∨
+      ClassifiedAsFeatureLocal
+        generatedComponentObject.generatedIdentityFeatureExtension
+        generatedComponentObject.generatedIdentityExtensionComponentUniverse
+        atomGeneratedSignature_extensionWitness ∨
+      ClassifiedAsInteraction
+        generatedComponentObject.generatedIdentityFeatureExtension
+        generatedComponentObject.generatedIdentityExtensionComponentUniverse
+        atomGeneratedSignature_extensionWitness ∨
+      ClassifiedAsLiftingFailure
+        generatedComponentObject.generatedIdentityFeatureExtension
+        generatedComponentObject.generatedIdentityExtensionComponentUniverse
+        atomGeneratedSignature_extensionWitness ∨
+      ClassifiedAsFillingFailure
+        generatedComponentObject.generatedIdentityFeatureExtension
+        generatedComponentObject.generatedIdentityExtensionComponentUniverse
+        atomGeneratedSignature_extensionWitness ∨
+      ClassifiedAsComplexityTransfer
+        generatedComponentObject.generatedIdentityFeatureExtension
+        generatedComponentObject.generatedIdentityExtensionComponentUniverse
+        atomGeneratedSignature_extensionWitness ∨
+      ClassifiedAsResidualCoverageGap
+        generatedComponentObject.generatedIdentityFeatureExtension
+        generatedComponentObject.generatedIdentityExtensionComponentUniverse
+        atomGeneratedSignature_extensionWitness := by
+  exact
+    Formal.Arch.Chapter10ArchitectureExtensionFormula.generatedIdentityArchitectureExtensionFormula_structural
+      generatedComponentObject atomGeneratedSignature_extensionWitness
+
+theorem atomGeneratedSignature_extensionFormula_multilabel_structural :
+    MultiLabelClassifiedAsInheritedCore
+        generatedComponentObject.generatedIdentityFeatureExtension
+        generatedComponentObject.generatedIdentityExtensionComponentUniverse
+        atomGeneratedSignature_extensionWitness.toMultiLabel ∨
+      MultiLabelClassifiedAsFeatureLocal
+        generatedComponentObject.generatedIdentityFeatureExtension
+        generatedComponentObject.generatedIdentityExtensionComponentUniverse
+        atomGeneratedSignature_extensionWitness.toMultiLabel ∨
+      MultiLabelClassifiedAsInteraction
+        generatedComponentObject.generatedIdentityFeatureExtension
+        generatedComponentObject.generatedIdentityExtensionComponentUniverse
+        atomGeneratedSignature_extensionWitness.toMultiLabel ∨
+      MultiLabelClassifiedAsLiftingFailure
+        generatedComponentObject.generatedIdentityFeatureExtension
+        generatedComponentObject.generatedIdentityExtensionComponentUniverse
+        atomGeneratedSignature_extensionWitness.toMultiLabel ∨
+      MultiLabelClassifiedAsFillingFailure
+        generatedComponentObject.generatedIdentityFeatureExtension
+        generatedComponentObject.generatedIdentityExtensionComponentUniverse
+        atomGeneratedSignature_extensionWitness.toMultiLabel ∨
+      MultiLabelClassifiedAsComplexityTransfer
+        generatedComponentObject.generatedIdentityFeatureExtension
+        generatedComponentObject.generatedIdentityExtensionComponentUniverse
+        atomGeneratedSignature_extensionWitness.toMultiLabel ∨
+      MultiLabelClassifiedAsResidualCoverageGap
+        generatedComponentObject.generatedIdentityFeatureExtension
+        generatedComponentObject.generatedIdentityExtensionComponentUniverse
+        atomGeneratedSignature_extensionWitness.toMultiLabel := by
+  exact
+    Formal.Arch.Chapter10ArchitectureExtensionFormula.generatedIdentityArchitectureExtensionFormula_multilabel_structural
+      generatedComponentObject atomGeneratedSignature_extensionWitness.toMultiLabel
 
 /--
 Positive acceptance: the generated Signature theorem package is available as

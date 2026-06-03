@@ -1,3 +1,4 @@
+import Formal.Arch.AAT.GeneratedFeatureExtension
 import Formal.Arch.Extension.ArchitectureExtensionFormula
 
 /-!
@@ -13,6 +14,8 @@ coverage, or extractor-completeness claims.
 -/
 
 namespace Formal.Arch
+
+universe u v z
 
 namespace Chapter10ArchitectureExtensionFormula
 
@@ -89,6 +92,7 @@ def representativeDeclarations : Candidate -> List String
        "ClassifiedAsFillingFailure",
        "ClassifiedAsComplexityTransfer",
        "ClassifiedAsResidualCoverageGap",
+       "Chapter10ArchitectureExtensionFormula.generatedIdentityArchitectureExtensionFormula_structural",
        "ArchitectureExtensionFormula_structural"]
   | multiLabelClassification =>
       ["MultiLabelClassifiedAsInheritedCore",
@@ -98,6 +102,7 @@ def representativeDeclarations : Candidate -> List String
        "MultiLabelClassifiedAsFillingFailure",
        "MultiLabelClassifiedAsComplexityTransfer",
        "MultiLabelClassifiedAsResidualCoverageGap",
+       "Chapter10ArchitectureExtensionFormula.generatedIdentityArchitectureExtensionFormula_multilabel_structural",
        "ArchitectureExtensionFormula_multilabel_structural"]
   | fillingFailureBridge =>
       ["FillingFailureWitnessPayload",
@@ -168,16 +173,18 @@ def schematicCorrespondences : Candidate -> List SchematicCorrespondence
   | singleLabelClassification =>
       [{ schematic := "ArchitectureExtensionFormula_structural",
          leanDeclarations :=
-          ["ArchitectureExtensionFormula_structural"],
+          ["ArchitectureExtensionFormula_structural",
+           "Chapter10ArchitectureExtensionFormula.generatedIdentityArchitectureExtensionFormula_structural"],
          reading :=
-          "every selected single-label witness is covered by at least one of the seven classification predicates",
+          "every selected single-label witness is covered by at least one of the seven classification predicates, including generated identity feature extensions",
          status := "proved" }]
   | multiLabelClassification =>
       [{ schematic := "ArchitectureExtensionFormula_multilabel_structural",
          leanDeclarations :=
-          ["ArchitectureExtensionFormula_multilabel_structural"],
+          ["ArchitectureExtensionFormula_multilabel_structural",
+           "Chapter10ArchitectureExtensionFormula.generatedIdentityArchitectureExtensionFormula_multilabel_structural"],
          reading :=
-          "every selected multi-label witness is covered by at least one of the seven multi-label predicates",
+          "every selected multi-label witness is covered by at least one of the seven multi-label predicates, including generated identity feature extensions",
          status := "proved" }]
   | fillingFailureBridge =>
       [{ schematic := "filling failure classified as extension obstruction",
@@ -251,6 +258,104 @@ def nonConclusionBoundary : Candidate -> String
       "selected coverage diagnostic only; no static split failure, runtime / semantic flatness failure, or extractor completeness"
 
 end Candidate
+
+/--
+Atom-generated specialization of the single-label structural architecture
+extension formula.
+
+The feature extension and coverage premise are generated from the same
+`GeneratedArchitectureObject`; callers do not supply a hand-authored
+`FeatureExtension`.
+-/
+theorem generatedIdentityArchitectureExtensionFormula_structural
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    (object : AAT.GeneratedArchitectureObject presentation)
+    {Witness : Type z}
+    (witness :
+      ExtensionObstructionWitness
+        object.generatedIdentityFeatureExtension Witness) :
+    ClassifiedAsInheritedCore
+        object.generatedIdentityFeatureExtension
+        object.generatedIdentityExtensionComponentUniverse
+        witness ∨
+      ClassifiedAsFeatureLocal
+        object.generatedIdentityFeatureExtension
+        object.generatedIdentityExtensionComponentUniverse
+        witness ∨
+      ClassifiedAsInteraction
+        object.generatedIdentityFeatureExtension
+        object.generatedIdentityExtensionComponentUniverse
+        witness ∨
+      ClassifiedAsLiftingFailure
+        object.generatedIdentityFeatureExtension
+        object.generatedIdentityExtensionComponentUniverse
+        witness ∨
+      ClassifiedAsFillingFailure
+        object.generatedIdentityFeatureExtension
+        object.generatedIdentityExtensionComponentUniverse
+        witness ∨
+      ClassifiedAsComplexityTransfer
+        object.generatedIdentityFeatureExtension
+        object.generatedIdentityExtensionComponentUniverse
+        witness ∨
+      ClassifiedAsResidualCoverageGap
+        object.generatedIdentityFeatureExtension
+        object.generatedIdentityExtensionComponentUniverse
+        witness := by
+  exact
+    ArchitectureExtensionFormula_structural
+      object.generatedIdentityFeatureExtension
+      object.generatedIdentityExtensionComponentUniverse
+      object.generatedIdentityExtensionCoverageComplete
+      witness
+
+/--
+Atom-generated specialization of the multi-label structural architecture
+extension formula.
+-/
+theorem generatedIdentityArchitectureExtensionFormula_multilabel_structural
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    (object : AAT.GeneratedArchitectureObject presentation)
+    {Witness : Type z}
+    (witness :
+      MultiLabelExtensionObstructionWitness
+        object.generatedIdentityFeatureExtension Witness) :
+    MultiLabelClassifiedAsInheritedCore
+        object.generatedIdentityFeatureExtension
+        object.generatedIdentityExtensionComponentUniverse
+        witness ∨
+      MultiLabelClassifiedAsFeatureLocal
+        object.generatedIdentityFeatureExtension
+        object.generatedIdentityExtensionComponentUniverse
+        witness ∨
+      MultiLabelClassifiedAsInteraction
+        object.generatedIdentityFeatureExtension
+        object.generatedIdentityExtensionComponentUniverse
+        witness ∨
+      MultiLabelClassifiedAsLiftingFailure
+        object.generatedIdentityFeatureExtension
+        object.generatedIdentityExtensionComponentUniverse
+        witness ∨
+      MultiLabelClassifiedAsFillingFailure
+        object.generatedIdentityFeatureExtension
+        object.generatedIdentityExtensionComponentUniverse
+        witness ∨
+      MultiLabelClassifiedAsComplexityTransfer
+        object.generatedIdentityFeatureExtension
+        object.generatedIdentityExtensionComponentUniverse
+        witness ∨
+      MultiLabelClassifiedAsResidualCoverageGap
+        object.generatedIdentityFeatureExtension
+        object.generatedIdentityExtensionComponentUniverse
+        witness := by
+  exact
+    ArchitectureExtensionFormula_multilabel_structural
+      object.generatedIdentityFeatureExtension
+      object.generatedIdentityExtensionComponentUniverse
+      object.generatedIdentityExtensionCoverageComplete
+      witness
 
 end Chapter10ArchitectureExtensionFormula
 
