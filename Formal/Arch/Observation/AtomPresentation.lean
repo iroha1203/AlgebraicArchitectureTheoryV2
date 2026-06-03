@@ -121,6 +121,8 @@ structure AtomPresentation (system : AtomAxiomSystem.{u, v})
   rejectedIsNotMeasuredZeroEvidence : rejectedIsNotMeasuredZero
   uncertainIsNotMeasuredZero : Prop
   uncertainIsNotMeasuredZeroEvidence : uncertainIsNotMeasuredZero
+  missingIsNotMeasuredZero : Prop
+  missingIsNotMeasuredZeroEvidence : missingIsNotMeasuredZero
   missingIsNotAtomAbsence : Prop
   missingIsNotAtomAbsenceEvidence : missingIsNotAtomAbsence
   nonConclusions : Prop
@@ -150,6 +152,14 @@ theorem uncertain_is_not_measured_zero
     (presentation : AtomPresentation system Evidence) :
     presentation.uncertainIsNotMeasuredZero :=
   presentation.uncertainIsNotMeasuredZeroEvidence
+
+/-- Missing observations are not measured-zero atoms. -/
+theorem missing_is_not_measured_zero
+    {system : AtomAxiomSystem.{u, v}}
+    {Evidence : Type e}
+    (presentation : AtomPresentation system Evidence) :
+    presentation.missingIsNotMeasuredZero :=
+  presentation.missingIsNotMeasuredZeroEvidence
 
 /-- Missing observation is not atom absence. -/
 theorem missing_is_not_atom_absence

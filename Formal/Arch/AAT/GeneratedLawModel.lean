@@ -148,6 +148,26 @@ theorem generatedArchitectureLawful
       model.generated_boundary_policy_sound,
       model.generated_abstraction_policy_sound⟩
 
+/--
+Generated objects produce generated law models once the generated graph
+acyclicity premise is supplied.
+
+The existing `ArchitectureLawModel` is constructed by `toArchitectureLawModel`;
+it is not a caller-supplied representation field.
+-/
+theorem generated_law_model_from_generated_object
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : GeneratedArchitectureObject presentation}
+    (hWalkAcyclic : WalkAcyclic (GeneratedArchGraph object))
+    (lawModelBoundary : Prop) :
+    ∃ model : GeneratedArchitectureLawModel object,
+      ArchitectureSignature.ArchitectureLawful model.toArchitectureLawModel := by
+  let model : GeneratedArchitectureLawModel object :=
+    { generatedWalkAcyclic := hWalkAcyclic
+      lawModelBoundary := lawModelBoundary }
+  exact ⟨model, model.generatedArchitectureLawful⟩
+
 /-- Signature required axes are zero for generated law models. -/
 def generatedSignatureOf
     {system : AtomAxiomSystem.{u, v}}

@@ -62,6 +62,14 @@ theorem raw_candidate_is_not_atom_truth
     layer.presentation.rawCandidateIsNotAtomTruth :=
   layer.presentation.raw_candidate_is_not_atom_truth
 
+/-- Missing observations in an ArchMap presentation are not measured-zero atoms. -/
+theorem missing_is_not_measured_zero
+    {system : AtomAxiomSystem.{u, v}}
+    {Source : Type s} {Evidence : Type e}
+    (layer : ArchMapObservationLayer system Source Evidence) :
+    layer.presentation.missingIsNotMeasuredZero :=
+  layer.presentation.missing_is_not_measured_zero
+
 /-- Missing observations in an ArchMap presentation are not atom absence. -/
 theorem missing_is_not_atom_absence
     {system : AtomAxiomSystem.{u, v}}

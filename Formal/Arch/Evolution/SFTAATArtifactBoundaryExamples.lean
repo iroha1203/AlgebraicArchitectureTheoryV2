@@ -118,6 +118,8 @@ def artifactAtomPresentation :
   rejectedIsNotMeasuredZeroEvidence := trivial
   uncertainIsNotMeasuredZero := True
   uncertainIsNotMeasuredZeroEvidence := trivial
+  missingIsNotMeasuredZero := True
+  missingIsNotMeasuredZeroEvidence := trivial
   missingIsNotAtomAbsence := True
   missingIsNotAtomAbsenceEvidence := trivial
   nonConclusions := True

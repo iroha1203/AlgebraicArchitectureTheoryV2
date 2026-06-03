@@ -1,4 +1,5 @@
 import Formal.Arch.AAT.GeneratedGraph
+import Formal.Arch.Observation.AtomPresentation
 
 namespace Formal.Arch.IncompatibleAtomCompositionExamples
 
@@ -470,5 +471,74 @@ theorem effect_atom_without_authority_not_law_satisfied :
         intro authority hAuthority
         cases authority.val
         cases hAuthority)
+
+def concernHintCandidate :
+    Observation.RawAtomCandidate exampleSystem String where
+  predicate := AtomKind.relation
+  evidence := "concern-only"
+  candidateBoundary := True
+  notAtomTruthBoundary := True
+  nonConclusions := True
+
+def concernHintMolecule : AAT.Molecule exampleSystem where
+  atoms := fun _ => False
+  finiteConfiguration := True
+  nonConclusions := True
+
+def concernHintLaw : AAT.DesignLaw exampleSystem where
+  Bad := fun _ => False
+  evaluationBoundary := True
+  nonConclusions := True
+
+theorem concern_hint_is_raw_candidate :
+    Observation.RawAtomCandidate.Status =
+      Observation.AtomObservationStatus.rawCandidate := by
+  rfl
+
+theorem concern_hint_does_not_create_atoms :
+    exampleSystem.noObservationBoundaryCreatesAtoms := by
+  exact concernHintCandidate.does_not_create_atoms
+
+theorem concern_hint_not_obstruction_circuit :
+    ¬ AAT.ObstructionCircuit concernHintLaw concernHintMolecule := by
+  intro hCircuit
+  exact AAT.obstructionCircuit_bad hCircuit
+
+def missingConcernObservation :
+    Observation.AtomObservationGap exampleSystem String where
+  evidence := "missing-concern"
+  gapBoundary := True
+  doesNotImplyAtomAbsence := True
+  doesNotImplyAtomAbsenceEvidence := trivial
+  nonConclusions := True
+
+def concernAtomPresentation :
+    Observation.AtomPresentation exampleSystem String where
+  rawCandidate := fun candidate => candidate = concernHintCandidate
+  observed := fun _ => False
+  validated := fun _ => False
+  rejected := fun _ => False
+  uncertain := fun candidate => candidate = concernHintCandidate
+  missing := fun gap => gap = missingConcernObservation
+  validationBoundary := True
+  rawCandidateIsNotAtomTruth := True
+  rawCandidateIsNotAtomTruthEvidence := trivial
+  rejectedIsNotMeasuredZero := True
+  rejectedIsNotMeasuredZeroEvidence := trivial
+  uncertainIsNotMeasuredZero := True
+  uncertainIsNotMeasuredZeroEvidence := trivial
+  missingIsNotMeasuredZero := True
+  missingIsNotMeasuredZeroEvidence := trivial
+  missingIsNotAtomAbsence := True
+  missingIsNotAtomAbsenceEvidence := trivial
+  nonConclusions := True
+
+theorem observation_gap_is_not_measured_zero :
+    concernAtomPresentation.missingIsNotMeasuredZero := by
+  exact concernAtomPresentation.missing_is_not_measured_zero
+
+theorem observation_gap_is_not_atom_absence :
+    concernAtomPresentation.missingIsNotAtomAbsence := by
+  exact concernAtomPresentation.missing_is_not_atom_absence
 
 end Formal.Arch.IncompatibleAtomCompositionExamples

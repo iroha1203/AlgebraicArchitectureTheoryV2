@@ -45,6 +45,8 @@ def exampleAtomPresentation :
   rejectedIsNotMeasuredZeroEvidence := trivial
   uncertainIsNotMeasuredZero := True
   uncertainIsNotMeasuredZeroEvidence := trivial
+  missingIsNotMeasuredZero := True
+  missingIsNotMeasuredZeroEvidence := trivial
   missingIsNotAtomAbsence := True
   missingIsNotAtomAbsenceEvidence := trivial
   nonConclusions := True
@@ -86,6 +88,10 @@ theorem presentation_missing_is_not_atom_absence :
     exampleAtomPresentation.missingIsNotAtomAbsence := by
   exact exampleAtomPresentation.missing_is_not_atom_absence
 
+theorem presentation_missing_is_not_measured_zero :
+    exampleAtomPresentation.missingIsNotMeasuredZero := by
+  exact exampleAtomPresentation.missing_is_not_measured_zero
+
 theorem archMap_observes_atoms :
     exampleArchMapObservationLayer.observesAtoms := by
   exact exampleArchMapObservationLayer.observes_atoms
@@ -97,5 +103,9 @@ theorem archMap_does_not_create_atoms :
 theorem archMap_does_not_define_aat :
     exampleArchMapObservationLayer.archMapDoesNotDefineAAT := by
   exact exampleArchMapObservationLayer.archmap_does_not_define_aat
+
+theorem archMap_missing_is_not_measured_zero :
+    exampleArchMapObservationLayer.presentation.missingIsNotMeasuredZero := by
+  exact exampleArchMapObservationLayer.missing_is_not_measured_zero
 
 end Formal.Arch.ArchMapObservationExamples
