@@ -1,5 +1,6 @@
 import Formal.Arch.AAT.GeneratedObject
 import Formal.Arch.Core.Graph
+import Formal.Arch.Core.Layering
 
 namespace Formal.Arch
 namespace AAT
@@ -90,6 +91,43 @@ def GeneratedRuntimeGraph {system : AtomAxiomSystem.{u, v}}
     (object : GeneratedArchitectureObject presentation) :
     RuntimeDependencyGraph (GeneratedCarrier object) where
   edge := GeneratedRuntimeRelation object
+
+/--
+Generated runtime graph rank certificate.
+
+The rank is assigned to carriers of the generated object, and every generated
+runtime-interaction edge must strictly decrease it. This keeps runtime edge
+acyclicity as generated structure rather than an external graph assumption.
+-/
+structure GeneratedRuntimeGraphRank {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    (object : GeneratedArchitectureObject presentation) where
+  rank : GeneratedCarrier object -> Nat
+  edgeRankDecreases :
+    ∀ {source target : GeneratedCarrier object},
+      (GeneratedRuntimeGraph object).edge source target ->
+        rank target < rank source
+
+namespace GeneratedRuntimeGraphRank
+
+def strictLayering
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : GeneratedArchitectureObject presentation}
+    (certificate : GeneratedRuntimeGraphRank object) :
+    StrictLayering (GeneratedRuntimeGraph object) certificate.rank :=
+  fun hEdge => certificate.edgeRankDecreases hEdge
+
+theorem walkAcyclic
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : GeneratedArchitectureObject presentation}
+    (certificate : GeneratedRuntimeGraphRank object) :
+    WalkAcyclic (GeneratedRuntimeGraph object) :=
+  walkAcyclic_of_acyclic
+    (acyclic_of_strictLayering certificate.strictLayering)
+
+end GeneratedRuntimeGraphRank
 
 namespace GeneratedArchitectureObject
 

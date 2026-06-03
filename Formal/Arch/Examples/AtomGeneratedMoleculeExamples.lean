@@ -1221,6 +1221,69 @@ theorem directedRuntimeGeneratedGraph_no_database_to_api_edge :
     exact hSourceKind
   · cases hInteraction.interactionFamily
 
+def directedRuntimeCarrierRank
+    (carrier : AAT.GeneratedCarrier directedRuntimeGeneratedObject) : Nat :=
+  match carrier.val with
+  | DirectedRuntimeAtom.api => 1
+  | DirectedRuntimeAtom.apiRuntimeDatabase => 2
+  | DirectedRuntimeAtom.database => 0
+
+theorem directedRuntimeGeneratedGraph_edge_only_api_to_database
+    {source target : AAT.GeneratedCarrier directedRuntimeGeneratedObject}
+    (hEdge : (AAT.GeneratedRuntimeGraph directedRuntimeGeneratedObject).edge
+      source target) :
+    source.val = DirectedRuntimeAtom.api ∧
+      target.val = DirectedRuntimeAtom.database := by
+  rcases hEdge with ⟨interaction, hInteraction⟩
+  rcases interaction with ⟨interactionAtom, hInteractionAtom⟩
+  rcases source with ⟨sourceAtom, hSourceAtom⟩
+  rcases target with ⟨targetAtom, hTargetAtom⟩
+  cases interactionAtom
+  · cases hInteraction.interactionFamily
+  · constructor
+    · cases sourceAtom
+      · rfl
+      · exact False.elim (hInteraction.interactionSourceDistinct rfl)
+      · have hSourceKind : False := by
+          simpa [AAT.GeneratedMolecule.compatible_pairs,
+            AAT.CompositionGraph.compatible_pairs,
+            directedRuntimeGeneratedObject,
+            directedRuntimeGeneratedMolecule,
+            directedRuntimeCompositionGraph,
+            directedRuntimeDatabaseTargetComposition,
+            directedDatabaseRuntimeTargetComposition,
+            runtimeTargetPort]
+            using hInteraction.sourceCompositionUsesRuntimeSource.1
+        exact False.elim hSourceKind
+    · cases targetAtom
+      · have hTargetKind : False := by
+          simpa [AAT.GeneratedMolecule.compatible_pairs,
+            AAT.CompositionGraph.compatible_pairs,
+            directedRuntimeGeneratedObject,
+            directedRuntimeGeneratedMolecule,
+            directedRuntimeCompositionGraph,
+            directedRuntimeApiSourceComposition,
+            directedApiRuntimeSourceComposition,
+            runtimeSourcePort]
+            using hInteraction.targetCompositionUsesRuntimeTarget.1
+        exact False.elim hTargetKind
+      · exact False.elim (hInteraction.interactionTargetDistinct rfl)
+      · rfl
+  · cases hInteraction.interactionFamily
+
+def directedRuntimeGraphRank :
+    AAT.GeneratedRuntimeGraphRank directedRuntimeGeneratedObject where
+  rank := directedRuntimeCarrierRank
+  edgeRankDecreases := by
+    intro source target hEdge
+    rcases directedRuntimeGeneratedGraph_edge_only_api_to_database hEdge with
+      ⟨hSource, hTarget⟩
+    simp [directedRuntimeCarrierRank, hSource, hTarget]
+
+theorem directedRuntimeGraphRank_walkAcyclic :
+    WalkAcyclic (AAT.GeneratedRuntimeGraph directedRuntimeGeneratedObject) :=
+  directedRuntimeGraphRank.walkAcyclic
+
 def selectedApiOnlyAtoms : ComponentAtom -> Prop
   | ComponentAtom.api => True
   | ComponentAtom.database => False
