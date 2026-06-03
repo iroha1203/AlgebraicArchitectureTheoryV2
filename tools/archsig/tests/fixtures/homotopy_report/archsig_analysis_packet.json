@@ -553,6 +553,786 @@
       ]
     }
   ],
+  "generatedAtomShapes": [
+    {
+      "atomShapeId": "atom-shape:atom-cache-read",
+      "atomObservationRef": "atom:cache-read",
+      "family": "relation",
+      "axis": "static",
+      "subjectRef": "order.read",
+      "predicate": "cache read path can return an order view",
+      "objectSlots": [
+        "objectSlot:0:cacheorder:axis=static",
+        "objectSlot:1:orderview:axis=static"
+      ],
+      "payloadSlots": [
+        "payload:observationStatus:observed",
+        "payload:confidence:high"
+      ],
+      "direction": "outgoing",
+      "arity": 3,
+      "ports": [
+        "object:cacheorder:axis=static",
+        "object:orderview:axis=static",
+        "subject:order-read:family=relation:axis=static"
+      ],
+      "valenceSummary": "subject port plus 2 object port(s); shape is generated from atom family, predicate, subject, object slots, and payload slots",
+      "evidenceBoundary": "generated AtomShape is computed from ArchMap atom observation fields; source refs and confidence remain observation metadata",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    },
+    {
+      "atomShapeId": "atom-shape:atom-repository-read",
+      "atomObservationRef": "atom:repository-read",
+      "family": "relation",
+      "axis": "static",
+      "subjectRef": "order.read",
+      "predicate": "repository read path can return an order view",
+      "objectSlots": [
+        "objectSlot:0:repositoryorder:axis=static",
+        "objectSlot:1:orderview:axis=static"
+      ],
+      "payloadSlots": [
+        "payload:observationStatus:observed",
+        "payload:confidence:high"
+      ],
+      "direction": "outgoing",
+      "arity": 3,
+      "ports": [
+        "object:orderview:axis=static",
+        "object:repositoryorder:axis=static",
+        "subject:order-read:family=relation:axis=static"
+      ],
+      "valenceSummary": "subject port plus 2 object port(s); shape is generated from atom family, predicate, subject, object slots, and payload slots",
+      "evidenceBoundary": "generated AtomShape is computed from ArchMap atom observation fields; source refs and confidence remain observation metadata",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    },
+    {
+      "atomShapeId": "atom-shape:atom-event-projection",
+      "atomObservationRef": "atom:event-projection",
+      "family": "effect",
+      "axis": "semantic",
+      "subjectRef": "order.projection",
+      "predicate": "event projection updates order read model",
+      "objectSlots": [
+        "objectSlot:0:orderevent:axis=semantic",
+        "objectSlot:1:orderview:axis=semantic"
+      ],
+      "payloadSlots": [
+        "payload:observationStatus:observed",
+        "payload:confidence:medium"
+      ],
+      "direction": "outgoing",
+      "arity": 3,
+      "ports": [
+        "object:orderevent:axis=semantic",
+        "object:orderview:axis=semantic",
+        "subject:order-projection:family=effect:axis=semantic"
+      ],
+      "valenceSummary": "subject port plus 2 object port(s); shape is generated from atom family, predicate, subject, object slots, and payload slots",
+      "evidenceBoundary": "generated AtomShape is computed from ArchMap atom observation fields; source refs and confidence remain observation metadata",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    },
+    {
+      "atomShapeId": "atom-shape:atom-retry-idempotency",
+      "atomObservationRef": "atom:retry-idempotency",
+      "family": "effect",
+      "axis": "semantic",
+      "subjectRef": "payment.charge",
+      "predicate": "retry path should preserve idempotent charge effect",
+      "objectSlots": [
+        "objectSlot:0:retrycharge:axis=semantic",
+        "objectSlot:1:singlecharge:axis=semantic"
+      ],
+      "payloadSlots": [
+        "payload:observationStatus:observed",
+        "payload:confidence:medium"
+      ],
+      "direction": "outgoing",
+      "arity": 3,
+      "ports": [
+        "object:retrycharge:axis=semantic",
+        "object:singlecharge:axis=semantic",
+        "subject:payment-charge:family=effect:axis=semantic"
+      ],
+      "valenceSummary": "subject port plus 2 object port(s); shape is generated from atom family, predicate, subject, object slots, and payload slots",
+      "evidenceBoundary": "generated AtomShape is computed from ArchMap atom observation fields; source refs and confidence remain observation metadata",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    },
+    {
+      "atomShapeId": "atom-shape:atom-authorization-bypass",
+      "atomObservationRef": "atom:authorization-bypass",
+      "family": "authority",
+      "axis": "boundary",
+      "subjectRef": "auth.adminBypassRead",
+      "predicate": "admin bypass read requires explicit policy or test filler evidence",
+      "objectSlots": [
+        "objectSlot:0:adminbypass:axis=boundary",
+        "objectSlot:1:orderview:axis=boundary"
+      ],
+      "payloadSlots": [
+        "payload:observationStatus:observed",
+        "payload:confidence:medium"
+      ],
+      "direction": "neutral",
+      "arity": 3,
+      "ports": [
+        "object:adminbypass:axis=boundary",
+        "object:orderview:axis=boundary",
+        "subject:auth-adminbypassread:family=authority:axis=boundary"
+      ],
+      "valenceSummary": "subject port plus 2 object port(s); shape is generated from atom family, predicate, subject, object slots, and payload slots",
+      "evidenceBoundary": "generated AtomShape is computed from ArchMap atom observation fields; source refs and confidence remain observation metadata",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    },
+    {
+      "atomShapeId": "atom-shape:atom-coupon-tax-rounding",
+      "atomObservationRef": "atom:coupon-tax-rounding",
+      "family": "contractSpecification",
+      "axis": "specification",
+      "subjectRef": "pricing.checkoutTotal",
+      "predicate": "coupon tax rounding paths compare PaymentAmount and ReceiptAmount",
+      "objectSlots": [
+        "objectSlot:0:paymentamount:axis=specification",
+        "objectSlot:1:receiptamount:axis=specification"
+      ],
+      "payloadSlots": [
+        "payload:observationStatus:observed",
+        "payload:confidence:high"
+      ],
+      "direction": "neutral",
+      "arity": 3,
+      "ports": [
+        "object:paymentamount:axis=specification",
+        "object:receiptamount:axis=specification",
+        "subject:pricing-checkouttotal:family=contractSpecification:axis=specification"
+      ],
+      "valenceSummary": "subject port plus 2 object port(s); shape is generated from atom family, predicate, subject, object slots, and payload slots",
+      "evidenceBoundary": "generated AtomShape is computed from ArchMap atom observation fields; source refs and confidence remain observation metadata",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    }
+  ],
+  "generatedMolecules": [
+    {
+      "generatedMoleculeId": "generated-molecule:molecule-homotopy-report-fixture",
+      "sourceMoleculeObservationRef": "molecule:homotopy-report-fixture",
+      "generationStatus": "generatedCompatibleConfiguration",
+      "atomObservationRefs": [
+        "atom:cache-read",
+        "atom:repository-read",
+        "atom:event-projection",
+        "atom:retry-idempotency",
+        "atom:authorization-bypass",
+        "atom:coupon-tax-rounding"
+      ],
+      "atomShapeRefs": [
+        "atom-shape:atom-cache-read",
+        "atom-shape:atom-repository-read",
+        "atom-shape:atom-event-projection",
+        "atom-shape:atom-retry-idempotency",
+        "atom-shape:atom-authorization-bypass",
+        "atom-shape:atom-coupon-tax-rounding"
+      ],
+      "compatiblePairCount": 15,
+      "requiredPortStatus": "required ports are represented by observed AtomShape ports in this bounded molecule",
+      "notArbitrarySetBoundary": "generated molecule is materialized from an ArchMap molecule observation and its observed AtomShape refs; arbitrary atom sets are not promoted",
+      "evidenceBoundary": "compatibility is a bounded ArchSig construction over supplied atom refs, not a Lean proof of global molecule minimality",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    }
+  ],
+  "generatedLawInputs": [
+    {
+      "generatedLawInputId": "generated-law-input:molecule-reading-molecule-homotopy-report-fixture",
+      "generatedMoleculeRef": "generated-molecule:molecule-homotopy-report-fixture",
+      "sourceMoleculeReadingRef": "molecule-reading:molecule-homotopy-report-fixture",
+      "lawRefs": [
+        "law:homotopy-report-fixture"
+      ],
+      "signatureAxisRefs": [
+        "sig-axis:homotopy-report-fixture"
+      ],
+      "atomShapeRefs": [
+        "atom-shape:atom-cache-read",
+        "atom-shape:atom-repository-read",
+        "atom-shape:atom-event-projection",
+        "atom-shape:atom-retry-idempotency",
+        "atom-shape:atom-authorization-bypass",
+        "atom-shape:atom-coupon-tax-rounding"
+      ],
+      "lawInputKind": "generatedArchitectureLawModelInput",
+      "evaluationStatus": "availableForSelectedLawUniverse",
+      "coverageBoundary": "generated law input is built from observed molecule and selected LawPolicy laws; missing ArchMap evidence remains a coverage blocker",
+      "evidenceBoundary": "law input is an ArchSig middle-layer construction, not a hand-authored ArchitectureLawModel",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    }
+  ],
+  "generatedObstructions": [
+    {
+      "generatedObstructionId": "generated-obstruction:obstruction-homotopy-report-fixture-computed",
+      "obstructionCircuitRef": "obstruction:homotopy-report-fixture:computed",
+      "generatedLawInputRefs": [
+        "generated-law-input:molecule-reading-molecule-homotopy-report-fixture"
+      ],
+      "generatedMoleculeRefs": [
+        "generated-molecule:molecule-homotopy-report-fixture"
+      ],
+      "atomShapeRefs": [
+        "atom-shape:atom-authorization-bypass",
+        "atom-shape:atom-cache-read",
+        "atom-shape:atom-coupon-tax-rounding",
+        "atom-shape:atom-repository-read"
+      ],
+      "obstructionKind": "HomotopyReportFixtureCircuit",
+      "measurementStatus": "locallyBlockedByCoverageGap",
+      "evidenceBoundary": "generated obstruction is backed by generated molecule / law input refs and selected obstruction circuit evidence",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    }
+  ],
+  "generatedRepairTargets": [
+    {
+      "repairTargetId": "generated-repair-target:repair-obstruction-homotopy-report-fixture-computed",
+      "targetKind": "shapeLevelGeneratedRepairTarget",
+      "sourceRepairCandidateRef": "repair:obstruction-homotopy-report-fixture-computed",
+      "generatedObstructionRefs": [
+        "generated-obstruction:obstruction-homotopy-report-fixture-computed"
+      ],
+      "generatedMoleculeRefs": [
+        "generated-molecule:molecule-homotopy-report-fixture"
+      ],
+      "atomShapeRefs": [
+        "atom-shape:atom-authorization-bypass",
+        "atom-shape:atom-cache-read",
+        "atom-shape:atom-coupon-tax-rounding",
+        "atom-shape:atom-repository-read"
+      ],
+      "blockedByGapRefs": [
+        "coverage:homotopy-report-fixture: report observation gap and block signature-zero reflection",
+        "gap:path-rule:authorization-bypass-hole:missing-policy-test: authorization bypass path lacks policy or test filler evidence",
+        "implementation patch and verification evidence are not supplied by ArchSig analysis",
+        "witness:homotopy-report-fixture: report observation gap; do not infer measured zero"
+      ],
+      "requiredPortOrSlot": "portOrSlotOrValenceMismatch",
+      "recommendedOperationKind": "repair-homotopyreportfixturecircuit",
+      "evidenceBoundary": "repair target is localized to generated obstruction / molecule / AtomShape refs; it is not a free-form recommendation",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    }
+  ],
+  "viewerDistanceInputs": [
+    {
+      "distanceInputId": "viewer-distance:generated-molecule-molecule-homotopy-report-fixture:atom-cache-read:atom-repository-read",
+      "distanceKind": "atom-shape-coordinate-mismatch-count",
+      "sourceRef": "atom:cache-read",
+      "targetRef": "atom:repository-read",
+      "generatedMoleculeRef": "generated-molecule:molecule-homotopy-report-fixture",
+      "atomShapeRefs": [
+        "atom-shape:atom-cache-read",
+        "atom-shape:atom-repository-read"
+      ],
+      "distanceValue": 2,
+      "coordinateComponents": [
+        "family:left=relation:right=relation:delta=0",
+        "axis:left=static:right=static:delta=0",
+        "subject:left=order-read:right=order-read:delta=0",
+        "predicate:left=cache-read-path-can-return-an-order-view:right=repository-read-path-can-return-an-order-view:delta=1",
+        "objectSlotSet:left=cacheorder-orderview:right=repositoryorder-orderview:delta=1"
+      ],
+      "evidenceBoundary": "viewer distance input is computed from AtomShape coordinates for layout and review; it is not semantic equivalence or theorem distance",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    },
+    {
+      "distanceInputId": "viewer-distance:generated-molecule-molecule-homotopy-report-fixture:atom-cache-read:atom-event-projection",
+      "distanceKind": "atom-shape-coordinate-mismatch-count",
+      "sourceRef": "atom:cache-read",
+      "targetRef": "atom:event-projection",
+      "generatedMoleculeRef": "generated-molecule:molecule-homotopy-report-fixture",
+      "atomShapeRefs": [
+        "atom-shape:atom-cache-read",
+        "atom-shape:atom-event-projection"
+      ],
+      "distanceValue": 5,
+      "coordinateComponents": [
+        "family:left=relation:right=effect:delta=1",
+        "axis:left=static:right=semantic:delta=1",
+        "subject:left=order-read:right=order-projection:delta=1",
+        "predicate:left=cache-read-path-can-return-an-order-view:right=event-projection-updates-order-read-model:delta=1",
+        "objectSlotSet:left=cacheorder-orderview:right=orderevent-orderview:delta=1"
+      ],
+      "evidenceBoundary": "viewer distance input is computed from AtomShape coordinates for layout and review; it is not semantic equivalence or theorem distance",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    },
+    {
+      "distanceInputId": "viewer-distance:generated-molecule-molecule-homotopy-report-fixture:atom-cache-read:atom-retry-idempotency",
+      "distanceKind": "atom-shape-coordinate-mismatch-count",
+      "sourceRef": "atom:cache-read",
+      "targetRef": "atom:retry-idempotency",
+      "generatedMoleculeRef": "generated-molecule:molecule-homotopy-report-fixture",
+      "atomShapeRefs": [
+        "atom-shape:atom-cache-read",
+        "atom-shape:atom-retry-idempotency"
+      ],
+      "distanceValue": 5,
+      "coordinateComponents": [
+        "family:left=relation:right=effect:delta=1",
+        "axis:left=static:right=semantic:delta=1",
+        "subject:left=order-read:right=payment-charge:delta=1",
+        "predicate:left=cache-read-path-can-return-an-order-view:right=retry-path-should-preserve-idempotent-charge-effect:delta=1",
+        "objectSlotSet:left=cacheorder-orderview:right=retrycharge-singlecharge:delta=1"
+      ],
+      "evidenceBoundary": "viewer distance input is computed from AtomShape coordinates for layout and review; it is not semantic equivalence or theorem distance",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    },
+    {
+      "distanceInputId": "viewer-distance:generated-molecule-molecule-homotopy-report-fixture:atom-cache-read:atom-authorization-bypass",
+      "distanceKind": "atom-shape-coordinate-mismatch-count",
+      "sourceRef": "atom:cache-read",
+      "targetRef": "atom:authorization-bypass",
+      "generatedMoleculeRef": "generated-molecule:molecule-homotopy-report-fixture",
+      "atomShapeRefs": [
+        "atom-shape:atom-cache-read",
+        "atom-shape:atom-authorization-bypass"
+      ],
+      "distanceValue": 5,
+      "coordinateComponents": [
+        "family:left=relation:right=authority:delta=1",
+        "axis:left=static:right=boundary:delta=1",
+        "subject:left=order-read:right=auth-adminbypassread:delta=1",
+        "predicate:left=cache-read-path-can-return-an-order-view:right=admin-bypass-read-requires-explicit-policy-or-test-filler-evidence:delta=1",
+        "objectSlotSet:left=cacheorder-orderview:right=adminbypass-orderview:delta=1"
+      ],
+      "evidenceBoundary": "viewer distance input is computed from AtomShape coordinates for layout and review; it is not semantic equivalence or theorem distance",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    },
+    {
+      "distanceInputId": "viewer-distance:generated-molecule-molecule-homotopy-report-fixture:atom-cache-read:atom-coupon-tax-rounding",
+      "distanceKind": "atom-shape-coordinate-mismatch-count",
+      "sourceRef": "atom:cache-read",
+      "targetRef": "atom:coupon-tax-rounding",
+      "generatedMoleculeRef": "generated-molecule:molecule-homotopy-report-fixture",
+      "atomShapeRefs": [
+        "atom-shape:atom-cache-read",
+        "atom-shape:atom-coupon-tax-rounding"
+      ],
+      "distanceValue": 5,
+      "coordinateComponents": [
+        "family:left=relation:right=contractspecification:delta=1",
+        "axis:left=static:right=specification:delta=1",
+        "subject:left=order-read:right=pricing-checkouttotal:delta=1",
+        "predicate:left=cache-read-path-can-return-an-order-view:right=coupon-tax-rounding-paths-compare-paymentamount-and-receiptamount:delta=1",
+        "objectSlotSet:left=cacheorder-orderview:right=paymentamount-receiptamount:delta=1"
+      ],
+      "evidenceBoundary": "viewer distance input is computed from AtomShape coordinates for layout and review; it is not semantic equivalence or theorem distance",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    },
+    {
+      "distanceInputId": "viewer-distance:generated-molecule-molecule-homotopy-report-fixture:atom-repository-read:atom-event-projection",
+      "distanceKind": "atom-shape-coordinate-mismatch-count",
+      "sourceRef": "atom:repository-read",
+      "targetRef": "atom:event-projection",
+      "generatedMoleculeRef": "generated-molecule:molecule-homotopy-report-fixture",
+      "atomShapeRefs": [
+        "atom-shape:atom-repository-read",
+        "atom-shape:atom-event-projection"
+      ],
+      "distanceValue": 5,
+      "coordinateComponents": [
+        "family:left=relation:right=effect:delta=1",
+        "axis:left=static:right=semantic:delta=1",
+        "subject:left=order-read:right=order-projection:delta=1",
+        "predicate:left=repository-read-path-can-return-an-order-view:right=event-projection-updates-order-read-model:delta=1",
+        "objectSlotSet:left=repositoryorder-orderview:right=orderevent-orderview:delta=1"
+      ],
+      "evidenceBoundary": "viewer distance input is computed from AtomShape coordinates for layout and review; it is not semantic equivalence or theorem distance",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    },
+    {
+      "distanceInputId": "viewer-distance:generated-molecule-molecule-homotopy-report-fixture:atom-repository-read:atom-retry-idempotency",
+      "distanceKind": "atom-shape-coordinate-mismatch-count",
+      "sourceRef": "atom:repository-read",
+      "targetRef": "atom:retry-idempotency",
+      "generatedMoleculeRef": "generated-molecule:molecule-homotopy-report-fixture",
+      "atomShapeRefs": [
+        "atom-shape:atom-repository-read",
+        "atom-shape:atom-retry-idempotency"
+      ],
+      "distanceValue": 5,
+      "coordinateComponents": [
+        "family:left=relation:right=effect:delta=1",
+        "axis:left=static:right=semantic:delta=1",
+        "subject:left=order-read:right=payment-charge:delta=1",
+        "predicate:left=repository-read-path-can-return-an-order-view:right=retry-path-should-preserve-idempotent-charge-effect:delta=1",
+        "objectSlotSet:left=repositoryorder-orderview:right=retrycharge-singlecharge:delta=1"
+      ],
+      "evidenceBoundary": "viewer distance input is computed from AtomShape coordinates for layout and review; it is not semantic equivalence or theorem distance",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    },
+    {
+      "distanceInputId": "viewer-distance:generated-molecule-molecule-homotopy-report-fixture:atom-repository-read:atom-authorization-bypass",
+      "distanceKind": "atom-shape-coordinate-mismatch-count",
+      "sourceRef": "atom:repository-read",
+      "targetRef": "atom:authorization-bypass",
+      "generatedMoleculeRef": "generated-molecule:molecule-homotopy-report-fixture",
+      "atomShapeRefs": [
+        "atom-shape:atom-repository-read",
+        "atom-shape:atom-authorization-bypass"
+      ],
+      "distanceValue": 5,
+      "coordinateComponents": [
+        "family:left=relation:right=authority:delta=1",
+        "axis:left=static:right=boundary:delta=1",
+        "subject:left=order-read:right=auth-adminbypassread:delta=1",
+        "predicate:left=repository-read-path-can-return-an-order-view:right=admin-bypass-read-requires-explicit-policy-or-test-filler-evidence:delta=1",
+        "objectSlotSet:left=repositoryorder-orderview:right=adminbypass-orderview:delta=1"
+      ],
+      "evidenceBoundary": "viewer distance input is computed from AtomShape coordinates for layout and review; it is not semantic equivalence or theorem distance",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    },
+    {
+      "distanceInputId": "viewer-distance:generated-molecule-molecule-homotopy-report-fixture:atom-repository-read:atom-coupon-tax-rounding",
+      "distanceKind": "atom-shape-coordinate-mismatch-count",
+      "sourceRef": "atom:repository-read",
+      "targetRef": "atom:coupon-tax-rounding",
+      "generatedMoleculeRef": "generated-molecule:molecule-homotopy-report-fixture",
+      "atomShapeRefs": [
+        "atom-shape:atom-repository-read",
+        "atom-shape:atom-coupon-tax-rounding"
+      ],
+      "distanceValue": 5,
+      "coordinateComponents": [
+        "family:left=relation:right=contractspecification:delta=1",
+        "axis:left=static:right=specification:delta=1",
+        "subject:left=order-read:right=pricing-checkouttotal:delta=1",
+        "predicate:left=repository-read-path-can-return-an-order-view:right=coupon-tax-rounding-paths-compare-paymentamount-and-receiptamount:delta=1",
+        "objectSlotSet:left=repositoryorder-orderview:right=paymentamount-receiptamount:delta=1"
+      ],
+      "evidenceBoundary": "viewer distance input is computed from AtomShape coordinates for layout and review; it is not semantic equivalence or theorem distance",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    },
+    {
+      "distanceInputId": "viewer-distance:generated-molecule-molecule-homotopy-report-fixture:atom-event-projection:atom-retry-idempotency",
+      "distanceKind": "atom-shape-coordinate-mismatch-count",
+      "sourceRef": "atom:event-projection",
+      "targetRef": "atom:retry-idempotency",
+      "generatedMoleculeRef": "generated-molecule:molecule-homotopy-report-fixture",
+      "atomShapeRefs": [
+        "atom-shape:atom-event-projection",
+        "atom-shape:atom-retry-idempotency"
+      ],
+      "distanceValue": 3,
+      "coordinateComponents": [
+        "family:left=effect:right=effect:delta=0",
+        "axis:left=semantic:right=semantic:delta=0",
+        "subject:left=order-projection:right=payment-charge:delta=1",
+        "predicate:left=event-projection-updates-order-read-model:right=retry-path-should-preserve-idempotent-charge-effect:delta=1",
+        "objectSlotSet:left=orderevent-orderview:right=retrycharge-singlecharge:delta=1"
+      ],
+      "evidenceBoundary": "viewer distance input is computed from AtomShape coordinates for layout and review; it is not semantic equivalence or theorem distance",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    },
+    {
+      "distanceInputId": "viewer-distance:generated-molecule-molecule-homotopy-report-fixture:atom-event-projection:atom-authorization-bypass",
+      "distanceKind": "atom-shape-coordinate-mismatch-count",
+      "sourceRef": "atom:event-projection",
+      "targetRef": "atom:authorization-bypass",
+      "generatedMoleculeRef": "generated-molecule:molecule-homotopy-report-fixture",
+      "atomShapeRefs": [
+        "atom-shape:atom-event-projection",
+        "atom-shape:atom-authorization-bypass"
+      ],
+      "distanceValue": 5,
+      "coordinateComponents": [
+        "family:left=effect:right=authority:delta=1",
+        "axis:left=semantic:right=boundary:delta=1",
+        "subject:left=order-projection:right=auth-adminbypassread:delta=1",
+        "predicate:left=event-projection-updates-order-read-model:right=admin-bypass-read-requires-explicit-policy-or-test-filler-evidence:delta=1",
+        "objectSlotSet:left=orderevent-orderview:right=adminbypass-orderview:delta=1"
+      ],
+      "evidenceBoundary": "viewer distance input is computed from AtomShape coordinates for layout and review; it is not semantic equivalence or theorem distance",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    },
+    {
+      "distanceInputId": "viewer-distance:generated-molecule-molecule-homotopy-report-fixture:atom-event-projection:atom-coupon-tax-rounding",
+      "distanceKind": "atom-shape-coordinate-mismatch-count",
+      "sourceRef": "atom:event-projection",
+      "targetRef": "atom:coupon-tax-rounding",
+      "generatedMoleculeRef": "generated-molecule:molecule-homotopy-report-fixture",
+      "atomShapeRefs": [
+        "atom-shape:atom-event-projection",
+        "atom-shape:atom-coupon-tax-rounding"
+      ],
+      "distanceValue": 5,
+      "coordinateComponents": [
+        "family:left=effect:right=contractspecification:delta=1",
+        "axis:left=semantic:right=specification:delta=1",
+        "subject:left=order-projection:right=pricing-checkouttotal:delta=1",
+        "predicate:left=event-projection-updates-order-read-model:right=coupon-tax-rounding-paths-compare-paymentamount-and-receiptamount:delta=1",
+        "objectSlotSet:left=orderevent-orderview:right=paymentamount-receiptamount:delta=1"
+      ],
+      "evidenceBoundary": "viewer distance input is computed from AtomShape coordinates for layout and review; it is not semantic equivalence or theorem distance",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    },
+    {
+      "distanceInputId": "viewer-distance:generated-molecule-molecule-homotopy-report-fixture:atom-retry-idempotency:atom-authorization-bypass",
+      "distanceKind": "atom-shape-coordinate-mismatch-count",
+      "sourceRef": "atom:retry-idempotency",
+      "targetRef": "atom:authorization-bypass",
+      "generatedMoleculeRef": "generated-molecule:molecule-homotopy-report-fixture",
+      "atomShapeRefs": [
+        "atom-shape:atom-retry-idempotency",
+        "atom-shape:atom-authorization-bypass"
+      ],
+      "distanceValue": 5,
+      "coordinateComponents": [
+        "family:left=effect:right=authority:delta=1",
+        "axis:left=semantic:right=boundary:delta=1",
+        "subject:left=payment-charge:right=auth-adminbypassread:delta=1",
+        "predicate:left=retry-path-should-preserve-idempotent-charge-effect:right=admin-bypass-read-requires-explicit-policy-or-test-filler-evidence:delta=1",
+        "objectSlotSet:left=retrycharge-singlecharge:right=adminbypass-orderview:delta=1"
+      ],
+      "evidenceBoundary": "viewer distance input is computed from AtomShape coordinates for layout and review; it is not semantic equivalence or theorem distance",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    },
+    {
+      "distanceInputId": "viewer-distance:generated-molecule-molecule-homotopy-report-fixture:atom-retry-idempotency:atom-coupon-tax-rounding",
+      "distanceKind": "atom-shape-coordinate-mismatch-count",
+      "sourceRef": "atom:retry-idempotency",
+      "targetRef": "atom:coupon-tax-rounding",
+      "generatedMoleculeRef": "generated-molecule:molecule-homotopy-report-fixture",
+      "atomShapeRefs": [
+        "atom-shape:atom-retry-idempotency",
+        "atom-shape:atom-coupon-tax-rounding"
+      ],
+      "distanceValue": 5,
+      "coordinateComponents": [
+        "family:left=effect:right=contractspecification:delta=1",
+        "axis:left=semantic:right=specification:delta=1",
+        "subject:left=payment-charge:right=pricing-checkouttotal:delta=1",
+        "predicate:left=retry-path-should-preserve-idempotent-charge-effect:right=coupon-tax-rounding-paths-compare-paymentamount-and-receiptamount:delta=1",
+        "objectSlotSet:left=retrycharge-singlecharge:right=paymentamount-receiptamount:delta=1"
+      ],
+      "evidenceBoundary": "viewer distance input is computed from AtomShape coordinates for layout and review; it is not semantic equivalence or theorem distance",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    },
+    {
+      "distanceInputId": "viewer-distance:generated-molecule-molecule-homotopy-report-fixture:atom-authorization-bypass:atom-coupon-tax-rounding",
+      "distanceKind": "atom-shape-coordinate-mismatch-count",
+      "sourceRef": "atom:authorization-bypass",
+      "targetRef": "atom:coupon-tax-rounding",
+      "generatedMoleculeRef": "generated-molecule:molecule-homotopy-report-fixture",
+      "atomShapeRefs": [
+        "atom-shape:atom-authorization-bypass",
+        "atom-shape:atom-coupon-tax-rounding"
+      ],
+      "distanceValue": 5,
+      "coordinateComponents": [
+        "family:left=authority:right=contractspecification:delta=1",
+        "axis:left=boundary:right=specification:delta=1",
+        "subject:left=auth-adminbypassread:right=pricing-checkouttotal:delta=1",
+        "predicate:left=admin-bypass-read-requires-explicit-policy-or-test-filler-evidence:right=coupon-tax-rounding-paths-compare-paymentamount-and-receiptamount:delta=1",
+        "objectSlotSet:left=adminbypass-orderview:right=paymentamount-receiptamount:delta=1"
+      ],
+      "evidenceBoundary": "viewer distance input is computed from AtomShape coordinates for layout and review; it is not semantic equivalence or theorem distance",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    }
+  ],
   "obstructionCircuits": [
     {
       "obstructionCircuitId": "obstruction:homotopy-report-fixture:computed",
@@ -5721,7 +6501,7 @@
         "witnessCompletenessBoundary": "homotopy zero reflects only measured path pairs and fillers inside the selected coverage universe; unresolved paths stay coverage gaps"
       },
       "distanceKind": "selected-axis-continuation-distance",
-      "value": 1,
+      "value": 2,
       "comparedContinuationSummary": "path:semantic-operation-flow vs molecule:homotopy-report-fixture on axis:homotopy-report-fixture; distanceKind=selected-axis-continuation-distance; sourceRefs=8; semanticEvidence=5; traceAxes=2; missing=0",
       "comparedContinuationRefs": [
         "Cont_axis:homotopy-report-fixture(molecule:homotopy-report-fixture)",
@@ -5838,9 +6618,7 @@
         "src-retry-effect",
         "test-homotopy-fillers"
       ],
-      "muDefectRefs": [
-        "mu:path-pair-path-rule-zero-holonomy-filled-loop:axis-homotopy-report-fixture"
-      ],
+      "muDefectRefs": [],
       "sourceRefs": [
         "doc-auth-policy",
         "filler-candidate:loop-candidate-path-pair-path-rule-zero-holonomy-filled-loop-1:filler-rule-contract-or-test",
@@ -6123,7 +6901,7 @@
         "witnessCompletenessBoundary": "homotopy zero reflects only measured path pairs and fillers inside the selected coverage universe; unresolved paths stay coverage gaps"
       },
       "distanceKind": "selected-axis-continuation-distance",
-      "value": 1,
+      "value": 0,
       "comparedContinuationSummary": "path-rule:retry-idempotency-effect vs retry-idempotency-effect-path on axis:homotopy-report-fixture; distanceKind=selected-axis-continuation-distance; sourceRefs=4; semanticEvidence=1; traceAxes=2; missing=0",
       "comparedContinuationRefs": [
         "Cont_axis:homotopy-report-fixture(path-rule:retry-idempotency-effect)",
@@ -6146,9 +6924,7 @@
         "src-retry-effect",
         "test-homotopy-fillers"
       ],
-      "muDefectRefs": [
-        "mu:path-pair-path-rule-retry-idempotency-effect:axis-homotopy-report-fixture"
-      ],
+      "muDefectRefs": [],
       "sourceRefs": [
         "filler-candidate:loop-candidate-path-pair-path-rule-retry-idempotency-effect-5:filler-rule-contract-or-test",
         "src-cache-read",
@@ -6215,9 +6991,7 @@
         "src-retry-effect",
         "test-homotopy-fillers"
       ],
-      "muDefectRefs": [
-        "mu:path-pair-path-rule-authorization-bypass-hole:axis-homotopy-report-fixture"
-      ],
+      "muDefectRefs": [],
       "sourceRefs": [
         "doc-auth-policy",
         "filler-candidate:loop-candidate-path-pair-path-rule-authorization-bypass-hole-6:filler-rule-contract-or-test",
@@ -6271,7 +7045,7 @@
         "witnessCompletenessBoundary": "homotopy zero reflects only measured path pairs and fillers inside the selected coverage universe; unresolved paths stay coverage gaps"
       },
       "distanceKind": "selected-axis-continuation-distance",
-      "value": 1,
+      "value": 0,
       "comparedContinuationSummary": "path-rule:coupon-tax-rounding-semantic-loop vs coupon-tax-rounding-semantic-loop-path on axis:homotopy-report-fixture; distanceKind=selected-axis-continuation-distance; sourceRefs=4; semanticEvidence=1; traceAxes=2; missing=0",
       "comparedContinuationRefs": [
         "Cont_axis:homotopy-report-fixture(coupon-tax-rounding-semantic-loop-path)",
@@ -6294,9 +7068,7 @@
         "src-pricing-checkout",
         "test-homotopy-fillers"
       ],
-      "muDefectRefs": [
-        "mu:path-pair-path-rule-coupon-tax-rounding-semantic-loop:axis-homotopy-report-fixture"
-      ],
+      "muDefectRefs": [],
       "sourceRefs": [
         "filler-candidate:loop-candidate-path-pair-path-rule-coupon-tax-rounding-semantic-loop-7:filler-rule-contract-or-test",
         "src-cache-read",
@@ -6600,7 +7372,7 @@
     {
       "readingId": "stokes-style:loop-candidate-path-pair-path-rule-retry-idempotency-effect-5",
       "loopRef": "loop-candidate:path-pair-path-rule-retry-idempotency-effect-5",
-      "status": "filledNonzeroHolonomyReview",
+      "status": "measuredZeroWithinBoundary",
       "measurementStatus": "measured",
       "readingBoundary": {
         "readingStrength": "boundedMeasuredWithCandidatePaths",
@@ -6635,12 +7407,10 @@
         "test-homotopy-fillers"
       ],
       "nonFillabilityWitnessRefs": [],
-      "localCurvatureCondition": "measured filling plus nonzero holonomy localizes review curvature to selected 2-cells",
-      "localCurvatureCellCandidates": [
-        "2-cell:obstruction-homotopy-report-fixture"
-      ],
+      "localCurvatureCondition": "missing measured filler evidence blocks Stokes-style local curvature conclusion",
+      "localCurvatureCellCandidates": [],
       "reviewQueueRefs": [
-        "2-cell:obstruction-homotopy-report-fixture"
+        "homotopy-holonomy:loop-candidate-path-pair-path-rule-retry-idempotency-effect-5:axis-homotopy-report-fixture"
       ],
       "coverageBoundary": "missing path or filler evidence blocks zero and Stokes-style readings",
       "evidenceBoundary": "Stokes-style reading is a bounded review queue, not theorem discharge",
@@ -6697,7 +7467,7 @@
     {
       "readingId": "stokes-style:loop-candidate-path-pair-path-rule-coupon-tax-rounding-semantic-loop-7",
       "loopRef": "loop-candidate:path-pair-path-rule-coupon-tax-rounding-semantic-loop-7",
-      "status": "filledNonzeroHolonomyReview",
+      "status": "measuredZeroWithinBoundary",
       "measurementStatus": "measured",
       "readingBoundary": {
         "readingStrength": "boundedMeasuredWithCandidatePaths",
@@ -6732,12 +7502,10 @@
         "test-homotopy-fillers"
       ],
       "nonFillabilityWitnessRefs": [],
-      "localCurvatureCondition": "measured filling plus nonzero holonomy localizes review curvature to selected 2-cells",
-      "localCurvatureCellCandidates": [
-        "2-cell:obstruction-homotopy-report-fixture"
-      ],
+      "localCurvatureCondition": "missing measured filler evidence blocks Stokes-style local curvature conclusion",
+      "localCurvatureCellCandidates": [],
       "reviewQueueRefs": [
-        "2-cell:obstruction-homotopy-report-fixture"
+        "homotopy-holonomy:loop-candidate-path-pair-path-rule-coupon-tax-rounding-semantic-loop-7:axis-homotopy-report-fixture"
       ],
       "coverageBoundary": "missing path or filler evidence blocks zero and Stokes-style readings",
       "evidenceBoundary": "Stokes-style reading is a bounded review queue, not theorem discharge",
@@ -6784,10 +7552,8 @@
     ],
     "nonzeroHolonomyLoops": [
       "loop-candidate:path-pair-path-rule-cache-repository-semantic-loop-3",
-      "loop-candidate:path-pair-path-rule-coupon-tax-rounding-semantic-loop-7",
       "loop-candidate:path-pair-path-rule-event-projection-direct-read-4",
       "loop-candidate:path-pair-path-rule-nonzero-holonomy-filled-loop-2",
-      "loop-candidate:path-pair-path-rule-retry-idempotency-effect-5",
       "loop-candidate:path-pair-semantic-contract-loop-0"
     ],
     "topLocalCurvatureCells": [
@@ -6802,7 +7568,7 @@
       },
       {
         "aggregateId": "hol-mass:nonzero-holonomy-loop-count",
-        "value": 6,
+        "value": 4,
         "reading": "bounded count of loops with nonzero selected-axis holonomy",
         "boundary": "not future incident or empirical cost prediction"
       },

@@ -976,6 +976,18 @@ pub struct ArchSigAnalysisPacketV0 {
     pub invariant_family_readings: Vec<ArchSigInvariantFamilyReadingV0>,
     pub law_universe_reading: ArchSigLawUniverseReadingV0,
     pub molecule_readings: Vec<ArchSigMoleculeReadingV0>,
+    #[serde(default)]
+    pub generated_atom_shapes: Vec<ArchSigGeneratedAtomShapeV0>,
+    #[serde(default)]
+    pub generated_molecules: Vec<ArchSigGeneratedMoleculeV0>,
+    #[serde(default)]
+    pub generated_law_inputs: Vec<ArchSigGeneratedLawInputV0>,
+    #[serde(default)]
+    pub generated_obstructions: Vec<ArchSigGeneratedObstructionV0>,
+    #[serde(default)]
+    pub generated_repair_targets: Vec<ArchSigGeneratedRepairTargetV0>,
+    #[serde(default)]
+    pub viewer_distance_inputs: Vec<ArchSigViewerDistanceInputV0>,
     pub obstruction_circuits: Vec<ArchSigObstructionCircuitV0>,
     pub signature_axes: Vec<ArchSigSignatureAxisReadingV0>,
     pub analytic_representations: Vec<ArchSigAnalyticRepresentationV0>,
@@ -1537,6 +1549,103 @@ pub struct ArchSigMoleculeReadingV0 {
     pub source_refs: Vec<String>,
     #[serde(rename = "interpretationNotesForLLM")]
     pub interpretation_notes_for_llm: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigGeneratedAtomShapeV0 {
+    pub atom_shape_id: String,
+    pub atom_observation_ref: String,
+    pub family: String,
+    pub axis: String,
+    pub subject_ref: String,
+    pub predicate: String,
+    pub object_slots: Vec<String>,
+    pub payload_slots: Vec<String>,
+    pub direction: String,
+    pub arity: usize,
+    pub ports: Vec<String>,
+    pub valence_summary: String,
+    pub evidence_boundary: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigGeneratedMoleculeV0 {
+    pub generated_molecule_id: String,
+    pub source_molecule_observation_ref: String,
+    pub generation_status: String,
+    pub atom_observation_refs: Vec<String>,
+    pub atom_shape_refs: Vec<String>,
+    pub compatible_pair_count: usize,
+    pub required_port_status: String,
+    pub not_arbitrary_set_boundary: String,
+    pub evidence_boundary: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigGeneratedLawInputV0 {
+    pub generated_law_input_id: String,
+    pub generated_molecule_ref: String,
+    pub source_molecule_reading_ref: String,
+    pub law_refs: Vec<String>,
+    pub signature_axis_refs: Vec<String>,
+    pub atom_shape_refs: Vec<String>,
+    pub law_input_kind: String,
+    pub evaluation_status: String,
+    pub coverage_boundary: String,
+    pub evidence_boundary: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigGeneratedObstructionV0 {
+    pub generated_obstruction_id: String,
+    pub obstruction_circuit_ref: String,
+    pub generated_law_input_refs: Vec<String>,
+    pub generated_molecule_refs: Vec<String>,
+    pub atom_shape_refs: Vec<String>,
+    pub obstruction_kind: String,
+    pub measurement_status: String,
+    pub evidence_boundary: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigGeneratedRepairTargetV0 {
+    pub repair_target_id: String,
+    pub target_kind: String,
+    pub source_repair_candidate_ref: String,
+    pub generated_obstruction_refs: Vec<String>,
+    pub generated_molecule_refs: Vec<String>,
+    pub atom_shape_refs: Vec<String>,
+    pub blocked_by_gap_refs: Vec<String>,
+    pub required_port_or_slot: String,
+    pub recommended_operation_kind: String,
+    pub evidence_boundary: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigViewerDistanceInputV0 {
+    pub distance_input_id: String,
+    pub distance_kind: String,
+    pub source_ref: String,
+    pub target_ref: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub generated_molecule_ref: Option<String>,
+    pub atom_shape_refs: Vec<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub distance_value: Option<i64>,
+    pub coordinate_components: Vec<String>,
+    pub evidence_boundary: String,
     pub non_conclusions: Vec<String>,
 }
 
@@ -3293,6 +3402,12 @@ pub struct ArchSigAnalysisPacketValidationSummaryV0 {
     pub result: String,
     pub aat_concept_surface_count: usize,
     pub molecule_reading_count: usize,
+    pub generated_atom_shape_count: usize,
+    pub generated_molecule_count: usize,
+    pub generated_law_input_count: usize,
+    pub generated_obstruction_count: usize,
+    pub generated_repair_target_count: usize,
+    pub viewer_distance_input_count: usize,
     pub obstruction_circuit_count: usize,
     pub signature_axis_count: usize,
     pub analytic_representation_count: usize,

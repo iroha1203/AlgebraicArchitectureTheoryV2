@@ -993,6 +993,15 @@ fn cli_runs_primary_archmap_lawpolicy_archsig_analyze_workflow() {
             .is_some(),
         "viewer data must carry computed AAT path and holonomy geometry projection"
     );
+    assert!(
+        viewer_data["aatGeometryOverlays"]["generatedMolecules"]
+            .as_array()
+            .is_some_and(|items| !items.is_empty())
+            && viewer_data["aatGeometryOverlays"]["viewerDistanceInputs"]
+                .as_array()
+                .is_some_and(|items| !items.is_empty()),
+        "viewer data must carry generated molecule and AtomShape distance inputs"
+    );
     assert_eq!(
         viewer_data["reportPane"]["overview"]["summaryVerdict"]["readingMode"].as_str(),
         Some("measurementOverSuppliedArchMapAndLawPolicy")
@@ -1259,6 +1268,27 @@ fn cli_analyze_emit_raw_artifacts_writes_field_sig_handoff_packet() {
         "analysis packet must construct obstruction circuits"
     );
     assert!(
+        analysis_packet["generatedAtomShapes"]
+            .as_array()
+            .is_some_and(|items| !items.is_empty())
+            && analysis_packet["generatedMolecules"]
+                .as_array()
+                .is_some_and(|items| !items.is_empty())
+            && analysis_packet["generatedLawInputs"]
+                .as_array()
+                .is_some_and(|items| !items.is_empty())
+            && analysis_packet["generatedObstructions"]
+                .as_array()
+                .is_some_and(|items| !items.is_empty())
+            && analysis_packet["generatedRepairTargets"]
+                .as_array()
+                .is_some_and(|items| !items.is_empty())
+            && analysis_packet["viewerDistanceInputs"]
+                .as_array()
+                .is_some_and(|items| !items.is_empty()),
+        "analysis packet must materialize generated AtomShape, molecule, law input, obstruction, repair target, and viewer distance surfaces"
+    );
+    assert!(
         analysis_packet["signatureAxes"]
             .as_array()
             .expect("signature axes are array")
@@ -1281,6 +1311,27 @@ fn cli_analyze_emit_raw_artifacts_writes_field_sig_handoff_packet() {
             .as_u64()
             .is_some_and(|count| count >= 10),
         "validation summary must count bounded judgements"
+    );
+    assert!(
+        analysis_validation["summary"]["generatedAtomShapeCount"]
+            .as_u64()
+            .is_some_and(|count| count > 0)
+            && analysis_validation["summary"]["generatedMoleculeCount"]
+                .as_u64()
+                .is_some_and(|count| count > 0)
+            && analysis_validation["summary"]["generatedLawInputCount"]
+                .as_u64()
+                .is_some_and(|count| count > 0)
+            && analysis_validation["summary"]["generatedObstructionCount"]
+                .as_u64()
+                .is_some_and(|count| count > 0)
+            && analysis_validation["summary"]["generatedRepairTargetCount"]
+                .as_u64()
+                .is_some_and(|count| count > 0)
+            && analysis_validation["summary"]["viewerDistanceInputCount"]
+                .as_u64()
+                .is_some_and(|count| count > 0),
+        "validation summary must count generated middle-layer and viewer distance surfaces"
     );
     let llm_packet = read_json(&out_dir.join("llm-interpretation-packet.json"));
     assert_eq!(llm_packet, analysis_packet["llmInterpretationPacket"]);

@@ -9754,5 +9754,332 @@
     "flatness reading is blocked by coverage gaps and exactness assumptions",
     "repair operation candidates are not automatic safe refactorings",
     "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+  ],
+  "generatedAtomShapes": [
+    {
+      "atomShapeId": "atom-shape:atom-contract-paymentamount-receiptamount-coupon-tax-rounding",
+      "atomObservationRef": "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding",
+      "family": "contractSpecification",
+      "axis": "specification",
+      "subjectRef": "pricing.checkoutTotal",
+      "predicate": "pricing contract exposes p = round(tax(discount(subtotal))) and q = round(discount(tax(subtotal)))",
+      "objectSlots": [
+        "objectSlot:0:paymentamount:axis=specification",
+        "objectSlot:1:receiptamount:axis=specification",
+        "objectSlot:2:p-round-tax-discount-subtotal:axis=specification",
+        "objectSlot:3:q-round-discount-tax-subtotal:axis=specification"
+      ],
+      "payloadSlots": [
+        "payload:observationStatus:observed",
+        "payload:confidence:high"
+      ],
+      "direction": "neutral",
+      "arity": 5,
+      "ports": [
+        "object:p-round-tax-discount-subtotal:axis=specification",
+        "object:paymentamount:axis=specification",
+        "object:q-round-discount-tax-subtotal:axis=specification",
+        "object:receiptamount:axis=specification",
+        "subject:pricing-checkouttotal:family=contractSpecification:axis=specification"
+      ],
+      "valenceSummary": "subject port plus 4 object port(s); shape is generated from atom family, predicate, subject, object slots, and payload slots",
+      "evidenceBoundary": "generated AtomShape is computed from ArchMap atom observation fields; source refs and confidence remain observation metadata",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    },
+    {
+      "atomShapeId": "atom-shape:atom-semantic-paymentamount-receiptamount-coupon-tax-rounding-noncommutation",
+      "atomObservationRef": "atom:semantic:PaymentAmount-ReceiptAmount-coupon-tax-rounding-noncommutation",
+      "family": "semanticInterpretation",
+      "axis": "semantic",
+      "subjectRef": "pricing.checkoutTotal",
+      "predicate": "coupon, tax, and rounding order is semantically noncommutative for PaymentAmount and ReceiptAmount",
+      "objectSlots": [
+        "objectSlot:0:paymentamount:axis=semantic",
+        "objectSlot:1:receiptamount:axis=semantic",
+        "objectSlot:2:discount:axis=semantic",
+        "objectSlot:3:tax:axis=semantic",
+        "objectSlot:4:round:axis=semantic"
+      ],
+      "payloadSlots": [
+        "payload:observationStatus:observed",
+        "payload:confidence:high"
+      ],
+      "direction": "neutral",
+      "arity": 6,
+      "ports": [
+        "object:discount:axis=semantic",
+        "object:paymentamount:axis=semantic",
+        "object:receiptamount:axis=semantic",
+        "object:round:axis=semantic",
+        "object:tax:axis=semantic",
+        "subject:pricing-checkouttotal:family=semanticInterpretation:axis=semantic"
+      ],
+      "valenceSummary": "subject port plus 5 object port(s); shape is generated from atom family, predicate, subject, object slots, and payload slots",
+      "evidenceBoundary": "generated AtomShape is computed from ArchMap atom observation fields; source refs and confidence remain observation metadata",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    },
+    {
+      "atomShapeId": "atom-shape:atom-effect-receipt-boundary",
+      "atomObservationRef": "atom:effect:receipt-boundary",
+      "family": "effect",
+      "axis": "boundary",
+      "subjectRef": "pricing.receipt",
+      "predicate": "ReceiptAmount is emitted after PaymentAmount calculation crosses checkout boundary",
+      "objectSlots": [
+        "objectSlot:0:paymentamount:axis=boundary",
+        "objectSlot:1:receiptamount:axis=boundary"
+      ],
+      "payloadSlots": [
+        "payload:observationStatus:observed",
+        "payload:confidence:medium"
+      ],
+      "direction": "outgoing",
+      "arity": 3,
+      "ports": [
+        "object:paymentamount:axis=boundary",
+        "object:receiptamount:axis=boundary",
+        "subject:pricing-receipt:family=effect:axis=boundary"
+      ],
+      "valenceSummary": "subject port plus 2 object port(s); shape is generated from atom family, predicate, subject, object slots, and payload slots",
+      "evidenceBoundary": "generated AtomShape is computed from ArchMap atom observation fields; source refs and confidence remain observation metadata",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    }
+  ],
+  "generatedMolecules": [
+    {
+      "generatedMoleculeId": "generated-molecule:molecule-coupon-operation-contract",
+      "sourceMoleculeObservationRef": "molecule:coupon-operation-contract",
+      "generationStatus": "generatedCompatibleConfiguration",
+      "atomObservationRefs": [
+        "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding",
+        "atom:semantic:PaymentAmount-ReceiptAmount-coupon-tax-rounding-noncommutation",
+        "atom:effect:receipt-boundary"
+      ],
+      "atomShapeRefs": [
+        "atom-shape:atom-contract-paymentamount-receiptamount-coupon-tax-rounding",
+        "atom-shape:atom-semantic-paymentamount-receiptamount-coupon-tax-rounding-noncommutation",
+        "atom-shape:atom-effect-receipt-boundary"
+      ],
+      "compatiblePairCount": 3,
+      "requiredPortStatus": "required ports are represented by observed AtomShape ports in this bounded molecule",
+      "notArbitrarySetBoundary": "generated molecule is materialized from an ArchMap molecule observation and its observed AtomShape refs; arbitrary atom sets are not promoted",
+      "evidenceBoundary": "compatibility is a bounded ArchSig construction over supplied atom refs, not a Lean proof of global molecule minimality",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    }
+  ],
+  "generatedLawInputs": [
+    {
+      "generatedLawInputId": "generated-law-input:molecule-reading-molecule-coupon-operation-contract",
+      "generatedMoleculeRef": "generated-molecule:molecule-coupon-operation-contract",
+      "sourceMoleculeReadingRef": "molecule-reading:molecule-coupon-operation-contract",
+      "lawRefs": [
+        "law:semantic-contract-alignment"
+      ],
+      "signatureAxisRefs": [
+        "sig-axis:semantic-inconsistency"
+      ],
+      "atomShapeRefs": [
+        "atom-shape:atom-contract-paymentamount-receiptamount-coupon-tax-rounding",
+        "atom-shape:atom-semantic-paymentamount-receiptamount-coupon-tax-rounding-noncommutation",
+        "atom-shape:atom-effect-receipt-boundary"
+      ],
+      "lawInputKind": "generatedArchitectureLawModelInput",
+      "evaluationStatus": "availableForSelectedLawUniverse",
+      "coverageBoundary": "generated law input is built from observed molecule and selected LawPolicy laws; missing ArchMap evidence remains a coverage blocker",
+      "evidenceBoundary": "law input is an ArchSig middle-layer construction, not a hand-authored ArchitectureLawModel",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    }
+  ],
+  "generatedObstructions": [
+    {
+      "generatedObstructionId": "generated-obstruction:obstruction-semantic-contract-mismatch-computed",
+      "obstructionCircuitRef": "obstruction:semantic-contract-mismatch:computed",
+      "generatedLawInputRefs": [
+        "generated-law-input:molecule-reading-molecule-coupon-operation-contract"
+      ],
+      "generatedMoleculeRefs": [
+        "generated-molecule:molecule-coupon-operation-contract"
+      ],
+      "atomShapeRefs": [
+        "atom-shape:atom-contract-paymentamount-receiptamount-coupon-tax-rounding",
+        "atom-shape:atom-semantic-paymentamount-receiptamount-coupon-tax-rounding-noncommutation"
+      ],
+      "obstructionKind": "SemanticMismatchCircuit",
+      "measurementStatus": "locallyBlockedByCoverageGap",
+      "evidenceBoundary": "generated obstruction is backed by generated molecule / law input refs and selected obstruction circuit evidence",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    }
+  ],
+  "generatedRepairTargets": [
+    {
+      "repairTargetId": "generated-repair-target:repair-obstruction-semantic-contract-mismatch-computed",
+      "targetKind": "shapeLevelGeneratedRepairTarget",
+      "sourceRepairCandidateRef": "repair:obstruction-semantic-contract-mismatch-computed",
+      "generatedObstructionRefs": [
+        "generated-obstruction:obstruction-semantic-contract-mismatch-computed"
+      ],
+      "generatedMoleculeRefs": [
+        "generated-molecule:molecule-coupon-operation-contract"
+      ],
+      "atomShapeRefs": [
+        "atom-shape:atom-contract-paymentamount-receiptamount-coupon-tax-rounding",
+        "atom-shape:atom-semantic-paymentamount-receiptamount-coupon-tax-rounding-noncommutation"
+      ],
+      "blockedByGapRefs": [
+        "coverage:semantic-contract-atoms: report observation gap and block signature-zero reflection",
+        "gap:coupon-runtime-payment-trace: payment processor and receipt reconciliation traces are not included in the fixture",
+        "implementation patch and verification evidence are not supplied by ArchSig analysis",
+        "witness:semantic-contract-mismatch: report observation gap; do not infer measured zero"
+      ],
+      "requiredPortOrSlot": "portOrSlotOrValenceMismatch",
+      "recommendedOperationKind": "repair-semanticmismatchcircuit",
+      "evidenceBoundary": "repair target is localized to generated obstruction / molecule / AtomShape refs; it is not a free-form recommendation",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    }
+  ],
+  "viewerDistanceInputs": [
+    {
+      "distanceInputId": "viewer-distance:generated-molecule-molecule-coupon-operation-contract:atom-contract-paymentamount-receiptamount-coupon-tax-rounding:atom-semantic-paymentamount-receiptamount-coupon-tax-rounding-noncommutation",
+      "distanceKind": "atom-shape-coordinate-mismatch-count",
+      "sourceRef": "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding",
+      "targetRef": "atom:semantic:PaymentAmount-ReceiptAmount-coupon-tax-rounding-noncommutation",
+      "generatedMoleculeRef": "generated-molecule:molecule-coupon-operation-contract",
+      "atomShapeRefs": [
+        "atom-shape:atom-contract-paymentamount-receiptamount-coupon-tax-rounding",
+        "atom-shape:atom-semantic-paymentamount-receiptamount-coupon-tax-rounding-noncommutation"
+      ],
+      "distanceValue": 4,
+      "coordinateComponents": [
+        "family:left=contractspecification:right=semanticinterpretation:delta=1",
+        "axis:left=specification:right=semantic:delta=1",
+        "subject:left=pricing-checkouttotal:right=pricing-checkouttotal:delta=0",
+        "predicate:left=pricing-contract-exposes-p-round-tax-discount-subtotal-and-q-round-discount-tax-subtotal:right=coupon-tax-and-rounding-order-is-semantically-noncommutative-for-paymentamount-and-receiptamount:delta=1",
+        "objectSlotSet:left=paymentamount-receiptamount-p-round-tax-discount-subtotal-q-round-discount-tax-subtotal:right=paymentamount-receiptamount-discount-tax-round:delta=1"
+      ],
+      "evidenceBoundary": "viewer distance input is computed from AtomShape coordinates for layout and review; it is not semantic equivalence or theorem distance",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    },
+    {
+      "distanceInputId": "viewer-distance:generated-molecule-molecule-coupon-operation-contract:atom-contract-paymentamount-receiptamount-coupon-tax-rounding:atom-effect-receipt-boundary",
+      "distanceKind": "atom-shape-coordinate-mismatch-count",
+      "sourceRef": "atom:contract:PaymentAmount-ReceiptAmount-coupon-tax-rounding",
+      "targetRef": "atom:effect:receipt-boundary",
+      "generatedMoleculeRef": "generated-molecule:molecule-coupon-operation-contract",
+      "atomShapeRefs": [
+        "atom-shape:atom-contract-paymentamount-receiptamount-coupon-tax-rounding",
+        "atom-shape:atom-effect-receipt-boundary"
+      ],
+      "distanceValue": 5,
+      "coordinateComponents": [
+        "family:left=contractspecification:right=effect:delta=1",
+        "axis:left=specification:right=boundary:delta=1",
+        "subject:left=pricing-checkouttotal:right=pricing-receipt:delta=1",
+        "predicate:left=pricing-contract-exposes-p-round-tax-discount-subtotal-and-q-round-discount-tax-subtotal:right=receiptamount-is-emitted-after-paymentamount-calculation-crosses-checkout-boundary:delta=1",
+        "objectSlotSet:left=paymentamount-receiptamount-p-round-tax-discount-subtotal-q-round-discount-tax-subtotal:right=paymentamount-receiptamount:delta=1"
+      ],
+      "evidenceBoundary": "viewer distance input is computed from AtomShape coordinates for layout and review; it is not semantic equivalence or theorem distance",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    },
+    {
+      "distanceInputId": "viewer-distance:generated-molecule-molecule-coupon-operation-contract:atom-semantic-paymentamount-receiptamount-coupon-tax-rounding-noncommutation:atom-effect-receipt-boundary",
+      "distanceKind": "atom-shape-coordinate-mismatch-count",
+      "sourceRef": "atom:semantic:PaymentAmount-ReceiptAmount-coupon-tax-rounding-noncommutation",
+      "targetRef": "atom:effect:receipt-boundary",
+      "generatedMoleculeRef": "generated-molecule:molecule-coupon-operation-contract",
+      "atomShapeRefs": [
+        "atom-shape:atom-semantic-paymentamount-receiptamount-coupon-tax-rounding-noncommutation",
+        "atom-shape:atom-effect-receipt-boundary"
+      ],
+      "distanceValue": 5,
+      "coordinateComponents": [
+        "family:left=semanticinterpretation:right=effect:delta=1",
+        "axis:left=semantic:right=boundary:delta=1",
+        "subject:left=pricing-checkouttotal:right=pricing-receipt:delta=1",
+        "predicate:left=coupon-tax-and-rounding-order-is-semantically-noncommutative-for-paymentamount-and-receiptamount:right=receiptamount-is-emitted-after-paymentamount-calculation-crosses-checkout-boundary:delta=1",
+        "objectSlotSet:left=paymentamount-receiptamount-discount-tax-round:right=paymentamount-receiptamount:delta=1"
+      ],
+      "evidenceBoundary": "viewer distance input is computed from AtomShape coordinates for layout and review; it is not semantic equivalence or theorem distance",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    }
   ]
 }

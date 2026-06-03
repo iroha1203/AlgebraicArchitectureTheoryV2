@@ -53,7 +53,13 @@
     "measurementDepthCheckCount": 1,
     "proxyRegressionCheckCount": 1,
     "failedCheckCount": 0,
-    "warningCheckCount": 0
+    "warningCheckCount": 0,
+    "generatedAtomShapeCount": 3,
+    "generatedMoleculeCount": 1,
+    "generatedLawInputCount": 1,
+    "generatedObstructionCount": 1,
+    "generatedRepairTargetCount": 1,
+    "viewerDistanceInputCount": 3
   },
   "checks": [
     {
@@ -160,6 +166,12 @@
     {
       "id": "archsig-fieldsig-current-state-evolution-boundary",
       "title": "packet preserves ArchSig current-state and FieldSig evolution responsibilities",
+      "result": "pass",
+      "count": 0
+    },
+    {
+      "id": "archsig-analysis-packet-generated-middle-layer",
+      "title": "packet materializes generated AtomShape, molecule, law input, obstruction, repair target, and viewer distance inputs",
       "result": "pass",
       "count": 0
     },

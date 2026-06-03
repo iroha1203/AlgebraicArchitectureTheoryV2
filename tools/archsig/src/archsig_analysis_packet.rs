@@ -35,8 +35,10 @@ use crate::{
     ArchSigFeatureExtensionAxisSummaryV0, ArchSigFeatureExtensionDiagnosisReadingV0,
     ArchSigFeatureExtensionFormulaReadingV0, ArchSigFeatureExtensionWitnessAttributionV0,
     ArchSigFeatureExtensionWitnessBasisV0, ArchSigFillerCandidateReadingV0,
-    ArchSigFlatnessReadingV0, ArchSigHighOverlapMoleculePairV0, ArchSigHomotopyAggregateReadingV0,
-    ArchSigHomotopyCellSummaryV0, ArchSigHomotopyComplexSummaryV0,
+    ArchSigFlatnessReadingV0, ArchSigGeneratedAtomShapeV0, ArchSigGeneratedLawInputV0,
+    ArchSigGeneratedMoleculeV0, ArchSigGeneratedObstructionV0,
+    ArchSigGeneratedRepairTargetV0, ArchSigHighOverlapMoleculePairV0,
+    ArchSigHomotopyAggregateReadingV0, ArchSigHomotopyCellSummaryV0, ArchSigHomotopyComplexSummaryV0,
     ArchSigHomotopyHolonomyReadingV0, ArchSigHomotopyOrderSensitivityReadingV0,
     ArchSigInvariantFamilyReadingV0, ArchSigLawUniverseCoverageReadingV0,
     ArchSigLawUniverseReadingV0, ArchSigLawWitnessAxisAlignmentEvaluationV0, ArchSigLayerSplitV0,
@@ -63,7 +65,8 @@ use crate::{
     ArchSigStokesStyleReadingV0, ArchSigStructuralReadingReviewSurfaceV0,
     ArchSigSubjectFamilySpreadV0, ArchSigSynthesisBlockageReadingV0,
     ArchSigThreeLayerFlatnessReadingV0, ArchSigTransferBridgeReadingV0,
-    ArchSigTransferMatrixEntryV0, LAW_POLICY_SCHEMA_VERSION, LawPolicyDocumentV0,
+    ArchSigTransferMatrixEntryV0, ArchSigViewerDistanceInputV0, LAW_POLICY_SCHEMA_VERSION,
+    LawPolicyDocumentV0,
     LawPolicyObstructionCircuitDefinitionV0, LawPolicyReadingBoundaryV0,
     LawPolicySignatureAxisDefinitionV0, LawPolicyWitnessRuleV0, ValidationCheck, ValidationExample,
 };
@@ -116,11 +119,33 @@ pub fn build_archsig_analysis_packet(
     );
     let arch_map_store_refs = build_arch_map_store_refs(archmap);
     let molecule_readings = build_molecule_readings(archmap, law_policy);
+    let generated_atom_shapes = build_generated_atom_shapes(archmap);
+    let generated_molecules = build_generated_molecules(archmap, &generated_atom_shapes);
+    let generated_law_inputs = build_generated_law_inputs(
+        law_policy,
+        &molecule_readings,
+        &generated_molecules,
+        &generated_atom_shapes,
+    );
     let obstruction_circuits = build_obstruction_circuits(archmap, law_policy, &molecule_readings);
+    let generated_obstructions = build_generated_obstructions(
+        &obstruction_circuits,
+        &generated_law_inputs,
+        &generated_molecules,
+        &generated_atom_shapes,
+    );
     let signature_axes = build_signature_axes(archmap, law_policy, &obstruction_circuits);
     let flatness_reading = build_flatness_reading(archmap, law_policy, &signature_axes);
     let repair_operation_candidates =
         build_repair_candidates(archmap, &obstruction_circuits, &signature_axes);
+    let generated_repair_targets = build_generated_repair_targets(
+        &repair_operation_candidates,
+        &generated_obstructions,
+        &generated_molecules,
+        &generated_atom_shapes,
+    );
+    let viewer_distance_inputs =
+        build_viewer_distance_inputs(archmap, &generated_molecules, &generated_atom_shapes);
     let architecture_object_projections = build_architecture_object_projections(archmap);
     let invariant_family_readings =
         build_invariant_family_readings(archmap, law_policy, &obstruction_circuits);
@@ -465,6 +490,12 @@ pub fn build_archsig_analysis_packet(
         invariant_family_readings,
         law_universe_reading,
         molecule_readings,
+        generated_atom_shapes,
+        generated_molecules,
+        generated_law_inputs,
+        generated_obstructions,
+        generated_repair_targets,
+        viewer_distance_inputs,
         obstruction_circuits,
         signature_axes,
         analytic_representations,
@@ -2458,6 +2489,503 @@ fn build_molecule_readings(
             }
         })
         .collect()
+}
+
+fn build_generated_atom_shapes(archmap: &ArchMapDocumentV0) -> Vec<ArchSigGeneratedAtomShapeV0> {
+    archmap
+        .atom_observations
+        .iter()
+        .map(|atom| {
+            let axis = atom_shape_axis(atom);
+            let mut object_slots = atom
+                .object_refs
+                .iter()
+                .enumerate()
+                .map(|(index, object_ref)| {
+                    format!("objectSlot:{index}:{}:axis={axis}", stable_id(object_ref))
+                })
+                .collect::<Vec<_>>();
+            object_slots.sort();
+            let payload_slots = vec![
+                format!("payload:observationStatus:{}", atom.observation_status),
+                format!("payload:confidence:{}", atom.confidence),
+            ];
+            let mut ports = vec![format!(
+                "subject:{}:family={}:axis={axis}",
+                stable_id(&atom.subject_ref),
+                atom.atom_family
+            )];
+            ports.extend(
+                atom.object_refs
+                    .iter()
+                    .map(|object_ref| format!("object:{}:axis={axis}", stable_id(object_ref))),
+            );
+            ports.sort();
+            ArchSigGeneratedAtomShapeV0 {
+                atom_shape_id: atom_shape_ref(&atom.atom_observation_id),
+                atom_observation_ref: atom.atom_observation_id.clone(),
+                family: atom.atom_family.clone(),
+                axis,
+                subject_ref: atom.subject_ref.clone(),
+                predicate: atom.predicate.clone(),
+                object_slots,
+                payload_slots,
+                direction: atom_shape_direction(atom).to_string(),
+                arity: 1 + atom.object_refs.len(),
+                valence_summary: format!(
+                    "subject port plus {} object port(s); shape is generated from atom family, predicate, subject, object slots, and payload slots",
+                    atom.object_refs.len()
+                ),
+                ports,
+                evidence_boundary:
+                    "generated AtomShape is computed from ArchMap atom observation fields; source refs and confidence remain observation metadata"
+                        .to_string(),
+                non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
+            }
+        })
+        .collect()
+}
+
+fn build_generated_molecules(
+    archmap: &ArchMapDocumentV0,
+    generated_atom_shapes: &[ArchSigGeneratedAtomShapeV0],
+) -> Vec<ArchSigGeneratedMoleculeV0> {
+    let shape_refs = generated_atom_shapes
+        .iter()
+        .map(|shape| shape.atom_observation_ref.as_str())
+        .collect::<BTreeSet<_>>();
+    archmap
+        .molecule_observations
+        .iter()
+        .map(|molecule| {
+            let atom_shape_refs = molecule
+                .atom_observation_refs
+                .iter()
+                .filter(|atom_ref| shape_refs.contains(atom_ref.as_str()))
+                .map(|atom_ref| atom_shape_ref(atom_ref))
+                .collect::<Vec<_>>();
+            let missing_shape_count = molecule
+                .atom_observation_refs
+                .len()
+                .saturating_sub(atom_shape_refs.len());
+            let generation_status = if molecule.atom_observation_refs.is_empty() {
+                "blockedByMissingAtomRefs"
+            } else if missing_shape_count > 0 {
+                "partialGeneratedMolecule"
+            } else {
+                "generatedCompatibleConfiguration"
+            };
+            let compatible_pair_count =
+                atom_shape_refs.len().saturating_mul(atom_shape_refs.len().saturating_sub(1)) / 2;
+            ArchSigGeneratedMoleculeV0 {
+                generated_molecule_id: generated_molecule_ref(&molecule.molecule_observation_id),
+                source_molecule_observation_ref: molecule.molecule_observation_id.clone(),
+                generation_status: generation_status.to_string(),
+                atom_observation_refs: molecule.atom_observation_refs.clone(),
+                atom_shape_refs,
+                compatible_pair_count,
+                required_port_status: if missing_shape_count == 0 {
+                    "required ports are represented by observed AtomShape ports in this bounded molecule"
+                        .to_string()
+                } else {
+                    format!("{missing_shape_count} atom ref(s) lack generated AtomShape evidence")
+                },
+                not_arbitrary_set_boundary:
+                    "generated molecule is materialized from an ArchMap molecule observation and its observed AtomShape refs; arbitrary atom sets are not promoted"
+                        .to_string(),
+                evidence_boundary:
+                    "compatibility is a bounded ArchSig construction over supplied atom refs, not a Lean proof of global molecule minimality"
+                        .to_string(),
+                non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
+            }
+        })
+        .collect()
+}
+
+fn build_generated_law_inputs(
+    law_policy: &LawPolicyDocumentV0,
+    molecule_readings: &[ArchSigMoleculeReadingV0],
+    generated_molecules: &[ArchSigGeneratedMoleculeV0],
+    generated_atom_shapes: &[ArchSigGeneratedAtomShapeV0],
+) -> Vec<ArchSigGeneratedLawInputV0> {
+    let generated_by_source = generated_molecules
+        .iter()
+        .map(|molecule| {
+            (
+                molecule.source_molecule_observation_ref.as_str(),
+                molecule.generated_molecule_id.as_str(),
+            )
+        })
+        .collect::<BTreeMap<_, _>>();
+    let shape_by_atom = generated_atom_shapes
+        .iter()
+        .map(|shape| {
+            (
+                shape.atom_observation_ref.as_str(),
+                shape.atom_shape_id.as_str(),
+            )
+        })
+        .collect::<BTreeMap<_, _>>();
+
+    molecule_readings
+        .iter()
+        .filter_map(|reading| {
+            let generated_molecule_ref =
+                generated_by_source.get(reading.molecule_observation_ref.as_str())?;
+            let law_refs = if reading.law_refs.is_empty() {
+                law_policy
+                    .selected_laws
+                    .iter()
+                    .map(|law| law.law_id.clone())
+                    .collect::<Vec<_>>()
+            } else {
+                reading.law_refs.clone()
+            };
+            let signature_axis_refs = law_policy
+                .signature_axis_definitions
+                .iter()
+                .filter(|axis| law_refs.contains(&axis.law_ref))
+                .map(|axis| axis.signature_axis_id.clone())
+                .collect::<Vec<_>>();
+            let atom_shape_refs = reading
+                .atom_observation_refs
+                .iter()
+                .filter_map(|atom_ref| shape_by_atom.get(atom_ref.as_str()).copied())
+                .map(str::to_string)
+                .collect::<Vec<_>>();
+            Some(ArchSigGeneratedLawInputV0 {
+                generated_law_input_id: format!(
+                    "generated-law-input:{}",
+                    stable_id(&reading.molecule_reading_id)
+                ),
+                generated_molecule_ref: (*generated_molecule_ref).to_string(),
+                source_molecule_reading_ref: reading.molecule_reading_id.clone(),
+                law_refs,
+                signature_axis_refs,
+                atom_shape_refs,
+                law_input_kind: "generatedArchitectureLawModelInput".to_string(),
+                evaluation_status: "availableForSelectedLawUniverse".to_string(),
+                coverage_boundary:
+                    "generated law input is built from observed molecule and selected LawPolicy laws; missing ArchMap evidence remains a coverage blocker"
+                        .to_string(),
+                evidence_boundary:
+                    "law input is an ArchSig middle-layer construction, not a hand-authored ArchitectureLawModel"
+                        .to_string(),
+                non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
+            })
+        })
+        .collect()
+}
+
+fn build_generated_obstructions(
+    obstruction_circuits: &[ArchSigObstructionCircuitV0],
+    generated_law_inputs: &[ArchSigGeneratedLawInputV0],
+    generated_molecules: &[ArchSigGeneratedMoleculeV0],
+    generated_atom_shapes: &[ArchSigGeneratedAtomShapeV0],
+) -> Vec<ArchSigGeneratedObstructionV0> {
+    let law_input_by_reading = generated_law_inputs
+        .iter()
+        .map(|input| {
+            (
+                input.source_molecule_reading_ref.as_str(),
+                input.generated_law_input_id.as_str(),
+            )
+        })
+        .collect::<BTreeMap<_, _>>();
+    let generated_molecule_by_source = generated_molecules
+        .iter()
+        .map(|molecule| {
+            (
+                molecule.source_molecule_observation_ref.as_str(),
+                molecule.generated_molecule_id.as_str(),
+            )
+        })
+        .collect::<BTreeMap<_, _>>();
+    let shape_by_atom = generated_atom_shapes
+        .iter()
+        .map(|shape| {
+            (
+                shape.atom_observation_ref.as_str(),
+                shape.atom_shape_id.as_str(),
+            )
+        })
+        .collect::<BTreeMap<_, _>>();
+
+    obstruction_circuits
+        .iter()
+        .map(|circuit| {
+            let generated_law_input_refs = circuit
+                .molecule_reading_refs
+                .iter()
+                .filter_map(|reading_ref| law_input_by_reading.get(reading_ref.as_str()).copied())
+                .map(str::to_string)
+                .collect::<Vec<_>>();
+            let generated_molecule_refs = generated_law_inputs
+                .iter()
+                .filter(|input| generated_law_input_refs.contains(&input.generated_law_input_id))
+                .map(|input| input.generated_molecule_ref.clone())
+                .chain(
+                    circuit
+                        .molecule_reading_refs
+                        .iter()
+                        .filter_map(|reading_ref| {
+                            generated_molecule_by_source.get(reading_ref.as_str()).copied()
+                        })
+                        .map(str::to_string),
+                )
+                .collect::<Vec<_>>();
+            let atom_shape_refs = circuit
+                .atom_observation_refs
+                .iter()
+                .filter_map(|atom_ref| shape_by_atom.get(atom_ref.as_str()).copied())
+                .map(str::to_string)
+                .collect::<Vec<_>>();
+            ArchSigGeneratedObstructionV0 {
+                generated_obstruction_id: format!(
+                    "generated-obstruction:{}",
+                    stable_id(&circuit.obstruction_circuit_id)
+                ),
+                obstruction_circuit_ref: circuit.obstruction_circuit_id.clone(),
+                generated_law_input_refs: unique_strings(generated_law_input_refs.into_iter()),
+                generated_molecule_refs: unique_strings(generated_molecule_refs.into_iter()),
+                atom_shape_refs: unique_strings(atom_shape_refs.into_iter()),
+                obstruction_kind: circuit.circuit_kind.clone(),
+                measurement_status: if circuit.missing_evidence.is_empty() {
+                    "locallyMeasuredGeneratedObstruction".to_string()
+                } else {
+                    "locallyBlockedByCoverageGap".to_string()
+                },
+                evidence_boundary:
+                    "generated obstruction is backed by generated molecule / law input refs and selected obstruction circuit evidence"
+                        .to_string(),
+                non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
+            }
+        })
+        .collect()
+}
+
+fn build_generated_repair_targets(
+    repair_candidates: &[ArchSigRepairOperationCandidateV0],
+    generated_obstructions: &[ArchSigGeneratedObstructionV0],
+    generated_molecules: &[ArchSigGeneratedMoleculeV0],
+    generated_atom_shapes: &[ArchSigGeneratedAtomShapeV0],
+) -> Vec<ArchSigGeneratedRepairTargetV0> {
+    let generated_obstruction_by_circuit = generated_obstructions
+        .iter()
+        .map(|obstruction| {
+            (
+                obstruction.obstruction_circuit_ref.as_str(),
+                obstruction.generated_obstruction_id.as_str(),
+            )
+        })
+        .collect::<BTreeMap<_, _>>();
+    let molecule_refs = generated_molecules
+        .iter()
+        .map(|molecule| molecule.generated_molecule_id.clone())
+        .collect::<BTreeSet<_>>();
+    let shape_refs = generated_atom_shapes
+        .iter()
+        .map(|shape| shape.atom_shape_id.clone())
+        .collect::<BTreeSet<_>>();
+
+    repair_candidates
+        .iter()
+        .map(|candidate| {
+            let generated_obstruction_refs = candidate
+                .target_obstruction_refs
+                .iter()
+                .filter_map(|obstruction_ref| {
+                    generated_obstruction_by_circuit
+                        .get(obstruction_ref.as_str())
+                        .copied()
+                })
+                .map(str::to_string)
+                .collect::<Vec<_>>();
+            let generated_molecule_refs = generated_obstructions
+                .iter()
+                .filter(|obstruction| {
+                    generated_obstruction_refs.contains(&obstruction.generated_obstruction_id)
+                })
+                .flat_map(|obstruction| obstruction.generated_molecule_refs.clone())
+                .filter(|molecule_ref| molecule_refs.contains(molecule_ref))
+                .collect::<Vec<_>>();
+            let atom_shape_refs = generated_obstructions
+                .iter()
+                .filter(|obstruction| {
+                    generated_obstruction_refs.contains(&obstruction.generated_obstruction_id)
+                })
+                .flat_map(|obstruction| obstruction.atom_shape_refs.clone())
+                .filter(|shape_ref| shape_refs.contains(shape_ref))
+                .collect::<Vec<_>>();
+            ArchSigGeneratedRepairTargetV0 {
+                repair_target_id: format!(
+                    "generated-repair-target:{}",
+                    stable_id(&candidate.repair_operation_candidate_id)
+                ),
+                target_kind: "shapeLevelGeneratedRepairTarget".to_string(),
+                source_repair_candidate_ref: candidate.repair_operation_candidate_id.clone(),
+                generated_obstruction_refs: unique_strings(generated_obstruction_refs.into_iter()),
+                generated_molecule_refs: unique_strings(generated_molecule_refs.into_iter()),
+                atom_shape_refs: unique_strings(atom_shape_refs.into_iter()),
+                blocked_by_gap_refs: candidate.missing_evidence.clone(),
+                required_port_or_slot: "portOrSlotOrValenceMismatch".to_string(),
+                recommended_operation_kind: candidate.operation_kind.clone(),
+                evidence_boundary:
+                    "repair target is localized to generated obstruction / molecule / AtomShape refs; it is not a free-form recommendation"
+                        .to_string(),
+                non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
+            }
+        })
+        .collect()
+}
+
+fn build_viewer_distance_inputs(
+    archmap: &ArchMapDocumentV0,
+    generated_molecules: &[ArchSigGeneratedMoleculeV0],
+    generated_atom_shapes: &[ArchSigGeneratedAtomShapeV0],
+) -> Vec<ArchSigViewerDistanceInputV0> {
+    let atoms_by_ref = archmap
+        .atom_observations
+        .iter()
+        .map(|atom| (atom.atom_observation_id.as_str(), atom))
+        .collect::<BTreeMap<_, _>>();
+    let shapes_by_atom = generated_atom_shapes
+        .iter()
+        .map(|shape| (shape.atom_observation_ref.as_str(), shape))
+        .collect::<BTreeMap<_, _>>();
+
+    let mut inputs = Vec::new();
+    for molecule in generated_molecules {
+        for left_index in 0..molecule.atom_observation_refs.len() {
+            for right_index in (left_index + 1)..molecule.atom_observation_refs.len() {
+                let left_ref = &molecule.atom_observation_refs[left_index];
+                let right_ref = &molecule.atom_observation_refs[right_index];
+                let Some(left) = atoms_by_ref.get(left_ref.as_str()) else {
+                    continue;
+                };
+                let Some(right) = atoms_by_ref.get(right_ref.as_str()) else {
+                    continue;
+                };
+                let Some(left_shape) = shapes_by_atom.get(left_ref.as_str()) else {
+                    continue;
+                };
+                let Some(right_shape) = shapes_by_atom.get(right_ref.as_str()) else {
+                    continue;
+                };
+                let (distance_value, coordinate_components) =
+                    atom_shape_distance_components(left, right);
+                inputs.push(ArchSigViewerDistanceInputV0 {
+                    distance_input_id: format!(
+                        "viewer-distance:{}:{}:{}",
+                        stable_id(&molecule.generated_molecule_id),
+                        stable_id(left_ref),
+                        stable_id(right_ref)
+                    ),
+                    distance_kind: "atom-shape-coordinate-mismatch-count".to_string(),
+                    source_ref: left_ref.clone(),
+                    target_ref: right_ref.clone(),
+                    generated_molecule_ref: Some(molecule.generated_molecule_id.clone()),
+                    atom_shape_refs: vec![
+                        left_shape.atom_shape_id.clone(),
+                        right_shape.atom_shape_id.clone(),
+                    ],
+                    distance_value: Some(distance_value),
+                    coordinate_components,
+                    evidence_boundary:
+                        "viewer distance input is computed from AtomShape coordinates for layout and review; it is not semantic equivalence or theorem distance"
+                            .to_string(),
+                    non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
+                });
+            }
+        }
+    }
+    inputs
+}
+
+fn atom_shape_ref(atom_observation_ref: &str) -> String {
+    format!("atom-shape:{}", stable_id(atom_observation_ref))
+}
+
+fn generated_molecule_ref(molecule_observation_ref: &str) -> String {
+    format!("generated-molecule:{}", stable_id(molecule_observation_ref))
+}
+
+fn atom_shape_axis(atom: &ArchMapAtomObservationV0) -> String {
+    let family = atom.atom_family.to_ascii_lowercase();
+    let predicate = atom.predicate.to_ascii_lowercase();
+    if family.contains("runtime") || predicate.contains("runtime") {
+        "runtime"
+    } else if family.contains("authority")
+        || family.contains("boundary")
+        || predicate.contains("authority")
+        || predicate.contains("boundary")
+    {
+        "boundary"
+    } else if family.contains("contract") || predicate.contains("contract") {
+        "specification"
+    } else if family.contains("state") || predicate.contains("state") {
+        "dataflow"
+    } else if family.contains("effect")
+        || family.contains("semantic")
+        || predicate.contains("effect")
+        || predicate.contains("semantic")
+    {
+        "semantic"
+    } else if family.contains("policy") || predicate.contains("policy") {
+        "policy"
+    } else {
+        "static"
+    }
+    .to_string()
+}
+
+fn atom_shape_direction(atom: &ArchMapAtomObservationV0) -> &'static str {
+    let family = atom.atom_family.to_ascii_lowercase();
+    let predicate = atom.predicate.to_ascii_lowercase();
+    if family.contains("relation")
+        || family.contains("runtime")
+        || family.contains("effect")
+        || predicate.contains("calls")
+        || predicate.contains("depends")
+        || predicate.contains("writes")
+    {
+        "outgoing"
+    } else {
+        "neutral"
+    }
+}
+
+fn atom_shape_distance_components(
+    left: &ArchMapAtomObservationV0,
+    right: &ArchMapAtomObservationV0,
+) -> (i64, Vec<String>) {
+    let left_axis = atom_shape_axis(left);
+    let right_axis = atom_shape_axis(right);
+    let left_objects = left.object_refs.join("|");
+    let right_objects = right.object_refs.join("|");
+    let components = [
+        (
+            "family",
+            left.atom_family.as_str(),
+            right.atom_family.as_str(),
+        ),
+        ("axis", left_axis.as_str(), right_axis.as_str()),
+        ("subject", left.subject_ref.as_str(), right.subject_ref.as_str()),
+        ("predicate", left.predicate.as_str(), right.predicate.as_str()),
+        ("objectSlotSet", left_objects.as_str(), right_objects.as_str()),
+    ];
+    let mut distance = 0i64;
+    let mut labels = Vec::new();
+    for (name, left_value, right_value) in components {
+        let contribution = if left_value == right_value { 0 } else { 1 };
+        distance += contribution;
+        labels.push(format!(
+            "{name}:left={}:right={}:delta={contribution}",
+            stable_id(left_value),
+            stable_id(right_value)
+        ));
+    }
+    (distance, labels)
 }
 
 fn build_obstruction_circuits(
@@ -12317,6 +12845,7 @@ pub fn validate_archsig_analysis_packet_report(
         check_curvature_transfer_surface(packet),
         check_architecture_spectrum_report_surface(packet),
         check_transfer_bridge_surface(packet),
+        check_generated_middle_layer_surface(packet),
         check_aat_structural_reading_surfaces(packet),
         check_current_state_evolution_boundary(packet),
         check_operation_square_trace_surface(packet),
@@ -12343,6 +12872,12 @@ pub fn validate_archsig_analysis_packet_report(
         },
         aat_concept_surface_count: packet.aat_concept_surfaces.len(),
         molecule_reading_count: packet.molecule_readings.len(),
+        generated_atom_shape_count: packet.generated_atom_shapes.len(),
+        generated_molecule_count: packet.generated_molecules.len(),
+        generated_law_input_count: packet.generated_law_inputs.len(),
+        generated_obstruction_count: packet.generated_obstructions.len(),
+        generated_repair_target_count: packet.generated_repair_targets.len(),
+        viewer_distance_input_count: packet.viewer_distance_inputs.len(),
         obstruction_circuit_count: packet.obstruction_circuits.len(),
         signature_axis_count: packet.signature_axes.len(),
         analytic_representation_count: packet.analytic_representations.len(),
@@ -17493,6 +18028,167 @@ fn check_monodromy_family(
             "reading family must keep non-conclusions explicit",
         ));
     }
+}
+
+fn check_generated_middle_layer_surface(packet: &ArchSigAnalysisPacketV0) -> ValidationCheck {
+    let mut examples = Vec::new();
+    if packet.generated_atom_shapes.is_empty() {
+        examples.push(generic_validation_example(
+            "generatedAtomShapes",
+            "empty",
+            "packet must expose AtomShape records generated from observed atoms",
+        ));
+    }
+    if packet.generated_molecules.is_empty() {
+        examples.push(generic_validation_example(
+            "generatedMolecules",
+            "empty",
+            "packet must expose generated molecules before law and obstruction readings",
+        ));
+    }
+    if packet.generated_law_inputs.is_empty() {
+        examples.push(generic_validation_example(
+            "generatedLawInputs",
+            "empty",
+            "packet must expose generated law inputs derived from generated molecules",
+        ));
+    }
+    if !packet.obstruction_circuits.is_empty() && packet.generated_obstructions.is_empty() {
+        examples.push(generic_validation_example(
+            "generatedObstructions",
+            "empty",
+            "packet must connect obstruction circuits to generated law inputs and molecules",
+        ));
+    }
+    if !packet.repair_operation_candidates.is_empty() && packet.generated_repair_targets.is_empty()
+    {
+        examples.push(generic_validation_example(
+            "generatedRepairTargets",
+            "empty",
+            "packet must localize repair candidates to generated shape-level targets",
+        ));
+    }
+    if packet.generated_molecules.iter().any(|molecule| {
+        molecule.atom_observation_refs.len() > 1
+    }) && packet.viewer_distance_inputs.is_empty()
+    {
+        examples.push(generic_validation_example(
+            "viewerDistanceInputs",
+            "empty",
+            "packet must expose AtomShape-based distance inputs for viewer layout",
+        ));
+    }
+
+    for shape in &packet.generated_atom_shapes {
+        push_blank(&mut examples, &shape.atom_shape_id, &shape.atom_observation_ref);
+        push_blank(
+            &mut examples,
+            &format!("{} family", shape.atom_shape_id),
+            &shape.family,
+        );
+        push_blank(
+            &mut examples,
+            &format!("{} axis", shape.atom_shape_id),
+            &shape.axis,
+        );
+        push_blank(
+            &mut examples,
+            &format!("{} valenceSummary", shape.atom_shape_id),
+            &shape.valence_summary,
+        );
+        if shape.ports.is_empty() {
+            examples.push(generic_validation_example(
+                &shape.atom_shape_id,
+                "ports",
+                "generated AtomShape must expose at least one valence port",
+            ));
+        }
+    }
+    for molecule in &packet.generated_molecules {
+        push_blank(
+            &mut examples,
+            &molecule.generated_molecule_id,
+            &molecule.source_molecule_observation_ref,
+        );
+        if molecule.atom_shape_refs.is_empty() {
+            examples.push(generic_validation_example(
+                &molecule.generated_molecule_id,
+                "atomShapeRefs",
+                "generated molecule must retain AtomShape refs",
+            ));
+        }
+        push_blank(
+            &mut examples,
+            &format!("{} notArbitrarySetBoundary", molecule.generated_molecule_id),
+            &molecule.not_arbitrary_set_boundary,
+        );
+    }
+    for input in &packet.generated_law_inputs {
+        push_blank(
+            &mut examples,
+            &input.generated_law_input_id,
+            &input.generated_molecule_ref,
+        );
+        if input.law_refs.is_empty() || input.atom_shape_refs.is_empty() {
+            examples.push(generic_validation_example(
+                &input.generated_law_input_id,
+                "lawRefs/atomShapeRefs",
+                "generated law input must connect laws to AtomShape-backed molecules",
+            ));
+        }
+    }
+    for obstruction in &packet.generated_obstructions {
+        push_blank(
+            &mut examples,
+            &obstruction.generated_obstruction_id,
+            &obstruction.obstruction_circuit_ref,
+        );
+        if obstruction.generated_law_input_refs.is_empty()
+            || obstruction.generated_molecule_refs.is_empty()
+        {
+            examples.push(generic_validation_example(
+                &obstruction.generated_obstruction_id,
+                "generatedLawInputRefs/generatedMoleculeRefs",
+                "generated obstruction must keep generated law input and molecule refs",
+            ));
+        }
+    }
+    for target in &packet.generated_repair_targets {
+        push_blank(&mut examples, &target.repair_target_id, &target.target_kind);
+        push_blank(
+            &mut examples,
+            &format!("{} requiredPortOrSlot", target.repair_target_id),
+            &target.required_port_or_slot,
+        );
+        if target.generated_obstruction_refs.is_empty() || target.atom_shape_refs.is_empty() {
+            examples.push(generic_validation_example(
+                &target.repair_target_id,
+                "generatedObstructionRefs/atomShapeRefs",
+                "generated repair target must localize to generated obstruction and AtomShape refs",
+            ));
+        }
+    }
+    for distance in &packet.viewer_distance_inputs {
+        push_blank(
+            &mut examples,
+            &distance.distance_input_id,
+            &distance.distance_kind,
+        );
+        if distance.atom_shape_refs.len() < 2 || distance.coordinate_components.is_empty() {
+            examples.push(generic_validation_example(
+                &distance.distance_input_id,
+                "atomShapeRefs/coordinateComponents",
+                "viewer distance input must compare two AtomShape coordinate records",
+            ));
+        }
+    }
+
+    check_from_examples(
+        "archsig-analysis-packet-generated-middle-layer",
+        "packet materializes generated AtomShape, molecule, law input, obstruction, repair target, and viewer distance inputs",
+        examples,
+        "fail",
+    )
 }
 
 fn check_measurement_depth(packet: &ArchSigAnalysisPacketV0) -> ValidationCheck {
