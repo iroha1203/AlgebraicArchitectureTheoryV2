@@ -329,15 +329,14 @@ def classifyChapter7
         (by simp)
         "Repair is connected through generated repair targets and pre-molecule repair problems."
   | .complexityTransfer =>
-      representationRow
+      atomGeneratedRow
         "chapter7.complexityTransfer"
         (Chapter7TheoremPackages.Candidate.representativeDeclarations
           .complexityTransfer)
-        ["BoundedComplexityTransferPackage"]
+        ["Chapter10ArchitectureExtensionFormula.generatedComplexityTransferExtensionObstructionWitnessExists_of_no_free_elimination",
+         "Chapter10ArchitectureExtensionFormula.generatedComplexityTransferExtensionObstructionWitness_multilabel_classified"]
         (by simp)
-        .downstreamLibrary
-        ActionAllowed.representationDownstream
-        "Complexity transfer remains a bounded representation-level diagnostic bridge rather than an Atom-generated theorem source."
+        "Bounded complexity transfer has generated identity feature-extension entrypoints into the Architecture Extension Formula classification layer."
   | .noSolutionCertificate =>
       atomGeneratedRow
         "chapter7.noSolutionCertificate"
@@ -497,25 +496,25 @@ def classifyChapter10
         (by simp)
         "Generated self-view lifting failures are classified in both single-label and multi-label extension-obstruction layers."
   | .complexityTransferBridge =>
-      representationRow
+      atomGeneratedRow
         "chapter10.complexityTransferBridge"
         (Chapter10ArchitectureExtensionFormula.Candidate.representativeDeclarations
           .complexityTransferBridge)
-        ["ComplexityTransferWitnessPayload"]
+        ["Chapter10ArchitectureExtensionFormula.generatedComplexityTransferExtensionObstructionWitness_classified",
+         "Chapter10ArchitectureExtensionFormula.generatedComplexityTransferExtensionObstructionWitnessExists_of_no_free_elimination",
+         "Chapter10ArchitectureExtensionFormula.generatedComplexityTransferExtensionObstructionWitness_multilabel_classified"]
         (by simp)
-        .downstreamLibrary
-        ActionAllowed.representationDownstream
-        "Complexity transfer is retained as a downstream analytic/classification bridge."
+        "Complexity-transfer witnesses classify over the generated identity feature extension."
   | .residualCoverageGapBridge =>
-      representationRow
+      atomGeneratedRow
         "chapter10.residualCoverageGapBridge"
         (Chapter10ArchitectureExtensionFormula.Candidate.representativeDeclarations
           .residualCoverageGapBridge)
-        ["ResidualCoverageGapWitnessPayload"]
+        ["Chapter10ArchitectureExtensionFormula.generatedResidualCoverageGapExtensionObstructionWitness_classified",
+         "Chapter10ArchitectureExtensionFormula.generatedResidualCoverageGapExtensionObstructionWitness_multilabel_classified",
+         "Chapter10ArchitectureExtensionFormula.generatedIdentityExtension_noResidualCoverageGapPayload"]
         (by simp)
-        .downstreamLibrary
-        ActionAllowed.representationDownstream
-        "Residual coverage gap remains a downstream coverage-diagnostic bridge."
+        "Residual-coverage diagnostics have generated identity feature-extension classification entrypoints, and generated identity coverage rules out residual-gap payloads."
 
 def classifyChapter11
     (candidate : Chapter11AnalyticRepresentation.Candidate) :
@@ -971,6 +970,15 @@ theorem generated_chapter8_path_diagram_is_atom_generated :
     (classifyChapter8 .obstructionAsNonFillability).classification =
       .atomGenerated := by
   exact ⟨rfl, rfl, rfl, rfl⟩
+
+theorem generated_complexity_residual_bridge_is_atom_generated :
+    (classifyChapter7 .complexityTransfer).classification =
+      .atomGenerated ∧
+    (classifyChapter10 .complexityTransferBridge).classification =
+      .atomGenerated ∧
+    (classifyChapter10 .residualCoverageGapBridge).classification =
+      .atomGenerated := by
+  exact ⟨rfl, rfl, rfl⟩
 
 end AATReconstructionClassification
 end Formal.Arch

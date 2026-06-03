@@ -16,7 +16,7 @@ coverage, or extractor-completeness claims.
 
 namespace Formal.Arch
 
-universe u v z
+universe u v w q r z
 
 namespace Chapter10ArchitectureExtensionFormula
 
@@ -140,7 +140,11 @@ def representativeDeclarations : Candidate -> List String
        "complexityTransferExtensionObstructionWitness_classified",
        "complexityTransferExtensionObstructionWitnessExists_of_transferredTo",
        "complexityTransferExtensionObstructionWitnessExists_of_no_free_elimination",
-       "complexityTransferExtensionObstructionWitness_multilabel_classified"]
+       "complexityTransferExtensionObstructionWitness_multilabel_classified",
+       "Chapter10ArchitectureExtensionFormula.generatedComplexityTransferExtensionObstructionWitness_classified",
+       "Chapter10ArchitectureExtensionFormula.generatedComplexityTransferExtensionObstructionWitnessExists_of_transferredTo",
+       "Chapter10ArchitectureExtensionFormula.generatedComplexityTransferExtensionObstructionWitnessExists_of_no_free_elimination",
+       "Chapter10ArchitectureExtensionFormula.generatedComplexityTransferExtensionObstructionWitness_multilabel_classified"]
   | residualCoverageGapBridge =>
       ["ResidualCoverageGapWitnessPayload",
        "residualCoverageGapExtensionObstructionWitness",
@@ -148,7 +152,10 @@ def representativeDeclarations : Candidate -> List String
        "not_extensionCoverage_of_residualCoverageGapPayload",
        "residualCoverageGapExtensionObstructionWitnessExists_of_extensionCoverageWitnessExists",
        "residualCoverageGapExtensionObstructionWitnessExists_of_not_extensionCoverage",
-       "residualCoverageGapExtensionObstructionWitness_multilabel_classified"]
+       "residualCoverageGapExtensionObstructionWitness_multilabel_classified",
+       "Chapter10ArchitectureExtensionFormula.generatedResidualCoverageGapExtensionObstructionWitness_classified",
+       "Chapter10ArchitectureExtensionFormula.generatedResidualCoverageGapExtensionObstructionWitness_multilabel_classified",
+       "Chapter10ArchitectureExtensionFormula.generatedIdentityExtension_noResidualCoverageGapPayload"]
 
 /--
 Schematic-name to Lean-API correspondences for Chapter 10.
@@ -242,9 +249,12 @@ def schematicCorrespondences : Candidate -> List SchematicCorrespondence
            "complexityTransferExtensionObstructionWitness",
            "complexityTransferExtensionObstructionWitness_classified",
            "complexityTransferExtensionObstructionWitnessExists_of_no_free_elimination",
-           "complexityTransferExtensionObstructionWitness_multilabel_classified"],
+           "complexityTransferExtensionObstructionWitness_multilabel_classified",
+           "Chapter10ArchitectureExtensionFormula.generatedComplexityTransferExtensionObstructionWitness_classified",
+           "Chapter10ArchitectureExtensionFormula.generatedComplexityTransferExtensionObstructionWitnessExists_of_no_free_elimination",
+           "Chapter10ArchitectureExtensionFormula.generatedComplexityTransferExtensionObstructionWitness_multilabel_classified"],
          reading :=
-          "selected runtime / semantic / policy transfer witness embedded into the complexity-transfer classification layer",
+          "selected runtime / semantic / policy transfer witness embedded into the generated identity feature-extension complexity-transfer classification layer",
          status := "defined only / proved" }]
   | residualCoverageGapBridge =>
       [{ schematic := "residual coverage gap classified as extension obstruction",
@@ -253,9 +263,12 @@ def schematicCorrespondences : Candidate -> List SchematicCorrespondence
            "residualCoverageGapExtensionObstructionWitness",
            "residualCoverageGapExtensionObstructionWitness_classified",
            "residualCoverageGapExtensionObstructionWitnessExists_of_not_extensionCoverage",
-           "residualCoverageGapExtensionObstructionWitness_multilabel_classified"],
+           "residualCoverageGapExtensionObstructionWitness_multilabel_classified",
+           "Chapter10ArchitectureExtensionFormula.generatedResidualCoverageGapExtensionObstructionWitness_classified",
+           "Chapter10ArchitectureExtensionFormula.generatedResidualCoverageGapExtensionObstructionWitness_multilabel_classified",
+           "Chapter10ArchitectureExtensionFormula.generatedIdentityExtension_noResidualCoverageGapPayload"],
          reading :=
-          "selected extension-coverage diagnostic embedded into the residual-coverage-gap classification layer",
+          "selected extension-coverage diagnostic embedded into the generated identity feature-extension residual-coverage classification layer; generated identity coverage rules out such payloads",
          status := "defined only / proved" }]
 
 /-- Boundary reminder for reading each candidate as a bounded Chapter 10 API. -/
@@ -437,6 +450,169 @@ theorem generatedSelfLiftingFailureExtensionObstructionWitness_multilabel_classi
         (Formal.Arch.Chapter9DiagramFilling.generatedSelfSplitExtensionLiftingData object)
         payload).toMultiLabel :=
   rfl
+
+/--
+Atom-generated specialization of the complexity-transfer classification bridge
+over the generated identity feature extension.
+-/
+theorem generatedComplexityTransferExtensionObstructionWitness_classified
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : AAT.GeneratedArchitectureObject presentation}
+    {Transform : Type q} {Witness : Type z}
+    {S : ComplexityTransferSchema Transform Witness}
+    {target : ComplexityTransferTarget} {t : Transform}
+    (payload : ComplexityTransferWitnessPayload S target t) :
+    ClassifiedAsComplexityTransfer
+      object.generatedIdentityFeatureExtension
+      object.generatedIdentityExtensionComponentUniverse
+      (complexityTransferExtensionObstructionWitness
+        object.generatedIdentityFeatureExtension payload) :=
+  complexityTransferExtensionObstructionWitness_classified
+    object.generatedIdentityFeatureExtension
+    object.generatedIdentityExtensionComponentUniverse
+    payload
+
+/--
+Atom-generated specialization of the target-specific complexity-transfer
+existence bridge.
+-/
+theorem generatedComplexityTransferExtensionObstructionWitnessExists_of_transferredTo
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    (object : AAT.GeneratedArchitectureObject presentation)
+    {Transform : Type q} {Witness : Type z}
+    {S : ComplexityTransferSchema Transform Witness}
+    {target : ComplexityTransferTarget} {t : Transform}
+    (hTransfer : ComplexityTransferredTo S target t) :
+    ∃ payload : ComplexityTransferWitnessPayload S target t,
+      ClassifiedAsComplexityTransfer
+        object.generatedIdentityFeatureExtension
+        object.generatedIdentityExtensionComponentUniverse
+        (complexityTransferExtensionObstructionWitness
+          object.generatedIdentityFeatureExtension payload) :=
+  complexityTransferExtensionObstructionWitnessExists_of_transferredTo
+    object.generatedIdentityFeatureExtension
+    object.generatedIdentityExtensionComponentUniverse
+    hTransfer
+
+/--
+Atom-generated specialization of the bounded no-free-elimination complexity
+transfer bridge.
+-/
+theorem generatedComplexityTransferExtensionObstructionWitnessExists_of_no_free_elimination
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    (object : AAT.GeneratedArchitectureObject presentation)
+    {State : Type w} {Transform : Type q} {Requirement : Type r}
+    {Witness : Type z}
+    {T : ArchitectureTransform State Transform}
+    {staticMeasure : SelectedComplexityMeasure State}
+    {requirements : RequirementSchema State Requirement}
+    {S : ComplexityTransferSchema Transform Witness}
+    (pkg : BoundedComplexityTransferPackage T staticMeasure requirements S)
+    (t : Transform)
+    (hReduces : ReducesStaticComplexity T staticMeasure t)
+    (hPreserves :
+      PreservesRequirements requirements (T.source t) (T.target t))
+    (hNotEliminated : ¬ ComplexityEliminatedByProof S t) :
+    ∃ target : ComplexityTransferTarget,
+      ∃ payload : ComplexityTransferWitnessPayload S target t,
+        ClassifiedAsComplexityTransfer
+          object.generatedIdentityFeatureExtension
+          object.generatedIdentityExtensionComponentUniverse
+          (complexityTransferExtensionObstructionWitness
+            object.generatedIdentityFeatureExtension payload) :=
+  complexityTransferExtensionObstructionWitnessExists_of_no_free_elimination
+    object.generatedIdentityFeatureExtension
+    object.generatedIdentityExtensionComponentUniverse
+    pkg t hReduces hPreserves hNotEliminated
+
+/--
+Atom-generated specialization of the complexity-transfer multi-label bridge.
+-/
+theorem generatedComplexityTransferExtensionObstructionWitness_multilabel_classified
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : AAT.GeneratedArchitectureObject presentation}
+    {Transform : Type q} {Witness : Type z}
+    {S : ComplexityTransferSchema Transform Witness}
+    {target : ComplexityTransferTarget} {t : Transform}
+    (payload : ComplexityTransferWitnessPayload S target t) :
+    MultiLabelClassifiedAsComplexityTransfer
+      object.generatedIdentityFeatureExtension
+      object.generatedIdentityExtensionComponentUniverse
+      (complexityTransferExtensionObstructionWitness
+        object.generatedIdentityFeatureExtension payload).toMultiLabel :=
+  complexityTransferExtensionObstructionWitness_multilabel_classified
+    object.generatedIdentityFeatureExtension
+    object.generatedIdentityExtensionComponentUniverse
+    payload
+
+/--
+Atom-generated specialization of the residual-coverage-gap classification
+bridge over the generated identity feature extension.
+-/
+theorem generatedResidualCoverageGapExtensionObstructionWitness_classified
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : AAT.GeneratedArchitectureObject presentation}
+    (payload :
+      ResidualCoverageGapWitnessPayload
+        object.generatedIdentityFeatureExtension
+        object.generatedIdentityExtensionComponentUniverse) :
+    ClassifiedAsResidualCoverageGap
+      object.generatedIdentityFeatureExtension
+      object.generatedIdentityExtensionComponentUniverse
+      (residualCoverageGapExtensionObstructionWitness
+        object.generatedIdentityFeatureExtension
+        object.generatedIdentityExtensionComponentUniverse
+        payload) :=
+  residualCoverageGapExtensionObstructionWitness_classified
+    object.generatedIdentityFeatureExtension
+    object.generatedIdentityExtensionComponentUniverse
+    payload
+
+/--
+Atom-generated specialization of the residual-coverage-gap multi-label bridge.
+-/
+theorem generatedResidualCoverageGapExtensionObstructionWitness_multilabel_classified
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : AAT.GeneratedArchitectureObject presentation}
+    (payload :
+      ResidualCoverageGapWitnessPayload
+        object.generatedIdentityFeatureExtension
+        object.generatedIdentityExtensionComponentUniverse) :
+    MultiLabelClassifiedAsResidualCoverageGap
+      object.generatedIdentityFeatureExtension
+      object.generatedIdentityExtensionComponentUniverse
+      (residualCoverageGapExtensionObstructionWitness
+        object.generatedIdentityFeatureExtension
+        object.generatedIdentityExtensionComponentUniverse
+        payload).toMultiLabel :=
+  residualCoverageGapExtensionObstructionWitness_multilabel_classified
+    object.generatedIdentityFeatureExtension
+    object.generatedIdentityExtensionComponentUniverse
+    payload
+
+/--
+Generated identity feature extensions have complete generated coverage, so a
+residual coverage-gap payload cannot be constructed for that generated surface.
+-/
+theorem generatedIdentityExtension_noResidualCoverageGapPayload
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    (object : AAT.GeneratedArchitectureObject presentation) :
+    ¬ Nonempty
+      (ResidualCoverageGapWitnessPayload
+        object.generatedIdentityFeatureExtension
+        object.generatedIdentityExtensionComponentUniverse) := by
+  intro hPayload
+  rcases hPayload with ⟨payload⟩
+  exact
+    not_extensionCoverage_of_residualCoverageGapPayload payload
+      object.generatedIdentityExtensionCoverageComplete
 
 end Chapter10ArchitectureExtensionFormula
 

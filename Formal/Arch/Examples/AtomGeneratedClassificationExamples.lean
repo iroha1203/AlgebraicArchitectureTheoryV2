@@ -138,4 +138,17 @@ theorem generated_chapter8_path_diagram_classified_atom_generated :
         .atomGenerated := by
   exact generated_chapter8_path_diagram_is_atom_generated
 
+/--
+Acceptance: complexity transfer and residual coverage diagnostics now have
+generated identity feature-extension entrypoints in the classification registry.
+-/
+theorem generated_complexity_residual_bridge_classified_atom_generated :
+    (classifyChapter7 .complexityTransfer).classification =
+        .atomGenerated ∧
+      (classifyChapter10 .complexityTransferBridge).classification =
+        .atomGenerated ∧
+      (classifyChapter10 .residualCoverageGapBridge).classification =
+        .atomGenerated := by
+  exact generated_complexity_residual_bridge_is_atom_generated
+
 end Formal.Arch.AtomGeneratedClassificationExamples

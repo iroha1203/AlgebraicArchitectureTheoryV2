@@ -261,7 +261,9 @@ def representativeDeclarations : Candidate -> List String
        "BoundedComplexityTransferPackage.complexityTransfer_selectedAlternative",
        "BoundedComplexityTransferPackage.no_free_elimination_bounded",
        "complexityTransferExtensionObstructionWitness",
-       "complexityTransferExtensionObstructionWitnessExists_of_no_free_elimination"]
+       "complexityTransferExtensionObstructionWitnessExists_of_no_free_elimination",
+       "Chapter10ArchitectureExtensionFormula.generatedComplexityTransferExtensionObstructionWitnessExists_of_no_free_elimination",
+       "Chapter10ArchitectureExtensionFormula.generatedComplexityTransferExtensionObstructionWitness_multilabel_classified"]
   | noSolutionCertificate =>
       ["NoSolutionCertificate",
        "ValidNoSolutionCertificate",
@@ -378,9 +380,13 @@ def schematicCorrespondences : Candidate -> List SchematicCorrespondence
            "ComplexityTransferWitnessPayload",
            "complexityTransferExtensionObstructionWitness",
            "complexityTransferExtensionObstructionWitness_classified",
-           "complexityTransferExtensionObstructionWitnessExists_of_no_free_elimination"],
+           "Chapter10ArchitectureExtensionFormula.generatedComplexityTransferExtensionObstructionWitness_classified",
+           "complexityTransferExtensionObstructionWitnessExists_of_no_free_elimination",
+           "Chapter10ArchitectureExtensionFormula.generatedComplexityTransferExtensionObstructionWitnessExists_of_no_free_elimination",
+           "complexityTransferExtensionObstructionWitness_multilabel_classified",
+           "Chapter10ArchitectureExtensionFormula.generatedComplexityTransferExtensionObstructionWitness_multilabel_classified"],
          reading :=
-          "bounded alternative plus bridge into the Architecture Extension Formula complexity-transfer classification",
+          "bounded alternative plus bridge into the generated identity Architecture Extension Formula complexity-transfer classification",
          status := "defined only / proved" }]
   | noSolutionCertificate =>
       [{ schematic := "ProducesNoSolutionCertificate C cert",
