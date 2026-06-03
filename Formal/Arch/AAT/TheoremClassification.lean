@@ -214,8 +214,26 @@ def genericSignatureBridgeLegacySurface : LegacyBridgeSurface where
   bridgeEvidence := by simp
   replacementEvidence := by simp
 
+def generatedWalkAcyclicLawModelLegacySurface : LegacyBridgeSurface where
+  surfaceId := "aat.generatedLawModelFromWalkAcyclic"
+  representativeDeclarations :=
+    ["AAT.GeneratedArchitectureLawModel.generated_law_model_from_generated_object"]
+  bridgeAssumptions := ["WalkAcyclic (GeneratedArchGraph object)"]
+  generatedReplacementEntrypoints :=
+    ["AAT.GeneratedGraphRank.walkAcyclic",
+     "AAT.GeneratedArchitectureLawModel.ofGraphRank",
+     "AAT.GeneratedArchitectureLawModel.generated_law_model_from_generated_graph_rank"]
+  reason :=
+    "The compatibility constructor accepts a caller-supplied generated-graph acyclicity premise; the theorem-package registry uses the generated graph-rank constructor as the source-of-truth entrypoint."
+  bridgeEvidence := by simp
+  replacementEvidence := by simp
+
 def legacyBridgeSurfaces : List LegacyBridgeSurface :=
-  [genericSignatureBridgeLegacySurface]
+  [genericSignatureBridgeLegacySurface,
+   generatedWalkAcyclicLawModelLegacySurface]
+
+def legacyBridgeSurfaceIds : List String :=
+  legacyBridgeSurfaces.map (fun surface => surface.surfaceId)
 
 /-- AAT-side theorem packages not already represented by chapter candidates. -/
 inductive AATCandidate where
@@ -1060,6 +1078,19 @@ theorem generic_signature_bridge_is_legacy_replaced_surface :
         genericSignatureBridgeLegacySurface,
       LegacyBridgeSurface.has_generated_replacement
         genericSignatureBridgeLegacySurface⟩
+
+theorem generated_walk_acyclic_law_model_is_not_theorem_package_registry_row :
+    "aat.generatedLawModelFromWalkAcyclic" ∉ allPackageIds := by
+  native_decide
+
+theorem generated_walk_acyclic_law_model_is_legacy_replaced_surface :
+    generatedWalkAcyclicLawModelLegacySurface.IsBridgeAssumptionSurface ∧
+    generatedWalkAcyclicLawModelLegacySurface.HasGeneratedReplacement := by
+  exact
+    ⟨LegacyBridgeSurface.bridge_assumption_surface
+        generatedWalkAcyclicLawModelLegacySurface,
+      LegacyBridgeSurface.has_generated_replacement
+        generatedWalkAcyclicLawModelLegacySurface⟩
 
 theorem generated_signature_bridge_is_atom_generated :
     (classifyAATCandidate .generatedSignatureBridge).classification =

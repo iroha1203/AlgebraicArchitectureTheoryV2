@@ -114,6 +114,20 @@ theorem generic_signature_bridge_is_legacy_replaced_surface_acceptance :
       generic_signature_bridge_is_not_theorem_package_registry_row⟩
 
 /--
+Acceptance: the old generated-law-model constructor that accepts a raw
+`WalkAcyclic` premise is retained only as a legacy compatibility surface.  The
+registry source entrypoint is the generated graph-rank constructor.
+-/
+theorem generated_walk_acyclic_law_model_is_legacy_replaced_surface_acceptance :
+    generatedWalkAcyclicLawModelLegacySurface.IsBridgeAssumptionSurface ∧
+      generatedWalkAcyclicLawModelLegacySurface.HasGeneratedReplacement ∧
+      "aat.generatedLawModelFromWalkAcyclic" ∉ allPackageIds := by
+  exact
+    ⟨generated_walk_acyclic_law_model_is_legacy_replaced_surface.1,
+      generated_walk_acyclic_law_model_is_legacy_replaced_surface.2,
+      generated_walk_acyclic_law_model_is_not_theorem_package_registry_row⟩
+
+/--
 Acceptance: the generated Signature bridge is the Atom-generated replacement
 entrypoint for the generic bridge.
 -/
