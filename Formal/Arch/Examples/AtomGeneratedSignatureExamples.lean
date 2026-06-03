@@ -223,11 +223,9 @@ SFT input without becoming a forecast-correctness theorem.
 -/
 noncomputable def atomGeneratedSignature_sftInput :
     AAT.GeneratedSFTInput generatedComponentLawModel where
-  theoremStatus :=
-    generatedComponentLawModel.generatedAATTheoremStatusForSFT
-      True True True True True
-  theoremStatusFromGenerated :=
-    generatedComponentLawModel.generatedAATTheoremStatusForSFT_recordsTheoremPackage
+  theoremBoundary := True
+  unmeasuredAxisBoundary := True
+  toolingBoundary := True
   sftReadsGeneratedAAT := True
   sftReadsGeneratedAATEvidence := trivial
   sftDoesNotRedefineAtoms := True
@@ -240,6 +238,14 @@ noncomputable def atomGeneratedSignature_sftInput :
     componentSystem.sft_event_does_not_create_atoms
   nonConclusions := True
 
+theorem atomGeneratedSignature_sft_theoremStatusFromGenerated :
+    atomGeneratedSignature_sftInput.theoremStatus.RecordsTheoremPackage := by
+  exact atomGeneratedSignature_sftInput.theoremStatusFromGenerated
+
+theorem atomGeneratedSignature_sft_measuredZeroFromGenerated :
+    atomGeneratedSignature_sftInput.theoremStatus.RecordsMeasuredZeroEvidence := by
+  exact atomGeneratedSignature_sftInput.measured_zero_from_generated
+
 theorem atomGeneratedSignature_sft_reads_generated_aat :
     atomGeneratedSignature_sftInput.sftReadsGeneratedAAT := by
   exact atomGeneratedSignature_sftInput.reads_generated_aat
@@ -247,5 +253,49 @@ theorem atomGeneratedSignature_sft_reads_generated_aat :
 theorem atomGeneratedSignature_sft_forecast_correctness_boundary :
     atomGeneratedSignature_sftInput.forecastCorrectnessBoundary := by
   exact atomGeneratedSignature_sftInput.forecast_correctness_remains_boundary
+
+noncomputable def atomGeneratedSignature_sftForecastStatus :
+    SFTForecastStatus where
+  localPremise := True
+  supportBoundary := True
+  trajectorySafetyBoundary := True
+  measuredAxisBoundary := True
+  unmeasuredAxisBoundary := True
+  theoremBoundary := True
+  toolingBoundary := True
+  forecastBoundary := True
+  nonConclusions := True
+
+noncomputable def atomGeneratedSignature_sftInterfaceBoundary :
+    AATToSFTInterfaceBoundary
+      atomGeneratedSignature_sftInput.theoremStatus
+      atomGeneratedSignature_sftForecastStatus where
+  readsAATAsLocalPremise := by
+    intro _hGeneratedStatus
+    trivial
+  preservesAATTheoremBoundary := by
+    intro _hTheoremBoundary
+    trivial
+  preservesMeasuredAxisBoundary := by
+    intro _hMeasured
+    trivial
+  preservesUnmeasuredAxisBoundary := by
+    intro _hUnmeasured
+    trivial
+  preservesToolingBoundary := by
+    intro _hTooling
+    trivial
+  recordsSupportBoundary := trivial
+  recordsTrajectorySafetyBoundary := trivial
+  recordsForecastBoundary := trivial
+  recordsNonConclusions := by
+    intro _hNonConclusions
+    trivial
+
+theorem atomGeneratedSignature_sft_localPremiseFromGenerated :
+    atomGeneratedSignature_sftForecastStatus.RecordsLocalPremise := by
+  exact
+    atomGeneratedSignature_sftInput.reads_generated_aat_as_sft_local_premise
+      atomGeneratedSignature_sftInterfaceBoundary
 
 end Formal.Arch.AtomGeneratedSignatureExamples

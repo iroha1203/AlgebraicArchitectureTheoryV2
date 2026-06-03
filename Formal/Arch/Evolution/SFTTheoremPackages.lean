@@ -6,6 +6,7 @@ import Formal.Arch.Evolution.SFTArtifactAction
 import Formal.Arch.Evolution.SFTPolicy
 import Formal.Arch.Evolution.SFTReachability
 import Formal.Arch.Evolution.SFTFieldUpdate
+import Formal.Arch.AAT.GeneratedSFT
 import Formal.Arch.Evolution.SFTEnvelope
 import Formal.Arch.Evolution.SFTInterfaceBoundary
 import Formal.Arch.Evolution.SFTArchSigBoundary
@@ -162,6 +163,14 @@ def representativeDeclarations : Candidate -> List String
   | aatInterfaceBoundary =>
       ["AATTheoremStatus",
        "SFTForecastStatus",
+       "AAT.GeneratedArchitectureLawModel.generatedAATTheoremStatusForSFT",
+       "AAT.GeneratedArchitectureLawModel.generatedAATTheoremStatusForSFT_recordsTheoremPackage",
+       "AAT.GeneratedArchitectureLawModel.generatedAATTheoremStatusForSFT_recordsMeasuredZeroEvidence",
+       "AAT.GeneratedSFTInput",
+       "AAT.GeneratedSFTInput.theoremStatus",
+       "AAT.GeneratedSFTInput.theoremStatusFromGenerated",
+       "AAT.GeneratedSFTInput.measured_zero_from_generated",
+       "AAT.GeneratedSFTInput.reads_generated_aat_as_sft_local_premise",
        "AATCoreLocalAlgebraForSFT",
        "AATCoreTransition",
        "AATToSFTInterfaceBoundary",
@@ -530,13 +539,17 @@ def schematicCorrespondences : Candidate -> List SchematicCorrespondence
   | aatInterfaceBoundary =>
       [{ schematic := "AAT theorem status is only an SFT local premise",
          leanDeclarations :=
-          ["AATToSFTInterfaceBoundary.aat_theorem_status_as_local_premise",
+          ["AAT.GeneratedSFTInput.theoremStatus",
+           "AAT.GeneratedSFTInput.theoremStatusFromGenerated",
+           "AAT.GeneratedSFTInput.measured_zero_from_generated",
+           "AAT.GeneratedSFTInput.reads_generated_aat_as_sft_local_premise",
+           "AATToSFTInterfaceBoundary.aat_theorem_status_as_local_premise",
            "AATToSFTInterfaceBoundary.aat_lawfulness_alone_does_not_discharge_trajectory_safety_boundary",
            "AATToSFTInterfaceBoundary.measured_zero_does_not_discharge_unmeasured_axis_safety_boundary",
            "AATCoreLocalAlgebraForSFT.reads_aatcore_as_local_algebra",
            "AATCoreTransition.operation_does_not_create_atoms"],
          reading :=
-          "AATCore evidence is read as local algebra and does not automatically promote to forecast safety",
+          "Atom-generated theorem status and AATCore evidence are read as local algebra or local premise and do not automatically promote to forecast safety",
          status := "proved accessors" }]
   | archSigReportBoundary =>
       [{ schematic := "ArchSig report reads as SFT estimate/status boundary",
