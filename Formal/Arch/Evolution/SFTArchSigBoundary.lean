@@ -439,4 +439,259 @@ theorem theorem_and_nonConclusions_remain_boundaries
 
 end FieldSigAATCoreTransitionAnalysis
 
+/--
+Generated ArchSig-side transition between two Atom-generated AAT cores.
+
+Unlike `ArchSigAATCoreTransition`, this record does not accept caller-supplied
+Signature bridges.  The source and target bridges are computed from the
+generated law models, so callers cannot discharge the transition by manually
+filling an `architectureLawfulFromAAT` field.
+-/
+structure GeneratedArchSigAATCoreTransition
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {sourceObject targetObject :
+      AAT.GeneratedArchitectureObject presentation}
+    (sourceModel : AAT.GeneratedArchitectureLawModel sourceObject)
+    (targetModel : AAT.GeneratedArchitectureLawModel targetObject) where
+  transition :
+    AATCoreTransition
+      sourceModel.generatedAATCore targetModel.generatedAATCore
+  analyzesUsingAAT : Prop
+  analyzesUsingAATEvidence : analyzesUsingAAT
+  transitionBoundary : Prop
+  transitionBoundaryEvidence : transitionBoundary
+  archsigDoesNotDefineAAT : Prop
+  archsigDoesNotDefineAATEvidence : archsigDoesNotDefineAAT
+  fieldSigAnalysisBoundary : Prop
+  fieldSigAnalysisBoundaryEvidence : fieldSigAnalysisBoundary
+  unknownRejectedUnmeasuredSeparated : Prop
+  unknownRejectedUnmeasuredSeparatedEvidence :
+    unknownRejectedUnmeasuredSeparated
+  measuredZeroBoundary : Prop
+  validationIsNotTheoremDischarge : Prop
+  nonConclusions : Prop
+
+namespace GeneratedArchSigAATCoreTransition
+
+variable {system : AtomAxiomSystem.{u, v}}
+variable {presentation : AtomShapePresentation system}
+variable
+  {sourceObject targetObject :
+    AAT.GeneratedArchitectureObject presentation}
+variable
+  {sourceModel : AAT.GeneratedArchitectureLawModel sourceObject}
+variable
+  {targetModel : AAT.GeneratedArchitectureLawModel targetObject}
+
+/-- Source-side Signature bridge generated from the source law model. -/
+noncomputable def sourceBridge
+    (archsigTransition :
+      GeneratedArchSigAATCoreTransition sourceModel targetModel) :
+    ArchitectureSignature.AATCoreSignatureLawfulnessBridge
+      sourceModel.generatedAATCore sourceModel.toArchitectureLawModel :=
+  ArchitectureSignature.AATCoreSignatureLawfulnessBridge.ofGeneratedLawModel
+    sourceModel
+    archsigTransition.analyzesUsingAAT
+    archsigTransition.archsigDoesNotDefineAAT
+    archsigTransition.unknownRejectedUnmeasuredSeparated
+    archsigTransition.measuredZeroBoundary
+    archsigTransition.validationIsNotTheoremDischarge
+    archsigTransition.nonConclusions
+    archsigTransition.analyzesUsingAATEvidence
+    archsigTransition.archsigDoesNotDefineAATEvidence
+    archsigTransition.unknownRejectedUnmeasuredSeparatedEvidence
+
+/-- Target-side Signature bridge generated from the target law model. -/
+noncomputable def targetBridge
+    (archsigTransition :
+      GeneratedArchSigAATCoreTransition sourceModel targetModel) :
+    ArchitectureSignature.AATCoreSignatureLawfulnessBridge
+      targetModel.generatedAATCore targetModel.toArchitectureLawModel :=
+  ArchitectureSignature.AATCoreSignatureLawfulnessBridge.ofGeneratedLawModel
+    targetModel
+    archsigTransition.analyzesUsingAAT
+    archsigTransition.archsigDoesNotDefineAAT
+    archsigTransition.unknownRejectedUnmeasuredSeparated
+    archsigTransition.measuredZeroBoundary
+    archsigTransition.validationIsNotTheoremDischarge
+    archsigTransition.nonConclusions
+    archsigTransition.analyzesUsingAATEvidence
+    archsigTransition.archsigDoesNotDefineAATEvidence
+    archsigTransition.unknownRejectedUnmeasuredSeparatedEvidence
+
+/-- The generated ArchSig transition records its selected boundary. -/
+theorem records_transition_boundary
+    (archsigTransition :
+      GeneratedArchSigAATCoreTransition sourceModel targetModel) :
+    archsigTransition.transitionBoundary :=
+  archsigTransition.transitionBoundaryEvidence
+
+/-- Generated ArchSig transition analysis does not define AAT. -/
+theorem archsig_transition_does_not_define_aat
+    (archsigTransition :
+      GeneratedArchSigAATCoreTransition sourceModel targetModel) :
+    archsigTransition.archsigDoesNotDefineAAT :=
+  archsigTransition.archsigDoesNotDefineAATEvidence
+
+/-- The generated transition remains an analysis boundary for FieldSig. -/
+theorem records_fieldsig_analysis_boundary
+    (archsigTransition :
+      GeneratedArchSigAATCoreTransition sourceModel targetModel) :
+    archsigTransition.fieldSigAnalysisBoundary :=
+  archsigTransition.fieldSigAnalysisBoundaryEvidence
+
+/-- The underlying generated AATCore transition does not create atom existence. -/
+theorem transition_does_not_create_atoms
+    (archsigTransition :
+      GeneratedArchSigAATCoreTransition sourceModel targetModel) :
+    system.noToolOutputCreatesAtoms :=
+  archsigTransition.transition.operation_does_not_create_atoms
+
+/-- The generated source bridge derives Signature lawfulness from the source model. -/
+theorem source_bridge_architectureLawful
+    (archsigTransition :
+      GeneratedArchSigAATCoreTransition sourceModel targetModel) :
+    ArchitectureSignature.ArchitectureLawful
+      sourceModel.toArchitectureLawModel := by
+  exact
+    ArchitectureSignature.AATCoreSignatureLawfulnessBridge.architectureLawful
+      archsigTransition.sourceBridge
+
+/-- The generated target bridge derives Signature lawfulness from the target model. -/
+theorem target_bridge_architectureLawful
+    (archsigTransition :
+      GeneratedArchSigAATCoreTransition sourceModel targetModel) :
+    ArchitectureSignature.ArchitectureLawful
+      targetModel.toArchitectureLawModel := by
+  exact
+    ArchitectureSignature.AATCoreSignatureLawfulnessBridge.architectureLawful
+      archsigTransition.targetBridge
+
+end GeneratedArchSigAATCoreTransition
+
+/--
+FieldSig analysis boundary over a generated ArchSig-observed AATCore transition.
+
+The analysis consumes a generated transition and a selected ArchSig report
+boundary.  It keeps report, theorem, forecast, and non-conclusion boundaries
+visible, and does not turn generated AAT evidence into forecast correctness.
+-/
+structure GeneratedFieldSigAATCoreTransitionAnalysis
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {sourceObject targetObject :
+      AAT.GeneratedArchitectureObject presentation}
+    {sourceModel : AAT.GeneratedArchitectureLawModel sourceObject}
+    {targetModel : AAT.GeneratedArchitectureLawModel targetObject}
+    {SemanticExpr : Type q} {SemanticObs : Type r}
+    {FieldState : Type s}
+    (archsigTransition :
+      GeneratedArchSigAATCoreTransition sourceModel targetModel)
+    (report :
+      ArchSigSFTReport
+        FieldState
+        (AAT.GeneratedCarrier sourceObject)
+        (AAT.GeneratedCarrier sourceObject)
+        AAT.GeneratedObservationCoordinate
+        SemanticExpr
+        SemanticObs)
+    (estimate :
+      SoftwareFieldEstimate
+        FieldState
+        (AAT.GeneratedCarrier sourceObject)
+        (AAT.GeneratedCarrier sourceObject)
+        AAT.GeneratedObservationCoordinate
+        SemanticExpr
+        SemanticObs)
+    (forecast : SFTForecastStatus) :
+    Prop where
+  reportBoundary : ArchSigSFTReportEstimateBoundary report estimate forecast
+  readsGeneratedArchSigTransitionAsSFTAnalysisEvidence :
+    archsigTransition.fieldSigAnalysisBoundary
+  fieldSigDoesNotDefineAATEvidence :
+    archsigTransition.archsigDoesNotDefineAAT
+  transitionDoesNotCreateAtoms : system.noToolOutputCreatesAtoms
+  forecastBoundary : forecast.RecordsForecastBoundary
+  theoremBoundary : forecast.RecordsTheoremBoundary
+  nonConclusions : forecast.RecordsNonConclusions
+
+namespace GeneratedFieldSigAATCoreTransitionAnalysis
+
+variable {system : AtomAxiomSystem.{u, v}}
+variable {presentation : AtomShapePresentation system}
+variable
+  {sourceObject targetObject :
+    AAT.GeneratedArchitectureObject presentation}
+variable
+  {sourceModel : AAT.GeneratedArchitectureLawModel sourceObject}
+variable
+  {targetModel : AAT.GeneratedArchitectureLawModel targetObject}
+variable {SemanticExpr : Type q} {SemanticObs : Type r}
+variable {FieldState : Type s}
+variable
+  {archsigTransition :
+    GeneratedArchSigAATCoreTransition sourceModel targetModel}
+variable
+  {report :
+    ArchSigSFTReport
+      FieldState
+      (AAT.GeneratedCarrier sourceObject)
+      (AAT.GeneratedCarrier sourceObject)
+      AAT.GeneratedObservationCoordinate
+      SemanticExpr
+      SemanticObs}
+variable
+  {estimate :
+    SoftwareFieldEstimate
+      FieldState
+      (AAT.GeneratedCarrier sourceObject)
+      (AAT.GeneratedCarrier sourceObject)
+      AAT.GeneratedObservationCoordinate
+      SemanticExpr
+      SemanticObs}
+variable {forecast : SFTForecastStatus}
+
+/-- FieldSig reads the generated ArchSig transition as SFT analysis input. -/
+theorem fieldsig_reads_generated_archsig_transition_as_sft_analysis
+    (analysis :
+      GeneratedFieldSigAATCoreTransitionAnalysis
+        archsigTransition report estimate forecast) :
+    archsigTransition.fieldSigAnalysisBoundary :=
+  analysis.readsGeneratedArchSigTransitionAsSFTAnalysisEvidence
+
+/-- FieldSig analysis over a generated transition does not define AAT. -/
+theorem fieldsig_does_not_define_aat
+    (analysis :
+      GeneratedFieldSigAATCoreTransitionAnalysis
+        archsigTransition report estimate forecast) :
+    archsigTransition.archsigDoesNotDefineAAT :=
+  analysis.fieldSigDoesNotDefineAATEvidence
+
+/-- FieldSig analysis over a generated transition does not create atom existence. -/
+theorem transition_does_not_create_atoms
+    (analysis :
+      GeneratedFieldSigAATCoreTransitionAnalysis
+        archsigTransition report estimate forecast) :
+    system.noToolOutputCreatesAtoms :=
+  analysis.transitionDoesNotCreateAtoms
+
+/-- Forecast correctness remains a forecast boundary. -/
+theorem forecast_correctness_remains_boundary
+    (analysis :
+      GeneratedFieldSigAATCoreTransitionAnalysis
+        archsigTransition report estimate forecast) :
+    forecast.RecordsForecastBoundary :=
+  analysis.forecastBoundary
+
+/-- Theorem and non-conclusion boundaries remain visible. -/
+theorem theorem_and_nonConclusions_remain_boundaries
+    (analysis :
+      GeneratedFieldSigAATCoreTransitionAnalysis
+        archsigTransition report estimate forecast) :
+    forecast.RecordsTheoremBoundary ∧ forecast.RecordsNonConclusions :=
+  ⟨analysis.theoremBoundary, analysis.nonConclusions⟩
+
+end GeneratedFieldSigAATCoreTransitionAnalysis
+
 end Formal.Arch

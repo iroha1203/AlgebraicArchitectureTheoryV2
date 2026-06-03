@@ -180,6 +180,12 @@ def representativeDeclarations : Candidate -> List String
        "ArchSigSFTReportEstimateBoundary",
        "ArchSigAATCoreTransition",
        "FieldSigAATCoreTransitionAnalysis",
+       "GeneratedArchSigAATCoreTransition",
+       "GeneratedFieldSigAATCoreTransitionAnalysis",
+       "GeneratedArchSigAATCoreTransition.sourceBridge",
+       "GeneratedArchSigAATCoreTransition.targetBridge",
+       "GeneratedArchSigAATCoreTransition.source_bridge_architectureLawful",
+       "GeneratedFieldSigAATCoreTransitionAnalysis.fieldsig_reads_generated_archsig_transition_as_sft_analysis",
        "ArchSigSFTReportEstimateBoundary.report_existence_does_not_promote_aat_theorem_status",
        "ArchSigSFTReportEstimateBoundary.report_existence_does_not_promote_calibrated_forecast"]
   | counterexamplePackage =>
@@ -568,9 +574,13 @@ def schematicCorrespondences : Candidate -> List SchematicCorrespondence
            "ArchSigSFTReportEstimateBoundary.report_preserves_forecastBoundary",
            "ArchSigSFTReportEstimateBoundary.report_preserves_nonConclusions",
            "FieldSigAATCoreTransitionAnalysis.fieldsig_reads_archsig_transition_as_sft_analysis",
-           "FieldSigAATCoreTransitionAnalysis.forecast_correctness_remains_boundary"],
+           "FieldSigAATCoreTransitionAnalysis.forecast_correctness_remains_boundary",
+           "GeneratedArchSigAATCoreTransition.source_bridge_architectureLawful",
+           "GeneratedArchSigAATCoreTransition.target_bridge_architectureLawful",
+           "GeneratedFieldSigAATCoreTransitionAnalysis.fieldsig_reads_generated_archsig_transition_as_sft_analysis",
+           "GeneratedFieldSigAATCoreTransitionAnalysis.forecast_correctness_remains_boundary"],
          reading :=
-          "tool report output and AATCore transition analysis preserve selected SFT boundaries without promoting claims",
+          "tool report output and generated AATCore transition analysis preserve selected SFT boundaries without caller-supplied Signature bridge fields or forecast claim promotion",
          status := "proved accessors" }]
   | counterexamplePackage =>
       [{ schematic := "SFT forbidden readings have canonical counterexample entrypoints",

@@ -4,6 +4,7 @@ import Formal.Arch.AAT.GeneratedSFT
 import Formal.Arch.Evolution.Chapter7TheoremPackages
 import Formal.Arch.Evolution.Chapter10ArchitectureExtensionFormula
 import Formal.Arch.Evolution.Chapter11AnalyticRepresentation
+import Formal.Arch.Evolution.SFTArchSigBoundary
 import Formal.Arch.Examples.AtomGeneratedMoleculeExamples
 import Formal.Arch.Signature.AATCoreBridge
 
@@ -317,5 +318,257 @@ theorem atomGeneratedSignature_sft_localPremiseFromGenerated :
   exact
     atomGeneratedSignature_sftInput.reads_generated_aat_as_sft_local_premise
       atomGeneratedSignature_sftInterfaceBoundary
+
+/--
+Positive acceptance: the generated law model supplies an AATCore transition
+without a hand-authored `ArchitectureLawModel` or Signature bridge.
+-/
+def atomGeneratedSignature_operationPreservation :
+    AAT.OperationPreservationPackage
+      generatedComponentLawModel.generatedAATCore
+      generatedComponentLawModel.generatedAATCore where
+  selectedMolecule := generatedComponentLawModel.requiredGeneratedMolecule
+  selectedLaw := fun law => law = generatedComponentLawModel.generatedDesignLaw
+  preservesMolecule := by
+    intro _molecule _hSelected hSource
+    exact hSource
+  preservesLaw := by
+    intro _law _hSelected hSource
+    exact hSource
+  operationDoesNotCreateAtomsEvidence :=
+    componentSystem.tool_output_does_not_create_atoms
+  operationBoundary := True
+  theoremPackageBoundary := True
+  nonConclusions := True
+
+def atomGeneratedSignature_atomDelta :
+    AATCoreAtomDelta
+      generatedComponentLawModel.generatedAATCore
+      generatedComponentLawModel.generatedAATCore where
+  sourceAtom := generatedComponentMolecule.atoms
+  targetAtom := generatedComponentMolecule.atoms
+  preservedAtom := generatedComponentMolecule.atoms
+  transformedAtom := fun source target => source = target
+  sourceAtomPrimitive := by
+    intro atom hAtom
+    exact generatedComponentMolecule.atoms_primitive hAtom
+  targetAtomPrimitive := by
+    intro atom hAtom
+    exact generatedComponentMolecule.atoms_primitive hAtom
+  preservedAtomOnSource := by
+    intro _atom hAtom
+    exact hAtom
+  preservedAtomOnTarget := by
+    intro _atom hAtom
+    exact hAtom
+  transitionBoundary := True
+  doesNotCreateAtomsEvidence :=
+    componentSystem.sft_event_does_not_create_atoms
+  nonConclusions := True
+
+def atomGeneratedSignature_semanticDelta :
+    AATCoreSemanticDelta atomGeneratedSignature_atomDelta where
+  semanticAtom := generatedComponentMolecule.atoms
+  sourceSemanticAtomsPrimitive := by
+    intro atom _hSource hSemantic
+    exact generatedComponentMolecule.atoms_primitive hSemantic
+  targetSemanticAtomsPrimitive := by
+    intro atom _hTarget hSemantic
+    exact generatedComponentMolecule.atoms_primitive hSemantic
+  semanticBoundary := True
+  doesNotCreateAtomsEvidence :=
+    componentSystem.sft_event_does_not_create_atoms
+  nonConclusions := True
+
+def atomGeneratedSignature_circuitDelta :
+    AATCoreCircuitDelta
+      generatedComponentLawModel.generatedAATCore
+      generatedComponentLawModel.generatedAATCore where
+  law := generatedComponentLawModel.generatedDesignLaw
+  molecule := generatedComponentObject.molecule.toMolecule
+  lawOnSource := generatedComponentLawModel.generated_law_on_core
+  lawOnTarget := generatedComponentLawModel.generated_law_on_core
+  moleculeOnSource := generatedComponentLawModel.generated_molecule_on_core
+  moleculeOnTarget := generatedComponentLawModel.generated_molecule_on_core
+  createdCircuit := fun _ => False
+  removedCircuit := fun _ => False
+  preservedCircuit := fun _ => True
+  circuitBoundary := True
+  doesNotCreateAtomsEvidence :=
+    componentSystem.sft_event_does_not_create_atoms
+  nonConclusions := True
+
+def atomGeneratedSignature_aatCoreTransition :
+    AATCoreTransition
+      generatedComponentLawModel.generatedAATCore
+      generatedComponentLawModel.generatedAATCore where
+  operationPackage := atomGeneratedSignature_operationPreservation
+  atomDelta := atomGeneratedSignature_atomDelta
+  semanticDelta := atomGeneratedSignature_semanticDelta
+  circuitDelta := atomGeneratedSignature_circuitDelta
+  transitionBoundary := True
+  fieldSigBoundary := True
+  nonConclusions := True
+
+theorem atomGeneratedSignature_transition_does_not_create_atoms :
+    componentSystem.noToolOutputCreatesAtoms := by
+  exact atomGeneratedSignature_aatCoreTransition.operation_does_not_create_atoms
+
+noncomputable def atomGeneratedSignature_generatedArchSigTransition :
+    GeneratedArchSigAATCoreTransition
+      generatedComponentLawModel
+      generatedComponentLawModel where
+  transition := atomGeneratedSignature_aatCoreTransition
+  analyzesUsingAAT := True
+  analyzesUsingAATEvidence := trivial
+  transitionBoundary := True
+  transitionBoundaryEvidence := trivial
+  archsigDoesNotDefineAAT := True
+  archsigDoesNotDefineAATEvidence := trivial
+  fieldSigAnalysisBoundary := True
+  fieldSigAnalysisBoundaryEvidence := trivial
+  unknownRejectedUnmeasuredSeparated := True
+  unknownRejectedUnmeasuredSeparatedEvidence := trivial
+  measuredZeroBoundary := True
+  validationIsNotTheoremDischarge := True
+  nonConclusions := True
+
+theorem atomGeneratedSignature_generatedArchSig_sourceLawful :
+    ArchitectureSignature.ArchitectureLawful
+      generatedComponentLawModel.toArchitectureLawModel := by
+  exact
+    atomGeneratedSignature_generatedArchSigTransition
+      |>.source_bridge_architectureLawful
+
+theorem atomGeneratedSignature_generatedArchSig_targetLawful :
+    ArchitectureSignature.ArchitectureLawful
+      generatedComponentLawModel.toArchitectureLawModel := by
+  exact
+    atomGeneratedSignature_generatedArchSigTransition
+      |>.target_bridge_architectureLawful
+
+def atomGeneratedSignature_generatedSoftwareField :
+    SoftwareField
+      Unit
+      (AAT.GeneratedCarrier generatedComponentObject)
+      (AAT.GeneratedCarrier generatedComponentObject)
+      AAT.GeneratedObservationCoordinate
+      (AAT.GeneratedArchitectureObject.GeneratedSemanticExpr
+        generatedComponentObject)
+      AAT.GeneratedObservationCoordinate where
+  state := ()
+  architectureProjection := generatedComponentObject.generatedFlatnessModel
+  observedSignatureRecord := True
+  historyBoundary := True
+  operationSupportBoundary := True
+  operationPolicyBoundary := True
+  constraintEnvironmentBoundary := True
+  observationModelBoundary := True
+  governanceInterventionBoundary := True
+  exogenousArtifactInputBoundary := True
+  fieldBoundary := True
+  nonConclusions := True
+
+def atomGeneratedSignature_generatedSoftwareFieldEstimate :
+    SoftwareFieldEstimate
+      Unit
+      (AAT.GeneratedCarrier generatedComponentObject)
+      (AAT.GeneratedCarrier generatedComponentObject)
+      AAT.GeneratedObservationCoordinate
+      (AAT.GeneratedArchitectureObject.GeneratedSemanticExpr
+        generatedComponentObject)
+      AAT.GeneratedObservationCoordinate where
+  field := atomGeneratedSignature_generatedSoftwareField
+  coverageAssumptions := True
+  observationBoundary := True
+  reconstructionBoundary := True
+  estimatorBoundary := True
+  missingEvidence := True
+  nonConclusions := True
+
+def atomGeneratedSignature_generatedArchSigSFTReport :
+    ArchSigSFTReport
+      Unit
+      (AAT.GeneratedCarrier generatedComponentObject)
+      (AAT.GeneratedCarrier generatedComponentObject)
+      AAT.GeneratedObservationCoordinate
+      (AAT.GeneratedArchitectureObject.GeneratedSemanticExpr
+        generatedComponentObject)
+      AAT.GeneratedObservationCoordinate where
+  selectedEstimate := atomGeneratedSignature_generatedSoftwareFieldEstimate
+  actionClassCandidates := True
+  targetRegions := True
+  candidateOperationFamilies := True
+  comparableSignatureAxes := True
+  coverageAssumptions := True
+  observationBoundary := True
+  reconstructionBoundary := True
+  missingInvariants := True
+  unmeasuredAxes := True
+  theoremBoundary := True
+  forecastBoundary := True
+  reportBoundary := True
+  nonConclusions := True
+
+def atomGeneratedSignature_generatedReportEstimateBoundary :
+    ArchSigSFTReportEstimateBoundary
+      atomGeneratedSignature_generatedArchSigSFTReport
+      atomGeneratedSignature_generatedSoftwareFieldEstimate
+      atomGeneratedSignature_sftForecastStatus where
+  reportSelectsEstimate := rfl
+  preservesCoverageAssumptions := by
+    intro h
+    exact h
+  preservesObservationBoundary := by
+    intro h
+    exact h
+  preservesReconstructionBoundary := by
+    intro h
+    exact h
+  preservesMissingInvariants := by
+    intro h
+    exact h
+  preservesUnmeasuredAxes := by
+    intro h
+    exact h
+  preservesTheoremBoundary := by
+    intro h
+    exact h
+  preservesForecastBoundary := by
+    intro h
+    exact h
+  recordsReportBoundary := by
+    intro h
+    exact h
+  recordsNonConclusions := by
+    intro _h
+    exact ⟨⟨trivial, trivial⟩, trivial⟩
+
+def atomGeneratedSignature_generatedFieldSigAnalysis :
+    GeneratedFieldSigAATCoreTransitionAnalysis
+      atomGeneratedSignature_generatedArchSigTransition
+      atomGeneratedSignature_generatedArchSigSFTReport
+      atomGeneratedSignature_generatedSoftwareFieldEstimate
+      atomGeneratedSignature_sftForecastStatus where
+  reportBoundary := atomGeneratedSignature_generatedReportEstimateBoundary
+  readsGeneratedArchSigTransitionAsSFTAnalysisEvidence := trivial
+  fieldSigDoesNotDefineAATEvidence := trivial
+  transitionDoesNotCreateAtoms :=
+    atomGeneratedSignature_aatCoreTransition.operation_does_not_create_atoms
+  forecastBoundary := trivial
+  theoremBoundary := trivial
+  nonConclusions := trivial
+
+theorem atomGeneratedSignature_fieldsig_reads_generated_transition :
+    atomGeneratedSignature_generatedArchSigTransition.fieldSigAnalysisBoundary := by
+  exact
+    atomGeneratedSignature_generatedFieldSigAnalysis
+      |>.fieldsig_reads_generated_archsig_transition_as_sft_analysis
+
+theorem atomGeneratedSignature_fieldsig_forecast_correctness_boundary :
+    atomGeneratedSignature_sftForecastStatus.RecordsForecastBoundary := by
+  exact
+    atomGeneratedSignature_generatedFieldSigAnalysis
+      |>.forecast_correctness_remains_boundary
 
 end Formal.Arch.AtomGeneratedSignatureExamples
