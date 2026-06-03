@@ -463,8 +463,9 @@ rg -n "architectureLawfulFromAAT|DoesNotDefineAAT|DoesNotCreateAtoms" Formal/Arc
 rg -n "ArchGraph|ArchitectureLawModel|FeatureExtension|Path|Observation" Formal/Arch
 ```
 
-`architectureLawfulFromAAT` 型の bridge field は原則として rewrite target とする。
-残す場合は、なぜ生成写像で置き換えられないかを Issue と acceptance test に落とす。
+`architectureLawfulFromAAT` 型の bridge field は theorem package source として扱わない。
+残す場合は legacy surface として分離し、対応する generated replacement entrypoint と
+「registry row ではない」acceptance theorem を置く。
 
 ### 8.2 Theorem classification check
 
@@ -494,6 +495,13 @@ Formal/Arch/Examples/AtomGeneratedClassificationExamples.lean
 だけを持ち、`unclassified` constructor を持たない。各 registry row は分類に応じて
 generated entrypoint、bridge assumption、representation surface の evidence list と
 許可された migration action を要求する。
+
+current registry は `theorem_package_registry_has_no_bridge_assumed_rows` と
+`theorem_package_registry_has_no_rewrite_targets` により、bridge-assumed row と
+rewrite target row が残っていないことを Lean 上で固定する。generic Signature bridge は
+`legacyBridgeSurfaces` に移し、`architectureLawfulFromAAT` bridge assumption と
+`AATCoreSignatureLawfulnessBridge.ofGeneratedLawModel` replacement を明示するが、
+theorem package registry の source row には数えない。
 
 ### 8.3 ArchSig checks
 
@@ -529,6 +537,7 @@ atom_generated_acceptance fixture:
 - ArchSig が generated molecule / law input / obstruction / repair target を出力する。
 - Viewer の距離・配置は AtomShape と generated structure を根拠にする。
 - hand-authored representation theorem は AAT の主張ではなく後段 library として扱われる。
+- theorem package registry に `bridgeAssumed` / `rewriteTarget` の残存 row がない。
 
 ## 10. 失敗条件
 

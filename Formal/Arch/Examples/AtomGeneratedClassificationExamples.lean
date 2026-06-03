@@ -17,15 +17,29 @@ theorem theorem_package_registry_rows_are_classified
       registry_rows_have_allowed_actions hRow⟩
 
 /--
-Acceptance: the generic Signature bridge is still marked as a temporary
-bridge-assumed surface, not as an Atom-generated source-of-truth theorem.
+Acceptance: the theorem-package registry has no remaining bridge-assumed rows
+or rewrite targets.
 -/
-theorem generic_signature_bridge_remains_temporary_bridge :
-    (classifyAATCandidate .genericSignatureBridge).classification =
-        .bridgeAssumed ∧
-      (classifyAATCandidate .genericSignatureBridge).action =
-        .temporaryBridge := by
-  exact generic_signature_bridge_is_temporary_bridge
+theorem theorem_package_registry_has_no_temporary_or_rewrite_rows :
+    TheoremPackageClass.bridgeAssumed ∉ allClassificationClasses ∧
+      ReconstructionAction.rewriteTarget ∉ allClassificationActions := by
+  exact
+    ⟨theorem_package_registry_has_no_bridge_assumed_rows,
+      theorem_package_registry_has_no_rewrite_targets⟩
+
+/--
+Acceptance: the generic Signature bridge remains visible as a legacy bridge
+surface with an explicit generated replacement, but it no longer counts as a
+theorem-package registry row.
+-/
+theorem generic_signature_bridge_is_legacy_replaced_surface_acceptance :
+    genericSignatureBridgeLegacySurface.IsBridgeAssumptionSurface ∧
+      genericSignatureBridgeLegacySurface.HasGeneratedReplacement ∧
+      "aat.genericSignatureBridge" ∉ allPackageIds := by
+  exact
+    ⟨generic_signature_bridge_is_legacy_replaced_surface.1,
+      generic_signature_bridge_is_legacy_replaced_surface.2,
+      generic_signature_bridge_is_not_theorem_package_registry_row⟩
 
 /--
 Acceptance: the generated Signature bridge is the Atom-generated replacement

@@ -161,10 +161,64 @@ def representationRow
   evidence := ClassificationEvidence.representationLevel hRepresentation
   actionEvidence := hAction
 
+/--
+Bridge surfaces that still exist as compatibility APIs, but are no longer
+registered as theorem-package source rows.
+
+This keeps the bridge assumption visible without allowing it to satisfy the
+Atom-based theorem-package completion check.  Such a surface must name both
+the bridge field that made it invalid as AAT source and the generated
+entrypoint that replaces it.
+-/
+structure LegacyBridgeSurface where
+  surfaceId : String
+  representativeDeclarations : List String
+  bridgeAssumptions : List String
+  generatedReplacementEntrypoints : List String
+  reason : String
+  bridgeEvidence : bridgeAssumptions ≠ []
+  replacementEvidence : generatedReplacementEntrypoints ≠ []
+
+namespace LegacyBridgeSurface
+
+def IsBridgeAssumptionSurface (surface : LegacyBridgeSurface) : Prop :=
+  surface.bridgeAssumptions ≠ []
+
+def HasGeneratedReplacement (surface : LegacyBridgeSurface) : Prop :=
+  surface.generatedReplacementEntrypoints ≠ []
+
+theorem bridge_assumption_surface
+    (surface : LegacyBridgeSurface) :
+    surface.IsBridgeAssumptionSurface :=
+  surface.bridgeEvidence
+
+theorem has_generated_replacement
+    (surface : LegacyBridgeSurface) :
+    surface.HasGeneratedReplacement :=
+  surface.replacementEvidence
+
+end LegacyBridgeSurface
+
+def genericSignatureBridgeLegacySurface : LegacyBridgeSurface where
+  surfaceId := "aat.genericSignatureBridge"
+  representativeDeclarations :=
+    ["ArchitectureSignature.AATCoreSignatureLawfulnessBridge",
+     "ArchitectureSignature.AATCoreSignatureLawfulnessBridge.architectureLawful",
+     "ArchitectureSignature.AATCoreSignatureLawfulnessBridge.requiredSignatureAxesZero"]
+  bridgeAssumptions := ["architectureLawfulFromAAT"]
+  generatedReplacementEntrypoints :=
+    ["ArchitectureSignature.AATCoreSignatureLawfulnessBridge.ofGeneratedLawModel"]
+  reason :=
+    "The generic bridge stores a caller-supplied lawfulness callback; the theorem-package registry uses the generated law-model constructor as the AAT source-of-truth entrypoint instead."
+  bridgeEvidence := by simp
+  replacementEvidence := by simp
+
+def legacyBridgeSurfaces : List LegacyBridgeSurface :=
+  [genericSignatureBridgeLegacySurface]
+
 /-- AAT-side theorem packages not already represented by chapter candidates. -/
 inductive AATCandidate where
   | finiteStaticStructuralCore
-  | genericSignatureBridge
   | generatedSignatureBridge
   | atomGeneratedAlgebraKernel
   | archMapObservationBoundary
@@ -178,10 +232,6 @@ def representativeDeclarations : AATCandidate -> List String
       ["ArchitectureSignature.architectureLawful_iff_requiredSignatureAxesZero",
        "ArchitectureSignature.architectureLawful_iff_architectureZeroCurvatureTheoremPackage",
        "ArchitectureSignature.ArchitectureLawModel.signatureOf"]
-  | genericSignatureBridge =>
-      ["ArchitectureSignature.AATCoreSignatureLawfulnessBridge",
-       "ArchitectureSignature.AATCoreSignatureLawfulnessBridge.architectureLawful",
-       "ArchitectureSignature.AATCoreSignatureLawfulnessBridge.requiredSignatureAxesZero"]
   | generatedSignatureBridge =>
       ["ArchitectureSignature.AATCoreSignatureLawfulnessBridge.ofGeneratedLawModel",
        "ArchitectureSignature.AATCoreSignatureLawfulnessBridge.ofGeneratedLawModel_architectureLawful",
@@ -216,13 +266,6 @@ def classifyAATCandidate
         .downstreamLibrary
         ActionAllowed.representationDownstream
         "The static Signature anchor is a representation-level theorem retained as a downstream library; generated law models invoke it through generated bridge entrypoints."
-  | .genericSignatureBridge =>
-      bridgeAssumedRow
-        "aat.genericSignatureBridge"
-        (AATCandidate.representativeDeclarations .genericSignatureBridge)
-        ["architectureLawfulFromAAT"]
-        (by simp)
-        "The generic bridge stores a lawfulness callback and is therefore a temporary bridge-assumed surface unless constructed through the generated law-model constructor."
   | .generatedSignatureBridge =>
       atomGeneratedRow
         "aat.generatedSignatureBridge"
@@ -745,7 +788,6 @@ def classifySFT
 
 def aatClassifications : List TheoremPackageClassification :=
   [ classifyAATCandidate .finiteStaticStructuralCore
-  , classifyAATCandidate .genericSignatureBridge
   , classifyAATCandidate .generatedSignatureBridge
   , classifyAATCandidate .atomGeneratedAlgebraKernel
   , classifyAATCandidate .archMapObservationBoundary
@@ -828,6 +870,15 @@ def allClassifications : List TheoremPackageClassification :=
   chapter11Classifications ++
   sftClassifications
 
+def allPackageIds : List String :=
+  allClassifications.map (fun row => row.packageId)
+
+def allClassificationClasses : List TheoremPackageClass :=
+  allClassifications.map (fun row => row.classification)
+
+def allClassificationActions : List ReconstructionAction :=
+  allClassifications.map (fun row => row.action)
+
 theorem registry_rows_have_classification_evidence
     {row : TheoremPackageClassification}
     (_hRow : row ∈ allClassifications) :
@@ -840,12 +891,26 @@ theorem registry_rows_have_allowed_actions
     row.HasAllowedAction :=
   row.action_allowed
 
-theorem generic_signature_bridge_is_temporary_bridge :
-    (classifyAATCandidate .genericSignatureBridge).classification =
-      .bridgeAssumed ∧
-    (classifyAATCandidate .genericSignatureBridge).action =
-      .temporaryBridge := by
-  exact ⟨rfl, rfl⟩
+theorem theorem_package_registry_has_no_bridge_assumed_rows :
+    .bridgeAssumed ∉ allClassificationClasses := by
+  native_decide
+
+theorem theorem_package_registry_has_no_rewrite_targets :
+    .rewriteTarget ∉ allClassificationActions := by
+  native_decide
+
+theorem generic_signature_bridge_is_not_theorem_package_registry_row :
+    "aat.genericSignatureBridge" ∉ allPackageIds := by
+  native_decide
+
+theorem generic_signature_bridge_is_legacy_replaced_surface :
+    genericSignatureBridgeLegacySurface.IsBridgeAssumptionSurface ∧
+    genericSignatureBridgeLegacySurface.HasGeneratedReplacement := by
+  exact
+    ⟨LegacyBridgeSurface.bridge_assumption_surface
+        genericSignatureBridgeLegacySurface,
+      LegacyBridgeSurface.has_generated_replacement
+        genericSignatureBridgeLegacySurface⟩
 
 theorem generated_signature_bridge_is_atom_generated :
     (classifyAATCandidate .generatedSignatureBridge).classification =
