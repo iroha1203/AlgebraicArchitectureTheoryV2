@@ -1,3 +1,4 @@
+import Formal.Arch.AAT.GeneratedAnalyticRepresentation
 import Formal.Arch.AAT.GeneratedSFT
 import Formal.Arch.Examples.AtomGeneratedMoleculeExamples
 
@@ -62,6 +63,42 @@ theorem atomGeneratedSignature_architectureLawful :
     ArchitectureSignature.ArchitectureLawful
       generatedComponentLawModel.toArchitectureLawModel := by
   exact generatedComponentLawModel.generatedArchitectureLawful
+
+/--
+Positive acceptance: generated law models have a generated analytic
+representation into Signature v1.
+-/
+noncomputable def atomGeneratedSignature_analyticRepresentation :
+    AnalyticRepresentation
+      (AAT.GeneratedArchitectureLawModel generatedComponentObject)
+      ArchitectureSignature.ArchitectureSignatureV1
+      AAT.GeneratedAnalyticWitness :=
+  AAT.GeneratedArchitectureLawModel.generatedAnalyticRepresentation
+    (object := generatedComponentObject)
+
+theorem atomGeneratedSignature_analytic_zeroPreserving :
+    AnalyticRepresentation.ZeroPreserving
+      atomGeneratedSignature_analyticRepresentation := by
+  exact
+    AAT.GeneratedArchitectureLawModel.generatedAnalyticRepresentation_zeroPreserving
+      (object := generatedComponentObject)
+
+theorem atomGeneratedSignature_analytic_zero :
+    atomGeneratedSignature_analyticRepresentation.analyticZero
+      (atomGeneratedSignature_analyticRepresentation.represent
+        generatedComponentLawModel) := by
+  exact
+    AnalyticRepresentation.analyticZero_of_structuralZero
+      atomGeneratedSignature_analyticRepresentation
+      atomGeneratedSignature_analytic_zeroPreserving
+      generatedComponentLawModel.generatedArchitectureLawful
+
+theorem atomGeneratedSignature_analytic_zeroReflecting :
+    AnalyticRepresentation.ZeroReflecting
+      atomGeneratedSignature_analyticRepresentation := by
+  exact
+    AAT.GeneratedArchitectureLawModel.generatedAnalyticRepresentation_zeroReflecting
+      (object := generatedComponentObject)
 
 /--
 Positive acceptance: the generated Signature theorem package is available as

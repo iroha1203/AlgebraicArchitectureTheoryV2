@@ -215,6 +215,7 @@ Formal/Arch/AAT/GeneratedFlatness.lean
 Formal/Arch/AAT/GeneratedPath.lean
 Formal/Arch/AAT/GeneratedDiagram.lean
 Formal/Arch/AAT/GeneratedCurvature.lean
+Formal/Arch/AAT/GeneratedAnalyticRepresentation.lean
 Formal/Arch/AAT/GeneratedSFT.lean
 ```
 
