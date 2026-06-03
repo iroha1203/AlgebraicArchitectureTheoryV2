@@ -917,6 +917,28 @@ def allClassificationClassActions :
     List (TheoremPackageClass × ReconstructionAction) :=
   allClassifications.map (fun row => (row.classification, row.action))
 
+/-- Decidable footprint extracted from a classification row for registry-wide checks. -/
+structure ClassificationFootprint where
+  packageId : String
+  classification : TheoremPackageClass
+  action : ReconstructionAction
+  generatedEntrypoints : List String
+  bridgeAssumptions : List String
+  representationEntrypoints : List String
+  deriving DecidableEq, Repr
+
+def classificationFootprintOf
+    (row : TheoremPackageClassification) : ClassificationFootprint where
+  packageId := row.packageId
+  classification := row.classification
+  action := row.action
+  generatedEntrypoints := row.generatedEntrypoints
+  bridgeAssumptions := row.bridgeAssumptions
+  representationEntrypoints := row.representationEntrypoints
+
+def allClassificationFootprints : List ClassificationFootprint :=
+  allClassifications.map classificationFootprintOf
+
 theorem registry_rows_have_classification_evidence
     {row : TheoremPackageClassification}
     (_hRow : row ∈ allClassifications) :
@@ -945,16 +967,39 @@ theorem theorem_package_registry_has_unique_package_ids :
     allPackageIds.Nodup := by
   native_decide
 
+theorem theorem_package_registry_has_no_bridge_assumption_footprints :
+    ∀ footprint ∈ allClassificationFootprints,
+      footprint.bridgeAssumptions = [] := by
+  native_decide
+
 theorem theorem_package_registry_source_rows_are_atom_generated :
     ∀ classAction ∈ allClassificationClassActions,
       classAction.2 = .aatSourceOfTruth ->
         classAction.1 = .atomGenerated := by
   native_decide
 
+theorem theorem_package_registry_source_footprints_are_generated_only :
+    ∀ footprint ∈ allClassificationFootprints,
+      footprint.action = .aatSourceOfTruth ->
+        footprint.classification = .atomGenerated ∧
+        footprint.generatedEntrypoints ≠ [] ∧
+        footprint.bridgeAssumptions = [] ∧
+        footprint.representationEntrypoints = [] := by
+  native_decide
+
 theorem theorem_package_registry_representation_rows_are_downstream_libraries :
     ∀ classAction ∈ allClassificationClassActions,
       classAction.1 = .representationLevel ->
         classAction.2 = .downstreamLibrary := by
+  native_decide
+
+theorem theorem_package_registry_representation_footprints_are_downstream_only :
+    ∀ footprint ∈ allClassificationFootprints,
+      footprint.classification = .representationLevel ->
+        footprint.action = .downstreamLibrary ∧
+        footprint.generatedEntrypoints = [] ∧
+        footprint.bridgeAssumptions = [] ∧
+        footprint.representationEntrypoints ≠ [] := by
   native_decide
 
 theorem generic_signature_bridge_is_not_theorem_package_registry_row :

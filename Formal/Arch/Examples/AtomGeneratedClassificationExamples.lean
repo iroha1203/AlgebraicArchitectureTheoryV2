@@ -50,11 +50,14 @@ remaining bridge-assumed rows, temporary bridge actions, or rewrite targets.
 -/
 theorem theorem_package_registry_has_no_temporary_or_rewrite_rows :
     allPackageIds.Nodup ∧
+      (∀ footprint ∈ allClassificationFootprints,
+        footprint.bridgeAssumptions = []) ∧
       TheoremPackageClass.bridgeAssumed ∉ allClassificationClasses ∧
       ReconstructionAction.temporaryBridge ∉ allClassificationActions ∧
       ReconstructionAction.rewriteTarget ∉ allClassificationActions := by
   exact
     ⟨theorem_package_registry_has_unique_package_ids,
+      theorem_package_registry_has_no_bridge_assumption_footprints,
       theorem_package_registry_has_no_bridge_assumed_rows,
       theorem_package_registry_has_no_temporary_bridge_actions,
       theorem_package_registry_has_no_rewrite_targets⟩
@@ -68,12 +71,33 @@ theorem theorem_package_registry_source_rows_are_only_atom_generated :
     (∀ classAction ∈ allClassificationClassActions,
       classAction.2 = .aatSourceOfTruth ->
         classAction.1 = .atomGenerated) ∧
+    (∀ footprint ∈ allClassificationFootprints,
+      footprint.action = .aatSourceOfTruth ->
+        footprint.classification = .atomGenerated ∧
+        footprint.generatedEntrypoints ≠ [] ∧
+        footprint.bridgeAssumptions = [] ∧
+        footprint.representationEntrypoints = []) ∧
     (∀ classAction ∈ allClassificationClassActions,
       classAction.1 = .representationLevel ->
         classAction.2 = .downstreamLibrary) := by
   exact
     ⟨theorem_package_registry_source_rows_are_atom_generated,
+      theorem_package_registry_source_footprints_are_generated_only,
       theorem_package_registry_representation_rows_are_downstream_libraries⟩
+
+/--
+Acceptance: representation-level theorem-package rows are downstream-only
+footprints. They cannot carry generated source entrypoints or bridge
+assumptions.
+-/
+theorem theorem_package_registry_representation_rows_are_downstream_only :
+    ∀ footprint ∈ allClassificationFootprints,
+      footprint.classification = .representationLevel ->
+        footprint.action = .downstreamLibrary ∧
+        footprint.generatedEntrypoints = [] ∧
+        footprint.bridgeAssumptions = [] ∧
+        footprint.representationEntrypoints ≠ [] := by
+  exact theorem_package_registry_representation_footprints_are_downstream_only
 
 /--
 Acceptance: the generic Signature bridge remains visible as a legacy bridge
