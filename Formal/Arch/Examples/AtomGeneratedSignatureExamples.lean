@@ -575,14 +575,75 @@ theorem atomGeneratedSignature_fieldsig_forecast_correctness_boundary :
 Positive acceptance: generated operation transport can be read as an AATCore
 transport transition, without collapsing transport into preservation.
 -/
+def atomGeneratedSignature_transportAtomDelta :
+    AATCoreAtomDelta
+      generatedApiOnlyLawModel.generatedAATCore
+      generatedComponentLawModel.generatedAATCore where
+  sourceAtom := generatedApiOnlyMolecule.atoms
+  targetAtom := generatedComponentMolecule.atoms
+  preservedAtom := generatedApiOnlyMolecule.atoms
+  transformedAtom := fun source target => source = target
+  sourceAtomPrimitive := by
+    intro atom hAtom
+    exact generatedApiOnlyMolecule.atoms_primitive hAtom
+  targetAtomPrimitive := by
+    intro atom hAtom
+    exact generatedComponentMolecule.atoms_primitive hAtom
+  preservedAtomOnSource := by
+    intro _atom hAtom
+    exact hAtom
+  preservedAtomOnTarget := by
+    intro atom hAtom
+    cases atom
+    · trivial
+    · cases hAtom
+  transitionBoundary := True
+  doesNotCreateAtomsEvidence :=
+    componentSystem.sft_event_does_not_create_atoms
+  nonConclusions := True
+
+def atomGeneratedSignature_transportSemanticDelta :
+    AATCoreSemanticDelta atomGeneratedSignature_transportAtomDelta where
+  semanticAtom := generatedApiOnlyMolecule.atoms
+  sourceSemanticAtomsPrimitive := by
+    intro atom _hSource hSemantic
+    exact generatedApiOnlyMolecule.atoms_primitive hSemantic
+  targetSemanticAtomsPrimitive := by
+    intro atom hTarget _hSemantic
+    exact generatedComponentMolecule.atoms_primitive hTarget
+  semanticBoundary := True
+  doesNotCreateAtomsEvidence :=
+    componentSystem.sft_event_does_not_create_atoms
+  nonConclusions := True
+
+def atomGeneratedSignature_transportCircuitDelta :
+    AATCoreTransportCircuitDelta
+      generatedApiOnlyLawModel.generatedAATCore
+      generatedComponentLawModel.generatedAATCore where
+  sourceLaw := generatedApiOnlyLawModel.generatedDesignLaw
+  targetLaw := generatedComponentLawModel.generatedDesignLaw
+  sourceMolecule := generatedApiOnlyMolecule.toMolecule
+  targetMolecule := generatedComponentMolecule.toMolecule
+  sourceLawOnSource := generatedApiOnlyLawModel.generated_law_on_core
+  targetLawOnTarget := generatedComponentLawModel.generated_law_on_core
+  sourceMoleculeOnSource := generatedApiOnlyLawModel.generated_molecule_on_core
+  targetMoleculeOnTarget := generatedComponentLawModel.generated_molecule_on_core
+  sourceCircuit := fun _circuit => False
+  targetCircuit := fun _circuit => False
+  transportedCircuit := fun _sourceCircuit _targetCircuit => False
+  circuitBoundary := True
+  doesNotCreateAtomsEvidence :=
+    componentSystem.sft_event_does_not_create_atoms
+  nonConclusions := True
+
 def atomGeneratedSignature_aatCoreTransportTransition :
     AATCoreTransportTransition
-      generatedComponentLawModel.generatedAATCore
+      generatedApiOnlyLawModel.generatedAATCore
       generatedComponentLawModel.generatedAATCore where
-  transportPackage := generatedComponentIdentityOperationTransportPackage
-  atomDelta := atomGeneratedSignature_atomDelta
-  semanticDelta := atomGeneratedSignature_semanticDelta
-  circuitDelta := atomGeneratedSignature_circuitDelta
+  transportPackage := generatedApiExpansionOperationTransportPackage
+  atomDelta := atomGeneratedSignature_transportAtomDelta
+  semanticDelta := atomGeneratedSignature_transportSemanticDelta
+  circuitDelta := atomGeneratedSignature_transportCircuitDelta
   transitionBoundary := True
   fieldSigBoundary := True
   nonConclusions := True
@@ -598,18 +659,25 @@ theorem atomGeneratedSignature_transport_moves_molecule :
       (atomGeneratedSignature_aatCoreTransportTransition.transportPackage
         |>.selectedTargetMolecule targetMolecule) ∧
       generatedComponentLawModel.generatedAATCore.molecules targetMolecule := by
-  exact generatedComponentIdentityOperation_transports_molecule
+  exact generatedApiExpansionOperation_transports_molecule
 
 theorem atomGeneratedSignature_transport_moves_law :
     ∃ targetLaw,
       (atomGeneratedSignature_aatCoreTransportTransition.transportPackage
         |>.selectedTargetLaw targetLaw) ∧
       generatedComponentLawModel.generatedAATCore.laws targetLaw := by
-  exact generatedComponentIdentityOperation_transports_law
+  exact generatedApiExpansionOperation_transports_law
+
+theorem atomGeneratedSignature_transport_target_molecule_is_distinct :
+    (atomGeneratedSignature_aatCoreTransportTransition.transportPackage
+        |>.selectedTargetMolecule generatedComponentMolecule.toMolecule) ∧
+      generatedApiOnlyMolecule.toMolecule ≠
+        generatedComponentMolecule.toMolecule := by
+  exact generatedApiExpansionOperation_target_molecule_is_distinct
 
 noncomputable def atomGeneratedSignature_generatedArchSigTransportTransition :
     GeneratedArchSigAATCoreTransportTransition
-      generatedComponentLawModel
+      generatedApiOnlyLawModel
       generatedComponentLawModel where
   transportTransition := atomGeneratedSignature_aatCoreTransportTransition
   analyzesUsingAAT := True
@@ -628,7 +696,7 @@ noncomputable def atomGeneratedSignature_generatedArchSigTransportTransition :
 
 theorem atomGeneratedSignature_generatedArchSigTransport_sourceLawful :
     ArchitectureSignature.ArchitectureLawful
-      generatedComponentLawModel.toArchitectureLawModel := by
+      generatedApiOnlyLawModel.toArchitectureLawModel := by
   exact
     atomGeneratedSignature_generatedArchSigTransportTransition
       |>.source_bridge_architectureLawful
@@ -640,13 +708,110 @@ theorem atomGeneratedSignature_generatedArchSigTransport_targetLawful :
     atomGeneratedSignature_generatedArchSigTransportTransition
       |>.target_bridge_architectureLawful
 
+def atomGeneratedSignature_transportSoftwareField :
+    SoftwareField
+      Unit
+      (AAT.GeneratedCarrier generatedApiOnlyObject)
+      (AAT.GeneratedCarrier generatedApiOnlyObject)
+      AAT.GeneratedObservationCoordinate
+      (AAT.GeneratedArchitectureObject.GeneratedSemanticExpr
+        generatedApiOnlyObject)
+      AAT.GeneratedObservationCoordinate where
+  state := ()
+  architectureProjection := generatedApiOnlyObject.generatedFlatnessModel
+  observedSignatureRecord := True
+  historyBoundary := True
+  operationSupportBoundary := True
+  operationPolicyBoundary := True
+  constraintEnvironmentBoundary := True
+  observationModelBoundary := True
+  governanceInterventionBoundary := True
+  exogenousArtifactInputBoundary := True
+  fieldBoundary := True
+  nonConclusions := True
+
+def atomGeneratedSignature_transportSoftwareFieldEstimate :
+    SoftwareFieldEstimate
+      Unit
+      (AAT.GeneratedCarrier generatedApiOnlyObject)
+      (AAT.GeneratedCarrier generatedApiOnlyObject)
+      AAT.GeneratedObservationCoordinate
+      (AAT.GeneratedArchitectureObject.GeneratedSemanticExpr
+        generatedApiOnlyObject)
+      AAT.GeneratedObservationCoordinate where
+  field := atomGeneratedSignature_transportSoftwareField
+  coverageAssumptions := True
+  observationBoundary := True
+  reconstructionBoundary := True
+  estimatorBoundary := True
+  missingEvidence := True
+  nonConclusions := True
+
+def atomGeneratedSignature_transportArchSigSFTReport :
+    ArchSigSFTReport
+      Unit
+      (AAT.GeneratedCarrier generatedApiOnlyObject)
+      (AAT.GeneratedCarrier generatedApiOnlyObject)
+      AAT.GeneratedObservationCoordinate
+      (AAT.GeneratedArchitectureObject.GeneratedSemanticExpr
+        generatedApiOnlyObject)
+      AAT.GeneratedObservationCoordinate where
+  selectedEstimate := atomGeneratedSignature_transportSoftwareFieldEstimate
+  actionClassCandidates := True
+  targetRegions := True
+  candidateOperationFamilies := True
+  comparableSignatureAxes := True
+  coverageAssumptions := True
+  observationBoundary := True
+  reconstructionBoundary := True
+  missingInvariants := True
+  unmeasuredAxes := True
+  theoremBoundary := True
+  forecastBoundary := True
+  reportBoundary := True
+  nonConclusions := True
+
+def atomGeneratedSignature_transportReportEstimateBoundary :
+    ArchSigSFTReportEstimateBoundary
+      atomGeneratedSignature_transportArchSigSFTReport
+      atomGeneratedSignature_transportSoftwareFieldEstimate
+      atomGeneratedSignature_sftForecastStatus where
+  reportSelectsEstimate := rfl
+  preservesCoverageAssumptions := by
+    intro h
+    exact h
+  preservesObservationBoundary := by
+    intro h
+    exact h
+  preservesReconstructionBoundary := by
+    intro h
+    exact h
+  preservesMissingInvariants := by
+    intro h
+    exact h
+  preservesUnmeasuredAxes := by
+    intro h
+    exact h
+  preservesTheoremBoundary := by
+    intro h
+    exact h
+  preservesForecastBoundary := by
+    intro h
+    exact h
+  recordsReportBoundary := by
+    intro h
+    exact h
+  recordsNonConclusions := by
+    intro _h
+    exact ⟨⟨trivial, trivial⟩, trivial⟩
+
 def atomGeneratedSignature_generatedFieldSigTransportAnalysis :
     GeneratedFieldSigAATCoreTransportTransitionAnalysis
       atomGeneratedSignature_generatedArchSigTransportTransition
-      atomGeneratedSignature_generatedArchSigSFTReport
-      atomGeneratedSignature_generatedSoftwareFieldEstimate
+      atomGeneratedSignature_transportArchSigSFTReport
+      atomGeneratedSignature_transportSoftwareFieldEstimate
       atomGeneratedSignature_sftForecastStatus where
-  reportBoundary := atomGeneratedSignature_generatedReportEstimateBoundary
+  reportBoundary := atomGeneratedSignature_transportReportEstimateBoundary
   readsGeneratedArchSigTransitionAsSFTAnalysisEvidence := trivial
   fieldSigDoesNotDefineAATEvidence := trivial
   transitionDoesNotCreateAtoms :=

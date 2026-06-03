@@ -265,6 +265,199 @@ def generatedComponentLawModel :
   generatedWalkAcyclic := generatedComponentGraph_walkAcyclic
   lawModelBoundary := True
 
+def selectedApiOnlyAtoms : ComponentAtom -> Prop
+  | ComponentAtom.api => True
+  | ComponentAtom.database => False
+
+theorem selectedApiOnlyAtoms_no_database :
+    ¬ selectedApiOnlyAtoms ComponentAtom.database := by
+  intro hAtom
+  exact hAtom
+
+def apiOnlyCompositionGraph :
+    AAT.CompositionGraph
+      componentShapePresentation selectedApiOnlyAtoms where
+  compatiblePairs := by
+    intro left right hLeft hRight hDistinct
+    cases left
+    · cases right
+      · exact False.elim (hDistinct rfl)
+      · cases hRight
+    · cases hLeft
+  graphBoundary := True
+
+/--
+Source-side generated molecule containing only the API atom.
+
+This is intentionally smaller than `generatedComponentMolecule`, so generated
+operation transport has to move between two distinct generated molecules.
+-/
+def generatedApiOnlyMolecule :
+    AAT.GeneratedMolecule componentShapePresentation where
+  atoms := selectedApiOnlyAtoms
+  finiteConfiguration := True
+  atomsPrimitive := by
+    intro atom hAtom
+    cases atom
+    · exact componentSystem.primitive ComponentAtom.api
+    · cases hAtom
+  compositionGraph := apiOnlyCompositionGraph
+  requiredPortsMatched := by
+    intro atom _port hAtom hRequired
+    cases atom
+    · cases hRequired
+    · exact False.elim (selectedApiOnlyAtoms_no_database hAtom)
+  notArbitrarySet := True
+  notArbitrarySetEvidence := trivial
+
+/-- Source-side generated object whose carrier is exactly the API atom. -/
+def generatedApiOnlyObject :
+    AAT.GeneratedArchitectureObject componentShapePresentation where
+  molecule := generatedApiOnlyMolecule
+  carrierList := [ ⟨ComponentAtom.api, by trivial⟩ ]
+  carrierListNodup := by
+    simp
+  carrierListCovers := by
+    intro carrier
+    cases carrier with
+    | mk atom hAtom =>
+        cases atom
+        · simp
+        · cases hAtom
+  objectBoundary := True
+
+theorem generatedApiOnlyObject_no_relation_atom
+    (carrier : AAT.GeneratedCarrier generatedApiOnlyObject) :
+    (AtomShapeOf componentShapePresentation carrier.val).family ≠
+      AtomKind.relation := by
+  cases carrier.val <;> intro hRelation <;> cases hRelation
+
+instance generatedApiOnlyRelationDecidable :
+    DecidableRel (AAT.GeneratedRelation generatedApiOnlyObject) := by
+  intro source target
+  exact isFalse (by
+    intro hEdge
+    rcases hEdge with ⟨relation, hRelation⟩
+    exact generatedApiOnlyObject_no_relation_atom relation hRelation.1)
+
+theorem generatedApiOnlyGraph_no_edges :
+    ∀ source target,
+      ¬ (AAT.GeneratedArchGraph generatedApiOnlyObject).edge
+        source target := by
+  intro source target hEdge
+  rcases hEdge with ⟨relation, hRelation⟩
+  exact generatedApiOnlyObject_no_relation_atom relation hRelation.1
+
+theorem generatedApiOnlyGraph_walkAcyclic :
+    WalkAcyclic (AAT.GeneratedArchGraph generatedApiOnlyObject) := by
+  intro hClosed
+  rcases hClosed with ⟨_carrier, walk, hPositive⟩
+  cases walk with
+  | nil _ =>
+      simp [Walk.length] at hPositive
+  | cons hEdge _rest =>
+      exact generatedApiOnlyGraph_no_edges _ _ hEdge
+
+/-- Source-side generated law model for the API-only object. -/
+def generatedApiOnlyLawModel :
+    AAT.GeneratedArchitectureLawModel generatedApiOnlyObject where
+  generatedWalkAcyclic := generatedApiOnlyGraph_walkAcyclic
+  lawModelBoundary := True
+
+def generatedApiOnlyCarrier :
+    AAT.GeneratedCarrier generatedApiOnlyObject :=
+  ⟨ComponentAtom.api, by trivial⟩
+
+def generatedComponentApiCarrier :
+    AAT.GeneratedCarrier generatedComponentObject :=
+  ⟨ComponentAtom.api, by trivial⟩
+
+theorem generatedApiOnlyMolecule_is_distinct_from_component_molecule :
+    generatedApiOnlyMolecule.toMolecule ≠
+      generatedComponentMolecule.toMolecule := by
+  intro hEqual
+  have hTarget :
+      generatedComponentMolecule.toMolecule.atoms ComponentAtom.database := by
+    trivial
+  rw [← hEqual] at hTarget
+  exact hTarget
+
+/--
+Non-identity generated operation from the API-only object into the fuller
+component object.
+-/
+def generatedApiExpansionOperation :
+    AAT.GeneratedOperation generatedApiOnlyObject generatedComponentObject where
+  atomMap := fun _carrier => generatedComponentApiCarrier
+  shapeTransform := fun source target => source = target
+  transformsAtomShape := by
+    intro carrier
+    cases carrier with
+    | mk atom hAtom =>
+        cases atom
+        · rfl
+        · cases hAtom
+  preservesPrimitive := by
+    intro _carrier
+    exact generatedComponentObject.carrier_atom_primitive
+      generatedComponentApiCarrier
+  operationDoesNotCreateAtomsEvidence :=
+    componentSystem.tool_output_does_not_create_atoms
+  operationBoundary := True
+
+theorem generatedApiExpansionOperation_transforms_shape
+    (carrier : AAT.GeneratedCarrier generatedApiOnlyObject) :
+    generatedApiExpansionOperation.shapeTransform
+      (AtomShapeOf componentShapePresentation carrier.val)
+      (AtomShapeOf componentShapePresentation
+        (generatedApiExpansionOperation.atomMap carrier).val) := by
+  exact
+    Formal.Arch.Chapter7TheoremPackages.generatedOperation_atomShape_transformed
+      generatedApiExpansionOperation carrier
+
+theorem generatedApiExpansionOperation_does_not_create_atoms :
+    componentSystem.noToolOutputCreatesAtoms := by
+  exact generatedApiExpansionOperation.operation_does_not_create_atoms
+
+def generatedApiExpansionOperationTransportPackage :
+    AAT.OperationTransportPackage
+      generatedApiOnlyLawModel.generatedAATCore
+      generatedComponentLawModel.generatedAATCore := by
+  exact
+    (Formal.Arch.Chapter7TheoremPackages.generatedOperation_toOperationTransportPackage
+      generatedApiExpansionOperation
+      generatedApiOnlyLawModel generatedComponentLawModel)
+
+theorem generatedApiExpansionOperation_transports_molecule :
+    ∃ targetMolecule,
+      generatedApiExpansionOperationTransportPackage.selectedTargetMolecule
+        targetMolecule ∧
+      generatedComponentLawModel.generatedAATCore.molecules targetMolecule := by
+  exact
+    generatedApiExpansionOperationTransportPackage.target_molecule_exists
+      (molecule := generatedApiOnlyMolecule.toMolecule)
+      rfl
+      generatedApiOnlyLawModel.generated_molecule_on_core
+
+theorem generatedApiExpansionOperation_transports_law :
+    ∃ targetLaw,
+      generatedApiExpansionOperationTransportPackage.selectedTargetLaw
+        targetLaw ∧
+      generatedComponentLawModel.generatedAATCore.laws targetLaw := by
+  exact
+    generatedApiExpansionOperationTransportPackage.target_law_exists
+      (law := generatedApiOnlyLawModel.generatedDesignLaw)
+      rfl
+      generatedApiOnlyLawModel.generated_law_on_core
+
+theorem generatedApiExpansionOperation_target_molecule_is_distinct :
+    generatedApiExpansionOperationTransportPackage.selectedTargetMolecule
+        generatedComponentMolecule.toMolecule ∧
+      generatedApiOnlyMolecule.toMolecule ≠
+        generatedComponentMolecule.toMolecule := by
+  exact
+    ⟨rfl, generatedApiOnlyMolecule_is_distinct_from_component_molecule⟩
+
 def generatedComponentZeroCurvaturePackage :
     AAT.ZeroCurvaturePackage generatedComponentLawModel.generatedAATCore := by
   exact generatedComponentLawModel.generatedZeroCurvaturePackage

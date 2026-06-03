@@ -407,6 +407,8 @@ atomObservations
 
 - generated operation
 - operation preserves / transforms AtomShape
+- non-identity generated operation transport between distinct source / target generated molecules
+- transport circuit delta keeps source / target law and molecule selections separate
 - generated repair problem configuration before `GeneratedMolecule`
 - repair clears port / slot / valence mismatch into a generated target object
 - repair clears selected generated obstruction

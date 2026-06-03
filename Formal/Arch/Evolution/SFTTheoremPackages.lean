@@ -174,6 +174,7 @@ def representativeDeclarations : Candidate -> List String
        "AATCoreLocalAlgebraForSFT",
        "AATCoreTransition",
        "AATCoreTransportTransition",
+       "AATCoreTransportCircuitDelta",
        "AATToSFTInterfaceBoundary",
        "AATToSFTInterfaceBoundary.aat_lawfulness_alone_does_not_discharge_trajectory_safety_boundary"]
   | archSigReportBoundary =>
@@ -570,9 +571,10 @@ def schematicCorrespondences : Candidate -> List SchematicCorrespondence
            "AATToSFTInterfaceBoundary.measured_zero_does_not_discharge_unmeasured_axis_safety_boundary",
            "AATCoreLocalAlgebraForSFT.reads_aatcore_as_local_algebra",
            "AATCoreTransition.operation_does_not_create_atoms",
-           "AATCoreTransportTransition.operation_does_not_create_atoms"],
+           "AATCoreTransportTransition.operation_does_not_create_atoms",
+           "AATCoreTransportCircuitDelta.transport_circuit_delta_does_not_create_atoms"],
          reading :=
-          "Atom-generated theorem status and AATCore preservation / transport evidence are read as local algebra or local premise and do not automatically promote to forecast safety",
+          "Atom-generated theorem status and AATCore preservation / transport evidence are read as local algebra or local premise; transport circuit deltas keep source and target law/molecule selections separate and do not automatically promote to forecast safety",
          status := "proved accessors" }]
   | archSigReportBoundary =>
       [{ schematic := "ArchSig report reads as SFT estimate/status boundary",
@@ -590,9 +592,10 @@ def schematicCorrespondences : Candidate -> List SchematicCorrespondence
            "GeneratedArchSigAATCoreTransportTransition.source_bridge_architectureLawful",
            "GeneratedArchSigAATCoreTransportTransition.target_bridge_architectureLawful",
            "GeneratedFieldSigAATCoreTransportTransitionAnalysis.fieldsig_reads_generated_archsig_transport_transition_as_sft_analysis",
-           "GeneratedFieldSigAATCoreTransportTransitionAnalysis.forecast_correctness_remains_boundary"],
+           "GeneratedFieldSigAATCoreTransportTransitionAnalysis.forecast_correctness_remains_boundary",
+           "AtomGeneratedSignatureExamples.atomGeneratedSignature_transport_target_molecule_is_distinct"],
          reading :=
-          "tool report output and generated AATCore preservation / transport transition analysis preserve selected SFT boundaries without caller-supplied Signature bridge fields or forecast claim promotion",
+          "tool report output and generated AATCore preservation / non-identity transport transition analysis preserve selected SFT boundaries without caller-supplied Signature bridge fields or forecast claim promotion",
          status := "proved accessors" }]
   | counterexamplePackage =>
       [{ schematic := "SFT forbidden readings have canonical counterexample entrypoints",
