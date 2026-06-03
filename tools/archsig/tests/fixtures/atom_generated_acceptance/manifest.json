@@ -8,7 +8,9 @@
     "generatedMolecules": 1,
     "generatedLawInputs": 1,
     "applicableLawAxes": 1,
+    "generatedRepairTargets": 1,
     "localStatuses": [
+      "localSatisfied",
       "localViolated",
       "locallyBlocked"
     ],

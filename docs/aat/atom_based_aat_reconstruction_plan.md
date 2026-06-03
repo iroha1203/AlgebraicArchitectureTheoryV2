@@ -492,6 +492,7 @@ atom_generated_acceptance fixture:
   expected generatedLawInputs > 0
   expected applicableLawAxes > 0
   expected localSatisfied/localViolated/locallyBlocked present
+  expected generatedRepairTargets > 0
   expected viewerDistanceInputs present
 ```
 

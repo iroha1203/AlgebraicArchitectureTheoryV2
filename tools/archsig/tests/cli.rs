@@ -1445,6 +1445,10 @@ fn atom_generated_acceptance_fixture_materializes_local_middle_layer() {
         .as_u64()
         .expect("generatedLawInputs expectation is present")
         as usize;
+    let minimum_generated_repair_targets = expectations["generatedRepairTargets"]
+        .as_u64()
+        .expect("generatedRepairTargets expectation is present")
+        as usize;
     let minimum_applicable_law_axes = expectations["applicableLawAxes"]
         .as_u64()
         .expect("applicableLawAxes expectation is present")
@@ -1453,6 +1457,9 @@ fn atom_generated_acceptance_fixture_materializes_local_middle_layer() {
         .as_u64()
         .expect("viewerDistanceInputs expectation is present")
         as usize;
+    let expected_local_statuses = expectations["localStatuses"]
+        .as_array()
+        .expect("localStatuses expectation is present");
 
     assert!(
         packet["generatedMolecules"]
@@ -1476,6 +1483,32 @@ fn atom_generated_acceptance_fixture_materializes_local_middle_layer() {
             }),
         "generated law inputs must expose applicable law axes and localSatisfied status"
     );
+    for expected_status in expected_local_statuses {
+        let expected_status = expected_status
+            .as_str()
+            .expect("local status expectation is string");
+        let present = packet["generatedLawInputs"]
+            .as_array()
+            .is_some_and(|items| {
+                items.iter().any(|item| {
+                    item["localStatuses"].as_array().is_some_and(|statuses| {
+                        statuses.iter().any(|status| status == expected_status)
+                    })
+                })
+            })
+            || packet["generatedObstructions"]
+                .as_array()
+                .is_some_and(|items| {
+                    items.iter().any(|item| {
+                        item["localStatus"] == expected_status
+                            || item["blockerStatus"] == expected_status
+                    })
+                });
+        assert!(
+            present,
+            "atom-generated acceptance must expose expected local status {expected_status}"
+        );
+    }
     assert!(
         packet["generatedObstructions"]
             .as_array()
@@ -1486,6 +1519,30 @@ fn atom_generated_acceptance_fixture_materializes_local_middle_layer() {
                 })
             }),
         "generated obstructions must expose localViolated and locallyBlocked status"
+    );
+    assert!(
+        packet["generatedRepairTargets"]
+            .as_array()
+            .is_some_and(|items| {
+                items.len() >= minimum_generated_repair_targets
+                    && items.iter().any(|item| {
+                        item["targetKind"] == "shapeLevelGeneratedRepairTarget"
+                            && item["generatedObstructionRefs"]
+                                .as_array()
+                                .is_some_and(|refs| !refs.is_empty())
+                            && item["generatedMoleculeRefs"]
+                                .as_array()
+                                .is_some_and(|refs| !refs.is_empty())
+                            && item["atomShapeRefs"]
+                                .as_array()
+                                .is_some_and(|refs| !refs.is_empty())
+                            && item["requiredPortOrSlot"] == "portOrSlotOrValenceMismatch"
+                            && item["evidenceBoundary"].as_str().is_some_and(|text| {
+                                text.contains("not a free-form recommendation")
+                            })
+                    })
+            }),
+        "generated repair targets must localize repair candidates to generated obstruction, molecule, and AtomShape refs"
     );
     assert!(
         packet["viewerDistanceInputs"]
