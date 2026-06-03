@@ -1,3 +1,4 @@
+import Formal.Arch.AAT.GeneratedAnalyticRepresentation
 import Formal.Arch.Signature.AnalyticRepresentation
 import Formal.Arch.Extension.ArchitectureExtensionFormula
 import Formal.Arch.Extension.FeatureExtensionExamples
@@ -19,6 +20,8 @@ completeness claims.
 -/
 
 namespace Formal.Arch
+
+universe u v w q
 
 namespace Chapter11AnalyticRepresentation
 
@@ -454,6 +457,105 @@ theorem architectureSignatureAnalyticRepresentation_obstructionReflecting
   exact hObstruction
     ((ArchitectureSignature.architectureLawful_iff_requiredSignatureAxesZero X).mp
       hLawful)
+
+/--
+Atom-generated Chapter 11 analytic representation map.
+
+The representation state is the generated law model itself, and the analytic
+value is `signatureOfGenerated`; callers do not provide a hand-authored
+`ArchitectureLawModel` representation map.
+-/
+theorem generatedAnalyticRepresentation_represent_eq_signatureOfGenerated
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : AAT.GeneratedArchitectureObject presentation}
+    [DecidableEq system.Atom]
+    [DecidableRel (AAT.GeneratedRelation object)]
+    (model : AAT.GeneratedArchitectureLawModel object) :
+    (AAT.GeneratedArchitectureLawModel.generatedAnalyticRepresentation
+      (object := object)).represent model = model.signatureOfGenerated := by
+  rfl
+
+/--
+Atom-generated specialization of the Chapter 11 zero-preserving direction.
+-/
+theorem generatedAnalyticRepresentation_zeroPreserving
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : AAT.GeneratedArchitectureObject presentation}
+    [DecidableEq system.Atom]
+    [DecidableRel (AAT.GeneratedRelation object)] :
+    AnalyticRepresentation.ZeroPreserving
+      (AAT.GeneratedArchitectureLawModel.generatedAnalyticRepresentation
+        (object := object)) := by
+  exact
+    AAT.GeneratedArchitectureLawModel.generatedAnalyticRepresentation_zeroPreserving
+      (object := object)
+
+/--
+Atom-generated specialization of the Chapter 11 zero-reflecting direction.
+-/
+theorem generatedAnalyticRepresentation_zeroReflecting
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : AAT.GeneratedArchitectureObject presentation}
+    [DecidableEq system.Atom]
+    [DecidableRel (AAT.GeneratedRelation object)] :
+    AnalyticRepresentation.ZeroReflecting
+      (AAT.GeneratedArchitectureLawModel.generatedAnalyticRepresentation
+        (object := object)) := by
+  exact
+    AAT.GeneratedArchitectureLawModel.generatedAnalyticRepresentation_zeroReflecting
+      (object := object)
+
+/--
+Atom-generated specialization of the Chapter 11 obstruction-preserving
+direction.
+-/
+theorem generatedAnalyticRepresentation_obstructionPreserving
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : AAT.GeneratedArchitectureObject presentation}
+    [DecidableEq system.Atom]
+    [DecidableRel (AAT.GeneratedRelation object)] :
+    AnalyticRepresentation.ObstructionPreserving
+      (AAT.GeneratedArchitectureLawModel.generatedAnalyticRepresentation
+        (object := object)) := by
+  exact
+    AAT.GeneratedArchitectureLawModel.generatedAnalyticRepresentation_obstructionPreserving
+      (object := object)
+
+/--
+Atom-generated specialization of the Chapter 11 obstruction-reflecting
+direction.
+-/
+theorem generatedAnalyticRepresentation_obstructionReflecting
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : AAT.GeneratedArchitectureObject presentation}
+    [DecidableEq system.Atom]
+    [DecidableRel (AAT.GeneratedRelation object)] :
+    AnalyticRepresentation.ObstructionReflecting
+      (AAT.GeneratedArchitectureLawModel.generatedAnalyticRepresentation
+        (object := object)) := by
+  exact
+    AAT.GeneratedArchitectureLawModel.generatedAnalyticRepresentation_obstructionReflecting
+      (object := object)
+
+/--
+The generated Chapter 11 representation keeps its non-conclusion boundary.
+-/
+theorem generatedAnalyticRepresentation_nonConclusions
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : AAT.GeneratedArchitectureObject presentation}
+    [DecidableEq system.Atom]
+    [DecidableRel (AAT.GeneratedRelation object)] :
+    (AAT.GeneratedArchitectureLawModel.generatedAnalyticRepresentation
+      (object := object)).nonConclusions := by
+  exact
+    AAT.GeneratedArchitectureLawModel.generatedAnalyticRepresentation_nonConclusions
+      (object := object)
 
 /--
 Analytic extension formula package for Chapter 11.
@@ -1033,6 +1135,13 @@ def representativeDeclarations : Candidate -> List String
        "architectureSignatureAnalyticRepresentation_zeroReflecting",
        "architectureSignatureAnalyticRepresentation_obstructionPreserving",
        "architectureSignatureAnalyticRepresentation_obstructionReflecting",
+       "AAT.GeneratedArchitectureLawModel.generatedAnalyticRepresentation",
+       "Chapter11AnalyticRepresentation.generatedAnalyticRepresentation_represent_eq_signatureOfGenerated",
+       "Chapter11AnalyticRepresentation.generatedAnalyticRepresentation_zeroPreserving",
+       "Chapter11AnalyticRepresentation.generatedAnalyticRepresentation_zeroReflecting",
+       "Chapter11AnalyticRepresentation.generatedAnalyticRepresentation_obstructionPreserving",
+       "Chapter11AnalyticRepresentation.generatedAnalyticRepresentation_obstructionReflecting",
+       "Chapter11AnalyticRepresentation.generatedAnalyticRepresentation_nonConclusions",
        "ArchitectureSignature.ArchitectureLawModel.signatureOf",
        "ArchitectureSignature.RequiredSignatureAxesZero",
        "ArchitectureSignature.architectureLawful_iff_requiredSignatureAxesZero"]
@@ -1213,6 +1322,19 @@ def schematicCorrespondences : Candidate -> List SchematicCorrespondence
            "ArchitectureSignature.ArchitectureSignatureV1.not_axisAvailableAndZero_of_axisValue_none"],
          reading :=
           "`none` is an unavailable optional metric, not an available selected required-axis zero certificate",
+         status := "proved" },
+       { schematic :=
+          "GeneratedArchitectureLawModel -> ArchitectureSignatureV1",
+         leanDeclarations :=
+          ["AAT.GeneratedArchitectureLawModel.generatedAnalyticRepresentation",
+           "Chapter11AnalyticRepresentation.generatedAnalyticRepresentation_represent_eq_signatureOfGenerated",
+           "Chapter11AnalyticRepresentation.generatedAnalyticRepresentation_zeroPreserving",
+           "Chapter11AnalyticRepresentation.generatedAnalyticRepresentation_zeroReflecting",
+           "Chapter11AnalyticRepresentation.generatedAnalyticRepresentation_obstructionPreserving",
+           "Chapter11AnalyticRepresentation.generatedAnalyticRepresentation_obstructionReflecting",
+           "Chapter11AnalyticRepresentation.generatedAnalyticRepresentation_nonConclusions"],
+         reading :=
+          "Atom-generated law models form the representation state space and map to `signatureOfGenerated`, with preserving and reflecting directions inherited from generated lawfulness",
          status := "proved" }]
   | obstructionValuation =>
       [{ schematic := "ObstructionValuation State Witness",

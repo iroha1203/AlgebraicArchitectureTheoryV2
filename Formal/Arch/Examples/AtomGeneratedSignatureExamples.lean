@@ -2,6 +2,7 @@ import Formal.Arch.AAT.GeneratedAnalyticRepresentation
 import Formal.Arch.AAT.GeneratedFeatureExtension
 import Formal.Arch.AAT.GeneratedSFT
 import Formal.Arch.Evolution.Chapter10ArchitectureExtensionFormula
+import Formal.Arch.Evolution.Chapter11AnalyticRepresentation
 import Formal.Arch.Examples.AtomGeneratedMoleculeExamples
 
 namespace Formal.Arch.AtomGeneratedSignatureExamples
@@ -82,7 +83,7 @@ theorem atomGeneratedSignature_analytic_zeroPreserving :
     AnalyticRepresentation.ZeroPreserving
       atomGeneratedSignature_analyticRepresentation := by
   exact
-    AAT.GeneratedArchitectureLawModel.generatedAnalyticRepresentation_zeroPreserving
+    Formal.Arch.Chapter11AnalyticRepresentation.generatedAnalyticRepresentation_zeroPreserving
       (object := generatedComponentObject)
 
 theorem atomGeneratedSignature_analytic_zero :
@@ -99,8 +100,36 @@ theorem atomGeneratedSignature_analytic_zeroReflecting :
     AnalyticRepresentation.ZeroReflecting
       atomGeneratedSignature_analyticRepresentation := by
   exact
-    AAT.GeneratedArchitectureLawModel.generatedAnalyticRepresentation_zeroReflecting
+    Formal.Arch.Chapter11AnalyticRepresentation.generatedAnalyticRepresentation_zeroReflecting
       (object := generatedComponentObject)
+
+theorem atomGeneratedSignature_analytic_obstructionPreserving :
+    AnalyticRepresentation.ObstructionPreserving
+      atomGeneratedSignature_analyticRepresentation := by
+  exact
+    Formal.Arch.Chapter11AnalyticRepresentation.generatedAnalyticRepresentation_obstructionPreserving
+      (object := generatedComponentObject)
+
+theorem atomGeneratedSignature_analytic_obstructionReflecting :
+    AnalyticRepresentation.ObstructionReflecting
+      atomGeneratedSignature_analyticRepresentation := by
+  exact
+    Formal.Arch.Chapter11AnalyticRepresentation.generatedAnalyticRepresentation_obstructionReflecting
+      (object := generatedComponentObject)
+
+theorem atomGeneratedSignature_analytic_nonConclusions :
+    atomGeneratedSignature_analyticRepresentation.nonConclusions := by
+  exact
+    Formal.Arch.Chapter11AnalyticRepresentation.generatedAnalyticRepresentation_nonConclusions
+      (object := generatedComponentObject)
+
+theorem atomGeneratedSignature_analytic_represent_eq_signatureOfGenerated :
+    atomGeneratedSignature_analyticRepresentation.represent
+        generatedComponentLawModel =
+      generatedComponentLawModel.signatureOfGenerated := by
+  exact
+    Formal.Arch.Chapter11AnalyticRepresentation.generatedAnalyticRepresentation_represent_eq_signatureOfGenerated
+      generatedComponentLawModel
 
 /--
 Positive acceptance: generated law models also trigger the existing bounded
