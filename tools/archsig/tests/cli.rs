@@ -1006,6 +1006,19 @@ fn cli_runs_primary_archmap_lawpolicy_archsig_analyze_workflow() {
                 .is_some_and(|items| !items.is_empty()),
         "viewer data must carry generated molecule and AtomShape distance inputs"
     );
+    let viewer_distance = viewer_data["aatGeometryOverlays"]["viewerDistanceInputs"]
+        .as_array()
+        .and_then(|items| items.first())
+        .expect("viewer distance input is projected");
+    assert!(
+        viewer_distance["sourceRef"].as_str().is_some()
+            && viewer_distance["targetRef"].as_str().is_some()
+            && viewer_distance["distanceValue"].as_i64().is_some()
+            && viewer_distance["coordinateComponents"]
+                .as_array()
+                .is_some_and(|items| !items.is_empty()),
+        "viewer distance inputs must retain source/target refs, distance value, and AtomShape coordinate components for layout"
+    );
     assert_eq!(
         viewer_data["reportPane"]["overview"]["summaryVerdict"]["readingMode"].as_str(),
         Some("measurementOverSuppliedArchMapAndLawPolicy")
@@ -1090,6 +1103,27 @@ fn cli_runs_primary_archmap_lawpolicy_archsig_analyze_workflow() {
         analysis_validation.get("packet").is_none(),
         "analysis validation must not embed the full analysis packet"
     );
+}
+
+#[test]
+fn atom_viewer_uses_atom_shape_distance_inputs_for_molecule_layout() {
+    let viewer_path = Path::new(env!("CARGO_MANIFEST_DIR")).join("viewer/archsig-atom-viewer.html");
+    let viewer = fs::read_to_string(&viewer_path).expect("viewer html can be read");
+
+    for required in [
+        "geometry.viewerDistanceInputs",
+        "atomToViewerDistances",
+        "viewerDistances",
+        "function viewerDistanceProfile",
+        "distanceProfile.meanDistance",
+        "function renderViewerDistanceBonds",
+        "AtomShape distance from molecule center",
+    ] {
+        assert!(
+            viewer.contains(required),
+            "atom viewer must use AtomShape viewerDistanceInputs in molecule layout: missing {required}"
+        );
+    }
 }
 
 #[test]
@@ -1405,16 +1439,20 @@ fn atom_generated_acceptance_fixture_materializes_local_middle_layer() {
     let expectations = &manifest["expectations"];
     let minimum_generated_molecules = expectations["generatedMolecules"]
         .as_u64()
-        .expect("generatedMolecules expectation is present") as usize;
+        .expect("generatedMolecules expectation is present")
+        as usize;
     let minimum_generated_law_inputs = expectations["generatedLawInputs"]
         .as_u64()
-        .expect("generatedLawInputs expectation is present") as usize;
+        .expect("generatedLawInputs expectation is present")
+        as usize;
     let minimum_applicable_law_axes = expectations["applicableLawAxes"]
         .as_u64()
-        .expect("applicableLawAxes expectation is present") as usize;
+        .expect("applicableLawAxes expectation is present")
+        as usize;
     let minimum_viewer_distance_inputs = expectations["viewerDistanceInputs"]
         .as_u64()
-        .expect("viewerDistanceInputs expectation is present") as usize;
+        .expect("viewerDistanceInputs expectation is present")
+        as usize;
 
     assert!(
         packet["generatedMolecules"]
@@ -1423,26 +1461,30 @@ fn atom_generated_acceptance_fixture_materializes_local_middle_layer() {
         "atom-generated acceptance must materialize generated molecules"
     );
     assert!(
-        packet["generatedLawInputs"].as_array().is_some_and(|items| {
-            items.len() >= minimum_generated_law_inputs
-                && items.iter().any(|item| {
-                    item["applicableLawAxes"]
-                        .as_array()
-                        .is_some_and(|axes| axes.len() >= minimum_applicable_law_axes)
-                        && item["localStatuses"].as_array().is_some_and(|statuses| {
-                            statuses.iter().any(|status| status == "localSatisfied")
-                        })
-                })
-        }),
+        packet["generatedLawInputs"]
+            .as_array()
+            .is_some_and(|items| {
+                items.len() >= minimum_generated_law_inputs
+                    && items.iter().any(|item| {
+                        item["applicableLawAxes"]
+                            .as_array()
+                            .is_some_and(|axes| axes.len() >= minimum_applicable_law_axes)
+                            && item["localStatuses"].as_array().is_some_and(|statuses| {
+                                statuses.iter().any(|status| status == "localSatisfied")
+                            })
+                    })
+            }),
         "generated law inputs must expose applicable law axes and localSatisfied status"
     );
     assert!(
-        packet["generatedObstructions"].as_array().is_some_and(|items| {
-            items.iter().any(|item| {
-                item["localStatus"] == "localViolated"
-                    && item["blockerStatus"] == "locallyBlocked"
-            })
-        }),
+        packet["generatedObstructions"]
+            .as_array()
+            .is_some_and(|items| {
+                items.iter().any(|item| {
+                    item["localStatus"] == "localViolated"
+                        && item["blockerStatus"] == "locallyBlocked"
+                })
+            }),
         "generated obstructions must expose localViolated and locallyBlocked status"
     );
     assert!(
@@ -2737,8 +2779,9 @@ fn archsig_release_workflow_packages_output_viewer_contract() {
         .parent()
         .and_then(Path::parent)
         .expect("repo root");
-    let release_workflow = fs::read_to_string(repo_root.join(".github/workflows/archsig-release.yml"))
-        .expect("release workflow can be read");
+    let release_workflow =
+        fs::read_to_string(repo_root.join(".github/workflows/archsig-release.yml"))
+            .expect("release workflow can be read");
     assert!(
         release_workflow.contains("package/archsig-atom-viewer.html")
             && release_workflow.contains("package/viewer/archsig-atom-viewer.html")

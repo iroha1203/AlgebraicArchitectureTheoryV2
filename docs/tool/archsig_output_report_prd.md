@@ -245,6 +245,8 @@ viewer data は少なくとも次を持つ。
 - boundary / coverage overlays
 - obstruction / signature overlays
 - selected ArchSig analysis overlays
+- AAT geometry overlays, including `viewerDistanceInputs` with `sourceRef`,
+  `targetRef`, `distanceValue`, and `coordinateComponents`
 - report pane sections
 - source ref samples
 - omitted detail counts
@@ -265,6 +267,8 @@ report pane の要約、source sample、detail ref だけを含む。
 - halo: hotspot、coverage gap、nonzero monodromy、boundary residual
 - layer toggle: LawPolicy axis、obstruction circuit、signature axis、spectrum hotspot、
   bridge pressure、homotopy hole、repair candidate
+- molecule layout distance: AtomShape coordinate mismatch inputs generated from
+  `viewerDistanceInputs`
 
 3D 距離は theorem metric ではない。layout は AAT concept を読むための visual projection であり、
 数学的埋め込みの証明ではない。
