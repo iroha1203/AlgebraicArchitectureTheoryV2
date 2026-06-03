@@ -1,4 +1,5 @@
 import Formal.Arch.Evolution.SFTAATFundamentalModularity
+import Formal.Arch.Examples.AtomGeneratedSignatureExamples
 
 /-!
 Canonical finite AAT-supported SFT Grand Theorem example.
@@ -516,6 +517,43 @@ theorem canonicalAATSupportedBoundary_reads_aat_status_as_local_premise :
     canonicalAATSupportedBoundary.forecastStatus.RecordsLocalPremise :=
   canonicalAATSupportedBoundary.aat_status_as_sft_local_premise trivial
 
+noncomputable def canonicalGeneratedAATSupportedBoundary :
+    AATSupportedSFTBoundary canonicalExactModel () 1 :=
+  AATSupportedSFTBoundary.ofGeneratedSFTInput
+    canonicalSelectedSlice
+    AtomGeneratedSignatureExamples.atomGeneratedSignature_sftInput
+    AtomGeneratedSignatureExamples.atomGeneratedSignature_sftForecastStatus
+    AtomGeneratedSignatureExamples.atomGeneratedSignature_sftInterfaceBoundary
+    True True
+    canonicalExactModel_recordsFiniteModelBoundary
+    canonicalExactModel_recordsExactCoverBoundary
+    canonicalExactModel_recordsObservationBoundary
+    trivial trivial trivial trivial True True True True
+
+theorem canonicalGeneratedAATSupportedBoundary_aatStatus_eq_generated :
+    canonicalGeneratedAATSupportedBoundary.aatStatus =
+      AtomGeneratedSignatureExamples.atomGeneratedSignature_sftInput.theoremStatus := by
+  rfl
+
+theorem canonicalGeneratedAATSupportedBoundary_reads_generated_status_as_local_premise :
+    canonicalGeneratedAATSupportedBoundary.forecastStatus.RecordsLocalPremise := by
+  exact
+    AATSupportedSFTBoundary.ofGeneratedSFTInput_reads_generated_status_as_local_premise
+      canonicalSelectedSlice
+      AtomGeneratedSignatureExamples.atomGeneratedSignature_sftInput
+      AtomGeneratedSignatureExamples.atomGeneratedSignature_sftForecastStatus
+      AtomGeneratedSignatureExamples.atomGeneratedSignature_sftInterfaceBoundary
+      True True
+      canonicalExactModel_recordsFiniteModelBoundary
+      canonicalExactModel_recordsExactCoverBoundary
+      canonicalExactModel_recordsObservationBoundary
+      trivial trivial trivial trivial True True True True
+
+theorem canonicalGeneratedAATSupportedBoundary_preserves_nonConclusions :
+    canonicalGeneratedAATSupportedBoundary.RecordsNonConclusions :=
+  canonicalGeneratedAATSupportedBoundary.preserves_nonConclusions
+    trivial trivial trivial canonicalExactModel_recordsNonConclusions
+
 def canonicalAATSupportedFundamentalModularityPackage :
     AATSupportedFundamentalModularityPackage canonicalExactModel () 1 :=
   AATSupportedFundamentalModularityPackage.ofBoundaryAndFiniteSelectedHypotheses
@@ -550,6 +588,25 @@ theorem canonicalAATSupported_preserves_nonConclusions :
     canonicalAATSupportedFundamentalModularityPackage.boundary.RecordsNonConclusions ∧
       canonicalAATSupportedFundamentalModularityPackage.finalPackage.RecordsNonConclusions :=
   canonicalAATSupportedFundamentalModularityPackage.does_not_promote_to_unconditional_claim
+
+noncomputable def canonicalGeneratedAATSupportedFundamentalModularityPackage :
+    AATSupportedFundamentalModularityPackage canonicalExactModel () 1 :=
+  AATSupportedFundamentalModularityPackage.ofBoundaryAndFiniteSelectedHypotheses
+    (exactModel := canonicalExactModel) (source := ()) (horizon := 1)
+    canonicalGeneratedAATSupportedBoundary
+    canonicalFundamentalModularityHypotheses
+    canonicalExactModel_recordsGovernanceBoundary
+    trivial trivial trivial trivial trivial trivial trivial trivial
+    canonicalExactModel_recordsNonConclusions trivial
+
+theorem canonicalGeneratedAATSupported_final_typed_conclusion :
+    canonicalGeneratedAATSupportedFundamentalModularityPackage.AATSupportedFinalTypedConclusion :=
+  canonicalGeneratedAATSupportedFundamentalModularityPackage.governed_or_finite_failure_or_aat_boundary_failure
+
+theorem canonicalGeneratedAATSupported_preserves_nonConclusions :
+    canonicalGeneratedAATSupportedFundamentalModularityPackage.boundary.RecordsNonConclusions ∧
+      canonicalGeneratedAATSupportedFundamentalModularityPackage.finalPackage.RecordsNonConclusions :=
+  canonicalGeneratedAATSupportedFundamentalModularityPackage.does_not_promote_to_unconditional_claim
 
 /-! ## Non-singleton selected finite example -/
 
