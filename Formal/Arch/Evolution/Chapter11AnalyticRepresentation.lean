@@ -1,4 +1,5 @@
 import Formal.Arch.AAT.GeneratedAnalyticRepresentation
+import Formal.Arch.AAT.GeneratedFlatness
 import Formal.Arch.Signature.AnalyticRepresentation
 import Formal.Arch.Extension.ArchitectureExtensionFormula
 import Formal.Arch.Extension.FeatureExtensionExamples
@@ -21,7 +22,7 @@ completeness claims.
 
 namespace Formal.Arch
 
-universe u v w q
+universe u v w q r s t
 
 namespace Chapter11AnalyticRepresentation
 
@@ -1169,6 +1170,160 @@ theorem hiddenDependency_liftingFailure_bridge :
 
 end CouponHiddenInteractionLiftingBridge
 
+/--
+Boundary package separating generated reflexive semantic flatness from an
+external selected semantic obstruction.
+
+The generated side is an Atom-generated law model over one generated object.
+The external side is a selected flatness model, such as the canonical coupon
+semantic counterexample.  This package intentionally does not reinterpret the
+external obstruction as a generated one, and it does not let generated
+reflexive semantic flatness discharge an independently selected semantic
+diagram failure.
+-/
+structure GeneratedExternalSemanticObstructionBoundary
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : AAT.GeneratedArchitectureObject presentation}
+    (ExternalComponent : Type w)
+    (ExternalRuntime : Type q)
+    (ExternalObservation : Type r)
+    (ExternalSemanticExpr : Type s)
+    (ExternalSemanticValue : Type t) where
+  generatedModel : AAT.GeneratedArchitectureLawModel object
+  externalFlatnessModel :
+    ArchitectureFlatnessModel ExternalComponent ExternalRuntime
+      ExternalObservation ExternalSemanticExpr ExternalSemanticValue
+  externalUniverse : ComponentUniverse externalFlatnessModel.static
+  externalStaticFlatWithin :
+    StaticFlatWithin externalFlatnessModel externalUniverse
+  externalSemanticObstruction : ¬ SemanticFlatWithin externalFlatnessModel
+  nonConclusions : Prop
+
+namespace GeneratedExternalSemanticObstructionBoundary
+
+theorem generated_semanticFlatWithin
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : AAT.GeneratedArchitectureObject presentation}
+    {ExternalComponent : Type w}
+    {ExternalRuntime : Type q}
+    {ExternalObservation : Type r}
+    {ExternalSemanticExpr : Type s}
+    {ExternalSemanticValue : Type t}
+    (boundary :
+      GeneratedExternalSemanticObstructionBoundary
+        (object := object)
+        ExternalComponent ExternalRuntime ExternalObservation
+        ExternalSemanticExpr ExternalSemanticValue) :
+    SemanticFlatWithin object.generatedFlatnessModel :=
+  boundary.generatedModel.generated_semanticFlatWithin
+
+theorem external_semantic_obstruction_remains
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : AAT.GeneratedArchitectureObject presentation}
+    {ExternalComponent : Type w}
+    {ExternalRuntime : Type q}
+    {ExternalObservation : Type r}
+    {ExternalSemanticExpr : Type s}
+    {ExternalSemanticValue : Type t}
+    (boundary :
+      GeneratedExternalSemanticObstructionBoundary
+        (object := object)
+        ExternalComponent ExternalRuntime ExternalObservation
+        ExternalSemanticExpr ExternalSemanticValue) :
+    ¬ SemanticFlatWithin boundary.externalFlatnessModel :=
+  boundary.externalSemanticObstruction
+
+theorem external_not_architectureFlatWithin
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : AAT.GeneratedArchitectureObject presentation}
+    {ExternalComponent : Type w}
+    {ExternalRuntime : Type q}
+    {ExternalObservation : Type r}
+    {ExternalSemanticExpr : Type s}
+    {ExternalSemanticValue : Type t}
+    (boundary :
+      GeneratedExternalSemanticObstructionBoundary
+        (object := object)
+        ExternalComponent ExternalRuntime ExternalObservation
+        ExternalSemanticExpr ExternalSemanticValue) :
+    ¬ ArchitectureFlatWithin
+        boundary.externalFlatnessModel boundary.externalUniverse := by
+  intro hFlat
+  exact boundary.externalSemanticObstruction
+    (semanticFlatWithin_of_architectureFlatWithin hFlat)
+
+theorem generated_semantic_flatness_does_not_discharge_external
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : AAT.GeneratedArchitectureObject presentation}
+    {ExternalComponent : Type w}
+    {ExternalRuntime : Type q}
+    {ExternalObservation : Type r}
+    {ExternalSemanticExpr : Type s}
+    {ExternalSemanticValue : Type t}
+    (boundary :
+      GeneratedExternalSemanticObstructionBoundary
+        (object := object)
+        ExternalComponent ExternalRuntime ExternalObservation
+        ExternalSemanticExpr ExternalSemanticValue) :
+    SemanticFlatWithin object.generatedFlatnessModel ∧
+      ¬ SemanticFlatWithin boundary.externalFlatnessModel :=
+  ⟨boundary.generated_semanticFlatWithin,
+    boundary.external_semantic_obstruction_remains⟩
+
+end GeneratedExternalSemanticObstructionBoundary
+
+/--
+The coupon static/semantic counterexample remains an external selected
+counterexample when read next to any generated law model.
+-/
+def couponGeneratedExternalSemanticObstructionBoundary
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : AAT.GeneratedArchitectureObject presentation}
+    (model : AAT.GeneratedArchitectureLawModel object) :
+    GeneratedExternalSemanticObstructionBoundary
+      (object := object)
+      CouponStaticDependencyExample.ExtendedComponent
+      Unit
+      Unit
+      StaticSemanticCounterexample.SelectedCouponOrder
+      Nat where
+  generatedModel := model
+  externalFlatnessModel := StaticSemanticCounterexample.canonicalFlatnessModel
+  externalUniverse := StaticSemanticCounterexample.repairedUniverse
+  externalStaticFlatWithin :=
+    StaticSemanticCounterexample.canonical_staticFlatWithin
+  externalSemanticObstruction :=
+    StaticSemanticCounterexample.canonical_not_semanticFlatWithin
+  nonConclusions := True
+
+theorem coupon_generated_semantic_flatness_does_not_discharge_static_semantic_counterexample
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : AAT.GeneratedArchitectureObject presentation}
+    (model : AAT.GeneratedArchitectureLawModel object) :
+    SemanticFlatWithin object.generatedFlatnessModel ∧
+      ¬ SemanticFlatWithin StaticSemanticCounterexample.canonicalFlatnessModel :=
+  GeneratedExternalSemanticObstructionBoundary.generated_semantic_flatness_does_not_discharge_external
+    (couponGeneratedExternalSemanticObstructionBoundary model)
+
+theorem coupon_generated_boundary_staticFlat_with_semanticObstruction
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : AAT.GeneratedArchitectureObject presentation}
+    (model : AAT.GeneratedArchitectureLawModel object) :
+    StaticFlatWithin StaticSemanticCounterexample.canonicalFlatnessModel
+        StaticSemanticCounterexample.repairedUniverse ∧
+      ¬ SemanticFlatWithin StaticSemanticCounterexample.canonicalFlatnessModel :=
+  ⟨(couponGeneratedExternalSemanticObstructionBoundary model).externalStaticFlatWithin,
+    GeneratedExternalSemanticObstructionBoundary.external_semantic_obstruction_remains
+      (couponGeneratedExternalSemanticObstructionBoundary model)⟩
+
 /-- The main Chapter 11 API groups exposed through this entrypoint. -/
 inductive Candidate where
   | analyticRepresentation
@@ -1327,7 +1482,14 @@ def representativeDeclarations : Candidate -> List String
        "StaticSemanticCounterexample.canonical_not_semanticFlatWithin",
        "StaticSemanticCounterexample.canonical_not_architectureFlat",
        "StaticSemanticCounterexample.staticFlat_with_semanticObstruction",
-       "StaticSemanticCounterexample.staticFlat_not_architectureFlat"]
+       "StaticSemanticCounterexample.staticFlat_not_architectureFlat",
+       "Chapter11AnalyticRepresentation.GeneratedExternalSemanticObstructionBoundary",
+       "Chapter11AnalyticRepresentation.GeneratedExternalSemanticObstructionBoundary.generated_semanticFlatWithin",
+       "Chapter11AnalyticRepresentation.GeneratedExternalSemanticObstructionBoundary.external_semantic_obstruction_remains",
+       "Chapter11AnalyticRepresentation.GeneratedExternalSemanticObstructionBoundary.generated_semantic_flatness_does_not_discharge_external",
+       "Chapter11AnalyticRepresentation.couponGeneratedExternalSemanticObstructionBoundary",
+       "Chapter11AnalyticRepresentation.coupon_generated_semantic_flatness_does_not_discharge_static_semantic_counterexample",
+       "Chapter11AnalyticRepresentation.coupon_generated_boundary_staticFlat_with_semanticObstruction"]
   | measurementBoundary =>
       ["MeasurementBoundary",
        "MeasurementBoundary.measuredZero",
@@ -1597,6 +1759,18 @@ def schematicCorrespondences : Candidate -> List SchematicCorrespondence
            "StaticSemanticCounterexample.staticFlat_not_architectureFlat"],
          reading :=
           "repaired static skeleton can be selected-static-flat while the selected semantic coupon / discount diagram still obstructs architecture flatness",
+         status := "proved" },
+       { schematic :=
+          "generated reflexive semantic flatness does not discharge external selected semantic obstruction",
+         leanDeclarations :=
+          ["Chapter11AnalyticRepresentation.GeneratedExternalSemanticObstructionBoundary",
+           "Chapter11AnalyticRepresentation.GeneratedExternalSemanticObstructionBoundary.generated_semanticFlatWithin",
+           "Chapter11AnalyticRepresentation.GeneratedExternalSemanticObstructionBoundary.external_semantic_obstruction_remains",
+           "Chapter11AnalyticRepresentation.GeneratedExternalSemanticObstructionBoundary.generated_semantic_flatness_does_not_discharge_external",
+           "Chapter11AnalyticRepresentation.couponGeneratedExternalSemanticObstructionBoundary",
+           "Chapter11AnalyticRepresentation.coupon_generated_semantic_flatness_does_not_discharge_static_semantic_counterexample"],
+         reading :=
+          "Atom-generated law model semantic flatness is scoped to generated reflexive diagrams and does not erase the separately selected coupon semantic obstruction",
          status := "proved" }]
   | measurementBoundary =>
       [{ schematic := "measuredZero / measuredNonzero / unmeasured / outOfScope",
