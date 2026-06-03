@@ -17,15 +17,45 @@ theorem theorem_package_registry_rows_are_classified
       registry_rows_have_allowed_actions hRow⟩
 
 /--
-Acceptance: the theorem-package registry has no remaining bridge-assumed rows
-or rewrite targets.
+Acceptance: every candidate enum represented by the reconstruction registry is
+listed in the corresponding registry slice.
+-/
+theorem theorem_package_registry_covers_all_candidates :
+    (∀ candidate : AATCandidate,
+      classifyAATCandidate candidate ∈ aatClassifications) ∧
+    (∀ candidate : Chapter7TheoremPackages.Candidate,
+      classifyChapter7 candidate ∈ chapter7Classifications) ∧
+    (∀ candidate : Chapter8HomotopySkeleton.Candidate,
+      classifyChapter8 candidate ∈ chapter8Classifications) ∧
+    (∀ candidate : Chapter9DiagramFilling.Candidate,
+      classifyChapter9 candidate ∈ chapter9Classifications) ∧
+    (∀ candidate : Chapter10ArchitectureExtensionFormula.Candidate,
+      classifyChapter10 candidate ∈ chapter10Classifications) ∧
+    (∀ candidate : Chapter11AnalyticRepresentation.Candidate,
+      classifyChapter11 candidate ∈ chapter11Classifications) ∧
+    (∀ candidate : SFTTheoremPackages.Candidate,
+      classifySFT candidate ∈ sftClassifications) := by
+  exact
+    ⟨aat_candidates_are_registered,
+      chapter7_candidates_are_registered,
+      chapter8_candidates_are_registered,
+      chapter9_candidates_are_registered,
+      chapter10_candidates_are_registered,
+      chapter11_candidates_are_registered,
+      sft_candidates_are_registered⟩
+
+/--
+Acceptance: the theorem-package registry has unique package identifiers and no
+remaining bridge-assumed rows, temporary bridge actions, or rewrite targets.
 -/
 theorem theorem_package_registry_has_no_temporary_or_rewrite_rows :
-    TheoremPackageClass.bridgeAssumed ∉ allClassificationClasses ∧
+    allPackageIds.Nodup ∧
+      TheoremPackageClass.bridgeAssumed ∉ allClassificationClasses ∧
       ReconstructionAction.temporaryBridge ∉ allClassificationActions ∧
       ReconstructionAction.rewriteTarget ∉ allClassificationActions := by
   exact
-    ⟨theorem_package_registry_has_no_bridge_assumed_rows,
+    ⟨theorem_package_registry_has_unique_package_ids,
+      theorem_package_registry_has_no_bridge_assumed_rows,
       theorem_package_registry_has_no_temporary_bridge_actions,
       theorem_package_registry_has_no_rewrite_targets⟩
 

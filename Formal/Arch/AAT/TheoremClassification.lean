@@ -859,6 +859,41 @@ def sftClassifications : List TheoremPackageClassification :=
   , classifySFT .aatSupportedFundamentalModularity
   ]
 
+theorem aat_candidates_are_registered
+    (candidate : AATCandidate) :
+    classifyAATCandidate candidate ∈ aatClassifications := by
+  cases candidate <;> simp [aatClassifications]
+
+theorem chapter7_candidates_are_registered
+    (candidate : Chapter7TheoremPackages.Candidate) :
+    classifyChapter7 candidate ∈ chapter7Classifications := by
+  cases candidate <;> simp [chapter7Classifications]
+
+theorem chapter8_candidates_are_registered
+    (candidate : Chapter8HomotopySkeleton.Candidate) :
+    classifyChapter8 candidate ∈ chapter8Classifications := by
+  cases candidate <;> simp [chapter8Classifications]
+
+theorem chapter9_candidates_are_registered
+    (candidate : Chapter9DiagramFilling.Candidate) :
+    classifyChapter9 candidate ∈ chapter9Classifications := by
+  cases candidate <;> simp [chapter9Classifications]
+
+theorem chapter10_candidates_are_registered
+    (candidate : Chapter10ArchitectureExtensionFormula.Candidate) :
+    classifyChapter10 candidate ∈ chapter10Classifications := by
+  cases candidate <;> simp [chapter10Classifications]
+
+theorem chapter11_candidates_are_registered
+    (candidate : Chapter11AnalyticRepresentation.Candidate) :
+    classifyChapter11 candidate ∈ chapter11Classifications := by
+  cases candidate <;> simp [chapter11Classifications]
+
+theorem sft_candidates_are_registered
+    (candidate : SFTTheoremPackages.Candidate) :
+    classifySFT candidate ∈ sftClassifications := by
+  cases candidate <;> simp [sftClassifications]
+
 /-- Registry for the theorem-package classification check in the reconstruction plan. -/
 def allClassifications : List TheoremPackageClassification :=
   aatClassifications ++
@@ -904,6 +939,10 @@ theorem theorem_package_registry_has_no_rewrite_targets :
 
 theorem theorem_package_registry_has_no_temporary_bridge_actions :
     .temporaryBridge ∉ allClassificationActions := by
+  native_decide
+
+theorem theorem_package_registry_has_unique_package_ids :
+    allPackageIds.Nodup := by
   native_decide
 
 theorem theorem_package_registry_source_rows_are_atom_generated :
