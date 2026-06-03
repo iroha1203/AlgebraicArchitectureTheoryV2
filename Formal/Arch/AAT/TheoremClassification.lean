@@ -240,6 +240,8 @@ def representativeDeclarations : AATCandidate -> List String
   | atomGeneratedAlgebraKernel =>
       ["AAT.GeneratedMolecule",
        "AAT.GeneratedArchitectureObject",
+       "AtomShapeKindCoverageExamples.coverage_shape_exists_for_every_atom_kind",
+       "AtomShapeKindCoverageExamples.coverage_shape_has_valence_port",
        "AAT.GeneratedAtomShapeCoordinate",
        "AAT.GeneratedArchitectureObject.generatedCarrierShapeDistance",
        "AAT.GeneratedRelationAtom",
@@ -291,13 +293,14 @@ def classifyAATCandidate
         "aat.atomGeneratedAlgebraKernel"
         (AATCandidate.representativeDeclarations .atomGeneratedAlgebraKernel)
         ["AAT.GeneratedArchitectureObject",
+         "AtomShapeKindCoverageExamples.coverage_shape_exists_for_every_atom_kind",
          "AAT.GeneratedArchitectureObject.generatedCarrierShapeDistance",
          "AtomGeneratedMoleculeExamples.directedRelationGeneratedGraph_api_to_database_edge",
          "AtomGeneratedMoleculeExamples.directedRuntimeGeneratedGraph_api_to_database_edge",
          "AAT.GeneratedArchitectureLawModel",
          "AtomGeneratedSignatureExamples.*"]
         (by simp)
-        "The kernel starts from AtomShape / compatible composition and reaches generated molecule, object, shape distance, oriented relation/runtime edge generation, law model, signature, repair, and negative acceptance examples."
+        "The kernel starts from AtomShape / compatible composition, covers the current AtomKind grammar as shaped typed facts, and reaches generated molecule, object, shape distance, oriented relation/runtime edge generation, law model, signature, repair, and negative acceptance examples."
   | .archMapObservationBoundary =>
       atomGeneratedRow
         "aat.archMapObservationBoundary"
