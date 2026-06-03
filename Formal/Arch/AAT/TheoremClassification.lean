@@ -240,8 +240,11 @@ def representativeDeclarations : AATCandidate -> List String
   | atomGeneratedAlgebraKernel =>
       ["AAT.GeneratedMolecule",
        "AAT.GeneratedArchitectureObject",
+       "AAT.GeneratedAtomShapeCoordinate",
+       "AAT.GeneratedArchitectureObject.generatedCarrierShapeDistance",
        "AAT.GeneratedArchitectureLawModel",
        "AtomGeneratedSignatureExamples.*",
+       "AtomGeneratedMoleculeExamples.generatedComponentObject_api_database_shapeDistance_eq_one",
        "AtomGeneratedRepairExamples.*",
        "IncompatibleAtomCompositionExamples.*"]
   | archMapObservationBoundary =>
@@ -281,10 +284,11 @@ def classifyAATCandidate
         "aat.atomGeneratedAlgebraKernel"
         (AATCandidate.representativeDeclarations .atomGeneratedAlgebraKernel)
         ["AAT.GeneratedArchitectureObject",
+         "AAT.GeneratedArchitectureObject.generatedCarrierShapeDistance",
          "AAT.GeneratedArchitectureLawModel",
          "AtomGeneratedSignatureExamples.*"]
         (by simp)
-        "The kernel starts from AtomShape / compatible composition and reaches generated molecule, object, law model, signature, repair, and negative acceptance examples."
+        "The kernel starts from AtomShape / compatible composition and reaches generated molecule, object, shape distance, law model, signature, repair, and negative acceptance examples."
   | .archMapObservationBoundary =>
       atomGeneratedRow
         "aat.archMapObservationBoundary"

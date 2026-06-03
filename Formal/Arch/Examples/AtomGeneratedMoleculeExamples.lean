@@ -1,4 +1,5 @@
 import Formal.Arch.AAT.GeneratedCurvature
+import Formal.Arch.AAT.GeneratedDistance
 import Formal.Arch.AAT.GeneratedDiagram
 import Formal.Arch.AAT.GeneratedPath
 import Formal.Arch.AAT.GeneratedSynthesis
@@ -371,6 +372,28 @@ def generatedApiOnlyCarrier :
 def generatedComponentApiCarrier :
     AAT.GeneratedCarrier generatedComponentObject :=
   ⟨ComponentAtom.api, by trivial⟩
+
+def generatedComponentDatabaseCarrier :
+    AAT.GeneratedCarrier generatedComponentObject :=
+  ⟨ComponentAtom.database, by trivial⟩
+
+theorem generatedComponentObject_api_shapeDistance_self_eq_zero :
+    generatedComponentObject.generatedCarrierShapeDistance
+      generatedComponentApiCarrier generatedComponentApiCarrier = 0 := by
+  exact
+    generatedComponentObject.generatedCarrierShapeDistance_self
+      generatedComponentApiCarrier
+
+/--
+Acceptance: generated carrier distance is computed from AtomShape coordinates.
+
+The API and database atoms share family / axis / predicate / direction / arity
+and differ only in subject, so the generated mismatch-count distance is one.
+-/
+theorem generatedComponentObject_api_database_shapeDistance_eq_one :
+    generatedComponentObject.generatedCarrierShapeDistance
+      generatedComponentApiCarrier generatedComponentDatabaseCarrier = 1 := by
+  native_decide
 
 theorem generatedApiOnlyMolecule_is_distinct_from_component_molecule :
     generatedApiOnlyMolecule.toMolecule ≠

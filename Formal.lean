@@ -93,6 +93,7 @@ import Formal.Arch.AAT.Molecule
 import Formal.Arch.AAT.AtomComposition
 import Formal.Arch.AAT.GeneratedMolecule
 import Formal.Arch.AAT.GeneratedObject
+import Formal.Arch.AAT.GeneratedDistance
 import Formal.Arch.AAT.GeneratedGraph
 import Formal.Arch.AAT.GeneratedLawModel
 import Formal.Arch.AAT.GeneratedSignature
