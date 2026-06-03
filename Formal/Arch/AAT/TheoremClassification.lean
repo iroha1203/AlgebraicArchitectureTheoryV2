@@ -878,6 +878,10 @@ def allClassificationClasses : List TheoremPackageClass :=
 def allClassificationActions : List ReconstructionAction :=
   allClassifications.map (fun row => row.action)
 
+def allClassificationClassActions :
+    List (TheoremPackageClass × ReconstructionAction) :=
+  allClassifications.map (fun row => (row.classification, row.action))
+
 theorem registry_rows_have_classification_evidence
     {row : TheoremPackageClassification}
     (_hRow : row ∈ allClassifications) :
@@ -896,6 +900,22 @@ theorem theorem_package_registry_has_no_bridge_assumed_rows :
 
 theorem theorem_package_registry_has_no_rewrite_targets :
     .rewriteTarget ∉ allClassificationActions := by
+  native_decide
+
+theorem theorem_package_registry_has_no_temporary_bridge_actions :
+    .temporaryBridge ∉ allClassificationActions := by
+  native_decide
+
+theorem theorem_package_registry_source_rows_are_atom_generated :
+    ∀ classAction ∈ allClassificationClassActions,
+      classAction.2 = .aatSourceOfTruth ->
+        classAction.1 = .atomGenerated := by
+  native_decide
+
+theorem theorem_package_registry_representation_rows_are_downstream_libraries :
+    ∀ classAction ∈ allClassificationClassActions,
+      classAction.1 = .representationLevel ->
+        classAction.2 = .downstreamLibrary := by
   native_decide
 
 theorem generic_signature_bridge_is_not_theorem_package_registry_row :

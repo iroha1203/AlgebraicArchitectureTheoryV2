@@ -22,10 +22,28 @@ or rewrite targets.
 -/
 theorem theorem_package_registry_has_no_temporary_or_rewrite_rows :
     TheoremPackageClass.bridgeAssumed ∉ allClassificationClasses ∧
+      ReconstructionAction.temporaryBridge ∉ allClassificationActions ∧
       ReconstructionAction.rewriteTarget ∉ allClassificationActions := by
   exact
     ⟨theorem_package_registry_has_no_bridge_assumed_rows,
+      theorem_package_registry_has_no_temporary_bridge_actions,
       theorem_package_registry_has_no_rewrite_targets⟩
+
+/--
+Acceptance: any theorem-package row that is allowed to act as AAT source of
+truth is classified Atom-generated; representation rows are downstream
+libraries only.
+-/
+theorem theorem_package_registry_source_rows_are_only_atom_generated :
+    (∀ classAction ∈ allClassificationClassActions,
+      classAction.2 = .aatSourceOfTruth ->
+        classAction.1 = .atomGenerated) ∧
+    (∀ classAction ∈ allClassificationClassActions,
+      classAction.1 = .representationLevel ->
+        classAction.2 = .downstreamLibrary) := by
+  exact
+    ⟨theorem_package_registry_source_rows_are_atom_generated,
+      theorem_package_registry_representation_rows_are_downstream_libraries⟩
 
 /--
 Acceptance: the generic Signature bridge remains visible as a legacy bridge
