@@ -76,7 +76,12 @@ def representativeDeclarations : Candidate -> List String
        "MultiLabelExtensionObstructionWitness",
        "ExtensionObstructionWitness.toMultiLabel",
        "ExtensionObstructionWitness.toMultiLabel_label_iff",
-       "ExtensionObstructionWitness.toMultiLabel_classifiesAs"]
+       "ExtensionObstructionWitness.toMultiLabel_classifiesAs",
+       "Chapter10ArchitectureExtensionFormula.GeneratedExtensionObstructionWitness",
+       "Chapter10ArchitectureExtensionFormula.GeneratedMultiLabelExtensionObstructionWitness",
+       "Chapter10ArchitectureExtensionFormula.generatedExtensionObstructionWitness_toMultiLabel",
+       "Chapter10ArchitectureExtensionFormula.generatedExtensionObstructionWitness_toMultiLabel_label_iff",
+       "Chapter10ArchitectureExtensionFormula.generatedExtensionObstructionWitness_toMultiLabel_classifiesAs"]
   | nonSplitWitnessPackage =>
       ["SelectedSplitExtension",
        "SelectedExtensionObstructionWitness",
@@ -170,17 +175,22 @@ def schematicCorrespondences : Candidate -> List SchematicCorrespondence
          leanDeclarations :=
           ["ExtensionObstructionClass",
            "ExtensionObstructionWitness",
-           "MultiLabelExtensionObstructionWitness"],
+           "MultiLabelExtensionObstructionWitness",
+           "Chapter10ArchitectureExtensionFormula.GeneratedExtensionObstructionWitness",
+           "Chapter10ArchitectureExtensionFormula.GeneratedMultiLabelExtensionObstructionWitness"],
          reading :=
-          "bounded classification carrier for selected extension-obstruction witnesses",
+          "bounded classification carrier for selected extension-obstruction witnesses, specialized to generated identity feature extensions",
          status := "defined only" },
        { schematic := "single-label witness embedded into multi-label layer",
          leanDeclarations :=
           ["ExtensionObstructionWitness.toMultiLabel",
            "ExtensionObstructionWitness.toMultiLabel_label_iff",
-           "ExtensionObstructionWitness.toMultiLabel_classifiesAs"],
+           "ExtensionObstructionWitness.toMultiLabel_classifiesAs",
+           "Chapter10ArchitectureExtensionFormula.generatedExtensionObstructionWitness_toMultiLabel",
+           "Chapter10ArchitectureExtensionFormula.generatedExtensionObstructionWitness_toMultiLabel_label_iff",
+           "Chapter10ArchitectureExtensionFormula.generatedExtensionObstructionWitness_toMultiLabel_classifiesAs"],
          reading :=
-          "payload-preserving bridge from a selected single label to the corresponding multi-label witness",
+          "payload-preserving bridge from a selected single label to the corresponding generated multi-label witness",
          status := "defined only / proved" }]
   | nonSplitWitnessPackage =>
       [{ schematic := "selected non-split witness package",
@@ -291,6 +301,77 @@ def nonConclusionBoundary : Candidate -> String
       "selected coverage diagnostic only; no static split failure, runtime / semantic flatness failure, or extractor completeness"
 
 end Candidate
+
+/--
+Generated identity feature-extension obstruction witness carrier.
+
+This gives the Chapter 10 obstruction universe a generated source surface
+instead of leaving `ExtensionObstructionWitness` as only a hand-authored
+feature-extension carrier.
+-/
+abbrev GeneratedExtensionObstructionWitness
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    (object : AAT.GeneratedArchitectureObject presentation)
+    (Witness : Type z) : Type z :=
+  ExtensionObstructionWitness object.generatedIdentityFeatureExtension Witness
+
+/--
+Generated identity feature-extension multi-label obstruction witness carrier.
+-/
+abbrev GeneratedMultiLabelExtensionObstructionWitness
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    (object : AAT.GeneratedArchitectureObject presentation)
+    (Witness : Type z) : Type z :=
+  MultiLabelExtensionObstructionWitness
+    object.generatedIdentityFeatureExtension Witness
+
+/--
+Embed a generated single-label extension-obstruction witness into the
+generated multi-label witness layer.
+-/
+def generatedExtensionObstructionWitness_toMultiLabel
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : AAT.GeneratedArchitectureObject presentation}
+    {Witness : Type z}
+    (witness : GeneratedExtensionObstructionWitness object Witness) :
+    GeneratedMultiLabelExtensionObstructionWitness object Witness :=
+  witness.toMultiLabel
+
+@[simp]
+theorem generatedExtensionObstructionWitness_toMultiLabel_witness
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : AAT.GeneratedArchitectureObject presentation}
+    {Witness : Type z}
+    (witness : GeneratedExtensionObstructionWitness object Witness) :
+    (generatedExtensionObstructionWitness_toMultiLabel witness).witness =
+      witness.witness :=
+  rfl
+
+theorem generatedExtensionObstructionWitness_toMultiLabel_label_iff
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : AAT.GeneratedArchitectureObject presentation}
+    {Witness : Type z}
+    (witness : GeneratedExtensionObstructionWitness object Witness)
+    (classification : ExtensionObstructionClass) :
+    (generatedExtensionObstructionWitness_toMultiLabel witness).labels
+        classification ↔
+      witness.classifiesAs = classification :=
+  Iff.rfl
+
+theorem generatedExtensionObstructionWitness_toMultiLabel_classifiesAs
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : AAT.GeneratedArchitectureObject presentation}
+    {Witness : Type z}
+    (witness : GeneratedExtensionObstructionWitness object Witness) :
+    (generatedExtensionObstructionWitness_toMultiLabel witness).labels
+      witness.classifiesAs :=
+  rfl
 
 /--
 Atom-generated specialization of the single-label structural architecture

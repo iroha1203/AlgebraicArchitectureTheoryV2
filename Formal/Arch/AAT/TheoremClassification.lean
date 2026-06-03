@@ -443,15 +443,15 @@ def classifyChapter10
     TheoremPackageClassification :=
   match candidate with
   | .obstructionUniverse =>
-      representationRow
+      atomGeneratedRow
         "chapter10.obstructionUniverse"
         (Chapter10ArchitectureExtensionFormula.Candidate.representativeDeclarations
           .obstructionUniverse)
-        ["ExtensionObstructionWitness", "MultiLabelExtensionObstructionWitness"]
+        ["Chapter10ArchitectureExtensionFormula.GeneratedExtensionObstructionWitness",
+         "Chapter10ArchitectureExtensionFormula.GeneratedMultiLabelExtensionObstructionWitness",
+         "Chapter10ArchitectureExtensionFormula.generatedExtensionObstructionWitness_toMultiLabel"]
         (by simp)
-        .downstreamLibrary
-        ActionAllowed.representationDownstream
-        "The classification universe is a downstream witness carrier."
+        "The extension-obstruction witness universe has generated identity feature-extension witness carriers and a generated single-to-multi-label bridge."
   | .nonSplitWitnessPackage =>
       atomGeneratedRow
         "chapter10.nonSplitWitnessPackage"
@@ -979,6 +979,11 @@ theorem generated_complexity_residual_bridge_is_atom_generated :
     (classifyChapter10 .residualCoverageGapBridge).classification =
       .atomGenerated := by
   exact ⟨rfl, rfl, rfl⟩
+
+theorem generated_extension_obstruction_universe_is_atom_generated :
+    (classifyChapter10 .obstructionUniverse).classification =
+      .atomGenerated := by
+  rfl
 
 end AATReconstructionClassification
 end Formal.Arch

@@ -151,4 +151,13 @@ theorem generated_complexity_residual_bridge_classified_atom_generated :
         .atomGenerated := by
   exact generated_complexity_residual_bridge_is_atom_generated
 
+/--
+Acceptance: the Chapter 10 extension-obstruction witness universe has generated
+identity feature-extension witness carriers.
+-/
+theorem generated_extension_obstruction_universe_classified_atom_generated :
+    (classifyChapter10 .obstructionUniverse).classification =
+        .atomGenerated := by
+  exact generated_extension_obstruction_universe_is_atom_generated
+
 end Formal.Arch.AtomGeneratedClassificationExamples
