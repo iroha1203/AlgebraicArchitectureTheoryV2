@@ -1,6 +1,7 @@
 import Formal.Arch.AAT.GeneratedAnalyticRepresentation
 import Formal.Arch.AAT.GeneratedFeatureExtension
 import Formal.Arch.AAT.GeneratedSFT
+import Formal.Arch.Evolution.Chapter7TheoremPackages
 import Formal.Arch.Evolution.Chapter10ArchitectureExtensionFormula
 import Formal.Arch.Evolution.Chapter11AnalyticRepresentation
 import Formal.Arch.Examples.AtomGeneratedMoleculeExamples
@@ -140,7 +141,9 @@ theorem atomGeneratedSignature_featureExtension_flatWithin :
     ArchitectureFlatWithin
       generatedComponentObject.generatedIdentityExtensionFlatnessModel
       generatedComponentObject.generatedIdentityExtensionComponentUniverse := by
-  exact generatedComponentLawModel.generatedFeatureExtension_architectureFlatWithin
+  exact
+    Formal.Arch.Chapter7TheoremPackages.generatedSplitFeatureExtension_flatWithin
+      generatedComponentLawModel
 
 def atomGeneratedSignature_extensionWitness :
     ExtensionObstructionWitness

@@ -2,6 +2,7 @@ import Formal.Arch.AAT.GeneratedCurvature
 import Formal.Arch.AAT.GeneratedDiagram
 import Formal.Arch.AAT.GeneratedPath
 import Formal.Arch.AAT.GeneratedSynthesis
+import Formal.Arch.Evolution.Chapter7TheoremPackages
 import Formal.Arch.Evolution.Chapter8HomotopySkeleton
 import Formal.Arch.Evolution.Chapter9DiagramFilling
 
@@ -420,7 +421,9 @@ theorem generatedComponentIdentityOperation_transforms_shape
       (AtomShapeOf componentShapePresentation carrier.val)
       (AtomShapeOf componentShapePresentation
         (generatedComponentIdentityOperation.atomMap carrier).val) := by
-  exact generatedComponentIdentityOperation.atomShape_transformed carrier
+  exact
+    Formal.Arch.Chapter7TheoremPackages.generatedOperation_atomShape_transformed
+      generatedComponentIdentityOperation carrier
 
 theorem generatedComponentIdentityOperation_does_not_create_atoms :
     componentSystem.noToolOutputCreatesAtoms := by
@@ -430,8 +433,10 @@ def generatedComponentIdentityOperationTransportPackage :
     AAT.OperationTransportPackage
       generatedComponentLawModel.generatedAATCore
       generatedComponentLawModel.generatedAATCore := by
-  exact generatedComponentIdentityOperation.toOperationTransportPackage
-    generatedComponentLawModel generatedComponentLawModel
+  exact
+    (Formal.Arch.Chapter7TheoremPackages.generatedOperation_toOperationTransportPackage
+      generatedComponentIdentityOperation
+      generatedComponentLawModel generatedComponentLawModel)
 
 theorem generatedComponentIdentityOperation_transports_molecule :
     ∃ targetMolecule,
@@ -466,7 +471,9 @@ def generatedComponentSynthesisCandidate :
 theorem generatedComponentSynthesisCandidate_flatWithin :
     ArchitectureFlatWithin generatedComponentObject.generatedFlatnessModel
       generatedComponentObject.generatedComponentUniverse := by
-  exact generatedComponentSynthesisCandidate.candidate_flatWithin
+  exact
+    Formal.Arch.Chapter7TheoremPackages.generatedSynthesisCandidate_flatWithin
+      generatedComponentSynthesisCandidate
 
 theorem generatedComponentSynthesisCandidate_totalCurvature_eq_zero :
     totalCurvature AAT.generatedObservationDistance
@@ -482,7 +489,9 @@ def generatedComponentSynthesisSoundnessPackage :
     AAT.SynthesisSoundnessPackage
       generatedComponentLawModel.generatedAATCore
       (AAT.GeneratedSynthesisCandidate generatedComponentObject) := by
-  exact generatedComponentSynthesisCandidate.toSynthesisSoundnessPackage
+  exact
+    Formal.Arch.Chapter7TheoremPackages.generatedSynthesisCandidate_toSynthesisSoundnessPackage
+      generatedComponentSynthesisCandidate
 
 theorem generatedComponentSynthesis_candidate_noRequiredObstructionCircuit :
     AAT.NoRequiredObstructionCircuit
