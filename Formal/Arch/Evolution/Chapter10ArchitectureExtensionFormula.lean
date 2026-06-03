@@ -124,11 +124,16 @@ def representativeDeclarations : Candidate -> List String
        "Chapter10ArchitectureExtensionFormula.generatedFillingFailureExtensionObstructionWitness_multilabel_classified"]
   | liftingFailureBridge =>
       ["LiftingFailureWitnessPayload",
+       "Chapter9DiagramFilling.generatedSelfFeatureExtension",
+       "Chapter9DiagramFilling.generatedSelfSplitExtensionLiftingData",
        "liftingFailureExtensionObstructionWitness",
+       "Chapter9DiagramFilling.generatedSelfLiftingFailureExtensionObstructionWitness_classified",
        "liftingFailureExtensionObstructionWitness_classified",
        "not_compatibleWithInterface_of_liftingFailurePayload",
        "liftingFailureExtensionObstructionWitnessExists_of_not_liftingPreservationPackage",
-       "liftingFailureExtensionObstructionWitness_multilabel_classified"]
+       "Chapter9DiagramFilling.generatedSelfLiftingFailureExtensionObstructionWitnessExists_of_not_liftingPreservationPackage",
+       "liftingFailureExtensionObstructionWitness_multilabel_classified",
+       "Chapter10ArchitectureExtensionFormula.generatedSelfLiftingFailureExtensionObstructionWitness_multilabel_classified"]
   | complexityTransferBridge =>
       ["ComplexityTransferWitnessPayload",
        "complexityTransferExtensionObstructionWitness",
@@ -218,12 +223,17 @@ def schematicCorrespondences : Candidate -> List SchematicCorrespondence
       [{ schematic := "lifting failure classified as extension obstruction",
          leanDeclarations :=
           ["LiftingFailureWitnessPayload",
+           "Chapter9DiagramFilling.generatedSelfFeatureExtension",
+           "Chapter9DiagramFilling.generatedSelfSplitExtensionLiftingData",
            "liftingFailureExtensionObstructionWitness",
            "liftingFailureExtensionObstructionWitness_classified",
            "liftingFailureExtensionObstructionWitnessExists_of_not_liftingPreservationPackage",
-           "liftingFailureExtensionObstructionWitness_multilabel_classified"],
+           "Chapter9DiagramFilling.generatedSelfLiftingFailureExtensionObstructionWitness_classified",
+           "Chapter9DiagramFilling.generatedSelfLiftingFailureExtensionObstructionWitnessExists_of_not_liftingPreservationPackage",
+           "liftingFailureExtensionObstructionWitness_multilabel_classified",
+           "Chapter10ArchitectureExtensionFormula.generatedSelfLiftingFailureExtensionObstructionWitness_multilabel_classified"],
          reading :=
-          "absence of a selected lifting preservation package embedded into the lifting-failure classification layer",
+          "absence of a selected generated self-view lifting preservation package embedded into the lifting-failure classification layer",
          status := "defined only / proved" }]
   | complexityTransferBridge =>
       [{ schematic := "complexity transfer classified as extension obstruction",
@@ -402,6 +412,29 @@ theorem generatedFillingFailureExtensionObstructionWitness_multilabel_classified
     MultiLabelClassifiedAsFillingFailure object.generatedIdentityFeatureExtension
       object.generatedIdentityExtensionComponentUniverse
       (Formal.Arch.Chapter9DiagramFilling.generatedFillingFailureExtensionObstructionWitness
+        payload).toMultiLabel :=
+  rfl
+
+/--
+Atom-generated specialization of the lifting-failure multi-label bridge over
+the generated self-view feature extension.
+-/
+theorem generatedSelfLiftingFailureExtensionObstructionWitness_multilabel_classified
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : AAT.GeneratedArchitectureObject presentation}
+    {featureInvariant : AAT.GeneratedCarrier object -> Prop}
+    {coreInvariant : AAT.GeneratedCarrier object -> Prop}
+    {featureStep : SelectedFeatureStep (AAT.GeneratedCarrier object)}
+    (payload :
+      LiftingFailureWitnessPayload
+        (Formal.Arch.Chapter9DiagramFilling.generatedSelfSplitExtensionLiftingData object)
+        featureInvariant coreInvariant featureStep) :
+    MultiLabelClassifiedAsLiftingFailure
+      (Formal.Arch.Chapter9DiagramFilling.generatedSelfFeatureExtension object)
+      object.generatedIdentityExtensionComponentUniverse
+      (liftingFailureExtensionObstructionWitness
+        (Formal.Arch.Chapter9DiagramFilling.generatedSelfSplitExtensionLiftingData object)
         payload).toMultiLabel :=
   rfl
 

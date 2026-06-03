@@ -394,6 +394,7 @@ atomObservations
 - generated path family
 - generated diagram family
 - generated filler / non-fillability witness
+- generated self-view feature-step lifting bridge over generated carriers
 - generated filling-failure bridge from `GeneratedNonFillabilityWitnessFor` to
   `NonSplitExtensionWitnessPackage` over generated identity feature extensions
 - generated curvature measurement input

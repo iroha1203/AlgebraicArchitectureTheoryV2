@@ -380,15 +380,14 @@ def classifyChapter9
         (by simp)
         "Diagram filling and non-fillability have generated diagram and generated witness entrypoints."
   | .splitExtensionLifting =>
-      representationRow
+      atomGeneratedRow
         "chapter9.splitExtensionLifting"
         (Chapter9DiagramFilling.Candidate.representativeDeclarations
           .splitExtensionLifting)
-        ["SplitExtensionLiftingData", "FeatureViewSectionPackage"]
+        ["Chapter9DiagramFilling.generatedSelfSplitExtensionLiftingData",
+         "Chapter9DiagramFilling.generatedSelfSplitExtensionLifting_preservationPackage"]
         (by simp)
-        .rewriteTarget
-        ActionAllowed.representationRewriteTarget
-        "Split-extension lifting is still a representation-level package and remains a rewrite target for generated feature steps."
+        "Split-extension lifting has a generated self-view feature extension entrypoint over generated carriers and generated lifting data."
   | .fillingFailureBridge =>
       atomGeneratedRow
         "chapter9.fillingFailureBridge"
@@ -448,15 +447,14 @@ def classifyChapter10
         (by simp)
         "Generated filling-failure payloads are classified in both single-label and multi-label extension-obstruction layers for generated identity extensions."
   | .liftingFailureBridge =>
-      representationRow
+      atomGeneratedRow
         "chapter10.liftingFailureBridge"
         (Chapter10ArchitectureExtensionFormula.Candidate.representativeDeclarations
           .liftingFailureBridge)
-        ["LiftingFailureWitnessPayload"]
+        ["Chapter9DiagramFilling.generatedSelfLiftingFailureExtensionObstructionWitness_classified",
+         "Chapter10ArchitectureExtensionFormula.generatedSelfLiftingFailureExtensionObstructionWitness_multilabel_classified"]
         (by simp)
-        .rewriteTarget
-        ActionAllowed.representationRewriteTarget
-        "Lifting failure remains a representation-level bridge until generated feature-step lifting is first-class."
+        "Generated self-view lifting failures are classified in both single-label and multi-label extension-obstruction layers."
   | .complexityTransferBridge =>
       representationRow
         "chapter10.complexityTransferBridge"
@@ -878,6 +876,13 @@ theorem generated_filling_failure_bridge_is_atom_generated :
     (classifyChapter10 .fillingFailureBridge).classification =
       .atomGenerated := by
   exact ⟨rfl, rfl, rfl, rfl⟩
+
+theorem generated_split_lifting_bridge_is_atom_generated :
+    (classifyChapter9 .splitExtensionLifting).classification =
+      .atomGenerated ∧
+    (classifyChapter10 .liftingFailureBridge).classification =
+      .atomGenerated := by
+  exact ⟨rfl, rfl⟩
 
 end AATReconstructionClassification
 end Formal.Arch

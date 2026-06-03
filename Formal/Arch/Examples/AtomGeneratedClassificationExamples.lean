@@ -77,4 +77,15 @@ theorem generated_filling_failure_bridge_classified_atom_generated :
         .atomGenerated := by
   exact generated_filling_failure_bridge_is_atom_generated
 
+/--
+Acceptance: generated self-view feature extension supplies the source-of-truth
+entrypoint for split-extension lifting and lifting-failure classification.
+-/
+theorem generated_split_lifting_bridge_classified_atom_generated :
+    (classifyChapter9 .splitExtensionLifting).classification =
+        .atomGenerated ∧
+      (classifyChapter10 .liftingFailureBridge).classification =
+        .atomGenerated := by
+  exact generated_split_lifting_bridge_is_atom_generated
+
 end Formal.Arch.AtomGeneratedClassificationExamples

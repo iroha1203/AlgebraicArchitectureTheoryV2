@@ -77,6 +77,8 @@ def representativeDeclarations : Candidate -> List String
        "FeatureViewSectionPackage",
        "ObservationalCoreRetraction",
        "SplitExtensionLiftingData",
+       "Chapter9DiagramFilling.generatedSelfFeatureExtension",
+       "Chapter9DiagramFilling.generatedSelfSplitExtensionLiftingData",
        "SplitExtensionLiftingData.featureSection_observes",
        "SplitExtensionLiftingData.coreRetraction_observes_coreEmbedding",
        "SplitExtensionLiftingData.interfaceFactorization_holds",
@@ -85,7 +87,10 @@ def representativeDeclarations : Candidate -> List String
        "PreservesCoreInvariants",
        "SplitExtensionLifting",
        "SplitExtensionLiftingPreservationPackage",
-       "SplitExtensionLifting_preservationPackage"]
+       "SplitExtensionLifting_preservationPackage",
+       "Chapter9DiagramFilling.generatedSelfSplitExtensionLifting_preservationPackage",
+       "Chapter9DiagramFilling.generatedSelfLiftingFailureExtensionObstructionWitness_classified",
+       "Chapter9DiagramFilling.generatedSelfLiftingFailureExtensionObstructionWitnessExists_of_not_liftingPreservationPackage"]
   | fillingFailureBridge =>
       ["FillingFailureWitnessPayload",
        "Chapter9DiagramFilling.generatedFillingFailureWitnessPayload",
@@ -173,9 +178,14 @@ def schematicCorrespondences : Candidate -> List SchematicCorrespondence
            "PreservesCoreInvariants",
            "SplitExtensionLifting",
            "SplitExtensionLiftingPreservationPackage",
-           "SplitExtensionLifting_preservationPackage"],
+           "SplitExtensionLifting_preservationPackage",
+           "Chapter9DiagramFilling.generatedSelfFeatureExtension",
+           "Chapter9DiagramFilling.generatedSelfSplitExtensionLiftingData",
+           "Chapter9DiagramFilling.generatedSelfSplitExtensionLifting_preservationPackage",
+           "Chapter9DiagramFilling.generatedSelfLiftingFailureExtensionObstructionWitness_classified",
+           "Chapter9DiagramFilling.generatedSelfLiftingFailureExtensionObstructionWitnessExists_of_not_liftingPreservationPackage"],
          reading :=
-          "bounded lifting and feature/core preservation for one selected feature step",
+          "bounded lifting and feature/core preservation for one selected generated feature step over the generated self-view feature extension",
          status := "defined only / proved" },
        { schematic := "interface factorization and coverage accessors",
          leanDeclarations :=
@@ -231,6 +241,153 @@ def nonConclusionBoundary : Candidate -> String
       "selected filling-failure payload bridge only; NonFillabilityWitnessFor alone does not refute an arbitrary split predicate"
 
 end Candidate
+
+/--
+Generated self-view feature extension.
+
+The selected feature, core, and extended carriers are all the generated carrier
+of the same object. This is not a claim that a new feature component was
+introduced; it is a generated feature-step view used to run the lifting theorem
+without a hand-authored `FeatureExtension`.
+-/
+def generatedSelfFeatureExtension
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    (object : AAT.GeneratedArchitectureObject presentation) :
+    FeatureExtension (AAT.GeneratedCarrier object)
+      (AAT.GeneratedCarrier object)
+      (AAT.GeneratedCarrier object)
+      (AAT.GeneratedCarrier object) where
+  core := AAT.GeneratedArchGraph object
+  feature := AAT.GeneratedArchGraph object
+  extended := AAT.GeneratedArchGraph object
+  coreEmbedding := id
+  featureEmbedding := id
+  featureView := { observe := id }
+  preservesRequiredInvariants := True
+  interactionFactorsThroughDeclaredInterfaces := True
+  coverageAssumptions := True
+  proofObligations := True
+
+/--
+Generated split-extension lifting data for the generated self-view feature
+extension.
+-/
+def generatedSelfSplitExtensionLiftingData
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    (object : AAT.GeneratedArchitectureObject presentation) :
+    SplitExtensionLiftingData
+      (AAT.GeneratedCarrier object)
+      (AAT.GeneratedCarrier object)
+      (AAT.GeneratedCarrier object)
+      (AAT.GeneratedCarrier object)
+      (AAT.GeneratedCarrier object) where
+  extension := generatedSelfFeatureExtension object
+  featureObservation := { observe := id }
+  coreObservation := { observe := id }
+  featureSection := id
+  coreRetraction := id
+  featureSectionLaw := by
+    intro _feature
+    rfl
+  observationalCoreRetraction := by
+    intro _core
+    rfl
+  interfaceFactorization := trivial
+  preservesRequiredInvariants := trivial
+
+/--
+The generated self-view lifting data exposes the selected feature section law.
+-/
+theorem generatedSelfSplitExtension_featureSection_observes
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    (object : AAT.GeneratedArchitectureObject presentation)
+    (feature : AAT.GeneratedCarrier object) :
+    (generatedSelfSplitExtensionLiftingData object).extension.featureView.observe
+        ((generatedSelfSplitExtensionLiftingData object).featureSection feature) =
+      (generatedSelfSplitExtensionLiftingData object).featureObservation.observe
+        feature :=
+  rfl
+
+/--
+Generated self-view feature steps induce the existing split-extension lifting
+preservation package under the selected local interface compatibility premise.
+-/
+theorem generatedSelfSplitExtensionLifting_preservationPackage
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : AAT.GeneratedArchitectureObject presentation}
+    {featureInvariant : AAT.GeneratedCarrier object -> Prop}
+    {coreInvariant : AAT.GeneratedCarrier object -> Prop}
+    (featureStep : SelectedFeatureStep (AAT.GeneratedCarrier object))
+    (hLawfulFeatureStep : LawfulFeatureStep featureInvariant featureStep)
+    (hCompatible :
+      CompatibleWithInterface
+        (generatedSelfSplitExtensionLiftingData object)
+        coreInvariant featureStep) :
+    ∃ liftedStep : LiftedExtensionStep (AAT.GeneratedCarrier object),
+      SplitExtensionLiftingPreservationPackage
+        (generatedSelfSplitExtensionLiftingData object)
+        featureInvariant coreInvariant featureStep liftedStep := by
+  exact
+    SplitExtensionLifting_preservationPackage
+      (generatedSelfSplitExtensionLiftingData object)
+      featureStep hLawfulFeatureStep hCompatible
+
+/--
+A lifting-failure payload over generated self-view lifting data lands in the
+generated lifting-failure classification.
+-/
+theorem generatedSelfLiftingFailureExtensionObstructionWitness_classified
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : AAT.GeneratedArchitectureObject presentation}
+    {featureInvariant : AAT.GeneratedCarrier object -> Prop}
+    {coreInvariant : AAT.GeneratedCarrier object -> Prop}
+    {featureStep : SelectedFeatureStep (AAT.GeneratedCarrier object)}
+    (payload :
+      LiftingFailureWitnessPayload
+        (generatedSelfSplitExtensionLiftingData object)
+        featureInvariant coreInvariant featureStep) :
+    ClassifiedAsLiftingFailure (generatedSelfFeatureExtension object)
+      object.generatedIdentityExtensionComponentUniverse
+      (liftingFailureExtensionObstructionWitness
+        (generatedSelfSplitExtensionLiftingData object) payload) :=
+  rfl
+
+/--
+Generated self-view lifting failures become classified extension-obstruction
+witnesses under the same bounded no-preservation-package premise as the generic
+lifting-failure bridge.
+-/
+theorem generatedSelfLiftingFailureExtensionObstructionWitnessExists_of_not_liftingPreservationPackage
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : AAT.GeneratedArchitectureObject presentation}
+    {featureInvariant : AAT.GeneratedCarrier object -> Prop}
+    {coreInvariant : AAT.GeneratedCarrier object -> Prop}
+    {featureStep : SelectedFeatureStep (AAT.GeneratedCarrier object)}
+    (hLawfulFeatureStep : LawfulFeatureStep featureInvariant featureStep)
+    (hNoPreservationPackage :
+      ¬ ∃ liftedStep : LiftedExtensionStep (AAT.GeneratedCarrier object),
+        SplitExtensionLiftingPreservationPackage
+          (generatedSelfSplitExtensionLiftingData object)
+          featureInvariant coreInvariant featureStep liftedStep) :
+    ∃ payload :
+      LiftingFailureWitnessPayload
+        (generatedSelfSplitExtensionLiftingData object)
+        featureInvariant coreInvariant featureStep,
+      ClassifiedAsLiftingFailure (generatedSelfFeatureExtension object)
+        object.generatedIdentityExtensionComponentUniverse
+        (liftingFailureExtensionObstructionWitness
+          (generatedSelfSplitExtensionLiftingData object) payload) := by
+  exact
+    liftingFailureExtensionObstructionWitnessExists_of_not_liftingPreservationPackage
+      (generatedSelfSplitExtensionLiftingData object)
+      object.generatedIdentityExtensionComponentUniverse
+      hLawfulFeatureStep hNoPreservationPackage
 
 /-- Chapter 9 entrypoint for reflexive fillability of Atom-generated diagrams. -/
 theorem generatedDiagramFiller_refl
