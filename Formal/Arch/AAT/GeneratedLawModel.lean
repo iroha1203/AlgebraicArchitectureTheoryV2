@@ -54,18 +54,6 @@ def generatedComponentUniverse {system : AtomAxiomSystem.{u, v}}
 end GeneratedArchitectureObject
 
 /--
-Generated law model over a generated architecture object.
-
-The representation model is constructed by `toArchitectureLawModel`; it is not
-stored as a hand-authored field.
--/
-structure GeneratedArchitectureLawModel {system : AtomAxiomSystem.{u, v}}
-    {presentation : AtomShapePresentation system}
-    (object : GeneratedArchitectureObject presentation) where
-  generatedWalkAcyclic : WalkAcyclic (GeneratedArchGraph object)
-  lawModelBoundary : Prop
-
-/--
 Generated graph rank certificate.
 
 The rank is assigned to carriers of the generated object, and every generated
@@ -102,7 +90,37 @@ theorem walkAcyclic
 
 end GeneratedGraphRank
 
+/--
+Generated law model over a generated architecture object.
+
+The representation model is constructed by `toArchitectureLawModel`; it is not
+stored as a hand-authored field.  Its acyclicity witness is also not stored as a
+raw `WalkAcyclic` premise: the model carries the generated graph-rank
+certificate and derives `WalkAcyclic` from that generated structure.
+-/
+structure GeneratedArchitectureLawModel {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    (object : GeneratedArchitectureObject presentation) where
+  graphRank : GeneratedGraphRank object
+  lawModelBoundary : Prop
+
 namespace GeneratedArchitectureLawModel
+
+def generatedWalkAcyclic
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : GeneratedArchitectureObject presentation}
+    (model : GeneratedArchitectureLawModel object) :
+    WalkAcyclic (GeneratedArchGraph object) :=
+  model.graphRank.walkAcyclic
+
+theorem generatedWalkAcyclic_eq_graphRank_walkAcyclic
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : GeneratedArchitectureObject presentation}
+    (model : GeneratedArchitectureLawModel object) :
+    model.generatedWalkAcyclic = model.graphRank.walkAcyclic := by
+  rfl
 
 def ofGraphRank
     {system : AtomAxiomSystem.{u, v}}
@@ -111,7 +129,7 @@ def ofGraphRank
     (certificate : GeneratedGraphRank object)
     (lawModelBoundary : Prop) :
     GeneratedArchitectureLawModel object where
-  generatedWalkAcyclic := certificate.walkAcyclic
+  graphRank := certificate
   lawModelBoundary := lawModelBoundary
 
 /-- Construct the existing Signature law model from generated object surfaces. -/
@@ -197,23 +215,23 @@ theorem generatedArchitectureLawful
       model.generated_abstraction_policy_sound⟩
 
 /--
-Generated objects produce generated law models once the generated graph
-acyclicity premise is supplied.
+Generated objects produce generated law models once the generated graph-rank
+certificate is supplied.
 
 The existing `ArchitectureLawModel` is constructed by `toArchitectureLawModel`;
-it is not a caller-supplied representation field.
+it is not a caller-supplied representation field, and the acyclicity witness is
+derived from generated graph rank rather than accepted as a raw premise.
 -/
 theorem generated_law_model_from_generated_object
     {system : AtomAxiomSystem.{u, v}}
     {presentation : AtomShapePresentation system}
     {object : GeneratedArchitectureObject presentation}
-    (hWalkAcyclic : WalkAcyclic (GeneratedArchGraph object))
+    (certificate : GeneratedGraphRank object)
     (lawModelBoundary : Prop) :
     ∃ model : GeneratedArchitectureLawModel object,
       ArchitectureSignature.ArchitectureLawful model.toArchitectureLawModel := by
   let model : GeneratedArchitectureLawModel object :=
-    { generatedWalkAcyclic := hWalkAcyclic
-      lawModelBoundary := lawModelBoundary }
+    ofGraphRank certificate lawModelBoundary
   exact ⟨model, model.generatedArchitectureLawful⟩
 
 /--

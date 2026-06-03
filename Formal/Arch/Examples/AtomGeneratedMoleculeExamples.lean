@@ -287,6 +287,15 @@ def generatedComponentLawModel :
   AAT.GeneratedArchitectureLawModel.ofGraphRank
     generatedComponentGraphRank True
 
+theorem generatedComponentLawModel_carries_generated_graph_rank :
+    generatedComponentLawModel.graphRank = generatedComponentGraphRank := by
+  rfl
+
+theorem generatedComponentLawModel_walkAcyclic_derived_from_graph_rank :
+    generatedComponentLawModel.generatedWalkAcyclic =
+      generatedComponentGraphRank.walkAcyclic := by
+  rfl
+
 inductive DirectedRelationAtom where
   | api
   | apiToDatabase

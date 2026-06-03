@@ -114,9 +114,10 @@ theorem generic_signature_bridge_is_legacy_replaced_surface_acceptance :
       generic_signature_bridge_is_not_theorem_package_registry_row⟩
 
 /--
-Acceptance: the old generated-law-model constructor that accepts a raw
-`WalkAcyclic` premise is retained only as a legacy compatibility surface.  The
-registry source entrypoint is the generated graph-rank constructor.
+Acceptance: the old generated-law-model surface that accepted a raw
+`WalkAcyclic` premise remains only as a legacy classification record.  The
+current law-model state carries generated graph rank, and the registry source
+entrypoint is the generated graph-rank constructor.
 -/
 theorem generated_walk_acyclic_law_model_is_legacy_replaced_surface_acceptance :
     generatedWalkAcyclicLawModelLegacySurface.IsBridgeAssumptionSurface ∧

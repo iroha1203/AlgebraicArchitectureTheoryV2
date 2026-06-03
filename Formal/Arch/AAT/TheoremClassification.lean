@@ -217,14 +217,16 @@ def genericSignatureBridgeLegacySurface : LegacyBridgeSurface where
 def generatedWalkAcyclicLawModelLegacySurface : LegacyBridgeSurface where
   surfaceId := "aat.generatedLawModelFromWalkAcyclic"
   representativeDeclarations :=
-    ["AAT.GeneratedArchitectureLawModel.generated_law_model_from_generated_object"]
-  bridgeAssumptions := ["WalkAcyclic (GeneratedArchGraph object)"]
+    ["AAT.GeneratedArchitectureLawModel.generatedWalkAcyclic_eq_graphRank_walkAcyclic"]
+  bridgeAssumptions := ["obsolete generatedWalkAcyclic field: WalkAcyclic (GeneratedArchGraph object)"]
   generatedReplacementEntrypoints :=
-    ["AAT.GeneratedGraphRank.walkAcyclic",
+    ["AAT.GeneratedArchitectureLawModel.graphRank",
+     "AAT.GeneratedGraphRank.walkAcyclic",
      "AAT.GeneratedArchitectureLawModel.ofGraphRank",
+     "AAT.GeneratedArchitectureLawModel.generated_law_model_from_generated_object",
      "AAT.GeneratedArchitectureLawModel.generated_law_model_from_generated_graph_rank"]
   reason :=
-    "The compatibility constructor accepts a caller-supplied generated-graph acyclicity premise; the theorem-package registry uses the generated graph-rank constructor as the source-of-truth entrypoint."
+    "The old law-model state accepted a caller-supplied generated-graph acyclicity premise.  The current state stores GeneratedGraphRank and derives WalkAcyclic from that generated certificate."
   bridgeEvidence := by simp
   replacementEvidence := by simp
 
