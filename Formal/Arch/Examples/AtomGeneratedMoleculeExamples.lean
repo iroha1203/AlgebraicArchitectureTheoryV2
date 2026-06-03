@@ -1385,6 +1385,20 @@ theorem generatedComponent_noMeasuredNumericalCurvatureObstruction :
       generatedComponentObject.generatedSemanticDiagrams := by
   exact generatedComponentObject.generated_noMeasuredNumericalCurvatureObstruction
 
+theorem generatedComponent_shapeCoordinateTotalCurvature_eq_zero :
+    totalCurvature AAT.generatedAtomShapeCoordinateDistance
+      generatedComponentObject.generatedAtomShapeCoordinateSemantics
+      generatedComponentObject.generatedSemanticDiagrams = 0 := by
+  exact generatedComponentObject.generated_shapeCoordinateTotalCurvature_eq_zero
+
+theorem generatedComponent_noMeasuredShapeCoordinateCurvatureObstruction :
+    NoMeasuredNumericalCurvatureObstruction
+      AAT.generatedAtomShapeCoordinateDistance
+      generatedComponentObject.generatedAtomShapeCoordinateSemantics
+      generatedComponentObject.generatedSemanticDiagrams := by
+  exact
+    generatedComponentObject.generated_noMeasuredShapeCoordinateCurvatureObstruction
+
 def generatedComponentNilPath
     (carrier : AAT.GeneratedCarrier generatedComponentObject) :
     AAT.GeneratedArchitecturePath generatedComponentObject carrier carrier :=

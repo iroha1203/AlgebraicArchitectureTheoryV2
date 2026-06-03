@@ -244,6 +244,9 @@ def representativeDeclarations : AATCandidate -> List String
        "AtomShapeKindCoverageExamples.coverage_shape_has_valence_port",
        "AAT.GeneratedAtomShapeCoordinate",
        "AAT.GeneratedArchitectureObject.generatedCarrierShapeDistance",
+       "AAT.generatedAtomShapeCoordinateDistance",
+       "AAT.GeneratedArchitectureObject.generated_shapeCoordinateTotalCurvature_eq_zero",
+       "AtomGeneratedMoleculeExamples.generatedComponent_shapeCoordinateTotalCurvature_eq_zero",
        "AAT.GeneratedRelationAtom",
        "AtomGeneratedMoleculeExamples.directedRelationGeneratedGraph_api_to_database_edge",
        "AtomGeneratedMoleculeExamples.directedRelationGeneratedGraph_edge_uses_source_target_ports",
@@ -295,12 +298,13 @@ def classifyAATCandidate
         ["AAT.GeneratedArchitectureObject",
          "AtomShapeKindCoverageExamples.coverage_shape_exists_for_every_atom_kind",
          "AAT.GeneratedArchitectureObject.generatedCarrierShapeDistance",
+         "AAT.GeneratedArchitectureObject.generated_shapeCoordinateTotalCurvature_eq_zero",
          "AtomGeneratedMoleculeExamples.directedRelationGeneratedGraph_api_to_database_edge",
          "AtomGeneratedMoleculeExamples.directedRuntimeGeneratedGraph_api_to_database_edge",
          "AAT.GeneratedArchitectureLawModel",
          "AtomGeneratedSignatureExamples.*"]
         (by simp)
-        "The kernel starts from AtomShape / compatible composition, covers the current AtomKind grammar as shaped typed facts, and reaches generated molecule, object, shape distance, oriented relation/runtime edge generation, law model, signature, repair, and negative acceptance examples."
+        "The kernel starts from AtomShape / compatible composition, covers the current AtomKind grammar as shaped typed facts, and reaches generated molecule, object, shape distance, shape-coordinate curvature, oriented relation/runtime edge generation, law model, signature, repair, and negative acceptance examples."
   | .archMapObservationBoundary =>
       atomGeneratedRow
         "aat.archMapObservationBoundary"

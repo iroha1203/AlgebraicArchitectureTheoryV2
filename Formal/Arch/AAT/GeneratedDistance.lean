@@ -59,6 +59,13 @@ def componentLabels : List String :=
     mismatchBit value value = 0 := by
   simp [mismatchBit]
 
+theorem mismatchBit_eq_zero_iff
+    {α : Type u} [DecidableEq α] (left right : α) :
+    mismatchBit left right = 0 ↔ left = right := by
+  by_cases hEq : left = right
+  · simp [mismatchBit, hEq]
+  · simp [mismatchBit, hEq]
+
 @[simp] theorem mismatchCount_self
     (coordinate : GeneratedAtomShapeCoordinate) :
     mismatchCount coordinate coordinate = 0 := by
@@ -70,6 +77,26 @@ theorem mismatchCount_eq_zero_of_eq
     mismatchCount left right = 0 := by
   cases hEq
   simp
+
+theorem mismatchCount_eq_zero_iff
+    {left right : GeneratedAtomShapeCoordinate} :
+    mismatchCount left right = 0 ↔ left = right := by
+  cases left
+  cases right
+  simp [mismatchCount, mismatchBit_eq_zero_iff]
+  constructor
+  · intro h
+    rcases h with
+      ⟨⟨⟨⟨⟨hFamily, hAxis⟩, hSubject⟩, hPredicate⟩,
+        hDirection⟩, hArity⟩
+    exact
+      ⟨hFamily, hAxis, hSubject, hPredicate, hDirection, hArity⟩
+  · intro h
+    rcases h with
+      ⟨hFamily, hAxis, hSubject, hPredicate, hDirection, hArity⟩
+    exact
+      ⟨⟨⟨⟨⟨hFamily, hAxis⟩, hSubject⟩, hPredicate⟩,
+        hDirection⟩, hArity⟩
 
 end GeneratedAtomShapeCoordinate
 
