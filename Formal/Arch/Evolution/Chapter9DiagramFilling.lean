@@ -1,3 +1,4 @@
+import Formal.Arch.AAT.GeneratedDiagram
 import Formal.Arch.Evolution.DiagramFiller
 import Formal.Arch.Extension.SplitExtensionLifting
 import Formal.Arch.Extension.ArchitectureExtensionFormula
@@ -14,6 +15,8 @@ claims.
 -/
 
 namespace Formal.Arch
+
+universe u v w x
 
 namespace Chapter9DiagramFilling
 
@@ -53,10 +56,16 @@ def schematicName : Candidate -> String
 def representativeDeclarations : Candidate -> List String
   | diagramFillingObstruction =>
       ["ArchitectureDiagram",
+       "AAT.GeneratedArchitectureDiagram",
        "DiagramFiller",
+       "AAT.GeneratedDiagramFiller",
+       "Chapter9DiagramFilling.generatedDiagramFiller_refl",
        "diagramFiller_observation_eq",
+       "Chapter9DiagramFilling.generatedObservationDifference_refutesDiagramFiller",
        "observationDifference_refutesDiagramFiller",
        "NonFillabilityWitness",
+       "AAT.GeneratedNonFillabilityWitnessFor",
+       "Chapter9DiagramFilling.generatedObservationDifference_nonFillabilityWitnessFor",
        "NonFillabilityWitnessFor",
        "obstructionAsNonFillability_sound",
        "observationDifference_nonFillabilityWitnessFor",
@@ -99,25 +108,31 @@ def schematicCorrespondences : Candidate -> List SchematicCorrespondence
       [{ schematic := "DiagramFiller D",
          leanDeclarations :=
           ["ArchitectureDiagram",
+           "AAT.GeneratedArchitectureDiagram",
+           "AAT.GeneratedDiagramFiller",
+           "Chapter9DiagramFilling.generatedDiagramFiller_refl",
            "DiagramFiller"],
          reading :=
-          "finite semantic diagram fillability via generated path homotopy",
+          "finite semantic diagram fillability via generated path homotopy, including Atom-generated diagrams",
          status := "defined only" },
        { schematic := "Obs D.lhs != Obs D.rhs refutes DiagramFiller D",
          leanDeclarations :=
           ["diagramFiller_observation_eq",
-           "observationDifference_refutesDiagramFiller"],
+           "observationDifference_refutesDiagramFiller",
+           "Chapter9DiagramFilling.generatedObservationDifference_refutesDiagramFiller"],
          reading :=
-          "selected observation difference refutes fillability under explicit generator-preservation assumptions",
+          "selected observation difference refutes fillability under explicit generator-preservation assumptions, specialized to Atom-generated diagrams",
          status := "proved" },
        { schematic := "NonFillabilityWitnessFor D w",
          leanDeclarations :=
           ["NonFillabilityWitness",
            "NonFillabilityWitnessFor",
+           "AAT.GeneratedNonFillabilityWitnessFor",
            "obstructionAsNonFillability_sound",
-           "observationDifference_nonFillabilityWitnessFor"],
+           "observationDifference_nonFillabilityWitnessFor",
+           "Chapter9DiagramFilling.generatedObservationDifference_nonFillabilityWitnessFor"],
          reading :=
-          "sound non-fillability witness for one selected diagram and witness value",
+          "sound non-fillability witness for one selected Atom-generated diagram and witness value",
          status := "defined only / proved" },
        { schematic := "WitnessUniverseComplete U D",
          leanDeclarations :=
@@ -203,6 +218,169 @@ def nonConclusionBoundary : Candidate -> String
       "selected filling-failure payload bridge only; NonFillabilityWitnessFor alone does not refute an arbitrary split predicate"
 
 end Candidate
+
+/-- Chapter 9 entrypoint for reflexive fillability of Atom-generated diagrams. -/
+theorem generatedDiagramFiller_refl
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : AAT.GeneratedArchitectureObject presentation}
+    {IndependentSquare :
+      (W X Y Z : AAT.GeneratedCarrier object) ->
+        AAT.GeneratedArchitectureStep object W X ->
+        AAT.GeneratedArchitectureStep object X Z ->
+        AAT.GeneratedArchitectureStep object W Y ->
+        AAT.GeneratedArchitectureStep object Y Z -> Prop}
+    {SameExternalContract :
+      (X Y : AAT.GeneratedCarrier object) ->
+        AAT.GeneratedArchitectureStep object X Y ->
+        AAT.GeneratedArchitectureStep object X Y -> Prop}
+    {RepairFill :
+      (X Y : AAT.GeneratedCarrier object) ->
+        AAT.GeneratedArchitecturePath object X Y ->
+        AAT.GeneratedArchitecturePath object X Y -> Prop}
+    {source target : AAT.GeneratedCarrier object}
+    (path : AAT.GeneratedArchitecturePath object source target) :
+    AAT.GeneratedDiagramFiller
+      IndependentSquare SameExternalContract RepairFill
+      (AAT.GeneratedArchitectureDiagram.reflexive path) :=
+  AAT.generatedDiagramFiller_refl path
+
+/--
+Chapter 9 entrypoint for refuting fillability of Atom-generated diagrams from a
+selected generated observation difference.
+-/
+theorem generatedObservationDifference_refutesDiagramFiller
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : AAT.GeneratedArchitectureObject presentation}
+    {α : Type x}
+    {IndependentSquare :
+      (W X Y Z : AAT.GeneratedCarrier object) ->
+        AAT.GeneratedArchitectureStep object W X ->
+        AAT.GeneratedArchitectureStep object X Z ->
+        AAT.GeneratedArchitectureStep object W Y ->
+        AAT.GeneratedArchitectureStep object Y Z -> Prop}
+    {SameExternalContract :
+      (X Y : AAT.GeneratedCarrier object) ->
+        AAT.GeneratedArchitectureStep object X Y ->
+        AAT.GeneratedArchitectureStep object X Y -> Prop}
+    {RepairFill :
+      (X Y : AAT.GeneratedCarrier object) ->
+        AAT.GeneratedArchitecturePath object X Y ->
+        AAT.GeneratedArchitecturePath object X Y -> Prop}
+    {Obs :
+      {X Y : AAT.GeneratedCarrier object} ->
+        AAT.GeneratedArchitecturePath object X Y -> α}
+    (hIndependentSquare :
+      ∀ {W X Y Z T : AAT.GeneratedCarrier object}
+        (a : AAT.GeneratedArchitectureStep object W X)
+        (b : AAT.GeneratedArchitectureStep object X Z)
+        (c : AAT.GeneratedArchitectureStep object W Y)
+        (d : AAT.GeneratedArchitectureStep object Y Z)
+        (rest : AAT.GeneratedArchitecturePath object Z T),
+          IndependentSquare W X Y Z a b c d ->
+            Obs (ArchitecturePath.cons a (ArchitecturePath.cons b rest)) =
+              Obs (ArchitecturePath.cons c (ArchitecturePath.cons d rest)))
+    (hSameExternalContract :
+      ∀ {X Y Z : AAT.GeneratedCarrier object}
+        (s t : AAT.GeneratedArchitectureStep object X Y)
+        (rest : AAT.GeneratedArchitecturePath object Y Z),
+          SameExternalContract X Y s t ->
+            Obs (ArchitecturePath.cons s rest) =
+              Obs (ArchitecturePath.cons t rest))
+    (hRepairFill :
+      ∀ {X Y Z : AAT.GeneratedCarrier object}
+        {p q : AAT.GeneratedArchitecturePath object X Y},
+        RepairFill X Y p q ->
+          (suffix : AAT.GeneratedArchitecturePath object Y Z) ->
+            Obs (ArchitecturePath.append p suffix) =
+              Obs (ArchitecturePath.append q suffix))
+    (hConsContext :
+      ∀ {X Y Z : AAT.GeneratedCarrier object}
+        (step : AAT.GeneratedArchitectureStep object X Y)
+        {p q : AAT.GeneratedArchitecturePath object Y Z},
+          Obs p = Obs q ->
+            Obs (ArchitecturePath.cons step p) =
+              Obs (ArchitecturePath.cons step q))
+    {source target : AAT.GeneratedCarrier object}
+    {diagram : AAT.GeneratedArchitectureDiagram object
+      (source := source) (target := target)}
+    (hDifference : Obs diagram.lhs ≠ Obs diagram.rhs) :
+    ¬ AAT.GeneratedDiagramFiller
+      IndependentSquare SameExternalContract RepairFill diagram := by
+  exact
+    AAT.generatedObservationDifference_refutesDiagramFiller
+      hIndependentSquare hSameExternalContract hRepairFill hConsContext
+      hDifference
+
+/--
+Chapter 9 entrypoint for packaging an Atom-generated observation difference as
+a generated non-fillability witness.
+-/
+theorem generatedObservationDifference_nonFillabilityWitnessFor
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : AAT.GeneratedArchitectureObject presentation}
+    {α : Type x}
+    {IndependentSquare :
+      (W X Y Z : AAT.GeneratedCarrier object) ->
+        AAT.GeneratedArchitectureStep object W X ->
+        AAT.GeneratedArchitectureStep object X Z ->
+        AAT.GeneratedArchitectureStep object W Y ->
+        AAT.GeneratedArchitectureStep object Y Z -> Prop}
+    {SameExternalContract :
+      (X Y : AAT.GeneratedCarrier object) ->
+        AAT.GeneratedArchitectureStep object X Y ->
+        AAT.GeneratedArchitectureStep object X Y -> Prop}
+    {RepairFill :
+      (X Y : AAT.GeneratedCarrier object) ->
+        AAT.GeneratedArchitecturePath object X Y ->
+        AAT.GeneratedArchitecturePath object X Y -> Prop}
+    {Obs :
+      {X Y : AAT.GeneratedCarrier object} ->
+        AAT.GeneratedArchitecturePath object X Y -> α}
+    (hIndependentSquare :
+      ∀ {W X Y Z T : AAT.GeneratedCarrier object}
+        (a : AAT.GeneratedArchitectureStep object W X)
+        (b : AAT.GeneratedArchitectureStep object X Z)
+        (c : AAT.GeneratedArchitectureStep object W Y)
+        (d : AAT.GeneratedArchitectureStep object Y Z)
+        (rest : AAT.GeneratedArchitecturePath object Z T),
+          IndependentSquare W X Y Z a b c d ->
+            Obs (ArchitecturePath.cons a (ArchitecturePath.cons b rest)) =
+              Obs (ArchitecturePath.cons c (ArchitecturePath.cons d rest)))
+    (hSameExternalContract :
+      ∀ {X Y Z : AAT.GeneratedCarrier object}
+        (s t : AAT.GeneratedArchitectureStep object X Y)
+        (rest : AAT.GeneratedArchitecturePath object Y Z),
+          SameExternalContract X Y s t ->
+            Obs (ArchitecturePath.cons s rest) =
+              Obs (ArchitecturePath.cons t rest))
+    (hRepairFill :
+      ∀ {X Y Z : AAT.GeneratedCarrier object}
+        {p q : AAT.GeneratedArchitecturePath object X Y},
+        RepairFill X Y p q ->
+          (suffix : AAT.GeneratedArchitecturePath object Y Z) ->
+            Obs (ArchitecturePath.append p suffix) =
+              Obs (ArchitecturePath.append q suffix))
+    (hConsContext :
+      ∀ {X Y Z : AAT.GeneratedCarrier object}
+        (step : AAT.GeneratedArchitectureStep object X Y)
+        {p q : AAT.GeneratedArchitecturePath object Y Z},
+          Obs p = Obs q ->
+            Obs (ArchitecturePath.cons step p) =
+              Obs (ArchitecturePath.cons step q))
+    {source target : AAT.GeneratedCarrier object}
+    {diagram : AAT.GeneratedArchitectureDiagram object
+      (source := source) (target := target)}
+    {Witness : Type w} (witness : Witness)
+    (hDifference : Obs diagram.lhs ≠ Obs diagram.rhs) :
+    AAT.GeneratedNonFillabilityWitnessFor
+      IndependentSquare SameExternalContract RepairFill diagram witness := by
+  exact
+    AAT.generatedObservationDifference_nonFillabilityWitnessFor
+      hIndependentSquare hSameExternalContract hRepairFill hConsContext
+      witness hDifference
 
 end Chapter9DiagramFilling
 

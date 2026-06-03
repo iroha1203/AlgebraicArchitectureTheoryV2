@@ -1,5 +1,7 @@
+import Formal.Arch.AAT.GeneratedDiagram
 import Formal.Arch.Evolution.ArchitecturePath
 import Formal.Arch.Evolution.DiagramFiller
+import Formal.Arch.Evolution.ReverseImportTheorems
 
 /-!
 Documentation-facing entrypoint for the mathematical design Chapter 8 homotopy
@@ -12,6 +14,8 @@ completeness, higher-category, or extractor-completeness claims.
 -/
 
 namespace Formal.Arch
+
+universe u v w
 
 namespace Chapter8HomotopySkeleton
 
@@ -64,6 +68,8 @@ def representativeDeclarations : Candidate -> List String
        "ArchitecturePath.pathPreservesInvariant"]
   | generatedPathHomotopy =>
       ["ArchitecturePath.PathHomotopy",
+       "AAT.GeneratedPathHomotopy",
+       "Chapter8HomotopySkeleton.generatedSignatureTrajectory_refutesGeneratedPathHomotopy",
        "ArchitecturePath.PathHomotopy.cons_congr",
        "ArchitecturePath.PathHomotopy.append_left",
        "ArchitecturePath.PathHomotopy.append_right",
@@ -113,11 +119,13 @@ def schematicCorrespondences : Candidate -> List SchematicCorrespondence
       [{ schematic := "PathHomotopy p q",
          leanDeclarations :=
           ["ArchitecturePath.PathHomotopy",
+           "AAT.GeneratedPathHomotopy",
+           "Chapter8HomotopySkeleton.generatedSignatureTrajectory_refutesGeneratedPathHomotopy",
            "ArchitecturePath.PathHomotopy.cons_congr",
            "ArchitecturePath.PathHomotopy.append_left",
            "ArchitecturePath.PathHomotopy.append_right"],
          reading :=
-          "generated relation closed under selected finite path contexts",
+          "generated relation closed under selected finite path contexts, including Atom-generated path homotopy",
          status := "defined only / proved" }]
   | selectedObservationInvariance =>
       [{ schematic := "Obs p = Obs q for homotopic paths",
@@ -181,6 +189,78 @@ def nonConclusionBoundary : Candidate -> String
       "soundness plus bounded completeness under WitnessUniverseComplete only; no extractor completeness or full witness coverage"
 
 end Candidate
+
+/--
+Atom-generated specialization of the reverse-import trajectory theorem.
+
+This keeps the Chapter 8 entrypoint from being a representation-only wrapper:
+the state space, steps, paths, and homotopy relation are all generated from a
+`GeneratedArchitectureObject`.
+-/
+theorem generatedSignatureTrajectory_refutesGeneratedPathHomotopy
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : AAT.GeneratedArchitectureObject presentation}
+    {α : Type w}
+    {IndependentSquare :
+      (W X Y Z : AAT.GeneratedCarrier object) ->
+        AAT.GeneratedArchitectureStep object W X ->
+        AAT.GeneratedArchitectureStep object X Z ->
+        AAT.GeneratedArchitectureStep object W Y ->
+        AAT.GeneratedArchitectureStep object Y Z -> Prop}
+    {SameExternalContract :
+      (X Y : AAT.GeneratedCarrier object) ->
+        AAT.GeneratedArchitectureStep object X Y ->
+        AAT.GeneratedArchitectureStep object X Y -> Prop}
+    {RepairFill :
+      (X Y : AAT.GeneratedCarrier object) ->
+        AAT.GeneratedArchitecturePath object X Y ->
+        AAT.GeneratedArchitecturePath object X Y -> Prop}
+    {Obs :
+      {X Y : AAT.GeneratedCarrier object} ->
+        AAT.GeneratedArchitecturePath object X Y -> α}
+    (hIndependentSquare :
+      ∀ {W X Y Z T : AAT.GeneratedCarrier object}
+        (a : AAT.GeneratedArchitectureStep object W X)
+        (b : AAT.GeneratedArchitectureStep object X Z)
+        (c : AAT.GeneratedArchitectureStep object W Y)
+        (d : AAT.GeneratedArchitectureStep object Y Z)
+        (rest : AAT.GeneratedArchitecturePath object Z T),
+          IndependentSquare W X Y Z a b c d ->
+            Obs (ArchitecturePath.cons a (ArchitecturePath.cons b rest)) =
+              Obs (ArchitecturePath.cons c (ArchitecturePath.cons d rest)))
+    (hSameExternalContract :
+      ∀ {X Y Z : AAT.GeneratedCarrier object}
+        (s t : AAT.GeneratedArchitectureStep object X Y)
+        (rest : AAT.GeneratedArchitecturePath object Y Z),
+          SameExternalContract X Y s t ->
+            Obs (ArchitecturePath.cons s rest) =
+              Obs (ArchitecturePath.cons t rest))
+    (hRepairFill :
+      ∀ {X Y Z : AAT.GeneratedCarrier object}
+        {p q : AAT.GeneratedArchitecturePath object X Y},
+        RepairFill X Y p q ->
+          (suffix : AAT.GeneratedArchitecturePath object Y Z) ->
+            Obs (ArchitecturePath.append p suffix) =
+              Obs (ArchitecturePath.append q suffix))
+    (hConsContext :
+      ∀ {X Y Z : AAT.GeneratedCarrier object}
+        (step : AAT.GeneratedArchitectureStep object X Y)
+        {p q : AAT.GeneratedArchitecturePath object Y Z},
+          Obs p = Obs q ->
+            Obs (ArchitecturePath.cons step p) =
+              Obs (ArchitecturePath.cons step q))
+    {source target : AAT.GeneratedCarrier object}
+    {left right : AAT.GeneratedArchitecturePath object source target}
+    (hTrajectoryDiff : Obs left ≠ Obs right) :
+    ¬ AAT.GeneratedPathHomotopy
+      IndependentSquare SameExternalContract RepairFill left right := by
+  exact
+    ReverseImportTheorems.selectedSignatureTrajectory_refutesPathHomotopy
+      (Step := AAT.GeneratedArchitectureStep object)
+      (Obs := Obs)
+      hIndependentSquare hSameExternalContract hRepairFill hConsContext
+      hTrajectoryDiff
 
 end Chapter8HomotopySkeleton
 

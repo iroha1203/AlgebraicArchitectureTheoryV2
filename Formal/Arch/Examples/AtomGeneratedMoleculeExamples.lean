@@ -2,6 +2,8 @@ import Formal.Arch.AAT.GeneratedCurvature
 import Formal.Arch.AAT.GeneratedDiagram
 import Formal.Arch.AAT.GeneratedPath
 import Formal.Arch.AAT.GeneratedSynthesis
+import Formal.Arch.Evolution.Chapter8HomotopySkeleton
+import Formal.Arch.Evolution.Chapter9DiagramFilling
 
 namespace Formal.Arch.AtomGeneratedMoleculeExamples
 
@@ -326,6 +328,77 @@ theorem generatedComponentNilDiagram_filler
       (generatedComponentNilDiagram carrier) := by
   exact AAT.generatedDiagramFiller_refl
     (generatedComponentNilPath carrier)
+
+theorem generatedComponentNilDiagram_chapter9_filler
+    (carrier : AAT.GeneratedCarrier generatedComponentObject) :
+    AAT.GeneratedDiagramFiller
+      (object := generatedComponentObject)
+      (fun _ _ _ _ _ _ _ _ => False)
+      (fun _ _ _ _ => False)
+      (fun _ _ _ _ => False)
+      (generatedComponentNilDiagram carrier) := by
+  exact _root_.Formal.Arch.Chapter9DiagramFilling.generatedDiagramFiller_refl
+    (generatedComponentNilPath carrier)
+
+theorem generatedComponent_chapter8_refutes_homotopy_from_observation_diff
+    {α : Type}
+    {IndependentSquare :
+      (W X Y Z : AAT.GeneratedCarrier generatedComponentObject) ->
+        AAT.GeneratedArchitectureStep generatedComponentObject W X ->
+        AAT.GeneratedArchitectureStep generatedComponentObject X Z ->
+        AAT.GeneratedArchitectureStep generatedComponentObject W Y ->
+        AAT.GeneratedArchitectureStep generatedComponentObject Y Z -> Prop}
+    {SameExternalContract :
+      (X Y : AAT.GeneratedCarrier generatedComponentObject) ->
+        AAT.GeneratedArchitectureStep generatedComponentObject X Y ->
+        AAT.GeneratedArchitectureStep generatedComponentObject X Y -> Prop}
+    {RepairFill :
+      (X Y : AAT.GeneratedCarrier generatedComponentObject) ->
+        AAT.GeneratedArchitecturePath generatedComponentObject X Y ->
+        AAT.GeneratedArchitecturePath generatedComponentObject X Y -> Prop}
+    {Obs :
+      {X Y : AAT.GeneratedCarrier generatedComponentObject} ->
+        AAT.GeneratedArchitecturePath generatedComponentObject X Y -> α}
+    (hIndependentSquare :
+      ∀ {W X Y Z T : AAT.GeneratedCarrier generatedComponentObject}
+        (a : AAT.GeneratedArchitectureStep generatedComponentObject W X)
+        (b : AAT.GeneratedArchitectureStep generatedComponentObject X Z)
+        (c : AAT.GeneratedArchitectureStep generatedComponentObject W Y)
+        (d : AAT.GeneratedArchitectureStep generatedComponentObject Y Z)
+        (rest : AAT.GeneratedArchitecturePath generatedComponentObject Z T),
+          IndependentSquare W X Y Z a b c d ->
+            Obs (ArchitecturePath.cons a (ArchitecturePath.cons b rest)) =
+              Obs (ArchitecturePath.cons c (ArchitecturePath.cons d rest)))
+    (hSameExternalContract :
+      ∀ {X Y Z : AAT.GeneratedCarrier generatedComponentObject}
+        (s t : AAT.GeneratedArchitectureStep generatedComponentObject X Y)
+        (rest : AAT.GeneratedArchitecturePath generatedComponentObject Y Z),
+          SameExternalContract X Y s t ->
+            Obs (ArchitecturePath.cons s rest) =
+              Obs (ArchitecturePath.cons t rest))
+    (hRepairFill :
+      ∀ {X Y Z : AAT.GeneratedCarrier generatedComponentObject}
+        {p q : AAT.GeneratedArchitecturePath generatedComponentObject X Y},
+        RepairFill X Y p q ->
+          (suffix : AAT.GeneratedArchitecturePath generatedComponentObject Y Z) ->
+            Obs (ArchitecturePath.append p suffix) =
+              Obs (ArchitecturePath.append q suffix))
+    (hConsContext :
+      ∀ {X Y Z : AAT.GeneratedCarrier generatedComponentObject}
+        (step : AAT.GeneratedArchitectureStep generatedComponentObject X Y)
+        {p q : AAT.GeneratedArchitecturePath generatedComponentObject Y Z},
+          Obs p = Obs q ->
+            Obs (ArchitecturePath.cons step p) =
+              Obs (ArchitecturePath.cons step q))
+    {source target : AAT.GeneratedCarrier generatedComponentObject}
+    {left right : AAT.GeneratedArchitecturePath generatedComponentObject source target}
+    (hTrajectoryDiff : Obs left ≠ Obs right) :
+    ¬ AAT.GeneratedPathHomotopy
+      IndependentSquare SameExternalContract RepairFill left right := by
+  exact
+    Formal.Arch.Chapter8HomotopySkeleton.generatedSignatureTrajectory_refutesGeneratedPathHomotopy
+      hIndependentSquare hSameExternalContract hRepairFill hConsContext
+      hTrajectoryDiff
 
 def generatedComponentIdentityOperation :
     AAT.GeneratedOperation generatedComponentObject generatedComponentObject where
