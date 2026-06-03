@@ -65,7 +65,54 @@ structure GeneratedArchitectureLawModel {system : AtomAxiomSystem.{u, v}}
   generatedWalkAcyclic : WalkAcyclic (GeneratedArchGraph object)
   lawModelBoundary : Prop
 
+/--
+Generated graph rank certificate.
+
+The rank is assigned to carriers of the generated object, and every generated
+relation edge must strictly decrease it. This is a generated graph witness for
+the acyclicity premise consumed by the existing Signature lawfulness API.
+-/
+structure GeneratedGraphRank {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    (object : GeneratedArchitectureObject presentation) where
+  rank : GeneratedCarrier object -> Nat
+  edgeRankDecreases :
+    ∀ {source target : GeneratedCarrier object},
+      (GeneratedArchGraph object).edge source target ->
+        rank target < rank source
+
+namespace GeneratedGraphRank
+
+def strictLayering
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : GeneratedArchitectureObject presentation}
+    (certificate : GeneratedGraphRank object) :
+    StrictLayering (GeneratedArchGraph object) certificate.rank :=
+  fun hEdge => certificate.edgeRankDecreases hEdge
+
+theorem walkAcyclic
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : GeneratedArchitectureObject presentation}
+    (certificate : GeneratedGraphRank object) :
+    WalkAcyclic (GeneratedArchGraph object) :=
+  walkAcyclic_of_acyclic
+    (acyclic_of_strictLayering certificate.strictLayering)
+
+end GeneratedGraphRank
+
 namespace GeneratedArchitectureLawModel
+
+def ofGraphRank
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : GeneratedArchitectureObject presentation}
+    (certificate : GeneratedGraphRank object)
+    (lawModelBoundary : Prop) :
+    GeneratedArchitectureLawModel object where
+  generatedWalkAcyclic := certificate.walkAcyclic
+  lawModelBoundary := lawModelBoundary
 
 /-- Construct the existing Signature law model from generated object surfaces. -/
 def toArchitectureLawModel {system : AtomAxiomSystem.{u, v}}
@@ -167,6 +214,21 @@ theorem generated_law_model_from_generated_object
   let model : GeneratedArchitectureLawModel object :=
     { generatedWalkAcyclic := hWalkAcyclic
       lawModelBoundary := lawModelBoundary }
+  exact ⟨model, model.generatedArchitectureLawful⟩
+
+/--
+Generated objects produce generated law models from a generated graph rank
+certificate, rather than from a caller-supplied architecture law model.
+-/
+theorem generated_law_model_from_generated_graph_rank
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : GeneratedArchitectureObject presentation}
+    (certificate : GeneratedGraphRank object)
+    (lawModelBoundary : Prop) :
+    ∃ model : GeneratedArchitectureLawModel object,
+      ArchitectureSignature.ArchitectureLawful model.toArchitectureLawModel := by
+  let model := ofGraphRank certificate lawModelBoundary
   exact ⟨model, model.generatedArchitectureLawful⟩
 
 /-- Signature required axes are zero for generated law models. -/

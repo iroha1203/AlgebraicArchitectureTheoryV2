@@ -264,11 +264,28 @@ theorem generatedComponentGraph_walkAcyclic :
   | cons hEdge _rest =>
       exact generatedComponentGraph_no_edges _ _ hEdge
 
+def generatedComponentGraphRank :
+    AAT.GeneratedGraphRank generatedComponentObject where
+  rank := fun _carrier => 0
+  edgeRankDecreases := by
+    intro source target hEdge
+    exact False.elim (generatedComponentGraph_no_edges source target hEdge)
+
+theorem generatedComponentGraphRank_walkAcyclic :
+    WalkAcyclic (AAT.GeneratedArchGraph generatedComponentObject) :=
+  generatedComponentGraphRank.walkAcyclic
+
+theorem generatedComponent_law_model_from_graph_rank :
+    ∃ model : AAT.GeneratedArchitectureLawModel generatedComponentObject,
+      ArchitectureSignature.ArchitectureLawful model.toArchitectureLawModel :=
+  AAT.GeneratedArchitectureLawModel.generated_law_model_from_generated_graph_rank
+    generatedComponentGraphRank True
+
 /-- Generated law model built from the generated object, not from a hand-authored graph. -/
 def generatedComponentLawModel :
-    AAT.GeneratedArchitectureLawModel generatedComponentObject where
-  generatedWalkAcyclic := generatedComponentGraph_walkAcyclic
-  lawModelBoundary := True
+    AAT.GeneratedArchitectureLawModel generatedComponentObject :=
+  AAT.GeneratedArchitectureLawModel.ofGraphRank
+    generatedComponentGraphRank True
 
 inductive DirectedRelationAtom where
   | api
@@ -694,6 +711,80 @@ theorem directedRelationGeneratedGraph_no_database_to_api_edge :
         using hRelation.sourceCompositionUsesRelationSource.1
     exact hSourceKind
   · cases hRelation.relationFamily
+
+def directedRelationCarrierRank
+    (carrier : AAT.GeneratedCarrier directedRelationGeneratedObject) : Nat :=
+  match carrier.val with
+  | DirectedRelationAtom.api => 1
+  | DirectedRelationAtom.apiToDatabase => 2
+  | DirectedRelationAtom.database => 0
+
+theorem directedRelationGeneratedGraph_edge_only_api_to_database
+    {source target : AAT.GeneratedCarrier directedRelationGeneratedObject}
+    (hEdge : (AAT.GeneratedArchGraph directedRelationGeneratedObject).edge
+      source target) :
+    source.val = DirectedRelationAtom.api ∧
+      target.val = DirectedRelationAtom.database := by
+  rcases hEdge with ⟨relation, hRelation⟩
+  rcases relation with ⟨relationAtom, hRelationAtom⟩
+  rcases source with ⟨sourceAtom, hSourceAtom⟩
+  rcases target with ⟨targetAtom, hTargetAtom⟩
+  cases relationAtom
+  · cases hRelation.relationFamily
+  · constructor
+    · cases sourceAtom
+      · rfl
+      · exact False.elim (hRelation.relationSourceDistinct rfl)
+      · have hSourceKind : False := by
+          simpa [AAT.GeneratedMolecule.compatible_pairs,
+            AAT.CompositionGraph.compatible_pairs,
+            directedRelationGeneratedObject,
+            directedRelationGeneratedMolecule,
+            directedRelationCompositionGraph,
+            directedRelationDatabaseTargetComposition,
+            directedDatabaseRelationTargetComposition,
+            relationTargetPort]
+            using hRelation.sourceCompositionUsesRelationSource.1
+        exact False.elim hSourceKind
+    · cases targetAtom
+      · have hTargetKind : False := by
+          simpa [AAT.GeneratedMolecule.compatible_pairs,
+            AAT.CompositionGraph.compatible_pairs,
+            directedRelationGeneratedObject,
+            directedRelationGeneratedMolecule,
+            directedRelationCompositionGraph,
+            directedRelationApiSourceComposition,
+            directedApiRelationSourceComposition,
+            relationSourcePort]
+            using hRelation.targetCompositionUsesRelationTarget.1
+        exact False.elim hTargetKind
+      · exact False.elim (hRelation.relationTargetDistinct rfl)
+      · rfl
+  · cases hRelation.relationFamily
+
+def directedRelationGraphRank :
+    AAT.GeneratedGraphRank directedRelationGeneratedObject where
+  rank := directedRelationCarrierRank
+  edgeRankDecreases := by
+    intro source target hEdge
+    rcases directedRelationGeneratedGraph_edge_only_api_to_database hEdge with
+      ⟨hSource, hTarget⟩
+    simp [directedRelationCarrierRank, hSource, hTarget]
+
+theorem directedRelationGraphRank_walkAcyclic :
+    WalkAcyclic (AAT.GeneratedArchGraph directedRelationGeneratedObject) :=
+  directedRelationGraphRank.walkAcyclic
+
+theorem directedRelation_law_model_from_graph_rank :
+    ∃ model : AAT.GeneratedArchitectureLawModel directedRelationGeneratedObject,
+      ArchitectureSignature.ArchitectureLawful model.toArchitectureLawModel :=
+  AAT.GeneratedArchitectureLawModel.generated_law_model_from_generated_graph_rank
+    directedRelationGraphRank True
+
+def directedRelationLawModel :
+    AAT.GeneratedArchitectureLawModel directedRelationGeneratedObject :=
+  AAT.GeneratedArchitectureLawModel.ofGraphRank
+    directedRelationGraphRank True
 
 inductive DirectedRuntimeAtom where
   | api
@@ -1227,11 +1318,22 @@ theorem generatedApiOnlyGraph_walkAcyclic :
   | cons hEdge _rest =>
       exact generatedApiOnlyGraph_no_edges _ _ hEdge
 
+def generatedApiOnlyGraphRank :
+    AAT.GeneratedGraphRank generatedApiOnlyObject where
+  rank := fun _carrier => 0
+  edgeRankDecreases := by
+    intro source target hEdge
+    exact False.elim (generatedApiOnlyGraph_no_edges source target hEdge)
+
+theorem generatedApiOnlyGraphRank_walkAcyclic :
+    WalkAcyclic (AAT.GeneratedArchGraph generatedApiOnlyObject) :=
+  generatedApiOnlyGraphRank.walkAcyclic
+
 /-- Source-side generated law model for the API-only object. -/
 def generatedApiOnlyLawModel :
-    AAT.GeneratedArchitectureLawModel generatedApiOnlyObject where
-  generatedWalkAcyclic := generatedApiOnlyGraph_walkAcyclic
-  lawModelBoundary := True
+    AAT.GeneratedArchitectureLawModel generatedApiOnlyObject :=
+  AAT.GeneratedArchitectureLawModel.ofGraphRank
+    generatedApiOnlyGraphRank True
 
 def generatedApiOnlyCarrier :
     AAT.GeneratedCarrier generatedApiOnlyObject :=
