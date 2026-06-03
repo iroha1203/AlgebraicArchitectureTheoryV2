@@ -207,6 +207,18 @@ theorem generated_analytic_extension_formula_classified_atom_generated :
   exact generated_analytic_extension_formula_is_atom_generated
 
 /--
+Acceptance: generated semantic flatness has an Atom-generated boundary package
+that keeps selected external semantic obstructions external instead of
+discharging them through generated reflexive diagrams.
+-/
+theorem generated_external_semantic_boundary_classified_atom_generated :
+    (classifyChapter11 .generatedExternalSemanticBoundary).classification =
+        .atomGenerated ∧
+      (classifyChapter11 .generatedExternalSemanticBoundary).action =
+        .aatSourceOfTruth := by
+  exact generated_external_semantic_boundary_is_atom_generated
+
+/--
 Acceptance: Chapter 8 path calculus, selected observation invariance, diagram
 filling, and non-fillability all have generated path/diagram entrypoints.
 -/

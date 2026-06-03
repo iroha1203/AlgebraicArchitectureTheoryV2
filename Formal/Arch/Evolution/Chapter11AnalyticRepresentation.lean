@@ -1336,6 +1336,7 @@ inductive Candidate where
   | couponStaticExample
   | couponSemanticValuation
   | staticSemanticCounterexample
+  | generatedExternalSemanticBoundary
   | measurementBoundary
   deriving DecidableEq, Repr
 
@@ -1353,6 +1354,8 @@ def designSection : Candidate -> String
   | couponStaticExample => "11 / coupon static axis"
   | couponSemanticValuation => "11 / coupon semantic axis"
   | staticSemanticCounterexample => "11 / canonical counterexample"
+  | generatedExternalSemanticBoundary =>
+      "11 / generated semantic boundary"
   | measurementBoundary => "11 / tooling boundary"
 
 /-- Stable schematic name used by documentation and theorem-index tables. -/
@@ -1370,6 +1373,8 @@ def schematicName : Candidate -> String
   | couponStaticExample => "Coupon static hidden dependency example"
   | couponSemanticValuation => "Coupon semantic rounding-order valuation"
   | staticSemanticCounterexample => "Static-flat semantic-obstruction example"
+  | generatedExternalSemanticBoundary =>
+      "Generated semantic flatness external-obstruction boundary"
   | measurementBoundary => "Measurement boundary for unmeasured axes"
 
 /-- Representative Lean declarations that serve as public entrypoints. -/
@@ -1482,10 +1487,12 @@ def representativeDeclarations : Candidate -> List String
        "StaticSemanticCounterexample.canonical_not_semanticFlatWithin",
        "StaticSemanticCounterexample.canonical_not_architectureFlat",
        "StaticSemanticCounterexample.staticFlat_with_semanticObstruction",
-       "StaticSemanticCounterexample.staticFlat_not_architectureFlat",
-       "Chapter11AnalyticRepresentation.GeneratedExternalSemanticObstructionBoundary",
+       "StaticSemanticCounterexample.staticFlat_not_architectureFlat"]
+  | generatedExternalSemanticBoundary =>
+      ["Chapter11AnalyticRepresentation.GeneratedExternalSemanticObstructionBoundary",
        "Chapter11AnalyticRepresentation.GeneratedExternalSemanticObstructionBoundary.generated_semanticFlatWithin",
        "Chapter11AnalyticRepresentation.GeneratedExternalSemanticObstructionBoundary.external_semantic_obstruction_remains",
+       "Chapter11AnalyticRepresentation.GeneratedExternalSemanticObstructionBoundary.external_not_architectureFlatWithin",
        "Chapter11AnalyticRepresentation.GeneratedExternalSemanticObstructionBoundary.generated_semantic_flatness_does_not_discharge_external",
        "Chapter11AnalyticRepresentation.couponGeneratedExternalSemanticObstructionBoundary",
        "Chapter11AnalyticRepresentation.coupon_generated_semantic_flatness_does_not_discharge_static_semantic_counterexample",
@@ -1759,19 +1766,21 @@ def schematicCorrespondences : Candidate -> List SchematicCorrespondence
            "StaticSemanticCounterexample.staticFlat_not_architectureFlat"],
          reading :=
           "repaired static skeleton can be selected-static-flat while the selected semantic coupon / discount diagram still obstructs architecture flatness",
-         status := "proved" },
-       { schematic :=
+         status := "proved" }]
+  | generatedExternalSemanticBoundary =>
+      [{ schematic :=
           "generated reflexive semantic flatness does not discharge external selected semantic obstruction",
          leanDeclarations :=
           ["Chapter11AnalyticRepresentation.GeneratedExternalSemanticObstructionBoundary",
            "Chapter11AnalyticRepresentation.GeneratedExternalSemanticObstructionBoundary.generated_semanticFlatWithin",
            "Chapter11AnalyticRepresentation.GeneratedExternalSemanticObstructionBoundary.external_semantic_obstruction_remains",
+           "Chapter11AnalyticRepresentation.GeneratedExternalSemanticObstructionBoundary.external_not_architectureFlatWithin",
            "Chapter11AnalyticRepresentation.GeneratedExternalSemanticObstructionBoundary.generated_semantic_flatness_does_not_discharge_external",
            "Chapter11AnalyticRepresentation.couponGeneratedExternalSemanticObstructionBoundary",
            "Chapter11AnalyticRepresentation.coupon_generated_semantic_flatness_does_not_discharge_static_semantic_counterexample"],
          reading :=
           "Atom-generated law model semantic flatness is scoped to generated reflexive diagrams and does not erase the separately selected coupon semantic obstruction",
-         status := "proved" }]
+         status := "defined only / proved" }]
   | measurementBoundary =>
       [{ schematic := "measuredZero / measuredNonzero / unmeasured / outOfScope",
          leanDeclarations :=
@@ -1834,6 +1843,8 @@ def nonConclusionBoundary : Candidate -> String
       "selected rounding-order semantic residual only; no unmeasured-axis zero claim or global semantic completeness"
   | staticSemanticCounterexample =>
       "counterexample is selected static / semantic scope only; no empirical frequency or extractor claim"
+  | generatedExternalSemanticBoundary =>
+      "generated semantic flatness is scoped to generated reflexive diagrams; external selected semantic obstructions remain external unless a generated obstruction witness is constructed"
   | measurementBoundary =>
       "unmeasured and out-of-scope report axes are not measured-zero evidence and cannot discharge Lean theorem preconditions"
 

@@ -621,6 +621,15 @@ def classifyChapter11
         .downstreamLibrary
         ActionAllowed.representationDownstream
         "The static-semantic counterexample is a downstream negative fixture."
+  | .generatedExternalSemanticBoundary =>
+      atomGeneratedRow
+        "chapter11.generatedExternalSemanticBoundary"
+        (Chapter11AnalyticRepresentation.Candidate.representativeDeclarations
+          .generatedExternalSemanticBoundary)
+        ["Chapter11AnalyticRepresentation.GeneratedExternalSemanticObstructionBoundary.generated_semantic_flatness_does_not_discharge_external",
+         "Chapter11AnalyticRepresentation.coupon_generated_semantic_flatness_does_not_discharge_static_semantic_counterexample"]
+        (by simp)
+        "Generated semantic flatness is scoped to generated reflexive diagrams and does not discharge external selected semantic obstructions."
   | .measurementBoundary =>
       representationRow
         "chapter11.measurementBoundary"
@@ -838,6 +847,7 @@ def chapter11Classifications : List TheoremPackageClassification :=
   , classifyChapter11 .couponStaticExample
   , classifyChapter11 .couponSemanticValuation
   , classifyChapter11 .staticSemanticCounterexample
+  , classifyChapter11 .generatedExternalSemanticBoundary
   , classifyChapter11 .measurementBoundary
   ]
 
@@ -1071,6 +1081,13 @@ theorem generated_analytic_extension_formula_is_atom_generated :
       .atomGenerated ∧
     (classifyChapter11 .analyticExtensionFormula).classification =
       .atomGenerated := by
+  exact ⟨rfl, rfl⟩
+
+theorem generated_external_semantic_boundary_is_atom_generated :
+    (classifyChapter11 .generatedExternalSemanticBoundary).classification =
+      .atomGenerated ∧
+    (classifyChapter11 .generatedExternalSemanticBoundary).action =
+      .aatSourceOfTruth := by
   exact ⟨rfl, rfl⟩
 
 theorem generated_chapter8_path_diagram_is_atom_generated :
