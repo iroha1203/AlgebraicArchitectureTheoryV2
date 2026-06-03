@@ -197,6 +197,44 @@ theorem sft_event_does_not_create_atoms
     system.noSFTEventCreatesAtoms :=
   input.sftEventDoesNotCreateAtomsEvidence
 
+/--
+Generated SFT input induces the existing `AATCoreLocalAlgebraForSFT` boundary.
+
+The local algebra premise is computed from the generated law model carried by
+the input; callers do not supply an unrelated `AATCore` premise.
+-/
+def toAATCoreLocalAlgebraForSFT
+    (input : GeneratedSFTInput model) :
+    AATCoreLocalAlgebraForSFT model.generatedAATCore where
+  usedAsLocalAlgebra := input.sftReadsGeneratedAAT
+  usedAsLocalAlgebraEvidence := input.sftReadsGeneratedAATEvidence
+  sftDoesNotRedefineAtoms := input.sftDoesNotRedefineAtoms
+  sftDoesNotRedefineAtomsEvidence := input.sftDoesNotRedefineAtomsEvidence
+  sftDoesNotRedefineAAT := input.sftDoesNotRedefineAAT
+  sftDoesNotRedefineAATEvidence := input.sftDoesNotRedefineAATEvidence
+  noForecastCorrectnessFromAATAlone :=
+    input.forecastCorrectnessBoundary
+  noForecastCorrectnessFromAATAloneEvidence :=
+    input.forecastCorrectnessBoundaryEvidence
+  sftEventDoesNotCreateAtomsEvidence :=
+    input.sftEventDoesNotCreateAtomsEvidence
+  nonConclusions := input.nonConclusions
+
+/-- The local algebra boundary produced from generated SFT input reads generated AAT. -/
+theorem localAlgebra_reads_generated_aat
+    (input : GeneratedSFTInput model) :
+    (input.toAATCoreLocalAlgebraForSFT).usedAsLocalAlgebra :=
+  input.sftReadsGeneratedAATEvidence
+
+/--
+The local algebra boundary produced from generated SFT input still records that
+AAT alone does not prove forecast correctness.
+-/
+theorem localAlgebra_forecast_correctness_remains_boundary
+    (input : GeneratedSFTInput model) :
+    (input.toAATCoreLocalAlgebraForSFT).noForecastCorrectnessFromAATAlone :=
+  input.forecastCorrectnessBoundaryEvidence
+
 end GeneratedSFTInput
 
 end AAT

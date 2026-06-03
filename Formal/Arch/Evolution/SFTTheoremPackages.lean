@@ -158,6 +158,10 @@ def representativeDeclarations : Candidate -> List String
        "ObservationBoundary",
        "ConsequenceEnvelope",
        "EnvelopeProjection.envelope_does_not_strengthen_forecast_claim",
+       "GeneratedAATConsequenceEnvelope",
+       "GeneratedAATConsequenceEnvelope.theorem_status_from_generated",
+       "GeneratedAATConsequenceEnvelope.records_transition_boundaries",
+       "GeneratedAATConsequenceEnvelope.forecast_correctness_remains_boundary",
        "AATCorePremisedConsequenceEnvelope",
        "AATCorePremisedConsequenceEnvelope.aatcore_premise_does_not_prove_forecast_correctness"]
   | aatInterfaceBoundary =>
@@ -554,10 +558,16 @@ def schematicCorrespondences : Candidate -> List SchematicCorrespondence
            "EnvelopeProjection.envelope_preserves_missingBoundary",
            "EnvelopeProjection.envelope_preserves_theoremBoundary",
            "EnvelopeProjection.envelope_does_not_strengthen_forecast_claim",
+           "GeneratedAATConsequenceEnvelope",
+           "GeneratedAATConsequenceEnvelope.to_premisedEnvelope",
+           "GeneratedAATConsequenceEnvelope.theorem_status_from_generated",
+           "GeneratedAATConsequenceEnvelope.records_transition_boundaries",
+           "GeneratedAATConsequenceEnvelope.forecast_correctness_remains_boundary",
+           "GeneratedAATConsequenceEnvelope.records_envelope_boundaries",
            "AATCorePremisedConsequenceEnvelope.records_envelope_boundaries",
            "AATCorePremisedConsequenceEnvelope.aatcore_premise_does_not_prove_forecast_correctness"],
          reading :=
-          "loss-aware report projection preserving missing/theorem/forecast boundaries and AATCore transition premises",
+          "loss-aware report projection preserving missing/theorem/forecast boundaries and generated AAT transition premises",
          status := "proved accessors" }]
   | aatInterfaceBoundary =>
       [{ schematic := "AAT theorem status is only an SFT local premise",

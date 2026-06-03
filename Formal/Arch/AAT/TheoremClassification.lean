@@ -675,13 +675,15 @@ def classifySFT
         ActionAllowed.representationDownstream
         "Field updates are downstream SFT feedback vocabulary."
   | .consequenceEnvelope =>
-      bridgeAssumedRow
+      atomGeneratedRow
         "sft.consequenceEnvelope"
         (SFTTheoremPackages.Candidate.representativeDeclarations
           .consequenceEnvelope)
-        ["AATCorePremisedConsequenceEnvelope"]
+        ["GeneratedAATConsequenceEnvelope",
+         "AAT.GeneratedSFTInput.toAATCoreLocalAlgebraForSFT",
+         "GeneratedAATConsequenceEnvelope.theorem_status_from_generated"]
         (by simp)
-        "The consequence envelope can consume an AATCore premise, but that premise does not become forecast correctness."
+        "The consequence envelope has a generated entrypoint from GeneratedSFTInput and generated ArchSig transition evidence while preserving forecast boundaries."
   | .aatInterfaceBoundary =>
       atomGeneratedRow
         "sft.aatInterfaceBoundary"
@@ -883,6 +885,11 @@ theorem generated_split_lifting_bridge_is_atom_generated :
     (classifyChapter10 .liftingFailureBridge).classification =
       .atomGenerated := by
   exact ⟨rfl, rfl⟩
+
+theorem generated_consequence_envelope_is_atom_generated :
+    (classifySFT .consequenceEnvelope).classification =
+      .atomGenerated := by
+  rfl
 
 end AATReconstructionClassification
 end Formal.Arch

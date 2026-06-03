@@ -430,6 +430,8 @@ atomObservations
 - generated local obstruction readings
 - generated repair target readings
 - viewer distance inputs from AtomShape / generated structure
+- generated SFT consequence-envelope input from `GeneratedSFTInput` and
+  generated ArchSig transition evidence
 
 ### Phase 9: Docs synchronization
 

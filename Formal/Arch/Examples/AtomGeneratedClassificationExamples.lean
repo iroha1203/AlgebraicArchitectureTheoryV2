@@ -88,4 +88,13 @@ theorem generated_split_lifting_bridge_classified_atom_generated :
         .atomGenerated := by
   exact generated_split_lifting_bridge_is_atom_generated
 
+/--
+Acceptance: SFT consequence envelopes now have an Atom-generated entrypoint
+from generated SFT input and generated ArchSig transition evidence.
+-/
+theorem generated_consequence_envelope_classified_atom_generated :
+    (classifySFT .consequenceEnvelope).classification =
+        .atomGenerated := by
+  exact generated_consequence_envelope_is_atom_generated
+
 end Formal.Arch.AtomGeneratedClassificationExamples
