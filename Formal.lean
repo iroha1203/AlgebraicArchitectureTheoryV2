@@ -117,6 +117,7 @@ import Formal.Arch.Observation.ArchMap
 import Formal.Arch.Examples.AtomFoundationExamples
 import Formal.Arch.Examples.AtomGeneratedMoleculeExamples
 import Formal.Arch.Examples.AtomGeneratedSignatureExamples
+import Formal.Arch.Examples.AtomGeneratedRepairExamples
 import Formal.Arch.Examples.IncompatibleAtomCompositionExamples
 import Formal.Arch.Examples.AATMoleculeLawExamples
 import Formal.Arch.Examples.AATZeroCurvatureExamples

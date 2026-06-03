@@ -406,6 +406,8 @@ atomObservations
 
 - generated operation
 - operation preserves / transforms AtomShape
+- generated repair problem configuration before `GeneratedMolecule`
+- repair clears port / slot / valence mismatch into a generated target object
 - repair clears selected generated obstruction
 - repair target is port / slot / valence mismatch, not free-form recommendation
 
