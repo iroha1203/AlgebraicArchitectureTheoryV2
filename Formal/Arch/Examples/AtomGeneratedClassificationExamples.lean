@@ -123,4 +123,19 @@ theorem generated_analytic_extension_formula_classified_atom_generated :
         .atomGenerated := by
   exact generated_analytic_extension_formula_is_atom_generated
 
+/--
+Acceptance: Chapter 8 path calculus, selected observation invariance, diagram
+filling, and non-fillability all have generated path/diagram entrypoints.
+-/
+theorem generated_chapter8_path_diagram_classified_atom_generated :
+    (classifyChapter8 .architecturePaths).classification =
+        .atomGenerated ∧
+      (classifyChapter8 .selectedObservationInvariance).classification =
+        .atomGenerated ∧
+      (classifyChapter8 .diagramFiller).classification =
+        .atomGenerated ∧
+      (classifyChapter8 .obstructionAsNonFillability).classification =
+        .atomGenerated := by
+  exact generated_chapter8_path_diagram_is_atom_generated
+
 end Formal.Arch.AtomGeneratedClassificationExamples

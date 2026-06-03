@@ -360,15 +360,14 @@ def classifyChapter8
     TheoremPackageClassification :=
   match candidate with
   | .architecturePaths =>
-      representationRow
+      atomGeneratedRow
         "chapter8.architecturePaths"
         (Chapter8HomotopySkeleton.Candidate.representativeDeclarations
           .architecturePaths)
-        ["ArchitecturePath"]
+        ["AAT.GeneratedArchitecturePath.preservesInvariant",
+         "Chapter8HomotopySkeleton.generatedPath_preservesInvariant"]
         (by simp)
-        .downstreamLibrary
-        ActionAllowed.representationDownstream
-        "Generic path calculus is retained as downstream library; generated paths specialize it."
+        "Path calculus has a generated relation-backed path entrypoint for invariant preservation."
   | .generatedPathHomotopy =>
       atomGeneratedRow
         "chapter8.generatedPathHomotopy"
@@ -378,35 +377,34 @@ def classifyChapter8
         (by simp)
         "Generated path homotopy is an Atom-generated entrypoint over generated carriers and steps."
   | .selectedObservationInvariance =>
-      representationRow
+      atomGeneratedRow
         "chapter8.selectedObservationInvariance"
         (Chapter8HomotopySkeleton.Candidate.representativeDeclarations
           .selectedObservationInvariance)
-        ["ArchitecturePath.PathHomotopy", "Observation"]
+        ["Chapter8HomotopySkeleton.generatedPathHomotopy_observation_eq_append",
+         "Chapter8HomotopySkeleton.generatedPathHomotopy_observation_eq"]
         (by simp)
-        .downstreamLibrary
-        ActionAllowed.representationDownstream
-        "Observation invariance is a generic path-observation theorem specialized by generated homotopy wrappers."
+        "Selected observation invariance has generated path-homotopy entrypoints over generated relation-backed paths."
   | .diagramFiller =>
-      representationRow
+      atomGeneratedRow
         "chapter8.diagramFiller"
         (Chapter8HomotopySkeleton.Candidate.representativeDeclarations
           .diagramFiller)
-        ["ArchitectureDiagram", "DiagramFiller"]
+        ["AAT.GeneratedDiagramFiller",
+         "Chapter8HomotopySkeleton.generatedDiagramFiller_observation_eq",
+         "Chapter8HomotopySkeleton.generatedObservationDifference_refutesDiagramFiller"]
         (by simp)
-        .downstreamLibrary
-        ActionAllowed.representationDownstream
-        "Generic diagram filling remains downstream library; Chapter 9 supplies generated diagram entrypoints."
+        "Diagram filling has generated diagram entrypoints and generated observation-difference refutation."
   | .obstructionAsNonFillability =>
-      representationRow
+      atomGeneratedRow
         "chapter8.obstructionAsNonFillability"
         (Chapter8HomotopySkeleton.Candidate.representativeDeclarations
           .obstructionAsNonFillability)
-        ["NonFillabilityWitnessFor"]
+        ["AAT.GeneratedNonFillabilityWitnessFor",
+         "Chapter8HomotopySkeleton.generated_obstructionAsNonFillability_sound",
+         "Chapter8HomotopySkeleton.generatedObservationDifference_nonFillabilityWitnessFor"]
         (by simp)
-        .downstreamLibrary
-        ActionAllowed.representationDownstream
-        "Generic non-fillability remains a downstream witness package relative to selected observation differences."
+        "Non-fillability has generated witness entrypoints over generated diagrams and generated observation differences."
 
 def classifyChapter9
     (candidate : Chapter9DiagramFilling.Candidate) :
@@ -962,6 +960,17 @@ theorem generated_analytic_extension_formula_is_atom_generated :
     (classifyChapter11 .analyticExtensionFormula).classification =
       .atomGenerated := by
   exact ⟨rfl, rfl⟩
+
+theorem generated_chapter8_path_diagram_is_atom_generated :
+    (classifyChapter8 .architecturePaths).classification =
+      .atomGenerated ∧
+    (classifyChapter8 .selectedObservationInvariance).classification =
+      .atomGenerated ∧
+    (classifyChapter8 .diagramFiller).classification =
+      .atomGenerated ∧
+    (classifyChapter8 .obstructionAsNonFillability).classification =
+      .atomGenerated := by
+  exact ⟨rfl, rfl, rfl, rfl⟩
 
 end AATReconstructionClassification
 end Formal.Arch
