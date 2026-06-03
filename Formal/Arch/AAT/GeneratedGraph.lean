@@ -48,15 +48,33 @@ def GeneratedArchGraph {system : AtomAxiomSystem.{u, v}}
     ArchGraph (GeneratedCarrier object) where
   edge := GeneratedRelation object
 
-def GeneratedRuntimeRelationAtom {system : AtomAxiomSystem.{u, v}}
+/--
+A runtime-interaction atom generates an oriented runtime edge when it composes
+with the source through `runtimeSource` ports and with the target through
+`runtimeTarget` ports.
+-/
+structure GeneratedRuntimeRelationAtom {system : AtomAxiomSystem.{u, v}}
     {presentation : AtomShapePresentation system}
     (object : GeneratedArchitectureObject presentation)
-    (interaction source target : GeneratedCarrier object) : Prop :=
-  (AtomShapeOf presentation interaction.val).family =
-    AtomKind.runtimeInteraction ∧
-  interaction.val ≠ source.val ∧
-  interaction.val ≠ target.val ∧
-  source.val ≠ target.val
+    (interaction source target : GeneratedCarrier object) : Prop where
+  interactionFamily :
+    (AtomShapeOf presentation interaction.val).family =
+      AtomKind.runtimeInteraction
+  interactionSourceDistinct : interaction.val ≠ source.val
+  interactionTargetDistinct : interaction.val ≠ target.val
+  endpointsDistinct : source.val ≠ target.val
+  sourceCompositionUsesRuntimeSource :
+    let composition :=
+      object.molecule.compatible_pairs
+        interaction.property source.property interactionSourceDistinct
+    composition.leftPort.kind = AtomPortKind.runtimeSource ∧
+      composition.rightPort.kind = AtomPortKind.runtimeSource
+  targetCompositionUsesRuntimeTarget :
+    let composition :=
+      object.molecule.compatible_pairs
+        interaction.property target.property interactionTargetDistinct
+    composition.leftPort.kind = AtomPortKind.runtimeTarget ∧
+      composition.rightPort.kind = AtomPortKind.runtimeTarget
 
 /-- Runtime relation induced by selected runtime-interaction atoms. -/
 def GeneratedRuntimeRelation {system : AtomAxiomSystem.{u, v}}
@@ -182,10 +200,12 @@ def generated_runtime_atom_witness
   interactionAtom := hInteraction
   interactionSourceComposition :=
     object.molecule.compatible_pairs
-      interaction.property source.property hInteraction.2.1
+      interaction.property source.property
+      hInteraction.interactionSourceDistinct
   interactionTargetComposition :=
     object.molecule.compatible_pairs
-      interaction.property target.property hInteraction.2.2.1
+      interaction.property target.property
+      hInteraction.interactionTargetDistinct
 
 /-- Generated runtime graph edges are exactly backed by runtime-interaction atoms. -/
 theorem generated_runtime_edges_from_interaction_atoms
@@ -207,7 +227,7 @@ theorem generated_runtime_edge_requires_distinct_endpoints
     (hEdge : (GeneratedRuntimeGraph object).edge source target) :
     source.val ≠ target.val := by
   rcases hEdge with ⟨_interaction, hInteraction⟩
-  exact hInteraction.2.2.2
+  exact hInteraction.endpointsDistinct
 
 end GeneratedRuntimeGraph
 

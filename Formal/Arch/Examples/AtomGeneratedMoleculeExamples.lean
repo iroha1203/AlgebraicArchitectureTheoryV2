@@ -695,6 +695,441 @@ theorem directedRelationGeneratedGraph_no_database_to_api_edge :
     exact hSourceKind
   · cases hRelation.relationFamily
 
+inductive DirectedRuntimeAtom where
+  | api
+  | apiRuntimeDatabase
+  | database
+  deriving DecidableEq, Repr
+
+def directedRuntimeKind : DirectedRuntimeAtom -> AtomKind
+  | .api => AtomKind.existence
+  | .apiRuntimeDatabase => AtomKind.runtimeInteraction
+  | .database => AtomKind.existence
+
+def directedRuntimeAxis : DirectedRuntimeAtom -> Axis
+  | .apiRuntimeDatabase => Axis.runtime
+  | _ => Axis.static
+
+/-- Atom system with an explicit API -> database runtime interaction atom. -/
+def directedRuntimeSystem : AtomAxiomSystem where
+  Atom := DirectedRuntimeAtom
+  Predicate := AtomKind
+  kind := directedRuntimeKind
+  axis := directedRuntimeAxis
+  predicate := directedRuntimeKind
+  predicateKind := fun kind => kind
+  predicateAxis := fun kind =>
+    match kind with
+    | AtomKind.runtimeInteraction => Axis.runtime
+    | _ => Axis.static
+  predicateKindAligned := by
+    intro atom
+    rfl
+  predicateAxisAligned := by
+    intro atom
+    cases atom <;> rfl
+  singleFact := fun _ => True
+  singleFactEvidence := fun _ => trivial
+  predicatePreserving := fun _ => True
+  predicatePreservingEvidence := fun _ => trivial
+  boundaryIndependent := fun _ => True
+  boundaryIndependentEvidence := fun _ => trivial
+  lawIndependent := fun _ => True
+  lawIndependentEvidence := fun _ => trivial
+  noObservationBoundaryCreatesAtoms := True
+  noObservationBoundaryCreatesAtomsEvidence := trivial
+  noLawCreatesAtoms := True
+  noLawCreatesAtomsEvidence := trivial
+  noToolOutputCreatesAtoms := True
+  noToolOutputCreatesAtomsEvidence := trivial
+  noSFTEventCreatesAtoms := True
+  noSFTEventCreatesAtomsEvidence := trivial
+  openTaxonomyBoundary := True
+
+def runtimeSourcePort : AtomPort where
+  name := "runtime-source"
+  kind := AtomPortKind.runtimeSource
+  family := AtomKind.runtimeInteraction
+  axis := Axis.runtime
+  required := False
+  acceptsFamily := fun _ => True
+  acceptsAxis := fun _ => True
+
+def apiRuntimeSourcePort : AtomPort where
+  name := "api-runtime-source"
+  kind := AtomPortKind.runtimeSource
+  family := AtomKind.existence
+  axis := Axis.static
+  required := False
+  acceptsFamily := fun _ => True
+  acceptsAxis := fun _ => True
+
+def runtimeTargetPort : AtomPort where
+  name := "runtime-target"
+  kind := AtomPortKind.runtimeTarget
+  family := AtomKind.runtimeInteraction
+  axis := Axis.runtime
+  required := False
+  acceptsFamily := fun _ => True
+  acceptsAxis := fun _ => True
+
+def databaseRuntimeTargetPort : AtomPort where
+  name := "database-runtime-target"
+  kind := AtomPortKind.runtimeTarget
+  family := AtomKind.existence
+  axis := Axis.static
+  required := False
+  acceptsFamily := fun _ => True
+  acceptsAxis := fun _ => True
+
+def directedRuntimeApiValence : AtomValence where
+  ports := fun port => port = apiPort ∨ port = apiRuntimeSourcePort
+  requiredPort := fun _ => False
+  requiredPortHasPort := by
+    intro _ hRequired
+    cases hRequired
+  hasPort := ⟨apiPort, Or.inl rfl⟩
+
+def directedRuntimeInteractionValence : AtomValence where
+  ports := fun port => port = runtimeSourcePort ∨ port = runtimeTargetPort
+  requiredPort := fun _ => False
+  requiredPortHasPort := by
+    intro _ hRequired
+    cases hRequired
+  hasPort := ⟨runtimeSourcePort, Or.inl rfl⟩
+
+def directedRuntimeDatabaseValence : AtomValence where
+  ports := fun port => port = databasePort ∨ port = databaseRuntimeTargetPort
+  requiredPort := fun _ => False
+  requiredPortHasPort := by
+    intro _ hRequired
+    cases hRequired
+  hasPort := ⟨databasePort, Or.inl rfl⟩
+
+def directedRuntimeShape (atom : DirectedRuntimeAtom) : AtomShape where
+  family := directedRuntimeKind atom
+  axis := directedRuntimeAxis atom
+  subject := { name := match atom with
+    | .api => "api"
+    | .apiRuntimeDatabase => "api-runtime-database"
+    | .database => "database" }
+  predicate := match atom with
+    | .api => "component"
+    | .apiRuntimeDatabase => "runtime-interaction"
+    | .database => "component"
+  objectSlots := fun _ => False
+  payloadSlots := fun _ => False
+  direction := match atom with
+    | .apiRuntimeDatabase => AtomDirection.outgoing
+    | _ => AtomDirection.neutral
+  arity := match atom with
+    | .apiRuntimeDatabase => 2
+    | _ => 1
+  valence := match atom with
+    | .api => directedRuntimeApiValence
+    | .apiRuntimeDatabase => directedRuntimeInteractionValence
+    | .database => directedRuntimeDatabaseValence
+  singleFactShape := True
+  singleFactShapeEvidence := trivial
+
+def directedRuntimeShapePresentation :
+    AtomShapePresentation directedRuntimeSystem where
+  shapeOf := directedRuntimeShape
+  shapeKindAligned := by
+    intro atom
+    cases atom <;> rfl
+  shapeAxisAligned := by
+    intro atom
+    cases atom <;> rfl
+  shapeSingleFact := by
+    intro _ _
+    trivial
+
+def directedRuntimeSelectedAtoms : DirectedRuntimeAtom -> Prop
+  | .api => True
+  | .apiRuntimeDatabase => True
+  | .database => True
+
+def runtimeSourcePortCompatible :
+    PortCompatible runtimeSourcePort apiRuntimeSourcePort := by
+  exact ⟨rfl, trivial, trivial, trivial, trivial⟩
+
+def runtimeSourcePortCompatibleSymm :
+    PortCompatible apiRuntimeSourcePort runtimeSourcePort :=
+  PortCompatible.symm runtimeSourcePortCompatible
+
+def runtimeTargetPortCompatible :
+    PortCompatible runtimeTargetPort databaseRuntimeTargetPort := by
+  exact ⟨rfl, trivial, trivial, trivial, trivial⟩
+
+def runtimeTargetPortCompatibleSymm :
+    PortCompatible databaseRuntimeTargetPort runtimeTargetPort :=
+  PortCompatible.symm runtimeTargetPortCompatible
+
+def directedRuntimeApiDatabaseComposition :
+    CompatibleComposition
+      (AtomShapeOf directedRuntimeShapePresentation DirectedRuntimeAtom.api)
+      (AtomShapeOf directedRuntimeShapePresentation
+        DirectedRuntimeAtom.database) where
+  leftPort := apiPort
+  rightPort := databasePort
+  leftHasPort := Or.inl rfl
+  rightHasPort := Or.inl rfl
+  portsCompatible := componentPortCompatible
+  objectSlotsCompatible := by
+    intro _ _ hSlot _
+    cases hSlot
+  payloadSlotsCompatible := by
+    intro _ _ hSlot _
+    cases hSlot
+  predicateSlotsCompatible := by
+    intro _hPredicate
+    exact ⟨rfl, rfl⟩
+
+def directedRuntimeDatabaseApiComposition :
+    CompatibleComposition
+      (AtomShapeOf directedRuntimeShapePresentation
+        DirectedRuntimeAtom.database)
+      (AtomShapeOf directedRuntimeShapePresentation DirectedRuntimeAtom.api) where
+  leftPort := databasePort
+  rightPort := apiPort
+  leftHasPort := Or.inl rfl
+  rightHasPort := Or.inl rfl
+  portsCompatible := databasePortCompatible
+  objectSlotsCompatible := by
+    intro _ _ hSlot _
+    cases hSlot
+  payloadSlotsCompatible := by
+    intro _ _ hSlot _
+    cases hSlot
+  predicateSlotsCompatible := by
+    intro _hPredicate
+    exact ⟨rfl, rfl⟩
+
+def directedRuntimeApiSourceComposition :
+    CompatibleComposition
+      (AtomShapeOf directedRuntimeShapePresentation
+        DirectedRuntimeAtom.apiRuntimeDatabase)
+      (AtomShapeOf directedRuntimeShapePresentation DirectedRuntimeAtom.api) where
+  leftPort := runtimeSourcePort
+  rightPort := apiRuntimeSourcePort
+  leftHasPort := Or.inl rfl
+  rightHasPort := Or.inr rfl
+  portsCompatible := runtimeSourcePortCompatible
+  objectSlotsCompatible := by
+    intro _ _ hSlot _
+    cases hSlot
+  payloadSlotsCompatible := by
+    intro _ _ hSlot _
+    cases hSlot
+  predicateSlotsCompatible := by
+    intro hPredicate
+    have hDifferent :
+        ("runtime-interaction" : String) ≠ "component" := by
+      decide
+    exact False.elim (hDifferent hPredicate)
+
+def directedApiRuntimeSourceComposition :
+    CompatibleComposition
+      (AtomShapeOf directedRuntimeShapePresentation DirectedRuntimeAtom.api)
+      (AtomShapeOf directedRuntimeShapePresentation
+        DirectedRuntimeAtom.apiRuntimeDatabase) where
+  leftPort := apiRuntimeSourcePort
+  rightPort := runtimeSourcePort
+  leftHasPort := Or.inr rfl
+  rightHasPort := Or.inl rfl
+  portsCompatible := runtimeSourcePortCompatibleSymm
+  objectSlotsCompatible := by
+    intro _ _ hSlot _
+    cases hSlot
+  payloadSlotsCompatible := by
+    intro _ _ hSlot _
+    cases hSlot
+  predicateSlotsCompatible := by
+    intro hPredicate
+    have hDifferent :
+        ("component" : String) ≠ "runtime-interaction" := by
+      decide
+    exact False.elim (hDifferent hPredicate)
+
+def directedRuntimeDatabaseTargetComposition :
+    CompatibleComposition
+      (AtomShapeOf directedRuntimeShapePresentation
+        DirectedRuntimeAtom.apiRuntimeDatabase)
+      (AtomShapeOf directedRuntimeShapePresentation
+        DirectedRuntimeAtom.database) where
+  leftPort := runtimeTargetPort
+  rightPort := databaseRuntimeTargetPort
+  leftHasPort := Or.inr rfl
+  rightHasPort := Or.inr rfl
+  portsCompatible := runtimeTargetPortCompatible
+  objectSlotsCompatible := by
+    intro _ _ hSlot _
+    cases hSlot
+  payloadSlotsCompatible := by
+    intro _ _ hSlot _
+    cases hSlot
+  predicateSlotsCompatible := by
+    intro hPredicate
+    have hDifferent :
+        ("runtime-interaction" : String) ≠ "component" := by
+      decide
+    exact False.elim (hDifferent hPredicate)
+
+def directedDatabaseRuntimeTargetComposition :
+    CompatibleComposition
+      (AtomShapeOf directedRuntimeShapePresentation
+        DirectedRuntimeAtom.database)
+      (AtomShapeOf directedRuntimeShapePresentation
+        DirectedRuntimeAtom.apiRuntimeDatabase) where
+  leftPort := databaseRuntimeTargetPort
+  rightPort := runtimeTargetPort
+  leftHasPort := Or.inr rfl
+  rightHasPort := Or.inr rfl
+  portsCompatible := runtimeTargetPortCompatibleSymm
+  objectSlotsCompatible := by
+    intro _ _ hSlot _
+    cases hSlot
+  payloadSlotsCompatible := by
+    intro _ _ hSlot _
+    cases hSlot
+  predicateSlotsCompatible := by
+    intro hPredicate
+    have hDifferent :
+        ("component" : String) ≠ "runtime-interaction" := by
+      decide
+    exact False.elim (hDifferent hPredicate)
+
+def directedRuntimeCompositionGraph :
+    AAT.CompositionGraph
+      directedRuntimeShapePresentation directedRuntimeSelectedAtoms where
+  compatiblePairs := by
+    intro left right _hLeft _hRight hDistinct
+    cases left
+    · cases right
+      · exact False.elim (hDistinct rfl)
+      · exact directedApiRuntimeSourceComposition
+      · exact directedRuntimeApiDatabaseComposition
+    · cases right
+      · exact directedRuntimeApiSourceComposition
+      · exact False.elim (hDistinct rfl)
+      · exact directedRuntimeDatabaseTargetComposition
+    · cases right
+      · exact directedRuntimeDatabaseApiComposition
+      · exact directedDatabaseRuntimeTargetComposition
+      · exact False.elim (hDistinct rfl)
+  graphBoundary := True
+
+/-- Positive graph example with an oriented API -> database runtime interaction atom. -/
+def directedRuntimeGeneratedMolecule :
+    AAT.GeneratedMolecule directedRuntimeShapePresentation where
+  atoms := directedRuntimeSelectedAtoms
+  finiteConfiguration := True
+  atomsPrimitive := by
+    intro atom _
+    exact directedRuntimeSystem.primitive atom
+  compositionGraph := directedRuntimeCompositionGraph
+  requiredPortsMatched := by
+    intro atom _port _hAtom hRequired
+    cases atom <;> cases hRequired
+  notArbitrarySet := True
+  notArbitrarySetEvidence := trivial
+
+def directedRuntimeGeneratedObject :
+    AAT.GeneratedArchitectureObject directedRuntimeShapePresentation where
+  molecule := directedRuntimeGeneratedMolecule
+  carrierList :=
+    [ ⟨DirectedRuntimeAtom.api, by trivial⟩
+    , ⟨DirectedRuntimeAtom.apiRuntimeDatabase, by trivial⟩
+    , ⟨DirectedRuntimeAtom.database, by trivial⟩
+    ]
+  carrierListNodup := by
+    simp
+  carrierListCovers := by
+    intro carrier
+    cases carrier with
+    | mk atom _hAtom =>
+        cases atom <;> simp
+  objectBoundary := True
+
+def directedRuntimeApiCarrier :
+    AAT.GeneratedCarrier directedRuntimeGeneratedObject :=
+  ⟨DirectedRuntimeAtom.api, by trivial⟩
+
+def directedRuntimeInteractionCarrier :
+    AAT.GeneratedCarrier directedRuntimeGeneratedObject :=
+  ⟨DirectedRuntimeAtom.apiRuntimeDatabase, by trivial⟩
+
+def directedRuntimeDatabaseCarrier :
+    AAT.GeneratedCarrier directedRuntimeGeneratedObject :=
+  ⟨DirectedRuntimeAtom.database, by trivial⟩
+
+def directedRuntimeInteraction_api_to_database :
+    AAT.GeneratedRuntimeRelationAtom
+      directedRuntimeGeneratedObject
+      directedRuntimeInteractionCarrier
+      directedRuntimeApiCarrier
+      directedRuntimeDatabaseCarrier where
+  interactionFamily := rfl
+  interactionSourceDistinct := by
+    intro hEq
+    cases hEq
+  interactionTargetDistinct := by
+    intro hEq
+    cases hEq
+  endpointsDistinct := by
+    intro hEq
+    cases hEq
+  sourceCompositionUsesRuntimeSource := by
+    native_decide
+  targetCompositionUsesRuntimeTarget := by
+    native_decide
+
+theorem directedRuntimeGeneratedGraph_api_to_database_edge :
+    (AAT.GeneratedRuntimeGraph directedRuntimeGeneratedObject).edge
+      directedRuntimeApiCarrier directedRuntimeDatabaseCarrier := by
+  exact
+    ⟨directedRuntimeInteractionCarrier,
+      directedRuntimeInteraction_api_to_database⟩
+
+def directedRuntimeGeneratedGraph_api_to_database_witness :
+    AAT.GeneratedRuntimeEdgeWitness
+      directedRuntimeGeneratedObject
+      directedRuntimeApiCarrier
+      directedRuntimeDatabaseCarrier :=
+  AAT.GeneratedRuntimeGraph.generated_runtime_atom_witness
+    directedRuntimeGeneratedObject
+    directedRuntimeInteraction_api_to_database
+
+theorem directedRuntimeGeneratedGraph_edge_uses_source_target_ports :
+    (directedRuntimeGeneratedGraph_api_to_database_witness.interactionSourceComposition.leftPort.kind =
+        AtomPortKind.runtimeSource) ∧
+      (directedRuntimeGeneratedGraph_api_to_database_witness.interactionTargetComposition.leftPort.kind =
+          AtomPortKind.runtimeTarget) := by
+  native_decide
+
+theorem directedRuntimeGeneratedGraph_no_database_to_api_edge :
+    ¬ (AAT.GeneratedRuntimeGraph directedRuntimeGeneratedObject).edge
+      directedRuntimeDatabaseCarrier directedRuntimeApiCarrier := by
+  intro hEdge
+  rcases hEdge with ⟨interaction, hInteraction⟩
+  rcases interaction with ⟨atom, hAtom⟩
+  cases atom
+  · cases hInteraction.interactionFamily
+  · have hSourceKind : False := by
+      simpa [AAT.GeneratedMolecule.compatible_pairs,
+        AAT.CompositionGraph.compatible_pairs,
+        directedRuntimeGeneratedObject,
+        directedRuntimeGeneratedMolecule,
+        directedRuntimeDatabaseCarrier,
+        directedRuntimeCompositionGraph,
+        directedRuntimeDatabaseTargetComposition,
+        directedDatabaseRuntimeTargetComposition,
+        runtimeTargetPort]
+        using hInteraction.sourceCompositionUsesRuntimeSource.1
+    exact hSourceKind
+  · cases hInteraction.interactionFamily
+
 def selectedApiOnlyAtoms : ComponentAtom -> Prop
   | ComponentAtom.api => True
   | ComponentAtom.database => False

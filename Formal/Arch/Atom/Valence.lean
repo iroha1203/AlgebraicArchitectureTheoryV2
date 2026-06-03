@@ -7,6 +7,8 @@ inductive AtomPortKind where
   | subject
   | relationSource
   | relationTarget
+  | runtimeSource
+  | runtimeTarget
   | object
   | payload
   | authority

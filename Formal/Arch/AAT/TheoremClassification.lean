@@ -246,6 +246,9 @@ def representativeDeclarations : AATCandidate -> List String
        "AtomGeneratedMoleculeExamples.directedRelationGeneratedGraph_api_to_database_edge",
        "AtomGeneratedMoleculeExamples.directedRelationGeneratedGraph_edge_uses_source_target_ports",
        "AtomGeneratedMoleculeExamples.directedRelationGeneratedGraph_no_database_to_api_edge",
+       "AtomGeneratedMoleculeExamples.directedRuntimeGeneratedGraph_api_to_database_edge",
+       "AtomGeneratedMoleculeExamples.directedRuntimeGeneratedGraph_edge_uses_source_target_ports",
+       "AtomGeneratedMoleculeExamples.directedRuntimeGeneratedGraph_no_database_to_api_edge",
        "AAT.GeneratedArchitectureLawModel",
        "AtomGeneratedSignatureExamples.*",
        "AtomGeneratedMoleculeExamples.generatedComponentObject_api_database_shapeDistance_eq_one",
@@ -290,10 +293,11 @@ def classifyAATCandidate
         ["AAT.GeneratedArchitectureObject",
          "AAT.GeneratedArchitectureObject.generatedCarrierShapeDistance",
          "AtomGeneratedMoleculeExamples.directedRelationGeneratedGraph_api_to_database_edge",
+         "AtomGeneratedMoleculeExamples.directedRuntimeGeneratedGraph_api_to_database_edge",
          "AAT.GeneratedArchitectureLawModel",
          "AtomGeneratedSignatureExamples.*"]
         (by simp)
-        "The kernel starts from AtomShape / compatible composition and reaches generated molecule, object, shape distance, oriented relation edge generation, law model, signature, repair, and negative acceptance examples."
+        "The kernel starts from AtomShape / compatible composition and reaches generated molecule, object, shape distance, oriented relation/runtime edge generation, law model, signature, repair, and negative acceptance examples."
   | .archMapObservationBoundary =>
       atomGeneratedRow
         "aat.archMapObservationBoundary"
