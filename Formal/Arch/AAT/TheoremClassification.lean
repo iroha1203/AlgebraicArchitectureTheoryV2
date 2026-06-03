@@ -4,6 +4,7 @@ import Formal.Arch.Evolution.Chapter9DiagramFilling
 import Formal.Arch.Evolution.Chapter10ArchitectureExtensionFormula
 import Formal.Arch.Evolution.Chapter11AnalyticRepresentation
 import Formal.Arch.Evolution.SFTTheoremPackages
+import Formal.Arch.Observation.ArchMapGeneratedHandoff
 
 /-!
 Atom-based AAT reconstruction classification registry.
@@ -246,7 +247,9 @@ def representativeDeclarations : AATCandidate -> List String
   | archMapObservationBoundary =>
       ["Observation.ArchMapObservationLayer",
        "Observation.ArchMapObservationLayer.archmap_does_not_create_atoms",
-       "Observation.ArchMapObservationLayer.archmap_does_not_define_aat"]
+       "Observation.ArchMapObservationLayer.archmap_does_not_define_aat",
+       "Observation.ArchMapObservedAtomSelection.toGeneratedMolecule",
+       "Observation.ArchMapGeneratedArchitectureObjectInput.toGeneratedArchitectureObject"]
   | crossPackageSmoke =>
       ["AATCoreSmokeExamples.generated_transport_handoff_reads_nonidentity_transition",
        "AATCoreSmokeExamples.generated_transport_circuit_delta_keeps_source_target_surfaces"]
@@ -283,14 +286,13 @@ def classifyAATCandidate
         (by simp)
         "The kernel starts from AtomShape / compatible composition and reaches generated molecule, object, law model, signature, repair, and negative acceptance examples."
   | .archMapObservationBoundary =>
-      representationRow
+      atomGeneratedRow
         "aat.archMapObservationBoundary"
         (AATCandidate.representativeDeclarations .archMapObservationBoundary)
-        ["Observation.ArchMapObservationLayer"]
+        ["Observation.ArchMapObservedAtomSelection.toGeneratedMolecule",
+         "Observation.ArchMapGeneratedArchitectureObjectInput.toGeneratedArchitectureObject"]
         (by simp)
-        .downstreamLibrary
-        ActionAllowed.representationDownstream
-        "ArchMap remains an observation boundary outside pure AAT; it observes atoms but does not generate or define them."
+        "ArchMap remains an observation boundary outside pure AAT, but observed atoms now have a positive handoff into GeneratedMolecule and GeneratedArchitectureObject without letting ArchMap create atoms or define AAT."
   | .crossPackageSmoke =>
       atomGeneratedRow
         "aat.crossPackageSmoke"
@@ -928,6 +930,13 @@ theorem finite_static_core_is_downstream_representation_library :
       .representationLevel ∧
     (classifyAATCandidate .finiteStaticStructuralCore).action =
       .downstreamLibrary := by
+  exact ⟨rfl, rfl⟩
+
+theorem archmap_observation_handoff_is_atom_generated :
+    (classifyAATCandidate .archMapObservationBoundary).classification =
+      .atomGenerated ∧
+    (classifyAATCandidate .archMapObservationBoundary).action =
+      .aatSourceOfTruth := by
   exact ⟨rfl, rfl⟩
 
 theorem generated_filling_failure_bridge_is_atom_generated :

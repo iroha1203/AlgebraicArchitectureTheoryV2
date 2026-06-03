@@ -64,6 +64,17 @@ theorem static_signature_anchor_is_downstream_library :
   exact finite_static_core_is_downstream_representation_library
 
 /--
+Acceptance: ArchMap remains an observation boundary, but observed atoms now
+have a positive handoff into the Atom-generated molecule/object kernel.
+-/
+theorem archmap_observation_handoff_classified_atom_generated :
+    (classifyAATCandidate .archMapObservationBoundary).classification =
+        .atomGenerated ∧
+      (classifyAATCandidate .archMapObservationBoundary).action =
+        .aatSourceOfTruth := by
+  exact archmap_observation_handoff_is_atom_generated
+
+/--
 Acceptance: the non-identity generated transport handoff is classified as an
 Atom-generated boundary, both in the AAT smoke surface and the ArchSig/SFT
 handoff surface.

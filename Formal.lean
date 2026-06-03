@@ -116,6 +116,7 @@ import Formal.Arch.AAT.Repair
 import Formal.Arch.AAT.Synthesis
 import Formal.Arch.Observation.AtomPresentation
 import Formal.Arch.Observation.ArchMap
+import Formal.Arch.Observation.ArchMapGeneratedHandoff
 import Formal.Arch.Examples.AtomFoundationExamples
 import Formal.Arch.Examples.AtomGeneratedMoleculeExamples
 import Formal.Arch.Examples.AtomGeneratedSignatureExamples
