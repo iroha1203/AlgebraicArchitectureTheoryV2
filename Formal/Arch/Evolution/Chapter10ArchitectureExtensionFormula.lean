@@ -1,4 +1,5 @@
 import Formal.Arch.AAT.GeneratedFeatureExtension
+import Formal.Arch.Evolution.Chapter9DiagramFilling
 import Formal.Arch.Extension.ArchitectureExtensionFormula
 
 /-!
@@ -81,9 +82,12 @@ def representativeDeclarations : Candidate -> List String
        "SelectedExtensionObstructionWitness",
        "SelectedExtensionObstructionWitnessExists",
        "NonSplitExtensionWitnessPackage",
+       "Chapter9DiagramFilling.generatedFillingFailureBridge_toNonSplitExtensionWitnessPackage",
        "NonSplitExtensionWitnessPackage.not_selectedSplitExtension_of_selectedExtensionObstructionWitness",
+       "Chapter9DiagramFilling.generatedFillingFailureBridge_not_selectedSplitExtension_of_generatedWitness",
        "NonSplitExtensionWitnessPackage.selectedExtensionObstructionWitnessExists_of_not_selectedSplitExtension",
-       "NonSplitExtensionWitnessPackage.selectedExtensionObstructionWitnessExists_iff_not_selectedSplitExtension"]
+       "NonSplitExtensionWitnessPackage.selectedExtensionObstructionWitnessExists_iff_not_selectedSplitExtension",
+       "Chapter9DiagramFilling.generatedFillingFailureBridge_selectedExtensionObstructionWitnessExists_of_generatedWitnessExists"]
   | singleLabelClassification =>
       ["ClassifiedAsInheritedCore",
        "ClassifiedAsFeatureLocal",
@@ -106,12 +110,18 @@ def representativeDeclarations : Candidate -> List String
        "ArchitectureExtensionFormula_multilabel_structural"]
   | fillingFailureBridge =>
       ["FillingFailureWitnessPayload",
+       "Chapter9DiagramFilling.generatedFillingFailureWitnessPayload",
        "fillingFailureExtensionObstructionWitness",
+       "Chapter9DiagramFilling.generatedFillingFailureExtensionObstructionWitness",
        "fillingFailureExtensionObstructionWitness_classified",
+       "Chapter9DiagramFilling.generatedFillingFailureExtensionObstructionWitness_classified",
        "FillingFailureRefutesSplit",
        "not_selectedSplitExtension_of_fillingFailurePayload",
        "FillingFailureBridgePackage.toNonSplitExtensionWitnessPackage",
-       "fillingFailureExtensionObstructionWitness_multilabel_classified"]
+       "Chapter9DiagramFilling.generatedFillingFailureBridge_toNonSplitExtensionWitnessPackage",
+       "Chapter9DiagramFilling.generatedFillingFailureBridge_selectedExtensionObstructionWitnessExists_of_generatedWitnessExists",
+       "fillingFailureExtensionObstructionWitness_multilabel_classified",
+       "Chapter10ArchitectureExtensionFormula.generatedFillingFailureExtensionObstructionWitness_multilabel_classified"]
   | liftingFailureBridge =>
       ["LiftingFailureWitnessPayload",
        "liftingFailureExtensionObstructionWitness",
@@ -356,6 +366,44 @@ theorem generatedIdentityArchitectureExtensionFormula_multilabel_structural
       object.generatedIdentityExtensionComponentUniverse
       object.generatedIdentityExtensionCoverageComplete
       witness
+
+/--
+Atom-generated specialization of the filling-failure multi-label bridge.
+
+The obstruction witness is built over the generated identity feature extension
+of the same generated object, so callers do not supply a hand-authored
+`FeatureExtension`.
+-/
+theorem generatedFillingFailureExtensionObstructionWitness_multilabel_classified
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : AAT.GeneratedArchitectureObject presentation}
+    {IndependentSquare :
+      (W X Y Z : AAT.GeneratedCarrier object) ->
+        AAT.GeneratedArchitectureStep object W X ->
+        AAT.GeneratedArchitectureStep object X Z ->
+        AAT.GeneratedArchitectureStep object W Y ->
+        AAT.GeneratedArchitectureStep object Y Z -> Prop}
+    {SameExternalContract :
+      (X Y : AAT.GeneratedCarrier object) ->
+        AAT.GeneratedArchitectureStep object X Y ->
+        AAT.GeneratedArchitectureStep object X Y -> Prop}
+    {RepairFill :
+      (X Y : AAT.GeneratedCarrier object) ->
+        AAT.GeneratedArchitecturePath object X Y ->
+        AAT.GeneratedArchitecturePath object X Y -> Prop}
+    {source target : AAT.GeneratedCarrier object}
+    {diagram : AAT.GeneratedArchitectureDiagram object
+      (source := source) (target := target)}
+    {DiagramWitness : Type z}
+    (payload :
+      FillingFailureWitnessPayload
+        IndependentSquare SameExternalContract RepairFill diagram DiagramWitness) :
+    MultiLabelClassifiedAsFillingFailure object.generatedIdentityFeatureExtension
+      object.generatedIdentityExtensionComponentUniverse
+      (Formal.Arch.Chapter9DiagramFilling.generatedFillingFailureExtensionObstructionWitness
+        payload).toMultiLabel :=
+  rfl
 
 end Chapter10ArchitectureExtensionFormula
 

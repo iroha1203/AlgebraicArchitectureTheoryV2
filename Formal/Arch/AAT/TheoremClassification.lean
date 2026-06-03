@@ -269,15 +269,14 @@ def classifyChapter7
         (by simp)
         "The package has generated identity feature-extension entrypoints and is read as an Atom-generated source-of-truth entry for the split-extension flatness direction."
   | .nonSplitExtensionWitness =>
-      representationRow
+      atomGeneratedRow
         "chapter7.nonSplitExtensionWitness"
         (Chapter7TheoremPackages.Candidate.representativeDeclarations
           .nonSplitExtensionWitness)
-        ["NonSplitExtensionWitnessPackage", "ExtensionObstructionWitness"]
+        ["Chapter9DiagramFilling.generatedFillingFailureBridge_toNonSplitExtensionWitnessPackage",
+         "Chapter9DiagramFilling.generatedFillingFailureBridge_selectedExtensionObstructionWitnessExists_of_generatedWitnessExists"]
         (by simp)
-        .rewriteTarget
-        ActionAllowed.representationRewriteTarget
-        "The witness package is still selected-extension representation-level API; it remains a rewrite target for generated obstruction witnesses."
+        "The non-split witness package has a generated filling-failure bridge over generated diagrams and the generated identity feature extension."
   | .repairAsResplitting =>
       atomGeneratedRow
         "chapter7.repairAsResplitting"
@@ -391,15 +390,14 @@ def classifyChapter9
         ActionAllowed.representationRewriteTarget
         "Split-extension lifting is still a representation-level package and remains a rewrite target for generated feature steps."
   | .fillingFailureBridge =>
-      representationRow
+      atomGeneratedRow
         "chapter9.fillingFailureBridge"
         (Chapter9DiagramFilling.Candidate.representativeDeclarations
           .fillingFailureBridge)
-        ["FillingFailureWitnessPayload", "FillingFailureBridgePackage"]
+        ["Chapter9DiagramFilling.generatedFillingFailureWitnessPayload",
+         "Chapter9DiagramFilling.generatedFillingFailureBridge_toNonSplitExtensionWitnessPackage"]
         (by simp)
-        .downstreamLibrary
-        ActionAllowed.representationDownstream
-        "Filling-failure classification is a downstream bridge from selected non-fillability payloads."
+        "Filling failure is generated from GeneratedNonFillabilityWitnessFor and embedded into the generated identity extension obstruction layer."
 
 def classifyChapter10
     (candidate : Chapter10ArchitectureExtensionFormula.Candidate) :
@@ -416,15 +414,14 @@ def classifyChapter10
         ActionAllowed.representationDownstream
         "The classification universe is a downstream witness carrier."
   | .nonSplitWitnessPackage =>
-      representationRow
+      atomGeneratedRow
         "chapter10.nonSplitWitnessPackage"
         (Chapter10ArchitectureExtensionFormula.Candidate.representativeDeclarations
           .nonSplitWitnessPackage)
-        ["NonSplitExtensionWitnessPackage"]
+        ["Chapter9DiagramFilling.generatedFillingFailureBridge_toNonSplitExtensionWitnessPackage",
+         "Chapter9DiagramFilling.generatedFillingFailureBridge_selectedExtensionObstructionWitnessExists_of_generatedWitnessExists"]
         (by simp)
-        .rewriteTarget
-        ActionAllowed.representationRewriteTarget
-        "The non-split witness package remains a selected-extension representation-level rewrite target."
+        "The non-split witness package is specialized by a generated filling-failure bridge over generated diagrams and generated identity extensions."
   | .singleLabelClassification =>
       atomGeneratedRow
         "chapter10.singleLabelClassification"
@@ -442,15 +439,14 @@ def classifyChapter10
         (by simp)
         "The multi-label classification theorem fires on generated identity feature extensions."
   | .fillingFailureBridge =>
-      representationRow
+      atomGeneratedRow
         "chapter10.fillingFailureBridge"
         (Chapter10ArchitectureExtensionFormula.Candidate.representativeDeclarations
           .fillingFailureBridge)
-        ["FillingFailureWitnessPayload"]
+        ["Chapter9DiagramFilling.generatedFillingFailureExtensionObstructionWitness_classified",
+         "Chapter10ArchitectureExtensionFormula.generatedFillingFailureExtensionObstructionWitness_multilabel_classified"]
         (by simp)
-        .downstreamLibrary
-        ActionAllowed.representationDownstream
-        "Filling failure is embedded in the extension-obstruction classification layer as a downstream bridge."
+        "Generated filling-failure payloads are classified in both single-label and multi-label extension-obstruction layers for generated identity extensions."
   | .liftingFailureBridge =>
       representationRow
         "chapter10.liftingFailureBridge"
@@ -871,6 +867,17 @@ theorem finite_static_core_is_downstream_representation_library :
     (classifyAATCandidate .finiteStaticStructuralCore).action =
       .downstreamLibrary := by
   exact ⟨rfl, rfl⟩
+
+theorem generated_filling_failure_bridge_is_atom_generated :
+    (classifyChapter7 .nonSplitExtensionWitness).classification =
+      .atomGenerated ∧
+    (classifyChapter9 .fillingFailureBridge).classification =
+      .atomGenerated ∧
+    (classifyChapter10 .nonSplitWitnessPackage).classification =
+      .atomGenerated ∧
+    (classifyChapter10 .fillingFailureBridge).classification =
+      .atomGenerated := by
+  exact ⟨rfl, rfl, rfl, rfl⟩
 
 end AATReconstructionClassification
 end Formal.Arch

@@ -1,5 +1,6 @@
 import Formal.Arch.AAT.GeneratedFeatureExtension
 import Formal.Arch.AAT.GeneratedSynthesis
+import Formal.Arch.Evolution.Chapter9DiagramFilling
 import Formal.Arch.Extension.Flatness
 import Formal.Arch.Extension.ArchitectureExtensionFormula
 import Formal.Arch.Repair.Repair
@@ -238,9 +239,12 @@ def representativeDeclarations : Candidate -> List String
        "Chapter7TheoremPackages.generatedSplitFeatureExtension_recordsNonConclusions"]
   | nonSplitExtensionWitness =>
       ["NonSplitExtensionWitnessPackage",
+       "Chapter9DiagramFilling.generatedFillingFailureBridge_toNonSplitExtensionWitnessPackage",
        "NonSplitExtensionWitnessPackage.not_selectedSplitExtension_of_selectedExtensionObstructionWitness",
+       "Chapter9DiagramFilling.generatedFillingFailureBridge_not_selectedSplitExtension_of_generatedWitness",
        "NonSplitExtensionWitnessPackage.selectedExtensionObstructionWitnessExists_of_not_selectedSplitExtension",
-       "NonSplitExtensionWitnessPackage.selectedExtensionObstructionWitnessExists_iff_not_selectedSplitExtension"]
+       "NonSplitExtensionWitnessPackage.selectedExtensionObstructionWitnessExists_iff_not_selectedSplitExtension",
+       "Chapter9DiagramFilling.generatedFillingFailureBridge_selectedExtensionObstructionWitnessExists_of_generatedWitnessExists"]
   | repairAsResplitting =>
       ["SelectedObstructionUniverse",
        "AdmissibleRepairRule",
@@ -322,9 +326,11 @@ def schematicCorrespondences : Candidate -> List SchematicCorrespondence
          leanDeclarations :=
           ["NonSplitExtensionWitnessPackage.coverageAssumptions",
            "NonSplitExtensionWitnessPackage.exactnessAssumptions",
-           "NonSplitExtensionWitnessPackage.selectedExtensionObstructionWitnessExists_of_not_selectedSplitExtension"],
+           "NonSplitExtensionWitnessPackage.selectedExtensionObstructionWitnessExists_of_not_selectedSplitExtension",
+           "Chapter9DiagramFilling.generatedFillingFailureBridge_selectedExtensionObstructionWitnessExists_of_generatedWitnessExists",
+           "Chapter9DiagramFilling.generatedFillingFailureBridge_not_selectedSplitExtension_of_generatedWitness"],
          reading :=
-          "coverage and exactness assumptions required for the bounded completeness direction",
+          "coverage and exactness assumptions required for the bounded completeness direction, specialized through generated diagram filling-failure witnesses",
          status := "proved under package assumptions" }]
   | repairAsResplitting =>
       [{ schematic := "NonSplitExtensionWitness X F X' w",

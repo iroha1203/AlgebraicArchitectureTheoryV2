@@ -1,4 +1,5 @@
 import Formal.Arch.AAT.GeneratedDiagram
+import Formal.Arch.AAT.GeneratedFeatureExtension
 import Formal.Arch.Evolution.DiagramFiller
 import Formal.Arch.Extension.SplitExtensionLifting
 import Formal.Arch.Extension.ArchitectureExtensionFormula
@@ -87,14 +88,20 @@ def representativeDeclarations : Candidate -> List String
        "SplitExtensionLifting_preservationPackage"]
   | fillingFailureBridge =>
       ["FillingFailureWitnessPayload",
+       "Chapter9DiagramFilling.generatedFillingFailureWitnessPayload",
        "fillingFailureExtensionObstructionWitness",
+       "Chapter9DiagramFilling.generatedFillingFailureExtensionObstructionWitness",
        "ClassifiedAsFillingFailure",
        "fillingFailureExtensionObstructionWitness_classified",
+       "Chapter9DiagramFilling.generatedFillingFailureExtensionObstructionWitness_classified",
        "FillingFailureRefutesSplit",
        "not_selectedSplitExtension_of_fillingFailurePayload",
        "FillingFailureBridgePackage",
        "FillingFailureBridgePackage.toNonSplitExtensionWitnessPackage",
-       "FillingFailureBridgePackage.selectedExtensionObstructionWitnessExists_of_selectedPayloadExists"]
+       "FillingFailureBridgePackage.selectedExtensionObstructionWitnessExists_of_selectedPayloadExists",
+       "Chapter9DiagramFilling.generatedFillingFailureBridge_toNonSplitExtensionWitnessPackage",
+       "Chapter9DiagramFilling.generatedFillingFailureBridge_selectedExtensionObstructionWitnessExists_of_generatedWitnessExists",
+       "Chapter9DiagramFilling.generatedFillingFailureBridge_not_selectedSplitExtension_of_generatedWitness"]
 
 /--
 Schematic-name to Lean-API correspondences for Chapter 9.
@@ -185,11 +192,14 @@ def schematicCorrespondences : Candidate -> List SchematicCorrespondence
       [{ schematic := "diagram filling failure classified as extension obstruction",
          leanDeclarations :=
           ["FillingFailureWitnessPayload",
+           "Chapter9DiagramFilling.generatedFillingFailureWitnessPayload",
            "fillingFailureExtensionObstructionWitness",
+           "Chapter9DiagramFilling.generatedFillingFailureExtensionObstructionWitness",
            "ClassifiedAsFillingFailure",
-           "fillingFailureExtensionObstructionWitness_classified"],
+           "fillingFailureExtensionObstructionWitness_classified",
+           "Chapter9DiagramFilling.generatedFillingFailureExtensionObstructionWitness_classified"],
          reading :=
-          "selected diagram non-fillability payload embedded into the extension-obstruction classification universe",
+          "selected generated diagram non-fillability payload embedded into the generated identity extension-obstruction classification universe",
          status := "defined only / proved" },
        { schematic := "filling failure refutes selected split predicate",
          leanDeclarations :=
@@ -203,9 +213,12 @@ def schematicCorrespondences : Candidate -> List SchematicCorrespondence
           ["FillingFailureBridgePackage",
            "FillingFailureBridgePackage.SelectedWitness",
            "FillingFailureBridgePackage.toNonSplitExtensionWitnessPackage",
-           "FillingFailureBridgePackage.selectedExtensionObstructionWitnessExists_of_selectedPayloadExists"],
+           "FillingFailureBridgePackage.selectedExtensionObstructionWitnessExists_of_selectedPayloadExists",
+           "Chapter9DiagramFilling.generatedFillingFailureBridge_toNonSplitExtensionWitnessPackage",
+           "Chapter9DiagramFilling.generatedFillingFailureBridge_selectedExtensionObstructionWitnessExists_of_generatedWitnessExists",
+           "Chapter9DiagramFilling.generatedFillingFailureBridge_not_selectedSplitExtension_of_generatedWitness"],
          reading :=
-          "bounded bridge into the generic non-split witness package under selected payload coverage and exactness assumptions",
+          "bounded bridge into the generic non-split witness package specialized to generated diagrams and the generated identity feature extension",
          status := "defined only / proved" }]
 
 /-- Boundary reminder for reading each candidate as a bounded Chapter 9 API. -/
@@ -381,6 +394,232 @@ theorem generatedObservationDifference_nonFillabilityWitnessFor
     AAT.generatedObservationDifference_nonFillabilityWitnessFor
       hIndependentSquare hSameExternalContract hRepairFill hConsContext
       witness hDifference
+
+/--
+Package a generated non-fillability witness as the filling-failure payload used
+by the extension-obstruction classification layer.
+-/
+def generatedFillingFailureWitnessPayload
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : AAT.GeneratedArchitectureObject presentation}
+    {IndependentSquare :
+      (W X Y Z : AAT.GeneratedCarrier object) ->
+        AAT.GeneratedArchitectureStep object W X ->
+        AAT.GeneratedArchitectureStep object X Z ->
+        AAT.GeneratedArchitectureStep object W Y ->
+        AAT.GeneratedArchitectureStep object Y Z -> Prop}
+    {SameExternalContract :
+      (X Y : AAT.GeneratedCarrier object) ->
+        AAT.GeneratedArchitectureStep object X Y ->
+        AAT.GeneratedArchitectureStep object X Y -> Prop}
+    {RepairFill :
+      (X Y : AAT.GeneratedCarrier object) ->
+        AAT.GeneratedArchitecturePath object X Y ->
+        AAT.GeneratedArchitecturePath object X Y -> Prop}
+    {source target : AAT.GeneratedCarrier object}
+    {diagram : AAT.GeneratedArchitectureDiagram object
+      (source := source) (target := target)}
+    {DiagramWitness : Type w}
+    (witness : DiagramWitness)
+    (hWitness :
+      AAT.GeneratedNonFillabilityWitnessFor
+        IndependentSquare SameExternalContract RepairFill diagram witness) :
+    FillingFailureWitnessPayload
+      IndependentSquare SameExternalContract RepairFill diagram DiagramWitness where
+  witness := witness
+  nonFillability := hWitness
+
+/--
+Generated diagram filling failure becomes an extension-obstruction witness for
+the identity feature extension generated by the same Atom-generated object.
+-/
+def generatedFillingFailureExtensionObstructionWitness
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : AAT.GeneratedArchitectureObject presentation}
+    {IndependentSquare :
+      (W X Y Z : AAT.GeneratedCarrier object) ->
+        AAT.GeneratedArchitectureStep object W X ->
+        AAT.GeneratedArchitectureStep object X Z ->
+        AAT.GeneratedArchitectureStep object W Y ->
+        AAT.GeneratedArchitectureStep object Y Z -> Prop}
+    {SameExternalContract :
+      (X Y : AAT.GeneratedCarrier object) ->
+        AAT.GeneratedArchitectureStep object X Y ->
+        AAT.GeneratedArchitectureStep object X Y -> Prop}
+    {RepairFill :
+      (X Y : AAT.GeneratedCarrier object) ->
+        AAT.GeneratedArchitecturePath object X Y ->
+        AAT.GeneratedArchitecturePath object X Y -> Prop}
+    {source target : AAT.GeneratedCarrier object}
+    {diagram : AAT.GeneratedArchitectureDiagram object
+      (source := source) (target := target)}
+    {DiagramWitness : Type w}
+    (payload :
+      FillingFailureWitnessPayload
+        IndependentSquare SameExternalContract RepairFill diagram DiagramWitness) :
+    ExtensionObstructionWitness object.generatedIdentityFeatureExtension
+      (FillingFailureWitnessPayload
+        IndependentSquare SameExternalContract RepairFill diagram
+        DiagramWitness) :=
+  fillingFailureExtensionObstructionWitness
+    object.generatedIdentityFeatureExtension payload
+
+/--
+The generated filling-failure bridge lands in the generated identity extension
+as a `fillingFailure` classification.
+-/
+theorem generatedFillingFailureExtensionObstructionWitness_classified
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : AAT.GeneratedArchitectureObject presentation}
+    {IndependentSquare :
+      (W X Y Z : AAT.GeneratedCarrier object) ->
+        AAT.GeneratedArchitectureStep object W X ->
+        AAT.GeneratedArchitectureStep object X Z ->
+        AAT.GeneratedArchitectureStep object W Y ->
+        AAT.GeneratedArchitectureStep object Y Z -> Prop}
+    {SameExternalContract :
+      (X Y : AAT.GeneratedCarrier object) ->
+        AAT.GeneratedArchitectureStep object X Y ->
+        AAT.GeneratedArchitectureStep object X Y -> Prop}
+    {RepairFill :
+      (X Y : AAT.GeneratedCarrier object) ->
+        AAT.GeneratedArchitecturePath object X Y ->
+        AAT.GeneratedArchitecturePath object X Y -> Prop}
+    {source target : AAT.GeneratedCarrier object}
+    {diagram : AAT.GeneratedArchitectureDiagram object
+      (source := source) (target := target)}
+    {DiagramWitness : Type w}
+    (payload :
+      FillingFailureWitnessPayload
+        IndependentSquare SameExternalContract RepairFill diagram DiagramWitness) :
+    ClassifiedAsFillingFailure object.generatedIdentityFeatureExtension
+      object.generatedIdentityExtensionComponentUniverse
+      (generatedFillingFailureExtensionObstructionWitness payload) :=
+  rfl
+
+/--
+Generated filling-failure bridge packages embed into the generic non-split
+witness package without asking callers to provide a hand-authored
+`FeatureExtension`.
+-/
+def generatedFillingFailureBridge_toNonSplitExtensionWitnessPackage
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : AAT.GeneratedArchitectureObject presentation}
+    {IndependentSquare :
+      (W X Y Z : AAT.GeneratedCarrier object) ->
+        AAT.GeneratedArchitectureStep object W X ->
+        AAT.GeneratedArchitectureStep object X Z ->
+        AAT.GeneratedArchitectureStep object W Y ->
+        AAT.GeneratedArchitectureStep object Y Z -> Prop}
+    {SameExternalContract :
+      (X Y : AAT.GeneratedCarrier object) ->
+        AAT.GeneratedArchitectureStep object X Y ->
+        AAT.GeneratedArchitectureStep object X Y -> Prop}
+    {RepairFill :
+      (X Y : AAT.GeneratedCarrier object) ->
+        AAT.GeneratedArchitecturePath object X Y ->
+        AAT.GeneratedArchitecturePath object X Y -> Prop}
+    {source target : AAT.GeneratedCarrier object}
+    {diagram : AAT.GeneratedArchitectureDiagram object
+      (source := source) (target := target)}
+    {DiagramWitness : Type w}
+    (P :
+      FillingFailureBridgePackage object.generatedIdentityFeatureExtension
+        IndependentSquare SameExternalContract RepairFill diagram
+        DiagramWitness) :
+    NonSplitExtensionWitnessPackage object.generatedIdentityFeatureExtension
+      (FillingFailureWitnessPayload
+        IndependentSquare SameExternalContract RepairFill diagram
+        DiagramWitness) :=
+  P.toNonSplitExtensionWitnessPackage
+
+/--
+A selected generated non-fillability witness gives a selected non-split
+extension-obstruction witness through the generated filling-failure bridge.
+-/
+theorem generatedFillingFailureBridge_selectedExtensionObstructionWitnessExists_of_generatedWitnessExists
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : AAT.GeneratedArchitectureObject presentation}
+    {IndependentSquare :
+      (W X Y Z : AAT.GeneratedCarrier object) ->
+        AAT.GeneratedArchitectureStep object W X ->
+        AAT.GeneratedArchitectureStep object X Z ->
+        AAT.GeneratedArchitectureStep object W Y ->
+        AAT.GeneratedArchitectureStep object Y Z -> Prop}
+    {SameExternalContract :
+      (X Y : AAT.GeneratedCarrier object) ->
+        AAT.GeneratedArchitectureStep object X Y ->
+        AAT.GeneratedArchitectureStep object X Y -> Prop}
+    {RepairFill :
+      (X Y : AAT.GeneratedCarrier object) ->
+        AAT.GeneratedArchitecturePath object X Y ->
+        AAT.GeneratedArchitecturePath object X Y -> Prop}
+    {source target : AAT.GeneratedCarrier object}
+    {diagram : AAT.GeneratedArchitectureDiagram object
+      (source := source) (target := target)}
+    {DiagramWitness : Type w}
+    (P :
+      FillingFailureBridgePackage object.generatedIdentityFeatureExtension
+        IndependentSquare SameExternalContract RepairFill diagram
+        DiagramWitness)
+    (hGenerated :
+      ∃ witness : DiagramWitness,
+        ∃ hWitness :
+          AAT.GeneratedNonFillabilityWitnessFor
+            IndependentSquare SameExternalContract RepairFill diagram witness,
+          P.selectedPayload
+            (generatedFillingFailureWitnessPayload witness hWitness)) :
+    (generatedFillingFailureBridge_toNonSplitExtensionWitnessPackage P).WitnessExists := by
+  rcases hGenerated with ⟨witness, hWitness, hSelected⟩
+  exact
+    P.selectedExtensionObstructionWitnessExists_of_selectedPayloadExists
+      ⟨generatedFillingFailureWitnessPayload witness hWitness, hSelected⟩
+
+/--
+Soundness form: a selected generated filling-failure payload refutes the split
+predicate selected by the generated bridge package.
+-/
+theorem generatedFillingFailureBridge_not_selectedSplitExtension_of_generatedWitness
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : AAT.GeneratedArchitectureObject presentation}
+    {IndependentSquare :
+      (W X Y Z : AAT.GeneratedCarrier object) ->
+        AAT.GeneratedArchitectureStep object W X ->
+        AAT.GeneratedArchitectureStep object X Z ->
+        AAT.GeneratedArchitectureStep object W Y ->
+        AAT.GeneratedArchitectureStep object Y Z -> Prop}
+    {SameExternalContract :
+      (X Y : AAT.GeneratedCarrier object) ->
+        AAT.GeneratedArchitectureStep object X Y ->
+        AAT.GeneratedArchitectureStep object X Y -> Prop}
+    {RepairFill :
+      (X Y : AAT.GeneratedCarrier object) ->
+        AAT.GeneratedArchitecturePath object X Y ->
+        AAT.GeneratedArchitecturePath object X Y -> Prop}
+    {source target : AAT.GeneratedCarrier object}
+    {diagram : AAT.GeneratedArchitectureDiagram object
+      (source := source) (target := target)}
+    {DiagramWitness : Type w}
+    (P :
+      FillingFailureBridgePackage object.generatedIdentityFeatureExtension
+        IndependentSquare SameExternalContract RepairFill diagram
+        DiagramWitness)
+    (witness : DiagramWitness)
+    (hWitness :
+      AAT.GeneratedNonFillabilityWitnessFor
+        IndependentSquare SameExternalContract RepairFill diagram witness)
+    (hSelected :
+      P.selectedPayload
+        (generatedFillingFailureWitnessPayload witness hWitness)) :
+    ¬ SelectedSplitExtension object.generatedIdentityFeatureExtension
+      P.splitPredicate :=
+  P.fillingFailureRefutesSplit hSelected
 
 end Chapter9DiagramFilling
 

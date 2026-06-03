@@ -61,4 +61,20 @@ theorem nonidentity_transport_handoff_classified_atom_generated :
         .atomGenerated := by
   exact nonidentity_transport_handoff_is_atom_generated
 
+/--
+Acceptance: generated diagram filling failure now supplies the source-of-truth
+entrypoint for the non-split / filling-failure theorem packages rather than
+leaving them as representation-level rewrite targets.
+-/
+theorem generated_filling_failure_bridge_classified_atom_generated :
+    (classifyChapter7 .nonSplitExtensionWitness).classification =
+        .atomGenerated ∧
+      (classifyChapter9 .fillingFailureBridge).classification =
+        .atomGenerated ∧
+      (classifyChapter10 .nonSplitWitnessPackage).classification =
+        .atomGenerated ∧
+      (classifyChapter10 .fillingFailureBridge).classification =
+        .atomGenerated := by
+  exact generated_filling_failure_bridge_is_atom_generated
+
 end Formal.Arch.AtomGeneratedClassificationExamples

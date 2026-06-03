@@ -394,6 +394,8 @@ atomObservations
 - generated path family
 - generated diagram family
 - generated filler / non-fillability witness
+- generated filling-failure bridge from `GeneratedNonFillabilityWitnessFor` to
+  `NonSplitExtensionWitnessPackage` over generated identity feature extensions
 - generated curvature measurement input
 - generated flatness theorem package
 
