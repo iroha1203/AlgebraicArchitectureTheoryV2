@@ -99,6 +99,7 @@ import Formal.Arch.AAT.GeneratedSignature
 import Formal.Arch.AAT.GeneratedFlatness
 import Formal.Arch.AAT.GeneratedCurvature
 import Formal.Arch.AAT.GeneratedPath
+import Formal.Arch.AAT.GeneratedDiagram
 import Formal.Arch.AAT.GeneratedOperation
 import Formal.Arch.AAT.GeneratedRepair
 import Formal.Arch.AAT.GeneratedSynthesis

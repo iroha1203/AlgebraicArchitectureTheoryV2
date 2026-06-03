@@ -1,4 +1,5 @@
 import Formal.Arch.AAT.GeneratedCurvature
+import Formal.Arch.AAT.GeneratedDiagram
 import Formal.Arch.AAT.GeneratedPath
 import Formal.Arch.AAT.GeneratedSynthesis
 
@@ -297,6 +298,24 @@ theorem generatedComponentNilPath_length_zero
     AAT.GeneratedArchitecturePath.length
       (generatedComponentNilPath carrier) = 0 := by
   rfl
+
+def generatedComponentNilDiagram
+    (carrier : AAT.GeneratedCarrier generatedComponentObject) :
+    AAT.GeneratedArchitectureDiagram generatedComponentObject
+      (source := carrier) (target := carrier) :=
+  AAT.GeneratedArchitectureDiagram.reflexive
+    (generatedComponentNilPath carrier)
+
+theorem generatedComponentNilDiagram_filler
+    (carrier : AAT.GeneratedCarrier generatedComponentObject) :
+    AAT.GeneratedDiagramFiller
+      (object := generatedComponentObject)
+      (fun _ _ _ _ _ _ _ _ => False)
+      (fun _ _ _ _ => False)
+      (fun _ _ _ _ => False)
+      (generatedComponentNilDiagram carrier) := by
+  exact AAT.generatedDiagramFiller_refl
+    (generatedComponentNilPath carrier)
 
 def generatedComponentIdentityOperation :
     AAT.GeneratedOperation generatedComponentObject generatedComponentObject where
