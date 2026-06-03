@@ -263,6 +263,8 @@ def representativeDeclarations : AATCandidate -> List String
        "AAT.GeneratedArchitectureLawModel.generated_law_model_from_generated_graph_rank",
        "AtomGeneratedSignatureExamples.*",
        "AtomGeneratedMoleculeExamples.generatedComponentObject_api_database_shapeDistance_eq_one",
+       "AtomGeneratedRepairExamples.repairedGeneratedGraphRank",
+       "AtomGeneratedRepairExamples.repaired_law_model_from_graph_rank",
        "AtomGeneratedRepairExamples.*",
        "IncompatibleAtomCompositionExamples.*"]
   | archMapObservationBoundary =>
@@ -309,6 +311,7 @@ def classifyAATCandidate
          "AtomGeneratedMoleculeExamples.directedRelation_law_model_from_graph_rank",
          "AtomGeneratedMoleculeExamples.directedRuntimeGeneratedGraph_api_to_database_edge",
          "AAT.GeneratedArchitectureLawModel.ofGraphRank",
+         "AtomGeneratedRepairExamples.repaired_law_model_from_graph_rank",
          "AAT.GeneratedArchitectureLawModel",
          "AtomGeneratedSignatureExamples.*"]
         (by simp)

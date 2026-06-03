@@ -278,10 +278,27 @@ theorem repairedGeneratedGraph_walkAcyclic :
   | cons hEdge _rest =>
       exact repairedGeneratedGraph_no_edges _ _ hEdge
 
+def repairedGeneratedGraphRank :
+    AAT.GeneratedGraphRank repairedGeneratedObject where
+  rank := fun _carrier => 0
+  edgeRankDecreases := by
+    intro source target hEdge
+    exact False.elim (repairedGeneratedGraph_no_edges source target hEdge)
+
+theorem repairedGeneratedGraphRank_walkAcyclic :
+    WalkAcyclic (AAT.GeneratedArchGraph repairedGeneratedObject) :=
+  repairedGeneratedGraphRank.walkAcyclic
+
+theorem repaired_law_model_from_graph_rank :
+    ∃ model : AAT.GeneratedArchitectureLawModel repairedGeneratedObject,
+      ArchitectureSignature.ArchitectureLawful model.toArchitectureLawModel :=
+  AAT.GeneratedArchitectureLawModel.generated_law_model_from_generated_graph_rank
+    repairedGeneratedGraphRank True
+
 def repairedGeneratedLawModel :
-    AAT.GeneratedArchitectureLawModel repairedGeneratedObject where
-  generatedWalkAcyclic := repairedGeneratedGraph_walkAcyclic
-  lawModelBoundary := True
+    AAT.GeneratedArchitectureLawModel repairedGeneratedObject :=
+  AAT.GeneratedArchitectureLawModel.ofGraphRank
+    repairedGeneratedGraphRank True
 
 def repairedGeneratedZeroCurvaturePackage :
     AAT.ZeroCurvaturePackage repairedGeneratedLawModel.generatedAATCore := by
