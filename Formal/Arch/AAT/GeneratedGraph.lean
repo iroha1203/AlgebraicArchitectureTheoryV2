@@ -16,7 +16,8 @@ def GeneratedRelationAtom {system : AtomAxiomSystem.{u, v}}
     (relation source target : GeneratedCarrier object) : Prop :=
   (AtomShapeOf presentation relation.val).family = AtomKind.relation ∧
   relation.val ≠ source.val ∧
-  relation.val ≠ target.val
+  relation.val ≠ target.val ∧
+  source.val ≠ target.val
 
 /-- Generated graph relation induced by selected relation atoms. -/
 def GeneratedRelation {system : AtomAxiomSystem.{u, v}}
@@ -40,7 +41,8 @@ def GeneratedRuntimeRelationAtom {system : AtomAxiomSystem.{u, v}}
   (AtomShapeOf presentation interaction.val).family =
     AtomKind.runtimeInteraction ∧
   interaction.val ≠ source.val ∧
-  interaction.val ≠ target.val
+  interaction.val ≠ target.val ∧
+  source.val ≠ target.val
 
 /-- Runtime relation induced by selected runtime-interaction atoms. -/
 def GeneratedRuntimeRelation {system : AtomAxiomSystem.{u, v}}
@@ -120,7 +122,7 @@ def generated_relation_atom_witness
       relation.property source.property hRelation.2.1
   relationTargetComposition :=
     object.molecule.compatible_pairs
-      relation.property target.property hRelation.2.2
+      relation.property target.property hRelation.2.2.1
 
 /-- Generated graph edges are exactly backed by selected relation atoms. -/
 theorem generated_graph_edges_from_relation_atoms
@@ -132,6 +134,17 @@ theorem generated_graph_edges_from_relation_atoms
     ∃ relation : GeneratedCarrier object,
       GeneratedRelationAtom object relation source target :=
   hEdge
+
+/-- Generated graph edges require two distinct selected endpoint atoms. -/
+theorem generated_graph_edge_requires_distinct_endpoints
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    (object : GeneratedArchitectureObject presentation)
+    {source target : GeneratedCarrier object}
+    (hEdge : (GeneratedArchGraph object).edge source target) :
+    source.val ≠ target.val := by
+  rcases hEdge with ⟨_relation, hRelation⟩
+  exact hRelation.2.2.2
 
 end GeneratedArchGraph
 
@@ -156,7 +169,7 @@ def generated_runtime_atom_witness
       interaction.property source.property hInteraction.2.1
   interactionTargetComposition :=
     object.molecule.compatible_pairs
-      interaction.property target.property hInteraction.2.2
+      interaction.property target.property hInteraction.2.2.1
 
 /-- Generated runtime graph edges are exactly backed by runtime-interaction atoms. -/
 theorem generated_runtime_edges_from_interaction_atoms
@@ -168,6 +181,17 @@ theorem generated_runtime_edges_from_interaction_atoms
     ∃ interaction : GeneratedCarrier object,
       GeneratedRuntimeRelationAtom object interaction source target :=
   hEdge
+
+/-- Generated runtime graph edges require two distinct selected endpoint atoms. -/
+theorem generated_runtime_edge_requires_distinct_endpoints
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    (object : GeneratedArchitectureObject presentation)
+    {source target : GeneratedCarrier object}
+    (hEdge : (GeneratedRuntimeGraph object).edge source target) :
+    source.val ≠ target.val := by
+  rcases hEdge with ⟨_interaction, hInteraction⟩
+  exact hInteraction.2.2.2
 
 end GeneratedRuntimeGraph
 

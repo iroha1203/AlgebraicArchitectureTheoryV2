@@ -21,6 +21,10 @@ fn acts_spectrum_root() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/acts_spectrum")
 }
 
+fn atom_generated_acceptance_root() -> PathBuf {
+    Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/atom_generated_acceptance")
+}
+
 fn homotopy_report_root() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/homotopy_report")
 }
@@ -1348,6 +1352,104 @@ fn cli_analyze_emit_raw_artifacts_writes_field_sig_handoff_packet() {
     assert_eq!(
         run_manifest["rawArtifactPaths"]["analysisPacket"].as_str(),
         Some("archsig-analysis-packet.json")
+    );
+}
+
+#[test]
+fn atom_generated_acceptance_fixture_materializes_local_middle_layer() {
+    let out_dir = temp_dir("atom-generated-acceptance");
+    let root = atom_generated_acceptance_root();
+    let manifest = read_json(&root.join("manifest.json"));
+    assert_eq!(
+        manifest["schemaVersion"],
+        "archsig-atom-generated-acceptance-manifest-v0"
+    );
+    assert!(
+        manifest["nonConclusions"].as_array().is_some_and(|items| {
+            items.iter().any(|item| {
+                item.as_str()
+                    .is_some_and(|text| text.contains("not Lean theorem proofs"))
+            })
+        }),
+        "acceptance fixture must preserve generated-surface non-conclusions"
+    );
+
+    let archmap = root.join(
+        manifest["archmapPath"]
+            .as_str()
+            .expect("manifest archmap path is present"),
+    );
+    let law_policy = root.join(
+        manifest["lawPolicyPath"]
+            .as_str()
+            .expect("manifest law policy path is present"),
+    );
+    let packet_path = out_dir.join("archsig-analysis-packet.json");
+    let validation_path = out_dir.join("archsig-analysis-validation.json");
+
+    run_sig0(&[
+        "archsig-analysis",
+        "--archmap",
+        archmap.to_str().expect("archmap path is utf-8"),
+        "--law-policy",
+        law_policy.to_str().expect("law policy path is utf-8"),
+        "--out",
+        packet_path.to_str().expect("packet path is utf-8"),
+        "--validation-out",
+        validation_path.to_str().expect("validation path is utf-8"),
+    ]);
+
+    let packet = read_json(&packet_path);
+    let validation = read_json(&validation_path);
+    assert_eq!(validation["summary"]["result"], "pass");
+    let expectations = &manifest["expectations"];
+    let minimum_generated_molecules = expectations["generatedMolecules"]
+        .as_u64()
+        .expect("generatedMolecules expectation is present") as usize;
+    let minimum_generated_law_inputs = expectations["generatedLawInputs"]
+        .as_u64()
+        .expect("generatedLawInputs expectation is present") as usize;
+    let minimum_applicable_law_axes = expectations["applicableLawAxes"]
+        .as_u64()
+        .expect("applicableLawAxes expectation is present") as usize;
+    let minimum_viewer_distance_inputs = expectations["viewerDistanceInputs"]
+        .as_u64()
+        .expect("viewerDistanceInputs expectation is present") as usize;
+
+    assert!(
+        packet["generatedMolecules"]
+            .as_array()
+            .is_some_and(|items| items.len() >= minimum_generated_molecules),
+        "atom-generated acceptance must materialize generated molecules"
+    );
+    assert!(
+        packet["generatedLawInputs"].as_array().is_some_and(|items| {
+            items.len() >= minimum_generated_law_inputs
+                && items.iter().any(|item| {
+                    item["applicableLawAxes"]
+                        .as_array()
+                        .is_some_and(|axes| axes.len() >= minimum_applicable_law_axes)
+                        && item["localStatuses"].as_array().is_some_and(|statuses| {
+                            statuses.iter().any(|status| status == "localSatisfied")
+                        })
+                })
+        }),
+        "generated law inputs must expose applicable law axes and localSatisfied status"
+    );
+    assert!(
+        packet["generatedObstructions"].as_array().is_some_and(|items| {
+            items.iter().any(|item| {
+                item["localStatus"] == "localViolated"
+                    && item["blockerStatus"] == "locallyBlocked"
+            })
+        }),
+        "generated obstructions must expose localViolated and locallyBlocked status"
+    );
+    assert!(
+        packet["viewerDistanceInputs"]
+            .as_array()
+            .is_some_and(|items| items.len() >= minimum_viewer_distance_inputs),
+        "atom-generated acceptance must expose viewer distance inputs"
     );
 }
 

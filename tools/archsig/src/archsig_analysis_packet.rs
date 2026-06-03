@@ -2661,10 +2661,12 @@ fn build_generated_law_inputs(
                 generated_molecule_ref: (*generated_molecule_ref).to_string(),
                 source_molecule_reading_ref: reading.molecule_reading_id.clone(),
                 law_refs,
+                applicable_law_axes: signature_axis_refs.clone(),
                 signature_axis_refs,
                 atom_shape_refs,
                 law_input_kind: "generatedArchitectureLawModelInput".to_string(),
                 evaluation_status: "availableForSelectedLawUniverse".to_string(),
+                local_statuses: vec!["localSatisfied".to_string()],
                 coverage_boundary:
                     "generated law input is built from observed molecule and selected LawPolicy laws; missing ArchMap evidence remains a coverage blocker"
                         .to_string(),
@@ -2750,10 +2752,16 @@ fn build_generated_obstructions(
                 generated_molecule_refs: unique_strings(generated_molecule_refs.into_iter()),
                 atom_shape_refs: unique_strings(atom_shape_refs.into_iter()),
                 obstruction_kind: circuit.circuit_kind.clone(),
+                local_status: "localViolated".to_string(),
                 measurement_status: if circuit.missing_evidence.is_empty() {
                     "locallyMeasuredGeneratedObstruction".to_string()
                 } else {
                     "locallyBlockedByCoverageGap".to_string()
+                },
+                blocker_status: if circuit.missing_evidence.is_empty() {
+                    "locallyMeasured".to_string()
+                } else {
+                    "locallyBlocked".to_string()
                 },
                 evidence_boundary:
                     "generated obstruction is backed by generated molecule / law input refs and selected obstruction circuit evidence"
@@ -18129,11 +18137,15 @@ fn check_generated_middle_layer_surface(packet: &ArchSigAnalysisPacketV0) -> Val
             &input.generated_law_input_id,
             &input.generated_molecule_ref,
         );
-        if input.law_refs.is_empty() || input.atom_shape_refs.is_empty() {
+        if input.law_refs.is_empty()
+            || input.atom_shape_refs.is_empty()
+            || input.applicable_law_axes.is_empty()
+            || input.local_statuses.is_empty()
+        {
             examples.push(generic_validation_example(
                 &input.generated_law_input_id,
-                "lawRefs/atomShapeRefs",
-                "generated law input must connect laws to AtomShape-backed molecules",
+                "lawRefs/applicableLawAxes/atomShapeRefs/localStatuses",
+                "generated law input must connect applicable law axes to AtomShape-backed molecules and local status",
             ));
         }
     }
@@ -18145,11 +18157,13 @@ fn check_generated_middle_layer_surface(packet: &ArchSigAnalysisPacketV0) -> Val
         );
         if obstruction.generated_law_input_refs.is_empty()
             || obstruction.generated_molecule_refs.is_empty()
+            || obstruction.local_status.is_empty()
+            || obstruction.blocker_status.is_empty()
         {
             examples.push(generic_validation_example(
                 &obstruction.generated_obstruction_id,
-                "generatedLawInputRefs/generatedMoleculeRefs",
-                "generated obstruction must keep generated law input and molecule refs",
+                "generatedLawInputRefs/generatedMoleculeRefs/localStatus/blockerStatus",
+                "generated obstruction must keep generated refs and local violated / blocked status",
             ));
         }
     }

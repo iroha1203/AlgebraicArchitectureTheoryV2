@@ -1,4 +1,4 @@
-import Formal.Arch.AAT.GeneratedMolecule
+import Formal.Arch.AAT.GeneratedGraph
 
 namespace Formal.Arch.IncompatibleAtomCompositionExamples
 
@@ -151,5 +151,324 @@ theorem missing_required_port_not_generated_molecule
       rcases hMatch with
         ⟨other, _otherPort, hOther, hDistinct, _hOtherPort, _hCompatible⟩
       exact hDistinct (hOnlyIsolated other hOther))
+
+inductive EndpointAtom where
+  | relationOnly
+  | endpoint
+  deriving DecidableEq, Repr
+
+def endpointKind : EndpointAtom -> AtomKind
+  | EndpointAtom.relationOnly => AtomKind.relation
+  | EndpointAtom.endpoint => AtomKind.existence
+
+def endpointAxis (_atom : EndpointAtom) : Axis :=
+  Axis.static
+
+def endpointSystem : AtomAxiomSystem where
+  Atom := EndpointAtom
+  Predicate := AtomKind
+  kind := endpointKind
+  axis := endpointAxis
+  predicate := endpointKind
+  predicateKind := fun kind => kind
+  predicateAxis := fun _ => Axis.static
+  predicateKindAligned := by
+    intro atom
+    rfl
+  predicateAxisAligned := by
+    intro atom
+    cases atom <;> rfl
+  singleFact := fun _ => True
+  singleFactEvidence := fun _ => trivial
+  predicatePreserving := fun _ => True
+  predicatePreservingEvidence := fun _ => trivial
+  boundaryIndependent := fun _ => True
+  boundaryIndependentEvidence := fun _ => trivial
+  lawIndependent := fun _ => True
+  lawIndependentEvidence := fun _ => trivial
+  noObservationBoundaryCreatesAtoms := True
+  noObservationBoundaryCreatesAtomsEvidence := trivial
+  noLawCreatesAtoms := True
+  noLawCreatesAtomsEvidence := trivial
+  noToolOutputCreatesAtoms := True
+  noToolOutputCreatesAtomsEvidence := trivial
+  noSFTEventCreatesAtoms := True
+  noSFTEventCreatesAtomsEvidence := trivial
+  openTaxonomyBoundary := True
+
+def endpointPort : AtomPort where
+  name := "endpoint-compatible"
+  kind := AtomPortKind.subject
+  family := AtomKind.existence
+  axis := Axis.static
+  required := False
+  acceptsFamily := fun _ => True
+  acceptsAxis := fun _ => True
+
+def endpointValence : AtomValence where
+  ports := fun port => port = endpointPort
+  requiredPort := fun _ => False
+  requiredPortHasPort := by
+    intro _ hRequired
+    cases hRequired
+  hasPort := ⟨endpointPort, rfl⟩
+
+def endpointShape (atom : EndpointAtom) : AtomShape where
+  family := endpointKind atom
+  axis := Axis.static
+  subject := { name := match atom with
+    | EndpointAtom.relationOnly => "relation-only"
+    | EndpointAtom.endpoint => "endpoint" }
+  predicate := match atom with
+    | EndpointAtom.relationOnly => "relation"
+    | EndpointAtom.endpoint => "component"
+  objectSlots := fun _ => False
+  payloadSlots := fun _ => False
+  direction := AtomDirection.neutral
+  arity := 1
+  valence := endpointValence
+  singleFactShape := True
+  singleFactShapeEvidence := trivial
+
+def endpointShapePresentation :
+    AtomShapePresentation endpointSystem where
+  shapeOf := endpointShape
+  shapeKindAligned := by
+    intro atom
+    cases atom <;> rfl
+  shapeAxisAligned := by
+    intro atom
+    cases atom <;> rfl
+  shapeSingleFact := by
+    intro _ _
+    trivial
+
+def endpointSelectedAtoms : EndpointAtom -> Prop
+  | EndpointAtom.relationOnly => True
+  | EndpointAtom.endpoint => True
+
+def endpointComposition :
+    CompatibleComposition
+      (AtomShapeOf endpointShapePresentation EndpointAtom.relationOnly)
+      (AtomShapeOf endpointShapePresentation EndpointAtom.endpoint) where
+  leftPort := endpointPort
+  rightPort := endpointPort
+  leftHasPort := rfl
+  rightHasPort := rfl
+  portsCompatible := by
+    exact ⟨rfl, trivial, trivial, trivial, trivial⟩
+  objectSlotsCompatible := by
+    intro _ _ hSlot _
+    cases hSlot
+  payloadSlotsCompatible := by
+    intro _ _ hSlot _
+    cases hSlot
+  predicateSlotsCompatible := by
+    intro hPredicate
+    have hDifferent : ("relation" : String) ≠ "component" := by
+      decide
+    exact False.elim (hDifferent hPredicate)
+
+def endpointCompositionSymm :
+    CompatibleComposition
+      (AtomShapeOf endpointShapePresentation EndpointAtom.endpoint)
+      (AtomShapeOf endpointShapePresentation EndpointAtom.relationOnly) where
+  leftPort := endpointPort
+  rightPort := endpointPort
+  leftHasPort := rfl
+  rightHasPort := rfl
+  portsCompatible := by
+    exact ⟨rfl, trivial, trivial, trivial, trivial⟩
+  objectSlotsCompatible := by
+    intro _ _ hSlot _
+    cases hSlot
+  payloadSlotsCompatible := by
+    intro _ _ hSlot _
+    cases hSlot
+  predicateSlotsCompatible := by
+    intro hPredicate
+    have hDifferent : ("component" : String) ≠ "relation" := by
+      decide
+    exact False.elim (hDifferent hPredicate)
+
+def endpointCompositionGraph :
+    AAT.CompositionGraph endpointShapePresentation endpointSelectedAtoms where
+  compatiblePairs := by
+    intro left right _hLeft _hRight hDistinct
+    cases left
+    · cases right
+      · exact False.elim (hDistinct rfl)
+      · exact endpointComposition
+    · cases right
+      · exact endpointCompositionSymm
+      · exact False.elim (hDistinct rfl)
+  graphBoundary := True
+
+def endpointGeneratedMolecule :
+    AAT.GeneratedMolecule endpointShapePresentation where
+  atoms := endpointSelectedAtoms
+  finiteConfiguration := True
+  atomsPrimitive := by
+    intro atom _
+    exact endpointSystem.primitive atom
+  compositionGraph := endpointCompositionGraph
+  requiredPortsMatched := by
+    intro _ _ _ hRequired
+    cases hRequired
+  notArbitrarySet := True
+  notArbitrarySetEvidence := trivial
+
+def endpointGeneratedObject :
+    AAT.GeneratedArchitectureObject endpointShapePresentation where
+  molecule := endpointGeneratedMolecule
+  carrierList :=
+    [ ⟨EndpointAtom.relationOnly, by trivial⟩
+    , ⟨EndpointAtom.endpoint, by trivial⟩
+    ]
+  carrierListNodup := by
+    simp
+  carrierListCovers := by
+    intro carrier
+    cases carrier with
+    | mk atom _hAtom =>
+        cases atom <;> simp
+  objectBoundary := True
+
+def endpointCarrier :
+    AAT.GeneratedCarrier endpointGeneratedObject :=
+  ⟨EndpointAtom.endpoint, by trivial⟩
+
+def handAuthoredEndpointGraph :
+    ArchGraph (AAT.GeneratedCarrier endpointGeneratedObject) where
+  edge := fun _ _ => True
+
+theorem relation_atom_without_second_endpoint_not_generated_edge :
+    ¬ (AAT.GeneratedArchGraph endpointGeneratedObject).edge
+      endpointCarrier endpointCarrier := by
+  intro hEdge
+  exact
+    (AAT.GeneratedArchGraph.generated_graph_edge_requires_distinct_endpoints
+      endpointGeneratedObject hEdge) rfl
+
+theorem hand_authored_graph_edge_not_atom_generated_edge :
+    handAuthoredEndpointGraph.edge endpointCarrier endpointCarrier ∧
+      ¬ (AAT.GeneratedArchGraph endpointGeneratedObject).edge
+        endpointCarrier endpointCarrier := by
+  exact ⟨trivial, relation_atom_without_second_endpoint_not_generated_edge⟩
+
+inductive EffectOnlyAtom where
+  | effectOnly
+  deriving DecidableEq, Repr
+
+def effectOnlySystem : AtomAxiomSystem where
+  Atom := EffectOnlyAtom
+  Predicate := AtomKind
+  kind := fun _ => AtomKind.effect
+  axis := fun _ => Axis.semantic
+  predicate := fun _ => AtomKind.effect
+  predicateKind := fun kind => kind
+  predicateAxis := fun _ => Axis.semantic
+  predicateKindAligned := by
+    intro atom
+    cases atom
+    rfl
+  predicateAxisAligned := by
+    intro atom
+    cases atom
+    rfl
+  singleFact := fun _ => True
+  singleFactEvidence := fun _ => trivial
+  predicatePreserving := fun _ => True
+  predicatePreservingEvidence := fun _ => trivial
+  boundaryIndependent := fun _ => True
+  boundaryIndependentEvidence := fun _ => trivial
+  lawIndependent := fun _ => True
+  lawIndependentEvidence := fun _ => trivial
+  noObservationBoundaryCreatesAtoms := True
+  noObservationBoundaryCreatesAtomsEvidence := trivial
+  noLawCreatesAtoms := True
+  noLawCreatesAtomsEvidence := trivial
+  noToolOutputCreatesAtoms := True
+  noToolOutputCreatesAtomsEvidence := trivial
+  noSFTEventCreatesAtoms := True
+  noSFTEventCreatesAtomsEvidence := trivial
+  openTaxonomyBoundary := True
+
+def effectOnlyShape (_atom : EffectOnlyAtom) : AtomShape where
+  family := AtomKind.effect
+  axis := Axis.semantic
+  subject := { name := "effect-only" }
+  predicate := "effect"
+  objectSlots := fun _ => False
+  payloadSlots := fun _ => False
+  direction := AtomDirection.outgoing
+  arity := 1
+  valence := endpointValence
+  singleFactShape := True
+  singleFactShapeEvidence := trivial
+
+def effectOnlyShapePresentation :
+    AtomShapePresentation effectOnlySystem where
+  shapeOf := effectOnlyShape
+  shapeKindAligned := by
+    intro atom
+    cases atom
+    rfl
+  shapeAxisAligned := by
+    intro atom
+    cases atom
+    rfl
+  shapeSingleFact := by
+    intro _ _
+    trivial
+
+def effectOnlyGeneratedMolecule :
+    AAT.GeneratedMolecule effectOnlyShapePresentation where
+  atoms := fun _ => True
+  finiteConfiguration := True
+  atomsPrimitive := by
+    intro atom _
+    exact effectOnlySystem.primitive atom
+  compositionGraph :=
+    { compatiblePairs := by
+        intro left right _ _ hDistinct
+        cases left
+        cases right
+        exact False.elim (hDistinct rfl)
+      graphBoundary := True }
+  requiredPortsMatched := by
+    intro _ _ _ hRequired
+    cases hRequired
+  notArbitrarySet := True
+  notArbitrarySetEvidence := trivial
+
+def effectOnlyGeneratedObject :
+    AAT.GeneratedArchitectureObject effectOnlyShapePresentation where
+  molecule := effectOnlyGeneratedMolecule
+  carrierList := [ ⟨EffectOnlyAtom.effectOnly, by trivial⟩ ]
+  carrierListNodup := by
+    simp
+  carrierListCovers := by
+    intro carrier
+    cases carrier with
+    | mk atom _hAtom =>
+        cases atom
+        simp
+  objectBoundary := True
+
+def effectOnlyCarrier :
+    AAT.GeneratedCarrier effectOnlyGeneratedObject :=
+  ⟨EffectOnlyAtom.effectOnly, by trivial⟩
+
+theorem effect_atom_without_authority_not_law_satisfied :
+    ¬ AAT.GeneratedArchitectureObject.GeneratedAuthorityEffectLawSatisfied
+      effectOnlyGeneratedObject effectOnlyCarrier := by
+  exact
+    AAT.GeneratedArchitectureObject.no_authority_policy_not_generated_authority_effect_law_satisfied
+      effectOnlyGeneratedObject effectOnlyCarrier
+      (by
+        intro authority hAuthority
+        cases authority.val
+        cases hAuthority)
 
 end Formal.Arch.IncompatibleAtomCompositionExamples

@@ -4167,6 +4167,59 @@ tooling policy である。
 
 Non-conclusions: `AtomAxiomSystem` は taxonomy completeness、extractor completeness、tool validation correctness、forecast correctness、global future safety を結論しない。ArchMap / ArchSig / FieldSig は Atom を観測・分析・受け渡しする後段 layer であり、Atom や AAT を生成しない。
 
+### Atom-Generated Algebra Kernel
+
+Files: `Formal/Arch/Atom/Valence.lean`,
+`Formal/Arch/Atom/Shape.lean`,
+`Formal/Arch/Atom/Composition.lean`,
+`Formal/Arch/AAT/AtomComposition.lean`,
+`Formal/Arch/AAT/GeneratedMolecule.lean`,
+`Formal/Arch/AAT/GeneratedObject.lean`,
+`Formal/Arch/AAT/GeneratedGraph.lean`,
+`Formal/Arch/AAT/GeneratedLawModel.lean`,
+`Formal/Arch/AAT/GeneratedSignature.lean`,
+`Formal/Arch/AAT/GeneratedFlatness.lean`,
+`Formal/Arch/AAT/GeneratedCurvature.lean`,
+`Formal/Arch/AAT/GeneratedPath.lean`,
+`Formal/Arch/AAT/GeneratedOperation.lean`,
+`Formal/Arch/AAT/GeneratedRepair.lean`,
+`Formal/Arch/AAT/GeneratedSynthesis.lean`,
+`Formal/Arch/AAT/GeneratedSFT.lean`, and acceptance examples
+`Formal/Arch/Examples/AtomGeneratedSignatureExamples.lean`,
+`Formal/Arch/Examples/IncompatibleAtomCompositionExamples.lean`.
+
+この節は [AAT Atom-Based Reconstruction Plan](atom_based_aat_reconstruction_plan.md)
+の acceptance kernel を索引する。Atom は無構造な点ではなく `AtomShape` /
+`AtomValence` を持つ primitive typed fact として読み、compatible composition から
+generated molecule、generated object、generated graph / law model、generated signature、
+SFT handoff へ接続する。これは計画全体の完了宣言ではなく、既存 theorem package 全体の
+Atom-generated 移行を監査するための initial generated kernel である。
+
+| Lean 名 | 種別 | 意味 | Status |
+| --- | --- | --- | --- |
+| `AtomPortKind`, `AtomPort`, `AtomValence`, `AtomSubject`, `AtomObjectSlot`, `AtomPayloadSlot`, `AtomDirection`, `AtomShape`, `AtomShapePresentation`, `AtomShapeOf` | `inductive` / `structure` / `def` | Atom の port / valence、subject、object / payload slot、direction、arity、shape presentation を持つ形状層。 | `defined only` |
+| `required_port_has_port`, `PortCompatible.symm`, `shape_kind_aligned`, `shape_axis_aligned`, `shape_single_fact` | `theorem` | required port が valence 内に存在すること、port compatibility の対称性、shape が atom kind / axis / single fact と整合することを取り出す。 | `proved` |
+| `SlotCompatible`, `PayloadSlotCompatible`, `PredicateSlotCompatible`, `CompatibleComposition`, `CompositionGraph` | `def` / `structure` | AtomShape 間の slot / payload / predicate / port compatibility と composition graph。 | `defined only` |
+| `CompatibleComposition.has_port_pair`, `no_compatible_port_not_compatible`, `incompatible_slots_not_compatible` | `theorem` | compatible composition は port pair を持ち、port 不一致や slot 不一致から compatible composition が出ないことを示す。 | `proved` |
+| `RequiredPortsMatched`, `GeneratedMolecule`, `GeneratedMolecule.toMolecule`, `GeneratedMolecule.compatible_pairs` | `def` / `structure` | Molecule を任意 atom 集合ではなく、required ports と compatible pairs を満たす generated finite configuration として読む。 | `defined only` |
+| `GeneratedMolecule.atoms_primitive`, `GeneratedMolecule.not_arbitrary_set`, `GeneratedMolecule.incompatible_slots_not_generatedMolecule`, `GeneratedMolecule.missing_required_port_not_generatedMolecule` | `theorem` | generated molecule が primitive atom に支えられ、任意集合ではなく、slot / required port 不整合からは生成されないことを固定する。 | `proved` |
+| `GeneratedArchitectureObject`, `GeneratedCarrier`, `GeneratedObservationCoordinate`, `GeneratedAuthority`, `GeneratedEffect`, `GeneratedContract`, `GeneratedAuthorityPolicy`, `GeneratedEffectLawInput`, `GeneratedAuthorityEffectLawSatisfied` | `structure` / `abbrev` / `def` | generated molecule から architecture carrier、observation coordinate、authority / effect / contract と authority-effect law input を読む object 層。 | `defined only` |
+| `GeneratedArchitectureObject.carrier_atom_primitive`, `generated_observation_from_semantic_atoms`, `generated_authority_policy_from_authority_atoms`, `generated_effect_law_input_from_effect_atoms`, `no_authority_policy_not_generated_authority_effect_law_satisfied` | `theorem` | generated object の carrier atom が primitive であり、semantic / authority / effect atom から対応 surface が出ること、authority がない effect-only input から law satisfied は出ないことを示す。 | `proved` |
+| `GeneratedRelationAtom`, `GeneratedRelation`, `GeneratedArchGraph`, `GeneratedRuntimeRelationAtom`, `GeneratedRuntimeRelation`, `GeneratedRuntimeGraph`, `GeneratedRelationEdgeWitness`, `GeneratedRuntimeEdgeWitness` | `def` / `structure` | relation / runtime interaction atom から generated static / runtime graph edge を作る graph 層。relation atom は distinct endpoints を要求する。 | `defined only` |
+| `generated_graph_edges_from_relation_atoms`, `generated_graph_edge_requires_distinct_endpoints`, `generated_runtime_edges_from_interaction_atoms`, `generated_runtime_edge_requires_distinct_endpoints` | `theorem` | generated relation / runtime atom から graph edge witness を得る方向と、generated edge が distinct endpoints を要求することを固定する。 | `proved` |
+| `GeneratedArchitectureLawModel`, `GeneratedArchitectureLawModel.toArchitectureLawModel`, `GeneratedArchitectureLawModel.generatedSignatureOf`, `signatureOfGenerated` | `structure` / `def` | generated object / graph / observation から `ArchitectureLawModel` と signature reading を構成する law / signature 層。 | `defined only` |
+| `GeneratedArchitectureLawModel.generated_projection_sound`, `generated_lsp_compatible`, `generated_boundary_policy_sound`, `generated_abstraction_policy_sound`, `generatedArchitectureLawful`, `generated_requiredSignatureAxesZero`, `generatedArchitectureLawful_iff_requiredSignatureAxesZero`, `generatedArchitectureLawful_of_requiredSignatureAxesZero` | `theorem` | generated law model から selected lawfulness と required signature axes zero を得る。`generatedArchitectureLawful_iff_requiredSignatureAxesZero` は hand-authored graph / law model や `architectureLawfulFromAAT` field を入力にしない。 | `proved` |
+| `generatedSemanticDiagram`, `generatedFlatnessModel`, `generatedArchitectureFlatWithin`, `generatedArchitectureFlat`, `generatedObservationDistance`, `generated_totalCurvature_eq_zero`, `generated_noMeasuredNumericalCurvatureObstruction` | `def` / `theorem` | generated semantic diagram / flatness model / curvature input を既存 bounded flatness / curvature API に接続する。 | `defined only` / `proved` |
+| `GeneratedArchitectureStep`, `GeneratedArchitecturePath`, `GeneratedArchitecturePath.preservesInvariant`, `GeneratedPathHomotopy`, `GeneratedOperation`, `GeneratedOperation.atomShape_transformed`, `GeneratedOperation.operation_does_not_create_atoms` | `structure` / `abbrev` / `theorem` | generated step / path / homotopy と AtomShape transformation を、atom existence を生成しない operation として読む。 | `defined only` / `proved` |
+| `GeneratedRepairTarget`, `GeneratedRepairTarget.shapeLevel`, `GeneratedRepair`, `GeneratedRepair.clears_selected_target`, `GeneratedRepair.repair_does_not_create_atoms`, `GeneratedSynthesisCandidate`, `GeneratedSynthesisCandidate.candidate_flatWithin`, `GeneratedSynthesisCandidate.candidate_totalCurvature_eq_zero`, `GeneratedSynthesisCandidate.synthesis_does_not_create_atoms` | `inductive` / `structure` / `def` / `theorem` | repair target を port / slot / valence / relation endpoint / authority などの shape-level target として読み、synthesis candidate を generated flatness / curvature package に接続する。 | `defined only` / `proved` |
+| `GeneratedArchitectureLawModel.generatedAATTheoremStatusForSFT`, `GeneratedSFTInput`, `GeneratedSFTInput.reads_generated_aat`, `sft_does_not_redefine_atoms`, `sft_does_not_redefine_aat`, `forecast_correctness_remains_boundary`, `sft_event_does_not_create_atoms` | `def` / `structure` / `theorem` | generated law model の AAT theorem status を SFT local premise として渡し、SFT / FieldSig が Atom / AAT を再定義せず forecast correctness を結論しないことを固定する。 | `defined only` / `proved` |
+| `AtomGeneratedSignatureExamples.*`, `IncompatibleAtomCompositionExamples.*` | `def` / `theorem` | positive acceptance は source-like AtomShape から generated law model / signature / SFT handoff までを通す。negative acceptance は incompatible slot、missing required port、relation endpoint 欠落、authority 欠落、hand-authored graph 非含意を固定する。 | `proved` |
+
+Non-conclusions: この kernel は `AtomShape` / `Generated*` surface の存在と代表 acceptance
+theorem を固定するが、全 theorem package の Atom-generated 分類完了、実コード extractor
+completeness、ArchMap observation completeness、global semantic flatness、all-path homotopy
+completeness、FieldSig forecast correctness は結論しない。
+
 ## Reverse-Import Theorem Packages
 
 File: `Formal/Arch/Evolution/ReverseImportTheorems.lean`.

@@ -780,6 +780,9 @@
       "signatureAxisRefs": [
         "sig-axis:layer-violation"
       ],
+      "applicableLawAxes": [
+        "sig-axis:layer-violation"
+      ],
       "atomShapeRefs": [
         "atom-shape:atom-component-route-users",
         "atom-shape:atom-component-service-user",
@@ -789,6 +792,9 @@
       ],
       "lawInputKind": "generatedArchitectureLawModelInput",
       "evaluationStatus": "availableForSelectedLawUniverse",
+      "localStatuses": [
+        "localSatisfied"
+      ],
       "coverageBoundary": "generated law input is built from observed molecule and selected LawPolicy laws; missing ArchMap evidence remains a coverage blocker",
       "evidenceBoundary": "law input is an ArchSig middle-layer construction, not a hand-authored ArchitectureLawModel",
       "nonConclusions": [

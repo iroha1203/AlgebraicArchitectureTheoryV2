@@ -1594,9 +1594,13 @@ pub struct ArchSigGeneratedLawInputV0 {
     pub source_molecule_reading_ref: String,
     pub law_refs: Vec<String>,
     pub signature_axis_refs: Vec<String>,
+    #[serde(default)]
+    pub applicable_law_axes: Vec<String>,
     pub atom_shape_refs: Vec<String>,
     pub law_input_kind: String,
     pub evaluation_status: String,
+    #[serde(default)]
+    pub local_statuses: Vec<String>,
     pub coverage_boundary: String,
     pub evidence_boundary: String,
     pub non_conclusions: Vec<String>,
@@ -1611,7 +1615,11 @@ pub struct ArchSigGeneratedObstructionV0 {
     pub generated_molecule_refs: Vec<String>,
     pub atom_shape_refs: Vec<String>,
     pub obstruction_kind: String,
+    #[serde(default)]
+    pub local_status: String,
     pub measurement_status: String,
+    #[serde(default)]
+    pub blocker_status: String,
     pub evidence_boundary: String,
     pub non_conclusions: Vec<String>,
 }

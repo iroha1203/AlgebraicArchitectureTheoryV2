@@ -806,6 +806,9 @@
       "signatureAxisRefs": [
         "sig-axis:homotopy-report-fixture"
       ],
+      "applicableLawAxes": [
+        "sig-axis:homotopy-report-fixture"
+      ],
       "atomShapeRefs": [
         "atom-shape:atom-cache-read",
         "atom-shape:atom-repository-read",
@@ -816,6 +819,9 @@
       ],
       "lawInputKind": "generatedArchitectureLawModelInput",
       "evaluationStatus": "availableForSelectedLawUniverse",
+      "localStatuses": [
+        "localSatisfied"
+      ],
       "coverageBoundary": "generated law input is built from observed molecule and selected LawPolicy laws; missing ArchMap evidence remains a coverage blocker",
       "evidenceBoundary": "law input is an ArchSig middle-layer construction, not a hand-authored ArchitectureLawModel",
       "nonConclusions": [
@@ -846,7 +852,9 @@
         "atom-shape:atom-repository-read"
       ],
       "obstructionKind": "HomotopyReportFixtureCircuit",
+      "localStatus": "localViolated",
       "measurementStatus": "locallyBlockedByCoverageGap",
+      "blockerStatus": "locallyBlocked",
       "evidenceBoundary": "generated obstruction is backed by generated molecule / law input refs and selected obstruction circuit evidence",
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",

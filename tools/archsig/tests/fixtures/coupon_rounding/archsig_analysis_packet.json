@@ -9910,6 +9910,9 @@
       "signatureAxisRefs": [
         "sig-axis:semantic-inconsistency"
       ],
+      "applicableLawAxes": [
+        "sig-axis:semantic-inconsistency"
+      ],
       "atomShapeRefs": [
         "atom-shape:atom-contract-paymentamount-receiptamount-coupon-tax-rounding",
         "atom-shape:atom-semantic-paymentamount-receiptamount-coupon-tax-rounding-noncommutation",
@@ -9917,6 +9920,9 @@
       ],
       "lawInputKind": "generatedArchitectureLawModelInput",
       "evaluationStatus": "availableForSelectedLawUniverse",
+      "localStatuses": [
+        "localSatisfied"
+      ],
       "coverageBoundary": "generated law input is built from observed molecule and selected LawPolicy laws; missing ArchMap evidence remains a coverage blocker",
       "evidenceBoundary": "law input is an ArchSig middle-layer construction, not a hand-authored ArchitectureLawModel",
       "nonConclusions": [
@@ -9945,7 +9951,9 @@
         "atom-shape:atom-semantic-paymentamount-receiptamount-coupon-tax-rounding-noncommutation"
       ],
       "obstructionKind": "SemanticMismatchCircuit",
+      "localStatus": "localViolated",
       "measurementStatus": "locallyBlockedByCoverageGap",
+      "blockerStatus": "locallyBlocked",
       "evidenceBoundary": "generated obstruction is backed by generated molecule / law input refs and selected obstruction circuit evidence",
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
