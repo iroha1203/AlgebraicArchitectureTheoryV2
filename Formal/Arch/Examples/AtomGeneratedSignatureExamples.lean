@@ -5,6 +5,7 @@ import Formal.Arch.Evolution.Chapter7TheoremPackages
 import Formal.Arch.Evolution.Chapter10ArchitectureExtensionFormula
 import Formal.Arch.Evolution.Chapter11AnalyticRepresentation
 import Formal.Arch.Examples.AtomGeneratedMoleculeExamples
+import Formal.Arch.Signature.AATCoreBridge
 
 namespace Formal.Arch.AtomGeneratedSignatureExamples
 
@@ -67,6 +68,25 @@ theorem atomGeneratedSignature_architectureLawful :
     ArchitectureSignature.ArchitectureLawful
       generatedComponentLawModel.toArchitectureLawModel := by
   exact generatedComponentLawModel.generatedArchitectureLawful
+
+/--
+Positive acceptance: the AATCore-to-Signature bridge is built from the generated
+law model without supplying an `architectureLawfulFromAAT` field.
+-/
+noncomputable def atomGeneratedSignature_coreSignatureBridge :
+    ArchitectureSignature.AATCoreSignatureLawfulnessBridge
+      generatedComponentLawModel.generatedAATCore
+      generatedComponentLawModel.toArchitectureLawModel :=
+  ArchitectureSignature.AATCoreSignatureLawfulnessBridge.ofGeneratedLawModel
+    generatedComponentLawModel True True True True True True
+    trivial trivial trivial
+
+theorem atomGeneratedSignature_coreSignatureBridge_architectureLawful :
+    ArchitectureSignature.ArchitectureLawful
+      generatedComponentLawModel.toArchitectureLawModel := by
+  exact
+    ArchitectureSignature.AATCoreSignatureLawfulnessBridge.architectureLawful
+      atomGeneratedSignature_coreSignatureBridge
 
 /--
 Positive acceptance: generated law models have a generated analytic
