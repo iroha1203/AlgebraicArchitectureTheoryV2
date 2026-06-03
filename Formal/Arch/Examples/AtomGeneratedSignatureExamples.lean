@@ -154,6 +154,41 @@ theorem atomGeneratedSignature_analytic_represent_eq_signatureOfGenerated :
       generatedComponentLawModel
 
 /--
+Positive acceptance: the Chapter 11 analytic extension formula has a generated
+law-model specialization using the generated analytic representation and the
+generated selected obstruction valuation.
+-/
+noncomputable def atomGeneratedSignature_analyticExtensionFormulaPackage :
+    Formal.Arch.Chapter11AnalyticRepresentation.AnalyticExtensionFormulaPackage
+      (AAT.GeneratedArchitectureLawModel generatedComponentObject)
+      ArchitectureSignature.ArchitectureSignatureV1
+      Unit
+      AAT.GeneratedAnalyticWitness :=
+  Formal.Arch.Chapter11AnalyticRepresentation.generatedIdentityAnalyticExtensionFormulaPackage
+    generatedComponentLawModel
+
+theorem atomGeneratedSignature_analyticExtensionFormula_holds :
+    atomGeneratedSignature_analyticExtensionFormulaPackage.FormulaEquation := by
+  exact
+    Formal.Arch.Chapter11AnalyticRepresentation.generatedIdentityAnalyticExtensionFormula_formula_holds
+      generatedComponentLawModel
+
+theorem atomGeneratedSignature_analyticExtensionFormula_requiredAssumptions :
+    atomGeneratedSignature_analyticExtensionFormulaPackage.RequiredAssumptions := by
+  exact
+    Formal.Arch.Chapter11AnalyticRepresentation.generatedIdentityAnalyticExtensionFormula_requiredAssumptions
+      generatedComponentLawModel
+
+theorem atomGeneratedSignature_analyticExtensionFormula_obstructionValue_zero :
+    atomGeneratedSignature_analyticExtensionFormulaPackage.obstructionValuation.value
+      generatedComponentLawModel AAT.GeneratedAnalyticWitness.requiredSignatureAxes =
+        0 := by
+  exact
+    Formal.Arch.Chapter11AnalyticRepresentation.generatedIdentityAnalyticExtensionFormula_obstructionValue_zero
+      generatedComponentLawModel
+      AAT.GeneratedAnalyticWitness.requiredSignatureAxes
+
+/--
 Positive acceptance: generated law models also trigger the existing bounded
 feature-extension flatness theorem through a generated identity feature
 extension.

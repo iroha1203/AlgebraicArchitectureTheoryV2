@@ -117,6 +117,103 @@ theorem generatedAnalyticRepresentation_obstructionReflecting
     ((model.generatedArchitectureLawful_iff_requiredSignatureAxesZero).mp
       hLawful)
 
+/--
+Selected obstruction valuation generated from the generated Signature reading.
+
+The selected witness is the required Signature axis package exposed by
+`GeneratedAnalyticWitness.requiredSignatureAxes`.  A generated law model has
+value `0` exactly because its generated required Signature axes are zero; a
+nonzero value is reserved for the selected generated Signature obstruction.
+-/
+noncomputable def generatedRequiredSignatureObstructionValuation
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : GeneratedArchitectureObject presentation}
+    [DecidableEq system.Atom]
+    [DecidableRel (GeneratedRelation object)] :
+    ObstructionValuation
+      (GeneratedArchitectureLawModel object)
+      GeneratedAnalyticWitness where
+  obstruction := fun model _ =>
+    ¬ ArchitectureSignature.RequiredSignatureAxesZero
+      model.signatureOfGenerated
+  value := fun model _ => by
+    classical
+    exact
+      if ArchitectureSignature.RequiredSignatureAxesZero
+          model.signatureOfGenerated then 0 else 1
+  zeroReflectsAbsence := by
+    intro model witness hZero hObstruction
+    classical
+    by_cases hRequired :
+      ArchitectureSignature.RequiredSignatureAxesZero
+        model.signatureOfGenerated
+    · exact hObstruction hRequired
+    · simp [hRequired] at hZero
+  obstructionGivesPositive := by
+    intro model witness hObstruction
+    classical
+    by_cases hRequired :
+      ArchitectureSignature.RequiredSignatureAxesZero
+        model.signatureOfGenerated
+    · exact False.elim (hObstruction hRequired)
+    · simp [hRequired]
+  coverageAssumptions := True
+  nonConclusions := True
+
+/-- Generated obstruction valuation records its non-conclusion boundary. -/
+theorem generatedRequiredSignatureObstructionValuation_recordsNonConclusions
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : GeneratedArchitectureObject presentation}
+    [DecidableEq system.Atom]
+    [DecidableRel (GeneratedRelation object)] :
+    (generatedRequiredSignatureObstructionValuation
+      (object := object)).RecordsNonConclusions := by
+  trivial
+
+/--
+Every generated law model has zero selected generated analytic obstruction
+value, because the value is computed from generated required Signature axes.
+-/
+theorem generatedRequiredSignatureObstructionValuation_value_zero
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : GeneratedArchitectureObject presentation}
+    [DecidableEq system.Atom]
+    [DecidableRel (GeneratedRelation object)]
+    (model : GeneratedArchitectureLawModel object)
+    (witness : GeneratedAnalyticWitness) :
+    (generatedRequiredSignatureObstructionValuation
+      (object := object)).value model witness = 0 := by
+  classical
+  have hRequired :
+      ArchitectureSignature.RequiredSignatureAxesZero
+        model.signatureOfGenerated :=
+    (model.generatedArchitectureLawful_iff_requiredSignatureAxesZero).mp
+      model.generatedArchitectureLawful
+  simp [generatedRequiredSignatureObstructionValuation, hRequired]
+
+/--
+Generated law models have no selected generated analytic obstruction witness.
+-/
+theorem generatedRequiredSignatureObstructionValuation_noSelectedObstruction
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : GeneratedArchitectureObject presentation}
+    [DecidableEq system.Atom]
+    [DecidableRel (GeneratedRelation object)]
+    (model : GeneratedArchitectureLawModel object) :
+    (generatedRequiredSignatureObstructionValuation
+      (object := object)).NoSelectedObstruction model := by
+  intro witness
+  exact
+    ObstructionValuation.no_obstruction_of_value_zero
+      (generatedRequiredSignatureObstructionValuation
+        (object := object))
+      (generatedRequiredSignatureObstructionValuation_value_zero
+        (object := object) model witness)
+
 end GeneratedArchitectureLawModel
 
 end AAT

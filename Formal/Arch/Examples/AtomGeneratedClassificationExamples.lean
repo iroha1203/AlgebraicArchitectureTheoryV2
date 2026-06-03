@@ -111,4 +111,16 @@ theorem generated_consequence_envelope_classified_atom_generated :
         .atomGenerated := by
   exact generated_consequence_envelope_is_atom_generated
 
+/--
+Acceptance: Chapter 11 obstruction valuation and analytic extension formula now
+have generated law-model entrypoints rather than remaining only downstream
+representation packages.
+-/
+theorem generated_analytic_extension_formula_classified_atom_generated :
+    (classifyChapter11 .obstructionValuation).classification =
+        .atomGenerated ∧
+      (classifyChapter11 .analyticExtensionFormula).classification =
+        .atomGenerated := by
+  exact generated_analytic_extension_formula_is_atom_generated
+
 end Formal.Arch.AtomGeneratedClassificationExamples

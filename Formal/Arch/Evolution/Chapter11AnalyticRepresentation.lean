@@ -653,6 +653,121 @@ theorem requiredAssumptions_of_fields
 end AnalyticExtensionFormulaPackage
 
 /--
+Atom-generated specialization of the Chapter 11 analytic extension formula.
+
+The state space is `GeneratedArchitectureLawModel object`, the representation
+is the generated analytic representation, and the obstruction valuation is the
+generated required-Signature-axis valuation.  The identity package records the
+zero-change generated case without accepting a hand-authored representation
+map or an arbitrary obstruction valuation.
+-/
+noncomputable def generatedIdentityAnalyticExtensionFormulaPackage
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : AAT.GeneratedArchitectureObject presentation}
+    [DecidableEq system.Atom]
+    [DecidableRel (AAT.GeneratedRelation object)]
+    (model : AAT.GeneratedArchitectureLawModel object) :
+    AnalyticExtensionFormulaPackage
+      (AAT.GeneratedArchitectureLawModel object)
+      ArchitectureSignature.ArchitectureSignatureV1
+      Unit
+      AAT.GeneratedAnalyticWitness where
+  representation :=
+    AAT.GeneratedArchitectureLawModel.generatedAnalyticRepresentation
+      (object := object)
+  obstructionValuation :=
+    AAT.GeneratedArchitectureLawModel.generatedRequiredSignatureObstructionValuation
+      (object := object)
+  before := model
+  after := model
+  feature := ()
+  signatureValue := fun sig =>
+    match
+      ArchitectureSignature.ArchitectureSignatureV1.axisValue sig
+        ArchitectureSignature.ArchitectureSignatureV1Axis.hasCycle with
+    | none => 0
+    | some n => n
+  featureContribution := fun _ => 0
+  interactionTerm := fun _ _ _ => 0
+  transferTerm := fun _ _ _ => 0
+  repairTerm := fun _ _ _ => 0
+  obstructionResidual := fun _ _ _ => 0
+  representationMapAssumptions := True
+  valuationStructureAssumptions := True
+  decompositionCertificate := True
+  coverageAssumptions := True
+  complexityTransferBoundary := True
+  formulaHolds := by
+    simp
+  nonConclusions := True
+
+/-- Generated identity analytic extension formula records the carried equation. -/
+theorem generatedIdentityAnalyticExtensionFormula_formula_holds
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : AAT.GeneratedArchitectureObject presentation}
+    [DecidableEq system.Atom]
+    [DecidableRel (AAT.GeneratedRelation object)]
+    (model : AAT.GeneratedArchitectureLawModel object) :
+    (generatedIdentityAnalyticExtensionFormulaPackage
+      (object := object) model).FormulaEquation := by
+  exact
+    AnalyticExtensionFormulaPackage.formula_holds
+      (generatedIdentityAnalyticExtensionFormulaPackage
+        (object := object) model)
+
+/--
+Generated identity analytic extension formula discharges the package's explicit
+representation / valuation / decomposition / coverage assumptions.
+-/
+theorem generatedIdentityAnalyticExtensionFormula_requiredAssumptions
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : AAT.GeneratedArchitectureObject presentation}
+    [DecidableEq system.Atom]
+    [DecidableRel (AAT.GeneratedRelation object)]
+    (model : AAT.GeneratedArchitectureLawModel object) :
+    (generatedIdentityAnalyticExtensionFormulaPackage
+      (object := object) model).RequiredAssumptions := by
+  exact
+    AnalyticExtensionFormulaPackage.requiredAssumptions_of_fields
+      (generatedIdentityAnalyticExtensionFormulaPackage
+        (object := object) model)
+      trivial trivial trivial trivial trivial
+
+/-- Generated identity analytic extension formula records non-conclusions. -/
+theorem generatedIdentityAnalyticExtensionFormula_recordsNonConclusions
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : AAT.GeneratedArchitectureObject presentation}
+    [DecidableEq system.Atom]
+    [DecidableRel (AAT.GeneratedRelation object)]
+    (model : AAT.GeneratedArchitectureLawModel object) :
+    (generatedIdentityAnalyticExtensionFormulaPackage
+      (object := object) model).RecordsNonConclusions := by
+  trivial
+
+/--
+The generated analytic extension formula uses the generated selected
+obstruction valuation, whose selected generated witness value is zero.
+-/
+theorem generatedIdentityAnalyticExtensionFormula_obstructionValue_zero
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : AAT.GeneratedArchitectureObject presentation}
+    [DecidableEq system.Atom]
+    [DecidableRel (AAT.GeneratedRelation object)]
+    (model : AAT.GeneratedArchitectureLawModel object)
+    (witness : AAT.GeneratedAnalyticWitness) :
+    (generatedIdentityAnalyticExtensionFormulaPackage
+      (object := object) model).obstructionValuation.value
+        model witness = 0 := by
+  exact
+    AAT.GeneratedArchitectureLawModel.generatedRequiredSignatureObstructionValuation_value_zero
+      (object := object) model witness
+
+/--
 Report-facing analytic snapshot for the Chapter 11 coupon canonical example.
 
 The three axes mirror the design-note fields
@@ -1151,7 +1266,11 @@ def representativeDeclarations : Candidate -> List String
        "ObstructionValuation.ZeroReflectingSum",
        "ObstructionValuation.no_obstruction_of_value_zero",
        "ObstructionValuation.noSelectedObstruction_of_zeroReflectingSum",
-       "ObstructionValuation.RecordsNonConclusions"]
+       "ObstructionValuation.RecordsNonConclusions",
+       "AAT.GeneratedArchitectureLawModel.generatedRequiredSignatureObstructionValuation",
+       "AAT.GeneratedArchitectureLawModel.generatedRequiredSignatureObstructionValuation_value_zero",
+       "AAT.GeneratedArchitectureLawModel.generatedRequiredSignatureObstructionValuation_noSelectedObstruction",
+       "AAT.GeneratedArchitectureLawModel.generatedRequiredSignatureObstructionValuation_recordsNonConclusions"]
   | analyticExtensionFormula =>
       ["AnalyticExtensionFormulaPackage",
        "AnalyticExtensionFormulaPackage.FormulaEquation",
@@ -1160,6 +1279,11 @@ def representativeDeclarations : Candidate -> List String
        "AnalyticExtensionFormulaPackage.formula_holds",
        "AnalyticExtensionFormulaPackage.requiredAssumptions_of_fields",
        "AnalyticExtensionFormulaPackage.records_nonConclusions_iff",
+       "Chapter11AnalyticRepresentation.generatedIdentityAnalyticExtensionFormulaPackage",
+       "Chapter11AnalyticRepresentation.generatedIdentityAnalyticExtensionFormula_formula_holds",
+       "Chapter11AnalyticRepresentation.generatedIdentityAnalyticExtensionFormula_requiredAssumptions",
+       "Chapter11AnalyticRepresentation.generatedIdentityAnalyticExtensionFormula_recordsNonConclusions",
+       "Chapter11AnalyticRepresentation.generatedIdentityAnalyticExtensionFormula_obstructionValue_zero",
        "ObstructionValuation",
        "BoundedComplexityTransferPackage.no_free_elimination_bounded"]
   | couponAnalyticSnapshot =>
@@ -1346,6 +1470,15 @@ def schematicCorrespondences : Candidate -> List SchematicCorrespondence
            "ObstructionValuation.noSelectedObstruction_of_zeroReflectingSum"],
          reading :=
           "selected witness valuation; zero values rule out selected witnesses, not global flatness",
+         status := "defined only / proved" },
+       { schematic := "GeneratedArchitectureLawModel selected valuation",
+         leanDeclarations :=
+          ["AAT.GeneratedArchitectureLawModel.generatedRequiredSignatureObstructionValuation",
+           "AAT.GeneratedArchitectureLawModel.generatedRequiredSignatureObstructionValuation_value_zero",
+           "AAT.GeneratedArchitectureLawModel.generatedRequiredSignatureObstructionValuation_noSelectedObstruction",
+           "AAT.GeneratedArchitectureLawModel.generatedRequiredSignatureObstructionValuation_recordsNonConclusions"],
+         reading :=
+          "generated Signature required-axis status computes the selected generated analytic obstruction valuation for generated law models",
          status := "defined only / proved" }]
   | analyticExtensionFormula =>
       [{ schematic := "AnalyticExtensionFormulaPackage",
@@ -1366,6 +1499,16 @@ def schematicCorrespondences : Candidate -> List SchematicCorrespondence
            "BoundedComplexityTransferPackage.no_free_elimination_bounded"],
          reading :=
           "formula use is relative to explicit representation-map, valuation-structure, decomposition, coverage, and complexity-transfer boundary assumptions",
+         status := "defined only / proved" },
+       { schematic := "generated identity analytic extension formula",
+         leanDeclarations :=
+          ["Chapter11AnalyticRepresentation.generatedIdentityAnalyticExtensionFormulaPackage",
+           "Chapter11AnalyticRepresentation.generatedIdentityAnalyticExtensionFormula_formula_holds",
+           "Chapter11AnalyticRepresentation.generatedIdentityAnalyticExtensionFormula_requiredAssumptions",
+           "Chapter11AnalyticRepresentation.generatedIdentityAnalyticExtensionFormula_recordsNonConclusions",
+           "Chapter11AnalyticRepresentation.generatedIdentityAnalyticExtensionFormula_obstructionValue_zero"],
+         reading :=
+          "generated law models, generated analytic representation, and generated selected obstruction valuation instantiate the analytic extension formula without hand-authored representation input",
          status := "defined only / proved" }]
   | couponAnalyticSnapshot =>
       [{ schematic := "coupon canonical analytic snapshot",

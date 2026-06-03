@@ -553,25 +553,25 @@ def classifyChapter11
         (by simp)
         "ArchitectureSignature representation has a generated law-model entrypoint."
   | .obstructionValuation =>
-      representationRow
+      atomGeneratedRow
         "chapter11.obstructionValuation"
         (Chapter11AnalyticRepresentation.Candidate.representativeDeclarations
           .obstructionValuation)
-        ["ObstructionValuation"]
+        ["AAT.GeneratedArchitectureLawModel.generatedRequiredSignatureObstructionValuation",
+         "AAT.GeneratedArchitectureLawModel.generatedRequiredSignatureObstructionValuation_value_zero",
+         "AAT.GeneratedArchitectureLawModel.generatedRequiredSignatureObstructionValuation_noSelectedObstruction"]
         (by simp)
-        .downstreamLibrary
-        ActionAllowed.representationDownstream
-        "Obstruction valuation is a downstream analytic witness package."
+        "Obstruction valuation has a generated selected Signature-axis valuation over generated law models."
   | .analyticExtensionFormula =>
-      representationRow
+      atomGeneratedRow
         "chapter11.analyticExtensionFormula"
         (Chapter11AnalyticRepresentation.Candidate.representativeDeclarations
           .analyticExtensionFormula)
-        ["AnalyticExtensionFormulaPackage"]
+        ["Chapter11AnalyticRepresentation.generatedIdentityAnalyticExtensionFormulaPackage",
+         "Chapter11AnalyticRepresentation.generatedIdentityAnalyticExtensionFormula_formula_holds",
+         "Chapter11AnalyticRepresentation.generatedIdentityAnalyticExtensionFormula_obstructionValue_zero"]
         (by simp)
-        .downstreamLibrary
-        ActionAllowed.representationDownstream
-        "The analytic extension formula remains downstream and assumption-relative."
+        "The analytic extension formula has a generated identity specialization over generated law models, generated analytic representation, and generated selected obstruction valuation."
   | .couponAnalyticSnapshot =>
       representationRow
         "chapter11.couponAnalyticSnapshot"
@@ -955,6 +955,13 @@ theorem generated_consequence_envelope_is_atom_generated :
     (classifySFT .consequenceEnvelope).classification =
       .atomGenerated := by
   rfl
+
+theorem generated_analytic_extension_formula_is_atom_generated :
+    (classifyChapter11 .obstructionValuation).classification =
+      .atomGenerated ∧
+    (classifyChapter11 .analyticExtensionFormula).classification =
+      .atomGenerated := by
+  exact ⟨rfl, rfl⟩
 
 end AATReconstructionClassification
 end Formal.Arch
