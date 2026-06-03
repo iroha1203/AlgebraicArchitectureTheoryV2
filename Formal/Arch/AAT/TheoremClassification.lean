@@ -1,0 +1,876 @@
+import Formal.Arch.Evolution.Chapter7TheoremPackages
+import Formal.Arch.Evolution.Chapter8HomotopySkeleton
+import Formal.Arch.Evolution.Chapter9DiagramFilling
+import Formal.Arch.Evolution.Chapter10ArchitectureExtensionFormula
+import Formal.Arch.Evolution.Chapter11AnalyticRepresentation
+import Formal.Arch.Evolution.SFTTheoremPackages
+
+/-!
+Atom-based AAT reconstruction classification registry.
+
+The reconstruction plan requires each theorem package to be classified as
+Atom-generated, bridge-assumed, or representation-level.  This module makes
+that status a Lean surface: a registry row cannot be constructed without the
+evidence list required by its classification, and there is no `unclassified`
+constructor.
+-/
+
+namespace Formal.Arch
+namespace AATReconstructionClassification
+
+/-- Classification required by the atom-based reconstruction plan. -/
+inductive TheoremPackageClass where
+  | atomGenerated
+  | bridgeAssumed
+  | representationLevel
+  deriving DecidableEq, Repr
+
+/-- Migration action allowed for a classified theorem package. -/
+inductive ReconstructionAction where
+  | aatSourceOfTruth
+  | temporaryBridge
+  | downstreamLibrary
+  | rewriteTarget
+  deriving DecidableEq, Repr
+
+/--
+Evidence required by each classification.
+
+Atom-generated rows must name at least one generated entrypoint,
+bridge-assumed rows must name the bridge assumption, and representation-level
+rows must name the representation surface they remain relative to.
+-/
+inductive ClassificationEvidence :
+    TheoremPackageClass -> List String -> List String -> List String -> Prop where
+  | atomGenerated
+      {generatedEntrypoints bridgeAssumptions representationEntrypoints :
+        List String}
+      (hGenerated : generatedEntrypoints ≠ []) :
+      ClassificationEvidence .atomGenerated generatedEntrypoints
+        bridgeAssumptions representationEntrypoints
+  | bridgeAssumed
+      {generatedEntrypoints bridgeAssumptions representationEntrypoints :
+        List String}
+      (hBridge : bridgeAssumptions ≠ []) :
+      ClassificationEvidence .bridgeAssumed generatedEntrypoints
+        bridgeAssumptions representationEntrypoints
+  | representationLevel
+      {generatedEntrypoints bridgeAssumptions representationEntrypoints :
+        List String}
+      (hRepresentation : representationEntrypoints ≠ []) :
+      ClassificationEvidence .representationLevel generatedEntrypoints
+        bridgeAssumptions representationEntrypoints
+
+/-- Allowed actions for each classification. -/
+inductive ActionAllowed :
+    TheoremPackageClass -> ReconstructionAction -> Prop where
+  | atomGeneratedSourceOfTruth :
+      ActionAllowed .atomGenerated .aatSourceOfTruth
+  | bridgeAssumedTemporary :
+      ActionAllowed .bridgeAssumed .temporaryBridge
+  | representationDownstream :
+      ActionAllowed .representationLevel .downstreamLibrary
+  | representationRewriteTarget :
+      ActionAllowed .representationLevel .rewriteTarget
+
+/-- A classified theorem-package registry row. -/
+structure TheoremPackageClassification where
+  packageId : String
+  representativeDeclarations : List String
+  classification : TheoremPackageClass
+  generatedEntrypoints : List String
+  bridgeAssumptions : List String
+  representationEntrypoints : List String
+  action : ReconstructionAction
+  reason : String
+  evidence :
+    ClassificationEvidence classification generatedEntrypoints
+      bridgeAssumptions representationEntrypoints
+  actionEvidence : ActionAllowed classification action
+
+namespace TheoremPackageClassification
+
+/-- A row passes the reconstruction classification evidence check. -/
+def Passes (row : TheoremPackageClassification) : Prop :=
+  ClassificationEvidence row.classification row.generatedEntrypoints
+    row.bridgeAssumptions row.representationEntrypoints
+
+/-- The selected migration action is allowed for the row's classification. -/
+def HasAllowedAction (row : TheoremPackageClassification) : Prop :=
+  ActionAllowed row.classification row.action
+
+theorem passes (row : TheoremPackageClassification) : row.Passes :=
+  row.evidence
+
+theorem action_allowed
+    (row : TheoremPackageClassification) : row.HasAllowedAction :=
+  row.actionEvidence
+
+end TheoremPackageClassification
+
+def atomGeneratedRow
+    (packageId : String)
+    (representativeDeclarations generatedEntrypoints : List String)
+    (hGenerated : generatedEntrypoints ≠ [])
+    (reason : String) :
+    TheoremPackageClassification where
+  packageId := packageId
+  representativeDeclarations := representativeDeclarations
+  classification := .atomGenerated
+  generatedEntrypoints := generatedEntrypoints
+  bridgeAssumptions := []
+  representationEntrypoints := []
+  action := .aatSourceOfTruth
+  reason := reason
+  evidence := ClassificationEvidence.atomGenerated hGenerated
+  actionEvidence := ActionAllowed.atomGeneratedSourceOfTruth
+
+def bridgeAssumedRow
+    (packageId : String)
+    (representativeDeclarations bridgeAssumptions : List String)
+    (hBridge : bridgeAssumptions ≠ [])
+    (reason : String) :
+    TheoremPackageClassification where
+  packageId := packageId
+  representativeDeclarations := representativeDeclarations
+  classification := .bridgeAssumed
+  generatedEntrypoints := []
+  bridgeAssumptions := bridgeAssumptions
+  representationEntrypoints := []
+  action := .temporaryBridge
+  reason := reason
+  evidence := ClassificationEvidence.bridgeAssumed hBridge
+  actionEvidence := ActionAllowed.bridgeAssumedTemporary
+
+def representationRow
+    (packageId : String)
+    (representativeDeclarations representationEntrypoints : List String)
+    (hRepresentation : representationEntrypoints ≠ [])
+    (action : ReconstructionAction)
+    (hAction : ActionAllowed .representationLevel action)
+    (reason : String) :
+    TheoremPackageClassification where
+  packageId := packageId
+  representativeDeclarations := representativeDeclarations
+  classification := .representationLevel
+  generatedEntrypoints := []
+  bridgeAssumptions := []
+  representationEntrypoints := representationEntrypoints
+  action := action
+  reason := reason
+  evidence := ClassificationEvidence.representationLevel hRepresentation
+  actionEvidence := hAction
+
+/-- AAT-side theorem packages not already represented by chapter candidates. -/
+inductive AATCandidate where
+  | finiteStaticStructuralCore
+  | genericSignatureBridge
+  | generatedSignatureBridge
+  | atomGeneratedAlgebraKernel
+  | archMapObservationBoundary
+  | crossPackageSmoke
+  deriving DecidableEq, Repr
+
+namespace AATCandidate
+
+def representativeDeclarations : AATCandidate -> List String
+  | finiteStaticStructuralCore =>
+      ["ArchitectureSignature.architectureLawful_iff_requiredSignatureAxesZero",
+       "ArchitectureSignature.architectureLawful_iff_architectureZeroCurvatureTheoremPackage",
+       "ArchitectureSignature.ArchitectureLawModel.signatureOf"]
+  | genericSignatureBridge =>
+      ["ArchitectureSignature.AATCoreSignatureLawfulnessBridge",
+       "ArchitectureSignature.AATCoreSignatureLawfulnessBridge.architectureLawful",
+       "ArchitectureSignature.AATCoreSignatureLawfulnessBridge.requiredSignatureAxesZero"]
+  | generatedSignatureBridge =>
+      ["ArchitectureSignature.AATCoreSignatureLawfulnessBridge.ofGeneratedLawModel",
+       "ArchitectureSignature.AATCoreSignatureLawfulnessBridge.ofGeneratedLawModel_architectureLawful",
+       "AtomGeneratedSignatureExamples.atomGeneratedSignature_coreSignatureBridge"]
+  | atomGeneratedAlgebraKernel =>
+      ["AAT.GeneratedMolecule",
+       "AAT.GeneratedArchitectureObject",
+       "AAT.GeneratedArchitectureLawModel",
+       "AtomGeneratedSignatureExamples.*",
+       "AtomGeneratedRepairExamples.*",
+       "IncompatibleAtomCompositionExamples.*"]
+  | archMapObservationBoundary =>
+      ["Observation.ArchMapObservationLayer",
+       "Observation.ArchMapObservationLayer.archmap_does_not_create_atoms",
+       "Observation.ArchMapObservationLayer.archmap_does_not_define_aat"]
+  | crossPackageSmoke =>
+      ["AATCoreSmokeExamples.generated_transport_handoff_reads_nonidentity_transition",
+       "AATCoreSmokeExamples.generated_transport_circuit_delta_keeps_source_target_surfaces"]
+
+end AATCandidate
+
+def classifyAATCandidate
+    (candidate : AATCandidate) : TheoremPackageClassification :=
+  match candidate with
+  | .finiteStaticStructuralCore =>
+      representationRow
+        "aat.finiteStaticStructuralCore"
+        (AATCandidate.representativeDeclarations
+          .finiteStaticStructuralCore)
+        ["ArchitectureLawModel", "ArchGraph", "Observation"]
+        (by simp)
+        .downstreamLibrary
+        ActionAllowed.representationDownstream
+        "The static Signature anchor is a representation-level theorem retained as a downstream library; generated law models invoke it through generated bridge entrypoints."
+  | .genericSignatureBridge =>
+      bridgeAssumedRow
+        "aat.genericSignatureBridge"
+        (AATCandidate.representativeDeclarations .genericSignatureBridge)
+        ["architectureLawfulFromAAT"]
+        (by simp)
+        "The generic bridge stores a lawfulness callback and is therefore a temporary bridge-assumed surface unless constructed through the generated law-model constructor."
+  | .generatedSignatureBridge =>
+      atomGeneratedRow
+        "aat.generatedSignatureBridge"
+        (AATCandidate.representativeDeclarations .generatedSignatureBridge)
+        ["ArchitectureSignature.AATCoreSignatureLawfulnessBridge.ofGeneratedLawModel"]
+        (by simp)
+        "The generated constructor derives Signature lawfulness from GeneratedArchitectureLawModel and does not ask callers for architectureLawfulFromAAT."
+  | .atomGeneratedAlgebraKernel =>
+      atomGeneratedRow
+        "aat.atomGeneratedAlgebraKernel"
+        (AATCandidate.representativeDeclarations .atomGeneratedAlgebraKernel)
+        ["AAT.GeneratedArchitectureObject",
+         "AAT.GeneratedArchitectureLawModel",
+         "AtomGeneratedSignatureExamples.*"]
+        (by simp)
+        "The kernel starts from AtomShape / compatible composition and reaches generated molecule, object, law model, signature, repair, and negative acceptance examples."
+  | .archMapObservationBoundary =>
+      representationRow
+        "aat.archMapObservationBoundary"
+        (AATCandidate.representativeDeclarations .archMapObservationBoundary)
+        ["Observation.ArchMapObservationLayer"]
+        (by simp)
+        .downstreamLibrary
+        ActionAllowed.representationDownstream
+        "ArchMap remains an observation boundary outside pure AAT; it observes atoms but does not generate or define them."
+  | .crossPackageSmoke =>
+      atomGeneratedRow
+        "aat.crossPackageSmoke"
+        (AATCandidate.representativeDeclarations .crossPackageSmoke)
+        ["AATCoreSmokeExamples.generated_transport_handoff_reads_nonidentity_transition"]
+        (by simp)
+        "The smoke examples now include a non-identity generated transport handoff and source/target transport circuit delta acceptance."
+
+def classifyChapter7
+    (candidate : Chapter7TheoremPackages.Candidate) :
+    TheoremPackageClassification :=
+  match candidate with
+  | .splitExtensionPreservation =>
+      atomGeneratedRow
+        "chapter7.splitExtensionPreservation"
+        (Chapter7TheoremPackages.Candidate.representativeDeclarations
+          .splitExtensionPreservation)
+        ["Chapter7TheoremPackages.generatedSplitFeatureExtension_flatWithin"]
+        (by simp)
+        "The package has generated identity feature-extension entrypoints and is read as an Atom-generated source-of-truth entry for the split-extension flatness direction."
+  | .nonSplitExtensionWitness =>
+      representationRow
+        "chapter7.nonSplitExtensionWitness"
+        (Chapter7TheoremPackages.Candidate.representativeDeclarations
+          .nonSplitExtensionWitness)
+        ["NonSplitExtensionWitnessPackage", "ExtensionObstructionWitness"]
+        (by simp)
+        .rewriteTarget
+        ActionAllowed.representationRewriteTarget
+        "The witness package is still selected-extension representation-level API; it remains a rewrite target for generated obstruction witnesses."
+  | .repairAsResplitting =>
+      atomGeneratedRow
+        "chapter7.repairAsResplitting"
+        (Chapter7TheoremPackages.Candidate.representativeDeclarations
+          .repairAsResplitting)
+        ["Chapter7TheoremPackages.generatedRepairFromProblem_toRepairClearingPackage"]
+        (by simp)
+        "Repair is connected through generated repair targets and pre-molecule repair problems."
+  | .complexityTransfer =>
+      representationRow
+        "chapter7.complexityTransfer"
+        (Chapter7TheoremPackages.Candidate.representativeDeclarations
+          .complexityTransfer)
+        ["BoundedComplexityTransferPackage"]
+        (by simp)
+        .downstreamLibrary
+        ActionAllowed.representationDownstream
+        "Complexity transfer remains a bounded representation-level diagnostic bridge rather than an Atom-generated theorem source."
+  | .noSolutionCertificate =>
+      atomGeneratedRow
+        "chapter7.noSolutionCertificate"
+        (Chapter7TheoremPackages.Candidate.representativeDeclarations
+          .noSolutionCertificate)
+        ["Chapter7TheoremPackages.generatedSynthesisCandidate_toSynthesisSoundnessPackage"]
+        (by simp)
+        "Generated synthesis candidates induce the downstream synthesis soundness package."
+  | .architectureEvolution =>
+      atomGeneratedRow
+        "chapter7.architectureEvolution"
+        (Chapter7TheoremPackages.Candidate.representativeDeclarations
+          .architectureEvolution)
+        ["Chapter7TheoremPackages.generatedOperation_toOperationTransportPackage"]
+        (by simp)
+        "Generated operations expose AtomShape transformation and non-identity AATCore transport."
+
+def classifyChapter8
+    (candidate : Chapter8HomotopySkeleton.Candidate) :
+    TheoremPackageClassification :=
+  match candidate with
+  | .architecturePaths =>
+      representationRow
+        "chapter8.architecturePaths"
+        (Chapter8HomotopySkeleton.Candidate.representativeDeclarations
+          .architecturePaths)
+        ["ArchitecturePath"]
+        (by simp)
+        .downstreamLibrary
+        ActionAllowed.representationDownstream
+        "Generic path calculus is retained as downstream library; generated paths specialize it."
+  | .generatedPathHomotopy =>
+      atomGeneratedRow
+        "chapter8.generatedPathHomotopy"
+        (Chapter8HomotopySkeleton.Candidate.representativeDeclarations
+          .generatedPathHomotopy)
+        ["AAT.GeneratedPathHomotopy"]
+        (by simp)
+        "Generated path homotopy is an Atom-generated entrypoint over generated carriers and steps."
+  | .selectedObservationInvariance =>
+      representationRow
+        "chapter8.selectedObservationInvariance"
+        (Chapter8HomotopySkeleton.Candidate.representativeDeclarations
+          .selectedObservationInvariance)
+        ["ArchitecturePath.PathHomotopy", "Observation"]
+        (by simp)
+        .downstreamLibrary
+        ActionAllowed.representationDownstream
+        "Observation invariance is a generic path-observation theorem specialized by generated homotopy wrappers."
+  | .diagramFiller =>
+      representationRow
+        "chapter8.diagramFiller"
+        (Chapter8HomotopySkeleton.Candidate.representativeDeclarations
+          .diagramFiller)
+        ["ArchitectureDiagram", "DiagramFiller"]
+        (by simp)
+        .downstreamLibrary
+        ActionAllowed.representationDownstream
+        "Generic diagram filling remains downstream library; Chapter 9 supplies generated diagram entrypoints."
+  | .obstructionAsNonFillability =>
+      representationRow
+        "chapter8.obstructionAsNonFillability"
+        (Chapter8HomotopySkeleton.Candidate.representativeDeclarations
+          .obstructionAsNonFillability)
+        ["NonFillabilityWitnessFor"]
+        (by simp)
+        .downstreamLibrary
+        ActionAllowed.representationDownstream
+        "Generic non-fillability remains a downstream witness package relative to selected observation differences."
+
+def classifyChapter9
+    (candidate : Chapter9DiagramFilling.Candidate) :
+    TheoremPackageClassification :=
+  match candidate with
+  | .diagramFillingObstruction =>
+      atomGeneratedRow
+        "chapter9.diagramFillingObstruction"
+        (Chapter9DiagramFilling.Candidate.representativeDeclarations
+          .diagramFillingObstruction)
+        ["AAT.GeneratedArchitectureDiagram",
+         "AAT.GeneratedDiagramFiller",
+         "AAT.GeneratedNonFillabilityWitnessFor"]
+        (by simp)
+        "Diagram filling and non-fillability have generated diagram and generated witness entrypoints."
+  | .splitExtensionLifting =>
+      representationRow
+        "chapter9.splitExtensionLifting"
+        (Chapter9DiagramFilling.Candidate.representativeDeclarations
+          .splitExtensionLifting)
+        ["SplitExtensionLiftingData", "FeatureViewSectionPackage"]
+        (by simp)
+        .rewriteTarget
+        ActionAllowed.representationRewriteTarget
+        "Split-extension lifting is still a representation-level package and remains a rewrite target for generated feature steps."
+  | .fillingFailureBridge =>
+      representationRow
+        "chapter9.fillingFailureBridge"
+        (Chapter9DiagramFilling.Candidate.representativeDeclarations
+          .fillingFailureBridge)
+        ["FillingFailureWitnessPayload", "FillingFailureBridgePackage"]
+        (by simp)
+        .downstreamLibrary
+        ActionAllowed.representationDownstream
+        "Filling-failure classification is a downstream bridge from selected non-fillability payloads."
+
+def classifyChapter10
+    (candidate : Chapter10ArchitectureExtensionFormula.Candidate) :
+    TheoremPackageClassification :=
+  match candidate with
+  | .obstructionUniverse =>
+      representationRow
+        "chapter10.obstructionUniverse"
+        (Chapter10ArchitectureExtensionFormula.Candidate.representativeDeclarations
+          .obstructionUniverse)
+        ["ExtensionObstructionWitness", "MultiLabelExtensionObstructionWitness"]
+        (by simp)
+        .downstreamLibrary
+        ActionAllowed.representationDownstream
+        "The classification universe is a downstream witness carrier."
+  | .nonSplitWitnessPackage =>
+      representationRow
+        "chapter10.nonSplitWitnessPackage"
+        (Chapter10ArchitectureExtensionFormula.Candidate.representativeDeclarations
+          .nonSplitWitnessPackage)
+        ["NonSplitExtensionWitnessPackage"]
+        (by simp)
+        .rewriteTarget
+        ActionAllowed.representationRewriteTarget
+        "The non-split witness package remains a selected-extension representation-level rewrite target."
+  | .singleLabelClassification =>
+      atomGeneratedRow
+        "chapter10.singleLabelClassification"
+        (Chapter10ArchitectureExtensionFormula.Candidate.representativeDeclarations
+          .singleLabelClassification)
+        ["Chapter10ArchitectureExtensionFormula.generatedIdentityArchitectureExtensionFormula_structural"]
+        (by simp)
+        "The structural classification theorem fires on generated identity feature extensions."
+  | .multiLabelClassification =>
+      atomGeneratedRow
+        "chapter10.multiLabelClassification"
+        (Chapter10ArchitectureExtensionFormula.Candidate.representativeDeclarations
+          .multiLabelClassification)
+        ["Chapter10ArchitectureExtensionFormula.generatedIdentityArchitectureExtensionFormula_multilabel_structural"]
+        (by simp)
+        "The multi-label classification theorem fires on generated identity feature extensions."
+  | .fillingFailureBridge =>
+      representationRow
+        "chapter10.fillingFailureBridge"
+        (Chapter10ArchitectureExtensionFormula.Candidate.representativeDeclarations
+          .fillingFailureBridge)
+        ["FillingFailureWitnessPayload"]
+        (by simp)
+        .downstreamLibrary
+        ActionAllowed.representationDownstream
+        "Filling failure is embedded in the extension-obstruction classification layer as a downstream bridge."
+  | .liftingFailureBridge =>
+      representationRow
+        "chapter10.liftingFailureBridge"
+        (Chapter10ArchitectureExtensionFormula.Candidate.representativeDeclarations
+          .liftingFailureBridge)
+        ["LiftingFailureWitnessPayload"]
+        (by simp)
+        .rewriteTarget
+        ActionAllowed.representationRewriteTarget
+        "Lifting failure remains a representation-level bridge until generated feature-step lifting is first-class."
+  | .complexityTransferBridge =>
+      representationRow
+        "chapter10.complexityTransferBridge"
+        (Chapter10ArchitectureExtensionFormula.Candidate.representativeDeclarations
+          .complexityTransferBridge)
+        ["ComplexityTransferWitnessPayload"]
+        (by simp)
+        .downstreamLibrary
+        ActionAllowed.representationDownstream
+        "Complexity transfer is retained as a downstream analytic/classification bridge."
+  | .residualCoverageGapBridge =>
+      representationRow
+        "chapter10.residualCoverageGapBridge"
+        (Chapter10ArchitectureExtensionFormula.Candidate.representativeDeclarations
+          .residualCoverageGapBridge)
+        ["ResidualCoverageGapWitnessPayload"]
+        (by simp)
+        .downstreamLibrary
+        ActionAllowed.representationDownstream
+        "Residual coverage gap remains a downstream coverage-diagnostic bridge."
+
+def classifyChapter11
+    (candidate : Chapter11AnalyticRepresentation.Candidate) :
+    TheoremPackageClassification :=
+  match candidate with
+  | .analyticRepresentation =>
+      representationRow
+        "chapter11.analyticRepresentation"
+        (Chapter11AnalyticRepresentation.Candidate.representativeDeclarations
+          .analyticRepresentation)
+        ["AnalyticRepresentation"]
+        (by simp)
+        .downstreamLibrary
+        ActionAllowed.representationDownstream
+        "The generic analytic representation package is a downstream representation theorem."
+  | .toolingReportMetadata =>
+      representationRow
+        "chapter11.toolingReportMetadata"
+        (Chapter11AnalyticRepresentation.Candidate.representativeDeclarations
+          .toolingReportMetadata)
+        ["ToolingTheoremPackageMetadata", "ClaimClassification"]
+        (by simp)
+        .downstreamLibrary
+        ActionAllowed.representationDownstream
+        "Report metadata separates measurement and theorem claims; it is not an Atom-generated theorem source."
+  | .architectureSignatureRepresentation =>
+      atomGeneratedRow
+        "chapter11.architectureSignatureRepresentation"
+        (Chapter11AnalyticRepresentation.Candidate.representativeDeclarations
+          .architectureSignatureRepresentation)
+        ["AAT.GeneratedArchitectureLawModel.generatedAnalyticRepresentation",
+         "Chapter11AnalyticRepresentation.generatedAnalyticRepresentation_represent_eq_signatureOfGenerated"]
+        (by simp)
+        "ArchitectureSignature representation has a generated law-model entrypoint."
+  | .obstructionValuation =>
+      representationRow
+        "chapter11.obstructionValuation"
+        (Chapter11AnalyticRepresentation.Candidate.representativeDeclarations
+          .obstructionValuation)
+        ["ObstructionValuation"]
+        (by simp)
+        .downstreamLibrary
+        ActionAllowed.representationDownstream
+        "Obstruction valuation is a downstream analytic witness package."
+  | .analyticExtensionFormula =>
+      representationRow
+        "chapter11.analyticExtensionFormula"
+        (Chapter11AnalyticRepresentation.Candidate.representativeDeclarations
+          .analyticExtensionFormula)
+        ["AnalyticExtensionFormulaPackage"]
+        (by simp)
+        .downstreamLibrary
+        ActionAllowed.representationDownstream
+        "The analytic extension formula remains downstream and assumption-relative."
+  | .couponAnalyticSnapshot =>
+      representationRow
+        "chapter11.couponAnalyticSnapshot"
+        (Chapter11AnalyticRepresentation.Candidate.representativeDeclarations
+          .couponAnalyticSnapshot)
+        ["CouponAnalyticSnapshot"]
+        (by simp)
+        .downstreamLibrary
+        ActionAllowed.representationDownstream
+        "Coupon snapshots are concrete representation-level counterexample fixtures."
+  | .couponHiddenInteractionLiftingBridge =>
+      representationRow
+        "chapter11.couponHiddenInteractionLiftingBridge"
+        (Chapter11AnalyticRepresentation.Candidate.representativeDeclarations
+          .couponHiddenInteractionLiftingBridge)
+        ["CouponHiddenInteractionLiftingBridge"]
+        (by simp)
+        .downstreamLibrary
+        ActionAllowed.representationDownstream
+        "The coupon lifting bridge is a concrete downstream witness bridge."
+  | .couponStaticExample =>
+      representationRow
+        "chapter11.couponStaticExample"
+        (Chapter11AnalyticRepresentation.Candidate.representativeDeclarations
+          .couponStaticExample)
+        ["CouponStaticDependencyExample"]
+        (by simp)
+        .downstreamLibrary
+        ActionAllowed.representationDownstream
+        "Coupon static examples are concrete representation-level fixtures."
+  | .couponSemanticValuation =>
+      representationRow
+        "chapter11.couponSemanticValuation"
+        (Chapter11AnalyticRepresentation.Candidate.representativeDeclarations
+          .couponSemanticValuation)
+        ["CouponDiscountExample"]
+        (by simp)
+        .downstreamLibrary
+        ActionAllowed.representationDownstream
+        "Coupon semantic valuation is a concrete downstream semantic fixture."
+  | .staticSemanticCounterexample =>
+      representationRow
+        "chapter11.staticSemanticCounterexample"
+        (Chapter11AnalyticRepresentation.Candidate.representativeDeclarations
+          .staticSemanticCounterexample)
+        ["StaticSemanticCounterexample"]
+        (by simp)
+        .downstreamLibrary
+        ActionAllowed.representationDownstream
+        "The static-semantic counterexample is a downstream negative fixture."
+  | .measurementBoundary =>
+      representationRow
+        "chapter11.measurementBoundary"
+        (Chapter11AnalyticRepresentation.Candidate.representativeDeclarations
+          .measurementBoundary)
+        ["MeasurementBoundary", "AnalyticAxisBoundary"]
+        (by simp)
+        .downstreamLibrary
+        ActionAllowed.representationDownstream
+        "Measurement boundary is a downstream tooling/analytic boundary surface."
+
+def classifySFT
+    (candidate : SFTTheoremPackages.Candidate) :
+    TheoremPackageClassification :=
+  match candidate with
+  | .softwareFieldProjection =>
+      representationRow
+        "sft.softwareFieldProjection"
+        (SFTTheoremPackages.Candidate.representativeDeclarations
+          .softwareFieldProjection)
+        ["SoftwareField", "SoftwareFieldEstimate"]
+        (by simp)
+        .downstreamLibrary
+        ActionAllowed.representationDownstream
+        "SFT software-field projection is a downstream SFT package, not an Atom-generated AAT theorem."
+  | .forecastConeCore =>
+      representationRow
+        "sft.forecastConeCore"
+        (SFTTheoremPackages.Candidate.representativeDeclarations
+          .forecastConeCore)
+        ["ForecastCone"]
+        (by simp)
+        .downstreamLibrary
+        ActionAllowed.representationDownstream
+        "ForecastCone is downstream SFT evolution vocabulary."
+  | .coneProjection =>
+      representationRow
+        "sft.coneProjection"
+        (SFTTheoremPackages.Candidate.representativeDeclarations
+          .coneProjection)
+        ["ForecastConeProjection"]
+        (by simp)
+        .downstreamLibrary
+        ActionAllowed.representationDownstream
+        "Cone projection is downstream SFT support/projection vocabulary."
+  | .artifactAction =>
+      representationRow
+        "sft.artifactAction"
+        (SFTTheoremPackages.Candidate.representativeDeclarations
+          .artifactAction)
+        ["ArtifactAction"]
+        (by simp)
+        .downstreamLibrary
+        ActionAllowed.representationDownstream
+        "Artifact actions are downstream SFT workflow vocabulary."
+  | .operationPolicyGovernance =>
+      representationRow
+        "sft.operationPolicyGovernance"
+        (SFTTheoremPackages.Candidate.representativeDeclarations
+          .operationPolicyGovernance)
+        ["OperationPolicy", "GovernanceIntervention"]
+        (by simp)
+        .downstreamLibrary
+        ActionAllowed.representationDownstream
+        "Policy/governance is downstream SFT control vocabulary."
+  | .stableRegionReachability =>
+      representationRow
+        "sft.stableRegionReachability"
+        (SFTTheoremPackages.Candidate.representativeDeclarations
+          .stableRegionReachability)
+        ["StableRegion", "MayReach", "MustReach"]
+        (by simp)
+        .downstreamLibrary
+        ActionAllowed.representationDownstream
+        "Reachability is downstream SFT field vocabulary."
+  | .supportSafety =>
+      representationRow
+        "sft.supportSafety"
+        (SFTTheoremPackages.Candidate.representativeDeclarations
+          .supportSafety)
+        ["SFTSupportSafetyPackage"]
+        (by simp)
+        .downstreamLibrary
+        ActionAllowed.representationDownstream
+        "Support safety is an assumption-relative downstream SFT package."
+  | .fieldUpdate =>
+      representationRow
+        "sft.fieldUpdate"
+        (SFTTheoremPackages.Candidate.representativeDeclarations
+          .fieldUpdate)
+        ["FieldUpdate"]
+        (by simp)
+        .downstreamLibrary
+        ActionAllowed.representationDownstream
+        "Field updates are downstream SFT feedback vocabulary."
+  | .consequenceEnvelope =>
+      bridgeAssumedRow
+        "sft.consequenceEnvelope"
+        (SFTTheoremPackages.Candidate.representativeDeclarations
+          .consequenceEnvelope)
+        ["AATCorePremisedConsequenceEnvelope"]
+        (by simp)
+        "The consequence envelope can consume an AATCore premise, but that premise does not become forecast correctness."
+  | .aatInterfaceBoundary =>
+      atomGeneratedRow
+        "sft.aatInterfaceBoundary"
+        (SFTTheoremPackages.Candidate.representativeDeclarations
+          .aatInterfaceBoundary)
+        ["AAT.GeneratedSFTInput",
+         "AAT.GeneratedSFTInput.theoremStatusFromGenerated"]
+        (by simp)
+        "Generated SFT input computes theorem status from GeneratedArchitectureLawModel."
+  | .archSigReportBoundary =>
+      atomGeneratedRow
+        "sft.archSigReportBoundary"
+        (SFTTheoremPackages.Candidate.representativeDeclarations
+          .archSigReportBoundary)
+        ["GeneratedArchSigAATCoreTransition",
+         "GeneratedFieldSigAATCoreTransitionAnalysis",
+         "GeneratedArchSigAATCoreTransportTransition"]
+        (by simp)
+        "ArchSig / FieldSig boundary includes generated preservation and non-identity transport handoff."
+  | .counterexamplePackage =>
+      representationRow
+        "sft.counterexamplePackage"
+        (SFTTheoremPackages.Candidate.representativeDeclarations
+          .counterexamplePackage)
+        ["SFTCounterexamples.Package"]
+        (by simp)
+        .downstreamLibrary
+        ActionAllowed.representationDownstream
+        "Counterexamples are downstream forbidden-reading fixtures."
+  | .theoremRoadmap =>
+      representationRow
+        "sft.theoremRoadmap"
+        (SFTTheoremPackages.Candidate.representativeDeclarations
+          .theoremRoadmap)
+        ["SFTTheoremRoadmap"]
+        (by simp)
+        .downstreamLibrary
+        ActionAllowed.representationDownstream
+        "The SFT theorem roadmap is downstream SFT theorem-package assembly."
+  | .finiteExactModel =>
+      representationRow
+        "sft.finiteExactModel"
+        (SFTTheoremPackages.Candidate.representativeDeclarations
+          .finiteExactModel)
+        ["FiniteExactSFTModel"]
+        (by simp)
+        .downstreamLibrary
+        ActionAllowed.representationDownstream
+        "Finite exact SFT models are downstream selected finite field models."
+  | .aatSupportedFundamentalModularity =>
+      atomGeneratedRow
+        "sft.aatSupportedFundamentalModularity"
+        (SFTTheoremPackages.Candidate.representativeDeclarations
+          .aatSupportedFundamentalModularity)
+        ["SFTAATFundamentalModularity.AATSupportedSFTBoundary.ofGeneratedSFTInput",
+         "SFTAATFundamentalModularity.Examples.canonicalGeneratedAATSupportedBoundary"]
+        (by simp)
+        "The AAT-supported SFT boundary has generated handoff constructors and examples."
+
+def aatClassifications : List TheoremPackageClassification :=
+  [ classifyAATCandidate .finiteStaticStructuralCore
+  , classifyAATCandidate .genericSignatureBridge
+  , classifyAATCandidate .generatedSignatureBridge
+  , classifyAATCandidate .atomGeneratedAlgebraKernel
+  , classifyAATCandidate .archMapObservationBoundary
+  , classifyAATCandidate .crossPackageSmoke
+  ]
+
+def chapter7Classifications : List TheoremPackageClassification :=
+  [ classifyChapter7 .splitExtensionPreservation
+  , classifyChapter7 .nonSplitExtensionWitness
+  , classifyChapter7 .repairAsResplitting
+  , classifyChapter7 .complexityTransfer
+  , classifyChapter7 .noSolutionCertificate
+  , classifyChapter7 .architectureEvolution
+  ]
+
+def chapter8Classifications : List TheoremPackageClassification :=
+  [ classifyChapter8 .architecturePaths
+  , classifyChapter8 .generatedPathHomotopy
+  , classifyChapter8 .selectedObservationInvariance
+  , classifyChapter8 .diagramFiller
+  , classifyChapter8 .obstructionAsNonFillability
+  ]
+
+def chapter9Classifications : List TheoremPackageClassification :=
+  [ classifyChapter9 .diagramFillingObstruction
+  , classifyChapter9 .splitExtensionLifting
+  , classifyChapter9 .fillingFailureBridge
+  ]
+
+def chapter10Classifications : List TheoremPackageClassification :=
+  [ classifyChapter10 .obstructionUniverse
+  , classifyChapter10 .nonSplitWitnessPackage
+  , classifyChapter10 .singleLabelClassification
+  , classifyChapter10 .multiLabelClassification
+  , classifyChapter10 .fillingFailureBridge
+  , classifyChapter10 .liftingFailureBridge
+  , classifyChapter10 .complexityTransferBridge
+  , classifyChapter10 .residualCoverageGapBridge
+  ]
+
+def chapter11Classifications : List TheoremPackageClassification :=
+  [ classifyChapter11 .analyticRepresentation
+  , classifyChapter11 .toolingReportMetadata
+  , classifyChapter11 .architectureSignatureRepresentation
+  , classifyChapter11 .obstructionValuation
+  , classifyChapter11 .analyticExtensionFormula
+  , classifyChapter11 .couponAnalyticSnapshot
+  , classifyChapter11 .couponHiddenInteractionLiftingBridge
+  , classifyChapter11 .couponStaticExample
+  , classifyChapter11 .couponSemanticValuation
+  , classifyChapter11 .staticSemanticCounterexample
+  , classifyChapter11 .measurementBoundary
+  ]
+
+def sftClassifications : List TheoremPackageClassification :=
+  [ classifySFT .softwareFieldProjection
+  , classifySFT .forecastConeCore
+  , classifySFT .coneProjection
+  , classifySFT .artifactAction
+  , classifySFT .operationPolicyGovernance
+  , classifySFT .stableRegionReachability
+  , classifySFT .supportSafety
+  , classifySFT .fieldUpdate
+  , classifySFT .consequenceEnvelope
+  , classifySFT .aatInterfaceBoundary
+  , classifySFT .archSigReportBoundary
+  , classifySFT .counterexamplePackage
+  , classifySFT .theoremRoadmap
+  , classifySFT .finiteExactModel
+  , classifySFT .aatSupportedFundamentalModularity
+  ]
+
+/-- Registry for the theorem-package classification check in the reconstruction plan. -/
+def allClassifications : List TheoremPackageClassification :=
+  aatClassifications ++
+  chapter7Classifications ++
+  chapter8Classifications ++
+  chapter9Classifications ++
+  chapter10Classifications ++
+  chapter11Classifications ++
+  sftClassifications
+
+theorem registry_rows_have_classification_evidence
+    {row : TheoremPackageClassification}
+    (_hRow : row ∈ allClassifications) :
+    row.Passes :=
+  row.passes
+
+theorem registry_rows_have_allowed_actions
+    {row : TheoremPackageClassification}
+    (_hRow : row ∈ allClassifications) :
+    row.HasAllowedAction :=
+  row.action_allowed
+
+theorem generic_signature_bridge_is_temporary_bridge :
+    (classifyAATCandidate .genericSignatureBridge).classification =
+      .bridgeAssumed ∧
+    (classifyAATCandidate .genericSignatureBridge).action =
+      .temporaryBridge := by
+  exact ⟨rfl, rfl⟩
+
+theorem generated_signature_bridge_is_atom_generated :
+    (classifyAATCandidate .generatedSignatureBridge).classification =
+      .atomGenerated ∧
+    (classifyAATCandidate .generatedSignatureBridge).action =
+      .aatSourceOfTruth := by
+  exact ⟨rfl, rfl⟩
+
+theorem nonidentity_transport_handoff_is_atom_generated :
+    (classifyAATCandidate .crossPackageSmoke).classification =
+      .atomGenerated ∧
+    (classifySFT .archSigReportBoundary).classification =
+      .atomGenerated := by
+  exact ⟨rfl, rfl⟩
+
+theorem finite_static_core_is_downstream_representation_library :
+    (classifyAATCandidate .finiteStaticStructuralCore).classification =
+      .representationLevel ∧
+    (classifyAATCandidate .finiteStaticStructuralCore).action =
+      .downstreamLibrary := by
+  exact ⟨rfl, rfl⟩
+
+end AATReconstructionClassification
+end Formal.Arch

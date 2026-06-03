@@ -478,6 +478,18 @@ Representation-level theorem:
 
 分類不能な theorem は合格扱いしない。
 
+実装済み検査:
+
+```text
+Formal/Arch/AAT/TheoremClassification.lean
+Formal/Arch/Examples/AtomGeneratedClassificationExamples.lean
+```
+
+`TheoremPackageClass` は `atomGenerated` / `bridgeAssumed` / `representationLevel`
+だけを持ち、`unclassified` constructor を持たない。各 registry row は分類に応じて
+generated entrypoint、bridge assumption、representation surface の evidence list と
+許可された migration action を要求する。
+
 ### 8.3 ArchSig checks
 
 必須:
