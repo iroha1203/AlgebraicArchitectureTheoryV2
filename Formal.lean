@@ -97,6 +97,7 @@ import Formal.Arch.AAT.GeneratedGraph
 import Formal.Arch.AAT.GeneratedLawModel
 import Formal.Arch.AAT.GeneratedSignature
 import Formal.Arch.AAT.GeneratedFlatness
+import Formal.Arch.AAT.GeneratedFeatureExtension
 import Formal.Arch.AAT.GeneratedCurvature
 import Formal.Arch.AAT.GeneratedPath
 import Formal.Arch.AAT.GeneratedDiagram

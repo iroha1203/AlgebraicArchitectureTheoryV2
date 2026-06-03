@@ -212,6 +212,7 @@ generated_law_model_from_generated_object
 ```text
 Formal/Arch/AAT/GeneratedSignature.lean
 Formal/Arch/AAT/GeneratedFlatness.lean
+Formal/Arch/AAT/GeneratedFeatureExtension.lean
 Formal/Arch/AAT/GeneratedPath.lean
 Formal/Arch/AAT/GeneratedDiagram.lean
 Formal/Arch/AAT/GeneratedCurvature.lean

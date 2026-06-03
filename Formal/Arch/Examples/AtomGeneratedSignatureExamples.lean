@@ -1,4 +1,5 @@
 import Formal.Arch.AAT.GeneratedAnalyticRepresentation
+import Formal.Arch.AAT.GeneratedFeatureExtension
 import Formal.Arch.AAT.GeneratedSFT
 import Formal.Arch.Examples.AtomGeneratedMoleculeExamples
 
@@ -99,6 +100,17 @@ theorem atomGeneratedSignature_analytic_zeroReflecting :
   exact
     AAT.GeneratedArchitectureLawModel.generatedAnalyticRepresentation_zeroReflecting
       (object := generatedComponentObject)
+
+/--
+Positive acceptance: generated law models also trigger the existing bounded
+feature-extension flatness theorem through a generated identity feature
+extension.
+-/
+theorem atomGeneratedSignature_featureExtension_flatWithin :
+    ArchitectureFlatWithin
+      generatedComponentObject.generatedIdentityExtensionFlatnessModel
+      generatedComponentObject.generatedIdentityExtensionComponentUniverse := by
+  exact generatedComponentLawModel.generatedFeatureExtension_architectureFlatWithin
 
 /--
 Positive acceptance: the generated Signature theorem package is available as
