@@ -1,4 +1,5 @@
 import Formal.Arch.AAT.GeneratedFlatness
+import Formal.Arch.AAT.Operation
 
 namespace Formal.Arch
 namespace AAT
@@ -62,6 +63,36 @@ theorem operation_does_not_create_atoms
     (operation : GeneratedOperation source target) :
     system.noToolOutputCreatesAtoms :=
   operation.operationDoesNotCreateAtomsEvidence
+
+/--
+Generated operations induce pure AAT operation transport between the generated
+AAT cores of their source and target law models.
+-/
+def toOperationTransportPackage
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {source target : GeneratedArchitectureObject presentation}
+    (operation : GeneratedOperation source target)
+    (sourceModel : GeneratedArchitectureLawModel source)
+    (targetModel : GeneratedArchitectureLawModel target) :
+    OperationTransportPackage
+      sourceModel.generatedAATCore
+      targetModel.generatedAATCore where
+  selectedSourceMolecule := sourceModel.requiredGeneratedMolecule
+  selectedTargetMolecule := targetModel.requiredGeneratedMolecule
+  selectedSourceLaw := fun law => law = sourceModel.generatedDesignLaw
+  selectedTargetLaw := fun law => law = targetModel.generatedDesignLaw
+  transportsMolecule := by
+    intro _molecule _hSelected _hSource
+    exact ⟨target.molecule.toMolecule, rfl, rfl⟩
+  transportsLaw := by
+    intro _law _hSelected _hSource
+    exact ⟨targetModel.generatedDesignLaw, rfl, targetModel.generated_law_on_core⟩
+  operationDoesNotCreateAtomsEvidence :=
+    operation.operation_does_not_create_atoms
+  operationBoundary := operation.operationBoundary
+  theoremPackageBoundary := operation.operationBoundary
+  nonConclusions := True
 
 end GeneratedOperation
 

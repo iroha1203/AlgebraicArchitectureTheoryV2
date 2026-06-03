@@ -252,6 +252,39 @@ def repairedGeneratedObject :
         cases atom <;> simp
   objectBoundary := True
 
+theorem repairedGeneratedObject_no_relation_atom
+    (carrier : AAT.GeneratedCarrier repairedGeneratedObject) :
+    (AtomShapeOf repairShapePresentation carrier.val).family ≠
+      AtomKind.relation := by
+  cases carrier.val <;> intro hRelation <;> cases hRelation
+
+theorem repairedGeneratedGraph_no_edges :
+    ∀ source target,
+      ¬ (AAT.GeneratedArchGraph repairedGeneratedObject).edge
+        source target := by
+  intro source target hEdge
+  rcases hEdge with ⟨relation, hRelation⟩
+  exact repairedGeneratedObject_no_relation_atom relation hRelation.1
+
+theorem repairedGeneratedGraph_walkAcyclic :
+    WalkAcyclic (AAT.GeneratedArchGraph repairedGeneratedObject) := by
+  intro hClosed
+  rcases hClosed with ⟨_carrier, walk, hPositive⟩
+  cases walk with
+  | nil _ =>
+      simp [Walk.length] at hPositive
+  | cons hEdge _rest =>
+      exact repairedGeneratedGraph_no_edges _ _ hEdge
+
+def repairedGeneratedLawModel :
+    AAT.GeneratedArchitectureLawModel repairedGeneratedObject where
+  generatedWalkAcyclic := repairedGeneratedGraph_walkAcyclic
+  lawModelBoundary := True
+
+def repairedGeneratedZeroCurvaturePackage :
+    AAT.ZeroCurvaturePackage repairedGeneratedLawModel.generatedAATCore := by
+  exact repairedGeneratedLawModel.generatedZeroCurvaturePackage
+
 def repairedApiCarrier :
     AAT.GeneratedCarrier repairedGeneratedObject :=
   ⟨RepairAtom.api, by trivial⟩
@@ -351,5 +384,31 @@ theorem generatedMissingPortRepair_transforms_shape :
 theorem generatedMissingPortRepair_does_not_create_atoms :
     repairSystem.noToolOutputCreatesAtoms := by
   exact generatedMissingPortRepair.repair_problem_does_not_create_atoms
+
+def generatedMissingPortRepairClearingPackage :
+    AAT.RepairClearingPackage
+      repairedGeneratedLawModel.generatedAATCore
+      (Sum
+        (AAT.GeneratedRepairProblemConfiguration repairShapePresentation)
+        (AAT.GeneratedArchitectureObject repairShapePresentation))
+      Unit
+      (Sum.inl missingPortConfiguration)
+      (Sum.inr repairedGeneratedObject) := by
+  exact generatedMissingPortRepair.toRepairClearingPackage
+    repairedGeneratedLawModel
+
+theorem generatedMissingPortRepair_target_noRequiredObstructionCircuit :
+    AAT.NoRequiredObstructionCircuit
+      repairedGeneratedLawModel.generatedDesignLaw
+      repairedGeneratedLawModel.requiredGeneratedMolecule := by
+  exact
+    generatedMissingPortRepairClearingPackage.target_noRequiredObstructionCircuit
+
+theorem generatedMissingPortRepair_target_lawful :
+    AAT.LawfulWithinMoleculeConfiguration
+      repairedGeneratedLawModel.generatedDesignLaw
+      repairedGeneratedLawModel.requiredGeneratedMolecule := by
+  exact
+    generatedMissingPortRepairClearingPackage.target_lawfulWithinMoleculeConfiguration
 
 end Formal.Arch.AtomGeneratedRepairExamples

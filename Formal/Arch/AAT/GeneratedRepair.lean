@@ -1,4 +1,5 @@
 import Formal.Arch.AAT.GeneratedOperation
+import Formal.Arch.AAT.Repair
 
 namespace Formal.Arch
 namespace AAT
@@ -117,6 +118,40 @@ theorem repair_does_not_create_atoms
     (repair : GeneratedRepair source target) :
     system.noToolOutputCreatesAtoms :=
   repair.operation.operation_does_not_create_atoms
+
+/--
+Generated repairs induce the existing pure AAT repair-clearing package at the
+generated target object.
+-/
+def toRepairClearingPackage
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {source target : GeneratedArchitectureObject presentation}
+    (repair : GeneratedRepair source target)
+    (targetModel : GeneratedArchitectureLawModel target) :
+    RepairClearingPackage
+      targetModel.generatedAATCore
+      (GeneratedArchitectureObject presentation)
+      Unit
+      source
+      target where
+  law := targetModel.generatedDesignLaw
+  requiredMolecule := targetModel.requiredGeneratedMolecule
+  lawOnCore := targetModel.generated_law_on_core
+  requiredMoleculesOnCore := by
+    intro molecule hRequired
+    exact hRequired
+  requiredCircuitsOnCore := by
+    intro _molecule _hRequired _hCircuit
+    trivial
+  lawfulnessBridge := targetModel.generatedLawfulnessBridge
+  targetNoRequiredObstructionCircuit :=
+    targetModel.generated_noRequiredObstructionCircuit
+  repairDoesNotCreateAtomsEvidence :=
+    repair.repair_does_not_create_atoms
+  repairBoundary := repair.repairBoundary
+  exactnessBoundary := targetModel.lawModelBoundary
+  nonConclusions := True
 
 end GeneratedRepair
 
@@ -365,6 +400,43 @@ theorem repair_problem_does_not_create_atoms
     (repair : GeneratedRepairFromProblem configuration target) :
     system.noToolOutputCreatesAtoms :=
   repair.operation.operation_does_not_create_atoms
+
+/--
+Generated repair from a failed pre-molecule configuration induces the existing
+pure AAT repair-clearing package at the generated target object.
+-/
+def toRepairClearingPackage
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {configuration : GeneratedRepairProblemConfiguration presentation}
+    {target : GeneratedArchitectureObject presentation}
+    (repair : GeneratedRepairFromProblem configuration target)
+    (targetModel : GeneratedArchitectureLawModel target) :
+    RepairClearingPackage
+      targetModel.generatedAATCore
+      (Sum
+        (GeneratedRepairProblemConfiguration presentation)
+        (GeneratedArchitectureObject presentation))
+      Unit
+      (Sum.inl configuration)
+      (Sum.inr target) where
+  law := targetModel.generatedDesignLaw
+  requiredMolecule := targetModel.requiredGeneratedMolecule
+  lawOnCore := targetModel.generated_law_on_core
+  requiredMoleculesOnCore := by
+    intro molecule hRequired
+    exact hRequired
+  requiredCircuitsOnCore := by
+    intro _molecule _hRequired _hCircuit
+    trivial
+  lawfulnessBridge := targetModel.generatedLawfulnessBridge
+  targetNoRequiredObstructionCircuit :=
+    targetModel.generated_noRequiredObstructionCircuit
+  repairDoesNotCreateAtomsEvidence :=
+    repair.repair_problem_does_not_create_atoms
+  repairBoundary := repair.repairBoundary
+  exactnessBoundary := targetModel.lawModelBoundary
+  nonConclusions := True
 
 end GeneratedRepairFromProblem
 

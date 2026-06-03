@@ -63,5 +63,75 @@ theorem operation_does_not_create_atoms
 
 end OperationPreservationPackage
 
+/--
+Operation transport over Atom-generated AAT cores.
+
+Unlike `OperationPreservationPackage`, this package is allowed to move a
+selected source molecule/law to a selected target molecule/law.  This is the
+shape needed by generated operations, where a repair or transformation may
+change the finite atom configuration instead of preserving the same molecule.
+-/
+structure OperationTransportPackage {system : AtomAxiomSystem.{u, v}}
+    (source target : AATCore system) where
+  selectedSourceMolecule : Molecule system -> Prop
+  selectedTargetMolecule : Molecule system -> Prop
+  selectedSourceLaw : DesignLaw system -> Prop
+  selectedTargetLaw : DesignLaw system -> Prop
+  transportsMolecule :
+    ∀ molecule,
+      selectedSourceMolecule molecule ->
+      source.molecules molecule ->
+        ∃ targetMolecule,
+          selectedTargetMolecule targetMolecule ∧
+          target.molecules targetMolecule
+  transportsLaw :
+    ∀ law,
+      selectedSourceLaw law ->
+      source.laws law ->
+        ∃ targetLaw,
+          selectedTargetLaw targetLaw ∧
+          target.laws targetLaw
+  operationDoesNotCreateAtomsEvidence :
+    system.noToolOutputCreatesAtoms
+  operationBoundary : Prop
+  theoremPackageBoundary : Prop
+  nonConclusions : Prop
+
+namespace OperationTransportPackage
+
+/-- A selected source molecule transported by the operation has a selected target molecule. -/
+theorem target_molecule_exists {system : AtomAxiomSystem.{u, v}}
+    {source target : AATCore system}
+    (pkg : OperationTransportPackage source target)
+    {molecule : Molecule system}
+    (hSelected : pkg.selectedSourceMolecule molecule)
+    (hSource : source.molecules molecule) :
+    ∃ targetMolecule,
+      pkg.selectedTargetMolecule targetMolecule ∧
+      target.molecules targetMolecule :=
+  pkg.transportsMolecule molecule hSelected hSource
+
+/-- A selected source law transported by the operation has a selected target law. -/
+theorem target_law_exists {system : AtomAxiomSystem.{u, v}}
+    {source target : AATCore system}
+    (pkg : OperationTransportPackage source target)
+    {law : DesignLaw system}
+    (hSelected : pkg.selectedSourceLaw law)
+    (hSource : source.laws law) :
+    ∃ targetLaw,
+      pkg.selectedTargetLaw targetLaw ∧
+      target.laws targetLaw :=
+  pkg.transportsLaw law hSelected hSource
+
+/-- Pure AAT operation transport packages do not create atom existence. -/
+theorem operation_does_not_create_atoms
+    {system : AtomAxiomSystem.{u, v}}
+    {source target : AATCore system}
+    (pkg : OperationTransportPackage source target) :
+    system.noToolOutputCreatesAtoms :=
+  pkg.operationDoesNotCreateAtomsEvidence
+
+end OperationTransportPackage
+
 end AAT
 end Formal.Arch

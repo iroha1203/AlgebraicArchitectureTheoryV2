@@ -262,6 +262,16 @@ def generatedComponentLawModel :
   generatedWalkAcyclic := generatedComponentGraph_walkAcyclic
   lawModelBoundary := True
 
+def generatedComponentZeroCurvaturePackage :
+    AAT.ZeroCurvaturePackage generatedComponentLawModel.generatedAATCore := by
+  exact generatedComponentLawModel.generatedZeroCurvaturePackage
+
+theorem generatedComponent_lawfulWithinMoleculeConfiguration :
+    AAT.LawfulWithinMoleculeConfiguration
+      generatedComponentLawModel.generatedDesignLaw
+      generatedComponentLawModel.requiredGeneratedMolecule := by
+  exact generatedComponentLawModel.generated_lawfulWithinMoleculeConfiguration
+
 theorem generatedComponent_requiredSignatureAxesZero :
     ArchitectureSignature.RequiredSignatureAxesZero
       generatedComponentLawModel.generatedSignatureOf := by
@@ -343,6 +353,35 @@ theorem generatedComponentIdentityOperation_does_not_create_atoms :
     componentSystem.noToolOutputCreatesAtoms := by
   exact generatedComponentIdentityOperation.operation_does_not_create_atoms
 
+def generatedComponentIdentityOperationTransportPackage :
+    AAT.OperationTransportPackage
+      generatedComponentLawModel.generatedAATCore
+      generatedComponentLawModel.generatedAATCore := by
+  exact generatedComponentIdentityOperation.toOperationTransportPackage
+    generatedComponentLawModel generatedComponentLawModel
+
+theorem generatedComponentIdentityOperation_transports_molecule :
+    ∃ targetMolecule,
+      generatedComponentIdentityOperationTransportPackage.selectedTargetMolecule
+        targetMolecule ∧
+      generatedComponentLawModel.generatedAATCore.molecules targetMolecule := by
+  exact
+    generatedComponentIdentityOperationTransportPackage.target_molecule_exists
+      (molecule := generatedComponentMolecule.toMolecule)
+      rfl
+      rfl
+
+theorem generatedComponentIdentityOperation_transports_law :
+    ∃ targetLaw,
+      generatedComponentIdentityOperationTransportPackage.selectedTargetLaw
+        targetLaw ∧
+      generatedComponentLawModel.generatedAATCore.laws targetLaw := by
+  exact
+    generatedComponentIdentityOperationTransportPackage.target_law_exists
+      (law := generatedComponentLawModel.generatedDesignLaw)
+      rfl
+      generatedComponentLawModel.generated_law_on_core
+
 def generatedComponentSynthesisCandidate :
     AAT.GeneratedSynthesisCandidate generatedComponentObject where
   lawModel := generatedComponentLawModel
@@ -365,5 +404,25 @@ theorem generatedComponentSynthesisCandidate_totalCurvature_eq_zero :
 theorem generatedComponentSynthesisCandidate_does_not_create_atoms :
     componentSystem.noToolOutputCreatesAtoms := by
   exact generatedComponentSynthesisCandidate.synthesis_does_not_create_atoms
+
+def generatedComponentSynthesisSoundnessPackage :
+    AAT.SynthesisSoundnessPackage
+      generatedComponentLawModel.generatedAATCore
+      (AAT.GeneratedSynthesisCandidate generatedComponentObject) := by
+  exact generatedComponentSynthesisCandidate.toSynthesisSoundnessPackage
+
+theorem generatedComponentSynthesis_candidate_noRequiredObstructionCircuit :
+    AAT.NoRequiredObstructionCircuit
+      generatedComponentLawModel.generatedDesignLaw
+      generatedComponentLawModel.requiredGeneratedMolecule := by
+  exact
+    generatedComponentSynthesisSoundnessPackage.candidate_noRequiredObstructionCircuit
+
+theorem generatedComponentSynthesis_candidate_lawful :
+    AAT.LawfulWithinMoleculeConfiguration
+      generatedComponentLawModel.generatedDesignLaw
+      generatedComponentLawModel.requiredGeneratedMolecule := by
+  exact
+    generatedComponentSynthesisSoundnessPackage.candidate_lawfulWithinMoleculeConfiguration
 
 end Formal.Arch.AtomGeneratedMoleculeExamples
