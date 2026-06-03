@@ -7,17 +7,31 @@ namespace AAT
 universe u v
 
 /--
-A relation atom generates an edge when it is selected by the generated object
-and composes with both endpoint carriers.
+A relation atom generates an oriented edge when it is selected by the generated
+object and composes with the source through `relationSource` ports and with the
+target through `relationTarget` ports.
 -/
-def GeneratedRelationAtom {system : AtomAxiomSystem.{u, v}}
+structure GeneratedRelationAtom {system : AtomAxiomSystem.{u, v}}
     {presentation : AtomShapePresentation system}
     (object : GeneratedArchitectureObject presentation)
-    (relation source target : GeneratedCarrier object) : Prop :=
-  (AtomShapeOf presentation relation.val).family = AtomKind.relation ∧
-  relation.val ≠ source.val ∧
-  relation.val ≠ target.val ∧
-  source.val ≠ target.val
+    (relation source target : GeneratedCarrier object) : Prop where
+  relationFamily :
+    (AtomShapeOf presentation relation.val).family = AtomKind.relation
+  relationSourceDistinct : relation.val ≠ source.val
+  relationTargetDistinct : relation.val ≠ target.val
+  endpointsDistinct : source.val ≠ target.val
+  sourceCompositionUsesRelationSource :
+    let composition :=
+      object.molecule.compatible_pairs
+        relation.property source.property relationSourceDistinct
+    composition.leftPort.kind = AtomPortKind.relationSource ∧
+      composition.rightPort.kind = AtomPortKind.relationSource
+  targetCompositionUsesRelationTarget :
+    let composition :=
+      object.molecule.compatible_pairs
+        relation.property target.property relationTargetDistinct
+    composition.leftPort.kind = AtomPortKind.relationTarget ∧
+      composition.rightPort.kind = AtomPortKind.relationTarget
 
 /-- Generated graph relation induced by selected relation atoms. -/
 def GeneratedRelation {system : AtomAxiomSystem.{u, v}}
@@ -119,10 +133,12 @@ def generated_relation_atom_witness
   relationAtom := hRelation
   relationSourceComposition :=
     object.molecule.compatible_pairs
-      relation.property source.property hRelation.2.1
+      relation.property source.property
+      hRelation.relationSourceDistinct
   relationTargetComposition :=
     object.molecule.compatible_pairs
-      relation.property target.property hRelation.2.2.1
+      relation.property target.property
+      hRelation.relationTargetDistinct
 
 /-- Generated graph edges are exactly backed by selected relation atoms. -/
 theorem generated_graph_edges_from_relation_atoms
@@ -144,7 +160,7 @@ theorem generated_graph_edge_requires_distinct_endpoints
     (hEdge : (GeneratedArchGraph object).edge source target) :
     source.val ≠ target.val := by
   rcases hEdge with ⟨_relation, hRelation⟩
-  exact hRelation.2.2.2
+  exact hRelation.endpointsDistinct
 
 end GeneratedArchGraph
 

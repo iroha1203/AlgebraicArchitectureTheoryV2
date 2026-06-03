@@ -236,7 +236,9 @@ instance generatedComponentRelationDecidable :
   exact isFalse (by
     intro hEdge
     rcases hEdge with ⟨relation, hRelation⟩
-    exact generatedComponentObject_no_relation_atom relation hRelation.1)
+    exact
+      generatedComponentObject_no_relation_atom
+        relation hRelation.relationFamily)
 
 instance componentSystemAtomDecidableEq :
     DecidableEq componentSystem.Atom :=
@@ -248,7 +250,9 @@ theorem generatedComponentGraph_no_edges :
         source target := by
   intro source target hEdge
   rcases hEdge with ⟨relation, hRelation⟩
-  exact generatedComponentObject_no_relation_atom relation hRelation.1
+  exact
+    generatedComponentObject_no_relation_atom
+      relation hRelation.relationFamily
 
 theorem generatedComponentGraph_walkAcyclic :
     WalkAcyclic (AAT.GeneratedArchGraph generatedComponentObject) := by
@@ -265,6 +269,431 @@ def generatedComponentLawModel :
     AAT.GeneratedArchitectureLawModel generatedComponentObject where
   generatedWalkAcyclic := generatedComponentGraph_walkAcyclic
   lawModelBoundary := True
+
+inductive DirectedRelationAtom where
+  | api
+  | apiToDatabase
+  | database
+  deriving DecidableEq, Repr
+
+def directedRelationKind : DirectedRelationAtom -> AtomKind
+  | .api => AtomKind.existence
+  | .apiToDatabase => AtomKind.relation
+  | .database => AtomKind.existence
+
+def directedRelationAxis (_atom : DirectedRelationAtom) : Axis :=
+  Axis.static
+
+/-- Atom system with an explicit API -> database relation atom. -/
+def directedRelationSystem : AtomAxiomSystem where
+  Atom := DirectedRelationAtom
+  Predicate := AtomKind
+  kind := directedRelationKind
+  axis := directedRelationAxis
+  predicate := directedRelationKind
+  predicateKind := fun kind => kind
+  predicateAxis := fun _ => Axis.static
+  predicateKindAligned := by
+    intro atom
+    rfl
+  predicateAxisAligned := by
+    intro atom
+    cases atom <;> rfl
+  singleFact := fun _ => True
+  singleFactEvidence := fun _ => trivial
+  predicatePreserving := fun _ => True
+  predicatePreservingEvidence := fun _ => trivial
+  boundaryIndependent := fun _ => True
+  boundaryIndependentEvidence := fun _ => trivial
+  lawIndependent := fun _ => True
+  lawIndependentEvidence := fun _ => trivial
+  noObservationBoundaryCreatesAtoms := True
+  noObservationBoundaryCreatesAtomsEvidence := trivial
+  noLawCreatesAtoms := True
+  noLawCreatesAtomsEvidence := trivial
+  noToolOutputCreatesAtoms := True
+  noToolOutputCreatesAtomsEvidence := trivial
+  noSFTEventCreatesAtoms := True
+  noSFTEventCreatesAtomsEvidence := trivial
+  openTaxonomyBoundary := True
+
+def relationSourcePort : AtomPort where
+  name := "relation-source"
+  kind := AtomPortKind.relationSource
+  family := AtomKind.relation
+  axis := Axis.static
+  required := False
+  acceptsFamily := fun _ => True
+  acceptsAxis := fun _ => True
+
+def apiRelationSourcePort : AtomPort where
+  name := "api-relation-source"
+  kind := AtomPortKind.relationSource
+  family := AtomKind.existence
+  axis := Axis.static
+  required := False
+  acceptsFamily := fun _ => True
+  acceptsAxis := fun _ => True
+
+def relationTargetPort : AtomPort where
+  name := "relation-target"
+  kind := AtomPortKind.relationTarget
+  family := AtomKind.relation
+  axis := Axis.static
+  required := False
+  acceptsFamily := fun _ => True
+  acceptsAxis := fun _ => True
+
+def databaseRelationTargetPort : AtomPort where
+  name := "database-relation-target"
+  kind := AtomPortKind.relationTarget
+  family := AtomKind.existence
+  axis := Axis.static
+  required := False
+  acceptsFamily := fun _ => True
+  acceptsAxis := fun _ => True
+
+def directedApiValence : AtomValence where
+  ports := fun port => port = apiPort ∨ port = apiRelationSourcePort
+  requiredPort := fun _ => False
+  requiredPortHasPort := by
+    intro _ hRequired
+    cases hRequired
+  hasPort := ⟨apiPort, Or.inl rfl⟩
+
+def directedRelationValence : AtomValence where
+  ports := fun port => port = relationSourcePort ∨ port = relationTargetPort
+  requiredPort := fun _ => False
+  requiredPortHasPort := by
+    intro _ hRequired
+    cases hRequired
+  hasPort := ⟨relationSourcePort, Or.inl rfl⟩
+
+def directedDatabaseValence : AtomValence where
+  ports := fun port => port = databasePort ∨ port = databaseRelationTargetPort
+  requiredPort := fun _ => False
+  requiredPortHasPort := by
+    intro _ hRequired
+    cases hRequired
+  hasPort := ⟨databasePort, Or.inl rfl⟩
+
+def directedRelationShape (atom : DirectedRelationAtom) : AtomShape where
+  family := directedRelationKind atom
+  axis := Axis.static
+  subject := { name := match atom with
+    | .api => "api"
+    | .apiToDatabase => "api-to-database"
+    | .database => "database" }
+  predicate := match atom with
+    | .api => "component"
+    | .apiToDatabase => "relation"
+    | .database => "component"
+  objectSlots := fun _ => False
+  payloadSlots := fun _ => False
+  direction := match atom with
+    | .apiToDatabase => AtomDirection.outgoing
+    | _ => AtomDirection.neutral
+  arity := match atom with
+    | .apiToDatabase => 2
+    | _ => 1
+  valence := match atom with
+    | .api => directedApiValence
+    | .apiToDatabase => directedRelationValence
+    | .database => directedDatabaseValence
+  singleFactShape := True
+  singleFactShapeEvidence := trivial
+
+def directedRelationShapePresentation :
+    AtomShapePresentation directedRelationSystem where
+  shapeOf := directedRelationShape
+  shapeKindAligned := by
+    intro atom
+    cases atom <;> rfl
+  shapeAxisAligned := by
+    intro atom
+    cases atom <;> rfl
+  shapeSingleFact := by
+    intro _ _
+    trivial
+
+def directedRelationSelectedAtoms : DirectedRelationAtom -> Prop
+  | .api => True
+  | .apiToDatabase => True
+  | .database => True
+
+def relationSourcePortCompatible :
+    PortCompatible relationSourcePort apiRelationSourcePort := by
+  exact ⟨rfl, trivial, trivial, trivial, trivial⟩
+
+def relationSourcePortCompatibleSymm :
+    PortCompatible apiRelationSourcePort relationSourcePort :=
+  PortCompatible.symm relationSourcePortCompatible
+
+def relationTargetPortCompatible :
+    PortCompatible relationTargetPort databaseRelationTargetPort := by
+  exact ⟨rfl, trivial, trivial, trivial, trivial⟩
+
+def relationTargetPortCompatibleSymm :
+    PortCompatible databaseRelationTargetPort relationTargetPort :=
+  PortCompatible.symm relationTargetPortCompatible
+
+def directedApiDatabaseComposition :
+    CompatibleComposition
+      (AtomShapeOf directedRelationShapePresentation DirectedRelationAtom.api)
+      (AtomShapeOf directedRelationShapePresentation
+        DirectedRelationAtom.database) where
+  leftPort := apiPort
+  rightPort := databasePort
+  leftHasPort := Or.inl rfl
+  rightHasPort := Or.inl rfl
+  portsCompatible := componentPortCompatible
+  objectSlotsCompatible := by
+    intro _ _ hSlot _
+    cases hSlot
+  payloadSlotsCompatible := by
+    intro _ _ hSlot _
+    cases hSlot
+  predicateSlotsCompatible := by
+    intro _hPredicate
+    exact ⟨rfl, rfl⟩
+
+def directedDatabaseApiComposition :
+    CompatibleComposition
+      (AtomShapeOf directedRelationShapePresentation
+        DirectedRelationAtom.database)
+      (AtomShapeOf directedRelationShapePresentation DirectedRelationAtom.api) where
+  leftPort := databasePort
+  rightPort := apiPort
+  leftHasPort := Or.inl rfl
+  rightHasPort := Or.inl rfl
+  portsCompatible := databasePortCompatible
+  objectSlotsCompatible := by
+    intro _ _ hSlot _
+    cases hSlot
+  payloadSlotsCompatible := by
+    intro _ _ hSlot _
+    cases hSlot
+  predicateSlotsCompatible := by
+    intro _hPredicate
+    exact ⟨rfl, rfl⟩
+
+def directedRelationApiSourceComposition :
+    CompatibleComposition
+      (AtomShapeOf directedRelationShapePresentation
+        DirectedRelationAtom.apiToDatabase)
+      (AtomShapeOf directedRelationShapePresentation DirectedRelationAtom.api) where
+  leftPort := relationSourcePort
+  rightPort := apiRelationSourcePort
+  leftHasPort := Or.inl rfl
+  rightHasPort := Or.inr rfl
+  portsCompatible := relationSourcePortCompatible
+  objectSlotsCompatible := by
+    intro _ _ hSlot _
+    cases hSlot
+  payloadSlotsCompatible := by
+    intro _ _ hSlot _
+    cases hSlot
+  predicateSlotsCompatible := by
+    intro hPredicate
+    have hDifferent : ("relation" : String) ≠ "component" := by
+      decide
+    exact False.elim (hDifferent hPredicate)
+
+def directedApiRelationSourceComposition :
+    CompatibleComposition
+      (AtomShapeOf directedRelationShapePresentation DirectedRelationAtom.api)
+      (AtomShapeOf directedRelationShapePresentation
+        DirectedRelationAtom.apiToDatabase) where
+  leftPort := apiRelationSourcePort
+  rightPort := relationSourcePort
+  leftHasPort := Or.inr rfl
+  rightHasPort := Or.inl rfl
+  portsCompatible := relationSourcePortCompatibleSymm
+  objectSlotsCompatible := by
+    intro _ _ hSlot _
+    cases hSlot
+  payloadSlotsCompatible := by
+    intro _ _ hSlot _
+    cases hSlot
+  predicateSlotsCompatible := by
+    intro hPredicate
+    have hDifferent : ("component" : String) ≠ "relation" := by
+      decide
+    exact False.elim (hDifferent hPredicate)
+
+def directedRelationDatabaseTargetComposition :
+    CompatibleComposition
+      (AtomShapeOf directedRelationShapePresentation
+        DirectedRelationAtom.apiToDatabase)
+      (AtomShapeOf directedRelationShapePresentation
+        DirectedRelationAtom.database) where
+  leftPort := relationTargetPort
+  rightPort := databaseRelationTargetPort
+  leftHasPort := Or.inr rfl
+  rightHasPort := Or.inr rfl
+  portsCompatible := relationTargetPortCompatible
+  objectSlotsCompatible := by
+    intro _ _ hSlot _
+    cases hSlot
+  payloadSlotsCompatible := by
+    intro _ _ hSlot _
+    cases hSlot
+  predicateSlotsCompatible := by
+    intro hPredicate
+    have hDifferent : ("relation" : String) ≠ "component" := by
+      decide
+    exact False.elim (hDifferent hPredicate)
+
+def directedDatabaseRelationTargetComposition :
+    CompatibleComposition
+      (AtomShapeOf directedRelationShapePresentation
+        DirectedRelationAtom.database)
+      (AtomShapeOf directedRelationShapePresentation
+        DirectedRelationAtom.apiToDatabase) where
+  leftPort := databaseRelationTargetPort
+  rightPort := relationTargetPort
+  leftHasPort := Or.inr rfl
+  rightHasPort := Or.inr rfl
+  portsCompatible := relationTargetPortCompatibleSymm
+  objectSlotsCompatible := by
+    intro _ _ hSlot _
+    cases hSlot
+  payloadSlotsCompatible := by
+    intro _ _ hSlot _
+    cases hSlot
+  predicateSlotsCompatible := by
+    intro hPredicate
+    have hDifferent : ("component" : String) ≠ "relation" := by
+      decide
+    exact False.elim (hDifferent hPredicate)
+
+def directedRelationCompositionGraph :
+    AAT.CompositionGraph
+      directedRelationShapePresentation directedRelationSelectedAtoms where
+  compatiblePairs := by
+    intro left right _hLeft _hRight hDistinct
+    cases left
+    · cases right
+      · exact False.elim (hDistinct rfl)
+      · exact directedApiRelationSourceComposition
+      · exact directedApiDatabaseComposition
+    · cases right
+      · exact directedRelationApiSourceComposition
+      · exact False.elim (hDistinct rfl)
+      · exact directedRelationDatabaseTargetComposition
+    · cases right
+      · exact directedDatabaseApiComposition
+      · exact directedDatabaseRelationTargetComposition
+      · exact False.elim (hDistinct rfl)
+  graphBoundary := True
+
+/-- Positive graph example with an oriented API -> database relation atom. -/
+def directedRelationGeneratedMolecule :
+    AAT.GeneratedMolecule directedRelationShapePresentation where
+  atoms := directedRelationSelectedAtoms
+  finiteConfiguration := True
+  atomsPrimitive := by
+    intro atom _
+    exact directedRelationSystem.primitive atom
+  compositionGraph := directedRelationCompositionGraph
+  requiredPortsMatched := by
+    intro atom _port _hAtom hRequired
+    cases atom <;> cases hRequired
+  notArbitrarySet := True
+  notArbitrarySetEvidence := trivial
+
+def directedRelationGeneratedObject :
+    AAT.GeneratedArchitectureObject directedRelationShapePresentation where
+  molecule := directedRelationGeneratedMolecule
+  carrierList :=
+    [ ⟨DirectedRelationAtom.api, by trivial⟩
+    , ⟨DirectedRelationAtom.apiToDatabase, by trivial⟩
+    , ⟨DirectedRelationAtom.database, by trivial⟩
+    ]
+  carrierListNodup := by
+    simp
+  carrierListCovers := by
+    intro carrier
+    cases carrier with
+    | mk atom _hAtom =>
+        cases atom <;> simp
+  objectBoundary := True
+
+def directedRelationApiCarrier :
+    AAT.GeneratedCarrier directedRelationGeneratedObject :=
+  ⟨DirectedRelationAtom.api, by trivial⟩
+
+def directedRelationAtomCarrier :
+    AAT.GeneratedCarrier directedRelationGeneratedObject :=
+  ⟨DirectedRelationAtom.apiToDatabase, by trivial⟩
+
+def directedRelationDatabaseCarrier :
+    AAT.GeneratedCarrier directedRelationGeneratedObject :=
+  ⟨DirectedRelationAtom.database, by trivial⟩
+
+def directedRelationAtom_api_to_database :
+    AAT.GeneratedRelationAtom
+      directedRelationGeneratedObject
+      directedRelationAtomCarrier
+      directedRelationApiCarrier
+      directedRelationDatabaseCarrier where
+  relationFamily := rfl
+  relationSourceDistinct := by
+    intro hEq
+    cases hEq
+  relationTargetDistinct := by
+    intro hEq
+    cases hEq
+  endpointsDistinct := by
+    intro hEq
+    cases hEq
+  sourceCompositionUsesRelationSource := by
+    native_decide
+  targetCompositionUsesRelationTarget := by
+    native_decide
+
+theorem directedRelationGeneratedGraph_api_to_database_edge :
+    (AAT.GeneratedArchGraph directedRelationGeneratedObject).edge
+      directedRelationApiCarrier directedRelationDatabaseCarrier := by
+  exact ⟨directedRelationAtomCarrier, directedRelationAtom_api_to_database⟩
+
+def directedRelationGeneratedGraph_api_to_database_witness :
+    AAT.GeneratedRelationEdgeWitness
+      directedRelationGeneratedObject
+      directedRelationApiCarrier
+      directedRelationDatabaseCarrier :=
+  AAT.GeneratedArchGraph.generated_relation_atom_witness
+    directedRelationGeneratedObject
+    directedRelationAtom_api_to_database
+
+theorem directedRelationGeneratedGraph_edge_uses_source_target_ports :
+    (directedRelationGeneratedGraph_api_to_database_witness.relationSourceComposition.leftPort.kind =
+        AtomPortKind.relationSource) ∧
+      (directedRelationGeneratedGraph_api_to_database_witness.relationTargetComposition.leftPort.kind =
+          AtomPortKind.relationTarget) := by
+  native_decide
+
+theorem directedRelationGeneratedGraph_no_database_to_api_edge :
+    ¬ (AAT.GeneratedArchGraph directedRelationGeneratedObject).edge
+      directedRelationDatabaseCarrier directedRelationApiCarrier := by
+  intro hEdge
+  rcases hEdge with ⟨relation, hRelation⟩
+  rcases relation with ⟨atom, hAtom⟩
+  cases atom
+  · cases hRelation.relationFamily
+  · have hSourceKind : False := by
+      simpa [AAT.GeneratedMolecule.compatible_pairs,
+        AAT.CompositionGraph.compatible_pairs,
+        directedRelationGeneratedObject,
+        directedRelationGeneratedMolecule,
+        directedRelationDatabaseCarrier,
+        directedRelationCompositionGraph,
+        directedRelationDatabaseTargetComposition,
+        directedDatabaseRelationTargetComposition,
+        relationTargetPort]
+        using hRelation.sourceCompositionUsesRelationSource.1
+    exact hSourceKind
+  · cases hRelation.relationFamily
 
 def selectedApiOnlyAtoms : ComponentAtom -> Prop
   | ComponentAtom.api => True
@@ -339,7 +768,9 @@ instance generatedApiOnlyRelationDecidable :
   exact isFalse (by
     intro hEdge
     rcases hEdge with ⟨relation, hRelation⟩
-    exact generatedApiOnlyObject_no_relation_atom relation hRelation.1)
+    exact
+      generatedApiOnlyObject_no_relation_atom
+        relation hRelation.relationFamily)
 
 theorem generatedApiOnlyGraph_no_edges :
     ∀ source target,
@@ -347,7 +778,9 @@ theorem generatedApiOnlyGraph_no_edges :
         source target := by
   intro source target hEdge
   rcases hEdge with ⟨relation, hRelation⟩
-  exact generatedApiOnlyObject_no_relation_atom relation hRelation.1
+  exact
+    generatedApiOnlyObject_no_relation_atom
+      relation hRelation.relationFamily
 
 theorem generatedApiOnlyGraph_walkAcyclic :
     WalkAcyclic (AAT.GeneratedArchGraph generatedApiOnlyObject) := by

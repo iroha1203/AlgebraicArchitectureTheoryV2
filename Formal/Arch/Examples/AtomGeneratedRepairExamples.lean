@@ -264,7 +264,9 @@ theorem repairedGeneratedGraph_no_edges :
         source target := by
   intro source target hEdge
   rcases hEdge with ⟨relation, hRelation⟩
-  exact repairedGeneratedObject_no_relation_atom relation hRelation.1
+  exact
+    repairedGeneratedObject_no_relation_atom
+      relation hRelation.relationFamily
 
 theorem repairedGeneratedGraph_walkAcyclic :
     WalkAcyclic (AAT.GeneratedArchGraph repairedGeneratedObject) := by
