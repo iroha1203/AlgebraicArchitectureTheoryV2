@@ -321,6 +321,37 @@ structure GeneratedRepairProblemOperation {system : AtomAxiomSystem.{u, v}}
 
 namespace GeneratedRepairProblemOperation
 
+/--
+AtomShape-coordinate distance between a failed-configuration carrier and its
+mapped target carrier.
+-/
+def mappedCarrierShapeDistance
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {configuration : GeneratedRepairProblemConfiguration presentation}
+    {target : GeneratedArchitectureObject presentation}
+    (operation : GeneratedRepairProblemOperation configuration target)
+    (carrier : GeneratedRepairProblemCarrier configuration) : Nat :=
+  GeneratedAtomShapeCoordinate.mismatchCount
+    (GeneratedAtomShapeCoordinate.ofShape
+      (AtomShapeOf presentation carrier.val))
+    (GeneratedAtomShapeCoordinate.ofShape
+      (AtomShapeOf presentation (operation.atomMap carrier).val))
+
+/--
+Target carriers outside the repair source atom map are still target generated
+carriers, not atoms created by the repair operation.
+-/
+def TargetCarrierUnmapped
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {configuration : GeneratedRepairProblemConfiguration presentation}
+    {target : GeneratedArchitectureObject presentation}
+    (operation : GeneratedRepairProblemOperation configuration target)
+    (targetCarrier : GeneratedCarrier target) : Prop :=
+  ∀ sourceCarrier : GeneratedRepairProblemCarrier configuration,
+    operation.atomMap sourceCarrier ≠ targetCarrier
+
 /-- Problem repair operations expose their AtomShape transformation. -/
 theorem atomShape_transformed
     {system : AtomAxiomSystem.{u, v}}
@@ -334,6 +365,37 @@ theorem atomShape_transformed
       (AtomShapeOf presentation (operation.atomMap carrier).val) :=
   operation.transformsAtomShape carrier
 
+/-- Repair operation mapped distance unfolds to AtomShape coordinate mismatch count. -/
+theorem mappedCarrierShapeDistance_eq_coordinate_mismatchCount
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {configuration : GeneratedRepairProblemConfiguration presentation}
+    {target : GeneratedArchitectureObject presentation}
+    (operation : GeneratedRepairProblemOperation configuration target)
+    (carrier : GeneratedRepairProblemCarrier configuration) :
+    operation.mappedCarrierShapeDistance carrier =
+      GeneratedAtomShapeCoordinate.mismatchCount
+        (GeneratedAtomShapeCoordinate.ofShape
+          (AtomShapeOf presentation carrier.val))
+        (GeneratedAtomShapeCoordinate.ofShape
+          (AtomShapeOf presentation (operation.atomMap carrier).val)) := by
+  rfl
+
+/-- Zero repair mapped distance is exactly equality of source and target coordinates. -/
+theorem mappedCarrierShapeDistance_eq_zero_iff_coordinate_eq
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {configuration : GeneratedRepairProblemConfiguration presentation}
+    {target : GeneratedArchitectureObject presentation}
+    (operation : GeneratedRepairProblemOperation configuration target)
+    (carrier : GeneratedRepairProblemCarrier configuration) :
+    operation.mappedCarrierShapeDistance carrier = 0 ↔
+      GeneratedAtomShapeCoordinate.ofShape
+          (AtomShapeOf presentation carrier.val) =
+        GeneratedAtomShapeCoordinate.ofShape
+          (AtomShapeOf presentation (operation.atomMap carrier).val) := by
+  exact GeneratedAtomShapeCoordinate.mismatchCount_eq_zero_iff
+
 /-- Problem repair operations map selected source atoms to primitive target atoms. -/
 theorem target_atom_primitive
     {system : AtomAxiomSystem.{u, v}}
@@ -344,6 +406,18 @@ theorem target_atom_primitive
     (carrier : GeneratedRepairProblemCarrier configuration) :
     system.Primitive (operation.atomMap carrier).val :=
   target.carrier_atom_primitive (operation.atomMap carrier)
+
+/-- Unmapped repair target carriers remain primitive atoms in the same root system. -/
+theorem unmapped_target_atom_primitive
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {configuration : GeneratedRepairProblemConfiguration presentation}
+    {target : GeneratedArchitectureObject presentation}
+    (operation : GeneratedRepairProblemOperation configuration target)
+    (targetCarrier : GeneratedCarrier target)
+    (_hUnmapped : operation.TargetCarrierUnmapped targetCarrier) :
+    system.Primitive targetCarrier.val :=
+  target.carrier_atom_primitive targetCarrier
 
 /-- Problem repair operations do not create atom existence. -/
 theorem operation_does_not_create_atoms

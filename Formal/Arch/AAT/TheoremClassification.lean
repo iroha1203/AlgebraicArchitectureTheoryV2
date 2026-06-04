@@ -415,9 +415,11 @@ def classifyChapter7
         "chapter7.repairAsResplitting"
         (Chapter7TheoremPackages.Candidate.representativeDeclarations
           .repairAsResplitting)
-        ["Chapter7TheoremPackages.generatedRepairFromProblem_toRepairClearingPackage"]
+        ["Chapter7TheoremPackages.generatedRepairProblemOperation_mappedCarrierShapeDistance_eq_coordinate_mismatchCount",
+         "Chapter7TheoremPackages.generatedRepairProblemOperation_unmapped_target_atom_primitive",
+         "Chapter7TheoremPackages.generatedRepairFromProblem_toRepairClearingPackage"]
         (by simp)
-        "Repair is connected through generated repair targets and pre-molecule repair problems."
+        "Repair is connected through generated repair targets, pre-molecule repair problem operations with AtomShape distance and unmapped target primitive evidence, and the downstream repair-clearing package."
   | .complexityTransfer =>
       atomGeneratedRow
         "chapter7.complexityTransfer"

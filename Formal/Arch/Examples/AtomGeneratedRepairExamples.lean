@@ -306,6 +306,10 @@ def repairedApiCarrier :
     AAT.GeneratedCarrier repairedGeneratedObject :=
   ⟨RepairAtom.api, by trivial⟩
 
+def repairedDatabaseCarrier :
+    AAT.GeneratedCarrier repairedGeneratedObject :=
+  ⟨RepairAtom.database, by trivial⟩
+
 def missingPortRepairOperation :
     AAT.GeneratedRepairProblemOperation
       missingPortConfiguration repairedGeneratedObject where
@@ -393,6 +397,29 @@ theorem generatedMissingPortRepair_target_atom_primitive :
     repairSystem.Primitive
       (missingPortRepairOperation.atomMap missingPortApiCarrier).val := by
   exact missingPortRepairOperation.target_atom_primitive missingPortApiCarrier
+
+theorem generatedMissingPortRepair_mapped_api_shapeDistance_eq_zero :
+    missingPortRepairOperation.mappedCarrierShapeDistance
+      missingPortApiCarrier = 0 := by
+  native_decide
+
+theorem generatedMissingPortRepair_database_unmapped :
+    missingPortRepairOperation.TargetCarrierUnmapped
+      repairedDatabaseCarrier := by
+  intro sourceCarrier
+  cases sourceCarrier with
+  | mk atom hAtom =>
+      cases atom
+      · intro hEqual
+        cases hEqual
+      · cases hAtom
+
+theorem generatedMissingPortRepair_unmapped_database_primitive :
+    repairSystem.Primitive repairedDatabaseCarrier.val := by
+  exact
+    missingPortRepairOperation.unmapped_target_atom_primitive
+      repairedDatabaseCarrier
+      generatedMissingPortRepair_database_unmapped
 
 theorem generatedMissingPortRepair_does_not_create_atoms :
     repairSystem.noToolOutputCreatesAtoms := by

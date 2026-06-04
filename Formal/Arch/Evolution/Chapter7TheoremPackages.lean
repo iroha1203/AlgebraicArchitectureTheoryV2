@@ -186,6 +186,40 @@ def generatedRepairFromProblem_clears_selected_problem
   exact repair.clears_selected_problem
 
 /--
+Generated repair problem operations expose the AtomShape-coordinate distance
+between failed-configuration carriers and their mapped target carriers.
+-/
+theorem generatedRepairProblemOperation_mappedCarrierShapeDistance_eq_coordinate_mismatchCount
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {configuration : AAT.GeneratedRepairProblemConfiguration presentation}
+    {target : AAT.GeneratedArchitectureObject presentation}
+    (operation : AAT.GeneratedRepairProblemOperation configuration target)
+    (carrier : AAT.GeneratedRepairProblemCarrier configuration) :
+    operation.mappedCarrierShapeDistance carrier =
+      AAT.GeneratedAtomShapeCoordinate.mismatchCount
+        (AAT.GeneratedAtomShapeCoordinate.ofShape
+          (AtomShapeOf presentation carrier.val))
+        (AAT.GeneratedAtomShapeCoordinate.ofShape
+          (AtomShapeOf presentation (operation.atomMap carrier).val)) := by
+  exact operation.mappedCarrierShapeDistance_eq_coordinate_mismatchCount carrier
+
+/--
+Target carriers outside a repair source atom map are still primitive atoms of
+the generated target object.
+-/
+theorem generatedRepairProblemOperation_unmapped_target_atom_primitive
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {configuration : AAT.GeneratedRepairProblemConfiguration presentation}
+    {target : AAT.GeneratedArchitectureObject presentation}
+    (operation : AAT.GeneratedRepairProblemOperation configuration target)
+    (targetCarrier : AAT.GeneratedCarrier target)
+    (hUnmapped : operation.TargetCarrierUnmapped targetCarrier) :
+    system.Primitive targetCarrier.val :=
+  operation.unmapped_target_atom_primitive targetCarrier hUnmapped
+
+/--
 Generated repair from a pre-molecule problem induces the existing AAT
 repair-clearing package at the generated target object.
 -/
@@ -285,6 +319,8 @@ def representativeDeclarations : Candidate -> List String
        "Chapter7TheoremPackages.generatedRepair_target_shapeLevel",
        "Chapter7TheoremPackages.generatedRepair_clears_selected_target",
        "Chapter7TheoremPackages.generatedRepair_toRepairClearingPackage",
+       "Chapter7TheoremPackages.generatedRepairProblemOperation_mappedCarrierShapeDistance_eq_coordinate_mismatchCount",
+       "Chapter7TheoremPackages.generatedRepairProblemOperation_unmapped_target_atom_primitive",
        "Chapter7TheoremPackages.generatedRepairFromProblem_shapeLevel",
        "Chapter7TheoremPackages.generatedRepairFromProblem_clears_selected_problem",
        "Chapter7TheoremPackages.generatedRepairFromProblem_toRepairClearingPackage"]
@@ -389,11 +425,13 @@ def schematicCorrespondences : Candidate -> List SchematicCorrespondence
           ["Chapter7TheoremPackages.generatedRepair_target_shapeLevel",
            "Chapter7TheoremPackages.generatedRepair_clears_selected_target",
            "Chapter7TheoremPackages.generatedRepair_toRepairClearingPackage",
+           "Chapter7TheoremPackages.generatedRepairProblemOperation_mappedCarrierShapeDistance_eq_coordinate_mismatchCount",
+           "Chapter7TheoremPackages.generatedRepairProblemOperation_unmapped_target_atom_primitive",
            "Chapter7TheoremPackages.generatedRepairFromProblem_shapeLevel",
            "Chapter7TheoremPackages.generatedRepairFromProblem_clears_selected_problem",
            "Chapter7TheoremPackages.generatedRepairFromProblem_toRepairClearingPackage"],
          reading :=
-          "generated repair targets are port / slot / valence-level targets and induce the existing AAT repair-clearing package at a generated target object",
+          "generated repair targets are port / slot / valence-level targets, repair problem operations expose AtomShape distance and unmapped target primitive evidence, and the repair induces the existing AAT repair-clearing package at a generated target object",
          status := "defined only / proved" }]
   | complexityTransfer =>
       [{ schematic := "ComplexityTransferredTo Runtime/Semantic/Policy t",
