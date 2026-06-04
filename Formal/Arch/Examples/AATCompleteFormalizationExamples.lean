@@ -11,6 +11,7 @@ def generatedComponentWorld : AAT.AtomGeneratedAATWorld where
   presentation := componentShapePresentation
   object := generatedComponentObject
   lawModel := generatedComponentLawModel
+  runtimeGraphRank := generatedComponentRuntimeGraphRank
   atomDecidable := inferInstance
   relationDecidable := inferInstance
 
@@ -45,6 +46,22 @@ theorem generatedComponentTheoremSuite_has_generated_object_fields :
       generatedComponentTheoremSuite
         |>.generatedMoleculeObject
         |>.archMapHandoffToGeneratedObject⟩
+
+theorem generatedComponentTheoremSuite_has_graph_rank_fields :
+    generatedComponentTheoremSuite.generatedGraphRank.relationGraphRank =
+        generatedComponentGraphRank ∧
+      generatedComponentTheoremSuite.generatedGraphRank.runtimeGraphRank =
+        generatedComponentRuntimeGraphRank ∧
+      WalkAcyclic (AAT.GeneratedArchGraph generatedComponentWorld.object) ∧
+      WalkAcyclic (AAT.GeneratedRuntimeGraph generatedComponentWorld.object) := by
+  exact
+    ⟨rfl, rfl,
+      generatedComponentTheoremSuite
+        |>.generatedGraphRank
+        |>.relationGraphRankWalkAcyclic,
+      generatedComponentTheoremSuite
+        |>.generatedGraphRank
+        |>.runtimeGraphRankWalkAcyclic⟩
 
 theorem generatedComponentTheoremSuite_registry_has_no_bridge_assumed_rows :
     AATReconstructionClassification.TheoremPackageClass.bridgeAssumed ∉
