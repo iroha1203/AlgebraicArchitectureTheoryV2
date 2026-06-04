@@ -1,6 +1,7 @@
 import Formal.Arch.AAT.GeneratedCurvature
-import Formal.Arch.AAT.GeneratedSignature
+import Formal.Arch.AAT.GeneratedSFT
 import Formal.Arch.AAT.TheoremClassification
+import Formal.Arch.Evolution.SFTArchSigBoundary
 import Formal.Arch.Observation.ArchMapGeneratedHandoff
 
 namespace Formal.Arch
@@ -146,6 +147,84 @@ structure GeneratedFlatnessCurvatureFields
     totalCurvature generatedAtomShapeCoordinateDistance
       world.object.generatedAtomShapeCoordinateSemantics
       world.object.generatedSemanticDiagrams = 0
+
+/-- Generated SFT input specialized to the decidability evidence carried by a world. -/
+abbrev GeneratedSFTInputForWorld
+    (world : AtomGeneratedAATWorld.{u, v}) : Type _ :=
+  @GeneratedSFTInput world.system world.presentation world.object
+    world.atomDecidable world.relationDecidable world.lawModel
+
+/--
+Suite field payload for the generated SFT / ArchSig / FieldSig handoff.
+
+This field keeps the boundary directional: generated AAT can be read as an SFT
+local algebra premise, ArchSig source bridges are computed from generated law
+models, and FieldSig consumes the ArchSig transition as analysis input.  It does
+not expose forecast correctness as an AAT theorem.
+-/
+structure GeneratedSFTArchSigFieldSigFields
+    (world : AtomGeneratedAATWorld.{u, v}) where
+  sftInputToLocalAlgebra :
+    ∀ _input : GeneratedSFTInputForWorld world,
+      AATCoreLocalAlgebraForSFT world.lawModel.generatedAATCore
+  sftInputLocalAlgebraReadsGenerated :
+    ∀ input : GeneratedSFTInputForWorld world,
+      (sftInputToLocalAlgebra input).usedAsLocalAlgebra
+  archsigTransitionSourceBridge :
+    ∀ _transition :
+      GeneratedArchSigAATCoreTransition world.lawModel world.lawModel,
+      ArchitectureSignature.AATCoreSignatureLawfulnessBridge
+        world.lawModel.generatedAATCore world.lawModel.toArchitectureLawModel
+  fieldSigReadsArchSigTransitionAsSFTAnalysis :
+    ∀ {SemanticExpr : Type v} {SemanticObs : Type v}
+      {FieldState : Type u}
+      {transition :
+        GeneratedArchSigAATCoreTransition world.lawModel world.lawModel}
+      {report :
+        ArchSigSFTReport
+          FieldState
+          (GeneratedCarrier world.object)
+          (GeneratedCarrier world.object)
+          GeneratedObservationCoordinate
+          SemanticExpr
+          SemanticObs}
+      {estimate :
+        SoftwareFieldEstimate
+          FieldState
+          (GeneratedCarrier world.object)
+          (GeneratedCarrier world.object)
+          GeneratedObservationCoordinate
+          SemanticExpr
+          SemanticObs}
+      {forecast : SFTForecastStatus},
+      GeneratedFieldSigAATCoreTransitionAnalysis
+        transition report estimate forecast ->
+        transition.fieldSigAnalysisBoundary
+  fieldSigForecastCorrectnessRemainsBoundary :
+    ∀ {SemanticExpr : Type v} {SemanticObs : Type v}
+      {FieldState : Type u}
+      {transition :
+        GeneratedArchSigAATCoreTransition world.lawModel world.lawModel}
+      {report :
+        ArchSigSFTReport
+          FieldState
+          (GeneratedCarrier world.object)
+          (GeneratedCarrier world.object)
+          GeneratedObservationCoordinate
+          SemanticExpr
+          SemanticObs}
+      {estimate :
+        SoftwareFieldEstimate
+          FieldState
+          (GeneratedCarrier world.object)
+          (GeneratedCarrier world.object)
+          GeneratedObservationCoordinate
+          SemanticExpr
+          SemanticObs}
+      {forecast : SFTForecastStatus},
+      GeneratedFieldSigAATCoreTransitionAnalysis
+        transition report estimate forecast ->
+        forecast.RecordsForecastBoundary
 
 namespace AtomGeneratedAATWorld
 
@@ -300,6 +379,122 @@ def generated_flatness_curvature_fields
   shapeCoordinateTotalCurvature_eq_zero :=
     world.generated_shapeCoordinateTotalCurvature_eq_zero
 
+/-- Generated SFT input induces the SFT local-algebra boundary for this world. -/
+def generated_sft_input_toAATCoreLocalAlgebraForSFT
+    (world : AtomGeneratedAATWorld.{u, v})
+    (input : GeneratedSFTInputForWorld world) :
+    AATCoreLocalAlgebraForSFT world.lawModel.generatedAATCore := by
+  letI : DecidableEq world.system.Atom := world.atomDecidable
+  letI : DecidableRel (GeneratedRelation world.object) :=
+    world.relationDecidable
+  exact input.toAATCoreLocalAlgebraForSFT
+
+/-- The generated local-algebra boundary reads generated AAT as SFT input. -/
+theorem generated_sft_input_localAlgebra_reads_generated
+    (world : AtomGeneratedAATWorld.{u, v})
+    (input : GeneratedSFTInputForWorld world) :
+    (world.generated_sft_input_toAATCoreLocalAlgebraForSFT
+      input).usedAsLocalAlgebra := by
+  letI : DecidableEq world.system.Atom := world.atomDecidable
+  letI : DecidableRel (GeneratedRelation world.object) :=
+    world.relationDecidable
+  exact input.localAlgebra_reads_generated_aat
+
+/-- Generated ArchSig source bridge computed from the world's law model. -/
+noncomputable def generated_archsig_transition_sourceBridge
+    (world : AtomGeneratedAATWorld.{u, v})
+    (transition :
+      GeneratedArchSigAATCoreTransition world.lawModel world.lawModel) :
+    ArchitectureSignature.AATCoreSignatureLawfulnessBridge
+      world.lawModel.generatedAATCore world.lawModel.toArchitectureLawModel :=
+  transition.sourceBridge
+
+/-- FieldSig reads a generated ArchSig transition only as SFT analysis input. -/
+theorem generated_fieldsig_reads_archsig_transition_as_sft_analysis
+    (world : AtomGeneratedAATWorld.{u, v})
+    {SemanticExpr : Type v} {SemanticObs : Type v}
+    {FieldState : Type u}
+    {transition :
+      GeneratedArchSigAATCoreTransition world.lawModel world.lawModel}
+    {report :
+      ArchSigSFTReport
+        FieldState
+        (GeneratedCarrier world.object)
+        (GeneratedCarrier world.object)
+        GeneratedObservationCoordinate
+        SemanticExpr
+        SemanticObs}
+    {estimate :
+      SoftwareFieldEstimate
+        FieldState
+        (GeneratedCarrier world.object)
+        (GeneratedCarrier world.object)
+        GeneratedObservationCoordinate
+        SemanticExpr
+        SemanticObs}
+    {forecast : SFTForecastStatus}
+    (analysis :
+      GeneratedFieldSigAATCoreTransitionAnalysis
+        transition report estimate forecast) :
+    transition.fieldSigAnalysisBoundary :=
+  analysis.fieldsig_reads_generated_archsig_transition_as_sft_analysis
+
+/--
+Generated FieldSig handoff keeps forecast correctness outside the AAT theorem
+suite and records only the selected forecast boundary.
+-/
+theorem generated_fieldsig_forecast_correctness_remains_boundary
+    (world : AtomGeneratedAATWorld.{u, v})
+    {SemanticExpr : Type v} {SemanticObs : Type v}
+    {FieldState : Type u}
+    {transition :
+      GeneratedArchSigAATCoreTransition world.lawModel world.lawModel}
+    {report :
+      ArchSigSFTReport
+        FieldState
+        (GeneratedCarrier world.object)
+        (GeneratedCarrier world.object)
+        GeneratedObservationCoordinate
+        SemanticExpr
+        SemanticObs}
+    {estimate :
+      SoftwareFieldEstimate
+        FieldState
+        (GeneratedCarrier world.object)
+        (GeneratedCarrier world.object)
+        GeneratedObservationCoordinate
+        SemanticExpr
+        SemanticObs}
+    {forecast : SFTForecastStatus}
+    (analysis :
+      GeneratedFieldSigAATCoreTransitionAnalysis
+        transition report estimate forecast) :
+    forecast.RecordsForecastBoundary :=
+  analysis.forecast_correctness_remains_boundary
+
+/-- Generated SFT / ArchSig / FieldSig handoff field derived from generated input. -/
+noncomputable def generated_sft_archsig_fieldsig_fields
+    (world : AtomGeneratedAATWorld.{u, v}) :
+    GeneratedSFTArchSigFieldSigFields world where
+  sftInputToLocalAlgebra :=
+    world.generated_sft_input_toAATCoreLocalAlgebraForSFT
+  sftInputLocalAlgebraReadsGenerated :=
+    world.generated_sft_input_localAlgebra_reads_generated
+  archsigTransitionSourceBridge :=
+    world.generated_archsig_transition_sourceBridge
+  fieldSigReadsArchSigTransitionAsSFTAnalysis := by
+    intro _SemanticExpr _SemanticObs _FieldState _transition
+      _report _estimate _forecast analysis
+    exact
+      world.generated_fieldsig_reads_archsig_transition_as_sft_analysis
+        analysis
+  fieldSigForecastCorrectnessRemainsBoundary := by
+    intro _SemanticExpr _SemanticObs _FieldState _transition
+      _report _estimate _forecast analysis
+    exact
+      world.generated_fieldsig_forecast_correctness_remains_boundary
+        analysis
+
 end AtomGeneratedAATWorld
 
 /--
@@ -324,6 +519,8 @@ structure AATTheoremSuite (world : AtomGeneratedAATWorld.{u, v}) where
   generatedAATCoreCircuitBoundary :
     world.GeneratedAATCoreCircuitBoundary
   generatedFlatnessCurvature : GeneratedFlatnessCurvatureFields world
+  generatedSFTArchSigFieldSig :
+    GeneratedSFTArchSigFieldSigFields world
   classificationRegistryHasNoBridgeAssumedRows :
     AATReconstructionClassification.TheoremPackageClass.bridgeAssumed ∉
       AATReconstructionClassification.allClassificationClasses
@@ -480,13 +677,16 @@ def currentImplementationFrontier : List AATImplementationFrontier :=
       docsTarget := "docs/aat/lean_theorem_index.md#atom-generated-algebra-kernel" }
   , { family := .generatedSFTArchSigFieldSig
       suiteField := "AATTheoremSuite.generatedSFTArchSigFieldSig"
-      status := .parallelReady
+      status := .connected
       existingEntrypoints :=
         ["GeneratedSFTInput.toAATCoreLocalAlgebraForSFT",
          "GeneratedArchSigAATCoreTransition.sourceBridge",
-         "GeneratedFieldSigAATCoreTransitionAnalysis.fieldsig_reads_generated_archsig_transition_as_sft_analysis"]
+         "GeneratedFieldSigAATCoreTransitionAnalysis.fieldsig_reads_generated_archsig_transition_as_sft_analysis",
+         "AtomGeneratedAATWorld.generated_sft_input_toAATCoreLocalAlgebraForSFT",
+         "AtomGeneratedAATWorld.generated_archsig_transition_sourceBridge",
+         "AtomGeneratedAATWorld.generated_fieldsig_reads_archsig_transition_as_sft_analysis"]
       nextWorkPackage :=
-        "Add suite fields for SFT, ArchSig, and FieldSig handoff."
+        "Preserve generated SFT / ArchSig / FieldSig handoff as a connected suite field."
       parallelAllowed := true
       coordinationRequired := false
       docsTarget := "docs/aat/lean_theorem_index.md#atom-generated-algebra-kernel" }
@@ -546,7 +746,7 @@ structure AATCompleteFormalization where
       allAATTheoremFamilies
 
 /-- Initial theorem suite obtained from existing generated law/signature proofs. -/
-def initialTheoremSuite
+noncomputable def initialTheoremSuite
     (world : AtomGeneratedAATWorld.{u, v}) :
     AATTheoremSuite world where
   atomShapeCompositionKernel :=
@@ -567,6 +767,8 @@ def initialTheoremSuite
     world.generated_aat_core_circuitBoundary
   generatedFlatnessCurvature :=
     world.generated_flatness_curvature_fields
+  generatedSFTArchSigFieldSig :=
+    world.generated_sft_archsig_fieldsig_fields
   classificationRegistryHasNoBridgeAssumedRows :=
     AATReconstructionClassification.theorem_package_registry_has_no_bridge_assumed_rows
   classificationRegistryHasNoRewriteTargets :=
@@ -577,7 +779,7 @@ def initialTheoremSuite
     AATReconstructionClassification.theorem_package_registry_representation_rows_are_downstream_libraries
 
 /-- Initial complete-formalization coordination object for any generated world. -/
-def initialCompleteFormalization
+noncomputable def initialCompleteFormalization
     (world : AtomGeneratedAATWorld.{u, v}) :
     AATCompleteFormalization where
   world := world
