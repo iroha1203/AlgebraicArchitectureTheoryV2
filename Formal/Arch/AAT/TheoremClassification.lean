@@ -259,6 +259,8 @@ def representativeDeclarations : AATCandidate -> List String
        "AtomGeneratedSignatureExamples.atomGeneratedSignature_coreSignatureBridge"]
   | atomGeneratedAlgebraKernel =>
       ["AAT.GeneratedMolecule",
+       "AAT.GeneratedMolecule.not_arbitrary_set",
+       "AtomGeneratedMoleculeExamples.generatedComponentMolecule_not_arbitrary_set",
        "AAT.GeneratedArchitectureObject",
        "AtomShapeKindCoverageExamples.coverage_shape_exists_for_every_atom_kind",
        "AtomShapeKindCoverageExamples.coverage_shape_has_valence_port",
@@ -296,6 +298,8 @@ def representativeDeclarations : AATCandidate -> List String
        "Observation.ArchMapObservationLayer.archmap_does_not_create_atoms",
        "Observation.ArchMapObservationLayer.archmap_does_not_define_aat",
        "Observation.ArchMapObservedAtomSelection.toGeneratedMolecule",
+       "ArchMapObservationExamples.archMap_observed_atom_selection_not_arbitrary",
+       "ArchMapObservationExamples.archMap_observed_atom_handoff_not_arbitrary",
        "Observation.ArchMapGeneratedArchitectureObjectInput.toGeneratedArchitectureObject"]
   | crossPackageSmoke =>
       ["AATCoreSmokeExamples.generated_transport_handoff_reads_nonidentity_transition",
@@ -328,6 +332,8 @@ def classifyAATCandidate
         "aat.atomGeneratedAlgebraKernel"
         (AATCandidate.representativeDeclarations .atomGeneratedAlgebraKernel)
         ["AAT.GeneratedArchitectureObject",
+         "AAT.GeneratedMolecule.not_arbitrary_set",
+         "AtomGeneratedMoleculeExamples.generatedComponentMolecule_not_arbitrary_set",
          "AtomShapeKindCoverageExamples.coverage_shape_exists_for_every_atom_kind",
          "AAT.GeneratedArchitectureObject.generatedCarrierShapeDistance",
          "AAT.GeneratedArchitectureObject.generated_shapeCoordinateTotalCurvature_eq_zero",
@@ -346,6 +352,7 @@ def classifyAATCandidate
         "aat.archMapObservationBoundary"
         (AATCandidate.representativeDeclarations .archMapObservationBoundary)
         ["Observation.ArchMapObservedAtomSelection.toGeneratedMolecule",
+         "ArchMapObservationExamples.archMap_observed_atom_handoff_not_arbitrary",
          "Observation.ArchMapGeneratedArchitectureObjectInput.toGeneratedArchitectureObject"]
         (by simp)
         "ArchMap remains an observation boundary outside pure AAT, but observed atoms now have a positive handoff into GeneratedMolecule and GeneratedArchitectureObject without letting ArchMap create atoms or define AAT."

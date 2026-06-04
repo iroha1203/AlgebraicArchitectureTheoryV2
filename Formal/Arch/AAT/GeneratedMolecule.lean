@@ -38,8 +38,6 @@ structure GeneratedMolecule {system : AtomAxiomSystem.{u, v}}
   compositionGraph : CompositionGraph presentation atoms
   requiredPortsMatched :
     RequiredPortsMatched presentation atoms
-  notArbitrarySet : Prop
-  notArbitrarySetEvidence : notArbitrarySet
 
 namespace GeneratedMolecule
 
@@ -73,12 +71,34 @@ def compatible_pairs {system : AtomAxiomSystem.{u, v}}
       (AtomShapeOf presentation right) :=
   molecule.compositionGraph.compatible_pairs hLeft hRight hDistinct
 
-/-- Generated molecules are explicitly not arbitrary atom sets. -/
+/--
+Generated molecules are not arbitrary atom sets.
+
+This predicate is computed from the carried composition graph and required-port
+matching evidence; callers do not provide a separate marker field.
+-/
+def notArbitrarySet {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    (molecule : GeneratedMolecule presentation) : Prop :=
+  (∀ {left right : system.Atom},
+    molecule.atoms left ->
+    molecule.atoms right ->
+    left ≠ right ->
+      Nonempty
+        (CompatibleComposition
+          (AtomShapeOf presentation left)
+          (AtomShapeOf presentation right))) ∧
+    RequiredPortsMatched presentation molecule.atoms
+
+/-- Generated molecules are structurally not arbitrary atom sets. -/
 theorem not_arbitrary_set {system : AtomAxiomSystem.{u, v}}
     {presentation : AtomShapePresentation system}
     (molecule : GeneratedMolecule presentation) :
     molecule.notArbitrarySet :=
-  molecule.notArbitrarySetEvidence
+  ⟨by
+    intro _left _right hLeft hRight hDistinct
+    exact ⟨molecule.compatible_pairs hLeft hRight hDistinct⟩,
+    molecule.requiredPortsMatched⟩
 
 /-- Incompatible selected atom pairs cannot inhabit a generated molecule. -/
 theorem incompatible_slots_not_generatedMolecule

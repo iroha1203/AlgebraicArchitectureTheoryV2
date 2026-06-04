@@ -182,8 +182,6 @@ def generatedComponentMolecule :
   requiredPortsMatched := by
     intro atom _ _ hRequired
     cases atom <;> cases hRequired
-  notArbitrarySet := True
-  notArbitrarySetEvidence := trivial
 
 def generatedComponentMolecule_api_database_compatible :
     CompatibleComposition
@@ -201,6 +199,10 @@ theorem generatedComponentMolecule_to_legacy_molecule_contains_api :
 theorem generatedComponentMolecule_atoms_primitive :
     componentSystem.Primitive ComponentAtom.api := by
   exact generatedComponentMolecule.atoms_primitive (by trivial)
+
+theorem generatedComponentMolecule_not_arbitrary_set :
+    generatedComponentMolecule.notArbitrarySet := by
+  exact generatedComponentMolecule.not_arbitrary_set
 
 /-- Generated architecture object whose carrier is exactly the generated molecule. -/
 def generatedComponentObject :
@@ -625,8 +627,6 @@ def directedRelationGeneratedMolecule :
   requiredPortsMatched := by
     intro atom _port _hAtom hRequired
     cases atom <;> cases hRequired
-  notArbitrarySet := True
-  notArbitrarySetEvidence := trivial
 
 def directedRelationGeneratedObject :
     AAT.GeneratedArchitectureObject directedRelationShapePresentation where
@@ -1132,8 +1132,6 @@ def directedRuntimeGeneratedMolecule :
   requiredPortsMatched := by
     intro atom _port _hAtom hRequired
     cases atom <;> cases hRequired
-  notArbitrarySet := True
-  notArbitrarySetEvidence := trivial
 
 def directedRuntimeGeneratedObject :
     AAT.GeneratedArchitectureObject directedRuntimeShapePresentation where
@@ -1335,8 +1333,6 @@ def generatedApiOnlyMolecule :
     cases atom
     · cases hRequired
     · exact False.elim (selectedApiOnlyAtoms_no_database hAtom)
-  notArbitrarySet := True
-  notArbitrarySetEvidence := trivial
 
 /-- Source-side generated object whose carrier is exactly the API atom. -/
 def generatedApiOnlyObject :

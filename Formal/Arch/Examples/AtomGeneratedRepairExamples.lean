@@ -233,8 +233,6 @@ def repairedGeneratedMolecule :
           requiredProvidedCompatible⟩
     · change False at hRequired
       cases hRequired
-  notArbitrarySet := True
-  notArbitrarySetEvidence := trivial
 
 def repairedGeneratedObject :
     AAT.GeneratedArchitectureObject repairShapePresentation where

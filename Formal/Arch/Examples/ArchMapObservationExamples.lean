@@ -180,12 +180,18 @@ def observedApiArchMapSelection :
     intro atom _port _hAtom hRequired
     cases atom
     cases hRequired
-  notArbitrarySet := True
-  notArbitrarySetEvidence := trivial
 
 def observedApiGeneratedMolecule :
     AAT.GeneratedMolecule observedApiShapePresentation :=
   observedApiArchMapSelection.toGeneratedMolecule
+
+theorem archMap_observed_atom_selection_not_arbitrary :
+    observedApiArchMapSelection.notArbitrarySet := by
+  exact observedApiArchMapSelection.not_arbitrary_set
+
+theorem archMap_observed_atom_handoff_not_arbitrary :
+    observedApiGeneratedMolecule.notArbitrarySet := by
+  exact observedApiGeneratedMolecule.not_arbitrary_set
 
 theorem archMap_observed_atom_handoff_to_generated_molecule :
     observedApiGeneratedMolecule.atoms ExampleAtom.apiComponent := by

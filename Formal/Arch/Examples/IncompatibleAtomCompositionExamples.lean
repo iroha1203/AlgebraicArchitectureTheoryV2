@@ -316,8 +316,6 @@ def endpointGeneratedMolecule :
   requiredPortsMatched := by
     intro _ _ _ hRequired
     cases hRequired
-  notArbitrarySet := True
-  notArbitrarySetEvidence := trivial
 
 def endpointGeneratedObject :
     AAT.GeneratedArchitectureObject endpointShapePresentation where
@@ -440,8 +438,6 @@ def effectOnlyGeneratedMolecule :
   requiredPortsMatched := by
     intro _ _ _ hRequired
     cases hRequired
-  notArbitrarySet := True
-  notArbitrarySetEvidence := trivial
 
 def effectOnlyGeneratedObject :
     AAT.GeneratedArchitectureObject effectOnlyShapePresentation where

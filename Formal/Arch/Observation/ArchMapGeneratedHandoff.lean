@@ -28,8 +28,6 @@ structure ArchMapObservedAtomSelection
   compositionGraph : AAT.CompositionGraph shapePresentation atoms
   requiredPortsMatched :
     AAT.RequiredPortsMatched shapePresentation atoms
-  notArbitrarySet : Prop
-  notArbitrarySetEvidence : notArbitrarySet
 
 namespace ArchMapObservedAtomSelection
 
@@ -80,8 +78,29 @@ def toGeneratedMolecule
     exact selection.selected_atoms_primitive hAtom
   compositionGraph := selection.compositionGraph
   requiredPortsMatched := selection.requiredPortsMatched
-  notArbitrarySet := selection.notArbitrarySet
-  notArbitrarySetEvidence := selection.notArbitrarySetEvidence
+
+/--
+Observed-atom handoff selections are not arbitrary sets exactly when the
+generated molecule built from them is structurally constrained.
+-/
+def notArbitrarySet
+    {system : AtomAxiomSystem.{u, v}}
+    {Source : Type s} {Evidence : Type e}
+    {layer : ArchMapObservationLayer system Source Evidence}
+    {shapePresentation : AtomShapePresentation system}
+    (selection : ArchMapObservedAtomSelection layer shapePresentation) :
+    Prop :=
+  selection.toGeneratedMolecule.notArbitrarySet
+
+/-- The observed-atom handoff inherits non-arbitrary structure from generated molecules. -/
+theorem not_arbitrary_set
+    {system : AtomAxiomSystem.{u, v}}
+    {Source : Type s} {Evidence : Type e}
+    {layer : ArchMapObservationLayer system Source Evidence}
+    {shapePresentation : AtomShapePresentation system}
+    (selection : ArchMapObservedAtomSelection layer shapePresentation) :
+    selection.notArbitrarySet :=
+  selection.toGeneratedMolecule.not_arbitrary_set
 
 /-- The generated molecule handoff keeps the same selected atom predicate. -/
 theorem toGeneratedMolecule_atoms
