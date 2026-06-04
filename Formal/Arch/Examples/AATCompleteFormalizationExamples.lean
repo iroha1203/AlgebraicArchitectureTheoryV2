@@ -63,6 +63,10 @@ theorem generatedComponentTheoremSuite_has_graph_rank_fields :
         |>.generatedGraphRank
         |>.runtimeGraphRankWalkAcyclic⟩
 
+theorem generatedComponentTheoremSuite_has_feature_extension_fields :
+    AAT.GeneratedFeatureExtensionFields generatedComponentWorld := by
+  exact generatedComponentTheoremSuite.generatedFeatureExtension
+
 theorem generatedComponentTheoremSuite_has_flatness_curvature_fields :
     ArchitectureFlat generatedComponentObject.generatedFlatnessModel ∧
       totalCurvature AAT.generatedAtomShapeCoordinateDistance
@@ -72,9 +76,9 @@ theorem generatedComponentTheoremSuite_has_flatness_curvature_fields :
     ⟨generatedComponentTheoremSuite
         |>.generatedFlatnessCurvature
         |>.architectureFlat,
-      generatedComponentTheoremSuite
-        |>.generatedFlatnessCurvature
-        |>.shapeCoordinateTotalCurvature_eq_zero⟩
+       generatedComponentTheoremSuite
+         |>.generatedFlatnessCurvature
+         |>.shapeCoordinateTotalCurvature_eq_zero⟩
 
 theorem generatedComponentTheoremSuite_registry_has_no_bridge_assumed_rows :
     AATReconstructionClassification.TheoremPackageClass.bridgeAssumed ∉
