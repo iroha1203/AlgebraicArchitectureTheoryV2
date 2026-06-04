@@ -200,6 +200,35 @@ theorem generatedComponentTheoremSuite_registry_has_no_bridge_assumed_rows :
     generatedComponentTheoremSuite
       |>.classificationRegistryHasNoBridgeAssumedRows
 
+theorem generatedComponentTheoremSuite_registry_has_no_rewrite_targets :
+    AATReconstructionClassification.ReconstructionAction.rewriteTarget ∉
+      AATReconstructionClassification.allClassificationActions := by
+  exact
+    generatedComponentTheoremSuite
+      |>.classificationRegistryHasNoRewriteTargets
+
+theorem generatedComponentTheoremSuite_registry_source_rows_are_atom_generated :
+    ∀ classAction ∈
+      AATReconstructionClassification.allClassificationClassActions,
+      classAction.2 =
+        AATReconstructionClassification.ReconstructionAction.aatSourceOfTruth ->
+        classAction.1 =
+          AATReconstructionClassification.TheoremPackageClass.atomGenerated := by
+  exact
+    generatedComponentTheoremSuite
+      |>.classificationRegistrySourceRowsAreAtomGenerated
+
+theorem generatedComponentTheoremSuite_registry_representation_rows_are_downstream :
+    ∀ classAction ∈
+      AATReconstructionClassification.allClassificationClassActions,
+      classAction.1 =
+        AATReconstructionClassification.TheoremPackageClass.representationLevel ->
+        classAction.2 =
+          AATReconstructionClassification.ReconstructionAction.downstreamLibrary := by
+  exact
+    generatedComponentTheoremSuite
+      |>.classificationRegistryRepresentationRowsAreDownstream
+
 /--
 The complete-formalization coordination artifact covers every current theorem
 family before sub-agent proof filling begins.
