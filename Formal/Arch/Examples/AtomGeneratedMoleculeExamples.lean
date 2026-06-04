@@ -2266,6 +2266,29 @@ theorem generatedApiExpansionOperation_target_atom_primitive :
       (generatedApiExpansionOperation.atomMap generatedApiOnlyCarrier).val := by
   exact generatedApiExpansionOperation.target_atom_primitive generatedApiOnlyCarrier
 
+theorem generatedApiExpansionOperation_mapped_api_shapeDistance_eq_zero :
+    generatedApiExpansionOperation.mappedCarrierShapeDistance
+      generatedApiOnlyCarrier = 0 := by
+  native_decide
+
+theorem generatedApiExpansionOperation_database_unmapped :
+    generatedApiExpansionOperation.TargetCarrierUnmapped
+      generatedComponentDatabaseCarrier := by
+  intro sourceCarrier
+  cases sourceCarrier with
+  | mk atom hAtom =>
+      cases atom
+      · intro hEqual
+        cases hEqual
+      · cases hAtom
+
+theorem generatedApiExpansionOperation_unmapped_database_primitive :
+    componentSystem.Primitive generatedComponentDatabaseCarrier.val := by
+  exact
+    generatedApiExpansionOperation.unmapped_target_atom_primitive
+      generatedComponentDatabaseCarrier
+      generatedApiExpansionOperation_database_unmapped
+
 def generatedApiExpansionOperationTransportPackage :
     AAT.OperationTransportPackage
       generatedApiOnlyLawModel.generatedAATCore

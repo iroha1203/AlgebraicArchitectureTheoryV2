@@ -80,6 +80,38 @@ theorem generatedOperation_atomShape_transformed
   exact operation.atomShape_transformed carrier
 
 /--
+Generated operations expose the AtomShape-coordinate distance between each
+source carrier and its mapped target carrier.
+-/
+theorem generatedOperation_mappedCarrierShapeDistance_eq_coordinate_mismatchCount
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {source target : AAT.GeneratedArchitectureObject presentation}
+    (operation : AAT.GeneratedOperation source target)
+    (carrier : AAT.GeneratedCarrier source) :
+    operation.mappedCarrierShapeDistance carrier =
+      AAT.GeneratedAtomShapeCoordinate.mismatchCount
+        (AAT.GeneratedAtomShapeCoordinate.ofShape
+          (AtomShapeOf presentation carrier.val))
+        (AAT.GeneratedAtomShapeCoordinate.ofShape
+          (AtomShapeOf presentation (operation.atomMap carrier).val)) := by
+  exact operation.mappedCarrierShapeDistance_eq_coordinate_mismatchCount carrier
+
+/--
+Target carriers outside the source atom map are still primitive atoms of the
+target generated object.
+-/
+theorem generatedOperation_unmapped_target_atom_primitive
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {source target : AAT.GeneratedArchitectureObject presentation}
+    (operation : AAT.GeneratedOperation source target)
+    (targetCarrier : AAT.GeneratedCarrier target)
+    (hUnmapped : operation.TargetCarrierUnmapped targetCarrier) :
+    system.Primitive targetCarrier.val :=
+  operation.unmapped_target_atom_primitive targetCarrier hUnmapped
+
+/--
 Generated operations induce the existing AAT operation transport package
 between generated AAT cores.
 -/
@@ -278,6 +310,8 @@ def representativeDeclarations : Candidate -> List String
        "eventuallyFlat_of_targetFlat",
        "evolutionPathPreservesFlatness",
        "Chapter7TheoremPackages.generatedOperation_atomShape_transformed",
+       "Chapter7TheoremPackages.generatedOperation_mappedCarrierShapeDistance_eq_coordinate_mismatchCount",
+       "Chapter7TheoremPackages.generatedOperation_unmapped_target_atom_primitive",
        "Chapter7TheoremPackages.generatedOperation_toOperationTransportPackage"]
 
 /--
@@ -430,9 +464,11 @@ def schematicCorrespondences : Candidate -> List SchematicCorrespondence
            "eventuallyFlat_of_targetFlat",
            "evolutionPathPreservesFlatness",
            "Chapter7TheoremPackages.generatedOperation_atomShape_transformed",
+           "Chapter7TheoremPackages.generatedOperation_mappedCarrierShapeDistance_eq_coordinate_mismatchCount",
+           "Chapter7TheoremPackages.generatedOperation_unmapped_target_atom_primitive",
            "Chapter7TheoremPackages.generatedOperation_toOperationTransportPackage"],
          reading :=
-          "bounded eventual flatness for a selected migration path or preserving path, with generated operations exposed as AtomShape transport over generated AAT cores",
+          "bounded eventual flatness for a selected migration path or preserving path, with generated operations exposed as AtomShape transport, mapped shape distance, unmapped target primitive evidence, and generated AATCore transport",
          status := "defined only / proved" }]
 
 /-- Boundary reminder for reading each candidate as a bounded theorem package. -/

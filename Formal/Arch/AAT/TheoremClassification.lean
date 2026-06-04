@@ -304,6 +304,9 @@ def representativeDeclarations : AATCandidate -> List String
        "AAT.GeneratedArchitectureLawModel.generated_law_model_from_generated_graph_rank",
        "AtomGeneratedSignatureExamples.*",
        "AtomGeneratedMoleculeExamples.generatedComponentObject_api_database_shapeDistance_eq_one",
+       "AtomGeneratedMoleculeExamples.generatedApiExpansionOperation_mapped_api_shapeDistance_eq_zero",
+       "AtomGeneratedMoleculeExamples.generatedApiExpansionOperation_database_unmapped",
+       "AtomGeneratedMoleculeExamples.generatedApiExpansionOperation_unmapped_database_primitive",
        "AtomGeneratedRepairExamples.repairedGeneratedGraphRank",
        "AtomGeneratedRepairExamples.repaired_law_model_from_graph_rank",
        "AtomGeneratedRepairExamples.*",
@@ -437,9 +440,11 @@ def classifyChapter7
         "chapter7.architectureEvolution"
         (Chapter7TheoremPackages.Candidate.representativeDeclarations
           .architectureEvolution)
-        ["Chapter7TheoremPackages.generatedOperation_toOperationTransportPackage"]
+        ["Chapter7TheoremPackages.generatedOperation_mappedCarrierShapeDistance_eq_coordinate_mismatchCount",
+         "Chapter7TheoremPackages.generatedOperation_unmapped_target_atom_primitive",
+         "Chapter7TheoremPackages.generatedOperation_toOperationTransportPackage"]
         (by simp)
-        "Generated operations expose AtomShape transformation and non-identity AATCore transport."
+        "Generated operations expose AtomShape transformation, mapped shape distance, unmapped target primitive evidence, and non-identity AATCore transport."
 
 def classifyChapter8
     (candidate : Chapter8HomotopySkeleton.Candidate) :

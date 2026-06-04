@@ -1,3 +1,4 @@
+import Formal.Arch.AAT.GeneratedDistance
 import Formal.Arch.AAT.GeneratedFlatness
 import Formal.Arch.AAT.Operation
 
@@ -30,6 +31,32 @@ structure GeneratedOperation {system : AtomAxiomSystem.{u, v}}
 
 namespace GeneratedOperation
 
+/-- AtomShape-coordinate distance between a source carrier and its mapped target carrier. -/
+def mappedCarrierShapeDistance
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {source target : GeneratedArchitectureObject presentation}
+    (operation : GeneratedOperation source target)
+    (carrier : GeneratedCarrier source) : Nat :=
+  GeneratedAtomShapeCoordinate.mismatchCount
+    (GeneratedAtomShapeCoordinate.ofShape
+      (AtomShapeOf presentation carrier.val))
+    (GeneratedAtomShapeCoordinate.ofShape
+      (AtomShapeOf presentation (operation.atomMap carrier).val))
+
+/--
+Target carriers outside the source atom map are still target generated carriers,
+not atoms created by the operation.
+-/
+def TargetCarrierUnmapped
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {source target : GeneratedArchitectureObject presentation}
+    (operation : GeneratedOperation source target)
+    (targetCarrier : GeneratedCarrier target) : Prop :=
+  ∀ sourceCarrier : GeneratedCarrier source,
+    operation.atomMap sourceCarrier ≠ targetCarrier
+
 /-- Generated operations expose their AtomShape transformation on each mapped atom. -/
 theorem atomShape_transformed
     {system : AtomAxiomSystem.{u, v}}
@@ -42,6 +69,35 @@ theorem atomShape_transformed
       (AtomShapeOf presentation (operation.atomMap carrier).val) :=
   operation.transformsAtomShape carrier
 
+/-- Operation mapped distance unfolds to generated AtomShape coordinate mismatch count. -/
+theorem mappedCarrierShapeDistance_eq_coordinate_mismatchCount
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {source target : GeneratedArchitectureObject presentation}
+    (operation : GeneratedOperation source target)
+    (carrier : GeneratedCarrier source) :
+    operation.mappedCarrierShapeDistance carrier =
+      GeneratedAtomShapeCoordinate.mismatchCount
+        (GeneratedAtomShapeCoordinate.ofShape
+          (AtomShapeOf presentation carrier.val))
+        (GeneratedAtomShapeCoordinate.ofShape
+          (AtomShapeOf presentation (operation.atomMap carrier).val)) := by
+  rfl
+
+/-- Zero mapped distance is exactly equality of source and mapped target coordinates. -/
+theorem mappedCarrierShapeDistance_eq_zero_iff_coordinate_eq
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {source target : GeneratedArchitectureObject presentation}
+    (operation : GeneratedOperation source target)
+    (carrier : GeneratedCarrier source) :
+    operation.mappedCarrierShapeDistance carrier = 0 ↔
+      GeneratedAtomShapeCoordinate.ofShape
+          (AtomShapeOf presentation carrier.val) =
+        GeneratedAtomShapeCoordinate.ofShape
+          (AtomShapeOf presentation (operation.atomMap carrier).val) := by
+  exact GeneratedAtomShapeCoordinate.mismatchCount_eq_zero_iff
+
 /-- Operation targets remain primitive atoms in the same root system. -/
 theorem target_atom_primitive
     {system : AtomAxiomSystem.{u, v}}
@@ -51,6 +107,17 @@ theorem target_atom_primitive
     (carrier : GeneratedCarrier source) :
     system.Primitive (operation.atomMap carrier).val :=
   target.carrier_atom_primitive (operation.atomMap carrier)
+
+/-- Unmapped target carriers remain primitive atoms in the same root system. -/
+theorem unmapped_target_atom_primitive
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {source target : GeneratedArchitectureObject presentation}
+    (operation : GeneratedOperation source target)
+    (targetCarrier : GeneratedCarrier target)
+    (_hUnmapped : operation.TargetCarrierUnmapped targetCarrier) :
+    system.Primitive targetCarrier.val :=
+  target.carrier_atom_primitive targetCarrier
 
 /-- Generated operations do not create atom existence. -/
 theorem operation_does_not_create_atoms
