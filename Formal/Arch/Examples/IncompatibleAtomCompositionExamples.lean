@@ -468,6 +468,106 @@ theorem effect_atom_without_authority_not_law_satisfied :
         cases authority.val
         cases hAuthority)
 
+inductive CapabilityOnlyAtom where
+  | capabilityOnly
+  deriving DecidableEq, Repr
+
+def capabilityOnlySystem : AtomAxiomSystem where
+  Atom := CapabilityOnlyAtom
+  Predicate := AtomKind
+  kind := fun _ => AtomKind.capability
+  axis := fun _ => Axis.static
+  predicate := fun _ => AtomKind.capability
+  predicateKind := fun kind => kind
+  predicateAxis := fun _ => Axis.static
+  predicateKindAligned := by
+    intro atom
+    cases atom
+    rfl
+  predicateAxisAligned := by
+    intro atom
+    cases atom
+    rfl
+  singleFact := fun _ => True
+  singleFactEvidence := fun _ => trivial
+  predicatePreserving := fun _ => True
+  predicatePreservingEvidence := fun _ => trivial
+  boundaryIndependent := fun _ => True
+  boundaryIndependentEvidence := fun _ => trivial
+  lawIndependent := fun _ => True
+  lawIndependentEvidence := fun _ => trivial
+  noObservationBoundaryCreatesAtoms := True
+  noObservationBoundaryCreatesAtomsEvidence := trivial
+  noLawCreatesAtoms := True
+  noLawCreatesAtomsEvidence := trivial
+  noToolOutputCreatesAtoms := True
+  noToolOutputCreatesAtomsEvidence := trivial
+  noSFTEventCreatesAtoms := True
+  noSFTEventCreatesAtomsEvidence := trivial
+  openTaxonomyBoundary := True
+
+def capabilityOnlyRequiredDataStatePort : AtomPort where
+  name := "capability-only-required-data-state"
+  kind := AtomPortKind.payload
+  family := AtomKind.capability
+  axis := Axis.static
+  required := True
+  acceptsFamily := fun kind => kind = AtomKind.dataState
+  acceptsAxis := fun axis => axis = Axis.dataflow
+
+def capabilityOnlyValence : AtomValence where
+  ports := fun port => port = capabilityOnlyRequiredDataStatePort
+  requiredPort := fun port => port = capabilityOnlyRequiredDataStatePort
+  requiredPortHasPort := by
+    intro _ hRequired
+    exact hRequired
+  hasPort := ⟨capabilityOnlyRequiredDataStatePort, rfl⟩
+
+def capabilityOnlyShape (_atom : CapabilityOnlyAtom) : AtomShape where
+  family := AtomKind.capability
+  axis := Axis.static
+  subject := { name := "capability-only" }
+  predicate := "capability"
+  objectSlots := fun _ => False
+  payloadSlots := fun _ => False
+  direction := AtomDirection.outgoing
+  arity := 1
+  valence := capabilityOnlyValence
+  singleFactShape := True
+  singleFactShapeEvidence := trivial
+
+def capabilityOnlyShapePresentation :
+    AtomShapePresentation capabilityOnlySystem where
+  shapeOf := capabilityOnlyShape
+  shapeKindAligned := by
+    intro atom
+    cases atom
+    rfl
+  shapeAxisAligned := by
+    intro atom
+    cases atom
+    rfl
+  shapeSingleFact := by
+    intro _ _
+    trivial
+
+theorem capability_atom_without_data_state_not_generated_molecule
+    (molecule : AAT.GeneratedMolecule capabilityOnlyShapePresentation)
+    (hCapability : molecule.atoms CapabilityOnlyAtom.capabilityOnly)
+    (hOnlyCapability :
+      ∀ atom,
+        molecule.atoms atom -> atom = CapabilityOnlyAtom.capabilityOnly) :
+    False := by
+  exact molecule.missing_required_port_not_generatedMolecule
+    hCapability
+    (by rfl)
+    (by
+      intro hMatch
+      rcases hMatch with
+        ⟨other, _otherPort, hOther, hDistinct, _hOtherPort,
+          _hCompatible⟩
+      exact hDistinct (hOnlyCapability other hOther))
+
 def concernHintCandidate :
     Observation.RawAtomCandidate exampleSystem String where
   predicate := AtomKind.relation
