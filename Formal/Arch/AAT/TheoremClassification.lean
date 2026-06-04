@@ -627,15 +627,22 @@ def classifyChapter11
     TheoremPackageClassification :=
   match candidate with
   | .analyticRepresentation =>
-      representationRow
+      atomGeneratedRow
         "chapter11.analyticRepresentation"
         (Chapter11AnalyticRepresentation.Candidate.representativeDeclarations
           .analyticRepresentation)
-        ["AnalyticRepresentation"]
+        ["AAT.GeneratedArchitectureLawModel.generatedAnalyticRepresentation",
+         "Chapter11AnalyticRepresentation.generatedAnalyticRepresentation_represent_eq_signatureOfGenerated",
+         "Chapter11AnalyticRepresentation.generatedAnalyticRepresentation_coverageAssumptions",
+         "Chapter11AnalyticRepresentation.generatedAnalyticRepresentation_witnessCompleteness",
+         "Chapter11AnalyticRepresentation.generatedAnalyticRepresentation_semanticContractCoverage",
+         "Chapter11AnalyticRepresentation.generatedAnalyticRepresentation_zeroPreserving",
+         "Chapter11AnalyticRepresentation.generatedAnalyticRepresentation_zeroReflecting",
+         "Chapter11AnalyticRepresentation.generatedAnalyticRepresentation_obstructionPreserving",
+         "Chapter11AnalyticRepresentation.generatedAnalyticRepresentation_obstructionReflecting",
+         "Chapter11AnalyticRepresentation.generatedAnalyticRepresentation_nonConclusions"]
         (by simp)
-        .downstreamLibrary
-        ActionAllowed.representationDownstream
-        "The generic analytic representation package is a downstream representation theorem."
+        "The generic analytic representation package has an Atom-generated law-model specialization with generated coverage, preserving, reflecting, and non-conclusion evidence."
   | .toolingReportMetadata =>
       representationRow
         "chapter11.toolingReportMetadata"
@@ -1206,6 +1213,13 @@ theorem generated_consequence_envelope_is_atom_generated :
     (classifySFT .consequenceEnvelope).classification =
       .atomGenerated := by
   rfl
+
+theorem generated_analytic_representation_is_atom_generated :
+    (classifyChapter11 .analyticRepresentation).classification =
+      .atomGenerated ∧
+    (classifyChapter11 .architectureSignatureRepresentation).classification =
+      .atomGenerated := by
+  exact ⟨rfl, rfl⟩
 
 theorem generated_analytic_extension_formula_is_atom_generated :
     (classifyChapter11 .obstructionValuation).classification =

@@ -1606,7 +1606,17 @@ def representativeDeclarations : Candidate -> List String
        "AnalyticRepresentation.analyticZero_of_structuralZero",
        "AnalyticRepresentation.structuralZero_of_analyticZero",
        "AnalyticRepresentation.analyticObstruction_of_structuralObstruction",
-       "AnalyticRepresentation.structuralObstruction_of_analyticObstruction"]
+       "AnalyticRepresentation.structuralObstruction_of_analyticObstruction",
+       "AAT.GeneratedArchitectureLawModel.generatedAnalyticRepresentation",
+       "Chapter11AnalyticRepresentation.generatedAnalyticRepresentation_represent_eq_signatureOfGenerated",
+       "Chapter11AnalyticRepresentation.generatedAnalyticRepresentation_coverageAssumptions",
+       "Chapter11AnalyticRepresentation.generatedAnalyticRepresentation_witnessCompleteness",
+       "Chapter11AnalyticRepresentation.generatedAnalyticRepresentation_semanticContractCoverage",
+       "Chapter11AnalyticRepresentation.generatedAnalyticRepresentation_zeroPreserving",
+       "Chapter11AnalyticRepresentation.generatedAnalyticRepresentation_zeroReflecting",
+       "Chapter11AnalyticRepresentation.generatedAnalyticRepresentation_obstructionPreserving",
+       "Chapter11AnalyticRepresentation.generatedAnalyticRepresentation_obstructionReflecting",
+       "Chapter11AnalyticRepresentation.generatedAnalyticRepresentation_nonConclusions"]
   | toolingReportMetadata =>
       ["ClaimClassification",
        "ClaimClassification.IsProved",
@@ -1767,6 +1777,22 @@ def schematicCorrespondences : Candidate -> List SchematicCorrespondence
          reading :=
           "representation map with preserving directions and reflecting directions relative to coverage and completeness assumptions",
          status := "defined only / proved" },
+       { schematic :=
+          "GeneratedArchitectureLawModel -> AnalyticRepresentation",
+         leanDeclarations :=
+          ["AAT.GeneratedArchitectureLawModel.generatedAnalyticRepresentation",
+           "Chapter11AnalyticRepresentation.generatedAnalyticRepresentation_represent_eq_signatureOfGenerated",
+           "Chapter11AnalyticRepresentation.generatedAnalyticRepresentation_coverageAssumptions",
+           "Chapter11AnalyticRepresentation.generatedAnalyticRepresentation_witnessCompleteness",
+           "Chapter11AnalyticRepresentation.generatedAnalyticRepresentation_semanticContractCoverage",
+           "Chapter11AnalyticRepresentation.generatedAnalyticRepresentation_zeroPreserving",
+           "Chapter11AnalyticRepresentation.generatedAnalyticRepresentation_zeroReflecting",
+           "Chapter11AnalyticRepresentation.generatedAnalyticRepresentation_obstructionPreserving",
+           "Chapter11AnalyticRepresentation.generatedAnalyticRepresentation_obstructionReflecting",
+           "Chapter11AnalyticRepresentation.generatedAnalyticRepresentation_nonConclusions"],
+         reading :=
+          "Atom-generated law models instantiate the generic analytic representation package with generated coverage, preserving, reflecting, and non-conclusion evidence",
+         status := "proved" },
        { schematic := "coverage / witness completeness / semantic contract coverage",
          leanDeclarations :=
           ["AnalyticRepresentation.coverageAssumptions",

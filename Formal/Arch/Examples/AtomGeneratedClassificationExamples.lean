@@ -210,6 +210,18 @@ theorem generated_consequence_envelope_classified_atom_generated :
   exact generated_consequence_envelope_is_atom_generated
 
 /--
+Acceptance: the generic Chapter 11 analytic representation theorem package has
+an Atom-generated law-model specialization instead of remaining only a
+downstream representation row.
+-/
+theorem generated_analytic_representation_classified_atom_generated :
+    (classifyChapter11 .analyticRepresentation).classification =
+        .atomGenerated ∧
+      (classifyChapter11 .architectureSignatureRepresentation).classification =
+        .atomGenerated := by
+  exact generated_analytic_representation_is_atom_generated
+
+/--
 Acceptance: Chapter 11 obstruction valuation and analytic extension formula now
 have generated law-model entrypoints rather than remaining only downstream
 representation packages.
