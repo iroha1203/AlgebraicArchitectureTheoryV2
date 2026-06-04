@@ -326,13 +326,6 @@ def missingPortRepairOperation :
         cases atom
         · rfl
         · cases hAtom
-  preservesPrimitive := by
-    intro carrier
-    cases carrier with
-    | mk atom hAtom =>
-        cases atom
-        · exact repairedGeneratedObject.carrier_atom_primitive repairedApiCarrier
-        · cases hAtom
   operationDoesNotCreateAtomsEvidence :=
     repairSystem.tool_output_does_not_create_atoms
   operationBoundary := True
@@ -399,6 +392,11 @@ theorem generatedMissingPortRepair_transforms_shape :
       (AtomShapeOf repairShapePresentation
         (missingPortRepairOperation.atomMap missingPortApiCarrier).val) := by
   exact missingPortRepairOperation.atomShape_transformed missingPortApiCarrier
+
+theorem generatedMissingPortRepair_target_atom_primitive :
+    repairSystem.Primitive
+      (missingPortRepairOperation.atomMap missingPortApiCarrier).val := by
+  exact missingPortRepairOperation.target_atom_primitive missingPortApiCarrier
 
 theorem generatedMissingPortRepair_does_not_create_atoms :
     repairSystem.noToolOutputCreatesAtoms := by

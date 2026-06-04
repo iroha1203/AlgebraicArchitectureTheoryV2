@@ -25,8 +25,6 @@ structure GeneratedOperation {system : AtomAxiomSystem.{u, v}}
       shapeTransform
         (AtomShapeOf presentation carrier.val)
         (AtomShapeOf presentation (atomMap carrier).val)
-  preservesPrimitive :
-    ∀ carrier, system.Primitive (atomMap carrier).val
   operationDoesNotCreateAtomsEvidence :
     system.noToolOutputCreatesAtoms
   operationBoundary : Prop
@@ -53,7 +51,7 @@ theorem target_atom_primitive
     (operation : GeneratedOperation source target)
     (carrier : GeneratedCarrier source) :
     system.Primitive (operation.atomMap carrier).val :=
-  operation.preservesPrimitive carrier
+  target.carrier_atom_primitive (operation.atomMap carrier)
 
 /-- Generated operations do not create atom existence. -/
 theorem operation_does_not_create_atoms

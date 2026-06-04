@@ -1462,10 +1462,6 @@ def generatedApiExpansionOperation :
         cases atom
         · rfl
         · cases hAtom
-  preservesPrimitive := by
-    intro _carrier
-    exact generatedComponentObject.carrier_atom_primitive
-      generatedComponentApiCarrier
   operationDoesNotCreateAtomsEvidence :=
     componentSystem.tool_output_does_not_create_atoms
   operationBoundary := True
@@ -1483,6 +1479,11 @@ theorem generatedApiExpansionOperation_transforms_shape
 theorem generatedApiExpansionOperation_does_not_create_atoms :
     componentSystem.noToolOutputCreatesAtoms := by
   exact generatedApiExpansionOperation.operation_does_not_create_atoms
+
+theorem generatedApiExpansionOperation_target_atom_primitive :
+    componentSystem.Primitive
+      (generatedApiExpansionOperation.atomMap generatedApiOnlyCarrier).val := by
+  exact generatedApiExpansionOperation.target_atom_primitive generatedApiOnlyCarrier
 
 def generatedApiExpansionOperationTransportPackage :
     AAT.OperationTransportPackage
@@ -1680,9 +1681,6 @@ def generatedComponentIdentityOperation :
   transformsAtomShape := by
     intro _carrier
     rfl
-  preservesPrimitive := by
-    intro carrier
-    exact generatedComponentObject.carrier_atom_primitive carrier
   operationDoesNotCreateAtomsEvidence :=
     componentSystem.tool_output_does_not_create_atoms
   operationBoundary := True
