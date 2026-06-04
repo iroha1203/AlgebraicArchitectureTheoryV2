@@ -1,5 +1,8 @@
 import Formal.Arch.AAT.GeneratedCurvature
 import Formal.Arch.AAT.GeneratedSFT
+import Formal.Arch.AAT.GeneratedAnalyticRepresentation
+import Formal.Arch.AAT.GeneratedSignature
+import Formal.Arch.AAT.GeneratedSynthesis
 import Formal.Arch.AAT.TheoremClassification
 import Formal.Arch.Evolution.SFTArchSigBoundary
 import Formal.Arch.Observation.ArchMapGeneratedHandoff
@@ -129,6 +132,141 @@ structure GeneratedGraphRankFields
   runtimeGraphRankWalkAcyclic :
     WalkAcyclic (GeneratedRuntimeGraph world.object)
 
+/-- Generated identity feature-extension flatness specialized to the world. -/
+def GeneratedFeatureExtensionArchitectureFlatWithin
+    (world : AtomGeneratedAATWorld.{u, v}) : Prop :=
+  ArchitectureFlatWithin
+    world.object.generatedIdentityExtensionFlatnessModel
+    world.object.generatedIdentityExtensionComponentUniverse
+
+/-- Generated identity split-extension non-conclusion boundary. -/
+def GeneratedFeatureExtensionRecordsNonConclusions
+    (world : AtomGeneratedAATWorld.{u, v}) : Prop :=
+  SplitFeatureExtensionWithinNonConclusions
+    world.object.generatedIdentityStaticSplitFeatureExtension
+    world.object.generatedIdentityExtensionComponentUniverse
+
+/--
+Generated self-view lifting package under the explicit selected feature-step
+and interface compatibility assumptions.
+-/
+def GeneratedSelfSplitExtensionLiftingPreservationPackage
+    (world : AtomGeneratedAATWorld.{u, v}) : Prop :=
+  ∀ {featureInvariant coreInvariant : GeneratedCarrier world.object -> Prop}
+    (featureStep : SelectedFeatureStep.{u} (GeneratedCarrier world.object)),
+    LawfulFeatureStep.{u} featureInvariant featureStep ->
+    CompatibleWithInterface.{u, u, u, u, u}
+      (Chapter9DiagramFilling.generatedSelfSplitExtensionLiftingData
+        world.object)
+      coreInvariant featureStep ->
+    ∃ liftedStep : LiftedExtensionStep.{u} (GeneratedCarrier world.object),
+      SplitExtensionLiftingPreservationPackage.{u, u, u, u, u}
+        (Chapter9DiagramFilling.generatedSelfSplitExtensionLiftingData
+          world.object)
+        featureInvariant coreInvariant featureStep liftedStep
+
+/--
+Generated lifting-failure obstruction bridge.
+
+The conclusion stays relative to the selected no-preservation-package premise;
+it does not discharge external semantic obstruction from generated flatness.
+-/
+def GeneratedSelfLiftingFailureExtensionObstructionBridge
+    (world : AtomGeneratedAATWorld.{u, v}) : Prop :=
+  ∀ {featureInvariant coreInvariant : GeneratedCarrier world.object -> Prop}
+    {featureStep : SelectedFeatureStep.{u} (GeneratedCarrier world.object)},
+    LawfulFeatureStep.{u} featureInvariant featureStep ->
+    (¬ ∃ liftedStep : LiftedExtensionStep.{u} (GeneratedCarrier world.object),
+      SplitExtensionLiftingPreservationPackage.{u, u, u, u, u}
+        (Chapter9DiagramFilling.generatedSelfSplitExtensionLiftingData
+          world.object)
+        featureInvariant coreInvariant featureStep liftedStep) ->
+    ∃ payload :
+      LiftingFailureWitnessPayload.{u, u, u, u, u, u, u}
+        (Chapter9DiagramFilling.generatedSelfSplitExtensionLiftingData
+          world.object)
+        featureInvariant coreInvariant featureStep,
+      ClassifiedAsLiftingFailure.{u, u, u, u, u}
+        (Chapter9DiagramFilling.generatedSelfFeatureExtension world.object)
+        world.object.generatedIdentityExtensionComponentUniverse
+        (liftingFailureExtensionObstructionWitness.{u, u, u, u, u, u, u}
+          (Chapter9DiagramFilling.generatedSelfSplitExtensionLiftingData
+            world.object)
+          payload)
+
+/--
+Generated identity architecture-extension formula, with witness coverage kept as
+an explicit field rather than hidden behind generated flatness.
+-/
+def GeneratedIdentityArchitectureExtensionFormulaStructural
+    (world : AtomGeneratedAATWorld.{u, v}) : Prop :=
+  ∀ {Witness : Type (max u v)}
+    (witness :
+      Chapter10ArchitectureExtensionFormula.GeneratedExtensionObstructionWitness
+        world.object Witness),
+    ClassifiedAsInheritedCore
+        world.object.generatedIdentityFeatureExtension
+        world.object.generatedIdentityExtensionComponentUniverse
+        witness ∨
+      ClassifiedAsFeatureLocal
+        world.object.generatedIdentityFeatureExtension
+        world.object.generatedIdentityExtensionComponentUniverse
+        witness ∨
+      ClassifiedAsInteraction
+        world.object.generatedIdentityFeatureExtension
+        world.object.generatedIdentityExtensionComponentUniverse
+        witness ∨
+      ClassifiedAsLiftingFailure
+        world.object.generatedIdentityFeatureExtension
+        world.object.generatedIdentityExtensionComponentUniverse
+        witness ∨
+      ClassifiedAsFillingFailure
+        world.object.generatedIdentityFeatureExtension
+        world.object.generatedIdentityExtensionComponentUniverse
+        witness ∨
+      ClassifiedAsComplexityTransfer
+        world.object.generatedIdentityFeatureExtension
+        world.object.generatedIdentityExtensionComponentUniverse
+        witness ∨
+      ClassifiedAsResidualCoverageGap
+        world.object.generatedIdentityFeatureExtension
+        world.object.generatedIdentityExtensionComponentUniverse
+        witness
+
+/--
+Suite field payload for generated feature extension, lifting, obstruction, and
+extension-formula work.
+
+The package keeps coverage assumptions and non-conclusion boundaries explicit:
+lifting is relative to a selected feature step and interface compatibility, and
+lifting-failure obstruction is relative to the selected no-preservation-package
+premise.
+-/
+structure GeneratedFeatureExtensionFields
+    (world : AtomGeneratedAATWorld.{u, v}) : Prop where
+  architectureFlatWithin :
+    GeneratedFeatureExtensionArchitectureFlatWithin world
+  recordsNonConclusions :
+    GeneratedFeatureExtensionRecordsNonConclusions world
+  selfPreservesRequiredInvariants :
+    (Chapter9DiagramFilling.generatedSelfFeatureExtension
+      world.object).preservesRequiredInvariants
+  selfInteractionFactorsThroughDeclaredInterfaces :
+    (Chapter9DiagramFilling.generatedSelfFeatureExtension
+      world.object).interactionFactorsThroughDeclaredInterfaces
+  selfCoverageAssumptions :
+    (Chapter9DiagramFilling.generatedSelfFeatureExtension
+      world.object).coverageAssumptions
+  selfProofObligations :
+    (Chapter9DiagramFilling.generatedSelfFeatureExtension
+      world.object).proofObligations
+  selfSplitExtensionLifting :
+    GeneratedSelfSplitExtensionLiftingPreservationPackage world
+  selfLiftingFailureObstruction :
+    GeneratedSelfLiftingFailureExtensionObstructionBridge world
+  identityExtensionFormulaStructural :
+    GeneratedIdentityArchitectureExtensionFormulaStructural world
+
 /--
 Suite field payload for generated flatness and shape-coordinate curvature.
 
@@ -147,6 +285,66 @@ structure GeneratedFlatnessCurvatureFields
     totalCurvature generatedAtomShapeCoordinateDistance
       world.object.generatedAtomShapeCoordinateSemantics
       world.object.generatedSemanticDiagrams = 0
+
+/-- Suite field payload for generated operation / repair / synthesis wrappers. -/
+structure GeneratedOperationRepairSynthesisFields
+    (world : AtomGeneratedAATWorld.{u, v}) where
+  operationDoesNotCreateAtoms :
+    ∀ {target : GeneratedArchitectureObject world.presentation},
+      GeneratedOperation world.object target ->
+        world.system.noToolOutputCreatesAtoms
+  repairToRepairClearingPackage :
+    ∀ {configuration :
+        GeneratedRepairProblemConfiguration world.presentation}
+      {target : GeneratedArchitectureObject world.presentation},
+      (repair : GeneratedRepairFromProblem configuration target) ->
+      (targetModel : GeneratedArchitectureLawModel target) ->
+        RepairClearingPackage
+          targetModel.generatedAATCore
+          (Sum
+            (GeneratedRepairProblemConfiguration world.presentation)
+            (GeneratedArchitectureObject world.presentation))
+          Unit
+          (Sum.inl configuration)
+          (Sum.inr target)
+  synthesisToSynthesisSoundnessPackage :
+    ∀ {object : GeneratedArchitectureObject world.presentation},
+      (candidate : GeneratedSynthesisCandidate object) ->
+        SynthesisSoundnessPackage
+          candidate.lawModel.generatedAATCore
+          (GeneratedSynthesisCandidate object)
+
+/--
+Suite field payload for generated Chapter 11 analytic representation packages.
+
+The payload stores the generated representation, selected obstruction
+valuation, and identity formula package as downstream representation artifacts
+specialized to the Atom-generated world.  It does not promote a representation
+row to an AAT source-of-truth row.
+-/
+structure GeneratedAnalyticRepresentationFields
+    (world : AtomGeneratedAATWorld.{u, v}) where
+  analyticRepresentation :
+    AnalyticRepresentation
+      (GeneratedArchitectureLawModel world.object)
+      ArchitectureSignature.ArchitectureSignatureV1
+      GeneratedAnalyticWitness
+  analyticRepresentationCoverage :
+    analyticRepresentation.coverageAssumptions
+  requiredSignatureObstructionValuation :
+    ObstructionValuation
+      (GeneratedArchitectureLawModel world.object)
+      GeneratedAnalyticWitness
+  obstructionValuationCoverage :
+    requiredSignatureObstructionValuation.coverageAssumptions
+  identityAnalyticExtensionFormulaPackage :
+    Chapter11AnalyticRepresentation.AnalyticExtensionFormulaPackage
+      (GeneratedArchitectureLawModel world.object)
+      ArchitectureSignature.ArchitectureSignatureV1
+      Unit
+      GeneratedAnalyticWitness
+  identityFormulaHolds :
+    identityAnalyticExtensionFormulaPackage.FormulaEquation
 
 /-- Generated SFT input specialized to the decidability evidence carried by a world. -/
 abbrev GeneratedSFTInputForWorld
@@ -271,6 +469,46 @@ def generated_runtime_graph_rank
     GeneratedRuntimeGraphRank world.object :=
   world.runtimeGraphRank
 
+/-- Generated analytic representation specialized to the world's law model. -/
+noncomputable def generated_analyticRepresentation
+    (world : AtomGeneratedAATWorld.{u, v}) :
+    AnalyticRepresentation
+      (GeneratedArchitectureLawModel world.object)
+      ArchitectureSignature.ArchitectureSignatureV1
+      GeneratedAnalyticWitness := by
+  letI : DecidableEq world.system.Atom := world.atomDecidable
+  letI : DecidableRel (GeneratedRelation world.object) :=
+    world.relationDecidable
+  exact GeneratedArchitectureLawModel.generatedAnalyticRepresentation
+    (object := world.object)
+
+/-- Generated selected required-Signature obstruction valuation for the world. -/
+noncomputable def generated_requiredSignatureObstructionValuation
+    (world : AtomGeneratedAATWorld.{u, v}) :
+    ObstructionValuation
+      (GeneratedArchitectureLawModel world.object)
+      GeneratedAnalyticWitness := by
+  letI : DecidableEq world.system.Atom := world.atomDecidable
+  letI : DecidableRel (GeneratedRelation world.object) :=
+    world.relationDecidable
+  exact GeneratedArchitectureLawModel.generatedRequiredSignatureObstructionValuation
+    (object := world.object)
+
+/-- Generated identity analytic extension formula package for the world's model. -/
+noncomputable def generated_identityAnalyticExtensionFormulaPackage
+    (world : AtomGeneratedAATWorld.{u, v}) :
+    Chapter11AnalyticRepresentation.AnalyticExtensionFormulaPackage
+      (GeneratedArchitectureLawModel world.object)
+      ArchitectureSignature.ArchitectureSignatureV1
+      Unit
+      GeneratedAnalyticWitness := by
+  letI : DecidableEq world.system.Atom := world.atomDecidable
+  letI : DecidableRel (GeneratedRelation world.object) :=
+    world.relationDecidable
+  exact
+    Chapter11AnalyticRepresentation.generatedIdentityAnalyticExtensionFormulaPackage
+      world.lawModel
+
 theorem molecule_not_arbitrary_set
     (world : AtomGeneratedAATWorld.{u, v}) :
     world.object.molecule.notArbitrarySet :=
@@ -296,6 +534,38 @@ def generated_molecule_object_fields
     world.generated_object_carriers_atom_primitive
   archMapHandoffToGeneratedObject :=
     world.archMap_generated_object_handoff
+
+/-- Generated analytic representation suite field derived from generated input. -/
+noncomputable def generated_analyticRepresentation_fields
+    (world : AtomGeneratedAATWorld.{u, v}) :
+    GeneratedAnalyticRepresentationFields world where
+  analyticRepresentation :=
+    world.generated_analyticRepresentation
+  analyticRepresentationCoverage := by
+    letI : DecidableEq world.system.Atom := world.atomDecidable
+    letI : DecidableRel (GeneratedRelation world.object) :=
+      world.relationDecidable
+    exact
+      GeneratedArchitectureLawModel.generatedAnalyticRepresentation_coverageAssumptions
+        (object := world.object)
+  requiredSignatureObstructionValuation :=
+    world.generated_requiredSignatureObstructionValuation
+  obstructionValuationCoverage := by
+    letI : DecidableEq world.system.Atom := world.atomDecidable
+    letI : DecidableRel (GeneratedRelation world.object) :=
+      world.relationDecidable
+    exact
+      GeneratedArchitectureLawModel.generatedRequiredSignatureObstructionValuation_coverageAssumptions
+        (object := world.object)
+  identityAnalyticExtensionFormulaPackage :=
+    world.generated_identityAnalyticExtensionFormulaPackage
+  identityFormulaHolds := by
+    letI : DecidableEq world.system.Atom := world.atomDecidable
+    letI : DecidableRel (GeneratedRelation world.object) :=
+      world.relationDecidable
+    exact
+      Chapter11AnalyticRepresentation.generatedIdentityAnalyticExtensionFormula_formula_holds
+        world.lawModel
 
 theorem generated_lawful
     (world : AtomGeneratedAATWorld.{u, v}) :
@@ -356,6 +626,93 @@ def generated_graph_rank_fields
   runtimeGraphRank := world.generated_runtime_graph_rank
   runtimeGraphRankWalkAcyclic := world.generated_runtime_graph_rank_walkAcyclic
 
+theorem generated_featureExtension_architectureFlatWithin
+    (world : AtomGeneratedAATWorld.{u, v}) :
+    GeneratedFeatureExtensionArchitectureFlatWithin world :=
+  world.lawModel.generatedFeatureExtension_architectureFlatWithin
+
+theorem generated_featureExtension_recordsNonConclusions
+    (world : AtomGeneratedAATWorld.{u, v}) :
+    GeneratedFeatureExtensionRecordsNonConclusions world :=
+  world.lawModel.generatedSplitFeatureExtension_recordsNonConclusions
+
+theorem generated_selfFeatureExtension_preservesRequiredInvariants
+    (world : AtomGeneratedAATWorld.{u, v}) :
+    (Chapter9DiagramFilling.generatedSelfFeatureExtension
+      world.object).preservesRequiredInvariants :=
+  Chapter9DiagramFilling.generatedSelfFeatureExtension_preservesRequiredInvariants
+    world.object
+
+theorem generated_selfFeatureExtension_interactionFactorsThroughDeclaredInterfaces
+    (world : AtomGeneratedAATWorld.{u, v}) :
+    (Chapter9DiagramFilling.generatedSelfFeatureExtension
+      world.object).interactionFactorsThroughDeclaredInterfaces :=
+  Chapter9DiagramFilling.generatedSelfFeatureExtension_interactionFactorsThroughDeclaredInterfaces
+    world.object
+
+theorem generated_selfFeatureExtension_coverageAssumptions
+    (world : AtomGeneratedAATWorld.{u, v}) :
+    (Chapter9DiagramFilling.generatedSelfFeatureExtension
+      world.object).coverageAssumptions :=
+  Chapter9DiagramFilling.generatedSelfFeatureExtension_coverageAssumptions
+    world.object
+
+theorem generated_selfFeatureExtension_proofObligations
+    (world : AtomGeneratedAATWorld.{u, v}) :
+    (Chapter9DiagramFilling.generatedSelfFeatureExtension
+      world.object).proofObligations :=
+  Chapter9DiagramFilling.generatedSelfFeatureExtension_proofObligations
+    world.object
+
+theorem generated_selfSplitExtensionLifting_preservationPackage
+    (world : AtomGeneratedAATWorld.{u, v}) :
+    GeneratedSelfSplitExtensionLiftingPreservationPackage world := by
+  intro _featureInvariant _coreInvariant featureStep hLawfulFeatureStep
+    hCompatible
+  exact
+    Chapter9DiagramFilling.generatedSelfSplitExtensionLifting_preservationPackage
+      featureStep hLawfulFeatureStep hCompatible
+
+theorem generated_selfLiftingFailureExtensionObstructionWitnessExists
+    (world : AtomGeneratedAATWorld.{u, v}) :
+    GeneratedSelfLiftingFailureExtensionObstructionBridge world := by
+  intro _featureInvariant _coreInvariant _featureStep hLawfulFeatureStep
+    hNoPreservationPackage
+  exact
+    Chapter9DiagramFilling.generatedSelfLiftingFailureExtensionObstructionWitnessExists_of_not_liftingPreservationPackage
+      hLawfulFeatureStep hNoPreservationPackage
+
+theorem generated_identityArchitectureExtensionFormula_structural
+    (world : AtomGeneratedAATWorld.{u, v}) :
+    GeneratedIdentityArchitectureExtensionFormulaStructural world := by
+  intro _Witness witness
+  exact
+    Chapter10ArchitectureExtensionFormula.generatedIdentityArchitectureExtensionFormula_structural
+      world.object witness
+
+/-- Generated feature-extension field derived from generated entrypoints. -/
+def generated_feature_extension_fields
+    (world : AtomGeneratedAATWorld.{u, v}) :
+    GeneratedFeatureExtensionFields world where
+  architectureFlatWithin :=
+    world.generated_featureExtension_architectureFlatWithin
+  recordsNonConclusions :=
+    world.generated_featureExtension_recordsNonConclusions
+  selfPreservesRequiredInvariants :=
+    world.generated_selfFeatureExtension_preservesRequiredInvariants
+  selfInteractionFactorsThroughDeclaredInterfaces :=
+    world.generated_selfFeatureExtension_interactionFactorsThroughDeclaredInterfaces
+  selfCoverageAssumptions :=
+    world.generated_selfFeatureExtension_coverageAssumptions
+  selfProofObligations :=
+    world.generated_selfFeatureExtension_proofObligations
+  selfSplitExtensionLifting :=
+    world.generated_selfSplitExtensionLifting_preservationPackage
+  selfLiftingFailureObstruction :=
+    world.generated_selfLiftingFailureExtensionObstructionWitnessExists
+  identityExtensionFormulaStructural :=
+    world.generated_identityArchitectureExtensionFormula_structural
+
 theorem generated_architecture_flat
     (world : AtomGeneratedAATWorld.{u, v}) :
     ArchitectureFlat world.object.generatedFlatnessModel :=
@@ -378,6 +735,58 @@ def generated_flatness_curvature_fields
     world.generated_architecture_flat
   shapeCoordinateTotalCurvature_eq_zero :=
     world.generated_shapeCoordinateTotalCurvature_eq_zero
+
+/-- Generated operations from the world's object do not create Atom existence. -/
+theorem generated_operation_does_not_create_atoms
+    (world : AtomGeneratedAATWorld.{u, v})
+    {target : GeneratedArchitectureObject world.presentation}
+    (operation : GeneratedOperation world.object target) :
+    world.system.noToolOutputCreatesAtoms :=
+  operation.operation_does_not_create_atoms
+
+/--
+Generated repairs from a failed atom configuration expose the pure
+repair-clearing package over the generated target model.
+-/
+def generated_repair_toRepairClearingPackage
+    (world : AtomGeneratedAATWorld.{u, v})
+    {configuration : GeneratedRepairProblemConfiguration world.presentation}
+    {target : GeneratedArchitectureObject world.presentation}
+    (repair : GeneratedRepairFromProblem configuration target)
+    (targetModel : GeneratedArchitectureLawModel target) :
+    RepairClearingPackage
+      targetModel.generatedAATCore
+      (Sum
+        (GeneratedRepairProblemConfiguration world.presentation)
+        (GeneratedArchitectureObject world.presentation))
+      Unit
+      (Sum.inl configuration)
+      (Sum.inr target) :=
+  repair.toRepairClearingPackage targetModel
+
+/--
+Generated synthesis candidates expose the pure synthesis-soundness package over
+their generated law model.
+-/
+def generated_synthesis_toSynthesisSoundnessPackage
+    (world : AtomGeneratedAATWorld.{u, v})
+    {object : GeneratedArchitectureObject world.presentation}
+    (candidate : GeneratedSynthesisCandidate object) :
+    SynthesisSoundnessPackage
+      candidate.lawModel.generatedAATCore
+      (GeneratedSynthesisCandidate object) :=
+  candidate.toSynthesisSoundnessPackage
+
+/-- Generated operation / repair / synthesis field derived from generated input. -/
+def generated_operation_repair_synthesis_fields
+    (world : AtomGeneratedAATWorld.{u, v}) :
+    GeneratedOperationRepairSynthesisFields world where
+  operationDoesNotCreateAtoms :=
+    world.generated_operation_does_not_create_atoms
+  repairToRepairClearingPackage :=
+    world.generated_repair_toRepairClearingPackage
+  synthesisToSynthesisSoundnessPackage :=
+    world.generated_synthesis_toSynthesisSoundnessPackage
 
 /-- Generated SFT input induces the SFT local-algebra boundary for this world. -/
 def generated_sft_input_toAATCoreLocalAlgebraForSFT
@@ -519,6 +928,11 @@ structure AATTheoremSuite (world : AtomGeneratedAATWorld.{u, v}) where
   generatedAATCoreCircuitBoundary :
     world.GeneratedAATCoreCircuitBoundary
   generatedFlatnessCurvature : GeneratedFlatnessCurvatureFields world
+  generatedFeatureExtension : GeneratedFeatureExtensionFields world
+  generatedOperationRepairSynthesis :
+    GeneratedOperationRepairSynthesisFields world
+  generatedAnalyticRepresentation :
+    GeneratedAnalyticRepresentationFields world
   generatedSFTArchSigFieldSig :
     GeneratedSFTArchSigFieldSigFields world
   classificationRegistryHasNoBridgeAssumedRows :
@@ -641,37 +1055,47 @@ def currentImplementationFrontier : List AATImplementationFrontier :=
       docsTarget := "docs/aat/lean_theorem_index.md#chapter-8-homotopy-skeleton-entrypoint" }
   , { family := .generatedFeatureExtension
       suiteField := "AATTheoremSuite.generatedFeatureExtension"
-      status := .parallelReady
+      status := .connected
       existingEntrypoints :=
         ["generatedIdentityFeatureExtension",
          "generatedFeatureExtension_architectureFlatWithin",
-         "Chapter9DiagramFilling.generatedSelfSplitExtensionLifting_preservationPackage"]
+         "AtomGeneratedAATWorld.generated_featureExtension_architectureFlatWithin",
+         "AtomGeneratedAATWorld.generated_selfSplitExtensionLifting_preservationPackage",
+         "Chapter9DiagramFilling.generatedSelfSplitExtensionLifting_preservationPackage",
+         "Chapter9DiagramFilling.generatedSelfLiftingFailureExtensionObstructionWitnessExists_of_not_liftingPreservationPackage",
+         "Chapter10ArchitectureExtensionFormula.generatedIdentityArchitectureExtensionFormula_structural"]
       nextWorkPackage :=
-        "Add suite fields for generated feature extension and lifting bridges."
-      parallelAllowed := true
+        "Preserve explicit feature-extension coverage assumptions, lifting premises, obstruction bridge, and extension-formula boundary as downstream fields are filled."
+      parallelAllowed := false
       coordinationRequired := false
       docsTarget := "docs/aat/lean_theorem_index.md#chapter-9-diagram-filling-entrypoint" }
   , { family := .generatedOperationRepairSynthesis
       suiteField := "AATTheoremSuite.generatedOperationRepairSynthesis"
-      status := .parallelReady
+      status := .connected
       existingEntrypoints :=
         ["GeneratedOperation.operation_does_not_create_atoms",
          "GeneratedRepairFromProblem.toRepairClearingPackage",
-         "GeneratedSynthesisCandidate.toSynthesisSoundnessPackage"]
+         "GeneratedSynthesisCandidate.toSynthesisSoundnessPackage",
+         "AtomGeneratedAATWorld.generated_operation_does_not_create_atoms",
+         "AtomGeneratedAATWorld.generated_repair_toRepairClearingPackage",
+         "AtomGeneratedAATWorld.generated_synthesis_toSynthesisSoundnessPackage"]
       nextWorkPackage :=
-        "Add suite fields for generated operation, repair, and synthesis."
+        "Preserve generated operation, repair, and synthesis as connected suite fields."
       parallelAllowed := true
       coordinationRequired := false
       docsTarget := "docs/aat/lean_theorem_index.md#chapter-7-theorem-package-entrypoints" }
   , { family := .generatedAnalyticRepresentation
       suiteField := "AATTheoremSuite.generatedAnalyticRepresentation"
-      status := .parallelReady
+      status := .connected
       existingEntrypoints :=
         ["GeneratedArchitectureLawModel.generatedAnalyticRepresentation",
          "generatedRequiredSignatureObstructionValuation",
-         "generatedIdentityAnalyticExtensionFormulaPackage"]
+         "generatedIdentityAnalyticExtensionFormulaPackage",
+         "AtomGeneratedAATWorld.generated_analyticRepresentation",
+         "AtomGeneratedAATWorld.generated_requiredSignatureObstructionValuation",
+         "AtomGeneratedAATWorld.generated_identityAnalyticExtensionFormulaPackage"]
       nextWorkPackage :=
-        "Add suite fields for generated analytic representation and valuation."
+        "Preserve generated analytic representation, selected valuation, and identity formula package as connected suite fields."
       parallelAllowed := true
       coordinationRequired := false
       docsTarget := "docs/aat/lean_theorem_index.md#atom-generated-algebra-kernel" }
@@ -767,6 +1191,12 @@ noncomputable def initialTheoremSuite
     world.generated_aat_core_circuitBoundary
   generatedFlatnessCurvature :=
     world.generated_flatness_curvature_fields
+  generatedFeatureExtension :=
+    world.generated_feature_extension_fields
+  generatedOperationRepairSynthesis :=
+    world.generated_operation_repair_synthesis_fields
+  generatedAnalyticRepresentation :=
+    world.generated_analyticRepresentation_fields
   generatedSFTArchSigFieldSig :=
     world.generated_sft_archsig_fieldsig_fields
   classificationRegistryHasNoBridgeAssumedRows :=

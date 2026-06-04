@@ -37,6 +37,30 @@ theorem generatedComponentTheoremSuite_has_generated_aat_core_bridge_fields :
     ⟨generatedComponentTheoremSuite.generatedAATCoreNoObservationDependency,
       generatedComponentTheoremSuite.generatedAATCoreCircuitBoundary⟩
 
+theorem generatedComponentTheoremSuite_has_analytic_representation_fields :
+    (generatedComponentTheoremSuite
+        |>.generatedAnalyticRepresentation
+        |>.analyticRepresentation
+        |>.coverageAssumptions) ∧
+      (generatedComponentTheoremSuite
+        |>.generatedAnalyticRepresentation
+        |>.requiredSignatureObstructionValuation
+        |>.coverageAssumptions) ∧
+      (generatedComponentTheoremSuite
+        |>.generatedAnalyticRepresentation
+        |>.identityAnalyticExtensionFormulaPackage
+        |>.FormulaEquation) := by
+  exact
+    ⟨generatedComponentTheoremSuite
+        |>.generatedAnalyticRepresentation
+        |>.analyticRepresentationCoverage,
+      generatedComponentTheoremSuite
+        |>.generatedAnalyticRepresentation
+        |>.obstructionValuationCoverage,
+      generatedComponentTheoremSuite
+        |>.generatedAnalyticRepresentation
+        |>.identityFormulaHolds⟩
+
 theorem generatedComponentTheoremSuite_has_generated_object_fields :
     (∀ carrier : AAT.GeneratedCarrier generatedComponentWorld.object,
       generatedComponentWorld.system.Primitive carrier.val) ∧
@@ -65,6 +89,10 @@ theorem generatedComponentTheoremSuite_has_graph_rank_fields :
         |>.generatedGraphRank
         |>.runtimeGraphRankWalkAcyclic⟩
 
+theorem generatedComponentTheoremSuite_has_feature_extension_fields :
+    AAT.GeneratedFeatureExtensionFields generatedComponentWorld := by
+  exact generatedComponentTheoremSuite.generatedFeatureExtension
+
 theorem generatedComponentTheoremSuite_has_flatness_curvature_fields :
     ArchitectureFlat generatedComponentObject.generatedFlatnessModel ∧
       totalCurvature AAT.generatedAtomShapeCoordinateDistance
@@ -74,9 +102,52 @@ theorem generatedComponentTheoremSuite_has_flatness_curvature_fields :
     ⟨generatedComponentTheoremSuite
         |>.generatedFlatnessCurvature
         |>.architectureFlat,
-      generatedComponentTheoremSuite
-        |>.generatedFlatnessCurvature
-        |>.shapeCoordinateTotalCurvature_eq_zero⟩
+       generatedComponentTheoremSuite
+         |>.generatedFlatnessCurvature
+         |>.shapeCoordinateTotalCurvature_eq_zero⟩
+
+theorem generatedComponentTheoremSuite_has_operation_repair_synthesis_fields :
+    (∀ {target : AAT.GeneratedArchitectureObject generatedComponentWorld.presentation}
+      (_operation : AAT.GeneratedOperation generatedComponentWorld.object target),
+        generatedComponentWorld.system.noToolOutputCreatesAtoms) ∧
+    (∀ {configuration :
+        AAT.GeneratedRepairProblemConfiguration generatedComponentWorld.presentation}
+      {target : AAT.GeneratedArchitectureObject generatedComponentWorld.presentation}
+      (_repair : AAT.GeneratedRepairFromProblem configuration target)
+      (targetModel : AAT.GeneratedArchitectureLawModel target),
+        Nonempty (AAT.RepairClearingPackage
+          targetModel.generatedAATCore
+          (Sum
+            (AAT.GeneratedRepairProblemConfiguration
+              generatedComponentWorld.presentation)
+            (AAT.GeneratedArchitectureObject generatedComponentWorld.presentation))
+          Unit
+          (Sum.inl configuration)
+          (Sum.inr target))) ∧
+    (∀ {object : AAT.GeneratedArchitectureObject generatedComponentWorld.presentation}
+      (candidate : AAT.GeneratedSynthesisCandidate object),
+        Nonempty (AAT.SynthesisSoundnessPackage
+          candidate.lawModel.generatedAATCore
+          (AAT.GeneratedSynthesisCandidate object))) := by
+  exact
+    ⟨by
+      intro _target operation
+      exact
+        generatedComponentTheoremSuite
+          |>.generatedOperationRepairSynthesis
+          |>.operationDoesNotCreateAtoms operation,
+    by
+      constructor
+      · intro _configuration _target repair targetModel
+        exact ⟨
+          generatedComponentTheoremSuite
+            |>.generatedOperationRepairSynthesis
+            |>.repairToRepairClearingPackage repair targetModel⟩
+      · intro _object candidate
+        exact ⟨
+          generatedComponentTheoremSuite
+            |>.generatedOperationRepairSynthesis
+            |>.synthesisToSynthesisSoundnessPackage candidate⟩⟩
 
 theorem generatedComponentTheoremSuite_has_sft_archsig_fieldsig_fields :
     (generatedComponentTheoremSuite
