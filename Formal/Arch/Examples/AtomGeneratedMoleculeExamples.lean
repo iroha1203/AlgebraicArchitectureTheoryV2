@@ -1522,6 +1522,25 @@ def generatedComponentZeroCurvaturePackage :
     AAT.ZeroCurvaturePackage generatedComponentLawModel.generatedAATCore := by
   exact generatedComponentLawModel.generatedZeroCurvaturePackage
 
+theorem generatedComponentAATCore_noObservationDependency :
+    generatedComponentLawModel.generatedAATCore.noObservationDependency := by
+  exact generatedComponentLawModel.generatedAATCoreNoObservationDependency_recorded
+
+theorem generatedComponentAATCore_circuitBoundary :
+    generatedComponentLawModel.generatedAATCore.circuitBoundary := by
+  exact generatedComponentLawModel.generatedAATCoreCircuitBoundary_recorded
+
+theorem generatedComponentAATCore_obstructionCircuit_impossible
+    {law : AAT.DesignLaw componentSystem}
+    {molecule : AAT.Molecule componentSystem}
+    (hLaw : law = generatedComponentLawModel.generatedDesignLaw)
+    (hMolecule : generatedComponentLawModel.requiredGeneratedMolecule molecule)
+    (hCircuit : AAT.ObstructionCircuit law molecule) :
+    False := by
+  exact
+    generatedComponentLawModel.generatedAATCoreCircuit_impossible
+      hLaw hMolecule hCircuit
+
 theorem generatedComponent_lawfulWithinMoleculeConfiguration :
     AAT.LawfulWithinMoleculeConfiguration
       generatedComponentLawModel.generatedDesignLaw

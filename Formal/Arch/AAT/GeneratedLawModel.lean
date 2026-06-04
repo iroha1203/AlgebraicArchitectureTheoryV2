@@ -337,6 +337,65 @@ def generatedDesignLaw
   evaluationBoundary := model.lawModelBoundary
   nonConclusions := True
 
+/-- Generated AAT cores inherit observation independence from the root atom system. -/
+def generatedAATCoreNoObservationDependency
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : GeneratedArchitectureObject presentation}
+    (_model : GeneratedArchitectureLawModel object) : Prop :=
+  system.noObservationBoundaryCreatesAtoms
+
+/-- Generated AAT core observation independence is the root atom-system fact. -/
+theorem generatedAATCoreNoObservationDependency_recorded
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : GeneratedArchitectureObject presentation}
+    (model : GeneratedArchitectureLawModel object) :
+    model.generatedAATCoreNoObservationDependency :=
+  system.observation_boundary_does_not_create_atoms
+
+/--
+Circuit boundary for generated AAT cores.
+
+The only selected law is the generated design law.  For that law, obstruction
+circuits over selected generated molecules are impossible because generated
+Signature lawfulness is already proved.
+-/
+def generatedAATCoreCircuitBoundary
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : GeneratedArchitectureObject presentation}
+    (model : GeneratedArchitectureLawModel object) : Prop :=
+  ∀ {law : DesignLaw system} {molecule : Molecule system},
+    (hLaw : law = model.generatedDesignLaw) ->
+    (hMolecule : model.requiredGeneratedMolecule molecule) ->
+    (hCircuit : ObstructionCircuit law molecule) ->
+      False
+
+/-- Generated lawfulness excludes each selected pure AAT obstruction circuit. -/
+theorem generatedAATCoreCircuit_impossible
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : GeneratedArchitectureObject presentation}
+    (model : GeneratedArchitectureLawModel object)
+    {law : DesignLaw system} {molecule : Molecule system}
+    (hLaw : law = model.generatedDesignLaw)
+    (_hMolecule : model.requiredGeneratedMolecule molecule)
+    (hCircuit : ObstructionCircuit law molecule) :
+    False := by
+  subst law
+  exact (obstructionCircuit_bad hCircuit).2 model.generatedArchitectureLawful
+
+/-- Generated lawfulness records the generated AAT core circuit boundary. -/
+theorem generatedAATCoreCircuitBoundary_recorded
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : GeneratedArchitectureObject presentation}
+    (model : GeneratedArchitectureLawModel object) :
+    model.generatedAATCoreCircuitBoundary := by
+  intro _law _molecule hLaw hMolecule hCircuit
+  exact model.generatedAATCoreCircuit_impossible hLaw hMolecule hCircuit
+
 /-- Pure AAT core generated from the selected generated object and law model. -/
 def generatedAATCore
     {system : AtomAxiomSystem.{u, v}}
@@ -350,16 +409,17 @@ def generatedAATCore
     subst molecule
     exact object.molecule.atoms_primitive hAtom
   laws := fun law => law = model.generatedDesignLaw
-  circuits := fun _hLaw _hMolecule _hCircuit => True
+  circuits := fun _hLaw _hMolecule _hCircuit => False
   circuitEvidence := by
-    intro _law _molecule _hLaw _hMolecule _hCircuit
-    trivial
-  noObservationDependency := True
-  noObservationDependencyEvidence := trivial
+    intro _law _molecule hLaw hMolecule hCircuit
+    exact model.generatedAATCoreCircuit_impossible hLaw hMolecule hCircuit
+  noObservationDependency := model.generatedAATCoreNoObservationDependency
+  noObservationDependencyEvidence :=
+    model.generatedAATCoreNoObservationDependency_recorded
   noLawCreatesAtomsEvidence := system.law_does_not_create_atoms
   moleculeBoundary := object.objectBoundary
   lawBoundary := model.lawModelBoundary
-  circuitBoundary := True
+  circuitBoundary := model.generatedAATCoreCircuitBoundary
   nonConclusions := True
 
 /-- The generated design law is selected in its generated AAT core. -/
@@ -428,8 +488,10 @@ def generatedZeroCurvaturePackage
     intro molecule hRequired
     exact hRequired
   requiredCircuitsOnCore := by
-    intro _molecule _hRequired _hCircuit
-    trivial
+    intro _molecule hRequired hCircuit
+    exact
+      model.generatedAATCore.circuitEvidence
+        model.generated_law_on_core hRequired hCircuit
   lawfulnessBridge := model.generatedLawfulnessBridge
   zeroCurvature :=
     zeroCurvature_iff_noRequiredObstructionCircuit.mpr

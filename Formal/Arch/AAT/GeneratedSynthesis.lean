@@ -80,8 +80,10 @@ def toSynthesisSoundnessPackage
     intro molecule hRequired
     exact hRequired
   requiredCircuitsOnCore := by
-    intro _molecule _hRequired _hCircuit
-    trivial
+    intro _molecule hRequired hCircuit
+    exact
+      candidate.lawModel.generatedAATCore.circuitEvidence
+        candidate.lawModel.generated_law_on_core hRequired hCircuit
   lawfulnessBridge := candidate.lawModel.generatedLawfulnessBridge
   candidate := candidate
   candidateNoRequiredObstructionCircuit :=

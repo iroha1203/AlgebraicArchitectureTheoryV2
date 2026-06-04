@@ -166,8 +166,10 @@ def toRepairClearingPackage
     intro molecule hRequired
     exact hRequired
   requiredCircuitsOnCore := by
-    intro _molecule _hRequired _hCircuit
-    trivial
+    intro _molecule hRequired hCircuit
+    exact
+      targetModel.generatedAATCore.circuitEvidence
+        targetModel.generated_law_on_core hRequired hCircuit
   lawfulnessBridge := targetModel.generatedLawfulnessBridge
   targetNoRequiredObstructionCircuit :=
     targetModel.generated_noRequiredObstructionCircuit
@@ -478,8 +480,10 @@ def toRepairClearingPackage
     intro molecule hRequired
     exact hRequired
   requiredCircuitsOnCore := by
-    intro _molecule _hRequired _hCircuit
-    trivial
+    intro _molecule hRequired hCircuit
+    exact
+      targetModel.generatedAATCore.circuitEvidence
+        targetModel.generated_law_on_core hRequired hCircuit
   lawfulnessBridge := targetModel.generatedLawfulnessBridge
   targetNoRequiredObstructionCircuit :=
     targetModel.generated_noRequiredObstructionCircuit

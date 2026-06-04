@@ -256,6 +256,9 @@ def representativeDeclarations : AATCandidate -> List String
   | generatedSignatureBridge =>
       ["ArchitectureSignature.AATCoreSignatureLawfulnessBridge.ofGeneratedLawModel",
        "ArchitectureSignature.AATCoreSignatureLawfulnessBridge.ofGeneratedLawModel_architectureLawful",
+       "AAT.GeneratedArchitectureLawModel.generatedAATCoreNoObservationDependency_recorded",
+       "AAT.GeneratedArchitectureLawModel.generatedAATCoreCircuitBoundary_recorded",
+       "AAT.GeneratedArchitectureLawModel.generatedAATCoreCircuit_impossible",
        "AtomGeneratedSignatureExamples.atomGeneratedSignature_coreSignatureBridge"]
   | atomGeneratedAlgebraKernel =>
       ["AAT.GeneratedMolecule",
@@ -324,9 +327,10 @@ def classifyAATCandidate
       atomGeneratedRow
         "aat.generatedSignatureBridge"
         (AATCandidate.representativeDeclarations .generatedSignatureBridge)
-        ["ArchitectureSignature.AATCoreSignatureLawfulnessBridge.ofGeneratedLawModel"]
+        ["ArchitectureSignature.AATCoreSignatureLawfulnessBridge.ofGeneratedLawModel",
+         "AAT.GeneratedArchitectureLawModel.generatedAATCoreCircuitBoundary_recorded"]
         (by simp)
-        "The generated constructor derives Signature lawfulness from GeneratedArchitectureLawModel and does not ask callers for architectureLawfulFromAAT."
+        "The generated constructor derives Signature lawfulness and pure AAT circuit boundaries from GeneratedArchitectureLawModel and does not ask callers for architectureLawfulFromAAT."
   | .atomGeneratedAlgebraKernel =>
       atomGeneratedRow
         "aat.atomGeneratedAlgebraKernel"
