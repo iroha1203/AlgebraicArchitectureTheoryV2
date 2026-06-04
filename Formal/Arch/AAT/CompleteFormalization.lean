@@ -1,9 +1,11 @@
 import Formal.Arch.AAT.GeneratedCurvature
+import Formal.Arch.AAT.GeneratedDiagram
 import Formal.Arch.AAT.GeneratedSFT
 import Formal.Arch.AAT.GeneratedAnalyticRepresentation
 import Formal.Arch.AAT.GeneratedSignature
 import Formal.Arch.AAT.GeneratedSynthesis
 import Formal.Arch.AAT.TheoremClassification
+import Formal.Arch.Evolution.Chapter8HomotopySkeleton
 import Formal.Arch.Evolution.SFTArchSigBoundary
 import Formal.Arch.Observation.ArchMapGeneratedHandoff
 
@@ -131,6 +133,99 @@ structure GeneratedGraphRankFields
   runtimeGraphRank : GeneratedRuntimeGraphRank world.object
   runtimeGraphRankWalkAcyclic :
     WalkAcyclic (GeneratedRuntimeGraph world.object)
+
+/--
+Suite field payload for generated paths, diagrams, and selected non-fillability.
+
+The package stays relative to generated paths and explicit observation
+difference evidence.  It does not claim that arbitrary diagrams are fillable or
+non-fillable.
+-/
+structure GeneratedPathDiagramFields
+    (world : AtomGeneratedAATWorld.{u, v}) where
+  pathPreservesInvariant :
+    ∀ {I : GeneratedCarrier world.object -> Prop}
+      {source target : GeneratedCarrier world.object}
+      (path : GeneratedArchitecturePath world.object source target),
+      ArchitecturePath.InvariantHolds I source ->
+      ArchitecturePath.EveryStepPreserves path I ->
+        ArchitecturePath.InvariantHolds I
+          (ArchitecturePath.ApplyPath source path)
+  reflexiveDiagramFiller :
+    ∀ {IndependentSquare :
+        (W X Y Z : GeneratedCarrier world.object) ->
+          GeneratedArchitectureStep world.object W X ->
+          GeneratedArchitectureStep world.object X Z ->
+          GeneratedArchitectureStep world.object W Y ->
+          GeneratedArchitectureStep world.object Y Z -> Prop}
+      {SameExternalContract :
+        (X Y : GeneratedCarrier world.object) ->
+          GeneratedArchitectureStep world.object X Y ->
+          GeneratedArchitectureStep world.object X Y -> Prop}
+      {RepairFill :
+        (X Y : GeneratedCarrier world.object) ->
+          GeneratedArchitecturePath world.object X Y ->
+          GeneratedArchitecturePath world.object X Y -> Prop}
+      {source target : GeneratedCarrier world.object}
+      (path : GeneratedArchitecturePath world.object source target),
+        GeneratedDiagramFiller
+          (object := world.object)
+          IndependentSquare SameExternalContract RepairFill
+          (GeneratedArchitectureDiagram.reflexive path)
+  nonFillabilityWitness :
+    ∀ {α : Type (max u v)}
+      {IndependentSquare :
+        (W X Y Z : GeneratedCarrier world.object) ->
+          GeneratedArchitectureStep world.object W X ->
+          GeneratedArchitectureStep world.object X Z ->
+          GeneratedArchitectureStep world.object W Y ->
+          GeneratedArchitectureStep world.object Y Z -> Prop}
+      {SameExternalContract :
+        (X Y : GeneratedCarrier world.object) ->
+          GeneratedArchitectureStep world.object X Y ->
+          GeneratedArchitectureStep world.object X Y -> Prop}
+      {RepairFill :
+        (X Y : GeneratedCarrier world.object) ->
+          GeneratedArchitecturePath world.object X Y ->
+          GeneratedArchitecturePath world.object X Y -> Prop}
+      {Obs :
+        {X Y : GeneratedCarrier world.object} ->
+          GeneratedArchitecturePath world.object X Y -> α},
+      (∀ {W X Y Z T : GeneratedCarrier world.object}
+        (a : GeneratedArchitectureStep world.object W X)
+        (b : GeneratedArchitectureStep world.object X Z)
+        (c : GeneratedArchitectureStep world.object W Y)
+        (d : GeneratedArchitectureStep world.object Y Z)
+        (rest : GeneratedArchitecturePath world.object Z T),
+          IndependentSquare W X Y Z a b c d ->
+            Obs (ArchitecturePath.cons a (ArchitecturePath.cons b rest)) =
+              Obs (ArchitecturePath.cons c (ArchitecturePath.cons d rest))) ->
+      (∀ {X Y Z : GeneratedCarrier world.object}
+        (s t : GeneratedArchitectureStep world.object X Y)
+        (rest : GeneratedArchitecturePath world.object Y Z),
+          SameExternalContract X Y s t ->
+            Obs (ArchitecturePath.cons s rest) =
+              Obs (ArchitecturePath.cons t rest)) ->
+      (∀ {X Y Z : GeneratedCarrier world.object}
+        {p q : GeneratedArchitecturePath world.object X Y},
+        RepairFill X Y p q ->
+          (suffix : GeneratedArchitecturePath world.object Y Z) ->
+            Obs (ArchitecturePath.append p suffix) =
+              Obs (ArchitecturePath.append q suffix)) ->
+      (∀ {X Y Z : GeneratedCarrier world.object}
+        (step : GeneratedArchitectureStep world.object X Y)
+        {p q : GeneratedArchitecturePath world.object Y Z},
+          Obs p = Obs q ->
+            Obs (ArchitecturePath.cons step p) =
+              Obs (ArchitecturePath.cons step q)) ->
+      ∀ {source target : GeneratedCarrier world.object}
+        {diagram : GeneratedArchitectureDiagram world.object
+          (source := source) (target := target)}
+        {Witness : Type (max u v)} (witness : Witness),
+        Obs diagram.lhs ≠ Obs diagram.rhs ->
+          GeneratedNonFillabilityWitnessFor
+            (object := world.object)
+            IndependentSquare SameExternalContract RepairFill diagram witness
 
 /-- Generated identity feature-extension flatness specialized to the world. -/
 def GeneratedFeatureExtensionArchitectureFlatWithin
@@ -626,6 +721,94 @@ def generated_graph_rank_fields
   runtimeGraphRank := world.generated_runtime_graph_rank
   runtimeGraphRankWalkAcyclic := world.generated_runtime_graph_rank_walkAcyclic
 
+theorem generated_path_preservesInvariant
+    (world : AtomGeneratedAATWorld.{u, v})
+    {I : GeneratedCarrier world.object -> Prop}
+    {source target : GeneratedCarrier world.object}
+    (path : GeneratedArchitecturePath world.object source target)
+    (hStart : ArchitecturePath.InvariantHolds I source)
+    (hEvery : ArchitecturePath.EveryStepPreserves path I) :
+    ArchitecturePath.InvariantHolds I
+      (ArchitecturePath.ApplyPath source path) :=
+  Chapter8HomotopySkeleton.generatedPath_preservesInvariant
+    path hStart hEvery
+
+theorem generated_nonFillabilityWitness
+    (world : AtomGeneratedAATWorld.{u, v})
+    {α : Type (max u v)}
+    {IndependentSquare :
+      (W X Y Z : GeneratedCarrier world.object) ->
+        GeneratedArchitectureStep world.object W X ->
+        GeneratedArchitectureStep world.object X Z ->
+        GeneratedArchitectureStep world.object W Y ->
+        GeneratedArchitectureStep world.object Y Z -> Prop}
+    {SameExternalContract :
+      (X Y : GeneratedCarrier world.object) ->
+        GeneratedArchitectureStep world.object X Y ->
+        GeneratedArchitectureStep world.object X Y -> Prop}
+    {RepairFill :
+      (X Y : GeneratedCarrier world.object) ->
+        GeneratedArchitecturePath world.object X Y ->
+        GeneratedArchitecturePath world.object X Y -> Prop}
+    {Obs :
+      {X Y : GeneratedCarrier world.object} ->
+        GeneratedArchitecturePath world.object X Y -> α}
+    (hIndependentSquare :
+      ∀ {W X Y Z T : GeneratedCarrier world.object}
+        (a : GeneratedArchitectureStep world.object W X)
+        (b : GeneratedArchitectureStep world.object X Z)
+        (c : GeneratedArchitectureStep world.object W Y)
+        (d : GeneratedArchitectureStep world.object Y Z)
+        (rest : GeneratedArchitecturePath world.object Z T),
+          IndependentSquare W X Y Z a b c d ->
+            Obs (ArchitecturePath.cons a (ArchitecturePath.cons b rest)) =
+              Obs (ArchitecturePath.cons c (ArchitecturePath.cons d rest)))
+    (hSameExternalContract :
+      ∀ {X Y Z : GeneratedCarrier world.object}
+        (s t : GeneratedArchitectureStep world.object X Y)
+        (rest : GeneratedArchitecturePath world.object Y Z),
+          SameExternalContract X Y s t ->
+            Obs (ArchitecturePath.cons s rest) =
+              Obs (ArchitecturePath.cons t rest))
+    (hRepairFill :
+      ∀ {X Y Z : GeneratedCarrier world.object}
+        {p q : GeneratedArchitecturePath world.object X Y},
+        RepairFill X Y p q ->
+          (suffix : GeneratedArchitecturePath world.object Y Z) ->
+            Obs (ArchitecturePath.append p suffix) =
+              Obs (ArchitecturePath.append q suffix))
+    (hConsContext :
+      ∀ {X Y Z : GeneratedCarrier world.object}
+        (step : GeneratedArchitectureStep world.object X Y)
+        {p q : GeneratedArchitecturePath world.object Y Z},
+          Obs p = Obs q ->
+            Obs (ArchitecturePath.cons step p) =
+              Obs (ArchitecturePath.cons step q))
+    {source target : GeneratedCarrier world.object}
+    {diagram : GeneratedArchitectureDiagram world.object
+      (source := source) (target := target)}
+    {Witness : Type (max u v)} (witness : Witness)
+    (hDifference : Obs diagram.lhs ≠ Obs diagram.rhs) :
+    GeneratedNonFillabilityWitnessFor
+      (object := world.object)
+      IndependentSquare SameExternalContract RepairFill diagram witness :=
+  Chapter8HomotopySkeleton.generatedObservationDifference_nonFillabilityWitnessFor
+    hIndependentSquare hSameExternalContract hRepairFill hConsContext
+    witness hDifference
+
+/-- Generated path / diagram field derived from generated entrypoints. -/
+def generated_path_diagram_fields
+    (world : AtomGeneratedAATWorld.{u, v}) :
+    GeneratedPathDiagramFields world where
+  pathPreservesInvariant :=
+    world.generated_path_preservesInvariant
+  reflexiveDiagramFiller := by
+    intro _IndependentSquare _SameExternalContract _RepairFill
+      _source _target path
+    exact generatedDiagramFiller_refl path
+  nonFillabilityWitness :=
+    world.generated_nonFillabilityWitness
+
 theorem generated_featureExtension_architectureFlatWithin
     (world : AtomGeneratedAATWorld.{u, v}) :
     GeneratedFeatureExtensionArchitectureFlatWithin world :=
@@ -928,6 +1111,7 @@ structure AATTheoremSuite (world : AtomGeneratedAATWorld.{u, v}) where
   generatedAATCoreCircuitBoundary :
     world.GeneratedAATCoreCircuitBoundary
   generatedFlatnessCurvature : GeneratedFlatnessCurvatureFields world
+  generatedPathDiagram : GeneratedPathDiagramFields world
   generatedFeatureExtension : GeneratedFeatureExtensionFields world
   generatedOperationRepairSynthesis :
     GeneratedOperationRepairSynthesisFields world
@@ -1042,15 +1226,17 @@ def currentImplementationFrontier : List AATImplementationFrontier :=
       docsTarget := "docs/aat/lean_theorem_index.md#atom-generated-algebra-kernel" }
   , { family := .generatedPathDiagram
       suiteField := "AATTheoremSuite.generatedPathDiagram"
-      status := .parallelReady
+      status := .connected
       existingEntrypoints :=
         ["GeneratedArchitecturePath",
          "GeneratedArchitectureDiagram",
          "GeneratedNonFillabilityWitnessFor",
-         "Chapter8HomotopySkeleton.generatedPath_preservesInvariant"]
+         "Chapter8HomotopySkeleton.generatedPath_preservesInvariant",
+         "AtomGeneratedAATWorld.generated_path_preservesInvariant",
+         "AtomGeneratedAATWorld.generated_nonFillabilityWitness"]
       nextWorkPackage :=
-        "Add suite fields for generated path, diagram, and non-fillability."
-      parallelAllowed := true
+        "Preserve generated path, diagram, and selected non-fillability as connected suite fields."
+      parallelAllowed := false
       coordinationRequired := false
       docsTarget := "docs/aat/lean_theorem_index.md#chapter-8-homotopy-skeleton-entrypoint" }
   , { family := .generatedFeatureExtension
@@ -1191,6 +1377,8 @@ noncomputable def initialTheoremSuite
     world.generated_aat_core_circuitBoundary
   generatedFlatnessCurvature :=
     world.generated_flatness_curvature_fields
+  generatedPathDiagram :=
+    world.generated_path_diagram_fields
   generatedFeatureExtension :=
     world.generated_feature_extension_fields
   generatedOperationRepairSynthesis :=

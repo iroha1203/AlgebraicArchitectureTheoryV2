@@ -89,6 +89,20 @@ theorem generatedComponentTheoremSuite_has_graph_rank_fields :
         |>.generatedGraphRank
         |>.runtimeGraphRankWalkAcyclic⟩
 
+theorem generatedComponentTheoremSuite_has_path_diagram_fields
+    (carrier : AAT.GeneratedCarrier generatedComponentObject) :
+    AAT.GeneratedDiagramFiller
+      (object := generatedComponentObject)
+      (fun _ _ _ _ _ _ _ _ => False)
+      (fun _ _ _ _ => False)
+      (fun _ _ _ _ => False)
+      (generatedComponentNilDiagram carrier) := by
+  exact
+    generatedComponentTheoremSuite
+      |>.generatedPathDiagram
+      |>.reflexiveDiagramFiller
+        (generatedComponentNilPath carrier)
+
 theorem generatedComponentTheoremSuite_has_feature_extension_fields :
     AAT.GeneratedFeatureExtensionFields generatedComponentWorld := by
   exact generatedComponentTheoremSuite.generatedFeatureExtension
