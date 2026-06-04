@@ -766,35 +766,39 @@ def classifySFT
     TheoremPackageClassification :=
   match candidate with
   | .softwareFieldProjection =>
-      representationRow
+      atomGeneratedRow
         "sft.softwareFieldProjection"
         (SFTTheoremPackages.Candidate.representativeDeclarations
           .softwareFieldProjection)
-        ["SoftwareField", "SoftwareFieldEstimate"]
+        ["AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedSoftwareField",
+         "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedSoftwareFieldEstimate",
+         "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedArchitectureProjectionBoundary",
+         "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedSoftwareField_projects_to_generated",
+         "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedSoftwareField_records_nonConclusions"]
         (by simp)
-        .downstreamLibrary
-        ActionAllowed.representationDownstream
-        "SFT software-field projection is a downstream SFT package, not an Atom-generated AAT theorem."
+        "Software-field projection has an Atom-generated carrier instantiation whose selected estimate projects to the generated flatness model while preserving field and non-conclusion boundaries."
   | .forecastConeCore =>
-      representationRow
+      atomGeneratedRow
         "sft.forecastConeCore"
         (SFTTheoremPackages.Candidate.representativeDeclarations
           .forecastConeCore)
-        ["ForecastCone"]
+        ["AtomGeneratedSignatureExamples.atomGeneratedSignature_sftSupportSafetyPackage",
+         "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedForecastCone_mem",
+         "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedForecastCone_length_le_horizon",
+         "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedForecastCone_monotone_succ"]
         (by simp)
-        .downstreamLibrary
-        ActionAllowed.representationDownstream
-        "ForecastCone is downstream SFT evolution vocabulary."
+        "ForecastCone core has an Atom-generated carrier witness induced by the generated support-safety package and finite supported trajectory."
   | .coneProjection =>
-      representationRow
+      atomGeneratedRow
         "sft.coneProjection"
         (SFTTheoremPackages.Candidate.representativeDeclarations
           .coneProjection)
-        ["ForecastConeProjection"]
+        ["AtomGeneratedSignatureExamples.atomGeneratedSignature_supportSelfInclusion",
+         "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedForecastCone_projects_self",
+         "AtomGeneratedSignatureExamples.atomGeneratedSignature_exists_projected_generatedForecastCone",
+         "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedForecastCone_projects_horizon_succ"]
         (by simp)
-        .downstreamLibrary
-        ActionAllowed.representationDownstream
-        "Cone projection is downstream SFT support/projection vocabulary."
+        "Cone projection has generated carrier evidence through generated support self-inclusion, projected path existence, and horizon-extension projection."
   | .artifactAction =>
       representationRow
         "sft.artifactAction"
@@ -1220,6 +1224,15 @@ theorem generated_support_safety_is_atom_generated :
     (classifySFT .supportSafety).action =
       .aatSourceOfTruth := by
   exact ⟨rfl, rfl⟩
+
+theorem generated_sft_projection_cone_is_atom_generated :
+    (classifySFT .softwareFieldProjection).classification =
+      .atomGenerated ∧
+    (classifySFT .forecastConeCore).classification =
+      .atomGenerated ∧
+    (classifySFT .coneProjection).classification =
+      .atomGenerated := by
+  exact ⟨rfl, rfl, rfl⟩
 
 theorem generated_analytic_representation_is_atom_generated :
     (classifyChapter11 .analyticRepresentation).classification =

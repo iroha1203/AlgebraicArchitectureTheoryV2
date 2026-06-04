@@ -5,6 +5,7 @@ import Formal.Arch.Evolution.Chapter7TheoremPackages
 import Formal.Arch.Evolution.Chapter10ArchitectureExtensionFormula
 import Formal.Arch.Evolution.Chapter11AnalyticRepresentation
 import Formal.Arch.Evolution.SFTArchSigBoundary
+import Formal.Arch.Evolution.SFTConeProjection
 import Formal.Arch.Evolution.SFTSupportSafety
 import Formal.Arch.Examples.AtomGeneratedMoleculeExamples
 import Formal.Arch.Signature.AATCoreBridge
@@ -572,6 +573,106 @@ theorem atomGeneratedSignature_supportSafety_forecastCone_and_safety :
     atomGeneratedSignature_acceptedSupportedTrajectory
       |>.forecastCone_and_supportSafety
 
+theorem atomGeneratedSignature_generatedForecastCone_mem :
+    ForecastCone
+      atomGeneratedSignature_sftSupportSafetyPackage.operationSupport
+      atomGeneratedSignature_sftSupportSafetyPackage.stepRelation
+      generatedComponentApiCarrier
+      atomGeneratedSignature_supportScript.operations.length
+      generatedComponentApiCarrier
+      atomGeneratedSignature_acceptedSupportedTrajectory.fieldPath := by
+  exact
+    atomGeneratedSignature_acceptedSupportedTrajectory
+      |>.mem_forecastCone
+
+theorem atomGeneratedSignature_generatedForecastCone_length_le_horizon :
+    ArchitecturePath.length
+        atomGeneratedSignature_acceptedSupportedTrajectory.fieldPath <=
+      atomGeneratedSignature_supportScript.operations.length := by
+  exact ForecastCone.length_le_horizon
+    atomGeneratedSignature_generatedForecastCone_mem
+
+theorem atomGeneratedSignature_generatedForecastCone_monotone_succ :
+    ForecastCone
+      atomGeneratedSignature_sftSupportSafetyPackage.operationSupport
+      atomGeneratedSignature_sftSupportSafetyPackage.stepRelation
+      generatedComponentApiCarrier
+      (Nat.succ atomGeneratedSignature_supportScript.operations.length)
+      generatedComponentApiCarrier
+      atomGeneratedSignature_acceptedSupportedTrajectory.fieldPath := by
+  exact ForecastCone.monotone_horizon
+    atomGeneratedSignature_generatedForecastCone_mem
+    (Nat.le_succ atomGeneratedSignature_supportScript.operations.length)
+
+def atomGeneratedSignature_supportSelfInclusion :
+    PointwiseSupportInclusion
+      atomGeneratedSignature_sftSupportSafetyPackage.operationSupport
+      atomGeneratedSignature_sftSupportSafetyPackage.operationSupport :=
+  fun _source _operation hSupported => hSupported
+
+theorem atomGeneratedSignature_generatedForecastCone_projects_self :
+    ForecastCone
+      atomGeneratedSignature_sftSupportSafetyPackage.operationSupport
+      atomGeneratedSignature_sftSupportSafetyPackage.stepRelation
+      generatedComponentApiCarrier
+      atomGeneratedSignature_supportScript.operations.length
+      generatedComponentApiCarrier
+      (ForecastConeProjection.projectFieldPath
+        atomGeneratedSignature_supportSelfInclusion
+        (SameRelationStepSimulation
+          atomGeneratedSignature_sftSupportSafetyPackage.operationSupport
+          atomGeneratedSignature_sftSupportSafetyPackage.stepRelation)
+        atomGeneratedSignature_acceptedSupportedTrajectory.fieldPath) := by
+  exact
+    ForecastConeProjection.forecastCone_projects_of_supportInclusion
+      atomGeneratedSignature_supportSelfInclusion
+      atomGeneratedSignature_generatedForecastCone_mem
+
+theorem atomGeneratedSignature_exists_projected_generatedForecastCone :
+    ∃ path₁ :
+        FieldPath
+          atomGeneratedSignature_sftSupportSafetyPackage.operationSupport
+          atomGeneratedSignature_sftSupportSafetyPackage.stepRelation
+          generatedComponentApiCarrier
+          generatedComponentApiCarrier,
+      ForecastConeProjection.ProjectedFieldPath
+          atomGeneratedSignature_supportSelfInclusion
+          (SameRelationStepSimulation
+            atomGeneratedSignature_sftSupportSafetyPackage.operationSupport
+            atomGeneratedSignature_sftSupportSafetyPackage.stepRelation)
+          atomGeneratedSignature_acceptedSupportedTrajectory.fieldPath
+          path₁ ∧
+        ForecastCone
+          atomGeneratedSignature_sftSupportSafetyPackage.operationSupport
+          atomGeneratedSignature_sftSupportSafetyPackage.stepRelation
+          generatedComponentApiCarrier
+          atomGeneratedSignature_supportScript.operations.length
+          generatedComponentApiCarrier
+          path₁ := by
+  exact
+    ForecastConeProjection.exists_projected_forecastCone_of_supportInclusion
+      atomGeneratedSignature_supportSelfInclusion
+      atomGeneratedSignature_generatedForecastCone_mem
+
+theorem atomGeneratedSignature_generatedForecastCone_projects_horizon_succ :
+    ForecastCone
+      atomGeneratedSignature_sftSupportSafetyPackage.operationSupport
+      atomGeneratedSignature_sftSupportSafetyPackage.stepRelation
+      generatedComponentApiCarrier
+      (Nat.succ atomGeneratedSignature_supportScript.operations.length)
+      generatedComponentApiCarrier
+      (ForecastConeProjection.projectFieldPath
+        atomGeneratedSignature_supportSelfInclusion
+        (SameRelationStepSimulation
+          atomGeneratedSignature_sftSupportSafetyPackage.operationSupport
+          atomGeneratedSignature_sftSupportSafetyPackage.stepRelation)
+        atomGeneratedSignature_acceptedSupportedTrajectory.fieldPath) := by
+  exact
+    ForecastConeProjection.forecastCone_projects_of_supportInclusion_and_horizon_le
+      atomGeneratedSignature_supportSelfInclusion
+      atomGeneratedSignature_generatedForecastCone_mem
+      (Nat.le_succ atomGeneratedSignature_supportScript.operations.length)
+
 noncomputable def atomGeneratedSignature_sftForecastStatus :
     SFTForecastStatus where
   localPremise := True
@@ -770,6 +871,31 @@ def atomGeneratedSignature_generatedSoftwareFieldEstimate :
   estimatorBoundary := True
   missingEvidence := True
   nonConclusions := True
+
+def atomGeneratedSignature_generatedArchitectureProjectionBoundary :
+    ArchitectureProjectionBoundary
+      atomGeneratedSignature_generatedSoftwareFieldEstimate
+      generatedComponentObject.generatedFlatnessModel where
+  projectsToSelectedArchitecture := rfl
+  preservesCoverageAssumptions := trivial
+  preservesObservationBoundary := trivial
+  preservesReconstructionBoundary := trivial
+  preservesMissingEvidence := trivial
+  recordsFieldBoundary := trivial
+  recordsNonConclusions := ⟨trivial, trivial⟩
+
+theorem atomGeneratedSignature_generatedSoftwareField_projects_to_generated :
+    generatedComponentObject.generatedFlatnessModel =
+      atomGeneratedSignature_generatedSoftwareFieldEstimate.arch := by
+  exact
+    atomGeneratedSignature_generatedArchitectureProjectionBoundary
+      |>.projection_eq_selected_arch
+
+theorem atomGeneratedSignature_generatedSoftwareField_records_nonConclusions :
+    atomGeneratedSignature_generatedSoftwareFieldEstimate.RecordsNonConclusions := by
+  exact
+    atomGeneratedSignature_generatedArchitectureProjectionBoundary
+      |>.projection_records_nonConclusions
 
 def atomGeneratedSignature_generatedArchSigSFTReport :
     ArchSigSFTReport

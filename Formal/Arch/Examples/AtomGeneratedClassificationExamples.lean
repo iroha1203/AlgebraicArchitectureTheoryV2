@@ -221,6 +221,19 @@ theorem generated_support_safety_classified_atom_generated :
   exact generated_support_safety_is_atom_generated
 
 /--
+Acceptance: SFT projection, ForecastCone core, and cone projection now have
+Atom-generated carrier witnesses instead of remaining downstream-only rows.
+-/
+theorem generated_sft_projection_cone_classified_atom_generated :
+    (classifySFT .softwareFieldProjection).classification =
+        .atomGenerated ∧
+      (classifySFT .forecastConeCore).classification =
+        .atomGenerated ∧
+      (classifySFT .coneProjection).classification =
+        .atomGenerated := by
+  exact generated_sft_projection_cone_is_atom_generated
+
+/--
 Acceptance: the generic Chapter 11 analytic representation theorem package has
 an Atom-generated law-model specialization instead of remaining only a
 downstream representation row.

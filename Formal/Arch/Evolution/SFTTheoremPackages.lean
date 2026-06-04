@@ -114,18 +114,31 @@ def representativeDeclarations : Candidate -> List String
       ["SoftwareField",
        "SoftwareFieldEstimate",
        "ArchitectureProjectionBoundary",
-       "ArchitectureProjectionBoundary.projection_records_nonConclusions"]
+       "ArchitectureProjectionBoundary.projection_records_nonConclusions",
+       "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedSoftwareField",
+       "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedSoftwareFieldEstimate",
+       "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedArchitectureProjectionBoundary",
+       "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedSoftwareField_projects_to_generated",
+       "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedSoftwareField_records_nonConclusions"]
   | forecastConeCore =>
       ["OperationSupport",
        "StepRelation",
        "FieldPath",
        "ForecastCone",
-       "ForecastCone.monotone_horizon"]
+       "ForecastCone.monotone_horizon",
+       "AtomGeneratedSignatureExamples.atomGeneratedSignature_sftSupportSafetyPackage",
+       "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedForecastCone_mem",
+       "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedForecastCone_length_le_horizon",
+       "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedForecastCone_monotone_succ"]
   | coneProjection =>
       ["PointwiseSupportInclusion",
        "StepSimulation",
        "ForecastConeProjection.forecastCone_projects_of_supportInclusion_and_stepSimulation",
-       "ForecastConeProjection.forecastCone_projects_of_supportInclusion_and_horizon_le"]
+       "ForecastConeProjection.forecastCone_projects_of_supportInclusion_and_horizon_le",
+       "AtomGeneratedSignatureExamples.atomGeneratedSignature_supportSelfInclusion",
+       "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedForecastCone_projects_self",
+       "AtomGeneratedSignatureExamples.atomGeneratedSignature_exists_projected_generatedForecastCone",
+       "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedForecastCone_projects_horizon_succ"]
   | artifactAction =>
       ["CandidateUpdateRelation",
        "ArtifactAction",
@@ -505,7 +518,18 @@ def schematicCorrespondences : Candidate -> List SchematicCorrespondence
            "ArchitectureProjectionBoundary.projection_eq_selected_arch"],
          reading :=
           "selected field estimate has a one-way architecture projection boundary",
-         status := "defined only / proved accessors" }]
+         status := "defined only / proved accessors" },
+       { schematic :=
+          "GeneratedArchitectureObject -> SoftwareFieldEstimate projection",
+         leanDeclarations :=
+          ["AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedSoftwareField",
+           "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedSoftwareFieldEstimate",
+           "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedArchitectureProjectionBoundary",
+           "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedSoftwareField_projects_to_generated",
+           "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedSoftwareField_records_nonConclusions"],
+         reading :=
+          "Atom-generated carriers instantiate the selected SoftwareField and SoftwareFieldEstimate projection boundary to the generated flatness model while retaining field/non-conclusion boundaries",
+         status := "proved acceptance" }]
   | forecastConeCore =>
       [{ schematic := "ForecastCone support relation source horizon target path",
          leanDeclarations :=
@@ -515,7 +539,17 @@ def schematicCorrespondences : Candidate -> List SchematicCorrespondence
            "ForecastCone.monotone_horizon"],
          reading :=
           "bounded finite field-path membership under selected support and step relation",
-         status := "defined only / proved accessors" }]
+         status := "defined only / proved accessors" },
+       { schematic :=
+          "GeneratedArchitectureObject support package -> ForecastCone witness",
+         leanDeclarations :=
+          ["AtomGeneratedSignatureExamples.atomGeneratedSignature_sftSupportSafetyPackage",
+           "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedForecastCone_mem",
+           "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedForecastCone_length_le_horizon",
+           "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedForecastCone_monotone_succ"],
+         reading :=
+          "the Atom-generated support-safety package yields a concrete generated carrier field path with a bounded ForecastCone witness and monotone horizon theorem",
+         status := "proved acceptance" }]
   | coneProjection =>
       [{ schematic := "support inclusion projects cone membership",
          leanDeclarations :=
@@ -524,7 +558,17 @@ def schematicCorrespondences : Candidate -> List SchematicCorrespondence
            "ForecastConeProjection.forecastCone_projects_of_supportInclusion_and_horizon_le"],
          reading :=
           "same-relation support monotonicity with projected finite path witness",
-         status := "proved" }]
+         status := "proved" },
+       { schematic :=
+          "Generated ForecastCone witness projects through generated support inclusion",
+         leanDeclarations :=
+          ["AtomGeneratedSignatureExamples.atomGeneratedSignature_supportSelfInclusion",
+           "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedForecastCone_projects_self",
+           "AtomGeneratedSignatureExamples.atomGeneratedSignature_exists_projected_generatedForecastCone",
+           "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedForecastCone_projects_horizon_succ"],
+         reading :=
+          "the generated carrier ForecastCone witness is projected through generated self-inclusion with the projected path and horizon-extension evidence exposed",
+         status := "proved acceptance" }]
   | artifactAction =>
       [{ schematic := "artifact action induces candidate update and after-action cone",
          leanDeclarations :=
