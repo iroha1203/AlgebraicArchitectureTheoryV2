@@ -490,9 +490,13 @@ def classifyChapter9
         (Chapter9DiagramFilling.Candidate.representativeDeclarations
           .splitExtensionLifting)
         ["Chapter9DiagramFilling.generatedSelfSplitExtensionLiftingData",
+         "Chapter9DiagramFilling.generatedSelfFeatureExtension_preservesRequiredInvariants",
+         "Chapter9DiagramFilling.generatedSelfFeatureExtension_interactionFactorsThroughDeclaredInterfaces",
+         "Chapter9DiagramFilling.generatedSelfFeatureExtension_coverageAssumptions",
+         "Chapter9DiagramFilling.generatedSelfFeatureExtension_proofObligations",
          "Chapter9DiagramFilling.generatedSelfSplitExtensionLifting_preservationPackage"]
         (by simp)
-        "Split-extension lifting has a generated self-view feature extension entrypoint over generated carriers and generated lifting data."
+        "Split-extension lifting has a generated self-view feature extension entrypoint whose fields are discharged from generated carriers, relation atoms, and carrier coverage."
   | .fillingFailureBridge =>
       atomGeneratedRow
         "chapter9.fillingFailureBridge"

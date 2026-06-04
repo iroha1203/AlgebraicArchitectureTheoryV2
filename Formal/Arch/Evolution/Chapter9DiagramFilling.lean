@@ -78,6 +78,10 @@ def representativeDeclarations : Candidate -> List String
        "ObservationalCoreRetraction",
        "SplitExtensionLiftingData",
        "Chapter9DiagramFilling.generatedSelfFeatureExtension",
+       "Chapter9DiagramFilling.generatedSelfFeatureExtension_preservesRequiredInvariants",
+       "Chapter9DiagramFilling.generatedSelfFeatureExtension_interactionFactorsThroughDeclaredInterfaces",
+       "Chapter9DiagramFilling.generatedSelfFeatureExtension_coverageAssumptions",
+       "Chapter9DiagramFilling.generatedSelfFeatureExtension_proofObligations",
        "Chapter9DiagramFilling.generatedSelfSplitExtensionLiftingData",
        "SplitExtensionLiftingData.featureSection_observes",
        "SplitExtensionLiftingData.coreRetraction_observes_coreEmbedding",
@@ -180,6 +184,10 @@ def schematicCorrespondences : Candidate -> List SchematicCorrespondence
            "SplitExtensionLiftingPreservationPackage",
            "SplitExtensionLifting_preservationPackage",
            "Chapter9DiagramFilling.generatedSelfFeatureExtension",
+           "Chapter9DiagramFilling.generatedSelfFeatureExtension_preservesRequiredInvariants",
+           "Chapter9DiagramFilling.generatedSelfFeatureExtension_interactionFactorsThroughDeclaredInterfaces",
+           "Chapter9DiagramFilling.generatedSelfFeatureExtension_coverageAssumptions",
+           "Chapter9DiagramFilling.generatedSelfFeatureExtension_proofObligations",
            "Chapter9DiagramFilling.generatedSelfSplitExtensionLiftingData",
            "Chapter9DiagramFilling.generatedSelfSplitExtensionLifting_preservationPackage",
            "Chapter9DiagramFilling.generatedSelfLiftingFailureExtensionObstructionWitness_classified",
@@ -243,6 +251,49 @@ def nonConclusionBoundary : Candidate -> String
 end Candidate
 
 /--
+Generated self-view feature extensions preserve the generated carrier primitive
+invariant.
+-/
+def generatedSelfFeatureExtensionPreservesRequiredInvariants
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    (object : AAT.GeneratedArchitectureObject presentation) : Prop :=
+  ∀ carrier : AAT.GeneratedCarrier object,
+    system.Primitive carrier.val
+
+/--
+Generated self-view interface factorization is backed by generated relation-atom
+edge witnesses.
+-/
+def generatedSelfFeatureExtensionInterfaceFactorization
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    (object : AAT.GeneratedArchitectureObject presentation) : Prop :=
+  ∀ {source target : AAT.GeneratedCarrier object},
+    (AAT.GeneratedArchGraph object).edge source target ->
+      ∃ relation : AAT.GeneratedCarrier object,
+        AAT.GeneratedRelationAtom object relation source target
+
+/-- Generated self-view coverage is the generated object's finite carrier cover. -/
+def generatedSelfFeatureExtensionCarrierCoverage
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    (object : AAT.GeneratedArchitectureObject presentation) : Prop :=
+  ∀ carrier : AAT.GeneratedCarrier object,
+    carrier ∈ object.carrierList
+
+/--
+Generated self-view proof obligations are discharged by primitive-carrier and
+finite-carrier coverage evidence from the generated object.
+-/
+def generatedSelfFeatureExtensionProofObligations
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    (object : AAT.GeneratedArchitectureObject presentation) : Prop :=
+  ∀ carrier : AAT.GeneratedCarrier object,
+    system.Primitive carrier.val ∧ carrier ∈ object.carrierList
+
+/--
 Generated self-view feature extension.
 
 The selected feature, core, and extended carriers are all the generated carrier
@@ -264,10 +315,52 @@ def generatedSelfFeatureExtension
   coreEmbedding := id
   featureEmbedding := id
   featureView := { observe := id }
-  preservesRequiredInvariants := True
-  interactionFactorsThroughDeclaredInterfaces := True
-  coverageAssumptions := True
-  proofObligations := True
+  preservesRequiredInvariants :=
+    generatedSelfFeatureExtensionPreservesRequiredInvariants object
+  interactionFactorsThroughDeclaredInterfaces :=
+    generatedSelfFeatureExtensionInterfaceFactorization object
+  coverageAssumptions :=
+    generatedSelfFeatureExtensionCarrierCoverage object
+  proofObligations :=
+    generatedSelfFeatureExtensionProofObligations object
+
+/-- Generated self-view extensions preserve primitive generated carriers. -/
+theorem generatedSelfFeatureExtension_preservesRequiredInvariants
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    (object : AAT.GeneratedArchitectureObject presentation) :
+    (generatedSelfFeatureExtension object).preservesRequiredInvariants := by
+  intro carrier
+  exact AAT.GeneratedArchitectureObject.carrier_atom_primitive object carrier
+
+/-- Generated self-view interface factorization is generated-relation backed. -/
+theorem generatedSelfFeatureExtension_interactionFactorsThroughDeclaredInterfaces
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    (object : AAT.GeneratedArchitectureObject presentation) :
+    (generatedSelfFeatureExtension object).interactionFactorsThroughDeclaredInterfaces := by
+  intro _source _target hEdge
+  exact hEdge
+
+/-- Generated self-view coverage is discharged by the generated carrier cover. -/
+theorem generatedSelfFeatureExtension_coverageAssumptions
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    (object : AAT.GeneratedArchitectureObject presentation) :
+    (generatedSelfFeatureExtension object).coverageAssumptions := by
+  intro carrier
+  exact object.carrierListCovers carrier
+
+/-- Generated self-view proof obligations are generated-object carrier facts. -/
+theorem generatedSelfFeatureExtension_proofObligations
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    (object : AAT.GeneratedArchitectureObject presentation) :
+    (generatedSelfFeatureExtension object).proofObligations := by
+  intro carrier
+  exact
+    ⟨AAT.GeneratedArchitectureObject.carrier_atom_primitive object carrier,
+      object.carrierListCovers carrier⟩
 
 /--
 Generated split-extension lifting data for the generated self-view feature
@@ -294,8 +387,10 @@ def generatedSelfSplitExtensionLiftingData
   observationalCoreRetraction := by
     intro _core
     rfl
-  interfaceFactorization := trivial
-  preservesRequiredInvariants := trivial
+  interfaceFactorization :=
+    generatedSelfFeatureExtension_interactionFactorsThroughDeclaredInterfaces object
+  preservesRequiredInvariants :=
+    generatedSelfFeatureExtension_preservesRequiredInvariants object
 
 /--
 The generated self-view lifting data exposes the selected feature section law.
