@@ -254,4 +254,8 @@ theorem generatedComponentCompleteFormalization_parallel_rows_are_safe :
     AAT.initialCompleteFormalization]
     using AAT.parallel_frontier_rows_are_not_core_coordination
 
+theorem generatedComponentCompleteFormalization_is_complete :
+    generatedComponentCompleteFormalization.IsComplete := by
+  exact AAT.initialCompleteFormalization_is_complete generatedComponentWorld
+
 end Formal.Arch.AATCompleteFormalizationExamples

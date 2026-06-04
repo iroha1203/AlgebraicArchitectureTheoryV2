@@ -66,6 +66,9 @@ namespace AATImplementationFrontier
 def HasExistingEntrypoints (row : AATImplementationFrontier) : Prop :=
   row.existingEntrypoints ≠ []
 
+def IsConnected (row : AATImplementationFrontier) : Bool :=
+  row.status == AATFieldImplementationStatus.connected
+
 def IsParallelWorkPackage (row : AATImplementationFrontier) : Prop :=
   row.parallelAllowed = true /\ row.coordinationRequired = false
 
@@ -1341,11 +1344,24 @@ theorem parallel_frontier_rows_are_not_core_coordination :
           true) = true := by
   native_decide
 
+theorem currentImplementationFrontier_has_no_parallelReady_rows :
+    currentImplementationFrontier.all
+      (fun row =>
+        decide (row.status ≠ AATFieldImplementationStatus.parallelReady)) =
+      true := by
+  native_decide
+
+theorem currentImplementationFrontier_all_rows_connected :
+    currentImplementationFrontier.all
+      AATImplementationFrontier.IsConnected = true := by
+  native_decide
+
 /--
 The first complete-formalization artifact.
 
-Future PRs should reduce the frontier by adding fields to `AATTheoremSuite` and
-replacing `parallelReady` rows with connected theorem fields.
+The frontier is retained as the completion ledger.  A complete artifact has no
+`parallelReady` rows left; every theorem-family row is connected to a suite
+field or coordination guard.
 -/
 structure AATCompleteFormalization where
   world : AtomGeneratedAATWorld.{u, v}
@@ -1354,6 +1370,14 @@ structure AATCompleteFormalization where
   frontierCoversFamilies :
     implementationFrontier.map (fun row => row.family) =
       allAATTheoremFamilies
+
+namespace AATCompleteFormalization
+
+def IsComplete (complete : AATCompleteFormalization.{u, v}) : Prop :=
+  complete.implementationFrontier.all
+    AATImplementationFrontier.IsConnected = true
+
+end AATCompleteFormalization
 
 /-- Initial theorem suite obtained from existing generated law/signature proofs. -/
 noncomputable def initialTheoremSuite
@@ -1411,6 +1435,11 @@ theorem initialCompleteFormalization_frontier_covers_all_families
         (fun row => row.family) =
       allAATTheoremFamilies :=
   (initialCompleteFormalization world).frontierCoversFamilies
+
+theorem initialCompleteFormalization_is_complete
+    (world : AtomGeneratedAATWorld.{u, v}) :
+    (initialCompleteFormalization world).IsComplete := by
+  exact currentImplementationFrontier_all_rows_connected
 
 end AAT
 end Formal.Arch
