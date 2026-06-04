@@ -468,6 +468,109 @@ theorem effect_atom_without_authority_not_law_satisfied :
         cases authority.val
         cases hAuthority)
 
+inductive EffectRequiredAuthorityOnlyAtom where
+  | effectOnly
+  deriving DecidableEq, Repr
+
+def effectRequiredAuthorityOnlySystem : AtomAxiomSystem where
+  Atom := EffectRequiredAuthorityOnlyAtom
+  Predicate := AtomKind
+  kind := fun _ => AtomKind.effect
+  axis := fun _ => Axis.semantic
+  predicate := fun _ => AtomKind.effect
+  predicateKind := fun kind => kind
+  predicateAxis := fun _ => Axis.semantic
+  predicateKindAligned := by
+    intro atom
+    cases atom
+    rfl
+  predicateAxisAligned := by
+    intro atom
+    cases atom
+    rfl
+  singleFact := fun _ => True
+  singleFactEvidence := fun _ => trivial
+  predicatePreserving := fun _ => True
+  predicatePreservingEvidence := fun _ => trivial
+  boundaryIndependent := fun _ => True
+  boundaryIndependentEvidence := fun _ => trivial
+  lawIndependent := fun _ => True
+  lawIndependentEvidence := fun _ => trivial
+  noObservationBoundaryCreatesAtoms := True
+  noObservationBoundaryCreatesAtomsEvidence := trivial
+  noLawCreatesAtoms := True
+  noLawCreatesAtomsEvidence := trivial
+  noToolOutputCreatesAtoms := True
+  noToolOutputCreatesAtomsEvidence := trivial
+  noSFTEventCreatesAtoms := True
+  noSFTEventCreatesAtomsEvidence := trivial
+  openTaxonomyBoundary := True
+
+def effectOnlyRequiredAuthorityPort : AtomPort where
+  name := "effect-only-required-authority"
+  kind := AtomPortKind.authority
+  family := AtomKind.effect
+  axis := Axis.semantic
+  required := True
+  acceptsFamily := fun kind => kind = AtomKind.boundaryAuthority
+  acceptsAxis := fun axis => axis = Axis.boundary
+
+def effectRequiredAuthorityOnlyValence : AtomValence where
+  ports := fun port => port = effectOnlyRequiredAuthorityPort
+  requiredPort := fun port => port = effectOnlyRequiredAuthorityPort
+  requiredPortHasPort := by
+    intro _ hRequired
+    exact hRequired
+  hasPort := ⟨effectOnlyRequiredAuthorityPort, rfl⟩
+
+def effectRequiredAuthorityOnlyShape
+    (_atom : EffectRequiredAuthorityOnlyAtom) : AtomShape where
+  family := AtomKind.effect
+  axis := Axis.semantic
+  subject := { name := "effect-only-required-authority" }
+  predicate := "effect"
+  objectSlots := fun _ => False
+  payloadSlots := fun _ => False
+  direction := AtomDirection.outgoing
+  arity := 1
+  valence := effectRequiredAuthorityOnlyValence
+  singleFactShape := True
+  singleFactShapeEvidence := trivial
+
+def effectRequiredAuthorityOnlyShapePresentation :
+    AtomShapePresentation effectRequiredAuthorityOnlySystem where
+  shapeOf := effectRequiredAuthorityOnlyShape
+  shapeKindAligned := by
+    intro atom
+    cases atom
+    rfl
+  shapeAxisAligned := by
+    intro atom
+    cases atom
+    rfl
+  shapeSingleFact := by
+    intro _ _
+    trivial
+
+theorem effect_atom_without_authority_not_generated_molecule
+    (molecule :
+      AAT.GeneratedMolecule effectRequiredAuthorityOnlyShapePresentation)
+    (hEffect :
+      molecule.atoms EffectRequiredAuthorityOnlyAtom.effectOnly)
+    (hOnlyEffect :
+      ∀ atom,
+        molecule.atoms atom -> atom = EffectRequiredAuthorityOnlyAtom.effectOnly) :
+    False := by
+  exact molecule.missing_required_port_not_generatedMolecule
+    hEffect
+    (by rfl)
+    (by
+      intro hMatch
+      rcases hMatch with
+        ⟨other, _otherPort, hOther, hDistinct, _hOtherPort,
+          _hCompatible⟩
+      exact hDistinct (hOnlyEffect other hOther))
+
 inductive CapabilityOnlyAtom where
   | capabilityOnly
   deriving DecidableEq, Repr
