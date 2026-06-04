@@ -232,6 +232,12 @@ theorem generatedComponentObject_no_relation_atom
       AtomKind.relation := by
   cases carrier.val <;> intro hRelation <;> cases hRelation
 
+theorem generatedComponentObject_no_runtime_relation_atom
+    (carrier : AAT.GeneratedCarrier generatedComponentObject) :
+    (AtomShapeOf componentShapePresentation carrier.val).family ≠
+      AtomKind.runtimeInteraction := by
+  cases carrier.val <;> intro hRuntime <;> cases hRuntime
+
 instance generatedComponentRelationDecidable :
     DecidableRel (AAT.GeneratedRelation generatedComponentObject) := by
   intro source target
@@ -276,6 +282,29 @@ def generatedComponentGraphRank :
 theorem generatedComponentGraphRank_walkAcyclic :
     WalkAcyclic (AAT.GeneratedArchGraph generatedComponentObject) :=
   generatedComponentGraphRank.walkAcyclic
+
+theorem generatedComponentRuntimeGraph_no_edges :
+    ∀ source target,
+      ¬ (AAT.GeneratedRuntimeGraph generatedComponentObject).edge
+        source target := by
+  intro source target hEdge
+  rcases hEdge with ⟨interaction, hInteraction⟩
+  exact
+    generatedComponentObject_no_runtime_relation_atom
+      interaction hInteraction.interactionFamily
+
+def generatedComponentRuntimeGraphRank :
+    AAT.GeneratedRuntimeGraphRank generatedComponentObject where
+  rank := fun _carrier => 0
+  edgeRankDecreases := by
+    intro source target hEdge
+    exact
+      False.elim
+        (generatedComponentRuntimeGraph_no_edges source target hEdge)
+
+theorem generatedComponentRuntimeGraphRank_walkAcyclic :
+    WalkAcyclic (AAT.GeneratedRuntimeGraph generatedComponentObject) :=
+  generatedComponentRuntimeGraphRank.walkAcyclic
 
 theorem generatedComponent_law_model_from_graph_rank :
     ∃ model : AAT.GeneratedArchitectureLawModel generatedComponentObject,

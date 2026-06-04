@@ -73,13 +73,16 @@ Shared world read by the complete AAT theorem suite.
 The world starts at an Atom root and a shape presentation, then carries the
 generated object and law model used by source-of-truth theorem fields.  It
 stores decidability instances only so generated Signature and static structural
-core fields can be stated without passing hand-authored law models.
+core fields can be stated without passing hand-authored law models.  Runtime
+rank is stored as a generated certificate, matching the law model's static
+`graphRank`, rather than as a raw acyclicity premise.
 -/
 structure AtomGeneratedAATWorld where
   system : AtomAxiomSystem.{u, v}
   presentation : AtomShapePresentation system
   object : GeneratedArchitectureObject presentation
   lawModel : GeneratedArchitectureLawModel object
+  runtimeGraphRank : GeneratedRuntimeGraphRank object
   atomDecidable : DecidableEq system.Atom
   relationDecidable : DecidableRel (GeneratedRelation object)
 
@@ -105,6 +108,24 @@ structure GeneratedMoleculeObjectFields
       world.system.Primitive carrier.val
   archMapHandoffToGeneratedObject :
     ArchMapGeneratedObjectHandoff world
+
+/-- Suite field payload for generated relation/runtime graph rank work. -/
+structure GeneratedGraphRankFields
+    (world : AtomGeneratedAATWorld.{u, v}) where
+  relationAtomGeneratesEdge :
+    ∀ {relation source target : GeneratedCarrier world.object},
+      GeneratedRelationAtom world.object relation source target ->
+        (GeneratedArchGraph world.object).edge source target
+  runtimeAtomGeneratesEdge :
+    ∀ {interaction source target : GeneratedCarrier world.object},
+      GeneratedRuntimeRelationAtom world.object interaction source target ->
+        (GeneratedRuntimeGraph world.object).edge source target
+  relationGraphRank : GeneratedGraphRank world.object
+  relationGraphRankWalkAcyclic :
+    WalkAcyclic (GeneratedArchGraph world.object)
+  runtimeGraphRank : GeneratedRuntimeGraphRank world.object
+  runtimeGraphRankWalkAcyclic :
+    WalkAcyclic (GeneratedRuntimeGraph world.object)
 
 namespace AtomGeneratedAATWorld
 
@@ -138,6 +159,18 @@ def GeneratedAATCoreNoObservationDependency
 def GeneratedAATCoreCircuitBoundary
     (world : AtomGeneratedAATWorld.{u, v}) : Prop :=
   world.lawModel.generatedAATCoreCircuitBoundary
+
+/-- Static generated graph rank certificate carried by the world's law model. -/
+def generated_graph_rank
+    (world : AtomGeneratedAATWorld.{u, v}) :
+    GeneratedGraphRank world.object :=
+  world.lawModel.graphRank
+
+/-- Runtime generated graph rank certificate carried by the generated world. -/
+def generated_runtime_graph_rank
+    (world : AtomGeneratedAATWorld.{u, v}) :
+    GeneratedRuntimeGraphRank world.object :=
+  world.runtimeGraphRank
 
 theorem molecule_not_arbitrary_set
     (world : AtomGeneratedAATWorld.{u, v}) :
@@ -199,6 +232,31 @@ theorem generated_aat_core_circuitBoundary
     world.GeneratedAATCoreCircuitBoundary :=
   world.lawModel.generatedAATCoreCircuitBoundary_recorded
 
+theorem generated_graph_rank_walkAcyclic
+    (world : AtomGeneratedAATWorld.{u, v}) :
+    WalkAcyclic (GeneratedArchGraph world.object) :=
+  world.generated_graph_rank.walkAcyclic
+
+theorem generated_runtime_graph_rank_walkAcyclic
+    (world : AtomGeneratedAATWorld.{u, v}) :
+    WalkAcyclic (GeneratedRuntimeGraph world.object) :=
+  world.generated_runtime_graph_rank.walkAcyclic
+
+/-- Generated relation/runtime graph-rank field derived from generated input. -/
+def generated_graph_rank_fields
+    (world : AtomGeneratedAATWorld.{u, v}) :
+    GeneratedGraphRankFields world where
+  relationAtomGeneratesEdge := by
+    intro relation _source _target hRelation
+    exact ⟨relation, hRelation⟩
+  runtimeAtomGeneratesEdge := by
+    intro interaction _source _target hInteraction
+    exact ⟨interaction, hInteraction⟩
+  relationGraphRank := world.generated_graph_rank
+  relationGraphRankWalkAcyclic := world.generated_graph_rank_walkAcyclic
+  runtimeGraphRank := world.generated_runtime_graph_rank
+  runtimeGraphRankWalkAcyclic := world.generated_runtime_graph_rank_walkAcyclic
+
 end AtomGeneratedAATWorld
 
 /--
@@ -217,6 +275,7 @@ structure AATTheoremSuite (world : AtomGeneratedAATWorld.{u, v}) where
       world.lawModel.toArchitectureLawModel
   generatedSignatureAxesZero : world.RequiredSignatureAxesZero
   generatedStaticStructuralCore : world.StaticStructuralCore
+  generatedGraphRank : GeneratedGraphRankFields world
   generatedAATCoreNoObservationDependency :
     world.GeneratedAATCoreNoObservationDependency
   generatedAATCoreCircuitBoundary :
@@ -286,15 +345,17 @@ def currentImplementationFrontier : List AATImplementationFrontier :=
       docsTarget := "docs/aat/lean_theorem_index.md#atom-generated-algebra-kernel" }
   , { family := .generatedGraphRank
       suiteField := "AATTheoremSuite.generatedGraphRank"
-      status := .parallelReady
+      status := .connected
       existingEntrypoints :=
         ["GeneratedRelationAtom",
          "GeneratedRuntimeRelationAtom",
+         "AtomGeneratedAATWorld.generated_graph_rank_walkAcyclic",
+         "AtomGeneratedAATWorld.generated_runtime_graph_rank_walkAcyclic",
          "GeneratedGraphRank.walkAcyclic",
          "GeneratedRuntimeGraphRank.walkAcyclic"]
       nextWorkPackage :=
-        "Add suite fields for relation/runtime edges and rank certificates."
-      parallelAllowed := true
+        "Preserve relation/runtime generated rank as a connected suite field."
+      parallelAllowed := false
       coordinationRequired := false
       docsTarget := "docs/aat/lean_theorem_index.md#atom-generated-algebra-kernel" }
   , { family := .generatedLawSignature
@@ -454,6 +515,8 @@ def initialTheoremSuite
     world.required_signature_axes_zero
   generatedStaticStructuralCore :=
     world.static_structural_core
+  generatedGraphRank :=
+    world.generated_graph_rank_fields
   generatedAATCoreNoObservationDependency :=
     world.generated_aat_core_noObservationDependency
   generatedAATCoreCircuitBoundary :=
