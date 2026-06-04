@@ -101,6 +101,24 @@ noncomputable def atomGeneratedSignature_analyticRepresentation :
   AAT.GeneratedArchitectureLawModel.generatedAnalyticRepresentation
     (object := generatedComponentObject)
 
+theorem atomGeneratedSignature_analytic_coverageAssumptions :
+    atomGeneratedSignature_analyticRepresentation.coverageAssumptions := by
+  exact
+    Formal.Arch.Chapter11AnalyticRepresentation.generatedAnalyticRepresentation_coverageAssumptions
+      (object := generatedComponentObject)
+
+theorem atomGeneratedSignature_analytic_witnessCompleteness :
+    atomGeneratedSignature_analyticRepresentation.witnessCompleteness := by
+  exact
+    Formal.Arch.Chapter11AnalyticRepresentation.generatedAnalyticRepresentation_witnessCompleteness
+      (object := generatedComponentObject)
+
+theorem atomGeneratedSignature_analytic_semanticContractCoverage :
+    atomGeneratedSignature_analyticRepresentation.semanticContractCoverage := by
+  exact
+    Formal.Arch.Chapter11AnalyticRepresentation.generatedAnalyticRepresentation_semanticContractCoverage
+      (object := generatedComponentObject)
+
 theorem atomGeneratedSignature_analytic_zeroPreserving :
     AnalyticRepresentation.ZeroPreserving
       atomGeneratedSignature_analyticRepresentation := by
@@ -152,6 +170,19 @@ theorem atomGeneratedSignature_analytic_represent_eq_signatureOfGenerated :
   exact
     Formal.Arch.Chapter11AnalyticRepresentation.generatedAnalyticRepresentation_represent_eq_signatureOfGenerated
       generatedComponentLawModel
+
+noncomputable def atomGeneratedSignature_obstructionValuation :
+    ObstructionValuation
+      (AAT.GeneratedArchitectureLawModel generatedComponentObject)
+      AAT.GeneratedAnalyticWitness :=
+  AAT.GeneratedArchitectureLawModel.generatedRequiredSignatureObstructionValuation
+    (object := generatedComponentObject)
+
+theorem atomGeneratedSignature_obstructionValuation_coverageAssumptions :
+    atomGeneratedSignature_obstructionValuation.coverageAssumptions := by
+  exact
+    Formal.Arch.Chapter11AnalyticRepresentation.generatedRequiredSignatureObstructionValuation_coverageAssumptions
+      (object := generatedComponentObject)
 
 /--
 Positive acceptance: the Chapter 11 analytic extension formula has a generated

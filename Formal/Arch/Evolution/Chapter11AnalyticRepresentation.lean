@@ -478,6 +478,51 @@ theorem generatedAnalyticRepresentation_represent_eq_signatureOfGenerated
   rfl
 
 /--
+The generated Chapter 11 representation records generated lawfulness coverage,
+not a caller-supplied marker.
+-/
+theorem generatedAnalyticRepresentation_coverageAssumptions
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : AAT.GeneratedArchitectureObject presentation}
+    [DecidableEq system.Atom]
+    [DecidableRel (AAT.GeneratedRelation object)] :
+    (AAT.GeneratedArchitectureLawModel.generatedAnalyticRepresentation
+      (object := object)).coverageAssumptions := by
+  exact
+    AAT.GeneratedArchitectureLawModel.generatedAnalyticRepresentation_coverageAssumptions
+      (object := object)
+
+/-- The generated Chapter 11 representation has only the selected Signature witness. -/
+theorem generatedAnalyticRepresentation_witnessCompleteness
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : AAT.GeneratedArchitectureObject presentation}
+    [DecidableEq system.Atom]
+    [DecidableRel (AAT.GeneratedRelation object)] :
+    (AAT.GeneratedArchitectureLawModel.generatedAnalyticRepresentation
+      (object := object)).witnessCompleteness := by
+  exact
+    AAT.GeneratedArchitectureLawModel.generatedAnalyticRepresentation_witnessCompleteness
+      (object := object)
+
+/--
+The generated Chapter 11 representation covers the selected generated
+Signature contract.
+-/
+theorem generatedAnalyticRepresentation_semanticContractCoverage
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : AAT.GeneratedArchitectureObject presentation}
+    [DecidableEq system.Atom]
+    [DecidableRel (AAT.GeneratedRelation object)] :
+    (AAT.GeneratedArchitectureLawModel.generatedAnalyticRepresentation
+      (object := object)).semanticContractCoverage := by
+  exact
+    AAT.GeneratedArchitectureLawModel.generatedAnalyticRepresentation_semanticContractCoverage
+      (object := object)
+
+/--
 Atom-generated specialization of the Chapter 11 zero-preserving direction.
 -/
 theorem generatedAnalyticRepresentation_zeroPreserving
@@ -556,6 +601,19 @@ theorem generatedAnalyticRepresentation_nonConclusions
       (object := object)).nonConclusions := by
   exact
     AAT.GeneratedArchitectureLawModel.generatedAnalyticRepresentation_nonConclusions
+      (object := object)
+
+/-- Generated obstruction valuation records selected generated Signature coverage. -/
+theorem generatedRequiredSignatureObstructionValuation_coverageAssumptions
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : AAT.GeneratedArchitectureObject presentation}
+    [DecidableEq system.Atom]
+    [DecidableRel (AAT.GeneratedRelation object)] :
+    (AAT.GeneratedArchitectureLawModel.generatedRequiredSignatureObstructionValuation
+      (object := object)).coverageAssumptions := by
+  exact
+    AAT.GeneratedArchitectureLawModel.generatedRequiredSignatureObstructionValuation_coverageAssumptions
       (object := object)
 
 /--
@@ -1412,6 +1470,9 @@ def representativeDeclarations : Candidate -> List String
        "architectureSignatureAnalyticRepresentation_obstructionReflecting",
        "AAT.GeneratedArchitectureLawModel.generatedAnalyticRepresentation",
        "Chapter11AnalyticRepresentation.generatedAnalyticRepresentation_represent_eq_signatureOfGenerated",
+       "Chapter11AnalyticRepresentation.generatedAnalyticRepresentation_coverageAssumptions",
+       "Chapter11AnalyticRepresentation.generatedAnalyticRepresentation_witnessCompleteness",
+       "Chapter11AnalyticRepresentation.generatedAnalyticRepresentation_semanticContractCoverage",
        "Chapter11AnalyticRepresentation.generatedAnalyticRepresentation_zeroPreserving",
        "Chapter11AnalyticRepresentation.generatedAnalyticRepresentation_zeroReflecting",
        "Chapter11AnalyticRepresentation.generatedAnalyticRepresentation_obstructionPreserving",
@@ -1428,6 +1489,7 @@ def representativeDeclarations : Candidate -> List String
        "ObstructionValuation.noSelectedObstruction_of_zeroReflectingSum",
        "ObstructionValuation.RecordsNonConclusions",
        "AAT.GeneratedArchitectureLawModel.generatedRequiredSignatureObstructionValuation",
+       "Chapter11AnalyticRepresentation.generatedRequiredSignatureObstructionValuation_coverageAssumptions",
        "AAT.GeneratedArchitectureLawModel.generatedRequiredSignatureObstructionValuation_value_zero",
        "AAT.GeneratedArchitectureLawModel.generatedRequiredSignatureObstructionValuation_noSelectedObstruction",
        "AAT.GeneratedArchitectureLawModel.generatedRequiredSignatureObstructionValuation_recordsNonConclusions"]
@@ -1621,6 +1683,9 @@ def schematicCorrespondences : Candidate -> List SchematicCorrespondence
          leanDeclarations :=
           ["AAT.GeneratedArchitectureLawModel.generatedAnalyticRepresentation",
            "Chapter11AnalyticRepresentation.generatedAnalyticRepresentation_represent_eq_signatureOfGenerated",
+           "Chapter11AnalyticRepresentation.generatedAnalyticRepresentation_coverageAssumptions",
+           "Chapter11AnalyticRepresentation.generatedAnalyticRepresentation_witnessCompleteness",
+           "Chapter11AnalyticRepresentation.generatedAnalyticRepresentation_semanticContractCoverage",
            "Chapter11AnalyticRepresentation.generatedAnalyticRepresentation_zeroPreserving",
            "Chapter11AnalyticRepresentation.generatedAnalyticRepresentation_zeroReflecting",
            "Chapter11AnalyticRepresentation.generatedAnalyticRepresentation_obstructionPreserving",
@@ -1643,6 +1708,7 @@ def schematicCorrespondences : Candidate -> List SchematicCorrespondence
        { schematic := "GeneratedArchitectureLawModel selected valuation",
          leanDeclarations :=
           ["AAT.GeneratedArchitectureLawModel.generatedRequiredSignatureObstructionValuation",
+           "Chapter11AnalyticRepresentation.generatedRequiredSignatureObstructionValuation_coverageAssumptions",
            "AAT.GeneratedArchitectureLawModel.generatedRequiredSignatureObstructionValuation_value_zero",
            "AAT.GeneratedArchitectureLawModel.generatedRequiredSignatureObstructionValuation_noSelectedObstruction",
            "AAT.GeneratedArchitectureLawModel.generatedRequiredSignatureObstructionValuation_recordsNonConclusions"],

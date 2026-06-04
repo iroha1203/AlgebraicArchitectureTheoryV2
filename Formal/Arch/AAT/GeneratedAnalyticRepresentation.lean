@@ -20,6 +20,43 @@ inductive GeneratedAnalyticWitness where
 namespace GeneratedArchitectureLawModel
 
 /--
+Coverage used by the generated analytic representation.
+
+For generated law models, coverage is the generated Signature lawfulness
+equivalence itself.  It is not a caller-supplied `True` marker and it is not a
+claim of global semantic or extractor completeness.
+-/
+def generatedAnalyticCoverageAssumptions
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : GeneratedArchitectureObject presentation}
+    [DecidableEq system.Atom]
+    [DecidableRel (GeneratedRelation object)] : Prop :=
+  ∀ model : GeneratedArchitectureLawModel object,
+    ArchitectureSignature.ArchitectureLawful model.toArchitectureLawModel ↔
+      ArchitectureSignature.RequiredSignatureAxesZero model.signatureOfGenerated
+
+/-- The generated analytic witness universe has exactly the selected Signature witness. -/
+def generatedAnalyticWitnessCompleteness : Prop :=
+  ∀ witness : GeneratedAnalyticWitness,
+    witness = GeneratedAnalyticWitness.requiredSignatureAxes
+
+/--
+Selected semantic-contract coverage for the generated analytic representation.
+
+This is bounded to the generated required Signature axes carried by generated
+law models.
+-/
+def generatedAnalyticSemanticContractCoverage
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : GeneratedArchitectureObject presentation}
+    [DecidableEq system.Atom]
+    [DecidableRel (GeneratedRelation object)] : Prop :=
+  ∀ model : GeneratedArchitectureLawModel object,
+    ArchitectureSignature.RequiredSignatureAxesZero model.signatureOfGenerated
+
+/--
 Analytic representation generated from Atom-generated law models.
 
 The state space is `GeneratedArchitectureLawModel object`, so the representation
@@ -45,10 +82,51 @@ noncomputable def generatedAnalyticRepresentation
     ¬ ArchitectureSignature.ArchitectureLawful model.toArchitectureLawModel
   analyticObstruction := fun sig _ =>
     ¬ ArchitectureSignature.RequiredSignatureAxesZero sig
-  coverageAssumptions := True
-  witnessCompleteness := True
-  semanticContractCoverage := True
+  coverageAssumptions :=
+    generatedAnalyticCoverageAssumptions (object := object)
+  witnessCompleteness := generatedAnalyticWitnessCompleteness
+  semanticContractCoverage :=
+    generatedAnalyticSemanticContractCoverage (object := object)
   nonConclusions := True
+
+/-- The generated analytic representation records generated lawfulness coverage. -/
+theorem generatedAnalyticRepresentation_coverageAssumptions
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : GeneratedArchitectureObject presentation}
+    [DecidableEq system.Atom]
+    [DecidableRel (GeneratedRelation object)] :
+    (generatedAnalyticRepresentation
+      (object := object)).coverageAssumptions := by
+  intro model
+  exact model.generatedArchitectureLawful_iff_requiredSignatureAxesZero
+
+/-- The generated analytic representation has a complete selected witness universe. -/
+theorem generatedAnalyticRepresentation_witnessCompleteness
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : GeneratedArchitectureObject presentation}
+    [DecidableEq system.Atom]
+    [DecidableRel (GeneratedRelation object)] :
+    (generatedAnalyticRepresentation
+      (object := object)).witnessCompleteness := by
+  intro witness
+  cases witness
+  rfl
+
+/-- The generated analytic representation covers its selected generated Signature contract. -/
+theorem generatedAnalyticRepresentation_semanticContractCoverage
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : GeneratedArchitectureObject presentation}
+    [DecidableEq system.Atom]
+    [DecidableRel (GeneratedRelation object)] :
+    (generatedAnalyticRepresentation
+      (object := object)).semanticContractCoverage := by
+  intro model
+  exact
+    (model.generatedArchitectureLawful_iff_requiredSignatureAxesZero).mp
+      model.generatedArchitectureLawful
 
 /-- The generated analytic representation records its non-conclusion boundary. -/
 theorem generatedAnalyticRepresentation_nonConclusions
@@ -158,8 +236,23 @@ noncomputable def generatedRequiredSignatureObstructionValuation
         model.signatureOfGenerated
     · exact False.elim (hObstruction hRequired)
     · simp [hRequired]
-  coverageAssumptions := True
+  coverageAssumptions :=
+    generatedAnalyticSemanticContractCoverage (object := object)
   nonConclusions := True
+
+/-- Generated obstruction valuation coverage is the selected generated Signature coverage. -/
+theorem generatedRequiredSignatureObstructionValuation_coverageAssumptions
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : GeneratedArchitectureObject presentation}
+    [DecidableEq system.Atom]
+    [DecidableRel (GeneratedRelation object)] :
+    (generatedRequiredSignatureObstructionValuation
+      (object := object)).coverageAssumptions := by
+  intro model
+  exact
+    (model.generatedArchitectureLawful_iff_requiredSignatureAxesZero).mp
+      model.generatedArchitectureLawful
 
 /-- Generated obstruction valuation records its non-conclusion boundary. -/
 theorem generatedRequiredSignatureObstructionValuation_recordsNonConclusions

@@ -611,15 +611,19 @@ def classifyChapter11
         (Chapter11AnalyticRepresentation.Candidate.representativeDeclarations
           .architectureSignatureRepresentation)
         ["AAT.GeneratedArchitectureLawModel.generatedAnalyticRepresentation",
-         "Chapter11AnalyticRepresentation.generatedAnalyticRepresentation_represent_eq_signatureOfGenerated"]
+         "Chapter11AnalyticRepresentation.generatedAnalyticRepresentation_represent_eq_signatureOfGenerated",
+         "Chapter11AnalyticRepresentation.generatedAnalyticRepresentation_coverageAssumptions",
+         "Chapter11AnalyticRepresentation.generatedAnalyticRepresentation_witnessCompleteness",
+         "Chapter11AnalyticRepresentation.generatedAnalyticRepresentation_semanticContractCoverage"]
         (by simp)
-        "ArchitectureSignature representation has a generated law-model entrypoint."
+        "ArchitectureSignature representation has a generated law-model entrypoint and generated coverage assumptions."
   | .obstructionValuation =>
       atomGeneratedRow
         "chapter11.obstructionValuation"
         (Chapter11AnalyticRepresentation.Candidate.representativeDeclarations
           .obstructionValuation)
         ["AAT.GeneratedArchitectureLawModel.generatedRequiredSignatureObstructionValuation",
+         "Chapter11AnalyticRepresentation.generatedRequiredSignatureObstructionValuation_coverageAssumptions",
          "AAT.GeneratedArchitectureLawModel.generatedRequiredSignatureObstructionValuation_value_zero",
          "AAT.GeneratedArchitectureLawModel.generatedRequiredSignatureObstructionValuation_noSelectedObstruction"]
         (by simp)
