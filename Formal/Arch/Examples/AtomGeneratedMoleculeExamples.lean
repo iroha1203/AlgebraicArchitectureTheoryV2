@@ -1735,10 +1735,14 @@ theorem generatedComponentIdentityOperation_transports_law :
 def generatedComponentSynthesisCandidate :
     AAT.GeneratedSynthesisCandidate generatedComponentObject where
   lawModel := generatedComponentLawModel
-  flatWithin := generatedComponent_architectureFlatWithin
   synthesisDoesNotCreateAtomsEvidence :=
     componentSystem.tool_output_does_not_create_atoms
   synthesisBoundary := True
+
+theorem generatedComponentSynthesisCandidate_flatWithin_from_law_model :
+    generatedComponentSynthesisCandidate.candidate_flatWithin =
+      generatedComponentLawModel.generatedArchitectureFlatWithin := by
+  rfl
 
 theorem generatedComponentSynthesisCandidate_flatWithin :
     ArchitectureFlatWithin generatedComponentObject.generatedFlatnessModel

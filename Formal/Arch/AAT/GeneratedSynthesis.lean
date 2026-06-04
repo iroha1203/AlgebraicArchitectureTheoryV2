@@ -11,15 +11,13 @@ universe u v
 Generated synthesis candidate.
 
 The candidate is a generated architecture object with a generated law model and
-bounded flatness proof. Solver completeness is not claimed here.
+bounded flatness derived from that generated law model. Solver completeness is
+not claimed here.
 -/
 structure GeneratedSynthesisCandidate {system : AtomAxiomSystem.{u, v}}
     {presentation : AtomShapePresentation system}
     (object : GeneratedArchitectureObject presentation) where
   lawModel : GeneratedArchitectureLawModel object
-  flatWithin :
-    ArchitectureFlatWithin object.generatedFlatnessModel
-      object.generatedComponentUniverse
   synthesisDoesNotCreateAtomsEvidence :
     system.noToolOutputCreatesAtoms
   synthesisBoundary : Prop
@@ -34,7 +32,16 @@ theorem candidate_flatWithin
     (candidate : GeneratedSynthesisCandidate object) :
     ArchitectureFlatWithin object.generatedFlatnessModel
       object.generatedComponentUniverse :=
-  candidate.flatWithin
+  candidate.lawModel.generatedArchitectureFlatWithin
+
+theorem candidate_flatWithin_eq_lawModel_generated
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : GeneratedArchitectureObject presentation}
+    (candidate : GeneratedSynthesisCandidate object) :
+    candidate.candidate_flatWithin =
+      candidate.lawModel.generatedArchitectureFlatWithin := by
+  rfl
 
 /-- The candidate has zero generated semantic curvature. -/
 theorem candidate_totalCurvature_eq_zero
