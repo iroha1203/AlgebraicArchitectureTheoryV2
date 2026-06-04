@@ -519,16 +519,17 @@ theorem canonicalAATSupportedBoundary_reads_aat_status_as_local_premise :
 
 noncomputable def canonicalGeneratedAATSupportedBoundary :
     AATSupportedSFTBoundary canonicalExactModel () 1 :=
-  AATSupportedSFTBoundary.ofGeneratedSFTInput
+  AATSupportedSFTBoundary.ofGeneratedSFTInputAndArchSigTransition
     canonicalSelectedSlice
     AtomGeneratedSignatureExamples.atomGeneratedSignature_sftInput
+    AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedArchSigTransition
     AtomGeneratedSignatureExamples.atomGeneratedSignature_sftForecastStatus
     AtomGeneratedSignatureExamples.atomGeneratedSignature_sftInterfaceBoundary
     True True
     canonicalExactModel_recordsFiniteModelBoundary
     canonicalExactModel_recordsExactCoverBoundary
     canonicalExactModel_recordsObservationBoundary
-    trivial trivial trivial trivial True True True True
+    trivial trivial trivial trivial
 
 theorem canonicalGeneratedAATSupportedBoundary_aatStatus_eq_generated :
     canonicalGeneratedAATSupportedBoundary.aatStatus =
@@ -538,21 +539,40 @@ theorem canonicalGeneratedAATSupportedBoundary_aatStatus_eq_generated :
 theorem canonicalGeneratedAATSupportedBoundary_reads_generated_status_as_local_premise :
     canonicalGeneratedAATSupportedBoundary.forecastStatus.RecordsLocalPremise := by
   exact
-    AATSupportedSFTBoundary.ofGeneratedSFTInput_reads_generated_status_as_local_premise
-      canonicalSelectedSlice
-      AtomGeneratedSignatureExamples.atomGeneratedSignature_sftInput
-      AtomGeneratedSignatureExamples.atomGeneratedSignature_sftForecastStatus
-      AtomGeneratedSignatureExamples.atomGeneratedSignature_sftInterfaceBoundary
-      True True
-      canonicalExactModel_recordsFiniteModelBoundary
-      canonicalExactModel_recordsExactCoverBoundary
-      canonicalExactModel_recordsObservationBoundary
-      trivial trivial trivial trivial True True True True
+    canonicalGeneratedAATSupportedBoundary.aat_status_as_sft_local_premise
+      AtomGeneratedSignatureExamples.atomGeneratedSignature_sft_theoremStatusFromGenerated
+
+theorem canonicalGeneratedAATSupportedBoundary_records_archsig_transition_boundary :
+    canonicalGeneratedAATSupportedBoundary.archSigReportBoundary := by
+  exact
+    AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedArchSigTransition
+      |>.records_fieldsig_analysis_boundary
+
+theorem canonicalGeneratedAATSupportedBoundary_records_generated_theorem_boundary :
+    canonicalGeneratedAATSupportedBoundary.theoremBoundary := by
+  exact
+    ⟨trivial, trivial,
+      AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedArchSigTransition
+        |>.records_transition_boundary⟩
+
+theorem canonicalGeneratedAATSupportedBoundary_records_typed_failure_boundary :
+    canonicalGeneratedAATSupportedBoundary.typedFailureBoundary := by
+  exact
+    AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedArchSigTransition
+      |>.archsig_transition_does_not_define_aat
+
+theorem canonicalGeneratedAATSupportedBoundary_records_nonConclusions_from_generated_transition :
+    canonicalGeneratedAATSupportedBoundary.nonConclusions := by
+  exact
+    ⟨trivial, trivial,
+      AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedArchSigTransition
+        |>.archsig_transition_does_not_define_aat⟩
 
 theorem canonicalGeneratedAATSupportedBoundary_preserves_nonConclusions :
     canonicalGeneratedAATSupportedBoundary.RecordsNonConclusions :=
   canonicalGeneratedAATSupportedBoundary.preserves_nonConclusions
-    trivial trivial trivial canonicalExactModel_recordsNonConclusions
+    canonicalGeneratedAATSupportedBoundary_records_nonConclusions_from_generated_transition
+    trivial trivial canonicalExactModel_recordsNonConclusions
 
 def canonicalAATSupportedFundamentalModularityPackage :
     AATSupportedFundamentalModularityPackage canonicalExactModel () 1 :=
@@ -596,7 +616,12 @@ noncomputable def canonicalGeneratedAATSupportedFundamentalModularityPackage :
     canonicalGeneratedAATSupportedBoundary
     canonicalFundamentalModularityHypotheses
     canonicalExactModel_recordsGovernanceBoundary
-    trivial trivial trivial trivial trivial trivial trivial trivial
+    trivial trivial
+    canonicalGeneratedAATSupportedBoundary_records_archsig_transition_boundary
+    canonicalGeneratedAATSupportedBoundary_records_generated_theorem_boundary
+    canonicalGeneratedAATSupportedBoundary_records_typed_failure_boundary
+    canonicalGeneratedAATSupportedBoundary_records_nonConclusions_from_generated_transition
+    trivial trivial
     canonicalExactModel_recordsNonConclusions trivial
 
 theorem canonicalGeneratedAATSupported_final_typed_conclusion :

@@ -874,9 +874,10 @@ def classifySFT
         (SFTTheoremPackages.Candidate.representativeDeclarations
           .aatSupportedFundamentalModularity)
         ["SFTAATFundamentalModularity.AATSupportedSFTBoundary.ofGeneratedSFTInput",
+         "SFTAATFundamentalModularity.AATSupportedSFTBoundary.ofGeneratedSFTInputAndArchSigTransition",
          "SFTAATFundamentalModularity.Examples.canonicalGeneratedAATSupportedBoundary"]
         (by simp)
-        "The AAT-supported SFT boundary has generated handoff constructors and examples."
+        "The AAT-supported SFT boundary has generated handoff constructors that read generated SFT input and generated ArchSig transition evidence before the finite selected final package."
 
 def aatClassifications : List TheoremPackageClassification :=
   [ classifyAATCandidate .finiteStaticStructuralCore
