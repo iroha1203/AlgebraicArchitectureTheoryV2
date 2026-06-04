@@ -273,6 +273,10 @@ def representativeDeclarations : AATCandidate -> List String
        "AtomGeneratedMoleculeExamples.generatedContract_from_contract_atom",
        "AtomGeneratedMoleculeExamples.generatedSemanticInterpretation_from_semantic_atom",
        "AtomGeneratedMoleculeExamples.generatedSemanticContractCoverage_from_contract_atom",
+       "AAT.GeneratedArchitectureObject.generated_capability_data_state_support_from_data_state_atoms",
+       "AtomGeneratedMoleculeExamples.generatedCapability_from_capability_atom",
+       "AtomGeneratedMoleculeExamples.generatedDataState_from_data_state_atom",
+       "AtomGeneratedMoleculeExamples.generatedCapabilityDataStateSupport_from_data_state_atom",
        "AtomShapeKindCoverageExamples.coverage_shape_exists_for_every_atom_kind",
        "AtomShapeKindCoverageExamples.coverage_shape_has_valence_port",
        "AAT.GeneratedAtomShapeCoordinate",
@@ -348,6 +352,7 @@ def classifyAATCandidate
          "AtomGeneratedMoleculeExamples.generatedComponentMolecule_not_arbitrary_set",
          "AtomGeneratedMoleculeExamples.generatedAuthorityEffectLaw_locally_satisfied",
          "AtomGeneratedMoleculeExamples.generatedSemanticContractCoverage_from_contract_atom",
+         "AtomGeneratedMoleculeExamples.generatedCapabilityDataStateSupport_from_data_state_atom",
          "AtomShapeKindCoverageExamples.coverage_shape_exists_for_every_atom_kind",
          "AAT.GeneratedArchitectureObject.generatedCarrierShapeDistance",
          "AAT.GeneratedArchitectureObject.generated_shapeCoordinateTotalCurvature_eq_zero",
@@ -360,7 +365,7 @@ def classifyAATCandidate
          "AAT.GeneratedArchitectureLawModel",
          "AtomGeneratedSignatureExamples.*"]
         (by simp)
-        "The kernel starts from AtomShape / compatible composition, covers the current AtomKind grammar as shaped typed facts, and reaches generated molecule, object, authority/effect local law satisfaction, semantic-contract coverage, shape distance, shape-coordinate curvature, oriented relation/runtime edge generation, generated graph rank, law model, signature, repair, and negative acceptance examples."
+        "The kernel starts from AtomShape / compatible composition, covers the current AtomKind grammar as shaped typed facts, and reaches generated molecule, object, authority/effect local law satisfaction, semantic-contract coverage, capability/data-state support, shape distance, shape-coordinate curvature, oriented relation/runtime edge generation, generated graph rank, law model, signature, repair, and negative acceptance examples."
   | .archMapObservationBoundary =>
       atomGeneratedRow
         "aat.archMapObservationBoundary"

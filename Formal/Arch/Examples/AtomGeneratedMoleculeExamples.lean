@@ -820,6 +820,271 @@ theorem generatedSemanticContractCoverage_from_contract_atom :
       generatedContractSemanticObject contractSemanticSemanticCarrier rfl
       contractSemanticContractCarrier generatedContract_from_contract_atom
 
+inductive CapabilityDataStateAtom where
+  | capability
+  | dataState
+  deriving DecidableEq, Repr
+
+def capabilityDataStateKind : CapabilityDataStateAtom -> AtomKind
+  | .capability => AtomKind.capability
+  | .dataState => AtomKind.dataState
+
+def capabilityDataStateAxis : CapabilityDataStateAtom -> Axis
+  | .capability => Axis.static
+  | .dataState => Axis.dataflow
+
+/--
+Atom system with a capability fact and a data-state fact.
+
+The capability fact requires a data-state payload in the same molecule; the
+support theorem below is not a caller-supplied capability-completeness marker.
+-/
+def capabilityDataStateSystem : AtomAxiomSystem where
+  Atom := CapabilityDataStateAtom
+  Predicate := AtomKind
+  kind := capabilityDataStateKind
+  axis := capabilityDataStateAxis
+  predicate := capabilityDataStateKind
+  predicateKind := fun kind => kind
+  predicateAxis := fun
+    | AtomKind.capability => Axis.static
+    | AtomKind.dataState => Axis.dataflow
+    | _ => Axis.static
+  predicateKindAligned := by
+    intro atom
+    rfl
+  predicateAxisAligned := by
+    intro atom
+    cases atom <;> rfl
+  singleFact := fun _ => True
+  singleFactEvidence := fun _ => trivial
+  predicatePreserving := fun _ => True
+  predicatePreservingEvidence := fun _ => trivial
+  boundaryIndependent := fun _ => True
+  boundaryIndependentEvidence := fun _ => trivial
+  lawIndependent := fun _ => True
+  lawIndependentEvidence := fun _ => trivial
+  noObservationBoundaryCreatesAtoms := True
+  noObservationBoundaryCreatesAtomsEvidence := trivial
+  noLawCreatesAtoms := True
+  noLawCreatesAtomsEvidence := trivial
+  noToolOutputCreatesAtoms := True
+  noToolOutputCreatesAtomsEvidence := trivial
+  noSFTEventCreatesAtoms := True
+  noSFTEventCreatesAtomsEvidence := trivial
+  openTaxonomyBoundary := True
+
+def dataStatePayloadPort : AtomPort where
+  name := "data-state-payload"
+  kind := AtomPortKind.payload
+  family := AtomKind.dataState
+  axis := Axis.dataflow
+  required := False
+  acceptsFamily := fun kind => kind = AtomKind.capability
+  acceptsAxis := fun axis => axis = Axis.static
+
+def capabilityRequiredDataStatePort : AtomPort where
+  name := "capability-required-data-state"
+  kind := AtomPortKind.payload
+  family := AtomKind.capability
+  axis := Axis.static
+  required := True
+  acceptsFamily := fun kind => kind = AtomKind.dataState
+  acceptsAxis := fun axis => axis = Axis.dataflow
+
+def dataStateValence : AtomValence where
+  ports := fun port => port = dataStatePayloadPort
+  requiredPort := fun _ => False
+  requiredPortHasPort := by
+    intro _ hRequired
+    cases hRequired
+  hasPort := ⟨dataStatePayloadPort, rfl⟩
+
+def capabilityValence : AtomValence where
+  ports := fun port => port = capabilityRequiredDataStatePort
+  requiredPort := fun port => port = capabilityRequiredDataStatePort
+  requiredPortHasPort := by
+    intro _ hRequired
+    exact hRequired
+  hasPort := ⟨capabilityRequiredDataStatePort, rfl⟩
+
+def capabilityDataStateShape : CapabilityDataStateAtom -> AtomShape
+  | .capability =>
+      { family := AtomKind.capability
+        axis := Axis.static
+        subject := { name := "api" }
+        predicate := "capability"
+        objectSlots := fun _ => False
+        payloadSlots := fun _ => False
+        direction := AtomDirection.outgoing
+        arity := 1
+        valence := capabilityValence
+        singleFactShape := True
+        singleFactShapeEvidence := trivial }
+  | .dataState =>
+      { family := AtomKind.dataState
+        axis := Axis.dataflow
+        subject := { name := "request-state" }
+        predicate := "data-state"
+        objectSlots := fun _ => False
+        payloadSlots := fun _ => False
+        direction := AtomDirection.neutral
+        arity := 1
+        valence := dataStateValence
+        singleFactShape := True
+        singleFactShapeEvidence := trivial }
+
+def capabilityDataStateShapePresentation :
+    AtomShapePresentation capabilityDataStateSystem where
+  shapeOf := capabilityDataStateShape
+  shapeKindAligned := by
+    intro atom
+    cases atom <;> rfl
+  shapeAxisAligned := by
+    intro atom
+    cases atom <;> rfl
+  shapeSingleFact := by
+    intro _ _
+    trivial
+
+def selectedCapabilityDataStateAtoms : CapabilityDataStateAtom -> Prop
+  | .capability => True
+  | .dataState => True
+
+def dataStateCapabilityPortCompatible :
+    PortCompatible dataStatePayloadPort capabilityRequiredDataStatePort := by
+  exact ⟨rfl, rfl, rfl, rfl, rfl⟩
+
+def capabilityDataStatePortCompatible :
+    PortCompatible capabilityRequiredDataStatePort dataStatePayloadPort := by
+  exact PortCompatible.symm dataStateCapabilityPortCompatible
+
+def capabilityDataStateComposition :
+    CompatibleComposition
+      (AtomShapeOf capabilityDataStateShapePresentation
+        CapabilityDataStateAtom.capability)
+      (AtomShapeOf capabilityDataStateShapePresentation
+        CapabilityDataStateAtom.dataState) where
+  leftPort := capabilityRequiredDataStatePort
+  rightPort := dataStatePayloadPort
+  leftHasPort := rfl
+  rightHasPort := rfl
+  portsCompatible := capabilityDataStatePortCompatible
+  objectSlotsCompatible := by
+    intro _ _ hSlot _
+    cases hSlot
+  payloadSlotsCompatible := by
+    intro _ _ hSlot _
+    cases hSlot
+  predicateSlotsCompatible := by
+    intro hPredicate
+    exact False.elim
+      ((by decide : "capability" ≠ "data-state") hPredicate)
+
+def dataStateCapabilityComposition :
+    CompatibleComposition
+      (AtomShapeOf capabilityDataStateShapePresentation
+        CapabilityDataStateAtom.dataState)
+      (AtomShapeOf capabilityDataStateShapePresentation
+        CapabilityDataStateAtom.capability) where
+  leftPort := dataStatePayloadPort
+  rightPort := capabilityRequiredDataStatePort
+  leftHasPort := rfl
+  rightHasPort := rfl
+  portsCompatible := dataStateCapabilityPortCompatible
+  objectSlotsCompatible := by
+    intro _ _ hSlot _
+    cases hSlot
+  payloadSlotsCompatible := by
+    intro _ _ hSlot _
+    cases hSlot
+  predicateSlotsCompatible := by
+    intro hPredicate
+    exact False.elim
+      ((by decide : "data-state" ≠ "capability") hPredicate)
+
+def capabilityDataStateCompositionGraph :
+    AAT.CompositionGraph
+      capabilityDataStateShapePresentation selectedCapabilityDataStateAtoms where
+  compatiblePairs := by
+    intro left right _hLeft _hRight hDistinct
+    cases left
+    · cases right
+      · exact False.elim (hDistinct rfl)
+      · exact capabilityDataStateComposition
+    · cases right
+      · exact dataStateCapabilityComposition
+      · exact False.elim (hDistinct rfl)
+  graphBoundary := True
+
+def generatedCapabilityDataStateMolecule :
+    AAT.GeneratedMolecule capabilityDataStateShapePresentation where
+  atoms := selectedCapabilityDataStateAtoms
+  finiteConfiguration := True
+  atomsPrimitive := by
+    intro atom _
+    exact capabilityDataStateSystem.primitive atom
+  compositionGraph := capabilityDataStateCompositionGraph
+  requiredPortsMatched := by
+    intro atom port _hAtom hRequired
+    cases atom
+    · subst port
+      exact
+        ⟨CapabilityDataStateAtom.dataState, dataStatePayloadPort, trivial,
+          (by intro h; cases h), rfl, capabilityDataStatePortCompatible⟩
+    · cases hRequired
+
+theorem generatedCapabilityDataStateMolecule_not_arbitrary_set :
+    generatedCapabilityDataStateMolecule.notArbitrarySet := by
+  exact generatedCapabilityDataStateMolecule.not_arbitrary_set
+
+def generatedCapabilityDataStateObject :
+    AAT.GeneratedArchitectureObject capabilityDataStateShapePresentation where
+  molecule := generatedCapabilityDataStateMolecule
+  carrierList :=
+    [ ⟨CapabilityDataStateAtom.capability, by trivial⟩
+    , ⟨CapabilityDataStateAtom.dataState, by trivial⟩
+    ]
+  carrierListNodup := by
+    simp
+  carrierListCovers := by
+    intro carrier
+    cases carrier with
+    | mk atom _hAtom =>
+        cases atom <;> simp
+  objectBoundary := True
+
+def capabilityDataStateCapabilityCarrier :
+    AAT.GeneratedCarrier generatedCapabilityDataStateObject :=
+  ⟨CapabilityDataStateAtom.capability, by trivial⟩
+
+def capabilityDataStateDataStateCarrier :
+    AAT.GeneratedCarrier generatedCapabilityDataStateObject :=
+  ⟨CapabilityDataStateAtom.dataState, by trivial⟩
+
+theorem generatedCapability_from_capability_atom :
+    AAT.GeneratedArchitectureObject.GeneratedCapability
+      generatedCapabilityDataStateObject capabilityDataStateCapabilityCarrier := by
+  exact
+    AAT.GeneratedArchitectureObject.generated_capability_from_capability_atoms
+      generatedCapabilityDataStateObject capabilityDataStateCapabilityCarrier rfl
+
+theorem generatedDataState_from_data_state_atom :
+    AAT.GeneratedArchitectureObject.GeneratedDataState
+      generatedCapabilityDataStateObject capabilityDataStateDataStateCarrier := by
+  exact
+    AAT.GeneratedArchitectureObject.generated_data_state_from_data_state_atoms
+      generatedCapabilityDataStateObject capabilityDataStateDataStateCarrier rfl
+
+theorem generatedCapabilityDataStateSupport_from_data_state_atom :
+    AAT.GeneratedArchitectureObject.GeneratedCapabilityDataStateSupport
+      generatedCapabilityDataStateObject capabilityDataStateCapabilityCarrier := by
+  exact
+    AAT.GeneratedArchitectureObject.generated_capability_data_state_support_from_data_state_atoms
+      generatedCapabilityDataStateObject capabilityDataStateCapabilityCarrier
+      generatedCapability_from_capability_atom capabilityDataStateDataStateCarrier
+      generatedDataState_from_data_state_atom
+
 inductive DirectedRelationAtom where
   | api
   | apiToDatabase
