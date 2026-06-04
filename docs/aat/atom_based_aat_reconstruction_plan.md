@@ -733,9 +733,9 @@ docs synchronization target
 - `GeneratedArchitectureObject` / `GeneratedArchitectureLawModel` の基本 API
 - source-of-truth と downstream representation library の分離規則
 
-### 13.7 次の PR の完了条件
+### 13.7 第 1 coordination PR の完了条件
 
-次の PR は、完全形式化を完了する PR ではない。完全形式化を並列で進められるようにする
+第 1 coordination PR は、完全形式化を完了する PR ではない。完全形式化を並列で進められるようにする
 coordination PR である。
 
 完了条件:
