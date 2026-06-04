@@ -247,6 +247,17 @@ theorem generated_sft_action_policy_reachability_classified_atom_generated :
   exact generated_sft_action_policy_reachability_is_atom_generated
 
 /--
+Acceptance: SFT FieldUpdate now has an Atom-generated ForecastCone prior and
+generated carrier feedback/update record.
+-/
+theorem generated_sft_field_update_classified_atom_generated :
+    (classifySFT .fieldUpdate).classification =
+        .atomGenerated ∧
+      (classifySFT .fieldUpdate).action =
+        .aatSourceOfTruth := by
+  exact generated_sft_field_update_is_atom_generated
+
+/--
 Acceptance: the generic Chapter 11 analytic representation theorem package has
 an Atom-generated law-model specialization instead of remaining only a
 downstream representation row.

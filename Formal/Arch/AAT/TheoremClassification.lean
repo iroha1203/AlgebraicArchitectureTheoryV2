@@ -846,15 +846,17 @@ def classifySFT
         (by simp)
         "Support safety has an Atom-generated carrier instantiation with a generated identity support operation, accepted supported trajectory, and forecast-cone/safety theorem."
   | .fieldUpdate =>
-      representationRow
+      atomGeneratedRow
         "sft.fieldUpdate"
         (SFTTheoremPackages.Candidate.representativeDeclarations
           .fieldUpdate)
-        ["FieldUpdate"]
+        ["AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedForecastRecord",
+         "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedFieldUpdate",
+         "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedFieldUpdate_sound",
+         "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedFieldUpdate_records_calibration",
+         "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedFieldUpdate_records_nonConclusions"]
         (by simp)
-        .downstreamLibrary
-        ActionAllowed.representationDownstream
-        "Field updates are downstream SFT feedback vocabulary."
+        "FieldUpdate has an Atom-generated ForecastCone prior and generated carrier posterior record whose soundness package preserves calibration and non-conclusion boundaries."
   | .consequenceEnvelope =>
       atomGeneratedRow
         "sft.consequenceEnvelope"
@@ -1248,6 +1250,13 @@ theorem generated_sft_action_policy_reachability_is_atom_generated :
     (classifySFT .stableRegionReachability).classification =
       .atomGenerated := by
   exact ⟨rfl, rfl, rfl⟩
+
+theorem generated_sft_field_update_is_atom_generated :
+    (classifySFT .fieldUpdate).classification =
+      .atomGenerated ∧
+    (classifySFT .fieldUpdate).action =
+      .aatSourceOfTruth := by
+  exact ⟨rfl, rfl⟩
 
 theorem generated_analytic_representation_is_atom_generated :
     (classifyChapter11 .analyticRepresentation).classification =

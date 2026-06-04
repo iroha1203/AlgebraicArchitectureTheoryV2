@@ -7,6 +7,7 @@ import Formal.Arch.Evolution.Chapter11AnalyticRepresentation
 import Formal.Arch.Evolution.SFTArchSigBoundary
 import Formal.Arch.Evolution.SFTArtifactAction
 import Formal.Arch.Evolution.SFTConeProjection
+import Formal.Arch.Evolution.SFTFieldUpdate
 import Formal.Arch.Evolution.SFTPolicy
 import Formal.Arch.Evolution.SFTReachability
 import Formal.Arch.Evolution.SFTSupportSafety
@@ -915,6 +916,98 @@ theorem atomGeneratedSignature_generatedReachablePreimage :
       atomGeneratedSignature_generatedFieldRegion
       generatedComponentApiCarrier := by
   exact ReachablePreimage.of_mem trivial
+
+def atomGeneratedSignature_generatedForecastRecord :
+    ForecastRecord
+      atomGeneratedSignature_sftSupportSafetyPackage.operationSupport
+      atomGeneratedSignature_sftSupportSafetyPackage.stepRelation
+      generatedComponentApiCarrier
+      atomGeneratedSignature_supportScript.operations.length where
+  target := generatedComponentApiCarrier
+  path := atomGeneratedSignature_acceptedSupportedTrajectory.fieldPath
+  coneMember := atomGeneratedSignature_generatedForecastCone_mem
+  forecastBoundary := True
+  nonConclusions := True
+
+def atomGeneratedSignature_generatedObservedOutcome :
+    ObservedOutcome
+      (AAT.GeneratedCarrier generatedComponentObject) where
+  observedField := generatedComponentApiCarrier
+  forecastError := True
+  missingEvidence := True
+  unexpectedWitness := True
+  policyDrift := True
+  observationBoundary := True
+  nonConclusions := True
+
+def atomGeneratedSignature_generatedPosteriorFieldRecord :
+    PosteriorFieldRecord
+      (AAT.GeneratedCarrier generatedComponentObject) where
+  posteriorField := generatedComponentApiCarrier
+  forecastError := True
+  missingEvidence := True
+  unexpectedWitness := True
+  policyDrift := True
+  updateBoundary := True
+  calibrationBoundary := True
+  nonConclusions := True
+
+def atomGeneratedSignature_generatedFieldUpdate :
+    FieldUpdate
+      atomGeneratedSignature_sftSupportSafetyPackage.operationSupport
+      atomGeneratedSignature_sftSupportSafetyPackage.stepRelation
+      generatedComponentApiCarrier
+      atomGeneratedSignature_supportScript.operations.length where
+  forecast := atomGeneratedSignature_generatedForecastRecord
+  observed := atomGeneratedSignature_generatedObservedOutcome
+  posterior := atomGeneratedSignature_generatedPosteriorFieldRecord
+  updateBoundary := True
+  nonConclusions := True
+
+theorem atomGeneratedSignature_generatedForecastRecord_length_le_horizon :
+    ArchitecturePath.length
+        atomGeneratedSignature_generatedForecastRecord.path <=
+      atomGeneratedSignature_supportScript.operations.length := by
+  exact atomGeneratedSignature_generatedForecastRecord.length_le_horizon
+
+theorem atomGeneratedSignature_generatedFieldUpdate_sound :
+    FieldUpdate.UpdateSound
+      atomGeneratedSignature_generatedFieldUpdate := by
+  constructor
+  · intro h
+    exact h
+  · intro h
+    exact h
+  · intro h
+    exact h
+  · intro h
+    exact h
+  · intro h
+    exact h
+  · trivial
+  · trivial
+  · trivial
+  · simp [atomGeneratedSignature_generatedFieldUpdate,
+      atomGeneratedSignature_generatedForecastRecord,
+      atomGeneratedSignature_generatedObservedOutcome,
+      atomGeneratedSignature_generatedPosteriorFieldRecord,
+      FieldUpdate.RecordsNonConclusions,
+      ForecastRecord.RecordsNonConclusions,
+      ObservedOutcome.RecordsNonConclusions,
+      PosteriorFieldRecord.RecordsNonConclusions]
+
+theorem atomGeneratedSignature_generatedFieldUpdate_records_calibration :
+    atomGeneratedSignature_generatedFieldUpdate.posterior
+      |>.RecordsCalibrationBoundary := by
+  exact
+    atomGeneratedSignature_generatedFieldUpdate_sound
+      |>.fieldUpdate_records_calibrationBoundary
+
+theorem atomGeneratedSignature_generatedFieldUpdate_records_nonConclusions :
+    atomGeneratedSignature_generatedFieldUpdate.RecordsNonConclusions := by
+  exact
+    atomGeneratedSignature_generatedFieldUpdate_sound
+      |>.fieldUpdate_records_nonConclusions
 
 noncomputable def atomGeneratedSignature_sftForecastStatus :
     SFTForecastStatus where

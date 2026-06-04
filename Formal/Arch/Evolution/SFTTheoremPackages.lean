@@ -183,7 +183,12 @@ def representativeDeclarations : Candidate -> List String
        "ObservedOutcome",
        "PosteriorFieldRecord",
        "FieldUpdate",
-       "FieldUpdate.UpdateSound.fieldUpdate_records_nonConclusions"]
+       "FieldUpdate.UpdateSound.fieldUpdate_records_nonConclusions",
+       "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedForecastRecord",
+       "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedFieldUpdate",
+       "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedFieldUpdate_sound",
+       "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedFieldUpdate_records_calibration",
+       "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedFieldUpdate_records_nonConclusions"]
   | consequenceEnvelope =>
       ["ConeFamily",
        "ObservationBoundary",
@@ -672,7 +677,18 @@ def schematicCorrespondences : Candidate -> List SchematicCorrespondence
            "FieldUpdate.UpdateSound.fieldUpdate_records_calibrationBoundary"],
          reading :=
           "selected update soundness preserves recorded feedback without claiming accuracy improvement",
-         status := "proved accessors" }]
+         status := "proved accessors" },
+       { schematic :=
+          "Generated ForecastCone witness -> FieldUpdate record",
+         leanDeclarations :=
+          ["AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedForecastRecord",
+           "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedFieldUpdate",
+           "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedFieldUpdate_sound",
+           "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedFieldUpdate_records_calibration",
+           "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedFieldUpdate_records_nonConclusions"],
+         reading :=
+          "the Atom-generated ForecastCone witness instantiates a selected FieldUpdate whose soundness record exposes calibration and non-conclusion boundaries",
+         status := "proved acceptance" }]
   | consequenceEnvelope =>
       [{ schematic := "cone family projects to consequence envelope",
          leanDeclarations :=
