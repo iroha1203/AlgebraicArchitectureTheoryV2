@@ -560,6 +560,266 @@ theorem generatedAuthorityEffectLaw_locally_satisfied :
       authorityEffectAuthorityCarrier,
       generatedAuthorityPolicy_from_authority_atom⟩
 
+inductive ContractSemanticAtom where
+  | contract
+  | semantic
+  deriving DecidableEq, Repr
+
+def contractSemanticKind : ContractSemanticAtom -> AtomKind
+  | .contract => AtomKind.contractSpecification
+  | .semantic => AtomKind.semanticInterpretation
+
+def contractSemanticAxis : ContractSemanticAtom -> Axis
+  | .contract => Axis.specification
+  | .semantic => Axis.semantic
+
+/--
+Atom system with a contract-specification fact and a semantic interpretation
+fact.  The semantic fact requires a generated contract in the same molecule.
+-/
+def contractSemanticSystem : AtomAxiomSystem where
+  Atom := ContractSemanticAtom
+  Predicate := AtomKind
+  kind := contractSemanticKind
+  axis := contractSemanticAxis
+  predicate := contractSemanticKind
+  predicateKind := fun kind => kind
+  predicateAxis := fun
+    | AtomKind.contractSpecification => Axis.specification
+    | AtomKind.semanticInterpretation => Axis.semantic
+    | _ => Axis.static
+  predicateKindAligned := by
+    intro atom
+    rfl
+  predicateAxisAligned := by
+    intro atom
+    cases atom <;> rfl
+  singleFact := fun _ => True
+  singleFactEvidence := fun _ => trivial
+  predicatePreserving := fun _ => True
+  predicatePreservingEvidence := fun _ => trivial
+  boundaryIndependent := fun _ => True
+  boundaryIndependentEvidence := fun _ => trivial
+  lawIndependent := fun _ => True
+  lawIndependentEvidence := fun _ => trivial
+  noObservationBoundaryCreatesAtoms := True
+  noObservationBoundaryCreatesAtomsEvidence := trivial
+  noLawCreatesAtoms := True
+  noLawCreatesAtomsEvidence := trivial
+  noToolOutputCreatesAtoms := True
+  noToolOutputCreatesAtomsEvidence := trivial
+  noSFTEventCreatesAtoms := True
+  noSFTEventCreatesAtomsEvidence := trivial
+  openTaxonomyBoundary := True
+
+def contractSpecificationPort : AtomPort where
+  name := "contract-specification"
+  kind := AtomPortKind.contract
+  family := AtomKind.contractSpecification
+  axis := Axis.specification
+  required := False
+  acceptsFamily := fun kind => kind = AtomKind.semanticInterpretation
+  acceptsAxis := fun axis => axis = Axis.semantic
+
+def semanticRequiredContractPort : AtomPort where
+  name := "semantic-required-contract"
+  kind := AtomPortKind.contract
+  family := AtomKind.semanticInterpretation
+  axis := Axis.semantic
+  required := True
+  acceptsFamily := fun kind => kind = AtomKind.contractSpecification
+  acceptsAxis := fun axis => axis = Axis.specification
+
+def contractValence : AtomValence where
+  ports := fun port => port = contractSpecificationPort
+  requiredPort := fun _ => False
+  requiredPortHasPort := by
+    intro _ hRequired
+    cases hRequired
+  hasPort := ⟨contractSpecificationPort, rfl⟩
+
+def semanticValence : AtomValence where
+  ports := fun port => port = semanticRequiredContractPort
+  requiredPort := fun port => port = semanticRequiredContractPort
+  requiredPortHasPort := by
+    intro _ hRequired
+    exact hRequired
+  hasPort := ⟨semanticRequiredContractPort, rfl⟩
+
+def contractSemanticShape : ContractSemanticAtom -> AtomShape
+  | .contract =>
+      { family := AtomKind.contractSpecification
+        axis := Axis.specification
+        subject := { name := "request-flow" }
+        predicate := "contract-specification"
+        objectSlots := fun _ => False
+        payloadSlots := fun _ => False
+        direction := AtomDirection.neutral
+        arity := 1
+        valence := contractValence
+        singleFactShape := True
+        singleFactShapeEvidence := trivial }
+  | .semantic =>
+      { family := AtomKind.semanticInterpretation
+        axis := Axis.semantic
+        subject := { name := "request-flow" }
+        predicate := "semantic-interpretation"
+        objectSlots := fun _ => False
+        payloadSlots := fun _ => False
+        direction := AtomDirection.outgoing
+        arity := 1
+        valence := semanticValence
+        singleFactShape := True
+        singleFactShapeEvidence := trivial }
+
+def contractSemanticShapePresentation :
+    AtomShapePresentation contractSemanticSystem where
+  shapeOf := contractSemanticShape
+  shapeKindAligned := by
+    intro atom
+    cases atom <;> rfl
+  shapeAxisAligned := by
+    intro atom
+    cases atom <;> rfl
+  shapeSingleFact := by
+    intro _ _
+    trivial
+
+def selectedContractSemanticAtoms : ContractSemanticAtom -> Prop
+  | .contract => True
+  | .semantic => True
+
+def contractSemanticPortCompatible :
+    PortCompatible contractSpecificationPort semanticRequiredContractPort := by
+  exact ⟨rfl, rfl, rfl, rfl, rfl⟩
+
+def semanticContractPortCompatible :
+    PortCompatible semanticRequiredContractPort contractSpecificationPort := by
+  exact PortCompatible.symm contractSemanticPortCompatible
+
+def contractSemanticComposition :
+    CompatibleComposition
+      (AtomShapeOf contractSemanticShapePresentation ContractSemanticAtom.contract)
+      (AtomShapeOf contractSemanticShapePresentation ContractSemanticAtom.semantic) where
+  leftPort := contractSpecificationPort
+  rightPort := semanticRequiredContractPort
+  leftHasPort := rfl
+  rightHasPort := rfl
+  portsCompatible := contractSemanticPortCompatible
+  objectSlotsCompatible := by
+    intro _ _ hSlot _
+    cases hSlot
+  payloadSlotsCompatible := by
+    intro _ _ hSlot _
+    cases hSlot
+  predicateSlotsCompatible := by
+    intro hPredicate
+    exact False.elim
+      ((by decide : "contract-specification" ≠ "semantic-interpretation")
+        hPredicate)
+
+def semanticContractComposition :
+    CompatibleComposition
+      (AtomShapeOf contractSemanticShapePresentation ContractSemanticAtom.semantic)
+      (AtomShapeOf contractSemanticShapePresentation ContractSemanticAtom.contract) where
+  leftPort := semanticRequiredContractPort
+  rightPort := contractSpecificationPort
+  leftHasPort := rfl
+  rightHasPort := rfl
+  portsCompatible := semanticContractPortCompatible
+  objectSlotsCompatible := by
+    intro _ _ hSlot _
+    cases hSlot
+  payloadSlotsCompatible := by
+    intro _ _ hSlot _
+    cases hSlot
+  predicateSlotsCompatible := by
+    intro hPredicate
+    exact False.elim
+      ((by decide : "semantic-interpretation" ≠ "contract-specification")
+        hPredicate)
+
+def contractSemanticCompositionGraph :
+    AAT.CompositionGraph
+      contractSemanticShapePresentation selectedContractSemanticAtoms where
+  compatiblePairs := by
+    intro left right _hLeft _hRight hDistinct
+    cases left
+    · cases right
+      · exact False.elim (hDistinct rfl)
+      · exact contractSemanticComposition
+    · cases right
+      · exact semanticContractComposition
+      · exact False.elim (hDistinct rfl)
+  graphBoundary := True
+
+def generatedContractSemanticMolecule :
+    AAT.GeneratedMolecule contractSemanticShapePresentation where
+  atoms := selectedContractSemanticAtoms
+  finiteConfiguration := True
+  atomsPrimitive := by
+    intro atom _
+    exact contractSemanticSystem.primitive atom
+  compositionGraph := contractSemanticCompositionGraph
+  requiredPortsMatched := by
+    intro atom port _hAtom hRequired
+    cases atom
+    · cases hRequired
+    · subst port
+      exact
+        ⟨ContractSemanticAtom.contract, contractSpecificationPort, trivial,
+          (by intro h; cases h), rfl, semanticContractPortCompatible⟩
+
+theorem generatedContractSemanticMolecule_not_arbitrary_set :
+    generatedContractSemanticMolecule.notArbitrarySet := by
+  exact generatedContractSemanticMolecule.not_arbitrary_set
+
+def generatedContractSemanticObject :
+    AAT.GeneratedArchitectureObject contractSemanticShapePresentation where
+  molecule := generatedContractSemanticMolecule
+  carrierList :=
+    [ ⟨ContractSemanticAtom.contract, by trivial⟩
+    , ⟨ContractSemanticAtom.semantic, by trivial⟩
+    ]
+  carrierListNodup := by
+    simp
+  carrierListCovers := by
+    intro carrier
+    cases carrier with
+    | mk atom _hAtom =>
+        cases atom <;> simp
+  objectBoundary := True
+
+def contractSemanticContractCarrier :
+    AAT.GeneratedCarrier generatedContractSemanticObject :=
+  ⟨ContractSemanticAtom.contract, by trivial⟩
+
+def contractSemanticSemanticCarrier :
+    AAT.GeneratedCarrier generatedContractSemanticObject :=
+  ⟨ContractSemanticAtom.semantic, by trivial⟩
+
+theorem generatedContract_from_contract_atom :
+    AAT.GeneratedArchitectureObject.GeneratedContract
+      generatedContractSemanticObject contractSemanticContractCarrier := by
+  exact
+    AAT.GeneratedArchitectureObject.generated_contract_from_contract_atoms
+      generatedContractSemanticObject contractSemanticContractCarrier rfl
+
+theorem generatedSemanticInterpretation_from_semantic_atom :
+    AAT.GeneratedArchitectureObject.GeneratedSemanticInterpretation
+      generatedContractSemanticObject contractSemanticSemanticCarrier := by
+  exact
+    AAT.GeneratedArchitectureObject.generated_semantic_interpretation_from_semantic_atoms
+      generatedContractSemanticObject contractSemanticSemanticCarrier rfl
+
+theorem generatedSemanticContractCoverage_from_contract_atom :
+    AAT.GeneratedArchitectureObject.GeneratedSemanticContractCoverage
+      generatedContractSemanticObject contractSemanticSemanticCarrier := by
+  exact
+    AAT.GeneratedArchitectureObject.generated_semantic_contract_coverage_from_contract_atoms
+      generatedContractSemanticObject contractSemanticSemanticCarrier rfl
+      contractSemanticContractCarrier generatedContract_from_contract_atom
+
 inductive DirectedRelationAtom where
   | api
   | apiToDatabase
