@@ -1,5 +1,6 @@
 import Formal.Arch.AAT.GeneratedSignature
 import Formal.Arch.AAT.TheoremClassification
+import Formal.Arch.Observation.ArchMapGeneratedHandoff
 
 namespace Formal.Arch
 namespace AAT
@@ -82,6 +83,29 @@ structure AtomGeneratedAATWorld where
   atomDecidable : DecidableEq system.Atom
   relationDecidable : DecidableRel (GeneratedRelation object)
 
+/-- Generic ArchMap observed-atom handoff into a generated architecture object. -/
+def ArchMapGeneratedObjectHandoff
+    (world : AtomGeneratedAATWorld.{u, v}) : Prop :=
+  ∀ {Source : Type u} {Evidence : Type v}
+    {layer : Observation.ArchMapObservationLayer
+      world.system Source Evidence}
+    {shapePresentation : AtomShapePresentation world.system}
+    {selection : Observation.ArchMapObservedAtomSelection
+      layer shapePresentation}
+    (input :
+      Observation.ArchMapGeneratedArchitectureObjectInput selection),
+      ∃ object : GeneratedArchitectureObject shapePresentation,
+        object = input.toGeneratedArchitectureObject
+
+/-- Suite field payload for generated object carriers and ArchMap handoff. -/
+structure GeneratedMoleculeObjectFields
+    (world : AtomGeneratedAATWorld.{u, v}) where
+  objectCarrierAtomPrimitive :
+    ∀ carrier : GeneratedCarrier world.object,
+      world.system.Primitive carrier.val
+  archMapHandoffToGeneratedObject :
+    ArchMapGeneratedObjectHandoff world
+
 namespace AtomGeneratedAATWorld
 
 /-- Signature produced from the world's generated law model. -/
@@ -109,6 +133,27 @@ theorem molecule_not_arbitrary_set
     (world : AtomGeneratedAATWorld.{u, v}) :
     world.object.molecule.notArbitrarySet :=
   world.object.molecule.not_arbitrary_set
+
+theorem generated_object_carriers_atom_primitive
+    (world : AtomGeneratedAATWorld.{u, v})
+    (carrier : GeneratedCarrier world.object) :
+    world.system.Primitive carrier.val :=
+  world.object.carrier_atom_primitive carrier
+
+theorem archMap_generated_object_handoff
+    (world : AtomGeneratedAATWorld.{u, v}) :
+    ArchMapGeneratedObjectHandoff world := by
+  intro _Source _Evidence _layer _shapePresentation _selection input
+  exact ⟨input.toGeneratedArchitectureObject, rfl⟩
+
+/-- Generated object carrier / ArchMap handoff field derived from generated input. -/
+def generated_molecule_object_fields
+    (world : AtomGeneratedAATWorld.{u, v}) :
+    GeneratedMoleculeObjectFields world where
+  objectCarrierAtomPrimitive :=
+    world.generated_object_carriers_atom_primitive
+  archMapHandoffToGeneratedObject :=
+    world.archMap_generated_object_handoff
 
 theorem generated_lawful
     (world : AtomGeneratedAATWorld.{u, v}) :
@@ -146,6 +191,7 @@ field they are filling.
 -/
 structure AATTheoremSuite (world : AtomGeneratedAATWorld.{u, v}) where
   atomShapeCompositionKernel : world.object.molecule.notArbitrarySet
+  generatedMoleculeObject : GeneratedMoleculeObjectFields world
   generatedLawModelLawful :
     ArchitectureSignature.ArchitectureLawful
       world.lawModel.toArchitectureLawModel
@@ -202,13 +248,15 @@ def currentImplementationFrontier : List AATImplementationFrontier :=
       docsTarget := "docs/aat/lean_theorem_index.md#atom-generated-algebra-kernel" }
   , { family := .generatedMoleculeObject
       suiteField := "AATTheoremSuite.generatedMoleculeObject"
-      status := .parallelReady
+      status := .connected
       existingEntrypoints :=
         ["GeneratedArchitectureObject",
          "GeneratedArchitectureObject.carrier_atom_primitive",
-         "ArchMapGeneratedArchitectureObjectInput.toGeneratedArchitectureObject"]
+         "ArchMapGeneratedArchitectureObjectInput.toGeneratedArchitectureObject",
+         "AtomGeneratedAATWorld.generated_object_carriers_atom_primitive",
+         "AtomGeneratedAATWorld.archMap_generated_object_handoff"]
       nextWorkPackage :=
-        "Add suite fields for generated object carriers and ArchMap handoff."
+        "Preserve generated object carriers and ArchMap handoff as connected suite fields."
       parallelAllowed := true
       coordinationRequired := false
       docsTarget := "docs/aat/lean_theorem_index.md#atom-generated-algebra-kernel" }
@@ -372,6 +420,8 @@ def initialTheoremSuite
     AATTheoremSuite world where
   atomShapeCompositionKernel :=
     world.molecule_not_arbitrary_set
+  generatedMoleculeObject :=
+    world.generated_molecule_object_fields
   generatedLawModelLawful :=
     world.generated_lawful
   generatedSignatureAxesZero :=
