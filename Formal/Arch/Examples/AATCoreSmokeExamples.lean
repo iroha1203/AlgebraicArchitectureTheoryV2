@@ -4,6 +4,7 @@ import Formal.Arch.Examples.AATZeroCurvatureExamples
 import Formal.Arch.Examples.AATOperationRepairSynthesisExamples
 import Formal.Arch.Examples.ArchMapObservationExamples
 import Formal.Arch.Examples.AtomSFTInterfaceExamples
+import Formal.Arch.Examples.AtomGeneratedSignatureExamples
 
 namespace Formal.Arch.AATCoreSmokeExamples
 
@@ -13,6 +14,8 @@ open Formal.Arch.AATZeroCurvatureExamples
 open Formal.Arch.AATOperationRepairSynthesisExamples
 open Formal.Arch.ArchMapObservationExamples
 open Formal.Arch.AtomSFTInterfaceExamples
+open Formal.Arch.AtomGeneratedMoleculeExamples
+open Formal.Arch.AtomGeneratedSignatureExamples
 
 /-- Smoke test: the root example starts from an Atom axiom system. -/
 theorem atom_axiom_system_root_primitive :
@@ -74,5 +77,37 @@ theorem sft_fieldsig_reads_aatcore_transition_without_forecast_correctness :
     ⟨exampleAATCoreLocalAlgebra_no_forecast_correctness,
       exampleFieldSig_reads_archsig_transition_as_sft_analysis,
       exampleFieldSig_forecast_correctness_remains_boundary⟩
+
+/--
+Smoke test: generated transport handoff reads a non-identity source/target
+molecule transition without turning FieldSig analysis into forecast correctness.
+-/
+theorem generated_transport_handoff_reads_nonidentity_transition :
+    componentSystem.noToolOutputCreatesAtoms ∧
+      (atomGeneratedSignature_generatedArchSigTransportTransition
+        |>.fieldSigAnalysisBoundary) ∧
+      atomGeneratedSignature_sftForecastStatus.RecordsForecastBoundary ∧
+      generatedApiOnlyMolecule.toMolecule ≠
+        generatedComponentMolecule.toMolecule := by
+  exact
+    ⟨atomGeneratedSignature_transport_transition_does_not_create_atoms,
+      atomGeneratedSignature_fieldsig_reads_generated_transport_transition,
+      atomGeneratedSignature_fieldsig_transport_forecast_correctness_boundary,
+      atomGeneratedSignature_transport_target_molecule_is_distinct.2⟩
+
+/--
+Smoke test: transport circuit deltas keep source and target law/molecule
+surfaces separate.
+-/
+theorem generated_transport_circuit_delta_keeps_source_target_surfaces :
+    atomGeneratedSignature_aatCoreTransportTransition.circuitDelta.sourceLaw =
+        generatedApiOnlyLawModel.generatedDesignLaw ∧
+      atomGeneratedSignature_aatCoreTransportTransition.circuitDelta.targetLaw =
+        generatedComponentLawModel.generatedDesignLaw ∧
+      atomGeneratedSignature_aatCoreTransportTransition.circuitDelta.sourceMolecule =
+        generatedApiOnlyMolecule.toMolecule ∧
+      atomGeneratedSignature_aatCoreTransportTransition.circuitDelta.targetMolecule =
+        generatedComponentMolecule.toMolecule := by
+  exact ⟨rfl, rfl, rfl, rfl⟩
 
 end Formal.Arch.AATCoreSmokeExamples

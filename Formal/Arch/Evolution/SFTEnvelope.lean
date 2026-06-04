@@ -1,5 +1,7 @@
 import Formal.Arch.Evolution.SFTFieldUpdate
+import Formal.Arch.AAT.GeneratedSFT
 import Formal.Arch.Evolution.SFTInterfaceBoundary
+import Formal.Arch.Evolution.SFTArchSigBoundary
 
 namespace Formal.Arch
 
@@ -406,5 +408,140 @@ theorem records_envelope_boundaries
     package.nonConclusions⟩
 
 end AATCorePremisedConsequenceEnvelope
+
+/--
+Generated consequence-envelope boundary.
+
+This is the Atom-generated replacement entrypoint for the generic
+`AATCorePremisedConsequenceEnvelope`: the local SFT algebra is derived from
+`GeneratedSFTInput`, and the AAT transition is the one carried by a generated
+ArchSig transition between generated law models.
+-/
+structure GeneratedAATConsequenceEnvelope
+    {Field : Type u} {Operation : Type v}
+    {system : AtomAxiomSystem.{w, q}}
+    {presentation : AtomShapePresentation system}
+    {sourceObject targetObject :
+      AAT.GeneratedArchitectureObject presentation}
+    [DecidableEq system.Atom]
+    [DecidableRel (AAT.GeneratedRelation sourceObject)]
+    {sourceModel : AAT.GeneratedArchitectureLawModel sourceObject}
+    {targetModel : AAT.GeneratedArchitectureLawModel targetObject}
+    {support : OperationSupport Field Operation}
+    {relation : StepRelation Field Operation}
+    {source : Field} {horizon : Nat}
+    (target : Field)
+    (path : FieldPath support relation source target)
+    (generatedInput : AAT.GeneratedSFTInput sourceModel)
+    (archsigTransition :
+      GeneratedArchSigAATCoreTransition sourceModel targetModel)
+    (family : ConeFamily support relation source horizon)
+    (boundary : ObservationBoundary Field)
+    (envelope : ConsequenceEnvelope support relation source horizon) :
+    Prop where
+  premisedEnvelope :
+    AATCorePremisedConsequenceEnvelope target path
+      generatedInput.toAATCoreLocalAlgebraForSFT
+      archsigTransition.transition family boundary envelope
+  theoremStatusFromGenerated :
+    generatedInput.theoremStatus.RecordsTheoremPackage
+  readsGeneratedAAT :
+    generatedInput.sftReadsGeneratedAAT
+  transitionBoundary :
+    archsigTransition.transition.RecordsTransitionBoundary
+  fieldSigBoundary :
+    archsigTransition.transition.RecordsFieldSigBoundary
+  forecastCorrectnessBoundary :
+    generatedInput.forecastCorrectnessBoundary
+  envelopeForecastBoundary :
+    envelope.RecordsForecastBoundary
+  envelopeProjectionBoundary :
+    envelope.RecordsProjectionBoundary
+  nonConclusions :
+    envelope.RecordsNonConclusions
+
+namespace GeneratedAATConsequenceEnvelope
+
+variable {Field : Type u} {Operation : Type v}
+variable {system : AtomAxiomSystem.{w, q}}
+variable {presentation : AtomShapePresentation system}
+variable
+  {sourceObject targetObject :
+    AAT.GeneratedArchitectureObject presentation}
+variable [DecidableEq system.Atom]
+variable [DecidableRel (AAT.GeneratedRelation sourceObject)]
+variable
+  {sourceModel : AAT.GeneratedArchitectureLawModel sourceObject}
+variable
+  {targetModel : AAT.GeneratedArchitectureLawModel targetObject}
+variable {support : OperationSupport Field Operation}
+variable {relation : StepRelation Field Operation}
+variable {source : Field} {horizon : Nat}
+variable {target : Field}
+variable {path : FieldPath support relation source target}
+variable {generatedInput : AAT.GeneratedSFTInput sourceModel}
+variable
+  {archsigTransition :
+    GeneratedArchSigAATCoreTransition sourceModel targetModel}
+variable {family : ConeFamily support relation source horizon}
+variable {boundary : ObservationBoundary Field}
+variable {envelope : ConsequenceEnvelope support relation source horizon}
+
+/-- The generated envelope exposes the underlying generic envelope package. -/
+theorem to_premisedEnvelope
+    (package :
+      GeneratedAATConsequenceEnvelope
+        target path generatedInput archsigTransition family boundary envelope) :
+    AATCorePremisedConsequenceEnvelope target path
+      generatedInput.toAATCoreLocalAlgebraForSFT
+      archsigTransition.transition family boundary envelope :=
+  package.premisedEnvelope
+
+/-- The AAT theorem status read by the envelope is generated from Atom data. -/
+theorem theorem_status_from_generated
+    (package :
+      GeneratedAATConsequenceEnvelope
+        target path generatedInput archsigTransition family boundary envelope) :
+    generatedInput.theoremStatus.RecordsTheoremPackage :=
+  package.theoremStatusFromGenerated
+
+/-- The generated envelope reads generated AAT as the SFT local premise. -/
+theorem reads_generated_aat
+    (package :
+      GeneratedAATConsequenceEnvelope
+        target path generatedInput archsigTransition family boundary envelope) :
+    generatedInput.sftReadsGeneratedAAT :=
+  package.readsGeneratedAAT
+
+/-- The generated envelope keeps transition and FieldSig boundaries explicit. -/
+theorem records_transition_boundaries
+    (package :
+      GeneratedAATConsequenceEnvelope
+        target path generatedInput archsigTransition family boundary envelope) :
+    archsigTransition.transition.RecordsTransitionBoundary ∧
+      archsigTransition.transition.RecordsFieldSigBoundary :=
+  ⟨package.transitionBoundary, package.fieldSigBoundary⟩
+
+/-- The generated envelope still does not prove forecast correctness. -/
+theorem forecast_correctness_remains_boundary
+    (package :
+      GeneratedAATConsequenceEnvelope
+        target path generatedInput archsigTransition family boundary envelope) :
+    generatedInput.forecastCorrectnessBoundary :=
+  package.forecastCorrectnessBoundary
+
+/-- Envelope forecast / projection / non-conclusion boundaries remain explicit. -/
+theorem records_envelope_boundaries
+    (package :
+      GeneratedAATConsequenceEnvelope
+        target path generatedInput archsigTransition family boundary envelope) :
+    envelope.RecordsForecastBoundary ∧
+      envelope.RecordsProjectionBoundary ∧
+      envelope.RecordsNonConclusions :=
+  ⟨package.envelopeForecastBoundary,
+    package.envelopeProjectionBoundary,
+    package.nonConclusions⟩
+
+end GeneratedAATConsequenceEnvelope
 
 end Formal.Arch

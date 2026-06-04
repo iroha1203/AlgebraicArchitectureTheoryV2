@@ -1,5 +1,7 @@
 import Formal.Arch.Evolution.SFTFundamentalModularity
 import Formal.Arch.Evolution.SFTInterfaceBoundary
+import Formal.Arch.Evolution.SFTArchSigBoundary
+import Formal.Arch.AAT.GeneratedSFT
 
 /-!
 AAT-supported boundary surface for the finite selected SFT Grand Theorem.
@@ -15,7 +17,7 @@ namespace SFTAATFundamentalModularity
 
 open SFTFundamentalModularity
 
-universe u v w x y z a
+universe u v w x y z a b
 
 /-- Selected architecture slice supplied by AAT to an SFT theorem package. -/
 structure AATSelectedArchitectureSlice where
@@ -134,6 +136,340 @@ def ofSelectedSliceAndFiniteExactModel
   theoremBoundary := theoremBoundary
   typedFailureBoundary := typedFailureBoundary
   nonConclusions := nonConclusions
+
+/--
+Construct an AAT-supported SFT boundary whose theorem status is computed from
+an Atom-generated SFT input.
+
+The selected AAT slice, finite exact SFT model, ArchSig/report boundary, final
+theorem boundary, and typed-failure boundary remain explicit premises.  This
+constructor only removes the freedom to supply an unrelated `AATTheoremStatus`.
+-/
+noncomputable def ofGeneratedSFTInput
+    {system : AtomAxiomSystem.{a, b}}
+    {presentation : AtomShapePresentation system}
+    {object : AAT.GeneratedArchitectureObject presentation}
+    [DecidableEq system.Atom]
+    [DecidableRel (AAT.GeneratedRelation object)]
+    {model : AAT.GeneratedArchitectureLawModel object}
+    (selectedSlice : AATSelectedArchitectureSlice)
+    (generatedInput : AAT.GeneratedSFTInput model)
+    (forecastStatus : SFTForecastStatus)
+    (interfaceBoundary :
+      AATToSFTInterfaceBoundary generatedInput.theoremStatus forecastStatus)
+    (selectedSourceBoundary : Prop)
+    (selectedHorizonBoundary : Prop)
+    (hFinite : exactModel.RecordsFiniteModelBoundary)
+    (hExact : exactModel.RecordsExactCoverBoundary)
+    (hObservation : exactModel.RecordsObservationBoundary)
+    (hProjection : selectedSlice.RecordsProjectionBoundary)
+    (hAATObservation : selectedSlice.RecordsObservationBoundary)
+    (hReconstruction : selectedSlice.RecordsReconstructionBoundary)
+    (hMissingEvidence : selectedSlice.RecordsMissingEvidence)
+    (archSigReportBoundary theoremBoundary typedFailureBoundary
+      nonConclusions : Prop) :
+    AATSupportedSFTBoundary exactModel source horizon :=
+  ofSelectedSliceAndFiniteExactModel
+    (exactModel := exactModel) (source := source) (horizon := horizon)
+    selectedSlice generatedInput.theoremStatus forecastStatus
+    interfaceBoundary selectedSourceBoundary selectedHorizonBoundary hFinite
+    hExact hObservation hProjection hAATObservation hReconstruction
+    hMissingEvidence archSigReportBoundary theoremBoundary
+    typedFailureBoundary nonConclusions
+
+/-- The generated constructor stores the generated theorem status. -/
+theorem ofGeneratedSFTInput_aatStatus_eq_generated
+    {system : AtomAxiomSystem.{a, b}}
+    {presentation : AtomShapePresentation system}
+    {object : AAT.GeneratedArchitectureObject presentation}
+    [DecidableEq system.Atom]
+    [DecidableRel (AAT.GeneratedRelation object)]
+    {model : AAT.GeneratedArchitectureLawModel object}
+    (selectedSlice : AATSelectedArchitectureSlice)
+    (generatedInput : AAT.GeneratedSFTInput model)
+    (forecastStatus : SFTForecastStatus)
+    (interfaceBoundary :
+      AATToSFTInterfaceBoundary generatedInput.theoremStatus forecastStatus)
+    (selectedSourceBoundary : Prop)
+    (selectedHorizonBoundary : Prop)
+    (hFinite : exactModel.RecordsFiniteModelBoundary)
+    (hExact : exactModel.RecordsExactCoverBoundary)
+    (hObservation : exactModel.RecordsObservationBoundary)
+    (hProjection : selectedSlice.RecordsProjectionBoundary)
+    (hAATObservation : selectedSlice.RecordsObservationBoundary)
+    (hReconstruction : selectedSlice.RecordsReconstructionBoundary)
+    (hMissingEvidence : selectedSlice.RecordsMissingEvidence)
+    (archSigReportBoundary theoremBoundary typedFailureBoundary
+      nonConclusions : Prop) :
+    (ofGeneratedSFTInput
+      selectedSlice generatedInput forecastStatus interfaceBoundary
+      selectedSourceBoundary selectedHorizonBoundary hFinite hExact
+      hObservation hProjection hAATObservation hReconstruction
+      hMissingEvidence archSigReportBoundary theoremBoundary
+      typedFailureBoundary nonConclusions :
+        AATSupportedSFTBoundary exactModel source horizon).aatStatus =
+        generatedInput.theoremStatus := by
+  rfl
+
+/-- Generated constructor reads generated AAT status as the SFT local premise. -/
+theorem ofGeneratedSFTInput_reads_generated_status_as_local_premise
+    {system : AtomAxiomSystem.{a, b}}
+    {presentation : AtomShapePresentation system}
+    {object : AAT.GeneratedArchitectureObject presentation}
+    [DecidableEq system.Atom]
+    [DecidableRel (AAT.GeneratedRelation object)]
+    {model : AAT.GeneratedArchitectureLawModel object}
+    (selectedSlice : AATSelectedArchitectureSlice)
+    (generatedInput : AAT.GeneratedSFTInput model)
+    (forecastStatus : SFTForecastStatus)
+    (interfaceBoundary :
+      AATToSFTInterfaceBoundary generatedInput.theoremStatus forecastStatus)
+    (selectedSourceBoundary : Prop)
+    (selectedHorizonBoundary : Prop)
+    (hFinite : exactModel.RecordsFiniteModelBoundary)
+    (hExact : exactModel.RecordsExactCoverBoundary)
+    (hObservation : exactModel.RecordsObservationBoundary)
+    (hProjection : selectedSlice.RecordsProjectionBoundary)
+    (hAATObservation : selectedSlice.RecordsObservationBoundary)
+    (hReconstruction : selectedSlice.RecordsReconstructionBoundary)
+    (hMissingEvidence : selectedSlice.RecordsMissingEvidence)
+    (archSigReportBoundary theoremBoundary typedFailureBoundary
+      nonConclusions : Prop) :
+    (ofGeneratedSFTInput
+      selectedSlice generatedInput forecastStatus interfaceBoundary
+      selectedSourceBoundary selectedHorizonBoundary hFinite hExact
+      hObservation hProjection hAATObservation hReconstruction
+      hMissingEvidence archSigReportBoundary theoremBoundary
+      typedFailureBoundary nonConclusions :
+        AATSupportedSFTBoundary exactModel source horizon).forecastStatus.RecordsLocalPremise :=
+  generatedInput.reads_generated_aat_as_sft_local_premise interfaceBoundary
+
+/--
+Construct an AAT-supported SFT boundary from generated AAT status and generated
+ArchSig transition evidence.
+
+Compared with `ofGeneratedSFTInput`, this constructor also removes the freedom
+to fill the ArchSig report, theorem, typed-failure, and non-conclusion boundary
+fields with unrelated propositions.  Those fields are read from the generated
+transition and the generated / forecast status boundaries.
+-/
+noncomputable def ofGeneratedSFTInputAndArchSigTransition
+    {system : AtomAxiomSystem.{a, b}}
+    {presentation : AtomShapePresentation system}
+    {sourceObject targetObject :
+      AAT.GeneratedArchitectureObject presentation}
+    [DecidableEq system.Atom]
+    [DecidableRel (AAT.GeneratedRelation sourceObject)]
+    {sourceModel : AAT.GeneratedArchitectureLawModel sourceObject}
+    {targetModel : AAT.GeneratedArchitectureLawModel targetObject}
+    (selectedSlice : AATSelectedArchitectureSlice)
+    (generatedInput : AAT.GeneratedSFTInput sourceModel)
+    (archsigTransition :
+      GeneratedArchSigAATCoreTransition sourceModel targetModel)
+    (forecastStatus : SFTForecastStatus)
+    (interfaceBoundary :
+      AATToSFTInterfaceBoundary generatedInput.theoremStatus forecastStatus)
+    (selectedSourceBoundary : Prop)
+    (selectedHorizonBoundary : Prop)
+    (hFinite : exactModel.RecordsFiniteModelBoundary)
+    (hExact : exactModel.RecordsExactCoverBoundary)
+    (hObservation : exactModel.RecordsObservationBoundary)
+    (hProjection : selectedSlice.RecordsProjectionBoundary)
+    (hAATObservation : selectedSlice.RecordsObservationBoundary)
+    (hReconstruction : selectedSlice.RecordsReconstructionBoundary)
+    (hMissingEvidence : selectedSlice.RecordsMissingEvidence) :
+    AATSupportedSFTBoundary exactModel source horizon :=
+  ofSelectedSliceAndFiniteExactModel
+    (exactModel := exactModel) (source := source) (horizon := horizon)
+    selectedSlice generatedInput.theoremStatus forecastStatus
+    interfaceBoundary selectedSourceBoundary selectedHorizonBoundary hFinite
+    hExact hObservation hProjection hAATObservation hReconstruction
+    hMissingEvidence
+    archsigTransition.fieldSigAnalysisBoundary
+    (generatedInput.theoremStatus.RecordsTheoremBoundary ∧
+      forecastStatus.RecordsTheoremBoundary ∧
+        archsigTransition.transitionBoundary)
+    archsigTransition.archsigDoesNotDefineAAT
+    (generatedInput.theoremStatus.RecordsNonConclusions ∧
+      forecastStatus.RecordsNonConclusions ∧
+        archsigTransition.archsigDoesNotDefineAAT)
+
+/-- The generated ArchSig constructor stores the generated theorem status. -/
+theorem ofGeneratedSFTInputAndArchSigTransition_aatStatus_eq_generated
+    {system : AtomAxiomSystem.{a, b}}
+    {presentation : AtomShapePresentation system}
+    {sourceObject targetObject :
+      AAT.GeneratedArchitectureObject presentation}
+    [DecidableEq system.Atom]
+    [DecidableRel (AAT.GeneratedRelation sourceObject)]
+    {sourceModel : AAT.GeneratedArchitectureLawModel sourceObject}
+    {targetModel : AAT.GeneratedArchitectureLawModel targetObject}
+    (selectedSlice : AATSelectedArchitectureSlice)
+    (generatedInput : AAT.GeneratedSFTInput sourceModel)
+    (archsigTransition :
+      GeneratedArchSigAATCoreTransition sourceModel targetModel)
+    (forecastStatus : SFTForecastStatus)
+    (interfaceBoundary :
+      AATToSFTInterfaceBoundary generatedInput.theoremStatus forecastStatus)
+    (selectedSourceBoundary : Prop)
+    (selectedHorizonBoundary : Prop)
+    (hFinite : exactModel.RecordsFiniteModelBoundary)
+    (hExact : exactModel.RecordsExactCoverBoundary)
+    (hObservation : exactModel.RecordsObservationBoundary)
+    (hProjection : selectedSlice.RecordsProjectionBoundary)
+    (hAATObservation : selectedSlice.RecordsObservationBoundary)
+    (hReconstruction : selectedSlice.RecordsReconstructionBoundary)
+    (hMissingEvidence : selectedSlice.RecordsMissingEvidence) :
+    (ofGeneratedSFTInputAndArchSigTransition
+      selectedSlice generatedInput archsigTransition forecastStatus
+      interfaceBoundary selectedSourceBoundary selectedHorizonBoundary hFinite
+      hExact hObservation hProjection hAATObservation hReconstruction
+      hMissingEvidence :
+        AATSupportedSFTBoundary exactModel source horizon).aatStatus =
+        generatedInput.theoremStatus := by
+  rfl
+
+/-- The generated ArchSig constructor records the transition analysis boundary. -/
+theorem ofGeneratedSFTInputAndArchSigTransition_records_archsig_boundary
+    {system : AtomAxiomSystem.{a, b}}
+    {presentation : AtomShapePresentation system}
+    {sourceObject targetObject :
+      AAT.GeneratedArchitectureObject presentation}
+    [DecidableEq system.Atom]
+    [DecidableRel (AAT.GeneratedRelation sourceObject)]
+    {sourceModel : AAT.GeneratedArchitectureLawModel sourceObject}
+    {targetModel : AAT.GeneratedArchitectureLawModel targetObject}
+    (selectedSlice : AATSelectedArchitectureSlice)
+    (generatedInput : AAT.GeneratedSFTInput sourceModel)
+    (archsigTransition :
+      GeneratedArchSigAATCoreTransition sourceModel targetModel)
+    (forecastStatus : SFTForecastStatus)
+    (interfaceBoundary :
+      AATToSFTInterfaceBoundary generatedInput.theoremStatus forecastStatus)
+    (selectedSourceBoundary : Prop)
+    (selectedHorizonBoundary : Prop)
+    (hFinite : exactModel.RecordsFiniteModelBoundary)
+    (hExact : exactModel.RecordsExactCoverBoundary)
+    (hObservation : exactModel.RecordsObservationBoundary)
+    (hProjection : selectedSlice.RecordsProjectionBoundary)
+    (hAATObservation : selectedSlice.RecordsObservationBoundary)
+    (hReconstruction : selectedSlice.RecordsReconstructionBoundary)
+    (hMissingEvidence : selectedSlice.RecordsMissingEvidence) :
+    (ofGeneratedSFTInputAndArchSigTransition
+      selectedSlice generatedInput archsigTransition forecastStatus
+      interfaceBoundary selectedSourceBoundary selectedHorizonBoundary hFinite
+      hExact hObservation hProjection hAATObservation hReconstruction
+      hMissingEvidence :
+        AATSupportedSFTBoundary exactModel source horizon).archSigReportBoundary :=
+  archsigTransition.records_fieldsig_analysis_boundary
+
+/-- The generated ArchSig constructor reads theorem boundaries from generated evidence. -/
+theorem ofGeneratedSFTInputAndArchSigTransition_records_theorem_boundary
+    {system : AtomAxiomSystem.{a, b}}
+    {presentation : AtomShapePresentation system}
+    {sourceObject targetObject :
+      AAT.GeneratedArchitectureObject presentation}
+    [DecidableEq system.Atom]
+    [DecidableRel (AAT.GeneratedRelation sourceObject)]
+    {sourceModel : AAT.GeneratedArchitectureLawModel sourceObject}
+    {targetModel : AAT.GeneratedArchitectureLawModel targetObject}
+    (selectedSlice : AATSelectedArchitectureSlice)
+    (generatedInput : AAT.GeneratedSFTInput sourceModel)
+    (archsigTransition :
+      GeneratedArchSigAATCoreTransition sourceModel targetModel)
+    (forecastStatus : SFTForecastStatus)
+    (interfaceBoundary :
+      AATToSFTInterfaceBoundary generatedInput.theoremStatus forecastStatus)
+    (selectedSourceBoundary : Prop)
+    (selectedHorizonBoundary : Prop)
+    (hFinite : exactModel.RecordsFiniteModelBoundary)
+    (hExact : exactModel.RecordsExactCoverBoundary)
+    (hObservation : exactModel.RecordsObservationBoundary)
+    (hProjection : selectedSlice.RecordsProjectionBoundary)
+    (hAATObservation : selectedSlice.RecordsObservationBoundary)
+    (hReconstruction : selectedSlice.RecordsReconstructionBoundary)
+    (hMissingEvidence : selectedSlice.RecordsMissingEvidence)
+    (hAATTheorem : generatedInput.theoremStatus.RecordsTheoremBoundary)
+    (hForecastTheorem : forecastStatus.RecordsTheoremBoundary) :
+    (ofGeneratedSFTInputAndArchSigTransition
+      selectedSlice generatedInput archsigTransition forecastStatus
+      interfaceBoundary selectedSourceBoundary selectedHorizonBoundary hFinite
+      hExact hObservation hProjection hAATObservation hReconstruction
+      hMissingEvidence :
+        AATSupportedSFTBoundary exactModel source horizon).theoremBoundary :=
+  ⟨hAATTheorem, hForecastTheorem,
+    archsigTransition.records_transition_boundary⟩
+
+/-- Generated ArchSig non-definition is the typed-failure boundary. -/
+theorem ofGeneratedSFTInputAndArchSigTransition_records_typed_failure_boundary
+    {system : AtomAxiomSystem.{a, b}}
+    {presentation : AtomShapePresentation system}
+    {sourceObject targetObject :
+      AAT.GeneratedArchitectureObject presentation}
+    [DecidableEq system.Atom]
+    [DecidableRel (AAT.GeneratedRelation sourceObject)]
+    {sourceModel : AAT.GeneratedArchitectureLawModel sourceObject}
+    {targetModel : AAT.GeneratedArchitectureLawModel targetObject}
+    (selectedSlice : AATSelectedArchitectureSlice)
+    (generatedInput : AAT.GeneratedSFTInput sourceModel)
+    (archsigTransition :
+      GeneratedArchSigAATCoreTransition sourceModel targetModel)
+    (forecastStatus : SFTForecastStatus)
+    (interfaceBoundary :
+      AATToSFTInterfaceBoundary generatedInput.theoremStatus forecastStatus)
+    (selectedSourceBoundary : Prop)
+    (selectedHorizonBoundary : Prop)
+    (hFinite : exactModel.RecordsFiniteModelBoundary)
+    (hExact : exactModel.RecordsExactCoverBoundary)
+    (hObservation : exactModel.RecordsObservationBoundary)
+    (hProjection : selectedSlice.RecordsProjectionBoundary)
+    (hAATObservation : selectedSlice.RecordsObservationBoundary)
+    (hReconstruction : selectedSlice.RecordsReconstructionBoundary)
+    (hMissingEvidence : selectedSlice.RecordsMissingEvidence) :
+    (ofGeneratedSFTInputAndArchSigTransition
+      selectedSlice generatedInput archsigTransition forecastStatus
+      interfaceBoundary selectedSourceBoundary selectedHorizonBoundary hFinite
+      hExact hObservation hProjection hAATObservation hReconstruction
+      hMissingEvidence :
+        AATSupportedSFTBoundary exactModel source horizon).typedFailureBoundary :=
+  archsigTransition.archsig_transition_does_not_define_aat
+
+/-- The generated ArchSig constructor keeps non-conclusions structurally attached. -/
+theorem ofGeneratedSFTInputAndArchSigTransition_records_nonConclusions
+    {system : AtomAxiomSystem.{a, b}}
+    {presentation : AtomShapePresentation system}
+    {sourceObject targetObject :
+      AAT.GeneratedArchitectureObject presentation}
+    [DecidableEq system.Atom]
+    [DecidableRel (AAT.GeneratedRelation sourceObject)]
+    {sourceModel : AAT.GeneratedArchitectureLawModel sourceObject}
+    {targetModel : AAT.GeneratedArchitectureLawModel targetObject}
+    (selectedSlice : AATSelectedArchitectureSlice)
+    (generatedInput : AAT.GeneratedSFTInput sourceModel)
+    (archsigTransition :
+      GeneratedArchSigAATCoreTransition sourceModel targetModel)
+    (forecastStatus : SFTForecastStatus)
+    (interfaceBoundary :
+      AATToSFTInterfaceBoundary generatedInput.theoremStatus forecastStatus)
+    (selectedSourceBoundary : Prop)
+    (selectedHorizonBoundary : Prop)
+    (hFinite : exactModel.RecordsFiniteModelBoundary)
+    (hExact : exactModel.RecordsExactCoverBoundary)
+    (hObservation : exactModel.RecordsObservationBoundary)
+    (hProjection : selectedSlice.RecordsProjectionBoundary)
+    (hAATObservation : selectedSlice.RecordsObservationBoundary)
+    (hReconstruction : selectedSlice.RecordsReconstructionBoundary)
+    (hMissingEvidence : selectedSlice.RecordsMissingEvidence)
+    (hAATNonConclusions : generatedInput.theoremStatus.RecordsNonConclusions)
+    (hForecastNonConclusions : forecastStatus.RecordsNonConclusions) :
+    (ofGeneratedSFTInputAndArchSigTransition
+      selectedSlice generatedInput archsigTransition forecastStatus
+      interfaceBoundary selectedSourceBoundary selectedHorizonBoundary hFinite
+      hExact hObservation hProjection hAATObservation hReconstruction
+      hMissingEvidence :
+        AATSupportedSFTBoundary exactModel source horizon).nonConclusions :=
+  ⟨hAATNonConclusions, hForecastNonConclusions,
+    archsigTransition.archsig_transition_does_not_define_aat⟩
 
 def RecordsSelectedFiniteBoundary
     (boundary : AATSupportedSFTBoundary exactModel source horizon) : Prop :=

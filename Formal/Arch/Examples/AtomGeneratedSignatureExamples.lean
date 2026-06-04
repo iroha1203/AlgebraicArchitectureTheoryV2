@@ -1,0 +1,1827 @@
+import Formal.Arch.AAT.GeneratedAnalyticRepresentation
+import Formal.Arch.AAT.GeneratedFeatureExtension
+import Formal.Arch.AAT.GeneratedSFT
+import Formal.Arch.Evolution.Chapter7TheoremPackages
+import Formal.Arch.Evolution.Chapter10ArchitectureExtensionFormula
+import Formal.Arch.Evolution.Chapter11AnalyticRepresentation
+import Formal.Arch.Evolution.SFTArchSigBoundary
+import Formal.Arch.Evolution.SFTArtifactAction
+import Formal.Arch.Evolution.SFTConeProjection
+import Formal.Arch.Evolution.SFTCounterexamples
+import Formal.Arch.Evolution.SFTFieldUpdate
+import Formal.Arch.Evolution.SFTFiniteExactModel
+import Formal.Arch.Evolution.SFTPolicy
+import Formal.Arch.Evolution.SFTReachability
+import Formal.Arch.Evolution.SFTSupportSafety
+import Formal.Arch.Evolution.SFTTheoremRoadmap
+import Formal.Arch.Examples.AtomGeneratedMoleculeExamples
+import Formal.Arch.Signature.AATCoreBridge
+
+namespace Formal.Arch.AtomGeneratedSignatureExamples
+
+open Formal.Arch.AtomGeneratedMoleculeExamples
+
+/--
+Positive acceptance: source-like AtomShape facts generate a compatible molecule.
+
+This theorem starts from the generated molecule example rather than a
+hand-authored `Molecule`.
+-/
+def atomGeneratedSignature_hasGeneratedMolecule :
+    AAT.GeneratedMolecule componentShapePresentation :=
+  generatedComponentMolecule
+
+/--
+Positive acceptance: the generated architecture object is built from the
+generated molecule, not from a supplied graph.
+-/
+def atomGeneratedSignature_hasGeneratedObject :
+    AAT.GeneratedArchitectureObject componentShapePresentation :=
+  generatedComponentObject
+
+/--
+Positive acceptance: the generated law model is the source of the legacy
+`ArchitectureLawModel` bridge.
+-/
+def atomGeneratedSignature_generatesArchitectureLawModel :
+    ArchitectureSignature.ArchitectureLawModel
+      (AAT.GeneratedCarrier generatedComponentObject)
+      (AAT.GeneratedCarrier generatedComponentObject)
+      AAT.GeneratedObservationCoordinate :=
+  generatedComponentLawModel.toArchitectureLawModel
+
+/--
+Positive acceptance: required Signature axes are derived for the generated
+law model.
+-/
+theorem atomGeneratedSignature_requiredAxesZero :
+    ArchitectureSignature.RequiredSignatureAxesZero
+      (generatedComponentLawModel.signatureOfGenerated) := by
+  exact generatedComponentLawModel.generated_requiredSignatureAxesZero
+
+/--
+Positive acceptance: generated lawfulness is equivalent to generated required
+Signature axes being zero.
+-/
+theorem atomGeneratedSignature_lawful_iff_requiredAxesZero :
+    ArchitectureSignature.ArchitectureLawful
+        generatedComponentLawModel.toArchitectureLawModel ↔
+      ArchitectureSignature.RequiredSignatureAxesZero
+        (generatedComponentLawModel.signatureOfGenerated) := by
+  exact generatedComponentLawModel.generatedArchitectureLawful_iff_requiredSignatureAxesZero
+
+/--
+Positive acceptance: the full static Signature theorem package fires from the
+generated law model, not from a hand-authored `ArchitectureLawModel`.
+-/
+theorem atomGeneratedSignature_zeroCurvatureTheoremPackage :
+    generatedComponentLawModel.generatedArchitectureZeroCurvatureTheoremPackage := by
+  exact
+    generatedComponentLawModel.generatedArchitectureZeroCurvatureTheoremPackage_holds
+
+/--
+Positive acceptance: generated lawfulness is equivalent to the static Signature
+zero-curvature theorem package on the generated law model.
+-/
+theorem atomGeneratedSignature_lawful_iff_zeroCurvatureTheoremPackage :
+    ArchitectureSignature.ArchitectureLawful
+        generatedComponentLawModel.toArchitectureLawModel ↔
+      generatedComponentLawModel.generatedArchitectureZeroCurvatureTheoremPackage := by
+  exact
+    generatedComponentLawModel.generatedArchitectureLawful_iff_generatedArchitectureZeroCurvatureTheoremPackage
+
+/--
+Positive acceptance: the generated signature theorem uses the generated law
+model directly and does not require an `architectureLawfulFromAAT` field.
+-/
+theorem atomGeneratedSignature_architectureLawful :
+    ArchitectureSignature.ArchitectureLawful
+      generatedComponentLawModel.toArchitectureLawModel := by
+  exact generatedComponentLawModel.generatedArchitectureLawful
+
+/--
+Positive acceptance: the AATCore-to-Signature bridge is built from the generated
+law model without supplying an `architectureLawfulFromAAT` field.
+-/
+noncomputable def atomGeneratedSignature_coreSignatureBridge :
+    ArchitectureSignature.AATCoreSignatureLawfulnessBridge
+      generatedComponentLawModel.generatedAATCore
+      generatedComponentLawModel.toArchitectureLawModel :=
+  ArchitectureSignature.AATCoreSignatureLawfulnessBridge.ofGeneratedLawModel
+    generatedComponentLawModel True True True True True True
+    trivial trivial trivial
+
+theorem atomGeneratedSignature_coreSignatureBridge_architectureLawful :
+    ArchitectureSignature.ArchitectureLawful
+      generatedComponentLawModel.toArchitectureLawModel := by
+  exact
+    ArchitectureSignature.AATCoreSignatureLawfulnessBridge.architectureLawful
+      atomGeneratedSignature_coreSignatureBridge
+
+/--
+Positive acceptance: generated law models have a generated analytic
+representation into Signature v1.
+-/
+noncomputable def atomGeneratedSignature_analyticRepresentation :
+    AnalyticRepresentation
+      (AAT.GeneratedArchitectureLawModel generatedComponentObject)
+      ArchitectureSignature.ArchitectureSignatureV1
+      AAT.GeneratedAnalyticWitness :=
+  AAT.GeneratedArchitectureLawModel.generatedAnalyticRepresentation
+    (object := generatedComponentObject)
+
+theorem atomGeneratedSignature_analytic_coverageAssumptions :
+    atomGeneratedSignature_analyticRepresentation.coverageAssumptions := by
+  exact
+    Formal.Arch.Chapter11AnalyticRepresentation.generatedAnalyticRepresentation_coverageAssumptions
+      (object := generatedComponentObject)
+
+theorem atomGeneratedSignature_analytic_witnessCompleteness :
+    atomGeneratedSignature_analyticRepresentation.witnessCompleteness := by
+  exact
+    Formal.Arch.Chapter11AnalyticRepresentation.generatedAnalyticRepresentation_witnessCompleteness
+      (object := generatedComponentObject)
+
+theorem atomGeneratedSignature_analytic_semanticContractCoverage :
+    atomGeneratedSignature_analyticRepresentation.semanticContractCoverage := by
+  exact
+    Formal.Arch.Chapter11AnalyticRepresentation.generatedAnalyticRepresentation_semanticContractCoverage
+      (object := generatedComponentObject)
+
+theorem atomGeneratedSignature_analytic_zeroPreserving :
+    AnalyticRepresentation.ZeroPreserving
+      atomGeneratedSignature_analyticRepresentation := by
+  exact
+    Formal.Arch.Chapter11AnalyticRepresentation.generatedAnalyticRepresentation_zeroPreserving
+      (object := generatedComponentObject)
+
+theorem atomGeneratedSignature_analytic_zero :
+    atomGeneratedSignature_analyticRepresentation.analyticZero
+      (atomGeneratedSignature_analyticRepresentation.represent
+        generatedComponentLawModel) := by
+  exact
+    AnalyticRepresentation.analyticZero_of_structuralZero
+      atomGeneratedSignature_analyticRepresentation
+      atomGeneratedSignature_analytic_zeroPreserving
+      generatedComponentLawModel.generatedArchitectureLawful
+
+theorem atomGeneratedSignature_analytic_zeroReflecting :
+    AnalyticRepresentation.ZeroReflecting
+      atomGeneratedSignature_analyticRepresentation := by
+  exact
+    Formal.Arch.Chapter11AnalyticRepresentation.generatedAnalyticRepresentation_zeroReflecting
+      (object := generatedComponentObject)
+
+theorem atomGeneratedSignature_analytic_obstructionPreserving :
+    AnalyticRepresentation.ObstructionPreserving
+      atomGeneratedSignature_analyticRepresentation := by
+  exact
+    Formal.Arch.Chapter11AnalyticRepresentation.generatedAnalyticRepresentation_obstructionPreserving
+      (object := generatedComponentObject)
+
+theorem atomGeneratedSignature_analytic_obstructionReflecting :
+    AnalyticRepresentation.ObstructionReflecting
+      atomGeneratedSignature_analyticRepresentation := by
+  exact
+    Formal.Arch.Chapter11AnalyticRepresentation.generatedAnalyticRepresentation_obstructionReflecting
+      (object := generatedComponentObject)
+
+theorem atomGeneratedSignature_analytic_nonConclusions :
+    atomGeneratedSignature_analyticRepresentation.nonConclusions := by
+  exact
+    Formal.Arch.Chapter11AnalyticRepresentation.generatedAnalyticRepresentation_nonConclusions
+      (object := generatedComponentObject)
+
+theorem atomGeneratedSignature_analytic_represent_eq_signatureOfGenerated :
+    atomGeneratedSignature_analyticRepresentation.represent
+        generatedComponentLawModel =
+      generatedComponentLawModel.signatureOfGenerated := by
+  exact
+    Formal.Arch.Chapter11AnalyticRepresentation.generatedAnalyticRepresentation_represent_eq_signatureOfGenerated
+      generatedComponentLawModel
+
+noncomputable def atomGeneratedSignature_obstructionValuation :
+    ObstructionValuation
+      (AAT.GeneratedArchitectureLawModel generatedComponentObject)
+      AAT.GeneratedAnalyticWitness :=
+  AAT.GeneratedArchitectureLawModel.generatedRequiredSignatureObstructionValuation
+    (object := generatedComponentObject)
+
+theorem atomGeneratedSignature_obstructionValuation_coverageAssumptions :
+    atomGeneratedSignature_obstructionValuation.coverageAssumptions := by
+  exact
+    Formal.Arch.Chapter11AnalyticRepresentation.generatedRequiredSignatureObstructionValuation_coverageAssumptions
+      (object := generatedComponentObject)
+
+/--
+Positive acceptance: the Chapter 11 analytic extension formula has a generated
+law-model specialization using the generated analytic representation and the
+generated selected obstruction valuation.
+-/
+noncomputable def atomGeneratedSignature_analyticExtensionFormulaPackage :
+    Formal.Arch.Chapter11AnalyticRepresentation.AnalyticExtensionFormulaPackage
+      (AAT.GeneratedArchitectureLawModel generatedComponentObject)
+      ArchitectureSignature.ArchitectureSignatureV1
+      Unit
+      AAT.GeneratedAnalyticWitness :=
+  Formal.Arch.Chapter11AnalyticRepresentation.generatedIdentityAnalyticExtensionFormulaPackage
+    generatedComponentLawModel
+
+theorem atomGeneratedSignature_analyticExtensionFormula_holds :
+    atomGeneratedSignature_analyticExtensionFormulaPackage.FormulaEquation := by
+  exact
+    Formal.Arch.Chapter11AnalyticRepresentation.generatedIdentityAnalyticExtensionFormula_formula_holds
+      generatedComponentLawModel
+
+theorem atomGeneratedSignature_analyticExtensionFormula_requiredAssumptions :
+    atomGeneratedSignature_analyticExtensionFormulaPackage.RequiredAssumptions := by
+  exact
+    Formal.Arch.Chapter11AnalyticRepresentation.generatedIdentityAnalyticExtensionFormula_requiredAssumptions
+      generatedComponentLawModel
+
+theorem atomGeneratedSignature_analyticExtensionFormula_representationMapAssumptions :
+    atomGeneratedSignature_analyticExtensionFormulaPackage.representationMapAssumptions := by
+  exact
+    Formal.Arch.Chapter11AnalyticRepresentation.generatedIdentityAnalyticExtensionFormula_representationMapAssumptions
+      generatedComponentLawModel
+
+theorem atomGeneratedSignature_analyticExtensionFormula_valuationStructureAssumptions :
+    atomGeneratedSignature_analyticExtensionFormulaPackage.valuationStructureAssumptions := by
+  exact
+    Formal.Arch.Chapter11AnalyticRepresentation.generatedIdentityAnalyticExtensionFormula_valuationStructureAssumptions
+      generatedComponentLawModel
+
+theorem atomGeneratedSignature_analyticExtensionFormula_decompositionCertificate :
+    atomGeneratedSignature_analyticExtensionFormulaPackage.decompositionCertificate := by
+  exact
+    Formal.Arch.Chapter11AnalyticRepresentation.generatedIdentityAnalyticExtensionFormula_decompositionCertificate
+      generatedComponentLawModel
+
+theorem atomGeneratedSignature_analyticExtensionFormula_coverageAssumptions :
+    atomGeneratedSignature_analyticExtensionFormulaPackage.coverageAssumptions := by
+  exact
+    Formal.Arch.Chapter11AnalyticRepresentation.generatedIdentityAnalyticExtensionFormula_coverageAssumptions
+      generatedComponentLawModel
+
+theorem atomGeneratedSignature_analyticExtensionFormula_complexityTransferBoundary :
+    atomGeneratedSignature_analyticExtensionFormulaPackage.complexityTransferBoundary := by
+  exact
+    Formal.Arch.Chapter11AnalyticRepresentation.generatedIdentityAnalyticExtensionFormula_complexityTransferBoundary
+      generatedComponentLawModel
+
+theorem atomGeneratedSignature_analyticExtensionFormula_obstructionValue_zero :
+    atomGeneratedSignature_analyticExtensionFormulaPackage.obstructionValuation.value
+      generatedComponentLawModel AAT.GeneratedAnalyticWitness.requiredSignatureAxes =
+        0 := by
+  exact
+    Formal.Arch.Chapter11AnalyticRepresentation.generatedIdentityAnalyticExtensionFormula_obstructionValue_zero
+      generatedComponentLawModel
+      AAT.GeneratedAnalyticWitness.requiredSignatureAxes
+
+/--
+Positive acceptance: generated law models also trigger the existing bounded
+feature-extension flatness theorem through a generated identity feature
+extension.
+-/
+theorem atomGeneratedSignature_featureExtension_flatWithin :
+    ArchitectureFlatWithin
+      generatedComponentObject.generatedIdentityExtensionFlatnessModel
+      generatedComponentObject.generatedIdentityExtensionComponentUniverse := by
+  exact
+    Formal.Arch.Chapter7TheoremPackages.generatedSplitFeatureExtension_flatWithin
+      generatedComponentLawModel
+
+def atomGeneratedSignature_extensionWitness :
+    ExtensionObstructionWitness
+      generatedComponentObject.generatedIdentityFeatureExtension Unit where
+  witness := ()
+  classifiesAs := ExtensionObstructionClass.residualCoverageGap
+
+theorem atomGeneratedSignature_extensionFormula_structural :
+    ClassifiedAsInheritedCore
+        generatedComponentObject.generatedIdentityFeatureExtension
+        generatedComponentObject.generatedIdentityExtensionComponentUniverse
+        atomGeneratedSignature_extensionWitness ∨
+      ClassifiedAsFeatureLocal
+        generatedComponentObject.generatedIdentityFeatureExtension
+        generatedComponentObject.generatedIdentityExtensionComponentUniverse
+        atomGeneratedSignature_extensionWitness ∨
+      ClassifiedAsInteraction
+        generatedComponentObject.generatedIdentityFeatureExtension
+        generatedComponentObject.generatedIdentityExtensionComponentUniverse
+        atomGeneratedSignature_extensionWitness ∨
+      ClassifiedAsLiftingFailure
+        generatedComponentObject.generatedIdentityFeatureExtension
+        generatedComponentObject.generatedIdentityExtensionComponentUniverse
+        atomGeneratedSignature_extensionWitness ∨
+      ClassifiedAsFillingFailure
+        generatedComponentObject.generatedIdentityFeatureExtension
+        generatedComponentObject.generatedIdentityExtensionComponentUniverse
+        atomGeneratedSignature_extensionWitness ∨
+      ClassifiedAsComplexityTransfer
+        generatedComponentObject.generatedIdentityFeatureExtension
+        generatedComponentObject.generatedIdentityExtensionComponentUniverse
+        atomGeneratedSignature_extensionWitness ∨
+      ClassifiedAsResidualCoverageGap
+        generatedComponentObject.generatedIdentityFeatureExtension
+        generatedComponentObject.generatedIdentityExtensionComponentUniverse
+        atomGeneratedSignature_extensionWitness := by
+  exact
+    Formal.Arch.Chapter10ArchitectureExtensionFormula.generatedIdentityArchitectureExtensionFormula_structural
+      generatedComponentObject atomGeneratedSignature_extensionWitness
+
+theorem atomGeneratedSignature_extensionFormula_multilabel_structural :
+    MultiLabelClassifiedAsInheritedCore
+        generatedComponentObject.generatedIdentityFeatureExtension
+        generatedComponentObject.generatedIdentityExtensionComponentUniverse
+        atomGeneratedSignature_extensionWitness.toMultiLabel ∨
+      MultiLabelClassifiedAsFeatureLocal
+        generatedComponentObject.generatedIdentityFeatureExtension
+        generatedComponentObject.generatedIdentityExtensionComponentUniverse
+        atomGeneratedSignature_extensionWitness.toMultiLabel ∨
+      MultiLabelClassifiedAsInteraction
+        generatedComponentObject.generatedIdentityFeatureExtension
+        generatedComponentObject.generatedIdentityExtensionComponentUniverse
+        atomGeneratedSignature_extensionWitness.toMultiLabel ∨
+      MultiLabelClassifiedAsLiftingFailure
+        generatedComponentObject.generatedIdentityFeatureExtension
+        generatedComponentObject.generatedIdentityExtensionComponentUniverse
+        atomGeneratedSignature_extensionWitness.toMultiLabel ∨
+      MultiLabelClassifiedAsFillingFailure
+        generatedComponentObject.generatedIdentityFeatureExtension
+        generatedComponentObject.generatedIdentityExtensionComponentUniverse
+        atomGeneratedSignature_extensionWitness.toMultiLabel ∨
+      MultiLabelClassifiedAsComplexityTransfer
+        generatedComponentObject.generatedIdentityFeatureExtension
+        generatedComponentObject.generatedIdentityExtensionComponentUniverse
+        atomGeneratedSignature_extensionWitness.toMultiLabel ∨
+      MultiLabelClassifiedAsResidualCoverageGap
+        generatedComponentObject.generatedIdentityFeatureExtension
+        generatedComponentObject.generatedIdentityExtensionComponentUniverse
+        atomGeneratedSignature_extensionWitness.toMultiLabel := by
+  exact
+    Formal.Arch.Chapter10ArchitectureExtensionFormula.generatedIdentityArchitectureExtensionFormula_multilabel_structural
+      generatedComponentObject atomGeneratedSignature_extensionWitness.toMultiLabel
+
+/--
+Positive acceptance: the generated Signature theorem package is available as
+SFT input without becoming a forecast-correctness theorem.
+-/
+noncomputable def atomGeneratedSignature_sftInput :
+    AAT.GeneratedSFTInput generatedComponentLawModel where
+  theoremBoundary := True
+  unmeasuredAxisBoundary := True
+  toolingBoundary := True
+  sftReadsGeneratedAAT := True
+  sftReadsGeneratedAATEvidence := trivial
+  sftDoesNotRedefineAtoms := True
+  sftDoesNotRedefineAtomsEvidence := trivial
+  sftDoesNotRedefineAAT := True
+  sftDoesNotRedefineAATEvidence := trivial
+  forecastCorrectnessBoundary := True
+  forecastCorrectnessBoundaryEvidence := trivial
+  nonConclusions := True
+
+theorem atomGeneratedSignature_sft_theoremStatusFromGenerated :
+    atomGeneratedSignature_sftInput.theoremStatus.RecordsTheoremPackage := by
+  exact atomGeneratedSignature_sftInput.theoremStatusFromGenerated
+
+theorem atomGeneratedSignature_sft_measuredZeroFromGenerated :
+    atomGeneratedSignature_sftInput.theoremStatus.RecordsMeasuredZeroEvidence := by
+  exact atomGeneratedSignature_sftInput.measured_zero_from_generated
+
+theorem atomGeneratedSignature_sft_reads_generated_aat :
+    atomGeneratedSignature_sftInput.sftReadsGeneratedAAT := by
+  exact atomGeneratedSignature_sftInput.reads_generated_aat
+
+theorem atomGeneratedSignature_sft_forecast_correctness_boundary :
+    atomGeneratedSignature_sftInput.forecastCorrectnessBoundary := by
+  exact atomGeneratedSignature_sftInput.forecast_correctness_remains_boundary
+
+theorem atomGeneratedSignature_sft_event_does_not_create_atoms :
+    componentSystem.noSFTEventCreatesAtoms := by
+  exact atomGeneratedSignature_sftInput.sft_event_does_not_create_atoms
+
+/--
+Selected generated support operation for the SFT support-safety acceptance.
+
+The state space below is the generated carrier space of the Atom-generated
+component object; this operation is not a hand-authored architecture graph.
+-/
+inductive AtomGeneratedSupportOperation where
+  | identity
+  deriving DecidableEq
+
+def atomGeneratedSignature_supportObservation :
+    SignatureObservation
+      (AAT.GeneratedCarrier generatedComponentObject)
+      AAT.GeneratedObservationCoordinate where
+  observe := generatedComponentObject.generatedObservation.observe
+  coverageAssumptions := True
+  nonConclusions := True
+
+def atomGeneratedSignature_supportSafeRegion :
+    SafeRegion AAT.GeneratedObservationCoordinate :=
+  fun _coordinate => True
+
+def atomGeneratedSignature_supportKernel :
+    FiniteOperationKernel
+      (AAT.GeneratedCarrier generatedComponentObject)
+      AtomGeneratedSupportOperation where
+  support := fun _carrier => [AtomGeneratedSupportOperation.identity]
+  coverageAssumptions := True
+  weightSourceBoundary := True
+  normalizationBoundary := True
+  nonConclusions := True
+
+def atomGeneratedSignature_supportSemantics :
+    OperationTransitionSemantics
+      (AAT.GeneratedCarrier generatedComponentObject)
+      AtomGeneratedSupportOperation where
+  realizes := fun _operation => fun {_X _Y} _transition => True
+  coverageAssumptions := True
+  nonConclusions := True
+
+theorem atomGeneratedSignature_supportPreservesSafeRegion :
+    atomGeneratedSignature_supportKernel.SupportOperationsPreserveSafeRegion
+      atomGeneratedSignature_supportSemantics
+      atomGeneratedSignature_supportObservation
+      atomGeneratedSignature_supportSafeRegion := by
+  intro _source _operation _hSupport _X _Y _transition _hRealizes _hStart
+  trivial
+
+def atomGeneratedSignature_attractorSupportPackage :
+    AttractorEngineeringSupportPackage
+      (AAT.GeneratedCarrier generatedComponentObject)
+      AAT.GeneratedObservationCoordinate
+      AtomGeneratedSupportOperation where
+  observation := atomGeneratedSignature_supportObservation
+  kernel := atomGeneratedSignature_supportKernel
+  semantics := atomGeneratedSignature_supportSemantics
+  targetRegion := atomGeneratedSignature_supportSafeRegion
+  supportPreserves := atomGeneratedSignature_supportPreservesSafeRegion
+  coverageAssumptions := True
+  measurementBoundary := True
+  nonConclusions := True
+
+def atomGeneratedSignature_sftSupportSafetyPackage :
+    SFTSupportSafetyPackage
+      (AAT.GeneratedCarrier generatedComponentObject)
+      AAT.GeneratedObservationCoordinate
+      AtomGeneratedSupportOperation where
+  supportPackage := atomGeneratedSignature_attractorSupportPackage
+  observationBoundary := True
+  acceptedStepBoundary := True
+  forecastBoundary := True
+  nonConclusions := True
+
+def atomGeneratedSignature_supportControl :
+    DampingControlSchema
+      (AAT.GeneratedCarrier generatedComponentObject)
+      AAT.GeneratedObservationCoordinate where
+  observation := atomGeneratedSignature_supportObservation
+  invariant := atomGeneratedSignature_supportSafeRegion
+  accepted := fun _transition => True
+  rejected := fun _transition => False
+  acceptedPreservesInvariant := by
+    intro _X _Y _transition _hAccepted _hStart
+    trivial
+  coverageAssumptions := True
+  nonConclusions := True
+
+def atomGeneratedSignature_supportScript :
+    BoundedOperationScript AtomGeneratedSupportOperation where
+  operations := [AtomGeneratedSupportOperation.identity]
+  operationFamily := fun operation =>
+    operation = AtomGeneratedSupportOperation.identity
+  operationsInFamily := by
+    intro operation hMem
+    exact List.mem_singleton.mp hMem
+  coverageAssumptions := True
+  nonConclusions := True
+
+def atomGeneratedSignature_supportIdentityTransition :
+    ArchitectureTransition
+      (AAT.GeneratedCarrier generatedComponentObject)
+      generatedComponentApiCarrier generatedComponentApiCarrier where
+  kind := ArchitectureTransitionKind.policyUpdate
+  lawful := True
+  coverageAssumptions := True
+  exactnessAssumptions := True
+  nonConclusions := True
+
+def atomGeneratedSignature_supportPlan :
+    ArchitectureEvolution
+      (AAT.GeneratedCarrier generatedComponentObject)
+      generatedComponentApiCarrier generatedComponentApiCarrier :=
+  ArchitecturePath.cons atomGeneratedSignature_supportIdentityTransition
+    (ArchitecturePath.nil generatedComponentApiCarrier)
+
+theorem atomGeneratedSignature_supportScript_realizes :
+    atomGeneratedSignature_supportScript.RealizesEvolution
+      atomGeneratedSignature_supportSemantics
+      atomGeneratedSignature_supportPlan := by
+  simp [atomGeneratedSignature_supportScript,
+    atomGeneratedSignature_supportSemantics,
+    atomGeneratedSignature_supportPlan,
+    BoundedOperationScript.RealizesEvolution,
+    BoundedOperationScript.ScriptRealizesEvolution,
+    OperationTransitionSemantics.Realizes]
+
+theorem atomGeneratedSignature_supportScript_usesSupport :
+    atomGeneratedSignature_supportKernel.ScriptUsesSupport
+      atomGeneratedSignature_supportScript.operations
+      atomGeneratedSignature_supportPlan := by
+  simp [atomGeneratedSignature_supportKernel,
+    atomGeneratedSignature_supportScript,
+    atomGeneratedSignature_supportPlan,
+    FiniteOperationKernel.ScriptUsesSupport,
+    FiniteOperationKernel.Supports]
+
+theorem atomGeneratedSignature_supportScript_accepted :
+    atomGeneratedSignature_supportScript.AcceptedEvolution
+      atomGeneratedSignature_supportControl
+      atomGeneratedSignature_supportSemantics
+      atomGeneratedSignature_supportPlan := by
+  simp [atomGeneratedSignature_supportScript,
+    atomGeneratedSignature_supportControl,
+    atomGeneratedSignature_supportSemantics,
+    atomGeneratedSignature_supportPlan,
+    BoundedOperationScript.AcceptedEvolution,
+    BoundedOperationScript.EveryScriptStepAccepted,
+    DampingControlSchema.AcceptedStep,
+    OperationTransitionSemantics.Realizes]
+
+def atomGeneratedSignature_acceptedSupportedTrajectory :
+    SFTSupportSafetyPackage.AcceptedSupportedTrajectory
+      atomGeneratedSignature_sftSupportSafetyPackage
+      atomGeneratedSignature_supportControl
+      generatedComponentApiCarrier generatedComponentApiCarrier where
+  script := atomGeneratedSignature_supportScript
+  plan := atomGeneratedSignature_supportPlan
+  startsInsideTarget := trivial
+  realizes := atomGeneratedSignature_supportScript_realizes
+  usesSupport := atomGeneratedSignature_supportScript_usesSupport
+  accepted := atomGeneratedSignature_supportScript_accepted
+
+theorem atomGeneratedSignature_supportSafety_forecastCone_and_safety :
+    ForecastCone
+        atomGeneratedSignature_sftSupportSafetyPackage.operationSupport
+        atomGeneratedSignature_sftSupportSafetyPackage.stepRelation
+        generatedComponentApiCarrier
+        atomGeneratedSignature_supportScript.operations.length
+        generatedComponentApiCarrier
+        atomGeneratedSignature_acceptedSupportedTrajectory.fieldPath ∧
+      SignatureTrajectoryInSafeRegion
+        atomGeneratedSignature_sftSupportSafetyPackage.targetRegion
+        (atomGeneratedSignature_sftSupportSafetyPackage.ForecastTrajectory
+          atomGeneratedSignature_supportPlan) := by
+  exact
+    atomGeneratedSignature_acceptedSupportedTrajectory
+      |>.forecastCone_and_supportSafety
+
+theorem atomGeneratedSignature_generatedForecastCone_mem :
+    ForecastCone
+      atomGeneratedSignature_sftSupportSafetyPackage.operationSupport
+      atomGeneratedSignature_sftSupportSafetyPackage.stepRelation
+      generatedComponentApiCarrier
+      atomGeneratedSignature_supportScript.operations.length
+      generatedComponentApiCarrier
+      atomGeneratedSignature_acceptedSupportedTrajectory.fieldPath := by
+  exact
+    atomGeneratedSignature_acceptedSupportedTrajectory
+      |>.mem_forecastCone
+
+theorem atomGeneratedSignature_generatedForecastCone_length_le_horizon :
+    ArchitecturePath.length
+        atomGeneratedSignature_acceptedSupportedTrajectory.fieldPath <=
+      atomGeneratedSignature_supportScript.operations.length := by
+  exact ForecastCone.length_le_horizon
+    atomGeneratedSignature_generatedForecastCone_mem
+
+theorem atomGeneratedSignature_generatedForecastCone_monotone_succ :
+    ForecastCone
+      atomGeneratedSignature_sftSupportSafetyPackage.operationSupport
+      atomGeneratedSignature_sftSupportSafetyPackage.stepRelation
+      generatedComponentApiCarrier
+      (Nat.succ atomGeneratedSignature_supportScript.operations.length)
+      generatedComponentApiCarrier
+      atomGeneratedSignature_acceptedSupportedTrajectory.fieldPath := by
+  exact ForecastCone.monotone_horizon
+    atomGeneratedSignature_generatedForecastCone_mem
+    (Nat.le_succ atomGeneratedSignature_supportScript.operations.length)
+
+def atomGeneratedSignature_supportSelfInclusion :
+    PointwiseSupportInclusion
+      atomGeneratedSignature_sftSupportSafetyPackage.operationSupport
+      atomGeneratedSignature_sftSupportSafetyPackage.operationSupport :=
+  fun _source _operation hSupported => hSupported
+
+theorem atomGeneratedSignature_generatedForecastCone_projects_self :
+    ForecastCone
+      atomGeneratedSignature_sftSupportSafetyPackage.operationSupport
+      atomGeneratedSignature_sftSupportSafetyPackage.stepRelation
+      generatedComponentApiCarrier
+      atomGeneratedSignature_supportScript.operations.length
+      generatedComponentApiCarrier
+      (ForecastConeProjection.projectFieldPath
+        atomGeneratedSignature_supportSelfInclusion
+        (SameRelationStepSimulation
+          atomGeneratedSignature_sftSupportSafetyPackage.operationSupport
+          atomGeneratedSignature_sftSupportSafetyPackage.stepRelation)
+        atomGeneratedSignature_acceptedSupportedTrajectory.fieldPath) := by
+  exact
+    ForecastConeProjection.forecastCone_projects_of_supportInclusion
+      atomGeneratedSignature_supportSelfInclusion
+      atomGeneratedSignature_generatedForecastCone_mem
+
+theorem atomGeneratedSignature_exists_projected_generatedForecastCone :
+    ∃ path₁ :
+        FieldPath
+          atomGeneratedSignature_sftSupportSafetyPackage.operationSupport
+          atomGeneratedSignature_sftSupportSafetyPackage.stepRelation
+          generatedComponentApiCarrier
+          generatedComponentApiCarrier,
+      ForecastConeProjection.ProjectedFieldPath
+          atomGeneratedSignature_supportSelfInclusion
+          (SameRelationStepSimulation
+            atomGeneratedSignature_sftSupportSafetyPackage.operationSupport
+            atomGeneratedSignature_sftSupportSafetyPackage.stepRelation)
+          atomGeneratedSignature_acceptedSupportedTrajectory.fieldPath
+          path₁ ∧
+        ForecastCone
+          atomGeneratedSignature_sftSupportSafetyPackage.operationSupport
+          atomGeneratedSignature_sftSupportSafetyPackage.stepRelation
+          generatedComponentApiCarrier
+          atomGeneratedSignature_supportScript.operations.length
+          generatedComponentApiCarrier
+          path₁ := by
+  exact
+    ForecastConeProjection.exists_projected_forecastCone_of_supportInclusion
+      atomGeneratedSignature_supportSelfInclusion
+      atomGeneratedSignature_generatedForecastCone_mem
+
+theorem atomGeneratedSignature_generatedForecastCone_projects_horizon_succ :
+    ForecastCone
+      atomGeneratedSignature_sftSupportSafetyPackage.operationSupport
+      atomGeneratedSignature_sftSupportSafetyPackage.stepRelation
+      generatedComponentApiCarrier
+      (Nat.succ atomGeneratedSignature_supportScript.operations.length)
+      generatedComponentApiCarrier
+      (ForecastConeProjection.projectFieldPath
+        atomGeneratedSignature_supportSelfInclusion
+        (SameRelationStepSimulation
+          atomGeneratedSignature_sftSupportSafetyPackage.operationSupport
+          atomGeneratedSignature_sftSupportSafetyPackage.stepRelation)
+        atomGeneratedSignature_acceptedSupportedTrajectory.fieldPath) := by
+  exact
+    ForecastConeProjection.forecastCone_projects_of_supportInclusion_and_horizon_le
+      atomGeneratedSignature_supportSelfInclusion
+      atomGeneratedSignature_generatedForecastCone_mem
+      (Nat.le_succ atomGeneratedSignature_supportScript.operations.length)
+
+inductive AtomGeneratedArtifactUpdate where
+  | keepGeneratedCarrier
+  deriving DecidableEq
+
+def atomGeneratedSignature_candidateUpdateRelation :
+    CandidateUpdateRelation
+      (AAT.GeneratedCarrier generatedComponentObject)
+      AtomGeneratedArtifactUpdate where
+  candidate := fun _source update =>
+    update = AtomGeneratedArtifactUpdate.keepGeneratedCarrier
+  appliesTo := fun source update target =>
+    update = AtomGeneratedArtifactUpdate.keepGeneratedCarrier ∧
+      target = source
+  interpretationBoundary := True
+  updateBoundary := True
+  nonConclusions := True
+
+noncomputable def atomGeneratedSignature_artifactAction :
+    ArtifactAction
+      (AAT.GeneratedSFTInput generatedComponentLawModel)
+      (AAT.GeneratedCarrier generatedComponentObject)
+      AtomGeneratedArtifactUpdate where
+  artifact := atomGeneratedSignature_sftInput
+  candidateUpdates := atomGeneratedSignature_candidateUpdateRelation
+  targetFieldComponents := True
+  actionBoundary := True
+  compositionBoundary := True
+  observableBoundary := True
+  nonConclusions := True
+
+noncomputable def atomGeneratedSignature_deterministicArtifactAction :
+    DeterministicArtifactAction
+      (AAT.GeneratedSFTInput generatedComponentLawModel)
+      (AAT.GeneratedCarrier generatedComponentObject)
+      AtomGeneratedArtifactUpdate where
+  action := atomGeneratedSignature_artifactAction
+  selectedUpdate := fun _source =>
+    AtomGeneratedArtifactUpdate.keepGeneratedCarrier
+  selectedTarget := fun source => source
+  selectedUpdate_candidate := by
+    intro _source
+    rfl
+  selectedUpdate_applies := by
+    intro _source
+    exact ⟨rfl, rfl⟩
+  candidate_unique := by
+    intro _source _update hCandidate
+    exact hCandidate
+  target_unique := by
+    intro _source _update _target _hCandidate hApplies
+    exact hApplies.2
+
+theorem atomGeneratedSignature_artifactAction_selected_candidate :
+    atomGeneratedSignature_artifactAction.CandidateUpdate
+      generatedComponentApiCarrier
+      AtomGeneratedArtifactUpdate.keepGeneratedCarrier := by
+  exact
+    atomGeneratedSignature_deterministicArtifactAction
+      |>.selected_candidate generatedComponentApiCarrier
+
+theorem atomGeneratedSignature_artifactAction_applies_to_generated :
+    atomGeneratedSignature_artifactAction.AppliesTo
+      generatedComponentApiCarrier
+      AtomGeneratedArtifactUpdate.keepGeneratedCarrier
+      generatedComponentApiCarrier := by
+  exact
+    atomGeneratedSignature_deterministicArtifactAction
+      |>.selectedUpdate_applies generatedComponentApiCarrier
+
+def atomGeneratedSignature_supportAfterArtifact
+    (_field : AAT.GeneratedCarrier generatedComponentObject) :
+    OperationSupport
+      (AAT.GeneratedCarrier generatedComponentObject)
+      AtomGeneratedSupportOperation :=
+  atomGeneratedSignature_sftSupportSafetyPackage.operationSupport
+
+def atomGeneratedSignature_relationAfterArtifact
+    (_field : AAT.GeneratedCarrier generatedComponentObject) :
+    StepRelation
+      (AAT.GeneratedCarrier generatedComponentObject)
+      AtomGeneratedSupportOperation :=
+  atomGeneratedSignature_sftSupportSafetyPackage.stepRelation
+
+noncomputable def atomGeneratedSignature_forecastConeAfterArtifact :
+    ForecastConeFamilyAfterAction
+      atomGeneratedSignature_artifactAction
+      AtomGeneratedSupportOperation
+      atomGeneratedSignature_supportAfterArtifact
+      atomGeneratedSignature_relationAfterArtifact
+      generatedComponentApiCarrier
+      atomGeneratedSignature_supportScript.operations.length where
+  candidateUpdate := AtomGeneratedArtifactUpdate.keepGeneratedCarrier
+  updatedField := generatedComponentApiCarrier
+  candidateMember := atomGeneratedSignature_artifactAction_selected_candidate
+  appliesToUpdatedField :=
+    atomGeneratedSignature_artifactAction_applies_to_generated
+  target := generatedComponentApiCarrier
+  path := atomGeneratedSignature_acceptedSupportedTrajectory.fieldPath
+  coneMember := atomGeneratedSignature_generatedForecastCone_mem
+  familyBoundary := True
+  nonConclusions := True
+
+theorem atomGeneratedSignature_forecastConeAfterArtifact_candidate_member :
+    atomGeneratedSignature_artifactAction.CandidateUpdate
+      generatedComponentApiCarrier
+      atomGeneratedSignature_forecastConeAfterArtifact.candidateUpdate := by
+  exact
+    atomGeneratedSignature_forecastConeAfterArtifact
+      |>.candidate_member
+
+theorem atomGeneratedSignature_forecastConeAfterArtifact_length_le_horizon :
+    ArchitecturePath.length
+        atomGeneratedSignature_forecastConeAfterArtifact.path <=
+      atomGeneratedSignature_supportScript.operations.length := by
+  exact
+    atomGeneratedSignature_forecastConeAfterArtifact
+      |>.length_le_horizon
+
+def atomGeneratedSignature_generatedOperationPolicy :
+    OperationPolicy
+      atomGeneratedSignature_sftSupportSafetyPackage.operationSupport where
+  selected := fun _source operation =>
+    operation = AtomGeneratedSupportOperation.identity
+  noHarderThan := fun _source _operation₁ _operation₂ => True
+  costBoundary := True
+  selectionBoundary := True
+  policyBoundary := True
+  nonConclusions := True
+
+def atomGeneratedSignature_supportSelfTransformation :
+    SupportTransformation
+      atomGeneratedSignature_sftSupportSafetyPackage.operationSupport
+      atomGeneratedSignature_sftSupportSafetyPackage.operationSupport where
+  transformsSupport := True
+  supportBoundary := True
+  policyBoundary := True
+  nonConclusions := True
+
+def atomGeneratedSignature_generatedGovernanceIntervention :
+    GovernanceIntervention
+      atomGeneratedSignature_sftSupportSafetyPackage.operationSupport
+      atomGeneratedSignature_sftSupportSafetyPackage.operationSupport where
+  policyBefore := atomGeneratedSignature_generatedOperationPolicy
+  policyAfter := atomGeneratedSignature_generatedOperationPolicy
+  supportTransformation := atomGeneratedSignature_supportSelfTransformation
+  observationEnrichment := True
+  feedbackUpdate := True
+  escalationBoundary := True
+  interventionBoundary := True
+  nonConclusions := True
+
+theorem atomGeneratedSignature_generatedGovernance_restrictive :
+    atomGeneratedSignature_generatedGovernanceIntervention.Restrictive := by
+  exact atomGeneratedSignature_supportSelfInclusion
+
+theorem atomGeneratedSignature_generatedGovernance_projects_forecastCone :
+    ForecastCone
+      atomGeneratedSignature_sftSupportSafetyPackage.operationSupport
+      atomGeneratedSignature_sftSupportSafetyPackage.stepRelation
+      generatedComponentApiCarrier
+      atomGeneratedSignature_supportScript.operations.length
+      generatedComponentApiCarrier
+      (ForecastConeProjection.projectFieldPath
+        (atomGeneratedSignature_generatedGovernanceIntervention
+          |>.restrictive_supportInclusion
+            atomGeneratedSignature_generatedGovernance_restrictive)
+        (SameRelationStepSimulation
+          atomGeneratedSignature_sftSupportSafetyPackage.operationSupport
+          atomGeneratedSignature_sftSupportSafetyPackage.stepRelation)
+        atomGeneratedSignature_acceptedSupportedTrajectory.fieldPath) := by
+  exact
+    atomGeneratedSignature_generatedGovernanceIntervention
+      |>.restrictive_forecastCone_projects
+        atomGeneratedSignature_generatedGovernance_restrictive
+        atomGeneratedSignature_generatedForecastCone_mem
+
+theorem atomGeneratedSignature_generatedGovernance_keeps_nonConclusion :
+    atomGeneratedSignature_generatedGovernanceIntervention.nonConclusions := by
+  exact
+    atomGeneratedSignature_generatedGovernanceIntervention
+      |>.policy_pass_does_not_discharge_lawfulness
+        (by
+          simp [atomGeneratedSignature_generatedGovernanceIntervention,
+            atomGeneratedSignature_generatedOperationPolicy,
+            atomGeneratedSignature_supportSelfTransformation,
+            atomGeneratedSignature_sftSupportSafetyPackage,
+            atomGeneratedSignature_attractorSupportPackage,
+            atomGeneratedSignature_supportKernel,
+            SFTSupportSafetyPackage.kernel,
+            SFTSupportSafetyPackage.operationSupport,
+            OperationPolicy.RecordsNonConclusions,
+            SupportTransformation.RecordsNonConclusions,
+            GovernanceIntervention.RecordsNonConclusions,
+            OperationSupport.RecordsNonConclusions,
+            FiniteOperationKernel.RecordsNonConclusions])
+
+def atomGeneratedSignature_generatedFieldRegion :
+    FieldRegion (AAT.GeneratedCarrier generatedComponentObject) :=
+  fun _field => True
+
+theorem atomGeneratedSignature_generatedStableRegion :
+    StableRegion
+      atomGeneratedSignature_sftSupportSafetyPackage.operationSupport
+      atomGeneratedSignature_sftSupportSafetyPackage.stepRelation
+      atomGeneratedSignature_generatedFieldRegion := by
+  intro _source _target _operation _hSource _hSupported _hRealizes
+  trivial
+
+theorem atomGeneratedSignature_generatedMayReach :
+    MayReach
+      atomGeneratedSignature_sftSupportSafetyPackage.operationSupport
+      atomGeneratedSignature_sftSupportSafetyPackage.stepRelation
+      generatedComponentApiCarrier
+      atomGeneratedSignature_supportScript.operations.length
+      atomGeneratedSignature_generatedFieldRegion := by
+  exact
+    MayReach.of_forecastCone
+      atomGeneratedSignature_generatedForecastCone_mem
+      trivial
+
+theorem atomGeneratedSignature_generatedMustReach :
+    MustReach
+      atomGeneratedSignature_sftSupportSafetyPackage.operationSupport
+      atomGeneratedSignature_sftSupportSafetyPackage.stepRelation
+      generatedComponentApiCarrier
+      atomGeneratedSignature_supportScript.operations.length
+      atomGeneratedSignature_generatedFieldRegion := by
+  exact
+    atomGeneratedSignature_generatedStableRegion.mustReach
+      trivial
+
+theorem atomGeneratedSignature_generatedReachablePreimage :
+    ReachablePreimage
+      atomGeneratedSignature_sftSupportSafetyPackage.operationSupport
+      atomGeneratedSignature_sftSupportSafetyPackage.stepRelation
+      atomGeneratedSignature_supportScript.operations.length
+      atomGeneratedSignature_generatedFieldRegion
+      generatedComponentApiCarrier := by
+  exact ReachablePreimage.of_mem trivial
+
+def atomGeneratedSignature_generatedForecastRecord :
+    ForecastRecord
+      atomGeneratedSignature_sftSupportSafetyPackage.operationSupport
+      atomGeneratedSignature_sftSupportSafetyPackage.stepRelation
+      generatedComponentApiCarrier
+      atomGeneratedSignature_supportScript.operations.length where
+  target := generatedComponentApiCarrier
+  path := atomGeneratedSignature_acceptedSupportedTrajectory.fieldPath
+  coneMember := atomGeneratedSignature_generatedForecastCone_mem
+  forecastBoundary := True
+  nonConclusions := True
+
+def atomGeneratedSignature_generatedObservedOutcome :
+    ObservedOutcome
+      (AAT.GeneratedCarrier generatedComponentObject) where
+  observedField := generatedComponentApiCarrier
+  forecastError := True
+  missingEvidence := True
+  unexpectedWitness := True
+  policyDrift := True
+  observationBoundary := True
+  nonConclusions := True
+
+def atomGeneratedSignature_generatedPosteriorFieldRecord :
+    PosteriorFieldRecord
+      (AAT.GeneratedCarrier generatedComponentObject) where
+  posteriorField := generatedComponentApiCarrier
+  forecastError := True
+  missingEvidence := True
+  unexpectedWitness := True
+  policyDrift := True
+  updateBoundary := True
+  calibrationBoundary := True
+  nonConclusions := True
+
+def atomGeneratedSignature_generatedFieldUpdate :
+    FieldUpdate
+      atomGeneratedSignature_sftSupportSafetyPackage.operationSupport
+      atomGeneratedSignature_sftSupportSafetyPackage.stepRelation
+      generatedComponentApiCarrier
+      atomGeneratedSignature_supportScript.operations.length where
+  forecast := atomGeneratedSignature_generatedForecastRecord
+  observed := atomGeneratedSignature_generatedObservedOutcome
+  posterior := atomGeneratedSignature_generatedPosteriorFieldRecord
+  updateBoundary := True
+  nonConclusions := True
+
+theorem atomGeneratedSignature_generatedForecastRecord_length_le_horizon :
+    ArchitecturePath.length
+        atomGeneratedSignature_generatedForecastRecord.path <=
+      atomGeneratedSignature_supportScript.operations.length := by
+  exact atomGeneratedSignature_generatedForecastRecord.length_le_horizon
+
+theorem atomGeneratedSignature_generatedFieldUpdate_sound :
+    FieldUpdate.UpdateSound
+      atomGeneratedSignature_generatedFieldUpdate := by
+  constructor
+  · intro h
+    exact h
+  · intro h
+    exact h
+  · intro h
+    exact h
+  · intro h
+    exact h
+  · intro h
+    exact h
+  · trivial
+  · trivial
+  · trivial
+  · simp [atomGeneratedSignature_generatedFieldUpdate,
+      atomGeneratedSignature_generatedForecastRecord,
+      atomGeneratedSignature_generatedObservedOutcome,
+      atomGeneratedSignature_generatedPosteriorFieldRecord,
+      FieldUpdate.RecordsNonConclusions,
+      ForecastRecord.RecordsNonConclusions,
+      ObservedOutcome.RecordsNonConclusions,
+      PosteriorFieldRecord.RecordsNonConclusions]
+
+theorem atomGeneratedSignature_generatedFieldUpdate_records_calibration :
+    atomGeneratedSignature_generatedFieldUpdate.posterior
+      |>.RecordsCalibrationBoundary := by
+  exact
+    atomGeneratedSignature_generatedFieldUpdate_sound
+      |>.fieldUpdate_records_calibrationBoundary
+
+theorem atomGeneratedSignature_generatedFieldUpdate_records_nonConclusions :
+    atomGeneratedSignature_generatedFieldUpdate.RecordsNonConclusions := by
+  exact
+    atomGeneratedSignature_generatedFieldUpdate_sound
+      |>.fieldUpdate_records_nonConclusions
+
+def atomGeneratedSignature_generatedFiniteCover :
+    UniformFiniteFieldCover
+      (AAT.GeneratedCarrier generatedComponentObject)
+      Unit
+      (AAT.GeneratedCarrier generatedComponentObject) where
+  indices := [()]
+  restrict := fun _index field => field
+  coversGlobal := True
+  finiteBoundary := True
+  nonConclusions := True
+
+def atomGeneratedSignature_generatedFiniteModel :
+    FiniteSFTModel
+      atomGeneratedSignature_generatedFiniteCover
+      AtomGeneratedSupportOperation
+      AtomGeneratedSupportOperation where
+  globalSupport :=
+    atomGeneratedSignature_sftSupportSafetyPackage.operationSupport
+  globalRelation :=
+    atomGeneratedSignature_sftSupportSafetyPackage.stepRelation
+  localSupport :=
+    atomGeneratedSignature_sftSupportSafetyPackage.operationSupport
+  localRelation :=
+    atomGeneratedSignature_sftSupportSafetyPackage.stepRelation
+  projectLocalOp := fun _index operation => operation
+  global_support_projects_local := by
+    intro _index _global _operation _hIndex hSupport
+    exact hSupport
+  global_step_projects_local := by
+    intro _index _g₀ _g₁ _operation _hIndex _hSupport hStep
+    exact hStep
+  supportBoundary := True
+  stepBoundary := True
+  nonConclusions := True
+
+def atomGeneratedSignature_generatedFiniteObservationBoundary :
+    ObservationBoundary
+      (AAT.GeneratedCarrier generatedComponentObject) where
+  pathClassesVisible := True
+  affectedRegionsVisible := True
+  comparableAxes := True
+  observedProjectionBoundary := True
+  missingBoundary := True
+  theoremBoundary := True
+  unknownRemainder := True
+  nonConclusions := True
+
+def atomGeneratedSignature_generatedFiniteExactModel :
+    FiniteExactSFTModel
+      (AAT.GeneratedCarrier generatedComponentObject)
+      Unit
+      (AAT.GeneratedCarrier generatedComponentObject)
+      AtomGeneratedSupportOperation
+      AtomGeneratedSupportOperation
+      Unit where
+  selectedGlobalCarrier := [generatedComponentApiCarrier]
+  selectedIndexCarrier := [()]
+  selectedLocalCarrier := [generatedComponentApiCarrier]
+  selectedOperationCarrier := [AtomGeneratedSupportOperation.identity]
+  governanceBasisCarrier := [()]
+  cover := atomGeneratedSignature_generatedFiniteCover
+  cover_indices_eq_selected := rfl
+  finiteModel := atomGeneratedSignature_generatedFiniteModel
+  observationBoundary :=
+    atomGeneratedSignature_generatedFiniteObservationBoundary
+  exactCoverBoundary := True
+  selectedUniverseBoundary := True
+  operationSupportBoundary := True
+  operationRelationBoundary := True
+  observationBoundaryExplicit := True
+  governanceBasisBoundary := True
+  finiteModelBoundary := True
+  extractorBoundary := True
+  empiricalBoundary := True
+  nonConclusions := True
+
+theorem atomGeneratedSignature_generatedFiniteExactModel_indices_selected :
+    atomGeneratedSignature_generatedFiniteExactModel.exactCover.indices =
+      atomGeneratedSignature_generatedFiniteExactModel.selectedIndexCarrier := by
+  exact
+    atomGeneratedSignature_generatedFiniteExactModel
+      |>.exactCover_indices_eq_selected
+
+theorem atomGeneratedSignature_generatedFiniteExactModel_records_exactCover :
+    atomGeneratedSignature_generatedFiniteExactModel.RecordsExactCoverBoundary := by
+  simp [atomGeneratedSignature_generatedFiniteExactModel,
+    atomGeneratedSignature_generatedFiniteCover,
+    FiniteExactSFTModel.RecordsExactCoverBoundary,
+    UniformFiniteFieldCover.RecordsCoverage,
+    UniformFiniteFieldCover.RecordsFiniteBoundary]
+
+theorem atomGeneratedSignature_generatedFiniteExactModel_records_operation :
+    atomGeneratedSignature_generatedFiniteExactModel.RecordsOperationBoundary := by
+  simp [atomGeneratedSignature_generatedFiniteExactModel,
+    atomGeneratedSignature_generatedFiniteModel,
+    FiniteExactSFTModel.RecordsOperationBoundary]
+
+theorem atomGeneratedSignature_generatedFiniteExactModel_records_nonConclusions :
+    atomGeneratedSignature_generatedFiniteExactModel.RecordsNonConclusions := by
+  simp [atomGeneratedSignature_generatedFiniteExactModel,
+    atomGeneratedSignature_generatedFiniteCover,
+    atomGeneratedSignature_generatedFiniteModel,
+    atomGeneratedSignature_generatedFiniteObservationBoundary,
+    FiniteExactSFTModel.RecordsNonConclusions,
+    FiniteExactSFTModel.RecordsFiniteModelBoundary,
+    FiniteExactSFTModel.RecordsExtractorEmpiricalBoundary,
+    UniformFiniteFieldCover.RecordsNonConclusions,
+    ObservationBoundary.RecordsNonConclusions]
+
+def atomGeneratedSignature_sftCounterexamplePackage :
+    SFTCounterexamples.Package :=
+  SFTCounterexamples.canonicalPackage
+
+theorem atomGeneratedSignature_sftCounterexamples_record_nonConclusions :
+    atomGeneratedSignature_sftCounterexamplePackage.nonConclusions := by
+  exact
+    SFTCounterexamples.records_nonConclusions
+      atomGeneratedSignature_sftCounterexamplePackage
+
+theorem atomGeneratedSignature_supportSafety_does_not_discharge_counterexamples :
+    atomGeneratedSignature_sftSupportSafetyPackage.RecordsNonConclusions ∧
+      atomGeneratedSignature_sftCounterexamplePackage.nonConclusions := by
+  exact
+    ⟨by
+      simp [atomGeneratedSignature_sftSupportSafetyPackage,
+        atomGeneratedSignature_attractorSupportPackage,
+        SFTSupportSafetyPackage.RecordsNonConclusions,
+        AttractorEngineeringSupportPackage.RecordsMeasurementBoundary,
+        AttractorEngineeringSupportPackage.RecordsNonConclusions],
+     atomGeneratedSignature_sftCounterexamples_record_nonConclusions⟩
+
+def atomGeneratedSignature_roadmapCover :
+    SFTTheoremRoadmap.FiniteArchitectureCover Unit where
+  regions := [()]
+  coversGlobal := True
+  overlapsFinite := True
+  interfaceBoundary := True
+  nonConclusions := True
+
+def atomGeneratedSignature_clockedConePoint :
+    ClockedConePoint
+      atomGeneratedSignature_sftSupportSafetyPackage.operationSupport
+      atomGeneratedSignature_sftSupportSafetyPackage.stepRelation
+      generatedComponentApiCarrier
+      atomGeneratedSignature_supportScript.operations.length :=
+  ClockedConePoint.ofForecastCone
+    atomGeneratedSignature_generatedForecastCone_mem
+
+def atomGeneratedSignature_clockedConeDescentPackage :
+    SFTTheoremRoadmap.ClockedForecastConeDescentPackage
+      atomGeneratedSignature_sftSupportSafetyPackage.operationSupport
+      atomGeneratedSignature_sftSupportSafetyPackage.stepRelation
+      atomGeneratedSignature_roadmapCover
+      generatedComponentApiCarrier
+      atomGeneratedSignature_supportScript.operations.length where
+  compatibleLocalFamily :=
+    ClockedConePoint
+      atomGeneratedSignature_sftSupportSafetyPackage.operationSupport
+      atomGeneratedSignature_sftSupportSafetyPackage.stepRelation
+      generatedComponentApiCarrier
+      atomGeneratedSignature_supportScript.operations.length
+  descentEquiv :=
+    { toFun := fun point => point
+      invFun := fun point => point
+      left_inv := by
+        intro point
+        rfl
+      right_inv := by
+        intro point
+        rfl }
+  supportDescentBoundary := True
+  policyDescentBoundary := True
+  stepDescentBoundary := True
+  observationBoundary := True
+  idleBoundary := True
+  nonConclusions := True
+
+theorem atomGeneratedSignature_clockedConeDescent_forecastCone_descent :
+    Nonempty
+      (SFTTheoremRoadmap.BidirectionalEquivalence
+        (ClockedConePoint
+          atomGeneratedSignature_sftSupportSafetyPackage.operationSupport
+          atomGeneratedSignature_sftSupportSafetyPackage.stepRelation
+          generatedComponentApiCarrier
+          atomGeneratedSignature_supportScript.operations.length)
+        atomGeneratedSignature_clockedConeDescentPackage.compatibleLocalFamily) := by
+  exact
+    SFTTheoremRoadmap.ClockedForecastConeDescentPackage.forecastCone_descent
+      atomGeneratedSignature_clockedConeDescentPackage
+
+def atomGeneratedSignature_modularityRepresentationPackage :
+    SFTTheoremRoadmap.ModularityRepresentationPackage where
+  moduleBoundary := True
+  forecastConeDescentForAll := True
+  uniqueCompatiblePathRepresentation := True
+  boundary_iff_descent := by
+    simp
+  descent_iff_uniqueRepresentation := by
+    simp
+  theoremBoundary := True
+  nonConclusions := True
+
+theorem atomGeneratedSignature_modularity_representation :
+    atomGeneratedSignature_modularityRepresentationPackage.moduleBoundary ↔
+      atomGeneratedSignature_modularityRepresentationPackage.forecastConeDescentForAll ∧
+      atomGeneratedSignature_modularityRepresentationPackage.uniqueCompatiblePathRepresentation := by
+  exact
+    SFTTheoremRoadmap.ModularityRepresentationPackage.modularity_representation
+      atomGeneratedSignature_modularityRepresentationPackage
+
+def atomGeneratedSignature_fundamentalModularityConclusion :
+    SFTTheoremRoadmap.FundamentalModularityConclusion where
+  modularityAsDescent := True
+  technicalDebtAsObstruction := True
+  reviewAsMinimalEnvelope := True
+  governanceAsObstructionCutting := True
+  learningAsBoundaryExplicitFixedPoint := True
+  computablyGoverned := True
+  typedBoundaryFailureWitness := False
+  governed_or_failure := Or.inl trivial
+  nonConclusions := True
+
+def atomGeneratedSignature_fundamentalModularityTheoremPackage :
+    SFTTheoremRoadmap.FundamentalModularityTheoremPackage :=
+  SFTTheoremRoadmap.FundamentalModularityTheoremPackage.ofTheoremFamily
+    atomGeneratedSignature_fundamentalModularityConclusion
+    trivial
+    trivial
+    trivial
+    trivial
+    trivial
+    True
+
+theorem atomGeneratedSignature_fundamental_modularity :
+    atomGeneratedSignature_fundamentalModularityTheoremPackage.modularity ↔
+      atomGeneratedSignature_fundamentalModularityTheoremPackage.forecastConeDescent := by
+  exact
+    SFTTheoremRoadmap.FundamentalModularityTheoremPackage.fundamental_modularity
+      atomGeneratedSignature_fundamentalModularityTheoremPackage
+
+theorem atomGeneratedSignature_fundamental_modularity_nonConclusions :
+    atomGeneratedSignature_fundamentalModularityTheoremPackage.nonConclusions := by
+  trivial
+
+noncomputable def atomGeneratedSignature_sftForecastStatus :
+    SFTForecastStatus where
+  localPremise := True
+  supportBoundary := True
+  trajectorySafetyBoundary := True
+  measuredAxisBoundary := True
+  unmeasuredAxisBoundary := True
+  theoremBoundary := True
+  toolingBoundary := True
+  forecastBoundary := True
+  nonConclusions := True
+
+noncomputable def atomGeneratedSignature_sftInterfaceBoundary :
+    AATToSFTInterfaceBoundary
+      atomGeneratedSignature_sftInput.theoremStatus
+      atomGeneratedSignature_sftForecastStatus where
+  readsAATAsLocalPremise := by
+    intro _hGeneratedStatus
+    trivial
+  preservesAATTheoremBoundary := by
+    intro _hTheoremBoundary
+    trivial
+  preservesMeasuredAxisBoundary := by
+    intro _hMeasured
+    trivial
+  preservesUnmeasuredAxisBoundary := by
+    intro _hUnmeasured
+    trivial
+  preservesToolingBoundary := by
+    intro _hTooling
+    trivial
+  recordsSupportBoundary := trivial
+  recordsTrajectorySafetyBoundary := trivial
+  recordsForecastBoundary := trivial
+  recordsNonConclusions := by
+    intro _hNonConclusions
+    trivial
+
+theorem atomGeneratedSignature_sft_localPremiseFromGenerated :
+    atomGeneratedSignature_sftForecastStatus.RecordsLocalPremise := by
+  exact
+    atomGeneratedSignature_sftInput.reads_generated_aat_as_sft_local_premise
+      atomGeneratedSignature_sftInterfaceBoundary
+
+/--
+Positive acceptance: the generated law model supplies an AATCore transition
+without a hand-authored `ArchitectureLawModel` or Signature bridge.
+-/
+def atomGeneratedSignature_operationPreservation :
+    AAT.OperationPreservationPackage
+      generatedComponentLawModel.generatedAATCore
+      generatedComponentLawModel.generatedAATCore where
+  selectedMolecule := generatedComponentLawModel.requiredGeneratedMolecule
+  selectedLaw := fun law => law = generatedComponentLawModel.generatedDesignLaw
+  preservesMolecule := by
+    intro _molecule _hSelected hSource
+    exact hSource
+  preservesLaw := by
+    intro _law _hSelected hSource
+    exact hSource
+  operationDoesNotCreateAtomsEvidence :=
+    componentSystem.tool_output_does_not_create_atoms
+  operationBoundary := True
+  theoremPackageBoundary := True
+  nonConclusions := True
+
+def atomGeneratedSignature_atomDelta :
+    AATCoreAtomDelta
+      generatedComponentLawModel.generatedAATCore
+      generatedComponentLawModel.generatedAATCore where
+  sourceAtom := generatedComponentMolecule.atoms
+  targetAtom := generatedComponentMolecule.atoms
+  preservedAtom := generatedComponentMolecule.atoms
+  transformedAtom := fun source target => source = target
+  sourceAtomPrimitive := by
+    intro atom hAtom
+    exact generatedComponentMolecule.atoms_primitive hAtom
+  targetAtomPrimitive := by
+    intro atom hAtom
+    exact generatedComponentMolecule.atoms_primitive hAtom
+  preservedAtomOnSource := by
+    intro _atom hAtom
+    exact hAtom
+  preservedAtomOnTarget := by
+    intro _atom hAtom
+    exact hAtom
+  transitionBoundary := True
+  doesNotCreateAtomsEvidence :=
+    componentSystem.sft_event_does_not_create_atoms
+  nonConclusions := True
+
+def atomGeneratedSignature_semanticDelta :
+    AATCoreSemanticDelta atomGeneratedSignature_atomDelta where
+  semanticAtom := generatedComponentMolecule.atoms
+  sourceSemanticAtomsPrimitive := by
+    intro atom _hSource hSemantic
+    exact generatedComponentMolecule.atoms_primitive hSemantic
+  targetSemanticAtomsPrimitive := by
+    intro atom _hTarget hSemantic
+    exact generatedComponentMolecule.atoms_primitive hSemantic
+  semanticBoundary := True
+  doesNotCreateAtomsEvidence :=
+    componentSystem.sft_event_does_not_create_atoms
+  nonConclusions := True
+
+def atomGeneratedSignature_circuitDelta :
+    AATCoreCircuitDelta
+      generatedComponentLawModel.generatedAATCore
+      generatedComponentLawModel.generatedAATCore :=
+  generatedComponentLawModel.generatedIdentityAATCoreCircuitDelta
+
+theorem atomGeneratedSignature_circuitDelta_boundary :
+    atomGeneratedSignature_circuitDelta.circuitBoundary := by
+  exact
+    generatedComponentLawModel
+      |>.generatedIdentityAATCoreCircuitDelta_circuitBoundary
+
+theorem atomGeneratedSignature_circuitDelta_does_not_create_atoms :
+    componentSystem.noSFTEventCreatesAtoms := by
+  exact
+    generatedComponentLawModel
+      |>.generatedIdentityAATCoreCircuitDelta_doesNotCreateAtoms
+
+def atomGeneratedSignature_aatCoreTransition :
+    AATCoreTransition
+      generatedComponentLawModel.generatedAATCore
+      generatedComponentLawModel.generatedAATCore where
+  operationPackage := atomGeneratedSignature_operationPreservation
+  atomDelta := atomGeneratedSignature_atomDelta
+  semanticDelta := atomGeneratedSignature_semanticDelta
+  circuitDelta := atomGeneratedSignature_circuitDelta
+  transitionBoundary := True
+  fieldSigBoundary := True
+  nonConclusions := True
+
+theorem atomGeneratedSignature_transition_does_not_create_atoms :
+    componentSystem.noToolOutputCreatesAtoms := by
+  exact atomGeneratedSignature_aatCoreTransition.operation_does_not_create_atoms
+
+noncomputable def atomGeneratedSignature_generatedArchSigTransition :
+    GeneratedArchSigAATCoreTransition
+      generatedComponentLawModel
+      generatedComponentLawModel :=
+  GeneratedArchSigAATCoreTransition.ofTransition
+    atomGeneratedSignature_aatCoreTransition
+
+theorem atomGeneratedSignature_generatedArchSig_sourceLawful :
+    ArchitectureSignature.ArchitectureLawful
+      generatedComponentLawModel.toArchitectureLawModel := by
+  exact
+    atomGeneratedSignature_generatedArchSigTransition
+      |>.source_bridge_architectureLawful
+
+theorem atomGeneratedSignature_generatedArchSig_targetLawful :
+    ArchitectureSignature.ArchitectureLawful
+      generatedComponentLawModel.toArchitectureLawModel := by
+  exact
+    atomGeneratedSignature_generatedArchSigTransition
+      |>.target_bridge_architectureLawful
+
+def atomGeneratedSignature_generatedSoftwareField :
+    SoftwareField
+      Unit
+      (AAT.GeneratedCarrier generatedComponentObject)
+      (AAT.GeneratedCarrier generatedComponentObject)
+      AAT.GeneratedObservationCoordinate
+      (AAT.GeneratedArchitectureObject.GeneratedSemanticExpr
+        generatedComponentObject)
+      AAT.GeneratedObservationCoordinate where
+  state := ()
+  architectureProjection := generatedComponentObject.generatedFlatnessModel
+  observedSignatureRecord := True
+  historyBoundary := True
+  operationSupportBoundary := True
+  operationPolicyBoundary := True
+  constraintEnvironmentBoundary := True
+  observationModelBoundary := True
+  governanceInterventionBoundary := True
+  exogenousArtifactInputBoundary := True
+  fieldBoundary := True
+  nonConclusions := True
+
+def atomGeneratedSignature_generatedSoftwareFieldEstimate :
+    SoftwareFieldEstimate
+      Unit
+      (AAT.GeneratedCarrier generatedComponentObject)
+      (AAT.GeneratedCarrier generatedComponentObject)
+      AAT.GeneratedObservationCoordinate
+      (AAT.GeneratedArchitectureObject.GeneratedSemanticExpr
+        generatedComponentObject)
+      AAT.GeneratedObservationCoordinate where
+  field := atomGeneratedSignature_generatedSoftwareField
+  coverageAssumptions := True
+  observationBoundary := True
+  reconstructionBoundary := True
+  estimatorBoundary := True
+  missingEvidence := True
+  nonConclusions := True
+
+def atomGeneratedSignature_generatedArchitectureProjectionBoundary :
+    ArchitectureProjectionBoundary
+      atomGeneratedSignature_generatedSoftwareFieldEstimate
+      generatedComponentObject.generatedFlatnessModel where
+  projectsToSelectedArchitecture := rfl
+  preservesCoverageAssumptions := trivial
+  preservesObservationBoundary := trivial
+  preservesReconstructionBoundary := trivial
+  preservesMissingEvidence := trivial
+  recordsFieldBoundary := trivial
+  recordsNonConclusions := ⟨trivial, trivial⟩
+
+theorem atomGeneratedSignature_generatedSoftwareField_projects_to_generated :
+    generatedComponentObject.generatedFlatnessModel =
+      atomGeneratedSignature_generatedSoftwareFieldEstimate.arch := by
+  exact
+    atomGeneratedSignature_generatedArchitectureProjectionBoundary
+      |>.projection_eq_selected_arch
+
+theorem atomGeneratedSignature_generatedSoftwareField_records_nonConclusions :
+    atomGeneratedSignature_generatedSoftwareFieldEstimate.RecordsNonConclusions := by
+  exact
+    atomGeneratedSignature_generatedArchitectureProjectionBoundary
+      |>.projection_records_nonConclusions
+
+def atomGeneratedSignature_generatedArchSigSFTReport :
+    ArchSigSFTReport
+      Unit
+      (AAT.GeneratedCarrier generatedComponentObject)
+      (AAT.GeneratedCarrier generatedComponentObject)
+      AAT.GeneratedObservationCoordinate
+      (AAT.GeneratedArchitectureObject.GeneratedSemanticExpr
+        generatedComponentObject)
+      AAT.GeneratedObservationCoordinate where
+  selectedEstimate := atomGeneratedSignature_generatedSoftwareFieldEstimate
+  actionClassCandidates := True
+  targetRegions := True
+  candidateOperationFamilies := True
+  comparableSignatureAxes := True
+  coverageAssumptions := True
+  observationBoundary := True
+  reconstructionBoundary := True
+  missingInvariants := True
+  unmeasuredAxes := True
+  theoremBoundary := True
+  forecastBoundary := True
+  reportBoundary := True
+  nonConclusions := True
+
+def atomGeneratedSignature_generatedReportEstimateBoundary :
+    ArchSigSFTReportEstimateBoundary
+      atomGeneratedSignature_generatedArchSigSFTReport
+      atomGeneratedSignature_generatedSoftwareFieldEstimate
+      atomGeneratedSignature_sftForecastStatus where
+  reportSelectsEstimate := rfl
+  preservesCoverageAssumptions := by
+    intro h
+    exact h
+  preservesObservationBoundary := by
+    intro h
+    exact h
+  preservesReconstructionBoundary := by
+    intro h
+    exact h
+  preservesMissingInvariants := by
+    intro h
+    exact h
+  preservesUnmeasuredAxes := by
+    intro h
+    exact h
+  preservesTheoremBoundary := by
+    intro h
+    exact h
+  preservesForecastBoundary := by
+    intro h
+    exact h
+  recordsReportBoundary := by
+    intro h
+    exact h
+  recordsNonConclusions := by
+    intro _h
+    exact ⟨⟨trivial, trivial⟩, trivial⟩
+
+def atomGeneratedSignature_generatedFieldSigAnalysis :
+    GeneratedFieldSigAATCoreTransitionAnalysis
+      atomGeneratedSignature_generatedArchSigTransition
+      atomGeneratedSignature_generatedArchSigSFTReport
+      atomGeneratedSignature_generatedSoftwareFieldEstimate
+      atomGeneratedSignature_sftForecastStatus where
+  reportBoundary := atomGeneratedSignature_generatedReportEstimateBoundary
+  readsGeneratedArchSigTransitionAsSFTAnalysisEvidence :=
+    atomGeneratedSignature_generatedArchSigTransition
+      |>.records_fieldsig_analysis_boundary
+  fieldSigDoesNotDefineAATEvidence :=
+    atomGeneratedSignature_generatedArchSigTransition
+      |>.archsig_transition_does_not_define_aat
+  transitionDoesNotCreateAtoms :=
+    atomGeneratedSignature_aatCoreTransition.operation_does_not_create_atoms
+  forecastBoundary := trivial
+  theoremBoundary := trivial
+  nonConclusions := trivial
+
+theorem atomGeneratedSignature_fieldsig_reads_generated_transition :
+    atomGeneratedSignature_generatedArchSigTransition.fieldSigAnalysisBoundary := by
+  exact
+    atomGeneratedSignature_generatedFieldSigAnalysis
+      |>.fieldsig_reads_generated_archsig_transition_as_sft_analysis
+
+theorem atomGeneratedSignature_fieldsig_forecast_correctness_boundary :
+    atomGeneratedSignature_sftForecastStatus.RecordsForecastBoundary := by
+  exact
+    atomGeneratedSignature_generatedFieldSigAnalysis
+      |>.forecast_correctness_remains_boundary
+
+/--
+Positive acceptance: generated operation transport can be read as an AATCore
+transport transition, without collapsing transport into preservation.
+-/
+def atomGeneratedSignature_transportAtomDelta :
+    AATCoreAtomDelta
+      generatedApiOnlyLawModel.generatedAATCore
+      generatedComponentLawModel.generatedAATCore where
+  sourceAtom := generatedApiOnlyMolecule.atoms
+  targetAtom := generatedComponentMolecule.atoms
+  preservedAtom := generatedApiOnlyMolecule.atoms
+  transformedAtom := fun source target => source = target
+  sourceAtomPrimitive := by
+    intro atom hAtom
+    exact generatedApiOnlyMolecule.atoms_primitive hAtom
+  targetAtomPrimitive := by
+    intro atom hAtom
+    exact generatedComponentMolecule.atoms_primitive hAtom
+  preservedAtomOnSource := by
+    intro _atom hAtom
+    exact hAtom
+  preservedAtomOnTarget := by
+    intro atom hAtom
+    cases atom
+    · trivial
+    · cases hAtom
+  transitionBoundary := True
+  doesNotCreateAtomsEvidence :=
+    componentSystem.sft_event_does_not_create_atoms
+  nonConclusions := True
+
+def atomGeneratedSignature_transportSemanticDelta :
+    AATCoreSemanticDelta atomGeneratedSignature_transportAtomDelta where
+  semanticAtom := generatedApiOnlyMolecule.atoms
+  sourceSemanticAtomsPrimitive := by
+    intro atom _hSource hSemantic
+    exact generatedApiOnlyMolecule.atoms_primitive hSemantic
+  targetSemanticAtomsPrimitive := by
+    intro atom hTarget _hSemantic
+    exact generatedComponentMolecule.atoms_primitive hTarget
+  semanticBoundary := True
+  doesNotCreateAtomsEvidence :=
+    componentSystem.sft_event_does_not_create_atoms
+  nonConclusions := True
+
+def atomGeneratedSignature_transportCircuitDelta :
+    AATCoreTransportCircuitDelta
+      generatedApiOnlyLawModel.generatedAATCore
+      generatedComponentLawModel.generatedAATCore where
+  sourceLaw := generatedApiOnlyLawModel.generatedDesignLaw
+  targetLaw := generatedComponentLawModel.generatedDesignLaw
+  sourceMolecule := generatedApiOnlyMolecule.toMolecule
+  targetMolecule := generatedComponentMolecule.toMolecule
+  sourceLawOnSource := generatedApiOnlyLawModel.generated_law_on_core
+  targetLawOnTarget := generatedComponentLawModel.generated_law_on_core
+  sourceMoleculeOnSource := generatedApiOnlyLawModel.generated_molecule_on_core
+  targetMoleculeOnTarget := generatedComponentLawModel.generated_molecule_on_core
+  sourceCircuit := fun _circuit => False
+  targetCircuit := fun _circuit => False
+  transportedCircuit := fun _sourceCircuit _targetCircuit => False
+  circuitBoundary := True
+  doesNotCreateAtomsEvidence :=
+    componentSystem.sft_event_does_not_create_atoms
+  nonConclusions := True
+
+def atomGeneratedSignature_aatCoreTransportTransition :
+    AATCoreTransportTransition
+      generatedApiOnlyLawModel.generatedAATCore
+      generatedComponentLawModel.generatedAATCore where
+  transportPackage := generatedApiExpansionOperationTransportPackage
+  atomDelta := atomGeneratedSignature_transportAtomDelta
+  semanticDelta := atomGeneratedSignature_transportSemanticDelta
+  circuitDelta := atomGeneratedSignature_transportCircuitDelta
+  transitionBoundary := True
+  fieldSigBoundary := True
+  nonConclusions := True
+
+theorem atomGeneratedSignature_transport_transition_does_not_create_atoms :
+    componentSystem.noToolOutputCreatesAtoms := by
+  exact
+    atomGeneratedSignature_aatCoreTransportTransition
+      |>.operation_does_not_create_atoms
+
+theorem atomGeneratedSignature_transport_moves_molecule :
+    ∃ targetMolecule,
+      (atomGeneratedSignature_aatCoreTransportTransition.transportPackage
+        |>.selectedTargetMolecule targetMolecule) ∧
+      generatedComponentLawModel.generatedAATCore.molecules targetMolecule := by
+  exact generatedApiExpansionOperation_transports_molecule
+
+theorem atomGeneratedSignature_transport_moves_law :
+    ∃ targetLaw,
+      (atomGeneratedSignature_aatCoreTransportTransition.transportPackage
+        |>.selectedTargetLaw targetLaw) ∧
+      generatedComponentLawModel.generatedAATCore.laws targetLaw := by
+  exact generatedApiExpansionOperation_transports_law
+
+theorem atomGeneratedSignature_transport_target_molecule_is_distinct :
+    (atomGeneratedSignature_aatCoreTransportTransition.transportPackage
+        |>.selectedTargetMolecule generatedComponentMolecule.toMolecule) ∧
+      generatedApiOnlyMolecule.toMolecule ≠
+        generatedComponentMolecule.toMolecule := by
+  exact generatedApiExpansionOperation_target_molecule_is_distinct
+
+noncomputable def atomGeneratedSignature_generatedArchSigTransportTransition :
+    GeneratedArchSigAATCoreTransportTransition
+      generatedApiOnlyLawModel
+      generatedComponentLawModel :=
+  GeneratedArchSigAATCoreTransportTransition.ofTransportTransition
+    atomGeneratedSignature_aatCoreTransportTransition
+
+theorem atomGeneratedSignature_generatedArchSigTransport_sourceLawful :
+    ArchitectureSignature.ArchitectureLawful
+      generatedApiOnlyLawModel.toArchitectureLawModel := by
+  exact
+    atomGeneratedSignature_generatedArchSigTransportTransition
+      |>.source_bridge_architectureLawful
+
+theorem atomGeneratedSignature_generatedArchSigTransport_targetLawful :
+    ArchitectureSignature.ArchitectureLawful
+      generatedComponentLawModel.toArchitectureLawModel := by
+  exact
+    atomGeneratedSignature_generatedArchSigTransportTransition
+      |>.target_bridge_architectureLawful
+
+def atomGeneratedSignature_transportSoftwareField :
+    SoftwareField
+      Unit
+      (AAT.GeneratedCarrier generatedApiOnlyObject)
+      (AAT.GeneratedCarrier generatedApiOnlyObject)
+      AAT.GeneratedObservationCoordinate
+      (AAT.GeneratedArchitectureObject.GeneratedSemanticExpr
+        generatedApiOnlyObject)
+      AAT.GeneratedObservationCoordinate where
+  state := ()
+  architectureProjection := generatedApiOnlyObject.generatedFlatnessModel
+  observedSignatureRecord := True
+  historyBoundary := True
+  operationSupportBoundary := True
+  operationPolicyBoundary := True
+  constraintEnvironmentBoundary := True
+  observationModelBoundary := True
+  governanceInterventionBoundary := True
+  exogenousArtifactInputBoundary := True
+  fieldBoundary := True
+  nonConclusions := True
+
+def atomGeneratedSignature_transportSoftwareFieldEstimate :
+    SoftwareFieldEstimate
+      Unit
+      (AAT.GeneratedCarrier generatedApiOnlyObject)
+      (AAT.GeneratedCarrier generatedApiOnlyObject)
+      AAT.GeneratedObservationCoordinate
+      (AAT.GeneratedArchitectureObject.GeneratedSemanticExpr
+        generatedApiOnlyObject)
+      AAT.GeneratedObservationCoordinate where
+  field := atomGeneratedSignature_transportSoftwareField
+  coverageAssumptions := True
+  observationBoundary := True
+  reconstructionBoundary := True
+  estimatorBoundary := True
+  missingEvidence := True
+  nonConclusions := True
+
+def atomGeneratedSignature_transportArchSigSFTReport :
+    ArchSigSFTReport
+      Unit
+      (AAT.GeneratedCarrier generatedApiOnlyObject)
+      (AAT.GeneratedCarrier generatedApiOnlyObject)
+      AAT.GeneratedObservationCoordinate
+      (AAT.GeneratedArchitectureObject.GeneratedSemanticExpr
+        generatedApiOnlyObject)
+      AAT.GeneratedObservationCoordinate where
+  selectedEstimate := atomGeneratedSignature_transportSoftwareFieldEstimate
+  actionClassCandidates := True
+  targetRegions := True
+  candidateOperationFamilies := True
+  comparableSignatureAxes := True
+  coverageAssumptions := True
+  observationBoundary := True
+  reconstructionBoundary := True
+  missingInvariants := True
+  unmeasuredAxes := True
+  theoremBoundary := True
+  forecastBoundary := True
+  reportBoundary := True
+  nonConclusions := True
+
+def atomGeneratedSignature_transportReportEstimateBoundary :
+    ArchSigSFTReportEstimateBoundary
+      atomGeneratedSignature_transportArchSigSFTReport
+      atomGeneratedSignature_transportSoftwareFieldEstimate
+      atomGeneratedSignature_sftForecastStatus where
+  reportSelectsEstimate := rfl
+  preservesCoverageAssumptions := by
+    intro h
+    exact h
+  preservesObservationBoundary := by
+    intro h
+    exact h
+  preservesReconstructionBoundary := by
+    intro h
+    exact h
+  preservesMissingInvariants := by
+    intro h
+    exact h
+  preservesUnmeasuredAxes := by
+    intro h
+    exact h
+  preservesTheoremBoundary := by
+    intro h
+    exact h
+  preservesForecastBoundary := by
+    intro h
+    exact h
+  recordsReportBoundary := by
+    intro h
+    exact h
+  recordsNonConclusions := by
+    intro _h
+    exact ⟨⟨trivial, trivial⟩, trivial⟩
+
+def atomGeneratedSignature_generatedFieldSigTransportAnalysis :
+    GeneratedFieldSigAATCoreTransportTransitionAnalysis
+      atomGeneratedSignature_generatedArchSigTransportTransition
+      atomGeneratedSignature_transportArchSigSFTReport
+      atomGeneratedSignature_transportSoftwareFieldEstimate
+      atomGeneratedSignature_sftForecastStatus where
+  reportBoundary := atomGeneratedSignature_transportReportEstimateBoundary
+  readsGeneratedArchSigTransitionAsSFTAnalysisEvidence :=
+    atomGeneratedSignature_generatedArchSigTransportTransition
+      |>.records_fieldsig_analysis_boundary
+  fieldSigDoesNotDefineAATEvidence :=
+    atomGeneratedSignature_generatedArchSigTransportTransition
+      |>.archsig_transition_does_not_define_aat
+  transitionDoesNotCreateAtoms :=
+    atomGeneratedSignature_aatCoreTransportTransition
+      |>.operation_does_not_create_atoms
+  forecastBoundary := trivial
+  theoremBoundary := trivial
+  nonConclusions := trivial
+
+theorem atomGeneratedSignature_fieldsig_reads_generated_transport_transition :
+    atomGeneratedSignature_generatedArchSigTransportTransition
+      |>.fieldSigAnalysisBoundary := by
+  exact
+    atomGeneratedSignature_generatedFieldSigTransportAnalysis
+      |>.fieldsig_reads_generated_archsig_transport_transition_as_sft_analysis
+
+theorem atomGeneratedSignature_fieldsig_transport_forecast_correctness_boundary :
+    atomGeneratedSignature_sftForecastStatus.RecordsForecastBoundary := by
+  exact
+    atomGeneratedSignature_generatedFieldSigTransportAnalysis
+      |>.forecast_correctness_remains_boundary
+
+end Formal.Arch.AtomGeneratedSignatureExamples

@@ -1107,6 +1107,12 @@ fn build_aat_geometry_overlays(packet: &serde_json::Value, limit: usize) -> serd
         "projectionBoundary": "bounded projection of computed ArchSig AAT geometry readings; not a theorem metric and not a raw packet copy",
         "curvatureSupports": compact_geometry_array(packet, "curvatureSupportReadings", limit, GEOMETRY_ATOM_REF_SAMPLE_LIMIT),
         "curvatureTransfers": compact_geometry_array(packet, "curvatureTransferReadings", limit, GEOMETRY_ATOM_REF_SAMPLE_LIMIT),
+        "generatedAtomShapes": compact_geometry_array(packet, "generatedAtomShapes", limit, GEOMETRY_ATOM_REF_SAMPLE_LIMIT),
+        "generatedMolecules": compact_geometry_array(packet, "generatedMolecules", limit, GEOMETRY_ATOM_REF_SAMPLE_LIMIT),
+        "generatedLawInputs": compact_geometry_array(packet, "generatedLawInputs", limit, GEOMETRY_ATOM_REF_SAMPLE_LIMIT),
+        "generatedObstructions": compact_geometry_array(packet, "generatedObstructions", limit, GEOMETRY_ATOM_REF_SAMPLE_LIMIT),
+        "generatedRepairTargets": compact_geometry_array(packet, "generatedRepairTargets", limit, GEOMETRY_ATOM_REF_SAMPLE_LIMIT),
+        "viewerDistanceInputs": compact_viewer_distance_inputs(packet, limit, GEOMETRY_ATOM_REF_SAMPLE_LIMIT),
         "spectrumReport": spectrum_report,
         "pathPairs": compact_geometry_array(packet, "pathPairCandidates", limit, GEOMETRY_ATOM_REF_SAMPLE_LIMIT),
         "loops": compact_geometry_array(packet, "loopCandidates", limit, GEOMETRY_ATOM_REF_SAMPLE_LIMIT),
@@ -1123,6 +1129,12 @@ fn build_aat_geometry_overlays(packet: &serde_json::Value, limit: usize) -> serd
         "omittedGeometryCounts": {
             "curvatureSupports": omitted_array_count(packet, "curvatureSupportReadings", limit),
             "curvatureTransfers": omitted_array_count(packet, "curvatureTransferReadings", limit),
+            "generatedAtomShapes": omitted_array_count(packet, "generatedAtomShapes", limit),
+            "generatedMolecules": omitted_array_count(packet, "generatedMolecules", limit),
+            "generatedLawInputs": omitted_array_count(packet, "generatedLawInputs", limit),
+            "generatedObstructions": omitted_array_count(packet, "generatedObstructions", limit),
+            "generatedRepairTargets": omitted_array_count(packet, "generatedRepairTargets", limit),
+            "viewerDistanceInputs": omitted_array_count(packet, "viewerDistanceInputs", limit),
             "pathPairs": omitted_array_count(packet, "pathPairCandidates", limit),
             "loops": omitted_array_count(packet, "loopCandidates", limit),
             "holonomyReadings": omitted_array_count(packet, "homotopyHolonomyReadings", limit),
@@ -1147,6 +1159,59 @@ fn compact_geometry_array(
             .map(|item| compact_geometry_item(item, atom_ref_limit))
             .collect(),
     )
+}
+
+fn compact_viewer_distance_inputs(
+    value: &serde_json::Value,
+    limit: usize,
+    atom_ref_limit: usize,
+) -> serde_json::Value {
+    serde_json::Value::Array(
+        array_items(value, "viewerDistanceInputs")
+            .into_iter()
+            .take(limit)
+            .map(|item| compact_viewer_distance_input(item, atom_ref_limit))
+            .collect(),
+    )
+}
+
+fn compact_viewer_distance_input(
+    value: &serde_json::Value,
+    atom_ref_limit: usize,
+) -> serde_json::Value {
+    let mut atom_refs = BTreeSet::new();
+    collect_atom_refs(value, &mut atom_refs);
+    let sampled_atom_refs = atom_refs
+        .iter()
+        .take(atom_ref_limit)
+        .cloned()
+        .collect::<Vec<_>>();
+    let atom_shape_refs = string_array(value, "atomShapeRefs")
+        .into_iter()
+        .take(atom_ref_limit)
+        .collect::<Vec<_>>();
+    let coordinate_components = string_array(value, "coordinateComponents")
+        .into_iter()
+        .take(24)
+        .collect::<Vec<_>>();
+    serde_json::json!({
+        "id": json_field(value, "distanceInputId"),
+        "kind": json_field(value, "distanceKind"),
+        "status": compact_first_string_field(value, &["status", "measurementStatus"]),
+        "value": json_field(value, "distanceValue"),
+        "distanceInputId": json_field(value, "distanceInputId"),
+        "distanceKind": json_field(value, "distanceKind"),
+        "sourceRef": json_field(value, "sourceRef"),
+        "targetRef": json_field(value, "targetRef"),
+        "generatedMoleculeRef": json_field(value, "generatedMoleculeRef"),
+        "atomShapeRefs": atom_shape_refs,
+        "coordinateComponents": coordinate_components,
+        "distanceValue": json_field(value, "distanceValue"),
+        "evidenceBoundary": json_field(value, "evidenceBoundary"),
+        "atomRefs": sampled_atom_refs,
+        "atomRefCount": atom_refs.len(),
+        "omittedAtomRefs": atom_refs.len().saturating_sub(atom_ref_limit)
+    })
 }
 
 fn compact_geometry_report(

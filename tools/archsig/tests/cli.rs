@@ -1,3 +1,4 @@
+use std::collections::BTreeSet;
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::Command;
@@ -19,6 +20,10 @@ fn coupon_rounding_root() -> PathBuf {
 
 fn acts_spectrum_root() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/acts_spectrum")
+}
+
+fn atom_generated_acceptance_root() -> PathBuf {
+    Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/atom_generated_acceptance")
 }
 
 fn homotopy_report_root() -> PathBuf {
@@ -993,6 +998,28 @@ fn cli_runs_primary_archmap_lawpolicy_archsig_analyze_workflow() {
             .is_some(),
         "viewer data must carry computed AAT path and holonomy geometry projection"
     );
+    assert!(
+        viewer_data["aatGeometryOverlays"]["generatedMolecules"]
+            .as_array()
+            .is_some_and(|items| !items.is_empty())
+            && viewer_data["aatGeometryOverlays"]["viewerDistanceInputs"]
+                .as_array()
+                .is_some_and(|items| !items.is_empty()),
+        "viewer data must carry generated molecule and AtomShape distance inputs"
+    );
+    let viewer_distance = viewer_data["aatGeometryOverlays"]["viewerDistanceInputs"]
+        .as_array()
+        .and_then(|items| items.first())
+        .expect("viewer distance input is projected");
+    assert!(
+        viewer_distance["sourceRef"].as_str().is_some()
+            && viewer_distance["targetRef"].as_str().is_some()
+            && viewer_distance["distanceValue"].as_i64().is_some()
+            && viewer_distance["coordinateComponents"]
+                .as_array()
+                .is_some_and(|items| !items.is_empty()),
+        "viewer distance inputs must retain source/target refs, distance value, and AtomShape coordinate components for layout"
+    );
     assert_eq!(
         viewer_data["reportPane"]["overview"]["summaryVerdict"]["readingMode"].as_str(),
         Some("measurementOverSuppliedArchMapAndLawPolicy")
@@ -1077,6 +1104,30 @@ fn cli_runs_primary_archmap_lawpolicy_archsig_analyze_workflow() {
         analysis_validation.get("packet").is_none(),
         "analysis validation must not embed the full analysis packet"
     );
+}
+
+#[test]
+fn atom_viewer_uses_atom_shape_distance_inputs_for_molecule_layout() {
+    let viewer_path = Path::new(env!("CARGO_MANIFEST_DIR")).join("viewer/archsig-atom-viewer.html");
+    let viewer = fs::read_to_string(&viewer_path).expect("viewer html can be read");
+
+    for required in [
+        "geometry.viewerDistanceInputs",
+        "atomToViewerDistances",
+        "viewerDistances",
+        "function viewerDistanceProfile",
+        "function viewerDistanceEmbedding",
+        "function componentAxisVector",
+        "distanceProfile.meanDistance",
+        "distanceProfile.offset",
+        "function renderViewerDistanceBonds",
+        "AtomShape distance from molecule center",
+    ] {
+        assert!(
+            viewer.contains(required),
+            "atom viewer must use AtomShape viewerDistanceInputs in molecule layout: missing {required}"
+        );
+    }
 }
 
 #[test]
@@ -1259,6 +1310,27 @@ fn cli_analyze_emit_raw_artifacts_writes_field_sig_handoff_packet() {
         "analysis packet must construct obstruction circuits"
     );
     assert!(
+        analysis_packet["generatedAtomShapes"]
+            .as_array()
+            .is_some_and(|items| !items.is_empty())
+            && analysis_packet["generatedMolecules"]
+                .as_array()
+                .is_some_and(|items| !items.is_empty())
+            && analysis_packet["generatedLawInputs"]
+                .as_array()
+                .is_some_and(|items| !items.is_empty())
+            && analysis_packet["generatedObstructions"]
+                .as_array()
+                .is_some_and(|items| !items.is_empty())
+            && analysis_packet["generatedRepairTargets"]
+                .as_array()
+                .is_some_and(|items| !items.is_empty())
+            && analysis_packet["viewerDistanceInputs"]
+                .as_array()
+                .is_some_and(|items| !items.is_empty()),
+        "analysis packet must materialize generated AtomShape, molecule, law input, obstruction, repair target, and viewer distance surfaces"
+    );
+    assert!(
         analysis_packet["signatureAxes"]
             .as_array()
             .expect("signature axes are array")
@@ -1282,6 +1354,27 @@ fn cli_analyze_emit_raw_artifacts_writes_field_sig_handoff_packet() {
             .is_some_and(|count| count >= 10),
         "validation summary must count bounded judgements"
     );
+    assert!(
+        analysis_validation["summary"]["generatedAtomShapeCount"]
+            .as_u64()
+            .is_some_and(|count| count > 0)
+            && analysis_validation["summary"]["generatedMoleculeCount"]
+                .as_u64()
+                .is_some_and(|count| count > 0)
+            && analysis_validation["summary"]["generatedLawInputCount"]
+                .as_u64()
+                .is_some_and(|count| count > 0)
+            && analysis_validation["summary"]["generatedObstructionCount"]
+                .as_u64()
+                .is_some_and(|count| count > 0)
+            && analysis_validation["summary"]["generatedRepairTargetCount"]
+                .as_u64()
+                .is_some_and(|count| count > 0)
+            && analysis_validation["summary"]["viewerDistanceInputCount"]
+                .as_u64()
+                .is_some_and(|count| count > 0),
+        "validation summary must count generated middle-layer and viewer distance surfaces"
+    );
     let llm_packet = read_json(&out_dir.join("llm-interpretation-packet.json"));
     assert_eq!(llm_packet, analysis_packet["llmInterpretationPacket"]);
     assert!(
@@ -1298,6 +1391,256 @@ fn cli_analyze_emit_raw_artifacts_writes_field_sig_handoff_packet() {
         run_manifest["rawArtifactPaths"]["analysisPacket"].as_str(),
         Some("archsig-analysis-packet.json")
     );
+}
+
+#[test]
+fn atom_generated_acceptance_fixture_materializes_local_middle_layer() {
+    let out_dir = temp_dir("atom-generated-acceptance");
+    let root = atom_generated_acceptance_root();
+    let manifest = read_json(&root.join("manifest.json"));
+    assert_eq!(
+        manifest["schemaVersion"],
+        "archsig-atom-generated-acceptance-manifest-v0"
+    );
+    assert!(
+        manifest["nonConclusions"].as_array().is_some_and(|items| {
+            items.iter().any(|item| {
+                item.as_str()
+                    .is_some_and(|text| text.contains("not Lean theorem proofs"))
+            })
+        }),
+        "acceptance fixture must preserve generated-surface non-conclusions"
+    );
+
+    let archmap = root.join(
+        manifest["archmapPath"]
+            .as_str()
+            .expect("manifest archmap path is present"),
+    );
+    let law_policy = root.join(
+        manifest["lawPolicyPath"]
+            .as_str()
+            .expect("manifest law policy path is present"),
+    );
+    let packet_path = out_dir.join("archsig-analysis-packet.json");
+    let validation_path = out_dir.join("archsig-analysis-validation.json");
+
+    run_sig0(&[
+        "archsig-analysis",
+        "--archmap",
+        archmap.to_str().expect("archmap path is utf-8"),
+        "--law-policy",
+        law_policy.to_str().expect("law policy path is utf-8"),
+        "--out",
+        packet_path.to_str().expect("packet path is utf-8"),
+        "--validation-out",
+        validation_path.to_str().expect("validation path is utf-8"),
+    ]);
+
+    let packet = read_json(&packet_path);
+    let validation = read_json(&validation_path);
+    assert_eq!(validation["summary"]["result"], "pass");
+    let expectations = &manifest["expectations"];
+    let minimum_generated_molecules = expectations["generatedMolecules"]
+        .as_u64()
+        .expect("generatedMolecules expectation is present")
+        as usize;
+    let minimum_generated_law_inputs = expectations["generatedLawInputs"]
+        .as_u64()
+        .expect("generatedLawInputs expectation is present")
+        as usize;
+    let minimum_generated_repair_targets = expectations["generatedRepairTargets"]
+        .as_u64()
+        .expect("generatedRepairTargets expectation is present")
+        as usize;
+    let minimum_applicable_law_axes = expectations["applicableLawAxes"]
+        .as_u64()
+        .expect("applicableLawAxes expectation is present")
+        as usize;
+    let minimum_viewer_distance_inputs = expectations["viewerDistanceInputs"]
+        .as_u64()
+        .expect("viewerDistanceInputs expectation is present")
+        as usize;
+    let expected_local_statuses = expectations["localStatuses"]
+        .as_array()
+        .expect("localStatuses expectation is present");
+
+    assert!(
+        packet["generatedMolecules"]
+            .as_array()
+            .is_some_and(|items| items.len() >= minimum_generated_molecules),
+        "atom-generated acceptance must materialize generated molecules"
+    );
+    assert!(
+        packet["generatedLawInputs"]
+            .as_array()
+            .is_some_and(|items| {
+                items.len() >= minimum_generated_law_inputs
+                    && items.iter().any(|item| {
+                        item["applicableLawAxes"]
+                            .as_array()
+                            .is_some_and(|axes| axes.len() >= minimum_applicable_law_axes)
+                            && item["localStatuses"].as_array().is_some_and(|statuses| {
+                                statuses.iter().any(|status| status == "localSatisfied")
+                            })
+                    })
+            }),
+        "generated law inputs must expose applicable law axes and localSatisfied status"
+    );
+    for expected_status in expected_local_statuses {
+        let expected_status = expected_status
+            .as_str()
+            .expect("local status expectation is string");
+        let present = packet["generatedLawInputs"]
+            .as_array()
+            .is_some_and(|items| {
+                items.iter().any(|item| {
+                    item["localStatuses"].as_array().is_some_and(|statuses| {
+                        statuses.iter().any(|status| status == expected_status)
+                    })
+                })
+            })
+            || packet["generatedObstructions"]
+                .as_array()
+                .is_some_and(|items| {
+                    items.iter().any(|item| {
+                        item["localStatus"] == expected_status
+                            || item["blockerStatus"] == expected_status
+                    })
+                });
+        assert!(
+            present,
+            "atom-generated acceptance must expose expected local status {expected_status}"
+        );
+    }
+    assert!(
+        packet["generatedObstructions"]
+            .as_array()
+            .is_some_and(|items| {
+                items.iter().any(|item| {
+                    item["localStatus"] == "localViolated"
+                        && item["blockerStatus"] == "locallyBlocked"
+                })
+            }),
+        "generated obstructions must expose localViolated and locallyBlocked status"
+    );
+    assert!(
+        packet["generatedRepairTargets"]
+            .as_array()
+            .is_some_and(|items| {
+                items.len() >= minimum_generated_repair_targets
+                    && items.iter().any(|item| {
+                        item["targetKind"] == "shapeLevelGeneratedRepairTarget"
+                            && item["generatedObstructionRefs"]
+                                .as_array()
+                                .is_some_and(|refs| !refs.is_empty())
+                            && item["generatedMoleculeRefs"]
+                                .as_array()
+                                .is_some_and(|refs| !refs.is_empty())
+                            && item["atomShapeRefs"]
+                                .as_array()
+                                .is_some_and(|refs| !refs.is_empty())
+                            && item["requiredPortOrSlot"] == "portOrSlotOrValenceMismatch"
+                            && item["evidenceBoundary"]
+                                .as_str()
+                                .is_some_and(|text| text.contains("not a free-form recommendation"))
+                    })
+            }),
+        "generated repair targets must localize repair candidates to generated obstruction, molecule, and AtomShape refs"
+    );
+    assert!(
+        packet["viewerDistanceInputs"]
+            .as_array()
+            .is_some_and(|items| items.len() >= minimum_viewer_distance_inputs),
+        "atom-generated acceptance must expose viewer distance inputs"
+    );
+    let viewer_distance_inputs = packet["viewerDistanceInputs"]
+        .as_array()
+        .expect("viewerDistanceInputs are present");
+    let mut covered_distance_pairs = BTreeSet::<(String, String, String)>::new();
+    for distance in viewer_distance_inputs {
+        let molecule_ref = distance["generatedMoleculeRef"]
+            .as_str()
+            .expect("viewer distance input has generatedMoleculeRef")
+            .to_string();
+        let shape_refs = distance["atomShapeRefs"]
+            .as_array()
+            .expect("viewer distance input has atomShapeRefs");
+        assert_eq!(
+            shape_refs.len(),
+            2,
+            "viewer distance input must compare exactly two AtomShape refs"
+        );
+        let left = shape_refs[0]
+            .as_str()
+            .expect("left AtomShape ref is string")
+            .to_string();
+        let right = shape_refs[1]
+            .as_str()
+            .expect("right AtomShape ref is string")
+            .to_string();
+        let expected_delta_sum = distance["coordinateComponents"]
+            .as_array()
+            .expect("viewer distance has coordinateComponents")
+            .iter()
+            .map(|component| {
+                component
+                    .as_str()
+                    .and_then(|text| text.rsplit_once("delta="))
+                    .and_then(|(_prefix, delta)| delta.parse::<i64>().ok())
+                    .expect("coordinate component carries numeric delta")
+            })
+            .sum::<i64>();
+        assert_eq!(
+            distance["distanceValue"].as_i64(),
+            Some(expected_delta_sum),
+            "viewer distance value must equal the sum of AtomShape coordinate deltas"
+        );
+        let (left, right) = ordered_test_pair(left, right);
+        covered_distance_pairs.insert((molecule_ref, left, right));
+    }
+    for molecule in packet["generatedMolecules"]
+        .as_array()
+        .expect("generatedMolecules are present")
+    {
+        let molecule_ref = molecule["generatedMoleculeId"]
+            .as_str()
+            .expect("generated molecule id is present")
+            .to_string();
+        let shape_refs = molecule["atomShapeRefs"]
+            .as_array()
+            .expect("generated molecule has atomShapeRefs")
+            .iter()
+            .map(|shape_ref| {
+                shape_ref
+                    .as_str()
+                    .expect("AtomShape ref is string")
+                    .to_string()
+            })
+            .collect::<BTreeSet<_>>()
+            .into_iter()
+            .collect::<Vec<_>>();
+        for left_index in 0..shape_refs.len() {
+            for right_index in (left_index + 1)..shape_refs.len() {
+                let (left, right) = ordered_test_pair(
+                    shape_refs[left_index].clone(),
+                    shape_refs[right_index].clone(),
+                );
+                assert!(
+                    covered_distance_pairs.contains(&(molecule_ref.clone(), left, right)),
+                    "viewerDistanceInputs must cover every generated molecule AtomShape pair"
+                );
+            }
+        }
+    }
+}
+
+fn ordered_test_pair(left: String, right: String) -> (String, String) {
+    if left <= right {
+        (left, right)
+    } else {
+        (right, left)
+    }
 }
 
 #[test]
@@ -2584,8 +2927,9 @@ fn archsig_release_workflow_packages_output_viewer_contract() {
         .parent()
         .and_then(Path::parent)
         .expect("repo root");
-    let release_workflow = fs::read_to_string(repo_root.join(".github/workflows/archsig-release.yml"))
-        .expect("release workflow can be read");
+    let release_workflow =
+        fs::read_to_string(repo_root.join(".github/workflows/archsig-release.yml"))
+            .expect("release workflow can be read");
     assert!(
         release_workflow.contains("package/archsig-atom-viewer.html")
             && release_workflow.contains("package/viewer/archsig-atom-viewer.html")

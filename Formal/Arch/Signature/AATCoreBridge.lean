@@ -1,4 +1,5 @@
 import Formal.Arch.AAT.ZeroCurvature
+import Formal.Arch.AAT.GeneratedLawModel
 import Formal.Arch.Signature.SignatureLawfulness
 
 namespace Formal.Arch
@@ -39,6 +40,76 @@ structure AATCoreSignatureLawfulnessBridge
   nonConclusions : Prop
 
 namespace AATCoreSignatureLawfulnessBridge
+
+/--
+Construct the Signature bridge from an Atom-generated law model.
+
+Callers still provide the analysis / tooling boundary propositions, but they do
+not provide an `architectureLawfulFromAAT` proof.  The bridge consumes the
+generated zero-curvature package and derives Signature lawfulness from the
+generated law model itself.
+-/
+noncomputable def ofGeneratedLawModel
+    {system : AtomAxiomSystem.{q, r}}
+    {presentation : AtomShapePresentation system}
+    {object : AAT.GeneratedArchitectureObject presentation}
+    (model : AAT.GeneratedArchitectureLawModel object)
+    (analyzesUsingAAT archSigDoesNotDefineAAT
+      unknownRejectedUnmeasuredSeparated measuredZeroBoundary
+      validationIsNotTheoremDischarge nonConclusions : Prop)
+    (hAnalyzesUsingAAT : analyzesUsingAAT)
+    (hArchSigDoesNotDefineAAT : archSigDoesNotDefineAAT)
+    (hUnknownRejectedUnmeasuredSeparated :
+      unknownRejectedUnmeasuredSeparated) :
+    AATCoreSignatureLawfulnessBridge
+      model.generatedAATCore model.toArchitectureLawModel where
+  zeroCurvaturePackage := model.generatedZeroCurvaturePackage
+  architectureLawfulFromAAT := by
+    intro _hGeneratedLawfulWithin
+    exact model.generatedArchitectureLawful
+  analyzesUsingAAT := analyzesUsingAAT
+  analyzesUsingAATEvidence := hAnalyzesUsingAAT
+  archSigDoesNotDefineAAT := archSigDoesNotDefineAAT
+  archSigDoesNotDefineAATEvidence := hArchSigDoesNotDefineAAT
+  archSigDoesNotCreateAtomsEvidence :=
+    system.tool_output_does_not_create_atoms
+  unknownRejectedUnmeasuredSeparated :=
+    unknownRejectedUnmeasuredSeparated
+  unknownRejectedUnmeasuredSeparatedEvidence :=
+    hUnknownRejectedUnmeasuredSeparated
+  measuredZeroBoundary := measuredZeroBoundary
+  validationIsNotTheoremDischarge := validationIsNotTheoremDischarge
+  nonConclusions := nonConclusions
+
+/-- Generated constructor stores the generated zero-curvature package. -/
+theorem ofGeneratedLawModel_zeroCurvaturePackage_eq_generated
+    {system : AtomAxiomSystem.{q, r}}
+    {presentation : AtomShapePresentation system}
+    {object : AAT.GeneratedArchitectureObject presentation}
+    (model : AAT.GeneratedArchitectureLawModel object)
+    (analyzesUsingAAT archSigDoesNotDefineAAT
+      unknownRejectedUnmeasuredSeparated measuredZeroBoundary
+      validationIsNotTheoremDischarge nonConclusions : Prop)
+    (hAnalyzesUsingAAT : analyzesUsingAAT)
+    (hArchSigDoesNotDefineAAT : archSigDoesNotDefineAAT)
+    (hUnknownRejectedUnmeasuredSeparated :
+      unknownRejectedUnmeasuredSeparated) :
+    (ofGeneratedLawModel model analyzesUsingAAT archSigDoesNotDefineAAT
+      unknownRejectedUnmeasuredSeparated measuredZeroBoundary
+      validationIsNotTheoremDischarge nonConclusions
+      hAnalyzesUsingAAT hArchSigDoesNotDefineAAT
+      hUnknownRejectedUnmeasuredSeparated).zeroCurvaturePackage =
+        model.generatedZeroCurvaturePackage := by
+  rfl
+
+/-- Generated constructor derives Signature lawfulness from the generated model. -/
+theorem ofGeneratedLawModel_architectureLawful
+    {system : AtomAxiomSystem.{q, r}}
+    {presentation : AtomShapePresentation system}
+    {object : AAT.GeneratedArchitectureObject presentation}
+    (model : AAT.GeneratedArchitectureLawModel object) :
+    ArchitectureLawful model.toArchitectureLawModel :=
+  model.generatedArchitectureLawful
 
 /-- The bridge derives Signature lawfulness from pure AAT zero curvature. -/
 theorem architectureLawful

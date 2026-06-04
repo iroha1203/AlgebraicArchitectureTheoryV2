@@ -1,6 +1,7 @@
 import Formal.Arch.Evolution.SFTEnvelope
 import Formal.Arch.Evolution.SFTArchSigBoundary
 import Formal.Arch.Examples.AATOperationRepairSynthesisExamples
+import Formal.Arch.Examples.AtomGeneratedSignatureExamples
 
 namespace Formal.Arch.AtomSFTInterfaceExamples
 
@@ -8,6 +9,7 @@ open Formal.Arch.AtomFoundationExamples
 open Formal.Arch.AATMoleculeLawExamples
 open Formal.Arch.AATZeroCurvatureExamples
 open Formal.Arch.AATOperationRepairSynthesisExamples
+open Formal.Arch.AtomGeneratedSignatureExamples
 
 def exampleAATCoreLocalAlgebraForSFT :
     AATCoreLocalAlgebraForSFT noBadCore where
@@ -233,219 +235,33 @@ theorem exampleAATCorePremisedEnvelope_no_forecast_correctness :
     exampleAATCorePremisedConsequenceEnvelope
       |>.aatcore_premise_does_not_prove_forecast_correctness
 
-def unitGraph : ArchGraph Unit where
-  edge := fun _ _ => False
+noncomputable abbrev exampleArchSigAATCoreTransition :=
+  atomGeneratedSignature_generatedArchSigTransition
 
-def unitProjection : InterfaceProjection Unit Unit where
-  expose := fun _ => ()
+abbrev exampleSoftwareField :=
+  atomGeneratedSignature_generatedSoftwareField
 
-def unitObservation : Observation Unit Unit where
-  observe := fun _ => ()
+abbrev exampleSoftwareFieldEstimate :=
+  atomGeneratedSignature_generatedSoftwareFieldEstimate
 
-def unitComponentUniverse : ComponentUniverse unitGraph where
-  components := [()]
-  nodup := by
-    simp
-  covers := by
-    intro c
-    cases c
-    simp
-  edgeClosed := by
-    intro _ _ hEdge
-    cases hEdge
+abbrev exampleArchSigSFTReport :=
+  atomGeneratedSignature_generatedArchSigSFTReport
 
-def unitArchitectureLawModel :
-    ArchitectureSignature.ArchitectureLawModel Unit Unit Unit where
-  G := unitGraph
-  π := unitProjection
-  GA := unitGraph
-  O := unitObservation
-  U := unitComponentUniverse
-  boundaryAllowed := fun _ _ => True
-  abstractionAllowed := fun _ _ => True
-  lspPairClosed := by
-    intro x y _h
-    exact ⟨unitComponentUniverse.covers x, unitComponentUniverse.covers y⟩
+noncomputable abbrev exampleSFTForecastStatus :=
+  atomGeneratedSignature_sftForecastStatus
 
-theorem unitGraph_acyclic : Acyclic unitGraph := by
-  intro _ _ hEdge _hReach
-  cases hEdge
+abbrev exampleArchSigSFTReportEstimateBoundary :=
+  atomGeneratedSignature_generatedReportEstimateBoundary
 
-theorem unitGraph_walkAcyclic : WalkAcyclic unitGraph := by
-  exact walkAcyclic_of_acyclic unitGraph_acyclic
-
-theorem unitArchitectureLawful :
-    ArchitectureSignature.ArchitectureLawful unitArchitectureLawModel := by
-  constructor
-  · exact unitGraph_walkAcyclic
-  · constructor
-    · intro _ _ hEdge
-      cases hEdge
-    · constructor
-      · intro _ _ _h
-        rfl
-      · constructor
-        · intro _ _ hEdge
-          cases hEdge
-        · intro _ _ hEdge
-          cases hEdge
-
-def exampleAATCoreSignatureBridge :
-    ArchitectureSignature.AATCoreSignatureLawfulnessBridge
-      noBadCore
-      unitArchitectureLawModel where
-  zeroCurvaturePackage := noBadZeroCurvaturePackage
-  architectureLawfulFromAAT := by
-    intro _hLawful
-    exact unitArchitectureLawful
-  analyzesUsingAAT := True
-  analyzesUsingAATEvidence := trivial
-  archSigDoesNotDefineAAT := True
-  archSigDoesNotDefineAATEvidence := trivial
-  archSigDoesNotCreateAtomsEvidence :=
-    exampleAtomAxiomSystem.tool_output_does_not_create_atoms
-  unknownRejectedUnmeasuredSeparated := True
-  unknownRejectedUnmeasuredSeparatedEvidence := trivial
-  measuredZeroBoundary := True
-  validationIsNotTheoremDischarge := True
-  nonConclusions := True
-
-def exampleArchSigAATCoreTransition :
-    ArchSigAATCoreTransition noBadCore noBadCore unitArchitectureLawModel where
-  transition := exampleAATCoreTransition
-  sourceBridge := exampleAATCoreSignatureBridge
-  targetBridge := exampleAATCoreSignatureBridge
-  transitionBoundary := True
-  transitionBoundaryEvidence := trivial
-  archsigDoesNotDefineAAT := True
-  archsigDoesNotDefineAATEvidence := trivial
-  fieldSigAnalysisBoundary := True
-  fieldSigAnalysisBoundaryEvidence := trivial
-  nonConclusions := True
-
-def exampleSoftwareField :
-    SoftwareField Unit Unit Unit Unit Unit Unit where
-  state := ()
-  architectureProjection :=
-    { static := unitArchitectureLawModel.G
-      runtime := { edge := fun _ _ => False }
-      projection := unitArchitectureLawModel.π
-      abstractStatic := unitArchitectureLawModel.GA
-      staticObservation := unitArchitectureLawModel.O
-      boundaryAllowed := unitArchitectureLawModel.boundaryAllowed
-      abstractionAllowed := unitArchitectureLawModel.abstractionAllowed
-      runtimeAllowed := fun _ _ => True
-      semantic := { eval := fun _ => () }
-      requiredSemantic := fun _ => False
-      measuredSemantic := [] }
-  observedSignatureRecord := True
-  historyBoundary := True
-  operationSupportBoundary := True
-  operationPolicyBoundary := True
-  constraintEnvironmentBoundary := True
-  observationModelBoundary := True
-  governanceInterventionBoundary := True
-  exogenousArtifactInputBoundary := True
-  fieldBoundary := True
-  nonConclusions := True
-
-def exampleSoftwareFieldEstimate :
-    SoftwareFieldEstimate Unit Unit Unit Unit Unit Unit where
-  field := exampleSoftwareField
-  coverageAssumptions := True
-  observationBoundary := True
-  reconstructionBoundary := True
-  estimatorBoundary := True
-  missingEvidence := True
-  nonConclusions := True
-
-def exampleArchSigSFTReport :
-    ArchSigSFTReport Unit Unit Unit Unit Unit Unit where
-  selectedEstimate := exampleSoftwareFieldEstimate
-  actionClassCandidates := True
-  targetRegions := True
-  candidateOperationFamilies := True
-  comparableSignatureAxes := True
-  coverageAssumptions := True
-  observationBoundary := True
-  reconstructionBoundary := True
-  missingInvariants := True
-  unmeasuredAxes := True
-  theoremBoundary := True
-  forecastBoundary := True
-  reportBoundary := True
-  nonConclusions := True
-
-def exampleSFTForecastStatus : SFTForecastStatus where
-  localPremise := True
-  supportBoundary := True
-  trajectorySafetyBoundary := True
-  measuredAxisBoundary := True
-  unmeasuredAxisBoundary := True
-  theoremBoundary := True
-  toolingBoundary := True
-  forecastBoundary := True
-  nonConclusions := True
-
-def exampleArchSigSFTReportEstimateBoundary :
-    ArchSigSFTReportEstimateBoundary
-      exampleArchSigSFTReport
-      exampleSoftwareFieldEstimate
-      exampleSFTForecastStatus where
-  reportSelectsEstimate := rfl
-  preservesCoverageAssumptions := by
-    intro h
-    exact h
-  preservesObservationBoundary := by
-    intro h
-    exact h
-  preservesReconstructionBoundary := by
-    intro h
-    exact h
-  preservesMissingInvariants := by
-    intro h
-    exact h
-  preservesUnmeasuredAxes := by
-    intro h
-    exact h
-  preservesTheoremBoundary := by
-    intro h
-    exact h
-  preservesForecastBoundary := by
-    intro h
-    exact h
-  recordsReportBoundary := by
-    intro h
-    exact h
-  recordsNonConclusions := by
-    intro _h
-    exact ⟨⟨trivial, trivial⟩, trivial⟩
-
-def exampleFieldSigAATCoreTransitionAnalysis :
-    FieldSigAATCoreTransitionAnalysis
-      exampleArchSigAATCoreTransition
-      exampleArchSigSFTReport
-      exampleSoftwareFieldEstimate
-      exampleSFTForecastStatus where
-  reportBoundary := exampleArchSigSFTReportEstimateBoundary
-  readsArchSigTransitionAsSFTAnalysisEvidence := trivial
-  fieldSigDoesNotDefineAATEvidence := trivial
-  transitionDoesNotCreateAtoms :=
-    exampleAATCoreTransition.operation_does_not_create_atoms
-  forecastBoundary := trivial
-  theoremBoundary := trivial
-  nonConclusions := trivial
+abbrev exampleFieldSigAATCoreTransitionAnalysis :=
+  atomGeneratedSignature_generatedFieldSigAnalysis
 
 theorem exampleFieldSig_reads_archsig_transition_as_sft_analysis :
     exampleArchSigAATCoreTransition.fieldSigAnalysisBoundary := by
-  exact
-    exampleFieldSigAATCoreTransitionAnalysis
-      |>.fieldsig_reads_archsig_transition_as_sft_analysis
+  exact atomGeneratedSignature_fieldsig_reads_generated_transition
 
 theorem exampleFieldSig_forecast_correctness_remains_boundary :
     exampleSFTForecastStatus.RecordsForecastBoundary := by
-  exact
-    exampleFieldSigAATCoreTransitionAnalysis
-      |>.forecast_correctness_remains_boundary
+  exact atomGeneratedSignature_fieldsig_forecast_correctness_boundary
 
 end Formal.Arch.AtomSFTInterfaceExamples

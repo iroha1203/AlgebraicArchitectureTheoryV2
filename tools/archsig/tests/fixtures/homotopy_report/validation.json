@@ -11,6 +11,12 @@
     "result": "pass",
     "aatConceptSurfaceCount": 12,
     "moleculeReadingCount": 1,
+    "generatedAtomShapeCount": 6,
+    "generatedMoleculeCount": 1,
+    "generatedLawInputCount": 1,
+    "generatedObstructionCount": 1,
+    "generatedRepairTargetCount": 1,
+    "viewerDistanceInputCount": 15,
     "obstructionCircuitCount": 1,
     "signatureAxisCount": 1,
     "analyticRepresentationCount": 10,
@@ -148,6 +154,12 @@
     {
       "id": "archsig-analysis-packet-transfer-bridge-surface",
       "title": "packet exposes transfer matrix, bridge atom families, and evolution risk ranking",
+      "result": "pass",
+      "count": 0
+    },
+    {
+      "id": "archsig-analysis-packet-generated-middle-layer",
+      "title": "packet materializes generated AtomShape, molecule, law input, obstruction, repair target, and viewer distance inputs",
       "result": "pass",
       "count": 0
     },

@@ -212,8 +212,11 @@ generated_law_model_from_generated_object
 ```text
 Formal/Arch/AAT/GeneratedSignature.lean
 Formal/Arch/AAT/GeneratedFlatness.lean
+Formal/Arch/AAT/GeneratedFeatureExtension.lean
 Formal/Arch/AAT/GeneratedPath.lean
+Formal/Arch/AAT/GeneratedDiagram.lean
 Formal/Arch/AAT/GeneratedCurvature.lean
+Formal/Arch/AAT/GeneratedAnalyticRepresentation.lean
 Formal/Arch/AAT/GeneratedSFT.lean
 ```
 
@@ -391,6 +394,9 @@ atomObservations
 - generated path family
 - generated diagram family
 - generated filler / non-fillability witness
+- generated self-view feature-step lifting bridge over generated carriers
+- generated filling-failure bridge from `GeneratedNonFillabilityWitnessFor` to
+  `NonSplitExtensionWitnessPackage` over generated identity feature extensions
 - generated curvature measurement input
 - generated flatness theorem package
 
@@ -404,6 +410,10 @@ atomObservations
 
 - generated operation
 - operation preserves / transforms AtomShape
+- non-identity generated operation transport between distinct source / target generated molecules
+- transport circuit delta keeps source / target law and molecule selections separate
+- generated repair problem configuration before `GeneratedMolecule`
+- repair clears port / slot / valence mismatch into a generated target object
 - repair clears selected generated obstruction
 - repair target is port / slot / valence mismatch, not free-form recommendation
 
@@ -420,6 +430,8 @@ atomObservations
 - generated local obstruction readings
 - generated repair target readings
 - viewer distance inputs from AtomShape / generated structure
+- generated SFT consequence-envelope input from `GeneratedSFTInput` and
+  generated ArchSig transition evidence
 
 ### Phase 9: Docs synchronization
 
@@ -451,8 +463,9 @@ rg -n "architectureLawfulFromAAT|DoesNotDefineAAT|DoesNotCreateAtoms" Formal/Arc
 rg -n "ArchGraph|ArchitectureLawModel|FeatureExtension|Path|Observation" Formal/Arch
 ```
 
-`architectureLawfulFromAAT` 型の bridge field は原則として rewrite target とする。
-残す場合は、なぜ生成写像で置き換えられないかを Issue と acceptance test に落とす。
+`architectureLawfulFromAAT` 型の bridge field は theorem package source として扱わない。
+残す場合は legacy surface として分離し、対応する generated replacement entrypoint と
+「registry row ではない」acceptance theorem を置く。
 
 ### 8.2 Theorem classification check
 
@@ -471,6 +484,25 @@ Representation-level theorem:
 
 分類不能な theorem は合格扱いしない。
 
+実装済み検査:
+
+```text
+Formal/Arch/AAT/TheoremClassification.lean
+Formal/Arch/Examples/AtomGeneratedClassificationExamples.lean
+```
+
+`TheoremPackageClass` は `atomGenerated` / `bridgeAssumed` / `representationLevel`
+だけを持ち、`unclassified` constructor を持たない。各 registry row は分類に応じて
+generated entrypoint、bridge assumption、representation surface の evidence list と
+許可された migration action を要求する。
+
+current registry は `theorem_package_registry_has_no_bridge_assumed_rows` と
+`theorem_package_registry_has_no_rewrite_targets` により、bridge-assumed row と
+rewrite target row が残っていないことを Lean 上で固定する。generic Signature bridge は
+`legacyBridgeSurfaces` に移し、`architectureLawfulFromAAT` bridge assumption と
+`AATCoreSignatureLawfulnessBridge.ofGeneratedLawModel` replacement を明示するが、
+theorem package registry の source row には数えない。
+
 ### 8.3 ArchSig checks
 
 必須:
@@ -487,6 +519,7 @@ atom_generated_acceptance fixture:
   expected generatedLawInputs > 0
   expected applicableLawAxes > 0
   expected localSatisfied/localViolated/locallyBlocked present
+  expected generatedRepairTargets > 0
   expected viewerDistanceInputs present
 ```
 
@@ -504,6 +537,7 @@ atom_generated_acceptance fixture:
 - ArchSig が generated molecule / law input / obstruction / repair target を出力する。
 - Viewer の距離・配置は AtomShape と generated structure を根拠にする。
 - hand-authored representation theorem は AAT の主張ではなく後段 library として扱われる。
+- theorem package registry に `bridgeAssumed` / `rewriteTarget` の残存 row がない。
 
 ## 10. 失敗条件
 

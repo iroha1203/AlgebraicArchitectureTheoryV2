@@ -1,3 +1,5 @@
+import Formal.Arch.AAT.GeneratedFeatureExtension
+import Formal.Arch.Evolution.Chapter9DiagramFilling
 import Formal.Arch.Extension.ArchitectureExtensionFormula
 
 /-!
@@ -13,6 +15,8 @@ coverage, or extractor-completeness claims.
 -/
 
 namespace Formal.Arch
+
+universe u v w q r z
 
 namespace Chapter10ArchitectureExtensionFormula
 
@@ -72,15 +76,23 @@ def representativeDeclarations : Candidate -> List String
        "MultiLabelExtensionObstructionWitness",
        "ExtensionObstructionWitness.toMultiLabel",
        "ExtensionObstructionWitness.toMultiLabel_label_iff",
-       "ExtensionObstructionWitness.toMultiLabel_classifiesAs"]
+       "ExtensionObstructionWitness.toMultiLabel_classifiesAs",
+       "Chapter10ArchitectureExtensionFormula.GeneratedExtensionObstructionWitness",
+       "Chapter10ArchitectureExtensionFormula.GeneratedMultiLabelExtensionObstructionWitness",
+       "Chapter10ArchitectureExtensionFormula.generatedExtensionObstructionWitness_toMultiLabel",
+       "Chapter10ArchitectureExtensionFormula.generatedExtensionObstructionWitness_toMultiLabel_label_iff",
+       "Chapter10ArchitectureExtensionFormula.generatedExtensionObstructionWitness_toMultiLabel_classifiesAs"]
   | nonSplitWitnessPackage =>
       ["SelectedSplitExtension",
        "SelectedExtensionObstructionWitness",
        "SelectedExtensionObstructionWitnessExists",
        "NonSplitExtensionWitnessPackage",
+       "Chapter9DiagramFilling.generatedFillingFailureBridge_toNonSplitExtensionWitnessPackage",
        "NonSplitExtensionWitnessPackage.not_selectedSplitExtension_of_selectedExtensionObstructionWitness",
+       "Chapter9DiagramFilling.generatedFillingFailureBridge_not_selectedSplitExtension_of_generatedWitness",
        "NonSplitExtensionWitnessPackage.selectedExtensionObstructionWitnessExists_of_not_selectedSplitExtension",
-       "NonSplitExtensionWitnessPackage.selectedExtensionObstructionWitnessExists_iff_not_selectedSplitExtension"]
+       "NonSplitExtensionWitnessPackage.selectedExtensionObstructionWitnessExists_iff_not_selectedSplitExtension",
+       "Chapter9DiagramFilling.generatedFillingFailureBridge_selectedExtensionObstructionWitnessExists_of_generatedWitnessExists"]
   | singleLabelClassification =>
       ["ClassifiedAsInheritedCore",
        "ClassifiedAsFeatureLocal",
@@ -89,6 +101,7 @@ def representativeDeclarations : Candidate -> List String
        "ClassifiedAsFillingFailure",
        "ClassifiedAsComplexityTransfer",
        "ClassifiedAsResidualCoverageGap",
+       "Chapter10ArchitectureExtensionFormula.generatedIdentityArchitectureExtensionFormula_structural",
        "ArchitectureExtensionFormula_structural"]
   | multiLabelClassification =>
       ["MultiLabelClassifiedAsInheritedCore",
@@ -98,29 +111,45 @@ def representativeDeclarations : Candidate -> List String
        "MultiLabelClassifiedAsFillingFailure",
        "MultiLabelClassifiedAsComplexityTransfer",
        "MultiLabelClassifiedAsResidualCoverageGap",
+       "Chapter10ArchitectureExtensionFormula.generatedIdentityArchitectureExtensionFormula_multilabel_structural",
        "ArchitectureExtensionFormula_multilabel_structural"]
   | fillingFailureBridge =>
       ["FillingFailureWitnessPayload",
+       "Chapter9DiagramFilling.generatedFillingFailureWitnessPayload",
        "fillingFailureExtensionObstructionWitness",
+       "Chapter9DiagramFilling.generatedFillingFailureExtensionObstructionWitness",
        "fillingFailureExtensionObstructionWitness_classified",
+       "Chapter9DiagramFilling.generatedFillingFailureExtensionObstructionWitness_classified",
        "FillingFailureRefutesSplit",
        "not_selectedSplitExtension_of_fillingFailurePayload",
        "FillingFailureBridgePackage.toNonSplitExtensionWitnessPackage",
-       "fillingFailureExtensionObstructionWitness_multilabel_classified"]
+       "Chapter9DiagramFilling.generatedFillingFailureBridge_toNonSplitExtensionWitnessPackage",
+       "Chapter9DiagramFilling.generatedFillingFailureBridge_selectedExtensionObstructionWitnessExists_of_generatedWitnessExists",
+       "fillingFailureExtensionObstructionWitness_multilabel_classified",
+       "Chapter10ArchitectureExtensionFormula.generatedFillingFailureExtensionObstructionWitness_multilabel_classified"]
   | liftingFailureBridge =>
       ["LiftingFailureWitnessPayload",
+       "Chapter9DiagramFilling.generatedSelfFeatureExtension",
+       "Chapter9DiagramFilling.generatedSelfSplitExtensionLiftingData",
        "liftingFailureExtensionObstructionWitness",
+       "Chapter9DiagramFilling.generatedSelfLiftingFailureExtensionObstructionWitness_classified",
        "liftingFailureExtensionObstructionWitness_classified",
        "not_compatibleWithInterface_of_liftingFailurePayload",
        "liftingFailureExtensionObstructionWitnessExists_of_not_liftingPreservationPackage",
-       "liftingFailureExtensionObstructionWitness_multilabel_classified"]
+       "Chapter9DiagramFilling.generatedSelfLiftingFailureExtensionObstructionWitnessExists_of_not_liftingPreservationPackage",
+       "liftingFailureExtensionObstructionWitness_multilabel_classified",
+       "Chapter10ArchitectureExtensionFormula.generatedSelfLiftingFailureExtensionObstructionWitness_multilabel_classified"]
   | complexityTransferBridge =>
       ["ComplexityTransferWitnessPayload",
        "complexityTransferExtensionObstructionWitness",
        "complexityTransferExtensionObstructionWitness_classified",
        "complexityTransferExtensionObstructionWitnessExists_of_transferredTo",
        "complexityTransferExtensionObstructionWitnessExists_of_no_free_elimination",
-       "complexityTransferExtensionObstructionWitness_multilabel_classified"]
+       "complexityTransferExtensionObstructionWitness_multilabel_classified",
+       "Chapter10ArchitectureExtensionFormula.generatedComplexityTransferExtensionObstructionWitness_classified",
+       "Chapter10ArchitectureExtensionFormula.generatedComplexityTransferExtensionObstructionWitnessExists_of_transferredTo",
+       "Chapter10ArchitectureExtensionFormula.generatedComplexityTransferExtensionObstructionWitnessExists_of_no_free_elimination",
+       "Chapter10ArchitectureExtensionFormula.generatedComplexityTransferExtensionObstructionWitness_multilabel_classified"]
   | residualCoverageGapBridge =>
       ["ResidualCoverageGapWitnessPayload",
        "residualCoverageGapExtensionObstructionWitness",
@@ -128,7 +157,10 @@ def representativeDeclarations : Candidate -> List String
        "not_extensionCoverage_of_residualCoverageGapPayload",
        "residualCoverageGapExtensionObstructionWitnessExists_of_extensionCoverageWitnessExists",
        "residualCoverageGapExtensionObstructionWitnessExists_of_not_extensionCoverage",
-       "residualCoverageGapExtensionObstructionWitness_multilabel_classified"]
+       "residualCoverageGapExtensionObstructionWitness_multilabel_classified",
+       "Chapter10ArchitectureExtensionFormula.generatedResidualCoverageGapExtensionObstructionWitness_classified",
+       "Chapter10ArchitectureExtensionFormula.generatedResidualCoverageGapExtensionObstructionWitness_multilabel_classified",
+       "Chapter10ArchitectureExtensionFormula.generatedIdentityExtension_noResidualCoverageGapPayload"]
 
 /--
 Schematic-name to Lean-API correspondences for Chapter 10.
@@ -143,17 +175,22 @@ def schematicCorrespondences : Candidate -> List SchematicCorrespondence
          leanDeclarations :=
           ["ExtensionObstructionClass",
            "ExtensionObstructionWitness",
-           "MultiLabelExtensionObstructionWitness"],
+           "MultiLabelExtensionObstructionWitness",
+           "Chapter10ArchitectureExtensionFormula.GeneratedExtensionObstructionWitness",
+           "Chapter10ArchitectureExtensionFormula.GeneratedMultiLabelExtensionObstructionWitness"],
          reading :=
-          "bounded classification carrier for selected extension-obstruction witnesses",
+          "bounded classification carrier for selected extension-obstruction witnesses, specialized to generated identity feature extensions",
          status := "defined only" },
        { schematic := "single-label witness embedded into multi-label layer",
          leanDeclarations :=
           ["ExtensionObstructionWitness.toMultiLabel",
            "ExtensionObstructionWitness.toMultiLabel_label_iff",
-           "ExtensionObstructionWitness.toMultiLabel_classifiesAs"],
+           "ExtensionObstructionWitness.toMultiLabel_classifiesAs",
+           "Chapter10ArchitectureExtensionFormula.generatedExtensionObstructionWitness_toMultiLabel",
+           "Chapter10ArchitectureExtensionFormula.generatedExtensionObstructionWitness_toMultiLabel_label_iff",
+           "Chapter10ArchitectureExtensionFormula.generatedExtensionObstructionWitness_toMultiLabel_classifiesAs"],
          reading :=
-          "payload-preserving bridge from a selected single label to the corresponding multi-label witness",
+          "payload-preserving bridge from a selected single label to the corresponding generated multi-label witness",
          status := "defined only / proved" }]
   | nonSplitWitnessPackage =>
       [{ schematic := "selected non-split witness package",
@@ -168,16 +205,18 @@ def schematicCorrespondences : Candidate -> List SchematicCorrespondence
   | singleLabelClassification =>
       [{ schematic := "ArchitectureExtensionFormula_structural",
          leanDeclarations :=
-          ["ArchitectureExtensionFormula_structural"],
+          ["ArchitectureExtensionFormula_structural",
+           "Chapter10ArchitectureExtensionFormula.generatedIdentityArchitectureExtensionFormula_structural"],
          reading :=
-          "every selected single-label witness is covered by at least one of the seven classification predicates",
+          "every selected single-label witness is covered by at least one of the seven classification predicates, including generated identity feature extensions",
          status := "proved" }]
   | multiLabelClassification =>
       [{ schematic := "ArchitectureExtensionFormula_multilabel_structural",
          leanDeclarations :=
-          ["ArchitectureExtensionFormula_multilabel_structural"],
+          ["ArchitectureExtensionFormula_multilabel_structural",
+           "Chapter10ArchitectureExtensionFormula.generatedIdentityArchitectureExtensionFormula_multilabel_structural"],
          reading :=
-          "every selected multi-label witness is covered by at least one of the seven multi-label predicates",
+          "every selected multi-label witness is covered by at least one of the seven multi-label predicates, including generated identity feature extensions",
          status := "proved" }]
   | fillingFailureBridge =>
       [{ schematic := "filling failure classified as extension obstruction",
@@ -201,12 +240,17 @@ def schematicCorrespondences : Candidate -> List SchematicCorrespondence
       [{ schematic := "lifting failure classified as extension obstruction",
          leanDeclarations :=
           ["LiftingFailureWitnessPayload",
+           "Chapter9DiagramFilling.generatedSelfFeatureExtension",
+           "Chapter9DiagramFilling.generatedSelfSplitExtensionLiftingData",
            "liftingFailureExtensionObstructionWitness",
            "liftingFailureExtensionObstructionWitness_classified",
            "liftingFailureExtensionObstructionWitnessExists_of_not_liftingPreservationPackage",
-           "liftingFailureExtensionObstructionWitness_multilabel_classified"],
+           "Chapter9DiagramFilling.generatedSelfLiftingFailureExtensionObstructionWitness_classified",
+           "Chapter9DiagramFilling.generatedSelfLiftingFailureExtensionObstructionWitnessExists_of_not_liftingPreservationPackage",
+           "liftingFailureExtensionObstructionWitness_multilabel_classified",
+           "Chapter10ArchitectureExtensionFormula.generatedSelfLiftingFailureExtensionObstructionWitness_multilabel_classified"],
          reading :=
-          "absence of a selected lifting preservation package embedded into the lifting-failure classification layer",
+          "absence of a selected generated self-view lifting preservation package embedded into the lifting-failure classification layer",
          status := "defined only / proved" }]
   | complexityTransferBridge =>
       [{ schematic := "complexity transfer classified as extension obstruction",
@@ -215,9 +259,12 @@ def schematicCorrespondences : Candidate -> List SchematicCorrespondence
            "complexityTransferExtensionObstructionWitness",
            "complexityTransferExtensionObstructionWitness_classified",
            "complexityTransferExtensionObstructionWitnessExists_of_no_free_elimination",
-           "complexityTransferExtensionObstructionWitness_multilabel_classified"],
+           "complexityTransferExtensionObstructionWitness_multilabel_classified",
+           "Chapter10ArchitectureExtensionFormula.generatedComplexityTransferExtensionObstructionWitness_classified",
+           "Chapter10ArchitectureExtensionFormula.generatedComplexityTransferExtensionObstructionWitnessExists_of_no_free_elimination",
+           "Chapter10ArchitectureExtensionFormula.generatedComplexityTransferExtensionObstructionWitness_multilabel_classified"],
          reading :=
-          "selected runtime / semantic / policy transfer witness embedded into the complexity-transfer classification layer",
+          "selected runtime / semantic / policy transfer witness embedded into the generated identity feature-extension complexity-transfer classification layer",
          status := "defined only / proved" }]
   | residualCoverageGapBridge =>
       [{ schematic := "residual coverage gap classified as extension obstruction",
@@ -226,9 +273,12 @@ def schematicCorrespondences : Candidate -> List SchematicCorrespondence
            "residualCoverageGapExtensionObstructionWitness",
            "residualCoverageGapExtensionObstructionWitness_classified",
            "residualCoverageGapExtensionObstructionWitnessExists_of_not_extensionCoverage",
-           "residualCoverageGapExtensionObstructionWitness_multilabel_classified"],
+           "residualCoverageGapExtensionObstructionWitness_multilabel_classified",
+           "Chapter10ArchitectureExtensionFormula.generatedResidualCoverageGapExtensionObstructionWitness_classified",
+           "Chapter10ArchitectureExtensionFormula.generatedResidualCoverageGapExtensionObstructionWitness_multilabel_classified",
+           "Chapter10ArchitectureExtensionFormula.generatedIdentityExtension_noResidualCoverageGapPayload"],
          reading :=
-          "selected extension-coverage diagnostic embedded into the residual-coverage-gap classification layer",
+          "selected extension-coverage diagnostic embedded into the generated identity feature-extension residual-coverage classification layer; generated identity coverage rules out such payloads",
          status := "defined only / proved" }]
 
 /-- Boundary reminder for reading each candidate as a bounded Chapter 10 API. -/
@@ -251,6 +301,399 @@ def nonConclusionBoundary : Candidate -> String
       "selected coverage diagnostic only; no static split failure, runtime / semantic flatness failure, or extractor completeness"
 
 end Candidate
+
+/--
+Generated identity feature-extension obstruction witness carrier.
+
+This gives the Chapter 10 obstruction universe a generated source surface
+instead of leaving `ExtensionObstructionWitness` as only a hand-authored
+feature-extension carrier.
+-/
+abbrev GeneratedExtensionObstructionWitness
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    (object : AAT.GeneratedArchitectureObject presentation)
+    (Witness : Type z) : Type z :=
+  ExtensionObstructionWitness object.generatedIdentityFeatureExtension Witness
+
+/--
+Generated identity feature-extension multi-label obstruction witness carrier.
+-/
+abbrev GeneratedMultiLabelExtensionObstructionWitness
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    (object : AAT.GeneratedArchitectureObject presentation)
+    (Witness : Type z) : Type z :=
+  MultiLabelExtensionObstructionWitness
+    object.generatedIdentityFeatureExtension Witness
+
+/--
+Embed a generated single-label extension-obstruction witness into the
+generated multi-label witness layer.
+-/
+def generatedExtensionObstructionWitness_toMultiLabel
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : AAT.GeneratedArchitectureObject presentation}
+    {Witness : Type z}
+    (witness : GeneratedExtensionObstructionWitness object Witness) :
+    GeneratedMultiLabelExtensionObstructionWitness object Witness :=
+  witness.toMultiLabel
+
+@[simp]
+theorem generatedExtensionObstructionWitness_toMultiLabel_witness
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : AAT.GeneratedArchitectureObject presentation}
+    {Witness : Type z}
+    (witness : GeneratedExtensionObstructionWitness object Witness) :
+    (generatedExtensionObstructionWitness_toMultiLabel witness).witness =
+      witness.witness :=
+  rfl
+
+theorem generatedExtensionObstructionWitness_toMultiLabel_label_iff
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : AAT.GeneratedArchitectureObject presentation}
+    {Witness : Type z}
+    (witness : GeneratedExtensionObstructionWitness object Witness)
+    (classification : ExtensionObstructionClass) :
+    (generatedExtensionObstructionWitness_toMultiLabel witness).labels
+        classification ↔
+      witness.classifiesAs = classification :=
+  Iff.rfl
+
+theorem generatedExtensionObstructionWitness_toMultiLabel_classifiesAs
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : AAT.GeneratedArchitectureObject presentation}
+    {Witness : Type z}
+    (witness : GeneratedExtensionObstructionWitness object Witness) :
+    (generatedExtensionObstructionWitness_toMultiLabel witness).labels
+      witness.classifiesAs :=
+  rfl
+
+/--
+Atom-generated specialization of the single-label structural architecture
+extension formula.
+
+The feature extension and coverage premise are generated from the same
+`GeneratedArchitectureObject`; callers do not supply a hand-authored
+`FeatureExtension`.
+-/
+theorem generatedIdentityArchitectureExtensionFormula_structural
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    (object : AAT.GeneratedArchitectureObject presentation)
+    {Witness : Type z}
+    (witness :
+      ExtensionObstructionWitness
+        object.generatedIdentityFeatureExtension Witness) :
+    ClassifiedAsInheritedCore
+        object.generatedIdentityFeatureExtension
+        object.generatedIdentityExtensionComponentUniverse
+        witness ∨
+      ClassifiedAsFeatureLocal
+        object.generatedIdentityFeatureExtension
+        object.generatedIdentityExtensionComponentUniverse
+        witness ∨
+      ClassifiedAsInteraction
+        object.generatedIdentityFeatureExtension
+        object.generatedIdentityExtensionComponentUniverse
+        witness ∨
+      ClassifiedAsLiftingFailure
+        object.generatedIdentityFeatureExtension
+        object.generatedIdentityExtensionComponentUniverse
+        witness ∨
+      ClassifiedAsFillingFailure
+        object.generatedIdentityFeatureExtension
+        object.generatedIdentityExtensionComponentUniverse
+        witness ∨
+      ClassifiedAsComplexityTransfer
+        object.generatedIdentityFeatureExtension
+        object.generatedIdentityExtensionComponentUniverse
+        witness ∨
+      ClassifiedAsResidualCoverageGap
+        object.generatedIdentityFeatureExtension
+        object.generatedIdentityExtensionComponentUniverse
+        witness := by
+  exact
+    ArchitectureExtensionFormula_structural
+      object.generatedIdentityFeatureExtension
+      object.generatedIdentityExtensionComponentUniverse
+      object.generatedIdentityExtensionCoverageComplete
+      witness
+
+/--
+Atom-generated specialization of the multi-label structural architecture
+extension formula.
+-/
+theorem generatedIdentityArchitectureExtensionFormula_multilabel_structural
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    (object : AAT.GeneratedArchitectureObject presentation)
+    {Witness : Type z}
+    (witness :
+      MultiLabelExtensionObstructionWitness
+        object.generatedIdentityFeatureExtension Witness) :
+    MultiLabelClassifiedAsInheritedCore
+        object.generatedIdentityFeatureExtension
+        object.generatedIdentityExtensionComponentUniverse
+        witness ∨
+      MultiLabelClassifiedAsFeatureLocal
+        object.generatedIdentityFeatureExtension
+        object.generatedIdentityExtensionComponentUniverse
+        witness ∨
+      MultiLabelClassifiedAsInteraction
+        object.generatedIdentityFeatureExtension
+        object.generatedIdentityExtensionComponentUniverse
+        witness ∨
+      MultiLabelClassifiedAsLiftingFailure
+        object.generatedIdentityFeatureExtension
+        object.generatedIdentityExtensionComponentUniverse
+        witness ∨
+      MultiLabelClassifiedAsFillingFailure
+        object.generatedIdentityFeatureExtension
+        object.generatedIdentityExtensionComponentUniverse
+        witness ∨
+      MultiLabelClassifiedAsComplexityTransfer
+        object.generatedIdentityFeatureExtension
+        object.generatedIdentityExtensionComponentUniverse
+        witness ∨
+      MultiLabelClassifiedAsResidualCoverageGap
+        object.generatedIdentityFeatureExtension
+        object.generatedIdentityExtensionComponentUniverse
+        witness := by
+  exact
+    ArchitectureExtensionFormula_multilabel_structural
+      object.generatedIdentityFeatureExtension
+      object.generatedIdentityExtensionComponentUniverse
+      object.generatedIdentityExtensionCoverageComplete
+      witness
+
+/--
+Atom-generated specialization of the filling-failure multi-label bridge.
+
+The obstruction witness is built over the generated identity feature extension
+of the same generated object, so callers do not supply a hand-authored
+`FeatureExtension`.
+-/
+theorem generatedFillingFailureExtensionObstructionWitness_multilabel_classified
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : AAT.GeneratedArchitectureObject presentation}
+    {IndependentSquare :
+      (W X Y Z : AAT.GeneratedCarrier object) ->
+        AAT.GeneratedArchitectureStep object W X ->
+        AAT.GeneratedArchitectureStep object X Z ->
+        AAT.GeneratedArchitectureStep object W Y ->
+        AAT.GeneratedArchitectureStep object Y Z -> Prop}
+    {SameExternalContract :
+      (X Y : AAT.GeneratedCarrier object) ->
+        AAT.GeneratedArchitectureStep object X Y ->
+        AAT.GeneratedArchitectureStep object X Y -> Prop}
+    {RepairFill :
+      (X Y : AAT.GeneratedCarrier object) ->
+        AAT.GeneratedArchitecturePath object X Y ->
+        AAT.GeneratedArchitecturePath object X Y -> Prop}
+    {source target : AAT.GeneratedCarrier object}
+    {diagram : AAT.GeneratedArchitectureDiagram object
+      (source := source) (target := target)}
+    {DiagramWitness : Type z}
+    (payload :
+      FillingFailureWitnessPayload
+        IndependentSquare SameExternalContract RepairFill diagram DiagramWitness) :
+    MultiLabelClassifiedAsFillingFailure object.generatedIdentityFeatureExtension
+      object.generatedIdentityExtensionComponentUniverse
+      (Formal.Arch.Chapter9DiagramFilling.generatedFillingFailureExtensionObstructionWitness
+        payload).toMultiLabel :=
+  rfl
+
+/--
+Atom-generated specialization of the lifting-failure multi-label bridge over
+the generated self-view feature extension.
+-/
+theorem generatedSelfLiftingFailureExtensionObstructionWitness_multilabel_classified
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : AAT.GeneratedArchitectureObject presentation}
+    {featureInvariant : AAT.GeneratedCarrier object -> Prop}
+    {coreInvariant : AAT.GeneratedCarrier object -> Prop}
+    {featureStep : SelectedFeatureStep (AAT.GeneratedCarrier object)}
+    (payload :
+      LiftingFailureWitnessPayload
+        (Formal.Arch.Chapter9DiagramFilling.generatedSelfSplitExtensionLiftingData object)
+        featureInvariant coreInvariant featureStep) :
+    MultiLabelClassifiedAsLiftingFailure
+      (Formal.Arch.Chapter9DiagramFilling.generatedSelfFeatureExtension object)
+      object.generatedIdentityExtensionComponentUniverse
+      (liftingFailureExtensionObstructionWitness
+        (Formal.Arch.Chapter9DiagramFilling.generatedSelfSplitExtensionLiftingData object)
+        payload).toMultiLabel :=
+  rfl
+
+/--
+Atom-generated specialization of the complexity-transfer classification bridge
+over the generated identity feature extension.
+-/
+theorem generatedComplexityTransferExtensionObstructionWitness_classified
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : AAT.GeneratedArchitectureObject presentation}
+    {Transform : Type q} {Witness : Type z}
+    {S : ComplexityTransferSchema Transform Witness}
+    {target : ComplexityTransferTarget} {t : Transform}
+    (payload : ComplexityTransferWitnessPayload S target t) :
+    ClassifiedAsComplexityTransfer
+      object.generatedIdentityFeatureExtension
+      object.generatedIdentityExtensionComponentUniverse
+      (complexityTransferExtensionObstructionWitness
+        object.generatedIdentityFeatureExtension payload) :=
+  complexityTransferExtensionObstructionWitness_classified
+    object.generatedIdentityFeatureExtension
+    object.generatedIdentityExtensionComponentUniverse
+    payload
+
+/--
+Atom-generated specialization of the target-specific complexity-transfer
+existence bridge.
+-/
+theorem generatedComplexityTransferExtensionObstructionWitnessExists_of_transferredTo
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    (object : AAT.GeneratedArchitectureObject presentation)
+    {Transform : Type q} {Witness : Type z}
+    {S : ComplexityTransferSchema Transform Witness}
+    {target : ComplexityTransferTarget} {t : Transform}
+    (hTransfer : ComplexityTransferredTo S target t) :
+    ∃ payload : ComplexityTransferWitnessPayload S target t,
+      ClassifiedAsComplexityTransfer
+        object.generatedIdentityFeatureExtension
+        object.generatedIdentityExtensionComponentUniverse
+        (complexityTransferExtensionObstructionWitness
+          object.generatedIdentityFeatureExtension payload) :=
+  complexityTransferExtensionObstructionWitnessExists_of_transferredTo
+    object.generatedIdentityFeatureExtension
+    object.generatedIdentityExtensionComponentUniverse
+    hTransfer
+
+/--
+Atom-generated specialization of the bounded no-free-elimination complexity
+transfer bridge.
+-/
+theorem generatedComplexityTransferExtensionObstructionWitnessExists_of_no_free_elimination
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    (object : AAT.GeneratedArchitectureObject presentation)
+    {State : Type w} {Transform : Type q} {Requirement : Type r}
+    {Witness : Type z}
+    {T : ArchitectureTransform State Transform}
+    {staticMeasure : SelectedComplexityMeasure State}
+    {requirements : RequirementSchema State Requirement}
+    {S : ComplexityTransferSchema Transform Witness}
+    (pkg : BoundedComplexityTransferPackage T staticMeasure requirements S)
+    (t : Transform)
+    (hReduces : ReducesStaticComplexity T staticMeasure t)
+    (hPreserves :
+      PreservesRequirements requirements (T.source t) (T.target t))
+    (hNotEliminated : ¬ ComplexityEliminatedByProof S t) :
+    ∃ target : ComplexityTransferTarget,
+      ∃ payload : ComplexityTransferWitnessPayload S target t,
+        ClassifiedAsComplexityTransfer
+          object.generatedIdentityFeatureExtension
+          object.generatedIdentityExtensionComponentUniverse
+          (complexityTransferExtensionObstructionWitness
+            object.generatedIdentityFeatureExtension payload) :=
+  complexityTransferExtensionObstructionWitnessExists_of_no_free_elimination
+    object.generatedIdentityFeatureExtension
+    object.generatedIdentityExtensionComponentUniverse
+    pkg t hReduces hPreserves hNotEliminated
+
+/--
+Atom-generated specialization of the complexity-transfer multi-label bridge.
+-/
+theorem generatedComplexityTransferExtensionObstructionWitness_multilabel_classified
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : AAT.GeneratedArchitectureObject presentation}
+    {Transform : Type q} {Witness : Type z}
+    {S : ComplexityTransferSchema Transform Witness}
+    {target : ComplexityTransferTarget} {t : Transform}
+    (payload : ComplexityTransferWitnessPayload S target t) :
+    MultiLabelClassifiedAsComplexityTransfer
+      object.generatedIdentityFeatureExtension
+      object.generatedIdentityExtensionComponentUniverse
+      (complexityTransferExtensionObstructionWitness
+        object.generatedIdentityFeatureExtension payload).toMultiLabel :=
+  complexityTransferExtensionObstructionWitness_multilabel_classified
+    object.generatedIdentityFeatureExtension
+    object.generatedIdentityExtensionComponentUniverse
+    payload
+
+/--
+Atom-generated specialization of the residual-coverage-gap classification
+bridge over the generated identity feature extension.
+-/
+theorem generatedResidualCoverageGapExtensionObstructionWitness_classified
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : AAT.GeneratedArchitectureObject presentation}
+    (payload :
+      ResidualCoverageGapWitnessPayload
+        object.generatedIdentityFeatureExtension
+        object.generatedIdentityExtensionComponentUniverse) :
+    ClassifiedAsResidualCoverageGap
+      object.generatedIdentityFeatureExtension
+      object.generatedIdentityExtensionComponentUniverse
+      (residualCoverageGapExtensionObstructionWitness
+        object.generatedIdentityFeatureExtension
+        object.generatedIdentityExtensionComponentUniverse
+        payload) :=
+  residualCoverageGapExtensionObstructionWitness_classified
+    object.generatedIdentityFeatureExtension
+    object.generatedIdentityExtensionComponentUniverse
+    payload
+
+/--
+Atom-generated specialization of the residual-coverage-gap multi-label bridge.
+-/
+theorem generatedResidualCoverageGapExtensionObstructionWitness_multilabel_classified
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : AAT.GeneratedArchitectureObject presentation}
+    (payload :
+      ResidualCoverageGapWitnessPayload
+        object.generatedIdentityFeatureExtension
+        object.generatedIdentityExtensionComponentUniverse) :
+    MultiLabelClassifiedAsResidualCoverageGap
+      object.generatedIdentityFeatureExtension
+      object.generatedIdentityExtensionComponentUniverse
+      (residualCoverageGapExtensionObstructionWitness
+        object.generatedIdentityFeatureExtension
+        object.generatedIdentityExtensionComponentUniverse
+        payload).toMultiLabel :=
+  residualCoverageGapExtensionObstructionWitness_multilabel_classified
+    object.generatedIdentityFeatureExtension
+    object.generatedIdentityExtensionComponentUniverse
+    payload
+
+/--
+Generated identity feature extensions have complete generated coverage, so a
+residual coverage-gap payload cannot be constructed for that generated surface.
+-/
+theorem generatedIdentityExtension_noResidualCoverageGapPayload
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    (object : AAT.GeneratedArchitectureObject presentation) :
+    ¬ Nonempty
+      (ResidualCoverageGapWitnessPayload
+        object.generatedIdentityFeatureExtension
+        object.generatedIdentityExtensionComponentUniverse) := by
+  intro hPayload
+  rcases hPayload with ⟨payload⟩
+  exact
+    not_extensionCoverage_of_residualCoverageGapPayload payload
+      object.generatedIdentityExtensionCoverageComplete
 
 end Chapter10ArchitectureExtensionFormula
 

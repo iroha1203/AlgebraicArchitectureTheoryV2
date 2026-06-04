@@ -324,6 +324,75 @@ theorem circuit_delta_does_not_create_atoms
 end AATCoreCircuitDelta
 
 /--
+Law-relative circuit delta for transport transitions.
+
+Unlike `AATCoreCircuitDelta`, this record does not require one law and one
+molecule to be selected by both cores. Generated operations can move the
+selected source molecule/law to a selected target molecule/law, so the circuit
+surface keeps source and target selections separate.
+-/
+structure AATCoreTransportCircuitDelta
+    {system : AtomAxiomSystem.{u, v}}
+    (source target : AAT.AATCore system) where
+  sourceLaw : AAT.DesignLaw system
+  targetLaw : AAT.DesignLaw system
+  sourceMolecule : AAT.Molecule system
+  targetMolecule : AAT.Molecule system
+  sourceLawOnSource : source.laws sourceLaw
+  targetLawOnTarget : target.laws targetLaw
+  sourceMoleculeOnSource : source.molecules sourceMolecule
+  targetMoleculeOnTarget : target.molecules targetMolecule
+  sourceCircuit : AAT.ObstructionCircuit sourceLaw sourceMolecule -> Prop
+  targetCircuit : AAT.ObstructionCircuit targetLaw targetMolecule -> Prop
+  transportedCircuit :
+    AAT.ObstructionCircuit sourceLaw sourceMolecule ->
+      AAT.ObstructionCircuit targetLaw targetMolecule -> Prop
+  circuitBoundary : Prop
+  doesNotCreateAtomsEvidence : system.noSFTEventCreatesAtoms
+  nonConclusions : Prop
+
+namespace AATCoreTransportCircuitDelta
+
+variable {system : AtomAxiomSystem.{u, v}}
+variable {source target : AAT.AATCore system}
+
+/-- Source-side transport-circuit molecules contain primitive root atoms. -/
+theorem source_molecule_atom_primitive
+    (delta : AATCoreTransportCircuitDelta source target)
+    {atom : system.Atom}
+    (hAtom : delta.sourceMolecule.atoms atom) :
+    system.Primitive atom :=
+  source.atom_of_selected_molecule delta.sourceMoleculeOnSource hAtom
+
+/-- Target-side transport-circuit molecules contain primitive root atoms. -/
+theorem target_molecule_atom_primitive
+    (delta : AATCoreTransportCircuitDelta source target)
+    {atom : system.Atom}
+    (hAtom : delta.targetMolecule.atoms atom) :
+    system.Primitive atom :=
+  target.atom_of_selected_molecule delta.targetMoleculeOnTarget hAtom
+
+/-- Source-side selected law does not create atom existence. -/
+theorem source_law_does_not_create_atoms
+    (delta : AATCoreTransportCircuitDelta source target) :
+    system.noLawCreatesAtoms :=
+  delta.sourceLaw.does_not_create_atoms
+
+/-- Target-side selected law does not create atom existence. -/
+theorem target_law_does_not_create_atoms
+    (delta : AATCoreTransportCircuitDelta source target) :
+    system.noLawCreatesAtoms :=
+  delta.targetLaw.does_not_create_atoms
+
+/-- Transport circuit deltas do not create atom existence. -/
+theorem transport_circuit_delta_does_not_create_atoms
+    (delta : AATCoreTransportCircuitDelta source target) :
+    system.noSFTEventCreatesAtoms :=
+  delta.doesNotCreateAtomsEvidence
+
+end AATCoreTransportCircuitDelta
+
+/--
 SFT-visible transition between two Atom-axiomatized AAT cores.
 
 The transition consumes an AAT operation package and records atom, semantic,
@@ -381,6 +450,67 @@ theorem circuit_delta_does_not_create_atoms
   transition.circuitDelta.circuit_delta_does_not_create_atoms
 
 end AATCoreTransition
+
+/--
+SFT-visible transport transition between two Atom-axiomatized AAT cores.
+
+This is the transition shape used by generated operations whose selected
+source molecule/law is transported to a selected target molecule/law.  It keeps
+the same atom, semantic, and circuit delta surfaces as `AATCoreTransition`,
+but consumes an `OperationTransportPackage` rather than forcing preservation of
+the same molecule and law.
+-/
+structure AATCoreTransportTransition
+    {system : AtomAxiomSystem.{u, v}}
+    (source target : AAT.AATCore system) where
+  transportPackage : AAT.OperationTransportPackage source target
+  atomDelta : AATCoreAtomDelta source target
+  semanticDelta : AATCoreSemanticDelta atomDelta
+  circuitDelta : AATCoreTransportCircuitDelta source target
+  transitionBoundary : Prop
+  fieldSigBoundary : Prop
+  nonConclusions : Prop
+
+namespace AATCoreTransportTransition
+
+variable {system : AtomAxiomSystem.{u, v}}
+variable {source target : AAT.AATCore system}
+
+/-- The selected transport-transition boundary remains explicit. -/
+def RecordsTransitionBoundary
+    (transition : AATCoreTransportTransition source target) : Prop :=
+  transition.transitionBoundary
+
+/-- FieldSig-related transport data remains an analysis boundary. -/
+def RecordsFieldSigBoundary
+    (transition : AATCoreTransportTransition source target) : Prop :=
+  transition.fieldSigBoundary
+
+/-- The underlying AAT transport package does not create atom existence. -/
+theorem operation_does_not_create_atoms
+    (transition : AATCoreTransportTransition source target) :
+    system.noToolOutputCreatesAtoms :=
+  transition.transportPackage.operation_does_not_create_atoms
+
+/-- The atom delta does not create atom existence. -/
+theorem atom_delta_does_not_create_atoms
+    (transition : AATCoreTransportTransition source target) :
+    system.noSFTEventCreatesAtoms :=
+  transition.atomDelta.delta_does_not_create_atoms
+
+/-- The semantic delta does not create atom existence. -/
+theorem semantic_delta_does_not_create_atoms
+    (transition : AATCoreTransportTransition source target) :
+    system.noSFTEventCreatesAtoms :=
+  transition.semanticDelta.semantic_delta_does_not_create_atoms
+
+/-- The circuit delta does not create atom existence. -/
+theorem circuit_delta_does_not_create_atoms
+    (transition : AATCoreTransportTransition source target) :
+    system.noSFTEventCreatesAtoms :=
+  transition.circuitDelta.transport_circuit_delta_does_not_create_atoms
+
+end AATCoreTransportTransition
 
 /--
 SFT-side forecast status exposed at the AAT/SFT interface.

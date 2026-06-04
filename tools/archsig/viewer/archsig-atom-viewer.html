@@ -1088,6 +1088,7 @@
       renderedAtoms.forEach((node, index) => positions.set(node.nodeId, nodePosition(node, index, renderedAtoms.length, activeLayoutContext)));
       renderAtomInstances(renderedAtoms, positions);
       renderMoleculeGroups(renderedGroups, positions, activeLayoutContext);
+      renderViewerDistanceBonds(positions, activeLayoutContext);
       renderedEdgeCount = renderEdges(edges, positions);
       renderLegend();
       renderAxisHud();
@@ -1156,6 +1157,36 @@
       });
       const bonds = new THREE.LineSegments(geometry, material);
       bonds.userData = { kind: "moleculeBonds" };
+      moleculeGroup.add(bonds);
+    }
+
+    function renderViewerDistanceBonds(positions, layoutContext) {
+      if (viewModeEl.value !== "molecules") return;
+      const distances = layoutContext?.aat?.viewerDistances || [];
+      if (!distances.length) return;
+      const vertices = [];
+      const colors = [];
+      distances.slice(0, 5000).forEach((distance) => {
+        const source = positions.get(distance.source);
+        const target = positions.get(distance.target);
+        if (!source || !target) return;
+        const value = Number.isFinite(distance.value) ? distance.value : 0;
+        const colorHex = value >= 4 ? 0xff9468 : value >= 2 ? 0xf2c15f : 0x64d6be;
+        scratchColor.setHex(colorHex);
+        vertices.push(source.x, source.y, source.z, target.x, target.y, target.z);
+        colors.push(scratchColor.r, scratchColor.g, scratchColor.b, scratchColor.r, scratchColor.g, scratchColor.b);
+      });
+      if (!vertices.length) return;
+      const geometry = new THREE.BufferGeometry();
+      geometry.setAttribute("position", new THREE.Float32BufferAttribute(vertices, 3));
+      geometry.setAttribute("color", new THREE.Float32BufferAttribute(colors, 3));
+      const material = new THREE.LineBasicMaterial({
+        vertexColors: true,
+        transparent: true,
+        opacity: vertices.length > 9000 ? 0.16 : 0.28
+      });
+      const bonds = new THREE.LineSegments(geometry, material);
+      bonds.userData = { kind: "viewerDistanceInputs" };
       moleculeGroup.add(bonds);
     }
 
@@ -1245,12 +1276,17 @@
         ...flattenReportItems(geometry.spectrumReport),
         ...(Array.isArray(geometry.curvatureTransfers) ? geometry.curvatureTransfers : [])
       ]);
+      const viewerDistanceItems = Array.isArray(geometry.viewerDistanceInputs)
+        ? geometry.viewerDistanceInputs
+        : [];
       const atomToAxes = new Map();
       const atomToObstructions = new Map();
       const atomToCurvature = new Map();
       const atomToHolonomy = new Map();
       const atomToObstructionLoops = new Map();
       const atomToSpectrum = new Map();
+      const atomToViewerDistances = new Map();
+      const viewerDistances = [];
       const axisByRef = new Map();
       const axisCenters = new Map();
       const obstructionCenters = new Map();
@@ -1289,6 +1325,27 @@
       indexGeometryItems(holonomyItems, atomIndex, atomToHolonomy, 86);
       indexGeometryItems(obstructionLoopItems, atomIndex, atomToObstructionLoops, 92);
       indexGeometryItems(spectrumItems, atomIndex, atomToSpectrum, 74);
+      viewerDistanceItems.forEach((item, index) => {
+        if (!item || typeof item !== "object") return;
+        const source = String(item.sourceRef || "");
+        const target = String(item.targetRef || "");
+        if (!atomIndex.has(source) || !atomIndex.has(target)) return;
+        const rawValue = Number(item.distanceValue);
+        const record = {
+          item,
+          index,
+          source,
+          target,
+          value: Number.isFinite(rawValue) ? Math.max(rawValue, 0) : null,
+          moleculeRef: String(item.generatedMoleculeRef || ""),
+          coordinateComponents: Array.isArray(item.coordinateComponents) ? item.coordinateComponents.map(String) : []
+        };
+        viewerDistances.push(record);
+        [source, target].forEach((atomRef) => {
+          if (!atomToViewerDistances.has(atomRef)) atomToViewerDistances.set(atomRef, []);
+          atomToViewerDistances.get(atomRef).push(record);
+        });
+      });
 
       return {
         geometry,
@@ -1305,6 +1362,8 @@
         atomToHolonomy,
         atomToObstructionLoops,
         atomToSpectrum,
+        atomToViewerDistances,
+        viewerDistances,
         axisByRef,
         axisCenters,
         obstructionCenters,
@@ -1386,7 +1445,8 @@
         curvature: aat.atomToCurvature.get(node.nodeId) || [],
         holonomy: aat.atomToHolonomy.get(node.nodeId) || [],
         obstructions: aat.atomToObstructionLoops.get(node.nodeId) || [],
-        spectrum: aat.atomToSpectrum.get(node.nodeId) || []
+        spectrum: aat.atomToSpectrum.get(node.nodeId) || [],
+        viewerDistances: aat.atomToViewerDistances.get(node.nodeId) || []
       };
     }
 
@@ -1597,6 +1657,23 @@
       }
       const primary = memberships[0];
       const center = memberships.length === 1 ? primary.center : centroid(memberships.map((item) => item.center));
+      const distanceProfile = viewerDistanceProfile(node, memberships, layoutContext);
+      if (distanceProfile) {
+        const localRadius = 7 +
+          Math.min(distanceProfile.meanDistance, 8) * 5.4 +
+          Math.sqrt(distanceProfile.count) * 2.6 +
+          Math.min(distanceProfile.componentCount, 20) * 0.35;
+        const offset = distanceProfile.offset || new THREE.Vector3(
+          Math.cos(distanceProfile.angle) * localRadius,
+          0,
+          Math.sin(distanceProfile.angle) * localRadius
+        );
+        return new THREE.Vector3(
+          center.x + offset.x,
+          center.y + offset.y + (familyRank(node.atomFamily) - 4) * 3 + distanceProfile.meanDistance * 4 + memberships.length * 2,
+          center.z + offset.z
+        );
+      }
       const localAngle = (primary.refIndex + hashText(node.nodeId) % 13) * 2.399963229728653;
       const localRadius = 8 + Math.sqrt(primary.refIndex + 1) * 2.3 + Math.min(memberships.length, 4) * 3;
       return new THREE.Vector3(
@@ -1604,6 +1681,72 @@
         center.y + (familyRank(node.atomFamily) - 4) * 4 + memberships.length * 3,
         center.z + Math.sin(localAngle) * localRadius
       );
+    }
+
+    function viewerDistanceProfile(node, memberships, layoutContext) {
+      const inputs = layoutContext.aat.atomToViewerDistances.get(node.nodeId) || [];
+      if (!inputs.length) return null;
+      const membershipIds = new Set(memberships.map((membership) => String(membership.group?.groupId || "")));
+      const local = inputs.filter((input) =>
+        !input.moleculeRef ||
+        membershipIds.has(input.moleculeRef) ||
+        membershipIds.has(input.moleculeRef.replace(/^generated-/, ""))
+      );
+      const selected = local.length ? local : inputs;
+      const values = selected
+        .map((input) => Number(input.value))
+        .filter((value) => Number.isFinite(value));
+      if (!values.length) return null;
+      const meanDistance = values.reduce((sum, value) => sum + value, 0) / values.length;
+      const componentCount = selected.reduce((sum, input) => sum + input.coordinateComponents.length, 0);
+      const signature = selected.slice(0, 10).map((input) => [
+        input.source,
+        input.target,
+        input.value,
+        input.coordinateComponents.slice(0, 6).join("|")
+      ].join(":")).join(";");
+      const offset = viewerDistanceEmbedding(node, selected);
+      return {
+        count: selected.length,
+        meanDistance,
+        componentCount,
+        angle: ((hashText(`${node.nodeId}:${signature}`) % 6283) / 1000),
+        offset
+      };
+    }
+
+    function viewerDistanceEmbedding(node, selected) {
+      const offset = new THREE.Vector3();
+      let contribution = 0;
+      selected.slice(0, 20).forEach((input) => {
+        const direction = input.source === node.nodeId ? -1 : 1;
+        input.coordinateComponents.forEach((component) => {
+          const delta = componentDelta(component);
+          if (!delta) return;
+          offset.addScaledVector(componentAxisVector(component), direction * delta);
+          contribution += Math.abs(delta);
+        });
+      });
+      if (!contribution || offset.lengthSq() < 0.0001) return null;
+      const scale = 8 + Math.min(contribution, 24) * 1.8 + Math.min(selected.length, 16) * 0.9;
+      return offset.normalize().multiplyScalar(scale);
+    }
+
+    function componentDelta(component) {
+      const match = String(component || "").match(/delta=(-?\d+)/);
+      return match ? Number(match[1]) : 0;
+    }
+
+    function componentAxisVector(component) {
+      const key = String(component || "").split(":")[0];
+      const vectors = {
+        family: new THREE.Vector3(1, 0.2, 0),
+        axis: new THREE.Vector3(0, 0.25, 1),
+        subject: new THREE.Vector3(-0.8, 0.15, 0.4),
+        predicate: new THREE.Vector3(0.45, 0.2, -0.75),
+        objectSlotSet: new THREE.Vector3(-0.25, 0.1, -1)
+      };
+      return (vectors[key] || new THREE.Vector3(0.6, 0.1, 0.6)).normalize();
     }
 
     function bucketedPosition(key, index, ranks, baseRadius, weight) {
@@ -1826,6 +1969,9 @@
         const hotAtoms = renderedAtoms.filter((node) => (aat.atomToSpectrum.get(node.nodeId) || []).length || (aat.atomToAxes.get(node.nodeId) || []).some((item) => aat.hotspotByAxis.has(item.axis.axisRef))).length;
         return `, ${hotAtoms} spectrum-support atoms, ${aat.spectrumItems.length || aat.hotspots.length} spectral readings`;
       }
+      if (viewModeEl.value === "molecules") {
+        return `, ${aat.atomToViewerDistances.size} distance-positioned atoms, ${aat.viewerDistances.length} AtomShape distance inputs`;
+      }
       return "";
     }
 
@@ -1890,9 +2036,9 @@
         },
         molecules: {
           title: "Molecule map",
-          x: "membership bond layout",
-          y: "atom family / multi-membership",
-          z: "membership bond layout"
+          x: "AtomShape distance from molecule center",
+          y: "atom family + mean distance",
+          z: "AtomShape distance from molecule center"
         },
         sources: {
           title: "Source map",

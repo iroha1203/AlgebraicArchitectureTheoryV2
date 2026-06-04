@@ -6,6 +6,7 @@ import Formal.Arch.Evolution.SFTArtifactAction
 import Formal.Arch.Evolution.SFTPolicy
 import Formal.Arch.Evolution.SFTReachability
 import Formal.Arch.Evolution.SFTFieldUpdate
+import Formal.Arch.AAT.GeneratedSFT
 import Formal.Arch.Evolution.SFTEnvelope
 import Formal.Arch.Evolution.SFTInterfaceBoundary
 import Formal.Arch.Evolution.SFTArchSigBoundary
@@ -113,57 +114,111 @@ def representativeDeclarations : Candidate -> List String
       ["SoftwareField",
        "SoftwareFieldEstimate",
        "ArchitectureProjectionBoundary",
-       "ArchitectureProjectionBoundary.projection_records_nonConclusions"]
+       "ArchitectureProjectionBoundary.projection_records_nonConclusions",
+       "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedSoftwareField",
+       "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedSoftwareFieldEstimate",
+       "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedArchitectureProjectionBoundary",
+       "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedSoftwareField_projects_to_generated",
+       "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedSoftwareField_records_nonConclusions"]
   | forecastConeCore =>
       ["OperationSupport",
        "StepRelation",
        "FieldPath",
        "ForecastCone",
-       "ForecastCone.monotone_horizon"]
+       "ForecastCone.monotone_horizon",
+       "AtomGeneratedSignatureExamples.atomGeneratedSignature_sftSupportSafetyPackage",
+       "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedForecastCone_mem",
+       "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedForecastCone_length_le_horizon",
+       "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedForecastCone_monotone_succ"]
   | coneProjection =>
       ["PointwiseSupportInclusion",
        "StepSimulation",
        "ForecastConeProjection.forecastCone_projects_of_supportInclusion_and_stepSimulation",
-       "ForecastConeProjection.forecastCone_projects_of_supportInclusion_and_horizon_le"]
+       "ForecastConeProjection.forecastCone_projects_of_supportInclusion_and_horizon_le",
+       "AtomGeneratedSignatureExamples.atomGeneratedSignature_supportSelfInclusion",
+       "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedForecastCone_projects_self",
+       "AtomGeneratedSignatureExamples.atomGeneratedSignature_exists_projected_generatedForecastCone",
+       "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedForecastCone_projects_horizon_succ"]
   | artifactAction =>
       ["CandidateUpdateRelation",
        "ArtifactAction",
        "DeterministicArtifactAction",
-       "ForecastConeFamilyAfterAction"]
+       "ForecastConeFamilyAfterAction",
+       "AtomGeneratedSignatureExamples.atomGeneratedSignature_artifactAction",
+       "AtomGeneratedSignatureExamples.atomGeneratedSignature_deterministicArtifactAction",
+       "AtomGeneratedSignatureExamples.atomGeneratedSignature_forecastConeAfterArtifact",
+       "AtomGeneratedSignatureExamples.atomGeneratedSignature_forecastConeAfterArtifact_candidate_member",
+       "AtomGeneratedSignatureExamples.atomGeneratedSignature_forecastConeAfterArtifact_length_le_horizon"]
   | operationPolicyGovernance =>
       ["OperationPolicy",
        "SupportTransformation",
        "GovernanceIntervention",
-       "GovernanceIntervention.restrictive_forecastCone_projects"]
+       "GovernanceIntervention.restrictive_forecastCone_projects",
+       "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedOperationPolicy",
+       "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedGovernanceIntervention",
+       "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedGovernance_restrictive",
+       "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedGovernance_projects_forecastCone",
+       "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedGovernance_keeps_nonConclusion"]
   | stableRegionReachability =>
       ["FieldRegion",
        "MayReach",
        "MustReach",
        "StableRegion",
-       "ReachablePreimage"]
+       "ReachablePreimage",
+       "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedFieldRegion",
+       "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedStableRegion",
+       "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedMayReach",
+       "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedMustReach",
+       "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedReachablePreimage"]
   | supportSafety =>
       ["SFTSupportSafetyPackage",
        "SFTSupportSafetyPackage.operationSupport",
        "SFTSupportSafetyPackage.stepRelation",
-       "SFTSupportSafetyPackage.AcceptedSupportedTrajectory.forecastCone_and_supportSafety"]
+       "SFTSupportSafetyPackage.AcceptedSupportedTrajectory.forecastCone_and_supportSafety",
+       "AtomGeneratedSignatureExamples.atomGeneratedSignature_sftSupportSafetyPackage",
+       "AtomGeneratedSignatureExamples.atomGeneratedSignature_acceptedSupportedTrajectory",
+       "AtomGeneratedSignatureExamples.atomGeneratedSignature_supportSafety_forecastCone_and_safety"]
   | fieldUpdate =>
       ["ForecastRecord",
        "ObservedOutcome",
        "PosteriorFieldRecord",
        "FieldUpdate",
-       "FieldUpdate.UpdateSound.fieldUpdate_records_nonConclusions"]
+       "FieldUpdate.UpdateSound.fieldUpdate_records_nonConclusions",
+       "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedForecastRecord",
+       "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedFieldUpdate",
+       "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedFieldUpdate_sound",
+       "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedFieldUpdate_records_calibration",
+       "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedFieldUpdate_records_nonConclusions"]
   | consequenceEnvelope =>
       ["ConeFamily",
        "ObservationBoundary",
        "ConsequenceEnvelope",
        "EnvelopeProjection.envelope_does_not_strengthen_forecast_claim",
+       "GeneratedAATConsequenceEnvelope",
+       "GeneratedAATConsequenceEnvelope.theorem_status_from_generated",
+       "GeneratedAATConsequenceEnvelope.records_transition_boundaries",
+       "GeneratedAATConsequenceEnvelope.forecast_correctness_remains_boundary",
        "AATCorePremisedConsequenceEnvelope",
        "AATCorePremisedConsequenceEnvelope.aatcore_premise_does_not_prove_forecast_correctness"]
   | aatInterfaceBoundary =>
       ["AATTheoremStatus",
        "SFTForecastStatus",
+       "AAT.GeneratedArchitectureLawModel.generatedAATTheoremStatusForSFT",
+       "AAT.GeneratedArchitectureLawModel.generatedAATTheoremStatusForSFT_recordsTheoremPackage",
+       "AAT.GeneratedArchitectureLawModel.generatedAATTheoremStatusForSFT_recordsMeasuredZeroEvidence",
+       "AAT.GeneratedSFTInput",
+       "AAT.GeneratedSFTInput.theoremStatus",
+       "AAT.GeneratedSFTInput.theoremStatusFromGenerated",
+       "AAT.GeneratedSFTInput.measured_zero_from_generated",
+       "AAT.GeneratedSFTInput.reads_generated_aat_as_sft_local_premise",
+       "AAT.GeneratedSFTInput.sft_event_does_not_create_atoms",
+       "AAT.GeneratedArchitectureLawModel.generatedIdentityAATCoreCircuitDelta",
+       "AAT.GeneratedArchitectureLawModel.generatedIdentityAATCoreCircuitDelta_circuitBoundary",
+       "AAT.GeneratedArchitectureLawModel.generatedIdentityAATCoreCircuitDelta_doesNotCreateAtoms",
        "AATCoreLocalAlgebraForSFT",
        "AATCoreTransition",
+       "AATCoreTransportTransition",
+       "AATCoreTransportCircuitDelta",
        "AATToSFTInterfaceBoundary",
        "AATToSFTInterfaceBoundary.aat_lawfulness_alone_does_not_discharge_trajectory_safety_boundary"]
   | archSigReportBoundary =>
@@ -171,13 +226,36 @@ def representativeDeclarations : Candidate -> List String
        "ArchSigSFTReportEstimateBoundary",
        "ArchSigAATCoreTransition",
        "FieldSigAATCoreTransitionAnalysis",
+       "GeneratedArchSigAATCoreTransition",
+       "GeneratedFieldSigAATCoreTransitionAnalysis",
+       "GeneratedArchSigAATCoreTransition.ofTransition",
+       "GeneratedArchSigAATCoreTransition.generatedArchSigDoesNotDefineAAT_recorded",
+       "GeneratedArchSigAATCoreTransition.generatedFieldSigAnalysisBoundary_recorded",
+       "GeneratedArchSigAATCoreTransition.generatedUnknownRejectedUnmeasuredSeparated_recorded",
+       "GeneratedArchSigAATCoreTransition.sourceBridge",
+       "GeneratedArchSigAATCoreTransition.targetBridge",
+       "GeneratedArchSigAATCoreTransition.source_bridge_architectureLawful",
+       "GeneratedFieldSigAATCoreTransitionAnalysis.fieldsig_reads_generated_archsig_transition_as_sft_analysis",
+       "GeneratedArchSigAATCoreTransportTransition",
+       "GeneratedFieldSigAATCoreTransportTransitionAnalysis",
+       "GeneratedArchSigAATCoreTransportTransition.ofTransportTransition",
+       "GeneratedArchSigAATCoreTransportTransition.generatedArchSigDoesNotDefineAAT_recorded",
+       "GeneratedArchSigAATCoreTransportTransition.generatedFieldSigAnalysisBoundary_recorded",
+       "GeneratedArchSigAATCoreTransportTransition.generatedUnknownRejectedUnmeasuredSeparated_recorded",
+       "GeneratedArchSigAATCoreTransportTransition.sourceBridge",
+       "GeneratedArchSigAATCoreTransportTransition.targetBridge",
+       "GeneratedArchSigAATCoreTransportTransition.source_bridge_architectureLawful",
+       "GeneratedFieldSigAATCoreTransportTransitionAnalysis.fieldsig_reads_generated_archsig_transport_transition_as_sft_analysis",
        "ArchSigSFTReportEstimateBoundary.report_existence_does_not_promote_aat_theorem_status",
        "ArchSigSFTReportEstimateBoundary.report_existence_does_not_promote_calibrated_forecast"]
   | counterexamplePackage =>
       ["SFTCounterexampleKind",
        "SFTCounterexamples.Package",
        "SFTCounterexamples.canonicalPackage",
-       "SFTCounterexamples.records_nonConclusions"]
+       "SFTCounterexamples.records_nonConclusions",
+       "AtomGeneratedSignatureExamples.atomGeneratedSignature_sftCounterexamplePackage",
+       "AtomGeneratedSignatureExamples.atomGeneratedSignature_sftCounterexamples_record_nonConclusions",
+       "AtomGeneratedSignatureExamples.atomGeneratedSignature_supportSafety_does_not_discharge_counterexamples"]
   | theoremRoadmap =>
       ["ClockedForecastCone",
        "BoundedClockedForecastCone",
@@ -333,7 +411,14 @@ def representativeDeclarations : Candidate -> List String
        "SFTAgenticConfluence.NewmanStyleConfluenceKernel.RecordsNonConclusions",
        "SFTFundamentalModularity.agenticComponent_of_newmanStyleConfluenceKernel",
        "SFTFundamentalModularity.agenticComponent_records_newmanStyle_confluence",
-       "SFTFundamentalModularity.agenticComponent_records_newmanStyle_nonConclusions"]
+       "SFTFundamentalModularity.agenticComponent_records_newmanStyle_nonConclusions",
+       "AtomGeneratedSignatureExamples.atomGeneratedSignature_clockedConeDescentPackage",
+       "AtomGeneratedSignatureExamples.atomGeneratedSignature_clockedConeDescent_forecastCone_descent",
+       "AtomGeneratedSignatureExamples.atomGeneratedSignature_modularityRepresentationPackage",
+       "AtomGeneratedSignatureExamples.atomGeneratedSignature_modularity_representation",
+       "AtomGeneratedSignatureExamples.atomGeneratedSignature_fundamentalModularityTheoremPackage",
+       "AtomGeneratedSignatureExamples.atomGeneratedSignature_fundamental_modularity",
+       "AtomGeneratedSignatureExamples.atomGeneratedSignature_fundamental_modularity_nonConclusions"]
   | finiteExactModel =>
       ["FiniteExactSFTModel",
        "FiniteExactSFTModel.exactCover",
@@ -349,6 +434,11 @@ def representativeDeclarations : Candidate -> List String
        "FiniteExactDescentAssumptions",
        "FiniteExactDescentAssumptions.descentPackage",
        "finiteExactForecastConeDescentPackage_of_assumptions",
+       "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedFiniteExactModel",
+       "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedFiniteExactModel_indices_selected",
+       "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedFiniteExactModel_records_exactCover",
+       "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedFiniteExactModel_records_operation",
+       "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedFiniteExactModel_records_nonConclusions",
        "CechCone0",
        "CechCone1",
        "IsCechConeCocycle",
@@ -371,6 +461,15 @@ def representativeDeclarations : Candidate -> List String
        "SFTAATFundamentalModularity.AATSelectedArchitectureSlice.RecordsProjectionBoundary",
        "SFTAATFundamentalModularity.AATSupportedSFTBoundary",
        "SFTAATFundamentalModularity.AATSupportedSFTBoundary.ofSelectedSliceAndFiniteExactModel",
+       "SFTAATFundamentalModularity.AATSupportedSFTBoundary.ofGeneratedSFTInput",
+       "SFTAATFundamentalModularity.AATSupportedSFTBoundary.ofGeneratedSFTInput_aatStatus_eq_generated",
+       "SFTAATFundamentalModularity.AATSupportedSFTBoundary.ofGeneratedSFTInput_reads_generated_status_as_local_premise",
+       "SFTAATFundamentalModularity.AATSupportedSFTBoundary.ofGeneratedSFTInputAndArchSigTransition",
+       "SFTAATFundamentalModularity.AATSupportedSFTBoundary.ofGeneratedSFTInputAndArchSigTransition_aatStatus_eq_generated",
+       "SFTAATFundamentalModularity.AATSupportedSFTBoundary.ofGeneratedSFTInputAndArchSigTransition_records_archsig_boundary",
+       "SFTAATFundamentalModularity.AATSupportedSFTBoundary.ofGeneratedSFTInputAndArchSigTransition_records_theorem_boundary",
+       "SFTAATFundamentalModularity.AATSupportedSFTBoundary.ofGeneratedSFTInputAndArchSigTransition_records_typed_failure_boundary",
+       "SFTAATFundamentalModularity.AATSupportedSFTBoundary.ofGeneratedSFTInputAndArchSigTransition_records_nonConclusions",
        "SFTAATFundamentalModularity.AATSupportedSFTBoundary.ofArchMapAndArchSigBoundaries",
        "SFTAATFundamentalModularity.AATSupportedSFTBoundary.artifact_constructor_records_archMap_boundaries",
        "SFTAATFundamentalModularity.AATSupportedSFTBoundary.artifact_constructor_preserves_nonConclusions",
@@ -416,12 +515,18 @@ def representativeDeclarations : Candidate -> List String
        "SFTAATFundamentalModularity.Examples.canonicalObstructionGovernancePackage",
        "SFTAATFundamentalModularity.Examples.canonicalGovernanceComponent",
        "SFTAATFundamentalModularity.Examples.canonicalAATSupportedBoundary",
+       "SFTAATFundamentalModularity.Examples.canonicalGeneratedAATSupportedBoundary",
+       "SFTAATFundamentalModularity.Examples.canonicalGeneratedAATSupportedBoundary_aatStatus_eq_generated",
+       "SFTAATFundamentalModularity.Examples.canonicalGeneratedAATSupportedBoundary_reads_generated_status_as_local_premise",
        "SFTAATFundamentalModularity.Examples.artifactDerivedReportBoundary",
        "SFTAATFundamentalModularity.Examples.canonicalArtifactSupportedBoundary",
        "SFTAATFundamentalModularity.Examples.canonicalArtifactSupportedFundamentalModularityPackage",
        "SFTAATFundamentalModularity.Examples.canonicalArtifactSupported_final_typed_conclusion",
        "SFTAATFundamentalModularity.Examples.canonicalArtifactSupported_preserves_nonConclusions",
        "SFTAATFundamentalModularity.Examples.canonicalAATSupportedFundamentalModularityPackage",
+       "SFTAATFundamentalModularity.Examples.canonicalGeneratedAATSupportedFundamentalModularityPackage",
+       "SFTAATFundamentalModularity.Examples.canonicalGeneratedAATSupported_final_typed_conclusion",
+       "SFTAATFundamentalModularity.Examples.canonicalGeneratedAATSupported_preserves_nonConclusions",
        "SFTAATFundamentalModularity.Examples.canonicalAATSupported_fundamental_modularity",
        "SFTAATFundamentalModularity.Examples.canonicalAATSupported_governed_or_typed_boundary_failure",
        "SFTAATFundamentalModularity.Examples.canonicalAATSupported_final_typed_conclusion",
@@ -448,7 +553,18 @@ def schematicCorrespondences : Candidate -> List SchematicCorrespondence
            "ArchitectureProjectionBoundary.projection_eq_selected_arch"],
          reading :=
           "selected field estimate has a one-way architecture projection boundary",
-         status := "defined only / proved accessors" }]
+         status := "defined only / proved accessors" },
+       { schematic :=
+          "GeneratedArchitectureObject -> SoftwareFieldEstimate projection",
+         leanDeclarations :=
+          ["AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedSoftwareField",
+           "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedSoftwareFieldEstimate",
+           "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedArchitectureProjectionBoundary",
+           "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedSoftwareField_projects_to_generated",
+           "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedSoftwareField_records_nonConclusions"],
+         reading :=
+          "Atom-generated carriers instantiate the selected SoftwareField and SoftwareFieldEstimate projection boundary to the generated flatness model while retaining field/non-conclusion boundaries",
+         status := "proved acceptance" }]
   | forecastConeCore =>
       [{ schematic := "ForecastCone support relation source horizon target path",
          leanDeclarations :=
@@ -458,7 +574,17 @@ def schematicCorrespondences : Candidate -> List SchematicCorrespondence
            "ForecastCone.monotone_horizon"],
          reading :=
           "bounded finite field-path membership under selected support and step relation",
-         status := "defined only / proved accessors" }]
+         status := "defined only / proved accessors" },
+       { schematic :=
+          "GeneratedArchitectureObject support package -> ForecastCone witness",
+         leanDeclarations :=
+          ["AtomGeneratedSignatureExamples.atomGeneratedSignature_sftSupportSafetyPackage",
+           "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedForecastCone_mem",
+           "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedForecastCone_length_le_horizon",
+           "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedForecastCone_monotone_succ"],
+         reading :=
+          "the Atom-generated support-safety package yields a concrete generated carrier field path with a bounded ForecastCone witness and monotone horizon theorem",
+         status := "proved acceptance" }]
   | coneProjection =>
       [{ schematic := "support inclusion projects cone membership",
          leanDeclarations :=
@@ -467,7 +593,17 @@ def schematicCorrespondences : Candidate -> List SchematicCorrespondence
            "ForecastConeProjection.forecastCone_projects_of_supportInclusion_and_horizon_le"],
          reading :=
           "same-relation support monotonicity with projected finite path witness",
-         status := "proved" }]
+         status := "proved" },
+       { schematic :=
+          "Generated ForecastCone witness projects through generated support inclusion",
+         leanDeclarations :=
+          ["AtomGeneratedSignatureExamples.atomGeneratedSignature_supportSelfInclusion",
+           "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedForecastCone_projects_self",
+           "AtomGeneratedSignatureExamples.atomGeneratedSignature_exists_projected_generatedForecastCone",
+           "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedForecastCone_projects_horizon_succ"],
+         reading :=
+          "the generated carrier ForecastCone witness is projected through generated self-inclusion with the projected path and horizon-extension evidence exposed",
+         status := "proved acceptance" }]
   | artifactAction =>
       [{ schematic := "artifact action induces candidate update and after-action cone",
          leanDeclarations :=
@@ -477,7 +613,18 @@ def schematicCorrespondences : Candidate -> List SchematicCorrespondence
            "ForecastConeFamilyAfterAction.applies_to_updatedField"],
          reading :=
           "artifact-mediated change records candidate and applied target boundaries",
-         status := "defined only / proved accessors" }]
+         status := "defined only / proved accessors" },
+       { schematic :=
+          "GeneratedSFTInput -> ArtifactAction after-action cone",
+         leanDeclarations :=
+          ["AtomGeneratedSignatureExamples.atomGeneratedSignature_artifactAction",
+           "AtomGeneratedSignatureExamples.atomGeneratedSignature_deterministicArtifactAction",
+           "AtomGeneratedSignatureExamples.atomGeneratedSignature_forecastConeAfterArtifact",
+           "AtomGeneratedSignatureExamples.atomGeneratedSignature_forecastConeAfterArtifact_candidate_member",
+           "AtomGeneratedSignatureExamples.atomGeneratedSignature_forecastConeAfterArtifact_length_le_horizon"],
+         reading :=
+          "the Atom-generated SFT input acts as a generated artifact whose deterministic keep-carrier update preserves the generated ForecastCone witness after the action",
+         status := "proved acceptance" }]
   | operationPolicyGovernance =>
       [{ schematic := "restrictive governance narrows support",
          leanDeclarations :=
@@ -486,7 +633,18 @@ def schematicCorrespondences : Candidate -> List SchematicCorrespondence
            "GovernanceIntervention.policy_pass_does_not_discharge_lawfulness"],
          reading :=
           "restrictive support transformation preserves projected cone membership but not lawfulness",
-         status := "proved accessors" }]
+         status := "proved accessors" },
+       { schematic :=
+          "Generated support policy/governance projects generated ForecastCone",
+         leanDeclarations :=
+          ["AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedOperationPolicy",
+           "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedGovernanceIntervention",
+           "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedGovernance_restrictive",
+           "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedGovernance_projects_forecastCone",
+           "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedGovernance_keeps_nonConclusion"],
+         reading :=
+          "the Atom-generated support package instantiates before/after policies and a restrictive governance intervention whose cone projection and policy-pass non-conclusion are proved",
+         status := "proved acceptance" }]
   | stableRegionReachability =>
       [{ schematic := "MayReach / MustReach / StableRegion / ReachablePreimage",
          leanDeclarations :=
@@ -496,7 +654,18 @@ def schematicCorrespondences : Candidate -> List SchematicCorrespondence
            "ReachablePreimage.iff_mayReach"],
          reading :=
           "selected finite-cone reachability and stable-region closure vocabulary",
-         status := "defined only / proved accessors" }]
+         status := "defined only / proved accessors" },
+       { schematic :=
+          "Generated ForecastCone witness -> generated reachability region",
+         leanDeclarations :=
+          ["AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedFieldRegion",
+           "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedStableRegion",
+           "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedMayReach",
+           "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedMustReach",
+           "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedReachablePreimage"],
+         reading :=
+          "the Atom-generated support-safety ForecastCone witness instantiates selected may-reach, must-reach, stable-region, and reachable-preimage accessors over generated carriers",
+         status := "proved acceptance" }]
   | supportSafety =>
       [{ schematic := "supported accepted trajectory stays in selected safe region",
          leanDeclarations :=
@@ -505,7 +674,16 @@ def schematicCorrespondences : Candidate -> List SchematicCorrespondence
            "SFTSupportSafetyPackage.AcceptedSupportedTrajectory.forecastCone_and_supportSafety"],
          reading :=
           "support-preservation premise yields selected trajectory safety and cone membership",
-         status := "proved under package assumptions" }]
+         status := "proved under package assumptions" },
+       { schematic :=
+          "GeneratedArchitectureObject -> SFTSupportSafetyPackage",
+         leanDeclarations :=
+          ["AtomGeneratedSignatureExamples.atomGeneratedSignature_sftSupportSafetyPackage",
+           "AtomGeneratedSignatureExamples.atomGeneratedSignature_acceptedSupportedTrajectory",
+           "AtomGeneratedSignatureExamples.atomGeneratedSignature_supportSafety_forecastCone_and_safety"],
+         reading :=
+          "Atom-generated carriers instantiate the selected support-safety package with a generated identity support operation and a finite accepted supported trajectory",
+         status := "proved acceptance" }]
   | fieldUpdate =>
       [{ schematic := "observed feedback is preserved into posterior field record",
          leanDeclarations :=
@@ -514,7 +692,18 @@ def schematicCorrespondences : Candidate -> List SchematicCorrespondence
            "FieldUpdate.UpdateSound.fieldUpdate_records_calibrationBoundary"],
          reading :=
           "selected update soundness preserves recorded feedback without claiming accuracy improvement",
-         status := "proved accessors" }]
+         status := "proved accessors" },
+       { schematic :=
+          "Generated ForecastCone witness -> FieldUpdate record",
+         leanDeclarations :=
+          ["AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedForecastRecord",
+           "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedFieldUpdate",
+           "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedFieldUpdate_sound",
+           "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedFieldUpdate_records_calibration",
+           "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedFieldUpdate_records_nonConclusions"],
+         reading :=
+          "the Atom-generated ForecastCone witness instantiates a selected FieldUpdate whose soundness record exposes calibration and non-conclusion boundaries",
+         status := "proved acceptance" }]
   | consequenceEnvelope =>
       [{ schematic := "cone family projects to consequence envelope",
          leanDeclarations :=
@@ -522,21 +711,37 @@ def schematicCorrespondences : Candidate -> List SchematicCorrespondence
            "EnvelopeProjection.envelope_preserves_missingBoundary",
            "EnvelopeProjection.envelope_preserves_theoremBoundary",
            "EnvelopeProjection.envelope_does_not_strengthen_forecast_claim",
+           "GeneratedAATConsequenceEnvelope",
+           "GeneratedAATConsequenceEnvelope.to_premisedEnvelope",
+           "GeneratedAATConsequenceEnvelope.theorem_status_from_generated",
+           "GeneratedAATConsequenceEnvelope.records_transition_boundaries",
+           "GeneratedAATConsequenceEnvelope.forecast_correctness_remains_boundary",
+           "GeneratedAATConsequenceEnvelope.records_envelope_boundaries",
            "AATCorePremisedConsequenceEnvelope.records_envelope_boundaries",
            "AATCorePremisedConsequenceEnvelope.aatcore_premise_does_not_prove_forecast_correctness"],
          reading :=
-          "loss-aware report projection preserving missing/theorem/forecast boundaries and AATCore transition premises",
+          "loss-aware report projection preserving missing/theorem/forecast boundaries and generated AAT transition premises",
          status := "proved accessors" }]
   | aatInterfaceBoundary =>
       [{ schematic := "AAT theorem status is only an SFT local premise",
          leanDeclarations :=
-          ["AATToSFTInterfaceBoundary.aat_theorem_status_as_local_premise",
+          ["AAT.GeneratedSFTInput.theoremStatus",
+           "AAT.GeneratedSFTInput.theoremStatusFromGenerated",
+           "AAT.GeneratedSFTInput.measured_zero_from_generated",
+           "AAT.GeneratedSFTInput.reads_generated_aat_as_sft_local_premise",
+           "AAT.GeneratedSFTInput.sft_event_does_not_create_atoms",
+           "AAT.GeneratedArchitectureLawModel.generatedIdentityAATCoreCircuitDelta",
+           "AAT.GeneratedArchitectureLawModel.generatedIdentityAATCoreCircuitDelta_circuitBoundary",
+           "AAT.GeneratedArchitectureLawModel.generatedIdentityAATCoreCircuitDelta_doesNotCreateAtoms",
+           "AATToSFTInterfaceBoundary.aat_theorem_status_as_local_premise",
            "AATToSFTInterfaceBoundary.aat_lawfulness_alone_does_not_discharge_trajectory_safety_boundary",
            "AATToSFTInterfaceBoundary.measured_zero_does_not_discharge_unmeasured_axis_safety_boundary",
            "AATCoreLocalAlgebraForSFT.reads_aatcore_as_local_algebra",
-           "AATCoreTransition.operation_does_not_create_atoms"],
+           "AATCoreTransition.operation_does_not_create_atoms",
+           "AATCoreTransportTransition.operation_does_not_create_atoms",
+           "AATCoreTransportCircuitDelta.transport_circuit_delta_does_not_create_atoms"],
          reading :=
-          "AATCore evidence is read as local algebra and does not automatically promote to forecast safety",
+          "Atom-generated theorem status and generated AATCore circuit delta evidence are read as local algebra or local premise; transport circuit deltas keep source and target law/molecule selections separate and do not automatically promote to forecast safety",
          status := "proved accessors" }]
   | archSigReportBoundary =>
       [{ schematic := "ArchSig report reads as SFT estimate/status boundary",
@@ -546,9 +751,26 @@ def schematicCorrespondences : Candidate -> List SchematicCorrespondence
            "ArchSigSFTReportEstimateBoundary.report_preserves_forecastBoundary",
            "ArchSigSFTReportEstimateBoundary.report_preserves_nonConclusions",
            "FieldSigAATCoreTransitionAnalysis.fieldsig_reads_archsig_transition_as_sft_analysis",
-           "FieldSigAATCoreTransitionAnalysis.forecast_correctness_remains_boundary"],
+           "FieldSigAATCoreTransitionAnalysis.forecast_correctness_remains_boundary",
+           "GeneratedArchSigAATCoreTransition.ofTransition",
+           "GeneratedArchSigAATCoreTransition.generatedArchSigDoesNotDefineAAT_recorded",
+           "GeneratedArchSigAATCoreTransition.generatedFieldSigAnalysisBoundary_recorded",
+           "GeneratedArchSigAATCoreTransition.generatedUnknownRejectedUnmeasuredSeparated_recorded",
+           "GeneratedArchSigAATCoreTransition.source_bridge_architectureLawful",
+           "GeneratedArchSigAATCoreTransition.target_bridge_architectureLawful",
+           "GeneratedFieldSigAATCoreTransitionAnalysis.fieldsig_reads_generated_archsig_transition_as_sft_analysis",
+           "GeneratedFieldSigAATCoreTransitionAnalysis.forecast_correctness_remains_boundary",
+           "GeneratedArchSigAATCoreTransportTransition.ofTransportTransition",
+           "GeneratedArchSigAATCoreTransportTransition.generatedArchSigDoesNotDefineAAT_recorded",
+           "GeneratedArchSigAATCoreTransportTransition.generatedFieldSigAnalysisBoundary_recorded",
+           "GeneratedArchSigAATCoreTransportTransition.generatedUnknownRejectedUnmeasuredSeparated_recorded",
+           "GeneratedArchSigAATCoreTransportTransition.source_bridge_architectureLawful",
+           "GeneratedArchSigAATCoreTransportTransition.target_bridge_architectureLawful",
+           "GeneratedFieldSigAATCoreTransportTransitionAnalysis.fieldsig_reads_generated_archsig_transport_transition_as_sft_analysis",
+           "GeneratedFieldSigAATCoreTransportTransitionAnalysis.forecast_correctness_remains_boundary",
+           "AtomGeneratedSignatureExamples.atomGeneratedSignature_transport_target_molecule_is_distinct"],
          reading :=
-          "tool report output and AATCore transition analysis preserve selected SFT boundaries without promoting claims",
+          "tool report output and generated AATCore preservation / non-identity transport transition analysis preserve selected SFT boundaries without caller-supplied Signature bridge or generated handoff boundary fields, and without forecast claim promotion",
          status := "proved accessors" }]
   | counterexamplePackage =>
       [{ schematic := "SFT forbidden readings have canonical counterexample entrypoints",
@@ -559,7 +781,15 @@ def schematicCorrespondences : Candidate -> List SchematicCorrespondence
            "SFTCounterexamples.coarse_safe_not_refined_hidden_axis_safe"],
          reading :=
           "existing finite counterexamples indexed as SFT-native non-conclusion witnesses",
-         status := "proved wrappers" }]
+         status := "proved wrappers" },
+       { schematic := "Generated support safety keeps counterexamples as non-conclusions",
+         leanDeclarations :=
+          ["AtomGeneratedSignatureExamples.atomGeneratedSignature_sftCounterexamplePackage",
+           "AtomGeneratedSignatureExamples.atomGeneratedSignature_sftCounterexamples_record_nonConclusions",
+           "AtomGeneratedSignatureExamples.atomGeneratedSignature_supportSafety_does_not_discharge_counterexamples"],
+         reading :=
+          "the generated carrier support-safety package is connected to the canonical counterexample registry by recording both sides as non-conclusion evidence rather than discharging forbidden readings",
+         status := "proved generated acceptance" }]
   | theoremRoadmap =>
       [{ schematic := "ForecastCone Descent / Modularity / Grand SFT roadmap",
          leanDeclarations :=
@@ -679,7 +909,19 @@ def schematicCorrespondences : Candidate -> List SchematicCorrespondence
            "SFTTheoremRoadmap.EvolutionaryInvariancePackage.evolutionary_invariance"],
          reading :=
           "engineering-surface and closed-loop roadmap theorem families are available as checked theorem-package entrypoints",
-         status := "defined only / proved accessors under package assumptions" }]
+         status := "defined only / proved accessors under package assumptions" },
+       { schematic := "Generated carrier instances for roadmap-scale theorem packages",
+         leanDeclarations :=
+          ["AtomGeneratedSignatureExamples.atomGeneratedSignature_clockedConeDescentPackage",
+           "AtomGeneratedSignatureExamples.atomGeneratedSignature_clockedConeDescent_forecastCone_descent",
+           "AtomGeneratedSignatureExamples.atomGeneratedSignature_modularityRepresentationPackage",
+           "AtomGeneratedSignatureExamples.atomGeneratedSignature_modularity_representation",
+           "AtomGeneratedSignatureExamples.atomGeneratedSignature_fundamentalModularityTheoremPackage",
+           "AtomGeneratedSignatureExamples.atomGeneratedSignature_fundamental_modularity",
+           "AtomGeneratedSignatureExamples.atomGeneratedSignature_fundamental_modularity_nonConclusions"],
+         reading :=
+          "roadmap theorem-package surfaces have generated carrier instances for clocked descent, modularity representation, and the fundamental modularity theorem package while retaining non-conclusion boundaries",
+         status := "proved generated acceptance" }]
   | finiteExactModel =>
       [{ schematic := "FiniteExactSFTModel selected finite proof universe",
          leanDeclarations :=
@@ -702,7 +944,18 @@ def schematicCorrespondences : Candidate -> List SchematicCorrespondence
            "h1_vanishes_selected_finite_descent_bridge"],
          reading :=
          "selected finite universe, exact cover, operation support, observation boundary, and governance basis are packaged for downstream assumption-discharge theorems; explicit gluing laws yield a selected finite descent package; concrete Cech cone cochains connect the finite simplex skeleton to cocycle/coboundary predicates and selected H1 vanishing implies selected finite descent under explicit finite exact assumptions",
-         status := "defined only / proved accessor under explicit assumptions" }]
+         status := "defined only / proved accessor under explicit assumptions" },
+       { schematic :=
+          "Generated carrier -> FiniteExactSFTModel",
+         leanDeclarations :=
+          ["AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedFiniteExactModel",
+           "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedFiniteExactModel_indices_selected",
+           "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedFiniteExactModel_records_exactCover",
+           "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedFiniteExactModel_records_operation",
+           "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedFiniteExactModel_records_nonConclusions"],
+         reading :=
+          "the Atom-generated carrier instantiates a singleton-index finite exact SFT model whose global/local carriers, support, relation, observation boundary, exact-cover boundary, operation boundary, and non-conclusions are generated-source evidence",
+         status := "proved acceptance" }]
   | aatSupportedFundamentalModularity =>
       [{ schematic := "AAT-supported finite selected Fundamental Modularity",
          leanDeclarations :=
@@ -711,8 +964,12 @@ def schematicCorrespondences : Candidate -> List SchematicCorrespondence
            "SFTAATFundamentalModularity.AATSelectedArchitectureSlice.ofArchMapObservationBoundary",
            "SFTAATFundamentalModularity.ArchSigDerivedSFTReportBoundary",
            "SFTAATFundamentalModularity.AATSupportedSFTBoundary.ofSelectedSliceAndFiniteExactModel",
+           "SFTAATFundamentalModularity.AATSupportedSFTBoundary.ofGeneratedSFTInputAndArchSigTransition",
            "SFTAATFundamentalModularity.AATSupportedSFTBoundary.ofArchMapAndArchSigBoundaries",
            "SFTAATFundamentalModularity.AATSupportedSFTBoundary.aat_status_as_sft_local_premise",
+           "SFTAATFundamentalModularity.AATSupportedSFTBoundary.ofGeneratedSFTInputAndArchSigTransition_records_archsig_boundary",
+           "SFTAATFundamentalModularity.AATSupportedSFTBoundary.ofGeneratedSFTInputAndArchSigTransition_records_theorem_boundary",
+           "SFTAATFundamentalModularity.AATSupportedSFTBoundary.ofGeneratedSFTInputAndArchSigTransition_records_typed_failure_boundary",
            "SFTAATFundamentalModularity.AATSupportedSFTBoundary.records_report_and_theorem_status_boundaries",
            "SFTAATFundamentalModularity.AATSupportedSFTBoundary.constructor_preserves_nonConclusions",
            "SFTAATFundamentalModularity.AATSFTBoundaryFailure.ofKind",
@@ -732,11 +989,14 @@ def schematicCorrespondences : Candidate -> List SchematicCorrespondence
            "SFTAATFundamentalModularity.Examples.canonicalAATSupportedFundamentalModularityPackage",
            "SFTAATFundamentalModularity.Examples.canonicalArtifactSupportedFundamentalModularityPackage",
            "SFTAATFundamentalModularity.Examples.canonicalAATSupportedBoundary_reads_aat_status_as_local_premise",
+           "SFTAATFundamentalModularity.Examples.canonicalGeneratedAATSupportedBoundary_records_archsig_transition_boundary",
+           "SFTAATFundamentalModularity.Examples.canonicalGeneratedAATSupportedBoundary_records_generated_theorem_boundary",
+           "SFTAATFundamentalModularity.Examples.canonicalGeneratedAATSupportedBoundary_records_typed_failure_boundary",
            "SFTAATFundamentalModularity.Examples.canonicalAATSupported_final_typed_conclusion",
            "SFTAATFundamentalModularity.Examples.canonicalArtifactSupported_final_typed_conclusion",
            "SFTAATFundamentalModularity.Examples.canonicalAATSupported_preserves_nonConclusions"],
          reading :=
-          "AAT theorem status, selected architecture slice, finite exact model, selected source, and selected horizon are carried as explicit premises for the finite selected final assembly; ArchMap preservation packages can be read as selected AAT slices and ArchSig report boundaries can be read as SFT report/forecast boundaries before constructing the AAT-supported boundary; singleton canonical examples instantiate both direct and artifact-boundary AAT-supported packages end to end with descent, obstruction, and governance components routed through existing helper packages",
+          "AAT theorem status, selected architecture slice, finite exact model, selected source, and selected horizon are carried as explicit premises for the finite selected final assembly; generated SFT input plus generated ArchSig transition evidence can supply the AAT status, report boundary, theorem boundary, typed-failure boundary, and non-conclusion boundary without caller-filled report propositions; ArchMap preservation packages can be read as selected AAT slices and ArchSig report boundaries can be read as SFT report/forecast boundaries before constructing the AAT-supported boundary; singleton canonical examples instantiate generated, direct, and artifact-boundary AAT-supported packages end to end with descent, obstruction, and governance components routed through existing helper packages",
          status := "proved accessors and canonical example under explicit AAT/SFT boundary assumptions" }]
 
 /-- Boundary reminder for reading each SFT candidate as a bounded package. -/

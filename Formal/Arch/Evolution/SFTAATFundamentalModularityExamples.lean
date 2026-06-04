@@ -1,4 +1,5 @@
 import Formal.Arch.Evolution.SFTAATFundamentalModularity
+import Formal.Arch.Examples.AtomGeneratedSignatureExamples
 
 /-!
 Canonical finite AAT-supported SFT Grand Theorem example.
@@ -516,6 +517,63 @@ theorem canonicalAATSupportedBoundary_reads_aat_status_as_local_premise :
     canonicalAATSupportedBoundary.forecastStatus.RecordsLocalPremise :=
   canonicalAATSupportedBoundary.aat_status_as_sft_local_premise trivial
 
+noncomputable def canonicalGeneratedAATSupportedBoundary :
+    AATSupportedSFTBoundary canonicalExactModel () 1 :=
+  AATSupportedSFTBoundary.ofGeneratedSFTInputAndArchSigTransition
+    canonicalSelectedSlice
+    AtomGeneratedSignatureExamples.atomGeneratedSignature_sftInput
+    AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedArchSigTransition
+    AtomGeneratedSignatureExamples.atomGeneratedSignature_sftForecastStatus
+    AtomGeneratedSignatureExamples.atomGeneratedSignature_sftInterfaceBoundary
+    True True
+    canonicalExactModel_recordsFiniteModelBoundary
+    canonicalExactModel_recordsExactCoverBoundary
+    canonicalExactModel_recordsObservationBoundary
+    trivial trivial trivial trivial
+
+theorem canonicalGeneratedAATSupportedBoundary_aatStatus_eq_generated :
+    canonicalGeneratedAATSupportedBoundary.aatStatus =
+      AtomGeneratedSignatureExamples.atomGeneratedSignature_sftInput.theoremStatus := by
+  rfl
+
+theorem canonicalGeneratedAATSupportedBoundary_reads_generated_status_as_local_premise :
+    canonicalGeneratedAATSupportedBoundary.forecastStatus.RecordsLocalPremise := by
+  exact
+    canonicalGeneratedAATSupportedBoundary.aat_status_as_sft_local_premise
+      AtomGeneratedSignatureExamples.atomGeneratedSignature_sft_theoremStatusFromGenerated
+
+theorem canonicalGeneratedAATSupportedBoundary_records_archsig_transition_boundary :
+    canonicalGeneratedAATSupportedBoundary.archSigReportBoundary := by
+  exact
+    AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedArchSigTransition
+      |>.records_fieldsig_analysis_boundary
+
+theorem canonicalGeneratedAATSupportedBoundary_records_generated_theorem_boundary :
+    canonicalGeneratedAATSupportedBoundary.theoremBoundary := by
+  exact
+    ⟨trivial, trivial,
+      AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedArchSigTransition
+        |>.records_transition_boundary⟩
+
+theorem canonicalGeneratedAATSupportedBoundary_records_typed_failure_boundary :
+    canonicalGeneratedAATSupportedBoundary.typedFailureBoundary := by
+  exact
+    AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedArchSigTransition
+      |>.archsig_transition_does_not_define_aat
+
+theorem canonicalGeneratedAATSupportedBoundary_records_nonConclusions_from_generated_transition :
+    canonicalGeneratedAATSupportedBoundary.nonConclusions := by
+  exact
+    ⟨trivial, trivial,
+      AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedArchSigTransition
+        |>.archsig_transition_does_not_define_aat⟩
+
+theorem canonicalGeneratedAATSupportedBoundary_preserves_nonConclusions :
+    canonicalGeneratedAATSupportedBoundary.RecordsNonConclusions :=
+  canonicalGeneratedAATSupportedBoundary.preserves_nonConclusions
+    canonicalGeneratedAATSupportedBoundary_records_nonConclusions_from_generated_transition
+    trivial trivial canonicalExactModel_recordsNonConclusions
+
 def canonicalAATSupportedFundamentalModularityPackage :
     AATSupportedFundamentalModularityPackage canonicalExactModel () 1 :=
   AATSupportedFundamentalModularityPackage.ofBoundaryAndFiniteSelectedHypotheses
@@ -550,6 +608,30 @@ theorem canonicalAATSupported_preserves_nonConclusions :
     canonicalAATSupportedFundamentalModularityPackage.boundary.RecordsNonConclusions ∧
       canonicalAATSupportedFundamentalModularityPackage.finalPackage.RecordsNonConclusions :=
   canonicalAATSupportedFundamentalModularityPackage.does_not_promote_to_unconditional_claim
+
+noncomputable def canonicalGeneratedAATSupportedFundamentalModularityPackage :
+    AATSupportedFundamentalModularityPackage canonicalExactModel () 1 :=
+  AATSupportedFundamentalModularityPackage.ofBoundaryAndFiniteSelectedHypotheses
+    (exactModel := canonicalExactModel) (source := ()) (horizon := 1)
+    canonicalGeneratedAATSupportedBoundary
+    canonicalFundamentalModularityHypotheses
+    canonicalExactModel_recordsGovernanceBoundary
+    trivial trivial
+    canonicalGeneratedAATSupportedBoundary_records_archsig_transition_boundary
+    canonicalGeneratedAATSupportedBoundary_records_generated_theorem_boundary
+    canonicalGeneratedAATSupportedBoundary_records_typed_failure_boundary
+    canonicalGeneratedAATSupportedBoundary_records_nonConclusions_from_generated_transition
+    trivial trivial
+    canonicalExactModel_recordsNonConclusions trivial
+
+theorem canonicalGeneratedAATSupported_final_typed_conclusion :
+    canonicalGeneratedAATSupportedFundamentalModularityPackage.AATSupportedFinalTypedConclusion :=
+  canonicalGeneratedAATSupportedFundamentalModularityPackage.governed_or_finite_failure_or_aat_boundary_failure
+
+theorem canonicalGeneratedAATSupported_preserves_nonConclusions :
+    canonicalGeneratedAATSupportedFundamentalModularityPackage.boundary.RecordsNonConclusions ∧
+      canonicalGeneratedAATSupportedFundamentalModularityPackage.finalPackage.RecordsNonConclusions :=
+  canonicalGeneratedAATSupportedFundamentalModularityPackage.does_not_promote_to_unconditional_claim
 
 /-! ## Non-singleton selected finite example -/
 
