@@ -290,8 +290,6 @@ noncomputable def atomGeneratedSignature_sftInput :
   sftDoesNotRedefineAATEvidence := trivial
   forecastCorrectnessBoundary := True
   forecastCorrectnessBoundaryEvidence := trivial
-  sftEventDoesNotCreateAtomsEvidence :=
-    componentSystem.sft_event_does_not_create_atoms
   nonConclusions := True
 
 theorem atomGeneratedSignature_sft_theoremStatusFromGenerated :
@@ -309,6 +307,10 @@ theorem atomGeneratedSignature_sft_reads_generated_aat :
 theorem atomGeneratedSignature_sft_forecast_correctness_boundary :
     atomGeneratedSignature_sftInput.forecastCorrectnessBoundary := by
   exact atomGeneratedSignature_sftInput.forecast_correctness_remains_boundary
+
+theorem atomGeneratedSignature_sft_event_does_not_create_atoms :
+    componentSystem.noSFTEventCreatesAtoms := by
+  exact atomGeneratedSignature_sftInput.sft_event_does_not_create_atoms
 
 noncomputable def atomGeneratedSignature_sftForecastStatus :
     SFTForecastStatus where

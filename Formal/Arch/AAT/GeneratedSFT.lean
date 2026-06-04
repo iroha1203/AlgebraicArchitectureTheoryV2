@@ -101,7 +101,8 @@ SFT input boundary generated from an Atom-generated AAT law model.
 
 This record packages what FieldSig/SFT may consume: generated theorem status
 and explicit boundaries.  It deliberately does not say that AAT proves forecast
-correctness.
+correctness, and SFT event non-creation is inherited from the root
+`AtomAxiomSystem` rather than supplied as an SFT-local field.
 -/
 structure GeneratedSFTInput {system : AtomAxiomSystem.{u, v}}
     {presentation : AtomShapePresentation system}
@@ -120,7 +121,6 @@ structure GeneratedSFTInput {system : AtomAxiomSystem.{u, v}}
   sftDoesNotRedefineAATEvidence : sftDoesNotRedefineAAT
   forecastCorrectnessBoundary : Prop
   forecastCorrectnessBoundaryEvidence : forecastCorrectnessBoundary
-  sftEventDoesNotCreateAtomsEvidence : system.noSFTEventCreatesAtoms
   nonConclusions : Prop
 
 namespace GeneratedSFTInput
@@ -191,11 +191,11 @@ theorem forecast_correctness_remains_boundary
     input.forecastCorrectnessBoundary :=
   input.forecastCorrectnessBoundaryEvidence
 
-/-- SFT events do not create Atom existence. -/
+/-- SFT events do not create Atom existence, inherited from the root Atom axioms. -/
 theorem sft_event_does_not_create_atoms
-    (input : GeneratedSFTInput model) :
+    (_input : GeneratedSFTInput model) :
     system.noSFTEventCreatesAtoms :=
-  input.sftEventDoesNotCreateAtomsEvidence
+  system.sft_event_does_not_create_atoms
 
 /--
 Generated SFT input induces the existing `AATCoreLocalAlgebraForSFT` boundary.
@@ -217,7 +217,7 @@ def toAATCoreLocalAlgebraForSFT
   noForecastCorrectnessFromAATAloneEvidence :=
     input.forecastCorrectnessBoundaryEvidence
   sftEventDoesNotCreateAtomsEvidence :=
-    input.sftEventDoesNotCreateAtomsEvidence
+    input.sft_event_does_not_create_atoms
   nonConclusions := input.nonConclusions
 
 /-- The local algebra boundary produced from generated SFT input reads generated AAT. -/
