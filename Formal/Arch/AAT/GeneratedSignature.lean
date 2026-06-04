@@ -75,6 +75,107 @@ theorem generatedArchitectureLawful_of_requiredSignatureAxesZero
     ArchitectureSignature.ArchitectureLawful model.toArchitectureLawModel :=
   (model.generatedArchitectureLawful_iff_requiredSignatureAxesZero).mpr hZero
 
+/--
+Generated specialization of the full static Signature zero-curvature theorem
+package.
+
+The decidable relation instances for the projected `ArchitectureLawModel` are
+recovered from the generated relation predicate, so callers do not supply a
+hand-authored law-model package.
+-/
+def generatedArchitectureZeroCurvatureTheoremPackage
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : GeneratedArchitectureObject presentation}
+    [DecidableEq system.Atom]
+    [hRelation : DecidableRel (GeneratedRelation object)]
+    (model : GeneratedArchitectureLawModel object) : Prop := by
+  letI : DecidableRel model.toArchitectureLawModel.G.edge := by
+    intro source target
+    change Decidable (GeneratedRelation object source target)
+    exact hRelation source target
+  letI : DecidableRel model.toArchitectureLawModel.GA.edge := by
+    intro source target
+    change Decidable (GeneratedRelation object source target)
+    exact hRelation source target
+  letI : DecidableRel model.toArchitectureLawModel.boundaryAllowed := by
+    intro source target
+    change Decidable (GeneratedRelation object source target)
+    exact hRelation source target
+  letI : DecidableRel model.toArchitectureLawModel.abstractionAllowed := by
+    intro source target
+    change Decidable (GeneratedRelation object source target)
+    exact hRelation source target
+  exact
+    ArchitectureSignature.ArchitectureZeroCurvatureTheoremPackage
+      model.toArchitectureLawModel
+
+/--
+Generated law models trigger the full static Signature zero-curvature theorem
+package from generated lawfulness.
+-/
+theorem generatedArchitectureZeroCurvatureTheoremPackage_holds
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : GeneratedArchitectureObject presentation}
+    [DecidableEq system.Atom]
+    [hRelation : DecidableRel (GeneratedRelation object)]
+    (model : GeneratedArchitectureLawModel object) :
+    model.generatedArchitectureZeroCurvatureTheoremPackage := by
+  letI : DecidableRel model.toArchitectureLawModel.G.edge := by
+    intro source target
+    change Decidable (GeneratedRelation object source target)
+    exact hRelation source target
+  letI : DecidableRel model.toArchitectureLawModel.GA.edge := by
+    intro source target
+    change Decidable (GeneratedRelation object source target)
+    exact hRelation source target
+  letI : DecidableRel model.toArchitectureLawModel.boundaryAllowed := by
+    intro source target
+    change Decidable (GeneratedRelation object source target)
+    exact hRelation source target
+  letI : DecidableRel model.toArchitectureLawModel.abstractionAllowed := by
+    intro source target
+    change Decidable (GeneratedRelation object source target)
+    exact hRelation source target
+  exact
+    ArchitectureSignature.architectureZeroCurvatureTheoremPackage_of_architectureLawful
+      model.toArchitectureLawModel
+      model.generatedArchitectureLawful
+
+/--
+Generated lawfulness is equivalent to the full static Signature theorem package
+for the generated law model.
+-/
+theorem generatedArchitectureLawful_iff_generatedArchitectureZeroCurvatureTheoremPackage
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : GeneratedArchitectureObject presentation}
+    [DecidableEq system.Atom]
+    [hRelation : DecidableRel (GeneratedRelation object)]
+    (model : GeneratedArchitectureLawModel object) :
+    ArchitectureSignature.ArchitectureLawful model.toArchitectureLawModel ↔
+      model.generatedArchitectureZeroCurvatureTheoremPackage := by
+  letI : DecidableRel model.toArchitectureLawModel.G.edge := by
+    intro source target
+    change Decidable (GeneratedRelation object source target)
+    exact hRelation source target
+  letI : DecidableRel model.toArchitectureLawModel.GA.edge := by
+    intro source target
+    change Decidable (GeneratedRelation object source target)
+    exact hRelation source target
+  letI : DecidableRel model.toArchitectureLawModel.boundaryAllowed := by
+    intro source target
+    change Decidable (GeneratedRelation object source target)
+    exact hRelation source target
+  letI : DecidableRel model.toArchitectureLawModel.abstractionAllowed := by
+    intro source target
+    change Decidable (GeneratedRelation object source target)
+    exact hRelation source target
+  exact
+    ArchitectureSignature.architectureLawful_iff_architectureZeroCurvatureTheoremPackage
+      model.toArchitectureLawModel
+
 end GeneratedArchitectureLawModel
 
 end AAT

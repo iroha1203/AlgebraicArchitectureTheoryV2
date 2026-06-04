@@ -140,15 +140,15 @@ theorem generated_signature_bridge_is_source_of_truth :
   exact generated_signature_bridge_is_atom_generated
 
 /--
-Acceptance: the representation-level static Signature anchor remains a
-downstream library rather than being mistaken for the generated AAT source.
+Acceptance: the static Signature zero-curvature anchor is exposed as an
+Atom-generated source row through generated law-model entrypoints.
 -/
-theorem static_signature_anchor_is_downstream_library :
+theorem static_signature_anchor_is_atom_generated_source :
     (classifyAATCandidate .finiteStaticStructuralCore).classification =
-        .representationLevel ∧
+        .atomGenerated ∧
       (classifyAATCandidate .finiteStaticStructuralCore).action =
-        .downstreamLibrary := by
-  exact finite_static_core_is_downstream_representation_library
+        .aatSourceOfTruth := by
+  exact finite_static_core_is_atom_generated
 
 /--
 Acceptance: ArchMap remains an observation boundary, but observed atoms now

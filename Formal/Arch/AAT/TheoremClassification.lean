@@ -252,7 +252,13 @@ def representativeDeclarations : AATCandidate -> List String
   | finiteStaticStructuralCore =>
       ["ArchitectureSignature.architectureLawful_iff_requiredSignatureAxesZero",
        "ArchitectureSignature.architectureLawful_iff_architectureZeroCurvatureTheoremPackage",
-       "ArchitectureSignature.ArchitectureLawModel.signatureOf"]
+       "ArchitectureSignature.ArchitectureLawModel.signatureOf",
+       "AAT.GeneratedArchitectureLawModel.generatedArchitectureLawful_iff_requiredSignatureAxesZero",
+       "AAT.GeneratedArchitectureLawModel.generatedArchitectureZeroCurvatureTheoremPackage",
+       "AAT.GeneratedArchitectureLawModel.generatedArchitectureZeroCurvatureTheoremPackage_holds",
+       "AAT.GeneratedArchitectureLawModel.generatedArchitectureLawful_iff_generatedArchitectureZeroCurvatureTheoremPackage",
+       "AtomGeneratedSignatureExamples.atomGeneratedSignature_zeroCurvatureTheoremPackage",
+       "AtomGeneratedSignatureExamples.atomGeneratedSignature_lawful_iff_zeroCurvatureTheoremPackage"]
   | generatedSignatureBridge =>
       ["ArchitectureSignature.AATCoreSignatureLawfulnessBridge.ofGeneratedLawModel",
        "ArchitectureSignature.AATCoreSignatureLawfulnessBridge.ofGeneratedLawModel_architectureLawful",
@@ -332,15 +338,17 @@ def classifyAATCandidate
     (candidate : AATCandidate) : TheoremPackageClassification :=
   match candidate with
   | .finiteStaticStructuralCore =>
-      representationRow
+      atomGeneratedRow
         "aat.finiteStaticStructuralCore"
         (AATCandidate.representativeDeclarations
           .finiteStaticStructuralCore)
-        ["ArchitectureLawModel", "ArchGraph", "Observation"]
+        ["AAT.GeneratedArchitectureLawModel.generatedArchitectureLawful_iff_requiredSignatureAxesZero",
+         "AAT.GeneratedArchitectureLawModel.generatedArchitectureZeroCurvatureTheoremPackage",
+         "AAT.GeneratedArchitectureLawModel.generatedArchitectureZeroCurvatureTheoremPackage_holds",
+         "AAT.GeneratedArchitectureLawModel.generatedArchitectureLawful_iff_generatedArchitectureZeroCurvatureTheoremPackage",
+         "AtomGeneratedSignatureExamples.atomGeneratedSignature_zeroCurvatureTheoremPackage"]
         (by simp)
-        .downstreamLibrary
-        ActionAllowed.representationDownstream
-        "The static Signature anchor is a representation-level theorem retained as a downstream library; generated law models invoke it through generated bridge entrypoints."
+        "The static Signature zero-curvature anchor is source-of-truth only through generated law-model entrypoints; the hand-authored ArchitectureLawModel theorem remains the downstream library surface invoked by those generated wrappers."
   | .generatedSignatureBridge =>
       atomGeneratedRow
         "aat.generatedSignatureBridge"
@@ -1162,11 +1170,11 @@ theorem nonidentity_transport_handoff_is_atom_generated :
       .atomGenerated := by
   exact ⟨rfl, rfl⟩
 
-theorem finite_static_core_is_downstream_representation_library :
+theorem finite_static_core_is_atom_generated :
     (classifyAATCandidate .finiteStaticStructuralCore).classification =
-      .representationLevel ∧
+      .atomGenerated ∧
     (classifyAATCandidate .finiteStaticStructuralCore).action =
-      .downstreamLibrary := by
+      .aatSourceOfTruth := by
   exact ⟨rfl, rfl⟩
 
 theorem archmap_observation_handoff_is_atom_generated :

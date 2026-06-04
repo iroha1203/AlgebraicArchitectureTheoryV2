@@ -62,6 +62,26 @@ theorem atomGeneratedSignature_lawful_iff_requiredAxesZero :
   exact generatedComponentLawModel.generatedArchitectureLawful_iff_requiredSignatureAxesZero
 
 /--
+Positive acceptance: the full static Signature theorem package fires from the
+generated law model, not from a hand-authored `ArchitectureLawModel`.
+-/
+theorem atomGeneratedSignature_zeroCurvatureTheoremPackage :
+    generatedComponentLawModel.generatedArchitectureZeroCurvatureTheoremPackage := by
+  exact
+    generatedComponentLawModel.generatedArchitectureZeroCurvatureTheoremPackage_holds
+
+/--
+Positive acceptance: generated lawfulness is equivalent to the static Signature
+zero-curvature theorem package on the generated law model.
+-/
+theorem atomGeneratedSignature_lawful_iff_zeroCurvatureTheoremPackage :
+    ArchitectureSignature.ArchitectureLawful
+        generatedComponentLawModel.toArchitectureLawModel ↔
+      generatedComponentLawModel.generatedArchitectureZeroCurvatureTheoremPackage := by
+  exact
+    generatedComponentLawModel.generatedArchitectureLawful_iff_generatedArchitectureZeroCurvatureTheoremPackage
+
+/--
 Positive acceptance: the generated signature theorem uses the generated law
 model directly and does not require an `architectureLawfulFromAAT` field.
 -/
