@@ -298,6 +298,268 @@ theorem generatedComponentLawModel_walkAcyclic_derived_from_graph_rank :
       generatedComponentGraphRank.walkAcyclic := by
   rfl
 
+inductive AuthorityEffectAtom where
+  | authority
+  | effect
+  deriving DecidableEq, Repr
+
+def authorityEffectKind : AuthorityEffectAtom -> AtomKind
+  | .authority => AtomKind.boundaryAuthority
+  | .effect => AtomKind.effect
+
+def authorityEffectAxis : AuthorityEffectAtom -> Axis
+  | .authority => Axis.boundary
+  | .effect => Axis.semantic
+
+/--
+Atom system with a boundary-authority fact and an effect fact.
+
+The effect's required authority port is satisfied by the authority atom inside
+the generated molecule; it is not a caller-supplied law satisfaction marker.
+-/
+def authorityEffectSystem : AtomAxiomSystem where
+  Atom := AuthorityEffectAtom
+  Predicate := AtomKind
+  kind := authorityEffectKind
+  axis := authorityEffectAxis
+  predicate := authorityEffectKind
+  predicateKind := fun kind => kind
+  predicateAxis := fun
+    | AtomKind.boundaryAuthority => Axis.boundary
+    | AtomKind.effect => Axis.semantic
+    | _ => Axis.static
+  predicateKindAligned := by
+    intro atom
+    rfl
+  predicateAxisAligned := by
+    intro atom
+    cases atom <;> rfl
+  singleFact := fun _ => True
+  singleFactEvidence := fun _ => trivial
+  predicatePreserving := fun _ => True
+  predicatePreservingEvidence := fun _ => trivial
+  boundaryIndependent := fun _ => True
+  boundaryIndependentEvidence := fun _ => trivial
+  lawIndependent := fun _ => True
+  lawIndependentEvidence := fun _ => trivial
+  noObservationBoundaryCreatesAtoms := True
+  noObservationBoundaryCreatesAtomsEvidence := trivial
+  noLawCreatesAtoms := True
+  noLawCreatesAtomsEvidence := trivial
+  noToolOutputCreatesAtoms := True
+  noToolOutputCreatesAtomsEvidence := trivial
+  noSFTEventCreatesAtoms := True
+  noSFTEventCreatesAtomsEvidence := trivial
+  openTaxonomyBoundary := True
+
+def authorityPolicyPort : AtomPort where
+  name := "authority-policy"
+  kind := AtomPortKind.authority
+  family := AtomKind.boundaryAuthority
+  axis := Axis.boundary
+  required := False
+  acceptsFamily := fun kind => kind = AtomKind.effect
+  acceptsAxis := fun axis => axis = Axis.semantic
+
+def effectRequiredAuthorityPort : AtomPort where
+  name := "effect-required-authority"
+  kind := AtomPortKind.authority
+  family := AtomKind.effect
+  axis := Axis.semantic
+  required := True
+  acceptsFamily := fun kind => kind = AtomKind.boundaryAuthority
+  acceptsAxis := fun axis => axis = Axis.boundary
+
+def authorityValence : AtomValence where
+  ports := fun port => port = authorityPolicyPort
+  requiredPort := fun _ => False
+  requiredPortHasPort := by
+    intro _ hRequired
+    cases hRequired
+  hasPort := ⟨authorityPolicyPort, rfl⟩
+
+def effectValence : AtomValence where
+  ports := fun port => port = effectRequiredAuthorityPort
+  requiredPort := fun port => port = effectRequiredAuthorityPort
+  requiredPortHasPort := by
+    intro _ hRequired
+    exact hRequired
+  hasPort := ⟨effectRequiredAuthorityPort, rfl⟩
+
+def authorityEffectShape : AuthorityEffectAtom -> AtomShape
+  | .authority =>
+      { family := AtomKind.boundaryAuthority
+        axis := Axis.boundary
+        subject := { name := "api" }
+        predicate := "boundary-authority"
+        objectSlots := fun _ => False
+        payloadSlots := fun _ => False
+        direction := AtomDirection.incoming
+        arity := 1
+        valence := authorityValence
+        singleFactShape := True
+        singleFactShapeEvidence := trivial }
+  | .effect =>
+      { family := AtomKind.effect
+        axis := Axis.semantic
+        subject := { name := "request-flow" }
+        predicate := "effect"
+        objectSlots := fun _ => False
+        payloadSlots := fun _ => False
+        direction := AtomDirection.outgoing
+        arity := 1
+        valence := effectValence
+        singleFactShape := True
+        singleFactShapeEvidence := trivial }
+
+def authorityEffectShapePresentation :
+    AtomShapePresentation authorityEffectSystem where
+  shapeOf := authorityEffectShape
+  shapeKindAligned := by
+    intro atom
+    cases atom <;> rfl
+  shapeAxisAligned := by
+    intro atom
+    cases atom <;> rfl
+  shapeSingleFact := by
+    intro _ _
+    trivial
+
+def selectedAuthorityEffectAtoms : AuthorityEffectAtom -> Prop
+  | .authority => True
+  | .effect => True
+
+def authorityEffectPortCompatible :
+    PortCompatible authorityPolicyPort effectRequiredAuthorityPort := by
+  exact ⟨rfl, rfl, rfl, rfl, rfl⟩
+
+def effectAuthorityPortCompatible :
+    PortCompatible effectRequiredAuthorityPort authorityPolicyPort := by
+  exact PortCompatible.symm authorityEffectPortCompatible
+
+def authorityEffectComposition :
+    CompatibleComposition
+      (AtomShapeOf authorityEffectShapePresentation AuthorityEffectAtom.authority)
+      (AtomShapeOf authorityEffectShapePresentation AuthorityEffectAtom.effect) where
+  leftPort := authorityPolicyPort
+  rightPort := effectRequiredAuthorityPort
+  leftHasPort := rfl
+  rightHasPort := rfl
+  portsCompatible := authorityEffectPortCompatible
+  objectSlotsCompatible := by
+    intro _ _ hSlot _
+    cases hSlot
+  payloadSlotsCompatible := by
+    intro _ _ hSlot _
+    cases hSlot
+  predicateSlotsCompatible := by
+    intro hPredicate
+    exact False.elim
+      ((by decide : "boundary-authority" ≠ "effect") hPredicate)
+
+def effectAuthorityComposition :
+    CompatibleComposition
+      (AtomShapeOf authorityEffectShapePresentation AuthorityEffectAtom.effect)
+      (AtomShapeOf authorityEffectShapePresentation AuthorityEffectAtom.authority) where
+  leftPort := effectRequiredAuthorityPort
+  rightPort := authorityPolicyPort
+  leftHasPort := rfl
+  rightHasPort := rfl
+  portsCompatible := effectAuthorityPortCompatible
+  objectSlotsCompatible := by
+    intro _ _ hSlot _
+    cases hSlot
+  payloadSlotsCompatible := by
+    intro _ _ hSlot _
+    cases hSlot
+  predicateSlotsCompatible := by
+    intro hPredicate
+    exact False.elim
+      ((by decide : "effect" ≠ "boundary-authority") hPredicate)
+
+def authorityEffectCompositionGraph :
+    AAT.CompositionGraph
+      authorityEffectShapePresentation selectedAuthorityEffectAtoms where
+  compatiblePairs := by
+    intro left right _hLeft _hRight hDistinct
+    cases left
+    · cases right
+      · exact False.elim (hDistinct rfl)
+      · exact authorityEffectComposition
+    · cases right
+      · exact effectAuthorityComposition
+      · exact False.elim (hDistinct rfl)
+  graphBoundary := True
+
+def generatedAuthorityEffectMolecule :
+    AAT.GeneratedMolecule authorityEffectShapePresentation where
+  atoms := selectedAuthorityEffectAtoms
+  finiteConfiguration := True
+  atomsPrimitive := by
+    intro atom _
+    exact authorityEffectSystem.primitive atom
+  compositionGraph := authorityEffectCompositionGraph
+  requiredPortsMatched := by
+    intro atom port _hAtom hRequired
+    cases atom
+    · cases hRequired
+    · subst port
+      exact
+        ⟨AuthorityEffectAtom.authority, authorityPolicyPort, trivial,
+          (by intro h; cases h), rfl, effectAuthorityPortCompatible⟩
+
+theorem generatedAuthorityEffectMolecule_not_arbitrary_set :
+    generatedAuthorityEffectMolecule.notArbitrarySet := by
+  exact generatedAuthorityEffectMolecule.not_arbitrary_set
+
+def generatedAuthorityEffectObject :
+    AAT.GeneratedArchitectureObject authorityEffectShapePresentation where
+  molecule := generatedAuthorityEffectMolecule
+  carrierList :=
+    [ ⟨AuthorityEffectAtom.authority, by trivial⟩
+    , ⟨AuthorityEffectAtom.effect, by trivial⟩
+    ]
+  carrierListNodup := by
+    simp
+  carrierListCovers := by
+    intro carrier
+    cases carrier with
+    | mk atom _hAtom =>
+        cases atom <;> simp
+  objectBoundary := True
+
+def authorityEffectAuthorityCarrier :
+    AAT.GeneratedCarrier generatedAuthorityEffectObject :=
+  ⟨AuthorityEffectAtom.authority, by trivial⟩
+
+def authorityEffectEffectCarrier :
+    AAT.GeneratedCarrier generatedAuthorityEffectObject :=
+  ⟨AuthorityEffectAtom.effect, by trivial⟩
+
+theorem generatedAuthorityPolicy_from_authority_atom :
+    AAT.GeneratedArchitectureObject.GeneratedAuthorityPolicy
+      generatedAuthorityEffectObject authorityEffectAuthorityCarrier := by
+  exact
+    AAT.GeneratedArchitectureObject.generated_authority_policy_from_authority_atoms
+      generatedAuthorityEffectObject
+      authorityEffectAuthorityCarrier rfl
+
+theorem generatedEffectLawInput_from_effect_atom :
+    AAT.GeneratedArchitectureObject.GeneratedEffectLawInput
+      generatedAuthorityEffectObject authorityEffectEffectCarrier := by
+  exact
+    AAT.GeneratedArchitectureObject.generated_effect_law_input_from_effect_atoms
+      generatedAuthorityEffectObject
+      authorityEffectEffectCarrier rfl
+
+theorem generatedAuthorityEffectLaw_locally_satisfied :
+    AAT.GeneratedArchitectureObject.GeneratedAuthorityEffectLawSatisfied
+      generatedAuthorityEffectObject authorityEffectEffectCarrier := by
+  exact
+    ⟨generatedEffectLawInput_from_effect_atom,
+      authorityEffectAuthorityCarrier,
+      generatedAuthorityPolicy_from_authority_atom⟩
+
 inductive DirectedRelationAtom where
   | api
   | apiToDatabase

@@ -265,6 +265,10 @@ def representativeDeclarations : AATCandidate -> List String
        "AAT.GeneratedMolecule.not_arbitrary_set",
        "AtomGeneratedMoleculeExamples.generatedComponentMolecule_not_arbitrary_set",
        "AAT.GeneratedArchitectureObject",
+       "AAT.GeneratedArchitectureObject.generated_authority_effect_law_satisfied_from_authority_policy",
+       "AtomGeneratedMoleculeExamples.generatedAuthorityPolicy_from_authority_atom",
+       "AtomGeneratedMoleculeExamples.generatedEffectLawInput_from_effect_atom",
+       "AtomGeneratedMoleculeExamples.generatedAuthorityEffectLaw_locally_satisfied",
        "AtomShapeKindCoverageExamples.coverage_shape_exists_for_every_atom_kind",
        "AtomShapeKindCoverageExamples.coverage_shape_has_valence_port",
        "AAT.GeneratedAtomShapeCoordinate",
@@ -338,6 +342,7 @@ def classifyAATCandidate
         ["AAT.GeneratedArchitectureObject",
          "AAT.GeneratedMolecule.not_arbitrary_set",
          "AtomGeneratedMoleculeExamples.generatedComponentMolecule_not_arbitrary_set",
+         "AtomGeneratedMoleculeExamples.generatedAuthorityEffectLaw_locally_satisfied",
          "AtomShapeKindCoverageExamples.coverage_shape_exists_for_every_atom_kind",
          "AAT.GeneratedArchitectureObject.generatedCarrierShapeDistance",
          "AAT.GeneratedArchitectureObject.generated_shapeCoordinateTotalCurvature_eq_zero",
@@ -350,7 +355,7 @@ def classifyAATCandidate
          "AAT.GeneratedArchitectureLawModel",
          "AtomGeneratedSignatureExamples.*"]
         (by simp)
-        "The kernel starts from AtomShape / compatible composition, covers the current AtomKind grammar as shaped typed facts, and reaches generated molecule, object, shape distance, shape-coordinate curvature, oriented relation/runtime edge generation, generated graph rank, law model, signature, repair, and negative acceptance examples."
+        "The kernel starts from AtomShape / compatible composition, covers the current AtomKind grammar as shaped typed facts, and reaches generated molecule, object, authority/effect local law satisfaction, shape distance, shape-coordinate curvature, oriented relation/runtime edge generation, generated graph rank, law model, signature, repair, and negative acceptance examples."
   | .archMapObservationBoundary =>
       atomGeneratedRow
         "aat.archMapObservationBoundary"

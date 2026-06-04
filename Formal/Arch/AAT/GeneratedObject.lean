@@ -145,6 +145,22 @@ theorem generated_effect_law_input_from_effect_atoms
     GeneratedEffectLawInput object effect :=
   hEffect
 
+/--
+Authority-effect law satisfaction is generated only from an effect Atom plus a
+generated authority policy in the same generated object.
+-/
+theorem generated_authority_effect_law_satisfied_from_authority_policy
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    (object : GeneratedArchitectureObject presentation)
+    (effect : GeneratedCarrier object)
+    (hEffect : GeneratedEffect object effect)
+    (authority : GeneratedCarrier object)
+    (hAuthority : GeneratedAuthorityPolicy object authority) :
+    GeneratedAuthorityEffectLawSatisfied object effect :=
+  ⟨generated_effect_law_input_from_effect_atoms object effect hEffect,
+    authority, hAuthority⟩
+
 /-- Without a generated authority policy, an effect law is not locally satisfied. -/
 theorem no_authority_policy_not_generated_authority_effect_law_satisfied
     {system : AtomAxiomSystem.{u, v}}
