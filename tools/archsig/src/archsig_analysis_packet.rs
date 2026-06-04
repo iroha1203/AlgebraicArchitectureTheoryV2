@@ -36,9 +36,9 @@ use crate::{
     ArchSigFeatureExtensionFormulaReadingV0, ArchSigFeatureExtensionWitnessAttributionV0,
     ArchSigFeatureExtensionWitnessBasisV0, ArchSigFillerCandidateReadingV0,
     ArchSigFlatnessReadingV0, ArchSigGeneratedAtomShapeV0, ArchSigGeneratedLawInputV0,
-    ArchSigGeneratedMoleculeV0, ArchSigGeneratedObstructionV0,
-    ArchSigGeneratedRepairTargetV0, ArchSigHighOverlapMoleculePairV0,
-    ArchSigHomotopyAggregateReadingV0, ArchSigHomotopyCellSummaryV0, ArchSigHomotopyComplexSummaryV0,
+    ArchSigGeneratedMoleculeV0, ArchSigGeneratedObstructionV0, ArchSigGeneratedRepairTargetV0,
+    ArchSigHighOverlapMoleculePairV0, ArchSigHomotopyAggregateReadingV0,
+    ArchSigHomotopyCellSummaryV0, ArchSigHomotopyComplexSummaryV0,
     ArchSigHomotopyHolonomyReadingV0, ArchSigHomotopyOrderSensitivityReadingV0,
     ArchSigInvariantFamilyReadingV0, ArchSigLawUniverseCoverageReadingV0,
     ArchSigLawUniverseReadingV0, ArchSigLawWitnessAxisAlignmentEvaluationV0, ArchSigLayerSplitV0,
@@ -66,8 +66,7 @@ use crate::{
     ArchSigSubjectFamilySpreadV0, ArchSigSynthesisBlockageReadingV0,
     ArchSigThreeLayerFlatnessReadingV0, ArchSigTransferBridgeReadingV0,
     ArchSigTransferMatrixEntryV0, ArchSigViewerDistanceInputV0, LAW_POLICY_SCHEMA_VERSION,
-    LawPolicyDocumentV0,
-    LawPolicyObstructionCircuitDefinitionV0, LawPolicyReadingBoundaryV0,
+    LawPolicyDocumentV0, LawPolicyObstructionCircuitDefinitionV0, LawPolicyReadingBoundaryV0,
     LawPolicySignatureAxisDefinitionV0, LawPolicyWitnessRuleV0, ValidationCheck, ValidationExample,
 };
 
@@ -2978,9 +2977,21 @@ fn atom_shape_distance_components(
             right.atom_family.as_str(),
         ),
         ("axis", left_axis.as_str(), right_axis.as_str()),
-        ("subject", left.subject_ref.as_str(), right.subject_ref.as_str()),
-        ("predicate", left.predicate.as_str(), right.predicate.as_str()),
-        ("objectSlotSet", left_objects.as_str(), right_objects.as_str()),
+        (
+            "subject",
+            left.subject_ref.as_str(),
+            right.subject_ref.as_str(),
+        ),
+        (
+            "predicate",
+            left.predicate.as_str(),
+            right.predicate.as_str(),
+        ),
+        (
+            "objectSlotSet",
+            left_objects.as_str(),
+            right_objects.as_str(),
+        ),
     ];
     let mut distance = 0i64;
     let mut labels = Vec::new();
@@ -18040,6 +18051,13 @@ fn check_monodromy_family(
 
 fn check_generated_middle_layer_surface(packet: &ArchSigAnalysisPacketV0) -> ValidationCheck {
     let mut examples = Vec::new();
+    let generated_shape_ids = packet
+        .generated_atom_shapes
+        .iter()
+        .map(|shape| shape.atom_shape_id.as_str())
+        .collect::<BTreeSet<_>>();
+    let mut generated_molecule_shape_refs = BTreeMap::<String, BTreeSet<String>>::new();
+    let mut generated_molecule_shape_pairs = BTreeSet::<(String, String, String)>::new();
     if packet.generated_atom_shapes.is_empty() {
         examples.push(generic_validation_example(
             "generatedAtomShapes",
@@ -18076,9 +18094,11 @@ fn check_generated_middle_layer_surface(packet: &ArchSigAnalysisPacketV0) -> Val
             "packet must localize repair candidates to generated shape-level targets",
         ));
     }
-    if packet.generated_molecules.iter().any(|molecule| {
-        molecule.atom_observation_refs.len() > 1
-    }) && packet.viewer_distance_inputs.is_empty()
+    if packet
+        .generated_molecules
+        .iter()
+        .any(|molecule| molecule.atom_observation_refs.len() > 1)
+        && packet.viewer_distance_inputs.is_empty()
     {
         examples.push(generic_validation_example(
             "viewerDistanceInputs",
@@ -18088,7 +18108,11 @@ fn check_generated_middle_layer_surface(packet: &ArchSigAnalysisPacketV0) -> Val
     }
 
     for shape in &packet.generated_atom_shapes {
-        push_blank(&mut examples, &shape.atom_shape_id, &shape.atom_observation_ref);
+        push_blank(
+            &mut examples,
+            &shape.atom_shape_id,
+            &shape.atom_observation_ref,
+        );
         push_blank(
             &mut examples,
             &format!("{} family", shape.atom_shape_id),
@@ -18118,6 +18142,29 @@ fn check_generated_middle_layer_surface(packet: &ArchSigAnalysisPacketV0) -> Val
             &molecule.generated_molecule_id,
             &molecule.source_molecule_observation_ref,
         );
+        let shape_ref_set = molecule
+            .atom_shape_refs
+            .iter()
+            .cloned()
+            .collect::<BTreeSet<_>>();
+        generated_molecule_shape_refs.insert(
+            molecule.generated_molecule_id.clone(),
+            shape_ref_set.clone(),
+        );
+        let molecule_shape_refs = shape_ref_set.into_iter().collect::<Vec<_>>();
+        for left_index in 0..molecule_shape_refs.len() {
+            for right_index in (left_index + 1)..molecule_shape_refs.len() {
+                let (left, right) = ordered_shape_pair(
+                    &molecule_shape_refs[left_index],
+                    &molecule_shape_refs[right_index],
+                );
+                generated_molecule_shape_pairs.insert((
+                    molecule.generated_molecule_id.clone(),
+                    left,
+                    right,
+                ));
+            }
+        }
         if molecule.atom_shape_refs.is_empty() {
             examples.push(generic_validation_example(
                 &molecule.generated_molecule_id,
@@ -18182,17 +18229,94 @@ fn check_generated_middle_layer_surface(packet: &ArchSigAnalysisPacketV0) -> Val
             ));
         }
     }
+    let mut covered_distance_pairs = BTreeSet::<(String, String, String)>::new();
     for distance in &packet.viewer_distance_inputs {
         push_blank(
             &mut examples,
             &distance.distance_input_id,
             &distance.distance_kind,
         );
-        if distance.atom_shape_refs.len() < 2 || distance.coordinate_components.is_empty() {
+        push_blank(
+            &mut examples,
+            &format!("{} sourceRef", distance.distance_input_id),
+            &distance.source_ref,
+        );
+        push_blank(
+            &mut examples,
+            &format!("{} targetRef", distance.distance_input_id),
+            &distance.target_ref,
+        );
+        let generated_molecule_ref = distance.generated_molecule_ref.as_deref();
+        if generated_molecule_ref.is_none_or(|molecule_ref| molecule_ref.trim().is_empty()) {
+            examples.push(generic_validation_example(
+                &distance.distance_input_id,
+                "generatedMoleculeRef",
+                "viewer distance input must be anchored to the generated molecule whose AtomShape pair it compares",
+            ));
+        }
+        if distance.atom_shape_refs.len() != 2 || distance.coordinate_components.len() < 5 {
             examples.push(generic_validation_example(
                 &distance.distance_input_id,
                 "atomShapeRefs/coordinateComponents",
-                "viewer distance input must compare two AtomShape coordinate records",
+                "viewer distance input must compare exactly two AtomShape coordinate records with full coordinate components",
+            ));
+        }
+        for shape_ref in &distance.atom_shape_refs {
+            if !generated_shape_ids.contains(shape_ref.as_str()) {
+                examples.push(generic_validation_example(
+                    &distance.distance_input_id,
+                    "atomShapeRefs",
+                    "viewer distance input must refer to generated AtomShape records",
+                ));
+            }
+        }
+        if let Some(molecule_ref) = generated_molecule_ref {
+            if let Some(shape_refs) = generated_molecule_shape_refs.get(molecule_ref) {
+                if distance.atom_shape_refs.len() == 2 {
+                    let left = &distance.atom_shape_refs[0];
+                    let right = &distance.atom_shape_refs[1];
+                    if !shape_refs.contains(left) || !shape_refs.contains(right) {
+                        examples.push(generic_validation_example(
+                            &distance.distance_input_id,
+                            "generatedMoleculeRef/atomShapeRefs",
+                            "viewer distance input must compare AtomShape refs belonging to its generated molecule",
+                        ));
+                    } else {
+                        let (left, right) = ordered_shape_pair(left, right);
+                        covered_distance_pairs.insert((molecule_ref.to_string(), left, right));
+                    }
+                }
+            } else if !molecule_ref.trim().is_empty() {
+                examples.push(generic_validation_example(
+                    &distance.distance_input_id,
+                    "generatedMoleculeRef",
+                    "viewer distance input must reference an existing generated molecule",
+                ));
+            }
+        }
+        match (
+            distance.distance_value,
+            viewer_distance_delta_sum(&distance.coordinate_components),
+        ) {
+            (Some(value), Some(delta_sum)) if value == delta_sum => {}
+            (Some(_), Some(_)) => examples.push(generic_validation_example(
+                &distance.distance_input_id,
+                "distanceValue/coordinateComponents",
+                "viewer distance value must equal the sum of AtomShape coordinate delta components",
+            )),
+            _ => examples.push(generic_validation_example(
+                &distance.distance_input_id,
+                "distanceValue/coordinateComponents",
+                "viewer distance input must carry a computed distance value and delta components",
+            )),
+        }
+    }
+    for (molecule_ref, left, right) in generated_molecule_shape_pairs {
+        if !covered_distance_pairs.contains(&(molecule_ref.clone(), left.clone(), right.clone())) {
+            examples.push(generic_validation_example(
+                &molecule_ref,
+                "viewerDistanceInputs",
+                "viewer distance inputs must cover every generated molecule AtomShape pair",
             ));
         }
     }
@@ -18203,6 +18327,25 @@ fn check_generated_middle_layer_surface(packet: &ArchSigAnalysisPacketV0) -> Val
         examples,
         "fail",
     )
+}
+
+fn ordered_shape_pair(left: &str, right: &str) -> (String, String) {
+    if left <= right {
+        (left.to_string(), right.to_string())
+    } else {
+        (right.to_string(), left.to_string())
+    }
+}
+
+fn viewer_distance_delta_sum(coordinate_components: &[String]) -> Option<i64> {
+    let mut sum = 0i64;
+    let mut found = false;
+    for component in coordinate_components {
+        let (_prefix, delta) = component.rsplit_once("delta=")?;
+        sum += delta.parse::<i64>().ok()?;
+        found = true;
+    }
+    found.then_some(sum)
 }
 
 fn check_measurement_depth(packet: &ArchSigAnalysisPacketV0) -> ValidationCheck {

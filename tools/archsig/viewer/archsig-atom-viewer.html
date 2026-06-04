@@ -1663,10 +1663,15 @@
           Math.min(distanceProfile.meanDistance, 8) * 5.4 +
           Math.sqrt(distanceProfile.count) * 2.6 +
           Math.min(distanceProfile.componentCount, 20) * 0.35;
+        const offset = distanceProfile.offset || new THREE.Vector3(
+          Math.cos(distanceProfile.angle) * localRadius,
+          0,
+          Math.sin(distanceProfile.angle) * localRadius
+        );
         return new THREE.Vector3(
-          center.x + Math.cos(distanceProfile.angle) * localRadius,
-          center.y + (familyRank(node.atomFamily) - 4) * 3 + distanceProfile.meanDistance * 4 + memberships.length * 2,
-          center.z + Math.sin(distanceProfile.angle) * localRadius
+          center.x + offset.x,
+          center.y + offset.y + (familyRank(node.atomFamily) - 4) * 3 + distanceProfile.meanDistance * 4 + memberships.length * 2,
+          center.z + offset.z
         );
       }
       const localAngle = (primary.refIndex + hashText(node.nodeId) % 13) * 2.399963229728653;
@@ -1700,12 +1705,48 @@
         input.value,
         input.coordinateComponents.slice(0, 6).join("|")
       ].join(":")).join(";");
+      const offset = viewerDistanceEmbedding(node, selected);
       return {
         count: selected.length,
         meanDistance,
         componentCount,
-        angle: ((hashText(`${node.nodeId}:${signature}`) % 6283) / 1000)
+        angle: ((hashText(`${node.nodeId}:${signature}`) % 6283) / 1000),
+        offset
       };
+    }
+
+    function viewerDistanceEmbedding(node, selected) {
+      const offset = new THREE.Vector3();
+      let contribution = 0;
+      selected.slice(0, 20).forEach((input) => {
+        const direction = input.source === node.nodeId ? -1 : 1;
+        input.coordinateComponents.forEach((component) => {
+          const delta = componentDelta(component);
+          if (!delta) return;
+          offset.addScaledVector(componentAxisVector(component), direction * delta);
+          contribution += Math.abs(delta);
+        });
+      });
+      if (!contribution || offset.lengthSq() < 0.0001) return null;
+      const scale = 8 + Math.min(contribution, 24) * 1.8 + Math.min(selected.length, 16) * 0.9;
+      return offset.normalize().multiplyScalar(scale);
+    }
+
+    function componentDelta(component) {
+      const match = String(component || "").match(/delta=(-?\d+)/);
+      return match ? Number(match[1]) : 0;
+    }
+
+    function componentAxisVector(component) {
+      const key = String(component || "").split(":")[0];
+      const vectors = {
+        family: new THREE.Vector3(1, 0.2, 0),
+        axis: new THREE.Vector3(0, 0.25, 1),
+        subject: new THREE.Vector3(-0.8, 0.15, 0.4),
+        predicate: new THREE.Vector3(0.45, 0.2, -0.75),
+        objectSlotSet: new THREE.Vector3(-0.25, 0.1, -1)
+      };
+      return (vectors[key] || new THREE.Vector3(0.6, 0.1, 0.6)).normalize();
     }
 
     function bucketedPosition(key, index, ranks, baseRadius, weight) {

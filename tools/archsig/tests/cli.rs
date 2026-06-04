@@ -1,3 +1,4 @@
+use std::collections::BTreeSet;
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::Command;
@@ -1115,7 +1116,10 @@ fn atom_viewer_uses_atom_shape_distance_inputs_for_molecule_layout() {
         "atomToViewerDistances",
         "viewerDistances",
         "function viewerDistanceProfile",
+        "function viewerDistanceEmbedding",
+        "function componentAxisVector",
         "distanceProfile.meanDistance",
+        "distanceProfile.offset",
         "function renderViewerDistanceBonds",
         "AtomShape distance from molecule center",
     ] {
@@ -1537,9 +1541,9 @@ fn atom_generated_acceptance_fixture_materializes_local_middle_layer() {
                                 .as_array()
                                 .is_some_and(|refs| !refs.is_empty())
                             && item["requiredPortOrSlot"] == "portOrSlotOrValenceMismatch"
-                            && item["evidenceBoundary"].as_str().is_some_and(|text| {
-                                text.contains("not a free-form recommendation")
-                            })
+                            && item["evidenceBoundary"]
+                                .as_str()
+                                .is_some_and(|text| text.contains("not a free-form recommendation"))
                     })
             }),
         "generated repair targets must localize repair candidates to generated obstruction, molecule, and AtomShape refs"
@@ -1550,6 +1554,93 @@ fn atom_generated_acceptance_fixture_materializes_local_middle_layer() {
             .is_some_and(|items| items.len() >= minimum_viewer_distance_inputs),
         "atom-generated acceptance must expose viewer distance inputs"
     );
+    let viewer_distance_inputs = packet["viewerDistanceInputs"]
+        .as_array()
+        .expect("viewerDistanceInputs are present");
+    let mut covered_distance_pairs = BTreeSet::<(String, String, String)>::new();
+    for distance in viewer_distance_inputs {
+        let molecule_ref = distance["generatedMoleculeRef"]
+            .as_str()
+            .expect("viewer distance input has generatedMoleculeRef")
+            .to_string();
+        let shape_refs = distance["atomShapeRefs"]
+            .as_array()
+            .expect("viewer distance input has atomShapeRefs");
+        assert_eq!(
+            shape_refs.len(),
+            2,
+            "viewer distance input must compare exactly two AtomShape refs"
+        );
+        let left = shape_refs[0]
+            .as_str()
+            .expect("left AtomShape ref is string")
+            .to_string();
+        let right = shape_refs[1]
+            .as_str()
+            .expect("right AtomShape ref is string")
+            .to_string();
+        let expected_delta_sum = distance["coordinateComponents"]
+            .as_array()
+            .expect("viewer distance has coordinateComponents")
+            .iter()
+            .map(|component| {
+                component
+                    .as_str()
+                    .and_then(|text| text.rsplit_once("delta="))
+                    .and_then(|(_prefix, delta)| delta.parse::<i64>().ok())
+                    .expect("coordinate component carries numeric delta")
+            })
+            .sum::<i64>();
+        assert_eq!(
+            distance["distanceValue"].as_i64(),
+            Some(expected_delta_sum),
+            "viewer distance value must equal the sum of AtomShape coordinate deltas"
+        );
+        let (left, right) = ordered_test_pair(left, right);
+        covered_distance_pairs.insert((molecule_ref, left, right));
+    }
+    for molecule in packet["generatedMolecules"]
+        .as_array()
+        .expect("generatedMolecules are present")
+    {
+        let molecule_ref = molecule["generatedMoleculeId"]
+            .as_str()
+            .expect("generated molecule id is present")
+            .to_string();
+        let shape_refs = molecule["atomShapeRefs"]
+            .as_array()
+            .expect("generated molecule has atomShapeRefs")
+            .iter()
+            .map(|shape_ref| {
+                shape_ref
+                    .as_str()
+                    .expect("AtomShape ref is string")
+                    .to_string()
+            })
+            .collect::<BTreeSet<_>>()
+            .into_iter()
+            .collect::<Vec<_>>();
+        for left_index in 0..shape_refs.len() {
+            for right_index in (left_index + 1)..shape_refs.len() {
+                let (left, right) = ordered_test_pair(
+                    shape_refs[left_index].clone(),
+                    shape_refs[right_index].clone(),
+                );
+                assert!(
+                    covered_distance_pairs.contains(&(molecule_ref.clone(), left, right)),
+                    "viewerDistanceInputs must cover every generated molecule AtomShape pair"
+                );
+            }
+        }
+    }
+}
+
+fn ordered_test_pair(left: String, right: String) -> (String, String) {
+    if left <= right {
+        (left, right)
+    } else {
+        (right, left)
+    }
 }
 
 #[test]
