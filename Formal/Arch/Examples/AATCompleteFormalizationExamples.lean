@@ -1,9 +1,11 @@
 import Formal.Arch.AAT.CompleteFormalization
 import Formal.Arch.Examples.AtomGeneratedMoleculeExamples
+import Formal.Arch.Examples.AtomGeneratedSignatureExamples
 
 namespace Formal.Arch.AATCompleteFormalizationExamples
 
 open Formal.Arch.AtomGeneratedMoleculeExamples
+open Formal.Arch.AtomGeneratedSignatureExamples
 
 /-- Concrete generated world used to test the complete-formalization skeleton. -/
 def generatedComponentWorld : AAT.AtomGeneratedAATWorld where
@@ -146,6 +148,36 @@ theorem generatedComponentTheoremSuite_has_operation_repair_synthesis_fields :
           generatedComponentTheoremSuite
             |>.generatedOperationRepairSynthesis
             |>.synthesisToSynthesisSoundnessPackage candidate⟩⟩
+
+theorem generatedComponentTheoremSuite_has_sft_archsig_fieldsig_fields :
+    (generatedComponentTheoremSuite
+      |>.generatedSFTArchSigFieldSig
+      |>.sftInputToLocalAlgebra
+        atomGeneratedSignature_sftInput).usedAsLocalAlgebra ∧
+      ArchitectureSignature.ArchitectureLawful
+        generatedComponentWorld.lawModel.toArchitectureLawModel ∧
+      atomGeneratedSignature_generatedArchSigTransition.fieldSigAnalysisBoundary ∧
+      atomGeneratedSignature_sftForecastStatus.RecordsForecastBoundary := by
+  let sourceBridge :=
+    generatedComponentTheoremSuite
+      |>.generatedSFTArchSigFieldSig
+      |>.archsigTransitionSourceBridge
+        atomGeneratedSignature_generatedArchSigTransition
+  exact
+    ⟨generatedComponentTheoremSuite
+        |>.generatedSFTArchSigFieldSig
+        |>.sftInputLocalAlgebraReadsGenerated
+          atomGeneratedSignature_sftInput,
+      ArchitectureSignature.AATCoreSignatureLawfulnessBridge.architectureLawful
+        sourceBridge,
+      generatedComponentTheoremSuite
+        |>.generatedSFTArchSigFieldSig
+        |>.fieldSigReadsArchSigTransitionAsSFTAnalysis
+          atomGeneratedSignature_generatedFieldSigAnalysis,
+      generatedComponentTheoremSuite
+        |>.generatedSFTArchSigFieldSig
+        |>.fieldSigForecastCorrectnessRemainsBoundary
+          atomGeneratedSignature_generatedFieldSigAnalysis⟩
 
 theorem generatedComponentTheoremSuite_registry_has_no_bridge_assumed_rows :
     AATReconstructionClassification.TheoremPackageClass.bridgeAssumed ∉
