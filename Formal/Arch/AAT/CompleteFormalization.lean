@@ -129,6 +129,16 @@ def StaticStructuralCore
     world.relationDecidable
   exact world.lawModel.generatedArchitectureZeroCurvatureTheoremPackage
 
+/-- Generated AATCore observation boundary specialized to the world's model. -/
+def GeneratedAATCoreNoObservationDependency
+    (world : AtomGeneratedAATWorld.{u, v}) : Prop :=
+  world.lawModel.generatedAATCoreNoObservationDependency
+
+/-- Generated AATCore circuit boundary specialized to the world's model. -/
+def GeneratedAATCoreCircuitBoundary
+    (world : AtomGeneratedAATWorld.{u, v}) : Prop :=
+  world.lawModel.generatedAATCoreCircuitBoundary
+
 theorem molecule_not_arbitrary_set
     (world : AtomGeneratedAATWorld.{u, v}) :
     world.object.molecule.notArbitrarySet :=
@@ -179,6 +189,16 @@ theorem static_structural_core
     world.relationDecidable
   exact world.lawModel.generatedArchitectureZeroCurvatureTheoremPackage_holds
 
+theorem generated_aat_core_noObservationDependency
+    (world : AtomGeneratedAATWorld.{u, v}) :
+    world.GeneratedAATCoreNoObservationDependency :=
+  world.lawModel.generatedAATCoreNoObservationDependency_recorded
+
+theorem generated_aat_core_circuitBoundary
+    (world : AtomGeneratedAATWorld.{u, v}) :
+    world.GeneratedAATCoreCircuitBoundary :=
+  world.lawModel.generatedAATCoreCircuitBoundary_recorded
+
 end AtomGeneratedAATWorld
 
 /--
@@ -197,6 +217,10 @@ structure AATTheoremSuite (world : AtomGeneratedAATWorld.{u, v}) where
       world.lawModel.toArchitectureLawModel
   generatedSignatureAxesZero : world.RequiredSignatureAxesZero
   generatedStaticStructuralCore : world.StaticStructuralCore
+  generatedAATCoreNoObservationDependency :
+    world.GeneratedAATCoreNoObservationDependency
+  generatedAATCoreCircuitBoundary :
+    world.GeneratedAATCoreCircuitBoundary
   classificationRegistryHasNoBridgeAssumedRows :
     AATReconstructionClassification.TheoremPackageClass.bridgeAssumed ∉
       AATReconstructionClassification.allClassificationClasses
@@ -275,14 +299,16 @@ def currentImplementationFrontier : List AATImplementationFrontier :=
       docsTarget := "docs/aat/lean_theorem_index.md#atom-generated-algebra-kernel" }
   , { family := .generatedLawSignature
       suiteField :=
-        "AATTheoremSuite.generatedLawModelLawful / generatedSignatureAxesZero / generatedStaticStructuralCore"
+        "AATTheoremSuite.generatedLawModelLawful / generatedSignatureAxesZero / generatedStaticStructuralCore / generatedAATCoreNoObservationDependency / generatedAATCoreCircuitBoundary"
       status := .connected
       existingEntrypoints :=
         ["GeneratedArchitectureLawModel.generatedArchitectureLawful",
          "GeneratedArchitectureLawModel.generated_requiredSignatureAxesZero",
-         "GeneratedArchitectureLawModel.generatedArchitectureZeroCurvatureTheoremPackage_holds"]
+         "GeneratedArchitectureLawModel.generatedArchitectureZeroCurvatureTheoremPackage_holds",
+         "GeneratedArchitectureLawModel.generatedAATCoreNoObservationDependency_recorded",
+         "GeneratedArchitectureLawModel.generatedAATCoreCircuitBoundary_recorded"]
       nextWorkPackage :=
-        "Extend the suite from static core into generated AATCore bridge fields."
+        "Preserve the connected generated law / Signature / AATCore bridge fields as later suite families are filled."
       parallelAllowed := true
       coordinationRequired := false
       docsTarget := "docs/aat/lean_theorem_index.md#atom-generated-algebra-kernel" }
@@ -428,6 +454,10 @@ def initialTheoremSuite
     world.required_signature_axes_zero
   generatedStaticStructuralCore :=
     world.static_structural_core
+  generatedAATCoreNoObservationDependency :=
+    world.generated_aat_core_noObservationDependency
+  generatedAATCoreCircuitBoundary :=
+    world.generated_aat_core_circuitBoundary
   classificationRegistryHasNoBridgeAssumedRows :=
     AATReconstructionClassification.theorem_package_registry_has_no_bridge_assumed_rows
   classificationRegistryHasNoRewriteTargets :=

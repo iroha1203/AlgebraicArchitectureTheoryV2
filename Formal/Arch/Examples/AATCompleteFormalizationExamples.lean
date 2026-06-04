@@ -27,6 +27,13 @@ theorem generatedComponentTheoremSuite_has_static_structural_core :
     generatedComponentWorld.StaticStructuralCore := by
   exact generatedComponentTheoremSuite.generatedStaticStructuralCore
 
+theorem generatedComponentTheoremSuite_has_generated_aat_core_bridge_fields :
+    generatedComponentWorld.GeneratedAATCoreNoObservationDependency ∧
+      generatedComponentWorld.GeneratedAATCoreCircuitBoundary := by
+  exact
+    ⟨generatedComponentTheoremSuite.generatedAATCoreNoObservationDependency,
+      generatedComponentTheoremSuite.generatedAATCoreCircuitBoundary⟩
+
 theorem generatedComponentTheoremSuite_has_generated_object_fields :
     (∀ carrier : AAT.GeneratedCarrier generatedComponentWorld.object,
       generatedComponentWorld.system.Primitive carrier.val) ∧
