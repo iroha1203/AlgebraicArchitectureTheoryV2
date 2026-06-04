@@ -822,9 +822,10 @@ def classifySFT
           .aatInterfaceBoundary)
         ["AAT.GeneratedSFTInput",
          "AAT.GeneratedSFTInput.theoremStatusFromGenerated",
-         "AAT.GeneratedSFTInput.sft_event_does_not_create_atoms"]
+         "AAT.GeneratedSFTInput.sft_event_does_not_create_atoms",
+         "AAT.GeneratedArchitectureLawModel.generatedIdentityAATCoreCircuitDelta_circuitBoundary"]
         (by simp)
-        "Generated SFT input computes theorem status from GeneratedArchitectureLawModel and inherits SFT event non-creation from the root AtomAxiomSystem."
+        "Generated SFT input computes theorem status from GeneratedArchitectureLawModel, inherits SFT event non-creation from the root AtomAxiomSystem, and uses generated lawfulness for identity circuit-delta boundaries."
   | .archSigReportBoundary =>
       atomGeneratedRow
         "sft.archSigReportBoundary"

@@ -94,6 +94,75 @@ theorem generatedAATTheoremStatusForSFT_recordsMeasuredZeroEvidence
       nonConclusions).RecordsMeasuredZeroEvidence :=
   model.generated_requiredSignatureAxesZero
 
+/--
+Circuit-delta boundary for the identity SFT view of a generated AAT core.
+
+The selected law and molecule are the generated design law and generated
+molecule.  Any selected obstruction circuit is impossible by generated
+lawfulness, so the transition circuit surface is not an arbitrary marker.
+-/
+def generatedIdentityCircuitDeltaBoundary
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : GeneratedArchitectureObject presentation}
+    (model : GeneratedArchitectureLawModel object) : Prop :=
+  ∀ _hCircuit :
+      ObstructionCircuit model.generatedDesignLaw object.molecule.toMolecule,
+    False
+
+/-- Generated lawfulness records the identity SFT circuit-delta boundary. -/
+theorem generatedIdentityCircuitDeltaBoundary_recorded
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : GeneratedArchitectureObject presentation}
+    (model : GeneratedArchitectureLawModel object) :
+    model.generatedIdentityCircuitDeltaBoundary := by
+  intro hCircuit
+  exact model.generatedAATCoreCircuit_impossible rfl rfl hCircuit
+
+/--
+Identity circuit delta generated from a law model.
+
+This packages the same generated law/molecule on source and target cores and
+uses the generated no-circuit theorem as the circuit boundary.
+-/
+def generatedIdentityAATCoreCircuitDelta
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : GeneratedArchitectureObject presentation}
+    (model : GeneratedArchitectureLawModel object) :
+    AATCoreCircuitDelta model.generatedAATCore model.generatedAATCore where
+  law := model.generatedDesignLaw
+  molecule := object.molecule.toMolecule
+  lawOnSource := model.generated_law_on_core
+  lawOnTarget := model.generated_law_on_core
+  moleculeOnSource := model.generated_molecule_on_core
+  moleculeOnTarget := model.generated_molecule_on_core
+  createdCircuit := fun _circuit => False
+  removedCircuit := fun _circuit => False
+  preservedCircuit := fun _circuit => False
+  circuitBoundary := model.generatedIdentityCircuitDeltaBoundary
+  doesNotCreateAtomsEvidence := system.sft_event_does_not_create_atoms
+  nonConclusions := True
+
+/-- The generated identity circuit delta records the generated no-circuit boundary. -/
+theorem generatedIdentityAATCoreCircuitDelta_circuitBoundary
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : GeneratedArchitectureObject presentation}
+    (model : GeneratedArchitectureLawModel object) :
+    model.generatedIdentityAATCoreCircuitDelta.circuitBoundary :=
+  model.generatedIdentityCircuitDeltaBoundary_recorded
+
+/-- The generated identity circuit delta does not create atom existence. -/
+theorem generatedIdentityAATCoreCircuitDelta_doesNotCreateAtoms
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : GeneratedArchitectureObject presentation}
+    (model : GeneratedArchitectureLawModel object) :
+    system.noSFTEventCreatesAtoms :=
+  model.generatedIdentityAATCoreCircuitDelta.circuit_delta_does_not_create_atoms
+
 end GeneratedArchitectureLawModel
 
 /--

@@ -481,20 +481,20 @@ def atomGeneratedSignature_semanticDelta :
 def atomGeneratedSignature_circuitDelta :
     AATCoreCircuitDelta
       generatedComponentLawModel.generatedAATCore
-      generatedComponentLawModel.generatedAATCore where
-  law := generatedComponentLawModel.generatedDesignLaw
-  molecule := generatedComponentObject.molecule.toMolecule
-  lawOnSource := generatedComponentLawModel.generated_law_on_core
-  lawOnTarget := generatedComponentLawModel.generated_law_on_core
-  moleculeOnSource := generatedComponentLawModel.generated_molecule_on_core
-  moleculeOnTarget := generatedComponentLawModel.generated_molecule_on_core
-  createdCircuit := fun _ => False
-  removedCircuit := fun _ => False
-  preservedCircuit := fun _ => True
-  circuitBoundary := True
-  doesNotCreateAtomsEvidence :=
-    componentSystem.sft_event_does_not_create_atoms
-  nonConclusions := True
+      generatedComponentLawModel.generatedAATCore :=
+  generatedComponentLawModel.generatedIdentityAATCoreCircuitDelta
+
+theorem atomGeneratedSignature_circuitDelta_boundary :
+    atomGeneratedSignature_circuitDelta.circuitBoundary := by
+  exact
+    generatedComponentLawModel
+      |>.generatedIdentityAATCoreCircuitDelta_circuitBoundary
+
+theorem atomGeneratedSignature_circuitDelta_does_not_create_atoms :
+    componentSystem.noSFTEventCreatesAtoms := by
+  exact
+    generatedComponentLawModel
+      |>.generatedIdentityAATCoreCircuitDelta_doesNotCreateAtoms
 
 def atomGeneratedSignature_aatCoreTransition :
     AATCoreTransition

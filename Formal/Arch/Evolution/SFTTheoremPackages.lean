@@ -176,6 +176,9 @@ def representativeDeclarations : Candidate -> List String
        "AAT.GeneratedSFTInput.measured_zero_from_generated",
        "AAT.GeneratedSFTInput.reads_generated_aat_as_sft_local_premise",
        "AAT.GeneratedSFTInput.sft_event_does_not_create_atoms",
+       "AAT.GeneratedArchitectureLawModel.generatedIdentityAATCoreCircuitDelta",
+       "AAT.GeneratedArchitectureLawModel.generatedIdentityAATCoreCircuitDelta_circuitBoundary",
+       "AAT.GeneratedArchitectureLawModel.generatedIdentityAATCoreCircuitDelta_doesNotCreateAtoms",
        "AATCoreLocalAlgebraForSFT",
        "AATCoreTransition",
        "AATCoreTransportTransition",
@@ -578,6 +581,9 @@ def schematicCorrespondences : Candidate -> List SchematicCorrespondence
            "AAT.GeneratedSFTInput.measured_zero_from_generated",
            "AAT.GeneratedSFTInput.reads_generated_aat_as_sft_local_premise",
            "AAT.GeneratedSFTInput.sft_event_does_not_create_atoms",
+           "AAT.GeneratedArchitectureLawModel.generatedIdentityAATCoreCircuitDelta",
+           "AAT.GeneratedArchitectureLawModel.generatedIdentityAATCoreCircuitDelta_circuitBoundary",
+           "AAT.GeneratedArchitectureLawModel.generatedIdentityAATCoreCircuitDelta_doesNotCreateAtoms",
            "AATToSFTInterfaceBoundary.aat_theorem_status_as_local_premise",
            "AATToSFTInterfaceBoundary.aat_lawfulness_alone_does_not_discharge_trajectory_safety_boundary",
            "AATToSFTInterfaceBoundary.measured_zero_does_not_discharge_unmeasured_axis_safety_boundary",
@@ -586,7 +592,7 @@ def schematicCorrespondences : Candidate -> List SchematicCorrespondence
            "AATCoreTransportTransition.operation_does_not_create_atoms",
            "AATCoreTransportCircuitDelta.transport_circuit_delta_does_not_create_atoms"],
          reading :=
-          "Atom-generated theorem status and AATCore preservation / transport evidence are read as local algebra or local premise; transport circuit deltas keep source and target law/molecule selections separate and do not automatically promote to forecast safety",
+          "Atom-generated theorem status and generated AATCore circuit delta evidence are read as local algebra or local premise; transport circuit deltas keep source and target law/molecule selections separate and do not automatically promote to forecast safety",
          status := "proved accessors" }]
   | archSigReportBoundary =>
       [{ schematic := "ArchSig report reads as SFT estimate/status boundary",
