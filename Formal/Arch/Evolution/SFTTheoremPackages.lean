@@ -424,6 +424,11 @@ def representativeDeclarations : Candidate -> List String
        "FiniteExactDescentAssumptions",
        "FiniteExactDescentAssumptions.descentPackage",
        "finiteExactForecastConeDescentPackage_of_assumptions",
+       "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedFiniteExactModel",
+       "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedFiniteExactModel_indices_selected",
+       "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedFiniteExactModel_records_exactCover",
+       "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedFiniteExactModel_records_operation",
+       "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedFiniteExactModel_records_nonConclusions",
        "CechCone0",
        "CechCone1",
        "IsCechConeCocycle",
@@ -909,7 +914,18 @@ def schematicCorrespondences : Candidate -> List SchematicCorrespondence
            "h1_vanishes_selected_finite_descent_bridge"],
          reading :=
          "selected finite universe, exact cover, operation support, observation boundary, and governance basis are packaged for downstream assumption-discharge theorems; explicit gluing laws yield a selected finite descent package; concrete Cech cone cochains connect the finite simplex skeleton to cocycle/coboundary predicates and selected H1 vanishing implies selected finite descent under explicit finite exact assumptions",
-         status := "defined only / proved accessor under explicit assumptions" }]
+         status := "defined only / proved accessor under explicit assumptions" },
+       { schematic :=
+          "Generated carrier -> FiniteExactSFTModel",
+         leanDeclarations :=
+          ["AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedFiniteExactModel",
+           "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedFiniteExactModel_indices_selected",
+           "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedFiniteExactModel_records_exactCover",
+           "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedFiniteExactModel_records_operation",
+           "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedFiniteExactModel_records_nonConclusions"],
+         reading :=
+          "the Atom-generated carrier instantiates a singleton-index finite exact SFT model whose global/local carriers, support, relation, observation boundary, exact-cover boundary, operation boundary, and non-conclusions are generated-source evidence",
+         status := "proved acceptance" }]
   | aatSupportedFundamentalModularity =>
       [{ schematic := "AAT-supported finite selected Fundamental Modularity",
          leanDeclarations :=

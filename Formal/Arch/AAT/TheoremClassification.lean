@@ -911,15 +911,17 @@ def classifySFT
         ActionAllowed.representationDownstream
         "The SFT theorem roadmap is downstream SFT theorem-package assembly."
   | .finiteExactModel =>
-      representationRow
+      atomGeneratedRow
         "sft.finiteExactModel"
         (SFTTheoremPackages.Candidate.representativeDeclarations
           .finiteExactModel)
-        ["FiniteExactSFTModel"]
+        ["AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedFiniteExactModel",
+         "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedFiniteExactModel_indices_selected",
+         "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedFiniteExactModel_records_exactCover",
+         "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedFiniteExactModel_records_operation",
+         "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedFiniteExactModel_records_nonConclusions"]
         (by simp)
-        .downstreamLibrary
-        ActionAllowed.representationDownstream
-        "Finite exact SFT models are downstream selected finite field models."
+        "Finite exact SFT model has a generated carrier singleton-index instantiation with generated support, relation, exact-cover, operation-boundary, and non-conclusion evidence."
   | .aatSupportedFundamentalModularity =>
       atomGeneratedRow
         "sft.aatSupportedFundamentalModularity"
@@ -1255,6 +1257,13 @@ theorem generated_sft_field_update_is_atom_generated :
     (classifySFT .fieldUpdate).classification =
       .atomGenerated ∧
     (classifySFT .fieldUpdate).action =
+      .aatSourceOfTruth := by
+  exact ⟨rfl, rfl⟩
+
+theorem generated_sft_finite_exact_model_is_atom_generated :
+    (classifySFT .finiteExactModel).classification =
+      .atomGenerated ∧
+    (classifySFT .finiteExactModel).action =
       .aatSourceOfTruth := by
   exact ⟨rfl, rfl⟩
 

@@ -8,6 +8,7 @@ import Formal.Arch.Evolution.SFTArchSigBoundary
 import Formal.Arch.Evolution.SFTArtifactAction
 import Formal.Arch.Evolution.SFTConeProjection
 import Formal.Arch.Evolution.SFTFieldUpdate
+import Formal.Arch.Evolution.SFTFiniteExactModel
 import Formal.Arch.Evolution.SFTPolicy
 import Formal.Arch.Evolution.SFTReachability
 import Formal.Arch.Evolution.SFTSupportSafety
@@ -1008,6 +1009,115 @@ theorem atomGeneratedSignature_generatedFieldUpdate_records_nonConclusions :
   exact
     atomGeneratedSignature_generatedFieldUpdate_sound
       |>.fieldUpdate_records_nonConclusions
+
+def atomGeneratedSignature_generatedFiniteCover :
+    UniformFiniteFieldCover
+      (AAT.GeneratedCarrier generatedComponentObject)
+      Unit
+      (AAT.GeneratedCarrier generatedComponentObject) where
+  indices := [()]
+  restrict := fun _index field => field
+  coversGlobal := True
+  finiteBoundary := True
+  nonConclusions := True
+
+def atomGeneratedSignature_generatedFiniteModel :
+    FiniteSFTModel
+      atomGeneratedSignature_generatedFiniteCover
+      AtomGeneratedSupportOperation
+      AtomGeneratedSupportOperation where
+  globalSupport :=
+    atomGeneratedSignature_sftSupportSafetyPackage.operationSupport
+  globalRelation :=
+    atomGeneratedSignature_sftSupportSafetyPackage.stepRelation
+  localSupport :=
+    atomGeneratedSignature_sftSupportSafetyPackage.operationSupport
+  localRelation :=
+    atomGeneratedSignature_sftSupportSafetyPackage.stepRelation
+  projectLocalOp := fun _index operation => operation
+  global_support_projects_local := by
+    intro _index _global _operation _hIndex hSupport
+    exact hSupport
+  global_step_projects_local := by
+    intro _index _g₀ _g₁ _operation _hIndex _hSupport hStep
+    exact hStep
+  supportBoundary := True
+  stepBoundary := True
+  nonConclusions := True
+
+def atomGeneratedSignature_generatedFiniteObservationBoundary :
+    ObservationBoundary
+      (AAT.GeneratedCarrier generatedComponentObject) where
+  pathClassesVisible := True
+  affectedRegionsVisible := True
+  comparableAxes := True
+  observedProjectionBoundary := True
+  missingBoundary := True
+  theoremBoundary := True
+  unknownRemainder := True
+  nonConclusions := True
+
+def atomGeneratedSignature_generatedFiniteExactModel :
+    FiniteExactSFTModel
+      (AAT.GeneratedCarrier generatedComponentObject)
+      Unit
+      (AAT.GeneratedCarrier generatedComponentObject)
+      AtomGeneratedSupportOperation
+      AtomGeneratedSupportOperation
+      Unit where
+  selectedGlobalCarrier := [generatedComponentApiCarrier]
+  selectedIndexCarrier := [()]
+  selectedLocalCarrier := [generatedComponentApiCarrier]
+  selectedOperationCarrier := [AtomGeneratedSupportOperation.identity]
+  governanceBasisCarrier := [()]
+  cover := atomGeneratedSignature_generatedFiniteCover
+  cover_indices_eq_selected := rfl
+  finiteModel := atomGeneratedSignature_generatedFiniteModel
+  observationBoundary :=
+    atomGeneratedSignature_generatedFiniteObservationBoundary
+  exactCoverBoundary := True
+  selectedUniverseBoundary := True
+  operationSupportBoundary := True
+  operationRelationBoundary := True
+  observationBoundaryExplicit := True
+  governanceBasisBoundary := True
+  finiteModelBoundary := True
+  extractorBoundary := True
+  empiricalBoundary := True
+  nonConclusions := True
+
+theorem atomGeneratedSignature_generatedFiniteExactModel_indices_selected :
+    atomGeneratedSignature_generatedFiniteExactModel.exactCover.indices =
+      atomGeneratedSignature_generatedFiniteExactModel.selectedIndexCarrier := by
+  exact
+    atomGeneratedSignature_generatedFiniteExactModel
+      |>.exactCover_indices_eq_selected
+
+theorem atomGeneratedSignature_generatedFiniteExactModel_records_exactCover :
+    atomGeneratedSignature_generatedFiniteExactModel.RecordsExactCoverBoundary := by
+  simp [atomGeneratedSignature_generatedFiniteExactModel,
+    atomGeneratedSignature_generatedFiniteCover,
+    FiniteExactSFTModel.RecordsExactCoverBoundary,
+    UniformFiniteFieldCover.RecordsCoverage,
+    UniformFiniteFieldCover.RecordsFiniteBoundary]
+
+theorem atomGeneratedSignature_generatedFiniteExactModel_records_operation :
+    atomGeneratedSignature_generatedFiniteExactModel.RecordsOperationBoundary := by
+  simp [atomGeneratedSignature_generatedFiniteExactModel,
+    atomGeneratedSignature_generatedFiniteModel,
+    FiniteExactSFTModel.RecordsOperationBoundary]
+
+theorem atomGeneratedSignature_generatedFiniteExactModel_records_nonConclusions :
+    atomGeneratedSignature_generatedFiniteExactModel.RecordsNonConclusions := by
+  simp [atomGeneratedSignature_generatedFiniteExactModel,
+    atomGeneratedSignature_generatedFiniteCover,
+    atomGeneratedSignature_generatedFiniteModel,
+    atomGeneratedSignature_generatedFiniteObservationBoundary,
+    FiniteExactSFTModel.RecordsNonConclusions,
+    FiniteExactSFTModel.RecordsFiniteModelBoundary,
+    FiniteExactSFTModel.RecordsExtractorEmpiricalBoundary,
+    UniformFiniteFieldCover.RecordsNonConclusions,
+    ObservationBoundary.RecordsNonConclusions]
 
 noncomputable def atomGeneratedSignature_sftForecastStatus :
     SFTForecastStatus where

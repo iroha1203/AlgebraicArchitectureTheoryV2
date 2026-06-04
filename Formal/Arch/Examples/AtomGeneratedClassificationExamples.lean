@@ -258,6 +258,17 @@ theorem generated_sft_field_update_classified_atom_generated :
   exact generated_sft_field_update_is_atom_generated
 
 /--
+Acceptance: the finite exact SFT model package now has an Atom-generated
+carrier instantiation.
+-/
+theorem generated_sft_finite_exact_model_classified_atom_generated :
+    (classifySFT .finiteExactModel).classification =
+        .atomGenerated ∧
+      (classifySFT .finiteExactModel).action =
+        .aatSourceOfTruth := by
+  exact generated_sft_finite_exact_model_is_atom_generated
+
+/--
 Acceptance: the generic Chapter 11 analytic representation theorem package has
 an Atom-generated law-model specialization instead of remaining only a
 downstream representation row.
