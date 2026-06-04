@@ -104,6 +104,49 @@ theorem generatedComponentTheoremSuite_has_flatness_curvature_fields :
          |>.generatedFlatnessCurvature
          |>.shapeCoordinateTotalCurvature_eq_zero⟩
 
+theorem generatedComponentTheoremSuite_has_operation_repair_synthesis_fields :
+    (∀ {target : AAT.GeneratedArchitectureObject generatedComponentWorld.presentation}
+      (_operation : AAT.GeneratedOperation generatedComponentWorld.object target),
+        generatedComponentWorld.system.noToolOutputCreatesAtoms) ∧
+    (∀ {configuration :
+        AAT.GeneratedRepairProblemConfiguration generatedComponentWorld.presentation}
+      {target : AAT.GeneratedArchitectureObject generatedComponentWorld.presentation}
+      (_repair : AAT.GeneratedRepairFromProblem configuration target)
+      (targetModel : AAT.GeneratedArchitectureLawModel target),
+        Nonempty (AAT.RepairClearingPackage
+          targetModel.generatedAATCore
+          (Sum
+            (AAT.GeneratedRepairProblemConfiguration
+              generatedComponentWorld.presentation)
+            (AAT.GeneratedArchitectureObject generatedComponentWorld.presentation))
+          Unit
+          (Sum.inl configuration)
+          (Sum.inr target))) ∧
+    (∀ {object : AAT.GeneratedArchitectureObject generatedComponentWorld.presentation}
+      (candidate : AAT.GeneratedSynthesisCandidate object),
+        Nonempty (AAT.SynthesisSoundnessPackage
+          candidate.lawModel.generatedAATCore
+          (AAT.GeneratedSynthesisCandidate object))) := by
+  exact
+    ⟨by
+      intro _target operation
+      exact
+        generatedComponentTheoremSuite
+          |>.generatedOperationRepairSynthesis
+          |>.operationDoesNotCreateAtoms operation,
+    by
+      constructor
+      · intro _configuration _target repair targetModel
+        exact ⟨
+          generatedComponentTheoremSuite
+            |>.generatedOperationRepairSynthesis
+            |>.repairToRepairClearingPackage repair targetModel⟩
+      · intro _object candidate
+        exact ⟨
+          generatedComponentTheoremSuite
+            |>.generatedOperationRepairSynthesis
+            |>.synthesisToSynthesisSoundnessPackage candidate⟩⟩
+
 theorem generatedComponentTheoremSuite_registry_has_no_bridge_assumed_rows :
     AATReconstructionClassification.TheoremPackageClass.bridgeAssumed ∉
       AATReconstructionClassification.allClassificationClasses := by

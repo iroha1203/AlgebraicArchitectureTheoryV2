@@ -1,6 +1,7 @@
 import Formal.Arch.AAT.GeneratedCurvature
 import Formal.Arch.AAT.GeneratedAnalyticRepresentation
 import Formal.Arch.AAT.GeneratedSignature
+import Formal.Arch.AAT.GeneratedSynthesis
 import Formal.Arch.AAT.TheoremClassification
 import Formal.Arch.Observation.ArchMapGeneratedHandoff
 
@@ -282,6 +283,34 @@ structure GeneratedFlatnessCurvatureFields
     totalCurvature generatedAtomShapeCoordinateDistance
       world.object.generatedAtomShapeCoordinateSemantics
       world.object.generatedSemanticDiagrams = 0
+
+/-- Suite field payload for generated operation / repair / synthesis wrappers. -/
+structure GeneratedOperationRepairSynthesisFields
+    (world : AtomGeneratedAATWorld.{u, v}) where
+  operationDoesNotCreateAtoms :
+    ∀ {target : GeneratedArchitectureObject world.presentation},
+      GeneratedOperation world.object target ->
+        world.system.noToolOutputCreatesAtoms
+  repairToRepairClearingPackage :
+    ∀ {configuration :
+        GeneratedRepairProblemConfiguration world.presentation}
+      {target : GeneratedArchitectureObject world.presentation},
+      (repair : GeneratedRepairFromProblem configuration target) ->
+      (targetModel : GeneratedArchitectureLawModel target) ->
+        RepairClearingPackage
+          targetModel.generatedAATCore
+          (Sum
+            (GeneratedRepairProblemConfiguration world.presentation)
+            (GeneratedArchitectureObject world.presentation))
+          Unit
+          (Sum.inl configuration)
+          (Sum.inr target)
+  synthesisToSynthesisSoundnessPackage :
+    ∀ {object : GeneratedArchitectureObject world.presentation},
+      (candidate : GeneratedSynthesisCandidate object) ->
+        SynthesisSoundnessPackage
+          candidate.lawModel.generatedAATCore
+          (GeneratedSynthesisCandidate object)
 
 /--
 Suite field payload for generated Chapter 11 analytic representation packages.
@@ -627,6 +656,58 @@ def generated_flatness_curvature_fields
   shapeCoordinateTotalCurvature_eq_zero :=
     world.generated_shapeCoordinateTotalCurvature_eq_zero
 
+/-- Generated operations from the world's object do not create Atom existence. -/
+theorem generated_operation_does_not_create_atoms
+    (world : AtomGeneratedAATWorld.{u, v})
+    {target : GeneratedArchitectureObject world.presentation}
+    (operation : GeneratedOperation world.object target) :
+    world.system.noToolOutputCreatesAtoms :=
+  operation.operation_does_not_create_atoms
+
+/--
+Generated repairs from a failed atom configuration expose the pure
+repair-clearing package over the generated target model.
+-/
+def generated_repair_toRepairClearingPackage
+    (world : AtomGeneratedAATWorld.{u, v})
+    {configuration : GeneratedRepairProblemConfiguration world.presentation}
+    {target : GeneratedArchitectureObject world.presentation}
+    (repair : GeneratedRepairFromProblem configuration target)
+    (targetModel : GeneratedArchitectureLawModel target) :
+    RepairClearingPackage
+      targetModel.generatedAATCore
+      (Sum
+        (GeneratedRepairProblemConfiguration world.presentation)
+        (GeneratedArchitectureObject world.presentation))
+      Unit
+      (Sum.inl configuration)
+      (Sum.inr target) :=
+  repair.toRepairClearingPackage targetModel
+
+/--
+Generated synthesis candidates expose the pure synthesis-soundness package over
+their generated law model.
+-/
+def generated_synthesis_toSynthesisSoundnessPackage
+    (world : AtomGeneratedAATWorld.{u, v})
+    {object : GeneratedArchitectureObject world.presentation}
+    (candidate : GeneratedSynthesisCandidate object) :
+    SynthesisSoundnessPackage
+      candidate.lawModel.generatedAATCore
+      (GeneratedSynthesisCandidate object) :=
+  candidate.toSynthesisSoundnessPackage
+
+/-- Generated operation / repair / synthesis field derived from generated input. -/
+def generated_operation_repair_synthesis_fields
+    (world : AtomGeneratedAATWorld.{u, v}) :
+    GeneratedOperationRepairSynthesisFields world where
+  operationDoesNotCreateAtoms :=
+    world.generated_operation_does_not_create_atoms
+  repairToRepairClearingPackage :=
+    world.generated_repair_toRepairClearingPackage
+  synthesisToSynthesisSoundnessPackage :=
+    world.generated_synthesis_toSynthesisSoundnessPackage
+
 end AtomGeneratedAATWorld
 
 /--
@@ -652,6 +733,8 @@ structure AATTheoremSuite (world : AtomGeneratedAATWorld.{u, v}) where
     world.GeneratedAATCoreCircuitBoundary
   generatedFlatnessCurvature : GeneratedFlatnessCurvatureFields world
   generatedFeatureExtension : GeneratedFeatureExtensionFields world
+  generatedOperationRepairSynthesis :
+    GeneratedOperationRepairSynthesisFields world
   generatedAnalyticRepresentation :
     GeneratedAnalyticRepresentationFields world
   classificationRegistryHasNoBridgeAssumedRows :
@@ -790,13 +873,16 @@ def currentImplementationFrontier : List AATImplementationFrontier :=
       docsTarget := "docs/aat/lean_theorem_index.md#chapter-9-diagram-filling-entrypoint" }
   , { family := .generatedOperationRepairSynthesis
       suiteField := "AATTheoremSuite.generatedOperationRepairSynthesis"
-      status := .parallelReady
+      status := .connected
       existingEntrypoints :=
         ["GeneratedOperation.operation_does_not_create_atoms",
          "GeneratedRepairFromProblem.toRepairClearingPackage",
-         "GeneratedSynthesisCandidate.toSynthesisSoundnessPackage"]
+         "GeneratedSynthesisCandidate.toSynthesisSoundnessPackage",
+         "AtomGeneratedAATWorld.generated_operation_does_not_create_atoms",
+         "AtomGeneratedAATWorld.generated_repair_toRepairClearingPackage",
+         "AtomGeneratedAATWorld.generated_synthesis_toSynthesisSoundnessPackage"]
       nextWorkPackage :=
-        "Add suite fields for generated operation, repair, and synthesis."
+        "Preserve generated operation, repair, and synthesis as connected suite fields."
       parallelAllowed := true
       coordinationRequired := false
       docsTarget := "docs/aat/lean_theorem_index.md#chapter-7-theorem-package-entrypoints" }
@@ -906,6 +992,8 @@ noncomputable def initialTheoremSuite
     world.generated_flatness_curvature_fields
   generatedFeatureExtension :=
     world.generated_feature_extension_fields
+  generatedOperationRepairSynthesis :=
+    world.generated_operation_repair_synthesis_fields
   generatedAnalyticRepresentation :=
     world.generated_analyticRepresentation_fields
   classificationRegistryHasNoBridgeAssumedRows :=
