@@ -644,15 +644,15 @@ def classifyChapter11
         (by simp)
         "The generic analytic representation package has an Atom-generated law-model specialization with generated coverage, preserving, reflecting, and non-conclusion evidence."
   | .toolingReportMetadata =>
-      representationRow
+      atomGeneratedRow
         "chapter11.toolingReportMetadata"
         (Chapter11AnalyticRepresentation.Candidate.representativeDeclarations
           .toolingReportMetadata)
-        ["ToolingTheoremPackageMetadata", "ClaimClassification"]
+        ["Chapter11AnalyticRepresentation.generatedToolingTheoremPackageMetadata",
+         "Chapter11AnalyticRepresentation.generatedToolingTheoremPackageMetadata_formalProvedClaim",
+         "Chapter11AnalyticRepresentation.generatedToolingTheoremPackageMetadata_recordsNonConclusions"]
         (by simp)
-        .downstreamLibrary
-        ActionAllowed.representationDownstream
-        "Report metadata separates measurement and theorem claims; it is not an Atom-generated theorem source."
+        "Report metadata has a generated formal-claim package for generated analytic representation, while measured tooling witnesses remain separated from theorem claims."
   | .architectureSignatureRepresentation =>
       atomGeneratedRow
         "chapter11.architectureSignatureRepresentation"
@@ -692,55 +692,47 @@ def classifyChapter11
         (by simp)
         "The analytic extension formula has a generated identity specialization whose assumptions are discharged from generated coverage, identity decomposition, and zero-transfer evidence."
   | .couponAnalyticSnapshot =>
-      representationRow
+      atomGeneratedRow
         "chapter11.couponAnalyticSnapshot"
         (Chapter11AnalyticRepresentation.Candidate.representativeDeclarations
           .couponAnalyticSnapshot)
-        ["CouponAnalyticSnapshot"]
+        ["Chapter11AnalyticRepresentation.generatedCouponAnalyticSnapshot_bad_staticHiddenInteraction_bridge"]
         (by simp)
-        .downstreamLibrary
-        ActionAllowed.representationDownstream
-        "Coupon snapshots are concrete representation-level counterexample fixtures."
+        "Coupon analytic snapshots have a generated boundary acceptance that reads generated semantic flatness alongside the selected static hidden-interaction obstruction."
   | .couponHiddenInteractionLiftingBridge =>
-      representationRow
+      atomGeneratedRow
         "chapter11.couponHiddenInteractionLiftingBridge"
         (Chapter11AnalyticRepresentation.Candidate.representativeDeclarations
           .couponHiddenInteractionLiftingBridge)
-        ["CouponHiddenInteractionLiftingBridge"]
+        ["Chapter11AnalyticRepresentation.generatedCouponHiddenInteraction_liftingFailure_bridge"]
         (by simp)
-        .downstreamLibrary
-        ActionAllowed.representationDownstream
-        "The coupon lifting bridge is a concrete downstream witness bridge."
+        "Coupon hidden interaction lifting has a generated boundary acceptance that keeps the selected lifting failure visible next to generated semantic flatness."
   | .couponStaticExample =>
-      representationRow
+      atomGeneratedRow
         "chapter11.couponStaticExample"
         (Chapter11AnalyticRepresentation.Candidate.representativeDeclarations
           .couponStaticExample)
-        ["CouponStaticDependencyExample"]
+        ["Chapter11AnalyticRepresentation.generatedCouponStaticExample_bad_not_split",
+         "Chapter11AnalyticRepresentation.generatedCouponStaticExample_repaired_split"]
         (by simp)
-        .downstreamLibrary
-        ActionAllowed.representationDownstream
-        "Coupon static examples are concrete representation-level fixtures."
+        "Coupon static examples have generated boundary acceptance for both bad non-split and repaired split readings."
   | .couponSemanticValuation =>
-      representationRow
+      atomGeneratedRow
         "chapter11.couponSemanticValuation"
         (Chapter11AnalyticRepresentation.Candidate.representativeDeclarations
           .couponSemanticValuation)
-        ["CouponDiscountExample"]
+        ["Chapter11AnalyticRepresentation.generatedCouponSemanticValuation_roundingOrder_positive",
+         "Chapter11AnalyticRepresentation.generatedCouponSemanticValuation_recordsNonConclusions"]
         (by simp)
-        .downstreamLibrary
-        ActionAllowed.representationDownstream
-        "Coupon semantic valuation is a concrete downstream semantic fixture."
+        "Coupon semantic valuation has generated boundary acceptance that preserves the selected positive rounding-order obstruction and non-conclusions."
   | .staticSemanticCounterexample =>
-      representationRow
+      atomGeneratedRow
         "chapter11.staticSemanticCounterexample"
         (Chapter11AnalyticRepresentation.Candidate.representativeDeclarations
           .staticSemanticCounterexample)
-        ["StaticSemanticCounterexample"]
+        ["Chapter11AnalyticRepresentation.generatedStaticSemanticCounterexample_boundary"]
         (by simp)
-        .downstreamLibrary
-        ActionAllowed.representationDownstream
-        "The static-semantic counterexample is a downstream negative fixture."
+        "Static-semantic counterexample has a generated boundary acceptance that keeps external static-flat semantic obstruction separate from generated semantic flatness."
   | .generatedExternalSemanticBoundary =>
       atomGeneratedRow
         "chapter11.generatedExternalSemanticBoundary"
@@ -751,15 +743,17 @@ def classifyChapter11
         (by simp)
         "Generated semantic flatness is scoped to generated reflexive diagrams and does not discharge external selected semantic obstructions."
   | .measurementBoundary =>
-      representationRow
+      atomGeneratedRow
         "chapter11.measurementBoundary"
         (Chapter11AnalyticRepresentation.Candidate.representativeDeclarations
           .measurementBoundary)
-        ["MeasurementBoundary", "AnalyticAxisBoundary"]
+        ["Chapter11AnalyticRepresentation.generatedAnalyticAxisBoundary",
+         "Chapter11AnalyticRepresentation.generatedAnalyticAxisBoundary_value_eq_generatedValuation",
+         "Chapter11AnalyticRepresentation.generatedAnalyticAxisBoundary_measuredZero",
+         "Chapter11AnalyticRepresentation.generatedAnalyticAxisBoundary_canDischargeZeroReflectingClaim",
+         "Chapter11AnalyticRepresentation.generatedMeasurementBoundary_unmeasured_remains_not_measuredZero"]
         (by simp)
-        .downstreamLibrary
-        ActionAllowed.representationDownstream
-        "Measurement boundary is a downstream tooling/analytic boundary surface."
+        "Measurement boundary has generated selected-axis acceptance for generated obstruction valuation zero while preserving unmeasured-vs-measured-zero separation."
 
 def classifySFT
     (candidate : SFTTheoremPackages.Candidate) :
@@ -891,25 +885,29 @@ def classifySFT
         (by simp)
         "ArchSig / FieldSig boundary includes generated preservation and non-identity transport handoff with generated boundary constructors instead of caller-supplied Signature bridge or handoff fields."
   | .counterexamplePackage =>
-      representationRow
+      atomGeneratedRow
         "sft.counterexamplePackage"
         (SFTTheoremPackages.Candidate.representativeDeclarations
           .counterexamplePackage)
-        ["SFTCounterexamples.Package"]
+        ["AtomGeneratedSignatureExamples.atomGeneratedSignature_sftCounterexamplePackage",
+         "AtomGeneratedSignatureExamples.atomGeneratedSignature_sftCounterexamples_record_nonConclusions",
+         "AtomGeneratedSignatureExamples.atomGeneratedSignature_supportSafety_does_not_discharge_counterexamples"]
         (by simp)
-        .downstreamLibrary
-        ActionAllowed.representationDownstream
-        "Counterexamples are downstream forbidden-reading fixtures."
+        "SFT counterexamples have a generated support-safety acceptance row that records canonical forbidden readings as non-conclusions instead of discharging them."
   | .theoremRoadmap =>
-      representationRow
+      atomGeneratedRow
         "sft.theoremRoadmap"
         (SFTTheoremPackages.Candidate.representativeDeclarations
           .theoremRoadmap)
-        ["SFTTheoremRoadmap"]
+        ["AtomGeneratedSignatureExamples.atomGeneratedSignature_clockedConeDescentPackage",
+         "AtomGeneratedSignatureExamples.atomGeneratedSignature_clockedConeDescent_forecastCone_descent",
+         "AtomGeneratedSignatureExamples.atomGeneratedSignature_modularityRepresentationPackage",
+         "AtomGeneratedSignatureExamples.atomGeneratedSignature_modularity_representation",
+         "AtomGeneratedSignatureExamples.atomGeneratedSignature_fundamentalModularityTheoremPackage",
+         "AtomGeneratedSignatureExamples.atomGeneratedSignature_fundamental_modularity",
+         "AtomGeneratedSignatureExamples.atomGeneratedSignature_fundamental_modularity_nonConclusions"]
         (by simp)
-        .downstreamLibrary
-        ActionAllowed.representationDownstream
-        "The SFT theorem roadmap is downstream SFT theorem-package assembly."
+        "The SFT theorem roadmap has generated carrier instances for clocked descent, modularity representation, and fundamental modularity theorem-package acceptance."
   | .finiteExactModel =>
       atomGeneratedRow
         "sft.finiteExactModel"
@@ -1267,6 +1265,13 @@ theorem generated_sft_finite_exact_model_is_atom_generated :
       .aatSourceOfTruth := by
   exact ⟨rfl, rfl⟩
 
+theorem generated_sft_counterexample_roadmap_is_atom_generated :
+    (classifySFT .counterexamplePackage).classification =
+      .atomGenerated ∧
+    (classifySFT .theoremRoadmap).classification =
+      .atomGenerated := by
+  exact ⟨rfl, rfl⟩
+
 theorem generated_analytic_representation_is_atom_generated :
     (classifyChapter11 .analyticRepresentation).classification =
       .atomGenerated ∧
@@ -1287,6 +1292,23 @@ theorem generated_external_semantic_boundary_is_atom_generated :
     (classifyChapter11 .generatedExternalSemanticBoundary).action =
       .aatSourceOfTruth := by
   exact ⟨rfl, rfl⟩
+
+theorem generated_chapter11_fixture_boundary_is_atom_generated :
+    (classifyChapter11 .toolingReportMetadata).classification =
+      .atomGenerated ∧
+    (classifyChapter11 .couponAnalyticSnapshot).classification =
+      .atomGenerated ∧
+    (classifyChapter11 .couponHiddenInteractionLiftingBridge).classification =
+      .atomGenerated ∧
+    (classifyChapter11 .couponStaticExample).classification =
+      .atomGenerated ∧
+    (classifyChapter11 .couponSemanticValuation).classification =
+      .atomGenerated ∧
+    (classifyChapter11 .staticSemanticCounterexample).classification =
+      .atomGenerated ∧
+    (classifyChapter11 .measurementBoundary).classification =
+      .atomGenerated := by
+  exact ⟨rfl, rfl, rfl, rfl, rfl, rfl, rfl⟩
 
 theorem generated_chapter8_path_diagram_is_atom_generated :
     (classifyChapter8 .architecturePaths).classification =

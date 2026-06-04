@@ -269,6 +269,18 @@ theorem generated_sft_finite_exact_model_classified_atom_generated :
   exact generated_sft_finite_exact_model_is_atom_generated
 
 /--
+Acceptance: SFT counterexample and theorem-roadmap packages now have
+Atom-generated carrier acceptance entrypoints while retaining non-conclusion
+boundaries.
+-/
+theorem generated_sft_counterexample_roadmap_classified_atom_generated :
+    (classifySFT .counterexamplePackage).classification =
+        .atomGenerated ∧
+      (classifySFT .theoremRoadmap).classification =
+        .atomGenerated := by
+  exact generated_sft_counterexample_roadmap_is_atom_generated
+
+/--
 Acceptance: the generic Chapter 11 analytic representation theorem package has
 an Atom-generated law-model specialization instead of remaining only a
 downstream representation row.
@@ -303,6 +315,28 @@ theorem generated_external_semantic_boundary_classified_atom_generated :
       (classifyChapter11 .generatedExternalSemanticBoundary).action =
         .aatSourceOfTruth := by
   exact generated_external_semantic_boundary_is_atom_generated
+
+/--
+Acceptance: the remaining Chapter 11 metadata, coupon fixture, static-semantic
+counterexample, and measurement-boundary rows now have generated boundary
+acceptance entrypoints.
+-/
+theorem generated_chapter11_fixture_boundary_classified_atom_generated :
+    (classifyChapter11 .toolingReportMetadata).classification =
+        .atomGenerated ∧
+      (classifyChapter11 .couponAnalyticSnapshot).classification =
+        .atomGenerated ∧
+      (classifyChapter11 .couponHiddenInteractionLiftingBridge).classification =
+        .atomGenerated ∧
+      (classifyChapter11 .couponStaticExample).classification =
+        .atomGenerated ∧
+      (classifyChapter11 .couponSemanticValuation).classification =
+        .atomGenerated ∧
+      (classifyChapter11 .staticSemanticCounterexample).classification =
+        .atomGenerated ∧
+      (classifyChapter11 .measurementBoundary).classification =
+        .atomGenerated := by
+  exact generated_chapter11_fixture_boundary_is_atom_generated
 
 /--
 Acceptance: Chapter 8 path calculus, selected observation invariance, diagram

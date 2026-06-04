@@ -1541,6 +1541,246 @@ theorem coupon_generated_boundary_staticFlat_with_semanticObstruction
     GeneratedExternalSemanticObstructionBoundary.external_semantic_obstruction_remains
       (couponGeneratedExternalSemanticObstructionBoundary model)⟩
 
+/--
+Generated metadata for citing the Chapter 11 generated analytic representation
+as a formal claim. Tooling reports may point at this package only when the
+generated coverage and exactness assumptions are discharged by the generated
+law model.
+-/
+def generatedToolingTheoremPackageMetadata
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : AAT.GeneratedArchitectureObject presentation}
+    [DecidableEq system.Atom]
+    [DecidableRel (AAT.GeneratedRelation object)]
+    (model : AAT.GeneratedArchitectureLawModel object) :
+    ToolingTheoremPackageMetadata where
+  theoremReferences :=
+    ["AAT.GeneratedArchitectureLawModel.generatedAnalyticRepresentation",
+     "Chapter11AnalyticRepresentation.generatedAnalyticRepresentation_zeroReflecting"]
+  claimLevel := ClaimLevel.formal
+  claimClassification := ClaimClassification.proved
+  measurementBoundary := MeasurementBoundary.outOfScope
+  requiredAssumptions :=
+    ArchitectureSignature.ArchitectureLawful model.toArchitectureLawModel
+  coverageAssumptions :=
+    (AAT.GeneratedArchitectureLawModel.generatedAnalyticRepresentation
+      (object := object)).coverageAssumptions
+  exactnessAssumptions :=
+    (AAT.GeneratedArchitectureLawModel.generatedAnalyticRepresentation
+      (object := object)).witnessCompleteness
+  missingPreconditions := False
+  nonConclusions :=
+    (AAT.GeneratedArchitectureLawModel.generatedAnalyticRepresentation
+      (object := object)).nonConclusions
+
+theorem generatedToolingTheoremPackageMetadata_formalProvedClaim
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : AAT.GeneratedArchitectureObject presentation}
+    [DecidableEq system.Atom]
+    [DecidableRel (AAT.GeneratedRelation object)]
+    (model : AAT.GeneratedArchitectureLawModel object) :
+    (generatedToolingTheoremPackageMetadata model).IsFormalProvedClaim := by
+  dsimp [generatedToolingTheoremPackageMetadata,
+    ToolingTheoremPackageMetadata.IsFormalProvedClaim]
+  exact
+    ⟨rfl, rfl, by simp,
+      model.generatedArchitectureLawful,
+      generatedAnalyticRepresentation_coverageAssumptions (object := object),
+      generatedAnalyticRepresentation_witnessCompleteness (object := object),
+      by intro h; exact h⟩
+
+theorem generatedToolingTheoremPackageMetadata_recordsNonConclusions
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : AAT.GeneratedArchitectureObject presentation}
+    [DecidableEq system.Atom]
+    [DecidableRel (AAT.GeneratedRelation object)]
+    (model : AAT.GeneratedArchitectureLawModel object) :
+    (generatedToolingTheoremPackageMetadata model).RecordsNonConclusions := by
+  exact generatedAnalyticRepresentation_nonConclusions (object := object)
+
+/--
+Generated selected analytic axis boundary for a generated witness. The value is
+the generated obstruction valuation, which is proved zero for generated law
+models.
+-/
+def generatedAnalyticAxisBoundary
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : AAT.GeneratedArchitectureObject presentation}
+    [DecidableEq system.Atom]
+    [DecidableRel (AAT.GeneratedRelation object)]
+    (_model : AAT.GeneratedArchitectureLawModel object)
+    (_witness : AAT.GeneratedAnalyticWitness) :
+    AnalyticAxisBoundary :=
+  AnalyticAxisBoundary.ofOption (some 0)
+    ((AAT.GeneratedArchitectureLawModel.generatedAnalyticRepresentation
+      (object := object)).coverageAssumptions)
+    ((AAT.GeneratedArchitectureLawModel.generatedAnalyticRepresentation
+      (object := object)).witnessCompleteness)
+    ((AAT.GeneratedArchitectureLawModel.generatedAnalyticRepresentation
+      (object := object)).semanticContractCoverage)
+    ((AAT.GeneratedArchitectureLawModel.generatedAnalyticRepresentation
+      (object := object)).nonConclusions)
+
+theorem generatedAnalyticAxisBoundary_value_eq_generatedValuation
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : AAT.GeneratedArchitectureObject presentation}
+    [DecidableEq system.Atom]
+    [DecidableRel (AAT.GeneratedRelation object)]
+    (model : AAT.GeneratedArchitectureLawModel object)
+    (witness : AAT.GeneratedAnalyticWitness) :
+    (generatedAnalyticAxisBoundary model witness).value =
+      some
+        ((AAT.GeneratedArchitectureLawModel.generatedRequiredSignatureObstructionValuation
+          (object := object)).value model witness) := by
+  rw [
+    AAT.GeneratedArchitectureLawModel.generatedRequiredSignatureObstructionValuation_value_zero
+      (object := object) model witness]
+  rfl
+
+theorem generatedAnalyticAxisBoundary_measuredZero
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : AAT.GeneratedArchitectureObject presentation}
+    [DecidableEq system.Atom]
+    [DecidableRel (AAT.GeneratedRelation object)]
+    (model : AAT.GeneratedArchitectureLawModel object)
+    (witness : AAT.GeneratedAnalyticWitness) :
+    (generatedAnalyticAxisBoundary model witness).IsMeasuredZero := by
+  exact ⟨rfl, rfl⟩
+
+theorem generatedAnalyticAxisBoundary_canDischargeZeroReflectingClaim
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : AAT.GeneratedArchitectureObject presentation}
+    [DecidableEq system.Atom]
+    [DecidableRel (AAT.GeneratedRelation object)]
+    (model : AAT.GeneratedArchitectureLawModel object)
+    (witness : AAT.GeneratedAnalyticWitness) :
+    (generatedAnalyticAxisBoundary model witness).CanDischargeZeroReflectingClaim := by
+  exact
+    ⟨rfl,
+      generatedAnalyticRepresentation_coverageAssumptions (object := object),
+      generatedAnalyticRepresentation_witnessCompleteness (object := object),
+      generatedAnalyticRepresentation_semanticContractCoverage (object := object)⟩
+
+theorem generatedMeasurementBoundary_unmeasured_remains_not_measuredZero :
+    MeasurementBoundary.unmeasured ≠ MeasurementBoundary.measuredZero :=
+  MeasurementBoundary.unmeasured_not_measuredZero
+
+theorem generatedCouponAnalyticSnapshot_bad_staticHiddenInteraction_bridge
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : AAT.GeneratedArchitectureObject presentation}
+    (model : AAT.GeneratedArchitectureLawModel object) :
+    SemanticFlatWithin object.generatedFlatnessModel ∧
+      AnalyticAxisBoundary.SupportsSelectedAnalyticObstruction
+        CouponAnalyticSnapshot.bad.staticHiddenInteraction ∧
+      StaticExtensionWitnessExists
+        CouponStaticDependencyExample.badExtension
+        CouponStaticDependencyExample.declaredInterface
+        CouponStaticDependencyExample.coreAllowedStaticEdge
+        CouponStaticDependencyExample.extendedAllowedStaticEdge := by
+  exact
+    ⟨model.generated_semanticFlatWithin,
+      CouponAnalyticSnapshot.bad_staticHiddenInteraction_bridge⟩
+
+theorem generatedCouponHiddenInteraction_liftingFailure_bridge
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : AAT.GeneratedArchitectureObject presentation}
+    (model : AAT.GeneratedArchitectureLawModel object) :
+    SemanticFlatWithin object.generatedFlatnessModel ∧
+      StaticExtensionWitnessExists
+        CouponStaticDependencyExample.badExtension
+        CouponStaticDependencyExample.declaredInterface
+        CouponStaticDependencyExample.coreAllowedStaticEdge
+        CouponStaticDependencyExample.extendedAllowedStaticEdge ∧
+      ∃ payload :
+        LiftingFailureWitnessPayload
+          CouponHiddenInteractionLiftingBridge.liftingData
+          CouponHiddenInteractionLiftingBridge.featureInvariant
+          CouponHiddenInteractionLiftingBridge.coreInvariant
+          CouponHiddenInteractionLiftingBridge.selectedFeatureStep,
+        ClassifiedAsLiftingFailure
+          CouponHiddenInteractionLiftingBridge.operationExtension
+          CouponHiddenInteractionLiftingBridge.canonicalUniverse
+          (liftingFailureExtensionObstructionWitness
+            CouponHiddenInteractionLiftingBridge.liftingData payload) := by
+  exact
+    ⟨model.generated_semanticFlatWithin,
+      CouponHiddenInteractionLiftingBridge.hiddenDependency_liftingFailure_bridge⟩
+
+theorem generatedCouponStaticExample_bad_not_split
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : AAT.GeneratedArchitectureObject presentation}
+    (model : AAT.GeneratedArchitectureLawModel object) :
+    SemanticFlatWithin object.generatedFlatnessModel ∧
+      ¬ SelectedStaticSplitExtension
+        CouponStaticDependencyExample.badExtension
+        CouponStaticDependencyExample.declaredInterface
+        CouponStaticDependencyExample.coreAllowedStaticEdge
+        CouponStaticDependencyExample.extendedAllowedStaticEdge := by
+  exact
+    ⟨model.generated_semanticFlatWithin,
+      CouponStaticDependencyExample.bad_not_selectedStaticSplitFeatureExtension⟩
+
+theorem generatedCouponStaticExample_repaired_split
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : AAT.GeneratedArchitectureObject presentation}
+    (model : AAT.GeneratedArchitectureLawModel object) :
+    SemanticFlatWithin object.generatedFlatnessModel ∧
+      SelectedStaticSplitExtension
+        CouponStaticDependencyExample.repairedExtension
+        CouponStaticDependencyExample.declaredInterface
+        CouponStaticDependencyExample.coreAllowedStaticEdge
+        CouponStaticDependencyExample.extendedAllowedStaticEdge := by
+  exact
+    ⟨model.generated_semanticFlatWithin,
+      CouponStaticDependencyExample.repaired_selectedStaticSplitFeatureExtension⟩
+
+theorem generatedCouponSemanticValuation_roundingOrder_positive
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : AAT.GeneratedArchitectureObject presentation}
+    (model : AAT.GeneratedArchitectureLawModel object) :
+    SemanticFlatWithin object.generatedFlatnessModel ∧
+      0 < CouponDiscountExample.roundingOrderValuation.value
+        CouponDiscountExample.couponDiscountDiagram
+        CouponDiscountExample.CouponDiscountWitness.roundingOrder := by
+  exact
+    ⟨model.generated_semanticFlatWithin,
+      CouponDiscountExample.roundingOrderValuation_positive⟩
+
+theorem generatedCouponSemanticValuation_recordsNonConclusions
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : AAT.GeneratedArchitectureObject presentation}
+    (model : AAT.GeneratedArchitectureLawModel object) :
+    SemanticFlatWithin object.generatedFlatnessModel ∧
+      CouponDiscountExample.roundingOrderValuation.RecordsNonConclusions := by
+  exact
+    ⟨model.generated_semanticFlatWithin,
+      CouponDiscountExample.roundingOrderValuation_recordsNonConclusions⟩
+
+theorem generatedStaticSemanticCounterexample_boundary
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : AAT.GeneratedArchitectureObject presentation}
+    (model : AAT.GeneratedArchitectureLawModel object) :
+    SemanticFlatWithin object.generatedFlatnessModel ∧
+      StaticFlatWithin StaticSemanticCounterexample.canonicalFlatnessModel
+        StaticSemanticCounterexample.repairedUniverse ∧
+      ¬ SemanticFlatWithin StaticSemanticCounterexample.canonicalFlatnessModel :=
+  ⟨model.generated_semanticFlatWithin,
+    coupon_generated_boundary_staticFlat_with_semanticObstruction model⟩
+
 /-- The main Chapter 11 API groups exposed through this entrypoint. -/
 inductive Candidate where
   | analyticRepresentation
@@ -1627,7 +1867,10 @@ def representativeDeclarations : Candidate -> List String
        "ToolingTheoremPackageMetadata.IsFormalProvedClaim",
        "ToolingTheoremPackageMetadata.measuredWitness_not_formalProvedClaim",
        "ToolingTheoremPackageMetadata.not_formalProvedClaim_of_missingPreconditions",
-       "ToolingTheoremPackageMetadata.RecordsNonConclusions"]
+       "ToolingTheoremPackageMetadata.RecordsNonConclusions",
+       "Chapter11AnalyticRepresentation.generatedToolingTheoremPackageMetadata",
+       "Chapter11AnalyticRepresentation.generatedToolingTheoremPackageMetadata_formalProvedClaim",
+       "Chapter11AnalyticRepresentation.generatedToolingTheoremPackageMetadata_recordsNonConclusions"]
   | architectureSignatureRepresentation =>
       ["ArchitectureSignatureAggregateWitness",
        "ArchitectureSignatureAnalyticNonConclusions",
@@ -1692,7 +1935,8 @@ def representativeDeclarations : Candidate -> List String
        "CouponAnalyticSnapshot.runtimeExposure_not_zeroReflectingClaim",
        "CouponAnalyticSnapshot.semanticCurvature_unmeasured_not_zeroReflectingClaim",
        "CouponAnalyticSnapshot.repairedWithMeasuredSemanticCurvature_roundingOrderValuation_positive",
-       "CouponAnalyticSnapshot.recordsNonConclusions"]
+       "CouponAnalyticSnapshot.recordsNonConclusions",
+       "Chapter11AnalyticRepresentation.generatedCouponAnalyticSnapshot_bad_staticHiddenInteraction_bridge"]
   | couponHiddenInteractionLiftingBridge =>
       ["CouponHiddenInteractionLiftingBridge.selectedFeatureStep",
        "CouponHiddenInteractionLiftingBridge.selectedFeatureStep_liftedEdge_is_hiddenDependency",
@@ -1702,14 +1946,17 @@ def representativeDeclarations : Candidate -> List String
        "CouponHiddenInteractionLiftingBridge.liftingFailureWitness",
        "CouponHiddenInteractionLiftingBridge.liftingFailureWitness_classified",
        "CouponHiddenInteractionLiftingBridge.liftingFailurePayload_refutesCompatibility",
-       "CouponHiddenInteractionLiftingBridge.hiddenDependency_liftingFailure_bridge"]
+       "CouponHiddenInteractionLiftingBridge.hiddenDependency_liftingFailure_bridge",
+       "Chapter11AnalyticRepresentation.generatedCouponHiddenInteraction_liftingFailure_bridge"]
   | couponStaticExample =>
       ["CouponStaticDependencyExample.goodStaticSplitFeatureExtension",
        "CouponStaticDependencyExample.hiddenDependencyWitness",
        "CouponStaticDependencyExample.hiddenDependencyWitnessExists",
        "CouponStaticDependencyExample.bad_not_selectedStaticSplitFeatureExtension",
        "CouponStaticDependencyExample.repairedStaticSplitFeatureExtension",
-       "CouponStaticDependencyExample.repaired_selectedStaticSplitFeatureExtension"]
+       "CouponStaticDependencyExample.repaired_selectedStaticSplitFeatureExtension",
+       "Chapter11AnalyticRepresentation.generatedCouponStaticExample_bad_not_split",
+       "Chapter11AnalyticRepresentation.generatedCouponStaticExample_repaired_split"]
   | couponSemanticValuation =>
       ["CouponDiscountExample.couponDiscountDiagram",
        "CouponDiscountExample.roundingOrderResidual",
@@ -1717,13 +1964,16 @@ def representativeDeclarations : Candidate -> List String
        "CouponDiscountExample.couponDiscount_roundingOrderResidual_positive",
        "CouponDiscountExample.roundingOrderValuation_obstruction",
        "CouponDiscountExample.roundingOrderValuation_positive",
-       "CouponDiscountExample.roundingOrderValuation_recordsNonConclusions"]
+       "CouponDiscountExample.roundingOrderValuation_recordsNonConclusions",
+       "Chapter11AnalyticRepresentation.generatedCouponSemanticValuation_roundingOrder_positive",
+       "Chapter11AnalyticRepresentation.generatedCouponSemanticValuation_recordsNonConclusions"]
   | staticSemanticCounterexample =>
       ["StaticSemanticCounterexample.canonical_staticFlatWithin",
        "StaticSemanticCounterexample.canonical_not_semanticFlatWithin",
        "StaticSemanticCounterexample.canonical_not_architectureFlat",
        "StaticSemanticCounterexample.staticFlat_with_semanticObstruction",
-       "StaticSemanticCounterexample.staticFlat_not_architectureFlat"]
+       "StaticSemanticCounterexample.staticFlat_not_architectureFlat",
+       "Chapter11AnalyticRepresentation.generatedStaticSemanticCounterexample_boundary"]
   | generatedExternalSemanticBoundary =>
       ["Chapter11AnalyticRepresentation.GeneratedExternalSemanticObstructionBoundary",
        "Chapter11AnalyticRepresentation.GeneratedExternalSemanticObstructionBoundary.generated_semanticFlatWithin",
@@ -1754,6 +2004,11 @@ def representativeDeclarations : Candidate -> List String
        "AnalyticAxisBoundary.not_canDischargeZeroReflectingClaim_of_unmeasured",
        "AnalyticAxisBoundary.signatureAxisMeasuredZero_of_unmeasured",
        "AnalyticAxisBoundary.not_signatureAxisAvailableAndZero_of_unmeasured",
+       "Chapter11AnalyticRepresentation.generatedAnalyticAxisBoundary",
+       "Chapter11AnalyticRepresentation.generatedAnalyticAxisBoundary_value_eq_generatedValuation",
+       "Chapter11AnalyticRepresentation.generatedAnalyticAxisBoundary_measuredZero",
+       "Chapter11AnalyticRepresentation.generatedAnalyticAxisBoundary_canDischargeZeroReflectingClaim",
+       "Chapter11AnalyticRepresentation.generatedMeasurementBoundary_unmeasured_remains_not_measuredZero",
        "MeasurementBoundary.unmeasured_not_measuredZero",
        "ArchitectureClaim.unmeasured_not_measuredZero",
        "ArchitectureSignature.v1Schema_unitNoEdge_unmeasured"]

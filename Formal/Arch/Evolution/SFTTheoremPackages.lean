@@ -252,7 +252,10 @@ def representativeDeclarations : Candidate -> List String
       ["SFTCounterexampleKind",
        "SFTCounterexamples.Package",
        "SFTCounterexamples.canonicalPackage",
-       "SFTCounterexamples.records_nonConclusions"]
+       "SFTCounterexamples.records_nonConclusions",
+       "AtomGeneratedSignatureExamples.atomGeneratedSignature_sftCounterexamplePackage",
+       "AtomGeneratedSignatureExamples.atomGeneratedSignature_sftCounterexamples_record_nonConclusions",
+       "AtomGeneratedSignatureExamples.atomGeneratedSignature_supportSafety_does_not_discharge_counterexamples"]
   | theoremRoadmap =>
       ["ClockedForecastCone",
        "BoundedClockedForecastCone",
@@ -408,7 +411,14 @@ def representativeDeclarations : Candidate -> List String
        "SFTAgenticConfluence.NewmanStyleConfluenceKernel.RecordsNonConclusions",
        "SFTFundamentalModularity.agenticComponent_of_newmanStyleConfluenceKernel",
        "SFTFundamentalModularity.agenticComponent_records_newmanStyle_confluence",
-       "SFTFundamentalModularity.agenticComponent_records_newmanStyle_nonConclusions"]
+       "SFTFundamentalModularity.agenticComponent_records_newmanStyle_nonConclusions",
+       "AtomGeneratedSignatureExamples.atomGeneratedSignature_clockedConeDescentPackage",
+       "AtomGeneratedSignatureExamples.atomGeneratedSignature_clockedConeDescent_forecastCone_descent",
+       "AtomGeneratedSignatureExamples.atomGeneratedSignature_modularityRepresentationPackage",
+       "AtomGeneratedSignatureExamples.atomGeneratedSignature_modularity_representation",
+       "AtomGeneratedSignatureExamples.atomGeneratedSignature_fundamentalModularityTheoremPackage",
+       "AtomGeneratedSignatureExamples.atomGeneratedSignature_fundamental_modularity",
+       "AtomGeneratedSignatureExamples.atomGeneratedSignature_fundamental_modularity_nonConclusions"]
   | finiteExactModel =>
       ["FiniteExactSFTModel",
        "FiniteExactSFTModel.exactCover",
@@ -771,7 +781,15 @@ def schematicCorrespondences : Candidate -> List SchematicCorrespondence
            "SFTCounterexamples.coarse_safe_not_refined_hidden_axis_safe"],
          reading :=
           "existing finite counterexamples indexed as SFT-native non-conclusion witnesses",
-         status := "proved wrappers" }]
+         status := "proved wrappers" },
+       { schematic := "Generated support safety keeps counterexamples as non-conclusions",
+         leanDeclarations :=
+          ["AtomGeneratedSignatureExamples.atomGeneratedSignature_sftCounterexamplePackage",
+           "AtomGeneratedSignatureExamples.atomGeneratedSignature_sftCounterexamples_record_nonConclusions",
+           "AtomGeneratedSignatureExamples.atomGeneratedSignature_supportSafety_does_not_discharge_counterexamples"],
+         reading :=
+          "the generated carrier support-safety package is connected to the canonical counterexample registry by recording both sides as non-conclusion evidence rather than discharging forbidden readings",
+         status := "proved generated acceptance" }]
   | theoremRoadmap =>
       [{ schematic := "ForecastCone Descent / Modularity / Grand SFT roadmap",
          leanDeclarations :=
@@ -891,7 +909,19 @@ def schematicCorrespondences : Candidate -> List SchematicCorrespondence
            "SFTTheoremRoadmap.EvolutionaryInvariancePackage.evolutionary_invariance"],
          reading :=
           "engineering-surface and closed-loop roadmap theorem families are available as checked theorem-package entrypoints",
-         status := "defined only / proved accessors under package assumptions" }]
+         status := "defined only / proved accessors under package assumptions" },
+       { schematic := "Generated carrier instances for roadmap-scale theorem packages",
+         leanDeclarations :=
+          ["AtomGeneratedSignatureExamples.atomGeneratedSignature_clockedConeDescentPackage",
+           "AtomGeneratedSignatureExamples.atomGeneratedSignature_clockedConeDescent_forecastCone_descent",
+           "AtomGeneratedSignatureExamples.atomGeneratedSignature_modularityRepresentationPackage",
+           "AtomGeneratedSignatureExamples.atomGeneratedSignature_modularity_representation",
+           "AtomGeneratedSignatureExamples.atomGeneratedSignature_fundamentalModularityTheoremPackage",
+           "AtomGeneratedSignatureExamples.atomGeneratedSignature_fundamental_modularity",
+           "AtomGeneratedSignatureExamples.atomGeneratedSignature_fundamental_modularity_nonConclusions"],
+         reading :=
+          "roadmap theorem-package surfaces have generated carrier instances for clocked descent, modularity representation, and the fundamental modularity theorem package while retaining non-conclusion boundaries",
+         status := "proved generated acceptance" }]
   | finiteExactModel =>
       [{ schematic := "FiniteExactSFTModel selected finite proof universe",
          leanDeclarations :=
