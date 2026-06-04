@@ -157,6 +157,67 @@ theorem generatedArchitectureFlatWithin
       model.generated_runtimeFlatWithin,
       model.generated_semanticFlatWithin⟩
 
+/--
+Generated law models carry exhaustive coverage for their own generated
+flatness universe.
+-/
+theorem generatedExhaustiveFlatnessCoverage
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : GeneratedArchitectureObject presentation}
+    (model : GeneratedArchitectureLawModel object) :
+    ExhaustiveFlatnessCoverage object.generatedFlatnessModel
+      object.generatedComponentUniverse :=
+  model.generated_noUnmeasuredRequiredAxis
+
+/--
+The exact-observation bridge for generated flatness is discharged by generated
+coverage, not by a caller-supplied marker.
+-/
+theorem generatedExactFlatnessObservation
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : GeneratedArchitectureObject presentation}
+    (model : GeneratedArchitectureLawModel object) :
+    ExactFlatnessObservation object.generatedFlatnessModel
+      object.generatedComponentUniverse :=
+  exactFlatnessObservation_of_exhaustiveCoverage
+    model.generatedExhaustiveFlatnessCoverage
+
+/--
+Completion boundary recorded by the generated global-flat certificate.
+
+The primary theorem remains bounded generated flatness.  The global completion
+certificate records the generated lawfulness source, generated bounded
+flatness, generated exhaustive coverage, and generated exact-observation bridge
+it uses.
+-/
+def generatedArchitectureFlatCompletionBoundary
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : GeneratedArchitectureObject presentation}
+    (model : GeneratedArchitectureLawModel object) : Prop :=
+  ArchitectureSignature.ArchitectureLawful model.toArchitectureLawModel ∧
+    ArchitectureFlatWithin object.generatedFlatnessModel
+      object.generatedComponentUniverse ∧
+    ExhaustiveFlatnessCoverage object.generatedFlatnessModel
+      object.generatedComponentUniverse ∧
+    ExactFlatnessObservation object.generatedFlatnessModel
+      object.generatedComponentUniverse
+
+/-- Generated global-flat completion records its generated premises explicitly. -/
+theorem generatedArchitectureFlatCompletionBoundary_recorded
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : GeneratedArchitectureObject presentation}
+    (model : GeneratedArchitectureLawModel object) :
+    model.generatedArchitectureFlatCompletionBoundary := by
+  exact
+    ⟨model.generatedArchitectureLawful,
+      model.generatedArchitectureFlatWithin,
+      model.generatedExhaustiveFlatnessCoverage,
+      model.generatedExactFlatnessObservation⟩
+
 /-- Generated bounded flatness can be promoted with its explicit generated coverage certificate. -/
 theorem generatedArchitectureFlat
     {system : AtomAxiomSystem.{u, v}}
@@ -166,10 +227,9 @@ theorem generatedArchitectureFlat
     ArchitectureFlat object.generatedFlatnessModel :=
   globalFlat_of_within_exhaustive
     model.generatedArchitectureFlatWithin
-    model.generated_noUnmeasuredRequiredAxis
-    (exactFlatnessObservation_of_exhaustiveCoverage
-      model.generated_noUnmeasuredRequiredAxis)
-    True.intro
+    model.generatedExhaustiveFlatnessCoverage
+    model.generatedExactFlatnessObservation
+    model.generatedArchitectureFlatCompletionBoundary_recorded
 
 end GeneratedArchitectureLawModel
 

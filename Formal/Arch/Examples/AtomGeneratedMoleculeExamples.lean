@@ -1538,6 +1538,20 @@ theorem generatedComponent_architectureFlatWithin :
       generatedComponentObject.generatedComponentUniverse := by
   exact generatedComponentLawModel.generatedArchitectureFlatWithin
 
+theorem generatedComponent_exhaustiveFlatnessCoverage :
+    ExhaustiveFlatnessCoverage generatedComponentObject.generatedFlatnessModel
+      generatedComponentObject.generatedComponentUniverse := by
+  exact generatedComponentLawModel.generatedExhaustiveFlatnessCoverage
+
+theorem generatedComponent_exactFlatnessObservation :
+    ExactFlatnessObservation generatedComponentObject.generatedFlatnessModel
+      generatedComponentObject.generatedComponentUniverse := by
+  exact generatedComponentLawModel.generatedExactFlatnessObservation
+
+theorem generatedComponent_architectureFlatCompletionBoundary :
+    generatedComponentLawModel.generatedArchitectureFlatCompletionBoundary := by
+  exact generatedComponentLawModel.generatedArchitectureFlatCompletionBoundary_recorded
+
 theorem generatedComponent_architectureFlat :
     ArchitectureFlat generatedComponentObject.generatedFlatnessModel := by
   exact generatedComponentLawModel.generatedArchitectureFlat
