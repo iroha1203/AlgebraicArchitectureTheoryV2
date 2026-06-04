@@ -27,6 +27,13 @@ theorem generatedComponentTheoremSuite_has_static_structural_core :
     generatedComponentWorld.StaticStructuralCore := by
   exact generatedComponentTheoremSuite.generatedStaticStructuralCore
 
+theorem generatedComponentTheoremSuite_has_generated_aat_core_bridge_fields :
+    generatedComponentWorld.GeneratedAATCoreNoObservationDependency ∧
+      generatedComponentWorld.GeneratedAATCoreCircuitBoundary := by
+  exact
+    ⟨generatedComponentTheoremSuite.generatedAATCoreNoObservationDependency,
+      generatedComponentTheoremSuite.generatedAATCoreCircuitBoundary⟩
+
 theorem generatedComponentTheoremSuite_registry_has_no_bridge_assumed_rows :
     AATReconstructionClassification.TheoremPackageClass.bridgeAssumed ∉
       AATReconstructionClassification.allClassificationClasses := by
