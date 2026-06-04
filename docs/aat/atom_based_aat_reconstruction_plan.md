@@ -591,3 +591,162 @@ after:
 
 ArchSig は boundary を消す必要はない。しかし、boundary が主役であってはならない。
 Atom が十分に観測されているなら、AAT-generated middle layer が構成され、そこから診断が出なければならない。
+
+## 13. AAT 完全形式化への次段計画
+
+この文書のここまでの計画は、Atom-generated layer と代表 theorem package の接続を作る
+第一段階である。次段階の目的は、ArchSig fixture を増やすことではなく、AAT の主張集合を
+Lean 上の閉じた theorem suite として定義し、各 theorem package がその suite のどの field を
+満たすかを明示することである。
+
+この段階では、`boundary` は「原理的に証明できない巨大 claim」を並べるための語ではない。
+必要なのは、実装がどこまで到達していて、次にどの Lean field が未充足なのかを見える形にする
+実装境界である。
+
+### 13.1 直近の実装境界
+
+現状の到達点:
+
+- `AtomShape` / `AtomValence` / `CompatibleComposition` が存在する。
+- `GeneratedMolecule` は primitive atoms、composition graph、required-port matching を要求する。
+- `GeneratedArchitectureObject`、generated relation / runtime graph、`GeneratedArchitectureLawModel` が存在する。
+- Signature、flatness、path / diagram、curvature、analytic representation、operation / repair / synthesis、
+  SFT / ArchSig / FieldSig handoff への代表 entrypoint が存在する。
+- theorem package classification registry は、current row に `bridgeAssumed` / `rewriteTarget` が
+  残らないことを Lean 上で検査する。
+
+未到達の実装境界:
+
+- AAT 全体の claim family を束ねる top-level theorem suite がまだない。
+- theorem package registry は重要 candidate の curated registry であり、AAT の完成 claim set そのものではない。
+- 各 theorem package が「AAT source of truth の field」なのか「downstream representation library」なのかを、
+  top-level suite の型で強制していない。
+- `GeneratedGraphRank` など、外部 certificate を受け取る箇所がどの suite field の未充足前提なのか、
+  一箇所で読める形になっていない。
+- ArchSig generated packet と Lean generated theorem layer は対応する surface を持つが、
+  proof-carrying handoff としてはまだ束ねていない。
+
+### 13.2 単一設計点: AATCompleteFormalization
+
+次の PR では、大量の新 theorem を先に書かない。まず AAT 完全形式化の受け皿を作る。
+
+候補ファイル:
+
+```text
+Formal/Arch/AAT/CompleteFormalization.lean
+Formal/Arch/Examples/AATCompleteFormalizationExamples.lean
+```
+
+候補 API:
+
+```text
+AtomGeneratedAATWorld
+AATTheoremSuite
+AATImplementationFrontier
+AATCompleteFormalization
+```
+
+`AtomGeneratedAATWorld` は、Atom root、shape presentation、generated molecule、
+generated architecture object、generated graph / law model など、AAT theorem suite が読む
+共通 world を持つ。`AATTheoremSuite` は、AAT が source of truth として主張する theorem family を
+field として列挙する。
+
+最初の suite field family:
+
+- Atom / shape / composition kernel
+- generated molecule / generated architecture object
+- generated graph / runtime graph / graph rank
+- generated law model / Signature / zero-curvature package
+- flatness / curvature
+- path / homotopy / diagram / non-fillability
+- feature extension / obstruction / extension formula
+- operation / repair / synthesis
+- analytic representation / obstruction valuation
+- SFT / ArchSig / FieldSig handoff
+- theorem package classification / downstream representation separation
+
+`AATImplementationFrontier` は未充足 field を明示するための台帳である。これは
+「いつか証明できるか分からない巨大 claim」を置く場所ではない。対象は、既存の Lean API、
+今後追加すべき theorem、または外部 certificate を受け取っている concrete entrypoint に限る。
+
+### 13.3 Suite 設計ルール
+
+- `AATTheoremSuite` の source field は Atom-generated input を読む。
+- hand-authored `ArchGraph` / `ArchitectureLawModel` / `FeatureExtension` だけで閉じる theorem は、
+  source field ではなく downstream representation library として分離する。
+- `architectureLawfulFromAAT` のような bridge assumption は source field に入れない。
+- compatibility wrapper は残してよいが、対応する generated replacement を持ち、
+  suite の source field ではないことを Lean 上で示す。
+- 未実装箇所は `non-conclusion` と呼ばず、`AATImplementationFrontier` の concrete task として書く。
+- docs は suite field、Lean theorem、proof obligation の対応を反映する。docs だけで完了 claim を増やさない。
+
+### 13.4 サブエージェント並列化の手順
+
+並列化は `AATCompleteFormalization` skeleton が main に入ってから行う。
+先に skeleton を固定しない場合、各サブエージェントが別々の `Generated*` surface や bridge を増やし、
+統合時に AAT の claim set が分裂する。
+
+手順:
+
+1. 単一エージェントで `AATCompleteFormalization` skeleton を作る。
+2. skeleton PR を merge し、`main` を同期する。
+3. suite field ごとに sub-issue / work package を切る。
+4. 各サブエージェントは別 worktree / 別 branch で、割り当てられた field だけを埋める。
+5. core world 型、suite field 名、source/downstream 境界を変える必要がある場合は、
+   個別エージェントではなく統合エージェントが先に coordination PR を作る。
+6. 各 work package は `lake build` と、必要に応じて対象 tool test を通してから PR 化する。
+7. 統合エージェントは conflict と docs synchronization を処理し、suite の未充足 field を減らす。
+
+サブエージェントへ渡す work package には、必ず次を含める。
+
+```text
+target suite field
+allowed files
+forbidden files
+existing theorem entrypoints
+required new theorem / example names
+verification command
+docs synchronization target
+```
+
+### 13.5 並列化してよい領域
+
+次は suite skeleton が固定された後に並列化しやすい。
+
+- generated Signature / static structural core
+- generated flatness / curvature
+- generated path / homotopy / diagram / non-fillability
+- generated feature extension / obstruction / extension formula
+- generated operation / repair / synthesis
+- generated analytic representation / obstruction valuation
+- generated SFT / ArchSig / FieldSig handoff
+- theorem package classification audit
+- docs / theorem index / proof obligation synchronization
+
+### 13.6 並列化してはいけない領域
+
+次は coordination PR で先に固定する。
+
+- `AtomGeneratedAATWorld` の型
+- `AATTheoremSuite` の field 名と依存関係
+- `AATImplementationFrontier` の status vocabulary
+- `GeneratedArchitectureObject` / `GeneratedArchitectureLawModel` の基本 API
+- source-of-truth と downstream representation library の分離規則
+
+### 13.7 次の PR の完了条件
+
+次の PR は、完全形式化を完了する PR ではない。完全形式化を並列で進められるようにする
+coordination PR である。
+
+完了条件:
+
+- `Formal/Arch/AAT/CompleteFormalization.lean` が存在する。
+- `AtomGeneratedAATWorld` と `AATTheoremSuite` の skeleton が存在する。
+- 主要 theorem family が suite field として列挙されている。
+- 既存の generated theorem package のうち、少なくとも Signature / generated law model / classification registry が
+  suite field に接続されている。
+- 未充足 field が `AATImplementationFrontier` として列挙されている。
+- downstream representation library と source-of-truth field が混同されていない。
+- `lake build` が通る。
+
+この PR が入った後、suite field ごとにサブエージェントを投入する。
