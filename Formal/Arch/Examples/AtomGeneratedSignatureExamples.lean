@@ -5,7 +5,10 @@ import Formal.Arch.Evolution.Chapter7TheoremPackages
 import Formal.Arch.Evolution.Chapter10ArchitectureExtensionFormula
 import Formal.Arch.Evolution.Chapter11AnalyticRepresentation
 import Formal.Arch.Evolution.SFTArchSigBoundary
+import Formal.Arch.Evolution.SFTArtifactAction
 import Formal.Arch.Evolution.SFTConeProjection
+import Formal.Arch.Evolution.SFTPolicy
+import Formal.Arch.Evolution.SFTReachability
 import Formal.Arch.Evolution.SFTSupportSafety
 import Formal.Arch.Examples.AtomGeneratedMoleculeExamples
 import Formal.Arch.Signature.AATCoreBridge
@@ -672,6 +675,246 @@ theorem atomGeneratedSignature_generatedForecastCone_projects_horizon_succ :
       atomGeneratedSignature_supportSelfInclusion
       atomGeneratedSignature_generatedForecastCone_mem
       (Nat.le_succ atomGeneratedSignature_supportScript.operations.length)
+
+inductive AtomGeneratedArtifactUpdate where
+  | keepGeneratedCarrier
+  deriving DecidableEq
+
+def atomGeneratedSignature_candidateUpdateRelation :
+    CandidateUpdateRelation
+      (AAT.GeneratedCarrier generatedComponentObject)
+      AtomGeneratedArtifactUpdate where
+  candidate := fun _source update =>
+    update = AtomGeneratedArtifactUpdate.keepGeneratedCarrier
+  appliesTo := fun source update target =>
+    update = AtomGeneratedArtifactUpdate.keepGeneratedCarrier ∧
+      target = source
+  interpretationBoundary := True
+  updateBoundary := True
+  nonConclusions := True
+
+noncomputable def atomGeneratedSignature_artifactAction :
+    ArtifactAction
+      (AAT.GeneratedSFTInput generatedComponentLawModel)
+      (AAT.GeneratedCarrier generatedComponentObject)
+      AtomGeneratedArtifactUpdate where
+  artifact := atomGeneratedSignature_sftInput
+  candidateUpdates := atomGeneratedSignature_candidateUpdateRelation
+  targetFieldComponents := True
+  actionBoundary := True
+  compositionBoundary := True
+  observableBoundary := True
+  nonConclusions := True
+
+noncomputable def atomGeneratedSignature_deterministicArtifactAction :
+    DeterministicArtifactAction
+      (AAT.GeneratedSFTInput generatedComponentLawModel)
+      (AAT.GeneratedCarrier generatedComponentObject)
+      AtomGeneratedArtifactUpdate where
+  action := atomGeneratedSignature_artifactAction
+  selectedUpdate := fun _source =>
+    AtomGeneratedArtifactUpdate.keepGeneratedCarrier
+  selectedTarget := fun source => source
+  selectedUpdate_candidate := by
+    intro _source
+    rfl
+  selectedUpdate_applies := by
+    intro _source
+    exact ⟨rfl, rfl⟩
+  candidate_unique := by
+    intro _source _update hCandidate
+    exact hCandidate
+  target_unique := by
+    intro _source _update _target _hCandidate hApplies
+    exact hApplies.2
+
+theorem atomGeneratedSignature_artifactAction_selected_candidate :
+    atomGeneratedSignature_artifactAction.CandidateUpdate
+      generatedComponentApiCarrier
+      AtomGeneratedArtifactUpdate.keepGeneratedCarrier := by
+  exact
+    atomGeneratedSignature_deterministicArtifactAction
+      |>.selected_candidate generatedComponentApiCarrier
+
+theorem atomGeneratedSignature_artifactAction_applies_to_generated :
+    atomGeneratedSignature_artifactAction.AppliesTo
+      generatedComponentApiCarrier
+      AtomGeneratedArtifactUpdate.keepGeneratedCarrier
+      generatedComponentApiCarrier := by
+  exact
+    atomGeneratedSignature_deterministicArtifactAction
+      |>.selectedUpdate_applies generatedComponentApiCarrier
+
+def atomGeneratedSignature_supportAfterArtifact
+    (_field : AAT.GeneratedCarrier generatedComponentObject) :
+    OperationSupport
+      (AAT.GeneratedCarrier generatedComponentObject)
+      AtomGeneratedSupportOperation :=
+  atomGeneratedSignature_sftSupportSafetyPackage.operationSupport
+
+def atomGeneratedSignature_relationAfterArtifact
+    (_field : AAT.GeneratedCarrier generatedComponentObject) :
+    StepRelation
+      (AAT.GeneratedCarrier generatedComponentObject)
+      AtomGeneratedSupportOperation :=
+  atomGeneratedSignature_sftSupportSafetyPackage.stepRelation
+
+noncomputable def atomGeneratedSignature_forecastConeAfterArtifact :
+    ForecastConeFamilyAfterAction
+      atomGeneratedSignature_artifactAction
+      AtomGeneratedSupportOperation
+      atomGeneratedSignature_supportAfterArtifact
+      atomGeneratedSignature_relationAfterArtifact
+      generatedComponentApiCarrier
+      atomGeneratedSignature_supportScript.operations.length where
+  candidateUpdate := AtomGeneratedArtifactUpdate.keepGeneratedCarrier
+  updatedField := generatedComponentApiCarrier
+  candidateMember := atomGeneratedSignature_artifactAction_selected_candidate
+  appliesToUpdatedField :=
+    atomGeneratedSignature_artifactAction_applies_to_generated
+  target := generatedComponentApiCarrier
+  path := atomGeneratedSignature_acceptedSupportedTrajectory.fieldPath
+  coneMember := atomGeneratedSignature_generatedForecastCone_mem
+  familyBoundary := True
+  nonConclusions := True
+
+theorem atomGeneratedSignature_forecastConeAfterArtifact_candidate_member :
+    atomGeneratedSignature_artifactAction.CandidateUpdate
+      generatedComponentApiCarrier
+      atomGeneratedSignature_forecastConeAfterArtifact.candidateUpdate := by
+  exact
+    atomGeneratedSignature_forecastConeAfterArtifact
+      |>.candidate_member
+
+theorem atomGeneratedSignature_forecastConeAfterArtifact_length_le_horizon :
+    ArchitecturePath.length
+        atomGeneratedSignature_forecastConeAfterArtifact.path <=
+      atomGeneratedSignature_supportScript.operations.length := by
+  exact
+    atomGeneratedSignature_forecastConeAfterArtifact
+      |>.length_le_horizon
+
+def atomGeneratedSignature_generatedOperationPolicy :
+    OperationPolicy
+      atomGeneratedSignature_sftSupportSafetyPackage.operationSupport where
+  selected := fun _source operation =>
+    operation = AtomGeneratedSupportOperation.identity
+  noHarderThan := fun _source _operation₁ _operation₂ => True
+  costBoundary := True
+  selectionBoundary := True
+  policyBoundary := True
+  nonConclusions := True
+
+def atomGeneratedSignature_supportSelfTransformation :
+    SupportTransformation
+      atomGeneratedSignature_sftSupportSafetyPackage.operationSupport
+      atomGeneratedSignature_sftSupportSafetyPackage.operationSupport where
+  transformsSupport := True
+  supportBoundary := True
+  policyBoundary := True
+  nonConclusions := True
+
+def atomGeneratedSignature_generatedGovernanceIntervention :
+    GovernanceIntervention
+      atomGeneratedSignature_sftSupportSafetyPackage.operationSupport
+      atomGeneratedSignature_sftSupportSafetyPackage.operationSupport where
+  policyBefore := atomGeneratedSignature_generatedOperationPolicy
+  policyAfter := atomGeneratedSignature_generatedOperationPolicy
+  supportTransformation := atomGeneratedSignature_supportSelfTransformation
+  observationEnrichment := True
+  feedbackUpdate := True
+  escalationBoundary := True
+  interventionBoundary := True
+  nonConclusions := True
+
+theorem atomGeneratedSignature_generatedGovernance_restrictive :
+    atomGeneratedSignature_generatedGovernanceIntervention.Restrictive := by
+  exact atomGeneratedSignature_supportSelfInclusion
+
+theorem atomGeneratedSignature_generatedGovernance_projects_forecastCone :
+    ForecastCone
+      atomGeneratedSignature_sftSupportSafetyPackage.operationSupport
+      atomGeneratedSignature_sftSupportSafetyPackage.stepRelation
+      generatedComponentApiCarrier
+      atomGeneratedSignature_supportScript.operations.length
+      generatedComponentApiCarrier
+      (ForecastConeProjection.projectFieldPath
+        (atomGeneratedSignature_generatedGovernanceIntervention
+          |>.restrictive_supportInclusion
+            atomGeneratedSignature_generatedGovernance_restrictive)
+        (SameRelationStepSimulation
+          atomGeneratedSignature_sftSupportSafetyPackage.operationSupport
+          atomGeneratedSignature_sftSupportSafetyPackage.stepRelation)
+        atomGeneratedSignature_acceptedSupportedTrajectory.fieldPath) := by
+  exact
+    atomGeneratedSignature_generatedGovernanceIntervention
+      |>.restrictive_forecastCone_projects
+        atomGeneratedSignature_generatedGovernance_restrictive
+        atomGeneratedSignature_generatedForecastCone_mem
+
+theorem atomGeneratedSignature_generatedGovernance_keeps_nonConclusion :
+    atomGeneratedSignature_generatedGovernanceIntervention.nonConclusions := by
+  exact
+    atomGeneratedSignature_generatedGovernanceIntervention
+      |>.policy_pass_does_not_discharge_lawfulness
+        (by
+          simp [atomGeneratedSignature_generatedGovernanceIntervention,
+            atomGeneratedSignature_generatedOperationPolicy,
+            atomGeneratedSignature_supportSelfTransformation,
+            atomGeneratedSignature_sftSupportSafetyPackage,
+            atomGeneratedSignature_attractorSupportPackage,
+            atomGeneratedSignature_supportKernel,
+            SFTSupportSafetyPackage.kernel,
+            SFTSupportSafetyPackage.operationSupport,
+            OperationPolicy.RecordsNonConclusions,
+            SupportTransformation.RecordsNonConclusions,
+            GovernanceIntervention.RecordsNonConclusions,
+            OperationSupport.RecordsNonConclusions,
+            FiniteOperationKernel.RecordsNonConclusions])
+
+def atomGeneratedSignature_generatedFieldRegion :
+    FieldRegion (AAT.GeneratedCarrier generatedComponentObject) :=
+  fun _field => True
+
+theorem atomGeneratedSignature_generatedStableRegion :
+    StableRegion
+      atomGeneratedSignature_sftSupportSafetyPackage.operationSupport
+      atomGeneratedSignature_sftSupportSafetyPackage.stepRelation
+      atomGeneratedSignature_generatedFieldRegion := by
+  intro _source _target _operation _hSource _hSupported _hRealizes
+  trivial
+
+theorem atomGeneratedSignature_generatedMayReach :
+    MayReach
+      atomGeneratedSignature_sftSupportSafetyPackage.operationSupport
+      atomGeneratedSignature_sftSupportSafetyPackage.stepRelation
+      generatedComponentApiCarrier
+      atomGeneratedSignature_supportScript.operations.length
+      atomGeneratedSignature_generatedFieldRegion := by
+  exact
+    MayReach.of_forecastCone
+      atomGeneratedSignature_generatedForecastCone_mem
+      trivial
+
+theorem atomGeneratedSignature_generatedMustReach :
+    MustReach
+      atomGeneratedSignature_sftSupportSafetyPackage.operationSupport
+      atomGeneratedSignature_sftSupportSafetyPackage.stepRelation
+      generatedComponentApiCarrier
+      atomGeneratedSignature_supportScript.operations.length
+      atomGeneratedSignature_generatedFieldRegion := by
+  exact
+    atomGeneratedSignature_generatedStableRegion.mustReach
+      trivial
+
+theorem atomGeneratedSignature_generatedReachablePreimage :
+    ReachablePreimage
+      atomGeneratedSignature_sftSupportSafetyPackage.operationSupport
+      atomGeneratedSignature_sftSupportSafetyPackage.stepRelation
+      atomGeneratedSignature_supportScript.operations.length
+      atomGeneratedSignature_generatedFieldRegion
+      generatedComponentApiCarrier := by
+  exact ReachablePreimage.of_mem trivial
 
 noncomputable def atomGeneratedSignature_sftForecastStatus :
     SFTForecastStatus where

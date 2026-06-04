@@ -800,35 +800,41 @@ def classifySFT
         (by simp)
         "Cone projection has generated carrier evidence through generated support self-inclusion, projected path existence, and horizon-extension projection."
   | .artifactAction =>
-      representationRow
+      atomGeneratedRow
         "sft.artifactAction"
         (SFTTheoremPackages.Candidate.representativeDeclarations
           .artifactAction)
-        ["ArtifactAction"]
+        ["AtomGeneratedSignatureExamples.atomGeneratedSignature_artifactAction",
+         "AtomGeneratedSignatureExamples.atomGeneratedSignature_deterministicArtifactAction",
+         "AtomGeneratedSignatureExamples.atomGeneratedSignature_forecastConeAfterArtifact",
+         "AtomGeneratedSignatureExamples.atomGeneratedSignature_forecastConeAfterArtifact_candidate_member",
+         "AtomGeneratedSignatureExamples.atomGeneratedSignature_forecastConeAfterArtifact_length_le_horizon"]
         (by simp)
-        .downstreamLibrary
-        ActionAllowed.representationDownstream
-        "Artifact actions are downstream SFT workflow vocabulary."
+        "Artifact action has an Atom-generated SFT input artifact and deterministic keep-carrier update whose after-action cone is the generated carrier ForecastCone witness."
   | .operationPolicyGovernance =>
-      representationRow
+      atomGeneratedRow
         "sft.operationPolicyGovernance"
         (SFTTheoremPackages.Candidate.representativeDeclarations
           .operationPolicyGovernance)
-        ["OperationPolicy", "GovernanceIntervention"]
+        ["AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedOperationPolicy",
+         "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedGovernanceIntervention",
+         "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedGovernance_restrictive",
+         "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedGovernance_projects_forecastCone",
+         "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedGovernance_keeps_nonConclusion"]
         (by simp)
-        .downstreamLibrary
-        ActionAllowed.representationDownstream
-        "Policy/governance is downstream SFT control vocabulary."
+        "Operation policy and governance have a generated support self-restriction instantiation that projects the generated ForecastCone and preserves policy-pass non-conclusions."
   | .stableRegionReachability =>
-      representationRow
+      atomGeneratedRow
         "sft.stableRegionReachability"
         (SFTTheoremPackages.Candidate.representativeDeclarations
           .stableRegionReachability)
-        ["StableRegion", "MayReach", "MustReach"]
+        ["AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedFieldRegion",
+         "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedStableRegion",
+         "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedMayReach",
+         "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedMustReach",
+         "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedReachablePreimage"]
         (by simp)
-        .downstreamLibrary
-        ActionAllowed.representationDownstream
-        "Reachability is downstream SFT field vocabulary."
+        "Stable-region reachability has generated carrier may-reach, must-reach, stable-region, and reachable-preimage witnesses induced by the generated ForecastCone."
   | .supportSafety =>
       atomGeneratedRow
         "sft.supportSafety"
@@ -1231,6 +1237,15 @@ theorem generated_sft_projection_cone_is_atom_generated :
     (classifySFT .forecastConeCore).classification =
       .atomGenerated ∧
     (classifySFT .coneProjection).classification =
+      .atomGenerated := by
+  exact ⟨rfl, rfl, rfl⟩
+
+theorem generated_sft_action_policy_reachability_is_atom_generated :
+    (classifySFT .artifactAction).classification =
+      .atomGenerated ∧
+    (classifySFT .operationPolicyGovernance).classification =
+      .atomGenerated ∧
+    (classifySFT .stableRegionReachability).classification =
       .atomGenerated := by
   exact ⟨rfl, rfl, rfl⟩
 

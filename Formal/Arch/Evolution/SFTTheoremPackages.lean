@@ -143,18 +143,33 @@ def representativeDeclarations : Candidate -> List String
       ["CandidateUpdateRelation",
        "ArtifactAction",
        "DeterministicArtifactAction",
-       "ForecastConeFamilyAfterAction"]
+       "ForecastConeFamilyAfterAction",
+       "AtomGeneratedSignatureExamples.atomGeneratedSignature_artifactAction",
+       "AtomGeneratedSignatureExamples.atomGeneratedSignature_deterministicArtifactAction",
+       "AtomGeneratedSignatureExamples.atomGeneratedSignature_forecastConeAfterArtifact",
+       "AtomGeneratedSignatureExamples.atomGeneratedSignature_forecastConeAfterArtifact_candidate_member",
+       "AtomGeneratedSignatureExamples.atomGeneratedSignature_forecastConeAfterArtifact_length_le_horizon"]
   | operationPolicyGovernance =>
       ["OperationPolicy",
        "SupportTransformation",
        "GovernanceIntervention",
-       "GovernanceIntervention.restrictive_forecastCone_projects"]
+       "GovernanceIntervention.restrictive_forecastCone_projects",
+       "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedOperationPolicy",
+       "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedGovernanceIntervention",
+       "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedGovernance_restrictive",
+       "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedGovernance_projects_forecastCone",
+       "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedGovernance_keeps_nonConclusion"]
   | stableRegionReachability =>
       ["FieldRegion",
        "MayReach",
        "MustReach",
        "StableRegion",
-       "ReachablePreimage"]
+       "ReachablePreimage",
+       "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedFieldRegion",
+       "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedStableRegion",
+       "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedMayReach",
+       "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedMustReach",
+       "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedReachablePreimage"]
   | supportSafety =>
       ["SFTSupportSafetyPackage",
        "SFTSupportSafetyPackage.operationSupport",
@@ -578,7 +593,18 @@ def schematicCorrespondences : Candidate -> List SchematicCorrespondence
            "ForecastConeFamilyAfterAction.applies_to_updatedField"],
          reading :=
           "artifact-mediated change records candidate and applied target boundaries",
-         status := "defined only / proved accessors" }]
+         status := "defined only / proved accessors" },
+       { schematic :=
+          "GeneratedSFTInput -> ArtifactAction after-action cone",
+         leanDeclarations :=
+          ["AtomGeneratedSignatureExamples.atomGeneratedSignature_artifactAction",
+           "AtomGeneratedSignatureExamples.atomGeneratedSignature_deterministicArtifactAction",
+           "AtomGeneratedSignatureExamples.atomGeneratedSignature_forecastConeAfterArtifact",
+           "AtomGeneratedSignatureExamples.atomGeneratedSignature_forecastConeAfterArtifact_candidate_member",
+           "AtomGeneratedSignatureExamples.atomGeneratedSignature_forecastConeAfterArtifact_length_le_horizon"],
+         reading :=
+          "the Atom-generated SFT input acts as a generated artifact whose deterministic keep-carrier update preserves the generated ForecastCone witness after the action",
+         status := "proved acceptance" }]
   | operationPolicyGovernance =>
       [{ schematic := "restrictive governance narrows support",
          leanDeclarations :=
@@ -587,7 +613,18 @@ def schematicCorrespondences : Candidate -> List SchematicCorrespondence
            "GovernanceIntervention.policy_pass_does_not_discharge_lawfulness"],
          reading :=
           "restrictive support transformation preserves projected cone membership but not lawfulness",
-         status := "proved accessors" }]
+         status := "proved accessors" },
+       { schematic :=
+          "Generated support policy/governance projects generated ForecastCone",
+         leanDeclarations :=
+          ["AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedOperationPolicy",
+           "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedGovernanceIntervention",
+           "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedGovernance_restrictive",
+           "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedGovernance_projects_forecastCone",
+           "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedGovernance_keeps_nonConclusion"],
+         reading :=
+          "the Atom-generated support package instantiates before/after policies and a restrictive governance intervention whose cone projection and policy-pass non-conclusion are proved",
+         status := "proved acceptance" }]
   | stableRegionReachability =>
       [{ schematic := "MayReach / MustReach / StableRegion / ReachablePreimage",
          leanDeclarations :=
@@ -597,7 +634,18 @@ def schematicCorrespondences : Candidate -> List SchematicCorrespondence
            "ReachablePreimage.iff_mayReach"],
          reading :=
           "selected finite-cone reachability and stable-region closure vocabulary",
-         status := "defined only / proved accessors" }]
+         status := "defined only / proved accessors" },
+       { schematic :=
+          "Generated ForecastCone witness -> generated reachability region",
+         leanDeclarations :=
+          ["AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedFieldRegion",
+           "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedStableRegion",
+           "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedMayReach",
+           "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedMustReach",
+           "AtomGeneratedSignatureExamples.atomGeneratedSignature_generatedReachablePreimage"],
+         reading :=
+          "the Atom-generated support-safety ForecastCone witness instantiates selected may-reach, must-reach, stable-region, and reachable-preimage accessors over generated carriers",
+         status := "proved acceptance" }]
   | supportSafety =>
       [{ schematic := "supported accepted trajectory stays in selected safe region",
          leanDeclarations :=
