@@ -16,7 +16,7 @@ def generatedComponentWorld : AAT.AtomGeneratedAATWorld where
   relationDecidable := inferInstance
 
 /-- The first suite is inhabited by the existing generated component model. -/
-def generatedComponentTheoremSuite :
+noncomputable def generatedComponentTheoremSuite :
     AAT.AATTheoremSuite generatedComponentWorld :=
   AAT.initialTheoremSuite generatedComponentWorld
 
@@ -34,6 +34,30 @@ theorem generatedComponentTheoremSuite_has_generated_aat_core_bridge_fields :
   exact
     ⟨generatedComponentTheoremSuite.generatedAATCoreNoObservationDependency,
       generatedComponentTheoremSuite.generatedAATCoreCircuitBoundary⟩
+
+theorem generatedComponentTheoremSuite_has_analytic_representation_fields :
+    (generatedComponentTheoremSuite
+        |>.generatedAnalyticRepresentation
+        |>.analyticRepresentation
+        |>.coverageAssumptions) ∧
+      (generatedComponentTheoremSuite
+        |>.generatedAnalyticRepresentation
+        |>.requiredSignatureObstructionValuation
+        |>.coverageAssumptions) ∧
+      (generatedComponentTheoremSuite
+        |>.generatedAnalyticRepresentation
+        |>.identityAnalyticExtensionFormulaPackage
+        |>.FormulaEquation) := by
+  exact
+    ⟨generatedComponentTheoremSuite
+        |>.generatedAnalyticRepresentation
+        |>.analyticRepresentationCoverage,
+      generatedComponentTheoremSuite
+        |>.generatedAnalyticRepresentation
+        |>.obstructionValuationCoverage,
+      generatedComponentTheoremSuite
+        |>.generatedAnalyticRepresentation
+        |>.identityFormulaHolds⟩
 
 theorem generatedComponentTheoremSuite_has_generated_object_fields :
     (∀ carrier : AAT.GeneratedCarrier generatedComponentWorld.object,
@@ -87,7 +111,7 @@ theorem generatedComponentTheoremSuite_registry_has_no_bridge_assumed_rows :
 The complete-formalization coordination artifact covers every current theorem
 family before sub-agent proof filling begins.
 -/
-def generatedComponentCompleteFormalization :
+noncomputable def generatedComponentCompleteFormalization :
     AAT.AATCompleteFormalization :=
   AAT.initialCompleteFormalization generatedComponentWorld
 

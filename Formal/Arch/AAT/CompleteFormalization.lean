@@ -1,4 +1,5 @@
 import Formal.Arch.AAT.GeneratedCurvature
+import Formal.Arch.AAT.GeneratedAnalyticRepresentation
 import Formal.Arch.AAT.GeneratedSignature
 import Formal.Arch.AAT.TheoremClassification
 import Formal.Arch.Observation.ArchMapGeneratedHandoff
@@ -147,6 +148,38 @@ structure GeneratedFlatnessCurvatureFields
       world.object.generatedAtomShapeCoordinateSemantics
       world.object.generatedSemanticDiagrams = 0
 
+/--
+Suite field payload for generated Chapter 11 analytic representation packages.
+
+The payload stores the generated representation, selected obstruction
+valuation, and identity formula package as downstream representation artifacts
+specialized to the Atom-generated world.  It does not promote a representation
+row to an AAT source-of-truth row.
+-/
+structure GeneratedAnalyticRepresentationFields
+    (world : AtomGeneratedAATWorld.{u, v}) where
+  analyticRepresentation :
+    AnalyticRepresentation
+      (GeneratedArchitectureLawModel world.object)
+      ArchitectureSignature.ArchitectureSignatureV1
+      GeneratedAnalyticWitness
+  analyticRepresentationCoverage :
+    analyticRepresentation.coverageAssumptions
+  requiredSignatureObstructionValuation :
+    ObstructionValuation
+      (GeneratedArchitectureLawModel world.object)
+      GeneratedAnalyticWitness
+  obstructionValuationCoverage :
+    requiredSignatureObstructionValuation.coverageAssumptions
+  identityAnalyticExtensionFormulaPackage :
+    Chapter11AnalyticRepresentation.AnalyticExtensionFormulaPackage
+      (GeneratedArchitectureLawModel world.object)
+      ArchitectureSignature.ArchitectureSignatureV1
+      Unit
+      GeneratedAnalyticWitness
+  identityFormulaHolds :
+    identityAnalyticExtensionFormulaPackage.FormulaEquation
+
 namespace AtomGeneratedAATWorld
 
 /-- Signature produced from the world's generated law model. -/
@@ -192,6 +225,46 @@ def generated_runtime_graph_rank
     GeneratedRuntimeGraphRank world.object :=
   world.runtimeGraphRank
 
+/-- Generated analytic representation specialized to the world's law model. -/
+noncomputable def generated_analyticRepresentation
+    (world : AtomGeneratedAATWorld.{u, v}) :
+    AnalyticRepresentation
+      (GeneratedArchitectureLawModel world.object)
+      ArchitectureSignature.ArchitectureSignatureV1
+      GeneratedAnalyticWitness := by
+  letI : DecidableEq world.system.Atom := world.atomDecidable
+  letI : DecidableRel (GeneratedRelation world.object) :=
+    world.relationDecidable
+  exact GeneratedArchitectureLawModel.generatedAnalyticRepresentation
+    (object := world.object)
+
+/-- Generated selected required-Signature obstruction valuation for the world. -/
+noncomputable def generated_requiredSignatureObstructionValuation
+    (world : AtomGeneratedAATWorld.{u, v}) :
+    ObstructionValuation
+      (GeneratedArchitectureLawModel world.object)
+      GeneratedAnalyticWitness := by
+  letI : DecidableEq world.system.Atom := world.atomDecidable
+  letI : DecidableRel (GeneratedRelation world.object) :=
+    world.relationDecidable
+  exact GeneratedArchitectureLawModel.generatedRequiredSignatureObstructionValuation
+    (object := world.object)
+
+/-- Generated identity analytic extension formula package for the world's model. -/
+noncomputable def generated_identityAnalyticExtensionFormulaPackage
+    (world : AtomGeneratedAATWorld.{u, v}) :
+    Chapter11AnalyticRepresentation.AnalyticExtensionFormulaPackage
+      (GeneratedArchitectureLawModel world.object)
+      ArchitectureSignature.ArchitectureSignatureV1
+      Unit
+      GeneratedAnalyticWitness := by
+  letI : DecidableEq world.system.Atom := world.atomDecidable
+  letI : DecidableRel (GeneratedRelation world.object) :=
+    world.relationDecidable
+  exact
+    Chapter11AnalyticRepresentation.generatedIdentityAnalyticExtensionFormulaPackage
+      world.lawModel
+
 theorem molecule_not_arbitrary_set
     (world : AtomGeneratedAATWorld.{u, v}) :
     world.object.molecule.notArbitrarySet :=
@@ -217,6 +290,38 @@ def generated_molecule_object_fields
     world.generated_object_carriers_atom_primitive
   archMapHandoffToGeneratedObject :=
     world.archMap_generated_object_handoff
+
+/-- Generated analytic representation suite field derived from generated input. -/
+noncomputable def generated_analyticRepresentation_fields
+    (world : AtomGeneratedAATWorld.{u, v}) :
+    GeneratedAnalyticRepresentationFields world where
+  analyticRepresentation :=
+    world.generated_analyticRepresentation
+  analyticRepresentationCoverage := by
+    letI : DecidableEq world.system.Atom := world.atomDecidable
+    letI : DecidableRel (GeneratedRelation world.object) :=
+      world.relationDecidable
+    exact
+      GeneratedArchitectureLawModel.generatedAnalyticRepresentation_coverageAssumptions
+        (object := world.object)
+  requiredSignatureObstructionValuation :=
+    world.generated_requiredSignatureObstructionValuation
+  obstructionValuationCoverage := by
+    letI : DecidableEq world.system.Atom := world.atomDecidable
+    letI : DecidableRel (GeneratedRelation world.object) :=
+      world.relationDecidable
+    exact
+      GeneratedArchitectureLawModel.generatedRequiredSignatureObstructionValuation_coverageAssumptions
+        (object := world.object)
+  identityAnalyticExtensionFormulaPackage :=
+    world.generated_identityAnalyticExtensionFormulaPackage
+  identityFormulaHolds := by
+    letI : DecidableEq world.system.Atom := world.atomDecidable
+    letI : DecidableRel (GeneratedRelation world.object) :=
+      world.relationDecidable
+    exact
+      Chapter11AnalyticRepresentation.generatedIdentityAnalyticExtensionFormula_formula_holds
+        world.lawModel
 
 theorem generated_lawful
     (world : AtomGeneratedAATWorld.{u, v}) :
@@ -324,6 +429,8 @@ structure AATTheoremSuite (world : AtomGeneratedAATWorld.{u, v}) where
   generatedAATCoreCircuitBoundary :
     world.GeneratedAATCoreCircuitBoundary
   generatedFlatnessCurvature : GeneratedFlatnessCurvatureFields world
+  generatedAnalyticRepresentation :
+    GeneratedAnalyticRepresentationFields world
   classificationRegistryHasNoBridgeAssumedRows :
     AATReconstructionClassification.TheoremPackageClass.bridgeAssumed ∉
       AATReconstructionClassification.allClassificationClasses
@@ -468,13 +575,16 @@ def currentImplementationFrontier : List AATImplementationFrontier :=
       docsTarget := "docs/aat/lean_theorem_index.md#chapter-7-theorem-package-entrypoints" }
   , { family := .generatedAnalyticRepresentation
       suiteField := "AATTheoremSuite.generatedAnalyticRepresentation"
-      status := .parallelReady
+      status := .connected
       existingEntrypoints :=
         ["GeneratedArchitectureLawModel.generatedAnalyticRepresentation",
          "generatedRequiredSignatureObstructionValuation",
-         "generatedIdentityAnalyticExtensionFormulaPackage"]
+         "generatedIdentityAnalyticExtensionFormulaPackage",
+         "AtomGeneratedAATWorld.generated_analyticRepresentation",
+         "AtomGeneratedAATWorld.generated_requiredSignatureObstructionValuation",
+         "AtomGeneratedAATWorld.generated_identityAnalyticExtensionFormulaPackage"]
       nextWorkPackage :=
-        "Add suite fields for generated analytic representation and valuation."
+        "Preserve generated analytic representation, selected valuation, and identity formula package as connected suite fields."
       parallelAllowed := true
       coordinationRequired := false
       docsTarget := "docs/aat/lean_theorem_index.md#atom-generated-algebra-kernel" }
@@ -546,7 +656,7 @@ structure AATCompleteFormalization where
       allAATTheoremFamilies
 
 /-- Initial theorem suite obtained from existing generated law/signature proofs. -/
-def initialTheoremSuite
+noncomputable def initialTheoremSuite
     (world : AtomGeneratedAATWorld.{u, v}) :
     AATTheoremSuite world where
   atomShapeCompositionKernel :=
@@ -567,6 +677,8 @@ def initialTheoremSuite
     world.generated_aat_core_circuitBoundary
   generatedFlatnessCurvature :=
     world.generated_flatness_curvature_fields
+  generatedAnalyticRepresentation :=
+    world.generated_analyticRepresentation_fields
   classificationRegistryHasNoBridgeAssumedRows :=
     AATReconstructionClassification.theorem_package_registry_has_no_bridge_assumed_rows
   classificationRegistryHasNoRewriteTargets :=
@@ -577,7 +689,7 @@ def initialTheoremSuite
     AATReconstructionClassification.theorem_package_registry_representation_rows_are_downstream_libraries
 
 /-- Initial complete-formalization coordination object for any generated world. -/
-def initialCompleteFormalization
+noncomputable def initialCompleteFormalization
     (world : AtomGeneratedAATWorld.{u, v}) :
     AATCompleteFormalization where
   world := world
