@@ -63,6 +63,10 @@ theorem generatedComponentTheoremSuite_has_graph_rank_fields :
         |>.generatedGraphRank
         |>.runtimeGraphRankWalkAcyclic⟩
 
+theorem generatedComponentTheoremSuite_has_feature_extension_fields :
+    AAT.GeneratedFeatureExtensionFields generatedComponentWorld := by
+  exact generatedComponentTheoremSuite.generatedFeatureExtension
+
 theorem generatedComponentTheoremSuite_registry_has_no_bridge_assumed_rows :
     AATReconstructionClassification.TheoremPackageClass.bridgeAssumed ∉
       AATReconstructionClassification.allClassificationClasses := by

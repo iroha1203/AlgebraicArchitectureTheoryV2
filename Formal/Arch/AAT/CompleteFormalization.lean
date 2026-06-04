@@ -127,6 +127,141 @@ structure GeneratedGraphRankFields
   runtimeGraphRankWalkAcyclic :
     WalkAcyclic (GeneratedRuntimeGraph world.object)
 
+/-- Generated identity feature-extension flatness specialized to the world. -/
+def GeneratedFeatureExtensionArchitectureFlatWithin
+    (world : AtomGeneratedAATWorld.{u, v}) : Prop :=
+  ArchitectureFlatWithin
+    world.object.generatedIdentityExtensionFlatnessModel
+    world.object.generatedIdentityExtensionComponentUniverse
+
+/-- Generated identity split-extension non-conclusion boundary. -/
+def GeneratedFeatureExtensionRecordsNonConclusions
+    (world : AtomGeneratedAATWorld.{u, v}) : Prop :=
+  SplitFeatureExtensionWithinNonConclusions
+    world.object.generatedIdentityStaticSplitFeatureExtension
+    world.object.generatedIdentityExtensionComponentUniverse
+
+/--
+Generated self-view lifting package under the explicit selected feature-step
+and interface compatibility assumptions.
+-/
+def GeneratedSelfSplitExtensionLiftingPreservationPackage
+    (world : AtomGeneratedAATWorld.{u, v}) : Prop :=
+  ∀ {featureInvariant coreInvariant : GeneratedCarrier world.object -> Prop}
+    (featureStep : SelectedFeatureStep.{u} (GeneratedCarrier world.object)),
+    LawfulFeatureStep.{u} featureInvariant featureStep ->
+    CompatibleWithInterface.{u, u, u, u, u}
+      (Chapter9DiagramFilling.generatedSelfSplitExtensionLiftingData
+        world.object)
+      coreInvariant featureStep ->
+    ∃ liftedStep : LiftedExtensionStep.{u} (GeneratedCarrier world.object),
+      SplitExtensionLiftingPreservationPackage.{u, u, u, u, u}
+        (Chapter9DiagramFilling.generatedSelfSplitExtensionLiftingData
+          world.object)
+        featureInvariant coreInvariant featureStep liftedStep
+
+/--
+Generated lifting-failure obstruction bridge.
+
+The conclusion stays relative to the selected no-preservation-package premise;
+it does not discharge external semantic obstruction from generated flatness.
+-/
+def GeneratedSelfLiftingFailureExtensionObstructionBridge
+    (world : AtomGeneratedAATWorld.{u, v}) : Prop :=
+  ∀ {featureInvariant coreInvariant : GeneratedCarrier world.object -> Prop}
+    {featureStep : SelectedFeatureStep.{u} (GeneratedCarrier world.object)},
+    LawfulFeatureStep.{u} featureInvariant featureStep ->
+    (¬ ∃ liftedStep : LiftedExtensionStep.{u} (GeneratedCarrier world.object),
+      SplitExtensionLiftingPreservationPackage.{u, u, u, u, u}
+        (Chapter9DiagramFilling.generatedSelfSplitExtensionLiftingData
+          world.object)
+        featureInvariant coreInvariant featureStep liftedStep) ->
+    ∃ payload :
+      LiftingFailureWitnessPayload.{u, u, u, u, u, u, u}
+        (Chapter9DiagramFilling.generatedSelfSplitExtensionLiftingData
+          world.object)
+        featureInvariant coreInvariant featureStep,
+      ClassifiedAsLiftingFailure.{u, u, u, u, u}
+        (Chapter9DiagramFilling.generatedSelfFeatureExtension world.object)
+        world.object.generatedIdentityExtensionComponentUniverse
+        (liftingFailureExtensionObstructionWitness.{u, u, u, u, u, u, u}
+          (Chapter9DiagramFilling.generatedSelfSplitExtensionLiftingData
+            world.object)
+          payload)
+
+/--
+Generated identity architecture-extension formula, with witness coverage kept as
+an explicit field rather than hidden behind generated flatness.
+-/
+def GeneratedIdentityArchitectureExtensionFormulaStructural
+    (world : AtomGeneratedAATWorld.{u, v}) : Prop :=
+  ∀ {Witness : Type (max u v)}
+    (witness :
+      Chapter10ArchitectureExtensionFormula.GeneratedExtensionObstructionWitness
+        world.object Witness),
+    ClassifiedAsInheritedCore
+        world.object.generatedIdentityFeatureExtension
+        world.object.generatedIdentityExtensionComponentUniverse
+        witness ∨
+      ClassifiedAsFeatureLocal
+        world.object.generatedIdentityFeatureExtension
+        world.object.generatedIdentityExtensionComponentUniverse
+        witness ∨
+      ClassifiedAsInteraction
+        world.object.generatedIdentityFeatureExtension
+        world.object.generatedIdentityExtensionComponentUniverse
+        witness ∨
+      ClassifiedAsLiftingFailure
+        world.object.generatedIdentityFeatureExtension
+        world.object.generatedIdentityExtensionComponentUniverse
+        witness ∨
+      ClassifiedAsFillingFailure
+        world.object.generatedIdentityFeatureExtension
+        world.object.generatedIdentityExtensionComponentUniverse
+        witness ∨
+      ClassifiedAsComplexityTransfer
+        world.object.generatedIdentityFeatureExtension
+        world.object.generatedIdentityExtensionComponentUniverse
+        witness ∨
+      ClassifiedAsResidualCoverageGap
+        world.object.generatedIdentityFeatureExtension
+        world.object.generatedIdentityExtensionComponentUniverse
+        witness
+
+/--
+Suite field payload for generated feature extension, lifting, obstruction, and
+extension-formula work.
+
+The package keeps coverage assumptions and non-conclusion boundaries explicit:
+lifting is relative to a selected feature step and interface compatibility, and
+lifting-failure obstruction is relative to the selected no-preservation-package
+premise.
+-/
+structure GeneratedFeatureExtensionFields
+    (world : AtomGeneratedAATWorld.{u, v}) : Prop where
+  architectureFlatWithin :
+    GeneratedFeatureExtensionArchitectureFlatWithin world
+  recordsNonConclusions :
+    GeneratedFeatureExtensionRecordsNonConclusions world
+  selfPreservesRequiredInvariants :
+    (Chapter9DiagramFilling.generatedSelfFeatureExtension
+      world.object).preservesRequiredInvariants
+  selfInteractionFactorsThroughDeclaredInterfaces :
+    (Chapter9DiagramFilling.generatedSelfFeatureExtension
+      world.object).interactionFactorsThroughDeclaredInterfaces
+  selfCoverageAssumptions :
+    (Chapter9DiagramFilling.generatedSelfFeatureExtension
+      world.object).coverageAssumptions
+  selfProofObligations :
+    (Chapter9DiagramFilling.generatedSelfFeatureExtension
+      world.object).proofObligations
+  selfSplitExtensionLifting :
+    GeneratedSelfSplitExtensionLiftingPreservationPackage world
+  selfLiftingFailureObstruction :
+    GeneratedSelfLiftingFailureExtensionObstructionBridge world
+  identityExtensionFormulaStructural :
+    GeneratedIdentityArchitectureExtensionFormulaStructural world
+
 namespace AtomGeneratedAATWorld
 
 /-- Signature produced from the world's generated law model. -/
@@ -257,6 +392,93 @@ def generated_graph_rank_fields
   runtimeGraphRank := world.generated_runtime_graph_rank
   runtimeGraphRankWalkAcyclic := world.generated_runtime_graph_rank_walkAcyclic
 
+theorem generated_featureExtension_architectureFlatWithin
+    (world : AtomGeneratedAATWorld.{u, v}) :
+    GeneratedFeatureExtensionArchitectureFlatWithin world :=
+  world.lawModel.generatedFeatureExtension_architectureFlatWithin
+
+theorem generated_featureExtension_recordsNonConclusions
+    (world : AtomGeneratedAATWorld.{u, v}) :
+    GeneratedFeatureExtensionRecordsNonConclusions world :=
+  world.lawModel.generatedSplitFeatureExtension_recordsNonConclusions
+
+theorem generated_selfFeatureExtension_preservesRequiredInvariants
+    (world : AtomGeneratedAATWorld.{u, v}) :
+    (Chapter9DiagramFilling.generatedSelfFeatureExtension
+      world.object).preservesRequiredInvariants :=
+  Chapter9DiagramFilling.generatedSelfFeatureExtension_preservesRequiredInvariants
+    world.object
+
+theorem generated_selfFeatureExtension_interactionFactorsThroughDeclaredInterfaces
+    (world : AtomGeneratedAATWorld.{u, v}) :
+    (Chapter9DiagramFilling.generatedSelfFeatureExtension
+      world.object).interactionFactorsThroughDeclaredInterfaces :=
+  Chapter9DiagramFilling.generatedSelfFeatureExtension_interactionFactorsThroughDeclaredInterfaces
+    world.object
+
+theorem generated_selfFeatureExtension_coverageAssumptions
+    (world : AtomGeneratedAATWorld.{u, v}) :
+    (Chapter9DiagramFilling.generatedSelfFeatureExtension
+      world.object).coverageAssumptions :=
+  Chapter9DiagramFilling.generatedSelfFeatureExtension_coverageAssumptions
+    world.object
+
+theorem generated_selfFeatureExtension_proofObligations
+    (world : AtomGeneratedAATWorld.{u, v}) :
+    (Chapter9DiagramFilling.generatedSelfFeatureExtension
+      world.object).proofObligations :=
+  Chapter9DiagramFilling.generatedSelfFeatureExtension_proofObligations
+    world.object
+
+theorem generated_selfSplitExtensionLifting_preservationPackage
+    (world : AtomGeneratedAATWorld.{u, v}) :
+    GeneratedSelfSplitExtensionLiftingPreservationPackage world := by
+  intro _featureInvariant _coreInvariant featureStep hLawfulFeatureStep
+    hCompatible
+  exact
+    Chapter9DiagramFilling.generatedSelfSplitExtensionLifting_preservationPackage
+      featureStep hLawfulFeatureStep hCompatible
+
+theorem generated_selfLiftingFailureExtensionObstructionWitnessExists
+    (world : AtomGeneratedAATWorld.{u, v}) :
+    GeneratedSelfLiftingFailureExtensionObstructionBridge world := by
+  intro _featureInvariant _coreInvariant _featureStep hLawfulFeatureStep
+    hNoPreservationPackage
+  exact
+    Chapter9DiagramFilling.generatedSelfLiftingFailureExtensionObstructionWitnessExists_of_not_liftingPreservationPackage
+      hLawfulFeatureStep hNoPreservationPackage
+
+theorem generated_identityArchitectureExtensionFormula_structural
+    (world : AtomGeneratedAATWorld.{u, v}) :
+    GeneratedIdentityArchitectureExtensionFormulaStructural world := by
+  intro _Witness witness
+  exact
+    Chapter10ArchitectureExtensionFormula.generatedIdentityArchitectureExtensionFormula_structural
+      world.object witness
+
+/-- Generated feature-extension field derived from generated entrypoints. -/
+def generated_feature_extension_fields
+    (world : AtomGeneratedAATWorld.{u, v}) :
+    GeneratedFeatureExtensionFields world where
+  architectureFlatWithin :=
+    world.generated_featureExtension_architectureFlatWithin
+  recordsNonConclusions :=
+    world.generated_featureExtension_recordsNonConclusions
+  selfPreservesRequiredInvariants :=
+    world.generated_selfFeatureExtension_preservesRequiredInvariants
+  selfInteractionFactorsThroughDeclaredInterfaces :=
+    world.generated_selfFeatureExtension_interactionFactorsThroughDeclaredInterfaces
+  selfCoverageAssumptions :=
+    world.generated_selfFeatureExtension_coverageAssumptions
+  selfProofObligations :=
+    world.generated_selfFeatureExtension_proofObligations
+  selfSplitExtensionLifting :=
+    world.generated_selfSplitExtensionLifting_preservationPackage
+  selfLiftingFailureObstruction :=
+    world.generated_selfLiftingFailureExtensionObstructionWitnessExists
+  identityExtensionFormulaStructural :=
+    world.generated_identityArchitectureExtensionFormula_structural
+
 end AtomGeneratedAATWorld
 
 /--
@@ -280,6 +502,7 @@ structure AATTheoremSuite (world : AtomGeneratedAATWorld.{u, v}) where
     world.GeneratedAATCoreNoObservationDependency
   generatedAATCoreCircuitBoundary :
     world.GeneratedAATCoreCircuitBoundary
+  generatedFeatureExtension : GeneratedFeatureExtensionFields world
   classificationRegistryHasNoBridgeAssumedRows :
     AATReconstructionClassification.TheoremPackageClass.bridgeAssumed ∉
       AATReconstructionClassification.allClassificationClasses
@@ -400,14 +623,18 @@ def currentImplementationFrontier : List AATImplementationFrontier :=
       docsTarget := "docs/aat/lean_theorem_index.md#chapter-8-homotopy-skeleton-entrypoint" }
   , { family := .generatedFeatureExtension
       suiteField := "AATTheoremSuite.generatedFeatureExtension"
-      status := .parallelReady
+      status := .connected
       existingEntrypoints :=
         ["generatedIdentityFeatureExtension",
          "generatedFeatureExtension_architectureFlatWithin",
-         "Chapter9DiagramFilling.generatedSelfSplitExtensionLifting_preservationPackage"]
+         "AtomGeneratedAATWorld.generated_featureExtension_architectureFlatWithin",
+         "AtomGeneratedAATWorld.generated_selfSplitExtensionLifting_preservationPackage",
+         "Chapter9DiagramFilling.generatedSelfSplitExtensionLifting_preservationPackage",
+         "Chapter9DiagramFilling.generatedSelfLiftingFailureExtensionObstructionWitnessExists_of_not_liftingPreservationPackage",
+         "Chapter10ArchitectureExtensionFormula.generatedIdentityArchitectureExtensionFormula_structural"]
       nextWorkPackage :=
-        "Add suite fields for generated feature extension and lifting bridges."
-      parallelAllowed := true
+        "Preserve explicit feature-extension coverage assumptions, lifting premises, obstruction bridge, and extension-formula boundary as downstream fields are filled."
+      parallelAllowed := false
       coordinationRequired := false
       docsTarget := "docs/aat/lean_theorem_index.md#chapter-9-diagram-filling-entrypoint" }
   , { family := .generatedOperationRepairSynthesis
@@ -521,6 +748,8 @@ def initialTheoremSuite
     world.generated_aat_core_noObservationDependency
   generatedAATCoreCircuitBoundary :=
     world.generated_aat_core_circuitBoundary
+  generatedFeatureExtension :=
+    world.generated_feature_extension_fields
   classificationRegistryHasNoBridgeAssumedRows :=
     AATReconstructionClassification.theorem_package_registry_has_no_bridge_assumed_rows
   classificationRegistryHasNoRewriteTargets :=
