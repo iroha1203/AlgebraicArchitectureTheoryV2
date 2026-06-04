@@ -308,6 +308,7 @@ def representativeDeclarations : AATCandidate -> List String
        "AtomGeneratedRepairExamples.repaired_law_model_from_graph_rank",
        "AtomGeneratedRepairExamples.*",
        "IncompatibleAtomCompositionExamples.capability_atom_without_data_state_not_generated_molecule",
+       "IncompatibleAtomCompositionExamples.semantic_atom_without_contract_not_generated_molecule",
        "IncompatibleAtomCompositionExamples.*"]
   | archMapObservationBoundary =>
       ["Observation.ArchMapObservationLayer",

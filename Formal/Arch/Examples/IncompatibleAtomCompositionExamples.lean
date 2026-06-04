@@ -568,6 +568,105 @@ theorem capability_atom_without_data_state_not_generated_molecule
           _hCompatible⟩
       exact hDistinct (hOnlyCapability other hOther))
 
+inductive SemanticOnlyAtom where
+  | semanticOnly
+  deriving DecidableEq, Repr
+
+def semanticOnlySystem : AtomAxiomSystem where
+  Atom := SemanticOnlyAtom
+  Predicate := AtomKind
+  kind := fun _ => AtomKind.semanticInterpretation
+  axis := fun _ => Axis.semantic
+  predicate := fun _ => AtomKind.semanticInterpretation
+  predicateKind := fun kind => kind
+  predicateAxis := fun _ => Axis.semantic
+  predicateKindAligned := by
+    intro atom
+    cases atom
+    rfl
+  predicateAxisAligned := by
+    intro atom
+    cases atom
+    rfl
+  singleFact := fun _ => True
+  singleFactEvidence := fun _ => trivial
+  predicatePreserving := fun _ => True
+  predicatePreservingEvidence := fun _ => trivial
+  boundaryIndependent := fun _ => True
+  boundaryIndependentEvidence := fun _ => trivial
+  lawIndependent := fun _ => True
+  lawIndependentEvidence := fun _ => trivial
+  noObservationBoundaryCreatesAtoms := True
+  noObservationBoundaryCreatesAtomsEvidence := trivial
+  noLawCreatesAtoms := True
+  noLawCreatesAtomsEvidence := trivial
+  noToolOutputCreatesAtoms := True
+  noToolOutputCreatesAtomsEvidence := trivial
+  noSFTEventCreatesAtoms := True
+  noSFTEventCreatesAtomsEvidence := trivial
+  openTaxonomyBoundary := True
+
+def semanticOnlyRequiredContractPort : AtomPort where
+  name := "semantic-only-required-contract"
+  kind := AtomPortKind.contract
+  family := AtomKind.semanticInterpretation
+  axis := Axis.semantic
+  required := True
+  acceptsFamily := fun kind => kind = AtomKind.contractSpecification
+  acceptsAxis := fun axis => axis = Axis.specification
+
+def semanticOnlyValence : AtomValence where
+  ports := fun port => port = semanticOnlyRequiredContractPort
+  requiredPort := fun port => port = semanticOnlyRequiredContractPort
+  requiredPortHasPort := by
+    intro _ hRequired
+    exact hRequired
+  hasPort := ⟨semanticOnlyRequiredContractPort, rfl⟩
+
+def semanticOnlyShape (_atom : SemanticOnlyAtom) : AtomShape where
+  family := AtomKind.semanticInterpretation
+  axis := Axis.semantic
+  subject := { name := "semantic-only" }
+  predicate := "semantic-interpretation"
+  objectSlots := fun _ => False
+  payloadSlots := fun _ => False
+  direction := AtomDirection.outgoing
+  arity := 1
+  valence := semanticOnlyValence
+  singleFactShape := True
+  singleFactShapeEvidence := trivial
+
+def semanticOnlyShapePresentation :
+    AtomShapePresentation semanticOnlySystem where
+  shapeOf := semanticOnlyShape
+  shapeKindAligned := by
+    intro atom
+    cases atom
+    rfl
+  shapeAxisAligned := by
+    intro atom
+    cases atom
+    rfl
+  shapeSingleFact := by
+    intro _ _
+    trivial
+
+theorem semantic_atom_without_contract_not_generated_molecule
+    (molecule : AAT.GeneratedMolecule semanticOnlyShapePresentation)
+    (hSemantic : molecule.atoms SemanticOnlyAtom.semanticOnly)
+    (hOnlySemantic :
+      ∀ atom, molecule.atoms atom -> atom = SemanticOnlyAtom.semanticOnly) :
+    False := by
+  exact molecule.missing_required_port_not_generatedMolecule
+    hSemantic
+    (by rfl)
+    (by
+      intro hMatch
+      rcases hMatch with
+        ⟨other, _otherPort, hOther, hDistinct, _hOtherPort,
+          _hCompatible⟩
+      exact hDistinct (hOnlySemantic other hOther))
+
 def concernHintCandidate :
     Observation.RawAtomCandidate exampleSystem String where
   predicate := AtomKind.relation
