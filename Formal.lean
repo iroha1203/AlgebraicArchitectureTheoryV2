@@ -108,6 +108,7 @@ import Formal.Arch.AAT.GeneratedRepair
 import Formal.Arch.AAT.GeneratedSynthesis
 import Formal.Arch.AAT.GeneratedSFT
 import Formal.Arch.AAT.TheoremClassification
+import Formal.Arch.AAT.CompleteFormalization
 import Formal.Arch.AAT.Law
 import Formal.Arch.AAT.Circuit
 import Formal.Arch.AAT.Core
@@ -124,6 +125,7 @@ import Formal.Arch.Examples.AtomGeneratedMoleculeExamples
 import Formal.Arch.Examples.AtomGeneratedSignatureExamples
 import Formal.Arch.Examples.AtomGeneratedRepairExamples
 import Formal.Arch.Examples.AtomGeneratedClassificationExamples
+import Formal.Arch.Examples.AATCompleteFormalizationExamples
 import Formal.Arch.Examples.IncompatibleAtomCompositionExamples
 import Formal.Arch.Examples.AATMoleculeLawExamples
 import Formal.Arch.Examples.AATZeroCurvatureExamples
