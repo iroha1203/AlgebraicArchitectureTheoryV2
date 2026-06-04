@@ -832,10 +832,12 @@ def classifySFT
         (SFTTheoremPackages.Candidate.representativeDeclarations
           .archSigReportBoundary)
         ["GeneratedArchSigAATCoreTransition",
+         "GeneratedArchSigAATCoreTransition.ofTransition",
          "GeneratedFieldSigAATCoreTransitionAnalysis",
-         "GeneratedArchSigAATCoreTransportTransition"]
+         "GeneratedArchSigAATCoreTransportTransition",
+         "GeneratedArchSigAATCoreTransportTransition.ofTransportTransition"]
         (by simp)
-        "ArchSig / FieldSig boundary includes generated preservation and non-identity transport handoff."
+        "ArchSig / FieldSig boundary includes generated preservation and non-identity transport handoff with generated boundary constructors instead of caller-supplied Signature bridge or handoff fields."
   | .counterexamplePackage =>
       representationRow
         "sft.counterexamplePackage"

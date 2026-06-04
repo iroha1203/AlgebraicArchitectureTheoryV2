@@ -515,21 +515,9 @@ theorem atomGeneratedSignature_transition_does_not_create_atoms :
 noncomputable def atomGeneratedSignature_generatedArchSigTransition :
     GeneratedArchSigAATCoreTransition
       generatedComponentLawModel
-      generatedComponentLawModel where
-  transition := atomGeneratedSignature_aatCoreTransition
-  analyzesUsingAAT := True
-  analyzesUsingAATEvidence := trivial
-  transitionBoundary := True
-  transitionBoundaryEvidence := trivial
-  archsigDoesNotDefineAAT := True
-  archsigDoesNotDefineAATEvidence := trivial
-  fieldSigAnalysisBoundary := True
-  fieldSigAnalysisBoundaryEvidence := trivial
-  unknownRejectedUnmeasuredSeparated := True
-  unknownRejectedUnmeasuredSeparatedEvidence := trivial
-  measuredZeroBoundary := True
-  validationIsNotTheoremDischarge := True
-  nonConclusions := True
+      generatedComponentLawModel :=
+  GeneratedArchSigAATCoreTransition.ofTransition
+    atomGeneratedSignature_aatCoreTransition
 
 theorem atomGeneratedSignature_generatedArchSig_sourceLawful :
     ArchitectureSignature.ArchitectureLawful
@@ -649,8 +637,12 @@ def atomGeneratedSignature_generatedFieldSigAnalysis :
       atomGeneratedSignature_generatedSoftwareFieldEstimate
       atomGeneratedSignature_sftForecastStatus where
   reportBoundary := atomGeneratedSignature_generatedReportEstimateBoundary
-  readsGeneratedArchSigTransitionAsSFTAnalysisEvidence := trivial
-  fieldSigDoesNotDefineAATEvidence := trivial
+  readsGeneratedArchSigTransitionAsSFTAnalysisEvidence :=
+    atomGeneratedSignature_generatedArchSigTransition
+      |>.records_fieldsig_analysis_boundary
+  fieldSigDoesNotDefineAATEvidence :=
+    atomGeneratedSignature_generatedArchSigTransition
+      |>.archsig_transition_does_not_define_aat
   transitionDoesNotCreateAtoms :=
     atomGeneratedSignature_aatCoreTransition.operation_does_not_create_atoms
   forecastBoundary := trivial
@@ -776,21 +768,9 @@ theorem atomGeneratedSignature_transport_target_molecule_is_distinct :
 noncomputable def atomGeneratedSignature_generatedArchSigTransportTransition :
     GeneratedArchSigAATCoreTransportTransition
       generatedApiOnlyLawModel
-      generatedComponentLawModel where
-  transportTransition := atomGeneratedSignature_aatCoreTransportTransition
-  analyzesUsingAAT := True
-  analyzesUsingAATEvidence := trivial
-  transitionBoundary := True
-  transitionBoundaryEvidence := trivial
-  archsigDoesNotDefineAAT := True
-  archsigDoesNotDefineAATEvidence := trivial
-  fieldSigAnalysisBoundary := True
-  fieldSigAnalysisBoundaryEvidence := trivial
-  unknownRejectedUnmeasuredSeparated := True
-  unknownRejectedUnmeasuredSeparatedEvidence := trivial
-  measuredZeroBoundary := True
-  validationIsNotTheoremDischarge := True
-  nonConclusions := True
+      generatedComponentLawModel :=
+  GeneratedArchSigAATCoreTransportTransition.ofTransportTransition
+    atomGeneratedSignature_aatCoreTransportTransition
 
 theorem atomGeneratedSignature_generatedArchSigTransport_sourceLawful :
     ArchitectureSignature.ArchitectureLawful
@@ -910,8 +890,12 @@ def atomGeneratedSignature_generatedFieldSigTransportAnalysis :
       atomGeneratedSignature_transportSoftwareFieldEstimate
       atomGeneratedSignature_sftForecastStatus where
   reportBoundary := atomGeneratedSignature_transportReportEstimateBoundary
-  readsGeneratedArchSigTransitionAsSFTAnalysisEvidence := trivial
-  fieldSigDoesNotDefineAATEvidence := trivial
+  readsGeneratedArchSigTransitionAsSFTAnalysisEvidence :=
+    atomGeneratedSignature_generatedArchSigTransportTransition
+      |>.records_fieldsig_analysis_boundary
+  fieldSigDoesNotDefineAATEvidence :=
+    atomGeneratedSignature_generatedArchSigTransportTransition
+      |>.archsig_transition_does_not_define_aat
   transitionDoesNotCreateAtoms :=
     atomGeneratedSignature_aatCoreTransportTransition
       |>.operation_does_not_create_atoms

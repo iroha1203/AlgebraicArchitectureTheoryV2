@@ -484,6 +484,172 @@ variable
 variable
   {targetModel : AAT.GeneratedArchitectureLawModel targetObject}
 
+/-- Generated transitions analyze the generated source and target AAT cores. -/
+def generatedAnalyzesUsingAAT
+    (_transition :
+      AATCoreTransition
+        sourceModel.generatedAATCore targetModel.generatedAATCore) :
+    Prop :=
+  sourceModel.generatedAATCore.laws sourceModel.generatedDesignLaw ∧
+    targetModel.generatedAATCore.laws targetModel.generatedDesignLaw
+
+/-- The generated source and target laws are selected in their generated cores. -/
+theorem generatedAnalyzesUsingAAT_recorded
+    (transition :
+      AATCoreTransition
+        sourceModel.generatedAATCore targetModel.generatedAATCore) :
+    generatedAnalyzesUsingAAT transition :=
+  ⟨sourceModel.generated_law_on_core,
+    targetModel.generated_law_on_core⟩
+
+/--
+Generated ArchSig handoff does not define AAT: it reads generated cores whose
+observation boundary is fixed by the root atom system and whose transition
+does not create atoms.
+-/
+def generatedArchSigDoesNotDefineAAT
+    (_transition :
+      AATCoreTransition
+        sourceModel.generatedAATCore targetModel.generatedAATCore) :
+    Prop :=
+  sourceModel.generatedAATCore.noObservationDependency ∧
+    targetModel.generatedAATCore.noObservationDependency ∧
+      system.noToolOutputCreatesAtoms
+
+/-- Generated ArchSig non-definition is recorded by generated core and root facts. -/
+theorem generatedArchSigDoesNotDefineAAT_recorded
+    (transition :
+      AATCoreTransition
+        sourceModel.generatedAATCore targetModel.generatedAATCore) :
+    generatedArchSigDoesNotDefineAAT transition :=
+  ⟨sourceModel.generatedAATCoreNoObservationDependency_recorded,
+    targetModel.generatedAATCoreNoObservationDependency_recorded,
+    transition.operation_does_not_create_atoms⟩
+
+/-- Generated transition boundaries are rooted in transition atom non-creation. -/
+def generatedTransitionBoundary
+    (_transition :
+      AATCoreTransition
+        sourceModel.generatedAATCore targetModel.generatedAATCore) :
+    Prop :=
+  system.noToolOutputCreatesAtoms
+
+/-- The generated transition boundary is recorded by the operation package. -/
+theorem generatedTransitionBoundary_recorded
+    (transition :
+      AATCoreTransition
+        sourceModel.generatedAATCore targetModel.generatedAATCore) :
+    generatedTransitionBoundary transition :=
+  transition.operation_does_not_create_atoms
+
+/-- FieldSig analysis over a generated transition remains a generated handoff boundary. -/
+def generatedFieldSigAnalysisBoundary
+    (_transition :
+      AATCoreTransition
+        sourceModel.generatedAATCore targetModel.generatedAATCore) :
+    Prop :=
+  system.noToolOutputCreatesAtoms
+
+/-- The FieldSig analysis boundary is recorded by transition non-creation. -/
+theorem generatedFieldSigAnalysisBoundary_recorded
+    (transition :
+      AATCoreTransition
+        sourceModel.generatedAATCore targetModel.generatedAATCore) :
+    generatedFieldSigAnalysisBoundary transition :=
+  transition.operation_does_not_create_atoms
+
+/-- Unknown / rejected / unmeasured readings stay separated by generated circuit boundaries. -/
+def generatedUnknownRejectedUnmeasuredSeparated
+    (_transition :
+      AATCoreTransition
+        sourceModel.generatedAATCore targetModel.generatedAATCore) :
+    Prop :=
+  sourceModel.generatedAATCore.circuitBoundary ∧
+    targetModel.generatedAATCore.circuitBoundary
+
+/-- Generated circuit boundaries record the unknown/rejected/unmeasured separation. -/
+theorem generatedUnknownRejectedUnmeasuredSeparated_recorded
+    (transition :
+      AATCoreTransition
+        sourceModel.generatedAATCore targetModel.generatedAATCore) :
+    generatedUnknownRejectedUnmeasuredSeparated transition :=
+  ⟨sourceModel.generatedAATCoreCircuitBoundary_recorded,
+    targetModel.generatedAATCoreCircuitBoundary_recorded⟩
+
+/-- Generated measured-zero boundary is the generated source/target lawfulness reading. -/
+def generatedMeasuredZeroBoundary
+    (_transition :
+      AATCoreTransition
+        sourceModel.generatedAATCore targetModel.generatedAATCore) :
+    Prop :=
+  ArchitectureSignature.ArchitectureLawful sourceModel.toArchitectureLawModel ∧
+    ArchitectureSignature.ArchitectureLawful targetModel.toArchitectureLawModel
+
+/-- Source and target generated lawfulness record the measured-zero boundary. -/
+theorem generatedMeasuredZeroBoundary_recorded
+    (transition :
+      AATCoreTransition
+        sourceModel.generatedAATCore targetModel.generatedAATCore) :
+    generatedMeasuredZeroBoundary transition :=
+  ⟨sourceModel.generatedArchitectureLawful,
+    targetModel.generatedArchitectureLawful⟩
+
+/-- Validation does not discharge theorem status by creating atoms. -/
+def generatedValidationIsNotTheoremDischarge
+    (_transition :
+      AATCoreTransition
+        sourceModel.generatedAATCore targetModel.generatedAATCore) :
+    Prop :=
+  system.noToolOutputCreatesAtoms
+
+/-- Generated validation boundary is recorded by transition non-creation. -/
+theorem generatedValidationIsNotTheoremDischarge_recorded
+    (transition :
+      AATCoreTransition
+        sourceModel.generatedAATCore targetModel.generatedAATCore) :
+    generatedValidationIsNotTheoremDischarge transition :=
+  transition.operation_does_not_create_atoms
+
+/-- Generated transition non-conclusions remain attached to source and target cores. -/
+def generatedNonConclusions
+    (_transition :
+      AATCoreTransition
+        sourceModel.generatedAATCore targetModel.generatedAATCore) :
+    Prop :=
+  sourceModel.generatedAATCore.nonConclusions ∧
+    targetModel.generatedAATCore.nonConclusions
+
+/-- Construct a generated ArchSig transition without caller-supplied bridge fields. -/
+def ofTransition
+    (transition :
+      AATCoreTransition
+        sourceModel.generatedAATCore targetModel.generatedAATCore) :
+    GeneratedArchSigAATCoreTransition sourceModel targetModel where
+  transition := transition
+  analyzesUsingAAT := generatedAnalyzesUsingAAT transition
+  analyzesUsingAATEvidence :=
+    generatedAnalyzesUsingAAT_recorded transition
+  transitionBoundary := generatedTransitionBoundary transition
+  transitionBoundaryEvidence :=
+    generatedTransitionBoundary_recorded transition
+  archsigDoesNotDefineAAT :=
+    generatedArchSigDoesNotDefineAAT transition
+  archsigDoesNotDefineAATEvidence :=
+    generatedArchSigDoesNotDefineAAT_recorded transition
+  fieldSigAnalysisBoundary :=
+    generatedFieldSigAnalysisBoundary transition
+  fieldSigAnalysisBoundaryEvidence :=
+    generatedFieldSigAnalysisBoundary_recorded transition
+  unknownRejectedUnmeasuredSeparated :=
+    generatedUnknownRejectedUnmeasuredSeparated transition
+  unknownRejectedUnmeasuredSeparatedEvidence :=
+    generatedUnknownRejectedUnmeasuredSeparated_recorded transition
+  measuredZeroBoundary :=
+    generatedMeasuredZeroBoundary transition
+  validationIsNotTheoremDischarge :=
+    generatedValidationIsNotTheoremDischarge transition
+  nonConclusions := generatedNonConclusions transition
+
 /-- Source-side Signature bridge generated from the source law model. -/
 noncomputable def sourceBridge
     (archsigTransition :
@@ -738,6 +904,170 @@ variable
   {sourceModel : AAT.GeneratedArchitectureLawModel sourceObject}
 variable
   {targetModel : AAT.GeneratedArchitectureLawModel targetObject}
+
+/-- Generated transport transitions analyze the generated source and target AAT cores. -/
+def generatedAnalyzesUsingAAT
+    (_transition :
+      AATCoreTransportTransition
+        sourceModel.generatedAATCore targetModel.generatedAATCore) :
+    Prop :=
+  sourceModel.generatedAATCore.laws sourceModel.generatedDesignLaw ∧
+    targetModel.generatedAATCore.laws targetModel.generatedDesignLaw
+
+/-- The generated source and target laws are selected in transport handoff cores. -/
+theorem generatedAnalyzesUsingAAT_recorded
+    (transition :
+      AATCoreTransportTransition
+        sourceModel.generatedAATCore targetModel.generatedAATCore) :
+    generatedAnalyzesUsingAAT transition :=
+  ⟨sourceModel.generated_law_on_core,
+    targetModel.generated_law_on_core⟩
+
+/-- Generated transport handoff does not define AAT or create atoms. -/
+def generatedArchSigDoesNotDefineAAT
+    (_transition :
+      AATCoreTransportTransition
+        sourceModel.generatedAATCore targetModel.generatedAATCore) :
+    Prop :=
+  sourceModel.generatedAATCore.noObservationDependency ∧
+    targetModel.generatedAATCore.noObservationDependency ∧
+      system.noToolOutputCreatesAtoms
+
+/-- Generated transport non-definition is recorded by generated core and root facts. -/
+theorem generatedArchSigDoesNotDefineAAT_recorded
+    (transition :
+      AATCoreTransportTransition
+        sourceModel.generatedAATCore targetModel.generatedAATCore) :
+    generatedArchSigDoesNotDefineAAT transition :=
+  ⟨sourceModel.generatedAATCoreNoObservationDependency_recorded,
+    targetModel.generatedAATCoreNoObservationDependency_recorded,
+    transition.operation_does_not_create_atoms⟩
+
+/-- Generated transport boundaries are rooted in transport atom non-creation. -/
+def generatedTransitionBoundary
+    (_transition :
+      AATCoreTransportTransition
+        sourceModel.generatedAATCore targetModel.generatedAATCore) :
+    Prop :=
+  system.noToolOutputCreatesAtoms
+
+/-- The generated transport boundary is recorded by the transport package. -/
+theorem generatedTransitionBoundary_recorded
+    (transition :
+      AATCoreTransportTransition
+        sourceModel.generatedAATCore targetModel.generatedAATCore) :
+    generatedTransitionBoundary transition :=
+  transition.operation_does_not_create_atoms
+
+/-- FieldSig analysis over generated transport remains a generated handoff boundary. -/
+def generatedFieldSigAnalysisBoundary
+    (_transition :
+      AATCoreTransportTransition
+        sourceModel.generatedAATCore targetModel.generatedAATCore) :
+    Prop :=
+  system.noToolOutputCreatesAtoms
+
+/-- The generated transport FieldSig boundary is recorded by transport non-creation. -/
+theorem generatedFieldSigAnalysisBoundary_recorded
+    (transition :
+      AATCoreTransportTransition
+        sourceModel.generatedAATCore targetModel.generatedAATCore) :
+    generatedFieldSigAnalysisBoundary transition :=
+  transition.operation_does_not_create_atoms
+
+/-- Unknown / rejected / unmeasured transport readings stay circuit-boundary separated. -/
+def generatedUnknownRejectedUnmeasuredSeparated
+    (_transition :
+      AATCoreTransportTransition
+        sourceModel.generatedAATCore targetModel.generatedAATCore) :
+    Prop :=
+  sourceModel.generatedAATCore.circuitBoundary ∧
+    targetModel.generatedAATCore.circuitBoundary
+
+/-- Generated source/target circuit boundaries record transport separation. -/
+theorem generatedUnknownRejectedUnmeasuredSeparated_recorded
+    (transition :
+      AATCoreTransportTransition
+        sourceModel.generatedAATCore targetModel.generatedAATCore) :
+    generatedUnknownRejectedUnmeasuredSeparated transition :=
+  ⟨sourceModel.generatedAATCoreCircuitBoundary_recorded,
+    targetModel.generatedAATCoreCircuitBoundary_recorded⟩
+
+/-- Generated transport measured-zero boundary is source/target lawfulness. -/
+def generatedMeasuredZeroBoundary
+    (_transition :
+      AATCoreTransportTransition
+        sourceModel.generatedAATCore targetModel.generatedAATCore) :
+    Prop :=
+  ArchitectureSignature.ArchitectureLawful sourceModel.toArchitectureLawModel ∧
+    ArchitectureSignature.ArchitectureLawful targetModel.toArchitectureLawModel
+
+/-- Source and target generated lawfulness record the transport measured-zero boundary. -/
+theorem generatedMeasuredZeroBoundary_recorded
+    (transition :
+      AATCoreTransportTransition
+        sourceModel.generatedAATCore targetModel.generatedAATCore) :
+    generatedMeasuredZeroBoundary transition :=
+  ⟨sourceModel.generatedArchitectureLawful,
+    targetModel.generatedArchitectureLawful⟩
+
+/-- Transport validation does not discharge theorem status by creating atoms. -/
+def generatedValidationIsNotTheoremDischarge
+    (_transition :
+      AATCoreTransportTransition
+        sourceModel.generatedAATCore targetModel.generatedAATCore) :
+    Prop :=
+  system.noToolOutputCreatesAtoms
+
+/-- Generated transport validation boundary is recorded by transport non-creation. -/
+theorem generatedValidationIsNotTheoremDischarge_recorded
+    (transition :
+      AATCoreTransportTransition
+        sourceModel.generatedAATCore targetModel.generatedAATCore) :
+    generatedValidationIsNotTheoremDischarge transition :=
+  transition.operation_does_not_create_atoms
+
+/-- Generated transport non-conclusions remain attached to source and target cores. -/
+def generatedNonConclusions
+    (_transition :
+      AATCoreTransportTransition
+        sourceModel.generatedAATCore targetModel.generatedAATCore) :
+    Prop :=
+  sourceModel.generatedAATCore.nonConclusions ∧
+    targetModel.generatedAATCore.nonConclusions
+
+/-- Construct a generated ArchSig transport transition without caller-supplied bridge fields. -/
+def ofTransportTransition
+    (transportTransition :
+      AATCoreTransportTransition
+        sourceModel.generatedAATCore targetModel.generatedAATCore) :
+    GeneratedArchSigAATCoreTransportTransition sourceModel targetModel where
+  transportTransition := transportTransition
+  analyzesUsingAAT :=
+    generatedAnalyzesUsingAAT transportTransition
+  analyzesUsingAATEvidence :=
+    generatedAnalyzesUsingAAT_recorded transportTransition
+  transitionBoundary :=
+    generatedTransitionBoundary transportTransition
+  transitionBoundaryEvidence :=
+    generatedTransitionBoundary_recorded transportTransition
+  archsigDoesNotDefineAAT :=
+    generatedArchSigDoesNotDefineAAT transportTransition
+  archsigDoesNotDefineAATEvidence :=
+    generatedArchSigDoesNotDefineAAT_recorded transportTransition
+  fieldSigAnalysisBoundary :=
+    generatedFieldSigAnalysisBoundary transportTransition
+  fieldSigAnalysisBoundaryEvidence :=
+    generatedFieldSigAnalysisBoundary_recorded transportTransition
+  unknownRejectedUnmeasuredSeparated :=
+    generatedUnknownRejectedUnmeasuredSeparated transportTransition
+  unknownRejectedUnmeasuredSeparatedEvidence :=
+    generatedUnknownRejectedUnmeasuredSeparated_recorded transportTransition
+  measuredZeroBoundary :=
+    generatedMeasuredZeroBoundary transportTransition
+  validationIsNotTheoremDischarge :=
+    generatedValidationIsNotTheoremDischarge transportTransition
+  nonConclusions := generatedNonConclusions transportTransition
 
 /-- Source-side Signature bridge generated from the source law model. -/
 noncomputable def sourceBridge
