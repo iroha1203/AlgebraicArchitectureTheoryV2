@@ -25,12 +25,32 @@ inductive GeneratedRepairTarget {system : AtomAxiomSystem.{u, v}}
 
 namespace GeneratedRepairTarget
 
+/-- Structural witness that a generated repair target is shape-level. -/
+inductive ShapeLevel {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : GeneratedArchitectureObject presentation} :
+    GeneratedRepairTarget object -> Prop where
+  | missingRequiredPort
+      (carrier : GeneratedCarrier object)
+      (port : AtomPort)
+      (required :
+        (AtomShapeOf presentation carrier.val).valence.requiredPort port) :
+      ShapeLevel (.missingRequiredPort carrier port required)
+  | incompatibleAtomPair
+      (left right : GeneratedCarrier object)
+      (distinct : left.val ≠ right.val)
+      (incompatible :
+        CompatibleComposition
+          (AtomShapeOf presentation left.val)
+          (AtomShapeOf presentation right.val) -> False) :
+      ShapeLevel (.incompatibleAtomPair left right distinct incompatible)
+
 /-- Repair targets are port / slot / valence level targets, not free-form recommendations. -/
 def shapeLevel {system : AtomAxiomSystem.{u, v}}
     {presentation : AtomShapePresentation system}
     {object : GeneratedArchitectureObject presentation}
-    (_target : GeneratedRepairTarget object) : Prop :=
-  True
+    (target : GeneratedRepairTarget object) : Prop :=
+  ShapeLevel target
 
 /-- Every generated repair target is shape-level by construction. -/
 theorem is_shapeLevel {system : AtomAxiomSystem.{u, v}}
@@ -38,7 +58,11 @@ theorem is_shapeLevel {system : AtomAxiomSystem.{u, v}}
     {object : GeneratedArchitectureObject presentation}
     (target : GeneratedRepairTarget object) :
     target.shapeLevel := by
-  trivial
+  cases target with
+  | missingRequiredPort carrier port required =>
+      exact ShapeLevel.missingRequiredPort carrier port required
+  | incompatibleAtomPair left right distinct incompatible =>
+      exact ShapeLevel.incompatibleAtomPair left right distinct incompatible
 
 end GeneratedRepairTarget
 
@@ -228,12 +252,38 @@ inductive GeneratedRepairProblem {system : AtomAxiomSystem.{u, v}}
 
 namespace GeneratedRepairProblem
 
+/-- Structural witness that a generated repair problem is shape-level. -/
+inductive ShapeLevel {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {configuration : GeneratedRepairProblemConfiguration presentation} :
+    GeneratedRepairProblem configuration -> Prop where
+  | missingRequiredPort
+      (atom : GeneratedRepairProblemCarrier configuration)
+      (port : AtomPort)
+      (required :
+        (AtomShapeOf presentation atom.val).valence.requiredPort port)
+      (missing :
+        ¬ ∃ other otherPort,
+          configuration.atoms other ∧
+          other ≠ atom.val ∧
+          (AtomShapeOf presentation other).valence.ports otherPort ∧
+          PortCompatible port otherPort) :
+      ShapeLevel (.missingRequiredPort atom port required missing)
+  | incompatibleAtomPair
+      (left right : GeneratedRepairProblemCarrier configuration)
+      (distinct : left.val ≠ right.val)
+      (incompatible :
+        CompatibleComposition
+          (AtomShapeOf presentation left.val)
+          (AtomShapeOf presentation right.val) -> False) :
+      ShapeLevel (.incompatibleAtomPair left right distinct incompatible)
+
 /-- Generated repair problems are defined at port / slot / valence level. -/
 def shapeLevel {system : AtomAxiomSystem.{u, v}}
     {presentation : AtomShapePresentation system}
     {configuration : GeneratedRepairProblemConfiguration presentation}
-    (_problem : GeneratedRepairProblem configuration) : Prop :=
-  True
+    (problem : GeneratedRepairProblem configuration) : Prop :=
+  ShapeLevel problem
 
 /-- Every generated repair problem is shape-level by construction. -/
 theorem is_shapeLevel {system : AtomAxiomSystem.{u, v}}
@@ -241,7 +291,11 @@ theorem is_shapeLevel {system : AtomAxiomSystem.{u, v}}
     {configuration : GeneratedRepairProblemConfiguration presentation}
     (problem : GeneratedRepairProblem configuration) :
     problem.shapeLevel := by
-  trivial
+  cases problem with
+  | missingRequiredPort atom port required missing =>
+      exact ShapeLevel.missingRequiredPort atom port required missing
+  | incompatibleAtomPair left right distinct incompatible =>
+      exact ShapeLevel.incompatibleAtomPair left right distinct incompatible
 
 end GeneratedRepairProblem
 
