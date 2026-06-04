@@ -210,6 +210,36 @@ theorem atomGeneratedSignature_analyticExtensionFormula_requiredAssumptions :
     Formal.Arch.Chapter11AnalyticRepresentation.generatedIdentityAnalyticExtensionFormula_requiredAssumptions
       generatedComponentLawModel
 
+theorem atomGeneratedSignature_analyticExtensionFormula_representationMapAssumptions :
+    atomGeneratedSignature_analyticExtensionFormulaPackage.representationMapAssumptions := by
+  exact
+    Formal.Arch.Chapter11AnalyticRepresentation.generatedIdentityAnalyticExtensionFormula_representationMapAssumptions
+      generatedComponentLawModel
+
+theorem atomGeneratedSignature_analyticExtensionFormula_valuationStructureAssumptions :
+    atomGeneratedSignature_analyticExtensionFormulaPackage.valuationStructureAssumptions := by
+  exact
+    Formal.Arch.Chapter11AnalyticRepresentation.generatedIdentityAnalyticExtensionFormula_valuationStructureAssumptions
+      generatedComponentLawModel
+
+theorem atomGeneratedSignature_analyticExtensionFormula_decompositionCertificate :
+    atomGeneratedSignature_analyticExtensionFormulaPackage.decompositionCertificate := by
+  exact
+    Formal.Arch.Chapter11AnalyticRepresentation.generatedIdentityAnalyticExtensionFormula_decompositionCertificate
+      generatedComponentLawModel
+
+theorem atomGeneratedSignature_analyticExtensionFormula_coverageAssumptions :
+    atomGeneratedSignature_analyticExtensionFormulaPackage.coverageAssumptions := by
+  exact
+    Formal.Arch.Chapter11AnalyticRepresentation.generatedIdentityAnalyticExtensionFormula_coverageAssumptions
+      generatedComponentLawModel
+
+theorem atomGeneratedSignature_analyticExtensionFormula_complexityTransferBoundary :
+    atomGeneratedSignature_analyticExtensionFormulaPackage.complexityTransferBoundary := by
+  exact
+    Formal.Arch.Chapter11AnalyticRepresentation.generatedIdentityAnalyticExtensionFormula_complexityTransferBoundary
+      generatedComponentLawModel
+
 theorem atomGeneratedSignature_analyticExtensionFormula_obstructionValue_zero :
     atomGeneratedSignature_analyticExtensionFormulaPackage.obstructionValuation.value
       generatedComponentLawModel AAT.GeneratedAnalyticWitness.requiredSignatureAxes =

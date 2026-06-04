@@ -712,6 +712,78 @@ theorem requiredAssumptions_of_fields
 end AnalyticExtensionFormulaPackage
 
 /--
+Representation-map assumptions for the generated identity analytic formula.
+
+The package uses the generated analytic representation and records both its
+coverage assumptions and the fact that it represents a generated law model by
+`signatureOfGenerated`.
+-/
+def generatedIdentityAnalyticRepresentationMapAssumptions
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : AAT.GeneratedArchitectureObject presentation}
+    [DecidableEq system.Atom]
+    [DecidableRel (AAT.GeneratedRelation object)]
+    (model : AAT.GeneratedArchitectureLawModel object) : Prop :=
+  (AAT.GeneratedArchitectureLawModel.generatedAnalyticRepresentation
+    (object := object)).coverageAssumptions ∧
+    (AAT.GeneratedArchitectureLawModel.generatedAnalyticRepresentation
+      (object := object)).represent model = model.signatureOfGenerated
+
+/--
+Valuation assumptions for the generated identity analytic formula.
+
+The selected generated obstruction valuation carries generated Signature
+coverage and evaluates every generated analytic witness to zero on generated law
+models.
+-/
+def generatedIdentityAnalyticValuationStructureAssumptions
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : AAT.GeneratedArchitectureObject presentation}
+    [DecidableEq system.Atom]
+    [DecidableRel (AAT.GeneratedRelation object)]
+    (model : AAT.GeneratedArchitectureLawModel object) : Prop :=
+  (AAT.GeneratedArchitectureLawModel.generatedRequiredSignatureObstructionValuation
+    (object := object)).coverageAssumptions ∧
+    ∀ witness : AAT.GeneratedAnalyticWitness,
+      (AAT.GeneratedArchitectureLawModel.generatedRequiredSignatureObstructionValuation
+        (object := object)).value model witness = 0
+
+/-- Identity analytic formulas decompose over the same generated law model. -/
+def generatedIdentityAnalyticDecompositionCertificate
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : AAT.GeneratedArchitectureObject presentation}
+    (before after : AAT.GeneratedArchitectureLawModel object) : Prop :=
+  before = after
+
+/--
+Coverage assumptions for the generated identity analytic formula are the
+generated required Signature axes coverage of the selected generated law model.
+-/
+def generatedIdentityAnalyticCoverageAssumptions
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : AAT.GeneratedArchitectureObject presentation}
+    [DecidableEq system.Atom]
+    [DecidableRel (AAT.GeneratedRelation object)]
+    (model : AAT.GeneratedArchitectureLawModel object) : Prop :=
+  ArchitectureSignature.RequiredSignatureAxesZero model.signatureOfGenerated
+
+/--
+The generated identity formula has no selected complexity-transfer event: the
+before / after states are identical and the selected feature is unit.
+-/
+def generatedIdentityAnalyticComplexityTransferBoundary
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : AAT.GeneratedArchitectureObject presentation}
+    (before after : AAT.GeneratedArchitectureLawModel object)
+    (feature : Unit) : Prop :=
+  before = after ∧ feature = ()
+
+/--
 Atom-generated specialization of the Chapter 11 analytic extension formula.
 
 The state space is `GeneratedArchitectureLawModel object`, the representation
@@ -752,14 +824,92 @@ noncomputable def generatedIdentityAnalyticExtensionFormulaPackage
   transferTerm := fun _ _ _ => 0
   repairTerm := fun _ _ _ => 0
   obstructionResidual := fun _ _ _ => 0
-  representationMapAssumptions := True
-  valuationStructureAssumptions := True
-  decompositionCertificate := True
-  coverageAssumptions := True
-  complexityTransferBoundary := True
+  representationMapAssumptions :=
+    generatedIdentityAnalyticRepresentationMapAssumptions model
+  valuationStructureAssumptions :=
+    generatedIdentityAnalyticValuationStructureAssumptions model
+  decompositionCertificate :=
+    generatedIdentityAnalyticDecompositionCertificate model model
+  coverageAssumptions :=
+    generatedIdentityAnalyticCoverageAssumptions model
+  complexityTransferBoundary :=
+    generatedIdentityAnalyticComplexityTransferBoundary model model ()
   formulaHolds := by
     simp
   nonConclusions := True
+
+/-- Generated identity formula representation assumptions are structurally discharged. -/
+theorem generatedIdentityAnalyticExtensionFormula_representationMapAssumptions
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : AAT.GeneratedArchitectureObject presentation}
+    [DecidableEq system.Atom]
+    [DecidableRel (AAT.GeneratedRelation object)]
+    (model : AAT.GeneratedArchitectureLawModel object) :
+    (generatedIdentityAnalyticExtensionFormulaPackage
+      (object := object) model).representationMapAssumptions := by
+  constructor
+  · exact
+      AAT.GeneratedArchitectureLawModel.generatedAnalyticRepresentation_coverageAssumptions
+        (object := object)
+  · rfl
+
+/-- Generated identity formula valuation assumptions are structurally discharged. -/
+theorem generatedIdentityAnalyticExtensionFormula_valuationStructureAssumptions
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : AAT.GeneratedArchitectureObject presentation}
+    [DecidableEq system.Atom]
+    [DecidableRel (AAT.GeneratedRelation object)]
+    (model : AAT.GeneratedArchitectureLawModel object) :
+    (generatedIdentityAnalyticExtensionFormulaPackage
+      (object := object) model).valuationStructureAssumptions := by
+  constructor
+  · exact
+      AAT.GeneratedArchitectureLawModel.generatedRequiredSignatureObstructionValuation_coverageAssumptions
+        (object := object)
+  · intro witness
+    exact
+      AAT.GeneratedArchitectureLawModel.generatedRequiredSignatureObstructionValuation_value_zero
+        (object := object) model witness
+
+/-- Generated identity formula decomposition is the identity state decomposition. -/
+theorem generatedIdentityAnalyticExtensionFormula_decompositionCertificate
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : AAT.GeneratedArchitectureObject presentation}
+    [DecidableEq system.Atom]
+    [DecidableRel (AAT.GeneratedRelation object)]
+    (model : AAT.GeneratedArchitectureLawModel object) :
+    (generatedIdentityAnalyticExtensionFormulaPackage
+      (object := object) model).decompositionCertificate := by
+  rfl
+
+/-- Generated identity formula coverage is generated required Signature coverage. -/
+theorem generatedIdentityAnalyticExtensionFormula_coverageAssumptions
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : AAT.GeneratedArchitectureObject presentation}
+    [DecidableEq system.Atom]
+    [DecidableRel (AAT.GeneratedRelation object)]
+    (model : AAT.GeneratedArchitectureLawModel object) :
+    (generatedIdentityAnalyticExtensionFormulaPackage
+      (object := object) model).coverageAssumptions := by
+  exact
+    (model.generatedArchitectureLawful_iff_requiredSignatureAxesZero).mp
+      model.generatedArchitectureLawful
+
+/-- Generated identity formulas have the selected zero-transfer boundary. -/
+theorem generatedIdentityAnalyticExtensionFormula_complexityTransferBoundary
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {object : AAT.GeneratedArchitectureObject presentation}
+    [DecidableEq system.Atom]
+    [DecidableRel (AAT.GeneratedRelation object)]
+    (model : AAT.GeneratedArchitectureLawModel object) :
+    (generatedIdentityAnalyticExtensionFormulaPackage
+      (object := object) model).complexityTransferBoundary := by
+  exact ⟨rfl, rfl⟩
 
 /-- Generated identity analytic extension formula records the carried equation. -/
 theorem generatedIdentityAnalyticExtensionFormula_formula_holds
@@ -793,7 +943,16 @@ theorem generatedIdentityAnalyticExtensionFormula_requiredAssumptions
     AnalyticExtensionFormulaPackage.requiredAssumptions_of_fields
       (generatedIdentityAnalyticExtensionFormulaPackage
         (object := object) model)
-      trivial trivial trivial trivial trivial
+      (generatedIdentityAnalyticExtensionFormula_representationMapAssumptions
+        (object := object) model)
+      (generatedIdentityAnalyticExtensionFormula_valuationStructureAssumptions
+        (object := object) model)
+      (generatedIdentityAnalyticExtensionFormula_decompositionCertificate
+        (object := object) model)
+      (generatedIdentityAnalyticExtensionFormula_coverageAssumptions
+        (object := object) model)
+      (generatedIdentityAnalyticExtensionFormula_complexityTransferBoundary
+        (object := object) model)
 
 /-- Generated identity analytic extension formula records non-conclusions. -/
 theorem generatedIdentityAnalyticExtensionFormula_recordsNonConclusions
@@ -1502,6 +1661,11 @@ def representativeDeclarations : Candidate -> List String
        "AnalyticExtensionFormulaPackage.requiredAssumptions_of_fields",
        "AnalyticExtensionFormulaPackage.records_nonConclusions_iff",
        "Chapter11AnalyticRepresentation.generatedIdentityAnalyticExtensionFormulaPackage",
+       "Chapter11AnalyticRepresentation.generatedIdentityAnalyticExtensionFormula_representationMapAssumptions",
+       "Chapter11AnalyticRepresentation.generatedIdentityAnalyticExtensionFormula_valuationStructureAssumptions",
+       "Chapter11AnalyticRepresentation.generatedIdentityAnalyticExtensionFormula_decompositionCertificate",
+       "Chapter11AnalyticRepresentation.generatedIdentityAnalyticExtensionFormula_coverageAssumptions",
+       "Chapter11AnalyticRepresentation.generatedIdentityAnalyticExtensionFormula_complexityTransferBoundary",
        "Chapter11AnalyticRepresentation.generatedIdentityAnalyticExtensionFormula_formula_holds",
        "Chapter11AnalyticRepresentation.generatedIdentityAnalyticExtensionFormula_requiredAssumptions",
        "Chapter11AnalyticRepresentation.generatedIdentityAnalyticExtensionFormula_recordsNonConclusions",
@@ -1738,12 +1902,17 @@ def schematicCorrespondences : Candidate -> List SchematicCorrespondence
        { schematic := "generated identity analytic extension formula",
          leanDeclarations :=
           ["Chapter11AnalyticRepresentation.generatedIdentityAnalyticExtensionFormulaPackage",
+           "Chapter11AnalyticRepresentation.generatedIdentityAnalyticExtensionFormula_representationMapAssumptions",
+           "Chapter11AnalyticRepresentation.generatedIdentityAnalyticExtensionFormula_valuationStructureAssumptions",
+           "Chapter11AnalyticRepresentation.generatedIdentityAnalyticExtensionFormula_decompositionCertificate",
+           "Chapter11AnalyticRepresentation.generatedIdentityAnalyticExtensionFormula_coverageAssumptions",
+           "Chapter11AnalyticRepresentation.generatedIdentityAnalyticExtensionFormula_complexityTransferBoundary",
            "Chapter11AnalyticRepresentation.generatedIdentityAnalyticExtensionFormula_formula_holds",
            "Chapter11AnalyticRepresentation.generatedIdentityAnalyticExtensionFormula_requiredAssumptions",
            "Chapter11AnalyticRepresentation.generatedIdentityAnalyticExtensionFormula_recordsNonConclusions",
            "Chapter11AnalyticRepresentation.generatedIdentityAnalyticExtensionFormula_obstructionValue_zero"],
          reading :=
-          "generated law models, generated analytic representation, and generated selected obstruction valuation instantiate the analytic extension formula without hand-authored representation input",
+          "generated law models, generated analytic representation, and generated selected obstruction valuation instantiate the analytic extension formula while discharging package assumptions from generated coverage, identity decomposition, and zero-transfer evidence",
          status := "defined only / proved" }]
   | couponAnalyticSnapshot =>
       [{ schematic := "coupon canonical analytic snapshot",

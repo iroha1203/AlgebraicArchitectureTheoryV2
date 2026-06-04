@@ -638,10 +638,15 @@ def classifyChapter11
         (Chapter11AnalyticRepresentation.Candidate.representativeDeclarations
           .analyticExtensionFormula)
         ["Chapter11AnalyticRepresentation.generatedIdentityAnalyticExtensionFormulaPackage",
+         "Chapter11AnalyticRepresentation.generatedIdentityAnalyticExtensionFormula_representationMapAssumptions",
+         "Chapter11AnalyticRepresentation.generatedIdentityAnalyticExtensionFormula_valuationStructureAssumptions",
+         "Chapter11AnalyticRepresentation.generatedIdentityAnalyticExtensionFormula_decompositionCertificate",
+         "Chapter11AnalyticRepresentation.generatedIdentityAnalyticExtensionFormula_coverageAssumptions",
+         "Chapter11AnalyticRepresentation.generatedIdentityAnalyticExtensionFormula_complexityTransferBoundary",
          "Chapter11AnalyticRepresentation.generatedIdentityAnalyticExtensionFormula_formula_holds",
          "Chapter11AnalyticRepresentation.generatedIdentityAnalyticExtensionFormula_obstructionValue_zero"]
         (by simp)
-        "The analytic extension formula has a generated identity specialization over generated law models, generated analytic representation, and generated selected obstruction valuation."
+        "The analytic extension formula has a generated identity specialization whose assumptions are discharged from generated coverage, identity decomposition, and zero-transfer evidence."
   | .couponAnalyticSnapshot =>
       representationRow
         "chapter11.couponAnalyticSnapshot"
