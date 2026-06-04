@@ -34,6 +34,18 @@ theorem generatedComponentTheoremSuite_has_generated_aat_core_bridge_fields :
     ⟨generatedComponentTheoremSuite.generatedAATCoreNoObservationDependency,
       generatedComponentTheoremSuite.generatedAATCoreCircuitBoundary⟩
 
+theorem generatedComponentTheoremSuite_has_generated_object_fields :
+    (∀ carrier : AAT.GeneratedCarrier generatedComponentWorld.object,
+      generatedComponentWorld.system.Primitive carrier.val) ∧
+      AAT.ArchMapGeneratedObjectHandoff generatedComponentWorld := by
+  exact
+    ⟨generatedComponentTheoremSuite
+        |>.generatedMoleculeObject
+        |>.objectCarrierAtomPrimitive,
+      generatedComponentTheoremSuite
+        |>.generatedMoleculeObject
+        |>.archMapHandoffToGeneratedObject⟩
+
 theorem generatedComponentTheoremSuite_registry_has_no_bridge_assumed_rows :
     AATReconstructionClassification.TheoremPackageClass.bridgeAssumed ∉
       AATReconstructionClassification.allClassificationClasses := by
