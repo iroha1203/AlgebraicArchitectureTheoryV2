@@ -146,7 +146,10 @@ def representativeDeclarations : Candidate -> List String
       ["SFTSupportSafetyPackage",
        "SFTSupportSafetyPackage.operationSupport",
        "SFTSupportSafetyPackage.stepRelation",
-       "SFTSupportSafetyPackage.AcceptedSupportedTrajectory.forecastCone_and_supportSafety"]
+       "SFTSupportSafetyPackage.AcceptedSupportedTrajectory.forecastCone_and_supportSafety",
+       "AtomGeneratedSignatureExamples.atomGeneratedSignature_sftSupportSafetyPackage",
+       "AtomGeneratedSignatureExamples.atomGeneratedSignature_acceptedSupportedTrajectory",
+       "AtomGeneratedSignatureExamples.atomGeneratedSignature_supportSafety_forecastCone_and_safety"]
   | fieldUpdate =>
       ["ForecastRecord",
        "ObservedOutcome",
@@ -559,7 +562,16 @@ def schematicCorrespondences : Candidate -> List SchematicCorrespondence
            "SFTSupportSafetyPackage.AcceptedSupportedTrajectory.forecastCone_and_supportSafety"],
          reading :=
           "support-preservation premise yields selected trajectory safety and cone membership",
-         status := "proved under package assumptions" }]
+         status := "proved under package assumptions" },
+       { schematic :=
+          "GeneratedArchitectureObject -> SFTSupportSafetyPackage",
+         leanDeclarations :=
+          ["AtomGeneratedSignatureExamples.atomGeneratedSignature_sftSupportSafetyPackage",
+           "AtomGeneratedSignatureExamples.atomGeneratedSignature_acceptedSupportedTrajectory",
+           "AtomGeneratedSignatureExamples.atomGeneratedSignature_supportSafety_forecastCone_and_safety"],
+         reading :=
+          "Atom-generated carriers instantiate the selected support-safety package with a generated identity support operation and a finite accepted supported trajectory",
+         status := "proved acceptance" }]
   | fieldUpdate =>
       [{ schematic := "observed feedback is preserved into posterior field record",
          leanDeclarations :=

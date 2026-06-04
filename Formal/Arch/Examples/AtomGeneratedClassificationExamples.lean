@@ -210,6 +210,17 @@ theorem generated_consequence_envelope_classified_atom_generated :
   exact generated_consequence_envelope_is_atom_generated
 
 /--
+Acceptance: SFT support safety has an Atom-generated carrier instantiation and
+is no longer only a downstream representation row.
+-/
+theorem generated_support_safety_classified_atom_generated :
+    (classifySFT .supportSafety).classification =
+        .atomGenerated ∧
+      (classifySFT .supportSafety).action =
+        .aatSourceOfTruth := by
+  exact generated_support_safety_is_atom_generated
+
+/--
 Acceptance: the generic Chapter 11 analytic representation theorem package has
 an Atom-generated law-model specialization instead of remaining only a
 downstream representation row.

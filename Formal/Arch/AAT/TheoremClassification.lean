@@ -826,15 +826,15 @@ def classifySFT
         ActionAllowed.representationDownstream
         "Reachability is downstream SFT field vocabulary."
   | .supportSafety =>
-      representationRow
+      atomGeneratedRow
         "sft.supportSafety"
         (SFTTheoremPackages.Candidate.representativeDeclarations
           .supportSafety)
-        ["SFTSupportSafetyPackage"]
+        ["AtomGeneratedSignatureExamples.atomGeneratedSignature_sftSupportSafetyPackage",
+         "AtomGeneratedSignatureExamples.atomGeneratedSignature_acceptedSupportedTrajectory",
+         "AtomGeneratedSignatureExamples.atomGeneratedSignature_supportSafety_forecastCone_and_safety"]
         (by simp)
-        .downstreamLibrary
-        ActionAllowed.representationDownstream
-        "Support safety is an assumption-relative downstream SFT package."
+        "Support safety has an Atom-generated carrier instantiation with a generated identity support operation, accepted supported trajectory, and forecast-cone/safety theorem."
   | .fieldUpdate =>
       representationRow
         "sft.fieldUpdate"
@@ -1213,6 +1213,13 @@ theorem generated_consequence_envelope_is_atom_generated :
     (classifySFT .consequenceEnvelope).classification =
       .atomGenerated := by
   rfl
+
+theorem generated_support_safety_is_atom_generated :
+    (classifySFT .supportSafety).classification =
+      .atomGenerated ∧
+    (classifySFT .supportSafety).action =
+      .aatSourceOfTruth := by
+  exact ⟨rfl, rfl⟩
 
 theorem generated_analytic_representation_is_atom_generated :
     (classifyChapter11 .analyticRepresentation).classification =

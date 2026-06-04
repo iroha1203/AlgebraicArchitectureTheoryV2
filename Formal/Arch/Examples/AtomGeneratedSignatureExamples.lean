@@ -5,6 +5,7 @@ import Formal.Arch.Evolution.Chapter7TheoremPackages
 import Formal.Arch.Evolution.Chapter10ArchitectureExtensionFormula
 import Formal.Arch.Evolution.Chapter11AnalyticRepresentation
 import Formal.Arch.Evolution.SFTArchSigBoundary
+import Formal.Arch.Evolution.SFTSupportSafety
 import Formal.Arch.Examples.AtomGeneratedMoleculeExamples
 import Formal.Arch.Signature.AATCoreBridge
 
@@ -392,6 +393,184 @@ theorem atomGeneratedSignature_sft_forecast_correctness_boundary :
 theorem atomGeneratedSignature_sft_event_does_not_create_atoms :
     componentSystem.noSFTEventCreatesAtoms := by
   exact atomGeneratedSignature_sftInput.sft_event_does_not_create_atoms
+
+/--
+Selected generated support operation for the SFT support-safety acceptance.
+
+The state space below is the generated carrier space of the Atom-generated
+component object; this operation is not a hand-authored architecture graph.
+-/
+inductive AtomGeneratedSupportOperation where
+  | identity
+  deriving DecidableEq
+
+def atomGeneratedSignature_supportObservation :
+    SignatureObservation
+      (AAT.GeneratedCarrier generatedComponentObject)
+      AAT.GeneratedObservationCoordinate where
+  observe := generatedComponentObject.generatedObservation.observe
+  coverageAssumptions := True
+  nonConclusions := True
+
+def atomGeneratedSignature_supportSafeRegion :
+    SafeRegion AAT.GeneratedObservationCoordinate :=
+  fun _coordinate => True
+
+def atomGeneratedSignature_supportKernel :
+    FiniteOperationKernel
+      (AAT.GeneratedCarrier generatedComponentObject)
+      AtomGeneratedSupportOperation where
+  support := fun _carrier => [AtomGeneratedSupportOperation.identity]
+  coverageAssumptions := True
+  weightSourceBoundary := True
+  normalizationBoundary := True
+  nonConclusions := True
+
+def atomGeneratedSignature_supportSemantics :
+    OperationTransitionSemantics
+      (AAT.GeneratedCarrier generatedComponentObject)
+      AtomGeneratedSupportOperation where
+  realizes := fun _operation => fun {_X _Y} _transition => True
+  coverageAssumptions := True
+  nonConclusions := True
+
+theorem atomGeneratedSignature_supportPreservesSafeRegion :
+    atomGeneratedSignature_supportKernel.SupportOperationsPreserveSafeRegion
+      atomGeneratedSignature_supportSemantics
+      atomGeneratedSignature_supportObservation
+      atomGeneratedSignature_supportSafeRegion := by
+  intro _source _operation _hSupport _X _Y _transition _hRealizes _hStart
+  trivial
+
+def atomGeneratedSignature_attractorSupportPackage :
+    AttractorEngineeringSupportPackage
+      (AAT.GeneratedCarrier generatedComponentObject)
+      AAT.GeneratedObservationCoordinate
+      AtomGeneratedSupportOperation where
+  observation := atomGeneratedSignature_supportObservation
+  kernel := atomGeneratedSignature_supportKernel
+  semantics := atomGeneratedSignature_supportSemantics
+  targetRegion := atomGeneratedSignature_supportSafeRegion
+  supportPreserves := atomGeneratedSignature_supportPreservesSafeRegion
+  coverageAssumptions := True
+  measurementBoundary := True
+  nonConclusions := True
+
+def atomGeneratedSignature_sftSupportSafetyPackage :
+    SFTSupportSafetyPackage
+      (AAT.GeneratedCarrier generatedComponentObject)
+      AAT.GeneratedObservationCoordinate
+      AtomGeneratedSupportOperation where
+  supportPackage := atomGeneratedSignature_attractorSupportPackage
+  observationBoundary := True
+  acceptedStepBoundary := True
+  forecastBoundary := True
+  nonConclusions := True
+
+def atomGeneratedSignature_supportControl :
+    DampingControlSchema
+      (AAT.GeneratedCarrier generatedComponentObject)
+      AAT.GeneratedObservationCoordinate where
+  observation := atomGeneratedSignature_supportObservation
+  invariant := atomGeneratedSignature_supportSafeRegion
+  accepted := fun _transition => True
+  rejected := fun _transition => False
+  acceptedPreservesInvariant := by
+    intro _X _Y _transition _hAccepted _hStart
+    trivial
+  coverageAssumptions := True
+  nonConclusions := True
+
+def atomGeneratedSignature_supportScript :
+    BoundedOperationScript AtomGeneratedSupportOperation where
+  operations := [AtomGeneratedSupportOperation.identity]
+  operationFamily := fun operation =>
+    operation = AtomGeneratedSupportOperation.identity
+  operationsInFamily := by
+    intro operation hMem
+    exact List.mem_singleton.mp hMem
+  coverageAssumptions := True
+  nonConclusions := True
+
+def atomGeneratedSignature_supportIdentityTransition :
+    ArchitectureTransition
+      (AAT.GeneratedCarrier generatedComponentObject)
+      generatedComponentApiCarrier generatedComponentApiCarrier where
+  kind := ArchitectureTransitionKind.policyUpdate
+  lawful := True
+  coverageAssumptions := True
+  exactnessAssumptions := True
+  nonConclusions := True
+
+def atomGeneratedSignature_supportPlan :
+    ArchitectureEvolution
+      (AAT.GeneratedCarrier generatedComponentObject)
+      generatedComponentApiCarrier generatedComponentApiCarrier :=
+  ArchitecturePath.cons atomGeneratedSignature_supportIdentityTransition
+    (ArchitecturePath.nil generatedComponentApiCarrier)
+
+theorem atomGeneratedSignature_supportScript_realizes :
+    atomGeneratedSignature_supportScript.RealizesEvolution
+      atomGeneratedSignature_supportSemantics
+      atomGeneratedSignature_supportPlan := by
+  simp [atomGeneratedSignature_supportScript,
+    atomGeneratedSignature_supportSemantics,
+    atomGeneratedSignature_supportPlan,
+    BoundedOperationScript.RealizesEvolution,
+    BoundedOperationScript.ScriptRealizesEvolution,
+    OperationTransitionSemantics.Realizes]
+
+theorem atomGeneratedSignature_supportScript_usesSupport :
+    atomGeneratedSignature_supportKernel.ScriptUsesSupport
+      atomGeneratedSignature_supportScript.operations
+      atomGeneratedSignature_supportPlan := by
+  simp [atomGeneratedSignature_supportKernel,
+    atomGeneratedSignature_supportScript,
+    atomGeneratedSignature_supportPlan,
+    FiniteOperationKernel.ScriptUsesSupport,
+    FiniteOperationKernel.Supports]
+
+theorem atomGeneratedSignature_supportScript_accepted :
+    atomGeneratedSignature_supportScript.AcceptedEvolution
+      atomGeneratedSignature_supportControl
+      atomGeneratedSignature_supportSemantics
+      atomGeneratedSignature_supportPlan := by
+  simp [atomGeneratedSignature_supportScript,
+    atomGeneratedSignature_supportControl,
+    atomGeneratedSignature_supportSemantics,
+    atomGeneratedSignature_supportPlan,
+    BoundedOperationScript.AcceptedEvolution,
+    BoundedOperationScript.EveryScriptStepAccepted,
+    DampingControlSchema.AcceptedStep,
+    OperationTransitionSemantics.Realizes]
+
+def atomGeneratedSignature_acceptedSupportedTrajectory :
+    SFTSupportSafetyPackage.AcceptedSupportedTrajectory
+      atomGeneratedSignature_sftSupportSafetyPackage
+      atomGeneratedSignature_supportControl
+      generatedComponentApiCarrier generatedComponentApiCarrier where
+  script := atomGeneratedSignature_supportScript
+  plan := atomGeneratedSignature_supportPlan
+  startsInsideTarget := trivial
+  realizes := atomGeneratedSignature_supportScript_realizes
+  usesSupport := atomGeneratedSignature_supportScript_usesSupport
+  accepted := atomGeneratedSignature_supportScript_accepted
+
+theorem atomGeneratedSignature_supportSafety_forecastCone_and_safety :
+    ForecastCone
+        atomGeneratedSignature_sftSupportSafetyPackage.operationSupport
+        atomGeneratedSignature_sftSupportSafetyPackage.stepRelation
+        generatedComponentApiCarrier
+        atomGeneratedSignature_supportScript.operations.length
+        generatedComponentApiCarrier
+        atomGeneratedSignature_acceptedSupportedTrajectory.fieldPath ∧
+      SignatureTrajectoryInSafeRegion
+        atomGeneratedSignature_sftSupportSafetyPackage.targetRegion
+        (atomGeneratedSignature_sftSupportSafetyPackage.ForecastTrajectory
+          atomGeneratedSignature_supportPlan) := by
+  exact
+    atomGeneratedSignature_acceptedSupportedTrajectory
+      |>.forecastCone_and_supportSafety
 
 noncomputable def atomGeneratedSignature_sftForecastStatus :
     SFTForecastStatus where
