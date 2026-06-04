@@ -326,8 +326,6 @@ def missingPortRepairOperation :
         cases atom
         · rfl
         · cases hAtom
-  operationDoesNotCreateAtomsEvidence :=
-    repairSystem.tool_output_does_not_create_atoms
   operationBoundary := True
 
 def missingPortRepairCleared :

@@ -11,15 +11,14 @@ universe u v
 Generated synthesis candidate.
 
 The candidate is a generated architecture object with a generated law model and
-bounded flatness derived from that generated law model. Solver completeness is
-not claimed here.
+bounded flatness derived from that generated law model. Atom non-creation is
+inherited from the root `AtomAxiomSystem`; solver completeness is not claimed
+here.
 -/
 structure GeneratedSynthesisCandidate {system : AtomAxiomSystem.{u, v}}
     {presentation : AtomShapePresentation system}
     (object : GeneratedArchitectureObject presentation) where
   lawModel : GeneratedArchitectureLawModel object
-  synthesisDoesNotCreateAtomsEvidence :
-    system.noToolOutputCreatesAtoms
   synthesisBoundary : Prop
 
 namespace GeneratedSynthesisCandidate
@@ -58,9 +57,9 @@ theorem synthesis_does_not_create_atoms
     {system : AtomAxiomSystem.{u, v}}
     {presentation : AtomShapePresentation system}
     {object : GeneratedArchitectureObject presentation}
-    (candidate : GeneratedSynthesisCandidate object) :
+    (_candidate : GeneratedSynthesisCandidate object) :
     system.noToolOutputCreatesAtoms :=
-  candidate.synthesisDoesNotCreateAtomsEvidence
+  system.tool_output_does_not_create_atoms
 
 /--
 Generated synthesis candidates induce the existing pure AAT synthesis soundness

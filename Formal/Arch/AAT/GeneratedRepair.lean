@@ -247,7 +247,8 @@ end GeneratedRepairProblem
 
 /--
 Generated operation from a pre-molecule repair problem configuration into a
-valid generated target object.
+valid generated target object. Atom non-creation is inherited from the root
+`AtomAxiomSystem`, not supplied by the repair operation.
 -/
 structure GeneratedRepairProblemOperation {system : AtomAxiomSystem.{u, v}}
     {presentation : AtomShapePresentation system}
@@ -260,8 +261,6 @@ structure GeneratedRepairProblemOperation {system : AtomAxiomSystem.{u, v}}
       shapeTransform
         (AtomShapeOf presentation carrier.val)
         (AtomShapeOf presentation (atomMap carrier).val)
-  operationDoesNotCreateAtomsEvidence :
-    system.noToolOutputCreatesAtoms
   operationBoundary : Prop
 
 namespace GeneratedRepairProblemOperation
@@ -296,9 +295,9 @@ theorem operation_does_not_create_atoms
     {presentation : AtomShapePresentation system}
     {configuration : GeneratedRepairProblemConfiguration presentation}
     {target : GeneratedArchitectureObject presentation}
-    (operation : GeneratedRepairProblemOperation configuration target) :
+    (_operation : GeneratedRepairProblemOperation configuration target) :
     system.noToolOutputCreatesAtoms :=
-  operation.operationDoesNotCreateAtomsEvidence
+  system.tool_output_does_not_create_atoms
 
 end GeneratedRepairProblemOperation
 

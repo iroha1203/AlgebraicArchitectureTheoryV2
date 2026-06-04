@@ -1462,8 +1462,6 @@ def generatedApiExpansionOperation :
         cases atom
         · rfl
         · cases hAtom
-  operationDoesNotCreateAtomsEvidence :=
-    componentSystem.tool_output_does_not_create_atoms
   operationBoundary := True
 
 theorem generatedApiExpansionOperation_transforms_shape
@@ -1681,8 +1679,6 @@ def generatedComponentIdentityOperation :
   transformsAtomShape := by
     intro _carrier
     rfl
-  operationDoesNotCreateAtomsEvidence :=
-    componentSystem.tool_output_does_not_create_atoms
   operationBoundary := True
 
 theorem generatedComponentIdentityOperation_transforms_shape
@@ -1733,8 +1729,6 @@ theorem generatedComponentIdentityOperation_transports_law :
 def generatedComponentSynthesisCandidate :
     AAT.GeneratedSynthesisCandidate generatedComponentObject where
   lawModel := generatedComponentLawModel
-  synthesisDoesNotCreateAtomsEvidence :=
-    componentSystem.tool_output_does_not_create_atoms
   synthesisBoundary := True
 
 theorem generatedComponentSynthesisCandidate_flatWithin_from_law_model :

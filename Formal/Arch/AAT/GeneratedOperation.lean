@@ -13,7 +13,8 @@ abbrev AtomShapeTransform := AtomShape -> AtomShape -> Prop
 Generated operation between generated architecture objects.
 
 The operation maps selected source atoms to selected target atoms and records
-the AtomShape transformation it performs. It does not create atom existence.
+the AtomShape transformation it performs. Atom non-creation is derived from the
+root `AtomAxiomSystem`, not supplied as an operation-specific field.
 -/
 structure GeneratedOperation {system : AtomAxiomSystem.{u, v}}
     {presentation : AtomShapePresentation system}
@@ -25,8 +26,6 @@ structure GeneratedOperation {system : AtomAxiomSystem.{u, v}}
       shapeTransform
         (AtomShapeOf presentation carrier.val)
         (AtomShapeOf presentation (atomMap carrier).val)
-  operationDoesNotCreateAtomsEvidence :
-    system.noToolOutputCreatesAtoms
   operationBoundary : Prop
 
 namespace GeneratedOperation
@@ -58,9 +57,9 @@ theorem operation_does_not_create_atoms
     {system : AtomAxiomSystem.{u, v}}
     {presentation : AtomShapePresentation system}
     {source target : GeneratedArchitectureObject presentation}
-    (operation : GeneratedOperation source target) :
+    (_operation : GeneratedOperation source target) :
     system.noToolOutputCreatesAtoms :=
-  operation.operationDoesNotCreateAtomsEvidence
+  system.tool_output_does_not_create_atoms
 
 /--
 Generated operations induce pure AAT operation transport between the generated
