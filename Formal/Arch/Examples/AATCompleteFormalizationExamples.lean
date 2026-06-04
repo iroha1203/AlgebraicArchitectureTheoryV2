@@ -63,6 +63,19 @@ theorem generatedComponentTheoremSuite_has_graph_rank_fields :
         |>.generatedGraphRank
         |>.runtimeGraphRankWalkAcyclic⟩
 
+theorem generatedComponentTheoremSuite_has_flatness_curvature_fields :
+    ArchitectureFlat generatedComponentObject.generatedFlatnessModel ∧
+      totalCurvature AAT.generatedAtomShapeCoordinateDistance
+        generatedComponentObject.generatedAtomShapeCoordinateSemantics
+        generatedComponentObject.generatedSemanticDiagrams = 0 := by
+  exact
+    ⟨generatedComponentTheoremSuite
+        |>.generatedFlatnessCurvature
+        |>.architectureFlat,
+      generatedComponentTheoremSuite
+        |>.generatedFlatnessCurvature
+        |>.shapeCoordinateTotalCurvature_eq_zero⟩
+
 theorem generatedComponentTheoremSuite_registry_has_no_bridge_assumed_rows :
     AATReconstructionClassification.TheoremPackageClass.bridgeAssumed ∉
       AATReconstructionClassification.allClassificationClasses := by

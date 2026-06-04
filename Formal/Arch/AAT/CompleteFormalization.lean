@@ -1,3 +1,4 @@
+import Formal.Arch.AAT.GeneratedCurvature
 import Formal.Arch.AAT.GeneratedSignature
 import Formal.Arch.AAT.TheoremClassification
 import Formal.Arch.Observation.ArchMapGeneratedHandoff
@@ -126,6 +127,25 @@ structure GeneratedGraphRankFields
   runtimeGraphRank : GeneratedRuntimeGraphRank world.object
   runtimeGraphRankWalkAcyclic :
     WalkAcyclic (GeneratedRuntimeGraph world.object)
+
+/--
+Suite field payload for generated flatness and shape-coordinate curvature.
+
+This package is relative to the generated world and its generated measurement
+universe.  It does not claim global semantic completeness, extractor
+completeness, or safety for unmeasured axes.
+-/
+structure GeneratedFlatnessCurvatureFields
+    (world : AtomGeneratedAATWorld.{u, v}) : Prop where
+  architectureFlatWithin :
+    ArchitectureFlatWithin world.object.generatedFlatnessModel
+      world.object.generatedComponentUniverse
+  architectureFlat :
+    ArchitectureFlat world.object.generatedFlatnessModel
+  shapeCoordinateTotalCurvature_eq_zero :
+    totalCurvature generatedAtomShapeCoordinateDistance
+      world.object.generatedAtomShapeCoordinateSemantics
+      world.object.generatedSemanticDiagrams = 0
 
 namespace AtomGeneratedAATWorld
 
@@ -257,6 +277,29 @@ def generated_graph_rank_fields
   runtimeGraphRank := world.generated_runtime_graph_rank
   runtimeGraphRankWalkAcyclic := world.generated_runtime_graph_rank_walkAcyclic
 
+theorem generated_architecture_flat
+    (world : AtomGeneratedAATWorld.{u, v}) :
+    ArchitectureFlat world.object.generatedFlatnessModel :=
+  world.lawModel.generatedArchitectureFlat
+
+theorem generated_shapeCoordinateTotalCurvature_eq_zero
+    (world : AtomGeneratedAATWorld.{u, v}) :
+    totalCurvature generatedAtomShapeCoordinateDistance
+      world.object.generatedAtomShapeCoordinateSemantics
+      world.object.generatedSemanticDiagrams = 0 :=
+  world.object.generated_shapeCoordinateTotalCurvature_eq_zero
+
+/-- Generated flatness / curvature field derived from generated entrypoints. -/
+def generated_flatness_curvature_fields
+    (world : AtomGeneratedAATWorld.{u, v}) :
+    GeneratedFlatnessCurvatureFields world where
+  architectureFlatWithin :=
+    world.lawModel.generatedArchitectureFlatWithin
+  architectureFlat :=
+    world.generated_architecture_flat
+  shapeCoordinateTotalCurvature_eq_zero :=
+    world.generated_shapeCoordinateTotalCurvature_eq_zero
+
 end AtomGeneratedAATWorld
 
 /--
@@ -280,6 +323,7 @@ structure AATTheoremSuite (world : AtomGeneratedAATWorld.{u, v}) where
     world.GeneratedAATCoreNoObservationDependency
   generatedAATCoreCircuitBoundary :
     world.GeneratedAATCoreCircuitBoundary
+  generatedFlatnessCurvature : GeneratedFlatnessCurvatureFields world
   classificationRegistryHasNoBridgeAssumedRows :
     AATReconstructionClassification.TheoremPackageClass.bridgeAssumed ∉
       AATReconstructionClassification.allClassificationClasses
@@ -375,13 +419,13 @@ def currentImplementationFrontier : List AATImplementationFrontier :=
       docsTarget := "docs/aat/lean_theorem_index.md#atom-generated-algebra-kernel" }
   , { family := .generatedFlatnessCurvature
       suiteField := "AATTheoremSuite.generatedFlatnessCurvature"
-      status := .parallelReady
+      status := .connected
       existingEntrypoints :=
         ["GeneratedArchitectureLawModel.generatedArchitectureFlatWithin",
          "GeneratedArchitectureLawModel.generatedArchitectureFlat",
          "GeneratedArchitectureObject.generated_shapeCoordinateTotalCurvature_eq_zero"]
       nextWorkPackage :=
-        "Add suite fields for generated flatness and curvature."
+        "Preserve generated flatness / curvature as a bounded generated-world package."
       parallelAllowed := true
       coordinationRequired := false
       docsTarget := "docs/aat/lean_theorem_index.md#atom-generated-algebra-kernel" }
@@ -521,6 +565,8 @@ def initialTheoremSuite
     world.generated_aat_core_noObservationDependency
   generatedAATCoreCircuitBoundary :=
     world.generated_aat_core_circuitBoundary
+  generatedFlatnessCurvature :=
+    world.generated_flatness_curvature_fields
   classificationRegistryHasNoBridgeAssumedRows :=
     AATReconstructionClassification.theorem_package_registry_has_no_bridge_assumed_rows
   classificationRegistryHasNoRewriteTargets :=
