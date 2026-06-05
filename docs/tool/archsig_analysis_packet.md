@@ -158,6 +158,21 @@ both atoms have semantic observation support; otherwise it remains unmeasured
 with blocker refs. `viewerDistanceInputRefs` may be retained for visual
 projection lookup, but those refs do not become the diagnostic distance.
 
+`configurationDistanceReadings[]` is the Part IV configuration geometry
+evaluator surface. Rows cover all observed molecule-local Atom pairs plus a
+bounded cross-context diagnostic sample for disconnected / unreachable review;
+they are not a complete all-pairs architecture metric. Each row records the
+typed configuration hypergraph evidence used for the reading. Hyperedges are
+extracted from explicit ArchMap evidence such as molecule membership, shared
+subject/object refs, relation endpoints, contract attachment, semantic
+interpretation, operation-square evidence, boundary/effect surfaces, concern
+surfaces, and source-backed co-observation. `configurationIndexedDistance` is
+the shortest path length in that typed hypergraph. `contextDistance` is the
+molecule-context Jaccard distance. `smallMoleculeWeightMilli` records the Part
+IV small-molecule overlap weight. Observation gaps and missing relations block
+the configuration bundle; they are not filled in as measured zero or inferred
+architecture completeness.
+
 The implemented schema records:
 
 - `interpretationProfileRef`
@@ -460,6 +475,14 @@ The builder:
   refs for fiber, carrier, valence, and semantic anchor distance. Missing
   semantic anchor evidence blocks the selected layout bundle rather than
   contributing zero.
+- `configurationDistanceReadings[]` computes selected configuration geometry
+  distances from typed ArchMap hyperedges and molecule context, not from raw
+  relation counts or schema presence. The evaluator records hyperedge IDs,
+  shortest-path atom refs, shortest-path hyperedge refs,
+  `configurationIndexedDistance`, `contextDistance`, and
+  `smallMoleculeWeightMilli`. Unreachable sampled pairs remain `infinite` with
+  blocker refs. Observation gaps block `configurationDistanceBundle` and the
+  `configurationGeometry` family-level row rather than contributing zero.
 - `operationSquareCandidates` enumerates supplied, inferred, or blocked
   operation pairs as path pairs `p = g . f` and `q = f . g`. Supplied
   candidates are read from first-class ArchMap `operationSquareEvidence[]` and

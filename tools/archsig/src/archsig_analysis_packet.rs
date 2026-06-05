@@ -1,4 +1,4 @@
-use std::collections::{BTreeMap, BTreeSet};
+use std::collections::{BTreeMap, BTreeSet, VecDeque};
 
 use crate::validation::{count_checks, duplicates, generic_validation_example, validation_check};
 use crate::{
@@ -23,7 +23,8 @@ use crate::{
     ArchSigBoundaryHolonomyAxisResidualV0, ArchSigBoundaryHolonomyReadingFamilyV0,
     ArchSigBoundaryPreparationRankV0, ArchSigBoundedJudgementV0, ArchSigBridgeAtomFamilyReadingV0,
     ArchSigBridgeEdgeBreakdownV0, ArchSigBridgeSplitObstructionTransferReadingV0,
-    ArchSigChangeImpactReadingV0, ArchSigCouplingCohesionReadingV0, ArchSigCoverageStatusV0,
+    ArchSigChangeImpactReadingV0, ArchSigConfigurationDistanceReadingV0,
+    ArchSigConfigurationHyperedgeV0, ArchSigCouplingCohesionReadingV0, ArchSigCoverageStatusV0,
     ArchSigCurrentStateEvolutionBoundaryV0, ArchSigCurvatureSupportReadingV0,
     ArchSigCurvatureTopModeV0, ArchSigCurvatureTransferEdgeV0,
     ArchSigCurvatureTransferMatrixEntryV0, ArchSigCurvatureTransferOperatorV0,
@@ -155,9 +156,18 @@ pub fn build_archsig_analysis_packet(
         &viewer_distance_inputs,
         &part4_distance_foundation,
     );
+    let configuration_distance_readings = build_configuration_distance_readings(
+        archmap,
+        &generated_molecules,
+        &part4_distance_foundation,
+    );
     promote_atom_geometry_supporting_distance(
         &mut part4_distance_foundation,
         &atom_distance_readings,
+    );
+    promote_configuration_geometry_supporting_distance(
+        &mut part4_distance_foundation,
+        &configuration_distance_readings,
     );
     let architecture_object_projections = build_architecture_object_projections(archmap);
     let invariant_family_readings =
@@ -511,6 +521,7 @@ pub fn build_archsig_analysis_packet(
         viewer_distance_inputs,
         part4_distance_foundation,
         atom_distance_readings,
+        configuration_distance_readings,
         obstruction_circuits,
         signature_axes,
         analytic_representations,
@@ -2722,6 +2733,10 @@ fn build_molecule_readings(
                 molecule_observation_ref: molecule.molecule_observation_id.clone(),
                 law_refs,
                 atom_observation_refs: molecule.atom_observation_refs.clone(),
+                configuration_graph_refs: vec![
+                    configuration_hypergraph_ref(&archmap.map_id),
+                    configuration_hypergraph_ref(&molecule.molecule_observation_id),
+                ],
                 reading: format!(
                     "{} is read as a {} molecule under selected LawPolicy",
                     molecule.molecule_observation_id, molecule.molecule_family
@@ -3346,6 +3361,273 @@ fn promote_atom_geometry_supporting_distance(
         .count();
 }
 
+fn build_configuration_distance_readings(
+    archmap: &ArchMapDocumentV0,
+    generated_molecules: &[ArchSigGeneratedMoleculeV0],
+    foundation: &ArchSigPart4DistanceFoundationV0,
+) -> Vec<ArchSigConfigurationDistanceReadingV0> {
+    let atoms_by_ref = archmap
+        .atom_observations
+        .iter()
+        .map(|atom| (atom.atom_observation_id.as_str(), atom))
+        .collect::<BTreeMap<_, _>>();
+    let atom_refs = archmap
+        .atom_observations
+        .iter()
+        .map(|atom| atom.atom_observation_id.clone())
+        .collect::<Vec<_>>();
+    let context_refs_by_atom = molecule_context_refs_by_atom(generated_molecules);
+    let molecule_refs_by_pair = molecule_refs_by_atom_pair(generated_molecules);
+    let hypergraph_ref = configuration_hypergraph_ref(&archmap.map_id);
+    let typed_hyperedges =
+        build_configuration_hyperedges(archmap, generated_molecules, &hypergraph_ref);
+    let coverage_refs = foundation.profile.coverage_policy_refs.clone();
+    let observation_gap_blockers = configuration_observation_gap_blockers(archmap);
+    let pair_refs = selected_configuration_distance_pair_refs(&atom_refs, &molecule_refs_by_pair);
+
+    let mut readings = Vec::new();
+    for (left_ref, right_ref) in pair_refs {
+        let Some(left) = atoms_by_ref.get(left_ref.as_str()) else {
+            continue;
+        };
+        let Some(right) = atoms_by_ref.get(right_ref.as_str()) else {
+            continue;
+        };
+        let molecule_refs = molecule_refs_by_pair
+            .get(&(left_ref.clone(), right_ref.clone()))
+            .cloned()
+            .unwrap_or_default();
+        let configuration_ref = molecule_refs
+            .first()
+            .map(|molecule_ref| format!("configuration:{molecule_ref}"))
+            .unwrap_or_else(|| "configuration:observed-atom-hypergraph".to_string());
+        let path = shortest_configuration_path(&typed_hyperedges, &left_ref, &right_ref);
+        let (configuration_indexed_distance, shortest_path_atom_refs, shortest_path_hyperedge_refs) =
+            match path {
+                Some((path_atom_refs, path_hyperedge_refs)) => {
+                    let provenance_refs = configuration_pair_provenance_refs(
+                        left,
+                        right,
+                        &typed_hyperedges,
+                        &path_hyperedge_refs,
+                    );
+                    let evaluator_basis_refs = path_atom_refs
+                        .iter()
+                        .map(|atom_ref| format!("shortestPath:atom:{}", stable_id(atom_ref)))
+                        .chain(
+                            path_hyperedge_refs
+                                .iter()
+                                .map(|hyperedge_ref| format!("hyperedge:{hyperedge_ref}")),
+                        )
+                        .collect::<Vec<_>>();
+                    (
+                        measured_part4_distance_value(
+                            path_hyperedge_refs.len() as i64,
+                            "configuration-hop",
+                            provenance_refs,
+                            evaluator_basis_refs,
+                            &coverage_refs,
+                            "configuration-indexed distance is the shortest path length in the typed ArchMap configuration hypergraph",
+                        ),
+                        path_atom_refs,
+                        path_hyperedge_refs,
+                    )
+                }
+                None => (
+                    infinite_part4_distance_value(
+                        "configuration-hop",
+                        atom_pair_provenance_refs(left, right),
+                        vec![format!(
+                            "unreachablePair:{}:{}",
+                            stable_id(&left_ref),
+                            stable_id(&right_ref)
+                        )],
+                        &coverage_refs,
+                        "configuration-indexed distance is infinite because no typed hypergraph path connects the selected atoms",
+                    ),
+                    Vec::new(),
+                    Vec::new(),
+                ),
+            };
+        let context_distance = configuration_context_distance_value(
+            left,
+            right,
+            context_refs_by_atom.get(left_ref.as_str()),
+            context_refs_by_atom.get(right_ref.as_str()),
+            &coverage_refs,
+        );
+        let small_molecule_weight_milli =
+            small_molecule_weight_milli(generated_molecules, &molecule_refs);
+        let unreachable_pair_refs = if configuration_indexed_distance.status == "infinite" {
+            vec![format!("{left_ref}<->{right_ref}")]
+        } else {
+            Vec::new()
+        };
+        let configuration_distance_bundle = configuration_distance_bundle_value(
+            &configuration_indexed_distance,
+            &context_distance,
+            small_molecule_weight_milli,
+            &observation_gap_blockers,
+            &coverage_refs,
+        );
+        let reading_hyperedges = configuration_reading_hyperedges(
+            &typed_hyperedges,
+            &left_ref,
+            &right_ref,
+            &shortest_path_hyperedge_refs,
+        );
+        readings.push(ArchSigConfigurationDistanceReadingV0 {
+            configuration_distance_reading_id: format!(
+                "configuration-distance:{}:{}",
+                stable_id(&left_ref),
+                stable_id(&right_ref)
+            ),
+            source_atom_ref: left_ref,
+            target_atom_ref: right_ref,
+            configuration_ref,
+            molecule_refs,
+            distance_profile_ref: foundation.profile.profile_id.clone(),
+            diagnostic_scope_ref: foundation.diagnostic_scope.scope_id.clone(),
+            hypergraph_ref: hypergraph_ref.clone(),
+            typed_hyperedges: reading_hyperedges,
+            shortest_path_atom_refs,
+            shortest_path_hyperedge_refs,
+            configuration_indexed_distance,
+            context_distance,
+            small_molecule_weight_milli,
+            high_context_overlap: small_molecule_weight_milli > 0,
+            unreachable_pair_refs,
+            configuration_distance_bundle,
+            evidence_boundary:
+                "Configuration distance is computed for molecule-local pairs plus bounded cross-context diagnostic pairs from typed ArchMap hyperedges and molecule context; observation gaps block aggregation and are not measured zero"
+                    .to_string(),
+            non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
+        });
+    }
+    readings
+}
+
+fn promote_configuration_geometry_supporting_distance(
+    foundation: &mut ArchSigPart4DistanceFoundationV0,
+    readings: &[ArchSigConfigurationDistanceReadingV0],
+) {
+    if readings.is_empty() {
+        return;
+    }
+    if let Some(distance) = foundation
+        .supporting_distances
+        .iter_mut()
+        .find(|distance| distance.distance_family == "configurationGeometry")
+    {
+        let blocker_refs = readings
+            .iter()
+            .flat_map(|reading| {
+                reading
+                    .configuration_distance_bundle
+                    .blocker_refs
+                    .iter()
+                    .cloned()
+                    .chain(
+                        reading
+                            .configuration_indexed_distance
+                            .blocker_refs
+                            .iter()
+                            .cloned(),
+                    )
+            })
+            .collect::<BTreeSet<_>>()
+            .into_iter()
+            .collect::<Vec<_>>();
+        let max_bundle_distance = readings
+            .iter()
+            .filter_map(|reading| reading.configuration_distance_bundle.measured_value)
+            .max()
+            .or_else(|| {
+                readings
+                    .iter()
+                    .filter_map(|reading| reading.configuration_indexed_distance.measured_value)
+                    .max()
+            })
+            .unwrap_or(0);
+        let fully_measured = blocker_refs.is_empty();
+        distance.value = ArchSigDistanceValueV0 {
+            status: if fully_measured {
+                if max_bundle_distance == 0 {
+                    "zero"
+                } else {
+                    "measured"
+                }
+            } else {
+                "blocked"
+            }
+            .to_string(),
+            measured_value: fully_measured.then_some(max_bundle_distance),
+            unit: "configuration-distance".to_string(),
+            provenance_refs: vec![
+                "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#3-configuration-geometry"
+                    .to_string(),
+                "configurationDistanceReadings".to_string(),
+            ],
+            evaluator_basis_refs: readings
+                .iter()
+                .map(|reading| reading.configuration_distance_reading_id.clone())
+                .collect(),
+            coverage_refs: foundation.profile.coverage_policy_refs.clone(),
+            blocker_refs,
+            reading:
+                "Configuration geometry distance rows are computed from typed hypergraph shortest paths and molecule context; family-level status remains blocked while observation gaps could hide configuration edges"
+                    .to_string(),
+        };
+        distance.evidence_boundary =
+            "configurationGeometry is measured only through configurationDistanceReadings; missing relation and observation gaps are blockers, not zero distances"
+                .to_string();
+    }
+    refresh_part4_status_summary(foundation);
+}
+
+fn refresh_part4_status_summary(foundation: &mut ArchSigPart4DistanceFoundationV0) {
+    foundation.status_summary.measured_count = foundation
+        .supporting_distances
+        .iter()
+        .filter(|distance| distance.value.status == "measured")
+        .count();
+    foundation.status_summary.zero_count = foundation
+        .supporting_distances
+        .iter()
+        .filter(|distance| distance.value.status == "zero")
+        .count();
+    foundation.status_summary.unmeasured_count = foundation
+        .supporting_distances
+        .iter()
+        .filter(|distance| distance.value.status == "unmeasured")
+        .count();
+    foundation.status_summary.unavailable_count = foundation
+        .supporting_distances
+        .iter()
+        .filter(|distance| distance.value.status == "unavailable")
+        .count();
+    foundation.status_summary.incomparable_count = foundation
+        .supporting_distances
+        .iter()
+        .filter(|distance| distance.value.status == "incomparable")
+        .count();
+    foundation.status_summary.infinite_count = foundation
+        .supporting_distances
+        .iter()
+        .filter(|distance| distance.value.status == "infinite")
+        .count();
+    foundation.status_summary.blocked_count = foundation
+        .supporting_distances
+        .iter()
+        .filter(|distance| distance.value.status == "blocked")
+        .count();
+    foundation.status_summary.schema_foundation_only_count = foundation
+        .supporting_distances
+        .iter()
+        .filter(|distance| distance.value.status == "schemaFoundationOnly")
+        .count();
+}
+
 fn atom_fiber_distance_value(
     left: &ArchMapAtomObservationV0,
     right: &ArchMapAtomObservationV0,
@@ -3594,6 +3876,550 @@ fn unmeasured_part4_distance_value(
     }
 }
 
+fn infinite_part4_distance_value(
+    unit: &str,
+    provenance_refs: Vec<String>,
+    blocker_refs: Vec<String>,
+    coverage_refs: &[String],
+    reading: &str,
+) -> ArchSigDistanceValueV0 {
+    ArchSigDistanceValueV0 {
+        status: "infinite".to_string(),
+        measured_value: None,
+        unit: unit.to_string(),
+        provenance_refs,
+        evaluator_basis_refs: Vec::new(),
+        coverage_refs: coverage_refs.to_vec(),
+        blocker_refs,
+        reading: reading.to_string(),
+    }
+}
+
+fn configuration_hypergraph_ref(configuration_ref: &str) -> String {
+    format!("configuration-hypergraph:{}", stable_id(configuration_ref))
+}
+
+fn build_configuration_hyperedges(
+    archmap: &ArchMapDocumentV0,
+    generated_molecules: &[ArchSigGeneratedMoleculeV0],
+    hypergraph_ref: &str,
+) -> Vec<ArchSigConfigurationHyperedgeV0> {
+    let atoms_by_ref = archmap
+        .atom_observations
+        .iter()
+        .map(|atom| (atom.atom_observation_id.as_str(), atom))
+        .collect::<BTreeMap<_, _>>();
+    let atom_scope = archmap
+        .atom_observations
+        .iter()
+        .map(|atom| atom.atom_observation_id.as_str())
+        .collect::<BTreeSet<_>>();
+    let mut hyperedges = BTreeMap::<String, ArchSigConfigurationHyperedgeV0>::new();
+
+    for molecule in generated_molecules {
+        push_configuration_hyperedge(
+            &mut hyperedges,
+            hypergraph_ref,
+            "moleculeMembership",
+            molecule.atom_observation_refs.clone(),
+            vec![molecule.source_molecule_observation_ref.clone()],
+        );
+    }
+
+    push_grouped_configuration_edges(
+        &mut hyperedges,
+        hypergraph_ref,
+        "sameSubject",
+        archmap.atom_observations.iter().fold(
+            BTreeMap::<String, Vec<String>>::new(),
+            |mut groups, atom| {
+                groups
+                    .entry(atom.subject_ref.clone())
+                    .or_default()
+                    .push(atom.atom_observation_id.clone());
+                groups
+            },
+        ),
+    );
+    let mut object_groups = BTreeMap::<String, Vec<String>>::new();
+    for atom in &archmap.atom_observations {
+        for object_ref in &atom.object_refs {
+            object_groups
+                .entry(object_ref.clone())
+                .or_default()
+                .push(atom.atom_observation_id.clone());
+        }
+    }
+    push_grouped_configuration_edges(
+        &mut hyperedges,
+        hypergraph_ref,
+        "sharedObjectRef",
+        object_groups,
+    );
+
+    for atom in &archmap.atom_observations {
+        let family = atom.atom_family.to_ascii_lowercase();
+        let predicate = atom.predicate.to_ascii_lowercase();
+        if family.contains("relation")
+            || predicate.contains("delegates")
+            || predicate.contains("calls")
+            || predicate.contains("depends")
+        {
+            let endpoint_atoms = endpoint_atoms_for(atom, &archmap.atom_observations);
+            push_configuration_hyperedge(
+                &mut hyperedges,
+                hypergraph_ref,
+                "relationEndpoint",
+                endpoint_atoms,
+                atom.source_refs.iter().map(source_ref_label).collect(),
+            );
+        }
+        if family.contains("contract") || predicate.contains("contract") {
+            push_configuration_hyperedge(
+                &mut hyperedges,
+                hypergraph_ref,
+                "contractAttachment",
+                endpoint_atoms_for(atom, &archmap.atom_observations),
+                atom.source_refs.iter().map(source_ref_label).collect(),
+            );
+        }
+        if family.contains("effect") || predicate.contains("effect") {
+            push_configuration_hyperedge(
+                &mut hyperedges,
+                hypergraph_ref,
+                "effectSurface",
+                endpoint_atoms_for(atom, &archmap.atom_observations),
+                atom.source_refs.iter().map(source_ref_label).collect(),
+            );
+        }
+        if family.contains("authority")
+            || family.contains("boundary")
+            || predicate.contains("authority")
+            || predicate.contains("boundary")
+        {
+            push_configuration_hyperedge(
+                &mut hyperedges,
+                hypergraph_ref,
+                "boundaryAuthoritySurface",
+                endpoint_atoms_for(atom, &archmap.atom_observations),
+                atom.source_refs.iter().map(source_ref_label).collect(),
+            );
+        }
+    }
+
+    for semantic in &archmap.semantic_observations {
+        let scoped_atoms = semantic
+            .atom_observation_refs
+            .iter()
+            .filter(|atom_ref| atom_scope.contains(atom_ref.as_str()))
+            .cloned()
+            .collect::<Vec<_>>();
+        push_configuration_hyperedge(
+            &mut hyperedges,
+            hypergraph_ref,
+            "semanticInterpretation",
+            scoped_atoms,
+            vec![semantic.semantic_observation_id.clone()]
+                .into_iter()
+                .chain(semantic.source_refs.iter().map(source_ref_label))
+                .collect(),
+        );
+    }
+    for evidence in &archmap.operation_square_evidence {
+        let scoped_atoms = evidence
+            .atom_observation_refs
+            .iter()
+            .filter(|atom_ref| atom_scope.contains(atom_ref.as_str()))
+            .cloned()
+            .collect::<Vec<_>>();
+        push_configuration_hyperedge(
+            &mut hyperedges,
+            hypergraph_ref,
+            "operationSquare",
+            scoped_atoms,
+            vec![evidence.operation_square_evidence_id.clone()]
+                .into_iter()
+                .chain(evidence.source_refs.iter().map(source_ref_label))
+                .collect(),
+        );
+    }
+    for concern in &archmap.concern_hints {
+        let scoped_atoms = concern
+            .atom_observation_refs
+            .iter()
+            .filter(|atom_ref| atom_scope.contains(atom_ref.as_str()))
+            .cloned()
+            .collect::<Vec<_>>();
+        push_configuration_hyperedge(
+            &mut hyperedges,
+            hypergraph_ref,
+            "sharedConcernSurface",
+            scoped_atoms,
+            vec![concern.concern_hint_id.clone()]
+                .into_iter()
+                .chain(concern.source_refs.iter().map(source_ref_label))
+                .collect(),
+        );
+    }
+
+    let mut source_groups = BTreeMap::<String, Vec<String>>::new();
+    for atom in &archmap.atom_observations {
+        for source_ref in &atom.source_refs {
+            source_groups
+                .entry(source_ref_label(source_ref))
+                .or_default()
+                .push(atom.atom_observation_id.clone());
+        }
+    }
+    push_grouped_configuration_edges(
+        &mut hyperedges,
+        hypergraph_ref,
+        "sourceBackedCoObservation",
+        source_groups,
+    );
+
+    hyperedges
+        .into_values()
+        .filter(|edge| {
+            edge.atom_refs
+                .iter()
+                .all(|atom_ref| atoms_by_ref.contains_key(atom_ref.as_str()))
+        })
+        .collect()
+}
+
+fn push_grouped_configuration_edges(
+    hyperedges: &mut BTreeMap<String, ArchSigConfigurationHyperedgeV0>,
+    hypergraph_ref: &str,
+    kind: &str,
+    groups: BTreeMap<String, Vec<String>>,
+) {
+    for (group_ref, atom_refs) in groups {
+        push_configuration_hyperedge(
+            hyperedges,
+            hypergraph_ref,
+            kind,
+            atom_refs,
+            vec![format!("{kind}:{group_ref}")],
+        );
+    }
+}
+
+fn push_configuration_hyperedge(
+    hyperedges: &mut BTreeMap<String, ArchSigConfigurationHyperedgeV0>,
+    hypergraph_ref: &str,
+    kind: &str,
+    atom_refs: Vec<String>,
+    source_refs: Vec<String>,
+) {
+    let atom_refs = unique_strings(atom_refs.into_iter());
+    if atom_refs.len() < 2 {
+        return;
+    }
+    let source_refs = unique_strings(source_refs.into_iter());
+    let hyperedge_id = format!(
+        "{hypergraph_ref}:hyperedge:{kind}:{}",
+        stable_id(&atom_refs.join("|"))
+    );
+    hyperedges.entry(hyperedge_id.clone()).or_insert_with(|| {
+        ArchSigConfigurationHyperedgeV0 {
+            hyperedge_id,
+            hyperedge_kind: kind.to_string(),
+            atom_refs,
+            source_refs,
+            evidence_boundary:
+                "typed configuration hyperedge is extracted from explicit ArchMap observation refs; absent relations are not synthesized"
+                    .to_string(),
+        }
+    });
+}
+
+fn endpoint_atoms_for(
+    seed: &ArchMapAtomObservationV0,
+    atoms: &[ArchMapAtomObservationV0],
+) -> Vec<String> {
+    let endpoint_refs = seed
+        .object_refs
+        .iter()
+        .chain(std::iter::once(&seed.subject_ref))
+        .cloned()
+        .collect::<BTreeSet<_>>();
+    atoms
+        .iter()
+        .filter(|candidate| {
+            candidate.atom_observation_id == seed.atom_observation_id
+                || endpoint_refs.contains(&candidate.subject_ref)
+                || candidate
+                    .object_refs
+                    .iter()
+                    .any(|object_ref| endpoint_refs.contains(object_ref))
+        })
+        .map(|candidate| candidate.atom_observation_id.clone())
+        .collect()
+}
+
+fn shortest_configuration_path(
+    hyperedges: &[ArchSigConfigurationHyperedgeV0],
+    source_ref: &str,
+    target_ref: &str,
+) -> Option<(Vec<String>, Vec<String>)> {
+    let mut adjacency = BTreeMap::<String, Vec<(String, String)>>::new();
+    for edge in hyperedges {
+        for atom_ref in &edge.atom_refs {
+            for neighbor_ref in &edge.atom_refs {
+                if atom_ref != neighbor_ref {
+                    adjacency
+                        .entry(atom_ref.clone())
+                        .or_default()
+                        .push((neighbor_ref.clone(), edge.hyperedge_id.clone()));
+                }
+            }
+        }
+    }
+    let mut queue = VecDeque::from([source_ref.to_string()]);
+    let mut previous = BTreeMap::<String, (String, String)>::new();
+    let mut seen = BTreeSet::from([source_ref.to_string()]);
+    while let Some(current) = queue.pop_front() {
+        if current == target_ref {
+            break;
+        }
+        for (neighbor, hyperedge_ref) in adjacency.get(&current).cloned().unwrap_or_default() {
+            if seen.insert(neighbor.clone()) {
+                previous.insert(neighbor.clone(), (current.clone(), hyperedge_ref));
+                queue.push_back(neighbor);
+            }
+        }
+    }
+    if !seen.contains(target_ref) {
+        return None;
+    }
+    let mut atoms = vec![target_ref.to_string()];
+    let mut edges = Vec::new();
+    let mut cursor = target_ref.to_string();
+    while cursor != source_ref {
+        let (prior, edge_ref) = previous.get(&cursor)?.clone();
+        edges.push(edge_ref);
+        atoms.push(prior.clone());
+        cursor = prior;
+    }
+    atoms.reverse();
+    edges.reverse();
+    Some((atoms, edges))
+}
+
+fn configuration_pair_provenance_refs(
+    left: &ArchMapAtomObservationV0,
+    right: &ArchMapAtomObservationV0,
+    hyperedges: &[ArchSigConfigurationHyperedgeV0],
+    path_hyperedge_refs: &[String],
+) -> Vec<String> {
+    let path_hyperedge_set = path_hyperedge_refs.iter().collect::<BTreeSet<_>>();
+    unique_strings(
+        atom_pair_provenance_refs(left, right)
+            .into_iter()
+            .chain(std::iter::once(
+                "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#3-configuration-geometry"
+                    .to_string(),
+            ))
+            .chain(
+                hyperedges
+                    .iter()
+                    .filter(|edge| path_hyperedge_set.contains(&edge.hyperedge_id))
+                    .flat_map(|edge| {
+                        std::iter::once(edge.hyperedge_id.clone())
+                            .chain(edge.source_refs.iter().cloned())
+                    }),
+            ),
+    )
+}
+
+fn configuration_reading_hyperedges(
+    hyperedges: &[ArchSigConfigurationHyperedgeV0],
+    source_ref: &str,
+    target_ref: &str,
+    path_hyperedge_refs: &[String],
+) -> Vec<ArchSigConfigurationHyperedgeV0> {
+    let path_hyperedge_refs = path_hyperedge_refs.iter().collect::<BTreeSet<_>>();
+    let mut selected = hyperedges
+        .iter()
+        .filter(|edge| path_hyperedge_refs.contains(&edge.hyperedge_id))
+        .cloned()
+        .collect::<Vec<_>>();
+    if selected.is_empty() {
+        selected = hyperedges
+            .iter()
+            .filter(|edge| {
+                edge.atom_refs
+                    .iter()
+                    .any(|atom_ref| atom_ref == source_ref || atom_ref == target_ref)
+            })
+            .take(16)
+            .cloned()
+            .collect();
+    }
+    selected
+}
+
+fn molecule_context_refs_by_atom(
+    generated_molecules: &[ArchSigGeneratedMoleculeV0],
+) -> BTreeMap<String, BTreeSet<String>> {
+    let mut refs = BTreeMap::<String, BTreeSet<String>>::new();
+    for molecule in generated_molecules {
+        for atom_ref in &molecule.atom_observation_refs {
+            refs.entry(atom_ref.clone())
+                .or_default()
+                .insert(molecule.generated_molecule_id.clone());
+        }
+    }
+    refs
+}
+
+fn configuration_context_distance_value(
+    left: &ArchMapAtomObservationV0,
+    right: &ArchMapAtomObservationV0,
+    left_context: Option<&BTreeSet<String>>,
+    right_context: Option<&BTreeSet<String>>,
+    coverage_refs: &[String],
+) -> ArchSigDistanceValueV0 {
+    let Some(left_context) = left_context else {
+        return unmeasured_part4_distance_value(
+            "milli-distance",
+            atom_pair_provenance_refs(left, right),
+            vec![format!(
+                "missing molecule context for {}",
+                left.atom_observation_id
+            )],
+            coverage_refs,
+            "context distance is unmeasured until both atoms have molecule membership context",
+        );
+    };
+    let Some(right_context) = right_context else {
+        return unmeasured_part4_distance_value(
+            "milli-distance",
+            atom_pair_provenance_refs(left, right),
+            vec![format!(
+                "missing molecule context for {}",
+                right.atom_observation_id
+            )],
+            coverage_refs,
+            "context distance is unmeasured until both atoms have molecule membership context",
+        );
+    };
+    let value = milli_jaccard_distance(left_context, right_context).unwrap_or(1000);
+    measured_part4_distance_value(
+        value,
+        "milli-distance",
+        atom_pair_provenance_refs(left, right),
+        vec![
+            format!("context:left={}", refs_join(left_context)),
+            format!("context:right={}", refs_join(right_context)),
+        ],
+        coverage_refs,
+        "context distance is one minus Jaccard overlap of observed molecule memberships",
+    )
+}
+
+fn small_molecule_weight_milli(
+    generated_molecules: &[ArchSigGeneratedMoleculeV0],
+    molecule_refs: &[String],
+) -> i64 {
+    let shared = molecule_refs.iter().collect::<BTreeSet<_>>();
+    generated_molecules
+        .iter()
+        .filter(|molecule| shared.contains(&molecule.generated_molecule_id))
+        .map(|molecule| {
+            let size = molecule.atom_observation_refs.len().max(1) as i64;
+            1000 / size
+        })
+        .sum()
+}
+
+fn configuration_observation_gap_blockers(archmap: &ArchMapDocumentV0) -> Vec<String> {
+    archmap
+        .observation_gaps
+        .iter()
+        .map(|gap| format!("observationGap:{}:{}", gap.gap_id, stable_id(&gap.reason)))
+        .collect()
+}
+
+fn configuration_distance_bundle_value(
+    configuration_indexed_distance: &ArchSigDistanceValueV0,
+    context_distance: &ArchSigDistanceValueV0,
+    small_molecule_weight_milli: i64,
+    observation_gap_blockers: &[String],
+    coverage_refs: &[String],
+) -> ArchSigDistanceValueV0 {
+    let blockers = configuration_indexed_distance
+        .blocker_refs
+        .iter()
+        .cloned()
+        .chain(context_distance.blocker_refs.iter().cloned())
+        .chain(observation_gap_blockers.iter().cloned())
+        .collect::<BTreeSet<_>>()
+        .into_iter()
+        .collect::<Vec<_>>();
+    let provenance_refs = unique_strings(
+        configuration_indexed_distance
+            .provenance_refs
+            .iter()
+            .cloned()
+            .chain(context_distance.provenance_refs.iter().cloned()),
+    );
+    let evaluator_basis_refs = unique_strings(
+        configuration_indexed_distance
+            .evaluator_basis_refs
+            .iter()
+            .cloned()
+            .chain(context_distance.evaluator_basis_refs.iter().cloned())
+            .chain(std::iter::once(format!(
+                "smallMoleculeWeightMilli:{small_molecule_weight_milli}"
+            ))),
+    );
+    if !blockers.is_empty() {
+        return ArchSigDistanceValueV0 {
+            status: "blocked".to_string(),
+            measured_value: None,
+            unit: "configuration-distance".to_string(),
+            provenance_refs,
+            evaluator_basis_refs,
+            coverage_refs: coverage_refs.to_vec(),
+            blocker_refs: blockers,
+            reading:
+                "configuration distance bundle is blocked until selected configuration paths, context, and observation gaps are resolved; blockers are not numeric zero"
+                    .to_string(),
+        };
+    }
+    let Some(path_hops) = configuration_indexed_distance.measured_value else {
+        return unmeasured_part4_distance_value(
+            "configuration-distance",
+            provenance_refs,
+            vec!["configuration indexed distance lacks measured path hops".to_string()],
+            coverage_refs,
+            "configuration bundle requires measured shortest path hops",
+        );
+    };
+    let Some(context_value) = context_distance.measured_value else {
+        return unmeasured_part4_distance_value(
+            "configuration-distance",
+            provenance_refs,
+            vec!["configuration context distance lacks measured overlap".to_string()],
+            coverage_refs,
+            "configuration bundle requires measured molecule context overlap",
+        );
+    };
+    let path_milli = (path_hops * 250).min(1000);
+    let overlap_discount = (small_molecule_weight_milli / 2).min(500);
+    let value = ((path_milli + context_value) / 2).saturating_sub(overlap_discount);
+    measured_part4_distance_value(
+        value,
+        "configuration-distance",
+        provenance_refs,
+        evaluator_basis_refs,
+        coverage_refs,
+        "configuration bundle combines shortest-path hops, context distance, and small-molecule overlap weight within the selected evidence contract",
+    )
+}
+
 fn atom_distance_component(
     component_kind: &str,
     weight: i64,
@@ -3653,6 +4479,32 @@ fn molecule_refs_by_atom_pair(
         values.dedup();
     }
     refs
+}
+
+fn selected_configuration_distance_pair_refs(
+    atom_refs: &[String],
+    molecule_refs_by_pair: &BTreeMap<(String, String), Vec<String>>,
+) -> Vec<(String, String)> {
+    let mut pair_refs = molecule_refs_by_pair
+        .keys()
+        .cloned()
+        .collect::<BTreeSet<_>>();
+    let mut sampled_cross_context_count = 0usize;
+    const MAX_CROSS_CONTEXT_CONFIGURATION_PAIRS: usize = 256;
+    'outer: for left_index in 0..atom_refs.len() {
+        for right_index in (left_index + 1)..atom_refs.len() {
+            let pair = sorted_pair(&atom_refs[left_index], &atom_refs[right_index]);
+            if pair_refs.contains(&pair) {
+                continue;
+            }
+            pair_refs.insert(pair);
+            sampled_cross_context_count += 1;
+            if sampled_cross_context_count >= MAX_CROSS_CONTEXT_CONFIGURATION_PAIRS {
+                break 'outer;
+            }
+        }
+    }
+    pair_refs.into_iter().collect()
 }
 
 fn viewer_distance_refs_by_atom_pair(
@@ -13739,6 +14591,7 @@ pub fn validate_archsig_analysis_packet_report(
         check_generated_middle_layer_surface(packet),
         check_part4_distance_foundation_surface(packet),
         check_atom_distance_reading_surface(packet),
+        check_configuration_distance_reading_surface(packet),
         check_aat_structural_reading_surfaces(packet),
         check_current_state_evolution_boundary(packet),
         check_operation_square_trace_surface(packet),
@@ -13776,6 +14629,7 @@ pub fn validate_archsig_analysis_packet_report(
             .supporting_distances
             .len(),
         atom_distance_reading_count: packet.atom_distance_readings.len(),
+        configuration_distance_reading_count: packet.configuration_distance_readings.len(),
         obstruction_circuit_count: packet.obstruction_circuits.len(),
         signature_axis_count: packet.signature_axes.len(),
         analytic_representation_count: packet.analytic_representations.len(),
@@ -19570,6 +20424,304 @@ fn check_atom_distance_reading_surface(packet: &ArchSigAnalysisPacketV0) -> Vali
     )
 }
 
+fn check_configuration_distance_reading_surface(
+    packet: &ArchSigAnalysisPacketV0,
+) -> ValidationCheck {
+    let mut examples = Vec::new();
+    let atom_refs = packet
+        .generated_atom_shapes
+        .iter()
+        .map(|shape| shape.atom_observation_ref.as_str())
+        .collect::<BTreeSet<_>>();
+    let molecule_refs = packet
+        .generated_molecules
+        .iter()
+        .map(|molecule| molecule.generated_molecule_id.as_str())
+        .collect::<BTreeSet<_>>();
+    let has_atom_pairs = atom_refs.len() > 1;
+    if has_atom_pairs && packet.configuration_distance_readings.is_empty() {
+        examples.push(generic_validation_example(
+            "configurationDistanceReadings",
+            "empty",
+            "packet with multiple observed atoms must expose Part IV configuration hypergraph distance readings",
+        ));
+    }
+    let configuration_distance = packet
+        .part4_distance_foundation
+        .supporting_distances
+        .iter()
+        .find(|distance| distance.distance_family == "configurationGeometry");
+    if let Some(distance) = configuration_distance {
+        if !packet.configuration_distance_readings.is_empty()
+            && distance.value.evaluator_basis_refs.is_empty()
+        {
+            examples.push(generic_validation_example(
+                "part4DistanceFoundation.configurationGeometry",
+                "evaluatorBasisRefs",
+                "configurationGeometry supporting distance must be backed by configurationDistanceReadings",
+            ));
+        }
+    }
+
+    for reading in &packet.configuration_distance_readings {
+        push_blank(
+            &mut examples,
+            "configurationDistanceReadings.configurationDistanceReadingId",
+            &reading.configuration_distance_reading_id,
+        );
+        if reading.source_atom_ref == reading.target_atom_ref {
+            examples.push(generic_validation_example(
+                &reading.configuration_distance_reading_id,
+                "atom pair",
+                "Configuration distance reading must compare two distinct atoms",
+            ));
+        }
+        if !atom_refs.contains(reading.source_atom_ref.as_str())
+            || !atom_refs.contains(reading.target_atom_ref.as_str())
+        {
+            examples.push(generic_validation_example(
+                &reading.configuration_distance_reading_id,
+                "sourceAtomRef/targetAtomRef",
+                "Configuration distance reading must refer to generated AtomShape-backed observed atoms",
+            ));
+        }
+        if reading.distance_profile_ref != packet.part4_distance_foundation.profile.profile_id
+            || reading.diagnostic_scope_ref
+                != packet.part4_distance_foundation.diagnostic_scope.scope_id
+        {
+            examples.push(generic_validation_example(
+                &reading.configuration_distance_reading_id,
+                "profile/scope",
+                "Configuration distance reading must be tied to the selected Part IV DistanceProfile and DiagnosticScope",
+            ));
+        }
+        if reading.hypergraph_ref.is_empty()
+            || (reading.typed_hyperedges.is_empty()
+                && matches!(
+                    reading.configuration_indexed_distance.status.as_str(),
+                    "measured" | "zero"
+                ))
+        {
+            examples.push(generic_validation_example(
+                &reading.configuration_distance_reading_id,
+                "typedHyperedges",
+                "Configuration distance reading must retain typed ArchMap hyperedges, not a relation-count proxy",
+            ));
+        }
+        if !reading
+            .evidence_boundary
+            .contains("observation gaps block aggregation")
+        {
+            examples.push(generic_validation_example(
+                &reading.configuration_distance_reading_id,
+                "evidenceBoundary",
+                "Configuration distance must state that observation gaps block aggregation rather than becoming zero",
+            ));
+        }
+        for molecule_ref in &reading.molecule_refs {
+            if !molecule_refs.contains(molecule_ref.as_str()) {
+                examples.push(generic_validation_example(
+                    &reading.configuration_distance_reading_id,
+                    molecule_ref,
+                    "moleculeRefs must resolve to generated molecules when present",
+                ));
+            }
+        }
+        for hyperedge in &reading.typed_hyperedges {
+            if hyperedge.hyperedge_id.is_empty()
+                || hyperedge.hyperedge_kind.is_empty()
+                || hyperedge.atom_refs.len() < 2
+                || hyperedge.source_refs.is_empty()
+            {
+                examples.push(generic_validation_example(
+                    &reading.configuration_distance_reading_id,
+                    "typedHyperedges",
+                    "typed hyperedges must retain id, kind, two or more atom refs, and source refs",
+                ));
+            }
+            if hyperedge
+                .atom_refs
+                .iter()
+                .any(|atom_ref| !atom_refs.contains(atom_ref.as_str()))
+            {
+                examples.push(generic_validation_example(
+                    &reading.configuration_distance_reading_id,
+                    &hyperedge.hyperedge_id,
+                    "typed hyperedge atom refs must resolve to observed atoms",
+                ));
+            }
+        }
+
+        check_configuration_distance_value(
+            &mut examples,
+            &reading.configuration_distance_reading_id,
+            "configurationIndexedDistance",
+            &reading.configuration_indexed_distance,
+            "shortestPath:",
+            true,
+        );
+        check_configuration_distance_value(
+            &mut examples,
+            &reading.configuration_distance_reading_id,
+            "contextDistance",
+            &reading.context_distance,
+            "context:",
+            true,
+        );
+        check_configuration_distance_value(
+            &mut examples,
+            &reading.configuration_distance_reading_id,
+            "configurationDistanceBundle",
+            &reading.configuration_distance_bundle,
+            "hyperedge:",
+            false,
+        );
+        if matches!(
+            reading.configuration_indexed_distance.status.as_str(),
+            "measured" | "zero"
+        ) && (reading.shortest_path_atom_refs.len() < 2
+            || reading.shortest_path_hyperedge_refs.is_empty()
+            || !reading
+                .configuration_indexed_distance
+                .evaluator_basis_refs
+                .iter()
+                .any(|basis| basis.starts_with("hyperedge:")))
+        {
+            examples.push(generic_validation_example(
+                &reading.configuration_distance_reading_id,
+                "shortestPath/hyperedge",
+                "measured configuration-indexed distance must retain shortest path atom refs and hyperedge refs",
+            ));
+        }
+        if matches!(
+            reading.configuration_indexed_distance.status.as_str(),
+            "measured" | "zero"
+        ) && !reading
+            .configuration_indexed_distance
+            .evaluator_basis_refs
+            .is_empty()
+            && reading
+                .configuration_indexed_distance
+                .evaluator_basis_refs
+                .iter()
+                .all(|basis| basis.contains("relation-count") || basis.contains("relationCount"))
+        {
+            examples.push(generic_validation_example(
+                &reading.configuration_distance_reading_id,
+                "relation-count-only",
+                "configuration indexed distance must not be backed by a relation-count-only proxy",
+            ));
+        }
+        if !packet
+            .atom_configuration_summary
+            .source_refs
+            .iter()
+            .filter(|source_ref| source_ref.starts_with("gap"))
+            .collect::<Vec<_>>()
+            .is_empty()
+            && matches!(
+                reading.configuration_distance_bundle.status.as_str(),
+                "measured" | "zero"
+            )
+        {
+            examples.push(generic_validation_example(
+                &reading.configuration_distance_reading_id,
+                "observation gaps",
+                "missing relation or observation gap evidence must block the configuration bundle instead of becoming measured zero",
+            ));
+        }
+        if contains_hard_coded_marker(&reading.configuration_indexed_distance.provenance_refs)
+            || contains_hard_coded_marker(
+                &reading.configuration_indexed_distance.evaluator_basis_refs,
+            )
+            || contains_hard_coded_marker(&reading.context_distance.provenance_refs)
+            || contains_hard_coded_marker(&reading.context_distance.evaluator_basis_refs)
+            || contains_hard_coded_marker(&reading.configuration_distance_bundle.provenance_refs)
+            || contains_hard_coded_marker(
+                &reading.configuration_distance_bundle.evaluator_basis_refs,
+            )
+        {
+            examples.push(generic_validation_example(
+                &reading.configuration_distance_reading_id,
+                "hard-coded fixture marker",
+                "Configuration distance readings must not be backed by hard-coded fixture markers",
+            ));
+        }
+    }
+
+    check_from_examples(
+        "archsig-analysis-packet-configuration-distance-readings",
+        "packet exposes proxy-free Part IV configuration hypergraph distance readings with shortest-path, context, and gap blockers",
+        examples,
+        "fail",
+    )
+}
+
+fn check_configuration_distance_value(
+    examples: &mut Vec<ValidationExample>,
+    reading_id: &str,
+    field: &str,
+    value: &ArchSigDistanceValueV0,
+    required_basis_prefix: &str,
+    must_measure_when_not_blocked: bool,
+) {
+    let allowed = BTreeSet::from([
+        "measured",
+        "zero",
+        "unmeasured",
+        "unavailable",
+        "incomparable",
+        "infinite",
+        "blocked",
+    ]);
+    if !allowed.contains(value.status.as_str()) {
+        examples.push(generic_validation_example(
+            reading_id,
+            field,
+            "Configuration distance status must be measured, zero, unmeasured, unavailable, incomparable, infinite, or blocked",
+        ));
+    }
+    if must_measure_when_not_blocked
+        && !matches!(value.status.as_str(), "measured" | "zero" | "infinite")
+    {
+        examples.push(generic_validation_example(
+            reading_id,
+            field,
+            "configuration indexed and context distances must be computed from ArchMap hypergraph/context evidence when available",
+        ));
+    }
+    if matches!(value.status.as_str(), "measured" | "zero") {
+        if value.measured_value.is_none()
+            || value.provenance_refs.is_empty()
+            || value.evaluator_basis_refs.is_empty()
+            || value.coverage_refs.is_empty()
+        {
+            examples.push(generic_validation_example(
+                reading_id,
+                field,
+                "measured or zero Configuration distance must retain value, provenance refs, evaluator basis refs, and coverage refs",
+            ));
+        }
+        if !value
+            .evaluator_basis_refs
+            .iter()
+            .any(|basis| basis.starts_with(required_basis_prefix))
+        {
+            examples.push(generic_validation_example(
+                reading_id,
+                required_basis_prefix,
+                "measured Configuration distance must be backed by evaluator-specific basis refs, not name-only or presence-only evidence",
+            ));
+        }
+    } else if value.blocker_refs.is_empty() {
+        examples.push(generic_validation_example(
+            reading_id,
+            field,
+            "unmeasured, unavailable, incomparable, infinite, or blocked Configuration distance must retain blocker refs",
+        ));
+    }
+}
+
 fn check_atom_distance_value(
     examples: &mut Vec<ValidationExample>,
     reading_id: &str,
@@ -21793,6 +22945,101 @@ mod tests {
                         .target
                         .as_deref()
                         .is_some_and(|target| target == "fiber:")
+                })
+        }));
+    }
+
+    #[test]
+    fn configuration_distance_readings_keep_observation_gap_blocked() {
+        let packet = static_archsig_analysis_packet();
+        let reading = packet
+            .configuration_distance_readings
+            .iter()
+            .find(|reading| reading.high_context_overlap)
+            .expect("static fixture has high-context configuration distance readings");
+
+        assert!(
+            !reading.typed_hyperedges.is_empty(),
+            "configuration distance must retain typed hyperedges"
+        );
+        assert!(
+            reading
+                .typed_hyperedges
+                .iter()
+                .any(|edge| edge.hyperedge_kind == "moleculeMembership")
+        );
+        assert!(matches!(
+            reading.configuration_indexed_distance.status.as_str(),
+            "measured" | "zero"
+        ));
+        assert!(
+            !reading.shortest_path_atom_refs.is_empty()
+                && !reading.shortest_path_hyperedge_refs.is_empty()
+        );
+        assert_eq!(reading.configuration_distance_bundle.status, "blocked");
+        assert!(
+            reading
+                .configuration_distance_bundle
+                .blocker_refs
+                .iter()
+                .any(|blocker| blocker.starts_with("observationGap:")),
+            "observation gaps must block configuration bundle aggregation"
+        );
+    }
+
+    #[test]
+    fn configuration_distance_negative_fixture_relation_count_only_basis_fails_validation() {
+        let mut packet = static_archsig_analysis_packet();
+        let reading = packet
+            .configuration_distance_readings
+            .first_mut()
+            .expect("static fixture has configuration distance readings");
+        reading.configuration_indexed_distance.evaluator_basis_refs =
+            vec!["relationCount:1".to_string()];
+
+        let report = validate_archsig_analysis_packet_report(
+            &packet,
+            "negative-fixture-configuration-distance-relation-count-only.json",
+        );
+
+        assert_eq!(report.summary.result, "fail");
+        assert!(report.checks.iter().any(|check| {
+            check.id == "archsig-analysis-packet-configuration-distance-readings"
+                && check.result == "fail"
+                && check.examples.iter().any(|example| {
+                    example
+                        .target
+                        .as_deref()
+                        .is_some_and(|target| target == "relation-count-only")
+                })
+        }));
+    }
+
+    #[test]
+    fn configuration_distance_negative_fixture_gap_as_zero_fails_validation() {
+        let mut packet = static_archsig_analysis_packet();
+        let reading = packet
+            .configuration_distance_readings
+            .first_mut()
+            .expect("static fixture has configuration distance readings");
+        reading.configuration_distance_bundle.status = "zero".to_string();
+        reading.configuration_distance_bundle.measured_value = Some(0);
+        reading.configuration_distance_bundle.blocker_refs.clear();
+
+        let report = validate_archsig_analysis_packet_report(
+            &packet,
+            "negative-fixture-configuration-distance-gap-as-zero.json",
+        );
+
+        assert_eq!(report.summary.result, "fail");
+        assert!(report.checks.iter().any(|check| {
+            check.id == "archsig-analysis-packet-configuration-distance-readings"
+                && check.result == "fail"
+                && check.examples.iter().any(|example| {
+                    example
+                        .target
+                        .as_deref()
+                        .is_some_and(|target| target == "observation gaps")
                 })
         }));
     }
