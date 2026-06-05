@@ -13,9 +13,12 @@
 ## claim discipline
 
 - ForecastCone、ConsequenceEnvelope、proposal accounting、organization field、AI governance は、明示された computable core と claim boundary の下で扱う。
-- forecast correctness、probability、causal correctness、global safety、CI/Test/human review の置換を主張しない。
+- forecast、probability、causal reading、safety、CI/Test/human review との関係は、明示された model /
+  dataset / operational artifact に相対化して扱う。
 - empirical dataset、operational feedback、calibration artifact は、相関・観測・仮説を因果 theorem と混同しない。
 - Lean theorem claim として読める範囲は AAT / Lean 側に置く。SFT docs で theorem boundary に触れる場合は、対応する `docs/aat/proof_obligations.md` や `docs/aat/lean_theorem_index.md` も確認する。
+- レビューやタスク整理では、SFT 文書が定義した artifact、typed conclusion、accessor theorem、
+  calibration step だけを完了条件にする。現実の未来全体や因果全体を、未完了タスクとして持ち出さない。
 
 ## 編集方針
 

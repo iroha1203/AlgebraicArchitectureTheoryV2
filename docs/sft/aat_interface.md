@@ -193,7 +193,7 @@ boundary と既存の `SFTFundamentalModularity.FiniteSelectedFundamentalModular
 governed-or-typed-boundary-failure と modularity-as-ForecastCone-descent accessor である。
 assumption-free Grand Theorem、all software systems / all covers / all runtime schedules、
 empirical calibration correctness、operational governance effectiveness、global AI safety、
-extractor completeness は結論しない。
+source-observation layer は AAT theorem package の外で扱う。
 
 review / calibration / agentic component は、それぞれ final component へ読むための
 discharge helper accessor を持つ。canonical finite example は singleton finite exact
@@ -216,7 +216,7 @@ selected descent package、finite descent obstruction package、finite
 obstruction-governance package から既存 helper 経由で構成される。この例は、主要な final
 component を theorem-package surface から組み立てる読みを示す。ただし、singleton
 selected example であり、任意の software system、all covers、all runtime schedules、
-extractor completeness、classifier completeness の無条件化、operational governance
+classifier completeness の無条件化、operational governance
 effectiveness へ一般化しない。
 
 non-singleton selected finite example として
@@ -245,7 +245,7 @@ ArchSig-derived report boundary を、selected finite exact model と interface 
 `ArchitectureSignature.AATCoreSignatureLawfulnessBridge` は、`AATCore` と
 `AAT.ZeroCurvaturePackage` を消費して Signature lawfulness / required Signature axes zero へ渡す
 後段 analysis bridge であり、ArchSig が AAT を定義するものではない。unknown / rejected /
-unmeasured は measured zero と分けて保持し、validation pass や extractor output を theorem
+unmeasured は measured zero と分けて保持し、validation pass や source-observation output を theorem
 discharge と読まない。
 `Observation.ArchMapObservationLayer` は raw candidate / observed atom / validated /
 rejected / uncertain / missing を pure AAT core の外に置く observation layer である。
@@ -255,7 +255,7 @@ absence ではなく、raw candidate は atom truth ではない。
 pipeline から canonical finite AAT-supported package へ到達し、final typed conclusion と
 non-conclusions preservation を取り出す selected finite example である。この pipeline でも
 artifact は theorem proof ではなく theorem precondition / boundary evidence として扱い、
-extractor completeness、calibrated forecast correctness、operational governance effectiveness、
+calibrated forecast correctness、operational governance effectiveness、
 global AI safety は結論しない。
 
 ArchMap-derived slice は AAT projection surface に限定する。LLM-authored ArchMap に保持してよい

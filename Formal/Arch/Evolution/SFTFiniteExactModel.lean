@@ -7,7 +7,7 @@ Finite exact SFT model package.
 This module packages the selected finite proof universe used by the SFT
 Fundamental Modularity assumption-discharge roadmap.  It is a boundary-carrying
 entrypoint over the existing `UniformFiniteFieldCover` and `FiniteSFTModel`
-surface; it does not assert extractor completeness, empirical correctness, or
+surface; it does not assert ambient source-observation coverage, empirical correctness, or
 that every finite cover satisfies descent.
 -/
 

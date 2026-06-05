@@ -14,6 +14,8 @@
 - website copy は `docs/website/README.md` の Tone Guide に従う。防衛的な書き方や否定から入る説明を避ける。
 - 読者向け本文では「何を読めるか」「何を理解できるか」「どの概念へ進むか」を中心に書く。
 - claim boundary、Lean status、Issue 管理、repository / docs の責務分離は編集時の制約として扱い、公開コピーにそのまま出さない。
+- 公開ページや renewal plan では、読者が検討できる具体的な artifact / theorem / example / command を中心にする。
+  一般的に証明できない巨大 claim の否定を、見出しや残タスクの中心にしない。
 - 理論上の新規 claim は先に `docs/aat/mathematical_theory/`、`docs/sft/software_field_theory.md`、`docs/sft/aat_interface.md`、または `docs/tool/` に反映する。
 - ArchSig website では Core / Review の AAT structural surface と FieldSig 側の SFT / Operational / governance surface を分けて書く。
 - 公開ページから `docs/website/` の内部設計メモへ誘導しない。

@@ -5,11 +5,17 @@
 ## 境界
 
 - ArchMap は supplied `archmap-observation-map-v0` evidence を読む source-grounded Atom observation map である。law-independent な観測、gap、projection info、concern hints、provenance、non-conclusions を記録する。
+- AAT は Atom を公理的出発点とする。ArchMap / extractor は source code から Atom input を提示・検査する
+  実測 surface であり、AAT の定理や完了条件を定義しない。
 - LawPolicy / interpretation profile は、law universe、witness rule、molecule pattern、obstruction circuit definition、signature axis、coverage requirement、exactness assumption を選ぶ profile である。AAT そのものではない。
 - ArchSig は ArchMap + interpretation profile から `archsig-analysis-packet-v0` を作る AAT structural analysis layer である。Lean 証明器ではない。
 - `concernHints` は review cue であり、obstruction circuit、law violation、theorem evidence ではない。
 - FieldSig は `archsig-analysis-packet-v0` を bounded current AAT structural state として読み、SFT 側の evolution measurement / governance input へ写す。raw ArchMap observations を forecast truth として読まない。
-- ArchSig validation は extractor completeness、semantic correctness、architecture lawfulness、global safety、certified universal atom truth、zero curvature、SFT forecast correctness、Lean theorem discharge を証明しない。
+- ArchSig validation は、schema、refs、generated middle layer、selected law-policy reading、fixture expectation など、
+  明示された tooling contract を検査する。Lean theorem、実運用上の正しさ、予測精度を要求する場合は、
+  それぞれ専用の theorem / fixture / dataset / issue として定義してから扱う。
+- PRD や完了レビューでは、PRD 自身の acceptance criteria と実装済み test / fixture を照合する。
+  PRD が要求していない巨大な一般 claim を、未完了タスクとして追加しない。
 
 ## CLI / schema 方針
 
@@ -34,15 +40,15 @@ ArchSig analyze:
 cargo run --manifest-path tools/archsig/Cargo.toml -- analyze \
   --archmap tools/archsig/tests/fixtures/minimal/archmap.json \
   --law-policy tools/archsig/tests/fixtures/minimal/law_policy.json \
-  --out-dir .lake/archsig-analyze
+  --out-dir .tmp/archsig-analyze
 ```
 
 FieldSig handoff:
 
 ```bash
 cargo run --manifest-path tools/fieldsig/Cargo.toml -- archsig-analysis-sft-input \
-  --analysis-packet .lake/archsig-analyze/archsig-analysis-packet.json \
-  --out .lake/fieldsig/operation-support-estimate.json
+  --analysis-packet .tmp/archsig-analyze/archsig-analysis-packet.json \
+  --out .tmp/fieldsig/operation-support-estimate.json
 ```
 
 PR 前には次も確認する。

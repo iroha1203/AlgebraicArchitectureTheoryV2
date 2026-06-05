@@ -296,7 +296,7 @@ state hashes when supplied, and coverage / compaction reports. It does not prove
 - global architecture truth
 - operation commutativity
 - merge safety
-- FieldSig forecast correctness
+- FieldSig forecast calibration
 - Lean theorem discharge
 
 Those non-conclusions travel with deltas, commits, snapshots, and indexes.

@@ -1267,7 +1267,7 @@ Bounded law package for `merge` external-contract preservation.
 
 The conclusion exposes exact projection, representative stability, and selected
 observation preservation from the explicit merged-boundary contract.  It does
-not assert extractor completeness, semantic completeness, or global flatness.
+not assert ambient source-observation coverage, semantic completeness, or global flatness.
 -/
 def mergeExternalContractPreservationLaw
     (merged : ArchGraph C) (π : InterfaceProjection C A) (GA : AbstractGraph A)

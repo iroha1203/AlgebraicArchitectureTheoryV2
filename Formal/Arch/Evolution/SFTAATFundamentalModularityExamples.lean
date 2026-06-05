@@ -5,7 +5,7 @@ import Formal.Arch.Examples.AtomGeneratedSignatureExamples
 Canonical finite AAT-supported SFT Grand Theorem example.
 
 The example uses singleton carriers so that the theorem-package constructors can
-be exercised end to end without adding any extractor-completeness, empirical
+be exercised end to end without adding any ambient source-observation coverage, empirical
 calibration, all-cover, or global software claim.
 -/
 

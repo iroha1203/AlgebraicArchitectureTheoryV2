@@ -8,8 +8,8 @@ universe u v
 /--
 AtomShape coordinate used by generated distance calculations.
 
-This is intentionally an intrinsic shape coordinate. Observation metadata such
-as source refs, confidence, or extractor boundary is not part of the distance.
+This is intentionally an intrinsic shape coordinate. Measurement metadata such
+as source refs or confidence is not part of the distance.
 -/
 structure GeneratedAtomShapeCoordinate where
   family : AtomKind
@@ -39,7 +39,7 @@ def mismatchBit {α : Type u} [DecidableEq α] (left right : α) : Nat :=
 AtomShape coordinate distance used by generated layout and review surfaces.
 
 This is a bounded mismatch count over intrinsic coordinates. It is not a
-semantic equivalence theorem, causal distance, or extractor-completeness claim.
+semantic equivalence theorem or causal distance.
 -/
 def mismatchCount
     (left right : GeneratedAtomShapeCoordinate) : Nat :=

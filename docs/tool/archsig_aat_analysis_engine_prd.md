@@ -450,6 +450,6 @@ coverage boundary、exactness blockers、recommended next action を一緒に出
   open-closed extension、dependency inversion、representation independence、
   idempotency / replay safety、authority / trust boundary が、静的 lint ではなく
   AAT reading として扱われることが要求されている。
-- Non-Goals が、static lint 化、single score 化、LLM truth、extractor completeness、
+- Non-Goals が、static lint 化、single score 化、LLM truth、
   theorem discharge、automatic repair safety を明確に除外している。
 - 後続の schema / CLI / fixture / docs migration issue を切れる粒度になっている。

@@ -10,7 +10,7 @@ skeleton.
 This module is intentionally thin. Importing it exposes the finite path
 calculus, generated path homotopy, selected observation-invariance theorem, and
 diagram-filler obstruction API used by Chapter 8 without adding global semantic
-completeness, higher-category, or extractor-completeness claims.
+completeness, higher-category, or ambient source-observation coverage claims.
 -/
 
 namespace Formal.Arch
@@ -205,9 +205,9 @@ def nonConclusionBoundary : Candidate -> String
   | selectedObservationInvariance =>
       "selected observations only under explicit generator assumptions; no all-observation preservation"
   | diagramFiller =>
-      "diagram fillability in the finite path calculus only; no global semantic completeness"
+      "diagram fillability in the finite path calculus only; no ambient semantic coverage"
   | obstructionAsNonFillability =>
-      "soundness plus bounded completeness under WitnessUniverseComplete only; no extractor completeness or full witness coverage"
+      "soundness plus bounded completeness under WitnessUniverseComplete only; no ambient source-observation coverage or full witness coverage"
 
 end Candidate
 

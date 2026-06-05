@@ -771,7 +771,7 @@ Architecture Extension Formula obstruction universe.
 The payload is coverage-only: it records a selected failure of
 `ExtensionCoverageComplete` for the supplied bounded universe. It does not
 assert static split-law failure, runtime flatness failure, semantic flatness
-failure, or extractor completeness.
+failure, or ambient source-observation coverage.
 -/
 structure ResidualCoverageGapWitnessPayload
     (X : FeatureExtension Core Feature Extended FeatureView)

@@ -10,8 +10,8 @@ filling and split-extension packages.
 
 This module is intentionally thin. Importing it exposes the bounded diagram
 filling, non-fillability witness, split-extension lifting, and filling-failure
-bridge APIs used by Chapter 9 without adding global semantic completeness,
-strict section / retraction equality, all-step lifting, or extractor-completeness
+bridge APIs used by Chapter 9 without adding ambient semantic coverage,
+strict section / retraction equality, all-step lifting, or ambient source-observation coverage
 claims.
 -/
 
@@ -242,7 +242,7 @@ def schematicCorrespondences : Candidate -> List SchematicCorrespondence
 /-- Boundary reminder for reading each candidate as a bounded Chapter 9 API. -/
 def nonConclusionBoundary : Candidate -> String
   | diagramFillingObstruction =>
-      "selected finite diagram and witness universe only; no global semantic completeness or extractor completeness"
+      "selected finite diagram and witness universe only; no ambient semantic coverage or ambient source-observation coverage"
   | splitExtensionLifting =>
       "observation-relative section / retraction and selected-step lifting only; no strict equality, unique decomposition, or all-step lifting"
   | fillingFailureBridge =>

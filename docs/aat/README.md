@@ -81,7 +81,7 @@ AnalyticRepresentation
 [証明義務と実証仮説](proof_obligations.md) で管理する。
 
 `proved`, `defined only`, `future proof obligation`, `empirical hypothesis`
-を混同しない。特に、tooling output、extractor output、未測定軸、
+を混同しない。特に、tooling output、source-observation output、未測定軸、
 empirical correlation は、それだけで Lean theorem にはならない。
 
 ## 非目標

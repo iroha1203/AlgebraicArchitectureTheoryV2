@@ -37,9 +37,9 @@ inductive AtomDirection where
 /--
 Intrinsic shape of a primitive atom.
 
-`sourceRefs`, confidence, extractor provenance, and observation boundaries are
-not fields here. The fields below are the typed fact shape from which AAT
-composition is allowed to start.
+Source references, confidence, and measurement provenance are not fields here.
+The fields below are the typed fact shape from which AAT composition is allowed
+to start.
 -/
 structure AtomShape where
   family : AtomKind

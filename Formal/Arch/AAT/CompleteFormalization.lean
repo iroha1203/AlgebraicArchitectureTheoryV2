@@ -369,8 +369,8 @@ structure GeneratedFeatureExtensionFields
 Suite field payload for generated flatness and shape-coordinate curvature.
 
 This package is relative to the generated world and its generated measurement
-universe.  It does not claim global semantic completeness, extractor
-completeness, or safety for unmeasured axes.
+universe. It records only the flatness and curvature fields carried by that
+generated Atom-rooted world.
 -/
 structure GeneratedFlatnessCurvatureFields
     (world : AtomGeneratedAATWorld.{u, v}) : Prop where

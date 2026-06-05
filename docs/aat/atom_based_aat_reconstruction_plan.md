@@ -3,21 +3,28 @@
 この文書は、AAT を完全な Atom-generated algebra として再構成するための計画書である。
 
 目的は小さな補修ではない。既存の AAT theorem package に薄い Atom wrapper を足すことでもない。
-実コードから検出できる primitive architectural facts を Atom として置き、その Atom から
-architecture object、law、obstruction、operation、flatness、path / homotopy、signature、
-analytic representation、SFT handoff までを生成する理論へ書き直す。
+AAT は Atom を公理的出発点として置き、その Atom から architecture object、law、
+obstruction、operation、flatness、path / homotopy、signature、analytic representation、
+SFT handoff までを生成する純粋理論へ書き直す。
+
+source code から Atom 候補を観測する extractor / ArchMap は、AAT の前段にある実測・観測 surface である。
+AAT の完了条件は source code からの観測成否ではなく、与えられた Atom から後段の代数と
+theorem package が構成されることに置く。
 
 ## 0. 背景
 
 Atom を AAT に導入した理由は、以前の AAT が boundary、selected universe、coverage assumption、
-explicit witness family に強く依存し、形式的には綺麗でも実コードから浮いた理論になっていたからである。
+explicit witness family を出発点にしていたため、純粋理論と実測・観測 surface の境界が曖昧に
+なっていたからである。Atom を公理的出発点にすることで、AAT は source extraction の成否から独立した
+局所代数になり、対象コードに関する実測は ArchMap / ArchSig / FieldSig 側で明確に切り分けられる。
 
 本来の要求は次である。
 
 ```text
 source code
-  -> detected Atoms
-  -> Atom-generated algebra
+  -> ArchMap / extractor observation surface
+  -> Atom input
+  -> AAT Atom-generated algebra
   -> Molecule / ArchitectureObject
   -> Law / Obstruction / Operation
   -> Flatness / Path / Homotopy / Signature / Analytic representation
@@ -107,15 +114,16 @@ AtomConfiguration
 
 ### 3.4 Boundary は主役ではない
 
-Boundary、coverage、exactness、non-conclusion は必要である。しかしそれらは出発点ではない。
-出発点は実コードから検出される Atom と、その Atom が生成する algebra である。
+Boundary、coverage、exactness、non-conclusion は tooling / measurement / handoff の語彙としては必要である。
+しかし純粋 AAT の出発点ではない。AAT の出発点は公理として与えられた Atom と、
+その Atom が生成する algebra である。
 
 ```text
 悪い順序:
-selected boundary -> theorem package -> possible atom interpretation
+measurement boundary -> theorem package -> possible atom interpretation
 
 正しい順序:
-detected atoms -> generated algebra -> theorem package -> remaining boundary
+Atom axioms -> generated algebra -> theorem package -> measurement / tooling handoff
 ```
 
 ## 4. 新しい Lean kernel
@@ -780,13 +788,63 @@ Issue chain #1654-#1664 の完了条件は、`AATCompleteFormalization` の fron
 - generated SFT / ArchSig / FieldSig handoff は接続済み。
 - theorem package classification audit は source/downstream 分離を保持した状態で接続済み。
 
-この final closure は、AAT の現行 Lean suite が完了したことを示す境界であり、次は結論しない。
-
-- extractor completeness
-- global semantic completeness
-- FieldSig forecast correctness
-- 未観測の external semantic universe 全域についての完全性
-
+この final closure は、AAT の現行 Lean suite が完了したことを示す境界である。
 したがって、この節の「完全」は `AATCompleteFormalization.IsComplete` が定義する実装境界に限られる。
-未知の universe 全域に対する主張ではなく、現在の Atom-generated AAT theorem-family ledger が
-すべて Lean field / guard / audit へ接続された、という形式化された完了判定である。
+現在の Atom-generated AAT theorem-family ledger がすべて Lean field / guard / audit へ接続された、
+という形式化された完了判定である。
+
+## 14. 完了状況レビュー (2026-06-05)
+
+判定: この計画書の完了条件は、現行の `AATCompleteFormalization.IsComplete` が定義する
+AAT 実装境界において満たされている。
+
+確認した根拠:
+
+- `Formal/Arch/AAT/CompleteFormalization.lean` は `AATTheoremSuite` と
+  `AATCompleteFormalization` を持ち、`currentImplementationFrontier` の全 theorem-family row を
+  `connected` として保持している。
+- `currentImplementationFrontier_has_no_parallelReady_rows`、
+  `currentImplementationFrontier_all_rows_connected`、
+  `initialCompleteFormalization_is_complete` が Lean theorem として存在する。
+- `Formal/Arch/Examples/AATCompleteFormalizationExamples.lean` の
+  `generatedComponentCompleteFormalization_is_complete` は、concrete generated component example でも
+  同じ completion boundary を読む。
+- `docs/aat/proof_obligations.md` は Issue #1654-#1664 の各 suite field を
+  `proved suite connection` / `proved suite audit` / `proved completion boundary` として同期している。
+- `docs/aat/lean_theorem_index.md` は Atom-generated kernel、suite field、frontier closure、
+  theorem classification registry、非主張境界を索引している。
+- `tools/archsig/tests/fixtures/atom_generated_acceptance/` と
+  `tools/archsig/tests/cli.rs` は、`generatedMolecules`、`generatedLawInputs`、
+  `generatedObstructions`、`generatedRepairTargets`、`viewerDistanceInputs`、
+  `localSatisfied` / `localViolated` / `locallyBlocked` を fixture で検査している。
+- GitHub Issue #1654-#1664 は closed であり、epic #1653 も closed である。
+- 2026-06-05 の確認で `lake build` は成功した。
+- 2026-06-05 の確認で
+  `cargo test --manifest-path tools/archsig/Cargo.toml atom_generated_acceptance_fixture_materializes_local_middle_layer`
+  は成功した。
+- 2026-06-05 の確認で `cargo test --manifest-path tools/archsig/Cargo.toml` と
+  `cargo test --manifest-path tools/fieldsig/Cargo.toml` は成功した。
+
+計画書 9 の完了条件との対応:
+
+| 完了条件 | 判定 | 主な根拠 |
+| --- | --- | --- |
+| AtomShape / AtomValence / CompatibleComposition が Lean に存在する | 完了 | `Formal/Arch/Atom/Shape.lean`, `Formal/Arch/Atom/Valence.lean`, `Formal/Arch/Atom/Composition.lean` |
+| Molecule は compatible finite configuration として扱われる | 完了 | `GeneratedMolecule.not_arbitrary_set`, negative acceptance theorem |
+| GeneratedArchitectureObject が Lean に存在する | 完了 | `Formal/Arch/AAT/GeneratedObject.lean` |
+| `ArchGraph` / `Observation` / `ArchitectureLawModel` の主要 entrypoint が generated object から構成される | 完了 | generated graph / law model / ArchMap handoff entrypoint |
+| Signature lawfulness theorem が generated law model に対して発火する | 完了 | `generatedArchitectureLawful_iff_requiredSignatureAxesZero`, suite field |
+| Flatness / path / homotopy / curvature の主要 theorem package が generated input に接続される | 完了 | `GeneratedFlatnessCurvatureFields`, `GeneratedPathDiagramFields` |
+| Operation / repair / synthesis が generated obstruction / generated operation として接続される | 完了 | `GeneratedOperationRepairSynthesisFields` |
+| ArchSig が generated molecule / law input / obstruction / repair target を出力する | 完了 | `atom_generated_acceptance` fixture |
+| Viewer の距離・配置は AtomShape と generated structure を根拠にする | 完了 | `viewerDistanceInputs` acceptance |
+| hand-authored representation theorem は AAT の主張ではなく後段 library として扱われる | 完了 | `TheoremClassification.lean`, registry downstream separation |
+| theorem package registry に `bridgeAssumed` / `rewriteTarget` の残存 row がない | 完了 | `theorem_package_registry_has_no_bridge_assumed_rows`, `theorem_package_registry_has_no_rewrite_targets` |
+
+残タスク:
+
+- この計画書の完了条件に対する未完了タスクはない。
+- `AATCompleteFormalization.IsComplete` は current theorem-family ledger の完了境界であり、
+  この計画書の acceptance / suite / registry / tooling 条件を満たすための残作業はない。
+- 今後の追加 theorem family や新しい tooling acceptance を増やす場合は、
+  この完了済み計画の残タスクではなく、新しい計画書または Issue として扱う。

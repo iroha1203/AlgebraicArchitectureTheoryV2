@@ -8,7 +8,7 @@ Artifact-to-theorem-boundary bridge for AAT-supported SFT.
 This module connects ArchMap observation layers and ArchSig-style artifact
 boundaries to the existing AAT-supported finite selected SFT boundary surface.
 The bridge keeps the artifact evidence on the precondition/boundary side: it
-does not turn a tool artifact into extractor completeness, calibrated forecast
+does not turn a tool artifact into ambient source-observation coverage, calibrated forecast
 correctness, or an assumption-free Grand Theorem.
 -/
 
@@ -30,7 +30,7 @@ Evidence that an ArchMap observation layer can be read as a selected AAT slice.
 
 The observation layer itself records the boundary propositions. This package
 keeps the proof obligations explicit so that an ArchMap artifact is not
-promoted into atom truth, extractor completeness, or theorem discharge.
+promoted into atom truth, ambient source-observation coverage, or theorem discharge.
 -/
 structure ArchMapDerivedAATSliceBoundary
     (layer : Observation.ArchMapObservationLayer system Source Evidence) where

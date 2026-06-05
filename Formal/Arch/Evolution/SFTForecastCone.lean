@@ -52,7 +52,7 @@ Selected SFT step relation for field evolution.
 
 This relation only says that an operation can realize a transition from one
 selected field state to another. It does not claim probability, causal
-correctness, calibration, or implementation extractor completeness.
+correctness, calibration, or implementation ambient source-observation coverage.
 -/
 structure StepRelation (Field : Type u) (Operation : Type v) where
   step : Field -> Operation -> Field -> Prop

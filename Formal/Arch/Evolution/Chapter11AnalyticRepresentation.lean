@@ -2344,7 +2344,7 @@ def nonConclusionBoundary : Candidate -> String
   | toolingReportMetadata =>
       "MEASURED tooling witnesses, missing preconditions, unmeasured axes, and out-of-scope evidence are not PROVED formal theorem claims"
   | architectureSignatureRepresentation =>
-      "concrete bridge is restricted to selected required Signature axes; optional none values, runtime axes, empirical cost, and extractor completeness are not zero certificates"
+      "concrete bridge is restricted to selected required Signature axes; optional none values, runtime axes, empirical cost, and ambient source-observation coverage are not zero certificates"
   | obstructionValuation =>
       "valuation is selected-witness-relative; zero selected valuation does not imply global ArchitectureFlat"
   | analyticExtensionFormula =>
@@ -2354,9 +2354,9 @@ def nonConclusionBoundary : Candidate -> String
   | couponHiddenInteractionLiftingBridge =>
       "bridge is local to one selected coupon interaction; no strict section equality, all-step lifting failure, runtime flatness, or semantic flatness is concluded"
   | couponStaticExample =>
-      "selected static hidden dependency witness only; no runtime flatness, semantic flatness, or extractor completeness"
+      "selected static hidden dependency witness only; no runtime flatness, semantic flatness, or ambient source-observation coverage"
   | couponSemanticValuation =>
-      "selected rounding-order semantic residual only; no unmeasured-axis zero claim or global semantic completeness"
+      "selected rounding-order semantic residual only; no unmeasured-axis zero claim or ambient semantic coverage"
   | staticSemanticCounterexample =>
       "counterexample is selected static / semantic scope only; no empirical frequency or extractor claim"
   | generatedExternalSemanticBoundary =>

@@ -5,9 +5,8 @@ universe u v w
 /--
 Atom axes are coordinates used to organize primitive architectural facts.
 
-Axes help later AAT / ArchSig readings select views over already-existing
-atoms. They are not observation boundaries, scores, theorem discharges, or
-extractor completeness claims.
+Axes help later AAT / ArchSig readings organize already-existing atoms. They
+are not scores, theorem discharges, or source-observation guarantees.
 -/
 inductive Axis where
   | static

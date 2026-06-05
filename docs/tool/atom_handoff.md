@@ -19,7 +19,7 @@ source artifacts -> ArchMap Atom observations -> LawPolicy -> ArchSig analysis p
   signature axes, coverage requirements, and exactness assumptions. It is not
   the AAT theory itself.
 - Validation may report a Lean-facing `AtomPresentation` promotion boundary.
-- Validation does not certify universal `ArchitectureAtom` truth, Lean theorem discharge, extractor completeness, architecture lawfulness, zero curvature, or SFT forecast correctness.
+- Validation does not certify universal `ArchitectureAtom` truth, Lean theorem discharge, source-observation layer, architecture lawfulness, zero curvature, or SFT forecast correctness.
 
 ## Lean AAT Surface
 

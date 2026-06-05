@@ -8,7 +8,7 @@ universe u v
 Pointwise inclusion between two selected SFT operation supports.
 
 This is only set-valued support inclusion at each selected field state. It does
-not compare probabilities, costs, calibration, or extractor completeness.
+not compare probabilities, costs, calibration, or ambient source-observation coverage.
 -/
 def PointwiseSupportInclusion
     {Field : Type u} {Operation : Type v}

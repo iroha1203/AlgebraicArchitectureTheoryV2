@@ -470,7 +470,7 @@ ArchSig reference pages must keep these warnings visible:
 
 - `archsig` is not a Lean prover.
 - tool output is not a Lean theorem.
-- extractor output is not a complete `ComponentUniverse`.
+- source-observation output is not a complete `ComponentUniverse`.
 - measured zero is different from unmeasured.
 - policy pass does not imply architecture lawfulness.
 - report warning does not imply incident causality.

@@ -89,7 +89,7 @@ def RecordsNonConclusions
 Read the finite kernel as an SFT set-valued operation support.
 
 This is a bridge of vocabulary only. It carries finite-support boundaries and
-does not add probabilities, proposal completeness, or extractor completeness.
+does not add probabilities, proposal completeness, or ambient source-observation coverage.
 -/
 def operationSupport
     (package : SFTSupportSafetyPackage State Sig OperationId) :
