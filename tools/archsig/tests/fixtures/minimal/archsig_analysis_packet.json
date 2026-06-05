@@ -1520,25 +1520,28 @@
         "sourceRef": "ArchMap",
         "targetRef": "Part4DistanceEngine",
         "value": {
-          "status": "unmeasured",
-          "unit": "selected-distance-unit",
+          "status": "blocked",
+          "unit": "curvature-mass",
           "provenanceRefs": [
-            "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md",
-            "docs/aat/AAT_Distance_Extension_Design.md"
+            "curvature-mass:curvature-support-reading-spectrum-profile-curvature-transfer-default"
           ],
-          "evaluatorBasisRefs": [],
+          "evaluatorBasisRefs": [
+            "curvatureMass:curvature-mass:curvature-support-reading-spectrum-profile-curvature-transfer-default"
+          ],
           "coverageRefs": [
             "coverage:layer-atoms",
             "coverage:semantic-contract-atoms"
           ],
           "blockerRefs": [
-            "issue:#1709 curvature distance evaluator"
+            "gap-runtime-user-db-trace: runtime trace was requested but not supplied",
+            "unmeasuredAxis:axis:layer-violation",
+            "unmeasuredAxis:axis:semantic-inconsistency"
           ],
-          "reading": "distance family is represented in the Part4 contract but has not been measured by its evaluator yet"
+          "reading": "curvatureGeometry remains blocked while selected witness rows or axes are unmeasured"
         },
         "profileRef": "part4-distance-profile:llm-native-aat-law-policy-fixture",
         "diagnosticScopeRef": "part4-diagnostic-scope:fixture-archmap-atom-observation",
-        "evidenceBoundary": "unmeasured means no evaluator result has been supplied; it must not be aggregated as zero",
+        "evidenceBoundary": "curvatureGeometry reads selected obstruction measure and transport; it is not global zero-curvature proof",
         "nonConclusions": [
           "ArchSig analysis packet is not a Lean theorem proof",
           "ArchSig analysis packet is not global architecture truth",
@@ -1625,11 +1628,11 @@
     "statusSummary": {
       "measuredCount": 0,
       "zeroCount": 0,
-      "unmeasuredCount": 3,
+      "unmeasuredCount": 2,
       "unavailableCount": 0,
       "incomparableCount": 0,
       "infiniteCount": 0,
-      "blockedCount": 4,
+      "blockedCount": 5,
       "schemaFoundationOnlyCount": 0
     },
     "measurementBoundary": "Part4 distance foundation is a proxy-free measurement contract: no distance is measured until an evaluator supplies provenance, basis refs, and coverage refs",
@@ -6018,6 +6021,453 @@
       ]
     }
   ],
+  "obstructionMeasureReadings": [
+    {
+      "obstructionMeasureReadingId": "obstruction-measure:curvature-support-witness-layer-violation-axis-layer-violation",
+      "profileRef": "spectrum-profile:curvature-transfer-default",
+      "obstructionCircuitRef": "unmeasured:curvature-support:witness-layer-violation:axis-layer-violation",
+      "witnessSupportRef": "curvature-support:witness-layer-violation:axis-layer-violation",
+      "witnessRuleRef": "witness:layer-violation",
+      "selectedAxisRef": "axis:layer-violation",
+      "signatureAxisRef": "sig-axis:layer-violation",
+      "distanceProfileRef": "part4-distance-profile:llm-native-aat-law-policy-fixture",
+      "diagnosticScopeRef": "part4-diagnostic-scope:fixture-archmap-atom-observation",
+      "witnessValue": {
+        "status": "blocked",
+        "unit": "obstruction-measure-mass",
+        "provenanceRefs": [
+          "curvature-support:witness-layer-violation:axis-layer-violation"
+        ],
+        "evaluatorBasisRefs": [
+          "Omega_U:unmeasuredWitness:witness:layer-violation",
+          "selectedAxis:axis:layer-violation"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [
+          "gap-runtime-user-db-trace: runtime trace was requested but not supplied"
+        ],
+        "reading": "missing witness support blocks obstruction measure; it is not zero curvature"
+      },
+      "measureValue": {
+        "status": "blocked",
+        "unit": "obstruction-measure-mass",
+        "provenanceRefs": [
+          "curvature-support:witness-layer-violation:axis-layer-violation"
+        ],
+        "evaluatorBasisRefs": [
+          "Omega_U:unmeasuredWitness:witness:layer-violation",
+          "selectedAxis:axis:layer-violation"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [
+          "gap-runtime-user-db-trace: runtime trace was requested but not supplied"
+        ],
+        "reading": "missing witness support blocks obstruction measure; it is not zero curvature"
+      },
+      "supportRefs": [],
+      "sourceRefs": [],
+      "observationRefs": [],
+      "missingEvidence": [
+        "gap-runtime-user-db-trace: runtime trace was requested but not supplied"
+      ],
+      "measurementStatus": "blockedByMissingWitness",
+      "evidenceBoundary": "obstruction measure is computed from selected witness support rows under LawPolicy; missing witnesses remain blockers, not zero curvature",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    },
+    {
+      "obstructionMeasureReadingId": "obstruction-measure:curvature-support-witness-semantic-contract-mismatch-axis-layer-violation",
+      "profileRef": "spectrum-profile:curvature-transfer-default",
+      "obstructionCircuitRef": "unmeasured:curvature-support:witness-semantic-contract-mismatch:axis-layer-violation",
+      "witnessSupportRef": "curvature-support:witness-semantic-contract-mismatch:axis-layer-violation",
+      "witnessRuleRef": "witness:semantic-contract-mismatch",
+      "selectedAxisRef": "axis:layer-violation",
+      "signatureAxisRef": "sig-axis:layer-violation",
+      "distanceProfileRef": "part4-distance-profile:llm-native-aat-law-policy-fixture",
+      "diagnosticScopeRef": "part4-diagnostic-scope:fixture-archmap-atom-observation",
+      "witnessValue": {
+        "status": "blocked",
+        "unit": "obstruction-measure-mass",
+        "provenanceRefs": [
+          "curvature-support:witness-semantic-contract-mismatch:axis-layer-violation"
+        ],
+        "evaluatorBasisRefs": [
+          "Omega_U:unmeasuredWitness:witness:semantic-contract-mismatch",
+          "selectedAxis:axis:layer-violation"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [
+          "gap-runtime-user-db-trace: runtime trace was requested but not supplied"
+        ],
+        "reading": "missing witness support blocks obstruction measure; it is not zero curvature"
+      },
+      "measureValue": {
+        "status": "blocked",
+        "unit": "obstruction-measure-mass",
+        "provenanceRefs": [
+          "curvature-support:witness-semantic-contract-mismatch:axis-layer-violation"
+        ],
+        "evaluatorBasisRefs": [
+          "Omega_U:unmeasuredWitness:witness:semantic-contract-mismatch",
+          "selectedAxis:axis:layer-violation"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [
+          "gap-runtime-user-db-trace: runtime trace was requested but not supplied"
+        ],
+        "reading": "missing witness support blocks obstruction measure; it is not zero curvature"
+      },
+      "supportRefs": [],
+      "sourceRefs": [],
+      "observationRefs": [],
+      "missingEvidence": [
+        "gap-runtime-user-db-trace: runtime trace was requested but not supplied"
+      ],
+      "measurementStatus": "blockedByMissingWitness",
+      "evidenceBoundary": "obstruction measure is computed from selected witness support rows under LawPolicy; missing witnesses remain blockers, not zero curvature",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    },
+    {
+      "obstructionMeasureReadingId": "obstruction-measure:curvature-support-witness-layer-violation-axis-semantic-inconsistency",
+      "profileRef": "spectrum-profile:curvature-transfer-default",
+      "obstructionCircuitRef": "unmeasured:curvature-support:witness-layer-violation:axis-semantic-inconsistency",
+      "witnessSupportRef": "curvature-support:witness-layer-violation:axis-semantic-inconsistency",
+      "witnessRuleRef": "witness:layer-violation",
+      "selectedAxisRef": "axis:semantic-inconsistency",
+      "signatureAxisRef": "sig-axis:semantic-inconsistency",
+      "distanceProfileRef": "part4-distance-profile:llm-native-aat-law-policy-fixture",
+      "diagnosticScopeRef": "part4-diagnostic-scope:fixture-archmap-atom-observation",
+      "witnessValue": {
+        "status": "blocked",
+        "unit": "obstruction-measure-mass",
+        "provenanceRefs": [
+          "curvature-support:witness-layer-violation:axis-semantic-inconsistency"
+        ],
+        "evaluatorBasisRefs": [
+          "Omega_U:unmeasuredWitness:witness:layer-violation",
+          "selectedAxis:axis:semantic-inconsistency"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [
+          "gap-runtime-user-db-trace: runtime trace was requested but not supplied"
+        ],
+        "reading": "missing witness support blocks obstruction measure; it is not zero curvature"
+      },
+      "measureValue": {
+        "status": "blocked",
+        "unit": "obstruction-measure-mass",
+        "provenanceRefs": [
+          "curvature-support:witness-layer-violation:axis-semantic-inconsistency"
+        ],
+        "evaluatorBasisRefs": [
+          "Omega_U:unmeasuredWitness:witness:layer-violation",
+          "selectedAxis:axis:semantic-inconsistency"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [
+          "gap-runtime-user-db-trace: runtime trace was requested but not supplied"
+        ],
+        "reading": "missing witness support blocks obstruction measure; it is not zero curvature"
+      },
+      "supportRefs": [],
+      "sourceRefs": [],
+      "observationRefs": [],
+      "missingEvidence": [
+        "gap-runtime-user-db-trace: runtime trace was requested but not supplied"
+      ],
+      "measurementStatus": "blockedByMissingWitness",
+      "evidenceBoundary": "obstruction measure is computed from selected witness support rows under LawPolicy; missing witnesses remain blockers, not zero curvature",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    },
+    {
+      "obstructionMeasureReadingId": "obstruction-measure:curvature-support-witness-semantic-contract-mismatch-axis-semantic-inconsistency",
+      "profileRef": "spectrum-profile:curvature-transfer-default",
+      "obstructionCircuitRef": "obstruction:semantic-contract-mismatch:computed",
+      "witnessSupportRef": "curvature-support:witness-semantic-contract-mismatch:axis-semantic-inconsistency",
+      "witnessRuleRef": "witness:semantic-contract-mismatch",
+      "selectedAxisRef": "axis:semantic-inconsistency",
+      "signatureAxisRef": "sig-axis:semantic-inconsistency",
+      "distanceProfileRef": "part4-distance-profile:llm-native-aat-law-policy-fixture",
+      "diagnosticScopeRef": "part4-diagnostic-scope:fixture-archmap-atom-observation",
+      "witnessValue": {
+        "status": "measured",
+        "measuredValue": 1,
+        "unit": "obstruction-witness-value",
+        "provenanceRefs": [
+          "atom:contract:create-user",
+          "concern:missing-compensation",
+          "molecule-reading:molecule-user-request-responsibility",
+          "semantic:interpretation:create-user"
+        ],
+        "evaluatorBasisRefs": [
+          "witnessRule:witness:semantic-contract-mismatch",
+          "selectedAxis:axis:semantic-inconsistency"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [],
+        "reading": "witness value is measured from source-backed obstruction support rows"
+      },
+      "measureValue": {
+        "status": "measured",
+        "measuredValue": 1,
+        "unit": "obstruction-measure-mass",
+        "provenanceRefs": [
+          "curvature-support:witness-semantic-contract-mismatch:axis-semantic-inconsistency"
+        ],
+        "evaluatorBasisRefs": [
+          "Omega_U:circuit:obstruction:semantic-contract-mismatch:computed",
+          "curvatureSupport:curvature-support:witness-semantic-contract-mismatch:axis-semantic-inconsistency"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [],
+        "reading": "Omega_U(A) mass contribution over the selected obstruction circuit"
+      },
+      "supportRefs": [
+        "atom:contract:create-user",
+        "concern:missing-compensation",
+        "molecule-reading:molecule-user-request-responsibility",
+        "semantic:interpretation:create-user"
+      ],
+      "sourceRefs": [
+        "doc-architecture",
+        "test-user-contract"
+      ],
+      "observationRefs": [
+        "atom:contract:create-user",
+        "concern:missing-compensation",
+        "molecule-reading:molecule-user-request-responsibility",
+        "semantic:interpretation:create-user"
+      ],
+      "missingEvidence": [
+        "gap-runtime-user-db-trace: runtime trace was requested but not supplied"
+      ],
+      "measurementStatus": "measured",
+      "evidenceBoundary": "obstruction measure is computed from selected witness support rows under LawPolicy; missing witnesses remain blockers, not zero curvature",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    }
+  ],
+  "curvatureMassReadings": [
+    {
+      "curvatureMassReadingId": "curvature-mass:curvature-support-reading-spectrum-profile-curvature-transfer-default",
+      "profileRef": "spectrum-profile:curvature-transfer-default",
+      "supportReadingRef": "curvature-support-reading:spectrum-profile-curvature-transfer-default",
+      "transferReadingRef": "curvature-transfer-reading:spectrum-profile-curvature-transfer-default",
+      "distanceProfileRef": "part4-distance-profile:llm-native-aat-law-policy-fixture",
+      "diagnosticScopeRef": "part4-diagnostic-scope:fixture-archmap-atom-observation",
+      "obstructionMeasureReadingRefs": [
+        "obstruction-measure:curvature-support-witness-layer-violation-axis-layer-violation",
+        "obstruction-measure:curvature-support-witness-semantic-contract-mismatch-axis-layer-violation",
+        "obstruction-measure:curvature-support-witness-layer-violation-axis-semantic-inconsistency",
+        "obstruction-measure:curvature-support-witness-semantic-contract-mismatch-axis-semantic-inconsistency"
+      ],
+      "measuredAxisRefs": [
+        "axis:semantic-inconsistency"
+      ],
+      "unmeasuredAxisRefs": [
+        "axis:layer-violation",
+        "axis:semantic-inconsistency"
+      ],
+      "curvatureMass": {
+        "status": "blocked",
+        "unit": "curvature-mass",
+        "provenanceRefs": [
+          "obstruction-measure:curvature-support-witness-layer-violation-axis-layer-violation",
+          "obstruction-measure:curvature-support-witness-semantic-contract-mismatch-axis-layer-violation",
+          "obstruction-measure:curvature-support-witness-layer-violation-axis-semantic-inconsistency",
+          "obstruction-measure:curvature-support-witness-semantic-contract-mismatch-axis-semantic-inconsistency"
+        ],
+        "evaluatorBasisRefs": [
+          "curv_mass_U:spectrum-profile:curvature-transfer-default",
+          "unmeasuredIsNotZero"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [
+          "gap-runtime-user-db-trace: runtime trace was requested but not supplied",
+          "unmeasuredAxis:axis:layer-violation",
+          "unmeasuredAxis:axis:semantic-inconsistency"
+        ],
+        "reading": "curvature mass is blocked while selected witness rows or axes are unmeasured; absence is not zero curvature"
+      },
+      "beforeOperationMass": {
+        "status": "measured",
+        "measuredValue": 1,
+        "unit": "curvature-mass",
+        "provenanceRefs": [
+          "obstruction-measure:curvature-support-witness-layer-violation-axis-layer-violation",
+          "obstruction-measure:curvature-support-witness-semantic-contract-mismatch-axis-layer-violation",
+          "obstruction-measure:curvature-support-witness-layer-violation-axis-semantic-inconsistency",
+          "obstruction-measure:curvature-support-witness-semantic-contract-mismatch-axis-semantic-inconsistency"
+        ],
+        "evaluatorBasisRefs": [
+          "beforeOperation:Omega_U(A)"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [],
+        "reading": "before-operation mass is the measured selected support contribution only"
+      },
+      "afterOperationMass": {
+        "status": "blocked",
+        "unit": "curvature-mass",
+        "provenanceRefs": [
+          "obstruction-measure:curvature-support-witness-layer-violation-axis-layer-violation",
+          "obstruction-measure:curvature-support-witness-semantic-contract-mismatch-axis-layer-violation",
+          "obstruction-measure:curvature-support-witness-layer-violation-axis-semantic-inconsistency",
+          "obstruction-measure:curvature-support-witness-semantic-contract-mismatch-axis-semantic-inconsistency"
+        ],
+        "evaluatorBasisRefs": [
+          "afterOperation:blockedByUnmeasuredCurvature"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [
+          "gap-runtime-user-db-trace: runtime trace was requested but not supplied",
+          "unmeasuredAxis:axis:layer-violation",
+          "unmeasuredAxis:axis:semantic-inconsistency"
+        ],
+        "reading": "after-operation curvature mass is blocked while selected curvature rows remain unmeasured"
+      },
+      "targetAxisDecrease": {
+        "status": "measured",
+        "measuredValue": 1000,
+        "unit": "curvature-target-axis-decrease",
+        "provenanceRefs": [
+          "operation-distance:operation-delta-repair-obstruction-semantic-contract-mismatch-computed"
+        ],
+        "evaluatorBasisRefs": [
+          "curvatureTransport:targetAxisDecrease"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [],
+        "reading": "target-axis curvature decrease is read separately from protected-axis movement"
+      },
+      "protectedAxisMovement": {
+        "status": "measured",
+        "measuredValue": 1000,
+        "unit": "curvature-protected-axis-movement",
+        "provenanceRefs": [
+          "operation-distance:operation-delta-repair-obstruction-semantic-contract-mismatch-computed"
+        ],
+        "evaluatorBasisRefs": [
+          "curvatureTransport:protectedAxisMovement"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [],
+        "reading": "protected-axis movement is tracked as possible curvature transport, not erased target improvement"
+      },
+      "transportDistance": {
+        "status": "blocked",
+        "unit": "curvature-transport-distance",
+        "provenanceRefs": [
+          "curvature-transfer-reading:spectrum-profile-curvature-transfer-default"
+        ],
+        "evaluatorBasisRefs": [
+          "transport_U:blockedByUnmeasuredCurvature"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [
+          "gap-runtime-user-db-trace: runtime trace was requested but not supplied",
+          "unmeasuredAxis:axis:layer-violation",
+          "unmeasuredAxis:axis:semantic-inconsistency"
+        ],
+        "reading": "curvature transport is blocked by unmeasured witness rows or axes and cannot be read as zero transfer"
+      },
+      "transferredObstructionRefs": [
+        "curvature-transfer-edge:curvature-support-witness-semantic-contract-mismatch-axis-semantic-inconsistency:curvature-support-witness-semantic-contract-mismatch-axis-semantic-inconsistency",
+        "witness:semantic-contract-mismatch"
+      ],
+      "complexityTransferDistanceRefs": [
+        "operation-distance:operation-delta-repair-obstruction-semantic-contract-mismatch-computed"
+      ],
+      "evidenceRefs": [
+        "atom:contract:create-user",
+        "concern:missing-compensation",
+        "molecule-reading:molecule-user-request-responsibility",
+        "semantic:interpretation:create-user"
+      ],
+      "evidenceBoundary": "curvature mass and transport are selected LawPolicy-relative readings over witness-backed obstruction measure; they are not global flatness or future incident claims",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    }
+  ],
   "obstructionCircuits": [
     {
       "obstructionCircuitId": "obstruction:semantic-contract-mismatch:computed",
@@ -7385,6 +7835,9 @@
           "missingEvidence": [
             "gap-runtime-user-db-trace: runtime trace was requested but not supplied"
           ],
+          "obstructionMeasureReadingRefs": [
+            "obstruction-measure:curvature-support-witness-layer-violation-axis-layer-violation"
+          ],
           "reading": "unmeasured support is preserved as missing evidence, not measured zero"
         },
         {
@@ -7427,6 +7880,9 @@
           "missingEvidence": [
             "gap-runtime-user-db-trace: runtime trace was requested but not supplied"
           ],
+          "obstructionMeasureReadingRefs": [
+            "obstruction-measure:curvature-support-witness-semantic-contract-mismatch-axis-layer-violation"
+          ],
           "reading": "unmeasured support is preserved as missing evidence, not measured zero"
         },
         {
@@ -7468,6 +7924,9 @@
           "observationRefs": [],
           "missingEvidence": [
             "gap-runtime-user-db-trace: runtime trace was requested but not supplied"
+          ],
+          "obstructionMeasureReadingRefs": [
+            "obstruction-measure:curvature-support-witness-layer-violation-axis-semantic-inconsistency"
           ],
           "reading": "unmeasured support is preserved as missing evidence, not measured zero"
         },
@@ -7534,6 +7993,9 @@
           ],
           "missingEvidence": [
             "gap-runtime-user-db-trace: runtime trace was requested but not supplied"
+          ],
+          "obstructionMeasureReadingRefs": [
+            "obstruction-measure:curvature-support-witness-semantic-contract-mismatch-axis-semantic-inconsistency"
           ],
           "reading": "1 constructed witness support(s) contribute to axis:semantic-inconsistency under spectrum-profile:curvature-transfer-default"
         }
@@ -7678,6 +8140,9 @@
       "missingEvidence": [
         "gap-runtime-user-db-trace: runtime trace was requested but not supplied"
       ],
+      "part4DistanceRefs": [
+        "curvature-mass:curvature-support-reading-spectrum-profile-curvature-transfer-default"
+      ],
       "nonConclusions": [
         "spectrum measurement profile is a measurement recipe, not a law universe",
         "profile differences are not law universe differences",
@@ -7765,6 +8230,9 @@
           ],
           "extractionRule": "same-selected-axis",
           "closedWalkKind": "selfLoop",
+          "part4DistanceRefs": [
+            "curvature-mass:curvature-support-reading-spectrum-profile-curvature-transfer-default"
+          ],
           "reading": "positive self-loop records a closed walk in the finite transfer operator"
         }
       ],
@@ -7802,6 +8270,9 @@
       },
       "coverageBoundary": "missing coverage blocks spectrum zero reflection and remains a report gap",
       "evidenceBoundary": "transfer operator is computed from measured curvature support rows and does not forecast future cost, safety, or amplification",
+      "part4DistanceRefs": [
+        "curvature-mass:curvature-support-reading-spectrum-profile-curvature-transfer-default"
+      ],
       "nonConclusions": [
         "rho(T^kappa) > 0 is only a bounded recurrent obstruction reading",
         "transfer operator reading does not predict future incidents or empirical cost increase",
@@ -8040,6 +8511,9 @@
     ],
     "coverageGaps": [
       "gap-runtime-user-db-trace: runtime trace was requested but not supplied"
+    ],
+    "curvatureMassReadingRefs": [
+      "curvature-mass:curvature-support-reading-spectrum-profile-curvature-transfer-default"
     ],
     "measuredBoundary": "report is measured from ArchSig curvature support and transfer readings under selected LawPolicy coverage and exactness assumptions",
     "recommendedReviewFocus": [

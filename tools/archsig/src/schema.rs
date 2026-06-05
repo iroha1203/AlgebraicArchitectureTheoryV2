@@ -998,6 +998,10 @@ pub struct ArchSigAnalysisPacketV0 {
     pub signature_distance_readings: Vec<ArchSigSignatureDistanceReadingV0>,
     #[serde(default)]
     pub operation_distance_readings: Vec<ArchSigOperationDistanceReadingV0>,
+    #[serde(default)]
+    pub obstruction_measure_readings: Vec<ArchSigObstructionMeasureReadingV0>,
+    #[serde(default)]
+    pub curvature_mass_readings: Vec<ArchSigCurvatureMassReadingV0>,
     pub obstruction_circuits: Vec<ArchSigObstructionCircuitV0>,
     pub signature_axes: Vec<ArchSigSignatureAxisReadingV0>,
     pub analytic_representations: Vec<ArchSigAnalyticRepresentationV0>,
@@ -2068,6 +2072,8 @@ pub struct ArchSigCurvatureSupportReadingV0 {
     pub exactness_assumption_refs: Vec<String>,
     pub measurement_boundary: String,
     pub missing_evidence: Vec<String>,
+    #[serde(default)]
+    pub part4_distance_refs: Vec<String>,
     pub non_conclusions: Vec<String>,
 }
 
@@ -2104,7 +2110,58 @@ pub struct ArchSigCurvatureWitnessSupportV0 {
     pub source_refs: Vec<String>,
     pub observation_refs: Vec<String>,
     pub missing_evidence: Vec<String>,
+    #[serde(default)]
+    pub obstruction_measure_reading_refs: Vec<String>,
     pub reading: String,
+}
+
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigObstructionMeasureReadingV0 {
+    pub obstruction_measure_reading_id: String,
+    pub profile_ref: String,
+    pub obstruction_circuit_ref: String,
+    pub witness_support_ref: String,
+    pub witness_rule_ref: String,
+    pub selected_axis_ref: String,
+    pub signature_axis_ref: String,
+    pub distance_profile_ref: String,
+    pub diagnostic_scope_ref: String,
+    pub witness_value: ArchSigDistanceValueV0,
+    pub measure_value: ArchSigDistanceValueV0,
+    pub support_refs: Vec<String>,
+    pub source_refs: Vec<String>,
+    pub observation_refs: Vec<String>,
+    pub missing_evidence: Vec<String>,
+    pub measurement_status: String,
+    pub evidence_boundary: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigCurvatureMassReadingV0 {
+    pub curvature_mass_reading_id: String,
+    pub profile_ref: String,
+    pub support_reading_ref: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub transfer_reading_ref: Option<String>,
+    pub distance_profile_ref: String,
+    pub diagnostic_scope_ref: String,
+    pub obstruction_measure_reading_refs: Vec<String>,
+    pub measured_axis_refs: Vec<String>,
+    pub unmeasured_axis_refs: Vec<String>,
+    pub curvature_mass: ArchSigDistanceValueV0,
+    pub before_operation_mass: ArchSigDistanceValueV0,
+    pub after_operation_mass: ArchSigDistanceValueV0,
+    pub target_axis_decrease: ArchSigDistanceValueV0,
+    pub protected_axis_movement: ArchSigDistanceValueV0,
+    pub transport_distance: ArchSigDistanceValueV0,
+    pub transferred_obstruction_refs: Vec<String>,
+    pub complexity_transfer_distance_refs: Vec<String>,
+    pub evidence_refs: Vec<String>,
+    pub evidence_boundary: String,
+    pub non_conclusions: Vec<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -2163,6 +2220,8 @@ pub struct ArchSigCurvatureTransferReadingV0 {
     pub spectral_radius_reading: ArchSigSpectralValueV0,
     pub coverage_boundary: String,
     pub evidence_boundary: String,
+    #[serde(default)]
+    pub part4_distance_refs: Vec<String>,
     pub non_conclusions: Vec<String>,
 }
 
@@ -2215,6 +2274,8 @@ pub struct ArchSigCurvatureTransferEdgeV0 {
     pub extraction_rule: String,
     #[serde(default)]
     pub closed_walk_kind: String,
+    #[serde(default)]
+    pub part4_distance_refs: Vec<String>,
     pub reading: String,
 }
 
@@ -2250,6 +2311,8 @@ pub struct ArchSigArchitectureSpectrumReportV0 {
     pub top_witness_clusters: Vec<ArchSigArchitectureSpectrumWitnessClusterV0>,
     pub recurrent_obstructions: Vec<ArchSigArchitectureSpectrumRecurrentObstructionV0>,
     pub coverage_gaps: Vec<String>,
+    #[serde(default)]
+    pub curvature_mass_reading_refs: Vec<String>,
     pub measured_boundary: String,
     pub recommended_review_focus: Vec<String>,
     pub non_conclusions: Vec<String>,
@@ -3668,6 +3731,10 @@ pub struct ArchSigAnalysisPacketValidationSummaryV0 {
     pub signature_distance_reading_count: usize,
     #[serde(default)]
     pub operation_distance_reading_count: usize,
+    #[serde(default)]
+    pub obstruction_measure_reading_count: usize,
+    #[serde(default)]
+    pub curvature_mass_reading_count: usize,
     pub obstruction_circuit_count: usize,
     pub signature_axis_count: usize,
     pub analytic_representation_count: usize,
