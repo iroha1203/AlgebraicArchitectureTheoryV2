@@ -28,8 +28,9 @@ ArchSig Analysis Packet
   readiness, path multiplicity loss, Homotopy / Holonomy / Stokes readings,
   ArchitectureHomotopyReport, bounded judgements, repair operation candidates,
   operation deltas, path / homotopy / diagram readings, child-level evidence
-  boundaries, ArchMapStore refs, monodromy / boundary holonomy reading family
-  policy surfaces, and an LLM interpretation packet.
+  boundaries, ArchMapStore refs, Part IV Atom distance readings, monodromy /
+  boundary holonomy reading family policy surfaces, and an LLM interpretation
+  packet.
 ```
 
 ## Responsibility
@@ -147,6 +148,16 @@ families, but those rows are blockers for downstream evaluator work; they are
 not placeholders for hidden zeroes, fixed fixture values, concern-only scores,
 or viewer layout distances.
 
+`atomDistanceReadings[]` is the Part IV Atom geometry evaluator surface. Each
+row compares a source / target Atom pair in molecule scope and reports
+`fiberDistance`, `carrierDistance`, `valenceDistance`,
+`semanticAnchorDistance`, and an `atomLayoutDistanceBundle`. Fiber, carrier,
+and valence are measured from ArchMap atom fields, carrier refs, source refs,
+and derived affordance sets. Semantic anchor distance is measured only when
+both atoms have semantic observation support; otherwise it remains unmeasured
+with blocker refs. `viewerDistanceInputRefs` may be retained for visual
+projection lookup, but those refs do not become the diagnostic distance.
+
 The implemented schema records:
 
 - `interpretationProfileRef`
@@ -163,6 +174,7 @@ The implemented schema records:
 - `lawUniverseReading`
 - `moleculeReadings`
 - `part4DistanceFoundation`
+- `atomDistanceReadings`
 - `obstructionCircuits`
 - `signatureAxes`
 - `analyticRepresentations`
@@ -262,8 +274,8 @@ architectural hole readings, homotopy holonomy readings, Stokes-style readings,
 ArchitectureHomotopyReport, AAT structural state readings, ArchMapStore delta /
 commit / snapshot / index refs, operation square candidates, axis-wise path
 continuation traces, `measurementStatus` and `readingBoundary` fields for ACTS
-and Homotopy measurement records, Part IV distance foundation rows, monodromy /
-boundary holonomy reading family
+and Homotopy measurement records, Part IV distance foundation rows, Part IV Atom
+distance readings, monodromy / boundary holonomy reading family
 policy surfaces, law-relative obstruction links, signature / flatness
 references, repair candidate guardrails, selected-axis continuation defect refs
 for nonzero homotopy holonomy, LLM interpretation notes, evidence boundary,
@@ -442,6 +454,12 @@ The builder:
   A measured or zero `DistanceValue` must carry provenance refs, evaluator-basis
   refs, and coverage refs. Unmeasured, unavailable, incomparable, infinite, and
   blocked rows must carry blocker refs and must not be aggregated as zero.
+- `atomDistanceReadings[]` computes Atom geometry distance from ArchMap atom
+  observations and semantic observations, not from names, raw presence, or
+  viewer layout coordinates. The evaluator records component-specific basis
+  refs for fiber, carrier, valence, and semantic anchor distance. Missing
+  semantic anchor evidence blocks the selected layout bundle rather than
+  contributing zero.
 - `operationSquareCandidates` enumerates supplied, inferred, or blocked
   operation pairs as path pairs `p = g . f` and `q = f . g`. Supplied
   candidates are read from first-class ArchMap `operationSquareEvidence[]` and
