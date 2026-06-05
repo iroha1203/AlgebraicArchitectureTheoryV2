@@ -33,9 +33,17 @@ inductive Candidate where
   | distanceFoundation
   | atomConfigurationGeometry
   | signaturePathGeometry
+  | finiteWitnessInfimumCore
+  | distanceToLawfulnessGeometry
+  | metricGaloisCorrespondence
   | operationRepairGeometry
+  | contractiveRepairGeometry
   | curvatureFillingGeometry
+  | curvatureTransportGeometry
+  | quantitativeHomotopyFillingGeometry
   | representationMetric
+  | representationSpectralStability
+  | abstractInfimumInterface
   | docsClassificationBoundary
   deriving DecidableEq, Repr
 
@@ -48,12 +56,28 @@ def designSection : Candidate -> String
       "Part IV.B atom / configuration distance schema"
   | signaturePathGeometry =>
       "Part IV.C signature path length, hidden excursion, and margin stability"
+  | finiteWitnessInfimumCore =>
+      "Part IV.C/D/E finite witness, lower-bound, and selected optimum core"
+  | distanceToLawfulnessGeometry =>
+      "Part IV.D distance to selected lawfulness / flatness region"
+  | metricGaloisCorrespondence =>
+      "Part IV.D metric operation / invariant correspondence"
   | operationRepairGeometry =>
       "Part IV.D operation cost, distance to flatness, and bounded repair"
+  | contractiveRepairGeometry =>
+      "Part IV.D finite repair sequence and selected contractive repair"
   | curvatureFillingGeometry =>
       "Part IV.E curvature mass and filling-cost lower bound"
+  | curvatureTransportGeometry =>
+      "Part IV.E selected curvature transport between measured axes"
+  | quantitativeHomotopyFillingGeometry =>
+      "Part IV.E finite homotopy, filling, Dehn, and persistent non-fillability"
   | representationMetric =>
       "Part IV.F representation metric and selected-scope faithfulness"
+  | representationSpectralStability =>
+      "Part IV.F representation / spectral stability"
+  | abstractInfimumInterface =>
+      "Part IV.G abstract infimum interface over finite witnesses"
   | docsClassificationBoundary =>
       "Part IV.G theorem index, proof obligations, and classification boundary"
 
@@ -61,9 +85,17 @@ def schematicName : Candidate -> String
   | distanceFoundation => "distanceFoundation"
   | atomConfigurationGeometry => "atomConfigurationGeometry"
   | signaturePathGeometry => "signaturePathGeometry"
+  | finiteWitnessInfimumCore => "finiteWitnessInfimumCore"
+  | distanceToLawfulnessGeometry => "distanceToLawfulnessGeometry"
+  | metricGaloisCorrespondence => "metricGaloisCorrespondence"
   | operationRepairGeometry => "operationRepairGeometry"
+  | contractiveRepairGeometry => "contractiveRepairGeometry"
   | curvatureFillingGeometry => "curvatureFillingGeometry"
+  | curvatureTransportGeometry => "curvatureTransportGeometry"
+  | quantitativeHomotopyFillingGeometry => "quantitativeHomotopyFillingGeometry"
   | representationMetric => "representationMetric"
+  | representationSpectralStability => "representationSpectralStability"
+  | abstractInfimumInterface => "abstractInfimumInterface"
   | docsClassificationBoundary => "docsClassificationBoundary"
 
 def representativeDeclarations : Candidate -> List String
@@ -85,8 +117,32 @@ def representativeDeclarations : Candidate -> List String
       , "SignatureDistanceSchema.pathLength"
       , "SignatureDistanceSchema.endpointDistance"
       , "SignatureDistanceSchema.hiddenExcursion"
+      , "SignatureDistanceSchema.hiddenExcursion_eq_pathLength_sub_endpointDistance"
+      , "SignatureDistanceSchema.endpointDistance_add_hiddenExcursion_eq_pathLength"
+      , "SignatureDistanceSchema.hiddenExcursion_positive_of_endpointDistance_lt_pathLength"
       , "SignatureDistanceSchema.endpointDistance_le_pathLength"
       , "SignatureDistanceSchema.margin_stability"
+      ]
+  | finiteWitnessInfimumCore =>
+      [ "FiniteRouteCost"
+      , "FiniteFillerCost"
+      , "FiniteHomotopyCost"
+      , "LowerBoundForSelectedCandidates"
+      , "SelectedFiniteOptimum"
+      , "SelectedFiniteOptimum.lowerBound_for_selected_candidates"
+      ]
+  | distanceToLawfulnessGeometry =>
+      [ "SelectedDistanceToRegion"
+      , "SelectedDistanceToRegion.region_of_distance_zero"
+      , "SelectedDistanceToRegion.distance_zero_of_region"
+      , "DistanceToFlatRegion.flat_of_distance_zero"
+      ]
+  | metricGaloisCorrespondence =>
+      [ "MetricOperationAction"
+      , "MetricOperationAction.PreservesDistance"
+      , "MetricOperationAction.NonExpansive"
+      , "MetricOperationAction.Lipschitz"
+      , "MetricOperationAction.SelectedMetricGaloisPackage"
       ]
   | operationRepairGeometry =>
       [ "OperationCostModel"
@@ -96,6 +152,13 @@ def representativeDeclarations : Candidate -> List String
       , "BoundedSideEffectRepair.targetDistance_decreases"
       , "RepairStepDecreases"
       ]
+  | contractiveRepairGeometry =>
+      [ "FiniteRepairSequence"
+      , "FiniteRepairSequence.AllStepsDecrease"
+      , "FiniteRepairSequence.allStepsDecrease"
+      , "ContractiveRepairStep"
+      , "ContractiveRepairStep.target_contracts"
+      ]
   | curvatureFillingGeometry =>
       [ "totalCurvature"
       , "totalWeightedCurvature"
@@ -103,11 +166,35 @@ def representativeDeclarations : Candidate -> List String
       , "FillingCostLowerBound"
       , "FillingCostLowerBound.observationGap_le_lipschitz_mul_fillingCost"
       ]
+  | curvatureTransportGeometry =>
+      [ "SelectedCurvatureReading"
+      , "CurvatureTransport"
+      , "CurvatureTransport.target_curvature_decreases"
+      , "CurvatureTransport.transported_curvature_increases"
+      ]
+  | quantitativeHomotopyFillingGeometry =>
+      [ "QuantitativeHomotopyBound"
+      , "QuantitativeHomotopyBound.observationDistance_le"
+      , "FiniteDehnBound"
+      , "FiniteDehnBound.fillingArea_le_dehnValue"
+      , "PersistentNonFillability"
+      ]
   | representationMetric =>
       [ "LipschitzRepresentation"
       , "BiLipschitzRepresentation"
       , "LipschitzRepresentation.analyticDistance_le_lipschitz"
       , "BiLipschitzRepresentation.structuralDistance_le_analyticDistance"
+      ]
+  | representationSpectralStability =>
+      [ "LipschitzRepresentation.analyticDistance_le_of_structuralDistance_le"
+      , "SpectralStabilityPackage"
+      , "SpectralStabilityPackage.spectralDistance_le"
+      ]
+  | abstractInfimumInterface =>
+      [ "AbstractInfimumInterface"
+      , "AbstractInfimumInterface.lowerBound"
+      , "AbstractInfimumInterface.exists_approximatingWitness"
+      , "AbstractInfimumInterface.ofSelectedFiniteOptimum"
       ]
   | docsClassificationBoundary =>
       [ "Part4DistanceMeasureGeometry.Candidate"
@@ -122,12 +209,28 @@ def claimBoundary : Candidate -> String
       "Generated distances are bounded AtomShape-coordinate mismatch counts, not empirical semantic calibration."
   | signaturePathGeometry =>
       "Path-length and margin-stability results are finite-path and selected-scope theorems with explicit preservation assumptions."
+  | finiteWitnessInfimumCore =>
+      "Finite witness and selected optimum rows range only over supplied candidate lists; they do not assert global optimization completeness."
+  | distanceToLawfulnessGeometry =>
+      "Distance-to-region zero bridges are selected-scope and exactness-assumption relative, not global lawfulness or flatness claims."
+  | metricGaloisCorrespondence =>
+      "Metric operation / invariant correspondence is selected finite-universe and does not classify every operation."
   | operationRepairGeometry =>
       "Repair cost and side-effect records show selected decreases / bounds only; they do not prove solver completeness or global termination."
+  | contractiveRepairGeometry =>
+      "Contractive repair is stated for supplied finite sequences or selected steps and does not prove global convergence or solver completeness."
   | curvatureFillingGeometry =>
       "Curvature and filling-cost lower bounds are finite measured-universe packages; no universal Dehn-function completeness is claimed."
+  | curvatureTransportGeometry =>
+      "Curvature transport compares selected measured axes before and after a supplied operation/read; unmeasured axes are not treated as zero."
+  | quantitativeHomotopyFillingGeometry =>
+      "Quantitative homotopy, filling, Dehn, and non-fillability rows are finite-candidate packages, not all-path completeness theorems."
   | representationMetric =>
       "Representation faithfulness is relative to comparability, coverage, and witness-completeness assumptions."
+  | representationSpectralStability =>
+      "Spectral stability is selected-scope Lipschitz control and does not calibrate empirical spectral metrics."
+  | abstractInfimumInterface =>
+      "The abstract infimum interface records lower-bound and approximation witnesses without computing a global optimizer."
   | docsClassificationBoundary =>
       "The index and proof-obligation rows document the bounded Lean package without editing the mathematical Part IV source text."
 
@@ -140,9 +243,17 @@ def schematicCorrespondences : List SchematicCorrespondence :=
   [ schematicCorrespondence .distanceFoundation
   , schematicCorrespondence .atomConfigurationGeometry
   , schematicCorrespondence .signaturePathGeometry
+  , schematicCorrespondence .finiteWitnessInfimumCore
+  , schematicCorrespondence .distanceToLawfulnessGeometry
+  , schematicCorrespondence .metricGaloisCorrespondence
   , schematicCorrespondence .operationRepairGeometry
+  , schematicCorrespondence .contractiveRepairGeometry
   , schematicCorrespondence .curvatureFillingGeometry
+  , schematicCorrespondence .curvatureTransportGeometry
+  , schematicCorrespondence .quantitativeHomotopyFillingGeometry
   , schematicCorrespondence .representationMetric
+  , schematicCorrespondence .representationSpectralStability
+  , schematicCorrespondence .abstractInfimumInterface
   , schematicCorrespondence .docsClassificationBoundary
   ]
 
@@ -153,9 +264,17 @@ def all : List Candidate :=
   [ distanceFoundation
   , atomConfigurationGeometry
   , signaturePathGeometry
+  , finiteWitnessInfimumCore
+  , distanceToLawfulnessGeometry
+  , metricGaloisCorrespondence
   , operationRepairGeometry
+  , contractiveRepairGeometry
   , curvatureFillingGeometry
+  , curvatureTransportGeometry
+  , quantitativeHomotopyFillingGeometry
   , representationMetric
+  , representationSpectralStability
+  , abstractInfimumInterface
   , docsClassificationBoundary
   ]
 
@@ -201,6 +320,33 @@ theorem signatureEndpointDistance_le_pathLength
     schema.endpointDistance plan ≤ schema.pathLength plan :=
   SignatureDistanceSchema.endpointDistance_le_pathLength schema plan
 
+theorem signatureHiddenExcursion_eq_pathLength_sub_endpointDistance
+    {State : Type u} {Sig : Type v}
+    (schema : SignatureDistanceSchema State Sig)
+    {X Y : State} (plan : ArchitectureEvolution State X Y) :
+    schema.hiddenExcursion plan =
+      schema.pathLength plan - schema.endpointDistance plan :=
+  SignatureDistanceSchema.hiddenExcursion_eq_pathLength_sub_endpointDistance
+    schema plan
+
+theorem signatureEndpointDistance_add_hiddenExcursion_eq_pathLength
+    {State : Type u} {Sig : Type v}
+    (schema : SignatureDistanceSchema State Sig)
+    {X Y : State} (plan : ArchitectureEvolution State X Y) :
+    schema.endpointDistance plan + schema.hiddenExcursion plan =
+      schema.pathLength plan :=
+  SignatureDistanceSchema.endpointDistance_add_hiddenExcursion_eq_pathLength
+    schema plan
+
+theorem signatureHiddenExcursion_positive_of_endpointDistance_lt_pathLength
+    {State : Type u} {Sig : Type v}
+    (schema : SignatureDistanceSchema State Sig)
+    {X Y : State} (plan : ArchitectureEvolution State X Y)
+    (hVisibleGap : schema.endpointDistance plan < schema.pathLength plan) :
+    0 < schema.hiddenExcursion plan :=
+  SignatureDistanceSchema.hiddenExcursion_positive_of_endpointDistance_lt_pathLength
+    schema plan hVisibleGap
+
 theorem signature_margin_stability
     {State : Type u} {Sig : Type v}
     (schema : SignatureDistanceSchema State Sig)
@@ -215,6 +361,40 @@ theorem signature_margin_stability
   SignatureDistanceSchema.margin_stability
     schema R plan margin hStart hWithin hPreserves
 
+theorem selectedFiniteOptimum_lowerBound_for_selected_candidates
+    {Candidate : Type u}
+    (optimum : SelectedFiniteOptimum Candidate) :
+    LowerBoundForSelectedCandidates optimum.candidates optimum.selected
+      optimum.cost optimum.lowerBound :=
+  optimum.lowerBound_for_selected_candidates
+
+theorem selectedDistanceToRegion_region_of_distance_zero
+    {State : Type u}
+    (pkg : SelectedDistanceToRegion State)
+    (X : State)
+    (hZero : pkg.distanceToRegion X = 0) :
+    pkg.region X :=
+  pkg.region_of_distance_zero X hZero
+
+theorem selectedDistanceToRegion_distance_zero_of_region
+    {State : Type u}
+    (pkg : SelectedDistanceToRegion State)
+    (hExact : pkg.exactnessAssumptions)
+    (X : State)
+    (hRegion : pkg.region X) :
+    pkg.distanceToRegion X = 0 :=
+  pkg.distance_zero_of_region hExact X hRegion
+
+theorem metricGalois_operation_nonExpansive
+    {State : Type u} {Operation : Type v}
+    {action : MetricOperationAction State Operation}
+    (pkg : MetricOperationAction.SelectedMetricGaloisPackage action)
+    {operation : Operation}
+    (hMem : operation ∈ pkg.operations)
+    (hSelected : action.selectedOperation operation) :
+    action.NonExpansive operation :=
+  pkg.operation_nonExpansive hMem hSelected
+
 theorem boundedSideEffectRepair_targetDistance_decreases
     {State : Type u} (repair : BoundedSideEffectRepair State) :
     repair.targetDistance repair.target <
@@ -227,10 +407,58 @@ theorem boundedSideEffectRepair_protectedMovement_within_bound
       repair.epsilon :=
   repair.protectedMovement_within_bound
 
+theorem finiteRepairSequence_allStepsDecrease
+    {State : Type u} (sequence : FiniteRepairSequence State) :
+    sequence.AllStepsDecrease :=
+  sequence.allStepsDecrease
+
+theorem contractiveRepairStep_target_contracts
+    {State : Type u} (step : ContractiveRepairStep State) :
+    step.denominator * step.targetDistance step.target ≤
+      step.numerator * step.targetDistance step.source :=
+  step.target_contracts
+
 theorem fillingCostLowerBound_observationGap_le
     (pkg : FillingCostLowerBound) :
     pkg.observationGap ≤ pkg.lipschitzConstant * pkg.fillingCost :=
   pkg.observationGap_le_lipschitz_mul_fillingCost
+
+theorem quantitativeHomotopyBound_observationDistance_le
+    (pkg : QuantitativeHomotopyBound) :
+    pkg.observationDistance ≤ pkg.lipschitzConstant * pkg.homotopyCost :=
+  pkg.observationDistance_le
+
+theorem finiteDehnBound_fillingArea_le
+    {Loop : Type u}
+    (pkg : FiniteDehnBound Loop)
+    {loop : Loop}
+    (hMem : loop ∈ pkg.candidates)
+    (hBoundary : pkg.boundaryLength loop ≤ pkg.boundaryLimit) :
+    pkg.fillingArea loop ≤ pkg.dehnValue :=
+  pkg.fillingArea_le_dehnValue hMem hBoundary
+
+theorem persistentNonFillability_no_candidate_filler_within_scale
+    {Filler : Type u}
+    (pkg : PersistentNonFillability Filler)
+    {filler : Filler}
+    (hCandidate : pkg.candidate filler)
+    (hWithin : pkg.fillerCost filler ≤ pkg.scale) :
+    False :=
+  pkg.no_candidate_filler_within_scale hCandidate hWithin
+
+theorem curvatureTransport_target_curvature_decreases
+    {Axis : Type u} {State : Type v}
+    (pkg : CurvatureTransport Axis State) :
+    pkg.reading.curvatureMass pkg.targetAxis pkg.after <
+      pkg.reading.curvatureMass pkg.targetAxis pkg.before :=
+  pkg.target_curvature_decreases
+
+theorem curvatureTransport_transported_curvature_increases
+    {Axis : Type u} {State : Type v}
+    (pkg : CurvatureTransport Axis State) :
+    pkg.reading.curvatureMass pkg.transportedAxis pkg.before <
+      pkg.reading.curvatureMass pkg.transportedAxis pkg.after :=
+  pkg.transported_curvature_increases
 
 theorem lipschitzRepresentation_analyticDistance_le
     {State : Type u} {Analytic : Type v}
@@ -241,6 +469,18 @@ theorem lipschitzRepresentation_analyticDistance_le
       rep.lipschitzConstant * rep.structuralDistance X Y :=
   rep.analyticDistance_le_lipschitz hComparable
 
+theorem lipschitzRepresentation_analyticDistance_le_of_structuralDistance_le
+    {State : Type u} {Analytic : Type v}
+    (rep : LipschitzRepresentation State Analytic)
+    {X Y : State}
+    (hComparable : rep.comparable X Y)
+    {epsilon : Nat}
+    (hStructural : rep.structuralDistance X Y ≤ epsilon) :
+    rep.analyticDistance (rep.represent X) (rep.represent Y) ≤
+      rep.lipschitzConstant * epsilon :=
+  rep.analyticDistance_le_of_structuralDistance_le
+    hComparable hStructural
+
 theorem biLipschitzRepresentation_structuralDistance_le
     {State : Type u} {Analytic : Type v}
     (rep : BiLipschitzRepresentation State Analytic)
@@ -249,6 +489,29 @@ theorem biLipschitzRepresentation_structuralDistance_le
     rep.lowerConstant * rep.structuralDistance X Y ≤
       rep.analyticDistance (rep.represent X) (rep.represent Y) :=
   rep.structuralDistance_le_analyticDistance hComparable
+
+theorem spectralStabilityPackage_spectralDistance_le
+    {State : Type u} {Spectral : Type v}
+    (pkg : SpectralStabilityPackage State Spectral) :
+    pkg.spectralDistance (pkg.represent pkg.source) (pkg.represent pkg.target) ≤
+      pkg.lipschitzConstant * pkg.epsilon :=
+  pkg.spectralDistance_le
+
+theorem abstractInfimumInterface_lowerBound
+    {Candidate : Type u}
+    (interface : AbstractInfimumInterface Candidate)
+    {candidate : Candidate}
+    (hCandidate : interface.candidate candidate) :
+    interface.infimumValue ≤ interface.cost candidate :=
+  interface.lowerBound hCandidate
+
+theorem abstractInfimumInterface_exists_approximatingWitness
+    {Candidate : Type u}
+    (interface : AbstractInfimumInterface Candidate)
+    (tolerance : Nat) :
+    ∃ candidate, interface.candidate candidate ∧
+      interface.cost candidate ≤ interface.infimumValue + tolerance :=
+  interface.exists_approximatingWitness tolerance
 
 end Part4DistanceMeasureGeometry
 end Formal.Arch
