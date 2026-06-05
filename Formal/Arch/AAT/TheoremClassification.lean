@@ -3,6 +3,7 @@ import Formal.Arch.Evolution.Chapter8HomotopySkeleton
 import Formal.Arch.Evolution.Chapter9DiagramFilling
 import Formal.Arch.Evolution.Chapter10ArchitectureExtensionFormula
 import Formal.Arch.Evolution.Chapter11AnalyticRepresentation
+import Formal.Arch.Evolution.Part4DistanceMeasureGeometry
 import Formal.Arch.Evolution.SFTTheoremPackages
 import Formal.Arch.Observation.ArchMapGeneratedHandoff
 
@@ -755,6 +756,102 @@ def classifyChapter11
         (by simp)
         "Measurement boundary has generated selected-axis acceptance for generated obstruction valuation zero while preserving unmeasured-vs-measured-zero separation."
 
+def classifyPart4
+    (candidate : Part4DistanceMeasureGeometry.Candidate) :
+    TheoremPackageClassification :=
+  match candidate with
+  | .distanceFoundation =>
+      representationRow
+        "part4.distanceFoundation"
+        (Part4DistanceMeasureGeometry.Candidate.representativeDeclarations
+          .distanceFoundation)
+        ["DistanceValue",
+         "DistanceProfile",
+         "SelectedDistanceScope",
+         "BoundedDiagnosticConclusion",
+         "DistanceValue.unmeasured_not_measuredZero"]
+        (by simp)
+        .downstreamLibrary
+        ActionAllowed.representationDownstream
+        "Part IV distance foundations are selected-scope representation surfaces that keep unmeasured axes distinct from measured zero."
+  | .atomConfigurationGeometry =>
+      atomGeneratedRow
+        "part4.atomConfigurationGeometry"
+        (Part4DistanceMeasureGeometry.Candidate.representativeDeclarations
+          .atomConfigurationGeometry)
+        ["AAT.GeneratedArchitectureObject.generatedCarrierShapeDistance_eq_coordinate_mismatchCount",
+         "AAT.GeneratedOperation.mappedCarrierShapeDistance_eq_coordinate_mismatchCount",
+         "Part4DistanceMeasureGeometry.generatedCarrierShapeDistance_eq_coordinate_mismatchCount",
+         "Part4DistanceMeasureGeometry.generatedOperation_mappedCarrierShapeDistance_eq_coordinate_mismatchCount"]
+        (by simp)
+        "Atom and operation distance entrypoints unfold to generated AtomShape-coordinate mismatch counts."
+  | .signaturePathGeometry =>
+      representationRow
+        "part4.signaturePathGeometry"
+        (Part4DistanceMeasureGeometry.Candidate.representativeDeclarations
+          .signaturePathGeometry)
+        ["SignatureDistanceSchema",
+         "SignatureDistanceSchema.endpointDistance_le_pathLength",
+         "SignatureDistanceSchema.margin_stability",
+         "Part4DistanceMeasureGeometry.signatureEndpointDistance_le_pathLength"]
+        (by simp)
+        .downstreamLibrary
+        ActionAllowed.representationDownstream
+        "Signature path geometry is finite-path and selected-scope, with margin stability requiring explicit preservation evidence."
+  | .operationRepairGeometry =>
+      representationRow
+        "part4.operationRepairGeometry"
+        (Part4DistanceMeasureGeometry.Candidate.representativeDeclarations
+          .operationRepairGeometry)
+        ["OperationCostModel",
+         "OperationPathCost",
+         "DistanceToFlatRegion",
+         "BoundedSideEffectRepair",
+         "Part4DistanceMeasureGeometry.boundedSideEffectRepair_targetDistance_decreases"]
+        (by simp)
+        .downstreamLibrary
+        ActionAllowed.representationDownstream
+        "Operation repair geometry records selected costs, distance-to-flat wrappers, and bounded side-effect decreases without solver-completeness claims."
+  | .curvatureFillingGeometry =>
+      representationRow
+        "part4.curvatureFillingGeometry"
+        (Part4DistanceMeasureGeometry.Candidate.representativeDeclarations
+          .curvatureFillingGeometry)
+        ["totalCurvature",
+         "totalWeightedCurvature",
+         "totalWeightedCurvature_eq_zero_iff_forall_measured_DiagramCommutes",
+         "FillingCostLowerBound",
+         "Part4DistanceMeasureGeometry.fillingCostLowerBound_observationGap_le"]
+        (by simp)
+        .downstreamLibrary
+        ActionAllowed.representationDownstream
+        "Curvature mass and filling-cost rows are finite measured-universe theorem packages and do not assert universal filling completeness."
+  | .representationMetric =>
+      representationRow
+        "part4.representationMetric"
+        (Part4DistanceMeasureGeometry.Candidate.representativeDeclarations
+          .representationMetric)
+        ["LipschitzRepresentation",
+         "BiLipschitzRepresentation",
+         "LipschitzRepresentation.analyticDistance_le_lipschitz",
+         "BiLipschitzRepresentation.structuralDistance_le_analyticDistance"]
+        (by simp)
+        .downstreamLibrary
+        ActionAllowed.representationDownstream
+        "Representation metrics are selected-scope Lipschitz and bi-Lipschitz surfaces with explicit comparability, coverage, and witness assumptions."
+  | .docsClassificationBoundary =>
+      representationRow
+        "part4.docsClassificationBoundary"
+        (Part4DistanceMeasureGeometry.Candidate.representativeDeclarations
+          .docsClassificationBoundary)
+        ["Part4DistanceMeasureGeometry.Candidate",
+         "Part4DistanceMeasureGeometry.Candidate.schematicCorrespondence",
+         "AATReconstructionClassification.classifyPart4"]
+        (by simp)
+        .downstreamLibrary
+        ActionAllowed.representationDownstream
+        "The Part IV entrypoint synchronizes theorem-index and proof-obligation rows without editing the mathematical Part IV source text."
+
 def classifySFT
     (candidate : SFTTheoremPackages.Candidate) :
     TheoremPackageClassification :=
@@ -988,6 +1085,16 @@ def chapter11Classifications : List TheoremPackageClassification :=
   , classifyChapter11 .measurementBoundary
   ]
 
+def part4Classifications : List TheoremPackageClassification :=
+  [ classifyPart4 .distanceFoundation
+  , classifyPart4 .atomConfigurationGeometry
+  , classifyPart4 .signaturePathGeometry
+  , classifyPart4 .operationRepairGeometry
+  , classifyPart4 .curvatureFillingGeometry
+  , classifyPart4 .representationMetric
+  , classifyPart4 .docsClassificationBoundary
+  ]
+
 def sftClassifications : List TheoremPackageClassification :=
   [ classifySFT .softwareFieldProjection
   , classifySFT .forecastConeCore
@@ -1036,6 +1143,11 @@ theorem chapter11_candidates_are_registered
     classifyChapter11 candidate ∈ chapter11Classifications := by
   cases candidate <;> simp [chapter11Classifications]
 
+theorem part4_candidates_are_registered
+    (candidate : Part4DistanceMeasureGeometry.Candidate) :
+    classifyPart4 candidate ∈ part4Classifications := by
+  cases candidate <;> simp [part4Classifications]
+
 theorem sft_candidates_are_registered
     (candidate : SFTTheoremPackages.Candidate) :
     classifySFT candidate ∈ sftClassifications := by
@@ -1049,6 +1161,7 @@ def allClassifications : List TheoremPackageClassification :=
   chapter9Classifications ++
   chapter10Classifications ++
   chapter11Classifications ++
+  part4Classifications ++
   sftClassifications
 
 def allPackageIds : List String :=
