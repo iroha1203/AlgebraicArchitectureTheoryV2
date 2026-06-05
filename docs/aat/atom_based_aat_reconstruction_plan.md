@@ -750,3 +750,43 @@ coordination PR である。
 - `lake build` が通る。
 
 この PR が入った後、suite field ごとにサブエージェントを投入する。
+
+### 13.8 AATCompleteFormalization final closure
+
+Issue chain #1654-#1664 の完了条件は、`AATCompleteFormalization` の frontier を
+「未実装タスク一覧」として消すことではない。frontier は completion ledger として残し、
+各 theorem-family row がどの suite field、guard、audit に接続されたかを後から読めるようにする。
+
+完了境界は Lean 上で次の theorem により固定する。
+
+- `currentImplementationFrontier_has_no_parallelReady_rows`:
+  `currentImplementationFrontier` に `parallelReady` row が残っていない。
+- `currentImplementationFrontier_all_rows_connected`:
+  すべての frontier row が `connected` である。
+- `initialCompleteFormalization_is_complete`:
+  `initialCompleteFormalization` が `AATCompleteFormalization.IsComplete` を満たす。
+- `generatedComponentCompleteFormalization_is_complete`:
+  concrete generated component example でも同じ completion boundary を読む。
+
+これにより、AAT complete-formalization suite の実装境界は次の状態になる。
+
+- Atom-generated molecule / object / ArchMap handoff は suite field に接続済み。
+- generated relation/runtime graph-rank、generated lawfulness、Signature static core は接続済み。
+- generated flatness / curvature は接続済み。
+- generated path / diagram / selected non-fillability は接続済み。
+- generated feature extension / lifting / obstruction / extension formula は接続済み。
+- generated operation / repair / synthesis は接続済み。
+- generated analytic representation / selected obstruction valuation / identity analytic extension formula は接続済み。
+- generated SFT / ArchSig / FieldSig handoff は接続済み。
+- theorem package classification audit は source/downstream 分離を保持した状態で接続済み。
+
+この final closure は、AAT の現行 Lean suite が完了したことを示す境界であり、次は結論しない。
+
+- extractor completeness
+- global semantic completeness
+- FieldSig forecast correctness
+- 未観測の external semantic universe 全域についての完全性
+
+したがって、この節の「完全」は `AATCompleteFormalization.IsComplete` が定義する実装境界に限られる。
+未知の universe 全域に対する主張ではなく、現在の Atom-generated AAT theorem-family ledger が
+すべて Lean field / guard / audit へ接続された、という形式化された完了判定である。
