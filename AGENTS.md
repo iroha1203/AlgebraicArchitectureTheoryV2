@@ -16,6 +16,15 @@
 - 作業は原則として GitHub Issue 起点で進める。次タスクを選ぶ場合は `priority:blocking`, `status:ready`, milestone の依存順を優先する。
 - このリポジトリは個人開発であり、常に最小実装・最小差分を選ぶ必要はない。目的に対して自然に必要な設計、実装、docs、tests、website surface まで広げてよい。
 - ただし、無関係な既存変更の巻き戻し、claim boundary を越える主張、根拠のない互換性維持、不要な抽象化は避ける。
+- 完了レビューや残タスク整理では、対象 Issue / PRD / 計画書 / acceptance test が実際に要求している
+  concrete condition だけを判定する。現実コード全体、意味宇宙全体、未来予測全体のような
+  無制限 claim を勝手に残タスク化しない。
+- claim boundary は、現在の主張を正確に保つための制約として扱う。ユーザーが求めていない限り、
+  「証明できない巨大 claim」や一般的限界を列挙して作業計画の中心にしない。
+- 禁止: AAT の完了レビューで source extraction / ArchMap observation / tooling validation の完全性を
+  「未完了部分」「非主張」「残タスク」「証明不能な限界」として持ち出さない。AAT は Atom を公理とするため、
+  source-observation layer の性質は AAT の内側の claim ではない。必要な場合は tooling / SFT 側の
+  具体的な artifact、fixture、schema、validator、Issue acceptance として別に扱う。
 - AAT / SFT の数学本文は根幹文書である。ユーザーの明示的な指示なしに `docs/aat/mathematical_theory/`、`docs/sft/software_field_theory.md`、`docs/sft/aat_interface.md` を更新しない。
 - 実装作業は `main` を最新化してから専用ブランチを切る。ブランチ名は Issue 番号または作業内容が分かる名前にする。
 - PR 本文には対象 Issue を `Closes #N` 形式で明記し、`.github/pull_request_template.md` に沿って書く。
@@ -40,6 +49,8 @@
 ## 基礎概念
 
 - AAT は Atom から architecture object、law、obstruction circuit、operation、flatness、path / homotopy、analytic representation を構成する局所代数の核である。
+- AAT は Atom を公理的出発点とする純粋理論である。source extraction / ArchMap observation / tooling validation は
+  Atom 入力を提示・検査する前段または後段 surface であり、AAT の完了条件や残タスクではない。
 - Lean で証明済みの主張、定義のみの概念、将来の証明義務、実証仮説は混同しない。
 - SFT は artifact、practice、AI、review、CI、operational feedback が software evolution の reachable future をどう変えるかを扱う。
 - ArchMap は source-grounded Atom observation map であり、law-independent な観測を記録する。

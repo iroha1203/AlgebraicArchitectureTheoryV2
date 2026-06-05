@@ -6,7 +6,7 @@ Minimal theorem guardrails for Architecture Curvature Transfer Spectrum (ACTS).
 This module formalizes only the bounded mathematical readings that ArchSig may
 use around finite curvature-support and transfer-spectrum reports. It does not
 prove ArchSig implementation correctness, global semantic flatness, future
-safety, empirical calibration, or extractor completeness.
+safety, empirical calibration, or ambient source-observation coverage.
 -/
 
 namespace Formal.Arch

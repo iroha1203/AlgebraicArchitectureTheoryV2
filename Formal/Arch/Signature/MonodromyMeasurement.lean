@@ -7,7 +7,7 @@ readings.
 This module is deliberately bounded. It formalizes finite measured squares,
 selected axes, axis-local defects, and nonnegative weighted aggregates used as
 tooling claim boundaries. It does not assert all-path homotopy completeness,
-all-axis semantic completeness, extractor completeness, or ArchSig correctness
+all-axis semantic completeness, ambient source-observation coverage, or ArchSig correctness
 in the wild.
 -/
 

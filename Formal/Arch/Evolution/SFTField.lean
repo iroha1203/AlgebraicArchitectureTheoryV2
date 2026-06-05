@@ -118,7 +118,7 @@ Partial estimate of a selected software field.
 
 The estimate packages one selected `SoftwareField` with coverage, observation,
 and reconstruction boundaries. It does not claim complete reconstruction of a
-larger development field or extractor completeness.
+larger development field or ambient source-observation coverage.
 -/
 structure SoftwareFieldEstimate
     (FieldState : Type s) (C : Type u) (A : Type v)

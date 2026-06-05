@@ -502,8 +502,8 @@ Positive three-layer flatness example for the repaired coupon extension.
 The example bundles static split evidence, selected runtime protection, and a
 measured semantic diagram into the existing bounded theorem package.  It stops
 at `ArchitectureFlatWithin`: it does not build a global `ArchitectureFlat`
-certificate, extractor completeness claim, telemetry completeness claim, or
-global semantic completeness claim.
+certificate, ambient source-observation coverage claim, telemetry completeness claim, or
+ambient semantic coverage claim.
 -/
 namespace ThreeLayerFlatnessPositiveExample
 

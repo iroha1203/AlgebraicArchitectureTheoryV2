@@ -226,7 +226,7 @@ def Redirective
 
 /--
 An instrumenting intervention records additional observation capability.
-This does not discharge unmeasured-axis safety or extractor completeness.
+This does not discharge unmeasured-axis safety or ambient source-observation coverage.
 -/
 def Instrumenting
     (intervention :

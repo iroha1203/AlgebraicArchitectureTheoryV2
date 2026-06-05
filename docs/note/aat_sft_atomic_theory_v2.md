@@ -1030,7 +1030,7 @@ ArchMap candidate
   does not imply certified Atom truth.
 
 ArchMap coverage
-  does not imply extractor completeness.
+  does not imply source-observation layer.
 
 ArchMap missing observation
   does not imply Atom absence.

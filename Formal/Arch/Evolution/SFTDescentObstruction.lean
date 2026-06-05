@@ -278,7 +278,7 @@ Finite exact classifier-completeness package.
 
 The completeness theorem remains relative to the selected finite exact model
 and the supplied classifier package.  It does not classify all software
-failures and does not assert extractor completeness.
+failures and does not assert ambient source-observation coverage.
 -/
 structure FiniteExactFailureClassifierCompleteness
     {Global : Type u} {Index : Type v} {Local : Type w}

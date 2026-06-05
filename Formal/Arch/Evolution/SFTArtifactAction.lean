@@ -112,7 +112,7 @@ def RecordsObservableBoundary
 /--
 Artifact action non-conclusions combine action-level and candidate-relation
 non-conclusions. In particular, they do not imply a unique future, causal proof,
-market success, human intention, or extractor completeness.
+market success, human intention, or ambient source-observation coverage.
 -/
 def RecordsNonConclusions
     (action : ArtifactAction Artifact Field Update) : Prop :=

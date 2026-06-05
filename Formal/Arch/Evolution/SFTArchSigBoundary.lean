@@ -141,7 +141,7 @@ status.
 The relation preserves coverage, observation, reconstruction, missing evidence,
 unmeasured axes, theorem boundaries, tooling/report boundaries, forecast
 boundaries, and non-conclusions. It deliberately exposes preservation
-obligations instead of claiming extractor completeness, AAT theorem promotion,
+obligations instead of claiming ambient source-observation coverage, AAT theorem promotion,
 or calibrated forecast correctness.
 -/
 structure ArchSigSFTReportEstimateBoundary

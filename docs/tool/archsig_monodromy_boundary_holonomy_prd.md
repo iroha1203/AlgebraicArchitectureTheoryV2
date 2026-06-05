@@ -360,7 +360,7 @@ Lean は次を主張しない。
 
 - 全 operation path の homotopy completeness
 - all axes の semantic completeness
-- extractor completeness
+- source-observation layer
 - global architecture truth
 - feature extension safety
 - ArchSig measurement correctness in the wild
@@ -488,4 +488,4 @@ boundary holonomy witness を report するものとして扱う。
 - AAT 数学本文では、証明済み核、design-level theorem candidate、boundary holonomy conjecture、
   ArchSig measurement diagnosis、non-conclusions を分離することが要求されている。
 - Non-Goals が、theorem prover 化、single score 化、global path flatness、automatic safety、
-  extractor completeness、FieldSig 再設計、完全 Lean 形式化を明確に除外している。
+  FieldSig 再設計、完全 Lean 形式化を明確に除外している。

@@ -28,7 +28,7 @@ Non-goals remain unchanged:
 - no feature-extension safety theorem from boundary holonomy;
 - no raw-diff semantic parser inside ArchSig core;
 - no FieldSig forecast / governance / calibration redesign;
-- no extractor-completeness or ArchSig measurement-correctness theorem in the
+- no ambient source-observation coverage or ArchSig measurement-correctness theorem in the
   wild.
 
 ## Acceptance Criteria Mapping
@@ -93,7 +93,7 @@ global architecture lawfulness
 global path-flatness completeness
 all operation commutativity
 all-axis semantic completeness
-extractor completeness
+source-observation layer
 merge safety
 forecast correctness
 automatic repair safety

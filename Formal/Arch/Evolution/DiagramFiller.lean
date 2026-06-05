@@ -137,7 +137,7 @@ Bounded completeness of obstruction-as-non-fillability.
 
 Under a finite witness-universe completeness premise, every non-fillable
 diagram has a selected non-fillability witness in that universe. This theorem
-does not assert global semantic completeness; all coverage is carried by
+does not assert ambient semantic coverage; all coverage is carried by
 `WitnessUniverseComplete`.
 -/
 theorem obstructionAsNonFillability_complete_bounded {State : Type u}
@@ -333,8 +333,8 @@ A small path skeleton for the canonical coupon/discount ordering example from
 the design note.
 
 The selected semantic contract below tracks only rounding-order observations.
-It is a bounded example: it does not claim global semantic completeness or
-extractor completeness outside this selected diagram and witness.
+It is a bounded example: it does not claim ambient semantic coverage or
+ambient source-observation coverage outside this selected diagram and witness.
 -/
 namespace CouponDiscountExample
 

@@ -5,7 +5,7 @@ This module formalizes only the bounded mathematical readings that ArchSig may
 use around finite measured path pairs, loop fillings, selected continuation,
 local curvature, and ArchitectureHomotopyReport-style non-conclusions. It does
 not prove ArchSig implementation correctness, global homotopy completeness,
-future safety, empirical calibration, or extractor completeness.
+future safety, empirical calibration, or ambient source-observation coverage.
 -/
 
 namespace Formal.Arch

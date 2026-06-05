@@ -11,7 +11,7 @@ Minimal carrier for the state-transition algebra layer.
 The executable transition data and observation boundary are kept explicit, while
 lawfulness is still read through the existing `StateTransitionExpr` semantics.
 This lets Event Sourcing / Saga theorem packages specialize the carrier without
-claiming extractor completeness for real event logs.
+claiming ambient source-observation coverage for real event logs.
 -/
 structure StateTransitionCarrier (State : Type u) (Event : Type v)
     (Obs : Type w) where

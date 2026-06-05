@@ -72,7 +72,7 @@ def RecordsNonConclusions
 Single-step bounded flatness preservation.
 
 This is relative to the selected `ArchitectureFlat` predicate and the supplied
-transition proof package; it does not claim global extractor completeness.
+transition proof package; it does not claim global ambient source-observation coverage.
 -/
 theorem flatness_of_transitionPreservesFlatness
     {ArchitectureFlat : State -> Prop}

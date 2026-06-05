@@ -52,7 +52,7 @@ Atom
 - `Formal/Arch/Signature/AATCoreBridge.lean`
 
 `website/aat/**` は source of truth ではない。公開読書面である。
-website 独自の theorem claim、tool correctness claim、extractor completeness claim、
+website 独自の theorem claim、tool correctness claim claim、
 empirical claim は追加しない。
 
 ## Core Thesis
@@ -225,7 +225,7 @@ References
 書かないこと:
 
 - selected presentation を AAT の root として扱うこと。
-- `ComponentUniverse` を extractor completeness と同一視すること。
+- `ComponentUniverse` を source-observation layer と同一視すること。
 
 ### `/aat/laws/` Design Laws and Invariants
 

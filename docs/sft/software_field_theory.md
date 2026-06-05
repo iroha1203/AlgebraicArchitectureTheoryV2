@@ -870,7 +870,7 @@ SFT Lean surface 全体の docs-facing entrypoint は
 `SoftwareField`、`ForecastCone`、cone projection、artifact action、policy / governance、
 reachability、support safety、`FieldUpdate`、`ConsequenceEnvelope`、AAT / ArchSig boundary、
 counterexample package の代表 declaration と non-conclusion boundary を束ねる metadata であり、
-calibration、extractor completeness、global future safety を theorem claim に昇格しない。
+calibration、global future safety を theorem claim に昇格しない。
 
 Atom foundation との接続では、SFT は `AATCoreLocalAlgebraForSFT` と
 `AATCoreTransition` を通じて `AATCore system` の transition を読む。

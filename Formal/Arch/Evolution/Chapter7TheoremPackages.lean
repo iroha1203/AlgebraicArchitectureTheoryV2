@@ -15,7 +15,7 @@ packages.
 This module is intentionally thin.  Importing it exposes the representative
 bounded theorem packages for sections 7.1 through 7.6 and the Atom-generated
 wrappers that feed generated inputs into those packages, without adding new
-global flatness, completeness, solver-completeness, or extractor-completeness
+global flatness, completeness, solver-completeness, or ambient source-observation coverage
 claims.
 -/
 
@@ -512,7 +512,7 @@ def schematicCorrespondences : Candidate -> List SchematicCorrespondence
 /-- Boundary reminder for reading each candidate as a bounded theorem package. -/
 def nonConclusionBoundary : Candidate -> String
   | splitExtensionPreservation =>
-      "coverage-aware ArchitectureFlatWithin only; no global flatness or extractor completeness"
+      "coverage-aware ArchitectureFlatWithin only; no global flatness or ambient source-observation coverage"
   | nonSplitExtensionWitness =>
       "soundness plus bounded completeness under explicit coverage / exactness assumptions only"
   | repairAsResplitting =>

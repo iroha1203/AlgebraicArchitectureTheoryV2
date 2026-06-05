@@ -27,7 +27,7 @@ roadmap.
 `staticUniverse` is the proof-carrying finite measurement universe for static
 components. Decidability fields record the bounded computation assumptions
 needed by downstream theorem packages; they are intentionally explicit fields
-instead of global extractor-completeness claims.
+instead of global ambient source-observation coverage claims.
 -/
 structure ArchitectureCore (C : Type u) (A : Type v)
     (StaticObs : Type w) (SemanticExpr : Type q)

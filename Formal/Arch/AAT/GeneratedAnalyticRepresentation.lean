@@ -9,9 +9,9 @@ universe u v
 /--
 Witness type for the generated analytic representation.
 
-The current generated representation aggregates the selected required Signature
-axis failure.  It intentionally does not claim to cover every possible
-semantic, runtime, empirical, or extractor-side witness.
+The current generated representation aggregates the required Signature axis
+failure. It intentionally records only the generated analytic witness carried
+by the supplied Atom-rooted model.
 -/
 inductive GeneratedAnalyticWitness where
   | requiredSignatureAxes
@@ -23,8 +23,8 @@ namespace GeneratedArchitectureLawModel
 Coverage used by the generated analytic representation.
 
 For generated law models, coverage is the generated Signature lawfulness
-equivalence itself.  It is not a caller-supplied `True` marker and it is not a
-claim of global semantic or extractor completeness.
+equivalence itself. It is not a caller-supplied `True` marker and it is not a
+claim about measurements outside the supplied Atom-rooted model.
 -/
 def generatedAnalyticCoverageAssumptions
     {system : AtomAxiomSystem.{u, v}}

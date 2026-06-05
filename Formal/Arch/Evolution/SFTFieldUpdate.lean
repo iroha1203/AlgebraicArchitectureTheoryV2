@@ -119,7 +119,7 @@ A selected closed-loop SFT field update.
 
 The update links a prior forecast record, an observed outcome, and a posterior
 record. It carries update-level boundaries but does not itself claim forecast
-correctness, calibration, governance effectiveness, or extractor completeness.
+correctness, calibration, governance effectiveness, or ambient source-observation coverage.
 -/
 structure FieldUpdate
     {Field : Type u} {Operation : Type v}

@@ -272,7 +272,7 @@ def NoUnmeasuredRequiredAxis
 Architecture flatness within a bounded, coverage-aware universe.
 
 The conclusion is only relative to `U` and `measuredSemantic`; it does not claim
-global extractor, telemetry, or semantic-diagram completeness.
+ambient source observation, telemetry, or semantic-diagram completeness.
 -/
 def ArchitectureFlatWithin
     (X : ArchitectureFlatnessModel C A StaticObs SemanticExpr SemanticObs)
@@ -725,7 +725,7 @@ semantic evidence.
 
 The static graph is exactly the extended graph of the split extension. Runtime
 and semantic layers remain supplied evidence rather than inferred telemetry or
-global semantic completeness.
+ambient semantic coverage.
 -/
 def LawfulExtensionFlatnessModel
     (S : StaticSplitExtension Core Feature Extended FeatureView)
@@ -754,7 +754,7 @@ def LawfulExtensionFlatnessModel
 Recorded non-conclusions for the public split feature extension package.
 
 This marker keeps the bounded package from being read as global flatness,
-extractor completeness, or automatic runtime / semantic completeness.
+ambient source-observation coverage, or automatic runtime / semantic completeness.
 -/
 def SplitFeatureExtensionWithinNonConclusions
     (S : StaticSplitExtension Core Feature Extended FeatureView)
@@ -768,7 +768,7 @@ component universe.
 The package is intentionally a thin wrapper around existing static split,
 coverage, and runtime / semantic evidence. It records all assumptions needed
 to conclude `ArchitectureFlatWithin` for the induced flatness model, while
-leaving global `ArchitectureFlat`, extractor completeness, and unmeasured
+leaving global `ArchitectureFlat`, ambient source-observation coverage, and unmeasured
 runtime / semantic axes outside the conclusion.
 -/
 structure SplitFeatureExtensionWithin
@@ -880,7 +880,7 @@ Bounded flatness preservation for a lawful static split extension.
 
 This corollary is deliberately coverage-aware: extension coverage, runtime
 coverage, and semantic coverage are explicit premises. It does not assume global
-extractor completeness, telemetry completeness, or semantic universe
+ambient source-observation coverage, telemetry completeness, or semantic universe
 completeness outside the supplied bounded evidence.
 -/
 theorem LawfulExtensionPreservesFlatness

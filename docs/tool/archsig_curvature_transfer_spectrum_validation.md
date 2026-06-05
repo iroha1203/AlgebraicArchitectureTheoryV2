@@ -29,7 +29,7 @@ Non-goals remain unchanged:
 - no global lawfulness or flatness theorem from a zero ACTS reading;
 - no future incident, cost, or empirical risk prediction from recurrent support;
 - no automatic repair-safety certificate from a top mode;
-- no extractor-completeness or ArchSig implementation-correctness theorem;
+- no ambient source-observation coverage or ArchSig implementation-correctness theorem;
 - no FieldSig forecast / governance replacement;
 - no requirement that humans hand-author the full measurement profile.
 
@@ -137,7 +137,7 @@ unmeasured-axis zero
 future incident prediction
 empirical cost calibration
 automatic repair safety
-extractor completeness
+source-observation layer
 ArchSig implementation-correctness theorem
 FieldSig forecast replacement
 ```
@@ -153,6 +153,6 @@ future work unless a later PRD adopts them:
   and authority axes when the selected project supplies calibration evidence;
 - empirical calibration that relates recurrent support to incidents, cost, or
   review effort;
-- extractor-completeness and source-universe completeness proofs;
+- ambient source-observation coverage and ambient source-observation coverage proofs;
 - FieldSig longitudinal use of ACTS packet history;
 - a fuller sheaf / Hodge Laplacian theory beyond the minimal Lean guardrail.

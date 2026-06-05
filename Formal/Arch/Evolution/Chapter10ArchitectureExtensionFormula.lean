@@ -11,7 +11,7 @@ multi-label structural classification theorems plus the bridge APIs that connect
 selected filling, lifting, complexity-transfer, and residual-coverage payloads
 to the extension-obstruction classification universe. It does not add disjoint
 classification, global witness completeness, universe-wide obstruction
-coverage, or extractor-completeness claims.
+coverage, or ambient source-observation coverage claims.
 -/
 
 namespace Formal.Arch
@@ -284,7 +284,7 @@ def schematicCorrespondences : Candidate -> List SchematicCorrespondence
 /-- Boundary reminder for reading each candidate as a bounded Chapter 10 API. -/
 def nonConclusionBoundary : Candidate -> String
   | obstructionUniverse =>
-      "selected witness carriers only; no universe-wide obstruction coverage or extractor completeness"
+      "selected witness carriers only; no universe-wide obstruction coverage or ambient source-observation coverage"
   | nonSplitWitnessPackage =>
       "soundness plus bounded completeness under explicit coverage / exactness assumptions only"
   | singleLabelClassification =>
@@ -298,7 +298,7 @@ def nonConclusionBoundary : Candidate -> String
   | complexityTransferBridge =>
       "selected runtime / semantic / policy transfer witnesses only; no global conservation or empirical cost theorem"
   | residualCoverageGapBridge =>
-      "selected coverage diagnostic only; no static split failure, runtime / semantic flatness failure, or extractor completeness"
+      "selected coverage diagnostic only; no static split failure, runtime / semantic flatness failure, or ambient source-observation coverage"
 
 end Candidate
 

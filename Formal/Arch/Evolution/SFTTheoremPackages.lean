@@ -31,7 +31,7 @@ Documentation-facing entrypoints for the SFT Lean theorem packages.
 
 This module is intentionally thin. Importing it exposes the SFT formal surface
 implemented across the first `ForecastCone` wave and the remaining SFT boundary
-issues without adding forecast correctness, calibration, extractor completeness,
+issues without adding forecast correctness, calibration, ambient source-observation coverage,
 or global future-safety claims.
 -/
 
@@ -1002,7 +1002,7 @@ def schematicCorrespondences : Candidate -> List SchematicCorrespondence
 /-- Boundary reminder for reading each SFT candidate as a bounded package. -/
 def nonConclusionBoundary : Candidate -> String
   | softwareFieldProjection =>
-      "selected projection only; no full field model, reconstruction completeness, or extractor completeness"
+      "selected projection only; no full field model, reconstruction completeness, or ambient source-observation coverage"
   | forecastConeCore =>
       "bounded finite path membership only; no probability, calibration, causal proof, or global safety"
   | coneProjection =>
@@ -1026,11 +1026,11 @@ def nonConclusionBoundary : Candidate -> String
   | counterexamplePackage =>
       "finite non-conclusion witnesses only; no empirical degradation, incident risk, or global forecast claim"
   | theoremRoadmap =>
-      "roadmap theorem packages only; no unconditional global descent, calibration, governance effectiveness, AI safety, or extractor completeness"
+      "roadmap theorem packages only; no unconditional global descent, calibration, governance effectiveness, AI safety, or ambient source-observation coverage"
   | finiteExactModel =>
-      "selected finite proof universe only; no extractor completeness, empirical correctness, all-covers descent, or full Fundamental Modularity theorem"
+      "selected finite proof universe only; no ambient source-observation coverage, empirical correctness, all-covers descent, or full Fundamental Modularity theorem"
   | aatSupportedFundamentalModularity =>
-      "AAT-supported selected slice only; no assumption-free Grand Theorem, empirical correctness, operational effectiveness, global AI safety, or extractor completeness"
+      "AAT-supported selected slice only; no assumption-free Grand Theorem, empirical correctness, operational effectiveness, global AI safety, or ambient source-observation coverage"
 
 end Candidate
 

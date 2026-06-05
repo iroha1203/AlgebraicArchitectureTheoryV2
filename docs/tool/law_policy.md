@@ -176,7 +176,7 @@ Validation does not imply:
 - certified Atom truth
 - zero curvature
 - Lean theorem discharge
-- extractor completeness
+- source-observation layer
 
 Missing coverage remains a coverage gap. It is not measured zero.
 

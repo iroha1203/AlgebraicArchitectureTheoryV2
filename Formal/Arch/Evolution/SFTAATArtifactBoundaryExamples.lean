@@ -10,7 +10,7 @@ Selected finite artifact-boundary examples for AAT-supported SFT.
 The examples reuse the canonical finite SFT model and route an ArchMap
 preservation package plus an ArchSig report boundary through the
 AAT-supported Grand Theorem package.  The artifact inputs remain boundary
-evidence; they are not read as extractor completeness, calibrated forecasts, or
+evidence; they are not read as ambient source-observation coverage, calibrated forecasts, or
 global software claims.
 -/
 
