@@ -1381,8 +1381,14 @@ fn cli_analyze_emit_raw_artifacts_writes_field_sig_handoff_packet() {
                 .is_some_and(|count| count > 0)
             && analysis_validation["summary"]["operationDistanceReadingCount"]
                 .as_u64()
+                .is_some_and(|count| count > 0)
+            && analysis_validation["summary"]["obstructionMeasureReadingCount"]
+                .as_u64()
+                .is_some_and(|count| count > 0)
+            && analysis_validation["summary"]["curvatureMassReadingCount"]
+                .as_u64()
                 .is_some_and(|count| count > 0),
-        "validation summary must count generated middle-layer, viewer distance, configuration distance, signature distance, and operation distance surfaces"
+        "validation summary must count generated middle-layer, viewer distance, configuration distance, signature distance, operation distance, obstruction measure, and curvature mass surfaces"
     );
     let llm_packet = read_json(&out_dir.join("llm-interpretation-packet.json"));
     assert_eq!(llm_packet, analysis_packet["llmInterpretationPacket"]);
@@ -3364,10 +3370,14 @@ fn assert_north_star_packet_surfaces(json: &Value) {
             .expect("supporting distances are array")
             .iter()
             .all(|entry| {
+                let curvature_geometry_is_evaluator_backed = entry["distanceFamily"]
+                    == "curvatureGeometry"
+                    && entry["value"]["status"] != "unmeasured";
                 if entry["distanceFamily"] == "atomGeometry"
                     || entry["distanceFamily"] == "configurationGeometry"
                     || entry["distanceFamily"] == "signatureGeometry"
                     || entry["distanceFamily"] == "operationGeometry"
+                    || curvature_geometry_is_evaluator_backed
                 {
                     (entry["value"]["status"] == "measured"
                         || entry["value"]["status"] == "zero"
@@ -3392,9 +3402,9 @@ fn assert_north_star_packet_surfaces(json: &Value) {
                 .is_some_and(|count| count >= 4)
             && part4_distance["statusSummary"]["unmeasuredCount"]
                 .as_u64()
-                .is_some_and(|count| count >= 3)
+                .is_some_and(|count| count >= 2)
             && part4_distance["statusSummary"]["schemaFoundationOnlyCount"] == 0,
-        "Part IV foundation must route atomGeometry/configurationGeometry through evaluator readings while preserving semantic/gap blockers and keeping remaining evaluators unmeasured"
+        "Part IV foundation must route atom/configuration/signature/operation/curvature geometry through evaluator readings while preserving semantic/gap blockers and keeping remaining evaluators unmeasured"
     );
     let atom_distance_readings = json["atomDistanceReadings"]
         .as_array()
@@ -3561,6 +3571,93 @@ fn assert_north_star_packet_surfaces(json: &Value) {
                     })
             }),
         "repair candidates and operation deltas must retain Part IV operation distance refs"
+    );
+    let obstruction_measure_readings = json["obstructionMeasureReadings"]
+        .as_array()
+        .expect("obstruction measure readings are array");
+    assert!(
+        !obstruction_measure_readings.is_empty()
+            && obstruction_measure_readings.iter().all(|reading| {
+                reading["measureValue"]["status"] == "measured"
+                    || (reading["measureValue"]["status"] == "blocked"
+                        && reading["measureValue"]["blockerRefs"]
+                            .as_array()
+                            .is_some_and(|refs| !refs.is_empty()))
+            })
+            && obstruction_measure_readings.iter().any(|reading| {
+                reading["evidenceBoundary"]
+                    .as_str()
+                    .is_some_and(|boundary| boundary.contains("missing witnesses remain blockers"))
+            }),
+        "Obstruction measure readings must be witness-backed and keep missing witnesses as blockers, not zero curvature"
+    );
+    let curvature_mass_readings = json["curvatureMassReadings"]
+        .as_array()
+        .expect("curvature mass readings are array");
+    assert!(
+        !curvature_mass_readings.is_empty()
+            && curvature_mass_readings.iter().all(|reading| {
+                reading["obstructionMeasureReadingRefs"]
+                    .as_array()
+                    .is_some_and(|refs| !refs.is_empty())
+                    && reading["curvatureMass"]["evaluatorBasisRefs"]
+                        .as_array()
+                        .is_some_and(|refs| {
+                            refs.iter().any(|value| {
+                                value
+                                    .as_str()
+                                    .is_some_and(|s| s.starts_with("curv_mass_U:"))
+                            })
+                        })
+                    && reading["targetAxisDecrease"]["evaluatorBasisRefs"]
+                        .as_array()
+                        .is_some_and(|refs| {
+                            refs.iter().any(|value| {
+                                value.as_str().is_some_and(|s| {
+                                    s.starts_with("curvatureTransport:targetAxisDecrease")
+                                })
+                            })
+                        })
+                    && reading["protectedAxisMovement"]["evaluatorBasisRefs"]
+                        .as_array()
+                        .is_some_and(|refs| {
+                            refs.iter().any(|value| {
+                                value.as_str().is_some_and(|s| {
+                                    s.starts_with("curvatureTransport:protectedAxisMovement")
+                                })
+                            })
+                        })
+                    && reading["complexityTransferDistanceRefs"]
+                        .as_array()
+                        .is_some_and(|refs| !refs.is_empty())
+            }),
+        "Curvature mass readings must expose selected measure refs, target decrease, protected-axis movement, and complexity-transfer distance refs"
+    );
+    assert!(
+        json["curvatureSupportReadings"]
+            .as_array()
+            .is_some_and(|items| {
+                !items.is_empty()
+                    && items.iter().all(|reading| {
+                        reading["part4DistanceRefs"]
+                            .as_array()
+                            .is_some_and(|refs| !refs.is_empty())
+                    })
+            })
+            && json["curvatureTransferReadings"]
+                .as_array()
+                .is_some_and(|items| {
+                    !items.is_empty()
+                        && items.iter().all(|reading| {
+                            reading["part4DistanceRefs"]
+                                .as_array()
+                                .is_some_and(|refs| !refs.is_empty())
+                        })
+                })
+            && json["architectureSpectrumReport"]["curvatureMassReadingRefs"]
+                .as_array()
+                .is_some_and(|refs| !refs.is_empty()),
+        "existing curvature support, transfer, and spectrum report surfaces must retain Part IV curvature distance refs"
     );
     assert!(
         json.get("workflowSignalReadings").is_none() && !has_nested_key(json, "signalDensityScore"),

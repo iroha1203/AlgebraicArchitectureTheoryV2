@@ -25,8 +25,8 @@ use crate::{
     ArchSigBridgeEdgeBreakdownV0, ArchSigBridgeSplitObstructionTransferReadingV0,
     ArchSigChangeImpactReadingV0, ArchSigConfigurationDistanceReadingV0,
     ArchSigConfigurationHyperedgeV0, ArchSigCouplingCohesionReadingV0, ArchSigCoverageStatusV0,
-    ArchSigCurrentStateEvolutionBoundaryV0, ArchSigCurvatureSupportReadingV0,
-    ArchSigCurvatureTopModeV0, ArchSigCurvatureTransferEdgeV0,
+    ArchSigCurrentStateEvolutionBoundaryV0, ArchSigCurvatureMassReadingV0,
+    ArchSigCurvatureSupportReadingV0, ArchSigCurvatureTopModeV0, ArchSigCurvatureTransferEdgeV0,
     ArchSigCurvatureTransferMatrixEntryV0, ArchSigCurvatureTransferOperatorV0,
     ArchSigCurvatureTransferReadingV0, ArchSigCurvatureWitnessClusterV0,
     ArchSigCurvatureWitnessSupportV0, ArchSigDesignPressureReadingV0,
@@ -50,23 +50,23 @@ use crate::{
     ArchSigLoopCandidateV0, ArchSigMeasurementReadingBoundaryV0, ArchSigMoleculeReadingV0,
     ArchSigMonodromyReadingFamilyV0, ArchSigNonzeroMonodromyWitnessV0,
     ArchSigObservationProjectionFidelityReadingV0, ArchSigObservationProjectionReadingV0,
-    ArchSigObstructionCircuitV0, ArchSigOperationCalculusLawReadingV0,
-    ArchSigOperationDeltaReadingV0, ArchSigOperationDistanceReadingV0,
-    ArchSigOperationInvariantGaloisReadingV0, ArchSigOperationLawEvidenceV0,
-    ArchSigOperationPreconditionReadinessReadingV0, ArchSigOperationSquareCandidateV0,
-    ArchSigPart4DistanceFoundationV0, ArchSigPathContinuationTraceV0,
-    ArchSigPathHomotopyDiagramReadingV0, ArchSigPathMultiplicityLossReadingV0,
-    ArchSigPathPairCandidateV0, ArchSigPathSignatureTrajectoryReadingV0,
-    ArchSigProjectionCoordinateV0, ArchSigProjectionNonInjectivityCandidateV0,
-    ArchSigProjectionReconstructionBlockerV0, ArchSigRecurrentObstructionModeV0,
-    ArchSigRepairAxisDeltaReadingV0, ArchSigRepairOperationCandidateV0,
-    ArchSigRepairTransferRiskRankV0, ArchSigRepresentationStrengthReadingV0,
-    ArchSigSignatureAxisDistanceV0, ArchSigSignatureAxisReadingV0,
-    ArchSigSignatureDistanceReadingV0, ArchSigSignatureTrajectoryHomotopyRefutationReadingV0,
-    ArchSigSpectralAnalysisReadingV0, ArchSigSpectralDominantComponentV0,
-    ArchSigSpectralDrilldownReadingV0, ArchSigSpectralMatrixShapeV0,
-    ArchSigSpectralModeComponentV0, ArchSigSpectralModeReadingV0, ArchSigSpectralValueV0,
-    ArchSigSplitReadinessReadingV0, ArchSigStateTransitionAlgebraReadingV0,
+    ArchSigObstructionCircuitV0, ArchSigObstructionMeasureReadingV0,
+    ArchSigOperationCalculusLawReadingV0, ArchSigOperationDeltaReadingV0,
+    ArchSigOperationDistanceReadingV0, ArchSigOperationInvariantGaloisReadingV0,
+    ArchSigOperationLawEvidenceV0, ArchSigOperationPreconditionReadinessReadingV0,
+    ArchSigOperationSquareCandidateV0, ArchSigPart4DistanceFoundationV0,
+    ArchSigPathContinuationTraceV0, ArchSigPathHomotopyDiagramReadingV0,
+    ArchSigPathMultiplicityLossReadingV0, ArchSigPathPairCandidateV0,
+    ArchSigPathSignatureTrajectoryReadingV0, ArchSigProjectionCoordinateV0,
+    ArchSigProjectionNonInjectivityCandidateV0, ArchSigProjectionReconstructionBlockerV0,
+    ArchSigRecurrentObstructionModeV0, ArchSigRepairAxisDeltaReadingV0,
+    ArchSigRepairOperationCandidateV0, ArchSigRepairTransferRiskRankV0,
+    ArchSigRepresentationStrengthReadingV0, ArchSigSignatureAxisDistanceV0,
+    ArchSigSignatureAxisReadingV0, ArchSigSignatureDistanceReadingV0,
+    ArchSigSignatureTrajectoryHomotopyRefutationReadingV0, ArchSigSpectralAnalysisReadingV0,
+    ArchSigSpectralDominantComponentV0, ArchSigSpectralDrilldownReadingV0,
+    ArchSigSpectralMatrixShapeV0, ArchSigSpectralModeComponentV0, ArchSigSpectralModeReadingV0,
+    ArchSigSpectralValueV0, ArchSigSplitReadinessReadingV0, ArchSigStateTransitionAlgebraReadingV0,
     ArchSigStateTransitionLawEvaluationV0, ArchSigStateTransitionRelationInputV0,
     ArchSigStokesStyleReadingV0, ArchSigStructuralReadingReviewSurfaceV0,
     ArchSigSubjectFamilySpreadV0, ArchSigSupportingDistanceV0, ArchSigSynthesisBlockageReadingV0,
@@ -222,17 +222,43 @@ pub fn build_archsig_analysis_packet(
         &signature_axes,
         &operation_deltas,
     );
-    let curvature_support_readings = build_curvature_support_readings(
+    let mut curvature_support_readings = build_curvature_support_readings(
         archmap,
         law_policy,
         &obstruction_circuits,
         &signature_axes,
     );
-    let curvature_transfer_readings =
+    let mut curvature_transfer_readings =
         build_curvature_transfer_readings(archmap, &curvature_support_readings);
+    let obstruction_measure_readings = build_obstruction_measure_readings(
+        &curvature_support_readings,
+        &obstruction_circuits,
+        &part4_distance_foundation,
+    );
+    attach_obstruction_measure_refs(
+        &mut curvature_support_readings,
+        &obstruction_measure_readings,
+    );
+    let curvature_mass_readings = build_curvature_mass_readings(
+        &curvature_support_readings,
+        &curvature_transfer_readings,
+        &operation_distance_readings,
+        &obstruction_measure_readings,
+        &part4_distance_foundation,
+    );
+    attach_curvature_mass_refs(
+        &mut curvature_support_readings,
+        &mut curvature_transfer_readings,
+        &curvature_mass_readings,
+    );
+    promote_curvature_geometry_supporting_distance(
+        &mut part4_distance_foundation,
+        &curvature_mass_readings,
+    );
     let architecture_spectrum_report = build_architecture_spectrum_report(
         &curvature_support_readings,
         &curvature_transfer_readings,
+        &curvature_mass_readings,
     );
     let transfer_bridge_readings = build_transfer_bridge_readings(
         archmap,
@@ -548,6 +574,8 @@ pub fn build_archsig_analysis_packet(
         configuration_distance_readings,
         signature_distance_readings,
         operation_distance_readings,
+        obstruction_measure_readings,
+        curvature_mass_readings,
         obstruction_circuits,
         signature_axes,
         analytic_representations,
@@ -6878,6 +6906,7 @@ fn build_curvature_support_readings(
                     source_refs: Vec::new(),
                     observation_refs: Vec::new(),
                     missing_evidence: missing_evidence_base.clone(),
+                    obstruction_measure_reading_refs: Vec::new(),
                     reading:
                         "unmeasured support is preserved as missing evidence, not measured zero"
                             .to_string(),
@@ -6960,6 +6989,7 @@ fn build_curvature_support_readings(
                 source_refs,
                 observation_refs,
                 missing_evidence: missing_evidence_base.clone(),
+                obstruction_measure_reading_refs: Vec::new(),
                 reading: format!(
                     "{curvature_value} constructed witness support(s) contribute to {axis_ref} under {}",
                     profile.profile_id
@@ -7056,6 +7086,7 @@ fn build_curvature_support_readings(
         exactness_assumption_refs: profile.exactness_assumption_refs.clone(),
         measurement_boundary: profile.measurement_boundary.clone(),
         missing_evidence: missing_evidence_base,
+        part4_distance_refs: Vec::new(),
         non_conclusions: profile.non_conclusions.clone(),
     }]
 }
@@ -7116,6 +7147,449 @@ fn build_curvature_witness_clusters(
             }
         })
         .collect()
+}
+
+fn build_obstruction_measure_readings(
+    curvature_support_readings: &[ArchSigCurvatureSupportReadingV0],
+    obstruction_circuits: &[ArchSigObstructionCircuitV0],
+    foundation: &ArchSigPart4DistanceFoundationV0,
+) -> Vec<ArchSigObstructionMeasureReadingV0> {
+    let circuit_by_axis_and_witness = obstruction_circuits
+        .iter()
+        .flat_map(|circuit| {
+            circuit.signature_axis_refs.iter().map(move |axis_ref| {
+                (
+                    (axis_ref.as_str(), circuit.witness_rule_ref.as_str()),
+                    circuit,
+                )
+            })
+        })
+        .collect::<BTreeMap<_, _>>();
+    let coverage_refs = foundation.profile.coverage_policy_refs.clone();
+    curvature_support_readings
+        .iter()
+        .flat_map(|reading| {
+            reading.witness_supports.iter().map(|support| {
+                let circuit_ref = circuit_by_axis_and_witness
+                    .get(&(
+                        support.signature_axis_ref.as_str(),
+                        support.witness_rule_ref.as_str(),
+                    ))
+                    .map(|circuit| circuit.obstruction_circuit_id.clone())
+                    .unwrap_or_else(|| format!("unmeasured:{}", support.witness_support_id));
+                let obstruction_measure_reading_id = format!(
+                    "obstruction-measure:{}",
+                    stable_id(&support.witness_support_id)
+                );
+                let (witness_value, measure_value, measurement_status) =
+                    if support.measurement_status == "measured" && support.curvature_value > 0 {
+                        let witness_value = measured_part4_distance_value(
+                            support.curvature_value,
+                            "obstruction-witness-value",
+                            support.support_refs.clone(),
+                            vec![
+                                format!("witnessRule:{}", support.witness_rule_ref),
+                                format!("selectedAxis:{}", support.selected_axis_ref),
+                            ],
+                            &coverage_refs,
+                            "witness value is measured from source-backed obstruction support rows",
+                        );
+                        let measure_value = measured_part4_distance_value(
+                            support.curvature_value * support.weight.max(1),
+                            "obstruction-measure-mass",
+                            vec![support.witness_support_id.clone()],
+                            vec![
+                                format!("Omega_U:circuit:{circuit_ref}"),
+                                format!("curvatureSupport:{}", support.witness_support_id),
+                            ],
+                            &coverage_refs,
+                            "Omega_U(A) mass contribution over the selected obstruction circuit",
+                        );
+                        (witness_value, measure_value, "measured".to_string())
+                    } else {
+                        let blockers = if support.missing_evidence.is_empty() {
+                            vec![format!("unmeasuredWitness:{}", support.witness_support_id)]
+                        } else {
+                            support.missing_evidence.clone()
+                        };
+                        let value = ArchSigDistanceValueV0 {
+                            status: "blocked".to_string(),
+                            measured_value: None,
+                            unit: "obstruction-measure-mass".to_string(),
+                            provenance_refs: vec![support.witness_support_id.clone()],
+                            evaluator_basis_refs: vec![
+                                format!("Omega_U:unmeasuredWitness:{}", support.witness_rule_ref),
+                                format!("selectedAxis:{}", support.selected_axis_ref),
+                            ],
+                            coverage_refs: coverage_refs.clone(),
+                            blocker_refs: blockers,
+                            reading:
+                                "missing witness support blocks obstruction measure; it is not zero curvature"
+                                    .to_string(),
+                        };
+                        (value.clone(), value, "blockedByMissingWitness".to_string())
+                    };
+
+                ArchSigObstructionMeasureReadingV0 {
+                    obstruction_measure_reading_id,
+                    profile_ref: reading.profile_ref.clone(),
+                    obstruction_circuit_ref: circuit_ref,
+                    witness_support_ref: support.witness_support_id.clone(),
+                    witness_rule_ref: support.witness_rule_ref.clone(),
+                    selected_axis_ref: support.selected_axis_ref.clone(),
+                    signature_axis_ref: support.signature_axis_ref.clone(),
+                    distance_profile_ref: foundation.profile.profile_id.clone(),
+                    diagnostic_scope_ref: foundation.diagnostic_scope.scope_id.clone(),
+                    witness_value,
+                    measure_value,
+                    support_refs: support.support_refs.clone(),
+                    source_refs: support.source_refs.clone(),
+                    observation_refs: support.observation_refs.clone(),
+                    missing_evidence: support.missing_evidence.clone(),
+                    measurement_status,
+                    evidence_boundary:
+                        "obstruction measure is computed from selected witness support rows under LawPolicy; missing witnesses remain blockers, not zero curvature"
+                            .to_string(),
+                    non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
+                }
+            })
+        })
+        .collect()
+}
+
+fn attach_obstruction_measure_refs(
+    curvature_support_readings: &mut [ArchSigCurvatureSupportReadingV0],
+    obstruction_measure_readings: &[ArchSigObstructionMeasureReadingV0],
+) {
+    for support_reading in curvature_support_readings {
+        for support in &mut support_reading.witness_supports {
+            support.obstruction_measure_reading_refs = obstruction_measure_readings
+                .iter()
+                .filter(|reading| reading.witness_support_ref == support.witness_support_id)
+                .map(|reading| reading.obstruction_measure_reading_id.clone())
+                .collect();
+        }
+    }
+}
+
+fn build_curvature_mass_readings(
+    curvature_support_readings: &[ArchSigCurvatureSupportReadingV0],
+    curvature_transfer_readings: &[ArchSigCurvatureTransferReadingV0],
+    operation_distance_readings: &[ArchSigOperationDistanceReadingV0],
+    obstruction_measure_readings: &[ArchSigObstructionMeasureReadingV0],
+    foundation: &ArchSigPart4DistanceFoundationV0,
+) -> Vec<ArchSigCurvatureMassReadingV0> {
+    let coverage_refs = foundation.profile.coverage_policy_refs.clone();
+    curvature_support_readings
+        .iter()
+        .map(|support_reading| {
+            let measure_refs = obstruction_measure_readings
+                .iter()
+                .filter(|reading| reading.profile_ref == support_reading.profile_ref)
+                .collect::<Vec<_>>();
+            let measured_mass = measure_refs
+                .iter()
+                .filter_map(|reading| reading.measure_value.measured_value)
+                .sum::<i64>();
+            let blockers = unique_strings(
+                support_reading
+                    .unmeasured_axis_refs
+                    .iter()
+                    .map(|axis| format!("unmeasuredAxis:{axis}"))
+                    .chain(support_reading.missing_evidence.iter().cloned())
+                    .chain(
+                        measure_refs
+                            .iter()
+                            .flat_map(|reading| reading.measure_value.blocker_refs.clone()),
+                    ),
+            );
+            let measure_ids = measure_refs
+                .iter()
+                .map(|reading| reading.obstruction_measure_reading_id.clone())
+                .collect::<Vec<_>>();
+            let curvature_mass = if blockers.is_empty() {
+                measured_part4_distance_value(
+                    measured_mass,
+                    "curvature-mass",
+                    measure_ids.clone(),
+                    vec![
+                        format!("curv_mass_U:{}", support_reading.profile_ref),
+                        "norm:sumSelectedObstructionMeasure".to_string(),
+                    ],
+                    &coverage_refs,
+                    "curvature mass is the selected norm of witness-backed obstruction measure rows",
+                )
+            } else {
+                ArchSigDistanceValueV0 {
+                    status: "blocked".to_string(),
+                    measured_value: None,
+                    unit: "curvature-mass".to_string(),
+                    provenance_refs: measure_ids.clone(),
+                    evaluator_basis_refs: vec![
+                        format!("curv_mass_U:{}", support_reading.profile_ref),
+                        "unmeasuredIsNotZero".to_string(),
+                    ],
+                    coverage_refs: coverage_refs.clone(),
+                    blocker_refs: blockers.clone(),
+                    reading:
+                        "curvature mass is blocked while selected witness rows or axes are unmeasured; absence is not zero curvature"
+                            .to_string(),
+                }
+            };
+            let operation_target_decrease = operation_distance_readings
+                .iter()
+                .filter_map(|reading| reading.target_distance_decrease.measured_value)
+                .sum::<i64>();
+            let protected_axis_movement = operation_distance_readings
+                .iter()
+                .filter_map(|reading| reading.protected_axis_movement.measured_value)
+                .sum::<i64>();
+            let transfer_reading = curvature_transfer_readings
+                .iter()
+                .find(|reading| reading.profile_ref == support_reading.profile_ref);
+            let transfer_weight = transfer_reading
+                .map(|reading| {
+                    reading
+                        .transfer_edges
+                        .iter()
+                        .map(|edge| edge.weight)
+                        .sum::<i64>()
+                })
+                .unwrap_or(0);
+            let transferred_obstruction_refs = transfer_reading
+                .map(|reading| {
+                    unique_strings(reading.transfer_edges.iter().flat_map(|edge| {
+                        edge.witness_refs
+                            .iter()
+                            .cloned()
+                            .chain(std::iter::once(edge.edge_id.clone()))
+                    }))
+                })
+                .unwrap_or_default();
+            let operation_distance_refs = operation_distance_readings
+                .iter()
+                .map(|reading| reading.operation_distance_reading_id.clone())
+                .collect::<Vec<_>>();
+            let before_operation_mass = measured_part4_distance_value(
+                measured_mass,
+                "curvature-mass",
+                measure_ids.clone(),
+                vec!["beforeOperation:Omega_U(A)".to_string()],
+                &coverage_refs,
+                "before-operation mass is the measured selected support contribution only",
+            );
+            let after_value = measured_mass
+                .saturating_sub(operation_target_decrease)
+                .saturating_add(protected_axis_movement);
+            let after_operation_mass = if blockers.is_empty() {
+                measured_part4_distance_value(
+                    after_value,
+                    "curvature-mass",
+                    measure_ids.clone(),
+                    vec![
+                        format!("afterOperation:targetDecrease:{operation_target_decrease}"),
+                        format!("afterOperation:protectedMovement:{protected_axis_movement}"),
+                    ],
+                    &coverage_refs,
+                    "after-operation mass separates target-axis decrease from protected-axis movement",
+                )
+            } else {
+                blocked_curvature_distance_value(
+                    "curvature-mass",
+                    measure_ids.clone(),
+                    vec!["afterOperation:blockedByUnmeasuredCurvature".to_string()],
+                    &coverage_refs,
+                    blockers.clone(),
+                    "after-operation curvature mass is blocked while selected curvature rows remain unmeasured",
+                )
+            };
+            let target_axis_decrease = measured_part4_distance_value(
+                operation_target_decrease,
+                "curvature-target-axis-decrease",
+                operation_distance_refs.clone(),
+                vec!["curvatureTransport:targetAxisDecrease".to_string()],
+                &coverage_refs,
+                "target-axis curvature decrease is read separately from protected-axis movement",
+            );
+            let protected_axis_movement_value = measured_part4_distance_value(
+                protected_axis_movement,
+                "curvature-protected-axis-movement",
+                operation_distance_refs.clone(),
+                vec!["curvatureTransport:protectedAxisMovement".to_string()],
+                &coverage_refs,
+                "protected-axis movement is tracked as possible curvature transport, not erased target improvement",
+            );
+            let transport_distance = if blockers.is_empty() {
+                measured_part4_distance_value(
+                    transfer_weight + protected_axis_movement,
+                    "curvature-transport-distance",
+                    transfer_reading
+                        .map(|reading| vec![reading.reading_id.clone()])
+                        .unwrap_or_default(),
+                    vec![
+                        format!("transport_U:transferWeight:{transfer_weight}"),
+                        format!("transport_U:protectedMovement:{protected_axis_movement}"),
+                    ],
+                    &coverage_refs,
+                    "curvature transport compares selected obstruction measure before and after operation over measured supports",
+                )
+            } else {
+                blocked_curvature_distance_value(
+                    "curvature-transport-distance",
+                    transfer_reading
+                        .map(|reading| vec![reading.reading_id.clone()])
+                        .unwrap_or_else(|| measure_ids.clone()),
+                    vec!["transport_U:blockedByUnmeasuredCurvature".to_string()],
+                    &coverage_refs,
+                    blockers.clone(),
+                    "curvature transport is blocked by unmeasured witness rows or axes and cannot be read as zero transfer",
+                )
+            };
+            ArchSigCurvatureMassReadingV0 {
+                curvature_mass_reading_id: format!(
+                    "curvature-mass:{}",
+                    stable_id(&support_reading.reading_id)
+                ),
+                profile_ref: support_reading.profile_ref.clone(),
+                support_reading_ref: support_reading.reading_id.clone(),
+                transfer_reading_ref: transfer_reading.map(|reading| reading.reading_id.clone()),
+                distance_profile_ref: foundation.profile.profile_id.clone(),
+                diagnostic_scope_ref: foundation.diagnostic_scope.scope_id.clone(),
+                obstruction_measure_reading_refs: measure_ids,
+                measured_axis_refs: support_reading.measured_axis_refs.clone(),
+                unmeasured_axis_refs: support_reading.unmeasured_axis_refs.clone(),
+                curvature_mass,
+                before_operation_mass,
+                after_operation_mass,
+                target_axis_decrease,
+                protected_axis_movement: protected_axis_movement_value,
+                transport_distance,
+                transferred_obstruction_refs,
+                complexity_transfer_distance_refs: operation_distance_refs,
+                evidence_refs: unique_strings(
+                    support_reading
+                        .witness_supports
+                        .iter()
+                        .flat_map(|support| support.support_refs.iter().cloned()),
+                ),
+                evidence_boundary:
+                    "curvature mass and transport are selected LawPolicy-relative readings over witness-backed obstruction measure; they are not global flatness or future incident claims"
+                        .to_string(),
+                non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
+            }
+        })
+        .collect()
+}
+
+fn blocked_curvature_distance_value(
+    unit: &str,
+    provenance_refs: Vec<String>,
+    evaluator_basis_refs: Vec<String>,
+    coverage_refs: &[String],
+    blocker_refs: Vec<String>,
+    reading: &str,
+) -> ArchSigDistanceValueV0 {
+    ArchSigDistanceValueV0 {
+        status: "blocked".to_string(),
+        measured_value: None,
+        unit: unit.to_string(),
+        provenance_refs,
+        evaluator_basis_refs,
+        coverage_refs: coverage_refs.to_vec(),
+        blocker_refs,
+        reading: reading.to_string(),
+    }
+}
+
+fn attach_curvature_mass_refs(
+    curvature_support_readings: &mut [ArchSigCurvatureSupportReadingV0],
+    curvature_transfer_readings: &mut [ArchSigCurvatureTransferReadingV0],
+    curvature_mass_readings: &[ArchSigCurvatureMassReadingV0],
+) {
+    for mass in curvature_mass_readings {
+        if let Some(support) = curvature_support_readings
+            .iter_mut()
+            .find(|reading| reading.reading_id == mass.support_reading_ref)
+        {
+            support
+                .part4_distance_refs
+                .push(mass.curvature_mass_reading_id.clone());
+        }
+        if let Some(transfer_ref) = &mass.transfer_reading_ref {
+            if let Some(transfer) = curvature_transfer_readings
+                .iter_mut()
+                .find(|reading| reading.reading_id == *transfer_ref)
+            {
+                transfer
+                    .part4_distance_refs
+                    .push(mass.curvature_mass_reading_id.clone());
+                for edge in &mut transfer.transfer_edges {
+                    edge.part4_distance_refs
+                        .push(mass.curvature_mass_reading_id.clone());
+                }
+            }
+        }
+    }
+}
+
+fn promote_curvature_geometry_supporting_distance(
+    foundation: &mut ArchSigPart4DistanceFoundationV0,
+    readings: &[ArchSigCurvatureMassReadingV0],
+) {
+    if readings.is_empty() {
+        return;
+    }
+    if let Some(distance) = foundation
+        .supporting_distances
+        .iter_mut()
+        .find(|distance| distance.distance_family == "curvatureGeometry")
+    {
+        let blockers = readings
+            .iter()
+            .flat_map(|reading| reading.curvature_mass.blocker_refs.clone())
+            .collect::<BTreeSet<_>>()
+            .into_iter()
+            .collect::<Vec<_>>();
+        let total = readings
+            .iter()
+            .filter_map(|reading| reading.curvature_mass.measured_value)
+            .sum::<i64>();
+        distance.value = if blockers.is_empty() {
+            measured_part4_distance_value(
+                total,
+                "curvature-mass",
+                readings
+                    .iter()
+                    .map(|reading| reading.curvature_mass_reading_id.clone())
+                    .collect(),
+                readings
+                    .iter()
+                    .map(|reading| format!("curv_mass_U:{}", reading.profile_ref))
+                    .collect(),
+                &foundation.profile.coverage_policy_refs,
+                "curvatureGeometry aggregates selected witness-backed curvature mass readings",
+            )
+        } else {
+            blocked_curvature_distance_value(
+                "curvature-mass",
+                readings
+                    .iter()
+                    .map(|reading| reading.curvature_mass_reading_id.clone())
+                    .collect(),
+                readings
+                    .iter()
+                    .map(|reading| format!("curvatureMass:{}", reading.curvature_mass_reading_id))
+                    .collect(),
+                &foundation.profile.coverage_policy_refs,
+                blockers,
+                "curvatureGeometry remains blocked while selected witness rows or axes are unmeasured",
+            )
+        };
+        distance.evidence_boundary =
+            "curvatureGeometry reads selected obstruction measure and transport; it is not global zero-curvature proof"
+                .to_string();
+    }
+    refresh_part4_status_summary(foundation);
 }
 
 fn build_curvature_transfer_readings(
@@ -7195,6 +7669,7 @@ fn build_curvature_transfer_readings(
                 evidence_boundary:
                     "transfer operator is computed from measured curvature support rows and does not forecast future cost, safety, or amplification"
                         .to_string(),
+                part4_distance_refs: Vec::new(),
                 non_conclusions: vec![
                     "rho(T^kappa) > 0 is only a bounded recurrent obstruction reading"
                         .to_string(),
@@ -7280,6 +7755,7 @@ fn build_curvature_transfer_edges(
                     "openEdge"
                 }
                 .to_string(),
+                part4_distance_refs: Vec::new(),
                 reading: if source.witness_support_id == target.witness_support_id {
                     "positive self-loop records a closed walk in the finite transfer operator"
                         .to_string()
@@ -7397,6 +7873,7 @@ fn recurrent_transfer_spectral_radius(transfer_edges: &[ArchSigCurvatureTransfer
 fn build_architecture_spectrum_report(
     curvature_support_readings: &[ArchSigCurvatureSupportReadingV0],
     curvature_transfer_readings: &[ArchSigCurvatureTransferReadingV0],
+    curvature_mass_readings: &[ArchSigCurvatureMassReadingV0],
 ) -> Option<ArchSigArchitectureSpectrumReportV0> {
     let support_reading = curvature_support_readings.first()?;
     let profile_ref = support_reading.profile_ref.clone();
@@ -7480,7 +7957,7 @@ fn build_architecture_spectrum_report(
     };
     Some(ArchSigArchitectureSpectrumReportV0 {
         report_id: format!("architecture-spectrum-report:{}", stable_id(&profile_ref)),
-        profile_ref,
+        profile_ref: profile_ref.clone(),
         status: status.to_string(),
         measurement_status: if support_reading
             .witness_supports
@@ -7498,6 +7975,11 @@ fn build_architecture_spectrum_report(
         top_witness_clusters,
         recurrent_obstructions,
         coverage_gaps: support_reading.missing_evidence.clone(),
+        curvature_mass_reading_refs: curvature_mass_readings
+            .iter()
+            .filter(|reading| reading.profile_ref == profile_ref)
+            .map(|reading| reading.curvature_mass_reading_id.clone())
+            .collect(),
         measured_boundary:
             "report is measured from ArchSig curvature support and transfer readings under selected LawPolicy coverage and exactness assumptions"
                 .to_string(),
@@ -15333,6 +15815,8 @@ pub fn validate_archsig_analysis_packet_report(
         check_configuration_distance_reading_surface(packet),
         check_signature_distance_reading_surface(packet),
         check_operation_distance_reading_surface(packet),
+        check_obstruction_measure_reading_surface(packet),
+        check_curvature_mass_reading_surface(packet),
         check_aat_structural_reading_surfaces(packet),
         check_current_state_evolution_boundary(packet),
         check_operation_square_trace_surface(packet),
@@ -15373,6 +15857,8 @@ pub fn validate_archsig_analysis_packet_report(
         configuration_distance_reading_count: packet.configuration_distance_readings.len(),
         signature_distance_reading_count: packet.signature_distance_readings.len(),
         operation_distance_reading_count: packet.operation_distance_readings.len(),
+        obstruction_measure_reading_count: packet.obstruction_measure_readings.len(),
+        curvature_mass_reading_count: packet.curvature_mass_readings.len(),
         obstruction_circuit_count: packet.obstruction_circuits.len(),
         signature_axis_count: packet.signature_axes.len(),
         analytic_representation_count: packet.analytic_representations.len(),
@@ -21810,6 +22296,307 @@ fn check_operation_distance_value(
     }
 }
 
+fn check_obstruction_measure_reading_surface(packet: &ArchSigAnalysisPacketV0) -> ValidationCheck {
+    let mut examples = Vec::new();
+    let support_ids = packet
+        .curvature_support_readings
+        .iter()
+        .flat_map(|reading| reading.witness_supports.iter())
+        .map(|support| support.witness_support_id.as_str())
+        .collect::<BTreeSet<_>>();
+    let measure_ids = packet
+        .obstruction_measure_readings
+        .iter()
+        .map(|reading| reading.obstruction_measure_reading_id.as_str())
+        .collect::<BTreeSet<_>>();
+
+    if !packet.curvature_support_readings.is_empty()
+        && packet.obstruction_measure_readings.is_empty()
+    {
+        examples.push(generic_validation_example(
+            "obstructionMeasureReadings",
+            "empty",
+            "curvature support readings must be backed by obstruction measure readings",
+        ));
+    }
+    for support_reading in &packet.curvature_support_readings {
+        for support in &support_reading.witness_supports {
+            if support.obstruction_measure_reading_refs.is_empty()
+                || support
+                    .obstruction_measure_reading_refs
+                    .iter()
+                    .any(|reading_ref| !measure_ids.contains(reading_ref.as_str()))
+            {
+                examples.push(generic_validation_example(
+                    &support.witness_support_id,
+                    "obstructionMeasureReadingRefs",
+                    "curvature witness support rows must point to obstruction measure readings",
+                ));
+            }
+        }
+    }
+    for reading in &packet.obstruction_measure_readings {
+        if !support_ids.contains(reading.witness_support_ref.as_str()) {
+            examples.push(generic_validation_example(
+                &reading.obstruction_measure_reading_id,
+                &reading.witness_support_ref,
+                "obstruction measure reading must reference a known curvature witness support row",
+            ));
+        }
+        for field in [
+            &reading.profile_ref,
+            &reading.obstruction_circuit_ref,
+            &reading.witness_rule_ref,
+            &reading.selected_axis_ref,
+            &reading.signature_axis_ref,
+            &reading.distance_profile_ref,
+            &reading.diagnostic_scope_ref,
+            &reading.measurement_status,
+            &reading.evidence_boundary,
+        ] {
+            push_blank(
+                &mut examples,
+                &reading.obstruction_measure_reading_id,
+                field,
+            );
+        }
+        check_curvature_distance_value(
+            &mut examples,
+            &reading.obstruction_measure_reading_id,
+            "witnessValue",
+            &reading.witness_value,
+            "witness",
+        );
+        check_curvature_distance_value(
+            &mut examples,
+            &reading.obstruction_measure_reading_id,
+            "measureValue",
+            &reading.measure_value,
+            "Omega_U:",
+        );
+        if reading.measure_value.status == "zero"
+            && reading.support_refs.is_empty()
+            && reading.missing_evidence.is_empty()
+        {
+            examples.push(generic_validation_example(
+                &reading.obstruction_measure_reading_id,
+                "measureValue",
+                "obstruction measure must not turn absent witness support into zero curvature",
+            ));
+        }
+        if !reading
+            .evidence_boundary
+            .contains("missing witnesses remain blockers")
+        {
+            examples.push(generic_validation_example(
+                &reading.obstruction_measure_reading_id,
+                "evidenceBoundary",
+                "obstruction measure must state the missing-witness blocker boundary",
+            ));
+        }
+    }
+
+    check_from_examples(
+        "archsig-analysis-packet-obstruction-measure-readings",
+        "packet exposes witness-backed Part IV obstruction measure rows and preserves missing witnesses as blockers",
+        examples,
+        "fail",
+    )
+}
+
+fn check_curvature_mass_reading_surface(packet: &ArchSigAnalysisPacketV0) -> ValidationCheck {
+    let mut examples = Vec::new();
+    let mass_ids = packet
+        .curvature_mass_readings
+        .iter()
+        .map(|reading| reading.curvature_mass_reading_id.as_str())
+        .collect::<BTreeSet<_>>();
+    let measure_ids = packet
+        .obstruction_measure_readings
+        .iter()
+        .map(|reading| reading.obstruction_measure_reading_id.as_str())
+        .collect::<BTreeSet<_>>();
+    if !packet.obstruction_measure_readings.is_empty() && packet.curvature_mass_readings.is_empty()
+    {
+        examples.push(generic_validation_example(
+            "curvatureMassReadings",
+            "empty",
+            "obstruction measure readings must aggregate into curvature mass readings",
+        ));
+    }
+    for support in &packet.curvature_support_readings {
+        if support.part4_distance_refs.is_empty()
+            || support
+                .part4_distance_refs
+                .iter()
+                .any(|reading_ref| !mass_ids.contains(reading_ref.as_str()))
+        {
+            examples.push(generic_validation_example(
+                &support.reading_id,
+                "part4DistanceRefs",
+                "curvature support readings must point to Part IV curvature mass readings",
+            ));
+        }
+    }
+    for transfer in &packet.curvature_transfer_readings {
+        if transfer.part4_distance_refs.is_empty()
+            || transfer
+                .part4_distance_refs
+                .iter()
+                .any(|reading_ref| !mass_ids.contains(reading_ref.as_str()))
+        {
+            examples.push(generic_validation_example(
+                &transfer.reading_id,
+                "part4DistanceRefs",
+                "curvature transfer readings must point to Part IV curvature mass readings",
+            ));
+        }
+        for edge in &transfer.transfer_edges {
+            if edge.part4_distance_refs.is_empty()
+                || edge
+                    .part4_distance_refs
+                    .iter()
+                    .any(|reading_ref| !mass_ids.contains(reading_ref.as_str()))
+            {
+                examples.push(generic_validation_example(
+                    &edge.edge_id,
+                    "part4DistanceRefs",
+                    "curvature transfer edges must retain curvature transport distance refs",
+                ));
+            }
+        }
+    }
+    if let Some(report) = &packet.architecture_spectrum_report {
+        if report.curvature_mass_reading_refs.is_empty()
+            || report
+                .curvature_mass_reading_refs
+                .iter()
+                .any(|reading_ref| !mass_ids.contains(reading_ref.as_str()))
+        {
+            examples.push(generic_validation_example(
+                &report.report_id,
+                "curvatureMassReadingRefs",
+                "ArchitectureSpectrumReport must read curvature mass as selected measure refs, not score",
+            ));
+        }
+    }
+    for reading in &packet.curvature_mass_readings {
+        if reading.obstruction_measure_reading_refs.is_empty()
+            || reading
+                .obstruction_measure_reading_refs
+                .iter()
+                .any(|reading_ref| !measure_ids.contains(reading_ref.as_str()))
+        {
+            examples.push(generic_validation_example(
+                &reading.curvature_mass_reading_id,
+                "obstructionMeasureReadingRefs",
+                "curvature mass must aggregate known obstruction measure rows",
+            ));
+        }
+        for (field, value, prefix) in [
+            ("curvatureMass", &reading.curvature_mass, "curv_mass_U:"),
+            (
+                "beforeOperationMass",
+                &reading.before_operation_mass,
+                "beforeOperation:",
+            ),
+            (
+                "afterOperationMass",
+                &reading.after_operation_mass,
+                "afterOperation:",
+            ),
+            (
+                "targetAxisDecrease",
+                &reading.target_axis_decrease,
+                "curvatureTransport:targetAxisDecrease",
+            ),
+            (
+                "protectedAxisMovement",
+                &reading.protected_axis_movement,
+                "curvatureTransport:protectedAxisMovement",
+            ),
+            (
+                "transportDistance",
+                &reading.transport_distance,
+                "transport_U:",
+            ),
+        ] {
+            check_curvature_distance_value(
+                &mut examples,
+                &reading.curvature_mass_reading_id,
+                field,
+                value,
+                prefix,
+            );
+        }
+        if !reading.unmeasured_axis_refs.is_empty()
+            && matches!(reading.curvature_mass.status.as_str(), "measured" | "zero")
+        {
+            examples.push(generic_validation_example(
+                &reading.curvature_mass_reading_id,
+                "curvatureMass",
+                "curvature mass must not be measured while selected axes remain unmeasured",
+            ));
+        }
+        if !reading
+            .evidence_boundary
+            .contains("not global flatness or future incident claims")
+        {
+            examples.push(generic_validation_example(
+                &reading.curvature_mass_reading_id,
+                "evidenceBoundary",
+                "curvature mass must preserve selected-scope and non-forecast boundary",
+            ));
+        }
+    }
+
+    check_from_examples(
+        "archsig-analysis-packet-curvature-mass-readings",
+        "packet exposes Part IV curvature mass and curvature transport distances without promoting unmeasured witnesses to zero",
+        examples,
+        "fail",
+    )
+}
+
+fn check_curvature_distance_value(
+    examples: &mut Vec<ValidationExample>,
+    reading_id: &str,
+    field: &str,
+    value: &ArchSigDistanceValueV0,
+    required_basis_prefix: &str,
+) {
+    if matches!(value.status.as_str(), "measured" | "zero") {
+        if value.measured_value.is_none()
+            || value.provenance_refs.is_empty()
+            || value.evaluator_basis_refs.is_empty()
+            || value.coverage_refs.is_empty()
+        {
+            examples.push(generic_validation_example(
+                reading_id,
+                field,
+                "measured curvature distance must retain value, provenance refs, evaluator basis refs, and coverage refs",
+            ));
+        }
+        if !value
+            .evaluator_basis_refs
+            .iter()
+            .any(|basis| basis.starts_with(required_basis_prefix))
+        {
+            examples.push(generic_validation_example(
+                reading_id,
+                required_basis_prefix,
+                "curvature distance must be backed by Part IV curvature-specific evaluator basis refs",
+            ));
+        }
+    } else if value.blocker_refs.is_empty() {
+        examples.push(generic_validation_example(
+            reading_id,
+            field,
+            "blocked or unmeasured curvature distance must retain blocker refs",
+        ));
+    }
+}
+
 fn check_atom_distance_value(
     examples: &mut Vec<ValidationExample>,
     reading_id: &str,
@@ -23435,6 +24222,7 @@ mod tests {
             source_refs: vec![format!("source:{witness_support_id}")],
             observation_refs: vec![format!("observation:{witness_support_id}")],
             missing_evidence: Vec::new(),
+            obstruction_measure_reading_refs: Vec::new(),
             reading: "fixture curvature support".to_string(),
         }
     }
@@ -23510,6 +24298,99 @@ mod tests {
             radius > 4.0,
             "finite matrix radius should exceed the old max-self-loop bound: {radius}"
         );
+    }
+
+    #[test]
+    fn curvature_mass_readings_keep_measure_refs_and_unmeasured_blockers() {
+        let packet = static_archsig_analysis_packet();
+
+        assert!(!packet.obstruction_measure_readings.is_empty());
+        assert!(!packet.curvature_mass_readings.is_empty());
+        assert!(packet.curvature_support_readings.iter().all(|reading| {
+            !reading.part4_distance_refs.is_empty()
+                && reading
+                    .witness_supports
+                    .iter()
+                    .all(|support| !support.obstruction_measure_reading_refs.is_empty())
+        }));
+        assert!(
+            packet
+                .curvature_transfer_readings
+                .iter()
+                .all(|reading| !reading.part4_distance_refs.is_empty())
+        );
+        let mass = packet
+            .curvature_mass_readings
+            .first()
+            .expect("static fixture has curvature mass");
+        assert_eq!(mass.curvature_mass.status, "blocked");
+        assert!(
+            !mass.unmeasured_axis_refs.is_empty() && !mass.curvature_mass.blocker_refs.is_empty()
+        );
+        assert!(!mass.complexity_transfer_distance_refs.is_empty());
+        assert!(
+            packet
+                .architecture_spectrum_report
+                .as_ref()
+                .is_some_and(|report| !report.curvature_mass_reading_refs.is_empty())
+        );
+    }
+
+    #[test]
+    fn curvature_mass_negative_fixture_missing_part4_refs_fails_validation() {
+        let mut packet = static_archsig_analysis_packet();
+        packet.curvature_support_readings[0]
+            .part4_distance_refs
+            .clear();
+
+        let report = validate_archsig_analysis_packet_report(
+            &packet,
+            "negative-fixture-curvature-mass-missing-ref.json",
+        );
+
+        assert_eq!(report.summary.result, "fail");
+        assert!(report.checks.iter().any(|check| {
+            check.id == "archsig-analysis-packet-curvature-mass-readings"
+                && check.result == "fail"
+                && check.examples.iter().any(|example| {
+                    example
+                        .target
+                        .as_deref()
+                        .is_some_and(|target| target == "part4DistanceRefs")
+                })
+        }));
+    }
+
+    #[test]
+    fn obstruction_measure_negative_fixture_missing_witness_zero_fails_validation() {
+        let mut packet = static_archsig_analysis_packet();
+        let reading = packet
+            .obstruction_measure_readings
+            .iter_mut()
+            .find(|reading| reading.measure_value.status == "blocked")
+            .expect("static fixture has blocked obstruction measure row");
+        reading.measure_value.status = "zero".to_string();
+        reading.measure_value.measured_value = Some(0);
+        reading.measure_value.blocker_refs.clear();
+        reading.support_refs.clear();
+        reading.missing_evidence.clear();
+
+        let report = validate_archsig_analysis_packet_report(
+            &packet,
+            "negative-fixture-obstruction-measure-zero.json",
+        );
+
+        assert_eq!(report.summary.result, "fail");
+        assert!(report.checks.iter().any(|check| {
+            check.id == "archsig-analysis-packet-obstruction-measure-readings"
+                && check.result == "fail"
+                && check.examples.iter().any(|example| {
+                    example
+                        .target
+                        .as_deref()
+                        .is_some_and(|target| target == "measureValue")
+                })
+        }));
     }
 
     #[test]

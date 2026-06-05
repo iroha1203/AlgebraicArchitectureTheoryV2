@@ -192,6 +192,16 @@ Target decrease and protected-axis movement are separate fields, and transfer
 risk / unmeasured protected axes block side-effect bounds rather than becoming
 repair-safety claims.
 
+`obstructionMeasureReadings[]` and `curvatureMassReadings[]` are the Part IV
+obstruction / curvature evaluator surfaces. Obstruction measure rows are built
+from selected LawPolicy witness support rows and keep missing witnesses as
+blockers, not zero curvature. Curvature mass rows aggregate those selected
+measure rows and separate before-operation mass, after-operation mass,
+target-axis decrease, protected-axis movement, and curvature transport distance.
+`curvatureSupportReadings[]`, `curvatureTransferReadings[]`, transfer edges,
+and `architectureSpectrumReport` retain Part IV distance refs back to these
+rows.
+
 The implemented schema records:
 
 - `interpretationProfileRef`
@@ -212,6 +222,8 @@ The implemented schema records:
 - `configurationDistanceReadings`
 - `signatureDistanceReadings`
 - `operationDistanceReadings`
+- `obstructionMeasureReadings`
+- `curvatureMassReadings`
 - `obstructionCircuits`
 - `signatureAxes`
 - `analyticRepresentations`
@@ -395,6 +407,13 @@ The builder:
   records the local curvature reference `kappa(D)`, diagram reference, lhs/rhs
   observation refs, distance kind and inputs, soundness boundary, and coverage
   status. Missing support is `blockedByCoverageGap`, not zero.
+- obstruction measure and curvature mass readings integrate the support and
+  transfer surfaces with Part IV `DistanceValue` provenance. `Omega_U(A)` is
+  emitted as selected witness-backed measure rows, `curv_mass_U(A)` is a
+  selected-scope aggregate, and unmeasured axes block mass / transport instead
+  of becoming zero curvature. Curvature transport keeps target decrease,
+  protected-axis movement, transferred obstruction refs, and complexity-transfer
+  distance refs separate.
 - curvature transfer readings build a finite nonnegative transfer operator over
   measured curvature support rows. Transfer entries are backed by selected
   relation-graph evidence or shared selected-axis support, and report row/column
