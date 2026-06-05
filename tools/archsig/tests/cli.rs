@@ -3373,11 +3373,15 @@ fn assert_north_star_packet_surfaces(json: &Value) {
                 let curvature_geometry_is_evaluator_backed = entry["distanceFamily"]
                     == "curvatureGeometry"
                     && entry["value"]["status"] != "unmeasured";
+                let homotopy_filling_is_evaluator_backed = entry["distanceFamily"]
+                    == "homotopyFillingGeometry"
+                    && entry["value"]["status"] != "unmeasured";
                 if entry["distanceFamily"] == "atomGeometry"
                     || entry["distanceFamily"] == "configurationGeometry"
                     || entry["distanceFamily"] == "signatureGeometry"
                     || entry["distanceFamily"] == "operationGeometry"
                     || curvature_geometry_is_evaluator_backed
+                    || homotopy_filling_is_evaluator_backed
                 {
                     (entry["value"]["status"] == "measured"
                         || entry["value"]["status"] == "zero"
@@ -3402,7 +3406,7 @@ fn assert_north_star_packet_surfaces(json: &Value) {
                 .is_some_and(|count| count >= 4)
             && part4_distance["statusSummary"]["unmeasuredCount"]
                 .as_u64()
-                .is_some_and(|count| count >= 2)
+                .is_some_and(|count| count >= 1)
             && part4_distance["statusSummary"]["schemaFoundationOnlyCount"] == 0,
         "Part IV foundation must route atom/configuration/signature/operation/curvature geometry through evaluator readings while preserving semantic/gap blockers and keeping remaining evaluators unmeasured"
     );

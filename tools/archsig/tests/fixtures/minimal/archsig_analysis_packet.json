@@ -1559,25 +1559,30 @@
         "sourceRef": "ArchMap",
         "targetRef": "Part4DistanceEngine",
         "value": {
-          "status": "unmeasured",
-          "unit": "selected-distance-unit",
+          "status": "blocked",
+          "unit": "filling-cost",
           "provenanceRefs": [
-            "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md",
-            "docs/aat/AAT_Distance_Extension_Design.md"
+            "homotopy-distance:loop-candidate-path-pair-semantic-contract-loop-0",
+            "homotopy-distance:loop-candidate-path-pair-path-rule-interface-implementation-1",
+            "homotopy-distance:loop-candidate-path-pair-path-rule-cache-repository-2"
           ],
-          "evaluatorBasisRefs": [],
+          "evaluatorBasisRefs": [
+            "homotopyDistance:loop-candidate:path-pair-semantic-contract-loop-0",
+            "homotopyDistance:loop-candidate:path-pair-path-rule-interface-implementation-1",
+            "homotopyDistance:loop-candidate:path-pair-path-rule-cache-repository-2"
+          ],
           "coverageRefs": [
             "coverage:layer-atoms",
             "coverage:semantic-contract-atoms"
           ],
           "blockerRefs": [
-            "issue:#1707 homotopy filling distance evaluator"
+            "gap-runtime-user-db-trace"
           ],
-          "reading": "distance family is represented in the Part4 contract but has not been measured by its evaluator yet"
+          "reading": "homotopyFillingGeometry remains blocked while selected fillers are missing"
         },
         "profileRef": "part4-distance-profile:llm-native-aat-law-policy-fixture",
         "diagnosticScopeRef": "part4-diagnostic-scope:fixture-archmap-atom-observation",
-        "evidenceBoundary": "unmeasured means no evaluator result has been supplied; it must not be aggregated as zero",
+        "evidenceBoundary": "homotopyFillingGeometry reads selected path-pair and filler evidence; it is not global homology or path truth",
         "nonConclusions": [
           "ArchSig analysis packet is not a Lean theorem proof",
           "ArchSig analysis packet is not global architecture truth",
@@ -1628,11 +1633,11 @@
     "statusSummary": {
       "measuredCount": 0,
       "zeroCount": 0,
-      "unmeasuredCount": 2,
+      "unmeasuredCount": 1,
       "unavailableCount": 0,
       "incomparableCount": 0,
       "infiniteCount": 0,
-      "blockedCount": 5,
+      "blockedCount": 6,
       "schemaFoundationOnlyCount": 0
     },
     "measurementBoundary": "Part4 distance foundation is a proxy-free measurement contract: no distance is measured until an evaluator supplies provenance, basis refs, and coverage refs",
@@ -10507,6 +10512,9 @@
         "src-service-user",
         "test-user-contract"
       ],
+      "part4DistanceRefs": [
+        "homotopy-distance:loop-candidate-path-pair-semantic-contract-loop-0"
+      ],
       "coverageBoundary": "missing path or filler evidence blocks zero and Stokes-style readings",
       "evidenceBoundary": "loop candidate is a bounded homotopy review surface, not a violation proof",
       "nonConclusions": [
@@ -10566,6 +10574,9 @@
         "src-service-user",
         "test-user-contract"
       ],
+      "part4DistanceRefs": [
+        "homotopy-distance:loop-candidate-path-pair-path-rule-interface-implementation-1"
+      ],
       "coverageBoundary": "missing path or filler evidence blocks zero and Stokes-style readings",
       "evidenceBoundary": "loop candidate is a bounded homotopy review surface, not a violation proof",
       "nonConclusions": [
@@ -10624,6 +10635,9 @@
         "src-route-users",
         "src-service-user",
         "test-user-contract"
+      ],
+      "part4DistanceRefs": [
+        "homotopy-distance:loop-candidate-path-pair-path-rule-cache-repository-2"
       ],
       "coverageBoundary": "missing path or filler evidence blocks zero and Stokes-style readings",
       "evidenceBoundary": "loop candidate is a bounded homotopy review surface, not a violation proof",
@@ -10689,6 +10703,9 @@
         "check-filler-source-kind:test",
         "check-filler-source-kind:runtime-trace"
       ],
+      "part4DistanceRefs": [
+        "homotopy-distance:loop-candidate-path-pair-semantic-contract-loop-0"
+      ],
       "evidenceBoundary": "filler evidence is bounded to supplied source refs, tests, runtime evidence, or user-confirmed policy",
       "nonConclusions": [
         "candidate paths and loops are review cues, not path truth",
@@ -10749,6 +10766,9 @@
         "check-filler-source-kind:policy",
         "check-filler-source-kind:test",
         "check-filler-source-kind:runtime-trace"
+      ],
+      "part4DistanceRefs": [
+        "homotopy-distance:loop-candidate-path-pair-semantic-contract-loop-0"
       ],
       "evidenceBoundary": "filler absence blocks Stokes-style local-curvature conclusions",
       "nonConclusions": [
@@ -10811,6 +10831,9 @@
         "check-filler-source-kind:test",
         "check-filler-source-kind:runtime-trace"
       ],
+      "part4DistanceRefs": [
+        "homotopy-distance:loop-candidate-path-pair-path-rule-interface-implementation-1"
+      ],
       "evidenceBoundary": "filler evidence is bounded to supplied source refs, tests, runtime evidence, or user-confirmed policy",
       "nonConclusions": [
         "candidate paths and loops are review cues, not path truth",
@@ -10871,6 +10894,9 @@
         "check-filler-source-kind:policy",
         "check-filler-source-kind:test",
         "check-filler-source-kind:runtime-trace"
+      ],
+      "part4DistanceRefs": [
+        "homotopy-distance:loop-candidate-path-pair-path-rule-interface-implementation-1"
       ],
       "evidenceBoundary": "filler absence blocks Stokes-style local-curvature conclusions",
       "nonConclusions": [
@@ -10933,6 +10959,9 @@
         "check-filler-source-kind:test",
         "check-filler-source-kind:runtime-trace"
       ],
+      "part4DistanceRefs": [
+        "homotopy-distance:loop-candidate-path-pair-path-rule-cache-repository-2"
+      ],
       "evidenceBoundary": "filler evidence is bounded to supplied source refs, tests, runtime evidence, or user-confirmed policy",
       "nonConclusions": [
         "candidate paths and loops are review cues, not path truth",
@@ -10994,6 +11023,9 @@
         "check-filler-source-kind:test",
         "check-filler-source-kind:runtime-trace"
       ],
+      "part4DistanceRefs": [
+        "homotopy-distance:loop-candidate-path-pair-path-rule-cache-repository-2"
+      ],
       "evidenceBoundary": "filler absence blocks Stokes-style local-curvature conclusions",
       "nonConclusions": [
         "candidate paths and loops are review cues, not path truth",
@@ -11045,6 +11077,9 @@
         "src-route-users",
         "src-service-user",
         "test-user-contract"
+      ],
+      "part4DistanceRefs": [
+        "homotopy-distance:loop-candidate-path-pair-semantic-contract-loop-0"
       ],
       "coverageBoundary": "missing path or filler evidence blocks zero and Stokes-style readings",
       "evidenceBoundary": "architectural hole records missing filler evidence, not violation proof",
@@ -11098,6 +11133,9 @@
         "src-service-user",
         "test-user-contract"
       ],
+      "part4DistanceRefs": [
+        "homotopy-distance:loop-candidate-path-pair-path-rule-interface-implementation-1"
+      ],
       "coverageBoundary": "missing path or filler evidence blocks zero and Stokes-style readings",
       "evidenceBoundary": "architectural hole records missing filler evidence, not violation proof",
       "nonConclusions": [
@@ -11149,6 +11187,9 @@
         "src-route-users",
         "src-service-user",
         "test-user-contract"
+      ],
+      "part4DistanceRefs": [
+        "homotopy-distance:loop-candidate-path-pair-path-rule-cache-repository-2"
       ],
       "coverageBoundary": "missing path or filler evidence blocks zero and Stokes-style readings",
       "evidenceBoundary": "architectural hole records missing filler evidence, not violation proof",
@@ -11243,6 +11284,9 @@
       "missingFillerRefs": [
         "gap-runtime-user-db-trace"
       ],
+      "part4DistanceRefs": [
+        "homotopy-distance:loop-candidate-path-pair-semantic-contract-loop-0"
+      ],
       "coverageBoundary": "missing path or filler evidence blocks zero and Stokes-style readings",
       "exactnessAssumptionStatus": "bounded selected-axis continuation comparison; not theorem exactness",
       "nonConclusions": [
@@ -11334,6 +11378,9 @@
       "missingFillerRefs": [
         "gap-runtime-user-db-trace"
       ],
+      "part4DistanceRefs": [
+        "homotopy-distance:loop-candidate-path-pair-semantic-contract-loop-0"
+      ],
       "coverageBoundary": "missing path or filler evidence blocks zero and Stokes-style readings",
       "exactnessAssumptionStatus": "bounded selected-axis continuation comparison; not theorem exactness",
       "nonConclusions": [
@@ -11403,6 +11450,9 @@
       ],
       "missingFillerRefs": [
         "gap-runtime-user-db-trace"
+      ],
+      "part4DistanceRefs": [
+        "homotopy-distance:loop-candidate-path-pair-path-rule-interface-implementation-1"
       ],
       "coverageBoundary": "missing path or filler evidence blocks zero and Stokes-style readings",
       "exactnessAssumptionStatus": "bounded selected-axis continuation comparison; not theorem exactness",
@@ -11474,6 +11524,9 @@
       "missingFillerRefs": [
         "gap-runtime-user-db-trace"
       ],
+      "part4DistanceRefs": [
+        "homotopy-distance:loop-candidate-path-pair-path-rule-interface-implementation-1"
+      ],
       "coverageBoundary": "missing path or filler evidence blocks zero and Stokes-style readings",
       "exactnessAssumptionStatus": "bounded selected-axis continuation comparison; not theorem exactness",
       "nonConclusions": [
@@ -11543,6 +11596,9 @@
       ],
       "missingFillerRefs": [
         "gap-runtime-user-db-trace"
+      ],
+      "part4DistanceRefs": [
+        "homotopy-distance:loop-candidate-path-pair-path-rule-cache-repository-2"
       ],
       "coverageBoundary": "missing path or filler evidence blocks zero and Stokes-style readings",
       "exactnessAssumptionStatus": "bounded selected-axis continuation comparison; not theorem exactness",
@@ -11614,6 +11670,9 @@
       "missingFillerRefs": [
         "gap-runtime-user-db-trace"
       ],
+      "part4DistanceRefs": [
+        "homotopy-distance:loop-candidate-path-pair-path-rule-cache-repository-2"
+      ],
       "coverageBoundary": "missing path or filler evidence blocks zero and Stokes-style readings",
       "exactnessAssumptionStatus": "bounded selected-axis continuation comparison; not theorem exactness",
       "nonConclusions": [
@@ -11661,6 +11720,9 @@
       "reviewQueueRefs": [
         "architectural-hole:loop-candidate-path-pair-semantic-contract-loop-0"
       ],
+      "part4DistanceRefs": [
+        "homotopy-distance:loop-candidate-path-pair-semantic-contract-loop-0"
+      ],
       "coverageBoundary": "missing path or filler evidence blocks zero and Stokes-style readings",
       "evidenceBoundary": "Stokes-style reading is a bounded review queue, not theorem discharge",
       "nonConclusions": [
@@ -11706,6 +11768,9 @@
       "reviewQueueRefs": [
         "architectural-hole:loop-candidate-path-pair-path-rule-interface-implementation-1"
       ],
+      "part4DistanceRefs": [
+        "homotopy-distance:loop-candidate-path-pair-path-rule-interface-implementation-1"
+      ],
       "coverageBoundary": "missing path or filler evidence blocks zero and Stokes-style readings",
       "evidenceBoundary": "Stokes-style reading is a bounded review queue, not theorem discharge",
       "nonConclusions": [
@@ -11750,6 +11815,9 @@
       "localCurvatureCellCandidates": [],
       "reviewQueueRefs": [
         "architectural-hole:loop-candidate-path-pair-path-rule-cache-repository-2"
+      ],
+      "part4DistanceRefs": [
+        "homotopy-distance:loop-candidate-path-pair-path-rule-cache-repository-2"
       ],
       "coverageBoundary": "missing path or filler evidence blocks zero and Stokes-style readings",
       "evidenceBoundary": "Stokes-style reading is a bounded review queue, not theorem discharge",
@@ -11817,6 +11885,11 @@
     "coverageGaps": [
       "gap-runtime-user-db-trace"
     ],
+    "part4DistanceRefs": [
+      "homotopy-distance:loop-candidate-path-pair-semantic-contract-loop-0",
+      "homotopy-distance:loop-candidate-path-pair-path-rule-interface-implementation-1",
+      "homotopy-distance:loop-candidate-path-pair-path-rule-cache-repository-2"
+    ],
     "measuredBoundary": "ArchitectureHomotopyReport is bounded to supplied ArchMap, selected LawPolicy, and homotopy measurement profile",
     "recommendedReviewFocus": [
       "start with nonzero holonomy loops and compare continuation summaries",
@@ -11830,6 +11903,406 @@
       "Stokes-style readings are review queues, not theorem discharge"
     ]
   },
+  "homotopyDistanceReadings": [
+    {
+      "homotopyDistanceReadingId": "homotopy-distance:loop-candidate-path-pair-semantic-contract-loop-0",
+      "profileRef": "homotopy-profile:bounded-stokes-default",
+      "loopRef": "loop-candidate:path-pair-semantic-contract-loop-0",
+      "pathPairRef": "path-pair:semantic-contract-loop",
+      "distanceProfileRef": "part4-distance-profile:llm-native-aat-law-policy-fixture",
+      "diagnosticScopeRef": "part4-diagnostic-scope:fixture-archmap-atom-observation",
+      "homotopyDistance": {
+        "status": "blocked",
+        "unit": "homotopy-generator-cost",
+        "provenanceRefs": [
+          ".lake/runtime-trace.json",
+          "atom:capability:create-user",
+          "atom:component:route-users",
+          "atom:component:service-user",
+          "atom:contract:create-user",
+          "atom:relation:route-service",
+          "continuation-value:semantic-endpoints-route-users-service-user",
+          "continuation-value:semantic-path-p-operation-route-create-user-operation-service-create-user",
+          "continuation-value:semantic-path-q-operation-service-create-user-operation-route-create-user",
+          "doc-architecture",
+          "filler-candidate:loop-candidate-path-pair-semantic-contract-loop-0:filler-rule-authority-or-idempotency",
+          "filler-candidate:loop-candidate-path-pair-semantic-contract-loop-0:filler-rule-contract-or-test",
+          "molecule:user-request-responsibility",
+          "path:semantic-operation-flow",
+          "semantic:create-user-flow",
+          "semantic:interpretation:create-user",
+          "src-route-users",
+          "src-service-user",
+          "test-user-contract"
+        ],
+        "evaluatorBasisRefs": [
+          "d_hom:pathPair:path-pair:semantic-contract-loop"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [
+          "gap-runtime-user-db-trace"
+        ],
+        "reading": "homotopy distance is blocked by missing filler evidence and cannot be read as zero"
+      },
+      "fillingCost": {
+        "status": "blocked",
+        "unit": "filling-cost",
+        "provenanceRefs": [
+          "non-fillability-witness:gap-runtime-user-db-trace"
+        ],
+        "evaluatorBasisRefs": [
+          "fill_cost:loop:loop-candidate:path-pair-semantic-contract-loop-0"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [
+          "gap-runtime-user-db-trace"
+        ],
+        "reading": "filling cost is blocked while filler evidence is missing; missing filler is not zero cost"
+      },
+      "observationGapLowerBound": {
+        "status": "measured",
+        "measuredValue": 1,
+        "unit": "observation-gap-lower-bound",
+        "provenanceRefs": [
+          "gap-runtime-user-db-trace"
+        ],
+        "evaluatorBasisRefs": [
+          "lipschitzAssumption:selectedObservationGap",
+          "deltaOverL:1"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [],
+        "reading": "observation gap lower bound uses explicit selected Lipschitz and distance assumptions"
+      },
+      "selectedDehnArea": {
+        "status": "blocked",
+        "unit": "selected-dehn-area",
+        "provenanceRefs": [
+          "non-fillability-witness:gap-runtime-user-db-trace"
+        ],
+        "evaluatorBasisRefs": [
+          "Dehn_A:n<= 2"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [
+          "gap-runtime-user-db-trace"
+        ],
+        "reading": "selected Dehn-style area is blocked by architectural holes and missing filler evidence"
+      },
+      "fillerCandidateRefs": [
+        "filler-rule:contract-or-test",
+        "filler-rule:authority-or-idempotency"
+      ],
+      "measuredFillerRefs": [],
+      "missingFillerRefs": [
+        "gap-runtime-user-db-trace"
+      ],
+      "holonomyReadingRefs": [
+        "homotopy-holonomy:loop-candidate-path-pair-semantic-contract-loop-0:axis-layer-violation",
+        "homotopy-holonomy:loop-candidate-path-pair-semantic-contract-loop-0:axis-semantic-inconsistency"
+      ],
+      "nonFillabilityWitnessRefs": [
+        "non-fillability-witness:gap-runtime-user-db-trace"
+      ],
+      "evidenceRefs": [
+        ".lake/runtime-trace.json",
+        "atom:capability:create-user",
+        "atom:component:route-users",
+        "atom:component:service-user",
+        "atom:contract:create-user",
+        "atom:relation:route-service",
+        "continuation-value:semantic-endpoints-route-users-service-user",
+        "continuation-value:semantic-path-p-operation-route-create-user-operation-service-create-user",
+        "continuation-value:semantic-path-q-operation-service-create-user-operation-route-create-user",
+        "doc-architecture",
+        "filler-candidate:loop-candidate-path-pair-semantic-contract-loop-0:filler-rule-authority-or-idempotency",
+        "filler-candidate:loop-candidate-path-pair-semantic-contract-loop-0:filler-rule-contract-or-test",
+        "molecule:user-request-responsibility",
+        "path:semantic-operation-flow",
+        "semantic:create-user-flow",
+        "semantic:interpretation:create-user",
+        "src-route-users",
+        "src-service-user",
+        "test-user-contract"
+      ],
+      "lipschitzAssumptionRefs": [
+        "selected observation is L-Lipschitz for declared filling generators",
+        "lower bound is scoped to supplied ArchMap observation gaps"
+      ],
+      "evidenceBoundary": "homotopy and filling distances are selected bounded readings; missing fillers are blockers, not zero cost or global homology claims",
+      "nonConclusions": [
+        "candidate paths and loops are review cues, not path truth",
+        "unfilled loops are architectural holes, not automatic violations",
+        "missing filler evidence is not measured zero",
+        "nonzero holonomy is bounded diagnosis, not future incident prediction",
+        "homotopy complex summary is not source extraction completeness"
+      ]
+    },
+    {
+      "homotopyDistanceReadingId": "homotopy-distance:loop-candidate-path-pair-path-rule-interface-implementation-1",
+      "profileRef": "homotopy-profile:bounded-stokes-default",
+      "loopRef": "loop-candidate:path-pair-path-rule-interface-implementation-1",
+      "pathPairRef": "path-pair:path-rule-interface-implementation",
+      "distanceProfileRef": "part4-distance-profile:llm-native-aat-law-policy-fixture",
+      "diagnosticScopeRef": "part4-diagnostic-scope:fixture-archmap-atom-observation",
+      "homotopyDistance": {
+        "status": "blocked",
+        "unit": "homotopy-generator-cost",
+        "provenanceRefs": [
+          ".lake/runtime-trace.json",
+          "doc-architecture",
+          "filler-candidate:loop-candidate-path-pair-path-rule-interface-implementation-1:filler-rule-authority-or-idempotency",
+          "filler-candidate:loop-candidate-path-pair-path-rule-interface-implementation-1:filler-rule-contract-or-test",
+          "interface-implementation-path",
+          "path-rule:interface-implementation",
+          "src-route-users",
+          "src-service-user",
+          "test-user-contract"
+        ],
+        "evaluatorBasisRefs": [
+          "d_hom:pathPair:path-pair:path-rule-interface-implementation"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [
+          "gap-runtime-user-db-trace"
+        ],
+        "reading": "homotopy distance is blocked by missing filler evidence and cannot be read as zero"
+      },
+      "fillingCost": {
+        "status": "blocked",
+        "unit": "filling-cost",
+        "provenanceRefs": [
+          "non-fillability-witness:gap-runtime-user-db-trace"
+        ],
+        "evaluatorBasisRefs": [
+          "fill_cost:loop:loop-candidate:path-pair-path-rule-interface-implementation-1"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [
+          "gap-runtime-user-db-trace"
+        ],
+        "reading": "filling cost is blocked while filler evidence is missing; missing filler is not zero cost"
+      },
+      "observationGapLowerBound": {
+        "status": "measured",
+        "measuredValue": 1,
+        "unit": "observation-gap-lower-bound",
+        "provenanceRefs": [
+          "gap-runtime-user-db-trace"
+        ],
+        "evaluatorBasisRefs": [
+          "lipschitzAssumption:selectedObservationGap",
+          "deltaOverL:1"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [],
+        "reading": "observation gap lower bound uses explicit selected Lipschitz and distance assumptions"
+      },
+      "selectedDehnArea": {
+        "status": "blocked",
+        "unit": "selected-dehn-area",
+        "provenanceRefs": [
+          "non-fillability-witness:gap-runtime-user-db-trace"
+        ],
+        "evaluatorBasisRefs": [
+          "Dehn_A:n<= 2"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [
+          "gap-runtime-user-db-trace"
+        ],
+        "reading": "selected Dehn-style area is blocked by architectural holes and missing filler evidence"
+      },
+      "fillerCandidateRefs": [
+        "filler-rule:contract-or-test",
+        "filler-rule:authority-or-idempotency"
+      ],
+      "measuredFillerRefs": [],
+      "missingFillerRefs": [
+        "gap-runtime-user-db-trace"
+      ],
+      "holonomyReadingRefs": [
+        "homotopy-holonomy:loop-candidate-path-pair-path-rule-interface-implementation-1:axis-layer-violation",
+        "homotopy-holonomy:loop-candidate-path-pair-path-rule-interface-implementation-1:axis-semantic-inconsistency"
+      ],
+      "nonFillabilityWitnessRefs": [
+        "non-fillability-witness:gap-runtime-user-db-trace"
+      ],
+      "evidenceRefs": [
+        ".lake/runtime-trace.json",
+        "doc-architecture",
+        "filler-candidate:loop-candidate-path-pair-path-rule-interface-implementation-1:filler-rule-authority-or-idempotency",
+        "filler-candidate:loop-candidate-path-pair-path-rule-interface-implementation-1:filler-rule-contract-or-test",
+        "interface-implementation-path",
+        "path-rule:interface-implementation",
+        "src-route-users",
+        "src-service-user",
+        "test-user-contract"
+      ],
+      "lipschitzAssumptionRefs": [
+        "selected observation is L-Lipschitz for declared filling generators",
+        "lower bound is scoped to supplied ArchMap observation gaps"
+      ],
+      "evidenceBoundary": "homotopy and filling distances are selected bounded readings; missing fillers are blockers, not zero cost or global homology claims",
+      "nonConclusions": [
+        "candidate paths and loops are review cues, not path truth",
+        "unfilled loops are architectural holes, not automatic violations",
+        "missing filler evidence is not measured zero",
+        "nonzero holonomy is bounded diagnosis, not future incident prediction",
+        "homotopy complex summary is not source extraction completeness"
+      ]
+    },
+    {
+      "homotopyDistanceReadingId": "homotopy-distance:loop-candidate-path-pair-path-rule-cache-repository-2",
+      "profileRef": "homotopy-profile:bounded-stokes-default",
+      "loopRef": "loop-candidate:path-pair-path-rule-cache-repository-2",
+      "pathPairRef": "path-pair:path-rule-cache-repository",
+      "distanceProfileRef": "part4-distance-profile:llm-native-aat-law-policy-fixture",
+      "diagnosticScopeRef": "part4-diagnostic-scope:fixture-archmap-atom-observation",
+      "homotopyDistance": {
+        "status": "blocked",
+        "unit": "homotopy-generator-cost",
+        "provenanceRefs": [
+          ".lake/runtime-trace.json",
+          "cache-repository-path",
+          "doc-architecture",
+          "filler-candidate:loop-candidate-path-pair-path-rule-cache-repository-2:filler-rule-authority-or-idempotency",
+          "filler-candidate:loop-candidate-path-pair-path-rule-cache-repository-2:filler-rule-contract-or-test",
+          "path-rule:cache-repository",
+          "src-route-users",
+          "src-service-user",
+          "test-user-contract"
+        ],
+        "evaluatorBasisRefs": [
+          "d_hom:pathPair:path-pair:path-rule-cache-repository"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [
+          "gap-runtime-user-db-trace"
+        ],
+        "reading": "homotopy distance is blocked by missing filler evidence and cannot be read as zero"
+      },
+      "fillingCost": {
+        "status": "blocked",
+        "unit": "filling-cost",
+        "provenanceRefs": [
+          "non-fillability-witness:gap-runtime-user-db-trace"
+        ],
+        "evaluatorBasisRefs": [
+          "fill_cost:loop:loop-candidate:path-pair-path-rule-cache-repository-2"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [
+          "gap-runtime-user-db-trace"
+        ],
+        "reading": "filling cost is blocked while filler evidence is missing; missing filler is not zero cost"
+      },
+      "observationGapLowerBound": {
+        "status": "measured",
+        "measuredValue": 1,
+        "unit": "observation-gap-lower-bound",
+        "provenanceRefs": [
+          "gap-runtime-user-db-trace"
+        ],
+        "evaluatorBasisRefs": [
+          "lipschitzAssumption:selectedObservationGap",
+          "deltaOverL:1"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [],
+        "reading": "observation gap lower bound uses explicit selected Lipschitz and distance assumptions"
+      },
+      "selectedDehnArea": {
+        "status": "blocked",
+        "unit": "selected-dehn-area",
+        "provenanceRefs": [
+          "non-fillability-witness:gap-runtime-user-db-trace"
+        ],
+        "evaluatorBasisRefs": [
+          "Dehn_A:n<= 2"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [
+          "gap-runtime-user-db-trace"
+        ],
+        "reading": "selected Dehn-style area is blocked by architectural holes and missing filler evidence"
+      },
+      "fillerCandidateRefs": [
+        "filler-rule:contract-or-test",
+        "filler-rule:authority-or-idempotency"
+      ],
+      "measuredFillerRefs": [],
+      "missingFillerRefs": [
+        "gap-runtime-user-db-trace"
+      ],
+      "holonomyReadingRefs": [
+        "homotopy-holonomy:loop-candidate-path-pair-path-rule-cache-repository-2:axis-layer-violation",
+        "homotopy-holonomy:loop-candidate-path-pair-path-rule-cache-repository-2:axis-semantic-inconsistency"
+      ],
+      "nonFillabilityWitnessRefs": [
+        "non-fillability-witness:gap-runtime-user-db-trace"
+      ],
+      "evidenceRefs": [
+        ".lake/runtime-trace.json",
+        "cache-repository-path",
+        "doc-architecture",
+        "filler-candidate:loop-candidate-path-pair-path-rule-cache-repository-2:filler-rule-authority-or-idempotency",
+        "filler-candidate:loop-candidate-path-pair-path-rule-cache-repository-2:filler-rule-contract-or-test",
+        "path-rule:cache-repository",
+        "src-route-users",
+        "src-service-user",
+        "test-user-contract"
+      ],
+      "lipschitzAssumptionRefs": [
+        "selected observation is L-Lipschitz for declared filling generators",
+        "lower bound is scoped to supplied ArchMap observation gaps"
+      ],
+      "evidenceBoundary": "homotopy and filling distances are selected bounded readings; missing fillers are blockers, not zero cost or global homology claims",
+      "nonConclusions": [
+        "candidate paths and loops are review cues, not path truth",
+        "unfilled loops are architectural holes, not automatic violations",
+        "missing filler evidence is not measured zero",
+        "nonzero holonomy is bounded diagnosis, not future incident prediction",
+        "homotopy complex summary is not source extraction completeness"
+      ]
+    }
+  ],
   "operationSquareCandidates": [
     {
       "candidateId": "operation-square:operation-square-evidence-create-user-route-service",
