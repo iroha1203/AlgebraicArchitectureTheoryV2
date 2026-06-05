@@ -41,8 +41,8 @@ fragments.
 | ArchMap validation report | `archmap-validation-report-v0` | Checks schema support, identity, references, provenance, source refs, observation / concern guardrails, projection separation, gap boundaries, and formal-promotion non-conclusions. |
 | LawPolicy | `law-policy-v0` | Selected LawUniverse / witness-rule / molecule-pattern / obstruction-definition / signature-axis policy for one review context. |
 | LawPolicy validation report | `law-policy-validation-report-v0` | Checks LawPolicy identity, uniqueness, cross references, witness / obstruction guardrails, coverage requirements, exactness assumptions, and non-conclusions. |
-| ArchSig analysis summary | `archsig-analysis-summary.json` | LLM-readable compact reading surface emitted by default from `analyze`. It summarizes verdict, validation, measurement status, findings, action queue, coverage, measurement basis, and artifact metadata without reprinting raw packet detail. |
-| ArchSig Atom Viewer data | `archsig-atom-viewer-data-v0` | Bounded browser projection emitted by default from `analyze`. It records source refs as count plus samples, layout settings, priority-selected atom nodes, molecule groups, molecule-to-atom edges, overlays, report pane sections, omitted counts / reasons, truncation policy, and non-conclusions. It is not a raw packet copy. |
+| ArchSig analysis summary | `archsig-analysis-summary.json` | LLM-readable compact reading surface emitted by default from `analyze`. It summarizes verdict, validation, Part IV `distanceDiagnosis`, measurement status, findings, action queue, coverage, measurement basis, and artifact metadata without reprinting raw packet detail. |
+| ArchSig Atom Viewer data | `archsig-atom-viewer-data-v0` | Bounded browser projection emitted by default from `analyze`. It records source refs as count plus samples, layout settings, priority-selected atom nodes, molecule groups, molecule-to-atom edges, diagnostic distance overlays, report pane sections, omitted counts / reasons, truncation policy, and non-conclusions. It is not a raw packet copy, and `viewerDistanceInputs` remain visual layout support rather than diagnostic metrics. |
 | ArchSig run manifest | `archsig-run-manifest-v0` | Run navigation artifact emitted by default from `analyze`. It records command name, input paths, output mode, generated / omitted artifacts, validation report paths, optional raw artifact paths, and validation result summary. |
 | ArchSig analysis packet | `archsig-analysis-packet-v0` | Raw evidence artifact emitted only when raw artifact retention is requested. It records molecule readings, law-relative obstruction circuits, signature axes, flatness reading, repair candidates, coverage gaps, child-level `missingEvidence` / `excludedReadings`, evidence boundaries, LLM interpretation notes, and non-conclusions. |
 | ArchSig analysis validation report | `archsig-analysis-packet-validation-report-v0` | Checks the analysis packet boundary without proving lawfulness, source completeness, flatness, or repair safety. |
@@ -52,9 +52,9 @@ Release archives include a fixed `archsig-atom-viewer.html` at the package root
 and under `viewer/`. The app reads `archsig-atom-viewer-data-v0` projection
 data, not raw packet detail. Its report pane uses the projection data first and
 then same-directory `archsig-analysis-summary.json` / `archsig-run-manifest.json`
-when available to display verdict, findings, action queue, coverage,
-validation failures, generated / omitted artifacts, and relative raw artifact
-links.
+when available to display verdict, distance diagnosis, findings, action queue,
+coverage, validation failures, generated / omitted artifacts, and relative raw
+artifact links.
 
 ## Removed Surfaces
 
@@ -71,7 +71,9 @@ signature axes, repair candidates, and coverage gaps into
 `operation-support-estimate-v0` as bounded refs and unknown remainder. Raw
 ArchMap observation files are not the current FieldSig handoff. When `analyze`
 runs in the default summary / viewer / manifest mode, rerun it with explicit raw
-artifact retention before invoking FieldSig handoff.
+artifact retention before invoking FieldSig handoff. Do not treat
+`distanceDiagnosis` as a FieldSig forecast; it is ArchSig current-state
+diagnosis under the selected ArchMap + LawPolicy evidence contract.
 
 ArchSig does not own SFT forecast, IntentMap, workflow evidence, operational
 feedback, dynamics, governance, or calibration.
