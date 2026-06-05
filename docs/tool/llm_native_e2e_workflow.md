@@ -69,7 +69,10 @@ Default `analyze` does not save the raw analysis packet, detail index, or LLM
 interpretation packet. Read `archsig-analysis-summary.json` as the LLM first
 surface and open the fixed release-bundled `archsig-atom-viewer.html` with
 `archsig-atom-viewer-data.json` as the human first surface. The Viewer report
-pane also reads the same-directory summary and manifest when available.
+pane also reads the same-directory summary and manifest when available. Part IV
+distance diagnosis is read from summary `distanceDiagnosis` and viewer report
+pane diagnostic overlays first; raw packet distance rows are detail evidence,
+not the primary human or LLM surface.
 
 Use raw artifacts only when FieldSig handoff or detailed evidence lookup needs
 the packet:
@@ -123,10 +126,15 @@ The E2E flow must preserve these boundaries:
   coverage gaps, and non-conclusions.
 - `archsig-analysis-summary.json` is the LLM first reading surface. It is
   structured analysis input, not a natural-language judgement, proof, or
-  automatic repair instruction.
+  automatic repair instruction. Its `distanceDiagnosis` section is the first
+  Part IV distance surface for measured movement, unmeasured axes, safe margin,
+  repair / curvature / homotopy distance, representation metric boundaries,
+  and packet refs.
 - `archsig-atom-viewer-data.json` plus fixed `archsig-atom-viewer.html` is the
   human visual/report surface. It is a bounded projection and does not parse
-  raw packet detail in the browser.
+  raw packet detail in the browser. Diagnostic distance overlays are bounded
+  Part IV evaluator projections; viewer layout distances are visual placement
+  support, not ArchSig metrics.
 - `llm-interpretation-packet.json` is emitted only in raw mode and remains a
   compact packet sub-surface, not a separate source of truth.
 - FieldSig accepts `archsig-analysis-packet-v0` as bounded current AAT
@@ -148,6 +156,9 @@ The E2E flow must preserve these boundaries:
   is separate from change-local PR review and from FieldSig evolution analysis.
 - Coverage gaps are carried as unknown remainder; they are not rounded to
   absence, measured zero, or forecast truth.
+- `unmeasured`, `blocked`, `unavailable`, `incomparable`, and `infinite`
+  Part IV distance values are not zeros. They stay tied to coverage blockers,
+  `DistanceProfile`, and `DiagnosticScope`.
 - ArchSig default `analyze` emits only the current validation reports, summary,
   Atom Viewer data, and run manifest. Raw packet, detail index, and LLM
   interpretation packet are opt-in through `--emit-raw-artifacts`.

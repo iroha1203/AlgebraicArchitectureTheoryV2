@@ -138,15 +138,19 @@ Read in this order:
 2. Verdict and quality measurement
    - Prefer `archsig-analysis-summary.json` when available.
    - Read the whole summary before opening raw packet details. Start with
-     `verdict`, `qualityMeasurement`, `dominantFindings`, `actionQueue`,
-     `axisSummary`, `workflowRiskSummary`, `architecturalHoleSummary`,
-     `bridgeSummary`, `coverageGapSummary`, `detailIndex`, and
-     `measurementBasis`.
+     `verdict`, `qualityMeasurement`, `distanceDiagnosis`,
+     `dominantFindings`, `actionQueue`, `axisSummary`, `workflowRiskSummary`,
+     `architecturalHoleSummary`, `bridgeSummary`, `coverageGapSummary`,
+     `detailIndex`, and `measurementBasis`.
    - When a human visual reading is useful, open the fixed Atom Viewer and use
      its report pane as the human first surface for overview, top findings,
-     action queue, coverage boundaries, validation status, artifacts, and
-     omitted raw detail.
+     distance diagnosis, action queue, coverage boundaries, validation status,
+     artifacts, and omitted raw detail.
    - Say what the supplied ArchMap + LawPolicy measured: flat/nonflat under selected policy, nonzero axes, hotspots, recurrent pressure, architectural holes, workflow risk, bridge pressure, and review action queue.
+   - Report Part IV distance as selected-scope diagnosis: measured movement,
+     unmeasured axes, safe margin, repair / curvature / homotopy distance, and
+     representation metric boundaries. Never collapse blocked or unmeasured
+     distance to zero.
    - Treat `actionQueue` as the full compact queue. Its entries should carry
      `detailRefs`; do not expect nested support/source/witness evidence arrays
      in the summary.
@@ -192,7 +196,12 @@ Read in this order:
    - If transfer bridge or split readiness readings are empty, report that no bridge/split surface was emitted for this packet variant and prioritize obstruction / repair / coverage evidence instead.
 
 7. LLM interpretation packet
-   - Use `detailIndex` to reach `llmInterpretationPacket.recommendedHumanReviewFocus`, `structuralReadingReviewSummary`, `currentStateEvolutionBoundarySummary`, and `transferBridgeEdgeSummary` only when raw artifacts were emitted and the compact summary is not enough.
+   - Use `detailIndex` to reach
+     `llmInterpretationPacket.recommendedHumanReviewFocus`,
+     `distanceDiagnosisSummary`, `structuralReadingReviewSummary`,
+     `currentStateEvolutionBoundarySummary`, and `transferBridgeEdgeSummary`
+     only when raw artifacts were emitted and the compact summary is not
+     enough.
    - Do not treat the LLM packet as a separate source of truth.
 
 8. Packet variant fallback
@@ -242,11 +251,12 @@ For a normal user report, answer in this order:
 
 1. Verdict
 2. Quality Measurement
-3. Top Hotspots / Holes
-4. Action Queue
-5. Measurement Basis
-6. Source-code comparison findings, when source comparison was requested
-7. Metadata / non-conclusions, only when useful for the user's decision
+3. Distance Diagnosis
+4. Top Hotspots / Holes
+5. Action Queue
+6. Measurement Basis
+7. Source-code comparison findings, when source comparison was requested
+8. Metadata / non-conclusions, only when useful for the user's decision
 
 Use concise Japanese when working in this repository.
 
@@ -255,6 +265,7 @@ Recommended phrasing:
 - "ArchSig measured this as..."
 - "For this ArchMap + LawPolicy, the verdict is..."
 - "The selected law axes measured nonzero pressure..."
+- "Part IV distance is blocked by coverage on these axes, not measured zero..."
 - "This loop is an unfilled architectural hole in the supplied model..."
 - "Source comparison supports / partially supports / does not yet support this reading..."
 - "The next useful improvement is..."

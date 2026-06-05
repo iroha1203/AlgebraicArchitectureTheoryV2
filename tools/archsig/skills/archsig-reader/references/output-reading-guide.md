@@ -13,21 +13,25 @@ Read `archsig-analysis-summary.json` before raw packet details:
 1. `verdict`: the measured conclusion for the supplied ArchMap + LawPolicy.
 2. `qualityMeasurement`: counts for nonzero axes, hotspots, recurrent pressure,
    unfilled architectural holes, nonzero holonomy loops, and coverage gaps.
-3. `dominantFindings`: compact nonzero axes, hotspots, recurrent pressure,
+3. `distanceDiagnosis`: compact Part IV distance verdict, measured movement,
+   unmeasured axes, top moved atoms / axes, safe margin, repair distance,
+   curvature / homotopy distance, representation metric summary, and packet
+   detail refs. Blocked or unmeasured distance is not measured zero.
+4. `dominantFindings`: compact nonzero axes, hotspots, recurrent pressure,
    architectural holes, nonzero holonomy, workflow risks, and bridge pressure.
-4. `actionQueue`: the full compact review queue derived from hotspots, holes,
+5. `actionQueue`: the full compact review queue derived from hotspots, holes,
    nonzero holonomy, nonzero axes, workflow pressure, and bridge pressure.
    Queue entries use `detailRefs`; they do not carry nested support/source/
    witness evidence arrays.
-5. `axisSummary`, `workflowRiskSummary`, `architecturalHoleSummary`,
+6. `axisSummary`, `workflowRiskSummary`, `architecturalHoleSummary`,
    `bridgeSummary`, and `coverageGapSummary`: compact counts and examples for
    the major surfaces.
-6. `detailIndex`: packet sections and `packet:<json-pointer>` refs for reading
+7. `detailIndex`: packet sections and `packet:<json-pointer>` refs for reading
    full evidence in `archsig-analysis-packet.json` when raw artifacts were
    emitted.
-7. `measurementBasis`: input refs, profile refs, validation results, coverage
+8. `measurementBasis`: input refs, profile refs, validation results, coverage
    gaps, and measured boundaries.
-8. `metadata.nonConclusions`: claim-boundary metadata. Keep it available, but
+9. `metadata.nonConclusions`: claim-boundary metadata. Keep it available, but
    do not lead the user-facing diagnosis with it.
 
 The report posture is: "for this input model, these conclusions were measured."
@@ -37,9 +41,11 @@ finding needs evidence inspection.
 
 For human review, open the bundled `archsig-atom-viewer.html` and load
 `archsig-atom-viewer-data.json`. Its report pane should show the same verdict,
-top findings, action queue, coverage boundaries, validation status, artifact
-list, generated / omitted artifact state, and optional packet / detail-index
-links without parsing the raw packet in the browser.
+top findings, distance diagnosis, action queue, coverage boundaries,
+validation status, artifact list, generated / omitted artifact state, and
+optional packet / detail-index links without parsing the raw packet in the
+browser. Treat diagnostic distance overlays as Part IV evaluator projections;
+do not read viewer layout distance as an ArchSig metric.
 
 When ArchSig output is being read as part of complete ArchMap authoring, the
 posture is slightly different: keep the measured conclusion first, then turn
@@ -54,7 +60,12 @@ truly unavailable, private, or out of scope.
 | `archMapRef`, `selectedLawPolicyRef` | Identifies the observed source state and selected law universe. |
 | `axisSummary` / `detailIndex` | States selected/nonzero axis counts and points to `flatnessReading` / `signatureAxes[]` detail when needed. |
 | `workflowRiskSummary` / `actionQueue` | Prioritizes molecule-local review pressure such as permission, LLM mediation, state/effect reconciliation, and domain cohesion, with refs into `workflowRiskReadings[]`. |
+| `distanceDiagnosis` | First Part IV distance surface for verdict, measured movement, unmeasured axes, safe margin, repair / curvature / homotopy distance, representation metric summary, and detail refs. |
 | `dominantFindings` / `detailRefs` | Gives compact hotspots, recurrent pressure, architectural holes, nonzero holonomy, workflow risks, and bridge pressure before raw packet inspection. |
+| `part4DistanceFoundation` | Packet detail surface for selected `DistanceProfile`, observed `DiagnosticScope`, status-summary counts, and anti-proxy guardrails. |
+| `atomDistanceReadings[]` / `configurationDistanceReadings[]` | Packet detail surfaces for Atom and configuration geometry. Use them only after summary refs point there; missing semantic anchors or observation gaps are blockers, not zero. |
+| `signatureDistanceReadings[]` / `operationDistanceReadings[]` | Packet detail surfaces for axis distance, safe margin, path drift, operation cost, repair route distance, and side-effect blockers. |
+| `curvatureMassReadings[]` / `homotopyDistanceReadings[]` / `representationMetricReadings[]` | Packet detail surfaces for curvature transport, filling cost, and representation stability / faithfulness. These are current-state diagnostic readings, not forecast, proof, merge approval, or quality score. |
 | `architectureSpectrumReport` | Packet detail surface for ACTS evidence: top hotspots, bounded mode data, witness clusters, recurrent obstruction entries, coverage gaps, measured boundary, and review focus. |
 | `architectureHomotopyReport` | Packet detail surface for Homotopy / Holonomy / Stokes evidence: filled loops, unfilled loops, nonzero holonomy loops, local curvature cells, bounded aggregate readings, coverage gaps, and review focus. |
 | `transferBridgeReadings[]` | Packet detail surface for repair transfer axes, molecule overlap paths, bridge edge source refs, review focus, and boundary preparation. |
@@ -78,6 +89,15 @@ For Homotopy / Holonomy / Stokes readings, confirm that the selected LawPolicy
 contains `homotopyMeasurementProfile`. If it is absent, report that
 `ArchitectureHomotopyReport` may be absent and do not infer loop, filler,
 holonomy, or local-curvature readings from generic obstruction fields.
+
+For Part IV distance readings, confirm that `distanceDiagnosis` is present in
+the summary before opening raw packet rows. If a packet variant lacks it, fall
+back to `part4DistanceFoundation` and the specific distance reading arrays only
+when raw artifacts are present. Every measured or zero `DistanceValue` must be
+read together with provenance refs, evaluator-basis refs, coverage refs, and
+the selected `DistanceProfile` / `DiagnosticScope`. `unmeasured`, `blocked`,
+`unavailable`, `incomparable`, and `infinite` remain missing or bounded
+evidence states, not zeros.
 
 For both reports, read `measurementStatus` and `readingBoundary` before
 interpreting values. `measured` means the selected evidence needed by that
