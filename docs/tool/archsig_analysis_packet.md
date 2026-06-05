@@ -278,6 +278,7 @@ The implemented schema records:
 - `monodromyReadingFamily`
 - `boundaryHolonomyReadingFamily`
 - `representationStrengthReadings`
+- `representationMetricReadings`
 - `localCurvatureDiagramReadings`
 - `threeLayerFlatnessReadings`
 - `observationProjectionReadings`
@@ -552,6 +553,17 @@ The builder:
   refs, and `repairOperationCandidates[]` / `operationDeltas[]` retain
   `part4DistanceRefs` so repair candidates cannot be read as automatic safe
   patches.
+- `representationMetricReadings[]` computes selected Part IV representation
+  metric readings from `analyticRepresentations[]`,
+  `spectralAnalysisReadings[]`, `spectralModeReadings[]`,
+  `spectralDrilldownReadings[]`, and `representationStrengthReadings[]`.
+  Each row separates `structuralDistance`, `analyticDistance`,
+  `lipschitzStability`, and `biLipschitzFaithfulness`. Analytic distance is a
+  selected representation reading, not an architecture quality score.
+  Bi-Lipschitz lower-bound faithfulness remains `blocked` while coverage or
+  witness-completeness blockers remain. The source analytic / spectral /
+  strength surfaces retain `part4DistanceRefs` so representation conclusions
+  cannot be read without the metric evidence boundary.
 - `operationSquareCandidates` enumerates supplied, inferred, or blocked
   operation pairs as path pairs `p = g . f` and `q = f . g`. Supplied
   candidates are read from first-class ArchMap `operationSquareEvidence[]` and

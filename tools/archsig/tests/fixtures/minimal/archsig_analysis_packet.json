@@ -1600,25 +1600,54 @@
         "sourceRef": "ArchMap",
         "targetRef": "Part4DistanceEngine",
         "value": {
-          "status": "unmeasured",
-          "unit": "selected-distance-unit",
+          "status": "blocked",
+          "unit": "selected-representation-faithfulness",
           "provenanceRefs": [
-            "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md",
-            "docs/aat/AAT_Distance_Extension_Design.md"
+            "representation-metric:representation-strength-analytic-weighted-adjacency",
+            "representation-metric:representation-strength-analytic-reachable-cone-size",
+            "representation-metric:representation-strength-analytic-walk-count",
+            "representation-metric:representation-strength-analytic-nilpotence-boundary",
+            "representation-metric:representation-strength-analytic-selected-subgraph-spectrum",
+            "representation-metric:representation-strength-analytic-propagation-depth",
+            "representation-metric:representation-strength-analytic-spectral-radius",
+            "representation-metric:representation-strength-analytic-curvature-valuation",
+            "representation-metric:representation-strength-analytic-state-algebra-boundary",
+            "representation-metric:representation-strength-analytic-zero-reflecting-aggregate-boundary",
+            "representation-metric:representation-strength-spectral-relation-atom-adjacency",
+            "representation-metric:representation-strength-spectral-molecule-atom-overlap-coupling",
+            "representation-metric:representation-strength-spectral-obstruction-axis-curvature",
+            "representation-metric:representation-strength-spectral-operation-signature-delta"
           ],
-          "evaluatorBasisRefs": [],
+          "evaluatorBasisRefs": [
+            "representationMetric:weightedAdjacencyMatrix",
+            "representationMetric:reachableConeSize",
+            "representationMetric:walkCount",
+            "representationMetric:nilpotenceBoundary",
+            "representationMetric:selectedSubgraphSpectrum",
+            "representationMetric:propagationDepth",
+            "representationMetric:spectralRadius",
+            "representationMetric:curvatureValuation",
+            "representationMetric:stateAlgebra",
+            "representationMetric:zeroReflectingAggregateBoundary",
+            "representationMetric:relationAtomWeightedAdjacencyMatrix",
+            "representationMetric:moleculeAtomOverlapCouplingMatrix",
+            "representationMetric:obstructionAxisCurvatureMatrix",
+            "representationMetric:operationSignatureDeltaMatrix"
+          ],
           "coverageRefs": [
             "coverage:layer-atoms",
             "coverage:semantic-contract-atoms"
           ],
           "blockerRefs": [
-            "issue:#1711 representation metric evaluator"
+            "coverage-completeness:selected-representation-not-global",
+            "gap-runtime-user-db-trace",
+            "witness-completeness:selected-LawPolicy-not-certified"
           ],
-          "reading": "distance family is represented in the Part4 contract but has not been measured by its evaluator yet"
+          "reading": "representationMetric supporting distance is blocked for faithfulness until coverage and witness completeness are supplied"
         },
         "profileRef": "part4-distance-profile:llm-native-aat-law-policy-fixture",
         "diagnosticScopeRef": "part4-diagnostic-scope:fixture-archmap-atom-observation",
-        "evidenceBoundary": "unmeasured means no evaluator result has been supplied; it must not be aggregated as zero",
+        "evidenceBoundary": "representationMetric reads selected analytic stability; it does not certify global structural faithfulness",
         "nonConclusions": [
           "ArchSig analysis packet is not a Lean theorem proof",
           "ArchSig analysis packet is not global architecture truth",
@@ -1633,11 +1662,11 @@
     "statusSummary": {
       "measuredCount": 0,
       "zeroCount": 0,
-      "unmeasuredCount": 1,
+      "unmeasuredCount": 0,
       "unavailableCount": 0,
       "incomparableCount": 0,
       "infiniteCount": 0,
-      "blockedCount": 6,
+      "blockedCount": 7,
       "schemaFoundationOnlyCount": 0
     },
     "measurementBoundary": "Part4 distance foundation is a proxy-free measurement contract: no distance is measured until an evaluator supplies provenance, basis refs, and coverage refs",
@@ -6664,6 +6693,9 @@
       "reading": "selected relation atoms induce a bounded weighted adjacency representation with traceable sparse matrix entries",
       "coverageBoundary": "analytic value is relative to selected graph / matrix representation and is not a quality score",
       "zeroReflectingBoundary": "zero reflects only the selected representation when coverage and exactness assumptions hold",
+      "part4DistanceRefs": [
+        "representation-metric:representation-strength-analytic-weighted-adjacency"
+      ],
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -6722,6 +6754,9 @@
       "reading": "reachable cone is computed by finite graph traversal over selected relation atoms",
       "coverageBoundary": "analytic value is relative to selected graph / matrix representation and is not a quality score",
       "zeroReflectingBoundary": "zero reflects only the selected representation when coverage and exactness assumptions hold",
+      "part4DistanceRefs": [
+        "representation-metric:representation-strength-analytic-reachable-cone-size"
+      ],
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -6780,6 +6815,9 @@
       "reading": "walk count enumerates selected relation-graph walks up to length 3",
       "coverageBoundary": "analytic value is relative to selected graph / matrix representation and is not a quality score",
       "zeroReflectingBoundary": "zero reflects only the selected representation when coverage and exactness assumptions hold",
+      "part4DistanceRefs": [
+        "representation-metric:representation-strength-analytic-walk-count"
+      ],
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -6836,6 +6874,9 @@
       "reading": "nilpotence is read from cycle detection in the selected finite relation graph, not folded into Decomposable or global acyclicity",
       "coverageBoundary": "analytic value is relative to selected graph / matrix representation and is not a quality score",
       "zeroReflectingBoundary": "zero reflects only the selected representation when coverage and exactness assumptions hold",
+      "part4DistanceRefs": [
+        "representation-metric:representation-strength-analytic-nilpotence-boundary"
+      ],
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -6894,6 +6935,9 @@
       "reading": "selected subgraph spectrum is estimated from power iteration over the finite nonnegative adjacency matrix",
       "coverageBoundary": "analytic value is relative to selected graph / matrix representation and is not a quality score",
       "zeroReflectingBoundary": "zero reflects only the selected representation when coverage and exactness assumptions hold",
+      "part4DistanceRefs": [
+        "representation-metric:representation-strength-analytic-selected-subgraph-spectrum"
+      ],
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -6952,6 +6996,9 @@
       "reading": "propagation depth is computed over observed relation atoms only",
       "coverageBoundary": "analytic value is relative to selected graph / matrix representation and is not a quality score",
       "zeroReflectingBoundary": "zero reflects only the selected representation when coverage and exactness assumptions hold",
+      "part4DistanceRefs": [
+        "representation-metric:representation-strength-analytic-propagation-depth"
+      ],
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -7010,6 +7057,9 @@
       "reading": "spectral radius is estimated from the selected finite nonnegative adjacency matrix under bounded iteration",
       "coverageBoundary": "analytic value is relative to selected graph / matrix representation and is not a quality score",
       "zeroReflectingBoundary": "zero reflects only the selected representation when coverage and exactness assumptions hold",
+      "part4DistanceRefs": [
+        "representation-metric:representation-strength-analytic-spectral-radius"
+      ],
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -7040,6 +7090,9 @@
       "reading": "curvature valuation counts constructed obstruction circuits under the selected profile",
       "coverageBoundary": "analytic value is relative to selected graph / matrix representation and is not a quality score",
       "zeroReflectingBoundary": "zero reflects only the selected representation when coverage and exactness assumptions hold",
+      "part4DistanceRefs": [
+        "representation-metric:representation-strength-analytic-curvature-valuation"
+      ],
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -7074,6 +7127,9 @@
       "reading": "state algebra is preserved as a first-class analytic boundary even when state evidence is unavailable",
       "coverageBoundary": "analytic value is relative to selected graph / matrix representation and is not a quality score",
       "zeroReflectingBoundary": "zero reflects only the selected representation when coverage and exactness assumptions hold",
+      "part4DistanceRefs": [
+        "representation-metric:representation-strength-analytic-state-algebra-boundary"
+      ],
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -7104,6 +7160,9 @@
       "reading": "zero-reflecting aggregate boundary says when zero axes may and may not be read as absence",
       "coverageBoundary": "analytic value is relative to selected graph / matrix representation and is not a quality score",
       "zeroReflectingBoundary": "zero reflects only the selected representation when coverage and exactness assumptions hold",
+      "part4DistanceRefs": [
+        "representation-metric:representation-strength-analytic-zero-reflecting-aggregate-boundary"
+      ],
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -7276,6 +7335,9 @@
       "coverageBoundary": "observation gaps block measured-zero interpretation for absent relation edges",
       "zeroReflectingBoundary": "zero entries mean no selected relation atom endpoint under the current ArchMap, not proof of independence",
       "recommendedNextAction": "inspect dominant source/target nodes, cycle readings, and coverage gaps before selecting repair operations",
+      "part4DistanceRefs": [
+        "representation-metric:representation-strength-spectral-relation-atom-adjacency"
+      ],
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -7331,6 +7393,9 @@
       "coverageBoundary": "missing atom families and observation gaps can make overlap coupling appear smaller than the source architecture actually is",
       "zeroReflectingBoundary": "zero off-diagonal overlap means no shared observed atom/family evidence, not guaranteed independence",
       "recommendedNextAction": "inspect the dominant molecule and any high-overlap neighbors before splitting or moving responsibilities",
+      "part4DistanceRefs": [
+        "representation-metric:representation-strength-spectral-molecule-atom-overlap-coupling"
+      ],
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -7397,6 +7462,9 @@
       "coverageBoundary": "only constructed obstruction circuits are represented; concern hints that lack witness rules remain outside this matrix",
       "zeroReflectingBoundary": "zero incidence means no constructed obstruction-to-axis edge, not proof of zero curvature",
       "recommendedNextAction": "review the dominant obstruction row and repeated axis column before treating a signature axis as local",
+      "part4DistanceRefs": [
+        "representation-metric:representation-strength-spectral-obstruction-axis-curvature"
+      ],
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -7463,6 +7531,9 @@
       "coverageBoundary": "candidate operations are bounded review artifacts; absent delta entries are not proof that an operation preserves an axis",
       "zeroReflectingBoundary": "zero delta incidence means no declared or text-mentioned axis movement under current candidates, not repair safety",
       "recommendedNextAction": "review the dominant operation row and repeated axis column before converting a repair candidate into code changes",
+      "part4DistanceRefs": [
+        "representation-metric:representation-strength-spectral-operation-signature-delta"
+      ],
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -7516,6 +7587,9 @@
       "repairPerturbationReading": "not an operation transition matrix; use this mode to choose review focus before evaluating repair perturbations",
       "evidenceBoundary": "spectral mode is a bounded proxy computed from ArchSig finite representation summaries, not an exact eigenvector theorem",
       "recommendedNextAction": "review dominant components and evidence boundaries before drawing architectural conclusions",
+      "part4DistanceRefs": [
+        "representation-metric:representation-strength-spectral-relation-atom-adjacency"
+      ],
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -7560,6 +7634,9 @@
       "repairPerturbationReading": "not an operation transition matrix; use this mode to choose review focus before evaluating repair perturbations",
       "evidenceBoundary": "spectral mode is a bounded proxy computed from ArchSig finite representation summaries, not an exact eigenvector theorem",
       "recommendedNextAction": "map shared atom families across the dense molecule cluster before splitting boundaries",
+      "part4DistanceRefs": [
+        "representation-metric:representation-strength-spectral-molecule-atom-overlap-coupling"
+      ],
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -7611,6 +7688,9 @@
       "repairPerturbationReading": "not an operation transition matrix; use this mode to choose review focus before evaluating repair perturbations",
       "evidenceBoundary": "spectral mode is a bounded proxy computed from ArchSig finite representation summaries, not an exact eigenvector theorem",
       "recommendedNextAction": "review whether repeated obstruction-axis curvature is local, transferred, or a law-policy coverage gap",
+      "part4DistanceRefs": [
+        "representation-metric:representation-strength-spectral-obstruction-axis-curvature"
+      ],
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -7662,6 +7742,9 @@
       "repairPerturbationReading": "candidate operations have a dominant perturbation mode; review the leading operation before broad refactoring",
       "evidenceBoundary": "spectral mode is a bounded proxy computed from ArchSig finite representation summaries, not an exact eigenvector theorem",
       "recommendedNextAction": "compare the perturbation mode against candidate repair preconditions before changing code",
+      "part4DistanceRefs": [
+        "representation-metric:representation-strength-spectral-operation-signature-delta"
+      ],
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -7757,6 +7840,12 @@
       "reading": "spectral drilldown explains dominant modes with atom-family composition, molecule overlap pairs, and repair axis deltas",
       "evidenceBoundary": "drilldown is derived from ArchMap atom/molecule observations and ArchSig spectral summaries; it is not exact eigendecomposition or repair correctness",
       "recommendedNextAction": "review dominant atom families, high-overlap molecule pairs, and positive/negative repair delta axes before changing boundaries",
+      "part4DistanceRefs": [
+        "representation-metric:representation-strength-spectral-relation-atom-adjacency",
+        "representation-metric:representation-strength-spectral-molecule-atom-overlap-coupling",
+        "representation-metric:representation-strength-spectral-obstruction-axis-curvature",
+        "representation-metric:representation-strength-spectral-operation-signature-delta"
+      ],
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -14250,6 +14339,9 @@
       ],
       "reading": "weightedAdjacencyMatrix is a bounded analytic representation; use its zero/obstruction readings only with the recorded strength boundary",
       "evidenceBoundary": "analytic value is relative to selected graph / matrix representation and is not a quality score",
+      "part4DistanceRefs": [
+        "representation-metric:representation-strength-analytic-weighted-adjacency"
+      ],
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -14283,6 +14375,9 @@
       ],
       "reading": "reachableConeSize is a bounded analytic representation; use its zero/obstruction readings only with the recorded strength boundary",
       "evidenceBoundary": "analytic value is relative to selected graph / matrix representation and is not a quality score",
+      "part4DistanceRefs": [
+        "representation-metric:representation-strength-analytic-reachable-cone-size"
+      ],
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -14316,6 +14411,9 @@
       ],
       "reading": "walkCount is a bounded analytic representation; use its zero/obstruction readings only with the recorded strength boundary",
       "evidenceBoundary": "analytic value is relative to selected graph / matrix representation and is not a quality score",
+      "part4DistanceRefs": [
+        "representation-metric:representation-strength-analytic-walk-count"
+      ],
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -14349,6 +14447,9 @@
       ],
       "reading": "nilpotenceBoundary is a bounded analytic representation; use its zero/obstruction readings only with the recorded strength boundary",
       "evidenceBoundary": "analytic value is relative to selected graph / matrix representation and is not a quality score",
+      "part4DistanceRefs": [
+        "representation-metric:representation-strength-analytic-nilpotence-boundary"
+      ],
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -14382,6 +14483,9 @@
       ],
       "reading": "selectedSubgraphSpectrum is a bounded analytic representation; use its zero/obstruction readings only with the recorded strength boundary",
       "evidenceBoundary": "analytic value is relative to selected graph / matrix representation and is not a quality score",
+      "part4DistanceRefs": [
+        "representation-metric:representation-strength-analytic-selected-subgraph-spectrum"
+      ],
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -14415,6 +14519,9 @@
       ],
       "reading": "propagationDepth is a bounded analytic representation; use its zero/obstruction readings only with the recorded strength boundary",
       "evidenceBoundary": "analytic value is relative to selected graph / matrix representation and is not a quality score",
+      "part4DistanceRefs": [
+        "representation-metric:representation-strength-analytic-propagation-depth"
+      ],
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -14448,6 +14555,9 @@
       ],
       "reading": "spectralRadius is a bounded analytic representation; use its zero/obstruction readings only with the recorded strength boundary",
       "evidenceBoundary": "analytic value is relative to selected graph / matrix representation and is not a quality score",
+      "part4DistanceRefs": [
+        "representation-metric:representation-strength-analytic-spectral-radius"
+      ],
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -14481,6 +14591,9 @@
       ],
       "reading": "curvatureValuation is a bounded analytic representation; use its zero/obstruction readings only with the recorded strength boundary",
       "evidenceBoundary": "analytic value is relative to selected graph / matrix representation and is not a quality score",
+      "part4DistanceRefs": [
+        "representation-metric:representation-strength-analytic-curvature-valuation"
+      ],
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -14514,6 +14627,9 @@
       ],
       "reading": "stateAlgebra is a bounded analytic representation; use its zero/obstruction readings only with the recorded strength boundary",
       "evidenceBoundary": "analytic value is relative to selected graph / matrix representation and is not a quality score",
+      "part4DistanceRefs": [
+        "representation-metric:representation-strength-analytic-state-algebra-boundary"
+      ],
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -14547,6 +14663,9 @@
       ],
       "reading": "zeroReflectingAggregateBoundary is a bounded analytic representation; use its zero/obstruction readings only with the recorded strength boundary",
       "evidenceBoundary": "analytic value is relative to selected graph / matrix representation and is not a quality score",
+      "part4DistanceRefs": [
+        "representation-metric:representation-strength-analytic-zero-reflecting-aggregate-boundary"
+      ],
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -14580,6 +14699,9 @@
       ],
       "reading": "relationAtomWeightedAdjacencyMatrix is a finite selected relation-graph matrix reading; it preserves observed relation edges but does not reflect global architecture truth",
       "evidenceBoundary": "observation gaps block measured-zero interpretation for absent relation edges",
+      "part4DistanceRefs": [
+        "representation-metric:representation-strength-spectral-relation-atom-adjacency"
+      ],
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -14613,6 +14735,9 @@
       ],
       "reading": "moleculeAtomOverlapCouplingMatrix is a spectral proxy for review; it preserves selected pressure but does not reflect global architecture truth",
       "evidenceBoundary": "missing atom families and observation gaps can make overlap coupling appear smaller than the source architecture actually is",
+      "part4DistanceRefs": [
+        "representation-metric:representation-strength-spectral-molecule-atom-overlap-coupling"
+      ],
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -14646,6 +14771,9 @@
       ],
       "reading": "obstructionAxisCurvatureMatrix is a spectral proxy for review; it preserves selected pressure but does not reflect global architecture truth",
       "evidenceBoundary": "only constructed obstruction circuits are represented; concern hints that lack witness rules remain outside this matrix",
+      "part4DistanceRefs": [
+        "representation-metric:representation-strength-spectral-obstruction-axis-curvature"
+      ],
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -14679,6 +14807,1823 @@
       ],
       "reading": "operationSignatureDeltaMatrix is a spectral proxy for review; it preserves selected pressure but does not reflect global architecture truth",
       "evidenceBoundary": "candidate operations are bounded review artifacts; absent delta entries are not proof that an operation preserves an axis",
+      "part4DistanceRefs": [
+        "representation-metric:representation-strength-spectral-operation-signature-delta"
+      ],
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    }
+  ],
+  "representationMetricReadings": [
+    {
+      "representationMetricReadingId": "representation-metric:representation-strength-analytic-weighted-adjacency",
+      "representationRef": "analytic:weighted-adjacency",
+      "representationFamily": "weightedAdjacencyMatrix",
+      "sourceReadingRefs": [
+        "analytic:weighted-adjacency"
+      ],
+      "distanceProfileRef": "part4-distance-profile:llm-native-aat-law-policy-fixture",
+      "diagnosticScopeRef": "part4-diagnostic-scope:fixture-archmap-atom-observation",
+      "structuralDistance": {
+        "status": "measured",
+        "measuredValue": 4,
+        "unit": "selected-structural-support-count",
+        "provenanceRefs": [
+          "atom:relation:route-service",
+          "walk:route-users:1:service-user"
+        ],
+        "evaluatorBasisRefs": [
+          "structuralDistance:axis:sig-axis:layer-violation",
+          "structuralDistance:axis:sig-axis:semantic-inconsistency",
+          "structuralDistance:family:weightedAdjacencyMatrix",
+          "structuralDistance:graphScope:atom:relation:route-service",
+          "structuralDistance:representationStrength:representation-strength:analytic-weighted-adjacency"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [],
+        "reading": "selected structural distance is the bounded support size of this representation reading, not global architecture distance"
+      },
+      "analyticDistance": {
+        "status": "measured",
+        "measuredValue": 1,
+        "unit": "selected-analytic-magnitude-x100",
+        "provenanceRefs": [
+          "analytic:weighted-adjacency"
+        ],
+        "evaluatorBasisRefs": [
+          "analyticDistance:analytic:weighted-adjacency:matrixEntries=1",
+          "analyticDistance:representationFamily:weightedAdjacencyMatrix"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [],
+        "reading": "selected analytic distance reads this representation's finite matrix, vector, spectral, or boundary magnitude; it is not an architecture quality score"
+      },
+      "lipschitzStability": {
+        "status": "measured",
+        "measuredValue": 1,
+        "unit": "selected-L-upper-bound-x100",
+        "provenanceRefs": [
+          "analytic:weighted-adjacency"
+        ],
+        "evaluatorBasisRefs": [
+          "lipschitz:analyticDistance=1",
+          "lipschitz:structuralDistance=4",
+          "lipschitz:selectedRepresentation:weightedAdjacencyMatrix"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [],
+        "reading": "Lipschitz stability is a selected finite-representation upper-bound reading; it does not prove stability for all comparable architectures"
+      },
+      "biLipschitzFaithfulness": {
+        "status": "blocked",
+        "unit": "selected-bi-lipschitz-lower-bound",
+        "provenanceRefs": [
+          "analytic:weighted-adjacency"
+        ],
+        "evaluatorBasisRefs": [
+          "biLipschitz:structuralDistance:weightedAdjacencyMatrix",
+          "biLipschitz:analyticDistance:weightedAdjacencyMatrix",
+          "biLipschitz:requiresCoverageAndWitnessCompleteness"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [
+          "coverage-completeness:selected-representation-not-global",
+          "gap-runtime-user-db-trace",
+          "witness-completeness:selected-LawPolicy-not-certified"
+        ],
+        "reading": "bi-Lipschitz faithfulness lower bound is blocked unless coverage and witness completeness are supplied for the selected scope"
+      },
+      "coverageBlockerRefs": [
+        "gap-runtime-user-db-trace"
+      ],
+      "witnessCompletenessBlockerRefs": [
+        "coverage-completeness:selected-representation-not-global",
+        "gap-runtime-user-db-trace",
+        "witness-completeness:selected-LawPolicy-not-certified"
+      ],
+      "analyticRepresentationRefs": [
+        "analytic:weighted-adjacency"
+      ],
+      "spectralReadingRefs": [],
+      "spectralModeRefs": [],
+      "spectralDrilldownRefs": [],
+      "representationStrengthRefs": [
+        "representation-strength:analytic-weighted-adjacency"
+      ],
+      "evidenceRefs": [
+        "atom:relation:route-service",
+        "walk:route-users:1:service-user"
+      ],
+      "evidenceBoundary": "representation metric is selected-scope evidence over ArchMap + LawPolicy; analytic closeness is not structural faithfulness without coverage and witness completeness",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    },
+    {
+      "representationMetricReadingId": "representation-metric:representation-strength-analytic-reachable-cone-size",
+      "representationRef": "analytic:reachable-cone-size",
+      "representationFamily": "reachableConeSize",
+      "sourceReadingRefs": [
+        "analytic:reachable-cone-size"
+      ],
+      "distanceProfileRef": "part4-distance-profile:llm-native-aat-law-policy-fixture",
+      "diagnosticScopeRef": "part4-diagnostic-scope:fixture-archmap-atom-observation",
+      "structuralDistance": {
+        "status": "measured",
+        "measuredValue": 4,
+        "unit": "selected-structural-support-count",
+        "provenanceRefs": [
+          "atom:relation:route-service",
+          "walk:route-users:1:service-user"
+        ],
+        "evaluatorBasisRefs": [
+          "structuralDistance:axis:sig-axis:layer-violation",
+          "structuralDistance:axis:sig-axis:semantic-inconsistency",
+          "structuralDistance:family:reachableConeSize",
+          "structuralDistance:graphScope:atom:relation:route-service",
+          "structuralDistance:representationStrength:representation-strength:analytic-reachable-cone-size"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [],
+        "reading": "selected structural distance is the bounded support size of this representation reading, not global architecture distance"
+      },
+      "analyticDistance": {
+        "status": "measured",
+        "measuredValue": 1,
+        "unit": "selected-analytic-magnitude-x100",
+        "provenanceRefs": [
+          "analytic:reachable-cone-size"
+        ],
+        "evaluatorBasisRefs": [
+          "analyticDistance:analytic:reachable-cone-size:nat=1",
+          "analyticDistance:representationFamily:reachableConeSize"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [],
+        "reading": "selected analytic distance reads this representation's finite matrix, vector, spectral, or boundary magnitude; it is not an architecture quality score"
+      },
+      "lipschitzStability": {
+        "status": "measured",
+        "measuredValue": 1,
+        "unit": "selected-L-upper-bound-x100",
+        "provenanceRefs": [
+          "analytic:reachable-cone-size"
+        ],
+        "evaluatorBasisRefs": [
+          "lipschitz:analyticDistance=1",
+          "lipschitz:structuralDistance=4",
+          "lipschitz:selectedRepresentation:reachableConeSize"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [],
+        "reading": "Lipschitz stability is a selected finite-representation upper-bound reading; it does not prove stability for all comparable architectures"
+      },
+      "biLipschitzFaithfulness": {
+        "status": "blocked",
+        "unit": "selected-bi-lipschitz-lower-bound",
+        "provenanceRefs": [
+          "analytic:reachable-cone-size"
+        ],
+        "evaluatorBasisRefs": [
+          "biLipschitz:structuralDistance:reachableConeSize",
+          "biLipschitz:analyticDistance:reachableConeSize",
+          "biLipschitz:requiresCoverageAndWitnessCompleteness"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [
+          "coverage-completeness:selected-representation-not-global",
+          "gap-runtime-user-db-trace",
+          "witness-completeness:selected-LawPolicy-not-certified"
+        ],
+        "reading": "bi-Lipschitz faithfulness lower bound is blocked unless coverage and witness completeness are supplied for the selected scope"
+      },
+      "coverageBlockerRefs": [
+        "gap-runtime-user-db-trace"
+      ],
+      "witnessCompletenessBlockerRefs": [
+        "coverage-completeness:selected-representation-not-global",
+        "gap-runtime-user-db-trace",
+        "witness-completeness:selected-LawPolicy-not-certified"
+      ],
+      "analyticRepresentationRefs": [
+        "analytic:reachable-cone-size"
+      ],
+      "spectralReadingRefs": [],
+      "spectralModeRefs": [],
+      "spectralDrilldownRefs": [],
+      "representationStrengthRefs": [
+        "representation-strength:analytic-reachable-cone-size"
+      ],
+      "evidenceRefs": [
+        "atom:relation:route-service",
+        "walk:route-users:1:service-user"
+      ],
+      "evidenceBoundary": "representation metric is selected-scope evidence over ArchMap + LawPolicy; analytic closeness is not structural faithfulness without coverage and witness completeness",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    },
+    {
+      "representationMetricReadingId": "representation-metric:representation-strength-analytic-walk-count",
+      "representationRef": "analytic:walk-count",
+      "representationFamily": "walkCount",
+      "sourceReadingRefs": [
+        "analytic:walk-count"
+      ],
+      "distanceProfileRef": "part4-distance-profile:llm-native-aat-law-policy-fixture",
+      "diagnosticScopeRef": "part4-diagnostic-scope:fixture-archmap-atom-observation",
+      "structuralDistance": {
+        "status": "measured",
+        "measuredValue": 4,
+        "unit": "selected-structural-support-count",
+        "provenanceRefs": [
+          "atom:relation:route-service",
+          "walk:route-users:1:service-user"
+        ],
+        "evaluatorBasisRefs": [
+          "structuralDistance:axis:sig-axis:layer-violation",
+          "structuralDistance:axis:sig-axis:semantic-inconsistency",
+          "structuralDistance:family:walkCount",
+          "structuralDistance:graphScope:atom:relation:route-service",
+          "structuralDistance:representationStrength:representation-strength:analytic-walk-count"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [],
+        "reading": "selected structural distance is the bounded support size of this representation reading, not global architecture distance"
+      },
+      "analyticDistance": {
+        "status": "measured",
+        "measuredValue": 1,
+        "unit": "selected-analytic-magnitude-x100",
+        "provenanceRefs": [
+          "analytic:walk-count"
+        ],
+        "evaluatorBasisRefs": [
+          "analyticDistance:analytic:walk-count:nat=1",
+          "analyticDistance:representationFamily:walkCount"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [],
+        "reading": "selected analytic distance reads this representation's finite matrix, vector, spectral, or boundary magnitude; it is not an architecture quality score"
+      },
+      "lipschitzStability": {
+        "status": "measured",
+        "measuredValue": 1,
+        "unit": "selected-L-upper-bound-x100",
+        "provenanceRefs": [
+          "analytic:walk-count"
+        ],
+        "evaluatorBasisRefs": [
+          "lipschitz:analyticDistance=1",
+          "lipschitz:structuralDistance=4",
+          "lipschitz:selectedRepresentation:walkCount"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [],
+        "reading": "Lipschitz stability is a selected finite-representation upper-bound reading; it does not prove stability for all comparable architectures"
+      },
+      "biLipschitzFaithfulness": {
+        "status": "blocked",
+        "unit": "selected-bi-lipschitz-lower-bound",
+        "provenanceRefs": [
+          "analytic:walk-count"
+        ],
+        "evaluatorBasisRefs": [
+          "biLipschitz:structuralDistance:walkCount",
+          "biLipschitz:analyticDistance:walkCount",
+          "biLipschitz:requiresCoverageAndWitnessCompleteness"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [
+          "coverage-completeness:selected-representation-not-global",
+          "gap-runtime-user-db-trace",
+          "witness-completeness:selected-LawPolicy-not-certified"
+        ],
+        "reading": "bi-Lipschitz faithfulness lower bound is blocked unless coverage and witness completeness are supplied for the selected scope"
+      },
+      "coverageBlockerRefs": [
+        "gap-runtime-user-db-trace"
+      ],
+      "witnessCompletenessBlockerRefs": [
+        "coverage-completeness:selected-representation-not-global",
+        "gap-runtime-user-db-trace",
+        "witness-completeness:selected-LawPolicy-not-certified"
+      ],
+      "analyticRepresentationRefs": [
+        "analytic:walk-count"
+      ],
+      "spectralReadingRefs": [],
+      "spectralModeRefs": [],
+      "spectralDrilldownRefs": [],
+      "representationStrengthRefs": [
+        "representation-strength:analytic-walk-count"
+      ],
+      "evidenceRefs": [
+        "atom:relation:route-service",
+        "walk:route-users:1:service-user"
+      ],
+      "evidenceBoundary": "representation metric is selected-scope evidence over ArchMap + LawPolicy; analytic closeness is not structural faithfulness without coverage and witness completeness",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    },
+    {
+      "representationMetricReadingId": "representation-metric:representation-strength-analytic-nilpotence-boundary",
+      "representationRef": "analytic:nilpotence-boundary",
+      "representationFamily": "nilpotenceBoundary",
+      "sourceReadingRefs": [
+        "analytic:nilpotence-boundary"
+      ],
+      "distanceProfileRef": "part4-distance-profile:llm-native-aat-law-policy-fixture",
+      "diagnosticScopeRef": "part4-diagnostic-scope:fixture-archmap-atom-observation",
+      "structuralDistance": {
+        "status": "measured",
+        "measuredValue": 3,
+        "unit": "selected-structural-support-count",
+        "provenanceRefs": [
+          "walk:route-users:1:service-user"
+        ],
+        "evaluatorBasisRefs": [
+          "structuralDistance:axis:sig-axis:layer-violation",
+          "structuralDistance:axis:sig-axis:semantic-inconsistency",
+          "structuralDistance:family:nilpotenceBoundary",
+          "structuralDistance:representationStrength:representation-strength:analytic-nilpotence-boundary"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [],
+        "reading": "selected structural distance is the bounded support size of this representation reading, not global architecture distance"
+      },
+      "analyticDistance": {
+        "status": "blocked",
+        "unit": "selected-analytic-magnitude-x100",
+        "provenanceRefs": [
+          "analytic:nilpotence-boundary"
+        ],
+        "evaluatorBasisRefs": [
+          "analyticDistance:analytic:nilpotence-boundary:blockedBoundaryStatus=blockedByCoverageGap",
+          "analyticDistance:representationFamily:nilpotenceBoundary"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [
+          "coverage-completeness:selected-representation-not-global",
+          "gap-runtime-user-db-trace",
+          "witness-completeness:selected-LawPolicy-not-certified"
+        ],
+        "reading": "selected analytic distance is blocked when the representation value is boundary-only or unavailable; it is not an architecture quality score"
+      },
+      "lipschitzStability": {
+        "status": "blocked",
+        "unit": "selected-L-upper-bound-x100",
+        "provenanceRefs": [
+          "analytic:nilpotence-boundary"
+        ],
+        "evaluatorBasisRefs": [
+          "lipschitz:selectedRepresentation:nilpotenceBoundary"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [
+          "coverage-completeness:selected-representation-not-global",
+          "gap-runtime-user-db-trace",
+          "witness-completeness:selected-LawPolicy-not-certified"
+        ],
+        "reading": "Lipschitz upper-bound reading is blocked because analytic distance is unavailable"
+      },
+      "biLipschitzFaithfulness": {
+        "status": "blocked",
+        "unit": "selected-bi-lipschitz-lower-bound",
+        "provenanceRefs": [
+          "analytic:nilpotence-boundary"
+        ],
+        "evaluatorBasisRefs": [
+          "biLipschitz:structuralDistance:nilpotenceBoundary",
+          "biLipschitz:analyticDistance:nilpotenceBoundary",
+          "biLipschitz:requiresCoverageAndWitnessCompleteness"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [
+          "coverage-completeness:selected-representation-not-global",
+          "gap-runtime-user-db-trace",
+          "witness-completeness:selected-LawPolicy-not-certified"
+        ],
+        "reading": "bi-Lipschitz faithfulness lower bound is blocked unless coverage and witness completeness are supplied for the selected scope"
+      },
+      "coverageBlockerRefs": [
+        "gap-runtime-user-db-trace"
+      ],
+      "witnessCompletenessBlockerRefs": [
+        "coverage-completeness:selected-representation-not-global",
+        "gap-runtime-user-db-trace",
+        "witness-completeness:selected-LawPolicy-not-certified"
+      ],
+      "analyticRepresentationRefs": [
+        "analytic:nilpotence-boundary"
+      ],
+      "spectralReadingRefs": [],
+      "spectralModeRefs": [],
+      "spectralDrilldownRefs": [],
+      "representationStrengthRefs": [
+        "representation-strength:analytic-nilpotence-boundary"
+      ],
+      "evidenceRefs": [
+        "walk:route-users:1:service-user"
+      ],
+      "evidenceBoundary": "representation metric is selected-scope evidence over ArchMap + LawPolicy; analytic closeness is not structural faithfulness without coverage and witness completeness",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    },
+    {
+      "representationMetricReadingId": "representation-metric:representation-strength-analytic-selected-subgraph-spectrum",
+      "representationRef": "analytic:selected-subgraph-spectrum",
+      "representationFamily": "selectedSubgraphSpectrum",
+      "sourceReadingRefs": [
+        "analytic:selected-subgraph-spectrum"
+      ],
+      "distanceProfileRef": "part4-distance-profile:llm-native-aat-law-policy-fixture",
+      "diagnosticScopeRef": "part4-diagnostic-scope:fixture-archmap-atom-observation",
+      "structuralDistance": {
+        "status": "measured",
+        "measuredValue": 4,
+        "unit": "selected-structural-support-count",
+        "provenanceRefs": [
+          "atom:relation:route-service",
+          "walk:route-users:1:service-user"
+        ],
+        "evaluatorBasisRefs": [
+          "structuralDistance:axis:sig-axis:layer-violation",
+          "structuralDistance:axis:sig-axis:semantic-inconsistency",
+          "structuralDistance:family:selectedSubgraphSpectrum",
+          "structuralDistance:graphScope:atom:relation:route-service",
+          "structuralDistance:representationStrength:representation-strength:analytic-selected-subgraph-spectrum"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [],
+        "reading": "selected structural distance is the bounded support size of this representation reading, not global architecture distance"
+      },
+      "analyticDistance": {
+        "status": "zero",
+        "measuredValue": 0,
+        "unit": "selected-analytic-magnitude-x100",
+        "provenanceRefs": [
+          "analytic:selected-subgraph-spectrum"
+        ],
+        "evaluatorBasisRefs": [
+          "analyticDistance:analytic:selected-subgraph-spectrum:vector=[0.000]",
+          "analyticDistance:representationFamily:selectedSubgraphSpectrum"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [],
+        "reading": "selected analytic distance reads this representation's finite matrix, vector, spectral, or boundary magnitude; it is not an architecture quality score"
+      },
+      "lipschitzStability": {
+        "status": "measured",
+        "measuredValue": 1,
+        "unit": "selected-L-upper-bound-x100",
+        "provenanceRefs": [
+          "analytic:selected-subgraph-spectrum"
+        ],
+        "evaluatorBasisRefs": [
+          "lipschitz:analyticDistance=0",
+          "lipschitz:structuralDistance=4",
+          "lipschitz:selectedRepresentation:selectedSubgraphSpectrum"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [],
+        "reading": "Lipschitz stability is a selected finite-representation upper-bound reading; it does not prove stability for all comparable architectures"
+      },
+      "biLipschitzFaithfulness": {
+        "status": "blocked",
+        "unit": "selected-bi-lipschitz-lower-bound",
+        "provenanceRefs": [
+          "analytic:selected-subgraph-spectrum"
+        ],
+        "evaluatorBasisRefs": [
+          "biLipschitz:structuralDistance:selectedSubgraphSpectrum",
+          "biLipschitz:analyticDistance:selectedSubgraphSpectrum",
+          "biLipschitz:requiresCoverageAndWitnessCompleteness"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [
+          "coverage-completeness:selected-representation-not-global",
+          "gap-runtime-user-db-trace",
+          "witness-completeness:selected-LawPolicy-not-certified"
+        ],
+        "reading": "bi-Lipschitz faithfulness lower bound is blocked unless coverage and witness completeness are supplied for the selected scope"
+      },
+      "coverageBlockerRefs": [
+        "gap-runtime-user-db-trace"
+      ],
+      "witnessCompletenessBlockerRefs": [
+        "coverage-completeness:selected-representation-not-global",
+        "gap-runtime-user-db-trace",
+        "witness-completeness:selected-LawPolicy-not-certified"
+      ],
+      "analyticRepresentationRefs": [
+        "analytic:selected-subgraph-spectrum"
+      ],
+      "spectralReadingRefs": [],
+      "spectralModeRefs": [],
+      "spectralDrilldownRefs": [],
+      "representationStrengthRefs": [
+        "representation-strength:analytic-selected-subgraph-spectrum"
+      ],
+      "evidenceRefs": [
+        "atom:relation:route-service",
+        "walk:route-users:1:service-user"
+      ],
+      "evidenceBoundary": "representation metric is selected-scope evidence over ArchMap + LawPolicy; analytic closeness is not structural faithfulness without coverage and witness completeness",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    },
+    {
+      "representationMetricReadingId": "representation-metric:representation-strength-analytic-propagation-depth",
+      "representationRef": "analytic:propagation-depth",
+      "representationFamily": "propagationDepth",
+      "sourceReadingRefs": [
+        "analytic:propagation-depth"
+      ],
+      "distanceProfileRef": "part4-distance-profile:llm-native-aat-law-policy-fixture",
+      "diagnosticScopeRef": "part4-diagnostic-scope:fixture-archmap-atom-observation",
+      "structuralDistance": {
+        "status": "measured",
+        "measuredValue": 4,
+        "unit": "selected-structural-support-count",
+        "provenanceRefs": [
+          "atom:relation:route-service",
+          "walk:route-users:1:service-user"
+        ],
+        "evaluatorBasisRefs": [
+          "structuralDistance:axis:sig-axis:layer-violation",
+          "structuralDistance:axis:sig-axis:semantic-inconsistency",
+          "structuralDistance:family:propagationDepth",
+          "structuralDistance:graphScope:atom:relation:route-service",
+          "structuralDistance:representationStrength:representation-strength:analytic-propagation-depth"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [],
+        "reading": "selected structural distance is the bounded support size of this representation reading, not global architecture distance"
+      },
+      "analyticDistance": {
+        "status": "measured",
+        "measuredValue": 1,
+        "unit": "selected-analytic-magnitude-x100",
+        "provenanceRefs": [
+          "analytic:propagation-depth"
+        ],
+        "evaluatorBasisRefs": [
+          "analyticDistance:analytic:propagation-depth:nat=1",
+          "analyticDistance:representationFamily:propagationDepth"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [],
+        "reading": "selected analytic distance reads this representation's finite matrix, vector, spectral, or boundary magnitude; it is not an architecture quality score"
+      },
+      "lipschitzStability": {
+        "status": "measured",
+        "measuredValue": 1,
+        "unit": "selected-L-upper-bound-x100",
+        "provenanceRefs": [
+          "analytic:propagation-depth"
+        ],
+        "evaluatorBasisRefs": [
+          "lipschitz:analyticDistance=1",
+          "lipschitz:structuralDistance=4",
+          "lipschitz:selectedRepresentation:propagationDepth"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [],
+        "reading": "Lipschitz stability is a selected finite-representation upper-bound reading; it does not prove stability for all comparable architectures"
+      },
+      "biLipschitzFaithfulness": {
+        "status": "blocked",
+        "unit": "selected-bi-lipschitz-lower-bound",
+        "provenanceRefs": [
+          "analytic:propagation-depth"
+        ],
+        "evaluatorBasisRefs": [
+          "biLipschitz:structuralDistance:propagationDepth",
+          "biLipschitz:analyticDistance:propagationDepth",
+          "biLipschitz:requiresCoverageAndWitnessCompleteness"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [
+          "coverage-completeness:selected-representation-not-global",
+          "gap-runtime-user-db-trace",
+          "witness-completeness:selected-LawPolicy-not-certified"
+        ],
+        "reading": "bi-Lipschitz faithfulness lower bound is blocked unless coverage and witness completeness are supplied for the selected scope"
+      },
+      "coverageBlockerRefs": [
+        "gap-runtime-user-db-trace"
+      ],
+      "witnessCompletenessBlockerRefs": [
+        "coverage-completeness:selected-representation-not-global",
+        "gap-runtime-user-db-trace",
+        "witness-completeness:selected-LawPolicy-not-certified"
+      ],
+      "analyticRepresentationRefs": [
+        "analytic:propagation-depth"
+      ],
+      "spectralReadingRefs": [],
+      "spectralModeRefs": [],
+      "spectralDrilldownRefs": [],
+      "representationStrengthRefs": [
+        "representation-strength:analytic-propagation-depth"
+      ],
+      "evidenceRefs": [
+        "atom:relation:route-service",
+        "walk:route-users:1:service-user"
+      ],
+      "evidenceBoundary": "representation metric is selected-scope evidence over ArchMap + LawPolicy; analytic closeness is not structural faithfulness without coverage and witness completeness",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    },
+    {
+      "representationMetricReadingId": "representation-metric:representation-strength-analytic-spectral-radius",
+      "representationRef": "analytic:spectral-radius",
+      "representationFamily": "spectralRadius",
+      "sourceReadingRefs": [
+        "analytic:spectral-radius"
+      ],
+      "distanceProfileRef": "part4-distance-profile:llm-native-aat-law-policy-fixture",
+      "diagnosticScopeRef": "part4-diagnostic-scope:fixture-archmap-atom-observation",
+      "structuralDistance": {
+        "status": "measured",
+        "measuredValue": 4,
+        "unit": "selected-structural-support-count",
+        "provenanceRefs": [
+          "atom:relation:route-service",
+          "walk:route-users:1:service-user"
+        ],
+        "evaluatorBasisRefs": [
+          "structuralDistance:axis:sig-axis:layer-violation",
+          "structuralDistance:axis:sig-axis:semantic-inconsistency",
+          "structuralDistance:family:spectralRadius",
+          "structuralDistance:graphScope:atom:relation:route-service",
+          "structuralDistance:representationStrength:representation-strength:analytic-spectral-radius"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [],
+        "reading": "selected structural distance is the bounded support size of this representation reading, not global architecture distance"
+      },
+      "analyticDistance": {
+        "status": "zero",
+        "measuredValue": 0,
+        "unit": "selected-analytic-magnitude-x100",
+        "provenanceRefs": [
+          "analytic:spectral-radius"
+        ],
+        "evaluatorBasisRefs": [
+          "analyticDistance:analytic:spectral-radius:float=0.000",
+          "analyticDistance:representationFamily:spectralRadius"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [],
+        "reading": "selected analytic distance reads this representation's finite matrix, vector, spectral, or boundary magnitude; it is not an architecture quality score"
+      },
+      "lipschitzStability": {
+        "status": "measured",
+        "measuredValue": 1,
+        "unit": "selected-L-upper-bound-x100",
+        "provenanceRefs": [
+          "analytic:spectral-radius"
+        ],
+        "evaluatorBasisRefs": [
+          "lipschitz:analyticDistance=0",
+          "lipschitz:structuralDistance=4",
+          "lipschitz:selectedRepresentation:spectralRadius"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [],
+        "reading": "Lipschitz stability is a selected finite-representation upper-bound reading; it does not prove stability for all comparable architectures"
+      },
+      "biLipschitzFaithfulness": {
+        "status": "blocked",
+        "unit": "selected-bi-lipschitz-lower-bound",
+        "provenanceRefs": [
+          "analytic:spectral-radius"
+        ],
+        "evaluatorBasisRefs": [
+          "biLipschitz:structuralDistance:spectralRadius",
+          "biLipschitz:analyticDistance:spectralRadius",
+          "biLipschitz:requiresCoverageAndWitnessCompleteness"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [
+          "coverage-completeness:selected-representation-not-global",
+          "gap-runtime-user-db-trace",
+          "witness-completeness:selected-LawPolicy-not-certified"
+        ],
+        "reading": "bi-Lipschitz faithfulness lower bound is blocked unless coverage and witness completeness are supplied for the selected scope"
+      },
+      "coverageBlockerRefs": [
+        "gap-runtime-user-db-trace"
+      ],
+      "witnessCompletenessBlockerRefs": [
+        "coverage-completeness:selected-representation-not-global",
+        "gap-runtime-user-db-trace",
+        "witness-completeness:selected-LawPolicy-not-certified"
+      ],
+      "analyticRepresentationRefs": [
+        "analytic:spectral-radius"
+      ],
+      "spectralReadingRefs": [],
+      "spectralModeRefs": [],
+      "spectralDrilldownRefs": [],
+      "representationStrengthRefs": [
+        "representation-strength:analytic-spectral-radius"
+      ],
+      "evidenceRefs": [
+        "atom:relation:route-service",
+        "walk:route-users:1:service-user"
+      ],
+      "evidenceBoundary": "representation metric is selected-scope evidence over ArchMap + LawPolicy; analytic closeness is not structural faithfulness without coverage and witness completeness",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    },
+    {
+      "representationMetricReadingId": "representation-metric:representation-strength-analytic-curvature-valuation",
+      "representationRef": "analytic:curvature-valuation",
+      "representationFamily": "curvatureValuation",
+      "sourceReadingRefs": [
+        "analytic:curvature-valuation"
+      ],
+      "distanceProfileRef": "part4-distance-profile:llm-native-aat-law-policy-fixture",
+      "diagnosticScopeRef": "part4-diagnostic-scope:fixture-archmap-atom-observation",
+      "structuralDistance": {
+        "status": "measured",
+        "measuredValue": 3,
+        "unit": "selected-structural-support-count",
+        "provenanceRefs": [
+          "obstruction:semantic-contract-mismatch:computed"
+        ],
+        "evaluatorBasisRefs": [
+          "structuralDistance:axis:sig-axis:layer-violation",
+          "structuralDistance:axis:sig-axis:semantic-inconsistency",
+          "structuralDistance:family:curvatureValuation",
+          "structuralDistance:graphScope:obstruction:semantic-contract-mismatch:computed",
+          "structuralDistance:representationStrength:representation-strength:analytic-curvature-valuation"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [],
+        "reading": "selected structural distance is the bounded support size of this representation reading, not global architecture distance"
+      },
+      "analyticDistance": {
+        "status": "measured",
+        "measuredValue": 1,
+        "unit": "selected-analytic-magnitude-x100",
+        "provenanceRefs": [
+          "analytic:curvature-valuation"
+        ],
+        "evaluatorBasisRefs": [
+          "analyticDistance:analytic:curvature-valuation:nat=1",
+          "analyticDistance:representationFamily:curvatureValuation"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [],
+        "reading": "selected analytic distance reads this representation's finite matrix, vector, spectral, or boundary magnitude; it is not an architecture quality score"
+      },
+      "lipschitzStability": {
+        "status": "measured",
+        "measuredValue": 1,
+        "unit": "selected-L-upper-bound-x100",
+        "provenanceRefs": [
+          "analytic:curvature-valuation"
+        ],
+        "evaluatorBasisRefs": [
+          "lipschitz:analyticDistance=1",
+          "lipschitz:structuralDistance=3",
+          "lipschitz:selectedRepresentation:curvatureValuation"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [],
+        "reading": "Lipschitz stability is a selected finite-representation upper-bound reading; it does not prove stability for all comparable architectures"
+      },
+      "biLipschitzFaithfulness": {
+        "status": "blocked",
+        "unit": "selected-bi-lipschitz-lower-bound",
+        "provenanceRefs": [
+          "analytic:curvature-valuation"
+        ],
+        "evaluatorBasisRefs": [
+          "biLipschitz:structuralDistance:curvatureValuation",
+          "biLipschitz:analyticDistance:curvatureValuation",
+          "biLipschitz:requiresCoverageAndWitnessCompleteness"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [
+          "coverage-completeness:selected-representation-not-global",
+          "gap-runtime-user-db-trace",
+          "witness-completeness:selected-LawPolicy-not-certified"
+        ],
+        "reading": "bi-Lipschitz faithfulness lower bound is blocked unless coverage and witness completeness are supplied for the selected scope"
+      },
+      "coverageBlockerRefs": [
+        "gap-runtime-user-db-trace"
+      ],
+      "witnessCompletenessBlockerRefs": [
+        "coverage-completeness:selected-representation-not-global",
+        "gap-runtime-user-db-trace",
+        "witness-completeness:selected-LawPolicy-not-certified"
+      ],
+      "analyticRepresentationRefs": [
+        "analytic:curvature-valuation"
+      ],
+      "spectralReadingRefs": [],
+      "spectralModeRefs": [],
+      "spectralDrilldownRefs": [],
+      "representationStrengthRefs": [
+        "representation-strength:analytic-curvature-valuation"
+      ],
+      "evidenceRefs": [
+        "obstruction:semantic-contract-mismatch:computed"
+      ],
+      "evidenceBoundary": "representation metric is selected-scope evidence over ArchMap + LawPolicy; analytic closeness is not structural faithfulness without coverage and witness completeness",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    },
+    {
+      "representationMetricReadingId": "representation-metric:representation-strength-analytic-state-algebra-boundary",
+      "representationRef": "analytic:state-algebra-boundary",
+      "representationFamily": "stateAlgebra",
+      "sourceReadingRefs": [
+        "analytic:state-algebra-boundary"
+      ],
+      "distanceProfileRef": "part4-distance-profile:llm-native-aat-law-policy-fixture",
+      "diagnosticScopeRef": "part4-diagnostic-scope:fixture-archmap-atom-observation",
+      "structuralDistance": {
+        "status": "measured",
+        "measuredValue": 7,
+        "unit": "selected-structural-support-count",
+        "provenanceRefs": [
+          "atom:capability:create-user",
+          "atom:component:route-users",
+          "atom:component:service-user",
+          "atom:contract:create-user",
+          "atom:relation:route-service"
+        ],
+        "evaluatorBasisRefs": [
+          "structuralDistance:axis:sig-axis:layer-violation",
+          "structuralDistance:axis:sig-axis:semantic-inconsistency",
+          "structuralDistance:family:stateAlgebra",
+          "structuralDistance:graphScope:atom:capability:create-user",
+          "structuralDistance:graphScope:atom:component:route-users",
+          "structuralDistance:graphScope:atom:component:service-user",
+          "structuralDistance:graphScope:atom:contract:create-user",
+          "structuralDistance:graphScope:atom:relation:route-service",
+          "structuralDistance:representationStrength:representation-strength:analytic-state-algebra-boundary"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [],
+        "reading": "selected structural distance is the bounded support size of this representation reading, not global architecture distance"
+      },
+      "analyticDistance": {
+        "status": "blocked",
+        "unit": "selected-analytic-magnitude-x100",
+        "provenanceRefs": [
+          "analytic:state-algebra-boundary"
+        ],
+        "evaluatorBasisRefs": [
+          "analyticDistance:analytic:state-algebra-boundary:blockedBoundaryStatus=state/effect algebra requires explicit state transition and runtime/effect atoms",
+          "analyticDistance:representationFamily:stateAlgebra"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [
+          "coverage-completeness:selected-representation-not-global",
+          "gap-runtime-user-db-trace",
+          "witness-completeness:selected-LawPolicy-not-certified"
+        ],
+        "reading": "selected analytic distance is blocked when the representation value is boundary-only or unavailable; it is not an architecture quality score"
+      },
+      "lipschitzStability": {
+        "status": "blocked",
+        "unit": "selected-L-upper-bound-x100",
+        "provenanceRefs": [
+          "analytic:state-algebra-boundary"
+        ],
+        "evaluatorBasisRefs": [
+          "lipschitz:selectedRepresentation:stateAlgebra"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [
+          "coverage-completeness:selected-representation-not-global",
+          "gap-runtime-user-db-trace",
+          "witness-completeness:selected-LawPolicy-not-certified"
+        ],
+        "reading": "Lipschitz upper-bound reading is blocked because analytic distance is unavailable"
+      },
+      "biLipschitzFaithfulness": {
+        "status": "blocked",
+        "unit": "selected-bi-lipschitz-lower-bound",
+        "provenanceRefs": [
+          "analytic:state-algebra-boundary"
+        ],
+        "evaluatorBasisRefs": [
+          "biLipschitz:structuralDistance:stateAlgebra",
+          "biLipschitz:analyticDistance:stateAlgebra",
+          "biLipschitz:requiresCoverageAndWitnessCompleteness"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [
+          "coverage-completeness:selected-representation-not-global",
+          "gap-runtime-user-db-trace",
+          "witness-completeness:selected-LawPolicy-not-certified"
+        ],
+        "reading": "bi-Lipschitz faithfulness lower bound is blocked unless coverage and witness completeness are supplied for the selected scope"
+      },
+      "coverageBlockerRefs": [
+        "gap-runtime-user-db-trace"
+      ],
+      "witnessCompletenessBlockerRefs": [
+        "coverage-completeness:selected-representation-not-global",
+        "gap-runtime-user-db-trace",
+        "witness-completeness:selected-LawPolicy-not-certified"
+      ],
+      "analyticRepresentationRefs": [
+        "analytic:state-algebra-boundary"
+      ],
+      "spectralReadingRefs": [],
+      "spectralModeRefs": [],
+      "spectralDrilldownRefs": [],
+      "representationStrengthRefs": [
+        "representation-strength:analytic-state-algebra-boundary"
+      ],
+      "evidenceRefs": [
+        "atom:capability:create-user",
+        "atom:component:route-users",
+        "atom:component:service-user",
+        "atom:contract:create-user",
+        "atom:relation:route-service"
+      ],
+      "evidenceBoundary": "representation metric is selected-scope evidence over ArchMap + LawPolicy; analytic closeness is not structural faithfulness without coverage and witness completeness",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    },
+    {
+      "representationMetricReadingId": "representation-metric:representation-strength-analytic-zero-reflecting-aggregate-boundary",
+      "representationRef": "analytic:zero-reflecting-aggregate-boundary",
+      "representationFamily": "zeroReflectingAggregateBoundary",
+      "sourceReadingRefs": [
+        "analytic:zero-reflecting-aggregate-boundary"
+      ],
+      "distanceProfileRef": "part4-distance-profile:llm-native-aat-law-policy-fixture",
+      "diagnosticScopeRef": "part4-diagnostic-scope:fixture-archmap-atom-observation",
+      "structuralDistance": {
+        "status": "measured",
+        "measuredValue": 3,
+        "unit": "selected-structural-support-count",
+        "provenanceRefs": [
+          "gap-runtime-user-db-trace"
+        ],
+        "evaluatorBasisRefs": [
+          "structuralDistance:axis:sig-axis:layer-violation",
+          "structuralDistance:axis:sig-axis:semantic-inconsistency",
+          "structuralDistance:family:zeroReflectingAggregateBoundary",
+          "structuralDistance:graphScope:gap-runtime-user-db-trace",
+          "structuralDistance:representationStrength:representation-strength:analytic-zero-reflecting-aggregate-boundary"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [],
+        "reading": "selected structural distance is the bounded support size of this representation reading, not global architecture distance"
+      },
+      "analyticDistance": {
+        "status": "blocked",
+        "unit": "selected-analytic-magnitude-x100",
+        "provenanceRefs": [
+          "analytic:zero-reflecting-aggregate-boundary"
+        ],
+        "evaluatorBasisRefs": [
+          "analyticDistance:analytic:zero-reflecting-aggregate-boundary:blockedBoundaryStatus=blockedByObservationGaps",
+          "analyticDistance:representationFamily:zeroReflectingAggregateBoundary"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [
+          "coverage-completeness:selected-representation-not-global",
+          "gap-runtime-user-db-trace",
+          "witness-completeness:selected-LawPolicy-not-certified"
+        ],
+        "reading": "selected analytic distance is blocked when the representation value is boundary-only or unavailable; it is not an architecture quality score"
+      },
+      "lipschitzStability": {
+        "status": "blocked",
+        "unit": "selected-L-upper-bound-x100",
+        "provenanceRefs": [
+          "analytic:zero-reflecting-aggregate-boundary"
+        ],
+        "evaluatorBasisRefs": [
+          "lipschitz:selectedRepresentation:zeroReflectingAggregateBoundary"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [
+          "coverage-completeness:selected-representation-not-global",
+          "gap-runtime-user-db-trace",
+          "witness-completeness:selected-LawPolicy-not-certified"
+        ],
+        "reading": "Lipschitz upper-bound reading is blocked because analytic distance is unavailable"
+      },
+      "biLipschitzFaithfulness": {
+        "status": "blocked",
+        "unit": "selected-bi-lipschitz-lower-bound",
+        "provenanceRefs": [
+          "analytic:zero-reflecting-aggregate-boundary"
+        ],
+        "evaluatorBasisRefs": [
+          "biLipschitz:structuralDistance:zeroReflectingAggregateBoundary",
+          "biLipschitz:analyticDistance:zeroReflectingAggregateBoundary",
+          "biLipschitz:requiresCoverageAndWitnessCompleteness"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [
+          "coverage-completeness:selected-representation-not-global",
+          "gap-runtime-user-db-trace",
+          "witness-completeness:selected-LawPolicy-not-certified"
+        ],
+        "reading": "bi-Lipschitz faithfulness lower bound is blocked unless coverage and witness completeness are supplied for the selected scope"
+      },
+      "coverageBlockerRefs": [
+        "gap-runtime-user-db-trace"
+      ],
+      "witnessCompletenessBlockerRefs": [
+        "coverage-completeness:selected-representation-not-global",
+        "gap-runtime-user-db-trace",
+        "witness-completeness:selected-LawPolicy-not-certified"
+      ],
+      "analyticRepresentationRefs": [
+        "analytic:zero-reflecting-aggregate-boundary"
+      ],
+      "spectralReadingRefs": [],
+      "spectralModeRefs": [],
+      "spectralDrilldownRefs": [],
+      "representationStrengthRefs": [
+        "representation-strength:analytic-zero-reflecting-aggregate-boundary"
+      ],
+      "evidenceRefs": [
+        "gap-runtime-user-db-trace"
+      ],
+      "evidenceBoundary": "representation metric is selected-scope evidence over ArchMap + LawPolicy; analytic closeness is not structural faithfulness without coverage and witness completeness",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    },
+    {
+      "representationMetricReadingId": "representation-metric:representation-strength-spectral-relation-atom-adjacency",
+      "representationRef": "spectral:relation-atom-adjacency",
+      "representationFamily": "relationAtomWeightedAdjacencyMatrix",
+      "sourceReadingRefs": [
+        "spectral-drilldown:fixture-archmap-atom-observation",
+        "spectral-mode:spectral-relation-atom-adjacency",
+        "spectral:relation-atom-adjacency"
+      ],
+      "distanceProfileRef": "part4-distance-profile:llm-native-aat-law-policy-fixture",
+      "diagnosticScopeRef": "part4-diagnostic-scope:fixture-archmap-atom-observation",
+      "structuralDistance": {
+        "status": "measured",
+        "measuredValue": 3,
+        "unit": "selected-structural-support-count",
+        "provenanceRefs": [
+          "atom:capability:create-user",
+          "atom:component:route-users",
+          "atom:component:service-user",
+          "atom:contract:create-user",
+          "atom:relation:route-service"
+        ],
+        "evaluatorBasisRefs": [
+          "structuralDistance:family:relationAtomWeightedAdjacencyMatrix",
+          "structuralDistance:representationStrength:representation-strength:spectral-relation-atom-adjacency",
+          "structuralDistance:spectralSupport:atom:relation:route-service"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [],
+        "reading": "selected structural distance is the bounded support size of this representation reading, not global architecture distance"
+      },
+      "analyticDistance": {
+        "status": "measured",
+        "measuredValue": 525,
+        "unit": "selected-analytic-magnitude-x100",
+        "provenanceRefs": [
+          "spectral-drilldown:fixture-archmap-atom-observation",
+          "spectral-mode:spectral-relation-atom-adjacency",
+          "spectral:relation-atom-adjacency"
+        ],
+        "evaluatorBasisRefs": [
+          "analyticDistance:representationFamily:relationAtomWeightedAdjacencyMatrix",
+          "analyticDistance:spectral:relation-atom-adjacency:frobeniusNorm=1.000",
+          "analyticDistance:spectral:relation-atom-adjacency:maxColumnSum=1",
+          "analyticDistance:spectral:relation-atom-adjacency:maxRowSum=1",
+          "analyticDistance:spectral:relation-atom-adjacency:spectralRadius=0.000",
+          "analyticDistance:spectralDrilldown:spectral-drilldown:fixture-archmap-atom-observation:atomFamilies=4:overlapPairs=0:repairAxisDeltas=1",
+          "analyticDistance:spectralMode:spectral-mode:spectral-relation-atom-adjacency:gap=1.000:localization=1.000:density=0.250"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [],
+        "reading": "selected analytic distance reads this representation's finite matrix, vector, spectral, or boundary magnitude; it is not an architecture quality score"
+      },
+      "lipschitzStability": {
+        "status": "measured",
+        "measuredValue": 175,
+        "unit": "selected-L-upper-bound-x100",
+        "provenanceRefs": [
+          "spectral-drilldown:fixture-archmap-atom-observation",
+          "spectral-mode:spectral-relation-atom-adjacency",
+          "spectral:relation-atom-adjacency"
+        ],
+        "evaluatorBasisRefs": [
+          "lipschitz:analyticDistance=525",
+          "lipschitz:structuralDistance=3",
+          "lipschitz:selectedRepresentation:relationAtomWeightedAdjacencyMatrix"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [],
+        "reading": "Lipschitz stability is a selected finite-representation upper-bound reading; it does not prove stability for all comparable architectures"
+      },
+      "biLipschitzFaithfulness": {
+        "status": "blocked",
+        "unit": "selected-bi-lipschitz-lower-bound",
+        "provenanceRefs": [
+          "spectral-drilldown:fixture-archmap-atom-observation",
+          "spectral-mode:spectral-relation-atom-adjacency",
+          "spectral:relation-atom-adjacency"
+        ],
+        "evaluatorBasisRefs": [
+          "biLipschitz:structuralDistance:relationAtomWeightedAdjacencyMatrix",
+          "biLipschitz:analyticDistance:relationAtomWeightedAdjacencyMatrix",
+          "biLipschitz:requiresCoverageAndWitnessCompleteness"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [
+          "coverage-completeness:selected-representation-not-global",
+          "gap-runtime-user-db-trace",
+          "witness-completeness:selected-LawPolicy-not-certified"
+        ],
+        "reading": "bi-Lipschitz faithfulness lower bound is blocked unless coverage and witness completeness are supplied for the selected scope"
+      },
+      "coverageBlockerRefs": [
+        "gap-runtime-user-db-trace"
+      ],
+      "witnessCompletenessBlockerRefs": [
+        "coverage-completeness:selected-representation-not-global",
+        "gap-runtime-user-db-trace",
+        "witness-completeness:selected-LawPolicy-not-certified"
+      ],
+      "analyticRepresentationRefs": [],
+      "spectralReadingRefs": [
+        "spectral:relation-atom-adjacency"
+      ],
+      "spectralModeRefs": [
+        "spectral-mode:spectral-relation-atom-adjacency"
+      ],
+      "spectralDrilldownRefs": [
+        "spectral-drilldown:fixture-archmap-atom-observation"
+      ],
+      "representationStrengthRefs": [
+        "representation-strength:spectral-relation-atom-adjacency"
+      ],
+      "evidenceRefs": [
+        "atom:capability:create-user",
+        "atom:component:route-users",
+        "atom:component:service-user",
+        "atom:contract:create-user",
+        "atom:relation:route-service"
+      ],
+      "evidenceBoundary": "representation metric is selected-scope evidence over ArchMap + LawPolicy; analytic closeness is not structural faithfulness without coverage and witness completeness",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    },
+    {
+      "representationMetricReadingId": "representation-metric:representation-strength-spectral-molecule-atom-overlap-coupling",
+      "representationRef": "spectral:molecule-atom-overlap-coupling",
+      "representationFamily": "moleculeAtomOverlapCouplingMatrix",
+      "sourceReadingRefs": [
+        "spectral-drilldown:fixture-archmap-atom-observation",
+        "spectral-mode:spectral-molecule-atom-overlap-coupling",
+        "spectral:molecule-atom-overlap-coupling"
+      ],
+      "distanceProfileRef": "part4-distance-profile:llm-native-aat-law-policy-fixture",
+      "diagnosticScopeRef": "part4-diagnostic-scope:fixture-archmap-atom-observation",
+      "structuralDistance": {
+        "status": "measured",
+        "measuredValue": 2,
+        "unit": "selected-structural-support-count",
+        "provenanceRefs": [
+          "atom:capability:create-user",
+          "atom:component:route-users",
+          "atom:component:service-user",
+          "atom:contract:create-user",
+          "atom:relation:route-service",
+          "molecule:user-request-responsibility"
+        ],
+        "evaluatorBasisRefs": [
+          "structuralDistance:family:moleculeAtomOverlapCouplingMatrix",
+          "structuralDistance:representationStrength:representation-strength:spectral-molecule-atom-overlap-coupling",
+          "structuralDistance:spectralSupport:molecule:user-request-responsibility"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [],
+        "reading": "selected structural distance is the bounded support size of this representation reading, not global architecture distance"
+      },
+      "analyticDistance": {
+        "status": "measured",
+        "measuredValue": 2200,
+        "unit": "selected-analytic-magnitude-x100",
+        "provenanceRefs": [
+          "spectral-drilldown:fixture-archmap-atom-observation",
+          "spectral-mode:spectral-molecule-atom-overlap-coupling",
+          "spectral:molecule-atom-overlap-coupling"
+        ],
+        "evaluatorBasisRefs": [
+          "analyticDistance:representationFamily:moleculeAtomOverlapCouplingMatrix",
+          "analyticDistance:spectral:molecule-atom-overlap-coupling:frobeniusNorm=5.000",
+          "analyticDistance:spectral:molecule-atom-overlap-coupling:maxRowSum=5",
+          "analyticDistance:spectral:molecule-atom-overlap-coupling:spectralRadiusUpperBound=5.000",
+          "analyticDistance:spectralDrilldown:spectral-drilldown:fixture-archmap-atom-observation:atomFamilies=4:overlapPairs=0:repairAxisDeltas=1",
+          "analyticDistance:spectralMode:spectral-mode:spectral-molecule-atom-overlap-coupling:gap=5.000:localization=1.000:density=1.000"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [],
+        "reading": "selected analytic distance reads this representation's finite matrix, vector, spectral, or boundary magnitude; it is not an architecture quality score"
+      },
+      "lipschitzStability": {
+        "status": "measured",
+        "measuredValue": 1100,
+        "unit": "selected-L-upper-bound-x100",
+        "provenanceRefs": [
+          "spectral-drilldown:fixture-archmap-atom-observation",
+          "spectral-mode:spectral-molecule-atom-overlap-coupling",
+          "spectral:molecule-atom-overlap-coupling"
+        ],
+        "evaluatorBasisRefs": [
+          "lipschitz:analyticDistance=2200",
+          "lipschitz:structuralDistance=2",
+          "lipschitz:selectedRepresentation:moleculeAtomOverlapCouplingMatrix"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [],
+        "reading": "Lipschitz stability is a selected finite-representation upper-bound reading; it does not prove stability for all comparable architectures"
+      },
+      "biLipschitzFaithfulness": {
+        "status": "blocked",
+        "unit": "selected-bi-lipschitz-lower-bound",
+        "provenanceRefs": [
+          "spectral-drilldown:fixture-archmap-atom-observation",
+          "spectral-mode:spectral-molecule-atom-overlap-coupling",
+          "spectral:molecule-atom-overlap-coupling"
+        ],
+        "evaluatorBasisRefs": [
+          "biLipschitz:structuralDistance:moleculeAtomOverlapCouplingMatrix",
+          "biLipschitz:analyticDistance:moleculeAtomOverlapCouplingMatrix",
+          "biLipschitz:requiresCoverageAndWitnessCompleteness"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [
+          "coverage-completeness:selected-representation-not-global",
+          "gap-runtime-user-db-trace",
+          "witness-completeness:selected-LawPolicy-not-certified"
+        ],
+        "reading": "bi-Lipschitz faithfulness lower bound is blocked unless coverage and witness completeness are supplied for the selected scope"
+      },
+      "coverageBlockerRefs": [
+        "gap-runtime-user-db-trace"
+      ],
+      "witnessCompletenessBlockerRefs": [
+        "coverage-completeness:selected-representation-not-global",
+        "gap-runtime-user-db-trace",
+        "witness-completeness:selected-LawPolicy-not-certified"
+      ],
+      "analyticRepresentationRefs": [],
+      "spectralReadingRefs": [
+        "spectral:molecule-atom-overlap-coupling"
+      ],
+      "spectralModeRefs": [
+        "spectral-mode:spectral-molecule-atom-overlap-coupling"
+      ],
+      "spectralDrilldownRefs": [
+        "spectral-drilldown:fixture-archmap-atom-observation"
+      ],
+      "representationStrengthRefs": [
+        "representation-strength:spectral-molecule-atom-overlap-coupling"
+      ],
+      "evidenceRefs": [
+        "atom:capability:create-user",
+        "atom:component:route-users",
+        "atom:component:service-user",
+        "atom:contract:create-user",
+        "atom:relation:route-service",
+        "molecule:user-request-responsibility"
+      ],
+      "evidenceBoundary": "representation metric is selected-scope evidence over ArchMap + LawPolicy; analytic closeness is not structural faithfulness without coverage and witness completeness",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    },
+    {
+      "representationMetricReadingId": "representation-metric:representation-strength-spectral-obstruction-axis-curvature",
+      "representationRef": "spectral:obstruction-axis-curvature",
+      "representationFamily": "obstructionAxisCurvatureMatrix",
+      "sourceReadingRefs": [
+        "spectral-drilldown:fixture-archmap-atom-observation",
+        "spectral-mode:spectral-obstruction-axis-curvature",
+        "spectral:obstruction-axis-curvature"
+      ],
+      "distanceProfileRef": "part4-distance-profile:llm-native-aat-law-policy-fixture",
+      "diagnosticScopeRef": "part4-diagnostic-scope:fixture-archmap-atom-observation",
+      "structuralDistance": {
+        "status": "measured",
+        "measuredValue": 3,
+        "unit": "selected-structural-support-count",
+        "provenanceRefs": [
+          "atom:capability:create-user",
+          "atom:component:route-users",
+          "atom:component:service-user",
+          "atom:contract:create-user",
+          "atom:relation:route-service",
+          "obstruction:semantic-contract-mismatch:computed"
+        ],
+        "evaluatorBasisRefs": [
+          "structuralDistance:family:obstructionAxisCurvatureMatrix",
+          "structuralDistance:representationStrength:representation-strength:spectral-obstruction-axis-curvature",
+          "structuralDistance:spectralSupport:obstruction:semantic-contract-mismatch:computed"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [],
+        "reading": "selected structural distance is the bounded support size of this representation reading, not global architecture distance"
+      },
+      "analyticDistance": {
+        "status": "measured",
+        "measuredValue": 650,
+        "unit": "selected-analytic-magnitude-x100",
+        "provenanceRefs": [
+          "spectral-drilldown:fixture-archmap-atom-observation",
+          "spectral-mode:spectral-obstruction-axis-curvature",
+          "spectral:obstruction-axis-curvature"
+        ],
+        "evaluatorBasisRefs": [
+          "analyticDistance:representationFamily:obstructionAxisCurvatureMatrix",
+          "analyticDistance:spectral:obstruction-axis-curvature:frobeniusNorm=1.000",
+          "analyticDistance:spectral:obstruction-axis-curvature:maxColumnSum=1",
+          "analyticDistance:spectral:obstruction-axis-curvature:maxRowSum=1",
+          "analyticDistance:spectral:obstruction-axis-curvature:spectralRadiusUpperBound=1.000",
+          "analyticDistance:spectralDrilldown:spectral-drilldown:fixture-archmap-atom-observation:atomFamilies=4:overlapPairs=0:repairAxisDeltas=1",
+          "analyticDistance:spectralMode:spectral-mode:spectral-obstruction-axis-curvature:gap=1.000:localization=1.000:density=0.500"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [],
+        "reading": "selected analytic distance reads this representation's finite matrix, vector, spectral, or boundary magnitude; it is not an architecture quality score"
+      },
+      "lipschitzStability": {
+        "status": "measured",
+        "measuredValue": 217,
+        "unit": "selected-L-upper-bound-x100",
+        "provenanceRefs": [
+          "spectral-drilldown:fixture-archmap-atom-observation",
+          "spectral-mode:spectral-obstruction-axis-curvature",
+          "spectral:obstruction-axis-curvature"
+        ],
+        "evaluatorBasisRefs": [
+          "lipschitz:analyticDistance=650",
+          "lipschitz:structuralDistance=3",
+          "lipschitz:selectedRepresentation:obstructionAxisCurvatureMatrix"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [],
+        "reading": "Lipschitz stability is a selected finite-representation upper-bound reading; it does not prove stability for all comparable architectures"
+      },
+      "biLipschitzFaithfulness": {
+        "status": "blocked",
+        "unit": "selected-bi-lipschitz-lower-bound",
+        "provenanceRefs": [
+          "spectral-drilldown:fixture-archmap-atom-observation",
+          "spectral-mode:spectral-obstruction-axis-curvature",
+          "spectral:obstruction-axis-curvature"
+        ],
+        "evaluatorBasisRefs": [
+          "biLipschitz:structuralDistance:obstructionAxisCurvatureMatrix",
+          "biLipschitz:analyticDistance:obstructionAxisCurvatureMatrix",
+          "biLipschitz:requiresCoverageAndWitnessCompleteness"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [
+          "coverage-completeness:selected-representation-not-global",
+          "gap-runtime-user-db-trace",
+          "witness-completeness:selected-LawPolicy-not-certified"
+        ],
+        "reading": "bi-Lipschitz faithfulness lower bound is blocked unless coverage and witness completeness are supplied for the selected scope"
+      },
+      "coverageBlockerRefs": [
+        "gap-runtime-user-db-trace"
+      ],
+      "witnessCompletenessBlockerRefs": [
+        "coverage-completeness:selected-representation-not-global",
+        "gap-runtime-user-db-trace",
+        "witness-completeness:selected-LawPolicy-not-certified"
+      ],
+      "analyticRepresentationRefs": [],
+      "spectralReadingRefs": [
+        "spectral:obstruction-axis-curvature"
+      ],
+      "spectralModeRefs": [
+        "spectral-mode:spectral-obstruction-axis-curvature"
+      ],
+      "spectralDrilldownRefs": [
+        "spectral-drilldown:fixture-archmap-atom-observation"
+      ],
+      "representationStrengthRefs": [
+        "representation-strength:spectral-obstruction-axis-curvature"
+      ],
+      "evidenceRefs": [
+        "atom:capability:create-user",
+        "atom:component:route-users",
+        "atom:component:service-user",
+        "atom:contract:create-user",
+        "atom:relation:route-service",
+        "obstruction:semantic-contract-mismatch:computed"
+      ],
+      "evidenceBoundary": "representation metric is selected-scope evidence over ArchMap + LawPolicy; analytic closeness is not structural faithfulness without coverage and witness completeness",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    },
+    {
+      "representationMetricReadingId": "representation-metric:representation-strength-spectral-operation-signature-delta",
+      "representationRef": "spectral:operation-signature-delta",
+      "representationFamily": "operationSignatureDeltaMatrix",
+      "sourceReadingRefs": [
+        "spectral-drilldown:fixture-archmap-atom-observation",
+        "spectral-mode:spectral-operation-signature-delta",
+        "spectral:operation-signature-delta"
+      ],
+      "distanceProfileRef": "part4-distance-profile:llm-native-aat-law-policy-fixture",
+      "diagnosticScopeRef": "part4-diagnostic-scope:fixture-archmap-atom-observation",
+      "structuralDistance": {
+        "status": "measured",
+        "measuredValue": 3,
+        "unit": "selected-structural-support-count",
+        "provenanceRefs": [
+          "atom:capability:create-user",
+          "atom:component:route-users",
+          "atom:component:service-user",
+          "atom:contract:create-user",
+          "atom:relation:route-service",
+          "operation-delta:repair-obstruction-semantic-contract-mismatch-computed"
+        ],
+        "evaluatorBasisRefs": [
+          "structuralDistance:family:operationSignatureDeltaMatrix",
+          "structuralDistance:representationStrength:representation-strength:spectral-operation-signature-delta",
+          "structuralDistance:spectralSupport:operation-delta:repair-obstruction-semantic-contract-mismatch-computed"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [],
+        "reading": "selected structural distance is the bounded support size of this representation reading, not global architecture distance"
+      },
+      "analyticDistance": {
+        "status": "measured",
+        "measuredValue": 650,
+        "unit": "selected-analytic-magnitude-x100",
+        "provenanceRefs": [
+          "spectral-drilldown:fixture-archmap-atom-observation",
+          "spectral-mode:spectral-operation-signature-delta",
+          "spectral:operation-signature-delta"
+        ],
+        "evaluatorBasisRefs": [
+          "analyticDistance:representationFamily:operationSignatureDeltaMatrix",
+          "analyticDistance:spectral:operation-signature-delta:frobeniusNorm=1.000",
+          "analyticDistance:spectral:operation-signature-delta:maxColumnSum=1",
+          "analyticDistance:spectral:operation-signature-delta:maxRowSum=1",
+          "analyticDistance:spectral:operation-signature-delta:spectralRadiusUpperBound=1.000",
+          "analyticDistance:spectralDrilldown:spectral-drilldown:fixture-archmap-atom-observation:atomFamilies=4:overlapPairs=0:repairAxisDeltas=1",
+          "analyticDistance:spectralMode:spectral-mode:spectral-operation-signature-delta:gap=1.000:localization=1.000:density=0.500"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [],
+        "reading": "selected analytic distance reads this representation's finite matrix, vector, spectral, or boundary magnitude; it is not an architecture quality score"
+      },
+      "lipschitzStability": {
+        "status": "measured",
+        "measuredValue": 217,
+        "unit": "selected-L-upper-bound-x100",
+        "provenanceRefs": [
+          "spectral-drilldown:fixture-archmap-atom-observation",
+          "spectral-mode:spectral-operation-signature-delta",
+          "spectral:operation-signature-delta"
+        ],
+        "evaluatorBasisRefs": [
+          "lipschitz:analyticDistance=650",
+          "lipschitz:structuralDistance=3",
+          "lipschitz:selectedRepresentation:operationSignatureDeltaMatrix"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [],
+        "reading": "Lipschitz stability is a selected finite-representation upper-bound reading; it does not prove stability for all comparable architectures"
+      },
+      "biLipschitzFaithfulness": {
+        "status": "blocked",
+        "unit": "selected-bi-lipschitz-lower-bound",
+        "provenanceRefs": [
+          "spectral-drilldown:fixture-archmap-atom-observation",
+          "spectral-mode:spectral-operation-signature-delta",
+          "spectral:operation-signature-delta"
+        ],
+        "evaluatorBasisRefs": [
+          "biLipschitz:structuralDistance:operationSignatureDeltaMatrix",
+          "biLipschitz:analyticDistance:operationSignatureDeltaMatrix",
+          "biLipschitz:requiresCoverageAndWitnessCompleteness"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [
+          "coverage-completeness:selected-representation-not-global",
+          "gap-runtime-user-db-trace",
+          "witness-completeness:selected-LawPolicy-not-certified"
+        ],
+        "reading": "bi-Lipschitz faithfulness lower bound is blocked unless coverage and witness completeness are supplied for the selected scope"
+      },
+      "coverageBlockerRefs": [
+        "gap-runtime-user-db-trace"
+      ],
+      "witnessCompletenessBlockerRefs": [
+        "coverage-completeness:selected-representation-not-global",
+        "gap-runtime-user-db-trace",
+        "witness-completeness:selected-LawPolicy-not-certified"
+      ],
+      "analyticRepresentationRefs": [],
+      "spectralReadingRefs": [
+        "spectral:operation-signature-delta"
+      ],
+      "spectralModeRefs": [
+        "spectral-mode:spectral-operation-signature-delta"
+      ],
+      "spectralDrilldownRefs": [
+        "spectral-drilldown:fixture-archmap-atom-observation"
+      ],
+      "representationStrengthRefs": [
+        "representation-strength:spectral-operation-signature-delta"
+      ],
+      "evidenceRefs": [
+        "atom:capability:create-user",
+        "atom:component:route-users",
+        "atom:component:service-user",
+        "atom:contract:create-user",
+        "atom:relation:route-service",
+        "operation-delta:repair-obstruction-semantic-contract-mismatch-computed"
+      ],
+      "evidenceBoundary": "representation metric is selected-scope evidence over ArchMap + LawPolicy; analytic closeness is not structural faithfulness without coverage and witness completeness",
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -16314,6 +18259,22 @@
     ],
     "spectralDrilldownSummary": [
       "spectral-drilldown:fixture-archmap-atom-observation atomFamilies=4 overlapPairs=0 repairAxisDeltas=1 (actionable)"
+    ],
+    "representationMetricSummary": [
+      "weightedAdjacencyMatrix analytic=1 structural=4 lipschitz=measured faithfulness=blocked (representation-metric:representation-strength-analytic-weighted-adjacency)",
+      "reachableConeSize analytic=1 structural=4 lipschitz=measured faithfulness=blocked (representation-metric:representation-strength-analytic-reachable-cone-size)",
+      "walkCount analytic=1 structural=4 lipschitz=measured faithfulness=blocked (representation-metric:representation-strength-analytic-walk-count)",
+      "nilpotenceBoundary analytic=0 structural=3 lipschitz=blocked faithfulness=blocked (representation-metric:representation-strength-analytic-nilpotence-boundary)",
+      "selectedSubgraphSpectrum analytic=0 structural=4 lipschitz=measured faithfulness=blocked (representation-metric:representation-strength-analytic-selected-subgraph-spectrum)",
+      "propagationDepth analytic=1 structural=4 lipschitz=measured faithfulness=blocked (representation-metric:representation-strength-analytic-propagation-depth)",
+      "spectralRadius analytic=0 structural=4 lipschitz=measured faithfulness=blocked (representation-metric:representation-strength-analytic-spectral-radius)",
+      "curvatureValuation analytic=1 structural=3 lipschitz=measured faithfulness=blocked (representation-metric:representation-strength-analytic-curvature-valuation)",
+      "stateAlgebra analytic=0 structural=7 lipschitz=blocked faithfulness=blocked (representation-metric:representation-strength-analytic-state-algebra-boundary)",
+      "zeroReflectingAggregateBoundary analytic=0 structural=3 lipschitz=blocked faithfulness=blocked (representation-metric:representation-strength-analytic-zero-reflecting-aggregate-boundary)",
+      "relationAtomWeightedAdjacencyMatrix analytic=525 structural=3 lipschitz=measured faithfulness=blocked (representation-metric:representation-strength-spectral-relation-atom-adjacency)",
+      "moleculeAtomOverlapCouplingMatrix analytic=2200 structural=2 lipschitz=measured faithfulness=blocked (representation-metric:representation-strength-spectral-molecule-atom-overlap-coupling)",
+      "obstructionAxisCurvatureMatrix analytic=650 structural=3 lipschitz=measured faithfulness=blocked (representation-metric:representation-strength-spectral-obstruction-axis-curvature)",
+      "operationSignatureDeltaMatrix analytic=650 structural=3 lipschitz=measured faithfulness=blocked (representation-metric:representation-strength-spectral-operation-signature-delta)"
     ],
     "curvatureSupportSummary": [
       "curvature-support-reading:spectrum-profile-curvature-transfer-default supports=4 topModes=4 clusters=2 measuredAxes=1 unmeasuredAxes=2 (needsReview)"

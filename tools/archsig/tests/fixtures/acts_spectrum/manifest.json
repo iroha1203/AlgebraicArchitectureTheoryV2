@@ -41,6 +41,16 @@
       "requiredText": "runtime trace was requested but not supplied"
     },
     {
+      "caseId": "representation-metric-faithfulness-boundary",
+      "description": "Minimal fixture exposes Part IV representation metric readings and keeps bi-Lipschitz faithfulness blocked by coverage / witness completeness.",
+      "packetPath": "minimal/archsig_analysis_packet.json",
+      "validationPath": "acts_spectrum/minimal_validation.json",
+      "expectedSurface": "representationMetricReadings",
+      "minimumRepresentationMetricReadings": 1,
+      "requiresFaithfulnessBlockers": true,
+      "requiresSelectedMetricSummary": true
+    },
+    {
       "caseId": "coupon-tax-rounding-acts",
       "description": "Coupon/tax/rounding fixture exposes ACTS report and keeps payment trace coverage as a gap.",
       "packetPath": "coupon_rounding/archsig_analysis_packet.json",
