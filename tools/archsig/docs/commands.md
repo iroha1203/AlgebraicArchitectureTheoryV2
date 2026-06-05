@@ -12,8 +12,9 @@ archmap-observation-map-v0
 
 ArchSig no longer exposes pre-Atom scan, projection, report, or legacy raw-diff
 PR-review commands. Git history is the archive for those workflows. The
-retained `pr-review` command reads base ArchMap, PR-local ArchMap delta, and
-LawPolicy. Raw diff is not an ArchSig PR-review input.
+retained `pr-review` command reads base ArchMap, optional head / intermediate
+path ArchMaps, PR-local ArchMap delta, and LawPolicy for Part IV PR drift
+distance. Raw diff is not an ArchSig PR-review input.
 FieldSig owns SFT forecast, IntentMap, operational feedback, governance, and
 calibration commands under `tools/fieldsig`.
 
@@ -137,18 +138,28 @@ governance, calibration, and longitudinal monitoring.
 ```bash
 cargo run --manifest-path tools/archsig/Cargo.toml -- pr-review \
   --base-archmap tools/archsig/tests/fixtures/minimal/archmap.json \
+  --after-archmap tools/archsig/tests/fixtures/pr_review/after_archmap.json \
   --delta-archmap tools/archsig/tests/fixtures/pr_review/archmap_delta.json \
   --law-policy tools/archsig/tests/fixtures/minimal/law_policy.json \
   --out .archsig/pr-review/archsig-pr-review.json
 ```
 
 `pr-review` is the CI-friendly ArchSig surface for small PR review. Its
-canonical inputs are base `archmap-observation-map-v0`, PR-local
-`archmap-delta-v0`, and required `law-policy-v0`. No LawPolicy, no ArchSig
-judgement. `pr-review` does not accept raw diff, `archmap-commit-v0`, or
-base/head `archsig-analysis-packet-v0` artifacts as inputs. The report records
-which base observations, source targets, LawPolicy laws, and selected axes the
-PR-local delta touches. It is not FieldSig longitudinal evolution analysis.
+canonical inputs are base `archmap-observation-map-v0`, optional head
+`archmap-observation-map-v0`, PR-local `archmap-delta-v0`, and required
+`law-policy-v0`. No LawPolicy, no ArchSig judgement. `pr-review` does not
+accept raw diff, `archmap-commit-v0`, or base/head
+`archsig-analysis-packet-v0` artifacts as inputs. When `--after-archmap` is
+supplied, the command internally generates base/head ArchSig packets under the
+same LawPolicy and emits `prDriftReadings[]`: endpoint signature distance,
+total path movement, hidden-excursion status, top moved atoms / axes, coverage
+gaps, safe change budget, and architecture navigation review focus. Optional
+`--path-archmap` inputs may be supplied repeatedly to measure movement across
+intermediate ArchMap snapshots; without them, total movement is the two-point
+base/head lower bound and hidden-excursion absence remains blocked. Coverage
+gaps limit safe-change budget instead of becoming measured zero. The report
+remains a bounded PR review surface, not FieldSig longitudinal evolution
+analysis, merge approval, repair safety, or incident forecast.
 
 ## Sharded ArchMap Authoring
 

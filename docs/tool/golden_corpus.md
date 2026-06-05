@@ -44,11 +44,14 @@ ReceiptAmount evidence as fixture-local tooling validation rather than a proof
 theorem or general payment-safety claim.
 
 The PR review fixtures lock the lightweight change-local surface:
-base `archmap-observation-map-v0`, PR-local `archmap-delta-v0`, and required
-`law-policy-v0`. The `archsig-pr-review-report-v1` test reads changed
-observations, source targets, matched laws, and selected axes from those
-artifacts only. Raw diff, `archmap-commit-v0`, and base/head analysis packets
-are not PR-review inputs.
+base `archmap-observation-map-v0`, optional head / intermediate path
+`archmap-observation-map-v0`, PR-local `archmap-delta-v0`, and required
+`law-policy-v0`. The
+`archsig-pr-review-report-v1` test reads changed observations, source targets,
+matched laws, selected axes, and Part IV PR drift readings from those artifacts
+only. Raw diff, `archmap-commit-v0`, and base/head analysis packets are not
+PR-review inputs. The command generates base/path/head packets internally when
+head or path ArchMaps are supplied.
 
 The inspection fixtures lock the current-state surface:
 `archmap-snapshot-v0` and `archmap-index-v0`. The

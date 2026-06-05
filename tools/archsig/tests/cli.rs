@@ -2568,6 +2568,11 @@ fn cli_pr_review_reads_archmapstore_inputs() {
             .join("archmap.json")
             .to_str()
             .expect("base archmap path is utf-8"),
+        "--after-archmap",
+        review
+            .join("after_archmap.json")
+            .to_str()
+            .expect("after archmap path is utf-8"),
         "--delta-archmap",
         review
             .join("archmap_delta.json")
@@ -2586,6 +2591,10 @@ fn cli_pr_review_reads_archmapstore_inputs() {
     assert_eq!(json["schemaVersion"], "archsig-pr-review-report-v1");
     assert_eq!(
         json["canonicalInputs"]["baseArchMap"]["schemaVersion"],
+        "archmap-observation-map-v0"
+    );
+    assert_eq!(
+        json["canonicalInputs"]["afterArchMap"]["schemaVersion"],
         "archmap-observation-map-v0"
     );
     assert_eq!(
@@ -2617,7 +2626,106 @@ fn cli_pr_review_reads_archmapstore_inputs() {
             .as_array()
             .is_some_and(|laws| !laws.is_empty())
     );
+    let drift = &json["prDriftReadings"][0];
+    assert_eq!(
+        drift["endpointSignatureDistance"]["status"], "measured",
+        "PR endpoint distance must be measured from base/head ArchSig packets"
+    );
+    assert_eq!(
+        drift["endpointSignatureDistance"]["measuredValue"], 1000,
+        "semantic axis moves from one witness to zero under the head ArchMap"
+    );
+    assert_eq!(
+        drift["totalPathMovement"]["pathGranularity"], "twoPointBaseHead",
+        "endpoint distance and total movement must stay separated"
+    );
+    assert_eq!(
+        drift["hiddenExcursionStatus"], "blockedWithoutIntermediateArchMapPathSnapshots",
+        "without path snapshots, hidden excursion absence is blocked rather than inferred"
+    );
+    assert!(
+        drift["topMovedAtoms"]
+            .as_array()
+            .is_some_and(|atoms| atoms.iter().any(|atom| {
+                atom["atomObservationRef"] == "atom:contract:create-user"
+                    && atom["sourceRefs"]
+                        .as_array()
+                        .is_some_and(|refs| !refs.is_empty())
+            })),
+        "top moved atoms must retain source-backed refs"
+    );
+    assert!(
+        drift["topMovedAxes"]
+            .as_array()
+            .is_some_and(|axes| axes.iter().any(|axis| {
+                axis["axisRef"] == "sig-axis:semantic-inconsistency"
+                    && axis["sourceRefs"]
+                        .as_array()
+                        .is_some_and(|refs| !refs.is_empty())
+            })),
+        "top moved axes must be source-backed"
+    );
+    assert_eq!(
+        drift["safeChangeBudget"]["status"], "blockedByCoverageGap",
+        "coverage gaps must limit safe change budget rather than being rounded to zero"
+    );
+    assert!(
+        json["architectureNavigationReport"]["recommendedReviewFocus"]
+            .as_array()
+            .is_some_and(|focus| focus
+                .iter()
+                .any(|item| { item == "coverage-gaps-limit-safe-change-budget" })),
+        "navigation report must surface coverage-limited review focus"
+    );
     assert!(json.get("nonConclusions").is_none());
+
+    let path_report = out_dir.join("archsig-pr-review-with-path.json");
+    run_sig0(&[
+        "pr-review",
+        "--base-archmap",
+        minimal
+            .join("archmap.json")
+            .to_str()
+            .expect("base archmap path is utf-8"),
+        "--after-archmap",
+        review
+            .join("after_archmap.json")
+            .to_str()
+            .expect("after archmap path is utf-8"),
+        "--path-archmap",
+        minimal
+            .join("archmap.json")
+            .to_str()
+            .expect("path archmap path is utf-8"),
+        "--delta-archmap",
+        review
+            .join("archmap_delta.json")
+            .to_str()
+            .expect("delta path is utf-8"),
+        "--law-policy",
+        minimal
+            .join("law_policy.json")
+            .to_str()
+            .expect("law policy path is utf-8"),
+        "--out",
+        path_report.to_str().expect("path report path is utf-8"),
+    ]);
+    let path_json = read_json(&path_report);
+    assert_eq!(
+        path_json["canonicalInputs"]["pathArchMaps"]
+            .as_array()
+            .map(Vec::len),
+        Some(1),
+        "path ArchMap snapshots must be retained in canonical input provenance"
+    );
+    assert_eq!(
+        path_json["prDriftReadings"][0]["hiddenExcursionStatus"],
+        "measuredFromSuppliedIntermediateArchMapSnapshots"
+    );
+    assert_eq!(
+        path_json["prDriftReadings"][0]["totalPathMovement"]["pathGranularity"],
+        "suppliedIntermediateSnapshots"
+    );
 }
 
 #[test]
