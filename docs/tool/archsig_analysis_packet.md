@@ -695,9 +695,17 @@ surfaces are not current ArchSig CLI surface or compatibility commands.
 `pr-review` and `codebase-inspection` are separate report surfaces:
 
 - `archsig-pr-review-report-v1` reads base `archmap-observation-map-v0`,
-  PR-local `archmap-delta-v0`, and required `law-policy-v0`. No LawPolicy, no
-  ArchSig judgement. Raw diff, `archmap-commit-v0`, and base/head analysis
-  packets are not PR-review inputs.
+  optional head `archmap-observation-map-v0`, PR-local `archmap-delta-v0`, and
+  required `law-policy-v0`. No LawPolicy, no ArchSig judgement. Raw diff,
+  `archmap-commit-v0`, and base/head analysis packets are not PR-review inputs.
+  With a supplied head ArchMap, the command internally builds base/path/head
+  packets under the same LawPolicy and emits `prDriftReadings[]`: endpoint
+  signature distance, total path movement, hidden-excursion status, top moved
+  atoms / axes with source refs, coverage gaps, safe change budget, and
+  architecture navigation review focus. Optional intermediate path ArchMaps make
+  total movement a supplied-snapshot sum; without them it is a two-point
+  base/head lower bound. Coverage gaps limit the safe-change budget instead of
+  becoming measured zero.
 - `archsig-codebase-inspection-report-v0` reads latest
   `archmap-snapshot-v0`, `archmap-index-v0`, optional recent deltas, optional
   LawPolicy provenance, and one packet. It is current-state architecture health

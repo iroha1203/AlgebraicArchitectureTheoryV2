@@ -1,6 +1,6 @@
 ---
 name: archsig-pr-reviewer
-description: Run ArchSig lightweight PR review from base ArchMap, base-branch-derived PR-local archmap-delta-v0, and LawPolicy; read archsig-pr-review-report-v1 outputs; and turn the report into bounded source-first review questions. Use when Codex is asked to prepare, run, interpret, or automate ArchSig PR review for a pull request.
+description: Run ArchSig lightweight PR review from base/head ArchMap, base-branch-derived PR-local archmap-delta-v0, and LawPolicy; read archsig-pr-review-report-v1 outputs; and turn the report into bounded source-first review questions. Use when Codex is asked to prepare, run, interpret, or automate ArchSig PR review for a pull request.
 ---
 
 # ArchSig PR Reviewer
@@ -13,6 +13,7 @@ bounded review focus.
 `pr-review` is change-local. It reads:
 
 - base `archmap-observation-map-v0`
+- optional head and intermediate path `archmap-observation-map-v0` for PR drift / safe budget readings
 - PR-local `archmap-delta-v0`
 - required `law-policy-v0`
 
@@ -167,6 +168,8 @@ Resolve the ArchSig binary before running:
 Before running, verify the three JSON inputs have these `schemaVersion` values:
 
 - base ArchMap: `archmap-observation-map-v0`
+- head ArchMap: optional `archmap-observation-map-v0`
+- intermediate path ArchMaps: optional repeated `archmap-observation-map-v0`
 - delta ArchMap: `archmap-delta-v0`
 - LawPolicy: `law-policy-v0`
 
@@ -177,6 +180,8 @@ ARCHSIG_BIN=${ARCHSIG_BIN:-archsig}
 
 "$ARCHSIG_BIN" pr-review \
   --base-archmap <archmap.json> \
+  --after-archmap <after_archmap.json> \
+  --path-archmap <intermediate_archmap.json> \
   --delta-archmap <archmap_delta.json> \
   --law-policy <law_policy.json> \
   --out <archsig-pr-review.json>
@@ -289,9 +294,10 @@ the bundled fixtures:
 ```bash
 cargo run --manifest-path tools/archsig/Cargo.toml -- pr-review \
   --base-archmap tools/archsig/tests/fixtures/minimal/archmap.json \
+  --after-archmap tools/archsig/tests/fixtures/pr_review/after_archmap.json \
   --delta-archmap tools/archsig/tests/fixtures/pr_review/archmap_delta.json \
   --law-policy tools/archsig/tests/fixtures/minimal/law_policy.json \
-  --out .lake/archsig-pr-reviewer-validation.json
+  --out .tmp/archsig-pr-reviewer-validation.json
 ```
 
 Then confirm the output has `schemaVersion: "archsig-pr-review-report-v1"` and

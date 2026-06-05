@@ -34,10 +34,17 @@ Use this command shape:
 ```bash
 "$ARCHSIG_BIN" pr-review \
   --base-archmap <archmap.json> \
+  --after-archmap <after_archmap.json> \
+  --path-archmap <intermediate_archmap.json> \
   --delta-archmap <archmap_delta.json> \
   --law-policy <law_policy.json> \
   --out <archsig-pr-review.json>
 ```
+
+Omit `--after-archmap` only when the review intentionally does not need PR
+drift / safe-change budget readings. Omit `--path-archmap` when no intermediate
+ArchMap snapshots are available; the report will keep hidden-excursion absence
+blocked instead of inferring it.
 
 Do not ask the user to install Rust or build from source in a release-only
 workflow unless they explicitly want to develop ArchSig itself.
@@ -49,6 +56,8 @@ For `pr-review`, the release-only required artifacts are:
 | Artifact | Required schemaVersion | How to obtain |
 | --- | --- | --- |
 | base ArchMap | `archmap-observation-map-v0` | Existing project ArchMap. If absent, stop and use `archmap-creater`. |
+| head ArchMap | `archmap-observation-map-v0` | Optional PR head observation map. Supply it when PR drift / safe budget readings are needed. |
+| intermediate path ArchMap | `archmap-observation-map-v0` | Optional repeated snapshots between base and head. Supply when hidden-excursion / path movement needs more than a two-point lower bound. |
 | PR-local delta | `archmap-delta-v0` | Create from the current PR's base branch diff. |
 | LawPolicy | `law-policy-v0` | Existing selected project policy. If absent, stop and use `law-policy-creater`. |
 | PR review report | `archsig-pr-review-report-v1` | Output from `archsig pr-review`. |

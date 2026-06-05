@@ -132,13 +132,16 @@ The E2E flow must preserve these boundaries:
 - FieldSig accepts `archsig-analysis-packet-v0` as bounded current AAT
   structural state and rejects raw ArchMap JSON as the current handoff input.
   PR / diff / change-vector evolution remains FieldSig territory.
-- Future ArchSig PR review mode reads base ArchMap, PR-local ArchMap delta,
-  and LawPolicy as change-local structural evidence for CI. FieldSig reads
-  ArchMapStore and ArchSig packet chains in batch for longitudinal evolution
-  monitoring.
+- ArchSig PR review mode reads base ArchMap, optional head / intermediate path
+  ArchMaps, PR-local ArchMap delta, and LawPolicy as change-local structural
+  evidence for CI. FieldSig reads ArchMapStore and ArchSig packet chains in
+  batch for longitudinal evolution monitoring.
 - The implemented lightweight `archsig pr-review` command takes
-  base ArchMap, PR-local ArchMap delta, and LawPolicy as canonical inputs.
-  Raw diff is not an ArchSig PR-review input.
+  base ArchMap, optional head / intermediate path ArchMaps, PR-local ArchMap
+  delta, and LawPolicy as canonical inputs. With head ArchMap, it emits PR
+  drift, safe-change budget, and architecture navigation focus by internally
+  generating base/path/head packets under the same LawPolicy. Raw diff is not an
+  ArchSig PR-review input.
 - The implemented `archsig codebase-inspection` command takes latest
   `ArchMapSnapshot`, `ArchMapIndex`, an ArchSig packet, optional recent deltas,
   and optional LawPolicy provenance as the current-state diagnosis surface. It
