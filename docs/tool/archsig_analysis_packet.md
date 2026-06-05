@@ -338,9 +338,10 @@ Packet validation has separate JSON surface, measurement-depth, and
 proxy-regression checks. Surface checks confirm the packet contract and
 cross-references; measurement-depth checks require evaluator input refs,
 distance value provenance, witness rule / law / axis alignment, and coverage
-blockers for measured or blocked readings and reject hard-coded fixture markers
-as measured provenance; proxy-regression checks reject `schemaFoundationOnly`
-or bounded proxy rows when they masquerade as measured analysis. Packet
+blockers for measured or blocked readings, require Part IV rows to stay tied
+to the selected `DistanceProfile` / `DiagnosticScope`, and reject hard-coded
+fixture markers as measured provenance; proxy-regression checks reject
+`schemaFoundationOnly` or bounded proxy rows when they masquerade as measured analysis. Packet
 validation checks identity, ArchMap / interpretation profile
 references, AAT concept coverage, bounded judgement statuses, analytic axes,
 spectral analysis readings, spectral mode readings,

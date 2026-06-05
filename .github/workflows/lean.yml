@@ -142,6 +142,26 @@ jobs:
           jq -e '
             .summary.result == "pass"
             and ([.checks[]?.id] | index("archsig-analysis-packet-non-conclusion-boundary") != null)
+            and ([.checks[]? | select(.result == "pass") | .id] | index("archsig-analysis-packet-part4-distance-foundation") != null)
+            and ([.checks[]? | select(.result == "pass") | .id] | index("archsig-analysis-packet-atom-distance-readings") != null)
+            and ([.checks[]? | select(.result == "pass") | .id] | index("archsig-analysis-packet-configuration-distance-readings") != null)
+            and ([.checks[]? | select(.result == "pass") | .id] | index("archsig-analysis-packet-signature-distance-readings") != null)
+            and ([.checks[]? | select(.result == "pass") | .id] | index("archsig-analysis-packet-operation-distance-readings") != null)
+            and ([.checks[]? | select(.result == "pass") | .id] | index("archsig-analysis-packet-obstruction-measure-readings") != null)
+            and ([.checks[]? | select(.result == "pass") | .id] | index("archsig-analysis-packet-curvature-mass-readings") != null)
+            and ([.checks[]? | select(.result == "pass") | .id] | index("archsig-analysis-packet-homotopy-distance-readings") != null)
+            and ([.checks[]? | select(.result == "pass") | .id] | index("archsig-analysis-packet-representation-metric-readings") != null)
+            and ([.checks[]? | select(.result == "pass") | .id] | index("archsig-analysis-packet-measurement-depth") != null)
+            and ([.checks[]? | select(.result == "pass") | .id] | index("archsig-analysis-packet-proxy-regression-guardrails") != null)
+            and (.summary.part4SupportingDistanceCount >= 7)
+            and (.summary.atomDistanceReadingCount > 0)
+            and (.summary.configurationDistanceReadingCount > 0)
+            and (.summary.signatureDistanceReadingCount > 0)
+            and (.summary.operationDistanceReadingCount > 0)
+            and (.summary.obstructionMeasureReadingCount > 0)
+            and (.summary.curvatureMassReadingCount > 0)
+            and (.summary.homotopyDistanceReadingCount > 0)
+            and (.summary.representationMetricReadingCount > 0)
           ' "$archsig_raw_dir/archsig-analysis-validation.json"
 
           cargo run --manifest-path tools/fieldsig/Cargo.toml -- archsig-analysis-sft-input \
