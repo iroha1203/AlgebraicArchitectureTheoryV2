@@ -173,6 +173,16 @@ IV small-molecule overlap weight. Observation gaps and missing relations block
 the configuration bundle; they are not filled in as measured zero or inferred
 architecture completeness.
 
+`signatureDistanceReadings[]` is the Part IV signature geometry evaluator
+surface. It aggregates selected LawPolicy signature axes into axis-wise
+`rhoI`, `axisDistance`, measured / unmeasured / incomparable axis partitions,
+`totalMeasuredDistance`, `safeRegionMargin`, `pathDrift`,
+`endpointDistance`, and `hiddenExcursionStatus`. Existing `signatureAxes[]`
+remain the law-relative axis reading surface, but each axis must point to the
+first-class signature distance reading through `signatureDistanceReadingRefs`.
+Coverage gaps block safe-region and drift conclusions; a zero axis count alone
+is not a global lawfulness or flatness claim.
+
 The implemented schema records:
 
 - `interpretationProfileRef`
@@ -190,6 +200,8 @@ The implemented schema records:
 - `moleculeReadings`
 - `part4DistanceFoundation`
 - `atomDistanceReadings`
+- `configurationDistanceReadings`
+- `signatureDistanceReadings`
 - `obstructionCircuits`
 - `signatureAxes`
 - `analyticRepresentations`
@@ -483,6 +495,13 @@ The builder:
   `smallMoleculeWeightMilli`. Unreachable sampled pairs remain `infinite` with
   blocker refs. Observation gaps block `configurationDistanceBundle` and the
   `configurationGeometry` family-level row rather than contributing zero.
+- `signatureDistanceReadings[]` computes selected signature geometry distance
+  from LawPolicy signature axes, not from a single raw signature score. The
+  evaluator records axis-wise `rhoI`, `axisDistance`, measured / unmeasured /
+  incomparable axis partitions, `totalMeasuredDistance`, `safeRegionMargin`,
+  `pathDrift`, `endpointDistance`, and `hiddenExcursionStatus`.
+  `signatureAxes[]` retain `signatureDistanceReadingRefs` so axis counts
+  cannot be read without distance provenance and coverage blockers.
 - `operationSquareCandidates` enumerates supplied, inferred, or blocked
   operation pairs as path pairs `p = g . f` and `q = f . g`. Supplied
   candidates are read from first-class ArchMap `operationSquareEvidence[]` and
