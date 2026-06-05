@@ -1070,6 +1070,8 @@ pub struct ArchSigAnalysisPacketV0 {
     pub stokes_style_readings: Vec<ArchSigStokesStyleReadingV0>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub architecture_homotopy_report: Option<ArchSigArchitectureHomotopyReportV0>,
+    #[serde(default)]
+    pub homotopy_distance_readings: Vec<ArchSigHomotopyDistanceReadingV0>,
     pub operation_square_candidates: Vec<ArchSigOperationSquareCandidateV0>,
     pub path_continuation_traces: Vec<ArchSigPathContinuationTraceV0>,
     pub axis_wise_monodromy_defects: Vec<ArchSigAxisWiseMonodromyDefectV0>,
@@ -3091,6 +3093,8 @@ pub struct ArchSigLoopCandidateV0 {
     pub missing_filler_evidence: Vec<String>,
     pub selected_axis_refs: Vec<String>,
     pub source_refs: Vec<String>,
+    #[serde(default)]
+    pub part4_distance_refs: Vec<String>,
     pub coverage_boundary: String,
     pub evidence_boundary: String,
     pub non_conclusions: Vec<String>,
@@ -3120,6 +3124,8 @@ pub struct ArchSigFillerCandidateReadingV0 {
     pub docs_refs: Vec<String>,
     pub runtime_refs: Vec<String>,
     pub next_check_refs: Vec<String>,
+    #[serde(default)]
+    pub part4_distance_refs: Vec<String>,
     pub evidence_boundary: String,
     pub non_conclusions: Vec<String>,
 }
@@ -3141,6 +3147,8 @@ pub struct ArchSigArchitecturalHoleReadingV0 {
     pub missing_filler_evidence: Vec<String>,
     pub next_check_refs: Vec<String>,
     pub source_refs: Vec<String>,
+    #[serde(default)]
+    pub part4_distance_refs: Vec<String>,
     pub coverage_boundary: String,
     pub evidence_boundary: String,
     pub non_conclusions: Vec<String>,
@@ -3170,6 +3178,8 @@ pub struct ArchSigHomotopyHolonomyReadingV0 {
     pub observation_refs: Vec<String>,
     pub filler_refs: Vec<String>,
     pub missing_filler_refs: Vec<String>,
+    #[serde(default)]
+    pub part4_distance_refs: Vec<String>,
     pub coverage_boundary: String,
     pub exactness_assumption_status: String,
     pub non_conclusions: Vec<String>,
@@ -3194,6 +3204,8 @@ pub struct ArchSigStokesStyleReadingV0 {
     pub local_curvature_condition: String,
     pub local_curvature_cell_candidates: Vec<String>,
     pub review_queue_refs: Vec<String>,
+    #[serde(default)]
+    pub part4_distance_refs: Vec<String>,
     pub coverage_boundary: String,
     pub evidence_boundary: String,
     pub non_conclusions: Vec<String>,
@@ -3215,6 +3227,8 @@ pub struct ArchSigArchitectureHomotopyReportV0 {
     pub top_local_curvature_cells: Vec<String>,
     pub aggregate_readings: Vec<ArchSigHomotopyAggregateReadingV0>,
     pub coverage_gaps: Vec<String>,
+    #[serde(default)]
+    pub part4_distance_refs: Vec<String>,
     pub measured_boundary: String,
     pub recommended_review_focus: Vec<String>,
     pub non_conclusions: Vec<String>,
@@ -3227,6 +3241,30 @@ pub struct ArchSigHomotopyAggregateReadingV0 {
     pub value: i64,
     pub reading: String,
     pub boundary: String,
+}
+
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigHomotopyDistanceReadingV0 {
+    pub homotopy_distance_reading_id: String,
+    pub profile_ref: String,
+    pub loop_ref: String,
+    pub path_pair_ref: String,
+    pub distance_profile_ref: String,
+    pub diagnostic_scope_ref: String,
+    pub homotopy_distance: ArchSigDistanceValueV0,
+    pub filling_cost: ArchSigDistanceValueV0,
+    pub observation_gap_lower_bound: ArchSigDistanceValueV0,
+    pub selected_dehn_area: ArchSigDistanceValueV0,
+    pub filler_candidate_refs: Vec<String>,
+    pub measured_filler_refs: Vec<String>,
+    pub missing_filler_refs: Vec<String>,
+    pub holonomy_reading_refs: Vec<String>,
+    pub non_fillability_witness_refs: Vec<String>,
+    pub evidence_refs: Vec<String>,
+    pub lipschitz_assumption_refs: Vec<String>,
+    pub evidence_boundary: String,
+    pub non_conclusions: Vec<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -3761,6 +3799,8 @@ pub struct ArchSigAnalysisPacketValidationSummaryV0 {
     pub operation_precondition_readiness_reading_count: usize,
     pub path_multiplicity_loss_reading_count: usize,
     pub signature_trajectory_homotopy_refutation_reading_count: usize,
+    #[serde(default)]
+    pub homotopy_distance_reading_count: usize,
     pub bridge_split_obstruction_transfer_reading_count: usize,
     pub representation_strength_reading_count: usize,
     pub local_curvature_diagram_reading_count: usize,

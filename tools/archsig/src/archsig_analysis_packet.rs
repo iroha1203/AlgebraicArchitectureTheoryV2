@@ -42,10 +42,10 @@ use crate::{
     ArchSigGeneratedLawInputV0, ArchSigGeneratedMoleculeV0, ArchSigGeneratedObstructionV0,
     ArchSigGeneratedRepairTargetV0, ArchSigHighOverlapMoleculePairV0,
     ArchSigHomotopyAggregateReadingV0, ArchSigHomotopyCellSummaryV0,
-    ArchSigHomotopyComplexSummaryV0, ArchSigHomotopyHolonomyReadingV0,
-    ArchSigHomotopyOrderSensitivityReadingV0, ArchSigInvariantFamilyReadingV0,
-    ArchSigLawUniverseCoverageReadingV0, ArchSigLawUniverseReadingV0,
-    ArchSigLawWitnessAxisAlignmentEvaluationV0, ArchSigLayerSplitV0,
+    ArchSigHomotopyComplexSummaryV0, ArchSigHomotopyDistanceReadingV0,
+    ArchSigHomotopyHolonomyReadingV0, ArchSigHomotopyOrderSensitivityReadingV0,
+    ArchSigInvariantFamilyReadingV0, ArchSigLawUniverseCoverageReadingV0,
+    ArchSigLawUniverseReadingV0, ArchSigLawWitnessAxisAlignmentEvaluationV0, ArchSigLayerSplitV0,
     ArchSigLlmInterpretationPacketV0, ArchSigLocalCurvatureDiagramReadingV0,
     ArchSigLoopCandidateV0, ArchSigMeasurementReadingBoundaryV0, ArchSigMoleculeReadingV0,
     ArchSigMonodromyReadingFamilyV0, ArchSigNonzeroMonodromyWitnessV0,
@@ -370,17 +370,17 @@ pub fn build_archsig_analysis_packet(
         &homotopy_complex_summary,
         &path_homotopy_diagram_readings,
     );
-    let loop_candidates = build_loop_candidates(
+    let mut loop_candidates = build_loop_candidates(
         archmap,
         law_policy,
         &path_pair_candidates,
         &homotopy_complex_summary,
     );
-    let filler_candidate_readings =
+    let mut filler_candidate_readings =
         build_filler_candidate_readings(archmap, law_policy, &loop_candidates);
-    let architectural_hole_readings =
+    let mut architectural_hole_readings =
         build_architectural_hole_readings(archmap, &loop_candidates, &filler_candidate_readings);
-    let homotopy_holonomy_readings = build_homotopy_holonomy_readings(
+    let mut homotopy_holonomy_readings = build_homotopy_holonomy_readings(
         archmap,
         law_policy,
         &loop_candidates,
@@ -390,19 +390,41 @@ pub fn build_archsig_analysis_packet(
         &path_continuation_traces,
         &axis_wise_monodromy_defects,
     );
-    let stokes_style_readings = build_stokes_style_readings(
+    let mut stokes_style_readings = build_stokes_style_readings(
         &homotopy_complex_summary,
         &loop_candidates,
         &homotopy_holonomy_readings,
         &filler_candidate_readings,
         &architectural_hole_readings,
     );
-    let architecture_homotopy_report = build_architecture_homotopy_report(
+    let mut architecture_homotopy_report = build_architecture_homotopy_report(
         &homotopy_complex_summary,
         &loop_candidates,
         &architectural_hole_readings,
         &homotopy_holonomy_readings,
         &stokes_style_readings,
+    );
+    let homotopy_distance_readings = build_homotopy_distance_readings(
+        &homotopy_complex_summary,
+        &loop_candidates,
+        &filler_candidate_readings,
+        &architectural_hole_readings,
+        &homotopy_holonomy_readings,
+        &stokes_style_readings,
+        &part4_distance_foundation,
+    );
+    attach_homotopy_distance_refs(
+        &mut loop_candidates,
+        &mut filler_candidate_readings,
+        &mut architectural_hole_readings,
+        &mut homotopy_holonomy_readings,
+        &mut stokes_style_readings,
+        &mut architecture_homotopy_report,
+        &homotopy_distance_readings,
+    );
+    promote_homotopy_filling_supporting_distance(
+        &mut part4_distance_foundation,
+        &homotopy_distance_readings,
     );
     let ami_aggregate_readings =
         build_ami_aggregate_readings(law_policy, &axis_wise_monodromy_defects);
@@ -612,6 +634,7 @@ pub fn build_archsig_analysis_packet(
         homotopy_holonomy_readings,
         stokes_style_readings,
         architecture_homotopy_report: Some(architecture_homotopy_report),
+        homotopy_distance_readings,
         operation_square_candidates,
         path_continuation_traces,
         axis_wise_monodromy_defects,
@@ -14266,6 +14289,7 @@ fn build_loop_candidates(
                 missing_filler_evidence,
                 selected_axis_refs: complex.selected_axis_refs.clone(),
                 source_refs: candidate.source_refs.clone(),
+                part4_distance_refs: Vec::new(),
                 coverage_boundary: complex.coverage_boundary.clone(),
                 evidence_boundary:
                     "loop candidate is a bounded homotopy review surface, not a violation proof"
@@ -14374,6 +14398,7 @@ fn build_filler_candidate_readings(
                     docs_refs,
                     runtime_refs,
                     next_check_refs,
+                    part4_distance_refs: Vec::new(),
                     evidence_boundary: rule.evidence_boundary.clone(),
                     non_conclusions: strings(&REQUIRED_HOMOTOPY_NON_CONCLUSIONS),
                 }
@@ -14444,6 +14469,7 @@ fn build_architectural_hole_readings(
                 missing_filler_evidence: effective_missing_filler_evidence,
                 next_check_refs,
                 source_refs: loop_candidate.source_refs.clone(),
+                part4_distance_refs: Vec::new(),
                 coverage_boundary: loop_candidate.coverage_boundary.clone(),
                 evidence_boundary:
                     "architectural hole records missing filler evidence, not violation proof"
@@ -14565,6 +14591,7 @@ fn build_homotopy_holonomy_readings(
                                 .into_iter()
                                 .chain(comparison.missing_refs.into_iter()),
                         ),
+                        part4_distance_refs: Vec::new(),
                         coverage_boundary: loop_candidate.coverage_boundary.clone(),
                         exactness_assumption_status:
                             "bounded selected-axis continuation comparison; not theorem exactness"
@@ -14884,6 +14911,7 @@ fn build_stokes_style_readings(
                 .to_string(),
                 local_curvature_cell_candidates,
                 review_queue_refs,
+                part4_distance_refs: Vec::new(),
                 coverage_boundary: loop_candidate.coverage_boundary.clone(),
                 evidence_boundary:
                     "Stokes-style reading is a bounded review queue, not theorem discharge"
@@ -14982,6 +15010,7 @@ fn build_architecture_homotopy_report(
             },
         ],
         coverage_gaps,
+        part4_distance_refs: Vec::new(),
         measured_boundary:
             "ArchitectureHomotopyReport is bounded to supplied ArchMap, selected LawPolicy, and homotopy measurement profile"
                 .to_string(),
@@ -14999,6 +15028,339 @@ fn build_architecture_homotopy_report(
             "Stokes-style readings are review queues, not theorem discharge".to_string(),
         ],
     }
+}
+
+fn build_homotopy_distance_readings(
+    complex: &ArchSigHomotopyComplexSummaryV0,
+    loop_candidates: &[ArchSigLoopCandidateV0],
+    filler_candidate_readings: &[ArchSigFillerCandidateReadingV0],
+    architectural_hole_readings: &[ArchSigArchitecturalHoleReadingV0],
+    holonomy_readings: &[ArchSigHomotopyHolonomyReadingV0],
+    stokes_style_readings: &[ArchSigStokesStyleReadingV0],
+    foundation: &ArchSigPart4DistanceFoundationV0,
+) -> Vec<ArchSigHomotopyDistanceReadingV0> {
+    let coverage_refs = foundation.profile.coverage_policy_refs.clone();
+    loop_candidates
+        .iter()
+        .map(|loop_candidate| {
+            let filler_refs = filler_candidate_readings
+                .iter()
+                .filter(|reading| reading.loop_ref == loop_candidate.loop_id)
+                .collect::<Vec<_>>();
+            let hole_refs = architectural_hole_readings
+                .iter()
+                .filter(|reading| reading.loop_ref == loop_candidate.loop_id)
+                .collect::<Vec<_>>();
+            let holonomy_refs = holonomy_readings
+                .iter()
+                .filter(|reading| reading.loop_ref == loop_candidate.loop_id)
+                .collect::<Vec<_>>();
+            let stokes_refs = stokes_style_readings
+                .iter()
+                .filter(|reading| reading.loop_ref == loop_candidate.loop_id)
+                .collect::<Vec<_>>();
+            let measured_filler_refs = unique_strings(
+                filler_refs
+                    .iter()
+                    .flat_map(|reading| reading.measured_filler_evidence_refs.clone()),
+            );
+            let missing_filler_refs = unique_strings(
+                loop_candidate
+                    .missing_filler_evidence
+                    .iter()
+                    .cloned()
+                    .chain(
+                        filler_refs
+                            .iter()
+                            .flat_map(|reading| reading.missing_filler_evidence.clone()),
+                    )
+                    .chain(
+                        hole_refs
+                            .iter()
+                            .flat_map(|reading| reading.missing_filler_evidence.clone()),
+                    )
+                    .chain(
+                        holonomy_refs
+                            .iter()
+                            .flat_map(|reading| reading.missing_filler_refs.clone()),
+                    ),
+            );
+            let non_fillability_witness_refs = unique_strings(
+                hole_refs
+                    .iter()
+                    .flat_map(|reading| reading.non_fillability_witness_refs.clone())
+                    .chain(
+                        stokes_refs
+                            .iter()
+                            .flat_map(|reading| reading.non_fillability_witness_refs.clone()),
+                    ),
+            );
+            let holonomy_value = holonomy_refs
+                .iter()
+                .map(|reading| reading.value.max(0))
+                .sum::<i64>();
+            let generator_cost = loop_candidate.path_refs.len() as i64
+                + loop_candidate.filler_candidate_refs.len() as i64
+                + holonomy_value;
+            let filler_cost_value = measured_filler_refs.len() as i64;
+            let missing_cost = missing_filler_refs.len() as i64;
+            let evidence_refs = unique_strings(
+                loop_candidate
+                    .source_refs
+                    .iter()
+                    .cloned()
+                    .chain(loop_candidate.path_refs.iter().cloned())
+                    .chain(
+                        filler_refs
+                            .iter()
+                            .flat_map(|reading| reading.source_refs.clone()),
+                    )
+                    .chain(
+                        holonomy_refs
+                            .iter()
+                            .flat_map(|reading| reading.distance_input_refs.clone()),
+                    ),
+            );
+            let blockers = if missing_filler_refs.is_empty() {
+                Vec::new()
+            } else {
+                missing_filler_refs.clone()
+            };
+            let homotopy_distance = if blockers.is_empty() {
+                measured_part4_distance_value(
+                    generator_cost,
+                    "homotopy-generator-cost",
+                    evidence_refs.clone(),
+                    vec![
+                        format!("d_hom:pathPair:{}", loop_candidate.path_pair_ref),
+                        format!("generatorCount:{}", loop_candidate.filler_candidate_refs.len()),
+                    ],
+                    &coverage_refs,
+                    "homotopy distance is selected generator cost over measured path pair and filler evidence",
+                )
+            } else {
+                blocked_curvature_distance_value(
+                    "homotopy-generator-cost",
+                    evidence_refs.clone(),
+                    vec![format!("d_hom:pathPair:{}", loop_candidate.path_pair_ref)],
+                    &coverage_refs,
+                    blockers.clone(),
+                    "homotopy distance is blocked by missing filler evidence and cannot be read as zero",
+                )
+            };
+            let filling_cost = if blockers.is_empty() {
+                measured_part4_distance_value(
+                    filler_cost_value,
+                    "filling-cost",
+                    measured_filler_refs.clone(),
+                    vec![format!("fill_cost:loop:{}", loop_candidate.loop_id)],
+                    &coverage_refs,
+                    "filling cost is measured from selected filler evidence refs",
+                )
+            } else {
+                blocked_curvature_distance_value(
+                    "filling-cost",
+                    non_fillability_witness_refs.clone(),
+                    vec![format!("fill_cost:loop:{}", loop_candidate.loop_id)],
+                    &coverage_refs,
+                    blockers.clone(),
+                    "filling cost is blocked while filler evidence is missing; missing filler is not zero cost",
+                )
+            };
+            let observation_gap_lower_bound = if missing_cost > 0 {
+                measured_part4_distance_value(
+                    missing_cost,
+                    "observation-gap-lower-bound",
+                    missing_filler_refs.clone(),
+                    vec![
+                        "lipschitzAssumption:selectedObservationGap".to_string(),
+                        format!("deltaOverL:{}", missing_cost),
+                    ],
+                    &coverage_refs,
+                    "observation gap lower bound uses explicit selected Lipschitz and distance assumptions",
+                )
+            } else {
+                measured_part4_distance_value(
+                    0,
+                    "observation-gap-lower-bound",
+                    evidence_refs.clone(),
+                    vec!["lipschitzAssumption:noSelectedGap".to_string()],
+                    &coverage_refs,
+                    "no selected observation gap contributes a lower bound in this bounded loop",
+                )
+            };
+            let selected_dehn_area = if blockers.is_empty() {
+                measured_part4_distance_value(
+                    filler_cost_value + holonomy_value,
+                    "selected-dehn-area",
+                    measured_filler_refs.clone(),
+                    vec![
+                        format!("Dehn_A:n<= {}", loop_candidate.path_refs.len()),
+                        format!("area:{}", filler_cost_value + holonomy_value),
+                    ],
+                    &coverage_refs,
+                    "selected Dehn-style area is finite over bounded loop candidates only",
+                )
+            } else {
+                blocked_curvature_distance_value(
+                    "selected-dehn-area",
+                    non_fillability_witness_refs.clone(),
+                    vec![format!("Dehn_A:n<= {}", loop_candidate.path_refs.len())],
+                    &coverage_refs,
+                    blockers,
+                    "selected Dehn-style area is blocked by architectural holes and missing filler evidence",
+                )
+            };
+
+            ArchSigHomotopyDistanceReadingV0 {
+                homotopy_distance_reading_id: format!(
+                    "homotopy-distance:{}",
+                    stable_id(&loop_candidate.loop_id)
+                ),
+                profile_ref: complex.profile_ref.clone(),
+                loop_ref: loop_candidate.loop_id.clone(),
+                path_pair_ref: loop_candidate.path_pair_ref.clone(),
+                distance_profile_ref: foundation.profile.profile_id.clone(),
+                diagnostic_scope_ref: foundation.diagnostic_scope.scope_id.clone(),
+                homotopy_distance,
+                filling_cost,
+                observation_gap_lower_bound,
+                selected_dehn_area,
+                filler_candidate_refs: loop_candidate.filler_candidate_refs.clone(),
+                measured_filler_refs,
+                missing_filler_refs,
+                holonomy_reading_refs: holonomy_refs
+                    .iter()
+                    .map(|reading| reading.reading_id.clone())
+                    .collect(),
+                non_fillability_witness_refs,
+                evidence_refs,
+                lipschitz_assumption_refs: vec![
+                    "selected observation is L-Lipschitz for declared filling generators"
+                        .to_string(),
+                    "lower bound is scoped to supplied ArchMap observation gaps".to_string(),
+                ],
+                evidence_boundary:
+                    "homotopy and filling distances are selected bounded readings; missing fillers are blockers, not zero cost or global homology claims"
+                        .to_string(),
+                non_conclusions: strings(&REQUIRED_HOMOTOPY_NON_CONCLUSIONS),
+            }
+        })
+        .collect()
+}
+
+fn attach_homotopy_distance_refs(
+    loop_candidates: &mut [ArchSigLoopCandidateV0],
+    filler_candidate_readings: &mut [ArchSigFillerCandidateReadingV0],
+    architectural_hole_readings: &mut [ArchSigArchitecturalHoleReadingV0],
+    holonomy_readings: &mut [ArchSigHomotopyHolonomyReadingV0],
+    stokes_style_readings: &mut [ArchSigStokesStyleReadingV0],
+    report: &mut ArchSigArchitectureHomotopyReportV0,
+    readings: &[ArchSigHomotopyDistanceReadingV0],
+) {
+    for reading in readings {
+        if let Some(loop_candidate) = loop_candidates
+            .iter_mut()
+            .find(|candidate| candidate.loop_id == reading.loop_ref)
+        {
+            loop_candidate
+                .part4_distance_refs
+                .push(reading.homotopy_distance_reading_id.clone());
+        }
+        for filler in filler_candidate_readings
+            .iter_mut()
+            .filter(|filler| filler.loop_ref == reading.loop_ref)
+        {
+            filler
+                .part4_distance_refs
+                .push(reading.homotopy_distance_reading_id.clone());
+        }
+        for hole in architectural_hole_readings
+            .iter_mut()
+            .filter(|hole| hole.loop_ref == reading.loop_ref)
+        {
+            hole.part4_distance_refs
+                .push(reading.homotopy_distance_reading_id.clone());
+        }
+        for holonomy in holonomy_readings
+            .iter_mut()
+            .filter(|holonomy| holonomy.loop_ref == reading.loop_ref)
+        {
+            holonomy
+                .part4_distance_refs
+                .push(reading.homotopy_distance_reading_id.clone());
+        }
+        for stokes in stokes_style_readings
+            .iter_mut()
+            .filter(|stokes| stokes.loop_ref == reading.loop_ref)
+        {
+            stokes
+                .part4_distance_refs
+                .push(reading.homotopy_distance_reading_id.clone());
+        }
+        report
+            .part4_distance_refs
+            .push(reading.homotopy_distance_reading_id.clone());
+    }
+}
+
+fn promote_homotopy_filling_supporting_distance(
+    foundation: &mut ArchSigPart4DistanceFoundationV0,
+    readings: &[ArchSigHomotopyDistanceReadingV0],
+) {
+    if readings.is_empty() {
+        return;
+    }
+    if let Some(distance) = foundation
+        .supporting_distances
+        .iter_mut()
+        .find(|distance| distance.distance_family == "homotopyFillingGeometry")
+    {
+        let blockers = readings
+            .iter()
+            .flat_map(|reading| reading.filling_cost.blocker_refs.clone())
+            .collect::<BTreeSet<_>>()
+            .into_iter()
+            .collect::<Vec<_>>();
+        distance.value = if blockers.is_empty() {
+            measured_part4_distance_value(
+                readings
+                    .iter()
+                    .filter_map(|reading| reading.filling_cost.measured_value)
+                    .sum::<i64>(),
+                "filling-cost",
+                readings
+                    .iter()
+                    .map(|reading| reading.homotopy_distance_reading_id.clone())
+                    .collect(),
+                readings
+                    .iter()
+                    .map(|reading| format!("fill_cost:{}", reading.loop_ref))
+                    .collect(),
+                &foundation.profile.coverage_policy_refs,
+                "homotopyFillingGeometry aggregates selected filling costs over bounded loop candidates",
+            )
+        } else {
+            blocked_curvature_distance_value(
+                "filling-cost",
+                readings
+                    .iter()
+                    .map(|reading| reading.homotopy_distance_reading_id.clone())
+                    .collect(),
+                readings
+                    .iter()
+                    .map(|reading| format!("homotopyDistance:{}", reading.loop_ref))
+                    .collect(),
+                &foundation.profile.coverage_policy_refs,
+                blockers,
+                "homotopyFillingGeometry remains blocked while selected fillers are missing",
+            )
+        };
+        distance.evidence_boundary =
+            "homotopyFillingGeometry reads selected path-pair and filler evidence; it is not global homology or path truth"
+                .to_string();
+    }
+    refresh_part4_status_summary(foundation);
 }
 
 fn build_bounded_judgements(
@@ -15799,6 +16161,7 @@ pub fn validate_archsig_analysis_packet_report(
         check_homotopy_complex_candidate_surface(packet),
         check_filler_architectural_hole_surface(packet),
         check_homotopy_holonomy_stokes_surface(packet),
+        check_homotopy_distance_reading_surface(packet),
         check_architecture_homotopy_report_surface(packet),
         check_bounded_judgement_surface(packet),
         check_analytic_and_principle_surfaces(packet),
@@ -15891,6 +16254,7 @@ pub fn validate_archsig_analysis_packet_report(
         signature_trajectory_homotopy_refutation_reading_count: packet
             .signature_trajectory_homotopy_refutation_readings
             .len(),
+        homotopy_distance_reading_count: packet.homotopy_distance_readings.len(),
         bridge_split_obstruction_transfer_reading_count: packet
             .bridge_split_obstruction_transfer_readings
             .len(),
@@ -16660,6 +17024,125 @@ fn check_homotopy_holonomy_stokes_surface(packet: &ArchSigAnalysisPacketV0) -> V
     check_from_examples(
         "archsig-analysis-packet-homotopy-holonomy-stokes-surface",
         "packet reports selected-axis homotopy holonomy and bounded Stokes-style review queues",
+        examples,
+        "fail",
+    )
+}
+
+fn check_homotopy_distance_reading_surface(packet: &ArchSigAnalysisPacketV0) -> ValidationCheck {
+    let mut examples = Vec::new();
+    let distance_ids = packet
+        .homotopy_distance_readings
+        .iter()
+        .map(|reading| reading.homotopy_distance_reading_id.as_str())
+        .collect::<BTreeSet<_>>();
+    if !packet.loop_candidates.is_empty() && packet.homotopy_distance_readings.is_empty() {
+        examples.push(generic_validation_example(
+            "homotopyDistanceReadings",
+            "empty",
+            "loop candidates must have Part IV homotopy distance readings",
+        ));
+    }
+    for loop_candidate in &packet.loop_candidates {
+        if loop_candidate.part4_distance_refs.is_empty()
+            || loop_candidate
+                .part4_distance_refs
+                .iter()
+                .any(|reading_ref| !distance_ids.contains(reading_ref.as_str()))
+        {
+            examples.push(generic_validation_example(
+                &loop_candidate.loop_id,
+                "part4DistanceRefs",
+                "loop candidates must point to homotopy distance readings",
+            ));
+        }
+    }
+    for filler in &packet.filler_candidate_readings {
+        if filler.part4_distance_refs.is_empty()
+            || filler
+                .part4_distance_refs
+                .iter()
+                .any(|reading_ref| !distance_ids.contains(reading_ref.as_str()))
+        {
+            examples.push(generic_validation_example(
+                &filler.reading_id,
+                "part4DistanceRefs",
+                "filler candidates must retain Part IV filling cost refs",
+            ));
+        }
+    }
+    for hole in &packet.architectural_hole_readings {
+        if hole.part4_distance_refs.is_empty()
+            || hole
+                .part4_distance_refs
+                .iter()
+                .any(|reading_ref| !distance_ids.contains(reading_ref.as_str()))
+        {
+            examples.push(generic_validation_example(
+                &hole.reading_id,
+                "part4DistanceRefs",
+                "architectural holes must retain missing-filler distance refs",
+            ));
+        }
+    }
+    for reading in &packet.homotopy_distance_readings {
+        for (field, value, prefix) in [
+            ("homotopyDistance", &reading.homotopy_distance, "d_hom:"),
+            ("fillingCost", &reading.filling_cost, "fill_cost:"),
+            (
+                "observationGapLowerBound",
+                &reading.observation_gap_lower_bound,
+                "lipschitzAssumption:",
+            ),
+            ("selectedDehnArea", &reading.selected_dehn_area, "Dehn_A:"),
+        ] {
+            check_curvature_distance_value(
+                &mut examples,
+                &reading.homotopy_distance_reading_id,
+                field,
+                value,
+                prefix,
+            );
+        }
+        if !reading.missing_filler_refs.is_empty()
+            && matches!(reading.filling_cost.status.as_str(), "measured" | "zero")
+        {
+            examples.push(generic_validation_example(
+                &reading.homotopy_distance_reading_id,
+                "fillingCost",
+                "missing filler evidence must not be reported as measured zero filling cost",
+            ));
+        }
+        if reading.lipschitz_assumption_refs.is_empty()
+            || !reading
+                .evidence_boundary
+                .contains("missing fillers are blockers")
+        {
+            examples.push(generic_validation_example(
+                &reading.homotopy_distance_reading_id,
+                "lipschitzAssumptionRefs/evidenceBoundary",
+                "homotopy distance must retain lower-bound assumptions and missing-filler boundary",
+            ));
+        }
+    }
+    if let Some(report) = &packet.architecture_homotopy_report {
+        if report.part4_distance_refs.is_empty()
+            || report
+                .part4_distance_refs
+                .iter()
+                .any(|reading_ref| !distance_ids.contains(reading_ref.as_str()))
+        {
+            examples.push(generic_validation_example(
+                &report.report_id,
+                "part4DistanceRefs",
+                "ArchitectureHomotopyReport must retain Part IV homotopy distance refs",
+            ));
+        }
+    }
+
+    check_from_examples(
+        "archsig-analysis-packet-homotopy-distance-readings",
+        "packet exposes Part IV homotopy distance, filling cost, observation-gap lower bound, and selected Dehn-style area without treating missing fillers as zero",
         examples,
         "fail",
     )

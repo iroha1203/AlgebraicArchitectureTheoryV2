@@ -202,6 +202,13 @@ target-axis decrease, protected-axis movement, and curvature transport distance.
 and `architectureSpectrumReport` retain Part IV distance refs back to these
 rows.
 
+`homotopyDistanceReadings[]` is the Part IV homotopy / filling evaluator
+surface. Each row links a selected loop and path pair to `homotopyDistance`,
+`fillingCost`, `observationGapLowerBound`, and `selectedDehnArea`. Missing
+filler evidence blocks filling cost and selected Dehn-style area rather than
+becoming zero cost. Loop, filler, architectural-hole, holonomy, Stokes-style,
+and `ArchitectureHomotopyReport` surfaces retain `part4DistanceRefs`.
+
 The implemented schema records:
 
 - `interpretationProfileRef`
@@ -260,6 +267,7 @@ The implemented schema records:
 - `homotopyHolonomyReadings`
 - `stokesStyleReadings`
 - `architectureHomotopyReport`
+- `homotopyDistanceReadings`
 - `operationSquareCandidates`
 - `pathContinuationTraces`
 - `axisWiseMonodromyDefects`
@@ -480,6 +488,11 @@ The builder:
   non-fillability witness refs instead.
   Neither case is a theorem discharge, architecture score, future forecast, or
   automatic violation proof.
+- `homotopyDistanceReadings[]` computes selected homotopy generator cost,
+  measured filler cost, observation-gap lower bound with explicit Lipschitz
+  assumptions, and selected finite Dehn-style area. Missing filler evidence
+  remains a blocker on filling cost and Dehn area; the reading is not path truth,
+  global homology, or repair safety.
 - ArchMapStore is the forward history boundary for PR and longitudinal
   workflows. `ArchMapDelta` and `ArchMapCommit` carry ArchMap-level change
   evidence; `ArchMapSnapshot` and `ArchMapIndex` support large-repository
