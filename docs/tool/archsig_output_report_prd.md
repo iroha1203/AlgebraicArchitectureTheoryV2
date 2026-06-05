@@ -93,8 +93,9 @@ Viewer data 生成は通常 workflow の一部である。固定 viewer app は 
 summary は次を満たさなければならない。
 
 - 安定した JSON schema を持つ。
-- `verdict`、`qualityMeasurement`、`measurementStatusSummary`、`dominantFindings`、
-  `actionQueue`、`coverageGapSummary`、`measurementBasis`、`metadata` を上位に置く。
+- `verdict`、`qualityMeasurement`、`distanceDiagnosis`、`measurementStatusSummary`、
+  `dominantFindings`、`actionQueue`、`coverageGapSummary`、`measurementBasis`、
+  `metadata` を上位に置く。
 - 文章量よりも、短い bounded string、stable id、source refs、detail refs を優先する。
 - raw packet が保存されていなくても、summary 単体で LLM が主要診断を解釈できる。
 - raw packet が保存されている場合は、`detailRefs` / `packetRefs` / manifest refs から詳細へ
@@ -132,6 +133,13 @@ measurement status count を表示する。
 
 `dominantFindings`、重要な law-axis pressure、spectrum hotspot、bridge pressure、
 architectural hole、nonzero monodromy / boundary residual などを、重要度順に表示する。
+
+#### Distance Diagnosis
+
+Part IV Distance Engine の compact diagnosis を表示する。ここには distance verdict、
+measured movement、unmeasured axes、safe margin、repair distance、curvature / homotopy
+distance、representation metric、packet detail refs を含める。viewer の 3D / layout
+distance はここでは診断 metric として扱わず、visual placement support として明示的に分ける。
 
 #### Action Queue
 
@@ -348,7 +356,8 @@ tests は少なくとも次を固定する。
 - Atom Viewer data は node / edge / overlay / report pane / omitted count を持つ。
 - Atom Viewer は CDN 版 Three.js を読み込める。
 - offline fallback を実装する場合、CDN なしでも viewer を起動できる。
-- Atom Viewer report pane は verdict、top findings、action queue、coverage boundary、artifact list を含む。
+- Atom Viewer report pane は verdict、top findings、distance diagnosis、action queue、
+  coverage boundary、artifact list を含む。
 - manifest は generated / omitted artifact を正しく記録する。
 - validation failure 時も、可能な範囲で summary / manifest / viewer data が生成され、
   failure status が report pane に表示される。

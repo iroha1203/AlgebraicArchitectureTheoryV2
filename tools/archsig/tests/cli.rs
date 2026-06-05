@@ -174,6 +174,24 @@ fn cli_summarizes_archsig_analysis_packet() {
                 .is_some_and(|count| count > 0),
         "qualityMeasurement must count added AAT observation axes"
     );
+    assert!(
+        json["distanceDiagnosis"]["verdict"]
+            .as_str()
+            .is_some_and(|value| value == "distanceBlockedByCoverageOrEvidence")
+            && json["distanceDiagnosis"]["topMovedAtoms"]
+                .as_array()
+                .is_some_and(|items| !items.is_empty())
+            && json["distanceDiagnosis"]["topMovedAxes"]
+                .as_array()
+                .is_some_and(|items| !items.is_empty())
+            && json["distanceDiagnosis"]["detailRefs"]
+                .as_array()
+                .is_some_and(|items| items.iter().any(|item| {
+                    item.as_str()
+                        .is_some_and(|value| value.contains("/signatureDistanceReadings"))
+                })),
+        "analysis-summary must expose Part IV distance diagnosis with detail refs"
+    );
     assert_eq!(
         json["analysisUsefulness"]["mode"], "gapQualifiedActionableAnalysis",
         "analysis-summary must not collapse coverage-qualified analysis into no-value gap reporting"
@@ -1007,6 +1025,15 @@ fn cli_runs_primary_archmap_lawpolicy_archsig_analyze_workflow() {
                 .is_some_and(|items| !items.is_empty()),
         "viewer data must carry generated molecule and AtomShape distance inputs"
     );
+    assert!(
+        viewer_data["aatGeometryOverlays"]["diagnosticDistanceReadings"]["signatureDistances"]
+            .as_array()
+            .is_some_and(|items| !items.is_empty())
+            && viewer_data["aatGeometryOverlays"]["diagnosticDistanceBoundary"]
+                .as_str()
+                .is_some_and(|text| text.contains("viewerDistanceInputs are visual layout support")),
+        "viewer data must separate diagnostic Part IV distances from layout distance inputs"
+    );
     let viewer_distance = viewer_data["aatGeometryOverlays"]["viewerDistanceInputs"]
         .as_array()
         .and_then(|items| items.first())
@@ -1026,10 +1053,11 @@ fn cli_runs_primary_archmap_lawpolicy_archsig_analyze_workflow() {
     );
     assert!(
         viewer_data["reportPane"]["topFindings"].is_object()
+            && viewer_data["reportPane"]["distanceDiagnosis"].is_object()
             && viewer_data["reportPane"]["actionQueue"].is_array()
             && viewer_data["reportPane"]["coverageAndBoundaries"].is_object()
             && viewer_data["reportPane"]["artifacts"].is_object(),
-        "viewer data report pane must carry overview, top findings, action queue, coverage, and artifact sections"
+        "viewer data report pane must carry overview, top findings, distance diagnosis, action queue, coverage, and artifact sections"
     );
     assert_eq!(
         viewer_data["reportPane"]["artifacts"]["summary"].as_str(),
@@ -5041,6 +5069,15 @@ fn assert_north_star_packet_surfaces(json: &Value) {
             json["llmInterpretationPacket"]["structuralReadingReviewSummary"]
                 .as_array()
                 .is_some_and(|items| !items.is_empty())
+                && json["llmInterpretationPacket"]["distanceDiagnosisSummary"]
+                    .as_array()
+                    .is_some_and(|items| {
+                        items.iter().any(|item| {
+                            item.as_str().is_some_and(|text| {
+                                text.contains("diagnostic distance is Part IV evaluator output")
+                            })
+                        })
+                    })
                 && json["llmInterpretationPacket"]["currentStateEvolutionBoundarySummary"]
                     .as_array()
                     .is_some_and(|items| !items.is_empty())

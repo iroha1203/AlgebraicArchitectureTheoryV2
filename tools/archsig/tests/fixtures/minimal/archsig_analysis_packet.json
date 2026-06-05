@@ -18233,6 +18233,16 @@
       "sig-axis:layer-violation=0 (coverage-gap-preserved)",
       "sig-axis:semantic-inconsistency=1 (coverage-gap-preserved)"
     ],
+    "distanceDiagnosisSummary": [
+      "distanceProfile=part4-distance-profile:llm-native-aat-law-policy-fixture measured=0 blocked=7 unmeasured=0 schemaFoundationOnly=0",
+      "diagnostic distance is Part IV evaluator output; viewer layout distance is visual placement only",
+      "blocked or unmeasured distance is not measured zero; safe margin remains coverage-qualified",
+      "signature-distance:llm-native-aat-law-policy-fixture total=blocked:milli-signature-distance endpoint=blocked:milli-signature-endpoint-distance pathDrift=blocked:milli-signature-drift safe=blocked:milli-safe-region-margin hiddenExcursion=hiddenExcursionBlockedByCoverage",
+      "operation-distance:operation-delta-repair-obstruction-semantic-contract-mismatch-computed operationCost=measured:13operation-cost targetDecrease=measured:1000milli-target-distance-decrease sideEffectBound=blocked:milli-side-effect-bound",
+      "curvature-mass:curvature-support-reading-spectrum-profile-curvature-transfer-default curvatureMass=blocked:curvature-mass transport=blocked:curvature-transport-distance targetDecrease=measured:1000curvature-target-axis-decrease protectedMovement=measured:1000curvature-protected-axis-movement",
+      "homotopy-distance:loop-candidate-path-pair-semantic-contract-loop-0 homotopy=blocked:homotopy-generator-cost fillingCost=blocked:filling-cost observationGapLowerBound=measured:1observation-gap-lower-bound selectedDehnArea=blocked:selected-dehn-area",
+      "representationMetrics=14 blockedFaithfulness=14 boundary=selected analytic stability is not global structural faithfulness"
+    ],
     "analyticReadingsSummary": [
       "weightedAdjacencyMatrix=2x2; edgeCount=1 (measured)",
       "reachableConeSize=1 (measured)",
@@ -18435,6 +18445,7 @@
   "interpretationNotesForLLM": [
     "Lead with selected LawPolicy scope and evidence gaps.",
     "Explain nonzero signature axes as law-relative ArchSig outputs.",
+    "Read distanceDiagnosisSummary before raw Part IV packet rows; blocked distance is not measured zero.",
     "Do not describe concernHints as obstruction circuits."
   ],
   "excludedReadings": [

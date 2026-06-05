@@ -46,11 +46,16 @@ The command emits only:
 - `archsig-atom-viewer-data.json`
 - `archsig-run-manifest.json`
 
-`archsig-analysis-summary.json` is the LLM-readable compact reading surface.
+`archsig-analysis-summary.json` is the LLM-readable compact reading surface. It
+includes Part IV `distanceDiagnosis` with distance verdict, movement, safe
+margin, repair / curvature / homotopy distances, representation metric summary,
+and packet detail refs.
 `archsig-atom-viewer-data.json` is a bounded visual projection for the fixed
 Atom Viewer app. It uses deterministic top-N priority selection for atom nodes
 and molecule groups, emits bounded molecule-to-atom edges, limits labels and
-source refs to count plus samples, and records omitted counts / reasons.
+source refs to count plus samples, carries bounded diagnostic distance overlays
+separately from viewer layout distance inputs, and records omitted counts /
+reasons.
 `archsig-run-manifest.json` records generated and omitted artifacts. For large
 ArchMaps, run `analyze` with `cargo run --release`.
 
@@ -61,8 +66,9 @@ drag-and-drop, or same-directory default fetch. It does not read the raw
 analysis packet. Its report pane also reads same-directory
 `archsig-analysis-summary.json` and `archsig-run-manifest.json` when available
 to show the verdict, top findings, action queue, coverage boundaries,
-validation status, generated / omitted artifacts, and relative links to raw
-packet / detail-index files when raw artifacts were emitted.
+distance diagnosis, validation status, generated / omitted artifacts, and
+relative links to raw packet / detail-index files when raw artifacts were
+emitted.
 
 Raw evidence artifacts are opt-in:
 
