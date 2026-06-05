@@ -793,11 +793,53 @@ def classifyPart4
         ["SignatureDistanceSchema",
          "SignatureDistanceSchema.endpointDistance_le_pathLength",
          "SignatureDistanceSchema.margin_stability",
-         "Part4DistanceMeasureGeometry.signatureEndpointDistance_le_pathLength"]
+         "SignatureDistanceSchema.endpointDistance_add_hiddenExcursion_eq_pathLength",
+         "Part4DistanceMeasureGeometry.signatureEndpointDistance_le_pathLength",
+         "Part4DistanceMeasureGeometry.signatureEndpointDistance_add_hiddenExcursion_eq_pathLength"]
         (by simp)
         .downstreamLibrary
         ActionAllowed.representationDownstream
         "Signature path geometry is finite-path and selected-scope, with margin stability requiring explicit preservation evidence."
+  | .finiteWitnessInfimumCore =>
+      representationRow
+        "part4.finiteWitnessInfimumCore"
+        (Part4DistanceMeasureGeometry.Candidate.representativeDeclarations
+          .finiteWitnessInfimumCore)
+        ["FiniteRouteCost",
+         "FiniteFillerCost",
+         "FiniteHomotopyCost",
+         "SelectedFiniteOptimum",
+         "Part4DistanceMeasureGeometry.selectedFiniteOptimum_lowerBound_for_selected_candidates"]
+        (by simp)
+        .downstreamLibrary
+        ActionAllowed.representationDownstream
+        "Finite witness and selected optimum rows are scoped to supplied finite candidate sets and do not assert global optimization completeness."
+  | .distanceToLawfulnessGeometry =>
+      representationRow
+        "part4.distanceToLawfulnessGeometry"
+        (Part4DistanceMeasureGeometry.Candidate.representativeDeclarations
+          .distanceToLawfulnessGeometry)
+        ["SelectedDistanceToRegion",
+         "SelectedDistanceToRegion.region_of_distance_zero",
+         "SelectedDistanceToRegion.distance_zero_of_region",
+         "Part4DistanceMeasureGeometry.selectedDistanceToRegion_region_of_distance_zero"]
+        (by simp)
+        .downstreamLibrary
+        ActionAllowed.representationDownstream
+        "Distance-to-lawfulness and distance-to-flatness zero bridges are selected-scope and exactness-assumption relative."
+  | .metricGaloisCorrespondence =>
+      representationRow
+        "part4.metricGaloisCorrespondence"
+        (Part4DistanceMeasureGeometry.Candidate.representativeDeclarations
+          .metricGaloisCorrespondence)
+        ["MetricOperationAction",
+         "MetricOperationAction.NonExpansive",
+         "MetricOperationAction.SelectedMetricGaloisPackage",
+         "Part4DistanceMeasureGeometry.metricGalois_operation_nonExpansive"]
+        (by simp)
+        .downstreamLibrary
+        ActionAllowed.representationDownstream
+        "Metric Galois correspondence is registered only for selected finite operation universes."
   | .operationRepairGeometry =>
       representationRow
         "part4.operationRepairGeometry"
@@ -812,6 +854,20 @@ def classifyPart4
         .downstreamLibrary
         ActionAllowed.representationDownstream
         "Operation repair geometry records selected costs, distance-to-flat wrappers, and bounded side-effect decreases without solver-completeness claims."
+  | .contractiveRepairGeometry =>
+      representationRow
+        "part4.contractiveRepairGeometry"
+        (Part4DistanceMeasureGeometry.Candidate.representativeDeclarations
+          .contractiveRepairGeometry)
+        ["FiniteRepairSequence",
+         "FiniteRepairSequence.allStepsDecrease",
+         "ContractiveRepairStep",
+         "ContractiveRepairStep.target_contracts",
+         "Part4DistanceMeasureGeometry.contractiveRepairStep_target_contracts"]
+        (by simp)
+        .downstreamLibrary
+        ActionAllowed.representationDownstream
+        "Contractive repair is a supplied finite-sequence / selected-step package and does not imply solver completeness or global convergence."
   | .curvatureFillingGeometry =>
       representationRow
         "part4.curvatureFillingGeometry"
@@ -826,6 +882,33 @@ def classifyPart4
         .downstreamLibrary
         ActionAllowed.representationDownstream
         "Curvature mass and filling-cost rows are finite measured-universe theorem packages and do not assert universal filling completeness."
+  | .curvatureTransportGeometry =>
+      representationRow
+        "part4.curvatureTransportGeometry"
+        (Part4DistanceMeasureGeometry.Candidate.representativeDeclarations
+          .curvatureTransportGeometry)
+        ["SelectedCurvatureReading",
+         "CurvatureTransport",
+         "CurvatureTransport.target_curvature_decreases",
+         "CurvatureTransport.transported_curvature_increases"]
+        (by simp)
+        .downstreamLibrary
+        ActionAllowed.representationDownstream
+        "Curvature transport is scoped to selected measured axes and does not treat unmeasured axes as zero."
+  | .quantitativeHomotopyFillingGeometry =>
+      representationRow
+        "part4.quantitativeHomotopyFillingGeometry"
+        (Part4DistanceMeasureGeometry.Candidate.representativeDeclarations
+          .quantitativeHomotopyFillingGeometry)
+        ["QuantitativeHomotopyBound",
+         "FiniteDehnBound",
+         "PersistentNonFillability",
+         "Part4DistanceMeasureGeometry.quantitativeHomotopyBound_observationDistance_le",
+         "Part4DistanceMeasureGeometry.finiteDehnBound_fillingArea_le"]
+        (by simp)
+        .downstreamLibrary
+        ActionAllowed.representationDownstream
+        "Quantitative homotopy, filling, finite Dehn, and persistent non-fillability rows are selected finite-candidate packages."
   | .representationMetric =>
       representationRow
         "part4.representationMetric"
@@ -839,6 +922,32 @@ def classifyPart4
         .downstreamLibrary
         ActionAllowed.representationDownstream
         "Representation metrics are selected-scope Lipschitz and bi-Lipschitz surfaces with explicit comparability, coverage, and witness assumptions."
+  | .representationSpectralStability =>
+      representationRow
+        "part4.representationSpectralStability"
+        (Part4DistanceMeasureGeometry.Candidate.representativeDeclarations
+          .representationSpectralStability)
+        ["LipschitzRepresentation.analyticDistance_le_of_structuralDistance_le",
+         "SpectralStabilityPackage",
+         "SpectralStabilityPackage.spectralDistance_le",
+         "Part4DistanceMeasureGeometry.spectralStabilityPackage_spectralDistance_le"]
+        (by simp)
+        .downstreamLibrary
+        ActionAllowed.representationDownstream
+        "Representation / spectral stability is selected-scope Lipschitz control, not empirical spectral calibration."
+  | .abstractInfimumInterface =>
+      representationRow
+        "part4.abstractInfimumInterface"
+        (Part4DistanceMeasureGeometry.Candidate.representativeDeclarations
+          .abstractInfimumInterface)
+        ["AbstractInfimumInterface",
+         "AbstractInfimumInterface.lowerBound",
+         "AbstractInfimumInterface.exists_approximatingWitness",
+         "AbstractInfimumInterface.ofSelectedFiniteOptimum"]
+        (by simp)
+        .downstreamLibrary
+        ActionAllowed.representationDownstream
+        "The abstract infimum interface records lower-bound and approximation witnesses without computing a global optimizer."
   | .docsClassificationBoundary =>
       representationRow
         "part4.docsClassificationBoundary"
@@ -1089,9 +1198,17 @@ def part4Classifications : List TheoremPackageClassification :=
   [ classifyPart4 .distanceFoundation
   , classifyPart4 .atomConfigurationGeometry
   , classifyPart4 .signaturePathGeometry
+  , classifyPart4 .finiteWitnessInfimumCore
+  , classifyPart4 .distanceToLawfulnessGeometry
+  , classifyPart4 .metricGaloisCorrespondence
   , classifyPart4 .operationRepairGeometry
+  , classifyPart4 .contractiveRepairGeometry
   , classifyPart4 .curvatureFillingGeometry
+  , classifyPart4 .curvatureTransportGeometry
+  , classifyPart4 .quantitativeHomotopyFillingGeometry
   , classifyPart4 .representationMetric
+  , classifyPart4 .representationSpectralStability
+  , classifyPart4 .abstractInfimumInterface
   , classifyPart4 .docsClassificationBoundary
   ]
 

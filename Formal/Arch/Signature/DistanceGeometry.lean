@@ -274,6 +274,30 @@ theorem endpointDistance_le_pathLength
         _ = schema.pathLength (ArchitecturePath.cons _step rest) := by
               rfl
 
+theorem hiddenExcursion_eq_pathLength_sub_endpointDistance
+    (schema : SignatureDistanceSchema State Sig)
+    {X Y : State} (plan : ArchitectureEvolution State X Y) :
+    schema.hiddenExcursion plan =
+      schema.pathLength plan - schema.endpointDistance plan := by
+  rfl
+
+theorem endpointDistance_add_hiddenExcursion_eq_pathLength
+    (schema : SignatureDistanceSchema State Sig)
+    {X Y : State} (plan : ArchitectureEvolution State X Y) :
+    schema.endpointDistance plan + schema.hiddenExcursion plan =
+      schema.pathLength plan := by
+  unfold hiddenExcursion
+  exact Nat.add_sub_of_le
+    (SignatureDistanceSchema.endpointDistance_le_pathLength schema plan)
+
+theorem hiddenExcursion_positive_of_endpointDistance_lt_pathLength
+    (schema : SignatureDistanceSchema State Sig)
+    {X Y : State} (plan : ArchitectureEvolution State X Y)
+    (hVisibleGap : schema.endpointDistance plan < schema.pathLength plan) :
+    0 < schema.hiddenExcursion plan := by
+  unfold hiddenExcursion
+  exact Nat.sub_pos_of_lt hVisibleGap
+
 /-- A path remains inside the selected distance margin. -/
 def PathLengthWithinMargin
     (schema : SignatureDistanceSchema State Sig)
@@ -301,6 +325,277 @@ theorem margin_stability
   trajectory_preserves_safeRegion schema.observation R plan hStart hPreserves
 
 end SignatureDistanceSchema
+
+/--
+A supplied finite route witness and its selected cost.
+
+This records the cost of one concrete route.  It is not a global shortest-path
+claim and does not enumerate every possible route.
+-/
+structure FiniteRouteCost (Route : Type u) where
+  route : Route
+  cost : Nat
+  costEvidence : Prop
+  selectedScope : Prop
+  nonConclusions : Prop
+
+namespace FiniteRouteCost
+
+variable {Route : Type u}
+
+def RecordsSelectedScope (witness : FiniteRouteCost Route) : Prop :=
+  witness.selectedScope
+
+def RecordsNonConclusions (witness : FiniteRouteCost Route) : Prop :=
+  witness.nonConclusions
+
+theorem records_selectedScope
+    (witness : FiniteRouteCost Route)
+    (h : witness.selectedScope) :
+    witness.RecordsSelectedScope :=
+  h
+
+theorem records_nonConclusions
+    (witness : FiniteRouteCost Route)
+    (h : witness.nonConclusions) :
+    witness.RecordsNonConclusions :=
+  h
+
+end FiniteRouteCost
+
+/--
+A supplied finite filler witness and its selected cost.
+
+The witness is intentionally finite and supplied; it does not assert universal
+filler completeness.
+-/
+structure FiniteFillerCost (Filler : Type u) where
+  filler : Filler
+  cost : Nat
+  costEvidence : Prop
+  selectedScope : Prop
+  nonConclusions : Prop
+
+namespace FiniteFillerCost
+
+variable {Filler : Type u}
+
+def RecordsSelectedScope (witness : FiniteFillerCost Filler) : Prop :=
+  witness.selectedScope
+
+def RecordsNonConclusions (witness : FiniteFillerCost Filler) : Prop :=
+  witness.nonConclusions
+
+theorem records_selectedScope
+    (witness : FiniteFillerCost Filler)
+    (h : witness.selectedScope) :
+    witness.RecordsSelectedScope :=
+  h
+
+theorem records_nonConclusions
+    (witness : FiniteFillerCost Filler)
+    (h : witness.nonConclusions) :
+    witness.RecordsNonConclusions :=
+  h
+
+end FiniteFillerCost
+
+/--
+A supplied finite homotopy generator sequence and its selected cost.
+-/
+structure FiniteHomotopyCost (Generator : Type u) where
+  generators : List Generator
+  cost : Nat
+  costEvidence : Prop
+  selectedScope : Prop
+  nonConclusions : Prop
+
+namespace FiniteHomotopyCost
+
+variable {Generator : Type u}
+
+def RecordsSelectedScope (witness : FiniteHomotopyCost Generator) : Prop :=
+  witness.selectedScope
+
+def RecordsNonConclusions (witness : FiniteHomotopyCost Generator) : Prop :=
+  witness.nonConclusions
+
+theorem records_selectedScope
+    (witness : FiniteHomotopyCost Generator)
+    (h : witness.selectedScope) :
+    witness.RecordsSelectedScope :=
+  h
+
+theorem records_nonConclusions
+    (witness : FiniteHomotopyCost Generator)
+    (h : witness.nonConclusions) :
+    witness.RecordsNonConclusions :=
+  h
+
+end FiniteHomotopyCost
+
+/--
+`bound` is a lower bound for all selected candidates in the supplied finite
+candidate universe.
+-/
+def LowerBoundForSelectedCandidates
+    {Candidate : Type u}
+    (candidates : List Candidate)
+    (selected : Candidate -> Prop)
+    (cost : Candidate -> Nat)
+    (bound : Nat) : Prop :=
+  ∀ candidate, candidate ∈ candidates -> selected candidate ->
+    bound ≤ cost candidate
+
+/--
+Selected finite optimum inside a supplied candidate universe.
+
+The selected candidate is optimal only within `candidates`; no global optimizer
+or route-completeness claim is included.
+-/
+structure SelectedFiniteOptimum (Candidate : Type u) where
+  candidates : List Candidate
+  selected : Candidate -> Prop
+  cost : Candidate -> Nat
+  optimal : Candidate
+  optimal_mem : optimal ∈ candidates
+  optimal_selected : selected optimal
+  cost_le_of_mem_selected :
+    ∀ candidate, candidate ∈ candidates -> selected candidate ->
+      cost optimal ≤ cost candidate
+  nonConclusions : Prop
+
+namespace SelectedFiniteOptimum
+
+variable {Candidate : Type u}
+
+def lowerBound
+    (optimum : SelectedFiniteOptimum Candidate) : Nat :=
+  optimum.cost optimum.optimal
+
+theorem lowerBound_for_selected_candidates
+    (optimum : SelectedFiniteOptimum Candidate) :
+    LowerBoundForSelectedCandidates optimum.candidates optimum.selected
+      optimum.cost optimum.lowerBound := by
+  intro candidate hMem hSelected
+  exact optimum.cost_le_of_mem_selected candidate hMem hSelected
+
+theorem optimal_cost_le
+    (optimum : SelectedFiniteOptimum Candidate)
+    {candidate : Candidate}
+    (hMem : candidate ∈ optimum.candidates)
+    (hSelected : optimum.selected candidate) :
+    optimum.cost optimum.optimal ≤ optimum.cost candidate :=
+  optimum.cost_le_of_mem_selected candidate hMem hSelected
+
+theorem records_nonConclusions
+    (optimum : SelectedFiniteOptimum Candidate)
+    (h : optimum.nonConclusions) :
+    optimum.nonConclusions :=
+  h
+
+end SelectedFiniteOptimum
+
+/--
+Abstract infimum-style interface backed by lower-bound and approximation
+witnesses.  This is intentionally an interface, not a computable global
+optimizer or a completeness theorem for all possible candidates.
+-/
+structure AbstractInfimumInterface (Candidate : Type u) where
+  candidate : Candidate -> Prop
+  cost : Candidate -> Nat
+  infimumValue : Nat
+  isLowerBound : ∀ c, candidate c -> infimumValue ≤ cost c
+  approximatingWitness :
+    ∀ tolerance : Nat,
+      ∃ c, candidate c ∧ cost c ≤ infimumValue + tolerance
+  nonConclusions : Prop
+
+namespace AbstractInfimumInterface
+
+variable {Candidate : Type u}
+
+theorem lowerBound
+    (interface : AbstractInfimumInterface Candidate)
+    {candidate : Candidate}
+    (hCandidate : interface.candidate candidate) :
+    interface.infimumValue ≤ interface.cost candidate :=
+  interface.isLowerBound candidate hCandidate
+
+theorem exists_approximatingWitness
+    (interface : AbstractInfimumInterface Candidate)
+    (tolerance : Nat) :
+    ∃ candidate, interface.candidate candidate ∧
+      interface.cost candidate ≤ interface.infimumValue + tolerance :=
+  interface.approximatingWitness tolerance
+
+def ofSelectedFiniteOptimum
+    (optimum : SelectedFiniteOptimum Candidate) :
+    AbstractInfimumInterface Candidate where
+  candidate := fun candidate =>
+    candidate ∈ optimum.candidates ∧ optimum.selected candidate
+  cost := optimum.cost
+  infimumValue := optimum.cost optimum.optimal
+  isLowerBound := by
+    intro candidate hCandidate
+    exact optimum.cost_le_of_mem_selected candidate hCandidate.1 hCandidate.2
+  approximatingWitness := by
+    intro tolerance
+    exact
+      ⟨ optimum.optimal
+      , ⟨optimum.optimal_mem, optimum.optimal_selected⟩
+      , Nat.le_add_right _ _⟩
+  nonConclusions := optimum.nonConclusions
+
+end AbstractInfimumInterface
+
+/--
+Selected distance to a region such as a lawful or flat region.
+
+Zero reflection is always available from the supplied field.  The converse
+requires the stored exactness assumptions; this prevents distance values from
+becoming unscoped global lawfulness or flatness claims.
+-/
+structure SelectedDistanceToRegion (State : Type u) where
+  region : State -> Prop
+  distanceToRegion : State -> Nat
+  zeroReflectsRegion : ∀ X : State, distanceToRegion X = 0 -> region X
+  exactnessAssumptions : Prop
+  regionReflectsZero :
+    exactnessAssumptions -> ∀ X : State, region X -> distanceToRegion X = 0
+  coverageAssumptions : Prop
+  nonConclusions : Prop
+
+namespace SelectedDistanceToRegion
+
+variable {State : Type u}
+
+theorem region_of_distance_zero
+    (pkg : SelectedDistanceToRegion State)
+    (X : State)
+    (hZero : pkg.distanceToRegion X = 0) :
+    pkg.region X :=
+  pkg.zeroReflectsRegion X hZero
+
+theorem distance_zero_of_region
+    (pkg : SelectedDistanceToRegion State)
+    (hExact : pkg.exactnessAssumptions)
+    (X : State)
+    (hRegion : pkg.region X) :
+    pkg.distanceToRegion X = 0 :=
+  pkg.regionReflectsZero hExact X hRegion
+
+def RecordsNonConclusions
+    (pkg : SelectedDistanceToRegion State) : Prop :=
+  pkg.nonConclusions
+
+theorem records_nonConclusions
+    (pkg : SelectedDistanceToRegion State)
+    (h : pkg.nonConclusions) :
+    pkg.RecordsNonConclusions :=
+  h
+
+end SelectedDistanceToRegion
 
 /-- Cost data for selected operations. -/
 structure OperationCostModel (Operation : Type u) where
@@ -351,6 +646,80 @@ theorem flat_of_distance_zero
 
 end DistanceToFlatRegion
 
+/-- Selected operations can be read by bounded distortion predicates. -/
+structure MetricOperationAction
+    (State : Type u) (Operation : Type v) where
+  apply : Operation -> State -> State
+  distance : State -> State -> Nat
+  selectedOperation : Operation -> Prop
+  selectedScope : Prop
+  nonConclusions : Prop
+
+namespace MetricOperationAction
+
+variable {State : Type u} {Operation : Type v}
+
+def PreservesDistance
+    (action : MetricOperationAction State Operation)
+    (operation : Operation) : Prop :=
+  ∀ X Y : State,
+    action.distance (action.apply operation X) (action.apply operation Y) =
+      action.distance X Y
+
+def NonExpansive
+    (action : MetricOperationAction State Operation)
+    (operation : Operation) : Prop :=
+  ∀ X Y : State,
+    action.distance (action.apply operation X) (action.apply operation Y) ≤
+      action.distance X Y
+
+def Lipschitz
+    (action : MetricOperationAction State Operation)
+    (operation : Operation)
+    (constant : Nat) : Prop :=
+  ∀ X Y : State,
+    action.distance (action.apply operation X) (action.apply operation Y) ≤
+      constant * action.distance X Y
+
+structure SelectedMetricGaloisPackage
+    (action : MetricOperationAction State Operation) where
+  operations : List Operation
+  invariant : State -> Prop
+  operationStable :
+    ∀ operation, operation ∈ operations -> action.selectedOperation operation ->
+      action.NonExpansive operation
+  invariantStable :
+    ∀ operation X, operation ∈ operations ->
+      action.selectedOperation operation -> invariant X ->
+        invariant (action.apply operation X)
+  selectedScope : Prop
+  nonConclusions : Prop
+
+namespace SelectedMetricGaloisPackage
+
+theorem operation_nonExpansive
+    {action : MetricOperationAction State Operation}
+    (pkg : SelectedMetricGaloisPackage action)
+    {operation : Operation}
+    (hMem : operation ∈ pkg.operations)
+    (hSelected : action.selectedOperation operation) :
+    action.NonExpansive operation :=
+  pkg.operationStable operation hMem hSelected
+
+theorem invariant_stable
+    {action : MetricOperationAction State Operation}
+    (pkg : SelectedMetricGaloisPackage action)
+    {operation : Operation} {X : State}
+    (hMem : operation ∈ pkg.operations)
+    (hSelected : action.selectedOperation operation)
+    (hInvariant : pkg.invariant X) :
+    pkg.invariant (action.apply operation X) :=
+  pkg.invariantStable operation X hMem hSelected hInvariant
+
+end SelectedMetricGaloisPackage
+
+end MetricOperationAction
+
 /--
 Bounded side-effect repair step.
 
@@ -387,6 +756,64 @@ theorem protectedMovement_within_bound
 
 end BoundedSideEffectRepair
 
+/-- A finite selected repair sequence. -/
+structure FiniteRepairSequence (State : Type u) where
+  steps : List (BoundedSideEffectRepair State)
+  selectedTarget : State -> Prop
+  selectedScope : Prop
+  nonConclusions : Prop
+
+namespace FiniteRepairSequence
+
+variable {State : Type u}
+
+def AllStepsDecrease (sequence : FiniteRepairSequence State) : Prop :=
+  ∀ step, step ∈ sequence.steps ->
+    step.targetDistance step.target < step.targetDistance step.source
+
+theorem allStepsDecrease
+    (sequence : FiniteRepairSequence State) :
+    sequence.AllStepsDecrease := by
+  intro step _hMem
+  exact step.targetDistance_decreases
+
+end FiniteRepairSequence
+
+/--
+One selected repair step is contractive in the supplied Nat-compatible
+ratio.  The inequality is cross-multiplied to avoid introducing real analysis
+into the bounded theorem package.
+-/
+structure ContractiveRepairStep (State : Type u) where
+  source : State
+  target : State
+  targetDistance : State -> Nat
+  numerator : Nat
+  denominator : Nat
+  ratioBound : numerator < denominator
+  contractive :
+    denominator * targetDistance target ≤
+      numerator * targetDistance source
+  selectedScope : Prop
+  nonConclusions : Prop
+
+namespace ContractiveRepairStep
+
+variable {State : Type u}
+
+theorem target_contracts
+    (step : ContractiveRepairStep State) :
+    step.denominator * step.targetDistance step.target ≤
+      step.numerator * step.targetDistance step.source :=
+  step.contractive
+
+theorem ratio_lt_one
+    (step : ContractiveRepairStep State) :
+    step.numerator < step.denominator :=
+  step.ratioBound
+
+end ContractiveRepairStep
+
 /-- A bounded lower-bound package for filling cost diagnostics. -/
 structure FillingCostLowerBound where
   observationGap : Nat
@@ -403,6 +830,123 @@ theorem observationGap_le_lipschitz_mul_fillingCost
   pkg.lowerBound
 
 end FillingCostLowerBound
+
+/-- Quantitative homotopy bound over a selected finite generator sequence. -/
+structure QuantitativeHomotopyBound where
+  observationDistance : Nat
+  homotopyCost : Nat
+  lipschitzConstant : Nat
+  bound : observationDistance ≤ lipschitzConstant * homotopyCost
+  selectedScope : Prop
+  nonConclusions : Prop
+
+namespace QuantitativeHomotopyBound
+
+theorem observationDistance_le
+    (pkg : QuantitativeHomotopyBound) :
+    pkg.observationDistance ≤ pkg.lipschitzConstant * pkg.homotopyCost :=
+  pkg.bound
+
+end QuantitativeHomotopyBound
+
+/-- Finite Dehn-style upper bound over a supplied loop candidate list. -/
+structure FiniteDehnBound (Loop : Type u) where
+  candidates : List Loop
+  boundaryLength : Loop -> Nat
+  fillingArea : Loop -> Nat
+  boundaryLimit : Nat
+  dehnValue : Nat
+  upperBound :
+    ∀ loop, loop ∈ candidates -> boundaryLength loop ≤ boundaryLimit ->
+      fillingArea loop ≤ dehnValue
+  selectedScope : Prop
+  nonConclusions : Prop
+
+namespace FiniteDehnBound
+
+variable {Loop : Type u}
+
+theorem fillingArea_le_dehnValue
+    (pkg : FiniteDehnBound Loop)
+    {loop : Loop}
+    (hMem : loop ∈ pkg.candidates)
+    (hBoundary : pkg.boundaryLength loop ≤ pkg.boundaryLimit) :
+    pkg.fillingArea loop ≤ pkg.dehnValue :=
+  pkg.upperBound loop hMem hBoundary
+
+end FiniteDehnBound
+
+/--
+Persistent non-fillability at a selected scale.  This is a bounded predicate
+over the supplied candidate universe, not a universal non-fillability theorem.
+-/
+structure PersistentNonFillability (Filler : Type u) where
+  scale : Nat
+  candidate : Filler -> Prop
+  fillerCost : Filler -> Nat
+  noFillerWithinScale :
+    ∀ filler, candidate filler -> fillerCost filler ≤ scale -> False
+  selectedScope : Prop
+  nonConclusions : Prop
+
+namespace PersistentNonFillability
+
+variable {Filler : Type u}
+
+theorem no_candidate_filler_within_scale
+    (pkg : PersistentNonFillability Filler)
+    {filler : Filler}
+    (hCandidate : pkg.candidate filler)
+    (hWithin : pkg.fillerCost filler ≤ pkg.scale) :
+    False :=
+  pkg.noFillerWithinScale filler hCandidate hWithin
+
+end PersistentNonFillability
+
+/-- Selected curvature readings on named axes. -/
+structure SelectedCurvatureReading
+    (Axis : Type u) (State : Type v) where
+  curvatureMass : Axis -> State -> Nat
+  measuredAxis : Axis -> Prop
+  selectedScope : Prop
+  nonConclusions : Prop
+
+/-- Curvature transport between two selected axes across one operation/read. -/
+structure CurvatureTransport
+    (Axis : Type u) (State : Type v) where
+  reading : SelectedCurvatureReading Axis State
+  before : State
+  after : State
+  targetAxis : Axis
+  transportedAxis : Axis
+  targetMeasured : reading.measuredAxis targetAxis
+  transportedMeasured : reading.measuredAxis transportedAxis
+  targetDecreases :
+    reading.curvatureMass targetAxis after <
+      reading.curvatureMass targetAxis before
+  transportedIncreases :
+    reading.curvatureMass transportedAxis before <
+      reading.curvatureMass transportedAxis after
+  selectedScope : Prop
+  nonConclusions : Prop
+
+namespace CurvatureTransport
+
+variable {Axis : Type u} {State : Type v}
+
+theorem target_curvature_decreases
+    (pkg : CurvatureTransport Axis State) :
+    pkg.reading.curvatureMass pkg.targetAxis pkg.after <
+      pkg.reading.curvatureMass pkg.targetAxis pkg.before :=
+  pkg.targetDecreases
+
+theorem transported_curvature_increases
+    (pkg : CurvatureTransport Axis State) :
+    pkg.reading.curvatureMass pkg.transportedAxis pkg.before <
+      pkg.reading.curvatureMass pkg.transportedAxis pkg.after :=
+  pkg.transportedIncreases
+
+end CurvatureTransport
 
 /--
 Selected Lipschitz representation between structural and analytic distances.
@@ -433,6 +977,21 @@ theorem analyticDistance_le_lipschitz
     rep.analyticDistance (rep.represent X) (rep.represent Y) ≤
       rep.lipschitzConstant * rep.structuralDistance X Y :=
   rep.lipschitz X Y hComparable
+
+theorem analyticDistance_le_of_structuralDistance_le
+    (rep : LipschitzRepresentation State Analytic)
+    {X Y : State}
+    (hComparable : rep.comparable X Y)
+    {epsilon : Nat}
+    (hStructural : rep.structuralDistance X Y ≤ epsilon) :
+    rep.analyticDistance (rep.represent X) (rep.represent Y) ≤
+      rep.lipschitzConstant * epsilon := by
+  calc
+    rep.analyticDistance (rep.represent X) (rep.represent Y)
+        ≤ rep.lipschitzConstant * rep.structuralDistance X Y :=
+      rep.analyticDistance_le_lipschitz hComparable
+    _ ≤ rep.lipschitzConstant * epsilon :=
+      Nat.mul_le_mul_left rep.lipschitzConstant hStructural
 
 end LipschitzRepresentation
 
@@ -470,5 +1029,37 @@ theorem analyticDistance_le_lipschitz
   rep.lipschitz X Y hComparable
 
 end BiLipschitzRepresentation
+
+/--
+Spectral / analytic stability package for a selected comparable pair.
+-/
+structure SpectralStabilityPackage
+    (State : Type u) (Spectral : Type v) where
+  represent : State -> Spectral
+  structuralDistance : State -> State -> Nat
+  spectralDistance : Spectral -> Spectral -> Nat
+  source : State
+  target : State
+  epsilon : Nat
+  lipschitzConstant : Nat
+  structuralWithin : structuralDistance source target ≤ epsilon
+  spectralBound :
+    spectralDistance (represent source) (represent target) ≤
+      lipschitzConstant * epsilon
+  coverageAssumptions : Prop
+  witnessCompletenessAssumptions : Prop
+  nonConclusions : Prop
+
+namespace SpectralStabilityPackage
+
+variable {State : Type u} {Spectral : Type v}
+
+theorem spectralDistance_le
+    (pkg : SpectralStabilityPackage State Spectral) :
+    pkg.spectralDistance (pkg.represent pkg.source) (pkg.represent pkg.target) ≤
+      pkg.lipschitzConstant * pkg.epsilon :=
+  pkg.spectralBound
+
+end SpectralStabilityPackage
 
 end Formal.Arch
