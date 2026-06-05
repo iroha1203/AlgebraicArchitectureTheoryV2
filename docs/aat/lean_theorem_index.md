@@ -1681,6 +1681,44 @@ semantic examples、measurement boundary を索引するだけである。analyt
 単独からの flatness、global witness completeness、runtime / semantic universe
 completeness、実証的な cost 改善 は結論しない。
 
+## AAT Part IV Distance / Measure Geometry Entrypoint
+
+Files: `Formal/Arch/Signature/DistanceGeometry.lean`,
+`Formal/Arch/Evolution/Part4DistanceMeasureGeometry.lean`,
+`Formal/Arch/AAT/GeneratedDistance.lean`,
+`Formal/Arch/AAT/GeneratedOperation.lean`,
+`Formal/Arch/Signature/Curvature.lean`,
+`Formal/Arch/AAT/TheoremClassification.lean`.
+
+この節は [AAT Part IV: Distance, Measure, and Architecture Geometry](mathematical_theory/part_4_distance_measure_geometry.md)
+と [AAT Distance Extension Design](AAT_Distance_Extension_Design.md) に対応する
+bounded Lean theorem package の入口である。Part IV 本文は数学理論の source text として保ち、
+Lean 実装 status はこの索引と `proof_obligations.md` に分離する。
+
+| Lean 名 | 種別 | 意味 | Status |
+| --- | --- | --- | --- |
+| `DistanceValue`, `DistanceValue.IsMeasuredZero`, `DistanceValue.HasMeasuredDistance`, `DistanceValue.IsUnmeasured`, `DistanceValue.measuredNat?` | `inductive` / `def` | 測定ゼロ、測定値、未測定、利用不可、比較不能、無限を分ける診断距離値。 | `defined only` |
+| `DistanceValue.unmeasured_not_zero`, `DistanceValue.unmeasured_not_measuredZero`, `DistanceValue.unmeasured_not_hasMeasuredDistance`, `DistanceValue.unavailable_not_measuredZero`, `DistanceValue.incomparable_not_measuredZero`, `DistanceValue.infinite_not_measuredZero` | `theorem` | 未測定や利用不可などを measured zero と読まない境界を固定する。 | `proved` |
+| `DistanceProfile`, `SelectedDistanceScope`, `BoundedDiagnosticConclusion` | `structure` | 距離 profile、selected measured / unmeasured axes、bounded diagnostic conclusion と non-conclusion boundary を束ねる。 | `defined only` |
+| `BoundedDiagnosticConclusion.records_nonConclusions` | `theorem` | diagnostic conclusion が global lawfulness / flatness / unmeasured-zero 非結論を保持することを取り出す。 | `proved` |
+| `SignatureDistanceSchema`, `SignatureDistanceSchema.pathLength`, `SignatureDistanceSchema.endpointDistance`, `SignatureDistanceSchema.hiddenExcursion`, `SignatureDistanceSchema.PathLengthWithinMargin` | `structure` / `def` | selected signature observation 上の自然数距離、有限 path length、endpoint distance、hidden excursion、margin predicate。 | `defined only` |
+| `SignatureDistanceSchema.endpointDistance_le_pathLength`, `SignatureDistanceSchema.margin_stability` | `theorem` | triangle law つき selected schema で endpoint distance が path length 以下であること、明示された stepwise preservation と margin 前提の下で trajectory が selected safe region に残ることを示す。 | `proved` |
+| `OperationCostModel`, `OperationPathCost`, `DistanceToFlatRegion`, `BoundedSideEffectRepair` | `structure` / `abbrev` | selected operation cost、distance-to-flat wrapper、target distance decrease と protected side-effect bound を持つ repair package。 | `defined only` |
+| `DistanceToFlatRegion.flat_of_distance_zero`, `BoundedSideEffectRepair.targetDistance_decreases`, `BoundedSideEffectRepair.protectedMovement_within_bound` | `theorem` | 明示された zero reflection / decrease / side-effect bound field を取り出す。 | `proved` |
+| `FillingCostLowerBound`, `FillingCostLowerBound.observationGap_le_lipschitz_mul_fillingCost` | `structure` / `theorem` | `observationGap ≤ L * fillingCost` 形式の bounded lower-bound package。 | `defined only` / `proved` |
+| `LipschitzRepresentation`, `BiLipschitzRepresentation` | `structure` | selected comparability / coverage / witness completeness 前提つきの representation metric。 | `defined only` |
+| `LipschitzRepresentation.analyticDistance_le_lipschitz`, `BiLipschitzRepresentation.structuralDistance_le_analyticDistance`, `BiLipschitzRepresentation.analyticDistance_le_lipschitz` | `theorem` | comparable な selected state pair で upper / lower Lipschitz 境界を取り出す。 | `proved` |
+| `Part4DistanceMeasureGeometry.Candidate`, `Part4DistanceMeasureGeometry.Candidate.schematicCorrespondences`, `Part4DistanceMeasureGeometry.Candidate.nonConclusionBoundary` | `inductive` / `def` | Part IV の distance foundation、atom/configuration geometry、signature path geometry、operation repair geometry、curvature/filling geometry、representation metric、docs/classification boundary を横断する docs-facing entrypoint。 | `defined only` |
+| `Part4DistanceMeasureGeometry.generatedCarrierShapeDistance_eq_coordinate_mismatchCount`, `Part4DistanceMeasureGeometry.generatedOperation_mappedCarrierShapeDistance_eq_coordinate_mismatchCount` | `theorem` | generated carrier / operation distance が AtomShape coordinate mismatch count に展開されることを Part IV 入口から参照する wrapper。 | `proved` |
+| `Part4DistanceMeasureGeometry.signatureEndpointDistance_le_pathLength`, `signature_margin_stability`, `boundedSideEffectRepair_targetDistance_decreases`, `boundedSideEffectRepair_protectedMovement_within_bound`, `fillingCostLowerBound_observationGap_le`, `lipschitzRepresentation_analyticDistance_le`, `biLipschitzRepresentation_structuralDistance_le` | `theorem` | Part IV entrypoint から各 bounded theorem package の代表 accessor / bridge を参照する wrapper。 | `proved` |
+| `classifyPart4`, `part4Classifications`, `part4_candidates_are_registered` | `def` / `theorem` | theorem-package classification registry に Part IV row を追加し、distance foundation / path / repair / filling / representation は downstream representation-level、generated mismatch distance は Atom-generated source row として分離する。 | `defined only` / `proved` |
+
+Non-conclusions: Part IV distance package は selected scope、finite path、
+generated AtomShape coordinate mismatch、明示 coverage / witness assumptions に相対化される。
+距離値だけから lawfulness / flatness を証明せず、未測定 axis を measured zero と読まず、
+semantic ontology distance の empirical calibration、solver completeness、global repair
+termination、universal Dehn function completeness、global witness completeness は結論しない。
+
 ## Architecture Path
 
 File: `Formal/Arch/Evolution/ArchitecturePath.lean`

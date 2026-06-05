@@ -84,6 +84,7 @@ import Formal.Arch.Evolution.SFTAATFundamentalModularityExamples
 import Formal.Arch.Evolution.SFTArtifactBoundaryBridge
 import Formal.Arch.Evolution.SFTAATArtifactBoundaryExamples
 import Formal.Arch.Evolution.SFTTheoremPackages
+import Formal.Arch.Evolution.Part4DistanceMeasureGeometry
 import Formal.Arch.Evolution.ReverseImportTheorems
 import Formal.Arch.Atom.Foundation
 import Formal.Arch.Atom.Valence
@@ -116,6 +117,7 @@ import Formal.Arch.AAT.ZeroCurvature
 import Formal.Arch.AAT.Operation
 import Formal.Arch.AAT.Repair
 import Formal.Arch.AAT.Synthesis
+import Formal.Arch.Signature.DistanceGeometry
 import Formal.Arch.Observation.AtomPresentation
 import Formal.Arch.Observation.ArchMap
 import Formal.Arch.Observation.ArchMapGeneratedHandoff
