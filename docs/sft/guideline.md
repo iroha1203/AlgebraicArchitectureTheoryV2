@@ -7,6 +7,8 @@
 - SFT は field-shaped software evolution の計算理論である。
 - SFT は AAT の architecture object、operation、invariant、obstruction witness、signature、theorem boundary / non-conclusions を観測量・制約・制御入力として使う。
 - SFT は AAT の数学的核を置き換えない。AAT から SFT への依存は片方向として保つ。
+- AAT は Atom を公理とする純粋数学理論であり、測定境界は SFT / ArchSig / empirical artifact 側にある。
+  SFT 側でも、AAT の外部にある観測限界を AAT の未完了 theorem として扱わない。
 - `docs/sft/software_field_theory.md` は SFT 本文、`docs/sft/aat_interface.md` は AAT / SFT 境界の source of truth である。
 - `docs/sft/software_field_theory.md` と `docs/sft/aat_interface.md` は SFT / interface の根幹文書である。ユーザーの明示的な指示なしに更新しない。
 
@@ -17,6 +19,8 @@
   dataset / operational artifact に相対化して扱う。
 - empirical dataset、operational feedback、calibration artifact は、相関・観測・仮説を因果 theorem と混同しない。
 - Lean theorem claim として読める範囲は AAT / Lean 側に置く。SFT docs で theorem boundary に触れる場合は、対応する `docs/aat/proof_obligations.md` や `docs/aat/lean_theorem_index.md` も確認する。
+- ArchSig / FieldSig 由来の report は、選ばれた evidence contract の中で語れる肯定的な conclusion として読む。
+  語れない外側を一般的な non-conclusion や残タスクとして増幅しない。
 - レビューやタスク整理では、SFT 文書が定義した artifact、typed conclusion、accessor theorem、
   calibration step だけを完了条件にする。現実の未来全体や因果全体を、未完了タスクとして持ち出さない。
 

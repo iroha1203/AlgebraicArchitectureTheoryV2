@@ -8,7 +8,14 @@
 - AAT は Atom を公理的出発点とする。ArchMap / extractor は source code から Atom input を提示・検査する
   実測 surface であり、AAT の定理や完了条件を定義しない。
 - LawPolicy / interpretation profile は、law universe、witness rule、molecule pattern、obstruction circuit definition、signature axis、coverage requirement、exactness assumption を選ぶ profile である。AAT そのものではない。
-- ArchSig は ArchMap + interpretation profile から `archsig-analysis-packet-v0` を作る AAT structural analysis layer である。Lean 証明器ではない。
+- ArchSig は ArchMap + interpretation profile から `archsig-analysis-packet-v0` を作る AAT structural analysis layer である。Lean 証明器ではない。Rust と Lean の対応を tooling contract として要求しない。
+- ArchSig は tool として肯定的な bounded diagnostic conclusion を出す。たとえば
+  `SAFE_WITHIN_POLICY`、`NO_SELECTED_OBSTRUCTION`、`ACCEPTABLE_UNDER_EVIDENCE_CONTRACT`、
+  `DISTANCE_WITHIN_THRESHOLD` のように、選ばれた LawPolicy、DistanceProfile、evidence contract の中で
+  語れることを確かに語る。
+- ArchSig は、未観測 runtime 全体や global semantic safety のように選ばれた evidence language の外にあるものを、
+  failure、残タスク、Lean linkage requirement、長い `non-conclusion` 一覧として扱わない。外側は必要最小限の
+  silence boundary として扱う。
 - `concernHints` は review cue であり、obstruction circuit、law violation、theorem evidence ではない。
 - FieldSig は `archsig-analysis-packet-v0` を bounded current AAT structural state として読み、SFT 側の evolution measurement / governance input へ写す。raw ArchMap observations を forecast truth として読まない。
 - ArchSig validation は、schema、refs、generated middle layer、selected law-policy reading、fixture expectation など、
@@ -26,6 +33,8 @@
 - CLI surface を追加・変更する場合は、必要に応じて `tools/archsig/README.md`、`tools/archsig/docs/commands.md`、`tools/fieldsig/README.md`、`tools/fieldsig/docs/commands.md` を更新する。
 - Rust 型共有を ArchSig / FieldSig 間の cross-tool contract として扱わない。serialized JSON artifact boundary を重視する。
 - Rust source では不用意な `unwrap`, `expect`, `panic!`、placeholder 実装、claim boundary を曖昧にする fallback を避ける。
+- Report / schema / CLI wording は「これは結論ではない」を主文にしない。結論、根拠、選ばれた evidence contract を
+  先に出し、語らない領域は必要な場合だけ短い boundary として添える。
 
 ## 主要コマンド
 

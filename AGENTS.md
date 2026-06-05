@@ -16,11 +16,24 @@
 - 作業は原則として GitHub Issue 起点で進める。次タスクを選ぶ場合は `priority:blocking`, `status:ready`, milestone の依存順を優先する。
 - このリポジトリは個人開発であり、常に最小実装・最小差分を選ぶ必要はない。目的に対して自然に必要な設計、実装、docs、tests、website surface まで広げてよい。
 - ただし、無関係な既存変更の巻き戻し、claim boundary を越える主張、根拠のない互換性維持、不要な抽象化は避ける。
+- AAT / Lean / ArchSig の境界は作業前に必ず分ける。
+  - AAT は Atom を公理とする純粋数学理論である。AAT 自体に source observation、measurement、
+    tooling validation の境界を持ち込まない。測定境界は ArchMap / ArchSig / FieldSig 側の
+    artifact contract として扱う。
+  - Lean 形式化は神様の視点ではない。語れる命題だけを形式化し、全 runtime、全 semantic universe、
+    全未来予測のような証明対象を勝手にスコープへ入れない。
+  - ArchSig は Rust tooling であり Lean 証明器ではない。Rust と Lean の対応を要求しない。
+    ArchSig は `ArchMap + LawPolicy + evidence contract` に相対化して、選ばれた語彙内の肯定的な
+    diagnostic conclusion を出す。
 - 完了レビューや残タスク整理では、対象 Issue / PRD / 計画書 / acceptance test が実際に要求している
   concrete condition だけを判定する。現実コード全体、意味宇宙全体、未来予測全体のような
   無制限 claim を勝手に残タスク化しない。
 - claim boundary は、現在の主張を正確に保つための制約として扱う。ユーザーが求めていない限り、
   「証明できない巨大 claim」や一般的限界を列挙して作業計画の中心にしない。
+- 語り得ない領域は、残タスクや失敗ではなく沈黙として扱う。必要な場合だけ、結論の近くに
+  最小限の boundary として書く。ArchSig / website / report では `SAFE_WITHIN_POLICY`、
+  `NO_SELECTED_OBSTRUCTION`、`ACCEPTABLE_UNDER_EVIDENCE_CONTRACT` のような肯定的結論を中心にし、
+  外側の未観測領域を長い `non-conclusion` 一覧として主役化しない。
 - 禁止: AAT の完了レビューで source extraction / ArchMap observation / tooling validation の完全性を
   「未完了部分」「非主張」「残タスク」「証明不能な限界」として持ち出さない。AAT は Atom を公理とするため、
   source-observation layer の性質は AAT の内側の claim ではない。必要な場合は tooling / SFT 側の
@@ -55,7 +68,7 @@
 - SFT は artifact、practice、AI、review、CI、operational feedback が software evolution の reachable future をどう変えるかを扱う。
 - ArchMap は source-grounded Atom observation map であり、law-independent な観測を記録する。
 - LawPolicy / interpretation profile は選ばれた law universe、witness rule、signature axis、coverage requirement を与える profile であり、AAT そのものではない。
-- ArchSig は ArchMap と interpretation profile から `archsig-analysis-packet-v0` を作る AAT structural analysis layer である。Lean 証明器ではない。
+- ArchSig は ArchMap と interpretation profile から `archsig-analysis-packet-v0` を作る AAT structural analysis layer である。Lean 証明器ではない。選ばれた LawPolicy と evidence contract の中で語れることを確かに語り、その外側は証明不能な限界として騒がず沈黙する。
 - FieldSig は ArchSig analysis packet と workflow evidence を SFT 側の evolution measurement / governance input として読む。raw ArchMap を forecast truth として読まない。
 - Website は docs の複製ではなく、AAT / SFT / ArchSig を公開向けに読むための web-native publication surface である。
 
