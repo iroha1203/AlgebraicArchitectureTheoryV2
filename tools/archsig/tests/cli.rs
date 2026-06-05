@@ -2145,6 +2145,36 @@ fn acts_spectrum_fixture_manifest_locks_golden_validation() {
                     "coverage gap must remain explicit in ArchitectureSpectrumReport"
                 );
             }
+            "representation-metric-faithfulness-boundary" => {
+                let minimum = case["minimumRepresentationMetricReadings"]
+                    .as_u64()
+                    .expect("minimum representation metric readings is present");
+                let readings = packet["representationMetricReadings"]
+                    .as_array()
+                    .expect("representation metric readings are array");
+                assert!(
+                    readings.len() as u64 >= minimum
+                        && readings.iter().all(|reading| {
+                            reading["biLipschitzFaithfulness"]["status"] == "blocked"
+                                && reading["biLipschitzFaithfulness"]["blockerRefs"]
+                                    .as_array()
+                                    .is_some_and(|items| !items.is_empty())
+                                && reading["analyticDistance"]["reading"].as_str().is_some_and(
+                                    |text| text.contains("not an architecture quality score"),
+                                )
+                        }),
+                    "representation metric readings must keep faithfulness lower bounds blocked by coverage / witness completeness"
+                );
+                assert!(
+                    validation["summary"]["representationMetricReadingCount"]
+                        .as_u64()
+                        .is_some_and(|count| count >= minimum)
+                        && packet["llmInterpretationPacket"]["representationMetricSummary"]
+                            .as_array()
+                            .is_some_and(|items| !items.is_empty()),
+                    "ACTS validation and LLM summary must expose representation metric readings"
+                );
+            }
             "coupon-tax-rounding-acts" => {
                 let required_text = case["requiredText"]
                     .as_str()
@@ -3376,12 +3406,16 @@ fn assert_north_star_packet_surfaces(json: &Value) {
                 let homotopy_filling_is_evaluator_backed = entry["distanceFamily"]
                     == "homotopyFillingGeometry"
                     && entry["value"]["status"] != "unmeasured";
+                let representation_metric_is_evaluator_backed = entry["distanceFamily"]
+                    == "representationMetric"
+                    && entry["value"]["status"] != "unmeasured";
                 if entry["distanceFamily"] == "atomGeometry"
                     || entry["distanceFamily"] == "configurationGeometry"
                     || entry["distanceFamily"] == "signatureGeometry"
                     || entry["distanceFamily"] == "operationGeometry"
                     || curvature_geometry_is_evaluator_backed
                     || homotopy_filling_is_evaluator_backed
+                    || representation_metric_is_evaluator_backed
                 {
                     (entry["value"]["status"] == "measured"
                         || entry["value"]["status"] == "zero"
@@ -3403,12 +3437,12 @@ fn assert_north_star_packet_surfaces(json: &Value) {
             })
             && part4_distance["statusSummary"]["blockedCount"]
                 .as_u64()
-                .is_some_and(|count| count >= 4)
+                .is_some_and(|count| count >= 7)
             && part4_distance["statusSummary"]["unmeasuredCount"]
                 .as_u64()
-                .is_some_and(|count| count >= 1)
+                .is_some_and(|count| count == 0)
             && part4_distance["statusSummary"]["schemaFoundationOnlyCount"] == 0,
-        "Part IV foundation must route atom/configuration/signature/operation/curvature geometry through evaluator readings while preserving semantic/gap blockers and keeping remaining evaluators unmeasured"
+        "Part IV foundation must route atom/configuration/signature/operation/curvature/homotopy/representation geometry through evaluator readings while preserving semantic/gap blockers"
     );
     let atom_distance_readings = json["atomDistanceReadings"]
         .as_array()
@@ -4074,6 +4108,7 @@ fn assert_north_star_packet_surfaces(json: &Value) {
         "operationPreconditionReadinessReadings",
         "pathMultiplicityLossReadings",
         "representationStrengthReadings",
+        "representationMetricReadings",
         "localCurvatureDiagramReadings",
         "threeLayerFlatnessReadings",
         "observationProjectionReadings",
@@ -4438,9 +4473,44 @@ fn assert_north_star_packet_surfaces(json: &Value) {
                     && reading["requiredAssumptions"]
                         .as_array()
                         .is_some_and(|items| !items.is_empty())
+                    && reading["part4DistanceRefs"]
+                        .as_array()
+                        .is_some_and(|items| !items.is_empty())
                     && reading["evidenceBoundary"].as_str().is_some()
             }),
         "representation strength readings must carry strength classes and assumptions"
+    );
+    assert!(
+        json["representationMetricReadings"]
+            .as_array()
+            .expect("representation metric readings are array")
+            .iter()
+            .all(|reading| {
+                reading["representationMetricReadingId"].as_str().is_some()
+                    && reading["representationRef"].as_str().is_some()
+                    && reading["representationFamily"].as_str().is_some()
+                    && reading["structuralDistance"]["evaluatorBasisRefs"]
+                        .as_array()
+                        .is_some_and(|items| !items.is_empty())
+                    && reading["analyticDistance"]["reading"]
+                        .as_str()
+                        .is_some_and(|text| text.contains("not an architecture quality score"))
+                    && reading["lipschitzStability"]["evaluatorBasisRefs"]
+                        .as_array()
+                        .is_some()
+                    && reading["biLipschitzFaithfulness"]["status"] == "blocked"
+                    && reading["biLipschitzFaithfulness"]["blockerRefs"]
+                        .as_array()
+                        .is_some_and(|items| !items.is_empty())
+                    && reading["coverageBlockerRefs"].as_array().is_some()
+                    && reading["witnessCompletenessBlockerRefs"]
+                        .as_array()
+                        .is_some_and(|items| !items.is_empty())
+                    && reading["evidenceBoundary"]
+                        .as_str()
+                        .is_some_and(|text| text.contains("not structural faithfulness"))
+            }),
+        "representation metric readings must expose selected structural/analytic distance, Lipschitz stability, and blocked faithfulness lower bounds"
     );
     assert!(
         json["threeLayerFlatnessReadings"]

@@ -17,6 +17,13 @@
     "generatedObstructionCount": 1,
     "generatedRepairTargetCount": 1,
     "viewerDistanceInputCount": 10,
+    "part4SupportingDistanceCount": 7,
+    "atomDistanceReadingCount": 10,
+    "configurationDistanceReadingCount": 10,
+    "signatureDistanceReadingCount": 1,
+    "operationDistanceReadingCount": 1,
+    "obstructionMeasureReadingCount": 4,
+    "curvatureMassReadingCount": 1,
     "obstructionCircuitCount": 1,
     "signatureAxisCount": 2,
     "analyticRepresentationCount": 10,
@@ -43,8 +50,10 @@
     "operationPreconditionReadinessReadingCount": 1,
     "pathMultiplicityLossReadingCount": 1,
     "signatureTrajectoryHomotopyRefutationReadingCount": 1,
+    "homotopyDistanceReadingCount": 3,
     "bridgeSplitObstructionTransferReadingCount": 1,
     "representationStrengthReadingCount": 14,
+    "representationMetricReadingCount": 14,
     "localCurvatureDiagramReadingCount": 1,
     "threeLayerFlatnessReadingCount": 1,
     "observationProjectionReadingCount": 1,
@@ -94,6 +103,12 @@
     {
       "id": "archsig-analysis-packet-homotopy-holonomy-stokes-surface",
       "title": "packet reports selected-axis homotopy holonomy and bounded Stokes-style review queues",
+      "result": "pass",
+      "count": 0
+    },
+    {
+      "id": "archsig-analysis-packet-homotopy-distance-readings",
+      "title": "packet exposes Part IV homotopy distance, filling cost, observation-gap lower bound, and selected Dehn-style area without treating missing fillers as zero",
       "result": "pass",
       "count": 0
     },
@@ -160,6 +175,54 @@
     {
       "id": "archsig-analysis-packet-generated-middle-layer",
       "title": "packet materializes generated AtomShape, molecule, law input, obstruction, repair target, and viewer distance inputs",
+      "result": "pass",
+      "count": 0
+    },
+    {
+      "id": "archsig-analysis-packet-part4-distance-foundation",
+      "title": "packet exposes Part IV DistanceValue, DistanceProfile, DiagnosticScope, and anti-proxy distance provenance",
+      "result": "pass",
+      "count": 0
+    },
+    {
+      "id": "archsig-analysis-packet-atom-distance-readings",
+      "title": "packet exposes proxy-free Part IV Atom distance evaluator readings separated from viewer layout distance",
+      "result": "pass",
+      "count": 0
+    },
+    {
+      "id": "archsig-analysis-packet-configuration-distance-readings",
+      "title": "packet exposes proxy-free Part IV configuration hypergraph distance readings with shortest-path, context, and gap blockers",
+      "result": "pass",
+      "count": 0
+    },
+    {
+      "id": "archsig-analysis-packet-signature-distance-readings",
+      "title": "packet exposes proxy-free Part IV signature distance readings with rho_i, safe-region margin, drift, and coverage blockers",
+      "result": "pass",
+      "count": 0
+    },
+    {
+      "id": "archsig-analysis-packet-operation-distance-readings",
+      "title": "packet exposes proxy-free Part IV operation cost, repair distance, protected-axis movement, and side-effect blockers",
+      "result": "pass",
+      "count": 0
+    },
+    {
+      "id": "archsig-analysis-packet-obstruction-measure-readings",
+      "title": "packet exposes witness-backed Part IV obstruction measure rows and preserves missing witnesses as blockers",
+      "result": "pass",
+      "count": 0
+    },
+    {
+      "id": "archsig-analysis-packet-curvature-mass-readings",
+      "title": "packet exposes Part IV curvature mass and curvature transport distances without promoting unmeasured witnesses to zero",
+      "result": "pass",
+      "count": 0
+    },
+    {
+      "id": "archsig-analysis-packet-representation-metric-readings",
+      "title": "packet exposes Part IV representation metric, Lipschitz stability, and coverage-blocked faithfulness readings",
       "result": "pass",
       "count": 0
     },

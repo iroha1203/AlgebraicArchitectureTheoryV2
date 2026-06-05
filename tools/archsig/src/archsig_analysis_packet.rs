@@ -61,12 +61,13 @@ use crate::{
     ArchSigProjectionNonInjectivityCandidateV0, ArchSigProjectionReconstructionBlockerV0,
     ArchSigRecurrentObstructionModeV0, ArchSigRepairAxisDeltaReadingV0,
     ArchSigRepairOperationCandidateV0, ArchSigRepairTransferRiskRankV0,
-    ArchSigRepresentationStrengthReadingV0, ArchSigSignatureAxisDistanceV0,
-    ArchSigSignatureAxisReadingV0, ArchSigSignatureDistanceReadingV0,
-    ArchSigSignatureTrajectoryHomotopyRefutationReadingV0, ArchSigSpectralAnalysisReadingV0,
-    ArchSigSpectralDominantComponentV0, ArchSigSpectralDrilldownReadingV0,
-    ArchSigSpectralMatrixShapeV0, ArchSigSpectralModeComponentV0, ArchSigSpectralModeReadingV0,
-    ArchSigSpectralValueV0, ArchSigSplitReadinessReadingV0, ArchSigStateTransitionAlgebraReadingV0,
+    ArchSigRepresentationMetricReadingV0, ArchSigRepresentationStrengthReadingV0,
+    ArchSigSignatureAxisDistanceV0, ArchSigSignatureAxisReadingV0,
+    ArchSigSignatureDistanceReadingV0, ArchSigSignatureTrajectoryHomotopyRefutationReadingV0,
+    ArchSigSpectralAnalysisReadingV0, ArchSigSpectralDominantComponentV0,
+    ArchSigSpectralDrilldownReadingV0, ArchSigSpectralMatrixShapeV0,
+    ArchSigSpectralModeComponentV0, ArchSigSpectralModeReadingV0, ArchSigSpectralValueV0,
+    ArchSigSplitReadinessReadingV0, ArchSigStateTransitionAlgebraReadingV0,
     ArchSigStateTransitionLawEvaluationV0, ArchSigStateTransitionRelationInputV0,
     ArchSigStokesStyleReadingV0, ArchSigStructuralReadingReviewSurfaceV0,
     ArchSigSubjectFamilySpreadV0, ArchSigSupportingDistanceV0, ArchSigSynthesisBlockageReadingV0,
@@ -182,7 +183,7 @@ pub fn build_archsig_analysis_packet(
     let invariant_family_readings =
         build_invariant_family_readings(archmap, law_policy, &obstruction_circuits);
     let law_universe_reading = build_law_universe_reading(law_policy);
-    let analytic_representations =
+    let mut analytic_representations =
         build_analytic_representations(archmap, &signature_axes, &obstruction_circuits);
     let coupling_cohesion_readings = build_coupling_cohesion_readings(archmap);
     let design_principle_readings = build_design_principle_readings(
@@ -208,14 +209,14 @@ pub fn build_archsig_analysis_packet(
         &mut part4_distance_foundation,
         &operation_distance_readings,
     );
-    let spectral_analysis_readings = build_spectral_analysis_readings(
+    let mut spectral_analysis_readings = build_spectral_analysis_readings(
         archmap,
         &obstruction_circuits,
         &signature_axes,
         &operation_deltas,
     );
-    let spectral_mode_readings = build_spectral_mode_readings(&spectral_analysis_readings);
-    let spectral_drilldown_readings = build_spectral_drilldown_readings(
+    let mut spectral_mode_readings = build_spectral_mode_readings(&spectral_analysis_readings);
+    let mut spectral_drilldown_readings = build_spectral_drilldown_readings(
         archmap,
         &spectral_mode_readings,
         &obstruction_circuits,
@@ -272,11 +273,32 @@ pub fn build_archsig_analysis_packet(
     let path_homotopy_diagram_readings =
         build_path_homotopy_diagram_readings(archmap, &molecule_readings, &obstruction_circuits);
     let layer_split = build_layer_split(archmap);
-    let representation_strength_readings = build_representation_strength_readings(
+    let mut representation_strength_readings = build_representation_strength_readings(
         archmap,
         &analytic_representations,
         &spectral_analysis_readings,
         &flatness_reading,
+    );
+    let representation_metric_readings = build_representation_metric_readings(
+        archmap,
+        &analytic_representations,
+        &spectral_analysis_readings,
+        &spectral_mode_readings,
+        &spectral_drilldown_readings,
+        &representation_strength_readings,
+        &part4_distance_foundation,
+    );
+    attach_representation_metric_refs(
+        &mut analytic_representations,
+        &mut spectral_analysis_readings,
+        &mut spectral_mode_readings,
+        &mut spectral_drilldown_readings,
+        &mut representation_strength_readings,
+        &representation_metric_readings,
+    );
+    promote_representation_metric_supporting_distance(
+        &mut part4_distance_foundation,
+        &representation_metric_readings,
     );
     let local_curvature_diagram_readings =
         build_local_curvature_diagram_readings(archmap, &obstruction_circuits);
@@ -539,6 +561,7 @@ pub fn build_archsig_analysis_packet(
         &path_multiplicity_loss_readings,
         &signature_trajectory_homotopy_refutation_readings,
         &bridge_split_obstruction_transfer_readings,
+        &representation_metric_readings,
         &representation_strength_readings,
         &local_curvature_diagram_readings,
         &three_layer_flatness_readings,
@@ -645,6 +668,7 @@ pub fn build_archsig_analysis_packet(
         monodromy_reading_family,
         boundary_holonomy_reading_family,
         representation_strength_readings,
+        representation_metric_readings,
         local_curvature_diagram_readings,
         three_layer_flatness_readings,
         observation_projection_readings,
@@ -5945,6 +5969,7 @@ fn analytic_representation(
         zero_reflecting_boundary:
             "zero reflects only the selected representation when coverage and exactness assumptions hold"
                 .to_string(),
+        part4_distance_refs: Vec::new(),
         non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
     }
 }
@@ -6723,6 +6748,7 @@ fn spectral_reading(
         coverage_boundary: coverage_boundary.to_string(),
         zero_reflecting_boundary: zero_reflecting_boundary.to_string(),
         recommended_next_action: recommended_next_action.to_string(),
+        part4_distance_refs: Vec::new(),
         non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
     }
 }
@@ -8101,6 +8127,7 @@ fn spectral_mode_reading(
             localization,
             density,
         ),
+        part4_distance_refs: Vec::new(),
         non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
     }
 }
@@ -8253,6 +8280,7 @@ fn build_spectral_drilldown_readings(
         recommended_next_action:
             "review dominant atom families, high-overlap molecule pairs, and positive/negative repair delta axes before changing boundaries"
                 .to_string(),
+        part4_distance_refs: Vec::new(),
         non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
     }]
 }
@@ -9074,6 +9102,7 @@ fn build_representation_strength_readings(
                 representation.representation_family
             ),
             evidence_boundary: representation.coverage_boundary.clone(),
+            part4_distance_refs: Vec::new(),
             non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
         })
         .chain(spectral_analysis_readings.iter().map(|reading| {
@@ -9127,10 +9156,487 @@ fn build_representation_strength_readings(
                     )
                 },
                 evidence_boundary: reading.coverage_boundary.clone(),
+                part4_distance_refs: Vec::new(),
                 non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
             }
         }))
         .collect()
+}
+
+fn build_representation_metric_readings(
+    archmap: &ArchMapDocumentV0,
+    analytic_representations: &[ArchSigAnalyticRepresentationV0],
+    spectral_analysis_readings: &[ArchSigSpectralAnalysisReadingV0],
+    spectral_mode_readings: &[ArchSigSpectralModeReadingV0],
+    spectral_drilldown_readings: &[ArchSigSpectralDrilldownReadingV0],
+    representation_strength_readings: &[ArchSigRepresentationStrengthReadingV0],
+    foundation: &ArchSigPart4DistanceFoundationV0,
+) -> Vec<ArchSigRepresentationMetricReadingV0> {
+    let analytic_by_id = analytic_representations
+        .iter()
+        .map(|reading| (reading.representation_id.as_str(), reading))
+        .collect::<BTreeMap<_, _>>();
+    let spectral_by_id = spectral_analysis_readings
+        .iter()
+        .map(|reading| (reading.spectral_reading_id.as_str(), reading))
+        .collect::<BTreeMap<_, _>>();
+    let modes_by_spectral_ref = spectral_mode_readings.iter().fold(
+        BTreeMap::<&str, Vec<&ArchSigSpectralModeReadingV0>>::new(),
+        |mut map, mode| {
+            map.entry(mode.source_spectral_reading_ref.as_str())
+                .or_default()
+                .push(mode);
+            map
+        },
+    );
+    let drilldowns_by_mode_ref = spectral_drilldown_readings
+        .iter()
+        .flat_map(|drilldown| {
+            drilldown
+                .source_spectral_mode_refs
+                .iter()
+                .map(move |mode_ref| (mode_ref.as_str(), drilldown))
+        })
+        .fold(
+            BTreeMap::<&str, Vec<&ArchSigSpectralDrilldownReadingV0>>::new(),
+            |mut map, (mode_ref, drilldown)| {
+                map.entry(mode_ref).or_default().push(drilldown);
+                map
+            },
+        );
+    let coverage_blockers = archmap
+        .observation_gaps
+        .iter()
+        .map(|gap| gap.gap_id.clone())
+        .collect::<Vec<_>>();
+    let witness_blockers = vec![
+        "witness-completeness:selected-LawPolicy-not-certified".to_string(),
+        "coverage-completeness:selected-representation-not-global".to_string(),
+    ];
+    let coverage_refs = foundation.profile.coverage_policy_refs.clone();
+
+    representation_strength_readings
+        .iter()
+        .map(|strength| {
+            let mut source_reading_refs = vec![strength.source_reading_ref.clone()];
+            let mut analytic_representation_refs = Vec::new();
+            let mut spectral_reading_refs = Vec::new();
+            let mut spectral_mode_refs = Vec::new();
+            let mut spectral_drilldown_refs = Vec::new();
+            let mut evidence_refs = Vec::new();
+            let mut structural_basis = vec![
+                format!("structuralDistance:representationStrength:{}", strength.reading_id),
+                format!("structuralDistance:family:{}", strength.representation_family),
+            ];
+            let mut analytic_basis = vec![
+                format!("analyticDistance:representationFamily:{}", strength.representation_family),
+            ];
+            let mut structural_value = 0_i64;
+            let mut analytic_value = 0_i64;
+            let mut analytic_status = "measured";
+
+            if let Some(representation) = analytic_by_id.get(strength.source_reading_ref.as_str()) {
+                analytic_representation_refs.push(representation.representation_id.clone());
+                evidence_refs.extend(representation.graph_scope_refs.clone());
+                evidence_refs.extend(representation.walk_witness_refs.clone());
+                structural_value += representation.graph_scope_refs.len() as i64;
+                structural_value += representation.axis_refs.len() as i64;
+                structural_value += representation.walk_witness_refs.len() as i64;
+                structural_basis.extend(
+                    representation
+                        .axis_refs
+                        .iter()
+                        .map(|axis| format!("structuralDistance:axis:{axis}")),
+                );
+                structural_basis.extend(
+                    representation
+                        .graph_scope_refs
+                        .iter()
+                        .map(|graph_ref| format!("structuralDistance:graphScope:{graph_ref}")),
+                );
+                let (value, basis, measured) = analytic_metric_value_from_representation(representation);
+                analytic_value += value;
+                analytic_basis.extend(basis);
+                if !measured {
+                    analytic_status = "blocked";
+                }
+            }
+
+            if let Some(spectral) = spectral_by_id.get(strength.source_reading_ref.as_str()) {
+                spectral_reading_refs.push(spectral.spectral_reading_id.clone());
+                evidence_refs.extend(spectral.support_refs.clone());
+                structural_value += spectral.support_refs.len() as i64;
+                structural_value += spectral.dominant_components.len() as i64;
+                structural_basis.extend(
+                    spectral
+                        .support_refs
+                        .iter()
+                        .map(|support| format!("structuralDistance:spectralSupport:{support}")),
+                );
+                let (value, basis) = analytic_metric_value_from_spectral(spectral);
+                analytic_value += value;
+                analytic_basis.extend(basis);
+                if let Some(modes) = modes_by_spectral_ref.get(strength.source_reading_ref.as_str()) {
+                    for mode in modes {
+                        spectral_mode_refs.push(mode.spectral_mode_id.clone());
+                        source_reading_refs.push(mode.spectral_mode_id.clone());
+                        analytic_basis.push(format!(
+                            "analyticDistance:spectralMode:{}:gap={}:localization={}:density={}",
+                            mode.spectral_mode_id,
+                            mode.spectral_gap_proxy.value,
+                            mode.localization_index.value,
+                            mode.matrix_density.value
+                        ));
+                        analytic_value += scaled_spectral_value(&mode.spectral_gap_proxy.value).abs();
+                        analytic_value += scaled_spectral_value(&mode.localization_index.value).abs();
+                        analytic_value += scaled_spectral_value(&mode.matrix_density.value).abs();
+                        if let Some(drilldowns) = drilldowns_by_mode_ref.get(mode.spectral_mode_id.as_str()) {
+                            for drilldown in drilldowns {
+                                spectral_drilldown_refs.push(drilldown.drilldown_id.clone());
+                                source_reading_refs.push(drilldown.drilldown_id.clone());
+                                evidence_refs.extend(
+                                    drilldown
+                                        .dominant_atom_family_composition
+                                        .iter()
+                                        .flat_map(|composition| composition.atom_observation_refs.clone()),
+                                );
+                                analytic_basis.push(format!(
+                                    "analyticDistance:spectralDrilldown:{}:atomFamilies={}:overlapPairs={}:repairAxisDeltas={}",
+                                    drilldown.drilldown_id,
+                                    drilldown.dominant_atom_family_composition.len(),
+                                    drilldown.high_overlap_molecule_pairs.len(),
+                                    drilldown.repair_axis_delta_readings.len()
+                                ));
+                            }
+                        }
+                    }
+                }
+            }
+
+            let coverage_blocker_refs = unique_strings(
+                coverage_blockers
+                    .iter()
+                    .cloned()
+                    .chain(strength.blocked_by.iter().cloned()),
+            );
+            let witness_completeness_blocker_refs = unique_strings(
+                witness_blockers
+                    .iter()
+                    .cloned()
+                    .chain(strength.blocked_reflection_or_preservation_reasons.iter().cloned()),
+            );
+            let evidence_refs = if evidence_refs.is_empty() {
+                vec![strength.source_reading_ref.clone()]
+            } else {
+                unique_strings(evidence_refs.into_iter())
+            };
+            let source_reading_refs = unique_strings(source_reading_refs.into_iter());
+            let structural_distance = measured_part4_distance_value(
+                structural_value.max(0),
+                "selected-structural-support-count",
+                evidence_refs.clone(),
+                unique_strings(structural_basis.into_iter()),
+                &coverage_refs,
+                "selected structural distance is the bounded support size of this representation reading, not global architecture distance",
+            );
+            let analytic_distance = if analytic_status == "measured" {
+                measured_part4_distance_value(
+                    analytic_value.max(0),
+                    "selected-analytic-magnitude-x100",
+                    source_reading_refs.clone(),
+                    unique_strings(analytic_basis.into_iter()),
+                    &coverage_refs,
+                    "selected analytic distance reads this representation's finite matrix, vector, spectral, or boundary magnitude; it is not an architecture quality score",
+                )
+            } else {
+                blocked_curvature_distance_value(
+                    "selected-analytic-magnitude-x100",
+                    source_reading_refs.clone(),
+                    unique_strings(analytic_basis.into_iter()),
+                    &coverage_refs,
+                    witness_completeness_blocker_refs.clone(),
+                    "selected analytic distance is blocked when the representation value is boundary-only or unavailable; it is not an architecture quality score",
+                )
+            };
+            let lipschitz_stability = if matches!(analytic_distance.status.as_str(), "measured" | "zero") {
+                let denominator = structural_distance.measured_value.unwrap_or_default().max(1);
+                let numerator = analytic_distance.measured_value.unwrap_or_default();
+                measured_part4_distance_value(
+                    ((numerator + denominator - 1) / denominator).max(1),
+                    "selected-L-upper-bound-x100",
+                    source_reading_refs.clone(),
+                    vec![
+                        format!("lipschitz:analyticDistance={numerator}"),
+                        format!("lipschitz:structuralDistance={denominator}"),
+                        format!("lipschitz:selectedRepresentation:{}", strength.representation_family),
+                    ],
+                    &coverage_refs,
+                    "Lipschitz stability is a selected finite-representation upper-bound reading; it does not prove stability for all comparable architectures",
+                )
+            } else {
+                blocked_curvature_distance_value(
+                    "selected-L-upper-bound-x100",
+                    source_reading_refs.clone(),
+                    vec![format!("lipschitz:selectedRepresentation:{}", strength.representation_family)],
+                    &coverage_refs,
+                    analytic_distance.blocker_refs.clone(),
+                    "Lipschitz upper-bound reading is blocked because analytic distance is unavailable",
+                )
+            };
+            let bi_lipschitz_faithfulness = blocked_curvature_distance_value(
+                "selected-bi-lipschitz-lower-bound",
+                source_reading_refs.clone(),
+                vec![
+                    format!("biLipschitz:structuralDistance:{}", strength.representation_family),
+                    format!("biLipschitz:analyticDistance:{}", strength.representation_family),
+                    "biLipschitz:requiresCoverageAndWitnessCompleteness".to_string(),
+                ],
+                &coverage_refs,
+                unique_strings(
+                    coverage_blocker_refs
+                        .iter()
+                        .cloned()
+                        .chain(witness_completeness_blocker_refs.iter().cloned()),
+                ),
+                "bi-Lipschitz faithfulness lower bound is blocked unless coverage and witness completeness are supplied for the selected scope",
+            );
+
+            ArchSigRepresentationMetricReadingV0 {
+                representation_metric_reading_id: format!(
+                    "representation-metric:{}",
+                    stable_id(&strength.reading_id)
+                ),
+                representation_ref: strength.source_reading_ref.clone(),
+                representation_family: strength.representation_family.clone(),
+                source_reading_refs,
+                distance_profile_ref: foundation.profile.profile_id.clone(),
+                diagnostic_scope_ref: foundation.diagnostic_scope.scope_id.clone(),
+                structural_distance,
+                analytic_distance,
+                lipschitz_stability,
+                bi_lipschitz_faithfulness,
+                coverage_blocker_refs,
+                witness_completeness_blocker_refs,
+                analytic_representation_refs,
+                spectral_reading_refs,
+                spectral_mode_refs: unique_strings(spectral_mode_refs.into_iter()),
+                spectral_drilldown_refs: unique_strings(spectral_drilldown_refs.into_iter()),
+                representation_strength_refs: vec![strength.reading_id.clone()],
+                evidence_refs,
+                evidence_boundary:
+                    "representation metric is selected-scope evidence over ArchMap + LawPolicy; analytic closeness is not structural faithfulness without coverage and witness completeness"
+                        .to_string(),
+                non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
+            }
+        })
+        .collect()
+}
+
+fn analytic_metric_value_from_representation(
+    representation: &ArchSigAnalyticRepresentationV0,
+) -> (i64, Vec<String>, bool) {
+    let mut basis = Vec::new();
+    match representation.value_type.as_str() {
+        "nat" => {
+            let value = representation.value.parse::<i64>().unwrap_or_default();
+            basis.push(format!(
+                "analyticDistance:{}:nat={value}",
+                representation.representation_id
+            ));
+            (value, basis, true)
+        }
+        "float" => {
+            let value = scaled_spectral_value(&representation.value).abs();
+            basis.push(format!(
+                "analyticDistance:{}:float={}",
+                representation.representation_id, representation.value
+            ));
+            (value, basis, true)
+        }
+        "matrixShape" => {
+            let value = representation
+                .sparse_matrix_entries
+                .iter()
+                .map(|entry| entry.value.abs())
+                .sum::<i64>();
+            basis.push(format!(
+                "analyticDistance:{}:matrixEntries={}",
+                representation.representation_id,
+                representation.sparse_matrix_entries.len()
+            ));
+            (value, basis, true)
+        }
+        "vector" => {
+            let trimmed = representation
+                .value
+                .trim_matches(|ch| ch == '[' || ch == ']');
+            let value = scaled_spectral_value(trimmed).abs();
+            basis.push(format!(
+                "analyticDistance:{}:vector={}",
+                representation.representation_id, representation.value
+            ));
+            (value, basis, true)
+        }
+        "boundaryStatus" if representation.status == "measured" => {
+            basis.push(format!(
+                "analyticDistance:{}:boundaryStatus={}",
+                representation.representation_id, representation.value
+            ));
+            (1, basis, true)
+        }
+        _ => {
+            basis.push(format!(
+                "analyticDistance:{}:blockedBoundaryStatus={}",
+                representation.representation_id, representation.value
+            ));
+            (0, basis, false)
+        }
+    }
+}
+
+fn analytic_metric_value_from_spectral(
+    spectral: &ArchSigSpectralAnalysisReadingV0,
+) -> (i64, Vec<String>) {
+    let mut value = 0_i64;
+    let mut basis = Vec::new();
+    for spectral_value in &spectral.values {
+        let scaled = scaled_spectral_value(&spectral_value.value).abs();
+        value += scaled;
+        basis.push(format!(
+            "analyticDistance:{}:{}={}",
+            spectral.spectral_reading_id, spectral_value.name, spectral_value.value
+        ));
+    }
+    (value, basis)
+}
+
+fn scaled_spectral_value(value: &str) -> i64 {
+    value
+        .parse::<f64>()
+        .map(|value| (value * 100.0).round() as i64)
+        .unwrap_or_default()
+}
+
+fn attach_representation_metric_refs(
+    analytic_representations: &mut [ArchSigAnalyticRepresentationV0],
+    spectral_analysis_readings: &mut [ArchSigSpectralAnalysisReadingV0],
+    spectral_mode_readings: &mut [ArchSigSpectralModeReadingV0],
+    spectral_drilldown_readings: &mut [ArchSigSpectralDrilldownReadingV0],
+    representation_strength_readings: &mut [ArchSigRepresentationStrengthReadingV0],
+    metric_readings: &[ArchSigRepresentationMetricReadingV0],
+) {
+    for metric in metric_readings {
+        for representation in analytic_representations.iter_mut().filter(|reading| {
+            metric
+                .analytic_representation_refs
+                .contains(&reading.representation_id)
+        }) {
+            representation
+                .part4_distance_refs
+                .push(metric.representation_metric_reading_id.clone());
+        }
+        for spectral in spectral_analysis_readings.iter_mut().filter(|reading| {
+            metric
+                .spectral_reading_refs
+                .contains(&reading.spectral_reading_id)
+        }) {
+            spectral
+                .part4_distance_refs
+                .push(metric.representation_metric_reading_id.clone());
+        }
+        for mode in spectral_mode_readings.iter_mut().filter(|reading| {
+            metric
+                .spectral_mode_refs
+                .contains(&reading.spectral_mode_id)
+        }) {
+            mode.part4_distance_refs
+                .push(metric.representation_metric_reading_id.clone());
+        }
+        for drilldown in spectral_drilldown_readings.iter_mut().filter(|reading| {
+            metric
+                .spectral_drilldown_refs
+                .contains(&reading.drilldown_id)
+        }) {
+            drilldown
+                .part4_distance_refs
+                .push(metric.representation_metric_reading_id.clone());
+        }
+        for strength in representation_strength_readings
+            .iter_mut()
+            .filter(|reading| {
+                metric
+                    .representation_strength_refs
+                    .contains(&reading.reading_id)
+            })
+        {
+            strength
+                .part4_distance_refs
+                .push(metric.representation_metric_reading_id.clone());
+        }
+    }
+}
+
+fn promote_representation_metric_supporting_distance(
+    foundation: &mut ArchSigPart4DistanceFoundationV0,
+    readings: &[ArchSigRepresentationMetricReadingV0],
+) {
+    if readings.is_empty() {
+        return;
+    }
+    if let Some(distance) = foundation
+        .supporting_distances
+        .iter_mut()
+        .find(|distance| distance.distance_family == "representationMetric")
+    {
+        let blockers = readings
+            .iter()
+            .flat_map(|reading| reading.bi_lipschitz_faithfulness.blocker_refs.clone())
+            .collect::<BTreeSet<_>>()
+            .into_iter()
+            .collect::<Vec<_>>();
+        distance.value = if blockers.is_empty() {
+            measured_part4_distance_value(
+                readings
+                    .iter()
+                    .filter_map(|reading| reading.lipschitz_stability.measured_value)
+                    .sum::<i64>(),
+                "selected-representation-stability",
+                readings
+                    .iter()
+                    .map(|reading| reading.representation_metric_reading_id.clone())
+                    .collect(),
+                readings
+                    .iter()
+                    .map(|reading| {
+                        format!("representationMetric:{}", reading.representation_family)
+                    })
+                    .collect(),
+                &foundation.profile.coverage_policy_refs,
+                "representationMetric aggregates selected representation stability readings only",
+            )
+        } else {
+            blocked_curvature_distance_value(
+                "selected-representation-faithfulness",
+                readings
+                    .iter()
+                    .map(|reading| reading.representation_metric_reading_id.clone())
+                    .collect(),
+                readings
+                    .iter()
+                    .map(|reading| {
+                        format!("representationMetric:{}", reading.representation_family)
+                    })
+                    .collect(),
+                &foundation.profile.coverage_policy_refs,
+                blockers,
+                "representationMetric supporting distance is blocked for faithfulness until coverage and witness completeness are supplied",
+            )
+        };
+        distance.evidence_boundary =
+            "representationMetric reads selected analytic stability; it does not certify global structural faithfulness"
+                .to_string();
+    }
+    refresh_part4_status_summary(foundation);
 }
 
 fn build_atom_support_axis_readings(
@@ -15490,6 +15996,7 @@ fn build_llm_interpretation_packet(
     signature_trajectory_homotopy_refutation_readings:
         &[ArchSigSignatureTrajectoryHomotopyRefutationReadingV0],
     bridge_split_obstruction_transfer_readings: &[ArchSigBridgeSplitObstructionTransferReadingV0],
+    representation_metric_readings: &[ArchSigRepresentationMetricReadingV0],
     representation_strength_readings: &[ArchSigRepresentationStrengthReadingV0],
     local_curvature_diagram_readings: &[ArchSigLocalCurvatureDiagramReadingV0],
     three_layer_flatness_readings: &[ArchSigThreeLayerFlatnessReadingV0],
@@ -15588,6 +16095,20 @@ fn build_llm_interpretation_packet(
                     reading.high_overlap_molecule_pairs.len(),
                     reading.repair_axis_delta_readings.len(),
                     reading.status
+                )
+            })
+            .collect(),
+        representation_metric_summary: representation_metric_readings
+            .iter()
+            .map(|reading| {
+                format!(
+                    "{} analytic={} structural={} lipschitz={} faithfulness={} ({})",
+                    reading.representation_family,
+                    reading.analytic_distance.measured_value.unwrap_or_default(),
+                    reading.structural_distance.measured_value.unwrap_or_default(),
+                    reading.lipschitz_stability.status,
+                    reading.bi_lipschitz_faithfulness.status,
+                    reading.representation_metric_reading_id
                 )
             })
             .collect(),
@@ -16180,6 +16701,7 @@ pub fn validate_archsig_analysis_packet_report(
         check_operation_distance_reading_surface(packet),
         check_obstruction_measure_reading_surface(packet),
         check_curvature_mass_reading_surface(packet),
+        check_representation_metric_reading_surface(packet),
         check_aat_structural_reading_surfaces(packet),
         check_current_state_evolution_boundary(packet),
         check_operation_square_trace_surface(packet),
@@ -16259,6 +16781,7 @@ pub fn validate_archsig_analysis_packet_report(
             .bridge_split_obstruction_transfer_readings
             .len(),
         representation_strength_reading_count: packet.representation_strength_readings.len(),
+        representation_metric_reading_count: packet.representation_metric_readings.len(),
         local_curvature_diagram_reading_count: packet.local_curvature_diagram_readings.len(),
         three_layer_flatness_reading_count: packet.three_layer_flatness_readings.len(),
         observation_projection_reading_count: packet.observation_projection_readings.len(),
@@ -23080,6 +23603,292 @@ fn check_curvature_distance_value(
     }
 }
 
+fn check_representation_metric_reading_surface(
+    packet: &ArchSigAnalysisPacketV0,
+) -> ValidationCheck {
+    let mut examples = Vec::new();
+    let metric_ids = packet
+        .representation_metric_readings
+        .iter()
+        .map(|reading| reading.representation_metric_reading_id.as_str())
+        .collect::<BTreeSet<_>>();
+    let analytic_ids = set(packet
+        .analytic_representations
+        .iter()
+        .map(|reading| reading.representation_id.as_str()));
+    let spectral_ids = set(packet
+        .spectral_analysis_readings
+        .iter()
+        .map(|reading| reading.spectral_reading_id.as_str()));
+    let spectral_mode_ids = set(packet
+        .spectral_mode_readings
+        .iter()
+        .map(|reading| reading.spectral_mode_id.as_str()));
+    let drilldown_ids = set(packet
+        .spectral_drilldown_readings
+        .iter()
+        .map(|reading| reading.drilldown_id.as_str()));
+    let strength_ids = set(packet
+        .representation_strength_readings
+        .iter()
+        .map(|reading| reading.reading_id.as_str()));
+    if !packet.representation_strength_readings.is_empty()
+        && packet.representation_metric_readings.is_empty()
+    {
+        examples.push(generic_validation_example(
+            "representationMetricReadings",
+            "empty",
+            "representation strength readings must be backed by Part IV representation metric readings",
+        ));
+    }
+    for representation in &packet.analytic_representations {
+        if representation.part4_distance_refs.is_empty()
+            || representation
+                .part4_distance_refs
+                .iter()
+                .any(|reading_ref| !metric_ids.contains(reading_ref.as_str()))
+        {
+            examples.push(generic_validation_example(
+                &representation.representation_id,
+                "part4DistanceRefs",
+                "analytic representations must point to representation metric readings",
+            ));
+        }
+    }
+    for spectral in &packet.spectral_analysis_readings {
+        if spectral.part4_distance_refs.is_empty()
+            || spectral
+                .part4_distance_refs
+                .iter()
+                .any(|reading_ref| !metric_ids.contains(reading_ref.as_str()))
+        {
+            examples.push(generic_validation_example(
+                &spectral.spectral_reading_id,
+                "part4DistanceRefs",
+                "spectral readings must point to representation metric readings",
+            ));
+        }
+    }
+    for mode in &packet.spectral_mode_readings {
+        if mode.part4_distance_refs.is_empty()
+            || mode
+                .part4_distance_refs
+                .iter()
+                .any(|reading_ref| !metric_ids.contains(reading_ref.as_str()))
+        {
+            examples.push(generic_validation_example(
+                &mode.spectral_mode_id,
+                "part4DistanceRefs",
+                "spectral mode readings must point to representation metric readings",
+            ));
+        }
+    }
+    for drilldown in &packet.spectral_drilldown_readings {
+        if drilldown.part4_distance_refs.is_empty()
+            || drilldown
+                .part4_distance_refs
+                .iter()
+                .any(|reading_ref| !metric_ids.contains(reading_ref.as_str()))
+        {
+            examples.push(generic_validation_example(
+                &drilldown.drilldown_id,
+                "part4DistanceRefs",
+                "spectral drilldown readings must point to representation metric readings",
+            ));
+        }
+    }
+    for strength in &packet.representation_strength_readings {
+        if strength.part4_distance_refs.is_empty()
+            || strength
+                .part4_distance_refs
+                .iter()
+                .any(|reading_ref| !metric_ids.contains(reading_ref.as_str()))
+        {
+            examples.push(generic_validation_example(
+                &strength.reading_id,
+                "part4DistanceRefs",
+                "representation strength readings must point to representation metric readings",
+            ));
+        }
+    }
+
+    for reading in &packet.representation_metric_readings {
+        if reading.distance_profile_ref != packet.part4_distance_foundation.profile.profile_id
+            || reading.diagnostic_scope_ref
+                != packet.part4_distance_foundation.diagnostic_scope.scope_id
+        {
+            examples.push(generic_validation_example(
+                &reading.representation_metric_reading_id,
+                "profile/scope",
+                "representation metric reading must be tied to the selected Part IV DistanceProfile and DiagnosticScope",
+            ));
+        }
+        for reference in &reading.analytic_representation_refs {
+            if !analytic_ids.contains(reference.as_str()) {
+                examples.push(generic_validation_example(
+                    &reading.representation_metric_reading_id,
+                    reference,
+                    "representation metric analyticRepresentationRefs must resolve",
+                ));
+            }
+        }
+        for reference in &reading.spectral_reading_refs {
+            if !spectral_ids.contains(reference.as_str()) {
+                examples.push(generic_validation_example(
+                    &reading.representation_metric_reading_id,
+                    reference,
+                    "representation metric spectralReadingRefs must resolve",
+                ));
+            }
+        }
+        for reference in &reading.spectral_mode_refs {
+            if !spectral_mode_ids.contains(reference.as_str()) {
+                examples.push(generic_validation_example(
+                    &reading.representation_metric_reading_id,
+                    reference,
+                    "representation metric spectralModeRefs must resolve",
+                ));
+            }
+        }
+        for reference in &reading.spectral_drilldown_refs {
+            if !drilldown_ids.contains(reference.as_str()) {
+                examples.push(generic_validation_example(
+                    &reading.representation_metric_reading_id,
+                    reference,
+                    "representation metric spectralDrilldownRefs must resolve",
+                ));
+            }
+        }
+        for reference in &reading.representation_strength_refs {
+            if !strength_ids.contains(reference.as_str()) {
+                examples.push(generic_validation_example(
+                    &reading.representation_metric_reading_id,
+                    reference,
+                    "representation metric representationStrengthRefs must resolve",
+                ));
+            }
+        }
+        for (field, value, prefix) in [
+            (
+                "structuralDistance",
+                &reading.structural_distance,
+                "structuralDistance:",
+            ),
+            (
+                "analyticDistance",
+                &reading.analytic_distance,
+                "analyticDistance:",
+            ),
+            (
+                "lipschitzStability",
+                &reading.lipschitz_stability,
+                "lipschitz:",
+            ),
+            (
+                "biLipschitzFaithfulness",
+                &reading.bi_lipschitz_faithfulness,
+                "biLipschitz:",
+            ),
+        ] {
+            check_representation_metric_distance_value(
+                &mut examples,
+                &reading.representation_metric_reading_id,
+                field,
+                value,
+                prefix,
+            );
+        }
+        if reading.coverage_blocker_refs.is_empty()
+            && reading.witness_completeness_blocker_refs.is_empty()
+        {
+            examples.push(generic_validation_example(
+                &reading.representation_metric_reading_id,
+                "coverage/witness blockers",
+                "representation faithfulness must retain coverage and witness-completeness blockers instead of silently claiming lower-bound faithfulness",
+            ));
+        }
+        if !reading.bi_lipschitz_faithfulness.blocker_refs.is_empty()
+            && matches!(
+                reading.bi_lipschitz_faithfulness.status.as_str(),
+                "measured" | "zero"
+            )
+        {
+            examples.push(generic_validation_example(
+                &reading.representation_metric_reading_id,
+                "biLipschitzFaithfulness",
+                "bi-Lipschitz lower-bound faithfulness must not be measured while coverage or witness blockers remain",
+            ));
+        }
+        if !reading
+            .evidence_boundary
+            .contains("not structural faithfulness")
+        {
+            examples.push(generic_validation_example(
+                &reading.representation_metric_reading_id,
+                "evidenceBoundary",
+                "representation metric must state that analytic closeness is not structural faithfulness without coverage and witness completeness",
+            ));
+        }
+        if !reading
+            .analytic_distance
+            .reading
+            .contains("not an architecture quality score")
+        {
+            examples.push(generic_validation_example(
+                &reading.representation_metric_reading_id,
+                "analyticDistance.reading",
+                "analytic distance must be framed as a selected representation reading, not a quality score",
+            ));
+        }
+    }
+
+    check_from_examples(
+        "archsig-analysis-packet-representation-metric-readings",
+        "packet exposes Part IV representation metric, Lipschitz stability, and coverage-blocked faithfulness readings",
+        examples,
+        "fail",
+    )
+}
+
+fn check_representation_metric_distance_value(
+    examples: &mut Vec<ValidationExample>,
+    reading_id: &str,
+    field: &str,
+    value: &ArchSigDistanceValueV0,
+    required_basis_prefix: &str,
+) {
+    if matches!(value.status.as_str(), "measured" | "zero") {
+        if value.measured_value.is_none()
+            || value.provenance_refs.is_empty()
+            || value.evaluator_basis_refs.is_empty()
+            || value.coverage_refs.is_empty()
+        {
+            examples.push(generic_validation_example(
+                reading_id,
+                field,
+                "measured or zero Representation metric distance must retain value, provenance refs, evaluator basis refs, and coverage refs",
+            ));
+        }
+        if !value
+            .evaluator_basis_refs
+            .iter()
+            .any(|basis| basis.starts_with(required_basis_prefix))
+        {
+            examples.push(generic_validation_example(
+                reading_id,
+                required_basis_prefix,
+                "representation metric distance must be backed by representation-specific evaluator basis refs",
+            ));
+        }
+    } else if value.blocker_refs.is_empty() {
+        examples.push(generic_validation_example(
+            reading_id,
+            field,
+            "blocked or unmeasured Representation metric distance must retain blocker refs",
+        ));
+    }
+}
+
 fn check_atom_distance_value(
     examples: &mut Vec<ValidationExample>,
     reading_id: &str,
@@ -24845,6 +25654,60 @@ mod tests {
     }
 
     #[test]
+    fn representation_metric_negative_fixture_missing_part4_refs_fails_validation() {
+        let mut packet = static_archsig_analysis_packet();
+        packet.analytic_representations[0]
+            .part4_distance_refs
+            .clear();
+
+        let report = validate_archsig_analysis_packet_report(
+            &packet,
+            "negative-fixture-representation-metric-missing-ref.json",
+        );
+
+        assert_eq!(report.summary.result, "fail");
+        assert!(report.checks.iter().any(|check| {
+            check.id == "archsig-analysis-packet-representation-metric-readings"
+                && check.result == "fail"
+                && check.examples.iter().any(|example| {
+                    example
+                        .target
+                        .as_deref()
+                        .is_some_and(|target| target == "part4DistanceRefs")
+                })
+        }));
+    }
+
+    #[test]
+    fn representation_metric_negative_fixture_faithfulness_measured_with_blockers_fails_validation()
+    {
+        let mut packet = static_archsig_analysis_packet();
+        let reading = packet
+            .representation_metric_readings
+            .first_mut()
+            .expect("static fixture has representation metric readings");
+        reading.bi_lipschitz_faithfulness.status = "measured".to_string();
+        reading.bi_lipschitz_faithfulness.measured_value = Some(1);
+
+        let report = validate_archsig_analysis_packet_report(
+            &packet,
+            "negative-fixture-representation-faithfulness-measured.json",
+        );
+
+        assert_eq!(report.summary.result, "fail");
+        assert!(report.checks.iter().any(|check| {
+            check.id == "archsig-analysis-packet-representation-metric-readings"
+                && check.result == "fail"
+                && check.examples.iter().any(|example| {
+                    example
+                        .target
+                        .as_deref()
+                        .is_some_and(|target| target == "biLipschitzFaithfulness")
+                })
+        }));
+    }
+
+    #[test]
     fn obstruction_measure_negative_fixture_missing_witness_zero_fails_validation() {
         let mut packet = static_archsig_analysis_packet();
         let reading = packet
@@ -25227,7 +26090,11 @@ mod tests {
         packet
             .part4_distance_foundation
             .status_summary
-            .unmeasured_count -= 1;
+            .unmeasured_count = packet
+            .part4_distance_foundation
+            .status_summary
+            .unmeasured_count
+            .saturating_sub(1);
 
         let report = validate_archsig_analysis_packet_report(
             &packet,
@@ -25263,7 +26130,11 @@ mod tests {
         packet
             .part4_distance_foundation
             .status_summary
-            .unmeasured_count -= 1;
+            .unmeasured_count = packet
+            .part4_distance_foundation
+            .status_summary
+            .unmeasured_count
+            .saturating_sub(1);
 
         let report = validate_archsig_analysis_packet_report(
             &packet,
@@ -25334,7 +26205,11 @@ mod tests {
         packet
             .part4_distance_foundation
             .status_summary
-            .unmeasured_count -= 1;
+            .unmeasured_count = packet
+            .part4_distance_foundation
+            .status_summary
+            .unmeasured_count
+            .saturating_sub(1);
 
         let report = validate_archsig_analysis_packet_report(
             &packet,

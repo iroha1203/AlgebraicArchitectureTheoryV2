@@ -1082,6 +1082,8 @@ pub struct ArchSigAnalysisPacketV0 {
     pub monodromy_reading_family: ArchSigMonodromyReadingFamilyV0,
     pub boundary_holonomy_reading_family: ArchSigBoundaryHolonomyReadingFamilyV0,
     pub representation_strength_readings: Vec<ArchSigRepresentationStrengthReadingV0>,
+    #[serde(default)]
+    pub representation_metric_readings: Vec<ArchSigRepresentationMetricReadingV0>,
     pub local_curvature_diagram_readings: Vec<ArchSigLocalCurvatureDiagramReadingV0>,
     pub three_layer_flatness_readings: Vec<ArchSigThreeLayerFlatnessReadingV0>,
     pub observation_projection_readings: Vec<ArchSigObservationProjectionReadingV0>,
@@ -1943,6 +1945,8 @@ pub struct ArchSigAnalyticRepresentationV0 {
     pub reading: String,
     pub coverage_boundary: String,
     pub zero_reflecting_boundary: String,
+    #[serde(default)]
+    pub part4_distance_refs: Vec<String>,
     pub non_conclusions: Vec<String>,
 }
 
@@ -1998,6 +2002,8 @@ pub struct ArchSigSpectralAnalysisReadingV0 {
     pub coverage_boundary: String,
     pub zero_reflecting_boundary: String,
     pub recommended_next_action: String,
+    #[serde(default)]
+    pub part4_distance_refs: Vec<String>,
     pub non_conclusions: Vec<String>,
 }
 
@@ -2398,6 +2404,8 @@ pub struct ArchSigSpectralModeReadingV0 {
     pub repair_perturbation_reading: String,
     pub evidence_boundary: String,
     pub recommended_next_action: String,
+    #[serde(default)]
+    pub part4_distance_refs: Vec<String>,
     pub non_conclusions: Vec<String>,
 }
 
@@ -2423,6 +2431,8 @@ pub struct ArchSigSpectralDrilldownReadingV0 {
     pub reading: String,
     pub evidence_boundary: String,
     pub recommended_next_action: String,
+    #[serde(default)]
+    pub part4_distance_refs: Vec<String>,
     pub non_conclusions: Vec<String>,
 }
 
@@ -3287,6 +3297,33 @@ pub struct ArchSigRepresentationStrengthReadingV0 {
     pub blocked_reflection_or_preservation_reasons: Vec<String>,
     pub reading: String,
     pub evidence_boundary: String,
+    #[serde(default)]
+    pub part4_distance_refs: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigRepresentationMetricReadingV0 {
+    pub representation_metric_reading_id: String,
+    pub representation_ref: String,
+    pub representation_family: String,
+    pub source_reading_refs: Vec<String>,
+    pub distance_profile_ref: String,
+    pub diagnostic_scope_ref: String,
+    pub structural_distance: ArchSigDistanceValueV0,
+    pub analytic_distance: ArchSigDistanceValueV0,
+    pub lipschitz_stability: ArchSigDistanceValueV0,
+    pub bi_lipschitz_faithfulness: ArchSigDistanceValueV0,
+    pub coverage_blocker_refs: Vec<String>,
+    pub witness_completeness_blocker_refs: Vec<String>,
+    pub analytic_representation_refs: Vec<String>,
+    pub spectral_reading_refs: Vec<String>,
+    pub spectral_mode_refs: Vec<String>,
+    pub spectral_drilldown_refs: Vec<String>,
+    pub representation_strength_refs: Vec<String>,
+    pub evidence_refs: Vec<String>,
+    pub evidence_boundary: String,
     pub non_conclusions: Vec<String>,
 }
 
@@ -3661,6 +3698,8 @@ pub struct ArchSigLlmInterpretationPacketV0 {
     pub spectral_mode_summary: Vec<String>,
     pub spectral_drilldown_summary: Vec<String>,
     #[serde(default)]
+    pub representation_metric_summary: Vec<String>,
+    #[serde(default)]
     pub curvature_support_summary: Vec<String>,
     #[serde(default)]
     pub curvature_transfer_summary: Vec<String>,
@@ -3803,6 +3842,8 @@ pub struct ArchSigAnalysisPacketValidationSummaryV0 {
     pub homotopy_distance_reading_count: usize,
     pub bridge_split_obstruction_transfer_reading_count: usize,
     pub representation_strength_reading_count: usize,
+    #[serde(default)]
+    pub representation_metric_reading_count: usize,
     pub local_curvature_diagram_reading_count: usize,
     pub three_layer_flatness_reading_count: usize,
     pub observation_projection_reading_count: usize,
