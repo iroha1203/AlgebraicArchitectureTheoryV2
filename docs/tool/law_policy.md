@@ -12,8 +12,8 @@ ArchMap
 InterpretationProfile
   selects laws, witness rules, molecule patterns, obstruction definitions,
   signature axes, measurement policy, optional spectrum measurement profile,
-  optional homotopy measurement profile, coverage requirements, and exactness
-  assumptions.
+  optional homotopy measurement profile, selected Part IV distance profile
+  boundary, coverage requirements, and exactness assumptions.
 
 ArchSig
   reads ArchMap + InterpretationProfile and computes the AAT analysis packet.
@@ -39,6 +39,13 @@ The interpretation profile owns the selected analysis policy for a specific
 review context. It does not define AAT, does not act as a design-rule
 collection, and does not prove architecture lawfulness.
 
+For Part IV distance analysis, the profile is also the source of the selected
+`DistanceProfile` boundary that ArchSig copies into
+`part4DistanceFoundation`. That boundary can select axes, weights, operation
+costs, coverage refs, aggregation policy, and unmeasured propagation policy.
+It is not empirical calibration, a hidden repair cost model, or a Lean theorem
+proof.
+
 The implemented schema records:
 
 - `lawPolicyId`
@@ -52,6 +59,8 @@ The implemented schema records:
 - `measurementPolicy`
 - `spectrumMeasurementProfile` (optional)
 - `homotopyMeasurementProfile` (optional)
+- selected Part IV distance profile boundary (copied into
+  `part4DistanceFoundation`)
 - `exactnessAssumptions`
 - `coverageRequirements`
 - `excludedReadings`

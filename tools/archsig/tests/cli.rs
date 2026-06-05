@@ -3333,6 +3333,40 @@ fn assert_north_star_packet_surfaces(json: &Value) {
             .any(|entry| entry["status"] == "actionable"),
         "bounded judgements must include actionable readings"
     );
+    let part4_distance = &json["part4DistanceFoundation"];
+    assert!(
+        part4_distance["profile"]["profileId"]
+            .as_str()
+            .is_some_and(|profile| profile.starts_with("part4-distance-profile:"))
+            && part4_distance["profile"]["unmeasuredPolicy"]
+                .as_str()
+                .is_some_and(|policy| policy.contains("not zero"))
+            && part4_distance["diagnosticScope"]["observedAtomRefs"]
+                .as_array()
+                .is_some_and(|refs| !refs.is_empty())
+            && part4_distance["supportingDistances"]
+                .as_array()
+                .is_some_and(|items| items.len() >= 7),
+        "Part IV distance foundation must expose profile, diagnostic scope, and all unmeasured distance contract rows"
+    );
+    assert!(
+        part4_distance["supportingDistances"]
+            .as_array()
+            .expect("supporting distances are array")
+            .iter()
+            .all(|entry| {
+                entry["value"]["status"] != "zero"
+                    && entry["value"]["status"] != "measured"
+                    && entry["value"]["blockerRefs"]
+                        .as_array()
+                        .is_some_and(|refs| !refs.is_empty())
+            })
+            && part4_distance["statusSummary"]["unmeasuredCount"]
+                .as_u64()
+                .is_some_and(|count| count >= 7)
+            && part4_distance["statusSummary"]["schemaFoundationOnlyCount"] == 0,
+        "Part IV foundation must keep unimplemented evaluators unmeasured instead of treating them as zero or measured"
+    );
     assert!(
         json.get("workflowSignalReadings").is_none() && !has_nested_key(json, "signalDensityScore"),
         "North Star packet must not expose workflow-signal density proxy readings"

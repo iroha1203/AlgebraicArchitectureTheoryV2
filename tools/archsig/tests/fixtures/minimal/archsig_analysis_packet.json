@@ -1214,6 +1214,412 @@
       ]
     }
   ],
+  "part4DistanceFoundation": {
+    "foundationId": "part4-distance-foundation:fixture-archmap-atom-observation",
+    "profile": {
+      "profileId": "part4-distance-profile:llm-native-aat-law-policy-fixture",
+      "profileSourceRef": "llm-native-aat-law-policy-fixture",
+      "atomWeights": [
+        {
+          "axisRef": "atom.fiber",
+          "weight": 1,
+          "sourceRef": "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md"
+        },
+        {
+          "axisRef": "atom.carrier",
+          "weight": 1,
+          "sourceRef": "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md"
+        },
+        {
+          "axisRef": "atom.valence",
+          "weight": 1,
+          "sourceRef": "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md"
+        },
+        {
+          "axisRef": "atom.semanticAnchor",
+          "weight": 1,
+          "sourceRef": "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md"
+        }
+      ],
+      "signatureWeights": [
+        {
+          "axisRef": "sig-axis:layer-violation",
+          "weight": 1,
+          "sourceRef": "law:layer-respecting"
+        },
+        {
+          "axisRef": "sig-axis:semantic-inconsistency",
+          "weight": 1,
+          "sourceRef": "law:semantic-contract-alignment"
+        }
+      ],
+      "operationCosts": [
+        {
+          "operationKind": "rename",
+          "cost": 1,
+          "sourceRef": "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#5-operation-geometry"
+        },
+        {
+          "operationKind": "move",
+          "cost": 2,
+          "sourceRef": "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#5-operation-geometry"
+        },
+        {
+          "operationKind": "extract",
+          "cost": 3,
+          "sourceRef": "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#5-operation-geometry"
+        },
+        {
+          "operationKind": "introduce-port",
+          "cost": 4,
+          "sourceRef": "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#5-operation-geometry"
+        },
+        {
+          "operationKind": "split-module",
+          "cost": 5,
+          "sourceRef": "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#5-operation-geometry"
+        },
+        {
+          "operationKind": "change-contract",
+          "cost": 8,
+          "sourceRef": "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#5-operation-geometry"
+        },
+        {
+          "operationKind": "semantic-rewrite",
+          "cost": 13,
+          "sourceRef": "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#5-operation-geometry"
+        },
+        {
+          "operationKind": "runtime-protocol-shift",
+          "cost": 21,
+          "sourceRef": "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#5-operation-geometry"
+        }
+      ],
+      "aggregationPolicy": "aggregate measured axes only; propagate unmeasured, unavailable, incomparable, and blocked status separately",
+      "unmeasuredPolicy": "unmeasured is not zero and cannot contribute numeric zero to total measured distance",
+      "lawOverlayPolicy": "law-relative distance is an overlay over ArchMap Atom observations, not an Atom generator",
+      "coveragePolicyRefs": [
+        "coverage:layer-atoms",
+        "coverage:semantic-contract-atoms"
+      ],
+      "evidenceBoundary": "DistanceProfile is selected by LawPolicy / InterpretationProfile; it is not empirical calibration or a Lean theorem proof"
+    },
+    "diagnosticScope": {
+      "scopeId": "part4-diagnostic-scope:fixture-archmap-atom-observation",
+      "observedAtomRefs": [
+        "atom:component:route-users",
+        "atom:component:service-user",
+        "atom:relation:route-service",
+        "atom:contract:create-user",
+        "atom:capability:create-user"
+      ],
+      "configurationRefs": [
+        "molecule:user-request-responsibility"
+      ],
+      "lawUniverseRef": "llm-native-aat-law-policy-fixture",
+      "distanceProfileRef": "part4-distance-profile:llm-native-aat-law-policy-fixture",
+      "measuredAxisRefs": [],
+      "unmeasuredAxisRefs": [
+        "sig-axis:layer-violation",
+        "sig-axis:semantic-inconsistency"
+      ],
+      "coveragePolicyRefs": [
+        "coverage:layer-atoms",
+        "coverage:semantic-contract-atoms"
+      ],
+      "blockerRefs": [
+        "issue:#1702 atom geometry evaluator",
+        "issue:#1703 configuration hypergraph evaluator",
+        "issue:#1708 signature distance evaluator",
+        "issue:#1706 operation repair distance evaluator",
+        "issue:#1709 curvature distance evaluator",
+        "issue:#1707 homotopy filling distance evaluator",
+        "issue:#1711 representation metric evaluator"
+      ],
+      "evidenceBoundary": "Diagnostic scope records selected ArchMap observations and LawPolicy coverage; missing evaluators remain blockers, not zero distances"
+    },
+    "supportingDistances": [
+      {
+        "distanceId": "part4-distance:atom-geometry",
+        "distanceFamily": "atomGeometry",
+        "distanceKind": "fiber-carrier-valence-semantic-anchor",
+        "sourceRef": "ArchMap",
+        "targetRef": "Part4DistanceEngine",
+        "value": {
+          "status": "unmeasured",
+          "unit": "selected-distance-unit",
+          "provenanceRefs": [
+            "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md",
+            "docs/aat/AAT_Distance_Extension_Design.md"
+          ],
+          "evaluatorBasisRefs": [],
+          "coverageRefs": [
+            "coverage:layer-atoms",
+            "coverage:semantic-contract-atoms"
+          ],
+          "blockerRefs": [
+            "issue:#1702 atom geometry evaluator"
+          ],
+          "reading": "distance family is represented in the Part4 contract but has not been measured by its evaluator yet"
+        },
+        "profileRef": "part4-distance-profile:llm-native-aat-law-policy-fixture",
+        "diagnosticScopeRef": "part4-diagnostic-scope:fixture-archmap-atom-observation",
+        "evidenceBoundary": "unmeasured means no evaluator result has been supplied; it must not be aggregated as zero",
+        "nonConclusions": [
+          "ArchSig analysis packet is not a Lean theorem proof",
+          "ArchSig analysis packet is not global architecture truth",
+          "ArchSig analysis packet does not prove source extraction completeness",
+          "signature axes are law-policy-relative, not universal quality scores",
+          "flatness reading is blocked by coverage gaps and exactness assumptions",
+          "repair operation candidates are not automatic safe refactorings",
+          "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+        ]
+      },
+      {
+        "distanceId": "part4-distance:configuration-geometry",
+        "distanceFamily": "configurationGeometry",
+        "distanceKind": "configuration-indexed-hypergraph-distance",
+        "sourceRef": "ArchMap",
+        "targetRef": "Part4DistanceEngine",
+        "value": {
+          "status": "unmeasured",
+          "unit": "selected-distance-unit",
+          "provenanceRefs": [
+            "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md",
+            "docs/aat/AAT_Distance_Extension_Design.md"
+          ],
+          "evaluatorBasisRefs": [],
+          "coverageRefs": [
+            "coverage:layer-atoms",
+            "coverage:semantic-contract-atoms"
+          ],
+          "blockerRefs": [
+            "issue:#1703 configuration hypergraph evaluator"
+          ],
+          "reading": "distance family is represented in the Part4 contract but has not been measured by its evaluator yet"
+        },
+        "profileRef": "part4-distance-profile:llm-native-aat-law-policy-fixture",
+        "diagnosticScopeRef": "part4-diagnostic-scope:fixture-archmap-atom-observation",
+        "evidenceBoundary": "unmeasured means no evaluator result has been supplied; it must not be aggregated as zero",
+        "nonConclusions": [
+          "ArchSig analysis packet is not a Lean theorem proof",
+          "ArchSig analysis packet is not global architecture truth",
+          "ArchSig analysis packet does not prove source extraction completeness",
+          "signature axes are law-policy-relative, not universal quality scores",
+          "flatness reading is blocked by coverage gaps and exactness assumptions",
+          "repair operation candidates are not automatic safe refactorings",
+          "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+        ]
+      },
+      {
+        "distanceId": "part4-distance:signature-geometry",
+        "distanceFamily": "signatureGeometry",
+        "distanceKind": "axis-wise-signature-distance-aggregate",
+        "sourceRef": "ArchMap",
+        "targetRef": "Part4DistanceEngine",
+        "value": {
+          "status": "unmeasured",
+          "unit": "selected-distance-unit",
+          "provenanceRefs": [
+            "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md",
+            "docs/aat/AAT_Distance_Extension_Design.md"
+          ],
+          "evaluatorBasisRefs": [],
+          "coverageRefs": [
+            "coverage:layer-atoms",
+            "coverage:semantic-contract-atoms"
+          ],
+          "blockerRefs": [
+            "issue:#1708 signature distance evaluator"
+          ],
+          "reading": "distance family is represented in the Part4 contract but has not been measured by its evaluator yet"
+        },
+        "profileRef": "part4-distance-profile:llm-native-aat-law-policy-fixture",
+        "diagnosticScopeRef": "part4-diagnostic-scope:fixture-archmap-atom-observation",
+        "evidenceBoundary": "unmeasured means no evaluator result has been supplied; it must not be aggregated as zero",
+        "nonConclusions": [
+          "ArchSig analysis packet is not a Lean theorem proof",
+          "ArchSig analysis packet is not global architecture truth",
+          "ArchSig analysis packet does not prove source extraction completeness",
+          "signature axes are law-policy-relative, not universal quality scores",
+          "flatness reading is blocked by coverage gaps and exactness assumptions",
+          "repair operation candidates are not automatic safe refactorings",
+          "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+        ]
+      },
+      {
+        "distanceId": "part4-distance:operation-geometry",
+        "distanceFamily": "operationGeometry",
+        "distanceKind": "operation-cost-repair-side-effect-bound",
+        "sourceRef": "ArchMap",
+        "targetRef": "Part4DistanceEngine",
+        "value": {
+          "status": "unmeasured",
+          "unit": "selected-distance-unit",
+          "provenanceRefs": [
+            "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md",
+            "docs/aat/AAT_Distance_Extension_Design.md"
+          ],
+          "evaluatorBasisRefs": [],
+          "coverageRefs": [
+            "coverage:layer-atoms",
+            "coverage:semantic-contract-atoms"
+          ],
+          "blockerRefs": [
+            "issue:#1706 operation repair distance evaluator"
+          ],
+          "reading": "distance family is represented in the Part4 contract but has not been measured by its evaluator yet"
+        },
+        "profileRef": "part4-distance-profile:llm-native-aat-law-policy-fixture",
+        "diagnosticScopeRef": "part4-diagnostic-scope:fixture-archmap-atom-observation",
+        "evidenceBoundary": "unmeasured means no evaluator result has been supplied; it must not be aggregated as zero",
+        "nonConclusions": [
+          "ArchSig analysis packet is not a Lean theorem proof",
+          "ArchSig analysis packet is not global architecture truth",
+          "ArchSig analysis packet does not prove source extraction completeness",
+          "signature axes are law-policy-relative, not universal quality scores",
+          "flatness reading is blocked by coverage gaps and exactness assumptions",
+          "repair operation candidates are not automatic safe refactorings",
+          "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+        ]
+      },
+      {
+        "distanceId": "part4-distance:curvature-geometry",
+        "distanceFamily": "curvatureGeometry",
+        "distanceKind": "obstruction-measure-curvature-transport",
+        "sourceRef": "ArchMap",
+        "targetRef": "Part4DistanceEngine",
+        "value": {
+          "status": "unmeasured",
+          "unit": "selected-distance-unit",
+          "provenanceRefs": [
+            "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md",
+            "docs/aat/AAT_Distance_Extension_Design.md"
+          ],
+          "evaluatorBasisRefs": [],
+          "coverageRefs": [
+            "coverage:layer-atoms",
+            "coverage:semantic-contract-atoms"
+          ],
+          "blockerRefs": [
+            "issue:#1709 curvature distance evaluator"
+          ],
+          "reading": "distance family is represented in the Part4 contract but has not been measured by its evaluator yet"
+        },
+        "profileRef": "part4-distance-profile:llm-native-aat-law-policy-fixture",
+        "diagnosticScopeRef": "part4-diagnostic-scope:fixture-archmap-atom-observation",
+        "evidenceBoundary": "unmeasured means no evaluator result has been supplied; it must not be aggregated as zero",
+        "nonConclusions": [
+          "ArchSig analysis packet is not a Lean theorem proof",
+          "ArchSig analysis packet is not global architecture truth",
+          "ArchSig analysis packet does not prove source extraction completeness",
+          "signature axes are law-policy-relative, not universal quality scores",
+          "flatness reading is blocked by coverage gaps and exactness assumptions",
+          "repair operation candidates are not automatic safe refactorings",
+          "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+        ]
+      },
+      {
+        "distanceId": "part4-distance:homotopy-filling-geometry",
+        "distanceFamily": "homotopyFillingGeometry",
+        "distanceKind": "homotopy-distance-filling-cost-observation-gap",
+        "sourceRef": "ArchMap",
+        "targetRef": "Part4DistanceEngine",
+        "value": {
+          "status": "unmeasured",
+          "unit": "selected-distance-unit",
+          "provenanceRefs": [
+            "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md",
+            "docs/aat/AAT_Distance_Extension_Design.md"
+          ],
+          "evaluatorBasisRefs": [],
+          "coverageRefs": [
+            "coverage:layer-atoms",
+            "coverage:semantic-contract-atoms"
+          ],
+          "blockerRefs": [
+            "issue:#1707 homotopy filling distance evaluator"
+          ],
+          "reading": "distance family is represented in the Part4 contract but has not been measured by its evaluator yet"
+        },
+        "profileRef": "part4-distance-profile:llm-native-aat-law-policy-fixture",
+        "diagnosticScopeRef": "part4-diagnostic-scope:fixture-archmap-atom-observation",
+        "evidenceBoundary": "unmeasured means no evaluator result has been supplied; it must not be aggregated as zero",
+        "nonConclusions": [
+          "ArchSig analysis packet is not a Lean theorem proof",
+          "ArchSig analysis packet is not global architecture truth",
+          "ArchSig analysis packet does not prove source extraction completeness",
+          "signature axes are law-policy-relative, not universal quality scores",
+          "flatness reading is blocked by coverage gaps and exactness assumptions",
+          "repair operation candidates are not automatic safe refactorings",
+          "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+        ]
+      },
+      {
+        "distanceId": "part4-distance:representation-metric",
+        "distanceFamily": "representationMetric",
+        "distanceKind": "representation-stability-faithfulness-distance",
+        "sourceRef": "ArchMap",
+        "targetRef": "Part4DistanceEngine",
+        "value": {
+          "status": "unmeasured",
+          "unit": "selected-distance-unit",
+          "provenanceRefs": [
+            "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md",
+            "docs/aat/AAT_Distance_Extension_Design.md"
+          ],
+          "evaluatorBasisRefs": [],
+          "coverageRefs": [
+            "coverage:layer-atoms",
+            "coverage:semantic-contract-atoms"
+          ],
+          "blockerRefs": [
+            "issue:#1711 representation metric evaluator"
+          ],
+          "reading": "distance family is represented in the Part4 contract but has not been measured by its evaluator yet"
+        },
+        "profileRef": "part4-distance-profile:llm-native-aat-law-policy-fixture",
+        "diagnosticScopeRef": "part4-diagnostic-scope:fixture-archmap-atom-observation",
+        "evidenceBoundary": "unmeasured means no evaluator result has been supplied; it must not be aggregated as zero",
+        "nonConclusions": [
+          "ArchSig analysis packet is not a Lean theorem proof",
+          "ArchSig analysis packet is not global architecture truth",
+          "ArchSig analysis packet does not prove source extraction completeness",
+          "signature axes are law-policy-relative, not universal quality scores",
+          "flatness reading is blocked by coverage gaps and exactness assumptions",
+          "repair operation candidates are not automatic safe refactorings",
+          "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+        ]
+      }
+    ],
+    "statusSummary": {
+      "measuredCount": 0,
+      "zeroCount": 0,
+      "unmeasuredCount": 7,
+      "unavailableCount": 0,
+      "incomparableCount": 0,
+      "infiniteCount": 0,
+      "blockedCount": 0,
+      "schemaFoundationOnlyCount": 0
+    },
+    "measurementBoundary": "Part4 distance foundation is a proxy-free measurement contract: no distance is measured until an evaluator supplies provenance, basis refs, and coverage refs",
+    "proxyGuardrails": [
+      "schemaFoundationOnly is never a measured distance",
+      "concernHints cannot produce measured distance without evaluator provenance",
+      "fixed fixture markers cannot back measured distance",
+      "viewer layout distance is not AAT diagnostic distance",
+      "unmeasured and blocked values are not zero"
+    ],
+    "nonConclusions": [
+      "ArchSig analysis packet is not a Lean theorem proof",
+      "ArchSig analysis packet is not global architecture truth",
+      "ArchSig analysis packet does not prove source extraction completeness",
+      "signature axes are law-policy-relative, not universal quality scores",
+      "flatness reading is blocked by coverage gaps and exactness assumptions",
+      "repair operation candidates are not automatic safe refactorings",
+      "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+    ]
+  },
   "obstructionCircuits": [
     {
       "obstructionCircuitId": "obstruction:semantic-contract-mismatch:computed",

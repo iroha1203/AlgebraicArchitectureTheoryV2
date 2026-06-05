@@ -988,6 +988,8 @@ pub struct ArchSigAnalysisPacketV0 {
     pub generated_repair_targets: Vec<ArchSigGeneratedRepairTargetV0>,
     #[serde(default)]
     pub viewer_distance_inputs: Vec<ArchSigViewerDistanceInputV0>,
+    #[serde(default)]
+    pub part4_distance_foundation: ArchSigPart4DistanceFoundationV0,
     pub obstruction_circuits: Vec<ArchSigObstructionCircuitV0>,
     pub signature_axes: Vec<ArchSigSignatureAxisReadingV0>,
     pub analytic_representations: Vec<ArchSigAnalyticRepresentationV0>,
@@ -1655,6 +1657,107 @@ pub struct ArchSigViewerDistanceInputV0 {
     pub coordinate_components: Vec<String>,
     pub evidence_boundary: String,
     pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigPart4DistanceFoundationV0 {
+    pub foundation_id: String,
+    pub profile: ArchSigDistanceProfileV0,
+    pub diagnostic_scope: ArchSigDiagnosticScopeV0,
+    pub supporting_distances: Vec<ArchSigSupportingDistanceV0>,
+    pub status_summary: ArchSigDistanceStatusSummaryV0,
+    pub measurement_boundary: String,
+    pub proxy_guardrails: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigDistanceProfileV0 {
+    pub profile_id: String,
+    pub profile_source_ref: String,
+    pub atom_weights: Vec<ArchSigDistanceProfileWeightV0>,
+    pub signature_weights: Vec<ArchSigDistanceProfileWeightV0>,
+    pub operation_costs: Vec<ArchSigDistanceOperationCostV0>,
+    pub aggregation_policy: String,
+    pub unmeasured_policy: String,
+    pub law_overlay_policy: String,
+    pub coverage_policy_refs: Vec<String>,
+    pub evidence_boundary: String,
+}
+
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigDistanceProfileWeightV0 {
+    pub axis_ref: String,
+    pub weight: i64,
+    pub source_ref: String,
+}
+
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigDistanceOperationCostV0 {
+    pub operation_kind: String,
+    pub cost: i64,
+    pub source_ref: String,
+}
+
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigDiagnosticScopeV0 {
+    pub scope_id: String,
+    pub observed_atom_refs: Vec<String>,
+    pub configuration_refs: Vec<String>,
+    pub law_universe_ref: String,
+    pub distance_profile_ref: String,
+    pub measured_axis_refs: Vec<String>,
+    pub unmeasured_axis_refs: Vec<String>,
+    pub coverage_policy_refs: Vec<String>,
+    pub blocker_refs: Vec<String>,
+    pub evidence_boundary: String,
+}
+
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigSupportingDistanceV0 {
+    pub distance_id: String,
+    pub distance_family: String,
+    pub distance_kind: String,
+    pub source_ref: String,
+    pub target_ref: String,
+    pub value: ArchSigDistanceValueV0,
+    pub profile_ref: String,
+    pub diagnostic_scope_ref: String,
+    pub evidence_boundary: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigDistanceValueV0 {
+    pub status: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub measured_value: Option<i64>,
+    pub unit: String,
+    pub provenance_refs: Vec<String>,
+    pub evaluator_basis_refs: Vec<String>,
+    pub coverage_refs: Vec<String>,
+    pub blocker_refs: Vec<String>,
+    pub reading: String,
+}
+
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigDistanceStatusSummaryV0 {
+    pub measured_count: usize,
+    pub zero_count: usize,
+    pub unmeasured_count: usize,
+    pub unavailable_count: usize,
+    pub incomparable_count: usize,
+    pub infinite_count: usize,
+    pub blocked_count: usize,
+    pub schema_foundation_only_count: usize,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -3416,6 +3519,8 @@ pub struct ArchSigAnalysisPacketValidationSummaryV0 {
     pub generated_obstruction_count: usize,
     pub generated_repair_target_count: usize,
     pub viewer_distance_input_count: usize,
+    #[serde(default)]
+    pub part4_supporting_distance_count: usize,
     pub obstruction_circuit_count: usize,
     pub signature_axis_count: usize,
     pub analytic_representation_count: usize,

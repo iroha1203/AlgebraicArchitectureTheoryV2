@@ -28,20 +28,22 @@ use crate::{
     ArchSigCurvatureTransferMatrixEntryV0, ArchSigCurvatureTransferOperatorV0,
     ArchSigCurvatureTransferReadingV0, ArchSigCurvatureWitnessClusterV0,
     ArchSigCurvatureWitnessSupportV0, ArchSigDesignPressureReadingV0,
-    ArchSigDesignPrincipleReadingV0, ArchSigDiagramFillabilityReadingV0,
-    ArchSigDominantAtomFamilyCompositionV0, ArchSigEffectRelationAlgebraReadingV0,
-    ArchSigEffectRelationInputV0, ArchSigEffectRelationLawEvaluationV0,
-    ArchSigEvolutionRiskRankingV0, ArchSigFeatureBoundaryResidualReadingV0,
-    ArchSigFeatureExtensionAxisSummaryV0, ArchSigFeatureExtensionDiagnosisReadingV0,
-    ArchSigFeatureExtensionFormulaReadingV0, ArchSigFeatureExtensionWitnessAttributionV0,
-    ArchSigFeatureExtensionWitnessBasisV0, ArchSigFillerCandidateReadingV0,
-    ArchSigFlatnessReadingV0, ArchSigGeneratedAtomShapeV0, ArchSigGeneratedLawInputV0,
-    ArchSigGeneratedMoleculeV0, ArchSigGeneratedObstructionV0, ArchSigGeneratedRepairTargetV0,
-    ArchSigHighOverlapMoleculePairV0, ArchSigHomotopyAggregateReadingV0,
-    ArchSigHomotopyCellSummaryV0, ArchSigHomotopyComplexSummaryV0,
-    ArchSigHomotopyHolonomyReadingV0, ArchSigHomotopyOrderSensitivityReadingV0,
-    ArchSigInvariantFamilyReadingV0, ArchSigLawUniverseCoverageReadingV0,
-    ArchSigLawUniverseReadingV0, ArchSigLawWitnessAxisAlignmentEvaluationV0, ArchSigLayerSplitV0,
+    ArchSigDesignPrincipleReadingV0, ArchSigDiagnosticScopeV0, ArchSigDiagramFillabilityReadingV0,
+    ArchSigDistanceOperationCostV0, ArchSigDistanceProfileV0, ArchSigDistanceProfileWeightV0,
+    ArchSigDistanceStatusSummaryV0, ArchSigDistanceValueV0, ArchSigDominantAtomFamilyCompositionV0,
+    ArchSigEffectRelationAlgebraReadingV0, ArchSigEffectRelationInputV0,
+    ArchSigEffectRelationLawEvaluationV0, ArchSigEvolutionRiskRankingV0,
+    ArchSigFeatureBoundaryResidualReadingV0, ArchSigFeatureExtensionAxisSummaryV0,
+    ArchSigFeatureExtensionDiagnosisReadingV0, ArchSigFeatureExtensionFormulaReadingV0,
+    ArchSigFeatureExtensionWitnessAttributionV0, ArchSigFeatureExtensionWitnessBasisV0,
+    ArchSigFillerCandidateReadingV0, ArchSigFlatnessReadingV0, ArchSigGeneratedAtomShapeV0,
+    ArchSigGeneratedLawInputV0, ArchSigGeneratedMoleculeV0, ArchSigGeneratedObstructionV0,
+    ArchSigGeneratedRepairTargetV0, ArchSigHighOverlapMoleculePairV0,
+    ArchSigHomotopyAggregateReadingV0, ArchSigHomotopyCellSummaryV0,
+    ArchSigHomotopyComplexSummaryV0, ArchSigHomotopyHolonomyReadingV0,
+    ArchSigHomotopyOrderSensitivityReadingV0, ArchSigInvariantFamilyReadingV0,
+    ArchSigLawUniverseCoverageReadingV0, ArchSigLawUniverseReadingV0,
+    ArchSigLawWitnessAxisAlignmentEvaluationV0, ArchSigLayerSplitV0,
     ArchSigLlmInterpretationPacketV0, ArchSigLocalCurvatureDiagramReadingV0,
     ArchSigLoopCandidateV0, ArchSigMeasurementReadingBoundaryV0, ArchSigMoleculeReadingV0,
     ArchSigMonodromyReadingFamilyV0, ArchSigNonzeroMonodromyWitnessV0,
@@ -49,21 +51,21 @@ use crate::{
     ArchSigObstructionCircuitV0, ArchSigOperationCalculusLawReadingV0,
     ArchSigOperationDeltaReadingV0, ArchSigOperationInvariantGaloisReadingV0,
     ArchSigOperationLawEvidenceV0, ArchSigOperationPreconditionReadinessReadingV0,
-    ArchSigOperationSquareCandidateV0, ArchSigPathContinuationTraceV0,
-    ArchSigPathHomotopyDiagramReadingV0, ArchSigPathMultiplicityLossReadingV0,
-    ArchSigPathPairCandidateV0, ArchSigPathSignatureTrajectoryReadingV0,
-    ArchSigProjectionCoordinateV0, ArchSigProjectionNonInjectivityCandidateV0,
-    ArchSigProjectionReconstructionBlockerV0, ArchSigRecurrentObstructionModeV0,
-    ArchSigRepairAxisDeltaReadingV0, ArchSigRepairOperationCandidateV0,
-    ArchSigRepairTransferRiskRankV0, ArchSigRepresentationStrengthReadingV0,
-    ArchSigSignatureAxisReadingV0, ArchSigSignatureTrajectoryHomotopyRefutationReadingV0,
-    ArchSigSpectralAnalysisReadingV0, ArchSigSpectralDominantComponentV0,
-    ArchSigSpectralDrilldownReadingV0, ArchSigSpectralMatrixShapeV0,
-    ArchSigSpectralModeComponentV0, ArchSigSpectralModeReadingV0, ArchSigSpectralValueV0,
-    ArchSigSplitReadinessReadingV0, ArchSigStateTransitionAlgebraReadingV0,
+    ArchSigOperationSquareCandidateV0, ArchSigPart4DistanceFoundationV0,
+    ArchSigPathContinuationTraceV0, ArchSigPathHomotopyDiagramReadingV0,
+    ArchSigPathMultiplicityLossReadingV0, ArchSigPathPairCandidateV0,
+    ArchSigPathSignatureTrajectoryReadingV0, ArchSigProjectionCoordinateV0,
+    ArchSigProjectionNonInjectivityCandidateV0, ArchSigProjectionReconstructionBlockerV0,
+    ArchSigRecurrentObstructionModeV0, ArchSigRepairAxisDeltaReadingV0,
+    ArchSigRepairOperationCandidateV0, ArchSigRepairTransferRiskRankV0,
+    ArchSigRepresentationStrengthReadingV0, ArchSigSignatureAxisReadingV0,
+    ArchSigSignatureTrajectoryHomotopyRefutationReadingV0, ArchSigSpectralAnalysisReadingV0,
+    ArchSigSpectralDominantComponentV0, ArchSigSpectralDrilldownReadingV0,
+    ArchSigSpectralMatrixShapeV0, ArchSigSpectralModeComponentV0, ArchSigSpectralModeReadingV0,
+    ArchSigSpectralValueV0, ArchSigSplitReadinessReadingV0, ArchSigStateTransitionAlgebraReadingV0,
     ArchSigStateTransitionLawEvaluationV0, ArchSigStateTransitionRelationInputV0,
     ArchSigStokesStyleReadingV0, ArchSigStructuralReadingReviewSurfaceV0,
-    ArchSigSubjectFamilySpreadV0, ArchSigSynthesisBlockageReadingV0,
+    ArchSigSubjectFamilySpreadV0, ArchSigSupportingDistanceV0, ArchSigSynthesisBlockageReadingV0,
     ArchSigThreeLayerFlatnessReadingV0, ArchSigTransferBridgeReadingV0,
     ArchSigTransferMatrixEntryV0, ArchSigViewerDistanceInputV0, LAW_POLICY_SCHEMA_VERSION,
     LawPolicyDocumentV0, LawPolicyObstructionCircuitDefinitionV0, LawPolicyReadingBoundaryV0,
@@ -145,6 +147,7 @@ pub fn build_archsig_analysis_packet(
     );
     let viewer_distance_inputs =
         build_viewer_distance_inputs(archmap, &generated_molecules, &generated_atom_shapes);
+    let part4_distance_foundation = build_part4_distance_foundation(archmap, law_policy);
     let architecture_object_projections = build_architecture_object_projections(archmap);
     let invariant_family_readings =
         build_invariant_family_readings(archmap, law_policy, &obstruction_circuits);
@@ -495,6 +498,7 @@ pub fn build_archsig_analysis_packet(
         generated_obstructions,
         generated_repair_targets,
         viewer_distance_inputs,
+        part4_distance_foundation,
         obstruction_circuits,
         signature_axes,
         analytic_representations,
@@ -572,6 +576,245 @@ pub fn build_archsig_analysis_packet(
             "automatic repair safety".to_string(),
             "concern hint promoted without LawPolicy witness rule".to_string(),
         ],
+        non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
+    }
+}
+
+fn build_part4_distance_foundation(
+    archmap: &ArchMapDocumentV0,
+    law_policy: &LawPolicyDocumentV0,
+) -> ArchSigPart4DistanceFoundationV0 {
+    let profile_id = format!("part4-distance-profile:{}", law_policy.law_policy_id);
+    let scope_id = format!("part4-diagnostic-scope:{}", archmap.map_id);
+    let coverage_policy_refs = law_policy
+        .coverage_requirements
+        .iter()
+        .map(|requirement| requirement.coverage_requirement_id.clone())
+        .collect::<Vec<_>>();
+    let signature_axis_refs = law_policy
+        .signature_axis_definitions
+        .iter()
+        .map(|axis| axis.signature_axis_id.clone())
+        .collect::<Vec<_>>();
+    let blocker_refs = vec![
+        "issue:#1702 atom geometry evaluator".to_string(),
+        "issue:#1703 configuration hypergraph evaluator".to_string(),
+        "issue:#1708 signature distance evaluator".to_string(),
+        "issue:#1706 operation repair distance evaluator".to_string(),
+        "issue:#1709 curvature distance evaluator".to_string(),
+        "issue:#1707 homotopy filling distance evaluator".to_string(),
+        "issue:#1711 representation metric evaluator".to_string(),
+    ];
+    let supporting_distances = vec![
+        unmeasured_part4_distance(
+            "part4-distance:atom-geometry",
+            "atomGeometry",
+            "fiber-carrier-valence-semantic-anchor",
+            "issue:#1702 atom geometry evaluator",
+            &profile_id,
+            &scope_id,
+            &coverage_policy_refs,
+        ),
+        unmeasured_part4_distance(
+            "part4-distance:configuration-geometry",
+            "configurationGeometry",
+            "configuration-indexed-hypergraph-distance",
+            "issue:#1703 configuration hypergraph evaluator",
+            &profile_id,
+            &scope_id,
+            &coverage_policy_refs,
+        ),
+        unmeasured_part4_distance(
+            "part4-distance:signature-geometry",
+            "signatureGeometry",
+            "axis-wise-signature-distance-aggregate",
+            "issue:#1708 signature distance evaluator",
+            &profile_id,
+            &scope_id,
+            &coverage_policy_refs,
+        ),
+        unmeasured_part4_distance(
+            "part4-distance:operation-geometry",
+            "operationGeometry",
+            "operation-cost-repair-side-effect-bound",
+            "issue:#1706 operation repair distance evaluator",
+            &profile_id,
+            &scope_id,
+            &coverage_policy_refs,
+        ),
+        unmeasured_part4_distance(
+            "part4-distance:curvature-geometry",
+            "curvatureGeometry",
+            "obstruction-measure-curvature-transport",
+            "issue:#1709 curvature distance evaluator",
+            &profile_id,
+            &scope_id,
+            &coverage_policy_refs,
+        ),
+        unmeasured_part4_distance(
+            "part4-distance:homotopy-filling-geometry",
+            "homotopyFillingGeometry",
+            "homotopy-distance-filling-cost-observation-gap",
+            "issue:#1707 homotopy filling distance evaluator",
+            &profile_id,
+            &scope_id,
+            &coverage_policy_refs,
+        ),
+        unmeasured_part4_distance(
+            "part4-distance:representation-metric",
+            "representationMetric",
+            "representation-stability-faithfulness-distance",
+            "issue:#1711 representation metric evaluator",
+            &profile_id,
+            &scope_id,
+            &coverage_policy_refs,
+        ),
+    ];
+
+    ArchSigPart4DistanceFoundationV0 {
+        foundation_id: format!("part4-distance-foundation:{}", archmap.map_id),
+        profile: ArchSigDistanceProfileV0 {
+            profile_id: profile_id.clone(),
+            profile_source_ref: law_policy.law_policy_id.clone(),
+            atom_weights: vec![
+                distance_weight("atom.fiber", 1),
+                distance_weight("atom.carrier", 1),
+                distance_weight("atom.valence", 1),
+                distance_weight("atom.semanticAnchor", 1),
+            ],
+            signature_weights: law_policy
+                .signature_axis_definitions
+                .iter()
+                .map(|axis| ArchSigDistanceProfileWeightV0 {
+                    axis_ref: axis.signature_axis_id.clone(),
+                    weight: 1,
+                    source_ref: axis.law_ref.clone(),
+                })
+                .collect(),
+            operation_costs: vec![
+                operation_cost("rename", 1),
+                operation_cost("move", 2),
+                operation_cost("extract", 3),
+                operation_cost("introduce-port", 4),
+                operation_cost("split-module", 5),
+                operation_cost("change-contract", 8),
+                operation_cost("semantic-rewrite", 13),
+                operation_cost("runtime-protocol-shift", 21),
+            ],
+            aggregation_policy:
+                "aggregate measured axes only; propagate unmeasured, unavailable, incomparable, and blocked status separately"
+                    .to_string(),
+            unmeasured_policy:
+                "unmeasured is not zero and cannot contribute numeric zero to total measured distance"
+                    .to_string(),
+            law_overlay_policy:
+                "law-relative distance is an overlay over ArchMap Atom observations, not an Atom generator"
+                    .to_string(),
+            coverage_policy_refs: coverage_policy_refs.clone(),
+            evidence_boundary:
+                "DistanceProfile is selected by LawPolicy / InterpretationProfile; it is not empirical calibration or a Lean theorem proof"
+                    .to_string(),
+        },
+        diagnostic_scope: ArchSigDiagnosticScopeV0 {
+            scope_id: scope_id.clone(),
+            observed_atom_refs: archmap
+                .atom_observations
+                .iter()
+                .map(|atom| atom.atom_observation_id.clone())
+                .collect(),
+            configuration_refs: archmap
+                .molecule_observations
+                .iter()
+                .map(|molecule| molecule.molecule_observation_id.clone())
+                .collect(),
+            law_universe_ref: law_policy.law_policy_id.clone(),
+            distance_profile_ref: profile_id,
+            measured_axis_refs: Vec::new(),
+            unmeasured_axis_refs: signature_axis_refs,
+            coverage_policy_refs,
+            blocker_refs,
+            evidence_boundary:
+                "Diagnostic scope records selected ArchMap observations and LawPolicy coverage; missing evaluators remain blockers, not zero distances"
+                    .to_string(),
+        },
+        supporting_distances,
+        status_summary: ArchSigDistanceStatusSummaryV0 {
+            measured_count: 0,
+            zero_count: 0,
+            unmeasured_count: 7,
+            unavailable_count: 0,
+            incomparable_count: 0,
+            infinite_count: 0,
+            blocked_count: 0,
+            schema_foundation_only_count: 0,
+        },
+        measurement_boundary:
+            "Part4 distance foundation is a proxy-free measurement contract: no distance is measured until an evaluator supplies provenance, basis refs, and coverage refs"
+                .to_string(),
+        proxy_guardrails: vec![
+            "schemaFoundationOnly is never a measured distance".to_string(),
+            "concernHints cannot produce measured distance without evaluator provenance".to_string(),
+            "fixed fixture markers cannot back measured distance".to_string(),
+            "viewer layout distance is not AAT diagnostic distance".to_string(),
+            "unmeasured and blocked values are not zero".to_string(),
+        ],
+        non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
+    }
+}
+
+fn distance_weight(axis_ref: &str, weight: i64) -> ArchSigDistanceProfileWeightV0 {
+    ArchSigDistanceProfileWeightV0 {
+        axis_ref: axis_ref.to_string(),
+        weight,
+        source_ref: "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md".to_string(),
+    }
+}
+
+fn operation_cost(operation_kind: &str, cost: i64) -> ArchSigDistanceOperationCostV0 {
+    ArchSigDistanceOperationCostV0 {
+        operation_kind: operation_kind.to_string(),
+        cost,
+        source_ref:
+            "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#5-operation-geometry"
+                .to_string(),
+    }
+}
+
+fn unmeasured_part4_distance(
+    distance_id: &str,
+    distance_family: &str,
+    distance_kind: &str,
+    blocker_ref: &str,
+    profile_ref: &str,
+    diagnostic_scope_ref: &str,
+    coverage_refs: &[String],
+) -> ArchSigSupportingDistanceV0 {
+    ArchSigSupportingDistanceV0 {
+        distance_id: distance_id.to_string(),
+        distance_family: distance_family.to_string(),
+        distance_kind: distance_kind.to_string(),
+        source_ref: "ArchMap".to_string(),
+        target_ref: "Part4DistanceEngine".to_string(),
+        value: ArchSigDistanceValueV0 {
+            status: "unmeasured".to_string(),
+            measured_value: None,
+            unit: "selected-distance-unit".to_string(),
+            provenance_refs: vec![
+                "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md".to_string(),
+                "docs/aat/AAT_Distance_Extension_Design.md".to_string(),
+            ],
+            evaluator_basis_refs: Vec::new(),
+            coverage_refs: coverage_refs.to_vec(),
+            blocker_refs: vec![blocker_ref.to_string()],
+            reading:
+                "distance family is represented in the Part4 contract but has not been measured by its evaluator yet"
+                    .to_string(),
+        },
+        profile_ref: profile_ref.to_string(),
+        diagnostic_scope_ref: diagnostic_scope_ref.to_string(),
+        evidence_boundary:
+            "unmeasured means no evaluator result has been supplied; it must not be aggregated as zero"
+                .to_string(),
         non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
     }
 }
@@ -12865,6 +13108,7 @@ pub fn validate_archsig_analysis_packet_report(
         check_architecture_spectrum_report_surface(packet),
         check_transfer_bridge_surface(packet),
         check_generated_middle_layer_surface(packet),
+        check_part4_distance_foundation_surface(packet),
         check_aat_structural_reading_surfaces(packet),
         check_current_state_evolution_boundary(packet),
         check_operation_square_trace_surface(packet),
@@ -12897,6 +13141,10 @@ pub fn validate_archsig_analysis_packet_report(
         generated_obstruction_count: packet.generated_obstructions.len(),
         generated_repair_target_count: packet.generated_repair_targets.len(),
         viewer_distance_input_count: packet.viewer_distance_inputs.len(),
+        part4_supporting_distance_count: packet
+            .part4_distance_foundation
+            .supporting_distances
+            .len(),
         obstruction_circuit_count: packet.obstruction_circuits.len(),
         signature_axis_count: packet.signature_axes.len(),
         analytic_representation_count: packet.analytic_representations.len(),
@@ -18348,6 +18596,198 @@ fn viewer_distance_delta_sum(coordinate_components: &[String]) -> Option<i64> {
     found.then_some(sum)
 }
 
+fn check_part4_distance_foundation_surface(packet: &ArchSigAnalysisPacketV0) -> ValidationCheck {
+    let mut examples = Vec::new();
+    let foundation = &packet.part4_distance_foundation;
+    if foundation.foundation_id.is_empty() {
+        examples.push(generic_validation_example(
+            "part4DistanceFoundation",
+            "foundationId",
+            "packet must expose a Part IV distance foundation id",
+        ));
+    }
+    push_blank(
+        &mut examples,
+        "part4DistanceFoundation.profile.profileId",
+        &foundation.profile.profile_id,
+    );
+    push_blank(
+        &mut examples,
+        "part4DistanceFoundation.profile.profileSourceRef",
+        &foundation.profile.profile_source_ref,
+    );
+    if foundation.profile.atom_weights.is_empty() || foundation.profile.signature_weights.is_empty()
+    {
+        examples.push(generic_validation_example(
+            "part4DistanceFoundation.profile",
+            "atomWeights/signatureWeights",
+            "DistanceProfile must record selected atom and signature weights instead of an implicit score",
+        ));
+    }
+    if !foundation
+        .profile
+        .unmeasured_policy
+        .to_ascii_lowercase()
+        .contains("not zero")
+    {
+        examples.push(generic_validation_example(
+            "part4DistanceFoundation.profile",
+            "unmeasuredPolicy",
+            "DistanceProfile must state that unmeasured is not zero",
+        ));
+    }
+    push_blank(
+        &mut examples,
+        "part4DistanceFoundation.diagnosticScope.scopeId",
+        &foundation.diagnostic_scope.scope_id,
+    );
+    if foundation.diagnostic_scope.observed_atom_refs.is_empty() {
+        examples.push(generic_validation_example(
+            "part4DistanceFoundation.diagnosticScope",
+            "observedAtomRefs",
+            "DiagnosticScope must retain ArchMap observed Atom refs",
+        ));
+    }
+    if foundation.diagnostic_scope.blocker_refs.is_empty()
+        && !foundation.diagnostic_scope.unmeasured_axis_refs.is_empty()
+    {
+        examples.push(generic_validation_example(
+            "part4DistanceFoundation.diagnosticScope",
+            "blockerRefs",
+            "unmeasured axes must retain blocker refs",
+        ));
+    }
+    if foundation.supporting_distances.is_empty() {
+        examples.push(generic_validation_example(
+            "part4DistanceFoundation.supportingDistances",
+            "empty",
+            "Part IV distance foundation must enumerate distance families for downstream evaluators",
+        ));
+    }
+
+    let allowed = BTreeSet::from([
+        "measured",
+        "zero",
+        "unmeasured",
+        "unavailable",
+        "incomparable",
+        "infinite",
+        "blocked",
+    ]);
+    let mut counts = ArchSigDistanceStatusSummaryV0::default();
+    for distance in &foundation.supporting_distances {
+        push_blank(
+            &mut examples,
+            &format!("{} distanceFamily", distance.distance_id),
+            &distance.distance_family,
+        );
+        push_blank(
+            &mut examples,
+            &format!("{} distanceKind", distance.distance_id),
+            &distance.distance_kind,
+        );
+        push_blank(
+            &mut examples,
+            &format!("{} profileRef", distance.distance_id),
+            &distance.profile_ref,
+        );
+        let status = distance.value.status.as_str();
+        if !allowed.contains(status) {
+            examples.push(generic_validation_example(
+                &distance.distance_id,
+                status,
+                "DistanceValue status must be measured, zero, unmeasured, unavailable, incomparable, infinite, or blocked",
+            ));
+        }
+        match status {
+            "measured" => counts.measured_count += 1,
+            "zero" => counts.zero_count += 1,
+            "unmeasured" => counts.unmeasured_count += 1,
+            "unavailable" => counts.unavailable_count += 1,
+            "incomparable" => counts.incomparable_count += 1,
+            "infinite" => counts.infinite_count += 1,
+            "blocked" => counts.blocked_count += 1,
+            "schemaFoundationOnly" => counts.schema_foundation_only_count += 1,
+            _ => {}
+        }
+        if matches!(status, "measured" | "zero") {
+            if distance.value.provenance_refs.is_empty()
+                || distance.value.evaluator_basis_refs.is_empty()
+                || distance.value.coverage_refs.is_empty()
+            {
+                examples.push(generic_validation_example(
+                    &distance.distance_id,
+                    "provenance/evaluatorBasis/coverage",
+                    "measured or zero distances must retain provenance, evaluator basis, and coverage refs",
+                ));
+            }
+            if part4_distance_refs_are_concern_only(
+                &distance.value.provenance_refs,
+                &distance.value.evaluator_basis_refs,
+            ) {
+                examples.push(generic_validation_example(
+                    &distance.distance_id,
+                    "concern-only provenance",
+                    "concern cues alone cannot back a measured or zero Part IV distance",
+                ));
+            }
+        } else if distance.value.blocker_refs.is_empty() {
+            examples.push(generic_validation_example(
+                &distance.distance_id,
+                "blockerRefs",
+                "unmeasured, unavailable, incomparable, infinite, or blocked distances must retain blocker refs",
+            ));
+        }
+        if contains_hard_coded_marker(&distance.value.provenance_refs)
+            || contains_hard_coded_marker(&distance.value.evaluator_basis_refs)
+        {
+            examples.push(generic_validation_example(
+                &distance.distance_id,
+                "hard-coded fixture marker",
+                "Part IV distance values must not be backed by hard-coded fixture markers",
+            ));
+        }
+    }
+    if counts != foundation.status_summary {
+        examples.push(generic_validation_example(
+            "part4DistanceFoundation.statusSummary",
+            "mismatch",
+            "statusSummary must equal the actual supporting DistanceValue statuses",
+        ));
+    }
+    if foundation.status_summary.schema_foundation_only_count != 0 {
+        examples.push(generic_validation_example(
+            "part4DistanceFoundation.statusSummary",
+            "schemaFoundationOnly",
+            "schemaFoundationOnly must not be counted as a measured or acceptable distance status",
+        ));
+    }
+
+    check_from_examples(
+        "archsig-analysis-packet-part4-distance-foundation",
+        "packet exposes Part IV DistanceValue, DistanceProfile, DiagnosticScope, and anti-proxy distance provenance",
+        examples,
+        "fail",
+    )
+}
+
+fn part4_distance_refs_are_concern_only(
+    provenance_refs: &[String],
+    evaluator_basis_refs: &[String],
+) -> bool {
+    let refs = provenance_refs
+        .iter()
+        .chain(evaluator_basis_refs.iter())
+        .collect::<Vec<_>>();
+    !refs.is_empty()
+        && refs.iter().all(|reference| {
+            let reference = reference.to_ascii_lowercase();
+            reference.starts_with("concern:")
+                || reference.contains("concernhint")
+                || reference.contains("concern-hint")
+        })
+}
+
 fn check_measurement_depth(packet: &ArchSigAnalysisPacketV0) -> ValidationCheck {
     let mut examples = Vec::new();
 
@@ -20273,6 +20713,153 @@ mod tests {
                     .examples
                     .iter()
                     .any(|example| example.target.as_deref() == Some("hard-coded fixture marker"))
+        }));
+    }
+
+    #[test]
+    fn part4_negative_fixture_measured_distance_without_core_provenance_fails_validation() {
+        let mut packet = static_archsig_analysis_packet();
+        let distance = packet
+            .part4_distance_foundation
+            .supporting_distances
+            .first_mut()
+            .expect("static fixture has Part IV distance contract rows");
+        distance.value.status = "measured".to_string();
+        distance.value.measured_value = Some(0);
+        distance.value.evaluator_basis_refs.clear();
+        distance.value.coverage_refs.clear();
+        distance.value.blocker_refs.clear();
+        packet
+            .part4_distance_foundation
+            .status_summary
+            .measured_count = 1;
+        packet
+            .part4_distance_foundation
+            .status_summary
+            .unmeasured_count -= 1;
+
+        let report = validate_archsig_analysis_packet_report(
+            &packet,
+            "negative-fixture-part4-measured-without-core-provenance.json",
+        );
+
+        assert_eq!(report.summary.result, "fail");
+        assert!(report.checks.iter().any(|check| {
+            check.id == "archsig-analysis-packet-part4-distance-foundation"
+                && check.result == "fail"
+                && check.examples.iter().any(|example| {
+                    example
+                        .target
+                        .as_deref()
+                        .is_some_and(|target| target.contains("provenance/evaluatorBasis/coverage"))
+                })
+        }));
+    }
+
+    #[test]
+    fn part4_negative_fixture_schema_foundation_status_fails_validation() {
+        let mut packet = static_archsig_analysis_packet();
+        let distance = packet
+            .part4_distance_foundation
+            .supporting_distances
+            .first_mut()
+            .expect("static fixture has Part IV distance contract rows");
+        distance.value.status = "schemaFoundationOnly".to_string();
+        packet
+            .part4_distance_foundation
+            .status_summary
+            .schema_foundation_only_count = 1;
+        packet
+            .part4_distance_foundation
+            .status_summary
+            .unmeasured_count -= 1;
+
+        let report = validate_archsig_analysis_packet_report(
+            &packet,
+            "negative-fixture-part4-schema-foundation-only.json",
+        );
+
+        assert_eq!(report.summary.result, "fail");
+        assert!(report.checks.iter().any(|check| {
+            check.id == "archsig-analysis-packet-part4-distance-foundation"
+                && check.result == "fail"
+                && check.examples.iter().any(|example| {
+                    example
+                        .target
+                        .as_deref()
+                        .is_some_and(|target| target == "schemaFoundationOnly")
+                })
+        }));
+    }
+
+    #[test]
+    fn part4_negative_fixture_hard_coded_marker_fails_validation() {
+        let mut packet = static_archsig_analysis_packet();
+        let distance = packet
+            .part4_distance_foundation
+            .supporting_distances
+            .first_mut()
+            .expect("static fixture has Part IV distance contract rows");
+        distance
+            .value
+            .provenance_refs
+            .push("hard-coded-fixture-marker:part4-distance".to_string());
+
+        let report = validate_archsig_analysis_packet_report(
+            &packet,
+            "negative-fixture-part4-hard-coded-marker.json",
+        );
+
+        assert_eq!(report.summary.result, "fail");
+        assert!(report.checks.iter().any(|check| {
+            check.id == "archsig-analysis-packet-part4-distance-foundation"
+                && check.result == "fail"
+                && check.examples.iter().any(|example| {
+                    example
+                        .target
+                        .as_deref()
+                        .is_some_and(|target| target == "hard-coded fixture marker")
+                })
+        }));
+    }
+
+    #[test]
+    fn part4_negative_fixture_concern_only_measured_distance_fails_validation() {
+        let mut packet = static_archsig_analysis_packet();
+        let distance = packet
+            .part4_distance_foundation
+            .supporting_distances
+            .first_mut()
+            .expect("static fixture has Part IV distance contract rows");
+        distance.value.status = "measured".to_string();
+        distance.value.measured_value = Some(1);
+        distance.value.provenance_refs = vec!["concern:missing-runtime".to_string()];
+        distance.value.evaluator_basis_refs = vec!["concern-hint:semantic-mismatch".to_string()];
+        distance.value.blocker_refs.clear();
+        packet
+            .part4_distance_foundation
+            .status_summary
+            .measured_count = 1;
+        packet
+            .part4_distance_foundation
+            .status_summary
+            .unmeasured_count -= 1;
+
+        let report = validate_archsig_analysis_packet_report(
+            &packet,
+            "negative-fixture-part4-concern-only-measured-distance.json",
+        );
+
+        assert_eq!(report.summary.result, "fail");
+        assert!(report.checks.iter().any(|check| {
+            check.id == "archsig-analysis-packet-part4-distance-foundation"
+                && check.result == "fail"
+                && check.examples.iter().any(|example| {
+                    example
+                        .target
+                        .as_deref()
+                        .is_some_and(|target| target == "concern-only provenance")
+                })
         }));
     }
 

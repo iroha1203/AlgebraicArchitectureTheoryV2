@@ -10,8 +10,8 @@ ArchMap
 
 InterpretationProfile
   selects the LawUniverse, witness rules, signature axes, coverage, exactness,
-  optional spectrum measurement profile, and optional homotopy path / filler /
-  loop measurement profile.
+  optional spectrum measurement profile, optional homotopy path / filler /
+  loop measurement profile, and the selected Part IV distance profile boundary.
   The current JSON artifact is still named law-policy-v0 for the profile input.
 
 ArchSig Analysis Packet
@@ -19,6 +19,7 @@ ArchSig Analysis Packet
   impact, molecule readings, obstruction circuits, signature axes, analytic
   representations, spectral analysis readings, design principle readings,
   spectral mode readings, spectral drilldown readings,
+  Part IV distance foundation rows,
   transfer bridge readings, Atom support / compatibility readings,
   LawUniverse coverage, feature extension formula axes, operation calculus law
   axes, path signature trajectories, homotopy / operation-order sensitivity,
@@ -138,6 +139,14 @@ zero reading is meaningful only inside the recorded zero-reflection
 assumptions, obstruction-reflection assumptions, coverage requirements, and
 witness-completeness boundary.
 
+`part4DistanceFoundation` is the packet-level Distance Engine contract. It
+records `DistanceProfile`, `DiagnosticScope`, `DistanceValue` status rows, and
+anti-proxy guardrails before any individual Part IV evaluator is allowed to
+emit a measured distance. The foundation may expose unmeasured distance
+families, but those rows are blockers for downstream evaluator work; they are
+not placeholders for hidden zeroes, fixed fixture values, concern-only scores,
+or viewer layout distances.
+
 The implemented schema records:
 
 - `interpretationProfileRef`
@@ -153,6 +162,7 @@ The implemented schema records:
 - `invariantFamilyReadings`
 - `lawUniverseReading`
 - `moleculeReadings`
+- `part4DistanceFoundation`
 - `obstructionCircuits`
 - `signatureAxes`
 - `analyticRepresentations`
@@ -252,7 +262,8 @@ architectural hole readings, homotopy holonomy readings, Stokes-style readings,
 ArchitectureHomotopyReport, AAT structural state readings, ArchMapStore delta /
 commit / snapshot / index refs, operation square candidates, axis-wise path
 continuation traces, `measurementStatus` and `readingBoundary` fields for ACTS
-and Homotopy measurement records, monodromy / boundary holonomy reading family
+and Homotopy measurement records, Part IV distance foundation rows, monodromy /
+boundary holonomy reading family
 policy surfaces, law-relative obstruction links, signature / flatness
 references, repair candidate guardrails, selected-axis continuation defect refs
 for nonzero homotopy holonomy, LLM interpretation notes, evidence boundary,
@@ -424,6 +435,13 @@ The builder:
   from measured axis count, unmeasured axis count, positive witness count, and
   coverage blocker count. `schemaFoundationOnly` means the family has no
   measurable inputs yet and must not be read as completed measurement.
+- `part4DistanceFoundation` is the shared distance-engine boundary. It records
+  the selected `DistanceProfile`, observed `DiagnosticScope`, status-summary
+  counts, and `supportingDistances[]` rows for Atom, configuration, signature,
+  operation, curvature, homotopy/filling, and representation distance families.
+  A measured or zero `DistanceValue` must carry provenance refs, evaluator-basis
+  refs, and coverage refs. Unmeasured, unavailable, incomparable, infinite, and
+  blocked rows must carry blocker refs and must not be aggregated as zero.
 - `operationSquareCandidates` enumerates supplied, inferred, or blocked
   operation pairs as path pairs `p = g . f` and `q = f . g`. Supplied
   candidates are read from first-class ArchMap `operationSquareEvidence[]` and
