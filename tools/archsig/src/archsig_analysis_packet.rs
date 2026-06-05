@@ -51,21 +51,22 @@ use crate::{
     ArchSigMonodromyReadingFamilyV0, ArchSigNonzeroMonodromyWitnessV0,
     ArchSigObservationProjectionFidelityReadingV0, ArchSigObservationProjectionReadingV0,
     ArchSigObstructionCircuitV0, ArchSigOperationCalculusLawReadingV0,
-    ArchSigOperationDeltaReadingV0, ArchSigOperationInvariantGaloisReadingV0,
-    ArchSigOperationLawEvidenceV0, ArchSigOperationPreconditionReadinessReadingV0,
-    ArchSigOperationSquareCandidateV0, ArchSigPart4DistanceFoundationV0,
-    ArchSigPathContinuationTraceV0, ArchSigPathHomotopyDiagramReadingV0,
-    ArchSigPathMultiplicityLossReadingV0, ArchSigPathPairCandidateV0,
-    ArchSigPathSignatureTrajectoryReadingV0, ArchSigProjectionCoordinateV0,
-    ArchSigProjectionNonInjectivityCandidateV0, ArchSigProjectionReconstructionBlockerV0,
-    ArchSigRecurrentObstructionModeV0, ArchSigRepairAxisDeltaReadingV0,
-    ArchSigRepairOperationCandidateV0, ArchSigRepairTransferRiskRankV0,
-    ArchSigRepresentationStrengthReadingV0, ArchSigSignatureAxisDistanceV0,
-    ArchSigSignatureAxisReadingV0, ArchSigSignatureDistanceReadingV0,
-    ArchSigSignatureTrajectoryHomotopyRefutationReadingV0, ArchSigSpectralAnalysisReadingV0,
-    ArchSigSpectralDominantComponentV0, ArchSigSpectralDrilldownReadingV0,
-    ArchSigSpectralMatrixShapeV0, ArchSigSpectralModeComponentV0, ArchSigSpectralModeReadingV0,
-    ArchSigSpectralValueV0, ArchSigSplitReadinessReadingV0, ArchSigStateTransitionAlgebraReadingV0,
+    ArchSigOperationDeltaReadingV0, ArchSigOperationDistanceReadingV0,
+    ArchSigOperationInvariantGaloisReadingV0, ArchSigOperationLawEvidenceV0,
+    ArchSigOperationPreconditionReadinessReadingV0, ArchSigOperationSquareCandidateV0,
+    ArchSigPart4DistanceFoundationV0, ArchSigPathContinuationTraceV0,
+    ArchSigPathHomotopyDiagramReadingV0, ArchSigPathMultiplicityLossReadingV0,
+    ArchSigPathPairCandidateV0, ArchSigPathSignatureTrajectoryReadingV0,
+    ArchSigProjectionCoordinateV0, ArchSigProjectionNonInjectivityCandidateV0,
+    ArchSigProjectionReconstructionBlockerV0, ArchSigRecurrentObstructionModeV0,
+    ArchSigRepairAxisDeltaReadingV0, ArchSigRepairOperationCandidateV0,
+    ArchSigRepairTransferRiskRankV0, ArchSigRepresentationStrengthReadingV0,
+    ArchSigSignatureAxisDistanceV0, ArchSigSignatureAxisReadingV0,
+    ArchSigSignatureDistanceReadingV0, ArchSigSignatureTrajectoryHomotopyRefutationReadingV0,
+    ArchSigSpectralAnalysisReadingV0, ArchSigSpectralDominantComponentV0,
+    ArchSigSpectralDrilldownReadingV0, ArchSigSpectralMatrixShapeV0,
+    ArchSigSpectralModeComponentV0, ArchSigSpectralModeReadingV0, ArchSigSpectralValueV0,
+    ArchSigSplitReadinessReadingV0, ArchSigStateTransitionAlgebraReadingV0,
     ArchSigStateTransitionLawEvaluationV0, ArchSigStateTransitionRelationInputV0,
     ArchSigStokesStyleReadingV0, ArchSigStructuralReadingReviewSurfaceV0,
     ArchSigSubjectFamilySpreadV0, ArchSigSupportingDistanceV0, ArchSigSynthesisBlockageReadingV0,
@@ -140,7 +141,7 @@ pub fn build_archsig_analysis_packet(
     );
     let mut signature_axes = build_signature_axes(archmap, law_policy, &obstruction_circuits);
     let flatness_reading = build_flatness_reading(archmap, law_policy, &signature_axes);
-    let repair_operation_candidates =
+    let mut repair_operation_candidates =
         build_repair_candidates(archmap, &obstruction_circuits, &signature_axes);
     let generated_repair_targets = build_generated_repair_targets(
         &repair_operation_candidates,
@@ -190,8 +191,23 @@ pub fn build_archsig_analysis_packet(
         &obstruction_circuits,
         &repair_operation_candidates,
     );
-    let operation_deltas =
+    let mut operation_deltas =
         build_operation_deltas(archmap, &repair_operation_candidates, &signature_axes);
+    let operation_distance_readings = build_operation_distance_readings(
+        &repair_operation_candidates,
+        &operation_deltas,
+        &signature_distance_readings,
+        &part4_distance_foundation,
+    );
+    attach_operation_distance_refs(
+        &mut repair_operation_candidates,
+        &mut operation_deltas,
+        &operation_distance_readings,
+    );
+    promote_operation_geometry_supporting_distance(
+        &mut part4_distance_foundation,
+        &operation_distance_readings,
+    );
     let spectral_analysis_readings = build_spectral_analysis_readings(
         archmap,
         &obstruction_circuits,
@@ -531,6 +547,7 @@ pub fn build_archsig_analysis_packet(
         atom_distance_readings,
         configuration_distance_readings,
         signature_distance_readings,
+        operation_distance_readings,
         obstruction_circuits,
         signature_axes,
         analytic_representations,
@@ -12896,6 +12913,7 @@ fn build_operation_deltas(
                 .iter()
                 .map(|gap| gap.gap_id.clone())
                 .collect(),
+            part4_distance_refs: Vec::new(),
             excluded_readings: vec![
                 "evidence enrichment is not a source-code repair".to_string(),
                 "no automatic patch safety".to_string(),
@@ -12937,10 +12955,389 @@ fn build_operation_deltas(
                 .map(|axis| axis.signature_axis_id.clone())
                 .collect(),
             transferred_obstructions: candidate.transfer_risks.clone(),
+            part4_distance_refs: Vec::new(),
             excluded_readings: candidate.excluded_readings.clone(),
             non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
         })
         .collect()
+}
+
+fn build_operation_distance_readings(
+    repair_candidates: &[ArchSigRepairOperationCandidateV0],
+    operation_deltas: &[ArchSigOperationDeltaReadingV0],
+    signature_distance_readings: &[ArchSigSignatureDistanceReadingV0],
+    foundation: &ArchSigPart4DistanceFoundationV0,
+) -> Vec<ArchSigOperationDistanceReadingV0> {
+    let candidate_by_kind = repair_candidates
+        .iter()
+        .map(|candidate| (candidate.operation_kind.as_str(), candidate))
+        .collect::<BTreeMap<_, _>>();
+    let signature_reading = signature_distance_readings.first();
+    let coverage_refs = foundation.profile.coverage_policy_refs.clone();
+    operation_deltas
+        .iter()
+        .map(|delta| {
+            let candidate = candidate_by_kind.get(delta.operation_kind.as_str()).copied();
+            let operation_cost = operation_cost_distance_value(delta, foundation, &coverage_refs);
+            let target_distance_decrease =
+                target_distance_decrease_value(delta, candidate, &coverage_refs);
+            let protected_axis_movement =
+                protected_axis_movement_value(delta, candidate, &coverage_refs);
+            let transfer_risk_refs = unique_strings(
+                delta
+                    .transferred_obstructions
+                    .iter()
+                    .cloned()
+                    .chain(candidate.into_iter().flat_map(|c| c.transfer_risks.clone())),
+            );
+            let unmeasured_axis_refs = signature_reading
+                .map(|reading| reading.unmeasured_axis_refs.clone())
+                .unwrap_or_default();
+            let signature_blockers = signature_reading
+                .map(|reading| reading.total_measured_distance.blocker_refs.clone())
+                .unwrap_or_default();
+            let distance_to_selected_flat = distance_to_selected_flat_value(
+                signature_reading,
+                &target_distance_decrease,
+                &signature_blockers,
+                &coverage_refs,
+            );
+            let side_effect_bound = side_effect_bound_value(
+                delta,
+                &transfer_risk_refs,
+                &unmeasured_axis_refs,
+                &signature_blockers,
+                &coverage_refs,
+            );
+            let operation_distance_reading_id = format!(
+                "operation-distance:{}",
+                stable_id(&delta.operation_delta_id)
+            );
+            ArchSigOperationDistanceReadingV0 {
+                operation_distance_reading_id,
+                operation_delta_ref: delta.operation_delta_id.clone(),
+                repair_candidate_ref: candidate.map(|c| c.repair_operation_candidate_id.clone()),
+                operation_kind: delta.operation_kind.clone(),
+                distance_profile_ref: foundation.profile.profile_id.clone(),
+                diagnostic_scope_ref: foundation.diagnostic_scope.scope_id.clone(),
+                operation_cost,
+                target_distance_decrease,
+                protected_axis_movement,
+                distance_to_selected_flat,
+                side_effect_bound,
+                transfer_risk_refs,
+                unmeasured_axis_refs,
+                evidence_refs: unique_strings(
+                    delta
+                        .support_refs
+                        .iter()
+                        .cloned()
+                        .chain(delta.decreased_axes.iter().cloned())
+                        .chain(delta.transferred_obstructions.iter().cloned()),
+                ),
+                repair_route_status: if !delta.transferred_obstructions.is_empty()
+                    || !signature_blockers.is_empty()
+                {
+                    "candidateRouteBlockedByTransferRiskOrCoverage".to_string()
+                } else if delta.decreased_axes.is_empty() {
+                    "candidateRouteHasNoSelectedTargetDecrease".to_string()
+                } else {
+                    "candidateRouteHasSelectedTargetDecrease".to_string()
+                },
+                evidence_boundary:
+                    "operation distance is a selected repair-route reading over candidate deltas; it is not automatic repair safety"
+                        .to_string(),
+                non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
+            }
+        })
+        .collect()
+}
+
+fn operation_cost_distance_value(
+    delta: &ArchSigOperationDeltaReadingV0,
+    foundation: &ArchSigPart4DistanceFoundationV0,
+    coverage_refs: &[String],
+) -> ArchSigDistanceValueV0 {
+    let cost = selected_operation_cost(&delta.operation_kind, foundation);
+    measured_part4_distance_value(
+        cost,
+        "operation-cost",
+        vec![delta.operation_delta_id.clone()],
+        vec![
+            format!("operationCost:{}", delta.operation_kind),
+            format!("profile:{}", foundation.profile.profile_id),
+        ],
+        coverage_refs,
+        "operation cost is selected from the Part IV DistanceProfile operation cost table",
+    )
+}
+
+fn selected_operation_cost(
+    operation_kind: &str,
+    foundation: &ArchSigPart4DistanceFoundationV0,
+) -> i64 {
+    let kind = operation_kind.to_ascii_lowercase();
+    foundation
+        .profile
+        .operation_costs
+        .iter()
+        .find(|cost| kind.contains(&cost.operation_kind))
+        .map(|cost| cost.cost)
+        .unwrap_or_else(|| {
+            if kind.contains("split") {
+                5
+            } else if kind.contains("contract") {
+                8
+            } else if kind.contains("semantic") {
+                13
+            } else if kind.contains("runtime") {
+                21
+            } else {
+                3
+            }
+        })
+}
+
+fn target_distance_decrease_value(
+    delta: &ArchSigOperationDeltaReadingV0,
+    candidate: Option<&ArchSigRepairOperationCandidateV0>,
+    coverage_refs: &[String],
+) -> ArchSigDistanceValueV0 {
+    let decrease = delta.decreased_axes.len() as i64 * 1000;
+    measured_part4_distance_value(
+        decrease,
+        "milli-target-distance-decrease",
+        unique_strings(
+            std::iter::once(delta.operation_delta_id.clone())
+                .chain(delta.decreased_axes.iter().cloned())
+                .chain(
+                    candidate
+                        .into_iter()
+                        .flat_map(|c| c.target_obstruction_refs.clone()),
+                ),
+        ),
+        if delta.decreased_axes.is_empty() {
+            vec!["targetDecrease:noneSelected".to_string()]
+        } else {
+            delta
+                .decreased_axes
+                .iter()
+                .map(|axis| format!("targetDecrease:{axis}"))
+                .collect()
+        },
+        coverage_refs,
+        "target distance decrease counts selected nonzero signature axes targeted by the candidate transition",
+    )
+}
+
+fn protected_axis_movement_value(
+    delta: &ArchSigOperationDeltaReadingV0,
+    candidate: Option<&ArchSigRepairOperationCandidateV0>,
+    coverage_refs: &[String],
+) -> ArchSigDistanceValueV0 {
+    let movement = delta.transferred_obstructions.len() as i64 * 1000;
+    measured_part4_distance_value(
+        movement,
+        "milli-protected-axis-movement",
+        unique_strings(
+            std::iter::once(delta.operation_delta_id.clone())
+                .chain(delta.transferred_obstructions.iter().cloned())
+                .chain(
+                    candidate
+                        .into_iter()
+                        .flat_map(|c| c.preserved_invariants.clone()),
+                ),
+        ),
+        delta
+            .transferred_obstructions
+            .iter()
+            .map(|risk| format!("protectedAxisMovement:{}", stable_id(risk)))
+            .chain(std::iter::once(format!(
+                "preservedInvariantCount:{}",
+                candidate.map(|c| c.preserved_invariants.len()).unwrap_or(0)
+            )))
+            .collect(),
+        coverage_refs,
+        "protected-axis movement is separated from target decrease and records transferred obstruction risk",
+    )
+}
+
+fn distance_to_selected_flat_value(
+    signature_reading: Option<&ArchSigSignatureDistanceReadingV0>,
+    target_decrease: &ArchSigDistanceValueV0,
+    signature_blockers: &[String],
+    coverage_refs: &[String],
+) -> ArchSigDistanceValueV0 {
+    let current = signature_reading
+        .and_then(|reading| reading.total_measured_distance.measured_value)
+        .unwrap_or(0);
+    let decrease = target_decrease.measured_value.unwrap_or(0);
+    let remaining = current.saturating_sub(decrease);
+    if !signature_blockers.is_empty() {
+        return ArchSigDistanceValueV0 {
+            status: "blocked".to_string(),
+            measured_value: None,
+            unit: "milli-distance-to-selected-flat".to_string(),
+            provenance_refs: signature_reading
+                .map(|reading| vec![reading.signature_distance_reading_id.clone()])
+                .unwrap_or_default(),
+            evaluator_basis_refs: vec!["distanceToSelectedFlat:signatureDistanceReading".to_string()],
+            coverage_refs: coverage_refs.to_vec(),
+            blocker_refs: signature_blockers.to_vec(),
+            reading:
+                "distance to selected flat region is blocked while signature aggregate coverage is blocked"
+                    .to_string(),
+        };
+    }
+    measured_part4_distance_value(
+        remaining,
+        "milli-distance-to-selected-flat",
+        signature_reading
+            .map(|reading| vec![reading.signature_distance_reading_id.clone()])
+            .unwrap_or_default(),
+        vec![
+            format!("currentSignatureDistance:{current}"),
+            format!("targetDecrease:{}", decrease),
+        ],
+        coverage_refs,
+        "distance to selected flat region subtracts target decrease from selected signature distance without claiming global flatness",
+    )
+}
+
+fn side_effect_bound_value(
+    delta: &ArchSigOperationDeltaReadingV0,
+    transfer_risk_refs: &[String],
+    unmeasured_axis_refs: &[String],
+    signature_blockers: &[String],
+    coverage_refs: &[String],
+) -> ArchSigDistanceValueV0 {
+    let blockers = unique_strings(
+        transfer_risk_refs
+            .iter()
+            .cloned()
+            .chain(
+                unmeasured_axis_refs
+                    .iter()
+                    .map(|axis| format!("unmeasuredProtectedAxis:{axis}")),
+            )
+            .chain(signature_blockers.iter().cloned()),
+    );
+    if !blockers.is_empty() {
+        return ArchSigDistanceValueV0 {
+            status: "blocked".to_string(),
+            measured_value: None,
+            unit: "milli-side-effect-bound".to_string(),
+            provenance_refs: delta.support_refs.clone(),
+            evaluator_basis_refs: blockers
+                .iter()
+                .map(|blocker| format!("sideEffectBlocker:{}", stable_id(blocker)))
+                .collect(),
+            coverage_refs: coverage_refs.to_vec(),
+            blocker_refs: blockers,
+            reading:
+                "side-effect bound remains blocked while transfer risks or unmeasured protected axes remain"
+                    .to_string(),
+        };
+    }
+    measured_part4_distance_value(
+        0,
+        "milli-side-effect-bound",
+        delta.support_refs.clone(),
+        vec!["sideEffectBound:noSelectedTransferRisk".to_string()],
+        coverage_refs,
+        "side-effect bound is zero only when no selected transfer risk or unmeasured protected axis is present",
+    )
+}
+
+fn attach_operation_distance_refs(
+    repair_candidates: &mut [ArchSigRepairOperationCandidateV0],
+    operation_deltas: &mut [ArchSigOperationDeltaReadingV0],
+    readings: &[ArchSigOperationDistanceReadingV0],
+) {
+    for reading in readings {
+        if let Some(delta) = operation_deltas
+            .iter_mut()
+            .find(|delta| delta.operation_delta_id == reading.operation_delta_ref)
+        {
+            delta
+                .part4_distance_refs
+                .push(reading.operation_distance_reading_id.clone());
+        }
+        if let Some(candidate_ref) = &reading.repair_candidate_ref {
+            if let Some(candidate) = repair_candidates
+                .iter_mut()
+                .find(|candidate| candidate.repair_operation_candidate_id == *candidate_ref)
+            {
+                candidate
+                    .part4_distance_refs
+                    .push(reading.operation_distance_reading_id.clone());
+            }
+        }
+    }
+}
+
+fn promote_operation_geometry_supporting_distance(
+    foundation: &mut ArchSigPart4DistanceFoundationV0,
+    readings: &[ArchSigOperationDistanceReadingV0],
+) {
+    if readings.is_empty() {
+        return;
+    }
+    if let Some(distance) = foundation
+        .supporting_distances
+        .iter_mut()
+        .find(|distance| distance.distance_family == "operationGeometry")
+    {
+        let blockers = readings
+            .iter()
+            .flat_map(|reading| reading.side_effect_bound.blocker_refs.clone())
+            .collect::<BTreeSet<_>>()
+            .into_iter()
+            .collect::<Vec<_>>();
+        let cost_total = readings
+            .iter()
+            .filter_map(|reading| reading.operation_cost.measured_value)
+            .sum::<i64>();
+        distance.value = if blockers.is_empty() {
+            measured_part4_distance_value(
+                cost_total,
+                "operation-cost",
+                readings
+                    .iter()
+                    .map(|reading| reading.operation_distance_reading_id.clone())
+                    .collect(),
+                readings
+                    .iter()
+                    .map(|reading| format!("operationCost:{}", reading.operation_kind))
+                    .collect(),
+                &foundation.profile.coverage_policy_refs,
+                "operationGeometry aggregates operation costs for selected repair routes without claiming repair safety",
+            )
+        } else {
+            ArchSigDistanceValueV0 {
+                status: "blocked".to_string(),
+                measured_value: None,
+                unit: "operation-cost".to_string(),
+                provenance_refs: readings
+                    .iter()
+                    .map(|reading| reading.operation_distance_reading_id.clone())
+                    .collect(),
+                evaluator_basis_refs: readings
+                    .iter()
+                    .map(|reading| format!("operationDistance:{}", reading.operation_distance_reading_id))
+                    .collect(),
+                coverage_refs: foundation.profile.coverage_policy_refs.clone(),
+                blocker_refs: blockers,
+                reading:
+                    "operationGeometry remains blocked while selected repair routes have transfer risks or unmeasured protected axes"
+                        .to_string(),
+            }
+        };
+        distance.evidence_boundary =
+            "operationGeometry reads repair-route cost and side-effect blockers; it is not automatic patch safety"
+                .to_string();
+    }
+    refresh_part4_status_summary(foundation);
 }
 
 fn build_path_homotopy_diagram_readings(
@@ -14893,6 +15290,7 @@ fn build_repair_candidates(
                 "may transfer obstruction into runtime behavior, ownership, or idempotency boundary"
                     .to_string(),
             ],
+            part4_distance_refs: Vec::new(),
             evidence_boundary:
                 "repair candidate is derived from ArchSig packet evidence, not an automatic patch"
                     .to_string(),
@@ -14934,6 +15332,7 @@ pub fn validate_archsig_analysis_packet_report(
         check_atom_distance_reading_surface(packet),
         check_configuration_distance_reading_surface(packet),
         check_signature_distance_reading_surface(packet),
+        check_operation_distance_reading_surface(packet),
         check_aat_structural_reading_surfaces(packet),
         check_current_state_evolution_boundary(packet),
         check_operation_square_trace_surface(packet),
@@ -14973,6 +15372,7 @@ pub fn validate_archsig_analysis_packet_report(
         atom_distance_reading_count: packet.atom_distance_readings.len(),
         configuration_distance_reading_count: packet.configuration_distance_readings.len(),
         signature_distance_reading_count: packet.signature_distance_readings.len(),
+        operation_distance_reading_count: packet.operation_distance_readings.len(),
         obstruction_circuit_count: packet.obstruction_circuits.len(),
         signature_axis_count: packet.signature_axes.len(),
         analytic_representation_count: packet.analytic_representations.len(),
@@ -21241,6 +21641,175 @@ fn check_signature_distance_value(
     }
 }
 
+fn check_operation_distance_reading_surface(packet: &ArchSigAnalysisPacketV0) -> ValidationCheck {
+    let mut examples = Vec::new();
+    let operation_ids = packet
+        .operation_deltas
+        .iter()
+        .map(|delta| delta.operation_delta_id.as_str())
+        .collect::<BTreeSet<_>>();
+    let repair_ids = packet
+        .repair_operation_candidates
+        .iter()
+        .map(|candidate| candidate.repair_operation_candidate_id.as_str())
+        .collect::<BTreeSet<_>>();
+    let operation_distance_ids = packet
+        .operation_distance_readings
+        .iter()
+        .map(|reading| reading.operation_distance_reading_id.as_str())
+        .collect::<BTreeSet<_>>();
+    if !packet.operation_deltas.is_empty() && packet.operation_distance_readings.is_empty() {
+        examples.push(generic_validation_example(
+            "operationDistanceReadings",
+            "empty",
+            "packet with operation deltas must expose Part IV operation distance readings",
+        ));
+    }
+    for candidate in &packet.repair_operation_candidates {
+        if candidate.part4_distance_refs.is_empty()
+            || candidate
+                .part4_distance_refs
+                .iter()
+                .any(|reading_ref| !operation_distance_ids.contains(reading_ref.as_str()))
+        {
+            examples.push(generic_validation_example(
+                &candidate.repair_operation_candidate_id,
+                "part4DistanceRefs",
+                "repair candidates must point to operation distance readings for cost and side-effect evidence",
+            ));
+        }
+    }
+    for delta in &packet.operation_deltas {
+        if delta.part4_distance_refs.is_empty()
+            || delta
+                .part4_distance_refs
+                .iter()
+                .any(|reading_ref| !operation_distance_ids.contains(reading_ref.as_str()))
+        {
+            examples.push(generic_validation_example(
+                &delta.operation_delta_id,
+                "part4DistanceRefs",
+                "operation deltas must point to operation distance readings",
+            ));
+        }
+    }
+    for reading in &packet.operation_distance_readings {
+        if !operation_ids.contains(reading.operation_delta_ref.as_str()) {
+            examples.push(generic_validation_example(
+                &reading.operation_distance_reading_id,
+                &reading.operation_delta_ref,
+                "operation distance reading must refer to a known operation delta",
+            ));
+        }
+        if let Some(candidate_ref) = &reading.repair_candidate_ref {
+            if !repair_ids.contains(candidate_ref.as_str()) {
+                examples.push(generic_validation_example(
+                    &reading.operation_distance_reading_id,
+                    candidate_ref,
+                    "operation distance repair candidate ref must resolve",
+                ));
+            }
+        }
+        for (field, value, required_prefix) in [
+            ("operationCost", &reading.operation_cost, "operationCost:"),
+            (
+                "targetDistanceDecrease",
+                &reading.target_distance_decrease,
+                "targetDecrease:",
+            ),
+            (
+                "protectedAxisMovement",
+                &reading.protected_axis_movement,
+                "protectedAxisMovement:",
+            ),
+            (
+                "distanceToSelectedFlat",
+                &reading.distance_to_selected_flat,
+                "distanceToSelectedFlat:",
+            ),
+            ("sideEffectBound", &reading.side_effect_bound, "sideEffect"),
+        ] {
+            check_operation_distance_value(
+                &mut examples,
+                &reading.operation_distance_reading_id,
+                field,
+                value,
+                required_prefix,
+            );
+        }
+        if !reading.transfer_risk_refs.is_empty()
+            && matches!(
+                reading.side_effect_bound.status.as_str(),
+                "measured" | "zero"
+            )
+        {
+            examples.push(generic_validation_example(
+                &reading.operation_distance_reading_id,
+                "sideEffectBound",
+                "side-effect bound must not become measured zero while transfer risk refs remain",
+            ));
+        }
+        if reading.evidence_refs.is_empty()
+            || reading.repair_route_status.trim().is_empty()
+            || !reading
+                .evidence_boundary
+                .contains("not automatic repair safety")
+        {
+            examples.push(generic_validation_example(
+                &reading.operation_distance_reading_id,
+                "evidenceRefs/repairRouteStatus/evidenceBoundary",
+                "operation distance must retain evidence refs, route status, and non-safety boundary",
+            ));
+        }
+    }
+
+    check_from_examples(
+        "archsig-analysis-packet-operation-distance-readings",
+        "packet exposes proxy-free Part IV operation cost, repair distance, protected-axis movement, and side-effect blockers",
+        examples,
+        "fail",
+    )
+}
+
+fn check_operation_distance_value(
+    examples: &mut Vec<ValidationExample>,
+    reading_id: &str,
+    field: &str,
+    value: &ArchSigDistanceValueV0,
+    required_basis_prefix: &str,
+) {
+    if matches!(value.status.as_str(), "measured" | "zero") {
+        if value.measured_value.is_none()
+            || value.provenance_refs.is_empty()
+            || value.evaluator_basis_refs.is_empty()
+            || value.coverage_refs.is_empty()
+        {
+            examples.push(generic_validation_example(
+                reading_id,
+                field,
+                "measured or zero Operation distance must retain value, provenance refs, evaluator basis refs, and coverage refs",
+            ));
+        }
+        if !value
+            .evaluator_basis_refs
+            .iter()
+            .any(|basis| basis.starts_with(required_basis_prefix))
+        {
+            examples.push(generic_validation_example(
+                reading_id,
+                required_basis_prefix,
+                "measured Operation distance must be backed by operation-specific evaluator basis refs",
+            ));
+        }
+    } else if value.blocker_refs.is_empty() {
+        examples.push(generic_validation_example(
+            reading_id,
+            field,
+            "unmeasured, blocked, infinite, or incomparable Operation distance must retain blocker refs",
+        ));
+    }
+}
+
 fn check_atom_distance_value(
     examples: &mut Vec<ValidationExample>,
     reading_id: &str,
@@ -23667,6 +24236,103 @@ mod tests {
                         .target
                         .as_deref()
                         .is_some_and(|target| target == "rho_i:")
+                })
+        }));
+    }
+
+    #[test]
+    fn operation_distance_readings_keep_cost_and_side_effect_blockers() {
+        let packet = static_archsig_analysis_packet();
+        let reading = packet
+            .operation_distance_readings
+            .first()
+            .expect("static fixture has operation distance reading");
+
+        assert!(
+            reading
+                .operation_cost
+                .evaluator_basis_refs
+                .iter()
+                .any(|basis| basis.starts_with("operationCost:"))
+        );
+        assert!(
+            reading
+                .target_distance_decrease
+                .evaluator_basis_refs
+                .iter()
+                .any(|basis| basis.starts_with("targetDecrease:"))
+        );
+        assert_eq!(reading.side_effect_bound.status, "blocked");
+        assert!(
+            !reading.transfer_risk_refs.is_empty()
+                && !reading.side_effect_bound.blocker_refs.is_empty()
+        );
+        assert!(
+            packet
+                .repair_operation_candidates
+                .iter()
+                .all(|candidate| !candidate.part4_distance_refs.is_empty())
+        );
+        assert!(
+            packet
+                .operation_deltas
+                .iter()
+                .all(|delta| !delta.part4_distance_refs.is_empty())
+        );
+    }
+
+    #[test]
+    fn operation_distance_negative_fixture_missing_repair_ref_fails_validation() {
+        let mut packet = static_archsig_analysis_packet();
+        let candidate = packet
+            .repair_operation_candidates
+            .first_mut()
+            .expect("static fixture has repair candidate");
+        candidate.part4_distance_refs.clear();
+
+        let report = validate_archsig_analysis_packet_report(
+            &packet,
+            "negative-fixture-operation-distance-missing-repair-ref.json",
+        );
+
+        assert_eq!(report.summary.result, "fail");
+        assert!(report.checks.iter().any(|check| {
+            check.id == "archsig-analysis-packet-operation-distance-readings"
+                && check.result == "fail"
+                && check.examples.iter().any(|example| {
+                    example
+                        .target
+                        .as_deref()
+                        .is_some_and(|target| target == "part4DistanceRefs")
+                })
+        }));
+    }
+
+    #[test]
+    fn operation_distance_negative_fixture_side_effect_zero_with_risk_fails_validation() {
+        let mut packet = static_archsig_analysis_packet();
+        let reading = packet
+            .operation_distance_readings
+            .first_mut()
+            .expect("static fixture has operation distance reading");
+        reading.side_effect_bound.status = "zero".to_string();
+        reading.side_effect_bound.measured_value = Some(0);
+        reading.side_effect_bound.blocker_refs.clear();
+
+        let report = validate_archsig_analysis_packet_report(
+            &packet,
+            "negative-fixture-operation-distance-side-effect-zero.json",
+        );
+
+        assert_eq!(report.summary.result, "fail");
+        assert!(report.checks.iter().any(|check| {
+            check.id == "archsig-analysis-packet-operation-distance-readings"
+                && check.result == "fail"
+                && check.examples.iter().any(|example| {
+                    example
+                        .target
+                        .as_deref()
+                        .is_some_and(|target| target == "sideEffectBound")
                 })
         }));
     }

@@ -1480,25 +1480,29 @@
         "sourceRef": "ArchMap",
         "targetRef": "Part4DistanceEngine",
         "value": {
-          "status": "unmeasured",
-          "unit": "selected-distance-unit",
+          "status": "blocked",
+          "unit": "operation-cost",
           "provenanceRefs": [
-            "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md",
-            "docs/aat/AAT_Distance_Extension_Design.md"
+            "operation-distance:operation-delta-repair-obstruction-semantic-contract-mismatch-computed"
           ],
-          "evaluatorBasisRefs": [],
+          "evaluatorBasisRefs": [
+            "operationDistance:operation-distance:operation-delta-repair-obstruction-semantic-contract-mismatch-computed"
+          ],
           "coverageRefs": [
             "coverage:layer-atoms",
             "coverage:semantic-contract-atoms"
           ],
           "blockerRefs": [
-            "issue:#1706 operation repair distance evaluator"
+            "coverage:layer-atoms: report observation gap and block signature-zero reflection",
+            "coverage:semantic-contract-atoms: report observation gap and block signature-zero reflection",
+            "gap-runtime-user-db-trace: runtime trace was requested but not supplied",
+            "may transfer obstruction into runtime behavior, ownership, or idempotency boundary"
           ],
-          "reading": "distance family is represented in the Part4 contract but has not been measured by its evaluator yet"
+          "reading": "operationGeometry remains blocked while selected repair routes have transfer risks or unmeasured protected axes"
         },
         "profileRef": "part4-distance-profile:llm-native-aat-law-policy-fixture",
         "diagnosticScopeRef": "part4-diagnostic-scope:fixture-archmap-atom-observation",
-        "evidenceBoundary": "unmeasured means no evaluator result has been supplied; it must not be aggregated as zero",
+        "evidenceBoundary": "operationGeometry reads repair-route cost and side-effect blockers; it is not automatic patch safety",
         "nonConclusions": [
           "ArchSig analysis packet is not a Lean theorem proof",
           "ArchSig analysis packet is not global architecture truth",
@@ -1621,11 +1625,11 @@
     "statusSummary": {
       "measuredCount": 0,
       "zeroCount": 0,
-      "unmeasuredCount": 4,
+      "unmeasuredCount": 3,
       "unavailableCount": 0,
       "incomparableCount": 0,
       "infiniteCount": 0,
-      "blockedCount": 3,
+      "blockedCount": 4,
       "schemaFoundationOnlyCount": 0
     },
     "measurementBoundary": "Part4 distance foundation is a proxy-free measurement contract: no distance is measured until an evaluator supplies provenance, basis refs, and coverage refs",
@@ -5872,6 +5876,137 @@
       ],
       "confidence": "selected-profile-relative",
       "evidenceBoundary": "Signature distance is aggregated from selected LawPolicy signature axes; coverage gaps block safe-region and drift conclusions instead of becoming zero",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    }
+  ],
+  "operationDistanceReadings": [
+    {
+      "operationDistanceReadingId": "operation-distance:operation-delta-repair-obstruction-semantic-contract-mismatch-computed",
+      "operationDeltaRef": "operation-delta:repair-obstruction-semantic-contract-mismatch-computed",
+      "repairCandidateRef": "repair:obstruction-semantic-contract-mismatch-computed",
+      "operationKind": "repair-semanticmismatchcircuit",
+      "distanceProfileRef": "part4-distance-profile:llm-native-aat-law-policy-fixture",
+      "diagnosticScopeRef": "part4-diagnostic-scope:fixture-archmap-atom-observation",
+      "operationCost": {
+        "status": "measured",
+        "measuredValue": 13,
+        "unit": "operation-cost",
+        "provenanceRefs": [
+          "operation-delta:repair-obstruction-semantic-contract-mismatch-computed"
+        ],
+        "evaluatorBasisRefs": [
+          "operationCost:repair-semanticmismatchcircuit",
+          "profile:part4-distance-profile:llm-native-aat-law-policy-fixture"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [],
+        "reading": "operation cost is selected from the Part IV DistanceProfile operation cost table"
+      },
+      "targetDistanceDecrease": {
+        "status": "measured",
+        "measuredValue": 1000,
+        "unit": "milli-target-distance-decrease",
+        "provenanceRefs": [
+          "obstruction:semantic-contract-mismatch:computed",
+          "operation-delta:repair-obstruction-semantic-contract-mismatch-computed",
+          "sig-axis:semantic-inconsistency"
+        ],
+        "evaluatorBasisRefs": [
+          "targetDecrease:sig-axis:semantic-inconsistency"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [],
+        "reading": "target distance decrease counts selected nonzero signature axes targeted by the candidate transition"
+      },
+      "protectedAxisMovement": {
+        "status": "measured",
+        "measuredValue": 1000,
+        "unit": "milli-protected-axis-movement",
+        "provenanceRefs": [
+          "may transfer obstruction into runtime behavior, ownership, or idempotency boundary",
+          "operation-delta:repair-obstruction-semantic-contract-mismatch-computed",
+          "preserve zero reading for sig-axis:layer-violation"
+        ],
+        "evaluatorBasisRefs": [
+          "protectedAxisMovement:may-transfer-obstruction-into-runtime-behavior-ownership-or-idempotency-boundary",
+          "preservedInvariantCount:1"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [],
+        "reading": "protected-axis movement is separated from target decrease and records transferred obstruction risk"
+      },
+      "distanceToSelectedFlat": {
+        "status": "blocked",
+        "unit": "milli-distance-to-selected-flat",
+        "provenanceRefs": [
+          "signature-distance:llm-native-aat-law-policy-fixture"
+        ],
+        "evaluatorBasisRefs": [
+          "distanceToSelectedFlat:signatureDistanceReading"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [
+          "coverage:layer-atoms: report observation gap and block signature-zero reflection",
+          "coverage:semantic-contract-atoms: report observation gap and block signature-zero reflection",
+          "gap-runtime-user-db-trace: runtime trace was requested but not supplied"
+        ],
+        "reading": "distance to selected flat region is blocked while signature aggregate coverage is blocked"
+      },
+      "sideEffectBound": {
+        "status": "blocked",
+        "unit": "milli-side-effect-bound",
+        "provenanceRefs": [
+          "obstruction:semantic-contract-mismatch:computed"
+        ],
+        "evaluatorBasisRefs": [
+          "sideEffectBlocker:coverage-layer-atoms-report-observation-gap-and-block-signature-zero-reflection",
+          "sideEffectBlocker:coverage-semantic-contract-atoms-report-observation-gap-and-block-signature-zero-reflection",
+          "sideEffectBlocker:gap-runtime-user-db-trace-runtime-trace-was-requested-but-not-supplied",
+          "sideEffectBlocker:may-transfer-obstruction-into-runtime-behavior-ownership-or-idempotency-boundary"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [
+          "coverage:layer-atoms: report observation gap and block signature-zero reflection",
+          "coverage:semantic-contract-atoms: report observation gap and block signature-zero reflection",
+          "gap-runtime-user-db-trace: runtime trace was requested but not supplied",
+          "may transfer obstruction into runtime behavior, ownership, or idempotency boundary"
+        ],
+        "reading": "side-effect bound remains blocked while transfer risks or unmeasured protected axes remain"
+      },
+      "transferRiskRefs": [
+        "may transfer obstruction into runtime behavior, ownership, or idempotency boundary"
+      ],
+      "unmeasuredAxisRefs": [],
+      "evidenceRefs": [
+        "may transfer obstruction into runtime behavior, ownership, or idempotency boundary",
+        "obstruction:semantic-contract-mismatch:computed",
+        "sig-axis:semantic-inconsistency"
+      ],
+      "repairRouteStatus": "candidateRouteBlockedByTransferRiskOrCoverage",
+      "evidenceBoundary": "operation distance is a selected repair-route reading over candidate deltas; it is not automatic repair safety",
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
@@ -14692,6 +14827,9 @@
       "transferRisks": [
         "may transfer obstruction into runtime behavior, ownership, or idempotency boundary"
       ],
+      "part4DistanceRefs": [
+        "operation-distance:operation-delta-repair-obstruction-semantic-contract-mismatch-computed"
+      ],
       "evidenceBoundary": "repair candidate is derived from ArchSig packet evidence, not an automatic patch",
       "missingEvidence": [
         "coverage:semantic-contract-atoms: report observation gap and block signature-zero reflection",
@@ -14755,6 +14893,9 @@
       ],
       "transferredObstructions": [
         "may transfer obstruction into runtime behavior, ownership, or idempotency boundary"
+      ],
+      "part4DistanceRefs": [
+        "operation-distance:operation-delta-repair-obstruction-semantic-contract-mismatch-computed"
       ],
       "excludedReadings": [
         "Lean theorem discharge",

@@ -1378,8 +1378,11 @@ fn cli_analyze_emit_raw_artifacts_writes_field_sig_handoff_packet() {
                 .is_some_and(|count| count > 0)
             && analysis_validation["summary"]["signatureDistanceReadingCount"]
                 .as_u64()
+                .is_some_and(|count| count > 0)
+            && analysis_validation["summary"]["operationDistanceReadingCount"]
+                .as_u64()
                 .is_some_and(|count| count > 0),
-        "validation summary must count generated middle-layer, viewer distance, configuration distance, and signature distance surfaces"
+        "validation summary must count generated middle-layer, viewer distance, configuration distance, signature distance, and operation distance surfaces"
     );
     let llm_packet = read_json(&out_dir.join("llm-interpretation-packet.json"));
     assert_eq!(llm_packet, analysis_packet["llmInterpretationPacket"]);
@@ -3364,6 +3367,7 @@ fn assert_north_star_packet_surfaces(json: &Value) {
                 if entry["distanceFamily"] == "atomGeometry"
                     || entry["distanceFamily"] == "configurationGeometry"
                     || entry["distanceFamily"] == "signatureGeometry"
+                    || entry["distanceFamily"] == "operationGeometry"
                 {
                     (entry["value"]["status"] == "measured"
                         || entry["value"]["status"] == "zero"
@@ -3385,10 +3389,10 @@ fn assert_north_star_packet_surfaces(json: &Value) {
             })
             && part4_distance["statusSummary"]["blockedCount"]
                 .as_u64()
-                .is_some_and(|count| count >= 3)
+                .is_some_and(|count| count >= 4)
             && part4_distance["statusSummary"]["unmeasuredCount"]
                 .as_u64()
-                .is_some_and(|count| count >= 4)
+                .is_some_and(|count| count >= 3)
             && part4_distance["statusSummary"]["schemaFoundationOnlyCount"] == 0,
         "Part IV foundation must route atomGeometry/configurationGeometry through evaluator readings while preserving semantic/gap blockers and keeping remaining evaluators unmeasured"
     );
@@ -3503,6 +3507,60 @@ fn assert_north_star_packet_surfaces(json: &Value) {
                         .is_some_and(|status| status.contains("Coverage"))
             }),
         "Signature distance readings must expose rho_i, axis distances, axis partitions, safe-region margin, and drift blockers"
+    );
+    let operation_distance_readings = json["operationDistanceReadings"]
+        .as_array()
+        .expect("operation distance readings are array");
+    assert!(
+        !operation_distance_readings.is_empty()
+            && operation_distance_readings.iter().all(|reading| {
+                reading["operationCost"]["evaluatorBasisRefs"]
+                    .as_array()
+                    .is_some_and(|refs| {
+                        refs.iter().any(|value| {
+                            value
+                                .as_str()
+                                .is_some_and(|s| s.starts_with("operationCost:"))
+                        })
+                    })
+                    && reading["targetDistanceDecrease"]["evaluatorBasisRefs"]
+                        .as_array()
+                        .is_some_and(|refs| {
+                            refs.iter().any(|value| {
+                                value
+                                    .as_str()
+                                    .is_some_and(|s| s.starts_with("targetDecrease:"))
+                            })
+                        })
+                    && reading["sideEffectBound"]["status"] == "blocked"
+                    && reading["transferRiskRefs"]
+                        .as_array()
+                        .is_some_and(|refs| !refs.is_empty())
+                    && reading["evidenceBoundary"]
+                        .as_str()
+                        .is_some_and(|boundary| boundary.contains("not automatic repair safety"))
+            }),
+        "Operation distance readings must retain operation cost, target decrease, transfer risk, and side-effect blockers"
+    );
+    assert!(
+        json["repairOperationCandidates"]
+            .as_array()
+            .is_some_and(|items| {
+                items.iter().all(|candidate| {
+                    candidate["part4DistanceRefs"]
+                        .as_array()
+                        .is_some_and(|refs| !refs.is_empty())
+                })
+            })
+            && json["operationDeltas"].as_array().is_some_and(|items| {
+                !items.is_empty()
+                    && items.iter().all(|delta| {
+                        delta["part4DistanceRefs"]
+                            .as_array()
+                            .is_some_and(|refs| !refs.is_empty())
+                    })
+            }),
+        "repair candidates and operation deltas must retain Part IV operation distance refs"
     );
     assert!(
         json.get("workflowSignalReadings").is_none() && !has_nested_key(json, "signalDensityScore"),

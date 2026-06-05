@@ -996,6 +996,8 @@ pub struct ArchSigAnalysisPacketV0 {
     pub configuration_distance_readings: Vec<ArchSigConfigurationDistanceReadingV0>,
     #[serde(default)]
     pub signature_distance_readings: Vec<ArchSigSignatureDistanceReadingV0>,
+    #[serde(default)]
+    pub operation_distance_readings: Vec<ArchSigOperationDistanceReadingV0>,
     pub obstruction_circuits: Vec<ArchSigObstructionCircuitV0>,
     pub signature_axes: Vec<ArchSigSignatureAxisReadingV0>,
     pub analytic_representations: Vec<ArchSigAnalyticRepresentationV0>,
@@ -3459,6 +3461,8 @@ pub struct ArchSigRepairOperationCandidateV0 {
     pub preconditions: Vec<String>,
     pub expected_signature_axis_effects: Vec<String>,
     pub transfer_risks: Vec<String>,
+    #[serde(default)]
+    pub part4_distance_refs: Vec<String>,
     pub evidence_boundary: String,
     #[serde(default)]
     pub missing_evidence: Vec<String>,
@@ -3483,7 +3487,32 @@ pub struct ArchSigOperationDeltaReadingV0 {
     pub signature_delta: Vec<String>,
     pub decreased_axes: Vec<String>,
     pub transferred_obstructions: Vec<String>,
+    #[serde(default)]
+    pub part4_distance_refs: Vec<String>,
     pub excluded_readings: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigOperationDistanceReadingV0 {
+    pub operation_distance_reading_id: String,
+    pub operation_delta_ref: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub repair_candidate_ref: Option<String>,
+    pub operation_kind: String,
+    pub distance_profile_ref: String,
+    pub diagnostic_scope_ref: String,
+    pub operation_cost: ArchSigDistanceValueV0,
+    pub target_distance_decrease: ArchSigDistanceValueV0,
+    pub protected_axis_movement: ArchSigDistanceValueV0,
+    pub distance_to_selected_flat: ArchSigDistanceValueV0,
+    pub side_effect_bound: ArchSigDistanceValueV0,
+    pub transfer_risk_refs: Vec<String>,
+    pub unmeasured_axis_refs: Vec<String>,
+    pub evidence_refs: Vec<String>,
+    pub repair_route_status: String,
+    pub evidence_boundary: String,
     pub non_conclusions: Vec<String>,
 }
 
@@ -3637,6 +3666,8 @@ pub struct ArchSigAnalysisPacketValidationSummaryV0 {
     pub configuration_distance_reading_count: usize,
     #[serde(default)]
     pub signature_distance_reading_count: usize,
+    #[serde(default)]
+    pub operation_distance_reading_count: usize,
     pub obstruction_circuit_count: usize,
     pub signature_axis_count: usize,
     pub analytic_representation_count: usize,

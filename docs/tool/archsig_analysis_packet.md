@@ -183,6 +183,15 @@ first-class signature distance reading through `signatureDistanceReadingRefs`.
 Coverage gaps block safe-region and drift conclusions; a zero axis count alone
 is not a global lawfulness or flatness claim.
 
+`operationDistanceReadings[]` is the Part IV operation geometry evaluator
+surface. Each row links an `operationDelta` and optional repair candidate to
+`operationCost`, `targetDistanceDecrease`, `protectedAxisMovement`,
+`distanceToSelectedFlat`, and `sideEffectBound`. `repairOperationCandidates[]`
+and `operationDeltas[]` carry `part4DistanceRefs` back to these readings.
+Target decrease and protected-axis movement are separate fields, and transfer
+risk / unmeasured protected axes block side-effect bounds rather than becoming
+repair-safety claims.
+
 The implemented schema records:
 
 - `interpretationProfileRef`
@@ -202,6 +211,7 @@ The implemented schema records:
 - `atomDistanceReadings`
 - `configurationDistanceReadings`
 - `signatureDistanceReadings`
+- `operationDistanceReadings`
 - `obstructionCircuits`
 - `signatureAxes`
 - `analyticRepresentations`
@@ -502,6 +512,14 @@ The builder:
   `pathDrift`, `endpointDistance`, and `hiddenExcursionStatus`.
   `signatureAxes[]` retain `signatureDistanceReadingRefs` so axis counts
   cannot be read without distance provenance and coverage blockers.
+- `operationDistanceReadings[]` computes selected operation cost and repair
+  route distance from operation deltas, repair candidates, and the Part IV
+  operation cost profile. The evaluator keeps target distance decrease,
+  protected-axis movement, distance to selected flat region, and side-effect
+  bound separate. Transfer risks and unmeasured protected axes remain blocker
+  refs, and `repairOperationCandidates[]` / `operationDeltas[]` retain
+  `part4DistanceRefs` so repair candidates cannot be read as automatic safe
+  patches.
 - `operationSquareCandidates` enumerates supplied, inferred, or blocked
   operation pairs as path pairs `p = g . f` and `q = f . g`. Supplied
   candidates are read from first-class ArchMap `operationSquareEvidence[]` and
