@@ -60,6 +60,30 @@ boundary cues, feature-like clusters, operation-like relations, top boundary
 holonomy, top order-sensitive squares, and coverage / exactness boundaries
 without replaying all historical deltas.
 
+The Part IV Distance Engine golden corpus is the complete-first ArchSig packet
+and validation report generated from
+`tools/archsig/tests/fixtures/minimal/archmap.json` plus
+`tools/archsig/tests/fixtures/minimal/law_policy.json`. Local and CI tests
+require the validation report to pass the first-class Part IV checks for:
+
+- `part4DistanceFoundation`
+- `atomDistanceReadings`
+- `configurationDistanceReadings`
+- `signatureDistanceReadings`
+- `operationDistanceReadings`
+- `obstructionMeasureReadings`
+- `curvatureMassReadings`
+- `homotopyDistanceReadings`
+- `representationMetricReadings`
+- `measurement-depth`
+- `proxy-regression`
+
+This corpus is intentionally distance-surface complete rather than minimal.
+It must keep measured / zero values tied to provenance refs, evaluator-basis
+refs, coverage refs, selected `DistanceProfile`, and selected
+`DiagnosticScope`. Blocked, unmeasured, unavailable, incomparable, or infinite
+values must carry blocker refs. A missing measurement is not a measured zero.
+
 ## Negative Fixtures
 
 - `tools/archsig/tests/fixtures/minimal/archmap_invalid_concern_promoted.json`
@@ -69,6 +93,25 @@ These fixtures lock the two main guardrails:
 
 - `concernHints` are not obstruction circuits.
 - `observationGaps` are not measured zero.
+
+Part IV anti-proxy negative fixtures live as Rust validation tests instead of
+public JSON files when a single field mutation is clearer than maintaining a
+large copied packet. The suite mutates the static packet to reject:
+
+- measured distance without provenance / evaluator basis / coverage refs
+- stale or missing `DistanceProfile` / `DiagnosticScope` alignment
+- `schemaFoundationOnly` promoted into distance status
+- concern-only provenance promoted into measured distance
+- hard-coded fixture markers
+- name-only Atom basis refs
+- relation-count-only configuration distance
+- observation gap rounded to zero
+- signature axis without distance refs
+- signature rho without evaluator basis
+- repair candidate / operation delta without Part IV refs
+- operation side-effect bound rounded to zero while transfer risk remains
+- curvature / representation surfaces without Part IV refs
+- representation faithfulness measured while coverage blockers remain
 
 ## FieldSig Handoff Fixtures
 

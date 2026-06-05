@@ -22436,6 +22436,13 @@ fn check_part4_distance_foundation_surface(packet: &ArchSigAnalysisPacketV0) -> 
         "part4DistanceFoundation.profile.profileSourceRef",
         &foundation.profile.profile_source_ref,
     );
+    if foundation.diagnostic_scope.distance_profile_ref != foundation.profile.profile_id {
+        examples.push(generic_validation_example(
+            "part4DistanceFoundation.diagnosticScope.distanceProfileRef",
+            "profileRef",
+            "DiagnosticScope must point to the selected DistanceProfile, not a stale or unrelated profile",
+        ));
+    }
     if foundation.profile.atom_weights.is_empty() || foundation.profile.signature_weights.is_empty()
     {
         examples.push(generic_validation_example(
@@ -22511,6 +22518,15 @@ fn check_part4_distance_foundation_surface(packet: &ArchSigAnalysisPacketV0) -> 
             &format!("{} profileRef", distance.distance_id),
             &distance.profile_ref,
         );
+        if distance.profile_ref != foundation.profile.profile_id
+            || distance.diagnostic_scope_ref != foundation.diagnostic_scope.scope_id
+        {
+            examples.push(generic_validation_example(
+                &distance.distance_id,
+                "profile/scope",
+                "supporting DistanceValue rows must be tied to the selected DistanceProfile and DiagnosticScope",
+            ));
+        }
         let status = distance.value.status.as_str();
         if !allowed.contains(status) {
             examples.push(generic_validation_example(
@@ -26325,6 +26341,42 @@ mod tests {
                         .target
                         .as_deref()
                         .is_some_and(|target| target == "concern-only provenance")
+                })
+        }));
+    }
+
+    #[test]
+    fn part4_negative_fixture_stale_profile_ref_fails_validation() {
+        let mut packet = static_archsig_analysis_packet();
+        packet
+            .part4_distance_foundation
+            .diagnostic_scope
+            .distance_profile_ref = "part4-distance-profile:stale".to_string();
+        packet
+            .part4_distance_foundation
+            .supporting_distances
+            .first_mut()
+            .expect("static fixture has Part IV distance contract rows")
+            .profile_ref = "part4-distance-profile:stale".to_string();
+
+        let report = validate_archsig_analysis_packet_report(
+            &packet,
+            "negative-fixture-part4-stale-profile-ref.json",
+        );
+
+        assert_eq!(report.summary.result, "fail");
+        assert!(report.checks.iter().any(|check| {
+            check.id == "archsig-analysis-packet-part4-distance-foundation"
+                && check.result == "fail"
+                && check.examples.iter().any(|example| {
+                    example
+                        .target
+                        .as_deref()
+                        .is_some_and(|target| target == "profile/scope")
+                        || example
+                            .target
+                            .as_deref()
+                            .is_some_and(|target| target == "profileRef")
                 })
         }));
     }

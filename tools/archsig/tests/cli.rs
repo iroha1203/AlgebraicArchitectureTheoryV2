@@ -2447,6 +2447,55 @@ fn complete_archmap_acceptance_fixture_runs_full_measurement_without_private_nam
             "{label} must pass for complete-first acceptance fixture"
         );
     }
+    let archsig_validation = read_json(&out_dir.join("archsig-analysis-validation.json"));
+    for check_id in [
+        "archsig-analysis-packet-part4-distance-foundation",
+        "archsig-analysis-packet-atom-distance-readings",
+        "archsig-analysis-packet-configuration-distance-readings",
+        "archsig-analysis-packet-signature-distance-readings",
+        "archsig-analysis-packet-operation-distance-readings",
+        "archsig-analysis-packet-obstruction-measure-readings",
+        "archsig-analysis-packet-curvature-mass-readings",
+        "archsig-analysis-packet-homotopy-distance-readings",
+        "archsig-analysis-packet-representation-metric-readings",
+        "archsig-analysis-packet-measurement-depth",
+        "archsig-analysis-packet-proxy-regression-guardrails",
+    ] {
+        assert!(
+            has_check_result(&archsig_validation, check_id, "pass"),
+            "complete-first fixture validation must include passing Part IV anti-proxy check {check_id}"
+        );
+    }
+    assert!(
+        archsig_validation["summary"]["part4SupportingDistanceCount"]
+            .as_u64()
+            .is_some_and(|count| count >= 7)
+            && archsig_validation["summary"]["atomDistanceReadingCount"]
+                .as_u64()
+                .is_some_and(|count| count > 0)
+            && archsig_validation["summary"]["configurationDistanceReadingCount"]
+                .as_u64()
+                .is_some_and(|count| count > 0)
+            && archsig_validation["summary"]["signatureDistanceReadingCount"]
+                .as_u64()
+                .is_some_and(|count| count > 0)
+            && archsig_validation["summary"]["operationDistanceReadingCount"]
+                .as_u64()
+                .is_some_and(|count| count > 0)
+            && archsig_validation["summary"]["obstructionMeasureReadingCount"]
+                .as_u64()
+                .is_some_and(|count| count > 0)
+            && archsig_validation["summary"]["curvatureMassReadingCount"]
+                .as_u64()
+                .is_some_and(|count| count > 0)
+            && archsig_validation["summary"]["homotopyDistanceReadingCount"]
+                .as_u64()
+                .is_some_and(|count| count > 0)
+            && archsig_validation["summary"]["representationMetricReadingCount"]
+                .as_u64()
+                .is_some_and(|count| count > 0),
+        "complete-first fixture must be the golden corpus for all major Part IV distance surfaces"
+    );
 
     let packet = read_json(&out_dir.join("archsig-analysis-packet.json"));
     let spectrum = &packet["architectureSpectrumReport"];
