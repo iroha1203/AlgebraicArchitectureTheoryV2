@@ -26,7 +26,7 @@ source of truth として扱わない。
 ## 全体文書
 
 - [研究の全体目標](research_goal.md): AAT / SFT / ArchSig / AI-driven Development の全体像を示す入口文書。
-- [AAT 数学理論](aat/mathematical_theory/README.md): Atom から `ArchitectureObject`, law, obstruction circuit, operation, flatness, path, homotopy, analytic representation を構成する。
+- [AAT 数学理論](aat/mathematical_theory/README.md): Atom から `ArchitectureObject`, law, obstruction circuit, operation, flatness, path, homotopy, analytic representation, distance / measure を構成する。
 - [AAT / SFT Interface](sft/aat_interface.md): SFT が AAT から借りる概念と、片方向依存の interface を整理する。
 - [ソフトウェアの場の理論](sft/software_field_theory.md): PRD / Spec / Issue / PR / Review / CI / organization / AI / lifecycle を force, field, trajectory, control として整理する。
 - [証明義務と実証仮説](aat/proof_obligations.md): theorem assumption、未解決課題、empirical hypothesis の台帳。
