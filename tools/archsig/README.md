@@ -55,10 +55,14 @@ readings, bounded judgements, and LLM interpretation. These are ArchSig outputs,
 not first-class ArchMap outputs.
 
 `analysis-summary` is the preferred first reading surface. It reports the
-measured verdict, quality counts, measurement-status counts, dominant findings,
-action queue, trend diagnosis, review support, compact section summaries,
-detail index, measurement basis, and metadata. The full evidence remains in
-`archsig-analysis-packet.json` when raw artifacts are emitted.
+measured verdict, quality counts, Part IV distance diagnosis,
+measurement-status counts, dominant findings, action queue, trend diagnosis,
+review support, compact section summaries, detail index, measurement basis,
+and metadata. `distanceDiagnosis` keeps measured movement, unmeasured axes,
+safe margin, repair distance, curvature / homotopy distance, representation
+metrics, and packet refs compact; blocked distance is not measured zero. The
+full evidence remains in `archsig-analysis-packet.json` when raw artifacts are
+emitted.
 
 Large ArchMaps may be authored in shards for review and parallel generation,
 but current commands consume the exported monolithic
@@ -122,9 +126,10 @@ This writes:
 Use `archsig-analysis-summary.json` as the LLM-readable first pass and
 `archsig-atom-viewer-data.json` with the fixed Atom Viewer app for human visual
 review. Viewer data is bounded: atom nodes, molecule groups, edges, overlays,
-labels, and source refs are priority-selected or sampled, with omitted counts
-and reasons recorded. `archsig-run-manifest.json` records generated and omitted
-artifacts.
+labels, diagnostic distance projections, and source refs are priority-selected
+or sampled, with omitted counts and reasons recorded. Viewer layout distance
+inputs are visual placement support, not diagnostic metrics.
+`archsig-run-manifest.json` records generated and omitted artifacts.
 
 Release archives include `archsig-atom-viewer.html` as a fixed viewer app. Open
 it in a browser and load `archsig-atom-viewer-data.json` with the file picker,
@@ -133,9 +138,9 @@ tries the WebGPU renderer first when available, and falls back to WebGL. It
 does not load `archsig-analysis-packet.json`. Its lower report pane reads the
 bounded viewer data plus same-directory `archsig-analysis-summary.json` and
 `archsig-run-manifest.json` when present, so the human surface can show verdict,
-top findings, action queue, coverage boundaries, validation status, generated /
-omitted artifacts, and relative raw artifact links without embedding raw packet
-detail.
+top findings, distance diagnosis, action queue, coverage boundaries, validation
+status, generated / omitted artifacts, and relative raw artifact links without
+embedding raw packet detail.
 
 For large ArchMaps, prefer the optimized binary:
 

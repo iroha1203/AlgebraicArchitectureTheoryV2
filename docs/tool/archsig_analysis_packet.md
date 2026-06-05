@@ -50,8 +50,8 @@ filler evidence, non-fillability witnesses, projection hints, and targeted gaps
 before presenting ArchSig results. `analysis-summary` and
 `llm-interpretation-packet` then serve two readers:
 
-- user-facing diagnosis: measured verdict, quality counts, hotspots, holes,
-  and action queue first
+- user-facing diagnosis: measured verdict, quality counts, distance diagnosis,
+  hotspots, holes, and action queue first
 - authoring feedback: coverage blockers, unfilled loops, missing filler
   evidence, and unmeasured spectrum support become a repair queue before final
   handoff
@@ -66,7 +66,13 @@ It is designed to be read whole without jq slicing. It exposes:
   actionability, and reading mode.
 - `qualityMeasurement`: nonzero axis count, hotspot count, recurrent
   obstruction count, architectural hole count, nonzero holonomy count, and
-  coverage gap count.
+  coverage gap count, with compact Part IV distance-reading counts.
+- `distanceDiagnosis`: Part IV diagnostic-distance first surface. It reports
+  the distance verdict, measured movement, unmeasured axes, compact moved atom
+  / axis rows, safe margin, repair distance, curvature / homotopy distance,
+  representation metrics, and packet detail refs. Blocked or unmeasured
+  distance is preserved as blocked / unmeasured, not collapsed to measured
+  zero.
 - `measurementStatusSummary`: compact measured / partial / proxy /
   unmeasured / blocked / `schemaFoundationOnly` counts. This is the first
   summary-level guardrail against reading proxy or schema-only rows as measured
@@ -106,6 +112,21 @@ The full `archsig-analysis-packet.json` remains the evidence store. Raw
 `supportRefs`, `sourceRefs`, witness clusters, spectral rows, homotopy
 aggregate readings, and measurement-expansion detail belong in the packet, not
 in `analysis-summary`.
+
+`archsig-atom-viewer-data.json` keeps visual layout distance separate from
+Part IV diagnostic distance. `viewerDistanceInputs` support Atom Viewer
+placement only. Diagnostic distance overlays are bounded projections of packet
+distance readings and are exposed through `diagnosticDistanceReadings`,
+`diagnosticDistanceBoundary`, omitted counts, and the report pane
+`distanceDiagnosis` section. The viewer should help a human inspect where the
+diagnostic readings point; it must not reinterpret visual layout distance as an
+ArchSig metric.
+
+`llmInterpretationPacket.distanceDiagnosisSummary` is the compact LLM note for
+distance-first reading. It tells an agent to read summary distance diagnosis
+before raw Part IV rows, records measured / blocked / unmeasured status, and
+keeps non-claims bounded to the selected ArchMap + LawPolicy evidence
+contract.
 
 `trendInsights` is intentionally short. Each item reports a bounded claim, why
 the claim is nontrivial, a small measurement summary, and packet refs. The full

@@ -881,6 +881,10 @@
           <div id="findings" class="list"></div>
         </div>
         <div class="section">
+          <h2>Distance Diagnosis</h2>
+          <div id="distance-diagnosis" class="list"></div>
+        </div>
+        <div class="section">
           <h2>Action Queue</h2>
           <div id="actions" class="list"></div>
         </div>
@@ -2212,6 +2216,7 @@
 
       renderOverview(overview, verdict, summary, data.nonConclusions || []);
       renderItems("findings", report.topFindings || summary.dominantFindings || data.analysisOverlays?.dominantFindings, "finding");
+      renderItems("distance-diagnosis", report.distanceDiagnosis || summary.distanceDiagnosis || data.aatGeometryOverlays?.diagnosticDistanceReadings, "distance");
       renderItems("actions", report.actionQueue || summary.actionQueue || data.analysisOverlays?.actionQueue, "action");
       renderCoverage(report.coverageAndBoundaries || {}, verdict, summary);
       renderArtifacts(report.artifacts || {}, data.sourceArtifactRefs || {}, manifest);

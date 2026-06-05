@@ -990,6 +990,7 @@ fn build_atom_viewer_data(
             "validation": json_field(summary, "validation"),
             "measurementStatusSummary": json_field(summary, "measurementStatusSummary")
         },
+        "distanceDiagnosis": json_field(summary, "distanceDiagnosis"),
         "topFindings": json_field(summary, "dominantFindings"),
         "actionQueue": json_field(summary, "actionQueue"),
         "coverageAndBoundaries": {
@@ -1046,6 +1047,7 @@ fn build_atom_viewer_data(
                 "atom nodes are selected by deterministic top-N priority over observation status, confidence, source refs, object refs, projection refs, and molecule refs".to_string(),
                 "molecule groups are selected by deterministic top-N priority over observation status, confidence, source refs, and atom refs".to_string(),
                 "source refs and labels are represented by count plus bounded samples".to_string(),
+                "diagnostic distance readings are bounded projections; full evaluator rows remain in optional raw artifacts".to_string(),
                 "raw packet detail is intentionally omitted from browser viewer data".to_string(),
             ],
         },
@@ -1149,6 +1151,24 @@ fn build_aat_geometry_overlays(packet: &serde_json::Value, limit: usize) -> serd
         .get("architectureSpectrumReport")
         .map(|report| compact_geometry_report(report, limit, GEOMETRY_ATOM_REF_SAMPLE_LIMIT))
         .unwrap_or_else(|| serde_json::Value::Array(Vec::new()));
+    let diagnostic_distance_readings = serde_json::json!({
+        "atomDistances": compact_geometry_array(packet, "atomDistanceReadings", limit, GEOMETRY_ATOM_REF_SAMPLE_LIMIT),
+        "configurationDistances": compact_geometry_array(packet, "configurationDistanceReadings", limit, GEOMETRY_ATOM_REF_SAMPLE_LIMIT),
+        "signatureDistances": compact_geometry_array(packet, "signatureDistanceReadings", limit, GEOMETRY_ATOM_REF_SAMPLE_LIMIT),
+        "operationDistances": compact_geometry_array(packet, "operationDistanceReadings", limit, GEOMETRY_ATOM_REF_SAMPLE_LIMIT),
+        "curvatureMassDistances": compact_geometry_array(packet, "curvatureMassReadings", limit, GEOMETRY_ATOM_REF_SAMPLE_LIMIT),
+        "homotopyDistances": compact_geometry_array(packet, "homotopyDistanceReadings", limit, GEOMETRY_ATOM_REF_SAMPLE_LIMIT),
+        "representationMetrics": compact_geometry_array(packet, "representationMetricReadings", limit, GEOMETRY_ATOM_REF_SAMPLE_LIMIT)
+    });
+    let omitted_distance_counts = serde_json::json!({
+        "atomDistances": omitted_array_count(packet, "atomDistanceReadings", limit),
+        "configurationDistances": omitted_array_count(packet, "configurationDistanceReadings", limit),
+        "signatureDistances": omitted_array_count(packet, "signatureDistanceReadings", limit),
+        "operationDistances": omitted_array_count(packet, "operationDistanceReadings", limit),
+        "curvatureMassDistances": omitted_array_count(packet, "curvatureMassReadings", limit),
+        "homotopyDistances": omitted_array_count(packet, "homotopyDistanceReadings", limit),
+        "representationMetrics": omitted_array_count(packet, "representationMetricReadings", limit)
+    });
     serde_json::json!({
         "schemaVersion": "archsig-aat-geometry-overlays-v0",
         "projectionBoundary": "bounded projection of computed ArchSig AAT geometry readings; not a theorem metric and not a raw packet copy",
@@ -1159,6 +1179,8 @@ fn build_aat_geometry_overlays(packet: &serde_json::Value, limit: usize) -> serd
         "generatedLawInputs": compact_geometry_array(packet, "generatedLawInputs", limit, GEOMETRY_ATOM_REF_SAMPLE_LIMIT),
         "generatedObstructions": compact_geometry_array(packet, "generatedObstructions", limit, GEOMETRY_ATOM_REF_SAMPLE_LIMIT),
         "generatedRepairTargets": compact_geometry_array(packet, "generatedRepairTargets", limit, GEOMETRY_ATOM_REF_SAMPLE_LIMIT),
+        "diagnosticDistanceBoundary": "diagnostic distances come from Part IV evaluator readings; viewerDistanceInputs are visual layout support and must not be read as diagnostic metrics",
+        "diagnosticDistanceReadings": diagnostic_distance_readings,
         "viewerDistanceInputs": compact_viewer_distance_inputs(packet, limit, GEOMETRY_ATOM_REF_SAMPLE_LIMIT),
         "spectrumReport": spectrum_report,
         "pathPairs": compact_geometry_array(packet, "pathPairCandidates", limit, GEOMETRY_ATOM_REF_SAMPLE_LIMIT),
@@ -1181,6 +1203,7 @@ fn build_aat_geometry_overlays(packet: &serde_json::Value, limit: usize) -> serd
             "generatedLawInputs": omitted_array_count(packet, "generatedLawInputs", limit),
             "generatedObstructions": omitted_array_count(packet, "generatedObstructions", limit),
             "generatedRepairTargets": omitted_array_count(packet, "generatedRepairTargets", limit),
+            "diagnosticDistanceReadings": omitted_distance_counts,
             "viewerDistanceInputs": omitted_array_count(packet, "viewerDistanceInputs", limit),
             "pathPairs": omitted_array_count(packet, "pathPairCandidates", limit),
             "loops": omitted_array_count(packet, "loopCandidates", limit),
@@ -2934,6 +2957,7 @@ fn build_analysis_summary(
         "verdict": analysis_verdict(packet),
         "analysisUsefulness": analysis_usefulness(packet),
         "qualityMeasurement": quality_measurement(packet),
+        "distanceDiagnosis": distance_diagnosis(packet),
         "measurementStatusSummary": measurement_status_summary(packet),
         "trendDiagnosis": trend_diagnosis(packet),
         "architectureInsightSummary": architecture_insight_summary(packet),
@@ -4058,6 +4082,19 @@ fn quality_measurement(packet: &serde_json::Value) -> serde_json::Value {
         "filledLoopCount": array_len(homotopy, "filledLoops"),
         "nonzeroHolonomyLoopCount": array_len(homotopy, "nonzeroHolonomyLoops"),
         "localCurvatureCellCount": array_len(homotopy, "topLocalCurvatureCells"),
+        "part4SupportingDistanceCount": array_len(
+            packet
+                .get("part4DistanceFoundation")
+                .unwrap_or(&serde_json::Value::Null),
+            "supportingDistances"
+        ),
+        "atomDistanceReadingCount": array_len(packet, "atomDistanceReadings"),
+        "configurationDistanceReadingCount": array_len(packet, "configurationDistanceReadings"),
+        "signatureDistanceReadingCount": array_len(packet, "signatureDistanceReadings"),
+        "operationDistanceReadingCount": array_len(packet, "operationDistanceReadings"),
+        "curvatureMassReadingCount": array_len(packet, "curvatureMassReadings"),
+        "homotopyDistanceReadingCount": array_len(packet, "homotopyDistanceReadings"),
+        "representationMetricReadingCount": array_len(packet, "representationMetricReadings"),
         "transferBridgeCount": array_len(packet, "transferBridgeReadings"),
         "projectionFidelityLossCount": array_len(packet, "observationProjectionFidelityReadings"),
         "atomOriginClosureDebtCount": array_len(packet, "atomOriginClosureDebtReadings"),
@@ -4067,6 +4104,206 @@ fn quality_measurement(packet: &serde_json::Value) -> serde_json::Value {
         "pathMultiplicityLossCount": array_len(packet, "pathMultiplicityLossReadings"),
         "coverageGapCount": coverage_gap_refs(packet).len()
     })
+}
+
+fn distance_diagnosis(packet: &serde_json::Value) -> serde_json::Value {
+    let foundation = packet
+        .get("part4DistanceFoundation")
+        .unwrap_or(&serde_json::Value::Null);
+    let status_summary = json_field(foundation, "statusSummary");
+    let signature_distance = array_items(packet, "signatureDistanceReadings")
+        .into_iter()
+        .next()
+        .cloned()
+        .unwrap_or(serde_json::Value::Null);
+    let operation_distance = array_items(packet, "operationDistanceReadings")
+        .into_iter()
+        .next()
+        .cloned()
+        .unwrap_or(serde_json::Value::Null);
+    let curvature_distance = array_items(packet, "curvatureMassReadings")
+        .into_iter()
+        .next()
+        .cloned()
+        .unwrap_or(serde_json::Value::Null);
+    let homotopy_distance = array_items(packet, "homotopyDistanceReadings")
+        .into_iter()
+        .next()
+        .cloned()
+        .unwrap_or(serde_json::Value::Null);
+    let diagnostic_scope = foundation
+        .get("diagnosticScope")
+        .unwrap_or(&serde_json::Value::Null);
+    let blocked_count = status_summary
+        .get("blockedCount")
+        .and_then(serde_json::Value::as_u64)
+        .unwrap_or_default();
+    let measured_count = status_summary
+        .get("measuredCount")
+        .and_then(serde_json::Value::as_u64)
+        .unwrap_or_default();
+
+    serde_json::json!({
+        "verdict": if blocked_count > 0 {
+            "distanceBlockedByCoverageOrEvidence"
+        } else if measured_count > 0 {
+            "distanceMeasuredWithinPolicy"
+        } else {
+            "distanceNeedsEvaluatorEvidence"
+        },
+        "distanceStatusSummary": status_summary,
+        "distanceProfileRef": json_field(
+            foundation.get("profile").unwrap_or(&serde_json::Value::Null),
+            "profileId"
+        ),
+        "measuredMovement": {
+            "totalMeasuredDistance": compact_distance_value(&signature_distance, "totalMeasuredDistance"),
+            "pathDrift": compact_distance_value(&signature_distance, "pathDrift"),
+            "endpointDistance": compact_distance_value(&signature_distance, "endpointDistance")
+        },
+        "unmeasuredAxes": json_string_array(
+            string_vec_from_value(diagnostic_scope, "unmeasuredAxisRefs")
+                .into_iter()
+                .chain(string_vec_from_value(&signature_distance, "unmeasuredAxisRefs"))
+        ),
+        "topMovedAtoms": top_atom_distance_rows(packet, 6),
+        "topMovedAxes": top_signature_axis_distance_rows(packet, 6),
+        "safeMargin": compact_distance_value(&signature_distance, "safeRegionMargin"),
+        "repairDistance": {
+            "operationRef": json_field(&operation_distance, "operationRef"),
+            "operationCost": compact_distance_value(&operation_distance, "operationCost"),
+            "targetDistanceDecrease": compact_distance_value(&operation_distance, "targetDistanceDecrease"),
+            "sideEffectBound": compact_distance_value(&operation_distance, "sideEffectBound")
+        },
+        "curvatureDistance": {
+            "readingId": json_field(&curvature_distance, "readingId"),
+            "curvatureMass": compact_distance_value(&curvature_distance, "curvatureMass"),
+            "transportDistance": compact_distance_value(&curvature_distance, "transportDistance")
+        },
+        "homotopyDistance": {
+            "readingId": json_field(&homotopy_distance, "homotopyDistanceReadingId"),
+            "homotopyDistance": compact_distance_value(&homotopy_distance, "homotopyDistance"),
+            "fillingCost": compact_distance_value(&homotopy_distance, "fillingCost"),
+            "observationGapLowerBound": compact_distance_value(&homotopy_distance, "observationGapLowerBound")
+        },
+        "representationMetric": representation_metric_distance_rows(packet, 6),
+        "detailRefs": [
+            packet_ref("/part4DistanceFoundation"),
+            packet_ref("/atomDistanceReadings"),
+            packet_ref("/signatureDistanceReadings"),
+            packet_ref("/operationDistanceReadings"),
+            packet_ref("/curvatureMassReadings"),
+            packet_ref("/homotopyDistanceReadings"),
+            packet_ref("/representationMetricReadings")
+        ],
+        "distanceBoundary": "diagnostic distance is computed from Part IV evaluators over ArchMap + LawPolicy evidence; viewer layout distance is a separate visual projection and is not a diagnostic metric",
+        "nonClaims": [
+            "distance diagnosis is not a single architecture quality score",
+            "blocked or unmeasured distance is not measured zero",
+            "repair distance is not automatic repair safety",
+            "representation metric does not certify global structural faithfulness"
+        ]
+    })
+}
+
+fn compact_distance_value(container: &serde_json::Value, key: &str) -> serde_json::Value {
+    let value = container.get(key).unwrap_or(&serde_json::Value::Null);
+    if value.is_null() {
+        return serde_json::Value::Null;
+    }
+    serde_json::json!({
+        "status": json_field(value, "status"),
+        "measuredValue": json_field(value, "measuredValue"),
+        "unit": json_field(value, "unit"),
+        "provenanceRefSample": array_field_with_limit(value, "provenanceRefs", Some(3)),
+        "coverageRefSample": array_field_with_limit(value, "coverageRefs", Some(3)),
+        "blockerRefCount": array_len(value, "blockerRefs")
+    })
+}
+
+fn top_atom_distance_rows(packet: &serde_json::Value, limit: usize) -> serde_json::Value {
+    let mut rows = array_items(packet, "atomDistanceReadings")
+        .into_iter()
+        .map(|reading| {
+            let bundle = reading
+                .get("atomLayoutDistanceBundle")
+                .unwrap_or(&serde_json::Value::Null);
+            serde_json::json!({
+                "readingId": json_field(reading, "atomDistanceReadingId"),
+                "sourceAtomRef": json_field(reading, "sourceAtomRef"),
+                "targetAtomRef": json_field(reading, "targetAtomRef"),
+                "bundle": compact_distance_value(reading, "atomLayoutDistanceBundle"),
+                "statusRank": distance_status_rank(json_field(bundle, "status").as_str())
+            })
+        })
+        .collect::<Vec<_>>();
+    rows.sort_by_key(|row| {
+        -row.get("statusRank")
+            .and_then(serde_json::Value::as_i64)
+            .unwrap_or_default()
+    });
+    serde_json::Value::Array(rows.into_iter().take(limit).collect())
+}
+
+fn top_signature_axis_distance_rows(packet: &serde_json::Value, limit: usize) -> serde_json::Value {
+    let mut rows = array_items(packet, "signatureDistanceReadings")
+        .into_iter()
+        .flat_map(|reading| array_items(reading, "axisDistances"))
+        .map(|axis| {
+            let axis_distance = axis.get("axisDistance").unwrap_or(&serde_json::Value::Null);
+            serde_json::json!({
+                "signatureAxisRef": json_field(axis, "signatureAxisRef"),
+                "axisRef": json_field(axis, "axisRef"),
+                "rhoI": compact_distance_value(axis, "rhoI"),
+                "axisDistance": compact_distance_value(axis, "axisDistance"),
+                "coverageStatus": json_field(axis, "coverageStatus"),
+                "sourceRefCount": array_len(axis, "sourceRefs"),
+                "blockerRefCount": array_len(axis, "blockerRefs"),
+                "statusRank": distance_status_rank(json_field(axis_distance, "status").as_str())
+            })
+        })
+        .collect::<Vec<_>>();
+    rows.sort_by_key(|row| {
+        -row.get("statusRank")
+            .and_then(serde_json::Value::as_i64)
+            .unwrap_or_default()
+    });
+    serde_json::Value::Array(rows.into_iter().take(limit).collect())
+}
+
+fn representation_metric_distance_rows(
+    packet: &serde_json::Value,
+    limit: usize,
+) -> serde_json::Value {
+    serde_json::Value::Array(
+        array_items(packet, "representationMetricReadings")
+            .into_iter()
+            .take(limit)
+            .map(|reading| {
+                serde_json::json!({
+                    "readingId": json_field(reading, "representationMetricReadingId"),
+                    "representationFamily": json_field(reading, "representationFamily"),
+                    "structuralDistance": compact_distance_value(reading, "structuralDistance"),
+                    "analyticDistance": compact_distance_value(reading, "analyticDistance"),
+                    "lipschitzStability": compact_distance_value(reading, "lipschitzStability"),
+                    "biLipschitzFaithfulness": compact_distance_value(reading, "biLipschitzFaithfulness"),
+                    "part4DistanceRefs": array_field_with_limit(reading, "part4DistanceRefs", Some(6))
+                })
+            })
+            .collect(),
+    )
+}
+
+fn distance_status_rank(status: Option<&str>) -> i64 {
+    match status.unwrap_or_default() {
+        "measured" => 50,
+        "zero" => 40,
+        "partial" => 35,
+        "blocked" | "blockedByCoverageGap" => 30,
+        "unmeasured" => 20,
+        "unavailable" | "incomparable" | "infinite" => 10,
+        _ => 0,
+    }
 }
 
 fn measurement_status_summary(packet: &serde_json::Value) -> serde_json::Value {
@@ -4796,6 +5033,14 @@ fn detail_index(packet: &serde_json::Value) -> serde_json::Value {
         "packetRefSyntax": "packet:<json-pointer>",
         "sections": [
             detail_index_section("signatureAxes", "/signatureAxes", array_len(packet, "signatureAxes")),
+            detail_index_section("part4DistanceFoundation", "/part4DistanceFoundation", object_key_count(packet, "part4DistanceFoundation")),
+            detail_index_section("atomDistanceReadings", "/atomDistanceReadings", array_len(packet, "atomDistanceReadings")),
+            detail_index_section("configurationDistanceReadings", "/configurationDistanceReadings", array_len(packet, "configurationDistanceReadings")),
+            detail_index_section("signatureDistanceReadings", "/signatureDistanceReadings", array_len(packet, "signatureDistanceReadings")),
+            detail_index_section("operationDistanceReadings", "/operationDistanceReadings", array_len(packet, "operationDistanceReadings")),
+            detail_index_section("curvatureMassReadings", "/curvatureMassReadings", array_len(packet, "curvatureMassReadings")),
+            detail_index_section("homotopyDistanceReadings", "/homotopyDistanceReadings", array_len(packet, "homotopyDistanceReadings")),
+            detail_index_section("representationMetricReadings", "/representationMetricReadings", array_len(packet, "representationMetricReadings")),
             detail_index_section("architectureSpectrumReport.topHotspots", "/architectureSpectrumReport/topHotspots", array_len(packet.get("architectureSpectrumReport").unwrap_or(&serde_json::Value::Null), "topHotspots")),
             detail_index_section("architectureSpectrumReport.recurrentObstructions", "/architectureSpectrumReport/recurrentObstructions", array_len(packet.get("architectureSpectrumReport").unwrap_or(&serde_json::Value::Null), "recurrentObstructions")),
             detail_index_section("architectureHomotopyReport.unfilledLoops", "/architectureHomotopyReport/unfilledLoops", array_len(packet.get("architectureHomotopyReport").unwrap_or(&serde_json::Value::Null), "unfilledLoops")),

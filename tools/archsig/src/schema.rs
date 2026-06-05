@@ -3693,6 +3693,8 @@ pub struct ArchSigLlmInterpretationPacketV0 {
     pub observed_atoms_summary: Vec<String>,
     pub obstruction_summary: Vec<String>,
     pub signature_axes_summary: Vec<String>,
+    #[serde(default)]
+    pub distance_diagnosis_summary: Vec<String>,
     pub analytic_readings_summary: Vec<String>,
     pub spectral_readings_summary: Vec<String>,
     pub spectral_mode_summary: Vec<String>,

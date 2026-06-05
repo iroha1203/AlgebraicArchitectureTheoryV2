@@ -536,6 +536,11 @@ pub fn build_archsig_analysis_packet(
         &architecture_state,
         &design_pressure,
         &signature_axes,
+        &part4_distance_foundation,
+        &signature_distance_readings,
+        &operation_distance_readings,
+        &curvature_mass_readings,
+        &homotopy_distance_readings,
         &analytic_representations,
         &spectral_analysis_readings,
         &spectral_mode_readings,
@@ -692,6 +697,7 @@ pub fn build_archsig_analysis_packet(
         interpretation_notes_for_llm: vec![
             "Lead with selected LawPolicy scope and evidence gaps.".to_string(),
             "Explain nonzero signature axes as law-relative ArchSig outputs.".to_string(),
+            "Read distanceDiagnosisSummary before raw Part IV packet rows; blocked distance is not measured zero.".to_string(),
             "Do not describe concernHints as obstruction circuits.".to_string(),
         ],
         excluded_readings: vec![
@@ -15970,6 +15976,11 @@ fn build_llm_interpretation_packet(
     architecture_state: &ArchSigArchitectureStateV0,
     design_pressure: &[ArchSigDesignPressureReadingV0],
     signature_axes: &[ArchSigSignatureAxisReadingV0],
+    part4_distance_foundation: &ArchSigPart4DistanceFoundationV0,
+    signature_distance_readings: &[ArchSigSignatureDistanceReadingV0],
+    operation_distance_readings: &[ArchSigOperationDistanceReadingV0],
+    curvature_mass_readings: &[ArchSigCurvatureMassReadingV0],
+    homotopy_distance_readings: &[ArchSigHomotopyDistanceReadingV0],
     analytic_representations: &[ArchSigAnalyticRepresentationV0],
     spectral_analysis_readings: &[ArchSigSpectralAnalysisReadingV0],
     spectral_mode_readings: &[ArchSigSpectralModeReadingV0],
@@ -16043,6 +16054,14 @@ fn build_llm_interpretation_packet(
                 )
             })
             .collect(),
+        distance_diagnosis_summary: build_distance_diagnosis_summary(
+            part4_distance_foundation,
+            signature_distance_readings,
+            operation_distance_readings,
+            curvature_mass_readings,
+            homotopy_distance_readings,
+            representation_metric_readings,
+        ),
         analytic_readings_summary: analytic_representations
             .iter()
             .map(|reading| {
@@ -16625,6 +16644,87 @@ fn build_llm_interpretation_packet(
                 )
             })
             .collect(),
+    }
+}
+
+fn build_distance_diagnosis_summary(
+    foundation: &ArchSigPart4DistanceFoundationV0,
+    signature_distance_readings: &[ArchSigSignatureDistanceReadingV0],
+    operation_distance_readings: &[ArchSigOperationDistanceReadingV0],
+    curvature_mass_readings: &[ArchSigCurvatureMassReadingV0],
+    homotopy_distance_readings: &[ArchSigHomotopyDistanceReadingV0],
+    representation_metric_readings: &[ArchSigRepresentationMetricReadingV0],
+) -> Vec<String> {
+    let mut summary = vec![
+        format!(
+            "distanceProfile={} measured={} blocked={} unmeasured={} schemaFoundationOnly={}",
+            foundation.profile.profile_id,
+            foundation.status_summary.measured_count,
+            foundation.status_summary.blocked_count,
+            foundation.status_summary.unmeasured_count,
+            foundation.status_summary.schema_foundation_only_count
+        ),
+        "diagnostic distance is Part IV evaluator output; viewer layout distance is visual placement only"
+            .to_string(),
+        "blocked or unmeasured distance is not measured zero; safe margin remains coverage-qualified"
+            .to_string(),
+    ];
+    if let Some(reading) = signature_distance_readings.first() {
+        summary.push(format!(
+            "{} total={} endpoint={} pathDrift={} safe={} hiddenExcursion={}",
+            reading.signature_distance_reading_id,
+            distance_value_summary(&reading.total_measured_distance),
+            distance_value_summary(&reading.endpoint_distance),
+            distance_value_summary(&reading.path_drift),
+            distance_value_summary(&reading.safe_region_margin),
+            reading.hidden_excursion_status
+        ));
+    }
+    if let Some(reading) = operation_distance_readings.first() {
+        summary.push(format!(
+            "{} operationCost={} targetDecrease={} sideEffectBound={}",
+            reading.operation_distance_reading_id,
+            distance_value_summary(&reading.operation_cost),
+            distance_value_summary(&reading.target_distance_decrease),
+            distance_value_summary(&reading.side_effect_bound)
+        ));
+    }
+    if let Some(reading) = curvature_mass_readings.first() {
+        summary.push(format!(
+            "{} curvatureMass={} transport={} targetDecrease={} protectedMovement={}",
+            reading.curvature_mass_reading_id,
+            distance_value_summary(&reading.curvature_mass),
+            distance_value_summary(&reading.transport_distance),
+            distance_value_summary(&reading.target_axis_decrease),
+            distance_value_summary(&reading.protected_axis_movement)
+        ));
+    }
+    if let Some(reading) = homotopy_distance_readings.first() {
+        summary.push(format!(
+            "{} homotopy={} fillingCost={} observationGapLowerBound={} selectedDehnArea={}",
+            reading.homotopy_distance_reading_id,
+            distance_value_summary(&reading.homotopy_distance),
+            distance_value_summary(&reading.filling_cost),
+            distance_value_summary(&reading.observation_gap_lower_bound),
+            distance_value_summary(&reading.selected_dehn_area)
+        ));
+    }
+    let blocked_representation_count = representation_metric_readings
+        .iter()
+        .filter(|reading| reading.bi_lipschitz_faithfulness.status != "measured")
+        .count();
+    summary.push(format!(
+        "representationMetrics={} blockedFaithfulness={} boundary=selected analytic stability is not global structural faithfulness",
+        representation_metric_readings.len(),
+        blocked_representation_count
+    ));
+    summary
+}
+
+fn distance_value_summary(value: &ArchSigDistanceValueV0) -> String {
+    match value.measured_value {
+        Some(measured_value) => format!("{}:{}{}", value.status, measured_value, value.unit),
+        None => format!("{}:{}", value.status, value.unit),
     }
 }
 
