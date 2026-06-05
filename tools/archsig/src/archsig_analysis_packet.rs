@@ -16,6 +16,7 @@ use crate::{
     ArchSigArchitectureSpectrumReportV0, ArchSigArchitectureSpectrumWitnessClusterV0,
     ArchSigArchitectureStateV0, ArchSigAtomCompatibilityConflictV0,
     ArchSigAtomCompatibilityReadingV0, ArchSigAtomConfigurationSummaryV0,
+    ArchSigAtomDistanceComponentV0, ArchSigAtomDistanceReadingV0,
     ArchSigAtomOriginClosureDebtReadingV0, ArchSigAtomSupportAxisReadingV0,
     ArchSigAxisContinuationTraceV0, ArchSigAxisExcursionV0, ArchSigAxisForgettingRiskReadingV0,
     ArchSigAxisRestrictionCountV0, ArchSigAxisWiseMonodromyDefectV0,
@@ -147,7 +148,17 @@ pub fn build_archsig_analysis_packet(
     );
     let viewer_distance_inputs =
         build_viewer_distance_inputs(archmap, &generated_molecules, &generated_atom_shapes);
-    let part4_distance_foundation = build_part4_distance_foundation(archmap, law_policy);
+    let mut part4_distance_foundation = build_part4_distance_foundation(archmap, law_policy);
+    let atom_distance_readings = build_atom_distance_readings(
+        archmap,
+        &generated_molecules,
+        &viewer_distance_inputs,
+        &part4_distance_foundation,
+    );
+    promote_atom_geometry_supporting_distance(
+        &mut part4_distance_foundation,
+        &atom_distance_readings,
+    );
     let architecture_object_projections = build_architecture_object_projections(archmap);
     let invariant_family_readings =
         build_invariant_family_readings(archmap, law_policy, &obstruction_circuits);
@@ -499,6 +510,7 @@ pub fn build_archsig_analysis_packet(
         generated_repair_targets,
         viewer_distance_inputs,
         part4_distance_foundation,
+        atom_distance_readings,
         obstruction_circuits,
         signature_axes,
         analytic_representations,
@@ -3150,6 +3162,623 @@ fn build_viewer_distance_inputs(
         }
     }
     inputs
+}
+
+fn build_atom_distance_readings(
+    archmap: &ArchMapDocumentV0,
+    generated_molecules: &[ArchSigGeneratedMoleculeV0],
+    viewer_distance_inputs: &[ArchSigViewerDistanceInputV0],
+    foundation: &ArchSigPart4DistanceFoundationV0,
+) -> Vec<ArchSigAtomDistanceReadingV0> {
+    let atoms_by_ref = archmap
+        .atom_observations
+        .iter()
+        .map(|atom| (atom.atom_observation_id.as_str(), atom))
+        .collect::<BTreeMap<_, _>>();
+    let semantic_by_atom = semantic_anchor_sets_by_atom(archmap);
+    let molecule_refs_by_pair = molecule_refs_by_atom_pair(generated_molecules);
+    let viewer_refs_by_pair = viewer_distance_refs_by_atom_pair(viewer_distance_inputs);
+    let mut pair_refs = molecule_refs_by_pair.keys().cloned().collect::<Vec<_>>();
+    pair_refs.sort();
+
+    pair_refs
+        .into_iter()
+        .filter_map(|(left_ref, right_ref)| {
+            let left = atoms_by_ref.get(left_ref.as_str())?;
+            let right = atoms_by_ref.get(right_ref.as_str())?;
+            let molecule_refs = molecule_refs_by_pair
+                .get(&(left_ref.clone(), right_ref.clone()))
+                .cloned()
+                .unwrap_or_default();
+            let viewer_distance_input_refs = viewer_refs_by_pair
+                .get(&(left_ref.clone(), right_ref.clone()))
+                .cloned()
+                .unwrap_or_default();
+            let coverage_refs = foundation.profile.coverage_policy_refs.clone();
+            let fiber_distance = atom_fiber_distance_value(left, right, &coverage_refs);
+            let carrier_distance = atom_carrier_distance_value(left, right, &coverage_refs);
+            let valence_distance = atom_valence_distance_value(left, right, &coverage_refs);
+            let semantic_anchor_distance = atom_semantic_anchor_distance_value(
+                left,
+                right,
+                semantic_by_atom.get(left_ref.as_str()),
+                semantic_by_atom.get(right_ref.as_str()),
+                &coverage_refs,
+            );
+            let component_distances = vec![
+                atom_distance_component("fiber", 250, fiber_distance.clone()),
+                atom_distance_component("carrier", 350, carrier_distance.clone()),
+                atom_distance_component("valence", 250, valence_distance.clone()),
+                atom_distance_component("semanticAnchor", 150, semantic_anchor_distance.clone()),
+            ];
+            let atom_layout_distance_bundle =
+                atom_layout_distance_bundle_value(&component_distances, &coverage_refs);
+            let high_distance_reasons =
+                atom_high_distance_reasons(&component_distances, &atom_layout_distance_bundle);
+            Some(ArchSigAtomDistanceReadingV0 {
+                atom_distance_reading_id: format!(
+                    "atom-distance:{}:{}",
+                    stable_id(left_ref.as_str()),
+                    stable_id(right_ref.as_str())
+                ),
+                source_atom_ref: left_ref,
+                target_atom_ref: right_ref,
+                molecule_refs,
+                distance_profile_ref: foundation.profile.profile_id.clone(),
+                diagnostic_scope_ref: foundation.diagnostic_scope.scope_id.clone(),
+                fiber_distance,
+                carrier_distance,
+                valence_distance,
+                semantic_anchor_distance,
+                atom_layout_distance_bundle,
+                component_distances,
+                high_distance_reasons,
+                viewer_distance_input_refs,
+                evidence_boundary:
+                    "Atom diagnostic distance is computed from ArchMap atom, carrier, valence, and semantic evidence; viewer layout distance refs remain separate evidence and are not the diagnostic value"
+                        .to_string(),
+                non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
+            })
+        })
+        .collect()
+}
+
+fn promote_atom_geometry_supporting_distance(
+    foundation: &mut ArchSigPart4DistanceFoundationV0,
+    readings: &[ArchSigAtomDistanceReadingV0],
+) {
+    let measured_readings = readings
+        .iter()
+        .filter(|reading| {
+            matches!(
+                reading.atom_layout_distance_bundle.status.as_str(),
+                "measured" | "zero"
+            )
+        })
+        .collect::<Vec<_>>();
+    if measured_readings.is_empty() {
+        return;
+    }
+    let max_distance = measured_readings
+        .iter()
+        .filter_map(|reading| reading.atom_layout_distance_bundle.measured_value)
+        .max()
+        .unwrap_or(0);
+    if let Some(distance) = foundation
+        .supporting_distances
+        .iter_mut()
+        .find(|distance| distance.distance_family == "atomGeometry")
+    {
+        let blocker_refs = readings
+            .iter()
+            .flat_map(|reading| reading.semantic_anchor_distance.blocker_refs.clone())
+            .collect::<BTreeSet<_>>()
+            .into_iter()
+            .collect::<Vec<_>>();
+        let fully_measured = blocker_refs.is_empty();
+        distance.value = ArchSigDistanceValueV0 {
+            status: if fully_measured {
+                if max_distance == 0 { "zero" } else { "measured" }
+            } else {
+                "blocked"
+            }
+            .to_string(),
+            measured_value: fully_measured.then_some(max_distance),
+            unit: "milli-distance".to_string(),
+            provenance_refs: vec![
+                "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry"
+                    .to_string(),
+                "atomDistanceReadings".to_string(),
+            ],
+            evaluator_basis_refs: measured_readings
+                .iter()
+                .map(|reading| reading.atom_distance_reading_id.clone())
+                .collect(),
+            coverage_refs: foundation.profile.coverage_policy_refs.clone(),
+            blocker_refs,
+            reading:
+                "Atom geometry distance rows are computed from fiber, carrier, valence, and semantic-anchor evaluators; family-level status remains blocked while selected semantic anchors are missing"
+                    .to_string(),
+        };
+        distance.evidence_boundary =
+            "atomGeometry is measured only through atomDistanceReadings; viewerDistanceInputs stay visualization evidence, not diagnostic distance"
+                .to_string();
+    }
+    foundation.status_summary.measured_count = foundation
+        .supporting_distances
+        .iter()
+        .filter(|distance| distance.value.status == "measured")
+        .count();
+    foundation.status_summary.zero_count = foundation
+        .supporting_distances
+        .iter()
+        .filter(|distance| distance.value.status == "zero")
+        .count();
+    foundation.status_summary.unmeasured_count = foundation
+        .supporting_distances
+        .iter()
+        .filter(|distance| distance.value.status == "unmeasured")
+        .count();
+    foundation.status_summary.unavailable_count = foundation
+        .supporting_distances
+        .iter()
+        .filter(|distance| distance.value.status == "unavailable")
+        .count();
+    foundation.status_summary.incomparable_count = foundation
+        .supporting_distances
+        .iter()
+        .filter(|distance| distance.value.status == "incomparable")
+        .count();
+    foundation.status_summary.infinite_count = foundation
+        .supporting_distances
+        .iter()
+        .filter(|distance| distance.value.status == "infinite")
+        .count();
+    foundation.status_summary.blocked_count = foundation
+        .supporting_distances
+        .iter()
+        .filter(|distance| distance.value.status == "blocked")
+        .count();
+    foundation.status_summary.schema_foundation_only_count = foundation
+        .supporting_distances
+        .iter()
+        .filter(|distance| distance.value.status == "schemaFoundationOnly")
+        .count();
+}
+
+fn atom_fiber_distance_value(
+    left: &ArchMapAtomObservationV0,
+    right: &ArchMapAtomObservationV0,
+    coverage_refs: &[String],
+) -> ArchSigDistanceValueV0 {
+    let left_axis = atom_shape_axis(left);
+    let right_axis = atom_shape_axis(right);
+    let components = [
+        (
+            "atomFamily",
+            left.atom_family.as_str(),
+            right.atom_family.as_str(),
+        ),
+        ("axis", left_axis.as_str(), right_axis.as_str()),
+        (
+            "predicate",
+            left.predicate.as_str(),
+            right.predicate.as_str(),
+        ),
+        (
+            "observationStatus",
+            left.observation_status.as_str(),
+            right.observation_status.as_str(),
+        ),
+        (
+            "confidence",
+            left.confidence.as_str(),
+            right.confidence.as_str(),
+        ),
+    ];
+    let mismatch_count = components
+        .iter()
+        .filter(|(_, left_value, right_value)| left_value != right_value)
+        .count() as i64;
+    let value = mismatch_count * 1000 / components.len() as i64;
+    let evaluator_basis_refs = components
+        .iter()
+        .map(|(field, left_value, right_value)| {
+            format!(
+                "fiber:{field}:left={}:right={}",
+                stable_id(left_value),
+                stable_id(right_value)
+            )
+        })
+        .collect::<Vec<_>>();
+    measured_part4_distance_value(
+        value,
+        "milli-distance",
+        atom_pair_provenance_refs(left, right),
+        evaluator_basis_refs,
+        coverage_refs,
+        "fiber distance compares atom family, derived axis, predicate, observation status, and confidence payload fields",
+    )
+}
+
+fn atom_carrier_distance_value(
+    left: &ArchMapAtomObservationV0,
+    right: &ArchMapAtomObservationV0,
+    coverage_refs: &[String],
+) -> ArchSigDistanceValueV0 {
+    let left_carrier = atom_carrier_set(left);
+    let right_carrier = atom_carrier_set(right);
+    let value = milli_jaccard_distance(&left_carrier, &right_carrier).unwrap_or(1000);
+    measured_part4_distance_value(
+        value,
+        "milli-distance",
+        atom_pair_provenance_refs(left, right),
+        vec![
+            format!("carrier:left={}", refs_join(&left_carrier)),
+            format!("carrier:right={}", refs_join(&right_carrier)),
+        ],
+        coverage_refs,
+        "carrier distance is weighted-set distance over subject, object, and source-backed carrier refs",
+    )
+}
+
+fn atom_valence_distance_value(
+    left: &ArchMapAtomObservationV0,
+    right: &ArchMapAtomObservationV0,
+    coverage_refs: &[String],
+) -> ArchSigDistanceValueV0 {
+    let left_valence = atom_valence_set(left);
+    let right_valence = atom_valence_set(right);
+    let value = milli_jaccard_distance(&left_valence, &right_valence).unwrap_or(1000);
+    measured_part4_distance_value(
+        value,
+        "milli-distance",
+        atom_pair_provenance_refs(left, right),
+        vec![
+            format!("valence:left={}", refs_join(&left_valence)),
+            format!("valence:right={}", refs_join(&right_valence)),
+        ],
+        coverage_refs,
+        "valence distance compares architectural affordance sets derived from atom family and relation roles",
+    )
+}
+
+fn atom_semantic_anchor_distance_value(
+    left: &ArchMapAtomObservationV0,
+    right: &ArchMapAtomObservationV0,
+    left_semantic: Option<&BTreeSet<String>>,
+    right_semantic: Option<&BTreeSet<String>>,
+    coverage_refs: &[String],
+) -> ArchSigDistanceValueV0 {
+    let Some(left_semantic) = left_semantic else {
+        return unmeasured_part4_distance_value(
+            "milli-distance",
+            atom_pair_provenance_refs(left, right),
+            vec![format!(
+                "missing semantic anchor evidence for {}",
+                left.atom_observation_id
+            )],
+            coverage_refs,
+            "semantic anchor distance is unmeasured until both atoms have semantic observation support",
+        );
+    };
+    let Some(right_semantic) = right_semantic else {
+        return unmeasured_part4_distance_value(
+            "milli-distance",
+            atom_pair_provenance_refs(left, right),
+            vec![format!(
+                "missing semantic anchor evidence for {}",
+                right.atom_observation_id
+            )],
+            coverage_refs,
+            "semantic anchor distance is unmeasured until both atoms have semantic observation support",
+        );
+    };
+    let value = milli_jaccard_distance(left_semantic, right_semantic).unwrap_or(1000);
+    measured_part4_distance_value(
+        value,
+        "milli-distance",
+        atom_pair_provenance_refs(left, right),
+        vec![
+            format!("semantic:left={}", refs_join(left_semantic)),
+            format!("semantic:right={}", refs_join(right_semantic)),
+        ],
+        coverage_refs,
+        "semantic anchor distance compares supplied ArchMap semantic observation closures and does not infer ontology distance from names",
+    )
+}
+
+fn atom_layout_distance_bundle_value(
+    components: &[ArchSigAtomDistanceComponentV0],
+    coverage_refs: &[String],
+) -> ArchSigDistanceValueV0 {
+    let blockers = components
+        .iter()
+        .flat_map(|component| component.value.blocker_refs.clone())
+        .collect::<BTreeSet<_>>()
+        .into_iter()
+        .collect::<Vec<_>>();
+    if !blockers.is_empty() {
+        return ArchSigDistanceValueV0 {
+            status: "blocked".to_string(),
+            measured_value: None,
+            unit: "milli-distance".to_string(),
+            provenance_refs: components
+                .iter()
+                .flat_map(|component| component.value.provenance_refs.clone())
+                .collect::<BTreeSet<_>>()
+                .into_iter()
+                .collect(),
+            evaluator_basis_refs: components
+                .iter()
+                .flat_map(|component| component.evaluator_basis_refs.clone())
+                .collect::<BTreeSet<_>>()
+                .into_iter()
+                .collect(),
+            coverage_refs: coverage_refs.to_vec(),
+            blocker_refs: blockers,
+            reading:
+                "atom layout distance bundle is blocked until all selected component distances are measured; blocked components are not zero"
+                    .to_string(),
+        };
+    }
+    let mut weighted_sum = 0;
+    let mut total_weight = 0;
+    for component in components {
+        if let Some(value) = component.value.measured_value {
+            weighted_sum += value * component.weight;
+            total_weight += component.weight;
+        }
+    }
+    let value = if total_weight == 0 {
+        0
+    } else {
+        weighted_sum / total_weight
+    };
+    measured_part4_distance_value(
+        value,
+        "milli-distance",
+        components
+            .iter()
+            .flat_map(|component| component.value.provenance_refs.clone())
+            .collect::<BTreeSet<_>>()
+            .into_iter()
+            .collect(),
+        components
+            .iter()
+            .flat_map(|component| component.evaluator_basis_refs.clone())
+            .collect::<BTreeSet<_>>()
+            .into_iter()
+            .collect(),
+        coverage_refs,
+        "atom layout distance bundle is the selected weighted aggregate of measured fiber, carrier, valence, and semantic-anchor components",
+    )
+}
+
+fn measured_part4_distance_value(
+    value: i64,
+    unit: &str,
+    provenance_refs: Vec<String>,
+    evaluator_basis_refs: Vec<String>,
+    coverage_refs: &[String],
+    reading: &str,
+) -> ArchSigDistanceValueV0 {
+    ArchSigDistanceValueV0 {
+        status: if value == 0 { "zero" } else { "measured" }.to_string(),
+        measured_value: Some(value),
+        unit: unit.to_string(),
+        provenance_refs,
+        evaluator_basis_refs,
+        coverage_refs: coverage_refs.to_vec(),
+        blocker_refs: Vec::new(),
+        reading: reading.to_string(),
+    }
+}
+
+fn unmeasured_part4_distance_value(
+    unit: &str,
+    provenance_refs: Vec<String>,
+    blocker_refs: Vec<String>,
+    coverage_refs: &[String],
+    reading: &str,
+) -> ArchSigDistanceValueV0 {
+    ArchSigDistanceValueV0 {
+        status: "unmeasured".to_string(),
+        measured_value: None,
+        unit: unit.to_string(),
+        provenance_refs,
+        evaluator_basis_refs: Vec::new(),
+        coverage_refs: coverage_refs.to_vec(),
+        blocker_refs,
+        reading: reading.to_string(),
+    }
+}
+
+fn atom_distance_component(
+    component_kind: &str,
+    weight: i64,
+    value: ArchSigDistanceValueV0,
+) -> ArchSigAtomDistanceComponentV0 {
+    ArchSigAtomDistanceComponentV0 {
+        component_kind: component_kind.to_string(),
+        weight,
+        evaluator_basis_refs: value.evaluator_basis_refs.clone(),
+        value,
+    }
+}
+
+fn atom_high_distance_reasons(
+    components: &[ArchSigAtomDistanceComponentV0],
+    bundle: &ArchSigDistanceValueV0,
+) -> Vec<String> {
+    let mut reasons = components
+        .iter()
+        .filter_map(|component| {
+            let value = component.value.measured_value?;
+            (value >= 500).then(|| {
+                format!(
+                    "{} distance is high at {} {}",
+                    component.component_kind, value, component.value.unit
+                )
+            })
+        })
+        .collect::<Vec<_>>();
+    if bundle.status == "blocked" {
+        reasons.push(
+            "selected atom layout distance is blocked by unmeasured component evidence".to_string(),
+        );
+    }
+    reasons
+}
+
+fn molecule_refs_by_atom_pair(
+    generated_molecules: &[ArchSigGeneratedMoleculeV0],
+) -> BTreeMap<(String, String), Vec<String>> {
+    let mut refs = BTreeMap::<(String, String), Vec<String>>::new();
+    for molecule in generated_molecules {
+        for left_index in 0..molecule.atom_observation_refs.len() {
+            for right_index in (left_index + 1)..molecule.atom_observation_refs.len() {
+                let pair = sorted_pair(
+                    &molecule.atom_observation_refs[left_index],
+                    &molecule.atom_observation_refs[right_index],
+                );
+                refs.entry(pair)
+                    .or_default()
+                    .push(molecule.generated_molecule_id.clone());
+            }
+        }
+    }
+    for values in refs.values_mut() {
+        values.sort();
+        values.dedup();
+    }
+    refs
+}
+
+fn viewer_distance_refs_by_atom_pair(
+    viewer_distance_inputs: &[ArchSigViewerDistanceInputV0],
+) -> BTreeMap<(String, String), Vec<String>> {
+    let mut refs = BTreeMap::<(String, String), Vec<String>>::new();
+    for input in viewer_distance_inputs {
+        let pair = sorted_pair(&input.source_ref, &input.target_ref);
+        refs.entry(pair)
+            .or_default()
+            .push(input.distance_input_id.clone());
+    }
+    refs
+}
+
+fn sorted_pair(left: &str, right: &str) -> (String, String) {
+    if left <= right {
+        (left.to_string(), right.to_string())
+    } else {
+        (right.to_string(), left.to_string())
+    }
+}
+
+fn atom_pair_provenance_refs(
+    left: &ArchMapAtomObservationV0,
+    right: &ArchMapAtomObservationV0,
+) -> Vec<String> {
+    let mut refs = vec![
+        left.atom_observation_id.clone(),
+        right.atom_observation_id.clone(),
+        "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry"
+            .to_string(),
+    ];
+    refs.extend(left.source_refs.iter().map(source_ref_label));
+    refs.extend(right.source_refs.iter().map(source_ref_label));
+    unique_strings(refs.into_iter())
+}
+
+fn atom_carrier_set(atom: &ArchMapAtomObservationV0) -> BTreeSet<String> {
+    let mut carrier = BTreeSet::from([format!("subject:{}", stable_id(&atom.subject_ref))]);
+    carrier.extend(
+        atom.object_refs
+            .iter()
+            .map(|object_ref| format!("object:{}", stable_id(object_ref))),
+    );
+    carrier.extend(
+        atom.source_refs
+            .iter()
+            .map(source_ref_label)
+            .map(|source_ref| format!("source:{}", stable_id(&source_ref))),
+    );
+    carrier
+}
+
+fn atom_valence_set(atom: &ArchMapAtomObservationV0) -> BTreeSet<String> {
+    let family = atom.atom_family.to_ascii_lowercase();
+    let predicate = atom.predicate.to_ascii_lowercase();
+    let mut valence = BTreeSet::from(["can_be_vertex".to_string()]);
+    if family.contains("relation") || predicate.contains("delegates") || predicate.contains("calls")
+    {
+        valence.insert("can_be_edge".to_string());
+    }
+    if family.contains("contract") || predicate.contains("contract") {
+        valence.insert("can_attach_contract".to_string());
+    }
+    if family.contains("state") || predicate.contains("state") {
+        valence.insert("can_own_state".to_string());
+    }
+    if family.contains("effect") || predicate.contains("effect") {
+        valence.insert("can_emit_effect".to_string());
+    }
+    if family.contains("authority") || predicate.contains("authority") {
+        valence.insert("can_require_authority".to_string());
+    }
+    if family.contains("semantic")
+        || predicate.contains("semantic")
+        || predicate.contains("meaning")
+    {
+        valence.insert("can_carry_semantic_reading".to_string());
+    }
+    if family.contains("runtime") || predicate.contains("runtime") {
+        valence.insert("can_participate_runtime_path".to_string());
+    }
+    if family.contains("boundary") || predicate.contains("boundary") {
+        valence.insert("can_be_observed_as_boundary".to_string());
+    }
+    valence
+}
+
+fn semantic_anchor_sets_by_atom(archmap: &ArchMapDocumentV0) -> BTreeMap<String, BTreeSet<String>> {
+    let mut refs = BTreeMap::<String, BTreeSet<String>>::new();
+    for semantic in &archmap.semantic_observations {
+        for atom_ref in &semantic.atom_observation_refs {
+            let entry = refs.entry(atom_ref.clone()).or_default();
+            entry.insert(format!(
+                "semanticObservation:{}",
+                stable_id(&semantic.semantic_observation_id)
+            ));
+            entry.insert(format!(
+                "semanticFamily:{}",
+                stable_id(&semantic.semantic_family)
+            ));
+            entry.insert(format!(
+                "semanticSubject:{}",
+                stable_id(&semantic.subject_ref)
+            ));
+            entry.insert(format!(
+                "semanticPredicate:{}",
+                stable_id(&semantic.predicate)
+            ));
+        }
+    }
+    refs
+}
+
+fn milli_jaccard_distance(left: &BTreeSet<String>, right: &BTreeSet<String>) -> Option<i64> {
+    let union = left.union(right).count();
+    if union == 0 {
+        return None;
+    }
+    let intersection = left.intersection(right).count();
+    Some(1000 - (intersection as i64 * 1000 / union as i64))
+}
+
+fn refs_join(refs: &BTreeSet<String>) -> String {
+    refs.iter().cloned().collect::<Vec<_>>().join("|")
 }
 
 fn atom_shape_ref(atom_observation_ref: &str) -> String {
@@ -13109,6 +13738,7 @@ pub fn validate_archsig_analysis_packet_report(
         check_transfer_bridge_surface(packet),
         check_generated_middle_layer_surface(packet),
         check_part4_distance_foundation_surface(packet),
+        check_atom_distance_reading_surface(packet),
         check_aat_structural_reading_surfaces(packet),
         check_current_state_evolution_boundary(packet),
         check_operation_square_trace_surface(packet),
@@ -13145,6 +13775,7 @@ pub fn validate_archsig_analysis_packet_report(
             .part4_distance_foundation
             .supporting_distances
             .len(),
+        atom_distance_reading_count: packet.atom_distance_readings.len(),
         obstruction_circuit_count: packet.obstruction_circuits.len(),
         signature_axis_count: packet.signature_axes.len(),
         analytic_representation_count: packet.analytic_representations.len(),
@@ -18771,6 +19402,246 @@ fn check_part4_distance_foundation_surface(packet: &ArchSigAnalysisPacketV0) -> 
     )
 }
 
+fn check_atom_distance_reading_surface(packet: &ArchSigAnalysisPacketV0) -> ValidationCheck {
+    let mut examples = Vec::new();
+    let atom_refs = packet
+        .generated_atom_shapes
+        .iter()
+        .map(|shape| shape.atom_observation_ref.as_str())
+        .collect::<BTreeSet<_>>();
+    let viewer_distance_refs = packet
+        .viewer_distance_inputs
+        .iter()
+        .map(|input| input.distance_input_id.as_str())
+        .collect::<BTreeSet<_>>();
+    if atom_refs.len() > 1 && packet.atom_distance_readings.is_empty() {
+        examples.push(generic_validation_example(
+            "atomDistanceReadings",
+            "empty",
+            "packet with multiple observed atoms must expose diagnostic Atom distance readings",
+        ));
+    }
+
+    for reading in &packet.atom_distance_readings {
+        push_blank(
+            &mut examples,
+            "atomDistanceReadings.atomDistanceReadingId",
+            &reading.atom_distance_reading_id,
+        );
+        if reading.source_atom_ref == reading.target_atom_ref {
+            examples.push(generic_validation_example(
+                &reading.atom_distance_reading_id,
+                "atom pair",
+                "Atom distance reading must compare two distinct atoms",
+            ));
+        }
+        if !atom_refs.contains(reading.source_atom_ref.as_str())
+            || !atom_refs.contains(reading.target_atom_ref.as_str())
+        {
+            examples.push(generic_validation_example(
+                &reading.atom_distance_reading_id,
+                "sourceAtomRef/targetAtomRef",
+                "Atom distance reading must refer to generated AtomShape-backed observed atoms",
+            ));
+        }
+        if reading.molecule_refs.is_empty() {
+            examples.push(generic_validation_example(
+                &reading.atom_distance_reading_id,
+                "moleculeRefs",
+                "Atom distance reading must be scoped by molecule/configuration membership",
+            ));
+        }
+        if reading.distance_profile_ref != packet.part4_distance_foundation.profile.profile_id
+            || reading.diagnostic_scope_ref
+                != packet.part4_distance_foundation.diagnostic_scope.scope_id
+        {
+            examples.push(generic_validation_example(
+                &reading.atom_distance_reading_id,
+                "profile/scope",
+                "Atom distance reading must be tied to the selected Part IV DistanceProfile and DiagnosticScope",
+            ));
+        }
+        if !reading
+            .evidence_boundary
+            .contains("viewer layout distance refs remain separate")
+        {
+            examples.push(generic_validation_example(
+                &reading.atom_distance_reading_id,
+                "evidenceBoundary",
+                "Atom diagnostic distance must separate viewer layout refs from the diagnostic value",
+            ));
+        }
+        for viewer_ref in &reading.viewer_distance_input_refs {
+            if !viewer_distance_refs.contains(viewer_ref.as_str()) {
+                examples.push(generic_validation_example(
+                    &reading.atom_distance_reading_id,
+                    viewer_ref,
+                    "viewer distance refs must resolve when retained as separated layout evidence",
+                ));
+            }
+        }
+
+        check_atom_distance_value(
+            &mut examples,
+            &reading.atom_distance_reading_id,
+            "fiberDistance",
+            &reading.fiber_distance,
+            "fiber:",
+            true,
+        );
+        check_atom_distance_value(
+            &mut examples,
+            &reading.atom_distance_reading_id,
+            "carrierDistance",
+            &reading.carrier_distance,
+            "carrier:",
+            true,
+        );
+        check_atom_distance_value(
+            &mut examples,
+            &reading.atom_distance_reading_id,
+            "valenceDistance",
+            &reading.valence_distance,
+            "valence:",
+            true,
+        );
+        check_atom_distance_value(
+            &mut examples,
+            &reading.atom_distance_reading_id,
+            "semanticAnchorDistance",
+            &reading.semantic_anchor_distance,
+            "semantic:",
+            false,
+        );
+
+        let component_kinds = reading
+            .component_distances
+            .iter()
+            .map(|component| component.component_kind.as_str())
+            .collect::<BTreeSet<_>>();
+        for required in ["fiber", "carrier", "valence", "semanticAnchor"] {
+            if !component_kinds.contains(required) {
+                examples.push(generic_validation_example(
+                    &reading.atom_distance_reading_id,
+                    required,
+                    "Atom distance reading must retain all Part IV Atom geometry components",
+                ));
+            }
+        }
+        if matches!(
+            reading.semantic_anchor_distance.status.as_str(),
+            "unmeasured" | "blocked" | "unavailable"
+        ) && matches!(
+            reading.atom_layout_distance_bundle.status.as_str(),
+            "measured" | "zero"
+        ) {
+            examples.push(generic_validation_example(
+                &reading.atom_distance_reading_id,
+                "atomLayoutDistanceBundle",
+                "layout bundle must not become measured or zero while semantic anchor distance is unmeasured or blocked",
+            ));
+        }
+        if matches!(
+            reading.atom_layout_distance_bundle.status.as_str(),
+            "measured" | "zero"
+        ) {
+            for required_prefix in ["fiber:", "carrier:", "valence:", "semantic:"] {
+                if !reading
+                    .atom_layout_distance_bundle
+                    .evaluator_basis_refs
+                    .iter()
+                    .any(|basis| basis.starts_with(required_prefix))
+                {
+                    examples.push(generic_validation_example(
+                        &reading.atom_distance_reading_id,
+                        required_prefix,
+                        "measured atom layout bundle must retain component evaluator basis refs",
+                    ));
+                }
+            }
+        }
+    }
+
+    check_from_examples(
+        "archsig-analysis-packet-atom-distance-readings",
+        "packet exposes proxy-free Part IV Atom distance evaluator readings separated from viewer layout distance",
+        examples,
+        "fail",
+    )
+}
+
+fn check_atom_distance_value(
+    examples: &mut Vec<ValidationExample>,
+    reading_id: &str,
+    field: &str,
+    value: &ArchSigDistanceValueV0,
+    required_basis_prefix: &str,
+    must_measure: bool,
+) {
+    let allowed = BTreeSet::from([
+        "measured",
+        "zero",
+        "unmeasured",
+        "unavailable",
+        "incomparable",
+        "infinite",
+        "blocked",
+    ]);
+    if !allowed.contains(value.status.as_str()) {
+        examples.push(generic_validation_example(
+            reading_id,
+            field,
+            "Atom distance status must be measured, zero, unmeasured, unavailable, incomparable, infinite, or blocked",
+        ));
+    }
+    if must_measure && !matches!(value.status.as_str(), "measured" | "zero") {
+        examples.push(generic_validation_example(
+            reading_id,
+            field,
+            "fiber, carrier, and valence distance must be measured from ArchMap atom fields, not left as presence-only rows",
+        ));
+    }
+    if matches!(value.status.as_str(), "measured" | "zero") {
+        if value.measured_value.is_none()
+            || value.provenance_refs.is_empty()
+            || value.evaluator_basis_refs.is_empty()
+            || value.coverage_refs.is_empty()
+        {
+            examples.push(generic_validation_example(
+                reading_id,
+                field,
+                "measured or zero Atom distance must retain value, provenance refs, evaluator basis refs, and coverage refs",
+            ));
+        }
+        if !value
+            .evaluator_basis_refs
+            .iter()
+            .any(|basis| basis.starts_with(required_basis_prefix))
+        {
+            examples.push(generic_validation_example(
+                reading_id,
+                required_basis_prefix,
+                "measured Atom distance must be backed by component-specific evaluator basis refs, not name-only or presence-only evidence",
+            ));
+        }
+    } else if value.blocker_refs.is_empty() {
+        examples.push(generic_validation_example(
+            reading_id,
+            field,
+            "unmeasured, unavailable, incomparable, infinite, or blocked Atom distance must retain blocker refs",
+        ));
+    }
+    if contains_hard_coded_marker(&value.provenance_refs)
+        || contains_hard_coded_marker(&value.evaluator_basis_refs)
+    {
+        examples.push(generic_validation_example(
+            reading_id,
+            "hard-coded fixture marker",
+            "Atom distance readings must not be backed by hard-coded fixture markers",
+        ));
+    }
+}
+
 fn part4_distance_refs_are_concern_only(
     provenance_refs: &[String],
     evaluator_basis_refs: &[String],
@@ -20859,6 +21730,69 @@ mod tests {
                         .target
                         .as_deref()
                         .is_some_and(|target| target == "concern-only provenance")
+                })
+        }));
+    }
+
+    #[test]
+    fn atom_distance_readings_keep_semantic_gap_unmeasured() {
+        let packet = static_archsig_analysis_packet();
+        let semantic_gap_reading = packet
+            .atom_distance_readings
+            .iter()
+            .find(|reading| reading.semantic_anchor_distance.status == "unmeasured")
+            .expect("static fixture has atom pairs without semantic anchor evidence");
+
+        assert_eq!(
+            semantic_gap_reading.atom_layout_distance_bundle.status,
+            "blocked"
+        );
+        assert!(
+            semantic_gap_reading
+                .semantic_anchor_distance
+                .measured_value
+                .is_none()
+        );
+        assert!(
+            !semantic_gap_reading
+                .semantic_anchor_distance
+                .blocker_refs
+                .is_empty()
+        );
+        assert!(
+            !semantic_gap_reading.viewer_distance_input_refs.is_empty()
+                && semantic_gap_reading
+                    .evidence_boundary
+                    .contains("viewer layout distance refs remain separate")
+        );
+    }
+
+    #[test]
+    fn atom_distance_negative_fixture_name_only_basis_fails_validation() {
+        let mut packet = static_archsig_analysis_packet();
+        let reading = packet
+            .atom_distance_readings
+            .first_mut()
+            .expect("static fixture has atom distance readings");
+        reading.fiber_distance.evaluator_basis_refs = vec![
+            reading.source_atom_ref.clone(),
+            reading.target_atom_ref.clone(),
+        ];
+
+        let report = validate_archsig_analysis_packet_report(
+            &packet,
+            "negative-fixture-atom-distance-name-only-basis.json",
+        );
+
+        assert_eq!(report.summary.result, "fail");
+        assert!(report.checks.iter().any(|check| {
+            check.id == "archsig-analysis-packet-atom-distance-readings"
+                && check.result == "fail"
+                && check.examples.iter().any(|example| {
+                    example
+                        .target
+                        .as_deref()
+                        .is_some_and(|target| target == "fiber:")
                 })
         }));
     }

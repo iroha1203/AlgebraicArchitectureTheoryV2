@@ -990,6 +990,8 @@ pub struct ArchSigAnalysisPacketV0 {
     pub viewer_distance_inputs: Vec<ArchSigViewerDistanceInputV0>,
     #[serde(default)]
     pub part4_distance_foundation: ArchSigPart4DistanceFoundationV0,
+    #[serde(default)]
+    pub atom_distance_readings: Vec<ArchSigAtomDistanceReadingV0>,
     pub obstruction_circuits: Vec<ArchSigObstructionCircuitV0>,
     pub signature_axes: Vec<ArchSigSignatureAxisReadingV0>,
     pub analytic_representations: Vec<ArchSigAnalyticRepresentationV0>,
@@ -1758,6 +1760,36 @@ pub struct ArchSigDistanceStatusSummaryV0 {
     pub infinite_count: usize,
     pub blocked_count: usize,
     pub schema_foundation_only_count: usize,
+}
+
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigAtomDistanceReadingV0 {
+    pub atom_distance_reading_id: String,
+    pub source_atom_ref: String,
+    pub target_atom_ref: String,
+    pub molecule_refs: Vec<String>,
+    pub distance_profile_ref: String,
+    pub diagnostic_scope_ref: String,
+    pub fiber_distance: ArchSigDistanceValueV0,
+    pub carrier_distance: ArchSigDistanceValueV0,
+    pub valence_distance: ArchSigDistanceValueV0,
+    pub semantic_anchor_distance: ArchSigDistanceValueV0,
+    pub atom_layout_distance_bundle: ArchSigDistanceValueV0,
+    pub component_distances: Vec<ArchSigAtomDistanceComponentV0>,
+    pub high_distance_reasons: Vec<String>,
+    pub viewer_distance_input_refs: Vec<String>,
+    pub evidence_boundary: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigAtomDistanceComponentV0 {
+    pub component_kind: String,
+    pub weight: i64,
+    pub value: ArchSigDistanceValueV0,
+    pub evaluator_basis_refs: Vec<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -3521,6 +3553,8 @@ pub struct ArchSigAnalysisPacketValidationSummaryV0 {
     pub viewer_distance_input_count: usize,
     #[serde(default)]
     pub part4_supporting_distance_count: usize,
+    #[serde(default)]
+    pub atom_distance_reading_count: usize,
     pub obstruction_circuit_count: usize,
     pub signature_axis_count: usize,
     pub analytic_representation_count: usize,

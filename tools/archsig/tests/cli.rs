@@ -3355,17 +3355,59 @@ fn assert_north_star_packet_surfaces(json: &Value) {
             .expect("supporting distances are array")
             .iter()
             .all(|entry| {
-                entry["value"]["status"] != "zero"
-                    && entry["value"]["status"] != "measured"
-                    && entry["value"]["blockerRefs"]
-                        .as_array()
-                        .is_some_and(|refs| !refs.is_empty())
+                if entry["distanceFamily"] == "atomGeometry" {
+                    (entry["value"]["status"] == "measured"
+                        || entry["value"]["status"] == "zero"
+                        || entry["value"]["status"] == "blocked")
+                        && entry["value"]["evaluatorBasisRefs"]
+                            .as_array()
+                            .is_some_and(|refs| !refs.is_empty())
+                        && (entry["value"]["status"] != "blocked"
+                            || entry["value"]["blockerRefs"]
+                                .as_array()
+                                .is_some_and(|refs| !refs.is_empty()))
+                } else {
+                    entry["value"]["status"] != "zero"
+                        && entry["value"]["status"] != "measured"
+                        && entry["value"]["blockerRefs"]
+                            .as_array()
+                            .is_some_and(|refs| !refs.is_empty())
+                }
             })
+            && part4_distance["statusSummary"]["blockedCount"]
+                .as_u64()
+                .is_some_and(|count| count >= 1)
             && part4_distance["statusSummary"]["unmeasuredCount"]
                 .as_u64()
-                .is_some_and(|count| count >= 7)
+                .is_some_and(|count| count >= 6)
             && part4_distance["statusSummary"]["schemaFoundationOnlyCount"] == 0,
-        "Part IV foundation must keep unimplemented evaluators unmeasured instead of treating them as zero or measured"
+        "Part IV foundation must route atomGeometry through atomDistanceReadings while preserving semantic blockers and keeping remaining evaluators unmeasured"
+    );
+    let atom_distance_readings = json["atomDistanceReadings"]
+        .as_array()
+        .expect("atom distance readings are array");
+    assert!(
+        !atom_distance_readings.is_empty()
+            && atom_distance_readings.iter().any(|entry| {
+                entry["semanticAnchorDistance"]["status"] == "unmeasured"
+                    && entry["atomLayoutDistanceBundle"]["status"] == "blocked"
+            })
+            && atom_distance_readings.iter().any(|entry| {
+                entry["semanticAnchorDistance"]["status"] == "zero"
+                    || entry["semanticAnchorDistance"]["status"] == "measured"
+            }),
+        "Atom distance readings must measure fiber/carrier/valence while preserving missing semantic anchors as blocked, not zero"
+    );
+    assert!(
+        atom_distance_readings.iter().all(|entry| {
+            entry["viewerDistanceInputRefs"]
+                .as_array()
+                .is_some_and(|refs| !refs.is_empty())
+                && entry["evidenceBoundary"].as_str().is_some_and(|boundary| {
+                    boundary.contains("viewer layout distance refs remain separate")
+                })
+        }),
+        "Atom diagnostic distance must retain separated viewer layout refs without reading them as diagnostic values"
     );
     assert!(
         json.get("workflowSignalReadings").is_none() && !has_nested_key(json, "signalDensityScore"),
