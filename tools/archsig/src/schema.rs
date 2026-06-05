@@ -992,6 +992,8 @@ pub struct ArchSigAnalysisPacketV0 {
     pub part4_distance_foundation: ArchSigPart4DistanceFoundationV0,
     #[serde(default)]
     pub atom_distance_readings: Vec<ArchSigAtomDistanceReadingV0>,
+    #[serde(default)]
+    pub configuration_distance_readings: Vec<ArchSigConfigurationDistanceReadingV0>,
     pub obstruction_circuits: Vec<ArchSigObstructionCircuitV0>,
     pub signature_axes: Vec<ArchSigSignatureAxisReadingV0>,
     pub analytic_representations: Vec<ArchSigAnalyticRepresentationV0>,
@@ -1547,6 +1549,8 @@ pub struct ArchSigMoleculeReadingV0 {
     pub molecule_observation_ref: String,
     pub law_refs: Vec<String>,
     pub atom_observation_refs: Vec<String>,
+    #[serde(default)]
+    pub configuration_graph_refs: Vec<String>,
     pub reading: String,
     pub evidence_summary: String,
     pub evidence_boundary: String,
@@ -1790,6 +1794,40 @@ pub struct ArchSigAtomDistanceComponentV0 {
     pub weight: i64,
     pub value: ArchSigDistanceValueV0,
     pub evaluator_basis_refs: Vec<String>,
+}
+
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigConfigurationDistanceReadingV0 {
+    pub configuration_distance_reading_id: String,
+    pub source_atom_ref: String,
+    pub target_atom_ref: String,
+    pub configuration_ref: String,
+    pub molecule_refs: Vec<String>,
+    pub distance_profile_ref: String,
+    pub diagnostic_scope_ref: String,
+    pub hypergraph_ref: String,
+    pub typed_hyperedges: Vec<ArchSigConfigurationHyperedgeV0>,
+    pub shortest_path_atom_refs: Vec<String>,
+    pub shortest_path_hyperedge_refs: Vec<String>,
+    pub configuration_indexed_distance: ArchSigDistanceValueV0,
+    pub context_distance: ArchSigDistanceValueV0,
+    pub small_molecule_weight_milli: i64,
+    pub configuration_distance_bundle: ArchSigDistanceValueV0,
+    pub high_context_overlap: bool,
+    pub unreachable_pair_refs: Vec<String>,
+    pub evidence_boundary: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigConfigurationHyperedgeV0 {
+    pub hyperedge_id: String,
+    pub hyperedge_kind: String,
+    pub atom_refs: Vec<String>,
+    pub source_refs: Vec<String>,
+    pub evidence_boundary: String,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -3555,6 +3593,8 @@ pub struct ArchSigAnalysisPacketValidationSummaryV0 {
     pub part4_supporting_distance_count: usize,
     #[serde(default)]
     pub atom_distance_reading_count: usize,
+    #[serde(default)]
+    pub configuration_distance_reading_count: usize,
     pub obstruction_circuit_count: usize,
     pub signature_axis_count: usize,
     pub analytic_representation_count: usize,

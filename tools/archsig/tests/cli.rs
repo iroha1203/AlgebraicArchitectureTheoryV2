@@ -1372,8 +1372,11 @@ fn cli_analyze_emit_raw_artifacts_writes_field_sig_handoff_packet() {
                 .is_some_and(|count| count > 0)
             && analysis_validation["summary"]["viewerDistanceInputCount"]
                 .as_u64()
+                .is_some_and(|count| count > 0)
+            && analysis_validation["summary"]["configurationDistanceReadingCount"]
+                .as_u64()
                 .is_some_and(|count| count > 0),
-        "validation summary must count generated middle-layer and viewer distance surfaces"
+        "validation summary must count generated middle-layer, viewer distance, and configuration distance surfaces"
     );
     let llm_packet = read_json(&out_dir.join("llm-interpretation-packet.json"));
     assert_eq!(llm_packet, analysis_packet["llmInterpretationPacket"]);
@@ -3355,7 +3358,9 @@ fn assert_north_star_packet_surfaces(json: &Value) {
             .expect("supporting distances are array")
             .iter()
             .all(|entry| {
-                if entry["distanceFamily"] == "atomGeometry" {
+                if entry["distanceFamily"] == "atomGeometry"
+                    || entry["distanceFamily"] == "configurationGeometry"
+                {
                     (entry["value"]["status"] == "measured"
                         || entry["value"]["status"] == "zero"
                         || entry["value"]["status"] == "blocked")
@@ -3376,12 +3381,12 @@ fn assert_north_star_packet_surfaces(json: &Value) {
             })
             && part4_distance["statusSummary"]["blockedCount"]
                 .as_u64()
-                .is_some_and(|count| count >= 1)
+                .is_some_and(|count| count >= 2)
             && part4_distance["statusSummary"]["unmeasuredCount"]
                 .as_u64()
-                .is_some_and(|count| count >= 6)
+                .is_some_and(|count| count >= 5)
             && part4_distance["statusSummary"]["schemaFoundationOnlyCount"] == 0,
-        "Part IV foundation must route atomGeometry through atomDistanceReadings while preserving semantic blockers and keeping remaining evaluators unmeasured"
+        "Part IV foundation must route atomGeometry/configurationGeometry through evaluator readings while preserving semantic/gap blockers and keeping remaining evaluators unmeasured"
     );
     let atom_distance_readings = json["atomDistanceReadings"]
         .as_array()
@@ -3408,6 +3413,55 @@ fn assert_north_star_packet_surfaces(json: &Value) {
                 })
         }),
         "Atom diagnostic distance must retain separated viewer layout refs without reading them as diagnostic values"
+    );
+    let configuration_distance_readings = json["configurationDistanceReadings"]
+        .as_array()
+        .expect("configuration distance readings are array");
+    assert!(
+        !configuration_distance_readings.is_empty()
+            && configuration_distance_readings.iter().any(|entry| {
+                entry["highContextOverlap"] == true
+                    && entry["configurationIndexedDistance"]["status"] == "measured"
+                    && entry["configurationDistanceBundle"]["status"] == "blocked"
+                    && entry["configurationDistanceBundle"]["blockerRefs"]
+                        .as_array()
+                        .is_some_and(|refs| {
+                            refs.iter().any(|value| {
+                                value
+                                    .as_str()
+                                    .is_some_and(|s| s.starts_with("observationGap:"))
+                            })
+                        })
+            }),
+        "Configuration distance readings must compute hypergraph/context distances while preserving observation gaps as blockers"
+    );
+    assert!(
+        configuration_distance_readings.iter().all(|entry| {
+            entry["typedHyperedges"].as_array().is_some_and(|edges| {
+                !edges.is_empty()
+                    && edges.iter().all(|edge| {
+                        edge["hyperedgeId"].as_str().is_some()
+                            && edge["hyperedgeKind"].as_str().is_some()
+                            && edge["atomRefs"]
+                                .as_array()
+                                .is_some_and(|refs| refs.len() >= 2)
+                            && edge["sourceRefs"]
+                                .as_array()
+                                .is_some_and(|refs| !refs.is_empty())
+                    })
+            }) && entry["configurationIndexedDistance"]["evaluatorBasisRefs"]
+                .as_array()
+                .is_some_and(|refs| {
+                    refs.iter()
+                        .any(|value| value.as_str().is_some_and(|s| s.starts_with("hyperedge:")))
+                        && refs.iter().any(|value| {
+                            value
+                                .as_str()
+                                .is_some_and(|s| s.starts_with("shortestPath:"))
+                        })
+                })
+        }),
+        "Configuration distance readings must retain typed hyperedge and shortest-path evaluator basis refs"
     );
     assert!(
         json.get("workflowSignalReadings").is_none() && !has_nested_key(json, "signalDensityScore"),

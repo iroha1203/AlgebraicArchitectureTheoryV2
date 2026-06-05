@@ -599,6 +599,10 @@
         "atom:contract:create-user",
         "atom:capability:create-user"
       ],
+      "configurationGraphRefs": [
+        "configuration-hypergraph:fixture-archmap-atom-observation",
+        "configuration-hypergraph:molecule-user-request-responsibility"
+      ],
       "reading": "molecule:user-request-responsibility is read as a responsibility molecule under selected LawPolicy",
       "evidenceSummary": "molecule uses 5 atom observation refs and 1 source refs",
       "evidenceBoundary": "law-relative molecule reading over ArchMap observations; not a primitive atom",
@@ -1386,25 +1390,36 @@
         "sourceRef": "ArchMap",
         "targetRef": "Part4DistanceEngine",
         "value": {
-          "status": "unmeasured",
-          "unit": "selected-distance-unit",
+          "status": "blocked",
+          "unit": "configuration-distance",
           "provenanceRefs": [
-            "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md",
-            "docs/aat/AAT_Distance_Extension_Design.md"
+            "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#3-configuration-geometry",
+            "configurationDistanceReadings"
           ],
-          "evaluatorBasisRefs": [],
+          "evaluatorBasisRefs": [
+            "configuration-distance:atom-capability-create-user:atom-component-route-users",
+            "configuration-distance:atom-capability-create-user:atom-component-service-user",
+            "configuration-distance:atom-capability-create-user:atom-contract-create-user",
+            "configuration-distance:atom-capability-create-user:atom-relation-route-service",
+            "configuration-distance:atom-component-route-users:atom-component-service-user",
+            "configuration-distance:atom-component-route-users:atom-contract-create-user",
+            "configuration-distance:atom-component-route-users:atom-relation-route-service",
+            "configuration-distance:atom-component-service-user:atom-contract-create-user",
+            "configuration-distance:atom-component-service-user:atom-relation-route-service",
+            "configuration-distance:atom-contract-create-user:atom-relation-route-service"
+          ],
           "coverageRefs": [
             "coverage:layer-atoms",
             "coverage:semantic-contract-atoms"
           ],
           "blockerRefs": [
-            "issue:#1703 configuration hypergraph evaluator"
+            "observationGap:gap-runtime-user-db-trace:runtime-trace-was-requested-but-not-supplied"
           ],
-          "reading": "distance family is represented in the Part4 contract but has not been measured by its evaluator yet"
+          "reading": "Configuration geometry distance rows are computed from typed hypergraph shortest paths and molecule context; family-level status remains blocked while observation gaps could hide configuration edges"
         },
         "profileRef": "part4-distance-profile:llm-native-aat-law-policy-fixture",
         "diagnosticScopeRef": "part4-diagnostic-scope:fixture-archmap-atom-observation",
-        "evidenceBoundary": "unmeasured means no evaluator result has been supplied; it must not be aggregated as zero",
+        "evidenceBoundary": "configurationGeometry is measured only through configurationDistanceReadings; missing relation and observation gaps are blockers, not zero distances",
         "nonConclusions": [
           "ArchSig analysis packet is not a Lean theorem proof",
           "ArchSig analysis packet is not global architecture truth",
@@ -1599,11 +1614,11 @@
     "statusSummary": {
       "measuredCount": 0,
       "zeroCount": 0,
-      "unmeasuredCount": 6,
+      "unmeasuredCount": 5,
       "unavailableCount": 0,
       "incomparableCount": 0,
       "infiniteCount": 0,
-      "blockedCount": 1,
+      "blockedCount": 2,
       "schemaFoundationOnlyCount": 0
     },
     "measurementBoundary": "Part4 distance foundation is a proxy-free measurement contract: no distance is measured until an evaluator supplies provenance, basis refs, and coverage refs",
@@ -4336,6 +4351,1265 @@
         "viewer-distance:generated-molecule-molecule-user-request-responsibility:atom-relation-route-service:atom-contract-create-user"
       ],
       "evidenceBoundary": "Atom diagnostic distance is computed from ArchMap atom, carrier, valence, and semantic evidence; viewer layout distance refs remain separate evidence and are not the diagnostic value",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    }
+  ],
+  "configurationDistanceReadings": [
+    {
+      "configurationDistanceReadingId": "configuration-distance:atom-capability-create-user:atom-component-route-users",
+      "sourceAtomRef": "atom:capability:create-user",
+      "targetAtomRef": "atom:component:route-users",
+      "configurationRef": "configuration:generated-molecule:molecule-user-request-responsibility",
+      "moleculeRefs": [
+        "generated-molecule:molecule-user-request-responsibility"
+      ],
+      "distanceProfileRef": "part4-distance-profile:llm-native-aat-law-policy-fixture",
+      "diagnosticScopeRef": "part4-diagnostic-scope:fixture-archmap-atom-observation",
+      "hypergraphRef": "configuration-hypergraph:fixture-archmap-atom-observation",
+      "typedHyperedges": [
+        {
+          "hyperedgeId": "configuration-hypergraph:fixture-archmap-atom-observation:hyperedge:moleculeMembership:atom-capability-create-user-atom-component-route-users-atom-component-service-user-atom-contract-create-user-atom-relation-route-service",
+          "hyperedgeKind": "moleculeMembership",
+          "atomRefs": [
+            "atom:capability:create-user",
+            "atom:component:route-users",
+            "atom:component:service-user",
+            "atom:contract:create-user",
+            "atom:relation:route-service"
+          ],
+          "sourceRefs": [
+            "molecule:user-request-responsibility"
+          ],
+          "evidenceBoundary": "typed configuration hyperedge is extracted from explicit ArchMap observation refs; absent relations are not synthesized"
+        }
+      ],
+      "shortestPathAtomRefs": [
+        "atom:capability:create-user",
+        "atom:component:route-users"
+      ],
+      "shortestPathHyperedgeRefs": [
+        "configuration-hypergraph:fixture-archmap-atom-observation:hyperedge:moleculeMembership:atom-capability-create-user-atom-component-route-users-atom-component-service-user-atom-contract-create-user-atom-relation-route-service"
+      ],
+      "configurationIndexedDistance": {
+        "status": "measured",
+        "measuredValue": 1,
+        "unit": "configuration-hop",
+        "provenanceRefs": [
+          "atom:capability:create-user",
+          "atom:component:route-users",
+          "configuration-hypergraph:fixture-archmap-atom-observation:hyperedge:moleculeMembership:atom-capability-create-user-atom-component-route-users-atom-component-service-user-atom-contract-create-user-atom-relation-route-service",
+          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
+          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#3-configuration-geometry",
+          "molecule:user-request-responsibility",
+          "src-route-users",
+          "test-user-contract"
+        ],
+        "evaluatorBasisRefs": [
+          "shortestPath:atom:atom-capability-create-user",
+          "shortestPath:atom:atom-component-route-users",
+          "hyperedge:configuration-hypergraph:fixture-archmap-atom-observation:hyperedge:moleculeMembership:atom-capability-create-user-atom-component-route-users-atom-component-service-user-atom-contract-create-user-atom-relation-route-service"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [],
+        "reading": "configuration-indexed distance is the shortest path length in the typed ArchMap configuration hypergraph"
+      },
+      "contextDistance": {
+        "status": "zero",
+        "measuredValue": 0,
+        "unit": "milli-distance",
+        "provenanceRefs": [
+          "atom:capability:create-user",
+          "atom:component:route-users",
+          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
+          "src-route-users",
+          "test-user-contract"
+        ],
+        "evaluatorBasisRefs": [
+          "context:left=generated-molecule:molecule-user-request-responsibility",
+          "context:right=generated-molecule:molecule-user-request-responsibility"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [],
+        "reading": "context distance is one minus Jaccard overlap of observed molecule memberships"
+      },
+      "smallMoleculeWeightMilli": 200,
+      "configurationDistanceBundle": {
+        "status": "blocked",
+        "unit": "configuration-distance",
+        "provenanceRefs": [
+          "atom:capability:create-user",
+          "atom:component:route-users",
+          "configuration-hypergraph:fixture-archmap-atom-observation:hyperedge:moleculeMembership:atom-capability-create-user-atom-component-route-users-atom-component-service-user-atom-contract-create-user-atom-relation-route-service",
+          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
+          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#3-configuration-geometry",
+          "molecule:user-request-responsibility",
+          "src-route-users",
+          "test-user-contract"
+        ],
+        "evaluatorBasisRefs": [
+          "context:left=generated-molecule:molecule-user-request-responsibility",
+          "context:right=generated-molecule:molecule-user-request-responsibility",
+          "hyperedge:configuration-hypergraph:fixture-archmap-atom-observation:hyperedge:moleculeMembership:atom-capability-create-user-atom-component-route-users-atom-component-service-user-atom-contract-create-user-atom-relation-route-service",
+          "shortestPath:atom:atom-capability-create-user",
+          "shortestPath:atom:atom-component-route-users",
+          "smallMoleculeWeightMilli:200"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [
+          "observationGap:gap-runtime-user-db-trace:runtime-trace-was-requested-but-not-supplied"
+        ],
+        "reading": "configuration distance bundle is blocked until selected configuration paths, context, and observation gaps are resolved; blockers are not numeric zero"
+      },
+      "highContextOverlap": true,
+      "unreachablePairRefs": [],
+      "evidenceBoundary": "Configuration distance is computed for molecule-local pairs plus bounded cross-context diagnostic pairs from typed ArchMap hyperedges and molecule context; observation gaps block aggregation and are not measured zero",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    },
+    {
+      "configurationDistanceReadingId": "configuration-distance:atom-capability-create-user:atom-component-service-user",
+      "sourceAtomRef": "atom:capability:create-user",
+      "targetAtomRef": "atom:component:service-user",
+      "configurationRef": "configuration:generated-molecule:molecule-user-request-responsibility",
+      "moleculeRefs": [
+        "generated-molecule:molecule-user-request-responsibility"
+      ],
+      "distanceProfileRef": "part4-distance-profile:llm-native-aat-law-policy-fixture",
+      "diagnosticScopeRef": "part4-diagnostic-scope:fixture-archmap-atom-observation",
+      "hypergraphRef": "configuration-hypergraph:fixture-archmap-atom-observation",
+      "typedHyperedges": [
+        {
+          "hyperedgeId": "configuration-hypergraph:fixture-archmap-atom-observation:hyperedge:contractAttachment:atom-capability-create-user-atom-component-service-user-atom-contract-create-user-atom-relation-route-service",
+          "hyperedgeKind": "contractAttachment",
+          "atomRefs": [
+            "atom:capability:create-user",
+            "atom:component:service-user",
+            "atom:contract:create-user",
+            "atom:relation:route-service"
+          ],
+          "sourceRefs": [
+            "test-user-contract"
+          ],
+          "evidenceBoundary": "typed configuration hyperedge is extracted from explicit ArchMap observation refs; absent relations are not synthesized"
+        }
+      ],
+      "shortestPathAtomRefs": [
+        "atom:capability:create-user",
+        "atom:component:service-user"
+      ],
+      "shortestPathHyperedgeRefs": [
+        "configuration-hypergraph:fixture-archmap-atom-observation:hyperedge:contractAttachment:atom-capability-create-user-atom-component-service-user-atom-contract-create-user-atom-relation-route-service"
+      ],
+      "configurationIndexedDistance": {
+        "status": "measured",
+        "measuredValue": 1,
+        "unit": "configuration-hop",
+        "provenanceRefs": [
+          "atom:capability:create-user",
+          "atom:component:service-user",
+          "configuration-hypergraph:fixture-archmap-atom-observation:hyperedge:contractAttachment:atom-capability-create-user-atom-component-service-user-atom-contract-create-user-atom-relation-route-service",
+          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
+          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#3-configuration-geometry",
+          "src-service-user",
+          "test-user-contract"
+        ],
+        "evaluatorBasisRefs": [
+          "shortestPath:atom:atom-capability-create-user",
+          "shortestPath:atom:atom-component-service-user",
+          "hyperedge:configuration-hypergraph:fixture-archmap-atom-observation:hyperedge:contractAttachment:atom-capability-create-user-atom-component-service-user-atom-contract-create-user-atom-relation-route-service"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [],
+        "reading": "configuration-indexed distance is the shortest path length in the typed ArchMap configuration hypergraph"
+      },
+      "contextDistance": {
+        "status": "zero",
+        "measuredValue": 0,
+        "unit": "milli-distance",
+        "provenanceRefs": [
+          "atom:capability:create-user",
+          "atom:component:service-user",
+          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
+          "src-service-user",
+          "test-user-contract"
+        ],
+        "evaluatorBasisRefs": [
+          "context:left=generated-molecule:molecule-user-request-responsibility",
+          "context:right=generated-molecule:molecule-user-request-responsibility"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [],
+        "reading": "context distance is one minus Jaccard overlap of observed molecule memberships"
+      },
+      "smallMoleculeWeightMilli": 200,
+      "configurationDistanceBundle": {
+        "status": "blocked",
+        "unit": "configuration-distance",
+        "provenanceRefs": [
+          "atom:capability:create-user",
+          "atom:component:service-user",
+          "configuration-hypergraph:fixture-archmap-atom-observation:hyperedge:contractAttachment:atom-capability-create-user-atom-component-service-user-atom-contract-create-user-atom-relation-route-service",
+          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
+          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#3-configuration-geometry",
+          "src-service-user",
+          "test-user-contract"
+        ],
+        "evaluatorBasisRefs": [
+          "context:left=generated-molecule:molecule-user-request-responsibility",
+          "context:right=generated-molecule:molecule-user-request-responsibility",
+          "hyperedge:configuration-hypergraph:fixture-archmap-atom-observation:hyperedge:contractAttachment:atom-capability-create-user-atom-component-service-user-atom-contract-create-user-atom-relation-route-service",
+          "shortestPath:atom:atom-capability-create-user",
+          "shortestPath:atom:atom-component-service-user",
+          "smallMoleculeWeightMilli:200"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [
+          "observationGap:gap-runtime-user-db-trace:runtime-trace-was-requested-but-not-supplied"
+        ],
+        "reading": "configuration distance bundle is blocked until selected configuration paths, context, and observation gaps are resolved; blockers are not numeric zero"
+      },
+      "highContextOverlap": true,
+      "unreachablePairRefs": [],
+      "evidenceBoundary": "Configuration distance is computed for molecule-local pairs plus bounded cross-context diagnostic pairs from typed ArchMap hyperedges and molecule context; observation gaps block aggregation and are not measured zero",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    },
+    {
+      "configurationDistanceReadingId": "configuration-distance:atom-capability-create-user:atom-contract-create-user",
+      "sourceAtomRef": "atom:capability:create-user",
+      "targetAtomRef": "atom:contract:create-user",
+      "configurationRef": "configuration:generated-molecule:molecule-user-request-responsibility",
+      "moleculeRefs": [
+        "generated-molecule:molecule-user-request-responsibility"
+      ],
+      "distanceProfileRef": "part4-distance-profile:llm-native-aat-law-policy-fixture",
+      "diagnosticScopeRef": "part4-diagnostic-scope:fixture-archmap-atom-observation",
+      "hypergraphRef": "configuration-hypergraph:fixture-archmap-atom-observation",
+      "typedHyperedges": [
+        {
+          "hyperedgeId": "configuration-hypergraph:fixture-archmap-atom-observation:hyperedge:contractAttachment:atom-capability-create-user-atom-component-service-user-atom-contract-create-user-atom-relation-route-service",
+          "hyperedgeKind": "contractAttachment",
+          "atomRefs": [
+            "atom:capability:create-user",
+            "atom:component:service-user",
+            "atom:contract:create-user",
+            "atom:relation:route-service"
+          ],
+          "sourceRefs": [
+            "test-user-contract"
+          ],
+          "evidenceBoundary": "typed configuration hyperedge is extracted from explicit ArchMap observation refs; absent relations are not synthesized"
+        }
+      ],
+      "shortestPathAtomRefs": [
+        "atom:capability:create-user",
+        "atom:contract:create-user"
+      ],
+      "shortestPathHyperedgeRefs": [
+        "configuration-hypergraph:fixture-archmap-atom-observation:hyperedge:contractAttachment:atom-capability-create-user-atom-component-service-user-atom-contract-create-user-atom-relation-route-service"
+      ],
+      "configurationIndexedDistance": {
+        "status": "measured",
+        "measuredValue": 1,
+        "unit": "configuration-hop",
+        "provenanceRefs": [
+          "atom:capability:create-user",
+          "atom:contract:create-user",
+          "configuration-hypergraph:fixture-archmap-atom-observation:hyperedge:contractAttachment:atom-capability-create-user-atom-component-service-user-atom-contract-create-user-atom-relation-route-service",
+          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
+          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#3-configuration-geometry",
+          "test-user-contract"
+        ],
+        "evaluatorBasisRefs": [
+          "shortestPath:atom:atom-capability-create-user",
+          "shortestPath:atom:atom-contract-create-user",
+          "hyperedge:configuration-hypergraph:fixture-archmap-atom-observation:hyperedge:contractAttachment:atom-capability-create-user-atom-component-service-user-atom-contract-create-user-atom-relation-route-service"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [],
+        "reading": "configuration-indexed distance is the shortest path length in the typed ArchMap configuration hypergraph"
+      },
+      "contextDistance": {
+        "status": "zero",
+        "measuredValue": 0,
+        "unit": "milli-distance",
+        "provenanceRefs": [
+          "atom:capability:create-user",
+          "atom:contract:create-user",
+          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
+          "test-user-contract"
+        ],
+        "evaluatorBasisRefs": [
+          "context:left=generated-molecule:molecule-user-request-responsibility",
+          "context:right=generated-molecule:molecule-user-request-responsibility"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [],
+        "reading": "context distance is one minus Jaccard overlap of observed molecule memberships"
+      },
+      "smallMoleculeWeightMilli": 200,
+      "configurationDistanceBundle": {
+        "status": "blocked",
+        "unit": "configuration-distance",
+        "provenanceRefs": [
+          "atom:capability:create-user",
+          "atom:contract:create-user",
+          "configuration-hypergraph:fixture-archmap-atom-observation:hyperedge:contractAttachment:atom-capability-create-user-atom-component-service-user-atom-contract-create-user-atom-relation-route-service",
+          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
+          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#3-configuration-geometry",
+          "test-user-contract"
+        ],
+        "evaluatorBasisRefs": [
+          "context:left=generated-molecule:molecule-user-request-responsibility",
+          "context:right=generated-molecule:molecule-user-request-responsibility",
+          "hyperedge:configuration-hypergraph:fixture-archmap-atom-observation:hyperedge:contractAttachment:atom-capability-create-user-atom-component-service-user-atom-contract-create-user-atom-relation-route-service",
+          "shortestPath:atom:atom-capability-create-user",
+          "shortestPath:atom:atom-contract-create-user",
+          "smallMoleculeWeightMilli:200"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [
+          "observationGap:gap-runtime-user-db-trace:runtime-trace-was-requested-but-not-supplied"
+        ],
+        "reading": "configuration distance bundle is blocked until selected configuration paths, context, and observation gaps are resolved; blockers are not numeric zero"
+      },
+      "highContextOverlap": true,
+      "unreachablePairRefs": [],
+      "evidenceBoundary": "Configuration distance is computed for molecule-local pairs plus bounded cross-context diagnostic pairs from typed ArchMap hyperedges and molecule context; observation gaps block aggregation and are not measured zero",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    },
+    {
+      "configurationDistanceReadingId": "configuration-distance:atom-capability-create-user:atom-relation-route-service",
+      "sourceAtomRef": "atom:capability:create-user",
+      "targetAtomRef": "atom:relation:route-service",
+      "configurationRef": "configuration:generated-molecule:molecule-user-request-responsibility",
+      "moleculeRefs": [
+        "generated-molecule:molecule-user-request-responsibility"
+      ],
+      "distanceProfileRef": "part4-distance-profile:llm-native-aat-law-policy-fixture",
+      "diagnosticScopeRef": "part4-diagnostic-scope:fixture-archmap-atom-observation",
+      "hypergraphRef": "configuration-hypergraph:fixture-archmap-atom-observation",
+      "typedHyperedges": [
+        {
+          "hyperedgeId": "configuration-hypergraph:fixture-archmap-atom-observation:hyperedge:contractAttachment:atom-capability-create-user-atom-component-service-user-atom-contract-create-user-atom-relation-route-service",
+          "hyperedgeKind": "contractAttachment",
+          "atomRefs": [
+            "atom:capability:create-user",
+            "atom:component:service-user",
+            "atom:contract:create-user",
+            "atom:relation:route-service"
+          ],
+          "sourceRefs": [
+            "test-user-contract"
+          ],
+          "evidenceBoundary": "typed configuration hyperedge is extracted from explicit ArchMap observation refs; absent relations are not synthesized"
+        }
+      ],
+      "shortestPathAtomRefs": [
+        "atom:capability:create-user",
+        "atom:relation:route-service"
+      ],
+      "shortestPathHyperedgeRefs": [
+        "configuration-hypergraph:fixture-archmap-atom-observation:hyperedge:contractAttachment:atom-capability-create-user-atom-component-service-user-atom-contract-create-user-atom-relation-route-service"
+      ],
+      "configurationIndexedDistance": {
+        "status": "measured",
+        "measuredValue": 1,
+        "unit": "configuration-hop",
+        "provenanceRefs": [
+          "atom:capability:create-user",
+          "atom:relation:route-service",
+          "configuration-hypergraph:fixture-archmap-atom-observation:hyperedge:contractAttachment:atom-capability-create-user-atom-component-service-user-atom-contract-create-user-atom-relation-route-service",
+          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
+          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#3-configuration-geometry",
+          "src-route-users",
+          "src-service-user",
+          "test-user-contract"
+        ],
+        "evaluatorBasisRefs": [
+          "shortestPath:atom:atom-capability-create-user",
+          "shortestPath:atom:atom-relation-route-service",
+          "hyperedge:configuration-hypergraph:fixture-archmap-atom-observation:hyperedge:contractAttachment:atom-capability-create-user-atom-component-service-user-atom-contract-create-user-atom-relation-route-service"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [],
+        "reading": "configuration-indexed distance is the shortest path length in the typed ArchMap configuration hypergraph"
+      },
+      "contextDistance": {
+        "status": "zero",
+        "measuredValue": 0,
+        "unit": "milli-distance",
+        "provenanceRefs": [
+          "atom:capability:create-user",
+          "atom:relation:route-service",
+          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
+          "src-route-users",
+          "src-service-user",
+          "test-user-contract"
+        ],
+        "evaluatorBasisRefs": [
+          "context:left=generated-molecule:molecule-user-request-responsibility",
+          "context:right=generated-molecule:molecule-user-request-responsibility"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [],
+        "reading": "context distance is one minus Jaccard overlap of observed molecule memberships"
+      },
+      "smallMoleculeWeightMilli": 200,
+      "configurationDistanceBundle": {
+        "status": "blocked",
+        "unit": "configuration-distance",
+        "provenanceRefs": [
+          "atom:capability:create-user",
+          "atom:relation:route-service",
+          "configuration-hypergraph:fixture-archmap-atom-observation:hyperedge:contractAttachment:atom-capability-create-user-atom-component-service-user-atom-contract-create-user-atom-relation-route-service",
+          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
+          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#3-configuration-geometry",
+          "src-route-users",
+          "src-service-user",
+          "test-user-contract"
+        ],
+        "evaluatorBasisRefs": [
+          "context:left=generated-molecule:molecule-user-request-responsibility",
+          "context:right=generated-molecule:molecule-user-request-responsibility",
+          "hyperedge:configuration-hypergraph:fixture-archmap-atom-observation:hyperedge:contractAttachment:atom-capability-create-user-atom-component-service-user-atom-contract-create-user-atom-relation-route-service",
+          "shortestPath:atom:atom-capability-create-user",
+          "shortestPath:atom:atom-relation-route-service",
+          "smallMoleculeWeightMilli:200"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [
+          "observationGap:gap-runtime-user-db-trace:runtime-trace-was-requested-but-not-supplied"
+        ],
+        "reading": "configuration distance bundle is blocked until selected configuration paths, context, and observation gaps are resolved; blockers are not numeric zero"
+      },
+      "highContextOverlap": true,
+      "unreachablePairRefs": [],
+      "evidenceBoundary": "Configuration distance is computed for molecule-local pairs plus bounded cross-context diagnostic pairs from typed ArchMap hyperedges and molecule context; observation gaps block aggregation and are not measured zero",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    },
+    {
+      "configurationDistanceReadingId": "configuration-distance:atom-component-route-users:atom-component-service-user",
+      "sourceAtomRef": "atom:component:route-users",
+      "targetAtomRef": "atom:component:service-user",
+      "configurationRef": "configuration:generated-molecule:molecule-user-request-responsibility",
+      "moleculeRefs": [
+        "generated-molecule:molecule-user-request-responsibility"
+      ],
+      "distanceProfileRef": "part4-distance-profile:llm-native-aat-law-policy-fixture",
+      "diagnosticScopeRef": "part4-diagnostic-scope:fixture-archmap-atom-observation",
+      "hypergraphRef": "configuration-hypergraph:fixture-archmap-atom-observation",
+      "typedHyperedges": [
+        {
+          "hyperedgeId": "configuration-hypergraph:fixture-archmap-atom-observation:hyperedge:moleculeMembership:atom-capability-create-user-atom-component-route-users-atom-component-service-user-atom-contract-create-user-atom-relation-route-service",
+          "hyperedgeKind": "moleculeMembership",
+          "atomRefs": [
+            "atom:capability:create-user",
+            "atom:component:route-users",
+            "atom:component:service-user",
+            "atom:contract:create-user",
+            "atom:relation:route-service"
+          ],
+          "sourceRefs": [
+            "molecule:user-request-responsibility"
+          ],
+          "evidenceBoundary": "typed configuration hyperedge is extracted from explicit ArchMap observation refs; absent relations are not synthesized"
+        }
+      ],
+      "shortestPathAtomRefs": [
+        "atom:component:route-users",
+        "atom:component:service-user"
+      ],
+      "shortestPathHyperedgeRefs": [
+        "configuration-hypergraph:fixture-archmap-atom-observation:hyperedge:moleculeMembership:atom-capability-create-user-atom-component-route-users-atom-component-service-user-atom-contract-create-user-atom-relation-route-service"
+      ],
+      "configurationIndexedDistance": {
+        "status": "measured",
+        "measuredValue": 1,
+        "unit": "configuration-hop",
+        "provenanceRefs": [
+          "atom:component:route-users",
+          "atom:component:service-user",
+          "configuration-hypergraph:fixture-archmap-atom-observation:hyperedge:moleculeMembership:atom-capability-create-user-atom-component-route-users-atom-component-service-user-atom-contract-create-user-atom-relation-route-service",
+          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
+          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#3-configuration-geometry",
+          "molecule:user-request-responsibility",
+          "src-route-users",
+          "src-service-user"
+        ],
+        "evaluatorBasisRefs": [
+          "shortestPath:atom:atom-component-route-users",
+          "shortestPath:atom:atom-component-service-user",
+          "hyperedge:configuration-hypergraph:fixture-archmap-atom-observation:hyperedge:moleculeMembership:atom-capability-create-user-atom-component-route-users-atom-component-service-user-atom-contract-create-user-atom-relation-route-service"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [],
+        "reading": "configuration-indexed distance is the shortest path length in the typed ArchMap configuration hypergraph"
+      },
+      "contextDistance": {
+        "status": "zero",
+        "measuredValue": 0,
+        "unit": "milli-distance",
+        "provenanceRefs": [
+          "atom:component:route-users",
+          "atom:component:service-user",
+          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
+          "src-route-users",
+          "src-service-user"
+        ],
+        "evaluatorBasisRefs": [
+          "context:left=generated-molecule:molecule-user-request-responsibility",
+          "context:right=generated-molecule:molecule-user-request-responsibility"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [],
+        "reading": "context distance is one minus Jaccard overlap of observed molecule memberships"
+      },
+      "smallMoleculeWeightMilli": 200,
+      "configurationDistanceBundle": {
+        "status": "blocked",
+        "unit": "configuration-distance",
+        "provenanceRefs": [
+          "atom:component:route-users",
+          "atom:component:service-user",
+          "configuration-hypergraph:fixture-archmap-atom-observation:hyperedge:moleculeMembership:atom-capability-create-user-atom-component-route-users-atom-component-service-user-atom-contract-create-user-atom-relation-route-service",
+          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
+          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#3-configuration-geometry",
+          "molecule:user-request-responsibility",
+          "src-route-users",
+          "src-service-user"
+        ],
+        "evaluatorBasisRefs": [
+          "context:left=generated-molecule:molecule-user-request-responsibility",
+          "context:right=generated-molecule:molecule-user-request-responsibility",
+          "hyperedge:configuration-hypergraph:fixture-archmap-atom-observation:hyperedge:moleculeMembership:atom-capability-create-user-atom-component-route-users-atom-component-service-user-atom-contract-create-user-atom-relation-route-service",
+          "shortestPath:atom:atom-component-route-users",
+          "shortestPath:atom:atom-component-service-user",
+          "smallMoleculeWeightMilli:200"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [
+          "observationGap:gap-runtime-user-db-trace:runtime-trace-was-requested-but-not-supplied"
+        ],
+        "reading": "configuration distance bundle is blocked until selected configuration paths, context, and observation gaps are resolved; blockers are not numeric zero"
+      },
+      "highContextOverlap": true,
+      "unreachablePairRefs": [],
+      "evidenceBoundary": "Configuration distance is computed for molecule-local pairs plus bounded cross-context diagnostic pairs from typed ArchMap hyperedges and molecule context; observation gaps block aggregation and are not measured zero",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    },
+    {
+      "configurationDistanceReadingId": "configuration-distance:atom-component-route-users:atom-contract-create-user",
+      "sourceAtomRef": "atom:component:route-users",
+      "targetAtomRef": "atom:contract:create-user",
+      "configurationRef": "configuration:generated-molecule:molecule-user-request-responsibility",
+      "moleculeRefs": [
+        "generated-molecule:molecule-user-request-responsibility"
+      ],
+      "distanceProfileRef": "part4-distance-profile:llm-native-aat-law-policy-fixture",
+      "diagnosticScopeRef": "part4-diagnostic-scope:fixture-archmap-atom-observation",
+      "hypergraphRef": "configuration-hypergraph:fixture-archmap-atom-observation",
+      "typedHyperedges": [
+        {
+          "hyperedgeId": "configuration-hypergraph:fixture-archmap-atom-observation:hyperedge:moleculeMembership:atom-capability-create-user-atom-component-route-users-atom-component-service-user-atom-contract-create-user-atom-relation-route-service",
+          "hyperedgeKind": "moleculeMembership",
+          "atomRefs": [
+            "atom:capability:create-user",
+            "atom:component:route-users",
+            "atom:component:service-user",
+            "atom:contract:create-user",
+            "atom:relation:route-service"
+          ],
+          "sourceRefs": [
+            "molecule:user-request-responsibility"
+          ],
+          "evidenceBoundary": "typed configuration hyperedge is extracted from explicit ArchMap observation refs; absent relations are not synthesized"
+        }
+      ],
+      "shortestPathAtomRefs": [
+        "atom:component:route-users",
+        "atom:contract:create-user"
+      ],
+      "shortestPathHyperedgeRefs": [
+        "configuration-hypergraph:fixture-archmap-atom-observation:hyperedge:moleculeMembership:atom-capability-create-user-atom-component-route-users-atom-component-service-user-atom-contract-create-user-atom-relation-route-service"
+      ],
+      "configurationIndexedDistance": {
+        "status": "measured",
+        "measuredValue": 1,
+        "unit": "configuration-hop",
+        "provenanceRefs": [
+          "atom:component:route-users",
+          "atom:contract:create-user",
+          "configuration-hypergraph:fixture-archmap-atom-observation:hyperedge:moleculeMembership:atom-capability-create-user-atom-component-route-users-atom-component-service-user-atom-contract-create-user-atom-relation-route-service",
+          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
+          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#3-configuration-geometry",
+          "molecule:user-request-responsibility",
+          "src-route-users",
+          "test-user-contract"
+        ],
+        "evaluatorBasisRefs": [
+          "shortestPath:atom:atom-component-route-users",
+          "shortestPath:atom:atom-contract-create-user",
+          "hyperedge:configuration-hypergraph:fixture-archmap-atom-observation:hyperedge:moleculeMembership:atom-capability-create-user-atom-component-route-users-atom-component-service-user-atom-contract-create-user-atom-relation-route-service"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [],
+        "reading": "configuration-indexed distance is the shortest path length in the typed ArchMap configuration hypergraph"
+      },
+      "contextDistance": {
+        "status": "zero",
+        "measuredValue": 0,
+        "unit": "milli-distance",
+        "provenanceRefs": [
+          "atom:component:route-users",
+          "atom:contract:create-user",
+          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
+          "src-route-users",
+          "test-user-contract"
+        ],
+        "evaluatorBasisRefs": [
+          "context:left=generated-molecule:molecule-user-request-responsibility",
+          "context:right=generated-molecule:molecule-user-request-responsibility"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [],
+        "reading": "context distance is one minus Jaccard overlap of observed molecule memberships"
+      },
+      "smallMoleculeWeightMilli": 200,
+      "configurationDistanceBundle": {
+        "status": "blocked",
+        "unit": "configuration-distance",
+        "provenanceRefs": [
+          "atom:component:route-users",
+          "atom:contract:create-user",
+          "configuration-hypergraph:fixture-archmap-atom-observation:hyperedge:moleculeMembership:atom-capability-create-user-atom-component-route-users-atom-component-service-user-atom-contract-create-user-atom-relation-route-service",
+          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
+          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#3-configuration-geometry",
+          "molecule:user-request-responsibility",
+          "src-route-users",
+          "test-user-contract"
+        ],
+        "evaluatorBasisRefs": [
+          "context:left=generated-molecule:molecule-user-request-responsibility",
+          "context:right=generated-molecule:molecule-user-request-responsibility",
+          "hyperedge:configuration-hypergraph:fixture-archmap-atom-observation:hyperedge:moleculeMembership:atom-capability-create-user-atom-component-route-users-atom-component-service-user-atom-contract-create-user-atom-relation-route-service",
+          "shortestPath:atom:atom-component-route-users",
+          "shortestPath:atom:atom-contract-create-user",
+          "smallMoleculeWeightMilli:200"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [
+          "observationGap:gap-runtime-user-db-trace:runtime-trace-was-requested-but-not-supplied"
+        ],
+        "reading": "configuration distance bundle is blocked until selected configuration paths, context, and observation gaps are resolved; blockers are not numeric zero"
+      },
+      "highContextOverlap": true,
+      "unreachablePairRefs": [],
+      "evidenceBoundary": "Configuration distance is computed for molecule-local pairs plus bounded cross-context diagnostic pairs from typed ArchMap hyperedges and molecule context; observation gaps block aggregation and are not measured zero",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    },
+    {
+      "configurationDistanceReadingId": "configuration-distance:atom-component-route-users:atom-relation-route-service",
+      "sourceAtomRef": "atom:component:route-users",
+      "targetAtomRef": "atom:relation:route-service",
+      "configurationRef": "configuration:generated-molecule:molecule-user-request-responsibility",
+      "moleculeRefs": [
+        "generated-molecule:molecule-user-request-responsibility"
+      ],
+      "distanceProfileRef": "part4-distance-profile:llm-native-aat-law-policy-fixture",
+      "diagnosticScopeRef": "part4-diagnostic-scope:fixture-archmap-atom-observation",
+      "hypergraphRef": "configuration-hypergraph:fixture-archmap-atom-observation",
+      "typedHyperedges": [
+        {
+          "hyperedgeId": "configuration-hypergraph:fixture-archmap-atom-observation:hyperedge:moleculeMembership:atom-capability-create-user-atom-component-route-users-atom-component-service-user-atom-contract-create-user-atom-relation-route-service",
+          "hyperedgeKind": "moleculeMembership",
+          "atomRefs": [
+            "atom:capability:create-user",
+            "atom:component:route-users",
+            "atom:component:service-user",
+            "atom:contract:create-user",
+            "atom:relation:route-service"
+          ],
+          "sourceRefs": [
+            "molecule:user-request-responsibility"
+          ],
+          "evidenceBoundary": "typed configuration hyperedge is extracted from explicit ArchMap observation refs; absent relations are not synthesized"
+        }
+      ],
+      "shortestPathAtomRefs": [
+        "atom:component:route-users",
+        "atom:relation:route-service"
+      ],
+      "shortestPathHyperedgeRefs": [
+        "configuration-hypergraph:fixture-archmap-atom-observation:hyperedge:moleculeMembership:atom-capability-create-user-atom-component-route-users-atom-component-service-user-atom-contract-create-user-atom-relation-route-service"
+      ],
+      "configurationIndexedDistance": {
+        "status": "measured",
+        "measuredValue": 1,
+        "unit": "configuration-hop",
+        "provenanceRefs": [
+          "atom:component:route-users",
+          "atom:relation:route-service",
+          "configuration-hypergraph:fixture-archmap-atom-observation:hyperedge:moleculeMembership:atom-capability-create-user-atom-component-route-users-atom-component-service-user-atom-contract-create-user-atom-relation-route-service",
+          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
+          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#3-configuration-geometry",
+          "molecule:user-request-responsibility",
+          "src-route-users",
+          "src-service-user"
+        ],
+        "evaluatorBasisRefs": [
+          "shortestPath:atom:atom-component-route-users",
+          "shortestPath:atom:atom-relation-route-service",
+          "hyperedge:configuration-hypergraph:fixture-archmap-atom-observation:hyperedge:moleculeMembership:atom-capability-create-user-atom-component-route-users-atom-component-service-user-atom-contract-create-user-atom-relation-route-service"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [],
+        "reading": "configuration-indexed distance is the shortest path length in the typed ArchMap configuration hypergraph"
+      },
+      "contextDistance": {
+        "status": "zero",
+        "measuredValue": 0,
+        "unit": "milli-distance",
+        "provenanceRefs": [
+          "atom:component:route-users",
+          "atom:relation:route-service",
+          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
+          "src-route-users",
+          "src-service-user"
+        ],
+        "evaluatorBasisRefs": [
+          "context:left=generated-molecule:molecule-user-request-responsibility",
+          "context:right=generated-molecule:molecule-user-request-responsibility"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [],
+        "reading": "context distance is one minus Jaccard overlap of observed molecule memberships"
+      },
+      "smallMoleculeWeightMilli": 200,
+      "configurationDistanceBundle": {
+        "status": "blocked",
+        "unit": "configuration-distance",
+        "provenanceRefs": [
+          "atom:component:route-users",
+          "atom:relation:route-service",
+          "configuration-hypergraph:fixture-archmap-atom-observation:hyperedge:moleculeMembership:atom-capability-create-user-atom-component-route-users-atom-component-service-user-atom-contract-create-user-atom-relation-route-service",
+          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
+          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#3-configuration-geometry",
+          "molecule:user-request-responsibility",
+          "src-route-users",
+          "src-service-user"
+        ],
+        "evaluatorBasisRefs": [
+          "context:left=generated-molecule:molecule-user-request-responsibility",
+          "context:right=generated-molecule:molecule-user-request-responsibility",
+          "hyperedge:configuration-hypergraph:fixture-archmap-atom-observation:hyperedge:moleculeMembership:atom-capability-create-user-atom-component-route-users-atom-component-service-user-atom-contract-create-user-atom-relation-route-service",
+          "shortestPath:atom:atom-component-route-users",
+          "shortestPath:atom:atom-relation-route-service",
+          "smallMoleculeWeightMilli:200"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [
+          "observationGap:gap-runtime-user-db-trace:runtime-trace-was-requested-but-not-supplied"
+        ],
+        "reading": "configuration distance bundle is blocked until selected configuration paths, context, and observation gaps are resolved; blockers are not numeric zero"
+      },
+      "highContextOverlap": true,
+      "unreachablePairRefs": [],
+      "evidenceBoundary": "Configuration distance is computed for molecule-local pairs plus bounded cross-context diagnostic pairs from typed ArchMap hyperedges and molecule context; observation gaps block aggregation and are not measured zero",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    },
+    {
+      "configurationDistanceReadingId": "configuration-distance:atom-component-service-user:atom-contract-create-user",
+      "sourceAtomRef": "atom:component:service-user",
+      "targetAtomRef": "atom:contract:create-user",
+      "configurationRef": "configuration:generated-molecule:molecule-user-request-responsibility",
+      "moleculeRefs": [
+        "generated-molecule:molecule-user-request-responsibility"
+      ],
+      "distanceProfileRef": "part4-distance-profile:llm-native-aat-law-policy-fixture",
+      "diagnosticScopeRef": "part4-diagnostic-scope:fixture-archmap-atom-observation",
+      "hypergraphRef": "configuration-hypergraph:fixture-archmap-atom-observation",
+      "typedHyperedges": [
+        {
+          "hyperedgeId": "configuration-hypergraph:fixture-archmap-atom-observation:hyperedge:contractAttachment:atom-capability-create-user-atom-component-service-user-atom-contract-create-user-atom-relation-route-service",
+          "hyperedgeKind": "contractAttachment",
+          "atomRefs": [
+            "atom:capability:create-user",
+            "atom:component:service-user",
+            "atom:contract:create-user",
+            "atom:relation:route-service"
+          ],
+          "sourceRefs": [
+            "test-user-contract"
+          ],
+          "evidenceBoundary": "typed configuration hyperedge is extracted from explicit ArchMap observation refs; absent relations are not synthesized"
+        }
+      ],
+      "shortestPathAtomRefs": [
+        "atom:component:service-user",
+        "atom:contract:create-user"
+      ],
+      "shortestPathHyperedgeRefs": [
+        "configuration-hypergraph:fixture-archmap-atom-observation:hyperedge:contractAttachment:atom-capability-create-user-atom-component-service-user-atom-contract-create-user-atom-relation-route-service"
+      ],
+      "configurationIndexedDistance": {
+        "status": "measured",
+        "measuredValue": 1,
+        "unit": "configuration-hop",
+        "provenanceRefs": [
+          "atom:component:service-user",
+          "atom:contract:create-user",
+          "configuration-hypergraph:fixture-archmap-atom-observation:hyperedge:contractAttachment:atom-capability-create-user-atom-component-service-user-atom-contract-create-user-atom-relation-route-service",
+          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
+          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#3-configuration-geometry",
+          "src-service-user",
+          "test-user-contract"
+        ],
+        "evaluatorBasisRefs": [
+          "shortestPath:atom:atom-component-service-user",
+          "shortestPath:atom:atom-contract-create-user",
+          "hyperedge:configuration-hypergraph:fixture-archmap-atom-observation:hyperedge:contractAttachment:atom-capability-create-user-atom-component-service-user-atom-contract-create-user-atom-relation-route-service"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [],
+        "reading": "configuration-indexed distance is the shortest path length in the typed ArchMap configuration hypergraph"
+      },
+      "contextDistance": {
+        "status": "zero",
+        "measuredValue": 0,
+        "unit": "milli-distance",
+        "provenanceRefs": [
+          "atom:component:service-user",
+          "atom:contract:create-user",
+          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
+          "src-service-user",
+          "test-user-contract"
+        ],
+        "evaluatorBasisRefs": [
+          "context:left=generated-molecule:molecule-user-request-responsibility",
+          "context:right=generated-molecule:molecule-user-request-responsibility"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [],
+        "reading": "context distance is one minus Jaccard overlap of observed molecule memberships"
+      },
+      "smallMoleculeWeightMilli": 200,
+      "configurationDistanceBundle": {
+        "status": "blocked",
+        "unit": "configuration-distance",
+        "provenanceRefs": [
+          "atom:component:service-user",
+          "atom:contract:create-user",
+          "configuration-hypergraph:fixture-archmap-atom-observation:hyperedge:contractAttachment:atom-capability-create-user-atom-component-service-user-atom-contract-create-user-atom-relation-route-service",
+          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
+          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#3-configuration-geometry",
+          "src-service-user",
+          "test-user-contract"
+        ],
+        "evaluatorBasisRefs": [
+          "context:left=generated-molecule:molecule-user-request-responsibility",
+          "context:right=generated-molecule:molecule-user-request-responsibility",
+          "hyperedge:configuration-hypergraph:fixture-archmap-atom-observation:hyperedge:contractAttachment:atom-capability-create-user-atom-component-service-user-atom-contract-create-user-atom-relation-route-service",
+          "shortestPath:atom:atom-component-service-user",
+          "shortestPath:atom:atom-contract-create-user",
+          "smallMoleculeWeightMilli:200"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [
+          "observationGap:gap-runtime-user-db-trace:runtime-trace-was-requested-but-not-supplied"
+        ],
+        "reading": "configuration distance bundle is blocked until selected configuration paths, context, and observation gaps are resolved; blockers are not numeric zero"
+      },
+      "highContextOverlap": true,
+      "unreachablePairRefs": [],
+      "evidenceBoundary": "Configuration distance is computed for molecule-local pairs plus bounded cross-context diagnostic pairs from typed ArchMap hyperedges and molecule context; observation gaps block aggregation and are not measured zero",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    },
+    {
+      "configurationDistanceReadingId": "configuration-distance:atom-component-service-user:atom-relation-route-service",
+      "sourceAtomRef": "atom:component:service-user",
+      "targetAtomRef": "atom:relation:route-service",
+      "configurationRef": "configuration:generated-molecule:molecule-user-request-responsibility",
+      "moleculeRefs": [
+        "generated-molecule:molecule-user-request-responsibility"
+      ],
+      "distanceProfileRef": "part4-distance-profile:llm-native-aat-law-policy-fixture",
+      "diagnosticScopeRef": "part4-diagnostic-scope:fixture-archmap-atom-observation",
+      "hypergraphRef": "configuration-hypergraph:fixture-archmap-atom-observation",
+      "typedHyperedges": [
+        {
+          "hyperedgeId": "configuration-hypergraph:fixture-archmap-atom-observation:hyperedge:contractAttachment:atom-capability-create-user-atom-component-service-user-atom-contract-create-user-atom-relation-route-service",
+          "hyperedgeKind": "contractAttachment",
+          "atomRefs": [
+            "atom:capability:create-user",
+            "atom:component:service-user",
+            "atom:contract:create-user",
+            "atom:relation:route-service"
+          ],
+          "sourceRefs": [
+            "test-user-contract"
+          ],
+          "evidenceBoundary": "typed configuration hyperedge is extracted from explicit ArchMap observation refs; absent relations are not synthesized"
+        }
+      ],
+      "shortestPathAtomRefs": [
+        "atom:component:service-user",
+        "atom:relation:route-service"
+      ],
+      "shortestPathHyperedgeRefs": [
+        "configuration-hypergraph:fixture-archmap-atom-observation:hyperedge:contractAttachment:atom-capability-create-user-atom-component-service-user-atom-contract-create-user-atom-relation-route-service"
+      ],
+      "configurationIndexedDistance": {
+        "status": "measured",
+        "measuredValue": 1,
+        "unit": "configuration-hop",
+        "provenanceRefs": [
+          "atom:component:service-user",
+          "atom:relation:route-service",
+          "configuration-hypergraph:fixture-archmap-atom-observation:hyperedge:contractAttachment:atom-capability-create-user-atom-component-service-user-atom-contract-create-user-atom-relation-route-service",
+          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
+          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#3-configuration-geometry",
+          "src-route-users",
+          "src-service-user",
+          "test-user-contract"
+        ],
+        "evaluatorBasisRefs": [
+          "shortestPath:atom:atom-component-service-user",
+          "shortestPath:atom:atom-relation-route-service",
+          "hyperedge:configuration-hypergraph:fixture-archmap-atom-observation:hyperedge:contractAttachment:atom-capability-create-user-atom-component-service-user-atom-contract-create-user-atom-relation-route-service"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [],
+        "reading": "configuration-indexed distance is the shortest path length in the typed ArchMap configuration hypergraph"
+      },
+      "contextDistance": {
+        "status": "zero",
+        "measuredValue": 0,
+        "unit": "milli-distance",
+        "provenanceRefs": [
+          "atom:component:service-user",
+          "atom:relation:route-service",
+          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
+          "src-route-users",
+          "src-service-user"
+        ],
+        "evaluatorBasisRefs": [
+          "context:left=generated-molecule:molecule-user-request-responsibility",
+          "context:right=generated-molecule:molecule-user-request-responsibility"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [],
+        "reading": "context distance is one minus Jaccard overlap of observed molecule memberships"
+      },
+      "smallMoleculeWeightMilli": 200,
+      "configurationDistanceBundle": {
+        "status": "blocked",
+        "unit": "configuration-distance",
+        "provenanceRefs": [
+          "atom:component:service-user",
+          "atom:relation:route-service",
+          "configuration-hypergraph:fixture-archmap-atom-observation:hyperedge:contractAttachment:atom-capability-create-user-atom-component-service-user-atom-contract-create-user-atom-relation-route-service",
+          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
+          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#3-configuration-geometry",
+          "src-route-users",
+          "src-service-user",
+          "test-user-contract"
+        ],
+        "evaluatorBasisRefs": [
+          "context:left=generated-molecule:molecule-user-request-responsibility",
+          "context:right=generated-molecule:molecule-user-request-responsibility",
+          "hyperedge:configuration-hypergraph:fixture-archmap-atom-observation:hyperedge:contractAttachment:atom-capability-create-user-atom-component-service-user-atom-contract-create-user-atom-relation-route-service",
+          "shortestPath:atom:atom-component-service-user",
+          "shortestPath:atom:atom-relation-route-service",
+          "smallMoleculeWeightMilli:200"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [
+          "observationGap:gap-runtime-user-db-trace:runtime-trace-was-requested-but-not-supplied"
+        ],
+        "reading": "configuration distance bundle is blocked until selected configuration paths, context, and observation gaps are resolved; blockers are not numeric zero"
+      },
+      "highContextOverlap": true,
+      "unreachablePairRefs": [],
+      "evidenceBoundary": "Configuration distance is computed for molecule-local pairs plus bounded cross-context diagnostic pairs from typed ArchMap hyperedges and molecule context; observation gaps block aggregation and are not measured zero",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    },
+    {
+      "configurationDistanceReadingId": "configuration-distance:atom-contract-create-user:atom-relation-route-service",
+      "sourceAtomRef": "atom:contract:create-user",
+      "targetAtomRef": "atom:relation:route-service",
+      "configurationRef": "configuration:generated-molecule:molecule-user-request-responsibility",
+      "moleculeRefs": [
+        "generated-molecule:molecule-user-request-responsibility"
+      ],
+      "distanceProfileRef": "part4-distance-profile:llm-native-aat-law-policy-fixture",
+      "diagnosticScopeRef": "part4-diagnostic-scope:fixture-archmap-atom-observation",
+      "hypergraphRef": "configuration-hypergraph:fixture-archmap-atom-observation",
+      "typedHyperedges": [
+        {
+          "hyperedgeId": "configuration-hypergraph:fixture-archmap-atom-observation:hyperedge:contractAttachment:atom-capability-create-user-atom-component-service-user-atom-contract-create-user-atom-relation-route-service",
+          "hyperedgeKind": "contractAttachment",
+          "atomRefs": [
+            "atom:capability:create-user",
+            "atom:component:service-user",
+            "atom:contract:create-user",
+            "atom:relation:route-service"
+          ],
+          "sourceRefs": [
+            "test-user-contract"
+          ],
+          "evidenceBoundary": "typed configuration hyperedge is extracted from explicit ArchMap observation refs; absent relations are not synthesized"
+        }
+      ],
+      "shortestPathAtomRefs": [
+        "atom:contract:create-user",
+        "atom:relation:route-service"
+      ],
+      "shortestPathHyperedgeRefs": [
+        "configuration-hypergraph:fixture-archmap-atom-observation:hyperedge:contractAttachment:atom-capability-create-user-atom-component-service-user-atom-contract-create-user-atom-relation-route-service"
+      ],
+      "configurationIndexedDistance": {
+        "status": "measured",
+        "measuredValue": 1,
+        "unit": "configuration-hop",
+        "provenanceRefs": [
+          "atom:contract:create-user",
+          "atom:relation:route-service",
+          "configuration-hypergraph:fixture-archmap-atom-observation:hyperedge:contractAttachment:atom-capability-create-user-atom-component-service-user-atom-contract-create-user-atom-relation-route-service",
+          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
+          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#3-configuration-geometry",
+          "src-route-users",
+          "src-service-user",
+          "test-user-contract"
+        ],
+        "evaluatorBasisRefs": [
+          "shortestPath:atom:atom-contract-create-user",
+          "shortestPath:atom:atom-relation-route-service",
+          "hyperedge:configuration-hypergraph:fixture-archmap-atom-observation:hyperedge:contractAttachment:atom-capability-create-user-atom-component-service-user-atom-contract-create-user-atom-relation-route-service"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [],
+        "reading": "configuration-indexed distance is the shortest path length in the typed ArchMap configuration hypergraph"
+      },
+      "contextDistance": {
+        "status": "zero",
+        "measuredValue": 0,
+        "unit": "milli-distance",
+        "provenanceRefs": [
+          "atom:contract:create-user",
+          "atom:relation:route-service",
+          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
+          "src-route-users",
+          "src-service-user",
+          "test-user-contract"
+        ],
+        "evaluatorBasisRefs": [
+          "context:left=generated-molecule:molecule-user-request-responsibility",
+          "context:right=generated-molecule:molecule-user-request-responsibility"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [],
+        "reading": "context distance is one minus Jaccard overlap of observed molecule memberships"
+      },
+      "smallMoleculeWeightMilli": 200,
+      "configurationDistanceBundle": {
+        "status": "blocked",
+        "unit": "configuration-distance",
+        "provenanceRefs": [
+          "atom:contract:create-user",
+          "atom:relation:route-service",
+          "configuration-hypergraph:fixture-archmap-atom-observation:hyperedge:contractAttachment:atom-capability-create-user-atom-component-service-user-atom-contract-create-user-atom-relation-route-service",
+          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
+          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#3-configuration-geometry",
+          "src-route-users",
+          "src-service-user",
+          "test-user-contract"
+        ],
+        "evaluatorBasisRefs": [
+          "context:left=generated-molecule:molecule-user-request-responsibility",
+          "context:right=generated-molecule:molecule-user-request-responsibility",
+          "hyperedge:configuration-hypergraph:fixture-archmap-atom-observation:hyperedge:contractAttachment:atom-capability-create-user-atom-component-service-user-atom-contract-create-user-atom-relation-route-service",
+          "shortestPath:atom:atom-contract-create-user",
+          "shortestPath:atom:atom-relation-route-service",
+          "smallMoleculeWeightMilli:200"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [
+          "observationGap:gap-runtime-user-db-trace:runtime-trace-was-requested-but-not-supplied"
+        ],
+        "reading": "configuration distance bundle is blocked until selected configuration paths, context, and observation gaps are resolved; blockers are not numeric zero"
+      },
+      "highContextOverlap": true,
+      "unreachablePairRefs": [],
+      "evidenceBoundary": "Configuration distance is computed for molecule-local pairs plus bounded cross-context diagnostic pairs from typed ArchMap hyperedges and molecule context; observation gaps block aggregation and are not measured zero",
       "nonConclusions": [
         "ArchSig analysis packet is not a Lean theorem proof",
         "ArchSig analysis packet is not global architecture truth",
