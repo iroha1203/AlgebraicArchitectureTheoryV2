@@ -8,12 +8,16 @@
 - `docs/website/` は公開 artifact に含めない内部運用メモである。
 - website は docs の複製ではない。AAT / SFT / ArchSig を公開向けに読むための web-native publication surface として扱う。
 - AAT / SFT の公開ページは宣伝文ではなく、web-native preprint / monograph として、定義、前提、定理境界、例、反例、Lean status、non-conclusion を保つ。
+- 公開 surface では、AAT は Atom を公理とする純粋数学理論、ArchSig は Lean 証明器ではなく
+  `ArchMap + LawPolicy + evidence contract` を読む Rust tool、として分けて説明する。
 
 ## 編集方針
 
 - website copy は `docs/website/README.md` の Tone Guide に従う。防衛的な書き方や否定から入る説明を避ける。
 - 読者向け本文では「何を読めるか」「何を理解できるか」「どの概念へ進むか」を中心に書く。
 - claim boundary、Lean status、Issue 管理、repository / docs の責務分離は編集時の制約として扱い、公開コピーにそのまま出さない。
+- ArchSig の説明では、`SAFE_WITHIN_POLICY` や `NO_SELECTED_OBSTRUCTION` のような選ばれた語彙内の
+  肯定的診断を中心に置く。語れない外側は、長い non-conclusion ではなく必要最小限の boundary として扱う。
 - 公開ページや renewal plan では、読者が検討できる具体的な artifact / theorem / example / command を中心にする。
   一般的に証明できない巨大 claim の否定を、見出しや残タスクの中心にしない。
 - 理論上の新規 claim は先に `docs/aat/mathematical_theory/`、`docs/sft/software_field_theory.md`、`docs/sft/aat_interface.md`、または `docs/tool/` に反映する。

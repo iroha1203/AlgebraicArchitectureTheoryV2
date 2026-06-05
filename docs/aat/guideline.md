@@ -7,8 +7,13 @@
 - AAT は Atom から architecture object、law、obstruction circuit、operation、flatness、path / homotopy、analytic representation を構成する局所代数の核である。
 - AAT は Atom を公理的出発点とする。実コードベース抽出器、ArchMap observation、tooling validation は
   Atom 入力を提示・検査する前段または後段 surface であり、AAT の theorem package の完了条件ではない。
+- AAT 自体に observation / measurement / tooling boundary はない。境界を持つのは、Atom 入力を提示する
+  ArchMap、LawPolicy による選択、ArchSig / FieldSig の測定 artifact、または empirical dataset である。
 - Lean source は Atom から生成される純粋な algebra / theorem package を形式化する場所である。
   実測や empirical correlation は、AAT ではなく tooling / SFT 側の artifact に相対化して扱う。
+- Lean 形式化は全知の検査器ではない。形式化対象は、AAT の語彙で明示的に述べられる命題に限る。
+  全 runtime、全 semantic universe、source extraction completeness、tooling validation completeness を
+  AAT theorem package のスコープに入れない。
 - `docs/aat/mathematical_theory/` は数学本文である。Lean status、Issue 番号、実装済み API の進捗管理は本文に混ぜない。
 - `docs/aat/mathematical_theory/` は AAT の根幹文書である。ユーザーの明示的な指示なしに更新しない。
 - Lean status と Issue との対応は `docs/aat/proof_obligations.md` と `docs/aat/lean_theorem_index.md` で管理する。
@@ -24,6 +29,8 @@
 - executable metrics は、まず有限な measurement universe 上の計算として定義し、graph-level facts との接続は別 theorem として証明する。
 - `ComponentUniverse` は proof-carrying measurement universe として扱う。source extraction の成否は
   AAT core の定理ではなく、ArchMap / tooling 側の入力生成 contract として扱う。
+- ArchSig や Rust tooling の有用性を Lean との対応で正当化しない。Lean 側は AAT の語れる命題を支える
+  形式化であり、ArchSig は別に `ArchMap + LawPolicy + evidence contract` から診断結論を出す tool である。
 
 ## docs の claim discipline
 
@@ -37,6 +44,8 @@
   具体的な artifact、fixture、schema、validator、Issue acceptance として別管理する。
 - non-conclusion / claim boundary は、具体的な theorem や artifact の近くで必要な分だけ記録する。
   レビュー報告や残タスク欄を、一般的に証明不能な巨大 claim の一覧にしない。
+- 語れることだけを確かに語る。AAT / Lean docs では、語れない外部領域を `non-conclusion` 一覧として
+  主役化しない。必要な boundary は、定理や artifact の有効範囲を示すために最小限だけ置く。
 - theorem や定義を追加した場合は、必要に応じて `docs/aat/proof_obligations.md` と `docs/aat/lean_theorem_index.md` を更新する。
 - `docs/archive` は歴史的参照として扱い、現行文書の更新時に同じ変更を反映しない。
 - Architecture Signature は単一スコアではなく、多軸診断として扱う。
