@@ -1437,25 +1437,32 @@
         "sourceRef": "ArchMap",
         "targetRef": "Part4DistanceEngine",
         "value": {
-          "status": "unmeasured",
-          "unit": "selected-distance-unit",
+          "status": "blocked",
+          "unit": "milli-signature-distance",
           "provenanceRefs": [
-            "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md",
-            "docs/aat/AAT_Distance_Extension_Design.md"
+            "atom:contract:create-user",
+            "atom:relation:route-service",
+            "semantic:interpretation:create-user",
+            "sig-axis:layer-violation",
+            "sig-axis:semantic-inconsistency"
           ],
-          "evaluatorBasisRefs": [],
+          "evaluatorBasisRefs": [
+            "signature-distance:llm-native-aat-law-policy-fixture"
+          ],
           "coverageRefs": [
             "coverage:layer-atoms",
             "coverage:semantic-contract-atoms"
           ],
           "blockerRefs": [
-            "issue:#1708 signature distance evaluator"
+            "coverage:layer-atoms: report observation gap and block signature-zero reflection",
+            "coverage:semantic-contract-atoms: report observation gap and block signature-zero reflection",
+            "gap-runtime-user-db-trace: runtime trace was requested but not supplied"
           ],
-          "reading": "distance family is represented in the Part4 contract but has not been measured by its evaluator yet"
+          "reading": "signatureGeometry is aggregated through signatureDistanceReadings with selected-axis rho_i, safe-region margin, and drift boundary"
         },
         "profileRef": "part4-distance-profile:llm-native-aat-law-policy-fixture",
         "diagnosticScopeRef": "part4-diagnostic-scope:fixture-archmap-atom-observation",
-        "evidenceBoundary": "unmeasured means no evaluator result has been supplied; it must not be aggregated as zero",
+        "evidenceBoundary": "signatureGeometry is LawPolicy-profile-relative; unmeasured or blocked axes are not safety conclusions",
         "nonConclusions": [
           "ArchSig analysis packet is not a Lean theorem proof",
           "ArchSig analysis packet is not global architecture truth",
@@ -1614,11 +1621,11 @@
     "statusSummary": {
       "measuredCount": 0,
       "zeroCount": 0,
-      "unmeasuredCount": 5,
+      "unmeasuredCount": 4,
       "unavailableCount": 0,
       "incomparableCount": 0,
       "infiniteCount": 0,
-      "blockedCount": 2,
+      "blockedCount": 3,
       "schemaFoundationOnlyCount": 0
     },
     "measurementBoundary": "Part4 distance foundation is a proxy-free measurement contract: no distance is measured until an evaluator supplies provenance, basis refs, and coverage refs",
@@ -5621,6 +5628,261 @@
       ]
     }
   ],
+  "signatureDistanceReadings": [
+    {
+      "signatureDistanceReadingId": "signature-distance:llm-native-aat-law-policy-fixture",
+      "distanceProfileRef": "part4-distance-profile:llm-native-aat-law-policy-fixture",
+      "diagnosticScopeRef": "part4-diagnostic-scope:fixture-archmap-atom-observation",
+      "axisDistances": [
+        {
+          "signatureAxisRef": "sig-axis:layer-violation",
+          "lawRef": "law:layer-respecting",
+          "axisRef": "axis:layer-violation",
+          "rhoI": {
+            "status": "zero",
+            "measuredValue": 0,
+            "unit": "signature-rho",
+            "provenanceRefs": [
+              "atom:relation:route-service",
+              "law:layer-respecting",
+              "sig-axis:layer-violation"
+            ],
+            "evaluatorBasisRefs": [
+              "rho_i:axis=sig-axis:layer-violation",
+              "axisValue:0",
+              "coverageStatus:coverage-gap-preserved"
+            ],
+            "coverageRefs": [
+              "coverage:layer-atoms",
+              "coverage:semantic-contract-atoms"
+            ],
+            "blockerRefs": [],
+            "reading": "rho_i is the selected signature-axis obstruction count, retained with LawPolicy and source provenance"
+          },
+          "axisDistance": {
+            "status": "zero",
+            "measuredValue": 0,
+            "unit": "milli-signature-distance",
+            "provenanceRefs": [
+              "atom:relation:route-service",
+              "law:layer-respecting",
+              "sig-axis:layer-violation"
+            ],
+            "evaluatorBasisRefs": [
+              "rho_i:axis=sig-axis:layer-violation",
+              "axisValue:0",
+              "coverageStatus:coverage-gap-preserved"
+            ],
+            "coverageRefs": [
+              "coverage:layer-atoms",
+              "coverage:semantic-contract-atoms"
+            ],
+            "blockerRefs": [],
+            "reading": "axis distance scales rho_i into the selected signature distance unit without converting missing coverage to zero"
+          },
+          "coverageStatus": "coverage-gap-preserved",
+          "sourceRefs": [
+            "atom:relation:route-service"
+          ],
+          "blockerRefs": [
+            "coverage:layer-atoms: report observation gap and block signature-zero reflection",
+            "gap-runtime-user-db-trace: runtime trace was requested but not supplied"
+          ],
+          "evidenceBoundary": "axis distance is read from selected signature axis evidence and remains coverage-relative"
+        },
+        {
+          "signatureAxisRef": "sig-axis:semantic-inconsistency",
+          "lawRef": "law:semantic-contract-alignment",
+          "axisRef": "axis:semantic-inconsistency",
+          "rhoI": {
+            "status": "measured",
+            "measuredValue": 1,
+            "unit": "signature-rho",
+            "provenanceRefs": [
+              "atom:contract:create-user",
+              "law:semantic-contract-alignment",
+              "semantic:interpretation:create-user",
+              "sig-axis:semantic-inconsistency"
+            ],
+            "evaluatorBasisRefs": [
+              "rho_i:axis=sig-axis:semantic-inconsistency",
+              "axisValue:1",
+              "coverageStatus:coverage-gap-preserved"
+            ],
+            "coverageRefs": [
+              "coverage:layer-atoms",
+              "coverage:semantic-contract-atoms"
+            ],
+            "blockerRefs": [],
+            "reading": "rho_i is the selected signature-axis obstruction count, retained with LawPolicy and source provenance"
+          },
+          "axisDistance": {
+            "status": "measured",
+            "measuredValue": 1000,
+            "unit": "milli-signature-distance",
+            "provenanceRefs": [
+              "atom:contract:create-user",
+              "law:semantic-contract-alignment",
+              "semantic:interpretation:create-user",
+              "sig-axis:semantic-inconsistency"
+            ],
+            "evaluatorBasisRefs": [
+              "rho_i:axis=sig-axis:semantic-inconsistency",
+              "axisValue:1",
+              "coverageStatus:coverage-gap-preserved"
+            ],
+            "coverageRefs": [
+              "coverage:layer-atoms",
+              "coverage:semantic-contract-atoms"
+            ],
+            "blockerRefs": [],
+            "reading": "axis distance scales rho_i into the selected signature distance unit without converting missing coverage to zero"
+          },
+          "coverageStatus": "coverage-gap-preserved",
+          "sourceRefs": [
+            "atom:contract:create-user",
+            "semantic:interpretation:create-user"
+          ],
+          "blockerRefs": [
+            "coverage:semantic-contract-atoms: report observation gap and block signature-zero reflection",
+            "gap-runtime-user-db-trace: runtime trace was requested but not supplied"
+          ],
+          "evidenceBoundary": "axis distance is read from selected signature axis evidence and remains coverage-relative"
+        }
+      ],
+      "totalMeasuredDistance": {
+        "status": "blocked",
+        "unit": "milli-signature-distance",
+        "provenanceRefs": [
+          "atom:contract:create-user",
+          "atom:relation:route-service",
+          "semantic:interpretation:create-user",
+          "sig-axis:layer-violation",
+          "sig-axis:semantic-inconsistency"
+        ],
+        "evaluatorBasisRefs": [
+          "rho_i:sig-axis:layer-violation",
+          "axisDistance:sig-axis:layer-violation",
+          "rho_i:sig-axis:semantic-inconsistency",
+          "axisDistance:sig-axis:semantic-inconsistency"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [
+          "coverage:layer-atoms: report observation gap and block signature-zero reflection",
+          "coverage:semantic-contract-atoms: report observation gap and block signature-zero reflection",
+          "gap-runtime-user-db-trace: runtime trace was requested but not supplied"
+        ],
+        "reading": "total measured signature distance is the selected-axis sum; coverage blockers prevent safe-region conclusion"
+      },
+      "measuredAxisRefs": [
+        "sig-axis:layer-violation",
+        "sig-axis:semantic-inconsistency"
+      ],
+      "unmeasuredAxisRefs": [],
+      "incomparableAxisRefs": [],
+      "safeRegionStatus": "BLOCKED_BY_COVERAGE",
+      "safeRegionMargin": {
+        "status": "blocked",
+        "unit": "milli-safe-region-margin",
+        "provenanceRefs": [
+          "atom:contract:create-user",
+          "atom:relation:route-service",
+          "semantic:interpretation:create-user",
+          "sig-axis:layer-violation",
+          "sig-axis:semantic-inconsistency"
+        ],
+        "evaluatorBasisRefs": [
+          "rho_i:sig-axis:layer-violation",
+          "axisDistance:sig-axis:layer-violation",
+          "rho_i:sig-axis:semantic-inconsistency",
+          "axisDistance:sig-axis:semantic-inconsistency"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [
+          "coverage:layer-atoms: report observation gap and block signature-zero reflection",
+          "coverage:semantic-contract-atoms: report observation gap and block signature-zero reflection",
+          "gap-runtime-user-db-trace: runtime trace was requested but not supplied"
+        ],
+        "reading": "safe-region margin is relative to selected zero axes and selected coverage, not global lawfulness"
+      },
+      "pathDrift": {
+        "status": "blocked",
+        "unit": "milli-signature-drift",
+        "provenanceRefs": [
+          "atom:contract:create-user",
+          "atom:relation:route-service",
+          "semantic:interpretation:create-user",
+          "sig-axis:layer-violation",
+          "sig-axis:semantic-inconsistency"
+        ],
+        "evaluatorBasisRefs": [
+          "rho_i:sig-axis:layer-violation",
+          "axisDistance:sig-axis:layer-violation",
+          "rho_i:sig-axis:semantic-inconsistency",
+          "axisDistance:sig-axis:semantic-inconsistency"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [
+          "coverage:layer-atoms: report observation gap and block signature-zero reflection",
+          "coverage:semantic-contract-atoms: report observation gap and block signature-zero reflection",
+          "gap-runtime-user-db-trace: runtime trace was requested but not supplied"
+        ],
+        "reading": "path drift records selected-axis nonzero excursion density under the current LawPolicy profile"
+      },
+      "endpointDistance": {
+        "status": "blocked",
+        "unit": "milli-signature-endpoint-distance",
+        "provenanceRefs": [
+          "atom:contract:create-user",
+          "atom:relation:route-service",
+          "semantic:interpretation:create-user",
+          "sig-axis:layer-violation",
+          "sig-axis:semantic-inconsistency"
+        ],
+        "evaluatorBasisRefs": [
+          "rho_i:sig-axis:layer-violation",
+          "axisDistance:sig-axis:layer-violation",
+          "rho_i:sig-axis:semantic-inconsistency",
+          "axisDistance:sig-axis:semantic-inconsistency"
+        ],
+        "coverageRefs": [
+          "coverage:layer-atoms",
+          "coverage:semantic-contract-atoms"
+        ],
+        "blockerRefs": [
+          "coverage:layer-atoms: report observation gap and block signature-zero reflection",
+          "coverage:semantic-contract-atoms: report observation gap and block signature-zero reflection",
+          "gap-runtime-user-db-trace: runtime trace was requested but not supplied"
+        ],
+        "reading": "endpoint distance is the maximum selected-axis signature distance over the current bounded packet"
+      },
+      "hiddenExcursionStatus": "hiddenExcursionBlockedByCoverage",
+      "coverageRefs": [
+        "coverage:layer-atoms",
+        "coverage:semantic-contract-atoms"
+      ],
+      "confidence": "selected-profile-relative",
+      "evidenceBoundary": "Signature distance is aggregated from selected LawPolicy signature axes; coverage gaps block safe-region and drift conclusions instead of becoming zero",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    }
+  ],
   "obstructionCircuits": [
     {
       "obstructionCircuitId": "obstruction:semantic-contract-mismatch:computed",
@@ -5679,6 +5941,9 @@
       "axisRef": "axis:layer-violation",
       "valueType": "nat",
       "value": 0,
+      "signatureDistanceReadingRefs": [
+        "signature-distance:llm-native-aat-law-policy-fixture"
+      ],
       "zeroReading": "zero means no axis:layer-violation witness was constructed under declared coverage",
       "coverageStatus": "coverage-gap-preserved",
       "exactnessAssumptions": [
@@ -5720,6 +5985,9 @@
       "axisRef": "axis:semantic-inconsistency",
       "valueType": "nat",
       "value": 1,
+      "signatureDistanceReadingRefs": [
+        "signature-distance:llm-native-aat-law-policy-fixture"
+      ],
       "zeroReading": "nonzero means axis:semantic-inconsistency witness count is present under selected LawPolicy",
       "coverageStatus": "coverage-gap-preserved",
       "exactnessAssumptions": [

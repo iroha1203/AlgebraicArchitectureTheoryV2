@@ -994,6 +994,8 @@ pub struct ArchSigAnalysisPacketV0 {
     pub atom_distance_readings: Vec<ArchSigAtomDistanceReadingV0>,
     #[serde(default)]
     pub configuration_distance_readings: Vec<ArchSigConfigurationDistanceReadingV0>,
+    #[serde(default)]
+    pub signature_distance_readings: Vec<ArchSigSignatureDistanceReadingV0>,
     pub obstruction_circuits: Vec<ArchSigObstructionCircuitV0>,
     pub signature_axes: Vec<ArchSigSignatureAxisReadingV0>,
     pub analytic_representations: Vec<ArchSigAnalyticRepresentationV0>,
@@ -1862,6 +1864,8 @@ pub struct ArchSigSignatureAxisReadingV0 {
     pub axis_ref: String,
     pub value_type: String,
     pub value: i64,
+    #[serde(default)]
+    pub signature_distance_reading_refs: Vec<String>,
     pub zero_reading: String,
     pub coverage_status: String,
     pub exactness_assumptions: Vec<String>,
@@ -1872,6 +1876,42 @@ pub struct ArchSigSignatureAxisReadingV0 {
     #[serde(default)]
     pub excluded_readings: Vec<String>,
     pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigSignatureDistanceReadingV0 {
+    pub signature_distance_reading_id: String,
+    pub distance_profile_ref: String,
+    pub diagnostic_scope_ref: String,
+    pub axis_distances: Vec<ArchSigSignatureAxisDistanceV0>,
+    pub total_measured_distance: ArchSigDistanceValueV0,
+    pub measured_axis_refs: Vec<String>,
+    pub unmeasured_axis_refs: Vec<String>,
+    pub incomparable_axis_refs: Vec<String>,
+    pub safe_region_status: String,
+    pub safe_region_margin: ArchSigDistanceValueV0,
+    pub path_drift: ArchSigDistanceValueV0,
+    pub endpoint_distance: ArchSigDistanceValueV0,
+    pub hidden_excursion_status: String,
+    pub coverage_refs: Vec<String>,
+    pub confidence: String,
+    pub evidence_boundary: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigSignatureAxisDistanceV0 {
+    pub signature_axis_ref: String,
+    pub law_ref: String,
+    pub axis_ref: String,
+    pub rho_i: ArchSigDistanceValueV0,
+    pub axis_distance: ArchSigDistanceValueV0,
+    pub coverage_status: String,
+    pub source_refs: Vec<String>,
+    pub blocker_refs: Vec<String>,
+    pub evidence_boundary: String,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -3595,6 +3635,8 @@ pub struct ArchSigAnalysisPacketValidationSummaryV0 {
     pub atom_distance_reading_count: usize,
     #[serde(default)]
     pub configuration_distance_reading_count: usize,
+    #[serde(default)]
+    pub signature_distance_reading_count: usize,
     pub obstruction_circuit_count: usize,
     pub signature_axis_count: usize,
     pub analytic_representation_count: usize,

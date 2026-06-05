@@ -1375,8 +1375,11 @@ fn cli_analyze_emit_raw_artifacts_writes_field_sig_handoff_packet() {
                 .is_some_and(|count| count > 0)
             && analysis_validation["summary"]["configurationDistanceReadingCount"]
                 .as_u64()
+                .is_some_and(|count| count > 0)
+            && analysis_validation["summary"]["signatureDistanceReadingCount"]
+                .as_u64()
                 .is_some_and(|count| count > 0),
-        "validation summary must count generated middle-layer, viewer distance, and configuration distance surfaces"
+        "validation summary must count generated middle-layer, viewer distance, configuration distance, and signature distance surfaces"
     );
     let llm_packet = read_json(&out_dir.join("llm-interpretation-packet.json"));
     assert_eq!(llm_packet, analysis_packet["llmInterpretationPacket"]);
@@ -3360,6 +3363,7 @@ fn assert_north_star_packet_surfaces(json: &Value) {
             .all(|entry| {
                 if entry["distanceFamily"] == "atomGeometry"
                     || entry["distanceFamily"] == "configurationGeometry"
+                    || entry["distanceFamily"] == "signatureGeometry"
                 {
                     (entry["value"]["status"] == "measured"
                         || entry["value"]["status"] == "zero"
@@ -3381,10 +3385,10 @@ fn assert_north_star_packet_surfaces(json: &Value) {
             })
             && part4_distance["statusSummary"]["blockedCount"]
                 .as_u64()
-                .is_some_and(|count| count >= 2)
+                .is_some_and(|count| count >= 3)
             && part4_distance["statusSummary"]["unmeasuredCount"]
                 .as_u64()
-                .is_some_and(|count| count >= 5)
+                .is_some_and(|count| count >= 4)
             && part4_distance["statusSummary"]["schemaFoundationOnlyCount"] == 0,
         "Part IV foundation must route atomGeometry/configurationGeometry through evaluator readings while preserving semantic/gap blockers and keeping remaining evaluators unmeasured"
     );
@@ -3462,6 +3466,43 @@ fn assert_north_star_packet_surfaces(json: &Value) {
                 })
         }),
         "Configuration distance readings must retain typed hyperedge and shortest-path evaluator basis refs"
+    );
+    let signature_distance_readings = json["signatureDistanceReadings"]
+        .as_array()
+        .expect("signature distance readings are array");
+    assert!(
+        !signature_distance_readings.is_empty()
+            && signature_distance_readings.iter().all(|reading| {
+                reading["axisDistances"].as_array().is_some_and(|axes| {
+                    !axes.is_empty()
+                        && axes.iter().all(|axis| {
+                            axis["rhoI"]["evaluatorBasisRefs"]
+                                .as_array()
+                                .is_some_and(|refs| {
+                                    refs.iter().any(|value| {
+                                        value.as_str().is_some_and(|s| s.starts_with("rho_i:"))
+                                    })
+                                })
+                                && axis["axisDistance"]["evaluatorBasisRefs"]
+                                    .as_array()
+                                    .is_some_and(|refs| {
+                                        refs.iter().any(|value| {
+                                            value
+                                                .as_str()
+                                                .is_some_and(|s| s.starts_with("axisValue:"))
+                                        })
+                                    })
+                        })
+                }) && reading["measuredAxisRefs"].as_array().is_some()
+                    && reading["unmeasuredAxisRefs"].as_array().is_some()
+                    && reading["incomparableAxisRefs"].as_array().is_some()
+                    && reading["safeRegionMargin"]["status"] == "blocked"
+                    && reading["pathDrift"]["status"] == "blocked"
+                    && reading["hiddenExcursionStatus"]
+                        .as_str()
+                        .is_some_and(|status| status.contains("Coverage"))
+            }),
+        "Signature distance readings must expose rho_i, axis distances, axis partitions, safe-region margin, and drift blockers"
     );
     assert!(
         json.get("workflowSignalReadings").is_none() && !has_nested_key(json, "signalDensityScore"),
