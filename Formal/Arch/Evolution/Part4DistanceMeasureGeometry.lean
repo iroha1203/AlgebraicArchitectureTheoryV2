@@ -1,5 +1,6 @@
 import Formal.Arch.AAT.GeneratedDistance
 import Formal.Arch.AAT.GeneratedOperation
+import Formal.Arch.AAT.GeneratedRepair
 import Formal.Arch.Evolution.DiagramFiller
 import Formal.Arch.Evolution.SignatureDynamics
 import Formal.Arch.Repair.Repair
@@ -33,6 +34,7 @@ inductive Candidate where
   | distanceFoundation
   | distanceAATOverlay
   | atomRootGeometry
+  | atomGeneratedRootDistance
   | atomConfigurationGeometry
   | configurationContextGeometry
   | signaturePathGeometry
@@ -40,6 +42,7 @@ inductive Candidate where
   | distanceToLawfulnessGeometry
   | metricGaloisCorrespondence
   | operationRepairGeometry
+  | atomGeneratedOperationDistance
   | contractiveRepairGeometry
   | curvatureFillingGeometry
   | curvatureTransportGeometry
@@ -48,6 +51,7 @@ inductive Candidate where
   | representationSpectralStability
   | abstractInfimumInterface
   | diagnosticConclusionDetail
+  | atomGeneratedDiagnosticConclusion
   | docsClassificationBoundary
   deriving DecidableEq, Repr
 
@@ -60,6 +64,8 @@ def designSection : Candidate -> String
       "Part IV.A DistanceAAT / DistanceBundle selected overlay"
   | atomRootGeometry =>
       "Part IV.B root Atom geometry distance bundle"
+  | atomGeneratedRootDistance =>
+      "Part IV.B Atom-generated root distance package"
   | atomConfigurationGeometry =>
       "Part IV.B atom / configuration distance schema"
   | configurationContextGeometry =>
@@ -74,6 +80,8 @@ def designSection : Candidate -> String
       "Part IV.D metric operation / invariant correspondence"
   | operationRepairGeometry =>
       "Part IV.D operation cost, distance to flatness, and bounded repair"
+  | atomGeneratedOperationDistance =>
+      "Part IV.D Atom-generated operation distance package"
   | contractiveRepairGeometry =>
       "Part IV.D finite repair sequence and selected contractive repair"
   | curvatureFillingGeometry =>
@@ -90,6 +98,8 @@ def designSection : Candidate -> String
       "Part IV.G abstract infimum interface over finite witnesses"
   | diagnosticConclusionDetail =>
       "Part IV.H detailed bounded diagnostic conclusion"
+  | atomGeneratedDiagnosticConclusion =>
+      "Part IV.H Atom-generated distance diagnostic conclusion"
   | docsClassificationBoundary =>
       "Part IV.G theorem index, proof obligations, and classification boundary"
 
@@ -97,6 +107,7 @@ def schematicName : Candidate -> String
   | distanceFoundation => "distanceFoundation"
   | distanceAATOverlay => "distanceAATOverlay"
   | atomRootGeometry => "atomRootGeometry"
+  | atomGeneratedRootDistance => "atomGeneratedRootDistance"
   | atomConfigurationGeometry => "atomConfigurationGeometry"
   | configurationContextGeometry => "configurationContextGeometry"
   | signaturePathGeometry => "signaturePathGeometry"
@@ -104,6 +115,7 @@ def schematicName : Candidate -> String
   | distanceToLawfulnessGeometry => "distanceToLawfulnessGeometry"
   | metricGaloisCorrespondence => "metricGaloisCorrespondence"
   | operationRepairGeometry => "operationRepairGeometry"
+  | atomGeneratedOperationDistance => "atomGeneratedOperationDistance"
   | contractiveRepairGeometry => "contractiveRepairGeometry"
   | curvatureFillingGeometry => "curvatureFillingGeometry"
   | curvatureTransportGeometry => "curvatureTransportGeometry"
@@ -112,6 +124,7 @@ def schematicName : Candidate -> String
   | representationSpectralStability => "representationSpectralStability"
   | abstractInfimumInterface => "abstractInfimumInterface"
   | diagnosticConclusionDetail => "diagnosticConclusionDetail"
+  | atomGeneratedDiagnosticConclusion => "atomGeneratedDiagnosticConclusion"
   | docsClassificationBoundary => "docsClassificationBoundary"
 
 def representativeDeclarations : Candidate -> List String
@@ -137,6 +150,13 @@ def representativeDeclarations : Candidate -> List String
       , "AtomRootDistanceBundle.layoutDistance_eq_weighted_components"
       , "GeneratedAtomShapeDistanceBridge"
       , "GeneratedAtomShapeDistanceBridge.generatedDistance_eq_coordinateMismatch"
+      ]
+  | atomGeneratedRootDistance =>
+      [ "Part4DistanceMeasureGeometry.generatedCarrierShapeDistanceBridge"
+      , "Part4DistanceMeasureGeometry.generatedCarrierAtomRootDistanceBundle"
+      , "Part4DistanceMeasureGeometry.generatedCarrierRootDistance_layout_eq_generatedCarrierShapeDistance"
+      , "Part4DistanceMeasureGeometry.generatedCarrierShapeDistanceBridge_unfolds"
+      , "Part4DistanceMeasureGeometry.generatedCarrierShapeDistanceBridge_recordsRootBoundary"
       ]
   | atomConfigurationGeometry =>
       [ "AAT.GeneratedAtomShapeCoordinate.mismatchCount"
@@ -195,6 +215,16 @@ def representativeDeclarations : Candidate -> List String
       , "BoundedSideEffectRepair.targetDistance_decreases"
       , "RepairStepDecreases"
       ]
+  | atomGeneratedOperationDistance =>
+      [ "Part4DistanceMeasureGeometry.GeneratedMappedDistanceEvidence"
+      , "Part4DistanceMeasureGeometry.generatedOperation_mappedDistanceEvidence"
+      , "Part4DistanceMeasureGeometry.generatedOperation_mappedDistanceEvidence_unfolds"
+      , "Part4DistanceMeasureGeometry.generatedOperation_mappedDistanceEvidence_targetPrimitive"
+      , "Part4DistanceMeasureGeometry.generatedOperation_mappedDistanceEvidence_recordsGeneratedBoundaries"
+      , "Part4DistanceMeasureGeometry.generatedRepairProblemOperation_mappedDistanceEvidence"
+      , "Part4DistanceMeasureGeometry.generatedRepairProblemOperation_mappedDistanceEvidence_recordsGeneratedBoundaries"
+      , "Part4DistanceMeasureGeometry.generatedRepairProblemOperation_unmapped_target_atom_primitive"
+      ]
   | contractiveRepairGeometry =>
       [ "FiniteRepairSequence"
       , "FiniteRepairSequence.AllStepsDecrease"
@@ -247,6 +277,13 @@ def representativeDeclarations : Candidate -> List String
       , "DetailedBoundedDiagnosticConclusion.records_nonConclusions"
       , "DetailedBoundedDiagnosticConclusion.records_recommendation_boundary"
       ]
+  | atomGeneratedDiagnosticConclusion =>
+      [ "Part4DistanceMeasureGeometry.AtomGeneratedDistanceDiagnosticConclusion"
+      , "Part4DistanceMeasureGeometry.AtomGeneratedDistanceDiagnosticConclusion.records_generated_boundaries"
+      , "Part4DistanceMeasureGeometry.atomGeneratedDistanceDiagnosticConclusion"
+      , "Part4DistanceMeasureGeometry.atomGeneratedDiagnostic_supportingDistances_eq"
+      , "Part4DistanceMeasureGeometry.atomGeneratedDiagnostic_recommendedOperations_eq"
+      ]
   | docsClassificationBoundary =>
       [ "Part4DistanceMeasureGeometry.Candidate"
       , "Part4DistanceMeasureGeometry.Candidate.schematicCorrespondence"
@@ -260,6 +297,8 @@ def claimBoundary : Candidate -> String
       "DistanceAAT is an overlay on an existing AAT core; it does not generate atoms, replace the core, or prove lawfulness from distance alone."
   | atomRootGeometry =>
       "Root Atom geometry records selected fiber, carrier, valence, semantic-anchor, and layout distances without empirical semantic calibration."
+  | atomGeneratedRootDistance =>
+      "Generated carrier distances instantiate the root Atom geometry bridge from AtomShape coordinates without claiming semantic calibration."
   | atomConfigurationGeometry =>
       "Generated distances are bounded AtomShape-coordinate mismatch counts, not empirical semantic calibration."
   | configurationContextGeometry =>
@@ -274,6 +313,8 @@ def claimBoundary : Candidate -> String
       "Metric operation / invariant correspondence is selected finite-universe and does not classify every operation."
   | operationRepairGeometry =>
       "Repair cost and side-effect records show selected decreases / bounds only; they do not prove solver completeness or global termination."
+  | atomGeneratedOperationDistance =>
+      "Generated operation and repair-problem distances expose AtomShape coordinate movement, target primitive evidence, and non-creation boundaries without solver-completeness claims."
   | contractiveRepairGeometry =>
       "Contractive repair is stated for supplied finite sequences or selected steps and does not prove global convergence or solver completeness."
   | curvatureFillingGeometry =>
@@ -290,6 +331,8 @@ def claimBoundary : Candidate -> String
       "The abstract infimum interface records lower-bound and approximation witnesses without computing a global optimizer."
   | diagnosticConclusionDetail =>
       "Detailed diagnostic conclusions keep supporting distances and recommended operations scoped, without proving operation success or global repair."
+  | atomGeneratedDiagnosticConclusion =>
+      "Atom-generated diagnostic conclusions bundle generated distance evidence and generated operation recommendations without promoting recommendations to repair-correctness theorems."
   | docsClassificationBoundary =>
       "The index and proof-obligation rows document the bounded Lean package without editing the mathematical Part IV source text."
 
@@ -302,6 +345,7 @@ def schematicCorrespondences : List SchematicCorrespondence :=
   [ schematicCorrespondence .distanceFoundation
   , schematicCorrespondence .distanceAATOverlay
   , schematicCorrespondence .atomRootGeometry
+  , schematicCorrespondence .atomGeneratedRootDistance
   , schematicCorrespondence .atomConfigurationGeometry
   , schematicCorrespondence .configurationContextGeometry
   , schematicCorrespondence .signaturePathGeometry
@@ -309,6 +353,7 @@ def schematicCorrespondences : List SchematicCorrespondence :=
   , schematicCorrespondence .distanceToLawfulnessGeometry
   , schematicCorrespondence .metricGaloisCorrespondence
   , schematicCorrespondence .operationRepairGeometry
+  , schematicCorrespondence .atomGeneratedOperationDistance
   , schematicCorrespondence .contractiveRepairGeometry
   , schematicCorrespondence .curvatureFillingGeometry
   , schematicCorrespondence .curvatureTransportGeometry
@@ -317,6 +362,7 @@ def schematicCorrespondences : List SchematicCorrespondence :=
   , schematicCorrespondence .representationSpectralStability
   , schematicCorrespondence .abstractInfimumInterface
   , schematicCorrespondence .diagnosticConclusionDetail
+  , schematicCorrespondence .atomGeneratedDiagnosticConclusion
   , schematicCorrespondence .docsClassificationBoundary
   ]
 
@@ -327,6 +373,7 @@ def all : List Candidate :=
   [ distanceFoundation
   , distanceAATOverlay
   , atomRootGeometry
+  , atomGeneratedRootDistance
   , atomConfigurationGeometry
   , configurationContextGeometry
   , signaturePathGeometry
@@ -334,6 +381,7 @@ def all : List Candidate :=
   , distanceToLawfulnessGeometry
   , metricGaloisCorrespondence
   , operationRepairGeometry
+  , atomGeneratedOperationDistance
   , contractiveRepairGeometry
   , curvatureFillingGeometry
   , curvatureTransportGeometry
@@ -342,10 +390,444 @@ def all : List Candidate :=
   , representationSpectralStability
   , abstractInfimumInterface
   , diagnosticConclusionDetail
+  , atomGeneratedDiagnosticConclusion
   , docsClassificationBoundary
   ]
 
 end Candidate
+
+/--
+Generated carrier distance as a concrete Part IV root-distance bridge.
+
+The generated mismatch count is an intrinsic AtomShape-coordinate distance.  It
+does not calibrate semantic ontology distance and does not make distance an
+Atom generator.
+-/
+def generatedCarrierShapeDistanceBridge
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    (object : AAT.GeneratedArchitectureObject presentation) :
+    GeneratedAtomShapeDistanceBridge
+      (AAT.GeneratedCarrier object)
+      AAT.GeneratedAtomShapeCoordinate where
+  coordinate := object.generatedAtomShapeCoordinate
+  generatedDistance := object.generatedCarrierShapeDistance
+  coordinateMismatch := AAT.GeneratedAtomShapeCoordinate.mismatchCount
+  unfoldsToCoordinateMismatch := by
+    intro left right
+    rfl
+  rootDistanceBoundary := True
+  nonConclusions := True
+
+/--
+Generated carrier distance read as the selected fiber component of a root Atom
+distance bundle.
+-/
+def generatedCarrierAtomRootDistanceBundle
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    (object : AAT.GeneratedArchitectureObject presentation) :
+    AtomRootDistanceBundle (AAT.GeneratedCarrier object) where
+  fiberDistance := object.generatedCarrierShapeDistance
+  carrierDistance := fun _ _ => 0
+  valenceDistance := fun _ _ => 0
+  semanticAnchorDistance := fun _ _ => 0
+  fiberWeight := 1
+  carrierWeight := 0
+  valenceWeight := 0
+  semanticWeight := 0
+  selectedRootScope := True
+  lawOverlayBoundary := True
+  semanticDistanceBoundary := True
+  nonConclusions := True
+
+theorem generatedCarrierShapeDistanceBridge_unfolds
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    (object : AAT.GeneratedArchitectureObject presentation)
+    (left right : AAT.GeneratedCarrier object) :
+    (generatedCarrierShapeDistanceBridge object).generatedDistance left right =
+      AAT.GeneratedAtomShapeCoordinate.mismatchCount
+        ((generatedCarrierShapeDistanceBridge object).coordinate left)
+        ((generatedCarrierShapeDistanceBridge object).coordinate right) :=
+  GeneratedAtomShapeDistanceBridge.generatedDistance_eq_coordinateMismatch
+    (generatedCarrierShapeDistanceBridge object) left right
+
+theorem generatedCarrierShapeDistanceBridge_recordsRootBoundary
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    (object : AAT.GeneratedArchitectureObject presentation) :
+    (generatedCarrierShapeDistanceBridge object).rootDistanceBoundary ∧
+      (generatedCarrierShapeDistanceBridge object).nonConclusions :=
+  ⟨trivial, trivial⟩
+
+theorem generatedCarrierRootDistance_layout_eq_generatedCarrierShapeDistance
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    (object : AAT.GeneratedArchitectureObject presentation)
+    (left right : AAT.GeneratedCarrier object) :
+    (generatedCarrierAtomRootDistanceBundle object).layoutDistance left right =
+      object.generatedCarrierShapeDistance left right := by
+  simp [generatedCarrierAtomRootDistanceBundle,
+    AtomRootDistanceBundle.layoutDistance]
+
+/--
+Part IV evidence for one generated mapped-distance reading.
+
+The source and target carriers can live in different generated surfaces.  The
+distance is still a generated AtomShape-coordinate mismatch, and the package
+keeps primitive-target and atom-non-creation boundaries with it.
+-/
+structure GeneratedMappedDistanceEvidence
+    (SourceCarrier : Type u) (TargetCarrier : Type v)
+    (Coordinate : Type w) where
+  source : SourceCarrier
+  target : TargetCarrier
+  sourceCoordinate : Coordinate
+  targetCoordinate : Coordinate
+  mappedDistance : Nat
+  coordinateMismatch : Coordinate -> Coordinate -> Nat
+  unfoldsToCoordinateMismatch :
+    mappedDistance = coordinateMismatch sourceCoordinate targetCoordinate
+  targetPrimitiveBoundary : Prop
+  operationDoesNotCreateAtomsBoundary : Prop
+  distanceBoundary : Prop
+  doesNotProveSolverCompleteness : Prop
+  doesNotProveEmpiricalRepairQuality : Prop
+  nonConclusions : Prop
+
+namespace GeneratedMappedDistanceEvidence
+
+variable {SourceCarrier : Type u} {TargetCarrier : Type v}
+  {Coordinate : Type w}
+
+theorem mappedDistance_eq_coordinateMismatch
+    (evidence :
+      GeneratedMappedDistanceEvidence SourceCarrier TargetCarrier Coordinate) :
+    evidence.mappedDistance =
+      evidence.coordinateMismatch evidence.sourceCoordinate
+        evidence.targetCoordinate :=
+  evidence.unfoldsToCoordinateMismatch
+
+def RecordsGeneratedBoundaries
+    (evidence :
+      GeneratedMappedDistanceEvidence SourceCarrier TargetCarrier Coordinate) :
+    Prop :=
+  evidence.targetPrimitiveBoundary ∧
+  evidence.operationDoesNotCreateAtomsBoundary ∧
+  evidence.distanceBoundary ∧
+  evidence.doesNotProveSolverCompleteness ∧
+  evidence.doesNotProveEmpiricalRepairQuality ∧
+  evidence.nonConclusions
+
+theorem records_generated_boundaries
+    (evidence :
+      GeneratedMappedDistanceEvidence SourceCarrier TargetCarrier Coordinate)
+    (hTarget : evidence.targetPrimitiveBoundary)
+    (hNoCreate : evidence.operationDoesNotCreateAtomsBoundary)
+    (hDistance : evidence.distanceBoundary)
+    (hNoSolverCompleteness : evidence.doesNotProveSolverCompleteness)
+    (hNoEmpiricalQuality : evidence.doesNotProveEmpiricalRepairQuality)
+    (hNonConclusions : evidence.nonConclusions) :
+    evidence.RecordsGeneratedBoundaries :=
+  ⟨hTarget, hNoCreate, hDistance, hNoSolverCompleteness,
+    hNoEmpiricalQuality, hNonConclusions⟩
+
+end GeneratedMappedDistanceEvidence
+
+def generatedOperation_mappedDistanceEvidence
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {source target : AAT.GeneratedArchitectureObject presentation}
+    (operation : AAT.GeneratedOperation source target)
+    (carrier : AAT.GeneratedCarrier source) :
+    GeneratedMappedDistanceEvidence
+      (AAT.GeneratedCarrier source)
+      (AAT.GeneratedCarrier target)
+      AAT.GeneratedAtomShapeCoordinate where
+  source := carrier
+  target := operation.atomMap carrier
+  sourceCoordinate :=
+    AAT.GeneratedAtomShapeCoordinate.ofShape
+      (AtomShapeOf presentation carrier.val)
+  targetCoordinate :=
+    AAT.GeneratedAtomShapeCoordinate.ofShape
+      (AtomShapeOf presentation (operation.atomMap carrier).val)
+  mappedDistance := operation.mappedCarrierShapeDistance carrier
+  coordinateMismatch := AAT.GeneratedAtomShapeCoordinate.mismatchCount
+  unfoldsToCoordinateMismatch := by
+    rfl
+  targetPrimitiveBoundary :=
+    system.Primitive (operation.atomMap carrier).val
+  operationDoesNotCreateAtomsBoundary :=
+    system.noToolOutputCreatesAtoms
+  distanceBoundary := True
+  doesNotProveSolverCompleteness := True
+  doesNotProveEmpiricalRepairQuality := True
+  nonConclusions := True
+
+theorem generatedOperation_mappedDistanceEvidence_unfolds
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {source target : AAT.GeneratedArchitectureObject presentation}
+    (operation : AAT.GeneratedOperation source target)
+    (carrier : AAT.GeneratedCarrier source) :
+    (generatedOperation_mappedDistanceEvidence operation carrier).mappedDistance =
+      AAT.GeneratedAtomShapeCoordinate.mismatchCount
+        (AAT.GeneratedAtomShapeCoordinate.ofShape
+          (AtomShapeOf presentation carrier.val))
+        (AAT.GeneratedAtomShapeCoordinate.ofShape
+          (AtomShapeOf presentation
+            (operation.atomMap carrier).val)) :=
+  AAT.GeneratedOperation.mappedCarrierShapeDistance_eq_coordinate_mismatchCount
+    operation carrier
+
+theorem generatedOperation_mappedDistanceEvidence_targetPrimitive
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {source target : AAT.GeneratedArchitectureObject presentation}
+    (operation : AAT.GeneratedOperation source target)
+    (carrier : AAT.GeneratedCarrier source) :
+    (generatedOperation_mappedDistanceEvidence operation carrier).targetPrimitiveBoundary :=
+  operation.target_atom_primitive carrier
+
+theorem generatedOperation_mappedDistanceEvidence_doesNotCreateAtoms
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {source target : AAT.GeneratedArchitectureObject presentation}
+    (operation : AAT.GeneratedOperation source target)
+    (carrier : AAT.GeneratedCarrier source) :
+    (generatedOperation_mappedDistanceEvidence operation carrier).operationDoesNotCreateAtomsBoundary :=
+  operation.operation_does_not_create_atoms
+
+theorem generatedOperation_mappedDistanceEvidence_recordsGeneratedBoundaries
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {source target : AAT.GeneratedArchitectureObject presentation}
+    (operation : AAT.GeneratedOperation source target)
+    (carrier : AAT.GeneratedCarrier source) :
+    (generatedOperation_mappedDistanceEvidence operation carrier).RecordsGeneratedBoundaries :=
+  GeneratedMappedDistanceEvidence.records_generated_boundaries
+    (generatedOperation_mappedDistanceEvidence operation carrier)
+    (operation.target_atom_primitive carrier)
+    operation.operation_does_not_create_atoms
+    trivial
+    trivial
+    trivial
+    trivial
+
+theorem generatedOperation_unmapped_target_atom_primitive
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {source target : AAT.GeneratedArchitectureObject presentation}
+    (operation : AAT.GeneratedOperation source target)
+    (targetCarrier : AAT.GeneratedCarrier target)
+    (hUnmapped : operation.TargetCarrierUnmapped targetCarrier) :
+    system.Primitive targetCarrier.val :=
+  operation.unmapped_target_atom_primitive targetCarrier hUnmapped
+
+def generatedRepairProblemOperation_mappedDistanceEvidence
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {configuration : AAT.GeneratedRepairProblemConfiguration presentation}
+    {target : AAT.GeneratedArchitectureObject presentation}
+    (operation :
+      AAT.GeneratedRepairProblemOperation configuration target)
+    (carrier : AAT.GeneratedRepairProblemCarrier configuration) :
+    GeneratedMappedDistanceEvidence
+      (AAT.GeneratedRepairProblemCarrier configuration)
+      (AAT.GeneratedCarrier target)
+      AAT.GeneratedAtomShapeCoordinate where
+  source := carrier
+  target := operation.atomMap carrier
+  sourceCoordinate :=
+    AAT.GeneratedAtomShapeCoordinate.ofShape
+      (AtomShapeOf presentation carrier.val)
+  targetCoordinate :=
+    AAT.GeneratedAtomShapeCoordinate.ofShape
+      (AtomShapeOf presentation (operation.atomMap carrier).val)
+  mappedDistance := operation.mappedCarrierShapeDistance carrier
+  coordinateMismatch := AAT.GeneratedAtomShapeCoordinate.mismatchCount
+  unfoldsToCoordinateMismatch := by
+    rfl
+  targetPrimitiveBoundary :=
+    system.Primitive (operation.atomMap carrier).val
+  operationDoesNotCreateAtomsBoundary :=
+    system.noToolOutputCreatesAtoms
+  distanceBoundary := True
+  doesNotProveSolverCompleteness := True
+  doesNotProveEmpiricalRepairQuality := True
+  nonConclusions := True
+
+theorem generatedRepairProblemOperation_mappedDistanceEvidence_unfolds
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {configuration : AAT.GeneratedRepairProblemConfiguration presentation}
+    {target : AAT.GeneratedArchitectureObject presentation}
+    (operation :
+      AAT.GeneratedRepairProblemOperation configuration target)
+    (carrier : AAT.GeneratedRepairProblemCarrier configuration) :
+    (generatedRepairProblemOperation_mappedDistanceEvidence operation carrier).mappedDistance =
+      AAT.GeneratedAtomShapeCoordinate.mismatchCount
+        (AAT.GeneratedAtomShapeCoordinate.ofShape
+          (AtomShapeOf presentation carrier.val))
+        (AAT.GeneratedAtomShapeCoordinate.ofShape
+          (AtomShapeOf presentation
+            (operation.atomMap carrier).val)) :=
+  AAT.GeneratedRepairProblemOperation.mappedCarrierShapeDistance_eq_coordinate_mismatchCount
+    operation carrier
+
+theorem generatedRepairProblemOperation_mappedDistanceEvidence_targetPrimitive
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {configuration : AAT.GeneratedRepairProblemConfiguration presentation}
+    {target : AAT.GeneratedArchitectureObject presentation}
+    (operation :
+      AAT.GeneratedRepairProblemOperation configuration target)
+    (carrier : AAT.GeneratedRepairProblemCarrier configuration) :
+    (generatedRepairProblemOperation_mappedDistanceEvidence operation carrier).targetPrimitiveBoundary :=
+  operation.target_atom_primitive carrier
+
+theorem generatedRepairProblemOperation_mappedDistanceEvidence_doesNotCreateAtoms
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {configuration : AAT.GeneratedRepairProblemConfiguration presentation}
+    {target : AAT.GeneratedArchitectureObject presentation}
+    (operation :
+      AAT.GeneratedRepairProblemOperation configuration target)
+    (carrier : AAT.GeneratedRepairProblemCarrier configuration) :
+    (generatedRepairProblemOperation_mappedDistanceEvidence operation carrier).operationDoesNotCreateAtomsBoundary :=
+  operation.operation_does_not_create_atoms
+
+theorem generatedRepairProblemOperation_mappedDistanceEvidence_recordsGeneratedBoundaries
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {configuration : AAT.GeneratedRepairProblemConfiguration presentation}
+    {target : AAT.GeneratedArchitectureObject presentation}
+    (operation :
+      AAT.GeneratedRepairProblemOperation configuration target)
+    (carrier : AAT.GeneratedRepairProblemCarrier configuration) :
+    (generatedRepairProblemOperation_mappedDistanceEvidence operation carrier).RecordsGeneratedBoundaries :=
+  GeneratedMappedDistanceEvidence.records_generated_boundaries
+    (generatedRepairProblemOperation_mappedDistanceEvidence operation carrier)
+    (operation.target_atom_primitive carrier)
+    operation.operation_does_not_create_atoms
+    trivial
+    trivial
+    trivial
+    trivial
+
+theorem generatedRepairProblemOperation_unmapped_target_atom_primitive
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    {configuration : AAT.GeneratedRepairProblemConfiguration presentation}
+    {target : AAT.GeneratedArchitectureObject presentation}
+    (operation :
+      AAT.GeneratedRepairProblemOperation configuration target)
+    (targetCarrier : AAT.GeneratedCarrier target)
+    (hUnmapped : operation.TargetCarrierUnmapped targetCarrier) :
+    system.Primitive targetCarrier.val :=
+  operation.unmapped_target_atom_primitive targetCarrier hUnmapped
+
+/--
+Detailed diagnostic package whose support and recommendations are explicitly
+recorded as Atom-generated distance / operation evidence.
+-/
+structure AtomGeneratedDistanceDiagnosticConclusion
+    (Axis : Type u) (DistanceRef : Type v) (Operation : Type w) where
+  conclusion :
+    DetailedBoundedDiagnosticConclusion Axis DistanceRef Operation
+  atomGeneratedDistances : List DistanceRef
+  atomGeneratedOperations : List Operation
+  supportingDistances_eq_atomGenerated :
+    conclusion.supportingDistances = atomGeneratedDistances
+  recommendedOperations_eq_atomGenerated :
+    conclusion.recommendedOperations = atomGeneratedOperations
+  atomGeneratedDistanceEvidence : Prop
+  atomGeneratedOperationEvidence : Prop
+  nonConclusions : Prop
+
+namespace AtomGeneratedDistanceDiagnosticConclusion
+
+variable {Axis : Type u} {DistanceRef : Type v} {Operation : Type w}
+
+def RecordsGeneratedBoundaries
+    (pkg :
+      AtomGeneratedDistanceDiagnosticConclusion Axis DistanceRef Operation) :
+    Prop :=
+  pkg.atomGeneratedDistanceEvidence ∧
+  pkg.atomGeneratedOperationEvidence ∧
+  pkg.conclusion.RecordsRecommendationBoundary ∧
+  pkg.conclusion.base.RecordsNonConclusions ∧
+  pkg.nonConclusions
+
+theorem records_generated_boundaries
+    (pkg :
+      AtomGeneratedDistanceDiagnosticConclusion Axis DistanceRef Operation)
+    (hDistance : pkg.atomGeneratedDistanceEvidence)
+    (hOperation : pkg.atomGeneratedOperationEvidence)
+    (hRecommendation : pkg.conclusion.RecordsRecommendationBoundary)
+    (hNonConclusionBase : pkg.conclusion.base.RecordsNonConclusions)
+    (hNonConclusions : pkg.nonConclusions) :
+    pkg.RecordsGeneratedBoundaries :=
+  ⟨hDistance, hOperation, hRecommendation,
+    hNonConclusionBase, hNonConclusions⟩
+
+theorem supportingDistances_eq
+    (pkg :
+      AtomGeneratedDistanceDiagnosticConclusion Axis DistanceRef Operation) :
+    pkg.conclusion.supportingDistances = pkg.atomGeneratedDistances :=
+  pkg.supportingDistances_eq_atomGenerated
+
+theorem recommendedOperations_eq
+    (pkg :
+      AtomGeneratedDistanceDiagnosticConclusion Axis DistanceRef Operation) :
+    pkg.conclusion.recommendedOperations = pkg.atomGeneratedOperations :=
+  pkg.recommendedOperations_eq_atomGenerated
+
+end AtomGeneratedDistanceDiagnosticConclusion
+
+def atomGeneratedDistanceDiagnosticConclusion
+    {Axis : Type u} {DistanceRef : Type v} {Operation : Type w}
+    (base : BoundedDiagnosticConclusion Axis)
+    (distances : List DistanceRef)
+    (operations : List Operation)
+    (atomGeneratedDistanceEvidence : Prop)
+    (atomGeneratedOperationEvidence : Prop)
+    (recommendationBoundary : Prop)
+    (recommendationsAreNotRepairCorrectnessTheorems : Prop)
+    (nonConclusions : Prop) :
+    AtomGeneratedDistanceDiagnosticConclusion Axis DistanceRef Operation where
+  conclusion :=
+    { base := base
+      supportingDistances := distances
+      recommendedOperations := operations
+      supportingDistanceScope := atomGeneratedDistanceEvidence
+      recommendationBoundary := recommendationBoundary
+      recommendationsAreNotRepairCorrectnessTheorems :=
+        recommendationsAreNotRepairCorrectnessTheorems
+      nonConclusions := nonConclusions }
+  atomGeneratedDistances := distances
+  atomGeneratedOperations := operations
+  supportingDistances_eq_atomGenerated := rfl
+  recommendedOperations_eq_atomGenerated := rfl
+  atomGeneratedDistanceEvidence := atomGeneratedDistanceEvidence
+  atomGeneratedOperationEvidence := atomGeneratedOperationEvidence
+  nonConclusions := nonConclusions
+
+theorem atomGeneratedDiagnostic_supportingDistances_eq
+    {Axis : Type u} {DistanceRef : Type v} {Operation : Type w}
+    (pkg :
+      AtomGeneratedDistanceDiagnosticConclusion Axis DistanceRef Operation) :
+    pkg.conclusion.supportingDistances = pkg.atomGeneratedDistances :=
+  pkg.supportingDistances_eq
+
+theorem atomGeneratedDiagnostic_recommendedOperations_eq
+    {Axis : Type u} {DistanceRef : Type v} {Operation : Type w}
+    (pkg :
+      AtomGeneratedDistanceDiagnosticConclusion Axis DistanceRef Operation) :
+    pkg.conclusion.recommendedOperations = pkg.atomGeneratedOperations :=
+  pkg.recommendedOperations_eq
 
 theorem unmeasured_not_measured_zero :
     ¬ DistanceValue.IsMeasuredZero DistanceValue.unmeasured :=

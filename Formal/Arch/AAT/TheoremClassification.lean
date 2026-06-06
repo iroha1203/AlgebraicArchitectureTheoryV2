@@ -801,6 +801,18 @@ def classifyPart4
         .downstreamLibrary
         ActionAllowed.representationDownstream
         "Root Atom geometry records selected component distances while keeping semantic distance calibration and law overlays bounded."
+  | .atomGeneratedRootDistance =>
+      atomGeneratedRow
+        "part4.atomGeneratedRootDistance"
+        (Part4DistanceMeasureGeometry.Candidate.representativeDeclarations
+          .atomGeneratedRootDistance)
+        ["Part4DistanceMeasureGeometry.generatedCarrierShapeDistanceBridge",
+         "Part4DistanceMeasureGeometry.generatedCarrierAtomRootDistanceBundle",
+         "Part4DistanceMeasureGeometry.generatedCarrierRootDistance_layout_eq_generatedCarrierShapeDistance",
+         "Part4DistanceMeasureGeometry.generatedCarrierShapeDistanceBridge_unfolds",
+         "Part4DistanceMeasureGeometry.generatedCarrierShapeDistanceBridge_recordsRootBoundary"]
+        (by simp)
+        "Generated carrier distances instantiate Part IV root Atom geometry from AtomShape coordinate mismatch evidence."
   | .atomConfigurationGeometry =>
       atomGeneratedRow
         "part4.atomConfigurationGeometry"
@@ -895,6 +907,21 @@ def classifyPart4
         .downstreamLibrary
         ActionAllowed.representationDownstream
         "Operation repair geometry records selected costs, distance-to-flat wrappers, and bounded side-effect decreases without solver-completeness claims."
+  | .atomGeneratedOperationDistance =>
+      atomGeneratedRow
+        "part4.atomGeneratedOperationDistance"
+        (Part4DistanceMeasureGeometry.Candidate.representativeDeclarations
+          .atomGeneratedOperationDistance)
+        ["Part4DistanceMeasureGeometry.GeneratedMappedDistanceEvidence",
+         "Part4DistanceMeasureGeometry.generatedOperation_mappedDistanceEvidence",
+         "Part4DistanceMeasureGeometry.generatedOperation_mappedDistanceEvidence_unfolds",
+         "Part4DistanceMeasureGeometry.generatedOperation_mappedDistanceEvidence_targetPrimitive",
+         "Part4DistanceMeasureGeometry.generatedOperation_mappedDistanceEvidence_recordsGeneratedBoundaries",
+         "Part4DistanceMeasureGeometry.generatedRepairProblemOperation_mappedDistanceEvidence",
+         "Part4DistanceMeasureGeometry.generatedRepairProblemOperation_mappedDistanceEvidence_recordsGeneratedBoundaries",
+         "Part4DistanceMeasureGeometry.generatedRepairProblemOperation_unmapped_target_atom_primitive"]
+        (by simp)
+        "Generated operation and repair-problem distances expose AtomShape coordinate movement, primitive target evidence, and atom non-creation boundaries."
   | .contractiveRepairGeometry =>
       representationRow
         "part4.contractiveRepairGeometry"
@@ -1003,6 +1030,18 @@ def classifyPart4
         .downstreamLibrary
         ActionAllowed.representationDownstream
         "Detailed diagnostic conclusions keep supporting distances and recommended operations scoped without proving empirical repair success."
+  | .atomGeneratedDiagnosticConclusion =>
+      atomGeneratedRow
+        "part4.atomGeneratedDiagnosticConclusion"
+        (Part4DistanceMeasureGeometry.Candidate.representativeDeclarations
+          .atomGeneratedDiagnosticConclusion)
+        ["Part4DistanceMeasureGeometry.AtomGeneratedDistanceDiagnosticConclusion",
+         "Part4DistanceMeasureGeometry.AtomGeneratedDistanceDiagnosticConclusion.records_generated_boundaries",
+         "Part4DistanceMeasureGeometry.atomGeneratedDistanceDiagnosticConclusion",
+         "Part4DistanceMeasureGeometry.atomGeneratedDiagnostic_supportingDistances_eq",
+         "Part4DistanceMeasureGeometry.atomGeneratedDiagnostic_recommendedOperations_eq"]
+        (by simp)
+        "Atom-generated diagnostic conclusions keep generated distance evidence and generated operation recommendations inside the bounded conclusion package."
   | .docsClassificationBoundary =>
       representationRow
         "part4.docsClassificationBoundary"
@@ -1253,6 +1292,7 @@ def part4Classifications : List TheoremPackageClassification :=
   [ classifyPart4 .distanceFoundation
   , classifyPart4 .distanceAATOverlay
   , classifyPart4 .atomRootGeometry
+  , classifyPart4 .atomGeneratedRootDistance
   , classifyPart4 .atomConfigurationGeometry
   , classifyPart4 .configurationContextGeometry
   , classifyPart4 .signaturePathGeometry
@@ -1260,6 +1300,7 @@ def part4Classifications : List TheoremPackageClassification :=
   , classifyPart4 .distanceToLawfulnessGeometry
   , classifyPart4 .metricGaloisCorrespondence
   , classifyPart4 .operationRepairGeometry
+  , classifyPart4 .atomGeneratedOperationDistance
   , classifyPart4 .contractiveRepairGeometry
   , classifyPart4 .curvatureFillingGeometry
   , classifyPart4 .curvatureTransportGeometry
@@ -1268,6 +1309,7 @@ def part4Classifications : List TheoremPackageClassification :=
   , classifyPart4 .representationSpectralStability
   , classifyPart4 .abstractInfimumInterface
   , classifyPart4 .diagnosticConclusionDetail
+  , classifyPart4 .atomGeneratedDiagnosticConclusion
   , classifyPart4 .docsClassificationBoundary
   ]
 
