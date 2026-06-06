@@ -127,6 +127,7 @@ import Formal.Arch.Examples.AtomGeneratedMoleculeExamples
 import Formal.Arch.Examples.AtomGeneratedSignatureExamples
 import Formal.Arch.Examples.AtomGeneratedRepairExamples
 import Formal.Arch.Examples.AtomGeneratedClassificationExamples
+import Formal.Arch.Examples.AATPart4DistanceExamples
 import Formal.Arch.Examples.AATCompleteFormalizationExamples
 import Formal.Arch.Examples.IncompatibleAtomCompositionExamples
 import Formal.Arch.Examples.AATMoleculeLawExamples
