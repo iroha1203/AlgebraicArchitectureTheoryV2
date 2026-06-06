@@ -45,6 +45,29 @@ end GeneratedObservationCoordinate
 
 namespace GeneratedArchitectureObject
 
+/-- The selected generated context carried by the generated object. -/
+def generatedContext {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    (object : GeneratedArchitectureObject presentation) :
+    system.Atom -> Prop :=
+  object.molecule.atoms
+
+/-- Stable finite carrier projection for the selected generated context. -/
+def generatedContextCarriers {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    (object : GeneratedArchitectureObject presentation) :
+    List (GeneratedCarrier object) :=
+  object.carrierList
+
+/--
+The generated context projection records both the object boundary and the
+composition/required-port evidence that makes the molecule non-arbitrary.
+-/
+def GeneratedContextProjection {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    (object : GeneratedArchitectureObject presentation) : Prop :=
+  object.objectBoundary ∧ object.molecule.notArbitrarySet
+
 /-- Carrier atoms remain primitive atoms of the root system. -/
 theorem carrier_atom_primitive {system : AtomAxiomSystem.{u, v}}
     {presentation : AtomShapePresentation system}
@@ -52,6 +75,53 @@ theorem carrier_atom_primitive {system : AtomAxiomSystem.{u, v}}
     (carrier : GeneratedCarrier object) :
     system.Primitive carrier.val :=
   object.molecule.atoms_primitive carrier.property
+
+/-- Generated carriers are exactly atoms in the selected generated context. -/
+theorem carrier_in_generatedContext {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    (object : GeneratedArchitectureObject presentation)
+    (carrier : GeneratedCarrier object) :
+    object.generatedContext carrier.val :=
+  carrier.property
+
+/-- Every generated carrier is present in the finite carrier projection. -/
+theorem carrier_mem_generatedContextCarriers
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    (object : GeneratedArchitectureObject presentation)
+    (carrier : GeneratedCarrier object) :
+    carrier ∈ object.generatedContextCarriers :=
+  object.carrierListCovers carrier
+
+/-- Atoms in the selected generated context remain root primitive atoms. -/
+theorem generatedContext_atom_primitive
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    (object : GeneratedArchitectureObject presentation)
+    {atom : system.Atom}
+    (hAtom : object.generatedContext atom) :
+    system.Primitive atom :=
+  object.molecule.atoms_primitive hAtom
+
+/-- Distinct generated carriers compose through the generated object's molecule. -/
+def carrier_compatible_pairs {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    (object : GeneratedArchitectureObject presentation)
+    {left right : GeneratedCarrier object}
+    (hDistinct : left.val ≠ right.val) :
+    CompatibleComposition
+      (AtomShapeOf presentation left.val)
+      (AtomShapeOf presentation right.val) :=
+  object.molecule.compatible_pairs left.property right.property hDistinct
+
+/-- The generated context projection is derived from object and molecule evidence. -/
+theorem generatedContextProjection_from_object
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    (object : GeneratedArchitectureObject presentation)
+    (hBoundary : object.objectBoundary) :
+    object.GeneratedContextProjection :=
+  ⟨hBoundary, object.molecule.not_arbitrary_set⟩
 
 /-- Generated observations read the shape coordinate of each generated carrier. -/
 def generatedObservation {system : AtomAxiomSystem.{u, v}}

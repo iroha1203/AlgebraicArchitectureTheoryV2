@@ -824,6 +824,31 @@ def classifyPart4
          "Part4DistanceMeasureGeometry.generatedOperation_mappedCarrierShapeDistance_eq_coordinate_mismatchCount"]
         (by simp)
         "Atom and operation distance entrypoints unfold to generated AtomShape-coordinate mismatch counts."
+  | .atomGeneratedConfigurationContextBridge =>
+      atomGeneratedRow
+        "part4.atomGeneratedConfigurationContextBridge"
+        (Part4DistanceMeasureGeometry.Candidate.representativeDeclarations
+          .atomGeneratedConfigurationContextBridge)
+        ["AAT.GeneratedArchitectureObject.generatedContext",
+         "AAT.GeneratedArchitectureObject.generatedContextCarriers",
+         "AAT.GeneratedArchitectureObject.GeneratedContextProjection",
+         "AAT.GeneratedArchitectureObject.carrier_in_generatedContext",
+         "AAT.GeneratedArchitectureObject.carrier_mem_generatedContextCarriers",
+         "AAT.GeneratedArchitectureObject.generatedContext_atom_primitive",
+         "AAT.GeneratedArchitectureObject.carrier_compatible_pairs",
+         "AAT.GeneratedArchitectureObject.generatedContextProjection_from_object",
+         "Part4DistanceMeasureGeometry.GeneratedConfigurationContextEvidence",
+         "Part4DistanceMeasureGeometry.generatedConfigurationContextEvidence",
+         "Part4DistanceMeasureGeometry.generatedConfigurationContextEvidence_recordsBoundaries",
+         "Part4DistanceMeasureGeometry.generatedConfigurationContextEvidence_pairCompatible",
+         "Part4DistanceMeasureGeometry.generatedConfigurationDistanceWitness",
+         "Part4DistanceMeasureGeometry.generatedConfigurationDistanceWitness_recordsScope",
+         "Part4DistanceMeasureGeometry.generatedConfigurationDistanceWitness_distance_le",
+         "Part4DistanceMeasureGeometry.generatedConfigurationDistance_samePairDiffers_of_witness",
+         "Part4DistanceMeasureGeometry.generatedContextDistanceSchema_in_selectedContext",
+         "Part4DistanceMeasureGeometry.generatedContextDistanceSchema_recordsFiniteContext"]
+        (by simp)
+        "Generated configuration/context distances instantiate Part IV finite configuration and context readings from Atom-generated membership and carrier projection evidence."
   | .configurationContextGeometry =>
       representationRow
         "part4.configurationContextGeometry"
@@ -1310,6 +1335,7 @@ def part4Classifications : List TheoremPackageClassification :=
   , classifyPart4 .atomRootGeometry
   , classifyPart4 .atomGeneratedRootDistance
   , classifyPart4 .atomConfigurationGeometry
+  , classifyPart4 .atomGeneratedConfigurationContextBridge
   , classifyPart4 .configurationContextGeometry
   , classifyPart4 .signaturePathGeometry
   , classifyPart4 .signatureDistanceAggregation
