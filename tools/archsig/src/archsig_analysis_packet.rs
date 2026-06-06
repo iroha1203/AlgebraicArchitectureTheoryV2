@@ -448,6 +448,12 @@ pub fn build_archsig_analysis_packet(
         &mut part4_distance_foundation,
         &homotopy_distance_readings,
     );
+    sync_part4_diagnostic_scope(
+        &mut part4_distance_foundation,
+        &signature_distance_readings,
+        &operation_distance_readings,
+        &curvature_mass_readings,
+    );
     let ami_aggregate_readings =
         build_ami_aggregate_readings(law_policy, &axis_wise_monodromy_defects);
     let nonzero_monodromy_witnesses = build_nonzero_monodromy_witnesses(
@@ -824,7 +830,7 @@ fn build_part4_distance_foundation(
             coverage_policy_refs,
             blocker_refs,
             evidence_boundary:
-                "Diagnostic scope records selected ArchMap observations and LawPolicy coverage; missing evaluators remain blockers, not zero distances"
+                "Diagnostic scope is initialized from selected ArchMap observations and LawPolicy coverage, then synchronized from Part IV evaluator readings before output"
                     .to_string(),
         },
         supporting_distances,
@@ -3790,6 +3796,74 @@ fn refresh_part4_status_summary(foundation: &mut ArchSigPart4DistanceFoundationV
         .iter()
         .filter(|distance| distance.value.status == "schemaFoundationOnly")
         .count();
+}
+
+fn sync_part4_diagnostic_scope(
+    foundation: &mut ArchSigPart4DistanceFoundationV0,
+    signature_distance_readings: &[ArchSigSignatureDistanceReadingV0],
+    operation_distance_readings: &[ArchSigOperationDistanceReadingV0],
+    curvature_mass_readings: &[ArchSigCurvatureMassReadingV0],
+) {
+    let measured_axis_refs = signature_distance_readings
+        .iter()
+        .flat_map(|reading| reading.measured_axis_refs.iter().cloned())
+        .collect::<BTreeSet<_>>();
+    let unmeasured_axis_refs = signature_distance_readings
+        .iter()
+        .flat_map(|reading| reading.unmeasured_axis_refs.iter().cloned())
+        .chain(
+            signature_distance_readings
+                .iter()
+                .flat_map(|reading| reading.incomparable_axis_refs.iter().cloned()),
+        )
+        .chain(
+            operation_distance_readings
+                .iter()
+                .flat_map(|reading| reading.unmeasured_axis_refs.iter().cloned()),
+        )
+        .chain(
+            curvature_mass_readings
+                .iter()
+                .flat_map(|reading| reading.unmeasured_axis_refs.iter().cloned()),
+        )
+        .filter(|axis| !measured_axis_refs.contains(axis))
+        .collect::<BTreeSet<_>>();
+    let blocker_refs = signature_distance_readings
+        .iter()
+        .flat_map(|reading| reading.total_measured_distance.blocker_refs.iter().cloned())
+        .chain(
+            signature_distance_readings
+                .iter()
+                .flat_map(|reading| reading.safe_region_margin.blocker_refs.iter().cloned()),
+        )
+        .chain(
+            signature_distance_readings
+                .iter()
+                .flat_map(|reading| reading.path_drift.blocker_refs.iter().cloned()),
+        )
+        .chain(
+            operation_distance_readings
+                .iter()
+                .flat_map(|reading| reading.side_effect_bound.blocker_refs.iter().cloned()),
+        )
+        .chain(
+            curvature_mass_readings
+                .iter()
+                .flat_map(|reading| reading.curvature_mass.blocker_refs.iter().cloned()),
+        )
+        .filter(|blocker| {
+            blocker
+                .strip_prefix("unmeasuredAxis:")
+                .is_none_or(|axis| !measured_axis_refs.contains(axis))
+        })
+        .collect::<BTreeSet<_>>();
+
+    foundation.diagnostic_scope.measured_axis_refs = measured_axis_refs.into_iter().collect();
+    foundation.diagnostic_scope.unmeasured_axis_refs = unmeasured_axis_refs.into_iter().collect();
+    foundation.diagnostic_scope.blocker_refs = blocker_refs.into_iter().collect();
+    foundation.diagnostic_scope.evidence_boundary =
+        "Diagnostic scope is synchronized from Part IV evaluator readings; measured or zero signature-distance axes are removed from unmeasuredAxisRefs, while operation and curvature partial measurements can keep evidence blockers rather than becoming measured zero"
+            .to_string();
 }
 
 fn atom_fiber_distance_value(
@@ -16717,6 +16791,12 @@ fn build_distance_diagnosis_summary(
             foundation.status_summary.unmeasured_count,
             foundation.status_summary.schema_foundation_only_count
         ),
+        format!(
+            "diagnosticScope measuredAxes={} unmeasuredAxes={} blockers={} boundary=evaluator-synchronized",
+            foundation.diagnostic_scope.measured_axis_refs.len(),
+            foundation.diagnostic_scope.unmeasured_axis_refs.len(),
+            foundation.diagnostic_scope.blocker_refs.len()
+        ),
         "diagnostic distance is Part IV evaluator output; viewer layout distance is visual placement only"
             .to_string(),
         "blocked or unmeasured distance is not measured zero; safe margin remains coverage-qualified"
@@ -22537,6 +22617,110 @@ fn check_part4_distance_foundation_surface(packet: &ArchSigAnalysisPacketV0) -> 
             "unmeasured axes must retain blocker refs",
         ));
     }
+    let scope_measured_axis_refs = foundation
+        .diagnostic_scope
+        .measured_axis_refs
+        .iter()
+        .cloned()
+        .collect::<BTreeSet<_>>();
+    let scope_unmeasured_axis_refs = foundation
+        .diagnostic_scope
+        .unmeasured_axis_refs
+        .iter()
+        .cloned()
+        .collect::<BTreeSet<_>>();
+    let overlap = scope_measured_axis_refs
+        .intersection(&scope_unmeasured_axis_refs)
+        .cloned()
+        .collect::<Vec<_>>();
+    if !overlap.is_empty() {
+        examples.push(generic_validation_example(
+            "part4DistanceFoundation.diagnosticScope",
+            &format!("axis status overlap: {}", overlap.join(", ")),
+            "DiagnosticScope must not classify the same axis as measured and unmeasured",
+        ));
+    }
+    for blocker in &foundation.diagnostic_scope.blocker_refs {
+        if blocker.starts_with("issue:#") {
+            examples.push(generic_validation_example(
+                "part4DistanceFoundation.diagnosticScope.blockerRefs",
+                blocker,
+                "DiagnosticScope blocker refs must reflect evaluator evidence gaps after measurement, not closed implementation issue placeholders",
+            ));
+        }
+        if blocker
+            .strip_prefix("unmeasuredAxis:")
+            .is_some_and(|axis| scope_measured_axis_refs.contains(axis))
+        {
+            examples.push(generic_validation_example(
+                "part4DistanceFoundation.diagnosticScope.blockerRefs",
+                blocker,
+                "DiagnosticScope blocker refs must not retain an unmeasured-axis blocker for a measured or zero axis",
+            ));
+        }
+    }
+    let expected_measured_axis_refs = packet
+        .signature_distance_readings
+        .iter()
+        .flat_map(|reading| reading.measured_axis_refs.iter().cloned())
+        .collect::<BTreeSet<_>>();
+    let expected_unmeasured_axis_refs = packet
+        .signature_distance_readings
+        .iter()
+        .flat_map(|reading| reading.unmeasured_axis_refs.iter().cloned())
+        .chain(
+            packet
+                .signature_distance_readings
+                .iter()
+                .flat_map(|reading| reading.incomparable_axis_refs.iter().cloned()),
+        )
+        .chain(
+            packet
+                .operation_distance_readings
+                .iter()
+                .flat_map(|reading| reading.unmeasured_axis_refs.iter().cloned()),
+        )
+        .chain(
+            packet
+                .curvature_mass_readings
+                .iter()
+                .flat_map(|reading| reading.unmeasured_axis_refs.iter().cloned()),
+        )
+        .filter(|axis| !expected_measured_axis_refs.contains(axis))
+        .collect::<BTreeSet<_>>();
+    let missing_measured = expected_measured_axis_refs
+        .difference(&scope_measured_axis_refs)
+        .cloned()
+        .collect::<Vec<_>>();
+    if !missing_measured.is_empty() {
+        examples.push(generic_validation_example(
+            "part4DistanceFoundation.diagnosticScope.measuredAxisRefs",
+            &format!("missing measured axes: {}", missing_measured.join(", ")),
+            "DiagnosticScope measuredAxisRefs must include measured or zero signature-distance axes",
+        ));
+    }
+    let stale_unmeasured = scope_unmeasured_axis_refs
+        .intersection(&expected_measured_axis_refs)
+        .cloned()
+        .collect::<Vec<_>>();
+    if !stale_unmeasured.is_empty() {
+        examples.push(generic_validation_example(
+            "part4DistanceFoundation.diagnosticScope.unmeasuredAxisRefs",
+            &format!("measured axes still unmeasured: {}", stale_unmeasured.join(", ")),
+            "Measured or zero signature-distance axes must be removed from DiagnosticScope unmeasuredAxisRefs",
+        ));
+    }
+    let missing_unmeasured = expected_unmeasured_axis_refs
+        .difference(&scope_unmeasured_axis_refs)
+        .cloned()
+        .collect::<Vec<_>>();
+    if !missing_unmeasured.is_empty() {
+        examples.push(generic_validation_example(
+            "part4DistanceFoundation.diagnosticScope.unmeasuredAxisRefs",
+            &format!("missing unmeasured axes: {}", missing_unmeasured.join(", ")),
+            "DiagnosticScope unmeasuredAxisRefs must include non-measured Part IV evaluator axes without reclassifying measured signature axes",
+        ));
+    }
     if foundation.supporting_distances.is_empty() {
         examples.push(generic_validation_example(
             "part4DistanceFoundation.supportingDistances",
@@ -24840,6 +25024,18 @@ fn check_llm_interpretation_surface(packet: &ArchSigAnalysisPacketV0) -> Validat
     }
     for (field, is_empty) in [
         (
+            "llmInterpretationPacket.distanceDiagnosisSummary",
+            packet
+                .llm_interpretation_packet
+                .distance_diagnosis_summary
+                .is_empty()
+                || !packet
+                    .llm_interpretation_packet
+                    .distance_diagnosis_summary
+                    .iter()
+                    .any(|summary| summary.contains("diagnosticScope measuredAxes=")),
+        ),
+        (
             "llmInterpretationPacket.measurementExpansionSummary",
             packet
                 .llm_interpretation_packet
@@ -26430,6 +26626,101 @@ mod tests {
                             .target
                             .as_deref()
                             .is_some_and(|target| target == "profileRef")
+                })
+        }));
+    }
+
+    #[test]
+    fn part4_negative_fixture_diagnostic_scope_axis_overlap_fails_validation() {
+        let mut packet = static_archsig_analysis_packet();
+        let measured_axis = packet
+            .part4_distance_foundation
+            .diagnostic_scope
+            .measured_axis_refs
+            .first()
+            .expect("static fixture has measured DiagnosticScope axis")
+            .clone();
+        packet
+            .part4_distance_foundation
+            .diagnostic_scope
+            .unmeasured_axis_refs
+            .push(measured_axis);
+
+        let report = validate_archsig_analysis_packet_report(
+            &packet,
+            "negative-fixture-part4-diagnostic-scope-axis-overlap.json",
+        );
+
+        assert_eq!(report.summary.result, "fail");
+        assert!(report.checks.iter().any(|check| {
+            check.id == "archsig-analysis-packet-part4-distance-foundation"
+                && check.result == "fail"
+                && check.examples.iter().any(|example| {
+                    example
+                        .target
+                        .as_deref()
+                        .is_some_and(|target| target.contains("axis status overlap"))
+                })
+        }));
+    }
+
+    #[test]
+    fn part4_negative_fixture_diagnostic_scope_placeholder_blocker_fails_validation() {
+        let mut packet = static_archsig_analysis_packet();
+        packet
+            .part4_distance_foundation
+            .diagnostic_scope
+            .blocker_refs
+            .push("issue:#1708 signature distance evaluator".to_string());
+
+        let report = validate_archsig_analysis_packet_report(
+            &packet,
+            "negative-fixture-part4-diagnostic-scope-placeholder-blocker.json",
+        );
+
+        assert_eq!(report.summary.result, "fail");
+        assert!(report.checks.iter().any(|check| {
+            check.id == "archsig-analysis-packet-part4-distance-foundation"
+                && check.result == "fail"
+                && check.examples.iter().any(|example| {
+                    example
+                        .target
+                        .as_deref()
+                        .is_some_and(|target| target.starts_with("issue:#"))
+                })
+        }));
+    }
+
+    #[test]
+    fn part4_negative_fixture_diagnostic_scope_measured_axis_blocker_fails_validation() {
+        let mut packet = static_archsig_analysis_packet();
+        let measured_axis = packet
+            .part4_distance_foundation
+            .diagnostic_scope
+            .measured_axis_refs
+            .first()
+            .expect("static fixture has measured DiagnosticScope axis")
+            .clone();
+        packet
+            .part4_distance_foundation
+            .diagnostic_scope
+            .blocker_refs
+            .push(format!("unmeasuredAxis:{measured_axis}"));
+
+        let report = validate_archsig_analysis_packet_report(
+            &packet,
+            "negative-fixture-part4-diagnostic-scope-measured-axis-blocker.json",
+        );
+
+        assert_eq!(report.summary.result, "fail");
+        assert!(report.checks.iter().any(|check| {
+            check.id == "archsig-analysis-packet-part4-distance-foundation"
+                && check.result == "fail"
+                && check.examples.iter().any(|example| {
+                    example
+                        .target
+                        .as_deref()
+                        .is_some_and(|target| target.starts_with("unmeasuredAxis:"))
                 })
         }));
     }

@@ -4228,11 +4228,7 @@ fn distance_diagnosis(packet: &serde_json::Value) -> serde_json::Value {
             "pathDrift": compact_distance_value(&signature_distance, "pathDrift"),
             "endpointDistance": compact_distance_value(&signature_distance, "endpointDistance")
         },
-        "unmeasuredAxes": json_string_array(
-            string_vec_from_value(diagnostic_scope, "unmeasuredAxisRefs")
-                .into_iter()
-                .chain(string_vec_from_value(&signature_distance, "unmeasuredAxisRefs"))
-        ),
+        "unmeasuredAxes": distance_diagnosis_unmeasured_axes(diagnostic_scope, &signature_distance),
         "topMovedAtoms": top_atom_distance_rows(packet, 6),
         "topMovedAxes": top_signature_axis_distance_rows(packet, 6),
         "safeMargin": compact_distance_value(&signature_distance, "safeRegionMargin"),
@@ -4271,6 +4267,32 @@ fn distance_diagnosis(packet: &serde_json::Value) -> serde_json::Value {
             "representation metric does not certify global structural faithfulness"
         ]
     })
+}
+
+fn distance_diagnosis_unmeasured_axes(
+    diagnostic_scope: &serde_json::Value,
+    signature_distance: &serde_json::Value,
+) -> serde_json::Value {
+    let measured_axis_refs = string_vec_from_value(diagnostic_scope, "measuredAxisRefs")
+        .into_iter()
+        .chain(string_vec_from_value(
+            signature_distance,
+            "measuredAxisRefs",
+        ))
+        .collect::<BTreeSet<_>>();
+    let unmeasured_axis_refs = string_vec_from_value(diagnostic_scope, "unmeasuredAxisRefs")
+        .into_iter()
+        .chain(string_vec_from_value(
+            signature_distance,
+            "unmeasuredAxisRefs",
+        ))
+        .chain(string_vec_from_value(
+            signature_distance,
+            "incomparableAxisRefs",
+        ))
+        .filter(|axis| !measured_axis_refs.contains(axis))
+        .collect::<BTreeSet<_>>();
+    json_string_array(unmeasured_axis_refs.into_iter())
 }
 
 fn compact_distance_value(container: &serde_json::Value, key: &str) -> serde_json::Value {

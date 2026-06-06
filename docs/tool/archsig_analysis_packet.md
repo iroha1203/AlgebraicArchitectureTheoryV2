@@ -72,7 +72,9 @@ It is designed to be read whole without jq slicing. It exposes:
   / axis rows, safe margin, repair distance, curvature / homotopy distance,
   representation metrics, and packet detail refs. Blocked or unmeasured
   distance is preserved as blocked / unmeasured, not collapsed to measured
-  zero.
+  zero. `unmeasuredAxes` is derived after Part IV evaluator execution from the
+  synchronized `DiagnosticScope`; a signature axis with measured or zero
+  `axisDistance` must not remain in this summary-level unmeasured list.
 - `measurementStatusSummary`: compact measured / partial / proxy /
   unmeasured / blocked / `schemaFoundationOnly` counts. This is the first
   summary-level guardrail against reading proxy or schema-only rows as measured
@@ -118,15 +120,19 @@ Part IV diagnostic distance. `viewerDistanceInputs` support Atom Viewer
 placement only. Diagnostic distance overlays are bounded projections of packet
 distance readings and are exposed through `diagnosticDistanceReadings`,
 `diagnosticDistanceBoundary`, omitted counts, and the report pane
-`distanceDiagnosis` section. The viewer should help a human inspect where the
-diagnostic readings point; it must not reinterpret visual layout distance as an
-ArchSig metric.
+`distanceDiagnosis` section. The report pane reads the same compact
+`distanceDiagnosis` object as `analysis-summary`, so measured or zero signature
+axes cannot be reintroduced as unmeasured by the viewer surface. The viewer
+should help a human inspect where the diagnostic readings point; it must not
+reinterpret visual layout distance as an ArchSig metric.
 
 `llmInterpretationPacket.distanceDiagnosisSummary` is the compact LLM note for
 distance-first reading. It tells an agent to read summary distance diagnosis
 before raw Part IV rows, records measured / blocked / unmeasured status, and
-keeps non-claims bounded to the selected ArchMap + LawPolicy evidence
-contract.
+records the evaluator-synchronized `DiagnosticScope` measured / unmeasured /
+blocker counts. Operation and curvature axes can remain unmeasured when a
+partial measured contribution still has evidence blockers. It keeps non-claims
+bounded to the selected ArchMap + LawPolicy evidence contract.
 
 `trendInsights` is intentionally short. Each item reports a bounded claim, why
 the claim is nontrivial, a small measurement summary, and packet refs. The full
@@ -167,7 +173,9 @@ anti-proxy guardrails before any individual Part IV evaluator is allowed to
 emit a measured distance. The foundation may expose unmeasured distance
 families, but those rows are blockers for downstream evaluator work; they are
 not placeholders for hidden zeroes, fixed fixture values, concern-only scores,
-or viewer layout distances.
+or viewer layout distances. The builder initializes `DiagnosticScope` from
+ArchMap and LawPolicy coverage, then synchronizes it from evaluator readings
+before output.
 
 `atomDistanceReadings[]` is the Part IV Atom geometry evaluator surface. Each
 row compares a source / target Atom pair in molecule scope and reports
@@ -360,6 +368,13 @@ policy surfaces, law-relative obstruction links, signature / flatness
 references, repair candidate guardrails, selected-axis continuation defect refs
 for nonzero homotopy holonomy, LLM interpretation notes, evidence boundary,
 and required non-conclusions.
+Validation also checks that `part4DistanceFoundation.diagnosticScope` is
+post-evaluator state: `measuredAxisRefs` and `unmeasuredAxisRefs` must be
+disjoint, measured or zero signature-distance axes must appear in
+`measuredAxisRefs`, non-measured signature axes must stay in
+`unmeasuredAxisRefs`, and closed implementation Issue placeholder refs such as
+`issue:#...` or `unmeasuredAxis:<axis>` blockers for already measured
+signature-distance axes must not remain as final `DiagnosticScope.blockerRefs`.
 Each obstruction circuit, signature axis reading, and repair operation candidate
 must carry its own `missingEvidence` and `excludedReadings`. Packet-level
 `excludedReadings` does not stand in for child-record evidence boundaries.
@@ -543,6 +558,13 @@ The builder:
   the selected `DistanceProfile`, observed `DiagnosticScope`, status-summary
   counts, and `supportingDistances[]` rows for Atom, configuration, signature,
   operation, curvature, homotopy/filling, and representation distance families.
+  The final `DiagnosticScope` is synchronized after evaluator execution, so
+  measured or zero signature axes are removed from `unmeasuredAxisRefs` while
+  actual evidence / coverage gaps remain blockers. Unmeasured-axis blockers are
+  also filtered when the named axis has become measured or zero in the
+  signature-distance partition; operation / curvature partial measurements may
+  still leave the corresponding law axis as unmeasured when blocker evidence
+  remains.
   A measured or zero `DistanceValue` must carry provenance refs, evaluator-basis
   refs, and coverage refs. Unmeasured, unavailable, incomparable, infinite, and
   blocked rows must carry blocker refs and must not be aggregated as zero.

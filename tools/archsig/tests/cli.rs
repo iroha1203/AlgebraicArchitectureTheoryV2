@@ -99,6 +99,8 @@ fn cli_summarizes_archsig_analysis_packet() {
     ]);
 
     let json = read_json(&summary);
+    let packet = read_json(&root.join("archsig_analysis_packet.json"));
+    let measured_axis_refs = signature_measured_axis_refs(&packet);
     assert_eq!(
         json["packet"]["schemaVersion"],
         "archsig-analysis-packet-v0"
@@ -191,6 +193,10 @@ fn cli_summarizes_archsig_analysis_packet() {
                         .is_some_and(|value| value.contains("/signatureDistanceReadings"))
                 })),
         "analysis-summary must expose Part IV distance diagnosis with detail refs"
+    );
+    assert!(
+        unmeasured_surface_excludes_measured_axes(&json["distanceDiagnosis"], &measured_axis_refs),
+        "analysis-summary distanceDiagnosis must not report measured or zero signature axes as unmeasured"
     );
     assert_eq!(
         json["analysisUsefulness"]["mode"], "gapQualifiedActionableAnalysis",
@@ -943,6 +949,8 @@ fn cli_runs_primary_archmap_lawpolicy_archsig_analyze_workflow() {
         Some("pass")
     );
     let analysis_summary = read_json(&out_dir.join("archsig-analysis-summary.json"));
+    let expected_packet = read_json(&root.join("archsig_analysis_packet.json"));
+    let expected_measured_axis_refs = signature_measured_axis_refs(&expected_packet);
     assert_eq!(
         analysis_summary["packet"]["schemaVersion"].as_str(),
         Some("archsig-analysis-packet-v0")
@@ -1058,6 +1066,17 @@ fn cli_runs_primary_archmap_lawpolicy_archsig_analyze_workflow() {
             && viewer_data["reportPane"]["coverageAndBoundaries"].is_object()
             && viewer_data["reportPane"]["artifacts"].is_object(),
         "viewer data report pane must carry overview, top findings, distance diagnosis, action queue, coverage, and artifact sections"
+    );
+    assert_eq!(
+        viewer_data["reportPane"]["distanceDiagnosis"], analysis_summary["distanceDiagnosis"],
+        "viewer report pane must read the same Part IV distanceDiagnosis as the compact summary"
+    );
+    assert!(
+        unmeasured_surface_excludes_measured_axes(
+            &viewer_data["reportPane"]["distanceDiagnosis"],
+            &expected_measured_axis_refs
+        ),
+        "viewer report pane must not report measured or zero signature axes as unmeasured"
     );
     assert_eq!(
         viewer_data["reportPane"]["artifacts"]["summary"].as_str(),
@@ -1398,6 +1417,7 @@ fn cli_analyze_emit_raw_artifacts_writes_field_sig_handoff_packet() {
         analysis_packet["schemaVersion"],
         "archsig-analysis-packet-v0"
     );
+    assert_part4_cross_surface_axis_status_consistency(&analysis_packet);
     let detail_index = read_json(&out_dir.join("archsig-analysis-detail-index.json"));
     assert_eq!(
         detail_index["schemaVersion"],
@@ -2574,6 +2594,7 @@ fn complete_archmap_acceptance_fixture_runs_full_measurement_without_private_nam
     );
 
     let packet = read_json(&out_dir.join("archsig-analysis-packet.json"));
+    assert_part4_cross_surface_axis_status_consistency(&packet);
     let spectrum = &packet["architectureSpectrumReport"];
     assert!(
         spectrum["topHotspots"]
@@ -2683,6 +2704,14 @@ fn complete_archmap_acceptance_fixture_runs_full_measurement_without_private_nam
         summary_path.to_str().expect("summary path is utf-8"),
     ]);
     let summary = read_json(&summary_path);
+    let measured_axis_refs = signature_measured_axis_refs(&packet);
+    assert!(
+        unmeasured_surface_excludes_measured_axes(
+            &summary["distanceDiagnosis"],
+            &measured_axis_refs
+        ),
+        "complete-first summary must not report measured or zero signature axes as unmeasured"
+    );
     assert_eq!(
         summary["verdict"]["readingMode"], "measurementOverSuppliedArchMapAndLawPolicy",
         "summary must lead with measured ArchMap + LawPolicy verdict"
@@ -3324,6 +3353,119 @@ fn has_nested_key(value: &Value, key: &str) -> bool {
         Value::Array(items) => items.iter().any(|value| has_nested_key(value, key)),
         _ => false,
     }
+}
+
+fn string_set(value: &Value) -> BTreeSet<String> {
+    value
+        .as_array()
+        .into_iter()
+        .flatten()
+        .filter_map(|item| item.as_str().map(str::to_string))
+        .collect()
+}
+
+fn unmeasured_surface_excludes_measured_axes(
+    distance_diagnosis: &Value,
+    measured_axis_refs: &BTreeSet<String>,
+) -> bool {
+    let unmeasured_axes = string_set(&distance_diagnosis["unmeasuredAxes"]);
+    unmeasured_axes
+        .intersection(measured_axis_refs)
+        .next()
+        .is_none()
+}
+
+fn signature_measured_axis_refs(packet: &Value) -> BTreeSet<String> {
+    packet["signatureDistanceReadings"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .flat_map(|reading| string_set(&reading["measuredAxisRefs"]))
+        .collect()
+}
+
+fn assert_part4_cross_surface_axis_status_consistency(packet: &Value) {
+    let diagnostic_scope = &packet["part4DistanceFoundation"]["diagnosticScope"];
+    let scope_measured_axes = string_set(&diagnostic_scope["measuredAxisRefs"]);
+    let scope_unmeasured_axes = string_set(&diagnostic_scope["unmeasuredAxisRefs"]);
+    let overlap = scope_measured_axes
+        .intersection(&scope_unmeasured_axes)
+        .cloned()
+        .collect::<Vec<_>>();
+    assert!(
+        overlap.is_empty(),
+        "DiagnosticScope must not classify axes as both measured and unmeasured: {overlap:?}"
+    );
+    assert!(
+        diagnostic_scope["blockerRefs"]
+            .as_array()
+            .into_iter()
+            .flatten()
+            .filter_map(Value::as_str)
+            .all(|blocker| !blocker.starts_with("issue:#")),
+        "DiagnosticScope blockerRefs must not keep closed implementation issue placeholders"
+    );
+    let stale_unmeasured_blockers = diagnostic_scope["blockerRefs"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .filter_map(Value::as_str)
+        .filter_map(|blocker| blocker.strip_prefix("unmeasuredAxis:"))
+        .filter(|axis| scope_measured_axes.contains(*axis))
+        .map(str::to_string)
+        .collect::<Vec<_>>();
+    assert!(
+        stale_unmeasured_blockers.is_empty(),
+        "DiagnosticScope blockerRefs must not keep unmeasured-axis blockers for measured axes: {stale_unmeasured_blockers:?}"
+    );
+
+    let signature_measured_axes = signature_measured_axis_refs(packet);
+    let signature_unmeasured_axes = packet["signatureDistanceReadings"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .flat_map(|reading| {
+            string_set(&reading["unmeasuredAxisRefs"])
+                .into_iter()
+                .chain(string_set(&reading["incomparableAxisRefs"]))
+        })
+        .filter(|axis| !signature_measured_axes.contains(axis))
+        .collect::<BTreeSet<_>>();
+
+    let missing_measured = signature_measured_axes
+        .difference(&scope_measured_axes)
+        .cloned()
+        .collect::<Vec<_>>();
+    assert!(
+        missing_measured.is_empty(),
+        "DiagnosticScope measuredAxisRefs must include measured or zero signature axes: {missing_measured:?}"
+    );
+    let stale_unmeasured = scope_unmeasured_axes
+        .intersection(&signature_measured_axes)
+        .cloned()
+        .collect::<Vec<_>>();
+    assert!(
+        stale_unmeasured.is_empty(),
+        "measured or zero signature axes must not remain in DiagnosticScope unmeasuredAxisRefs: {stale_unmeasured:?}"
+    );
+    let missing_unmeasured = signature_unmeasured_axes
+        .difference(&scope_unmeasured_axes)
+        .cloned()
+        .collect::<Vec<_>>();
+    assert!(
+        missing_unmeasured.is_empty(),
+        "DiagnosticScope unmeasuredAxisRefs must include non-measured signature axes: {missing_unmeasured:?}"
+    );
+    assert!(
+        packet["llmInterpretationPacket"]["distanceDiagnosisSummary"]
+            .as_array()
+            .into_iter()
+            .flatten()
+            .filter_map(Value::as_str)
+            .any(|summary| summary.contains("diagnosticScope measuredAxes=")
+                && summary.contains("boundary=evaluator-synchronized")),
+        "LLM distanceDiagnosisSummary must expose the evaluator-synchronized DiagnosticScope status"
+    );
 }
 
 fn expand_large_archmap_for_viewer_projection(archmap: &mut Value) {

@@ -1337,25 +1337,27 @@
       ],
       "lawUniverseRef": "llm-native-aat-law-policy-fixture",
       "distanceProfileRef": "part4-distance-profile:llm-native-aat-law-policy-fixture",
-      "measuredAxisRefs": [],
-      "unmeasuredAxisRefs": [
+      "measuredAxisRefs": [
         "sig-axis:layer-violation",
         "sig-axis:semantic-inconsistency"
+      ],
+      "unmeasuredAxisRefs": [
+        "axis:layer-violation",
+        "axis:semantic-inconsistency"
       ],
       "coveragePolicyRefs": [
         "coverage:layer-atoms",
         "coverage:semantic-contract-atoms"
       ],
       "blockerRefs": [
-        "issue:#1702 atom geometry evaluator",
-        "issue:#1703 configuration hypergraph evaluator",
-        "issue:#1708 signature distance evaluator",
-        "issue:#1706 operation repair distance evaluator",
-        "issue:#1709 curvature distance evaluator",
-        "issue:#1707 homotopy filling distance evaluator",
-        "issue:#1711 representation metric evaluator"
+        "coverage:layer-atoms: report observation gap and block signature-zero reflection",
+        "coverage:semantic-contract-atoms: report observation gap and block signature-zero reflection",
+        "gap-runtime-user-db-trace: runtime trace was requested but not supplied",
+        "may transfer obstruction into runtime behavior, ownership, or idempotency boundary",
+        "unmeasuredAxis:axis:layer-violation",
+        "unmeasuredAxis:axis:semantic-inconsistency"
       ],
-      "evidenceBoundary": "Diagnostic scope records selected ArchMap observations and LawPolicy coverage; missing evaluators remain blockers, not zero distances"
+      "evidenceBoundary": "Diagnostic scope is synchronized from Part IV evaluator readings; measured or zero signature-distance axes are removed from unmeasuredAxisRefs, while operation and curvature partial measurements can keep evidence blockers rather than becoming measured zero"
     },
     "supportingDistances": [
       {
@@ -18250,6 +18252,7 @@
     ],
     "distanceDiagnosisSummary": [
       "distanceProfile=part4-distance-profile:llm-native-aat-law-policy-fixture measured=0 blocked=7 unmeasured=0 schemaFoundationOnly=0",
+      "diagnosticScope measuredAxes=2 unmeasuredAxes=2 blockers=6 boundary=evaluator-synchronized",
       "diagnostic distance is Part IV evaluator output; viewer layout distance is visual placement only",
       "blocked or unmeasured distance is not measured zero; safe margin remains coverage-qualified",
       "signature-distance:llm-native-aat-law-policy-fixture total=blocked:milli-signature-distance endpoint=blocked:milli-signature-endpoint-distance pathDrift=blocked:milli-signature-drift safe=blocked:milli-safe-region-margin hiddenExcursion=hiddenExcursionBlockedByCoverage",
