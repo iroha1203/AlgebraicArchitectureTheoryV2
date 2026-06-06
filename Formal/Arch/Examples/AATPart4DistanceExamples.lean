@@ -311,6 +311,129 @@ theorem generatedComponentRootDistance_layout_eq_one :
     _ = 1 :=
       AtomGeneratedMoleculeExamples.generatedComponentObject_api_database_shapeDistance_eq_one
 
+def generatedComponentContextEvidence :=
+  Part4DistanceMeasureGeometry.generatedConfigurationContextEvidence
+    AtomGeneratedMoleculeExamples.generatedComponentObject
+    AtomGeneratedMoleculeExamples.generatedComponentApiCarrier
+    AtomGeneratedMoleculeExamples.generatedComponentDatabaseCarrier
+    trivial
+
+theorem generatedComponentContextEvidence_recordsBoundaries :
+    generatedComponentContextEvidence.RecordsGeneratedBoundaries :=
+  Part4DistanceMeasureGeometry.generatedConfigurationContextEvidence_recordsBoundaries
+    AtomGeneratedMoleculeExamples.generatedComponentObject
+    AtomGeneratedMoleculeExamples.generatedComponentApiCarrier
+    AtomGeneratedMoleculeExamples.generatedComponentDatabaseCarrier
+    trivial
+
+def generatedComponentContextEvidence_pairCompatible :
+    CompatibleComposition
+      (AtomShapeOf AtomGeneratedMoleculeExamples.componentShapePresentation
+        AtomGeneratedMoleculeExamples.generatedComponentApiCarrier.val)
+      (AtomShapeOf AtomGeneratedMoleculeExamples.componentShapePresentation
+        AtomGeneratedMoleculeExamples.generatedComponentDatabaseCarrier.val) :=
+  Part4DistanceMeasureGeometry.generatedConfigurationContextEvidence_pairCompatible
+    AtomGeneratedMoleculeExamples.generatedComponentObject
+    AtomGeneratedMoleculeExamples.generatedComponentApiCarrier
+    AtomGeneratedMoleculeExamples.generatedComponentDatabaseCarrier
+    trivial
+    (by intro h; cases h)
+
+def generatedComponentConfigurationDistanceSchema :=
+  Part4DistanceMeasureGeometry.generatedConfigurationDistanceSchema
+    (presentation := AtomGeneratedMoleculeExamples.componentShapePresentation)
+    (fun object _left _right => object.generatedContextCarriers.length)
+    (fun object _left _right => object.generatedContextCarriers.length)
+    (by intro _object _left _right; rfl)
+
+def generatedComponentConfigurationDistanceWitness :=
+  Part4DistanceMeasureGeometry.generatedConfigurationDistanceWitness
+    AtomGeneratedMoleculeExamples.generatedComponentObject
+    generatedComponentConfigurationDistanceSchema
+    AtomGeneratedMoleculeExamples.generatedComponentApiCarrier
+    AtomGeneratedMoleculeExamples.generatedComponentDatabaseCarrier
+    trivial
+
+theorem generatedComponentConfigurationDistanceWitness_recordsScope :
+    generatedComponentConfigurationDistanceWitness.RecordsGeneratedScope :=
+  Part4DistanceMeasureGeometry.generatedConfigurationDistanceWitness_recordsScope
+    AtomGeneratedMoleculeExamples.generatedComponentObject
+    generatedComponentConfigurationDistanceSchema
+    AtomGeneratedMoleculeExamples.generatedComponentApiCarrier
+    AtomGeneratedMoleculeExamples.generatedComponentDatabaseCarrier
+    trivial
+
+theorem generatedComponentConfigurationDistanceWitness_distance_le :
+    generatedComponentConfigurationDistanceSchema.distanceIn
+        AtomGeneratedMoleculeExamples.generatedComponentObject
+        AtomGeneratedMoleculeExamples.generatedComponentApiCarrier.val
+        AtomGeneratedMoleculeExamples.generatedComponentDatabaseCarrier.val ≤
+      generatedComponentConfigurationDistanceSchema.suppliedPathCost
+        AtomGeneratedMoleculeExamples.generatedComponentObject
+        AtomGeneratedMoleculeExamples.generatedComponentApiCarrier.val
+        AtomGeneratedMoleculeExamples.generatedComponentDatabaseCarrier.val :=
+  Part4DistanceMeasureGeometry.generatedConfigurationDistanceWitness_distance_le
+    AtomGeneratedMoleculeExamples.generatedComponentObject
+    generatedComponentConfigurationDistanceSchema
+    AtomGeneratedMoleculeExamples.generatedComponentApiCarrier
+    AtomGeneratedMoleculeExamples.generatedComponentDatabaseCarrier
+    trivial
+
+theorem generatedComponentConfiguration_samePairDiffers :
+    generatedComponentConfigurationDistanceSchema.SamePairDistanceDiffers
+      AtomGeneratedMoleculeExamples.generatedApiOnlyObject
+      AtomGeneratedMoleculeExamples.generatedComponentObject
+      AtomGeneratedMoleculeExamples.ComponentAtom.api
+      AtomGeneratedMoleculeExamples.ComponentAtom.api :=
+  Part4DistanceMeasureGeometry.generatedConfigurationDistance_samePairDiffers_of_witness
+    generatedComponentConfigurationDistanceSchema
+    trivial
+    trivial
+    trivial
+    trivial
+    (by
+      simp [generatedComponentConfigurationDistanceSchema,
+        Part4DistanceMeasureGeometry.generatedConfigurationDistanceSchema,
+        AAT.GeneratedArchitectureObject.generatedContextCarriers,
+        AtomGeneratedMoleculeExamples.generatedApiOnlyObject,
+        AtomGeneratedMoleculeExamples.generatedComponentObject])
+
+def generatedComponentContextDistanceSchema :=
+  Part4DistanceMeasureGeometry.generatedContextDistanceSchema
+    AtomGeneratedMoleculeExamples.generatedComponentObject
+    AtomGeneratedMoleculeExamples.generatedComponentObject.generatedCarrierShapeDistance
+
+theorem generatedComponentContext_api_in_selected :
+    generatedComponentContextDistanceSchema.inContext
+      AtomGeneratedMoleculeExamples.generatedComponentApiCarrier
+      AtomGeneratedMoleculeExamples.generatedComponentMolecule :=
+  Part4DistanceMeasureGeometry.generatedContextDistanceSchema_in_selectedContext
+    AtomGeneratedMoleculeExamples.generatedComponentObject
+    AtomGeneratedMoleculeExamples.generatedComponentObject.generatedCarrierShapeDistance
+    AtomGeneratedMoleculeExamples.generatedComponentApiCarrier
+
+theorem generatedComponentContext_database_in_selected :
+    generatedComponentContextDistanceSchema.inContext
+      AtomGeneratedMoleculeExamples.generatedComponentDatabaseCarrier
+      AtomGeneratedMoleculeExamples.generatedComponentMolecule :=
+  Part4DistanceMeasureGeometry.generatedContextDistanceSchema_in_selectedContext
+    AtomGeneratedMoleculeExamples.generatedComponentObject
+    AtomGeneratedMoleculeExamples.generatedComponentObject.generatedCarrierShapeDistance
+    AtomGeneratedMoleculeExamples.generatedComponentDatabaseCarrier
+
+theorem generatedComponentContextDistance_recordsFiniteContext :
+    generatedComponentContextDistanceSchema.RecordsFiniteContext :=
+  Part4DistanceMeasureGeometry.generatedContextDistanceSchema_recordsFiniteContext
+    AtomGeneratedMoleculeExamples.generatedComponentObject
+    AtomGeneratedMoleculeExamples.generatedComponentObject.generatedCarrierShapeDistance
+    trivial
+
+theorem generatedComponentContextDistance_eq_one :
+    generatedComponentContextDistanceSchema.contextDistance
+      AtomGeneratedMoleculeExamples.generatedComponentApiCarrier
+      AtomGeneratedMoleculeExamples.generatedComponentDatabaseCarrier = 1 :=
+  AtomGeneratedMoleculeExamples.generatedComponentObject_api_database_shapeDistance_eq_one
+
 def generatedOperationDistanceEvidence :=
   Part4DistanceMeasureGeometry.generatedOperation_mappedDistanceEvidence
     AtomGeneratedMoleculeExamples.generatedApiExpansionOperation
