@@ -7,8 +7,9 @@ use crate::{
     LawPolicyHomotopyFillerRuleV0, LawPolicyHomotopyLoopMeasurementPolicyV0,
     LawPolicyHomotopyMeasurementProfileV0, LawPolicyHomotopyPathDiscoveryRuleV0,
     LawPolicyMeasurementPolicyV0, LawPolicyMoleculePatternV0,
-    LawPolicyObstructionCircuitDefinitionV0, LawPolicyReadingBoundaryV0, LawPolicySelectedLawV0,
-    LawPolicySignatureAxisDefinitionV0, LawPolicySpectrumDistanceKindV0,
+    LawPolicyObstructionCircuitDefinitionV0, LawPolicyPart4DistanceProfileV0,
+    LawPolicyPart4DistanceWeightV0, LawPolicyPart4OperationCostV0, LawPolicyReadingBoundaryV0,
+    LawPolicySelectedLawV0, LawPolicySignatureAxisDefinitionV0, LawPolicySpectrumDistanceKindV0,
     LawPolicySpectrumMeasurementProfileV0, LawPolicyValidationInputV0, LawPolicyValidationReportV0,
     LawPolicyValidationSummaryV0, LawPolicyWitnessRuleV0, ValidationCheck, ValidationExample,
 };
@@ -34,6 +35,13 @@ const REQUIRED_HOMOTOPY_PROFILE_NON_CONCLUSIONS: [&str; 5] = [
     "unfilled loops are architectural holes, not automatic violations",
     "missing filler evidence is not measured zero",
     "nonzero holonomy does not prove future incidents or repair unsafety",
+];
+
+const REQUIRED_PART4_DISTANCE_PROFILE_NON_CONCLUSIONS: [&str; 4] = [
+    "part4 distance profile is a selected measurement recipe, not a law universe",
+    "profile weights and costs are read from LawPolicy, not inferred from schema shape",
+    "unmeasured distance is not measured zero",
+    "operation distance requires a declared profile cost or explicit calibration evidence",
 ];
 
 pub fn static_law_policy() -> LawPolicyDocumentV0 {
@@ -178,6 +186,148 @@ pub fn static_law_policy() -> LawPolicyDocumentV0 {
             ],
             non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
         },
+        part4_distance_profile: Some(LawPolicyPart4DistanceProfileV0 {
+            profile_id: "part4-distance-profile:llm-native-aat-law-policy-fixture".to_string(),
+            atom_weights: vec![
+                LawPolicyPart4DistanceWeightV0 {
+                    axis_ref: "atom.fiber".to_string(),
+                    weight: 1,
+                    source_ref:
+                        "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#1-atom-geometry"
+                            .to_string(),
+                },
+                LawPolicyPart4DistanceWeightV0 {
+                    axis_ref: "atom.carrier".to_string(),
+                    weight: 1,
+                    source_ref:
+                        "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#1-atom-geometry"
+                            .to_string(),
+                },
+                LawPolicyPart4DistanceWeightV0 {
+                    axis_ref: "atom.valence".to_string(),
+                    weight: 1,
+                    source_ref:
+                        "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#1-atom-geometry"
+                            .to_string(),
+                },
+                LawPolicyPart4DistanceWeightV0 {
+                    axis_ref: "atom.semanticAnchor".to_string(),
+                    weight: 1,
+                    source_ref:
+                        "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#1-atom-geometry"
+                            .to_string(),
+                },
+            ],
+            signature_weights: vec![
+                LawPolicyPart4DistanceWeightV0 {
+                    axis_ref: "sig-axis:layer-violation".to_string(),
+                    weight: 1,
+                    source_ref: "law:layer-respecting".to_string(),
+                },
+                LawPolicyPart4DistanceWeightV0 {
+                    axis_ref: "sig-axis:semantic-inconsistency".to_string(),
+                    weight: 1,
+                    source_ref: "law:semantic-contract-alignment".to_string(),
+                },
+            ],
+            operation_costs: vec![
+                LawPolicyPart4OperationCostV0 {
+                    operation_kind: "rename".to_string(),
+                    cost: 1,
+                    source_ref:
+                        "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#5-operation-geometry"
+                            .to_string(),
+                },
+                LawPolicyPart4OperationCostV0 {
+                    operation_kind: "move".to_string(),
+                    cost: 2,
+                    source_ref:
+                        "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#5-operation-geometry"
+                            .to_string(),
+                },
+                LawPolicyPart4OperationCostV0 {
+                    operation_kind: "extract".to_string(),
+                    cost: 3,
+                    source_ref:
+                        "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#5-operation-geometry"
+                            .to_string(),
+                },
+                LawPolicyPart4OperationCostV0 {
+                    operation_kind: "evidence-enrichment".to_string(),
+                    cost: 3,
+                    source_ref:
+                        "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#5-operation-geometry"
+                            .to_string(),
+                },
+                LawPolicyPart4OperationCostV0 {
+                    operation_kind: "introduce-port".to_string(),
+                    cost: 4,
+                    source_ref:
+                        "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#5-operation-geometry"
+                            .to_string(),
+                },
+                LawPolicyPart4OperationCostV0 {
+                    operation_kind: "split-module".to_string(),
+                    cost: 5,
+                    source_ref:
+                        "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#5-operation-geometry"
+                            .to_string(),
+                },
+                LawPolicyPart4OperationCostV0 {
+                    operation_kind: "change-contract".to_string(),
+                    cost: 8,
+                    source_ref:
+                        "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#5-operation-geometry"
+                            .to_string(),
+                },
+                LawPolicyPart4OperationCostV0 {
+                    operation_kind: "semantic-rewrite".to_string(),
+                    cost: 13,
+                    source_ref:
+                        "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#5-operation-geometry"
+                            .to_string(),
+                },
+                LawPolicyPart4OperationCostV0 {
+                    operation_kind: "repair-boundaryleakcircuit".to_string(),
+                    cost: 13,
+                    source_ref:
+                        "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#5-operation-geometry"
+                            .to_string(),
+                },
+                LawPolicyPart4OperationCostV0 {
+                    operation_kind: "repair-semanticmismatchcircuit".to_string(),
+                    cost: 13,
+                    source_ref:
+                        "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#5-operation-geometry"
+                            .to_string(),
+                },
+                LawPolicyPart4OperationCostV0 {
+                    operation_kind: "runtime-protocol-shift".to_string(),
+                    cost: 21,
+                    source_ref:
+                        "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#5-operation-geometry"
+                            .to_string(),
+                },
+            ],
+            aggregation_policy:
+                "aggregate measured axes only; propagate unmeasured, unavailable, incomparable, and blocked status separately"
+                    .to_string(),
+            unmeasured_policy:
+                "unmeasured is not zero and cannot contribute numeric zero to total measured distance"
+                    .to_string(),
+            law_overlay_policy:
+                "law-relative distance is an overlay over ArchMap Atom observations, not an Atom generator"
+                    .to_string(),
+            coverage_requirement_refs: vec![
+                "coverage:layer-atoms".to_string(),
+                "coverage:semantic-contract-atoms".to_string(),
+            ],
+            evidence_boundary:
+                "Part IV distances are measured from selected ArchMap evidence under this LawPolicy profile"
+                    .to_string(),
+            calibration_refs: Vec::new(),
+            non_conclusions: strings(&REQUIRED_PART4_DISTANCE_PROFILE_NON_CONCLUSIONS),
+        }),
         spectrum_measurement_profile: Some(LawPolicySpectrumMeasurementProfileV0 {
             profile_id: "spectrum-profile:curvature-transfer-default".to_string(),
             reading_boundary: reading_boundary(
@@ -415,6 +565,7 @@ pub fn validate_law_policy_report(
         check_witness_and_obstruction_boundaries(policy),
         check_coverage_and_exactness(policy),
         check_measurement_policy(policy),
+        check_part4_distance_profile(policy),
         check_spectrum_measurement_profile(policy),
         check_homotopy_measurement_profile(policy),
         check_non_conclusions(policy),
@@ -541,6 +692,191 @@ fn check_measurement_policy(policy: &LawPolicyDocumentV0) -> ValidationCheck {
     check_from_examples(
         "law-policy-monodromy-measurement-policy",
         "LawPolicy declares selected axes, distance, weight, coverage, and ArchMapStore ref kinds for monodromy readings",
+        examples,
+        "fail",
+    )
+}
+
+fn check_part4_distance_profile(policy: &LawPolicyDocumentV0) -> ValidationCheck {
+    let Some(profile) = &policy.part4_distance_profile else {
+        return validation_check(
+            "law-policy-part4-distance-profile",
+            "part4DistanceProfile is absent; legacy LawPolicy remains parseable but cannot drive complete Part IV distance measurement",
+            "warn",
+        );
+    };
+
+    let signature_axis_ids = set(policy
+        .signature_axis_definitions
+        .iter()
+        .map(|axis| axis.signature_axis_id.as_str()));
+    let coverage_ids = set(policy
+        .coverage_requirements
+        .iter()
+        .map(|requirement| requirement.coverage_requirement_id.as_str()));
+    let required_atom_axes = BTreeSet::from([
+        "atom.fiber",
+        "atom.carrier",
+        "atom.valence",
+        "atom.semanticAnchor",
+    ]);
+    let present_atom_axes = profile
+        .atom_weights
+        .iter()
+        .map(|weight| weight.axis_ref.as_str())
+        .collect::<BTreeSet<_>>();
+    let present_non_conclusions = profile
+        .non_conclusions
+        .iter()
+        .map(|value| value.as_str())
+        .collect::<BTreeSet<_>>();
+    let mut examples = Vec::new();
+
+    push_blank(
+        &mut examples,
+        "part4DistanceProfile.profileId",
+        &profile.profile_id,
+    );
+    for required_axis in required_atom_axes {
+        if !present_atom_axes.contains(required_axis) {
+            examples.push(generic_validation_example(
+                &profile.profile_id,
+                required_axis,
+                "part4DistanceProfile.atomWeights must include every Part IV Atom geometry component",
+            ));
+        }
+    }
+    if profile.signature_weights.is_empty() {
+        examples.push(generic_validation_example(
+            &profile.profile_id,
+            "signatureWeights",
+            "part4DistanceProfile must declare signature-axis weights from LawPolicy",
+        ));
+    }
+    for weight in profile
+        .atom_weights
+        .iter()
+        .chain(profile.signature_weights.iter())
+    {
+        push_blank(
+            &mut examples,
+            "part4DistanceProfile.weight.axisRef",
+            &weight.axis_ref,
+        );
+        push_blank(
+            &mut examples,
+            &format!("part4DistanceProfile.weight[{}].sourceRef", weight.axis_ref),
+            &weight.source_ref,
+        );
+        if weight.weight <= 0 {
+            examples.push(generic_validation_example(
+                &profile.profile_id,
+                &weight.axis_ref,
+                "part4DistanceProfile weights must be positive selected distances",
+            ));
+        }
+    }
+    for weight in &profile.signature_weights {
+        if !signature_axis_ids.contains(weight.axis_ref.as_str()) {
+            examples.push(generic_validation_example(
+                &profile.profile_id,
+                &weight.axis_ref,
+                "part4DistanceProfile.signatureWeights[].axisRef must reference a known signature axis",
+            ));
+        }
+    }
+    if profile.operation_costs.is_empty() {
+        examples.push(generic_validation_example(
+            &profile.profile_id,
+            "operationCosts",
+            "part4DistanceProfile must declare operation costs instead of relying on evaluator fallbacks",
+        ));
+    }
+    for cost in &profile.operation_costs {
+        push_blank(
+            &mut examples,
+            "part4DistanceProfile.operationCosts[].operationKind",
+            &cost.operation_kind,
+        );
+        push_blank(
+            &mut examples,
+            &format!(
+                "part4DistanceProfile.operationCosts[{}].sourceRef",
+                cost.operation_kind
+            ),
+            &cost.source_ref,
+        );
+        if cost.cost <= 0 {
+            examples.push(generic_validation_example(
+                &profile.profile_id,
+                &cost.operation_kind,
+                "part4DistanceProfile operation costs must be positive selected distances",
+            ));
+        }
+    }
+    push_blank(
+        &mut examples,
+        "part4DistanceProfile.aggregationPolicy",
+        &profile.aggregation_policy,
+    );
+    push_blank(
+        &mut examples,
+        "part4DistanceProfile.unmeasuredPolicy",
+        &profile.unmeasured_policy,
+    );
+    if !profile.unmeasured_policy.contains("not zero") {
+        examples.push(generic_validation_example(
+            &profile.profile_id,
+            "unmeasuredPolicy",
+            "part4DistanceProfile.unmeasuredPolicy must explicitly state that unmeasured is not zero",
+        ));
+    }
+    push_blank(
+        &mut examples,
+        "part4DistanceProfile.lawOverlayPolicy",
+        &profile.law_overlay_policy,
+    );
+    if profile.coverage_requirement_refs.is_empty() {
+        examples.push(generic_validation_example(
+            &profile.profile_id,
+            "coverageRequirementRefs",
+            "part4DistanceProfile must reference LawPolicy coverage requirements",
+        ));
+    }
+    for coverage_ref in &profile.coverage_requirement_refs {
+        if !coverage_ids.contains(coverage_ref.as_str()) {
+            examples.push(generic_validation_example(
+                &profile.profile_id,
+                coverage_ref,
+                "part4DistanceProfile.coverageRequirementRefs must reference known coverage requirements",
+            ));
+        }
+    }
+    push_blank(
+        &mut examples,
+        "part4DistanceProfile.evidenceBoundary",
+        &profile.evidence_boundary,
+    );
+    if profile.non_conclusions.is_empty() || has_blank(&profile.non_conclusions) {
+        examples.push(generic_validation_example(
+            &profile.profile_id,
+            "nonConclusions",
+            "part4DistanceProfile must keep profile-local non-conclusions explicit",
+        ));
+    }
+    for required in REQUIRED_PART4_DISTANCE_PROFILE_NON_CONCLUSIONS {
+        if !present_non_conclusions.contains(required) {
+            examples.push(generic_validation_example(
+                &profile.profile_id,
+                required,
+                "missing required Part IV distance profile non-conclusion",
+            ));
+        }
+    }
+
+    check_from_examples(
+        "law-policy-part4-distance-profile",
+        "LawPolicy declares the selected Part IV DistanceProfile used by ArchSig distance measurement",
         examples,
         "fail",
     )
@@ -1733,6 +2069,42 @@ mod tests {
         assert_eq!(report.summary.result, "fail");
         assert!(report.checks.iter().any(|check| {
             check.id == "law-policy-monodromy-measurement-policy" && check.result == "fail"
+        }));
+    }
+
+    #[test]
+    fn invalid_part4_distance_profile_fails() {
+        let mut policy = static_law_policy();
+        let profile = policy
+            .part4_distance_profile
+            .as_mut()
+            .expect("fixture declares a Part IV distance profile");
+        profile
+            .atom_weights
+            .retain(|weight| weight.axis_ref != "atom.fiber");
+        profile.signature_weights[0].axis_ref = "sig-axis:missing".to_string();
+        profile.operation_costs[0].cost = 0;
+        profile.coverage_requirement_refs = vec!["coverage:missing".to_string()];
+        profile.non_conclusions.clear();
+
+        let report = validate_law_policy_report(&policy, "bad-law-policy.json");
+
+        assert_eq!(report.summary.result, "fail");
+        assert!(report.checks.iter().any(|check| {
+            check.id == "law-policy-part4-distance-profile" && check.result == "fail"
+        }));
+    }
+
+    #[test]
+    fn absent_part4_distance_profile_warns() {
+        let mut policy = static_law_policy();
+        policy.part4_distance_profile = None;
+
+        let report = validate_law_policy_report(&policy, "law-policy-without-part4-distance.json");
+
+        assert_eq!(report.summary.result, "warn");
+        assert!(report.checks.iter().any(|check| {
+            check.id == "law-policy-part4-distance-profile" && check.result == "warn"
         }));
     }
 

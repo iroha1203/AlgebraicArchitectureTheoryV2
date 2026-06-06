@@ -1222,27 +1222,27 @@
     "foundationId": "part4-distance-foundation:fixture-archmap-atom-observation",
     "profile": {
       "profileId": "part4-distance-profile:llm-native-aat-law-policy-fixture",
-      "profileSourceRef": "llm-native-aat-law-policy-fixture",
+      "profileSourceRef": "law-policy:llm-native-aat-law-policy-fixture#part4DistanceProfile:part4-distance-profile:llm-native-aat-law-policy-fixture",
       "atomWeights": [
         {
           "axisRef": "atom.fiber",
           "weight": 1,
-          "sourceRef": "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md"
+          "sourceRef": "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#1-atom-geometry"
         },
         {
           "axisRef": "atom.carrier",
           "weight": 1,
-          "sourceRef": "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md"
+          "sourceRef": "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#1-atom-geometry"
         },
         {
           "axisRef": "atom.valence",
           "weight": 1,
-          "sourceRef": "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md"
+          "sourceRef": "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#1-atom-geometry"
         },
         {
           "axisRef": "atom.semanticAnchor",
           "weight": 1,
-          "sourceRef": "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md"
+          "sourceRef": "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#1-atom-geometry"
         }
       ],
       "signatureWeights": [
@@ -1274,6 +1274,11 @@
           "sourceRef": "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#5-operation-geometry"
         },
         {
+          "operationKind": "evidence-enrichment",
+          "cost": 3,
+          "sourceRef": "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#5-operation-geometry"
+        },
+        {
           "operationKind": "introduce-port",
           "cost": 4,
           "sourceRef": "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#5-operation-geometry"
@@ -1294,6 +1299,16 @@
           "sourceRef": "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#5-operation-geometry"
         },
         {
+          "operationKind": "repair-boundaryleakcircuit",
+          "cost": 13,
+          "sourceRef": "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#5-operation-geometry"
+        },
+        {
+          "operationKind": "repair-semanticmismatchcircuit",
+          "cost": 13,
+          "sourceRef": "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#5-operation-geometry"
+        },
+        {
           "operationKind": "runtime-protocol-shift",
           "cost": 21,
           "sourceRef": "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#5-operation-geometry"
@@ -1306,7 +1321,7 @@
         "coverage:layer-atoms",
         "coverage:semantic-contract-atoms"
       ],
-      "evidenceBoundary": "DistanceProfile is selected by LawPolicy / InterpretationProfile; it is not empirical calibration or a Lean theorem proof"
+      "evidenceBoundary": "Part IV distances are measured from selected ArchMap evidence under this LawPolicy profile"
     },
     "diagnosticScope": {
       "scopeId": "part4-diagnostic-scope:fixture-archmap-atom-observation",

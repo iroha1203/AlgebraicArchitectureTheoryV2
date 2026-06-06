@@ -80,6 +80,10 @@ enum Command {
         /// Also write full raw analysis artifacts for FieldSig handoff and deep evidence lookup.
         #[arg(long = "emit-raw-artifacts")]
         emit_raw_artifacts: bool,
+
+        /// Fail when Part IV distance measurement would rely on legacy profile fallback, proxy, or schema-only rows.
+        #[arg(long = "strict-distance")]
+        strict_distance: bool,
     },
 
     /// Build an ArchSig AAT analysis packet from ArchMap + interpretation profile.
@@ -104,6 +108,10 @@ enum Command {
         /// Optional compact LLM interpretation packet output path.
         #[arg(long = "llm-interpretation-out")]
         llm_interpretation_out: Option<PathBuf>,
+
+        /// Fail when Part IV distance measurement would rely on legacy profile fallback, proxy, or schema-only rows.
+        #[arg(long = "strict-distance")]
+        strict_distance: bool,
     },
 
     /// Summarize an archsig-analysis-packet-v0 for human and LLM review.
@@ -309,9 +317,12 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
             out,
             validation_out,
             llm_interpretation_out,
+            strict_distance,
         }) => {
             let archmap_document: ArchMapDocumentV0 = read_json(&archmap)?;
             let law_policy_document: LawPolicyDocumentV0 = read_json(&law_policy)?;
+            let law_policy_validation =
+                validate_law_policy_report(&law_policy_document, &law_policy.display().to_string());
             let packet = build_archsig_analysis_packet(
                 &archmap_document,
                 &law_policy_document,
@@ -328,6 +339,9 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                 write_json(Some(path), &packet.llm_interpretation_packet)?;
             }
             write_json(out, &packet)?;
+            if strict_distance {
+                enforce_strict_distance_contract(&law_policy_validation, &validation)?;
+            }
             Ok(if failed {
                 ExitCode::from(1)
             } else {
@@ -525,6 +539,7 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
             law_policy,
             out_dir,
             emit_raw_artifacts,
+            strict_distance,
         }) => {
             let archmap_validation_path = out_dir.join("archmap-validation.json");
             let law_policy_validation_path = out_dir.join("law-policy-validation.json");
@@ -638,6 +653,10 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                 &analysis_validation,
             );
 
+            if strict_distance {
+                enforce_strict_distance_contract(&law_policy_validation, &analysis_validation)?;
+            }
+
             Ok(if archmap_failed || law_policy_failed || analysis_failed {
                 ExitCode::from(1)
             } else {
@@ -675,6 +694,54 @@ fn write_json<T: serde::Serialize>(out: Option<PathBuf>, value: &T) -> Result<()
         }
     }
     Ok(())
+}
+
+fn enforce_strict_distance_contract(
+    law_policy_validation: &LawPolicyValidationReportV0,
+    analysis_validation: &ArchSigAnalysisPacketValidationReportV0,
+) -> Result<(), Box<dyn Error>> {
+    let mut violations = Vec::new();
+    if law_policy_validation
+        .policy
+        .part4_distance_profile
+        .is_none()
+    {
+        violations.push(
+            "part4DistanceProfile is required for --strict-distance; legacy profile fallback is disabled"
+                .to_string(),
+        );
+    }
+    if law_policy_validation.summary.result != "pass" {
+        violations.push(format!(
+            "LawPolicy validation must pass for --strict-distance (result={}, failed={}, warnings={})",
+            law_policy_validation.summary.result,
+            law_policy_validation.summary.failed_check_count,
+            law_policy_validation.summary.warning_check_count
+        ));
+    }
+    if analysis_validation.summary.result != "pass" {
+        violations.push(format!(
+            "analysis packet validation must pass for --strict-distance (result={}, failed={}, warnings={}, proxyRegressionChecks={})",
+            analysis_validation.summary.result,
+            analysis_validation.summary.failed_check_count,
+            analysis_validation.summary.warning_check_count,
+            analysis_validation.summary.proxy_regression_check_count
+        ));
+    }
+    if analysis_validation.summary.proxy_regression_check_count == 0 {
+        violations
+            .push("analysis packet validation did not run proxy-regression guardrails".to_string());
+    }
+
+    if violations.is_empty() {
+        Ok(())
+    } else {
+        Err(format!(
+            "--strict-distance rejected incomplete Part IV distance measurement contract: {}",
+            violations.join("; ")
+        )
+        .into())
+    }
 }
 
 const COMPACT_REF_ARRAY_THRESHOLD: usize = 50;
