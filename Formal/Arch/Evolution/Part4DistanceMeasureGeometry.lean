@@ -36,6 +36,7 @@ inductive Candidate where
   | atomRootGeometry
   | atomGeneratedRootDistance
   | atomConfigurationGeometry
+  | atomGeneratedConfigurationContextBridge
   | configurationContextGeometry
   | signaturePathGeometry
   | signatureDistanceAggregation
@@ -69,6 +70,8 @@ def designSection : Candidate -> String
       "Part IV.B Atom-generated root distance package"
   | atomConfigurationGeometry =>
       "Part IV.B atom / configuration distance schema"
+  | atomGeneratedConfigurationContextBridge =>
+      "Part IV.B/C Atom-generated configuration and context distance bridge"
   | configurationContextGeometry =>
       "Part IV.B/C configuration-indexed and context distance schema"
   | signaturePathGeometry =>
@@ -112,6 +115,8 @@ def schematicName : Candidate -> String
   | atomRootGeometry => "atomRootGeometry"
   | atomGeneratedRootDistance => "atomGeneratedRootDistance"
   | atomConfigurationGeometry => "atomConfigurationGeometry"
+  | atomGeneratedConfigurationContextBridge =>
+      "atomGeneratedConfigurationContextBridge"
   | configurationContextGeometry => "configurationContextGeometry"
   | signaturePathGeometry => "signaturePathGeometry"
   | signatureDistanceAggregation => "signatureDistanceAggregation"
@@ -167,6 +172,28 @@ def representativeDeclarations : Candidate -> List String
       , "AAT.GeneratedArchitectureObject.generatedCarrierShapeDistance"
       , "AAT.GeneratedArchitectureObject.generatedCarrierShapeDistance_eq_coordinate_mismatchCount"
       , "AAT.GeneratedOperation.mappedCarrierShapeDistance_eq_coordinate_mismatchCount"
+      ]
+  | atomGeneratedConfigurationContextBridge =>
+      [ "AAT.GeneratedArchitectureObject.generatedContext"
+      , "AAT.GeneratedArchitectureObject.generatedContextCarriers"
+      , "AAT.GeneratedArchitectureObject.GeneratedContextProjection"
+      , "AAT.GeneratedArchitectureObject.carrier_in_generatedContext"
+      , "AAT.GeneratedArchitectureObject.carrier_mem_generatedContextCarriers"
+      , "AAT.GeneratedArchitectureObject.generatedContext_atom_primitive"
+      , "AAT.GeneratedArchitectureObject.carrier_compatible_pairs"
+      , "AAT.GeneratedArchitectureObject.generatedContextProjection_from_object"
+      , "Part4DistanceMeasureGeometry.GeneratedConfigurationContextEvidence"
+      , "Part4DistanceMeasureGeometry.generatedConfigurationContextEvidence"
+      , "Part4DistanceMeasureGeometry.generatedConfigurationContextEvidence_recordsBoundaries"
+      , "Part4DistanceMeasureGeometry.generatedConfigurationContextEvidence_pairCompatible"
+      , "Part4DistanceMeasureGeometry.generatedConfigurationDistanceSchema"
+      , "Part4DistanceMeasureGeometry.generatedConfigurationDistanceWitness"
+      , "Part4DistanceMeasureGeometry.generatedConfigurationDistanceWitness_recordsScope"
+      , "Part4DistanceMeasureGeometry.generatedConfigurationDistanceWitness_distance_le"
+      , "Part4DistanceMeasureGeometry.generatedConfigurationDistance_samePairDiffers_of_witness"
+      , "Part4DistanceMeasureGeometry.generatedContextDistanceSchema"
+      , "Part4DistanceMeasureGeometry.generatedContextDistanceSchema_in_selectedContext"
+      , "Part4DistanceMeasureGeometry.generatedContextDistanceSchema_recordsFiniteContext"
       ]
   | configurationContextGeometry =>
       [ "ConfigurationDistanceSchema"
@@ -316,6 +343,8 @@ def claimBoundary : Candidate -> String
       "Generated carrier distances instantiate the root Atom geometry bridge from AtomShape coordinates without claiming semantic calibration."
   | atomConfigurationGeometry =>
       "Generated distances are bounded AtomShape-coordinate mismatch counts, not empirical semantic calibration."
+  | atomGeneratedConfigurationContextBridge =>
+      "Generated configuration/context distance evidence is read from generated molecule/object membership, carrier projection, and finite context witnesses; it does not assert global shortest-path, global context, or source-observation completeness."
   | configurationContextGeometry =>
       "Configuration and context distance schemas use supplied finite witnesses and do not assert global shortest-path or context completeness."
   | signaturePathGeometry =>
@@ -364,6 +393,7 @@ def schematicCorrespondences : List SchematicCorrespondence :=
   , schematicCorrespondence .atomRootGeometry
   , schematicCorrespondence .atomGeneratedRootDistance
   , schematicCorrespondence .atomConfigurationGeometry
+  , schematicCorrespondence .atomGeneratedConfigurationContextBridge
   , schematicCorrespondence .configurationContextGeometry
   , schematicCorrespondence .signaturePathGeometry
   , schematicCorrespondence .signatureDistanceAggregation
@@ -393,6 +423,7 @@ def all : List Candidate :=
   , atomRootGeometry
   , atomGeneratedRootDistance
   , atomConfigurationGeometry
+  , atomGeneratedConfigurationContextBridge
   , configurationContextGeometry
   , signaturePathGeometry
   , signatureDistanceAggregation
@@ -489,6 +520,304 @@ theorem generatedCarrierRootDistance_layout_eq_generatedCarrierShapeDistance
       object.generatedCarrierShapeDistance left right := by
   simp [generatedCarrierAtomRootDistanceBundle,
     AtomRootDistanceBundle.layoutDistance]
+
+/--
+Generated context evidence for a selected carrier pair.
+
+The evidence is read from the generated object and its generated molecule. It
+does not enumerate all possible contexts or promote context distance to a
+global shortest-path theorem.
+-/
+structure GeneratedConfigurationContextEvidence
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    (object : AAT.GeneratedArchitectureObject presentation) where
+  left : AAT.GeneratedCarrier object
+  right : AAT.GeneratedCarrier object
+  leftInGeneratedContext : object.generatedContext left.val
+  rightInGeneratedContext : object.generatedContext right.val
+  leftPrimitive : system.Primitive left.val
+  rightPrimitive : system.Primitive right.val
+  pairCompatibleWhenDistinct :
+    left.val ≠ right.val ->
+      CompatibleComposition
+        (AtomShapeOf presentation left.val)
+        (AtomShapeOf presentation right.val)
+  generatedContextProjection : object.GeneratedContextProjection
+  distanceBoundary : Prop
+  noGlobalShortestPathCompleteness : Prop
+  noGlobalContextCompleteness : Prop
+  nonConclusions : Prop
+
+namespace GeneratedConfigurationContextEvidence
+
+variable {system : AtomAxiomSystem.{u, v}}
+  {presentation : AtomShapePresentation system}
+  {object : AAT.GeneratedArchitectureObject presentation}
+
+def RecordsGeneratedBoundaries
+    (evidence : GeneratedConfigurationContextEvidence object) : Prop :=
+  evidence.distanceBoundary ∧
+  evidence.noGlobalShortestPathCompleteness ∧
+  evidence.noGlobalContextCompleteness ∧
+  evidence.nonConclusions
+
+theorem records_generated_boundaries
+    (evidence : GeneratedConfigurationContextEvidence object)
+    (hDistance : evidence.distanceBoundary)
+    (hNoShortest : evidence.noGlobalShortestPathCompleteness)
+    (hNoContext : evidence.noGlobalContextCompleteness)
+    (hNonConclusions : evidence.nonConclusions) :
+    evidence.RecordsGeneratedBoundaries :=
+  ⟨hDistance, hNoShortest, hNoContext, hNonConclusions⟩
+
+end GeneratedConfigurationContextEvidence
+
+def generatedConfigurationContextEvidence
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    (object : AAT.GeneratedArchitectureObject presentation)
+    (left right : AAT.GeneratedCarrier object)
+    (hBoundary : object.objectBoundary) :
+    GeneratedConfigurationContextEvidence object where
+  left := left
+  right := right
+  leftInGeneratedContext := object.carrier_in_generatedContext left
+  rightInGeneratedContext := object.carrier_in_generatedContext right
+  leftPrimitive := object.carrier_atom_primitive left
+  rightPrimitive := object.carrier_atom_primitive right
+  pairCompatibleWhenDistinct := by
+    intro hDistinct
+    exact object.carrier_compatible_pairs hDistinct
+  generatedContextProjection :=
+    object.generatedContextProjection_from_object hBoundary
+  distanceBoundary := True
+  noGlobalShortestPathCompleteness := True
+  noGlobalContextCompleteness := True
+  nonConclusions := True
+
+theorem generatedConfigurationContextEvidence_recordsBoundaries
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    (object : AAT.GeneratedArchitectureObject presentation)
+    (left right : AAT.GeneratedCarrier object)
+    (hBoundary : object.objectBoundary) :
+    GeneratedConfigurationContextEvidence.RecordsGeneratedBoundaries
+      (generatedConfigurationContextEvidence object left right hBoundary) :=
+  GeneratedConfigurationContextEvidence.records_generated_boundaries
+    (generatedConfigurationContextEvidence object left right hBoundary)
+    trivial
+    trivial
+    trivial
+    trivial
+
+def generatedConfigurationContextEvidence_pairCompatible
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    (object : AAT.GeneratedArchitectureObject presentation)
+    (left right : AAT.GeneratedCarrier object)
+    (hBoundary : object.objectBoundary)
+    (hDistinct : left.val ≠ right.val) :
+    CompatibleComposition
+      (AtomShapeOf presentation left.val)
+      (AtomShapeOf presentation right.val) :=
+  let evidence :=
+    generatedConfigurationContextEvidence object left right hBoundary
+  evidence.pairCompatibleWhenDistinct hDistinct
+
+/--
+Configuration distance schema specialized to generated architecture objects.
+
+The distance and supplied path cost are selected inputs, while the wrapper
+records that the schema is finite-witness based and not a global shortest-path
+solver.
+-/
+def generatedConfigurationDistanceSchema
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    (distance pathCost :
+      AAT.GeneratedArchitectureObject presentation ->
+        system.Atom -> system.Atom -> Nat)
+    (hBound :
+      ∀ object left right,
+        distance object left right ≤ pathCost object left right) :
+    ConfigurationDistanceSchema
+      (AAT.GeneratedArchitectureObject presentation) system.Atom where
+  distanceIn := distance
+  suppliedPathCost := pathCost
+  suppliedPathBoundsDistance := hBound
+  selectedFiniteWitness := True
+  noGlobalShortestPathCompleteness := True
+  nonConclusions := True
+
+structure GeneratedConfigurationDistanceWitness
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    (object : AAT.GeneratedArchitectureObject presentation) where
+  schema :
+    ConfigurationDistanceSchema
+      (AAT.GeneratedArchitectureObject presentation) system.Atom
+  left : AAT.GeneratedCarrier object
+  right : AAT.GeneratedCarrier object
+  selectedContextProjection : object.GeneratedContextProjection
+  leftInSelectedConfiguration : object.generatedContext left.val
+  rightInSelectedConfiguration : object.generatedContext right.val
+  selectedGeneratedScope : Prop
+  noGlobalShortestPathCompleteness : Prop
+  nonConclusions : Prop
+
+namespace GeneratedConfigurationDistanceWitness
+
+variable {system : AtomAxiomSystem.{u, v}}
+  {presentation : AtomShapePresentation system}
+  {object : AAT.GeneratedArchitectureObject presentation}
+
+def RecordsGeneratedScope
+    (witness : GeneratedConfigurationDistanceWitness object) : Prop :=
+  witness.selectedGeneratedScope ∧
+  witness.noGlobalShortestPathCompleteness ∧
+  witness.nonConclusions
+
+theorem records_generated_scope
+    (witness : GeneratedConfigurationDistanceWitness object)
+    (hScope : witness.selectedGeneratedScope)
+    (hNoGlobal : witness.noGlobalShortestPathCompleteness)
+    (hNonConclusions : witness.nonConclusions) :
+    witness.RecordsGeneratedScope :=
+  ⟨hScope, hNoGlobal, hNonConclusions⟩
+
+theorem distance_le_suppliedPathCost
+    (witness : GeneratedConfigurationDistanceWitness object) :
+    witness.schema.distanceIn object witness.left.val witness.right.val ≤
+      witness.schema.suppliedPathCost object witness.left.val
+        witness.right.val :=
+  witness.schema.distance_le_suppliedPathCost
+    object witness.left.val witness.right.val
+
+end GeneratedConfigurationDistanceWitness
+
+def generatedConfigurationDistanceWitness
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    (object : AAT.GeneratedArchitectureObject presentation)
+    (schema :
+      ConfigurationDistanceSchema
+        (AAT.GeneratedArchitectureObject presentation) system.Atom)
+    (left right : AAT.GeneratedCarrier object)
+    (hBoundary : object.objectBoundary) :
+    GeneratedConfigurationDistanceWitness object where
+  schema := schema
+  left := left
+  right := right
+  selectedContextProjection :=
+    object.generatedContextProjection_from_object hBoundary
+  leftInSelectedConfiguration := object.carrier_in_generatedContext left
+  rightInSelectedConfiguration := object.carrier_in_generatedContext right
+  selectedGeneratedScope := True
+  noGlobalShortestPathCompleteness := True
+  nonConclusions := True
+
+theorem generatedConfigurationDistanceWitness_recordsScope
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    (object : AAT.GeneratedArchitectureObject presentation)
+    (schema :
+      ConfigurationDistanceSchema
+        (AAT.GeneratedArchitectureObject presentation) system.Atom)
+    (left right : AAT.GeneratedCarrier object)
+    (hBoundary : object.objectBoundary) :
+    GeneratedConfigurationDistanceWitness.RecordsGeneratedScope
+      (generatedConfigurationDistanceWitness object schema left right hBoundary) :=
+  GeneratedConfigurationDistanceWitness.records_generated_scope
+    (generatedConfigurationDistanceWitness object schema left right hBoundary)
+    trivial
+    trivial
+    trivial
+
+theorem generatedConfigurationDistanceWitness_distance_le
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    (object : AAT.GeneratedArchitectureObject presentation)
+    (schema :
+      ConfigurationDistanceSchema
+        (AAT.GeneratedArchitectureObject presentation) system.Atom)
+    (left right : AAT.GeneratedCarrier object)
+    (hBoundary : object.objectBoundary) :
+    schema.distanceIn object left.val right.val ≤
+      schema.suppliedPathCost object left.val right.val :=
+  let witness :=
+    generatedConfigurationDistanceWitness object schema left right hBoundary
+  witness.distance_le_suppliedPathCost
+
+theorem generatedConfigurationDistance_samePairDiffers_of_witness
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    (schema :
+      ConfigurationDistanceSchema
+        (AAT.GeneratedArchitectureObject presentation) system.Atom)
+    {leftConfig rightConfig : AAT.GeneratedArchitectureObject presentation}
+    {left right : system.Atom}
+    (hLeftInLeftConfig : leftConfig.generatedContext left)
+    (hRightInLeftConfig : leftConfig.generatedContext right)
+    (hLeftInRightConfig : rightConfig.generatedContext left)
+    (hRightInRightConfig : rightConfig.generatedContext right)
+    (hDiff :
+      schema.distanceIn leftConfig left right ≠
+        schema.distanceIn rightConfig left right) :
+    schema.SamePairDistanceDiffers leftConfig rightConfig left right :=
+  let _leftConfigMembership := And.intro hLeftInLeftConfig hRightInLeftConfig
+  let _rightConfigMembership := And.intro hLeftInRightConfig hRightInRightConfig
+  schema.samePairDistanceDiffers_of_witness hDiff
+
+/--
+Context distance schema over the selected generated molecule of an object.
+
+The context membership predicate is generated molecule membership.  The selected
+context list is intentionally finite and does not claim global context
+completeness.
+-/
+def generatedContextDistanceSchema
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    (object : AAT.GeneratedArchitectureObject presentation)
+    (contextDistance :
+      AAT.GeneratedCarrier object -> AAT.GeneratedCarrier object -> Nat) :
+    ContextDistanceSchema
+      (AAT.GeneratedCarrier object)
+      (AAT.GeneratedMolecule presentation) where
+  inContext := fun carrier molecule => molecule.atoms carrier.val
+  contextDistance := contextDistance
+  selectedContexts := [object.molecule]
+  selectedFiniteContext := object.molecule.finiteConfiguration
+  sharedContextEvidence := True
+  noGlobalContextCompleteness := True
+  nonConclusions := True
+
+theorem generatedContextDistanceSchema_in_selectedContext
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    (object : AAT.GeneratedArchitectureObject presentation)
+    (contextDistance :
+      AAT.GeneratedCarrier object -> AAT.GeneratedCarrier object -> Nat)
+    (carrier : AAT.GeneratedCarrier object) :
+    (generatedContextDistanceSchema object contextDistance).inContext
+      carrier object.molecule :=
+  carrier.property
+
+theorem generatedContextDistanceSchema_recordsFiniteContext
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    (object : AAT.GeneratedArchitectureObject presentation)
+    (contextDistance :
+      AAT.GeneratedCarrier object -> AAT.GeneratedCarrier object -> Nat)
+    (hFinite : object.molecule.finiteConfiguration) :
+    ContextDistanceSchema.RecordsFiniteContext
+      (generatedContextDistanceSchema object contextDistance) :=
+  ContextDistanceSchema.records_finiteContext
+    (generatedContextDistanceSchema object contextDistance)
+    hFinite
+    trivial
+    trivial
 
 /--
 Part IV evidence for one generated mapped-distance reading.
