@@ -853,6 +853,22 @@ def classifyPart4
         .downstreamLibrary
         ActionAllowed.representationDownstream
         "Signature path geometry is finite-path and selected-scope, with margin stability requiring explicit preservation evidence."
+  | .signatureDistanceAggregation =>
+      representationRow
+        "part4.signatureDistanceAggregation"
+        (Part4DistanceMeasureGeometry.Candidate.representativeDeclarations
+          .signatureDistanceAggregation)
+        ["AxisDistanceReading",
+         "SignatureDistanceBundle",
+         "SignatureDistanceBundle.measuredSubtotal",
+         "SignatureDistanceBundle.unmeasuredAxis_not_measuredPayload",
+         "SignatureDistanceBundle.unmeasuredAxis_not_measuredZero",
+         "Part4DistanceMeasureGeometry.signatureDistanceBundle_measuredSubtotal_eq_selectedAxes",
+         "Part4DistanceMeasureGeometry.signatureDistanceBundle_records_measurementBoundary"]
+        (by simp)
+        .downstreamLibrary
+        ActionAllowed.representationDownstream
+        "Signature distance aggregation keeps DistanceValue status axis-wise and reads only measured subtotal without turning unmeasured axes into zero."
   | .finiteWitnessInfimumCore =>
       representationRow
         "part4.finiteWitnessInfimumCore"
@@ -1296,6 +1312,7 @@ def part4Classifications : List TheoremPackageClassification :=
   , classifyPart4 .atomConfigurationGeometry
   , classifyPart4 .configurationContextGeometry
   , classifyPart4 .signaturePathGeometry
+  , classifyPart4 .signatureDistanceAggregation
   , classifyPart4 .finiteWitnessInfimumCore
   , classifyPart4 .distanceToLawfulnessGeometry
   , classifyPart4 .metricGaloisCorrespondence

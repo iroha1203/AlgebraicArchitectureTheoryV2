@@ -51,6 +51,18 @@ def measuredNat? : DistanceValue -> Option Nat
   | measured n => some n
   | _ => none
 
+/--
+Selected measured contribution used by subtotal accessors.
+
+The zero fallback is only the computational default for values with no measured
+payload.  It is not evidence that unmeasured, unavailable, incomparable, or
+infinite axes are measured-zero axes.
+-/
+def measuredContribution (value : DistanceValue) : Nat :=
+  match value.measuredNat? with
+  | some n => n
+  | none => 0
+
 theorem zero_is_measuredZero : IsMeasuredZero zero := by
   trivial
 
@@ -96,6 +108,73 @@ theorem infinite_not_measuredZero :
     ¬ IsMeasuredZero infinite := by
   intro h
   cases h
+
+theorem measuredNat?_zero : measuredNat? zero = some 0 := by
+  rfl
+
+theorem measuredNat?_measured (n : Nat) :
+    measuredNat? (measured n) = some n := by
+  rfl
+
+theorem measuredNat?_unmeasured :
+    measuredNat? unmeasured = none := by
+  rfl
+
+theorem measuredNat?_unavailable :
+    measuredNat? unavailable = none := by
+  rfl
+
+theorem measuredNat?_incomparable :
+    measuredNat? incomparable = none := by
+  rfl
+
+theorem measuredNat?_infinite :
+    measuredNat? infinite = none := by
+  rfl
+
+theorem unmeasured_not_measuredNat
+    (n : Nat) : measuredNat? unmeasured ≠ some n := by
+  intro h
+  cases h
+
+theorem unavailable_not_measuredNat
+    (n : Nat) : measuredNat? unavailable ≠ some n := by
+  intro h
+  cases h
+
+theorem incomparable_not_measuredNat
+    (n : Nat) : measuredNat? incomparable ≠ some n := by
+  intro h
+  cases h
+
+theorem infinite_not_measuredNat
+    (n : Nat) : measuredNat? infinite ≠ some n := by
+  intro h
+  cases h
+
+theorem measuredContribution_zero :
+    measuredContribution zero = 0 := by
+  rfl
+
+theorem measuredContribution_measured (n : Nat) :
+    measuredContribution (measured n) = n := by
+  rfl
+
+theorem measuredContribution_unmeasured :
+    measuredContribution unmeasured = 0 := by
+  rfl
+
+theorem measuredContribution_unavailable :
+    measuredContribution unavailable = 0 := by
+  rfl
+
+theorem measuredContribution_incomparable :
+    measuredContribution incomparable = 0 := by
+  rfl
+
+theorem measuredContribution_infinite :
+    measuredContribution infinite = 0 := by
+  rfl
 
 end DistanceValue
 
@@ -277,6 +356,233 @@ theorem records_recommendation_boundary
   ⟨hBoundary, hNotTheorem⟩
 
 end DetailedBoundedDiagnosticConclusion
+
+/--
+One selected axis-distance reading from Part IV signature geometry.
+
+The value is a `DistanceValue`, not a bare natural number, so measurement
+status remains visible at the axis level.
+-/
+structure AxisDistanceReading (Axis : Type u) where
+  axis : Axis
+  value : DistanceValue
+  selectedAxis : Prop
+  measurementBoundary : Prop
+  nonConclusions : Prop
+
+namespace AxisDistanceReading
+
+variable {Axis : Type u}
+
+def MeasuredPayload? (reading : AxisDistanceReading Axis) : Option Nat :=
+  reading.value.measuredNat?
+
+def RecordsMeasurementBoundary
+    (reading : AxisDistanceReading Axis) : Prop :=
+  reading.measurementBoundary ∧ reading.nonConclusions
+
+theorem measuredPayload?_eq
+    (reading : AxisDistanceReading Axis) :
+    reading.MeasuredPayload? = reading.value.measuredNat? := by
+  rfl
+
+theorem records_measurementBoundary
+    (reading : AxisDistanceReading Axis)
+    (hBoundary : reading.measurementBoundary)
+    (hNonConclusions : reading.nonConclusions) :
+    reading.RecordsMeasurementBoundary :=
+  ⟨hBoundary, hNonConclusions⟩
+
+end AxisDistanceReading
+
+/--
+DistanceValue-aware signature distance aggregation.
+
+This bundle is deliberately separate from `SignatureDistanceSchema`: the latter
+supports finite path geometry over a selected Nat-valued distance, while this
+record keeps axis-wise measurement status, coverage, confidence, and
+non-conclusion boundaries visible.
+-/
+structure SignatureDistanceBundle (Axis : Type u) where
+  profile : DistanceProfile
+  selectedAxes : List Axis
+  axisDistance : Axis -> DistanceValue
+  measuredAxis : Axis -> Prop
+  unmeasuredAxis : Axis -> Prop
+  unavailableAxis : Axis -> Prop
+  incomparableAxis : Axis -> Prop
+  coverageAssumptions : Prop
+  aggregationPolicy : Prop
+  confidenceBoundary : Prop
+  unmeasuredAxisPolicy : Prop
+  doesNotConcludeGlobalLawfulness : Prop
+  doesNotConcludeGlobalFlatness : Prop
+  doesNotConcludeUnmeasuredZero : Prop
+  nonConclusions : Prop
+
+namespace SignatureDistanceBundle
+
+variable {Axis : Type u}
+
+def valueAt (bundle : SignatureDistanceBundle Axis) (axis : Axis) :
+    DistanceValue :=
+  bundle.axisDistance axis
+
+def measuredPayload?
+    (bundle : SignatureDistanceBundle Axis) (axis : Axis) : Option Nat :=
+  (bundle.valueAt axis).measuredNat?
+
+def measuredSubtotalOf
+    (bundle : SignatureDistanceBundle Axis) : List Axis -> Nat
+  | [] => 0
+  | axis :: rest =>
+      DistanceValue.measuredContribution (bundle.axisDistance axis) +
+        bundle.measuredSubtotalOf rest
+
+/--
+Subtotal over selected measured payloads only.
+
+Axes whose `DistanceValue.measuredNat?` is `none` are not counted.  This
+accessor is not a total signature distance and does not turn unmeasured axes
+into measured zero evidence.
+-/
+def measuredSubtotal (bundle : SignatureDistanceBundle Axis) : Nat :=
+  bundle.measuredSubtotalOf bundle.selectedAxes
+
+def AxisMeasured (bundle : SignatureDistanceBundle Axis) (axis : Axis) :
+    Prop :=
+  bundle.measuredAxis axis
+
+def AxisUnmeasured (bundle : SignatureDistanceBundle Axis) (axis : Axis) :
+    Prop :=
+  bundle.unmeasuredAxis axis
+
+def AxisUnavailable (bundle : SignatureDistanceBundle Axis) (axis : Axis) :
+    Prop :=
+  bundle.unavailableAxis axis
+
+def AxisIncomparable (bundle : SignatureDistanceBundle Axis) (axis : Axis) :
+    Prop :=
+  bundle.incomparableAxis axis
+
+def RecordsMeasurementBoundary
+    (bundle : SignatureDistanceBundle Axis) : Prop :=
+  bundle.coverageAssumptions ∧
+  bundle.aggregationPolicy ∧
+  bundle.confidenceBoundary ∧
+  bundle.unmeasuredAxisPolicy ∧
+  bundle.nonConclusions
+
+def RecordsNonConclusions
+    (bundle : SignatureDistanceBundle Axis) : Prop :=
+  bundle.doesNotConcludeGlobalLawfulness ∧
+  bundle.doesNotConcludeGlobalFlatness ∧
+  bundle.doesNotConcludeUnmeasuredZero ∧
+  bundle.nonConclusions
+
+theorem valueAt_eq
+    (bundle : SignatureDistanceBundle Axis) (axis : Axis) :
+    bundle.valueAt axis = bundle.axisDistance axis := by
+  rfl
+
+theorem measuredPayload?_eq
+    (bundle : SignatureDistanceBundle Axis) (axis : Axis) :
+    bundle.measuredPayload? axis =
+      (bundle.axisDistance axis).measuredNat? := by
+  rfl
+
+theorem measuredSubtotalOf_nil
+    (bundle : SignatureDistanceBundle Axis) :
+    bundle.measuredSubtotalOf [] = 0 := by
+  rfl
+
+theorem measuredSubtotalOf_cons
+    (bundle : SignatureDistanceBundle Axis)
+    (axis : Axis) (rest : List Axis) :
+    bundle.measuredSubtotalOf (axis :: rest) =
+      DistanceValue.measuredContribution (bundle.axisDistance axis) +
+        bundle.measuredSubtotalOf rest := by
+  rfl
+
+theorem measuredSubtotal_eq_selectedAxes
+    (bundle : SignatureDistanceBundle Axis) :
+    bundle.measuredSubtotal =
+      bundle.measuredSubtotalOf bundle.selectedAxes := by
+  rfl
+
+theorem measuredPayload?_zero
+    (bundle : SignatureDistanceBundle Axis) {axis : Axis}
+    (hValue : bundle.axisDistance axis = DistanceValue.zero) :
+    bundle.measuredPayload? axis = some 0 := by
+  simp [measuredPayload?, valueAt, hValue,
+    DistanceValue.measuredNat?_zero]
+
+theorem measuredPayload?_measured
+    (bundle : SignatureDistanceBundle Axis) {axis : Axis} {n : Nat}
+    (hValue : bundle.axisDistance axis = DistanceValue.measured n) :
+    bundle.measuredPayload? axis = some n := by
+  simp [measuredPayload?, valueAt, hValue,
+    DistanceValue.measuredNat?_measured]
+
+theorem unmeasuredAxis_not_measuredPayload
+    (bundle : SignatureDistanceBundle Axis) {axis : Axis}
+    (hValue : bundle.axisDistance axis = DistanceValue.unmeasured)
+    (n : Nat) :
+    bundle.measuredPayload? axis ≠ some n := by
+  simp [measuredPayload?, valueAt, hValue,
+    DistanceValue.measuredNat?_unmeasured]
+
+theorem unavailableAxis_not_measuredPayload
+    (bundle : SignatureDistanceBundle Axis) {axis : Axis}
+    (hValue : bundle.axisDistance axis = DistanceValue.unavailable)
+    (n : Nat) :
+    bundle.measuredPayload? axis ≠ some n := by
+  simp [measuredPayload?, valueAt, hValue,
+    DistanceValue.measuredNat?_unavailable]
+
+theorem incomparableAxis_not_measuredPayload
+    (bundle : SignatureDistanceBundle Axis) {axis : Axis}
+    (hValue : bundle.axisDistance axis = DistanceValue.incomparable)
+    (n : Nat) :
+    bundle.measuredPayload? axis ≠ some n := by
+  simp [measuredPayload?, valueAt, hValue,
+    DistanceValue.measuredNat?_incomparable]
+
+theorem infiniteAxis_not_measuredPayload
+    (bundle : SignatureDistanceBundle Axis) {axis : Axis}
+    (hValue : bundle.axisDistance axis = DistanceValue.infinite)
+    (n : Nat) :
+    bundle.measuredPayload? axis ≠ some n := by
+  simp [measuredPayload?, valueAt, hValue,
+    DistanceValue.measuredNat?_infinite]
+
+theorem unmeasuredAxis_not_measuredZero
+    (bundle : SignatureDistanceBundle Axis) {axis : Axis}
+    (hValue : bundle.axisDistance axis = DistanceValue.unmeasured) :
+    ¬ DistanceValue.IsMeasuredZero (bundle.axisDistance axis) := by
+  simpa [hValue] using DistanceValue.unmeasured_not_measuredZero
+
+theorem records_measurementBoundary
+    (bundle : SignatureDistanceBundle Axis)
+    (hCoverage : bundle.coverageAssumptions)
+    (hAggregation : bundle.aggregationPolicy)
+    (hConfidence : bundle.confidenceBoundary)
+    (hUnmeasured : bundle.unmeasuredAxisPolicy)
+    (hNonConclusions : bundle.nonConclusions) :
+    bundle.RecordsMeasurementBoundary :=
+  ⟨hCoverage, hAggregation, hConfidence, hUnmeasured,
+    hNonConclusions⟩
+
+theorem records_nonConclusions
+    (bundle : SignatureDistanceBundle Axis)
+    (hLaw : bundle.doesNotConcludeGlobalLawfulness)
+    (hFlat : bundle.doesNotConcludeGlobalFlatness)
+    (hUnmeasured : bundle.doesNotConcludeUnmeasuredZero)
+    (hNonConclusions : bundle.nonConclusions) :
+    bundle.RecordsNonConclusions :=
+  ⟨hLaw, hFlat, hUnmeasured, hNonConclusions⟩
+
+end SignatureDistanceBundle
 
 /--
 Selected root Atom geometry from Part IV.
