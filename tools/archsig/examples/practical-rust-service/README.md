@@ -7,9 +7,8 @@ application service, and an in-memory infrastructure adapter.
 The first use of this directory is source-grounded ArchMap authoring. The Rust
 sample gives an agent concrete source refs for component atoms, dependency
 relations, operation contracts, and bounded concern hints. ArchSig analysis
-artifacts are generated locally under `analysis/`. They are not checked in
-because the current full audit surface is intentionally broader than this small
-example.
+artifacts should be generated under the repository `.tmp/` directory rather than
+inside this example tree.
 
 ## Layout
 
@@ -47,20 +46,20 @@ Expected smoke output includes a reserved order and remaining stock snapshot.
 ```bash
 cargo run --manifest-path tools/archsig/Cargo.toml -- archmap \
   --input tools/archsig/examples/practical-rust-service/archmap/archmap.json \
-  --out tools/archsig/examples/practical-rust-service/analysis/archmap-validation.json
+  --out .tmp/archsig-practical-rust-service/archmap-validation.json
 
 cargo run --manifest-path tools/archsig/Cargo.toml -- law-policy \
   --input tools/archsig/examples/practical-rust-service/law_policy/law_policy.json \
-  --out tools/archsig/examples/practical-rust-service/analysis/law-policy-validation.json
+  --out .tmp/archsig-practical-rust-service/law-policy-validation.json
 ```
 
 ## Analysis Boundary
 
 This example intentionally stops at ArchMap / LawPolicy authoring validation.
 Current full `analyze` packet validation asks for broader Part IV and structural
-surfaces than this small sample intends to claim. Generated `analysis/` output is
-therefore local-only and ignored by git until the selected-policy report model is
-separated from full audit guardrails.
+surfaces than this small sample intends to claim. Generated analysis output
+should remain local-only under `.tmp/archsig-practical-rust-service/` until the
+selected-policy report model is separated from full audit guardrails.
 
 ## ArchSig Reading Targets
 
