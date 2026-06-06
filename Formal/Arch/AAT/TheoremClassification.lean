@@ -774,6 +774,33 @@ def classifyPart4
         .downstreamLibrary
         ActionAllowed.representationDownstream
         "Part IV distance foundations are selected-scope representation surfaces that keep unmeasured axes distinct from measured zero."
+  | .distanceAATOverlay =>
+      representationRow
+        "part4.distanceAATOverlay"
+        (Part4DistanceMeasureGeometry.Candidate.representativeDeclarations
+          .distanceAATOverlay)
+        ["DistanceBundle",
+         "DistanceBundle.records_selectedOverlay",
+         "DistanceAAT",
+         "DistanceAAT.distance_does_not_generate_atoms",
+         "DistanceAAT.distance_does_not_replace_aatCore"]
+        (by simp)
+        .downstreamLibrary
+        ActionAllowed.representationDownstream
+        "DistanceAAT registers Part IV as a selected overlay on an existing AAT core, not as an Atom generator or replacement theorem."
+  | .atomRootGeometry =>
+      representationRow
+        "part4.atomRootGeometry"
+        (Part4DistanceMeasureGeometry.Candidate.representativeDeclarations
+          .atomRootGeometry)
+        ["AtomRootDistanceBundle",
+         "AtomRootDistanceBundle.layoutDistance_eq_weighted_components",
+         "GeneratedAtomShapeDistanceBridge",
+         "GeneratedAtomShapeDistanceBridge.generatedDistance_eq_coordinateMismatch"]
+        (by simp)
+        .downstreamLibrary
+        ActionAllowed.representationDownstream
+        "Root Atom geometry records selected component distances while keeping semantic distance calibration and law overlays bounded."
   | .atomConfigurationGeometry =>
       atomGeneratedRow
         "part4.atomConfigurationGeometry"
@@ -785,6 +812,20 @@ def classifyPart4
          "Part4DistanceMeasureGeometry.generatedOperation_mappedCarrierShapeDistance_eq_coordinate_mismatchCount"]
         (by simp)
         "Atom and operation distance entrypoints unfold to generated AtomShape-coordinate mismatch counts."
+  | .configurationContextGeometry =>
+      representationRow
+        "part4.configurationContextGeometry"
+        (Part4DistanceMeasureGeometry.Candidate.representativeDeclarations
+          .configurationContextGeometry)
+        ["ConfigurationDistanceSchema",
+         "ConfigurationDistanceSchema.distance_le_suppliedPathCost",
+         "ConfigurationDistanceSchema.samePairDistanceDiffers_of_witness",
+         "ContextDistanceSchema",
+         "ContextDistanceSchema.records_finiteContext"]
+        (by simp)
+        .downstreamLibrary
+        ActionAllowed.representationDownstream
+        "Configuration and context distance rows are supplied finite-witness schemas without global shortest-path or context completeness."
   | .signaturePathGeometry =>
       representationRow
         "part4.signaturePathGeometry"
@@ -948,6 +989,20 @@ def classifyPart4
         .downstreamLibrary
         ActionAllowed.representationDownstream
         "The abstract infimum interface records lower-bound and approximation witnesses without computing a global optimizer."
+  | .diagnosticConclusionDetail =>
+      representationRow
+        "part4.diagnosticConclusionDetail"
+        (Part4DistanceMeasureGeometry.Candidate.representativeDeclarations
+          .diagnosticConclusionDetail)
+        ["DetailedBoundedDiagnosticConclusion",
+         "DetailedBoundedDiagnosticConclusion.records_nonConclusions",
+         "DetailedBoundedDiagnosticConclusion.records_recommendation_boundary",
+         "Part4DistanceMeasureGeometry.detailedDiagnostic_records_nonConclusions",
+         "Part4DistanceMeasureGeometry.detailedDiagnostic_records_recommendation_boundary"]
+        (by simp)
+        .downstreamLibrary
+        ActionAllowed.representationDownstream
+        "Detailed diagnostic conclusions keep supporting distances and recommended operations scoped without proving empirical repair success."
   | .docsClassificationBoundary =>
       representationRow
         "part4.docsClassificationBoundary"
@@ -1196,7 +1251,10 @@ def chapter11Classifications : List TheoremPackageClassification :=
 
 def part4Classifications : List TheoremPackageClassification :=
   [ classifyPart4 .distanceFoundation
+  , classifyPart4 .distanceAATOverlay
+  , classifyPart4 .atomRootGeometry
   , classifyPart4 .atomConfigurationGeometry
+  , classifyPart4 .configurationContextGeometry
   , classifyPart4 .signaturePathGeometry
   , classifyPart4 .finiteWitnessInfimumCore
   , classifyPart4 .distanceToLawfulnessGeometry
@@ -1209,6 +1267,7 @@ def part4Classifications : List TheoremPackageClassification :=
   , classifyPart4 .representationMetric
   , classifyPart4 .representationSpectralStability
   , classifyPart4 .abstractInfimumInterface
+  , classifyPart4 .diagnosticConclusionDetail
   , classifyPart4 .docsClassificationBoundary
   ]
 
