@@ -6,6 +6,7 @@ import Formal.Arch.AAT.GeneratedSignature
 import Formal.Arch.AAT.GeneratedSynthesis
 import Formal.Arch.AAT.TheoremClassification
 import Formal.Arch.Evolution.Chapter8HomotopySkeleton
+import Formal.Arch.Evolution.Part4DistanceMeasureGeometry
 import Formal.Arch.Evolution.SFTArchSigBoundary
 import Formal.Arch.Observation.ArchMapGeneratedHandoff
 
@@ -30,6 +31,7 @@ inductive AATTheoremFamily where
   | generatedPathDiagram
   | generatedFeatureExtension
   | generatedOperationRepairSynthesis
+  | generatedDistanceMeasureGeometry
   | generatedAnalyticRepresentation
   | generatedSFTArchSigFieldSig
   | theoremClassification
@@ -444,6 +446,154 @@ structure GeneratedAnalyticRepresentationFields
   identityFormulaHolds :
     identityAnalyticExtensionFormulaPackage.FormulaEquation
 
+/--
+Suite field payload for Part IV distance / measure geometry.
+
+The field packages the existing Part IV theorem surfaces as generated-world
+theorem accessors.  It keeps distance as a selected diagnostic overlay: it
+does not generate atoms, does not treat unmeasured axes as zero, and does not
+promote recommendations to repair-correctness theorems.
+-/
+structure GeneratedDistanceMeasureGeometryFields
+    (world : AtomGeneratedAATWorld.{u, v}) where
+  unmeasuredNotMeasuredZero :
+    ¬ DistanceValue.IsMeasuredZero DistanceValue.unmeasured
+  rootGeometry :
+    ∀ (_ : AtomShape -> Nat)
+      (_ : AtomShape -> Nat)
+      (_ : AtomShape -> Nat)
+      (_ : AtomShape -> Nat)
+      (_ : AtomShape -> String),
+      Part4DistanceMeasureGeometry.GeneratedAtomRootGeometryPackage
+        (GeneratedCarrier world.object)
+        GeneratedAtomFullShapeCoordinate
+  rootGeometryRecordsBoundaries :
+    ∀ (objectSlotFootprint : AtomShape -> Nat)
+      (payloadSlotFootprint : AtomShape -> Nat)
+      (valencePortFootprint : AtomShape -> Nat)
+      (requiredPortFootprint : AtomShape -> Nat)
+      (semanticAnchorName : AtomShape -> String),
+      (rootGeometry objectSlotFootprint payloadSlotFootprint
+        valencePortFootprint requiredPortFootprint semanticAnchorName)
+        |>.RecordsGeneratedBoundaries
+  signatureDistanceBundleRecordsMeasurementBoundary :
+    ∀ {Axis : Type u} (bundle : SignatureDistanceBundle Axis),
+      bundle.coverageAssumptions ->
+      bundle.aggregationPolicy ->
+      bundle.confidenceBoundary ->
+      bundle.unmeasuredAxisPolicy ->
+      bundle.nonConclusions ->
+        bundle.RecordsMeasurementBoundary
+  generatedOperationMappedDistanceRecordsBoundaries :
+    ∀ {target : GeneratedArchitectureObject world.presentation}
+      (operation : GeneratedOperation world.object target)
+      (carrier : GeneratedCarrier world.object),
+      (Part4DistanceMeasureGeometry.generatedOperation_mappedDistanceEvidence
+        operation carrier).RecordsGeneratedBoundaries
+  generatedRepairProblemMappedDistanceRecordsBoundaries :
+    ∀ {configuration :
+        GeneratedRepairProblemConfiguration world.presentation}
+      {target : GeneratedArchitectureObject world.presentation}
+      (operation : GeneratedRepairProblemOperation configuration target)
+      (carrier : GeneratedRepairProblemCarrier configuration),
+      (Part4DistanceMeasureGeometry.generatedRepairProblemOperation_mappedDistanceEvidence
+        operation carrier).RecordsGeneratedBoundaries
+  diagnosticConclusionRecordsNonConclusions :
+    ∀ {Axis : Type u} (conclusion : BoundedDiagnosticConclusion Axis),
+      conclusion.doesNotConcludeGlobalLawfulness ->
+      conclusion.doesNotConcludeGlobalFlatness ->
+      conclusion.doesNotConcludeUnmeasuredZero ->
+        conclusion.RecordsNonConclusions
+  detailedDiagnosticRecordsRecommendationBoundary :
+    ∀ {Axis : Type u} {DistanceRef : Type v} {Operation : Type u}
+      (conclusion :
+        DetailedBoundedDiagnosticConclusion Axis DistanceRef Operation),
+      conclusion.recommendationBoundary ->
+      conclusion.recommendationsAreNotRepairCorrectnessTheorems ->
+        conclusion.RecordsRecommendationBoundary
+  generatedFillingPackageRecordsBoundaries :
+    ∀ {Diagram : Type u} {Filler : Type v}
+      (pkg : Part4DistanceMeasureGeometry.GeneratedFillingCostPackage
+        Diagram Filler),
+      pkg.generatedDiagramEvidence ->
+      pkg.finiteFillerUniverse ->
+      pkg.lowerBound.nonConclusions ->
+      pkg.persistentNonFillability.selectedScope ->
+      pkg.persistentNonFillability.nonConclusions ->
+      pkg.nonConclusions ->
+        pkg.RecordsGeneratedFillingBoundaries
+  generatedCurvatureFillingBridgeRecordsBoundaries :
+    ∀ {Axis : Type u} {State : Type v}
+      {Diagram : Type u} {Filler : Type v}
+      (pkg :
+        Part4DistanceMeasureGeometry.GeneratedCurvatureFillingBridge
+          Axis State Diagram Filler),
+      pkg.generatedCurvatureEvidence ->
+      pkg.generatedFillingEvidence ->
+      pkg.curvatureTransport.selectedScope ->
+      pkg.curvatureTransport.nonConclusions ->
+      pkg.fillingPackage.RecordsGeneratedFillingBoundaries ->
+      pkg.selectedScope ->
+      pkg.nonConclusions ->
+        pkg.RecordsGeneratedCurvatureFillingBoundaries
+  generatedCurvatureFillingBridgeTargetDecreases :
+    ∀ {Axis : Type u} {State : Type v}
+      {Diagram : Type u} {Filler : Type v}
+      (pkg :
+        Part4DistanceMeasureGeometry.GeneratedCurvatureFillingBridge
+          Axis State Diagram Filler),
+      pkg.curvatureTransport.reading.curvatureMass
+          pkg.curvatureTransport.targetAxis pkg.curvatureTransport.after <
+        pkg.curvatureTransport.reading.curvatureMass
+          pkg.curvatureTransport.targetAxis pkg.curvatureTransport.before
+  generatedFiniteHomotopyCostRecordsUniverse :
+    ∀ {Path : Type u} {Homotopy : Type v}
+      (pkg :
+        Part4DistanceMeasureGeometry.GeneratedFiniteHomotopyCost
+          Path Homotopy),
+      pkg.finiteWitnessUniverse ->
+      pkg.selectedScope ->
+      pkg.homotopyBound.selectedScope ->
+      pkg.homotopyBound.nonConclusions ->
+      pkg.nonConclusions ->
+        pkg.RecordsFiniteWitnessUniverse
+  generatedFiniteDehnBoundRecordsUniverse :
+    ∀ {Loop : Type u}
+      (pkg : Part4DistanceMeasureGeometry.GeneratedFiniteDehnBound Loop),
+      pkg.suppliedCandidateUniverse ->
+      pkg.dehnBound.selectedScope ->
+      pkg.notUniversalDehnFunction ->
+      pkg.dehnBound.nonConclusions ->
+      pkg.nonConclusions ->
+        pkg.RecordsFiniteUniverse
+  generatedRepresentationMetricRecordsBoundaries :
+    ∀ {State : Type u} {Analytic : Type v} {Spectral : Type u}
+      (pkg :
+        Part4DistanceMeasureGeometry.GeneratedRepresentationMetricPackage
+          State Analytic Spectral),
+      pkg.generatedRepresentationEvidence ->
+      pkg.selectedObstructionValuationEvidence ->
+      pkg.lipschitzPackage.coverageAssumptions ->
+      pkg.lipschitzPackage.witnessCompletenessAssumptions ->
+      pkg.spectralPackage.coverageAssumptions ->
+      pkg.spectralPackage.witnessCompletenessAssumptions ->
+      pkg.zeroPreservationBoundary ->
+      pkg.zeroReflectionBoundary ->
+      pkg.nonConclusions ->
+        pkg.RecordsGeneratedMetricBoundaries
+  generatedRepresentationMetricAnalyticDistance_le :
+    ∀ {State : Type u} {Analytic : Type v} {Spectral : Type u}
+      (pkg :
+        Part4DistanceMeasureGeometry.GeneratedRepresentationMetricPackage
+          State Analytic Spectral)
+      {X Y : State},
+      pkg.lipschitzPackage.comparable X Y ->
+        pkg.lipschitzPackage.analyticDistance
+            (pkg.lipschitzPackage.represent X)
+            (pkg.lipschitzPackage.represent Y) ≤
+          pkg.lipschitzPackage.lipschitzConstant *
+            pkg.lipschitzPackage.structuralDistance X Y
+
 /-- Generated SFT input specialized to the decidability evidence carried by a world. -/
 abbrev GeneratedSFTInputForWorld
     (world : AtomGeneratedAATWorld.{u, v}) : Type _ :=
@@ -664,6 +814,101 @@ noncomputable def generated_analyticRepresentation_fields
     exact
       Chapter11AnalyticRepresentation.generatedIdentityAnalyticExtensionFormula_formula_holds
         world.lawModel
+
+/-- Generated Part IV distance / measure geometry field derived from generated input. -/
+def generated_distance_measure_geometry_fields
+    (world : AtomGeneratedAATWorld.{u, v}) :
+    GeneratedDistanceMeasureGeometryFields world where
+  unmeasuredNotMeasuredZero :=
+    Part4DistanceMeasureGeometry.unmeasured_not_measured_zero
+  rootGeometry := by
+    intro objectSlotFootprint payloadSlotFootprint
+      valencePortFootprint requiredPortFootprint semanticAnchorName
+    exact
+      Part4DistanceMeasureGeometry.generatedCarrierFullRootGeometryPackage
+        world.object objectSlotFootprint payloadSlotFootprint
+        valencePortFootprint requiredPortFootprint semanticAnchorName
+  rootGeometryRecordsBoundaries := by
+    intro objectSlotFootprint payloadSlotFootprint
+      valencePortFootprint requiredPortFootprint semanticAnchorName
+    exact
+      Part4DistanceMeasureGeometry.generatedCarrierFullRootGeometryPackage_recordsBoundaries
+        world.object objectSlotFootprint payloadSlotFootprint
+        valencePortFootprint requiredPortFootprint semanticAnchorName
+  signatureDistanceBundleRecordsMeasurementBoundary := by
+    intro _Axis bundle hCoverage hAggregation hConfidence hUnmeasured
+      hNonConclusions
+    exact
+      Part4DistanceMeasureGeometry.signatureDistanceBundle_records_measurementBoundary
+        bundle hCoverage hAggregation hConfidence hUnmeasured
+        hNonConclusions
+  generatedOperationMappedDistanceRecordsBoundaries := by
+    intro _target operation carrier
+    exact
+      Part4DistanceMeasureGeometry.generatedOperation_mappedDistanceEvidence_recordsGeneratedBoundaries
+        operation carrier
+  generatedRepairProblemMappedDistanceRecordsBoundaries := by
+    intro _configuration _target operation carrier
+    exact
+      Part4DistanceMeasureGeometry.generatedRepairProblemOperation_mappedDistanceEvidence_recordsGeneratedBoundaries
+        operation carrier
+  diagnosticConclusionRecordsNonConclusions := by
+    intro _Axis conclusion hLaw hFlat hUnmeasured
+    exact
+      BoundedDiagnosticConclusion.records_nonConclusions
+        conclusion hLaw hFlat hUnmeasured
+  detailedDiagnosticRecordsRecommendationBoundary := by
+    intro _Axis _DistanceRef _Operation conclusion hBoundary hNotTheorem
+    exact
+      DetailedBoundedDiagnosticConclusion.records_recommendation_boundary
+        conclusion hBoundary hNotTheorem
+  generatedFillingPackageRecordsBoundaries := by
+    intro _Diagram _Filler pkg hDiagram hFinite hLower hScope
+      hPersistent hNonConclusions
+    exact
+      Part4DistanceMeasureGeometry.generatedFillingCostPackage_recordsGeneratedFillingBoundaries
+        pkg hDiagram hFinite hLower hScope hPersistent hNonConclusions
+  generatedCurvatureFillingBridgeRecordsBoundaries := by
+    intro _Axis _State _Diagram _Filler pkg hCurvature hFilling
+      hCurvatureScope hCurvatureNonConclusions hFillingBoundaries
+      hSelected hNonConclusions
+    exact
+      Part4DistanceMeasureGeometry.generatedCurvatureFillingBridge_recordsGeneratedCurvatureFillingBoundaries
+        pkg hCurvature hFilling hCurvatureScope hCurvatureNonConclusions
+        hFillingBoundaries hSelected hNonConclusions
+  generatedCurvatureFillingBridgeTargetDecreases := by
+    intro _Axis _State _Diagram _Filler pkg
+    exact
+      Part4DistanceMeasureGeometry.generatedCurvatureFillingBridge_target_curvature_decreases
+        pkg
+  generatedFiniteHomotopyCostRecordsUniverse := by
+    intro _Path _Homotopy pkg hFinite hSelected hBoundSelected
+      hBoundNonConclusions hNonConclusions
+    exact
+      Part4DistanceMeasureGeometry.generatedFiniteHomotopyCost_recordsFiniteWitnessUniverse
+        pkg hFinite hSelected hBoundSelected hBoundNonConclusions
+        hNonConclusions
+  generatedFiniteDehnBoundRecordsUniverse := by
+    intro _Loop pkg hUniverse hSelected hNotUniversal
+      hBoundNonConclusions hNonConclusions
+    exact
+      Part4DistanceMeasureGeometry.generatedFiniteDehnBound_recordsFiniteUniverse
+        pkg hUniverse hSelected hNotUniversal hBoundNonConclusions
+        hNonConclusions
+  generatedRepresentationMetricRecordsBoundaries := by
+    intro _State _Analytic _Spectral pkg hRepresentation hValuation
+      hLipCoverage hLipWitness hSpectralCoverage hSpectralWitness
+      hZeroPreservation hZeroReflection hNonConclusions
+    exact
+      Part4DistanceMeasureGeometry.generatedRepresentationMetricPackage_recordsGeneratedMetricBoundaries
+        pkg hRepresentation hValuation hLipCoverage hLipWitness
+        hSpectralCoverage hSpectralWitness hZeroPreservation hZeroReflection
+        hNonConclusions
+  generatedRepresentationMetricAnalyticDistance_le := by
+    intro _State _Analytic _Spectral pkg _X _Y hComparable
+    exact
+      Part4DistanceMeasureGeometry.generatedRepresentationMetricPackage_analyticDistance_le
+        pkg hComparable
 
 theorem generated_lawful
     (world : AtomGeneratedAATWorld.{u, v}) :
@@ -1118,6 +1363,8 @@ structure AATTheoremSuite (world : AtomGeneratedAATWorld.{u, v}) where
   generatedFeatureExtension : GeneratedFeatureExtensionFields world
   generatedOperationRepairSynthesis :
     GeneratedOperationRepairSynthesisFields world
+  generatedDistanceMeasureGeometry :
+    GeneratedDistanceMeasureGeometryFields world
   generatedAnalyticRepresentation :
     GeneratedAnalyticRepresentationFields world
   generatedSFTArchSigFieldSig :
@@ -1153,6 +1400,7 @@ def allAATTheoremFamilies : List AATTheoremFamily :=
   , .generatedPathDiagram
   , .generatedFeatureExtension
   , .generatedOperationRepairSynthesis
+  , .generatedDistanceMeasureGeometry
   , .generatedAnalyticRepresentation
   , .generatedSFTArchSigFieldSig
   , .theoremClassification
@@ -1273,6 +1521,25 @@ def currentImplementationFrontier : List AATImplementationFrontier :=
       parallelAllowed := true
       coordinationRequired := false
       docsTarget := "docs/aat/lean_theorem_index.md#chapter-7-theorem-package-entrypoints" }
+  , { family := .generatedDistanceMeasureGeometry
+      suiteField := "AATTheoremSuite.generatedDistanceMeasureGeometry"
+      status := .connected
+      existingEntrypoints :=
+        ["Part4DistanceMeasureGeometry.generatedCarrierFullRootGeometryPackage",
+         "Part4DistanceMeasureGeometry.generatedCarrierFullRootGeometryPackage_recordsBoundaries",
+         "Part4DistanceMeasureGeometry.signatureDistanceBundle_records_measurementBoundary",
+         "Part4DistanceMeasureGeometry.generatedOperation_mappedDistanceEvidence_recordsGeneratedBoundaries",
+         "Part4DistanceMeasureGeometry.generatedRepairProblemOperation_mappedDistanceEvidence_recordsGeneratedBoundaries",
+         "Part4DistanceMeasureGeometry.atomGeneratedDiagnostic_supportingDistances_eq",
+         "Part4DistanceMeasureGeometry.generatedCurvatureFillingBridge_recordsGeneratedCurvatureFillingBoundaries",
+         "Part4DistanceMeasureGeometry.generatedFiniteHomotopyCost_recordsFiniteWitnessUniverse",
+         "Part4DistanceMeasureGeometry.generatedFiniteDehnBound_recordsFiniteUniverse",
+         "Part4DistanceMeasureGeometry.generatedRepresentationMetricPackage_recordsGeneratedMetricBoundaries"]
+      nextWorkPackage :=
+        "Preserve Part IV distance / measure geometry as a connected generated theorem-family field."
+      parallelAllowed := false
+      coordinationRequired := false
+      docsTarget := "docs/aat/proof_obligations.md" }
   , { family := .generatedAnalyticRepresentation
       suiteField := "AATTheoremSuite.generatedAnalyticRepresentation"
       status := .connected
@@ -1407,6 +1674,8 @@ noncomputable def initialTheoremSuite
     world.generated_feature_extension_fields
   generatedOperationRepairSynthesis :=
     world.generated_operation_repair_synthesis_fields
+  generatedDistanceMeasureGeometry :=
+    world.generated_distance_measure_geometry_fields
   generatedAnalyticRepresentation :=
     world.generated_analyticRepresentation_fields
   generatedSFTArchSigFieldSig :=

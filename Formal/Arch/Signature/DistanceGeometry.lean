@@ -504,6 +504,17 @@ theorem measuredSubtotalOf_cons
         bundle.measuredSubtotalOf rest := by
   rfl
 
+theorem measuredSubtotalOf_append
+    (bundle : SignatureDistanceBundle Axis)
+    (left right : List Axis) :
+    bundle.measuredSubtotalOf (left ++ right) =
+      bundle.measuredSubtotalOf left + bundle.measuredSubtotalOf right := by
+  induction left with
+  | nil =>
+      simp [measuredSubtotalOf]
+  | cons axis rest ih =>
+      simp [measuredSubtotalOf, ih, Nat.add_assoc]
+
 theorem measuredSubtotal_eq_selectedAxes
     (bundle : SignatureDistanceBundle Axis) :
     bundle.measuredSubtotal =
@@ -556,6 +567,23 @@ theorem infiniteAxis_not_measuredPayload
   simp [measuredPayload?, valueAt, hValue,
     DistanceValue.measuredNat?_infinite]
 
+theorem nonMeasuredValue_not_measuredPayload
+    (bundle : SignatureDistanceBundle Axis) {axis : Axis}
+    (hValue :
+      bundle.axisDistance axis = DistanceValue.unmeasured ∨
+      bundle.axisDistance axis = DistanceValue.unavailable ∨
+      bundle.axisDistance axis = DistanceValue.incomparable ∨
+      bundle.axisDistance axis = DistanceValue.infinite)
+    (n : Nat) :
+    bundle.measuredPayload? axis ≠ some n := by
+  rcases hValue with hUnmeasured | hRest
+  · exact bundle.unmeasuredAxis_not_measuredPayload hUnmeasured n
+  rcases hRest with hUnavailable | hRest
+  · exact bundle.unavailableAxis_not_measuredPayload hUnavailable n
+  rcases hRest with hIncomparable | hInfinite
+  · exact bundle.incomparableAxis_not_measuredPayload hIncomparable n
+  · exact bundle.infiniteAxis_not_measuredPayload hInfinite n
+
 theorem unmeasuredAxis_not_measuredZero
     (bundle : SignatureDistanceBundle Axis) {axis : Axis}
     (hValue : bundle.axisDistance axis = DistanceValue.unmeasured) :
@@ -581,6 +609,21 @@ theorem records_nonConclusions
     (hNonConclusions : bundle.nonConclusions) :
     bundle.RecordsNonConclusions :=
   ⟨hLaw, hFlat, hUnmeasured, hNonConclusions⟩
+
+theorem records_coverage_confidence_boundary
+    (bundle : SignatureDistanceBundle Axis)
+    (hCoverage : bundle.coverageAssumptions)
+    (hAggregation : bundle.aggregationPolicy)
+    (hConfidence : bundle.confidenceBoundary)
+    (hUnmeasured : bundle.unmeasuredAxisPolicy)
+    (hNonConclusions : bundle.nonConclusions) :
+    bundle.coverageAssumptions ∧
+      bundle.aggregationPolicy ∧
+      bundle.confidenceBoundary ∧
+      bundle.unmeasuredAxisPolicy ∧
+      bundle.nonConclusions :=
+  bundle.records_measurementBoundary
+    hCoverage hAggregation hConfidence hUnmeasured hNonConclusions
 
 end SignatureDistanceBundle
 
@@ -807,6 +850,24 @@ theorem endpointDistance_nil
     schema.endpointDistance (ArchitecturePath.nil X) = 0 := by
   simp [endpointDistance, schema.self_zero]
 
+theorem pathLength_nil
+    (schema : SignatureDistanceSchema State Sig) (X : State) :
+    schema.pathLength (ArchitecturePath.nil X) = 0 := by
+  rfl
+
+theorem pathLength_append
+    (schema : SignatureDistanceSchema State Sig)
+    {X Y Z : State}
+    (left : ArchitectureEvolution State X Y)
+    (right : ArchitectureEvolution State Y Z) :
+    schema.pathLength (ArchitecturePath.append left right) =
+      schema.pathLength left + schema.pathLength right := by
+  induction left with
+  | nil X =>
+      simp [ArchitecturePath.append, pathLength]
+  | cons step rest ih =>
+      simp [ArchitecturePath.append, pathLength, ih, Nat.add_assoc]
+
 theorem endpointDistance_le_pathLength
     (schema : SignatureDistanceSchema State Sig) :
     {X Y : State} -> (plan : ArchitectureEvolution State X Y) ->
@@ -864,6 +925,15 @@ theorem hiddenExcursion_positive_of_endpointDistance_lt_pathLength
     0 < schema.hiddenExcursion plan := by
   unfold hiddenExcursion
   exact Nat.sub_pos_of_lt hVisibleGap
+
+theorem hiddenExcursion_zero_of_endpointDistance_eq_pathLength
+    (schema : SignatureDistanceSchema State Sig)
+    {X Y : State} (plan : ArchitectureEvolution State X Y)
+    (hExact : schema.endpointDistance plan = schema.pathLength plan) :
+    schema.hiddenExcursion plan = 0 := by
+  unfold hiddenExcursion
+  rw [hExact]
+  exact Nat.sub_self _
 
 /-- A path remains inside the selected distance margin. -/
 def PathLengthWithinMargin
