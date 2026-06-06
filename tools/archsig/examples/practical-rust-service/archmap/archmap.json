@@ -1,0 +1,1549 @@
+{
+  "schemaVersion": "archmap-observation-map-v0",
+  "mapId": "practical-rust-service-archmap",
+  "architectureId": "archsig-practical-rust-service-example",
+  "generatedAt": "2026-06-06T00:00:00Z",
+  "generator": {
+    "kind": "supplied-json",
+    "tool": "archsig",
+    "provider": "human-reviewed-example",
+    "modelId": "codex"
+  },
+  "promptRefs": [
+    {
+      "artifactId": "example-readme",
+      "kind": "docSection",
+      "path": "tools/archsig/examples/practical-rust-service/README.md",
+      "section": "ArchSig Reading Targets"
+    }
+  ],
+  "sourceInventoryRef": {
+    "artifactId": "practical-rust-service-source-inventory",
+    "kind": "source_inventory",
+    "path": "tools/archsig/examples/practical-rust-service/archmap/source_inventory.json",
+    "contentHash": "sha256-not-recorded"
+  },
+  "generationBoundary": {
+    "tokenBudget": "bounded manual example authoring",
+    "scope": [
+      "tools/archsig/examples/practical-rust-service/sample/src/domain.rs",
+      "tools/archsig/examples/practical-rust-service/sample/src/app.rs",
+      "tools/archsig/examples/practical-rust-service/sample/src/store.rs",
+      "tools/archsig/examples/practical-rust-service/sample/src/main.rs",
+      "tools/archsig/examples/practical-rust-service/sample/src/* tests"
+    ],
+    "excludedRefs": [
+      {
+        "kind": "directory",
+        "path": "tools/archsig/examples/practical-rust-service/sample/target"
+      }
+    ],
+    "privateRefs": [],
+    "unavailableRefs": [],
+    "nonConclusions": [
+      "manual example ArchMap does not claim extractor completeness",
+      "sample source observations do not claim production runtime behavior",
+      "runtime and deployment refs are bounded sample evidence, not production telemetry or SLO evidence"
+    ]
+  },
+  "sourceUniverse": {
+    "root": ".",
+    "includedRefs": [
+      {
+        "artifactId": "example-readme",
+        "kind": "docSection",
+        "path": "tools/archsig/examples/practical-rust-service/README.md",
+        "section": "ArchSig Reading Targets"
+      },
+      {
+        "artifactId": "sample-cargo",
+        "kind": "file",
+        "path": "tools/archsig/examples/practical-rust-service/sample/Cargo.toml"
+      },
+      {
+        "artifactId": "sample-lib",
+        "kind": "file",
+        "path": "tools/archsig/examples/practical-rust-service/sample/src/lib.rs",
+        "line": 1
+      },
+      {
+        "artifactId": "sample-domain-order",
+        "kind": "file",
+        "path": "tools/archsig/examples/practical-rust-service/sample/src/domain.rs",
+        "symbol": "Order",
+        "line": 66
+      },
+      {
+        "artifactId": "sample-domain-reservation",
+        "kind": "file",
+        "path": "tools/archsig/examples/practical-rust-service/sample/src/domain.rs",
+        "symbol": "InventoryReservation",
+        "line": 123
+      },
+      {
+        "artifactId": "sample-domain-invariant-tests",
+        "kind": "test",
+        "path": "tools/archsig/examples/practical-rust-service/sample/src/domain.rs",
+        "symbol": "order_requires_at_least_one_line",
+        "line": 185
+      },
+      {
+        "artifactId": "sample-app-port",
+        "kind": "file",
+        "path": "tools/archsig/examples/practical-rust-service/sample/src/app.rs",
+        "symbol": "InventoryStore",
+        "line": 6
+      },
+      {
+        "artifactId": "sample-app-service",
+        "kind": "file",
+        "path": "tools/archsig/examples/practical-rust-service/sample/src/app.rs",
+        "symbol": "OrderService",
+        "line": 11
+      },
+      {
+        "artifactId": "sample-app-place-order",
+        "kind": "file",
+        "path": "tools/archsig/examples/practical-rust-service/sample/src/app.rs",
+        "symbol": "place_order",
+        "line": 23
+      },
+      {
+        "artifactId": "sample-app-service-tests",
+        "kind": "test",
+        "path": "tools/archsig/examples/practical-rust-service/sample/src/app.rs",
+        "symbol": "place_order_reserves_inventory",
+        "line": 168
+      },
+      {
+        "artifactId": "sample-store-adapter",
+        "kind": "file",
+        "path": "tools/archsig/examples/practical-rust-service/sample/src/store.rs",
+        "symbol": "InMemoryInventoryStore",
+        "line": 6
+      },
+      {
+        "artifactId": "sample-store-reserve",
+        "kind": "file",
+        "path": "tools/archsig/examples/practical-rust-service/sample/src/store.rs",
+        "symbol": "reserve",
+        "line": 44
+      },
+      {
+        "artifactId": "sample-store-tests",
+        "kind": "test",
+        "path": "tools/archsig/examples/practical-rust-service/sample/src/store.rs",
+        "symbol": "reserve_decrements_stock",
+        "line": 71
+      },
+      {
+        "artifactId": "sample-store-conflict-test",
+        "kind": "test",
+        "path": "tools/archsig/examples/practical-rust-service/sample/src/store.rs",
+        "symbol": "reserve_rejects_stale_reservation_after_stock_changes",
+        "line": 89
+      },
+      {
+        "artifactId": "sample-main-smoke",
+        "kind": "file",
+        "path": "tools/archsig/examples/practical-rust-service/sample/src/main.rs",
+        "symbol": "main",
+        "line": 7
+      },
+      {
+        "artifactId": "runtime-place-order-trace",
+        "kind": "runtimeTrace",
+        "path": "tools/archsig/examples/practical-rust-service/runtime/place_order_trace.json"
+      },
+      {
+        "artifactId": "runtime-concurrent-reservation-trace",
+        "kind": "runtimeTrace",
+        "path": "tools/archsig/examples/practical-rust-service/runtime/concurrent_reservation_trace.json"
+      },
+      {
+        "artifactId": "sample-production-inventory-config",
+        "kind": "productionConfig",
+        "path": "tools/archsig/examples/practical-rust-service/production/inventory-store.toml"
+      }
+    ],
+    "excludedRefs": [
+      {
+        "kind": "directory",
+        "path": "tools/archsig/examples/practical-rust-service/sample/target"
+      }
+    ],
+    "unavailableRefs": [],
+    "privateRefs": [],
+    "hashes": [],
+    "knownBlindSpots": [
+      "the sample deployment profile uses an in-memory adapter and does not model an external database",
+      "the stale-reservation trace is a bounded unit-test trace, not a parallel production trace"
+    ],
+    "selectionBoundary": "bounded source-grounded observation map over the practical Rust service sample"
+  },
+  "provenance": {
+    "observer": "codex",
+    "observationMethod": "manual source-grounded reading of the sample Rust crate",
+    "sourceRoot": ".",
+    "observationBoundary": "source-grounded observations only; no law-relative obstruction analysis",
+    "reviewedRefs": [
+      {
+        "artifactId": "sample-domain-order",
+        "kind": "file",
+        "path": "tools/archsig/examples/practical-rust-service/sample/src/domain.rs",
+        "symbol": "Order",
+        "line": 66
+      },
+      {
+        "artifactId": "sample-app-place-order",
+        "kind": "file",
+        "path": "tools/archsig/examples/practical-rust-service/sample/src/app.rs",
+        "symbol": "place_order",
+        "line": 23
+      },
+      {
+        "artifactId": "sample-store-reserve",
+        "kind": "file",
+        "path": "tools/archsig/examples/practical-rust-service/sample/src/store.rs",
+        "symbol": "reserve",
+        "line": 44
+      }
+    ],
+    "excludedReadings": [
+      "architecture lawfulness",
+      "obstruction circuit",
+      "zero curvature",
+      "production runtime correctness",
+      "FieldSig forecast"
+    ],
+    "nonConclusions": [
+      "provenance records observation scope, not observation completeness"
+    ]
+  },
+  "atomObservations": [
+    {
+      "atomObservationId": "atom:component:domain-model",
+      "atomFamily": "existence",
+      "predicate": "domain module defines Order, OrderLine, ProductId, OrderId, and InventoryReservation domain objects",
+      "subjectRef": "module.domain",
+      "objectRefs": [
+        "domain.Order",
+        "domain.OrderLine",
+        "domain.ProductId",
+        "domain.OrderId",
+        "domain.InventoryReservation"
+      ],
+      "sourceRefs": [
+        {
+          "artifactId": "sample-domain-order",
+          "kind": "file",
+          "path": "tools/archsig/examples/practical-rust-service/sample/src/domain.rs",
+          "symbol": "Order",
+          "line": 66
+        },
+        {
+          "artifactId": "sample-domain-reservation",
+          "kind": "file",
+          "path": "tools/archsig/examples/practical-rust-service/sample/src/domain.rs",
+          "symbol": "InventoryReservation",
+          "line": 123
+        }
+      ],
+      "observationStatus": "observed",
+      "evidenceBoundary": "sourceObserved",
+      "confidence": "high",
+      "uncertainty": [],
+      "projectionRefs": [
+        "projection:aat:domain-model"
+      ],
+      "nonConclusions": [
+        "component atom observation is not complete domain discovery"
+      ]
+    },
+    {
+      "atomObservationId": "atom:component:order-service",
+      "atomFamily": "existence",
+      "predicate": "app module defines OrderService as the application orchestration component",
+      "subjectRef": "app.OrderService",
+      "objectRefs": [
+        "app.OrderService"
+      ],
+      "sourceRefs": [
+        {
+          "artifactId": "sample-app-service",
+          "kind": "file",
+          "path": "tools/archsig/examples/practical-rust-service/sample/src/app.rs",
+          "symbol": "OrderService",
+          "line": 11
+        }
+      ],
+      "observationStatus": "observed",
+      "evidenceBoundary": "sourceObserved",
+      "confidence": "high",
+      "uncertainty": [],
+      "projectionRefs": [
+        "projection:aat:order-service"
+      ],
+      "nonConclusions": [
+        "component atom observation is not complete service discovery"
+      ]
+    },
+    {
+      "atomObservationId": "atom:component:inventory-store-adapter",
+      "atomFamily": "existence",
+      "predicate": "store module defines InMemoryInventoryStore as an inventory adapter component",
+      "subjectRef": "store.InMemoryInventoryStore",
+      "objectRefs": [
+        "store.InMemoryInventoryStore"
+      ],
+      "sourceRefs": [
+        {
+          "artifactId": "sample-store-adapter",
+          "kind": "file",
+          "path": "tools/archsig/examples/practical-rust-service/sample/src/store.rs",
+          "symbol": "InMemoryInventoryStore",
+          "line": 6
+        }
+      ],
+      "observationStatus": "observed",
+      "evidenceBoundary": "sourceObserved",
+      "confidence": "high",
+      "uncertainty": [
+        "production persistence is not supplied"
+      ],
+      "projectionRefs": [
+        "projection:aat:inventory-store-adapter"
+      ],
+      "nonConclusions": [
+        "in-memory adapter observation is not a production storage claim"
+      ]
+    },
+    {
+      "atomObservationId": "atom:capability:place-order",
+      "atomFamily": "capability",
+      "predicate": "OrderService exposes place_order as the application command for reserving inventory for an order",
+      "subjectRef": "operation.placeOrder",
+      "objectRefs": [
+        "app.OrderService",
+        "domain.Order",
+        "domain.InventoryReservation"
+      ],
+      "sourceRefs": [
+        {
+          "artifactId": "sample-app-place-order",
+          "kind": "file",
+          "path": "tools/archsig/examples/practical-rust-service/sample/src/app.rs",
+          "symbol": "place_order",
+          "line": 23
+        }
+      ],
+      "observationStatus": "observed",
+      "evidenceBoundary": "sourceObserved",
+      "confidence": "high",
+      "uncertainty": [],
+      "projectionRefs": [
+        "projection:aat:place-order"
+      ],
+      "nonConclusions": [
+        "capability observation is bounded to the sample command implementation"
+      ]
+    },
+    {
+      "atomObservationId": "atom:capability:inventory-store-port",
+      "atomFamily": "capability",
+      "predicate": "InventoryStore port exposes available_units and reserve operations to the application layer",
+      "subjectRef": "app.InventoryStore",
+      "objectRefs": [
+        "app.InventoryStore.available_units",
+        "app.InventoryStore.reserve"
+      ],
+      "sourceRefs": [
+        {
+          "artifactId": "sample-app-port",
+          "kind": "file",
+          "path": "tools/archsig/examples/practical-rust-service/sample/src/app.rs",
+          "symbol": "InventoryStore",
+          "line": 6
+        }
+      ],
+      "observationStatus": "observed",
+      "evidenceBoundary": "sourceObserved",
+      "confidence": "high",
+      "uncertainty": [],
+      "projectionRefs": [
+        "projection:aat:inventory-store-port"
+      ],
+      "nonConclusions": [
+        "port capability observation does not prove all adapter implementations are correct"
+      ]
+    },
+    {
+      "atomObservationId": "atom:relation:app-domain",
+      "atomFamily": "relation",
+      "predicate": "app module imports and uses domain Order, InventoryReservation, ProductId, and DomainError types",
+      "subjectRef": "relation.app->domain",
+      "objectRefs": [
+        "app.OrderService",
+        "domain.Order",
+        "domain.InventoryReservation"
+      ],
+      "sourceRefs": [
+        {
+          "artifactId": "sample-app-service",
+          "kind": "file",
+          "path": "tools/archsig/examples/practical-rust-service/sample/src/app.rs",
+          "symbol": "OrderService",
+          "line": 11
+        },
+        {
+          "artifactId": "sample-app-place-order",
+          "kind": "file",
+          "path": "tools/archsig/examples/practical-rust-service/sample/src/app.rs",
+          "symbol": "place_order",
+          "line": 23
+        }
+      ],
+      "observationStatus": "observed",
+      "evidenceBoundary": "sourceObserved",
+      "confidence": "high",
+      "uncertainty": [],
+      "projectionRefs": [
+        "projection:aat:app-domain-relation"
+      ],
+      "nonConclusions": [
+        "relation atom observation does not prove runtime call frequency"
+      ]
+    },
+    {
+      "atomObservationId": "atom:relation:store-port-implementation",
+      "atomFamily": "relation",
+      "predicate": "InMemoryInventoryStore implements the InventoryStore port",
+      "subjectRef": "relation.store->app.InventoryStore",
+      "objectRefs": [
+        "store.InMemoryInventoryStore",
+        "app.InventoryStore"
+      ],
+      "sourceRefs": [
+        {
+          "artifactId": "sample-store-adapter",
+          "kind": "file",
+          "path": "tools/archsig/examples/practical-rust-service/sample/src/store.rs",
+          "symbol": "InMemoryInventoryStore",
+          "line": 6
+        },
+        {
+          "artifactId": "sample-store-reserve",
+          "kind": "file",
+          "path": "tools/archsig/examples/practical-rust-service/sample/src/store.rs",
+          "symbol": "reserve",
+          "line": 44
+        }
+      ],
+      "observationStatus": "observed",
+      "evidenceBoundary": "sourceObserved",
+      "confidence": "high",
+      "uncertainty": [],
+      "projectionRefs": [
+        "projection:aat:store-port-implementation"
+      ],
+      "nonConclusions": [
+        "implementation relation observation does not certify adapter behavior"
+      ]
+    },
+    {
+      "atomObservationId": "atom:relation:main-wiring",
+      "atomFamily": "relation",
+      "predicate": "main wires InMemoryInventoryStore into OrderService for the executable smoke flow",
+      "subjectRef": "relation.main->OrderService<InMemoryInventoryStore>",
+      "objectRefs": [
+        "main",
+        "app.OrderService",
+        "store.InMemoryInventoryStore"
+      ],
+      "sourceRefs": [
+        {
+          "artifactId": "sample-main-smoke",
+          "kind": "file",
+          "path": "tools/archsig/examples/practical-rust-service/sample/src/main.rs",
+          "symbol": "main",
+          "line": 7
+        }
+      ],
+      "observationStatus": "observed",
+      "evidenceBoundary": "sourceObserved",
+      "confidence": "medium",
+      "uncertainty": [
+        "main is a smoke scenario, not production dependency injection"
+      ],
+      "projectionRefs": [
+        "projection:aat:main-wiring"
+      ],
+      "nonConclusions": [
+        "demo wiring observation is not production deployment evidence"
+      ]
+    },
+    {
+      "atomObservationId": "atom:state:inventory-stock",
+      "atomFamily": "state",
+      "predicate": "InMemoryInventoryStore stores stock and reservation_log mutable state",
+      "subjectRef": "state.inventory",
+      "objectRefs": [
+        "store.InMemoryInventoryStore.stock",
+        "store.InMemoryInventoryStore.reservation_log"
+      ],
+      "sourceRefs": [
+        {
+          "artifactId": "sample-store-adapter",
+          "kind": "file",
+          "path": "tools/archsig/examples/practical-rust-service/sample/src/store.rs",
+          "symbol": "InMemoryInventoryStore",
+          "line": 6
+        }
+      ],
+      "observationStatus": "observed",
+      "evidenceBoundary": "sourceObserved",
+      "confidence": "high",
+      "uncertainty": [
+        "state is in-memory only"
+      ],
+      "projectionRefs": [
+        "projection:aat:inventory-stock"
+      ],
+      "nonConclusions": [
+        "state observation is not durable persistence evidence"
+      ]
+    },
+    {
+      "atomObservationId": "atom:effect:reserve-decrements-stock",
+      "atomFamily": "effect",
+      "predicate": "reserve checks available stock, decrements stock, and appends the reservation to reservation_log",
+      "subjectRef": "effect.reserveInventory",
+      "objectRefs": [
+        "store.InMemoryInventoryStore.stock",
+        "store.InMemoryInventoryStore.reservation_log",
+        "domain.InventoryReservation"
+      ],
+      "sourceRefs": [
+        {
+          "artifactId": "sample-store-reserve",
+          "kind": "file",
+          "path": "tools/archsig/examples/practical-rust-service/sample/src/store.rs",
+          "symbol": "reserve",
+          "line": 44
+        },
+        {
+          "artifactId": "sample-store-tests",
+          "kind": "test",
+          "path": "tools/archsig/examples/practical-rust-service/sample/src/store.rs",
+          "symbol": "reserve_decrements_stock",
+          "line": 71
+        }
+      ],
+      "observationStatus": "observed",
+      "evidenceBoundary": "sourceObserved",
+      "confidence": "high",
+      "uncertainty": [
+        "concurrent reservation behavior is not traced"
+      ],
+      "projectionRefs": [
+        "projection:aat:reserve-effect"
+      ],
+      "nonConclusions": [
+        "effect observation is not production transaction correctness"
+      ]
+    },
+    {
+      "atomObservationId": "atom:contract:domain-order-invariants",
+      "atomFamily": "contractSpecification",
+      "predicate": "domain constructors reject empty product ids, empty order ids, zero quantities, and empty orders",
+      "subjectRef": "contract.domainOrderInvariants",
+      "objectRefs": [
+        "domain.ProductId",
+        "domain.OrderId",
+        "domain.OrderLine",
+        "domain.Order"
+      ],
+      "sourceRefs": [
+        {
+          "artifactId": "sample-domain-order",
+          "kind": "file",
+          "path": "tools/archsig/examples/practical-rust-service/sample/src/domain.rs",
+          "symbol": "Order",
+          "line": 66
+        },
+        {
+          "artifactId": "sample-domain-invariant-tests",
+          "kind": "test",
+          "path": "tools/archsig/examples/practical-rust-service/sample/src/domain.rs",
+          "symbol": "order_requires_at_least_one_line",
+          "line": 185
+        }
+      ],
+      "observationStatus": "observed",
+      "evidenceBoundary": "sourceObserved",
+      "confidence": "high",
+      "uncertainty": [],
+      "projectionRefs": [
+        "projection:aat:domain-invariants"
+      ],
+      "nonConclusions": [
+        "contract observation is bounded to supplied constructors and tests"
+      ]
+    },
+    {
+      "atomObservationId": "atom:contract:application-inventory-check",
+      "atomFamily": "contractSpecification",
+      "predicate": "place_order checks available inventory before reserve and returns InsufficientInventory when requested units exceed available units",
+      "subjectRef": "contract.placeOrderInventoryCheck",
+      "objectRefs": [
+        "app.OrderService.place_order",
+        "app.AppError.InsufficientInventory"
+      ],
+      "sourceRefs": [
+        {
+          "artifactId": "sample-app-place-order",
+          "kind": "file",
+          "path": "tools/archsig/examples/practical-rust-service/sample/src/app.rs",
+          "symbol": "place_order",
+          "line": 23
+        },
+        {
+          "artifactId": "sample-app-service-tests",
+          "kind": "test",
+          "path": "tools/archsig/examples/practical-rust-service/sample/src/app.rs",
+          "symbol": "place_order_reserves_inventory",
+          "line": 168
+        }
+      ],
+      "observationStatus": "observed",
+      "evidenceBoundary": "sourceObserved",
+      "confidence": "high",
+      "uncertainty": [
+        "runtime evidence is bounded to the supplied sample traces"
+      ],
+      "projectionRefs": [
+        "projection:aat:app-inventory-check"
+      ],
+      "nonConclusions": [
+        "contract observation is not a global inventory correctness proof"
+      ]
+    },
+    {
+      "atomObservationId": "atom:semantic:reservation-meaning",
+      "atomFamily": "semantic",
+      "predicate": "InventoryReservation represents the reservation lines derived from an Order for later stock mutation",
+      "subjectRef": "meaning.InventoryReservation",
+      "objectRefs": [
+        "domain.InventoryReservation",
+        "domain.Order"
+      ],
+      "sourceRefs": [
+        {
+          "artifactId": "sample-domain-reservation",
+          "kind": "file",
+          "path": "tools/archsig/examples/practical-rust-service/sample/src/domain.rs",
+          "symbol": "InventoryReservation",
+          "line": 123
+        },
+        {
+          "artifactId": "sample-domain-invariant-tests",
+          "kind": "test",
+          "path": "tools/archsig/examples/practical-rust-service/sample/src/domain.rs",
+          "symbol": "order_requires_at_least_one_line",
+          "line": 185
+        }
+      ],
+      "observationStatus": "observed",
+      "evidenceBoundary": "sourceObserved",
+      "confidence": "medium",
+      "uncertainty": [
+        "domain meaning is bounded to names, constructors, and tests in the sample"
+      ],
+      "projectionRefs": [
+        "projection:aat:reservation-meaning"
+      ],
+      "nonConclusions": [
+        "semantic atom observation is not global domain correctness"
+      ]
+    },
+    {
+      "atomObservationId": "atom:runtime:place-order-trace",
+      "atomFamily": "runtimeInteraction",
+      "predicate": "supplied sample trace observes the place_order demo flow from stock setup through availability check, reservation write, and receipt return",
+      "subjectRef": "runtime.placeOrder",
+      "objectRefs": [
+        "app.OrderService.place_order",
+        "app.InventoryStore.available_units",
+        "app.InventoryStore.reserve",
+        "domain.OrderReceipt"
+      ],
+      "sourceRefs": [
+        {
+          "artifactId": "runtime-place-order-trace",
+          "kind": "runtimeTrace",
+          "path": "tools/archsig/examples/practical-rust-service/runtime/place_order_trace.json"
+        },
+        {
+          "artifactId": "sample-main-smoke",
+          "kind": "file",
+          "path": "tools/archsig/examples/practical-rust-service/sample/src/main.rs",
+          "symbol": "main",
+          "line": 7
+        },
+        {
+          "artifactId": "sample-app-place-order",
+          "kind": "file",
+          "path": "tools/archsig/examples/practical-rust-service/sample/src/app.rs",
+          "symbol": "place_order",
+          "line": 23
+        },
+        {
+          "artifactId": "sample-store-reserve",
+          "kind": "file",
+          "path": "tools/archsig/examples/practical-rust-service/sample/src/store.rs",
+          "symbol": "reserve",
+          "line": 44
+        }
+      ],
+      "observationStatus": "observed",
+      "evidenceBoundary": "sampleTraceObserved",
+      "confidence": "medium",
+      "uncertainty": [
+        "trace is a bounded sample run, not production telemetry"
+      ],
+      "projectionRefs": [
+        "projection:aat:place-order-runtime-trace"
+      ],
+      "nonConclusions": [
+        "runtime trace atom is not a production SLO or load correctness claim"
+      ]
+    },
+    {
+      "atomObservationId": "atom:runtime:stale-reservation-conflict",
+      "atomFamily": "runtimeInteraction",
+      "predicate": "supplied conflict trace observes a stale reservation attempt rejected after another reservation consumes the available stock",
+      "subjectRef": "runtime.concurrentReservation",
+      "objectRefs": [
+        "store.InMemoryInventoryStore.reserve",
+        "store.StorePortError.ReservationConflict",
+        "domain.InventoryReservation"
+      ],
+      "sourceRefs": [
+        {
+          "artifactId": "runtime-concurrent-reservation-trace",
+          "kind": "runtimeTrace",
+          "path": "tools/archsig/examples/practical-rust-service/runtime/concurrent_reservation_trace.json"
+        },
+        {
+          "artifactId": "sample-store-conflict-test",
+          "kind": "test",
+          "path": "tools/archsig/examples/practical-rust-service/sample/src/store.rs",
+          "symbol": "reserve_rejects_stale_reservation_after_stock_changes",
+          "line": 89
+        },
+        {
+          "artifactId": "sample-store-reserve",
+          "kind": "file",
+          "path": "tools/archsig/examples/practical-rust-service/sample/src/store.rs",
+          "symbol": "reserve",
+          "line": 44
+        }
+      ],
+      "observationStatus": "observed",
+      "evidenceBoundary": "sampleTraceObserved",
+      "confidence": "medium",
+      "uncertainty": [
+        "trace models stale reservation ordering, not true parallel production execution"
+      ],
+      "projectionRefs": [
+        "projection:aat:stale-reservation-conflict"
+      ],
+      "nonConclusions": [
+        "conflict trace atom is not a global transaction isolation proof"
+      ]
+    },
+    {
+      "atomObservationId": "atom:contract:reservation-conflict-policy",
+      "atomFamily": "contractSpecification",
+      "predicate": "deployment profile and unit test declare that reserve rechecks available stock and returns ReservationConflict for stale reservation attempts",
+      "subjectRef": "contract.reservationConflictPolicy",
+      "objectRefs": [
+        "store.InMemoryInventoryStore.reserve",
+        "store.StorePortError.ReservationConflict",
+        "production.InventoryStore"
+      ],
+      "sourceRefs": [
+        {
+          "artifactId": "sample-production-inventory-config",
+          "kind": "productionConfig",
+          "path": "tools/archsig/examples/practical-rust-service/production/inventory-store.toml"
+        },
+        {
+          "artifactId": "sample-store-conflict-test",
+          "kind": "test",
+          "path": "tools/archsig/examples/practical-rust-service/sample/src/store.rs",
+          "symbol": "reserve_rejects_stale_reservation_after_stock_changes",
+          "line": 89
+        },
+        {
+          "artifactId": "sample-store-reserve",
+          "kind": "file",
+          "path": "tools/archsig/examples/practical-rust-service/sample/src/store.rs",
+          "symbol": "reserve",
+          "line": 44
+        }
+      ],
+      "observationStatus": "observed",
+      "evidenceBoundary": "sampleConfigAndTestObserved",
+      "confidence": "medium",
+      "uncertainty": [
+        "policy is declared for the demo in-memory adapter only"
+      ],
+      "projectionRefs": [
+        "projection:aat:reservation-conflict-policy"
+      ],
+      "nonConclusions": [
+        "contract policy atom is not a certification of external storage behavior"
+      ]
+    },
+    {
+      "atomObservationId": "atom:state:sample-inventory-deployment",
+      "atomFamily": "state",
+      "predicate": "sample deployment profile selects the in-memory InventoryStore adapter and declares process-memory state ownership for the demo service",
+      "subjectRef": "production.InventoryStore",
+      "objectRefs": [
+        "store.InMemoryInventoryStore",
+        "app.InventoryStore",
+        "state.inventory"
+      ],
+      "sourceRefs": [
+        {
+          "artifactId": "sample-production-inventory-config",
+          "kind": "productionConfig",
+          "path": "tools/archsig/examples/practical-rust-service/production/inventory-store.toml"
+        },
+        {
+          "artifactId": "sample-store-adapter",
+          "kind": "file",
+          "path": "tools/archsig/examples/practical-rust-service/sample/src/store.rs",
+          "symbol": "InMemoryInventoryStore",
+          "line": 6
+        }
+      ],
+      "observationStatus": "observed",
+      "evidenceBoundary": "sampleConfigObserved",
+      "confidence": "medium",
+      "uncertainty": [
+        "deployment profile is a sample profile and does not model an external database"
+      ],
+      "projectionRefs": [
+        "projection:aat:sample-inventory-deployment"
+      ],
+      "nonConclusions": [
+        "deployment atom is not a production readiness claim"
+      ]
+    }
+  ],
+  "moleculeObservations": [
+    {
+      "moleculeObservationId": "molecule:domain-order-model",
+      "moleculeFamily": "responsibility",
+      "roleName": "domain order model",
+      "atomObservationRefs": [
+        "atom:component:domain-model",
+        "atom:contract:domain-order-invariants",
+        "atom:semantic:reservation-meaning"
+      ],
+      "sourceRefs": [
+        {
+          "artifactId": "example-readme",
+          "kind": "docSection",
+          "path": "tools/archsig/examples/practical-rust-service/README.md",
+          "section": "ArchSig Reading Targets"
+        },
+        {
+          "artifactId": "sample-domain-order",
+          "kind": "file",
+          "path": "tools/archsig/examples/practical-rust-service/sample/src/domain.rs",
+          "symbol": "Order",
+          "line": 66
+        }
+      ],
+      "observationStatus": "observed",
+      "evidenceBoundary": "sourceObserved",
+      "confidence": "high",
+      "nonConclusions": [
+        "responsibility is a molecule over atoms, not a primitive atom"
+      ]
+    },
+    {
+      "moleculeObservationId": "molecule:application-order-service",
+      "moleculeFamily": "responsibility",
+      "roleName": "application order orchestration",
+      "atomObservationRefs": [
+        "atom:component:order-service",
+        "atom:capability:place-order",
+        "atom:capability:inventory-store-port",
+        "atom:relation:app-domain",
+        "atom:contract:application-inventory-check"
+      ],
+      "sourceRefs": [
+        {
+          "artifactId": "example-readme",
+          "kind": "docSection",
+          "path": "tools/archsig/examples/practical-rust-service/README.md",
+          "section": "ArchSig Reading Targets"
+        },
+        {
+          "artifactId": "sample-app-place-order",
+          "kind": "file",
+          "path": "tools/archsig/examples/practical-rust-service/sample/src/app.rs",
+          "symbol": "place_order",
+          "line": 23
+        }
+      ],
+      "observationStatus": "observed",
+      "evidenceBoundary": "sourceObserved",
+      "confidence": "high",
+      "nonConclusions": [
+        "application service responsibility does not prove global workflow correctness"
+      ]
+    },
+    {
+      "moleculeObservationId": "molecule:inmemory-inventory-adapter",
+      "moleculeFamily": "adapter",
+      "roleName": "in-memory inventory adapter",
+      "atomObservationRefs": [
+        "atom:component:inventory-store-adapter",
+        "atom:relation:store-port-implementation",
+        "atom:state:inventory-stock",
+        "atom:effect:reserve-decrements-stock",
+        "atom:runtime:stale-reservation-conflict",
+        "atom:contract:reservation-conflict-policy",
+        "atom:state:sample-inventory-deployment"
+      ],
+      "sourceRefs": [
+        {
+          "artifactId": "example-readme",
+          "kind": "docSection",
+          "path": "tools/archsig/examples/practical-rust-service/README.md",
+          "section": "ArchSig Reading Targets"
+        },
+        {
+          "artifactId": "sample-store-reserve",
+          "kind": "file",
+          "path": "tools/archsig/examples/practical-rust-service/sample/src/store.rs",
+          "symbol": "reserve",
+          "line": 44
+        },
+        {
+          "artifactId": "sample-production-inventory-config",
+          "kind": "productionConfig",
+          "path": "tools/archsig/examples/practical-rust-service/production/inventory-store.toml"
+        },
+        {
+          "artifactId": "runtime-concurrent-reservation-trace",
+          "kind": "runtimeTrace",
+          "path": "tools/archsig/examples/practical-rust-service/runtime/concurrent_reservation_trace.json"
+        }
+      ],
+      "observationStatus": "observed",
+      "evidenceBoundary": "sourceObserved",
+      "confidence": "high",
+      "nonConclusions": [
+        "adapter molecule is bounded to the in-memory sample implementation"
+      ]
+    },
+    {
+      "moleculeObservationId": "molecule:demo-composition",
+      "moleculeFamily": "composition",
+      "roleName": "executable smoke composition",
+      "atomObservationRefs": [
+        "atom:relation:main-wiring",
+        "atom:component:order-service",
+        "atom:component:inventory-store-adapter",
+        "atom:runtime:place-order-trace"
+      ],
+      "sourceRefs": [
+        {
+          "artifactId": "sample-main-smoke",
+          "kind": "file",
+          "path": "tools/archsig/examples/practical-rust-service/sample/src/main.rs",
+          "symbol": "main",
+          "line": 7
+        },
+        {
+          "artifactId": "runtime-place-order-trace",
+          "kind": "runtimeTrace",
+          "path": "tools/archsig/examples/practical-rust-service/runtime/place_order_trace.json"
+        }
+      ],
+      "observationStatus": "observed",
+      "evidenceBoundary": "sourceObserved",
+      "confidence": "medium",
+      "nonConclusions": [
+        "demo composition is a smoke-flow molecule, not deployment evidence"
+      ]
+    }
+  ],
+  "semanticObservations": [
+    {
+      "semanticObservationId": "semantic:place-order-flow",
+      "semanticFamily": "workflow",
+      "subjectRef": "operation.placeOrder",
+      "predicate": "place_order constructs an InventoryReservation, checks availability through the port, reserves through the store, and returns an OrderReceipt",
+      "atomObservationRefs": [
+        "atom:capability:place-order",
+        "atom:capability:inventory-store-port",
+        "atom:relation:app-domain",
+        "atom:contract:application-inventory-check",
+        "atom:effect:reserve-decrements-stock",
+        "atom:runtime:place-order-trace"
+      ],
+      "moleculeObservationRefs": [
+        "molecule:application-order-service",
+        "molecule:inmemory-inventory-adapter",
+        "molecule:demo-composition"
+      ],
+      "sourceRefs": [
+        {
+          "artifactId": "sample-app-place-order",
+          "kind": "file",
+          "path": "tools/archsig/examples/practical-rust-service/sample/src/app.rs",
+          "symbol": "place_order",
+          "line": 23
+        },
+        {
+          "artifactId": "sample-store-reserve",
+          "kind": "file",
+          "path": "tools/archsig/examples/practical-rust-service/sample/src/store.rs",
+          "symbol": "reserve",
+          "line": 44
+        },
+        {
+          "artifactId": "sample-app-service-tests",
+          "kind": "test",
+          "path": "tools/archsig/examples/practical-rust-service/sample/src/app.rs",
+          "symbol": "place_order_reserves_inventory",
+          "line": 168
+        },
+        {
+          "artifactId": "runtime-place-order-trace",
+          "kind": "runtimeTrace",
+          "path": "tools/archsig/examples/practical-rust-service/runtime/place_order_trace.json"
+        }
+      ],
+      "observationStatus": "observed",
+      "evidenceBoundary": "sourceObserved",
+      "nonConclusions": [
+        "workflow semantic observation is not production runtime correctness"
+      ]
+    },
+    {
+      "semanticObservationId": "semantic:reservation-contract",
+      "semanticFamily": "contractBehavior",
+      "subjectRef": "contract.inventoryReservation",
+      "predicate": "domain reservation meaning, application availability check, and store mutation jointly define the bounded reservation contract in the sample",
+      "atomObservationRefs": [
+        "atom:contract:domain-order-invariants",
+        "atom:contract:application-inventory-check",
+        "atom:semantic:reservation-meaning",
+        "atom:effect:reserve-decrements-stock",
+        "atom:contract:reservation-conflict-policy",
+        "atom:runtime:stale-reservation-conflict"
+      ],
+      "moleculeObservationRefs": [
+        "molecule:domain-order-model",
+        "molecule:application-order-service",
+        "molecule:inmemory-inventory-adapter"
+      ],
+      "sourceRefs": [
+        {
+          "artifactId": "sample-domain-reservation",
+          "kind": "file",
+          "path": "tools/archsig/examples/practical-rust-service/sample/src/domain.rs",
+          "symbol": "InventoryReservation",
+          "line": 123
+        },
+        {
+          "artifactId": "sample-app-place-order",
+          "kind": "file",
+          "path": "tools/archsig/examples/practical-rust-service/sample/src/app.rs",
+          "symbol": "place_order",
+          "line": 23
+        },
+        {
+          "artifactId": "sample-store-reserve",
+          "kind": "file",
+          "path": "tools/archsig/examples/practical-rust-service/sample/src/store.rs",
+          "symbol": "reserve",
+          "line": 44
+        },
+        {
+          "artifactId": "sample-store-conflict-test",
+          "kind": "test",
+          "path": "tools/archsig/examples/practical-rust-service/sample/src/store.rs",
+          "symbol": "reserve_rejects_stale_reservation_after_stock_changes",
+          "line": 89
+        },
+        {
+          "artifactId": "runtime-concurrent-reservation-trace",
+          "kind": "runtimeTrace",
+          "path": "tools/archsig/examples/practical-rust-service/runtime/concurrent_reservation_trace.json"
+        },
+        {
+          "artifactId": "sample-production-inventory-config",
+          "kind": "productionConfig",
+          "path": "tools/archsig/examples/practical-rust-service/production/inventory-store.toml"
+        }
+      ],
+      "observationStatus": "observed",
+      "evidenceBoundary": "sourceObserved",
+      "nonConclusions": [
+        "contract behavior reading is bounded to supplied sample source and tests"
+      ]
+    },
+    {
+      "semanticObservationId": "semantic:reservation-conflict-boundary",
+      "semanticFamily": "contractBehavior",
+      "subjectRef": "runtime.concurrentReservation",
+      "predicate": "stale reservation evidence and the demo deployment profile bound the sample reservation conflict policy to an in-memory adapter that rechecks stock at reserve time",
+      "atomObservationRefs": [
+        "atom:contract:reservation-conflict-policy",
+        "atom:runtime:stale-reservation-conflict",
+        "atom:state:sample-inventory-deployment",
+        "atom:effect:reserve-decrements-stock"
+      ],
+      "moleculeObservationRefs": [
+        "molecule:inmemory-inventory-adapter"
+      ],
+      "sourceRefs": [
+        {
+          "artifactId": "runtime-concurrent-reservation-trace",
+          "kind": "runtimeTrace",
+          "path": "tools/archsig/examples/practical-rust-service/runtime/concurrent_reservation_trace.json"
+        },
+        {
+          "artifactId": "sample-store-conflict-test",
+          "kind": "test",
+          "path": "tools/archsig/examples/practical-rust-service/sample/src/store.rs",
+          "symbol": "reserve_rejects_stale_reservation_after_stock_changes",
+          "line": 89
+        },
+        {
+          "artifactId": "sample-production-inventory-config",
+          "kind": "productionConfig",
+          "path": "tools/archsig/examples/practical-rust-service/production/inventory-store.toml"
+        }
+      ],
+      "observationStatus": "observed",
+      "evidenceBoundary": "boundedSampleTraceAndConfigObserved",
+      "nonConclusions": [
+        "conflict boundary reading is not a proof of production transaction isolation"
+      ]
+    }
+  ],
+  "observationGaps": [],
+  "operationSquareEvidence": [
+    {
+      "operationSquareEvidenceId": "operation-square-evidence:place-order-check-reserve",
+      "evidenceKind": "source-backed-operation-pair",
+      "leftOperationRef": "operation:app-check-availability",
+      "rightOperationRef": "operation:store-reserve",
+      "pOperationSequence": [
+        "operation:app-check-availability",
+        "operation:store-reserve"
+      ],
+      "qOperationSequence": [
+        "operation:store-reserve",
+        "operation:app-check-availability"
+      ],
+      "endpointObjectRefs": [
+        "app.OrderService",
+        "store.InMemoryInventoryStore"
+      ],
+      "generatorCandidateRefs": [
+        "generator:reservation-contract-review",
+        "generator:bounded-conflict-evidence"
+      ],
+      "sharedEndpointRefs": [
+        "domain.InventoryReservation"
+      ],
+      "atomObservationRefs": [
+        "atom:contract:application-inventory-check",
+        "atom:effect:reserve-decrements-stock",
+        "atom:runtime:place-order-trace",
+        "atom:runtime:stale-reservation-conflict",
+        "atom:contract:reservation-conflict-policy"
+      ],
+      "moleculeObservationRefs": [
+        "molecule:application-order-service",
+        "molecule:inmemory-inventory-adapter"
+      ],
+      "semanticObservationRefs": [
+        "semantic:place-order-flow",
+        "semantic:reservation-contract",
+        "semantic:reservation-conflict-boundary"
+      ],
+      "projectionRefs": [
+        "projection:aat:app-inventory-check",
+        "projection:aat:reserve-effect",
+        "projection:aat:place-order-runtime-trace",
+        "projection:aat:stale-reservation-conflict",
+        "projection:aat:reservation-conflict-policy",
+        "projection:sft:place-order-flow"
+      ],
+      "sourceRefs": [
+        {
+          "artifactId": "sample-app-place-order",
+          "kind": "file",
+          "path": "tools/archsig/examples/practical-rust-service/sample/src/app.rs",
+          "symbol": "place_order",
+          "line": 23
+        },
+        {
+          "artifactId": "sample-store-reserve",
+          "kind": "file",
+          "path": "tools/archsig/examples/practical-rust-service/sample/src/store.rs",
+          "symbol": "reserve",
+          "line": 44
+        },
+        {
+          "artifactId": "sample-app-service-tests",
+          "kind": "test",
+          "path": "tools/archsig/examples/practical-rust-service/sample/src/app.rs",
+          "symbol": "place_order_reserves_inventory",
+          "line": 168
+        },
+        {
+          "artifactId": "sample-store-conflict-test",
+          "kind": "test",
+          "path": "tools/archsig/examples/practical-rust-service/sample/src/store.rs",
+          "symbol": "reserve_rejects_stale_reservation_after_stock_changes",
+          "line": 89
+        },
+        {
+          "artifactId": "runtime-place-order-trace",
+          "kind": "runtimeTrace",
+          "path": "tools/archsig/examples/practical-rust-service/runtime/place_order_trace.json"
+        },
+        {
+          "artifactId": "runtime-concurrent-reservation-trace",
+          "kind": "runtimeTrace",
+          "path": "tools/archsig/examples/practical-rust-service/runtime/concurrent_reservation_trace.json"
+        },
+        {
+          "artifactId": "sample-production-inventory-config",
+          "kind": "productionConfig",
+          "path": "tools/archsig/examples/practical-rust-service/production/inventory-store.toml"
+        }
+      ],
+      "observationStatus": "observed",
+      "evidenceBoundary": "source and bounded sample traces supply the p check-then-reserve order, stale-reservation conflict behavior, and the q reserve-then-check comparison candidate",
+      "nonConclusions": [
+        "operation square evidence is a bounded review cue and not a global commutation proof",
+        "qOperationSequence is a comparison candidate and not an observed execution trace"
+      ]
+    }
+  ],
+  "projectionInfo": [
+    {
+      "projectionId": "projection:aat:domain-model",
+      "projectionFamily": "object",
+      "sourceObservationRef": "atom:component:domain-model",
+      "targetSurface": "aat:object:domain-model",
+      "reading": "domain model is an observed component object",
+      "projectionBoundary": "derived from observed source atom; not primary ArchMap law claim",
+      "nonConclusions": [
+        "projection is not a Lean theorem"
+      ]
+    },
+    {
+      "projectionId": "projection:aat:order-service",
+      "projectionFamily": "object",
+      "sourceObservationRef": "atom:component:order-service",
+      "targetSurface": "aat:object:order-service",
+      "reading": "OrderService is an observed application component object",
+      "projectionBoundary": "derived from observed source atom",
+      "nonConclusions": [
+        "projection is not a Lean theorem"
+      ]
+    },
+    {
+      "projectionId": "projection:aat:inventory-store-adapter",
+      "projectionFamily": "object",
+      "sourceObservationRef": "atom:component:inventory-store-adapter",
+      "targetSurface": "aat:object:in-memory-inventory-store",
+      "reading": "InMemoryInventoryStore is an observed adapter component object",
+      "projectionBoundary": "derived from observed source atom and bounded sample deployment profile; external persistence unmeasured",
+      "nonConclusions": [
+        "projection is not production storage evidence"
+      ]
+    },
+    {
+      "projectionId": "projection:aat:place-order",
+      "projectionFamily": "operationCandidate",
+      "sourceObservationRef": "atom:capability:place-order",
+      "targetSurface": "aat:operation:place-order",
+      "reading": "place_order is an observed operation candidate",
+      "projectionBoundary": "derived from observed source command",
+      "nonConclusions": [
+        "projection is not a runtime success proof"
+      ]
+    },
+    {
+      "projectionId": "projection:aat:inventory-store-port",
+      "projectionFamily": "operationCandidate",
+      "sourceObservationRef": "atom:capability:inventory-store-port",
+      "targetSurface": "aat:operation:inventory-store-port",
+      "reading": "InventoryStore port methods are operation candidates",
+      "projectionBoundary": "derived from observed trait methods",
+      "nonConclusions": [
+        "projection is not adapter correctness"
+      ]
+    },
+    {
+      "projectionId": "projection:aat:app-domain-relation",
+      "projectionFamily": "relation",
+      "sourceObservationRef": "atom:relation:app-domain",
+      "targetSurface": "aat:relation:app->domain",
+      "reading": "app to domain dependency is an observed relation",
+      "projectionBoundary": "runtime frequency unmeasured",
+      "nonConclusions": [
+        "projection is not runtime dependency proof"
+      ]
+    },
+    {
+      "projectionId": "projection:aat:store-port-implementation",
+      "projectionFamily": "relation",
+      "sourceObservationRef": "atom:relation:store-port-implementation",
+      "targetSurface": "aat:relation:store->inventory-port",
+      "reading": "store implements InventoryStore as an observed relation",
+      "projectionBoundary": "implementation relation is source-observed, not behavioral proof",
+      "nonConclusions": [
+        "projection is not adapter correctness"
+      ]
+    },
+    {
+      "projectionId": "projection:aat:main-wiring",
+      "projectionFamily": "relation",
+      "sourceObservationRef": "atom:relation:main-wiring",
+      "targetSurface": "aat:relation:main->service-store",
+      "reading": "main composition is an observed smoke wiring relation",
+      "projectionBoundary": "demo wiring is not production deployment evidence",
+      "nonConclusions": [
+        "projection is not deployment topology"
+      ]
+    },
+    {
+      "projectionId": "projection:aat:inventory-stock",
+      "projectionFamily": "stateTransitionCandidate",
+      "sourceObservationRef": "atom:state:inventory-stock",
+      "targetSurface": "aat:state:inventory-stock",
+      "reading": "stock and reservation_log are observed state candidates",
+      "projectionBoundary": "in-memory state only",
+      "nonConclusions": [
+        "projection is not durable persistence evidence"
+      ]
+    },
+    {
+      "projectionId": "projection:aat:reserve-effect",
+      "projectionFamily": "stateTransitionCandidate",
+      "sourceObservationRef": "atom:effect:reserve-decrements-stock",
+      "targetSurface": "aat:effect:reserve-inventory",
+      "reading": "reserve is an observed state mutation effect",
+      "projectionBoundary": "stale-reservation behavior is sample-traced; true parallel production behavior remains outside this example",
+      "nonConclusions": [
+        "projection is not transaction correctness"
+      ]
+    },
+    {
+      "projectionId": "projection:aat:domain-invariants",
+      "projectionFamily": "signatureAxis",
+      "sourceObservationRef": "atom:contract:domain-order-invariants",
+      "targetSurface": "aat:contract:domain-order-invariants",
+      "reading": "domain invariants are observed contract support",
+      "projectionBoundary": "bounded to constructors and tests",
+      "nonConclusions": [
+        "projection is not full formal contract proof"
+      ]
+    },
+    {
+      "projectionId": "projection:aat:app-inventory-check",
+      "projectionFamily": "signatureAxis",
+      "sourceObservationRef": "atom:contract:application-inventory-check",
+      "targetSurface": "aat:contract:place-order-inventory-check",
+      "reading": "application inventory check is observed contract support",
+      "projectionBoundary": "bounded sample traces are observed; production concurrency remains outside this ArchMap",
+      "nonConclusions": [
+        "projection is not production inventory safety"
+      ]
+    },
+    {
+      "projectionId": "projection:aat:reservation-meaning",
+      "projectionFamily": "object",
+      "sourceObservationRef": "atom:semantic:reservation-meaning",
+      "targetSurface": "aat:semantic:inventory-reservation",
+      "reading": "InventoryReservation has observed bounded domain meaning",
+      "projectionBoundary": "bounded to source names, constructors, and tests",
+      "nonConclusions": [
+        "projection is not global semantic correctness"
+      ]
+    },
+    {
+      "projectionId": "projection:aat:place-order-runtime-trace",
+      "projectionFamily": "pathCandidate",
+      "sourceObservationRef": "atom:runtime:place-order-trace",
+      "targetSurface": "aat:path:place-order-runtime-trace",
+      "reading": "place_order sample trace is an observed path candidate through app and store operations",
+      "projectionBoundary": "bounded sample trace; not production telemetry",
+      "nonConclusions": [
+        "projection is not runtime correctness over all executions"
+      ]
+    },
+    {
+      "projectionId": "projection:aat:stale-reservation-conflict",
+      "projectionFamily": "pathCandidate",
+      "sourceObservationRef": "atom:runtime:stale-reservation-conflict",
+      "targetSurface": "aat:path:stale-reservation-conflict",
+      "reading": "stale reservation rejection is an observed conflict-path candidate",
+      "projectionBoundary": "bounded unit-test trace; not a production parallelism proof",
+      "nonConclusions": [
+        "projection is not transaction isolation certification"
+      ]
+    },
+    {
+      "projectionId": "projection:aat:reservation-conflict-policy",
+      "projectionFamily": "signatureAxis",
+      "sourceObservationRef": "atom:contract:reservation-conflict-policy",
+      "targetSurface": "aat:contract:reservation-conflict-policy",
+      "reading": "reservation conflict handling is observed contract support for the sample adapter",
+      "projectionBoundary": "bounded to demo config and unit test",
+      "nonConclusions": [
+        "projection is not external storage behavior evidence"
+      ]
+    },
+    {
+      "projectionId": "projection:aat:sample-inventory-deployment",
+      "projectionFamily": "stateTransitionCandidate",
+      "sourceObservationRef": "atom:state:sample-inventory-deployment",
+      "targetSurface": "aat:state:sample-inventory-deployment",
+      "reading": "sample deployment profile is observed state/deployment context for the adapter",
+      "projectionBoundary": "sample profile only; not production topology",
+      "nonConclusions": [
+        "projection is not deployment readiness"
+      ]
+    },
+    {
+      "projectionId": "projection:sft:place-order-flow",
+      "projectionFamily": "operationCandidate",
+      "sourceObservationRef": "semantic:place-order-flow",
+      "targetSurface": "sft:observation:place-order-flow",
+      "reading": "place_order semantic flow can be handed off as bounded SFT evidence",
+      "projectionBoundary": "SFT consequence analysis is not owned by ArchMap",
+      "nonConclusions": [
+        "projection is not forecast correctness"
+      ]
+    }
+  ],
+  "concernHints": [
+    {
+      "concernHintId": "concern:check-reserve-split",
+      "concernFamily": "checkThenActBoundary",
+      "subjectRef": "operation.placeOrder",
+      "atomObservationRefs": [
+        "atom:contract:application-inventory-check",
+        "atom:effect:reserve-decrements-stock",
+        "atom:runtime:stale-reservation-conflict",
+        "atom:contract:reservation-conflict-policy"
+      ],
+      "moleculeObservationRefs": [
+        "molecule:application-order-service",
+        "molecule:inmemory-inventory-adapter"
+      ],
+      "semanticObservationRefs": [
+        "semantic:place-order-flow",
+        "semantic:reservation-contract",
+        "semantic:reservation-conflict-boundary"
+      ],
+      "sourceRefs": [
+        {
+          "artifactId": "sample-app-place-order",
+          "kind": "file",
+          "path": "tools/archsig/examples/practical-rust-service/sample/src/app.rs",
+          "symbol": "place_order",
+          "line": 23
+        },
+        {
+          "artifactId": "sample-store-reserve",
+          "kind": "file",
+          "path": "tools/archsig/examples/practical-rust-service/sample/src/store.rs",
+          "symbol": "reserve",
+          "line": 44
+        },
+        {
+          "artifactId": "sample-store-conflict-test",
+          "kind": "test",
+          "path": "tools/archsig/examples/practical-rust-service/sample/src/store.rs",
+          "symbol": "reserve_rejects_stale_reservation_after_stock_changes",
+          "line": 89
+        },
+        {
+          "artifactId": "runtime-concurrent-reservation-trace",
+          "kind": "runtimeTrace",
+          "path": "tools/archsig/examples/practical-rust-service/runtime/concurrent_reservation_trace.json"
+        }
+      ],
+      "evidenceBoundary": "review cue from source-observed check-then-reserve split and bounded stale-reservation conflict evidence",
+      "analysisBoundary": "not an obstruction circuit; ArchSig must combine this ArchMap with LawPolicy before constructing law-relative witnesses",
+      "nonConclusions": [
+        "concern hint does not prove a law violation",
+        "concern hint is not an obstruction circuit"
+      ]
+    },
+    {
+      "concernHintId": "concern:inmemory-adapter-boundary",
+      "concernFamily": "sampleAdapterBoundary",
+      "subjectRef": "store.InMemoryInventoryStore",
+      "atomObservationRefs": [
+        "atom:component:inventory-store-adapter",
+        "atom:state:inventory-stock",
+        "atom:state:sample-inventory-deployment"
+      ],
+      "moleculeObservationRefs": [
+        "molecule:inmemory-inventory-adapter"
+      ],
+      "semanticObservationRefs": [
+        "semantic:place-order-flow"
+      ],
+      "sourceRefs": [
+        {
+          "artifactId": "sample-store-adapter",
+          "kind": "file",
+          "path": "tools/archsig/examples/practical-rust-service/sample/src/store.rs",
+          "symbol": "InMemoryInventoryStore",
+          "line": 6
+        },
+        {
+          "artifactId": "sample-production-inventory-config",
+          "kind": "productionConfig",
+          "path": "tools/archsig/examples/practical-rust-service/production/inventory-store.toml"
+        }
+      ],
+      "evidenceBoundary": "review cue from source-observed in-memory adapter and bounded sample deployment profile",
+      "analysisBoundary": "not a production-readiness failure; this example intentionally uses in-memory state",
+      "nonConclusions": [
+        "concern hint does not prove a law violation",
+        "concern hint is not an obstruction circuit"
+      ]
+    }
+  ],
+  "nonConclusions": [
+    "ArchMap does not prove architecture lawfulness",
+    "ArchMap does not output obstruction circuits",
+    "ArchMap does not prove zero curvature",
+    "concernHints are review cues, not obstruction circuits",
+    "observation gaps are not measured zero",
+    "Atom observations are source-grounded observations, not universal atom truth"
+  ]
+}

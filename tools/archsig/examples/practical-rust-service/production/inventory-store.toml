@@ -1,0 +1,18 @@
+[inventory_store]
+adapter = "in-memory"
+component_ref = "store.InMemoryInventoryStore"
+port_ref = "app.InventoryStore"
+deployment_scope = "demo"
+
+[inventory_store.state]
+stock_owner = "store.InMemoryInventoryStore.stock"
+reservation_log_owner = "store.InMemoryInventoryStore.reservation_log"
+durability = "process-memory"
+
+[inventory_store.concurrency]
+model = "single-process-demo"
+reservation_conflict_policy = "reserve rechecks available stock and returns ReservationConflict if stock changed before write"
+runtime_trace_ref = "tools/archsig/examples/practical-rust-service/runtime/concurrent_reservation_trace.json"
+
+[boundary]
+evidence_boundary = "sample deployment profile for the practical ArchSig example; not production SLO or external database evidence"

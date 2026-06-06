@@ -1,0 +1,141 @@
+{
+  "schemaVersion": "archmap-source-inventory-v0",
+  "inventoryId": "practical-rust-service-source-inventory",
+  "root": ".",
+  "includedRefs": [
+    {
+      "artifactId": "example-readme",
+      "kind": "docSection",
+      "path": "tools/archsig/examples/practical-rust-service/README.md",
+      "section": "ArchSig Reading Targets"
+    },
+    {
+      "artifactId": "sample-cargo",
+      "kind": "file",
+      "path": "tools/archsig/examples/practical-rust-service/sample/Cargo.toml"
+    },
+    {
+      "artifactId": "sample-lib",
+      "kind": "file",
+      "path": "tools/archsig/examples/practical-rust-service/sample/src/lib.rs",
+      "line": 1
+    },
+    {
+      "artifactId": "sample-domain-order",
+      "kind": "file",
+      "path": "tools/archsig/examples/practical-rust-service/sample/src/domain.rs",
+      "symbol": "Order",
+      "line": 66
+    },
+    {
+      "artifactId": "sample-domain-reservation",
+      "kind": "file",
+      "path": "tools/archsig/examples/practical-rust-service/sample/src/domain.rs",
+      "symbol": "InventoryReservation",
+      "line": 123
+    },
+    {
+      "artifactId": "sample-domain-invariant-tests",
+      "kind": "test",
+      "path": "tools/archsig/examples/practical-rust-service/sample/src/domain.rs",
+      "symbol": "order_requires_at_least_one_line",
+      "line": 185
+    },
+    {
+      "artifactId": "sample-app-port",
+      "kind": "file",
+      "path": "tools/archsig/examples/practical-rust-service/sample/src/app.rs",
+      "symbol": "InventoryStore",
+      "line": 6
+    },
+    {
+      "artifactId": "sample-app-service",
+      "kind": "file",
+      "path": "tools/archsig/examples/practical-rust-service/sample/src/app.rs",
+      "symbol": "OrderService",
+      "line": 11
+    },
+    {
+      "artifactId": "sample-app-place-order",
+      "kind": "file",
+      "path": "tools/archsig/examples/practical-rust-service/sample/src/app.rs",
+      "symbol": "place_order",
+      "line": 23
+    },
+    {
+      "artifactId": "sample-app-service-tests",
+      "kind": "test",
+      "path": "tools/archsig/examples/practical-rust-service/sample/src/app.rs",
+      "symbol": "place_order_reserves_inventory",
+      "line": 168
+    },
+    {
+      "artifactId": "sample-store-adapter",
+      "kind": "file",
+      "path": "tools/archsig/examples/practical-rust-service/sample/src/store.rs",
+      "symbol": "InMemoryInventoryStore",
+      "line": 6
+    },
+    {
+      "artifactId": "sample-store-reserve",
+      "kind": "file",
+      "path": "tools/archsig/examples/practical-rust-service/sample/src/store.rs",
+      "symbol": "reserve",
+      "line": 44
+    },
+    {
+      "artifactId": "sample-store-tests",
+      "kind": "test",
+      "path": "tools/archsig/examples/practical-rust-service/sample/src/store.rs",
+      "symbol": "reserve_decrements_stock",
+      "line": 71
+    },
+    {
+      "artifactId": "sample-store-conflict-test",
+      "kind": "test",
+      "path": "tools/archsig/examples/practical-rust-service/sample/src/store.rs",
+      "symbol": "reserve_rejects_stale_reservation_after_stock_changes",
+      "line": 89
+    },
+    {
+      "artifactId": "sample-main-smoke",
+      "kind": "file",
+      "path": "tools/archsig/examples/practical-rust-service/sample/src/main.rs",
+      "symbol": "main",
+      "line": 7
+    },
+    {
+      "artifactId": "runtime-place-order-trace",
+      "kind": "runtimeTrace",
+      "path": "tools/archsig/examples/practical-rust-service/runtime/place_order_trace.json"
+    },
+    {
+      "artifactId": "runtime-concurrent-reservation-trace",
+      "kind": "runtimeTrace",
+      "path": "tools/archsig/examples/practical-rust-service/runtime/concurrent_reservation_trace.json"
+    },
+    {
+      "artifactId": "sample-production-inventory-config",
+      "kind": "productionConfig",
+      "path": "tools/archsig/examples/practical-rust-service/production/inventory-store.toml"
+    }
+  ],
+  "excludedRefs": [
+    {
+      "kind": "directory",
+      "path": "tools/archsig/examples/practical-rust-service/sample/target"
+    }
+  ],
+  "unavailableRefs": [],
+  "privateRefs": [],
+  "hashes": [],
+  "knownBlindSpots": [
+    "the sample deployment profile uses an in-memory adapter and does not model an external database",
+    "the stale-reservation trace is a bounded unit-test trace, not a parallel production trace"
+  ],
+  "selectionBoundary": "bounded ArchMap source inventory for the practical Rust service sample under tools/archsig/examples/practical-rust-service/sample",
+  "nonConclusions": [
+    "source inventory is a bounded review universe, not a complete repository mirror",
+    "runtime and deployment refs are bounded sample evidence, not production telemetry or SLO evidence"
+  ]
+}
