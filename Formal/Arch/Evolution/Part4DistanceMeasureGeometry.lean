@@ -159,10 +159,15 @@ def representativeDeclarations : Candidate -> List String
       , "AtomRootDistanceBundle.layoutDistance_eq_weighted_components"
       , "GeneratedAtomShapeDistanceBridge"
       , "GeneratedAtomShapeDistanceBridge.generatedDistance_eq_coordinateMismatch"
+      , "AAT.GeneratedAtomFullShapeCoordinate"
+      , "AAT.GeneratedAtomFullShapeCoordinate.fullMismatchCount"
       ]
   | atomGeneratedRootDistance =>
       [ "Part4DistanceMeasureGeometry.generatedCarrierShapeDistanceBridge"
       , "Part4DistanceMeasureGeometry.generatedCarrierAtomRootDistanceBundle"
+      , "Part4DistanceMeasureGeometry.GeneratedAtomRootGeometryPackage"
+      , "Part4DistanceMeasureGeometry.generatedCarrierFullRootGeometryPackage"
+      , "Part4DistanceMeasureGeometry.generatedCarrierFullRootGeometryPackage_recordsBoundaries"
       , "Part4DistanceMeasureGeometry.generatedCarrierRootDistance_layout_eq_generatedCarrierShapeDistance"
       , "Part4DistanceMeasureGeometry.generatedCarrierShapeDistanceBridge_unfolds"
       , "Part4DistanceMeasureGeometry.generatedCarrierShapeDistanceBridge_recordsRootBoundary"
@@ -207,9 +212,11 @@ def representativeDeclarations : Candidate -> List String
       , "SignatureDistanceSchema.pathLength"
       , "SignatureDistanceSchema.endpointDistance"
       , "SignatureDistanceSchema.hiddenExcursion"
+      , "SignatureDistanceSchema.pathLength_append"
       , "SignatureDistanceSchema.hiddenExcursion_eq_pathLength_sub_endpointDistance"
       , "SignatureDistanceSchema.endpointDistance_add_hiddenExcursion_eq_pathLength"
       , "SignatureDistanceSchema.hiddenExcursion_positive_of_endpointDistance_lt_pathLength"
+      , "SignatureDistanceSchema.hiddenExcursion_zero_of_endpointDistance_eq_pathLength"
       , "SignatureDistanceSchema.endpointDistance_le_pathLength"
       , "SignatureDistanceSchema.margin_stability"
       ]
@@ -218,11 +225,14 @@ def representativeDeclarations : Candidate -> List String
       , "AxisDistanceReading.MeasuredPayload?"
       , "SignatureDistanceBundle"
       , "SignatureDistanceBundle.measuredSubtotal"
+      , "SignatureDistanceBundle.measuredSubtotalOf_append"
       , "SignatureDistanceBundle.measuredPayload?_measured"
       , "SignatureDistanceBundle.unmeasuredAxis_not_measuredPayload"
+      , "SignatureDistanceBundle.nonMeasuredValue_not_measuredPayload"
       , "SignatureDistanceBundle.unmeasuredAxis_not_measuredZero"
       , "Part4DistanceMeasureGeometry.signatureDistanceBundle_measuredSubtotal_eq_selectedAxes"
       , "Part4DistanceMeasureGeometry.signatureDistanceBundle_records_measurementBoundary"
+      , "Part4DistanceMeasureGeometry.signatureDistanceBundle_records_coverage_confidence_boundary"
       ]
   | finiteWitnessInfimumCore =>
       [ "FiniteRouteCost"
@@ -266,6 +276,8 @@ def representativeDeclarations : Candidate -> List String
       , "Part4DistanceMeasureGeometry.generatedRepairProblemOperation_mappedDistanceEvidence"
       , "Part4DistanceMeasureGeometry.generatedRepairProblemOperation_mappedDistanceEvidence_recordsGeneratedBoundaries"
       , "Part4DistanceMeasureGeometry.generatedRepairProblemOperation_unmapped_target_atom_primitive"
+      , "Part4DistanceMeasureGeometry.GeneratedOperationRepairDiagnosticBridge"
+      , "Part4DistanceMeasureGeometry.generatedOperationRepairDiagnosticBridge_recordsGeneratedDiagnosticBoundaries"
       ]
   | contractiveRepairGeometry =>
       [ "FiniteRepairSequence"
@@ -280,6 +292,14 @@ def representativeDeclarations : Candidate -> List String
       , "totalWeightedCurvature_eq_zero_iff_forall_measured_DiagramCommutes"
       , "FillingCostLowerBound"
       , "FillingCostLowerBound.observationGap_le_lipschitz_mul_fillingCost"
+      , "Part4DistanceMeasureGeometry.GeneratedFillingCostPackage"
+      , "Part4DistanceMeasureGeometry.generatedFillingCostPackage_recordsGeneratedFillingBoundaries"
+      , "Part4DistanceMeasureGeometry.generatedFillingCostPackage_observationGap_le"
+      , "Part4DistanceMeasureGeometry.generatedFillingCostPackage_no_candidate_filler_within_scale"
+      , "Part4DistanceMeasureGeometry.GeneratedCurvatureFillingBridge"
+      , "Part4DistanceMeasureGeometry.generatedCurvatureFillingBridge_recordsGeneratedCurvatureFillingBoundaries"
+      , "Part4DistanceMeasureGeometry.generatedCurvatureFillingBridge_target_curvature_decreases"
+      , "Part4DistanceMeasureGeometry.generatedCurvatureFillingBridge_observationGap_le"
       ]
   | curvatureTransportGeometry =>
       [ "SelectedCurvatureReading"
@@ -293,17 +313,27 @@ def representativeDeclarations : Candidate -> List String
       , "FiniteDehnBound"
       , "FiniteDehnBound.fillingArea_le_dehnValue"
       , "PersistentNonFillability"
+      , "Part4DistanceMeasureGeometry.GeneratedFiniteHomotopyCost"
+      , "Part4DistanceMeasureGeometry.generatedFiniteHomotopyCost_recordsFiniteWitnessUniverse"
+      , "Part4DistanceMeasureGeometry.generatedFiniteHomotopyCost_observationDistance_le"
+      , "Part4DistanceMeasureGeometry.GeneratedFiniteDehnBound"
+      , "Part4DistanceMeasureGeometry.generatedFiniteDehnBound_recordsFiniteUniverse"
+      , "Part4DistanceMeasureGeometry.generatedFiniteDehnBound_fillingArea_le_dehnValue"
       ]
   | representationMetric =>
       [ "LipschitzRepresentation"
       , "BiLipschitzRepresentation"
       , "LipschitzRepresentation.analyticDistance_le_lipschitz"
       , "BiLipschitzRepresentation.structuralDistance_le_analyticDistance"
+      , "Part4DistanceMeasureGeometry.GeneratedRepresentationMetricPackage"
+      , "Part4DistanceMeasureGeometry.generatedRepresentationMetricPackage_recordsGeneratedMetricBoundaries"
+      , "Part4DistanceMeasureGeometry.generatedRepresentationMetricPackage_analyticDistance_le"
       ]
   | representationSpectralStability =>
       [ "LipschitzRepresentation.analyticDistance_le_of_structuralDistance_le"
       , "SpectralStabilityPackage"
       , "SpectralStabilityPackage.spectralDistance_le"
+      , "Part4DistanceMeasureGeometry.generatedRepresentationMetricPackage_spectralDistance_le"
       ]
   | abstractInfimumInterface =>
       [ "AbstractInfimumInterface"
@@ -491,6 +521,136 @@ def generatedCarrierAtomRootDistanceBundle
   semanticDistanceBoundary := True
   nonConclusions := True
 
+/--
+Selected generated root geometry package for AtomShape-derived distance.
+
+The package records the four Part IV root components separately: base/fiber
+shape distance, selected carrier-slot footprint distance, selected valence
+footprint distance, and selected semantic-anchor distance.  It is still a
+selected generated-universe package, not a global semantic metric.
+-/
+structure GeneratedAtomRootGeometryPackage
+    (Carrier : Type u) (Coordinate : Type v) where
+  coordinate : Carrier -> Coordinate
+  rootBundle : AtomRootDistanceBundle Carrier
+  fullDistance : Carrier -> Carrier -> Nat
+  fullCoordinateMismatch : Coordinate -> Coordinate -> Nat
+  fullDistanceUnfolds :
+    ∀ left right,
+      fullDistance left right =
+        fullCoordinateMismatch (coordinate left) (coordinate right)
+  fiberBoundary : Prop
+  carrierSlotBoundary : Prop
+  valenceBoundary : Prop
+  semanticAnchorBoundary : Prop
+  distanceDoesNotGenerateAtoms : Prop
+  nonConclusions : Prop
+
+namespace GeneratedAtomRootGeometryPackage
+
+variable {Carrier : Type u} {Coordinate : Type v}
+
+def RecordsGeneratedBoundaries
+    (pkg : GeneratedAtomRootGeometryPackage Carrier Coordinate) : Prop :=
+  pkg.fiberBoundary ∧
+  pkg.carrierSlotBoundary ∧
+  pkg.valenceBoundary ∧
+  pkg.semanticAnchorBoundary ∧
+  pkg.distanceDoesNotGenerateAtoms ∧
+  pkg.nonConclusions
+
+theorem fullDistance_eq_coordinateMismatch
+    (pkg : GeneratedAtomRootGeometryPackage Carrier Coordinate)
+    (left right : Carrier) :
+    pkg.fullDistance left right =
+      pkg.fullCoordinateMismatch (pkg.coordinate left)
+        (pkg.coordinate right) :=
+  pkg.fullDistanceUnfolds left right
+
+theorem records_generated_boundaries
+    (pkg : GeneratedAtomRootGeometryPackage Carrier Coordinate)
+    (hFiber : pkg.fiberBoundary)
+    (hCarrier : pkg.carrierSlotBoundary)
+    (hValence : pkg.valenceBoundary)
+    (hSemantic : pkg.semanticAnchorBoundary)
+    (hNoCreate : pkg.distanceDoesNotGenerateAtoms)
+    (hNonConclusions : pkg.nonConclusions) :
+    pkg.RecordsGeneratedBoundaries :=
+  ⟨hFiber, hCarrier, hValence, hSemantic, hNoCreate,
+    hNonConclusions⟩
+
+end GeneratedAtomRootGeometryPackage
+
+/-- Generated carrier root distance bundle using selected full-shape components. -/
+def generatedCarrierFullRootDistanceBundle
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    (object : AAT.GeneratedArchitectureObject presentation)
+    (objectSlotFootprint : AtomShape -> Nat)
+    (payloadSlotFootprint : AtomShape -> Nat)
+    (valencePortFootprint : AtomShape -> Nat)
+    (requiredPortFootprint : AtomShape -> Nat)
+    (semanticAnchorName : AtomShape -> String) :
+    AtomRootDistanceBundle (AAT.GeneratedCarrier object) where
+  fiberDistance := object.generatedCarrierShapeDistance
+  carrierDistance :=
+    object.generatedCarrierSlotDistance
+      objectSlotFootprint payloadSlotFootprint
+      valencePortFootprint requiredPortFootprint semanticAnchorName
+  valenceDistance :=
+    object.generatedCarrierValenceDistance
+      objectSlotFootprint payloadSlotFootprint
+      valencePortFootprint requiredPortFootprint semanticAnchorName
+  semanticAnchorDistance :=
+    object.generatedCarrierSemanticAnchorDistance
+      objectSlotFootprint payloadSlotFootprint
+      valencePortFootprint requiredPortFootprint semanticAnchorName
+  fiberWeight := 1
+  carrierWeight := 1
+  valenceWeight := 1
+  semanticWeight := 1
+  selectedRootScope := True
+  lawOverlayBoundary := True
+  semanticDistanceBoundary := True
+  nonConclusions := True
+
+/-- Full generated root geometry package for a selected AtomShape footprint. -/
+def generatedCarrierFullRootGeometryPackage
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    (object : AAT.GeneratedArchitectureObject presentation)
+    (objectSlotFootprint : AtomShape -> Nat)
+    (payloadSlotFootprint : AtomShape -> Nat)
+    (valencePortFootprint : AtomShape -> Nat)
+    (requiredPortFootprint : AtomShape -> Nat)
+    (semanticAnchorName : AtomShape -> String) :
+    GeneratedAtomRootGeometryPackage
+      (AAT.GeneratedCarrier object)
+      AAT.GeneratedAtomFullShapeCoordinate where
+  coordinate :=
+    object.generatedAtomFullShapeCoordinate
+      objectSlotFootprint payloadSlotFootprint
+      valencePortFootprint requiredPortFootprint semanticAnchorName
+  rootBundle :=
+    generatedCarrierFullRootDistanceBundle object
+      objectSlotFootprint payloadSlotFootprint
+      valencePortFootprint requiredPortFootprint semanticAnchorName
+  fullDistance :=
+    object.generatedCarrierFullShapeDistance
+      objectSlotFootprint payloadSlotFootprint
+      valencePortFootprint requiredPortFootprint semanticAnchorName
+  fullCoordinateMismatch :=
+    AAT.GeneratedAtomFullShapeCoordinate.fullMismatchCount
+  fullDistanceUnfolds := by
+    intro left right
+    rfl
+  fiberBoundary := True
+  carrierSlotBoundary := True
+  valenceBoundary := True
+  semanticAnchorBoundary := True
+  distanceDoesNotGenerateAtoms := True
+  nonConclusions := True
+
 theorem generatedCarrierShapeDistanceBridge_unfolds
     {system : AtomAxiomSystem.{u, v}}
     {presentation : AtomShapePresentation system}
@@ -520,6 +680,53 @@ theorem generatedCarrierRootDistance_layout_eq_generatedCarrierShapeDistance
       object.generatedCarrierShapeDistance left right := by
   simp [generatedCarrierAtomRootDistanceBundle,
     AtomRootDistanceBundle.layoutDistance]
+
+theorem generatedCarrierFullRootGeometryPackage_recordsBoundaries
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    (object : AAT.GeneratedArchitectureObject presentation)
+    (objectSlotFootprint : AtomShape -> Nat)
+    (payloadSlotFootprint : AtomShape -> Nat)
+    (valencePortFootprint : AtomShape -> Nat)
+    (requiredPortFootprint : AtomShape -> Nat)
+    (semanticAnchorName : AtomShape -> String) :
+    (generatedCarrierFullRootGeometryPackage object
+      objectSlotFootprint payloadSlotFootprint
+      valencePortFootprint requiredPortFootprint semanticAnchorName)
+      |>.RecordsGeneratedBoundaries :=
+  GeneratedAtomRootGeometryPackage.records_generated_boundaries
+    (generatedCarrierFullRootGeometryPackage object
+      objectSlotFootprint payloadSlotFootprint
+      valencePortFootprint requiredPortFootprint semanticAnchorName)
+    trivial
+    trivial
+    trivial
+    trivial
+    trivial
+    trivial
+
+theorem generatedCarrierFullRootGeometryPackage_fullDistance_eq_coordinateMismatch
+    {system : AtomAxiomSystem.{u, v}}
+    {presentation : AtomShapePresentation system}
+    (object : AAT.GeneratedArchitectureObject presentation)
+    (objectSlotFootprint : AtomShape -> Nat)
+    (payloadSlotFootprint : AtomShape -> Nat)
+    (valencePortFootprint : AtomShape -> Nat)
+    (requiredPortFootprint : AtomShape -> Nat)
+    (semanticAnchorName : AtomShape -> String)
+    (left right : AAT.GeneratedCarrier object) :
+    let pkg :=
+      generatedCarrierFullRootGeometryPackage object
+        objectSlotFootprint payloadSlotFootprint
+        valencePortFootprint requiredPortFootprint semanticAnchorName
+    pkg.fullDistance left right =
+      AAT.GeneratedAtomFullShapeCoordinate.fullMismatchCount
+        (pkg.coordinate left) (pkg.coordinate right) :=
+  GeneratedAtomRootGeometryPackage.fullDistance_eq_coordinateMismatch
+    (generatedCarrierFullRootGeometryPackage object
+      objectSlotFootprint payloadSlotFootprint
+      valencePortFootprint requiredPortFootprint semanticAnchorName)
+    left right
 
 /--
 Generated context evidence for a selected carrier pair.
@@ -1177,6 +1384,515 @@ theorem atomGeneratedDiagnostic_recommendedOperations_eq
     pkg.conclusion.recommendedOperations = pkg.atomGeneratedOperations :=
   pkg.recommendedOperations_eq
 
+/--
+Bridge package from generated operation / repair distance evidence to a bounded
+diagnostic recommendation.
+
+The package records that the recommendation is supported by selected generated
+distance evidence.  It deliberately keeps repair correctness and solver
+completeness outside the conclusion.
+-/
+structure GeneratedOperationRepairDiagnosticBridge
+    (OperationDistance : Type u) (RepairDistance : Type v)
+    (Axis : Type w) (Recommendation : Type x) where
+  operationEvidence : OperationDistance
+  repairEvidence : RepairDistance
+  conclusion :
+    AtomGeneratedDistanceDiagnosticConclusion Axis
+      (Sum OperationDistance RepairDistance) Recommendation
+  operationEvidenceRecorded : Prop
+  repairEvidenceRecorded : Prop
+  boundedDiagnosticRecorded : Prop
+  recommendationBoundary : Prop
+  nonConclusions : Prop
+
+namespace GeneratedOperationRepairDiagnosticBridge
+
+variable {OperationDistance : Type u} {RepairDistance : Type v}
+  {Axis : Type w} {Recommendation : Type x}
+
+def RecordsGeneratedDiagnosticBoundaries
+    (pkg :
+      GeneratedOperationRepairDiagnosticBridge
+        OperationDistance RepairDistance Axis Recommendation) : Prop :=
+  pkg.operationEvidenceRecorded ∧
+  pkg.repairEvidenceRecorded ∧
+  pkg.conclusion.RecordsGeneratedBoundaries ∧
+  pkg.boundedDiagnosticRecorded ∧
+  pkg.recommendationBoundary ∧
+  pkg.nonConclusions
+
+theorem records_generatedDiagnosticBoundaries
+    (pkg :
+      GeneratedOperationRepairDiagnosticBridge
+        OperationDistance RepairDistance Axis Recommendation)
+    (hOperation : pkg.operationEvidenceRecorded)
+    (hRepair : pkg.repairEvidenceRecorded)
+    (hConclusion : pkg.conclusion.RecordsGeneratedBoundaries)
+    (hBounded : pkg.boundedDiagnosticRecorded)
+    (hRecommendation : pkg.recommendationBoundary)
+    (hNonConclusions : pkg.nonConclusions) :
+    pkg.RecordsGeneratedDiagnosticBoundaries :=
+  ⟨hOperation, hRepair, hConclusion, hBounded,
+    hRecommendation, hNonConclusions⟩
+
+end GeneratedOperationRepairDiagnosticBridge
+
+/--
+Generated filling bridge for curvature / filling diagnostics.
+
+`Diagram` and `Filler` are selected generated witness types supplied by the
+caller.  The package only states finite selected-universe lower-bound and
+non-fillability facts.
+-/
+structure GeneratedFillingCostPackage
+    (Diagram : Type u) (Filler : Type v) where
+  diagram : Diagram
+  fillers : List Filler
+  lowerBound : FillingCostLowerBound
+  persistentNonFillability : PersistentNonFillability Filler
+  generatedDiagramEvidence : Prop
+  finiteFillerUniverse : Prop
+  nonConclusions : Prop
+
+namespace GeneratedFillingCostPackage
+
+variable {Diagram : Type u} {Filler : Type v}
+
+def RecordsGeneratedFillingBoundaries
+    (pkg : GeneratedFillingCostPackage Diagram Filler) : Prop :=
+  pkg.generatedDiagramEvidence ∧
+  pkg.finiteFillerUniverse ∧
+  pkg.lowerBound.nonConclusions ∧
+  pkg.persistentNonFillability.selectedScope ∧
+  pkg.persistentNonFillability.nonConclusions ∧
+  pkg.nonConclusions
+
+theorem records_generatedFillingBoundaries
+    (pkg : GeneratedFillingCostPackage Diagram Filler)
+    (hDiagram : pkg.generatedDiagramEvidence)
+    (hFinite : pkg.finiteFillerUniverse)
+    (hLowerNonConclusions : pkg.lowerBound.nonConclusions)
+    (hPersistentScope : pkg.persistentNonFillability.selectedScope)
+    (hPersistentNonConclusions :
+      pkg.persistentNonFillability.nonConclusions)
+    (hNonConclusions : pkg.nonConclusions) :
+    pkg.RecordsGeneratedFillingBoundaries :=
+  ⟨hDiagram, hFinite, hLowerNonConclusions,
+    hPersistentScope, hPersistentNonConclusions, hNonConclusions⟩
+
+theorem observationGap_le_lipschitz_mul_fillingCost
+    (pkg : GeneratedFillingCostPackage Diagram Filler) :
+    pkg.lowerBound.observationGap ≤
+      pkg.lowerBound.lipschitzConstant * pkg.lowerBound.fillingCost :=
+  pkg.lowerBound.observationGap_le_lipschitz_mul_fillingCost
+
+theorem no_candidate_filler_within_scale
+    (pkg : GeneratedFillingCostPackage Diagram Filler)
+    {filler : Filler}
+    (hCandidate : pkg.persistentNonFillability.candidate filler)
+    (hWithin :
+      pkg.persistentNonFillability.fillerCost filler ≤
+        pkg.persistentNonFillability.scale) :
+    False :=
+  pkg.persistentNonFillability.no_candidate_filler_within_scale
+    hCandidate hWithin
+
+end GeneratedFillingCostPackage
+
+/--
+Generated bridge that keeps curvature transport and filling / non-fillability in
+one selected package.
+
+The curvature reading remains selected-axis data, and the filling side remains a
+finite generated witness universe.  The bridge only records that both pieces are
+being read together for the same Part IV diagnostic layer.
+-/
+structure GeneratedCurvatureFillingBridge
+    (Axis : Type u) (State : Type v)
+    (Diagram : Type w) (Filler : Type x) where
+  curvatureTransport : CurvatureTransport Axis State
+  fillingPackage : GeneratedFillingCostPackage Diagram Filler
+  generatedCurvatureEvidence : Prop
+  generatedFillingEvidence : Prop
+  selectedScope : Prop
+  nonConclusions : Prop
+
+namespace GeneratedCurvatureFillingBridge
+
+variable {Axis : Type u} {State : Type v}
+  {Diagram : Type w} {Filler : Type x}
+
+def RecordsGeneratedCurvatureFillingBoundaries
+    (pkg : GeneratedCurvatureFillingBridge Axis State Diagram Filler) :
+    Prop :=
+  pkg.generatedCurvatureEvidence ∧
+  pkg.generatedFillingEvidence ∧
+  pkg.curvatureTransport.selectedScope ∧
+  pkg.curvatureTransport.nonConclusions ∧
+  pkg.fillingPackage.RecordsGeneratedFillingBoundaries ∧
+  pkg.selectedScope ∧
+  pkg.nonConclusions
+
+theorem records_generatedCurvatureFillingBoundaries
+    (pkg : GeneratedCurvatureFillingBridge Axis State Diagram Filler)
+    (hCurvatureEvidence : pkg.generatedCurvatureEvidence)
+    (hFillingEvidence : pkg.generatedFillingEvidence)
+    (hCurvatureScope : pkg.curvatureTransport.selectedScope)
+    (hCurvatureNonConclusions : pkg.curvatureTransport.nonConclusions)
+    (hFilling : pkg.fillingPackage.RecordsGeneratedFillingBoundaries)
+    (hSelected : pkg.selectedScope)
+    (hNonConclusions : pkg.nonConclusions) :
+    pkg.RecordsGeneratedCurvatureFillingBoundaries :=
+  ⟨hCurvatureEvidence, hFillingEvidence, hCurvatureScope,
+    hCurvatureNonConclusions, hFilling, hSelected, hNonConclusions⟩
+
+theorem target_curvature_decreases
+    (pkg : GeneratedCurvatureFillingBridge Axis State Diagram Filler) :
+    pkg.curvatureTransport.reading.curvatureMass
+        pkg.curvatureTransport.targetAxis pkg.curvatureTransport.after <
+      pkg.curvatureTransport.reading.curvatureMass
+        pkg.curvatureTransport.targetAxis pkg.curvatureTransport.before :=
+  pkg.curvatureTransport.target_curvature_decreases
+
+theorem observationGap_le
+    (pkg : GeneratedCurvatureFillingBridge Axis State Diagram Filler) :
+    pkg.fillingPackage.lowerBound.observationGap ≤
+      pkg.fillingPackage.lowerBound.lipschitzConstant *
+        pkg.fillingPackage.lowerBound.fillingCost :=
+  pkg.fillingPackage.observationGap_le_lipschitz_mul_fillingCost
+
+end GeneratedCurvatureFillingBridge
+
+/--
+Finite generated homotopy bridge.
+
+The package is relative to the supplied candidate homotopy universe; it is not an
+all-path or universal Dehn-function completeness theorem.
+-/
+structure GeneratedFiniteHomotopyCost
+    (Path : Type u) (Homotopy : Type v) where
+  sourcePath : Path
+  targetPath : Path
+  homotopies : List Homotopy
+  homotopyBound : QuantitativeHomotopyBound
+  finiteWitnessUniverse : Prop
+  selectedScope : Prop
+  nonConclusions : Prop
+
+namespace GeneratedFiniteHomotopyCost
+
+variable {Path : Type u} {Homotopy : Type v}
+
+def RecordsFiniteWitnessUniverse
+    (pkg : GeneratedFiniteHomotopyCost Path Homotopy) : Prop :=
+  pkg.finiteWitnessUniverse ∧
+  pkg.selectedScope ∧
+  pkg.homotopyBound.selectedScope ∧
+  pkg.homotopyBound.nonConclusions ∧
+  pkg.nonConclusions
+
+theorem records_finiteWitnessUniverse
+    (pkg : GeneratedFiniteHomotopyCost Path Homotopy)
+    (hFinite : pkg.finiteWitnessUniverse)
+    (hSelected : pkg.selectedScope)
+    (hBoundSelected : pkg.homotopyBound.selectedScope)
+    (hBoundNonConclusions : pkg.homotopyBound.nonConclusions)
+    (hNonConclusions : pkg.nonConclusions) :
+    pkg.RecordsFiniteWitnessUniverse :=
+  ⟨hFinite, hSelected, hBoundSelected,
+    hBoundNonConclusions, hNonConclusions⟩
+
+theorem observationDistance_le
+    (pkg : GeneratedFiniteHomotopyCost Path Homotopy) :
+    pkg.homotopyBound.observationDistance ≤
+      pkg.homotopyBound.lipschitzConstant *
+        pkg.homotopyBound.homotopyCost :=
+  pkg.homotopyBound.observationDistance_le
+
+end GeneratedFiniteHomotopyCost
+
+/-- Finite generated Dehn-style bridge over a supplied loop universe. -/
+structure GeneratedFiniteDehnBound (Loop : Type u) where
+  dehnBound : FiniteDehnBound Loop
+  suppliedCandidateUniverse : Prop
+  notUniversalDehnFunction : Prop
+  nonConclusions : Prop
+
+namespace GeneratedFiniteDehnBound
+
+variable {Loop : Type u}
+
+def RecordsFiniteUniverse (pkg : GeneratedFiniteDehnBound Loop) : Prop :=
+  pkg.suppliedCandidateUniverse ∧
+  pkg.dehnBound.selectedScope ∧
+  pkg.notUniversalDehnFunction ∧
+  pkg.dehnBound.nonConclusions ∧
+  pkg.nonConclusions
+
+theorem records_finiteUniverse
+    (pkg : GeneratedFiniteDehnBound Loop)
+    (hUniverse : pkg.suppliedCandidateUniverse)
+    (hSelected : pkg.dehnBound.selectedScope)
+    (hNotUniversal : pkg.notUniversalDehnFunction)
+    (hBoundNonConclusions : pkg.dehnBound.nonConclusions)
+    (hNonConclusions : pkg.nonConclusions) :
+    pkg.RecordsFiniteUniverse :=
+  ⟨hUniverse, hSelected, hNotUniversal,
+    hBoundNonConclusions, hNonConclusions⟩
+
+theorem fillingArea_le_dehnValue
+    (pkg : GeneratedFiniteDehnBound Loop)
+    {loop : Loop}
+    (hMem : loop ∈ pkg.dehnBound.candidates)
+    (hBoundary :
+      pkg.dehnBound.boundaryLength loop ≤ pkg.dehnBound.boundaryLimit) :
+    pkg.dehnBound.fillingArea loop ≤ pkg.dehnBound.dehnValue :=
+  pkg.dehnBound.fillingArea_le_dehnValue hMem hBoundary
+
+end GeneratedFiniteDehnBound
+
+/--
+Generated representation metric bridge.
+
+The package connects selected structural and analytic / spectral metrics while
+recording the generated representation and selected obstruction-valuation
+boundaries.
+-/
+structure GeneratedRepresentationMetricPackage
+    (State : Type u) (Analytic : Type v) (Spectral : Type w) where
+  lipschitzPackage : LipschitzRepresentation State Analytic
+  spectralPackage : SpectralStabilityPackage State Spectral
+  generatedRepresentationEvidence : Prop
+  selectedObstructionValuationEvidence : Prop
+  zeroPreservationBoundary : Prop
+  zeroReflectionBoundary : Prop
+  nonConclusions : Prop
+
+namespace GeneratedRepresentationMetricPackage
+
+variable {State : Type u} {Analytic : Type v} {Spectral : Type w}
+
+def RecordsGeneratedMetricBoundaries
+    (pkg : GeneratedRepresentationMetricPackage State Analytic Spectral) :
+    Prop :=
+  pkg.generatedRepresentationEvidence ∧
+  pkg.selectedObstructionValuationEvidence ∧
+  pkg.lipschitzPackage.coverageAssumptions ∧
+  pkg.lipschitzPackage.witnessCompletenessAssumptions ∧
+  pkg.spectralPackage.coverageAssumptions ∧
+  pkg.spectralPackage.witnessCompletenessAssumptions ∧
+  pkg.zeroPreservationBoundary ∧
+  pkg.zeroReflectionBoundary ∧
+  pkg.nonConclusions
+
+theorem records_generatedMetricBoundaries
+    (pkg : GeneratedRepresentationMetricPackage State Analytic Spectral)
+    (hRepresentation : pkg.generatedRepresentationEvidence)
+    (hValuation : pkg.selectedObstructionValuationEvidence)
+    (hLipCoverage : pkg.lipschitzPackage.coverageAssumptions)
+    (hLipWitness :
+      pkg.lipschitzPackage.witnessCompletenessAssumptions)
+    (hSpectralCoverage : pkg.spectralPackage.coverageAssumptions)
+    (hSpectralWitness :
+      pkg.spectralPackage.witnessCompletenessAssumptions)
+    (hZeroPreservation : pkg.zeroPreservationBoundary)
+    (hZeroReflection : pkg.zeroReflectionBoundary)
+    (hNonConclusions : pkg.nonConclusions) :
+    pkg.RecordsGeneratedMetricBoundaries :=
+  ⟨hRepresentation, hValuation, hLipCoverage, hLipWitness,
+    hSpectralCoverage, hSpectralWitness, hZeroPreservation,
+    hZeroReflection, hNonConclusions⟩
+
+theorem analyticDistance_le
+    (pkg : GeneratedRepresentationMetricPackage State Analytic Spectral)
+    {X Y : State}
+    (hComparable : pkg.lipschitzPackage.comparable X Y) :
+    pkg.lipschitzPackage.analyticDistance
+        (pkg.lipschitzPackage.represent X)
+        (pkg.lipschitzPackage.represent Y) ≤
+      pkg.lipschitzPackage.lipschitzConstant *
+        pkg.lipschitzPackage.structuralDistance X Y :=
+  pkg.lipschitzPackage.analyticDistance_le_lipschitz hComparable
+
+theorem spectralDistance_le
+    (pkg : GeneratedRepresentationMetricPackage State Analytic Spectral) :
+    pkg.spectralPackage.spectralDistance
+        (pkg.spectralPackage.represent pkg.spectralPackage.source)
+        (pkg.spectralPackage.represent pkg.spectralPackage.target) ≤
+      pkg.spectralPackage.lipschitzConstant *
+        pkg.spectralPackage.epsilon :=
+  pkg.spectralPackage.spectralDistance_le
+
+end GeneratedRepresentationMetricPackage
+
+theorem generatedOperationRepairDiagnosticBridge_recordsGeneratedDiagnosticBoundaries
+    {OperationDistance : Type u} {RepairDistance : Type v}
+    {Axis : Type w} {Recommendation : Type x}
+    (pkg :
+      GeneratedOperationRepairDiagnosticBridge
+        OperationDistance RepairDistance Axis Recommendation)
+    (hOperation : pkg.operationEvidenceRecorded)
+    (hRepair : pkg.repairEvidenceRecorded)
+    (hConclusion : pkg.conclusion.RecordsGeneratedBoundaries)
+    (hBounded : pkg.boundedDiagnosticRecorded)
+    (hRecommendation : pkg.recommendationBoundary)
+    (hNonConclusions : pkg.nonConclusions) :
+    pkg.RecordsGeneratedDiagnosticBoundaries :=
+  pkg.records_generatedDiagnosticBoundaries
+    hOperation hRepair hConclusion hBounded hRecommendation hNonConclusions
+
+theorem generatedFillingCostPackage_recordsGeneratedFillingBoundaries
+    {Diagram : Type u} {Filler : Type v}
+    (pkg : GeneratedFillingCostPackage Diagram Filler)
+    (hDiagram : pkg.generatedDiagramEvidence)
+    (hFinite : pkg.finiteFillerUniverse)
+    (hLowerNonConclusions : pkg.lowerBound.nonConclusions)
+    (hPersistentScope : pkg.persistentNonFillability.selectedScope)
+    (hPersistentNonConclusions :
+      pkg.persistentNonFillability.nonConclusions)
+    (hNonConclusions : pkg.nonConclusions) :
+    pkg.RecordsGeneratedFillingBoundaries :=
+  pkg.records_generatedFillingBoundaries
+    hDiagram hFinite hLowerNonConclusions hPersistentScope
+    hPersistentNonConclusions hNonConclusions
+
+theorem generatedFillingCostPackage_observationGap_le
+    {Diagram : Type u} {Filler : Type v}
+    (pkg : GeneratedFillingCostPackage Diagram Filler) :
+    pkg.lowerBound.observationGap ≤
+      pkg.lowerBound.lipschitzConstant * pkg.lowerBound.fillingCost :=
+  pkg.observationGap_le_lipschitz_mul_fillingCost
+
+theorem generatedFillingCostPackage_no_candidate_filler_within_scale
+    {Diagram : Type u} {Filler : Type v}
+    (pkg : GeneratedFillingCostPackage Diagram Filler)
+    {filler : Filler}
+    (hCandidate : pkg.persistentNonFillability.candidate filler)
+    (hWithin :
+      pkg.persistentNonFillability.fillerCost filler ≤
+        pkg.persistentNonFillability.scale) :
+    False :=
+  pkg.no_candidate_filler_within_scale hCandidate hWithin
+
+theorem generatedCurvatureFillingBridge_recordsGeneratedCurvatureFillingBoundaries
+    {Axis : Type u} {State : Type v}
+    {Diagram : Type w} {Filler : Type x}
+    (pkg : GeneratedCurvatureFillingBridge Axis State Diagram Filler)
+    (hCurvatureEvidence : pkg.generatedCurvatureEvidence)
+    (hFillingEvidence : pkg.generatedFillingEvidence)
+    (hCurvatureScope : pkg.curvatureTransport.selectedScope)
+    (hCurvatureNonConclusions : pkg.curvatureTransport.nonConclusions)
+    (hFilling : pkg.fillingPackage.RecordsGeneratedFillingBoundaries)
+    (hSelected : pkg.selectedScope)
+    (hNonConclusions : pkg.nonConclusions) :
+    pkg.RecordsGeneratedCurvatureFillingBoundaries :=
+  pkg.records_generatedCurvatureFillingBoundaries
+    hCurvatureEvidence hFillingEvidence hCurvatureScope
+    hCurvatureNonConclusions hFilling hSelected hNonConclusions
+
+theorem generatedCurvatureFillingBridge_target_curvature_decreases
+    {Axis : Type u} {State : Type v}
+    {Diagram : Type w} {Filler : Type x}
+    (pkg : GeneratedCurvatureFillingBridge Axis State Diagram Filler) :
+    pkg.curvatureTransport.reading.curvatureMass
+        pkg.curvatureTransport.targetAxis pkg.curvatureTransport.after <
+      pkg.curvatureTransport.reading.curvatureMass
+        pkg.curvatureTransport.targetAxis pkg.curvatureTransport.before :=
+  pkg.target_curvature_decreases
+
+theorem generatedCurvatureFillingBridge_observationGap_le
+    {Axis : Type u} {State : Type v}
+    {Diagram : Type w} {Filler : Type x}
+    (pkg : GeneratedCurvatureFillingBridge Axis State Diagram Filler) :
+    pkg.fillingPackage.lowerBound.observationGap ≤
+      pkg.fillingPackage.lowerBound.lipschitzConstant *
+        pkg.fillingPackage.lowerBound.fillingCost :=
+  pkg.observationGap_le
+
+theorem generatedFiniteHomotopyCost_recordsFiniteWitnessUniverse
+    {Path : Type u} {Homotopy : Type v}
+    (pkg : GeneratedFiniteHomotopyCost Path Homotopy)
+    (hFinite : pkg.finiteWitnessUniverse)
+    (hSelected : pkg.selectedScope)
+    (hBoundSelected : pkg.homotopyBound.selectedScope)
+    (hBoundNonConclusions : pkg.homotopyBound.nonConclusions)
+    (hNonConclusions : pkg.nonConclusions) :
+    pkg.RecordsFiniteWitnessUniverse :=
+  pkg.records_finiteWitnessUniverse
+    hFinite hSelected hBoundSelected hBoundNonConclusions hNonConclusions
+
+theorem generatedFiniteHomotopyCost_observationDistance_le
+    {Path : Type u} {Homotopy : Type v}
+    (pkg : GeneratedFiniteHomotopyCost Path Homotopy) :
+    pkg.homotopyBound.observationDistance ≤
+      pkg.homotopyBound.lipschitzConstant *
+        pkg.homotopyBound.homotopyCost :=
+  pkg.observationDistance_le
+
+theorem generatedFiniteDehnBound_recordsFiniteUniverse
+    {Loop : Type u}
+    (pkg : GeneratedFiniteDehnBound Loop)
+    (hUniverse : pkg.suppliedCandidateUniverse)
+    (hSelected : pkg.dehnBound.selectedScope)
+    (hNotUniversal : pkg.notUniversalDehnFunction)
+    (hBoundNonConclusions : pkg.dehnBound.nonConclusions)
+    (hNonConclusions : pkg.nonConclusions) :
+    pkg.RecordsFiniteUniverse :=
+  pkg.records_finiteUniverse
+    hUniverse hSelected hNotUniversal hBoundNonConclusions hNonConclusions
+
+theorem generatedFiniteDehnBound_fillingArea_le_dehnValue
+    {Loop : Type u}
+    (pkg : GeneratedFiniteDehnBound Loop)
+    {loop : Loop}
+    (hMem : loop ∈ pkg.dehnBound.candidates)
+    (hBoundary :
+      pkg.dehnBound.boundaryLength loop ≤ pkg.dehnBound.boundaryLimit) :
+    pkg.dehnBound.fillingArea loop ≤ pkg.dehnBound.dehnValue :=
+  pkg.fillingArea_le_dehnValue hMem hBoundary
+
+theorem generatedRepresentationMetricPackage_recordsGeneratedMetricBoundaries
+    {State : Type u} {Analytic : Type v} {Spectral : Type w}
+    (pkg : GeneratedRepresentationMetricPackage State Analytic Spectral)
+    (hRepresentation : pkg.generatedRepresentationEvidence)
+    (hValuation : pkg.selectedObstructionValuationEvidence)
+    (hLipCoverage : pkg.lipschitzPackage.coverageAssumptions)
+    (hLipWitness :
+      pkg.lipschitzPackage.witnessCompletenessAssumptions)
+    (hSpectralCoverage : pkg.spectralPackage.coverageAssumptions)
+    (hSpectralWitness :
+      pkg.spectralPackage.witnessCompletenessAssumptions)
+    (hZeroPreservation : pkg.zeroPreservationBoundary)
+    (hZeroReflection : pkg.zeroReflectionBoundary)
+    (hNonConclusions : pkg.nonConclusions) :
+    pkg.RecordsGeneratedMetricBoundaries :=
+  pkg.records_generatedMetricBoundaries
+    hRepresentation hValuation hLipCoverage hLipWitness hSpectralCoverage
+    hSpectralWitness hZeroPreservation hZeroReflection hNonConclusions
+
+theorem generatedRepresentationMetricPackage_analyticDistance_le
+    {State : Type u} {Analytic : Type v} {Spectral : Type w}
+    (pkg : GeneratedRepresentationMetricPackage State Analytic Spectral)
+    {X Y : State}
+    (hComparable : pkg.lipschitzPackage.comparable X Y) :
+    pkg.lipschitzPackage.analyticDistance
+        (pkg.lipschitzPackage.represent X)
+        (pkg.lipschitzPackage.represent Y) ≤
+      pkg.lipschitzPackage.lipschitzConstant *
+        pkg.lipschitzPackage.structuralDistance X Y :=
+  pkg.analyticDistance_le hComparable
+
+theorem generatedRepresentationMetricPackage_spectralDistance_le
+    {State : Type u} {Analytic : Type v} {Spectral : Type w}
+    (pkg : GeneratedRepresentationMetricPackage State Analytic Spectral) :
+    pkg.spectralPackage.spectralDistance
+        (pkg.spectralPackage.represent pkg.spectralPackage.source)
+        (pkg.spectralPackage.represent pkg.spectralPackage.target) ≤
+      pkg.spectralPackage.lipschitzConstant *
+        pkg.spectralPackage.epsilon :=
+  pkg.spectralDistance_le
+
 theorem unmeasured_not_measured_zero :
     ¬ DistanceValue.IsMeasuredZero DistanceValue.unmeasured :=
   DistanceValue.unmeasured_not_measuredZero
@@ -1298,6 +2014,22 @@ theorem signatureEndpointDistance_le_pathLength
     schema.endpointDistance plan ≤ schema.pathLength plan :=
   SignatureDistanceSchema.endpointDistance_le_pathLength schema plan
 
+theorem signaturePathLength_nil
+    {State : Type u} {Sig : Type v}
+    (schema : SignatureDistanceSchema State Sig) (X : State) :
+    schema.pathLength (ArchitecturePath.nil X) = 0 :=
+  SignatureDistanceSchema.pathLength_nil schema X
+
+theorem signaturePathLength_append
+    {State : Type u} {Sig : Type v}
+    (schema : SignatureDistanceSchema State Sig)
+    {X Y Z : State}
+    (left : ArchitectureEvolution State X Y)
+    (right : ArchitectureEvolution State Y Z) :
+    schema.pathLength (ArchitecturePath.append left right) =
+      schema.pathLength left + schema.pathLength right :=
+  SignatureDistanceSchema.pathLength_append schema left right
+
 theorem signatureHiddenExcursion_eq_pathLength_sub_endpointDistance
     {State : Type u} {Sig : Type v}
     (schema : SignatureDistanceSchema State Sig)
@@ -1325,6 +2057,15 @@ theorem signatureHiddenExcursion_positive_of_endpointDistance_lt_pathLength
   SignatureDistanceSchema.hiddenExcursion_positive_of_endpointDistance_lt_pathLength
     schema plan hVisibleGap
 
+theorem signatureHiddenExcursion_zero_of_endpointDistance_eq_pathLength
+    {State : Type u} {Sig : Type v}
+    (schema : SignatureDistanceSchema State Sig)
+    {X Y : State} (plan : ArchitectureEvolution State X Y)
+    (hExact : schema.endpointDistance plan = schema.pathLength plan) :
+    schema.hiddenExcursion plan = 0 :=
+  SignatureDistanceSchema.hiddenExcursion_zero_of_endpointDistance_eq_pathLength
+    schema plan hExact
+
 theorem signature_margin_stability
     {State : Type u} {Sig : Type v}
     (schema : SignatureDistanceSchema State Sig)
@@ -1346,6 +2087,14 @@ theorem signatureDistanceBundle_measuredSubtotal_eq_selectedAxes
       bundle.measuredSubtotalOf bundle.selectedAxes :=
   SignatureDistanceBundle.measuredSubtotal_eq_selectedAxes bundle
 
+theorem signatureDistanceBundle_measuredSubtotalOf_append
+    {Axis : Type u}
+    (bundle : SignatureDistanceBundle Axis)
+    (left right : List Axis) :
+    bundle.measuredSubtotalOf (left ++ right) =
+      bundle.measuredSubtotalOf left + bundle.measuredSubtotalOf right :=
+  SignatureDistanceBundle.measuredSubtotalOf_append bundle left right
+
 theorem signatureDistanceBundle_measuredPayload_measured
     {Axis : Type u}
     (bundle : SignatureDistanceBundle Axis)
@@ -1362,6 +2111,19 @@ theorem signatureDistanceBundle_unmeasuredAxis_not_measuredPayload
     (n : Nat) :
     bundle.measuredPayload? axis ≠ some n :=
   bundle.unmeasuredAxis_not_measuredPayload hValue n
+
+theorem signatureDistanceBundle_nonMeasuredValue_not_measuredPayload
+    {Axis : Type u}
+    (bundle : SignatureDistanceBundle Axis)
+    {axis : Axis}
+    (hValue :
+      bundle.axisDistance axis = DistanceValue.unmeasured ∨
+      bundle.axisDistance axis = DistanceValue.unavailable ∨
+      bundle.axisDistance axis = DistanceValue.incomparable ∨
+      bundle.axisDistance axis = DistanceValue.infinite)
+    (n : Nat) :
+    bundle.measuredPayload? axis ≠ some n :=
+  bundle.nonMeasuredValue_not_measuredPayload hValue n
 
 theorem signatureDistanceBundle_unmeasuredAxis_not_measuredZero
     {Axis : Type u}
@@ -1381,6 +2143,22 @@ theorem signatureDistanceBundle_records_measurementBoundary
     (hNonConclusions : bundle.nonConclusions) :
     bundle.RecordsMeasurementBoundary :=
   bundle.records_measurementBoundary
+    hCoverage hAggregation hConfidence hUnmeasured hNonConclusions
+
+theorem signatureDistanceBundle_records_coverage_confidence_boundary
+    {Axis : Type u}
+    (bundle : SignatureDistanceBundle Axis)
+    (hCoverage : bundle.coverageAssumptions)
+    (hAggregation : bundle.aggregationPolicy)
+    (hConfidence : bundle.confidenceBoundary)
+    (hUnmeasured : bundle.unmeasuredAxisPolicy)
+    (hNonConclusions : bundle.nonConclusions) :
+    bundle.coverageAssumptions ∧
+      bundle.aggregationPolicy ∧
+      bundle.confidenceBoundary ∧
+      bundle.unmeasuredAxisPolicy ∧
+      bundle.nonConclusions :=
+  bundle.records_coverage_confidence_boundary
     hCoverage hAggregation hConfidence hUnmeasured hNonConclusions
 
 theorem signatureDistanceBundle_records_nonConclusions

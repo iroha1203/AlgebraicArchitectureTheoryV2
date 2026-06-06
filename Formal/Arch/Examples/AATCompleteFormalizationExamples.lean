@@ -1,9 +1,11 @@
 import Formal.Arch.AAT.CompleteFormalization
 import Formal.Arch.Examples.AtomGeneratedMoleculeExamples
+import Formal.Arch.Examples.AATPart4DistanceExamples
 import Formal.Arch.Examples.AtomGeneratedSignatureExamples
 
 namespace Formal.Arch.AATCompleteFormalizationExamples
 
+open Formal.Arch.AATPart4DistanceExamples
 open Formal.Arch.AtomGeneratedMoleculeExamples
 open Formal.Arch.AtomGeneratedSignatureExamples
 
@@ -162,6 +164,127 @@ theorem generatedComponentTheoremSuite_has_operation_repair_synthesis_fields :
           generatedComponentTheoremSuite
             |>.generatedOperationRepairSynthesis
             |>.synthesisToSynthesisSoundnessPackage candidate⟩⟩
+
+/-- Component-world repair problem configuration used by the complete-suite Part4 smoke test. -/
+def generatedComponentRepairConfiguration :
+    AAT.GeneratedRepairProblemConfiguration componentShapePresentation where
+  atoms := generatedComponentObject.molecule.atoms
+  finiteConfiguration := generatedComponentObject.molecule.finiteConfiguration
+  atomsPrimitive := by
+    intro atom hAtom
+    exact generatedComponentObject.molecule.atomsPrimitive atom hAtom
+  problemBoundary := True
+
+/-- Component-world repair carrier selected from the generated component object. -/
+def generatedComponentRepairCarrier
+    (carrier : AAT.GeneratedCarrier generatedComponentObject) :
+    AAT.GeneratedRepairProblemCarrier generatedComponentRepairConfiguration :=
+  ⟨carrier.val, carrier.property⟩
+
+/-- Identity repair-problem operation used to keep the complete-suite example world-local. -/
+def generatedComponentRepairIdentityOperation :
+    AAT.GeneratedRepairProblemOperation
+      generatedComponentRepairConfiguration
+      generatedComponentObject where
+  atomMap := fun carrier => ⟨carrier.val, carrier.property⟩
+  shapeTransform := fun source target => source = target
+  transformsAtomShape := by
+    intro carrier
+    rfl
+  operationBoundary := True
+
+/-- World-local operation distance evidence read by the complete suite example. -/
+def generatedComponentIdentityOperationDistanceEvidence :
+    Part4DistanceMeasureGeometry.GeneratedMappedDistanceEvidence
+      (AAT.GeneratedCarrier generatedComponentObject)
+      (AAT.GeneratedCarrier generatedComponentObject)
+      AAT.GeneratedAtomShapeCoordinate :=
+  Part4DistanceMeasureGeometry.generatedOperation_mappedDistanceEvidence
+    generatedComponentIdentityOperation
+    generatedComponentApiCarrier
+
+/-- World-local repair distance evidence read by the complete suite example. -/
+def generatedComponentRepairIdentityDistanceEvidence :
+    Part4DistanceMeasureGeometry.GeneratedMappedDistanceEvidence
+      (AAT.GeneratedRepairProblemCarrier generatedComponentRepairConfiguration)
+      (AAT.GeneratedCarrier generatedComponentObject)
+      AAT.GeneratedAtomShapeCoordinate :=
+  Part4DistanceMeasureGeometry.generatedRepairProblemOperation_mappedDistanceEvidence
+    generatedComponentRepairIdentityOperation
+    (generatedComponentRepairCarrier generatedComponentApiCarrier)
+
+theorem generatedComponentTheoremSuite_has_distance_measure_geometry_fields :
+    (¬ DistanceValue.IsMeasuredZero DistanceValue.unmeasured) ∧
+      generatedComponentFullRootGeometryPackage.RecordsGeneratedBoundaries ∧
+      signatureDistanceBundle.RecordsMeasurementBoundary ∧
+      generatedComponentIdentityOperationDistanceEvidence.RecordsGeneratedBoundaries ∧
+      generatedComponentRepairIdentityDistanceEvidence.RecordsGeneratedBoundaries ∧
+      diagnosticConclusion.RecordsNonConclusions ∧
+      detailedDiagnostic.RecordsRecommendationBoundary ∧
+      generatedFillingPackage.RecordsGeneratedFillingBoundaries ∧
+      generatedCurvatureFillingBridge.RecordsGeneratedCurvatureFillingBoundaries ∧
+      generatedFiniteHomotopyPackage.RecordsFiniteWitnessUniverse ∧
+      generatedFiniteDehnPackage.RecordsFiniteUniverse ∧
+      representationMetricPackage.RecordsGeneratedMetricBoundaries := by
+  exact
+    ⟨generatedComponentTheoremSuite
+        |>.generatedDistanceMeasureGeometry
+        |>.unmeasuredNotMeasuredZero,
+      generatedComponentTheoremSuite
+        |>.generatedDistanceMeasureGeometry
+        |>.rootGeometryRecordsBoundaries
+          selectedObjectSlotFootprint
+          selectedPayloadSlotFootprint
+          selectedValencePortFootprint
+          selectedRequiredPortFootprint
+          selectedSemanticAnchorName,
+      generatedComponentTheoremSuite
+        |>.generatedDistanceMeasureGeometry
+        |>.signatureDistanceBundleRecordsMeasurementBoundary
+          signatureDistanceBundle
+          trivial trivial trivial trivial trivial,
+      generatedComponentTheoremSuite
+        |>.generatedDistanceMeasureGeometry
+        |>.generatedOperationMappedDistanceRecordsBoundaries
+          generatedComponentIdentityOperation
+          generatedComponentApiCarrier,
+      generatedComponentTheoremSuite
+        |>.generatedDistanceMeasureGeometry
+        |>.generatedRepairProblemMappedDistanceRecordsBoundaries
+          generatedComponentRepairIdentityOperation
+          (generatedComponentRepairCarrier generatedComponentApiCarrier),
+      generatedComponentTheoremSuite
+        |>.generatedDistanceMeasureGeometry
+        |>.diagnosticConclusionRecordsNonConclusions
+          diagnosticConclusion trivial trivial trivial,
+      generatedComponentTheoremSuite
+        |>.generatedDistanceMeasureGeometry
+        |>.detailedDiagnosticRecordsRecommendationBoundary
+          detailedDiagnostic trivial trivial,
+      generatedComponentTheoremSuite
+        |>.generatedDistanceMeasureGeometry
+        |>.generatedFillingPackageRecordsBoundaries
+          generatedFillingPackage trivial trivial trivial trivial trivial trivial,
+      generatedComponentTheoremSuite
+        |>.generatedDistanceMeasureGeometry
+        |>.generatedCurvatureFillingBridgeRecordsBoundaries
+          generatedCurvatureFillingBridge
+          trivial trivial trivial trivial
+          generatedFillingPackage_recordsBoundaries
+          trivial trivial,
+      generatedComponentTheoremSuite
+        |>.generatedDistanceMeasureGeometry
+        |>.generatedFiniteHomotopyCostRecordsUniverse
+          generatedFiniteHomotopyPackage trivial trivial trivial trivial trivial,
+      generatedComponentTheoremSuite
+        |>.generatedDistanceMeasureGeometry
+        |>.generatedFiniteDehnBoundRecordsUniverse
+          generatedFiniteDehnPackage trivial trivial trivial trivial trivial,
+      generatedComponentTheoremSuite
+        |>.generatedDistanceMeasureGeometry
+        |>.generatedRepresentationMetricRecordsBoundaries
+          representationMetricPackage
+          trivial trivial trivial trivial trivial trivial trivial trivial trivial⟩
 
 theorem generatedComponentTheoremSuite_has_sft_archsig_fieldsig_fields :
     (generatedComponentTheoremSuite

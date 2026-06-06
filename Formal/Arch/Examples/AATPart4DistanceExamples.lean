@@ -34,6 +34,18 @@ inductive Route where
   | long
   deriving DecidableEq, Repr
 
+inductive ExampleFiller where
+  | selected
+  deriving DecidableEq, Repr
+
+inductive ExampleHomotopy where
+  | contract
+  deriving DecidableEq, Repr
+
+inductive ExampleLoop where
+  | boundary
+  deriving DecidableEq, Repr
+
 def selectedProfile : DistanceProfile where
   atomWeightPolicy := True
   signatureWeightPolicy := True
@@ -166,6 +178,22 @@ theorem signatureEndpointDistance_le_pathLength :
   Part4DistanceMeasureGeometry.signatureEndpointDistance_le_pathLength
     signatureDistanceSchema repairPath
 
+theorem signaturePathLength_append_repair_nil :
+    signatureDistanceSchema.pathLength
+        (ArchitecturePath.append repairPath
+          (ArchitecturePath.nil ExampleState.target)) =
+      signatureDistanceSchema.pathLength repairPath +
+        signatureDistanceSchema.pathLength
+          (ArchitecturePath.nil ExampleState.target) :=
+  Part4DistanceMeasureGeometry.signaturePathLength_append
+    signatureDistanceSchema repairPath
+      (ArchitecturePath.nil ExampleState.target)
+
+theorem signatureHiddenExcursion_zero_of_exact_path :
+    signatureDistanceSchema.hiddenExcursion repairPath = 0 :=
+  Part4DistanceMeasureGeometry.signatureHiddenExcursion_zero_of_endpointDistance_eq_pathLength
+    signatureDistanceSchema repairPath rfl
+
 def boundedRepair : BoundedSideEffectRepair ExampleState where
   source := ExampleState.source
   target := ExampleState.target
@@ -270,6 +298,44 @@ theorem spectralStability_bound :
   Part4DistanceMeasureGeometry.spectralStabilityPackage_spectralDistance_le
     spectralStability
 
+def representationMetricPackage :
+    Part4DistanceMeasureGeometry.GeneratedRepresentationMetricPackage
+      ExampleState Nat Nat where
+  lipschitzPackage := lipschitzRepresentation
+  spectralPackage := spectralStability
+  generatedRepresentationEvidence := True
+  selectedObstructionValuationEvidence := True
+  zeroPreservationBoundary := True
+  zeroReflectionBoundary := True
+  nonConclusions := True
+
+theorem representationMetricPackage_recordsBoundaries :
+    representationMetricPackage.RecordsGeneratedMetricBoundaries :=
+  Part4DistanceMeasureGeometry.generatedRepresentationMetricPackage_recordsGeneratedMetricBoundaries
+    representationMetricPackage
+    trivial trivial trivial trivial trivial trivial trivial trivial trivial
+
+theorem representationMetricPackage_analytic_bound :
+    representationMetricPackage.lipschitzPackage.analyticDistance
+        (representationMetricPackage.lipschitzPackage.represent ExampleState.source)
+        (representationMetricPackage.lipschitzPackage.represent ExampleState.target) ≤
+      representationMetricPackage.lipschitzPackage.lipschitzConstant *
+        representationMetricPackage.lipschitzPackage.structuralDistance
+          ExampleState.source ExampleState.target :=
+  Part4DistanceMeasureGeometry.generatedRepresentationMetricPackage_analyticDistance_le
+    representationMetricPackage trivial
+
+theorem representationMetricPackage_spectral_bound :
+    representationMetricPackage.spectralPackage.spectralDistance
+        (representationMetricPackage.spectralPackage.represent
+          representationMetricPackage.spectralPackage.source)
+        (representationMetricPackage.spectralPackage.represent
+          representationMetricPackage.spectralPackage.target) ≤
+      representationMetricPackage.spectralPackage.lipschitzConstant *
+        representationMetricPackage.spectralPackage.epsilon :=
+  Part4DistanceMeasureGeometry.generatedRepresentationMetricPackage_spectralDistance_le
+    representationMetricPackage
+
 def generatedComponentDistanceBridge :=
   Part4DistanceMeasureGeometry.generatedCarrierShapeDistanceBridge
     AtomGeneratedMoleculeExamples.generatedComponentObject
@@ -277,6 +343,26 @@ def generatedComponentDistanceBridge :=
 def generatedComponentRootDistanceBundle :=
   Part4DistanceMeasureGeometry.generatedCarrierAtomRootDistanceBundle
     AtomGeneratedMoleculeExamples.generatedComponentObject
+
+def selectedObjectSlotFootprint (_shape : AtomShape) : Nat := 0
+
+def selectedPayloadSlotFootprint (_shape : AtomShape) : Nat := 0
+
+def selectedValencePortFootprint (_shape : AtomShape) : Nat := 0
+
+def selectedRequiredPortFootprint (_shape : AtomShape) : Nat := 0
+
+def selectedSemanticAnchorName (shape : AtomShape) : String :=
+  shape.subject.name
+
+def generatedComponentFullRootGeometryPackage :=
+  Part4DistanceMeasureGeometry.generatedCarrierFullRootGeometryPackage
+    AtomGeneratedMoleculeExamples.generatedComponentObject
+    selectedObjectSlotFootprint
+    selectedPayloadSlotFootprint
+    selectedValencePortFootprint
+    selectedRequiredPortFootprint
+    selectedSemanticAnchorName
 
 theorem generatedComponentDistanceBridge_unfolds :
     generatedComponentDistanceBridge.generatedDistance
@@ -310,6 +396,35 @@ theorem generatedComponentRootDistance_layout_eq_one :
           AtomGeneratedMoleculeExamples.generatedComponentDatabaseCarrier)
     _ = 1 :=
       AtomGeneratedMoleculeExamples.generatedComponentObject_api_database_shapeDistance_eq_one
+
+theorem generatedComponentFullRootGeometryPackage_recordsBoundaries :
+    generatedComponentFullRootGeometryPackage.RecordsGeneratedBoundaries :=
+  Part4DistanceMeasureGeometry.generatedCarrierFullRootGeometryPackage_recordsBoundaries
+    AtomGeneratedMoleculeExamples.generatedComponentObject
+    selectedObjectSlotFootprint
+    selectedPayloadSlotFootprint
+    selectedValencePortFootprint
+    selectedRequiredPortFootprint
+    selectedSemanticAnchorName
+
+theorem generatedComponentFullRootGeometryPackage_fullDistance_unfolds :
+    generatedComponentFullRootGeometryPackage.fullDistance
+        AtomGeneratedMoleculeExamples.generatedComponentApiCarrier
+        AtomGeneratedMoleculeExamples.generatedComponentDatabaseCarrier =
+      AAT.GeneratedAtomFullShapeCoordinate.fullMismatchCount
+        (generatedComponentFullRootGeometryPackage.coordinate
+          AtomGeneratedMoleculeExamples.generatedComponentApiCarrier)
+        (generatedComponentFullRootGeometryPackage.coordinate
+          AtomGeneratedMoleculeExamples.generatedComponentDatabaseCarrier) :=
+  Part4DistanceMeasureGeometry.generatedCarrierFullRootGeometryPackage_fullDistance_eq_coordinateMismatch
+    AtomGeneratedMoleculeExamples.generatedComponentObject
+    selectedObjectSlotFootprint
+    selectedPayloadSlotFootprint
+    selectedValencePortFootprint
+    selectedRequiredPortFootprint
+    selectedSemanticAnchorName
+    AtomGeneratedMoleculeExamples.generatedComponentApiCarrier
+    AtomGeneratedMoleculeExamples.generatedComponentDatabaseCarrier
 
 def generatedComponentContextEvidence :=
   Part4DistanceMeasureGeometry.generatedConfigurationContextEvidence
@@ -514,6 +629,242 @@ theorem generatedOperationDiagnostic_records_generated_boundaries :
     ⟨trivial, trivial⟩
     ⟨trivial, trivial, trivial⟩
     trivial
+
+def generatedOperationRepairDiagnostic :=
+  Part4DistanceMeasureGeometry.atomGeneratedDistanceDiagnosticConclusion
+    diagnosticConclusion
+    [Sum.inl generatedOperationDistanceEvidence,
+      Sum.inr generatedRepairProblemDistanceEvidence]
+    [ExampleOperation.attachGuard]
+    True
+    True
+    True
+    True
+    True
+
+def generatedOperationRepairDiagnosticBridge :
+    Part4DistanceMeasureGeometry.GeneratedOperationRepairDiagnosticBridge
+      (Part4DistanceMeasureGeometry.GeneratedMappedDistanceEvidence
+        (AAT.GeneratedCarrier
+          AtomGeneratedMoleculeExamples.generatedApiOnlyObject)
+        (AAT.GeneratedCarrier
+          AtomGeneratedMoleculeExamples.generatedComponentObject)
+        AAT.GeneratedAtomShapeCoordinate)
+      (Part4DistanceMeasureGeometry.GeneratedMappedDistanceEvidence
+        (AAT.GeneratedRepairProblemCarrier
+          AtomGeneratedRepairExamples.missingPortConfiguration)
+        (AAT.GeneratedCarrier
+          AtomGeneratedRepairExamples.repairedGeneratedObject)
+        AAT.GeneratedAtomShapeCoordinate)
+      Axis
+      ExampleOperation where
+  operationEvidence := generatedOperationDistanceEvidence
+  repairEvidence := generatedRepairProblemDistanceEvidence
+  conclusion := generatedOperationRepairDiagnostic
+  operationEvidenceRecorded := True
+  repairEvidenceRecorded := True
+  boundedDiagnosticRecorded := True
+  recommendationBoundary := True
+  nonConclusions := True
+
+theorem generatedOperationRepairDiagnosticBridge_recordsBoundaries :
+    generatedOperationRepairDiagnosticBridge.RecordsGeneratedDiagnosticBoundaries :=
+  Part4DistanceMeasureGeometry.generatedOperationRepairDiagnosticBridge_recordsGeneratedDiagnosticBoundaries
+    generatedOperationRepairDiagnosticBridge
+    trivial
+    trivial
+    (Part4DistanceMeasureGeometry.AtomGeneratedDistanceDiagnosticConclusion.records_generated_boundaries
+      generatedOperationRepairDiagnostic
+      trivial
+      trivial
+      ⟨trivial, trivial⟩
+      ⟨trivial, trivial, trivial⟩
+      trivial)
+    trivial
+    trivial
+    trivial
+
+def fillingLowerBound : FillingCostLowerBound where
+  observationGap := 0
+  fillingCost := 0
+  lipschitzConstant := 1
+  lowerBound := by simp
+  nonConclusions := True
+
+def persistentNonFillability : PersistentNonFillability ExampleFiller where
+  scale := 0
+  candidate := fun _ => False
+  fillerCost := fun _ => 0
+  noFillerWithinScale := by
+    intro _filler hCandidate _hWithin
+    cases hCandidate
+  selectedScope := True
+  nonConclusions := True
+
+def generatedFillingPackage :
+    Part4DistanceMeasureGeometry.GeneratedFillingCostPackage
+      (AAT.GeneratedArchitectureDiagram
+        AtomGeneratedMoleculeExamples.generatedComponentObject
+        (source := AtomGeneratedMoleculeExamples.generatedComponentApiCarrier)
+        (target := AtomGeneratedMoleculeExamples.generatedComponentApiCarrier))
+      ExampleFiller where
+  diagram :=
+    AtomGeneratedMoleculeExamples.generatedComponentNilDiagram
+      AtomGeneratedMoleculeExamples.generatedComponentApiCarrier
+  fillers := []
+  lowerBound := fillingLowerBound
+  persistentNonFillability := persistentNonFillability
+  generatedDiagramEvidence := True
+  finiteFillerUniverse := True
+  nonConclusions := True
+
+theorem generatedFillingPackage_recordsBoundaries :
+    generatedFillingPackage.RecordsGeneratedFillingBoundaries :=
+  Part4DistanceMeasureGeometry.generatedFillingCostPackage_recordsGeneratedFillingBoundaries
+    generatedFillingPackage trivial trivial trivial trivial trivial trivial
+
+theorem generatedFillingPackage_observationGap_le :
+    generatedFillingPackage.lowerBound.observationGap ≤
+      generatedFillingPackage.lowerBound.lipschitzConstant *
+        generatedFillingPackage.lowerBound.fillingCost :=
+  Part4DistanceMeasureGeometry.generatedFillingCostPackage_observationGap_le
+    generatedFillingPackage
+
+def selectedCurvatureReading :
+    SelectedCurvatureReading Axis ExampleState where
+  curvatureMass := fun
+    | Axis.runtime, ExampleState.source => 1
+    | Axis.runtime, ExampleState.middle => 1
+    | Axis.runtime, ExampleState.target => 0
+    | Axis.deployment, ExampleState.source => 0
+    | Axis.deployment, ExampleState.middle => 0
+    | Axis.deployment, ExampleState.target => 1
+  measuredAxis := fun _axis => True
+  selectedScope := True
+  nonConclusions := True
+
+def selectedCurvatureTransport :
+    CurvatureTransport Axis ExampleState where
+  reading := selectedCurvatureReading
+  before := ExampleState.source
+  after := ExampleState.target
+  targetAxis := Axis.runtime
+  transportedAxis := Axis.deployment
+  targetMeasured := trivial
+  transportedMeasured := trivial
+  targetDecreases := by decide
+  transportedIncreases := by decide
+  selectedScope := True
+  nonConclusions := True
+
+def generatedCurvatureFillingBridge :
+    Part4DistanceMeasureGeometry.GeneratedCurvatureFillingBridge
+      Axis
+      ExampleState
+      (AAT.GeneratedArchitectureDiagram
+        AtomGeneratedMoleculeExamples.generatedComponentObject
+        (source := AtomGeneratedMoleculeExamples.generatedComponentApiCarrier)
+        (target := AtomGeneratedMoleculeExamples.generatedComponentApiCarrier))
+      ExampleFiller where
+  curvatureTransport := selectedCurvatureTransport
+  fillingPackage := generatedFillingPackage
+  generatedCurvatureEvidence := True
+  generatedFillingEvidence := True
+  selectedScope := True
+  nonConclusions := True
+
+theorem generatedCurvatureFillingBridge_recordsBoundaries :
+    generatedCurvatureFillingBridge.RecordsGeneratedCurvatureFillingBoundaries :=
+  Part4DistanceMeasureGeometry.generatedCurvatureFillingBridge_recordsGeneratedCurvatureFillingBoundaries
+    generatedCurvatureFillingBridge
+    trivial
+    trivial
+    trivial
+    trivial
+    generatedFillingPackage_recordsBoundaries
+    trivial
+    trivial
+
+theorem generatedCurvatureFillingBridge_target_decreases :
+    generatedCurvatureFillingBridge.curvatureTransport.reading.curvatureMass
+        generatedCurvatureFillingBridge.curvatureTransport.targetAxis
+        generatedCurvatureFillingBridge.curvatureTransport.after <
+      generatedCurvatureFillingBridge.curvatureTransport.reading.curvatureMass
+        generatedCurvatureFillingBridge.curvatureTransport.targetAxis
+        generatedCurvatureFillingBridge.curvatureTransport.before :=
+  Part4DistanceMeasureGeometry.generatedCurvatureFillingBridge_target_curvature_decreases
+    generatedCurvatureFillingBridge
+
+def generatedHomotopyBound : QuantitativeHomotopyBound where
+  observationDistance := 0
+  homotopyCost := 0
+  lipschitzConstant := 1
+  bound := by simp
+  selectedScope := True
+  nonConclusions := True
+
+def generatedFiniteHomotopyPackage :
+    Part4DistanceMeasureGeometry.GeneratedFiniteHomotopyCost
+      (AAT.GeneratedArchitecturePath
+        AtomGeneratedMoleculeExamples.generatedComponentObject
+        AtomGeneratedMoleculeExamples.generatedComponentApiCarrier
+        AtomGeneratedMoleculeExamples.generatedComponentApiCarrier)
+      ExampleHomotopy where
+  sourcePath :=
+    AtomGeneratedMoleculeExamples.generatedComponentNilPath
+      AtomGeneratedMoleculeExamples.generatedComponentApiCarrier
+  targetPath :=
+    AtomGeneratedMoleculeExamples.generatedComponentNilPath
+      AtomGeneratedMoleculeExamples.generatedComponentApiCarrier
+  homotopies := [ExampleHomotopy.contract]
+  homotopyBound := generatedHomotopyBound
+  finiteWitnessUniverse := True
+  selectedScope := True
+  nonConclusions := True
+
+theorem generatedFiniteHomotopyPackage_recordsUniverse :
+    generatedFiniteHomotopyPackage.RecordsFiniteWitnessUniverse :=
+  Part4DistanceMeasureGeometry.generatedFiniteHomotopyCost_recordsFiniteWitnessUniverse
+    generatedFiniteHomotopyPackage trivial trivial trivial trivial trivial
+
+theorem generatedFiniteHomotopyPackage_observationDistance_le :
+    generatedFiniteHomotopyPackage.homotopyBound.observationDistance ≤
+      generatedFiniteHomotopyPackage.homotopyBound.lipschitzConstant *
+        generatedFiniteHomotopyPackage.homotopyBound.homotopyCost :=
+  Part4DistanceMeasureGeometry.generatedFiniteHomotopyCost_observationDistance_le
+    generatedFiniteHomotopyPackage
+
+def finiteDehnBound : FiniteDehnBound ExampleLoop where
+  candidates := [ExampleLoop.boundary]
+  boundaryLength := fun _ => 0
+  fillingArea := fun _ => 0
+  boundaryLimit := 0
+  dehnValue := 0
+  upperBound := by
+    intro _loop _hMem _hBoundary
+    simp
+  selectedScope := True
+  nonConclusions := True
+
+def generatedFiniteDehnPackage :
+    Part4DistanceMeasureGeometry.GeneratedFiniteDehnBound ExampleLoop where
+  dehnBound := finiteDehnBound
+  suppliedCandidateUniverse := True
+  notUniversalDehnFunction := True
+  nonConclusions := True
+
+theorem generatedFiniteDehnPackage_recordsUniverse :
+    generatedFiniteDehnPackage.RecordsFiniteUniverse :=
+  Part4DistanceMeasureGeometry.generatedFiniteDehnBound_recordsFiniteUniverse
+    generatedFiniteDehnPackage trivial trivial trivial trivial trivial
+
+theorem generatedFiniteDehnPackage_area_le :
+    generatedFiniteDehnPackage.dehnBound.fillingArea ExampleLoop.boundary ≤
+      generatedFiniteDehnPackage.dehnBound.dehnValue :=
+  Part4DistanceMeasureGeometry.generatedFiniteDehnBound_fillingArea_le_dehnValue
+    generatedFiniteDehnPackage
+    (by simp [generatedFiniteDehnPackage, finiteDehnBound])
+    (by simp [generatedFiniteDehnPackage, finiteDehnBound])
 
 end AATPart4DistanceExamples
 end Formal.Arch
