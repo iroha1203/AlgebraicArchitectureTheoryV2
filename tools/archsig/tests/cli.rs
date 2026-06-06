@@ -1135,6 +1135,82 @@ fn cli_runs_primary_archmap_lawpolicy_archsig_analyze_workflow() {
 }
 
 #[test]
+fn cli_analyze_strict_distance_requires_part4_profile() {
+    let out_dir = temp_dir("analyze-strict-distance");
+    let root = fixture_root();
+    let archmap = root.join("archmap.json");
+    let law_policy = root.join("law_policy.json");
+
+    run_sig0(&[
+        "analyze",
+        "--archmap",
+        archmap.to_str().expect("archmap path is utf-8"),
+        "--law-policy",
+        law_policy.to_str().expect("law policy path is utf-8"),
+        "--out-dir",
+        out_dir.to_str().expect("output directory path is utf-8"),
+        "--strict-distance",
+    ]);
+
+    let legacy_policy_path = out_dir.join("law_policy_without_part4_distance_profile.json");
+    let mut legacy_policy = read_json(&law_policy);
+    legacy_policy
+        .as_object_mut()
+        .expect("LawPolicy is an object")
+        .remove("part4DistanceProfile");
+    fs::write(
+        &legacy_policy_path,
+        serde_json::to_vec_pretty(&legacy_policy).expect("legacy policy serializes"),
+    )
+    .expect("legacy policy can be written");
+
+    let legacy_out_dir = out_dir.join("legacy-profile");
+    let output = run_sig0_output(&[
+        "analyze",
+        "--archmap",
+        archmap.to_str().expect("archmap path is utf-8"),
+        "--law-policy",
+        legacy_policy_path
+            .to_str()
+            .expect("legacy law policy path is utf-8"),
+        "--out-dir",
+        legacy_out_dir.to_str().expect("legacy output dir is utf-8"),
+        "--strict-distance",
+    ]);
+
+    assert!(
+        !output.status.success(),
+        "strict-distance must reject LawPolicy without part4DistanceProfile"
+    );
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(
+        stderr.contains("--strict-distance")
+            && stderr.contains("part4DistanceProfile")
+            && stderr.contains("legacy profile fallback is disabled"),
+        "strict-distance error should identify missing Part IV profile\n{stderr}"
+    );
+    for file in [
+        "archmap-validation.json",
+        "law-policy-validation.json",
+        "archsig-analysis-validation.json",
+        "archsig-analysis-summary.json",
+        "archsig-atom-viewer-data.json",
+        "archsig-run-manifest.json",
+    ] {
+        assert!(
+            legacy_out_dir.join(file).is_file(),
+            "strict-distance failure should still write diagnostic artifact {file}"
+        );
+    }
+    let law_policy_validation = read_json(&legacy_out_dir.join("law-policy-validation.json"));
+    assert_eq!(
+        law_policy_validation["summary"]["result"].as_str(),
+        Some("warn"),
+        "legacy profile should be visible in the emitted LawPolicy validation report"
+    );
+}
+
+#[test]
 fn atom_viewer_uses_atom_shape_distance_inputs_for_molecule_layout() {
     let viewer_path = Path::new(env!("CARGO_MANIFEST_DIR")).join("viewer/archsig-atom-viewer.html");
     let viewer = fs::read_to_string(&viewer_path).expect("viewer html can be read");

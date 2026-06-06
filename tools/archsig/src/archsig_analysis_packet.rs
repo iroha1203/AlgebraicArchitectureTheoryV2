@@ -714,13 +714,14 @@ fn build_part4_distance_foundation(
     archmap: &ArchMapDocumentV0,
     law_policy: &LawPolicyDocumentV0,
 ) -> ArchSigPart4DistanceFoundationV0 {
-    let profile_id = format!("part4-distance-profile:{}", law_policy.law_policy_id);
     let scope_id = format!("part4-diagnostic-scope:{}", archmap.map_id);
     let coverage_policy_refs = law_policy
         .coverage_requirements
         .iter()
         .map(|requirement| requirement.coverage_requirement_id.clone())
         .collect::<Vec<_>>();
+    let profile = selected_part4_distance_profile(law_policy, &coverage_policy_refs);
+    let profile_id = profile.profile_id.clone();
     let signature_axis_refs = law_policy
         .signature_axis_definitions
         .iter()
@@ -803,48 +804,7 @@ fn build_part4_distance_foundation(
 
     ArchSigPart4DistanceFoundationV0 {
         foundation_id: format!("part4-distance-foundation:{}", archmap.map_id),
-        profile: ArchSigDistanceProfileV0 {
-            profile_id: profile_id.clone(),
-            profile_source_ref: law_policy.law_policy_id.clone(),
-            atom_weights: vec![
-                distance_weight("atom.fiber", 1),
-                distance_weight("atom.carrier", 1),
-                distance_weight("atom.valence", 1),
-                distance_weight("atom.semanticAnchor", 1),
-            ],
-            signature_weights: law_policy
-                .signature_axis_definitions
-                .iter()
-                .map(|axis| ArchSigDistanceProfileWeightV0 {
-                    axis_ref: axis.signature_axis_id.clone(),
-                    weight: 1,
-                    source_ref: axis.law_ref.clone(),
-                })
-                .collect(),
-            operation_costs: vec![
-                operation_cost("rename", 1),
-                operation_cost("move", 2),
-                operation_cost("extract", 3),
-                operation_cost("introduce-port", 4),
-                operation_cost("split-module", 5),
-                operation_cost("change-contract", 8),
-                operation_cost("semantic-rewrite", 13),
-                operation_cost("runtime-protocol-shift", 21),
-            ],
-            aggregation_policy:
-                "aggregate measured axes only; propagate unmeasured, unavailable, incomparable, and blocked status separately"
-                    .to_string(),
-            unmeasured_policy:
-                "unmeasured is not zero and cannot contribute numeric zero to total measured distance"
-                    .to_string(),
-            law_overlay_policy:
-                "law-relative distance is an overlay over ArchMap Atom observations, not an Atom generator"
-                    .to_string(),
-            coverage_policy_refs: coverage_policy_refs.clone(),
-            evidence_boundary:
-                "DistanceProfile is selected by LawPolicy / InterpretationProfile; it is not empirical calibration or a Lean theorem proof"
-                    .to_string(),
-        },
+        profile,
         diagnostic_scope: ArchSigDiagnosticScopeV0 {
             scope_id: scope_id.clone(),
             observed_atom_refs: archmap
@@ -889,6 +849,103 @@ fn build_part4_distance_foundation(
             "unmeasured and blocked values are not zero".to_string(),
         ],
         non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
+    }
+}
+
+fn selected_part4_distance_profile(
+    law_policy: &LawPolicyDocumentV0,
+    default_coverage_refs: &[String],
+) -> ArchSigDistanceProfileV0 {
+    if let Some(profile) = law_policy.part4_distance_profile.as_ref() {
+        return ArchSigDistanceProfileV0 {
+            profile_id: profile.profile_id.clone(),
+            profile_source_ref: format!(
+                "law-policy:{}#part4DistanceProfile:{}",
+                law_policy.law_policy_id, profile.profile_id
+            ),
+            atom_weights: profile
+                .atom_weights
+                .iter()
+                .map(|weight| ArchSigDistanceProfileWeightV0 {
+                    axis_ref: weight.axis_ref.clone(),
+                    weight: weight.weight,
+                    source_ref: weight.source_ref.clone(),
+                })
+                .collect(),
+            signature_weights: profile
+                .signature_weights
+                .iter()
+                .map(|weight| ArchSigDistanceProfileWeightV0 {
+                    axis_ref: weight.axis_ref.clone(),
+                    weight: weight.weight,
+                    source_ref: weight.source_ref.clone(),
+                })
+                .collect(),
+            operation_costs: profile
+                .operation_costs
+                .iter()
+                .map(|cost| ArchSigDistanceOperationCostV0 {
+                    operation_kind: cost.operation_kind.clone(),
+                    cost: cost.cost,
+                    source_ref: cost.source_ref.clone(),
+                })
+                .collect(),
+            aggregation_policy: profile.aggregation_policy.clone(),
+            unmeasured_policy: profile.unmeasured_policy.clone(),
+            law_overlay_policy: profile.law_overlay_policy.clone(),
+            coverage_policy_refs: if profile.coverage_requirement_refs.is_empty() {
+                default_coverage_refs.to_vec()
+            } else {
+                profile.coverage_requirement_refs.clone()
+            },
+            evidence_boundary: profile.evidence_boundary.clone(),
+        };
+    }
+
+    ArchSigDistanceProfileV0 {
+        profile_id: format!("part4-distance-profile:{}", law_policy.law_policy_id),
+        profile_source_ref: law_policy.law_policy_id.clone(),
+        atom_weights: vec![
+            distance_weight("atom.fiber", 1),
+            distance_weight("atom.carrier", 1),
+            distance_weight("atom.valence", 1),
+            distance_weight("atom.semanticAnchor", 1),
+        ],
+        signature_weights: law_policy
+            .signature_axis_definitions
+            .iter()
+            .map(|axis| ArchSigDistanceProfileWeightV0 {
+                axis_ref: axis.signature_axis_id.clone(),
+                weight: 1,
+                source_ref: axis.law_ref.clone(),
+            })
+            .collect(),
+        operation_costs: vec![
+            operation_cost("rename", 1),
+            operation_cost("move", 2),
+            operation_cost("extract", 3),
+            operation_cost("evidence-enrichment", 3),
+            operation_cost("introduce-port", 4),
+            operation_cost("split-module", 5),
+            operation_cost("change-contract", 8),
+            operation_cost("semantic-rewrite", 13),
+            operation_cost("repair-boundaryleakcircuit", 13),
+            operation_cost("repair-semanticmismatchcircuit", 13),
+            operation_cost("runtime-protocol-shift", 21),
+        ],
+        aggregation_policy:
+            "aggregate measured axes only; propagate unmeasured, unavailable, incomparable, and blocked status separately"
+                .to_string(),
+        unmeasured_policy:
+            "unmeasured is not zero and cannot contribute numeric zero to total measured distance"
+                .to_string(),
+        law_overlay_policy:
+            "law-relative distance is an overlay over ArchMap Atom observations, not an Atom generator"
+                .to_string(),
+        coverage_policy_refs: default_coverage_refs.to_vec(),
+        evidence_boundary:
+            "legacy LawPolicy did not declare part4DistanceProfile; ArchSig used compatibility defaults"
+                .to_string(),
     }
 }
 
@@ -14075,7 +14132,16 @@ fn operation_cost_distance_value(
     foundation: &ArchSigPart4DistanceFoundationV0,
     coverage_refs: &[String],
 ) -> ArchSigDistanceValueV0 {
-    let cost = selected_operation_cost(&delta.operation_kind, foundation);
+    let Some(cost) = selected_operation_cost(&delta.operation_kind, foundation) else {
+        return blocked_curvature_distance_value(
+            "operation-cost",
+            vec![delta.operation_delta_id.clone()],
+            vec![format!("profile:{}", foundation.profile.profile_id)],
+            coverage_refs,
+            vec![format!("missingOperationCost:{}", delta.operation_kind)],
+            "operation cost is blocked because the selected Part IV DistanceProfile does not declare this operation kind",
+        );
+    };
     measured_part4_distance_value(
         cost,
         "operation-cost",
@@ -14092,27 +14158,14 @@ fn operation_cost_distance_value(
 fn selected_operation_cost(
     operation_kind: &str,
     foundation: &ArchSigPart4DistanceFoundationV0,
-) -> i64 {
+) -> Option<i64> {
     let kind = operation_kind.to_ascii_lowercase();
     foundation
         .profile
         .operation_costs
         .iter()
-        .find(|cost| kind.contains(&cost.operation_kind))
+        .find(|cost| cost.operation_kind.eq_ignore_ascii_case(&kind))
         .map(|cost| cost.cost)
-        .unwrap_or_else(|| {
-            if kind.contains("split") {
-                5
-            } else if kind.contains("contract") {
-                8
-            } else if kind.contains("semantic") {
-                13
-            } else if kind.contains("runtime") {
-                21
-            } else {
-                3
-            }
-        })
 }
 
 fn target_distance_decrease_value(
@@ -26669,6 +26722,50 @@ mod tests {
                 .operation_deltas
                 .iter()
                 .all(|delta| !delta.part4_distance_refs.is_empty())
+        );
+    }
+
+    #[test]
+    fn operation_distance_blocks_when_profile_cost_is_missing() {
+        let archmap: ArchMapDocumentV0 =
+            serde_json::from_str(include_str!("../tests/fixtures/minimal/archmap.json"))
+                .expect("ArchMap fixture parses");
+        let mut law_policy = crate::law_policy::static_law_policy();
+        law_policy
+            .part4_distance_profile
+            .as_mut()
+            .expect("static policy has Part IV profile")
+            .operation_costs
+            .clear();
+
+        let packet = build_archsig_analysis_packet(&archmap, &law_policy, None, None);
+        let reading = packet
+            .operation_distance_readings
+            .first()
+            .expect("fixture has operation distance reading");
+
+        assert_eq!(reading.operation_cost.status, "blocked");
+        assert_eq!(reading.operation_cost.measured_value, None);
+        assert!(
+            reading
+                .operation_cost
+                .blocker_refs
+                .iter()
+                .any(|blocker| blocker.starts_with("missingOperationCost:"))
+        );
+    }
+
+    #[test]
+    fn operation_cost_selection_does_not_match_substrings() {
+        let packet = static_archsig_analysis_packet();
+
+        assert_eq!(
+            selected_operation_cost("rename", &packet.part4_distance_foundation),
+            Some(1)
+        );
+        assert_eq!(
+            selected_operation_cost("pre-rename-cleanup", &packet.part4_distance_foundation),
+            None
         );
     }
 
