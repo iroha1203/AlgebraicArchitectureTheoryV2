@@ -38,6 +38,7 @@ inductive Candidate where
   | atomConfigurationGeometry
   | configurationContextGeometry
   | signaturePathGeometry
+  | signatureDistanceAggregation
   | finiteWitnessInfimumCore
   | distanceToLawfulnessGeometry
   | metricGaloisCorrespondence
@@ -72,6 +73,8 @@ def designSection : Candidate -> String
       "Part IV.B/C configuration-indexed and context distance schema"
   | signaturePathGeometry =>
       "Part IV.C signature path length, hidden excursion, and margin stability"
+  | signatureDistanceAggregation =>
+      "Part IV.C/I DistanceValue-aware signature distance aggregation"
   | finiteWitnessInfimumCore =>
       "Part IV.C/D/E finite witness, lower-bound, and selected optimum core"
   | distanceToLawfulnessGeometry =>
@@ -111,6 +114,7 @@ def schematicName : Candidate -> String
   | atomConfigurationGeometry => "atomConfigurationGeometry"
   | configurationContextGeometry => "configurationContextGeometry"
   | signaturePathGeometry => "signaturePathGeometry"
+  | signatureDistanceAggregation => "signatureDistanceAggregation"
   | finiteWitnessInfimumCore => "finiteWitnessInfimumCore"
   | distanceToLawfulnessGeometry => "distanceToLawfulnessGeometry"
   | metricGaloisCorrespondence => "metricGaloisCorrespondence"
@@ -181,6 +185,17 @@ def representativeDeclarations : Candidate -> List String
       , "SignatureDistanceSchema.hiddenExcursion_positive_of_endpointDistance_lt_pathLength"
       , "SignatureDistanceSchema.endpointDistance_le_pathLength"
       , "SignatureDistanceSchema.margin_stability"
+      ]
+  | signatureDistanceAggregation =>
+      [ "AxisDistanceReading"
+      , "AxisDistanceReading.MeasuredPayload?"
+      , "SignatureDistanceBundle"
+      , "SignatureDistanceBundle.measuredSubtotal"
+      , "SignatureDistanceBundle.measuredPayload?_measured"
+      , "SignatureDistanceBundle.unmeasuredAxis_not_measuredPayload"
+      , "SignatureDistanceBundle.unmeasuredAxis_not_measuredZero"
+      , "Part4DistanceMeasureGeometry.signatureDistanceBundle_measuredSubtotal_eq_selectedAxes"
+      , "Part4DistanceMeasureGeometry.signatureDistanceBundle_records_measurementBoundary"
       ]
   | finiteWitnessInfimumCore =>
       [ "FiniteRouteCost"
@@ -305,6 +320,8 @@ def claimBoundary : Candidate -> String
       "Configuration and context distance schemas use supplied finite witnesses and do not assert global shortest-path or context completeness."
   | signaturePathGeometry =>
       "Path-length and margin-stability results are finite-path and selected-scope theorems with explicit preservation assumptions."
+  | signatureDistanceAggregation =>
+      "Signature distance aggregation keeps axis-wise DistanceValue status, measured subtotal, coverage, confidence, and unmeasured boundaries without treating non-measured axes as zero."
   | finiteWitnessInfimumCore =>
       "Finite witness and selected optimum rows range only over supplied candidate lists; they do not assert global optimization completeness."
   | distanceToLawfulnessGeometry =>
@@ -349,6 +366,7 @@ def schematicCorrespondences : List SchematicCorrespondence :=
   , schematicCorrespondence .atomConfigurationGeometry
   , schematicCorrespondence .configurationContextGeometry
   , schematicCorrespondence .signaturePathGeometry
+  , schematicCorrespondence .signatureDistanceAggregation
   , schematicCorrespondence .finiteWitnessInfimumCore
   , schematicCorrespondence .distanceToLawfulnessGeometry
   , schematicCorrespondence .metricGaloisCorrespondence
@@ -377,6 +395,7 @@ def all : List Candidate :=
   , atomConfigurationGeometry
   , configurationContextGeometry
   , signaturePathGeometry
+  , signatureDistanceAggregation
   , finiteWitnessInfimumCore
   , distanceToLawfulnessGeometry
   , metricGaloisCorrespondence
@@ -990,6 +1009,61 @@ theorem signature_margin_stability
       (SignatureTrajectory schema.observation plan) :=
   SignatureDistanceSchema.margin_stability
     schema R plan margin hStart hWithin hPreserves
+
+theorem signatureDistanceBundle_measuredSubtotal_eq_selectedAxes
+    {Axis : Type u}
+    (bundle : SignatureDistanceBundle Axis) :
+    bundle.measuredSubtotal =
+      bundle.measuredSubtotalOf bundle.selectedAxes :=
+  SignatureDistanceBundle.measuredSubtotal_eq_selectedAxes bundle
+
+theorem signatureDistanceBundle_measuredPayload_measured
+    {Axis : Type u}
+    (bundle : SignatureDistanceBundle Axis)
+    {axis : Axis} {n : Nat}
+    (hValue : bundle.axisDistance axis = DistanceValue.measured n) :
+    bundle.measuredPayload? axis = some n :=
+  bundle.measuredPayload?_measured hValue
+
+theorem signatureDistanceBundle_unmeasuredAxis_not_measuredPayload
+    {Axis : Type u}
+    (bundle : SignatureDistanceBundle Axis)
+    {axis : Axis}
+    (hValue : bundle.axisDistance axis = DistanceValue.unmeasured)
+    (n : Nat) :
+    bundle.measuredPayload? axis ≠ some n :=
+  bundle.unmeasuredAxis_not_measuredPayload hValue n
+
+theorem signatureDistanceBundle_unmeasuredAxis_not_measuredZero
+    {Axis : Type u}
+    (bundle : SignatureDistanceBundle Axis)
+    {axis : Axis}
+    (hValue : bundle.axisDistance axis = DistanceValue.unmeasured) :
+    ¬ DistanceValue.IsMeasuredZero (bundle.axisDistance axis) :=
+  bundle.unmeasuredAxis_not_measuredZero hValue
+
+theorem signatureDistanceBundle_records_measurementBoundary
+    {Axis : Type u}
+    (bundle : SignatureDistanceBundle Axis)
+    (hCoverage : bundle.coverageAssumptions)
+    (hAggregation : bundle.aggregationPolicy)
+    (hConfidence : bundle.confidenceBoundary)
+    (hUnmeasured : bundle.unmeasuredAxisPolicy)
+    (hNonConclusions : bundle.nonConclusions) :
+    bundle.RecordsMeasurementBoundary :=
+  bundle.records_measurementBoundary
+    hCoverage hAggregation hConfidence hUnmeasured hNonConclusions
+
+theorem signatureDistanceBundle_records_nonConclusions
+    {Axis : Type u}
+    (bundle : SignatureDistanceBundle Axis)
+    (hLaw : bundle.doesNotConcludeGlobalLawfulness)
+    (hFlat : bundle.doesNotConcludeGlobalFlatness)
+    (hUnmeasured : bundle.doesNotConcludeUnmeasuredZero)
+    (hNonConclusions : bundle.nonConclusions) :
+    bundle.RecordsNonConclusions :=
+  bundle.records_nonConclusions
+    hLaw hFlat hUnmeasured hNonConclusions
 
 theorem selectedFiniteOptimum_lowerBound_for_selected_candidates
     {Candidate : Type u}

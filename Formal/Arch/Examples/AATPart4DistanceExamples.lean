@@ -55,6 +55,51 @@ theorem unmeasured_axis_is_not_measured_zero :
     ¬ DistanceValue.IsMeasuredZero DistanceValue.unmeasured :=
   Part4DistanceMeasureGeometry.unmeasured_not_measured_zero
 
+def signatureDistanceBundle : SignatureDistanceBundle Axis where
+  profile := selectedProfile
+  selectedAxes := [Axis.runtime, Axis.deployment]
+  axisDistance := fun
+    | Axis.runtime => DistanceValue.measured 3
+    | Axis.deployment => DistanceValue.unmeasured
+  measuredAxis := fun axis => axis = Axis.runtime
+  unmeasuredAxis := fun axis => axis = Axis.deployment
+  unavailableAxis := fun _axis => False
+  incomparableAxis := fun _axis => False
+  coverageAssumptions := True
+  aggregationPolicy := True
+  confidenceBoundary := True
+  unmeasuredAxisPolicy := True
+  doesNotConcludeGlobalLawfulness := True
+  doesNotConcludeGlobalFlatness := True
+  doesNotConcludeUnmeasuredZero := True
+  nonConclusions := True
+
+theorem signatureDistanceBundle_runtime_payload :
+    signatureDistanceBundle.measuredPayload? Axis.runtime = some 3 :=
+  Part4DistanceMeasureGeometry.signatureDistanceBundle_measuredPayload_measured
+    signatureDistanceBundle rfl
+
+theorem signatureDistanceBundle_measuredSubtotal_eq_three :
+    signatureDistanceBundle.measuredSubtotal = 3 := by
+  rfl
+
+theorem signatureDistanceBundle_deployment_not_measuredPayload
+    (n : Nat) :
+    signatureDistanceBundle.measuredPayload? Axis.deployment ≠ some n :=
+  Part4DistanceMeasureGeometry.signatureDistanceBundle_unmeasuredAxis_not_measuredPayload
+    signatureDistanceBundle rfl n
+
+theorem signatureDistanceBundle_deployment_not_measuredZero :
+    ¬ DistanceValue.IsMeasuredZero
+      (signatureDistanceBundle.axisDistance Axis.deployment) :=
+  Part4DistanceMeasureGeometry.signatureDistanceBundle_unmeasuredAxis_not_measuredZero
+    signatureDistanceBundle rfl
+
+theorem signatureDistanceBundle_records_measurementBoundary :
+    signatureDistanceBundle.RecordsMeasurementBoundary :=
+  Part4DistanceMeasureGeometry.signatureDistanceBundle_records_measurementBoundary
+    signatureDistanceBundle trivial trivial trivial trivial trivial
+
 def diagnosticConclusion : BoundedDiagnosticConclusion Axis where
   scope := selectedScope
   value := fun
