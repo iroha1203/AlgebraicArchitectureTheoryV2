@@ -46,7 +46,7 @@ fragments.
 | ArchSig run manifest | `archsig-run-manifest-v0` | Run navigation artifact emitted by default from `analyze`. It records command name, input paths, output mode, generated / omitted artifacts, validation report paths, optional raw artifact paths, and validation result summary. |
 | ArchSig analysis packet | `archsig-analysis-packet-v0` | Raw evidence artifact emitted only when raw artifact retention is requested. It records molecule readings, law-relative obstruction circuits, signature axes, flatness reading, repair candidates, coverage gaps, child-level `missingEvidence` / `excludedReadings`, evidence boundaries, LLM interpretation notes, and non-conclusions. |
 | ArchSig analysis validation report | `archsig-analysis-packet-validation-report-v0` | Checks the analysis packet boundary without proving lawfulness, source completeness, flatness, or repair safety. |
-| LLM interpretation packet | `archsig-analysis-packet-v0` | Optional raw artifact: a second serialization of the packet's structured LLM interpretation surface. |
+| LLM interpretation packet | `llmInterpretationPacket` payload | Optional raw artifact: a serialization of the packet's structured LLM interpretation surface. It is not a second standalone `archsig-analysis-packet-v0` packet and does not carry the raw packet schema version by itself. |
 
 Release archives include a fixed `archsig-atom-viewer.html` at the package root
 and under `viewer/`. The app reads `archsig-atom-viewer-data-v0` projection

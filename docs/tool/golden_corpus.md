@@ -97,20 +97,31 @@ contributions carry evidence blockers.
 
 - `tools/archsig/tests/fixtures/minimal/archmap_invalid_concern_promoted.json`
 - `tools/archsig/tests/fixtures/minimal/archmap_invalid_gap_measured_zero.json`
+- `tools/archsig/tests/fixtures/negative/part4_distance_surface_negative_cases.json`
+- `tools/archsig/tests/fixtures/negative/part4_distance_policy_negative_cases.json`
 
 These fixtures lock the two main guardrails:
 
 - `concernHints` are not obstruction circuits.
 - `observationGaps` are not measured zero.
 
-Part IV anti-proxy negative fixtures live as Rust validation tests instead of
-public JSON files when a single field mutation is clearer than maintaining a
-large copied packet. The suite mutates the static packet to reject:
+Part IV anti-proxy negative fixtures are split between a persisted distance
+surface corpus, executable persisted LawPolicy mutation cases, and Rust
+validation tests. The persisted corpus records the regression classes that
+must remain covered across CLI / serde / artifact surfaces without copying a
+large raw packet. The persisted LawPolicy mutation cases are read by CLI tests
+and run through `analyze --strict-distance`. The Rust suite mutates the static
+packet when a single field mutation is clearer than maintaining a copied
+packet. Together they reject:
 
 - measured distance without provenance / evaluator basis / coverage refs
 - stale or missing `DistanceProfile` / `DiagnosticScope` alignment
 - measured or zero signature axes left in `DiagnosticScope.unmeasuredAxisRefs`
   or summary/viewer `distanceDiagnosis.unmeasuredAxes`
+- ignored `part4DistanceProfile` atom / signature weights
+- missing operation costs that fail to block `operationGeometry`
+- null summary ids for operation / curvature distance refs
+- stale `distanceDiagnosis.detailRefs` that do not resolve into the raw packet
 - closed implementation Issue placeholder blockers left in final
   `DiagnosticScope.blockerRefs`
 - `unmeasuredAxis:<axis>` blockers left in final `DiagnosticScope.blockerRefs`

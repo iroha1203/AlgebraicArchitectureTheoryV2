@@ -139,14 +139,16 @@ Read in this order:
    - Prefer `archsig-analysis-summary.json` when available.
    - Read the whole summary before opening raw packet details. Start with
      `verdict`, `qualityMeasurement`, `distanceDiagnosis`,
-     `dominantFindings`, `actionQueue`, `axisSummary`, `workflowRiskSummary`,
-     `architecturalHoleSummary`, `bridgeSummary`, `coverageGapSummary`,
-     `detailIndex`, and `measurementBasis`.
+     `trendDiagnosis`, `architectureInsightSummary`, `reviewSupport`,
+     `dominantFindings`, `actionQueue`, `axisSummary`,
+     `aatObservationAxisSummary`, `architecturalHoleSummary`,
+     `bridgeSummary`, `coverageGapSummary`, `detailIndex`, and
+     `measurementBasis`.
    - When a human visual reading is useful, open the fixed Atom Viewer and use
      its report pane as the human first surface for overview, top findings,
      distance diagnosis, action queue, coverage boundaries, validation status,
      artifacts, and omitted raw detail.
-   - Say what the supplied ArchMap + LawPolicy measured: flat/nonflat under selected policy, nonzero axes, hotspots, recurrent pressure, architectural holes, workflow risk, bridge pressure, and review action queue.
+   - Say what the supplied ArchMap + LawPolicy measured: flat/nonflat under selected policy, nonzero axes, hotspots, recurrent pressure, architectural holes, trend / review support, bridge pressure, and review action queue.
    - Report Part IV distance as selected-scope diagnosis: measured movement,
      unmeasured axes, safe margin, repair / curvature / homotopy distance, and
      representation metric boundaries. Never collapse blocked or unmeasured
@@ -173,7 +175,9 @@ Read in this order:
    - Treat coverage gaps as measurement basis for why zero was not measured.
 
 5. Dominant pressure
-   - Use `dominantFindings`, `actionQueue`, `workflowRiskSummary`, `architecturalHoleSummary`, and `bridgeSummary` before opening raw packet sections.
+   - Use `dominantFindings`, `actionQueue`, `trendDiagnosis`, `reviewSupport`,
+     `architectureInsightSummary`, `architecturalHoleSummary`, and
+     `bridgeSummary` before opening raw packet sections.
    - Follow summary `detailRefs` into `architectureSpectrumReport` when the review needs full hotspot, recurrent obstruction, witness cluster, coverage gap, measured boundary, or review focus detail.
    - Treat the report as a current-state architecture quality measurement over
      the selected axes only after checking `measurementStatus` and

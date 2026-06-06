@@ -23,7 +23,8 @@ Read `archsig-analysis-summary.json` before raw packet details:
    nonzero holonomy, nonzero axes, workflow pressure, and bridge pressure.
    Queue entries use `detailRefs`; they do not carry nested support/source/
    witness evidence arrays.
-6. `axisSummary`, `workflowRiskSummary`, `architecturalHoleSummary`,
+6. `axisSummary`, `aatObservationAxisSummary`, `trendDiagnosis`,
+   `reviewSupport`, `architectureInsightSummary`, `architecturalHoleSummary`,
    `bridgeSummary`, and `coverageGapSummary`: compact counts and examples for
    the major surfaces.
 7. `detailIndex`: packet sections and `packet:<json-pointer>` refs for reading
@@ -59,7 +60,7 @@ truly unavailable, private, or out of scope.
 | --- | --- |
 | `archMapRef`, `selectedLawPolicyRef` | Identifies the observed source state and selected law universe. |
 | `axisSummary` / `detailIndex` | States selected/nonzero axis counts and points to `flatnessReading` / `signatureAxes[]` detail when needed. |
-| `workflowRiskSummary` / `actionQueue` | Prioritizes molecule-local review pressure such as permission, LLM mediation, state/effect reconciliation, and domain cohesion, with refs into `workflowRiskReadings[]`. |
+| `trendDiagnosis` / `reviewSupport` / `actionQueue` | Prioritizes measured trend pressure, blocker queues, coverage gaps, and compact review actions with refs into packet detail surfaces. |
 | `distanceDiagnosis` | First Part IV distance surface for verdict, measured movement, unmeasured axes, safe margin, repair / curvature / homotopy distance, representation metric summary, and detail refs. |
 | `dominantFindings` / `detailRefs` | Gives compact hotspots, recurrent pressure, architectural holes, nonzero holonomy, workflow risks, and bridge pressure before raw packet inspection. |
 | `part4DistanceFoundation` | Packet detail surface for selected `DistanceProfile`, observed `DiagnosticScope`, status-summary counts, and anti-proxy guardrails. |

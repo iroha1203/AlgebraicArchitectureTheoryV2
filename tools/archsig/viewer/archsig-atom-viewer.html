@@ -2216,7 +2216,7 @@
 
       renderOverview(overview, verdict, summary, data.nonConclusions || []);
       renderItems("findings", report.topFindings || summary.dominantFindings || data.analysisOverlays?.dominantFindings, "finding");
-      renderItems("distance-diagnosis", report.distanceDiagnosis || summary.distanceDiagnosis || data.aatGeometryOverlays?.diagnosticDistanceReadings, "distance");
+      renderDistanceDiagnosis(report.distanceDiagnosis || summary.distanceDiagnosis || data.aatGeometryOverlays?.diagnosticDistanceReadings);
       renderItems("actions", report.actionQueue || summary.actionQueue || data.analysisOverlays?.actionQueue, "action");
       renderCoverage(report.coverageAndBoundaries || {}, verdict, summary);
       renderArtifacts(report.artifacts || {}, data.sourceArtifactRefs || {}, manifest);
@@ -2266,6 +2266,83 @@
       const root = document.getElementById(id);
       const items = flattenReportItems(value).slice(0, 12);
       root.innerHTML = items.length ? items.map((item, index) => itemHtml(item, fallbackLabel, index)).join("") : emptyItem();
+    }
+
+    function renderDistanceDiagnosis(value) {
+      const root = document.getElementById("distance-diagnosis");
+      if (!value || typeof value !== "object" || Array.isArray(value)) {
+        renderItems("distance-diagnosis", value, "distance");
+        return;
+      }
+      const status = value.distanceStatusSummary || {};
+      const measuredMovement = value.measuredMovement || {};
+      const blocks = [
+        ["verdict", value.verdict],
+        ["profile", value.distanceProfileRef],
+        ["status", compactStatusSummary(status)],
+        ["movement", compactDistanceValues(measuredMovement, ["totalMeasuredDistance", "pathDrift", "endpointDistance"])],
+        ["safe margin", distanceValueText(value.safeMargin)],
+        ["unmeasured axes", Array.isArray(value.unmeasuredAxes) && value.unmeasuredAxes.length ? value.unmeasuredAxes.join(", ") : "none"],
+        ["repair", compactDistanceValues(value.repairDistance, ["operationCost", "targetDistanceDecrease", "sideEffectBound"])],
+        ["curvature", compactDistanceValues(value.curvatureDistance, ["curvatureMass", "transportDistance"])],
+        ["homotopy", compactDistanceValues(value.homotopyDistance, ["homotopyDistance", "fillingCost", "observationGapLowerBound"])],
+        ["representation", compactRepresentationMetricValues(value.representationMetric)],
+        ["boundary", value.distanceBoundary],
+        ["non-claims", Array.isArray(value.nonClaims) ? value.nonClaims.join("; ") : null],
+        ["detail refs", Array.isArray(value.detailRefs) ? value.detailRefs.join(", ") : null]
+      ].filter(([, text]) => text != null && text !== "");
+      root.innerHTML = blocks.length
+        ? blocks.map(([label, text]) => `<div class="item"><strong>${escapeHtml(String(label))}</strong><p>${escapeHtml(String(text))}</p></div>`).join("")
+        : emptyItem();
+    }
+
+    function compactStatusSummary(summary) {
+      const parts = [
+        summary.measuredCount != null && `measured: ${summary.measuredCount}`,
+        summary.zeroCount != null && `zero: ${summary.zeroCount}`,
+        summary.blockedCount != null && `blocked: ${summary.blockedCount}`,
+        summary.unmeasuredCount != null && `unmeasured: ${summary.unmeasuredCount}`,
+        summary.schemaFoundationOnlyCount != null && `schema-only: ${summary.schemaFoundationOnlyCount}`
+      ].filter(Boolean);
+      return parts.join(", ") || null;
+    }
+
+    function compactDistanceValues(container, keys) {
+      if (!container || typeof container !== "object") return null;
+      const refs = [
+        container.readingId && `reading: ${container.readingId}`,
+        container.operationDeltaRef && `operation: ${container.operationDeltaRef}`,
+        container.operationRef && !container.operationDeltaRef && `operation: ${container.operationRef}`,
+        container.profileRef && `profile: ${container.profileRef}`,
+        container.supportReadingRef && `support: ${container.supportReadingRef}`
+      ].filter(Boolean);
+      const values = keys.map((key) => {
+        const text = distanceValueText(container[key]);
+        return text ? `${key}: ${text}` : null;
+      }).filter(Boolean);
+      return [...refs, ...values].join("; ") || null;
+    }
+
+    function distanceValueText(value) {
+      if (!value || typeof value !== "object") return null;
+      const status = value.status || "unknown";
+      const measured = value.measuredValue == null ? "n/a" : value.measuredValue;
+      const unit = value.unit || "";
+      const blockers = value.blockerRefCount != null ? ` blockers=${value.blockerRefCount}` : "";
+      return `${status} ${measured}${unit ? ` ${unit}` : ""}${blockers}`;
+    }
+
+    function compactRepresentationMetricValues(metrics) {
+      if (!Array.isArray(metrics) || !metrics.length) return null;
+      const rows = metrics.slice(0, 4).map((metric) => {
+        const id = metric.readingId || metric.representationFamily || "representation";
+        const structural = distanceValueText(metric.structuralDistance);
+        const analytic = distanceValueText(metric.analyticDistance);
+        const faithfulness = distanceValueText(metric.biLipschitzFaithfulness);
+        return `${id}: structural=${structural || "n/a"}, analytic=${analytic || "n/a"}, faithfulness=${faithfulness || "n/a"}`;
+      });
+      if (metrics.length > rows.length) rows.push(`more: ${metrics.length - rows.length}`);
+      return rows.join("; ");
     }
 
     function itemHtml(item, fallbackLabel, index) {
