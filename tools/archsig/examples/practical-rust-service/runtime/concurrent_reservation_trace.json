@@ -1,0 +1,45 @@
+{
+  "schemaVersion": "archsig-example-runtime-trace-v0",
+  "traceId": "runtime-trace:stale-reservation-conflict",
+  "scenario": "second reservation observes stock changed by the first reservation and is rejected",
+  "sourceRefs": [
+    {
+      "artifactId": "sample-store-conflict-test",
+      "path": "tools/archsig/examples/practical-rust-service/sample/src/store.rs",
+      "symbol": "reserve_rejects_stale_reservation_after_stock_changes"
+    },
+    {
+      "artifactId": "sample-store-reserve",
+      "path": "tools/archsig/examples/practical-rust-service/sample/src/store.rs",
+      "symbol": "reserve"
+    }
+  ],
+  "events": [
+    {
+      "step": 1,
+      "event": "stock-added",
+      "componentRef": "store.InMemoryInventoryStore",
+      "subjectRef": "sku-1",
+      "quantity": 1
+    },
+    {
+      "step": 2,
+      "event": "first-reservation-written",
+      "componentRef": "store.InMemoryInventoryStore",
+      "operationRef": "operation:store-reserve",
+      "remainingStock": 0
+    },
+    {
+      "step": 3,
+      "event": "stale-reservation-rejected",
+      "componentRef": "store.InMemoryInventoryStore",
+      "operationRef": "operation:store-reserve",
+      "error": "ReservationConflict"
+    }
+  ],
+  "evidenceBoundary": "unit-test trace for stale reservation conflict behavior in the in-memory adapter; it is not a parallel runtime trace",
+  "nonConclusions": [
+    "stale reservation trace does not prove multi-threaded transaction safety",
+    "conflict behavior is bounded to the in-memory sample adapter"
+  ]
+}

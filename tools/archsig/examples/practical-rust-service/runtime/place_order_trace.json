@@ -1,0 +1,82 @@
+{
+  "schemaVersion": "archsig-example-runtime-trace-v0",
+  "traceId": "runtime-trace:place-order-demo",
+  "scenario": "sample main reserves one order through OrderService and InMemoryInventoryStore",
+  "sourceRefs": [
+    {
+      "artifactId": "sample-main-smoke",
+      "path": "tools/archsig/examples/practical-rust-service/sample/src/main.rs",
+      "symbol": "main"
+    },
+    {
+      "artifactId": "sample-app-place-order",
+      "path": "tools/archsig/examples/practical-rust-service/sample/src/app.rs",
+      "symbol": "place_order"
+    },
+    {
+      "artifactId": "sample-store-reserve",
+      "path": "tools/archsig/examples/practical-rust-service/sample/src/store.rs",
+      "symbol": "reserve"
+    }
+  ],
+  "events": [
+    {
+      "step": 1,
+      "event": "stock-added",
+      "componentRef": "store.InMemoryInventoryStore",
+      "subjectRef": "sku-rust-book",
+      "quantity": 4
+    },
+    {
+      "step": 2,
+      "event": "stock-added",
+      "componentRef": "store.InMemoryInventoryStore",
+      "subjectRef": "sku-archsig-notes",
+      "quantity": 2
+    },
+    {
+      "step": 3,
+      "event": "place-order-called",
+      "componentRef": "app.OrderService",
+      "operationRef": "operation.placeOrder",
+      "orderRef": "order-demo-1"
+    },
+    {
+      "step": 4,
+      "event": "availability-checked",
+      "componentRef": "app.InventoryStore",
+      "operationRef": "operation:app-check-availability",
+      "result": "sufficient"
+    },
+    {
+      "step": 5,
+      "event": "reservation-written",
+      "componentRef": "store.InMemoryInventoryStore",
+      "operationRef": "operation:store-reserve",
+      "reservedUnitCount": 3
+    },
+    {
+      "step": 6,
+      "event": "receipt-returned",
+      "componentRef": "app.OrderService",
+      "orderRef": "order-demo-1",
+      "reservedLineCount": 2,
+      "reservedUnitCount": 3
+    }
+  ],
+  "observedOutput": {
+    "reservedOrder": "order-demo-1",
+    "reservedLineCount": 2,
+    "reservedUnitCount": 3,
+    "reservationCount": 1,
+    "remainingStock": {
+      "sku-archsig-notes": 0,
+      "sku-rust-book": 3
+    }
+  },
+  "evidenceBoundary": "synthetic trace captured from the checked-in sample smoke scenario; it is not production telemetry",
+  "nonConclusions": [
+    "runtime trace does not prove production correctness",
+    "runtime trace is bounded to the sample scenario"
+  ]
+}
