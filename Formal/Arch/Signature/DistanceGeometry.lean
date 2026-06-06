@@ -12,7 +12,7 @@ termination, or semantic completeness.
 
 namespace Formal.Arch
 
-universe u v w
+universe u v w x y z
 
 /--
 Diagnostic distance values with an explicit separation between measured zero
@@ -200,6 +200,267 @@ theorem records_nonConclusions
   ⟨hLaw, hFlat, hUnmeasured⟩
 
 end BoundedDiagnosticConclusion
+
+/--
+Detailed bounded diagnostic conclusion matching the Part IV report shape.
+
+The recommended operations are part of the selected diagnostic conclusion, not
+a theorem that those operations empirically succeed or globally repair the
+architecture.
+-/
+structure DetailedBoundedDiagnosticConclusion
+    (Axis : Type u) (DistanceRef : Type v) (Operation : Type w) where
+  base : BoundedDiagnosticConclusion Axis
+  supportingDistances : List DistanceRef
+  recommendedOperations : List Operation
+  supportingDistanceScope : Prop
+  recommendationBoundary : Prop
+  recommendationsAreNotRepairCorrectnessTheorems : Prop
+  nonConclusions : Prop
+
+namespace DetailedBoundedDiagnosticConclusion
+
+variable {Axis : Type u} {DistanceRef : Type v} {Operation : Type w}
+
+def MeasuredAxis
+    (conclusion :
+      DetailedBoundedDiagnosticConclusion Axis DistanceRef Operation)
+    (axis : Axis) : Prop :=
+  conclusion.base.scope.measuredAxis axis
+
+def UnmeasuredAxis
+    (conclusion :
+      DetailedBoundedDiagnosticConclusion Axis DistanceRef Operation)
+    (axis : Axis) : Prop :=
+  conclusion.base.scope.unmeasuredAxis axis
+
+def RecordsRecommendationBoundary
+    (conclusion :
+      DetailedBoundedDiagnosticConclusion Axis DistanceRef Operation) :
+    Prop :=
+  conclusion.recommendationBoundary ∧
+    conclusion.recommendationsAreNotRepairCorrectnessTheorems
+
+theorem records_nonConclusions
+    (conclusion :
+      DetailedBoundedDiagnosticConclusion Axis DistanceRef Operation)
+    (hLaw : conclusion.base.doesNotConcludeGlobalLawfulness)
+    (hFlat : conclusion.base.doesNotConcludeGlobalFlatness)
+    (hUnmeasured : conclusion.base.doesNotConcludeUnmeasuredZero) :
+    conclusion.base.RecordsNonConclusions :=
+  BoundedDiagnosticConclusion.records_nonConclusions conclusion.base
+    hLaw hFlat hUnmeasured
+
+theorem measured_axis
+    (conclusion :
+      DetailedBoundedDiagnosticConclusion Axis DistanceRef Operation)
+    {axis : Axis}
+    (hMeasured : conclusion.base.scope.measuredAxis axis) :
+    conclusion.MeasuredAxis axis :=
+  hMeasured
+
+theorem unmeasured_axis
+    (conclusion :
+      DetailedBoundedDiagnosticConclusion Axis DistanceRef Operation)
+    {axis : Axis}
+    (hUnmeasured : conclusion.base.scope.unmeasuredAxis axis) :
+    conclusion.UnmeasuredAxis axis :=
+  hUnmeasured
+
+theorem records_recommendation_boundary
+    (conclusion :
+      DetailedBoundedDiagnosticConclusion Axis DistanceRef Operation)
+    (hBoundary : conclusion.recommendationBoundary)
+    (hNotTheorem :
+      conclusion.recommendationsAreNotRepairCorrectnessTheorems) :
+    conclusion.RecordsRecommendationBoundary :=
+  ⟨hBoundary, hNotTheorem⟩
+
+end DetailedBoundedDiagnosticConclusion
+
+/--
+Selected root Atom geometry from Part IV.
+
+Each component is caller-selected and Nat-valued.  The semantic-anchor
+component records a selected reading only; it is not an empirical ontology
+calibration theorem.
+-/
+structure AtomRootDistanceBundle (Atom : Type u) where
+  fiberDistance : Atom -> Atom -> Nat
+  carrierDistance : Atom -> Atom -> Nat
+  valenceDistance : Atom -> Atom -> Nat
+  semanticAnchorDistance : Atom -> Atom -> Nat
+  fiberWeight : Nat
+  carrierWeight : Nat
+  valenceWeight : Nat
+  semanticWeight : Nat
+  selectedRootScope : Prop
+  lawOverlayBoundary : Prop
+  semanticDistanceBoundary : Prop
+  nonConclusions : Prop
+
+namespace AtomRootDistanceBundle
+
+variable {Atom : Type u}
+
+def layoutDistance
+    (bundle : AtomRootDistanceBundle Atom) (left right : Atom) : Nat :=
+  bundle.fiberWeight * bundle.fiberDistance left right +
+    bundle.carrierWeight * bundle.carrierDistance left right +
+    bundle.valenceWeight * bundle.valenceDistance left right +
+    bundle.semanticWeight * bundle.semanticAnchorDistance left right
+
+def RecordsRootBoundary (bundle : AtomRootDistanceBundle Atom) : Prop :=
+  bundle.selectedRootScope ∧ bundle.lawOverlayBoundary ∧
+    bundle.semanticDistanceBoundary ∧ bundle.nonConclusions
+
+theorem layoutDistance_eq_weighted_components
+    (bundle : AtomRootDistanceBundle Atom) (left right : Atom) :
+    bundle.layoutDistance left right =
+      bundle.fiberWeight * bundle.fiberDistance left right +
+        bundle.carrierWeight * bundle.carrierDistance left right +
+        bundle.valenceWeight * bundle.valenceDistance left right +
+        bundle.semanticWeight * bundle.semanticAnchorDistance left right := by
+  rfl
+
+theorem records_root_boundary
+    (bundle : AtomRootDistanceBundle Atom)
+    (hScope : bundle.selectedRootScope)
+    (hOverlay : bundle.lawOverlayBoundary)
+    (hSemantic : bundle.semanticDistanceBoundary)
+    (hNonConclusions : bundle.nonConclusions) :
+    bundle.RecordsRootBoundary :=
+  ⟨hScope, hOverlay, hSemantic, hNonConclusions⟩
+
+end AtomRootDistanceBundle
+
+/--
+Bridge from a generated shape distance to a selected root Atom geometry row.
+
+This is generic so that concrete generated AtomShape distances can instantiate
+it without claiming that generated mismatch count is the whole Atom geometry.
+-/
+structure GeneratedAtomShapeDistanceBridge
+    (Atom : Type u) (Coordinate : Type v) where
+  coordinate : Atom -> Coordinate
+  generatedDistance : Atom -> Atom -> Nat
+  coordinateMismatch : Coordinate -> Coordinate -> Nat
+  unfoldsToCoordinateMismatch :
+    ∀ left right,
+      generatedDistance left right =
+        coordinateMismatch (coordinate left) (coordinate right)
+  rootDistanceBoundary : Prop
+  nonConclusions : Prop
+
+namespace GeneratedAtomShapeDistanceBridge
+
+variable {Atom : Type u} {Coordinate : Type v}
+
+theorem generatedDistance_eq_coordinateMismatch
+    (bridge : GeneratedAtomShapeDistanceBridge Atom Coordinate)
+    (left right : Atom) :
+    bridge.generatedDistance left right =
+      bridge.coordinateMismatch (bridge.coordinate left)
+        (bridge.coordinate right) :=
+  bridge.unfoldsToCoordinateMismatch left right
+
+theorem records_nonConclusions
+    (bridge : GeneratedAtomShapeDistanceBridge Atom Coordinate)
+    (h : bridge.nonConclusions) :
+    bridge.nonConclusions :=
+  h
+
+end GeneratedAtomShapeDistanceBridge
+
+/--
+Selected configuration-indexed distance.
+
+The supplied path witness is finite and caller-provided.  No global shortest
+path solver or all-path enumeration is part of this schema.
+-/
+structure ConfigurationDistanceSchema
+    (Configuration : Type u) (Atom : Type v) where
+  distanceIn : Configuration -> Atom -> Atom -> Nat
+  suppliedPathCost : Configuration -> Atom -> Atom -> Nat
+  suppliedPathBoundsDistance :
+    ∀ configuration left right,
+      distanceIn configuration left right ≤
+        suppliedPathCost configuration left right
+  selectedFiniteWitness : Prop
+  noGlobalShortestPathCompleteness : Prop
+  nonConclusions : Prop
+
+namespace ConfigurationDistanceSchema
+
+variable {Configuration : Type u} {Atom : Type v}
+
+def SamePairDistanceDiffers
+    (schema : ConfigurationDistanceSchema Configuration Atom)
+    (leftConfig rightConfig : Configuration)
+    (left right : Atom) : Prop :=
+  schema.distanceIn leftConfig left right ≠
+    schema.distanceIn rightConfig left right
+
+theorem distance_le_suppliedPathCost
+    (schema : ConfigurationDistanceSchema Configuration Atom)
+    (configuration : Configuration) (left right : Atom) :
+    schema.distanceIn configuration left right ≤
+      schema.suppliedPathCost configuration left right :=
+  schema.suppliedPathBoundsDistance configuration left right
+
+theorem samePairDistanceDiffers_of_witness
+    (schema : ConfigurationDistanceSchema Configuration Atom)
+    {leftConfig rightConfig : Configuration}
+    {left right : Atom}
+    (hDiff :
+      schema.distanceIn leftConfig left right ≠
+        schema.distanceIn rightConfig left right) :
+    schema.SamePairDistanceDiffers leftConfig rightConfig left right :=
+  hDiff
+
+def RecordsNonConclusions
+    (schema : ConfigurationDistanceSchema Configuration Atom) : Prop :=
+  schema.noGlobalShortestPathCompleteness ∧ schema.nonConclusions
+
+theorem records_nonConclusions
+    (schema : ConfigurationDistanceSchema Configuration Atom)
+    (hNoGlobal : schema.noGlobalShortestPathCompleteness)
+    (hNonConclusions : schema.nonConclusions) :
+    schema.RecordsNonConclusions :=
+  ⟨hNoGlobal, hNonConclusions⟩
+
+end ConfigurationDistanceSchema
+
+/--
+Selected context distance over a finite molecule/context universe.
+-/
+structure ContextDistanceSchema (Atom : Type u) (Molecule : Type v) where
+  inContext : Atom -> Molecule -> Prop
+  contextDistance : Atom -> Atom -> Nat
+  selectedContexts : List Molecule
+  selectedFiniteContext : Prop
+  sharedContextEvidence : Prop
+  noGlobalContextCompleteness : Prop
+  nonConclusions : Prop
+
+namespace ContextDistanceSchema
+
+variable {Atom : Type u} {Molecule : Type v}
+
+def RecordsFiniteContext
+    (schema : ContextDistanceSchema Atom Molecule) : Prop :=
+  schema.selectedFiniteContext ∧ schema.noGlobalContextCompleteness ∧
+    schema.nonConclusions
+
+theorem records_finiteContext
+    (schema : ContextDistanceSchema Atom Molecule)
+    (hFinite : schema.selectedFiniteContext)
+    (hNoGlobal : schema.noGlobalContextCompleteness)
+    (hNonConclusions : schema.nonConclusions) :
+    schema.RecordsFiniteContext :=
+  ⟨hFinite, hNoGlobal, hNonConclusions⟩
+
+end ContextDistanceSchema
 
 /-- A selected natural-number distance schema on observed signatures. -/
 structure SignatureDistanceSchema (State : Type u) (Sig : Type v) where
@@ -447,6 +708,83 @@ def LowerBoundForSelectedCandidates
   ∀ candidate, candidate ∈ candidates -> selected candidate ->
     bound ≤ cost candidate
 
+/-- No selected candidate in a supplied finite universe has cost below `bound`. -/
+def NoCandidateBelow
+    {Candidate : Type u}
+    (candidates : List Candidate)
+    (selected : Candidate -> Prop)
+    (cost : Candidate -> Nat)
+    (bound : Nat) : Prop :=
+  ∀ candidate, candidate ∈ candidates -> selected candidate ->
+    ¬ cost candidate < bound
+
+abbrev NoRouteBelow
+    {Route : Type u}
+    (routes : List Route)
+    (selected : Route -> Prop)
+    (cost : Route -> Nat)
+    (bound : Nat) : Prop :=
+  NoCandidateBelow routes selected cost bound
+
+abbrev NoFillerBelow
+    {Filler : Type u}
+    (fillers : List Filler)
+    (selected : Filler -> Prop)
+    (cost : Filler -> Nat)
+    (bound : Nat) : Prop :=
+  NoCandidateBelow fillers selected cost bound
+
+abbrev NoHomotopyBelow
+    {Homotopy : Type u}
+    (homotopies : List Homotopy)
+    (selected : Homotopy -> Prop)
+    (cost : Homotopy -> Nat)
+    (bound : Nat) : Prop :=
+  NoCandidateBelow homotopies selected cost bound
+
+theorem noCandidateBelow_of_lowerBound
+    {Candidate : Type u}
+    {candidates : List Candidate}
+    {selected : Candidate -> Prop}
+    {cost : Candidate -> Nat}
+    {bound : Nat}
+    (hLower :
+      LowerBoundForSelectedCandidates candidates selected cost bound) :
+    NoCandidateBelow candidates selected cost bound := by
+  intro candidate hMem hSelected hBelow
+  exact Nat.not_lt_of_ge (hLower candidate hMem hSelected) hBelow
+
+theorem noRouteBelow_of_lowerBound
+    {Route : Type u}
+    {routes : List Route}
+    {selected : Route -> Prop}
+    {cost : Route -> Nat}
+    {bound : Nat}
+    (hLower : LowerBoundForSelectedCandidates routes selected cost bound) :
+    NoRouteBelow routes selected cost bound :=
+  noCandidateBelow_of_lowerBound hLower
+
+theorem noFillerBelow_of_lowerBound
+    {Filler : Type u}
+    {fillers : List Filler}
+    {selected : Filler -> Prop}
+    {cost : Filler -> Nat}
+    {bound : Nat}
+    (hLower : LowerBoundForSelectedCandidates fillers selected cost bound) :
+    NoFillerBelow fillers selected cost bound :=
+  noCandidateBelow_of_lowerBound hLower
+
+theorem noHomotopyBelow_of_lowerBound
+    {Homotopy : Type u}
+    {homotopies : List Homotopy}
+    {selected : Homotopy -> Prop}
+    {cost : Homotopy -> Nat}
+    {bound : Nat}
+    (hLower :
+      LowerBoundForSelectedCandidates homotopies selected cost bound) :
+    NoHomotopyBelow homotopies selected cost bound :=
+  noCandidateBelow_of_lowerBound hLower
+
 /--
 Selected finite optimum inside a supplied candidate universe.
 
@@ -479,6 +817,13 @@ theorem lowerBound_for_selected_candidates
       optimum.cost optimum.lowerBound := by
   intro candidate hMem hSelected
   exact optimum.cost_le_of_mem_selected candidate hMem hSelected
+
+theorem noCandidateBelow_lowerBound
+    (optimum : SelectedFiniteOptimum Candidate) :
+    NoCandidateBelow optimum.candidates optimum.selected
+      optimum.cost optimum.lowerBound :=
+  noCandidateBelow_of_lowerBound
+    (SelectedFiniteOptimum.lowerBound_for_selected_candidates optimum)
 
 theorem optimal_cost_le
     (optimum : SelectedFiniteOptimum Candidate)
@@ -528,6 +873,18 @@ theorem exists_approximatingWitness
     ∃ candidate, interface.candidate candidate ∧
       interface.cost candidate ≤ interface.infimumValue + tolerance :=
   interface.approximatingWitness tolerance
+
+def NoAbstractCandidateBelow
+    (interface : AbstractInfimumInterface Candidate) : Prop :=
+  ∀ candidate, interface.candidate candidate ->
+    ¬ interface.cost candidate < interface.infimumValue
+
+theorem noAbstractCandidateBelow_infimum
+    (interface : AbstractInfimumInterface Candidate) :
+    interface.NoAbstractCandidateBelow := by
+  intro candidate hCandidate hBelow
+  exact Nat.not_lt_of_ge
+    (interface.lowerBound hCandidate) hBelow
 
 def ofSelectedFiniteOptimum
     (optimum : SelectedFiniteOptimum Candidate) :
@@ -1061,5 +1418,128 @@ theorem spectralDistance_le
   pkg.spectralBound
 
 end SpectralStabilityPackage
+
+/--
+Part IV distance bundle as a selected overlay on top of AAT.
+
+The bundle gathers the already-defined selected surfaces.  It explicitly
+records that the distance layer neither generates Atom facts nor replaces the
+underlying AAT core.
+-/
+structure DistanceBundle
+    (Axis : Type u) (State : Type v) (Sig : Type w)
+    (Operation : Type x) (Generator : Type y) (Analytic : Type z) where
+  profile : DistanceProfile
+  scope : SelectedDistanceScope Axis
+  signatureSchema : SignatureDistanceSchema State Sig
+  operationCostModel : OperationCostModel Operation
+  homotopyGeneratorCost : Generator -> Nat
+  representationMetric : LipschitzRepresentation State Analytic
+  atomMetricBundle : Prop
+  configurationMetric : Prop
+  homotopyFillingCost : Prop
+  obstructionMeasure : Prop
+  selectedOverlay : Prop
+  doesNotGenerateAtoms : Prop
+  doesNotReplaceAATCore : Prop
+  doesNotProveLawfulnessByDistanceAlone : Prop
+  nonConclusions : Prop
+
+namespace DistanceBundle
+
+variable {Axis : Type u} {State : Type v} {Sig : Type w}
+variable {Operation : Type x} {Generator : Type y} {Analytic : Type z}
+
+def RecordsSelectedOverlay
+    (bundle : DistanceBundle Axis State Sig Operation Generator Analytic) :
+    Prop :=
+  bundle.selectedOverlay ∧ bundle.doesNotGenerateAtoms ∧
+    bundle.doesNotReplaceAATCore ∧
+    bundle.doesNotProveLawfulnessByDistanceAlone ∧
+    bundle.nonConclusions
+
+theorem records_selectedOverlay
+    (bundle : DistanceBundle Axis State Sig Operation Generator Analytic)
+    (hOverlay : bundle.selectedOverlay)
+    (hAtoms : bundle.doesNotGenerateAtoms)
+    (hCore : bundle.doesNotReplaceAATCore)
+    (hLaw : bundle.doesNotProveLawfulnessByDistanceAlone)
+    (hNonConclusions : bundle.nonConclusions) :
+    bundle.RecordsSelectedOverlay :=
+  ⟨hOverlay, hAtoms, hCore, hLaw, hNonConclusions⟩
+
+theorem records_profile_nonConclusions
+    (bundle : DistanceBundle Axis State Sig Operation Generator Analytic)
+    (h : bundle.profile.nonConclusions) :
+    bundle.profile.RecordsNonConclusions :=
+  DistanceProfile.records_nonConclusions bundle.profile h
+
+end DistanceBundle
+
+/--
+AAT core equipped with a selected Part IV distance bundle.
+
+`Core` is intentionally abstract here: this wrapper records the overlay
+boundary without forcing the pure AAT core to depend on measurement or tooling
+surfaces.
+-/
+structure DistanceAAT
+    (Core : Type u) (Axis : Type v) (State : Type w)
+    (Sig : Type x) (Operation : Type y) (Generator : Type z)
+    (Analytic : Type u) where
+  core : Core
+  distanceBundle :
+    DistanceBundle Axis State Sig Operation Generator Analytic
+  aatCoreBoundary : Prop
+  sourceObservationBoundary : Prop
+  nonConclusions : Prop
+
+namespace DistanceAAT
+
+variable {Core : Type u} {Axis : Type v} {State : Type w}
+variable {Sig : Type x} {Operation : Type y} {Generator : Type z}
+variable {Analytic : Type u}
+
+def RecordsOverlayBoundary
+    (aat : DistanceAAT Core Axis State Sig Operation Generator Analytic) :
+    Prop :=
+  aat.aatCoreBoundary ∧ aat.sourceObservationBoundary ∧
+    aat.distanceBundle.doesNotReplaceAATCore ∧
+    aat.distanceBundle.doesNotGenerateAtoms ∧
+    aat.nonConclusions
+
+theorem records_overlayBoundary
+    (aat : DistanceAAT Core Axis State Sig Operation Generator Analytic)
+    (hCore : aat.aatCoreBoundary)
+    (hObservation : aat.sourceObservationBoundary)
+    (hReplace : aat.distanceBundle.doesNotReplaceAATCore)
+    (hAtoms : aat.distanceBundle.doesNotGenerateAtoms)
+    (hNonConclusions : aat.nonConclusions) :
+    aat.RecordsOverlayBoundary :=
+  ⟨hCore, hObservation, hReplace, hAtoms, hNonConclusions⟩
+
+def DistanceDoesNotGenerateAtoms
+    (aat : DistanceAAT Core Axis State Sig Operation Generator Analytic) :
+    Prop :=
+  aat.distanceBundle.doesNotGenerateAtoms
+
+def DistanceDoesNotReplaceAATCore
+    (aat : DistanceAAT Core Axis State Sig Operation Generator Analytic) :
+    Prop :=
+  aat.distanceBundle.doesNotReplaceAATCore
+
+theorem distance_does_not_generate_atoms
+    (aat : DistanceAAT Core Axis State Sig Operation Generator Analytic)
+    (h : aat.distanceBundle.doesNotGenerateAtoms) :
+    aat.DistanceDoesNotGenerateAtoms :=
+  h
+
+theorem distance_does_not_replace_aatCore
+    (aat : DistanceAAT Core Axis State Sig Operation Generator Analytic)
+    (h : aat.distanceBundle.doesNotReplaceAATCore) :
+    aat.DistanceDoesNotReplaceAATCore :=
+  h
+
+end DistanceAAT
 
 end Formal.Arch
