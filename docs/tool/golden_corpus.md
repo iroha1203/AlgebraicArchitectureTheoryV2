@@ -83,6 +83,15 @@ It must keep measured / zero values tied to provenance refs, evaluator-basis
 refs, coverage refs, selected `DistanceProfile`, and selected
 `DiagnosticScope`. Blocked, unmeasured, unavailable, incomparable, or infinite
 values must carry blocker refs. A missing measurement is not a measured zero.
+The raw packet `part4DistanceFoundation.diagnosticScope`, compact
+`distanceDiagnosis`, Atom Viewer report pane, and LLM
+`distanceDiagnosisSummary` must agree on post-evaluator axis status. In
+particular, a measured or zero signature axis cannot remain in
+`unmeasuredAxes` / `unmeasuredAxisRefs`, and closed implementation Issue
+placeholder refs or unmeasured-axis blockers for already measured
+signature-distance axes cannot remain as final `DiagnosticScope.blockerRefs`.
+Operation and curvature axes can still remain unmeasured when partial measured
+contributions carry evidence blockers.
 
 ## Negative Fixtures
 
@@ -100,6 +109,12 @@ large copied packet. The suite mutates the static packet to reject:
 
 - measured distance without provenance / evaluator basis / coverage refs
 - stale or missing `DistanceProfile` / `DiagnosticScope` alignment
+- measured or zero signature axes left in `DiagnosticScope.unmeasuredAxisRefs`
+  or summary/viewer `distanceDiagnosis.unmeasuredAxes`
+- closed implementation Issue placeholder blockers left in final
+  `DiagnosticScope.blockerRefs`
+- `unmeasuredAxis:<axis>` blockers left in final `DiagnosticScope.blockerRefs`
+  after that signature-distance axis has become measured or zero
 - `schemaFoundationOnly` promoted into distance status
 - concern-only provenance promoted into measured distance
 - hard-coded fixture markers
