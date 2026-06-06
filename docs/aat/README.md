@@ -88,6 +88,18 @@ BoundedDiagnosticConclusion
 を混同しない。特に、tooling output、source-observation output、未測定軸、
 empirical correlation は、それだけで Lean theorem にはならない。
 
+## ArchMap / ArchSig との責務境界
+
+AAT は Atom を公理的出発点とする純粋数学理論である。
+ArchMap がどの source artifact をどう観測し、どの Atom / molecule / evidence を記録するかは
+AAT の内部 claim ではない。
+
+ウィトゲンシュタイン的責務境界では、ArchSig は与えられた
+`ArchMap + LawPolicy + evidence contract` から語れることだけを語り、
+語れないことには沈黙する。selected universe の妥当性は
+ArchMap author と LawPolicy author の責務であり、AAT / Lean はその選ばれた範囲内で
+成立する theorem boundary を与える。
+
 ## 非目標
 
 AAT は次を主張しない。

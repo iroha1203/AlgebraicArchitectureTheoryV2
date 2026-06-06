@@ -81,6 +81,13 @@ SFT:
   reachable future をどう変えるかを扱う計算理論。
 ```
 
+ウィトゲンシュタイン的責務境界では、ArchSig は与えられた
+`ArchMap + LawPolicy + evidence contract` から語れることだけを語り、
+語れないことには沈黙する。ArchMap の観測・Atom mapping・evidence の正しさは
+ArchMap author の責務であり、law / axis / witness / coverage の選択は
+LawPolicy author の責務である。SFT は ArchSig output を、その入力 contract に相対化された
+bounded observation として読み、raw ArchMap や ArchSig conclusion を forecast truth として読まない。
+
 SFT は AAT の数学的核を置き換えない。
 SFT は AAT の architecture object、operation、invariant、obstruction witness、
 signature、theorem boundary / non-conclusions を観測量・制約・制御入力として使う。

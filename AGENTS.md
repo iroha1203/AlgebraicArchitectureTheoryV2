@@ -25,6 +25,11 @@
   - ArchSig は Rust tooling であり Lean 証明器ではない。Rust と Lean の対応を要求しない。
     ArchSig は `ArchMap + LawPolicy + evidence contract` に相対化して、選ばれた語彙内の肯定的な
     diagnostic conclusion を出す。
+- ウィトゲンシュタイン的責務境界:
+  ArchSig は、与えられた `ArchMap + LawPolicy + evidence contract` から語れることだけを語る。
+  語れないことには沈黙する。ArchMap の観測・Atom mapping・evidence の正しさは ArchMap author の責務であり、
+  law / axis / witness / coverage の選択は LawPolicy author の責務である。ArchSig は入力 contract を補完・推測・拡張せず、
+  その範囲内で一貫した bounded diagnostic conclusion を出す。
 - 完了レビューや残タスク整理では、対象 Issue / PRD / 計画書 / acceptance test が実際に要求している
   concrete condition だけを判定する。現実コード全体、意味宇宙全体、未来予測全体のような
   無制限 claim を勝手に残タスク化しない。
@@ -69,6 +74,7 @@
 - ArchMap は source-grounded Atom observation map であり、law-independent な観測を記録する。
 - LawPolicy / interpretation profile は選ばれた law universe、witness rule、signature axis、coverage requirement を与える profile であり、AAT そのものではない。
 - ArchSig は ArchMap と interpretation profile から `archsig-analysis-packet-v0` を作る AAT structural analysis layer である。Lean 証明器ではない。選ばれた LawPolicy と evidence contract の中で語れることを確かに語り、その外側は証明不能な限界として騒がず沈黙する。
+- ウィトゲンシュタイン的責務境界では、ArchSig は入力された世界の中で語れることだけを出力し、語れない領域を診断・安全・失敗として作らない。
 - FieldSig は ArchSig analysis packet と workflow evidence を SFT 側の evolution measurement / governance input として読む。raw ArchMap を forecast truth として読まない。
 - Website は docs の複製ではなく、AAT / SFT / ArchSig を公開向けに読むための web-native publication surface である。
 
