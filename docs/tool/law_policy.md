@@ -57,10 +57,9 @@ The implemented schema records:
 - `obstructionCircuitDefinitions`
 - `signatureAxisDefinitions`
 - `measurementPolicy`
+- `part4DistanceProfile`
 - `spectrumMeasurementProfile` (optional)
 - `homotopyMeasurementProfile` (optional)
-- selected Part IV distance profile boundary (copied into
-  `part4DistanceFoundation`)
 - `exactnessAssumptions`
 - `coverageRequirements`
 - `excludedReadings`
@@ -101,6 +100,35 @@ The policy selects how ArchSig reads structural telemetry; it does not authorize
 FieldSig forecast, governance, calibration, or longitudinal evolution claims.
 FieldSig may consume ArchSig packet chains downstream, but it owns those
 evolution readings separately from this profile.
+
+## Part IV Distance Profile
+
+`part4DistanceProfile` is the first-class LawPolicy surface for Part IV
+distance measurement. ArchSig copies it into
+`part4DistanceFoundation.profile` and uses it as the selected source for:
+
+- `atomWeights`
+- `signatureWeights`
+- `operationCosts`
+- `aggregationPolicy`
+- `unmeasuredPolicy`
+- `lawOverlayPolicy`
+- `coverageRequirementRefs`
+- `evidenceBoundary`
+- `calibrationRefs`
+- `nonConclusions`
+
+Validation requires the Atom geometry components `atom.fiber`, `atom.carrier`,
+`atom.valence`, and `atom.semanticAnchor`; positive weights and operation
+costs; signature weights that reference declared `signatureAxisDefinitions`;
+coverage refs that reference declared `coverageRequirements`; and an
+`unmeasuredPolicy` that states unmeasured distance is not zero.
+
+`analyze --strict-distance` and `archsig-analysis --strict-distance` reject a
+LawPolicy that lacks `part4DistanceProfile`. They also require the ArchSig
+analysis packet validation to pass the proxy-regression guardrails, so
+`schemaFoundationOnly`, proxy promotion, hard-coded fixture markers, and
+legacy profile fallback cannot be accepted as measured Part IV distances.
 
 ## Spectrum Measurement Profile
 

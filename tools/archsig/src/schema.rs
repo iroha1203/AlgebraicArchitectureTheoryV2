@@ -659,9 +659,11 @@ pub struct LawPolicyDocumentV0 {
     pub obstruction_circuit_definitions: Vec<LawPolicyObstructionCircuitDefinitionV0>,
     pub signature_axis_definitions: Vec<LawPolicySignatureAxisDefinitionV0>,
     pub measurement_policy: LawPolicyMeasurementPolicyV0,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub part4_distance_profile: Option<LawPolicyPart4DistanceProfileV0>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub spectrum_measurement_profile: Option<LawPolicySpectrumMeasurementProfileV0>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub homotopy_measurement_profile: Option<LawPolicyHomotopyMeasurementProfileV0>,
     pub exactness_assumptions: Vec<String>,
     pub coverage_requirements: Vec<LawPolicyCoverageRequirementV0>,
@@ -686,6 +688,44 @@ pub struct LawPolicyMeasurementPolicyV0 {
     pub exactness_assumption_refs: Vec<String>,
     #[serde(default)]
     pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct LawPolicyPart4DistanceProfileV0 {
+    pub profile_id: String,
+    #[serde(default)]
+    pub atom_weights: Vec<LawPolicyPart4DistanceWeightV0>,
+    #[serde(default)]
+    pub signature_weights: Vec<LawPolicyPart4DistanceWeightV0>,
+    #[serde(default)]
+    pub operation_costs: Vec<LawPolicyPart4OperationCostV0>,
+    pub aggregation_policy: String,
+    pub unmeasured_policy: String,
+    pub law_overlay_policy: String,
+    #[serde(default)]
+    pub coverage_requirement_refs: Vec<String>,
+    pub evidence_boundary: String,
+    #[serde(default)]
+    pub calibration_refs: Vec<String>,
+    #[serde(default)]
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct LawPolicyPart4DistanceWeightV0 {
+    pub axis_ref: String,
+    pub weight: i64,
+    pub source_ref: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct LawPolicyPart4OperationCostV0 {
+    pub operation_kind: String,
+    pub cost: i64,
+    pub source_ref: String,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

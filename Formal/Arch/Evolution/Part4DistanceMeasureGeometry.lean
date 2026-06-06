@@ -31,7 +31,10 @@ structure SchematicCorrespondence where
 /-- Part IV candidate surfaces tracked by theorem index and classification. -/
 inductive Candidate where
   | distanceFoundation
+  | distanceAATOverlay
+  | atomRootGeometry
   | atomConfigurationGeometry
+  | configurationContextGeometry
   | signaturePathGeometry
   | finiteWitnessInfimumCore
   | distanceToLawfulnessGeometry
@@ -44,6 +47,7 @@ inductive Candidate where
   | representationMetric
   | representationSpectralStability
   | abstractInfimumInterface
+  | diagnosticConclusionDetail
   | docsClassificationBoundary
   deriving DecidableEq, Repr
 
@@ -52,8 +56,14 @@ namespace Candidate
 def designSection : Candidate -> String
   | distanceFoundation =>
       "Part IV.A distance values, profiles, and selected diagnostic scope"
+  | distanceAATOverlay =>
+      "Part IV.A DistanceAAT / DistanceBundle selected overlay"
+  | atomRootGeometry =>
+      "Part IV.B root Atom geometry distance bundle"
   | atomConfigurationGeometry =>
       "Part IV.B atom / configuration distance schema"
+  | configurationContextGeometry =>
+      "Part IV.B/C configuration-indexed and context distance schema"
   | signaturePathGeometry =>
       "Part IV.C signature path length, hidden excursion, and margin stability"
   | finiteWitnessInfimumCore =>
@@ -78,12 +88,17 @@ def designSection : Candidate -> String
       "Part IV.F representation / spectral stability"
   | abstractInfimumInterface =>
       "Part IV.G abstract infimum interface over finite witnesses"
+  | diagnosticConclusionDetail =>
+      "Part IV.H detailed bounded diagnostic conclusion"
   | docsClassificationBoundary =>
       "Part IV.G theorem index, proof obligations, and classification boundary"
 
 def schematicName : Candidate -> String
   | distanceFoundation => "distanceFoundation"
+  | distanceAATOverlay => "distanceAATOverlay"
+  | atomRootGeometry => "atomRootGeometry"
   | atomConfigurationGeometry => "atomConfigurationGeometry"
+  | configurationContextGeometry => "configurationContextGeometry"
   | signaturePathGeometry => "signaturePathGeometry"
   | finiteWitnessInfimumCore => "finiteWitnessInfimumCore"
   | distanceToLawfulnessGeometry => "distanceToLawfulnessGeometry"
@@ -96,6 +111,7 @@ def schematicName : Candidate -> String
   | representationMetric => "representationMetric"
   | representationSpectralStability => "representationSpectralStability"
   | abstractInfimumInterface => "abstractInfimumInterface"
+  | diagnosticConclusionDetail => "diagnosticConclusionDetail"
   | docsClassificationBoundary => "docsClassificationBoundary"
 
 def representativeDeclarations : Candidate -> List String
@@ -106,11 +122,34 @@ def representativeDeclarations : Candidate -> List String
       , "BoundedDiagnosticConclusion"
       , "DistanceValue.unmeasured_not_measuredZero"
       ]
+  | distanceAATOverlay =>
+      [ "DistanceBundle"
+      , "DistanceBundle.RecordsSelectedOverlay"
+      , "DistanceBundle.records_selectedOverlay"
+      , "DistanceAAT"
+      , "DistanceAAT.RecordsOverlayBoundary"
+      , "DistanceAAT.distance_does_not_generate_atoms"
+      , "DistanceAAT.distance_does_not_replace_aatCore"
+      ]
+  | atomRootGeometry =>
+      [ "AtomRootDistanceBundle"
+      , "AtomRootDistanceBundle.layoutDistance"
+      , "AtomRootDistanceBundle.layoutDistance_eq_weighted_components"
+      , "GeneratedAtomShapeDistanceBridge"
+      , "GeneratedAtomShapeDistanceBridge.generatedDistance_eq_coordinateMismatch"
+      ]
   | atomConfigurationGeometry =>
       [ "AAT.GeneratedAtomShapeCoordinate.mismatchCount"
       , "AAT.GeneratedArchitectureObject.generatedCarrierShapeDistance"
       , "AAT.GeneratedArchitectureObject.generatedCarrierShapeDistance_eq_coordinate_mismatchCount"
       , "AAT.GeneratedOperation.mappedCarrierShapeDistance_eq_coordinate_mismatchCount"
+      ]
+  | configurationContextGeometry =>
+      [ "ConfigurationDistanceSchema"
+      , "ConfigurationDistanceSchema.distance_le_suppliedPathCost"
+      , "ConfigurationDistanceSchema.samePairDistanceDiffers_of_witness"
+      , "ContextDistanceSchema"
+      , "ContextDistanceSchema.records_finiteContext"
       ]
   | signaturePathGeometry =>
       [ "SignatureDistanceSchema"
@@ -128,8 +167,12 @@ def representativeDeclarations : Candidate -> List String
       , "FiniteFillerCost"
       , "FiniteHomotopyCost"
       , "LowerBoundForSelectedCandidates"
+      , "NoRouteBelow"
+      , "NoFillerBelow"
+      , "NoHomotopyBelow"
       , "SelectedFiniteOptimum"
       , "SelectedFiniteOptimum.lowerBound_for_selected_candidates"
+      , "SelectedFiniteOptimum.noCandidateBelow_lowerBound"
       ]
   | distanceToLawfulnessGeometry =>
       [ "SelectedDistanceToRegion"
@@ -194,7 +237,15 @@ def representativeDeclarations : Candidate -> List String
       [ "AbstractInfimumInterface"
       , "AbstractInfimumInterface.lowerBound"
       , "AbstractInfimumInterface.exists_approximatingWitness"
+      , "AbstractInfimumInterface.noAbstractCandidateBelow_infimum"
       , "AbstractInfimumInterface.ofSelectedFiniteOptimum"
+      ]
+  | diagnosticConclusionDetail =>
+      [ "DetailedBoundedDiagnosticConclusion"
+      , "DetailedBoundedDiagnosticConclusion.MeasuredAxis"
+      , "DetailedBoundedDiagnosticConclusion.UnmeasuredAxis"
+      , "DetailedBoundedDiagnosticConclusion.records_nonConclusions"
+      , "DetailedBoundedDiagnosticConclusion.records_recommendation_boundary"
       ]
   | docsClassificationBoundary =>
       [ "Part4DistanceMeasureGeometry.Candidate"
@@ -205,8 +256,14 @@ def representativeDeclarations : Candidate -> List String
 def claimBoundary : Candidate -> String
   | distanceFoundation =>
       "Unmeasured axes remain distinct from measured zero; no global lawfulness or flatness conclusion is inferred from distance values."
+  | distanceAATOverlay =>
+      "DistanceAAT is an overlay on an existing AAT core; it does not generate atoms, replace the core, or prove lawfulness from distance alone."
+  | atomRootGeometry =>
+      "Root Atom geometry records selected fiber, carrier, valence, semantic-anchor, and layout distances without empirical semantic calibration."
   | atomConfigurationGeometry =>
       "Generated distances are bounded AtomShape-coordinate mismatch counts, not empirical semantic calibration."
+  | configurationContextGeometry =>
+      "Configuration and context distance schemas use supplied finite witnesses and do not assert global shortest-path or context completeness."
   | signaturePathGeometry =>
       "Path-length and margin-stability results are finite-path and selected-scope theorems with explicit preservation assumptions."
   | finiteWitnessInfimumCore =>
@@ -231,6 +288,8 @@ def claimBoundary : Candidate -> String
       "Spectral stability is selected-scope Lipschitz control and does not calibrate empirical spectral metrics."
   | abstractInfimumInterface =>
       "The abstract infimum interface records lower-bound and approximation witnesses without computing a global optimizer."
+  | diagnosticConclusionDetail =>
+      "Detailed diagnostic conclusions keep supporting distances and recommended operations scoped, without proving operation success or global repair."
   | docsClassificationBoundary =>
       "The index and proof-obligation rows document the bounded Lean package without editing the mathematical Part IV source text."
 
@@ -241,7 +300,10 @@ def schematicCorrespondence (candidate : Candidate) : SchematicCorrespondence wh
 
 def schematicCorrespondences : List SchematicCorrespondence :=
   [ schematicCorrespondence .distanceFoundation
+  , schematicCorrespondence .distanceAATOverlay
+  , schematicCorrespondence .atomRootGeometry
   , schematicCorrespondence .atomConfigurationGeometry
+  , schematicCorrespondence .configurationContextGeometry
   , schematicCorrespondence .signaturePathGeometry
   , schematicCorrespondence .finiteWitnessInfimumCore
   , schematicCorrespondence .distanceToLawfulnessGeometry
@@ -254,6 +316,7 @@ def schematicCorrespondences : List SchematicCorrespondence :=
   , schematicCorrespondence .representationMetric
   , schematicCorrespondence .representationSpectralStability
   , schematicCorrespondence .abstractInfimumInterface
+  , schematicCorrespondence .diagnosticConclusionDetail
   , schematicCorrespondence .docsClassificationBoundary
   ]
 
@@ -262,7 +325,10 @@ def nonConclusionBoundary : Candidate -> String :=
 
 def all : List Candidate :=
   [ distanceFoundation
+  , distanceAATOverlay
+  , atomRootGeometry
   , atomConfigurationGeometry
+  , configurationContextGeometry
   , signaturePathGeometry
   , finiteWitnessInfimumCore
   , distanceToLawfulnessGeometry
@@ -275,6 +341,7 @@ def all : List Candidate :=
   , representationMetric
   , representationSpectralStability
   , abstractInfimumInterface
+  , diagnosticConclusionDetail
   , docsClassificationBoundary
   ]
 
@@ -283,6 +350,87 @@ end Candidate
 theorem unmeasured_not_measured_zero :
     ¬ DistanceValue.IsMeasuredZero DistanceValue.unmeasured :=
   DistanceValue.unmeasured_not_measuredZero
+
+theorem distanceBundle_records_selectedOverlay
+    {Axis : Type u} {State : Type v} {Sig : Type u}
+    {Operation : Type v} {Generator : Type u} {Analytic : Type v}
+    (bundle :
+      DistanceBundle Axis State Sig Operation Generator Analytic)
+    (hOverlay : bundle.selectedOverlay)
+    (hAtoms : bundle.doesNotGenerateAtoms)
+    (hCore : bundle.doesNotReplaceAATCore)
+    (hLaw : bundle.doesNotProveLawfulnessByDistanceAlone)
+    (hNonConclusions : bundle.nonConclusions) :
+    bundle.RecordsSelectedOverlay :=
+  DistanceBundle.records_selectedOverlay bundle
+    hOverlay hAtoms hCore hLaw hNonConclusions
+
+theorem distanceAAT_does_not_generate_atoms
+    {Core : Type u} {Axis : Type v} {State : Type u}
+    {Sig : Type v} {Operation : Type u} {Generator : Type v}
+    {Analytic : Type u}
+    (aat : DistanceAAT Core Axis State Sig Operation Generator Analytic)
+    (h : aat.distanceBundle.doesNotGenerateAtoms) :
+    aat.DistanceDoesNotGenerateAtoms :=
+  aat.distance_does_not_generate_atoms h
+
+theorem distanceAAT_does_not_replace_aatCore
+    {Core : Type u} {Axis : Type v} {State : Type u}
+    {Sig : Type v} {Operation : Type u} {Generator : Type v}
+    {Analytic : Type u}
+    (aat : DistanceAAT Core Axis State Sig Operation Generator Analytic)
+    (h : aat.distanceBundle.doesNotReplaceAATCore) :
+    aat.DistanceDoesNotReplaceAATCore :=
+  aat.distance_does_not_replace_aatCore h
+
+theorem atomRootDistance_layoutDistance_eq_weighted_components
+    {Atom : Type u}
+    (bundle : AtomRootDistanceBundle Atom)
+    (left right : Atom) :
+    bundle.layoutDistance left right =
+      bundle.fiberWeight * bundle.fiberDistance left right +
+        bundle.carrierWeight * bundle.carrierDistance left right +
+        bundle.valenceWeight * bundle.valenceDistance left right +
+        bundle.semanticWeight * bundle.semanticAnchorDistance left right :=
+  AtomRootDistanceBundle.layoutDistance_eq_weighted_components
+    bundle left right
+
+theorem generatedAtomShapeBridge_generatedDistance_eq_coordinateMismatch
+    {Atom : Type u} {Coordinate : Type v}
+    (bridge : GeneratedAtomShapeDistanceBridge Atom Coordinate)
+    (left right : Atom) :
+    bridge.generatedDistance left right =
+      bridge.coordinateMismatch (bridge.coordinate left)
+        (bridge.coordinate right) :=
+  bridge.generatedDistance_eq_coordinateMismatch left right
+
+theorem configurationDistance_le_suppliedPathCost
+    {Configuration : Type u} {Atom : Type v}
+    (schema : ConfigurationDistanceSchema Configuration Atom)
+    (configuration : Configuration) (left right : Atom) :
+    schema.distanceIn configuration left right ≤
+      schema.suppliedPathCost configuration left right :=
+  schema.distance_le_suppliedPathCost configuration left right
+
+theorem configurationDistance_samePairDiffers_of_witness
+    {Configuration : Type u} {Atom : Type v}
+    (schema : ConfigurationDistanceSchema Configuration Atom)
+    {leftConfig rightConfig : Configuration}
+    {left right : Atom}
+    (hDiff :
+      schema.distanceIn leftConfig left right ≠
+        schema.distanceIn rightConfig left right) :
+    schema.SamePairDistanceDiffers leftConfig rightConfig left right :=
+  schema.samePairDistanceDiffers_of_witness hDiff
+
+theorem contextDistance_records_finiteContext
+    {Atom : Type u} {Molecule : Type v}
+    (schema : ContextDistanceSchema Atom Molecule)
+    (hFinite : schema.selectedFiniteContext)
+    (hNoGlobal : schema.noGlobalContextCompleteness)
+    (hNonConclusions : schema.nonConclusions) :
+    schema.RecordsFiniteContext :=
+  schema.records_finiteContext hFinite hNoGlobal hNonConclusions
 
 theorem generatedCarrierShapeDistance_eq_coordinate_mismatchCount
     {system : AtomAxiomSystem.{u, v}}
@@ -367,6 +515,44 @@ theorem selectedFiniteOptimum_lowerBound_for_selected_candidates
     LowerBoundForSelectedCandidates optimum.candidates optimum.selected
       optimum.cost optimum.lowerBound :=
   optimum.lowerBound_for_selected_candidates
+
+theorem selectedFiniteOptimum_noCandidateBelow_lowerBound
+    {Candidate : Type u}
+    (optimum : SelectedFiniteOptimum Candidate) :
+    NoCandidateBelow optimum.candidates optimum.selected
+      optimum.cost optimum.lowerBound :=
+  optimum.noCandidateBelow_lowerBound
+
+theorem noRouteBelow_of_selected_lowerBound
+    {Route : Type u}
+    {routes : List Route}
+    {selected : Route -> Prop}
+    {cost : Route -> Nat}
+    {bound : Nat}
+    (hLower : LowerBoundForSelectedCandidates routes selected cost bound) :
+    NoRouteBelow routes selected cost bound :=
+  Formal.Arch.noRouteBelow_of_lowerBound hLower
+
+theorem noFillerBelow_of_selected_lowerBound
+    {Filler : Type u}
+    {fillers : List Filler}
+    {selected : Filler -> Prop}
+    {cost : Filler -> Nat}
+    {bound : Nat}
+    (hLower : LowerBoundForSelectedCandidates fillers selected cost bound) :
+    NoFillerBelow fillers selected cost bound :=
+  Formal.Arch.noFillerBelow_of_lowerBound hLower
+
+theorem noHomotopyBelow_of_selected_lowerBound
+    {Homotopy : Type u}
+    {homotopies : List Homotopy}
+    {selected : Homotopy -> Prop}
+    {cost : Homotopy -> Nat}
+    {bound : Nat}
+    (hLower :
+      LowerBoundForSelectedCandidates homotopies selected cost bound) :
+    NoHomotopyBelow homotopies selected cost bound :=
+  Formal.Arch.noHomotopyBelow_of_lowerBound hLower
 
 theorem selectedDistanceToRegion_region_of_distance_zero
     {State : Type u}
@@ -512,6 +698,32 @@ theorem abstractInfimumInterface_exists_approximatingWitness
     ∃ candidate, interface.candidate candidate ∧
       interface.cost candidate ≤ interface.infimumValue + tolerance :=
   interface.exists_approximatingWitness tolerance
+
+theorem abstractInfimumInterface_noAbstractCandidateBelow_infimum
+    {Candidate : Type u}
+    (interface : AbstractInfimumInterface Candidate) :
+    interface.NoAbstractCandidateBelow :=
+  interface.noAbstractCandidateBelow_infimum
+
+theorem detailedDiagnostic_records_nonConclusions
+    {Axis : Type u} {DistanceRef : Type v} {Operation : Type u}
+    (conclusion :
+      DetailedBoundedDiagnosticConclusion Axis DistanceRef Operation)
+    (hLaw : conclusion.base.doesNotConcludeGlobalLawfulness)
+    (hFlat : conclusion.base.doesNotConcludeGlobalFlatness)
+    (hUnmeasured : conclusion.base.doesNotConcludeUnmeasuredZero) :
+    conclusion.base.RecordsNonConclusions :=
+  conclusion.records_nonConclusions hLaw hFlat hUnmeasured
+
+theorem detailedDiagnostic_records_recommendation_boundary
+    {Axis : Type u} {DistanceRef : Type v} {Operation : Type u}
+    (conclusion :
+      DetailedBoundedDiagnosticConclusion Axis DistanceRef Operation)
+    (hBoundary : conclusion.recommendationBoundary)
+    (hNotTheorem :
+      conclusion.recommendationsAreNotRepairCorrectnessTheorems) :
+    conclusion.RecordsRecommendationBoundary :=
+  conclusion.records_recommendation_boundary hBoundary hNotTheorem
 
 end Part4DistanceMeasureGeometry
 end Formal.Arch

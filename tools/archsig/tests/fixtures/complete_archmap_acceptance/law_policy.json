@@ -163,6 +163,109 @@
       "signature zero requires ArchSig analysis with declared coverage and exactness assumptions"
     ]
   },
+  "part4DistanceProfile": {
+    "profileId": "part4-distance-profile:complete-archmap-acceptance-policy",
+    "atomWeights": [
+      {
+        "axisRef": "atom.fiber",
+        "weight": 1,
+        "sourceRef": "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#1-atom-geometry"
+      },
+      {
+        "axisRef": "atom.carrier",
+        "weight": 1,
+        "sourceRef": "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#1-atom-geometry"
+      },
+      {
+        "axisRef": "atom.valence",
+        "weight": 1,
+        "sourceRef": "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#1-atom-geometry"
+      },
+      {
+        "axisRef": "atom.semanticAnchor",
+        "weight": 1,
+        "sourceRef": "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#1-atom-geometry"
+      }
+    ],
+    "signatureWeights": [
+      {
+        "axisRef": "sig-axis:complete-archmap-acceptance",
+        "weight": 1,
+        "sourceRef": "law:complete-archmap-acceptance"
+      }
+    ],
+    "operationCosts": [
+      {
+        "operationKind": "rename",
+        "cost": 1,
+        "sourceRef": "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#5-operation-geometry"
+      },
+      {
+        "operationKind": "move",
+        "cost": 2,
+        "sourceRef": "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#5-operation-geometry"
+      },
+      {
+        "operationKind": "extract",
+        "cost": 3,
+        "sourceRef": "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#5-operation-geometry"
+      },
+      {
+        "operationKind": "evidence-enrichment",
+        "cost": 3,
+        "sourceRef": "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#5-operation-geometry"
+      },
+      {
+        "operationKind": "introduce-port",
+        "cost": 4,
+        "sourceRef": "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#5-operation-geometry"
+      },
+      {
+        "operationKind": "split-module",
+        "cost": 5,
+        "sourceRef": "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#5-operation-geometry"
+      },
+      {
+        "operationKind": "change-contract",
+        "cost": 8,
+        "sourceRef": "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#5-operation-geometry"
+      },
+      {
+        "operationKind": "semantic-rewrite",
+        "cost": 13,
+        "sourceRef": "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#5-operation-geometry"
+      },
+      {
+        "operationKind": "repair-boundaryleakcircuit",
+        "cost": 13,
+        "sourceRef": "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#5-operation-geometry"
+      },
+      {
+        "operationKind": "repair-semanticmismatchcircuit",
+        "cost": 13,
+        "sourceRef": "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#5-operation-geometry"
+      },
+      {
+        "operationKind": "runtime-protocol-shift",
+        "cost": 21,
+        "sourceRef": "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#5-operation-geometry"
+      }
+    ],
+    "aggregationPolicy": "aggregate measured axes only; propagate unmeasured, unavailable, incomparable, and blocked status separately",
+    "unmeasuredPolicy": "unmeasured is not zero and cannot contribute numeric zero to total measured distance",
+    "lawOverlayPolicy": "law-relative distance is an overlay over ArchMap Atom observations, not an Atom generator",
+    "coverageRequirementRefs": [
+      "coverage:complete-archmap-acceptance"
+    ],
+    "evidenceBoundary": "Part IV distances are measured from selected ArchMap evidence under this LawPolicy profile",
+    "calibrationRefs": [],
+    "nonConclusions": [
+      "part4 distance profile is a selected measurement recipe, not a law universe",
+      "profile weights and costs are read from LawPolicy, not inferred from schema shape",
+      "unmeasured distance is not measured zero",
+      "operation distance requires a declared profile cost or explicit calibration evidence"
+    ]
+  },
   "spectrumMeasurementProfile": {
     "profileId": "spectrum-profile:complete-archmap-acceptance",
     "readingBoundary": {
