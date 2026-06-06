@@ -3391,10 +3391,26 @@ fn build_atom_distance_readings(
                 &coverage_refs,
             );
             let component_distances = vec![
-                atom_distance_component("fiber", 250, fiber_distance.clone()),
-                atom_distance_component("carrier", 350, carrier_distance.clone()),
-                atom_distance_component("valence", 250, valence_distance.clone()),
-                atom_distance_component("semanticAnchor", 150, semantic_anchor_distance.clone()),
+                atom_distance_component(
+                    "fiber",
+                    weighted_atom_component_weight("atom.fiber", 250, foundation),
+                    fiber_distance.clone(),
+                ),
+                atom_distance_component(
+                    "carrier",
+                    weighted_atom_component_weight("atom.carrier", 350, foundation),
+                    carrier_distance.clone(),
+                ),
+                atom_distance_component(
+                    "valence",
+                    weighted_atom_component_weight("atom.valence", 250, foundation),
+                    valence_distance.clone(),
+                ),
+                atom_distance_component(
+                    "semanticAnchor",
+                    weighted_atom_component_weight("atom.semanticAnchor", 150, foundation),
+                    semantic_anchor_distance.clone(),
+                ),
             ];
             let atom_layout_distance_bundle =
                 atom_layout_distance_bundle_value(&component_distances, &coverage_refs);
@@ -3804,9 +3820,14 @@ fn sync_part4_diagnostic_scope(
     operation_distance_readings: &[ArchSigOperationDistanceReadingV0],
     curvature_mass_readings: &[ArchSigCurvatureMassReadingV0],
 ) {
+    let signature_axis_aliases = part4_signature_axis_aliases(signature_distance_readings);
     let measured_axis_refs = signature_distance_readings
         .iter()
         .flat_map(|reading| reading.measured_axis_refs.iter().cloned())
+        .collect::<BTreeSet<_>>();
+    let measured_axis_aliases = measured_axis_refs
+        .iter()
+        .flat_map(|axis| part4_canonical_axis_refs(axis, &signature_axis_aliases))
         .collect::<BTreeSet<_>>();
     let unmeasured_axis_refs = signature_distance_readings
         .iter()
@@ -3826,7 +3847,11 @@ fn sync_part4_diagnostic_scope(
                 .iter()
                 .flat_map(|reading| reading.unmeasured_axis_refs.iter().cloned()),
         )
-        .filter(|axis| !measured_axis_refs.contains(axis))
+        .filter(|axis| {
+            part4_canonical_axis_refs(axis, &signature_axis_aliases)
+                .into_iter()
+                .all(|canonical| !measured_axis_aliases.contains(&canonical))
+        })
         .collect::<BTreeSet<_>>();
     let blocker_refs = signature_distance_readings
         .iter()
@@ -3852,9 +3877,11 @@ fn sync_part4_diagnostic_scope(
                 .flat_map(|reading| reading.curvature_mass.blocker_refs.iter().cloned()),
         )
         .filter(|blocker| {
-            blocker
-                .strip_prefix("unmeasuredAxis:")
-                .is_none_or(|axis| !measured_axis_refs.contains(axis))
+            blocker.strip_prefix("unmeasuredAxis:").is_none_or(|axis| {
+                part4_canonical_axis_refs(axis, &signature_axis_aliases)
+                    .into_iter()
+                    .all(|canonical| !measured_axis_aliases.contains(&canonical))
+            })
         })
         .collect::<BTreeSet<_>>();
 
@@ -3864,6 +3891,40 @@ fn sync_part4_diagnostic_scope(
     foundation.diagnostic_scope.evidence_boundary =
         "Diagnostic scope is synchronized from Part IV evaluator readings; measured or zero signature-distance axes are removed from unmeasuredAxisRefs, while operation and curvature partial measurements can keep evidence blockers rather than becoming measured zero"
             .to_string();
+}
+
+fn part4_signature_axis_aliases(
+    signature_distance_readings: &[ArchSigSignatureDistanceReadingV0],
+) -> BTreeMap<String, BTreeSet<String>> {
+    let mut aliases = BTreeMap::<String, BTreeSet<String>>::new();
+    for axis in signature_distance_readings
+        .iter()
+        .flat_map(|reading| reading.axis_distances.iter())
+    {
+        let refs = BTreeSet::from([
+            axis.signature_axis_ref.clone(),
+            axis.axis_ref.clone(),
+            axis.law_ref.clone(),
+        ]);
+        for axis_ref in &refs {
+            aliases
+                .entry(axis_ref.clone())
+                .or_default()
+                .extend(refs.iter().cloned());
+        }
+    }
+    aliases
+}
+
+fn part4_canonical_axis_refs(
+    axis_ref: &str,
+    aliases: &BTreeMap<String, BTreeSet<String>>,
+) -> BTreeSet<String> {
+    aliases.get(axis_ref).cloned().unwrap_or_else(|| {
+        let mut refs = BTreeSet::new();
+        refs.insert(axis_ref.to_string());
+        refs
+    })
 }
 
 fn atom_fiber_distance_value(
@@ -4663,12 +4724,31 @@ fn atom_distance_component(
     weight: i64,
     value: ArchSigDistanceValueV0,
 ) -> ArchSigAtomDistanceComponentV0 {
+    let evaluator_basis_refs = unique_strings(value.evaluator_basis_refs.iter().cloned().chain(
+        std::iter::once(format!("profileWeight:{component_kind}:{weight}")),
+    ));
     ArchSigAtomDistanceComponentV0 {
         component_kind: component_kind.to_string(),
         weight,
-        evaluator_basis_refs: value.evaluator_basis_refs.clone(),
+        evaluator_basis_refs,
         value,
     }
+}
+
+fn weighted_atom_component_weight(
+    axis_ref: &str,
+    base_weight: i64,
+    foundation: &ArchSigPart4DistanceFoundationV0,
+) -> i64 {
+    base_weight.saturating_mul(
+        foundation
+            .profile
+            .atom_weights
+            .iter()
+            .find(|weight| weight.axis_ref == axis_ref)
+            .map(|weight| weight.weight)
+            .unwrap_or(1),
+    )
 }
 
 fn atom_high_distance_reasons(
@@ -5124,7 +5204,7 @@ fn build_signature_distance_readings(
     let coverage_refs = foundation.profile.coverage_policy_refs.clone();
     let axis_distances = signature_axes
         .iter()
-        .map(|axis| signature_axis_distance(axis, &coverage_refs))
+        .map(|axis| signature_axis_distance(axis, foundation, &coverage_refs))
         .collect::<Vec<_>>();
     let measured_axis_refs = axis_distances
         .iter()
@@ -5212,9 +5292,11 @@ fn attach_signature_distance_reading_refs(
 
 fn signature_axis_distance(
     axis: &ArchSigSignatureAxisReadingV0,
+    foundation: &ArchSigPart4DistanceFoundationV0,
     coverage_refs: &[String],
 ) -> ArchSigSignatureAxisDistanceV0 {
     let blocker_refs = effective_signature_axis_blockers(axis);
+    let profile_weight = selected_signature_axis_weight(axis, foundation);
     let provenance_refs = unique_strings(
         axis.source_refs
             .iter()
@@ -5225,6 +5307,7 @@ fn signature_axis_distance(
     let evaluator_basis_refs = vec![
         format!("rho_i:axis={}", axis.signature_axis_id),
         format!("axisValue:{}", axis.value),
+        format!("profileWeight:{}={profile_weight}", axis.signature_axis_id),
         format!("coverageStatus:{}", axis.coverage_status),
     ];
     let rho_i = if axis.value_type != "integer"
@@ -5255,12 +5338,14 @@ fn signature_axis_distance(
         )
     };
     let axis_distance = measured_part4_distance_value(
-        axis.value * 1000,
+        axis.value
+            .saturating_mul(1000)
+            .saturating_mul(profile_weight),
         "milli-signature-distance",
         provenance_refs,
         evaluator_basis_refs,
         coverage_refs,
-        "axis distance scales rho_i into the selected signature distance unit without converting missing coverage to zero",
+        "axis distance scales rho_i by the selected Part IV DistanceProfile signature weight without converting missing coverage to zero",
     );
     ArchSigSignatureAxisDistanceV0 {
         signature_axis_ref: axis.signature_axis_id.clone(),
@@ -5275,6 +5360,23 @@ fn signature_axis_distance(
             "axis distance is read from selected signature axis evidence and remains coverage-relative"
                 .to_string(),
     }
+}
+
+fn selected_signature_axis_weight(
+    axis: &ArchSigSignatureAxisReadingV0,
+    foundation: &ArchSigPart4DistanceFoundationV0,
+) -> i64 {
+    foundation
+        .profile
+        .signature_weights
+        .iter()
+        .find(|weight| {
+            weight.axis_ref == axis.signature_axis_id
+                || weight.axis_ref == axis.axis_ref
+                || weight.axis_ref == axis.law_ref
+        })
+        .map(|weight| weight.weight)
+        .unwrap_or(1)
 }
 
 fn effective_signature_axis_blockers(axis: &ArchSigSignatureAxisReadingV0) -> Vec<String> {
@@ -14434,7 +14536,15 @@ fn promote_operation_geometry_supporting_distance(
     {
         let blockers = readings
             .iter()
-            .flat_map(|reading| reading.side_effect_bound.blocker_refs.clone())
+            .flat_map(|reading| {
+                reading
+                    .operation_cost
+                    .blocker_refs
+                    .iter()
+                    .chain(reading.side_effect_bound.blocker_refs.iter())
+                    .cloned()
+                    .collect::<Vec<_>>()
+            })
             .collect::<BTreeSet<_>>()
             .into_iter()
             .collect::<Vec<_>>();
@@ -14473,7 +14583,7 @@ fn promote_operation_geometry_supporting_distance(
                 coverage_refs: foundation.profile.coverage_policy_refs.clone(),
                 blocker_refs: blockers,
                 reading:
-                    "operationGeometry remains blocked while selected repair routes have transfer risks or unmeasured protected axes"
+                    "operationGeometry remains blocked while selected repair routes have missing profile costs, transfer risks, or unmeasured protected axes"
                         .to_string(),
             }
         };
@@ -22629,6 +22739,15 @@ fn check_part4_distance_foundation_surface(packet: &ArchSigAnalysisPacketV0) -> 
         .iter()
         .cloned()
         .collect::<BTreeSet<_>>();
+    let signature_axis_aliases = part4_signature_axis_aliases(&packet.signature_distance_readings);
+    let scope_measured_axis_aliases = scope_measured_axis_refs
+        .iter()
+        .flat_map(|axis| part4_canonical_axis_refs(axis, &signature_axis_aliases))
+        .collect::<BTreeSet<_>>();
+    let scope_unmeasured_axis_aliases = scope_unmeasured_axis_refs
+        .iter()
+        .flat_map(|axis| part4_canonical_axis_refs(axis, &signature_axis_aliases))
+        .collect::<BTreeSet<_>>();
     let overlap = scope_measured_axis_refs
         .intersection(&scope_unmeasured_axis_refs)
         .cloned()
@@ -22648,10 +22767,11 @@ fn check_part4_distance_foundation_surface(packet: &ArchSigAnalysisPacketV0) -> 
                 "DiagnosticScope blocker refs must reflect evaluator evidence gaps after measurement, not closed implementation issue placeholders",
             ));
         }
-        if blocker
-            .strip_prefix("unmeasuredAxis:")
-            .is_some_and(|axis| scope_measured_axis_refs.contains(axis))
-        {
+        if blocker.strip_prefix("unmeasuredAxis:").is_some_and(|axis| {
+            part4_canonical_axis_refs(axis, &signature_axis_aliases)
+                .into_iter()
+                .any(|axis| scope_measured_axis_aliases.contains(&axis))
+        }) {
             examples.push(generic_validation_example(
                 "part4DistanceFoundation.diagnosticScope.blockerRefs",
                 blocker,
@@ -22663,6 +22783,10 @@ fn check_part4_distance_foundation_surface(packet: &ArchSigAnalysisPacketV0) -> 
         .signature_distance_readings
         .iter()
         .flat_map(|reading| reading.measured_axis_refs.iter().cloned())
+        .collect::<BTreeSet<_>>();
+    let expected_measured_axis_aliases = expected_measured_axis_refs
+        .iter()
+        .flat_map(|axis| part4_canonical_axis_refs(axis, &signature_axis_aliases))
         .collect::<BTreeSet<_>>();
     let expected_unmeasured_axis_refs = packet
         .signature_distance_readings
@@ -22686,7 +22810,11 @@ fn check_part4_distance_foundation_surface(packet: &ArchSigAnalysisPacketV0) -> 
                 .iter()
                 .flat_map(|reading| reading.unmeasured_axis_refs.iter().cloned()),
         )
-        .filter(|axis| !expected_measured_axis_refs.contains(axis))
+        .filter(|axis| {
+            part4_canonical_axis_refs(axis, &signature_axis_aliases)
+                .into_iter()
+                .all(|axis| !expected_measured_axis_aliases.contains(&axis))
+        })
         .collect::<BTreeSet<_>>();
     let missing_measured = expected_measured_axis_refs
         .difference(&scope_measured_axis_refs)
@@ -22699,8 +22827,8 @@ fn check_part4_distance_foundation_surface(packet: &ArchSigAnalysisPacketV0) -> 
             "DiagnosticScope measuredAxisRefs must include measured or zero signature-distance axes",
         ));
     }
-    let stale_unmeasured = scope_unmeasured_axis_refs
-        .intersection(&expected_measured_axis_refs)
+    let stale_unmeasured = scope_unmeasured_axis_aliases
+        .intersection(&expected_measured_axis_aliases)
         .cloned()
         .collect::<Vec<_>>();
     if !stale_unmeasured.is_empty() {
@@ -22711,7 +22839,12 @@ fn check_part4_distance_foundation_surface(packet: &ArchSigAnalysisPacketV0) -> 
         ));
     }
     let missing_unmeasured = expected_unmeasured_axis_refs
-        .difference(&scope_unmeasured_axis_refs)
+        .iter()
+        .filter(|axis| {
+            part4_canonical_axis_refs(axis, &signature_axis_aliases)
+                .into_iter()
+                .all(|axis| !scope_unmeasured_axis_aliases.contains(&axis))
+        })
         .cloned()
         .collect::<Vec<_>>();
     if !missing_unmeasured.is_empty() {
@@ -27043,6 +27176,105 @@ mod tests {
                 .blocker_refs
                 .iter()
                 .any(|blocker| blocker.starts_with("missingOperationCost:"))
+        );
+    }
+
+    #[test]
+    fn missing_operation_cost_blocks_operation_geometry_summary() {
+        let archmap: ArchMapDocumentV0 =
+            serde_json::from_str(include_str!("../tests/fixtures/minimal/archmap.json"))
+                .expect("ArchMap fixture parses");
+        let mut law_policy = crate::law_policy::static_law_policy();
+        law_policy
+            .part4_distance_profile
+            .as_mut()
+            .expect("static policy has Part IV profile")
+            .operation_costs
+            .clear();
+
+        let packet = build_archsig_analysis_packet(&archmap, &law_policy, None, None);
+        let operation_geometry = packet
+            .part4_distance_foundation
+            .supporting_distances
+            .iter()
+            .find(|distance| distance.distance_family == "operationGeometry")
+            .expect("Part IV foundation has operationGeometry row");
+
+        assert_eq!(operation_geometry.value.status, "blocked");
+        assert_eq!(operation_geometry.value.measured_value, None);
+        assert!(
+            operation_geometry
+                .value
+                .blocker_refs
+                .iter()
+                .any(|blocker| blocker.starts_with("missingOperationCost:")),
+            "{:?}",
+            operation_geometry.value.blocker_refs
+        );
+    }
+
+    #[test]
+    fn part4_profile_weights_affect_atom_and_signature_distance() {
+        let archmap: ArchMapDocumentV0 =
+            serde_json::from_str(include_str!("../tests/fixtures/minimal/archmap.json"))
+                .expect("ArchMap fixture parses");
+        let mut law_policy = crate::law_policy::static_law_policy();
+        let profile = law_policy
+            .part4_distance_profile
+            .as_mut()
+            .expect("static policy has Part IV profile");
+        for weight in &mut profile.atom_weights {
+            if weight.axis_ref == "atom.carrier" {
+                weight.weight = 3;
+            }
+        }
+        for weight in &mut profile.signature_weights {
+            if weight.axis_ref == "sig-axis:semantic-inconsistency" {
+                weight.weight = 5;
+            }
+        }
+
+        let packet = build_archsig_analysis_packet(&archmap, &law_policy, None, None);
+        let atom_reading = packet
+            .atom_distance_readings
+            .iter()
+            .find(|reading| {
+                reading
+                    .component_distances
+                    .iter()
+                    .any(|component| component.component_kind == "carrier")
+            })
+            .expect("fixture has atom distance readings");
+        let carrier = atom_reading
+            .component_distances
+            .iter()
+            .find(|component| component.component_kind == "carrier")
+            .expect("atom reading has carrier component");
+        let signature_axis = packet
+            .signature_distance_readings
+            .first()
+            .and_then(|reading| {
+                reading
+                    .axis_distances
+                    .iter()
+                    .find(|axis| axis.signature_axis_ref == "sig-axis:semantic-inconsistency")
+            })
+            .expect("fixture has semantic signature axis distance");
+
+        assert_eq!(carrier.weight, 1050);
+        assert!(
+            carrier
+                .evaluator_basis_refs
+                .iter()
+                .any(|basis| basis == "profileWeight:carrier:1050")
+        );
+        assert_eq!(signature_axis.axis_distance.measured_value, Some(5000));
+        assert!(
+            signature_axis
+                .axis_distance
+                .evaluator_basis_refs
+                .iter()
+                .any(|basis| basis == "profileWeight:sig-axis:semantic-inconsistency=5")
         );
     }
 

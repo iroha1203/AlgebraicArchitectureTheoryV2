@@ -46,6 +46,10 @@ fn sharded_root() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/sharded")
 }
 
+fn negative_root() -> PathBuf {
+    Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/negative")
+}
+
 #[test]
 fn cli_help_exposes_only_llm_atom_archmap_surface() {
     let output = run_sig0_output(&["--help"]);
@@ -193,6 +197,31 @@ fn cli_summarizes_archsig_analysis_packet() {
                         .is_some_and(|value| value.contains("/signatureDistanceReadings"))
                 })),
         "analysis-summary must expose Part IV distance diagnosis with detail refs"
+    );
+    assert_part4_distance_diagnosis_refs_resolve(&json, &packet);
+    assert!(
+        json["distanceDiagnosis"]["repairDistance"]["readingId"]
+            .as_str()
+            .is_some()
+            && json["distanceDiagnosis"]["repairDistance"]["operationDeltaRef"]
+                .as_str()
+                .is_some()
+            && json["distanceDiagnosis"]["curvatureDistance"]["readingId"]
+                .as_str()
+                .is_some(),
+        "analysis-summary distanceDiagnosis must expose non-null raw packet ids for repair and curvature distances"
+    );
+    assert!(
+        json["distanceDiagnosis"]["topMovedAxes"]
+            .as_array()
+            .into_iter()
+            .flatten()
+            .all(|axis| {
+                axis["axisDistance"]["measuredValue"]
+                    .as_i64()
+                    .is_some_and(|value| value > 0)
+            }),
+        "topMovedAxes must only report positive measured movement axes"
     );
     assert!(
         unmeasured_surface_excludes_measured_axes(&json["distanceDiagnosis"], &measured_axis_refs),
@@ -1226,6 +1255,105 @@ fn cli_analyze_strict_distance_requires_part4_profile() {
         law_policy_validation["summary"]["result"].as_str(),
         Some("warn"),
         "legacy profile should be visible in the emitted LawPolicy validation report"
+    );
+}
+
+#[test]
+fn cli_analyze_strict_distance_uses_part4_profile_weights() {
+    let out_dir = temp_dir("analyze-strict-distance-weights");
+    let root = fixture_root();
+    let archmap = root.join("archmap.json");
+    let law_policy = root.join("law_policy.json");
+    let weighted_policy_path = out_dir.join("law_policy_weighted_part4.json");
+    let mut weighted_policy = read_json(&law_policy);
+    let signature_weights = weighted_policy["part4DistanceProfile"]["signatureWeights"]
+        .as_array_mut()
+        .expect("fixture LawPolicy has signature weights");
+    for weight in signature_weights {
+        if weight["axisRef"] == "sig-axis:semantic-inconsistency" {
+            weight["weight"] = Value::from(5);
+        }
+    }
+    let atom_weights = weighted_policy["part4DistanceProfile"]["atomWeights"]
+        .as_array_mut()
+        .expect("fixture LawPolicy has atom weights");
+    for weight in atom_weights {
+        if weight["axisRef"] == "atom.carrier" {
+            weight["weight"] = Value::from(3);
+        }
+    }
+    fs::write(
+        &weighted_policy_path,
+        serde_json::to_vec_pretty(&weighted_policy).expect("weighted policy serializes"),
+    )
+    .expect("weighted policy can be written");
+
+    run_sig0(&[
+        "analyze",
+        "--archmap",
+        archmap.to_str().expect("archmap path is utf-8"),
+        "--law-policy",
+        weighted_policy_path
+            .to_str()
+            .expect("weighted law policy path is utf-8"),
+        "--out-dir",
+        out_dir.to_str().expect("output directory path is utf-8"),
+        "--strict-distance",
+        "--emit-raw-artifacts",
+    ]);
+
+    let packet = read_json(&out_dir.join("archsig-analysis-packet.json"));
+    let summary = read_json(&out_dir.join("archsig-analysis-summary.json"));
+    let semantic_axis = packet["signatureDistanceReadings"][0]["axisDistances"]
+        .as_array()
+        .expect("axisDistances are present")
+        .iter()
+        .find(|axis| axis["signatureAxisRef"] == "sig-axis:semantic-inconsistency")
+        .expect("semantic axis distance is present");
+
+    assert_eq!(
+        semantic_axis["axisDistance"]["measuredValue"].as_i64(),
+        Some(5000),
+        "strict-distance analyze must use selected signature weight"
+    );
+    assert!(
+        semantic_axis["axisDistance"]["evaluatorBasisRefs"]
+            .as_array()
+            .into_iter()
+            .flatten()
+            .any(|basis| basis.as_str() == Some("profileWeight:sig-axis:semantic-inconsistency=5")),
+        "axis distance must expose the selected profile weight in evaluator basis"
+    );
+    assert_eq!(
+        summary["distanceDiagnosis"]["topMovedAxes"][0]["axisDistance"]["measuredValue"].as_i64(),
+        Some(5000),
+        "summary topMovedAxes must reflect the weighted raw packet distance"
+    );
+
+    let carrier_component = packet["atomDistanceReadings"]
+        .as_array()
+        .expect("atom distance readings are present")
+        .iter()
+        .flat_map(|reading| {
+            reading["componentDistances"]
+                .as_array()
+                .into_iter()
+                .flatten()
+        })
+        .find(|component| component["componentKind"] == "carrier")
+        .expect("carrier component distance is present");
+    assert_eq!(
+        carrier_component["weight"].as_i64(),
+        Some(1050),
+        "strict-distance analyze must use selected atom component weight"
+    );
+    assert!(
+        carrier_component["evaluatorBasisRefs"]
+            .as_array()
+            .into_iter()
+            .flatten()
+            .any(|basis| basis.as_str() == Some("profileWeight:carrier:1050")),
+        "atom component distance must expose the selected profile weight in evaluator basis"
     );
 }
 
@@ -3233,6 +3361,7 @@ fn archsig_atom_viewer_static_app_is_packaged_asset() {
     for section in [
         "Overview",
         "Top Findings",
+        "Distance Diagnosis",
         "Action Queue",
         "Coverage And Boundaries",
         "Artifacts",
@@ -3245,6 +3374,15 @@ fn archsig_atom_viewer_static_app_is_packaged_asset() {
         );
     }
     assert!(
+        html.contains("renderDistanceDiagnosis")
+            && html.contains("compactRepresentationMetricValues")
+            && html.contains("representationMetric")
+            && html.contains("distanceBoundary")
+            && html.contains("nonClaims")
+            && html.contains("detailRefs"),
+        "viewer must render distanceDiagnosis with boundary, non-claims, and detail refs"
+    );
+    assert!(
         html.contains("atomEdges")
             && html.contains("moleculeGroups")
             && html.contains("analysisOverlays"),
@@ -3254,6 +3392,143 @@ fn archsig_atom_viewer_static_app_is_packaged_asset() {
         !html.contains("archsig-analysis-packet.json"),
         "viewer must not embed or load the raw analysis packet"
     );
+}
+
+#[test]
+fn part4_negative_fixture_corpus_tracks_distance_surface_regressions() {
+    let corpus = read_json(&negative_root().join("part4_distance_surface_negative_cases.json"));
+    let cases = corpus["cases"]
+        .as_array()
+        .expect("Part IV negative corpus has cases");
+    for expected in [
+        "stale-axis-namespace",
+        "profile-weight-ignored",
+        "missing-operation-cost-not-promoted",
+        "summary-distance-id-null",
+        "stale-detail-ref",
+    ] {
+        assert!(
+            cases
+                .iter()
+                .any(|case| case["caseId"].as_str() == Some(expected)),
+            "negative corpus must track {expected}"
+        );
+    }
+    assert!(
+        cases.iter().all(|case| {
+            case["sourceIssue"]
+                .as_str()
+                .is_some_and(|issue| issue.starts_with('#'))
+                && case["assertion"].as_str().is_some()
+                && case["fixtureKind"].as_str().is_some()
+        }),
+        "each negative case must record source issue, fixture kind, and assertion"
+    );
+
+    let policy_cases =
+        read_json(&negative_root().join("part4_distance_policy_negative_cases.json"));
+    let policy_cases = policy_cases["cases"]
+        .as_array()
+        .expect("Part IV policy negative corpus has cases");
+    assert!(
+        policy_cases.len() >= 3,
+        "policy negative corpus must contain executable validation cases"
+    );
+    for case in policy_cases {
+        let out_dir = temp_dir(case["caseId"].as_str().expect("negative case has caseId"));
+        let root = fixture_root();
+        let policy_path = out_dir.join("law_policy_negative.json");
+        let mut policy = read_json(&root.join("law_policy.json"));
+        apply_part4_policy_negative_mutation(&mut policy, case);
+        fs::write(
+            &policy_path,
+            serde_json::to_vec_pretty(&policy).expect("negative policy serializes"),
+        )
+        .expect("negative policy can be written");
+
+        let output = run_sig0_output(&[
+            "analyze",
+            "--archmap",
+            root.join("archmap.json")
+                .to_str()
+                .expect("archmap path is utf-8"),
+            "--law-policy",
+            policy_path
+                .to_str()
+                .expect("negative law policy path is utf-8"),
+            "--out-dir",
+            out_dir.to_str().expect("negative out dir is utf-8"),
+            "--strict-distance",
+        ]);
+
+        assert!(
+            !output.status.success(),
+            "negative policy case must fail strict-distance: {}",
+            case["caseId"]
+        );
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        let expected = case["expectedStderr"]
+            .as_str()
+            .expect("negative case declares expected stderr");
+        assert!(
+            stderr.contains(expected),
+            "negative policy case {} stderr should contain {expected}\n{stderr}",
+            case["caseId"]
+        );
+    }
+}
+
+fn apply_part4_policy_negative_mutation(policy: &mut Value, case: &Value) {
+    let mutation = &case["mutation"];
+    let kind = mutation["kind"]
+        .as_str()
+        .expect("negative case mutation has kind");
+    match kind {
+        "removeSignatureWeight" => {
+            let axis_ref = mutation["axisRef"]
+                .as_str()
+                .expect("removeSignatureWeight has axisRef");
+            let weights = policy["part4DistanceProfile"]["signatureWeights"]
+                .as_array_mut()
+                .expect("fixture policy has signatureWeights");
+            weights.retain(|weight| weight["axisRef"].as_str() != Some(axis_ref));
+        }
+        "addAtomWeight" => {
+            let axis_ref = mutation["axisRef"]
+                .as_str()
+                .expect("addAtomWeight has axisRef");
+            let weight = mutation["weight"]
+                .as_i64()
+                .expect("addAtomWeight has weight");
+            let weights = policy["part4DistanceProfile"]["atomWeights"]
+                .as_array_mut()
+                .expect("fixture policy has atomWeights");
+            weights.push(serde_json::json!({
+                "axisRef": axis_ref,
+                "weight": weight,
+                "sourceRef": "fixture:negative-part4-distance-policy"
+            }));
+        }
+        "setSignatureWeight" => {
+            let axis_ref = mutation["axisRef"]
+                .as_str()
+                .expect("setSignatureWeight has axisRef");
+            let value = Value::from(
+                mutation["weight"]
+                    .as_i64()
+                    .expect("setSignatureWeight has weight"),
+            );
+            let weights = policy["part4DistanceProfile"]["signatureWeights"]
+                .as_array_mut()
+                .expect("fixture policy has signatureWeights");
+            let weight = weights
+                .iter_mut()
+                .find(|weight| weight["axisRef"].as_str() == Some(axis_ref))
+                .expect("fixture policy has target signature weight");
+            weight["weight"] = value;
+        }
+        other => panic!("unknown Part IV negative policy mutation kind: {other}"),
+    }
 }
 
 #[test]
@@ -3369,10 +3644,54 @@ fn unmeasured_surface_excludes_measured_axes(
     measured_axis_refs: &BTreeSet<String>,
 ) -> bool {
     let unmeasured_axes = string_set(&distance_diagnosis["unmeasuredAxes"]);
-    unmeasured_axes
-        .intersection(measured_axis_refs)
+    let measured_axis_aliases = measured_axis_refs
+        .iter()
+        .flat_map(|axis| axis_aliases(axis))
+        .collect::<BTreeSet<_>>();
+    let unmeasured_axis_aliases = unmeasured_axes
+        .iter()
+        .flat_map(|axis| axis_aliases(axis))
+        .collect::<BTreeSet<_>>();
+    unmeasured_axis_aliases
+        .intersection(&measured_axis_aliases)
         .next()
         .is_none()
+}
+
+fn axis_aliases(axis_ref: &str) -> BTreeSet<String> {
+    let mut aliases = BTreeSet::from([axis_ref.to_string()]);
+    if let Some(suffix) = axis_ref.strip_prefix("sig-axis:") {
+        aliases.insert(format!("axis:{suffix}"));
+    }
+    if let Some(suffix) = axis_ref.strip_prefix("axis:") {
+        aliases.insert(format!("sig-axis:{suffix}"));
+    }
+    aliases
+}
+
+fn assert_part4_distance_diagnosis_refs_resolve(summary: &Value, packet: &Value) {
+    let refs = summary["distanceDiagnosis"]["detailRefs"]
+        .as_array()
+        .expect("distanceDiagnosis detailRefs is array");
+    assert!(
+        !refs.is_empty(),
+        "distanceDiagnosis detailRefs must be nonempty"
+    );
+    for reference in refs {
+        let reference = reference
+            .as_str()
+            .expect("distanceDiagnosis detail ref is string");
+        let pointer = reference
+            .strip_prefix("packet:")
+            .expect("distanceDiagnosis detail ref uses packet: prefix");
+        let target = packet.pointer(pointer).unwrap_or_else(|| {
+            panic!("distanceDiagnosis detail ref must resolve into raw packet: {reference}")
+        });
+        assert!(
+            !target.as_array().is_some_and(Vec::is_empty),
+            "distanceDiagnosis detail ref must not resolve to an empty packet section: {reference}"
+        );
+    }
 }
 
 fn signature_measured_axis_refs(packet: &Value) -> BTreeSet<String> {
@@ -3388,6 +3707,14 @@ fn assert_part4_cross_surface_axis_status_consistency(packet: &Value) {
     let diagnostic_scope = &packet["part4DistanceFoundation"]["diagnosticScope"];
     let scope_measured_axes = string_set(&diagnostic_scope["measuredAxisRefs"]);
     let scope_unmeasured_axes = string_set(&diagnostic_scope["unmeasuredAxisRefs"]);
+    let scope_measured_axis_aliases = scope_measured_axes
+        .iter()
+        .flat_map(|axis| axis_aliases(axis))
+        .collect::<BTreeSet<_>>();
+    let scope_unmeasured_axis_aliases = scope_unmeasured_axes
+        .iter()
+        .flat_map(|axis| axis_aliases(axis))
+        .collect::<BTreeSet<_>>();
     let overlap = scope_measured_axes
         .intersection(&scope_unmeasured_axes)
         .cloned()
@@ -3411,7 +3738,11 @@ fn assert_part4_cross_surface_axis_status_consistency(packet: &Value) {
         .flatten()
         .filter_map(Value::as_str)
         .filter_map(|blocker| blocker.strip_prefix("unmeasuredAxis:"))
-        .filter(|axis| scope_measured_axes.contains(*axis))
+        .filter(|axis| {
+            axis_aliases(axis)
+                .into_iter()
+                .any(|axis| scope_measured_axis_aliases.contains(&axis))
+        })
         .map(str::to_string)
         .collect::<Vec<_>>();
     assert!(
@@ -3420,6 +3751,10 @@ fn assert_part4_cross_surface_axis_status_consistency(packet: &Value) {
     );
 
     let signature_measured_axes = signature_measured_axis_refs(packet);
+    let signature_measured_axis_aliases = signature_measured_axes
+        .iter()
+        .flat_map(|axis| axis_aliases(axis))
+        .collect::<BTreeSet<_>>();
     let signature_unmeasured_axes = packet["signatureDistanceReadings"]
         .as_array()
         .into_iter()
@@ -3440,8 +3775,8 @@ fn assert_part4_cross_surface_axis_status_consistency(packet: &Value) {
         missing_measured.is_empty(),
         "DiagnosticScope measuredAxisRefs must include measured or zero signature axes: {missing_measured:?}"
     );
-    let stale_unmeasured = scope_unmeasured_axes
-        .intersection(&signature_measured_axes)
+    let stale_unmeasured = scope_unmeasured_axis_aliases
+        .intersection(&signature_measured_axis_aliases)
         .cloned()
         .collect::<Vec<_>>();
     assert!(

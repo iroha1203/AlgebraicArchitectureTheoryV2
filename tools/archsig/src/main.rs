@@ -4233,13 +4233,18 @@ fn distance_diagnosis(packet: &serde_json::Value) -> serde_json::Value {
         "topMovedAxes": top_signature_axis_distance_rows(packet, 6),
         "safeMargin": compact_distance_value(&signature_distance, "safeRegionMargin"),
         "repairDistance": {
-            "operationRef": json_field(&operation_distance, "operationRef"),
+            "readingId": json_field(&operation_distance, "operationDistanceReadingId"),
+            "operationRef": json_field(&operation_distance, "operationDeltaRef"),
+            "operationDeltaRef": json_field(&operation_distance, "operationDeltaRef"),
+            "operationKind": json_field(&operation_distance, "operationKind"),
             "operationCost": compact_distance_value(&operation_distance, "operationCost"),
             "targetDistanceDecrease": compact_distance_value(&operation_distance, "targetDistanceDecrease"),
             "sideEffectBound": compact_distance_value(&operation_distance, "sideEffectBound")
         },
         "curvatureDistance": {
-            "readingId": json_field(&curvature_distance, "readingId"),
+            "readingId": json_field(&curvature_distance, "curvatureMassReadingId"),
+            "profileRef": json_field(&curvature_distance, "profileRef"),
+            "supportReadingRef": json_field(&curvature_distance, "supportReadingRef"),
             "curvatureMass": compact_distance_value(&curvature_distance, "curvatureMass"),
             "transportDistance": compact_distance_value(&curvature_distance, "transportDistance")
         },
@@ -4273,12 +4278,14 @@ fn distance_diagnosis_unmeasured_axes(
     diagnostic_scope: &serde_json::Value,
     signature_distance: &serde_json::Value,
 ) -> serde_json::Value {
+    let signature_axis_aliases = signature_axis_aliases(signature_distance);
     let measured_axis_refs = string_vec_from_value(diagnostic_scope, "measuredAxisRefs")
         .into_iter()
         .chain(string_vec_from_value(
             signature_distance,
             "measuredAxisRefs",
         ))
+        .flat_map(|axis| canonical_axis_refs(&axis, &signature_axis_aliases))
         .collect::<BTreeSet<_>>();
     let unmeasured_axis_refs = string_vec_from_value(diagnostic_scope, "unmeasuredAxisRefs")
         .into_iter()
@@ -4290,9 +4297,44 @@ fn distance_diagnosis_unmeasured_axes(
             signature_distance,
             "incomparableAxisRefs",
         ))
-        .filter(|axis| !measured_axis_refs.contains(axis))
+        .filter(|axis| {
+            canonical_axis_refs(axis, &signature_axis_aliases)
+                .into_iter()
+                .all(|canonical| !measured_axis_refs.contains(&canonical))
+        })
         .collect::<BTreeSet<_>>();
     json_string_array(unmeasured_axis_refs.into_iter())
+}
+
+fn signature_axis_aliases(
+    signature_distance: &serde_json::Value,
+) -> BTreeMap<String, BTreeSet<String>> {
+    let mut aliases = BTreeMap::<String, BTreeSet<String>>::new();
+    for axis in array_items(signature_distance, "axisDistances") {
+        let refs = ["signatureAxisRef", "axisRef", "lawRef"]
+            .into_iter()
+            .filter_map(|key| axis.get(key).and_then(serde_json::Value::as_str))
+            .map(str::to_string)
+            .collect::<BTreeSet<_>>();
+        for axis_ref in &refs {
+            aliases
+                .entry(axis_ref.clone())
+                .or_default()
+                .extend(refs.iter().cloned());
+        }
+    }
+    aliases
+}
+
+fn canonical_axis_refs(
+    axis_ref: &str,
+    aliases: &BTreeMap<String, BTreeSet<String>>,
+) -> BTreeSet<String> {
+    aliases.get(axis_ref).cloned().unwrap_or_else(|| {
+        let mut refs = BTreeSet::new();
+        refs.insert(axis_ref.to_string());
+        refs
+    })
 }
 
 fn compact_distance_value(container: &serde_json::Value, key: &str) -> serde_json::Value {
@@ -4338,6 +4380,13 @@ fn top_signature_axis_distance_rows(packet: &serde_json::Value, limit: usize) ->
     let mut rows = array_items(packet, "signatureDistanceReadings")
         .into_iter()
         .flat_map(|reading| array_items(reading, "axisDistances"))
+        .filter(|axis| {
+            axis.get("axisDistance")
+                .and_then(|value| value.get("measuredValue"))
+                .and_then(serde_json::Value::as_i64)
+                .unwrap_or_default()
+                > 0
+        })
         .map(|axis| {
             let axis_distance = axis.get("axisDistance").unwrap_or(&serde_json::Value::Null);
             serde_json::json!({

@@ -43,6 +43,8 @@ const REQUIRED_PART4_DISTANCE_PROFILE_NON_CONCLUSIONS: [&str; 4] = [
     "unmeasured distance is not measured zero",
     "operation distance requires a declared profile cost or explicit calibration evidence",
 ];
+const MAX_PART4_DISTANCE_PROFILE_WEIGHT: i64 = 1_000_000;
+const MAX_PART4_OPERATION_COST: i64 = 1_000_000;
 
 pub fn static_law_policy() -> LawPolicyDocumentV0 {
     LawPolicyDocumentV0 {
@@ -725,6 +727,11 @@ fn check_part4_distance_profile(policy: &LawPolicyDocumentV0) -> ValidationCheck
         .iter()
         .map(|weight| weight.axis_ref.as_str())
         .collect::<BTreeSet<_>>();
+    let present_signature_axes = profile
+        .signature_weights
+        .iter()
+        .map(|weight| weight.axis_ref.as_str())
+        .collect::<BTreeSet<_>>();
     let present_non_conclusions = profile
         .non_conclusions
         .iter()
@@ -746,12 +753,37 @@ fn check_part4_distance_profile(policy: &LawPolicyDocumentV0) -> ValidationCheck
             ));
         }
     }
+    for weight in &profile.atom_weights {
+        if ![
+            "atom.fiber",
+            "atom.carrier",
+            "atom.valence",
+            "atom.semanticAnchor",
+        ]
+        .contains(&weight.axis_ref.as_str())
+        {
+            examples.push(generic_validation_example(
+                &profile.profile_id,
+                &weight.axis_ref,
+                "part4DistanceProfile.atomWeights must not include unused Atom geometry components",
+            ));
+        }
+    }
     if profile.signature_weights.is_empty() {
         examples.push(generic_validation_example(
             &profile.profile_id,
             "signatureWeights",
             "part4DistanceProfile must declare signature-axis weights from LawPolicy",
         ));
+    }
+    for signature_axis_id in &signature_axis_ids {
+        if !present_signature_axes.contains(signature_axis_id) {
+            examples.push(generic_validation_example(
+                &profile.profile_id,
+                signature_axis_id,
+                "part4DistanceProfile.signatureWeights must include every selected signature axis",
+            ));
+        }
     }
     for weight in profile
         .atom_weights
@@ -773,6 +805,13 @@ fn check_part4_distance_profile(policy: &LawPolicyDocumentV0) -> ValidationCheck
                 &profile.profile_id,
                 &weight.axis_ref,
                 "part4DistanceProfile weights must be positive selected distances",
+            ));
+        }
+        if weight.weight > MAX_PART4_DISTANCE_PROFILE_WEIGHT {
+            examples.push(generic_validation_example(
+                &profile.profile_id,
+                &weight.axis_ref,
+                "part4DistanceProfile weights must stay within the bounded ArchSig distance range",
             ));
         }
     }
@@ -811,6 +850,13 @@ fn check_part4_distance_profile(policy: &LawPolicyDocumentV0) -> ValidationCheck
                 &profile.profile_id,
                 &cost.operation_kind,
                 "part4DistanceProfile operation costs must be positive selected distances",
+            ));
+        }
+        if cost.cost > MAX_PART4_OPERATION_COST {
+            examples.push(generic_validation_example(
+                &profile.profile_id,
+                &cost.operation_kind,
+                "part4DistanceProfile operation costs must stay within the bounded ArchSig distance range",
             ));
         }
     }
@@ -2092,6 +2138,77 @@ mod tests {
         assert_eq!(report.summary.result, "fail");
         assert!(report.checks.iter().any(|check| {
             check.id == "law-policy-part4-distance-profile" && check.result == "fail"
+        }));
+    }
+
+    #[test]
+    fn part4_distance_profile_rejects_sparse_and_unused_weights() {
+        let mut missing_signature = static_law_policy();
+        missing_signature
+            .part4_distance_profile
+            .as_mut()
+            .expect("fixture declares a Part IV distance profile")
+            .signature_weights
+            .retain(|weight| weight.axis_ref != "sig-axis:semantic-inconsistency");
+        let missing_report = validate_law_policy_report(&missing_signature, "bad-law-policy.json");
+        assert_eq!(missing_report.summary.result, "fail");
+        assert!(missing_report.checks.iter().any(|check| {
+            check.id == "law-policy-part4-distance-profile"
+                && check.result == "fail"
+                && check.examples.iter().any(|example| {
+                    example.evidence.as_deref().is_some_and(|evidence| {
+                        evidence.contains("must include every selected signature axis")
+                    })
+                })
+        }));
+
+        let mut unused_atom = static_law_policy();
+        unused_atom
+            .part4_distance_profile
+            .as_mut()
+            .expect("fixture declares a Part IV distance profile")
+            .atom_weights
+            .push(LawPolicyPart4DistanceWeightV0 {
+                axis_ref: "atom.unused".to_string(),
+                weight: 1,
+                source_ref: "fixture:unused".to_string(),
+            });
+        let unused_report = validate_law_policy_report(&unused_atom, "bad-law-policy.json");
+        assert_eq!(unused_report.summary.result, "fail");
+        assert!(unused_report.checks.iter().any(|check| {
+            check.id == "law-policy-part4-distance-profile"
+                && check.result == "fail"
+                && check.examples.iter().any(|example| {
+                    example.evidence.as_deref().is_some_and(|evidence| {
+                        evidence.contains("must not include unused Atom geometry components")
+                    })
+                })
+        }));
+    }
+
+    #[test]
+    fn part4_distance_profile_rejects_unbounded_weights_and_costs() {
+        let mut policy = static_law_policy();
+        let profile = policy
+            .part4_distance_profile
+            .as_mut()
+            .expect("fixture declares a Part IV distance profile");
+        profile.atom_weights[0].weight = MAX_PART4_DISTANCE_PROFILE_WEIGHT + 1;
+        profile.signature_weights[0].weight = MAX_PART4_DISTANCE_PROFILE_WEIGHT + 1;
+        profile.operation_costs[0].cost = MAX_PART4_OPERATION_COST + 1;
+
+        let report = validate_law_policy_report(&policy, "bad-law-policy.json");
+
+        assert_eq!(report.summary.result, "fail");
+        assert!(report.checks.iter().any(|check| {
+            check.id == "law-policy-part4-distance-profile"
+                && check.result == "fail"
+                && check.examples.iter().any(|example| {
+                    example
+                        .evidence
+                        .as_deref()
+                        .is_some_and(|evidence| evidence.contains("bounded ArchSig distance range"))
+                })
         }));
     }
 

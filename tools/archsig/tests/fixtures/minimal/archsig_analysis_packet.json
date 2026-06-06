@@ -1341,10 +1341,7 @@
         "sig-axis:layer-violation",
         "sig-axis:semantic-inconsistency"
       ],
-      "unmeasuredAxisRefs": [
-        "axis:layer-violation",
-        "axis:semantic-inconsistency"
-      ],
+      "unmeasuredAxisRefs": [],
       "coveragePolicyRefs": [
         "coverage:layer-atoms",
         "coverage:semantic-contract-atoms"
@@ -1353,9 +1350,7 @@
         "coverage:layer-atoms: report observation gap and block signature-zero reflection",
         "coverage:semantic-contract-atoms: report observation gap and block signature-zero reflection",
         "gap-runtime-user-db-trace: runtime trace was requested but not supplied",
-        "may transfer obstruction into runtime behavior, ownership, or idempotency boundary",
-        "unmeasuredAxis:axis:layer-violation",
-        "unmeasuredAxis:axis:semantic-inconsistency"
+        "may transfer obstruction into runtime behavior, ownership, or idempotency boundary"
       ],
       "evidenceBoundary": "Diagnostic scope is synchronized from Part IV evaluator readings; measured or zero signature-distance axes are removed from unmeasuredAxisRefs, while operation and curvature partial measurements can keep evidence blockers rather than becoming measured zero"
     },
@@ -1515,7 +1510,7 @@
             "gap-runtime-user-db-trace: runtime trace was requested but not supplied",
             "may transfer obstruction into runtime behavior, ownership, or idempotency boundary"
           ],
-          "reading": "operationGeometry remains blocked while selected repair routes have transfer risks or unmeasured protected axes"
+          "reading": "operationGeometry remains blocked while selected repair routes have missing profile costs, transfer risks, or unmeasured protected axes"
         },
         "profileRef": "part4-distance-profile:llm-native-aat-law-policy-fixture",
         "diagnosticScopeRef": "part4-diagnostic-scope:fixture-archmap-atom-observation",
@@ -1821,6 +1816,10 @@
           "fiber:confidence:left=medium:right=high",
           "fiber:observationStatus:left=observed:right=observed",
           "fiber:predicate:left=create-user-capability-is-observed:right=component-route-users-exists",
+          "profileWeight:carrier:350",
+          "profileWeight:fiber:250",
+          "profileWeight:semanticAnchor:150",
+          "profileWeight:valence:250",
           "valence:left=can_be_vertex",
           "valence:right=can_be_vertex"
         ],
@@ -1865,9 +1864,10 @@
           "evaluatorBasisRefs": [
             "fiber:atomFamily:left=capability:right=existence",
             "fiber:axis:left=static:right=static",
-            "fiber:predicate:left=create-user-capability-is-observed:right=component-route-users-exists",
+            "fiber:confidence:left=medium:right=high",
             "fiber:observationStatus:left=observed:right=observed",
-            "fiber:confidence:left=medium:right=high"
+            "fiber:predicate:left=create-user-capability-is-observed:right=component-route-users-exists",
+            "profileWeight:fiber:250"
           ]
         },
         {
@@ -1897,7 +1897,8 @@
           },
           "evaluatorBasisRefs": [
             "carrier:left=object:service-user|source:test-user-contract|subject:operation-createuser",
-            "carrier:right=object:route-users|source:src-route-users|subject:route-users"
+            "carrier:right=object:route-users|source:src-route-users|subject:route-users",
+            "profileWeight:carrier:350"
           ]
         },
         {
@@ -1926,6 +1927,7 @@
             "reading": "valence distance compares architectural affordance sets derived from atom family and relation roles"
           },
           "evaluatorBasisRefs": [
+            "profileWeight:valence:250",
             "valence:left=can_be_vertex",
             "valence:right=can_be_vertex"
           ]
@@ -1953,7 +1955,9 @@
             ],
             "reading": "semantic anchor distance is unmeasured until both atoms have semantic observation support"
           },
-          "evaluatorBasisRefs": []
+          "evaluatorBasisRefs": [
+            "profileWeight:semanticAnchor:150"
+          ]
         }
       ],
       "highDistanceReasons": [
@@ -2091,6 +2095,10 @@
           "fiber:confidence:left=medium:right=high",
           "fiber:observationStatus:left=observed:right=observed",
           "fiber:predicate:left=create-user-capability-is-observed:right=component-service-user-exists",
+          "profileWeight:carrier:350",
+          "profileWeight:fiber:250",
+          "profileWeight:semanticAnchor:150",
+          "profileWeight:valence:250",
           "valence:left=can_be_vertex",
           "valence:right=can_be_vertex"
         ],
@@ -2135,9 +2143,10 @@
           "evaluatorBasisRefs": [
             "fiber:atomFamily:left=capability:right=existence",
             "fiber:axis:left=static:right=static",
-            "fiber:predicate:left=create-user-capability-is-observed:right=component-service-user-exists",
+            "fiber:confidence:left=medium:right=high",
             "fiber:observationStatus:left=observed:right=observed",
-            "fiber:confidence:left=medium:right=high"
+            "fiber:predicate:left=create-user-capability-is-observed:right=component-service-user-exists",
+            "profileWeight:fiber:250"
           ]
         },
         {
@@ -2167,7 +2176,8 @@
           },
           "evaluatorBasisRefs": [
             "carrier:left=object:service-user|source:test-user-contract|subject:operation-createuser",
-            "carrier:right=object:service-user|source:src-service-user|subject:service-user"
+            "carrier:right=object:service-user|source:src-service-user|subject:service-user",
+            "profileWeight:carrier:350"
           ]
         },
         {
@@ -2196,6 +2206,7 @@
             "reading": "valence distance compares architectural affordance sets derived from atom family and relation roles"
           },
           "evaluatorBasisRefs": [
+            "profileWeight:valence:250",
             "valence:left=can_be_vertex",
             "valence:right=can_be_vertex"
           ]
@@ -2223,7 +2234,9 @@
             ],
             "reading": "semantic anchor distance is unmeasured until both atoms have semantic observation support"
           },
-          "evaluatorBasisRefs": []
+          "evaluatorBasisRefs": [
+            "profileWeight:semanticAnchor:150"
+          ]
         }
       ],
       "highDistanceReasons": [
@@ -2356,6 +2369,10 @@
           "fiber:confidence:left=medium:right=medium",
           "fiber:observationStatus:left=observed:right=observed",
           "fiber:predicate:left=create-user-capability-is-observed:right=contract-test-observes-create-user-success",
+          "profileWeight:carrier:350",
+          "profileWeight:fiber:250",
+          "profileWeight:semanticAnchor:150",
+          "profileWeight:valence:250",
           "valence:left=can_be_vertex",
           "valence:right=can_attach_contract|can_be_vertex"
         ],
@@ -2399,9 +2416,10 @@
           "evaluatorBasisRefs": [
             "fiber:atomFamily:left=capability:right=contractspecification",
             "fiber:axis:left=static:right=specification",
-            "fiber:predicate:left=create-user-capability-is-observed:right=contract-test-observes-create-user-success",
+            "fiber:confidence:left=medium:right=medium",
             "fiber:observationStatus:left=observed:right=observed",
-            "fiber:confidence:left=medium:right=medium"
+            "fiber:predicate:left=create-user-capability-is-observed:right=contract-test-observes-create-user-success",
+            "profileWeight:fiber:250"
           ]
         },
         {
@@ -2430,7 +2448,8 @@
           },
           "evaluatorBasisRefs": [
             "carrier:left=object:service-user|source:test-user-contract|subject:operation-createuser",
-            "carrier:right=object:service-user|source:test-user-contract|subject:contract-createsuser"
+            "carrier:right=object:service-user|source:test-user-contract|subject:contract-createsuser",
+            "profileWeight:carrier:350"
           ]
         },
         {
@@ -2458,6 +2477,7 @@
             "reading": "valence distance compares architectural affordance sets derived from atom family and relation roles"
           },
           "evaluatorBasisRefs": [
+            "profileWeight:valence:250",
             "valence:left=can_be_vertex",
             "valence:right=can_attach_contract|can_be_vertex"
           ]
@@ -2484,7 +2504,9 @@
             ],
             "reading": "semantic anchor distance is unmeasured until both atoms have semantic observation support"
           },
-          "evaluatorBasisRefs": []
+          "evaluatorBasisRefs": [
+            "profileWeight:semanticAnchor:150"
+          ]
         }
       ],
       "highDistanceReasons": [
@@ -2628,6 +2650,10 @@
           "fiber:confidence:left=medium:right=medium",
           "fiber:observationStatus:left=observed:right=observed",
           "fiber:predicate:left=create-user-capability-is-observed:right=route-users-delegates-user-creation-to-service-user",
+          "profileWeight:carrier:350",
+          "profileWeight:fiber:250",
+          "profileWeight:semanticAnchor:150",
+          "profileWeight:valence:250",
           "valence:left=can_be_vertex",
           "valence:right=can_be_edge|can_be_vertex"
         ],
@@ -2673,9 +2699,10 @@
           "evaluatorBasisRefs": [
             "fiber:atomFamily:left=capability:right=relation",
             "fiber:axis:left=static:right=static",
-            "fiber:predicate:left=create-user-capability-is-observed:right=route-users-delegates-user-creation-to-service-user",
+            "fiber:confidence:left=medium:right=medium",
             "fiber:observationStatus:left=observed:right=observed",
-            "fiber:confidence:left=medium:right=medium"
+            "fiber:predicate:left=create-user-capability-is-observed:right=route-users-delegates-user-creation-to-service-user",
+            "profileWeight:fiber:250"
           ]
         },
         {
@@ -2706,7 +2733,8 @@
           },
           "evaluatorBasisRefs": [
             "carrier:left=object:service-user|source:test-user-contract|subject:operation-createuser",
-            "carrier:right=object:route-users|object:service-user|source:src-route-users|source:src-service-user|subject:semantic-route-users-service-user"
+            "carrier:right=object:route-users|object:service-user|source:src-route-users|source:src-service-user|subject:semantic-route-users-service-user",
+            "profileWeight:carrier:350"
           ]
         },
         {
@@ -2736,6 +2764,7 @@
             "reading": "valence distance compares architectural affordance sets derived from atom family and relation roles"
           },
           "evaluatorBasisRefs": [
+            "profileWeight:valence:250",
             "valence:left=can_be_vertex",
             "valence:right=can_be_edge|can_be_vertex"
           ]
@@ -2764,7 +2793,9 @@
             ],
             "reading": "semantic anchor distance is unmeasured until both atoms have semantic observation support"
           },
-          "evaluatorBasisRefs": []
+          "evaluatorBasisRefs": [
+            "profileWeight:semanticAnchor:150"
+          ]
         }
       ],
       "highDistanceReasons": [
@@ -2902,6 +2933,10 @@
           "fiber:confidence:left=high:right=high",
           "fiber:observationStatus:left=observed:right=observed",
           "fiber:predicate:left=component-route-users-exists:right=component-service-user-exists",
+          "profileWeight:carrier:350",
+          "profileWeight:fiber:250",
+          "profileWeight:semanticAnchor:150",
+          "profileWeight:valence:250",
           "valence:left=can_be_vertex",
           "valence:right=can_be_vertex"
         ],
@@ -2946,9 +2981,10 @@
           "evaluatorBasisRefs": [
             "fiber:atomFamily:left=existence:right=existence",
             "fiber:axis:left=static:right=static",
-            "fiber:predicate:left=component-route-users-exists:right=component-service-user-exists",
+            "fiber:confidence:left=high:right=high",
             "fiber:observationStatus:left=observed:right=observed",
-            "fiber:confidence:left=high:right=high"
+            "fiber:predicate:left=component-route-users-exists:right=component-service-user-exists",
+            "profileWeight:fiber:250"
           ]
         },
         {
@@ -2978,7 +3014,8 @@
           },
           "evaluatorBasisRefs": [
             "carrier:left=object:route-users|source:src-route-users|subject:route-users",
-            "carrier:right=object:service-user|source:src-service-user|subject:service-user"
+            "carrier:right=object:service-user|source:src-service-user|subject:service-user",
+            "profileWeight:carrier:350"
           ]
         },
         {
@@ -3007,6 +3044,7 @@
             "reading": "valence distance compares architectural affordance sets derived from atom family and relation roles"
           },
           "evaluatorBasisRefs": [
+            "profileWeight:valence:250",
             "valence:left=can_be_vertex",
             "valence:right=can_be_vertex"
           ]
@@ -3034,7 +3072,9 @@
             ],
             "reading": "semantic anchor distance is unmeasured until both atoms have semantic observation support"
           },
-          "evaluatorBasisRefs": []
+          "evaluatorBasisRefs": [
+            "profileWeight:semanticAnchor:150"
+          ]
         }
       ],
       "highDistanceReasons": [
@@ -3171,6 +3211,10 @@
           "fiber:confidence:left=high:right=medium",
           "fiber:observationStatus:left=observed:right=observed",
           "fiber:predicate:left=component-route-users-exists:right=contract-test-observes-create-user-success",
+          "profileWeight:carrier:350",
+          "profileWeight:fiber:250",
+          "profileWeight:semanticAnchor:150",
+          "profileWeight:valence:250",
           "valence:left=can_be_vertex",
           "valence:right=can_attach_contract|can_be_vertex"
         ],
@@ -3215,9 +3259,10 @@
           "evaluatorBasisRefs": [
             "fiber:atomFamily:left=existence:right=contractspecification",
             "fiber:axis:left=static:right=specification",
-            "fiber:predicate:left=component-route-users-exists:right=contract-test-observes-create-user-success",
+            "fiber:confidence:left=high:right=medium",
             "fiber:observationStatus:left=observed:right=observed",
-            "fiber:confidence:left=high:right=medium"
+            "fiber:predicate:left=component-route-users-exists:right=contract-test-observes-create-user-success",
+            "profileWeight:fiber:250"
           ]
         },
         {
@@ -3247,7 +3292,8 @@
           },
           "evaluatorBasisRefs": [
             "carrier:left=object:route-users|source:src-route-users|subject:route-users",
-            "carrier:right=object:service-user|source:test-user-contract|subject:contract-createsuser"
+            "carrier:right=object:service-user|source:test-user-contract|subject:contract-createsuser",
+            "profileWeight:carrier:350"
           ]
         },
         {
@@ -3276,6 +3322,7 @@
             "reading": "valence distance compares architectural affordance sets derived from atom family and relation roles"
           },
           "evaluatorBasisRefs": [
+            "profileWeight:valence:250",
             "valence:left=can_be_vertex",
             "valence:right=can_attach_contract|can_be_vertex"
           ]
@@ -3303,7 +3350,9 @@
             ],
             "reading": "semantic anchor distance is unmeasured until both atoms have semantic observation support"
           },
-          "evaluatorBasisRefs": []
+          "evaluatorBasisRefs": [
+            "profileWeight:semanticAnchor:150"
+          ]
         }
       ],
       "highDistanceReasons": [
@@ -3442,6 +3491,10 @@
           "fiber:confidence:left=high:right=medium",
           "fiber:observationStatus:left=observed:right=observed",
           "fiber:predicate:left=component-route-users-exists:right=route-users-delegates-user-creation-to-service-user",
+          "profileWeight:carrier:350",
+          "profileWeight:fiber:250",
+          "profileWeight:semanticAnchor:150",
+          "profileWeight:valence:250",
           "valence:left=can_be_vertex",
           "valence:right=can_be_edge|can_be_vertex"
         ],
@@ -3486,9 +3539,10 @@
           "evaluatorBasisRefs": [
             "fiber:atomFamily:left=existence:right=relation",
             "fiber:axis:left=static:right=static",
-            "fiber:predicate:left=component-route-users-exists:right=route-users-delegates-user-creation-to-service-user",
+            "fiber:confidence:left=high:right=medium",
             "fiber:observationStatus:left=observed:right=observed",
-            "fiber:confidence:left=high:right=medium"
+            "fiber:predicate:left=component-route-users-exists:right=route-users-delegates-user-creation-to-service-user",
+            "profileWeight:fiber:250"
           ]
         },
         {
@@ -3518,7 +3572,8 @@
           },
           "evaluatorBasisRefs": [
             "carrier:left=object:route-users|source:src-route-users|subject:route-users",
-            "carrier:right=object:route-users|object:service-user|source:src-route-users|source:src-service-user|subject:semantic-route-users-service-user"
+            "carrier:right=object:route-users|object:service-user|source:src-route-users|source:src-service-user|subject:semantic-route-users-service-user",
+            "profileWeight:carrier:350"
           ]
         },
         {
@@ -3547,6 +3602,7 @@
             "reading": "valence distance compares architectural affordance sets derived from atom family and relation roles"
           },
           "evaluatorBasisRefs": [
+            "profileWeight:valence:250",
             "valence:left=can_be_vertex",
             "valence:right=can_be_edge|can_be_vertex"
           ]
@@ -3574,7 +3630,9 @@
             ],
             "reading": "semantic anchor distance is unmeasured until both atoms have semantic observation support"
           },
-          "evaluatorBasisRefs": []
+          "evaluatorBasisRefs": [
+            "profileWeight:semanticAnchor:150"
+          ]
         }
       ],
       "highDistanceReasons": [
@@ -3713,6 +3771,10 @@
           "fiber:confidence:left=high:right=medium",
           "fiber:observationStatus:left=observed:right=observed",
           "fiber:predicate:left=component-service-user-exists:right=contract-test-observes-create-user-success",
+          "profileWeight:carrier:350",
+          "profileWeight:fiber:250",
+          "profileWeight:semanticAnchor:150",
+          "profileWeight:valence:250",
           "valence:left=can_be_vertex",
           "valence:right=can_attach_contract|can_be_vertex"
         ],
@@ -3757,9 +3819,10 @@
           "evaluatorBasisRefs": [
             "fiber:atomFamily:left=existence:right=contractspecification",
             "fiber:axis:left=static:right=specification",
-            "fiber:predicate:left=component-service-user-exists:right=contract-test-observes-create-user-success",
+            "fiber:confidence:left=high:right=medium",
             "fiber:observationStatus:left=observed:right=observed",
-            "fiber:confidence:left=high:right=medium"
+            "fiber:predicate:left=component-service-user-exists:right=contract-test-observes-create-user-success",
+            "profileWeight:fiber:250"
           ]
         },
         {
@@ -3789,7 +3852,8 @@
           },
           "evaluatorBasisRefs": [
             "carrier:left=object:service-user|source:src-service-user|subject:service-user",
-            "carrier:right=object:service-user|source:test-user-contract|subject:contract-createsuser"
+            "carrier:right=object:service-user|source:test-user-contract|subject:contract-createsuser",
+            "profileWeight:carrier:350"
           ]
         },
         {
@@ -3818,6 +3882,7 @@
             "reading": "valence distance compares architectural affordance sets derived from atom family and relation roles"
           },
           "evaluatorBasisRefs": [
+            "profileWeight:valence:250",
             "valence:left=can_be_vertex",
             "valence:right=can_attach_contract|can_be_vertex"
           ]
@@ -3845,7 +3910,9 @@
             ],
             "reading": "semantic anchor distance is unmeasured until both atoms have semantic observation support"
           },
-          "evaluatorBasisRefs": []
+          "evaluatorBasisRefs": [
+            "profileWeight:semanticAnchor:150"
+          ]
         }
       ],
       "highDistanceReasons": [
@@ -3984,6 +4051,10 @@
           "fiber:confidence:left=high:right=medium",
           "fiber:observationStatus:left=observed:right=observed",
           "fiber:predicate:left=component-service-user-exists:right=route-users-delegates-user-creation-to-service-user",
+          "profileWeight:carrier:350",
+          "profileWeight:fiber:250",
+          "profileWeight:semanticAnchor:150",
+          "profileWeight:valence:250",
           "valence:left=can_be_vertex",
           "valence:right=can_be_edge|can_be_vertex"
         ],
@@ -4028,9 +4099,10 @@
           "evaluatorBasisRefs": [
             "fiber:atomFamily:left=existence:right=relation",
             "fiber:axis:left=static:right=static",
-            "fiber:predicate:left=component-service-user-exists:right=route-users-delegates-user-creation-to-service-user",
+            "fiber:confidence:left=high:right=medium",
             "fiber:observationStatus:left=observed:right=observed",
-            "fiber:confidence:left=high:right=medium"
+            "fiber:predicate:left=component-service-user-exists:right=route-users-delegates-user-creation-to-service-user",
+            "profileWeight:fiber:250"
           ]
         },
         {
@@ -4060,7 +4132,8 @@
           },
           "evaluatorBasisRefs": [
             "carrier:left=object:service-user|source:src-service-user|subject:service-user",
-            "carrier:right=object:route-users|object:service-user|source:src-route-users|source:src-service-user|subject:semantic-route-users-service-user"
+            "carrier:right=object:route-users|object:service-user|source:src-route-users|source:src-service-user|subject:semantic-route-users-service-user",
+            "profileWeight:carrier:350"
           ]
         },
         {
@@ -4089,6 +4162,7 @@
             "reading": "valence distance compares architectural affordance sets derived from atom family and relation roles"
           },
           "evaluatorBasisRefs": [
+            "profileWeight:valence:250",
             "valence:left=can_be_vertex",
             "valence:right=can_be_edge|can_be_vertex"
           ]
@@ -4116,7 +4190,9 @@
             ],
             "reading": "semantic anchor distance is unmeasured until both atoms have semantic observation support"
           },
-          "evaluatorBasisRefs": []
+          "evaluatorBasisRefs": [
+            "profileWeight:semanticAnchor:150"
+          ]
         }
       ],
       "highDistanceReasons": [
@@ -4263,6 +4339,10 @@
           "fiber:confidence:left=medium:right=medium",
           "fiber:observationStatus:left=observed:right=observed",
           "fiber:predicate:left=contract-test-observes-create-user-success:right=route-users-delegates-user-creation-to-service-user",
+          "profileWeight:carrier:350",
+          "profileWeight:fiber:250",
+          "profileWeight:semanticAnchor:150",
+          "profileWeight:valence:250",
           "semantic:left=semanticFamily:operationmeaning|semanticFamily:semanticinterpretation|semanticObservation:semantic-create-user-flow|semanticObservation:semantic-interpretation-create-user|semanticPredicate:create-user-operation-has-a-selected-semantic-interpretation|semanticPredicate:route-service-and-contract-jointly-describe-create-user-behavior|semanticSubject:operation-createuser",
           "semantic:right=semanticFamily:operationmeaning|semanticFamily:semanticinterpretation|semanticObservation:semantic-create-user-flow|semanticObservation:semantic-interpretation-create-user|semanticPredicate:create-user-operation-has-a-selected-semantic-interpretation|semanticPredicate:route-service-and-contract-jointly-describe-create-user-behavior|semanticSubject:operation-createuser",
           "valence:left=can_attach_contract|can_be_vertex",
@@ -4308,9 +4388,10 @@
           "evaluatorBasisRefs": [
             "fiber:atomFamily:left=contractspecification:right=relation",
             "fiber:axis:left=specification:right=static",
-            "fiber:predicate:left=contract-test-observes-create-user-success:right=route-users-delegates-user-creation-to-service-user",
+            "fiber:confidence:left=medium:right=medium",
             "fiber:observationStatus:left=observed:right=observed",
-            "fiber:confidence:left=medium:right=medium"
+            "fiber:predicate:left=contract-test-observes-create-user-success:right=route-users-delegates-user-creation-to-service-user",
+            "profileWeight:fiber:250"
           ]
         },
         {
@@ -4341,7 +4422,8 @@
           },
           "evaluatorBasisRefs": [
             "carrier:left=object:service-user|source:test-user-contract|subject:contract-createsuser",
-            "carrier:right=object:route-users|object:service-user|source:src-route-users|source:src-service-user|subject:semantic-route-users-service-user"
+            "carrier:right=object:route-users|object:service-user|source:src-route-users|source:src-service-user|subject:semantic-route-users-service-user",
+            "profileWeight:carrier:350"
           ]
         },
         {
@@ -4371,6 +4453,7 @@
             "reading": "valence distance compares architectural affordance sets derived from atom family and relation roles"
           },
           "evaluatorBasisRefs": [
+            "profileWeight:valence:250",
             "valence:left=can_attach_contract|can_be_vertex",
             "valence:right=can_be_edge|can_be_vertex"
           ]
@@ -4402,6 +4485,7 @@
             "reading": "semantic anchor distance compares supplied ArchMap semantic observation closures and does not infer ontology distance from names"
           },
           "evaluatorBasisRefs": [
+            "profileWeight:semanticAnchor:150",
             "semantic:left=semanticFamily:operationmeaning|semanticFamily:semanticinterpretation|semanticObservation:semantic-create-user-flow|semanticObservation:semantic-interpretation-create-user|semanticPredicate:create-user-operation-has-a-selected-semantic-interpretation|semanticPredicate:route-service-and-contract-jointly-describe-create-user-behavior|semanticSubject:operation-createuser",
             "semantic:right=semanticFamily:operationmeaning|semanticFamily:semanticinterpretation|semanticObservation:semantic-create-user-flow|semanticObservation:semantic-interpretation-create-user|semanticPredicate:create-user-operation-has-a-selected-semantic-interpretation|semanticPredicate:route-service-and-contract-jointly-describe-create-user-behavior|semanticSubject:operation-createuser"
           ]
@@ -5708,6 +5792,7 @@
             "evaluatorBasisRefs": [
               "rho_i:axis=sig-axis:layer-violation",
               "axisValue:0",
+              "profileWeight:sig-axis:layer-violation=1",
               "coverageStatus:coverage-gap-preserved"
             ],
             "coverageRefs": [
@@ -5729,6 +5814,7 @@
             "evaluatorBasisRefs": [
               "rho_i:axis=sig-axis:layer-violation",
               "axisValue:0",
+              "profileWeight:sig-axis:layer-violation=1",
               "coverageStatus:coverage-gap-preserved"
             ],
             "coverageRefs": [
@@ -5736,7 +5822,7 @@
               "coverage:semantic-contract-atoms"
             ],
             "blockerRefs": [],
-            "reading": "axis distance scales rho_i into the selected signature distance unit without converting missing coverage to zero"
+            "reading": "axis distance scales rho_i by the selected Part IV DistanceProfile signature weight without converting missing coverage to zero"
           },
           "coverageStatus": "coverage-gap-preserved",
           "sourceRefs": [
@@ -5765,6 +5851,7 @@
             "evaluatorBasisRefs": [
               "rho_i:axis=sig-axis:semantic-inconsistency",
               "axisValue:1",
+              "profileWeight:sig-axis:semantic-inconsistency=1",
               "coverageStatus:coverage-gap-preserved"
             ],
             "coverageRefs": [
@@ -5787,6 +5874,7 @@
             "evaluatorBasisRefs": [
               "rho_i:axis=sig-axis:semantic-inconsistency",
               "axisValue:1",
+              "profileWeight:sig-axis:semantic-inconsistency=1",
               "coverageStatus:coverage-gap-preserved"
             ],
             "coverageRefs": [
@@ -5794,7 +5882,7 @@
               "coverage:semantic-contract-atoms"
             ],
             "blockerRefs": [],
-            "reading": "axis distance scales rho_i into the selected signature distance unit without converting missing coverage to zero"
+            "reading": "axis distance scales rho_i by the selected Part IV DistanceProfile signature weight without converting missing coverage to zero"
           },
           "coverageStatus": "coverage-gap-preserved",
           "sourceRefs": [
@@ -18252,7 +18340,7 @@
     ],
     "distanceDiagnosisSummary": [
       "distanceProfile=part4-distance-profile:llm-native-aat-law-policy-fixture measured=0 blocked=7 unmeasured=0 schemaFoundationOnly=0",
-      "diagnosticScope measuredAxes=2 unmeasuredAxes=2 blockers=6 boundary=evaluator-synchronized",
+      "diagnosticScope measuredAxes=2 unmeasuredAxes=0 blockers=4 boundary=evaluator-synchronized",
       "diagnostic distance is Part IV evaluator output; viewer layout distance is visual placement only",
       "blocked or unmeasured distance is not measured zero; safe margin remains coverage-qualified",
       "signature-distance:llm-native-aat-law-policy-fixture total=blocked:milli-signature-distance endpoint=blocked:milli-signature-endpoint-distance pathDrift=blocked:milli-signature-drift safe=blocked:milli-safe-region-margin hiddenExcursion=hiddenExcursionBlockedByCoverage",
