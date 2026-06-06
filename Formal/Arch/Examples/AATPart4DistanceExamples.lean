@@ -1,4 +1,6 @@
 import Formal.Arch.Evolution.Part4DistanceMeasureGeometry
+import Formal.Arch.Examples.AtomGeneratedMoleculeExamples
+import Formal.Arch.Examples.AtomGeneratedRepairExamples
 
 /-!
 Concrete examples for the AAT Part IV distance / measure geometry package.
@@ -222,6 +224,128 @@ theorem spectralStability_bound :
       spectralStability.lipschitzConstant * spectralStability.epsilon :=
   Part4DistanceMeasureGeometry.spectralStabilityPackage_spectralDistance_le
     spectralStability
+
+def generatedComponentDistanceBridge :=
+  Part4DistanceMeasureGeometry.generatedCarrierShapeDistanceBridge
+    AtomGeneratedMoleculeExamples.generatedComponentObject
+
+def generatedComponentRootDistanceBundle :=
+  Part4DistanceMeasureGeometry.generatedCarrierAtomRootDistanceBundle
+    AtomGeneratedMoleculeExamples.generatedComponentObject
+
+theorem generatedComponentDistanceBridge_unfolds :
+    generatedComponentDistanceBridge.generatedDistance
+        AtomGeneratedMoleculeExamples.generatedComponentApiCarrier
+        AtomGeneratedMoleculeExamples.generatedComponentDatabaseCarrier =
+      AAT.GeneratedAtomShapeCoordinate.mismatchCount
+        (generatedComponentDistanceBridge.coordinate
+          AtomGeneratedMoleculeExamples.generatedComponentApiCarrier)
+        (generatedComponentDistanceBridge.coordinate
+          AtomGeneratedMoleculeExamples.generatedComponentDatabaseCarrier) :=
+  Part4DistanceMeasureGeometry.generatedCarrierShapeDistanceBridge_unfolds
+    AtomGeneratedMoleculeExamples.generatedComponentObject
+    AtomGeneratedMoleculeExamples.generatedComponentApiCarrier
+    AtomGeneratedMoleculeExamples.generatedComponentDatabaseCarrier
+
+theorem generatedComponentRootDistance_layout_eq_one :
+    generatedComponentRootDistanceBundle.layoutDistance
+        AtomGeneratedMoleculeExamples.generatedComponentApiCarrier
+        AtomGeneratedMoleculeExamples.generatedComponentDatabaseCarrier = 1 :=
+  calc
+    generatedComponentRootDistanceBundle.layoutDistance
+        AtomGeneratedMoleculeExamples.generatedComponentApiCarrier
+        AtomGeneratedMoleculeExamples.generatedComponentDatabaseCarrier =
+        AtomGeneratedMoleculeExamples.generatedComponentObject.generatedCarrierShapeDistance
+          AtomGeneratedMoleculeExamples.generatedComponentApiCarrier
+          AtomGeneratedMoleculeExamples.generatedComponentDatabaseCarrier := by
+      simpa [generatedComponentRootDistanceBundle] using
+        (Part4DistanceMeasureGeometry.generatedCarrierRootDistance_layout_eq_generatedCarrierShapeDistance
+          AtomGeneratedMoleculeExamples.generatedComponentObject
+          AtomGeneratedMoleculeExamples.generatedComponentApiCarrier
+          AtomGeneratedMoleculeExamples.generatedComponentDatabaseCarrier)
+    _ = 1 :=
+      AtomGeneratedMoleculeExamples.generatedComponentObject_api_database_shapeDistance_eq_one
+
+def generatedOperationDistanceEvidence :=
+  Part4DistanceMeasureGeometry.generatedOperation_mappedDistanceEvidence
+    AtomGeneratedMoleculeExamples.generatedApiExpansionOperation
+    AtomGeneratedMoleculeExamples.generatedApiOnlyCarrier
+
+theorem generatedOperationDistanceEvidence_targetPrimitive :
+    generatedOperationDistanceEvidence.targetPrimitiveBoundary :=
+  Part4DistanceMeasureGeometry.generatedOperation_mappedDistanceEvidence_targetPrimitive
+    AtomGeneratedMoleculeExamples.generatedApiExpansionOperation
+    AtomGeneratedMoleculeExamples.generatedApiOnlyCarrier
+
+theorem generatedOperationDistanceEvidence_doesNotCreateAtoms :
+    generatedOperationDistanceEvidence.operationDoesNotCreateAtomsBoundary :=
+  Part4DistanceMeasureGeometry.generatedOperation_mappedDistanceEvidence_doesNotCreateAtoms
+    AtomGeneratedMoleculeExamples.generatedApiExpansionOperation
+    AtomGeneratedMoleculeExamples.generatedApiOnlyCarrier
+
+theorem generatedOperationDistanceEvidence_recordsBoundaries :
+    generatedOperationDistanceEvidence.RecordsGeneratedBoundaries :=
+  Part4DistanceMeasureGeometry.generatedOperation_mappedDistanceEvidence_recordsGeneratedBoundaries
+    AtomGeneratedMoleculeExamples.generatedApiExpansionOperation
+    AtomGeneratedMoleculeExamples.generatedApiOnlyCarrier
+
+def generatedRepairProblemDistanceEvidence :=
+  Part4DistanceMeasureGeometry.generatedRepairProblemOperation_mappedDistanceEvidence
+    AtomGeneratedRepairExamples.missingPortRepairOperation
+    AtomGeneratedRepairExamples.missingPortApiCarrier
+
+theorem generatedRepairProblemDistanceEvidence_targetPrimitive :
+    generatedRepairProblemDistanceEvidence.targetPrimitiveBoundary :=
+  Part4DistanceMeasureGeometry.generatedRepairProblemOperation_mappedDistanceEvidence_targetPrimitive
+    AtomGeneratedRepairExamples.missingPortRepairOperation
+    AtomGeneratedRepairExamples.missingPortApiCarrier
+
+theorem generatedRepairProblemDistanceEvidence_recordsBoundaries :
+    generatedRepairProblemDistanceEvidence.RecordsGeneratedBoundaries :=
+  Part4DistanceMeasureGeometry.generatedRepairProblemOperation_mappedDistanceEvidence_recordsGeneratedBoundaries
+    AtomGeneratedRepairExamples.missingPortRepairOperation
+    AtomGeneratedRepairExamples.missingPortApiCarrier
+
+theorem generatedRepairProblemDistanceEvidence_unmappedPrimitive :
+    AtomGeneratedRepairExamples.repairSystem.Primitive
+      AtomGeneratedRepairExamples.repairedDatabaseCarrier.val :=
+  Part4DistanceMeasureGeometry.generatedRepairProblemOperation_unmapped_target_atom_primitive
+    AtomGeneratedRepairExamples.missingPortRepairOperation
+    AtomGeneratedRepairExamples.repairedDatabaseCarrier
+    AtomGeneratedRepairExamples.generatedMissingPortRepair_database_unmapped
+
+def generatedOperationDiagnostic :=
+  Part4DistanceMeasureGeometry.atomGeneratedDistanceDiagnosticConclusion
+    diagnosticConclusion
+    [generatedOperationDistanceEvidence]
+    [AtomGeneratedMoleculeExamples.generatedApiExpansionOperation]
+    True
+    True
+    True
+    True
+    True
+
+theorem generatedOperationDiagnostic_supportingDistances_eq :
+    generatedOperationDiagnostic.conclusion.supportingDistances =
+      generatedOperationDiagnostic.atomGeneratedDistances :=
+  Part4DistanceMeasureGeometry.atomGeneratedDiagnostic_supportingDistances_eq
+    generatedOperationDiagnostic
+
+theorem generatedOperationDiagnostic_recommendedOperations_eq :
+    generatedOperationDiagnostic.conclusion.recommendedOperations =
+      generatedOperationDiagnostic.atomGeneratedOperations :=
+  Part4DistanceMeasureGeometry.atomGeneratedDiagnostic_recommendedOperations_eq
+    generatedOperationDiagnostic
+
+theorem generatedOperationDiagnostic_records_generated_boundaries :
+    generatedOperationDiagnostic.RecordsGeneratedBoundaries :=
+  Part4DistanceMeasureGeometry.AtomGeneratedDistanceDiagnosticConclusion.records_generated_boundaries
+    generatedOperationDiagnostic
+    trivial
+    trivial
+    ⟨trivial, trivial⟩
+    ⟨trivial, trivial, trivial⟩
+    trivial
 
 end AATPart4DistanceExamples
 end Formal.Arch
