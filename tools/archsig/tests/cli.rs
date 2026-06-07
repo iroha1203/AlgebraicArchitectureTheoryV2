@@ -317,7 +317,7 @@ fn cli_pr_review_rejects_v0_archmap_and_law_policy_runtime_inputs() {
         root.join("archmap.json").to_str().expect("path is utf-8"),
         "--delta-archmap",
         review
-            .join("archmap_delta.json")
+            .join("archmap_delta_v1_refs.json")
             .to_str()
             .expect("path is utf-8"),
         "--law-policy",
@@ -2381,7 +2381,7 @@ fn cli_pr_review_accepts_v1_archmap_and_law_policy() {
         root.join("archmap.json").to_str().expect("path is utf-8"),
         "--delta-archmap",
         review
-            .join("archmap_delta.json")
+            .join("archmap_delta_v1_refs.json")
             .to_str()
             .expect("path is utf-8"),
         "--law-policy",
@@ -2395,7 +2395,10 @@ fn cli_pr_review_accepts_v1_archmap_and_law_policy() {
     assert!(output.status.success());
     let json = read_json(&report);
     assert_eq!(json["schemaVersion"], "archsig-pr-review-report-v1");
-    assert_eq!(json["reviewKind"], "typed-evaluator-pr-review");
+    assert_eq!(
+        json["reviewKind"],
+        "v1-output-replacement-structural-pr-review"
+    );
     assert_eq!(
         json["canonicalInputs"]["baseArchMap"]["schema"],
         "archmap/v1"
@@ -2405,10 +2408,44 @@ fn cli_pr_review_accepts_v1_archmap_and_law_policy() {
         "law-policy/v1"
     );
     assert_eq!(json["typedEvaluatorSummary"]["resultCount"], 6);
+    assert_eq!(
+        json["v1Analysis"]["base"]["packetSchema"],
+        "archsig-analysis-packet/v1"
+    );
+    assert!(
+        json["v1Analysis"]["base"]["structuralPacketRefs"]["structuralReadingReviewSurface"]
+            .as_str()
+            .is_some_and(|reference| reference == "/structuralReadingReviewSurface")
+            && json["v1Analysis"]["base"]["structuralReadingRefs"]
+                .as_array()
+                .is_some_and(|refs| !refs.is_empty()),
+        "pr-review must expose v1 derived structural packet refs"
+    );
+    assert!(
+        json["deltaPacketRefIntersections"]
+            .as_array()
+            .is_some_and(|items| items.iter().all(|item| {
+                item["matchedPacketRefCount"].as_u64().unwrap_or(0) > 0
+                    && item["status"] == "matchedDerivedPacketRefs"
+            })),
+        "v1 PR delta refs must intersect typed / derived packet refs"
+    );
+    assert!(
+        json["prStructuralDiagnosis"]["safeChangeBudget"]["status"]
+            .as_str()
+            .is_some_and(|status| status == "boundedNoNewSelectedObstruction"
+                || status == "blockedByIncompleteTypedSupport"),
+        "base-only PR review must not treat bounded incomplete support as measured zero"
+    );
+    assert_eq!(
+        json["prStructuralDiagnosis"]["endpointDistanceMovement"]["status"],
+        "blockedWithoutAfterArchMap",
+        "missing head ArchMap is blocked, not measured zero"
+    );
 }
 
 #[test]
-fn cli_pr_review_v1_rejects_after_archmap_until_typed_head_review_exists() {
+fn cli_pr_review_v1_reads_after_and_path_archmap_structural_diagnosis() {
     let out_dir = temp_dir("pr-review-v1-after-archmap");
     let root = archmap_v1_root();
     let review = pr_review_root();
@@ -2419,10 +2456,14 @@ fn cli_pr_review_v1_rejects_after_archmap_until_typed_head_review_exists() {
         "--base-archmap",
         root.join("archmap.json").to_str().expect("path is utf-8"),
         "--after-archmap",
+        root.join("archmap_violation.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--path-archmap",
         root.join("archmap.json").to_str().expect("path is utf-8"),
         "--delta-archmap",
         review
-            .join("archmap_delta.json")
+            .join("archmap_delta_v1_refs.json")
             .to_str()
             .expect("path is utf-8"),
         "--law-policy",
@@ -2433,9 +2474,206 @@ fn cli_pr_review_v1_rejects_after_archmap_until_typed_head_review_exists() {
         report.to_str().expect("path is utf-8"),
     ]);
 
-    assert!(!output.status.success());
-    let stderr = String::from_utf8_lossy(&output.stderr);
-    assert!(stderr.contains("v1 pr-review accepts only base archmap"));
+    assert!(output.status.success());
+    let json = read_json(&report);
+    assert_eq!(
+        json["canonicalInputs"]["afterArchMap"]["schema"],
+        "archmap/v1"
+    );
+    assert_eq!(
+        json["v1Analysis"]["after"]["packetSchema"],
+        "archsig-analysis-packet/v1"
+    );
+    assert_eq!(
+        json["v1Analysis"]["path"]
+            .as_array()
+            .expect("path analyses are array")
+            .len(),
+        1
+    );
+    assert_eq!(
+        json["prStructuralDiagnosis"]["endpointDistanceMovement"]["status"],
+        "measuredFromSuppliedBaseAndAfterArchMap"
+    );
+    assert_eq!(
+        json["prStructuralDiagnosis"]["totalPathMovement"]["status"],
+        "measuredFromSuppliedIntermediateArchMaps"
+    );
+    assert_eq!(
+        json["prStructuralDiagnosis"]["hiddenExcursionBoundary"]["status"],
+        "boundedBySuppliedIntermediateArchMaps"
+    );
+    assert!(
+        json["prStructuralDiagnosis"]["safeChangeBudget"]["status"]
+            .as_str()
+            .is_some_and(|status| status == "needsReviewForIncreasedDistance"
+                || status == "blockedByIncompleteTypedSupport"),
+        "after/path review must surface distance movement or blocked typed support without claiming safety"
+    );
+}
+
+#[test]
+fn cli_pr_review_v1_matches_head_only_delta_refs() {
+    let out_dir = temp_dir("pr-review-v1-after-only-delta");
+    let root = archmap_v1_root();
+    let review = pr_review_root();
+    let report = out_dir.join("archsig-pr-review-v1.json");
+
+    let output = run_sig0_output(&[
+        "pr-review",
+        "--base-archmap",
+        root.join("archmap.json").to_str().expect("path is utf-8"),
+        "--after-archmap",
+        root.join("archmap_violation.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--delta-archmap",
+        review
+            .join("archmap_delta_v1_after_refs.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--law-policy",
+        root.join("law_policy.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--out",
+        report.to_str().expect("path is utf-8"),
+    ]);
+
+    assert!(output.status.success());
+    let json = read_json(&report);
+    let intersection = json["deltaPacketRefIntersections"]
+        .as_array()
+        .expect("intersections are array")
+        .first()
+        .expect("head-only delta has one ref");
+    assert_eq!(intersection["deltaRef"], "atom:direct-store-dependency");
+    assert_eq!(intersection["status"], "matchedDerivedPacketRefs");
+    assert!(
+        intersection["snapshotMatches"]
+            .as_array()
+            .is_some_and(|items| {
+                items.iter().any(|item| item["analysisLabel"] == "after")
+                    && !items.iter().any(|item| item["analysisLabel"] == "base")
+            }),
+        "head-only delta ref must match the after analysis snapshot, not only base"
+    );
+}
+
+#[test]
+fn cli_pr_review_v1_rejects_invalid_delta_refs_and_path_without_after() {
+    let out_dir = temp_dir("pr-review-v1-invalid-delta");
+    let root = archmap_v1_root();
+    let malformed_delta = out_dir.join("archmap_delta_missing_refs.json");
+    fs::write(
+        &malformed_delta,
+        r#"{
+  "schemaVersion": "archmap-delta-v0",
+  "deltaId": "delta:missing-refs"
+}"#,
+    )
+    .expect("malformed delta fixture can be written");
+    let report = out_dir.join("archsig-pr-review-v1.json");
+
+    let missing_refs = run_sig0_output(&[
+        "pr-review",
+        "--base-archmap",
+        root.join("archmap.json").to_str().expect("path is utf-8"),
+        "--delta-archmap",
+        malformed_delta.to_str().expect("path is utf-8"),
+        "--law-policy",
+        root.join("law_policy.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--out",
+        report.to_str().expect("path is utf-8"),
+    ]);
+
+    assert!(!missing_refs.status.success());
+    assert!(
+        String::from_utf8_lossy(&missing_refs.stderr)
+            .contains("changedObservationRefs must be a non-empty string array")
+    );
+
+    let review = pr_review_root();
+    let path_without_after = run_sig0_output(&[
+        "pr-review",
+        "--base-archmap",
+        root.join("archmap.json").to_str().expect("path is utf-8"),
+        "--path-archmap",
+        root.join("archmap.json").to_str().expect("path is utf-8"),
+        "--delta-archmap",
+        review
+            .join("archmap_delta_v1_refs.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--law-policy",
+        root.join("law_policy.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--out",
+        report.to_str().expect("path is utf-8"),
+    ]);
+
+    assert!(!path_without_after.status.success());
+    assert!(
+        String::from_utf8_lossy(&path_without_after.stderr)
+            .contains("--path-archmap requires --after-archmap")
+    );
+}
+
+#[test]
+fn cli_pr_review_v1_rejects_invalid_archmap_or_law_policy_contract() {
+    let out_dir = temp_dir("pr-review-v1-invalid-contract");
+    let root = archmap_v1_root();
+    let review = pr_review_root();
+    let report = out_dir.join("archsig-pr-review-v1.json");
+
+    let invalid_archmap = run_sig0_output(&[
+        "pr-review",
+        "--base-archmap",
+        root.join("archmap_legacy_field.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--delta-archmap",
+        review
+            .join("archmap_delta_v1_refs.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--law-policy",
+        root.join("law_policy.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--out",
+        report.to_str().expect("path is utf-8"),
+    ]);
+    assert!(!invalid_archmap.status.success());
+    assert!(
+        String::from_utf8_lossy(&invalid_archmap.stderr)
+            .contains("failed ArchMap v1 validation for pr-review")
+    );
+
+    let invalid_policy = run_sig0_output(&[
+        "pr-review",
+        "--base-archmap",
+        root.join("archmap.json").to_str().expect("path is utf-8"),
+        "--delta-archmap",
+        review
+            .join("archmap_delta_v1_refs.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--law-policy",
+        root.join("law_policy_dsl_field.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--out",
+        report.to_str().expect("path is utf-8"),
+    ]);
+    assert!(!invalid_policy.status.success());
+    assert!(
+        String::from_utf8_lossy(&invalid_policy.stderr)
+            .contains("failed LawPolicy v1 validation for pr-review")
+    );
 }
 
 #[test]

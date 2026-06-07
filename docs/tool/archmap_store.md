@@ -56,8 +56,11 @@ base ArchMap
 -> ArchSig lightweight PR review
 ```
 
-Raw diffs are not ArchSig PR-review inputs. A language adapter, extractor, LLM
-reader, or manual author supplies ArchMap-level observations and deltas.
+For current ArchSig v1, base / head / path ArchMaps are `archmap/v1` and
+LawPolicy is `law-policy/v1`. `ArchMapDelta` remains a PR-local change ref
+artifact. Raw diffs are not ArchSig PR-review inputs. A language adapter,
+extractor, LLM reader, or manual author supplies ArchMap-level observations and
+deltas.
 
 ## ArchMapDelta
 
@@ -244,9 +247,11 @@ The output is a lightweight review surface:
 
 - changed support
 - touched axes
-- candidate operation squares
-- boundary holonomy witnesses
-- missing filler / lifting evidence
+- report-local refs to v1 generated obstructions / repair targets
+- spectrum / homotopy / structural reading refs
+- delta refs matched to typed / derived packet refs
+- endpoint and path architecture-distance movement
+- hidden-excursion boundary over supplied path snapshots
 - coverage and exactness boundary
 - non-conclusions
 
