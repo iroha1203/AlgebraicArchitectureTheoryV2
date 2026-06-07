@@ -7,7 +7,8 @@ use super::measurement_policy::{
     check_spectrum_measurement_profile,
 };
 use super::registry::{
-    expand_law_policy_v1, is_known_v1_basis, is_known_v1_evaluator, is_known_v1_pack,
+    expand_law_policy_v1, is_known_v1_basis, is_known_v1_distance_profile, is_known_v1_evaluator,
+    is_known_v1_pack,
 };
 use crate::validation::{count_checks, duplicates, generic_validation_example, validation_check};
 use crate::{
@@ -28,6 +29,7 @@ pub fn validate_law_policy_v1_report(
         check_v1_policy_entries(policy),
         check_v1_basis(policy),
         check_v1_pack_and_evaluator_vocabulary(policy),
+        check_v1_distance_profile_selector(policy),
     ];
     let failed_check_count = count_checks(&checks, "fail");
     let warning_check_count = count_checks(&checks, "warn");
@@ -214,6 +216,30 @@ fn check_v1_pack_and_evaluator_vocabulary(policy: &LawPolicyDocumentV1) -> Valid
     check_examples(
         "law-policy-v1-registry-vocabulary",
         "policy entries resolve to known registry packs and evaluators",
+        examples,
+    )
+}
+
+fn check_v1_distance_profile_selector(policy: &LawPolicyDocumentV1) -> ValidationCheck {
+    let mut examples = Vec::new();
+    if let Some(profile_ref) = policy.distance_profile_ref.as_deref() {
+        if profile_ref.trim().is_empty() {
+            examples.push(generic_validation_example(
+                "distanceProfileRef",
+                "empty",
+                "distance profile ref must be non-empty when present",
+            ));
+        } else if !is_known_v1_distance_profile(profile_ref) {
+            examples.push(generic_validation_example(
+                "distanceProfileRef",
+                profile_ref,
+                "distance profile ref must resolve to the v1 distance profile registry",
+            ));
+        }
+    }
+    check_examples(
+        "law-policy-v1-distance-profile-selector",
+        "LawPolicy v1 selects an optional distance profile by ref instead of embedding a distance DSL",
         examples,
     )
 }

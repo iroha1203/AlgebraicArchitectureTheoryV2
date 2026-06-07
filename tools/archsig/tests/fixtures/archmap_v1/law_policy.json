@@ -1,6 +1,7 @@
 {
   "schema": "law-policy/v1",
   "id": "solid-policy",
+  "distanceProfileRef": "distance-profile:architecture-default@1",
   "policies": [
     {
       "pack": "solid@1",

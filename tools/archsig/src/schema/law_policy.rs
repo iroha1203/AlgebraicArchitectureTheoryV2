@@ -7,6 +7,8 @@ use super::validation::ValidationCheck;
 pub struct LawPolicyDocumentV1 {
     pub schema: String,
     pub id: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub distance_profile_ref: Option<String>,
     #[serde(default)]
     pub policies: Vec<LawPolicyEntryV1>,
 }

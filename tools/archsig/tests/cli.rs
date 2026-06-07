@@ -269,9 +269,11 @@ fn cli_analyze_v1_writes_typed_evaluator_results() {
     assert!(
         json["positiveBoundedConclusions"]
             .as_array()
-            .is_some_and(|items| items.iter().any(|item| item.as_str().is_some_and(
-                |text| text.starts_with("SELECTED_VIOLATION_MEASURED_UNDER_EVIDENCE_CONTRACT")
-            )))
+            .is_some_and(|items| items
+                .iter()
+                .any(|item| item.as_str().is_some_and(|text| text
+                    .starts_with("ACCEPTABLE_UNDER_EVIDENCE_CONTRACT")
+                    || text.starts_with("SELECTED_VIOLATION_MEASURED_UNDER_EVIDENCE_CONTRACT"))))
     );
 }
 
@@ -565,6 +567,39 @@ fn cli_rejects_law_policy_v1_dsl_field() {
 }
 
 #[test]
+fn cli_rejects_law_policy_v1_unknown_distance_profile_ref() {
+    let out_dir = temp_dir("law-policy-v1-unknown-distance-profile");
+    let root = archmap_v1_root();
+    let report = out_dir.join("law-policy-validation.json");
+    let policy_path = out_dir.join("law_policy_unknown_distance_profile.json");
+    let mut policy = read_json(&root.join("law_policy.json"));
+    policy["distanceProfileRef"] = Value::from("distance-profile:unknown@1");
+    fs::write(
+        &policy_path,
+        serde_json::to_vec_pretty(&policy).expect("policy serializes"),
+    )
+    .expect("policy fixture can be written");
+
+    let output = run_sig0_output(&[
+        "law-policy",
+        "--input",
+        policy_path.to_str().expect("path is utf-8"),
+        "--out",
+        report.to_str().expect("path is utf-8"),
+    ]);
+
+    assert!(!output.status.success());
+    let json = read_json(&report);
+    assert_eq!(json["schemaVersion"], "law-policy-validation-report-v1");
+    assert_eq!(json["summary"]["result"], "fail");
+    assert!(json["checks"].as_array().is_some_and(|checks| {
+        checks.iter().any(|check| {
+            check["id"] == "law-policy-v1-distance-profile-selector" && check["result"] == "fail"
+        })
+    }));
+}
+
+#[test]
 fn cli_analyze_v1_writes_summary_viewer_and_manifest_artifacts() {
     let out_dir = temp_dir("analyze-v1-preflight");
     let root = archmap_v1_root();
@@ -575,6 +610,7 @@ fn cli_analyze_v1_writes_summary_viewer_and_manifest_artifacts() {
         "archsig-run-manifest.json",
         "normalized-archmap.json",
         "typed-evaluator-results.json",
+        "architecture-distance.json",
     ] {
         fs::write(out_dir.join(stale_artifact), "{}").expect("stale artifact can be written");
     }
@@ -609,6 +645,10 @@ fn cli_analyze_v1_writes_summary_viewer_and_manifest_artifacts() {
         "typed-evaluator-results/v1"
     );
     assert_eq!(
+        read_json(&out_dir.join("architecture-distance.json"))["schema"],
+        "archsig-architecture-distance/v1"
+    );
+    assert_eq!(
         read_json(&out_dir.join("archsig-analysis-summary.json"))["schema"],
         "archsig-analysis-summary/v1"
     );
@@ -627,6 +667,19 @@ fn cli_analyze_v1_writes_summary_viewer_and_manifest_artifacts() {
     assert!(
         !out_dir.join("archsig-analysis-packet.json").exists(),
         "raw v1 packet is omitted unless --emit-raw-artifacts is passed"
+    );
+    let manifest = read_json(&out_dir.join("archsig-run-manifest.json"));
+    assert_eq!(
+        manifest["architectureDistancePath"].as_str(),
+        Some("architecture-distance.json")
+    );
+    assert!(
+        manifest["generatedArtifacts"]
+            .as_array()
+            .is_some_and(|items| items
+                .iter()
+                .any(|item| item == "architecture-distance.json")),
+        "manifest must record architecture-distance.json as a generated artifact"
     );
 }
 
@@ -656,12 +709,42 @@ fn cli_analyze_v1_emit_raw_artifacts_writes_typed_packet_detail_and_handoff() {
         "typed-evaluator-results.json"
     );
     assert_eq!(
+        packet["architectureDistance"]["schema"],
+        "archsig-architecture-distance/v1"
+    );
+    assert_eq!(
+        packet["distanceDiagnosis"]["basis"], "architectureDistance",
+        "v1 packet distanceDiagnosis must point at architecture distance, not typed counts"
+    );
+    let analysis_validation = read_json(&out_dir.join("archsig-analysis-validation.json"));
+    for check_id in [
+        "archsig.v1.architectureDistanceProfileRefsMatch",
+        "archsig.v1.architectureDistanceBreakdownSums",
+        "archsig.v1.architectureDistanceReadingCounts",
+    ] {
+        assert!(
+            analysis_validation["checks"]
+                .as_array()
+                .is_some_and(|checks| {
+                    checks
+                        .iter()
+                        .any(|check| check["checkId"] == check_id && check["result"] == "pass")
+                }),
+            "analysis validation must include passing architecture distance check {check_id}"
+        );
+    }
+    assert_eq!(
         read_json(&out_dir.join("archsig-analysis-detail-index.json"))["schemaVersion"],
         "archsig-analysis-detail-index-v1"
     );
     assert_eq!(
         read_json(&out_dir.join("llm-interpretation-packet.json"))["schema"],
         "llm-interpretation-packet/v1"
+    );
+    let llm_packet = read_json(&out_dir.join("llm-interpretation-packet.json"));
+    assert_eq!(
+        llm_packet["distanceDiagnosisSummary"]["basis"],
+        "architectureDistance"
     );
     assert!(
         packet["nonConclusions"].as_array().is_some_and(|items| {
@@ -672,6 +755,59 @@ fn cli_analyze_v1_emit_raw_artifacts_writes_typed_packet_detail_and_handoff() {
         }),
         "v1 packet must not promote removed v0 helper fields into positive readings"
     );
+}
+
+#[test]
+fn cli_analyze_v1_strict_distance_rejects_missing_distance_profile_ref() {
+    let out_dir = temp_dir("analyze-v1-strict-distance-missing-profile");
+    let root = archmap_v1_root();
+    let policy_path = out_dir.join("law_policy_without_distance_profile.json");
+    let mut policy = read_json(&root.join("law_policy.json"));
+    policy
+        .as_object_mut()
+        .expect("policy root is object")
+        .remove("distanceProfileRef");
+    fs::write(
+        &policy_path,
+        serde_json::to_vec_pretty(&policy).expect("policy serializes"),
+    )
+    .expect("policy fixture can be written");
+
+    let output = run_sig0_output(&[
+        "analyze",
+        "--archmap",
+        root.join("archmap.json").to_str().expect("path is utf-8"),
+        "--law-policy",
+        policy_path.to_str().expect("path is utf-8"),
+        "--out-dir",
+        out_dir.to_str().expect("path is utf-8"),
+        "--strict-distance",
+    ]);
+
+    assert!(!output.status.success());
+    assert_eq!(output.status.code(), Some(1));
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(
+        stderr.contains("without distanceProfileRef"),
+        "--strict-distance must require an explicit v1 distance profile selector\n{stderr}"
+    );
+    assert!(
+        !out_dir.join("architecture-distance.json").exists(),
+        "strict missing profile rejection must stop before architecture distance is emitted"
+    );
+    for artifact in [
+        "normalized-archmap.json",
+        "typed-evaluator-results.json",
+        "archsig-analysis-validation.json",
+        "archsig-analysis-summary.json",
+        "archsig-atom-viewer-data.json",
+        "archsig-run-manifest.json",
+    ] {
+        assert!(
+            !out_dir.join(artifact).exists(),
+            "strict missing profile rejection must stop before writing {artifact}"
+        );
+    }
 }
 
 #[test]
@@ -695,6 +831,7 @@ fn cli_analyze_v1_strict_distance_rejects_blocked_typed_results() {
     ]);
 
     assert!(!output.status.success());
+    assert_eq!(output.status.code(), Some(1));
     let stderr = String::from_utf8_lossy(&output.stderr);
     assert!(
         stderr.contains("blocked, unknown, or unmeasured distance statuses"),
@@ -724,17 +861,89 @@ fn practical_rust_service_example_runs_v1_analyze() {
         "--out-dir",
         out_dir.to_str().expect("path is utf-8"),
         "--emit-raw-artifacts",
+        "--strict-distance",
     ]);
 
     assert!(output.status.success());
+    let archmap_validation = read_json(&out_dir.join("archmap-validation.json"));
+    assert_eq!(archmap_validation["summary"]["atomCount"], 29);
+    assert_eq!(archmap_validation["summary"]["moleculeCount"], 4);
+    assert_eq!(archmap_validation["summary"]["result"], "pass");
+    let normalized = read_json(&out_dir.join("normalized-archmap.json"));
+    assert_eq!(normalized["summary"]["normalizedAtomCount"], 29);
+    assert_eq!(normalized["summary"]["generatedMoleculeCandidateCount"], 4);
+    assert!(normalized["molecules"].as_array().is_some_and(|molecules| {
+        [
+            "mol:domain-invariants",
+            "mol:inventory-store-adapter",
+            "mol:runtime-smoke-flow",
+        ]
+        .into_iter()
+        .all(|source_molecule_id| {
+            molecules
+                .iter()
+                .any(|molecule| molecule["sourceMoleculeId"] == source_molecule_id)
+        })
+    }));
     assert_eq!(
         read_json(&out_dir.join("archsig-analysis-packet.json"))["schema"],
         "archsig-analysis-packet/v1"
     );
+    let typed = read_json(&out_dir.join("typed-evaluator-results.json"));
+    let architecture_distance = read_json(&out_dir.join("architecture-distance.json"));
+    let summary = read_json(&out_dir.join("archsig-analysis-summary.json"));
+    let viewer = read_json(&out_dir.join("archsig-atom-viewer-data.json"));
+    let llm_packet = read_json(&out_dir.join("llm-interpretation-packet.json"));
+    assert_eq!(summary["schema"], "archsig-analysis-summary/v1");
     assert_eq!(
-        read_json(&out_dir.join("archsig-analysis-summary.json"))["schema"],
-        "archsig-analysis-summary/v1"
+        architecture_distance["schema"],
+        "archsig-architecture-distance/v1"
     );
+    assert_eq!(
+        architecture_distance["summary"]["profileRef"],
+        "distance-profile:practical-rust-service@1"
+    );
+    assert_eq!(
+        architecture_distance["profile"]["signatureViolationWeight"].as_i64(),
+        Some(2),
+        "selected distance profile must contribute registry-owned weights"
+    );
+    assert_eq!(
+        architecture_distance["profile"]["operationCosts"]["domain.no-direct-infra-dependency"]
+            .as_i64(),
+        Some(6),
+        "selected distance profile must contribute registry-owned operation costs"
+    );
+    assert!(
+        architecture_distance["summary"]["measuredTotal"]
+            .as_i64()
+            .is_some_and(|total| {
+                total
+                    > typed["summary"]["measuredViolationCount"]
+                        .as_i64()
+                        .unwrap_or(0)
+            }),
+        "architecture distance must not collapse to typed evaluator violation count"
+    );
+    assert_eq!(
+        summary["conclusion"]["plainConclusion"].as_str(),
+        Some("違反なし")
+    );
+    assert_eq!(
+        summary["distanceDiagnosis"]["basis"].as_str(),
+        Some("architectureDistance")
+    );
+    assert_eq!(
+        viewer["reportPane"]["distanceDiagnosis"]["basis"].as_str(),
+        Some("architectureDistance")
+    );
+    assert_eq!(
+        llm_packet["distanceDiagnosisSummary"]["basis"].as_str(),
+        Some("architectureDistance")
+    );
+    assert_public_artifact_omits_part4("summary", &summary);
+    assert_public_artifact_omits_part4("viewer", &viewer);
+    assert_public_artifact_omits_part4("llm packet", &llm_packet);
 }
 
 #[test]
@@ -812,6 +1021,10 @@ fn cli_help_exposes_only_llm_atom_archmap_surface() {
     let output = run_sig0_output(&["--help"]);
     assert!(output.status.success());
     let stdout = String::from_utf8_lossy(&output.stdout);
+    assert!(
+        !stdout.contains("Part IV"),
+        "current v1 CLI help must describe architecture distance without Part IV public wording\n{stdout}"
+    );
 
     for command in [
         "archmap",
@@ -4111,6 +4324,7 @@ fn cli_schema_catalog_is_primary_archsig_surface_only() {
             "law-policy-validation-report",
             "normalized-archmap-v1",
             "typed-evaluator-results-v1",
+            "architecture-distance-v1",
             "archsig-analysis-packet",
             "archsig-analysis-packet-validation-report",
             "archsig-run-manifest",
@@ -4423,6 +4637,14 @@ fn run_sig0_output(args: &[&str]) -> std::process::Output {
 fn read_json(path: &Path) -> Value {
     serde_json::from_slice(&fs::read(path).expect("json fixture can be read"))
         .expect("json fixture parses")
+}
+
+fn assert_public_artifact_omits_part4(label: &str, value: &Value) {
+    let text = serde_json::to_string(value).expect("json value serializes");
+    assert!(
+        !text.contains("Part IV"),
+        "{label} must not expose Part IV as public v1 summary wording"
+    );
 }
 
 fn has_nested_key(value: &Value, key: &str) -> bool {

@@ -2,64 +2,477 @@
   "schema": "archmap/v1",
   "id": "practical-rust-service",
   "sources": {
+    "src.domain": {
+      "kind": "file",
+      "path": "tools/archsig/examples/practical-rust-service/sample/src/domain.rs"
+    },
     "src.app": {
       "kind": "file",
       "path": "tools/archsig/examples/practical-rust-service/sample/src/app.rs"
     },
-    "src.app.place_order": {
+    "src.store": {
+      "kind": "file",
+      "path": "tools/archsig/examples/practical-rust-service/sample/src/store.rs"
+    },
+    "src.main": {
+      "kind": "file",
+      "path": "tools/archsig/examples/practical-rust-service/sample/src/main.rs"
+    },
+    "domain.ProductId": {
+      "kind": "symbol",
+      "source": "src.domain",
+      "symbol": "ProductId",
+      "line": 4
+    },
+    "domain.ProductId.new": {
+      "kind": "symbol",
+      "source": "src.domain",
+      "symbol": "ProductId::new",
+      "line": 8
+    },
+    "domain.OrderId": {
+      "kind": "symbol",
+      "source": "src.domain",
+      "symbol": "OrderId",
+      "line": 21
+    },
+    "domain.OrderId.new": {
+      "kind": "symbol",
+      "source": "src.domain",
+      "symbol": "OrderId::new",
+      "line": 25
+    },
+    "domain.OrderLine": {
+      "kind": "symbol",
+      "source": "src.domain",
+      "symbol": "OrderLine",
+      "line": 38
+    },
+    "domain.OrderLine.new": {
+      "kind": "symbol",
+      "source": "src.domain",
+      "symbol": "OrderLine::new",
+      "line": 45
+    },
+    "domain.Order": {
+      "kind": "symbol",
+      "source": "src.domain",
+      "symbol": "Order",
+      "line": 66
+    },
+    "domain.Order.new": {
+      "kind": "symbol",
+      "source": "src.domain",
+      "symbol": "Order::new",
+      "line": 73
+    },
+    "domain.Order.total_quantity": {
+      "kind": "symbol",
+      "source": "src.domain",
+      "symbol": "Order::total_quantity",
+      "line": 90
+    },
+    "domain.InventoryReservation": {
+      "kind": "symbol",
+      "source": "src.domain",
+      "symbol": "InventoryReservation",
+      "line": 123
+    },
+    "domain.InventoryReservation.for_order": {
+      "kind": "symbol",
+      "source": "src.domain",
+      "symbol": "InventoryReservation::for_order",
+      "line": 130
+    },
+    "app.InventoryStore": {
       "kind": "symbol",
       "source": "src.app",
-      "symbol": "place_order",
+      "symbol": "InventoryStore",
+      "line": 6
+    },
+    "app.InventoryStore.available_units": {
+      "kind": "symbol",
+      "source": "src.app",
+      "symbol": "InventoryStore::available_units",
+      "line": 7
+    },
+    "app.InventoryStore.reserve": {
+      "kind": "symbol",
+      "source": "src.app",
+      "symbol": "InventoryStore::reserve",
+      "line": 8
+    },
+    "app.OrderService": {
+      "kind": "symbol",
+      "source": "src.app",
+      "symbol": "OrderService",
+      "line": 11
+    },
+    "app.OrderService.place_order": {
+      "kind": "symbol",
+      "source": "src.app",
+      "symbol": "OrderService::place_order",
       "line": 23
     },
-    "domain.OrderService": {
+    "app.OrderReceipt": {
       "kind": "symbol",
       "source": "src.app",
-      "symbol": "OrderService"
+      "symbol": "OrderReceipt",
+      "line": 50
     },
-    "domain.InventoryStore": {
+    "app.AppError": {
       "kind": "symbol",
       "source": "src.app",
-      "symbol": "InventoryStore"
+      "symbol": "AppError",
+      "line": 81
+    },
+    "store.InMemoryInventoryStore": {
+      "kind": "symbol",
+      "source": "src.store",
+      "symbol": "InMemoryInventoryStore",
+      "line": 6
+    },
+    "store.InMemoryInventoryStore.add_stock": {
+      "kind": "symbol",
+      "source": "src.store",
+      "symbol": "InMemoryInventoryStore::add_stock",
+      "line": 17
+    },
+    "store.InMemoryInventoryStore.stock_snapshot": {
+      "kind": "symbol",
+      "source": "src.store",
+      "symbol": "InMemoryInventoryStore::stock_snapshot",
+      "line": 26
+    },
+    "store.InMemoryInventoryStore.available_units": {
+      "kind": "symbol",
+      "source": "src.store",
+      "symbol": "InMemoryInventoryStore::available_units",
+      "line": 35
+    },
+    "store.InMemoryInventoryStore.reserve": {
+      "kind": "symbol",
+      "source": "src.store",
+      "symbol": "InMemoryInventoryStore::reserve",
+      "line": 44
+    },
+    "main.main": {
+      "kind": "symbol",
+      "source": "src.main",
+      "symbol": "main",
+      "line": 7
+    },
+    "runtime.place_order_trace": {
+      "kind": "runtimeTrace",
+      "path": "tools/archsig/examples/practical-rust-service/runtime/place_order_trace.json"
+    },
+    "runtime.concurrent_reservation_trace": {
+      "kind": "runtimeTrace",
+      "path": "tools/archsig/examples/practical-rust-service/runtime/concurrent_reservation_trace.json"
+    },
+    "edge.main.place_order": {
+      "kind": "runtimeEdge",
+      "source": "runtime.place_order_trace",
+      "symbol": "main->OrderService::place_order"
+    },
+    "edge.concurrent.reserve": {
+      "kind": "runtimeEdge",
+      "source": "runtime.concurrent_reservation_trace",
+      "symbol": "InMemoryInventoryStore::reserve stale reservation"
     }
   },
   "atoms": [
     {
+      "id": "atom:domain-product-id-component",
+      "kind": "component",
+      "subject": "domain.ProductId",
+      "refs": ["domain.ProductId"],
+      "label": "ProductId is a domain identity component"
+    },
+    {
+      "id": "atom:domain-order-component",
+      "kind": "component",
+      "subject": "domain.Order",
+      "refs": ["domain.Order"],
+      "label": "Order is the aggregate modeled by the domain module"
+    },
+    {
+      "id": "atom:inventory-store-port-component",
+      "kind": "component",
+      "subject": "app.InventoryStore",
+      "refs": ["app.InventoryStore"],
+      "label": "InventoryStore is the application port"
+    },
+    {
+      "id": "atom:in-memory-inventory-store-component",
+      "kind": "component",
+      "subject": "store.InMemoryInventoryStore",
+      "refs": ["store.InMemoryInventoryStore"],
+      "label": "InMemoryInventoryStore is the sample infrastructure adapter"
+    },
+    {
+      "id": "atom:product-id-nonempty-contract",
+      "kind": "contract",
+      "diagram": "domain.ProductId.new",
+      "contract": "rejectsEmptyProductId",
+      "refs": ["domain.ProductId.new"],
+      "label": "ProductId::new rejects empty product identifiers"
+    },
+    {
+      "id": "atom:order-id-nonempty-contract",
+      "kind": "contract",
+      "diagram": "domain.OrderId.new",
+      "contract": "rejectsEmptyOrderId",
+      "refs": ["domain.OrderId.new"],
+      "label": "OrderId::new rejects empty order identifiers"
+    },
+    {
+      "id": "atom:order-line-positive-quantity-contract",
+      "kind": "contract",
+      "diagram": "domain.OrderLine.new",
+      "contract": "requiresPositiveQuantity",
+      "refs": ["domain.OrderLine.new"],
+      "label": "OrderLine::new rejects zero quantity"
+    },
+    {
+      "id": "atom:order-nonempty-contract",
+      "kind": "contract",
+      "diagram": "domain.Order.new",
+      "contract": "requiresAtLeastOneLine",
+      "refs": ["domain.Order.new"],
+      "label": "Order::new rejects empty order lines"
+    },
+    {
+      "id": "atom:order-total-quantity-semantic",
+      "kind": "semantic",
+      "diagram": "domain.Order.total_quantity",
+      "meaning": "sumsOrderLineQuantities",
+      "refs": ["domain.Order.total_quantity"],
+      "label": "Order::total_quantity sums line quantities"
+    },
+    {
+      "id": "atom:reservation-preserves-order-lines",
+      "kind": "semantic",
+      "diagram": "domain.InventoryReservation.for_order",
+      "meaning": "copiesOrderLinesIntoReservationLines",
+      "refs": ["domain.InventoryReservation.for_order"],
+      "label": "InventoryReservation::for_order preserves order line product and quantity"
+    },
+    {
       "id": "atom:place-order-capability",
       "kind": "capability",
-      "subject": "domain.OrderService",
+      "subject": "app.OrderService",
       "predicate": "placesOrder",
-      "refs": ["src.app.place_order"],
+      "refs": ["app.OrderService.place_order"],
       "label": "OrderService places an order"
     },
     {
       "id": "atom:inventory-port-relation",
       "kind": "relation",
-      "subject": "domain.OrderService",
+      "subject": "app.OrderService",
       "predicate": "checksInventoryWith",
-      "object": "domain.InventoryStore",
-      "refs": ["src.app.place_order"],
+      "object": "app.InventoryStore",
+      "refs": ["app.OrderService.place_order"],
       "label": "OrderService checks inventory through the InventoryStore port"
     },
     {
-      "id": "atom:reservation-effect",
+      "id": "atom:order-service-depends-on-inventory-port",
+      "kind": "relation",
+      "subject": "app.OrderService",
+      "predicate": "dependsOn",
+      "object": "app.InventoryStore",
+      "refs": ["app.OrderService.place_order", "app.InventoryStore"],
+      "label": "OrderService depends on the InventoryStore abstraction"
+    },
+    {
+      "id": "atom:store-implements-inventory-port",
+      "kind": "relation",
+      "subject": "store.InMemoryInventoryStore",
+      "predicate": "implements",
+      "object": "app.InventoryStore",
+      "refs": ["store.InMemoryInventoryStore", "app.InventoryStore"],
+      "label": "InMemoryInventoryStore implements the InventoryStore port"
+    },
+    {
+      "id": "atom:place-order-builds-reservation",
       "kind": "effect",
-      "diagram": "src.app.place_order",
+      "diagram": "app.OrderService.place_order",
       "effect": "createsInventoryReservation",
-      "refs": ["src.app.place_order"],
-      "label": "place_order reserves inventory"
+      "refs": ["app.OrderService.place_order", "domain.InventoryReservation.for_order"],
+      "label": "place_order builds an inventory reservation from the order"
+    },
+    {
+      "id": "atom:place-order-rejects-insufficient-inventory",
+      "kind": "effect",
+      "diagram": "app.OrderService.place_order",
+      "effect": "rejectsInsufficientInventory",
+      "refs": ["app.OrderService.place_order"],
+      "label": "place_order rejects orders whose requested quantity exceeds availability"
+    },
+    {
+      "id": "atom:place-order-calls-store-reserve",
+      "kind": "relation",
+      "subject": "app.OrderService.place_order",
+      "predicate": "calls",
+      "object": "app.InventoryStore.reserve",
+      "refs": ["app.OrderService.place_order", "app.InventoryStore.reserve"],
+      "label": "place_order calls the InventoryStore reserve port"
+    },
+    {
+      "id": "atom:order-receipt-reports-reserved-counts",
+      "kind": "semantic",
+      "diagram": "app.OrderReceipt",
+      "meaning": "reportsReservedLineAndUnitCounts",
+      "refs": ["app.OrderReceipt", "app.OrderService.place_order"],
+      "label": "OrderReceipt reports reserved line and unit counts"
+    },
+    {
+      "id": "atom:app-error-wraps-domain-and-store-errors",
+      "kind": "semantic",
+      "diagram": "app.AppError",
+      "meaning": "wrapsDomainAndStoreErrors",
+      "refs": ["app.AppError"],
+      "label": "AppError preserves DomainError and StorePortError sources"
+    },
+    {
+      "id": "atom:store-stock-state",
+      "kind": "dataState",
+      "diagram": "store.InMemoryInventoryStore",
+      "state": "stockByProductId",
+      "refs": ["store.InMemoryInventoryStore"],
+      "label": "InMemoryInventoryStore keeps stock by ProductId"
+    },
+    {
+      "id": "atom:store-reservation-log-state",
+      "kind": "dataState",
+      "diagram": "store.InMemoryInventoryStore",
+      "state": "reservationLog",
+      "refs": ["store.InMemoryInventoryStore"],
+      "label": "InMemoryInventoryStore records reservation history"
+    },
+    {
+      "id": "atom:store-add-stock-effect",
+      "kind": "effect",
+      "diagram": "store.InMemoryInventoryStore.add_stock",
+      "effect": "incrementsStock",
+      "refs": ["store.InMemoryInventoryStore.add_stock"],
+      "label": "add_stock increments stock for a product"
+    },
+    {
+      "id": "atom:store-available-units-contract",
+      "kind": "contract",
+      "diagram": "store.InMemoryInventoryStore.available_units",
+      "contract": "returnsAvailableUnitsOrProductNotFound",
+      "refs": ["store.InMemoryInventoryStore.available_units"],
+      "label": "available_units returns current stock or ProductNotFound"
+    },
+    {
+      "id": "atom:store-reserve-decrements-stock",
+      "kind": "effect",
+      "diagram": "store.InMemoryInventoryStore.reserve",
+      "effect": "decrementsStockAndLogsReservation",
+      "refs": ["store.InMemoryInventoryStore.reserve"],
+      "label": "reserve decrements stock and appends the reservation log"
+    },
+    {
+      "id": "atom:store-reserve-rejects-conflict",
+      "kind": "effect",
+      "diagram": "store.InMemoryInventoryStore.reserve",
+      "effect": "rejectsReservationConflict",
+      "refs": ["store.InMemoryInventoryStore.reserve"],
+      "label": "reserve rejects stale reservations when stock changed"
+    },
+    {
+      "id": "atom:store-stock-snapshot-semantic",
+      "kind": "semantic",
+      "diagram": "store.InMemoryInventoryStore.stock_snapshot",
+      "meaning": "projectsProductStockToStringKeyedSnapshot",
+      "refs": ["store.InMemoryInventoryStore.stock_snapshot"],
+      "label": "stock_snapshot exposes remaining stock as string-keyed data"
+    },
+    {
+      "id": "atom:main-calls-place-order",
+      "kind": "relation",
+      "subject": "main.main",
+      "predicate": "calls",
+      "object": "app.OrderService.place_order",
+      "refs": ["main.main", "app.OrderService.place_order"],
+      "label": "main calls OrderService::place_order in the smoke flow"
+    },
+    {
+      "id": "atom:runtime-place-order-smoke",
+      "kind": "runtime",
+      "edge": "edge.main.place_order",
+      "interaction": "reservesOrderAndPrintsRemainingStock",
+      "refs": ["runtime.place_order_trace", "main.main"],
+      "label": "place order runtime trace reserves an order and prints stock"
+    },
+    {
+      "id": "atom:runtime-concurrent-reservation-conflict",
+      "kind": "runtime",
+      "edge": "edge.concurrent.reserve",
+      "interaction": "staleReservationRejectedAfterStockChange",
+      "refs": ["runtime.concurrent_reservation_trace", "store.InMemoryInventoryStore.reserve"],
+      "label": "concurrent reservation trace records stale reservation rejection"
     }
   ],
   "molecules": [
     {
+      "id": "mol:domain-invariants",
+      "atoms": [
+        "atom:domain-product-id-component",
+        "atom:domain-order-component",
+        "atom:product-id-nonempty-contract",
+        "atom:order-id-nonempty-contract",
+        "atom:order-line-positive-quantity-contract",
+        "atom:order-nonempty-contract",
+        "atom:order-total-quantity-semantic",
+        "atom:reservation-preserves-order-lines"
+      ],
+      "refs": ["src.domain"],
+      "label": "domain identity, order, quantity, and reservation invariants"
+    },
+    {
       "id": "mol:place-order-flow",
       "atoms": [
+        "atom:inventory-store-port-component",
         "atom:place-order-capability",
         "atom:inventory-port-relation",
-        "atom:reservation-effect"
+        "atom:order-service-depends-on-inventory-port",
+        "atom:place-order-builds-reservation",
+        "atom:place-order-rejects-insufficient-inventory",
+        "atom:place-order-calls-store-reserve",
+        "atom:order-receipt-reports-reserved-counts",
+        "atom:app-error-wraps-domain-and-store-errors"
       ],
-      "refs": ["src.app.place_order"],
-      "label": "place_order local flow"
+      "refs": ["app.OrderService.place_order"],
+      "label": "application service order placement flow"
+    },
+    {
+      "id": "mol:inventory-store-adapter",
+      "atoms": [
+        "atom:in-memory-inventory-store-component",
+        "atom:store-implements-inventory-port",
+        "atom:store-stock-state",
+        "atom:store-reservation-log-state",
+        "atom:store-add-stock-effect",
+        "atom:store-available-units-contract",
+        "atom:store-reserve-decrements-stock",
+        "atom:store-reserve-rejects-conflict",
+        "atom:store-stock-snapshot-semantic"
+      ],
+      "refs": ["src.store"],
+      "label": "in-memory inventory adapter state and effects"
+    },
+    {
+      "id": "mol:runtime-smoke-flow",
+      "atoms": [
+        "atom:main-calls-place-order",
+        "atom:runtime-place-order-smoke",
+        "atom:runtime-concurrent-reservation-conflict"
+      ],
+      "refs": ["main.main", "runtime.place_order_trace", "runtime.concurrent_reservation_trace"],
+      "label": "bounded runtime and smoke-flow evidence"
     }
   ]
 }

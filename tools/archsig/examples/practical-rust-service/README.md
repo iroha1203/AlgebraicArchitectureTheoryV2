@@ -59,12 +59,18 @@ cargo run --manifest-path tools/archsig/Cargo.toml -- analyze \
   --archmap tools/archsig/examples/practical-rust-service/archmap/archmap.json \
   --law-policy tools/archsig/examples/practical-rust-service/law_policy/law_policy.json \
   --out-dir .tmp/archsig-practical-rust-service \
-  --emit-raw-artifacts
+  --emit-raw-artifacts \
+  --strict-distance
 ```
 
-The output is the v1 typed evaluator artifact chain. It is bounded to the
-example ArchMap and LawPolicy and is not a Lean proof or architecture
-lawfulness certificate.
+The output is the v1 typed evaluator and architecture distance artifact chain:
+`normalized-archmap.json`, `typed-evaluator-results.json`,
+`architecture-distance.json`, `archsig-analysis-summary.json`,
+`archsig-atom-viewer-data.json`, and `archsig-run-manifest.json` by default,
+plus raw packet / detail / LLM artifacts with `--emit-raw-artifacts`. The public
+summary, viewer data, and LLM packet are conclusion-first and use architecture
+distance naming. The artifacts are bounded to the example ArchMap and LawPolicy
+and are not a Lean proof or architecture lawfulness certificate.
 
 ## ArchSig Reading Targets
 

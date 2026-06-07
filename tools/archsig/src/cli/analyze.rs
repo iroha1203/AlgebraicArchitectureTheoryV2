@@ -11,6 +11,7 @@ pub(crate) fn build_analyze_run_manifest_v1(
         "law-policy-validation.json",
         "normalized-archmap.json",
         "typed-evaluator-results.json",
+        "architecture-distance.json",
         "archsig-analysis-validation.json",
         "archsig-analysis-summary.json",
         "archsig-atom-viewer-data.json",
@@ -47,6 +48,7 @@ pub(crate) fn build_analyze_run_manifest_v1(
         "summaryPath": "archsig-analysis-summary.json",
         "atomViewerDataPath": "archsig-atom-viewer-data.json",
         "typedEvaluatorResultsPath": "typed-evaluator-results.json",
+        "architectureDistancePath": "architecture-distance.json",
         "validationReports": {
             "archmap": "archmap-validation.json",
             "lawPolicy": "law-policy-validation.json",

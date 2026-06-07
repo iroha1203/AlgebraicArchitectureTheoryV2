@@ -79,6 +79,13 @@ pub fn is_known_v1_basis(basis: &str) -> bool {
     matches!(basis, "policy-basis:solid" | "policy-basis:layering")
 }
 
+pub fn is_known_v1_distance_profile(profile_ref: &str) -> bool {
+    matches!(
+        profile_ref,
+        "distance-profile:architecture-default@1" | "distance-profile:practical-rust-service@1"
+    )
+}
+
 fn pack_entries(pack: &str) -> Vec<LawPolicyPackEntryV1> {
     match pack {
         "solid@1" => solid_pack_entries(),

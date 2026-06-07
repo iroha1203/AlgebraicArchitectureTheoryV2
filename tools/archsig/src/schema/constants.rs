@@ -7,6 +7,7 @@ pub const LAW_POLICY_V1_SCHEMA: &str = "law-policy/v1";
 pub const LAW_POLICY_VALIDATION_REPORT_SCHEMA_VERSION: &str = "law-policy-validation-report-v0";
 pub const NORMALIZED_ARCHMAP_V1_SCHEMA: &str = "normalized-archmap/v1";
 pub const TYPED_EVALUATOR_RESULTS_V1_SCHEMA: &str = "typed-evaluator-results/v1";
+pub const ARCHITECTURE_DISTANCE_V1_SCHEMA: &str = "archsig-architecture-distance/v1";
 pub const ARCHSIG_ANALYSIS_PACKET_SCHEMA_VERSION: &str = "archsig-analysis-packet-v0";
 pub const ARCHSIG_ANALYSIS_PACKET_VALIDATION_REPORT_SCHEMA_VERSION: &str =
     "archsig-analysis-packet-validation-report-v0";
