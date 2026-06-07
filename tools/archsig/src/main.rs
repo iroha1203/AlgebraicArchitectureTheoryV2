@@ -6,7 +6,10 @@ use archsig::{
     ARCHMAP_V1_SCHEMA, ARCHSIG_ANALYSIS_PACKET_SCHEMA_VERSION, ArchMapDocumentV0,
     ArchMapDocumentV1, ArchMapSourceInventoryInput, ArchMapSourceInventoryV0,
     ArchMapValidationReportV0, LAW_POLICY_V1_SCHEMA, LawPolicyDocumentV0, LawPolicyDocumentV1,
-    SchemaVersionCatalogV0, build_archsig_analysis_packet, evaluate_typed_v1, normalize_archmap_v1,
+    SchemaVersionCatalogV0, build_archsig_analysis_packet, build_typed_analysis_packet_v1,
+    build_typed_analysis_summary_v1, build_typed_analysis_validation_v1,
+    build_typed_atom_viewer_data_v1, build_typed_detail_index_v1,
+    build_typed_llm_interpretation_packet_v1, evaluate_typed_v1, normalize_archmap_v1,
     static_law_evaluator_registry_v1, static_law_policy, static_schema_version_catalog,
     validate_archmap_report, validate_archmap_v1_report, validate_archsig_analysis_packet_report,
     validate_law_policy_report, validate_law_policy_v1_report,
@@ -306,6 +309,10 @@ fn json_schema(document: &serde_json::Value) -> Option<&str> {
         .get("schema")
         .or_else(|| document.get("schemaVersion"))
         .and_then(|value| value.as_str())
+}
+
+fn summary_result(document: &serde_json::Value) -> &str {
+    document["summary"]["result"].as_str().unwrap_or("fail")
 }
 
 fn run() -> Result<ExitCode, Box<dyn Error>> {
@@ -609,11 +616,56 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                     &law_policy.display().to_string(),
                 );
                 write_json(Some(typed_evaluator_results_path), &typed_results)?;
-                eprintln!(
-                    "archsig analyze wrote v1 validation, normalized ArchMap, and typed evaluator artifacts to {} but the v1 packet pipeline is not implemented yet",
-                    out_dir.display()
+                let analysis_packet =
+                    build_typed_analysis_packet_v1(&normalized_archmap, &typed_results);
+                let analysis_summary =
+                    build_typed_analysis_summary_v1(&normalized_archmap, &typed_results);
+                let atom_viewer_data = build_typed_atom_viewer_data_v1(
+                    &normalized_archmap,
+                    &typed_results,
+                    &analysis_summary,
                 );
-                return Ok(ExitCode::from(1));
+                let analysis_validation =
+                    build_typed_analysis_validation_v1(&analysis_packet, &typed_results);
+                write_json(Some(analysis_validation_path), &analysis_validation)?;
+                write_json(Some(analysis_summary_path.clone()), &analysis_summary)?;
+                write_json(Some(atom_viewer_data_path.clone()), &atom_viewer_data)?;
+                if emit_raw_artifacts {
+                    write_json(Some(analysis_packet_path), &analysis_packet)?;
+                    write_json(
+                        Some(out_dir.join("archsig-analysis-detail-index.json")),
+                        &build_typed_detail_index_v1(&typed_results),
+                    )?;
+                    write_json(
+                        Some(llm_interpretation_path),
+                        &build_typed_llm_interpretation_packet_v1(&typed_results),
+                    )?;
+                }
+                write_json(
+                    Some(run_manifest_path),
+                    &build_analyze_run_manifest_v1(
+                        &archmap,
+                        &law_policy,
+                        emit_raw_artifacts,
+                        summary_result(&archmap_preflight),
+                        summary_result(&law_policy_preflight),
+                        analysis_validation["summary"]["result"]
+                            .as_str()
+                            .unwrap_or("fail"),
+                    ),
+                )?;
+                if strict_distance
+                    && typed_results.summary.blocked_count
+                        + typed_results.summary.unknown_count
+                        + typed_results.summary.unmeasured_count
+                        > 0
+                {
+                    return Err(
+                        "--strict-distance rejected v1 typed evaluator results with blocked, unknown, or unmeasured distance statuses"
+                            .into(),
+                    );
+                }
+                return Ok(ExitCode::SUCCESS);
             }
 
             let archmap_document: ArchMapDocumentV0 = read_json(&archmap)?;
