@@ -6,6 +6,9 @@ use super::measurement_policy::{
     check_homotopy_measurement_profile, check_measurement_policy, check_part4_distance_profile,
     check_spectrum_measurement_profile,
 };
+use super::registry::{
+    expand_law_policy_v1, is_known_v1_basis, is_known_v1_evaluator, is_known_v1_pack,
+};
 use crate::validation::{count_checks, duplicates, generic_validation_example, validation_check};
 use crate::{
     LAW_POLICY_SCHEMA_VERSION, LAW_POLICY_V1_SCHEMA, LAW_POLICY_VALIDATION_REPORT_SCHEMA_VERSION,
@@ -18,6 +21,7 @@ pub fn validate_law_policy_v1_report(
     policy: &LawPolicyDocumentV1,
     input_path: &str,
 ) -> LawPolicyValidationReportV1 {
+    let expanded_policies = expand_law_policy_v1(policy);
     let checks = vec![
         check_v1_schema(policy),
         check_v1_identity(policy),
@@ -41,10 +45,12 @@ pub fn validate_law_policy_v1_report(
             path: input_path.to_string(),
             id: policy.id.clone(),
         },
+        expanded_policies,
         checks,
         summary: LawPolicyValidationSummaryV1 {
             result: result.to_string(),
             policy_entry_count: policy.policies.len(),
+            expanded_policy_entry_count: expand_law_policy_v1(policy).len(),
             pack_entry_count: policy
                 .policies
                 .iter()
@@ -219,26 +225,6 @@ fn check_examples(id: &str, title: &str, examples: Vec<ValidationExample>) -> Va
         check.examples = examples;
     }
     check
-}
-
-fn is_known_v1_pack(pack: &str) -> bool {
-    matches!(pack, "solid@1")
-}
-
-fn is_known_v1_evaluator(evaluator: &str) -> bool {
-    matches!(
-        evaluator,
-        "solid.single-responsibility@1"
-            | "solid.open-closed@1"
-            | "solid.liskov-substitution@1"
-            | "solid.interface-segregation@1"
-            | "solid.dependency-inversion@1"
-            | "domain.no-direct-infra-dependency@1"
-    )
-}
-
-fn is_known_v1_basis(basis: &str) -> bool {
-    matches!(basis, "policy-basis:solid" | "policy-basis:layering")
 }
 
 pub fn validate_law_policy_report(

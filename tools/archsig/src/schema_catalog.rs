@@ -92,6 +92,19 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 ],
             ),
             artifact(
+                "law-evaluator-registry-v1",
+                "Law evaluator registry v1",
+                "law-evaluator-registry/v1",
+                "primary",
+                "ArchMap Atom-to-AAT contract",
+                vec!["docs/tool/archmap_minimal_observation_contract_prd.md"],
+                "Law evaluator registry v1 owns evaluator manifests, policy pack expansion, basis refs, missing blocker rules, pass / violation criteria, typed result schema refs, distance contribution, and output refs. LawPolicy v1 selects entries from this registry.",
+                vec![
+                    "Evaluator registry manifest is an ArchSig computation contract, not a Lean theorem proof.",
+                    "LawPolicy v1 cannot override witness rules, axis rules, distance formula, pass criteria, or violation criteria.",
+                ],
+            ),
+            artifact(
                 "law-policy-validation-report",
                 "LawPolicy validation report",
                 LAW_POLICY_VALIDATION_REPORT_SCHEMA_VERSION,
@@ -296,6 +309,7 @@ mod tests {
                 "law-policy",
                 "law-policy-validation-report",
                 "law-policy-v1",
+                "law-evaluator-registry-v1",
                 "normalized-archmap-v1",
                 "archsig-analysis-packet",
                 "archsig-analysis-packet-validation-report",

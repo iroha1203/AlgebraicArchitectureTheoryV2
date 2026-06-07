@@ -13,7 +13,8 @@ pub use archsig_analysis_packet::{
     build_archsig_analysis_packet, validate_archsig_analysis_packet_report,
 };
 pub use law_policy::{
-    static_law_policy, validate_law_policy_report, validate_law_policy_v1_report,
+    expand_law_policy_v1, static_law_evaluator_registry_v1, static_law_policy,
+    validate_law_policy_report, validate_law_policy_v1_report,
 };
 pub use normalizer::normalize_archmap_v1;
 pub(crate) use schema::*;
@@ -32,8 +33,10 @@ pub use schema::{
     ArchSigAtomViewerTruncationPolicyV0, ArchSigAtomViewerVisualV0,
     ArchSigRunManifestRawArtifactPathsV0, ArchSigRunManifestV0,
     ArchSigRunManifestValidationReportPathsV0, ArchSigRunManifestValidationResultSummaryV0,
-    LAW_POLICY_SCHEMA_VERSION, LAW_POLICY_V1_SCHEMA, LAW_POLICY_VALIDATION_REPORT_SCHEMA_VERSION,
-    LawPolicyDocumentV0, LawPolicyDocumentV1, LawPolicyEntryV1, LawPolicyValidationInputV1,
+    ExpandedLawPolicyEntryV1, LAW_POLICY_SCHEMA_VERSION, LAW_POLICY_V1_SCHEMA,
+    LAW_POLICY_VALIDATION_REPORT_SCHEMA_VERSION, LawEvaluatorManifestV1, LawEvaluatorRegistryV1,
+    LawPolicyBasisManifestV1, LawPolicyDocumentV0, LawPolicyDocumentV1, LawPolicyEntryV1,
+    LawPolicyPackEntryV1, LawPolicyPackManifestV1, LawPolicyValidationInputV1,
     LawPolicyValidationReportV0, LawPolicyValidationReportV1, LawPolicyValidationSummaryV1,
     NORMALIZED_ARCHMAP_V1_SCHEMA, NormalizedArchMapSummaryV1, NormalizedArchMapV1,
     NormalizedAtomBindingV1, NormalizedAtomPredicateV1, NormalizedAtomV1, NormalizedMoleculeV1,

@@ -275,6 +275,22 @@ fn cli_validates_law_policy_v1_selector_contract() {
     assert_eq!(json["summary"]["result"], "pass");
     assert_eq!(json["summary"]["policyEntryCount"], 2);
     assert_eq!(json["summary"]["packEntryCount"], 1);
+    assert_eq!(json["summary"]["expandedPolicyEntryCount"], 6);
+    assert!(json["expandedPolicies"].as_array().is_some_and(|entries| {
+        entries.len() == 6
+            && entries.iter().any(|entry| {
+                entry["law"] == "solid.single-responsibility"
+                    && entry["evaluator"] == "solid.single-responsibility@1"
+            })
+            && entries.iter().any(|entry| {
+                entry["law"] == "solid.dependency-inversion"
+                    && entry["evaluator"] == "solid.dependency-inversion@1"
+            })
+            && entries.iter().any(|entry| {
+                entry["law"] == "domain.no-direct-infra-dependency"
+                    && entry["evaluator"] == "domain.no-direct-infra-dependency@1"
+            })
+    }));
 }
 
 #[test]
@@ -303,6 +319,33 @@ fn cli_rejects_law_policy_v1_unknown_evaluator() {
             .any(|check| check["id"] == "law-policy-v1-registry-vocabulary"
                 && check["result"] == "fail"))
     );
+}
+
+#[test]
+fn cli_rejects_law_policy_v1_unknown_pack() {
+    let out_dir = temp_dir("law-policy-v1-unknown-pack");
+    let root = archmap_v1_root();
+    let report = out_dir.join("law-policy-validation.json");
+
+    let output = run_sig0_output(&[
+        "law-policy",
+        "--input",
+        root.join("law_policy_unknown_pack.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--out",
+        report.to_str().expect("path is utf-8"),
+    ]);
+
+    assert!(!output.status.success());
+    let json = read_json(&report);
+    assert_eq!(json["schemaVersion"], "law-policy-validation-report-v1");
+    assert_eq!(json["summary"]["result"], "fail");
+    assert!(json["checks"].as_array().is_some_and(|checks| {
+        checks.iter().any(|check| {
+            check["id"] == "law-policy-v1-registry-vocabulary" && check["result"] == "fail"
+        })
+    }));
 }
 
 #[test]
@@ -3682,6 +3725,7 @@ fn cli_schema_catalog_is_primary_archsig_surface_only() {
             "archmap-v1",
             "law-policy",
             "law-policy-v1",
+            "law-evaluator-registry-v1",
             "law-policy-validation-report",
             "normalized-archmap-v1",
             "archsig-analysis-packet",
