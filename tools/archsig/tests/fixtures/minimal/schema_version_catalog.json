@@ -226,6 +226,33 @@
       }
     },
     {
+      "artifactId": "typed-evaluator-results-v1",
+      "artifactName": "Typed evaluator results v1",
+      "schemaVersionName": "typed-evaluator-results/v1",
+      "artifactRole": "primary",
+      "ownerPhase": "ArchMap Atom-to-AAT contract",
+      "status": "implemented",
+      "primaryDocs": [
+        "docs/tool/archmap_minimal_observation_contract_prd.md"
+      ],
+      "downstreamIssues": [],
+      "compatibilityBoundary": {
+        "fieldMappingPolicy": "Typed evaluator results v1 records evaluator status, support atom refs, support molecule refs, basis refs, detail refs, and bounded conclusions computed from Normalized ArchMap v1 and LawPolicy v1.",
+        "deprecatedFields": [],
+        "newRequiredAssumptions": [
+          "Required fields, observation families, law refs, or analysis axes change.",
+          "Evidence boundaries or non-conclusions are removed or weakened."
+        ],
+        "coverageExactnessBoundary": [
+          "Coverage and exactness are artifact-local and do not imply semantic completeness."
+        ],
+        "nonConclusions": [
+          "Typed evaluator results do not read label-only, memo-only, removed-field-only, or schema-only evidence as measured support.",
+          "Blocked, unknown, and unmeasured results are not measured zero."
+        ]
+      }
+    },
+    {
       "artifactId": "archsig-analysis-packet",
       "artifactName": "ArchSig AAT analysis packet",
       "schemaVersionName": "archsig-analysis-packet-v0",

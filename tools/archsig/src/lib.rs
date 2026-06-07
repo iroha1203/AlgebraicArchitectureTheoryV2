@@ -4,6 +4,7 @@ mod law_policy;
 mod normalizer;
 mod schema;
 mod schema_catalog;
+mod typed_evaluator;
 mod validation;
 
 pub use archmap::{
@@ -41,5 +42,8 @@ pub use schema::{
     NORMALIZED_ARCHMAP_V1_SCHEMA, NormalizedArchMapSummaryV1, NormalizedArchMapV1,
     NormalizedAtomBindingV1, NormalizedAtomPredicateV1, NormalizedAtomV1, NormalizedMoleculeV1,
     SCHEMA_VERSION_CATALOG_SCHEMA_VERSION, SchemaVersionCatalogV0,
+    TYPED_EVALUATOR_RESULTS_V1_SCHEMA, TypedEvaluatorResultV1, TypedEvaluatorResultsSummaryV1,
+    TypedEvaluatorResultsV1,
 };
 pub use schema_catalog::static_schema_version_catalog;
+pub use typed_evaluator::evaluate_typed_v1;

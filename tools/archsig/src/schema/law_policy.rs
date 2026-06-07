@@ -120,6 +120,45 @@ pub struct ExpandedLawPolicyEntryV1 {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TypedEvaluatorResultsV1 {
+    pub schema: String,
+    pub pipeline_id: String,
+    pub normalized_archmap_ref: String,
+    pub law_policy_ref: String,
+    pub results: Vec<TypedEvaluatorResultV1>,
+    pub summary: TypedEvaluatorResultsSummaryV1,
+    pub positive_bounded_conclusions: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TypedEvaluatorResultV1 {
+    pub evaluator: String,
+    pub law: String,
+    pub status: String,
+    pub support_atom_refs: Vec<String>,
+    pub support_molecule_refs: Vec<String>,
+    pub basis_refs: Vec<String>,
+    pub detail_refs: Vec<String>,
+    pub summary: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub blocker_reason: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TypedEvaluatorResultsSummaryV1 {
+    pub result_count: usize,
+    pub measured_pass_count: usize,
+    pub measured_violation_count: usize,
+    pub blocked_count: usize,
+    pub unknown_count: usize,
+    pub unmeasured_count: usize,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct LawPolicyDocumentV0 {
     pub schema_version: String,
