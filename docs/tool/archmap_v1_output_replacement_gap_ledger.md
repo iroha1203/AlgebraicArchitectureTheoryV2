@@ -107,12 +107,12 @@ typed evaluator result` から ArchSig の output surface を再生成できる�
 
 | Document | Current state | Drift | Tracking issue |
 | --- | --- | --- | --- |
-| `docs/tool/README.md` | Correctly states current v1 thin route and marks `ArchitectureSpectrumReport` / `ArchitectureHomotopyReport` as legacy packet reading families. | It is accurate for current runtime, but it can obscure that PRD output replacement is still incomplete. | #1841, #1844 |
-| `docs/tool/archsig_analysis_packet.md` | Starts with current v1 chain, then documents legacy rich packet and desired rich reading surfaces. | Needs a clear split between current v1 runtime, legacy v0 evidence, and required v1 output replacement target. | #1844 |
-| `tools/archsig/README.md` | Still introduces ArchSig as `archmap-observation-map-v0` + `law-policy-v0` -> `archsig-analysis-packet-v0`, and lists removed commands as current product surface. | Contradicts current `docs/tool/README.md` and current CLI. | #1844 |
-| `tools/archsig/docs/commands.md` | Starts with current v1 route, but later sections still describe legacy command/input surfaces. | Needs pruning or legacy labeling after v1 output contract is fixed. | #1844 |
-| ACTS / Homotopy validation docs | Document v0 rich fixtures as implemented. | They remain valid historical evidence, but do not prove v1 runtime output replacement. | #1844, #1838, #1839 |
-| website / skills | Need verification against current v1 output once replacement surfaces are restored. | Potential docs / UX drift. | #1844, #1845 |
+| `docs/tool/README.md` | States current v1 output replacement route, default summary / viewer / manifest outputs, optional raw v1 packet, FieldSig handoff, and v1 PR review boundary. | No known current drift after #1846 / #1844 sync. | #1841, #1844 |
+| `docs/tool/archsig_analysis_packet.md` | Starts with current v1 chain and keeps v0 packet material under a legacy boundary. | Legacy sections remain as historical reference; current v1 output replacement is documented first. | #1844 |
+| `tools/archsig/README.md` | Introduces ArchSig as `archmap/v1` + `law-policy/v1` -> typed evaluator / summary / viewer / manifest, with optional raw `archsig-analysis-packet/v1`; removed commands are no longer listed as current. | No known current drift after #1844 sync. | #1844 |
+| `tools/archsig/docs/commands.md` | Documents `analyze` and v1 `pr-review` as current runtime surfaces and marks removed commands as historical. | No known current drift after #1846 / #1844 sync. | #1844 |
+| ACTS / Homotopy validation docs | Document v0 rich fixtures as historical evidence and v1 packet families as current derived output in the main analysis packet docs. | Validation PRDs remain historical design evidence, not current CLI source of truth. | #1844, #1838, #1839 |
+| website / skills | Website sitemap / manual wording / ArchSig landing and PR reviewer skill now point to v1 summary / viewer / packet refs and v1 PR review structural diagnosis. | No known current drift after #1844 sync. | #1844, #1845 |
 
 ## Closed Issues That Are Not Sufficient Evidence
 

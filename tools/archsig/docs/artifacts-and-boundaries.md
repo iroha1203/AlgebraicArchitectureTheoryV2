@@ -1,18 +1,22 @@
 # ArchSig Artifacts And Boundaries
 
-ArchSig owns the LLM Atom ArchMap analysis surface:
+ArchSig owns the ArchMap v1 analysis surface:
 
 ```text
-archmap-observation-map-v0
-  + law-policy-v0
+archmap/v1
+  + law-policy/v1
+  -> normalized-archmap/v1
+  -> typed-evaluator-results/v1
+  -> archsig-architecture-distance/v1
   -> archsig-analysis-summary.json
-  -> archsig-atom-viewer-data-v0
-  -> archsig-run-manifest-v0
-  -> optional archsig-analysis-packet-v0 for FieldSig handoff
+  -> archsig-atom-viewer-data.json
+  -> archsig-run-manifest.json
+  -> optional archsig-analysis-packet/v1 for raw evidence / FieldSig handoff
 ```
 
-Git history is the archive for pre-Atom scan, projection, report, and PR-review
-surfaces. They are not current ArchSig artifacts or commands.
+Git history is the archive for pre-Atom scan, v0 packet-builder, standalone
+summary, codebase-inspection, and legacy PR-review surfaces. They are not
+current ArchSig artifacts or commands.
 
 ArchMap is LLM-authored source reading, not an AST extractor result. Static
 artifacts such as ASTs, symbol indexes, import graphs, route lists, and
@@ -23,57 +27,79 @@ completeness.
 
 For large repositories, parallel agents may survey bounded surfaces and return
 candidate observations. The final ArchMap still requires an integration pass
-that deduplicates candidates, resolves source refs, preserves gaps, and promotes
-only primitive source-grounded facts to `atomObservations`.
+that deduplicates candidates, resolves source refs, preserves explicit molecule
+candidates, and promotes only primitive source-grounded facts to `atoms`.
 
-Large ArchMaps may be authored as horizontal bounded observation slices. This is
-a review and authoring layout headed by `archmap-shard-manifest-v0`; the current
-compatibility contract remains exported `archmap-observation-map-v0`. Current
-ArchSig analysis commands consume the exported monolithic artifact, not slice
-fragments.
+Large ArchMaps may be authored as horizontal bounded observation slices, but
+current ArchSig analysis commands consume an exported monolithic `archmap/v1`
+artifact, not slice fragments.
 
 ## Current Artifacts
 
-| artifact | schemaVersion | role |
+| Artifact | Schema / file | Role |
 | --- | --- | --- |
-| ArchMap observation map | `archmap-observation-map-v0` | Source-grounded Atom observation evidence. It records `atomObservations`, `moleculeObservations`, `semanticObservations`, `observationGaps`, `projectionInfo`, `concernHints`, provenance, and non-conclusions. It is law-independent and does not own obstruction circuits, lawfulness, zero curvature, repair conclusions, or Lean theorem discharge. |
-| ArchMap shard manifest | `archmap-shard-manifest-v0` | Planned authoring-side manifest for splitting large ArchMaps into horizontal bounded observation slices such as authority, state, effects, providers, runtime, domain, and governance. It is not a LawPolicy, runtime trace, or source inventory. It must bundle/export to `archmap-observation-map-v0` before current analysis. |
-| ArchMap validation report | `archmap-validation-report-v0` | Checks schema support, identity, references, provenance, source refs, observation / concern guardrails, projection separation, gap boundaries, and formal-promotion non-conclusions. |
-| LawPolicy | `law-policy-v0` | Selected LawUniverse / witness-rule / molecule-pattern / obstruction-definition / signature-axis policy for one review context. |
-| LawPolicy validation report | `law-policy-validation-report-v0` | Checks LawPolicy identity, uniqueness, cross references, witness / obstruction guardrails, coverage requirements, exactness assumptions, and non-conclusions. |
-| ArchSig analysis summary | `archsig-analysis-summary.json` | LLM-readable compact reading surface emitted by default from `analyze`. It summarizes verdict, validation, Part IV `distanceDiagnosis`, measurement status, findings, action queue, coverage, measurement basis, and artifact metadata without reprinting raw packet detail. |
-| ArchSig Atom Viewer data | `archsig-atom-viewer-data-v0` | Bounded browser projection emitted by default from `analyze`. It records source refs as count plus samples, layout settings, priority-selected atom nodes, molecule groups, molecule-to-atom edges, diagnostic distance overlays, report pane sections, omitted counts / reasons, truncation policy, and non-conclusions. It is not a raw packet copy, and `viewerDistanceInputs` remain visual layout support rather than diagnostic metrics. |
-| ArchSig run manifest | `archsig-run-manifest-v0` | Run navigation artifact emitted by default from `analyze`. It records command name, input paths, output mode, generated / omitted artifacts, validation report paths, optional raw artifact paths, and validation result summary. |
-| ArchSig analysis packet | `archsig-analysis-packet-v0` | Raw evidence artifact emitted only when raw artifact retention is requested. It records molecule readings, law-relative obstruction circuits, signature axes, flatness reading, repair candidates, coverage gaps, child-level `missingEvidence` / `excludedReadings`, evidence boundaries, LLM interpretation notes, and non-conclusions. |
-| ArchSig analysis validation report | `archsig-analysis-packet-validation-report-v0` | Checks the analysis packet boundary without proving lawfulness, source completeness, flatness, or repair safety. |
-| LLM interpretation packet | `llmInterpretationPacket` payload | Optional raw artifact: a serialization of the packet's structured LLM interpretation surface. It is not a second standalone `archsig-analysis-packet-v0` packet and does not carry the raw packet schema version by itself. |
+| ArchMap | `archmap/v1` | Source-grounded Atom observations and explicit molecule candidates. Removed v0 helper fields are not positive diagnostic input. ArchMap remains law-independent and does not own obstruction circuits, lawfulness, zero curvature, repair conclusions, or Lean theorem discharge. |
+| ArchMap validation report | `archmap-validation-report/v1` | Checks schema support, identity, source refs, atom kind / predicate boundary, molecule support, removed v0 fields, legacy aliases, and unresolved refs before analysis. |
+| Normalized ArchMap | `normalized-archmap/v1` | Canonicalized Atom and molecule support used by typed evaluators. This is an internal analysis artifact, not a new authoring schema. |
+| LawPolicy | `law-policy/v1` | Selected evaluator manifests, basis refs, law ids, distance profile refs, and non-conclusions for one review context. It is evaluator selection, not AAT itself. |
+| LawPolicy validation report | `law-policy-validation-report/v1` | Checks evaluator ids, basis refs, selected laws, profile refs, unknown packs, and unsupported legacy v0 DSL fields. |
+| Typed evaluator results | `typed-evaluator-results/v1` | Selected evaluator statuses, support refs, basis refs, replacement evaluator results, and positive bounded conclusions. `blocked`, `unknown`, and `unmeasured` are blockers, not measured zero. |
+| Architecture distance | `archsig-architecture-distance/v1` | Current-state diagnostic distance readings derived from typed evaluator output and the selected distance profile. It is not a forecast or merge-safety score. |
+| ArchSig analysis summary | `archsig-analysis-summary.json` | Default compact reading surface emitted by `analyze`. It reports conclusion, typed evaluator status, architecture distance, `distanceDiagnosis`, dominant findings, action queue, rich packet refs, measurement basis, and metadata without reprinting raw packet detail. |
+| ArchSig Atom Viewer data | `archsig-atom-viewer-data.json` | Bounded browser projection emitted by default from `analyze`. It mirrors summary / packet refs into a visual inspection surface. Viewer layout distance remains visual support, not diagnostic metric. |
+| ArchSig run manifest | `archsig-run-manifest.json` | Run navigation artifact emitted by default from `analyze`. It records command name, input paths, generated / omitted artifacts, validation report paths, optional raw artifact paths, and validation result summary. |
+| ArchSig analysis packet | `archsig-analysis-packet/v1` | Optional raw evidence artifact emitted with `--emit-raw-artifacts`. It records generated law inputs, signature axes, generated obstructions, generated repair targets, replacement registry / replacement evaluator results, spectrum / homotopy / structural readings, bounded judgements, LLM interpretation refs, and non-conclusions. |
+| ArchSig detail index | `archsig-analysis-detail-index/v1` | Optional raw lookup artifact for packet refs and detail refs. It lets summary / viewer users stay compact while preserving evidence lookup. |
+| LLM interpretation packet | `llm-interpretation-packet.json` | Optional raw artifact carrying compact reading guidance, action queue summary, distance diagnosis summary, and rich packet refs for LLM readers. |
+| PR review report | `archsig-pr-review-report-v1` | Lightweight PR review surface over base `archmap/v1`, optional head / path `archmap/v1`, PR-local `archmap-delta-v0`, and `law-policy/v1`. It emits report-local v1 snapshots, delta packet intersections, movement / hidden-excursion boundaries, safe-change budget, and review focus. |
 
 Release archives include a fixed `archsig-atom-viewer.html` at the package root
-and under `viewer/`. The app reads `archsig-atom-viewer-data-v0` projection
+and under `viewer/`. The app reads `archsig-atom-viewer-data.json` projection
 data, not raw packet detail. Its report pane uses the projection data first and
-then same-directory `archsig-analysis-summary.json` / `archsig-run-manifest.json`
-when available to display verdict, distance diagnosis, findings, action queue,
-coverage, validation failures, generated / omitted artifacts, and relative raw
-artifact links.
+then same-directory `archsig-analysis-summary.json` /
+`archsig-run-manifest.json` when available to display conclusion, distance
+diagnosis, findings, action queue, coverage boundaries, validation failures,
+generated / omitted artifacts, and relative raw artifact links.
 
-## Removed Surfaces
+## Removed v0 Fields
 
-The current CLI and schema catalog expose only the current artifacts above.
-Pre-Atom surfaces were removed rather than kept as compatibility shims. If one
-is needed again, rebuild it as a new feature on top of
-`archsig-analysis-packet-v0`.
+The v1 path rejects removed v0 ArchMap helper fields as input:
+
+- `semanticObservations`
+- `projectionInfo`
+- `operationSquareEvidence`
+- `concernHints`
+- `observationGaps`
+
+These concepts reappear only as evaluator output replacement surfaces:
+semantic interpretation, projection readings, operation-square / homotopy
+readings, missing-evidence readings, concern boundaries, generated
+obstructions, spectrum / homotopy reports, and structural review refs. Removed
+fields are not ignored silently and are not reintroduced as ArchMap primary
+input.
+
+## Removed Commands
+
+The current CLI and schema catalog expose only the v1 artifacts above.
+`llm-native-workflow`, `north-star-workflow`, `archsig-analysis`,
+`aat-analysis`, `analysis-summary`, `summary`, `codebase-inspection`, and
+`archmap-generate` are removed current runtime surfaces. If one is needed
+again, rebuild it as a new v1 feature instead of treating old packet equality
+as completion evidence.
 
 ## FieldSig Handoff
 
-FieldSig consumes the serialized `archsig-analysis-packet-v0` through
-`fieldsig archsig-analysis-sft-input`. FieldSig projects obstruction circuits,
-signature axes, repair candidates, and coverage gaps into
-`operation-support-estimate-v0` as bounded refs and unknown remainder. Raw
-ArchMap observation files are not the current FieldSig handoff. When `analyze`
-runs in the default summary / viewer / manifest mode, rerun it with explicit raw
-artifact retention before invoking FieldSig handoff. Do not treat
-`distanceDiagnosis` as a FieldSig forecast; it is ArchSig current-state
-diagnosis under the selected ArchMap + LawPolicy evidence contract.
+FieldSig consumes the serialized `archsig-analysis-packet/v1` through
+`fieldsig archsig-analysis-sft-input`. FieldSig projects ArchSig current-state
+structural refs into `operation-support-estimate-v0` as bounded refs and
+unknown remainder. Raw ArchMap files are not the current FieldSig handoff. When
+`analyze` runs in the default summary / viewer / manifest mode, rerun it with
+`--emit-raw-artifacts` before invoking FieldSig handoff.
+
+Do not treat `distanceDiagnosis`, spectrum hotspots, homotopy holes,
+structural review refs, or PR review safe-change budget as FieldSig forecasts.
+They are ArchSig current-state diagnoses under the selected
+`ArchMap + LawPolicy + evidence contract`.
 
 ArchSig does not own SFT forecast, IntentMap, workflow evidence, operational
 feedback, dynamics, governance, or calibration.

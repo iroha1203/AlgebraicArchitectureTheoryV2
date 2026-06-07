@@ -13,11 +13,13 @@ bounded review focus.
 `pr-review` is change-local. It reads:
 
 - base `archmap/v1`
+- optional head `archmap/v1`
+- optional intermediate path `archmap/v1` snapshots
 - PR-local `archmap-delta-v0`
 - required `law-policy/v1`
 
-It does not read raw diff, head/path ArchMaps, v0 analysis packets, FieldSig forecasts, CI status, or GitHub approval
-state. No LawPolicy, no ArchSig judgement.
+It does not read raw diff, v0 analysis packets, FieldSig forecasts, CI status,
+or GitHub approval state. No LawPolicy, no ArchSig judgement.
 
 This skill must work with only:
 
@@ -55,6 +57,8 @@ Collect:
 
 - repository root or selected source paths for source comparison
 - base ArchMap path, usually `.archsig/<scope>/archmap.json`
+- optional head ArchMap path, usually `.archsig/<scope>/head.archmap.json`
+- optional intermediate ArchMap path snapshots for hidden-excursion review
 - base branch or merge base ref, such as `origin/main...HEAD`
 - PR-local delta output path, usually `.archsig/pr-review/archmap_delta.json`
 - LawPolicy path, usually `.archsig/<scope>/law_policy.json`
@@ -86,8 +90,10 @@ Required procedure:
 2. Create the PR-local `archmap-delta-v0` from the base branch difference.
 3. Check that the LawPolicy exists and has `schema: "law-policy/v1"`. If it
    does not, stop.
-4. Run `archsig pr-review` with the base ArchMap, freshly created delta, and
-   LawPolicy.
+4. If the PR introduces new observations, either refine the ArchMap first or
+   supply a head ArchMap that contains the PR-local facts.
+5. Run `archsig pr-review` with the base ArchMap, optional head / path
+   ArchMaps, freshly created delta, and LawPolicy.
 
 ## ArchMap Delta Authoring
 
@@ -176,10 +182,16 @@ ARCHSIG_BIN=${ARCHSIG_BIN:-archsig}
 
 "$ARCHSIG_BIN" pr-review \
   --base-archmap <archmap.json> \
+  --after-archmap <optional-head-archmap.json> \
+  --path-archmap <optional-intermediate-archmap.json> \
   --delta-archmap <archmap_delta.json> \
   --law-policy <law_policy.json> \
   --out <archsig-pr-review.json>
 ```
+
+Omit `--after-archmap` and `--path-archmap` for base-only review. If
+`--path-archmap` is supplied, `--after-archmap` is required so endpoint
+movement is bounded.
 
 If no binary exists, stop and ask for the binary path. Do not require Cargo or
 the ArchSig source tree in a released skill-only environment.
@@ -192,7 +204,7 @@ Read the `archsig-pr-review-report-v1` in this order:
 
 1. `canonicalInputs`
    - Confirm the paths and schema versions are the intended base ArchMap,
-     PR-local delta, and LawPolicy.
+     optional head / path ArchMaps, PR-local delta, and LawPolicy.
    - If the wrong LawPolicy was used, stop and rerun with the selected policy.
 
 2. `typedEvaluatorSummary`
@@ -200,24 +212,36 @@ Read the `archsig-pr-review-report-v1` in this order:
      `unmeasured` as evaluator statuses, not as raw diff verdicts.
    - Missing support is not measured zero.
 
-3. `typedEvaluatorResults`
+3. `v1Analysis`
+   - Read the base snapshot first, then optional after / path snapshots.
+   - Use `packetRef`, `structuralPacketRefs`, `structuralReadingRefs`,
+     `distanceDiagnosis`, and `detailIndexSummary` as report-local navigation
+     refs.
+   - Do not treat report-local packet refs as proof objects.
+
+4. `deltaPacketRefIntersections`
+   - Confirm every `changedObservationRefs[]` entry intersects at least one
+     base / after / path typed or derived packet ref.
+   - Treat `blockedByMissingPacketRefIntersection` as a review blocker or
+     ArchMap refinement cue, not as a measured absence.
+
+5. `prStructuralDiagnosis`
+   - Read endpoint architecture-distance movement when an after ArchMap is
+     supplied.
+   - Read total path movement and hidden-excursion boundary only over supplied
+     path snapshots.
+   - Treat safe-change budget as a review cue. It is not merge approval,
+     incident forecast, or repair safety.
+
+6. `typedEvaluatorResults`
    - Read support atom refs, support molecule refs, basis refs, detail refs,
      and status reasons.
    - Keep selected evaluator scope as the review lens, not global architecture
      truth.
 
-4. `reviewFocus`
+7. `reviewFocus`
    - Use detail refs and changed source targets to decide which source files
      need human review.
-
-5. `policyMatchedLaws`
-   - Convert matched laws into review questions.
-   - Do not claim a violation merely because a law matched a changed atom
-     family.
-
-6. `sourceTargets`
-   - Inspect source refs first. Confirm whether the PR actually touches the
-     files, symbols, docs, or tests named by the delta/report.
 
 Before writing a human-facing review, read
 `references/human-review-guide.md`. It explains how to translate the report
@@ -285,13 +309,15 @@ the bundled fixtures:
 
 ```bash
 cargo run --manifest-path tools/archsig/Cargo.toml -- pr-review \
-  --base-archmap tools/archsig/tests/fixtures/minimal/archmap.json \
-  --after-archmap tools/archsig/tests/fixtures/pr_review/after_archmap.json \
-  --delta-archmap tools/archsig/tests/fixtures/pr_review/archmap_delta.json \
-  --law-policy tools/archsig/tests/fixtures/minimal/law_policy.json \
+  --base-archmap tools/archsig/tests/fixtures/archmap_v1/archmap.json \
+  --after-archmap tools/archsig/tests/fixtures/archmap_v1/archmap_violation.json \
+  --path-archmap tools/archsig/tests/fixtures/archmap_v1/archmap.json \
+  --delta-archmap tools/archsig/tests/fixtures/pr_review/archmap_delta_v1_refs.json \
+  --law-policy tools/archsig/tests/fixtures/archmap_v1/law_policy.json \
   --out .tmp/archsig-pr-reviewer-validation.json
 ```
 
 Then confirm the output has `schemaVersion: "archsig-pr-review-report-v1"` and
-does not contain a raw-diff input field.
+`reviewKind: "v1-output-replacement-structural-pr-review"` and does not
+contain a raw-diff input field.
 These are maintenance checks, not runtime requirements for released skill users.

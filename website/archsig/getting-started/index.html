@@ -110,7 +110,7 @@ Summarize the architecture tendencies and list the first files reviewers should 
                 <li><strong>ArchMap records atoms</strong><span>An ArchMap v1 is source-backed input: read sources, primitive atoms, and explicit molecule membership. It is evidence, not a verdict.</span></li>
                 <li><strong>LawPolicy selects evaluators</strong><span>A LawPolicy v1 says which policy pack or evaluator ids should run, with basis refs, scope, and severity. The evaluator registry owns witness and distance rules.</span></li>
                 <li><strong>The CLI runs typed analysis</strong><span>The agent passes ArchMap v1 and LawPolicy v1 to ArchSig <code>analyze</code>. ArchSig normalizes atoms, runs typed evaluators, and keeps blocked / unknown / unmeasured support out of measured zero.</span></li>
-                <li><strong>The summary becomes the review surface</strong><span><code>analysis-summary</code> exposes verdict, typed evaluator status counts, distance diagnosis, dominant findings, action queue, detail refs, and measurement basis.</span></li>
+                <li><strong>The summary becomes the review surface</strong><span><code>archsig-analysis-summary.json</code> exposes verdict, typed evaluator status counts, distance diagnosis, dominant findings, action queue, detail refs, and measurement basis.</span></li>
               </ol>
               <figure class="code-panel">
                 <figcaption>Core shape</figcaption>
@@ -119,7 +119,7 @@ Summarize the architecture tendencies and list the first files reviewers should 
   -> archsig analyze
   -> typed-evaluator-results
   -> archsig-analysis-packet
-  -> analysis-summary
+  -> archsig-analysis-summary.json
   -> LLM agent review findings</code></pre>
               </figure>
             </section>
