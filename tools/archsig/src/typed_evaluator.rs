@@ -140,6 +140,7 @@ pub fn build_typed_analysis_packet_v1(
     let signature_axes = signature_axes_v1(typed_results, architecture_distance);
     let generated_obstructions = generated_obstructions_v1(typed_results);
     let generated_repair_targets = generated_repair_targets_v1(&generated_obstructions);
+    let spectrum = architecture_spectrum_v1(normalized, typed_results);
     let detail_refs = typed_results
         .results
         .iter()
@@ -170,12 +171,26 @@ pub fn build_typed_analysis_packet_v1(
         "signatureAxes": signature_axes,
         "generatedObstructions": generated_obstructions,
         "generatedRepairTargets": generated_repair_targets,
+        "curvatureSupportReadings": spectrum["curvatureSupportReadings"],
+        "curvatureTransferReadings": spectrum["curvatureTransferReadings"],
+        "curvatureMassReadings": spectrum["curvatureMassReadings"],
+        "spectralAnalysisReadings": spectrum["spectralAnalysisReadings"],
+        "spectralModeReadings": spectrum["spectralModeReadings"],
+        "spectralDrilldownReadings": spectrum["spectralDrilldownReadings"],
+        "architectureSpectrumReport": spectrum["architectureSpectrumReport"],
         "generatedPacketRefs": {
             "basis": "typed-evaluator-results + law-evaluator-registry",
             "generatedLawInputs": "/generatedLawInputs",
             "signatureAxes": "/signatureAxes",
             "generatedObstructions": "/generatedObstructions",
             "generatedRepairTargets": "/generatedRepairTargets",
+            "architectureSpectrumReport": "/architectureSpectrumReport",
+            "curvatureSupportReadings": "/curvatureSupportReadings",
+            "curvatureTransferReadings": "/curvatureTransferReadings",
+            "curvatureMassReadings": "/curvatureMassReadings",
+            "spectralAnalysisReadings": "/spectralAnalysisReadings",
+            "spectralModeReadings": "/spectralModeReadings",
+            "spectralDrilldownReadings": "/spectralDrilldownReadings",
             "typedEvaluatorResults": "/typedEvaluatorResults",
             "architectureDistanceSignatureReadings": "/architectureDistance/signatureDistanceReadings"
         },
@@ -184,6 +199,7 @@ pub fn build_typed_analysis_packet_v1(
         "nonConclusions": [
             "ArchSig v1 packet is computed from Normalized ArchMap v1 and TypedEvaluatorResults v1.",
             "Generated law inputs, signature axes, obstruction candidates, and repair targets are derived packet refs over typed evaluator results and registry basis.",
+            "ArchitectureSpectrumReport/v1 is derived from normalized support, typed evaluator results, and coverage status; it does not read v0 spectrumMeasurementProfile.",
             "ArchSig v1 packet does not read v0 semanticObservations, projectionInfo, operationSquareEvidence, concernHints, or observationGaps.",
             "Blocked, unknown, and unmeasured evaluator results are not measured zero.",
             "ArchSig v1 packet is a computation artifact, not a Lean proof object."
@@ -197,6 +213,7 @@ pub fn build_typed_analysis_summary_v1(
     architecture_distance: &Value,
 ) -> serde_json::Value {
     let replacement_blocked_count = typed_results.replacement_summary.blocked_count;
+    let spectrum = architecture_spectrum_v1(normalized, typed_results);
     let verdict = if typed_results.summary.measured_violation_count > 0 {
         "SELECTED_VIOLATION_MEASURED_UNDER_EVIDENCE_CONTRACT"
     } else if typed_results.summary.measured_pass_count > 0
@@ -221,6 +238,7 @@ pub fn build_typed_analysis_summary_v1(
             "typedEvaluatorResults": "typed-evaluator-results.json",
             "replacementRegistry": typed_results.replacement_registry_ref,
             "architectureDistance": "architecture-distance.json",
+            "architectureSpectrumReport": "archsig-analysis-packet.json#/architectureSpectrumReport",
             "normalizedAtomCount": normalized.summary.normalized_atom_count,
             "generatedMoleculeCandidateCount": normalized.summary.generated_molecule_candidate_count
         },
@@ -231,6 +249,8 @@ pub fn build_typed_analysis_summary_v1(
         "architectureDistance": architecture_distance["summary"],
         "distanceDiagnosis": architecture_distance["distanceDiagnosis"],
         "dominantFindings": typed_dominant_findings(typed_results),
+        "architectureSpectrumReport": spectrum["architectureSpectrumReport"],
+        "architectureSpectrumSummary": architecture_spectrum_summary_v1(&spectrum),
         "actionQueue": typed_action_queue(typed_results),
         "positiveBoundedConclusions": typed_results.positive_bounded_conclusions,
         "metadata": {
@@ -297,6 +317,7 @@ pub fn build_typed_atom_viewer_data_v1(
             "typedEvaluatorDiagnosis": summary["typedEvaluatorDiagnosis"],
             "architectureDistance": summary["architectureDistance"],
             "distanceDiagnosis": summary["distanceDiagnosis"],
+            "architectureSpectrumReport": summary["architectureSpectrumReport"],
             "actionQueue": summary["actionQueue"]
         },
         "reportPane": {
@@ -306,6 +327,8 @@ pub fn build_typed_atom_viewer_data_v1(
                 "measurementStatusSummary": summary["measurementStatusSummary"]
             },
             "architectureDistance": summary["architectureDistance"],
+            "architectureSpectrumReport": summary["architectureSpectrumReport"],
+            "architectureSpectrumSummary": summary["architectureSpectrumSummary"],
             "replacementRegistryResolution": summary["replacementRegistryResolution"],
             "typedEvaluatorDiagnosis": summary["typedEvaluatorDiagnosis"],
             "distanceDiagnosis": summary["distanceDiagnosis"],
@@ -370,6 +393,14 @@ pub fn build_typed_detail_index_v1(
             detail_index_section_v1("signatureAxes", "/signatureAxes", packet_array_len(packet, "signatureAxes")),
             detail_index_section_v1("generatedObstructions", "/generatedObstructions", packet_array_len(packet, "generatedObstructions")),
             detail_index_section_v1("generatedRepairTargets", "/generatedRepairTargets", packet_array_len(packet, "generatedRepairTargets")),
+            detail_index_section_v1("curvatureSupportReadings", "/curvatureSupportReadings", packet_array_len(packet, "curvatureSupportReadings")),
+            detail_index_section_v1("curvatureTransferReadings", "/curvatureTransferReadings", packet_array_len(packet, "curvatureTransferReadings")),
+            detail_index_section_v1("curvatureMassReadings", "/curvatureMassReadings", packet_array_len(packet, "curvatureMassReadings")),
+            detail_index_section_v1("spectralAnalysisReadings", "/spectralAnalysisReadings", packet_array_len(packet, "spectralAnalysisReadings")),
+            detail_index_section_v1("spectralModeReadings", "/spectralModeReadings", packet_array_len(packet, "spectralModeReadings")),
+            detail_index_section_v1("spectralDrilldownReadings", "/spectralDrilldownReadings", packet_array_len(packet, "spectralDrilldownReadings")),
+            detail_index_section_v1("architectureSpectrumReport.topHotspots", "/architectureSpectrumReport/topHotspots", packet_nested_array_len(packet, &["architectureSpectrumReport", "topHotspots"])),
+            detail_index_section_v1("architectureSpectrumReport.recurrentObstructions", "/architectureSpectrumReport/recurrentObstructions", packet_nested_array_len(packet, &["architectureSpectrumReport", "recurrentObstructions"])),
             detail_index_section_v1("replacementEvaluatorResults", "/replacementEvaluatorResults", packet_array_len(packet, "replacementEvaluatorResults"))
         ],
         "refDictionary": ref_dictionary,
@@ -383,9 +414,11 @@ pub fn build_typed_detail_index_v1(
 }
 
 pub fn build_typed_llm_interpretation_packet_v1(
+    normalized: &NormalizedArchMapV1,
     typed_results: &TypedEvaluatorResultsV1,
     architecture_distance: &Value,
 ) -> serde_json::Value {
+    let spectrum = architecture_spectrum_v1(normalized, typed_results);
     json!({
         "schema": "llm-interpretation-packet/v1",
         "interpretationKind": "typed-evaluator-bounded-reading",
@@ -393,6 +426,7 @@ pub fn build_typed_llm_interpretation_packet_v1(
         "typedEvaluatorDiagnosis": typed_evaluator_diagnosis(typed_results),
         "architectureDistance": architecture_distance["summary"],
         "distanceDiagnosisSummary": architecture_distance["distanceDiagnosis"],
+        "architectureSpectrumReportSummary": architecture_spectrum_summary_v1(&spectrum),
         "typedEvaluatorSummary": typed_results.summary,
         "replacementRegistryResolution": typed_results.replacement_registry_resolution,
         "positiveBoundedConclusions": typed_results.positive_bounded_conclusions,
@@ -722,6 +756,13 @@ pub fn build_typed_analysis_validation_v1(
                     "signatureAxes",
                     "generatedObstructions",
                     "generatedRepairTargets",
+                    "architectureSpectrumReport",
+                    "curvatureSupportReadings",
+                    "curvatureTransferReadings",
+                    "curvatureMassReadings",
+                    "spectralAnalysisReadings",
+                    "spectralModeReadings",
+                    "spectralDrilldownReadings",
                     "typedEvaluatorResults",
                     "architectureDistanceSignatureReadings",
                 ]
@@ -736,11 +777,13 @@ pub fn build_typed_analysis_validation_v1(
         "semanticObservations",
         "projectionInfo",
         "operationSquareEvidence",
+        "spectrumMeasurementProfile",
         "concernHints",
         "observationGaps",
     ]
     .iter()
     .all(|field| packet.get(*field).is_none());
+    let architecture_spectrum_report_pass = architecture_spectrum_report_valid(packet);
     let checks_pass = [
         packet_schema_pass,
         typed_count_pass,
@@ -758,6 +801,7 @@ pub fn build_typed_analysis_validation_v1(
         generated_repair_targets_pass,
         generated_packet_refs_pass,
         removed_v0_input_fields_absent_pass,
+        architecture_spectrum_report_pass,
     ];
     let result = if checks_pass.iter().copied().all(|passed| passed) {
         "pass"
@@ -853,6 +897,11 @@ pub fn build_typed_analysis_validation_v1(
                 "checkId": "archsig.v1.removedV0InputFieldsAbsent",
                 "result": if removed_v0_input_fields_absent_pass { "pass" } else { "fail" },
                 "message": "v1 packet does not restore removed v0 input fields as root inputs"
+            },
+            {
+                "checkId": "archsig.v1.architectureSpectrumReportSurface",
+                "result": if architecture_spectrum_report_pass { "pass" } else { "fail" },
+                "message": "ArchitectureSpectrumReport resolves curvature support, transfer, hotspot, recurrent obstruction, and coverage refs"
             }
         ],
         "nonConclusions": [
@@ -902,6 +951,194 @@ fn typed_result(
     }
 }
 
+fn architecture_spectrum_report_valid(packet: &Value) -> bool {
+    let report = &packet["architectureSpectrumReport"];
+    if !report.is_object()
+        || report["reportId"].as_str().is_none()
+        || report["profileRef"].as_str().is_none()
+        || report["measuredBoundary"].as_str().is_none()
+        || !report["nonConclusions"]
+            .as_array()
+            .is_some_and(|items| !items.is_empty())
+    {
+        return false;
+    }
+    let Some(supports) = packet["curvatureSupportReadings"].as_array() else {
+        return false;
+    };
+    if supports.is_empty() {
+        return false;
+    }
+    if !supports.iter().enumerate().all(|(index, reading)| {
+        reading["typedEvaluatorResultRef"]
+            .as_str()
+            .is_some_and(|reference| packet.pointer(reference).is_some())
+            && reading["supportRefs"].is_array()
+            && reading["witnessRefs"].is_array()
+            && reading["curvatureValue"]["status"].as_str().is_some()
+            && (reading["curvatureValue"]["status"] != "blockedByCoverageGap"
+                || reading["coverageGapRefs"]
+                    .as_array()
+                    .is_some_and(|refs| !refs.is_empty()))
+            && report["topHotspots"].as_array().is_some_and(|hotspots| {
+                hotspots.iter().any(|hotspot| {
+                    hotspot["supportReadingRef"] == format!("/curvatureSupportReadings/{index}")
+                        && hotspot["supportRefs"] == reading["supportRefs"]
+                        && hotspot["witnessRefs"] == reading["witnessRefs"]
+                        && hotspot["coverageGapRefs"] == reading["coverageGapRefs"]
+                })
+            })
+    }) {
+        return false;
+    }
+    if !packet["curvatureTransferReadings"]
+        .as_array()
+        .is_some_and(|items| {
+            items.iter().all(|reading| {
+                let row_count = reading["transferOperator"]["rowCount"]
+                    .as_u64()
+                    .unwrap_or_default();
+                let column_count = reading["transferOperator"]["columnCount"]
+                    .as_u64()
+                    .unwrap_or_default();
+                reading["transferOperator"].is_object()
+                    && row_count == supports.len() as u64
+                    && column_count == supports.len() as u64
+                    && reading["transferOperator"]["sparseEntries"]
+                        .as_array()
+                        .is_some_and(|entries| {
+                            entries.iter().all(|entry| {
+                                entry["row"].as_u64().is_some_and(|row| row < row_count)
+                                    && entry["column"]
+                                        .as_u64()
+                                        .is_some_and(|column| column < column_count)
+                                    && entry["weight"].as_i64().is_some()
+                            })
+                        })
+                    && reading["transferEdges"].as_array().is_some_and(|edges| {
+                        edges.iter().all(|edge| {
+                            edge["supportIndex"]
+                                .as_u64()
+                                .is_some_and(|index| index < supports.len() as u64)
+                                && packet_ref_field_resolves(packet, edge, "fromSupportRef")
+                                && packet_ref_field_resolves(packet, edge, "toSupportRef")
+                                && edge["weight"].as_i64().is_some()
+                        })
+                    })
+                    && reading["recurrentObstructionModes"]
+                        .as_array()
+                        .is_some_and(|modes| {
+                            modes.iter().all(|mode| {
+                                packet_ref_array_field_resolves(packet, mode, "transferEdgeRefs")
+                            })
+                        })
+            })
+        })
+    {
+        return false;
+    }
+    if !packet["curvatureMassReadings"]
+        .as_array()
+        .is_some_and(|items| {
+            !items.is_empty()
+                && items
+                    .iter()
+                    .all(|item| packet_ref_array_field_resolves(packet, item, "supportReadingRefs"))
+        })
+    {
+        return false;
+    }
+    if !packet["spectralAnalysisReadings"]
+        .as_array()
+        .is_some_and(|items| {
+            !items.is_empty()
+                && items
+                    .iter()
+                    .all(|item| packet_ref_array_field_resolves(packet, item, "supportReadingRefs"))
+        })
+    {
+        return false;
+    }
+    if !packet["spectralModeReadings"]
+        .as_array()
+        .is_some_and(|items| {
+            !items.is_empty()
+                && items
+                    .iter()
+                    .all(|item| packet_ref_field_resolves(packet, item, "supportReadingRef"))
+        })
+    {
+        return false;
+    }
+    if !packet["spectralDrilldownReadings"]
+        .as_array()
+        .is_some_and(|items| {
+            !items.is_empty()
+                && items.iter().all(|item| {
+                    packet_ref_field_resolves(packet, item, "supportReadingRef")
+                        && packet_ref_array_field_resolves(packet, item, "transferReadingRefs")
+                })
+        })
+    {
+        return false;
+    }
+    if !packet_ref_array_field_resolves(packet, report, "curvatureMassReadingRefs") {
+        return false;
+    }
+    if !report["topEigenmodes"].as_array().is_some_and(|items| {
+        !items.is_empty()
+            && items
+                .iter()
+                .all(|item| packet_ref_field_resolves(packet, item, "supportReadingRef"))
+    }) {
+        return false;
+    }
+    if !report["topWitnessClusters"]
+        .as_array()
+        .is_some_and(|items| {
+            !items.is_empty()
+                && items
+                    .iter()
+                    .all(|item| packet_ref_array_field_resolves(packet, item, "transferEdgeRefs"))
+        })
+    {
+        return false;
+    }
+    let coverage_gaps = report["coverageGaps"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .filter_map(|item| item.as_str())
+        .collect::<BTreeSet<_>>();
+    let support_coverage_gaps = supports
+        .iter()
+        .flat_map(|reading| {
+            reading["coverageGapRefs"]
+                .as_array()
+                .into_iter()
+                .flatten()
+                .filter_map(|item| item.as_str())
+        })
+        .collect::<BTreeSet<_>>();
+    coverage_gaps == support_coverage_gaps
+}
+
+fn packet_ref_field_resolves(packet: &Value, item: &Value, field: &str) -> bool {
+    item[field]
+        .as_str()
+        .is_some_and(|pointer| packet.pointer(pointer).is_some())
+}
+
+fn packet_ref_array_field_resolves(packet: &Value, item: &Value, field: &str) -> bool {
+    item[field].as_array().is_some_and(|refs| {
+        refs.iter().all(|reference| {
+            reference
+                .as_str()
+                .is_some_and(|pointer| packet.pointer(pointer).is_some())
+        })
+    })
+}
+
 fn replacement_results_by_id(typed_results: &TypedEvaluatorResultsV1) -> Value {
     let mut object = serde_json::Map::new();
     for result in &typed_results.replacement_evaluator_results {
@@ -910,6 +1147,484 @@ fn replacement_results_by_id(typed_results: &TypedEvaluatorResultsV1) -> Value {
         }
     }
     Value::Object(object)
+}
+
+fn architecture_spectrum_v1(
+    normalized: &NormalizedArchMapV1,
+    typed_results: &TypedEvaluatorResultsV1,
+) -> Value {
+    let curvature_support_readings = curvature_support_readings_v1(typed_results);
+    let curvature_transfer_readings = curvature_transfer_readings_v1(&curvature_support_readings);
+    let curvature_mass_readings = curvature_mass_readings_v1(&curvature_support_readings);
+    let spectral_analysis_readings =
+        spectral_analysis_readings_v1(normalized, &curvature_support_readings);
+    let spectral_mode_readings = spectral_mode_readings_v1(&curvature_support_readings);
+    let spectral_drilldown_readings =
+        spectral_drilldown_readings_v1(&curvature_support_readings, &curvature_transfer_readings);
+    let architecture_spectrum_report = architecture_spectrum_report_v1(
+        normalized,
+        &curvature_support_readings,
+        &curvature_transfer_readings,
+        &curvature_mass_readings,
+    );
+    json!({
+        "curvatureSupportReadings": curvature_support_readings,
+        "curvatureTransferReadings": curvature_transfer_readings,
+        "curvatureMassReadings": curvature_mass_readings,
+        "spectralAnalysisReadings": spectral_analysis_readings,
+        "spectralModeReadings": spectral_mode_readings,
+        "spectralDrilldownReadings": spectral_drilldown_readings,
+        "architectureSpectrumReport": architecture_spectrum_report
+    })
+}
+
+fn curvature_support_readings_v1(typed_results: &TypedEvaluatorResultsV1) -> Vec<Value> {
+    typed_results
+        .results
+        .iter()
+        .enumerate()
+        .map(|(index, result)| {
+            let axis_ref = signature_axis_id(&result.law);
+            let measurement_status = spectrum_measurement_status(result);
+            let curvature_value = if result.status == "measuredViolation" {
+                Some(1)
+            } else if result.status == "measuredPass" {
+                Some(0)
+            } else {
+                None
+            };
+            let coverage_gap_refs = if curvature_value.is_some() {
+                Vec::new()
+            } else {
+                vec![format!(
+                    "coverage-gap:{}:{}",
+                    stable_ref(&result.law),
+                    stable_ref(result.blocker_reason.as_deref().unwrap_or("missing-support"))
+                )]
+            };
+            json!({
+                "readingId": format!("curvature-support:{}", stable_ref(&result.law)),
+                "profileRef": "spectrum-profile:v1-typed-evaluator@1",
+                "typedEvaluatorResultRef": typed_evaluator_result_ref(index),
+                "law": result.law,
+                "evaluator": result.evaluator,
+                "axisRef": axis_ref,
+                "measurementStatus": measurement_status,
+                "curvatureValue": {
+                    "status": if let Some(value) = curvature_value {
+                        if value == 0 { "measuredZero" } else { "measuredNonzero" }
+                    } else {
+                        "blockedByCoverageGap"
+                    },
+                    "value": curvature_value,
+                    "unit": "selected-axis-curvature"
+                },
+                "weight": if result.status == "measuredViolation" { 1 } else { 0 },
+                "supportRefs": result.detail_refs,
+                "witnessRefs": result.support_atom_refs,
+                "moleculeRefs": result.support_molecule_refs,
+                "sourceRefs": result.detail_refs,
+                "coverageGapRefs": coverage_gap_refs,
+                "basisRefs": result.basis_refs,
+                "registryBasisRefs": registry_basis_refs(result),
+                "readingBoundary": {
+                    "basis": "typed evaluator status over normalized ArchMap support",
+                    "zeroBoundary": "measured zero only means no selected measured violation for this evaluator under present support",
+                    "blockedBoundary": "blocked / unknown / unmeasured evaluator statuses are coverage gaps, not zero curvature"
+                },
+                "nonConclusions": [
+                    "curvatureSupportReadings/v1 is a bounded ArchSig diagnostic, not a Lean theorem discharge",
+                    "zero curvature support does not prove global lawfulness, flatness, or source-observation completeness"
+                ]
+            })
+        })
+        .collect()
+}
+
+fn curvature_transfer_readings_v1(curvature_support_readings: &[Value]) -> Vec<Value> {
+    let transfer_edges = curvature_support_readings
+        .iter()
+        .enumerate()
+        .flat_map(|(index, reading)| {
+            let reading_ref = format!("/curvatureSupportReadings/{index}");
+            let mut edges = Vec::new();
+            if reading["curvatureValue"]["status"] == "measuredNonzero"
+                || reading["curvatureValue"]["status"] == "blockedByCoverageGap"
+            {
+                edges.push(json!({
+                    "edgeId": format!(
+                        "curvature-transfer-edge:{}",
+                        stable_ref(reading["law"].as_str().unwrap_or("selected-law"))
+                    ),
+                    "edgeKind": "selfRecurrentSupport",
+                    "supportIndex": index,
+                    "fromSupportRef": reading_ref,
+                    "toSupportRef": reading_ref,
+                    "weight": if reading["curvatureValue"]["status"] == "measuredNonzero" { 1 } else { 0 },
+                    "coverageStatus": if reading["curvatureValue"]["status"] == "blockedByCoverageGap" {
+                        "blockedByCoverageGap"
+                    } else {
+                        "measured"
+                    },
+                    "supportRefs": reading["supportRefs"],
+                    "witnessRefs": reading["witnessRefs"],
+                    "coverageGapRefs": reading["coverageGapRefs"]
+                }));
+            }
+            edges
+        })
+        .collect::<Vec<_>>();
+    let recurrent_modes = transfer_edges
+        .iter()
+        .enumerate()
+        .map(|(index, edge)| {
+            json!({
+                "modeId": format!("recurrent-obstruction-mode:{index}"),
+                "recurrenceKind": edge["edgeKind"],
+                "spectralRadiusReading": if edge["coverageStatus"] == "blockedByCoverageGap" {
+                    "blocked by coverage gap; no zero spectrum conclusion"
+                } else {
+                    "bounded self recurrence over measured nonzero support"
+                },
+                "transferEdgeRefs": [format!("/curvatureTransferReadings/0/transferEdges/{index}")],
+                "supportRefs": edge["supportRefs"],
+                "witnessRefs": edge["witnessRefs"],
+                "coverageGapRefs": edge["coverageGapRefs"],
+                "reading": "current-state recurrent support reading; not empirical amplification"
+            })
+        })
+        .collect::<Vec<_>>();
+    let sparse_entries = transfer_edges
+        .iter()
+        .map(|edge| {
+            let support_index = edge["supportIndex"].as_u64().unwrap_or_default();
+            json!({
+                "row": support_index,
+                "column": support_index,
+                "weight": edge["weight"]
+            })
+        })
+        .collect::<Vec<_>>();
+    vec![json!({
+        "readingId": "curvature-transfer:v1-typed-evaluator",
+        "profileRef": "spectrum-profile:v1-typed-evaluator@1",
+        "transferOperator": {
+            "operatorKind": "finite-nonnegative-support-transfer",
+            "rowCount": curvature_support_readings.len(),
+            "columnCount": curvature_support_readings.len(),
+            "sparseEntries": sparse_entries,
+            "spectralRadiusKind": if transfer_edges.iter().any(|edge| edge["coverageStatus"] == "blockedByCoverageGap") {
+                "blockedByCoverageGap"
+            } else if transfer_edges.is_empty() {
+                "measuredZeroWithinSelectedSupport"
+            } else {
+                "boundedNonzero"
+            }
+        },
+        "transferEdges": transfer_edges,
+        "recurrentObstructionModes": recurrent_modes,
+        "measuredBoundary": "transfer spectrum is finite and bounded to selected typed evaluator support rows",
+        "nonConclusions": [
+            "curvatureTransferReadings/v1 does not predict future incidents or empirical amplification",
+            "missing transfer support blocks zero reflection rather than becoming measured zero"
+        ]
+    })]
+}
+
+fn curvature_mass_readings_v1(curvature_support_readings: &[Value]) -> Vec<Value> {
+    let measured_nonzero = curvature_support_readings
+        .iter()
+        .filter(|reading| reading["curvatureValue"]["status"] == "measuredNonzero")
+        .count();
+    let blocked = curvature_support_readings
+        .iter()
+        .filter(|reading| reading["curvatureValue"]["status"] == "blockedByCoverageGap")
+        .count();
+    vec![json!({
+        "curvatureMassReadingId": "curvature-mass:v1-typed-evaluator",
+        "profileRef": "spectrum-profile:v1-typed-evaluator@1",
+        "measurementStatus": if blocked > 0 { "partial" } else { "measured" },
+        "measuredNonzeroSupportCount": measured_nonzero,
+        "measuredZeroSupportCount": curvature_support_readings
+            .iter()
+            .filter(|reading| reading["curvatureValue"]["status"] == "measuredZero")
+            .count(),
+        "blockedSupportCount": blocked,
+        "supportReadingRefs": (0..curvature_support_readings.len())
+            .map(|index| format!("/curvatureSupportReadings/{index}"))
+            .collect::<Vec<_>>(),
+        "nonConclusions": [
+            "curvature mass is a selected-support diagnostic count, not an architecture health score"
+        ]
+    })]
+}
+
+fn spectral_analysis_readings_v1(
+    normalized: &NormalizedArchMapV1,
+    curvature_support_readings: &[Value],
+) -> Vec<Value> {
+    vec![json!({
+        "spectralReadingId": "spectral-analysis:v1-typed-evaluator-support",
+        "profileRef": "spectrum-profile:v1-typed-evaluator@1",
+        "operatorKind": "finite-selected-support-transfer",
+        "normalizedAtomCount": normalized.summary.normalized_atom_count,
+        "generatedMoleculeCandidateCount": normalized.summary.generated_molecule_candidate_count,
+        "supportReadingRefs": (0..curvature_support_readings.len())
+            .map(|index| format!("/curvatureSupportReadings/{index}"))
+            .collect::<Vec<_>>(),
+        "measuredBoundary": "spectrum is computed over emitted v1 curvature support rows only",
+        "nonConclusions": [
+            "spectralAnalysisReadings/v1 is not a global graph spectrum for every source relation"
+        ]
+    })]
+}
+
+fn spectral_mode_readings_v1(curvature_support_readings: &[Value]) -> Vec<Value> {
+    curvature_support_readings
+        .iter()
+        .enumerate()
+        .map(|(index, reading)| {
+            json!({
+                "spectralModeId": format!(
+                    "spectral-mode:{}",
+                    stable_ref(reading["law"].as_str().unwrap_or("selected-law"))
+                ),
+                "rank": index + 1,
+                "modeKind": if reading["curvatureValue"]["status"] == "measuredNonzero" {
+                    "nonzeroCurvatureMode"
+                } else if reading["curvatureValue"]["status"] == "blockedByCoverageGap" {
+                    "coverageBlockedMode"
+                } else {
+                    "measuredZeroMode"
+                },
+                "axisRef": reading["axisRef"],
+                "curvatureValue": reading["curvatureValue"],
+                "supportReadingRef": format!("/curvatureSupportReadings/{index}"),
+                "supportRefs": reading["supportRefs"],
+                "witnessRefs": reading["witnessRefs"],
+                "coverageGapRefs": reading["coverageGapRefs"],
+                "recommendedReviewTarget": if reading["curvatureValue"]["status"] == "measuredZero" {
+                    "retain zero as selected-support reading with coverage boundary"
+                } else {
+                    "review selected support, witness refs, and coverage gaps"
+                }
+            })
+        })
+        .collect()
+}
+
+fn spectral_drilldown_readings_v1(
+    curvature_support_readings: &[Value],
+    curvature_transfer_readings: &[Value],
+) -> Vec<Value> {
+    curvature_support_readings
+        .iter()
+        .enumerate()
+        .map(|(index, reading)| {
+            json!({
+                "drilldownId": format!(
+                    "spectral-drilldown:{}",
+                    stable_ref(reading["law"].as_str().unwrap_or("selected-law"))
+                ),
+                "supportReadingRef": format!("/curvatureSupportReadings/{index}"),
+                "transferReadingRefs": if curvature_transfer_readings.is_empty() {
+                    Vec::<String>::new()
+                } else {
+                    vec!["/curvatureTransferReadings/0".to_string()]
+                },
+                "sourceRefs": reading["sourceRefs"],
+                "supportRefs": reading["supportRefs"],
+                "witnessRefs": reading["witnessRefs"],
+                "coverageGapRefs": reading["coverageGapRefs"],
+                "reading": "bounded drilldown over v1 typed evaluator support"
+            })
+        })
+        .collect()
+}
+
+fn architecture_spectrum_report_v1(
+    normalized: &NormalizedArchMapV1,
+    curvature_support_readings: &[Value],
+    curvature_transfer_readings: &[Value],
+    curvature_mass_readings: &[Value],
+) -> Value {
+    let coverage_gaps = curvature_support_readings
+        .iter()
+        .flat_map(|reading| json_string_array_value(reading, "coverageGapRefs"))
+        .collect::<BTreeSet<_>>()
+        .into_iter()
+        .collect::<Vec<_>>();
+    let mut top_hotspots = curvature_support_readings
+        .iter()
+        .enumerate()
+        .map(|(index, reading)| {
+            json!({
+                "hotspotId": format!(
+                    "spectrum-hotspot:{}",
+                    stable_ref(reading["law"].as_str().unwrap_or("selected-law"))
+                ),
+                "axisRef": reading["axisRef"],
+                "curvatureValue": reading["curvatureValue"]["value"],
+                "curvatureStatus": reading["curvatureValue"]["status"],
+                "supportReadingRef": format!("/curvatureSupportReadings/{index}"),
+                "supportRefs": reading["supportRefs"],
+                "witnessRefs": reading["witnessRefs"],
+                "coverageGapRefs": reading["coverageGapRefs"],
+                "sourceRefs": reading["sourceRefs"],
+                "recommendedNextAction": if reading["curvatureValue"]["status"] == "measuredZero" {
+                    "keep selected-support zero bounded by coverage and exactness assumptions"
+                } else if reading["curvatureValue"]["status"] == "measuredNonzero" {
+                    "review nonzero selected-axis support before repair planning"
+                } else {
+                    "collect missing support before reading this axis as zero"
+                }
+            })
+        })
+        .collect::<Vec<_>>();
+    top_hotspots.sort_by_key(spectrum_hotspot_priority);
+    let recurrent_obstructions = curvature_transfer_readings
+        .first()
+        .and_then(|reading| reading["recurrentObstructionModes"].as_array())
+        .into_iter()
+        .flatten()
+        .cloned()
+        .collect::<Vec<_>>();
+    let status = if !coverage_gaps.is_empty() {
+        "needsCoverageReview"
+    } else if recurrent_obstructions.is_empty()
+        && top_hotspots
+            .iter()
+            .all(|hotspot| hotspot["curvatureStatus"] == "measuredZero")
+    {
+        "measuredZeroWithinSelectedSupport"
+    } else {
+        "actionable"
+    };
+    json!({
+        "reportId": "architecture-spectrum-report:v1-typed-evaluator",
+        "profileRef": "spectrum-profile:v1-typed-evaluator@1",
+        "status": status,
+        "measurementStatus": if coverage_gaps.is_empty() { "measured" } else { "partial" },
+        "readingBoundary": {
+            "basis": "normalized ArchMap v1 support + selected typed evaluator results",
+            "normalizerId": normalized.normalizer_id,
+            "zeroSpectrumBoundary": "zero spectrum is bounded to selected measured support rows and does not imply global lawfulness",
+            "coverageBoundary": "coverage gaps block zero reflection and remain explicit report gaps"
+        },
+        "topHotspots": top_hotspots,
+        "topEigenmodes": spectral_mode_readings_v1(curvature_support_readings),
+        "topWitnessClusters": witness_clusters_v1(curvature_support_readings),
+        "recurrentObstructions": recurrent_obstructions,
+        "coverageGaps": coverage_gaps,
+        "curvatureMassReadingRefs": curvature_mass_readings
+            .iter()
+            .enumerate()
+            .map(|(index, _)| format!("/curvatureMassReadings/{index}"))
+            .collect::<Vec<_>>(),
+        "measuredBoundary": "ArchitectureSpectrumReport/v1 is measured from selected v1 curvature support and transfer readings under explicit coverage boundaries",
+        "recommendedReviewFocus": [
+            "start from nonzero or coverage-blocked hotspots with support and witness refs",
+            "treat measured zero as selected-support zero, not global flatness",
+            "use recurrent obstruction modes as current-state review signals only"
+        ],
+        "nonConclusions": [
+            "ArchitectureSpectrumReport/v1 is not a single architecture quality score",
+            "ArchitectureSpectrumReport/v1 does not prove global lawfulness or flatness",
+            "ArchitectureSpectrumReport/v1 does not predict future incidents or empirical cost increase",
+            "ArchitectureSpectrumReport/v1 does not replace FieldSig forecast or governance"
+        ]
+    })
+}
+
+fn witness_clusters_v1(curvature_support_readings: &[Value]) -> Vec<Value> {
+    curvature_support_readings
+        .iter()
+        .enumerate()
+        .filter(|(_, reading)| {
+            reading["supportRefs"]
+                .as_array()
+                .is_some_and(|refs| !refs.is_empty())
+        })
+        .map(|(index, reading)| {
+            json!({
+                "clusterRef": format!(
+                    "spectrum-witness-cluster:{}",
+                    stable_ref(reading["law"].as_str().unwrap_or("selected-law"))
+                ),
+                "clusterBasis": "typed evaluator support refs grouped by selected law axis",
+                "axisRefs": [reading["axisRef"].clone()],
+                "witnessRefs": reading["witnessRefs"],
+                "supportRefs": reading["supportRefs"],
+                "sourceRefs": reading["sourceRefs"],
+                "transferEdgeRefs": transfer_edge_refs_for_support_index(curvature_support_readings, index),
+                "clusterWeight": reading["weight"],
+                "reading": "v1 witness cluster is derived from normalized support refs, not labels"
+            })
+        })
+        .collect()
+}
+
+fn transfer_edge_refs_for_support_index(
+    curvature_support_readings: &[Value],
+    support_index: usize,
+) -> Vec<String> {
+    let Some(reading) = curvature_support_readings.get(support_index) else {
+        return Vec::new();
+    };
+    if reading["curvatureValue"]["status"] != "measuredNonzero"
+        && reading["curvatureValue"]["status"] != "blockedByCoverageGap"
+    {
+        return Vec::new();
+    }
+    let edge_index = curvature_support_readings
+        .iter()
+        .take(support_index)
+        .filter(|candidate| {
+            candidate["curvatureValue"]["status"] == "measuredNonzero"
+                || candidate["curvatureValue"]["status"] == "blockedByCoverageGap"
+        })
+        .count();
+    vec![format!(
+        "/curvatureTransferReadings/0/transferEdges/{edge_index}"
+    )]
+}
+
+fn spectrum_hotspot_priority(hotspot: &Value) -> u8 {
+    match hotspot["curvatureStatus"].as_str().unwrap_or_default() {
+        "measuredNonzero" => 0,
+        "blockedByCoverageGap" => 1,
+        "measuredZero" => 2,
+        _ => 3,
+    }
+}
+
+fn architecture_spectrum_summary_v1(spectrum: &Value) -> Value {
+    let report = &spectrum["architectureSpectrumReport"];
+    json!({
+        "reportRef": "archsig-analysis-packet.json#/architectureSpectrumReport",
+        "reportPacketPointer": "/architectureSpectrumReport",
+        "status": report["status"],
+        "measurementStatus": report["measurementStatus"],
+        "hotspotCount": report["topHotspots"].as_array().map(Vec::len).unwrap_or_default(),
+        "recurrentObstructionCount": report["recurrentObstructions"].as_array().map(Vec::len).unwrap_or_default(),
+        "coverageGapCount": report["coverageGaps"].as_array().map(Vec::len).unwrap_or_default(),
+        "topHotspotRefs": report["topHotspots"]
+            .as_array()
+            .into_iter()
+            .flatten()
+            .take(5)
+            .filter_map(|hotspot| hotspot["hotspotId"].as_str().map(str::to_string))
+            .collect::<Vec<_>>(),
+        "nonConclusions": report["nonConclusions"]
+    })
+}
+
+fn spectrum_measurement_status(result: &TypedEvaluatorResultV1) -> &'static str {
+    match result.status.as_str() {
+        "measuredPass" | "measuredViolation" => "measured",
+        "blocked" | "unknown" | "unmeasured" => "blockedByCoverageGap",
+        _ => "unknown",
+    }
 }
 
 fn generated_law_inputs_v1(typed_results: &TypedEvaluatorResultsV1) -> Vec<Value> {
@@ -1147,12 +1862,26 @@ fn packet_array_len(packet: &Value, field: &str) -> usize {
     packet[field].as_array().map(Vec::len).unwrap_or_default()
 }
 
+fn packet_nested_array_len(packet: &Value, path: &[&str]) -> usize {
+    let mut value = packet;
+    for field in path {
+        value = &value[*field];
+    }
+    value.as_array().map(Vec::len).unwrap_or_default()
+}
+
 fn derived_packet_refs(packet: &Value) -> Vec<String> {
     [
         "generatedLawInputs",
         "signatureAxes",
         "generatedObstructions",
         "generatedRepairTargets",
+        "curvatureSupportReadings",
+        "curvatureTransferReadings",
+        "curvatureMassReadings",
+        "spectralAnalysisReadings",
+        "spectralModeReadings",
+        "spectralDrilldownReadings",
     ]
     .iter()
     .flat_map(|field| {
@@ -1189,6 +1918,56 @@ fn derived_detail_index_entries(packet: &Value) -> Vec<Value> {
         "generatedRepairTargetId",
         "generatedRepairTargets",
     ));
+    entries.extend(derived_detail_entries_for_field(
+        packet,
+        "curvatureSupportReadings",
+        "readingId",
+        "curvatureSupportReadings",
+    ));
+    entries.extend(derived_detail_entries_for_field(
+        packet,
+        "curvatureTransferReadings",
+        "readingId",
+        "curvatureTransferReadings",
+    ));
+    entries.extend(derived_detail_entries_for_field(
+        packet,
+        "curvatureMassReadings",
+        "curvatureMassReadingId",
+        "curvatureMassReadings",
+    ));
+    entries.extend(derived_detail_entries_for_field(
+        packet,
+        "spectralAnalysisReadings",
+        "spectralReadingId",
+        "spectralAnalysisReadings",
+    ));
+    entries.extend(derived_detail_entries_for_field(
+        packet,
+        "spectralModeReadings",
+        "spectralModeId",
+        "spectralModeReadings",
+    ));
+    entries.extend(derived_detail_entries_for_field(
+        packet,
+        "spectralDrilldownReadings",
+        "drilldownId",
+        "spectralDrilldownReadings",
+    ));
+    entries.extend(derived_detail_entries_for_nested_array(
+        packet,
+        &["architectureSpectrumReport", "topHotspots"],
+        "hotspotId",
+        "architectureSpectrumReport.topHotspots",
+        "packet:/architectureSpectrumReport/topHotspots",
+    ));
+    entries.extend(derived_detail_entries_for_nested_array(
+        packet,
+        &["architectureSpectrumReport", "recurrentObstructions"],
+        "modeId",
+        "architectureSpectrumReport.recurrentObstructions",
+        "packet:/architectureSpectrumReport/recurrentObstructions",
+    ));
     entries
 }
 
@@ -1223,6 +2002,47 @@ fn derived_detail_entries_for_field(
                 })
             })
         })
+        .collect()
+}
+
+fn derived_detail_entries_for_nested_array(
+    packet: &Value,
+    path: &[&str],
+    id_field: &str,
+    namespace: &str,
+    packet_ref_prefix: &str,
+) -> Vec<Value> {
+    let mut value = packet;
+    for field in path {
+        value = &value[*field];
+    }
+    value
+        .as_array()
+        .into_iter()
+        .flat_map(|items| {
+            items.iter().enumerate().map(move |(index, item)| {
+                let fallback_id = format!("{namespace}:{index}");
+                let id = item[id_field].as_str().unwrap_or(&fallback_id);
+                json!({
+                    "resultRef": format!("{namespace}:{id}"),
+                    "packetRef": format!("{packet_ref_prefix}/{index}"),
+                    "supportReadingRef": item["supportReadingRef"],
+                    "transferEdgeRefs": item["transferEdgeRefs"],
+                    "supportRefs": item["supportRefs"],
+                    "witnessRefs": item["witnessRefs"],
+                    "coverageGapRefs": item["coverageGapRefs"]
+                })
+            })
+        })
+        .collect()
+}
+
+fn json_string_array_value(value: &Value, field: &str) -> Vec<String> {
+    value[field]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .filter_map(|item| item.as_str().map(str::to_string))
         .collect()
 }
 
@@ -1556,7 +2376,7 @@ fn typed_violation_detected(
     match entry.law.as_str() {
         "domain.no-direct-infra-dependency" => support_atoms
             .iter()
-            .filter(|atom| atom.predicate.constructor == "dependsOn")
+            .filter(|atom| atom_has_predicate_name(atom, "dependsOn"))
             .any(|atom| {
                 let subject = binding_value(atom, "subject");
                 let object = binding_value(atom, "object");
@@ -1564,13 +2384,22 @@ fn typed_violation_detected(
             }),
         "solid.dependency-inversion" => support_atoms
             .iter()
-            .filter(|atom| atom.predicate.constructor == "dependsOn")
+            .filter(|atom| atom_has_predicate_name(atom, "dependsOn"))
             .any(|atom| {
                 let object = binding_value(atom, "object");
                 object.is_some_and(is_concrete_infrastructure_ref)
             }),
         _ => false,
     }
+}
+
+fn atom_has_predicate_name(atom: &NormalizedAtomV1, name: &str) -> bool {
+    atom.predicate.constructor == name
+        || atom
+            .predicate
+            .bindings
+            .iter()
+            .any(|binding| binding.role == "predicate" && binding.value == name)
 }
 
 fn binding_value<'a>(atom: &'a NormalizedAtomV1, role: &str) -> Option<&'a str> {

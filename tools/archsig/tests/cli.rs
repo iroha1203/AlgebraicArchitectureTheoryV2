@@ -380,6 +380,142 @@ fn cli_analyze_v1_marks_incomplete_molecule_candidate_blocked() {
             }),
         "blocked generated obstructions must materialize collectMissingEvidence repair targets"
     );
+    assert_eq!(
+        packet["architectureSpectrumReport"]["status"].as_str(),
+        Some("needsCoverageReview")
+    );
+    assert!(
+        packet["architectureSpectrumReport"]["coverageGaps"]
+            .as_array()
+            .is_some_and(|items| !items.is_empty())
+            && packet["curvatureSupportReadings"]
+                .as_array()
+                .is_some_and(|items| items.iter().all(|reading| {
+                    reading["curvatureValue"]["status"] == "blockedByCoverageGap"
+                        && reading["coverageGapRefs"]
+                            .as_array()
+                            .is_some_and(|refs| !refs.is_empty())
+                })),
+        "blocked typed evaluator results must become coverage gaps, not measured zero spectrum"
+    );
+}
+
+#[test]
+fn cli_analyze_v1_spectrum_detects_nonzero_curvature_from_typed_violation() {
+    let out_dir = temp_dir("analyze-v1-spectrum-nonzero");
+    let root = archmap_v1_root();
+
+    let output = run_sig0_output(&[
+        "analyze",
+        "--archmap",
+        root.join("archmap_violation.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--law-policy",
+        root.join("law_policy.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--out-dir",
+        out_dir.to_str().expect("path is utf-8"),
+        "--emit-raw-artifacts",
+    ]);
+
+    assert!(output.status.success());
+    let packet = read_json(&out_dir.join("archsig-analysis-packet.json"));
+    assert!(
+        packet["curvatureSupportReadings"]
+            .as_array()
+            .is_some_and(|items| {
+                items.iter().any(|reading| {
+                    reading["law"] == "domain.no-direct-infra-dependency"
+                        && reading["curvatureValue"]["status"] == "measuredNonzero"
+                        && reading["curvatureValue"]["value"] == 1
+                        && reading["supportRefs"]
+                            .as_array()
+                            .is_some_and(|refs| !refs.is_empty())
+                        && reading["witnessRefs"]
+                            .as_array()
+                            .is_some_and(|refs| !refs.is_empty())
+                })
+            }),
+        "typed measuredViolation must produce nonzero curvature support"
+    );
+    assert!(
+        packet["architectureSpectrumReport"]["topHotspots"]
+            .as_array()
+            .is_some_and(|hotspots| {
+                hotspots.iter().any(|hotspot| {
+                    hotspot["curvatureStatus"] == "measuredNonzero"
+                        && hotspot["supportReadingRef"]
+                            .as_str()
+                            .is_some_and(|reference| packet.pointer(reference).is_some())
+                })
+            }),
+        "ArchitectureSpectrumReport must surface nonzero hotspots with refs"
+    );
+    assert!(
+        packet["architectureSpectrumReport"]["recurrentObstructions"]
+            .as_array()
+            .is_some_and(|items| {
+                items.iter().any(|item| {
+                    item["transferEdgeRefs"].as_array().is_some_and(|refs| {
+                        !refs.is_empty()
+                            && refs.iter().all(|reference| {
+                                packet
+                                    .pointer(
+                                        reference.as_str().expect("transfer edge ref is string"),
+                                    )
+                                    .is_some()
+                            })
+                    })
+                })
+            }),
+        "nonzero transfer support must expose recurrent obstruction refs"
+    );
+    assert!(
+        packet["architectureSpectrumReport"]["topWitnessClusters"]
+            .as_array()
+            .is_some_and(|items| {
+                items.iter().any(|item| {
+                    item["transferEdgeRefs"].as_array().is_some_and(|refs| {
+                        !refs.is_empty()
+                            && refs.iter().all(|reference| {
+                                packet
+                                    .pointer(
+                                        reference.as_str().expect("transfer edge ref is string"),
+                                    )
+                                    .is_some()
+                            })
+                    })
+                })
+            }),
+        "nonzero witness clusters must reference existing transfer edges"
+    );
+    let llm_packet = read_json(&out_dir.join("llm-interpretation-packet.json"));
+    assert_eq!(
+        llm_packet["architectureSpectrumReportSummary"]["reportRef"].as_str(),
+        Some("archsig-analysis-packet.json#/architectureSpectrumReport")
+    );
+    assert!(
+        llm_packet["architectureSpectrumReportSummary"]["topHotspotRefs"]
+            .as_array()
+            .is_some_and(|refs| {
+                refs.iter().any(|reference| {
+                    reference == "spectrum-hotspot:domain-no-direct-infra-dependency"
+                })
+            }),
+        "LLM spectrum summary must keep nonzero hotspot visible"
+    );
+    let validation = read_json(&out_dir.join("archsig-analysis-validation.json"));
+    assert!(
+        validation["checks"].as_array().is_some_and(|checks| {
+            checks.iter().any(|check| {
+                check["checkId"] == "archsig.v1.architectureSpectrumReportSurface"
+                    && check["result"] == "pass"
+            })
+        }),
+        "analysis validation must lock v1 spectrum surface"
+    );
 }
 
 #[test]
@@ -932,6 +1068,13 @@ fn cli_analyze_v1_emit_raw_artifacts_writes_typed_packet_detail_and_handoff() {
         "signatureAxes",
         "generatedObstructions",
         "generatedRepairTargets",
+        "architectureSpectrumReport",
+        "curvatureSupportReadings",
+        "curvatureTransferReadings",
+        "curvatureMassReadings",
+        "spectralAnalysisReadings",
+        "spectralModeReadings",
+        "spectralDrilldownReadings",
         "typedEvaluatorResults",
         "architectureDistanceSignatureReadings",
     ] {
@@ -947,6 +1090,7 @@ fn cli_analyze_v1_emit_raw_artifacts_writes_typed_packet_detail_and_handoff() {
         "semanticObservations",
         "projectionInfo",
         "operationSquareEvidence",
+        "spectrumMeasurementProfile",
         "concernHints",
         "observationGaps",
     ] {
@@ -955,6 +1099,43 @@ fn cli_analyze_v1_emit_raw_artifacts_writes_typed_packet_detail_and_handoff() {
             "v1 packet must not restore removed v0 input field {removed_field}"
         );
     }
+    assert!(
+        packet["generatedPacketRefs"]
+            .as_object()
+            .is_some_and(|refs| !refs.contains_key("spectrumMeasurementProfile")),
+        "v1 generated packet refs must not restore v0 spectrumMeasurementProfile"
+    );
+    assert!(
+        packet["architectureSpectrumReport"].is_object()
+            && packet["curvatureSupportReadings"]
+                .as_array()
+                .is_some_and(|items| items.len() == 6)
+            && packet["spectralModeReadings"]
+                .as_array()
+                .is_some_and(|items| items.len() == 6),
+        "v1 packet must expose ArchitectureSpectrumReport and ACTS support / mode readings"
+    );
+    assert_eq!(
+        packet["architectureSpectrumReport"]["status"].as_str(),
+        Some("measuredZeroWithinSelectedSupport")
+    );
+    assert!(
+        packet["architectureSpectrumReport"]["topHotspots"]
+            .as_array()
+            .is_some_and(|hotspots| {
+                !hotspots.is_empty()
+                    && hotspots.iter().all(|hotspot| {
+                        hotspot["supportReadingRef"]
+                            .as_str()
+                            .is_some_and(|reference| packet.pointer(reference).is_some())
+                            && hotspot["supportRefs"]
+                                .as_array()
+                                .is_some_and(|refs| !refs.is_empty())
+                            && hotspot["curvatureStatus"] == "measuredZero"
+                    })
+            }),
+        "measured-zero spectrum hotspots must remain selected-support readings with refs"
+    );
     let analysis_validation = read_json(&out_dir.join("archsig-analysis-validation.json"));
     for check_id in [
         "archsig.v1.architectureDistanceProfileRefsMatch",
@@ -969,6 +1150,7 @@ fn cli_analyze_v1_emit_raw_artifacts_writes_typed_packet_detail_and_handoff() {
         "archsig.v1.generatedRepairTargetsTraceObstructions",
         "archsig.v1.generatedPacketRefsResolve",
         "archsig.v1.removedV0InputFieldsAbsent",
+        "archsig.v1.architectureSpectrumReportSurface",
     ] {
         assert!(
             analysis_validation["checks"]
@@ -1002,6 +1184,14 @@ fn cli_analyze_v1_emit_raw_artifacts_writes_typed_packet_detail_and_handoff() {
                 "signatureAxes",
                 "generatedObstructions",
                 "generatedRepairTargets",
+                "curvatureSupportReadings",
+                "curvatureTransferReadings",
+                "curvatureMassReadings",
+                "spectralAnalysisReadings",
+                "spectralModeReadings",
+                "spectralDrilldownReadings",
+                "architectureSpectrumReport.topHotspots",
+                "architectureSpectrumReport.recurrentObstructions",
             ]
             .into_iter()
             .all(|name| sections.iter().any(|section| section["name"] == name))
@@ -1016,9 +1206,20 @@ fn cli_analyze_v1_emit_raw_artifacts_writes_typed_packet_detail_and_handoff() {
             }) && entries.iter().any(|entry| {
                 entry["packetRef"] == "packet:/signatureAxes/0"
                     && entry["generatedLawInputRef"] == "/generatedLawInputs/0"
-            })
+            }) && entries
+                .iter()
+                .any(|entry| entry["packetRef"] == "packet:/curvatureMassReadings/0")
+                && entries
+                    .iter()
+                    .any(|entry| entry["packetRef"] == "packet:/spectralAnalysisReadings/0")
+                && entries
+                    .iter()
+                    .any(|entry| entry["packetRef"] == "packet:/spectralDrilldownReadings/0")
+                && entries.iter().any(|entry| {
+                    entry["packetRef"] == "packet:/architectureSpectrumReport/topHotspots/0"
+                })
         }),
-        "v1 detail index must include resolvable generated law input and signature axis refs"
+        "v1 detail index must include resolvable generated and spectrum entries"
     );
     assert_eq!(
         read_json(&out_dir.join("llm-interpretation-packet.json"))["schema"],
@@ -1032,6 +1233,10 @@ fn cli_analyze_v1_emit_raw_artifacts_writes_typed_packet_detail_and_handoff() {
     assert_eq!(
         llm_packet["replacementRegistryResolution"]["registryRef"].as_str(),
         Some("removed-v0-field-replacement-registry@1")
+    );
+    assert_eq!(
+        llm_packet["architectureSpectrumReportSummary"]["status"].as_str(),
+        Some("measuredZeroWithinSelectedSupport")
     );
     assert!(
         packet["nonConclusions"].as_array().is_some_and(|items| {

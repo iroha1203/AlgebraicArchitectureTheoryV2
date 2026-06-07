@@ -341,6 +341,7 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                 write_json(
                     Some(llm_interpretation_path),
                     &build_typed_llm_interpretation_packet_v1(
+                        &normalized_archmap,
                         &typed_results,
                         &architecture_distance,
                     ),

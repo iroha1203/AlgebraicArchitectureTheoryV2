@@ -62,9 +62,28 @@ Current v1 also restores the first generated packet refs as derived output:
   packet as bounded current structural state; preserving these generated refs as
   first-class downstream evidence remains tracked in the FieldSig handoff issue.
 
+Current v1 also emits the ACTS / ArchitectureSpectrumReport family as derived
+output:
+
+- `curvatureSupportReadings`: selected-axis support rows derived from typed
+  evaluator status and normalized support refs. `measuredPass` becomes bounded
+  measured zero, `measuredViolation` becomes bounded nonzero curvature, and
+  `blocked` / `unknown` / `unmeasured` become coverage gaps.
+- `curvatureTransferReadings`: finite selected-support transfer rows. Recurrent
+  obstruction entries are current-state review signals, not empirical
+  amplification or future incident predictions.
+- `spectralAnalysisReadings`, `spectralModeReadings`, and
+  `spectralDrilldownReadings`: compact spectrum surfaces over emitted v1
+  curvature support rows.
+- `architectureSpectrumReport`: hotspots, witness clusters, recurrent
+  obstruction readings, coverage gaps, measured boundary, review focus, and
+  non-conclusions. Spectrum zero is bounded to selected measured support and
+  does not imply global lawfulness or flatness.
+
 The v1 path does not read v0 helper fields such as `semanticObservations`,
 `projectionInfo`, `operationSquareEvidence`, `concernHints`, or
-`observationGaps` as positive readings. It also does not call Lean or require a
+`observationGaps` as positive readings. It also does not read v0
+`spectrumMeasurementProfile` as a measurement recipe, call Lean, or require a
 Lean proof object. `--emit-raw-artifacts` writes v1 raw packet,
 detail-index, and LLM interpretation artifacts; without it, summary / viewer /
 manifest remain the primary reading surface.
