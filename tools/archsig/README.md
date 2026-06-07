@@ -1,17 +1,16 @@
 # ArchSig
 
-`archsig` is the ArchMap -> AAT analysis packet CLI. It reads supplied
-`archmap-observation-map-v0` evidence and a selected interpretation profile
-(`law-policy-v0` JSON) into a North Star `archsig-analysis-packet-v0` for LLM
-and human review.
+`archsig` is the ArchMap -> ArchSig structural analysis CLI. The current v1
+runtime reads supplied `archmap/v1` evidence and a selected `law-policy/v1`
+profile, then emits a typed evaluator output chain for LLM and human review.
 
 ArchSig is an LLM-native tool. The intended product interface is the bundled
 LLM skills in `tools/archsig/skills`, not a human manually reading raw AAT
-packet JSON. The CLI provides stable validation and packet-building commands;
-the skills author ArchMaps and LawPolicies, run the CLI, read the structured
-packet, compare high-priority findings with source evidence, and translate the
-result into review or improvement language. This matters because raw AAT output
-is dense and easy to misread without the skill-specific reading workflow.
+packet JSON. The CLI provides stable validation and analysis commands; the
+skills author ArchMaps and LawPolicies, run the CLI, read summary / viewer /
+manifest first, inspect raw packet refs only when needed, compare
+high-priority findings with source evidence, and translate the result into
+review or improvement language.
 
 ArchSig's responsibility is bounded structural diagnosis over supplied
 `ArchMap + LawPolicy`: it validates the input surfaces, builds AAT-oriented
@@ -19,7 +18,7 @@ reading families, and preserves the measurement basis for human / LLM review.
 FieldSig owns forecast, governance, calibration, and operational feedback under
 `tools/fieldsig`.
 
-ArchSig's current primary workflow is complete-first authoring followed by
+ArchSig's current primary workflow is complete-first authoring followed by v1
 analysis:
 
 1. Build the fullest source-grounded ArchMap the selected source universe
@@ -27,8 +26,10 @@ analysis:
 2. Select a project-specific LawPolicy / interpretation profile, usually
    through `law-policy-creater`.
 3. Run `analyze` through `archsig-reader` or directly through the CLI.
-4. Let the skill read `analysis-summary` first, then inspect packet detail
-   through `detailRefs` / `packetRefs` when source-level evidence is needed.
+4. Let the skill read `archsig-analysis-summary.json`,
+   `archsig-atom-viewer-data.json`, and `archsig-run-manifest.json` first,
+   then inspect raw packet detail through `detailRefs` / `packetRefs` when
+   source-level evidence is needed.
 
 Coverage blockers such as `blockedByCoverageGap` are authoring repair targets
 unless the evidence is genuinely private, unavailable, or out of scope. They
@@ -38,37 +39,35 @@ are not measured zeros.
 
 | Surface | Commands | Boundary |
 | --- | --- | --- |
-| ArchMap validation and authoring | `archmap`, `archmap-generate` | ArchMap records source-grounded Atom observations, molecule observations, semantic readings, projection hints, concern hints, and gaps. Complete-first authoring should collect spectrum support, homotopy candidates, filler evidence, non-fillability witnesses, and targeted gaps before handoff. It does not select laws or output obstruction circuits. |
-| Interpretation profile | `law-policy`, `interpretation-profile` | The profile selects the LawUniverse, witness rules, molecule patterns, obstruction circuit definitions, signature axes, coverage requirements, exactness assumptions, optional ACTS spectrum profile, optional homotopy measurement profile, and non-conclusions. It is not AAT itself. |
-| ArchSig analysis | `analyze`, `llm-native-workflow`, `north-star-workflow`, `archsig-analysis`, `aat-analysis`, `analysis-summary`, `summary` | `analyze` is the primary workflow from ArchMap + LawPolicy to validation reports, `archsig-analysis-summary.json`, `archsig-atom-viewer-data.json`, and `archsig-run-manifest.json`. Raw packet artifacts for FieldSig handoff are emitted only with `--emit-raw-artifacts`. `llm-native-workflow` and `north-star-workflow` remain compatibility aliases for the same workflow. `archsig-analysis` / `aat-analysis` build a packet from already validated inputs. `analysis-summary` emits the compact LLM reading surface from an existing packet. |
-| Codebase inspection | `codebase-inspection` | Reads latest `archmap-snapshot-v0`, `archmap-index-v0`, optional recent deltas, optional LawPolicy provenance, and an `archsig-analysis-packet-v0` to produce current-state architectural diagnosis. It is not PR / diff evolution analysis or global safety. |
-| Lightweight PR review | `pr-review` | Reads base `archmap-observation-map-v0`, optional head / intermediate path `archmap-observation-map-v0`, PR-local `archmap-delta-v0`, and required `law-policy-v0`. It does not accept raw diff, ArchMapCommit, or base/head analysis packets as PR-review inputs. With head ArchMap, it internally computes base/path/head packets and emits PR drift, safe change budget, and architecture navigation focus. |
+| ArchMap validation and authoring | `archmap` | ArchMap v1 records source-grounded Atom observations and explicit molecule candidates. Removed v0 helper fields such as `semanticObservations`, `projectionInfo`, `operationSquareEvidence`, `concernHints`, and `observationGaps` are not positive input. Complete-first authoring should collect source support and molecule candidates before handoff. ArchMap does not select laws or output obstruction circuits. |
+| Interpretation profile | `law-policy` | LawPolicy v1 selects evaluator manifests, basis refs, selected laws, distance profile, and non-conclusions. It is an evaluator selector, not AAT itself. |
+| ArchSig analysis | `analyze` | `analyze` is the primary workflow from ArchMap v1 + LawPolicy v1 to validation reports, normalized ArchMap, typed evaluator results, architecture distance, `archsig-analysis-summary.json`, `archsig-atom-viewer-data.json`, and `archsig-run-manifest.json`. Raw packet, detail index, and LLM interpretation artifacts are emitted only with `--emit-raw-artifacts`. |
+| Lightweight PR review | `pr-review` | Reads base `archmap/v1`, optional head / intermediate `archmap/v1`, PR-local `archmap-delta-v0`, and required `law-policy/v1`. It does not accept raw diff, ArchMapCommit, or base/head analysis packets as PR-review inputs. It internally computes report-local v1 snapshots and emits delta packet intersections, architecture-distance movement, hidden-excursion boundary, safe-change budget, and structural review focus. |
 | Schema | `schema-catalog` | The catalog lists the current ArchMap, LawPolicy, ArchSig analysis packet, and validation report artifacts. |
 
-`archsig-analysis-packet-v0` currently includes the main AAT structural reading
-families: signature axes, obstruction circuits, workflow risk, spectral
-readings, transfer bridges, ACTS curvature / transfer support,
-`ArchitectureSpectrumReport`, Homotopy / Holonomy / Stokes readings,
-`ArchitectureHomotopyReport`, AAT observation-axis readings, monodromy /
-boundary holonomy readings, repair candidates, path / homotopy / diagram
-readings, bounded judgements, and LLM interpretation. These are ArchSig outputs,
-not first-class ArchMap outputs.
+`archsig-analysis-packet/v1` includes the main ArchSig structural reading
+families as derived output: generated law inputs, signature axes, generated
+obstructions, generated repair targets, ACTS / spectrum readings,
+`ArchitectureSpectrumReport`, homotopy / holonomy / Stokes readings,
+`ArchitectureHomotopyReport`, structural reading families, replacement
+registry / replacement evaluator results, bounded judgements, and LLM
+interpretation refs. These are ArchSig outputs, not first-class ArchMap inputs.
 
-`analysis-summary` is the preferred first reading surface. It reports the
-measured verdict, quality counts, Part IV distance diagnosis,
-measurement-status counts, dominant findings, action queue, trend diagnosis,
-review support, compact section summaries, detail index, measurement basis,
-and metadata. `distanceDiagnosis` keeps measured movement, unmeasured axes,
-safe margin, repair distance, curvature / homotopy distance, representation
-metrics, and packet refs compact; blocked distance is not measured zero. The
-full evidence remains in `archsig-analysis-packet.json` when raw artifacts are
-emitted.
+`archsig-analysis-summary.json` is the preferred first reading surface. It
+reports the conclusion, typed evaluator status, architecture distance,
+`distanceDiagnosis`, dominant findings, action queue, measurement basis,
+rich packet refs, and metadata. Blocked / unknown / unmeasured support is not
+measured zero. The full evidence remains in `archsig-analysis-packet.json` only
+when raw artifacts are emitted.
 
 Large ArchMaps may be authored in shards for review and parallel generation,
 but current commands consume the exported monolithic
-`archmap-observation-map-v0` artifact.
+`archmap/v1` artifact.
 
-Pre-Atom ArchSig commands were removed instead of kept as compatibility shims.
+Pre-Atom and v0 packet-builder commands were removed instead of kept as
+compatibility shims. `llm-native-workflow`, `north-star-workflow`,
+`archsig-analysis`, `aat-analysis`, `analysis-summary`, `summary`,
+`codebase-inspection`, and `archmap-generate` are not current runtime surfaces.
 Git history is the archive for those workflows.
 
 ## Install From GitHub Release
@@ -96,7 +95,7 @@ After extracting the archive, put the `archsig` executable on `PATH` or set
 `ARCHSIG_BIN` to its path. Then use the bundled `skills/` directory as the LLM
 agent interface. For normal analysis, start from `archmap-creater`,
 `law-policy-creater`, `archsig-reader`, or `archsig-pr-reviewer`; the skills
-call the CLI and read the AAT packet for the user.
+call the CLI and read the ArchSig output for the user.
 
 ## CLI Quick Start
 
@@ -106,18 +105,18 @@ carry the packet-reading and source-comparison workflow.
 
 ```bash
 cargo run --manifest-path tools/archsig/Cargo.toml -- analyze \
-  --archmap tools/archsig/tests/fixtures/minimal/archmap.json \
-  --law-policy tools/archsig/tests/fixtures/minimal/law_policy.json \
+  --archmap tools/archsig/tests/fixtures/archmap_v1/archmap.json \
+  --law-policy tools/archsig/tests/fixtures/archmap_v1/law_policy.json \
   --out-dir .archsig/analyze
 ```
-
-`llm-native-workflow` and `north-star-workflow` are compatibility aliases for
-the same workflow. Use `analyze` in new docs, scripts, and CI.
 
 This writes:
 
 - `.archsig/analyze/archmap-validation.json`
 - `.archsig/analyze/law-policy-validation.json`
+- `.archsig/analyze/normalized-archmap.json`
+- `.archsig/analyze/typed-evaluator-results.json`
+- `.archsig/analyze/architecture-distance.json`
 - `.archsig/analyze/archsig-analysis-validation.json`
 - `.archsig/analyze/archsig-analysis-summary.json`
 - `.archsig/analyze/archsig-atom-viewer-data.json`
@@ -155,8 +154,8 @@ For FieldSig handoff or deep evidence lookup, emit raw artifacts explicitly:
 
 ```bash
 cargo run --manifest-path tools/archsig/Cargo.toml -- analyze \
-  --archmap tools/archsig/tests/fixtures/minimal/archmap.json \
-  --law-policy tools/archsig/tests/fixtures/minimal/law_policy.json \
+  --archmap tools/archsig/tests/fixtures/archmap_v1/archmap.json \
+  --law-policy tools/archsig/tests/fixtures/archmap_v1/law_policy.json \
   --out-dir .archsig/analyze \
   --emit-raw-artifacts
 ```
@@ -167,26 +166,15 @@ This additionally writes:
 - `.archsig/analyze/archsig-analysis-detail-index.json`
 - `.archsig/analyze/llm-interpretation-packet.json`
 
-`archsig-analysis-packet.json` is compact-first when emitted: large repeated
-string ref sets are replaced by `archsig-detail-ref-v0` objects with counts,
-samples, and detail refs. Full ref sets are stored through a dictionary-backed
-`archsig-analysis-detail-index.json`.
+`archsig-analysis-packet.json` is the raw `archsig-analysis-packet/v1`
+evidence store. The dictionary-backed `archsig-analysis-detail-index.json`
+helps resolve compact `detailRefs` and packet refs without forcing summary /
+viewer users to load the raw packet.
 
 `llm-interpretation-packet.json` contains the compact
 `llmInterpretationPacket` reading surface from the analysis packet. Treat it as
 structured review evidence with explicit measurement bounds, not as a
 standalone decision record or automatic repair instruction.
-
-To write the compact reading surface from those artifacts:
-
-```bash
-cargo run --manifest-path tools/archsig/Cargo.toml -- analysis-summary \
-  --packet .archsig/analyze/archsig-analysis-packet.json \
-  --archmap-validation .archsig/analyze/archmap-validation.json \
-  --law-policy-validation .archsig/analyze/law-policy-validation.json \
-  --analysis-validation .archsig/analyze/archsig-analysis-validation.json \
-  --out .archsig/analyze/archsig-analysis-summary.json
-```
 
 Calling `archsig` without a subcommand intentionally fails. The old implicit
 scan-first path is no longer an ArchSig workflow.
@@ -205,10 +193,10 @@ from AAT structural output into source-level review language.
 
 | Skill | Purpose |
 | --- | --- |
-| `archmap-creater` | Create bounded `archmap-observation-map-v0` artifacts from repository evidence. It keeps ArchMap as source-grounded Atom observations, molecule observations, semantic readings, concern hints, and gaps, not law-relative analysis. |
-| `law-policy-creater` | Create project-specific `law-policy-v0` interpretation profiles from repository coding conventions, architecture rules, and user decisions. If docs do not define the law universe, ask the user before selecting laws. |
+| `archmap-creater` | Create bounded `archmap/v1` artifacts from repository evidence. It keeps ArchMap as source-grounded Atom observations and explicit molecule candidates, not law-relative analysis or removed v0 helper fields. |
+| `law-policy-creater` | Create project-specific `law-policy/v1` profiles from repository coding conventions, architecture rules, and user decisions. If docs do not define the evaluator universe, ask the user before selecting laws. |
 | `archsig-reader` | Run an ArchMap with a selected LawPolicy, read summary / viewer report / manifest first, follow `distanceDiagnosis` detail refs only when needed, compare high-priority readings with source evidence, and propose bounded improvements. It does not silently use a generic LawPolicy as project analysis. |
-| `archsig-pr-reviewer` | Derive PR-local `archmap-delta-v0` from the base branch diff, run `pr-review` with base ArchMap and LawPolicy, read the changed code, and explain review focus in human code-review language. It stops if the base ArchMap or LawPolicy is missing. |
+| `archsig-pr-reviewer` | Derive PR-local `archmap-delta-v0` from the base branch diff, run `pr-review` with base ArchMap v1, optional head/path ArchMaps, and LawPolicy v1, read the changed code, and explain review focus in human code-review language. It stops if the base ArchMap or LawPolicy is missing. |
 
 Typical use:
 

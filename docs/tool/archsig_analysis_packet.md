@@ -155,10 +155,10 @@ do not reprint packet evidence arrays. They point back to packet detail through
 
 For product workflow, ArchMap authoring is complete-first. The intended entry
 experience is not "create a thin map and ask the user to grow it." An LLM-native
-ArchMap authoring pass should collect source inventory, atoms, molecules,
-semantic observations, path candidates, endpoint / continuation evidence,
-filler evidence, non-fillability witnesses, projection hints, and targeted gaps
-before presenting ArchSig results. `analysis-summary` and
+ArchMap authoring pass should collect source inventory, atoms, explicit
+molecule candidates, path candidates, endpoint / continuation evidence, filler
+evidence, non-fillability witnesses, and source-backed semantic atoms before
+presenting ArchSig results. `archsig-analysis-summary.json` and
 `llm-interpretation-packet` then serve two readers:
 
 - user-facing diagnosis: measured verdict, quality counts, distance diagnosis,
@@ -170,7 +170,7 @@ before presenting ArchSig results. `analysis-summary` and
 Only evidence that is truly private, unavailable, or out of scope should remain
 as residual `blockedByCoverageGap` in a complete-first handoff.
 
-`analysis-summary` is the preferred reading surface for humans and LLM agents.
+`archsig-analysis-summary.json` is the preferred reading surface for humans and LLM agents.
 It is designed to be read whole without jq slicing. It exposes:
 
 - `verdict`: selected-policy flatness, quality state, primary conclusion,
@@ -233,7 +233,7 @@ It is designed to be read whole without jq slicing. It exposes:
 The full `archsig-analysis-packet.json` remains the evidence store. Raw
 `supportRefs`, `sourceRefs`, witness clusters, spectral rows, homotopy
 aggregate readings, and measurement-expansion detail belong in the packet, not
-in `analysis-summary`.
+in `archsig-analysis-summary.json`.
 
 `archsig-atom-viewer-data.json` keeps visual layout distance separate from
 Part IV diagnostic distance. `viewerDistanceInputs` support Atom Viewer
@@ -241,7 +241,7 @@ placement only. Diagnostic distance overlays are bounded projections of packet
 distance readings and are exposed through `diagnosticDistanceReadings`,
 `diagnosticDistanceBoundary`, omitted counts, and the report pane
 `distanceDiagnosis` section. The report pane reads the same compact
-`distanceDiagnosis` object as `analysis-summary`, so measured or zero signature
+`distanceDiagnosis` object as `archsig-analysis-summary.json`, so measured or zero signature
 axes cannot be reintroduced as unmeasured by the viewer surface. The viewer
 should help a human inspect where the diagnostic readings point; it must not
 reinterpret visual layout distance as an ArchSig metric.
@@ -282,7 +282,7 @@ because they cross-check existing packet readings:
 - `repairTransferRisk` pairs decreased selected axes with transferred
   obstruction, bridge-split, and precondition evidence.
 
-`ArchitectureHomotopyReport` is a bounded v1 codebase-inspection surface. It
+`ArchitectureHomotopyReport` is a bounded v1 derived output surface. It
 reads candidate path pairs, loops, fillers, architectural holes, selected-axis
 holonomy, and Stokes-style review queues from normalized ArchMap v1 atoms,
 explicit molecule candidates, typed evaluator status, and packet coverage gaps.
@@ -666,19 +666,14 @@ The builder:
   assumptions, and selected finite Dehn-style area. Missing filler evidence
   remains a blocker on filling cost and Dehn area; the reading is not path truth,
   global homology, or repair safety.
-- ArchMapStore is the forward history boundary for PR and longitudinal
-  workflows. `ArchMapDelta` and `ArchMapCommit` carry ArchMap-level change
-  evidence; `ArchMapSnapshot` and `ArchMapIndex` support large-repository
-  current-state inspection. Raw source diffs may narrow source refs, but they
-  are not canonical semantic inputs to this packet.
-- `codebase-inspection` reads the latest `ArchMapSnapshot`, `ArchMapIndex`, an
-  `archsig-analysis-packet-v0`, optional recent deltas, and optional LawPolicy
-  provenance to produce `archsig-codebase-inspection-report-v0`. The report is
-  a current-state architecture health surface: subsystem boundaries,
-  feature-like clusters, operation-like relations, top boundary holonomy, top
-  order-sensitive squares, ArchitectureSpectrumReport hotspots / recurrent
-  obstructions, coverage / exactness boundary, and next action cues. It is not
-  PR / diff evolution analysis and does not prove global lawfulness or safety.
+- ArchMapStore is the historical forward history boundary for PR and
+  longitudinal workflows. In the current v1 runtime, `pr-review` reads
+  PR-local `archmap-delta-v0` refs plus base / optional head / optional path
+  `archmap/v1` snapshots. Raw source diffs may narrow source refs, but they are
+  not canonical semantic inputs to this packet.
+- `codebase-inspection` is not a current v1 runtime surface. The current-state
+  structural readings that used to be read through inspection reports are
+  emitted as v1 packet / summary / viewer refs by `analyze`.
 - `archMapStoreRefs` records the packet's canonical history substrate:
   `archmap-delta-v0`, `archmap-commit-v0`, `archmap-snapshot-v0`, and
   `archmap-index-v0`. It also records raw-diff and compaction boundaries so
@@ -745,13 +740,13 @@ The builder:
   cannot be read without the metric evidence boundary.
 - `operationSquareCandidates` enumerates supplied, inferred, or blocked
   operation pairs as path pairs `p = g . f` and `q = f . g`. Supplied
-  candidates are read from first-class ArchMap `operationSquareEvidence[]` and
-  carry `pOperationSequence`, `qOperationSequence`, endpoint refs, generator
-  candidates, and source-backed `candidateBasisRefs`. Inferred candidates are
-  review cues derived from shared Atom support, state / effect / contract /
-  semantic / authority / runtime / projection evidence; they are not operation
-  truth. Blocked candidates preserve missing operation-pair or endpoint
-  evidence instead of synthesizing a `:continuation` operation.
+  candidates are derived from normalized relations and explicit molecule
+  candidates, then carry endpoint refs, generator candidates, support refs, and
+  source-backed `candidateBasisRefs`. Inferred candidates are review cues
+  derived from shared Atom support, state / effect / contract / semantic /
+  authority / runtime / projection evidence; they are not operation truth.
+  Blocked candidates preserve missing operation-pair or endpoint evidence
+  instead of synthesizing a `:continuation` operation.
 - `pathContinuationTraces` records the selected continuation trace for each
   candidate path and axis family: static, contract, semantic, state, effect,
   authority, runtime, and projection. Each axis trace carries a
@@ -836,10 +831,9 @@ The builder:
   blockers, curvature, flatness, projection loss, state/effect algebra,
   operation/invariant constraints, and split readiness.
 - `currentStateEvolutionBoundary` records the product boundary: ArchSig computes
-  current AAT structural state from `ArchMap + LawPolicy` and future
-  change-local structural cues from ArchMapStore deltas / commits. FieldSig
-  studies PR / diff / change-vector evolution over ArchMapStore and serialized
-  `archsig-analysis-packet-v0` chains. The packet must not be read as forecast
+  current AAT structural state from `ArchMap + LawPolicy`. FieldSig studies
+  PR / diff / change-vector evolution over workflow evidence and serialized
+  `archsig-analysis-packet/v1` handoff artifacts. The packet must not be read as forecast
   correctness, causal truth, raw-diff semantic truth, or raw-ArchMap forecast
   truth.
 - analytic representations include weighted adjacency, walk count, reachable
@@ -866,37 +860,29 @@ The builder:
 
 ## Downstream Handoff
 
-`analyze` treats the analysis packet as the source artifact and
-emits only ArchMap validation, LawPolicy validation, the analysis packet, packet
-validation, and the LLM interpretation packet. Pre-Atom projections and review
-surfaces are not current ArchSig CLI surface or compatibility commands.
+`analyze` treats summary / viewer / manifest as the default reading surface.
+For v1 input it emits ArchMap validation, LawPolicy validation, normalized
+ArchMap, typed evaluator results, architecture distance, summary, viewer data,
+and run manifest by default. Raw packet, detail index, packet validation, and
+LLM interpretation packet are emitted only with `--emit-raw-artifacts`.
+Pre-Atom projections and standalone packet-builder / summary commands are not
+current ArchSig CLI surfaces or compatibility commands.
 
-`pr-review` and `codebase-inspection` are separate report surfaces:
+`pr-review` is the separate change-local report surface:
 
 - `archsig-pr-review-report-v1` reads base `archmap/v1`, PR-local
-  `archmap-delta-v0`, and required `law-policy/v1` on the v1 path. It reports
-  typed evaluator status, positive bounded conclusions, support refs, basis
-  refs, and review focus without reconstructing v0 witness rules, signature
-  axes, coverage requirements, or distance formulas. Raw diff,
-  `archmap-commit-v0`, and base/head analysis packets are not PR-review inputs.
-  The legacy v0 path remains documented here for old artifacts only: with a
-  supplied head ArchMap, the command internally builds base/path/head packets
-  under the same LawPolicy and emits `prDriftReadings[]`: endpoint signature
-  distance, total path movement, hidden-excursion status, top moved atoms / axes
-  with source refs, coverage gaps, safe change budget, and architecture
-  navigation review focus. Optional intermediate path ArchMaps make
-  total movement a supplied-snapshot sum; without them it is a two-point
-  base/head lower bound. Coverage gaps limit the safe-change budget instead of
-  becoming measured zero.
-- `archsig-codebase-inspection-report-v0` reads latest
-  `archmap-snapshot-v0`, `archmap-index-v0`, optional recent deltas, optional
-  LawPolicy provenance, and one packet. It is current-state architecture health
-  telemetry.
+  `archmap-delta-v0`, required `law-policy/v1`, and optional head /
+  intermediate `archmap/v1` snapshots. It reports report-local v1 snapshots,
+  delta refs matched to typed / derived packet refs, endpoint
+  architecture-distance movement, total path movement, hidden-excursion
+  boundary, safe-change budget, and structural review focus. Raw diff,
+  `archmap-commit-v0`, v0 witness-rule reconstruction, and base/head analysis
+  packets are not PR-review inputs.
 
-Both reports preserve measured witnesses, coverage / exactness boundary,
-missing evidence, and non-conclusions. Neither report is a merge approval,
-global lawfulness proof, raw-diff semantic parser, forecast, governance,
-calibration, or longitudinal FieldSig analysis.
+The report preserves measured witnesses, coverage / exactness boundary,
+missing evidence, and non-conclusions. It is not merge approval, global
+lawfulness proof, raw-diff semantic parser, forecast, governance, calibration,
+or longitudinal FieldSig analysis.
 
 FieldSig handoff projects child-level `missingEvidence` / `excludedReadings`
 as unknown remainder and evidence-boundary refs instead of rounding them to

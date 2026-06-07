@@ -96,29 +96,6 @@ always writes `archsig-analysis-summary.json` directly. Read
 `distanceDiagnosis`, and `actionQueue` first. The summary does not replace the
 raw packet or validation reports.
 
-## Codebase Inspection
-
-```bash
-cargo run --manifest-path tools/archsig/Cargo.toml -- codebase-inspection \
-  --snapshot tools/archsig/tests/fixtures/inspection/archmap_snapshot.json \
-  --index tools/archsig/tests/fixtures/inspection/archmap_index.json \
-  --packet tools/archsig/tests/fixtures/coupon_rounding/archsig_analysis_packet.json \
-  --law-policy tools/archsig/tests/fixtures/minimal/law_policy.json \
-  --recent-delta tools/archsig/tests/fixtures/pr_review/archmap_delta.json \
-  --out .archsig/inspection/archsig-codebase-inspection.json
-```
-
-`codebase-inspection` is the current-state ArchSig surface for architecture
-health review. Its canonical inputs are the latest `archmap-snapshot-v0`,
-`archmap-index-v0`, an `archsig-analysis-packet-v0`, optional recent
-`archmap-delta-v0` window, and optional `law-policy-v0` provenance. The report
-groups subsystem boundary cues, feature-like clusters, operation-like
-relations, top boundary holonomy readings, top order-sensitive squares,
-coverage / exactness boundaries, and next action cues. It separates this
-current-state diagnosis from `pr-review`, which is change-local, and from
-FieldSig, which owns PR / diff / change-vector evolution analysis, forecast,
-governance, calibration, and longitudinal monitoring.
-
 ## Lightweight PR Review
 
 ```bash
@@ -165,11 +142,11 @@ Large ArchMaps may be drafted in a sharded authoring layout documented in
     runtime.archmap-slice.json
 ```
 
-The manifest schema is `archmap-shard-manifest-v0`. This is an authoring-side
-layout, not a current analysis input. The primary sharding model is horizontal:
-each `archmap-observation-slice-v0` file is a bounded observation slice over a
-repository surface or sub-agent assignment. Bundle/export must produce a
-monolithic `archmap-observation-map-v0` file before running:
+The manifest schema is historical `archmap-shard-manifest-v0`. This is an
+authoring-side layout, not a current analysis input. The primary sharding model
+is horizontal: each slice is a bounded observation slice over a repository
+surface or sub-agent assignment. Bundle/export must produce a monolithic
+`archmap/v1` file before running:
 
 ```bash
 cargo run --manifest-path tools/archsig/Cargo.toml -- archmap \
@@ -182,48 +159,22 @@ bundle/export command should validate slice paths, duplicate ids, dangling
 cross-slice refs, required/optional slice policy, allowed cross-slice
 references, and source refs before writing the exported ArchMap.
 
-## Step Commands
+## Validation Commands
 
 ```bash
 cargo run --manifest-path tools/archsig/Cargo.toml -- archmap \
-  --input tools/archsig/tests/fixtures/minimal/archmap.json \
+  --input tools/archsig/tests/fixtures/archmap_v1/archmap.json \
   --out .archsig/analyze/archmap-validation.json
 
-cargo run --manifest-path tools/archsig/Cargo.toml -- interpretation-profile \
-  --input tools/archsig/tests/fixtures/minimal/law_policy.json \
+cargo run --manifest-path tools/archsig/Cargo.toml -- law-policy \
+  --input tools/archsig/tests/fixtures/archmap_v1/law_policy.json \
   --out .archsig/analyze/law-policy-validation.json
-
-cargo run --manifest-path tools/archsig/Cargo.toml -- aat-analysis \
-  --archmap tools/archsig/tests/fixtures/minimal/archmap.json \
-  --law-policy tools/archsig/tests/fixtures/minimal/law_policy.json \
-  --out .archsig/analyze/archsig-analysis-packet.json \
-  --validation-out .archsig/analyze/archsig-analysis-validation.json \
-  --llm-interpretation-out .archsig/analyze/llm-interpretation-packet.json
-
-cargo run --manifest-path tools/archsig/Cargo.toml -- analysis-summary \
-  --packet .archsig/analyze/archsig-analysis-packet.json \
-  --out .archsig/analyze/archsig-analysis-summary.json
 ```
 
-`law-policy` / `interpretation-profile` validate the selected analysis profile.
-The JSON schema name remains `law-policy-v0`, but ArchSig treats it as a
-profile selecting LawUniverse, witness rules, axes, coverage, and exactness.
-`law-policy --fixture` emits the canonical minimal profile fixture.
-
-## ArchMap Generation Protocol
-
-```bash
-cargo run --manifest-path tools/archsig/Cargo.toml -- archmap-generate \
-  --source-inventory tools/archsig/tests/fixtures/minimal/archmap_source_inventory.json \
-  --prompt-pack tools/archsig/skills/archmap-creater/references/prompt-pack.md \
-  --provider external-agent \
-  --model-id unspecified \
-  --out .archsig/analyze/archmap-generation-protocol.json
-```
-
-This command emits a bounded protocol for an external agent to produce
-`archmap-observation-map-v0`. The protocol is provenance and boundary data; it
-does not reconstruct private context or prove semantic correctness.
+`archmap` validates `archmap/v1`. `law-policy` validates `law-policy/v1`.
+Standalone packet-builder, standalone summary, codebase-inspection, and
+archmap-generation commands are removed runtime surfaces; use `analyze` and
+the ArchSig skills instead.
 
 ## Schema Catalog
 

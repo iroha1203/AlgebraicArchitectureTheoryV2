@@ -12,16 +12,13 @@ or a FieldSig forecast.
 | Field | Meaning | Reviewer action |
 | --- | --- | --- |
 | `schemaVersion` | Report schema. Must be `archsig-pr-review-report-v1`. | Stop if different. |
-| `reviewId` | Combined id from base map, delta, and policy. | Use for traceability only. |
 | `canonicalInputs` | Paths, ids, and schema versions of base/head/path ArchMaps, delta, and LawPolicy. | Confirm the intended artifacts were used. |
-| `policyBoundary` | LawPolicy requirement and selected policy lens. | Keep the selected policy visible. |
-| `changeLocalDiagnosis` | Counts and matched families/axes. | Size the review and detect coverage problems. |
-| `changedObservations` | Delta refs matched against the base ArchMap. | Build the code-reading queue. |
-| `policyMatchedLaws` | LawPolicy laws related to changed atom families. | Turn into review questions. |
-| `sourceTargets` | Source refs attached to changed observations and delta intent. | Start source inspection here. |
-| `prDriftReadings` | Part IV endpoint distance, total movement, hidden-excursion status, top moved atoms / axes, coverage gaps, and safe budget. | Use as bounded architecture navigation, not approval. |
-| `architectureNavigationReport` | Compact review focus derived from PR drift. | Lead source review with these refs and blockers. |
-| `evidenceBoundary` | What the command did and did not inspect. | Include the boundary in the final note. |
+| `typedEvaluatorSummary` | Base snapshot evaluator status counts. | Check whether selected support is measured, blocked, unknown, or unmeasured. |
+| `v1Analysis` | Report-local base / optional after / optional path v1 analysis snapshots. | Use packet refs, structural refs, and distance diagnosis as navigation evidence. |
+| `deltaPacketRefIntersections` | Each delta ref matched against base / after / path typed and derived packet refs. | Build the code-reading queue and report unmatched delta refs as blockers. |
+| `prStructuralDiagnosis` | Endpoint movement, total path movement, hidden-excursion boundary, safe-change budget, and review focus refs. | Use as bounded architecture navigation, not approval. |
+| `reviewFocus` | Compact refs for changed observations and structural packet refs. | Lead source review with these refs and blockers. |
+| `nonConclusions` | What the command did and did not inspect. | Include the boundary in the final note. |
 
 ## Reading Order
 
@@ -32,23 +29,33 @@ or a FieldSig forecast.
    - intermediate path ArchMaps are present only when hidden-excursion movement was supplied
    - delta is the freshly created PR-local delta
    - LawPolicy is the selected project policy
-3. Read `changeLocalDiagnosis`:
-   - `changedObservationCount`: size of the delta
-   - `matchedBaseObservationCount`: how many refs resolved to base map entries
-   - `changedAtomFamilies`: kinds of boundaries touched
-   - `policyMatchedLawCount`: how many selected laws are relevant
-   - `policyMatchedAxisRefs`: review dimensions selected by policy
-   - `sourceTargetCount`: how much source evidence was named
-4. Read `prDriftReadings`:
-   - `endpointSignatureDistance`: selected-axis base/head signature delta
-   - `totalPathMovement`: two-point lower bound or supplied-snapshot path sum
-   - `hiddenExcursionStatus`: whether intermediate excursions were measured or remain blocked
-   - `topMovedAtoms` / `topMovedAxes`: source-backed drift focus
-   - `safeChangeBudget`: blocked by coverage gaps unless selected margin evidence is sufficient
-5. Use `architectureNavigationReport.recommendedReviewFocus` as the compact review queue.
-6. Read `changedObservations` and separate matched vs unmatched refs.
-7. Read `policyMatchedLaws` and rewrite each as a plain review question.
-8. Read `sourceTargets` and inspect those files before making claims.
+3. Read `typedEvaluatorSummary`:
+   - `measuredPass`, `measuredViolation`, `blocked`, `unknown`, and
+     `unmeasured` are evaluator statuses, not raw diff verdicts
+   - blocked / unknown / unmeasured support is not measured zero
+4. Read `v1Analysis`:
+   - `base` is always present
+   - `after` is present only when a head ArchMap was supplied
+   - `path[]` is present only when intermediate ArchMap snapshots were supplied
+   - `structuralPacketRefs`, `structuralReadingRefs`, `detailRefs`, and
+     `distanceDiagnosis` are report-local navigation refs
+5. Read `deltaPacketRefIntersections`:
+   - `matchedDerivedPacketRefs`: the delta ref intersects typed / derived
+     packet refs in at least one supplied snapshot
+   - `blockedByMissingPacketRefIntersection`: review the ArchMap / delta
+     coverage before making a source-level claim
+   - `snapshotMatches[]`: tells whether the ref was visible in base, after, or
+     an intermediate path snapshot
+6. Read `prStructuralDiagnosis`:
+   - `endpointDistanceMovement`: base/head architecture-distance movement or
+     blocked if no head ArchMap was supplied
+   - `totalPathMovement`: endpoint-only lower bound or supplied path movement
+   - `hiddenExcursionBoundary`: bounded only by supplied path snapshots
+   - `safeChangeBudget`: blocked by unmatched delta refs or incomplete typed
+     support; otherwise bounded within the selected evidence contract
+7. Use `reviewFocus` and `reviewIntent.sourceFirstTargets[]` from the delta as
+   the compact review queue.
+8. Inspect those source files before making claims.
 
 ## Count Interpretation
 
@@ -56,11 +63,13 @@ Use counts conservatively:
 
 - high `changedObservationCount`: review scope may be broad; split by file or
   family
-- low `matchedBaseObservationCount`: map/delta coverage issue; do not overclaim
-- zero `policyMatchedLawCount`: no selected law matched these atom families; not
-  proof of safety
-- nonempty `policyMatchedAxisRefs`: selected review dimensions to check in code
-- zero `sourceTargetCount`: delta/report is too weak for source-first review
+- low or zero `matchedPacketRefCount`: map/delta coverage issue; do not
+  overclaim
+- nonempty `blockedOrUnmeasuredSupportCount`: safe-change budget is blocked by
+  incomplete support
+- endpoint movement without path snapshots: hidden excursion remains blocked
+- zero source targets in the delta: delta/report is too weak for source-first
+  review
 
 ## Human Questions From Report Data
 
@@ -109,7 +118,7 @@ report is a triage artifact over the selected base ArchMap and LawPolicy.
 
 Avoid:
 
-- using `policyMatchedLaws[]` as violation findings
+- using `deltaPacketRefIntersections[]` as violation findings
 - hiding unmatched refs instead of reporting map/delta coverage gaps
 - showing raw axis ids to human reviewers when a code-review question is clearer
 - saying ArchSig analyzed raw diff
