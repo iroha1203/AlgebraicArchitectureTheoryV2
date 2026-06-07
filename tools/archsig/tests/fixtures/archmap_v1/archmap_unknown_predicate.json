@@ -1,0 +1,20 @@
+{
+  "schema": "archmap/v1",
+  "id": "bad-predicate",
+  "sources": {
+    "src.app": {
+      "kind": "file",
+      "path": "sample/src/app.rs"
+    }
+  },
+  "atoms": [
+    {
+      "id": "atom:unknown-predicate",
+      "kind": "capability",
+      "subject": "src.app",
+      "predicate": "whateverTheAuthorWants",
+      "refs": ["src.app"]
+    }
+  ],
+  "molecules": []
+}

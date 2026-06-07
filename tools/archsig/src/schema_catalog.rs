@@ -1,9 +1,9 @@
 use crate::{
-    ARCHMAP_SCHEMA_VERSION, ARCHMAP_VALIDATION_REPORT_SCHEMA_VERSION,
+    ARCHMAP_SCHEMA_VERSION, ARCHMAP_V1_SCHEMA, ARCHMAP_VALIDATION_REPORT_SCHEMA_VERSION,
     ARCHSIG_ANALYSIS_PACKET_SCHEMA_VERSION,
     ARCHSIG_ANALYSIS_PACKET_VALIDATION_REPORT_SCHEMA_VERSION,
     ARCHSIG_ATOM_VIEWER_DATA_SCHEMA_VERSION, ARCHSIG_RUN_MANIFEST_SCHEMA_VERSION,
-    LAW_POLICY_SCHEMA_VERSION, LAW_POLICY_VALIDATION_REPORT_SCHEMA_VERSION,
+    LAW_POLICY_SCHEMA_VERSION, LAW_POLICY_V1_SCHEMA, LAW_POLICY_VALIDATION_REPORT_SCHEMA_VERSION,
     SCHEMA_COMPATIBILITY_POLICY_SCHEMA_VERSION, SCHEMA_VERSION_CATALOG_SCHEMA_VERSION,
     SchemaCompatibilityBoundaryV0, SchemaCompatibilityDimensionV0, SchemaCompatibilityPolicyV0,
     SchemaVersionCatalogEntryV0, SchemaVersionCatalogV0,
@@ -46,6 +46,19 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 ],
             ),
             artifact(
+                "archmap-v1",
+                "ArchMap v1 Atom input artifact",
+                ARCHMAP_V1_SCHEMA,
+                "primary",
+                "ArchMap Atom-to-AAT contract",
+                vec!["docs/tool/archmap_minimal_observation_contract_prd.md"],
+                "ArchMap v1 records sources, atoms, and molecules as the primary input contract. It rejects legacy v0 root fields, unknown atom kinds, unknown predicates, and unresolved source refs before analysis.",
+                vec![
+                    "ArchMap v1 validation does not run the v1 evaluator pipeline.",
+                    "ArchMap v1 validation does not prove architecture lawfulness, source completeness, Lean theorem discharge, or global semantic truth.",
+                ],
+            ),
+            artifact(
                 "law-policy",
                 "Selected interpretation profile artifact",
                 LAW_POLICY_SCHEMA_VERSION,
@@ -62,6 +75,19 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                     "Adding a law family must preserve missing coverage as distinct from measured zero.",
                     "Changing a spectrum measurement profile changes a measurement recipe, not the selected law universe.",
                     "Changing a homotopy measurement profile changes a path / filler / loop measurement recipe, not the selected law universe.",
+                ],
+            ),
+            artifact(
+                "law-policy-v1",
+                "LawPolicy v1 selector artifact",
+                LAW_POLICY_V1_SCHEMA,
+                "primary",
+                "ArchMap Atom-to-AAT contract",
+                vec!["docs/tool/archmap_minimal_observation_contract_prd.md"],
+                "LawPolicy v1 selects policy packs or explicit law/evaluator pairs with registry-owned basis, scope, and severity. It rejects unknown packs, unknown evaluators, unresolved basis refs, and DSL-style witness rules before analysis.",
+                vec![
+                    "LawPolicy v1 selects evaluators; it does not define witness predicates, axis valuation, obstruction definitions, or Lean proofs.",
+                    "LawPolicy v1 validation does not run the v1 evaluator pipeline.",
                 ],
             ),
             artifact(
@@ -252,8 +278,10 @@ mod tests {
             BTreeSet::from([
                 "archmap",
                 "archmap-validation-report",
+                "archmap-v1",
                 "law-policy",
                 "law-policy-validation-report",
+                "law-policy-v1",
                 "archsig-analysis-packet",
                 "archsig-analysis-packet-validation-report",
                 "archsig-run-manifest",

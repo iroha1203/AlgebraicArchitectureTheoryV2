@@ -1,0 +1,13 @@
+{
+  "schema": "law-policy/v1",
+  "id": "dsl-field",
+  "policies": [
+    {
+      "pack": "solid@1",
+      "basis": ["policy-basis:solid"],
+      "scope": ["src.app"],
+      "severity": "error"
+    }
+  ],
+  "witnessRules": []
+}

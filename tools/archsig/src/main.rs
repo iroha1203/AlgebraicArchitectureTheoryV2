@@ -3,11 +3,13 @@ use std::path::PathBuf;
 use std::process::ExitCode;
 
 use archsig::{
-    ARCHSIG_ANALYSIS_PACKET_SCHEMA_VERSION, ArchMapDocumentV0, ArchMapSourceInventoryInput,
-    ArchMapSourceInventoryV0, ArchMapValidationReportV0, LawPolicyDocumentV0,
+    ARCHMAP_V1_SCHEMA, ARCHSIG_ANALYSIS_PACKET_SCHEMA_VERSION, ArchMapDocumentV0,
+    ArchMapDocumentV1, ArchMapSourceInventoryInput, ArchMapSourceInventoryV0,
+    ArchMapValidationReportV0, LAW_POLICY_V1_SCHEMA, LawPolicyDocumentV0, LawPolicyDocumentV1,
     SchemaVersionCatalogV0, build_archsig_analysis_packet, static_law_policy,
-    static_schema_version_catalog, validate_archmap_report,
+    static_schema_version_catalog, validate_archmap_report, validate_archmap_v1_report,
     validate_archsig_analysis_packet_report, validate_law_policy_report,
+    validate_law_policy_v1_report,
 };
 use clap::{Parser, Subcommand};
 
@@ -230,45 +232,88 @@ fn main() -> ExitCode {
     }
 }
 
+fn validate_archmap_command_input(
+    input: &PathBuf,
+) -> Result<(serde_json::Value, bool, bool), Box<dyn Error>> {
+    let raw: serde_json::Value = read_json(input)?;
+    if json_schema(&raw) == Some(ARCHMAP_V1_SCHEMA) {
+        let document: ArchMapDocumentV1 = serde_json::from_value(raw)?;
+        let report = validate_archmap_v1_report(&document, &input.display().to_string());
+        let failed = report.summary.result == "fail";
+        return Ok((serde_json::to_value(report)?, failed, true));
+    }
+
+    let document: ArchMapDocumentV0 = serde_json::from_value(raw)?;
+    let source_inventory_path = document
+        .source_inventory_ref
+        .as_ref()
+        .and_then(|source_inventory_ref| source_inventory_ref.path.as_deref());
+    let mut source_inventory_document: Option<ArchMapSourceInventoryV0> = None;
+    let mut source_inventory_error: Option<String> = None;
+    if let Some(path) = source_inventory_path {
+        match resolve_archmap_sidecar_path(input, path) {
+            Some(resolved_path) => match read_json(&resolved_path) {
+                Ok(source_inventory) => source_inventory_document = Some(source_inventory),
+                Err(error) => {
+                    source_inventory_error = Some(format!(
+                        "source inventory artifact could not be read: {error}"
+                    ));
+                }
+            },
+            None => {
+                source_inventory_error =
+                    Some("source inventory artifact path does not exist".to_string());
+            }
+        }
+    }
+    let source_inventory = source_inventory_path.map(|path| ArchMapSourceInventoryInput {
+        path,
+        document: source_inventory_document.as_ref(),
+        read_error: source_inventory_error.clone(),
+    });
+    let report: ArchMapValidationReportV0 =
+        validate_archmap_report(&document, &input.display().to_string(), source_inventory);
+    let failed = report.summary.result == "fail";
+    Ok((serde_json::to_value(report)?, failed, false))
+}
+
+fn validate_law_policy_command_input(
+    input: Option<&PathBuf>,
+) -> Result<(serde_json::Value, bool, bool), Box<dyn Error>> {
+    let Some(input) = input else {
+        let policy = static_law_policy();
+        let report = validate_law_policy_report(&policy, "static-law-policy");
+        let failed = report.summary.result == "fail";
+        return Ok((serde_json::to_value(report)?, failed, false));
+    };
+
+    let raw: serde_json::Value = read_json(input)?;
+    if json_schema(&raw) == Some(LAW_POLICY_V1_SCHEMA) {
+        let policy: LawPolicyDocumentV1 = serde_json::from_value(raw)?;
+        let report = validate_law_policy_v1_report(&policy, &input.display().to_string());
+        let failed = report.summary.result == "fail";
+        return Ok((serde_json::to_value(report)?, failed, true));
+    }
+
+    let policy: LawPolicyDocumentV0 = serde_json::from_value(raw)?;
+    let report = validate_law_policy_report(&policy, &input.display().to_string());
+    let failed = report.summary.result == "fail";
+    Ok((serde_json::to_value(report)?, failed, false))
+}
+
+fn json_schema(document: &serde_json::Value) -> Option<&str> {
+    document
+        .get("schema")
+        .or_else(|| document.get("schemaVersion"))
+        .and_then(|value| value.as_str())
+}
+
 fn run() -> Result<ExitCode, Box<dyn Error>> {
     let args = Args::parse();
 
     match args.command {
         Some(Command::Archmap { input, out }) => {
-            let document: ArchMapDocumentV0 = read_json(&input)?;
-            let source_inventory_path = document
-                .source_inventory_ref
-                .as_ref()
-                .and_then(|source_inventory_ref| source_inventory_ref.path.as_deref());
-            let mut source_inventory_document: Option<ArchMapSourceInventoryV0> = None;
-            let mut source_inventory_error: Option<String> = None;
-            if let Some(path) = source_inventory_path {
-                match resolve_archmap_sidecar_path(&input, path) {
-                    Some(resolved_path) => match read_json(&resolved_path) {
-                        Ok(source_inventory) => source_inventory_document = Some(source_inventory),
-                        Err(error) => {
-                            source_inventory_error = Some(format!(
-                                "source inventory artifact could not be read: {error}"
-                            ));
-                        }
-                    },
-                    None => {
-                        source_inventory_error =
-                            Some("source inventory artifact path does not exist".to_string());
-                    }
-                }
-            }
-            let source_inventory = source_inventory_path.map(|path| ArchMapSourceInventoryInput {
-                path,
-                document: source_inventory_document.as_ref(),
-                read_error: source_inventory_error.clone(),
-            });
-            let report: ArchMapValidationReportV0 = validate_archmap_report(
-                &document,
-                &input.display().to_string(),
-                source_inventory,
-            );
-            let failed = report.summary.result == "fail";
+            let (report, failed, _) = validate_archmap_command_input(&input)?;
             write_json(out, &report)?;
             Ok(if failed {
                 ExitCode::from(1)
@@ -286,17 +331,7 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                 write_json(out, &policy)?;
                 return Ok(ExitCode::SUCCESS);
             }
-            let policy: LawPolicyDocumentV0 = input
-                .as_ref()
-                .map(read_json)
-                .transpose()?
-                .unwrap_or_else(static_law_policy);
-            let input_path = input
-                .as_ref()
-                .map(|path| path.display().to_string())
-                .unwrap_or_else(|| "static-law-policy".to_string());
-            let report = validate_law_policy_report(&policy, &input_path);
-            let failed = report.summary.result == "fail";
+            let (report, failed, _) = validate_law_policy_command_input(input.as_ref())?;
             write_json(out, &report)?;
             Ok(if failed {
                 ExitCode::from(1)
@@ -543,6 +578,26 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
             let analysis_validation_path = out_dir.join("archsig-analysis-validation.json");
             let llm_interpretation_path = out_dir.join("llm-interpretation-packet.json");
 
+            let (archmap_preflight, archmap_failed, archmap_is_v1) =
+                validate_archmap_command_input(&archmap)?;
+            let (law_policy_preflight, law_policy_failed, law_policy_is_v1) =
+                validate_law_policy_command_input(Some(&law_policy))?;
+            if archmap_is_v1 || law_policy_is_v1 {
+                std::fs::create_dir_all(&out_dir)?;
+                remove_analyze_success_artifacts(&out_dir)?;
+                write_json(Some(archmap_validation_path), &archmap_preflight)?;
+                write_json(Some(law_policy_validation_path), &law_policy_preflight)?;
+                eprintln!(
+                    "archsig analyze wrote v1 validation artifacts to {} but the v1 evaluator pipeline is not implemented yet",
+                    out_dir.display()
+                );
+                return Ok(if archmap_failed || law_policy_failed {
+                    ExitCode::from(1)
+                } else {
+                    ExitCode::from(1)
+                });
+            }
+
             let archmap_document: ArchMapDocumentV0 = read_json(&archmap)?;
             let source_inventory_path = archmap_document
                 .source_inventory_ref
@@ -665,4 +720,24 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
             Err("ArchSig is ArchMap/LawPolicy/analysis-packet primary; use `archsig analyze` for the main analysis path.".into())
         }
     }
+}
+
+fn remove_analyze_success_artifacts(out_dir: &PathBuf) -> Result<(), Box<dyn Error>> {
+    for artifact in [
+        "archsig-analysis-summary.json",
+        "archsig-atom-viewer-data.json",
+        "archsig-run-manifest.json",
+        "archsig-analysis-packet.json",
+        "archsig-analysis-detail-index.json",
+        "archsig-analysis-validation.json",
+        "llm-interpretation-packet.json",
+    ] {
+        let path = out_dir.join(artifact);
+        match std::fs::remove_file(&path) {
+            Ok(()) => {}
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
+            Err(error) => return Err(Box::new(error)),
+        }
+    }
+    Ok(())
 }
