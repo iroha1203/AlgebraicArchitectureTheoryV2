@@ -5,6 +5,7 @@ pub const ARCHMAP_VALIDATION_REPORT_SCHEMA_VERSION: &str = "archmap-validation-r
 pub const LAW_POLICY_SCHEMA_VERSION: &str = "law-policy-v0";
 pub const LAW_POLICY_V1_SCHEMA: &str = "law-policy/v1";
 pub const LAW_POLICY_VALIDATION_REPORT_SCHEMA_VERSION: &str = "law-policy-validation-report-v0";
+pub const NORMALIZED_ARCHMAP_V1_SCHEMA: &str = "normalized-archmap/v1";
 pub const ARCHSIG_ANALYSIS_PACKET_SCHEMA_VERSION: &str = "archsig-analysis-packet-v0";
 pub const ARCHSIG_ANALYSIS_PACKET_VALIDATION_REPORT_SCHEMA_VERSION: &str =
     "archsig-analysis-packet-validation-report-v0";

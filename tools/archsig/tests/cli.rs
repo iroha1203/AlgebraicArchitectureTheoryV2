@@ -77,6 +77,79 @@ fn cli_validates_archmap_v1_atom_contract() {
 }
 
 #[test]
+fn cli_analyze_v1_writes_normalized_archmap_for_valid_input() {
+    let out_dir = temp_dir("analyze-v1-normalized");
+    let root = archmap_v1_root();
+
+    let output = run_sig0_output(&[
+        "analyze",
+        "--archmap",
+        root.join("archmap.json").to_str().expect("path is utf-8"),
+        "--law-policy",
+        root.join("law_policy.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--out-dir",
+        out_dir.to_str().expect("path is utf-8"),
+    ]);
+
+    assert!(
+        !output.status.success(),
+        "v1 analyze stops before the evaluator pipeline is implemented"
+    );
+    let json = read_json(&out_dir.join("normalized-archmap.json"));
+    assert_eq!(json["schema"], "normalized-archmap/v1");
+    assert_eq!(json["normalizerId"], "archmap-v1-aat-presentation@1");
+    assert_eq!(json["summary"]["atomCount"], 3);
+    assert_eq!(json["summary"]["normalizedAtomCount"], 3);
+    assert_eq!(json["summary"]["generatedMoleculeCandidateCount"], 1);
+    assert!(
+        json["atoms"]
+            .as_array()
+            .is_some_and(|atoms| atoms.iter().any(|atom| atom["sourceAtomId"]
+                == "atom:reservation-effect"
+                && atom["atomKind"] == "effect"
+                && atom["axis"] == "semantic"
+                && atom["predicate"]["constructor"] == "effect"
+                && atom["shapeCoordinateStatus"] == "resolved"
+                && atom["valenceTemplateId"] == "valence:effect@1"))
+    );
+}
+
+#[test]
+fn cli_analyze_v1_marks_incomplete_molecule_candidate_blocked() {
+    let out_dir = temp_dir("analyze-v1-blocked-molecule");
+    let root = archmap_v1_root();
+
+    let output = run_sig0_output(&[
+        "analyze",
+        "--archmap",
+        root.join("archmap_blocked_molecule.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--law-policy",
+        root.join("law_policy.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--out-dir",
+        out_dir.to_str().expect("path is utf-8"),
+    ]);
+
+    assert!(!output.status.success());
+    let json = read_json(&out_dir.join("normalized-archmap.json"));
+    assert_eq!(json["summary"]["blockedMoleculeCandidateCount"], 1);
+    assert!(
+        json["molecules"]
+            .as_array()
+            .is_some_and(|molecules| molecules
+                .iter()
+                .any(|molecule| molecule["sourceMoleculeId"] == "mol:single-atom"
+                    && molecule["generatedMoleculeCandidateStatus"] == "blockedForNormalization"
+                    && molecule["compositionStatus"] == "blockedForNormalization"))
+    );
+}
+
+#[test]
 fn cli_rejects_archmap_v1_unknown_atom_kind() {
     let out_dir = temp_dir("archmap-v1-unknown-kind");
     let root = archmap_v1_root();
@@ -291,6 +364,7 @@ fn cli_analyze_v1_writes_validation_artifacts_and_stops_before_packet() {
         "archsig-analysis-summary.json",
         "archsig-atom-viewer-data.json",
         "archsig-run-manifest.json",
+        "normalized-archmap.json",
     ] {
         fs::write(out_dir.join(stale_artifact), "{}").expect("stale artifact can be written");
     }
@@ -315,6 +389,10 @@ fn cli_analyze_v1_writes_validation_artifacts_and_stops_before_packet() {
     assert_eq!(
         read_json(&out_dir.join("law-policy-validation.json"))["schemaVersion"],
         "law-policy-validation-report-v1"
+    );
+    assert_eq!(
+        read_json(&out_dir.join("normalized-archmap.json"))["schema"],
+        "normalized-archmap/v1"
     );
     assert!(
         !out_dir.join("archsig-analysis-packet.json").exists(),
@@ -3605,6 +3683,7 @@ fn cli_schema_catalog_is_primary_archsig_surface_only() {
             "law-policy",
             "law-policy-v1",
             "law-policy-validation-report",
+            "normalized-archmap-v1",
             "archsig-analysis-packet",
             "archsig-analysis-packet-validation-report",
             "archsig-run-manifest",
