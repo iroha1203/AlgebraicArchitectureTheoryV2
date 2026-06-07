@@ -1,378 +1,348 @@
-# ArchMap Minimal Observation Contract PRD
+# ArchMap Atom-to-AAT Presentation Contract PRD
 
-この PRD は、ArchMap schema を最小の observation contract へ戻すための
-破壊的再設計要求を定義する。
+この PRD は、ArchMap v1 の target contract を定義する。
 
-既存の `archmap-observation-map-v0` は、実装を重ねる中で、ArchSig の計算を楽にする
-補助 field を ArchMap 側へ押し戻しすぎた。`semanticObservations`、`projectionInfo`、
-`operationSquareEvidence`、`concernHints`、`observationGaps`、大量の
-`nonConclusions` は、それぞれに理由があったが、結果として ArchMap が
-「観測した Atom / Molecule の地図」ではなく、分析前の濃い報告書になっている。
+ArchMap v1 は、source code / docs / tests / traces から作る atoms と molecules を、
+ArchSig が tooling contract 上の AAT-compatible presentation へ正規化できる形で保存する
+atom map contract である。ArchSig はその normalized presentation を LawPolicy に相対化して読み、
+bounded diagnostic conclusion を計算する。
 
-この PRD では後方互換性を維持しない。既存 schema、fixture、validation、analysis packet
-builder、skill、docs、website surface は壊してよい。優先するのは、元の責務分離である。
-
-```text
-ArchMap:
-  source universe から観測した atoms と molecules だけを書く。
-
-LawPolicy:
-  repository が採用する policy と、それを読む ArchSig evaluator を選ぶ。
-
-ArchSig:
-  built-in versioned evaluator library で ArchMap を評価し、bounded diagnostic conclusion を出す。
-```
-
-ArchMap は AAT に渡す数学スキーマではない。ArchMap は source-grounded observation contract
-である。ArchSig は Lean 証明器ではない。ArchSig は、与えられた
-`ArchMap + LawPolicy + evidence contract` から語れることだけを語る。
-
-## 中心責務
-
-ArchMap の責務は次の問いに答えることだけである。
+この v1 は破壊的変更である。現行 tooling はまだ v0.3.2 であり、v0 schema の後方互換、
+dual reader、legacy alias、compatibility shim を維持しない。レガシーを作らず、v1 contract へ
+素直に移行する。
 
 ```text
-この source universe の中で、どの atoms と molecules が観測されたか。
+source code / docs / tests / traces
+  -> ArchMap authoring layer
+     source-derived atoms と molecule membership を保存する
+  -> ArchSig normalizer
+     ArchMap を tooling contract 上の AAT-compatible Atom presentation へ変換する
+  -> LawPolicy
+     採用する law / evaluator / basis / scope / severity を選ぶ
+  -> ArchSig evaluator
+     obstruction / signature / distance / homotopy / review focus を計算する
 ```
 
-ArchMap は次を答えない。
+この文書でいう minimalization は、source から書ける atoms と molecules を主役にし、
+derived diagnosis を ArchSig 側の computation artifact へ移すことである。
 
-- どの projection が AAT object へ対応するか。
-- どの operation square が成立するか。
-- どの obstruction circuit があるか。
-- どの concern が risk / violation へ昇格するか。
-- 何が観測されなかったかの網羅的リスト。
-- global architecture truth、lawfulness、zero curvature、semantic correctness。
+## Core Thesis
 
-書かれている atom / molecule だけが観測済みである。書かれていないものは unknown であり、
-measured zero でも gap でもない。
+**ArchMap は atom-to-presentation contract である。source-derived atoms と molecules を保存し、
+ArchSig normalizer がそれを tooling contract 上の AAT-compatible presentation へ正規化する。**
 
-## R0. 破壊的変更を前提にする
+この一文を設計の中心に置く。
 
-この PRD で許容する破壊的変更は、ArchMap input / authoring contract 側の破壊である。
-ArchSig output の診断品質、測定深度、読解可能性を落としてよいという意味ではない。
+- ArchMap author は source-derived atoms と molecule membership を書く。
+- ArchSig normalizer は ArchMap を source 再読込なしで typed normalized model へ変換する。
+- unsupported atom は validation error にし、composition / required port が成立しない molecule は
+  normalization blocker として扱う。
+- ArchSig evaluator は normalized model と LawPolicy だけから bounded diagnostic conclusion を出す。
+- ArchSig は Lean に依存しない計算器であり、Lean を呼ばず、Lean proof object を要求しない。
+- missing atom は、ArchSig evaluator が `blocked` / `unknown` / `unmeasured` として扱う。
+- v0 input compatibility は維持しない。v0 artifact は migration note の対象であり、runtime contract ではない。
 
-この PRD の実装では、次の input-side 互換性を維持しない。
+## Responsibility Split
 
-- `archmap-observation-map-v0`
-- `semanticObservations`
-- `projectionInfo`
-- `operationSquareEvidence`
-- `concernHints`
-- `observationGaps`
-- v0 fixture / golden packet equality
-- v0 ArchMap validation report shape
-- v0 skill prompt output shape
-- v0 website / manual schema examples
+| Layer | Owns | Delegates to |
+| --- | --- | --- |
+| ArchMap authoring layer | source-derived atoms、explicit molecule membership、source refs | AAT presentation は normalizer、diagnosis は ArchSig evaluator |
+| ArchSig normalizer | ArchMap atoms から tooling contract 上の AAT-compatible Atom presentation / molecule candidate を作る | diagnosis は evaluator、policy selection は LawPolicy。Lean proof discharge はこの contract の対象外 |
+| LawPolicy | repository が採用する law、evaluator、basis、scope、severity の選択 | witness / axis / missing blocker / obstruction / measurement の計算規則は evaluator registry |
+| ArchSig evaluator | normalized presentation と LawPolicy から bounded diagnostic result を計算する | Lean theorem discharge はこの contract の対象外、evolution reading は FieldSig |
+| FieldSig | ArchSig packet を SFT 側の evolution / governance input として読む | current structural diagnosis は ArchSig |
 
-互換 shim、dual reader、legacy field alias は完了条件にしない。必要なら migration note は
-書いてよいが、runtime compatibility は要求しない。
+## Design Principles
 
-一方で、ArchSig output は現行の bounded diagnostic conclusion と同等以上の品質を維持する。
-ArchMap を痩せさせた結果として、obstruction、signature、distance、homotopy、coverage、
-review focus が粗くなる実装は完了とみなさない。v0 の補助 field に依存していた reading は、
-削除された field を復活させるのではなく、観測済み atom / molecule と ArchSig evaluator library
-から同等以上に評価できるよう作り直す。
+### 1. Atom-native first
 
-## 設計原則: evaluator first
+ArchMap primary schema は、code / docs / tests / traces を読んだ author が無理なく書ける形にする。
+`AtomShape`、`AtomValence`、required port graph、compatible composition への変換は
+ArchSig normalizer が引き受ける。
 
-この再設計は schema first ではない。ArchMap schema を削る前に、ArchSig が何を計算単位にするかを
-固定する。
+ArchMap author が書くのは、たとえば次のような atom である。
+
+```json
+{
+  "id": "atom:place-order-capability",
+  "kind": "capability",
+  "subject": "domain.OrderService",
+  "predicate": "placesOrder",
+  "refs": ["src.app.place_order"]
+}
+```
+
+これは source から書ける。これを tooling contract 上の AAT-compatible な `AtomKind.capability`、
+`Axis.static`、shape coordinate、port surface へ落とすのは ArchSig normalizer の責務である。
+
+### 2. Typed atoms
+
+ArchMap primary は、機械的に検査できる typed atom として書く。
+ArchSig は ArchMap の `atoms` を input records として扱う。AAT root の Atom object は
+Lean / AAT 側の対象である。
+
+- `kind` は `AtomPredicate` constructor に対応する registry enum であり、unknown string は validation error。
+- `predicate` と constructor-specific payload は controlled vocabulary である。
+- constructor-specific ref fields と `refs` は source table の id に解決される。
+- `label` や reviewer memo は表示 / authoring memo である。
+
+ArchMap primary に現れる文字列は、意味そのものではなく、次のどれかでなければならない。
+
+- schema / registry が定義する enum token。
+- `sources` に解決される source id。
+- registry が定義する predicate id。
+- author が同じ artifact 内で定義した atom / molecule id。
+
+Predicate registry は atom constructor ごとに required field shape を公開する。
+たとえば `capability` は `subject` / `predicate`、`effect` は `diagram` / `effect`、
+`runtime` は `edge` / `interaction` を要求する。任意の prose payload や
+未解決 namespace は validation error である。
+
+JSON は保存形式にすぎない。ArchSig 内部では typed normalized model に変換してから evaluator を走らせる。
+
+### 3. Normalization carries AAT compatibility
+
+AAT compatibility は、ArchMap primary の atoms を deterministic normalizer が
+tooling contract 上の AAT-compatible presentation へ写せることとして扱う。
 
 ```text
-ArchMap v1:
-  typed observed atom graph + molecule membership。
-
-LawPolicy v1:
-  repository policy selection + basis refs + evaluator refs。
-  witness predicate、signature axis、coverage rule、exactness assumption を持たない。
-
-ArchSig v1:
-  versioned evaluator library を持つ。
-  evaluator が witness / axis / coverage / zero-reading rule を実装として所有する。
+ArchMap typed atom records
+  -> deterministic normalizer
+  -> tooling contract 上の AAT-compatible Atom presentation
 ```
 
-LawPolicy に計算自由度を置かない。LawPolicy が任意の witness predicate や axis valuation rule を
-持つと、ArchMap から削った補助 field が LawPolicy 側に再発生する。LLM / tool がそれを生成する設計も
-採用しない。生成精度に ArchSig の計算が引っ張られるためである。
+Normalizer は、valid ArchMap の atom を `AtomKind`、`Axis`、typed predicate、shape coordinate、
+valence template、molecule compatibility check へ写す。
 
-ArchSig evaluator は固定 ID と version を持つ。
+この mapping は、valid ArchMap contract に対して決定論的かつ total である。つまり、
+validation を通過した atom は必ず normalized atom presentation を持つ。registry に mapping がない
+atom kind / predicate / shape は valid ArchMap ではなく、analysis 前の validation error である。
+
+`AAT-compatible` は Lean runtime dependency を意味しない。ArchSig は Lean を import / call せず、
+Lean theorem を discharge せず、Lean proof object を生成しない。ここでいう compatibility は、
+ArchSig の registry contract が AAT の current atom vocabulary / predicate grammar と同じ責務境界を
+保つ、という tooling contract である。
+
+### 4. Explicit molecule membership, normalized generated evidence
+
+Molecule membership は、ArchMap author が「同じ局所 configuration に属する atom 群」を
+明示する input である。
+
+ArchMap author が AAT の `GeneratedMolecule` 証拠を手で書く必要はない。Normalizer が、
+explicit molecule membership と atom facts から、AAT-compatible generated molecule candidate
+として読めるかを判定する。
 
 ```text
-solid.dependency-inversion@1
-domain.no-direct-infra-dependency@1
-provider.output-validation-before-persistence@1
-transaction.repository-owns-boundary@1
+author input:
+  molecule membership
+
+normalizer output:
+  generated molecule candidate
+  required port / composition evidence status
+  normalized / blockedForNormalization status
 ```
 
-各 evaluator は、必要な AAT atom family、観測 relation、molecule membership、source ref kind、
-coverage blocker、signature axis、distance contribution をコードとして定義する。ArchMap は evaluator
-を助けるための derived field を持たない。LawPolicy は evaluator を発明しない。
+`measuredPass`、`measuredViolation`、`blocked`、`unknown`、`unmeasured` は evaluator result の
+status である。
 
-各 evaluator は registry manifest を持つ。manifest は少なくとも次を公開する。
+### 5. LawPolicy selects, evaluator computes
 
-```text
-evaluator id / version
-recognized atom families
-recognized relations
-required term/ref shapes
-measured criteria
-blocked / unknown criteria
-output reading families
-packet ref paths emitted on success
-negative fixtures that must not measure
-```
+LawPolicy は、repository が採用する law と、それを読む versioned evaluator を選ぶ。
 
-Output quality は「現行と同等」という抽象 claim だけで判定しない。削除対象 field または output
-reading family ごとに、次の対応表を実装 PR の acceptance に含める。
+witness predicate、axis valuation、missing blocker rule、obstruction definition は、
+evaluator registry の実装と manifest が所有する。
 
-```text
-removed v0 input / reading family
--> replacement evaluator id
--> required observed atoms / molecules / refs
--> measured / blocked / unknown criteria
--> output packet refs
--> negative test fixture
-```
+Measurement、aggregation、threshold、distance contribution、review focus は evaluator registry が
+所有する。LawPolicy はそれらを DSL や score formula として持たない。
 
-ArchSig の計算は次の順序で行う。
+### 6. Positive bounded conclusions
 
-```text
-1. ArchMap を lookup index にする。
-2. LawPolicy の selected evaluator refs を読む。
-3. 各 evaluator を ArchMap index に対して実行する。
-4. evaluator result を measured / blocked / unknown / notApplicable に分類する。
-5. measured result だけから obstruction、signature、distance、homotopy、review focus を作る。
-```
+ArchSig は、与えられた `ArchMap + LawPolicy + evidence contract` から語れることだけを語る。
+ここでいう evidence contract は ArchMap schema と evaluator registry が定義する evidence boundary であり、
+追加の side input ではない。
+語れる範囲では `SAFE_WITHIN_POLICY`、`NO_SELECTED_OBSTRUCTION`、
+`ACCEPTABLE_UNDER_EVIDENCE_CONTRACT` のような肯定的な bounded conclusion を出す。
+語るための atom / molecule が足りない箇所は `blocked` / `unknown` / `unmeasured` として扱い、
+measured zero へ落とさない。
 
-不足した観測は measured zero ではない。evaluator が要求する atom / molecule / source ref が
-存在しない場合、ArchSig はその evaluator result を blocked / unknown / unmeasured にする。
+## Artifact Contract
 
-## R1. ArchMap v1 は sources / atoms / molecules だけを primary schema にする
+### ArchMap Primary Artifact
 
-ArchMap v1 の primary shape は次である。
+ArchMap primary artifact は、source-derived atoms と molecule membership を保存する。
 
 ```json
 {
   "schema": "archmap/v1",
   "id": "practical-rust-service",
   "sources": {
-    "app": { "kind": "file", "path": "sample/src/app.rs" },
-    "app.place_order": {
+    "src.app": { "kind": "file", "path": "sample/src/app.rs" },
+    "src.app.place_order": {
       "kind": "symbol",
-      "source": "app",
+      "source": "src.app",
       "symbol": "place_order",
       "line": 23
     },
     "domain.OrderService": {
       "kind": "symbol",
-      "source": "app",
+      "source": "src.app",
       "symbol": "OrderService"
     },
     "domain.Order": {
       "kind": "symbol",
-      "source": "app",
+      "source": "src.app",
       "symbol": "Order"
+    },
+    "domain.InventoryService": {
+      "kind": "symbol",
+      "source": "src.app",
+      "symbol": "InventoryService"
+    },
+    "domain.InventoryReservation": {
+      "kind": "symbol",
+      "source": "src.app",
+      "symbol": "InventoryReservation"
     }
   },
   "atoms": [
     {
-      "id": "a:place-order",
-      "family": "capability",
-      "relation": "provides",
-      "terms": ["domain.OrderService", "domain.Order"],
-      "refs": ["app.place_order"],
+      "id": "atom:place-order-capability",
+      "kind": "capability",
+      "subject": "domain.OrderService",
+      "predicate": "placesOrder",
+      "refs": ["src.app.place_order"],
       "label": "OrderService places an order"
+    },
+    {
+      "id": "atom:inventory-check",
+      "kind": "relation",
+      "subject": "domain.OrderService",
+      "predicate": "checksInventoryWith",
+      "object": "domain.InventoryService",
+      "refs": ["src.app.place_order"],
+      "label": "OrderService checks inventory through InventoryService"
+    },
+    {
+      "id": "atom:reserve-effect",
+      "kind": "effect",
+      "diagram": "src.app.place_order",
+      "effect": "createsInventoryReservation",
+      "refs": ["src.app.place_order"],
+      "label": "InventoryService creates an inventory reservation"
     }
   ],
   "molecules": [
     {
-      "id": "m:place-order-flow",
-      "atoms": ["a:place-order", "a:inventory-check", "a:reserve-effect"],
-      "refs": ["app.place_order"]
+      "id": "mol:place-order-flow",
+      "atoms": [
+        "atom:place-order-capability",
+        "atom:inventory-check",
+        "atom:reserve-effect"
+      ],
+      "refs": ["src.app.place_order"],
+      "label": "place_order local flow"
     }
   ]
 }
 ```
 
-`sources` は source 台帳である。file path、symbol、line、doc section、runtime trace などは
-ここに一度だけ書く。Atom / Molecule は `refs` で source id を参照する。Atom / Molecule に
-file path を直接繰り返さない。
+ArchMap primary に置くもの:
 
-`sources` は読んだ source の台帳であり、未読 source の inventory ではない。private、
-unavailable、out-of-scope の列挙は ArchMap primary schema に持ち込まない。必要な場合は
-run manifest、authoring note、または ArchSig evaluator の coverage result として扱う。
-
-## R2. Atom family は AAT core family に準拠する
-
-Atom は「観測された原子的事実」である。Atom は canonical Atom truth ではなく、
-source-grounded observation である。
-
-ArchMap v1 の atom family は AAT 数学本文の core Atom family に準拠する。PRD や実装都合で
-Atom family を追加・削除・分割しない。特に、semantic Atom と runtime interaction Atom は
-AAT core family の一部であり、ArchSig が静的解析器へ退化しないための必須語彙である。
-
-Source kind、runtime trace kind、evidence boundary、review memo は Atom family ではない。
-これらを Atom family に混ぜると、AAT の Atom ontology と ArchSig evaluator の軸がずれる。
-
-Atom は prose triple ではない。ArchSig が計算に使う部分は `family`、`relation`、`terms`、`refs`
-だけである。`label` は人間向け表示であり、evaluator は `label` を読まない。
-
-- `family`: AAT core Atom family。
-- `relation`: ArchSig evaluator library が認識する controlled relation。
-- `terms`: `sources` の id または既存 atom id への参照。自然文でも未解決 namespace でもない。
+- `sources`: 読んだ source の台帳。
+- `atoms`: source-derived atoms。
+- `molecules`: author が明示した局所 configuration membership。
 - `refs`: source 台帳への参照。
-- `label`: 任意の表示用説明。
+- `label`: 人間向け表示。evaluator は読まない。
 
-`terms` に未解決の `t:*` 文字列を許さない。計算対象となる概念、symbol、doc section、runtime trace は
-`sources` に登録し、Atom はその source id を参照する。Atom 間の関係を観測する場合だけ、`terms` に
-atom id を含めてよい。
+ArchMap primary に置かないもの:
 
-`relation` は versioned evaluator registry が公開する relation vocabulary に含まれる必要がある。
-未知 relation は測定不能として黙って落とすのではなく、ArchMap validation error にする。`label` を
-変更しても evaluator result が変わらない negative test を必須にする。
+- `semanticObservations`
+- `projectionInfo`
+- `operationSquareEvidence`
+- `concernHints`
+- `observationGaps`
+- `nonConclusions`
+- obstruction / signature / distance / holonomy / risk / review focus
+- AtomShape / AtomValence / compatible composition の完全手書き
 
-例:
+### Unknown / Missing Atom
 
-```json
-{
-  "id": "a:reservation-meaning",
-  "family": "semantic",
-  "relation": "represents",
-  "terms": ["domain.InventoryReservation", "domain.Order"],
-  "refs": ["domain.InventoryReservation"],
-  "label": "InventoryReservation represents reserved inventory bound to an order"
-}
-```
+ArchSig core input は `ArchMap + LawPolicy` に固定する。
 
-Atom に `confidence`、`uncertainty`、`nonConclusions` を標準搭載しない。必要な reviewer memo は
-ArchMap 本体ではなく authoring artifact に置く。ArchSig の測定境界は、selected evaluator と
-analysis output で表現する。
+ArchMap primary の `sources` は読んだ source の台帳である。source inventory audit は
+ArchMap authoring run metadata、review note、CI report、または別 tooling が扱う。
 
-## R3. Molecule を観測された atom の束として強くする
+Evaluator が要求する atom / molecule / source ref が ArchMap に存在しない場合、ArchSig は
+その evaluator result を `unknown` / `unmeasured` / `blocked` にする。missing を measured zero と
+して扱わない。
 
-Molecule は診断結果ではない。Molecule は、source-grounded atoms を束ねた観測単位である。
-Lean 側の AAT でも、Molecule は既存 Atom の有限 configuration であり、role、pattern、
-workflow そのものではない。
+### Atom Vocabulary
 
-ArchMap v1 は molecule kind enum を持たない。kind にないものが表現できなくなる設計は採用しない。
-Molecule の `atoms` は atom id の参照であり、配列は観測された finite configuration の membership
-として読む。
+Atom vocabulary は、Lean 側の current `AtomPredicate` grammar に対応する
+ArchMap authoring constructor vocabulary である。
+ArchMap authoring では書きやすい短い constructor 名を使い、normalizer が Lean-facing
+`AtomPredicate` constructor へ total に写す。
 
-Operation square、path candidate、homotopy candidate を ArchMap に first-class field として
-置かない。Role、pattern、workflow、path-like reading は、ArchSig evaluator が molecule の
-membership と source refs を読んで与える interpretation であり、ArchMap primary schema の
-closed enum ではない。
+| ArchMap atom constructor | Required shape | Normalized predicate | AtomKind | Axis |
+| --- | --- | --- | --- | --- |
+| `component` | `subject` | `AtomPredicate.component(subject)` | `existence` | `static` |
+| `relation` | `edge` または `subject`, `object`, `predicate` | `AtomPredicate.relation(edge)` | `relation` | `static` |
+| `capability` | `subject`, `predicate` | `AtomPredicate.capability(subject, predicate)` | `capability` | `static` |
+| `dataState` | `diagram`, `state` | `AtomPredicate.dataState(diagram, state)` | `dataState` | `dataflow` |
+| `effect` | `diagram`, `effect` | `AtomPredicate.effect(diagram, effect)` | `effect` | `semantic` |
+| `authority` | `subject`, `authority` | `AtomPredicate.boundaryAuthority(subject, authority)` | `boundaryAuthority` | `boundary` |
+| `contract` | `diagram`, `contract` | `AtomPredicate.contractSpecification(diagram, contract)` | `contractSpecification` | `specification` |
+| `semantic` | `diagram`, `meaning` | `AtomPredicate.semanticInterpretation(diagram, meaning)` | `semanticInterpretation` | `semantic` |
+| `runtime` | `edge`, `interaction` | `AtomPredicate.runtimeInteraction(edge, interaction)` | `runtimeInteraction` | `runtime` |
 
-```json
-{
-  "id": "m:reservation-sequence",
-  "atoms": [
-    "a:inventory-check",
-    "a:reserve-effect",
-    "a:reservation-created"
-  ],
-  "refs": ["app.place_order", "store.reserve"]
-}
-```
+`AtomPredicate.custom` は default ArchMap v1 vocabulary には含めない。使う場合は、registry extension が
+`AtomKind`、`Axis`、required shape、normalizer mapping、negative fixture を明示する。
 
-ArchSig は molecule を selected evaluator に従って読む。ArchSig は、
-観測されていない reverse path、square、filler、risk cue を勝手に作らない。足りない場合は
-blocked / unknown とする。
+この表は、ArchMap atom を current Lean-facing predicate grammar へ total に変換するための
+normalizer contract である。
 
-## R4. 次の field を ArchMap primary schema から削除する
+ArchSig は missing blocker を、evaluator requirement、LawPolicy scope、
+atoms / molecules の照合からだけ出す。
 
-### `semanticObservations`
+### Normalized ArchMap Artifact
 
-`semanticObservations` という ArchMap 独自 layer は置かない。Semantic は AAT core Atom family
-に属する。複数 Atom から読まれる意味は molecule に対する後段 interpretation として扱う。
+Normalized ArchMap は、ArchSig normalizer が生成する computation artifact である。
 
-### `projectionInfo`
+Normalized artifact は少なくとも次を持つ。
 
-Projection は ArchMap の観測ではない。ArchSig output の reading として作る場合も、
-Atom / Molecule を直接根拠にする。ArchMap に `projectionInfo` を要求しない。
+- source atom id
+- normalized atom id
+- `AtomKind`
+- `Axis`
+- typed predicate constructor / normalized predicate name
+- subject / object / payload bindings
+- shape coordinate status
+- valence template id
+- molecule membership
+- generated molecule candidate status
+- normalization status: `normalized` / `blockedForNormalization`
+- normalization blocker reason
 
-### `operationSquareEvidence`
+Normalizer は source repository を再読込しない。ArchMap primary と evaluator registry だけを読む。
 
-Square は ArchMap の観測単位ではない。観測できるのは operation、state/effect、contract、
-runtime interaction、またはそれらを含む molecule である。Square / commutation / holonomy /
-obstruction への読みは LawPolicy + ArchSig の責務である。
-
-### `concernHints`
-
-Concern は ArchMap の primary input にしない。Review note として別 artifact に置くことは
-許されるが、ArchSig は concern-only で obstruction、nonzero distance、holonomy、risk を
-出してはならない。
-
-### `observationGaps`
-
-ArchMap に gap 台帳を持たせない。書かれていないものは unknown である。
-
-Coverage gap は selected evaluator が要求する AAT atom family、relation、molecule membership、
-source ref、policy basis が存在しないとき、ArchSig が deterministic に評価結果として出す。
-これは「推測」ではなく、選ばれた policy requirement と観測集合の照合である。
-
-### `nonConclusions`
-
-ArchMap 本体に defensive prose を積まない。ArchMap の責務は schema の狭さで守る。
-必要な boundary は docs、manifest、analysis output に置く。
-
-## R5. ArchSig は hidden IR を作らず、atom / molecule を直接評価する
-
-ArchSig は、ArchMap v1 を受け取って fat v0 相当の hidden IR を再構成してはならない。
-
-許されるのは lookup index だけである。
-
-```text
-sources_by_id
-atoms_by_id
-atoms_by_family
-atoms_by_relation
-atoms_by_term
-molecules_by_id
-molecules_by_atom
-```
-
-禁止する hidden IR:
-
-- synthetic semantic observations
-- synthetic projection info
-- inferred operation square evidence
-- inferred concern hints
-- inferred observation gaps
-- guessed workflow / path / filler / reverse operation
-
-ArchSig evaluator は `atoms`、`molecules`、`LawPolicy` を直接読む。ただし、LawPolicy から
-witness predicate を受け取らない。witness / axis / coverage rule は built-in evaluator が所有し、
-atom family、relation、terms、molecule membership、source refs に対して deterministic に実行する。
-
-分析に必要な witness が見つからない場合、ArchSig は次のいずれかを返す。
-
-- `blockedByCoverage`
-- `unmeasured`
-- `unknown`
-- `notApplicableUnderSelectedPolicy`
-
-未観測を `measuredZero` にしない。
-
-## R6. LawPolicy は evaluator selector に絞る
+## LawPolicy Contract
 
 LawPolicy は、対象 repository / organization / review context が採用する architecture policy と、
-それを読む ArchSig evaluator を選ぶ artifact である。LawPolicy は計算言語ではない。
-
-たとえば「この repository は SOLID を採用している」「domain layer は infrastructure へ直接依存しない」
-「repository が transaction boundary を所有する」「external provider output は検証してから永続化する」
-といった規約は、LawPolicy の selected policy になる。
-
-LawPolicy v1 の primary shape は次である。
+それを読む ArchSig evaluator を選ぶ artifact である。
 
 ```json
 {
   "schema": "law-policy/v1",
   "id": "practical-rust-service-policy",
-  "selected": [
+  "policies": [
     {
-      "policy": "domain.no-direct-infra-dependency",
+      "pack": "solid@1",
+      "basis": ["docs.architecture.design_principles"],
+      "scope": ["src/**"],
+      "severity": "advisory"
+    },
+    {
+      "law": "domain.no-direct-infra-dependency",
       "evaluator": "domain.no-direct-infra-dependency@1",
       "basis": ["docs.architecture.layering"],
       "scope": ["src/domain/**"],
@@ -382,152 +352,340 @@ LawPolicy v1 の primary shape は次である。
 }
 ```
 
-LawPolicy に次を置かない。
+LawPolicy に置くもの:
 
-- selected design law refs
-- generated selected signature axis refs
-- generated witness predicates
-- generated required observation shapes
-- generated coverage requirements
-- exactness assumptions
-- obstruction circuit definitions
-- molecule patterns
+- policy pack id / version
+- law id
+- evaluator id / version
+- law basis refs
+- source scope
+- severity
 
-これらは LawPolicy authoring artifact でも LLM-generated profile でもない。ArchSig evaluator
-library の実装である。
+LawPolicy に置かないもの:
 
-LawPolicy の `basis` は、policy が採用済みである根拠を指す。これは code source ref ではなく、
-repository docs、organization rule、明示的な user approval などの policy basis である。
-反復パターンや現在のコード形状だけを basis にして selected policy を作らない。根拠がない場合は
-selected policy ではなく unresolved question として扱い、ArchSig の計算には入れない。
+- generated witness predicate
+- generated signature axis
+- generated missing blocker requirement
+- exactness assumption DSL
+- obstruction circuit definition
+- molecule pattern DSL
+- measurement profile / calibration profile
+- score expression / formula
+- evaluator-local witness generation rule
 
-`evaluator` と `basis` は fail-closed に解決する。unknown evaluator id、unsupported evaluator
-version、重複 evaluator id / version、未解決 basis、code-shape-only basis は analysis 前の hard
-validation error である。これらを `unknown`、`unmeasured`、`blocked` として分析続行してはならない。
-`blocked` は、既知 evaluator が選択され、policy basis も解決済みだが、要求観測が足りない場合だけに使う。
+Unknown pack、unsupported pack version、unknown evaluator、unsupported evaluator version、unresolved basis、
+code-shape-only basis は analysis 前の hard validation error である。
 
-Operation square、homotopy、distance、curvature などの高次 reading は、selected evaluator が
-観測済み atom / molecule に対して固定計算を実行した結果として評価する。ArchSig は候補を増やして
-測定深度を見せかけない。
+Evaluator id / version が、measurement、aggregation、threshold、distance contribution、review focus の
+計算 contract を決める。LawPolicy は evaluator を選ぶだけで、計算 contract を上書きしない。
 
-## R7. Failure contract は fail-closed にする
+### Policy Packs and Expressiveness
 
-破壊的 input redesign では、invalid input を partial analysis にしてはならない。
+LawPolicy は単一 law だけでなく、registry-defined policy pack を選べる。Policy pack は
+複数 law entry の shorthand であり、LawPolicy 内で展開規則や criteria を定義しない。
+
+たとえば SOLID は次のように表現できる。
+
+```json
+{
+  "pack": "solid@1",
+  "basis": ["docs.architecture.design_principles"],
+  "scope": ["src/**"],
+  "severity": "advisory"
+}
+```
+
+ArchSig は registry から `solid@1` を次のような law family に展開する。
+
+| Law | Evaluator |
+| --- | --- |
+| `solid.single-responsibility` | `solid.single-responsibility@1` |
+| `solid.open-closed` | `solid.open-closed@1` |
+| `solid.liskov-substitution` | `solid.liskov-substitution@1` |
+| `solid.interface-segregation` | `solid.interface-segregation@1` |
+| `solid.dependency-inversion` | `solid.dependency-inversion@1` |
+
+Pack entry の `basis` / `scope` / `severity` は展開された各 law entry に引き継がれる。
+特定 law だけ severity や scope を変える場合は、pack ではなく明示的な law entry を書く。
+
+SOLID のような抽象 principle は、ArchSig が global design quality を証明する対象ではない。
+各 evaluator は、ArchMap の atoms / molecules から読める support に限って
+`measuredPass` / `measuredViolation` / `blocked` / `unknown` / `unmeasured` を返す。
+
+### Law Evaluation Procedure
+
+Law は LawPolicy の中で計算されない。LawPolicy の各 `policies[]` entry が evaluator id / version を
+選び、ArchSig が evaluator registry の contract に従って計算する。
+
+各 evaluator は registry manifest で次を公開する。
+
+- evaluator id / version
+- 対象 law id
+- required atom constructors / predicates
+- required molecule membership / composition condition
+- scope filtering rule
+- missing atom / missing molecule blocker rule
+- measured pass / measured violation criteria
+- typed result schema
+- detail refs / basis refs の出力位置
+- negative fixtures
+
+ArchSig は各 policy entry について次の順に実行する。
+
+```text
+1. pack entry を registry-defined law entries へ展開する。
+2. law / evaluator / basis / scope / severity を validate する。
+3. normalized ArchMap から scope 内の atoms / molecules を選ぶ。
+4. evaluator manifest の required atom / molecule shape を照合する。
+5. required support が足りない場合は `unknown` / `unmeasured` / `blocked` を出す。
+6. required support がそろう場合だけ law-specific evaluator を実行する。
+7. evaluator result を `measuredPass` / `measuredViolation` / `blocked` / `unknown` / `unmeasured` として返す。
+8. result に law id、evaluator id、basis refs、support atom refs、support molecule refs、detail refs、severity を付ける。
+```
+
+`measuredPass` は Lean theorem discharge ではない。`measuredViolation` は global architecture failure ではない。
+どちらも `ArchMap + LawPolicy` の範囲で evaluator が計算した bounded diagnostic result である。
+
+## ArchSig Evaluation Contract
+
+ArchSig の計算順序は次である。
+
+```text
+1. ArchMap primary を validate する。
+2. LawPolicy を validate する。
+3. ArchSig normalizer が ArchMap primary を normalized ArchMap へ変換する。
+4. unsupported atom は validation error とし、composition / required port が成立しない molecule を
+   `blockedForNormalization` に分類する。
+5. LawPolicy の各 policy entry の evaluator が normalized ArchMap と LawPolicy を読む。
+6. typed evaluator result として `measuredPass` / `measuredViolation` / `blocked` / `unknown` /
+   `unmeasured` を出す。
+7. analysis packet / summary / viewer / distanceDiagnosis を typed evaluator result から作る。
+```
+
+ArchSig がしてはならないこと:
+
+- source repository を直接読んで ArchMap を補完する。
+- label / review memo / authoring note だけから positive result を出す。
+- missing atom を measured zero にする。
+- ArchMap primary にない molecule を勝手に生成する。
+- obstruction / square / holonomy / risk を ArchMap input として扱う。
+
+## Normalizer Contract
+
+Normalizer は versioned registry によって動く。
+
+Registry manifest は少なくとも次を公開する。
+
+- normalizer id / version
+- accepted atom kinds
+- predicate vocabulary
+- source ref requirements
+- object / payload binding rules
+- AtomKind / Axis mapping rules
+- valence template refs
+- generated molecule candidate criteria
+- `blockedForNormalization` criteria
+- negative fixtures that must not normalize
+
+Normalizer output は ArchSig evaluator が読む typed computation input である。
+
+```text
+ArchMap atom:
+  kind=capability subject=domain.OrderService predicate=placesOrder
+
+Normalized atom candidate:
+  kind=AtomKind.capability
+  axis=Axis.static
+  predicate=capability(domain.OrderService, placesOrder)
+  status=normalized
+```
+
+## Removed v0 Fields
+
+| Removed field | v1 replacement |
+| --- | --- |
+| `semanticObservations` | `semantic` atom -> `semantic.interpretation@1` normalizer -> semantic evaluator basis refs. Negative fixture: label-only semantic text does not normalize. |
+| `projectionInfo` | projection is evaluator output from registry evaluator `projection.reading@1` over normalized atoms. Negative fixture: projection-only v0 field is validation failure. |
+| `operationSquareEvidence` | square / commutation / holonomy are evaluator readings from normalized relations and molecule candidates. Negative fixture: square-only v0 field is validation failure. |
+| `concernHints` | review notes may exist outside ArchMap as authoring notes, but are not diagnostic input. Negative fixture: concern-only artifact produces no measured result. |
+| `observationGaps` | missing evidence is computed from evaluator requirements and atoms only. Negative fixture: authored gap list is ignored or rejected, never measured zero. |
+| `nonConclusions` | boundary is carried by schema, manifest, and analysis output. Negative fixture: nonConclusion prose cannot create blocker or safe result. |
+
+各 replacement は registry manifest に `replacementId`、required atom kinds、required molecule
+membership、typed output packet refs、positive fixture、negative fixture を持つ。
+削除 field を単に無視するだけの実装は acceptance を満たさない。
+
+## Failure Contract
 
 次は validation failure であり、`analyze` / `pr-review` は非ゼロ終了する。
 
-- `archmap-observation-map-v0` または `law-policy-v0` を v1 input として渡す。
+- v0 ArchMap / LawPolicy を v1 input として渡す。
 - v1 root に removed field、legacy alias、unknown root field が存在する。
-- Atom `family`、`relation`、`terms`、`refs`、molecule atom ref が解決できない。
-- LawPolicy selected evaluator id / version が registry に存在しない。
-- LawPolicy basis が explicit repository / organization rule または user approval に trace できない。
-- `label`、review memo、authoring note だけが positive reading の根拠になっている。
+- `sources`、atom refs、molecule refs が解決できない。
+- atom `kind` が registry vocabulary に存在しない。
+- `predicate` が active normalizer の vocabulary に存在しない。
+- `subject` / `object` / payload refs が source table に解決できない。
+- LawPolicy evaluator / basis が解決できない。
+- label / review memo / authoring note だけが positive result の根拠になっている。
 
-Validation failure 時、ArchSig は raw analysis packet、summary、viewer data を出さない。出してよいのは
-validation report と failure manifest だけである。既存 out-dir に古い success artifact がある場合も、
-今回の失敗を success artifact と混同できないよう manifest に failure status を明示する。
+Validation failure 時、ArchSig は raw analysis packet、summary、viewer data を出さない。
+出してよいのは validation report と failure manifest だけである。
+既存 out-dir に古い success artifact がある場合、ArchSig は stale success artifact を削除するか、
+failure manifest に stale artifact suppression status を記録し、今回 run の success artifact として読めないようにする。
 
-## R8. 実装移行要求
+## Implementation Plan
 
-実装は段階的に見えてもよいが、互換維持を目的にしない。
+1. `archmap/v1` primary schema を `sources` / `atoms` / `molecules` に作り直す。
+2. atom kind / predicate vocabulary を registry enum として実装する。
+3. `law-policy/v1` を law / evaluator / basis / scope / severity selector として実装する。
+4. versioned normalizer registry と removed field replacement registry を追加する。
+5. normalized ArchMap artifact を追加する。
+6. typed evaluator result artifact を追加する。
+7. v0 reader、dual schema reader、legacy alias、compatibility shim を追加しない。
+8. v0 fixture / golden packet equality を維持せず、v1 fixture / golden packet に置き換える。
+9. `archsig_analysis_packet.rs` の v0 field 依存を normalized ArchMap + evaluator pipeline へ置き換える。
+10. `analysis/distance/*` を typed evaluator result と normalized atoms ベースへ置き換える。
+11. `concernHints` / `projectionInfo` / `operationSquareEvidence` 由来の positive reading を消す。
+12. validation failure 時に stale success artifact が今回 run の output として読めないことを保証する。
+13. practical example、minimal fixture、golden corpus、skills、README、website schema example を v1 に置き換える。
+14. `analyze --strict-distance` で unknown / blocked / unmeasured が zero に落ちないこと、label-only / removed-field-only / schema-only reading が measured に昇格しないことを検査する。
+15. `analyze --emit-raw-artifacts` の v1 fixture packet が FieldSig handoff / schema compatibility check を通ることを確認する。
 
-1. `archmap/v1` schema を追加し、v0 field を primary schema から削除する。
-2. `tools/archsig/src/schema/archmap.rs` を sources / atoms / molecules 中心に作り直す。
-3. Atom schema を prose triple ではなく `family` / `relation` / `terms` / `refs` / optional
-   `label` にする。ArchSig evaluator は `label` を読まない。
-4. ArchMap validation を、source id 解決、atom id 一意性、AAT core atom family 準拠、
-   evaluator registry relation 準拠、term refs 解決、molecule atom refs、refs 解決に絞る。
-5. `law-policy/v1` schema を evaluator selector として追加し、v0 の witness rule / axis /
-   coverage / obstruction definition を primary schema から削除する。
-6. ArchSig に versioned evaluator registry を追加する。各 evaluator は必要 atom family、relation、
-   molecule membership、coverage blocker、axis valuation、distance contribution、output packet refs、
-   negative fixture refs を実装または manifest で持つ。
-7. LawPolicy validation は evaluator id / version、basis refs、scope、severity を fail-closed に検査する。
-8. CLI は v0 input、removed fields、unknown fields、unknown evaluator、bad basis を非ゼロ終了にする。
-9. Failure run は validation report と failure manifest だけを出し、raw packet / summary / viewer data を
-   出さない。
-10. `archsig_analysis_packet.rs` の v0 field 依存を削除し、selected evaluator execution pipeline へ
-   作り直す。
-11. `analysis/distance/*` は observation gap や projection info ではなく、evaluator result status と
-   observed atom / molecule membership を根拠にする。
-12. `operationSquareCandidates` は selected evaluator が観測済み molecule / relation から測定できる
-   場合だけ構成する。観測されていない pair を総当たりで inferred candidate にしない。
-13. `concernHints` 由来の positive reading を完全に消す。
-14. v0 補助 field に依存していた output reading は、削除によって消すのではなく、
-   atom / molecule direct evaluator と versioned evaluator library で同等以上の診断品質を保つ。
-15. 削除対象 field / output reading family ごとに evaluator replacement table を docs と tests に置く。
-16. practical example、minimal fixture、golden corpus、skills、README、website schema example を
-   v1 に置き換える。
-17. `analyze --strict-distance` は、unknown / blocked / unmeasured が zero に落ちていないこと、
-   proxy/schema-only/label-only/removed-field-only readings が measured に昇格していないこと、
-   summary / raw packet / `distanceDiagnosis` / `DiagnosticScope` が同期していることを検査する。
-18. `analyze --emit-raw-artifacts` の v1 fixture packet が FieldSig handoff / schema compatibility check を
-   通ることを確認する。
+## ArchSig Implementation Tasks
 
-## Acceptance Criteria / 完了条件
+ArchSig 側の実装タスクは次である。これは LawPolicy を薄くした分を、ArchSig runtime の
+versioned registry と typed evaluator pipeline として実装する作業である。
 
-- 極小 example の ArchMap が 100 行程度で、source 台帳、atoms、molecules だけで読める。
-- Atom の計算 payload は `family` / `relation` / `terms` / `refs` であり、自然言語 `label` は
-  evaluator に読まれない。
-- Atom `terms` は `sources` の id または既存 atom id に解決され、未解決 `t:*` namespace や自然文を
-  許さない。
-- `relation` は versioned evaluator registry が公開する vocabulary に含まれ、未知 relation は
-  ArchMap validation error になる。
-- `label` を変更しても evaluator result、distance、obstruction、signature、coverage status が変わらない
-  negative fixture が存在する。
-- ArchMap v1 primary schema に `semanticObservations`、`projectionInfo`、
-  `operationSquareEvidence`、`concernHints`、`observationGaps`、`nonConclusions` が存在しない。
-- Atom family は AAT 数学本文の core Atom family に準拠し、semantic Atom と runtime interaction
-  Atom を落とさない。
-- Molecule は固定 kind enum を持たず、観測された Atom membership と source refs だけを primary
-  payload とする。
-- Workflow / path-like source reading は molecule kind ではなく、observed molecule に対する
-  ArchSig evaluator interpretation として扱われる。
-- ArchSig は v1 ArchMap を v0 相当の hidden IR へ変換しない。
-- ArchSig 内部で許される中間構造は lookup index だけである。
-- LawPolicy v1 は selected policy / evaluator / basis / scope / severity に絞られている。
-- LawPolicy v1 に witness predicate、signature axis、coverage requirement、exactness assumption、
-  obstruction circuit definition、molecule pattern が存在しない。
-- selected policy は explicit repository / organization rule または user approval に trace できる。
-- ArchSig は versioned evaluator registry を持ち、LawPolicy はその evaluator を選ぶだけである。
-- evaluator は atom family、relation、terms、molecule membership、source refs を直接読む。
-- evaluator registry は id / version、recognized families、relations、required term/ref shapes、
-  measured / blocked / unknown criteria、output packet refs、negative fixture refs を公開する。
-- unknown evaluator id、unsupported evaluator version、重複 evaluator id / version、未解決 basis、
-  code-shape-only basis は analysis 前の hard validation error になる。
-- `blocked` は、既知 evaluator と解決済み basis のもとで要求観測が足りない場合にだけ使われる。
-- 削除対象 v0 field または output reading family ごとに、replacement evaluator、required observations、
-  measured / blocked / unknown criteria、output packet refs、negative fixture が対応表として存在する。
-- 追加 field がないために計算できない reading は、推測生成せず blocked / unknown / unmeasured になる。
-- v0 input、removed field、legacy alias、unknown root field は validator、`analyze`、`pr-review` の各入口で
-  fail-closed に拒否され、非ゼロ終了と validation report check id を持つ。
-- `observationGaps` 削除後も、未観測が measured zero に落ちない。
-- `concernHints` 削除後も、concern-only obstruction / distance / holonomy が生成されない。
-- `projectionInfo` 削除後も、ArchSig output は observed atoms / molecules を根拠にした reading
+### 1. v1 input model / validation
+
+- `ArchMapDocumentV1` を `sources` / `atoms` / `molecules` の primary model として追加する。
+- `LawPolicyDocumentV1` を `policies[]` の selector model として追加する。
+- v1 mode では v0 root field、legacy alias、unknown root field を hard validation error にする。
+- unresolved source ref、unknown atom kind、unknown predicate、unknown evaluator、unknown pack、
+  unresolved basis を analysis 前に止める。
+- validation failure 時は packet / summary / viewer data を出さず、validation report / failure manifest
   だけを出す。
-- `operationSquareEvidence` 削除後も、selected evaluator が測定できる observed molecule / relation が
-  ない square / path / filler は inferred されない。
-- `concernHints` only、`projectionInfo` only、`operationSquareEvidence` only、missing molecule refs、
-  label-only relation の negative fixtures が strict mode で measured に昇格しない。
-- Validation failure 時は validation report と failure manifest だけを出し、raw analysis packet、
-  summary、viewer data を出さない。
-- ArchMap input は破壊的に痩せているが、ArchSig output の bounded diagnostic conclusion、
-  measurement basis、coverage blocker、review focus の品質は現行より落ちていない。
-- practical example、minimal fixture、CLI tests、strict-distance tests、schema catalog、skills、
-  docs/tool、website/manual が v1 境界と一致している。
-- `analyze --emit-raw-artifacts` の v1 fixture packet が FieldSig handoff / schema compatibility check を
-  通る。
+
+### 2. Normalizer registry
+
+- atom constructor vocabulary を Rust enum として定義する。
+- constructor ごとの required payload shape、source ref requirement、predicate vocabulary、
+  `AtomKind` / `Axis` mapping、valence template ref を registry manifest に持たせる。
+- valid ArchMap atom はすべて normalized atom presentation へ total に変換する。
+- registry に mapping がない atom は silent drop せず validation error にする。
+- molecule は explicit membership だけから generated molecule candidate に変換し、required port /
+  composition condition が欠ける場合は `blockedForNormalization` にする。
+
+### 3. Law / evaluator registry
+
+- evaluator id / version を static registry として実装する。
+- 各 evaluator manifest に law id、required atom constructors / predicates、required molecule condition、
+  scope filtering rule、missing blocker rule、pass / violation criteria、typed result schema、
+  distance contribution、summary / detail output refs、negative fixtures を持たせる。
+- `solid@1` のような policy pack は registry-defined law entries へ展開する。
+- LawPolicy の `policies[]` entry は evaluator / pack を選ぶだけにし、criteria、witness rule、
+  axis rule、distance formula を上書きできないようにする。
+
+### 4. Typed evaluator pipeline
+
+- `ArchMap + LawPolicy` を直接 fat packet に流さず、
+  `ArchMapDocumentV1 -> NormalizedArchMap -> TypedEvaluatorResult[]` の順に処理する。
+- evaluator result は `measuredPass` / `measuredViolation` / `blocked` / `unknown` / `unmeasured`
+  を first-class status として持つ。
+- missing atom / molecule / source ref は measured zero にせず、evaluator manifest の blocker rule に従う。
+- positive bounded conclusion は typed evaluator result、support refs、basis refs からだけ生成する。
+
+### 5. Packet / distance / summary replacement
+
+- `archsig_analysis_packet.rs` の v0 LawPolicy field 依存を typed evaluator result 参照に置き換える。
+- `analysis/distance/*` は `part4DistanceProfile` ではなく evaluator registry の distance contribution と
+  typed evaluator result から計算する。
+- summary / viewer / detail index は v0 の `signatureAxes` / `obstructionCircuits` 前提を、
+  typed evaluator result と derived packet refs 前提へ置き換える。
+- `semanticObservations`、`projectionInfo`、`operationSquareEvidence`、`concernHints`、
+  `observationGaps` 由来の positive readings を消す。
+
+### 6. CLI / fixture / migration boundary
+
+- `analyze` / `pr-review` の v1 path を追加し、v0 compatibility path は完了条件にしない。
+- minimal fixture、practical fixture、SOLID fixture、negative fixture、golden packet を v1 で作り直す。
+- `--strict-distance` は unknown / blocked / unmeasured、label-only、removed-field-only、schema-only reading を
+  measured にしないことを検査する。
+- release note / migration note に v1 が破壊的変更であること、v0 dual reader を持たないことを明記する。
+
+## Acceptance Criteria
+
+### ArchMap Authoring
+
+- ArchMap primary は code-derived atom map として自然に書ける。
+- ArchMap primary は `sources` / `atoms` / `molecules` を中心にする。
+- atom は source-derived typed fact であり、自由自然文ではない。
+- molecule は explicit author input であり、ArchSig が勝手に推測しない。
+- ArchMap primary に obstruction、signature、distance、homotopy、risk、evidence gap、projection を置かない。
+
+### AAT Compatibility
+
+- Normalizer は atom kind を AAT-compatible `AtomKind` / `Axis` / typed predicate へ写す。
+- Normalizer は source を再読込しない。
+- Normalizer は valid ArchMap に対して決定論的かつ total である。
+- valid ArchMap 内の atom はすべて normalized atom presentation を持つ。
+- registry に mapping がない atom kind / predicate / shape は validation error である。
+- generated molecule candidate は explicit molecule membership からだけ作る。
+- generated molecule candidate は membership だけでなく、primitive atom presentation、finite configuration、
+  composition graph、required port match がそろう場合だけ positive evaluator basis になる。
+- incompatible pair または missing required port を含む molecule は `blockedForNormalization` または
+  evaluator の `blocked` / `unknown` として扱い、`GeneratedMolecule` positive result に昇格しない。
+- AAT-compatible presentation は computation artifact であり、ArchMap authoring schema ではない。
+
+### LawPolicy / ArchSig
+
+- LawPolicy は policy entries の law / evaluator / basis / scope / severity に絞られている。
+- LawPolicy は registry-defined policy pack を選べる。
+- SOLID は `solid@1` pack または 5つの明示的 law entries として表現できる。
+- LawPolicy は witness / axis / missing blocker / obstruction / measurement DSL / score formula を持たない。
+- Measurement、aggregation、threshold、distance contribution、review focus は evaluator registry が所有する。
+- 各 law の計算手順は evaluator registry manifest に固定されている。
+- LawPolicy の `policies[]` entry は pack / evaluator を選ぶだけで、law-specific criteria を上書きできない。
+- ArchSig evaluator は normalized ArchMap と LawPolicy だけから diagnostic result を出す。
+- ArchSig evaluator は Lean proof object、Lean theorem discharge、Lean runtime call を要求しない。
+- Missing atom は measured zero にならない。
+- Missing blocker は evaluator requirement、LawPolicy scope、atoms の照合からだけ生成される。
+- Positive bounded conclusion は typed evaluator result、detail refs、evaluator basis refs からだけ生成される。
+
+### Tests / Fixtures
+
+- unknown atom kind、unknown predicate、unresolved source ref は validation error になる。
+- valid ArchMap fixture の全 atom は normalized atom presentation を持つ。
+- valid ArchMap の atom が normalizer で dropped / unnormalized にならない。
+- label-only atom は measured result に昇格しない。
+- removed v0 field only の fixture は validation failure または unmeasured result になり、measured result に昇格しない。
+- molecule membership がない atom 集合から generated molecule candidate が勝手に作られない。
+- composition graph を構成できない molecule、required port match が欠ける molecule は
+  generated molecule candidate / positive result に昇格しない。
+- evaluator が要求する atom / molecule / source ref がない fixture は `unknown` / `unmeasured` /
+  `blocked` になり、measured zero にならない。
+- validation failure の out-dir には今回 run の packet / summary / viewer が残らず、古い success artifact も
+  今回 run の success として読めない。
+- `SAFE_WITHIN_POLICY` / `NO_SELECTED_OBSTRUCTION` /
+  `ACCEPTABLE_UNDER_EVIDENCE_CONTRACT` の positive fixture は evaluator basis refs を持つ。
+- ArchSig v1 fixture / CLI tests は Lean runtime なしで実行できる。
+- practical example、minimal fixture、CLI tests、strict-distance tests、schema catalog、skills、docs/tool、website/manual が v1 境界と一致している。
+- v0 reader、dual schema reader、legacy alias、compatibility shim が存在しない。
+- v0 fixture / golden packet equality は完了条件ではなく、v1 fixture / golden packet に置き換わっている。
 - 後方互換性の欠如が release note / migration note に明記されている。
 
 ## Non-Goals
 
 - ArchMap を AAT の formal input schema にする。
+- ArchMap author に `AtomShape` / `AtomValence` / compatible composition を手書きさせる。
 - ArchMap で obstruction circuit、lawfulness、zero curvature、distance、holonomy を表現する。
-- LawPolicy を witness predicate DSL、axis DSL、coverage DSL、exactness DSL として扱う。
+- LawPolicy を witness predicate DSL、axis DSL、missing blocker DSL、exactness DSL として扱う。
 - LLM / tool が generated evaluation profile を作り、ArchSig がそれを計算規則として読む。
 - ArchSig が source repository を直接読んで ArchMap を補完する。
+- ArchSig を Lean 証明器、Lean theorem dispatcher、Lean proof object generator として扱う。
 - ArchSig が hidden IR で semantic / projection / square / gap / concern を再生成する。
-- 未観測を gap 一覧として ArchMap author に列挙させる。
+- missing atom を gap 一覧として ArchMap author に列挙させる。
 - concern / review memo を diagnostic input として扱う。
 - 既存 v0 artifact と packet equality を維持する。
+- v0 runtime compatibility、dual reader、compatibility shim、legacy alias を維持する。
 - FieldSig の longitudinal / forecast schema をこの PRD で再設計する。
