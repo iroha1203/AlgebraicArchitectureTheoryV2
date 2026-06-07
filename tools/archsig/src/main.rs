@@ -160,7 +160,13 @@ fn build_pr_review_v1_analysis(
     law_policy_document: &LawPolicyDocumentV1,
     law_policy_path: &Path,
 ) -> Result<Value, Box<dyn Error>> {
-    let archmap_typed: ArchMapDocumentV1 = serde_json::from_value(archmap_document.clone())?;
+    let archmap_typed: ArchMapDocumentV1 = serde_json::from_value(archmap_document.clone())
+        .map_err(|error| {
+            format!(
+                "{} failed ArchMap v1 validation for pr-review: {error}",
+                archmap_path.display()
+            )
+        })?;
     let archmap_validation =
         validate_archmap_v1_report(&archmap_typed, &archmap_path.display().to_string());
     if archmap_validation.summary.result == "fail" {
@@ -551,8 +557,15 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
             let law_policy_document: serde_json::Value = read_json(&law_policy)?;
             require_schema(&base_archmap_document, ARCHMAP_V1_SCHEMA, "--base-archmap")?;
             require_schema(&law_policy_document, LAW_POLICY_V1_SCHEMA, "--law-policy")?;
-            let law_policy_typed: LawPolicyDocumentV1 =
-                serde_json::from_value(law_policy_document.clone())?;
+            let law_policy_typed: LawPolicyDocumentV1 = serde_json::from_value(
+                law_policy_document.clone(),
+            )
+            .map_err(|error| {
+                format!(
+                    "{} failed LawPolicy v1 validation for pr-review: {error}",
+                    law_policy.display()
+                )
+            })?;
             let law_policy_validation =
                 validate_law_policy_v1_report(&law_policy_typed, &law_policy.display().to_string());
             if law_policy_validation.summary.result == "fail" {
