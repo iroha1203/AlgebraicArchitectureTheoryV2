@@ -1204,6 +1204,39 @@ fn cli_analyze_v1_writes_summary_viewer_and_manifest_artifacts() {
         read_json(&out_dir.join("archsig-run-manifest.json"))["schemaVersion"],
         "archsig-run-manifest-v1"
     );
+    let summary = read_json(&out_dir.join("archsig-analysis-summary.json"));
+    let viewer_data = read_json(&out_dir.join("archsig-atom-viewer-data.json"));
+    assert!(
+        summary["richReadingGuide"]["readingOrder"]
+            .as_array()
+            .is_some_and(|items| {
+                items.iter().any(|item| item == "richDominantFindings")
+                    && items
+                        .iter()
+                        .any(|item| item == "structuralReadingReviewSummary")
+            })
+            && summary["richPacketRefs"]["structuralReadingRefs"]
+                .as_array()
+                .is_some_and(|items| !items.is_empty())
+            && summary["actionQueue"]
+                .as_array()
+                .is_some_and(|items| items.iter().any(|item| {
+                    item["kind"]
+                        .as_str()
+                        .is_some_and(|kind| kind == "spectrumHotspot")
+                })),
+        "v1 summary must expose rich packet refs and a conclusion-first reading guide"
+    );
+    assert_eq!(
+        viewer_data["reportPane"]["richPacketRefs"], summary["richPacketRefs"],
+        "viewer report pane must carry the same compact rich packet refs as summary"
+    );
+    assert!(
+        viewer_data["reportPane"]["omittedDetailCounts"]["rawPacketArrays"]
+            .as_str()
+            .is_some_and(|text| text.contains("omitted from viewer data")),
+        "viewer data must record that raw packet arrays are omitted from the projection"
+    );
     assert!(
         !out_dir.join("archsig-analysis-packet.json").exists(),
         "raw v1 packet is omitted unless --emit-raw-artifacts is passed"
@@ -1243,6 +1276,8 @@ fn cli_analyze_v1_emit_raw_artifacts_writes_typed_packet_detail_and_handoff() {
 
     assert!(output.status.success());
     let packet = read_json(&out_dir.join("archsig-analysis-packet.json"));
+    let summary = read_json(&out_dir.join("archsig-analysis-summary.json"));
+    let viewer_data = read_json(&out_dir.join("archsig-atom-viewer-data.json"));
     assert_eq!(packet["schema"], "archsig-analysis-packet/v1");
     assert_eq!(
         packet["inputRefs"]["typedEvaluatorResults"],
@@ -1509,6 +1544,56 @@ fn cli_analyze_v1_emit_raw_artifacts_writes_typed_packet_detail_and_handoff() {
                 .is_some_and(|items| !items.is_empty()),
         "v1 packet must expose structural reading review surface and structural reading families"
     );
+    assert!(
+        summary["richDominantFindings"]["spectrumHotspots"]
+            .as_array()
+            .is_some_and(|items| {
+                !items.is_empty()
+                    && items.iter().all(|reference| {
+                        reference
+                            .as_str()
+                            .and_then(|text| text.strip_prefix("packet:"))
+                            .is_some_and(|pointer| packet.pointer(pointer).is_some())
+                    })
+            })
+            && summary["richPacketRefs"]["architecturalHoleRefs"]
+                .as_array()
+                .is_some()
+            && summary["richPacketRefs"]["structuralReadingRefs"]
+                .as_array()
+                .is_some_and(|items| {
+                    !items.is_empty()
+                        && items.iter().all(|reference| {
+                            reference
+                                .as_str()
+                                .and_then(|text| text.strip_prefix("packet:"))
+                                .is_some_and(|pointer| packet.pointer(pointer).is_some())
+                        })
+                }),
+        "v1 summary rich refs must resolve into emitted raw packet when raw artifacts are retained"
+    );
+    assert!(
+        summary["actionQueue"].as_array().is_some_and(|items| {
+            items.iter().any(|item| item["kind"] == "spectrumHotspot")
+                && items
+                    .iter()
+                    .any(|item| item["kind"] == "pathMultiplicityLoss")
+                && items.iter().all(|item| {
+                    item["detailRefs"]
+                        .as_array()
+                        .is_some_and(|refs| !refs.is_empty())
+                })
+        }),
+        "v1 summary action queue must include compact spectrum, homotopy, and structural packet refs"
+    );
+    assert_eq!(
+        viewer_data["analysisOverlays"]["richPacketRefs"], summary["richPacketRefs"],
+        "viewer overlays must keep the same rich packet refs as summary"
+    );
+    assert_eq!(
+        viewer_data["reportPane"]["richDominantFindings"], summary["richDominantFindings"],
+        "viewer report pane must preserve rich dominant findings"
+    );
     assert_eq!(
         packet["architectureSpectrumReport"]["status"].as_str(),
         Some("measuredZeroWithinSelectedSupport")
@@ -1675,6 +1760,19 @@ fn cli_analyze_v1_emit_raw_artifacts_writes_typed_packet_detail_and_handoff() {
     assert_eq!(
         llm_packet["replacementRegistryResolution"]["registryRef"].as_str(),
         Some("removed-v0-field-replacement-registry@1")
+    );
+    assert_eq!(
+        llm_packet["richPacketRefs"], summary["richPacketRefs"],
+        "LLM interpretation packet must guide readers to the same compact packet refs"
+    );
+    assert!(
+        llm_packet["readingGuidance"]["readingOrder"]
+            .as_array()
+            .is_some_and(|items| items.iter().any(|item| item == "actionQueue"))
+            && llm_packet["actionQueueSummary"]["topDetailRefs"]
+                .as_array()
+                .is_some_and(|items| !items.is_empty()),
+        "LLM packet must include rich reading guidance and compact action refs"
     );
     assert_eq!(
         llm_packet["architectureSpectrumReportSummary"]["status"].as_str(),

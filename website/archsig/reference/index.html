@@ -88,7 +88,7 @@
   --law-policy tools/archsig/tests/fixtures/archmap_v1/law_policy.json \
   --out-dir .archsig/analyze</code></pre>
               </figure>
-              <p><code>archsig-analysis-summary.json</code> is emitted by <code>analyze</code> as the compact first reading surface.</p>
+              <p><code>archsig-analysis-summary.json</code> is emitted by <code>analyze</code> as the compact first reading surface. It includes <code>richPacketRefs</code>, <code>richDominantFindings</code>, <code>richReadingGuide</code>, and an <code>actionQueue</code> over generated, spectrum, homotopy, and structural refs.</p>
               <figure class="code-panel">
                 <figcaption>Run analysis with raw artifacts</figcaption>
                 <pre><code>cargo run --manifest-path tools/archsig/Cargo.toml -- analyze \
@@ -105,6 +105,7 @@
                 <li><strong><code>law-policy-validation.json</code></strong><span>Validation report for the selected <code>law-policy/v1</code>.</span></li>
                 <li><strong><code>normalized-archmap.json</code></strong><span>ArchMap atoms normalized into the ArchSig typed model.</span></li>
                 <li><strong><code>typed-evaluator-results.json</code></strong><span>Evaluator statuses, support refs, basis refs, and bounded conclusions.</span></li>
+                <li><strong><code>archsig-atom-viewer-data.json</code></strong><span>Bounded viewer projection with the same rich packet refs and report-pane reading guide as the summary.</span></li>
                 <li><strong><code>archsig-analysis-packet.json</code></strong><span>The raw <code>archsig-analysis-packet/v1</code> detail store, emitted with <code>--emit-raw-artifacts</code>.</span></li>
                 <li><strong><code>archsig-analysis-validation.json</code></strong><span>Validation report for the generated v1 analysis packet.</span></li>
                 <li><strong><code>llm-interpretation-packet.json</code></strong><span>The typed evaluator packet serialized for LLM reading when raw artifacts are emitted.</span></li>

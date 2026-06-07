@@ -305,13 +305,16 @@ pub fn build_typed_analysis_summary_v1(
         "architectureDistance": architecture_distance["summary"],
         "distanceDiagnosis": architecture_distance["distanceDiagnosis"],
         "dominantFindings": typed_dominant_findings(typed_results),
+        "richDominantFindings": rich_dominant_findings_v1(&spectrum, &homotopy, &structural),
         "architectureSpectrumReport": spectrum["architectureSpectrumReport"],
         "architectureSpectrumSummary": architecture_spectrum_summary_v1(&spectrum),
         "architectureHomotopyReport": homotopy["architectureHomotopyReport"],
         "architectureHomotopySummary": architecture_homotopy_summary_v1(&homotopy),
         "structuralReadingReviewSurface": structural["structuralReadingReviewSurface"],
         "structuralReadingReviewSummary": structural_reading_review_summary_v1(&structural),
-        "actionQueue": typed_action_queue(typed_results),
+        "richPacketRefs": rich_packet_refs_v1(architecture_distance, &spectrum, &homotopy, &structural),
+        "richReadingGuide": rich_reading_guide_v1(),
+        "actionQueue": rich_action_queue_v1(typed_results, &spectrum, &homotopy, &structural),
         "positiveBoundedConclusions": typed_results.positive_bounded_conclusions,
         "metadata": {
             "boundary": "ArchSig v1 summary reads typed evaluator results and architecture distance as separate artifacts",
@@ -380,6 +383,8 @@ pub fn build_typed_atom_viewer_data_v1(
             "architectureSpectrumReport": summary["architectureSpectrumReport"],
             "architectureHomotopyReport": summary["architectureHomotopyReport"],
             "structuralReadingReviewSurface": summary["structuralReadingReviewSurface"],
+            "richPacketRefs": summary["richPacketRefs"],
+            "richDominantFindings": summary["richDominantFindings"],
             "actionQueue": summary["actionQueue"]
         },
         "reportPane": {
@@ -395,11 +400,21 @@ pub fn build_typed_atom_viewer_data_v1(
             "architectureHomotopySummary": summary["architectureHomotopySummary"],
             "structuralReadingReviewSurface": summary["structuralReadingReviewSurface"],
             "structuralReadingReviewSummary": summary["structuralReadingReviewSummary"],
+            "richReadingGuide": summary["richReadingGuide"],
+            "richPacketRefs": summary["richPacketRefs"],
+            "richDominantFindings": summary["richDominantFindings"],
             "replacementRegistryResolution": summary["replacementRegistryResolution"],
             "typedEvaluatorDiagnosis": summary["typedEvaluatorDiagnosis"],
             "distanceDiagnosis": summary["distanceDiagnosis"],
             "topFindings": summary["dominantFindings"],
             "actionQueue": summary["actionQueue"],
+            "omittedDetailCounts": {
+                "rawPacketArrays": "omitted from viewer data; use richPacketRefs and optional raw artifacts",
+                "typedEvaluatorResultRows": typed_results.results.len(),
+                "replacementEvaluatorResultRows": typed_results.replacement_evaluator_results.len(),
+                "atomNodes": atom_nodes.len(),
+                "moleculeGroups": molecule_groups.len()
+            },
             "artifacts": {
                 "summary": "archsig-analysis-summary.json",
                 "typedEvaluatorResults": "typed-evaluator-results.json",
@@ -524,6 +539,9 @@ pub fn build_typed_llm_interpretation_packet_v1(
         "architectureSpectrumReportSummary": architecture_spectrum_summary_v1(&spectrum),
         "architectureHomotopyReportSummary": architecture_homotopy_summary_v1(&homotopy),
         "structuralReadingReviewSummary": structural_reading_review_summary_v1(&structural),
+        "richPacketRefs": rich_packet_refs_v1(architecture_distance, &spectrum, &homotopy, &structural),
+        "readingGuidance": rich_reading_guide_v1(),
+        "actionQueueSummary": rich_action_queue_summary_v1(typed_results, &spectrum, &homotopy, &structural),
         "typedEvaluatorSummary": typed_results.summary,
         "replacementRegistryResolution": typed_results.replacement_registry_resolution,
         "positiveBoundedConclusions": typed_results.positive_bounded_conclusions,
@@ -3197,6 +3215,245 @@ fn structural_reading_review_summary_v1(structural: &Value) -> Value {
         "coverageGapRefs": surface["coverageGapRefs"],
         "nonConclusions": surface["nonConclusions"]
     })
+}
+
+fn rich_packet_refs_v1(
+    architecture_distance: &Value,
+    spectrum: &Value,
+    homotopy: &Value,
+    structural: &Value,
+) -> Value {
+    json!({
+        "schemaVersion": "archsig-rich-packet-refs/v1",
+        "distanceDiagnosisDetailRefs": json_string_array_value(&architecture_distance["distanceDiagnosis"], "detailRefs"),
+        "spectrumHotspotRefs": packet_refs_from_nested_array(&spectrum["architectureSpectrumReport"], "topHotspots", "architectureSpectrumReport/topHotspots", 8),
+        "recurrentObstructionRefs": packet_refs_from_nested_array(&spectrum["architectureSpectrumReport"], "recurrentObstructions", "architectureSpectrumReport/recurrentObstructions", 8),
+        "architecturalHoleRefs": packet_refs_from_nested_array(&homotopy["architectureHomotopyReport"], "unfilledLoops", "architectureHomotopyReport/unfilledLoops", 8),
+        "nonzeroHolonomyRefs": packet_refs_from_nested_array(&homotopy["architectureHomotopyReport"], "nonzeroHolonomyLoops", "architectureHomotopyReport/nonzeroHolonomyLoops", 8),
+        "structuralReadingRefs": structural["structuralReadingReviewSurface"]["connectedReadingRefs"]
+            .as_array()
+            .into_iter()
+            .flatten()
+            .take(12)
+            .filter_map(|item| item.as_str().map(packet_ref))
+            .collect::<Vec<_>>(),
+        "structuralSurfaceRef": "packet:/structuralReadingReviewSurface",
+        "summaryBoundary": "compact refs only; raw reading arrays remain in the optional analysis packet"
+    })
+}
+
+fn rich_dominant_findings_v1(spectrum: &Value, homotopy: &Value, structural: &Value) -> Value {
+    json!({
+        "spectrumHotspots": packet_refs_from_nested_array(&spectrum["architectureSpectrumReport"], "topHotspots", "architectureSpectrumReport/topHotspots", 5),
+        "recurrentObstructions": packet_refs_from_nested_array(&spectrum["architectureSpectrumReport"], "recurrentObstructions", "architectureSpectrumReport/recurrentObstructions", 5),
+        "architecturalHoles": packet_refs_from_nested_array(&homotopy["architectureHomotopyReport"], "unfilledLoops", "architectureHomotopyReport/unfilledLoops", 5),
+        "nonzeroHolonomy": packet_refs_from_nested_array(&homotopy["architectureHomotopyReport"], "nonzeroHolonomyLoops", "architectureHomotopyReport/nonzeroHolonomyLoops", 5),
+        "projectionFidelityLoss": packet_refs_from_array(&structural["observationProjectionReadings"], "observationProjectionReadings", 3),
+        "synthesisBlockage": packet_refs_from_array(&structural["synthesisBlockageReadings"], "synthesisBlockageReadings", 3),
+        "operationPreconditionReadiness": packet_refs_from_array(&structural["operationPreconditionReadinessReadings"], "operationPreconditionReadinessReadings", 3),
+        "pathMultiplicityLoss": packet_refs_from_array(&structural["pathMultiplicityLossReadings"], "pathMultiplicityLossReadings", 3),
+        "boundary": "dominant findings are compact packet refs, not copied raw readings"
+    })
+}
+
+fn rich_reading_guide_v1() -> Value {
+    json!({
+        "schemaVersion": "archsig-rich-reading-guide/v1",
+        "readingOrder": [
+            "conclusion",
+            "distanceDiagnosis",
+            "richDominantFindings",
+            "architectureSpectrumSummary",
+            "architectureHomotopySummary",
+            "structuralReadingReviewSummary",
+            "actionQueue"
+        ],
+        "detailPolicy": "open packet refs only for selected findings; summary and viewer do not duplicate raw packet arrays",
+        "boundedInterpretation": [
+            "read selected evidence before turning a ref into a review finding",
+            "blocked rows are review queue items, not measured zero",
+            "viewer layout distance is separate from diagnostic distance"
+        ]
+    })
+}
+
+fn rich_action_queue_v1(
+    typed_results: &TypedEvaluatorResultsV1,
+    spectrum: &Value,
+    homotopy: &Value,
+    structural: &Value,
+) -> Vec<Value> {
+    let mut queue = typed_action_queue(typed_results);
+    queue.extend(
+        packet_refs_from_nested_array(
+            &spectrum["architectureSpectrumReport"],
+            "topHotspots",
+            "architectureSpectrumReport/topHotspots",
+            5,
+        )
+        .into_iter()
+        .enumerate()
+        .map(|(index, packet_ref)| {
+            rich_queue_item(
+                "spectrumHotspot",
+                index,
+                "reviewSpectrumHotspot",
+                "selectedSupportPressure",
+                vec![packet_ref],
+            )
+        }),
+    );
+    queue.extend(
+        packet_refs_from_nested_array(
+            &homotopy["architectureHomotopyReport"],
+            "unfilledLoops",
+            "architectureHomotopyReport/unfilledLoops",
+            5,
+        )
+        .into_iter()
+        .enumerate()
+        .map(|(index, packet_ref)| {
+            rich_queue_item(
+                "architecturalHole",
+                index,
+                "reviewMissingFiller",
+                "boundedHomotopyGap",
+                vec![packet_ref],
+            )
+        }),
+    );
+    queue.extend(
+        packet_refs_from_nested_array(
+            &homotopy["architectureHomotopyReport"],
+            "nonzeroHolonomyLoops",
+            "architectureHomotopyReport/nonzeroHolonomyLoops",
+            5,
+        )
+        .into_iter()
+        .enumerate()
+        .map(|(index, packet_ref)| {
+            rich_queue_item(
+                "nonzeroHolonomy",
+                index,
+                "reviewNonzeroHolonomy",
+                "measuredPathPressure",
+                vec![packet_ref],
+            )
+        }),
+    );
+    for (kind, field, action_kind, conclusion) in [
+        (
+            "projectionFidelityLoss",
+            "observationProjectionReadings",
+            "reviewProjectionReading",
+            "boundedProjectionReview",
+        ),
+        (
+            "synthesisBlockage",
+            "synthesisBlockageReadings",
+            "reviewSynthesisBlockage",
+            "boundedSynthesisReview",
+        ),
+        (
+            "operationPreconditionReadiness",
+            "operationPreconditionReadinessReadings",
+            "reviewOperationPrecondition",
+            "boundedRepairReadinessReview",
+        ),
+        (
+            "pathMultiplicityLoss",
+            "pathMultiplicityLossReadings",
+            "reviewPathMultiplicity",
+            "boundedPathMultiplicityReview",
+        ),
+    ] {
+        queue.extend(
+            packet_refs_from_array(&structural[field], field, 3)
+                .into_iter()
+                .enumerate()
+                .map(|(index, packet_ref)| {
+                    rich_queue_item(kind, index, action_kind, conclusion, vec![packet_ref])
+                }),
+        );
+    }
+    queue
+}
+
+fn rich_action_queue_summary_v1(
+    typed_results: &TypedEvaluatorResultsV1,
+    spectrum: &Value,
+    homotopy: &Value,
+    structural: &Value,
+) -> Value {
+    let queue = rich_action_queue_v1(typed_results, spectrum, homotopy, structural);
+    json!({
+        "queueItemCount": queue.len(),
+        "topActionKinds": queue
+            .iter()
+            .take(10)
+            .filter_map(|item| item["actionKind"].as_str().map(str::to_string))
+            .collect::<Vec<_>>(),
+        "topDetailRefs": queue
+            .iter()
+            .flat_map(|item| json_string_array_value(item, "detailRefs"))
+            .take(12)
+            .collect::<Vec<_>>(),
+        "boundary": "LLM should inspect packet refs before converting queue items into review comments"
+    })
+}
+
+fn rich_queue_item(
+    kind: &str,
+    index: usize,
+    action_kind: &str,
+    conclusion: &str,
+    detail_refs: Vec<String>,
+) -> Value {
+    json!({
+        "actionId": format!("action:{kind}:{index}"),
+        "kind": kind,
+        "actionKind": action_kind,
+        "conclusion": conclusion,
+        "detailRefs": detail_refs,
+        "boundary": "compact rich output ref; inspect packet detail before source-level conclusion"
+    })
+}
+
+fn packet_refs_from_array(value: &Value, field: &str, limit: usize) -> Vec<String> {
+    value
+        .as_array()
+        .into_iter()
+        .flat_map(|items| {
+            items
+                .iter()
+                .enumerate()
+                .take(limit)
+                .map(move |(index, _)| format!("packet:/{field}/{index}"))
+        })
+        .collect()
+}
+
+fn packet_refs_from_nested_array(
+    value: &Value,
+    field: &str,
+    packet_path: &str,
+    limit: usize,
+) -> Vec<String> {
+    value[field]
+        .as_array()
+        .into_iter()
+        .flat_map(|items| {
+            items
+                .iter()
+                .enumerate()
+                .take(limit)
+                .map(move |(index, _)| format!("packet:/{packet_path}/{index}"))
+        })
+        .collect()
+}
+
+fn packet_ref(pointer: &str) -> String {
+    format!("packet:{pointer}")
 }
 
 fn structural_blocked_row(
