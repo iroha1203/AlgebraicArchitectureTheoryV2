@@ -19,6 +19,14 @@ Validated surfaces:
   - `architectureSpectrumReport`.
 - `codebase-inspection` current-state ArchitectureSpectrumReport projection.
 - ACTS fixture manifest and locked minimal / coupon validation artifacts.
+- `archmap/v1` runtime path ACTS / ArchitectureSpectrumReport derived output:
+  - `curvatureSupportReadings`;
+  - `curvatureTransferReadings`;
+  - `curvatureMassReadings`;
+  - `spectralAnalysisReadings`;
+  - `spectralModeReadings`;
+  - `spectralDrilldownReadings`;
+  - `architectureSpectrumReport`.
 - Lean minimal theorem guardrail for finite measured curvature support and
   bounded recurrent transfer reading.
 - AAT mathematical text, Lean theorem index, proof-obligation status, tool docs,
@@ -115,18 +123,31 @@ The expected result is no matches.
 
 ## Claim Boundary
 
-The implemented package supports the following bounded reading:
+For `archmap/v1` / `law-policy/v1`, the ACTS output is derived from normalized
+ArchMap support, selected typed evaluator results, registry basis refs, and
+coverage status. It does not re-enable v0 `spectrumMeasurementProfile` as an
+input recipe. `measuredPass` produces a bounded selected-support zero reading,
+`measuredViolation` produces a bounded nonzero curvature support, and blocked /
+unknown / unmeasured evaluator statuses remain coverage gaps.
+
+For the `archmap/v1` runtime, the implemented package supports the following
+bounded reading:
 
 ```text
-supplied ArchMap
-+ selected LawPolicy
-+ optional spectrumMeasurementProfile
+normalized ArchMap v1 support
++ selected law-policy/v1 evaluator results
++ replacement registry basis refs
 + readingBoundary for measured / proxy / unmeasured / coverage-blocked rows
 + finite measured witness/support family with local curvature inputs
 + finite nonnegative sparse transfer operator over measured support rows
 + explicit coverage / exactness / non-conclusion records
 -> ArchitectureSpectrumReport as a current-state review surface
 ```
+
+Legacy/static ACTS fixture validation may still mention the old optional
+`spectrumMeasurementProfile` vocabulary while validating archived packet
+families, but that vocabulary is not a runtime input recipe for
+`archmap/v1` / `law-policy/v1` analysis.
 
 It does not support:
 
