@@ -205,6 +205,15 @@ It is designed to be read whole without jq slicing. It exposes:
 - `dominantFindings`: compact nonzero axes, hotspots, recurrent pressure,
   architectural holes, nonzero holonomy, bridge pressure, and
   compact AAT observation-axis pressure.
+- `richDominantFindings`: current v1 compact packet refs for spectrum hotspots,
+  recurrent obstructions, architectural holes, nonzero holonomy, and structural
+  review families. It is a ref surface, not a copy of raw packet arrays.
+- `richPacketRefs`: packet refs grouped for distance diagnosis, spectrum,
+  homotopy, and structural reading lookup. These refs are the bridge from the
+  first summary read to optional raw artifacts.
+- `richReadingGuide`: conclusion-first reading order and detail policy for LLMs
+  and reviewers. It explicitly tells the reader to inspect packet refs before
+  converting a compact queue item into a source-level finding.
 - `actionQueue`: the full prioritized queue for hotspots, unfilled loops,
   nonzero holonomy loops, nonzero signature axes, workflow pressure, bridge
   pressure, projection fidelity loss, Atom origin closure debt, effect relation
@@ -237,6 +246,11 @@ axes cannot be reintroduced as unmeasured by the viewer surface. The viewer
 should help a human inspect where the diagnostic readings point; it must not
 reinterpret visual layout distance as an ArchSig metric.
 
+Current v1 viewer data also mirrors `richPacketRefs`, `richDominantFindings`,
+`richReadingGuide`, and `actionQueue` into `analysisOverlays` / `reportPane`.
+It records omitted raw packet array counts so that the viewer remains a bounded
+projection rather than a second analysis engine.
+
 `llmInterpretationPacket.distanceDiagnosisSummary` is the compact LLM note for
 distance-first reading. It tells an agent to read summary distance diagnosis
 before raw Part IV rows, records measured / blocked / unmeasured status, and
@@ -244,6 +258,11 @@ records the evaluator-synchronized `DiagnosticScope` measured / unmeasured /
 blocker counts. Operation and curvature axes can remain unmeasured when a
 partial measured contribution still has evidence blockers. It keeps non-claims
 bounded to the selected ArchMap + LawPolicy evidence contract.
+
+Current v1 `llm-interpretation-packet.json` also carries `richPacketRefs`,
+`readingGuidance`, and `actionQueueSummary`, so an LLM can start from the same
+compact packet refs as summary / viewer without treating raw packet retention as
+mandatory.
 
 `trendInsights` is intentionally short. Each item reports a bounded claim, why
 the claim is nontrivial, a small measurement summary, and packet refs. The full
