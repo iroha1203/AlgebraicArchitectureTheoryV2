@@ -1,0 +1,12 @@
+{
+  "schema": "archmap/v1",
+  "id": "replacement-negative-schema-only",
+  "sources": {
+    "src.placeholder": {
+      "kind": "file",
+      "path": "sample/src/placeholder.rs"
+    }
+  },
+  "atoms": [],
+  "molecules": []
+}
