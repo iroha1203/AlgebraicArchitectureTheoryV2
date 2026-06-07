@@ -704,6 +704,154 @@ fn cli_analyze_v1_homotopy_accepts_empty_molecule_support() {
 }
 
 #[test]
+fn cli_analyze_v1_structural_reading_review_surface_uses_typed_refs() {
+    let out_dir = temp_dir("analyze-v1-structural-reading-review");
+    let root = archmap_v1_root();
+
+    let output = run_sig0_output(&[
+        "analyze",
+        "--archmap",
+        root.join("archmap.json").to_str().expect("path is utf-8"),
+        "--law-policy",
+        root.join("law_policy.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--out-dir",
+        out_dir.to_str().expect("path is utf-8"),
+        "--emit-raw-artifacts",
+    ]);
+
+    assert!(output.status.success());
+    let packet = read_json(&out_dir.join("archsig-analysis-packet.json"));
+    let surface = &packet["structuralReadingReviewSurface"];
+    assert_eq!(
+        surface["schemaVersion"].as_str(),
+        Some("structural-reading-review-surface/v1")
+    );
+    assert!(
+        surface["connectedReadingRefs"]
+            .as_array()
+            .is_some_and(|refs| {
+                let expected = [
+                    "representationMetricReadings",
+                    "localCurvatureDiagramReadings",
+                    "threeLayerFlatnessReadings",
+                    "observationProjectionReadings",
+                    "stateTransitionAlgebraReadings",
+                    "effectRelationAlgebraReadings",
+                    "synthesisBlockageReadings",
+                    "operationPreconditionReadinessReadings",
+                    "pathMultiplicityLossReadings",
+                ]
+                .into_iter()
+                .flat_map(|field| {
+                    packet[field]
+                        .as_array()
+                        .into_iter()
+                        .flat_map(move |readings| {
+                            (0..readings.len()).map(move |index| format!("/{field}/{index}"))
+                        })
+                })
+                .collect::<Vec<_>>();
+                !expected.is_empty()
+                    && refs
+                        .iter()
+                        .filter_map(|reference| reference.as_str())
+                        .collect::<Vec<_>>()
+                        == expected
+                    && expected
+                        .iter()
+                        .all(|pointer| packet.pointer(pointer).is_some())
+            }),
+        "structural review surface must connect exactly the structural packet refs"
+    );
+    for field in [
+        "representationMetricReadings",
+        "localCurvatureDiagramReadings",
+        "threeLayerFlatnessReadings",
+        "observationProjectionReadings",
+        "stateTransitionAlgebraReadings",
+        "effectRelationAlgebraReadings",
+        "synthesisBlockageReadings",
+        "operationPreconditionReadinessReadings",
+        "pathMultiplicityLossReadings",
+    ] {
+        assert!(
+            packet[field].as_array().is_some_and(|readings| {
+                !readings.is_empty()
+                    && readings.iter().all(|reading| {
+                        reading["readingId"].as_str().is_some()
+                            && reading["measurementStatus"].as_str().is_some()
+                            && reading["normalizedAtomRefs"].as_array().is_some()
+                            && reading["normalizedMoleculeRefs"].as_array().is_some()
+                            && reading["typedEvaluatorResultRefs"]
+                                .as_array()
+                                .is_some_and(|refs| {
+                                    !refs.is_empty()
+                                        && refs.iter().all(|reference| {
+                                            reference.as_str().is_some_and(|pointer| {
+                                                packet.pointer(pointer).is_some()
+                                            })
+                                        })
+                                })
+                            && reading["coverageGapRefs"].as_array().is_some()
+                    })
+            }),
+            "structural field {field} must expose typed / normalized refs"
+        );
+    }
+    assert!(
+        [
+            "representationMetricReadings",
+            "localCurvatureDiagramReadings",
+            "threeLayerFlatnessReadings",
+            "observationProjectionReadings",
+            "stateTransitionAlgebraReadings",
+            "effectRelationAlgebraReadings",
+            "synthesisBlockageReadings",
+            "operationPreconditionReadinessReadings",
+            "pathMultiplicityLossReadings",
+        ]
+        .into_iter()
+        .flat_map(|field| packet[field].as_array().into_iter().flatten())
+        .all(|reading| {
+            reading["measurementStatus"].as_str().is_some_and(|status| {
+                status != "measuredZero"
+                    && (status != "measured"
+                        || reading["coverageGapRefs"]
+                            .as_array()
+                            .is_some_and(|refs| refs.is_empty()))
+            })
+        }),
+        "structural rows must not use missing/proxy evidence as measured"
+    );
+    let validation = read_json(&out_dir.join("archsig-analysis-validation.json"));
+    assert!(
+        validation["checks"].as_array().is_some_and(|checks| {
+            checks.iter().any(|check| {
+                check["checkId"] == "archsig.v1.structuralReadingReviewSurface"
+                    && check["result"] == "pass"
+            })
+        }),
+        "analysis validation must lock v1 structural review surface"
+    );
+    let llm_packet = read_json(&out_dir.join("llm-interpretation-packet.json"));
+    assert!(
+        llm_packet["structuralReadingReviewSummary"]["topStructuralReadingRefs"]
+            .as_array()
+            .is_some_and(|refs| {
+                !refs.is_empty()
+                    && refs.iter().all(|reference| {
+                        reference
+                            .as_str()
+                            .is_some_and(|pointer| packet.pointer(pointer).is_some())
+                    })
+            }),
+        "LLM structural summary must keep resolvable packet refs"
+    );
+}
+
+#[test]
 fn cli_rejects_archmap_v1_unknown_atom_kind() {
     let out_dir = temp_dir("archmap-v1-unknown-kind");
     let root = archmap_v1_root();
@@ -1265,6 +1413,16 @@ fn cli_analyze_v1_emit_raw_artifacts_writes_typed_packet_detail_and_handoff() {
         "homotopyHolonomyReadings",
         "stokesStyleReadings",
         "homotopyDistanceReadings",
+        "structuralReadingReviewSurface",
+        "representationMetricReadings",
+        "localCurvatureDiagramReadings",
+        "threeLayerFlatnessReadings",
+        "observationProjectionReadings",
+        "stateTransitionAlgebraReadings",
+        "effectRelationAlgebraReadings",
+        "synthesisBlockageReadings",
+        "operationPreconditionReadinessReadings",
+        "pathMultiplicityLossReadings",
         "typedEvaluatorResults",
         "architectureDistanceSignatureReadings",
     ] {
@@ -1323,6 +1481,34 @@ fn cli_analyze_v1_emit_raw_artifacts_writes_typed_packet_detail_and_handoff() {
                 .is_some_and(|items| !items.is_empty()),
         "v1 packet must expose ArchitectureHomotopyReport and homotopy reading families"
     );
+    assert!(
+        packet["structuralReadingReviewSurface"].is_object()
+            && packet["structuralReadingReviewSurface"]["connectedReadingRefs"]
+                .as_array()
+                .is_some_and(|items| !items.is_empty())
+            && packet["representationMetricReadings"]
+                .as_array()
+                .is_some_and(|items| !items.is_empty())
+            && packet["observationProjectionReadings"]
+                .as_array()
+                .is_some_and(|items| !items.is_empty())
+            && packet["stateTransitionAlgebraReadings"]
+                .as_array()
+                .is_some_and(|items| !items.is_empty())
+            && packet["effectRelationAlgebraReadings"]
+                .as_array()
+                .is_some_and(|items| !items.is_empty())
+            && packet["synthesisBlockageReadings"]
+                .as_array()
+                .is_some_and(|items| !items.is_empty())
+            && packet["operationPreconditionReadinessReadings"]
+                .as_array()
+                .is_some_and(|items| !items.is_empty())
+            && packet["pathMultiplicityLossReadings"]
+                .as_array()
+                .is_some_and(|items| !items.is_empty()),
+        "v1 packet must expose structural reading review surface and structural reading families"
+    );
     assert_eq!(
         packet["architectureSpectrumReport"]["status"].as_str(),
         Some("measuredZeroWithinSelectedSupport")
@@ -1360,6 +1546,7 @@ fn cli_analyze_v1_emit_raw_artifacts_writes_typed_packet_detail_and_handoff() {
         "archsig.v1.removedV0InputFieldsAbsent",
         "archsig.v1.architectureSpectrumReportSurface",
         "archsig.v1.architectureHomotopyReportSurface",
+        "archsig.v1.structuralReadingReviewSurface",
     ] {
         assert!(
             analysis_validation["checks"]
@@ -1408,6 +1595,16 @@ fn cli_analyze_v1_emit_raw_artifacts_writes_typed_packet_detail_and_handoff() {
                 "architectureHomotopyReport.filledLoops",
                 "architectureHomotopyReport.unfilledLoops",
                 "architectureHomotopyReport.nonzeroHolonomyLoops",
+                "representationMetricReadings",
+                "localCurvatureDiagramReadings",
+                "threeLayerFlatnessReadings",
+                "observationProjectionReadings",
+                "stateTransitionAlgebraReadings",
+                "effectRelationAlgebraReadings",
+                "synthesisBlockageReadings",
+                "operationPreconditionReadinessReadings",
+                "pathMultiplicityLossReadings",
+                "structuralReadingReviewSurface.connectedReadingRefs",
             ]
             .into_iter()
             .all(|name| sections.iter().any(|section| section["name"] == name))
@@ -1449,8 +1646,22 @@ fn cli_analyze_v1_emit_raw_artifacts_writes_typed_packet_detail_and_handoff() {
                 && entries.iter().any(|entry| {
                     entry["packetRef"] == "packet:/architectureHomotopyReport/filledLoops/0"
                 })
+                && entries.iter().any(|entry| {
+                    entry["packetRef"] == "packet:/representationMetricReadings/0"
+                        && entry["typedEvaluatorResultRefs"]
+                            .as_array()
+                            .is_some_and(|refs| !refs.is_empty())
+                        && entry["normalizedAtomRefs"]
+                            .as_array()
+                            .is_some_and(|refs| !refs.is_empty())
+                        && entry["coverageGapRefs"].as_array().is_some()
+                })
+                && entries.iter().any(|entry| {
+                    entry["packetRef"]
+                        == "packet:/structuralReadingReviewSurface/connectedReadingRefs/0"
+                })
         }),
-        "v1 detail index must include resolvable generated, spectrum, and homotopy entries"
+        "v1 detail index must include resolvable generated, spectrum, homotopy, and structural entries"
     );
     assert_eq!(
         read_json(&out_dir.join("llm-interpretation-packet.json"))["schema"],
@@ -1490,6 +1701,18 @@ fn cli_analyze_v1_emit_raw_artifacts_writes_typed_packet_detail_and_handoff() {
                     .is_some_and(|pointer| packet.pointer(pointer).is_some())
             }),
         "LLM homotopy summary refs must resolve inside the analysis packet"
+    );
+    assert!(
+        llm_packet["structuralReadingReviewSummary"]["topStructuralReadingRefs"]
+            .as_array()
+            .into_iter()
+            .flatten()
+            .all(|reference| {
+                reference
+                    .as_str()
+                    .is_some_and(|pointer| packet.pointer(pointer).is_some())
+            }),
+        "LLM structural summary refs must resolve inside the analysis packet"
     );
     assert!(
         packet["nonConclusions"].as_array().is_some_and(|items| {

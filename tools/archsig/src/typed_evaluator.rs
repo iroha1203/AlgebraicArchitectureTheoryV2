@@ -142,6 +142,15 @@ pub fn build_typed_analysis_packet_v1(
     let generated_repair_targets = generated_repair_targets_v1(&generated_obstructions);
     let spectrum = architecture_spectrum_v1(normalized, typed_results);
     let homotopy = architecture_homotopy_v1(normalized, typed_results, &spectrum);
+    let structural = architecture_structural_v1(
+        normalized,
+        typed_results,
+        architecture_distance,
+        &generated_obstructions,
+        &generated_repair_targets,
+        &spectrum,
+        &homotopy,
+    );
     let detail_refs = typed_results
         .results
         .iter()
@@ -184,6 +193,16 @@ pub fn build_typed_analysis_packet_v1(
         "stokesStyleReadings": homotopy["stokesStyleReadings"],
         "homotopyDistanceReadings": homotopy["homotopyDistanceReadings"],
         "architectureHomotopyReport": homotopy["architectureHomotopyReport"],
+        "representationMetricReadings": structural["representationMetricReadings"],
+        "localCurvatureDiagramReadings": structural["localCurvatureDiagramReadings"],
+        "threeLayerFlatnessReadings": structural["threeLayerFlatnessReadings"],
+        "observationProjectionReadings": structural["observationProjectionReadings"],
+        "stateTransitionAlgebraReadings": structural["stateTransitionAlgebraReadings"],
+        "effectRelationAlgebraReadings": structural["effectRelationAlgebraReadings"],
+        "synthesisBlockageReadings": structural["synthesisBlockageReadings"],
+        "operationPreconditionReadinessReadings": structural["operationPreconditionReadinessReadings"],
+        "pathMultiplicityLossReadings": structural["pathMultiplicityLossReadings"],
+        "structuralReadingReviewSurface": structural["structuralReadingReviewSurface"],
         "generatedPacketRefs": {
             "basis": "typed-evaluator-results + law-evaluator-registry",
             "generatedLawInputs": "/generatedLawInputs",
@@ -202,6 +221,16 @@ pub fn build_typed_analysis_packet_v1(
             "homotopyHolonomyReadings": "/homotopyHolonomyReadings",
             "stokesStyleReadings": "/stokesStyleReadings",
             "homotopyDistanceReadings": "/homotopyDistanceReadings",
+            "structuralReadingReviewSurface": "/structuralReadingReviewSurface",
+            "representationMetricReadings": "/representationMetricReadings",
+            "localCurvatureDiagramReadings": "/localCurvatureDiagramReadings",
+            "threeLayerFlatnessReadings": "/threeLayerFlatnessReadings",
+            "observationProjectionReadings": "/observationProjectionReadings",
+            "stateTransitionAlgebraReadings": "/stateTransitionAlgebraReadings",
+            "effectRelationAlgebraReadings": "/effectRelationAlgebraReadings",
+            "synthesisBlockageReadings": "/synthesisBlockageReadings",
+            "operationPreconditionReadinessReadings": "/operationPreconditionReadinessReadings",
+            "pathMultiplicityLossReadings": "/pathMultiplicityLossReadings",
             "typedEvaluatorResults": "/typedEvaluatorResults",
             "architectureDistanceSignatureReadings": "/architectureDistance/signatureDistanceReadings"
         },
@@ -212,6 +241,7 @@ pub fn build_typed_analysis_packet_v1(
             "Generated law inputs, signature axes, obstruction candidates, and repair targets are derived packet refs over typed evaluator results and registry basis.",
             "ArchitectureSpectrumReport/v1 is derived from normalized support, typed evaluator results, and coverage status; it does not read v0 spectrumMeasurementProfile.",
             "ArchitectureHomotopyReport/v1 is derived from normalized relations, explicit molecule candidates, typed evaluator results, and coverage status; it does not read v0 operationSquareEvidence or homotopyMeasurementProfile.",
+            "StructuralReadingReviewSurface/v1 is derived from normalized atoms, explicit molecule candidates, typed evaluator results, and generated packet refs; it does not read v0 projectionInfo, concernHints, or observationGaps as positive input.",
             "ArchSig v1 packet does not read v0 semanticObservations, projectionInfo, operationSquareEvidence, concernHints, observationGaps, or homotopyMeasurementProfile.",
             "Blocked, unknown, and unmeasured evaluator results are not measured zero.",
             "ArchSig v1 packet is a computation artifact, not a Lean proof object."
@@ -227,6 +257,17 @@ pub fn build_typed_analysis_summary_v1(
     let replacement_blocked_count = typed_results.replacement_summary.blocked_count;
     let spectrum = architecture_spectrum_v1(normalized, typed_results);
     let homotopy = architecture_homotopy_v1(normalized, typed_results, &spectrum);
+    let generated_obstructions = generated_obstructions_v1(typed_results);
+    let generated_repair_targets = generated_repair_targets_v1(&generated_obstructions);
+    let structural = architecture_structural_v1(
+        normalized,
+        typed_results,
+        architecture_distance,
+        &generated_obstructions,
+        &generated_repair_targets,
+        &spectrum,
+        &homotopy,
+    );
     let verdict = if typed_results.summary.measured_violation_count > 0 {
         "SELECTED_VIOLATION_MEASURED_UNDER_EVIDENCE_CONTRACT"
     } else if typed_results.summary.measured_pass_count > 0
@@ -253,6 +294,7 @@ pub fn build_typed_analysis_summary_v1(
             "architectureDistance": "architecture-distance.json",
             "architectureSpectrumReport": "archsig-analysis-packet.json#/architectureSpectrumReport",
             "architectureHomotopyReport": "archsig-analysis-packet.json#/architectureHomotopyReport",
+            "structuralReadingReviewSurface": "archsig-analysis-packet.json#/structuralReadingReviewSurface",
             "normalizedAtomCount": normalized.summary.normalized_atom_count,
             "generatedMoleculeCandidateCount": normalized.summary.generated_molecule_candidate_count
         },
@@ -267,6 +309,8 @@ pub fn build_typed_analysis_summary_v1(
         "architectureSpectrumSummary": architecture_spectrum_summary_v1(&spectrum),
         "architectureHomotopyReport": homotopy["architectureHomotopyReport"],
         "architectureHomotopySummary": architecture_homotopy_summary_v1(&homotopy),
+        "structuralReadingReviewSurface": structural["structuralReadingReviewSurface"],
+        "structuralReadingReviewSummary": structural_reading_review_summary_v1(&structural),
         "actionQueue": typed_action_queue(typed_results),
         "positiveBoundedConclusions": typed_results.positive_bounded_conclusions,
         "metadata": {
@@ -335,6 +379,7 @@ pub fn build_typed_atom_viewer_data_v1(
             "distanceDiagnosis": summary["distanceDiagnosis"],
             "architectureSpectrumReport": summary["architectureSpectrumReport"],
             "architectureHomotopyReport": summary["architectureHomotopyReport"],
+            "structuralReadingReviewSurface": summary["structuralReadingReviewSurface"],
             "actionQueue": summary["actionQueue"]
         },
         "reportPane": {
@@ -348,6 +393,8 @@ pub fn build_typed_atom_viewer_data_v1(
             "architectureSpectrumSummary": summary["architectureSpectrumSummary"],
             "architectureHomotopyReport": summary["architectureHomotopyReport"],
             "architectureHomotopySummary": summary["architectureHomotopySummary"],
+            "structuralReadingReviewSurface": summary["structuralReadingReviewSurface"],
+            "structuralReadingReviewSummary": summary["structuralReadingReviewSummary"],
             "replacementRegistryResolution": summary["replacementRegistryResolution"],
             "typedEvaluatorDiagnosis": summary["typedEvaluatorDiagnosis"],
             "distanceDiagnosis": summary["distanceDiagnosis"],
@@ -427,6 +474,16 @@ pub fn build_typed_detail_index_v1(
             detail_index_section_v1("architectureHomotopyReport.filledLoops", "/architectureHomotopyReport/filledLoops", packet_nested_array_len(packet, &["architectureHomotopyReport", "filledLoops"])),
             detail_index_section_v1("architectureHomotopyReport.unfilledLoops", "/architectureHomotopyReport/unfilledLoops", packet_nested_array_len(packet, &["architectureHomotopyReport", "unfilledLoops"])),
             detail_index_section_v1("architectureHomotopyReport.nonzeroHolonomyLoops", "/architectureHomotopyReport/nonzeroHolonomyLoops", packet_nested_array_len(packet, &["architectureHomotopyReport", "nonzeroHolonomyLoops"])),
+            detail_index_section_v1("representationMetricReadings", "/representationMetricReadings", packet_array_len(packet, "representationMetricReadings")),
+            detail_index_section_v1("localCurvatureDiagramReadings", "/localCurvatureDiagramReadings", packet_array_len(packet, "localCurvatureDiagramReadings")),
+            detail_index_section_v1("threeLayerFlatnessReadings", "/threeLayerFlatnessReadings", packet_array_len(packet, "threeLayerFlatnessReadings")),
+            detail_index_section_v1("observationProjectionReadings", "/observationProjectionReadings", packet_array_len(packet, "observationProjectionReadings")),
+            detail_index_section_v1("stateTransitionAlgebraReadings", "/stateTransitionAlgebraReadings", packet_array_len(packet, "stateTransitionAlgebraReadings")),
+            detail_index_section_v1("effectRelationAlgebraReadings", "/effectRelationAlgebraReadings", packet_array_len(packet, "effectRelationAlgebraReadings")),
+            detail_index_section_v1("synthesisBlockageReadings", "/synthesisBlockageReadings", packet_array_len(packet, "synthesisBlockageReadings")),
+            detail_index_section_v1("operationPreconditionReadinessReadings", "/operationPreconditionReadinessReadings", packet_array_len(packet, "operationPreconditionReadinessReadings")),
+            detail_index_section_v1("pathMultiplicityLossReadings", "/pathMultiplicityLossReadings", packet_array_len(packet, "pathMultiplicityLossReadings")),
+            detail_index_section_v1("structuralReadingReviewSurface.connectedReadingRefs", "/structuralReadingReviewSurface/connectedReadingRefs", packet_nested_array_len(packet, &["structuralReadingReviewSurface", "connectedReadingRefs"])),
             detail_index_section_v1("replacementEvaluatorResults", "/replacementEvaluatorResults", packet_array_len(packet, "replacementEvaluatorResults"))
         ],
         "refDictionary": ref_dictionary,
@@ -446,6 +503,17 @@ pub fn build_typed_llm_interpretation_packet_v1(
 ) -> serde_json::Value {
     let spectrum = architecture_spectrum_v1(normalized, typed_results);
     let homotopy = architecture_homotopy_v1(normalized, typed_results, &spectrum);
+    let generated_obstructions = generated_obstructions_v1(typed_results);
+    let generated_repair_targets = generated_repair_targets_v1(&generated_obstructions);
+    let structural = architecture_structural_v1(
+        normalized,
+        typed_results,
+        architecture_distance,
+        &generated_obstructions,
+        &generated_repair_targets,
+        &spectrum,
+        &homotopy,
+    );
     json!({
         "schema": "llm-interpretation-packet/v1",
         "interpretationKind": "typed-evaluator-bounded-reading",
@@ -455,6 +523,7 @@ pub fn build_typed_llm_interpretation_packet_v1(
         "distanceDiagnosisSummary": architecture_distance["distanceDiagnosis"],
         "architectureSpectrumReportSummary": architecture_spectrum_summary_v1(&spectrum),
         "architectureHomotopyReportSummary": architecture_homotopy_summary_v1(&homotopy),
+        "structuralReadingReviewSummary": structural_reading_review_summary_v1(&structural),
         "typedEvaluatorSummary": typed_results.summary,
         "replacementRegistryResolution": typed_results.replacement_registry_resolution,
         "positiveBoundedConclusions": typed_results.positive_bounded_conclusions,
@@ -796,6 +865,16 @@ pub fn build_typed_analysis_validation_v1(
                     "homotopyHolonomyReadings",
                     "stokesStyleReadings",
                     "homotopyDistanceReadings",
+                    "structuralReadingReviewSurface",
+                    "representationMetricReadings",
+                    "localCurvatureDiagramReadings",
+                    "threeLayerFlatnessReadings",
+                    "observationProjectionReadings",
+                    "stateTransitionAlgebraReadings",
+                    "effectRelationAlgebraReadings",
+                    "synthesisBlockageReadings",
+                    "operationPreconditionReadinessReadings",
+                    "pathMultiplicityLossReadings",
                     "typedEvaluatorResults",
                     "architectureDistanceSignatureReadings",
                 ]
@@ -819,6 +898,7 @@ pub fn build_typed_analysis_validation_v1(
     .all(|field| packet.get(*field).is_none());
     let architecture_spectrum_report_pass = architecture_spectrum_report_valid(packet);
     let architecture_homotopy_report_pass = architecture_homotopy_report_valid(packet);
+    let structural_reading_review_surface_pass = structural_reading_review_surface_valid(packet);
     let checks_pass = [
         packet_schema_pass,
         typed_count_pass,
@@ -838,6 +918,7 @@ pub fn build_typed_analysis_validation_v1(
         removed_v0_input_fields_absent_pass,
         architecture_spectrum_report_pass,
         architecture_homotopy_report_pass,
+        structural_reading_review_surface_pass,
     ];
     let result = if checks_pass.iter().copied().all(|passed| passed) {
         "pass"
@@ -943,6 +1024,11 @@ pub fn build_typed_analysis_validation_v1(
                 "checkId": "archsig.v1.architectureHomotopyReportSurface",
                 "result": if architecture_homotopy_report_pass { "pass" } else { "fail" },
                 "message": "ArchitectureHomotopyReport resolves path, loop, filler, holonomy, Stokes, and missing filler refs without treating gaps as zero"
+            },
+            {
+                "checkId": "archsig.v1.structuralReadingReviewSurface",
+                "result": if structural_reading_review_surface_pass { "pass" } else { "fail" },
+                "message": "structural reading review surface resolves v1 structural readings to typed evaluator, generated packet, and normalized support refs"
             }
         ],
         "nonConclusions": [
@@ -1393,10 +1479,141 @@ fn architecture_homotopy_report_valid(packet: &Value) -> bool {
     coverage_gaps == expected_gaps
 }
 
+fn structural_reading_review_surface_valid(packet: &Value) -> bool {
+    let surface = &packet["structuralReadingReviewSurface"];
+    if !surface.is_object()
+        || surface["schemaVersion"] != "structural-reading-review-surface/v1"
+        || !surface["currentStateReading"]
+            .as_str()
+            .is_some_and(|reading| reading.contains("current architecture state"))
+        || !surface["reviewFocus"]
+            .as_array()
+            .is_some_and(|items| !items.is_empty())
+        || !surface["nonConclusions"]
+            .as_array()
+            .is_some_and(|items| !items.is_empty())
+    {
+        return false;
+    }
+    let structural_fields = [
+        "representationMetricReadings",
+        "localCurvatureDiagramReadings",
+        "threeLayerFlatnessReadings",
+        "observationProjectionReadings",
+        "stateTransitionAlgebraReadings",
+        "effectRelationAlgebraReadings",
+        "synthesisBlockageReadings",
+        "operationPreconditionReadinessReadings",
+        "pathMultiplicityLossReadings",
+    ];
+    if !structural_fields.iter().all(|field| {
+        packet[*field].as_array().is_some_and(|readings| {
+            !readings.is_empty()
+                && readings.iter().all(|reading| {
+                    reading["readingId"].as_str().is_some()
+                        && reading["measurementStatus"]
+                            .as_str()
+                            .is_some_and(|status| status != "measuredZero")
+                        && reading["normalizedAtomRefs"].as_array().is_some()
+                        && reading["normalizedMoleculeRefs"].as_array().is_some()
+                        && reading["coverageGapRefs"].as_array().is_some()
+                        && reading["typedEvaluatorResultRefs"]
+                            .as_array()
+                            .is_some_and(|refs| {
+                                !refs.is_empty()
+                                    && refs.iter().all(|reference| {
+                                        reference.as_str().is_some_and(|pointer| {
+                                            packet.pointer(pointer).is_some()
+                                        })
+                                    })
+                            })
+                        && (!reading["measurementStatus"]
+                            .as_str()
+                            .is_some_and(|status| status == "measured")
+                            || !structural_reading_has_gap(reading))
+                })
+        })
+    }) {
+        return false;
+    }
+    let expected_connected_reading_refs = expected_structural_connected_reading_refs(packet);
+    if expected_connected_reading_refs.is_empty() {
+        return false;
+    }
+    if !surface["connectedReadingRefs"]
+        .as_array()
+        .is_some_and(|refs| {
+            refs.len() == expected_connected_reading_refs.len()
+                && refs.iter().zip(expected_connected_reading_refs.iter()).all(
+                    |(reference, expected)| {
+                        reference.as_str().is_some_and(|pointer| {
+                            pointer == expected && packet.pointer(pointer).is_some()
+                        })
+                    },
+                )
+        })
+    {
+        return false;
+    }
+    surface["typedEvaluatorResultRefs"]
+        .as_array()
+        .is_some_and(|refs| {
+            !refs.is_empty()
+                && refs.iter().all(|reference| {
+                    reference
+                        .as_str()
+                        .is_some_and(|pointer| packet.pointer(pointer).is_some())
+                })
+        })
+}
+
+fn expected_structural_connected_reading_refs(packet: &Value) -> Vec<String> {
+    [
+        "representationMetricReadings",
+        "localCurvatureDiagramReadings",
+        "threeLayerFlatnessReadings",
+        "observationProjectionReadings",
+        "stateTransitionAlgebraReadings",
+        "effectRelationAlgebraReadings",
+        "synthesisBlockageReadings",
+        "operationPreconditionReadinessReadings",
+        "pathMultiplicityLossReadings",
+    ]
+    .iter()
+    .flat_map(|field| {
+        packet[*field]
+            .as_array()
+            .into_iter()
+            .flat_map(move |readings| {
+                (0..readings.len()).map(move |index| format!("/{field}/{index}"))
+            })
+    })
+    .collect()
+}
+
+fn structural_reading_is_measured(reading: &Value) -> bool {
+    reading["measurementStatus"] == "measured"
+        && reading["coverageGapRefs"]
+            .as_array()
+            .is_some_and(|refs| refs.is_empty())
+        && reading["typedEvaluatorResultRefs"]
+            .as_array()
+            .is_some_and(|refs| !refs.is_empty())
+}
+
+fn structural_reading_has_gap(reading: &Value) -> bool {
+    reading["coverageGapRefs"]
+        .as_array()
+        .is_none_or(|refs| !refs.is_empty())
+        || reading["typedEvaluatorResultRefs"]
+            .as_array()
+            .is_none_or(|refs| refs.is_empty())
+}
+
 fn packet_ref_field_resolves(packet: &Value, item: &Value, field: &str) -> bool {
     item[field]
         .as_str()
-        .is_some_and(|pointer| packet.pointer(pointer).is_some())
+        .is_some_and(|packet_ref| packet.pointer(packet_ref).is_some())
 }
 
 fn packet_ref_array_field_resolves(packet: &Value, item: &Value, field: &str) -> bool {
@@ -2447,6 +2664,663 @@ fn architecture_homotopy_summary_v1(homotopy: &Value) -> Value {
     })
 }
 
+fn architecture_structural_v1(
+    normalized: &NormalizedArchMapV1,
+    typed_results: &TypedEvaluatorResultsV1,
+    architecture_distance: &Value,
+    generated_obstructions: &[Value],
+    generated_repair_targets: &[Value],
+    spectrum: &Value,
+    homotopy: &Value,
+) -> Value {
+    let representation_metric_readings =
+        representation_metric_readings_v1(normalized, typed_results, architecture_distance);
+    let local_curvature_diagram_readings =
+        local_curvature_diagram_readings_v1(normalized, typed_results, spectrum);
+    let three_layer_flatness_readings = three_layer_flatness_readings_v1(normalized, typed_results);
+    let observation_projection_readings =
+        observation_projection_readings_v1(normalized, typed_results);
+    let state_transition_algebra_readings =
+        state_transition_algebra_readings_v1(normalized, typed_results);
+    let effect_relation_algebra_readings =
+        effect_relation_algebra_readings_v1(normalized, typed_results);
+    let synthesis_blockage_readings =
+        synthesis_blockage_readings_v1(normalized, typed_results, generated_obstructions);
+    let operation_precondition_readiness_readings = operation_precondition_readiness_readings_v1(
+        normalized,
+        typed_results,
+        generated_repair_targets,
+    );
+    let path_multiplicity_loss_readings =
+        path_multiplicity_loss_readings_v1(normalized, typed_results, homotopy);
+
+    let arrays = [
+        (
+            "representationMetricReadings",
+            representation_metric_readings.clone(),
+        ),
+        (
+            "localCurvatureDiagramReadings",
+            local_curvature_diagram_readings.clone(),
+        ),
+        (
+            "threeLayerFlatnessReadings",
+            three_layer_flatness_readings.clone(),
+        ),
+        (
+            "observationProjectionReadings",
+            observation_projection_readings.clone(),
+        ),
+        (
+            "stateTransitionAlgebraReadings",
+            state_transition_algebra_readings.clone(),
+        ),
+        (
+            "effectRelationAlgebraReadings",
+            effect_relation_algebra_readings.clone(),
+        ),
+        (
+            "synthesisBlockageReadings",
+            synthesis_blockage_readings.clone(),
+        ),
+        (
+            "operationPreconditionReadinessReadings",
+            operation_precondition_readiness_readings.clone(),
+        ),
+        (
+            "pathMultiplicityLossReadings",
+            path_multiplicity_loss_readings.clone(),
+        ),
+    ];
+    let connected_reading_refs = arrays
+        .iter()
+        .flat_map(|(field, readings)| {
+            readings
+                .iter()
+                .enumerate()
+                .map(move |(index, _)| format!("/{field}/{index}"))
+        })
+        .collect::<Vec<_>>();
+    let coverage_gap_refs = arrays
+        .iter()
+        .flat_map(|(_, readings)| {
+            readings
+                .iter()
+                .flat_map(|reading| json_string_array_value(reading, "coverageGapRefs"))
+        })
+        .collect::<BTreeSet<_>>()
+        .into_iter()
+        .collect::<Vec<_>>();
+    let measured_count = arrays
+        .iter()
+        .flat_map(|(_, readings)| readings.iter())
+        .filter(|reading| structural_reading_is_measured(reading))
+        .count();
+    let blocked_count = arrays
+        .iter()
+        .flat_map(|(_, readings)| readings.iter())
+        .filter(|reading| !structural_reading_is_measured(reading))
+        .count();
+    let status = if blocked_count > 0 {
+        "needsReview"
+    } else {
+        "measuredWithinSelectedStructuralSupport"
+    };
+
+    json!({
+        "representationMetricReadings": representation_metric_readings,
+        "localCurvatureDiagramReadings": local_curvature_diagram_readings,
+        "threeLayerFlatnessReadings": three_layer_flatness_readings,
+        "observationProjectionReadings": observation_projection_readings,
+        "stateTransitionAlgebraReadings": state_transition_algebra_readings,
+        "effectRelationAlgebraReadings": effect_relation_algebra_readings,
+        "synthesisBlockageReadings": synthesis_blockage_readings,
+        "operationPreconditionReadinessReadings": operation_precondition_readiness_readings,
+        "pathMultiplicityLossReadings": path_multiplicity_loss_readings,
+        "structuralReadingReviewSurface": {
+            "surfaceId": "structural-reading-review-surface:v1",
+            "schemaVersion": "structural-reading-review-surface/v1",
+            "status": status,
+            "measurementStatus": if blocked_count == 0 { "measured" } else { "partial" },
+            "currentStateReading": format!(
+                "ArchSig v1 reads current architecture state from normalized ArchMap {}, {} typed evaluator result(s), {} structural reading(s), and {} coverage gap(s)",
+                normalized.source_archmap_id,
+                typed_results.results.len(),
+                connected_reading_refs.len(),
+                coverage_gap_refs.len()
+            ),
+            "measuredStructuralReadingCount": measured_count,
+            "blockedStructuralReadingCount": blocked_count,
+            "connectedReadingRefs": connected_reading_refs,
+            "typedEvaluatorResultRefs": typed_result_refs(typed_results),
+            "normalizedAtomRefs": normalized_atom_ids(normalized),
+            "normalizedMoleculeRefs": normalized_molecule_ids(normalized),
+            "coverageGapRefs": coverage_gap_refs,
+            "reviewFocus": [
+                "read representation metrics and local curvature before interpreting structural pressure as quality",
+                "read projection, state/effect algebra, and path multiplicity before treating missing coordinates as zero",
+                "read synthesis and operation precondition rows as bounded review queues, not repair safety"
+            ],
+            "evidenceBoundary": "structural readings are generated from normalized ArchMap v1, typed evaluator results, and generated packet refs; they do not restore removed v0 input fields",
+            "nonConclusions": [
+                "structuralReadingReviewSurface/v1 is not a Lean theorem proof",
+                "structuralReadingReviewSurface/v1 is not a global architecture quality score",
+                "blocked structural rows are not measured zero",
+                "repair and synthesis rows are review telemetry, not automatic repair safety"
+            ]
+        }
+    })
+}
+
+fn representation_metric_readings_v1(
+    normalized: &NormalizedArchMapV1,
+    typed_results: &TypedEvaluatorResultsV1,
+    architecture_distance: &Value,
+) -> Vec<Value> {
+    let coverage_gap_refs = structural_coverage_gap_refs(typed_results);
+    let signature_distance_refs = architecture_distance["signatureDistanceReadings"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .enumerate()
+        .map(|(index, _)| format!("/architectureDistance/signatureDistanceReadings/{index}"))
+        .collect::<Vec<_>>();
+    let operation_distance_refs = architecture_distance["operationDistanceReadings"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .enumerate()
+        .map(|(index, _)| format!("/architectureDistance/operationDistanceReadings/{index}"))
+        .collect::<Vec<_>>();
+    vec![json!({
+        "readingId": format!("representation-metric:{}", stable_ref(&normalized.source_archmap_id)),
+        "representationFamily": "typedEvaluatorSupportGraph",
+        "measurementStatus": if typed_results.results.is_empty() {
+            "blockedByMissingTypedEvaluatorResults"
+        } else if coverage_gap_refs.is_empty() {
+            "measured"
+        } else {
+            "partial"
+        },
+        "typedEvaluatorResultRefs": typed_result_refs(typed_results),
+        "normalizedAtomRefs": normalized_atom_ids(normalized),
+        "normalizedMoleculeRefs": normalized_molecule_ids(normalized),
+        "signatureDistanceReadingRefs": signature_distance_refs,
+        "operationDistanceReadingRefs": operation_distance_refs,
+        "structuralDistance": {
+            "status": if normalized.atoms.is_empty() { "blocked" } else { "measured" },
+            "supportSize": normalized.atoms.len(),
+            "moleculeSupportSize": normalized.molecules.len(),
+            "evaluatorBasisRefs": typed_results
+                .results
+                .iter()
+                .flat_map(|result| result.basis_refs.iter().cloned())
+                .collect::<BTreeSet<_>>()
+                .into_iter()
+                .collect::<Vec<_>>()
+        },
+        "analyticDistance": {
+            "status": "boundedProxy",
+            "reading": "selected typed evaluator support graph size is review telemetry, not an architecture quality score"
+        },
+        "coverageGapRefs": coverage_gap_refs,
+        "evidenceBoundary": "representation metric reads normalized support and typed evaluator refs only; it is not global structural faithfulness"
+    })]
+}
+
+fn local_curvature_diagram_readings_v1(
+    normalized: &NormalizedArchMapV1,
+    typed_results: &TypedEvaluatorResultsV1,
+    spectrum: &Value,
+) -> Vec<Value> {
+    let supports = spectrum["curvatureSupportReadings"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .enumerate()
+        .map(|(index, reading)| {
+            let status = if reading["curvatureValue"]["status"] == "measuredNonzero" {
+                "measured"
+            } else if reading["curvatureValue"]["status"] == "measuredZero" {
+                "measured"
+            } else {
+                "blockedByCoverageGap"
+            };
+            json!({
+                "readingId": format!("local-curvature-diagram:{index}"),
+                "curvatureSupportReadingRef": format!("/curvatureSupportReadings/{index}"),
+                "typedEvaluatorResultRefs": [reading["typedEvaluatorResultRef"].clone()],
+                "normalizedAtomRefs": reading["witnessRefs"],
+                "normalizedMoleculeRefs": reading["moleculeRefs"],
+                "measurementStatus": status,
+                "curvatureStatus": reading["curvatureValue"]["status"],
+                "coverageGapRefs": reading["coverageGapRefs"],
+                "reading": "local curvature diagram is bounded to selected typed evaluator curvature support",
+                "evidenceBoundary": "absence of nonzero support is selected-support zero only, not global flatness"
+            })
+        })
+        .collect::<Vec<_>>();
+    if supports.is_empty() {
+        vec![structural_blocked_row(
+            "local-curvature-diagram:none",
+            "blockedByMissingCurvatureSupport",
+            normalized,
+            typed_results,
+            &[],
+        )]
+    } else {
+        supports
+    }
+}
+
+fn three_layer_flatness_readings_v1(
+    normalized: &NormalizedArchMapV1,
+    typed_results: &TypedEvaluatorResultsV1,
+) -> Vec<Value> {
+    let axes = normalized_axis_counts(normalized);
+    let coverage_gap_refs = structural_coverage_gap_refs(typed_results);
+    vec![json!({
+        "readingId": format!("three-layer-flatness:{}", stable_ref(&normalized.source_archmap_id)),
+        "measurementStatus": if typed_results.results.is_empty() {
+            "blockedByMissingTypedEvaluatorResults"
+        } else if coverage_gap_refs.is_empty() {
+            "measured"
+        } else {
+            "partial"
+        },
+        "typedEvaluatorResultRefs": typed_result_refs(typed_results),
+        "normalizedAtomRefs": normalized_atom_ids(normalized),
+        "normalizedMoleculeRefs": normalized_molecule_ids(normalized),
+        "staticStatus": layer_status(&axes, "static"),
+        "runtimeStatus": layer_status(&axes, "runtime"),
+        "semanticStatus": layer_status(&axes, "semantic"),
+        "axisCounts": axes,
+        "coverageGapRefs": coverage_gap_refs,
+        "nonImplicationReading": "static, runtime, and semantic support are separate selected readings; one layer does not imply global flatness of another",
+        "recommendedNextAction": "review blocked typed evaluator rows before interpreting layer separation as flatness"
+    })]
+}
+
+fn observation_projection_readings_v1(
+    normalized: &NormalizedArchMapV1,
+    typed_results: &TypedEvaluatorResultsV1,
+) -> Vec<Value> {
+    let atom_refs = normalized_atom_ids(normalized);
+    vec![json!({
+        "readingId": format!("observation-projection:{}", stable_ref(&normalized.source_archmap_id)),
+        "measurementStatus": if atom_refs.is_empty() {
+            "blockedByMissingAtoms"
+        } else if typed_results.results.is_empty() {
+            "blockedByMissingTypedEvaluatorResults"
+        } else {
+            "measured"
+        },
+        "typedEvaluatorResultRefs": typed_result_refs(typed_results),
+        "normalizedAtomRefs": atom_refs,
+        "normalizedMoleculeRefs": normalized_molecule_ids(normalized),
+        "observedAtomFamilies": normalized
+            .atoms
+            .iter()
+            .map(|atom| atom.atom_kind.clone())
+            .collect::<BTreeSet<_>>()
+            .into_iter()
+            .collect::<Vec<_>>(),
+        "observedCoordinates": normalized
+            .atoms
+            .iter()
+            .map(|atom| json!({
+                "atomRef": atom.normalized_atom_id,
+                "atomKind": atom.atom_kind,
+                "axis": atom.axis,
+                "predicate": atom.predicate.normalized_name
+            }))
+            .collect::<Vec<_>>(),
+        "forgottenCoordinateEvidence": Vec::<Value>::new(),
+        "coverageGapRefs": Vec::<String>::new(),
+        "reconstructionRisk": "boundedToAuthoredArchMapV1",
+        "evidenceBoundary": "projection reading records observed normalized coordinates only; it does not reconstruct removed v0 projectionInfo"
+    })]
+}
+
+fn state_transition_algebra_readings_v1(
+    normalized: &NormalizedArchMapV1,
+    typed_results: &TypedEvaluatorResultsV1,
+) -> Vec<Value> {
+    let state_refs = atoms_by_axis_or_kind(normalized, &["dataflow"], &["dataState"]);
+    let effect_refs = atoms_by_axis_or_kind(normalized, &["semantic"], &["effect"]);
+    let runtime_refs = atoms_by_axis_or_kind(normalized, &["runtime"], &["runtimeInteraction"]);
+    let blocked = state_refs.is_empty() || effect_refs.is_empty();
+    vec![json!({
+        "readingId": format!("state-transition-algebra:{}", stable_ref(&normalized.source_archmap_id)),
+        "measurementStatus": if blocked { "blockedByMissingStateOrEffectEvidence" } else { "measured" },
+        "typedEvaluatorResultRefs": typed_result_refs(typed_results),
+        "normalizedAtomRefs": state_refs.iter().chain(effect_refs.iter()).chain(runtime_refs.iter()).cloned().collect::<Vec<_>>(),
+        "normalizedMoleculeRefs": normalized_molecule_ids(normalized),
+        "stateAtomRefs": state_refs,
+        "effectAtomRefs": effect_refs,
+        "runtimeAtomRefs": runtime_refs,
+        "lawEvaluations": state_effect_law_evaluations(blocked),
+        "coverageGapRefs": if blocked { vec![format!("coverage-gap:state-transition:{}", stable_ref(&normalized.source_archmap_id))] } else { Vec::new() },
+        "reading": "state/effect algebra is evaluated from explicit normalized state/effect/runtime atoms",
+        "evidenceBoundary": "missing state/effect evidence blocks transition algebra and is not measured zero"
+    })]
+}
+
+fn effect_relation_algebra_readings_v1(
+    normalized: &NormalizedArchMapV1,
+    typed_results: &TypedEvaluatorResultsV1,
+) -> Vec<Value> {
+    let effect_refs = atoms_by_axis_or_kind(normalized, &["semantic"], &["effect"]);
+    let relation_refs = atoms_by_axis_or_kind(normalized, &["static"], &["relation"]);
+    let blocked = effect_refs.is_empty() || relation_refs.is_empty();
+    vec![json!({
+        "readingId": format!("effect-relation-algebra:{}", stable_ref(&normalized.source_archmap_id)),
+        "measurementStatus": if blocked { "blockedByMissingEffectRelationEvidence" } else { "measured" },
+        "typedEvaluatorResultRefs": typed_result_refs(typed_results),
+        "normalizedAtomRefs": effect_refs.iter().chain(relation_refs.iter()).cloned().collect::<Vec<_>>(),
+        "normalizedMoleculeRefs": normalized_molecule_ids(normalized),
+        "requiredEffectRelations": ["orderingPreservation", "replaySafety", "idempotency", "compensationAvailability"],
+        "relationInputs": relation_refs,
+        "effectAtomRefs": effect_refs,
+        "relationEvaluatorStatus": if blocked { "blocked" } else { "observed" },
+        "coverageGapRefs": if blocked { vec![format!("coverage-gap:effect-relation:{}", stable_ref(&normalized.source_archmap_id))] } else { Vec::new() },
+        "effectOrderingPressure": if blocked { "unmeasured" } else { "needsReview" },
+        "evidenceBoundary": "effect relation reading is derived from normalized relation/effect atoms, not concernHints"
+    })]
+}
+
+fn synthesis_blockage_readings_v1(
+    normalized: &NormalizedArchMapV1,
+    typed_results: &TypedEvaluatorResultsV1,
+    generated_obstructions: &[Value],
+) -> Vec<Value> {
+    if generated_obstructions.is_empty() {
+        return vec![json!({
+            "readingId": format!("synthesis-blockage:none:{}", stable_ref(&normalized.source_archmap_id)),
+            "measurementStatus": "blockedByNoGeneratedObstruction",
+            "typedEvaluatorResultRefs": typed_result_refs(typed_results),
+            "normalizedAtomRefs": normalized_atom_ids(normalized),
+            "normalizedMoleculeRefs": normalized_molecule_ids(normalized),
+            "targetConstructionRefs": Vec::<String>::new(),
+            "constraintRefs": Vec::<String>::new(),
+            "missingEvidenceRefs": structural_coverage_gap_refs(typed_results),
+            "blockageStatus": "notMeasured",
+            "noSolutionCertificateStatus": "notCertified",
+            "coverageGapRefs": structural_coverage_gap_refs(typed_results),
+            "synthesisBoundary": "no generated obstruction means no measured synthesis blocker; this row is a bounded non-measured review boundary"
+        })];
+    }
+    generated_obstructions
+        .iter()
+        .enumerate()
+        .map(|(index, obstruction)| {
+            let measurement_status = if obstruction["obstructionKind"] == "measuredLawViolation" {
+                "measured"
+            } else {
+                "blockedByMissingEvidence"
+            };
+            json!({
+                "readingId": format!("synthesis-blockage:{index}"),
+                "measurementStatus": measurement_status,
+                "typedEvaluatorResultRefs": [obstruction["typedEvaluatorResultRef"].clone()],
+                "normalizedAtomRefs": obstruction["supportAtomRefs"],
+                "normalizedMoleculeRefs": obstruction["supportMoleculeRefs"],
+                "targetConstructionRefs": [format!("/generatedObstructions/{index}")],
+                "constraintRefs": obstruction["registryBasisRefs"],
+                "missingEvidenceRefs": obstruction["coverageGapRefs"],
+                "blockageStatus": if obstruction["obstructionKind"] == "measuredLawViolation" { "measuredObstructionReview" } else { "blockedByMissingEvidence" },
+                "noSolutionCertificateStatus": "notCertified",
+                "coverageGapRefs": obstruction["coverageGapRefs"],
+                "synthesisBoundary": "generated obstruction is a structural review target, not a synthesis no-solution theorem"
+            })
+        })
+        .collect()
+}
+
+fn operation_precondition_readiness_readings_v1(
+    normalized: &NormalizedArchMapV1,
+    typed_results: &TypedEvaluatorResultsV1,
+    generated_repair_targets: &[Value],
+) -> Vec<Value> {
+    if generated_repair_targets.is_empty() {
+        return vec![json!({
+            "readingId": format!("operation-precondition-readiness:none:{}", stable_ref(&normalized.source_archmap_id)),
+            "measurementStatus": "blockedByNoRepairTarget",
+            "typedEvaluatorResultRefs": typed_result_refs(typed_results),
+            "normalizedAtomRefs": normalized_atom_ids(normalized),
+            "normalizedMoleculeRefs": normalized_molecule_ids(normalized),
+            "operationRef": Value::Null,
+            "readinessStatus": "notMeasured",
+            "preconditionRefs": Vec::<String>::new(),
+            "missingPreconditionRefs": structural_coverage_gap_refs(typed_results),
+            "coverageGapRefs": structural_coverage_gap_refs(typed_results),
+            "candidateBoundary": "no generated repair target means no measured operation precondition row; this is not repair safety"
+        })];
+    }
+    generated_repair_targets
+        .iter()
+        .enumerate()
+        .map(|(index, target)| {
+            json!({
+                "readingId": format!("operation-precondition-readiness:{index}"),
+                "measurementStatus": if target["targetKind"] == "reviewMeasuredViolation" { "partial" } else { "blockedByMissingEvidence" },
+                "typedEvaluatorResultRefs": [target["typedEvaluatorResultRef"].clone()],
+                "normalizedAtomRefs": target["supportAtomRefs"],
+                "normalizedMoleculeRefs": target["supportMoleculeRefs"],
+                "operationRef": format!("/generatedRepairTargets/{index}"),
+                "readinessStatus": if target["targetKind"] == "reviewMeasuredViolation" { "needsHumanReview" } else { "blockedByEvidenceCollection" },
+                "preconditionRefs": target["registryBasisRefs"],
+                "missingPreconditionRefs": target["coverageGapRefs"],
+                "coverageGapRefs": target["coverageGapRefs"],
+                "candidateBoundary": "repair target is a review operation candidate only; precondition readiness is not automatic repair safety"
+            })
+        })
+        .collect()
+}
+
+fn path_multiplicity_loss_readings_v1(
+    normalized: &NormalizedArchMapV1,
+    typed_results: &TypedEvaluatorResultsV1,
+    homotopy: &Value,
+) -> Vec<Value> {
+    if normalized.molecules.is_empty() {
+        return vec![json!({
+            "readingId": format!("path-multiplicity-loss:none:{}", stable_ref(&normalized.source_archmap_id)),
+            "measurementStatus": "blockedByNoMoleculeSupport",
+            "typedEvaluatorResultRefs": typed_result_refs(typed_results),
+            "normalizedAtomRefs": normalized_atom_ids(normalized),
+            "normalizedMoleculeRefs": Vec::<String>::new(),
+            "observedPathCount": 0,
+            "alternatePathPressure": 0,
+            "reachabilityForgottenRefs": Vec::<String>::new(),
+            "coverageGapRefs": Vec::<String>::new(),
+            "multiplicityLossStatus": "notMeasured",
+            "homotopyBoundary": "no explicit molecule support means no path multiplicity conclusion"
+        })];
+    }
+    normalized
+        .molecules
+        .iter()
+        .enumerate()
+        .map(|(index, molecule)| {
+            let holonomy = homotopy["homotopyHolonomyReadings"]
+                .as_array()
+                .and_then(|items| items.get(index))
+                .cloned()
+                .unwrap_or(Value::Null);
+            let typed_evaluator_result_refs = typed_result_refs(typed_results);
+            let homotopy_ref = format!("/homotopyHolonomyReadings/{index}");
+            let holonomy_missing = holonomy.is_null();
+            let coverage_gap_refs = if holonomy_missing {
+                vec![format!(
+                    "coverage-gap:path-multiplicity-missing-holonomy:{}",
+                    stable_ref(&molecule.normalized_molecule_id)
+                )]
+            } else {
+                json_string_array_value(&holonomy, "coverageGapRefs")
+            };
+            json!({
+                "readingId": format!("path-multiplicity-loss:{}", stable_ref(&molecule.normalized_molecule_id)),
+                "measurementStatus": if coverage_gap_refs.is_empty() { "measured" } else { "blockedByCoverageGap" },
+                "typedEvaluatorResultRefs": typed_evaluator_result_refs,
+                "homotopyHolonomyReadingRef": if holonomy_missing { Value::Null } else { json!(homotopy_ref) },
+                "normalizedAtomRefs": molecule.atom_ids,
+                "normalizedMoleculeRefs": [molecule.normalized_molecule_id.clone()],
+                "observedPathCount": molecule.atom_ids.len(),
+                "alternatePathPressure": if molecule.atom_ids.len() > 1 { molecule.atom_ids.len() - 1 } else { 0 },
+                "reachabilityForgottenRefs": coverage_gap_refs,
+                "coverageGapRefs": coverage_gap_refs,
+                "multiplicityLossStatus": if holonomy_missing { "blockedByMissingHolonomyEvidence" } else if holonomy["holonomyStatus"] == "blockedByMissingFiller" { "blockedByMissingFiller" } else { "boundedToExplicitMolecule" },
+                "homotopyBoundary": "explicit molecule membership is a bounded path support reading, not global reachability completeness"
+            })
+        })
+        .collect()
+}
+
+fn structural_reading_review_summary_v1(structural: &Value) -> Value {
+    let surface = &structural["structuralReadingReviewSurface"];
+    json!({
+        "surfaceRef": "archsig-analysis-packet.json#/structuralReadingReviewSurface",
+        "surfacePacketPointer": "/structuralReadingReviewSurface",
+        "status": surface["status"],
+        "measurementStatus": surface["measurementStatus"],
+        "connectedReadingCount": surface["connectedReadingRefs"].as_array().map(Vec::len).unwrap_or_default(),
+        "measuredStructuralReadingCount": surface["measuredStructuralReadingCount"],
+        "blockedStructuralReadingCount": surface["blockedStructuralReadingCount"],
+        "topStructuralReadingRefs": surface["connectedReadingRefs"]
+            .as_array()
+            .into_iter()
+            .flatten()
+            .take(8)
+            .filter_map(|item| item.as_str().map(str::to_string))
+            .collect::<Vec<_>>(),
+        "coverageGapRefs": surface["coverageGapRefs"],
+        "nonConclusions": surface["nonConclusions"]
+    })
+}
+
+fn structural_blocked_row(
+    reading_id: &str,
+    measurement_status: &str,
+    normalized: &NormalizedArchMapV1,
+    typed_results: &TypedEvaluatorResultsV1,
+    coverage_gap_refs: &[String],
+) -> Value {
+    json!({
+        "readingId": reading_id,
+        "measurementStatus": measurement_status,
+        "typedEvaluatorResultRefs": typed_result_refs(typed_results),
+        "normalizedAtomRefs": normalized_atom_ids(normalized),
+        "normalizedMoleculeRefs": normalized_molecule_ids(normalized),
+        "coverageGapRefs": coverage_gap_refs,
+        "evidenceBoundary": "blocked structural row is not measured zero"
+    })
+}
+
+fn typed_result_refs(typed_results: &TypedEvaluatorResultsV1) -> Vec<String> {
+    (0..typed_results.results.len())
+        .map(|index| format!("/typedEvaluatorResults/{index}"))
+        .collect()
+}
+
+fn normalized_atom_ids(normalized: &NormalizedArchMapV1) -> Vec<String> {
+    normalized
+        .atoms
+        .iter()
+        .map(|atom| atom.normalized_atom_id.clone())
+        .collect()
+}
+
+fn normalized_molecule_ids(normalized: &NormalizedArchMapV1) -> Vec<String> {
+    normalized
+        .molecules
+        .iter()
+        .map(|molecule| molecule.normalized_molecule_id.clone())
+        .collect()
+}
+
+fn structural_coverage_gap_refs(typed_results: &TypedEvaluatorResultsV1) -> Vec<String> {
+    typed_results
+        .results
+        .iter()
+        .enumerate()
+        .filter(|(_, result)| {
+            result.status != "measuredPass" && result.status != "measuredViolation"
+        })
+        .map(|(index, result)| {
+            result
+                .blocker_reason
+                .as_ref()
+                .map(|reason| {
+                    format!(
+                        "coverage-gap:typed-evaluator:{index}:{}",
+                        stable_ref(reason)
+                    )
+                })
+                .unwrap_or_else(|| format!("coverage-gap:typed-evaluator:{index}"))
+        })
+        .collect()
+}
+
+fn normalized_axis_counts(normalized: &NormalizedArchMapV1) -> Value {
+    let mut counts = serde_json::Map::new();
+    for atom in &normalized.atoms {
+        let count = counts
+            .get(&atom.axis)
+            .and_then(Value::as_u64)
+            .unwrap_or_default()
+            + 1;
+        counts.insert(atom.axis.clone(), json!(count));
+    }
+    Value::Object(counts)
+}
+
+fn layer_status(axis_counts: &Value, axis: &str) -> &'static str {
+    if axis_counts[axis].as_u64().unwrap_or_default() > 0 {
+        "observedWithinSelectedArchMap"
+    } else {
+        "unmeasuredWithinSelectedArchMap"
+    }
+}
+
+fn atoms_by_axis_or_kind(
+    normalized: &NormalizedArchMapV1,
+    axes: &[&str],
+    kinds: &[&str],
+) -> Vec<String> {
+    normalized
+        .atoms
+        .iter()
+        .filter(|atom| {
+            axes.contains(&atom.axis.as_str()) || kinds.contains(&atom.atom_kind.as_str())
+        })
+        .map(|atom| atom.normalized_atom_id.clone())
+        .collect()
+}
+
+fn state_effect_law_evaluations(blocked: bool) -> Vec<Value> {
+    [
+        "stateTransitionRelation",
+        "commutativity",
+        "idempotency",
+        "replaySafety",
+        "orderingPreservation",
+        "invariantPreservation",
+    ]
+    .into_iter()
+    .map(|axis| {
+        json!({
+            "lawAxis": axis,
+            "status": if blocked { "blocked" } else { "observed" },
+            "requiredInputRefs": Vec::<String>::new(),
+            "observedInputRefs": Vec::<String>::new(),
+            "blockedReasonRefs": if blocked { vec![format!("coverage-gap:state-transition-axis:{}", stable_ref(axis))] } else { Vec::new() },
+            "reading": "state/effect law axis is bounded to normalized v1 support"
+        })
+    })
+    .collect()
+}
+
 fn molecule_atoms<'a>(
     normalized: &'a NormalizedArchMapV1,
     molecule: &NormalizedMoleculeV1,
@@ -2809,6 +3683,15 @@ fn derived_packet_refs(packet: &Value) -> Vec<String> {
         "homotopyHolonomyReadings",
         "stokesStyleReadings",
         "homotopyDistanceReadings",
+        "representationMetricReadings",
+        "localCurvatureDiagramReadings",
+        "threeLayerFlatnessReadings",
+        "observationProjectionReadings",
+        "stateTransitionAlgebraReadings",
+        "effectRelationAlgebraReadings",
+        "synthesisBlockageReadings",
+        "operationPreconditionReadinessReadings",
+        "pathMultiplicityLossReadings",
     ]
     .iter()
     .flat_map(|field| {
@@ -2940,6 +3823,30 @@ fn derived_detail_index_entries(packet: &Value) -> Vec<Value> {
         "architectureHomotopyReport.nonzeroHolonomyLoops",
         "packet:/architectureHomotopyReport/nonzeroHolonomyLoops",
     ));
+    for field in [
+        "representationMetricReadings",
+        "localCurvatureDiagramReadings",
+        "threeLayerFlatnessReadings",
+        "observationProjectionReadings",
+        "stateTransitionAlgebraReadings",
+        "effectRelationAlgebraReadings",
+        "synthesisBlockageReadings",
+        "operationPreconditionReadinessReadings",
+        "pathMultiplicityLossReadings",
+    ] {
+        entries.extend(derived_detail_entries_for_field(
+            packet,
+            field,
+            "readingId",
+            field,
+        ));
+    }
+    entries.extend(derived_detail_entries_for_string_nested_array(
+        packet,
+        &["structuralReadingReviewSurface", "connectedReadingRefs"],
+        "structuralReadingReviewSurface.connectedReadingRefs",
+        "packet:/structuralReadingReviewSurface/connectedReadingRefs",
+    ));
     entries
 }
 
@@ -2960,11 +3867,17 @@ fn derived_detail_entries_for_field(
                     "resultRef": format!("{namespace}:{id}"),
                     "packetRef": format!("packet:/{field}/{index}"),
                     "typedEvaluatorResultRef": item["typedEvaluatorResultRef"],
+                    "typedEvaluatorResultRefs": item["typedEvaluatorResultRefs"],
+                    "normalizedAtomRefs": item["normalizedAtomRefs"],
+                    "normalizedMoleculeRefs": item["normalizedMoleculeRefs"],
+                    "coverageGapRefs": item["coverageGapRefs"],
                     "generatedLawInputRef": item["generatedLawInputRef"],
                     "signatureAxisRef": item["signatureAxisRef"],
                     "generatedObstructionRef": item["generatedObstructionRef"],
+                    "homotopyHolonomyReadingRef": item["homotopyHolonomyReadingRef"],
                     "status": item["status"],
                     "localStatus": item["localStatus"],
+                    "measurementStatus": item["measurementStatus"],
                     "targetKind": item["targetKind"],
                     "supportAtomRefs": item["supportAtomRefs"],
                     "supportMoleculeRefs": item["supportMoleculeRefs"],
@@ -3003,6 +3916,33 @@ fn derived_detail_entries_for_nested_array(
                     "supportRefs": item["supportRefs"],
                     "witnessRefs": item["witnessRefs"],
                     "coverageGapRefs": item["coverageGapRefs"]
+                })
+            })
+        })
+        .collect()
+}
+
+fn derived_detail_entries_for_string_nested_array(
+    packet: &Value,
+    path: &[&str],
+    namespace: &str,
+    packet_ref_prefix: &str,
+) -> Vec<Value> {
+    let mut value = packet;
+    for field in path {
+        value = &value[*field];
+    }
+    value
+        .as_array()
+        .into_iter()
+        .flat_map(|items| {
+            items.iter().enumerate().filter_map(move |(index, item)| {
+                item.as_str().map(|reference| {
+                    json!({
+                        "resultRef": format!("{namespace}:{index}"),
+                        "packetRef": format!("{packet_ref_prefix}/{index}"),
+                        "connectedReadingRef": reference
+                    })
                 })
             })
         })

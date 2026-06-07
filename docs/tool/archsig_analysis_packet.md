@@ -89,6 +89,18 @@ output:
   loops, local curvature cells, missing filler evidence, architectural hole
   readings, aggregate review counters, coverage gaps, review focus, and
   non-conclusions.
+- `representationMetricReadings`, `localCurvatureDiagramReadings`,
+  `threeLayerFlatnessReadings`, `observationProjectionReadings`,
+  `stateTransitionAlgebraReadings`, `effectRelationAlgebraReadings`,
+  `synthesisBlockageReadings`, `operationPreconditionReadinessReadings`, and
+  `pathMultiplicityLossReadings`: compact structural review readings derived
+  from normalized atoms / molecules, typed evaluator refs, architecture
+  distance refs, spectrum / homotopy refs, generated obstructions, generated
+  repair targets, and coverage gaps.
+- `structuralReadingReviewSurface`: current-state review surface connecting the
+  structural reading refs. Blocked rows remain blockers / review queues; they
+  are not measured zero, repair safety, synthesis certificates, or global
+  quality scores.
 
 The v1 path does not read v0 helper fields such as `semanticObservations`,
 `projectionInfo`, `operationSquareEvidence`, `concernHints`, or
