@@ -253,6 +253,34 @@
       }
     },
     {
+      "artifactId": "architecture-distance-v1",
+      "artifactName": "Architecture distance v1 computation artifact",
+      "schemaVersionName": "archsig-architecture-distance/v1",
+      "artifactRole": "primary",
+      "ownerPhase": "ArchSig Output / Viewer workflow",
+      "status": "implemented",
+      "primaryDocs": [
+        "docs/tool/README.md"
+      ],
+      "downstreamIssues": [],
+      "compatibilityBoundary": {
+        "fieldMappingPolicy": "Architecture distance v1 records measured atom, configuration, signature, and operation distance readings computed from Normalized ArchMap v1, TypedEvaluatorResults v1, and the selected LawPolicy distanceProfileRef.",
+        "deprecatedFields": [],
+        "newRequiredAssumptions": [
+          "Required fields, observation families, law refs, or analysis axes change.",
+          "Evidence boundaries or non-conclusions are removed or weakened."
+        ],
+        "coverageExactnessBoundary": [
+          "Coverage and exactness are artifact-local and do not imply semantic completeness."
+        ],
+        "nonConclusions": [
+          "Architecture distance is a diagnostic ArchSig artifact, not a Lean theorem proof.",
+          "Typed evaluator violation counts are not substituted for architecture distance.",
+          "Blocked or unmeasured distance readings are not measured zero."
+        ]
+      }
+    },
+    {
       "artifactId": "archsig-analysis-packet",
       "artifactName": "Legacy ArchSig v0 AAT analysis packet",
       "schemaVersionName": "archsig-analysis-packet-v0",

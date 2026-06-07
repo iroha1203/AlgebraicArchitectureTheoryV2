@@ -9,6 +9,7 @@ LawPolicy v1 is a selector:
 {
   "schema": "law-policy/v1",
   "id": "project-policy",
+  "distanceProfileRef": "distance-profile:architecture-default@1",
   "policies": [
     {
       "pack": "solid@1",
@@ -20,17 +21,40 @@ LawPolicy v1 is a selector:
 }
 ```
 
-It selects policy packs, evaluator ids, basis refs, scope, and severity.
+It selects policy packs, evaluator ids, basis refs, scope, severity, and an
+optional `distanceProfileRef`.
 Witness requirements, signature axes, coverage blockers, exactness assumptions,
-and distance contribution belong to the ArchSig evaluator registry, not to
-LawPolicy JSON.
+distance weights, operation costs, and distance contribution belong to the
+ArchSig evaluator registry / selected distance profile, not to LawPolicy JSON.
+
+## v1 Distance Profile Selector
+
+`distanceProfileRef` is a selector, not a profile body. LawPolicy v1 must not
+embed `part4DistanceProfile`, distance weights, operation cost tables, witness
+DSLs, axis formulas, or coverage DSLs. `archsig analyze --strict-distance`
+requires an explicit `distanceProfileRef` and rejects unknown refs, so a run
+cannot silently pass through a legacy profile fallback.
+
+The current built-in refs are:
+
+- `distance-profile:architecture-default@1`
+- `distance-profile:practical-rust-service@1`
+
+`architecture-distance.json` records the selected profile ref and computed
+atom / configuration / signature / operation distance readings. Summary,
+viewer, and LLM packets expose this as architecture distance; AAT mathematics
+source refs may remain raw metadata.
 
 ## Legacy v0 Profile
 
 `law-policy-v0` is the legacy JSON schema for the older selected interpretation
 profile used by the v0 ArchMap / ArchSig AAT analysis pipeline.
 
-It is intentionally separate from ArchMap.
+Everything in this section is historical. It does not describe the current
+`law-policy/v1` input contract, and it must not be copied into v1 authoring.
+Current v1 authoring uses `distanceProfileRef` only.
+
+The legacy profile was intentionally separate from ArchMap.
 
 ```text
 ArchMap
@@ -46,7 +70,7 @@ ArchSig
   reads ArchMap + InterpretationProfile and computes the AAT analysis packet.
 ```
 
-Future ArchMapStore workflows keep the same separation:
+Historical ArchMapStore design notes used the same separation:
 
 ```text
 ArchMapDelta / ArchMapCommit / ArchMapSnapshot / ArchMapIndex
@@ -57,23 +81,25 @@ InterpretationProfile
   exactness assumptions used to read that history.
 ```
 
-Raw source diffs may help an adapter choose source refs, but they do not select
-LawPolicy and are not canonical semantic inputs to the interpretation profile.
+Raw source diffs could help an adapter choose source refs, but they did not
+select LawPolicy and were not canonical semantic inputs to the interpretation
+profile.
 
-## Responsibility
+## Legacy v0 Responsibility
 
-The interpretation profile owns the selected analysis policy for a specific
-review context. It does not define AAT, does not act as a design-rule
-collection, and does not prove architecture lawfulness.
+The legacy interpretation profile owned the selected analysis policy for a
+specific review context. It did not define AAT, did not act as a design-rule
+collection, and did not prove architecture lawfulness.
 
-For Part IV distance analysis, the profile is also the source of the selected
-`DistanceProfile` boundary that ArchSig copies into
-`part4DistanceFoundation`. That boundary can select axes, weights, operation
+For legacy Part IV distance analysis, the v0 profile was the source of the
+selected `DistanceProfile` boundary that ArchSig copied into
+`part4DistanceFoundation`. That boundary could select axes, weights, operation
 costs, coverage refs, aggregation policy, and unmeasured propagation policy.
-It is not empirical calibration, a hidden repair cost model, or a Lean theorem
-proof.
+It was not empirical calibration, a hidden repair cost model, or a Lean theorem
+proof. In v1, this profile body is not embedded in LawPolicy; v1 selects a
+registry-owned profile by `distanceProfileRef`.
 
-The implemented schema records:
+The legacy implemented schema records:
 
 - `lawPolicyId`
 - `selectedLaws`
@@ -92,9 +118,9 @@ The implemented schema records:
 - `excludedReadings`
 - `nonConclusions`
 
-## Validation Boundary
+## Legacy v0 Validation Boundary
 
-Profile validation checks schema support, identity, uniqueness,
+Legacy profile validation checks schema support, identity, uniqueness,
 cross-reference integrity, witness / obstruction boundaries, coverage
 requirements, exactness assumptions, the monodromy measurement policy surface,
 and required non-conclusions.
@@ -121,18 +147,17 @@ They do not make `AMI_X(A)` a single quality score, merge gate, or global
 flatness theorem. `coveragePolicy` keeps unmeasured axes as missing evidence
 instead of treating them as zero.
 
-The same measurement policy is shared by the analysis packet,
-`archsig-pr-review-report-v1`, and `archsig-codebase-inspection-report-v0`.
-The policy selects how ArchSig reads structural telemetry; it does not authorize
-FieldSig forecast, governance, calibration, or longitudinal evolution claims.
-FieldSig may consume ArchSig packet chains downstream, but it owns those
-evolution readings separately from this profile.
+The same legacy measurement policy was shared by the analysis packet and older
+report surfaces. The policy selected how ArchSig read structural telemetry; it
+did not authorize FieldSig forecast, governance, calibration, or longitudinal
+evolution claims. FieldSig may consume ArchSig packet chains downstream, but it
+owns those evolution readings separately from this profile.
 
-## Part IV Distance Profile
+## Legacy v0 Part IV Distance Profile
 
-`part4DistanceProfile` is the first-class LawPolicy surface for Part IV
-distance measurement. ArchSig copies it into
-`part4DistanceFoundation.profile` and uses it as the selected source for:
+`part4DistanceProfile` was the first-class LawPolicy v0 surface for Part IV
+distance measurement. ArchSig copied it into
+`part4DistanceFoundation.profile` and used it as the selected source for:
 
 - `atomWeights`
 - `signatureWeights`
@@ -145,17 +170,15 @@ distance measurement. ArchSig copies it into
 - `calibrationRefs`
 - `nonConclusions`
 
-Validation requires the Atom geometry components `atom.fiber`, `atom.carrier`,
+Legacy validation required the Atom geometry components `atom.fiber`, `atom.carrier`,
 `atom.valence`, and `atom.semanticAnchor`; positive weights and operation
 costs; signature weights that reference declared `signatureAxisDefinitions`;
 coverage refs that reference declared `coverageRequirements`; and an
 `unmeasuredPolicy` that states unmeasured distance is not zero.
 
-`analyze --strict-distance` and `archsig-analysis --strict-distance` reject a
-LawPolicy that lacks `part4DistanceProfile`. They also require the ArchSig
-analysis packet validation to pass the proxy-regression guardrails, so
-`schemaFoundationOnly`, proxy promotion, hard-coded fixture markers, and
-legacy profile fallback cannot be accepted as measured Part IV distances.
+The legacy v0 strict-distance path rejected a LawPolicy that lacked
+`part4DistanceProfile`. Current v1 `archsig analyze --strict-distance` rejects a
+missing or unknown `distanceProfileRef` instead.
 
 ## Spectrum Measurement Profile
 

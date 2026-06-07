@@ -20,7 +20,8 @@ pub use law_policy::{
 pub use normalizer::normalize_archmap_v1;
 pub(crate) use schema::*;
 pub use schema::{
-    ARCHMAP_SCHEMA_VERSION, ARCHMAP_SOURCE_INVENTORY_SCHEMA_VERSION, ARCHMAP_V1_SCHEMA,
+    ARCHITECTURE_DISTANCE_V1_SCHEMA, ARCHMAP_SCHEMA_VERSION,
+    ARCHMAP_SOURCE_INVENTORY_SCHEMA_VERSION, ARCHMAP_V1_SCHEMA,
     ARCHMAP_VALIDATION_REPORT_SCHEMA_VERSION, ARCHSIG_ANALYSIS_PACKET_SCHEMA_VERSION,
     ARCHSIG_ANALYSIS_PACKET_VALIDATION_REPORT_SCHEMA_VERSION,
     ARCHSIG_ATOM_VIEWER_DATA_SCHEMA_VERSION, ARCHSIG_RUN_MANIFEST_SCHEMA_VERSION,
@@ -47,7 +48,8 @@ pub use schema::{
 };
 pub use schema_catalog::static_schema_version_catalog;
 pub use typed_evaluator::{
-    build_typed_analysis_packet_v1, build_typed_analysis_summary_v1,
-    build_typed_analysis_validation_v1, build_typed_atom_viewer_data_v1,
-    build_typed_detail_index_v1, build_typed_llm_interpretation_packet_v1, evaluate_typed_v1,
+    build_architecture_distance_v1, build_typed_analysis_packet_v1,
+    build_typed_analysis_summary_v1, build_typed_analysis_validation_v1,
+    build_typed_atom_viewer_data_v1, build_typed_detail_index_v1,
+    build_typed_llm_interpretation_packet_v1, evaluate_typed_v1,
 };

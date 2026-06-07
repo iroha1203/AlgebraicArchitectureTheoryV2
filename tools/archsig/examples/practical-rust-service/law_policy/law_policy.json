@@ -1,6 +1,7 @@
 {
   "schema": "law-policy/v1",
   "id": "practical-rust-service-solid-policy",
+  "distanceProfileRef": "distance-profile:practical-rust-service@1",
   "policies": [
     {
       "pack": "solid@1",

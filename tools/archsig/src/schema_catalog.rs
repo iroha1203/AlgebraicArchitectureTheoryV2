@@ -1,6 +1,6 @@
 use crate::{
-    ARCHMAP_SCHEMA_VERSION, ARCHMAP_V1_SCHEMA, ARCHMAP_VALIDATION_REPORT_SCHEMA_VERSION,
-    ARCHSIG_ANALYSIS_PACKET_SCHEMA_VERSION,
+    ARCHITECTURE_DISTANCE_V1_SCHEMA, ARCHMAP_SCHEMA_VERSION, ARCHMAP_V1_SCHEMA,
+    ARCHMAP_VALIDATION_REPORT_SCHEMA_VERSION, ARCHSIG_ANALYSIS_PACKET_SCHEMA_VERSION,
     ARCHSIG_ANALYSIS_PACKET_VALIDATION_REPORT_SCHEMA_VERSION,
     ARCHSIG_ATOM_VIEWER_DATA_SCHEMA_VERSION, ARCHSIG_RUN_MANIFEST_SCHEMA_VERSION,
     LAW_POLICY_SCHEMA_VERSION, LAW_POLICY_V1_SCHEMA, LAW_POLICY_VALIDATION_REPORT_SCHEMA_VERSION,
@@ -141,6 +141,20 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 vec![
                     "Typed evaluator results do not read label-only, memo-only, removed-field-only, or schema-only evidence as measured support.",
                     "Blocked, unknown, and unmeasured results are not measured zero.",
+                ],
+            ),
+            artifact(
+                "architecture-distance-v1",
+                "Architecture distance v1 computation artifact",
+                ARCHITECTURE_DISTANCE_V1_SCHEMA,
+                "primary",
+                "ArchSig Output / Viewer workflow",
+                vec!["docs/tool/README.md"],
+                "Architecture distance v1 records measured atom, configuration, signature, and operation distance readings computed from Normalized ArchMap v1, TypedEvaluatorResults v1, and the selected LawPolicy distanceProfileRef.",
+                vec![
+                    "Architecture distance is a diagnostic ArchSig artifact, not a Lean theorem proof.",
+                    "Typed evaluator violation counts are not substituted for architecture distance.",
+                    "Blocked or unmeasured distance readings are not measured zero.",
                 ],
             ),
             artifact(
@@ -325,6 +339,7 @@ mod tests {
                 "law-evaluator-registry-v1",
                 "normalized-archmap-v1",
                 "typed-evaluator-results-v1",
+                "architecture-distance-v1",
                 "archsig-analysis-packet",
                 "archsig-analysis-packet-validation-report",
                 "archsig-run-manifest",

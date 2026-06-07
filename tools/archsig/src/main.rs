@@ -5,11 +5,12 @@ use std::process::ExitCode;
 
 use archsig::{
     ARCHMAP_V1_SCHEMA, ArchMapDocumentV1, LAW_POLICY_V1_SCHEMA, LawPolicyDocumentV1,
-    SchemaVersionCatalogV0, build_typed_analysis_packet_v1, build_typed_analysis_summary_v1,
-    build_typed_analysis_validation_v1, build_typed_atom_viewer_data_v1,
-    build_typed_detail_index_v1, build_typed_llm_interpretation_packet_v1, evaluate_typed_v1,
-    normalize_archmap_v1, static_law_evaluator_registry_v1, static_schema_version_catalog,
-    validate_archmap_v1_report, validate_law_policy_v1_report,
+    SchemaVersionCatalogV0, build_architecture_distance_v1, build_typed_analysis_packet_v1,
+    build_typed_analysis_summary_v1, build_typed_analysis_validation_v1,
+    build_typed_atom_viewer_data_v1, build_typed_detail_index_v1,
+    build_typed_llm_interpretation_packet_v1, evaluate_typed_v1, normalize_archmap_v1,
+    static_law_evaluator_registry_v1, static_schema_version_catalog, validate_archmap_v1_report,
+    validate_law_policy_v1_report,
 };
 use clap::{Parser, Subcommand};
 
@@ -68,7 +69,7 @@ enum Command {
         #[arg(long = "emit-raw-artifacts")]
         emit_raw_artifacts: bool,
 
-        /// Fail when Part IV distance measurement would rely on legacy profile fallback, proxy, or schema-only rows.
+        /// Fail when architecture distance would rely on missing profile selection or unmeasured rows.
         #[arg(long = "strict-distance")]
         strict_distance: bool,
     },
@@ -264,6 +265,7 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
             let run_manifest_path = out_dir.join("archsig-run-manifest.json");
             let normalized_archmap_path = out_dir.join("normalized-archmap.json");
             let typed_evaluator_results_path = out_dir.join("typed-evaluator-results.json");
+            let architecture_distance_path = out_dir.join("architecture-distance.json");
             let analysis_packet_path = out_dir.join("archsig-analysis-packet.json");
             let analysis_validation_path = out_dir.join("archsig-analysis-validation.json");
             let llm_interpretation_path = out_dir.join("llm-interpretation-packet.json");
@@ -286,11 +288,15 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                 );
                 return Ok(ExitCode::from(1));
             }
+            let law_policy_document: LawPolicyDocumentV1 = read_json(&law_policy)?;
+            if strict_distance && law_policy_document.distance_profile_ref.is_none() {
+                eprintln!("--strict-distance rejected law-policy/v1 without distanceProfileRef");
+                return Ok(ExitCode::from(1));
+            }
             let archmap_document: ArchMapDocumentV1 = read_json(&archmap)?;
             let normalized_archmap =
                 normalize_archmap_v1(&archmap_document, &archmap.display().to_string());
             write_json(Some(normalized_archmap_path), &normalized_archmap)?;
-            let law_policy_document: LawPolicyDocumentV1 = read_json(&law_policy)?;
             let typed_results = evaluate_typed_v1(
                 &normalized_archmap,
                 &law_policy_document,
@@ -299,9 +305,23 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                 &law_policy.display().to_string(),
             );
             write_json(Some(typed_evaluator_results_path), &typed_results)?;
-            let analysis_packet = build_typed_analysis_packet_v1(&normalized_archmap, &typed_results);
-            let analysis_summary =
-                build_typed_analysis_summary_v1(&normalized_archmap, &typed_results);
+            let architecture_distance = build_architecture_distance_v1(
+                &normalized_archmap,
+                &law_policy_document,
+                &typed_results,
+            )
+            .map_err(|message| -> Box<dyn Error> { message.into() })?;
+            write_json(Some(architecture_distance_path), &architecture_distance)?;
+            let analysis_packet = build_typed_analysis_packet_v1(
+                &normalized_archmap,
+                &typed_results,
+                &architecture_distance,
+            );
+            let analysis_summary = build_typed_analysis_summary_v1(
+                &normalized_archmap,
+                &typed_results,
+                &architecture_distance,
+            );
             let atom_viewer_data = build_typed_atom_viewer_data_v1(
                 &normalized_archmap,
                 &typed_results,
@@ -320,7 +340,10 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                 )?;
                 write_json(
                     Some(llm_interpretation_path),
-                    &build_typed_llm_interpretation_packet_v1(&typed_results),
+                    &build_typed_llm_interpretation_packet_v1(
+                        &typed_results,
+                        &architecture_distance,
+                    ),
                 )?;
             }
             write_json(
@@ -342,10 +365,21 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                     + typed_results.summary.unmeasured_count
                     > 0
             {
-                return Err(
+                eprintln!(
                     "--strict-distance rejected v1 typed evaluator results with blocked, unknown, or unmeasured distance statuses"
-                        .into(),
                 );
+                return Ok(ExitCode::from(1));
+            }
+            if strict_distance
+                && architecture_distance["summary"]["blockedOrUnmeasuredCount"]
+                    .as_u64()
+                    .unwrap_or(0)
+                    > 0
+            {
+                eprintln!(
+                    "--strict-distance rejected v1 architecture distance with blocked or unmeasured readings"
+                );
+                return Ok(ExitCode::from(1));
             }
             Ok(ExitCode::SUCCESS)
         }
@@ -367,6 +401,7 @@ fn remove_analyze_success_artifacts(out_dir: &PathBuf) -> Result<(), Box<dyn Err
         "archsig-run-manifest.json",
         "normalized-archmap.json",
         "typed-evaluator-results.json",
+        "architecture-distance.json",
         "archsig-analysis-packet.json",
         "archsig-analysis-detail-index.json",
         "archsig-analysis-validation.json",

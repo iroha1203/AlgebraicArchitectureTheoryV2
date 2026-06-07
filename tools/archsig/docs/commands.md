@@ -1,20 +1,22 @@
 # ArchSig Commands
 
-`archsig` is now the AAT analysis engine over ArchMap. The current route is:
+`archsig` is the ArchMap v1 + LawPolicy v1 analysis tool. The current route is:
 
 ```text
-archmap-observation-map-v0
-  + interpretation profile (law-policy-v0 JSON)
-  -> archsig-analysis-packet-v0
-  -> LLM interpretation
-  -> FieldSig handoff
+archmap/v1
+  + law-policy/v1
+  -> normalized-archmap/v1
+  -> typed-evaluator-results/v1
+  -> archsig-architecture-distance/v1
+  -> archsig-analysis-summary/v1
+  -> archsig-atom-viewer-data-v1
+  -> archsig-run-manifest-v1
 ```
 
 ArchSig no longer exposes pre-Atom scan, projection, report, or legacy raw-diff
 PR-review commands. Git history is the archive for those workflows. The
-retained `pr-review` command reads base ArchMap, optional head / intermediate
-path ArchMaps, PR-local ArchMap delta, and LawPolicy for Part IV PR drift
-distance. Raw diff is not an ArchSig PR-review input.
+retained `pr-review` command reads ArchMap v1 and LawPolicy v1 typed evaluator
+state. Raw diff is not an ArchSig PR-review input.
 FieldSig owns SFT forecast, IntentMap, operational feedback, governance, and
 calibration commands under `tools/fieldsig`.
 
@@ -22,34 +24,30 @@ calibration commands under `tools/fieldsig`.
 
 ```bash
 cargo run --manifest-path tools/archsig/Cargo.toml -- analyze \
-  --archmap tools/archsig/tests/fixtures/minimal/archmap.json \
-  --law-policy tools/archsig/tests/fixtures/minimal/law_policy.json \
+  --archmap tools/archsig/tests/fixtures/archmap_v1/archmap.json \
+  --law-policy tools/archsig/tests/fixtures/archmap_v1/law_policy.json \
   --out-dir .archsig/analyze
 ```
 
-`llm-native-workflow` and `north-star-workflow` are visible compatibility
-aliases for the same workflow. Use `analyze` in new docs, scripts, and CI:
-
-```bash
-cargo run --manifest-path tools/archsig/Cargo.toml -- llm-native-workflow \
-  --archmap tools/archsig/tests/fixtures/minimal/archmap.json \
-  --law-policy tools/archsig/tests/fixtures/minimal/law_policy.json \
-  --out-dir .archsig/compat
-```
+Use `analyze` in new docs, scripts, and CI.
 
 The command emits only:
 
 - `archmap-validation.json`
 - `law-policy-validation.json`
+- `normalized-archmap.json`
+- `typed-evaluator-results.json`
+- `architecture-distance.json`
 - `archsig-analysis-validation.json`
 - `archsig-analysis-summary.json`
 - `archsig-atom-viewer-data.json`
 - `archsig-run-manifest.json`
 
 `archsig-analysis-summary.json` is the LLM-readable compact reading surface. It
-includes Part IV `distanceDiagnosis` with distance verdict, movement, safe
-margin, repair / curvature / homotopy distances, representation metric summary,
-and packet detail refs.
+is conclusion-first and includes typed evaluator diagnosis, architecture
+distance, `distanceDiagnosis`, action queue, and detail refs. Public summary /
+viewer / LLM wording uses architecture distance naming; raw metadata may retain
+source refs to the AAT mathematics documents.
 `archsig-atom-viewer-data.json` is a bounded visual projection for the fixed
 Atom Viewer app. It uses deterministic top-N priority selection for atom nodes
 and molecule groups, emits bounded molecule-to-atom edges, limits labels and
@@ -70,12 +68,17 @@ distance diagnosis, validation status, generated / omitted artifacts, and
 relative links to raw packet / detail-index files when raw artifacts were
 emitted.
 
+`--strict-distance` requires LawPolicy v1 to select a known `distanceProfileRef`
+and rejects blocked / unknown / unmeasured typed or architecture distance
+readings. LawPolicy v1 selects the profile ref only; it does not embed distance
+weights, operation costs, or a distance DSL.
+
 Raw evidence artifacts are opt-in:
 
 ```bash
 cargo run --manifest-path tools/archsig/Cargo.toml -- analyze \
-  --archmap tools/archsig/tests/fixtures/minimal/archmap.json \
-  --law-policy tools/archsig/tests/fixtures/minimal/law_policy.json \
+  --archmap tools/archsig/tests/fixtures/archmap_v1/archmap.json \
+  --law-policy tools/archsig/tests/fixtures/archmap_v1/law_policy.json \
   --out-dir .archsig/analyze \
   --emit-raw-artifacts
 ```
@@ -86,35 +89,12 @@ This additionally writes:
 - `archsig-analysis-detail-index.json`
 - `llm-interpretation-packet.json`
 
-`archsig-analysis-packet.json` is compact-first when emitted: large repeated
-string ref sets are replaced by `archsig-detail-ref-v0` objects with counts,
-samples, and detail refs. Full ref sets are stored through a dictionary-backed
-`archsig-analysis-detail-index.json`.
-
-To emit a compact review summary from an existing packet, run:
-
-```bash
-cargo run --manifest-path tools/archsig/Cargo.toml -- analysis-summary \
-  --packet .archsig/analyze/archsig-analysis-packet.json \
-  --archmap-validation .archsig/analyze/archmap-validation.json \
-  --law-policy-validation .archsig/analyze/law-policy-validation.json \
-  --analysis-validation .archsig/analyze/archsig-analysis-validation.json \
-  --out .archsig/analyze/archsig-analysis-summary.json
-```
-
-`summary` is a visible alias. The summary is a reading aid for human / LLM
-review. Read `verdict`, `analysisUsefulness`, `qualityMeasurement`, and
-`architectureInsightSummary` first. `analysisUsefulness` separates findings
-usable now from claims still blocked by coverage gaps, so gap-qualified output
-does not collapse into "nothing can be said." `architectureInsightSummary`
-groups selected law-axis pressure, spectrum hotspots, coverage blockers, repair
-candidates, and operation preconditions into a small structural review plan. Its
-`insightCards` field turns the measured AAT surfaces into structural review
-hypotheses with a claim, `whyItMatters`, AAT evidence refs, observed signals,
-missing evidence, and next validation steps. `actionQueue` is intentionally
-capped to representative AAT-computed items; use `detailRefs` and `detailIndex`
-to inspect the full packet. The summary does not replace the full packet or
-validation reports.
+`archsig-analysis-packet.json` is a raw evidence artifact for deeper lookup.
+Current v1 does not expose a separate `analysis-summary` command; `analyze`
+always writes `archsig-analysis-summary.json` directly. Read
+`conclusion`, `typedEvaluatorDiagnosis`, `architectureDistance`,
+`distanceDiagnosis`, and `actionQueue` first. The summary does not replace the
+raw packet or validation reports.
 
 ## Codebase Inspection
 
