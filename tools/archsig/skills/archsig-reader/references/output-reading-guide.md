@@ -3,8 +3,8 @@
 Use this reference when deciding what to read first in ArchSig output. The
 default first surfaces are `archsig-analysis-summary.json` for LLM/structured
 reading and the Atom Viewer report pane for human visual reading. Raw
-`archsig-analysis-packet-v0` artifacts are optional evidence-store and FieldSig
-handoff files.
+`archsig-analysis-packet/v1` artifacts are optional evidence-store and FieldSig
+handoff files emitted only with `--emit-raw-artifacts`.
 
 ## Analysis Summary Reading Order
 
@@ -58,12 +58,12 @@ truly unavailable, private, or out of scope.
 
 | Field | Why it matters |
 | --- | --- |
-| `archMapRef`, `selectedLawPolicyRef` | Identifies the observed source state and selected law universe. |
+| `archMapRef`, `selectedLawPolicyRef` | Identifies the ArchMap input and policy/evaluator selection. |
 | `axisSummary` / `detailIndex` | States selected/nonzero axis counts and points to `flatnessReading` / `signatureAxes[]` detail when needed. |
 | `trendDiagnosis` / `reviewSupport` / `actionQueue` | Prioritizes measured trend pressure, blocker queues, coverage gaps, and compact review actions with refs into packet detail surfaces. |
 | `distanceDiagnosis` | First Part IV distance surface for verdict, measured movement, unmeasured axes, safe margin, repair / curvature / homotopy distance, representation metric summary, and detail refs. |
 | `dominantFindings` / `detailRefs` | Gives compact hotspots, recurrent pressure, architectural holes, nonzero holonomy, workflow risks, and bridge pressure before raw packet inspection. |
-| `part4DistanceFoundation` | Packet detail surface for selected `DistanceProfile`, observed `DiagnosticScope`, status-summary counts, and anti-proxy guardrails. |
+| `part4DistanceFoundation` | Packet detail surface for evaluator-owned distance basis, diagnostic scope, status-summary counts, and anti-proxy guardrails. |
 | `atomDistanceReadings[]` / `configurationDistanceReadings[]` | Packet detail surfaces for Atom and configuration geometry. Use them only after summary refs point there; missing semantic anchors or observation gaps are blockers, not zero. |
 | `signatureDistanceReadings[]` / `operationDistanceReadings[]` | Packet detail surfaces for axis distance, safe margin, path drift, operation cost, repair route distance, and side-effect blockers. |
 | `curvatureMassReadings[]` / `homotopyDistanceReadings[]` / `representationMetricReadings[]` | Packet detail surfaces for curvature transport, filling cost, and representation stability / faithfulness. These are current-state diagnostic readings, not forecast, proof, merge approval, or quality score. |
@@ -77,26 +77,25 @@ truly unavailable, private, or out of scope.
 
 ## LawPolicy Boundary
 
-Do not treat LawPolicy as a harmless default. It defines the selected law universe, witness rules, signature axes, exactness assumptions, and coverage requirements. Changing LawPolicy changes what ArchSig can read as obstruction, nonzero axis, flatness pressure, repair candidate, or non-conclusion.
+Do not treat LawPolicy as a harmless default. In v1 it selects policies, evaluator ids, policy packs, basis refs, scope, severity, and restricted measurement profiles. Witness rules, signature axes, exactness assumptions, coverage requirements, missing-blocker rules, and distance formulas belong to the ArchSig evaluator registry. Changing LawPolicy changes which evaluator manifests run and therefore what ArchSig can measure.
 
 Use a project-specific LawPolicy for real analysis. If only the bundled `default_law_policy.json` is available, use it only as an explicit generic baseline / smoke test and label the result that way. A bundled baseline run can show that the toolchain and packet-reading workflow work; it should not be presented as the repository's intended architecture law analysis.
 
-For ACTS readings, confirm that the selected LawPolicy contains
-`spectrumMeasurementProfile`. If it is absent, report that
-`ArchitectureSpectrumReport` may be absent and do not infer spectrum hotspots
-from generic spectral fields.
+For ACTS readings, confirm that the selected evaluator profile emits
+`ArchitectureSpectrumReport` detail refs. If it is absent, do not infer
+spectrum hotspots from generic spectral fields.
 
-For Homotopy / Holonomy / Stokes readings, confirm that the selected LawPolicy
-contains `homotopyMeasurementProfile`. If it is absent, report that
-`ArchitectureHomotopyReport` may be absent and do not infer loop, filler,
-holonomy, or local-curvature readings from generic obstruction fields.
+For Homotopy / Holonomy / Stokes readings, confirm that the selected evaluator
+profile emits `ArchitectureHomotopyReport` detail refs. If it is absent, do not
+infer loop, filler, holonomy, or local-curvature readings from generic
+obstruction fields.
 
 For Part IV distance readings, confirm that `distanceDiagnosis` is present in
 the summary before opening raw packet rows. If a packet variant lacks it, fall
 back to `part4DistanceFoundation` and the specific distance reading arrays only
 when raw artifacts are present. Every measured or zero `DistanceValue` must be
 read together with provenance refs, evaluator-basis refs, coverage refs, and
-the selected `DistanceProfile` / `DiagnosticScope`. `unmeasured`, `blocked`,
+the evaluator-owned distance basis / diagnostic scope. `unmeasured`, `blocked`,
 `unavailable`, `incomparable`, and `infinite` remain missing or bounded
 evidence states, not zeros.
 
@@ -133,7 +132,7 @@ Use this fallback order:
 
 1. `flatnessReading`: status, nonzero axes, zero axes, coverage gaps
 2. `signatureAxes[]`: values, source refs, missing evidence, coverage status
-3. `obstructionCircuits[]`: law refs, witness rules, atom refs, molecule refs, concern refs, missing evidence
+3. `typedEvaluatorResults[]`: evaluator id, status, support atom refs, support molecule refs, basis refs, detail refs, and status reason
 4. `repairOperationCandidates[]`: operation kind, preconditions, support refs, transferred obstructions, excluded readings
 5. `operationDeltas[]`: decreased axes, transferred obstructions, side-effect axes
 6. `boundedJudgements[]` and `llmInterpretationPacket.recommendedHumanReviewFocus`

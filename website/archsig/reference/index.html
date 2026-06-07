@@ -74,29 +74,28 @@
       <section class="section-band">
         <div class="site-shell article-layout">
           <aside class="article-sidebar" aria-label="ArchSig page navigation">
-            <nav class="toc-panel" aria-labelledby="toc-title"><h2 id="toc-title">On this page</h2><ol><li><a href="#primary">Primary workflow</a></li><li><a href="#outputs">Workflow outputs</a></li><li><a href="#commands">Command surfaces</a></li><li><a href="#schemas">Artifact schemas</a></li><li><a href="#compatibility">Compatibility aliases</a></li><li><a href="#boundaries">Reference boundaries</a></li></ol></nav>
+            <nav class="toc-panel" aria-labelledby="toc-title"><h2 id="toc-title">On this page</h2><ol><li><a href="#primary">Primary workflow</a></li><li><a href="#outputs">Workflow outputs</a></li><li><a href="#commands">Command surfaces</a></li><li><a href="#schemas">Artifact schemas</a></li><li><a href="#removed">Removed runtime surfaces</a></li><li><a href="#boundaries">Reference boundaries</a></li></ol></nav>
             <div class="source-panel" data-sidebar-open="true"><h2>ArchSig</h2><ul><li><a href="../">Overview</a></li><li><a href="../getting-started/">Getting Started</a></li><li><a href="../analyses/">Analyses</a></li><li><a href="../examples/">Examples</a></li><li><a href="../manual/">Manual</a></li><li><a href="./" aria-current="page">Reference</a></li></ul></div>
           </aside>
           <div class="article-main">
             <section id="primary" class="article-section">
               <h2>Primary workflow</h2>
-              <p><code>analyze</code> is the primary ArchSig workflow entry. It consumes a monolithic ArchMap observation map and a selected LawPolicy, then writes validation reports and the analysis packet.</p>
+              <p><code>analyze</code> is the primary ArchSig workflow entry. It consumes <code>archmap/v1</code> and <code>law-policy/v1</code>, then writes validation reports, normalized atoms, typed evaluator results, summary, viewer data, and optional raw v1 artifacts.</p>
               <figure class="code-panel">
                 <figcaption>Run analysis</figcaption>
                 <pre><code>cargo run --manifest-path tools/archsig/Cargo.toml -- analyze \
-  --archmap tools/archsig/tests/fixtures/minimal/archmap.json \
-  --law-policy tools/archsig/tests/fixtures/minimal/law_policy.json \
+  --archmap tools/archsig/tests/fixtures/archmap_v1/archmap.json \
+  --law-policy tools/archsig/tests/fixtures/archmap_v1/law_policy.json \
   --out-dir .archsig/analyze</code></pre>
               </figure>
-              <p>Use <code>analysis-summary</code> when you need the compact first reading surface from an existing packet.</p>
+              <p><code>archsig-analysis-summary.json</code> is emitted by <code>analyze</code> as the compact first reading surface.</p>
               <figure class="code-panel">
-                <figcaption>Emit summary</figcaption>
-                <pre><code>cargo run --manifest-path tools/archsig/Cargo.toml -- analysis-summary \
-  --packet .archsig/analyze/archsig-analysis-packet.json \
-  --archmap-validation .archsig/analyze/archmap-validation.json \
-  --law-policy-validation .archsig/analyze/law-policy-validation.json \
-  --analysis-validation .archsig/analyze/archsig-analysis-validation.json \
-  --out .archsig/analyze/archsig-analysis-summary.json</code></pre>
+                <figcaption>Run analysis with raw artifacts</figcaption>
+                <pre><code>cargo run --manifest-path tools/archsig/Cargo.toml -- analyze \
+  --archmap tools/archsig/tests/fixtures/archmap_v1/archmap.json \
+  --law-policy tools/archsig/tests/fixtures/archmap_v1/law_policy.json \
+  --out-dir .archsig/analyze \
+  --emit-raw-artifacts</code></pre>
               </figure>
             </section>
             <section id="outputs" class="article-section">
@@ -118,12 +117,8 @@
                   <thead><tr><th scope="col">Command</th><th scope="col">Use it for</th></tr></thead>
                   <tbody>
                     <tr><td><code>archmap</code></td><td>Validate an <code>archmap/v1</code>.</td></tr>
-                    <tr><td><code>archmap-generate</code></td><td>Emit a bounded external-agent protocol for producing ArchMap evidence.</td></tr>
                     <tr><td><code>law-policy</code></td><td>Validate a selected <code>law-policy/v1</code> evaluator selector.</td></tr>
                     <tr><td><code>analyze</code></td><td>Run the primary ArchMap plus LawPolicy analysis workflow.</td></tr>
-                    <tr><td><code>archsig-analysis</code></td><td>Build an analysis packet from supplied inputs as a step command.</td></tr>
-                    <tr><td><code>analysis-summary</code></td><td>Emit a compact review summary from an existing packet and optional validation reports.</td></tr>
-                    <tr><td><code>codebase-inspection</code></td><td>Read current-state ArchMapStore artifacts and packet evidence for architecture health review.</td></tr>
                     <tr><td><code>pr-review</code></td><td>Read a base ArchMap, PR-local ArchMap delta, and LawPolicy for small PR review.</td></tr>
                     <tr><td><code>schema-catalog</code></td><td>Emit the current ArchSig schema catalog.</td></tr>
                   </tbody>
@@ -144,19 +139,19 @@
                     <tr><td><code>typed-evaluator-results/v1</code></td><td>Typed evaluator statuses, support refs, basis refs, and bounded conclusions.</td></tr>
                     <tr><td><code>archsig-analysis-packet/v1</code></td><td>Typed evaluator detail store for measurement detail and LLM / human review reading.</td></tr>
                     <tr><td><code>archsig-analysis-validation-report-v1</code></td><td>V1 analysis packet validation boundary.</td></tr>
-                    <tr><td><code>archsig-codebase-inspection-report-v0</code></td><td>Current-state architecture health review output from snapshot, index, packet, and optional deltas.</td></tr>
                     <tr><td><code>archsig-pr-review-report-v1</code></td><td>Change-local PR review output from base ArchMap, PR-local delta, and LawPolicy.</td></tr>
                   </tbody>
                 </table>
               </div>
             </section>
-            <section id="compatibility" class="article-section">
-              <h2>Compatibility aliases</h2>
+            <section id="removed" class="article-section">
+              <h2>Removed runtime surfaces</h2>
               <ul class="status-list">
-                <li><strong><code>llm-native-workflow</code> and <code>north-star-workflow</code></strong><span>Visible aliases for <code>analyze</code>. Use <code>analyze</code> in new docs, scripts, and CI.</span></li>
-                <li><strong><code>interpretation-profile</code></strong><span>Visible alias for <code>law-policy</code>; new artifacts should use <code>law-policy/v1</code>.</span></li>
-                <li><strong><code>aat-analysis</code></strong><span>Visible alias for <code>archsig-analysis</code>.</span></li>
-                <li><strong><code>summary</code></strong><span>Visible alias for <code>analysis-summary</code>.</span></li>
+                <li><strong><code>llm-native-workflow</code> / <code>north-star-workflow</code></strong><span>Removed as runtime aliases. Use <code>analyze</code>.</span></li>
+                <li><strong><code>interpretation-profile</code></strong><span>Removed as a runtime alias. Use <code>law-policy</code> with <code>law-policy/v1</code>.</span></li>
+                <li><strong><code>archsig-analysis</code> / <code>aat-analysis</code></strong><span>Removed as v0 packet-builder runtime surfaces. Use <code>analyze --emit-raw-artifacts</code>.</span></li>
+                <li><strong><code>analysis-summary</code> / <code>summary</code></strong><span>Removed as standalone runtime surfaces. Read the summary emitted by <code>analyze</code>.</span></li>
+                <li><strong><code>archmap-generate</code> / <code>codebase-inspection</code></strong><span>Removed from the v1 runtime contract.</span></li>
               </ul>
             </section>
             <section id="boundaries" class="article-section">

@@ -16,7 +16,7 @@ Unknown root fields fail validation.
 
 ## Sources
 
-`sources` is a ledger of source evidence that was read.
+`sources` is the source ledger for evidence used by the ArchMap.
 
 Common source shapes:
 

@@ -81,6 +81,110 @@ fn cli_validates_archmap_v1_atom_contract() {
 }
 
 #[test]
+fn cli_rejects_v0_archmap_as_current_runtime_input() {
+    let out_dir = temp_dir("archmap-v0-runtime-rejection");
+    let root = fixture_root();
+    let report = out_dir.join("archmap-validation.json");
+
+    let output = run_sig0_output(&[
+        "archmap",
+        "--input",
+        root.join("archmap.json").to_str().expect("path is utf-8"),
+        "--out",
+        report.to_str().expect("path is utf-8"),
+    ]);
+
+    assert!(!output.status.success());
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(stderr.contains("--input must have schemaVersion archmap/v1"));
+    assert!(
+        !report.exists(),
+        "v0 ArchMap rejection must not be reported as a current validation artifact"
+    );
+}
+
+#[test]
+fn cli_rejects_v0_law_policy_as_current_runtime_input() {
+    let out_dir = temp_dir("law-policy-v0-runtime-rejection");
+    let root = fixture_root();
+    let report = out_dir.join("law-policy-validation.json");
+
+    let output = run_sig0_output(&[
+        "law-policy",
+        "--input",
+        root.join("law_policy.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--out",
+        report.to_str().expect("path is utf-8"),
+    ]);
+
+    assert!(!output.status.success());
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(stderr.contains("--input must have schemaVersion law-policy/v1"));
+    assert!(
+        !report.exists(),
+        "v0 LawPolicy rejection must not be reported as a current validation artifact"
+    );
+}
+
+#[test]
+fn cli_analyze_rejects_v0_archmap_and_law_policy_runtime_inputs() {
+    let out_dir = temp_dir("analyze-v0-runtime-rejection");
+    let root = fixture_root();
+
+    let output = run_sig0_output(&[
+        "analyze",
+        "--archmap",
+        root.join("archmap.json").to_str().expect("path is utf-8"),
+        "--law-policy",
+        root.join("law_policy.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--out-dir",
+        out_dir.to_str().expect("path is utf-8"),
+    ]);
+
+    assert!(!output.status.success());
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(stderr.contains("--input must have schemaVersion archmap/v1"));
+    assert!(
+        !out_dir.join("archsig-analysis-summary.json").exists(),
+        "v0 analyze rejection must not emit current success artifacts"
+    );
+}
+
+#[test]
+fn cli_pr_review_rejects_v0_archmap_and_law_policy_runtime_inputs() {
+    let out_dir = temp_dir("pr-review-v0-runtime-rejection");
+    let root = fixture_root();
+    let review = pr_review_root();
+    let report = out_dir.join("archsig-pr-review.json");
+
+    let output = run_sig0_output(&[
+        "pr-review",
+        "--base-archmap",
+        root.join("archmap.json").to_str().expect("path is utf-8"),
+        "--delta-archmap",
+        review
+            .join("archmap_delta.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--law-policy",
+        root.join("law_policy.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--out",
+        report.to_str().expect("path is utf-8"),
+    ]);
+
+    assert!(!output.status.success());
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(stderr.contains("--base-archmap must have schemaVersion archmap/v1"));
+    assert!(!report.exists());
+}
+
+#[test]
 fn cli_analyze_v1_writes_normalized_archmap_for_valid_input() {
     let out_dir = temp_dir("analyze-v1-normalized");
     let root = archmap_v1_root();
@@ -700,7 +804,7 @@ fn cli_pr_review_v1_rejects_after_archmap_until_typed_head_review_exists() {
 
     assert!(!output.status.success());
     let stderr = String::from_utf8_lossy(&output.stderr);
-    assert!(stderr.contains("v1 pr-review does not accept --after-archmap yet"));
+    assert!(stderr.contains("v1 pr-review accepts only base archmap"));
 }
 
 #[test]
@@ -711,23 +815,31 @@ fn cli_help_exposes_only_llm_atom_archmap_surface() {
 
     for command in [
         "archmap",
-        "archmap-generate",
         "law-policy",
+        "pr-review",
+        "analyze",
+        "schema-catalog",
+    ] {
+        assert!(
+            stdout.contains(command),
+            "ArchSig help must expose retained command {command}\n{stdout}"
+        );
+    }
+
+    for removed in [
+        "archmap-generate",
         "interpretation-profile",
         "archsig-analysis",
         "aat-analysis",
         "analysis-summary",
         "summary",
         "codebase-inspection",
-        "pr-review",
-        "analyze",
         "llm-native-workflow",
         "north-star-workflow",
-        "schema-catalog",
     ] {
         assert!(
-            stdout.contains(command),
-            "ArchSig help must expose retained command {command}\n{stdout}"
+            !stdout.contains(removed),
+            "ArchSig help must not expose removed v0 runtime surface {removed}\n{stdout}"
         );
     }
 
@@ -740,6 +852,7 @@ fn cli_help_exposes_only_llm_atom_archmap_surface() {
 }
 
 #[test]
+#[ignore = "legacy v0 analysis-summary command is no longer current runtime surface"]
 fn cli_summarizes_archsig_analysis_packet() {
     let out_dir = temp_dir("analysis-summary");
     let root = fixture_root();
@@ -1239,6 +1352,7 @@ fn cli_summarizes_archsig_analysis_packet() {
 }
 
 #[test]
+#[ignore = "legacy v0 analysis-summary command is no longer current runtime surface"]
 fn cli_analysis_summary_stays_compact_for_sanitized_large_repo_class_packet() {
     let out_dir = temp_dir("analysis-summary-large-repo");
     let root = fixture_root();
@@ -1308,6 +1422,7 @@ fn cli_analysis_summary_stays_compact_for_sanitized_large_repo_class_packet() {
 }
 
 #[test]
+#[ignore = "legacy v0 analysis-summary command is no longer current runtime surface"]
 fn cli_analysis_summary_rejects_removed_limit_option() {
     let root = fixture_root();
     let output = run_sig0_output(&[
@@ -1332,6 +1447,7 @@ fn cli_analysis_summary_rejects_removed_limit_option() {
 }
 
 #[test]
+#[ignore = "legacy v0 codebase-inspection command is no longer current runtime surface"]
 fn cli_codebase_inspection_reads_snapshot_index_surface() {
     let out_dir = temp_dir("codebase-inspection");
     let inspection = inspection_root();
@@ -1447,6 +1563,7 @@ fn cli_codebase_inspection_reads_snapshot_index_surface() {
 }
 
 #[test]
+#[ignore = "legacy v0 analysis-summary command is no longer current runtime surface"]
 fn cli_rejects_summary_for_non_analysis_packet() {
     let root = fixture_root();
     let output = run_sig0_output(&[
@@ -1466,6 +1583,7 @@ fn cli_rejects_summary_for_non_analysis_packet() {
 }
 
 #[test]
+#[ignore = "legacy compatibility aliases are intentionally removed from current runtime surface"]
 fn cli_accepts_analysis_command_aliases() {
     let out_dir = temp_dir("analysis-aliases");
     let root = fixture_root();
@@ -1561,6 +1679,7 @@ fn removed_legacy_commands_are_not_accepted() {
 }
 
 #[test]
+#[ignore = "legacy v0 analyze fixture is no longer current runtime surface"]
 fn cli_runs_primary_archmap_lawpolicy_archsig_analyze_workflow() {
     let out_dir = temp_dir("analyze-workflow");
     let root = fixture_root();
@@ -1836,6 +1955,7 @@ fn cli_runs_primary_archmap_lawpolicy_archsig_analyze_workflow() {
 }
 
 #[test]
+#[ignore = "legacy Part IV v0 profile fallback is no longer current runtime surface"]
 fn cli_analyze_strict_distance_requires_part4_profile() {
     let out_dir = temp_dir("analyze-strict-distance");
     let root = fixture_root();
@@ -1912,6 +2032,7 @@ fn cli_analyze_strict_distance_requires_part4_profile() {
 }
 
 #[test]
+#[ignore = "legacy Part IV v0 profile fallback is no longer current runtime surface"]
 fn cli_analyze_strict_distance_uses_part4_profile_weights() {
     let out_dir = temp_dir("analyze-strict-distance-weights");
     let root = fixture_root();
@@ -2035,6 +2156,7 @@ fn atom_viewer_uses_atom_shape_distance_inputs_for_molecule_layout() {
 }
 
 #[test]
+#[ignore = "legacy large v0 ArchMap viewer projection is no longer current runtime surface"]
 fn cli_analyze_bounds_atom_viewer_data_for_large_repo_projection() {
     let out_dir = temp_dir("analyze-large-viewer-data");
     let root = fixture_root();
@@ -2166,6 +2288,7 @@ fn cli_analyze_bounds_atom_viewer_data_for_large_repo_projection() {
 }
 
 #[test]
+#[ignore = "legacy v0 raw packet FieldSig handoff is no longer current runtime surface"]
 fn cli_analyze_emit_raw_artifacts_writes_field_sig_handoff_packet() {
     let out_dir = temp_dir("analyze-workflow-raw-artifacts");
     let root = fixture_root();
@@ -2314,6 +2437,7 @@ fn cli_analyze_emit_raw_artifacts_writes_field_sig_handoff_packet() {
 }
 
 #[test]
+#[ignore = "legacy v0 generated-atom acceptance fixture is no longer current runtime surface"]
 fn atom_generated_acceptance_fixture_materializes_local_middle_layer() {
     let out_dir = temp_dir("atom-generated-acceptance");
     let root = atom_generated_acceptance_root();
@@ -2564,6 +2688,7 @@ fn ordered_test_pair(left: String, right: String) -> (String, String) {
 }
 
 #[test]
+#[ignore = "legacy v0 validation-failure summary behavior is no longer current runtime surface"]
 fn cli_analyze_reports_failed_validation_checks_to_stderr() {
     let out_dir = temp_dir("analyze-workflow-validation-failure");
     let root = fixture_root();
@@ -2648,6 +2773,7 @@ fn sharded_archmap_design_fixture_uses_horizontal_slices() {
 }
 
 #[test]
+#[ignore = "legacy v0 archsig-analysis step command is no longer current runtime surface"]
 fn cli_archsig_analysis_step_outputs_packet_and_validation() {
     let out_dir = temp_dir("archsig-analysis-step");
     let root = fixture_root();
@@ -2690,6 +2816,7 @@ fn cli_archsig_analysis_step_outputs_packet_and_validation() {
 }
 
 #[test]
+#[ignore = "legacy v0 semantic monodromy fixture is no longer current runtime surface"]
 fn coupon_tax_rounding_fixture_locks_semantic_monodromy() {
     let out_dir = temp_dir("coupon-tax-rounding");
     let root = coupon_rounding_root();
@@ -2853,6 +2980,7 @@ fn state_effect_law_evaluators_keep_missing_runtime_blocked() {
 }
 
 #[test]
+#[ignore = "legacy v0 operation square fixture is no longer current runtime surface"]
 fn supplied_operation_square_missing_endpoint_is_blocked_not_synthesized() {
     let out_dir = temp_dir("operation-square-missing-endpoint");
     let root = fixture_root();
@@ -3252,6 +3380,7 @@ fn homotopy_report_fixture_manifest_locks_golden_validation() {
 }
 
 #[test]
+#[ignore = "legacy v0 complete ArchMap acceptance fixture is no longer current runtime surface"]
 fn complete_archmap_acceptance_fixture_runs_full_measurement_without_private_names() {
     let root = complete_archmap_acceptance_root();
     let manifest = read_json(&root.join("manifest.json"));
@@ -3518,6 +3647,7 @@ fn complete_archmap_acceptance_fixture_runs_full_measurement_without_private_nam
 }
 
 #[test]
+#[ignore = "legacy v0 pr-review path is no longer current runtime surface"]
 fn cli_pr_review_reads_archmapstore_inputs() {
     let out_dir = temp_dir("pr-review");
     let review = pr_review_root();
@@ -3692,6 +3822,7 @@ fn cli_pr_review_reads_archmapstore_inputs() {
 }
 
 #[test]
+#[ignore = "legacy v0 negative fixture corpus is no longer current runtime surface"]
 fn cli_negative_archmap_fixtures_preserve_guardrails() {
     let out_dir = temp_dir("negative-archmap-fixtures");
     let root = fixture_root();
@@ -3776,6 +3907,7 @@ fn cli_regression_same_archmap_multiple_law_policies() {
 }
 
 #[test]
+#[ignore = "legacy v0 atom observation regression fixture is no longer current runtime surface"]
 fn cli_locks_archmap_atom_observation_regression() {
     let out_dir = temp_dir("archmap-atom-observation-regression");
     let root = fixture_root();
@@ -3986,7 +4118,21 @@ fn cli_schema_catalog_is_primary_archsig_surface_only() {
         ]
     );
     for entry in artifacts {
-        assert_eq!(entry["artifactRole"].as_str(), Some("primary"));
+        let artifact_id = entry["artifactId"].as_str().expect("artifact id");
+        let expected_role = match artifact_id {
+            "archmap"
+            | "archmap-validation-report"
+            | "law-policy"
+            | "law-policy-validation-report"
+            | "archsig-analysis-packet"
+            | "archsig-analysis-packet-validation-report" => "legacy",
+            _ => "primary",
+        };
+        assert_eq!(
+            entry["artifactRole"].as_str(),
+            Some(expected_role),
+            "unexpected artifact role for {artifact_id}"
+        );
     }
 }
 
@@ -4053,6 +4199,7 @@ fn archsig_atom_viewer_static_app_is_packaged_asset() {
 }
 
 #[test]
+#[ignore = "legacy v0 Part IV negative corpus is no longer current runtime surface"]
 fn part4_negative_fixture_corpus_tracks_distance_surface_regressions() {
     let corpus = read_json(&negative_root().join("part4_distance_surface_negative_cases.json"));
     let cases = corpus["cases"]

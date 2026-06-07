@@ -16,7 +16,7 @@ Ask only what is needed to select evaluator manifests.
 
 ## Basis
 
-- Which docs, ADRs, standards, or direct user decisions justify the selected policy?
+- Which docs, ADRs, standards, or direct user decisions justify the policy?
 - Should the basis be `policy-basis:solid`, `policy-basis:layering`, or a future registry basis ref?
 
 ## Severity

@@ -6,10 +6,10 @@
   "artifacts": [
     {
       "artifactId": "archmap",
-      "artifactName": "LLM-native ArchMap Atom observation artifact",
+      "artifactName": "Legacy ArchMap v0 observation artifact",
       "schemaVersionName": "archmap-observation-map-v0",
-      "artifactRole": "primary",
-      "ownerPhase": "LLM Atom ArchMap",
+      "artifactRole": "legacy",
+      "ownerPhase": "Historical ArchMap v0",
       "status": "implemented",
       "primaryDocs": [
         "docs/tool/llm_native_archmap_archsig_prd.md",
@@ -17,7 +17,7 @@
       ],
       "downstreamIssues": [],
       "compatibilityBoundary": {
-        "fieldMappingPolicy": "ArchMap records source-grounded atomObservations, moleculeObservations, semanticObservations, observationGaps, projectionInfo, operationSquareEvidence, concernHints, provenance, and nonConclusions without selecting laws or constructing obstruction circuits.",
+        "fieldMappingPolicy": "Legacy ArchMap v0 recorded atomObservations, moleculeObservations, semanticObservations, observationGaps, projectionInfo, operationSquareEvidence, concernHints, provenance, and nonConclusions. It is not a current runtime input.",
         "deprecatedFields": [],
         "newRequiredAssumptions": [
           "Required fields, observation families, law refs, or analysis axes change.",
@@ -34,10 +34,10 @@
     },
     {
       "artifactId": "archmap-validation-report",
-      "artifactName": "ArchMap validation report",
+      "artifactName": "Legacy ArchMap v0 validation report",
       "schemaVersionName": "archmap-validation-report-v0",
-      "artifactRole": "primary",
-      "ownerPhase": "LLM Atom ArchMap",
+      "artifactRole": "legacy",
+      "ownerPhase": "Historical ArchMap v0",
       "status": "implemented",
       "primaryDocs": [
         "docs/tool/llm_native_archmap_archsig_prd.md"
@@ -88,10 +88,10 @@
     },
     {
       "artifactId": "law-policy",
-      "artifactName": "Selected interpretation profile artifact",
+      "artifactName": "Legacy LawPolicy v0 interpretation profile artifact",
       "schemaVersionName": "law-policy-v0",
-      "artifactRole": "primary",
-      "ownerPhase": "ArchSig North Star AAT analysis",
+      "artifactRole": "legacy",
+      "ownerPhase": "Historical LawPolicy v0",
       "status": "implemented",
       "primaryDocs": [
         "docs/tool/archsig_aat_analysis_engine_prd.md",
@@ -100,7 +100,7 @@
       ],
       "downstreamIssues": [],
       "compatibilityBoundary": {
-        "fieldMappingPolicy": "The law-policy-v0 JSON contract is used as an interpretation profile: it selects laws, witness rules, molecule patterns, obstruction definitions, signature axes, measurement policy, optional spectrum measurement profile, optional homotopy measurement profile, exactness assumptions, coverage requirements, excluded readings, and non-conclusions separately from ArchMap observations. It is not the center of ArchSig output.",
+        "fieldMappingPolicy": "The legacy law-policy-v0 JSON contract selected laws, witness rules, molecule patterns, obstruction definitions, signature axes, measurement policy, optional spectrum measurement profile, optional homotopy measurement profile, exactness assumptions, coverage requirements, excluded readings, and non-conclusions. It is not a current runtime input.",
         "deprecatedFields": [],
         "newRequiredAssumptions": [
           "Required fields, observation families, law refs, or analysis axes change.",
@@ -173,10 +173,10 @@
     },
     {
       "artifactId": "law-policy-validation-report",
-      "artifactName": "LawPolicy validation report",
+      "artifactName": "Legacy LawPolicy v0 validation report",
       "schemaVersionName": "law-policy-validation-report-v0",
-      "artifactRole": "primary",
-      "ownerPhase": "LLM Atom ArchMap",
+      "artifactRole": "legacy",
+      "ownerPhase": "Historical LawPolicy v0",
       "status": "implemented",
       "primaryDocs": [
         "docs/tool/llm_native_archmap_archsig_prd.md"
@@ -254,10 +254,10 @@
     },
     {
       "artifactId": "archsig-analysis-packet",
-      "artifactName": "ArchSig AAT analysis packet",
+      "artifactName": "Legacy ArchSig v0 AAT analysis packet",
       "schemaVersionName": "archsig-analysis-packet-v0",
-      "artifactRole": "primary",
-      "ownerPhase": "ArchSig North Star AAT analysis",
+      "artifactRole": "legacy",
+      "ownerPhase": "Historical ArchSig v0 packet",
       "status": "implemented",
       "primaryDocs": [
         "docs/tool/archsig_aat_analysis_engine_prd.md",
@@ -283,10 +283,10 @@
     },
     {
       "artifactId": "archsig-analysis-packet-validation-report",
-      "artifactName": "ArchSig analysis packet validation report",
+      "artifactName": "Legacy ArchSig v0 analysis packet validation report",
       "schemaVersionName": "archsig-analysis-packet-validation-report-v0",
-      "artifactRole": "primary",
-      "ownerPhase": "LLM Atom ArchMap",
+      "artifactRole": "legacy",
+      "ownerPhase": "Historical ArchSig v0 packet",
       "status": "implemented",
       "primaryDocs": [
         "docs/tool/archsig_analysis_packet.md"
@@ -359,7 +359,7 @@
           "Coverage and exactness are artifact-local and do not imply semantic completeness."
         ],
         "nonConclusions": [
-          "Viewer data is a bounded visual projection, not a replacement for archsig-analysis-packet-v0 evidence lookup.",
+          "Viewer data is a bounded visual projection, not a replacement for explicit ArchSig evidence lookup.",
           "3D layout distance is not an AAT theorem metric, semantic equivalence, or causal relation.",
           "Viewer data must not treat raw packet detail as browser input."
         ]

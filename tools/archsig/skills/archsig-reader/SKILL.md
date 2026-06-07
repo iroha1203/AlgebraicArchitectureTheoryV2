@@ -7,8 +7,8 @@ description: Run ArchMap artifacts through ArchSig, read the summary and Atom Vi
 
 ## Purpose
 
-Turn a supplied `archmap-observation-map-v0` into an ArchSig analysis, read the
-resulting summary and Atom Viewer report pane as the first architecture quality
+Turn a supplied `archmap/v1` and `law-policy/v1` into an ArchSig analysis, read the
+resulting summary and Atom Viewer report pane as the first architecture
 measurement over the supplied `ArchMap + LawPolicy`, and propose practical
 improvements. Use raw packet artifacts only when detailed evidence lookup,
 FieldSig handoff, or fixture maintenance requires them.
@@ -67,7 +67,7 @@ Resolve the ArchSig binary before running:
 
 If none exists, stop and ask the user for the binary path. Do not require Cargo or the ArchSig source tree in a released skill-only environment.
 
-Before passing a LawPolicy-like file to ArchSig, verify it is JSON with `schemaVersion: "law-policy-v0"`. The file may be named `interpretation_profile.json`, but the schema must still be `law-policy-v0`. If the schema is absent or different, do not pass it as LawPolicy; continue the search order or ask the user.
+Before passing a LawPolicy-like file to ArchSig, verify it is JSON with `schema: "law-policy/v1"`. If the schema is absent or different, do not pass it as LawPolicy; continue the search order or ask the user.
 
 ```bash
 SKILL_DIR=<path-to-archsig-reader-skill>
@@ -118,7 +118,6 @@ priority when the compact summary or viewer report pane points to raw detail.
 
 Before assuming a path exists, check whether it is part of the release bundle:
 
-- `analysis-summary` is provided by the `archsig` binary.
 - `archsig-analysis-summary.json`, `archsig-atom-viewer-data.json`, and
   `archsig-run-manifest.json` are emitted by `analyze` by default.
 - Raw packet artifacts are not emitted by default; use `--emit-raw-artifacts`
@@ -290,9 +289,11 @@ Avoid:
 When editing this skill inside a source checkout, validate the skill metadata. This command is a maintenance check, not a runtime requirement for released skill users:
 
 ```bash
-cargo run --manifest-path tools/archsig/Cargo.toml -- analysis-summary \
-  --packet tools/archsig/tests/fixtures/minimal/archsig_analysis_packet.json \
-  --out .lake/archsig-reader-summary-validation.json
+cargo run --manifest-path tools/archsig/Cargo.toml -- analyze \
+  --archmap tools/archsig/tests/fixtures/archmap_v1/archmap.json \
+  --law-policy tools/archsig/tests/fixtures/archmap_v1/law_policy.json \
+  --out-dir .tmp/archsig-reader-validation \
+  --emit-raw-artifacts
 ```
 
 If the skill-creator validator is available in the local Codex installation, run it too. If it is missing dependencies such as `PyYAML`, report that as an environment issue rather than a skill runtime blocker.
