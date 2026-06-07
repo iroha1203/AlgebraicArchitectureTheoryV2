@@ -93,10 +93,7 @@ fn cli_analyze_v1_writes_normalized_archmap_for_valid_input() {
         out_dir.to_str().expect("path is utf-8"),
     ]);
 
-    assert!(
-        !output.status.success(),
-        "v1 analyze stops before the evaluator pipeline is implemented"
-    );
+    assert!(output.status.success());
     let json = read_json(&out_dir.join("normalized-archmap.json"));
     assert_eq!(json["schema"], "normalized-archmap/v1");
     assert_eq!(json["normalizerId"], "archmap-v1-aat-presentation@1");
@@ -133,10 +130,7 @@ fn cli_analyze_v1_writes_typed_evaluator_results() {
         out_dir.to_str().expect("path is utf-8"),
     ]);
 
-    assert!(
-        !output.status.success(),
-        "v1 analyze stops before packet replacement is implemented"
-    );
+    assert!(output.status.success());
     let json = read_json(&out_dir.join("typed-evaluator-results.json"));
     assert_eq!(json["schema"], "typed-evaluator-results/v1");
     assert_eq!(json["summary"]["resultCount"], 6);
@@ -192,7 +186,7 @@ fn cli_analyze_v1_marks_incomplete_molecule_candidate_blocked() {
         out_dir.to_str().expect("path is utf-8"),
     ]);
 
-    assert!(!output.status.success());
+    assert!(output.status.success());
     let json = read_json(&out_dir.join("normalized-archmap.json"));
     assert_eq!(json["summary"]["blockedMoleculeCandidateCount"], 1);
     assert!(
@@ -463,7 +457,7 @@ fn cli_rejects_law_policy_v1_dsl_field() {
 }
 
 #[test]
-fn cli_analyze_v1_writes_validation_artifacts_and_stops_before_packet() {
+fn cli_analyze_v1_writes_summary_viewer_and_manifest_artifacts() {
     let out_dir = temp_dir("analyze-v1-preflight");
     let root = archmap_v1_root();
     for stale_artifact in [
@@ -489,7 +483,7 @@ fn cli_analyze_v1_writes_validation_artifacts_and_stops_before_packet() {
         out_dir.to_str().expect("path is utf-8"),
     ]);
 
-    assert!(!output.status.success());
+    assert!(output.status.success());
     assert_eq!(
         read_json(&out_dir.join("archmap-validation.json"))["schemaVersion"],
         "archmap-validation-report-v1"
@@ -506,20 +500,102 @@ fn cli_analyze_v1_writes_validation_artifacts_and_stops_before_packet() {
         read_json(&out_dir.join("typed-evaluator-results.json"))["schema"],
         "typed-evaluator-results/v1"
     );
+    assert_eq!(
+        read_json(&out_dir.join("archsig-analysis-summary.json"))["schema"],
+        "archsig-analysis-summary/v1"
+    );
+    assert_eq!(
+        read_json(&out_dir.join("archsig-atom-viewer-data.json"))["schemaVersion"],
+        "archsig-atom-viewer-data-v1"
+    );
+    assert_eq!(
+        read_json(&out_dir.join("archsig-analysis-validation.json"))["schemaVersion"],
+        "archsig-analysis-validation-report-v1"
+    );
+    assert_eq!(
+        read_json(&out_dir.join("archsig-run-manifest.json"))["schemaVersion"],
+        "archsig-run-manifest-v1"
+    );
     assert!(
         !out_dir.join("archsig-analysis-packet.json").exists(),
-        "v1 input must not be silently converted into a v0 analysis packet"
+        "raw v1 packet is omitted unless --emit-raw-artifacts is passed"
     );
-    for stale_artifact in [
-        "archsig-analysis-summary.json",
-        "archsig-atom-viewer-data.json",
-        "archsig-run-manifest.json",
-    ] {
-        assert!(
-            !out_dir.join(stale_artifact).exists(),
-            "v1 preflight failure must remove stale success artifact {stale_artifact}"
-        );
-    }
+}
+
+#[test]
+fn cli_analyze_v1_emit_raw_artifacts_writes_typed_packet_detail_and_handoff() {
+    let out_dir = temp_dir("analyze-v1-raw-artifacts");
+    let root = archmap_v1_root();
+
+    let output = run_sig0_output(&[
+        "analyze",
+        "--archmap",
+        root.join("archmap.json").to_str().expect("path is utf-8"),
+        "--law-policy",
+        root.join("law_policy.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--out-dir",
+        out_dir.to_str().expect("path is utf-8"),
+        "--emit-raw-artifacts",
+    ]);
+
+    assert!(output.status.success());
+    let packet = read_json(&out_dir.join("archsig-analysis-packet.json"));
+    assert_eq!(packet["schema"], "archsig-analysis-packet/v1");
+    assert_eq!(
+        packet["inputRefs"]["typedEvaluatorResults"],
+        "typed-evaluator-results.json"
+    );
+    assert_eq!(
+        read_json(&out_dir.join("archsig-analysis-detail-index.json"))["schemaVersion"],
+        "archsig-analysis-detail-index-v1"
+    );
+    assert_eq!(
+        read_json(&out_dir.join("llm-interpretation-packet.json"))["schema"],
+        "llm-interpretation-packet/v1"
+    );
+    assert!(
+        packet["nonConclusions"].as_array().is_some_and(|items| {
+            items.iter().any(|item| {
+                item.as_str()
+                    .is_some_and(|text| text.contains("does not read v0 semanticObservations"))
+            })
+        }),
+        "v1 packet must not promote removed v0 helper fields into positive readings"
+    );
+}
+
+#[test]
+fn cli_analyze_v1_strict_distance_rejects_blocked_typed_results() {
+    let out_dir = temp_dir("analyze-v1-strict-distance-blocked");
+    let root = archmap_v1_root();
+
+    let output = run_sig0_output(&[
+        "analyze",
+        "--archmap",
+        root.join("archmap_blocked_molecule.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--law-policy",
+        root.join("law_policy.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--out-dir",
+        out_dir.to_str().expect("path is utf-8"),
+        "--strict-distance",
+    ]);
+
+    assert!(!output.status.success());
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(
+        stderr.contains("blocked, unknown, or unmeasured distance statuses"),
+        "--strict-distance must reject incomplete v1 typed distance support"
+    );
+    assert_eq!(
+        read_json(&out_dir.join("typed-evaluator-results.json"))["summary"]["blockedCount"],
+        6
+    );
 }
 
 #[test]

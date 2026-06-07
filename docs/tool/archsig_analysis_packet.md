@@ -1,6 +1,32 @@
 # ArchSig Analysis Packet
 
-`archsig-analysis-packet-v0` is the North Star ArchSig output artifact.
+For `archmap/v1` and `law-policy/v1`, ArchSig now uses a typed evaluator
+artifact chain:
+
+```text
+ArchMap v1
+  -> normalized-archmap/v1
+  -> typed-evaluator-results/v1
+  -> archsig-analysis-packet/v1
+  -> archsig-analysis-summary/v1
+  -> archsig-atom-viewer-data-v1
+```
+
+The v1 packet / summary / viewer path is computed from normalized atoms,
+generated molecule candidates, LawPolicy-selected evaluator manifests, typed
+evaluator statuses, support atom refs, support molecule refs, basis refs, and
+detail refs. `blocked`, `unknown`, and `unmeasured` statuses remain non-zero
+blocking states; they are not collapsed into measured zero.
+
+The v1 path does not read v0 helper fields such as `semanticObservations`,
+`projectionInfo`, `operationSquareEvidence`, `concernHints`, or
+`observationGaps` as positive readings. It also does not call Lean or require a
+Lean proof object. `--emit-raw-artifacts` writes v1 raw packet,
+detail-index, and LLM interpretation artifacts; without it, summary / viewer /
+manifest remain the primary reading surface.
+
+`archsig-analysis-packet-v0` is the legacy ArchSig output artifact for
+`archmap-observation-map-v0` / `law-policy-v0`.
 It reads a source-grounded ArchMap together with one selected interpretation
 profile and records AAT-based, bounded analysis for LLM and human review.
 
