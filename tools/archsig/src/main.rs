@@ -336,7 +336,7 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                 write_json(Some(analysis_packet_path), &analysis_packet)?;
                 write_json(
                     Some(out_dir.join("archsig-analysis-detail-index.json")),
-                    &build_typed_detail_index_v1(&typed_results),
+                    &build_typed_detail_index_v1(&typed_results, &analysis_packet),
                 )?;
                 write_json(
                     Some(llm_interpretation_path),

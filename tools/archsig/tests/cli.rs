@@ -236,6 +236,7 @@ fn cli_analyze_v1_writes_typed_evaluator_results() {
             .expect("path is utf-8"),
         "--out-dir",
         out_dir.to_str().expect("path is utf-8"),
+        "--emit-raw-artifacts",
     ]);
 
     assert!(output.status.success());
@@ -294,6 +295,7 @@ fn cli_analyze_v1_marks_incomplete_molecule_candidate_blocked() {
             .expect("path is utf-8"),
         "--out-dir",
         out_dir.to_str().expect("path is utf-8"),
+        "--emit-raw-artifacts",
     ]);
 
     assert!(output.status.success());
@@ -329,6 +331,54 @@ fn cli_analyze_v1_marks_incomplete_molecule_candidate_blocked() {
                 })
             }),
         "missing evidence replacement must be derived from blocked evaluator requirements"
+    );
+    let packet = read_json(&out_dir.join("archsig-analysis-packet.json"));
+    assert!(
+        packet["generatedObstructions"]
+            .as_array()
+            .is_some_and(|items| {
+                items.len() == 6
+                    && items.iter().all(|item| {
+                        item["obstructionKind"] == "blockedObstructionCandidate"
+                            && item["typedEvaluatorResultRef"]
+                                .as_str()
+                                .is_some_and(|reference| packet.pointer(reference).is_some())
+                            && item["generatedLawInputRef"]
+                                .as_str()
+                                .is_some_and(|reference| packet.pointer(reference).is_some())
+                            && item["signatureAxisRef"]
+                                .as_str()
+                                .is_some_and(|reference| packet.pointer(reference).is_some())
+                    })
+            }),
+        "blocked typed evaluator results must materialize generated obstruction candidates"
+    );
+    assert!(
+        packet["generatedRepairTargets"]
+            .as_array()
+            .is_some_and(|items| {
+                items.len() == 6
+                    && items.iter().all(|item| {
+                        item["targetKind"] == "collectMissingEvidence"
+                            && item["registryBasisRefs"]
+                                .as_array()
+                                .is_some_and(|refs| !refs.is_empty())
+                            && item["basisRefs"]
+                                .as_array()
+                                .is_some_and(|refs| !refs.is_empty())
+                            && item["signatureAxisRef"]
+                                .as_str()
+                                .is_some_and(|reference| packet.pointer(reference).is_some())
+                            && item["localStatus"] == "locallyBlocked"
+                            && item["generatedObstructionRef"]
+                                .as_str()
+                                .is_some_and(|reference| packet.pointer(reference).is_some())
+                            && item["typedEvaluatorResultRef"]
+                                .as_str()
+                                .is_some_and(|reference| packet.pointer(reference).is_some())
+                    })
+            }),
+        "blocked generated obstructions must materialize collectMissingEvidence repair targets"
     );
 }
 
@@ -820,6 +870,91 @@ fn cli_analyze_v1_emit_raw_artifacts_writes_typed_packet_detail_and_handoff() {
         packet["replacementEvaluatorResultsById"]["projection.reading@1"].is_object(),
         "packet must expose replacement evaluator results by id for registry refs"
     );
+    assert!(
+        packet["generatedLawInputs"]
+            .as_array()
+            .is_some_and(|items| {
+                items.len() == 6
+                    && items.iter().enumerate().all(|(index, item)| {
+                        item["typedEvaluatorResultRef"] == format!("/typedEvaluatorResults/{index}")
+                            && packet
+                                .pointer(
+                                    item["typedEvaluatorResultRef"]
+                                        .as_str()
+                                        .expect("typed result ref is string"),
+                                )
+                                .is_some()
+                            && item["registryBasisRefs"]
+                                .as_array()
+                                .is_some_and(|refs| !refs.is_empty())
+                            && item["applicableLawAxes"]
+                                .as_array()
+                                .is_some_and(|axes| !axes.is_empty())
+                    })
+            }),
+        "v1 packet must derive generatedLawInputs from typed evaluator results"
+    );
+    assert!(
+        packet["signatureAxes"].as_array().is_some_and(|items| {
+            items.len() == 6
+                && items.iter().enumerate().all(|(index, item)| {
+                    item["generatedLawInputRef"] == format!("/generatedLawInputs/{index}")
+                        && packet
+                            .pointer(
+                                item["generatedLawInputRef"]
+                                    .as_str()
+                                    .expect("generated law input ref is string"),
+                            )
+                            .is_some()
+                        && item["signatureDistanceReadingRefs"]
+                            .as_array()
+                            .is_some_and(|refs| {
+                                !refs.is_empty()
+                                    && refs.iter().all(|reference| {
+                                        packet
+                                            .pointer(
+                                                reference
+                                                    .as_str()
+                                                    .expect("signature distance ref is string"),
+                                            )
+                                            .is_some()
+                                    })
+                            })
+                        && item["registryBasisRefs"]
+                            .as_array()
+                            .is_some_and(|refs| !refs.is_empty())
+                })
+        }),
+        "v1 packet must derive signatureAxes from typed evaluator results and distance readings"
+    );
+    for field in [
+        "generatedLawInputs",
+        "signatureAxes",
+        "generatedObstructions",
+        "generatedRepairTargets",
+        "typedEvaluatorResults",
+        "architectureDistanceSignatureReadings",
+    ] {
+        let pointer = packet["generatedPacketRefs"][field]
+            .as_str()
+            .expect("generated packet ref is string");
+        assert!(
+            packet.pointer(pointer).is_some(),
+            "generated packet ref must resolve: {pointer}"
+        );
+    }
+    for removed_field in [
+        "semanticObservations",
+        "projectionInfo",
+        "operationSquareEvidence",
+        "concernHints",
+        "observationGaps",
+    ] {
+        assert!(
+            packet.get(removed_field).is_none(),
+            "v1 packet must not restore removed v0 input field {removed_field}"
+        );
+    }
     let analysis_validation = read_json(&out_dir.join("archsig-analysis-validation.json"));
     for check_id in [
         "archsig.v1.architectureDistanceProfileRefsMatch",
@@ -828,6 +963,12 @@ fn cli_analyze_v1_emit_raw_artifacts_writes_typed_packet_detail_and_handoff() {
         "archsig.v1.replacementRegistryPresent",
         "archsig.v1.replacementRegistryResultsMatch",
         "archsig.v1.replacementRegistryOutputRefs",
+        "archsig.v1.generatedLawInputsTraceTypedResults",
+        "archsig.v1.signatureAxesTraceTypedResults",
+        "archsig.v1.generatedObstructionsTraceTypedResults",
+        "archsig.v1.generatedRepairTargetsTraceObstructions",
+        "archsig.v1.generatedPacketRefsResolve",
+        "archsig.v1.removedV0InputFieldsAbsent",
     ] {
         assert!(
             analysis_validation["checks"]
@@ -853,6 +994,31 @@ fn cli_analyze_v1_emit_raw_artifacts_writes_typed_packet_detail_and_handoff() {
             })
         }),
         "replacement detail index entries must use replacementEvaluatorResults namespace"
+    );
+    assert!(
+        detail_index["sections"].as_array().is_some_and(|sections| {
+            [
+                "generatedLawInputs",
+                "signatureAxes",
+                "generatedObstructions",
+                "generatedRepairTargets",
+            ]
+            .into_iter()
+            .all(|name| sections.iter().any(|section| section["name"] == name))
+        }),
+        "v1 detail index must expose derived packet sections"
+    );
+    assert!(
+        detail_index["entries"].as_array().is_some_and(|entries| {
+            entries.iter().any(|entry| {
+                entry["packetRef"] == "packet:/generatedLawInputs/0"
+                    && entry["typedEvaluatorResultRef"] == "/typedEvaluatorResults/0"
+            }) && entries.iter().any(|entry| {
+                entry["packetRef"] == "packet:/signatureAxes/0"
+                    && entry["generatedLawInputRef"] == "/generatedLawInputs/0"
+            })
+        }),
+        "v1 detail index must include resolvable generated law input and signature axis refs"
     );
     assert_eq!(
         read_json(&out_dir.join("llm-interpretation-packet.json"))["schema"],
