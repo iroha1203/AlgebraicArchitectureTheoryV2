@@ -1,3 +1,5 @@
+#![recursion_limit = "256"]
+
 mod archmap;
 mod archsig_analysis_packet;
 mod law_policy;

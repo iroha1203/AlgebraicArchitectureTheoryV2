@@ -141,6 +141,7 @@ pub fn build_typed_analysis_packet_v1(
     let generated_obstructions = generated_obstructions_v1(typed_results);
     let generated_repair_targets = generated_repair_targets_v1(&generated_obstructions);
     let spectrum = architecture_spectrum_v1(normalized, typed_results);
+    let homotopy = architecture_homotopy_v1(normalized, typed_results, &spectrum);
     let detail_refs = typed_results
         .results
         .iter()
@@ -178,6 +179,11 @@ pub fn build_typed_analysis_packet_v1(
         "spectralModeReadings": spectrum["spectralModeReadings"],
         "spectralDrilldownReadings": spectrum["spectralDrilldownReadings"],
         "architectureSpectrumReport": spectrum["architectureSpectrumReport"],
+        "pathHomotopyDiagramReadings": homotopy["pathHomotopyDiagramReadings"],
+        "homotopyHolonomyReadings": homotopy["homotopyHolonomyReadings"],
+        "stokesStyleReadings": homotopy["stokesStyleReadings"],
+        "homotopyDistanceReadings": homotopy["homotopyDistanceReadings"],
+        "architectureHomotopyReport": homotopy["architectureHomotopyReport"],
         "generatedPacketRefs": {
             "basis": "typed-evaluator-results + law-evaluator-registry",
             "generatedLawInputs": "/generatedLawInputs",
@@ -191,6 +197,11 @@ pub fn build_typed_analysis_packet_v1(
             "spectralAnalysisReadings": "/spectralAnalysisReadings",
             "spectralModeReadings": "/spectralModeReadings",
             "spectralDrilldownReadings": "/spectralDrilldownReadings",
+            "architectureHomotopyReport": "/architectureHomotopyReport",
+            "pathHomotopyDiagramReadings": "/pathHomotopyDiagramReadings",
+            "homotopyHolonomyReadings": "/homotopyHolonomyReadings",
+            "stokesStyleReadings": "/stokesStyleReadings",
+            "homotopyDistanceReadings": "/homotopyDistanceReadings",
             "typedEvaluatorResults": "/typedEvaluatorResults",
             "architectureDistanceSignatureReadings": "/architectureDistance/signatureDistanceReadings"
         },
@@ -200,7 +211,8 @@ pub fn build_typed_analysis_packet_v1(
             "ArchSig v1 packet is computed from Normalized ArchMap v1 and TypedEvaluatorResults v1.",
             "Generated law inputs, signature axes, obstruction candidates, and repair targets are derived packet refs over typed evaluator results and registry basis.",
             "ArchitectureSpectrumReport/v1 is derived from normalized support, typed evaluator results, and coverage status; it does not read v0 spectrumMeasurementProfile.",
-            "ArchSig v1 packet does not read v0 semanticObservations, projectionInfo, operationSquareEvidence, concernHints, or observationGaps.",
+            "ArchitectureHomotopyReport/v1 is derived from normalized relations, explicit molecule candidates, typed evaluator results, and coverage status; it does not read v0 operationSquareEvidence or homotopyMeasurementProfile.",
+            "ArchSig v1 packet does not read v0 semanticObservations, projectionInfo, operationSquareEvidence, concernHints, observationGaps, or homotopyMeasurementProfile.",
             "Blocked, unknown, and unmeasured evaluator results are not measured zero.",
             "ArchSig v1 packet is a computation artifact, not a Lean proof object."
         ]
@@ -214,6 +226,7 @@ pub fn build_typed_analysis_summary_v1(
 ) -> serde_json::Value {
     let replacement_blocked_count = typed_results.replacement_summary.blocked_count;
     let spectrum = architecture_spectrum_v1(normalized, typed_results);
+    let homotopy = architecture_homotopy_v1(normalized, typed_results, &spectrum);
     let verdict = if typed_results.summary.measured_violation_count > 0 {
         "SELECTED_VIOLATION_MEASURED_UNDER_EVIDENCE_CONTRACT"
     } else if typed_results.summary.measured_pass_count > 0
@@ -239,6 +252,7 @@ pub fn build_typed_analysis_summary_v1(
             "replacementRegistry": typed_results.replacement_registry_ref,
             "architectureDistance": "architecture-distance.json",
             "architectureSpectrumReport": "archsig-analysis-packet.json#/architectureSpectrumReport",
+            "architectureHomotopyReport": "archsig-analysis-packet.json#/architectureHomotopyReport",
             "normalizedAtomCount": normalized.summary.normalized_atom_count,
             "generatedMoleculeCandidateCount": normalized.summary.generated_molecule_candidate_count
         },
@@ -251,6 +265,8 @@ pub fn build_typed_analysis_summary_v1(
         "dominantFindings": typed_dominant_findings(typed_results),
         "architectureSpectrumReport": spectrum["architectureSpectrumReport"],
         "architectureSpectrumSummary": architecture_spectrum_summary_v1(&spectrum),
+        "architectureHomotopyReport": homotopy["architectureHomotopyReport"],
+        "architectureHomotopySummary": architecture_homotopy_summary_v1(&homotopy),
         "actionQueue": typed_action_queue(typed_results),
         "positiveBoundedConclusions": typed_results.positive_bounded_conclusions,
         "metadata": {
@@ -318,6 +334,7 @@ pub fn build_typed_atom_viewer_data_v1(
             "architectureDistance": summary["architectureDistance"],
             "distanceDiagnosis": summary["distanceDiagnosis"],
             "architectureSpectrumReport": summary["architectureSpectrumReport"],
+            "architectureHomotopyReport": summary["architectureHomotopyReport"],
             "actionQueue": summary["actionQueue"]
         },
         "reportPane": {
@@ -329,6 +346,8 @@ pub fn build_typed_atom_viewer_data_v1(
             "architectureDistance": summary["architectureDistance"],
             "architectureSpectrumReport": summary["architectureSpectrumReport"],
             "architectureSpectrumSummary": summary["architectureSpectrumSummary"],
+            "architectureHomotopyReport": summary["architectureHomotopyReport"],
+            "architectureHomotopySummary": summary["architectureHomotopySummary"],
             "replacementRegistryResolution": summary["replacementRegistryResolution"],
             "typedEvaluatorDiagnosis": summary["typedEvaluatorDiagnosis"],
             "distanceDiagnosis": summary["distanceDiagnosis"],
@@ -401,6 +420,13 @@ pub fn build_typed_detail_index_v1(
             detail_index_section_v1("spectralDrilldownReadings", "/spectralDrilldownReadings", packet_array_len(packet, "spectralDrilldownReadings")),
             detail_index_section_v1("architectureSpectrumReport.topHotspots", "/architectureSpectrumReport/topHotspots", packet_nested_array_len(packet, &["architectureSpectrumReport", "topHotspots"])),
             detail_index_section_v1("architectureSpectrumReport.recurrentObstructions", "/architectureSpectrumReport/recurrentObstructions", packet_nested_array_len(packet, &["architectureSpectrumReport", "recurrentObstructions"])),
+            detail_index_section_v1("pathHomotopyDiagramReadings", "/pathHomotopyDiagramReadings", packet_array_len(packet, "pathHomotopyDiagramReadings")),
+            detail_index_section_v1("homotopyHolonomyReadings", "/homotopyHolonomyReadings", packet_array_len(packet, "homotopyHolonomyReadings")),
+            detail_index_section_v1("stokesStyleReadings", "/stokesStyleReadings", packet_array_len(packet, "stokesStyleReadings")),
+            detail_index_section_v1("homotopyDistanceReadings", "/homotopyDistanceReadings", packet_array_len(packet, "homotopyDistanceReadings")),
+            detail_index_section_v1("architectureHomotopyReport.filledLoops", "/architectureHomotopyReport/filledLoops", packet_nested_array_len(packet, &["architectureHomotopyReport", "filledLoops"])),
+            detail_index_section_v1("architectureHomotopyReport.unfilledLoops", "/architectureHomotopyReport/unfilledLoops", packet_nested_array_len(packet, &["architectureHomotopyReport", "unfilledLoops"])),
+            detail_index_section_v1("architectureHomotopyReport.nonzeroHolonomyLoops", "/architectureHomotopyReport/nonzeroHolonomyLoops", packet_nested_array_len(packet, &["architectureHomotopyReport", "nonzeroHolonomyLoops"])),
             detail_index_section_v1("replacementEvaluatorResults", "/replacementEvaluatorResults", packet_array_len(packet, "replacementEvaluatorResults"))
         ],
         "refDictionary": ref_dictionary,
@@ -419,6 +445,7 @@ pub fn build_typed_llm_interpretation_packet_v1(
     architecture_distance: &Value,
 ) -> serde_json::Value {
     let spectrum = architecture_spectrum_v1(normalized, typed_results);
+    let homotopy = architecture_homotopy_v1(normalized, typed_results, &spectrum);
     json!({
         "schema": "llm-interpretation-packet/v1",
         "interpretationKind": "typed-evaluator-bounded-reading",
@@ -427,6 +454,7 @@ pub fn build_typed_llm_interpretation_packet_v1(
         "architectureDistance": architecture_distance["summary"],
         "distanceDiagnosisSummary": architecture_distance["distanceDiagnosis"],
         "architectureSpectrumReportSummary": architecture_spectrum_summary_v1(&spectrum),
+        "architectureHomotopyReportSummary": architecture_homotopy_summary_v1(&homotopy),
         "typedEvaluatorSummary": typed_results.summary,
         "replacementRegistryResolution": typed_results.replacement_registry_resolution,
         "positiveBoundedConclusions": typed_results.positive_bounded_conclusions,
@@ -763,6 +791,11 @@ pub fn build_typed_analysis_validation_v1(
                     "spectralAnalysisReadings",
                     "spectralModeReadings",
                     "spectralDrilldownReadings",
+                    "architectureHomotopyReport",
+                    "pathHomotopyDiagramReadings",
+                    "homotopyHolonomyReadings",
+                    "stokesStyleReadings",
+                    "homotopyDistanceReadings",
                     "typedEvaluatorResults",
                     "architectureDistanceSignatureReadings",
                 ]
@@ -778,12 +811,14 @@ pub fn build_typed_analysis_validation_v1(
         "projectionInfo",
         "operationSquareEvidence",
         "spectrumMeasurementProfile",
+        "homotopyMeasurementProfile",
         "concernHints",
         "observationGaps",
     ]
     .iter()
     .all(|field| packet.get(*field).is_none());
     let architecture_spectrum_report_pass = architecture_spectrum_report_valid(packet);
+    let architecture_homotopy_report_pass = architecture_homotopy_report_valid(packet);
     let checks_pass = [
         packet_schema_pass,
         typed_count_pass,
@@ -802,6 +837,7 @@ pub fn build_typed_analysis_validation_v1(
         generated_packet_refs_pass,
         removed_v0_input_fields_absent_pass,
         architecture_spectrum_report_pass,
+        architecture_homotopy_report_pass,
     ];
     let result = if checks_pass.iter().copied().all(|passed| passed) {
         "pass"
@@ -902,6 +938,11 @@ pub fn build_typed_analysis_validation_v1(
                 "checkId": "archsig.v1.architectureSpectrumReportSurface",
                 "result": if architecture_spectrum_report_pass { "pass" } else { "fail" },
                 "message": "ArchitectureSpectrumReport resolves curvature support, transfer, hotspot, recurrent obstruction, and coverage refs"
+            },
+            {
+                "checkId": "archsig.v1.architectureHomotopyReportSurface",
+                "result": if architecture_homotopy_report_pass { "pass" } else { "fail" },
+                "message": "ArchitectureHomotopyReport resolves path, loop, filler, holonomy, Stokes, and missing filler refs without treating gaps as zero"
             }
         ],
         "nonConclusions": [
@@ -1121,6 +1162,235 @@ fn architecture_spectrum_report_valid(packet: &Value) -> bool {
         })
         .collect::<BTreeSet<_>>();
     coverage_gaps == support_coverage_gaps
+}
+
+fn architecture_homotopy_report_valid(packet: &Value) -> bool {
+    let report = &packet["architectureHomotopyReport"];
+    if !report.is_object()
+        || report["schemaVersion"] != "architecture-homotopy-report/v1"
+        || report["reportId"].as_str().is_none()
+        || !report["nonConclusions"]
+            .as_array()
+            .is_some_and(|items| !items.is_empty())
+    {
+        return false;
+    }
+    if !packet["pathHomotopyDiagramReadings"]
+        .as_array()
+        .is_some_and(|items| {
+            items.iter().all(|item| {
+                let support_atom_refs = json_string_array_value(item, "supportAtomRefs")
+                    .into_iter()
+                    .collect::<BTreeSet<_>>();
+                item["supportAtomRefs"].as_array().is_some()
+                    && item["selectedAxes"].as_array().is_some()
+                    && item["pathPairRefs"].as_array().is_some_and(|pairs| {
+                        pairs.iter().all(|pair| {
+                            pair["fromAtomRef"]
+                                .as_str()
+                                .is_some_and(|reference| support_atom_refs.contains(reference))
+                                && pair["toAtomRef"]
+                                    .as_str()
+                                    .is_some_and(|reference| support_atom_refs.contains(reference))
+                        })
+                    })
+                    && item["fillerStatus"].as_str().is_some_and(|status| {
+                        status == "measuredFiller" || status == "missingFillerEvidence"
+                    })
+                    && (item["fillerStatus"] != "missingFillerEvidence"
+                        || item["coverageGapRefs"]
+                            .as_array()
+                            .is_some_and(|refs| !refs.is_empty()))
+            })
+        })
+    {
+        return false;
+    }
+    if !packet["homotopyHolonomyReadings"]
+        .as_array()
+        .is_some_and(|items| {
+            items.iter().all(|item| {
+                packet_ref_field_resolves(packet, item, "pathHomotopyDiagramRef")
+                    && packet_ref_array_field_resolves(packet, item, "nonzeroCurvatureSupportRefs")
+                    && item["holonomyStatus"].as_str().is_some_and(|status| {
+                        status == "measuredZero"
+                            || status == "measuredNonzero"
+                            || status == "blockedByMissingFiller"
+                            || status == "unmeasuredSelectedAxisDifference"
+                    })
+                    && if item["holonomyStatus"] == "blockedByMissingFiller"
+                        || item["holonomyStatus"] == "unmeasuredSelectedAxisDifference"
+                    {
+                        item["holonomyValue"].is_null()
+                            && item["coverageGapRefs"]
+                                .as_array()
+                                .is_some_and(|refs| !refs.is_empty())
+                    } else {
+                        item["holonomyValue"].as_i64().is_some()
+                    }
+            })
+        })
+    {
+        return false;
+    }
+    if !packet["stokesStyleReadings"]
+        .as_array()
+        .is_some_and(|items| {
+            items.iter().all(|item| {
+                packet_ref_field_resolves(packet, item, "pathHomotopyDiagramRef")
+                    && packet_ref_field_resolves(packet, item, "holonomyReadingRef")
+                    && item["localCurvatureCells"].as_array().is_some()
+                    && if item["stokesStatus"] == "blockedByMissingFiller"
+                        || item["stokesStatus"] == "blockedByCoverageGap"
+                    {
+                        item["localCurvatureCells"]
+                            .as_array()
+                            .is_some_and(Vec::is_empty)
+                            && item["coverageGapRefs"]
+                                .as_array()
+                                .is_some_and(|refs| !refs.is_empty())
+                    } else {
+                        item["coverageGapRefs"].as_array().is_some()
+                    }
+            })
+        })
+    {
+        return false;
+    }
+    if !packet["homotopyDistanceReadings"]
+        .as_array()
+        .is_some_and(|items| {
+            items.iter().all(|item| {
+                packet_ref_field_resolves(packet, item, "pathHomotopyDiagramRef")
+                    && packet_ref_field_resolves(packet, item, "holonomyReadingRef")
+                    && if item["measurementStatus"] == "blockedByMissingFiller"
+                        || item["measurementStatus"] == "blockedByCoverageGap"
+                    {
+                        item["homotopyDistance"].is_null()
+                            && item["fillingCost"].is_null()
+                            && item["observationGapLowerBound"]
+                                .as_i64()
+                                .is_some_and(|value| value > 0)
+                    } else {
+                        item["homotopyDistance"].as_i64().is_some()
+                            && item["fillingCost"].as_u64().is_some()
+                    }
+            })
+        })
+    {
+        return false;
+    }
+    for field in [
+        "pathHomotopyDiagramReadingRefs",
+        "homotopyHolonomyReadingRefs",
+        "stokesStyleReadingRefs",
+        "homotopyDistanceReadingRefs",
+    ] {
+        if !packet_ref_array_field_resolves(packet, report, field) {
+            return false;
+        }
+    }
+    if !report["filledLoops"].as_array().is_some_and(|items| {
+        items.iter().all(|item| {
+            packet_ref_field_resolves(packet, item, "pathHomotopyDiagramRef")
+                && packet_ref_field_resolves(packet, item, "holonomyReadingRef")
+                && packet_ref_field_resolves(packet, item, "stokesReadingRef")
+                && packet_ref_field_resolves(packet, item, "homotopyDistanceReadingRef")
+                && item["loopStatus"] == "filled"
+        })
+    }) {
+        return false;
+    }
+    if !report["unfilledLoops"].as_array().is_some_and(|items| {
+        items.iter().all(|item| {
+            packet_ref_field_resolves(packet, item, "pathHomotopyDiagramRef")
+                && packet_ref_field_resolves(packet, item, "holonomyReadingRef")
+                && packet_ref_field_resolves(packet, item, "stokesReadingRef")
+                && packet_ref_field_resolves(packet, item, "homotopyDistanceReadingRef")
+                && packet_ref_field_resolves(packet, item, "missingFillerEvidenceRef")
+                && item["loopStatus"] == "unfilled"
+        })
+    }) {
+        return false;
+    }
+    if !report["nonzeroHolonomyLoops"]
+        .as_array()
+        .is_some_and(|items| {
+            items.iter().all(|item| {
+                item["holonomyReadingRef"]
+                    .as_str()
+                    .and_then(|reference| packet.pointer(reference))
+                    .is_some_and(|reading| reading["holonomyStatus"] == "measuredNonzero")
+            })
+        })
+    {
+        return false;
+    }
+    if !report["topLocalCurvatureCells"]
+        .as_array()
+        .is_some_and(|items| {
+            items.iter().all(|item| {
+                packet_ref_field_resolves(packet, item, "stokesReadingRef")
+                    && packet_ref_field_resolves(packet, item, "localCurvatureCellRef")
+            })
+        })
+    {
+        return false;
+    }
+    if !report["missingFillerEvidence"]
+        .as_array()
+        .is_some_and(|items| {
+            items.iter().all(|item| {
+                packet_ref_field_resolves(packet, item, "pathHomotopyDiagramRef")
+                    && packet_ref_field_resolves(packet, item, "holonomyReadingRef")
+                    && item["gapRef"].as_str().is_some()
+            })
+        })
+    {
+        return false;
+    }
+    if !report["architecturalHoleReadings"]
+        .as_array()
+        .is_some_and(|items| {
+            items.iter().all(|item| {
+                packet_ref_field_resolves(packet, item, "missingFillerEvidenceRef")
+                    && item["gapRef"].as_str().is_some()
+            })
+        })
+    {
+        return false;
+    }
+    if report["spectrumContextRef"] != "archsig-analysis-packet.json#/architectureSpectrumReport"
+        || !packet_ref_array_field_resolves(packet, report, "nonzeroCurvatureSupportRefs")
+    {
+        return false;
+    }
+    let coverage_gaps = report["coverageGaps"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .filter_map(|item| item.as_str())
+        .collect::<BTreeSet<_>>();
+    let expected_gaps = report["missingFillerEvidence"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .filter_map(|item| item["gapRef"].as_str())
+        .chain(
+            packet["homotopyHolonomyReadings"]
+                .as_array()
+                .into_iter()
+                .flatten()
+                .flat_map(|reading| {
+                    reading["coverageGapRefs"]
+                        .as_array()
+                        .into_iter()
+                        .flatten()
+                        .filter_map(|item| item.as_str())
+                }),
+        )
+        .collect::<BTreeSet<_>>();
+    coverage_gaps == expected_gaps
 }
 
 fn packet_ref_field_resolves(packet: &Value, item: &Value, field: &str) -> bool {
@@ -1619,6 +1889,659 @@ fn architecture_spectrum_summary_v1(spectrum: &Value) -> Value {
     })
 }
 
+fn architecture_homotopy_v1(
+    normalized: &NormalizedArchMapV1,
+    typed_results: &TypedEvaluatorResultsV1,
+    spectrum: &Value,
+) -> Value {
+    let path_homotopy_diagram_readings = path_homotopy_diagram_readings_v1(normalized);
+    let homotopy_holonomy_readings = homotopy_holonomy_readings_v1(normalized, spectrum);
+    let stokes_style_readings = stokes_style_readings_v1(normalized, &homotopy_holonomy_readings);
+    let homotopy_distance_readings =
+        homotopy_distance_readings_v1(normalized, &homotopy_holonomy_readings);
+    let architecture_homotopy_report = architecture_homotopy_report_v1(
+        normalized,
+        typed_results,
+        spectrum,
+        &path_homotopy_diagram_readings,
+        &homotopy_holonomy_readings,
+        &stokes_style_readings,
+        &homotopy_distance_readings,
+    );
+    json!({
+        "pathHomotopyDiagramReadings": path_homotopy_diagram_readings,
+        "homotopyHolonomyReadings": homotopy_holonomy_readings,
+        "stokesStyleReadings": stokes_style_readings,
+        "homotopyDistanceReadings": homotopy_distance_readings,
+        "architectureHomotopyReport": architecture_homotopy_report
+    })
+}
+
+fn path_homotopy_diagram_readings_v1(normalized: &NormalizedArchMapV1) -> Vec<Value> {
+    normalized
+        .molecules
+        .iter()
+        .enumerate()
+        .map(|(index, molecule)| {
+            let atoms = molecule_atoms(normalized, molecule);
+            json!({
+                "pathHomotopyDiagramReadingId": format!(
+                    "path-homotopy-diagram:{}",
+                    stable_ref(&molecule.normalized_molecule_id)
+                ),
+                "diagramKind": if molecule.generated_molecule_candidate_status == "generated" {
+                    "filledLoopCandidate"
+                } else {
+                    "missingFillerCandidate"
+                },
+                "moleculeRef": molecule.normalized_molecule_id,
+                "moleculeIndex": index,
+                "supportAtomRefs": molecule.atom_ids,
+                "selectedAxes": atom_axes(&atoms),
+                "pathPairRefs": molecule
+                    .atom_ids
+                    .windows(2)
+                    .enumerate()
+                    .map(|(pair_index, pair)| {
+                        json!({
+                            "pathPairId": format!(
+                                "path-pair:{}:{pair_index}",
+                                stable_ref(&molecule.normalized_molecule_id)
+                            ),
+                            "fromAtomRef": pair[0],
+                            "toAtomRef": pair[1]
+                        })
+                    })
+                    .collect::<Vec<_>>(),
+                "fillerStatus": if molecule.generated_molecule_candidate_status == "generated" {
+                    "measuredFiller"
+                } else {
+                    "missingFillerEvidence"
+                },
+                "coverageGapRefs": if molecule.generated_molecule_candidate_status == "generated" {
+                    Vec::<String>::new()
+                } else {
+                    vec![format!(
+                        "coverage-gap:homotopy:{}",
+                        stable_ref(&molecule.normalized_molecule_id)
+                    )]
+                },
+                "readingBoundary": {
+                    "basis": "explicit normalized ArchMap v1 molecule membership",
+                    "nonConclusion": "same endpoint or shared membership is not global homotopy equivalence"
+                }
+            })
+        })
+        .collect()
+}
+
+fn homotopy_holonomy_readings_v1(normalized: &NormalizedArchMapV1, spectrum: &Value) -> Vec<Value> {
+    let nonzero_support_atom_refs = nonzero_curvature_support_atom_refs(spectrum);
+    let nonzero_support_molecule_refs = nonzero_curvature_support_molecule_refs(spectrum);
+    normalized
+        .molecules
+        .iter()
+        .enumerate()
+        .map(|(index, molecule)| {
+            let atoms = molecule_atoms(normalized, molecule);
+            let is_filled = molecule.generated_molecule_candidate_status == "generated";
+            let witness_refs = molecule
+                .atom_ids
+                .iter()
+                .filter(|atom_id| nonzero_support_atom_refs.contains(atom_id.as_str()))
+                .cloned()
+                .collect::<Vec<_>>();
+            let nonzero_support_refs = nonzero_curvature_support_refs_for_molecule(
+                spectrum,
+                molecule,
+                &nonzero_support_molecule_refs,
+                &nonzero_support_atom_refs,
+            );
+            let has_nonzero_support = !nonzero_support_refs.is_empty();
+            let has_unmeasured_axis_signal = selected_axis_difference_signal(&atoms);
+            let holonomy_status = if !is_filled {
+                "blockedByMissingFiller"
+            } else if has_nonzero_support {
+                "measuredNonzero"
+            } else if has_unmeasured_axis_signal {
+                "unmeasuredSelectedAxisDifference"
+            } else {
+                "measuredZero"
+            };
+            let coverage_gap_refs = if !is_filled {
+                vec![format!(
+                    "coverage-gap:homotopy:{}",
+                    stable_ref(&molecule.normalized_molecule_id)
+                )]
+            } else if holonomy_status == "unmeasuredSelectedAxisDifference" {
+                vec![format!(
+                    "coverage-gap:homotopy-selected-axis:{}",
+                    stable_ref(&molecule.normalized_molecule_id)
+                )]
+            } else {
+                Vec::new()
+            };
+            json!({
+                "holonomyReadingId": format!(
+                    "homotopy-holonomy:{}",
+                    stable_ref(&molecule.normalized_molecule_id)
+                ),
+                "pathHomotopyDiagramRef": format!("/pathHomotopyDiagramReadings/{index}"),
+                "moleculeRef": molecule.normalized_molecule_id,
+                "supportAtomRefs": molecule.atom_ids,
+                "selectedAxes": atom_axes(&atoms),
+                "holonomyValue": if holonomy_status == "measuredNonzero" {
+                    json!(nonzero_support_refs.len())
+                } else if holonomy_status == "measuredZero" {
+                    json!(0)
+                } else {
+                    Value::Null
+                },
+                "holonomyStatus": holonomy_status,
+                "coverageGapRefs": coverage_gap_refs,
+                "nonzeroCurvatureSupportRefs": nonzero_support_refs,
+                "witnessRefs": witness_refs,
+                "readingBoundary": {
+                    "basis": "selected typed evaluator nonzero curvature support inside an explicit molecule candidate",
+                    "zeroBoundary": "measured zero is selected-axis zero for this explicit molecule only",
+                    "missingFillerBoundary": "missing filler blocks holonomy zero reflection",
+                    "unmeasuredAxisBoundary": "semantic/runtime axis presence without selected nonzero evaluator support remains unmeasured, not nonzero"
+                }
+            })
+        })
+        .collect()
+}
+
+fn stokes_style_readings_v1(
+    normalized: &NormalizedArchMapV1,
+    homotopy_holonomy_readings: &[Value],
+) -> Vec<Value> {
+    normalized
+        .molecules
+        .iter()
+        .enumerate()
+        .map(|(index, molecule)| {
+            let atoms = molecule_atoms(normalized, molecule);
+            let holonomy = &homotopy_holonomy_readings[index];
+            let is_filled = molecule.generated_molecule_candidate_status == "generated";
+            let local_curvature_cells = if is_filled {
+                atoms
+                    .iter()
+                    .filter(|atom| {
+                        holonomy["witnessRefs"]
+                            .as_array()
+                            .into_iter()
+                            .flatten()
+                            .any(|reference| reference == &atom.normalized_atom_id)
+                    })
+                    .enumerate()
+                    .map(|(cell_index, atom)| {
+                        json!({
+                            "localCurvatureCellId": format!(
+                                "local-curvature-cell:{}:{cell_index}",
+                                stable_ref(&molecule.normalized_molecule_id)
+                            ),
+                            "atomRef": atom.normalized_atom_id,
+                            "axis": atom.axis,
+                            "curvatureValue": 1,
+                            "supportRefs": [atom.normalized_atom_id.clone()]
+                        })
+                    })
+                    .collect::<Vec<_>>()
+            } else {
+                Vec::new()
+            };
+            json!({
+                "stokesReadingId": format!("stokes-style:{}", stable_ref(&molecule.normalized_molecule_id)),
+                "pathHomotopyDiagramRef": format!("/pathHomotopyDiagramReadings/{index}"),
+                "holonomyReadingRef": format!("/homotopyHolonomyReadings/{index}"),
+                "moleculeRef": molecule.normalized_molecule_id,
+                "stokesStatus": if !is_filled {
+                    "blockedByMissingFiller"
+                } else if holonomy["holonomyStatus"] == "measuredNonzero" {
+                    "boundedNonzeroWithMeasuredFilling"
+                } else if holonomy["holonomyStatus"] == "unmeasuredSelectedAxisDifference" {
+                    "blockedByCoverageGap"
+                } else {
+                    "measuredZeroWithinSelectedFilling"
+                },
+                "boundaryHolonomyValue": holonomy["holonomyValue"],
+                "localCurvatureCells": local_curvature_cells,
+                "coverageGapRefs": holonomy["coverageGapRefs"],
+                "readingBoundary": {
+                    "basis": "bounded Stokes-style reading over an explicit filled molecule candidate",
+                    "missingFillerBoundary": "no local curvature conclusion is emitted without measured filling"
+                },
+                "nonConclusions": [
+                    "Stokes-style reading is not a Lean theorem discharge",
+                    "filled-loop nonzero holonomy is bounded to selected axes and explicit molecule support"
+                ]
+            })
+        })
+        .collect()
+}
+
+fn homotopy_distance_readings_v1(
+    normalized: &NormalizedArchMapV1,
+    homotopy_holonomy_readings: &[Value],
+) -> Vec<Value> {
+    normalized
+        .molecules
+        .iter()
+        .enumerate()
+        .map(|(index, molecule)| {
+            let holonomy = &homotopy_holonomy_readings[index];
+            let is_filled = molecule.generated_molecule_candidate_status == "generated";
+            let homotopy_distance = if !is_filled {
+                Value::Null
+            } else {
+                holonomy["holonomyValue"].clone()
+            };
+            json!({
+                "homotopyDistanceReadingId": format!(
+                    "homotopy-distance:{}",
+                    stable_ref(&molecule.normalized_molecule_id)
+                ),
+                "pathHomotopyDiagramRef": format!("/pathHomotopyDiagramReadings/{index}"),
+                "holonomyReadingRef": format!("/homotopyHolonomyReadings/{index}"),
+                "moleculeRef": molecule.normalized_molecule_id,
+                "measurementStatus": if !is_filled {
+                    "blockedByMissingFiller"
+                } else if holonomy["holonomyStatus"] == "unmeasuredSelectedAxisDifference" {
+                    "blockedByCoverageGap"
+                } else {
+                    "measured"
+                },
+                "homotopyDistance": if holonomy["holonomyStatus"] == "unmeasuredSelectedAxisDifference" {
+                    Value::Null
+                } else {
+                    homotopy_distance
+                },
+                "fillingCost": if is_filled && holonomy["holonomyStatus"] != "unmeasuredSelectedAxisDifference" {
+                    json!(molecule.atom_ids.len())
+                } else {
+                    Value::Null
+                },
+                "observationGapLowerBound": if !is_filled || holonomy["holonomyStatus"] == "unmeasuredSelectedAxisDifference" { 1 } else { 0 },
+                "coverageGapRefs": holonomy["coverageGapRefs"],
+                "nonConclusions": [
+                    "homotopyDistanceReadings/v1 is a selected explicit-molecule reading, not global path distance"
+                ]
+            })
+        })
+        .collect()
+}
+
+fn architecture_homotopy_report_v1(
+    normalized: &NormalizedArchMapV1,
+    typed_results: &TypedEvaluatorResultsV1,
+    spectrum: &Value,
+    path_homotopy_diagram_readings: &[Value],
+    homotopy_holonomy_readings: &[Value],
+    stokes_style_readings: &[Value],
+    homotopy_distance_readings: &[Value],
+) -> Value {
+    let filled_indices = normalized
+        .molecules
+        .iter()
+        .enumerate()
+        .filter_map(|(index, molecule)| {
+            (molecule.generated_molecule_candidate_status == "generated").then_some(index)
+        })
+        .collect::<Vec<_>>();
+    let unfilled_indices = normalized
+        .molecules
+        .iter()
+        .enumerate()
+        .filter_map(|(index, molecule)| {
+            (molecule.generated_molecule_candidate_status != "generated").then_some(index)
+        })
+        .collect::<Vec<_>>();
+    let missing_filler_evidence = unfilled_indices
+        .iter()
+        .enumerate()
+        .map(|(gap_index, molecule_index)| {
+            let molecule = &normalized.molecules[*molecule_index];
+            json!({
+                "missingFillerEvidenceId": format!(
+                    "missing-filler:{}",
+                    stable_ref(&molecule.normalized_molecule_id)
+                ),
+                "pathHomotopyDiagramRef": format!("/pathHomotopyDiagramReadings/{molecule_index}"),
+                "holonomyReadingRef": format!("/homotopyHolonomyReadings/{molecule_index}"),
+                "moleculeRef": molecule.normalized_molecule_id,
+                "gapRef": format!(
+                    "coverage-gap:homotopy:{}",
+                    stable_ref(&molecule.normalized_molecule_id)
+                ),
+                "gapIndex": gap_index,
+                "blockerReason": molecule.normalization_blocker_reason,
+                "reading": "missing explicit molecule filler blocks zero holonomy and Stokes-style local curvature conclusions"
+            })
+        })
+        .collect::<Vec<_>>();
+    let filled_loops = filled_indices
+        .iter()
+        .map(|index| homotopy_loop_entry(normalized, *index, None))
+        .collect::<Vec<_>>();
+    let unfilled_loops = unfilled_indices
+        .iter()
+        .enumerate()
+        .map(|(gap_index, index)| homotopy_loop_entry(normalized, *index, Some(gap_index)))
+        .collect::<Vec<_>>();
+    let nonzero_holonomy_loops = homotopy_holonomy_readings
+        .iter()
+        .enumerate()
+        .filter(|(_, reading)| reading["holonomyStatus"] == "measuredNonzero")
+        .map(|(index, _)| homotopy_loop_entry(normalized, index, None))
+        .collect::<Vec<_>>();
+    let top_local_curvature_cells = stokes_style_readings
+        .iter()
+        .enumerate()
+        .flat_map(|(stokes_index, reading)| {
+            reading["localCurvatureCells"]
+                .as_array()
+                .into_iter()
+                .flatten()
+                .enumerate()
+                .map(move |(cell_index, cell)| {
+                    json!({
+                        "localCurvatureCellRef": format!(
+                            "/stokesStyleReadings/{stokes_index}/localCurvatureCells/{cell_index}"
+                        ),
+                        "stokesReadingRef": format!("/stokesStyleReadings/{stokes_index}"),
+                        "atomRef": cell["atomRef"],
+                        "axis": cell["axis"],
+                        "curvatureValue": cell["curvatureValue"]
+                    })
+                })
+        })
+        .collect::<Vec<_>>();
+    let coverage_gaps = missing_filler_evidence
+        .iter()
+        .filter_map(|item| item["gapRef"].as_str().map(str::to_string))
+        .chain(
+            homotopy_holonomy_readings
+                .iter()
+                .flat_map(|reading| json_string_array_value(reading, "coverageGapRefs")),
+        )
+        .collect::<BTreeSet<_>>()
+        .into_iter()
+        .collect::<Vec<_>>();
+    let status = if !coverage_gaps.is_empty() {
+        "needsHomotopyEvidenceReview"
+    } else if nonzero_holonomy_loops.is_empty() {
+        "measuredZeroWithinSelectedFillings"
+    } else {
+        "actionable"
+    };
+    json!({
+        "schemaVersion": "architecture-homotopy-report/v1",
+        "reportId": "architecture-homotopy-report:v1-explicit-molecule-support",
+        "selectedLawPolicyRef": typed_results.law_policy_ref,
+        "archMapRef": typed_results.normalized_archmap_ref,
+        "analysisPacketRef": "archsig-analysis-packet.json#/architectureHomotopyReport",
+        "status": status,
+        "measurementStatus": if coverage_gaps.is_empty() { "measured" } else { "partial" },
+        "selectedAxes": normalized
+            .atoms
+            .iter()
+            .map(|atom| atom.axis.clone())
+            .collect::<BTreeSet<_>>()
+            .into_iter()
+            .collect::<Vec<_>>(),
+        "homotopyComplexSummary": {
+            "explicitMoleculeCount": normalized.molecules.len(),
+            "filledLoopCount": filled_loops.len(),
+            "unfilledLoopCount": unfilled_loops.len(),
+            "nonzeroHolonomyLoopCount": nonzero_holonomy_loops.len(),
+            "topLocalCurvatureCellCount": top_local_curvature_cells.len()
+        },
+        "measuredPathPairSummary": {
+            "pathHomotopyDiagramReadingCount": path_homotopy_diagram_readings.len()
+        },
+        "measuredLoopSummary": {
+            "filledLoopCount": filled_loops.len(),
+            "unfilledLoopCount": unfilled_loops.len(),
+            "nonzeroHolonomyLoopCount": nonzero_holonomy_loops.len()
+        },
+        "filledLoops": filled_loops,
+        "unfilledLoops": unfilled_loops,
+        "nonzeroHolonomyLoops": nonzero_holonomy_loops,
+        "topLocalCurvatureCells": top_local_curvature_cells,
+        "missingFillerEvidence": missing_filler_evidence,
+        "architecturalHoleReadings": missing_filler_evidence
+            .iter()
+            .enumerate()
+            .filter_map(|(index, evidence)| {
+                evidence["gapRef"].as_str().map(|gap_ref| json!({
+                "holeReadingId": format!("architectural-hole:{index}"),
+                "missingFillerEvidenceRef": format!("/architectureHomotopyReport/missingFillerEvidence/{index}"),
+                "gapRef": gap_ref,
+                "reading": "architectural hole reading from missing explicit filler evidence"
+            }))
+            })
+            .collect::<Vec<_>>(),
+        "aggregateReadings": {
+            "HolMass": homotopy_holonomy_readings
+                .iter()
+                .filter(|reading| reading["holonomyStatus"] == "measuredNonzero")
+                .count(),
+            "FillRatio": if normalized.molecules.is_empty() {
+                Value::Null
+            } else {
+                json!(filled_indices.len() as f64 / normalized.molecules.len() as f64)
+            },
+            "CurvedFillMass": stokes_style_readings
+                .iter()
+                .flat_map(|reading| reading["localCurvatureCells"].as_array().into_iter().flatten())
+                .count(),
+            "HoleHolonomy": unfilled_indices.len()
+        },
+        "pathHomotopyDiagramReadingRefs": (0..path_homotopy_diagram_readings.len())
+            .map(|index| format!("/pathHomotopyDiagramReadings/{index}"))
+            .collect::<Vec<_>>(),
+        "homotopyHolonomyReadingRefs": (0..homotopy_holonomy_readings.len())
+            .map(|index| format!("/homotopyHolonomyReadings/{index}"))
+            .collect::<Vec<_>>(),
+        "stokesStyleReadingRefs": (0..stokes_style_readings.len())
+            .map(|index| format!("/stokesStyleReadings/{index}"))
+            .collect::<Vec<_>>(),
+        "homotopyDistanceReadingRefs": (0..homotopy_distance_readings.len())
+            .map(|index| format!("/homotopyDistanceReadings/{index}"))
+            .collect::<Vec<_>>(),
+        "spectrumContextRef": "archsig-analysis-packet.json#/architectureSpectrumReport",
+        "nonzeroCurvatureSupportRefs": spectrum["curvatureSupportReadings"]
+            .as_array()
+            .into_iter()
+            .flatten()
+            .enumerate()
+            .filter(|(_, reading)| reading["curvatureValue"]["status"] == "measuredNonzero")
+            .map(|(index, _)| format!("/curvatureSupportReadings/{index}"))
+            .collect::<Vec<_>>(),
+        "coverageGaps": coverage_gaps,
+        "recommendedReviewFocus": [
+            "review unfilled loops before reading holonomy as zero",
+            "review nonzero holonomy loops with their measured filler and local curvature cells",
+            "treat aggregate readings as prioritization signals, not architecture quality scores"
+        ],
+        "nonConclusions": [
+            "ArchitectureHomotopyReport/v1 does not reconstruct every path in the architecture object",
+            "unmeasured path is not flat or equivalent",
+            "missing filler is not a violation proof and is not measured zero",
+            "unfilled loop is an architectural hole reading, not defect absence or defect proof",
+            "nonzero holonomy is selected typed-evaluator support inside explicit molecule scope, not future incident proof",
+            "filled loop nonzero holonomy needs measured filling before local curvature can be read",
+            "ArchitectureHomotopyReport/v1 is not a Lean theorem discharge"
+        ]
+    })
+}
+
+fn homotopy_loop_entry(
+    normalized: &NormalizedArchMapV1,
+    molecule_index: usize,
+    missing_filler_index: Option<usize>,
+) -> Value {
+    let molecule = &normalized.molecules[molecule_index];
+    let atoms = molecule_atoms(normalized, molecule);
+    json!({
+        "loopId": format!("homotopy-loop:{}", stable_ref(&molecule.normalized_molecule_id)),
+        "moleculeRef": molecule.normalized_molecule_id,
+        "pathHomotopyDiagramRef": format!("/pathHomotopyDiagramReadings/{molecule_index}"),
+        "holonomyReadingRef": format!("/homotopyHolonomyReadings/{molecule_index}"),
+        "stokesReadingRef": format!("/stokesStyleReadings/{molecule_index}"),
+        "homotopyDistanceReadingRef": format!("/homotopyDistanceReadings/{molecule_index}"),
+        "missingFillerEvidenceRef": missing_filler_index
+            .map(|index| format!("/architectureHomotopyReport/missingFillerEvidence/{index}")),
+        "supportAtomRefs": molecule.atom_ids,
+        "selectedAxes": atom_axes(&atoms),
+        "loopStatus": if missing_filler_index.is_some() {
+            "unfilled"
+        } else {
+            "filled"
+        }
+    })
+}
+
+fn architecture_homotopy_summary_v1(homotopy: &Value) -> Value {
+    let report = &homotopy["architectureHomotopyReport"];
+    json!({
+        "reportRef": "archsig-analysis-packet.json#/architectureHomotopyReport",
+        "reportPacketPointer": "/architectureHomotopyReport",
+        "status": report["status"],
+        "measurementStatus": report["measurementStatus"],
+        "filledLoopCount": report["filledLoops"].as_array().map(Vec::len).unwrap_or_default(),
+        "unfilledLoopCount": report["unfilledLoops"].as_array().map(Vec::len).unwrap_or_default(),
+        "nonzeroHolonomyLoopCount": report["nonzeroHolonomyLoops"].as_array().map(Vec::len).unwrap_or_default(),
+        "topArchitecturalHoleRefs": report["unfilledLoops"]
+            .as_array()
+            .into_iter()
+            .flatten()
+            .enumerate()
+            .take(5)
+            .map(|(index, _)| format!("/architectureHomotopyReport/unfilledLoops/{index}"))
+            .collect::<Vec<_>>(),
+        "topArchitecturalHoleIds": report["unfilledLoops"]
+            .as_array()
+            .into_iter()
+            .flatten()
+            .take(5)
+            .filter_map(|item| item["loopId"].as_str().map(str::to_string))
+            .collect::<Vec<_>>(),
+        "topNonzeroHolonomyRefs": report["nonzeroHolonomyLoops"]
+            .as_array()
+            .into_iter()
+            .flatten()
+            .enumerate()
+            .take(5)
+            .map(|(index, _)| format!("/architectureHomotopyReport/nonzeroHolonomyLoops/{index}"))
+            .collect::<Vec<_>>(),
+        "topNonzeroHolonomyIds": report["nonzeroHolonomyLoops"]
+            .as_array()
+            .into_iter()
+            .flatten()
+            .take(5)
+            .filter_map(|item| item["loopId"].as_str().map(str::to_string))
+            .collect::<Vec<_>>(),
+        "nonConclusions": report["nonConclusions"]
+    })
+}
+
+fn molecule_atoms<'a>(
+    normalized: &'a NormalizedArchMapV1,
+    molecule: &NormalizedMoleculeV1,
+) -> Vec<&'a NormalizedAtomV1> {
+    molecule
+        .atom_ids
+        .iter()
+        .filter_map(|atom_id| {
+            normalized
+                .atoms
+                .iter()
+                .find(|atom| &atom.normalized_atom_id == atom_id)
+        })
+        .collect()
+}
+
+fn atom_axes(atoms: &[&NormalizedAtomV1]) -> Vec<String> {
+    atoms
+        .iter()
+        .map(|atom| atom.axis.clone())
+        .collect::<BTreeSet<_>>()
+        .into_iter()
+        .collect()
+}
+
+fn selected_axis_difference_signal(atoms: &[&NormalizedAtomV1]) -> bool {
+    atoms
+        .iter()
+        .any(|atom| atom.axis == "semantic" || atom.axis == "runtime")
+}
+
+fn nonzero_curvature_support_atom_refs(spectrum: &Value) -> BTreeSet<&str> {
+    spectrum["curvatureSupportReadings"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .filter(|reading| reading["curvatureValue"]["status"] == "measuredNonzero")
+        .flat_map(|reading| {
+            reading["witnessRefs"]
+                .as_array()
+                .into_iter()
+                .flatten()
+                .filter_map(Value::as_str)
+        })
+        .collect()
+}
+
+fn nonzero_curvature_support_molecule_refs(spectrum: &Value) -> BTreeSet<&str> {
+    spectrum["curvatureSupportReadings"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .filter(|reading| reading["curvatureValue"]["status"] == "measuredNonzero")
+        .flat_map(|reading| {
+            reading["moleculeRefs"]
+                .as_array()
+                .into_iter()
+                .flatten()
+                .filter_map(Value::as_str)
+        })
+        .collect()
+}
+
+fn nonzero_curvature_support_refs_for_molecule(
+    spectrum: &Value,
+    molecule: &NormalizedMoleculeV1,
+    nonzero_support_molecule_refs: &BTreeSet<&str>,
+    nonzero_support_atom_refs: &BTreeSet<&str>,
+) -> Vec<String> {
+    if !nonzero_support_molecule_refs.contains(molecule.normalized_molecule_id.as_str())
+        && !molecule
+            .atom_ids
+            .iter()
+            .any(|atom_id| nonzero_support_atom_refs.contains(atom_id.as_str()))
+    {
+        return Vec::new();
+    }
+    spectrum["curvatureSupportReadings"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .enumerate()
+        .filter(|(_, reading)| {
+            reading["curvatureValue"]["status"] == "measuredNonzero"
+                && (json_string_array_value(reading, "moleculeRefs")
+                    .iter()
+                    .any(|reference| reference == &molecule.normalized_molecule_id)
+                    || json_string_array_value(reading, "witnessRefs")
+                        .iter()
+                        .any(|reference| molecule.atom_ids.contains(reference)))
+        })
+        .map(|(index, _)| format!("/curvatureSupportReadings/{index}"))
+        .collect()
+}
+
 fn spectrum_measurement_status(result: &TypedEvaluatorResultV1) -> &'static str {
     match result.status.as_str() {
         "measuredPass" | "measuredViolation" => "measured",
@@ -1882,6 +2805,10 @@ fn derived_packet_refs(packet: &Value) -> Vec<String> {
         "spectralAnalysisReadings",
         "spectralModeReadings",
         "spectralDrilldownReadings",
+        "pathHomotopyDiagramReadings",
+        "homotopyHolonomyReadings",
+        "stokesStyleReadings",
+        "homotopyDistanceReadings",
     ]
     .iter()
     .flat_map(|field| {
@@ -1967,6 +2894,51 @@ fn derived_detail_index_entries(packet: &Value) -> Vec<Value> {
         "modeId",
         "architectureSpectrumReport.recurrentObstructions",
         "packet:/architectureSpectrumReport/recurrentObstructions",
+    ));
+    entries.extend(derived_detail_entries_for_field(
+        packet,
+        "pathHomotopyDiagramReadings",
+        "pathHomotopyDiagramReadingId",
+        "pathHomotopyDiagramReadings",
+    ));
+    entries.extend(derived_detail_entries_for_field(
+        packet,
+        "homotopyHolonomyReadings",
+        "holonomyReadingId",
+        "homotopyHolonomyReadings",
+    ));
+    entries.extend(derived_detail_entries_for_field(
+        packet,
+        "stokesStyleReadings",
+        "stokesReadingId",
+        "stokesStyleReadings",
+    ));
+    entries.extend(derived_detail_entries_for_field(
+        packet,
+        "homotopyDistanceReadings",
+        "homotopyDistanceReadingId",
+        "homotopyDistanceReadings",
+    ));
+    entries.extend(derived_detail_entries_for_nested_array(
+        packet,
+        &["architectureHomotopyReport", "filledLoops"],
+        "loopId",
+        "architectureHomotopyReport.filledLoops",
+        "packet:/architectureHomotopyReport/filledLoops",
+    ));
+    entries.extend(derived_detail_entries_for_nested_array(
+        packet,
+        &["architectureHomotopyReport", "unfilledLoops"],
+        "loopId",
+        "architectureHomotopyReport.unfilledLoops",
+        "packet:/architectureHomotopyReport/unfilledLoops",
+    ));
+    entries.extend(derived_detail_entries_for_nested_array(
+        packet,
+        &["architectureHomotopyReport", "nonzeroHolonomyLoops"],
+        "loopId",
+        "architectureHomotopyReport.nonzeroHolonomyLoops",
+        "packet:/architectureHomotopyReport/nonzeroHolonomyLoops",
     ));
     entries
 }
