@@ -1,0 +1,23 @@
+{
+  "schemaVersion": "archmap-delta-v0",
+  "deltaId": "delta:place-order-v1-after-only-pr",
+  "baseSnapshotRef": "archmap:v1:practical-rust-service:base",
+  "headSnapshotRef": "archmap:v1:practical-rust-service:head",
+  "changedObservationRefs": [
+    "atom:direct-store-dependency"
+  ],
+  "changeLocalBoundary": "PR review delta records a head-only ArchMap v1 Atom id",
+  "reviewIntent": {
+    "summary": "Fixture PR introduces a direct store dependency visible in the head ArchMap.",
+    "expectedReviewAxes": [
+      "solid.dependency-inversion"
+    ],
+    "sourceFirstTargets": [
+      "sample/src/app.rs"
+    ]
+  },
+  "nonConclusions": [
+    "Head-only delta evidence is not merge safety",
+    "changed refs are bounded to supplied ArchMap v1 atom ids"
+  ]
+}
