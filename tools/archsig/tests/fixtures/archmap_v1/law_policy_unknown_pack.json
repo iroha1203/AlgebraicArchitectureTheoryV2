@@ -1,0 +1,12 @@
+{
+  "schema": "law-policy/v1",
+  "id": "bad-pack",
+  "policies": [
+    {
+      "pack": "freeform@1",
+      "basis": ["policy-basis:solid"],
+      "scope": ["src.app"],
+      "severity": "error"
+    }
+  ]
+}
