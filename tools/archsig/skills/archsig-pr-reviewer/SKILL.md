@@ -1,6 +1,6 @@
 ---
 name: archsig-pr-reviewer
-description: Run ArchSig lightweight PR review from base/head ArchMap, base-branch-derived PR-local archmap-delta-v0, and LawPolicy; read archsig-pr-review-report-v1 outputs; and turn the report into bounded source-first review questions. Use when Codex is asked to prepare, run, interpret, or automate ArchSig PR review for a pull request.
+description: Run ArchSig lightweight PR review from base ArchMap v1, base-branch-derived PR-local archmap-delta-v0, and LawPolicy v1; read archsig-pr-review-report-v1 outputs; and turn the report into bounded source-first review questions. Use when Codex is asked to prepare, run, interpret, or automate ArchSig PR review for a pull request.
 ---
 
 # ArchSig PR Reviewer
@@ -12,13 +12,11 @@ bounded review focus.
 
 `pr-review` is change-local. It reads:
 
-- base `archmap-observation-map-v0`
-- optional head and intermediate path `archmap-observation-map-v0` for PR drift / safe budget readings
+- base `archmap/v1`
 - PR-local `archmap-delta-v0`
-- required `law-policy-v0`
+- required `law-policy/v1`
 
-It does not read raw diff, `archmap-commit-v0`, base/head
-`archsig-analysis-packet-v0`, FieldSig forecasts, CI status, or GitHub approval
+It does not read raw diff, head/path ArchMaps, v0 analysis packets, FieldSig forecasts, CI status, or GitHub approval
 state. No LawPolicy, no ArchSig judgement.
 
 This skill must work with only:
@@ -83,11 +81,11 @@ assuming any repository-local ArchSig paths, fixtures, or docs exist.
 
 Required procedure:
 
-1. Check that the base ArchMap exists and has `schemaVersion:
-   "archmap-observation-map-v0"`. If it does not, stop.
+1. Check that the base ArchMap exists and has `schema: "archmap/v1"`. If it
+   does not, stop.
 2. Create the PR-local `archmap-delta-v0` from the base branch difference.
-3. Check that the LawPolicy exists and has `schemaVersion: "law-policy-v0"`. If
-   it does not, stop.
+3. Check that the LawPolicy exists and has `schema: "law-policy/v1"`. If it
+   does not, stop.
 4. Run `archsig pr-review` with the base ArchMap, freshly created delta, and
    LawPolicy.
 
@@ -165,13 +163,11 @@ Resolve the ArchSig binary before running:
    binary such as `tools/archsig/target/release/archsig` or
    `tools/archsig/target/debug/archsig`
 
-Before running, verify the three JSON inputs have these `schemaVersion` values:
+Before running, verify the JSON inputs have these schema values:
 
-- base ArchMap: `archmap-observation-map-v0`
-- head ArchMap: optional `archmap-observation-map-v0`
-- intermediate path ArchMaps: optional repeated `archmap-observation-map-v0`
+- base ArchMap: `schema: "archmap/v1"`
 - delta ArchMap: `archmap-delta-v0`
-- LawPolicy: `law-policy-v0`
+- LawPolicy: `schema: "law-policy/v1"`
 
 Run:
 
@@ -180,8 +176,6 @@ ARCHSIG_BIN=${ARCHSIG_BIN:-archsig}
 
 "$ARCHSIG_BIN" pr-review \
   --base-archmap <archmap.json> \
-  --after-archmap <after_archmap.json> \
-  --path-archmap <intermediate_archmap.json> \
   --delta-archmap <archmap_delta.json> \
   --law-policy <law_policy.json> \
   --out <archsig-pr-review.json>
@@ -201,22 +195,20 @@ Read the `archsig-pr-review-report-v1` in this order:
      PR-local delta, and LawPolicy.
    - If the wrong LawPolicy was used, stop and rerun with the selected policy.
 
-2. `policyBoundary`
-   - Keep `No LawPolicy, no ArchSig judgement` visible.
-   - Treat selected axes and coverage policy as the review lens, not global
-     architecture truth.
+2. `typedEvaluatorSummary`
+   - Treat `measuredPass`, `measuredViolation`, `blocked`, `unknown`, and
+     `unmeasured` as evaluator statuses, not as raw diff verdicts.
+   - Missing support is not measured zero.
 
-3. `changeLocalDiagnosis`
-   - Use `changedObservationCount`, `matchedBaseObservationCount`,
-     `changedAtomFamilies`, `policyMatchedLawCount`,
-     `policyMatchedAxisRefs`, and `sourceTargetCount` to size the review.
-   - A low matched-base count usually means the ArchMap or delta needs review
-     before architectural judgement.
+3. `typedEvaluatorResults`
+   - Read support atom refs, support molecule refs, basis refs, detail refs,
+     and status reasons.
+   - Keep selected evaluator scope as the review lens, not global architecture
+     truth.
 
-4. `changedObservations`
-   - Check which changed refs matched base ArchMap observations.
-   - Unmatched refs are evidence gaps or PR-local observations, not failures by
-     themselves.
+4. `reviewFocus`
+   - Use detail refs and changed source targets to decide which source files
+     need human review.
 
 5. `policyMatchedLaws`
    - Convert matched laws into review questions.

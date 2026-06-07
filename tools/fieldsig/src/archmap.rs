@@ -169,11 +169,17 @@ pub fn build_operation_support_estimate_from_archsig_analysis_packet(
 ) -> Result<OperationSupportEstimateV0, Box<dyn std::error::Error>> {
     let schema_version = packet
         .get("schemaVersion")
+        .or_else(|| packet.get("schema"))
         .and_then(|value| value.as_str())
         .unwrap_or_default();
+    if schema_version == "archsig-analysis-packet/v1" {
+        return Ok(build_operation_support_estimate_from_archsig_v1_packet(
+            packet, input_path,
+        ));
+    }
     if schema_version != "archsig-analysis-packet-v0" {
         return Err(format!(
-            "FieldSig ArchSig handoff requires archsig-analysis-packet-v0, got {schema_version}"
+            "FieldSig ArchSig handoff requires archsig-analysis-packet/v1 or archsig-analysis-packet-v0, got {schema_version}"
         )
         .into());
     }
@@ -252,6 +258,273 @@ pub fn build_operation_support_estimate_from_archsig_analysis_packet(
         },
         non_conclusions: archsig_packet_sft_non_conclusions(packet),
     })
+}
+
+fn build_operation_support_estimate_from_archsig_v1_packet(
+    packet: &serde_json::Value,
+    input_path: &str,
+) -> OperationSupportEstimateV0 {
+    let analysis_id = packet
+        .get("analysisId")
+        .and_then(|value| value.as_str())
+        .unwrap_or("archsig-analysis-packet-v1");
+    let source_ref_ids = archsig_v1_packet_sft_source_refs(packet, input_path);
+    let action_class_candidate_ids = archsig_v1_packet_action_candidate_ids(packet);
+    let candidate_operation_families =
+        archsig_v1_packet_candidate_families(packet, &source_ref_ids, &action_class_candidate_ids);
+    let family_ids = candidate_operation_families
+        .iter()
+        .map(|family| family.family_id.clone())
+        .collect::<Vec<_>>();
+    let non_conclusions = archsig_v1_packet_sft_non_conclusions(packet);
+
+    OperationSupportEstimateV0 {
+        schema_version: OPERATION_SUPPORT_ESTIMATE_SCHEMA_VERSION.to_string(),
+        estimate_id: format!("estimate:archsig-analysis-v1:{}", stable_id(analysis_id)),
+        descriptor_ref: OperationSupportDescriptorRefV0 {
+            descriptor_schema_version: ARTIFACT_DESCRIPTOR_SCHEMA_VERSION.to_string(),
+            descriptor_id: format!("descriptor:archsig-analysis-v1:{analysis_id}"),
+            artifact_kind: "archsig-analysis-packet".to_string(),
+            source_ref_ids: source_ref_ids.clone(),
+            action_class_candidate_ids: action_class_candidate_ids.clone(),
+            non_conclusions: non_conclusions.clone(),
+        },
+        candidate_operation_families,
+        policy_constraints: vec![OperationSupportPolicyConstraintV0 {
+            constraint_id: "constraint:archsig-analysis-v1:no-forecast-truth-promotion".to_string(),
+            constraint_kind: "claim-boundary".to_string(),
+            applies_to_family_ids: family_ids.clone(),
+            source_ref_ids: source_ref_ids.clone(),
+            rule: "ArchSig v1 typed evaluator packet is current structural diagnosis for SFT evolution input, not forecast truth".to_string(),
+            safety_claim_boundary:
+                "SFT consumes typed evaluator statuses, support refs, basis refs, detail refs, and bounded conclusions as coordinates only"
+                    .to_string(),
+            policy_refs: vec!["policy:archsig-analysis-sft-boundary".to_string()],
+            support_disposition: "conditionallyAllowed".to_string(),
+            governance_action_refs: vec!["governance:review-archsig-analysis-handoff".to_string()],
+            non_conclusions: non_conclusions.clone(),
+        }],
+        known_forbidden_support: vec![KnownForbiddenOperationSupportV0 {
+            forbidden_id: "forbidden:raw-archmap-forecast-truth".to_string(),
+            operation_family: "raw-archmap-truth-promotion".to_string(),
+            source_ref_ids: source_ref_ids.clone(),
+            constraint_refs: vec![
+                "constraint:archsig-analysis-v1:no-forecast-truth-promotion".to_string(),
+            ],
+            reason: "raw ArchMap atoms and ArchSig typed evaluator packets do not assert SFT forecast correctness".to_string(),
+            boundary: "FieldSig must keep ArchSig packet refs as bounded current structural state, not ground truth or diff analysis".to_string(),
+            non_conclusions: non_conclusions.clone(),
+        }],
+        unknown_remainder: archsig_v1_packet_unknown_remainders(
+            packet,
+            &family_ids,
+            &source_ref_ids,
+        ),
+        evidence_boundary: OperationSupportEvidenceBoundaryV0 {
+            boundary_id: format!("boundary:archsig-analysis-v1:{}:sft-input", stable_id(analysis_id)),
+            source_ref_ids,
+            measurement_boundary_refs: archsig_v1_packet_measurement_boundary_refs(packet),
+            confidence_boundary:
+                "ArchSig v1 typed evaluator status is structural review evidence, not probability"
+                    .to_string(),
+            evidence_kinds: vec![
+                "archsig-analysis-packet/v1".to_string(),
+                "typed-evaluator-results/v1".to_string(),
+                "law-policy/v1".to_string(),
+                "archmap/v1".to_string(),
+            ],
+            unsupported_constructs: Vec::new(),
+            assumptions: vec![
+                "FieldSig reads ArchSig v1 typed evaluator refs as current structural state".to_string(),
+                "PR, diff, change-vector, forecast, governance, and operational evolution remain FieldSig readings".to_string(),
+                "typed evaluator violations are policy-relative coordinates, not causal proof".to_string(),
+                "blocked, unknown, and unmeasured results remain unknown remainder, not measured zero".to_string(),
+            ],
+            non_conclusions,
+        },
+        non_conclusions: archsig_v1_packet_sft_non_conclusions(packet),
+    }
+}
+
+fn archsig_v1_packet_sft_source_refs(packet: &serde_json::Value, input_path: &str) -> Vec<String> {
+    let mut refs = vec![format!("source:archsig-analysis-packet:{input_path}")];
+    for key in ["lawPolicy", "normalizedArchMap", "typedEvaluatorResults"] {
+        if let Some(value) = packet
+            .get("inputRefs")
+            .and_then(|input_refs| input_refs.get(key))
+            .and_then(|value| value.as_str())
+        {
+            refs.push(format!("archsigV1Input:{key}:{value}"));
+        }
+    }
+    refs.extend(
+        json_string_array(packet, &["detailRefs"])
+            .into_iter()
+            .map(|id| format!("archsigV1Detail:{id}")),
+    );
+    refs.extend(
+        packet
+            .get("typedEvaluatorResults")
+            .and_then(|value| value.as_array())
+            .into_iter()
+            .flatten()
+            .flat_map(|result| {
+                let mut refs = json_string_array_value(result, "supportAtomRefs")
+                    .into_iter()
+                    .map(|id| format!("archsigV1SupportAtom:{id}"))
+                    .collect::<Vec<_>>();
+                refs.extend(
+                    json_string_array_value(result, "supportMoleculeRefs")
+                        .into_iter()
+                        .map(|id| format!("archsigV1SupportMolecule:{id}")),
+                );
+                refs
+            }),
+    );
+    unique_strings(refs)
+}
+
+fn archsig_v1_packet_action_candidate_ids(packet: &serde_json::Value) -> Vec<String> {
+    let mut ids = json_object_string_array(packet, &["typedEvaluatorResults"], "evaluator");
+    ids.extend(json_object_string_array(
+        packet,
+        &["typedEvaluatorResults"],
+        "law",
+    ));
+    unique_strings(ids)
+}
+
+fn archsig_v1_packet_candidate_families(
+    packet: &serde_json::Value,
+    source_ref_ids: &[String],
+    action_class_candidate_ids: &[String],
+) -> Vec<CandidateOperationFamilyV0> {
+    let non_conclusions = archsig_v1_packet_sft_non_conclusions(packet);
+    let mut families = packet
+        .get("typedEvaluatorResults")
+        .and_then(|value| value.as_array())
+        .into_iter()
+        .flatten()
+        .map(|result| {
+            let evaluator = result
+                .get("evaluator")
+                .and_then(|value| value.as_str())
+                .unwrap_or("typed-evaluator");
+            let status = result
+                .get("status")
+                .and_then(|value| value.as_str())
+                .unwrap_or("unknown");
+            let law = result
+                .get("law")
+                .and_then(|value| value.as_str())
+                .unwrap_or("selected-law");
+            CandidateOperationFamilyV0 {
+                family_id: format!("family:archsig-v1:{}", stable_id(evaluator)),
+                operation_family: format!("review-typed-evaluator-{status}"),
+                support_kind: "typed-evaluator-result".to_string(),
+                action_class_candidate_ids: vec![evaluator.to_string(), law.to_string()],
+                source_ref_ids: source_ref_ids.to_vec(),
+                confidence: if status == "measuredPass" || status == "measuredViolation" {
+                    "medium"
+                } else {
+                    "low"
+                }
+                .to_string(),
+                rationale:
+                    "typed evaluator result is read from ArchSig v1 packet as current structural state"
+                        .to_string(),
+                assumptions: unique_strings(
+                    json_string_array_value(result, "basisRefs")
+                        .into_iter()
+                        .chain(json_string_array_value(result, "detailRefs"))
+                        .collect(),
+                ),
+                non_conclusions: non_conclusions.clone(),
+            }
+        })
+        .collect::<Vec<_>>();
+    if families.is_empty() {
+        families.push(CandidateOperationFamilyV0 {
+            family_id: "family:archsig-v1-review-only".to_string(),
+            operation_family: "review-selected-archsig-v1-analysis".to_string(),
+            support_kind: "review-boundary".to_string(),
+            action_class_candidate_ids: action_class_candidate_ids.to_vec(),
+            source_ref_ids: source_ref_ids.to_vec(),
+            confidence: "low".to_string(),
+            rationale:
+                "no typed evaluator result is present; FieldSig keeps the packet as review input"
+                    .to_string(),
+            assumptions: vec!["selected LawPolicy may not cover all future SFT axes".to_string()],
+            non_conclusions,
+        });
+    }
+    families
+}
+
+fn archsig_v1_packet_unknown_remainders(
+    packet: &serde_json::Value,
+    family_ids: &[String],
+    source_ref_ids: &[String],
+) -> Vec<OperationSupportUnknownRemainderV0> {
+    packet
+        .get("typedEvaluatorResults")
+        .and_then(|value| value.as_array())
+        .into_iter()
+        .flatten()
+        .filter_map(|result| {
+            let status = result.get("status")?.as_str()?;
+            if !matches!(status, "blocked" | "unknown" | "unmeasured") {
+                return None;
+            }
+            let evaluator = result
+                .get("evaluator")
+                .and_then(|value| value.as_str())
+                .unwrap_or("typed-evaluator");
+            Some(OperationSupportUnknownRemainderV0 {
+                remainder_id: format!(
+                    "unknown:archsig-analysis-v1:{}",
+                    stable_id(evaluator)
+                ),
+                affected_family_ids: family_ids.to_vec(),
+                source_ref_ids: source_ref_ids.to_vec(),
+                unknown_axes: vec![status.to_string()],
+                reason: format!("ArchSig v1 typed evaluator {evaluator} returned {status}"),
+                treatment: "carry as unknown remainder; do not round to absence, measured zero, or forecast truth".to_string(),
+                non_conclusions: archsig_v1_packet_sft_non_conclusions(packet),
+            })
+        })
+        .collect()
+}
+
+fn archsig_v1_packet_measurement_boundary_refs(packet: &serde_json::Value) -> Vec<String> {
+    let mut refs = json_string_array(packet, &["positiveBoundedConclusions"])
+        .into_iter()
+        .map(|id| format!("archsigV1BoundedConclusion:{id}"))
+        .collect::<Vec<_>>();
+    refs.extend(
+        packet
+            .get("typedEvaluatorResults")
+            .and_then(|value| value.as_array())
+            .into_iter()
+            .flatten()
+            .filter_map(|result| {
+                let evaluator = result.get("evaluator")?.as_str()?;
+                let status = result.get("status")?.as_str()?;
+                Some(format!("archsigV1EvaluatorStatus:{evaluator}:{status}"))
+            }),
+    );
+    unique_strings(refs)
+}
+
+fn archsig_v1_packet_sft_non_conclusions(packet: &serde_json::Value) -> Vec<String> {
+    let mut values = json_string_array(packet, &["nonConclusions"]);
+    values.extend([
+        "ArchSig v1 typed evaluator packet is FieldSig input state, not forecast correctness".to_string(),
+        "raw ArchMap atoms are not promoted to SFT ground truth".to_string(),
+        "blocked, unknown, and unmeasured evaluator results are unknown remainder, not measured zero".to_string(),
+        "FieldSig handoff does not prove causal correctness, repair safety, or global architecture safety".to_string(),
+    ]);
+    unique_strings(values)
 }
 
 pub fn build_air_from_archmap(

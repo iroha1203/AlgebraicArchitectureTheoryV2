@@ -548,7 +548,8 @@ fn cli_projects_archsig_analysis_packet_to_sft_input_boundary() {
     ]);
     assert!(!rejected.status.success());
     assert!(
-        String::from_utf8_lossy(&rejected.stderr).contains("requires archsig-analysis-packet-v0"),
+        String::from_utf8_lossy(&rejected.stderr)
+            .contains("requires archsig-analysis-packet/v1 or archsig-analysis-packet-v0"),
         "raw ArchMap input must be rejected by the ArchSig analysis handoff command"
     );
 }

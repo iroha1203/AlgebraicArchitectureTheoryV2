@@ -12,7 +12,7 @@ Create `archmap/v1` as source-grounded Atom input for ArchSig.
 ArchMap v1 has three primary surfaces:
 
 - `sources`: source ledger for files, symbols, docs, tests, traces, and policy refs that were actually read.
-- `atoms`: primitive typed facts observed from those sources.
+- `atoms`: primitive source-grounded Atom facts from those sources.
 - `molecules`: explicit local configurations that group existing atom ids.
 
 ArchMap does not contain obstruction circuits, law violations, signature axes,

@@ -19,15 +19,15 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
         artifacts: vec![
             artifact(
                 "archmap",
-                "LLM-native ArchMap Atom observation artifact",
+                "Legacy ArchMap v0 observation artifact",
                 ARCHMAP_SCHEMA_VERSION,
-                "primary",
-                "LLM Atom ArchMap",
+                "legacy",
+                "Historical ArchMap v0",
                 vec![
                     "docs/tool/llm_native_archmap_archsig_prd.md",
                     "docs/tool/atom_handoff.md",
                 ],
-                "ArchMap records source-grounded atomObservations, moleculeObservations, semanticObservations, observationGaps, projectionInfo, operationSquareEvidence, concernHints, provenance, and nonConclusions without selecting laws or constructing obstruction circuits.",
+                "Legacy ArchMap v0 recorded atomObservations, moleculeObservations, semanticObservations, observationGaps, projectionInfo, operationSquareEvidence, concernHints, provenance, and nonConclusions. It is not a current runtime input.",
                 vec![
                     "ArchMap does not prove architecture lawfulness, obstruction existence, zero curvature, or certified atom truth.",
                     "ArchMap concern hints are review cues until ArchSig combines them with a selected LawPolicy.",
@@ -35,10 +35,10 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
             ),
             artifact(
                 "archmap-validation-report",
-                "ArchMap validation report",
+                "Legacy ArchMap v0 validation report",
                 ARCHMAP_VALIDATION_REPORT_SCHEMA_VERSION,
-                "primary",
-                "LLM Atom ArchMap",
+                "legacy",
+                "Historical ArchMap v0",
                 vec!["docs/tool/llm_native_archmap_archsig_prd.md"],
                 "ArchMap validation checks source refs, claim boundaries, projection separation, atom observation summaries, and responsibility boundaries without promoting observations to formal truth.",
                 vec![
@@ -61,16 +61,16 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
             ),
             artifact(
                 "law-policy",
-                "Selected interpretation profile artifact",
+                "Legacy LawPolicy v0 interpretation profile artifact",
                 LAW_POLICY_SCHEMA_VERSION,
-                "primary",
-                "ArchSig North Star AAT analysis",
+                "legacy",
+                "Historical LawPolicy v0",
                 vec![
                     "docs/tool/archsig_aat_analysis_engine_prd.md",
                     "docs/tool/llm_native_archmap_archsig_prd.md",
                     "docs/tool/README.md",
                 ],
-                "The law-policy-v0 JSON contract is used as an interpretation profile: it selects laws, witness rules, molecule patterns, obstruction definitions, signature axes, measurement policy, optional spectrum measurement profile, optional homotopy measurement profile, exactness assumptions, coverage requirements, excluded readings, and non-conclusions separately from ArchMap observations. It is not the center of ArchSig output.",
+                "The legacy law-policy-v0 JSON contract selected laws, witness rules, molecule patterns, obstruction definitions, signature axes, measurement policy, optional spectrum measurement profile, optional homotopy measurement profile, exactness assumptions, coverage requirements, excluded readings, and non-conclusions. It is not a current runtime input.",
                 vec![
                     "Interpretation profile is selected analysis policy, not AAT itself, architecture lawfulness, atom truth, or Lean theorem discharge.",
                     "Adding a law family must preserve missing coverage as distinct from measured zero.",
@@ -106,10 +106,10 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
             ),
             artifact(
                 "law-policy-validation-report",
-                "LawPolicy validation report",
+                "Legacy LawPolicy v0 validation report",
                 LAW_POLICY_VALIDATION_REPORT_SCHEMA_VERSION,
-                "primary",
-                "LLM Atom ArchMap",
+                "legacy",
+                "Historical LawPolicy v0",
                 vec!["docs/tool/llm_native_archmap_archsig_prd.md"],
                 "LawPolicy validation checks schema support, identity, id uniqueness, law/witness/axis references, measurement policy, optional spectrum measurement profile refs, optional homotopy path / filler / loop measurement profile refs, coverage, exactness, and non-conclusion guardrails.",
                 vec![
@@ -145,10 +145,10 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
             ),
             artifact(
                 "archsig-analysis-packet",
-                "ArchSig AAT analysis packet",
+                "Legacy ArchSig v0 AAT analysis packet",
                 ARCHSIG_ANALYSIS_PACKET_SCHEMA_VERSION,
-                "primary",
-                "ArchSig North Star AAT analysis",
+                "legacy",
+                "Historical ArchSig v0 packet",
                 vec![
                     "docs/tool/archsig_aat_analysis_engine_prd.md",
                     "docs/tool/archsig_analysis_packet.md",
@@ -162,10 +162,10 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
             ),
             artifact(
                 "archsig-analysis-packet-validation-report",
-                "ArchSig analysis packet validation report",
+                "Legacy ArchSig v0 analysis packet validation report",
                 ARCHSIG_ANALYSIS_PACKET_VALIDATION_REPORT_SCHEMA_VERSION,
-                "primary",
-                "LLM Atom ArchMap",
+                "legacy",
+                "Historical ArchSig v0 packet",
                 vec!["docs/tool/archsig_analysis_packet.md"],
                 "Validation separates JSON surface checks from measurement-depth and proxy-regression checks. It checks identity, ArchMap and LawPolicy refs, Part IV distance foundation profile / diagnostic scope / DistanceValue status and provenance gates, Part IV Atom distance component basis / semantic-anchor blockers / viewer-distance separation, Part IV selected configuration hypergraph typed edges / shortest-path basis / context basis / observation-gap blockers, Part IV signature distance rho_i basis / safe-region margin / drift / axis partitions, Part IV operation cost / target decrease / protected-axis movement / side-effect blockers, Part IV obstruction measure / curvature mass / curvature transport distance refs and missing-witness blockers, Part IV homotopy distance / filling cost / observation-gap lower-bound refs and missing-filler blockers, spectral analysis readings, spectral mode readings, spectral drilldown readings, curvature support readings, curvature transfer readings, ArchitectureSpectrumReport, transfer bridge readings, bridge edge source refs / review focus / cut recommendations, v0.3.0 measurement expansion readings including reverse-import projection / trajectory / bridge-transfer readings, homotopy complex / path pair / loop candidate surfaces, filler candidate and architectural hole surfaces, homotopy holonomy and Stokes-style surfaces, ArchitectureHomotopyReport, AAT structural state readings, structural reading review surface, current-state/evolution boundary, law-relative obstruction links, signature and flatness boundaries, repair candidate guardrails, evaluator input refs, distance value provenance, witness rule alignment, coverage blockers, hard-coded fixture marker rejection, LLM interpretation surface, and non-conclusions without recomputing the full analysis engine.",
                 vec![
@@ -201,7 +201,7 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 ],
                 "Atom Viewer data records source artifact refs, bounded layout settings, atom nodes, molecule groups, selected law-axis overlays, analysis overlays, report pane sections, omitted detail counts, truncation policy, and non-conclusions for browser visualization without embedding the raw analysis packet.",
                 vec![
-                    "Viewer data is a bounded visual projection, not a replacement for archsig-analysis-packet-v0 evidence lookup.",
+                    "Viewer data is a bounded visual projection, not a replacement for explicit ArchSig evidence lookup.",
                     "3D layout distance is not an AAT theorem metric, semantic equivalence, or causal relation.",
                     "Viewer data must not treat raw packet detail as browser input.",
                 ],

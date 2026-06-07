@@ -55,11 +55,9 @@ For `pr-review`, the release-only required artifacts are:
 
 | Artifact | Required schemaVersion | How to obtain |
 | --- | --- | --- |
-| base ArchMap | `archmap-observation-map-v0` | Existing project ArchMap. If absent, stop and use `archmap-creater`. |
-| head ArchMap | `archmap-observation-map-v0` | Optional PR head observation map. Supply it when PR drift / safe budget readings are needed. |
-| intermediate path ArchMap | `archmap-observation-map-v0` | Optional repeated snapshots between base and head. Supply when hidden-excursion / path movement needs more than a two-point lower bound. |
+| base ArchMap | `archmap/v1` | Existing project ArchMap. If absent, stop and use `archmap-creater`. |
 | PR-local delta | `archmap-delta-v0` | Create from the current PR's base branch diff. |
-| LawPolicy | `law-policy-v0` | Existing selected project policy. If absent, stop and use `law-policy-creater`. |
+| LawPolicy | `law-policy/v1` | Existing selected project policy. If absent, stop and use `law-policy-creater`. |
 | PR review report | `archsig-pr-review-report-v1` | Output from `archsig pr-review`. |
 
 No bundled default LawPolicy is valid for PR review. A generic LawPolicy would

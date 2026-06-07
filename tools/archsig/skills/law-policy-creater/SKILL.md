@@ -35,7 +35,7 @@ If no output path is supplied, prefer `.archsig/<scope>/law_policy.json`.
 
 1. Define scope.
    - Scope is an array of source prefixes or project slices.
-   - Keep it narrow enough that the selected policy is defensible.
+   - Keep it narrow enough that the policy is defensible.
 
 2. Select policies.
    - Use a registry pack when the repo/user adopts a known family, for example `solid@1`.
@@ -131,7 +131,7 @@ If no binary exists, report that validation was not performed.
 When delivering a LawPolicy, include:
 
 1. LawPolicy path
-2. source evidence or user decision used for each selected policy
+2. source evidence or user decision used for each policy
 3. selected pack/evaluator ids
 4. basis refs
 5. scope and severity
