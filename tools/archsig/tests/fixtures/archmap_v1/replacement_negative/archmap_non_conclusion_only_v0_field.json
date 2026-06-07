@@ -1,0 +1,10 @@
+{
+  "schema": "archmap/v1",
+  "id": "replacement-negative-non-conclusion-only",
+  "sources": {},
+  "atoms": [],
+  "molecules": [],
+  "nonConclusions": [
+    "non-conclusion prose must not create blocker, safe result, or measured zero"
+  ]
+}

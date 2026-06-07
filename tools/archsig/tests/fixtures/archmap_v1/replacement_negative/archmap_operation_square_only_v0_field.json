@@ -1,0 +1,12 @@
+{
+  "schema": "archmap/v1",
+  "id": "replacement-negative-operation-square-only",
+  "sources": {},
+  "atoms": [],
+  "molecules": [],
+  "operationSquareEvidence": [
+    {
+      "note": "legacy square input must not become v1 replacement evidence"
+    }
+  ]
+}

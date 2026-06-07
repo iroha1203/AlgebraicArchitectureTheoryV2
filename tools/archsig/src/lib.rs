@@ -14,8 +14,8 @@ pub use archsig_analysis_packet::{
     build_archsig_analysis_packet, validate_archsig_analysis_packet_report,
 };
 pub use law_policy::{
-    expand_law_policy_v1, static_law_evaluator_registry_v1, static_law_policy,
-    validate_law_policy_report, validate_law_policy_v1_report,
+    REPLACEMENT_REGISTRY_REF, expand_law_policy_v1, static_law_evaluator_registry_v1,
+    static_law_policy, validate_law_policy_report, validate_law_policy_v1_report,
 };
 pub use normalizer::normalize_archmap_v1;
 pub(crate) use schema::*;
@@ -42,6 +42,7 @@ pub use schema::{
     LawPolicyValidationReportV0, LawPolicyValidationReportV1, LawPolicyValidationSummaryV1,
     NORMALIZED_ARCHMAP_V1_SCHEMA, NormalizedArchMapSummaryV1, NormalizedArchMapV1,
     NormalizedAtomBindingV1, NormalizedAtomPredicateV1, NormalizedAtomV1, NormalizedMoleculeV1,
+    ReplacementEvaluatorManifestV1, ReplacementRegistryResolutionV1,
     SCHEMA_VERSION_CATALOG_SCHEMA_VERSION, SchemaVersionCatalogV0,
     TYPED_EVALUATOR_RESULTS_V1_SCHEMA, TypedEvaluatorResultV1, TypedEvaluatorResultsSummaryV1,
     TypedEvaluatorResultsV1,

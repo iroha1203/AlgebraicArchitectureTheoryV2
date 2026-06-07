@@ -18,6 +18,30 @@ evaluator statuses, support atom refs, support molecule refs, basis refs, and
 detail refs. `blocked`, `unknown`, and `unmeasured` statuses remain non-zero
 blocking states; they are not collapsed into measured zero.
 
+Current v1 also exposes `removed-v0-field-replacement-registry@1`. The raw
+packet and typed evaluator artifact carry:
+
+- `replacementRegistry`: registry manifests for `semantic.interpretation@1`,
+  `projection.reading@1`, `operation-square.reading@1`,
+  `missing-evidence.reading@1`, `concern.boundary@1`, and
+  `non-conclusion.boundary@1`.
+- `replacementEvaluatorResults`: replacement readings derived from normalized
+  atoms, generated molecule candidates, selected evaluator requirements, and
+  registry manifests.
+- `replacementEvaluatorResultsById`: id-keyed lookup surface used by
+  `typedOutputPacketRefs`; every manifest ref must resolve as a packet JSON
+  pointer.
+- `replacementRegistryResolution`: manifest / resolved / blocked /
+  non-diagnostic replacement counts and the removed v0 fields covered by the
+  registry.
+
+Replacement readings are packet support refs. They do not re-enable removed v0
+ArchMap fields as input, and they do not turn concern notes or non-conclusion
+prose into diagnostic findings.
+FieldSig handoff can still validate the v1 raw packet, but FieldSig does not
+yet preserve replacement reading refs as its own downstream evidence surface;
+that integration remains tracked separately.
+
 The v1 path does not read v0 helper fields such as `semanticObservations`,
 `projectionInfo`, `operationSquareEvidence`, `concernHints`, or
 `observationGaps` as positive readings. It also does not call Lean or require a
