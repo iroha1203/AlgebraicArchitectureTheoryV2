@@ -1,7 +1,34 @@
 # Interpretation Profile
 
-`law-policy-v0` is the current JSON schema for the selected interpretation
-profile used by the ArchMap / ArchSig AAT analysis pipeline.
+`law-policy/v1` is the current JSON schema for the selected ArchSig evaluator
+policy. It is intentionally separate from ArchMap.
+
+LawPolicy v1 is a selector:
+
+```json
+{
+  "schema": "law-policy/v1",
+  "id": "project-policy",
+  "policies": [
+    {
+      "pack": "solid@1",
+      "basis": ["policy-basis:solid"],
+      "scope": ["src."],
+      "severity": "review"
+    }
+  ]
+}
+```
+
+It selects policy packs, evaluator ids, basis refs, scope, and severity.
+Witness requirements, signature axes, coverage blockers, exactness assumptions,
+and distance contribution belong to the ArchSig evaluator registry, not to
+LawPolicy JSON.
+
+## Legacy v0 Profile
+
+`law-policy-v0` is the legacy JSON schema for the older selected interpretation
+profile used by the v0 ArchMap / ArchSig AAT analysis pipeline.
 
 It is intentionally separate from ArchMap.
 
@@ -276,17 +303,16 @@ Important boundaries:
 - ArchitectureHomotopyReport is not a single architecture quality score,
   theorem proof, path truth, or global homology computation
 
-## Current Fixture
+## Legacy Fixture
 
 - `tools/archsig/tests/fixtures/minimal/law_policy.json`
 - `tools/archsig/tests/fixtures/homotopy_report/law_policy.json`
 - `tools/archsig/tests/fixtures/complete_archmap_acceptance/law_policy.json`
 
-The fixture is locked against the static Rust builder and the schema catalog
-records both `law-policy-v0` and `law-policy-validation-report-v0`. The schema
-name remains historical; the current ArchSig output treats it as
-`interpretationProfileRef`, while preserving `selectedLawPolicyRef` as
-provenance for existing profile content.
+These fixtures are locked against the legacy static Rust builder, and the
+schema catalog records both `law-policy-v0` and
+`law-policy-validation-report-v0`. The v1 path uses `law-policy/v1`; the legacy
+schema names remain here only to document old profile content.
 
 `complete_archmap_acceptance/law_policy.json` is the sanitized acceptance
 profile for complete-first authoring. Its spectrum and homotopy reading

@@ -80,11 +80,12 @@
           <div class="article-main">
             <section id="artifacts" class="article-section">
               <h2>Artifacts</h2>
-              <p>ArchSig reads observed architecture evidence with a selected interpretation profile, then emits a packet and summary for review.</p>
+              <p>ArchSig reads ArchMap v1 atoms with a selected LawPolicy v1 evaluator policy, then emits typed evaluator results, a packet, and a compact summary for review.</p>
               <ul class="status-list">
-                <li><strong><code>archmap-observation-map-v0</code></strong><span>Source-grounded Atom observation evidence: atom observations, molecule observations, semantic observations, concern hints, gaps, provenance, and non-conclusions.</span></li>
-                <li><strong><code>law-policy-v0</code></strong><span>The selected LawUniverse, witness rules, molecule patterns, obstruction definitions, signature axes, coverage requirements, and exactness assumptions.</span></li>
-                <li><strong><code>archsig-analysis-packet-v0</code></strong><span>The full detail store: molecule readings, obstruction circuits, signature axes, flatness, repair candidates, coverage gaps, measurement families, detail refs, and non-conclusions.</span></li>
+                <li><strong><code>archmap/v1</code></strong><span>Source-grounded atoms and explicit molecule membership over a read source ledger.</span></li>
+                <li><strong><code>law-policy/v1</code></strong><span>The selected policy pack or evaluator ids, basis refs, scope, and severity.</span></li>
+                <li><strong><code>typed-evaluator-results/v1</code></strong><span>Evaluator status, support atom refs, support molecule refs, basis refs, detail refs, and bounded conclusions.</span></li>
+                <li><strong><code>archsig-analysis-packet/v1</code></strong><span>The typed detail store for distance diagnosis, findings, and raw handoff artifacts.</span></li>
                 <li><strong><code>analysis-summary</code></strong><span>The compact first reading surface for Skills and human reviewers.</span></li>
               </ul>
             </section>
@@ -102,7 +103,7 @@
             </section>
             <section id="packet" class="article-section">
               <h2>Open packet detail</h2>
-              <p>Open <code>archsig-analysis-packet-v0</code> when a finding needs source refs, witness detail, missing evidence, or an exact packet path.</p>
+              <p>Open <code>archsig-analysis-packet/v1</code> when a finding needs support refs, basis refs, missing support, or an exact detail path.</p>
               <ul class="status-list">
                 <li><strong><code>detailIndex</code></strong><span>Shows packet sections and <code>packet:&lt;json-pointer&gt;</code> refs for deeper reading.</span></li>
                 <li><strong><code>sourceRefs</code></strong><span>Point the agent back to files, symbols, docs, tests, traces, or other source evidence.</span></li>
@@ -133,7 +134,7 @@
               <p>Every reading is relative to the supplied evidence and selected policy. Before acting on a finding, check what was measured.</p>
               <ul class="status-list">
                 <li><strong>Observed source state</strong><span>Which ArchMap was read, which source refs were included, and which observations were source-backed.</span></li>
-                <li><strong>Selected policy</strong><span>Which LawPolicy selected the laws, witness rules, axes, and coverage expectations.</span></li>
+                <li><strong>Selected policy</strong><span>Which LawPolicy selected the evaluator pack, evaluator ids, basis refs, scope, and severity.</span></li>
                 <li><strong>Validation state</strong><span>Whether ArchMap, LawPolicy, and analysis validation passed, warned, or failed.</span></li>
                 <li><strong>Coverage boundary</strong><span>Which gaps block a zero reading or require more evidence before repair planning.</span></li>
               </ul>

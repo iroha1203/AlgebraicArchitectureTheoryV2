@@ -4,11 +4,10 @@ This example is a small source universe for practical ArchSig validation. The
 sample application is intentionally ordinary Rust code: a domain model, an
 application service, and an in-memory infrastructure adapter.
 
-The first use of this directory is source-grounded ArchMap authoring. The Rust
-sample gives an agent concrete source refs for component atoms, dependency
-relations, operation contracts, and bounded concern hints. ArchSig analysis
-artifacts should be generated under the repository `.tmp/` directory rather than
-inside this example tree.
+The first use of this directory is source-grounded ArchMap v1 authoring. The
+Rust sample gives an agent concrete source refs for atoms and explicit molecule
+membership. ArchSig analysis artifacts should be generated under the repository
+`.tmp/` directory rather than inside this example tree.
 
 ## Layout
 
@@ -53,13 +52,19 @@ cargo run --manifest-path tools/archsig/Cargo.toml -- law-policy \
   --out .tmp/archsig-practical-rust-service/law-policy-validation.json
 ```
 
-## Analysis Boundary
+## Analyze
 
-This example intentionally stops at ArchMap / LawPolicy authoring validation.
-Current full `analyze` packet validation asks for broader Part IV and structural
-surfaces than this small sample intends to claim. Generated analysis output
-should remain local-only under `.tmp/archsig-practical-rust-service/` until the
-selected-policy report model is separated from full audit guardrails.
+```bash
+cargo run --manifest-path tools/archsig/Cargo.toml -- analyze \
+  --archmap tools/archsig/examples/practical-rust-service/archmap/archmap.json \
+  --law-policy tools/archsig/examples/practical-rust-service/law_policy/law_policy.json \
+  --out-dir .tmp/archsig-practical-rust-service \
+  --emit-raw-artifacts
+```
+
+The output is the v1 typed evaluator artifact chain. It is bounded to the
+example ArchMap and LawPolicy and is not a Lean proof or architecture
+lawfulness certificate.
 
 ## ArchSig Reading Targets
 

@@ -1,474 +1,145 @@
 ---
 name: archmap-creater
-description: Create bounded ArchMap observation artifacts from repository evidence. Use when Codex is asked to draft, generate, update, or validate an archmap-observation-map-v0 JSON file, prepare an ArchMap source inventory or prompt pack, run the archmap-generate protocol, or turn code/docs/tests/runtime hints into LLM-authored Atom observation evidence.
+description: Create and validate ArchMap v1 Atom artifacts from repository evidence. Use when Codex is asked to draft, generate, update, or validate an archmap/v1 JSON file, prepare source-grounded atoms and molecules, or run ArchSig v1 analyze from code/docs/tests/traces.
 ---
 
 # ArchMap Creater
 
 ## Purpose
 
-Create `archmap-observation-map-v0` as bounded LLM-authored Atom observation evidence.
+Create `archmap/v1` as source-grounded Atom input for ArchSig.
 
-ArchMap is an observation map, not an extractor result and not architecture truth. The LLM reads selected source evidence, records observed primitive architectural facts as Atom observations, records composed roles as Molecule observations, records selected semantic readings, and preserves gaps. ArchSig later combines this ArchMap with LawPolicy to produce law-relative analysis.
+ArchMap v1 has three primary surfaces:
 
-ArchMap does not prove Atom truth, architecture lawfulness, zero curvature, obstruction circuits, Lean theorem discharge, forecast correctness, or causal diagnosis.
+- `sources`: source ledger for files, symbols, docs, tests, traces, and policy refs that were actually read.
+- `atoms`: primitive typed facts observed from those sources.
+- `molecules`: explicit local configurations that group existing atom ids.
 
-The default authoring contract is complete-first. There is one user-facing
-workflow: produce the fullest source-grounded ArchMap that the selected source
-universe supports, validate it, run ArchSig when a LawPolicy is available, and
-repair missing evidence before handoff. Do not offer a shortened or partial
-ArchMap path as the normal product experience. Partial evidence may exist
-internally while the workflow is running, but the handoff artifact should
-already include source inventory, primitive atoms, molecules, semantic
-observations, projection hints, concern hints, spectrum support, homotopy path
-candidates, filler evidence, non-fillability witnesses, and explicit gaps for
-truly unavailable evidence.
+ArchMap does not contain obstruction circuits, law violations, signature axes,
+distance results, risk findings, projection hints, concern hints, observation
+gap ledgers, Lean proof objects, or global architecture truth. ArchSig computes
+bounded diagnostics later from `ArchMap + LawPolicy + evaluator registry`.
 
 ## Inputs
 
-Collect only evidence the user allows and record the boundary explicitly:
+Collect only evidence the user allows:
 
-- source inventory paths, included refs, excluded refs, private refs, unavailable refs, known blind spots
-- code, docs, tests, PR context, runtime hints, framework convention notes, generated artifacts, or policy files
-- the requested architecture scope and target representation
-- when spectrum or homotopy analysis is requested: operation path candidates,
-  endpoint evidence, lhs/rhs observation support, source-backed witness support,
-  filler evidence, runtime/test/policy refs, and known missing evidence
-- any prompt pack or model provenance needed for reproducibility
+- repository root and requested scope
+- files, symbols, docs, tests, traces, generated artifacts, or policy docs to read
+- source refs that are private, unavailable, or out of scope, kept as authoring notes rather than ArchMap primary fields
+- optional LawPolicy path when the user wants an immediate ArchSig run
 
-Before publishing or handing off public artifacts, scrub private repository
-names, private paths, real service names, customer names, internal artifact
-names, and local smoke paths. Use masked labels such as `private large-repo`,
-`sanitized fixture`, or `private local artifact` in public Issues, docs, and
-fixtures. Run a targeted text search for known private names before creating or
-editing public GitHub Issues / PRs / docs.
+Before publishing public artifacts, scrub private repository names, private
+paths, customer names, internal service names, local smoke paths, and private
+artifact ids.
 
-This skill must work with only the skill bundle and a built `archsig` executable. Do not require
-the ArchSig source repository, legacy `docs/tool` documents, or test fixtures to be present.
+This skill must work with only this skill bundle and a built `archsig`
+executable. Do not require the ArchSig source checkout.
 
-Use this command form by default:
+## Atom Rules
 
-```bash
-${ARCHSIG_BIN:-archsig} <command> ...
-```
+Write atoms directly. In the ArchSig context these are the atoms.
 
-When working inside the ArchSig source repository, these optional source references may help:
+Allowed atom `kind` values:
 
-- `tools/archsig/docs/commands.md`
-- `tools/archsig/docs/artifacts-and-boundaries.md`
-- `tools/archsig/tests/fixtures/minimal/archmap.json`
-- `tools/archsig/tests/fixtures/minimal/archmap_source_inventory.json`
+- `component`
+- `relation`
+- `capability`
+- `dataState`
+- `effect`
+- `authority`
+- `contract`
+- `semantic`
+- `runtime`
 
-## Atom Reading Rules
+Each atom must have:
 
-Use these rules before writing any observation.
+- `id`
+- `kind`
+- the constructor-specific fields required by the v1 schema
+- `refs` resolving to `sources` ids
+- optional `label` for human display only
 
-- An Atom is a primitive architectural fact: a small typed fact such as component existence, relation, capability, state, effect, authority, trust, contract, semantic fact, or runtime interaction.
-- An Atom observation is the LLM's bounded observation of such a fact from selected sources. It is not the certified canonical Atom itself.
-- An Atom observation has no coarse/fine scale. If the reading needs to be split into smaller architectural facts, it is not yet an atom observation.
-- A Molecule observation composes Atom observations into a higher role such as responsibility. Do not model responsibility as a primitive atom.
-- A Semantic observation records a source-supported meaning, contract reading, workflow reading, or commutation cue. It is not global semantic correctness.
-- A Concern hint records a review cue over observations. It is not an obstruction circuit or law violation.
-- A Projection info entry is a downstream handoff hint, especially toward AAT or SFT surfaces. It is not proof or forecast output.
-- An Observation gap records unavailable, private, unmeasured, or out-of-scope evidence. Never rewrite missing evidence as measured absence.
-- Static structure, ASTs, symbol indexes, route lists, and framework conventions may guide navigation, but they do not by themselves create an atom. The source text still has to support the architectural fact being recorded.
+Do not use natural-language-only atoms. `predicate`, `effect`, `authority`,
+`contract`, `meaning`, and `interaction` are controlled predicate tokens for
+ArchSig normalization, not prose paragraphs. Use `label` for prose display.
 
-Before writing an atom observation, ask:
+Do not write removed v0 fields:
 
-1. What exact architectural fact is observed?
-2. Which selected source refs directly support it?
-3. Is it primitive, or is it a responsibility, workflow, policy reading, concern, or gap?
-4. What evidence boundary prevents overclaiming?
+- `atomObservations`
+- `moleculeObservations`
+- `semanticObservations`
+- `projectionInfo`
+- `operationSquareEvidence`
+- `concernHints`
+- `observationGaps`
+- `nonConclusions` as a defensive prose ledger
 
-If any answer is unclear, do not write an atom yet. Read more source evidence, lower the confidence, or record an observation gap.
+Missing evidence is handled by ArchSig as `blocked`, `unknown`, or
+`unmeasured` when a selected evaluator needs support that is not present. Do
+not encode missing evidence as measured absence.
 
-Common Atom families:
+## Authoring Workflow
 
-| atomFamily | Record when the selected source directly shows | Do not record when |
-| --- | --- | --- |
-| `existence` | component, module, service, class, package, process, table, queue, or public surface exists | the only evidence is a guessed layer or inferred runtime instance |
-| `relation` | import, call, read, write, publish, subscribe, ownership, implementation, or explicit dependency edge | the edge is only a naming similarity, directory proximity, or framework convention not inspected |
-| `capability` | command, query, handler, port, interface, storage access, serializer, processor, or tool surface | the statement is really an end-to-end workflow or responsibility |
-| `state` | field, table column, cache entry, config value, event projection, lifecycle status, durable job marker | the fact is a transient runtime value with no supplied source or trace |
-| `effect` | database write, message send, email, payment, event publish, remote call, file/object storage mutation, provider call | the effect is only possible from a library name and no effecting code was read |
-| `authority` | permission check, owner scope, role gate, visibility boundary, access path, policy scope, admin bypass | the source only names a user or role without an observed guard or authority state |
-| `trust` | trusted source, delegated authority, token verification, webhook boundary, integration trust, provider output boundary | the source merely calls an external library without a trust decision or boundary |
-| `contractSpecification` | precondition, postcondition, return shape, error behavior, invariant, validation rule, retry or idempotency contract | a test or doc is being generalized to all executions |
-| `semantic` | source-supported domain meaning, identity meaning, ownership meaning, unit meaning, workflow term meaning | the statement is a large workflow reading better represented as `semanticObservations[]` |
-| `runtimeInteraction` | trace/log-supported runtime call, edge, message, or effect | runtime evidence was unavailable or only expected |
+1. Define the source scope.
+   - Record read files, symbols, docs, tests, and traces in `sources`.
+   - Keep unread/private/unavailable inventory in notes, not ArchMap primary JSON.
 
-If a source can support both a primitive fact and a larger interpretation, write the primitive fact in `atomObservations[]` first. Put the larger interpretation in `moleculeObservations[]`, `semanticObservations[]`, `projectionInfo[]`, or `concernHints[]`.
+2. Extract primitive atoms.
+   - Split workflows, responsibilities, and policies into primitive facts.
+   - Prefer small atoms with direct source refs.
+   - Use `semantic` only for a primitive source-supported meaning, not a whole workflow.
 
-See `references/mapping-guide.md` for atomFamily-specific yes/no examples and `references/schema-cheatsheet.md` for required evidence metadata.
+3. Add molecule membership.
+   - A molecule is a local configuration of existing atom ids.
+   - Do not invent molecule kind enums.
+   - Do not create reverse paths, squares, fillers, or risks in ArchMap.
 
-## Static Navigation Aid Boundary
+4. Validate.
+   - Run `archsig archmap --input <archmap.json> --out <archmap-validation.json>`.
+   - Unknown kind, unknown predicate, unresolved source refs, removed v0 fields, and legacy aliases must fail.
 
-Use ASTs, symbol indexes, route lists, import graphs, class/function maps, framework registries, and text-search result sets only as navigation aids.
+5. Run ArchSig when LawPolicy is available.
+   - Run `archsig analyze --archmap <archmap.json> --law-policy <law_policy.json> --out-dir <out>`.
+   - Use `--strict-distance` when blocked / unknown / unmeasured distance must fail the run.
+   - Use `--emit-raw-artifacts` when packet / detail-index / LLM handoff artifacts are needed.
 
-Allowed uses:
+## Commands
 
-- selecting candidate files for the source inventory
-- assigning exploration tasks to agents
-- finding source refs to read directly
-- identifying blind spots such as generated code, dynamic loading, or framework expansion
-- creating review queues or observation gaps
-
-Disallowed uses:
-
-- emitting `atomObservations[]` only because a static index found a symbol or edge
-- treating a route list, import graph, or AST as proof of semantic dependency, authority coverage, runtime interaction, or effect execution
-- upgrading uninspected generated/framework-expanded evidence into observed source evidence
-- claiming extractor completeness or measured absence from a partial scan
-
-When a navigation aid points to a candidate, read the selected source before writing an observed atom. If the source cannot be read, keep the candidate as an `observationGaps[]` entry or a low-confidence review cue, not an observed atom.
-
-## Observation Surface Decision Rules
-
-Choose the output surface by the role of the reading, not by how important it feels:
-
-| Candidate reading | Use | Do not use |
-| --- | --- | --- |
-| One primitive source-grounded architectural fact | `atomObservations[]` | `moleculeObservations[]` just because the fact is important |
-| A responsibility, role, or pattern composed from several atom refs | `moleculeObservations[]` | `atomObservations[]` with `atomFamily: "responsibility"` |
-| A workflow, operation meaning, contract behavior reading, policy reading, or commutation cue over atoms/molecules | `semanticObservations[]` | A coarse `semantic` atom that hides multiple facts |
-| Missing, private, unavailable, unmeasured, or out-of-scope evidence | `observationGaps[]` | An observed atom claiming absence |
-| A downstream AAT/SFT handoff hint | `projectionInfo[]` | A proof, forecast, lawfulness, or quality claim |
-| A source-grounded review cue | `concernHints[]` | An obstruction circuit or law violation |
-
-Workflow-first exploration is allowed: you may read a workflow to discover atoms. The ArchMap output must still put primitive facts in atoms and the workflow reading in `semanticObservations[]` after the atoms exist.
-
-## Parallel Exploration Protocol
-
-For large repositories, use parallel agents to survey bounded surfaces. Parallel
-survey is part of the complete-first workflow, not a reduced output mode. The
-integrator owns the final ArchMap; sub-agent output is candidate evidence, not
-final artifact truth.
-
-Recommended independent surfaces:
-
-- authority and authentication: roles, ownership checks, policy gates, admin bypasses
-- state and model: schemas, persisted state, lifecycle markers, projections
-- effects and jobs: writes, queues, background workers, emails, provider calls
-- provider and trust boundaries: webhooks, tokens, LLM/provider output validation, delegated credentials
-- domain semantics and contracts: operation meanings, tests, invariants, DTO validation
-- runtime and framework boundaries: supplied traces, generated files, dynamic imports, framework conventions
-- docs and governance: architecture policy, review policy, operational runbooks
-
-Each sub-agent should return a compact packet, not a full ArchMap:
-
-- reviewed refs and excluded refs
-- candidate atom observations with primitive predicates, source refs, confidence, uncertainty, and non-conclusions
-- candidate molecule or semantic observations only when they reference candidate atoms
-- observation gaps for private, unavailable, generated, framework-expanded, or runtime-only evidence
-- concern hints as review cues only
-- notes about static navigation aids used and why they are not observation support
-
-Integration rules:
-
-- Deduplicate candidates by primitive predicate, subject/object refs, and supporting source refs.
-- Resolve every accepted `sourceRefs[].artifactId` into `sourceUniverse.includedRefs[]`.
-- Re-read or sample-check source refs before accepting high-confidence atoms from sub-agent output.
-- Lower confidence or create a concern/gap when agents disagree or when evidence crosses surfaces.
-- Split coarse candidates before promotion; responsibilities, workflows, policy readings, and concerns do not become atoms.
-- Preserve each agent's blind spots and excluded readings in `sourceUniverse`, `provenance`, `observationGaps[]`, or `nonConclusions[]`.
-- Do not merge all candidates mechanically. The final ArchMap is an integrated bounded observation map.
-- Integrate every surface needed by the requested ArchSig measurement before
-  handoff. If ACTS or Homotopy is requested, the final pass must check that
-  spectrum support, path candidates, continuations, filler evidence, and
-  non-fillability witnesses are present or explicitly unavailable.
-
-## Complete-First Measurement Checklist
-
-Before handoff, check the artifact against the measurement surface the user
-expects to see.
-
-For every complete ArchMap:
-
-- Source inventory names included, excluded, unavailable, and private refs.
-- All observed atoms cite source refs that resolve to
-  `sourceUniverse.includedRefs[]`.
-- Molecules compose existing atom refs; responsibilities are not primitive
-  atoms.
-- Semantic observations record workflow, contract, policy, operation, or
-  commutation readings over atoms / molecules.
-- Projection info declares every atom `projectionRefs[]` entry.
-- Concern hints remain review cues and never become law violations.
-- Observation gaps are targeted to the missing subject when possible. Avoid
-  global gaps that accidentally block unrelated loops.
-
-For ACTS / Spectrum readiness:
-
-- Record lhs/rhs observation support for selected diagrams.
-- Record witness-support refs and selected-axis hints.
-- Preserve distance input evidence and source-backed transfer-edge cues.
-- Keep missing support as `observationGaps[]`; never read it as zero
-  curvature.
-
-For Homotopy / Holonomy / Stokes readiness:
-
-- Record path-pair candidates as semantic or projection readings backed by
-  source, test, runtime, policy, or explicit user evidence.
-- Record endpoint object refs, operation sequence cues, generator candidates,
-  and continuation evidence where source supports them.
-- Record filler evidence from contracts, tests, runtime traces, source
-  implementation, policy docs, or explicit user evidence.
-- Record non-fillability witnesses as targeted gaps when filler evidence is
-  private, unavailable, or out of scope.
-- Confirm that a measured filler plus nonzero holonomy can reach local
-  curvature review cells, while targeted missing filler remains
-  `blockedByCoverageGap`.
-
-An Atom alone is not Stokes-ready. The ArchMap must contain or explicitly lack
-the filler / non-fillability evidence needed by ArchSig to distinguish filled
-loops from architectural holes.
-
-## Sharded ArchMap Authoring
-
-For large maps, author shards under `.archsig/archmap/` and keep
-`manifest.json` as the review index. Use horizontal bounded observation slices
-by repository surface, subsystem, package, team-owned area, or sub-agent
-assignment. Sharding is an authoring layout only; export to monolithic
-`archmap-observation-map-v0` before handing the artifact to current ArchSig
-analysis commands.
-
-Default shard layout:
-
-```text
-.archsig/archmap/
-  manifest.json
-  slices/
-    authority.archmap-slice.json
-    state.archmap-slice.json
-    effects.archmap-slice.json
-    providers.archmap-slice.json
-    runtime.archmap-slice.json
-```
-
-Use `archmap-shard-manifest-v0` for the manifest. It should list slice ids,
-surfaces, paths, owned source scopes, allowed cross-slice references,
-required/optional status, export policy, cross-reference validation checks,
-fixture policy, and non-conclusions.
-
-Each `archmap-observation-slice-v0` should contain a local
-`sourceUniverseFragment`, `provenanceFragment`, `generationBoundary`,
-`atomObservations[]`, `moleculeObservations[]`, `semanticObservations[]`,
-`observationGaps[]`, `projectionInfo[]`, `concernHints[]`, and
-`nonConclusions[]`.
-
-Bundle/export rules:
-
-- Export must produce one valid `archmap-observation-map-v0` JSON file.
-- Required missing slices fail; optional missing slices may warn.
-- Duplicate observation ids across slices fail.
-- Source-universe fragments merge by artifact id, path, kind, and boundary.
-- Dangling molecule, semantic, projection, concern, and source refs fail unless the reference is explicitly a gap/private/unavailable boundary.
-- Disallowed cross-slice references fail or must be downgraded to uncertainty/gap before export.
-- Source refs for observed atoms must resolve to exported `sourceUniverse.includedRefs[]`.
-- Sharding does not prove source completeness, lawfulness, certified Atom truth, or Lean theorem discharge.
-
-## Workflow
-
-1. Identify the bounded source universe.
-   - Write down included, excluded, private, and unavailable references.
-   - Preserve blind spots instead of filling them with guesses.
-   - Do not infer evidence from files that were not read or supplied.
-   - For a new repository or unfamiliar area, read `references/repository-survey.md` first.
-   - For non-trivial authoring, read `references/mapping-guide.md` before drafting observations.
-   - When unsure about field values, read `references/schema-cheatsheet.md`.
-   - When checking output quality, compare against `references/examples.md`.
-   - For large repositories, use `references/repository-survey.md` to split parallel exploration surfaces and keep sub-agent results as candidates until integrated.
-
-2. Create a source inventory file.
-
-Use `.archsig/archmap/source-inventory.json` by default. Minimal shape:
-
-```json
-{
-  "schemaVersion": "archmap-source-inventory-v0",
-  "inventoryId": "source-inventory-<scope>",
-  "root": ".",
-  "includedRefs": [
-    {"artifactId": "src-main", "kind": "file", "path": "src/main.ts"}
-  ],
-  "excludedRefs": [],
-  "unavailableRefs": [],
-  "privateRefs": [],
-  "hashes": [],
-  "knownBlindSpots": [],
-  "selectionBoundary": "bounded source slice used for this ArchMap",
-  "nonConclusions": [
-    "source inventory is not complete repository discovery"
-  ]
-}
-```
-
-3. Generate or update the protocol artifact when useful.
-
-```bash
-${ARCHSIG_BIN:-archsig} archmap-generate \
-  --source-inventory .archsig/archmap/source-inventory.json \
-  --prompt-pack tools/archsig/skills/archmap-creater/references/prompt-pack.md \
-  --provider external-agent \
-  --model-id <model-or-agent-id> \
-  --out .archsig/archmap/generation-protocol.json
-```
-
-If this skill bundle is copied outside the ArchSig repository, use the local path to `references/prompt-pack.md` inside the copied skill bundle.
-
-4. Draft `.archsig/archmap/archmap.json`.
-   - Use `atomObservations[]` for source-grounded primitive observations.
-   - For every observed atom, make `sourceRefs[].artifactId` resolve to `sourceUniverse.includedRefs[]` and keep `evidenceBoundary` consistent with what was actually inspected.
-   - Put inferred, private, unavailable, framework-expanded, or runtime-only evidence into `observationGaps[]` unless it was directly supplied and read.
-   - Use `moleculeObservations[]` for composed roles such as responsibility over atom observation refs.
-   - Use `semanticObservations[]` for selected behavioral, contract, workflow, or diagram readings supported by sources.
-   - Use `observationGaps[]` for unknown/private/unavailable/out-of-scope evidence; never round gaps to absence.
-   - Use `projectionInfo[]` only as downstream reading hints, not as proof or lawfulness claims.
-   - Use `concernHints[]` only as review cues. A concern hint is not an obstruction circuit; ArchSig constructs law-relative obstruction readings only after combining ArchMap with LawPolicy.
-   - Keep `sourceRefs`, `observationStatus`, `evidenceBoundary`, `confidence`, `uncertainty`, `projectionRefs`, and `nonConclusions` explicit.
-   - Separate AAT-facing observations from SFT-facing projection hints. Shared source refs are allowed; proof claims and forecast inputs must not be conflated.
-   - Include semantic structure only when evidence supports it.
-   - For ACTS / Spectrum analysis, preserve source-backed lhs/rhs observation
-     refs, witness-support refs, selected-axis hints, distance input evidence,
-     and missing support gaps. Do not round a missing witness row to zero.
-   - For Homotopy / Holonomy / Stokes analysis, preserve operation sequences,
-     endpoint object refs, generator candidate refs, continuation evidence,
-     filler evidence, non-fillability evidence, and missing filler gaps. Do not
-     infer filled loops or path equality from intent alone.
-
-5. Validate the result.
-   - `archsig archmap` reads `sourceInventoryRef.path` from the ArchMap JSON when present.
-   - Do not pass repository paths or scan flags; ArchSig does not auto-scan code.
+Use this command form:
 
 ```bash
 ${ARCHSIG_BIN:-archsig} archmap \
-  --input .archsig/archmap/archmap.json \
-  --out .archsig/archmap/validation.json
-
-```
-
-6. Build downstream analysis through `archsig analyze` when a LawPolicy is available.
-
-```bash
-${ARCHSIG_BIN:-archsig} law-policy \
-  --input <law-policy.json> \
-  --out .archsig/law-policy/validation.json
-
-${ARCHSIG_BIN:-archsig} archsig-analysis \
-  --archmap .archsig/archmap/archmap.json \
-  --law-policy <law-policy.json> \
-  --out .archsig/analysis/packet.json \
-  --validation-out .archsig/analysis/validation.json
+  --input <archmap.json> \
+  --out <archmap-validation.json>
 
 ${ARCHSIG_BIN:-archsig} analyze \
-  --archmap .archsig/archmap/archmap.json \
-  --law-policy <law-policy.json> \
-  --out-dir .archsig/analyze
+  --archmap <archmap.json> \
+  --law-policy <law_policy.json> \
+  --out-dir <out-dir>
 ```
 
-7. Read the validation report before handing the artifact downstream.
-   - Treat failures as schema or boundary problems to fix.
-   - Treat warnings as review cues, not automatic rejection.
-   - Check `summary`, `sourceInventoryChecks`, `sourceRefChecks`, `claimBoundaryChecks`, `semanticCoverageChecks`, `formalPromotionGuardrailChecks`, `leanPreservationPreconditionChecklist`, `atomicObservationChecks`, `atomicObservationSummary`, `responsibilityChecks`, and `nonConclusions`.
+If no binary exists, report that validation was not performed. Do not replace
+ArchSig validation with an ad hoc checker.
 
-8. Repair evidence blockers before handoff.
-   - If ArchSig `analyze` was run, read `llm-interpretation-packet.json` and
-     `analysis-summary` when available.
-   - Build a missing-evidence queue from `blockedByCoverageGap`, unfilled
-     loops, missing filler evidence, unmeasured spectrum support, unresolved
-     source refs, and validation warnings.
-   - Re-open the selected source inventory and search code, docs, tests,
-     runtime traces, policy files, and supplied user evidence for each blocker.
-   - Add source-backed atoms, semantic observations, projection info, filler
-     evidence, or targeted gaps as appropriate.
-   - Stop only when validation passes and remaining gaps are truly private,
-     unavailable, or out of scope. Document those residual gaps with subject
-     refs and non-conclusions.
+## Output Shape
 
-## Minimal ArchMap Skeleton
+When delivering an ArchMap, include:
 
-Use this only as a starting shape. Replace every placeholder with source-grounded content or remove it.
+1. ArchMap path
+2. source scope summary
+3. atoms grouped by kind
+4. molecule membership summary
+5. explicit notes for private / unavailable / out-of-scope evidence outside the primary JSON
+6. validation result
+7. optional analyze output directory and verdict
 
-```json
-{
-  "schemaVersion": "archmap-observation-map-v0",
-  "mapId": "archmap-<scope>",
-  "architectureId": "<architecture-id>",
-  "generatedAt": "<iso-8601-time>",
-  "generator": {
-    "kind": "llm-authored",
-    "tool": "archsig",
-    "provider": "codex",
-    "modelId": "<model-or-agent-id>"
-  },
-  "promptRefs": [
-    {"artifactId": "prompt-pack", "kind": "prompt", "path": "tools/archsig/skills/archmap-creater/references/prompt-pack.md"}
-  ],
-  "sourceInventoryRef": {
-    "artifactId": "source-inventory-<scope>",
-    "kind": "source_inventory",
-    "path": ".archsig/archmap/source-inventory.json"
-  },
-  "generationBoundary": {
-    "tokenBudget": "<budget-or-unknown>",
-    "scope": ["<selected-scope>"],
-    "excludedRefs": [],
-    "privateRefs": [],
-    "unavailableRefs": [],
-    "nonConclusions": ["generation boundary does not imply complete repository discovery"]
-  },
-  "sourceUniverse": {
-    "root": ".",
-    "includedRefs": [],
-    "excludedRefs": [],
-    "unavailableRefs": [],
-    "privateRefs": [],
-    "hashes": [],
-    "knownBlindSpots": [],
-    "selectionBoundary": "<bounded source slice>"
-  },
-  "provenance": {
-    "observer": "codex",
-    "observationMethod": "LLM-authored source reading",
-    "sourceRoot": ".",
-    "observationBoundary": "source-grounded observations only; no law-relative obstruction analysis",
-    "reviewedRefs": [],
-    "excludedReadings": ["architecture lawfulness", "obstruction circuit", "zero curvature", "forecast correctness"],
-    "nonConclusions": ["ArchMap validation is not Lean theorem discharge"]
-  },
-  "atomObservations": [],
-  "moleculeObservations": [],
-  "semanticObservations": [],
-  "observationGaps": [],
-  "projectionInfo": [],
-  "concernHints": [],
-  "nonConclusions": [
-    "ArchMap is bounded observation evidence, not architecture ground truth"
-  ]
-}
-```
+Use concise Japanese when working in this repository.
 
-## Common Validation Fixes
+## References
 
-- Missing source inventory: add `sourceUniverse.includedRefs[]` and `sourceUniverse.selectionBoundary`, or supply a readable `sourceInventoryRef.path`.
-- Unresolved source refs: make every observed `sourceRefs[].artifactId` match an entry in `sourceUniverse.includedRefs[]`, unless it is intentionally a boundary ref in gaps or unavailable/private refs.
-- Measured-zero mistake: move absent runtime/framework/private evidence into `observationGaps[]` instead of claiming an observed negative fact.
-- Responsibility atom mistake: move responsibility from `atomObservations[]` to `moleculeObservations[]`.
-- Obstruction mistake: move law violation or obstruction wording out of ArchMap. Keep only source-grounded primitive facts and optional `concernHints[]`.
-- Forecast mistake: move ForecastCone, ConsequenceEnvelope, attractor, basin, probability, quality ranking, and incident causality out of ArchMap.
-
-## Writing Rules
-
-- Preserve uncertainty in fields; do not erase it in prose.
-- Never claim that `archmap-observation-map-v0` validates architecture lawfulness.
-- Never claim that `atomObservations[]` certifies universal `ArchitectureAtom` truth.
-- Never put obstruction circuits in ArchMap. Use `concernHints[]` for source-grounded review cues and let ArchSig + LawPolicy construct law-relative obstruction readings.
-- Never treat responsibility as a primitive atom; use `moleculeObservations[]`.
-- Never claim that validation produces a Lean proof term.
-- Never put ForecastCone, ConsequenceEnvelope, attractor, basin, incident causality, or quality ranking into ArchMap as computed results.
-- Do not write implementation progress into PRDs. Use issues, theorem indexes, proof obligations, roadmaps, or PRs for status.
-
-## Handoff
-
-Use ArchSig analysis only after a valid ArchMap and a selected LawPolicy exist. Report ArchMap findings as bounded observation evidence until then.
-
-Use FieldSig planning skills after ArchSig has produced `archsig-analysis-packet-v0` and the user asks for planning forecast.
+- `references/schema-cheatsheet.md`: v1 schema shape
+- `references/mapping-guide.md`: source cue to atom mapping
+- `references/examples.md`: v1 examples
+- `references/repository-survey.md`: survey protocol
+- `references/prompt-pack.md`: prompt template

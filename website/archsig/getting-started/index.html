@@ -98,25 +98,26 @@ Summarize the architecture tendencies and list the first files reviewers should 
               <h2>Three Skills</h2>
               <p>The ArchSig workflow is built around three Skills.</p>
               <ul class="status-list">
-                <li><strong><code>archmap-creater</code></strong><span>Creates the source-backed architecture map: observed atoms, molecule readings, semantic observations, concern hints, gaps, and provenance.</span></li>
-                <li><strong><code>law-policy-creater</code></strong><span>Creates the selected LawPolicy for the repository or subsystem: which architecture rules, witness rules, axes, and coverage expectations should guide this review. If the repository evidence does not define the law universe, the Skill should keep unresolved questions visible instead of silently choosing a generic policy.</span></li>
+                <li><strong><code>archmap-creater</code></strong><span>Creates the source-backed ArchMap v1: sources, atoms, and explicit molecule membership.</span></li>
+                <li><strong><code>law-policy-creater</code></strong><span>Creates the LawPolicy v1 selector: policy pack or evaluator ids, basis refs, scope, and severity. If repository evidence does not justify a selector, the Skill should ask instead of silently choosing a generic policy.</span></li>
                 <li><strong><code>archsig-reader</code></strong><span>Runs ArchSig, reads the summary and packet detail, checks the relevant source again, and returns review findings, repair candidates, and confirmation points.</span></li>
               </ul>
             </section>
             <section id="how" class="article-section">
               <h2>How ArchSig works</h2>
-              <p>Behind the Skill workflow, ArchSig has a simple shape: feed an ArchMap and a LawPolicy into the CLI, then read the analysis packet and compact summary.</p>
+              <p>Behind the Skill workflow, ArchSig has a simple shape: feed ArchMap v1 and LawPolicy v1 into the CLI, then read typed evaluator results, the analysis packet, and the compact summary.</p>
               <ol class="numbered-status-list">
-                <li><strong>ArchMap records observed atoms</strong><span>An ArchMap is a source-backed observation record. It captures architecture atoms, molecule readings, semantic observations, review cues, gaps, and provenance from the codebase. It is evidence, not a verdict.</span></li>
-                <li><strong>LawPolicy selects the interpretation</strong><span>A LawPolicy says which architecture laws, witness rules, axes, and coverage expectations should be used for this review. Changing the policy changes what ArchSig can read.</span></li>
-                <li><strong>The CLI runs AAT-based analysis</strong><span>The agent passes the ArchMap and LawPolicy to ArchSig <code>analyze</code>. ArchSig uses AAT-based structural concepts to compute readings such as nonzero axes, obstruction support, hotspots, architectural holes, repair candidates, and coverage gaps.</span></li>
-                <li><strong>The summary becomes the review surface</strong><span><code>analysis-summary</code> turns the packet into a compact review surface: verdict, quality measurement, trend diagnosis, dominant findings, action queue, detail refs, and measurement basis.</span></li>
+                <li><strong>ArchMap records atoms</strong><span>An ArchMap v1 is source-backed input: read sources, primitive atoms, and explicit molecule membership. It is evidence, not a verdict.</span></li>
+                <li><strong>LawPolicy selects evaluators</strong><span>A LawPolicy v1 says which policy pack or evaluator ids should run, with basis refs, scope, and severity. The evaluator registry owns witness and distance rules.</span></li>
+                <li><strong>The CLI runs typed analysis</strong><span>The agent passes ArchMap v1 and LawPolicy v1 to ArchSig <code>analyze</code>. ArchSig normalizes atoms, runs typed evaluators, and keeps blocked / unknown / unmeasured support out of measured zero.</span></li>
+                <li><strong>The summary becomes the review surface</strong><span><code>analysis-summary</code> exposes verdict, typed evaluator status counts, distance diagnosis, dominant findings, action queue, detail refs, and measurement basis.</span></li>
               </ol>
               <figure class="code-panel">
                 <figcaption>Core shape</figcaption>
-                <pre><code>ArchMap observation record
-  + LawPolicy
+                <pre><code>ArchMap v1
+  + LawPolicy v1
   -> archsig analyze
+  -> typed-evaluator-results
   -> archsig-analysis-packet
   -> analysis-summary
   -> LLM agent review findings</code></pre>
@@ -137,9 +138,9 @@ Summarize the architecture tendencies and list the first files reviewers should 
               <h2>What the Skills build</h2>
               <p>The LLM agent uses the Skills to turn the request into bounded analysis artifacts. You normally read the result, not every intermediate file.</p>
               <ul class="status-list">
-                <li><strong>ArchMap</strong><span>A source-backed map of architecture observations, semantic readings, review cues, gaps, and provenance.</span></li>
-                <li><strong>LawPolicy</strong><span>The selected architecture interpretation for this review: which laws, witness rules, axes, and coverage expectations apply.</span></li>
-                <li><strong>ArchSig output</strong><span>An analysis packet and compact summary that expose findings, trends, holes, coverage gaps, and detail references.</span></li>
+                <li><strong>ArchMap</strong><span>A source-backed map of atoms and explicit molecule membership.</span></li>
+                <li><strong>LawPolicy</strong><span>The selected evaluator policy for this review: policy pack or evaluator ids, basis refs, scope, and severity.</span></li>
+                <li><strong>ArchSig output</strong><span>Typed evaluator results, analysis packet, compact summary, viewer data, and detail references.</span></li>
                 <li><strong>Source comparison</strong><span>The agent reopens the relevant code paths before turning packet readings into human-facing review work.</span></li>
               </ul>
             </section>

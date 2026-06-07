@@ -38,7 +38,7 @@ InterpretationProfile
   selects the LawUniverse, witness rules, signature axes, coverage, exactness,
   optional spectrum measurement profile, optional homotopy path / filler /
   loop measurement profile, and the selected Part IV distance profile boundary.
-  The current JSON artifact is still named law-policy-v0 for the profile input.
+  In the legacy path, the JSON artifact is named law-policy-v0.
 
 ArchSig Analysis Packet
   records AAT concept surfaces, architecture state, design pressure, change
@@ -417,15 +417,15 @@ Validation metadata records that validation does not imply:
 - merge approval
 - LLM output as architecture truth
 
-## Current Fixture
+## Legacy Fixture
 
 - `tools/archsig/tests/fixtures/minimal/archsig_analysis_packet.json`
 - `tools/archsig/tests/fixtures/coupon_rounding/archsig_analysis_packet.json`
 - `tools/archsig/tests/fixtures/homotopy_report/archsig_analysis_packet.json`
 - `tools/archsig/tests/fixtures/complete_archmap_acceptance/`
 
-The fixture is locked against the static Rust builder and the schema catalog
-records both `archsig-analysis-packet-v0` and
+These fixtures are locked against the legacy static Rust builder and the schema
+catalog records both `archsig-analysis-packet-v0` and
 `archsig-analysis-packet-validation-report-v0`.
 
 `complete_archmap_acceptance` is a sanitized large-repo class fixture. It
@@ -434,7 +434,7 @@ validation, LawPolicy validation, and packet validation pass; spectrum emits
 hotspots / recurrent pressure; homotopy emits filled loops, nonzero holonomy,
 one targeted unfilled loop, and Stokes-style local curvature cells.
 
-## Builder
+## Legacy Builder
 
 `build_archsig_analysis_packet` deterministically builds a packet from one
 `ArchMapDocumentV0` and one `LawPolicyDocumentV0`.
@@ -764,15 +764,18 @@ surfaces are not current ArchSig CLI surface or compatibility commands.
 
 `pr-review` and `codebase-inspection` are separate report surfaces:
 
-- `archsig-pr-review-report-v1` reads base `archmap-observation-map-v0`,
-  optional head `archmap-observation-map-v0`, PR-local `archmap-delta-v0`, and
-  required `law-policy-v0`. No LawPolicy, no ArchSig judgement. Raw diff,
+- `archsig-pr-review-report-v1` reads base `archmap/v1`, PR-local
+  `archmap-delta-v0`, and required `law-policy/v1` on the v1 path. It reports
+  typed evaluator status, positive bounded conclusions, support refs, basis
+  refs, and review focus without reconstructing v0 witness rules, signature
+  axes, coverage requirements, or distance formulas. Raw diff,
   `archmap-commit-v0`, and base/head analysis packets are not PR-review inputs.
-  With a supplied head ArchMap, the command internally builds base/path/head
-  packets under the same LawPolicy and emits `prDriftReadings[]`: endpoint
-  signature distance, total path movement, hidden-excursion status, top moved
-  atoms / axes with source refs, coverage gaps, safe change budget, and
-  architecture navigation review focus. Optional intermediate path ArchMaps make
+  The legacy v0 path remains documented here for old artifacts only: with a
+  supplied head ArchMap, the command internally builds base/path/head packets
+  under the same LawPolicy and emits `prDriftReadings[]`: endpoint signature
+  distance, total path movement, hidden-excursion status, top moved atoms / axes
+  with source refs, coverage gaps, safe change budget, and architecture
+  navigation review focus. Optional intermediate path ArchMaps make
   total movement a supplied-snapshot sum; without them it is a two-point
   base/head lower bound. Coverage gaps limit the safe-change budget instead of
   becoming measured zero.

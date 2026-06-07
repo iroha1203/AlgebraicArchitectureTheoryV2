@@ -22,7 +22,7 @@ Then inspect likely config and architecture surfaces:
 
 ## Evidence Classification
 
-- **Normative**: explicit rules or user-approved decisions. Eligible for `selectedLaws[]`.
+- **Normative**: explicit rules or user-approved decisions. Eligible for a v1 policy pack or evaluator selector.
 - **Conventional**: repeated source pattern without explicit rule. Good for coverage requirements or questions.
 - **Observed only**: current code shape. Do not promote to law without user confirmation.
 - **Missing**: no evidence. Ask questions before writing a selected law.
@@ -31,12 +31,13 @@ Then inspect likely config and architecture surfaces:
 
 | Evidence | LawPolicy surface |
 | --- | --- |
-| "Routes must use permission dependency X" | selected law + permission axis + coverage requirement for routes |
-| "Tenant data must be scoped by workspace/org" | selected law + tenant boundary witness + model/route coverage |
-| "External provider output must be validated before persistence" | selected law + provider mediation witness + trust/effect/contract coverage |
-| "Jobs must be idempotent and retry-safe" | selected law + state/effect ordering axis + runtime/test coverage |
-| "Repository owns transaction flush" | selected law + transaction boundary witness + state/effect coverage |
-| repeated but undocumented pattern | question to user, not selected law yet |
+| "Repository adopts SOLID" | `pack: "solid@1"`, `basis: ["policy-basis:solid"]` |
+| "Domain layer must not depend on infrastructure" | `law: "domain.no-direct-infra-dependency"`, `evaluator: "domain.no-direct-infra-dependency@1"`, `basis: ["policy-basis:layering"]` |
+| repeated but undocumented pattern | question to user, not selected policy yet |
+
+Do not translate evidence into witness rules, signature axes, coverage
+requirements, exactness assumptions, or distance profiles. Those are evaluator
+registry responsibilities in v1.
 
 ## Survey Output
 
@@ -44,6 +45,6 @@ Before drafting JSON, summarize:
 
 - docs and files read
 - candidate laws with evidence refs
-- candidate coverage requirements
+- candidate policy pack / evaluator selectors
 - decisions that need user confirmation
 - blind spots and excluded evidence
