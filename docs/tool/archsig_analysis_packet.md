@@ -42,6 +42,26 @@ FieldSig handoff can still validate the v1 raw packet, but FieldSig does not
 yet preserve replacement reading refs as its own downstream evidence surface;
 that integration remains tracked separately.
 
+Current v1 also restores the first generated packet refs as derived output:
+
+- `generatedLawInputs`: one row per selected typed evaluator result. Each row
+  points back to `/typedEvaluatorResults/{i}`, registry basis refs, support atom
+  refs, support molecule refs, and the derived signature axis id.
+- `signatureAxes`: one row per selected typed evaluator result. Each axis
+  points to its generated law input and the corresponding
+  `/architectureDistance/signatureDistanceReadings/{i}` row.
+- `generatedObstructions`: rows for measured violations and blocked /
+  unmeasured evaluator results. A blocked row is a missing-evidence obstruction
+  candidate, not a measured violation.
+- `generatedRepairTargets`: bounded review targets generated from
+  `generatedObstructions`. They name review / evidence-collection targets; they
+  do not prove a repair operation.
+- `generatedPacketRefs`: top-level JSON pointers for the generated surfaces so
+  packet validation and the detail index can resolve v1 generated surfaces
+  without reading v0 LawPolicy DSL fields. FieldSig can already accept the v1
+  packet as bounded current structural state; preserving these generated refs as
+  first-class downstream evidence remains tracked in the FieldSig handoff issue.
+
 The v1 path does not read v0 helper fields such as `semanticObservations`,
 `projectionInfo`, `operationSquareEvidence`, `concernHints`, or
 `observationGaps` as positive readings. It also does not call Lean or require a

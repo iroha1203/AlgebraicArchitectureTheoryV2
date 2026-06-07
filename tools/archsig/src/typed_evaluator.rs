@@ -136,6 +136,10 @@ pub fn build_typed_analysis_packet_v1(
     typed_results: &TypedEvaluatorResultsV1,
     architecture_distance: &Value,
 ) -> serde_json::Value {
+    let generated_law_inputs = generated_law_inputs_v1(typed_results);
+    let signature_axes = signature_axes_v1(typed_results, architecture_distance);
+    let generated_obstructions = generated_obstructions_v1(typed_results);
+    let generated_repair_targets = generated_repair_targets_v1(&generated_obstructions);
     let detail_refs = typed_results
         .results
         .iter()
@@ -162,10 +166,24 @@ pub fn build_typed_analysis_packet_v1(
         "typedEvaluatorDiagnosis": typed_evaluator_diagnosis(typed_results),
         "architectureDistance": architecture_distance,
         "distanceDiagnosis": architecture_distance["distanceDiagnosis"],
+        "generatedLawInputs": generated_law_inputs,
+        "signatureAxes": signature_axes,
+        "generatedObstructions": generated_obstructions,
+        "generatedRepairTargets": generated_repair_targets,
+        "generatedPacketRefs": {
+            "basis": "typed-evaluator-results + law-evaluator-registry",
+            "generatedLawInputs": "/generatedLawInputs",
+            "signatureAxes": "/signatureAxes",
+            "generatedObstructions": "/generatedObstructions",
+            "generatedRepairTargets": "/generatedRepairTargets",
+            "typedEvaluatorResults": "/typedEvaluatorResults",
+            "architectureDistanceSignatureReadings": "/architectureDistance/signatureDistanceReadings"
+        },
         "positiveBoundedConclusions": typed_results.positive_bounded_conclusions,
         "detailRefs": detail_refs,
         "nonConclusions": [
             "ArchSig v1 packet is computed from Normalized ArchMap v1 and TypedEvaluatorResults v1.",
+            "Generated law inputs, signature axes, obstruction candidates, and repair targets are derived packet refs over typed evaluator results and registry basis.",
             "ArchSig v1 packet does not read v0 semanticObservations, projectionInfo, operationSquareEvidence, concernHints, or observationGaps.",
             "Blocked, unknown, and unmeasured evaluator results are not measured zero.",
             "ArchSig v1 packet is a computation artifact, not a Lean proof object."
@@ -306,16 +324,20 @@ pub fn build_typed_atom_viewer_data_v1(
     })
 }
 
-pub fn build_typed_detail_index_v1(typed_results: &TypedEvaluatorResultsV1) -> serde_json::Value {
+pub fn build_typed_detail_index_v1(
+    typed_results: &TypedEvaluatorResultsV1,
+    packet: &serde_json::Value,
+) -> serde_json::Value {
     let ref_dictionary = typed_results
         .results
         .iter()
         .chain(typed_results.replacement_evaluator_results.iter())
         .flat_map(|result| result.detail_refs.iter().cloned())
+        .chain(derived_packet_refs(packet))
         .collect::<BTreeSet<_>>()
         .into_iter()
         .collect::<Vec<_>>();
-    let entries = typed_results
+    let mut entries = typed_results
         .results
         .iter()
         .chain(typed_results.replacement_evaluator_results.iter())
@@ -338,13 +360,23 @@ pub fn build_typed_detail_index_v1(typed_results: &TypedEvaluatorResultsV1) -> s
             })
         })
         .collect::<Vec<_>>();
+    entries.extend(derived_detail_index_entries(packet));
     json!({
         "schemaVersion": "archsig-analysis-detail-index-v1",
         "indexKind": "typed-evaluator-support-index",
+        "sections": [
+            detail_index_section_v1("typedEvaluatorResults", "/typedEvaluatorResults", packet_array_len(packet, "typedEvaluatorResults")),
+            detail_index_section_v1("generatedLawInputs", "/generatedLawInputs", packet_array_len(packet, "generatedLawInputs")),
+            detail_index_section_v1("signatureAxes", "/signatureAxes", packet_array_len(packet, "signatureAxes")),
+            detail_index_section_v1("generatedObstructions", "/generatedObstructions", packet_array_len(packet, "generatedObstructions")),
+            detail_index_section_v1("generatedRepairTargets", "/generatedRepairTargets", packet_array_len(packet, "generatedRepairTargets")),
+            detail_index_section_v1("replacementEvaluatorResults", "/replacementEvaluatorResults", packet_array_len(packet, "replacementEvaluatorResults"))
+        ],
         "refDictionary": ref_dictionary,
         "entries": entries,
         "nonConclusions": [
             "detail index records typed evaluator support refs only",
+            "derived packet refs point to v1 generated surfaces, not removed v0 input fields",
             "detail refs are evidence navigation aids, not proof objects"
         ]
     })
@@ -562,6 +594,153 @@ pub fn build_typed_analysis_validation_v1(
                             .is_some_and(|fixtures| !fixtures.is_empty())
                 })
             });
+    let generated_law_inputs_pass = packet["generatedLawInputs"]
+        .as_array()
+        .is_some_and(|items| {
+            items.len() == typed_results.results.len()
+                && items.iter().enumerate().all(|(index, item)| {
+                    let Some(result) = typed_results.results.get(index) else {
+                        return false;
+                    };
+                    item["typedEvaluatorResultRef"]
+                        .as_str()
+                        .is_some_and(|reference| {
+                            reference == format!("/typedEvaluatorResults/{index}")
+                                && packet.pointer(reference).is_some()
+                        })
+                        && item["law"] == result.law
+                        && item["evaluator"] == result.evaluator
+                        && item["status"] == result.status
+                        && item["supportAtomRefs"] == json!(result.support_atom_refs)
+                        && item["supportMoleculeRefs"] == json!(result.support_molecule_refs)
+                        && item["registryBasisRefs"]
+                            .as_array()
+                            .is_some_and(|refs| !refs.is_empty())
+                        && item["supportAtomRefs"].is_array()
+                        && item["supportMoleculeRefs"].is_array()
+                })
+        });
+    let signature_axes_pass = packet["signatureAxes"].as_array().is_some_and(|items| {
+        items.len() == typed_results.results.len()
+            && items.iter().enumerate().all(|(index, item)| {
+                let Some(result) = typed_results.results.get(index) else {
+                    return false;
+                };
+                item["typedEvaluatorResultRef"]
+                    .as_str()
+                    .is_some_and(|reference| {
+                        reference == format!("/typedEvaluatorResults/{index}")
+                            && packet.pointer(reference).is_some()
+                    })
+                    && item["lawRef"] == result.law
+                    && item["evaluatorRef"] == result.evaluator
+                    && item["status"] == result.status
+                    && item["supportAtomRefs"] == json!(result.support_atom_refs)
+                    && item["supportMoleculeRefs"] == json!(result.support_molecule_refs)
+                    && item["generatedLawInputRef"]
+                        .as_str()
+                        .is_some_and(|reference| {
+                            reference == format!("/generatedLawInputs/{index}")
+                                && packet.pointer(reference).is_some()
+                        })
+                    && item["signatureAxisId"].as_str().is_some()
+                    && item["signatureDistanceReadingRefs"]
+                        .as_array()
+                        .is_some_and(|refs| {
+                            refs.iter().all(|reference| {
+                                reference
+                                    .as_str()
+                                    .is_some_and(|pointer| packet.pointer(pointer).is_some())
+                            })
+                        })
+            })
+    });
+    let generated_obstructions_pass =
+        packet["generatedObstructions"]
+            .as_array()
+            .is_some_and(|items| {
+                items.iter().all(|item| {
+                    let Some(result) =
+                        item["typedEvaluatorResultRef"]
+                            .as_str()
+                            .and_then(|reference| {
+                                typed_result_from_packet_ref(typed_results, reference)
+                            })
+                    else {
+                        return false;
+                    };
+                    result.status != "measuredPass"
+                        && item["law"] == result.law
+                        && item["evaluator"] == result.evaluator
+                        && item["supportAtomRefs"] == json!(result.support_atom_refs)
+                        && item["supportMoleculeRefs"] == json!(result.support_molecule_refs)
+                        && item["typedEvaluatorResultRef"]
+                            .as_str()
+                            .is_some_and(|reference| packet.pointer(reference).is_some())
+                        && item["generatedLawInputRef"]
+                            .as_str()
+                            .is_some_and(|reference| packet.pointer(reference).is_some())
+                        && item["signatureAxisRef"]
+                            .as_str()
+                            .is_some_and(|reference| packet.pointer(reference).is_some())
+                        && item["obstructionKind"].as_str().is_some()
+                })
+            });
+    let generated_repair_targets_pass =
+        packet["generatedRepairTargets"]
+            .as_array()
+            .is_some_and(|items| {
+                items.iter().all(|item| {
+                    let Some(obstruction) = item["generatedObstructionRef"]
+                        .as_str()
+                        .and_then(|reference| packet.pointer(reference))
+                    else {
+                        return false;
+                    };
+                    item["targetKind"] == repair_target_kind(obstruction)
+                        && item["supportAtomRefs"] == obstruction["supportAtomRefs"]
+                        && item["supportMoleculeRefs"] == obstruction["supportMoleculeRefs"]
+                        && item["registryBasisRefs"] == obstruction["registryBasisRefs"]
+                        && item["basisRefs"] == obstruction["basisRefs"]
+                        && item["signatureAxisRef"] == obstruction["signatureAxisRef"]
+                        && item["localStatus"] == obstruction["localStatus"]
+                        && item["generatedObstructionRef"]
+                            .as_str()
+                            .is_some_and(|reference| packet.pointer(reference).is_some())
+                        && item["typedEvaluatorResultRef"]
+                            .as_str()
+                            .is_some_and(|reference| packet.pointer(reference).is_some())
+                        && item["targetKind"].as_str().is_some()
+                })
+            });
+    let generated_packet_refs_pass =
+        packet["generatedPacketRefs"]
+            .as_object()
+            .is_some_and(|refs| {
+                [
+                    "generatedLawInputs",
+                    "signatureAxes",
+                    "generatedObstructions",
+                    "generatedRepairTargets",
+                    "typedEvaluatorResults",
+                    "architectureDistanceSignatureReadings",
+                ]
+                .iter()
+                .all(|field| {
+                    refs.get(*field)
+                        .and_then(Value::as_str)
+                        .is_some_and(|pointer| packet.pointer(pointer).is_some())
+                })
+            });
+    let removed_v0_input_fields_absent_pass = [
+        "semanticObservations",
+        "projectionInfo",
+        "operationSquareEvidence",
+        "concernHints",
+        "observationGaps",
+    ]
+    .iter()
+    .all(|field| packet.get(*field).is_none());
     let checks_pass = [
         packet_schema_pass,
         typed_count_pass,
@@ -573,6 +752,12 @@ pub fn build_typed_analysis_validation_v1(
         replacement_registry_present_pass,
         replacement_results_match_pass,
         replacement_output_refs_pass,
+        generated_law_inputs_pass,
+        signature_axes_pass,
+        generated_obstructions_pass,
+        generated_repair_targets_pass,
+        generated_packet_refs_pass,
+        removed_v0_input_fields_absent_pass,
     ];
     let result = if checks_pass.iter().copied().all(|passed| passed) {
         "pass"
@@ -638,6 +823,36 @@ pub fn build_typed_analysis_validation_v1(
                 "checkId": "archsig.v1.replacementRegistryOutputRefs",
                 "result": if replacement_output_refs_pass { "pass" } else { "fail" },
                 "message": "each replacement manifest declares typed output refs and positive / negative fixture coverage"
+            },
+            {
+                "checkId": "archsig.v1.generatedLawInputsTraceTypedResults",
+                "result": if generated_law_inputs_pass { "pass" } else { "fail" },
+                "message": "generatedLawInputs are derived from typed evaluator results and registry basis"
+            },
+            {
+                "checkId": "archsig.v1.signatureAxesTraceTypedResults",
+                "result": if signature_axes_pass { "pass" } else { "fail" },
+                "message": "signatureAxes resolve to generated law inputs, typed evaluator results, and signature distance readings"
+            },
+            {
+                "checkId": "archsig.v1.generatedObstructionsTraceTypedResults",
+                "result": if generated_obstructions_pass { "pass" } else { "fail" },
+                "message": "generatedObstructions resolve to typed evaluator result and signature axis refs"
+            },
+            {
+                "checkId": "archsig.v1.generatedRepairTargetsTraceObstructions",
+                "result": if generated_repair_targets_pass { "pass" } else { "fail" },
+                "message": "generatedRepairTargets resolve to generated obstruction refs"
+            },
+            {
+                "checkId": "archsig.v1.generatedPacketRefsResolve",
+                "result": if generated_packet_refs_pass { "pass" } else { "fail" },
+                "message": "top-level generated packet refs resolve to v1 packet JSON pointers"
+            },
+            {
+                "checkId": "archsig.v1.removedV0InputFieldsAbsent",
+                "result": if removed_v0_input_fields_absent_pass { "pass" } else { "fail" },
+                "message": "v1 packet does not restore removed v0 input fields as root inputs"
             }
         ],
         "nonConclusions": [
@@ -695,6 +910,320 @@ fn replacement_results_by_id(typed_results: &TypedEvaluatorResultsV1) -> Value {
         }
     }
     Value::Object(object)
+}
+
+fn generated_law_inputs_v1(typed_results: &TypedEvaluatorResultsV1) -> Vec<Value> {
+    typed_results
+        .results
+        .iter()
+        .enumerate()
+        .map(|(index, result)| {
+            let signature_axis_id = signature_axis_id(&result.law);
+            json!({
+                "lawInputId": generated_law_input_id(&result.law),
+                "law": result.law,
+                "evaluator": result.evaluator,
+                "status": result.status,
+                "typedEvaluatorResultRef": typed_evaluator_result_ref(index),
+                "registryBasisRefs": registry_basis_refs(result),
+                "basisRefs": result.basis_refs,
+                "applicableLawAxes": [signature_axis_id],
+                "localStatuses": [local_status(result)],
+                "supportAtomRefs": result.support_atom_refs,
+                "supportMoleculeRefs": result.support_molecule_refs,
+                "detailRefs": result.detail_refs,
+                "blockerReason": result.blocker_reason,
+                "nonConclusions": [
+                    "generatedLawInputs/v1 is a derived packet surface over typed evaluator results",
+                    "LawPolicy v1 supplies evaluator selection only; it does not supply witness, axis, or obstruction DSL"
+                ]
+            })
+        })
+        .collect()
+}
+
+fn signature_axes_v1(
+    typed_results: &TypedEvaluatorResultsV1,
+    architecture_distance: &Value,
+) -> Vec<Value> {
+    typed_results
+        .results
+        .iter()
+        .enumerate()
+        .map(|(index, result)| {
+            let value = if result.status == "measuredViolation" {
+                1
+            } else {
+                0
+            };
+            json!({
+                "signatureAxisId": signature_axis_id(&result.law),
+                "axisRef": format!("law-axis:{}", stable_ref(&result.law)),
+                "lawRef": result.law,
+                "evaluatorRef": result.evaluator,
+                "value": value,
+                "measurementStatus": measurement_status(result),
+                "status": result.status,
+                "typedEvaluatorResultRef": typed_evaluator_result_ref(index),
+                "generatedLawInputRef": format!("/generatedLawInputs/{index}"),
+                "signatureDistanceReadingRefs": signature_distance_reading_refs(architecture_distance, index),
+                "registryBasisRefs": registry_basis_refs(result),
+                "basisRefs": result.basis_refs,
+                "sourceRefs": result.support_atom_refs,
+                "supportAtomRefs": result.support_atom_refs,
+                "supportMoleculeRefs": result.support_molecule_refs,
+                "detailRefs": result.detail_refs,
+                "blockerReason": result.blocker_reason,
+                "nonConclusions": [
+                    "signatureAxes/v1 is derived from typed evaluator status and architecture distance readings",
+                    "zero value means no selected measured violation for this axis; blocked status is not measured zero"
+                ]
+            })
+        })
+        .collect()
+}
+
+fn generated_obstructions_v1(typed_results: &TypedEvaluatorResultsV1) -> Vec<Value> {
+    typed_results
+        .results
+        .iter()
+        .enumerate()
+        .filter(|(_, result)| result.status != "measuredPass")
+        .map(|(index, result)| {
+            json!({
+                "generatedObstructionId": generated_obstruction_id(&result.law),
+                "obstructionKind": if result.status == "measuredViolation" {
+                    "measuredLawViolation"
+                } else {
+                    "blockedObstructionCandidate"
+                },
+                "law": result.law,
+                "evaluator": result.evaluator,
+                "localStatus": local_status(result),
+                "blockerStatus": if result.status == "measuredViolation" {
+                    "locallyMeasured"
+                } else {
+                    "locallyBlocked"
+                },
+                "typedEvaluatorResultRef": typed_evaluator_result_ref(index),
+                "generatedLawInputRef": format!("/generatedLawInputs/{index}"),
+                "signatureAxisRef": format!("/signatureAxes/{index}"),
+                "registryBasisRefs": registry_basis_refs(result),
+                "basisRefs": result.basis_refs,
+                "supportAtomRefs": result.support_atom_refs,
+                "supportMoleculeRefs": result.support_molecule_refs,
+                "detailRefs": result.detail_refs,
+                "blockerReason": result.blocker_reason,
+                "nonConclusions": [
+                    "generatedObstructions/v1 is derived from typed evaluator status only",
+                    "blocked obstruction candidates are missing-evidence diagnostics, not measured violations"
+                ]
+            })
+        })
+        .collect()
+}
+
+fn generated_repair_targets_v1(generated_obstructions: &[Value]) -> Vec<Value> {
+    generated_obstructions
+        .iter()
+        .enumerate()
+        .map(|(index, obstruction)| {
+            let target_kind = if obstruction["obstructionKind"] == "measuredLawViolation" {
+                "reviewMeasuredViolation"
+            } else {
+                "collectMissingEvidence"
+            };
+            json!({
+                "generatedRepairTargetId": format!(
+                    "generated-repair-target:{}",
+                    stable_ref(
+                        obstruction["law"]
+                            .as_str()
+                            .unwrap_or("unknown-law")
+                    )
+                ),
+                "targetKind": target_kind,
+                "law": obstruction["law"],
+                "evaluator": obstruction["evaluator"],
+                "generatedObstructionRef": format!("/generatedObstructions/{index}"),
+                "typedEvaluatorResultRef": obstruction["typedEvaluatorResultRef"],
+                "signatureAxisRef": obstruction["signatureAxisRef"],
+                "localStatus": obstruction["localStatus"],
+                "registryBasisRefs": obstruction["registryBasisRefs"],
+                "basisRefs": obstruction["basisRefs"],
+                "supportAtomRefs": obstruction["supportAtomRefs"],
+                "supportMoleculeRefs": obstruction["supportMoleculeRefs"],
+                "detailRefs": obstruction["detailRefs"],
+                "blockerReason": obstruction["blockerReason"],
+                "nonConclusions": [
+                    "generatedRepairTargets/v1 names bounded review targets; it does not prove a repair operation",
+                    "repair target generation does not read removed v0 repair candidate inputs"
+                ]
+            })
+        })
+        .collect()
+}
+
+fn generated_law_input_id(law: &str) -> String {
+    format!("generated-law-input:{}", stable_ref(law))
+}
+
+fn signature_axis_id(law: &str) -> String {
+    format!("sig-axis:{}", stable_ref(law))
+}
+
+fn generated_obstruction_id(law: &str) -> String {
+    format!("generated-obstruction:{}", stable_ref(law))
+}
+
+fn typed_evaluator_result_ref(index: usize) -> String {
+    format!("/typedEvaluatorResults/{index}")
+}
+
+fn typed_result_from_packet_ref<'a>(
+    typed_results: &'a TypedEvaluatorResultsV1,
+    reference: &str,
+) -> Option<&'a TypedEvaluatorResultV1> {
+    reference
+        .strip_prefix("/typedEvaluatorResults/")
+        .and_then(|index| index.parse::<usize>().ok())
+        .and_then(|index| typed_results.results.get(index))
+}
+
+fn repair_target_kind(obstruction: &Value) -> &'static str {
+    if obstruction["obstructionKind"] == "measuredLawViolation" {
+        "reviewMeasuredViolation"
+    } else {
+        "collectMissingEvidence"
+    }
+}
+
+fn registry_basis_refs(result: &TypedEvaluatorResultV1) -> Vec<String> {
+    vec![
+        format!("law-evaluator-registry@1/evaluators/{}", result.evaluator),
+        format!("law-evaluator-registry@1/laws/{}", result.law),
+        "law-evaluator-registry@1/distance-contribution".to_string(),
+    ]
+}
+
+fn local_status(result: &TypedEvaluatorResultV1) -> &'static str {
+    match result.status.as_str() {
+        "measuredViolation" => "localViolated",
+        "measuredPass" => "localSatisfied",
+        "blocked" | "unknown" | "unmeasured" => "locallyBlocked",
+        _ => "locallyUnknown",
+    }
+}
+
+fn measurement_status(result: &TypedEvaluatorResultV1) -> &'static str {
+    match result.status.as_str() {
+        "measuredPass" | "measuredViolation" => "measured",
+        "blocked" | "unknown" | "unmeasured" => "blocked",
+        _ => "unknown",
+    }
+}
+
+fn signature_distance_reading_refs(architecture_distance: &Value, index: usize) -> Vec<String> {
+    architecture_distance["signatureDistanceReadings"]
+        .as_array()
+        .and_then(|readings| readings.get(index))
+        .map(|_| {
+            vec![format!(
+                "/architectureDistance/signatureDistanceReadings/{index}"
+            )]
+        })
+        .unwrap_or_default()
+}
+
+fn detail_index_section_v1(name: &str, pointer: &str, count: usize) -> Value {
+    json!({
+        "name": name,
+        "packetRef": format!("packet:{pointer}"),
+        "count": count
+    })
+}
+
+fn packet_array_len(packet: &Value, field: &str) -> usize {
+    packet[field].as_array().map(Vec::len).unwrap_or_default()
+}
+
+fn derived_packet_refs(packet: &Value) -> Vec<String> {
+    [
+        "generatedLawInputs",
+        "signatureAxes",
+        "generatedObstructions",
+        "generatedRepairTargets",
+    ]
+    .iter()
+    .flat_map(|field| {
+        packet[field].as_array().into_iter().flat_map(move |items| {
+            (0..items.len()).map(move |index| format!("packet:/{field}/{index}"))
+        })
+    })
+    .collect()
+}
+
+fn derived_detail_index_entries(packet: &Value) -> Vec<Value> {
+    let mut entries = Vec::new();
+    entries.extend(derived_detail_entries_for_field(
+        packet,
+        "generatedLawInputs",
+        "lawInputId",
+        "generatedLawInputs",
+    ));
+    entries.extend(derived_detail_entries_for_field(
+        packet,
+        "signatureAxes",
+        "signatureAxisId",
+        "signatureAxes",
+    ));
+    entries.extend(derived_detail_entries_for_field(
+        packet,
+        "generatedObstructions",
+        "generatedObstructionId",
+        "generatedObstructions",
+    ));
+    entries.extend(derived_detail_entries_for_field(
+        packet,
+        "generatedRepairTargets",
+        "generatedRepairTargetId",
+        "generatedRepairTargets",
+    ));
+    entries
+}
+
+fn derived_detail_entries_for_field(
+    packet: &Value,
+    field: &str,
+    id_field: &str,
+    namespace: &str,
+) -> Vec<Value> {
+    packet[field]
+        .as_array()
+        .into_iter()
+        .flat_map(|items| {
+            items.iter().enumerate().map(move |(index, item)| {
+                let fallback_id = format!("{namespace}:{index}");
+                let id = item[id_field].as_str().unwrap_or(&fallback_id);
+                json!({
+                    "resultRef": format!("{namespace}:{id}"),
+                    "packetRef": format!("packet:/{field}/{index}"),
+                    "typedEvaluatorResultRef": item["typedEvaluatorResultRef"],
+                    "generatedLawInputRef": item["generatedLawInputRef"],
+                    "signatureAxisRef": item["signatureAxisRef"],
+                    "generatedObstructionRef": item["generatedObstructionRef"],
+                    "status": item["status"],
+                    "localStatus": item["localStatus"],
+                    "targetKind": item["targetKind"],
+                    "supportAtomRefs": item["supportAtomRefs"],
+                    "supportMoleculeRefs": item["supportMoleculeRefs"],
+                    "basisRefs": item["basisRefs"],
+                    "registryBasisRefs": item["registryBasisRefs"],
+                    "detailRefs": item["detailRefs"]
+                })
+            })
+        })
+        .collect()
 }
 
 fn evaluate_replacement_registry_v1(
