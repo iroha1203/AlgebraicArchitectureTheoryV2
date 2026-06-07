@@ -42,6 +42,7 @@ Atom handoff checklist:
 
 Forward design PRDs:
 
+- [ArchMap Minimal Observation Contract PRD](archmap_minimal_observation_contract_prd.md)
 - [LLM-native ArchMap / ArchSig PRD](llm_native_archmap_archsig_prd.md)
 - [ArchSig AAT Analysis Engine PRD](archsig_aat_analysis_engine_prd.md)
 - [ArchSig Output / Viewer PRD](archsig_output_report_prd.md)
