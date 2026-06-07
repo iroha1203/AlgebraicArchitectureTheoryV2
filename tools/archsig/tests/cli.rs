@@ -519,6 +519,191 @@ fn cli_analyze_v1_spectrum_detects_nonzero_curvature_from_typed_violation() {
 }
 
 #[test]
+fn cli_analyze_v1_homotopy_surfaces_zero_nonzero_and_missing_filler() {
+    let root = archmap_v1_root();
+    for (fixture, expected_status, expected_loop_status) in [
+        (
+            "archmap_homotopy_zero.json",
+            "measuredZeroWithinSelectedFillings",
+            "measuredZero",
+        ),
+        (
+            "archmap_homotopy_nonzero.json",
+            "actionable",
+            "measuredNonzero",
+        ),
+        (
+            "archmap_homotopy_unmeasured_axis.json",
+            "needsHomotopyEvidenceReview",
+            "unmeasuredSelectedAxisDifference",
+        ),
+        (
+            "archmap_homotopy_hole.json",
+            "needsHomotopyEvidenceReview",
+            "blockedByMissingFiller",
+        ),
+    ] {
+        let out_dir = temp_dir(&format!("analyze-v1-homotopy-{expected_loop_status}"));
+        let output = run_sig0_output(&[
+            "analyze",
+            "--archmap",
+            root.join(fixture).to_str().expect("path is utf-8"),
+            "--law-policy",
+            root.join("law_policy.json")
+                .to_str()
+                .expect("path is utf-8"),
+            "--out-dir",
+            out_dir.to_str().expect("path is utf-8"),
+            "--emit-raw-artifacts",
+        ]);
+
+        assert!(output.status.success());
+        let packet = read_json(&out_dir.join("archsig-analysis-packet.json"));
+        assert_eq!(
+            packet["architectureHomotopyReport"]["status"].as_str(),
+            Some(expected_status)
+        );
+        assert!(
+            packet["homotopyHolonomyReadings"]
+                .as_array()
+                .is_some_and(|readings| {
+                    readings.iter().any(|reading| {
+                        reading["holonomyStatus"] == expected_loop_status
+                            && reading["pathHomotopyDiagramRef"]
+                                .as_str()
+                                .is_some_and(|reference| packet.pointer(reference).is_some())
+                    })
+                }),
+            "homotopy holonomy reading must expose expected status with refs"
+        );
+        let report = &packet["architectureHomotopyReport"];
+        if expected_loop_status == "blockedByMissingFiller" {
+            assert!(
+                report["unfilledLoops"]
+                    .as_array()
+                    .is_some_and(|items| !items.is_empty())
+                    && report["missingFillerEvidence"]
+                        .as_array()
+                        .is_some_and(|items| !items.is_empty())
+                    && packet["homotopyDistanceReadings"]
+                        .as_array()
+                        .is_some_and(|items| {
+                            items.iter().any(|reading| {
+                                reading["measurementStatus"] == "blockedByMissingFiller"
+                                    && reading["homotopyDistance"].is_null()
+                                    && reading["observationGapLowerBound"]
+                                        .as_i64()
+                                        .is_some_and(|value| value > 0)
+                            })
+                        }),
+                "missing filler must stay blocked and must not become measured zero"
+            );
+        } else if expected_loop_status == "unmeasuredSelectedAxisDifference" {
+            assert!(
+                report["nonzeroHolonomyLoops"]
+                    .as_array()
+                    .is_some_and(Vec::is_empty)
+                    && packet["homotopyDistanceReadings"]
+                        .as_array()
+                        .is_some_and(|items| {
+                            items.iter().any(|reading| {
+                                reading["measurementStatus"] == "blockedByCoverageGap"
+                                    && reading["homotopyDistance"].is_null()
+                                    && reading["observationGapLowerBound"]
+                                        .as_i64()
+                                        .is_some_and(|value| value > 0)
+                            })
+                        }),
+                "semantic/runtime axis presence without selected nonzero evaluator support must stay unmeasured"
+            );
+        } else if expected_loop_status == "measuredNonzero" {
+            assert!(
+                report["nonzeroHolonomyLoops"]
+                    .as_array()
+                    .is_some_and(|items| !items.is_empty())
+                    && report["topLocalCurvatureCells"]
+                        .as_array()
+                        .is_some_and(|items| !items.is_empty()),
+                "nonzero filled loop must surface holonomy and local curvature cells"
+            );
+        } else {
+            assert!(
+                report["filledLoops"]
+                    .as_array()
+                    .is_some_and(|items| !items.is_empty())
+                    && report["nonzeroHolonomyLoops"]
+                        .as_array()
+                        .is_some_and(Vec::is_empty),
+                "zero filled loop must remain measured zero within selected filling"
+            );
+        }
+        let validation = read_json(&out_dir.join("archsig-analysis-validation.json"));
+        assert!(
+            validation["checks"].as_array().is_some_and(|checks| {
+                checks.iter().any(|check| {
+                    check["checkId"] == "archsig.v1.architectureHomotopyReportSurface"
+                        && check["result"] == "pass"
+                })
+            }),
+            "analysis validation must lock v1 homotopy surface"
+        );
+    }
+}
+
+#[test]
+fn cli_analyze_v1_homotopy_accepts_empty_molecule_support() {
+    let out_dir = temp_dir("analyze-v1-homotopy-empty-support");
+    let root = archmap_v1_root();
+
+    let output = run_sig0_output(&[
+        "analyze",
+        "--archmap",
+        root.join("archmap_no_molecule.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--law-policy",
+        root.join("law_policy.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--out-dir",
+        out_dir.to_str().expect("path is utf-8"),
+        "--emit-raw-artifacts",
+    ]);
+
+    assert!(output.status.success());
+    let packet = read_json(&out_dir.join("archsig-analysis-packet.json"));
+    assert_eq!(
+        packet["architectureHomotopyReport"]["status"].as_str(),
+        Some("measuredZeroWithinSelectedFillings")
+    );
+    assert!(
+        packet["pathHomotopyDiagramReadings"]
+            .as_array()
+            .is_some_and(Vec::is_empty)
+            && packet["homotopyHolonomyReadings"]
+                .as_array()
+                .is_some_and(Vec::is_empty)
+            && packet["stokesStyleReadings"]
+                .as_array()
+                .is_some_and(Vec::is_empty)
+            && packet["homotopyDistanceReadings"]
+                .as_array()
+                .is_some_and(Vec::is_empty),
+        "empty molecule support must be a valid empty homotopy surface"
+    );
+    let validation = read_json(&out_dir.join("archsig-analysis-validation.json"));
+    assert!(
+        validation["checks"].as_array().is_some_and(|checks| {
+            checks.iter().any(|check| {
+                check["checkId"] == "archsig.v1.architectureHomotopyReportSurface"
+                    && check["result"] == "pass"
+            })
+        }),
+        "empty molecule support must not fail homotopy validation"
+    );
+}
+
+#[test]
 fn cli_rejects_archmap_v1_unknown_atom_kind() {
     let out_dir = temp_dir("archmap-v1-unknown-kind");
     let root = archmap_v1_root();
@@ -1075,6 +1260,11 @@ fn cli_analyze_v1_emit_raw_artifacts_writes_typed_packet_detail_and_handoff() {
         "spectralAnalysisReadings",
         "spectralModeReadings",
         "spectralDrilldownReadings",
+        "architectureHomotopyReport",
+        "pathHomotopyDiagramReadings",
+        "homotopyHolonomyReadings",
+        "stokesStyleReadings",
+        "homotopyDistanceReadings",
         "typedEvaluatorResults",
         "architectureDistanceSignatureReadings",
     ] {
@@ -1091,6 +1281,7 @@ fn cli_analyze_v1_emit_raw_artifacts_writes_typed_packet_detail_and_handoff() {
         "projectionInfo",
         "operationSquareEvidence",
         "spectrumMeasurementProfile",
+        "homotopyMeasurementProfile",
         "concernHints",
         "observationGaps",
     ] {
@@ -1102,8 +1293,9 @@ fn cli_analyze_v1_emit_raw_artifacts_writes_typed_packet_detail_and_handoff() {
     assert!(
         packet["generatedPacketRefs"]
             .as_object()
-            .is_some_and(|refs| !refs.contains_key("spectrumMeasurementProfile")),
-        "v1 generated packet refs must not restore v0 spectrumMeasurementProfile"
+            .is_some_and(|refs| !refs.contains_key("spectrumMeasurementProfile")
+                && !refs.contains_key("homotopyMeasurementProfile")),
+        "v1 generated packet refs must not restore v0 measurement profiles"
     );
     assert!(
         packet["architectureSpectrumReport"].is_object()
@@ -1114,6 +1306,22 @@ fn cli_analyze_v1_emit_raw_artifacts_writes_typed_packet_detail_and_handoff() {
                 .as_array()
                 .is_some_and(|items| items.len() == 6),
         "v1 packet must expose ArchitectureSpectrumReport and ACTS support / mode readings"
+    );
+    assert!(
+        packet["architectureHomotopyReport"].is_object()
+            && packet["pathHomotopyDiagramReadings"]
+                .as_array()
+                .is_some_and(|items| !items.is_empty())
+            && packet["homotopyHolonomyReadings"]
+                .as_array()
+                .is_some_and(|items| !items.is_empty())
+            && packet["stokesStyleReadings"]
+                .as_array()
+                .is_some_and(|items| !items.is_empty())
+            && packet["homotopyDistanceReadings"]
+                .as_array()
+                .is_some_and(|items| !items.is_empty()),
+        "v1 packet must expose ArchitectureHomotopyReport and homotopy reading families"
     );
     assert_eq!(
         packet["architectureSpectrumReport"]["status"].as_str(),
@@ -1151,6 +1359,7 @@ fn cli_analyze_v1_emit_raw_artifacts_writes_typed_packet_detail_and_handoff() {
         "archsig.v1.generatedPacketRefsResolve",
         "archsig.v1.removedV0InputFieldsAbsent",
         "archsig.v1.architectureSpectrumReportSurface",
+        "archsig.v1.architectureHomotopyReportSurface",
     ] {
         assert!(
             analysis_validation["checks"]
@@ -1192,6 +1401,13 @@ fn cli_analyze_v1_emit_raw_artifacts_writes_typed_packet_detail_and_handoff() {
                 "spectralDrilldownReadings",
                 "architectureSpectrumReport.topHotspots",
                 "architectureSpectrumReport.recurrentObstructions",
+                "pathHomotopyDiagramReadings",
+                "homotopyHolonomyReadings",
+                "stokesStyleReadings",
+                "homotopyDistanceReadings",
+                "architectureHomotopyReport.filledLoops",
+                "architectureHomotopyReport.unfilledLoops",
+                "architectureHomotopyReport.nonzeroHolonomyLoops",
             ]
             .into_iter()
             .all(|name| sections.iter().any(|section| section["name"] == name))
@@ -1218,8 +1434,23 @@ fn cli_analyze_v1_emit_raw_artifacts_writes_typed_packet_detail_and_handoff() {
                 && entries.iter().any(|entry| {
                     entry["packetRef"] == "packet:/architectureSpectrumReport/topHotspots/0"
                 })
+                && entries
+                    .iter()
+                    .any(|entry| entry["packetRef"] == "packet:/pathHomotopyDiagramReadings/0")
+                && entries
+                    .iter()
+                    .any(|entry| entry["packetRef"] == "packet:/homotopyHolonomyReadings/0")
+                && entries
+                    .iter()
+                    .any(|entry| entry["packetRef"] == "packet:/stokesStyleReadings/0")
+                && entries
+                    .iter()
+                    .any(|entry| entry["packetRef"] == "packet:/homotopyDistanceReadings/0")
+                && entries.iter().any(|entry| {
+                    entry["packetRef"] == "packet:/architectureHomotopyReport/filledLoops/0"
+                })
         }),
-        "v1 detail index must include resolvable generated and spectrum entries"
+        "v1 detail index must include resolvable generated, spectrum, and homotopy entries"
     );
     assert_eq!(
         read_json(&out_dir.join("llm-interpretation-packet.json"))["schema"],
@@ -1237,6 +1468,28 @@ fn cli_analyze_v1_emit_raw_artifacts_writes_typed_packet_detail_and_handoff() {
     assert_eq!(
         llm_packet["architectureSpectrumReportSummary"]["status"].as_str(),
         Some("measuredZeroWithinSelectedSupport")
+    );
+    assert_eq!(
+        llm_packet["architectureHomotopyReportSummary"]["reportRef"].as_str(),
+        Some("archsig-analysis-packet.json#/architectureHomotopyReport")
+    );
+    assert!(
+        llm_packet["architectureHomotopyReportSummary"]["topArchitecturalHoleRefs"]
+            .as_array()
+            .into_iter()
+            .flatten()
+            .chain(
+                llm_packet["architectureHomotopyReportSummary"]["topNonzeroHolonomyRefs"]
+                    .as_array()
+                    .into_iter()
+                    .flatten()
+            )
+            .all(|reference| {
+                reference
+                    .as_str()
+                    .is_some_and(|pointer| packet.pointer(pointer).is_some())
+            }),
+        "LLM homotopy summary refs must resolve inside the analysis packet"
     );
     assert!(
         packet["nonConclusions"].as_array().is_some_and(|items| {

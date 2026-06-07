@@ -1,0 +1,24 @@
+{
+  "schema": "archmap/v1",
+  "id": "no-molecule",
+  "sources": {
+    "src.app": {
+      "kind": "file",
+      "path": "sample/src/app.rs"
+    },
+    "domain.OrderService": {
+      "kind": "symbol",
+      "source": "src.app",
+      "symbol": "OrderService"
+    }
+  },
+  "atoms": [
+    {
+      "id": "atom:order-service",
+      "kind": "component",
+      "subject": "domain.OrderService",
+      "refs": ["domain.OrderService"]
+    }
+  ],
+  "molecules": []
+}

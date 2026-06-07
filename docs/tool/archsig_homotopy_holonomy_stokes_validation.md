@@ -11,6 +11,12 @@ obligation.
 
 Validated surfaces:
 
+- `archmap/v1` runtime path Homotopy / Holonomy / Stokes derived output:
+  - `pathHomotopyDiagramReadings`;
+  - `homotopyHolonomyReadings`;
+  - `stokesStyleReadings`;
+  - `homotopyDistanceReadings`;
+  - `architectureHomotopyReport`.
 - `law-policy-v0` optional `homotopyMeasurementProfile`.
 - LLM-native ArchSig skills for LawPolicy construction and HomotopyReport
   reading.
@@ -41,6 +47,8 @@ Non-goals remain unchanged:
 - no automatic violation proof from an unfilled loop;
 - no future incident, empirical risk, or repair-safety certificate;
 - no requirement that humans hand-author the full homotopy measurement profile.
+- no `archmap/v1` runtime dependency on v0 `operationSquareEvidence` or
+  `homotopyMeasurementProfile`.
 
 ## Acceptance Criteria Mapping
 
@@ -63,6 +71,8 @@ Non-goals remain unchanged:
 | Unfilled loop is architectural hole / missing filler evidence, not violation proof. | `unfilledLoops`, `architecturalHoleReadings`, report non-conclusions, and Lean `unfilledLoop_not_violationConclusion`. | implemented / proved |
 | Required homotopy fixtures are covered. | `tools/archsig/tests/fixtures/homotopy_report/manifest.json` covers zero holonomy, nonzero filled loop, unfilled hole, cache / repository, event projection, retry / idempotency, authorization, and coupon / tax / rounding readings. `tools/archsig/tests/fixtures/complete_archmap_acceptance/manifest.json` locks a sanitized large-repo class complete-first fixture with measured Stokes positive local curvature and one targeted blocked gap. | implemented |
 | Validation checks schema shape, refs, coverage boundary, and non-conclusions. | `homotopy_report_fixture_manifest_locks_golden_validation`, packet validation, and locked fixture validation artifact. | implemented |
+| `archmap/v1` runtime emits HomotopyReport from normalized atoms / explicit molecule candidates without v0 operation-square inputs. | `cli_analyze_v1_homotopy_surfaces_zero_nonzero_and_missing_filler` and `archsig.v1.architectureHomotopyReportSurface` validation check. | implemented |
+| Missing filler evidence does not become measured zero. | `archmap_homotopy_hole.json` fixture keeps `homotopyDistance=null`, `measurementStatus=blockedByMissingFiller`, and `observationGapLowerBound>0`. | implemented |
 | Lean minimal theorem guardrail exists and builds. | `Formal/Arch/Signature/HomotopyHolonomyStokes.lean`, imported by `Formal.lean`; local and CI `lake build`. | proved / bounded |
 | Proof obligations and theorem index reflect Lean additions and claim boundary. | `docs/aat/proof_obligations.md`, `docs/aat/lean_theorem_index.md`. | documented |
 | AAT mathematical text reflects the Homotopy-Holonomy Stokes reading as theory, not implementation status. | `docs/aat/mathematical_theory/part_2_flatness_calculus_geometry.md`, `part_3_analytic_state_examples.md`. | documented |
@@ -71,6 +81,43 @@ Non-goals remain unchanged:
 | Cargo, Lean, diff, and hidden Unicode checks pass. | Commands listed below. | validated |
 
 ## Local E2E Validation
+
+For the current `archmap/v1` runtime path, the closure run uses explicit v1
+ArchMap fixtures and the primary `analyze --emit-raw-artifacts` workflow:
+
+```bash
+cargo test --manifest-path tools/archsig/Cargo.toml \
+  cli_analyze_v1_homotopy_surfaces_zero_nonzero_and_missing_filler -- --nocapture
+
+cargo run --manifest-path tools/archsig/Cargo.toml -- analyze \
+  --archmap tools/archsig/examples/practical-rust-service/archmap/archmap.json \
+  --law-policy tools/archsig/examples/practical-rust-service/law_policy/law_policy.json \
+  --out-dir .tmp/issue-1839-practical-strict \
+  --emit-raw-artifacts \
+  --strict-distance
+```
+
+The v1 runtime validation result is:
+
+```text
+archsig-analysis-validation: pass
+architectureHomotopyReportSurface: pass
+```
+
+Dedicated v1 fixtures cover:
+
+- `archmap_homotopy_zero.json`: filled loop with selected-axis zero holonomy;
+- `archmap_homotopy_nonzero.json`: filled loop with selected-axis nonzero
+  holonomy and local curvature cell;
+- `archmap_homotopy_unmeasured_axis.json`: semantic / runtime axis difference
+  without selected nonzero evaluator support as an unmeasured coverage gap;
+- `archmap_homotopy_hole.json`: blocked molecule candidate as missing filler /
+  architectural hole, not measured zero;
+- `archmap_no_molecule.json`: valid ArchMap v1 input with no molecule support,
+  where homotopy arrays are empty and validation still passes.
+
+The legacy validation record below remains the historical rich-packet closure
+for `law-policy-v0` / archived homotopy fixtures.
 
 The closure run uses the homotopy fixture as a bounded current-state
 Homotopy / Holonomy / Stokes measurement.
@@ -170,11 +217,12 @@ The implemented package supports the following bounded reading:
 ```text
 supplied ArchMap
 + selected LawPolicy
-+ optional homotopyMeasurementProfile
-+ readingBoundary for measured / proxy / unmeasured / coverage-blocked rows
-+ finite measured path pair / loop / filler family
-+ operation sequences, endpoint refs, and generator candidates
-+ selected step-wise continuation / distance readings
++ normalized v1 atom / relation / explicit molecule support
++ selected typed evaluator status and curvature support readings
++ readingBoundary for measured / unmeasured / coverage-blocked rows
++ finite explicit path pair / loop / filler candidate family
++ packet coverage gaps for missing fillers and unmeasured selected-axis rows
++ selected homotopy distance readings
 + explicit coverage / exactness / non-conclusion records
 -> ArchitectureHomotopyReport as a current-state review surface
 ```

@@ -1,0 +1,37 @@
+{
+  "schema": "archmap/v1",
+  "id": "homotopy-zero",
+  "sources": {
+    "src.app": {
+      "kind": "file",
+      "path": "sample/src/app.rs"
+    },
+    "domain.OrderService": {
+      "kind": "symbol",
+      "source": "src.app",
+      "symbol": "OrderService"
+    }
+  },
+  "atoms": [
+    {
+      "id": "atom:order-service",
+      "kind": "component",
+      "subject": "domain.OrderService",
+      "refs": ["domain.OrderService"]
+    },
+    {
+      "id": "atom:order-contract",
+      "kind": "contract",
+      "diagram": "domain.OrderService",
+      "contract": "OrderServiceContract",
+      "refs": ["domain.OrderService"]
+    }
+  ],
+  "molecules": [
+    {
+      "id": "mol:order-contract-loop",
+      "atoms": ["atom:order-service", "atom:order-contract"],
+      "refs": ["domain.OrderService"]
+    }
+  ]
+}

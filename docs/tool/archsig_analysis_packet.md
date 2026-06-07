@@ -79,14 +79,24 @@ output:
   obstruction readings, coverage gaps, measured boundary, review focus, and
   non-conclusions. Spectrum zero is bounded to selected measured support and
   does not imply global lawfulness or flatness.
+- `pathHomotopyDiagramReadings`, `homotopyHolonomyReadings`,
+  `stokesStyleReadings`, and `homotopyDistanceReadings`: bounded homotopy /
+  holonomy / Stokes-style output over normalized relations and explicit
+  molecule candidates. Generated molecule candidates are read as measured
+  fillers; blocked molecule candidates become missing filler evidence and do
+  not become zero holonomy.
+- `architectureHomotopyReport`: filled loops, unfilled loops, nonzero holonomy
+  loops, local curvature cells, missing filler evidence, architectural hole
+  readings, aggregate review counters, coverage gaps, review focus, and
+  non-conclusions.
 
 The v1 path does not read v0 helper fields such as `semanticObservations`,
 `projectionInfo`, `operationSquareEvidence`, `concernHints`, or
 `observationGaps` as positive readings. It also does not read v0
-`spectrumMeasurementProfile` as a measurement recipe, call Lean, or require a
-Lean proof object. `--emit-raw-artifacts` writes v1 raw packet,
-detail-index, and LLM interpretation artifacts; without it, summary / viewer /
-manifest remain the primary reading surface.
+`spectrumMeasurementProfile` or `homotopyMeasurementProfile` as measurement
+recipes, call Lean, or require a Lean proof object. `--emit-raw-artifacts`
+writes v1 raw packet, detail-index, and LLM interpretation artifacts; without
+it, summary / viewer / manifest remain the primary reading surface.
 
 `archsig-analysis-packet-v0` is the legacy ArchSig output artifact for
 `archmap-observation-map-v0` / `law-policy-v0`.
@@ -241,13 +251,18 @@ because they cross-check existing packet readings:
 - `repairTransferRisk` pairs decreased selected axes with transferred
   obstruction, bridge-split, and precondition evidence.
 
-`ArchitectureHomotopyReport` is a bounded codebase-inspection surface. It reads
-candidate path pairs, loops, fillers, architectural holes, selected-axis
-holonomy, and Stokes-style review queues under the selected LawPolicy
-`homotopyMeasurementProfile`. User-facing summaries should report measured
-unfilled loops and nonzero holonomy as architectural holes / review queues
-first; path truth, global homology, future safety, and repair-safety boundaries
-belong in packet detail and metadata.
+`ArchitectureHomotopyReport` is a bounded v1 codebase-inspection surface. It
+reads candidate path pairs, loops, fillers, architectural holes, selected-axis
+holonomy, and Stokes-style review queues from normalized ArchMap v1 atoms,
+explicit molecule candidates, typed evaluator status, and packet coverage gaps.
+It does not read the legacy v0 `homotopyMeasurementProfile` as a measurement
+recipe. Nonzero holonomy is emitted only when the selected typed evaluator
+surface exposes measured nonzero curvature support for the explicit molecule;
+semantic / runtime axis differences without that support remain unmeasured
+coverage gaps. User-facing summaries should report measured unfilled loops and
+nonzero holonomy as architectural holes / review queues first; path truth,
+global homology, future safety, and repair-safety boundaries belong in packet
+detail and metadata.
 
 Spectrum and Homotopy surfaces expose `measurementStatus` and
 `readingBoundary` so a reader can distinguish measured rows, bounded proxy
