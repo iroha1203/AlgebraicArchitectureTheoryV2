@@ -1,0 +1,20 @@
+{
+  "schema": "archmap/v1",
+  "id": "bad-ref",
+  "sources": {
+    "src.app": {
+      "kind": "file",
+      "path": "sample/src/app.rs"
+    }
+  },
+  "atoms": [
+    {
+      "id": "atom:missing-source",
+      "kind": "capability",
+      "subject": "domain.MissingService",
+      "predicate": "placesOrder",
+      "refs": ["src.app"]
+    }
+  ],
+  "molecules": []
+}

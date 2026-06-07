@@ -10,6 +10,10 @@ fn fixture_root() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/minimal")
 }
 
+fn archmap_v1_root() -> PathBuf {
+    Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/archmap_v1")
+}
+
 fn expressiveness_root() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/expressiveness")
 }
@@ -48,6 +52,284 @@ fn sharded_root() -> PathBuf {
 
 fn negative_root() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/negative")
+}
+
+#[test]
+fn cli_validates_archmap_v1_atom_contract() {
+    let out_dir = temp_dir("archmap-v1-validation");
+    let root = archmap_v1_root();
+    let report = out_dir.join("archmap-validation.json");
+
+    run_sig0(&[
+        "archmap",
+        "--input",
+        root.join("archmap.json").to_str().expect("path is utf-8"),
+        "--out",
+        report.to_str().expect("path is utf-8"),
+    ]);
+
+    let json = read_json(&report);
+    assert_eq!(json["schemaVersion"], "archmap-validation-report-v1");
+    assert_eq!(json["inputSchema"], "archmap/v1");
+    assert_eq!(json["summary"]["result"], "pass");
+    assert_eq!(json["summary"]["atomCount"], 3);
+    assert_eq!(json["summary"]["moleculeCount"], 1);
+}
+
+#[test]
+fn cli_rejects_archmap_v1_unknown_atom_kind() {
+    let out_dir = temp_dir("archmap-v1-unknown-kind");
+    let root = archmap_v1_root();
+    let report = out_dir.join("archmap-validation.json");
+
+    let output = run_sig0_output(&[
+        "archmap",
+        "--input",
+        root.join("archmap_unknown_kind.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--out",
+        report.to_str().expect("path is utf-8"),
+    ]);
+
+    assert!(!output.status.success());
+    let json = read_json(&report);
+    assert_eq!(json["schemaVersion"], "archmap-validation-report-v1");
+    assert_eq!(json["summary"]["result"], "fail");
+    assert!(
+        json["checks"].as_array().is_some_and(|checks| checks
+            .iter()
+            .any(|check| check["id"] == "archmap-v1-atom-kind-vocabulary"
+                && check["result"] == "fail"))
+    );
+}
+
+#[test]
+fn cli_rejects_archmap_v1_unresolved_source_ref() {
+    let out_dir = temp_dir("archmap-v1-bad-ref");
+    let root = archmap_v1_root();
+    let report = out_dir.join("archmap-validation.json");
+
+    let output = run_sig0_output(&[
+        "archmap",
+        "--input",
+        root.join("archmap_bad_ref.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--out",
+        report.to_str().expect("path is utf-8"),
+    ]);
+
+    assert!(!output.status.success());
+    let json = read_json(&report);
+    assert_eq!(json["summary"]["result"], "fail");
+    assert!(json["checks"].as_array().is_some_and(|checks| {
+        checks
+            .iter()
+            .any(|check| check["id"] == "archmap-v1-atom-refs-resolve" && check["result"] == "fail")
+    }));
+}
+
+#[test]
+fn cli_rejects_archmap_v1_unknown_predicate() {
+    let out_dir = temp_dir("archmap-v1-unknown-predicate");
+    let root = archmap_v1_root();
+    let report = out_dir.join("archmap-validation.json");
+
+    let output = run_sig0_output(&[
+        "archmap",
+        "--input",
+        root.join("archmap_unknown_predicate.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--out",
+        report.to_str().expect("path is utf-8"),
+    ]);
+
+    assert!(!output.status.success());
+    let json = read_json(&report);
+    assert_eq!(json["summary"]["result"], "fail");
+    assert!(
+        json["checks"].as_array().is_some_and(|checks| checks
+            .iter()
+            .any(|check| check["id"] == "archmap-v1-predicate-vocabulary"
+                && check["result"] == "fail"))
+    );
+}
+
+#[test]
+fn cli_rejects_archmap_v1_legacy_root_field() {
+    let out_dir = temp_dir("archmap-v1-legacy-field");
+    let root = archmap_v1_root();
+    let report = out_dir.join("archmap-validation.json");
+
+    let output = run_sig0_output(&[
+        "archmap",
+        "--input",
+        root.join("archmap_legacy_field.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--out",
+        report.to_str().expect("path is utf-8"),
+    ]);
+
+    assert!(!output.status.success());
+    assert!(
+        !report.exists(),
+        "v1 legacy root field must stop before writing a validation report"
+    );
+}
+
+#[test]
+fn cli_validates_law_policy_v1_selector_contract() {
+    let out_dir = temp_dir("law-policy-v1-validation");
+    let root = archmap_v1_root();
+    let report = out_dir.join("law-policy-validation.json");
+
+    run_sig0(&[
+        "law-policy",
+        "--input",
+        root.join("law_policy.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--out",
+        report.to_str().expect("path is utf-8"),
+    ]);
+
+    let json = read_json(&report);
+    assert_eq!(json["schemaVersion"], "law-policy-validation-report-v1");
+    assert_eq!(json["input"]["schema"], "law-policy/v1");
+    assert_eq!(json["summary"]["result"], "pass");
+    assert_eq!(json["summary"]["policyEntryCount"], 2);
+    assert_eq!(json["summary"]["packEntryCount"], 1);
+}
+
+#[test]
+fn cli_rejects_law_policy_v1_unknown_evaluator() {
+    let out_dir = temp_dir("law-policy-v1-unknown-evaluator");
+    let root = archmap_v1_root();
+    let report = out_dir.join("law-policy-validation.json");
+
+    let output = run_sig0_output(&[
+        "law-policy",
+        "--input",
+        root.join("law_policy_unknown_evaluator.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--out",
+        report.to_str().expect("path is utf-8"),
+    ]);
+
+    assert!(!output.status.success());
+    let json = read_json(&report);
+    assert_eq!(json["schemaVersion"], "law-policy-validation-report-v1");
+    assert_eq!(json["summary"]["result"], "fail");
+    assert!(
+        json["checks"].as_array().is_some_and(|checks| checks
+            .iter()
+            .any(|check| check["id"] == "law-policy-v1-registry-vocabulary"
+                && check["result"] == "fail"))
+    );
+}
+
+#[test]
+fn cli_rejects_law_policy_v1_unresolved_basis() {
+    let out_dir = temp_dir("law-policy-v1-unknown-basis");
+    let root = archmap_v1_root();
+    let report = out_dir.join("law-policy-validation.json");
+
+    let output = run_sig0_output(&[
+        "law-policy",
+        "--input",
+        root.join("law_policy_unknown_basis.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--out",
+        report.to_str().expect("path is utf-8"),
+    ]);
+
+    assert!(!output.status.success());
+    let json = read_json(&report);
+    assert_eq!(json["schemaVersion"], "law-policy-validation-report-v1");
+    assert_eq!(json["summary"]["result"], "fail");
+    assert!(json["checks"].as_array().is_some_and(|checks| {
+        checks
+            .iter()
+            .any(|check| check["id"] == "law-policy-v1-basis-recorded" && check["result"] == "fail")
+    }));
+}
+
+#[test]
+fn cli_rejects_law_policy_v1_dsl_field() {
+    let out_dir = temp_dir("law-policy-v1-dsl-field");
+    let root = archmap_v1_root();
+    let report = out_dir.join("law-policy-validation.json");
+
+    let output = run_sig0_output(&[
+        "law-policy",
+        "--input",
+        root.join("law_policy_dsl_field.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--out",
+        report.to_str().expect("path is utf-8"),
+    ]);
+
+    assert!(!output.status.success());
+    assert!(
+        !report.exists(),
+        "LawPolicy v1 DSL fields must stop before writing a validation report"
+    );
+}
+
+#[test]
+fn cli_analyze_v1_writes_validation_artifacts_and_stops_before_packet() {
+    let out_dir = temp_dir("analyze-v1-preflight");
+    let root = archmap_v1_root();
+    for stale_artifact in [
+        "archsig-analysis-packet.json",
+        "archsig-analysis-summary.json",
+        "archsig-atom-viewer-data.json",
+        "archsig-run-manifest.json",
+    ] {
+        fs::write(out_dir.join(stale_artifact), "{}").expect("stale artifact can be written");
+    }
+
+    let output = run_sig0_output(&[
+        "analyze",
+        "--archmap",
+        root.join("archmap.json").to_str().expect("path is utf-8"),
+        "--law-policy",
+        root.join("law_policy.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--out-dir",
+        out_dir.to_str().expect("path is utf-8"),
+    ]);
+
+    assert!(!output.status.success());
+    assert_eq!(
+        read_json(&out_dir.join("archmap-validation.json"))["schemaVersion"],
+        "archmap-validation-report-v1"
+    );
+    assert_eq!(
+        read_json(&out_dir.join("law-policy-validation.json"))["schemaVersion"],
+        "law-policy-validation-report-v1"
+    );
+    assert!(
+        !out_dir.join("archsig-analysis-packet.json").exists(),
+        "v1 input must not be silently converted into a v0 analysis packet"
+    );
+    for stale_artifact in [
+        "archsig-analysis-summary.json",
+        "archsig-atom-viewer-data.json",
+        "archsig-run-manifest.json",
+    ] {
+        assert!(
+            !out_dir.join(stale_artifact).exists(),
+            "v1 preflight failure must remove stale success artifact {stale_artifact}"
+        );
+    }
 }
 
 #[test]
@@ -3319,7 +3601,9 @@ fn cli_schema_catalog_is_primary_archsig_surface_only() {
         vec![
             "archmap",
             "archmap-validation-report",
+            "archmap-v1",
             "law-policy",
+            "law-policy-v1",
             "law-policy-validation-report",
             "archsig-analysis-packet",
             "archsig-analysis-packet-validation-report",

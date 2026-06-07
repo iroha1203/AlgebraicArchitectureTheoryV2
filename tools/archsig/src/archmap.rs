@@ -2,17 +2,375 @@ use std::collections::BTreeSet;
 
 use crate::validation::{count_checks, duplicates, generic_validation_example, validation_check};
 use crate::{
-    ARCHMAP_SCHEMA_VERSION, ARCHMAP_SOURCE_INVENTORY_SCHEMA_VERSION,
-    ARCHMAP_VALIDATION_REPORT_SCHEMA_VERSION, ArchMapAtomicObservationSummary, ArchMapDocumentV0,
-    ArchMapLeanPreservationChecklistEntry, ArchMapLeanPreservationVocabularyEntry,
-    ArchMapSourceInventoryV0, ArchMapSourceRef, ArchMapValidationReportV0,
-    ArchMapValidationSummary, ValidationCheck,
+    ARCHMAP_SCHEMA_VERSION, ARCHMAP_SOURCE_INVENTORY_SCHEMA_VERSION, ARCHMAP_V1_SCHEMA,
+    ARCHMAP_VALIDATION_REPORT_SCHEMA_VERSION, ArchMapAtomV1, ArchMapAtomicObservationSummary,
+    ArchMapDocumentV0, ArchMapDocumentV1, ArchMapLeanPreservationChecklistEntry,
+    ArchMapLeanPreservationVocabularyEntry, ArchMapSourceInventoryV0, ArchMapSourceRef,
+    ArchMapValidationReportV0, ArchMapValidationReportV1, ArchMapValidationSummary,
+    ArchMapValidationSummaryV1, ValidationCheck, ValidationExample,
 };
 
 pub struct ArchMapSourceInventoryInput<'a> {
     pub path: &'a str,
     pub document: Option<&'a ArchMapSourceInventoryV0>,
     pub read_error: Option<String>,
+}
+
+pub fn validate_archmap_v1_report(
+    document: &ArchMapDocumentV1,
+    input_path: &str,
+) -> ArchMapValidationReportV1 {
+    let checks = vec![
+        check_archmap_v1_schema(&document.schema),
+        check_archmap_v1_sources(document),
+        check_archmap_v1_atom_ids(document),
+        check_archmap_v1_atom_kinds(document),
+        check_archmap_v1_atom_shapes(document),
+        check_archmap_v1_atom_predicates(document),
+        check_archmap_v1_atom_refs(document),
+        check_archmap_v1_molecule_refs(document),
+    ];
+    let failed_check_count = count_checks(&checks, "fail");
+    let warning_check_count = count_checks(&checks, "warn");
+    let result = if failed_check_count > 0 {
+        "fail"
+    } else if warning_check_count > 0 {
+        "warn"
+    } else {
+        "pass"
+    };
+
+    ArchMapValidationReportV1 {
+        schema_version: "archmap-validation-report-v1".to_string(),
+        archmap_ref: input_path.to_string(),
+        input_schema: document.schema.clone(),
+        checks,
+        summary: ArchMapValidationSummaryV1 {
+            result: result.to_string(),
+            source_count: document.sources.len(),
+            atom_count: document.atoms.len(),
+            molecule_count: document.molecules.len(),
+            failed_check_count,
+            warning_check_count,
+        },
+        non_conclusions: vec![
+            "ArchMap v1 validation checks the atom map contract; it does not prove architecture lawfulness, source completeness, Lean theorem discharge, or global semantic truth.".to_string(),
+            "Missing atoms remain unavailable to evaluators; they are not measured zero.".to_string(),
+        ],
+    }
+}
+
+fn check_archmap_v1_schema(schema: &str) -> ValidationCheck {
+    let mut check = validation_check(
+        "archmap-v1-schema",
+        "ArchMap v1 uses the atom-to-AAT schema discriminator",
+        if schema == ARCHMAP_V1_SCHEMA {
+            "pass"
+        } else {
+            "fail"
+        },
+    );
+    if check.result == "fail" {
+        check.reason = Some(format!("expected {ARCHMAP_V1_SCHEMA}, found {schema}"));
+    }
+    check
+}
+
+fn check_archmap_v1_sources(document: &ArchMapDocumentV1) -> ValidationCheck {
+    let mut examples = Vec::new();
+    if document.sources.is_empty() {
+        examples.push(generic_validation_example(
+            "sources",
+            "empty",
+            "ArchMap v1 needs a source table for atom refs and source refs",
+        ));
+    }
+    for (source_id, source) in &document.sources {
+        if source.kind.trim().is_empty() {
+            examples.push(generic_validation_example(
+                "sources",
+                source_id,
+                "source kind must be non-empty",
+            ));
+        }
+        if let Some(parent) = source.source.as_deref() {
+            if !document.sources.contains_key(parent) {
+                examples.push(generic_validation_example(
+                    source_id,
+                    parent,
+                    "source parent must resolve to sources",
+                ));
+            }
+        }
+    }
+    check_from_examples(
+        "archmap-v1-sources-resolve",
+        "sources table is present and internally resolvable",
+        examples,
+    )
+}
+
+fn check_archmap_v1_atom_ids(document: &ArchMapDocumentV1) -> ValidationCheck {
+    let mut examples = Vec::new();
+    for atom in &document.atoms {
+        if atom.id.trim().is_empty() {
+            examples.push(generic_validation_example(
+                "atoms[].id",
+                "empty",
+                "atom id must be non-empty",
+            ));
+        }
+    }
+    examples.extend(
+        duplicates(document.atoms.iter().map(|atom| atom.id.as_str()))
+            .into_iter()
+            .map(|duplicate| {
+                generic_validation_example("atoms[].id", &duplicate, "atom id must be unique")
+            }),
+    );
+    check_from_examples(
+        "archmap-v1-atom-ids",
+        "atom ids are non-empty and unique",
+        examples,
+    )
+}
+
+fn check_archmap_v1_atom_kinds(document: &ArchMapDocumentV1) -> ValidationCheck {
+    let examples = document
+        .atoms
+        .iter()
+        .filter(|atom| !is_archmap_v1_atom_kind(&atom.kind))
+        .map(|atom| {
+            generic_validation_example(
+                &atom.id,
+                &atom.kind,
+                "atom kind must be in the v1 constructor vocabulary",
+            )
+        })
+        .collect::<Vec<_>>();
+    check_from_examples(
+        "archmap-v1-atom-kind-vocabulary",
+        "atom kinds are in the v1 constructor vocabulary",
+        examples,
+    )
+}
+
+fn check_archmap_v1_atom_shapes(document: &ArchMapDocumentV1) -> ValidationCheck {
+    let mut examples = Vec::new();
+    for atom in &document.atoms {
+        examples.extend(
+            v1_atom_shape_errors(atom)
+                .into_iter()
+                .map(|message| generic_validation_example(&atom.id, &atom.kind, &message)),
+        );
+    }
+    check_from_examples(
+        "archmap-v1-atom-required-shapes",
+        "atom constructor payloads match required v1 shapes",
+        examples,
+    )
+}
+
+fn check_archmap_v1_atom_predicates(document: &ArchMapDocumentV1) -> ValidationCheck {
+    let mut examples = Vec::new();
+    for atom in &document.atoms {
+        if let Some(predicate) = atom.predicate.as_deref() {
+            if !is_known_v1_predicate(predicate) {
+                examples.push(generic_validation_example(
+                    &atom.id,
+                    predicate,
+                    "predicate must resolve to the v1 predicate vocabulary",
+                ));
+            }
+        }
+    }
+    check_from_examples(
+        "archmap-v1-predicate-vocabulary",
+        "atom predicates resolve to the v1 predicate vocabulary",
+        examples,
+    )
+}
+
+fn check_archmap_v1_atom_refs(document: &ArchMapDocumentV1) -> ValidationCheck {
+    let mut examples = Vec::new();
+    for atom in &document.atoms {
+        for source_ref in atom_refs(atom) {
+            if !document.sources.contains_key(source_ref) {
+                examples.push(generic_validation_example(
+                    &atom.id,
+                    source_ref,
+                    "atom source-bearing field must resolve to sources",
+                ));
+            }
+        }
+        for source_ref in &atom.refs {
+            if !document.sources.contains_key(source_ref) {
+                examples.push(generic_validation_example(
+                    &atom.id,
+                    source_ref,
+                    "atom refs[] entry must resolve to sources",
+                ));
+            }
+        }
+    }
+    check_from_examples(
+        "archmap-v1-atom-refs-resolve",
+        "atom source refs resolve to sources",
+        examples,
+    )
+}
+
+fn check_archmap_v1_molecule_refs(document: &ArchMapDocumentV1) -> ValidationCheck {
+    let atom_ids = document
+        .atoms
+        .iter()
+        .map(|atom| atom.id.as_str())
+        .collect::<BTreeSet<_>>();
+    let mut examples = Vec::new();
+    examples.extend(
+        duplicates(
+            document
+                .molecules
+                .iter()
+                .map(|molecule| molecule.id.as_str()),
+        )
+        .into_iter()
+        .map(|duplicate| {
+            generic_validation_example("molecules[].id", &duplicate, "molecule id must be unique")
+        }),
+    );
+    for molecule in &document.molecules {
+        if molecule.id.trim().is_empty() {
+            examples.push(generic_validation_example(
+                "molecules[].id",
+                "empty",
+                "molecule id must be non-empty",
+            ));
+        }
+        if molecule.atoms.is_empty() {
+            examples.push(generic_validation_example(
+                &molecule.id,
+                "atoms",
+                "molecule must explicitly list atom membership",
+            ));
+        }
+        for atom_ref in &molecule.atoms {
+            if !atom_ids.contains(atom_ref.as_str()) {
+                examples.push(generic_validation_example(
+                    &molecule.id,
+                    atom_ref,
+                    "molecule atom ref must resolve to atoms",
+                ));
+            }
+        }
+        for source_ref in &molecule.refs {
+            if !document.sources.contains_key(source_ref) {
+                examples.push(generic_validation_example(
+                    &molecule.id,
+                    source_ref,
+                    "molecule refs[] entry must resolve to sources",
+                ));
+            }
+        }
+    }
+    check_from_examples(
+        "archmap-v1-molecule-refs-resolve",
+        "molecule membership and source refs resolve",
+        examples,
+    )
+}
+
+fn check_from_examples(id: &str, title: &str, examples: Vec<ValidationExample>) -> ValidationCheck {
+    let mut check = validation_check(id, title, if examples.is_empty() { "pass" } else { "fail" });
+    if !examples.is_empty() {
+        check.count = Some(examples.len());
+        check.examples = examples;
+    }
+    check
+}
+
+fn is_archmap_v1_atom_kind(kind: &str) -> bool {
+    matches!(
+        kind,
+        "component"
+            | "relation"
+            | "capability"
+            | "dataState"
+            | "effect"
+            | "authority"
+            | "contract"
+            | "semantic"
+            | "runtime"
+    )
+}
+
+fn is_known_v1_predicate(predicate: &str) -> bool {
+    matches!(
+        predicate,
+        "placesOrder" | "checksInventoryWith" | "dependsOn" | "implements" | "calls"
+    )
+}
+
+fn v1_atom_shape_errors(atom: &ArchMapAtomV1) -> Vec<String> {
+    let mut errors = Vec::new();
+    match atom.kind.as_str() {
+        "component" => require_one(&mut errors, atom.subject.as_deref(), "subject"),
+        "relation" => {
+            if atom.edge.as_deref().map_or(true, str::is_empty) {
+                require_one(&mut errors, atom.subject.as_deref(), "subject");
+                require_one(&mut errors, atom.object.as_deref(), "object");
+                require_one(&mut errors, atom.predicate.as_deref(), "predicate");
+            }
+        }
+        "capability" => {
+            require_one(&mut errors, atom.subject.as_deref(), "subject");
+            require_one(&mut errors, atom.predicate.as_deref(), "predicate");
+        }
+        "dataState" => {
+            require_one(&mut errors, atom.diagram.as_deref(), "diagram");
+            require_one(&mut errors, atom.state.as_deref(), "state");
+        }
+        "effect" => {
+            require_one(&mut errors, atom.diagram.as_deref(), "diagram");
+            require_one(&mut errors, atom.effect.as_deref(), "effect");
+        }
+        "authority" => {
+            require_one(&mut errors, atom.subject.as_deref(), "subject");
+            require_one(&mut errors, atom.authority.as_deref(), "authority");
+        }
+        "contract" => {
+            require_one(&mut errors, atom.diagram.as_deref(), "diagram");
+            require_one(&mut errors, atom.contract.as_deref(), "contract");
+        }
+        "semantic" => {
+            require_one(&mut errors, atom.diagram.as_deref(), "diagram");
+            require_one(&mut errors, atom.meaning.as_deref(), "meaning");
+        }
+        "runtime" => {
+            require_one(&mut errors, atom.edge.as_deref(), "edge");
+            require_one(&mut errors, atom.interaction.as_deref(), "interaction");
+        }
+        _ => {}
+    }
+    errors
+}
+
+fn require_one(errors: &mut Vec<String>, value: Option<&str>, field: &str) {
+    if value.map_or(true, |value| value.trim().is_empty()) {
+        errors.push(format!("required field `{field}` is missing or empty"));
+    }
+}
+
+fn atom_refs(atom: &ArchMapAtomV1) -> Vec<&str> {
+    [
+        atom.subject.as_deref(),
+        atom.object.as_deref(),
+        atom.edge.as_deref(),
+        atom.diagram.as_deref(),
+    ]
+    .into_iter()
+    .flatten()
+    .collect()
 }
 
 pub fn validate_archmap_report(

@@ -4,6 +4,59 @@ use super::validation::ValidationCheck;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct LawPolicyDocumentV1 {
+    pub schema: String,
+    pub id: String,
+    #[serde(default)]
+    pub policies: Vec<LawPolicyEntryV1>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct LawPolicyEntryV1 {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub pack: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub law: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub evaluator: Option<String>,
+    #[serde(default)]
+    pub basis: Vec<String>,
+    #[serde(default)]
+    pub scope: Vec<String>,
+    pub severity: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct LawPolicyValidationReportV1 {
+    pub schema_version: String,
+    pub input: LawPolicyValidationInputV1,
+    pub checks: Vec<ValidationCheck>,
+    pub summary: LawPolicyValidationSummaryV1,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct LawPolicyValidationInputV1 {
+    pub schema: String,
+    pub path: String,
+    pub id: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct LawPolicyValidationSummaryV1 {
+    pub result: String,
+    pub policy_entry_count: usize,
+    pub pack_entry_count: usize,
+    pub explicit_law_entry_count: usize,
+    pub failed_check_count: usize,
+    pub warning_check_count: usize,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct LawPolicyDocumentV0 {
     pub schema_version: String,
     pub law_policy_id: String,

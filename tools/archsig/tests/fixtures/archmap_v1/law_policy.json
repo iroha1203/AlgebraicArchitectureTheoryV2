@@ -1,0 +1,19 @@
+{
+  "schema": "law-policy/v1",
+  "id": "solid-policy",
+  "policies": [
+    {
+      "pack": "solid@1",
+      "basis": ["policy-basis:solid"],
+      "scope": ["src.app"],
+      "severity": "error"
+    },
+    {
+      "law": "domain.no-direct-infra-dependency",
+      "evaluator": "domain.no-direct-infra-dependency@1",
+      "basis": ["policy-basis:layering"],
+      "scope": ["src.app"],
+      "severity": "warning"
+    }
+  ]
+}

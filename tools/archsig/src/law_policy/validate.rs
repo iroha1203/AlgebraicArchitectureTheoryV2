@@ -8,10 +8,238 @@ use super::measurement_policy::{
 };
 use crate::validation::{count_checks, duplicates, generic_validation_example, validation_check};
 use crate::{
-    LAW_POLICY_SCHEMA_VERSION, LAW_POLICY_VALIDATION_REPORT_SCHEMA_VERSION, LawPolicyDocumentV0,
-    LawPolicyValidationInputV0, LawPolicyValidationReportV0, LawPolicyValidationSummaryV0,
-    ValidationCheck,
+    LAW_POLICY_SCHEMA_VERSION, LAW_POLICY_V1_SCHEMA, LAW_POLICY_VALIDATION_REPORT_SCHEMA_VERSION,
+    LawPolicyDocumentV0, LawPolicyDocumentV1, LawPolicyValidationInputV0,
+    LawPolicyValidationInputV1, LawPolicyValidationReportV0, LawPolicyValidationReportV1,
+    LawPolicyValidationSummaryV0, LawPolicyValidationSummaryV1, ValidationCheck, ValidationExample,
 };
+
+pub fn validate_law_policy_v1_report(
+    policy: &LawPolicyDocumentV1,
+    input_path: &str,
+) -> LawPolicyValidationReportV1 {
+    let checks = vec![
+        check_v1_schema(policy),
+        check_v1_identity(policy),
+        check_v1_policy_entries(policy),
+        check_v1_basis(policy),
+        check_v1_pack_and_evaluator_vocabulary(policy),
+    ];
+    let failed_check_count = count_checks(&checks, "fail");
+    let warning_check_count = count_checks(&checks, "warn");
+    let result = if failed_check_count > 0 {
+        "fail"
+    } else if warning_check_count > 0 {
+        "warn"
+    } else {
+        "pass"
+    };
+    LawPolicyValidationReportV1 {
+        schema_version: "law-policy-validation-report-v1".to_string(),
+        input: LawPolicyValidationInputV1 {
+            schema: policy.schema.clone(),
+            path: input_path.to_string(),
+            id: policy.id.clone(),
+        },
+        checks,
+        summary: LawPolicyValidationSummaryV1 {
+            result: result.to_string(),
+            policy_entry_count: policy.policies.len(),
+            pack_entry_count: policy
+                .policies
+                .iter()
+                .filter(|entry| entry.pack.is_some())
+                .count(),
+            explicit_law_entry_count: policy
+                .policies
+                .iter()
+                .filter(|entry| entry.law.is_some())
+                .count(),
+            failed_check_count,
+            warning_check_count,
+        },
+    }
+}
+
+fn check_v1_schema(policy: &LawPolicyDocumentV1) -> ValidationCheck {
+    let mut check = validation_check(
+        "law-policy-v1-schema",
+        "LawPolicy v1 uses the selector schema discriminator",
+        if policy.schema == LAW_POLICY_V1_SCHEMA {
+            "pass"
+        } else {
+            "fail"
+        },
+    );
+    if check.result == "fail" {
+        check.reason = Some(format!(
+            "expected {LAW_POLICY_V1_SCHEMA}, found {}",
+            policy.schema
+        ));
+    }
+    check
+}
+
+fn check_v1_identity(policy: &LawPolicyDocumentV1) -> ValidationCheck {
+    let mut examples = Vec::new();
+    if policy.id.trim().is_empty() {
+        examples.push(generic_validation_example(
+            "id",
+            "empty",
+            "LawPolicy v1 id must be non-empty",
+        ));
+    }
+    if policy.policies.is_empty() {
+        examples.push(generic_validation_example(
+            "policies",
+            "empty",
+            "LawPolicy v1 must select at least one policy entry",
+        ));
+    }
+    check_examples(
+        "law-policy-v1-identity",
+        "LawPolicy v1 identity and selected policies are recorded",
+        examples,
+    )
+}
+
+fn check_v1_policy_entries(policy: &LawPolicyDocumentV1) -> ValidationCheck {
+    let mut examples = Vec::new();
+    for (index, entry) in policy.policies.iter().enumerate() {
+        let selector_count = usize::from(entry.pack.is_some()) + usize::from(entry.law.is_some());
+        if selector_count != 1 {
+            examples.push(generic_validation_example(
+                &format!("policies[{index}]"),
+                "selector",
+                "policy entry must select exactly one of pack or law",
+            ));
+        }
+        if entry.law.is_some() && entry.evaluator.is_none() {
+            examples.push(generic_validation_example(
+                &format!("policies[{index}].evaluator"),
+                "missing",
+                "explicit law entry must name evaluator id / version",
+            ));
+        }
+        if entry.pack.is_some() && entry.evaluator.is_some() {
+            examples.push(generic_validation_example(
+                &format!("policies[{index}].evaluator"),
+                "present",
+                "pack entry expands through registry and must not override evaluator",
+            ));
+        }
+        if entry.severity.trim().is_empty() {
+            examples.push(generic_validation_example(
+                &format!("policies[{index}].severity"),
+                "empty",
+                "policy entry severity must be non-empty",
+            ));
+        }
+        if entry.scope.is_empty() {
+            examples.push(generic_validation_example(
+                &format!("policies[{index}].scope"),
+                "empty",
+                "policy entry must declare source scope",
+            ));
+        }
+    }
+    check_examples(
+        "law-policy-v1-entry-shape",
+        "policy entries select pack or law and carry scope / severity",
+        examples,
+    )
+}
+
+fn check_v1_basis(policy: &LawPolicyDocumentV1) -> ValidationCheck {
+    let mut examples = Vec::new();
+    for (index, entry) in policy.policies.iter().enumerate() {
+        if entry.basis.is_empty() {
+            examples.push(generic_validation_example(
+                &format!("policies[{index}].basis"),
+                "empty",
+                "policy entry must carry basis refs",
+            ));
+        }
+        for basis in &entry.basis {
+            if basis.trim().is_empty() {
+                examples.push(generic_validation_example(
+                    &format!("policies[{index}].basis"),
+                    "empty",
+                    "basis refs must be non-empty",
+                ));
+            } else if !is_known_v1_basis(basis) {
+                examples.push(generic_validation_example(
+                    &format!("policies[{index}].basis"),
+                    basis,
+                    "basis ref must resolve to the v1 policy basis registry",
+                ));
+            }
+        }
+    }
+    check_examples(
+        "law-policy-v1-basis-recorded",
+        "policy entries carry explicit basis refs",
+        examples,
+    )
+}
+
+fn check_v1_pack_and_evaluator_vocabulary(policy: &LawPolicyDocumentV1) -> ValidationCheck {
+    let mut examples = Vec::new();
+    for (index, entry) in policy.policies.iter().enumerate() {
+        if let Some(pack) = entry.pack.as_deref() {
+            if !is_known_v1_pack(pack) {
+                examples.push(generic_validation_example(
+                    &format!("policies[{index}].pack"),
+                    pack,
+                    "unknown policy pack",
+                ));
+            }
+        }
+        if let Some(evaluator) = entry.evaluator.as_deref() {
+            if !is_known_v1_evaluator(evaluator) {
+                examples.push(generic_validation_example(
+                    &format!("policies[{index}].evaluator"),
+                    evaluator,
+                    "unknown evaluator id / version",
+                ));
+            }
+        }
+    }
+    check_examples(
+        "law-policy-v1-registry-vocabulary",
+        "policy entries resolve to known registry packs and evaluators",
+        examples,
+    )
+}
+
+fn check_examples(id: &str, title: &str, examples: Vec<ValidationExample>) -> ValidationCheck {
+    let mut check = validation_check(id, title, if examples.is_empty() { "pass" } else { "fail" });
+    if !examples.is_empty() {
+        check.count = Some(examples.len());
+        check.examples = examples;
+    }
+    check
+}
+
+fn is_known_v1_pack(pack: &str) -> bool {
+    matches!(pack, "solid@1")
+}
+
+fn is_known_v1_evaluator(evaluator: &str) -> bool {
+    matches!(
+        evaluator,
+        "solid.single-responsibility@1"
+            | "solid.open-closed@1"
+            | "solid.liskov-substitution@1"
+            | "solid.interface-segregation@1"
+            | "solid.dependency-inversion@1"
+            | "domain.no-direct-infra-dependency@1"
+    )
+}
+
+fn is_known_v1_basis(basis: &str) -> bool {
+    matches!(basis, "policy-basis:solid" | "policy-basis:layering")
+}
 
 pub fn validate_law_policy_report(
     policy: &LawPolicyDocumentV0,

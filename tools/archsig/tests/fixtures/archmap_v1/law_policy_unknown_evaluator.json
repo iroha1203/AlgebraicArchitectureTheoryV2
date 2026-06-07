@@ -1,0 +1,13 @@
+{
+  "schema": "law-policy/v1",
+  "id": "bad-policy",
+  "policies": [
+    {
+      "law": "custom.freeform",
+      "evaluator": "custom.freeform@1",
+      "basis": ["policy-basis:solid"],
+      "scope": ["src.app"],
+      "severity": "error"
+    }
+  ]
+}

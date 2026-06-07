@@ -1,6 +1,106 @@
+use std::collections::BTreeMap;
+
 use serde::{Deserialize, Serialize};
 
 use super::validation::ValidationCheck;
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ArchMapDocumentV1 {
+    pub schema: String,
+    pub id: String,
+    #[serde(default)]
+    pub sources: BTreeMap<String, ArchMapSourceV1>,
+    #[serde(default)]
+    pub atoms: Vec<ArchMapAtomV1>,
+    #[serde(default)]
+    pub molecules: Vec<ArchMapMoleculeV1>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ArchMapSourceV1 {
+    pub kind: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub path: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub source: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub symbol: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub line: Option<usize>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub section: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub trace_id: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ArchMapAtomV1 {
+    pub id: String,
+    pub kind: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub subject: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub object: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub edge: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub diagram: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub predicate: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub state: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub effect: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub authority: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub contract: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub meaning: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub interaction: Option<String>,
+    #[serde(default)]
+    pub refs: Vec<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub label: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ArchMapMoleculeV1 {
+    pub id: String,
+    #[serde(default)]
+    pub atoms: Vec<String>,
+    #[serde(default)]
+    pub refs: Vec<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub label: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchMapValidationReportV1 {
+    pub schema_version: String,
+    pub archmap_ref: String,
+    pub input_schema: String,
+    pub checks: Vec<ValidationCheck>,
+    pub summary: ArchMapValidationSummaryV1,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchMapValidationSummaryV1 {
+    pub result: String,
+    pub source_count: usize,
+    pub atom_count: usize,
+    pub molecule_count: usize,
+    pub failed_check_count: usize,
+    pub warning_check_count: usize,
+}
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
