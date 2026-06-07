@@ -131,7 +131,10 @@ pub fn build_schema_compatibility_check_report(
 }
 
 fn schema_version(value: &Value) -> Option<&str> {
-    value.get("schemaVersion").and_then(Value::as_str)
+    value
+        .get("schemaVersion")
+        .or_else(|| value.get("schema"))
+        .and_then(Value::as_str)
 }
 
 fn catalog_entry<'a>(

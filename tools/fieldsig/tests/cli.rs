@@ -555,6 +555,167 @@ fn cli_projects_archsig_analysis_packet_to_sft_input_boundary() {
 }
 
 #[test]
+fn cli_projects_archsig_v1_packet_refs_and_schema_compatibility() {
+    let out_dir = temp_dir("archsig-v1-analysis-sft-input");
+    let packet = out_dir.join("archsig-analysis-packet-v1.json");
+    let estimate = out_dir.join("operation-support-estimate.json");
+    let compatibility = out_dir.join("schema-compatibility-report.json");
+    let packet_json = serde_json::json!({
+        "schema": "archsig-analysis-packet/v1",
+        "analysisId": "analysis:test-v1-handoff",
+        "inputRefs": {
+            "normalizedArchMap": "normalized-archmap.json",
+            "lawPolicy": "law-policy.json",
+            "typedEvaluatorResults": "typed-evaluator-results.json"
+        },
+        "typedEvaluatorResults": [
+            {
+                "evaluator": "state-effect-law",
+                "law": "law:state-effect",
+                "status": "measuredViolation",
+                "supportAtomRefs": ["atom:state"],
+                "supportMoleculeRefs": ["molecule:state-effect"],
+                "basisRefs": ["basis:state-effect"],
+                "detailRefs": ["/typedEvaluatorResults/0"]
+            }
+        ],
+        "generatedPacketRefs": {
+            "architectureSpectrumReport": "/architectureSpectrumReport",
+            "architectureHomotopyReport": "/architectureHomotopyReport",
+            "structuralReadingReviewSurface": "/structuralReadingReviewSurface",
+            "spectralAnalysisReadings": "/spectralAnalysisReadings",
+            "homotopyHolonomyReadings": "/homotopyHolonomyReadings"
+        },
+        "architectureSpectrumReport": {
+            "schemaVersion": "architecture-spectrum-report/v1",
+            "reportId": "architecture-spectrum-report:test"
+        },
+        "spectralAnalysisReadings": [
+            {
+                "spectralReadingId": "spectral-analysis:test",
+                "measurementStatus": "measuredNonzero"
+            }
+        ],
+        "architectureHomotopyReport": {
+            "schemaVersion": "architecture-homotopy-report/v1",
+            "reportId": "architecture-homotopy-report:test"
+        },
+        "homotopyHolonomyReadings": [
+            {
+                "holonomyReadingId": "homotopy-holonomy:test",
+                "holonomyStatus": "nonzeroHolonomy"
+            }
+        ],
+        "homotopyDistanceReadings": [
+            {
+                "homotopyDistanceReadingId": "homotopy-distance:test",
+                "measurementStatus": "measuredNonzero"
+            }
+        ],
+        "representationMetricReadings": [
+            {
+                "readingId": "representation-metric:test",
+                "measurementStatus": "measuredNonzero"
+            }
+        ],
+        "structuralReadingReviewSurface": {
+            "schemaVersion": "structural-reading-review-surface/v1",
+            "surfaceId": "structural-reading-review-surface:test",
+            "connectedReadingRefs": [
+                "/representationMetricReadings/0",
+                "/homotopyHolonomyReadings/0"
+            ]
+        },
+        "positiveBoundedConclusions": [
+            "SELECTED_VIOLATION_MEASURED_UNDER_EVIDENCE_CONTRACT"
+        ],
+        "detailRefs": ["/typedEvaluatorResults/0"],
+        "nonConclusions": [
+            "ArchSig v1 packet is a computation artifact, not a Lean proof object."
+        ]
+    });
+    fs::write(
+        &packet,
+        serde_json::to_string_pretty(&packet_json).expect("v1 packet serializes"),
+    )
+    .expect("v1 packet fixture is written");
+
+    run_sig0(&[
+        "archsig-analysis-sft-input",
+        "--analysis-packet",
+        packet.to_str().expect("analysis packet path is utf-8"),
+        "--out",
+        estimate.to_str().expect("estimate path is utf-8"),
+    ]);
+    run_sig0(&[
+        "schema-compatibility",
+        "--before",
+        packet.to_str().expect("before packet path is utf-8"),
+        "--after",
+        packet.to_str().expect("after packet path is utf-8"),
+        "--out",
+        compatibility.to_str().expect("compatibility path is utf-8"),
+    ]);
+
+    let estimate_json = read_json(&estimate);
+    let descriptor_source_refs = estimate_json["descriptorRef"]["sourceRefIds"]
+        .as_array()
+        .expect("descriptor source refs are array");
+    assert!(
+        descriptor_source_refs
+            .iter()
+            .any(|source| source == "archsigV1PacketRef:architectureSpectrumReport:/architectureSpectrumReport")
+            && descriptor_source_refs
+                .iter()
+                .any(|source| source == "archsigV1ArchitectureHomotopyReport:architecture-homotopy-report:test")
+            && descriptor_source_refs
+                .iter()
+                .any(|source| source == "archsigV1StructuralReadingReviewSurface:structural-reading-review-surface:test"),
+        "FieldSig must preserve v1 spectrum, homotopy, and structural packet refs"
+    );
+    let measurement_refs = estimate_json["evidenceBoundary"]["measurementBoundaryRefs"]
+        .as_array()
+        .expect("measurement boundary refs are array");
+    assert!(
+        measurement_refs
+            .iter()
+            .any(|source| source == "archsigV1SpectrumBoundary:spectral-analysis:test")
+            && measurement_refs
+                .iter()
+                .any(|source| source == "archsigV1HomotopyBoundary:homotopy-holonomy:test")
+            && measurement_refs
+                .iter()
+                .any(|source| source
+                    == "archsigV1StructuralBoundary:/representationMetricReadings/0"),
+        "FieldSig must carry v1 spectrum, homotopy, and structural boundaries into the evidence boundary"
+    );
+    assert!(
+        estimate_json["evidenceBoundary"]["assumptions"]
+            .as_array()
+            .expect("assumptions are array")
+            .iter()
+            .any(|assumption| {
+                assumption
+                    .as_str()
+                    .expect("assumption is string")
+                    .contains("PR, diff, change-vector")
+            }),
+        "FieldSig must keep evolution analysis on the FieldSig side"
+    );
+
+    let compatibility_json = read_json(&compatibility);
+    assert_eq!(compatibility_json["summary"]["result"], "pass");
+    assert_eq!(
+        compatibility_json["after"]["artifactId"],
+        "archsig-analysis-packet-v1"
+    );
+    assert_eq!(
+        compatibility_json["after"]["schemaVersionName"],
+        "archsig-analysis-packet/v1"
+    );
+}
+
+#[test]
 fn cli_validates_archmap_fixture_and_guardrails() {
     let out_dir = temp_dir("archmap-validation");
     let input = fixture_root().join("archmap.json");

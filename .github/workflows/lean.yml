@@ -162,9 +162,27 @@ jobs:
             .schemaVersion == "operation-support-estimate-v0"
             and .descriptorRef.artifactKind == "archsig-analysis-packet"
             and ([.candidateOperationFamilies[]?.supportKind] | index("typed-evaluator-result") != null)
+            and ([.descriptorRef.sourceRefIds[]? | startswith("archsigV1PacketRef:architectureSpectrumReport:")] | any)
+            and ([.descriptorRef.sourceRefIds[]? | startswith("archsigV1PacketRef:architectureHomotopyReport:")] | any)
+            and ([.descriptorRef.sourceRefIds[]? | startswith("archsigV1StructuralReadingReviewSurface:")] | any)
+            and ([.evidenceBoundary.measurementBoundaryRefs[]? | startswith("archsigV1SpectrumBoundary:")] | any)
+            and ([.evidenceBoundary.measurementBoundaryRefs[]? | startswith("archsigV1HomotopyBoundary:")] | any)
+            and ([.evidenceBoundary.measurementBoundaryRefs[]? | startswith("archsigV1StructuralBoundary:")] | any)
             and ([.knownForbiddenSupport[]?.operationFamily] | index("raw-archmap-truth-promotion") != null)
             and (.unknownRemainder | type == "array")
           ' "$fieldsig_dir/operation-support-estimate.json"
+
+          cargo run --manifest-path tools/fieldsig/Cargo.toml -- schema-compatibility \
+            --before "$archsig_raw_dir/archsig-analysis-packet.json" \
+            --after "$archsig_raw_dir/archsig-analysis-packet.json" \
+            --out "$fieldsig_dir/schema-compatibility-report.json"
+
+          jq -e '
+            .schemaVersion == "schema-compatibility-check-report-v0"
+            and .summary.result == "pass"
+            and .after.artifactId == "archsig-analysis-packet-v1"
+            and .after.schemaVersionName == "archsig-analysis-packet/v1"
+          ' "$fieldsig_dir/schema-compatibility-report.json"
 
           if cargo run --manifest-path tools/fieldsig/Cargo.toml -- archsig-analysis-sft-input \
             --analysis-packet tools/archsig/tests/fixtures/archmap_v1/archmap.json \
