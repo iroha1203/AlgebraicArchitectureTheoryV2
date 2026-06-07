@@ -7,7 +7,7 @@ use crate::{
     NORMALIZED_ARCHMAP_V1_SCHEMA, SCHEMA_COMPATIBILITY_POLICY_SCHEMA_VERSION,
     SCHEMA_VERSION_CATALOG_SCHEMA_VERSION, SchemaCompatibilityBoundaryV0,
     SchemaCompatibilityDimensionV0, SchemaCompatibilityPolicyV0, SchemaVersionCatalogEntryV0,
-    SchemaVersionCatalogV0,
+    SchemaVersionCatalogV0, TYPED_EVALUATOR_RESULTS_V1_SCHEMA,
 };
 
 pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
@@ -128,6 +128,19 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 vec![
                     "Normalized ArchMap v1 is deterministic tooling input for evaluators, not a Lean proof object.",
                     "Generated molecule candidate status is not an obstruction, holonomy, risk, or lawfulness conclusion.",
+                ],
+            ),
+            artifact(
+                "typed-evaluator-results-v1",
+                "Typed evaluator results v1",
+                TYPED_EVALUATOR_RESULTS_V1_SCHEMA,
+                "primary",
+                "ArchMap Atom-to-AAT contract",
+                vec!["docs/tool/archmap_minimal_observation_contract_prd.md"],
+                "Typed evaluator results v1 records evaluator status, support atom refs, support molecule refs, basis refs, detail refs, and bounded conclusions computed from Normalized ArchMap v1 and LawPolicy v1.",
+                vec![
+                    "Typed evaluator results do not read label-only, memo-only, removed-field-only, or schema-only evidence as measured support.",
+                    "Blocked, unknown, and unmeasured results are not measured zero.",
                 ],
             ),
             artifact(
@@ -311,6 +324,7 @@ mod tests {
                 "law-policy-v1",
                 "law-evaluator-registry-v1",
                 "normalized-archmap-v1",
+                "typed-evaluator-results-v1",
                 "archsig-analysis-packet",
                 "archsig-analysis-packet-validation-report",
                 "archsig-run-manifest",

@@ -6,10 +6,10 @@ use archsig::{
     ARCHMAP_V1_SCHEMA, ARCHSIG_ANALYSIS_PACKET_SCHEMA_VERSION, ArchMapDocumentV0,
     ArchMapDocumentV1, ArchMapSourceInventoryInput, ArchMapSourceInventoryV0,
     ArchMapValidationReportV0, LAW_POLICY_V1_SCHEMA, LawPolicyDocumentV0, LawPolicyDocumentV1,
-    SchemaVersionCatalogV0, build_archsig_analysis_packet, normalize_archmap_v1, static_law_policy,
-    static_schema_version_catalog, validate_archmap_report, validate_archmap_v1_report,
-    validate_archsig_analysis_packet_report, validate_law_policy_report,
-    validate_law_policy_v1_report,
+    SchemaVersionCatalogV0, build_archsig_analysis_packet, evaluate_typed_v1, normalize_archmap_v1,
+    static_law_evaluator_registry_v1, static_law_policy, static_schema_version_catalog,
+    validate_archmap_report, validate_archmap_v1_report, validate_archsig_analysis_packet_report,
+    validate_law_policy_report, validate_law_policy_v1_report,
 };
 use clap::{Parser, Subcommand};
 
@@ -575,6 +575,7 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
             let atom_viewer_data_path = out_dir.join("archsig-atom-viewer-data.json");
             let run_manifest_path = out_dir.join("archsig-run-manifest.json");
             let normalized_archmap_path = out_dir.join("normalized-archmap.json");
+            let typed_evaluator_results_path = out_dir.join("typed-evaluator-results.json");
             let analysis_packet_path = out_dir.join("archsig-analysis-packet.json");
             let analysis_validation_path = out_dir.join("archsig-analysis-validation.json");
             let llm_interpretation_path = out_dir.join("llm-interpretation-packet.json");
@@ -599,8 +600,17 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                 let normalized_archmap =
                     normalize_archmap_v1(&archmap_document, &archmap.display().to_string());
                 write_json(Some(normalized_archmap_path), &normalized_archmap)?;
+                let law_policy_document: LawPolicyDocumentV1 = read_json(&law_policy)?;
+                let typed_results = evaluate_typed_v1(
+                    &normalized_archmap,
+                    &law_policy_document,
+                    &static_law_evaluator_registry_v1(),
+                    "normalized-archmap.json",
+                    &law_policy.display().to_string(),
+                );
+                write_json(Some(typed_evaluator_results_path), &typed_results)?;
                 eprintln!(
-                    "archsig analyze wrote v1 validation and normalized ArchMap artifacts to {} but the v1 evaluator pipeline is not implemented yet",
+                    "archsig analyze wrote v1 validation, normalized ArchMap, and typed evaluator artifacts to {} but the v1 packet pipeline is not implemented yet",
                     out_dir.display()
                 );
                 return Ok(ExitCode::from(1));
@@ -736,6 +746,7 @@ fn remove_analyze_success_artifacts(out_dir: &PathBuf) -> Result<(), Box<dyn Err
         "archsig-atom-viewer-data.json",
         "archsig-run-manifest.json",
         "normalized-archmap.json",
+        "typed-evaluator-results.json",
         "archsig-analysis-packet.json",
         "archsig-analysis-detail-index.json",
         "archsig-analysis-validation.json",

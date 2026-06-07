@@ -117,6 +117,63 @@ fn cli_analyze_v1_writes_normalized_archmap_for_valid_input() {
 }
 
 #[test]
+fn cli_analyze_v1_writes_typed_evaluator_results() {
+    let out_dir = temp_dir("analyze-v1-typed-results");
+    let root = archmap_v1_root();
+
+    let output = run_sig0_output(&[
+        "analyze",
+        "--archmap",
+        root.join("archmap.json").to_str().expect("path is utf-8"),
+        "--law-policy",
+        root.join("law_policy.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--out-dir",
+        out_dir.to_str().expect("path is utf-8"),
+    ]);
+
+    assert!(
+        !output.status.success(),
+        "v1 analyze stops before packet replacement is implemented"
+    );
+    let json = read_json(&out_dir.join("typed-evaluator-results.json"));
+    assert_eq!(json["schema"], "typed-evaluator-results/v1");
+    assert_eq!(json["summary"]["resultCount"], 6);
+    assert!(
+        json["summary"]["measuredPassCount"].as_u64().unwrap_or(0) > 0
+            || json["summary"]["measuredViolationCount"]
+                .as_u64()
+                .unwrap_or(0)
+                > 0
+    );
+    assert!(json["results"].as_array().is_some_and(|results| {
+        results.iter().any(|result| {
+            result["law"] == "solid.single-responsibility"
+                && result["status"] == "measuredPass"
+                && result["supportAtomRefs"]
+                    .as_array()
+                    .is_some_and(|refs| !refs.is_empty())
+                && result["basisRefs"]
+                    .as_array()
+                    .is_some_and(|refs| !refs.is_empty())
+        })
+    }));
+    assert!(
+        json["positiveBoundedConclusions"]
+            .as_array()
+            .is_some_and(|items| !items.is_empty())
+    );
+    assert!(
+        json["positiveBoundedConclusions"]
+            .as_array()
+            .is_some_and(|items| items.iter().any(|item| item.as_str().is_some_and(
+                |text| text.starts_with("SELECTED_VIOLATION_MEASURED_UNDER_EVIDENCE_CONTRACT")
+            )))
+    );
+}
+
+#[test]
 fn cli_analyze_v1_marks_incomplete_molecule_candidate_blocked() {
     let out_dir = temp_dir("analyze-v1-blocked-molecule");
     let root = archmap_v1_root();
@@ -146,6 +203,13 @@ fn cli_analyze_v1_marks_incomplete_molecule_candidate_blocked() {
                 .any(|molecule| molecule["sourceMoleculeId"] == "mol:single-atom"
                     && molecule["generatedMoleculeCandidateStatus"] == "blockedForNormalization"
                     && molecule["compositionStatus"] == "blockedForNormalization"))
+    );
+    let typed = read_json(&out_dir.join("typed-evaluator-results.json"));
+    assert_eq!(typed["summary"]["blockedCount"], 6);
+    assert!(
+        typed["results"]
+            .as_array()
+            .is_some_and(|results| { results.iter().all(|result| result["status"] == "blocked") })
     );
 }
 
@@ -408,6 +472,7 @@ fn cli_analyze_v1_writes_validation_artifacts_and_stops_before_packet() {
         "archsig-atom-viewer-data.json",
         "archsig-run-manifest.json",
         "normalized-archmap.json",
+        "typed-evaluator-results.json",
     ] {
         fs::write(out_dir.join(stale_artifact), "{}").expect("stale artifact can be written");
     }
@@ -436,6 +501,10 @@ fn cli_analyze_v1_writes_validation_artifacts_and_stops_before_packet() {
     assert_eq!(
         read_json(&out_dir.join("normalized-archmap.json"))["schema"],
         "normalized-archmap/v1"
+    );
+    assert_eq!(
+        read_json(&out_dir.join("typed-evaluator-results.json"))["schema"],
+        "typed-evaluator-results/v1"
     );
     assert!(
         !out_dir.join("archsig-analysis-packet.json").exists(),
@@ -3728,6 +3797,7 @@ fn cli_schema_catalog_is_primary_archsig_surface_only() {
             "law-evaluator-registry-v1",
             "law-policy-validation-report",
             "normalized-archmap-v1",
+            "typed-evaluator-results-v1",
             "archsig-analysis-packet",
             "archsig-analysis-packet-validation-report",
             "archsig-run-manifest",
