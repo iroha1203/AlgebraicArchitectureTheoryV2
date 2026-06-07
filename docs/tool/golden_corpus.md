@@ -1,15 +1,68 @@
-# LLM-Native Golden Corpus
+# ArchSig Golden Corpus
 
-The current ArchSig golden corpus is built around the LLM-native pipeline:
+The current ArchSig golden corpus is the v1 output replacement corpus:
 
 ```text
-ArchMap observation artifact
-  + LawPolicy
-  -> ArchSig analysis packet
-  -> LLM interpretation / human review
+ArchMap v1 + LawPolicy v1
+  -> normalized-archmap/v1
+  -> typed-evaluator-results/v1
+  -> archsig-architecture-distance/v1
+  -> summary / viewer / manifest
+  -> optional archsig-analysis-packet/v1 raw handoff
 ```
 
-## Positive Fixtures
+The v1 corpus is recorded in:
+
+- `tools/archsig/tests/fixtures/archmap_v1/output_replacement_golden_corpus.json`
+- `tools/archsig/tests/fixtures/complete_archmap_acceptance/output_replacement_manifest.json`
+
+It replaces v0 packet equality as current completion evidence. The corpus
+locks positive and negative paths for minimal, practical, SOLID, spectrum,
+homotopy, structural reading, FieldSig handoff, removed-field-only,
+label-only, schema-only, missing-support, blocked-molecule, strict-distance,
+and stale success artifact suppression cases.
+
+## V1 Positive Fixtures
+
+- `tools/archsig/tests/fixtures/archmap_v1/archmap.json`
+- `tools/archsig/tests/fixtures/archmap_v1/archmap_violation.json`
+- `tools/archsig/tests/fixtures/archmap_v1/archmap_homotopy_zero.json`
+- `tools/archsig/tests/fixtures/archmap_v1/archmap_homotopy_nonzero.json`
+- `tools/archsig/tests/fixtures/archmap_v1/archmap_homotopy_hole.json`
+- `tools/archsig/tests/fixtures/archmap_v1/law_policy.json`
+- `tools/archsig/examples/practical-rust-service/archmap/archmap.json`
+- `tools/archsig/examples/practical-rust-service/law_policy/law_policy.json`
+
+The v1 positive cases must prove diagnostic value, not just smoke execution.
+They check typed evaluator support refs, evaluator basis refs,
+`architecture-distance/v1`, `ArchitectureSpectrumReport`,
+`ArchitectureHomotopyReport`, `structuralReadingReviewSurface`,
+`generatedPacketRefs`, summary / viewer rich refs, and raw packet refs used by
+FieldSig handoff.
+
+## V1 Negative Fixtures
+
+- `tools/archsig/tests/fixtures/archmap_v1/replacement_negative/archmap_projection_only_v0_field.json`
+- `tools/archsig/tests/fixtures/archmap_v1/replacement_negative/archmap_operation_square_only_v0_field.json`
+- `tools/archsig/tests/fixtures/archmap_v1/replacement_negative/archmap_observation_gaps_only_v0_field.json`
+- `tools/archsig/tests/fixtures/archmap_v1/replacement_negative/archmap_concern_only_v0_field.json`
+- `tools/archsig/tests/fixtures/archmap_v1/replacement_negative/archmap_non_conclusion_only_v0_field.json`
+- `tools/archsig/tests/fixtures/archmap_v1/replacement_negative/archmap_label_only_semantic.json`
+- `tools/archsig/tests/fixtures/archmap_v1/replacement_negative/archmap_schema_only.json`
+- `tools/archsig/tests/fixtures/archmap_v1/archmap_bad_ref.json`
+- `tools/archsig/tests/fixtures/archmap_v1/archmap_blocked_molecule.json`
+
+These fixtures lock the current guardrails:
+
+- removed v0 helper fields are not v1 measurement input
+- label-only semantic text does not become a measured semantic replacement
+- schema-only input can only produce bounded incomplete measurement
+- missing refs fail validation
+- blocked molecule support stays blocked and is not rounded to measured zero
+- `--strict-distance` rejects missing `distanceProfileRef` and blocked support
+- validation failure removes stale success artifacts before returning
+
+## Legacy / Historical Fixtures
 
 - `tools/archsig/tests/fixtures/minimal/archmap.json`
 - `tools/archsig/tests/fixtures/minimal/law_policy.json`
@@ -24,6 +77,9 @@ ArchMap observation artifact
 - `tools/archsig/tests/fixtures/pr_review/raw_diff_hint.diff`
 - `tools/archsig/tests/fixtures/inspection/archmap_snapshot.json`
 - `tools/archsig/tests/fixtures/inspection/archmap_index.json`
+
+These files remain useful historical and regression evidence, but they are not
+the current ArchSig v1 output replacement completion target.
 
 The layer-only LawPolicy fixture reuses the same ArchMap and produces a
 different ArchSig packet. This fixes the requirement that ArchMap remains
@@ -60,7 +116,7 @@ boundary cues, feature-like clusters, operation-like relations, top boundary
 holonomy, top order-sensitive squares, and coverage / exactness boundaries
 without replaying all historical deltas.
 
-The Part IV Distance Engine golden corpus is the complete-first ArchSig packet
+The legacy Part IV Distance Engine corpus is the complete-first ArchSig packet
 and validation report generated from
 `tools/archsig/tests/fixtures/minimal/archmap.json` plus
 `tools/archsig/tests/fixtures/minimal/law_policy.json`. Local and CI tests
@@ -93,14 +149,14 @@ signature-distance axes cannot remain as final `DiagnosticScope.blockerRefs`.
 Operation and curvature axes can still remain unmeasured when partial measured
 contributions carry evidence blockers.
 
-## Negative Fixtures
+## Legacy Negative Fixtures
 
 - `tools/archsig/tests/fixtures/minimal/archmap_invalid_concern_promoted.json`
 - `tools/archsig/tests/fixtures/minimal/archmap_invalid_gap_measured_zero.json`
 - `tools/archsig/tests/fixtures/negative/part4_distance_surface_negative_cases.json`
 - `tools/archsig/tests/fixtures/negative/part4_distance_policy_negative_cases.json`
 
-These fixtures lock the two main guardrails:
+These historical fixtures lock the two main v0 guardrails:
 
 - `concernHints` are not obstruction circuits.
 - `observationGaps` are not measured zero.
@@ -153,10 +209,11 @@ FieldSig test suite reads these files as JSON contract fixtures and locks their
 schema versions, LawPolicy split, and concern/gap guardrails.
 
 FieldSig's current handoff command reads the ArchSig analysis packet, not raw
-ArchMap observations:
+ArchMap observations. The current schema is `archsig-analysis-packet/v1`; v0
+packet fixtures below are legacy contract examples.
 
 ```text
-archsig-analysis-packet-v0 -> operation-support-estimate-v0
+archsig-analysis-packet/v1 -> operation-support-estimate-v0
 ```
 
 The projection keeps obstruction circuits, signature axes, repair candidates,

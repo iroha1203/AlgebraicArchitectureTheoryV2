@@ -1,6 +1,6 @@
 use std::collections::BTreeSet;
 use std::fs;
-use std::path::{Path, PathBuf};
+use std::path::{Component, Path, PathBuf};
 use std::process::Command;
 use std::time::{SystemTime, UNIX_EPOCH};
 
@@ -78,6 +78,156 @@ fn cli_validates_archmap_v1_atom_contract() {
     assert_eq!(json["summary"]["result"], "pass");
     assert_eq!(json["summary"]["atomCount"], 3);
     assert_eq!(json["summary"]["moleculeCount"], 1);
+}
+
+#[test]
+fn cli_locks_archmap_v1_output_replacement_golden_corpus_manifest() {
+    let crate_root = Path::new(env!("CARGO_MANIFEST_DIR"));
+    let corpus = read_json(
+        &crate_root.join("tests/fixtures/archmap_v1/output_replacement_golden_corpus.json"),
+    );
+    assert_eq!(
+        corpus["schemaVersion"],
+        "archsig-v1-output-replacement-golden-corpus/v1"
+    );
+
+    let complete_manifest_path = corpus["completeAcceptanceManifestPath"]
+        .as_str()
+        .expect("complete acceptance manifest path is present");
+    let complete_manifest = read_json(&crate_root.join(complete_manifest_path));
+    assert_eq!(
+        complete_manifest["schemaVersion"],
+        "archsig-v1-output-replacement-acceptance-manifest/v1"
+    );
+    assert_eq!(
+        complete_manifest["legacyFixtureBoundary"]["currentCompletionEvidence"].as_bool(),
+        Some(false),
+        "v0 complete acceptance fixture must be quarantined from current completion evidence"
+    );
+
+    let known_executable_tests = BTreeSet::from([
+        "cli_analyze_v1_emit_raw_artifacts_writes_typed_packet_detail_and_handoff",
+        "practical_rust_service_example_runs_v1_analyze",
+        "cli_analyze_v1_writes_typed_evaluator_results",
+        "cli_analyze_v1_spectrum_detects_nonzero_curvature_from_typed_violation",
+        "cli_analyze_v1_homotopy_surfaces_zero_nonzero_and_missing_filler",
+        "cli_analyze_v1_structural_reading_review_surface_uses_typed_refs",
+        "cli_analyze_v1_removed_field_only_artifacts_do_not_become_measured_results",
+        "cli_analyze_v1_label_only_semantic_does_not_become_measured_replacement",
+        "cli_analyze_v1_schema_only_input_does_not_become_measured_replacement",
+        "cli_rejects_archmap_v1_unresolved_source_ref",
+        "cli_analyze_v1_marks_incomplete_molecule_candidate_blocked",
+        "cli_analyze_v1_strict_distance_rejects_missing_distance_profile_ref",
+        "cli_analyze_v1_strict_distance_rejects_blocked_typed_results",
+        "cli_analyze_v1_validation_failure_removes_stale_success_artifacts",
+    ]);
+    let positive_cases = corpus["positiveCases"]
+        .as_array()
+        .expect("positive cases are listed");
+    let negative_cases = corpus["negativeCases"]
+        .as_array()
+        .expect("negative cases are listed");
+    let positive_families = positive_cases
+        .iter()
+        .map(|case| {
+            case["family"]
+                .as_str()
+                .expect("positive case family is present")
+                .to_string()
+        })
+        .collect::<BTreeSet<_>>();
+    let negative_families = negative_cases
+        .iter()
+        .map(|case| {
+            case["family"]
+                .as_str()
+                .expect("negative case family is present")
+                .to_string()
+        })
+        .collect::<BTreeSet<_>>();
+
+    for family in complete_manifest["requiredPositiveFamilies"]
+        .as_array()
+        .expect("required positive families are listed")
+    {
+        let family = family.as_str().expect("family is string");
+        assert!(
+            positive_families.contains(family),
+            "v1 golden corpus must include positive family {family}"
+        );
+    }
+    for family in complete_manifest["requiredNegativeFamilies"]
+        .as_array()
+        .expect("required negative families are listed")
+    {
+        let family = family.as_str().expect("family is string");
+        assert!(
+            negative_families.contains(family),
+            "v1 golden corpus must include negative family {family}"
+        );
+    }
+
+    for case in positive_cases.iter().chain(negative_cases.iter()) {
+        let executable_test = case["executableTest"]
+            .as_str()
+            .expect("golden corpus case must name the executable regression test");
+        assert!(
+            known_executable_tests.contains(executable_test),
+            "golden corpus case references unknown executable regression test {executable_test}"
+        );
+        for field in ["archmapPath", "lawPolicyPath"] {
+            if let Some(path) = case[field].as_str() {
+                assert_repo_local_fixture_path(path);
+                assert!(
+                    crate_root.join(path).is_file(),
+                    "golden corpus fixture path must exist: {path}"
+                );
+            }
+        }
+        if let Some(paths) = case["fixturePaths"].as_array() {
+            for path in paths {
+                let path = path.as_str().expect("fixture path is string");
+                assert_repo_local_fixture_path(path);
+                assert!(
+                    crate_root.join(path).is_file(),
+                    "golden corpus fixture path must exist: {path}"
+                );
+            }
+        }
+    }
+
+    let required_surfaces = complete_manifest["requiredOutputSurfaces"]
+        .as_array()
+        .expect("required output surfaces are listed");
+    let positive_case_surfaces = positive_cases
+        .iter()
+        .flat_map(|case| {
+            case["requiredOutputSurfaces"]
+                .as_array()
+                .into_iter()
+                .flatten()
+        })
+        .filter_map(Value::as_str)
+        .collect::<BTreeSet<_>>();
+    for surface in required_surfaces {
+        let surface = surface.as_str().expect("surface is string");
+        assert!(
+            positive_case_surfaces.contains(surface),
+            "v1 output replacement corpus positive cases must lock output surface {surface}"
+        );
+    }
+}
+
+fn assert_repo_local_fixture_path(path: &str) {
+    let path = Path::new(path);
+    assert!(
+        path.is_relative()
+            && path
+                .components()
+                .all(|component| !matches!(component, Component::ParentDir | Component::RootDir)),
+        "fixture path must stay repo-local without parent traversal: {}",
+        path.display()
+    );
 }
 
 #[test]
@@ -1856,6 +2006,53 @@ fn cli_analyze_v1_label_only_semantic_does_not_become_measured_replacement() {
 }
 
 #[test]
+fn cli_analyze_v1_schema_only_input_does_not_become_measured_replacement() {
+    let out_dir = temp_dir("analyze-v1-schema-only");
+    let root = archmap_v1_root();
+    let archmap_path = root.join("replacement_negative/archmap_schema_only.json");
+
+    let output = run_sig0_output(&[
+        "analyze",
+        "--archmap",
+        archmap_path.to_str().expect("path is utf-8"),
+        "--law-policy",
+        root.join("law_policy.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--out-dir",
+        out_dir.to_str().expect("path is utf-8"),
+    ]);
+
+    assert!(
+        output.status.success(),
+        "schema-only v1 input is syntactically valid but must remain bounded incomplete"
+    );
+    let typed = read_json(&out_dir.join("typed-evaluator-results.json"));
+    assert_eq!(typed["schema"], "typed-evaluator-results/v1");
+    assert_eq!(
+        typed["summary"]["measuredPassCount"].as_u64().unwrap_or(0)
+            + typed["summary"]["measuredViolationCount"]
+                .as_u64()
+                .unwrap_or(0),
+        0,
+        "schema name alone must not become measured replacement evidence"
+    );
+    assert!(
+        typed["summary"]["blockedCount"].as_u64().unwrap_or(0)
+            + typed["summary"]["unknownCount"].as_u64().unwrap_or(0)
+            + typed["summary"]["unmeasuredCount"].as_u64().unwrap_or(0)
+            > 0,
+        "schema-only input must remain blocked, unknown, or unmeasured"
+    );
+    let summary = read_json(&out_dir.join("archsig-analysis-summary.json"));
+    assert_eq!(
+        summary["verdict"].as_str(),
+        Some("BOUNDED_MEASUREMENT_INCOMPLETE"),
+        "schema-only input must not report an acceptable measured conclusion"
+    );
+}
+
+#[test]
 fn cli_analyze_v1_removed_field_only_artifacts_do_not_become_measured_results() {
     let root = archmap_v1_root();
     for (removed_field, fixture) in [
@@ -1902,6 +2099,64 @@ fn cli_analyze_v1_removed_field_only_artifacts_do_not_become_measured_results() 
         assert!(
             !out_dir.join("typed-evaluator-results.json").exists(),
             "removed field {removed_field} must stop before measured typed evaluator output"
+        );
+    }
+}
+
+#[test]
+fn cli_analyze_v1_validation_failure_removes_stale_success_artifacts() {
+    let out_dir = temp_dir("analyze-v1-stale-success-artifact-suppression");
+    let root = archmap_v1_root();
+    for stale_artifact in [
+        "archsig-analysis-summary.json",
+        "archsig-atom-viewer-data.json",
+        "archsig-run-manifest.json",
+        "normalized-archmap.json",
+        "typed-evaluator-results.json",
+        "architecture-distance.json",
+        "archsig-analysis-packet.json",
+        "archsig-analysis-detail-index.json",
+        "archsig-analysis-validation.json",
+        "llm-interpretation-packet.json",
+    ] {
+        fs::write(out_dir.join(stale_artifact), "{\"schema\":\"stale\"}")
+            .expect("stale success artifact can be written");
+    }
+
+    let output = run_sig0_output(&[
+        "analyze",
+        "--archmap",
+        root.join("replacement_negative/archmap_label_only_semantic.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--law-policy",
+        root.join("law_policy.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--out-dir",
+        out_dir.to_str().expect("path is utf-8"),
+    ]);
+
+    assert!(!output.status.success());
+    assert_eq!(
+        read_json(&out_dir.join("archmap-validation.json"))["summary"]["result"],
+        "fail"
+    );
+    for stale_artifact in [
+        "archsig-analysis-summary.json",
+        "archsig-atom-viewer-data.json",
+        "archsig-run-manifest.json",
+        "normalized-archmap.json",
+        "typed-evaluator-results.json",
+        "architecture-distance.json",
+        "archsig-analysis-packet.json",
+        "archsig-analysis-detail-index.json",
+        "archsig-analysis-validation.json",
+        "llm-interpretation-packet.json",
+    ] {
+        assert!(
+            !out_dir.join(stale_artifact).exists(),
+            "v1 validation failure must remove stale success artifact {stale_artifact}"
         );
     }
 }
