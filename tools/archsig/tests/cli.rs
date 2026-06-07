@@ -315,6 +315,21 @@ fn cli_analyze_v1_marks_incomplete_molecule_candidate_blocked() {
             .as_array()
             .is_some_and(|results| { results.iter().all(|result| result["status"] == "blocked") })
     );
+    assert!(
+        typed["replacementEvaluatorResults"]
+            .as_array()
+            .is_some_and(|results| {
+                results.iter().any(|result| {
+                    result["replacementId"] == "missing-evidence.reading@1"
+                        && result["replacementForV0Field"] == "observationGaps"
+                        && result["status"] == "blocked"
+                        && result["blockerReason"]
+                            .as_str()
+                            .is_some_and(|reason| reason.contains("selected evaluator result"))
+                })
+            }),
+        "missing evidence replacement must be derived from blocked evaluator requirements"
+    );
 }
 
 #[test]
@@ -444,6 +459,12 @@ fn cli_validates_law_policy_v1_selector_contract() {
     assert_eq!(json["summary"]["policyEntryCount"], 2);
     assert_eq!(json["summary"]["packEntryCount"], 1);
     assert_eq!(json["summary"]["expandedPolicyEntryCount"], 6);
+    assert!(json["checks"].as_array().is_some_and(|checks| {
+        checks.iter().any(|check| {
+            check["id"] == "law-policy-v1-replacement-registry-manifest"
+                && check["result"] == "pass"
+        })
+    }));
     assert!(json["expandedPolicies"].as_array().is_some_and(|entries| {
         entries.len() == 6
             && entries.iter().any(|entry| {
@@ -716,11 +737,97 @@ fn cli_analyze_v1_emit_raw_artifacts_writes_typed_packet_detail_and_handoff() {
         packet["distanceDiagnosis"]["basis"], "architectureDistance",
         "v1 packet distanceDiagnosis must point at architecture distance, not typed counts"
     );
+    assert!(
+        packet["replacementRegistry"]
+            .as_array()
+            .is_some_and(|items| {
+                items.iter().any(|item| {
+                    item["replacementId"] == "semantic.interpretation@1"
+                        && item["replacedV0Field"] == "semanticObservations"
+                        && item["typedOutputPacketRefs"]
+                            .as_array()
+                            .is_some_and(|refs| !refs.is_empty())
+                        && item["positiveFixtures"]
+                            .as_array()
+                            .is_some_and(|fixtures| !fixtures.is_empty())
+                        && item["negativeFixtures"]
+                            .as_array()
+                            .is_some_and(|fixtures| !fixtures.is_empty())
+                })
+            }),
+        "v1 packet must expose replacement registry manifests"
+    );
+    for manifest in packet["replacementRegistry"]
+        .as_array()
+        .expect("replacement registry is array")
+    {
+        for refs_field in ["positiveFixtures", "negativeFixtures"] {
+            for fixture in manifest[refs_field]
+                .as_array()
+                .expect("fixture field is array")
+            {
+                let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR")).join(
+                    fixture
+                        .as_str()
+                        .expect("fixture manifest entry is a string"),
+                );
+                assert!(
+                    fixture_path.is_file(),
+                    "replacement registry fixture path must exist: {}",
+                    fixture_path.display()
+                );
+            }
+        }
+        for reference in manifest["typedOutputPacketRefs"]
+            .as_array()
+            .expect("typed output refs are array")
+        {
+            let pointer = reference
+                .as_str()
+                .expect("typed output packet ref is a string");
+            assert!(
+                packet.pointer(pointer).is_some(),
+                "typed output packet ref must resolve in emitted packet: {pointer}"
+            );
+        }
+    }
+    assert_eq!(
+        packet["replacementRegistryResolution"]["manifestCount"].as_u64(),
+        Some(6)
+    );
+    assert!(
+        packet["replacementEvaluatorResults"]
+            .as_array()
+            .is_some_and(|results| {
+                results.iter().any(|result| {
+                    result["replacementId"] == "projection.reading@1"
+                        && result["replacementForV0Field"] == "projectionInfo"
+                        && result["status"] == "measuredPass"
+                        && result["basisRefs"]
+                            .as_array()
+                            .is_some_and(|refs| !refs.is_empty())
+                        && result["supportAtomRefs"]
+                            .as_array()
+                            .is_some_and(|refs| !refs.is_empty())
+                        && result["detailRefs"]
+                            .as_array()
+                            .is_some_and(|refs| !refs.is_empty())
+                })
+            }),
+        "replacement evaluator result must carry basis/support/detail refs"
+    );
+    assert!(
+        packet["replacementEvaluatorResultsById"]["projection.reading@1"].is_object(),
+        "packet must expose replacement evaluator results by id for registry refs"
+    );
     let analysis_validation = read_json(&out_dir.join("archsig-analysis-validation.json"));
     for check_id in [
         "archsig.v1.architectureDistanceProfileRefsMatch",
         "archsig.v1.architectureDistanceBreakdownSums",
         "archsig.v1.architectureDistanceReadingCounts",
+        "archsig.v1.replacementRegistryPresent",
+        "archsig.v1.replacementRegistryResultsMatch",
+        "archsig.v1.replacementRegistryOutputRefs",
     ] {
         assert!(
             analysis_validation["checks"]
@@ -737,6 +844,16 @@ fn cli_analyze_v1_emit_raw_artifacts_writes_typed_packet_detail_and_handoff() {
         read_json(&out_dir.join("archsig-analysis-detail-index.json"))["schemaVersion"],
         "archsig-analysis-detail-index-v1"
     );
+    let detail_index = read_json(&out_dir.join("archsig-analysis-detail-index.json"));
+    assert!(
+        detail_index["entries"].as_array().is_some_and(|entries| {
+            entries.iter().any(|entry| {
+                entry["replacementId"] == "projection.reading@1"
+                    && entry["resultRef"] == "replacementEvaluatorResults:projection.reading@1"
+            })
+        }),
+        "replacement detail index entries must use replacementEvaluatorResults namespace"
+    );
     assert_eq!(
         read_json(&out_dir.join("llm-interpretation-packet.json"))["schema"],
         "llm-interpretation-packet/v1"
@@ -745,6 +862,10 @@ fn cli_analyze_v1_emit_raw_artifacts_writes_typed_packet_detail_and_handoff() {
     assert_eq!(
         llm_packet["distanceDiagnosisSummary"]["basis"],
         "architectureDistance"
+    );
+    assert_eq!(
+        llm_packet["replacementRegistryResolution"]["registryRef"].as_str(),
+        Some("removed-v0-field-replacement-registry@1")
     );
     assert!(
         packet["nonConclusions"].as_array().is_some_and(|items| {
@@ -755,6 +876,89 @@ fn cli_analyze_v1_emit_raw_artifacts_writes_typed_packet_detail_and_handoff() {
         }),
         "v1 packet must not promote removed v0 helper fields into positive readings"
     );
+}
+
+#[test]
+fn cli_analyze_v1_label_only_semantic_does_not_become_measured_replacement() {
+    let out_dir = temp_dir("analyze-v1-label-only-semantic");
+    let root = archmap_v1_root();
+    let archmap_path = root.join("replacement_negative/archmap_label_only_semantic.json");
+
+    let output = run_sig0_output(&[
+        "analyze",
+        "--archmap",
+        archmap_path.to_str().expect("path is utf-8"),
+        "--law-policy",
+        root.join("law_policy.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--out-dir",
+        out_dir.to_str().expect("path is utf-8"),
+    ]);
+
+    assert!(!output.status.success());
+    let validation = read_json(&out_dir.join("archmap-validation.json"));
+    assert_eq!(validation["summary"]["result"], "fail");
+    assert!(validation["checks"].as_array().is_some_and(|checks| {
+        checks.iter().any(|check| {
+            check["id"] == "archmap-v1-atom-required-shapes" && check["result"] == "fail"
+        })
+    }));
+    assert!(
+        !out_dir.join("typed-evaluator-results.json").exists(),
+        "label-only semantic text must stop before replacement evaluator measurement"
+    );
+}
+
+#[test]
+fn cli_analyze_v1_removed_field_only_artifacts_do_not_become_measured_results() {
+    let root = archmap_v1_root();
+    for (removed_field, fixture) in [
+        (
+            "projectionInfo",
+            "replacement_negative/archmap_projection_only_v0_field.json",
+        ),
+        (
+            "operationSquareEvidence",
+            "replacement_negative/archmap_operation_square_only_v0_field.json",
+        ),
+        (
+            "observationGaps",
+            "replacement_negative/archmap_observation_gaps_only_v0_field.json",
+        ),
+        (
+            "concernHints",
+            "replacement_negative/archmap_concern_only_v0_field.json",
+        ),
+        (
+            "nonConclusions",
+            "replacement_negative/archmap_non_conclusion_only_v0_field.json",
+        ),
+    ] {
+        let out_dir = temp_dir(&format!("analyze-v1-removed-field-only-{}", removed_field));
+        let archmap_path = root.join(fixture);
+
+        let output = run_sig0_output(&[
+            "analyze",
+            "--archmap",
+            archmap_path.to_str().expect("path is utf-8"),
+            "--law-policy",
+            root.join("law_policy.json")
+                .to_str()
+                .expect("path is utf-8"),
+            "--out-dir",
+            out_dir.to_str().expect("path is utf-8"),
+        ]);
+
+        assert!(
+            !output.status.success(),
+            "removed v0 field {removed_field} must not be accepted as v1 input"
+        );
+        assert!(
+            !out_dir.join("typed-evaluator-results.json").exists(),
+            "removed field {removed_field} must stop before measured typed evaluator output"
+        );
+    }
 }
 
 #[test]
@@ -834,7 +1038,7 @@ fn cli_analyze_v1_strict_distance_rejects_blocked_typed_results() {
     assert_eq!(output.status.code(), Some(1));
     let stderr = String::from_utf8_lossy(&output.stderr);
     assert!(
-        stderr.contains("blocked, unknown, or unmeasured distance statuses"),
+        stderr.contains("blocked, unknown, unmeasured, or replacement-blocked distance statuses"),
         "--strict-distance must reject incomplete v1 typed distance support"
     );
     assert_eq!(
@@ -890,6 +1094,24 @@ fn practical_rust_service_example_runs_v1_analyze() {
         "archsig-analysis-packet/v1"
     );
     let typed = read_json(&out_dir.join("typed-evaluator-results.json"));
+    assert!(
+        typed["replacementEvaluatorResults"]
+            .as_array()
+            .is_some_and(|results| {
+                results.iter().any(|result| {
+                    result["replacementId"] == "semantic.interpretation@1"
+                        && result["replacementForV0Field"] == "semanticObservations"
+                        && result["status"] == "measuredPass"
+                        && result["supportAtomRefs"]
+                            .as_array()
+                            .is_some_and(|refs| !refs.is_empty())
+                        && result["supportMoleculeRefs"]
+                            .as_array()
+                            .is_some_and(|refs| !refs.is_empty())
+                })
+            }),
+        "practical fixture must resolve semanticObservations through semantic atoms, not v0 helper fields"
+    );
     let architecture_distance = read_json(&out_dir.join("architecture-distance.json"));
     let summary = read_json(&out_dir.join("archsig-analysis-summary.json"));
     let viewer = read_json(&out_dir.join("archsig-atom-viewer-data.json"));

@@ -8,7 +8,7 @@ use super::measurement_policy::{
 };
 use super::registry::{
     expand_law_policy_v1, is_known_v1_basis, is_known_v1_distance_profile, is_known_v1_evaluator,
-    is_known_v1_pack,
+    is_known_v1_pack, static_law_evaluator_registry_v1,
 };
 use crate::validation::{count_checks, duplicates, generic_validation_example, validation_check};
 use crate::{
@@ -30,6 +30,7 @@ pub fn validate_law_policy_v1_report(
         check_v1_basis(policy),
         check_v1_pack_and_evaluator_vocabulary(policy),
         check_v1_distance_profile_selector(policy),
+        check_v1_replacement_registry_manifest(),
     ];
     let failed_check_count = count_checks(&checks, "fail");
     let warning_check_count = count_checks(&checks, "warn");
@@ -240,6 +241,53 @@ fn check_v1_distance_profile_selector(policy: &LawPolicyDocumentV1) -> Validatio
     check_examples(
         "law-policy-v1-distance-profile-selector",
         "LawPolicy v1 selects an optional distance profile by ref instead of embedding a distance DSL",
+        examples,
+    )
+}
+
+fn check_v1_replacement_registry_manifest() -> ValidationCheck {
+    let registry = static_law_evaluator_registry_v1();
+    let mut examples = Vec::new();
+    for manifest in &registry.replacement_registry {
+        if manifest.replacement_id.trim().is_empty() {
+            examples.push(generic_validation_example(
+                "replacementRegistry[].replacementId",
+                "empty",
+                "replacement id must be non-empty",
+            ));
+        }
+        if manifest.replaced_v0_field.trim().is_empty() {
+            examples.push(generic_validation_example(
+                &manifest.replacement_id,
+                "replacedV0Field",
+                "replacement manifest must identify the removed v0 field",
+            ));
+        }
+        if manifest.typed_output_packet_refs.is_empty() {
+            examples.push(generic_validation_example(
+                &manifest.replacement_id,
+                "typedOutputPacketRefs",
+                "replacement manifest must declare typed output packet refs",
+            ));
+        }
+        if manifest.positive_fixtures.is_empty() {
+            examples.push(generic_validation_example(
+                &manifest.replacement_id,
+                "positiveFixtures",
+                "replacement manifest must declare positive fixture coverage",
+            ));
+        }
+        if manifest.negative_fixtures.is_empty() {
+            examples.push(generic_validation_example(
+                &manifest.replacement_id,
+                "negativeFixtures",
+                "replacement manifest must declare negative fixture coverage",
+            ));
+        }
+    }
+    check_examples(
+        "law-policy-v1-replacement-registry-manifest",
+        "removed v0 field replacements resolve to registry manifests with output refs and fixture coverage",
         examples,
     )
 }

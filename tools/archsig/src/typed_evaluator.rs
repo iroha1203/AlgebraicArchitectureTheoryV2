@@ -2,12 +2,12 @@ use std::collections::{BTreeMap, BTreeSet};
 
 use serde_json::{Value, json};
 
-use crate::law_policy::is_known_v1_distance_profile;
+use crate::law_policy::{REPLACEMENT_REGISTRY_REF, is_known_v1_distance_profile};
 use crate::{
     ARCHITECTURE_DISTANCE_V1_SCHEMA, LawEvaluatorRegistryV1, LawPolicyDocumentV1,
-    NormalizedArchMapV1, NormalizedAtomV1, NormalizedMoleculeV1, TYPED_EVALUATOR_RESULTS_V1_SCHEMA,
-    TypedEvaluatorResultV1, TypedEvaluatorResultsSummaryV1, TypedEvaluatorResultsV1,
-    expand_law_policy_v1,
+    NormalizedArchMapV1, NormalizedAtomV1, NormalizedMoleculeV1, ReplacementEvaluatorManifestV1,
+    ReplacementRegistryResolutionV1, TYPED_EVALUATOR_RESULTS_V1_SCHEMA, TypedEvaluatorResultV1,
+    TypedEvaluatorResultsSummaryV1, TypedEvaluatorResultsV1, expand_law_policy_v1,
 };
 
 const PIPELINE_ID: &str = "archsig-v1-typed-evaluator-pipeline@1";
@@ -51,6 +51,9 @@ pub fn evaluate_typed_v1(
                     support_molecule_refs: Vec::new(),
                     basis_refs: entry.basis.clone(),
                     detail_refs: Vec::new(),
+                    replacement_id: None,
+                    replacement_for_v0_field: None,
+                    typed_output_packet_refs: Vec::new(),
                     summary: "evaluator manifest is not registered".to_string(),
                     blocker_reason: Some("unknown evaluator manifest".to_string()),
                 };
@@ -98,7 +101,12 @@ pub fn evaluate_typed_v1(
             )
         })
         .collect::<Vec<_>>();
+    let replacement_evaluator_results =
+        evaluate_replacement_registry_v1(normalized, registry, &results);
     let summary = typed_summary(&results);
+    let replacement_summary = typed_summary(&replacement_evaluator_results);
+    let replacement_registry_resolution =
+        replacement_registry_resolution(&registry.replacement_registry, &replacement_summary);
     let positive_bounded_conclusions = positive_bounded_conclusions(&results);
 
     TypedEvaluatorResultsV1 {
@@ -106,11 +114,17 @@ pub fn evaluate_typed_v1(
         pipeline_id: PIPELINE_ID.to_string(),
         normalized_archmap_ref: normalized_archmap_ref.to_string(),
         law_policy_ref: law_policy_ref.to_string(),
+        replacement_registry_ref: REPLACEMENT_REGISTRY_REF.to_string(),
+        replacement_registry: registry.replacement_registry.clone(),
         results,
+        replacement_evaluator_results,
         summary,
+        replacement_summary,
+        replacement_registry_resolution,
         positive_bounded_conclusions,
         non_conclusions: vec![
             "Typed evaluator results are bounded to normalized ArchMap, LawPolicy, and evaluator registry evidence.".to_string(),
+            "Replacement evaluator results are derived from normalized ArchMap and registry manifests, not from removed v0 input fields.".to_string(),
             "Blocked, unknown, and unmeasured results are not measured zero.".to_string(),
             "Typed evaluator results are ArchSig computation artifacts, not Lean proof objects.".to_string(),
         ],
@@ -125,6 +139,7 @@ pub fn build_typed_analysis_packet_v1(
     let detail_refs = typed_results
         .results
         .iter()
+        .chain(typed_results.replacement_evaluator_results.iter())
         .flat_map(|result| result.detail_refs.iter().cloned())
         .collect::<BTreeSet<_>>()
         .into_iter()
@@ -136,9 +151,14 @@ pub fn build_typed_analysis_packet_v1(
         "inputRefs": {
             "normalizedArchMap": typed_results.normalized_archmap_ref,
             "lawPolicy": typed_results.law_policy_ref,
-            "typedEvaluatorResults": "typed-evaluator-results.json"
+            "typedEvaluatorResults": "typed-evaluator-results.json",
+            "replacementRegistry": typed_results.replacement_registry_ref
         },
+        "replacementRegistry": typed_results.replacement_registry,
+        "replacementRegistryResolution": typed_results.replacement_registry_resolution,
         "typedEvaluatorResults": typed_results.results,
+        "replacementEvaluatorResults": typed_results.replacement_evaluator_results,
+        "replacementEvaluatorResultsById": replacement_results_by_id(typed_results),
         "typedEvaluatorDiagnosis": typed_evaluator_diagnosis(typed_results),
         "architectureDistance": architecture_distance,
         "distanceDiagnosis": architecture_distance["distanceDiagnosis"],
@@ -158,12 +178,14 @@ pub fn build_typed_analysis_summary_v1(
     typed_results: &TypedEvaluatorResultsV1,
     architecture_distance: &Value,
 ) -> serde_json::Value {
+    let replacement_blocked_count = typed_results.replacement_summary.blocked_count;
     let verdict = if typed_results.summary.measured_violation_count > 0 {
         "SELECTED_VIOLATION_MEASURED_UNDER_EVIDENCE_CONTRACT"
     } else if typed_results.summary.measured_pass_count > 0
         && typed_results.summary.blocked_count == 0
         && typed_results.summary.unknown_count == 0
         && typed_results.summary.unmeasured_count == 0
+        && replacement_blocked_count == 0
     {
         "ACCEPTABLE_UNDER_EVIDENCE_CONTRACT"
     } else {
@@ -179,11 +201,14 @@ pub fn build_typed_analysis_summary_v1(
             "normalizedArchMap": typed_results.normalized_archmap_ref,
             "lawPolicy": typed_results.law_policy_ref,
             "typedEvaluatorResults": "typed-evaluator-results.json",
+            "replacementRegistry": typed_results.replacement_registry_ref,
             "architectureDistance": "architecture-distance.json",
             "normalizedAtomCount": normalized.summary.normalized_atom_count,
             "generatedMoleculeCandidateCount": normalized.summary.generated_molecule_candidate_count
         },
         "measurementStatusSummary": typed_results.summary,
+        "replacementRegistryResolution": typed_results.replacement_registry_resolution,
+        "replacementStatusSummary": typed_results.replacement_summary,
         "typedEvaluatorDiagnosis": typed_evaluator_diagnosis(typed_results),
         "architectureDistance": architecture_distance["summary"],
         "distanceDiagnosis": architecture_distance["distanceDiagnosis"],
@@ -249,6 +274,8 @@ pub fn build_typed_atom_viewer_data_v1(
         "moleculeGroups": molecule_groups,
         "analysisOverlays": {
             "typedEvaluatorResults": typed_results.results,
+            "replacementEvaluatorResults": typed_results.replacement_evaluator_results,
+            "replacementRegistryResolution": typed_results.replacement_registry_resolution,
             "typedEvaluatorDiagnosis": summary["typedEvaluatorDiagnosis"],
             "architectureDistance": summary["architectureDistance"],
             "distanceDiagnosis": summary["distanceDiagnosis"],
@@ -261,6 +288,7 @@ pub fn build_typed_atom_viewer_data_v1(
                 "measurementStatusSummary": summary["measurementStatusSummary"]
             },
             "architectureDistance": summary["architectureDistance"],
+            "replacementRegistryResolution": summary["replacementRegistryResolution"],
             "typedEvaluatorDiagnosis": summary["typedEvaluatorDiagnosis"],
             "distanceDiagnosis": summary["distanceDiagnosis"],
             "topFindings": summary["dominantFindings"],
@@ -282,6 +310,7 @@ pub fn build_typed_detail_index_v1(typed_results: &TypedEvaluatorResultsV1) -> s
     let ref_dictionary = typed_results
         .results
         .iter()
+        .chain(typed_results.replacement_evaluator_results.iter())
         .flat_map(|result| result.detail_refs.iter().cloned())
         .collect::<BTreeSet<_>>()
         .into_iter()
@@ -289,14 +318,23 @@ pub fn build_typed_detail_index_v1(typed_results: &TypedEvaluatorResultsV1) -> s
     let entries = typed_results
         .results
         .iter()
+        .chain(typed_results.replacement_evaluator_results.iter())
         .map(|result| {
+            let result_ref = if let Some(replacement_id) = result.replacement_id.as_deref() {
+                format!("replacementEvaluatorResults:{replacement_id}")
+            } else {
+                format!("typedEvaluatorResults:{}", result.law)
+            };
             json!({
-                "resultRef": format!("typedEvaluatorResults:{}", result.law),
+                "resultRef": result_ref,
                 "status": result.status,
                 "supportAtomRefs": result.support_atom_refs,
                 "supportMoleculeRefs": result.support_molecule_refs,
                 "basisRefs": result.basis_refs,
-                "detailRefs": result.detail_refs
+                "detailRefs": result.detail_refs,
+                "replacementId": result.replacement_id,
+                "replacementForV0Field": result.replacement_for_v0_field,
+                "typedOutputPacketRefs": result.typed_output_packet_refs
             })
         })
         .collect::<Vec<_>>();
@@ -324,6 +362,7 @@ pub fn build_typed_llm_interpretation_packet_v1(
         "architectureDistance": architecture_distance["summary"],
         "distanceDiagnosisSummary": architecture_distance["distanceDiagnosis"],
         "typedEvaluatorSummary": typed_results.summary,
+        "replacementRegistryResolution": typed_results.replacement_registry_resolution,
         "positiveBoundedConclusions": typed_results.positive_bounded_conclusions,
         "nonConclusions": [
             "LLM interpretation packet summarizes typed evaluator results and does not add new findings.",
@@ -487,6 +526,42 @@ pub fn build_typed_analysis_validation_v1(
     let breakdown_sum_pass = architecture_distance_breakdown_sums(&packet["architectureDistance"]);
     let reading_counts_pass =
         architecture_distance_reading_counts_match(&packet["architectureDistance"]);
+    let replacement_registry_present_pass = packet["replacementRegistry"]
+        .as_array()
+        .is_some_and(|items| !items.is_empty());
+    let replacement_results_match_pass = packet["replacementEvaluatorResults"]
+        .as_array()
+        .is_some_and(|items| {
+            items.len()
+                == packet["replacementRegistryResolution"]["manifestCount"]
+                    .as_u64()
+                    .unwrap_or(0) as usize
+        });
+    let replacement_output_refs_pass =
+        packet["replacementRegistry"]
+            .as_array()
+            .is_some_and(|items| {
+                items.iter().all(|item| {
+                    item["replacementId"].as_str().is_some()
+                        && item["replacedV0Field"].as_str().is_some()
+                        && item["typedOutputPacketRefs"]
+                            .as_array()
+                            .is_some_and(|refs| {
+                                !refs.is_empty()
+                                    && refs.iter().all(|reference| {
+                                        reference.as_str().is_some_and(|pointer| {
+                                            packet.pointer(pointer).is_some()
+                                        })
+                                    })
+                            })
+                        && item["positiveFixtures"]
+                            .as_array()
+                            .is_some_and(|fixtures| !fixtures.is_empty())
+                        && item["negativeFixtures"]
+                            .as_array()
+                            .is_some_and(|fixtures| !fixtures.is_empty())
+                })
+            });
     let checks_pass = [
         packet_schema_pass,
         typed_count_pass,
@@ -495,6 +570,9 @@ pub fn build_typed_analysis_validation_v1(
         profile_ref_pass,
         breakdown_sum_pass,
         reading_counts_pass,
+        replacement_registry_present_pass,
+        replacement_results_match_pass,
+        replacement_output_refs_pass,
     ];
     let result = if checks_pass.iter().copied().all(|passed| passed) {
         "pass"
@@ -545,6 +623,21 @@ pub fn build_typed_analysis_validation_v1(
                 "checkId": "archsig.v1.architectureDistanceReadingCounts",
                 "result": if reading_counts_pass { "pass" } else { "fail" },
                 "message": "architecture distance readingCounts match the emitted reading arrays"
+            },
+            {
+                "checkId": "archsig.v1.replacementRegistryPresent",
+                "result": if replacement_registry_present_pass { "pass" } else { "fail" },
+                "message": "removed v0 field replacement registry manifest is present in the v1 packet"
+            },
+            {
+                "checkId": "archsig.v1.replacementRegistryResultsMatch",
+                "result": if replacement_results_match_pass { "pass" } else { "fail" },
+                "message": "replacement evaluator result count matches replacement registry resolution manifest count"
+            },
+            {
+                "checkId": "archsig.v1.replacementRegistryOutputRefs",
+                "result": if replacement_output_refs_pass { "pass" } else { "fail" },
+                "message": "each replacement manifest declares typed output refs and positive / negative fixture coverage"
             }
         ],
         "nonConclusions": [
@@ -586,8 +679,303 @@ fn typed_result(
             .chain(support_molecule_refs.iter())
             .cloned()
             .collect(),
+        replacement_id: None,
+        replacement_for_v0_field: None,
+        typed_output_packet_refs: Vec::new(),
         summary: format!("{} evaluated as {status}", entry.law),
         blocker_reason,
+    }
+}
+
+fn replacement_results_by_id(typed_results: &TypedEvaluatorResultsV1) -> Value {
+    let mut object = serde_json::Map::new();
+    for result in &typed_results.replacement_evaluator_results {
+        if let Some(replacement_id) = result.replacement_id.as_deref() {
+            object.insert(replacement_id.to_string(), json!(result));
+        }
+    }
+    Value::Object(object)
+}
+
+fn evaluate_replacement_registry_v1(
+    normalized: &NormalizedArchMapV1,
+    registry: &LawEvaluatorRegistryV1,
+    law_results: &[TypedEvaluatorResultV1],
+) -> Vec<TypedEvaluatorResultV1> {
+    registry
+        .replacement_registry
+        .iter()
+        .map(|manifest| replacement_result(normalized, manifest, law_results))
+        .collect()
+}
+
+fn replacement_result(
+    normalized: &NormalizedArchMapV1,
+    manifest: &ReplacementEvaluatorManifestV1,
+    law_results: &[TypedEvaluatorResultV1],
+) -> TypedEvaluatorResultV1 {
+    match manifest.replacement_id.as_str() {
+        "missing-evidence.reading@1" => missing_evidence_replacement_result(manifest, law_results),
+        "concern.boundary@1" | "non-conclusion.boundary@1" => boundary_replacement_result(manifest),
+        _ => support_based_replacement_result(normalized, manifest),
+    }
+}
+
+fn support_based_replacement_result(
+    normalized: &NormalizedArchMapV1,
+    manifest: &ReplacementEvaluatorManifestV1,
+) -> TypedEvaluatorResultV1 {
+    let support_atom_refs = replacement_support_atom_refs(normalized, manifest);
+    let support_molecule_refs =
+        replacement_support_molecule_refs(normalized, manifest, &support_atom_refs);
+    let blocker_reason = if support_atom_refs.is_empty() {
+        Some(format!(
+            "required replacement atom constructors are missing: {}",
+            manifest.required_atom_constructors.join(", ")
+        ))
+    } else if support_molecule_refs.is_empty() {
+        Some(manifest.missing_blocker_rule.clone())
+    } else {
+        None
+    };
+    let status = if blocker_reason.is_some() {
+        "blocked"
+    } else {
+        "measuredPass"
+    };
+    typed_replacement_result(
+        manifest,
+        status,
+        support_atom_refs,
+        support_molecule_refs,
+        format!(
+            "{} resolved as {status} from normalized ArchMap support",
+            manifest.replacement_id
+        ),
+        blocker_reason,
+    )
+}
+
+fn missing_evidence_replacement_result(
+    manifest: &ReplacementEvaluatorManifestV1,
+    law_results: &[TypedEvaluatorResultV1],
+) -> TypedEvaluatorResultV1 {
+    let blocked_results = law_results
+        .iter()
+        .filter(|result| {
+            result.status == "blocked"
+                || result.status == "unknown"
+                || result.status == "unmeasured"
+        })
+        .collect::<Vec<_>>();
+    let detail_refs = blocked_results
+        .iter()
+        .flat_map(|result| result.detail_refs.iter().cloned())
+        .collect::<BTreeSet<_>>()
+        .into_iter()
+        .collect::<Vec<_>>();
+    let blocker_reason = (!blocked_results.is_empty()).then(|| {
+        format!(
+            "{} selected evaluator result(s) have missing support under registry requirements",
+            blocked_results.len()
+        )
+    });
+    let status = if blocker_reason.is_some() {
+        "blocked"
+    } else {
+        "measuredPass"
+    };
+    typed_replacement_result(
+        manifest,
+        status,
+        Vec::new(),
+        Vec::new(),
+        if status == "blocked" {
+            "missing evidence was derived from blocked typed evaluator requirements".to_string()
+        } else {
+            "no selected evaluator missing-evidence reading was derived".to_string()
+        },
+        blocker_reason,
+    )
+    .with_detail_refs(detail_refs)
+}
+
+fn boundary_replacement_result(
+    manifest: &ReplacementEvaluatorManifestV1,
+) -> TypedEvaluatorResultV1 {
+    typed_replacement_result(
+        manifest,
+        "unmeasured",
+        Vec::new(),
+        Vec::new(),
+        format!(
+            "{} is a boundary replacement; removed v0 prose is not diagnostic input",
+            manifest.replacement_id
+        ),
+        Some(manifest.missing_blocker_rule.clone()),
+    )
+}
+
+fn typed_replacement_result(
+    manifest: &ReplacementEvaluatorManifestV1,
+    status: &str,
+    support_atom_refs: Vec<String>,
+    support_molecule_refs: Vec<String>,
+    summary: String,
+    blocker_reason: Option<String>,
+) -> TypedEvaluatorResultV1 {
+    let detail_refs = support_atom_refs
+        .iter()
+        .chain(support_molecule_refs.iter())
+        .cloned()
+        .collect();
+    TypedEvaluatorResultV1 {
+        evaluator: manifest.evaluator_id.clone(),
+        law: manifest.law_id.clone(),
+        status: status.to_string(),
+        support_atom_refs,
+        support_molecule_refs,
+        basis_refs: vec![format!(
+            "replacement-registry:{}",
+            manifest.replaced_v0_field
+        )],
+        detail_refs,
+        replacement_id: Some(manifest.replacement_id.clone()),
+        replacement_for_v0_field: Some(manifest.replaced_v0_field.clone()),
+        typed_output_packet_refs: manifest.typed_output_packet_refs.clone(),
+        summary,
+        blocker_reason,
+    }
+}
+
+trait WithDetailRefs {
+    fn with_detail_refs(self, detail_refs: Vec<String>) -> Self;
+}
+
+impl WithDetailRefs for TypedEvaluatorResultV1 {
+    fn with_detail_refs(mut self, detail_refs: Vec<String>) -> Self {
+        self.detail_refs = detail_refs;
+        self
+    }
+}
+
+fn replacement_support_atom_refs(
+    normalized: &NormalizedArchMapV1,
+    manifest: &ReplacementEvaluatorManifestV1,
+) -> Vec<String> {
+    normalized
+        .atoms
+        .iter()
+        .filter(|atom| {
+            manifest
+                .required_atom_constructors
+                .iter()
+                .any(|required| normalized_atom_matches_constructor(atom, required))
+        })
+        .map(|atom| atom.normalized_atom_id.clone())
+        .collect()
+}
+
+fn replacement_support_molecule_refs(
+    normalized: &NormalizedArchMapV1,
+    manifest: &ReplacementEvaluatorManifestV1,
+    support_atom_refs: &[String],
+) -> Vec<String> {
+    normalized
+        .molecules
+        .iter()
+        .filter(|molecule| {
+            molecule.generated_molecule_candidate_status == "generated"
+                && molecule
+                    .atom_ids
+                    .iter()
+                    .any(|atom_id| support_atom_refs.contains(atom_id))
+                && replacement_molecule_condition_matches(normalized, molecule, manifest)
+        })
+        .map(|molecule| molecule.normalized_molecule_id.clone())
+        .collect()
+}
+
+fn replacement_molecule_condition_matches(
+    normalized: &NormalizedArchMapV1,
+    molecule: &NormalizedMoleculeV1,
+    manifest: &ReplacementEvaluatorManifestV1,
+) -> bool {
+    match manifest.replacement_id.as_str() {
+        "semantic.interpretation@1" => molecule_has_constructor(normalized, molecule, "semantic"),
+        "projection.reading@1" => molecule_has_any_constructor(
+            normalized,
+            molecule,
+            &["component", "relation", "capability"],
+        ),
+        "operation-square.reading@1" => {
+            molecule_has_constructor(normalized, molecule, "relation")
+                && molecule_has_any_constructor(normalized, molecule, &["effect", "runtime"])
+        }
+        _ => true,
+    }
+}
+
+fn molecule_has_constructor(
+    normalized: &NormalizedArchMapV1,
+    molecule: &NormalizedMoleculeV1,
+    constructor: &str,
+) -> bool {
+    molecule_has_any_constructor(normalized, molecule, &[constructor])
+}
+
+fn molecule_has_any_constructor(
+    normalized: &NormalizedArchMapV1,
+    molecule: &NormalizedMoleculeV1,
+    constructors: &[&str],
+) -> bool {
+    molecule.atom_ids.iter().any(|atom_id| {
+        normalized
+            .atoms
+            .iter()
+            .find(|atom| atom.normalized_atom_id == *atom_id)
+            .is_some_and(|atom| {
+                constructors
+                    .iter()
+                    .any(|constructor| normalized_atom_matches_constructor(atom, constructor))
+            })
+    })
+}
+
+fn normalized_atom_matches_constructor(atom: &NormalizedAtomV1, constructor: &str) -> bool {
+    atom.predicate.constructor == constructor
+        || atom.atom_kind == constructor
+        || matches!(
+            (constructor, atom.predicate.constructor.as_str()),
+            ("dataState", "dataState")
+                | ("authority", "boundaryAuthority")
+                | ("contract", "contractSpecification")
+                | ("semantic", "semanticInterpretation")
+                | ("runtime", "runtimeInteraction")
+        )
+}
+
+fn replacement_registry_resolution(
+    manifests: &[ReplacementEvaluatorManifestV1],
+    summary: &TypedEvaluatorResultsSummaryV1,
+) -> ReplacementRegistryResolutionV1 {
+    ReplacementRegistryResolutionV1 {
+        schema: "archsig-replacement-registry-resolution/v1".to_string(),
+        registry_ref: REPLACEMENT_REGISTRY_REF.to_string(),
+        manifest_count: manifests.len(),
+        resolved_replacement_count: summary.measured_pass_count + summary.measured_violation_count,
+        blocked_replacement_count: summary.blocked_count,
+        non_diagnostic_replacement_count: summary.unknown_count + summary.unmeasured_count,
+        replaced_v0_fields: manifests
+            .iter()
+            .map(|manifest| manifest.replaced_v0_field.clone())
+            .collect(),
+        non_conclusions: vec![
+            "Replacement registry resolution does not re-enable removed v0 ArchMap fields."
+                .to_string(),
+            "Concern and non-conclusion boundary replacements are intentionally unmeasured."
+                .to_string(),
+        ],
     }
 }
 
@@ -736,7 +1124,8 @@ fn typed_evaluator_diagnosis(typed_results: &TypedEvaluatorResultsV1) -> serde_j
     let measured_violation_count = status_summary.measured_violation_count;
     let blocked_or_unmeasured_count = status_summary.blocked_count
         + status_summary.unknown_count
-        + status_summary.unmeasured_count;
+        + status_summary.unmeasured_count
+        + typed_results.replacement_summary.blocked_count;
     let violating_laws = typed_results
         .results
         .iter()
@@ -754,6 +1143,12 @@ fn typed_evaluator_diagnosis(typed_results: &TypedEvaluatorResultsV1) -> serde_j
     let blocked_results = typed_results
         .results
         .iter()
+        .chain(
+            typed_results
+                .replacement_evaluator_results
+                .iter()
+                .filter(|result| result.status == "blocked"),
+        )
         .filter(|result| {
             result.status == "blocked"
                 || result.status == "unknown"
@@ -764,6 +1159,8 @@ fn typed_evaluator_diagnosis(typed_results: &TypedEvaluatorResultsV1) -> serde_j
                 "law": result.law,
                 "evaluator": result.evaluator,
                 "status": result.status,
+                "replacementId": result.replacement_id,
+                "replacementForV0Field": result.replacement_for_v0_field,
                 "blockerReason": result.blocker_reason
             })
         })
@@ -780,11 +1177,13 @@ fn typed_evaluator_diagnosis(typed_results: &TypedEvaluatorResultsV1) -> serde_j
         },
         "violationCount": measured_violation_count,
         "blockedOrUnmeasuredCount": blocked_or_unmeasured_count,
+        "replacementBlockedCount": typed_results.replacement_summary.blocked_count,
         "violatingLaws": violating_laws,
         "blockedResults": blocked_results,
         "detailRefs": typed_results
             .results
             .iter()
+            .chain(typed_results.replacement_evaluator_results.iter())
             .flat_map(|result| result.detail_refs.iter().cloned())
             .collect::<BTreeSet<_>>()
             .into_iter()
@@ -811,9 +1210,15 @@ fn typed_conclusion(
         })
         .map(|result| result.law.clone())
         .collect::<Vec<_>>();
+    let blocked_replacement_readings = typed_results
+        .replacement_evaluator_results
+        .iter()
+        .filter(|result| result.status == "blocked")
+        .filter_map(|result| result.replacement_id.clone())
+        .collect::<Vec<_>>();
     let status = if !violated_laws.is_empty() {
         "violation_detected"
-    } else if !blocked_laws.is_empty() {
+    } else if !blocked_laws.is_empty() || !blocked_replacement_readings.is_empty() {
         "incomplete"
     } else {
         "acceptable"
@@ -837,12 +1242,15 @@ fn typed_conclusion(
         "violatedLaws": violated_laws,
         "passedLaws": passed_laws,
         "blockedLaws": blocked_laws,
+        "blockedReplacementReadings": blocked_replacement_readings,
         "distance": architecture_distance["summary"],
         "typedEvaluatorDiagnosis": {
             "violationCount": typed_results.summary.measured_violation_count,
             "blockedOrUnmeasuredCount": typed_results.summary.blocked_count
                 + typed_results.summary.unknown_count
                 + typed_results.summary.unmeasured_count
+                + typed_results.replacement_summary.blocked_count,
+            "replacementBlockedCount": typed_results.replacement_summary.blocked_count
         },
         "primaryEvidenceRefs": primary_evidence_refs,
         "nextActions": typed_next_actions(typed_results)
@@ -862,10 +1270,17 @@ fn typed_next_actions(typed_results: &TypedEvaluatorResultsV1) -> Vec<Value> {
     typed_results
         .results
         .iter()
+        .chain(
+            typed_results
+                .replacement_evaluator_results
+                .iter()
+                .filter(|result| result.status == "blocked"),
+        )
         .filter(|result| result.status == "measuredViolation" || result.status == "blocked")
         .map(|result| {
             json!({
                 "law": result.law,
+                "replacementId": result.replacement_id,
                 "actionKind": if result.status == "blocked" {
                     "collectEvidence"
                 } else {
@@ -1344,7 +1759,10 @@ mod tests {
             pipeline_id: PIPELINE_ID.to_string(),
             normalized_archmap_ref: "normalized-archmap.json".to_string(),
             law_policy_ref: "law-policy.json".to_string(),
+            replacement_registry_ref: REPLACEMENT_REGISTRY_REF.to_string(),
+            replacement_registry: Vec::new(),
             results: Vec::new(),
+            replacement_evaluator_results: Vec::new(),
             summary: TypedEvaluatorResultsSummaryV1 {
                 result_count: 0,
                 measured_pass_count: 0,
@@ -1352,6 +1770,24 @@ mod tests {
                 blocked_count: 0,
                 unknown_count: 0,
                 unmeasured_count: 0,
+            },
+            replacement_summary: TypedEvaluatorResultsSummaryV1 {
+                result_count: 0,
+                measured_pass_count: 0,
+                measured_violation_count: 0,
+                blocked_count: 0,
+                unknown_count: 0,
+                unmeasured_count: 0,
+            },
+            replacement_registry_resolution: ReplacementRegistryResolutionV1 {
+                schema: "archsig-replacement-registry-resolution/v1".to_string(),
+                registry_ref: REPLACEMENT_REGISTRY_REF.to_string(),
+                manifest_count: 0,
+                resolved_replacement_count: 0,
+                blocked_replacement_count: 0,
+                non_diagnostic_replacement_count: 0,
+                replaced_v0_fields: Vec::new(),
+                non_conclusions: Vec::new(),
             },
             positive_bounded_conclusions: Vec::new(),
             non_conclusions: Vec::new(),

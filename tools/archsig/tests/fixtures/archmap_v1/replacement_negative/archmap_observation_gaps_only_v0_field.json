@@ -1,0 +1,12 @@
+{
+  "schema": "archmap/v1",
+  "id": "replacement-negative-observation-gaps-only",
+  "sources": {},
+  "atoms": [],
+  "molecules": [],
+  "observationGaps": [
+    {
+      "note": "authored gap input must not become measured zero"
+    }
+  ]
+}

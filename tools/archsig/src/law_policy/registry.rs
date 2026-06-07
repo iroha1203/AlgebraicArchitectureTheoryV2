@@ -1,15 +1,18 @@
 use crate::{
     ExpandedLawPolicyEntryV1, LawEvaluatorManifestV1, LawEvaluatorRegistryV1,
     LawPolicyBasisManifestV1, LawPolicyDocumentV1, LawPolicyPackEntryV1, LawPolicyPackManifestV1,
+    ReplacementEvaluatorManifestV1,
 };
 
 const REGISTRY_SCHEMA: &str = "law-evaluator-registry/v1";
+pub const REPLACEMENT_REGISTRY_REF: &str = "removed-v0-field-replacement-registry@1";
 
 pub fn static_law_evaluator_registry_v1() -> LawEvaluatorRegistryV1 {
     LawEvaluatorRegistryV1 {
         schema: REGISTRY_SCHEMA.to_string(),
         registry_id: "archsig-law-evaluator-registry@1".to_string(),
         evaluators: evaluator_manifests(),
+        replacement_registry: replacement_manifests(),
         policy_packs: vec![LawPolicyPackManifestV1 {
             pack_id: "solid@1".to_string(),
             entries: solid_pack_entries(),
@@ -84,6 +87,91 @@ pub fn is_known_v1_distance_profile(profile_ref: &str) -> bool {
         profile_ref,
         "distance-profile:architecture-default@1" | "distance-profile:practical-rust-service@1"
     )
+}
+
+pub fn replacement_manifests() -> Vec<ReplacementEvaluatorManifestV1> {
+    vec![
+        replacement_manifest(
+            "semantic.interpretation@1",
+            "semanticObservations",
+            "semantic.interpretation@1",
+            "replacement.semantic-interpretation",
+            &["semantic"],
+            "semantic atom must belong to an explicit generated molecule candidate",
+            &["/replacementEvaluatorResultsById/semantic.interpretation@1"],
+            &["examples/practical-rust-service/archmap/archmap.json"],
+            &["tests/fixtures/archmap_v1/replacement_negative/archmap_label_only_semantic.json"],
+            "missing semantic atoms or generated molecule membership become blocked, not label-derived measured results",
+        ),
+        replacement_manifest(
+            "projection.reading@1",
+            "projectionInfo",
+            "projection.reading@1",
+            "replacement.projection-reading",
+            &["component", "relation", "capability"],
+            "projection reading is computed from normalized static atoms in explicit generated molecule candidates",
+            &["/replacementEvaluatorResultsById/projection.reading@1"],
+            &["tests/fixtures/archmap_v1/archmap.json"],
+            &[
+                "tests/fixtures/archmap_v1/replacement_negative/archmap_projection_only_v0_field.json",
+            ],
+            "missing normalized static atom support becomes blocked, not projection-only input evidence",
+        ),
+        replacement_manifest(
+            "operation-square.reading@1",
+            "operationSquareEvidence",
+            "operation-square.reading@1",
+            "replacement.operation-square-reading",
+            &["relation", "effect", "runtime"],
+            "square / commutation reading is computed from normalized relation with effect or runtime atoms in generated molecule candidates",
+            &["/replacementEvaluatorResultsById/operation-square.reading@1"],
+            &["examples/practical-rust-service/archmap/archmap.json"],
+            &[
+                "tests/fixtures/archmap_v1/replacement_negative/archmap_operation_square_only_v0_field.json",
+            ],
+            "missing relation plus effect/runtime support becomes blocked, not square-only input evidence",
+        ),
+        replacement_manifest(
+            "missing-evidence.reading@1",
+            "observationGaps",
+            "missing-evidence.reading@1",
+            "replacement.missing-evidence-reading",
+            &[],
+            "missing evidence is derived from selected evaluator requirements and typed evaluator blocked statuses",
+            &["/replacementEvaluatorResultsById/missing-evidence.reading@1"],
+            &["tests/fixtures/archmap_v1/archmap_blocked_molecule.json"],
+            &[
+                "tests/fixtures/archmap_v1/replacement_negative/archmap_observation_gaps_only_v0_field.json",
+            ],
+            "blocked selected evaluator requirements become missing-evidence readings; authored gap lists cannot become measured zero",
+        ),
+        replacement_manifest(
+            "concern.boundary@1",
+            "concernHints",
+            "concern.boundary@1",
+            "replacement.concern-boundary",
+            &[],
+            "concern notes are outside ArchMap primary input and never diagnostic support",
+            &["/replacementEvaluatorResultsById/concern.boundary@1"],
+            &["tests/fixtures/archmap_v1/archmap.json"],
+            &["tests/fixtures/archmap_v1/replacement_negative/archmap_concern_only_v0_field.json"],
+            "concern-only artifacts remain unmeasured review notes, never measured evaluator results",
+        ),
+        replacement_manifest(
+            "non-conclusion.boundary@1",
+            "nonConclusions",
+            "non-conclusion.boundary@1",
+            "replacement.non-conclusion-boundary",
+            &[],
+            "non-conclusion prose is carried by schemas and output manifests, not by ArchMap diagnostic input",
+            &["/replacementEvaluatorResultsById/non-conclusion.boundary@1"],
+            &["tests/fixtures/archmap_v1/archmap.json"],
+            &[
+                "tests/fixtures/archmap_v1/replacement_negative/archmap_non_conclusion_only_v0_field.json",
+            ],
+            "nonConclusion prose cannot create blockers, safe results, or measured zero",
+        ),
+    ]
 }
 
 fn pack_entries(pack: &str) -> Vec<LawPolicyPackEntryV1> {
@@ -172,6 +260,44 @@ fn evaluator_manifests() -> Vec<LawEvaluatorManifestV1> {
             negative_fixtures: vec!["law_policy_unknown_evaluator.json".to_string()],
         },
     ]
+}
+
+fn replacement_manifest(
+    replacement_id: &str,
+    replaced_v0_field: &str,
+    evaluator_id: &str,
+    law_id: &str,
+    required_atom_constructors: &[&str],
+    required_molecule_membership: &str,
+    typed_output_packet_refs: &[&str],
+    positive_fixtures: &[&str],
+    negative_fixtures: &[&str],
+    missing_blocker_rule: &str,
+) -> ReplacementEvaluatorManifestV1 {
+    ReplacementEvaluatorManifestV1 {
+        replacement_id: replacement_id.to_string(),
+        replaced_v0_field: replaced_v0_field.to_string(),
+        evaluator_id: evaluator_id.to_string(),
+        law_id: law_id.to_string(),
+        required_atom_constructors: required_atom_constructors
+            .iter()
+            .map(|value| (*value).to_string())
+            .collect(),
+        required_molecule_membership: required_molecule_membership.to_string(),
+        typed_output_packet_refs: typed_output_packet_refs
+            .iter()
+            .map(|value| (*value).to_string())
+            .collect(),
+        positive_fixtures: positive_fixtures
+            .iter()
+            .map(|value| (*value).to_string())
+            .collect(),
+        negative_fixtures: negative_fixtures
+            .iter()
+            .map(|value| (*value).to_string())
+            .collect(),
+        missing_blocker_rule: missing_blocker_rule.to_string(),
+    }
 }
 
 fn solid_manifest(

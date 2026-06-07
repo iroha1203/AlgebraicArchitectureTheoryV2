@@ -1,0 +1,12 @@
+{
+  "schema": "archmap/v1",
+  "id": "replacement-negative-projection-only",
+  "sources": {},
+  "atoms": [],
+  "molecules": [],
+  "projectionInfo": [
+    {
+      "note": "legacy projection input must not become v1 replacement evidence"
+    }
+  ]
+}

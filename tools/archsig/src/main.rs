@@ -363,10 +363,11 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                 && typed_results.summary.blocked_count
                     + typed_results.summary.unknown_count
                     + typed_results.summary.unmeasured_count
+                    + typed_results.replacement_summary.blocked_count
                     > 0
             {
                 eprintln!(
-                    "--strict-distance rejected v1 typed evaluator results with blocked, unknown, or unmeasured distance statuses"
+                    "--strict-distance rejected v1 typed evaluator results with blocked, unknown, unmeasured, or replacement-blocked distance statuses"
                 );
                 return Ok(ExitCode::from(1));
             }

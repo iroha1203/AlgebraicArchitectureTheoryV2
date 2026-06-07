@@ -1,0 +1,12 @@
+{
+  "schema": "archmap/v1",
+  "id": "replacement-negative-concern-only",
+  "sources": {},
+  "atoms": [],
+  "molecules": [],
+  "concernHints": [
+    {
+      "note": "concern-only input must not become v1 diagnostic evidence"
+    }
+  ]
+}
