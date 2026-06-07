@@ -358,6 +358,7 @@ mod tests {
                 "typed-evaluator-results-v1",
                 "architecture-distance-v1",
                 "archsig-analysis-packet",
+                "archsig-analysis-packet-v1",
                 "archsig-analysis-packet-validation-report",
                 "archsig-run-manifest",
                 "archsig-atom-viewer-data",
