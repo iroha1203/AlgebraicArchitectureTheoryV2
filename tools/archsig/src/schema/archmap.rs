@@ -103,6 +103,73 @@ pub struct ArchMapValidationSummaryV1 {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct NormalizedArchMapV1 {
+    pub schema: String,
+    pub normalizer_id: String,
+    pub source_archmap_ref: String,
+    pub source_archmap_id: String,
+    pub atoms: Vec<NormalizedAtomV1>,
+    pub molecules: Vec<NormalizedMoleculeV1>,
+    pub summary: NormalizedArchMapSummaryV1,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct NormalizedAtomV1 {
+    pub source_atom_id: String,
+    pub normalized_atom_id: String,
+    pub atom_kind: String,
+    pub axis: String,
+    pub predicate: NormalizedAtomPredicateV1,
+    pub shape_coordinate_status: String,
+    pub valence_template_id: String,
+    pub molecule_memberships: Vec<String>,
+    pub normalization_status: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub normalization_blocker_reason: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct NormalizedAtomPredicateV1 {
+    pub constructor: String,
+    pub normalized_name: String,
+    pub bindings: Vec<NormalizedAtomBindingV1>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct NormalizedAtomBindingV1 {
+    pub role: String,
+    pub value: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct NormalizedMoleculeV1 {
+    pub source_molecule_id: String,
+    pub normalized_molecule_id: String,
+    pub atom_ids: Vec<String>,
+    pub generated_molecule_candidate_status: String,
+    pub required_port_status: String,
+    pub composition_status: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub normalization_blocker_reason: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct NormalizedArchMapSummaryV1 {
+    pub atom_count: usize,
+    pub normalized_atom_count: usize,
+    pub molecule_count: usize,
+    pub generated_molecule_candidate_count: usize,
+    pub blocked_molecule_candidate_count: usize,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct ArchMapDocumentV0 {
     pub schema_version: String,

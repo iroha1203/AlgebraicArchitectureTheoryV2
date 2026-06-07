@@ -1,6 +1,7 @@
 mod archmap;
 mod archsig_analysis_packet;
 mod law_policy;
+mod normalizer;
 mod schema;
 mod schema_catalog;
 mod validation;
@@ -14,6 +15,7 @@ pub use archsig_analysis_packet::{
 pub use law_policy::{
     static_law_policy, validate_law_policy_report, validate_law_policy_v1_report,
 };
+pub use normalizer::normalize_archmap_v1;
 pub(crate) use schema::*;
 pub use schema::{
     ARCHMAP_SCHEMA_VERSION, ARCHMAP_SOURCE_INVENTORY_SCHEMA_VERSION, ARCHMAP_V1_SCHEMA,
@@ -33,6 +35,8 @@ pub use schema::{
     LAW_POLICY_SCHEMA_VERSION, LAW_POLICY_V1_SCHEMA, LAW_POLICY_VALIDATION_REPORT_SCHEMA_VERSION,
     LawPolicyDocumentV0, LawPolicyDocumentV1, LawPolicyEntryV1, LawPolicyValidationInputV1,
     LawPolicyValidationReportV0, LawPolicyValidationReportV1, LawPolicyValidationSummaryV1,
+    NORMALIZED_ARCHMAP_V1_SCHEMA, NormalizedArchMapSummaryV1, NormalizedArchMapV1,
+    NormalizedAtomBindingV1, NormalizedAtomPredicateV1, NormalizedAtomV1, NormalizedMoleculeV1,
     SCHEMA_VERSION_CATALOG_SCHEMA_VERSION, SchemaVersionCatalogV0,
 };
 pub use schema_catalog::static_schema_version_catalog;
