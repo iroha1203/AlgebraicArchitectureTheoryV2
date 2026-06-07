@@ -4,11 +4,11 @@
 
 ## 境界
 
-- ArchMap は supplied `archmap-observation-map-v0` evidence を読む source-grounded Atom observation map である。law-independent な観測、gap、projection info、concern hints、provenance、non-conclusions を記録する。
+- ArchMap v1 は supplied `archmap/v1` evidence を読む source-grounded Atom map である。primary input は `sources` / `atoms` / `molecules` であり、gap、projection info、concern hints、provenance、non-conclusions を primary schema に戻さない。
 - AAT は Atom を公理的出発点とする。ArchMap / extractor は source code から Atom input を提示・検査する
   実測 surface であり、AAT の定理や完了条件を定義しない。
-- LawPolicy / interpretation profile は、law universe、witness rule、molecule pattern、obstruction circuit definition、signature axis、coverage requirement、exactness assumption を選ぶ profile である。AAT そのものではない。
-- ArchSig は ArchMap + interpretation profile から `archsig-analysis-packet-v0` を作る AAT structural analysis layer である。Lean 証明器ではない。Rust と Lean の対応を tooling contract として要求しない。
+- LawPolicy v1 は policy pack / evaluator / basis / scope / severity を選ぶ selector である。witness rule、signature axis、coverage requirement、exactness assumption、distance rule は evaluator registry の責務である。AAT そのものではない。
+- ArchSig は ArchMap + LawPolicy から typed evaluator results と `archsig-analysis-packet/v1` を作る AAT structural analysis layer である。Lean 証明器ではない。Rust と Lean の対応を tooling contract として要求しない。
 - ArchSig は tool として肯定的な bounded diagnostic conclusion を出す。たとえば
   `SAFE_WITHIN_POLICY`、`NO_SELECTED_OBSTRUCTION`、`ACCEPTABLE_UNDER_EVIDENCE_CONTRACT`、
   `DISTANCE_WITHIN_THRESHOLD` のように、選ばれた LawPolicy、DistanceProfile、evidence contract の中で
@@ -16,7 +16,7 @@
 - ArchSig は、未観測 runtime 全体や global semantic safety のように選ばれた evidence language の外にあるものを、
   failure、残タスク、Lean linkage requirement、長い `non-conclusion` 一覧として扱わない。外側は必要最小限の
   silence boundary として扱う。
-- `concernHints` は review cue であり、obstruction circuit、law violation、theorem evidence ではない。
+- Review notes may exist outside ArchMap, but removed v0 fields such as `concernHints` are not v1 diagnostic input.
 - FieldSig は `archsig-analysis-packet-v0` を bounded current AAT structural state として読み、SFT 側の evolution measurement / governance input へ写す。raw ArchMap observations を forecast truth として読まない。
 - ArchSig validation は、schema、refs、generated middle layer、selected law-policy reading、fixture expectation など、
   明示された tooling contract を検査する。Lean theorem、実運用上の正しさ、予測精度を要求する場合は、

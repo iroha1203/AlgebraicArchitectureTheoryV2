@@ -14,6 +14,10 @@ fn archmap_v1_root() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/archmap_v1")
 }
 
+fn practical_rust_service_root() -> PathBuf {
+    Path::new(env!("CARGO_MANIFEST_DIR")).join("examples/practical-rust-service")
+}
+
 fn expressiveness_root() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/expressiveness")
 }
@@ -596,6 +600,107 @@ fn cli_analyze_v1_strict_distance_rejects_blocked_typed_results() {
         read_json(&out_dir.join("typed-evaluator-results.json"))["summary"]["blockedCount"],
         6
     );
+}
+
+#[test]
+fn practical_rust_service_example_runs_v1_analyze() {
+    let out_dir = temp_dir("practical-rust-service-v1-analyze");
+    let root = practical_rust_service_root();
+
+    let output = run_sig0_output(&[
+        "analyze",
+        "--archmap",
+        root.join("archmap/archmap.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--law-policy",
+        root.join("law_policy/law_policy.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--out-dir",
+        out_dir.to_str().expect("path is utf-8"),
+        "--emit-raw-artifacts",
+    ]);
+
+    assert!(output.status.success());
+    assert_eq!(
+        read_json(&out_dir.join("archsig-analysis-packet.json"))["schema"],
+        "archsig-analysis-packet/v1"
+    );
+    assert_eq!(
+        read_json(&out_dir.join("archsig-analysis-summary.json"))["schema"],
+        "archsig-analysis-summary/v1"
+    );
+}
+
+#[test]
+fn cli_pr_review_accepts_v1_archmap_and_law_policy() {
+    let out_dir = temp_dir("pr-review-v1");
+    let root = archmap_v1_root();
+    let review = pr_review_root();
+    let report = out_dir.join("archsig-pr-review-v1.json");
+
+    let output = run_sig0_output(&[
+        "pr-review",
+        "--base-archmap",
+        root.join("archmap.json").to_str().expect("path is utf-8"),
+        "--delta-archmap",
+        review
+            .join("archmap_delta.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--law-policy",
+        root.join("law_policy.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--out",
+        report.to_str().expect("path is utf-8"),
+    ]);
+
+    assert!(output.status.success());
+    let json = read_json(&report);
+    assert_eq!(json["schemaVersion"], "archsig-pr-review-report-v1");
+    assert_eq!(json["reviewKind"], "typed-evaluator-pr-review");
+    assert_eq!(
+        json["canonicalInputs"]["baseArchMap"]["schema"],
+        "archmap/v1"
+    );
+    assert_eq!(
+        json["canonicalInputs"]["lawPolicy"]["schema"],
+        "law-policy/v1"
+    );
+    assert_eq!(json["typedEvaluatorSummary"]["resultCount"], 6);
+}
+
+#[test]
+fn cli_pr_review_v1_rejects_after_archmap_until_typed_head_review_exists() {
+    let out_dir = temp_dir("pr-review-v1-after-archmap");
+    let root = archmap_v1_root();
+    let review = pr_review_root();
+    let report = out_dir.join("archsig-pr-review-v1.json");
+
+    let output = run_sig0_output(&[
+        "pr-review",
+        "--base-archmap",
+        root.join("archmap.json").to_str().expect("path is utf-8"),
+        "--after-archmap",
+        root.join("archmap.json").to_str().expect("path is utf-8"),
+        "--delta-archmap",
+        review
+            .join("archmap_delta.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--law-policy",
+        root.join("law_policy.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--out",
+        report.to_str().expect("path is utf-8"),
+    ]);
+
+    assert!(!output.status.success());
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(stderr.contains("v1 pr-review does not accept --after-archmap yet"));
 }
 
 #[test]

@@ -3,21 +3,21 @@
 This checklist records the current tooling boundary for the flow:
 
 ```text
-source artifacts -> ArchMap Atom observations -> LawPolicy -> ArchSig analysis packet -> AtomPresentation boundary -> AAT package boundary -> FieldSig SFT boundary
+source artifacts -> ArchMap v1 atoms -> LawPolicy v1 -> typed evaluator results -> ArchSig analysis packet -> AtomPresentation boundary -> AAT package boundary -> FieldSig SFT boundary
 ```
 
 ## ArchMap / ArchSig Surface
 
-- `archmap-observation-map-v0` `atomObservations` are source-grounded observations.
-- `moleculeObservations` may group atom observations into roles such as responsibility.
-- `semanticObservations` record source-grounded semantic readings without promoting them to theorem facts.
-- `observationGaps` remain explicit unknown, private, unavailable, unsupported, or dynamic blind-spot boundaries.
-- `concernHints` are review cues. They are not obstruction circuits and not law violations.
+- `archmap/v1` `atoms` are source-grounded Atom inputs.
+- `molecules` group existing atoms into explicit local configurations.
+- `semantic` is an atom kind for primitive source-supported meaning; broader semantic reports are downstream readings.
+- Missing support is computed by ArchSig evaluator requirements and reported as `blocked`, `unknown`, or `unmeasured`.
+- Removed v0 fields such as `semanticObservations`, `projectionInfo`, `operationSquareEvidence`, `concernHints`, and `observationGaps` are not v1 diagnostic input.
 - Law-relative obstruction circuits are computed downstream by ArchSig from ArchMap plus a selected LawPolicy.
-- LawPolicy is a selected review / CI / planning policy artifact. It selects
-  law universes, witness rules, molecule patterns, obstruction definitions,
-  signature axes, coverage requirements, and exactness assumptions. It is not
-  the AAT theory itself.
+- LawPolicy v1 is a selected review / CI / planning policy artifact. It selects
+  evaluator packs or evaluator ids, basis refs, scope, and severity. Evaluator
+  registry owns witness rules, axes, missing blockers, and distance contribution.
+  LawPolicy is not the AAT theory itself.
 - Validation may report a Lean-facing `AtomPresentation` promotion boundary.
 - Validation does not certify universal `ArchitectureAtom` truth, Lean theorem discharge, source-observation layer, architecture lawfulness, zero curvature, or SFT forecast correctness.
 
@@ -32,23 +32,24 @@ source artifacts -> ArchMap Atom observations -> LawPolicy -> ArchSig analysis p
 
 - `ValidatedFieldAtomPresentation` and `AtomicSFTPresentationBridgePackage` exclude raw candidates from SFT theorem input.
 - `AtomTraceForecastBoundary` attaches `AtomTrace` and law-relative `CircuitTrace` to selected `ForecastCone` membership.
-- FieldSig consumes `archsig-analysis-packet-v0` as the current tooling
-  handoff state, not raw ArchMap observations. Obstruction circuits, signature
-  axes, repair candidates, structural review boundaries, current-state /
-  evolution boundary, and coverage gaps remain bounded current AAT structural
-  state or unknown remainder when projected to `operation-support-estimate-v0`.
+- FieldSig consumes ArchSig analysis packets as bounded current tooling handoff
+  state, not raw ArchMap observations. Obstruction circuits, typed evaluator
+  statuses, repair candidates, structural review boundaries, current-state /
+  evolution boundary, and blockers remain bounded current AAT structural state
+  or unknown remainder when projected to SFT handoff artifacts.
 - FieldSig validation does not prove forecast correctness, probability, calibration, global future safety, or Lean theorem discharge.
 
 ## Current Fixture Check
 
-The minimal ArchMap fixture used by ArchSig now keeps the `archmap-observation-map-v0` handoff shape:
+The minimal v1 ArchMap fixture used by ArchSig is:
 
-- `tools/archsig/tests/fixtures/minimal/archmap.json`
+- `tools/archsig/tests/fixtures/archmap_v1/archmap.json`
 
-The fixture distinguishes `atomObservations`, `moleculeObservations`, `semanticObservations`, `observationGaps`, `projectionInfo`, and `concernHints`, and carries `nonConclusions` that prevent raw observation / validation evidence from becoming theorem claims.
+The fixture uses `sources`, `atoms`, and `molecules` only.
 
 The FieldSig handoff fixture reads the ArchSig analysis packet:
 
 - `tools/fieldsig/tests/fixtures/minimal/llm_native_handoff/archsig_analysis_packet.json`
 
-Raw `archmap-observation-map-v0` files are rejected by the FieldSig handoff command.
+Raw ArchMap files are not FieldSig handoff input. FieldSig reads ArchSig
+analysis packets after ArchSig has applied the ArchMap / LawPolicy contract.

@@ -1,3 +1,4 @@
+use std::collections::BTreeSet;
 use std::error::Error;
 use std::path::PathBuf;
 use std::process::ExitCode;
@@ -467,6 +468,77 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
             out,
         }) => {
             let base_archmap_document: serde_json::Value = read_json(&base_archmap)?;
+            let law_policy_document: serde_json::Value = read_json(&law_policy)?;
+            if json_schema(&base_archmap_document) == Some(ARCHMAP_V1_SCHEMA)
+                || json_schema(&law_policy_document) == Some(LAW_POLICY_V1_SCHEMA)
+            {
+                require_schema(&base_archmap_document, ARCHMAP_V1_SCHEMA, "--base-archmap")?;
+                require_schema(&law_policy_document, LAW_POLICY_V1_SCHEMA, "--law-policy")?;
+                if after_archmap.is_some() {
+                    return Err(
+                        "v1 pr-review does not accept --after-archmap yet; supply base archmap, delta archmap, and law-policy/v1"
+                            .into(),
+                    );
+                }
+                let base_archmap_typed: ArchMapDocumentV1 =
+                    serde_json::from_value(base_archmap_document.clone())?;
+                let normalized =
+                    normalize_archmap_v1(&base_archmap_typed, &base_archmap.display().to_string());
+                let law_policy_typed: LawPolicyDocumentV1 =
+                    serde_json::from_value(law_policy_document.clone())?;
+                let typed_results = evaluate_typed_v1(
+                    &normalized,
+                    &law_policy_typed,
+                    &static_law_evaluator_registry_v1(),
+                    "normalized-archmap.json",
+                    &law_policy.display().to_string(),
+                );
+                let delta_archmap_document: serde_json::Value = read_json(&delta_archmap)?;
+                require_schema(&delta_archmap_document, "archmap-delta-v0", "--delta-archmap")?;
+                let report = serde_json::json!({
+                    "schemaVersion": "archsig-pr-review-report-v1",
+                    "reviewKind": "typed-evaluator-pr-review",
+                    "canonicalInputs": {
+                        "baseArchMap": {
+                            "path": base_archmap.display().to_string(),
+                            "schema": json_schema(&base_archmap_document)
+                        },
+                        "afterArchMap": after_archmap.as_ref().map(|path| serde_json::json!({
+                            "path": path.display().to_string()
+                        })).unwrap_or(serde_json::Value::Null),
+                        "deltaArchMap": {
+                            "path": delta_archmap.display().to_string(),
+                            "schemaVersion": json_schema(&delta_archmap_document),
+                            "changedObservationRefs": delta_archmap_document
+                                .get("changedObservationRefs")
+                                .cloned()
+                                .unwrap_or(serde_json::Value::Array(Vec::new()))
+                        },
+                        "lawPolicy": {
+                            "path": law_policy.display().to_string(),
+                            "schema": json_schema(&law_policy_document)
+                        }
+                    },
+                    "typedEvaluatorSummary": typed_results.summary,
+                    "typedEvaluatorResults": typed_results.results,
+                    "positiveBoundedConclusions": typed_results.positive_bounded_conclusions,
+                    "reviewFocus": {
+                        "rule": "Review changed refs against typed evaluator statuses; blocked, unknown, and unmeasured are not measured zero.",
+                        "detailRefs": typed_results.results.iter()
+                            .flat_map(|result| result.detail_refs.iter().cloned())
+                            .collect::<BTreeSet<_>>()
+                            .into_iter()
+                            .collect::<Vec<_>>()
+                    },
+                    "nonConclusions": [
+                        "v1 pr-review is bounded to supplied ArchMap v1, LawPolicy v1, delta refs, and evaluator registry results.",
+                        "v1 pr-review does not reconstruct v0 witness rules, signature axes, coverage requirements, or distance formulas.",
+                        "v1 pr-review is not a Lean proof object."
+                    ]
+                });
+                write_json(out, &report)?;
+                return Ok(ExitCode::SUCCESS);
+            }
             require_schema(
                 &base_archmap_document,
                 "archmap-observation-map-v0",
@@ -501,7 +573,6 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
             }
             let delta_archmap_document: serde_json::Value = read_json(&delta_archmap)?;
             require_schema(&delta_archmap_document, "archmap-delta-v0", "--delta-archmap")?;
-            let law_policy_document: serde_json::Value = read_json(&law_policy)?;
             require_schema(&law_policy_document, "law-policy-v0", "--law-policy")?;
             let law_policy_typed: LawPolicyDocumentV0 =
                 serde_json::from_value(law_policy_document.clone())?;
