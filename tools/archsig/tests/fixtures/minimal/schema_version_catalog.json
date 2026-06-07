@@ -310,6 +310,35 @@
       }
     },
     {
+      "artifactId": "archsig-analysis-packet-v1",
+      "artifactName": "ArchSig v1 typed evaluator analysis packet",
+      "schemaVersionName": "archsig-analysis-packet/v1",
+      "artifactRole": "primary",
+      "ownerPhase": "FieldSig handoff / raw evidence store",
+      "status": "implemented",
+      "primaryDocs": [
+        "docs/tool/archmap_minimal_observation_contract_prd.md",
+        "docs/tool/archsig_analysis_packet.md",
+        "docs/tool/llm_native_e2e_workflow.md"
+      ],
+      "downstreamIssues": [],
+      "compatibilityBoundary": {
+        "fieldMappingPolicy": "ArchSig v1 analysis packet is emitted only in raw mode and is the current FieldSig handoff contract. It carries typed evaluator results, architecture distance, generated packet refs, spectrum, homotopy, structural reading surface, bounded conclusions, detail refs, and non-conclusions.",
+        "deprecatedFields": [],
+        "newRequiredAssumptions": [
+          "Required fields, observation families, law refs, or analysis axes change.",
+          "Evidence boundaries or non-conclusions are removed or weakened."
+        ],
+        "coverageExactnessBoundary": [
+          "Coverage and exactness are artifact-local and do not imply semantic completeness."
+        ],
+        "nonConclusions": [
+          "ArchSig v1 packet is bounded current structural state, not forecast truth, a Lean proof, global architecture truth, or automatic repair safety.",
+          "FieldSig reads v1 packet refs as SFT input coordinates and owns PR / diff / change-vector evolution analysis."
+        ]
+      }
+    },
+    {
       "artifactId": "archsig-analysis-packet-validation-report",
       "artifactName": "Legacy ArchSig v0 analysis packet validation report",
       "schemaVersionName": "archsig-analysis-packet-validation-report-v0",

@@ -1,7 +1,7 @@
 use crate::{
     ARCHITECTURE_DISTANCE_V1_SCHEMA, ARCHMAP_SCHEMA_VERSION, ARCHMAP_V1_SCHEMA,
     ARCHMAP_VALIDATION_REPORT_SCHEMA_VERSION, ARCHSIG_ANALYSIS_PACKET_SCHEMA_VERSION,
-    ARCHSIG_ANALYSIS_PACKET_VALIDATION_REPORT_SCHEMA_VERSION,
+    ARCHSIG_ANALYSIS_PACKET_V1_SCHEMA, ARCHSIG_ANALYSIS_PACKET_VALIDATION_REPORT_SCHEMA_VERSION,
     ARCHSIG_ATOM_VIEWER_DATA_SCHEMA_VERSION, ARCHSIG_RUN_MANIFEST_SCHEMA_VERSION,
     LAW_POLICY_SCHEMA_VERSION, LAW_POLICY_V1_SCHEMA, LAW_POLICY_VALIDATION_REPORT_SCHEMA_VERSION,
     NORMALIZED_ARCHMAP_V1_SCHEMA, SCHEMA_COMPATIBILITY_POLICY_SCHEMA_VERSION,
@@ -175,6 +175,23 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 ],
             ),
             artifact(
+                "archsig-analysis-packet-v1",
+                "ArchSig v1 typed evaluator analysis packet",
+                ARCHSIG_ANALYSIS_PACKET_V1_SCHEMA,
+                "primary",
+                "FieldSig handoff / raw evidence store",
+                vec![
+                    "docs/tool/archmap_minimal_observation_contract_prd.md",
+                    "docs/tool/archsig_analysis_packet.md",
+                    "docs/tool/llm_native_e2e_workflow.md",
+                ],
+                "ArchSig v1 analysis packet is emitted only in raw mode and is the current FieldSig handoff contract. It carries typed evaluator results, architecture distance, generated packet refs, spectrum, homotopy, structural reading surface, bounded conclusions, detail refs, and non-conclusions.",
+                vec![
+                    "ArchSig v1 packet is bounded current structural state, not forecast truth, a Lean proof, global architecture truth, or automatic repair safety.",
+                    "FieldSig reads v1 packet refs as SFT input coordinates and owns PR / diff / change-vector evolution analysis.",
+                ],
+            ),
+            artifact(
                 "archsig-analysis-packet-validation-report",
                 "Legacy ArchSig v0 analysis packet validation report",
                 ARCHSIG_ANALYSIS_PACKET_VALIDATION_REPORT_SCHEMA_VERSION,
@@ -341,6 +358,7 @@ mod tests {
                 "typed-evaluator-results-v1",
                 "architecture-distance-v1",
                 "archsig-analysis-packet",
+                "archsig-analysis-packet-v1",
                 "archsig-analysis-packet-validation-report",
                 "archsig-run-manifest",
                 "archsig-atom-viewer-data",

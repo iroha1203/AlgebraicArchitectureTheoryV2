@@ -381,6 +381,118 @@ fn archsig_v1_packet_sft_source_refs(packet: &serde_json::Value, input_path: &st
                 refs
             }),
     );
+    refs.extend(archsig_v1_generated_packet_refs(packet));
+    refs.extend(archsig_v1_object_id_refs(
+        packet,
+        "generatedLawInputs",
+        "lawInputId",
+        "archsigV1GeneratedLawInput",
+    ));
+    refs.extend(archsig_v1_object_id_refs(
+        packet,
+        "signatureAxes",
+        "signatureAxisId",
+        "archsigV1SignatureAxis",
+    ));
+    refs.extend(archsig_v1_object_id_refs(
+        packet,
+        "generatedObstructions",
+        "obstructionId",
+        "archsigV1GeneratedObstruction",
+    ));
+    refs.extend(archsig_v1_object_id_refs(
+        packet,
+        "generatedRepairTargets",
+        "repairTargetId",
+        "archsigV1GeneratedRepairTarget",
+    ));
+    refs.extend(archsig_v1_object_id_refs(
+        packet,
+        "curvatureSupportReadings",
+        "readingId",
+        "archsigV1CurvatureSupport",
+    ));
+    refs.extend(archsig_v1_object_id_refs(
+        packet,
+        "curvatureTransferReadings",
+        "readingId",
+        "archsigV1CurvatureTransfer",
+    ));
+    refs.extend(archsig_v1_object_id_refs(
+        packet,
+        "curvatureMassReadings",
+        "curvatureMassReadingId",
+        "archsigV1CurvatureMass",
+    ));
+    refs.extend(archsig_v1_object_id_refs(
+        packet,
+        "spectralAnalysisReadings",
+        "spectralReadingId",
+        "archsigV1SpectralAnalysis",
+    ));
+    refs.extend(archsig_v1_object_id_refs(
+        packet,
+        "pathHomotopyDiagramReadings",
+        "pathHomotopyDiagramReadingId",
+        "archsigV1PathHomotopyDiagram",
+    ));
+    refs.extend(archsig_v1_object_id_refs(
+        packet,
+        "homotopyHolonomyReadings",
+        "holonomyReadingId",
+        "archsigV1HomotopyHolonomy",
+    ));
+    refs.extend(archsig_v1_object_id_refs(
+        packet,
+        "stokesStyleReadings",
+        "stokesReadingId",
+        "archsigV1StokesStyle",
+    ));
+    refs.extend(archsig_v1_object_id_refs(
+        packet,
+        "homotopyDistanceReadings",
+        "homotopyDistanceReadingId",
+        "archsigV1HomotopyDistance",
+    ));
+    for section in [
+        "representationMetricReadings",
+        "localCurvatureDiagramReadings",
+        "threeLayerFlatnessReadings",
+        "observationProjectionReadings",
+        "stateTransitionAlgebraReadings",
+        "effectRelationAlgebraReadings",
+        "synthesisBlockageReadings",
+        "operationPreconditionReadinessReadings",
+        "pathMultiplicityLossReadings",
+    ] {
+        refs.extend(archsig_v1_object_id_refs(
+            packet,
+            section,
+            "readingId",
+            &format!("archsigV1StructuralReading:{section}"),
+        ));
+    }
+    for (path, key, prefix) in [
+        (
+            &["architectureSpectrumReport"][..],
+            "reportId",
+            "archsigV1ArchitectureSpectrumReport",
+        ),
+        (
+            &["architectureHomotopyReport"][..],
+            "reportId",
+            "archsigV1ArchitectureHomotopyReport",
+        ),
+        (
+            &["structuralReadingReviewSurface"][..],
+            "surfaceId",
+            "archsigV1StructuralReadingReviewSurface",
+        ),
+    ] {
+        if let Some(id) = json_path_string(packet, path, key) {
+            refs.push(format!("{prefix}:{id}"));
+        }
+    }
     unique_strings(refs)
 }
 
@@ -513,7 +625,76 @@ fn archsig_v1_packet_measurement_boundary_refs(packet: &serde_json::Value) -> Ve
                 Some(format!("archsigV1EvaluatorStatus:{evaluator}:{status}"))
             }),
     );
+    refs.extend(archsig_v1_generated_packet_refs(packet));
+    refs.extend(archsig_v1_object_id_refs(
+        packet,
+        "spectralAnalysisReadings",
+        "spectralReadingId",
+        "archsigV1SpectrumBoundary",
+    ));
+    refs.extend(archsig_v1_object_id_refs(
+        packet,
+        "homotopyHolonomyReadings",
+        "holonomyReadingId",
+        "archsigV1HomotopyBoundary",
+    ));
+    refs.extend(archsig_v1_object_id_refs(
+        packet,
+        "homotopyDistanceReadings",
+        "homotopyDistanceReadingId",
+        "archsigV1HomotopyDistanceBoundary",
+    ));
+    refs.extend(
+        packet
+            .get("structuralReadingReviewSurface")
+            .and_then(|surface| surface.get("connectedReadingRefs"))
+            .and_then(|value| value.as_array())
+            .into_iter()
+            .flatten()
+            .filter_map(|value| value.as_str())
+            .map(|value| format!("archsigV1StructuralBoundary:{value}")),
+    );
     unique_strings(refs)
+}
+
+fn archsig_v1_generated_packet_refs(packet: &serde_json::Value) -> Vec<String> {
+    packet
+        .get("generatedPacketRefs")
+        .and_then(|value| value.as_object())
+        .into_iter()
+        .flat_map(|refs| refs.iter())
+        .filter_map(|(key, value)| {
+            let pointer = value.as_str()?;
+            if !pointer.starts_with('/') {
+                return None;
+            }
+            Some(format!("archsigV1PacketRef:{key}:{pointer}"))
+        })
+        .collect()
+}
+
+fn archsig_v1_object_id_refs(
+    packet: &serde_json::Value,
+    section: &str,
+    key: &str,
+    prefix: &str,
+) -> Vec<String> {
+    packet
+        .get(section)
+        .and_then(|value| value.as_array())
+        .into_iter()
+        .flatten()
+        .filter_map(|value| value.get(key)?.as_str())
+        .map(|id| format!("{prefix}:{id}"))
+        .collect()
+}
+
+fn json_path_string(packet: &serde_json::Value, path: &[&str], key: &str) -> Option<String> {
+    let mut current = packet;
+    for segment in path {
+        current = current.get(*segment)?;
+    }
+    current.get(key)?.as_str().map(ToOwned::to_owned)
 }
 
 fn archsig_v1_packet_sft_non_conclusions(packet: &serde_json::Value) -> Vec<String> {

@@ -1,6 +1,6 @@
 # FieldSig
 
-`fieldsig` is the SFT-based software evolution measurement layer. It is separate from ArchSig: ArchSig produces current AAT structural telemetry and review cues, while FieldSig consumes the serialized `archsig-analysis-packet-v0` together with PRD, SPEC, Issue, CI, test, review, runtime, ownership, history, calibration, and AI proposal policy evidence to study PR / diff / change-vector evolution over that state.
+`fieldsig` is the SFT-based software evolution measurement layer. It is separate from ArchSig: ArchSig produces current AAT structural telemetry and review cues, while FieldSig consumes raw `archsig-analysis-packet/v1` handoff artifacts together with PRD, SPEC, Issue, CI, test, review, runtime, ownership, history, calibration, and AI proposal policy evidence to study PR / diff / change-vector evolution over that state.
 
 FieldSig artifacts are measurement and workflow evidence. They do not prove forecast correctness, assign probabilities by default, establish causal correctness, provide global safety, or replace CI, tests, and human review.
 
@@ -8,7 +8,7 @@ FieldSig artifacts are measurement and workflow evidence. They do not prove fore
 
 ```bash
 cargo run --manifest-path tools/fieldsig/Cargo.toml -- archsig-analysis-sft-input \
-  --analysis-packet tools/fieldsig/tests/fixtures/minimal/llm_native_handoff/archsig_analysis_packet.json \
+  --analysis-packet .tmp/archsig-analyze-e2e/archsig-raw/archsig-analysis-packet.json \
   --out .fieldsig/operation-support-estimate.json
 cargo run --manifest-path tools/fieldsig/Cargo.toml -- software-field-measurement --fixture --out .fieldsig/software-field-measurement.json
 cargo run --manifest-path tools/fieldsig/Cargo.toml -- software-field-measurement --input .fieldsig/software-field-measurement.json --out .fieldsig/software-field-measurement-validation.json
@@ -16,11 +16,11 @@ cargo run --manifest-path tools/fieldsig/Cargo.toml -- fieldsig-run-manifest --f
 ```
 
 `archsig-analysis-sft-input` is the current ArchSig handoff. It rejects raw
-ArchMap JSON when supplied as the analysis packet and preserves obstruction
-circuits, signature axes, repair candidates, v0.3.0 measurement expansion
-readings, structural review boundaries, and coverage gaps as bounded SFT input
-refs / unknown remainder. It does not treat
-ArchSig current-state telemetry as forecast correctness or causal truth.
+ArchMap JSON when supplied as the analysis packet and preserves v1 typed
+evaluator results, generated packet refs, spectrum readings, homotopy readings,
+structural review boundaries, detail refs, and coverage gaps as bounded SFT
+input refs / unknown remainder. It does not treat ArchSig current-state
+telemetry as forecast correctness or causal truth.
 
 ## Migrated surface
 
