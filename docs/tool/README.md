@@ -32,6 +32,7 @@ Atom handoff checklist:
 
 - [Tooling Editing Guideline](guideline.md)
 - [Atom Handoff Checklist](atom_handoff.md)
+- [ArchMap v1 Output Replacement Gap Ledger](archmap_v1_output_replacement_gap_ledger.md)
 - [ArchMapStore Delta / Snapshot / Index Model](archmap_store.md)
 - [LawPolicy](law_policy.md)
 - [ArchSig Analysis Packet](archsig_analysis_packet.md)
