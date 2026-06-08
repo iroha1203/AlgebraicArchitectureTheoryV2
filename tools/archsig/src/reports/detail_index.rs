@@ -4,6 +4,7 @@ fn detail_index(packet: &serde_json::Value) -> serde_json::Value {
         "sections": [
             detail_index_section("signatureAxes", "/signatureAxes", array_len(packet, "signatureAxes")),
             detail_index_section("part4DistanceFoundation", "/part4DistanceFoundation", object_key_count(packet, "part4DistanceFoundation")),
+            detail_index_section("part4DistanceCoverageLedger", "/part4DistanceCoverageLedger", array_len(packet, "part4DistanceCoverageLedger")),
             detail_index_section("atomDistanceReadings", "/atomDistanceReadings", array_len(packet, "atomDistanceReadings")),
             detail_index_section("configurationDistanceReadings", "/configurationDistanceReadings", array_len(packet, "configurationDistanceReadings")),
             detail_index_section("signatureDistanceReadings", "/signatureDistanceReadings", array_len(packet, "signatureDistanceReadings")),

@@ -151,6 +151,12 @@ pub fn build_typed_analysis_packet_v1(
         &spectrum,
         &homotopy,
     );
+    let part4_distance_coverage_ledger = typed_part4_distance_coverage_ledger_v1(
+        architecture_distance,
+        &spectrum,
+        &homotopy,
+        &structural,
+    );
     let detail_refs = typed_results
         .results
         .iter()
@@ -177,6 +183,7 @@ pub fn build_typed_analysis_packet_v1(
         "typedEvaluatorDiagnosis": typed_evaluator_diagnosis(typed_results),
         "architectureDistance": architecture_distance,
         "distanceDiagnosis": architecture_distance["distanceDiagnosis"],
+        "part4DistanceCoverageLedger": part4_distance_coverage_ledger,
         "generatedLawInputs": generated_law_inputs,
         "signatureAxes": signature_axes,
         "generatedObstructions": generated_obstructions,
@@ -232,7 +239,8 @@ pub fn build_typed_analysis_packet_v1(
             "operationPreconditionReadinessReadings": "/operationPreconditionReadinessReadings",
             "pathMultiplicityLossReadings": "/pathMultiplicityLossReadings",
             "typedEvaluatorResults": "/typedEvaluatorResults",
-            "architectureDistanceSignatureReadings": "/architectureDistance/signatureDistanceReadings"
+            "architectureDistanceSignatureReadings": "/architectureDistance/signatureDistanceReadings",
+            "part4DistanceCoverageLedger": "/part4DistanceCoverageLedger"
         },
         "positiveBoundedConclusions": typed_results.positive_bounded_conclusions,
         "detailRefs": detail_refs,
@@ -247,6 +255,209 @@ pub fn build_typed_analysis_packet_v1(
             "ArchSig v1 packet is a computation artifact, not a Lean proof object."
         ]
     })
+}
+
+fn typed_part4_distance_coverage_ledger_v1(
+    architecture_distance: &Value,
+    spectrum: &Value,
+    homotopy: &Value,
+    structural: &Value,
+) -> Vec<Value> {
+    let architecture_status = architecture_distance["summary"]["status"]
+        .as_str()
+        .unwrap_or("partial");
+    vec![
+        typed_part4_ledger_entry_v1(
+            "part4-ledger:distance-aat",
+            "definition:1.1",
+            "DistanceAAT",
+            "foundation",
+            architecture_status,
+            packet_refs(&["/architectureDistance", "/distanceDiagnosis"]),
+            vec!["architecture-distance.json#/summary"],
+            1,
+        ),
+        typed_part4_ledger_entry_v1(
+            "part4-ledger:atom-geometry",
+            "definitions:2.1-2.5",
+            "Fiber / Carrier / Valence / Semantic Anchor / Atom Layout distance",
+            "atomGeometry",
+            architecture_status,
+            packet_refs(&["/architectureDistance/atomDistanceReadings"]),
+            vec!["architecture-distance.json#/atomDistanceReadings"],
+            packet_array_len(architecture_distance, "atomDistanceReadings"),
+        ),
+        typed_part4_ledger_entry_v1(
+            "part4-ledger:configuration-context",
+            "definitions:3.1-3.2",
+            "Configuration-indexed distance and Context distance",
+            "configurationGeometry",
+            architecture_status,
+            packet_refs(&["/architectureDistance/configurationDistanceReadings"]),
+            vec!["architecture-distance.json#/configurationDistanceReadings"],
+            packet_array_len(architecture_distance, "configurationDistanceReadings"),
+        ),
+        typed_part4_ledger_entry_v1(
+            "part4-ledger:signature-geometry",
+            "definitions:4.1-4.4",
+            "Axis distance, Signature distance, Safe margin, and Signature drift",
+            "signatureGeometry",
+            architecture_status,
+            packet_refs(&[
+                "/architectureDistance/signatureDistanceReadings",
+                "/signatureAxes",
+            ]),
+            vec![
+                "architecture-distance.json#/signatureDistanceReadings",
+                "archsig-analysis-summary.json#/distanceDiagnosis/topMovedAxes",
+            ],
+            packet_array_len(architecture_distance, "signatureDistanceReadings"),
+        ),
+        typed_part4_ledger_entry_v1(
+            "part4-ledger:operation-geometry",
+            "definitions:5.1-5.5",
+            "Operation cost, Operation distance, Flatness distance, Repair route, and Side-effect bound",
+            "operationGeometry",
+            architecture_status,
+            packet_refs(&["/architectureDistance/operationDistanceReadings"]),
+            vec![
+                "architecture-distance.json#/operationDistanceReadings",
+                "archsig-analysis-summary.json#/distanceDiagnosis",
+            ],
+            packet_array_len(architecture_distance, "operationDistanceReadings"),
+        ),
+        typed_part4_ledger_entry_v1(
+            "part4-ledger:obstruction-curvature",
+            "definitions:6.1-6.3",
+            "Obstruction measure, Curvature mass, and Curvature transport",
+            "curvatureGeometry",
+            architecture_status,
+            packet_refs(&[
+                "/curvatureSupportReadings",
+                "/curvatureTransferReadings",
+                "/curvatureMassReadings",
+            ]),
+            vec![
+                "archsig-analysis-packet.json#/curvatureSupportReadings",
+                "archsig-analysis-packet.json#/curvatureTransferReadings",
+                "archsig-analysis-packet.json#/curvatureMassReadings",
+            ],
+            packet_array_len(spectrum, "curvatureMassReadings"),
+        ),
+        typed_part4_ledger_entry_v1(
+            "part4-ledger:homotopy-filling",
+            "definitions:7.1-7.4",
+            "Homotopy distance, Filling cost, Observation gap lower bound, and Architectural Dehn function",
+            "homotopyFillingGeometry",
+            architecture_status,
+            packet_refs(&[
+                "/homotopyDistanceReadings",
+                "/architectureHomotopyReport",
+                "/homotopyHolonomyReadings",
+            ]),
+            vec![
+                "archsig-analysis-packet.json#/homotopyDistanceReadings",
+                "archsig-analysis-packet.json#/architectureHomotopyReport",
+            ],
+            packet_array_len(homotopy, "homotopyDistanceReadings"),
+        ),
+        typed_part4_ledger_entry_v1(
+            "part4-ledger:representation-metric",
+            "definitions:8.1-8.2",
+            "Representation stability and Representation faithfulness",
+            "representationMetric",
+            architecture_status,
+            packet_refs(&["/representationMetricReadings"]),
+            vec!["archsig-analysis-packet.json#/representationMetricReadings"],
+            packet_array_len(structural, "representationMetricReadings"),
+        ),
+        typed_part4_ledger_entry_v1(
+            "part4-ledger:measurement-boundary",
+            "definitions:9.1-9.3",
+            "DistanceValue, unmeasured-is-not-zero, and DistanceProfile",
+            "measurementBoundary",
+            architecture_status,
+            packet_refs(&[
+                "/architectureDistance/profile",
+                "/architectureDistance/summary",
+                "/architectureDistance/distanceDiagnosis",
+            ]),
+            vec![
+                "architecture-distance.json#/profile",
+                "architecture-distance.json#/summary",
+                "archsig-analysis-summary.json#/distanceDiagnosis",
+            ],
+            architecture_distance["summary"]["readingCounts"]
+                .as_object()
+                .map(|counts| counts.len())
+                .unwrap_or_default(),
+        ),
+        typed_part4_ledger_entry_v1(
+            "part4-ledger:bounded-diagnostic-conclusion",
+            "definitions:10.1-10.2",
+            "Diagnostic scope and Bounded diagnostic conclusion",
+            "boundedDiagnosticConclusion",
+            architecture_status,
+            packet_refs(&["/distanceDiagnosis", "/structuralReadingReviewSurface"]),
+            vec![
+                "archsig-analysis-summary.json#/conclusion",
+                "archsig-analysis-summary.json#/distanceDiagnosis",
+                "llm-interpretation-packet.json#/distanceDiagnosisSummary",
+            ],
+            1,
+        ),
+    ]
+}
+
+fn typed_part4_ledger_entry_v1(
+    ledger_entry_id: &str,
+    part4_definition_ref: &str,
+    definition_title: &str,
+    distance_family: &str,
+    measurement_status: &str,
+    raw_packet_refs: Vec<String>,
+    primary_artifact_refs: Vec<&str>,
+    reading_count: usize,
+) -> Value {
+    let coverage_status = if reading_count == 0 {
+        "missing-readings"
+    } else {
+        "primary"
+    };
+    let measurement_status = if reading_count == 0 {
+        "unmeasured"
+    } else {
+        measurement_status
+    };
+    let blocker_refs = if reading_count == 0 {
+        vec![format!("noTypedReadings:{distance_family}")]
+    } else {
+        Vec::new()
+    };
+    json!({
+        "ledgerEntryId": ledger_entry_id,
+        "part4DefinitionRef": part4_definition_ref,
+        "definitionTitle": definition_title,
+        "distanceFamily": distance_family,
+        "coverageStatus": coverage_status,
+        "measurementStatus": measurement_status,
+        "readingCount": reading_count,
+        "primaryArtifactRefs": primary_artifact_refs,
+        "rawPacketRefs": raw_packet_refs,
+        "blockerRefs": blocker_refs,
+        "evidenceBoundary": "typed v1 ledger records where the selected Part IV distance family is exposed in ArchSig outputs; it is not a proof object",
+        "nonConclusions": [
+            "ArchSig distance coverage is relative to the supplied ArchMap, selected LawPolicy, typed evaluator results, and distance profile.",
+            "Unmeasured or blocked distance is not measured zero.",
+            "Part IV distance coverage ledger is an output navigation contract, not a Lean theorem proof."
+        ]
+    })
+}
+
+fn packet_refs(refs: &[&str]) -> Vec<String> {
+    refs.iter()
+        .map(|reference| format!("packet:{reference}"))
+        .collect()
 }
 
 pub fn build_typed_analysis_summary_v1(
@@ -470,6 +681,7 @@ pub fn build_typed_detail_index_v1(
         "indexKind": "typed-evaluator-support-index",
         "sections": [
             detail_index_section_v1("typedEvaluatorResults", "/typedEvaluatorResults", packet_array_len(packet, "typedEvaluatorResults")),
+            detail_index_section_v1("part4DistanceCoverageLedger", "/part4DistanceCoverageLedger", packet_array_len(packet, "part4DistanceCoverageLedger")),
             detail_index_section_v1("generatedLawInputs", "/generatedLawInputs", packet_array_len(packet, "generatedLawInputs")),
             detail_index_section_v1("signatureAxes", "/signatureAxes", packet_array_len(packet, "signatureAxes")),
             detail_index_section_v1("generatedObstructions", "/generatedObstructions", packet_array_len(packet, "generatedObstructions")),
@@ -3927,6 +4139,7 @@ fn packet_nested_array_len(packet: &Value, path: &[&str]) -> usize {
 fn derived_packet_refs(packet: &Value) -> Vec<String> {
     [
         "generatedLawInputs",
+        "part4DistanceCoverageLedger",
         "signatureAxes",
         "generatedObstructions",
         "generatedRepairTargets",
@@ -3961,6 +4174,12 @@ fn derived_packet_refs(packet: &Value) -> Vec<String> {
 
 fn derived_detail_index_entries(packet: &Value) -> Vec<Value> {
     let mut entries = Vec::new();
+    entries.extend(derived_detail_entries_for_field(
+        packet,
+        "part4DistanceCoverageLedger",
+        "ledgerEntryId",
+        "part4DistanceCoverageLedger",
+    ));
     entries.extend(derived_detail_entries_for_field(
         packet,
         "generatedLawInputs",

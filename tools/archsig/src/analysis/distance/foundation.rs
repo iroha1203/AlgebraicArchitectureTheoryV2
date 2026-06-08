@@ -140,6 +140,408 @@ fn build_part4_distance_foundation(
     }
 }
 
+fn build_part4_distance_coverage_ledger(
+    foundation: &ArchSigPart4DistanceFoundationV0,
+    atom_distance_readings: &[ArchSigAtomDistanceReadingV0],
+    configuration_distance_readings: &[ArchSigConfigurationDistanceReadingV0],
+    signature_distance_readings: &[ArchSigSignatureDistanceReadingV0],
+    operation_distance_readings: &[ArchSigOperationDistanceReadingV0],
+    obstruction_measure_readings: &[ArchSigObstructionMeasureReadingV0],
+    curvature_mass_readings: &[ArchSigCurvatureMassReadingV0],
+    homotopy_distance_readings: &[ArchSigHomotopyDistanceReadingV0],
+    representation_metric_readings: &[ArchSigRepresentationMetricReadingV0],
+) -> Vec<ArchSigPart4DistanceCoverageLedgerEntryV0> {
+    vec![
+        part4_ledger_entry(
+            "part4-ledger:distance-aat",
+            "definition:1.1",
+            "DistanceAAT",
+            "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md:35",
+            "foundation",
+            "primary",
+            foundation_status(foundation),
+            foundation.supporting_distances.len(),
+            &["archsig-analysis-packet.json#/part4DistanceFoundation"],
+            &["/part4DistanceFoundation"],
+            supporting_distance_refs(foundation, &[
+                "atomGeometry",
+                "configurationGeometry",
+                "signatureGeometry",
+                "operationGeometry",
+                "curvatureGeometry",
+                "homotopyFillingGeometry",
+                "representationMetric",
+            ]),
+            foundation.diagnostic_scope.blocker_refs.clone(),
+            &[],
+            "DistanceAAT is represented as the Part IV foundation, profile, diagnostic scope, supporting distances, and non-conclusion boundary.",
+        ),
+        part4_ledger_entry(
+            "part4-ledger:atom-geometry",
+            "definitions:2.1-2.5",
+            "Fiber / Carrier / Valence / Semantic Anchor / Atom Layout distance",
+            "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md:140",
+            "atomGeometry",
+            coverage_status_for_family(
+                foundation,
+                "atomGeometry",
+                atom_distance_readings.len(),
+                true,
+            ),
+            supporting_status(foundation, "atomGeometry"),
+            atom_distance_readings.len(),
+            &[
+                "architecture-distance.json#/atomDistanceReadings",
+                "archsig-analysis-summary.json#/distanceDiagnosis/topMovedAtoms",
+                "archsig-atom-viewer-data.json#/reportPane/distanceDiagnosis",
+            ],
+            &["/atomDistanceReadings", "/viewerDistanceInputs"],
+            supporting_distance_refs(foundation, &["atomGeometry"]),
+            supporting_blockers(foundation, "atomGeometry"),
+            &["#1859"],
+            "Atom geometry is expected to expose each Part IV atom-distance component without treating viewer layout distance as diagnostic distance.",
+        ),
+        part4_ledger_entry(
+            "part4-ledger:configuration-context",
+            "definitions:3.1-3.2",
+            "Configuration-indexed distance and Context distance",
+            "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md:275",
+            "configurationGeometry",
+            coverage_status_for_family(
+                foundation,
+                "configurationGeometry",
+                configuration_distance_readings.len(),
+                true,
+            ),
+            supporting_status(foundation, "configurationGeometry"),
+            configuration_distance_readings.len(),
+            &[
+                "architecture-distance.json#/configurationDistanceReadings",
+                "archsig-analysis-summary.json#/distanceDiagnosis",
+                "archsig-atom-viewer-data.json#/reportPane/distanceDiagnosis",
+            ],
+            &["/configurationDistanceReadings"],
+            supporting_distance_refs(foundation, &["configurationGeometry"]),
+            supporting_blockers(foundation, "configurationGeometry"),
+            &["#1859"],
+            "Configuration distance must stay typed-hypergraph and context based; molecule size alone is not complete Part IV coverage.",
+        ),
+        part4_ledger_entry(
+            "part4-ledger:signature-geometry",
+            "definitions:4.1-4.4",
+            "Axis distance, Signature distance, Safe margin, and Signature drift",
+            "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md:344",
+            "signatureGeometry",
+            coverage_status_for_family(
+                foundation,
+                "signatureGeometry",
+                signature_distance_readings.len(),
+                true,
+            ),
+            supporting_status(foundation, "signatureGeometry"),
+            signature_distance_readings.len(),
+            &[
+                "architecture-distance.json#/signatureDistanceReadings",
+                "archsig-analysis-summary.json#/distanceDiagnosis/topMovedAxes",
+                "llm-interpretation-packet.json#/distanceDiagnosisSummary",
+            ],
+            &["/signatureDistanceReadings", "/signatureAxes"],
+            supporting_distance_refs(foundation, &["signatureGeometry"]),
+            supporting_blockers(foundation, "signatureGeometry"),
+            &["#1861"],
+            "Signature geometry is LawPolicy-relative and must preserve measured, blocked, unmeasured, and incomparable axis states.",
+        ),
+        part4_ledger_entry(
+            "part4-ledger:operation-geometry",
+            "definitions:5.1-5.5",
+            "Operation cost, Operation distance, Flatness distance, Repair route, and Side-effect bound",
+            "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md:490",
+            "operationGeometry",
+            coverage_status_for_family(
+                foundation,
+                "operationGeometry",
+                operation_distance_readings.len(),
+                true,
+            ),
+            supporting_status(foundation, "operationGeometry"),
+            operation_distance_readings.len(),
+            &[
+                "architecture-distance.json#/operationDistanceReadings",
+                "archsig-analysis-summary.json#/distanceDiagnosis/repairDistance",
+            ],
+            &[
+                "/operationDistanceReadings",
+                "/repairOperationCandidates",
+                "/operationDeltas",
+            ],
+            supporting_distance_refs(foundation, &["operationGeometry"]),
+            supporting_blockers(foundation, "operationGeometry"),
+            &["#1860"],
+            "Operation geometry must be profile-driven and blocked when operation costs, preconditions, or side-effect evidence are missing.",
+        ),
+        part4_ledger_entry(
+            "part4-ledger:obstruction-curvature",
+            "definitions:6.1-6.3",
+            "Obstruction measure, Curvature mass, and Curvature transport",
+            "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md:599",
+            "curvatureGeometry",
+            coverage_status_for_family(
+                foundation,
+                "curvatureGeometry",
+                curvature_mass_readings.len(),
+                true,
+            ),
+            supporting_status(foundation, "curvatureGeometry"),
+            obstruction_measure_readings.len() + curvature_mass_readings.len(),
+            &[
+                "archsig-analysis-summary.json#/distanceDiagnosis/curvatureDistance",
+                "archsig-atom-viewer-data.json#/reportPane/distanceDiagnosis",
+            ],
+            &[
+                "/obstructionMeasureReadings",
+                "/curvatureMassReadings",
+                "/curvatureTransferReadings",
+            ],
+            supporting_distance_refs(foundation, &["curvatureGeometry"]),
+            supporting_blockers(foundation, "curvatureGeometry"),
+            &["#1864"],
+            "Curvature geometry must expose obstruction-measure support and transport state, not just raw packet rows.",
+        ),
+        part4_ledger_entry(
+            "part4-ledger:homotopy-filling",
+            "definitions:7.1-7.4",
+            "Homotopy distance, Filling cost, Observation gap lower bound, and Architectural Dehn function",
+            "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md:674",
+            "homotopyFillingGeometry",
+            coverage_status_for_family(
+                foundation,
+                "homotopyFillingGeometry",
+                homotopy_distance_readings.len(),
+                true,
+            ),
+            supporting_status(foundation, "homotopyFillingGeometry"),
+            homotopy_distance_readings.len(),
+            &[
+                "archsig-analysis-summary.json#/distanceDiagnosis/homotopyDistance",
+                "archsig-atom-viewer-data.json#/reportPane/distanceDiagnosis",
+            ],
+            &[
+                "/homotopyDistanceReadings",
+                "/architectureHomotopyReport",
+                "/homotopyHolonomyReadings",
+            ],
+            supporting_distance_refs(foundation, &["homotopyFillingGeometry"]),
+            supporting_blockers(foundation, "homotopyFillingGeometry"),
+            &["#1867"],
+            "Homotopy and filling readings must make missing filler evidence an actionable blocker, not a hidden non-conclusion.",
+        ),
+        part4_ledger_entry(
+            "part4-ledger:representation-metric",
+            "definitions:8.1-8.2",
+            "Representation stability and Representation faithfulness",
+            "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md:746",
+            "representationMetric",
+            coverage_status_for_family(
+                foundation,
+                "representationMetric",
+                representation_metric_readings.len(),
+                true,
+            ),
+            supporting_status(foundation, "representationMetric"),
+            representation_metric_readings.len(),
+            &[
+                "archsig-analysis-summary.json#/distanceDiagnosis/representationMetric",
+                "archsig-atom-viewer-data.json#/reportPane/distanceDiagnosis",
+            ],
+            &[
+                "/representationMetricReadings",
+                "/analyticRepresentations",
+                "/representationStrengthReadings",
+            ],
+            supporting_distance_refs(foundation, &["representationMetric"]),
+            supporting_blockers(foundation, "representationMetric"),
+            &["#1865"],
+            "Representation metrics must distinguish measured structural distance, bounded proxy telemetry, blocked Lipschitz evidence, and faithfulness blockers.",
+        ),
+        part4_ledger_entry(
+            "part4-ledger:measurement-boundary",
+            "definitions:9.1-9.3",
+            "DistanceValue, unmeasured-is-not-zero, and DistanceProfile",
+            "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md:784",
+            "measurementBoundary",
+            "primary",
+            foundation_status(foundation),
+            foundation.supporting_distances.len(),
+            &[
+                "archsig-run-manifest.json#/validationResultSummary",
+                "archsig-analysis-summary.json#/measurementStatusSummary",
+            ],
+            &[
+                "/part4DistanceFoundation/profile",
+                "/part4DistanceFoundation/statusSummary",
+                "/part4DistanceFoundation/diagnosticScope",
+            ],
+            supporting_distance_refs(foundation, &[
+                "atomGeometry",
+                "configurationGeometry",
+                "signatureGeometry",
+                "operationGeometry",
+                "curvatureGeometry",
+                "homotopyFillingGeometry",
+                "representationMetric",
+            ]),
+            foundation.diagnostic_scope.blocker_refs.clone(),
+            &["#1861", "#1866"],
+            "Measurement boundary rows record that blocked and unmeasured values remain first-class states and are not aggregated as measured zero.",
+        ),
+        part4_ledger_entry(
+            "part4-ledger:bounded-diagnostic-conclusion",
+            "definitions:10.1-10.2",
+            "Diagnostic scope and Bounded diagnostic conclusion",
+            "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md:852",
+            "boundedDiagnosticConclusion",
+            "partial",
+            foundation_status(foundation),
+            foundation.supporting_distances.len(),
+            &[
+                "archsig-analysis-summary.json#/conclusion",
+                "archsig-analysis-summary.json#/distanceDiagnosis",
+                "llm-interpretation-packet.json#/distanceDiagnosisSummary",
+            ],
+            &[
+                "/part4DistanceFoundation/diagnosticScope",
+                "/boundedJudgements",
+                "/llmInterpretationPacket",
+            ],
+            Vec::new(),
+            foundation.diagnostic_scope.blocker_refs.clone(),
+            &["#1863", "#1866"],
+            "Bounded diagnostic conclusion is partially covered until distanceInsights and full-output docs make the distance reading actionable.",
+        ),
+    ]
+}
+
+fn part4_ledger_entry(
+    ledger_entry_id: &str,
+    part4_definition_ref: &str,
+    definition_title: &str,
+    theory_section_ref: &str,
+    distance_family: &str,
+    coverage_status: impl Into<String>,
+    measurement_status: impl Into<String>,
+    reading_count: usize,
+    primary_artifact_refs: &[&str],
+    raw_packet_refs: &[&str],
+    supporting_distance_refs: Vec<String>,
+    blocker_refs: Vec<String>,
+    follow_up_issue_refs: &[&str],
+    evidence_boundary: &str,
+) -> ArchSigPart4DistanceCoverageLedgerEntryV0 {
+    ArchSigPart4DistanceCoverageLedgerEntryV0 {
+        ledger_entry_id: ledger_entry_id.to_string(),
+        part4_definition_ref: part4_definition_ref.to_string(),
+        definition_title: definition_title.to_string(),
+        theory_section_ref: theory_section_ref.to_string(),
+        distance_family: distance_family.to_string(),
+        coverage_status: coverage_status.into(),
+        measurement_status: measurement_status.into(),
+        reading_count,
+        primary_artifact_refs: primary_artifact_refs
+            .iter()
+            .map(|entry| (*entry).to_string())
+            .collect(),
+        raw_packet_refs: raw_packet_refs.iter().map(|entry| (*entry).to_string()).collect(),
+        supporting_distance_refs,
+        blocker_refs,
+        follow_up_issue_refs: follow_up_issue_refs
+            .iter()
+            .map(|entry| (*entry).to_string())
+            .collect(),
+        evidence_boundary: evidence_boundary.to_string(),
+        non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
+    }
+}
+
+fn coverage_status_for_family(
+    foundation: &ArchSigPart4DistanceFoundationV0,
+    family: &str,
+    reading_count: usize,
+    has_primary_refs: bool,
+) -> String {
+    let status = supporting_status(foundation, family);
+    if reading_count == 0 {
+        return match status.as_str() {
+            "unavailable" => "not-applicable".to_string(),
+            "unmeasured" => "missing-readings".to_string(),
+            "blocked" => "blocked-without-readings".to_string(),
+            _ => "missing-readings".to_string(),
+        };
+    }
+    if !has_primary_refs {
+        return "raw-packet-only".to_string();
+    }
+    match status.as_str() {
+        "measured" | "zero" => "primary".to_string(),
+        "blocked" => "primary-blocked".to_string(),
+        "unmeasured" => "raw-packet-only".to_string(),
+        _ => status,
+    }
+}
+
+fn foundation_status(foundation: &ArchSigPart4DistanceFoundationV0) -> String {
+    if foundation.status_summary.blocked_count > 0 {
+        "blocked".to_string()
+    } else if foundation.status_summary.unmeasured_count > 0 {
+        "partial".to_string()
+    } else if foundation.status_summary.measured_count > 0
+        || foundation.status_summary.zero_count > 0
+    {
+        "measured".to_string()
+    } else {
+        "unmeasured".to_string()
+    }
+}
+
+fn supporting_status(foundation: &ArchSigPart4DistanceFoundationV0, family: &str) -> String {
+    foundation
+        .supporting_distances
+        .iter()
+        .find(|distance| distance.distance_family == family)
+        .map(|distance| distance.value.status.clone())
+        .unwrap_or_else(|| "missing".to_string())
+}
+
+fn supporting_distance_refs(
+    foundation: &ArchSigPart4DistanceFoundationV0,
+    families: &[&str],
+) -> Vec<String> {
+    foundation
+        .supporting_distances
+        .iter()
+        .enumerate()
+        .filter_map(|(index, distance)| {
+            families
+                .iter()
+                .any(|family| distance.distance_family == *family)
+                .then(|| {
+                    format!(
+                        "/part4DistanceFoundation/supportingDistances/{index}#{}",
+                        distance.distance_id
+                    )
+                })
+        })
+        .collect()
+}
+
+fn supporting_blockers(foundation: &ArchSigPart4DistanceFoundationV0, family: &str) -> Vec<String> {
+    foundation
+        .supporting_distances
+        .iter()
+        .find(|distance| distance.distance_family == family)
+        .map(|distance| distance.value.blocker_refs.clone())
+        .unwrap_or_default()
+}
+
 fn selected_part4_distance_profile(
     law_policy: &LawPolicyDocumentV0,
     default_coverage_refs: &[String],

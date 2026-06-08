@@ -54,20 +54,20 @@ use crate::{
     ArchSigOperationCalculusLawReadingV0, ArchSigOperationDeltaReadingV0,
     ArchSigOperationDistanceReadingV0, ArchSigOperationInvariantGaloisReadingV0,
     ArchSigOperationLawEvidenceV0, ArchSigOperationPreconditionReadinessReadingV0,
-    ArchSigOperationSquareCandidateV0, ArchSigPart4DistanceFoundationV0,
-    ArchSigPathContinuationTraceV0, ArchSigPathHomotopyDiagramReadingV0,
-    ArchSigPathMultiplicityLossReadingV0, ArchSigPathPairCandidateV0,
-    ArchSigPathSignatureTrajectoryReadingV0, ArchSigProjectionCoordinateV0,
-    ArchSigProjectionNonInjectivityCandidateV0, ArchSigProjectionReconstructionBlockerV0,
-    ArchSigRecurrentObstructionModeV0, ArchSigRepairAxisDeltaReadingV0,
-    ArchSigRepairOperationCandidateV0, ArchSigRepairTransferRiskRankV0,
-    ArchSigRepresentationMetricReadingV0, ArchSigRepresentationStrengthReadingV0,
-    ArchSigSignatureAxisDistanceV0, ArchSigSignatureAxisReadingV0,
-    ArchSigSignatureDistanceReadingV0, ArchSigSignatureTrajectoryHomotopyRefutationReadingV0,
-    ArchSigSpectralAnalysisReadingV0, ArchSigSpectralDominantComponentV0,
-    ArchSigSpectralDrilldownReadingV0, ArchSigSpectralMatrixShapeV0,
-    ArchSigSpectralModeComponentV0, ArchSigSpectralModeReadingV0, ArchSigSpectralValueV0,
-    ArchSigSplitReadinessReadingV0, ArchSigStateTransitionAlgebraReadingV0,
+    ArchSigOperationSquareCandidateV0, ArchSigPart4DistanceCoverageLedgerEntryV0,
+    ArchSigPart4DistanceFoundationV0, ArchSigPathContinuationTraceV0,
+    ArchSigPathHomotopyDiagramReadingV0, ArchSigPathMultiplicityLossReadingV0,
+    ArchSigPathPairCandidateV0, ArchSigPathSignatureTrajectoryReadingV0,
+    ArchSigProjectionCoordinateV0, ArchSigProjectionNonInjectivityCandidateV0,
+    ArchSigProjectionReconstructionBlockerV0, ArchSigRecurrentObstructionModeV0,
+    ArchSigRepairAxisDeltaReadingV0, ArchSigRepairOperationCandidateV0,
+    ArchSigRepairTransferRiskRankV0, ArchSigRepresentationMetricReadingV0,
+    ArchSigRepresentationStrengthReadingV0, ArchSigSignatureAxisDistanceV0,
+    ArchSigSignatureAxisReadingV0, ArchSigSignatureDistanceReadingV0,
+    ArchSigSignatureTrajectoryHomotopyRefutationReadingV0, ArchSigSpectralAnalysisReadingV0,
+    ArchSigSpectralDominantComponentV0, ArchSigSpectralDrilldownReadingV0,
+    ArchSigSpectralMatrixShapeV0, ArchSigSpectralModeComponentV0, ArchSigSpectralModeReadingV0,
+    ArchSigSpectralValueV0, ArchSigSplitReadinessReadingV0, ArchSigStateTransitionAlgebraReadingV0,
     ArchSigStateTransitionLawEvaluationV0, ArchSigStateTransitionRelationInputV0,
     ArchSigStokesStyleReadingV0, ArchSigStructuralReadingReviewSurfaceV0,
     ArchSigSubjectFamilySpreadV0, ArchSigSupportingDistanceV0, ArchSigSynthesisBlockageReadingV0,
@@ -454,6 +454,17 @@ pub fn build_archsig_analysis_packet(
         &operation_distance_readings,
         &curvature_mass_readings,
     );
+    let part4_distance_coverage_ledger = build_part4_distance_coverage_ledger(
+        &part4_distance_foundation,
+        &atom_distance_readings,
+        &configuration_distance_readings,
+        &signature_distance_readings,
+        &operation_distance_readings,
+        &obstruction_measure_readings,
+        &curvature_mass_readings,
+        &homotopy_distance_readings,
+        &representation_metric_readings,
+    );
     let ami_aggregate_readings =
         build_ami_aggregate_readings(law_policy, &axis_wise_monodromy_defects);
     let nonzero_monodromy_witnesses = build_nonzero_monodromy_witnesses(
@@ -626,6 +637,7 @@ pub fn build_archsig_analysis_packet(
         generated_repair_targets,
         viewer_distance_inputs,
         part4_distance_foundation,
+        part4_distance_coverage_ledger,
         atom_distance_readings,
         configuration_distance_readings,
         signature_distance_readings,
@@ -14355,6 +14367,179 @@ mod tests {
                         .target
                         .as_deref()
                         .is_some_and(|target| target.starts_with("unmeasuredAxis:"))
+                })
+        }));
+    }
+
+    #[test]
+    fn part4_distance_coverage_ledger_covers_all_part4_definition_families() {
+        let packet = static_archsig_analysis_packet();
+        let ledger_by_id = packet
+            .part4_distance_coverage_ledger
+            .iter()
+            .map(|entry| (entry.ledger_entry_id.as_str(), entry))
+            .collect::<BTreeMap<_, _>>();
+        let expected_entries = [
+            ("part4-ledger:distance-aat", "definition:1.1", "foundation"),
+            (
+                "part4-ledger:atom-geometry",
+                "definitions:2.1-2.5",
+                "atomGeometry",
+            ),
+            (
+                "part4-ledger:configuration-context",
+                "definitions:3.1-3.2",
+                "configurationGeometry",
+            ),
+            (
+                "part4-ledger:signature-geometry",
+                "definitions:4.1-4.4",
+                "signatureGeometry",
+            ),
+            (
+                "part4-ledger:operation-geometry",
+                "definitions:5.1-5.5",
+                "operationGeometry",
+            ),
+            (
+                "part4-ledger:obstruction-curvature",
+                "definitions:6.1-6.3",
+                "curvatureGeometry",
+            ),
+            (
+                "part4-ledger:homotopy-filling",
+                "definitions:7.1-7.4",
+                "homotopyFillingGeometry",
+            ),
+            (
+                "part4-ledger:representation-metric",
+                "definitions:8.1-8.2",
+                "representationMetric",
+            ),
+            (
+                "part4-ledger:measurement-boundary",
+                "definitions:9.1-9.3",
+                "measurementBoundary",
+            ),
+            (
+                "part4-ledger:bounded-diagnostic-conclusion",
+                "definitions:10.1-10.2",
+                "boundedDiagnosticConclusion",
+            ),
+        ];
+
+        assert_eq!(ledger_by_id.len(), expected_entries.len());
+        for (entry_id, definition_ref, distance_family) in expected_entries {
+            let entry = ledger_by_id
+                .get(entry_id)
+                .unwrap_or_else(|| panic!("missing ledger entry {entry_id}"));
+            assert_eq!(entry.part4_definition_ref, definition_ref);
+            assert_eq!(entry.distance_family, distance_family);
+            assert!(!entry.definition_title.is_empty());
+            assert!(
+                entry
+                    .theory_section_ref
+                    .contains("part_4_distance_measure_geometry.md")
+            );
+            assert!(!entry.coverage_status.is_empty());
+            assert_ne!(entry.coverage_status, "schemaFoundationOnly");
+            assert!(!entry.measurement_status.is_empty());
+            assert_ne!(entry.measurement_status, "schemaFoundationOnly");
+            assert!(!entry.primary_artifact_refs.is_empty());
+            assert!(!entry.raw_packet_refs.is_empty());
+            assert!(!entry.evidence_boundary.is_empty());
+            assert!(
+                entry
+                    .non_conclusions
+                    .iter()
+                    .any(|non_conclusion| non_conclusion.contains("not a Lean theorem proof"))
+            );
+        }
+
+        for support_ref in packet
+            .part4_distance_coverage_ledger
+            .iter()
+            .flat_map(|entry| entry.supporting_distance_refs.iter())
+        {
+            let Some((pointer, distance_id)) = support_ref.split_once('#') else {
+                panic!(
+                    "supporting distance ref must include pointer and distance id: {support_ref}"
+                );
+            };
+            assert!(
+                distance_id.starts_with("part4-distance:"),
+                "distance id must remain visible in {support_ref}"
+            );
+            let index = pointer
+                .strip_prefix("/part4DistanceFoundation/supportingDistances/")
+                .and_then(|raw_index| raw_index.parse::<usize>().ok())
+                .unwrap_or_else(|| panic!("invalid supporting distance pointer: {support_ref}"));
+            let distance = packet
+                .part4_distance_foundation
+                .supporting_distances
+                .get(index)
+                .unwrap_or_else(|| {
+                    panic!("supporting distance pointer out of range: {support_ref}")
+                });
+            assert_eq!(distance.distance_id, distance_id);
+        }
+    }
+
+    #[test]
+    fn part4_distance_coverage_ledger_negative_fixture_status_drift_fails_validation() {
+        let mut packet = static_archsig_analysis_packet();
+        let entry = packet
+            .part4_distance_coverage_ledger
+            .iter_mut()
+            .find(|entry| entry.distance_family == "atomGeometry")
+            .expect("static fixture has atom geometry ledger row");
+        entry.measurement_status = "measured".to_string();
+        entry.blocker_refs.clear();
+
+        let report = validate_archsig_analysis_packet_report(
+            &packet,
+            "negative-fixture-part4-distance-coverage-ledger-status-drift.json",
+        );
+
+        assert_eq!(report.summary.result, "fail");
+        assert!(report.checks.iter().any(|check| {
+            check.id == "archsig-analysis-packet-part4-distance-coverage-ledger"
+                && check.result == "fail"
+                && check.examples.iter().any(|example| {
+                    example
+                        .target
+                        .as_deref()
+                        .is_some_and(|target| target == "measured")
+                })
+        }));
+    }
+
+    #[test]
+    fn part4_distance_coverage_ledger_negative_fixture_bad_support_ref_fails_validation() {
+        let mut packet = static_archsig_analysis_packet();
+        let entry = packet
+            .part4_distance_coverage_ledger
+            .iter_mut()
+            .find(|entry| entry.distance_family == "signatureGeometry")
+            .expect("static fixture has signature geometry ledger row");
+        entry.supporting_distance_refs = vec![
+            "/part4DistanceFoundation/supportingDistances/99#part4-distance:missing".to_string(),
+        ];
+
+        let report = validate_archsig_analysis_packet_report(
+            &packet,
+            "negative-fixture-part4-distance-coverage-ledger-bad-support-ref.json",
+        );
+
+        assert_eq!(report.summary.result, "fail");
+        assert!(report.checks.iter().any(|check| {
+            check.id == "archsig-analysis-packet-part4-distance-coverage-ledger"
+                && check.result == "fail"
+                && check.examples.iter().any(|example| {
+                    example
+                        .evidence
+                        .as_deref()
+                        .is_some_and(|evidence| evidence.contains("out of range"))
                 })
         }));
     }

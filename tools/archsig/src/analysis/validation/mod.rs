@@ -22,6 +22,7 @@ pub fn validate_archsig_analysis_packet_report(
         check_transfer_bridge_surface(packet),
         check_generated_middle_layer_surface(packet),
         check_part4_distance_foundation_surface(packet),
+        check_part4_distance_coverage_ledger_surface(packet),
         check_atom_distance_reading_surface(packet),
         check_configuration_distance_reading_surface(packet),
         check_signature_distance_reading_surface(packet),
@@ -5956,6 +5957,328 @@ fn check_part4_distance_foundation_surface(packet: &ArchSigAnalysisPacketV0) -> 
     check_from_examples(
         "archsig-analysis-packet-part4-distance-foundation",
         "packet exposes Part IV DistanceValue, DistanceProfile, DiagnosticScope, and anti-proxy distance provenance",
+        examples,
+        "fail",
+    )
+}
+
+fn check_part4_distance_coverage_ledger_surface(
+    packet: &ArchSigAnalysisPacketV0,
+) -> ValidationCheck {
+    let mut examples = Vec::new();
+    let ledger = &packet.part4_distance_coverage_ledger;
+    if ledger.is_empty() {
+        examples.push(generic_validation_example(
+            "part4DistanceCoverageLedger",
+            "empty",
+            "Part IV distance coverage ledger must enumerate the definition families covered by the packet",
+        ));
+    }
+    examples.extend(duplicate_examples(
+        "part4DistanceCoverageLedger.ledgerEntryId",
+        duplicates(ledger.iter().map(|entry| entry.ledger_entry_id.as_str())),
+    ));
+
+    let expected_entries = BTreeMap::from([
+        ("part4-ledger:distance-aat", ("definition:1.1", "foundation")),
+        (
+            "part4-ledger:atom-geometry",
+            ("definitions:2.1-2.5", "atomGeometry"),
+        ),
+        (
+            "part4-ledger:configuration-context",
+            ("definitions:3.1-3.2", "configurationGeometry"),
+        ),
+        (
+            "part4-ledger:signature-geometry",
+            ("definitions:4.1-4.4", "signatureGeometry"),
+        ),
+        (
+            "part4-ledger:operation-geometry",
+            ("definitions:5.1-5.5", "operationGeometry"),
+        ),
+        (
+            "part4-ledger:obstruction-curvature",
+            ("definitions:6.1-6.3", "curvatureGeometry"),
+        ),
+        (
+            "part4-ledger:homotopy-filling",
+            ("definitions:7.1-7.4", "homotopyFillingGeometry"),
+        ),
+        (
+            "part4-ledger:representation-metric",
+            ("definitions:8.1-8.2", "representationMetric"),
+        ),
+        (
+            "part4-ledger:measurement-boundary",
+            ("definitions:9.1-9.3", "measurementBoundary"),
+        ),
+        (
+            "part4-ledger:bounded-diagnostic-conclusion",
+            ("definitions:10.1-10.2", "boundedDiagnosticConclusion"),
+        ),
+    ]);
+    let ledger_by_id = ledger
+        .iter()
+        .map(|entry| (entry.ledger_entry_id.as_str(), entry))
+        .collect::<BTreeMap<_, _>>();
+    for (entry_id, (definition_ref, distance_family)) in &expected_entries {
+        match ledger_by_id.get(entry_id) {
+            Some(entry) => {
+                if entry.part4_definition_ref != *definition_ref {
+                    examples.push(generic_validation_example(
+                        &entry.ledger_entry_id,
+                        &entry.part4_definition_ref,
+                        "coverage ledger entry must keep the expected Part IV definition ref",
+                    ));
+                }
+                if entry.distance_family != *distance_family {
+                    examples.push(generic_validation_example(
+                        &entry.ledger_entry_id,
+                        &entry.distance_family,
+                        "coverage ledger entry must keep the expected Part IV distance family",
+                    ));
+                }
+            }
+            None => examples.push(generic_validation_example(
+                "part4DistanceCoverageLedger",
+                entry_id,
+                "coverage ledger must include every first-class Part IV definition family",
+            )),
+        }
+    }
+
+    let supporting_by_family = packet
+        .part4_distance_foundation
+        .supporting_distances
+        .iter()
+        .map(|distance| (distance.distance_family.as_str(), distance))
+        .collect::<BTreeMap<_, _>>();
+    let foundation_status = if packet.part4_distance_foundation.status_summary.blocked_count > 0 {
+        "blocked"
+    } else if packet
+        .part4_distance_foundation
+        .status_summary
+        .unmeasured_count
+        > 0
+    {
+        "partial"
+    } else if packet
+        .part4_distance_foundation
+        .status_summary
+        .measured_count
+        > 0
+        || packet.part4_distance_foundation.status_summary.zero_count > 0
+    {
+        "measured"
+    } else {
+        "unmeasured"
+    };
+    let allowed_coverage = BTreeSet::from([
+        "primary",
+        "partial",
+        "primary-blocked",
+        "raw-packet-only",
+        "missing-readings",
+        "blocked-without-readings",
+        "not-applicable",
+    ]);
+    let allowed_measurement = BTreeSet::from([
+        "measured",
+        "zero",
+        "unmeasured",
+        "unavailable",
+        "incomparable",
+        "infinite",
+        "blocked",
+        "partial",
+    ]);
+
+    for entry in ledger {
+        push_blank(
+            &mut examples,
+            "part4DistanceCoverageLedger.ledgerEntryId",
+            &entry.ledger_entry_id,
+        );
+        push_blank(
+            &mut examples,
+            &format!("{} definitionTitle", entry.ledger_entry_id),
+            &entry.definition_title,
+        );
+        push_blank(
+            &mut examples,
+            &format!("{} theorySectionRef", entry.ledger_entry_id),
+            &entry.theory_section_ref,
+        );
+        if !entry
+            .theory_section_ref
+            .contains("part_4_distance_measure_geometry.md")
+        {
+            examples.push(generic_validation_example(
+                &entry.ledger_entry_id,
+                &entry.theory_section_ref,
+                "coverage ledger theory refs must point back to the Part IV source text",
+            ));
+        }
+        if !allowed_coverage.contains(entry.coverage_status.as_str())
+            || entry.coverage_status == "schemaFoundationOnly"
+        {
+            examples.push(generic_validation_example(
+                &entry.ledger_entry_id,
+                &entry.coverage_status,
+                "coverageStatus must be a bounded ledger status and never schemaFoundationOnly",
+            ));
+        }
+        if !allowed_measurement.contains(entry.measurement_status.as_str())
+            || entry.measurement_status == "schemaFoundationOnly"
+        {
+            examples.push(generic_validation_example(
+                &entry.ledger_entry_id,
+                &entry.measurement_status,
+                "measurementStatus must mirror the foundation/supporting distance state and never schemaFoundationOnly",
+            ));
+        }
+        if entry.primary_artifact_refs.is_empty() || has_blank(&entry.primary_artifact_refs) {
+            examples.push(generic_validation_example(
+                &entry.ledger_entry_id,
+                "primaryArtifactRefs",
+                "coverage ledger entries must point to primary output artifacts",
+            ));
+        }
+        if entry.raw_packet_refs.is_empty() || has_blank(&entry.raw_packet_refs) {
+            examples.push(generic_validation_example(
+                &entry.ledger_entry_id,
+                "rawPacketRefs",
+                "coverage ledger entries must point to raw packet rows",
+            ));
+        }
+        if entry.evidence_boundary.trim().is_empty()
+            || entry
+                .evidence_boundary
+                .to_ascii_lowercase()
+                .contains("prove")
+        {
+            examples.push(generic_validation_example(
+                &entry.ledger_entry_id,
+                "evidenceBoundary",
+                "coverage ledger evidenceBoundary must be non-empty and avoid proof-style claims",
+            ));
+        }
+        if !entry
+            .non_conclusions
+            .iter()
+            .any(|non_conclusion| non_conclusion.contains("not a Lean theorem proof"))
+        {
+            examples.push(generic_validation_example(
+                &entry.ledger_entry_id,
+                "nonConclusions",
+                "coverage ledger entries must preserve ArchSig/Lean boundary language",
+            ));
+        }
+        for follow_up in &entry.follow_up_issue_refs {
+            if !follow_up.starts_with('#') {
+                examples.push(generic_validation_example(
+                    &entry.ledger_entry_id,
+                    follow_up,
+                    "follow-up issue refs must use repo-local # issue refs",
+                ));
+            }
+        }
+
+        if let Some(supporting_distance) = supporting_by_family.get(entry.distance_family.as_str()) {
+            if entry.measurement_status != supporting_distance.value.status {
+                examples.push(generic_validation_example(
+                    &entry.ledger_entry_id,
+                    &entry.measurement_status,
+                    "measurementStatus must match the selected supporting distance status for this Part IV family",
+                ));
+            }
+            if entry.supporting_distance_refs.is_empty() {
+                examples.push(generic_validation_example(
+                    &entry.ledger_entry_id,
+                    "supportingDistanceRefs",
+                    "families backed by supporting distances must point to those distance rows",
+                ));
+            }
+        } else if matches!(
+            entry.distance_family.as_str(),
+            "foundation" | "measurementBoundary" | "boundedDiagnosticConclusion"
+        ) && entry.measurement_status != foundation_status
+        {
+            examples.push(generic_validation_example(
+                &entry.ledger_entry_id,
+                &entry.measurement_status,
+                "foundation-level ledger rows must mirror the Part IV foundation status summary",
+            ));
+        }
+
+        for support_ref in &entry.supporting_distance_refs {
+            let Some((pointer, distance_id)) = support_ref.split_once('#') else {
+                examples.push(generic_validation_example(
+                    &entry.ledger_entry_id,
+                    support_ref,
+                    "supportingDistanceRefs must include a packet pointer and distance id",
+                ));
+                continue;
+            };
+            let Some(index) = pointer
+                .strip_prefix("/part4DistanceFoundation/supportingDistances/")
+                .and_then(|raw_index| raw_index.parse::<usize>().ok())
+            else {
+                examples.push(generic_validation_example(
+                    &entry.ledger_entry_id,
+                    support_ref,
+                    "supportingDistanceRefs must resolve inside part4DistanceFoundation.supportingDistances",
+                ));
+                continue;
+            };
+            let Some(distance) = packet
+                .part4_distance_foundation
+                .supporting_distances
+                .get(index)
+            else {
+                examples.push(generic_validation_example(
+                    &entry.ledger_entry_id,
+                    support_ref,
+                    "supportingDistanceRefs index is out of range",
+                ));
+                continue;
+            };
+            if distance.distance_id != distance_id {
+                examples.push(generic_validation_example(
+                    &entry.ledger_entry_id,
+                    support_ref,
+                    "supportingDistanceRefs distance id must match the referenced supporting distance row",
+                ));
+            }
+        }
+
+        match entry.measurement_status.as_str() {
+            "measured" | "zero" => {
+                if entry.supporting_distance_refs.is_empty() {
+                    examples.push(generic_validation_example(
+                        &entry.ledger_entry_id,
+                        "supportingDistanceRefs",
+                        "measured or zero ledger rows must retain supporting distance refs",
+                    ));
+                }
+            }
+            "blocked" | "unmeasured" | "unavailable" | "incomparable" | "infinite" => {
+                if entry.blocker_refs.is_empty() {
+                    examples.push(generic_validation_example(
+                        &entry.ledger_entry_id,
+                        "blockerRefs",
+                        "blocked, unmeasured, unavailable, incomparable, or infinite ledger rows must retain blocker refs",
+                    ));
+                }
+            }
+            _ => {}
+        }
+    }
+
+    check_from_examples(
+        "archsig-analysis-packet-part4-distance-coverage-ledger",
+        "packet maps Part IV definition families to primary artifacts, raw rows, supporting distances, blockers, and follow-up issues",
         examples,
         "fail",
     )
