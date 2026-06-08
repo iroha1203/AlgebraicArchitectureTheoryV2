@@ -165,6 +165,14 @@ missing cost is blocked, not guessed from a default. Repair routes must carry
 source refs, precondition refs, and either transfer-risk refs or transfer-risk
 blocker refs while preserving the boundary that a candidate route is diagnostic
 output, not automatic safe refactoring and not Atom generation.
+Curvature geometry rows in `architecture-distance.json` must expose obstruction
+measure rows, curvature support rows, curvature transport rows, curvature mass
+rows, and `distanceDiagnosis.curvatureInsights`. The insights must distinguish
+measured-zero support, measured-nonzero support, and blocked support counts,
+with witness / molecule / source refs for selected support. Missing witness or
+coverage support must remain blocked and cannot be represented as zero
+curvature. Measured-zero curvature is selected-support zero, not a global
+lawfulness or flatness proof.
 The raw packet `part4DistanceFoundation.diagnosticScope`, compact
 `distanceDiagnosis`, Atom Viewer report pane, and LLM
 `distanceDiagnosisSummary` must agree on post-evaluator axis status. In
