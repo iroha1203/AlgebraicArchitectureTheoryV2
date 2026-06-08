@@ -541,6 +541,8 @@ pub fn enrich_architecture_distance_with_part4_bundle_v1(
     );
     let measurement_state_summary =
         architecture_distance_measurement_state_summary(&family_summaries);
+    let atom_configuration_insights = architecture_distance["atomConfigurationInsights"].clone();
+    let operation_insights = architecture_distance["operationInsights"].clone();
     let obstruction_measure_readings = primary_obstruction_measure_readings_v1(packet);
     let curvature_support_readings = packet_array_clone(packet, "curvatureSupportReadings");
     let curvature_transfer_readings = packet_array_clone(packet, "curvatureTransferReadings");
@@ -558,22 +560,35 @@ pub fn enrich_architecture_distance_with_part4_bundle_v1(
     let architecture_homotopy_report = packet["architectureHomotopyReport"].clone();
     let homotopy_insights =
         homotopy_primary_insights_v1(&homotopy_distance_readings, &architecture_homotopy_report);
+    let distance_insights = distance_actionable_insights_v1(
+        architecture_distance,
+        &atom_configuration_insights,
+        &operation_insights,
+        &curvature_insights,
+        &representation_insights,
+        &homotopy_insights,
+    );
     let mut primary_insights_refs = vec![
         "architecture-distance.json#/familySummaries",
         "architecture-distance.json#/measurementStateSummary",
+        "architecture-distance.json#/distanceInsights",
         "architecture-distance.json#/distanceDiagnosis/familySummaries",
         "architecture-distance.json#/distanceDiagnosis/curvatureInsights",
         "architecture-distance.json#/distanceDiagnosis/representationInsights",
         "architecture-distance.json#/distanceDiagnosis/homotopyInsights",
+        "archsig-analysis-summary.json#/distanceInsights",
         "archsig-analysis-summary.json#/distanceDiagnosis",
+        "archsig-atom-viewer-data.json#/reportPane/distanceInsights",
         "archsig-atom-viewer-data.json#/reportPane/distanceDiagnosis",
     ];
     let optional_raw_artifact_refs = json!([
+        "llm-interpretation-packet.json#/distanceInsightsSummary",
         "llm-interpretation-packet.json#/distanceDiagnosisSummary",
         "archsig-analysis-detail-index.json#/sections/part4DistanceCoverageLedger"
     ]);
     if emit_raw_artifacts {
         primary_insights_refs.extend([
+            "llm-interpretation-packet.json#/distanceInsightsSummary",
             "llm-interpretation-packet.json#/distanceDiagnosisSummary",
             "archsig-analysis-detail-index.json#/sections/part4DistanceCoverageLedger",
         ]);
@@ -610,6 +625,7 @@ pub fn enrich_architecture_distance_with_part4_bundle_v1(
     enriched["homotopyDistanceReadings"] = homotopy_distance_readings.clone();
     enriched["architectureHomotopyReport"] = architecture_homotopy_report.clone();
     enriched["homotopyInsights"] = homotopy_insights.clone();
+    enriched["distanceInsights"] = distance_insights.clone();
     enriched["primaryInsightsRefs"] = primary_insights_refs.clone();
     enriched["optionalRawArtifactRefs"] = optional_raw_artifact_refs.clone();
     enriched["summary"]["status"] = json!(bundle_status);
@@ -633,6 +649,8 @@ pub fn enrich_architecture_distance_with_part4_bundle_v1(
     enriched["distanceDiagnosis"]["curvatureInsights"] = curvature_insights;
     enriched["distanceDiagnosis"]["representationInsights"] = representation_insights;
     enriched["distanceDiagnosis"]["homotopyInsights"] = homotopy_insights;
+    enriched["distanceDiagnosis"]["distanceInsightsRef"] =
+        json!("architecture-distance.json#/distanceInsights");
     enriched["distanceDiagnosis"]["distanceValue"]["status"] =
         enriched["summary"]["status"].clone();
     enriched["distanceDiagnosis"]["distanceValue"]["measuredTotalScope"] = measured_total_scope;
@@ -995,6 +1013,8 @@ fn representation_primary_insights_v1(representation_metric_readings: &Value) ->
                 "analyticDistance": reading["analyticDistance"],
                 "lipschitzUpperBound": reading["lipschitzUpperBound"],
                 "biLipschitzFaithfulness": reading["biLipschitzFaithfulness"],
+                "normalizedAtomRefs": reading["normalizedAtomRefs"],
+                "normalizedMoleculeRefs": reading["normalizedMoleculeRefs"],
                 "sourceRefs": reading["sourceRefs"],
                 "blockerRefs": reading["blockerRefs"],
                 "recommendedNextAction": if reading["analyticDistance"]["status"] == "boundedProxy" {
@@ -1155,6 +1175,390 @@ fn representation_metric_family_status_v1(structural: &Value) -> String {
         return "partial".to_string();
     }
     typed_family_status_from_array(structural, "representationMetricReadings")
+}
+
+fn distance_actionable_insights_v1(
+    architecture_distance: &Value,
+    atom_configuration_insights: &Value,
+    operation_insights: &Value,
+    curvature_insights: &Value,
+    representation_insights: &Value,
+    homotopy_insights: &Value,
+) -> Value {
+    let architectural_center = distance_architectural_center(atom_configuration_insights);
+    let change_sensitive_areas =
+        distance_change_sensitive_areas(atom_configuration_insights, operation_insights);
+    let policy_obstruction_reading = distance_policy_obstruction_reading(architecture_distance);
+    let blocked_evidence = distance_blocked_evidence(
+        curvature_insights,
+        representation_insights,
+        homotopy_insights,
+    );
+    let recommended_reading = distance_recommended_reading(
+        &architectural_center,
+        &change_sensitive_areas,
+        &policy_obstruction_reading,
+        &blocked_evidence,
+    );
+    let distance_action_queue = distance_action_queue(&blocked_evidence, &change_sensitive_areas);
+
+    json!({
+        "schema": "archsig-distance-insights/v1",
+        "basis": "architecture-distance.json",
+        "status": if blocked_evidence.as_array().is_some_and(|items| !items.is_empty()) {
+            "actionable-with-blocked-evidence"
+        } else {
+            "actionable"
+        },
+        "architecturalCenter": architectural_center,
+        "changeSensitiveAreas": change_sensitive_areas,
+        "policyObstructionReading": policy_obstruction_reading,
+        "blockedEvidence": blocked_evidence,
+        "recommendedReading": recommended_reading,
+        "distanceActionQueue": distance_action_queue,
+        "comparisonNeeded": {
+            "baselineRequired": true,
+            "reason": "single-run architecture distance can localize current structural weight and blockers, but cannot claim improvement, regression, or relative quality without a comparable baseline",
+            "claimsNeedingBaseline": [
+                "architecture improved",
+                "architecture regressed",
+                "this design is better than another design",
+                "distance trend changed"
+            ],
+            "availableWithoutBaseline": [
+                "structural center under the selected ArchMap and LawPolicy",
+                "current change-sensitive areas",
+                "current selected policy obstruction state",
+                "blocked evidence and next readings"
+            ]
+        },
+        "nonConclusions": [
+            "distanceInsights is a bounded engineer-facing reading, not a Lean theorem.",
+            "architecturalCenter is not a global importance theorem.",
+            "comparisonNeeded prevents single-run distance from becoming a fabricated trend."
+        ]
+    })
+}
+
+fn distance_architectural_center(atom_configuration_insights: &Value) -> Value {
+    let Some(molecule) = atom_configuration_insights["topMovedMolecules"]
+        .as_array()
+        .and_then(|items| items.first())
+    else {
+        return json!({
+            "status": "not-measured",
+            "reading": "no configuration molecule center was measured in the supplied distance surface",
+            "sourceRefs": [],
+            "atomRefs": [],
+            "moleculeRefs": []
+        });
+    };
+    let atom_refs = distance_atom_refs_from_molecule_insight(molecule);
+    let molecule_ref = molecule["moleculeRef"]
+        .as_str()
+        .unwrap_or("selected-molecule");
+    json!({
+        "status": "measured",
+        "centerKind": "configuration-molecule-distance",
+        "moleculeRef": molecule["moleculeRef"],
+        "moleculeRefs": [molecule_ref],
+        "atomRefs": atom_refs,
+        "measuredValue": molecule["measuredValue"],
+        "moleculeContributionRate": molecule["moleculeContributionRate"],
+        "readingRef": molecule["readingRef"],
+        "sourceRefs": molecule["sourceRefs"],
+        "detailRefs": molecule["detailRefs"],
+        "reading": "highest selected configuration-distance molecule is the first structural center to inspect"
+    })
+}
+
+fn distance_change_sensitive_areas(
+    atom_configuration_insights: &Value,
+    operation_insights: &Value,
+) -> Value {
+    let molecule_items = atom_configuration_insights["topMovedMolecules"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .take(3)
+        .map(|molecule| {
+            json!({
+                "areaKind": "configuration-molecule",
+                "moleculeRef": molecule["moleculeRef"],
+                "moleculeRefs": [molecule["moleculeRef"].clone()],
+                "atomRefs": distance_atom_refs_from_molecule_insight(molecule),
+                "measuredValue": molecule["measuredValue"],
+                "readingRef": molecule["readingRef"],
+                "sourceRefs": molecule["sourceRefs"],
+                "detailRefs": molecule["detailRefs"],
+                "recommendedNextAction": "inspect highest configuration-distance molecule before planning broad structural changes"
+            })
+        });
+    let operation_items = operation_insights["topOperationCandidates"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .take(3)
+        .map(|operation| {
+            json!({
+                "areaKind": "operation-route",
+                "law": operation["law"],
+                "operationKind": operation["operationKind"],
+                "readingRef": operation["readingRef"],
+                "operationCost": operation["operationCost"],
+                "distanceToSelectedFlat": operation["distanceToSelectedFlat"],
+                "repairRoute": operation["repairRoute"],
+                "sourceRefs": operation["detailRefs"],
+                "recommendedNextAction": if operation["repairRoute"]["status"] == "not-required" {
+                    "keep selected boundary evidence visible; no repair route is required for this passing law"
+                } else {
+                    "review repair-route preconditions and transfer-risk blockers before treating this as an implementation task"
+                }
+            })
+        });
+    Value::Array(molecule_items.chain(operation_items).collect())
+}
+
+fn distance_policy_obstruction_reading(architecture_distance: &Value) -> Value {
+    let moved_axes = architecture_distance["distanceDiagnosis"]["topMovedAxes"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .collect::<Vec<_>>();
+    if !moved_axes.is_empty() {
+        let source_refs = moved_axes
+            .iter()
+            .flat_map(|axis| json_string_array_value(axis, "detailRefs"))
+            .collect::<Vec<_>>();
+        return json!({
+            "status": "selectedPolicyObstructionMeasured",
+            "policyObstructionCount": moved_axes.len(),
+            "topMovedAxes": moved_axes.into_iter().take(5).cloned().collect::<Vec<_>>(),
+            "reading": "one or more selected LawPolicy axes measured nonzero signature distance",
+            "sourceRefs": unique_string_values(source_refs.into_iter())
+        });
+    }
+    let blocked_axes = architecture_distance["signatureDistanceReadings"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .filter(|axis| axis["status"] != "measured")
+        .collect::<Vec<_>>();
+    if !blocked_axes.is_empty() {
+        let source_refs = blocked_axes
+            .iter()
+            .flat_map(|axis| {
+                json_string_array_value(axis, "detailRefs")
+                    .into_iter()
+                    .chain(json_string_array_value(axis, "blockerRefs"))
+            })
+            .collect::<Vec<_>>();
+        return json!({
+            "status": "selectedPolicyObstructionBlocked",
+            "policyObstructionCount": 0,
+            "blockedPolicyAxisCount": blocked_axes.len(),
+            "blockedAxes": blocked_axes.into_iter().take(5).cloned().collect::<Vec<_>>(),
+            "reading": "selected LawPolicy obstruction state is blocked by missing distance evidence; this is not measured zero and not policy obstruction absence",
+            "sourceRefs": unique_string_values(source_refs.into_iter()),
+            "atomRefs": [],
+            "moleculeRefs": []
+        });
+    }
+    let measured_zero_axis_count = architecture_distance["signatureDistanceReadings"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .filter(|axis| axis["status"] == "measured" && axis["measuredValue"].as_i64() == Some(0))
+        .count();
+    if measured_zero_axis_count > 0 {
+        return json!({
+            "status": "selectedPolicyObstructionMeasuredZero",
+            "policyObstructionCount": 0,
+            "measuredZeroPolicyAxisCount": measured_zero_axis_count,
+            "reading": "selected LawPolicy evaluators measured zero nonzero signature obstruction; distance insights still report structural concentration and blockers",
+            "sourceRefs": [],
+            "atomRefs": [],
+            "moleculeRefs": []
+        });
+    }
+    json!({
+        "status": "noSelectedPolicyAxis",
+        "policyObstructionCount": 0,
+        "reading": "no selected signature-distance axis was available for policy obstruction reading",
+        "sourceRefs": [],
+        "atomRefs": [],
+        "moleculeRefs": []
+    })
+}
+
+fn distance_blocked_evidence(
+    curvature_insights: &Value,
+    representation_insights: &Value,
+    homotopy_insights: &Value,
+) -> Value {
+    let curvature_items = curvature_insights["topCurvatureSupports"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .filter(|support| {
+            support["curvatureValue"]["status"] == "blockedByCoverageGap"
+                || support["coverageGapRefs"]
+                    .as_array()
+                    .is_some_and(|items| !items.is_empty())
+        })
+        .map(|support| {
+            json!({
+                "evidenceKind": "curvature-support",
+                "status": "blocked",
+                "blockerRefs": support["coverageGapRefs"],
+                "sourceRefs": support["sourceRefs"],
+                "atomRefs": support["supportRefs"],
+                "moleculeRefs": support["moleculeRefs"],
+                "readingRef": support["supportReadingRef"],
+                "recommendedNextAction": support["recommendedNextAction"]
+            })
+        });
+    let representation_items = representation_insights["topRepresentationMetrics"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .filter(|reading| {
+            reading["blockerRefs"]
+                .as_array()
+                .is_some_and(|items| !items.is_empty())
+        })
+        .map(|reading| {
+            json!({
+                "evidenceKind": "representation-metric",
+                "status": "blocked",
+                "blockerRefs": reading["blockerRefs"],
+                "sourceRefs": reading["sourceRefs"],
+                "atomRefs": reading["normalizedAtomRefs"],
+                "moleculeRefs": reading["normalizedMoleculeRefs"],
+                "readingRef": reading["readingRef"],
+                "recommendedNextAction": reading["recommendedNextAction"]
+            })
+        });
+    let homotopy_items = homotopy_insights["topBlockedReadings"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .map(|reading| {
+            json!({
+                "evidenceKind": if reading["measurementStatus"] == "blockedByMissingFiller" {
+                    "homotopy-missing-filler"
+                } else {
+                    "homotopy-coverage-gap"
+                },
+                "status": "blocked",
+                "measurementStatus": reading["measurementStatus"],
+                "blockerRefs": reading["blockerRefs"],
+                "sourceRefs": reading["sourceRefs"],
+                "atomRefs": [],
+                "moleculeRefs": [reading["moleculeRef"].clone()],
+                "readingRef": reading["readingRef"],
+                "recommendedNextAction": reading["recommendedNextAction"]
+            })
+        });
+    let items = curvature_items
+        .chain(representation_items)
+        .chain(homotopy_items)
+        .collect::<Vec<_>>();
+    Value::Array(items)
+}
+
+fn distance_recommended_reading(
+    architectural_center: &Value,
+    change_sensitive_areas: &Value,
+    policy_obstruction_reading: &Value,
+    blocked_evidence: &Value,
+) -> Value {
+    json!({
+        "firstRead": if architectural_center["status"] == "measured" {
+            "start from architecturalCenter, then inspect changeSensitiveAreas and blockedEvidence"
+        } else {
+            "start from changeSensitiveAreas, then inspect blockedEvidence"
+        },
+        "policyReading": policy_obstruction_reading["reading"],
+        "nextSourceRefs": distance_first_refs(&[
+            &architectural_center["sourceRefs"],
+            &change_sensitive_areas[0]["sourceRefs"],
+            &blocked_evidence[0]["sourceRefs"],
+        ]),
+        "nextMoleculeRefs": distance_first_refs(&[
+            &architectural_center["moleculeRefs"],
+            &change_sensitive_areas[0]["moleculeRefs"],
+            &blocked_evidence[0]["moleculeRefs"],
+        ]),
+        "reading": "distance insights prioritize current structural center, policy obstruction state, and evidence blockers before any comparison or repair claim"
+    })
+}
+
+fn distance_action_queue(blocked_evidence: &Value, change_sensitive_areas: &Value) -> Value {
+    let blocked_items = blocked_evidence
+        .as_array()
+        .into_iter()
+        .flatten()
+        .collect::<Vec<_>>();
+    let blocked_count = blocked_items.len();
+    let blocked_actions = blocked_items.into_iter().enumerate().map(|(index, item)| {
+        json!({
+            "actionId": format!("distance-action:blocked-evidence:{}", index + 1),
+            "actionKind": "resolve-blocked-distance-evidence",
+            "priority": index + 1,
+            "recommendedNextAction": item["recommendedNextAction"],
+            "blockerRefs": item["blockerRefs"],
+            "sourceRefs": item["sourceRefs"],
+            "moleculeRefs": item["moleculeRefs"],
+            "readingRef": item["readingRef"]
+        })
+    });
+    let review_actions = change_sensitive_areas
+        .as_array()
+        .into_iter()
+        .flatten()
+        .take(3)
+        .enumerate()
+        .map(|(index, item)| {
+            json!({
+                "actionId": format!("distance-action:review-area:{}", index + 1),
+                "actionKind": "inspect-change-sensitive-area",
+                "priority": blocked_count + index + 1,
+                "recommendedNextAction": item["recommendedNextAction"],
+                "sourceRefs": item["sourceRefs"],
+                "moleculeRefs": item["moleculeRefs"],
+                "readingRef": item["readingRef"]
+            })
+        });
+    Value::Array(blocked_actions.chain(review_actions).collect())
+}
+
+fn distance_atom_refs_from_molecule_insight(molecule: &Value) -> Vec<String> {
+    let refs = molecule["topSelectedPairDistances"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .flat_map(|pair| {
+            [
+                pair["sourceAtomRef"].as_str().map(str::to_string),
+                pair["targetAtomRef"].as_str().map(str::to_string),
+            ]
+            .into_iter()
+            .flatten()
+        });
+    unique_string_values(refs)
+}
+
+fn distance_first_refs(values: &[&Value]) -> Vec<String> {
+    unique_string_values(
+        values
+            .iter()
+            .flat_map(|value| value.as_array().into_iter().flatten())
+            .filter_map(|value| value.as_str().map(str::to_string)),
+    )
+    .into_iter()
+    .take(8)
+    .collect()
 }
 
 fn primary_homotopy_distance_readings_v1(packet: &Value) -> Value {
@@ -1783,6 +2187,7 @@ pub fn build_typed_analysis_summary_v1(
         "replacementStatusSummary": typed_results.replacement_summary,
         "typedEvaluatorDiagnosis": typed_evaluator_diagnosis(typed_results),
         "architectureDistance": architecture_distance["summary"],
+        "distanceInsights": architecture_distance["distanceInsights"],
         "distanceDiagnosis": architecture_distance["distanceDiagnosis"],
         "dominantFindings": typed_dominant_findings(typed_results),
         "richDominantFindings": rich_dominant_findings_v1(&spectrum, &homotopy, &structural),
@@ -1859,6 +2264,7 @@ pub fn build_typed_atom_viewer_data_v1(
             "replacementRegistryResolution": typed_results.replacement_registry_resolution,
             "typedEvaluatorDiagnosis": summary["typedEvaluatorDiagnosis"],
             "architectureDistance": summary["architectureDistance"],
+            "distanceInsights": summary["distanceInsights"],
             "distanceDiagnosis": summary["distanceDiagnosis"],
             "architectureSpectrumReport": summary["architectureSpectrumReport"],
             "architectureHomotopyReport": summary["architectureHomotopyReport"],
@@ -1885,6 +2291,7 @@ pub fn build_typed_atom_viewer_data_v1(
             "richDominantFindings": summary["richDominantFindings"],
             "replacementRegistryResolution": summary["replacementRegistryResolution"],
             "typedEvaluatorDiagnosis": summary["typedEvaluatorDiagnosis"],
+            "distanceInsights": summary["distanceInsights"],
             "distanceDiagnosis": summary["distanceDiagnosis"],
             "topFindings": summary["dominantFindings"],
             "actionQueue": summary["actionQueue"],
@@ -2016,6 +2423,7 @@ pub fn build_typed_llm_interpretation_packet_v1(
         "primaryConclusion": typed_conclusion(typed_results, architecture_distance),
         "typedEvaluatorDiagnosis": typed_evaluator_diagnosis(typed_results),
         "architectureDistance": architecture_distance["summary"],
+        "distanceInsightsSummary": architecture_distance["distanceInsights"],
         "distanceDiagnosisSummary": architecture_distance["distanceDiagnosis"],
         "architectureSpectrumReportSummary": architecture_spectrum_summary_v1(&spectrum),
         "architectureHomotopyReportSummary": architecture_homotopy_summary_v1(&homotopy),

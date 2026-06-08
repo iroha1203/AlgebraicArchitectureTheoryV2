@@ -568,8 +568,32 @@ fn cli_analyze_v1_marks_incomplete_molecule_candidate_blocked() {
                                     .as_array()
                                     .is_some_and(|refs| !refs.is_empty())
                         })
-                }),
+        }),
         "primary curvature insights must preserve blocked support as blocked, not measured zero"
+    );
+    assert_eq!(
+        architecture_distance["distanceInsights"]["policyObstructionReading"]["status"].as_str(),
+        Some("selectedPolicyObstructionBlocked"),
+        "blocked selected signature-distance axes must not be reported as policy obstruction absence"
+    );
+    let blocked_evidence_count = architecture_distance["distanceInsights"]["blockedEvidence"]
+        .as_array()
+        .map(Vec::len)
+        .unwrap_or_default();
+    assert!(
+        blocked_evidence_count > 0
+            && architecture_distance["distanceInsights"]["distanceActionQueue"]
+                .as_array()
+                .is_some_and(|actions| {
+                    actions
+                        .iter()
+                        .filter(|action| {
+                            action["actionKind"] == "resolve-blocked-distance-evidence"
+                        })
+                        .count()
+                        == blocked_evidence_count
+                }),
+        "distance action queue must retain every blocked evidence item"
     );
 }
 
@@ -1590,6 +1614,8 @@ fn cli_analyze_v1_writes_summary_viewer_and_manifest_artifacts() {
             .is_some_and(|refs| refs
                 .iter()
                 .any(|reference| reference
+                    == "llm-interpretation-packet.json#/distanceInsightsSummary")
+                && refs.iter().any(|reference| reference
                     == "llm-interpretation-packet.json#/distanceDiagnosisSummary")),
         "raw-only interpretation refs must be optional when raw artifacts are omitted"
     );
@@ -3067,6 +3093,108 @@ fn practical_rust_service_example_runs_v1_analyze() {
         llm_packet["distanceDiagnosisSummary"]["basis"].as_str(),
         Some("architectureDistance")
     );
+    assert_eq!(
+        summary["distanceInsights"], architecture_distance["distanceInsights"],
+        "summary must read the same distanceInsights object as architecture-distance"
+    );
+    assert_eq!(
+        viewer["reportPane"]["distanceInsights"], architecture_distance["distanceInsights"],
+        "viewer report pane must read the same distanceInsights object as architecture-distance"
+    );
+    assert_eq!(
+        llm_packet["distanceInsightsSummary"], architecture_distance["distanceInsights"],
+        "LLM packet must read the same distanceInsights object as architecture-distance"
+    );
+    let distance_insights = &architecture_distance["distanceInsights"];
+    assert!(
+        distance_insights["architecturalCenter"]["status"] == "measured"
+            && distance_insights["architecturalCenter"]["moleculeRefs"]
+                .as_array()
+                .is_some_and(|refs| !refs.is_empty())
+            && distance_insights["architecturalCenter"]["atomRefs"]
+                .as_array()
+                .is_some_and(|refs| !refs.is_empty())
+            && distance_insights["architecturalCenter"]["sourceRefs"]
+                .as_array()
+                .is_some_and(|refs| !refs.is_empty())
+            && distance_insights["architecturalCenter"]["measuredValue"]
+                .as_i64()
+                .is_some_and(|value| value > 0),
+        "distanceInsights must expose the structural center with molecule, atom, source refs, and measured distance"
+    );
+    assert!(
+        distance_insights["changeSensitiveAreas"]
+            .as_array()
+            .is_some_and(|areas| {
+                areas.iter().any(|area| {
+                    area["areaKind"] == "configuration-molecule"
+                        && area["sourceRefs"]
+                            .as_array()
+                            .is_some_and(|refs| !refs.is_empty())
+                        && area["moleculeRefs"]
+                            .as_array()
+                            .is_some_and(|refs| !refs.is_empty())
+                }) && areas.iter().any(|area| {
+                    area["areaKind"] == "operation-route"
+                        && area["sourceRefs"]
+                            .as_array()
+                            .is_some_and(|refs| !refs.is_empty())
+                })
+            }),
+        "distanceInsights must expose change-sensitive configuration and operation areas"
+    );
+    assert_eq!(
+        distance_insights["policyObstructionReading"]["status"].as_str(),
+        Some("selectedPolicyObstructionMeasuredZero"),
+        "practical fixture should distinguish structural concentration from selected zero policy obstruction"
+    );
+    assert!(
+        distance_insights["blockedEvidence"]
+            .as_array()
+            .is_some_and(|items| {
+                items.iter().any(|item| {
+                    item["evidenceKind"] == "homotopy-coverage-gap"
+                        && item["blockerRefs"]
+                            .as_array()
+                            .is_some_and(|refs| !refs.is_empty())
+                        && item["sourceRefs"]
+                            .as_array()
+                            .is_some_and(|refs| !refs.is_empty())
+                        && item["moleculeRefs"]
+                            .as_array()
+                            .is_some_and(|refs| !refs.is_empty())
+                }) && items.iter().any(|item| {
+                    item["evidenceKind"] == "representation-metric"
+                        && item["atomRefs"]
+                            .as_array()
+                            .is_some_and(|refs| !refs.is_empty())
+                        && item["moleculeRefs"]
+                            .as_array()
+                            .is_some_and(|refs| !refs.is_empty())
+                })
+            }),
+        "distanceInsights must connect blocked evidence to source, atom, and molecule refs"
+    );
+    assert!(
+        distance_insights["comparisonNeeded"]["baselineRequired"] == true
+            && distance_insights["comparisonNeeded"]["claimsNeedingBaseline"]
+                .as_array()
+                .is_some_and(|claims| !claims.is_empty())
+            && distance_insights["distanceActionQueue"]
+                .as_array()
+                .is_some_and(|items| {
+                    items.iter().any(|item| {
+                        item["actionKind"] == "resolve-blocked-distance-evidence"
+                            && item["blockerRefs"]
+                                .as_array()
+                                .is_some_and(|refs| !refs.is_empty())
+                            && item["sourceRefs"]
+                                .as_array()
+                                .is_some_and(|refs| !refs.is_empty())
+                    })
+                }),
+        "distanceInsights must keep baseline-dependent claims explicit and convert blockers into distance action queue rows"
+    );
     assert_public_artifact_omits_part4("summary", &summary);
     assert_public_artifact_omits_part4("viewer", &viewer);
     assert_public_artifact_omits_part4("llm packet", &llm_packet);
@@ -4439,11 +4567,16 @@ fn cli_runs_primary_archmap_lawpolicy_archsig_analyze_workflow() {
     );
     assert!(
         viewer_data["reportPane"]["topFindings"].is_object()
+            && viewer_data["reportPane"]["distanceInsights"].is_object()
             && viewer_data["reportPane"]["distanceDiagnosis"].is_object()
             && viewer_data["reportPane"]["actionQueue"].is_array()
             && viewer_data["reportPane"]["coverageAndBoundaries"].is_object()
             && viewer_data["reportPane"]["artifacts"].is_object(),
-        "viewer data report pane must carry overview, top findings, distance diagnosis, action queue, coverage, and artifact sections"
+        "viewer data report pane must carry overview, top findings, distance insights, distance diagnosis, action queue, coverage, and artifact sections"
+    );
+    assert_eq!(
+        viewer_data["reportPane"]["distanceInsights"], analysis_summary["distanceInsights"],
+        "viewer report pane must read the same distanceInsights object as the compact summary"
     );
     assert_eq!(
         viewer_data["reportPane"]["distanceDiagnosis"], analysis_summary["distanceDiagnosis"],

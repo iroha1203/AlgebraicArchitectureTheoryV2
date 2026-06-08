@@ -93,9 +93,13 @@ Viewer data 生成は通常 workflow の一部である。固定 viewer app は 
 summary は次を満たさなければならない。
 
 - 安定した JSON schema を持つ。
-- `verdict`、`qualityMeasurement`、`distanceDiagnosis`、`measurementStatusSummary`、
+- `verdict`、`qualityMeasurement`、`distanceInsights`、`distanceDiagnosis`、`measurementStatusSummary`、
   `dominantFindings`、`actionQueue`、`coverageGapSummary`、`measurementBasis`、
   `metadata` を上位に置く。
+- `distanceInsights` は `architecturalCenter`、`changeSensitiveAreas`、
+  `policyObstructionReading`、`blockedEvidence`、`recommendedReading`、
+  `distanceActionQueue`、`comparisonNeeded` を持ち、距離から読める次の source refs /
+  atom refs / molecule refs を report surface に出す。
 - 文章量よりも、短い bounded string、stable id、source refs、detail refs を優先する。
 - raw packet が保存されていなくても、summary 単体で LLM が主要診断を解釈できる。
 - raw packet が保存されている場合は、`detailRefs` / `packetRefs` / manifest refs から詳細へ
