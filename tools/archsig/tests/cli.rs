@@ -2530,6 +2530,89 @@ fn practical_rust_service_example_runs_v1_analyze() {
                 })),
         "primary architecture-distance family bundle must mirror the raw packet ledger"
     );
+    let first_atom_distance = &architecture_distance["atomDistanceReadings"][0];
+    assert_eq!(
+        string_set(&Value::Array(
+            first_atom_distance["part4DefinitionReadings"]
+                .as_array()
+                .expect("atom Part IV definition readings are emitted")
+                .iter()
+                .map(|reading| reading["componentKind"].clone())
+                .collect::<Vec<_>>()
+        )),
+        BTreeSet::from([
+            "carrier".to_string(),
+            "fiber".to_string(),
+            "semanticAnchor".to_string(),
+            "valence".to_string(),
+        ]),
+        "atom distance must expose Fiber / Carrier / Valence / Semantic Anchor rows"
+    );
+    assert_eq!(
+        first_atom_distance["atomLayoutDistance"]["definitionRef"].as_str(),
+        Some("definitions:2.5"),
+        "atom layout distance must remain the composed atom-pair distance"
+    );
+    let first_configuration_distance = &architecture_distance["configurationDistanceReadings"][0];
+    assert_eq!(
+        first_configuration_distance["configurationIndexedDistance"]["definitionRef"].as_str(),
+        Some("definitions:3.1"),
+        "configuration-indexed distance must be explicit"
+    );
+    assert_eq!(
+        first_configuration_distance["contextDistance"]["definitionRef"].as_str(),
+        Some("definitions:3.2"),
+        "context distance must be explicit"
+    );
+    assert!(
+        first_configuration_distance["typedHypergraph"]["hyperedges"]
+            .as_array()
+            .is_some_and(|hyperedges| !hyperedges.is_empty()),
+        "configuration distance must expose typed hypergraph evidence"
+    );
+    assert!(
+        first_configuration_distance["selectedPairDistances"]
+            .as_array()
+            .is_some_and(|pairs| pairs.len() > 1
+                && pairs.iter().all(|pair| {
+                    pair["configurationIndexedDistance"]["shortestPathHyperedgeRefs"]
+                        .as_array()
+                        .is_some_and(|refs| !refs.is_empty())
+                        && pair["contextDistance"]["contextUnionRefs"]
+                            .as_array()
+                            .is_some()
+                })),
+        "configuration distance must materialize explicit atom-pair shortest paths, not infer a first/last endpoint"
+    );
+    assert!(
+        first_configuration_distance["basis"]
+            .as_str()
+            .is_some_and(|basis| !basis.contains("configuration size")),
+        "configuration distance must not read as a molecule-size proxy"
+    );
+    assert!(
+        first_configuration_distance["moleculeContributionRate"].is_object(),
+        "configuration distance must expose molecule contribution rate"
+    );
+    assert!(
+        summary["distanceDiagnosis"]["atomConfigurationInsights"]["topMovedAtomPairs"]
+            .as_array()
+            .is_some_and(|items| !items.is_empty())
+            && viewer["reportPane"]["distanceDiagnosis"]["atomConfigurationInsights"]
+                ["topMovedMolecules"]
+                .as_array()
+                .is_some_and(|items| items
+                    .iter()
+                    .all(|item| item["sourceRefs"].as_array().is_some_and(|refs| !refs.is_empty())
+                        && item["topSelectedPairDistances"]
+                            .as_array()
+                            .is_some_and(|pairs| !pairs.is_empty())))
+            && llm_packet["distanceDiagnosisSummary"]["atomConfigurationInsights"]
+                ["topMovedAtomPairs"]
+                .as_array()
+                .is_some_and(|items| !items.is_empty()),
+        "summary, viewer, and LLM packet must expose top atom-pair and molecule distance insights"
+    );
     assert_eq!(
         architecture_distance["profile"]["signatureViolationWeight"].as_i64(),
         Some(2),

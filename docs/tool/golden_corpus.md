@@ -152,6 +152,11 @@ make clear that `measuredTotal` is only the numeric aggregate for the
 architecture-distance-point families rather than the total of every distance
 definition. Non-aggregated families must remain visible with explicit measured,
 partial, blocked, unmeasured, or not-applicable state.
+Atom geometry rows must expose the Fiber / Carrier / Valence / Semantic Anchor
+definition readings and the composed Atom Layout distance for top moved atom
+pairs. Configuration geometry rows must use typed hypergraph shortest-path
+evidence and molecule context overlap, not molecule-size or relation-count-only
+proxies, and must keep molecule contribution rates tied to source refs.
 The raw packet `part4DistanceFoundation.diagnosticScope`, compact
 `distanceDiagnosis`, Atom Viewer report pane, and LLM
 `distanceDiagnosisSummary` must agree on post-evaluator axis status. In
