@@ -366,9 +366,12 @@ fn typed_part4_distance_coverage_ledger_v1(
             "definitions:8.1-8.2",
             "Representation stability and Representation faithfulness",
             "representationMetric",
-            typed_family_status_from_array(structural, "representationMetricReadings"),
+            representation_metric_family_status_v1(structural),
             packet_refs(&["/representationMetricReadings"]),
-            vec!["archsig-analysis-packet.json#/representationMetricReadings"],
+            vec![
+                "architecture-distance.json#/representationMetricReadings",
+                "archsig-analysis-summary.json#/distanceDiagnosis/representationInsights",
+            ],
             packet_array_len(structural, "representationMetricReadings"),
         ),
         typed_part4_ledger_entry_v1(
@@ -512,7 +515,7 @@ fn typed_part4_boundary_status_v1(
         typed_family_status_from_array(architecture_distance, "operationDistanceReadings"),
         typed_family_status_from_array(spectrum, "curvatureMassReadings"),
         typed_family_status_from_array(homotopy, "homotopyDistanceReadings"),
-        typed_family_status_from_array(structural, "representationMetricReadings"),
+        representation_metric_family_status_v1(structural),
     ];
     if statuses
         .iter()
@@ -547,11 +550,15 @@ pub fn enrich_architecture_distance_with_part4_bundle_v1(
         &curvature_transfer_readings,
         &curvature_mass_readings,
     );
+    let representation_metric_readings = primary_representation_metric_readings_v1(packet);
+    let representation_insights =
+        representation_primary_insights_v1(&representation_metric_readings);
     let mut primary_insights_refs = vec![
         "architecture-distance.json#/familySummaries",
         "architecture-distance.json#/measurementStateSummary",
         "architecture-distance.json#/distanceDiagnosis/familySummaries",
         "architecture-distance.json#/distanceDiagnosis/curvatureInsights",
+        "architecture-distance.json#/distanceDiagnosis/representationInsights",
         "archsig-analysis-summary.json#/distanceDiagnosis",
         "archsig-atom-viewer-data.json#/reportPane/distanceDiagnosis",
     ];
@@ -592,6 +599,8 @@ pub fn enrich_architecture_distance_with_part4_bundle_v1(
     enriched["curvatureTransferReadings"] = curvature_transfer_readings.clone();
     enriched["curvatureMassReadings"] = curvature_mass_readings.clone();
     enriched["curvatureInsights"] = curvature_insights.clone();
+    enriched["representationMetricReadings"] = representation_metric_readings.clone();
+    enriched["representationInsights"] = representation_insights.clone();
     enriched["primaryInsightsRefs"] = primary_insights_refs.clone();
     enriched["optionalRawArtifactRefs"] = optional_raw_artifact_refs.clone();
     enriched["summary"]["status"] = json!(bundle_status);
@@ -613,6 +622,7 @@ pub fn enrich_architecture_distance_with_part4_bundle_v1(
     enriched["distanceDiagnosis"]["primaryInsightsRefs"] = primary_insights_refs;
     enriched["distanceDiagnosis"]["optionalRawArtifactRefs"] = optional_raw_artifact_refs;
     enriched["distanceDiagnosis"]["curvatureInsights"] = curvature_insights;
+    enriched["distanceDiagnosis"]["representationInsights"] = representation_insights;
     enriched["distanceDiagnosis"]["distanceValue"]["status"] =
         enriched["summary"]["status"].clone();
     enriched["distanceDiagnosis"]["distanceValue"]["measuredTotalScope"] = measured_total_scope;
@@ -809,6 +819,332 @@ fn curvature_primary_insights_v1(
             "Curvature transport is current-state diagnostic structure, not future incident prediction."
         ]
     })
+}
+
+fn primary_representation_metric_readings_v1(packet: &Value) -> Value {
+    Value::Array(
+        packet["representationMetricReadings"]
+            .as_array()
+            .into_iter()
+            .flatten()
+            .enumerate()
+            .map(|(index, reading)| {
+                let reading_id = reading["readingId"]
+                    .as_str()
+                    .or_else(|| reading["representationMetricReadingId"].as_str())
+                    .unwrap_or("representation-metric:selected");
+                let analytic_status = reading["analyticDistance"]["status"]
+                    .as_str()
+                    .unwrap_or("blocked");
+                let structural_status = reading["structuralDistance"]["status"]
+                    .as_str()
+                    .unwrap_or("blocked");
+                let raw_measurement_status =
+                    reading["measurementStatus"].as_str().unwrap_or("blocked");
+                let coverage_blocker_refs = representation_coverage_blocker_refs(reading);
+                let witness_completeness_blocker_refs =
+                    representation_witness_completeness_blocker_refs(reading);
+                let status = if representation_status_is_blocked(raw_measurement_status)
+                    || representation_status_is_blocked(structural_status)
+                    || representation_status_is_blocked(analytic_status)
+                {
+                    "blocked"
+                } else if analytic_status == "boundedProxy"
+                    || representation_has_blocked_faithfulness(reading)
+                {
+                    "partial"
+                } else if matches!(structural_status, "measured" | "zero")
+                    && matches!(analytic_status, "measured" | "zero")
+                {
+                    "measured"
+                } else {
+                    "blocked"
+                };
+                let blocker_refs = representation_blocker_refs(reading);
+                let source_refs = representation_source_refs(reading);
+                let lipschitz_upper_bound = representation_lipschitz_upper_bound(reading);
+                let bi_lipschitz_faithfulness =
+                    representation_bi_lipschitz_faithfulness(reading, &blocker_refs);
+
+                json!({
+                    "readingId": reading_id,
+                    "distanceFamily": "representationMetric",
+                    "status": status,
+                    "measurementStatus": status,
+                    "representationFamily": reading["representationFamily"],
+                    "representationRef": reading["representationRef"],
+                    "rawPacketReadingRef": format!("packet:/representationMetricReadings/{index}"),
+                    "primaryReadingRef": format!("architecture-distance.json#/representationMetricReadings/{index}"),
+                    "typedEvaluatorResultRefs": reading["typedEvaluatorResultRefs"],
+                    "normalizedAtomRefs": reading["normalizedAtomRefs"],
+                    "normalizedMoleculeRefs": reading["normalizedMoleculeRefs"],
+                    "signatureDistanceReadingRefs": reading["signatureDistanceReadingRefs"],
+                    "operationDistanceReadingRefs": reading["operationDistanceReadingRefs"],
+                    "sourceRefs": source_refs,
+                    "structuralDistance": reading["structuralDistance"],
+                    "analyticDistance": reading["analyticDistance"],
+                    "lipschitzUpperBound": lipschitz_upper_bound,
+                    "biLipschitzFaithfulness": bi_lipschitz_faithfulness,
+                    "coverageGapRefs": reading["coverageGapRefs"],
+                    "coverageBlockerRefs": coverage_blocker_refs,
+                    "witnessCompletenessBlockerRefs": witness_completeness_blocker_refs,
+                    "blockerRefs": blocker_refs,
+                    "part4DefinitionReadings": [
+                        {
+                            "componentKind": "representationStability",
+                            "part4DefinitionRef": "definitions:8.1",
+                            "definitionName": "Representation Stability",
+                            "structuralDistanceRef": format!("architecture-distance.json#/representationMetricReadings/{index}/structuralDistance"),
+                            "analyticDistanceRef": format!("architecture-distance.json#/representationMetricReadings/{index}/analyticDistance"),
+                            "lipschitzUpperBoundRef": format!("architecture-distance.json#/representationMetricReadings/{index}/lipschitzUpperBound")
+                        },
+                        {
+                            "componentKind": "representationFaithfulness",
+                            "part4DefinitionRef": "definitions:8.2",
+                            "definitionName": "Representation Faithfulness",
+                            "faithfulnessRef": format!("architecture-distance.json#/representationMetricReadings/{index}/biLipschitzFaithfulness")
+                        }
+                    ],
+                    "evidenceBoundary": "representation metric is selected-scope evidence; bounded proxy telemetry is not a measured analytic distance or structural faithfulness claim",
+                    "nonConclusions": [
+                        "Bounded proxy analytic distance is not a measured representation distance.",
+                        "Blocked faithfulness is not selected structural faithfulness.",
+                        "Representation stability is scoped to selected structural and analytic readings, not all future comparable architectures."
+                    ]
+                })
+            })
+            .collect(),
+    )
+}
+
+fn representation_primary_insights_v1(representation_metric_readings: &Value) -> Value {
+    let readings = representation_metric_readings
+        .as_array()
+        .into_iter()
+        .flatten()
+        .collect::<Vec<_>>();
+    let measured_structural_distance_count = readings
+        .iter()
+        .filter(|reading| {
+            matches!(
+                reading["structuralDistance"]["status"].as_str(),
+                Some("measured" | "zero")
+            )
+        })
+        .count();
+    let measured_analytic_distance_count = readings
+        .iter()
+        .filter(|reading| {
+            matches!(
+                reading["analyticDistance"]["status"].as_str(),
+                Some("measured" | "zero")
+            )
+        })
+        .count();
+    let bounded_proxy_analytic_count = readings
+        .iter()
+        .filter(|reading| reading["analyticDistance"]["status"] == "boundedProxy")
+        .count();
+    let blocked_analytic_distance_count = readings
+        .iter()
+        .filter(|reading| {
+            matches!(
+                reading["analyticDistance"]["status"].as_str(),
+                Some("blocked" | "blockedByCoverageGap" | "unmeasured" | "unavailable")
+            )
+        })
+        .count();
+    let blocked_faithfulness_count = readings
+        .iter()
+        .filter(|reading| {
+            !matches!(
+                reading["biLipschitzFaithfulness"]["status"].as_str(),
+                Some("measured" | "zero")
+            )
+        })
+        .count();
+    let status = if readings.is_empty() {
+        "no-selected-representation"
+    } else if bounded_proxy_analytic_count > 0
+        || blocked_analytic_distance_count > 0
+        || blocked_faithfulness_count > 0
+    {
+        "partial"
+    } else {
+        "measured"
+    };
+    let top_readings = readings
+        .iter()
+        .take(6)
+        .map(|reading| {
+            json!({
+                "readingRef": reading["primaryReadingRef"],
+                "representationFamily": reading["representationFamily"],
+                "status": reading["status"],
+                "structuralDistance": reading["structuralDistance"],
+                "analyticDistance": reading["analyticDistance"],
+                "lipschitzUpperBound": reading["lipschitzUpperBound"],
+                "biLipschitzFaithfulness": reading["biLipschitzFaithfulness"],
+                "sourceRefs": reading["sourceRefs"],
+                "blockerRefs": reading["blockerRefs"],
+                "recommendedNextAction": if reading["analyticDistance"]["status"] == "boundedProxy" {
+                    "collect measured analytic representation evidence before reading proxy telemetry as distance"
+                } else if !matches!(
+                    reading["biLipschitzFaithfulness"]["status"].as_str(),
+                    Some("measured" | "zero")
+                ) {
+                    "collect coverage and witness completeness evidence before claiming representation faithfulness"
+                } else {
+                    "read as selected-scope representation stability only"
+                }
+            })
+        })
+        .collect::<Vec<_>>();
+    json!({
+        "status": status,
+        "representationMetricReadingCount": readings.len(),
+        "measuredStructuralDistanceCount": measured_structural_distance_count,
+        "measuredAnalyticDistanceCount": measured_analytic_distance_count,
+        "boundedProxyAnalyticCount": bounded_proxy_analytic_count,
+        "blockedAnalyticDistanceCount": blocked_analytic_distance_count,
+        "blockedFaithfulnessCount": blocked_faithfulness_count,
+        "topRepresentationMetrics": top_readings,
+        "reading": "representation insights expose selected structural distance, analytic-distance state, Lipschitz upper-bound availability, and blocked faithfulness without promoting proxy telemetry to measured distance",
+        "nonConclusions": [
+            "Bounded proxy telemetry is not measured Representation Stability.",
+            "Blocked bi-Lipschitz faithfulness is not Representation Faithfulness.",
+            "Selected representation readings do not prove global structural equivalence."
+        ]
+    })
+}
+
+fn representation_lipschitz_upper_bound(reading: &Value) -> Value {
+    let analytic_status = reading["analyticDistance"]["status"]
+        .as_str()
+        .unwrap_or("blocked");
+    if analytic_status == "boundedProxy" {
+        json!({
+            "status": "blockedByProxy",
+            "unit": "selected-L-upper-bound",
+            "blockerRefs": representation_blocker_refs(reading),
+            "reading": "Lipschitz upper-bound is blocked because analytic distance is bounded proxy telemetry, not measured representation distance"
+        })
+    } else if reading["lipschitzStability"].is_object() {
+        reading["lipschitzStability"].clone()
+    } else {
+        json!({
+            "status": "blocked",
+            "unit": "selected-L-upper-bound",
+            "blockerRefs": representation_blocker_refs(reading),
+            "reading": "Lipschitz upper-bound is blocked until selected structural and analytic distances are measured with provenance"
+        })
+    }
+}
+
+fn representation_bi_lipschitz_faithfulness(reading: &Value, blocker_refs: &[String]) -> Value {
+    if reading["biLipschitzFaithfulness"].is_object() {
+        return reading["biLipschitzFaithfulness"].clone();
+    }
+    json!({
+        "status": "blocked",
+        "unit": "selected-bi-lipschitz-faithfulness",
+        "blockerRefs": blocker_refs,
+        "reading": "bi-Lipschitz faithfulness is blocked until coverage and witness completeness are supplied for the selected representation scope"
+    })
+}
+
+fn representation_has_blocked_faithfulness(reading: &Value) -> bool {
+    let status = reading["biLipschitzFaithfulness"]["status"].as_str();
+    !matches!(status, Some("measured" | "zero"))
+        || !representation_coverage_blocker_refs(reading).is_empty()
+        || !representation_witness_completeness_blocker_refs(reading).is_empty()
+}
+
+fn representation_blocker_refs(reading: &Value) -> Vec<String> {
+    let mut refs = representation_coverage_blocker_refs(reading);
+    refs.extend(representation_witness_completeness_blocker_refs(reading));
+    if let Some(status) = reading["measurementStatus"].as_str() {
+        if representation_status_is_blocked(status) {
+            refs.push(format!("measurement-status:{status}"));
+        }
+    }
+    if reading["analyticDistance"]["status"] == "boundedProxy" {
+        refs.push("bounded-proxy:selected-analytic-distance-not-measured".to_string());
+    }
+    if representation_has_blocked_faithfulness(reading) {
+        refs.push("faithfulness:coverage-and-witness-completeness-required".to_string());
+    }
+    unique_string_values(refs.into_iter())
+}
+
+fn representation_coverage_blocker_refs(reading: &Value) -> Vec<String> {
+    let mut refs = json_string_array_value(reading, "coverageGapRefs");
+    refs.extend(json_string_array_value(reading, "coverageBlockerRefs"));
+    if representation_has_proxy_or_unmeasured_faithfulness(reading) {
+        refs.push("coverage-completeness:selected-representation-scope-not-certified".to_string());
+    }
+    unique_string_values(refs.into_iter())
+}
+
+fn representation_witness_completeness_blocker_refs(reading: &Value) -> Vec<String> {
+    let mut refs = json_string_array_value(reading, "witnessCompletenessBlockerRefs");
+    if representation_has_proxy_or_unmeasured_faithfulness(reading) {
+        refs.push(
+            "witness-completeness:selected-representation-faithfulness-not-certified".to_string(),
+        );
+    }
+    unique_string_values(refs.into_iter())
+}
+
+fn representation_has_proxy_or_unmeasured_faithfulness(reading: &Value) -> bool {
+    reading["analyticDistance"]["status"] == "boundedProxy"
+        || !matches!(
+            reading["biLipschitzFaithfulness"]["status"].as_str(),
+            Some("measured" | "zero")
+        )
+}
+
+fn representation_status_is_blocked(status: &str) -> bool {
+    let normalized = status.to_ascii_lowercase();
+    normalized.contains("blocked")
+        || matches!(
+            normalized.as_str(),
+            "unmeasured" | "unknown" | "unavailable" | "incomparable" | "infinite"
+        )
+}
+
+fn representation_source_refs(reading: &Value) -> Vec<String> {
+    let mut refs = Vec::new();
+    for field in [
+        "normalizedAtomRefs",
+        "normalizedMoleculeRefs",
+        "typedEvaluatorResultRefs",
+        "signatureDistanceReadingRefs",
+        "operationDistanceReadingRefs",
+        "sourceReadingRefs",
+        "evidenceRefs",
+    ] {
+        refs.extend(json_string_array_value(reading, field));
+    }
+    unique_string_values(refs.into_iter())
+}
+
+fn representation_metric_family_status_v1(structural: &Value) -> String {
+    let readings = structural["representationMetricReadings"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .collect::<Vec<_>>();
+    if readings.is_empty() {
+        return "blocked".to_string();
+    }
+    if readings.iter().any(|reading| {
+        reading["analyticDistance"]["status"] == "boundedProxy"
+            || representation_has_blocked_faithfulness(reading)
+    }) {
+        return "partial".to_string();
+    }
+    typed_family_status_from_array(structural, "representationMetricReadings")
 }
 
 fn architecture_distance_family_summaries_v1(
@@ -4992,6 +5328,10 @@ fn json_string_array_value(value: &Value, field: &str) -> Vec<String> {
         .collect()
 }
 
+fn unique_string_values(values: impl Iterator<Item = String>) -> Vec<String> {
+    values.collect::<BTreeSet<_>>().into_iter().collect()
+}
+
 fn evaluate_replacement_registry_v1(
     normalized: &NormalizedArchMapV1,
     registry: &LawEvaluatorRegistryV1,
@@ -7206,6 +7546,75 @@ mod tests {
                 .as_array()
                 .is_some_and(|items| items.is_empty())
         );
+    }
+
+    #[test]
+    fn representation_insights_do_not_treat_bounded_proxy_as_measured() {
+        let readings = primary_representation_metric_readings_v1(&json!({
+            "representationMetricReadings": [
+                {
+                    "readingId": "representation-metric:test",
+                    "representationFamily": "typedEvaluatorSupportGraph",
+                    "measurementStatus": "measured",
+                    "structuralDistance": {
+                        "status": "measured",
+                        "supportSize": 2,
+                        "evaluatorBasisRefs": ["basis:test"]
+                    },
+                    "analyticDistance": {
+                        "status": "boundedProxy",
+                        "reading": "proxy telemetry"
+                    },
+                    "lipschitzStability": {
+                        "status": "measured",
+                        "measuredValue": 1,
+                        "unit": "selected-L-upper-bound"
+                    },
+                    "coverageGapRefs": [],
+                    "typedEvaluatorResultRefs": ["/typedEvaluatorResults/0"],
+                    "normalizedAtomRefs": ["n:atom:test"],
+                    "normalizedMoleculeRefs": ["n:mol:test"]
+                },
+                {
+                    "readingId": "representation-metric:blocked",
+                    "representationFamily": "typedEvaluatorSupportGraph",
+                    "measurementStatus": "blockedByMissingTypedEvaluatorResults",
+                    "structuralDistance": {
+                        "status": "blocked"
+                    },
+                    "analyticDistance": {
+                        "status": "boundedProxy",
+                        "reading": "proxy telemetry"
+                    },
+                    "coverageGapRefs": [],
+                    "typedEvaluatorResultRefs": [],
+                    "normalizedAtomRefs": [],
+                    "normalizedMoleculeRefs": []
+                }
+            ]
+        }));
+        let insights = representation_primary_insights_v1(&readings);
+        assert_eq!(readings[0]["status"].as_str(), Some("partial"));
+        assert_eq!(
+            readings[0]["lipschitzUpperBound"]["status"],
+            "blockedByProxy"
+        );
+        assert_eq!(readings[0]["biLipschitzFaithfulness"]["status"], "blocked");
+        assert_eq!(readings[1]["status"].as_str(), Some("blocked"));
+        assert!(
+            readings[0]["coverageBlockerRefs"]
+                .as_array()
+                .is_some_and(|items| !items.is_empty())
+        );
+        assert!(
+            readings[0]["witnessCompletenessBlockerRefs"]
+                .as_array()
+                .is_some_and(|items| !items.is_empty())
+        );
+        assert_eq!(insights["status"].as_str(), Some("partial"));
+        assert_eq!(insights["measuredAnalyticDistanceCount"].as_u64(), Some(0));
+        assert_eq!(insights["boundedProxyAnalyticCount"].as_u64(), Some(2));
+        assert_eq!(insights["blockedFaithfulnessCount"].as_u64(), Some(2));
     }
 
     fn empty_typed_results_for_test() -> TypedEvaluatorResultsV1 {

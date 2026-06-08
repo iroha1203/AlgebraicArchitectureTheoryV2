@@ -173,6 +173,13 @@ with witness / molecule / source refs for selected support. Missing witness or
 coverage support must remain blocked and cannot be represented as zero
 curvature. Measured-zero curvature is selected-support zero, not a global
 lawfulness or flatness proof.
+Representation metric rows in `architecture-distance.json` must expose selected
+structural distance, analytic-distance state, Lipschitz upper-bound state,
+bi-Lipschitz faithfulness state, and `distanceDiagnosis.representationInsights`.
+Analytic `boundedProxy` telemetry must remain partial / blocked support and
+cannot be represented as measured analytic distance. Faithfulness must keep
+coverage and witness-completeness blockers visible until the selected scope
+supplies that evidence.
 The raw packet `part4DistanceFoundation.diagnosticScope`, compact
 `distanceDiagnosis`, Atom Viewer report pane, and LLM
 `distanceDiagnosisSummary` must agree on post-evaluator axis status. In
