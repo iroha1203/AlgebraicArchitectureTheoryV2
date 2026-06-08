@@ -1148,6 +1148,10 @@ pub fn build_architecture_distance_v1(
             "operationDistanceReadings": operation_distance_readings.len()
         }
     });
+    let atom_configuration_insights = atom_configuration_primary_insights(
+        &atom_distance_readings,
+        &configuration_distance_readings,
+    );
     let top_moved_axes = signature_distance_readings
         .iter()
         .filter(|reading| {
@@ -1202,6 +1206,9 @@ pub fn build_architecture_distance_v1(
                 "blockedOrUnmeasuredCount": blocked_or_unmeasured_count
             },
             "topMovedAxes": top_moved_axes,
+            "topMovedAtomPairs": atom_configuration_insights["topMovedAtomPairs"].clone(),
+            "topMovedMolecules": atom_configuration_insights["topMovedMolecules"].clone(),
+            "atomConfigurationInsights": atom_configuration_insights.clone(),
             "blockedResults": blocked_distance_results(
                 &atom_distance_readings,
                 &configuration_distance_readings,
@@ -1215,6 +1222,7 @@ pub fn build_architecture_distance_v1(
                 &operation_distance_readings
             )
         },
+        "atomConfigurationInsights": atom_configuration_insights,
         "atomDistanceReadings": atom_distance_readings,
         "configurationDistanceReadings": configuration_distance_readings,
         "signatureDistanceReadings": signature_distance_readings,
@@ -5541,27 +5549,197 @@ fn architecture_atom_distance_readings(
                     ));
                     continue;
                 };
-                let components = atom_distance_components(left, right, profile);
-                let measured_value = components
+                let part4_definition_readings =
+                    atom_part4_definition_readings(left, right, molecule, profile);
+                let measured_value = part4_definition_readings
                     .iter()
-                    .filter_map(|component| component["value"].as_i64())
+                    .filter_map(|component| component["measuredValue"].as_i64())
                     .sum::<i64>();
+                let blocked_definition_refs = part4_definition_readings
+                    .iter()
+                    .filter(|component| component["status"] != "measured")
+                    .map(|component| component["definitionRef"].clone())
+                    .collect::<Vec<_>>();
+                let blocker_refs = part4_definition_readings
+                    .iter()
+                    .flat_map(|component| {
+                        component["blockerRefs"]
+                            .as_array()
+                            .into_iter()
+                            .flatten()
+                            .cloned()
+                    })
+                    .collect::<Vec<_>>();
+                let atom_reading_status = if blocked_definition_refs.is_empty() {
+                    "measured"
+                } else {
+                    "partial"
+                };
+                let atom_layout_distance = json!({
+                    "definitionRef": "definitions:2.5",
+                    "definitionName": "Atom Layout Distance",
+                    "status": atom_reading_status,
+                    "measuredValue": if atom_reading_status == "measured" {
+                        json!(measured_value)
+                    } else {
+                        Value::Null
+                    },
+                    "unit": "architecture-distance-point",
+                    "componentRefs": part4_definition_readings
+                        .iter()
+                        .filter_map(|component| component["definitionRef"].as_str())
+                        .collect::<Vec<_>>(),
+                    "blockedDefinitionRefs": blocked_definition_refs,
+                    "blockerRefs": blocker_refs,
+                    "evaluatorBasisRefs": [
+                        "normalizedAtom.atomKind",
+                        "normalizedAtom.predicate",
+                        "normalizedAtom.valenceTemplateId",
+                        "normalizedAtom.moleculeMemberships"
+                    ],
+                    "reading": "Atom layout distance composes measured Fiber, Carrier, Valence, and Semantic Anchor distance rows for this explicit atom pair"
+                });
                 readings.push(json!({
                     "readingId": format!("atom-distance:{}:{}", stable_ref(left_id), stable_ref(right_id)),
                     "distanceFamily": "atomGeometry",
-                    "status": "measured",
-                    "measuredValue": measured_value,
+                    "status": atom_reading_status,
+                    "measuredValue": if atom_reading_status == "measured" {
+                        json!(measured_value)
+                    } else {
+                        Value::Null
+                    },
                     "unit": "architecture-distance-point",
                     "sourceAtomRef": left_id,
                     "targetAtomRef": right_id,
                     "moleculeRef": molecule.normalized_molecule_id,
-                    "components": components,
+                    "blockerReason": if atom_reading_status == "measured" {
+                        Value::Null
+                    } else {
+                        json!("one or more atom geometry definition rows are blocked")
+                    },
+                    "blockerRefs": atom_layout_distance["blockerRefs"],
+                    "blockedDefinitionRefs": atom_layout_distance["blockedDefinitionRefs"],
+                    "part4DefinitionReadings": part4_definition_readings,
+                    "atomLayoutDistance": atom_layout_distance,
+                    "components": atom_distance_components(left, right, profile),
                     "detailRefs": [left_id, right_id, &molecule.normalized_molecule_id]
                 }));
             }
         }
     }
     readings
+}
+
+fn atom_part4_definition_readings(
+    left: &NormalizedAtomV1,
+    right: &NormalizedAtomV1,
+    molecule: &NormalizedMoleculeV1,
+    profile: ArchitectureDistanceProfileV1,
+) -> Vec<Value> {
+    let left_carriers = binding_values(left);
+    let right_carriers = binding_values(right);
+    let left_memberships = left
+        .molecule_memberships
+        .iter()
+        .cloned()
+        .collect::<BTreeSet<_>>();
+    let right_memberships = right
+        .molecule_memberships
+        .iter()
+        .cloned()
+        .collect::<BTreeSet<_>>();
+    let membership_delta = left_memberships
+        .symmetric_difference(&right_memberships)
+        .count() as i64;
+    let valence_template_delta = if left.valence_template_id == right.valence_template_id {
+        0
+    } else {
+        profile.axis_weight
+    };
+    let valence_value = valence_template_delta + membership_delta * profile.axis_weight;
+    let semantic_anchor_status = if left_carriers.is_empty() || right_carriers.is_empty() {
+        "blocked"
+    } else {
+        "measured"
+    };
+    let semantic_anchor_value = if semantic_anchor_status == "measured" {
+        binding_distance(left, right) * profile.predicate_binding_weight
+    } else {
+        0
+    };
+    vec![
+        json!({
+            "definitionRef": "definitions:2.1",
+            "definitionName": "Fiber Distance",
+            "componentKind": "fiber",
+            "status": "measured",
+            "measuredValue": if left.atom_kind == right.atom_kind { 0 } else { profile.atom_kind_weight },
+            "unit": "architecture-distance-point",
+            "leftFiber": {
+                "base": left.atom_kind,
+                "payload": left.predicate.constructor
+            },
+            "rightFiber": {
+                "base": right.atom_kind,
+                "payload": right.predicate.constructor
+            },
+            "evaluatorBasisRefs": ["normalizedAtom.atomKind", "normalizedAtom.predicate.constructor"],
+            "sourceRefs": [left.normalized_atom_id.clone(), right.normalized_atom_id.clone()]
+        }),
+        json!({
+            "definitionRef": "definitions:2.2",
+            "definitionName": "Carrier Distance",
+            "componentKind": "carrier",
+            "status": "measured",
+            "measuredValue": carrier_distance(left, right) * profile.predicate_binding_weight,
+            "unit": "architecture-distance-point",
+            "leftCarrierRefs": left_carriers,
+            "rightCarrierRefs": right_carriers,
+            "evaluatorBasisRefs": ["normalizedAtom.predicate.bindings"],
+            "sourceRefs": [left.normalized_atom_id.clone(), right.normalized_atom_id.clone()]
+        }),
+        json!({
+            "definitionRef": "definitions:2.3",
+            "definitionName": "Valence Distance",
+            "componentKind": "valence",
+            "status": "measured",
+            "measuredValue": valence_value,
+            "unit": "architecture-distance-point",
+            "leftValenceTemplateRef": left.valence_template_id,
+            "rightValenceTemplateRef": right.valence_template_id,
+            "sharedMoleculeRef": molecule.normalized_molecule_id,
+            "leftMoleculeMembershipRefs": left.molecule_memberships,
+            "rightMoleculeMembershipRefs": right.molecule_memberships,
+            "evaluatorBasisRefs": ["normalizedAtom.valenceTemplateId", "normalizedAtom.moleculeMemberships"],
+            "sourceRefs": [left.normalized_atom_id.clone(), right.normalized_atom_id.clone(), molecule.normalized_molecule_id.clone()]
+        }),
+        json!({
+            "definitionRef": "definitions:2.4",
+            "definitionName": "Semantic Anchor Distance",
+            "componentKind": "semanticAnchor",
+            "status": semantic_anchor_status,
+            "measuredValue": if semantic_anchor_status == "measured" {
+                json!(semantic_anchor_value)
+            } else {
+                Value::Null
+            },
+            "unit": "architecture-distance-point",
+            "leftSemanticAnchorRefs": binding_values(left),
+            "rightSemanticAnchorRefs": binding_values(right),
+            "blockerRefs": if semantic_anchor_status == "blocked" {
+                vec![format!(
+                    "missingSemanticAnchor:{}:{}",
+                    stable_ref(&left.normalized_atom_id),
+                    stable_ref(&right.normalized_atom_id)
+                )]
+            } else {
+                Vec::new()
+            },
+            "evaluatorBasisRefs": ["normalizedAtom.predicate.bindings"],
+            "sourceRefs": [left.normalized_atom_id.clone(), right.normalized_atom_id.clone()],
+            "evidenceBoundary": "missing semantic anchor blocks this definition row instead of becoming measured zero"
+        }),
+    ]
 }
 
 fn atom_distance_components(
@@ -5617,19 +5795,31 @@ fn binding_distance(left: &NormalizedAtomV1, right: &NormalizedAtomV1) -> i64 {
     left_values.symmetric_difference(&right_values).count() as i64
 }
 
+fn carrier_distance(left: &NormalizedAtomV1, right: &NormalizedAtomV1) -> i64 {
+    binding_distance(left, right)
+}
+
 fn architecture_configuration_distance_readings(
     normalized: &NormalizedArchMapV1,
     profile: ArchitectureDistanceProfileV1,
 ) -> Vec<Value> {
-    normalized
+    let atoms_by_id = normalized
+        .atoms
+        .iter()
+        .map(|atom| (atom.normalized_atom_id.as_str(), atom))
+        .collect::<BTreeMap<_, _>>();
+    let mut readings = normalized
         .molecules
         .iter()
-        .map(|molecule| configuration_distance_reading(molecule, profile))
-        .collect()
+        .map(|molecule| configuration_distance_reading(molecule, &atoms_by_id, profile))
+        .collect::<Vec<_>>();
+    add_molecule_contribution_rates(&mut readings);
+    readings
 }
 
 fn configuration_distance_reading(
     molecule: &NormalizedMoleculeV1,
+    atoms_by_id: &BTreeMap<&str, &NormalizedAtomV1>,
     profile: ArchitectureDistanceProfileV1,
 ) -> Value {
     if molecule.generated_molecule_candidate_status != "generated" {
@@ -5643,22 +5833,328 @@ fn configuration_distance_reading(
             vec![molecule.normalized_molecule_id.clone()],
         );
     }
-    let measured_value =
-        molecule.atom_ids.len().saturating_sub(1) as i64 * profile.configuration_atom_weight;
+    if molecule.atom_ids.len() < 2 {
+        return blocked_distance_reading(
+            "configurationDistance",
+            &format!(
+                "configuration-distance:{}",
+                stable_ref(&molecule.normalized_molecule_id)
+            ),
+            "configuration requires at least two distinct atom refs for indexed distance",
+            vec![molecule.normalized_molecule_id.clone()],
+        );
+    }
+    for atom_id in &molecule.atom_ids {
+        if !atoms_by_id.contains_key(atom_id.as_str()) {
+            return blocked_distance_reading(
+                "configurationDistance",
+                &format!(
+                    "configuration-distance:{}",
+                    stable_ref(&molecule.normalized_molecule_id)
+                ),
+                "configuration atom ref is missing from normalized ArchMap",
+                vec![molecule.normalized_molecule_id.clone(), atom_id.clone()],
+            );
+        }
+    }
+    let hyperedge_ref = format!(
+        "configuration-hyperedge:{}",
+        stable_ref(&molecule.normalized_molecule_id)
+    );
+    let hypergraph_ref = format!(
+        "configuration-hypergraph:{}",
+        stable_ref(&molecule.normalized_molecule_id)
+    );
+    let selected_pair_distances = configuration_selected_pair_distances(
+        molecule,
+        atoms_by_id,
+        profile,
+        &hyperedge_ref,
+        &hypergraph_ref,
+    );
+    let indexed_total = selected_pair_distances
+        .iter()
+        .filter_map(|pair| pair["configurationIndexedDistance"]["measuredValue"].as_i64())
+        .sum::<i64>();
+    let context_total = selected_pair_distances
+        .iter()
+        .filter_map(|pair| pair["contextDistance"]["measuredValue"].as_i64())
+        .sum::<i64>();
+    let configuration_indexed_distance = json!({
+        "definitionRef": "definitions:3.1",
+        "definitionName": "Configuration-Indexed Distance",
+        "status": "measured",
+        "measuredValue": indexed_total,
+        "unit": "configuration-hop",
+        "selectedPairCount": selected_pair_distances.len(),
+        "selectedPairRefs": selected_pair_distances
+            .iter()
+            .map(|pair| pair["pairRef"].clone())
+            .collect::<Vec<_>>(),
+        "typedHypergraphRefs": [hypergraph_ref.clone()],
+        "evaluatorBasisRefs": ["normalizedMolecule.atomIds", "explicitMoleculeMembership"],
+        "reading": "configuration-indexed distance aggregates shortest paths for every explicit atom pair selected by molecule membership"
+    });
+    let context_distance = json!({
+        "definitionRef": "definitions:3.2",
+        "definitionName": "Context Distance",
+        "status": "measured",
+        "measuredValue": context_total,
+        "unit": "configuration-context-gap",
+        "selectedPairCount": selected_pair_distances.len(),
+        "selectedPairRefs": selected_pair_distances
+            .iter()
+            .map(|pair| pair["pairRef"].clone())
+            .collect::<Vec<_>>(),
+        "evaluatorBasisRefs": ["normalizedAtom.moleculeMemberships"],
+        "reading": "context distance aggregates explicit molecule membership overlap for every selected atom pair"
+    });
+    let measured_value = indexed_total + context_total;
+    let configuration_distance_bundle = json!({
+        "status": "measured",
+        "measuredValue": measured_value,
+        "unit": "architecture-distance-point",
+        "componentRefs": [
+            "configurationIndexedDistance",
+            "contextDistance"
+        ],
+        "blockerRefs": [],
+        "evaluatorBasisRefs": [
+            "normalizedMolecule.atomIds",
+            "normalizedAtom.moleculeMemberships"
+        ],
+        "reading": "configuration bundle combines typed hypergraph shortest path and molecule context overlap"
+    });
     json!({
         "readingId": format!("configuration-distance:{}", stable_ref(&molecule.normalized_molecule_id)),
-        "distanceFamily": "configuration",
+        "distanceFamily": "configurationGeometry",
         "status": "measured",
         "measuredValue": measured_value,
         "unit": "architecture-distance-point",
         "moleculeRef": molecule.normalized_molecule_id,
         "atomCount": molecule.atom_ids.len(),
+        "selectedPairCount": selected_pair_distances.len(),
         "weight": profile.configuration_atom_weight,
-        "basis": "configuration size above single atom baseline",
+        "basis": "all explicit atom-pair shortest paths plus molecule context overlap",
+        "typedHypergraph": {
+            "configurationRef": molecule.normalized_molecule_id,
+            "nodeRefs": molecule.atom_ids,
+            "hyperedgeRefs": [hyperedge_ref],
+            "hyperedges": [{
+                "hyperedgeKind": "explicitMoleculeMembership",
+                "atomRefs": molecule.atom_ids,
+                "sourceMoleculeRef": molecule.normalized_molecule_id
+            }]
+        },
+        "selectedPairDistances": selected_pair_distances,
+        "configurationIndexedDistance": configuration_indexed_distance,
+        "contextDistance": context_distance,
+        "configurationDistanceBundle": configuration_distance_bundle,
+        "sourceRefs": std::iter::once(molecule.source_molecule_id.clone())
+            .chain(molecule.atom_ids.iter().cloned())
+            .collect::<Vec<_>>(),
         "detailRefs": std::iter::once(molecule.normalized_molecule_id.clone())
             .chain(molecule.atom_ids.iter().cloned())
             .collect::<Vec<_>>()
     })
+}
+
+fn add_molecule_contribution_rates(readings: &mut [Value]) {
+    let total = readings
+        .iter()
+        .filter_map(|reading| reading["measuredValue"].as_i64())
+        .sum::<i64>();
+    for reading in readings {
+        let value = reading["measuredValue"].as_i64().unwrap_or(0);
+        reading["moleculeContributionRate"] = if total > 0 {
+            json!({
+                "numerator": value,
+                "denominator": total,
+                "ratio": value as f64 / total as f64
+            })
+        } else {
+            Value::Null
+        };
+    }
+}
+
+fn configuration_selected_pair_distances(
+    molecule: &NormalizedMoleculeV1,
+    atoms_by_id: &BTreeMap<&str, &NormalizedAtomV1>,
+    profile: ArchitectureDistanceProfileV1,
+    hyperedge_ref: &str,
+    hypergraph_ref: &str,
+) -> Vec<Value> {
+    let mut pairs = Vec::new();
+    for left_index in 0..molecule.atom_ids.len() {
+        for right_index in (left_index + 1)..molecule.atom_ids.len() {
+            let left_ref = &molecule.atom_ids[left_index];
+            let right_ref = &molecule.atom_ids[right_index];
+            let Some(left_atom) = atoms_by_id.get(left_ref.as_str()) else {
+                continue;
+            };
+            let Some(right_atom) = atoms_by_id.get(right_ref.as_str()) else {
+                continue;
+            };
+            let left_memberships = left_atom
+                .molecule_memberships
+                .iter()
+                .cloned()
+                .collect::<BTreeSet<_>>();
+            let right_memberships = right_atom
+                .molecule_memberships
+                .iter()
+                .cloned()
+                .collect::<BTreeSet<_>>();
+            let shared_contexts = left_memberships
+                .intersection(&right_memberships)
+                .cloned()
+                .collect::<Vec<_>>();
+            let union_contexts = left_memberships
+                .union(&right_memberships)
+                .cloned()
+                .collect::<Vec<_>>();
+            let context_gap = union_contexts.len().saturating_sub(shared_contexts.len()) as i64;
+            pairs.push(json!({
+                "pairRef": format!(
+                    "configuration-pair:{}:{}",
+                    stable_ref(left_ref),
+                    stable_ref(right_ref)
+                ),
+                "sourceAtomRef": left_ref,
+                "targetAtomRef": right_ref,
+                "configurationIndexedDistance": {
+                    "status": "measured",
+                    "measuredValue": profile.configuration_atom_weight,
+                    "unit": "configuration-hop",
+                    "shortestPathAtomRefs": [left_ref, right_ref],
+                    "shortestPathHyperedgeRefs": [hyperedge_ref],
+                    "typedHypergraphRefs": [hypergraph_ref],
+                    "evaluatorBasisRefs": ["normalizedMolecule.atomIds", "explicitMoleculeMembership"]
+                },
+                "contextDistance": {
+                    "status": "measured",
+                    "measuredValue": context_gap * profile.configuration_atom_weight,
+                    "unit": "configuration-context-gap",
+                    "sourceAtomContextRefs": left_atom.molecule_memberships,
+                    "targetAtomContextRefs": right_atom.molecule_memberships,
+                    "sharedContextRefs": shared_contexts,
+                    "contextUnionRefs": union_contexts,
+                    "evaluatorBasisRefs": ["normalizedAtom.moleculeMemberships"]
+                },
+                "sourceRefs": [
+                    molecule.normalized_molecule_id.clone(),
+                    left_ref.clone(),
+                    right_ref.clone()
+                ]
+            }));
+        }
+    }
+    pairs
+}
+
+fn atom_configuration_primary_insights(
+    atom_distance_readings: &[Value],
+    configuration_distance_readings: &[Value],
+) -> Value {
+    let mut atom_pairs = atom_distance_readings
+        .iter()
+        .filter(|reading| reading["status"] == "measured")
+        .filter_map(|reading| {
+            let measured_value = reading["measuredValue"].as_i64()?;
+            Some(json!({
+                "readingRef": reading["readingId"],
+                "measuredValue": measured_value,
+                "sourceAtomRef": reading["sourceAtomRef"],
+                "targetAtomRef": reading["targetAtomRef"],
+                "moleculeRef": reading["moleculeRef"],
+                "dominantDefinitionRows": top_definition_rows(reading, "part4DefinitionReadings"),
+                "atomLayoutDistance": reading["atomLayoutDistance"]
+            }))
+        })
+        .collect::<Vec<_>>();
+    atom_pairs.sort_by(|left, right| {
+        right["measuredValue"]
+            .as_i64()
+            .cmp(&left["measuredValue"].as_i64())
+    });
+    atom_pairs.truncate(5);
+
+    let mut molecules = configuration_distance_readings
+        .iter()
+        .filter(|reading| reading["status"] == "measured")
+        .filter_map(|reading| {
+            let measured_value = reading["measuredValue"].as_i64()?;
+            Some(json!({
+                "readingRef": reading["readingId"],
+                "moleculeRef": reading["moleculeRef"],
+                "measuredValue": measured_value,
+                "selectedPairCount": reading["selectedPairCount"],
+                "topSelectedPairDistances": top_configuration_pair_rows(reading),
+                "moleculeContributionRate": reading["moleculeContributionRate"],
+                "configurationIndexedDistance": reading["configurationIndexedDistance"],
+                "contextDistance": reading["contextDistance"],
+                "typedHypergraphRef": reading["configurationIndexedDistance"]["typedHypergraphRefs"][0],
+                "sourceRefs": reading["sourceRefs"],
+                "detailRefs": reading["detailRefs"]
+            }))
+        })
+        .collect::<Vec<_>>();
+    molecules.sort_by(|left, right| {
+        right["measuredValue"]
+            .as_i64()
+            .cmp(&left["measuredValue"].as_i64())
+    });
+    molecules.truncate(5);
+
+    json!({
+        "topMovedAtomPairs": atom_pairs,
+        "topMovedMolecules": molecules,
+        "reading": "atom/configuration insights use canonical definition rows, typed hypergraph shortest paths, and explicit molecule context overlap"
+    })
+}
+
+fn top_configuration_pair_rows(reading: &Value) -> Vec<Value> {
+    let mut rows = reading["selectedPairDistances"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .cloned()
+        .collect::<Vec<_>>();
+    rows.sort_by(|left, right| {
+        let right_value = right["configurationIndexedDistance"]["measuredValue"]
+            .as_i64()
+            .unwrap_or(0)
+            + right["contextDistance"]["measuredValue"]
+                .as_i64()
+                .unwrap_or(0);
+        let left_value = left["configurationIndexedDistance"]["measuredValue"]
+            .as_i64()
+            .unwrap_or(0)
+            + left["contextDistance"]["measuredValue"]
+                .as_i64()
+                .unwrap_or(0);
+        right_value.cmp(&left_value)
+    });
+    rows.truncate(3);
+    rows
+}
+
+fn top_definition_rows(reading: &Value, field: &str) -> Vec<Value> {
+    let mut rows = reading[field]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .filter(|row| row["status"] == "measured")
+        .cloned()
+        .collect::<Vec<_>>();
+    rows.sort_by(|left, right| {
+        right["measuredValue"]
+            .as_i64()
+            .cmp(&left["measuredValue"].as_i64())
+    });
+    rows.truncate(3);
+    rows
 }
 
 fn architecture_signature_distance_readings(
@@ -6049,5 +6545,156 @@ mod tests {
             !architecture_distance_bundle_matches_packet(&drifted_status),
             "family summary status drift must fail canonical bundle validation"
         );
+    }
+
+    #[test]
+    fn atom_semantic_anchor_distance_blocks_missing_anchor_instead_of_zero() {
+        let left = NormalizedAtomV1 {
+            source_atom_id: "atom:left".to_string(),
+            normalized_atom_id: "n:atom:left".to_string(),
+            atom_kind: "semantic".to_string(),
+            axis: "semantic".to_string(),
+            predicate: crate::NormalizedAtomPredicateV1 {
+                constructor: "semantic".to_string(),
+                normalized_name: "semantic()".to_string(),
+                bindings: Vec::new(),
+            },
+            shape_coordinate_status: "resolved".to_string(),
+            valence_template_id: "valence:semantic@1".to_string(),
+            molecule_memberships: vec!["mol:test".to_string()],
+            normalization_status: "normalized".to_string(),
+            normalization_blocker_reason: None,
+        };
+        let right = NormalizedAtomV1 {
+            source_atom_id: "atom:right".to_string(),
+            normalized_atom_id: "n:atom:right".to_string(),
+            atom_kind: "semantic".to_string(),
+            axis: "semantic".to_string(),
+            predicate: crate::NormalizedAtomPredicateV1 {
+                constructor: "semantic".to_string(),
+                normalized_name: "semantic(order)".to_string(),
+                bindings: vec![crate::NormalizedAtomBindingV1 {
+                    role: "anchor".to_string(),
+                    value: "order".to_string(),
+                }],
+            },
+            shape_coordinate_status: "resolved".to_string(),
+            valence_template_id: "valence:semantic@1".to_string(),
+            molecule_memberships: vec!["mol:test".to_string()],
+            normalization_status: "normalized".to_string(),
+            normalization_blocker_reason: None,
+        };
+        let molecule = NormalizedMoleculeV1 {
+            source_molecule_id: "mol:test".to_string(),
+            normalized_molecule_id: "n:mol:test".to_string(),
+            atom_ids: vec!["n:atom:left".to_string(), "n:atom:right".to_string()],
+            generated_molecule_candidate_status: "generated".to_string(),
+            required_port_status: "resolvedFromExplicitMembership".to_string(),
+            composition_status: "compatibleCandidate".to_string(),
+            normalization_blocker_reason: None,
+        };
+        let profile = architecture_distance_profile_v1("distance-profile:architecture-default@1")
+            .expect("default profile exists");
+
+        let readings = atom_part4_definition_readings(&left, &right, &molecule, profile);
+        let semantic_anchor = readings
+            .iter()
+            .find(|reading| reading["componentKind"] == "semanticAnchor")
+            .expect("semantic anchor row is emitted");
+        assert_eq!(semantic_anchor["status"].as_str(), Some("blocked"));
+        assert!(
+            semantic_anchor["measuredValue"].is_null(),
+            "missing semantic anchor must not become measured zero"
+        );
+        assert!(
+            semantic_anchor["blockerRefs"]
+                .as_array()
+                .is_some_and(|refs| !refs.is_empty()),
+            "missing semantic anchor must carry a blocker ref"
+        );
+        let normalized = NormalizedArchMapV1 {
+            schema: "normalized-archmap/v1".to_string(),
+            normalizer_id: "test-normalizer".to_string(),
+            source_archmap_ref: "archmap.json".to_string(),
+            source_archmap_id: "archmap:test".to_string(),
+            atoms: vec![left, right],
+            molecules: vec![molecule],
+            summary: NormalizedArchMapSummaryV1 {
+                atom_count: 2,
+                normalized_atom_count: 2,
+                molecule_count: 1,
+                generated_molecule_candidate_count: 1,
+                blocked_molecule_candidate_count: 0,
+            },
+            non_conclusions: Vec::new(),
+        };
+        let policy = LawPolicyDocumentV1 {
+            schema: "law-policy/v1".to_string(),
+            id: "policy:test".to_string(),
+            distance_profile_ref: Some("distance-profile:architecture-default@1".to_string()),
+            policies: Vec::new(),
+        };
+        let typed_results = empty_typed_results_for_test();
+        let architecture_distance =
+            build_architecture_distance_v1(&normalized, &policy, &typed_results)
+                .expect("architecture distance builds");
+        assert_eq!(
+            architecture_distance["summary"]["blockedOrUnmeasuredCount"].as_u64(),
+            Some(1),
+            "row-level semantic anchor blockers must propagate to architecture distance summary"
+        );
+        assert_eq!(
+            architecture_distance["atomDistanceReadings"][0]["status"].as_str(),
+            Some("partial"),
+            "parent atom reading must become partial when a definition row is blocked"
+        );
+        assert!(
+            architecture_distance["distanceDiagnosis"]["blockedResults"]
+                .as_array()
+                .is_some_and(|blocked| blocked.iter().any(|result| result["readingId"]
+                    == architecture_distance["atomDistanceReadings"][0]["readingId"])),
+            "blockedResults must expose the parent atom reading blocker"
+        );
+    }
+
+    fn empty_typed_results_for_test() -> TypedEvaluatorResultsV1 {
+        TypedEvaluatorResultsV1 {
+            schema: TYPED_EVALUATOR_RESULTS_V1_SCHEMA.to_string(),
+            pipeline_id: PIPELINE_ID.to_string(),
+            normalized_archmap_ref: "normalized-archmap.json".to_string(),
+            law_policy_ref: "law-policy.json".to_string(),
+            replacement_registry_ref: REPLACEMENT_REGISTRY_REF.to_string(),
+            replacement_registry: Vec::new(),
+            results: Vec::new(),
+            replacement_evaluator_results: Vec::new(),
+            summary: TypedEvaluatorResultsSummaryV1 {
+                result_count: 0,
+                measured_pass_count: 0,
+                measured_violation_count: 0,
+                blocked_count: 0,
+                unknown_count: 0,
+                unmeasured_count: 0,
+            },
+            replacement_summary: TypedEvaluatorResultsSummaryV1 {
+                result_count: 0,
+                measured_pass_count: 0,
+                measured_violation_count: 0,
+                blocked_count: 0,
+                unknown_count: 0,
+                unmeasured_count: 0,
+            },
+            replacement_registry_resolution: ReplacementRegistryResolutionV1 {
+                schema: "archsig-replacement-registry-resolution/v1".to_string(),
+                registry_ref: REPLACEMENT_REGISTRY_REF.to_string(),
+                manifest_count: 0,
+                resolved_replacement_count: 0,
+                blocked_replacement_count: 0,
+                non_diagnostic_replacement_count: 0,
+                replaced_v0_fields: Vec::new(),
+                non_conclusions: Vec::new(),
+            },
+            positive_bounded_conclusions: Vec::new(),
+            non_conclusions: Vec::new(),
+        }
     }
 }
