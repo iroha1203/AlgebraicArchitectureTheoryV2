@@ -548,6 +548,29 @@ fn cli_analyze_v1_marks_incomplete_molecule_candidate_blocked() {
                 })),
         "blocked typed evaluator results must become coverage gaps, not measured zero spectrum"
     );
+    let architecture_distance = read_json(&out_dir.join("architecture-distance.json"));
+    assert!(
+        architecture_distance["distanceDiagnosis"]["curvatureInsights"]["blockedSupportCount"]
+            .as_u64()
+            == Some(6)
+            && architecture_distance["distanceDiagnosis"]["curvatureInsights"]
+                ["measuredZeroSupportCount"]
+                .as_u64()
+                == Some(0)
+            && architecture_distance["obstructionMeasureReadings"]
+                .as_array()
+                .is_some_and(|items| {
+                    items.len() == 6
+                        && items.iter().all(|reading| {
+                            reading["status"] == "blocked"
+                                && reading["obstructionMeasure"]["measuredValue"].is_null()
+                                && reading["coverageGapRefs"]
+                                    .as_array()
+                                    .is_some_and(|refs| !refs.is_empty())
+                        })
+                }),
+        "primary curvature insights must preserve blocked support as blocked, not measured zero"
+    );
 }
 
 #[test]
@@ -677,6 +700,28 @@ fn cli_analyze_v1_spectrum_detects_nonzero_curvature_from_typed_violation() {
                 })
             }),
         "priced measuredViolation operationGeometry must keep operation cost and selected-flat distance while blocking missing side-effect evidence"
+    );
+    assert!(
+        architecture_distance["distanceDiagnosis"]["curvatureInsights"]
+            ["measuredNonzeroSupportCount"]
+            .as_u64()
+            == Some(1)
+            && architecture_distance["distanceDiagnosis"]["curvatureInsights"]
+                ["topCurvatureSupports"]
+                .as_array()
+                .is_some_and(|items| {
+                    items.iter().any(|support| {
+                        support["law"] == "domain.no-direct-infra-dependency"
+                            && support["curvatureValue"]["status"] == "measuredNonzero"
+                            && support["witnessRefs"]
+                                .as_array()
+                                .is_some_and(|refs| !refs.is_empty())
+                            && support["sourceRefs"]
+                                .as_array()
+                                .is_some_and(|refs| !refs.is_empty())
+                    })
+                }),
+        "primary curvature insights must expose measured nonzero support with witness and source refs"
     );
     let llm_packet = read_json(&out_dir.join("llm-interpretation-packet.json"));
     assert_eq!(
@@ -2706,8 +2751,63 @@ fn practical_rust_service_example_runs_v1_analyze() {
                 .is_some_and(|items| !items.is_empty())
             && llm_packet["distanceDiagnosisSummary"]["operationInsights"]["topOperationCandidates"]
                 .as_array()
-                .is_some_and(|items| !items.is_empty()),
+            .is_some_and(|items| !items.is_empty()),
         "summary, viewer, and LLM packet must expose operation family insights"
+    );
+    assert!(
+        architecture_distance["obstructionMeasureReadings"]
+            .as_array()
+            .is_some_and(|items| {
+                items.len() == 6
+                    && items.iter().all(|reading| {
+                        reading["part4DefinitionRef"] == "definitions:6.1"
+                            && reading["status"] == "measured"
+                            && reading["obstructionMeasure"]["status"] == "measuredZero"
+                            && reading["supportRefs"]
+                                .as_array()
+                                .is_some_and(|refs| !refs.is_empty())
+                            && reading["witnessRefs"]
+                                .as_array()
+                                .is_some_and(|refs| !refs.is_empty())
+                            && reading["sourceRefs"]
+                                .as_array()
+                                .is_some_and(|refs| !refs.is_empty())
+                    })
+            })
+            && architecture_distance["curvatureSupportReadings"]
+                .as_array()
+                .is_some_and(|items| items.len() == 6)
+            && architecture_distance["curvatureTransferReadings"]
+                .as_array()
+                .is_some_and(|items| items.len() == 1)
+            && architecture_distance["curvatureMassReadings"]
+                .as_array()
+                .is_some_and(|items| items.len() == 1),
+        "primary architecture-distance artifact must expose obstruction measure, curvature support, transport, and mass rows"
+    );
+    assert!(
+        summary["distanceDiagnosis"]["curvatureInsights"]["status"] == "measured-zero"
+            && summary["distanceDiagnosis"]["curvatureInsights"]["measuredZeroSupportCount"]
+                == 6
+            && summary["distanceDiagnosis"]["curvatureInsights"]["blockedSupportCount"] == 0
+            && summary["distanceDiagnosis"]["curvatureInsights"]["curvatureTransport"]
+                ["spectralRadiusKind"]
+                == "measuredZeroWithinSelectedSupport"
+            && viewer["reportPane"]["distanceDiagnosis"]["curvatureInsights"]
+                ["topCurvatureSupports"]
+                .as_array()
+                .is_some_and(|items| !items.is_empty())
+            && llm_packet["distanceDiagnosisSummary"]["curvatureInsights"]
+                ["topCurvatureSupports"]
+                .as_array()
+                .is_some_and(|items| {
+                    items.iter().all(|support| {
+                        support["recommendedNextAction"]
+                            .as_str()
+                            .is_some_and(|action| action.contains("selected-support zero"))
+                    })
+                }),
+        "summary, viewer, and LLM packet must expose curvature zero/nonzero/blocked counts without turning zero curvature into global lawfulness"
     );
     assert_eq!(
         architecture_distance["profile"]["signatureViolationWeight"].as_i64(),
@@ -6393,6 +6493,17 @@ fn cli_schema_catalog_is_primary_archsig_surface_only() {
             "unexpected artifact role for {artifact_id}"
         );
     }
+    assert!(
+        artifacts.iter().any(|entry| {
+            entry["artifactId"] == "architecture-distance-v1"
+                && entry["compatibilityBoundary"]["fieldMappingPolicy"]
+                    .as_str()
+                    .is_some_and(|description| {
+                        description.contains("primary curvature geometry readings")
+                    })
+        }),
+        "schema catalog must describe architecture-distance-v1 curvature primary surface"
+    );
 }
 
 #[test]

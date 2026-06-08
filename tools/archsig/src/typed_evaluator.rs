@@ -336,9 +336,11 @@ fn typed_part4_distance_coverage_ledger_v1(
                 "/curvatureMassReadings",
             ]),
             vec![
-                "archsig-analysis-packet.json#/curvatureSupportReadings",
-                "archsig-analysis-packet.json#/curvatureTransferReadings",
-                "archsig-analysis-packet.json#/curvatureMassReadings",
+                "architecture-distance.json#/obstructionMeasureReadings",
+                "architecture-distance.json#/curvatureSupportReadings",
+                "architecture-distance.json#/curvatureTransferReadings",
+                "architecture-distance.json#/curvatureMassReadings",
+                "archsig-analysis-summary.json#/distanceDiagnosis/curvatureInsights",
             ],
             packet_array_len(spectrum, "curvatureMassReadings"),
         ),
@@ -535,10 +537,21 @@ pub fn enrich_architecture_distance_with_part4_bundle_v1(
     );
     let measurement_state_summary =
         architecture_distance_measurement_state_summary(&family_summaries);
+    let obstruction_measure_readings = primary_obstruction_measure_readings_v1(packet);
+    let curvature_support_readings = packet_array_clone(packet, "curvatureSupportReadings");
+    let curvature_transfer_readings = packet_array_clone(packet, "curvatureTransferReadings");
+    let curvature_mass_readings = packet_array_clone(packet, "curvatureMassReadings");
+    let curvature_insights = curvature_primary_insights_v1(
+        &obstruction_measure_readings,
+        &curvature_support_readings,
+        &curvature_transfer_readings,
+        &curvature_mass_readings,
+    );
     let mut primary_insights_refs = vec![
         "architecture-distance.json#/familySummaries",
         "architecture-distance.json#/measurementStateSummary",
         "architecture-distance.json#/distanceDiagnosis/familySummaries",
+        "architecture-distance.json#/distanceDiagnosis/curvatureInsights",
         "archsig-analysis-summary.json#/distanceDiagnosis",
         "archsig-atom-viewer-data.json#/reportPane/distanceDiagnosis",
     ];
@@ -574,6 +587,11 @@ pub fn enrich_architecture_distance_with_part4_bundle_v1(
 
     enriched["familySummaries"] = Value::Array(family_summaries.clone());
     enriched["measurementStateSummary"] = measurement_state_summary.clone();
+    enriched["obstructionMeasureReadings"] = obstruction_measure_readings.clone();
+    enriched["curvatureSupportReadings"] = curvature_support_readings.clone();
+    enriched["curvatureTransferReadings"] = curvature_transfer_readings.clone();
+    enriched["curvatureMassReadings"] = curvature_mass_readings.clone();
+    enriched["curvatureInsights"] = curvature_insights.clone();
     enriched["primaryInsightsRefs"] = primary_insights_refs.clone();
     enriched["optionalRawArtifactRefs"] = optional_raw_artifact_refs.clone();
     enriched["summary"]["status"] = json!(bundle_status);
@@ -594,10 +612,203 @@ pub fn enrich_architecture_distance_with_part4_bundle_v1(
     enriched["distanceDiagnosis"]["measurementStateSummary"] = measurement_state_summary;
     enriched["distanceDiagnosis"]["primaryInsightsRefs"] = primary_insights_refs;
     enriched["distanceDiagnosis"]["optionalRawArtifactRefs"] = optional_raw_artifact_refs;
+    enriched["distanceDiagnosis"]["curvatureInsights"] = curvature_insights;
     enriched["distanceDiagnosis"]["distanceValue"]["status"] =
         enriched["summary"]["status"].clone();
     enriched["distanceDiagnosis"]["distanceValue"]["measuredTotalScope"] = measured_total_scope;
     enriched
+}
+
+fn packet_array_clone(packet: &Value, field: &str) -> Value {
+    Value::Array(
+        packet[field]
+            .as_array()
+            .into_iter()
+            .flatten()
+            .cloned()
+            .collect(),
+    )
+}
+
+fn primary_obstruction_measure_readings_v1(packet: &Value) -> Value {
+    Value::Array(
+        packet["curvatureSupportReadings"]
+            .as_array()
+            .into_iter()
+            .flatten()
+            .enumerate()
+            .map(|(index, support)| {
+                let curvature_status = support["curvatureValue"]["status"]
+                    .as_str()
+                    .unwrap_or("blockedByCoverageGap");
+                let status = if curvature_status == "blockedByCoverageGap" {
+                    "blocked"
+                } else {
+                    "measured"
+                };
+                json!({
+                    "readingId": format!(
+                        "obstruction-measure:{}",
+                        stable_ref(support["law"].as_str().unwrap_or("selected-law"))
+                    ),
+                    "distanceFamily": "curvatureGeometry",
+                    "part4DefinitionRef": "definitions:6.1",
+                    "definitionName": "Obstruction Measure",
+                    "status": status,
+                    "measurementStatus": support["measurementStatus"],
+                    "law": support["law"],
+                    "evaluator": support["evaluator"],
+                    "axisRef": support["axisRef"],
+                    "supportReadingRef": format!("/curvatureSupportReadings/{index}"),
+                    "primarySupportReadingRef": format!(
+                        "architecture-distance.json#/curvatureSupportReadings/{index}"
+                    ),
+                    "obstructionMeasure": {
+                        "status": support["curvatureValue"]["status"],
+                        "measuredValue": support["curvatureValue"]["value"],
+                        "unit": support["curvatureValue"]["unit"],
+                        "blockerRefs": support["coverageGapRefs"]
+                    },
+                    "supportRefs": support["supportRefs"],
+                    "witnessRefs": support["witnessRefs"],
+                    "moleculeRefs": support["moleculeRefs"],
+                    "sourceRefs": support["sourceRefs"],
+                    "coverageGapRefs": support["coverageGapRefs"],
+                    "basisRefs": support["basisRefs"],
+                    "registryBasisRefs": support["registryBasisRefs"],
+                    "readingBoundary": support["readingBoundary"],
+                    "evidenceBoundary": "obstruction measure is selected-support curvature evidence, not a global lawfulness proof",
+                    "nonConclusions": support["nonConclusions"]
+                })
+            })
+            .collect(),
+    )
+}
+
+fn curvature_primary_insights_v1(
+    obstruction_measure_readings: &Value,
+    curvature_support_readings: &Value,
+    curvature_transfer_readings: &Value,
+    curvature_mass_readings: &Value,
+) -> Value {
+    let supports = curvature_support_readings
+        .as_array()
+        .into_iter()
+        .flatten()
+        .collect::<Vec<_>>();
+    let measured_zero_support_count = supports
+        .iter()
+        .filter(|reading| reading["curvatureValue"]["status"] == "measuredZero")
+        .count();
+    let measured_nonzero_support_count = supports
+        .iter()
+        .filter(|reading| reading["curvatureValue"]["status"] == "measuredNonzero")
+        .count();
+    let blocked_support_count = supports
+        .iter()
+        .filter(|reading| reading["curvatureValue"]["status"] == "blockedByCoverageGap")
+        .count();
+    let status = if supports.is_empty() {
+        "no-selected-support"
+    } else if blocked_support_count > 0 {
+        "partial"
+    } else if measured_nonzero_support_count > 0 {
+        "measured-nonzero"
+    } else {
+        "measured-zero"
+    };
+    let mut top_supports = supports
+        .iter()
+        .enumerate()
+        .map(|(index, reading)| {
+            json!({
+                "supportReadingRef": format!("architecture-distance.json#/curvatureSupportReadings/{index}"),
+                "obstructionMeasureReadingRef": format!("architecture-distance.json#/obstructionMeasureReadings/{index}"),
+                "law": reading["law"],
+                "axisRef": reading["axisRef"],
+                "curvatureValue": reading["curvatureValue"],
+                "measurementStatus": reading["measurementStatus"],
+                "supportRefs": reading["supportRefs"],
+                "witnessRefs": reading["witnessRefs"],
+                "moleculeRefs": reading["moleculeRefs"],
+                "sourceRefs": reading["sourceRefs"],
+                "coverageGapRefs": reading["coverageGapRefs"],
+                "recommendedNextAction": if reading["curvatureValue"]["status"] == "measuredZero" {
+                    "treat as selected-support zero and keep coverage boundary visible"
+                } else if reading["curvatureValue"]["status"] == "measuredNonzero" {
+                    "review selected obstruction witness and affected source refs"
+                } else {
+                    "collect missing witness support before reading this axis as zero"
+                }
+            })
+        })
+        .collect::<Vec<_>>();
+    top_supports.sort_by_key(|reading| {
+        if reading["curvatureValue"]["status"] == "measuredNonzero" {
+            0
+        } else if reading["curvatureValue"]["status"] == "blockedByCoverageGap" {
+            1
+        } else {
+            2
+        }
+    });
+    top_supports.truncate(6);
+    let transfer = curvature_transfer_readings
+        .as_array()
+        .and_then(|items| items.first())
+        .cloned()
+        .unwrap_or(Value::Null);
+    let mass = curvature_mass_readings
+        .as_array()
+        .and_then(|items| items.first())
+        .cloned()
+        .unwrap_or(Value::Null);
+    json!({
+        "status": status,
+        "obstructionMeasureReadingCount": obstruction_measure_readings
+            .as_array()
+            .map(|items| items.len())
+            .unwrap_or_default(),
+        "curvatureSupportReadingCount": supports.len(),
+        "curvatureTransferReadingCount": curvature_transfer_readings
+            .as_array()
+            .map(|items| items.len())
+            .unwrap_or_default(),
+        "curvatureMassReadingCount": curvature_mass_readings
+            .as_array()
+            .map(|items| items.len())
+            .unwrap_or_default(),
+        "measuredZeroSupportCount": measured_zero_support_count,
+        "measuredNonzeroSupportCount": measured_nonzero_support_count,
+        "blockedSupportCount": blocked_support_count,
+        "curvatureMass": {
+            "readingRef": mass["curvatureMassReadingId"],
+            "measurementStatus": mass["measurementStatus"],
+            "measuredZeroSupportCount": mass["measuredZeroSupportCount"],
+            "measuredNonzeroSupportCount": mass["measuredNonzeroSupportCount"],
+            "blockedSupportCount": mass["blockedSupportCount"],
+            "supportReadingRefs": mass["supportReadingRefs"]
+        },
+        "curvatureTransport": {
+            "readingRef": transfer["readingId"],
+            "spectralRadiusKind": transfer["transferOperator"]["spectralRadiusKind"],
+            "transferEdgeCount": transfer["transferEdges"]
+                .as_array()
+                .map(|items| items.len())
+                .unwrap_or_default(),
+            "recurrentObstructionModeCount": transfer["recurrentObstructionModes"]
+                .as_array()
+                .map(|items| items.len())
+                .unwrap_or_default()
+        },
+        "topCurvatureSupports": top_supports,
+        "reading": "curvature insights expose selected obstruction support, zero/nonzero/blocked counts, and transport state without treating zero curvature as global lawfulness",
+        "nonConclusions": [
+            "Measured zero curvature is bounded to selected support rows.",
+            "Blocked support is not measured zero.",
+            "Curvature transport is current-state diagnostic structure, not future incident prediction."
+        ]
+    })
 }
 
 fn architecture_distance_family_summaries_v1(
@@ -6977,6 +7188,23 @@ mod tests {
         assert!(
             readings[0]["measuredValue"].is_null(),
             "missing operation cost must not fall back to a guessed measured value"
+        );
+    }
+
+    #[test]
+    fn curvature_insights_do_not_treat_empty_support_as_zero() {
+        let insights =
+            curvature_primary_insights_v1(&json!([]), &json!([]), &json!([]), &json!([]));
+        assert_eq!(
+            insights["status"].as_str(),
+            Some("no-selected-support"),
+            "empty curvature support is not selected-support zero"
+        );
+        assert_eq!(insights["measuredZeroSupportCount"].as_u64(), Some(0));
+        assert!(
+            insights["topCurvatureSupports"]
+                .as_array()
+                .is_some_and(|items| items.is_empty())
         );
     }
 
