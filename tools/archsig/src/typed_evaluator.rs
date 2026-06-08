@@ -356,8 +356,9 @@ fn typed_part4_distance_coverage_ledger_v1(
                 "/homotopyHolonomyReadings",
             ]),
             vec![
-                "archsig-analysis-packet.json#/homotopyDistanceReadings",
-                "archsig-analysis-packet.json#/architectureHomotopyReport",
+                "architecture-distance.json#/homotopyDistanceReadings",
+                "architecture-distance.json#/architectureHomotopyReport",
+                "archsig-analysis-summary.json#/distanceDiagnosis/homotopyInsights",
             ],
             packet_array_len(homotopy, "homotopyDistanceReadings"),
         ),
@@ -553,12 +554,17 @@ pub fn enrich_architecture_distance_with_part4_bundle_v1(
     let representation_metric_readings = primary_representation_metric_readings_v1(packet);
     let representation_insights =
         representation_primary_insights_v1(&representation_metric_readings);
+    let homotopy_distance_readings = primary_homotopy_distance_readings_v1(packet);
+    let architecture_homotopy_report = packet["architectureHomotopyReport"].clone();
+    let homotopy_insights =
+        homotopy_primary_insights_v1(&homotopy_distance_readings, &architecture_homotopy_report);
     let mut primary_insights_refs = vec![
         "architecture-distance.json#/familySummaries",
         "architecture-distance.json#/measurementStateSummary",
         "architecture-distance.json#/distanceDiagnosis/familySummaries",
         "architecture-distance.json#/distanceDiagnosis/curvatureInsights",
         "architecture-distance.json#/distanceDiagnosis/representationInsights",
+        "architecture-distance.json#/distanceDiagnosis/homotopyInsights",
         "archsig-analysis-summary.json#/distanceDiagnosis",
         "archsig-atom-viewer-data.json#/reportPane/distanceDiagnosis",
     ];
@@ -601,6 +607,9 @@ pub fn enrich_architecture_distance_with_part4_bundle_v1(
     enriched["curvatureInsights"] = curvature_insights.clone();
     enriched["representationMetricReadings"] = representation_metric_readings.clone();
     enriched["representationInsights"] = representation_insights.clone();
+    enriched["homotopyDistanceReadings"] = homotopy_distance_readings.clone();
+    enriched["architectureHomotopyReport"] = architecture_homotopy_report.clone();
+    enriched["homotopyInsights"] = homotopy_insights.clone();
     enriched["primaryInsightsRefs"] = primary_insights_refs.clone();
     enriched["optionalRawArtifactRefs"] = optional_raw_artifact_refs.clone();
     enriched["summary"]["status"] = json!(bundle_status);
@@ -623,6 +632,7 @@ pub fn enrich_architecture_distance_with_part4_bundle_v1(
     enriched["distanceDiagnosis"]["optionalRawArtifactRefs"] = optional_raw_artifact_refs;
     enriched["distanceDiagnosis"]["curvatureInsights"] = curvature_insights;
     enriched["distanceDiagnosis"]["representationInsights"] = representation_insights;
+    enriched["distanceDiagnosis"]["homotopyInsights"] = homotopy_insights;
     enriched["distanceDiagnosis"]["distanceValue"]["status"] =
         enriched["summary"]["status"].clone();
     enriched["distanceDiagnosis"]["distanceValue"]["measuredTotalScope"] = measured_total_scope;
@@ -1145,6 +1155,393 @@ fn representation_metric_family_status_v1(structural: &Value) -> String {
         return "partial".to_string();
     }
     typed_family_status_from_array(structural, "representationMetricReadings")
+}
+
+fn primary_homotopy_distance_readings_v1(packet: &Value) -> Value {
+    Value::Array(
+        packet["homotopyDistanceReadings"]
+            .as_array()
+            .into_iter()
+            .flatten()
+            .enumerate()
+            .map(|(index, reading)| {
+                let measurement_status = reading["measurementStatus"]
+                    .as_str()
+                    .unwrap_or("blocked");
+                let path_ref = reading["pathHomotopyDiagramRef"].as_str().unwrap_or("");
+                let diagram = packet.pointer(path_ref).unwrap_or(&Value::Null);
+                let loop_entry = homotopy_report_loop_entry(packet, index);
+                let missing_filler_evidence_ref = loop_entry["missingFillerEvidenceRef"]
+                    .as_str()
+                    .map(str::to_string);
+                let blocker_refs =
+                    homotopy_blocker_refs(reading, missing_filler_evidence_ref.as_deref());
+                let status = if homotopy_status_is_measured(measurement_status) {
+                    "measured"
+                } else {
+                    "blocked"
+                };
+                let homotopy_distance = homotopy_distance_value_component_v1(
+                    "definitions:7.1",
+                    "Homotopy Distance",
+                    "selected-homotopy-distance",
+                    status,
+                    &reading["homotopyDistance"],
+                    &blocker_refs,
+                );
+                let filling_cost = homotopy_distance_value_component_v1(
+                    "definitions:7.2",
+                    "Filling Cost",
+                    "selected-filling-cost",
+                    status,
+                    &reading["fillingCost"],
+                    &blocker_refs,
+                );
+                let observation_gap_lower_bound = json!({
+                    "part4DefinitionRef": "definitions:7.3",
+                    "definitionName": "Observation Gap Lower Bound",
+                    "status": "measured",
+                    "measuredValue": reading["observationGapLowerBound"],
+                    "unit": "selected-observation-gap-lower-bound",
+                    "blockerRefs": blocker_refs
+                });
+                let selected_dehn_area = homotopy_distance_value_component_v1(
+                    "definitions:7.4",
+                    "Architectural Dehn Function",
+                    "selected-Dehn-area",
+                    status,
+                    &reading["fillingCost"],
+                    &blocker_refs,
+                );
+                let source_refs = homotopy_source_refs(index, reading, diagram, &loop_entry);
+                let molecule_ref = reading["moleculeRef"]
+                    .as_str()
+                    .or_else(|| diagram["moleculeRef"].as_str())
+                    .unwrap_or("selected-molecule");
+
+                json!({
+                    "readingId": reading["homotopyDistanceReadingId"],
+                    "distanceFamily": "homotopyFillingGeometry",
+                    "status": status,
+                    "measurementStatus": measurement_status,
+                    "moleculeRef": molecule_ref,
+                    "moleculeRefs": [molecule_ref],
+                    "loopRef": loop_entry["loopId"],
+                    "primaryReadingRef": format!("architecture-distance.json#/homotopyDistanceReadings/{index}"),
+                    "rawPacketReadingRef": format!("packet:/homotopyDistanceReadings/{index}"),
+                    "pathHomotopyDiagramRef": reading["pathHomotopyDiagramRef"],
+                    "holonomyReadingRef": reading["holonomyReadingRef"],
+                    "architectureHomotopyLoopRef": homotopy_loop_ref_for_reading(packet, index),
+                    "missingFillerEvidenceRef": missing_filler_evidence_ref,
+                    "supportAtomRefs": diagram["supportAtomRefs"],
+                    "selectedAxes": diagram["selectedAxes"],
+                    "pathPairRefs": diagram["pathPairRefs"],
+                    "sourceRefs": source_refs,
+                    "coverageGapRefs": reading["coverageGapRefs"],
+                    "blockerRefs": blocker_refs,
+                    "homotopyDistance": homotopy_distance,
+                    "fillingCost": filling_cost,
+                    "observationGapLowerBound": observation_gap_lower_bound,
+                    "selectedDehnArea": selected_dehn_area,
+                    "part4DefinitionReadings": [
+                        {
+                            "componentKind": "homotopyDistance",
+                            "part4DefinitionRef": "definitions:7.1",
+                            "definitionName": "Homotopy Distance",
+                            "distanceValueRef": format!("architecture-distance.json#/homotopyDistanceReadings/{index}/homotopyDistance")
+                        },
+                        {
+                            "componentKind": "fillingCost",
+                            "part4DefinitionRef": "definitions:7.2",
+                            "definitionName": "Filling Cost",
+                            "distanceValueRef": format!("architecture-distance.json#/homotopyDistanceReadings/{index}/fillingCost")
+                        },
+                        {
+                            "componentKind": "observationGapLowerBound",
+                            "part4DefinitionRef": "definitions:7.3",
+                            "definitionName": "Observation Gap Lower Bound",
+                            "distanceValueRef": format!("architecture-distance.json#/homotopyDistanceReadings/{index}/observationGapLowerBound")
+                        },
+                        {
+                            "componentKind": "selectedDehnArea",
+                            "part4DefinitionRef": "definitions:7.4",
+                            "definitionName": "Architectural Dehn Function",
+                            "distanceValueRef": format!("architecture-distance.json#/homotopyDistanceReadings/{index}/selectedDehnArea")
+                        }
+                    ],
+                    "recommendedNextAction": homotopy_next_action(measurement_status),
+                    "evidenceBoundary": "homotopy filling geometry is selected explicit-molecule evidence; missing filler and selected-axis coverage gaps are blockers, not zero cost",
+                    "nonConclusions": [
+                        "Selected homotopy distance is not global path equivalence.",
+                        "Missing filler is not zero filling cost.",
+                        "Selected Dehn area is bounded to explicit molecule support."
+                    ]
+                })
+            })
+            .collect(),
+    )
+}
+
+fn homotopy_primary_insights_v1(
+    homotopy_distance_readings: &Value,
+    architecture_homotopy_report: &Value,
+) -> Value {
+    let readings = homotopy_distance_readings
+        .as_array()
+        .into_iter()
+        .flatten()
+        .collect::<Vec<_>>();
+    let measured_reading_count = readings
+        .iter()
+        .filter(|reading| reading["status"] == "measured")
+        .count();
+    let blocked_reading_count = readings
+        .iter()
+        .filter(|reading| reading["status"] == "blocked")
+        .count();
+    let blocked_filler_count = readings
+        .iter()
+        .filter(|reading| reading["measurementStatus"] == "blockedByMissingFiller")
+        .count();
+    let blocked_coverage_count = readings
+        .iter()
+        .filter(|reading| reading["measurementStatus"] == "blockedByCoverageGap")
+        .count();
+    let measured_zero_count = readings
+        .iter()
+        .filter(|reading| {
+            reading["status"] == "measured"
+                && reading["homotopyDistance"]["measuredValue"].as_i64() == Some(0)
+        })
+        .count();
+    let measured_nonzero_count = readings
+        .iter()
+        .filter(|reading| {
+            reading["status"] == "measured"
+                && reading["homotopyDistance"]["measuredValue"]
+                    .as_i64()
+                    .is_some_and(|value| value > 0)
+        })
+        .count();
+    let observation_gap_lower_bound_total = readings
+        .iter()
+        .filter_map(|reading| reading["observationGapLowerBound"]["measuredValue"].as_i64())
+        .sum::<i64>();
+    let status = if readings.is_empty() {
+        "no-selected-loop"
+    } else if blocked_reading_count > 0 {
+        "partial"
+    } else if measured_nonzero_count > 0 {
+        "measured-nonzero"
+    } else {
+        "measured-zero"
+    };
+    let top_blocked_readings = homotopy_blocked_insight_rows(
+        readings
+            .iter()
+            .copied()
+            .filter(|reading| reading["status"] == "blocked"),
+    );
+    let top_missing_filler_blockers = homotopy_blocked_insight_rows(
+        readings
+            .iter()
+            .copied()
+            .filter(|reading| reading["measurementStatus"] == "blockedByMissingFiller"),
+    );
+    let top_coverage_gap_blockers = homotopy_blocked_insight_rows(
+        readings
+            .iter()
+            .copied()
+            .filter(|reading| reading["measurementStatus"] == "blockedByCoverageGap"),
+    );
+    let top_measured_loops = readings
+        .iter()
+        .filter(|reading| reading["status"] == "measured")
+        .take(6)
+        .map(|reading| {
+            json!({
+                "readingRef": reading["primaryReadingRef"],
+                "moleculeRef": reading["moleculeRef"],
+                "loopRef": reading["loopRef"],
+                "homotopyDistance": reading["homotopyDistance"],
+                "fillingCost": reading["fillingCost"],
+                "selectedDehnArea": reading["selectedDehnArea"],
+                "sourceRefs": reading["sourceRefs"],
+                "recommendedNextAction": reading["recommendedNextAction"]
+            })
+        })
+        .collect::<Vec<_>>();
+
+    json!({
+        "status": status,
+        "homotopyDistanceReadingCount": readings.len(),
+        "measuredReadingCount": measured_reading_count,
+        "measuredZeroLoopCount": measured_zero_count,
+        "measuredNonzeroLoopCount": measured_nonzero_count,
+        "blockedReadingCount": blocked_reading_count,
+        "blockedFillerCount": blocked_filler_count,
+        "blockedCoverageCount": blocked_coverage_count,
+        "observationGapLowerBoundTotal": observation_gap_lower_bound_total,
+        "reportStatus": architecture_homotopy_report["status"],
+        "reportMeasurementStatus": architecture_homotopy_report["measurementStatus"],
+        "filledLoopCount": architecture_homotopy_report["homotopyComplexSummary"]["filledLoopCount"],
+        "unfilledLoopCount": architecture_homotopy_report["homotopyComplexSummary"]["unfilledLoopCount"],
+        "missingFillerEvidenceCount": architecture_homotopy_report["missingFillerEvidence"]
+            .as_array()
+            .map(|items| items.len())
+            .unwrap_or_default(),
+        "topBlockedReadings": top_blocked_readings,
+        "topMissingFillerBlockers": top_missing_filler_blockers,
+        "topCoverageGapBlockers": top_coverage_gap_blockers,
+        "topMeasuredLoops": top_measured_loops,
+        "reading": "homotopy insights expose selected loops, filling cost state, observation gap lower bounds, and bounded Dehn area without treating missing fillers as zero",
+        "nonConclusions": [
+            "Blocked filler evidence is not zero homotopy distance.",
+            "Measured zero is scoped to selected filled loops.",
+            "Selected Dehn area is not a global path-completeness theorem."
+        ]
+    })
+}
+
+fn homotopy_blocked_insight_rows<'a>(readings: impl Iterator<Item = &'a Value>) -> Vec<Value> {
+    readings
+        .take(6)
+        .map(|reading| {
+            json!({
+                "readingRef": reading["primaryReadingRef"],
+                "moleculeRef": reading["moleculeRef"],
+                "loopRef": reading["loopRef"],
+                "measurementStatus": reading["measurementStatus"],
+                "observationGapLowerBound": reading["observationGapLowerBound"],
+                "blockerRefs": reading["blockerRefs"],
+                "sourceRefs": reading["sourceRefs"],
+                "recommendedNextAction": reading["recommendedNextAction"]
+            })
+        })
+        .collect()
+}
+
+fn homotopy_distance_value_component_v1(
+    definition_ref: &str,
+    definition_name: &str,
+    unit: &str,
+    component_status: &str,
+    measured_value: &Value,
+    blocker_refs: &[String],
+) -> Value {
+    if component_status != "measured" || measured_value.is_null() {
+        json!({
+            "part4DefinitionRef": definition_ref,
+            "definitionName": definition_name,
+            "status": "blocked",
+            "measuredValue": Value::Null,
+            "unit": unit,
+            "blockerRefs": blocker_refs
+        })
+    } else {
+        json!({
+            "part4DefinitionRef": definition_ref,
+            "definitionName": definition_name,
+            "status": "measured",
+            "measuredValue": measured_value,
+            "unit": unit,
+            "blockerRefs": []
+        })
+    }
+}
+
+fn homotopy_report_loop_entry(packet: &Value, reading_index: usize) -> Value {
+    let reading_ref = format!("/homotopyDistanceReadings/{reading_index}");
+    for field in ["filledLoops", "unfilledLoops", "nonzeroHolonomyLoops"] {
+        if let Some(loop_entry) = packet["architectureHomotopyReport"][field]
+            .as_array()
+            .into_iter()
+            .flatten()
+            .find(|loop_entry| loop_entry["homotopyDistanceReadingRef"] == reading_ref)
+        {
+            return loop_entry.clone();
+        }
+    }
+    Value::Null
+}
+
+fn homotopy_loop_ref_for_reading(packet: &Value, reading_index: usize) -> String {
+    let reading_ref = format!("/homotopyDistanceReadings/{reading_index}");
+    for field in ["filledLoops", "unfilledLoops", "nonzeroHolonomyLoops"] {
+        if let Some((index, _)) = packet["architectureHomotopyReport"][field]
+            .as_array()
+            .into_iter()
+            .flatten()
+            .enumerate()
+            .find(|(_, loop_entry)| loop_entry["homotopyDistanceReadingRef"] == reading_ref)
+        {
+            return format!(
+                "architecture-distance.json#/architectureHomotopyReport/{field}/{index}"
+            );
+        }
+    }
+    format!("architecture-distance.json#/homotopyDistanceReadings/{reading_index}")
+}
+
+fn homotopy_blocker_refs(
+    reading: &Value,
+    missing_filler_evidence_ref: Option<&str>,
+) -> Vec<String> {
+    let mut refs = json_string_array_value(reading, "coverageGapRefs");
+    if let Some(reference) = missing_filler_evidence_ref {
+        refs.push(reference.to_string());
+    }
+    if reading["measurementStatus"] == "blockedByMissingFiller" {
+        refs.push("homotopy:filler-evidence-required".to_string());
+    } else if reading["measurementStatus"] == "blockedByCoverageGap" {
+        refs.push("homotopy:selected-axis-coverage-required".to_string());
+    }
+    unique_string_values(refs.into_iter())
+}
+
+fn homotopy_source_refs(
+    index: usize,
+    reading: &Value,
+    diagram: &Value,
+    loop_entry: &Value,
+) -> Vec<String> {
+    let mut refs = vec![
+        format!("packet:/homotopyDistanceReadings/{index}"),
+        format!(
+            "packet:{}",
+            reading["pathHomotopyDiagramRef"].as_str().unwrap_or("")
+        ),
+        format!(
+            "packet:{}",
+            reading["holonomyReadingRef"].as_str().unwrap_or("")
+        ),
+    ];
+    refs.extend(json_string_array_value(diagram, "supportAtomRefs"));
+    refs.extend(json_string_array_value(loop_entry, "supportAtomRefs"));
+    if let Some(molecule_ref) = reading["moleculeRef"].as_str() {
+        refs.push(molecule_ref.to_string());
+    }
+    unique_string_values(refs.into_iter())
+}
+
+fn homotopy_next_action(measurement_status: &str) -> &'static str {
+    match measurement_status {
+        "blockedByMissingFiller" => {
+            "add explicit filler evidence for this molecule before reading filling cost as zero"
+        }
+        "blockedByCoverageGap" => {
+            "resolve selected-axis coverage gap before reading homotopy distance as measured"
+        }
+        "measured" => "read as selected filled-loop distance within the evidence contract",
+        _ => "review selected loop evidence before drawing a homotopy conclusion",
+    }
+}
+
+fn homotopy_status_is_measured(status: &str) -> bool {
+    matches!(
+        status,
+        "measured" | "measuredZero" | "measuredNonzero" | "zero"
+    )
 }
 
 fn architecture_distance_family_summaries_v1(
@@ -7615,6 +8012,65 @@ mod tests {
         assert_eq!(insights["measuredAnalyticDistanceCount"].as_u64(), Some(0));
         assert_eq!(insights["boundedProxyAnalyticCount"].as_u64(), Some(2));
         assert_eq!(insights["blockedFaithfulnessCount"].as_u64(), Some(2));
+    }
+
+    #[test]
+    fn homotopy_primary_reading_keeps_blocked_status_over_stale_values() {
+        let readings = primary_homotopy_distance_readings_v1(&json!({
+            "homotopyDistanceReadings": [
+                {
+                    "homotopyDistanceReadingId": "homotopy-distance:test",
+                    "measurementStatus": "blockedByMissingFiller",
+                    "moleculeRef": "molecule:test",
+                    "pathHomotopyDiagramRef": "/pathHomotopyDiagrams/0",
+                    "holonomyReadingRef": "/homotopyHolonomyReadings/0",
+                    "coverageGapRefs": [],
+                    "homotopyDistance": 9,
+                    "fillingCost": 7,
+                    "observationGapLowerBound": 1
+                }
+            ],
+            "pathHomotopyDiagrams": [
+                {
+                    "moleculeRef": "molecule:test",
+                    "supportAtomRefs": ["atom:test"],
+                    "selectedAxes": ["semantic"],
+                    "pathPairRefs": ["path:a", "path:b"]
+                }
+            ],
+            "homotopyHolonomyReadings": [
+                {
+                    "readingId": "holonomy:test"
+                }
+            ],
+            "architectureHomotopyReport": {
+                "filledLoops": [],
+                "unfilledLoops": [
+                    {
+                        "loopId": "loop:test",
+                        "homotopyDistanceReadingRef": "/homotopyDistanceReadings/0",
+                        "missingFillerEvidenceRef": "evidence:filler:test",
+                        "supportAtomRefs": ["atom:test"]
+                    }
+                ],
+                "nonzeroHolonomyLoops": []
+            }
+        }));
+        assert_eq!(readings[0]["status"].as_str(), Some("blocked"));
+        assert_eq!(readings[0]["homotopyDistance"]["status"], "blocked");
+        assert_eq!(
+            readings[0]["homotopyDistance"]["measuredValue"],
+            Value::Null
+        );
+        assert_eq!(readings[0]["fillingCost"]["status"], "blocked");
+        assert_eq!(readings[0]["selectedDehnArea"]["status"], "blocked");
+        assert!(
+            readings[0]["blockerRefs"].as_array().is_some_and(|refs| {
+                refs.iter()
+                    .any(|reference| reference == "homotopy:filler-evidence-required")
+            }),
+            "blocked measurement status must win over stale raw numeric values"
+        );
     }
 
     fn empty_typed_results_for_test() -> TypedEvaluatorResultsV1 {
