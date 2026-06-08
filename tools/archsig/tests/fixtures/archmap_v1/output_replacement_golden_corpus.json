@@ -1,7 +1,7 @@
 {
   "schemaVersion": "archsig-v1-output-replacement-golden-corpus/v1",
   "corpusId": "archmap-v1-output-replacement",
-  "purpose": "Lock ArchSig v1 output replacement acceptance around typed evaluator evidence, architecture distance, spectrum, homotopy, structural reading, and FieldSig handoff refs. v0 packet equality is not current completion evidence.",
+  "purpose": "Lock ArchSig v1 output replacement acceptance around typed evaluator evidence, Part IV full-output architecture distance, spectrum, homotopy, structural reading, docs / skill / website smoke, and FieldSig handoff refs. v0 packet equality is not current completion evidence.",
   "completeAcceptanceManifestPath": "tests/fixtures/complete_archmap_acceptance/output_replacement_manifest.json",
   "positiveCases": [
     {
@@ -26,8 +26,25 @@
       "executableTest": "practical_rust_service_example_runs_v1_analyze",
       "requiredOutputSurfaces": [
         "diagnostic-value",
-        "strict-distance",
-        "architecture-distance-profile"
+        "architecture-distance-profile",
+        "archsig-atom-viewer-data-v1",
+        "distanceInsights",
+        "distanceDiagnosis",
+        "distanceDiagnosis.curvatureInsights",
+        "distanceDiagnosis.homotopyInsights",
+        "distanceDiagnosis.representationInsights",
+        "part4DistanceFoundation",
+        "part4DistanceCoverageLedger",
+        "atomDistanceReadings",
+        "configurationDistanceReadings",
+        "signatureDistanceReadings",
+        "operationDistanceReadings",
+        "obstructionMeasureReadings",
+        "curvatureMassReadings",
+        "homotopyDistanceReadings",
+        "representationMetricReadings",
+        "architectureHomotopyReport",
+        "llm-interpretation-packet/v1"
       ]
     },
     {
@@ -63,6 +80,8 @@
       "executableTest": "cli_analyze_v1_homotopy_surfaces_zero_nonzero_and_missing_filler",
       "requiredOutputSurfaces": [
         "architectureHomotopyReport",
+        "homotopyDistanceReadings",
+        "distanceDiagnosis.homotopyInsights",
         "pathHomotopyDiagramReadings",
         "homotopyHolonomyReadings",
         "stokesStyleReadings"
@@ -89,6 +108,8 @@
       "executableTest": "cli_analyze_v1_emit_raw_artifacts_writes_typed_packet_detail_and_handoff",
       "requiredOutputSurfaces": [
         "generatedPacketRefs",
+        "distanceInsights",
+        "distanceDiagnosis",
         "architectureSpectrumReport",
         "architectureHomotopyReport",
         "structuralReadingReviewSurface"
@@ -158,6 +179,14 @@
       "expectedGuard": "strict distance rejects blocked typed support"
     },
     {
+      "caseId": "strict-distance-partial-canonical-family-bundle-v1",
+      "family": "partial-canonical-family-bundle",
+      "archmapPath": "examples/practical-rust-service/archmap/archmap.json",
+      "lawPolicyPath": "examples/practical-rust-service/law_policy/law_policy.json",
+      "executableTest": "cli_analyze_v1_strict_distance_rejects_partial_canonical_family_bundle",
+      "expectedGuard": "strict distance rejects partial canonical Part IV family bundles after emitting explicit partial measurement state"
+    },
+    {
       "caseId": "stale-success-artifact-suppression-v1",
       "family": "stale-success-artifact-suppression",
       "archmapPath": "tests/fixtures/archmap_v1/replacement_negative/archmap_label_only_semantic.json",
@@ -169,6 +198,7 @@
   "nonGoals": [
     "v0 packet equality is not current v1 completion evidence.",
     "schema-only, label-only, and removed-field-only fixtures must not be promoted into measured results.",
+    "blocked, partial, or unmeasured Part IV family states must not be hidden behind a measured aggregate.",
     "fixtures are public sanitized evidence contracts, not private repository truth."
   ]
 }

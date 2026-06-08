@@ -138,8 +138,8 @@ Read in this order:
    - Prefer `archsig-analysis-summary.json` when available.
    - Read the whole summary before opening raw packet details. Start with
      `verdict`, `qualityMeasurement`, `distanceDiagnosis`,
-     `trendDiagnosis`, `architectureInsightSummary`, `reviewSupport`,
-     `dominantFindings`, `actionQueue`, `axisSummary`,
+     `distanceInsights`, `trendDiagnosis`, `architectureInsightSummary`,
+     `reviewSupport`, `dominantFindings`, `actionQueue`, `axisSummary`,
      `aatObservationAxisSummary`, `architecturalHoleSummary`,
      `bridgeSummary`, `coverageGapSummary`, `detailIndex`, and
      `measurementBasis`.
@@ -152,6 +152,10 @@ Read in this order:
      unmeasured axes, safe margin, repair / curvature / homotopy distance, and
      representation metric boundaries. Never collapse blocked or unmeasured
      distance to zero.
+   - Read `distanceInsights` as the engineer-facing distance conclusion:
+     structural center, change-sensitive areas, selected policy obstruction
+     state, blocked evidence, recommended refs, `distanceActionQueue`, and
+     baseline-dependent comparison claims.
    - Treat `actionQueue` as the full compact queue. Its entries should carry
      `detailRefs`; do not expect nested support/source/witness evidence arrays
      in the summary.
