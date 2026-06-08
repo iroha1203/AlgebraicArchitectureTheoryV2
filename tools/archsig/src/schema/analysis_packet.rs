@@ -36,6 +36,8 @@ pub struct ArchSigAnalysisPacketV0 {
     #[serde(default)]
     pub part4_distance_foundation: ArchSigPart4DistanceFoundationV0,
     #[serde(default)]
+    pub part4_distance_coverage_ledger: Vec<ArchSigPart4DistanceCoverageLedgerEntryV0>,
+    #[serde(default)]
     pub atom_distance_readings: Vec<ArchSigAtomDistanceReadingV0>,
     #[serde(default)]
     pub configuration_distance_readings: Vec<ArchSigConfigurationDistanceReadingV0>,
@@ -732,6 +734,26 @@ pub struct ArchSigPart4DistanceFoundationV0 {
     pub status_summary: ArchSigDistanceStatusSummaryV0,
     pub measurement_boundary: String,
     pub proxy_guardrails: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigPart4DistanceCoverageLedgerEntryV0 {
+    pub ledger_entry_id: String,
+    pub part4_definition_ref: String,
+    pub definition_title: String,
+    pub theory_section_ref: String,
+    pub distance_family: String,
+    pub coverage_status: String,
+    pub measurement_status: String,
+    pub reading_count: usize,
+    pub primary_artifact_refs: Vec<String>,
+    pub raw_packet_refs: Vec<String>,
+    pub supporting_distance_refs: Vec<String>,
+    pub blocker_refs: Vec<String>,
+    pub follow_up_issue_refs: Vec<String>,
+    pub evidence_boundary: String,
     pub non_conclusions: Vec<String>,
 }
 

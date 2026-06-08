@@ -124,6 +124,7 @@ and validation report generated from
 require the validation report to pass the first-class Part IV checks for:
 
 - `part4DistanceFoundation`
+- `part4DistanceCoverageLedger`
 - `atomDistanceReadings`
 - `configurationDistanceReadings`
 - `signatureDistanceReadings`
@@ -140,6 +141,10 @@ It must keep measured / zero values tied to provenance refs, evaluator-basis
 refs, coverage refs, selected `DistanceProfile`, and selected
 `DiagnosticScope`. Blocked, unmeasured, unavailable, incomparable, or infinite
 values must carry blocker refs. A missing measurement is not a measured zero.
+`part4DistanceCoverageLedger` must enumerate the Part IV definition families
+covered by the packet and point each family back to its primary artifacts, raw
+packet rows, supporting distance rows, blockers, and follow-up implementation
+Issues.
 The raw packet `part4DistanceFoundation.diagnosticScope`, compact
 `distanceDiagnosis`, Atom Viewer report pane, and LLM
 `distanceDiagnosisSummary` must agree on post-evaluator axis status. In

@@ -1812,6 +1812,7 @@ fn cli_analyze_v1_emit_raw_artifacts_writes_typed_packet_detail_and_handoff() {
         detail_index["sections"].as_array().is_some_and(|sections| {
             [
                 "generatedLawInputs",
+                "part4DistanceCoverageLedger",
                 "signatureAxes",
                 "generatedObstructions",
                 "generatedRepairTargets",
@@ -1849,6 +1850,9 @@ fn cli_analyze_v1_emit_raw_artifacts_writes_typed_packet_detail_and_handoff() {
     assert!(
         detail_index["entries"].as_array().is_some_and(|entries| {
             entries.iter().any(|entry| {
+                entry["packetRef"] == "packet:/part4DistanceCoverageLedger/0"
+                    && entry["resultRef"] == "part4DistanceCoverageLedger:part4-ledger:distance-aat"
+            }) && entries.iter().any(|entry| {
                 entry["packetRef"] == "packet:/generatedLawInputs/0"
                     && entry["typedEvaluatorResultRef"] == "/typedEvaluatorResults/0"
             }) && entries.iter().any(|entry| {

@@ -1699,6 +1699,415 @@
       "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
     ]
   },
+  "part4DistanceCoverageLedger": [
+    {
+      "ledgerEntryId": "part4-ledger:distance-aat",
+      "part4DefinitionRef": "definition:1.1",
+      "definitionTitle": "DistanceAAT",
+      "theorySectionRef": "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md:35",
+      "distanceFamily": "foundation",
+      "coverageStatus": "primary",
+      "measurementStatus": "blocked",
+      "readingCount": 7,
+      "primaryArtifactRefs": [
+        "archsig-analysis-packet.json#/part4DistanceFoundation"
+      ],
+      "rawPacketRefs": [
+        "/part4DistanceFoundation"
+      ],
+      "supportingDistanceRefs": [
+        "/part4DistanceFoundation/supportingDistances/0#part4-distance:atom-geometry",
+        "/part4DistanceFoundation/supportingDistances/1#part4-distance:configuration-geometry",
+        "/part4DistanceFoundation/supportingDistances/2#part4-distance:signature-geometry",
+        "/part4DistanceFoundation/supportingDistances/3#part4-distance:operation-geometry",
+        "/part4DistanceFoundation/supportingDistances/4#part4-distance:curvature-geometry",
+        "/part4DistanceFoundation/supportingDistances/5#part4-distance:homotopy-filling-geometry",
+        "/part4DistanceFoundation/supportingDistances/6#part4-distance:representation-metric"
+      ],
+      "blockerRefs": [
+        "coverage:layer-atoms: report observation gap and block signature-zero reflection",
+        "coverage:semantic-contract-atoms: report observation gap and block signature-zero reflection",
+        "gap-runtime-user-db-trace: runtime trace was requested but not supplied",
+        "may transfer obstruction into runtime behavior, ownership, or idempotency boundary"
+      ],
+      "followUpIssueRefs": [],
+      "evidenceBoundary": "DistanceAAT is represented as the Part IV foundation, profile, diagnostic scope, supporting distances, and non-conclusion boundary.",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    },
+    {
+      "ledgerEntryId": "part4-ledger:atom-geometry",
+      "part4DefinitionRef": "definitions:2.1-2.5",
+      "definitionTitle": "Fiber / Carrier / Valence / Semantic Anchor / Atom Layout distance",
+      "theorySectionRef": "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md:140",
+      "distanceFamily": "atomGeometry",
+      "coverageStatus": "primary-blocked",
+      "measurementStatus": "blocked",
+      "readingCount": 10,
+      "primaryArtifactRefs": [
+        "architecture-distance.json#/atomDistanceReadings",
+        "archsig-analysis-summary.json#/distanceDiagnosis/topMovedAtoms",
+        "archsig-atom-viewer-data.json#/reportPane/distanceDiagnosis"
+      ],
+      "rawPacketRefs": [
+        "/atomDistanceReadings",
+        "/viewerDistanceInputs"
+      ],
+      "supportingDistanceRefs": [
+        "/part4DistanceFoundation/supportingDistances/0#part4-distance:atom-geometry"
+      ],
+      "blockerRefs": [
+        "missing semantic anchor evidence for atom:capability:create-user",
+        "missing semantic anchor evidence for atom:component:route-users",
+        "missing semantic anchor evidence for atom:component:service-user"
+      ],
+      "followUpIssueRefs": [
+        "#1859"
+      ],
+      "evidenceBoundary": "Atom geometry is expected to expose each Part IV atom-distance component without treating viewer layout distance as diagnostic distance.",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    },
+    {
+      "ledgerEntryId": "part4-ledger:configuration-context",
+      "part4DefinitionRef": "definitions:3.1-3.2",
+      "definitionTitle": "Configuration-indexed distance and Context distance",
+      "theorySectionRef": "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md:275",
+      "distanceFamily": "configurationGeometry",
+      "coverageStatus": "primary-blocked",
+      "measurementStatus": "blocked",
+      "readingCount": 10,
+      "primaryArtifactRefs": [
+        "architecture-distance.json#/configurationDistanceReadings",
+        "archsig-analysis-summary.json#/distanceDiagnosis",
+        "archsig-atom-viewer-data.json#/reportPane/distanceDiagnosis"
+      ],
+      "rawPacketRefs": [
+        "/configurationDistanceReadings"
+      ],
+      "supportingDistanceRefs": [
+        "/part4DistanceFoundation/supportingDistances/1#part4-distance:configuration-geometry"
+      ],
+      "blockerRefs": [
+        "observationGap:gap-runtime-user-db-trace:runtime-trace-was-requested-but-not-supplied"
+      ],
+      "followUpIssueRefs": [
+        "#1859"
+      ],
+      "evidenceBoundary": "Configuration distance must stay typed-hypergraph and context based; molecule size alone is not complete Part IV coverage.",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    },
+    {
+      "ledgerEntryId": "part4-ledger:signature-geometry",
+      "part4DefinitionRef": "definitions:4.1-4.4",
+      "definitionTitle": "Axis distance, Signature distance, Safe margin, and Signature drift",
+      "theorySectionRef": "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md:344",
+      "distanceFamily": "signatureGeometry",
+      "coverageStatus": "primary-blocked",
+      "measurementStatus": "blocked",
+      "readingCount": 1,
+      "primaryArtifactRefs": [
+        "architecture-distance.json#/signatureDistanceReadings",
+        "archsig-analysis-summary.json#/distanceDiagnosis/topMovedAxes",
+        "llm-interpretation-packet.json#/distanceDiagnosisSummary"
+      ],
+      "rawPacketRefs": [
+        "/signatureDistanceReadings",
+        "/signatureAxes"
+      ],
+      "supportingDistanceRefs": [
+        "/part4DistanceFoundation/supportingDistances/2#part4-distance:signature-geometry"
+      ],
+      "blockerRefs": [
+        "coverage:layer-atoms: report observation gap and block signature-zero reflection",
+        "coverage:semantic-contract-atoms: report observation gap and block signature-zero reflection",
+        "gap-runtime-user-db-trace: runtime trace was requested but not supplied"
+      ],
+      "followUpIssueRefs": [
+        "#1861"
+      ],
+      "evidenceBoundary": "Signature geometry is LawPolicy-relative and must preserve measured, blocked, unmeasured, and incomparable axis states.",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    },
+    {
+      "ledgerEntryId": "part4-ledger:operation-geometry",
+      "part4DefinitionRef": "definitions:5.1-5.5",
+      "definitionTitle": "Operation cost, Operation distance, Flatness distance, Repair route, and Side-effect bound",
+      "theorySectionRef": "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md:490",
+      "distanceFamily": "operationGeometry",
+      "coverageStatus": "primary-blocked",
+      "measurementStatus": "blocked",
+      "readingCount": 1,
+      "primaryArtifactRefs": [
+        "architecture-distance.json#/operationDistanceReadings",
+        "archsig-analysis-summary.json#/distanceDiagnosis/repairDistance"
+      ],
+      "rawPacketRefs": [
+        "/operationDistanceReadings",
+        "/repairOperationCandidates",
+        "/operationDeltas"
+      ],
+      "supportingDistanceRefs": [
+        "/part4DistanceFoundation/supportingDistances/3#part4-distance:operation-geometry"
+      ],
+      "blockerRefs": [
+        "coverage:layer-atoms: report observation gap and block signature-zero reflection",
+        "coverage:semantic-contract-atoms: report observation gap and block signature-zero reflection",
+        "gap-runtime-user-db-trace: runtime trace was requested but not supplied",
+        "may transfer obstruction into runtime behavior, ownership, or idempotency boundary"
+      ],
+      "followUpIssueRefs": [
+        "#1860"
+      ],
+      "evidenceBoundary": "Operation geometry must be profile-driven and blocked when operation costs, preconditions, or side-effect evidence are missing.",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    },
+    {
+      "ledgerEntryId": "part4-ledger:obstruction-curvature",
+      "part4DefinitionRef": "definitions:6.1-6.3",
+      "definitionTitle": "Obstruction measure, Curvature mass, and Curvature transport",
+      "theorySectionRef": "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md:599",
+      "distanceFamily": "curvatureGeometry",
+      "coverageStatus": "primary-blocked",
+      "measurementStatus": "blocked",
+      "readingCount": 5,
+      "primaryArtifactRefs": [
+        "archsig-analysis-summary.json#/distanceDiagnosis/curvatureDistance",
+        "archsig-atom-viewer-data.json#/reportPane/distanceDiagnosis"
+      ],
+      "rawPacketRefs": [
+        "/obstructionMeasureReadings",
+        "/curvatureMassReadings",
+        "/curvatureTransferReadings"
+      ],
+      "supportingDistanceRefs": [
+        "/part4DistanceFoundation/supportingDistances/4#part4-distance:curvature-geometry"
+      ],
+      "blockerRefs": [
+        "gap-runtime-user-db-trace: runtime trace was requested but not supplied",
+        "unmeasuredAxis:axis:layer-violation",
+        "unmeasuredAxis:axis:semantic-inconsistency"
+      ],
+      "followUpIssueRefs": [
+        "#1864"
+      ],
+      "evidenceBoundary": "Curvature geometry must expose obstruction-measure support and transport state, not just raw packet rows.",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    },
+    {
+      "ledgerEntryId": "part4-ledger:homotopy-filling",
+      "part4DefinitionRef": "definitions:7.1-7.4",
+      "definitionTitle": "Homotopy distance, Filling cost, Observation gap lower bound, and Architectural Dehn function",
+      "theorySectionRef": "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md:674",
+      "distanceFamily": "homotopyFillingGeometry",
+      "coverageStatus": "primary-blocked",
+      "measurementStatus": "blocked",
+      "readingCount": 3,
+      "primaryArtifactRefs": [
+        "archsig-analysis-summary.json#/distanceDiagnosis/homotopyDistance",
+        "archsig-atom-viewer-data.json#/reportPane/distanceDiagnosis"
+      ],
+      "rawPacketRefs": [
+        "/homotopyDistanceReadings",
+        "/architectureHomotopyReport",
+        "/homotopyHolonomyReadings"
+      ],
+      "supportingDistanceRefs": [
+        "/part4DistanceFoundation/supportingDistances/5#part4-distance:homotopy-filling-geometry"
+      ],
+      "blockerRefs": [
+        "gap-runtime-user-db-trace"
+      ],
+      "followUpIssueRefs": [
+        "#1867"
+      ],
+      "evidenceBoundary": "Homotopy and filling readings must make missing filler evidence an actionable blocker, not a hidden non-conclusion.",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    },
+    {
+      "ledgerEntryId": "part4-ledger:representation-metric",
+      "part4DefinitionRef": "definitions:8.1-8.2",
+      "definitionTitle": "Representation stability and Representation faithfulness",
+      "theorySectionRef": "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md:746",
+      "distanceFamily": "representationMetric",
+      "coverageStatus": "primary-blocked",
+      "measurementStatus": "blocked",
+      "readingCount": 14,
+      "primaryArtifactRefs": [
+        "archsig-analysis-summary.json#/distanceDiagnosis/representationMetric",
+        "archsig-atom-viewer-data.json#/reportPane/distanceDiagnosis"
+      ],
+      "rawPacketRefs": [
+        "/representationMetricReadings",
+        "/analyticRepresentations",
+        "/representationStrengthReadings"
+      ],
+      "supportingDistanceRefs": [
+        "/part4DistanceFoundation/supportingDistances/6#part4-distance:representation-metric"
+      ],
+      "blockerRefs": [
+        "coverage-completeness:selected-representation-not-global",
+        "gap-runtime-user-db-trace",
+        "witness-completeness:selected-LawPolicy-not-certified"
+      ],
+      "followUpIssueRefs": [
+        "#1865"
+      ],
+      "evidenceBoundary": "Representation metrics must distinguish measured structural distance, bounded proxy telemetry, blocked Lipschitz evidence, and faithfulness blockers.",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    },
+    {
+      "ledgerEntryId": "part4-ledger:measurement-boundary",
+      "part4DefinitionRef": "definitions:9.1-9.3",
+      "definitionTitle": "DistanceValue, unmeasured-is-not-zero, and DistanceProfile",
+      "theorySectionRef": "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md:784",
+      "distanceFamily": "measurementBoundary",
+      "coverageStatus": "primary",
+      "measurementStatus": "blocked",
+      "readingCount": 7,
+      "primaryArtifactRefs": [
+        "archsig-run-manifest.json#/validationResultSummary",
+        "archsig-analysis-summary.json#/measurementStatusSummary"
+      ],
+      "rawPacketRefs": [
+        "/part4DistanceFoundation/profile",
+        "/part4DistanceFoundation/statusSummary",
+        "/part4DistanceFoundation/diagnosticScope"
+      ],
+      "supportingDistanceRefs": [
+        "/part4DistanceFoundation/supportingDistances/0#part4-distance:atom-geometry",
+        "/part4DistanceFoundation/supportingDistances/1#part4-distance:configuration-geometry",
+        "/part4DistanceFoundation/supportingDistances/2#part4-distance:signature-geometry",
+        "/part4DistanceFoundation/supportingDistances/3#part4-distance:operation-geometry",
+        "/part4DistanceFoundation/supportingDistances/4#part4-distance:curvature-geometry",
+        "/part4DistanceFoundation/supportingDistances/5#part4-distance:homotopy-filling-geometry",
+        "/part4DistanceFoundation/supportingDistances/6#part4-distance:representation-metric"
+      ],
+      "blockerRefs": [
+        "coverage:layer-atoms: report observation gap and block signature-zero reflection",
+        "coverage:semantic-contract-atoms: report observation gap and block signature-zero reflection",
+        "gap-runtime-user-db-trace: runtime trace was requested but not supplied",
+        "may transfer obstruction into runtime behavior, ownership, or idempotency boundary"
+      ],
+      "followUpIssueRefs": [
+        "#1861",
+        "#1866"
+      ],
+      "evidenceBoundary": "Measurement boundary rows record that blocked and unmeasured values remain first-class states and are not aggregated as measured zero.",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    },
+    {
+      "ledgerEntryId": "part4-ledger:bounded-diagnostic-conclusion",
+      "part4DefinitionRef": "definitions:10.1-10.2",
+      "definitionTitle": "Diagnostic scope and Bounded diagnostic conclusion",
+      "theorySectionRef": "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md:852",
+      "distanceFamily": "boundedDiagnosticConclusion",
+      "coverageStatus": "partial",
+      "measurementStatus": "blocked",
+      "readingCount": 7,
+      "primaryArtifactRefs": [
+        "archsig-analysis-summary.json#/conclusion",
+        "archsig-analysis-summary.json#/distanceDiagnosis",
+        "llm-interpretation-packet.json#/distanceDiagnosisSummary"
+      ],
+      "rawPacketRefs": [
+        "/part4DistanceFoundation/diagnosticScope",
+        "/boundedJudgements",
+        "/llmInterpretationPacket"
+      ],
+      "supportingDistanceRefs": [],
+      "blockerRefs": [
+        "coverage:layer-atoms: report observation gap and block signature-zero reflection",
+        "coverage:semantic-contract-atoms: report observation gap and block signature-zero reflection",
+        "gap-runtime-user-db-trace: runtime trace was requested but not supplied",
+        "may transfer obstruction into runtime behavior, ownership, or idempotency boundary"
+      ],
+      "followUpIssueRefs": [
+        "#1863",
+        "#1866"
+      ],
+      "evidenceBoundary": "Bounded diagnostic conclusion is partially covered until distanceInsights and full-output docs make the distance reading actionable.",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings",
+        "ArchSig reads current architecture state and does not replace FieldSig evolution analysis"
+      ]
+    }
+  ],
   "atomDistanceReadings": [
     {
       "atomDistanceReadingId": "atom-distance:atom-capability-create-user:atom-component-route-users",
