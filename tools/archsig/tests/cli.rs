@@ -791,9 +791,39 @@ fn cli_analyze_v1_homotopy_surfaces_zero_nonzero_and_missing_filler() {
 
         assert!(output.status.success());
         let packet = read_json(&out_dir.join("archsig-analysis-packet.json"));
+        let architecture_distance = read_json(&out_dir.join("architecture-distance.json"));
+        let summary = read_json(&out_dir.join("archsig-analysis-summary.json"));
+        let viewer = read_json(&out_dir.join("archsig-atom-viewer-data.json"));
+        let llm_packet = read_json(&out_dir.join("llm-interpretation-packet.json"));
         assert_eq!(
             packet["architectureHomotopyReport"]["status"].as_str(),
             Some(expected_status)
+        );
+        assert!(
+            architecture_distance["homotopyDistanceReadings"]
+                .as_array()
+                .is_some_and(|items| !items.is_empty())
+                && architecture_distance["architectureHomotopyReport"].is_object()
+                && architecture_distance["distanceDiagnosis"]["homotopyInsights"]
+                    ["homotopyDistanceReadingCount"]
+                    .as_u64()
+                    .is_some_and(|count| count > 0),
+            "primary architecture-distance artifact must expose homotopy distance rows, HomotopyReport, and homotopy insights"
+        );
+        assert_eq!(
+            summary["distanceDiagnosis"]["homotopyInsights"],
+            architecture_distance["distanceDiagnosis"]["homotopyInsights"],
+            "summary and primary architecture-distance artifact must read the same homotopy insight state"
+        );
+        assert_eq!(
+            viewer["reportPane"]["distanceDiagnosis"]["homotopyInsights"],
+            architecture_distance["distanceDiagnosis"]["homotopyInsights"],
+            "viewer report pane must read the same homotopy insight state"
+        );
+        assert_eq!(
+            llm_packet["distanceDiagnosisSummary"]["homotopyInsights"],
+            architecture_distance["distanceDiagnosis"]["homotopyInsights"],
+            "LLM packet must read the same homotopy insight state"
         );
         assert!(
             packet["homotopyHolonomyReadings"]
@@ -830,6 +860,31 @@ fn cli_analyze_v1_homotopy_surfaces_zero_nonzero_and_missing_filler() {
                         }),
                 "missing filler must stay blocked and must not become measured zero"
             );
+            assert!(
+                architecture_distance["distanceDiagnosis"]["homotopyInsights"]
+                    ["blockedFillerCount"]
+                    .as_u64()
+                    .is_some_and(|count| count > 0)
+                    && architecture_distance["distanceDiagnosis"]["homotopyInsights"]
+                        ["topMissingFillerBlockers"]
+                        .as_array()
+                        .is_some_and(|items| {
+                            items.iter().any(|item| {
+                                item["recommendedNextAction"]
+                                    .as_str()
+                                    .is_some_and(|action| action.contains("filler evidence"))
+                                    && item["blockerRefs"].as_array().is_some_and(|refs| {
+                                        refs.iter().any(|reference| {
+                                            reference == "homotopy:filler-evidence-required"
+                                        }) && !refs.is_empty()
+                                    })
+                                    && item["sourceRefs"]
+                                        .as_array()
+                                        .is_some_and(|refs| !refs.is_empty())
+                            })
+                        }),
+                "blocked filler evidence must become source-linked next action in primary homotopy insights"
+            );
         } else if expected_loop_status == "unmeasuredSelectedAxisDifference" {
             assert!(
                 report["nonzeroHolonomyLoops"]
@@ -848,6 +903,26 @@ fn cli_analyze_v1_homotopy_surfaces_zero_nonzero_and_missing_filler() {
                         }),
                 "semantic/runtime axis presence without selected nonzero evaluator support must stay unmeasured"
             );
+            assert!(
+                architecture_distance["distanceDiagnosis"]["homotopyInsights"]
+                    ["blockedCoverageCount"]
+                    .as_u64()
+                    .is_some_and(|count| count > 0)
+                    && architecture_distance["distanceDiagnosis"]["homotopyInsights"]
+                        ["topCoverageGapBlockers"]
+                        .as_array()
+                        .is_some_and(|items| {
+                            items.iter().any(|item| {
+                                item["blockerRefs"].as_array().is_some_and(|refs| {
+                                    refs.iter().any(|reference| {
+                                        reference
+                                            == "homotopy:selected-axis-coverage-required"
+                                    })
+                                })
+                            })
+                        }),
+                "selected-axis coverage gap must remain visible in primary homotopy insights"
+            );
         } else if expected_loop_status == "measuredNonzero" {
             assert!(
                 report["nonzeroHolonomyLoops"]
@@ -858,6 +933,17 @@ fn cli_analyze_v1_homotopy_surfaces_zero_nonzero_and_missing_filler() {
                         .is_some_and(|items| !items.is_empty()),
                 "nonzero filled loop must surface holonomy and local curvature cells"
             );
+            assert!(
+                architecture_distance["distanceDiagnosis"]["homotopyInsights"]
+                    ["measuredNonzeroLoopCount"]
+                    .as_u64()
+                    .is_some_and(|count| count > 0)
+                    && architecture_distance["distanceDiagnosis"]["homotopyInsights"]
+                        ["topMeasuredLoops"]
+                        .as_array()
+                        .is_some_and(|items| !items.is_empty()),
+                "measured nonzero homotopy loop must be primary insight, not raw-only packet detail"
+            );
         } else {
             assert!(
                 report["filledLoops"]
@@ -867,6 +953,13 @@ fn cli_analyze_v1_homotopy_surfaces_zero_nonzero_and_missing_filler() {
                         .as_array()
                         .is_some_and(Vec::is_empty),
                 "zero filled loop must remain measured zero within selected filling"
+            );
+            assert!(
+                architecture_distance["distanceDiagnosis"]["homotopyInsights"]
+                    ["measuredZeroLoopCount"]
+                    .as_u64()
+                    .is_some_and(|count| count > 0),
+                "measured zero loop must remain selected filled-loop zero in primary homotopy insights"
             );
         }
         let validation = read_json(&out_dir.join("archsig-analysis-validation.json"));
@@ -2870,6 +2963,71 @@ fn practical_rust_service_example_runs_v1_analyze() {
                     })
                 }),
         "summary, viewer, and LLM packet must expose representation proxy / faithfulness blockers instead of measured analytic distance"
+    );
+    assert!(
+        architecture_distance["homotopyDistanceReadings"]
+            .as_array()
+            .is_some_and(|items| {
+                items.len() == 4
+                    && items.iter().all(|reading| {
+                        reading["distanceFamily"] == "homotopyFillingGeometry"
+                            && reading["status"] == "blocked"
+                            && reading["measurementStatus"] == "blockedByCoverageGap"
+                            && reading["homotopyDistance"]["status"] == "blocked"
+                            && reading["fillingCost"]["status"] == "blocked"
+                            && reading["observationGapLowerBound"]["status"] == "measured"
+                            && reading["selectedDehnArea"]["status"] == "blocked"
+                            && reading["sourceRefs"]
+                                .as_array()
+                                .is_some_and(|refs| !refs.is_empty())
+                            && reading["moleculeRefs"]
+                                .as_array()
+                                .is_some_and(|refs| !refs.is_empty())
+                            && reading["blockerRefs"].as_array().is_some_and(|refs| {
+                                refs.iter().any(|reference| {
+                                    reference == "homotopy:selected-axis-coverage-required"
+                                })
+                            })
+                            && reading["part4DefinitionReadings"]
+                                .as_array()
+                                .is_some_and(|rows| {
+                                    [
+                                        "homotopyDistance",
+                                        "fillingCost",
+                                        "observationGapLowerBound",
+                                        "selectedDehnArea",
+                                    ]
+                                    .into_iter()
+                                    .all(|component| {
+                                        rows.iter().any(|row| row["componentKind"] == component)
+                                    })
+                                })
+                    })
+            }),
+        "primary homotopy rows must expose homotopy distance, filling cost, observation gap lower bound, selected Dehn area, and source refs"
+    );
+    assert!(
+        summary["distanceDiagnosis"]["homotopyInsights"]["status"] == "partial"
+            && summary["distanceDiagnosis"]["homotopyInsights"]["blockedCoverageCount"] == 4
+            && summary["distanceDiagnosis"]["homotopyInsights"]["blockedReadingCount"] == 4
+            && summary["distanceDiagnosis"]["homotopyInsights"]["observationGapLowerBoundTotal"]
+                == 4
+            && viewer["reportPane"]["distanceDiagnosis"]["homotopyInsights"]["topBlockedReadings"]
+                .as_array()
+                .is_some_and(|items| !items.is_empty())
+            && llm_packet["distanceDiagnosisSummary"]["homotopyInsights"]["topCoverageGapBlockers"]
+                .as_array()
+                .is_some_and(|items| {
+                    items.iter().all(|item| {
+                        item["recommendedNextAction"]
+                            .as_str()
+                            .is_some_and(|action| action.contains("coverage gap"))
+                            && item["sourceRefs"]
+                                .as_array()
+                                .is_some_and(|refs| !refs.is_empty())
+                    })
+                }),
+        "summary, viewer, and LLM packet must expose homotopy blocked coverage as source-linked next action"
     );
     assert_eq!(
         architecture_distance["profile"]["signatureViolationWeight"].as_i64(),
@@ -6565,6 +6723,17 @@ fn cli_schema_catalog_is_primary_archsig_surface_only() {
                     })
         }),
         "schema catalog must describe architecture-distance-v1 curvature primary surface"
+    );
+    assert!(
+        artifacts.iter().any(|entry| {
+            entry["artifactId"] == "architecture-distance-v1"
+                && entry["compatibilityBoundary"]["fieldMappingPolicy"]
+                    .as_str()
+                    .is_some_and(|description| {
+                        description.contains("primary homotopy filling geometry readings")
+                    })
+        }),
+        "schema catalog must describe architecture-distance-v1 homotopy primary surface"
     );
     assert!(
         artifacts.iter().any(|entry| {

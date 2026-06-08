@@ -173,6 +173,13 @@ with witness / molecule / source refs for selected support. Missing witness or
 coverage support must remain blocked and cannot be represented as zero
 curvature. Measured-zero curvature is selected-support zero, not a global
 lawfulness or flatness proof.
+Homotopy / filling geometry rows in `architecture-distance.json` must expose
+selected homotopy distance, filling cost, observation gap lower bound, selected
+Dehn area, `ArchitectureHomotopyReport`, and
+`distanceDiagnosis.homotopyInsights`. Blocked filler evidence and selected-axis
+coverage gaps must carry molecule / source refs and next actions. Missing
+filler evidence cannot be represented as zero filling cost, and measured-zero
+loops are selected filled-loop zero only.
 Representation metric rows in `architecture-distance.json` must expose selected
 structural distance, analytic-distance state, Lipschitz upper-bound state,
 bi-Lipschitz faithfulness state, and `distanceDiagnosis.representationInsights`.
