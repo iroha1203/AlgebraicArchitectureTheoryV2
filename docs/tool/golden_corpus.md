@@ -157,6 +157,14 @@ definition readings and the composed Atom Layout distance for top moved atom
 pairs. Configuration geometry rows must use typed hypergraph shortest-path
 evidence and molecule context overlap, not molecule-size or relation-count-only
 proxies, and must keep molecule contribution rates tied to source refs.
+Operation geometry rows in `architecture-distance.json` must expose Operation
+Cost, Operation Distance / target decrease, Distance to Selected Flatness,
+Repair Route, and Side-Effect Bound as primary fields and as Part IV definition
+rows. Operation cost must resolve from the selected `DistanceProfile`; a
+missing cost is blocked, not guessed from a default. Repair routes must carry
+source refs, precondition refs, and either transfer-risk refs or transfer-risk
+blocker refs while preserving the boundary that a candidate route is diagnostic
+output, not automatic safe refactoring and not Atom generation.
 The raw packet `part4DistanceFoundation.diagnosticScope`, compact
 `distanceDiagnosis`, Atom Viewer report pane, and LLM
 `distanceDiagnosisSummary` must agree on post-evaluator axis status. In
