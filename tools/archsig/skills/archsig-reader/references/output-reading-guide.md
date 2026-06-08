@@ -13,26 +13,30 @@ Read `archsig-analysis-summary.json` before raw packet details:
 1. `verdict`: the measured conclusion for the supplied ArchMap + LawPolicy.
 2. `qualityMeasurement`: counts for nonzero axes, hotspots, recurrent pressure,
    unfilled architectural holes, nonzero holonomy loops, and coverage gaps.
-3. `distanceDiagnosis`: compact Part IV distance verdict, measured movement,
+3. `distanceInsights`: engineer-facing distance conclusion: structural center,
+   change-sensitive areas, selected policy obstruction state, blocked evidence,
+   recommended refs, `distanceActionQueue`, and baseline-dependent comparison
+   claims.
+4. `distanceDiagnosis`: compact Part IV distance verdict, measured movement,
    unmeasured axes, top moved atoms / axes, safe margin, repair distance,
    curvature / homotopy distance, representation metric summary, and packet
    detail refs. Blocked or unmeasured distance is not measured zero.
-4. `dominantFindings`: compact nonzero axes, hotspots, recurrent pressure,
+5. `dominantFindings`: compact nonzero axes, hotspots, recurrent pressure,
    architectural holes, nonzero holonomy, workflow risks, and bridge pressure.
-5. `actionQueue`: the full compact review queue derived from hotspots, holes,
+6. `actionQueue`: the full compact review queue derived from hotspots, holes,
    nonzero holonomy, nonzero axes, workflow pressure, and bridge pressure.
    Queue entries use `detailRefs`; they do not carry nested support/source/
    witness evidence arrays.
-6. `axisSummary`, `aatObservationAxisSummary`, `trendDiagnosis`,
+7. `axisSummary`, `aatObservationAxisSummary`, `trendDiagnosis`,
    `reviewSupport`, `architectureInsightSummary`, `architecturalHoleSummary`,
    `bridgeSummary`, and `coverageGapSummary`: compact counts and examples for
    the major surfaces.
-7. `detailIndex`: packet sections and `packet:<json-pointer>` refs for reading
+8. `detailIndex`: packet sections and `packet:<json-pointer>` refs for reading
    full evidence in `archsig-analysis-packet.json` when raw artifacts were
    emitted.
-8. `measurementBasis`: input refs, profile refs, validation results, coverage
+9. `measurementBasis`: input refs, profile refs, validation results, coverage
    gaps, and measured boundaries.
-9. `metadata.nonConclusions`: claim-boundary metadata. Keep it available, but
+10. `metadata.nonConclusions`: claim-boundary metadata. Keep it available, but
    do not lead the user-facing diagnosis with it.
 
 The report posture is: "for this input model, these conclusions were measured."
@@ -61,6 +65,7 @@ truly unavailable, private, or out of scope.
 | `archMapRef`, `selectedLawPolicyRef` | Identifies the ArchMap input and policy/evaluator selection. |
 | `axisSummary` / `detailIndex` | States selected/nonzero axis counts and points to `flatnessReading` / `signatureAxes[]` detail when needed. |
 | `trendDiagnosis` / `reviewSupport` / `actionQueue` | Prioritizes measured trend pressure, blocker queues, coverage gaps, and compact review actions with refs into packet detail surfaces. |
+| `distanceInsights` | Engineer-facing distance conclusion: architectural center, change-sensitive areas, selected policy obstruction state, blocked evidence, recommended refs, `distanceActionQueue`, and comparison-needed claims. |
 | `distanceDiagnosis` | First Part IV distance surface for verdict, measured movement, unmeasured axes, safe margin, repair / curvature / homotopy distance, representation metric summary, and detail refs. |
 | `dominantFindings` / `detailRefs` | Gives compact hotspots, recurrent pressure, architectural holes, nonzero holonomy, workflow risks, and bridge pressure before raw packet inspection. |
 | `part4DistanceFoundation` | Packet detail surface for evaluator-owned distance basis, diagnostic scope, status-summary counts, and anti-proxy guardrails. |

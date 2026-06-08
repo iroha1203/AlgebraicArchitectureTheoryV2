@@ -80,7 +80,7 @@
           <div class="article-main">
             <section id="primary" class="article-section">
               <h2>Primary workflow</h2>
-              <p><code>analyze</code> is the primary ArchSig workflow entry. It consumes <code>archmap/v1</code> and <code>law-policy/v1</code>, then writes validation reports, normalized atoms, typed evaluator results, summary, viewer data, and optional raw v1 artifacts.</p>
+              <p><code>analyze</code> is the primary ArchSig workflow entry. It consumes <code>archmap/v1</code> and <code>law-policy/v1</code>, then writes validation reports, normalized atoms, typed evaluator results, <code>architecture-distance.json</code>, summary, viewer data, and optional raw v1 artifacts.</p>
               <figure class="code-panel">
                 <figcaption>Run analysis</figcaption>
                 <pre><code>cargo run --manifest-path tools/archsig/Cargo.toml -- analyze \
@@ -88,7 +88,7 @@
   --law-policy tools/archsig/tests/fixtures/archmap_v1/law_policy.json \
   --out-dir .archsig/analyze</code></pre>
               </figure>
-              <p><code>archsig-analysis-summary.json</code> is emitted by <code>analyze</code> as the compact first reading surface. It includes <code>distanceInsights</code>, <code>richPacketRefs</code>, <code>richDominantFindings</code>, <code>richReadingGuide</code>, and an <code>actionQueue</code> over generated, spectrum, homotopy, and structural refs.</p>
+              <p><code>archsig-analysis-summary.json</code> is emitted by <code>analyze</code> as the compact first reading surface. It includes <code>distanceInsights</code>, <code>distanceDiagnosis</code>, <code>richPacketRefs</code>, <code>richDominantFindings</code>, <code>richReadingGuide</code>, and an <code>actionQueue</code> over generated, spectrum, homotopy, and structural refs.</p>
               <figure class="code-panel">
                 <figcaption>Run analysis with raw artifacts</figcaption>
                 <pre><code>cargo run --manifest-path tools/archsig/Cargo.toml -- analyze \
@@ -105,7 +105,10 @@
                 <li><strong><code>law-policy-validation.json</code></strong><span>Validation report for the selected <code>law-policy/v1</code>.</span></li>
                 <li><strong><code>normalized-archmap.json</code></strong><span>ArchMap atoms normalized into the ArchSig typed model.</span></li>
                 <li><strong><code>typed-evaluator-results.json</code></strong><span>Evaluator statuses, support refs, basis refs, and bounded conclusions.</span></li>
+                <li><strong><code>architecture-distance.json</code></strong><span>The primary <code>archsig-architecture-distance/v1</code> artifact for Part IV family summaries, <code>distanceInsights</code>, <code>distanceDiagnosis</code>, homotopy rows, curvature rows, and representation metric rows.</span></li>
+                <li><strong><code>archsig-analysis-summary.json</code></strong><span>The compact first reading surface with the same distance insights and diagnosis.</span></li>
                 <li><strong><code>archsig-atom-viewer-data.json</code></strong><span>Bounded viewer projection with the same rich packet refs and report-pane reading guide as the summary.</span></li>
+                <li><strong><code>archsig-run-manifest.json</code></strong><span>Run artifact manifest and generated / omitted artifact state.</span></li>
                 <li><strong><code>archsig-analysis-packet.json</code></strong><span>The raw <code>archsig-analysis-packet/v1</code> detail store, emitted with <code>--emit-raw-artifacts</code>.</span></li>
                 <li><strong><code>archsig-analysis-validation.json</code></strong><span>Validation report for the generated v1 analysis packet.</span></li>
                 <li><strong><code>llm-interpretation-packet.json</code></strong><span>The typed evaluator packet serialized for LLM reading when raw artifacts are emitted.</span></li>
@@ -125,6 +128,7 @@
                   </tbody>
                 </table>
               </div>
+              <p><code>--strict-distance</code> rejects missing profile selectors, blocked typed support, hidden missing families, and partial canonical distance-family bundles instead of treating them as measured zero.</p>
             </section>
             <section id="schemas" class="article-section">
               <h2>Artifact schemas</h2>
@@ -138,6 +142,7 @@
                     <tr><td><code>law-policy-validation-report-v1</code></td><td>LawPolicy selector validation against the evaluator registry.</td></tr>
                     <tr><td><code>normalized-archmap/v1</code></td><td>Deterministic typed normalization of valid ArchMap atoms and molecules.</td></tr>
                     <tr><td><code>typed-evaluator-results/v1</code></td><td>Typed evaluator statuses, support refs, basis refs, and bounded conclusions.</td></tr>
+                    <tr><td><code>archsig-architecture-distance/v1</code></td><td>Primary Part IV family bundle for atom, configuration, signature, operation, curvature, homotopy, representation, distance insights, and distance diagnosis.</td></tr>
                     <tr><td><code>archsig-analysis-packet/v1</code></td><td>Typed evaluator detail store for measurement detail and LLM / human review reading.</td></tr>
                     <tr><td><code>archsig-analysis-validation-report-v1</code></td><td>V1 analysis packet validation boundary.</td></tr>
                     <tr><td><code>archsig-pr-review-report-v1</code></td><td>Change-local PR review output from base ArchMap, PR-local delta, and LawPolicy.</td></tr>

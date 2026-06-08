@@ -59,7 +59,8 @@ These fixtures lock the current guardrails:
 - schema-only input can only produce bounded incomplete measurement
 - missing refs fail validation
 - blocked molecule support stays blocked and is not rounded to measured zero
-- `--strict-distance` rejects missing `distanceProfileRef` and blocked support
+- `--strict-distance` rejects missing `distanceProfileRef`, blocked support,
+  and partial canonical Part IV family bundles
 - validation failure removes stale success artifacts before returning
 
 ## Legacy / Historical Fixtures
@@ -152,6 +153,10 @@ make clear that `measuredTotal` is only the numeric aggregate for the
 architecture-distance-point families rather than the total of every distance
 definition. Non-aggregated families must remain visible with explicit measured,
 partial, blocked, unmeasured, or not-applicable state.
+Its `distanceInsights` object must stay synchronized with summary, viewer, and
+LLM surfaces as the engineer-facing distance reading for structural center,
+change-sensitive areas, selected policy obstruction state, blocked evidence,
+recommended refs, and baseline-dependent comparison claims.
 Atom geometry rows must expose the Fiber / Carrier / Valence / Semantic Anchor
 definition readings and the composed Atom Layout distance for top moved atom
 pairs. Configuration geometry rows must use typed hypergraph shortest-path
@@ -242,6 +247,8 @@ packet. Together they reject:
 - operation side-effect bound rounded to zero while transfer risk remains
 - curvature / representation surfaces without Part IV refs
 - representation faithfulness measured while coverage blockers remain
+- partial canonical Part IV family bundles hidden behind a measured aggregate
+  or a smoke-only practical example
 
 ## FieldSig Handoff Fixtures
 

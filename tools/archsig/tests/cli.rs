@@ -119,6 +119,7 @@ fn cli_locks_archmap_v1_output_replacement_golden_corpus_manifest() {
         "cli_analyze_v1_marks_incomplete_molecule_candidate_blocked",
         "cli_analyze_v1_strict_distance_rejects_missing_distance_profile_ref",
         "cli_analyze_v1_strict_distance_rejects_blocked_typed_results",
+        "cli_analyze_v1_strict_distance_rejects_partial_canonical_family_bundle",
         "cli_analyze_v1_validation_failure_removes_stale_success_artifacts",
     ]);
     let positive_cases = corpus["positiveCases"]
@@ -215,6 +216,77 @@ fn cli_locks_archmap_v1_output_replacement_golden_corpus_manifest() {
             positive_case_surfaces.contains(surface),
             "v1 output replacement corpus positive cases must lock output surface {surface}"
         );
+    }
+}
+
+#[test]
+fn cli_locks_part4_output_contract_docs_skill_and_website_smoke() {
+    let crate_root = Path::new(env!("CARGO_MANIFEST_DIR"));
+    let repo_root = crate_root
+        .parent()
+        .and_then(Path::parent)
+        .expect("crate root is tools/archsig inside repo");
+
+    for (path, required_snippets) in [
+        (
+            "docs/tool/golden_corpus.md",
+            &[
+                "distanceInsights",
+                "distanceDiagnosis.homotopyInsights",
+                "homotopyDistanceReadings",
+                "representationMetricReadings",
+                "partial canonical Part IV family",
+            ][..],
+        ),
+        (
+            "tools/archsig/skills/archsig-reader/SKILL.md",
+            &[
+                "distanceInsights",
+                "distanceActionQueue",
+                "Distance Diagnosis",
+            ][..],
+        ),
+        (
+            "tools/archsig/skills/archsig-reader/references/output-reading-guide.md",
+            &[
+                "distanceInsights",
+                "distanceActionQueue",
+                "homotopyDistanceReadings",
+            ][..],
+        ),
+        (
+            "website/archsig/manual/index.html",
+            &[
+                "architecture-distance.json",
+                "distanceInsights",
+                "homotopyDistanceReadings",
+            ][..],
+        ),
+        (
+            "website/archsig/reference/index.html",
+            &[
+                "architecture-distance.json",
+                "archsig-architecture-distance/v1",
+                "--strict-distance",
+            ][..],
+        ),
+        (
+            "tools/archsig/examples/practical-rust-service/README.md",
+            &[
+                "architecture-distance.json",
+                "Strict distance guard",
+                "incomplete canonical distance family states",
+            ][..],
+        ),
+    ] {
+        let body = fs::read_to_string(repo_root.join(path))
+            .unwrap_or_else(|error| panic!("must read {path}: {error}"));
+        for snippet in required_snippets {
+            assert!(
+                body.contains(snippet),
+                "{path} must mention Part IV output contract snippet {snippet}"
+            );
+        }
     }
 }
 

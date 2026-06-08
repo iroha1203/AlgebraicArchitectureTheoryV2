@@ -59,8 +59,7 @@ cargo run --manifest-path tools/archsig/Cargo.toml -- analyze \
   --archmap tools/archsig/examples/practical-rust-service/archmap/archmap.json \
   --law-policy tools/archsig/examples/practical-rust-service/law_policy/law_policy.json \
   --out-dir .tmp/archsig-practical-rust-service \
-  --emit-raw-artifacts \
-  --strict-distance
+  --emit-raw-artifacts
 ```
 
 The output is the v1 typed evaluator and architecture distance artifact chain:
@@ -71,6 +70,14 @@ plus raw packet / detail / LLM artifacts with `--emit-raw-artifacts`. The public
 summary, viewer data, and LLM packet are conclusion-first and use architecture
 distance naming. The artifacts are bounded to the example ArchMap and LawPolicy
 and are not a Lean proof or architecture lawfulness certificate.
+
+## Strict distance guard
+
+The example is intentionally a full-output reading fixture, not a fully measured
+strict-distance fixture. Running the same command with `--strict-distance`
+should fail closed with `incomplete canonical distance family states` while
+still making the partial canonical family state explicit in
+`architecture-distance.json`.
 
 ## ArchSig Reading Targets
 
