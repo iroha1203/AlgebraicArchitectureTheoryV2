@@ -54,5 +54,6 @@ pub use typed_evaluator::{
     build_architecture_distance_v1, build_typed_analysis_packet_v1,
     build_typed_analysis_summary_v1, build_typed_analysis_validation_v1,
     build_typed_atom_viewer_data_v1, build_typed_detail_index_v1,
-    build_typed_llm_interpretation_packet_v1, evaluate_typed_v1,
+    build_typed_llm_interpretation_packet_v1, enrich_architecture_distance_with_part4_bundle_v1,
+    evaluate_typed_v1,
 };

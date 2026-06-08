@@ -145,6 +145,13 @@ values must carry blocker refs. A missing measurement is not a measured zero.
 covered by the packet and point each family back to its primary artifacts, raw
 packet rows, supporting distance rows, blockers, and follow-up implementation
 Issues.
+`architecture-distance.json` must mirror that ledger as the primary canonical
+distance-family bundle. Its `familySummaries` and `measurementStateSummary`
+must cover every canonical family, and its `summary.measuredTotalScope` must
+make clear that `measuredTotal` is only the numeric aggregate for the
+architecture-distance-point families rather than the total of every distance
+definition. Non-aggregated families must remain visible with explicit measured,
+partial, blocked, unmeasured, or not-applicable state.
 The raw packet `part4DistanceFoundation.diagnosticScope`, compact
 `distanceDiagnosis`, Atom Viewer report pane, and LLM
 `distanceDiagnosisSummary` must agree on post-evaluator axis status. In
