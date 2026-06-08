@@ -264,7 +264,7 @@
       ],
       "downstreamIssues": [],
       "compatibilityBoundary": {
-        "fieldMappingPolicy": "Architecture distance v1 records measured atom, configuration, signature, operation, primary curvature geometry readings, primary homotopy filling geometry readings, and primary representation metric readings computed from Normalized ArchMap v1, TypedEvaluatorResults v1, raw v1 packet distance rows, and the selected LawPolicy distanceProfileRef.",
+        "fieldMappingPolicy": "Architecture distance v1 records measured atom, configuration, signature, operation, primary curvature geometry readings, primary homotopy filling geometry readings, primary representation metric readings, and distanceInsights computed from Normalized ArchMap v1, TypedEvaluatorResults v1, raw v1 packet distance rows, and the selected LawPolicy distanceProfileRef.",
         "deprecatedFields": [],
         "newRequiredAssumptions": [
           "Required fields, observation families, law refs, or analysis axes change.",

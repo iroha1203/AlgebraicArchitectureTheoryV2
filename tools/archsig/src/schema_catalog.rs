@@ -150,7 +150,7 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 "primary",
                 "ArchSig Output / Viewer workflow",
                 vec!["docs/tool/README.md"],
-                "Architecture distance v1 records measured atom, configuration, signature, operation, primary curvature geometry readings, primary homotopy filling geometry readings, and primary representation metric readings computed from Normalized ArchMap v1, TypedEvaluatorResults v1, raw v1 packet distance rows, and the selected LawPolicy distanceProfileRef.",
+                "Architecture distance v1 records measured atom, configuration, signature, operation, primary curvature geometry readings, primary homotopy filling geometry readings, primary representation metric readings, and distanceInsights computed from Normalized ArchMap v1, TypedEvaluatorResults v1, raw v1 packet distance rows, and the selected LawPolicy distanceProfileRef.",
                 vec![
                     "Architecture distance is a diagnostic ArchSig artifact, not a Lean theorem proof.",
                     "Typed evaluator violation counts are not substituted for architecture distance.",

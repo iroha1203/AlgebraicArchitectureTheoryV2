@@ -161,8 +161,8 @@ evidence, non-fillability witnesses, and source-backed semantic atoms before
 presenting ArchSig results. `archsig-analysis-summary.json` and
 `llm-interpretation-packet` then serve two readers:
 
-- user-facing diagnosis: measured verdict, quality counts, distance diagnosis,
-  hotspots, holes, and action queue first
+- user-facing diagnosis: measured verdict, quality counts, distance insights,
+  distance diagnosis, hotspots, holes, and action queue first
 - authoring feedback: coverage blockers, unfilled loops, missing filler
   evidence, and unmeasured spectrum support become a repair queue before final
   handoff
@@ -178,6 +178,10 @@ It is designed to be read whole without jq slicing. It exposes:
 - `qualityMeasurement`: nonzero axis count, hotspot count, recurrent
   obstruction count, architectural hole count, nonzero holonomy count, and
   coverage gap count, with compact Part IV distance-reading counts.
+- `distanceInsights`: engineer-facing architecture-distance reading. It reports
+  architectural center, change-sensitive areas, selected policy-obstruction
+  state, blocked evidence, recommended source / atom / molecule refs, and
+  `comparisonNeeded` for baseline-dependent trend or improvement claims.
 - `distanceDiagnosis`: Part IV diagnostic-distance first surface. It reports
   the distance verdict, measured movement, unmeasured axes, compact moved atom
   / axis rows, safe margin, repair distance, curvature / homotopy distance,
@@ -240,24 +244,26 @@ Part IV diagnostic distance. `viewerDistanceInputs` support Atom Viewer
 placement only. Diagnostic distance overlays are bounded projections of packet
 distance readings and are exposed through `diagnosticDistanceReadings`,
 `diagnosticDistanceBoundary`, omitted counts, and the report pane
-`distanceDiagnosis` section. The report pane reads the same compact
-`distanceDiagnosis` object as `archsig-analysis-summary.json`, so measured or zero signature
-axes cannot be reintroduced as unmeasured by the viewer surface. The viewer
-should help a human inspect where the diagnostic readings point; it must not
-reinterpret visual layout distance as an ArchSig metric.
+`distanceInsights` / `distanceDiagnosis` sections. The report pane reads the
+same compact `distanceInsights` and `distanceDiagnosis` objects as
+`archsig-analysis-summary.json`, so measured or zero signature axes and
+engineer-facing distance readings cannot drift across summary, viewer, and LLM
+surfaces. The viewer should help a human inspect where the diagnostic readings
+point; it must not reinterpret visual layout distance as an ArchSig metric.
 
 Current v1 viewer data also mirrors `richPacketRefs`, `richDominantFindings`,
 `richReadingGuide`, and `actionQueue` into `analysisOverlays` / `reportPane`.
 It records omitted raw packet array counts so that the viewer remains a bounded
 projection rather than a second analysis engine.
 
-`llmInterpretationPacket.distanceDiagnosisSummary` is the compact LLM note for
-distance-first reading. It tells an agent to read summary distance diagnosis
-before raw Part IV rows, records measured / blocked / unmeasured status, and
-records the evaluator-synchronized `DiagnosticScope` measured / unmeasured /
-blocker counts. Operation and curvature axes can remain unmeasured when a
-partial measured contribution still has evidence blockers. It keeps non-claims
-bounded to the selected ArchMap + LawPolicy evidence contract.
+`llmInterpretationPacket.distanceInsightsSummary` and
+`llmInterpretationPacket.distanceDiagnosisSummary` are the compact LLM notes for
+distance-first reading. They tell an agent to read summary distance insights and
+diagnosis before raw Part IV rows, record measured / blocked / unmeasured
+status, and record the evaluator-synchronized `DiagnosticScope` measured /
+unmeasured / blocker counts. Operation and curvature axes can remain unmeasured
+when a partial measured contribution still has evidence blockers. They keep
+non-claims bounded to the selected ArchMap + LawPolicy evidence contract.
 
 Current v1 `llm-interpretation-packet.json` also carries `richPacketRefs`,
 `readingGuidance`, and `actionQueueSummary`, so an LLM can start from the same
