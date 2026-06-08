@@ -263,16 +263,15 @@ fn typed_part4_distance_coverage_ledger_v1(
     homotopy: &Value,
     structural: &Value,
 ) -> Vec<Value> {
-    let architecture_status = architecture_distance["summary"]["status"]
-        .as_str()
-        .unwrap_or("partial");
+    let boundary_status =
+        typed_part4_boundary_status_v1(architecture_distance, spectrum, homotopy, structural);
     vec![
         typed_part4_ledger_entry_v1(
             "part4-ledger:distance-aat",
             "definition:1.1",
             "DistanceAAT",
             "foundation",
-            architecture_status,
+            boundary_status.clone(),
             packet_refs(&["/architectureDistance", "/distanceDiagnosis"]),
             vec!["architecture-distance.json#/summary"],
             1,
@@ -282,7 +281,7 @@ fn typed_part4_distance_coverage_ledger_v1(
             "definitions:2.1-2.5",
             "Fiber / Carrier / Valence / Semantic Anchor / Atom Layout distance",
             "atomGeometry",
-            architecture_status,
+            typed_family_status_from_array(architecture_distance, "atomDistanceReadings"),
             packet_refs(&["/architectureDistance/atomDistanceReadings"]),
             vec!["architecture-distance.json#/atomDistanceReadings"],
             packet_array_len(architecture_distance, "atomDistanceReadings"),
@@ -292,7 +291,7 @@ fn typed_part4_distance_coverage_ledger_v1(
             "definitions:3.1-3.2",
             "Configuration-indexed distance and Context distance",
             "configurationGeometry",
-            architecture_status,
+            typed_family_status_from_array(architecture_distance, "configurationDistanceReadings"),
             packet_refs(&["/architectureDistance/configurationDistanceReadings"]),
             vec!["architecture-distance.json#/configurationDistanceReadings"],
             packet_array_len(architecture_distance, "configurationDistanceReadings"),
@@ -302,7 +301,7 @@ fn typed_part4_distance_coverage_ledger_v1(
             "definitions:4.1-4.4",
             "Axis distance, Signature distance, Safe margin, and Signature drift",
             "signatureGeometry",
-            architecture_status,
+            typed_family_status_from_array(architecture_distance, "signatureDistanceReadings"),
             packet_refs(&[
                 "/architectureDistance/signatureDistanceReadings",
                 "/signatureAxes",
@@ -318,7 +317,7 @@ fn typed_part4_distance_coverage_ledger_v1(
             "definitions:5.1-5.5",
             "Operation cost, Operation distance, Flatness distance, Repair route, and Side-effect bound",
             "operationGeometry",
-            architecture_status,
+            typed_family_status_from_array(architecture_distance, "operationDistanceReadings"),
             packet_refs(&["/architectureDistance/operationDistanceReadings"]),
             vec![
                 "architecture-distance.json#/operationDistanceReadings",
@@ -331,7 +330,7 @@ fn typed_part4_distance_coverage_ledger_v1(
             "definitions:6.1-6.3",
             "Obstruction measure, Curvature mass, and Curvature transport",
             "curvatureGeometry",
-            architecture_status,
+            typed_family_status_from_array(spectrum, "curvatureMassReadings"),
             packet_refs(&[
                 "/curvatureSupportReadings",
                 "/curvatureTransferReadings",
@@ -349,7 +348,7 @@ fn typed_part4_distance_coverage_ledger_v1(
             "definitions:7.1-7.4",
             "Homotopy distance, Filling cost, Observation gap lower bound, and Architectural Dehn function",
             "homotopyFillingGeometry",
-            architecture_status,
+            typed_family_status_from_array(homotopy, "homotopyDistanceReadings"),
             packet_refs(&[
                 "/homotopyDistanceReadings",
                 "/architectureHomotopyReport",
@@ -366,7 +365,7 @@ fn typed_part4_distance_coverage_ledger_v1(
             "definitions:8.1-8.2",
             "Representation stability and Representation faithfulness",
             "representationMetric",
-            architecture_status,
+            typed_family_status_from_array(structural, "representationMetricReadings"),
             packet_refs(&["/representationMetricReadings"]),
             vec!["archsig-analysis-packet.json#/representationMetricReadings"],
             packet_array_len(structural, "representationMetricReadings"),
@@ -376,7 +375,7 @@ fn typed_part4_distance_coverage_ledger_v1(
             "definitions:9.1-9.3",
             "DistanceValue, unmeasured-is-not-zero, and DistanceProfile",
             "measurementBoundary",
-            architecture_status,
+            boundary_status.clone(),
             packet_refs(&[
                 "/architectureDistance/profile",
                 "/architectureDistance/summary",
@@ -397,7 +396,7 @@ fn typed_part4_distance_coverage_ledger_v1(
             "definitions:10.1-10.2",
             "Diagnostic scope and Bounded diagnostic conclusion",
             "boundedDiagnosticConclusion",
-            architecture_status,
+            boundary_status,
             packet_refs(&["/distanceDiagnosis", "/structuralReadingReviewSurface"]),
             vec![
                 "archsig-analysis-summary.json#/conclusion",
@@ -414,23 +413,25 @@ fn typed_part4_ledger_entry_v1(
     part4_definition_ref: &str,
     definition_title: &str,
     distance_family: &str,
-    measurement_status: &str,
+    measurement_status: impl Into<String>,
     raw_packet_refs: Vec<String>,
     primary_artifact_refs: Vec<&str>,
     reading_count: usize,
 ) -> Value {
+    let measurement_status = measurement_status.into();
     let coverage_status = if reading_count == 0 {
-        "missing-readings"
+        "not-applicable"
+    } else if measurement_status == "blocked" {
+        "primary-blocked"
     } else {
         "primary"
     };
-    let measurement_status = if reading_count == 0 {
-        "unmeasured"
-    } else {
-        measurement_status
-    };
-    let blocker_refs = if reading_count == 0 {
-        vec![format!("noTypedReadings:{distance_family}")]
+    let blocker_refs = if measurement_status == "blocked" {
+        vec![format!("blockedDistanceFamily:{distance_family}")]
+    } else if measurement_status == "unmeasured" {
+        vec![format!("unmeasuredDistanceFamily:{distance_family}")]
+    } else if measurement_status == "partial" {
+        vec![format!("partialDistanceFamily:{distance_family}")]
     } else {
         Vec::new()
     };
@@ -458,6 +459,331 @@ fn packet_refs(refs: &[&str]) -> Vec<String> {
     refs.iter()
         .map(|reference| format!("packet:{reference}"))
         .collect()
+}
+
+fn typed_family_status_from_array(source: &Value, field: &str) -> String {
+    let Some(items) = source[field].as_array() else {
+        return "not-applicable".to_string();
+    };
+    if items.is_empty() {
+        return "not-applicable".to_string();
+    }
+    let statuses = items
+        .iter()
+        .filter_map(|item| {
+            item["measurementStatus"]
+                .as_str()
+                .or_else(|| item["status"].as_str())
+        })
+        .collect::<Vec<_>>();
+    if statuses
+        .iter()
+        .any(|status| status.to_ascii_lowercase().contains("blocked"))
+    {
+        "blocked".to_string()
+    } else if statuses
+        .iter()
+        .any(|status| matches!(*status, "unmeasured" | "unknown" | "unavailable"))
+    {
+        "unmeasured".to_string()
+    } else if statuses.iter().any(|status| {
+        matches!(
+            *status,
+            "measured" | "measuredPass" | "measuredViolation" | "measuredZero" | "zero"
+        )
+    }) {
+        "measured".to_string()
+    } else {
+        "partial".to_string()
+    }
+}
+
+fn typed_part4_boundary_status_v1(
+    architecture_distance: &Value,
+    spectrum: &Value,
+    homotopy: &Value,
+    structural: &Value,
+) -> String {
+    let statuses = [
+        typed_family_status_from_array(architecture_distance, "atomDistanceReadings"),
+        typed_family_status_from_array(architecture_distance, "configurationDistanceReadings"),
+        typed_family_status_from_array(architecture_distance, "signatureDistanceReadings"),
+        typed_family_status_from_array(architecture_distance, "operationDistanceReadings"),
+        typed_family_status_from_array(spectrum, "curvatureMassReadings"),
+        typed_family_status_from_array(homotopy, "homotopyDistanceReadings"),
+        typed_family_status_from_array(structural, "representationMetricReadings"),
+    ];
+    if statuses
+        .iter()
+        .any(|status| matches!(status.as_str(), "blocked" | "unmeasured" | "partial"))
+    {
+        "partial".to_string()
+    } else {
+        "measured".to_string()
+    }
+}
+
+pub fn enrich_architecture_distance_with_part4_bundle_v1(
+    architecture_distance: &Value,
+    packet: &Value,
+    emit_raw_artifacts: bool,
+) -> Value {
+    let mut enriched = architecture_distance.clone();
+    let family_summaries = architecture_distance_family_summaries_v1(
+        architecture_distance,
+        packet,
+        emit_raw_artifacts,
+    );
+    let measurement_state_summary =
+        architecture_distance_measurement_state_summary(&family_summaries);
+    let mut primary_insights_refs = vec![
+        "architecture-distance.json#/familySummaries",
+        "architecture-distance.json#/measurementStateSummary",
+        "architecture-distance.json#/distanceDiagnosis/familySummaries",
+        "archsig-analysis-summary.json#/distanceDiagnosis",
+        "archsig-atom-viewer-data.json#/reportPane/distanceDiagnosis",
+    ];
+    let optional_raw_artifact_refs = json!([
+        "llm-interpretation-packet.json#/distanceDiagnosisSummary",
+        "archsig-analysis-detail-index.json#/sections/part4DistanceCoverageLedger"
+    ]);
+    if emit_raw_artifacts {
+        primary_insights_refs.extend([
+            "llm-interpretation-packet.json#/distanceDiagnosisSummary",
+            "archsig-analysis-detail-index.json#/sections/part4DistanceCoverageLedger",
+        ]);
+    }
+    let primary_insights_refs = json!(primary_insights_refs);
+    let measured_total_scope = architecture_distance_measured_total_scope(&family_summaries);
+    let bundle_status = measurement_state_summary["status"]
+        .as_str()
+        .unwrap_or("partial")
+        .to_string();
+    let verdict = if bundle_status == "missing-family" {
+        "ARCHITECTURE_DISTANCE_MISSING_CANONICAL_FAMILY"
+    } else if bundle_status == "partial" {
+        "ARCHITECTURE_DISTANCE_PARTIALLY_BLOCKED"
+    } else if enriched["summary"]["measuredTotal"]
+        .as_i64()
+        .unwrap_or_default()
+        > 0
+    {
+        "ARCHITECTURE_DISTANCE_MEASURED"
+    } else {
+        "ARCHITECTURE_DISTANCE_ZERO"
+    };
+
+    enriched["familySummaries"] = Value::Array(family_summaries.clone());
+    enriched["measurementStateSummary"] = measurement_state_summary.clone();
+    enriched["primaryInsightsRefs"] = primary_insights_refs.clone();
+    enriched["optionalRawArtifactRefs"] = optional_raw_artifact_refs.clone();
+    enriched["summary"]["status"] = json!(bundle_status);
+    enriched["summary"]["familyCount"] = measurement_state_summary["familyCount"].clone();
+    enriched["summary"]["missingCanonicalFamilyCount"] =
+        measurement_state_summary["missingCanonicalFamilyCount"].clone();
+    enriched["summary"]["explicitBlockedFamilyCount"] =
+        measurement_state_summary["blockedFamilyCount"].clone();
+    enriched["summary"]["notApplicableFamilyCount"] =
+        measurement_state_summary["notApplicableFamilyCount"].clone();
+    enriched["summary"]["measuredTotalScope"] = measured_total_scope.clone();
+    enriched["summary"]["measuredTotalFamilyRefs"] =
+        measured_total_scope["includedFamilies"].clone();
+    enriched["summary"]["nonAggregatedFamilyRefs"] =
+        measured_total_scope["nonAggregatedFamilies"].clone();
+    enriched["distanceDiagnosis"]["verdict"] = json!(verdict);
+    enriched["distanceDiagnosis"]["familySummaries"] = Value::Array(family_summaries);
+    enriched["distanceDiagnosis"]["measurementStateSummary"] = measurement_state_summary;
+    enriched["distanceDiagnosis"]["primaryInsightsRefs"] = primary_insights_refs;
+    enriched["distanceDiagnosis"]["optionalRawArtifactRefs"] = optional_raw_artifact_refs;
+    enriched["distanceDiagnosis"]["distanceValue"]["status"] =
+        enriched["summary"]["status"].clone();
+    enriched["distanceDiagnosis"]["distanceValue"]["measuredTotalScope"] = measured_total_scope;
+    enriched
+}
+
+fn architecture_distance_family_summaries_v1(
+    architecture_distance: &Value,
+    packet: &Value,
+    emit_raw_artifacts: bool,
+) -> Vec<Value> {
+    packet["part4DistanceCoverageLedger"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .enumerate()
+        .map(|(index, entry)| {
+            let family = entry["distanceFamily"].as_str().unwrap_or("unknown");
+            let measurement_status = entry["measurementStatus"].as_str().unwrap_or("unknown");
+            let contribution =
+                architecture_distance_measured_contribution(architecture_distance, family);
+            let eligible_for_measured_total_scope = contribution.is_some();
+            let actually_measured_contribution =
+                eligible_for_measured_total_scope && measurement_status == "measured";
+            let contribution_status = match (contribution, measurement_status) {
+                (Some(_), "measured") => "measured-contribution".to_string(),
+                (Some(0), "not-applicable") => {
+                    "zero-contribution-not-applicable-not-measured-zero".to_string()
+                }
+                (Some(_), status) => format!("scoped-{status}-contribution"),
+                (None, _) => "non-aggregated-canonical-family".to_string(),
+            };
+            let mut primary_refs = entry["primaryArtifactRefs"]
+                .as_array()
+                .cloned()
+                .unwrap_or_default()
+                .into_iter()
+                .filter(|reference| {
+                    emit_raw_artifacts
+                        || reference
+                            .as_str()
+                            .is_some_and(|reference| !is_raw_only_artifact_ref(reference))
+                })
+                .collect::<Vec<_>>();
+            let optional_raw_refs = entry["primaryArtifactRefs"]
+                .as_array()
+                .cloned()
+                .unwrap_or_default()
+                .into_iter()
+                .filter(|reference| reference.as_str().is_some_and(is_raw_only_artifact_ref))
+                .collect::<Vec<_>>();
+            primary_refs.insert(
+                0,
+                json!(format!("architecture-distance.json#/familySummaries/{index}")),
+            );
+            json!({
+                "familySummaryId": format!("architecture-distance-family:{family}"),
+                "sourceLedgerRef": format!("packet:/part4DistanceCoverageLedger/{index}"),
+                "ledgerEntryId": entry["ledgerEntryId"],
+                "part4DefinitionRef": entry["part4DefinitionRef"],
+                "definitionTitle": entry["definitionTitle"],
+                "distanceFamily": family,
+                "coverageStatus": entry["coverageStatus"],
+                "measurementStatus": entry["measurementStatus"],
+                "readingCount": entry["readingCount"],
+                "measuredTotalContribution": contribution,
+                "measuredTotalContributionStatus": contribution_status,
+                "unit": if eligible_for_measured_total_scope {
+                    json!("architecture-distance-point")
+                } else {
+                    Value::Null
+                },
+                "eligibleForMeasuredTotalScope": eligible_for_measured_total_scope,
+                "actuallyMeasuredContribution": actually_measured_contribution,
+                "includedInMeasuredTotal": eligible_for_measured_total_scope,
+                "numericAggregationStatus": if actually_measured_contribution {
+                    "measured-contribution-in-measuredTotal"
+                } else if eligible_for_measured_total_scope {
+                    "eligible-scope-without-measured-contribution"
+                } else {
+                    "non-aggregated-canonical-family"
+                },
+                "rawPacketRefs": entry["rawPacketRefs"],
+                "primaryArtifactRefs": primary_refs,
+                "optionalRawArtifactRefs": optional_raw_refs,
+                "blockerRefs": entry["blockerRefs"],
+                "evidenceBoundary": "family summary mirrors part4DistanceCoverageLedger and makes the measuredTotal aggregation scope explicit"
+            })
+        })
+        .collect()
+}
+
+fn is_raw_only_artifact_ref(reference: &str) -> bool {
+    reference.starts_with("archsig-analysis-packet.json#")
+        || reference.starts_with("archsig-analysis-detail-index.json#")
+        || reference.starts_with("llm-interpretation-packet.json#")
+}
+
+fn architecture_distance_measured_contribution(
+    architecture_distance: &Value,
+    family: &str,
+) -> Option<i64> {
+    let breakdown = &architecture_distance["summary"]["breakdown"];
+    match family {
+        "atomGeometry" => breakdown["atomGeometry"].as_i64(),
+        "configurationGeometry" => breakdown["configuration"].as_i64(),
+        "signatureGeometry" => breakdown["signature"].as_i64(),
+        "operationGeometry" => breakdown["operation"].as_i64(),
+        _ => None,
+    }
+}
+
+fn architecture_distance_measurement_state_summary(family_summaries: &[Value]) -> Value {
+    let expected = BTreeSet::from([
+        "foundation",
+        "atomGeometry",
+        "configurationGeometry",
+        "signatureGeometry",
+        "operationGeometry",
+        "curvatureGeometry",
+        "homotopyFillingGeometry",
+        "representationMetric",
+        "measurementBoundary",
+        "boundedDiagnosticConclusion",
+    ]);
+    let present = family_summaries
+        .iter()
+        .filter_map(|summary| summary["distanceFamily"].as_str())
+        .collect::<BTreeSet<_>>();
+    let missing = expected
+        .iter()
+        .filter(|family| !present.contains(**family))
+        .copied()
+        .collect::<Vec<_>>();
+    let status_count = |status: &str| {
+        family_summaries
+            .iter()
+            .filter(|summary| summary["measurementStatus"] == status)
+            .count()
+    };
+    let blocked_count = status_count("blocked");
+    let unmeasured_count = status_count("unmeasured");
+    let partial_count = status_count("partial");
+    let not_applicable_count = status_count("not-applicable");
+    let missing_count = missing.len();
+    let status = if missing_count > 0 {
+        "missing-family"
+    } else if blocked_count + unmeasured_count + partial_count > 0 {
+        "partial"
+    } else {
+        "measured"
+    };
+    json!({
+        "status": status,
+        "expectedFamilyCount": expected.len(),
+        "familyCount": family_summaries.len(),
+        "missingCanonicalFamilyCount": missing_count,
+        "missingCanonicalFamilies": missing,
+        "measuredFamilyCount": status_count("measured"),
+        "zeroFamilyCount": status_count("zero"),
+        "blockedFamilyCount": blocked_count,
+        "unmeasuredFamilyCount": unmeasured_count,
+        "partialFamilyCount": partial_count,
+        "notApplicableFamilyCount": not_applicable_count,
+        "nonAggregatedFamilyCount": family_summaries
+            .iter()
+            .filter(|summary| summary["includedInMeasuredTotal"] == false)
+            .count(),
+        "evidenceBoundary": "measurementStateSummary counts canonical distance families; blocked or unmeasured families are explicit states, not measured zero"
+    })
+}
+
+fn architecture_distance_measured_total_scope(family_summaries: &[Value]) -> Value {
+    let included = family_summaries
+        .iter()
+        .filter(|summary| summary["includedInMeasuredTotal"] == true)
+        .filter_map(|summary| summary["distanceFamily"].as_str())
+        .collect::<Vec<_>>();
+    let non_aggregated = family_summaries
+        .iter()
+        .filter(|summary| summary["includedInMeasuredTotal"] == false)
+        .filter_map(|summary| summary["distanceFamily"].as_str())
+        .collect::<Vec<_>>();
+    json!({
+        "scope": "aggregated architecture-distance-point families only",
+        "includedFamilies": included,
+        "nonAggregatedFamilies": non_aggregated,
+        "reading": "measuredTotal is not the total of all canonical distance definitions; inspect familySummaries for every canonical family state"
+    })
 }
 
 pub fn build_typed_analysis_summary_v1(
@@ -919,6 +1245,7 @@ pub fn build_typed_analysis_validation_v1(
     let breakdown_sum_pass = architecture_distance_breakdown_sums(&packet["architectureDistance"]);
     let reading_counts_pass =
         architecture_distance_reading_counts_match(&packet["architectureDistance"]);
+    let architecture_distance_bundle_pass = architecture_distance_bundle_matches_packet(packet);
     let replacement_registry_present_pass = packet["replacementRegistry"]
         .as_array()
         .is_some_and(|items| !items.is_empty());
@@ -1107,6 +1434,7 @@ pub fn build_typed_analysis_validation_v1(
                     "pathMultiplicityLossReadings",
                     "typedEvaluatorResults",
                     "architectureDistanceSignatureReadings",
+                    "part4DistanceCoverageLedger",
                 ]
                 .iter()
                 .all(|field| {
@@ -1137,6 +1465,7 @@ pub fn build_typed_analysis_validation_v1(
         profile_ref_pass,
         breakdown_sum_pass,
         reading_counts_pass,
+        architecture_distance_bundle_pass,
         replacement_registry_present_pass,
         replacement_results_match_pass,
         replacement_output_refs_pass,
@@ -1199,6 +1528,11 @@ pub fn build_typed_analysis_validation_v1(
                 "checkId": "archsig.v1.architectureDistanceReadingCounts",
                 "result": if reading_counts_pass { "pass" } else { "fail" },
                 "message": "architecture distance readingCounts match the emitted reading arrays"
+            },
+            {
+                "checkId": "archsig.v1.architectureDistanceCanonicalBundle",
+                "result": if architecture_distance_bundle_pass { "pass" } else { "fail" },
+                "message": "architecture-distance familySummaries mirror the raw packet distance coverage ledger and expose measuredTotal scope"
             },
             {
                 "checkId": "archsig.v1.replacementRegistryPresent",
@@ -4757,6 +5091,91 @@ fn architecture_distance_reading_counts_match(architecture_distance: &Value) -> 
     })
 }
 
+fn architecture_distance_bundle_matches_packet(packet: &Value) -> bool {
+    let architecture_distance = &packet["architectureDistance"];
+    let Some(family_summaries) = architecture_distance["familySummaries"].as_array() else {
+        return false;
+    };
+    let Some(ledger) = packet["part4DistanceCoverageLedger"].as_array() else {
+        return false;
+    };
+    if family_summaries.len() != ledger.len() || family_summaries.len() != 10 {
+        return false;
+    }
+    if architecture_distance["measurementStateSummary"]["familyCount"].as_u64()
+        != Some(family_summaries.len() as u64)
+    {
+        return false;
+    }
+    if architecture_distance["measurementStateSummary"]["missingCanonicalFamilyCount"].as_u64()
+        != Some(0)
+    {
+        return false;
+    }
+    if !architecture_distance["primaryInsightsRefs"]
+        .as_array()
+        .is_some_and(|refs| !refs.is_empty())
+    {
+        return false;
+    }
+    let scope = &architecture_distance["summary"]["measuredTotalScope"];
+    if scope["scope"].as_str() != Some("aggregated architecture-distance-point families only")
+        || !scope["includedFamilies"]
+            .as_array()
+            .is_some_and(|families| {
+                [
+                    "atomGeometry",
+                    "configurationGeometry",
+                    "signatureGeometry",
+                    "operationGeometry",
+                ]
+                .iter()
+                .all(|family| families.iter().any(|value| value == family))
+            })
+        || !scope["nonAggregatedFamilies"]
+            .as_array()
+            .is_some_and(|families| {
+                [
+                    "foundation",
+                    "curvatureGeometry",
+                    "homotopyFillingGeometry",
+                    "representationMetric",
+                    "measurementBoundary",
+                    "boundedDiagnosticConclusion",
+                ]
+                .iter()
+                .all(|family| families.iter().any(|value| value == family))
+            })
+    {
+        return false;
+    }
+
+    family_summaries
+        .iter()
+        .zip(ledger.iter())
+        .enumerate()
+        .all(|(index, (summary, entry))| {
+            summary["ledgerEntryId"] == entry["ledgerEntryId"]
+                && summary["distanceFamily"] == entry["distanceFamily"]
+                && summary["coverageStatus"] == entry["coverageStatus"]
+                && summary["measurementStatus"] == entry["measurementStatus"]
+                && summary["readingCount"] == entry["readingCount"]
+                && summary["rawPacketRefs"] == entry["rawPacketRefs"]
+                && summary["sourceLedgerRef"]
+                    == format!("packet:/part4DistanceCoverageLedger/{index}")
+                && summary["primaryArtifactRefs"]
+                    .as_array()
+                    .is_some_and(|refs| {
+                        refs.iter().any(|reference| {
+                            reference
+                                == &json!(format!(
+                                    "architecture-distance.json#/familySummaries/{index}"
+                                ))
+                        })
+                    })
+        })
+}
+
 fn typed_violation_detected(
     entry: &crate::ExpandedLawPolicyEntryV1,
     support_atoms: &[&NormalizedAtomV1],
@@ -5542,5 +5961,93 @@ mod tests {
         let error = build_architecture_distance_v1(&normalized, &policy, &typed_results)
             .expect_err("unknown distance profile must fail closed");
         assert!(error.contains("unknown architecture distance profile ref"));
+    }
+
+    #[test]
+    fn architecture_distance_bundle_validation_fails_when_family_summary_drifts() {
+        let mut packet = json!({
+            "architectureDistance": {
+                "summary": {
+                    "measuredTotalScope": {
+                        "scope": "aggregated architecture-distance-point families only",
+                        "includedFamilies": [
+                            "atomGeometry",
+                            "configurationGeometry",
+                            "signatureGeometry",
+                            "operationGeometry"
+                        ],
+                        "nonAggregatedFamilies": [
+                            "foundation",
+                            "curvatureGeometry",
+                            "homotopyFillingGeometry",
+                            "representationMetric",
+                            "measurementBoundary",
+                            "boundedDiagnosticConclusion"
+                        ]
+                    }
+                },
+                "measurementStateSummary": {
+                    "familyCount": 10,
+                    "missingCanonicalFamilyCount": 0
+                },
+                "primaryInsightsRefs": ["architecture-distance.json#/familySummaries"],
+                "familySummaries": []
+            },
+            "part4DistanceCoverageLedger": []
+        });
+        let families = [
+            "foundation",
+            "atomGeometry",
+            "configurationGeometry",
+            "signatureGeometry",
+            "operationGeometry",
+            "curvatureGeometry",
+            "homotopyFillingGeometry",
+            "representationMetric",
+            "measurementBoundary",
+            "boundedDiagnosticConclusion",
+        ];
+        let summaries = families
+            .iter()
+            .enumerate()
+            .map(|(index, family)| {
+                json!({
+                    "ledgerEntryId": format!("part4-ledger:{family}"),
+                    "distanceFamily": family,
+                    "coverageStatus": "primary",
+                    "measurementStatus": "measured",
+                    "readingCount": 1,
+                    "rawPacketRefs": [format!("packet:/{family}")],
+                    "sourceLedgerRef": format!("packet:/part4DistanceCoverageLedger/{index}"),
+                    "primaryArtifactRefs": [
+                        format!("architecture-distance.json#/familySummaries/{index}")
+                    ]
+                })
+            })
+            .collect::<Vec<_>>();
+        packet["architectureDistance"]["familySummaries"] = Value::Array(summaries.clone());
+        packet["part4DistanceCoverageLedger"] = Value::Array(summaries);
+        assert!(
+            architecture_distance_bundle_matches_packet(&packet),
+            "control packet must satisfy the canonical bundle contract"
+        );
+
+        let mut missing_summary = packet.clone();
+        missing_summary["architectureDistance"]["familySummaries"]
+            .as_array_mut()
+            .expect("family summaries are mutable")
+            .pop();
+        assert!(
+            !architecture_distance_bundle_matches_packet(&missing_summary),
+            "missing family summary must fail canonical bundle validation"
+        );
+
+        let mut drifted_status = packet;
+        drifted_status["architectureDistance"]["familySummaries"][1]["measurementStatus"] =
+            json!("blocked");
+        assert!(
+            !architecture_distance_bundle_matches_packet(&drifted_status),
+            "family summary status drift must fail canonical bundle validation"
+        );
     }
 }

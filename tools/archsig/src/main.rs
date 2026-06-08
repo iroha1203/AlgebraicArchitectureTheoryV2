@@ -8,9 +8,9 @@ use archsig::{
     SchemaVersionCatalogV0, build_architecture_distance_v1, build_typed_analysis_packet_v1,
     build_typed_analysis_summary_v1, build_typed_analysis_validation_v1,
     build_typed_atom_viewer_data_v1, build_typed_detail_index_v1,
-    build_typed_llm_interpretation_packet_v1, evaluate_typed_v1, normalize_archmap_v1,
-    static_law_evaluator_registry_v1, static_schema_version_catalog, validate_archmap_v1_report,
-    validate_law_policy_v1_report,
+    build_typed_llm_interpretation_packet_v1, enrich_architecture_distance_with_part4_bundle_v1,
+    evaluate_typed_v1, normalize_archmap_v1, static_law_evaluator_registry_v1,
+    static_schema_version_catalog, validate_archmap_v1_report, validate_law_policy_v1_report,
 };
 use clap::{Parser, Subcommand};
 use serde_json::Value;
@@ -745,12 +745,22 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                 &law_policy.display().to_string(),
             );
             write_json(Some(typed_evaluator_results_path), &typed_results)?;
-            let architecture_distance = build_architecture_distance_v1(
+            let base_architecture_distance = build_architecture_distance_v1(
                 &normalized_archmap,
                 &law_policy_document,
                 &typed_results,
             )
             .map_err(|message| -> Box<dyn Error> { message.into() })?;
+            let base_analysis_packet = build_typed_analysis_packet_v1(
+                &normalized_archmap,
+                &typed_results,
+                &base_architecture_distance,
+            );
+            let architecture_distance = enrich_architecture_distance_with_part4_bundle_v1(
+                &base_architecture_distance,
+                &base_analysis_packet,
+                emit_raw_artifacts,
+            );
             write_json(Some(architecture_distance_path), &architecture_distance)?;
             let analysis_packet = build_typed_analysis_packet_v1(
                 &normalized_archmap,
@@ -820,6 +830,26 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
             {
                 eprintln!(
                     "--strict-distance rejected v1 architecture distance with blocked or unmeasured readings"
+                );
+                return Ok(ExitCode::from(1));
+            }
+            if strict_distance
+                && architecture_distance["measurementStateSummary"]["missingCanonicalFamilyCount"]
+                    .as_u64()
+                    .unwrap_or(0)
+                    > 0
+            {
+                eprintln!(
+                    "--strict-distance rejected v1 architecture distance with missing canonical Part IV distance families"
+                );
+                return Ok(ExitCode::from(1));
+            }
+            if strict_distance
+                && architecture_distance["measurementStateSummary"]["status"].as_str()
+                    != Some("measured")
+            {
+                eprintln!(
+                    "--strict-distance rejected v1 architecture distance with incomplete canonical distance family states"
                 );
                 return Ok(ExitCode::from(1));
             }

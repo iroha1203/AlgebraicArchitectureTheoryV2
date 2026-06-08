@@ -1334,8 +1334,9 @@ fn cli_analyze_v1_writes_summary_viewer_and_manifest_artifacts() {
         read_json(&out_dir.join("typed-evaluator-results.json"))["schema"],
         "typed-evaluator-results/v1"
     );
+    let architecture_distance = read_json(&out_dir.join("architecture-distance.json"));
     assert_eq!(
-        read_json(&out_dir.join("architecture-distance.json"))["schema"],
+        architecture_distance["schema"],
         "archsig-architecture-distance/v1"
     );
     assert_eq!(
@@ -1391,6 +1392,32 @@ fn cli_analyze_v1_writes_summary_viewer_and_manifest_artifacts() {
         !out_dir.join("archsig-analysis-packet.json").exists(),
         "raw v1 packet is omitted unless --emit-raw-artifacts is passed"
     );
+    for reference in architecture_distance["primaryInsightsRefs"]
+        .as_array()
+        .expect("primary insight refs are emitted")
+    {
+        let Some(path) = reference
+            .as_str()
+            .expect("primary insight ref is string")
+            .split('#')
+            .next()
+        else {
+            panic!("primary insight ref has path before fragment");
+        };
+        assert!(
+            out_dir.join(path).exists(),
+            "default architecture-distance primary ref must point to generated artifact: {path}"
+        );
+    }
+    assert!(
+        architecture_distance["optionalRawArtifactRefs"]
+            .as_array()
+            .is_some_and(|refs| refs
+                .iter()
+                .any(|reference| reference
+                    == "llm-interpretation-packet.json#/distanceDiagnosisSummary")),
+        "raw-only interpretation refs must be optional when raw artifacts are omitted"
+    );
     let manifest = read_json(&out_dir.join("archsig-run-manifest.json"));
     assert_eq!(
         manifest["architectureDistancePath"].as_str(),
@@ -1440,6 +1467,84 @@ fn cli_analyze_v1_emit_raw_artifacts_writes_typed_packet_detail_and_handoff() {
     assert_eq!(
         packet["distanceDiagnosis"]["basis"], "architectureDistance",
         "v1 packet distanceDiagnosis must point at architecture distance, not typed counts"
+    );
+    let family_summaries = packet["architectureDistance"]["familySummaries"]
+        .as_array()
+        .expect("architecture distance family summaries are emitted");
+    let part4_ledger = packet["part4DistanceCoverageLedger"]
+        .as_array()
+        .expect("Part IV distance coverage ledger is emitted");
+    assert_eq!(
+        family_summaries.len(),
+        10,
+        "architectureDistance must summarize every canonical distance family"
+    );
+    assert_eq!(
+        family_summaries.len(),
+        part4_ledger.len(),
+        "architectureDistance family summaries must mirror the raw packet ledger"
+    );
+    for (index, (family_summary, ledger_entry)) in
+        family_summaries.iter().zip(part4_ledger.iter()).enumerate()
+    {
+        assert_eq!(
+            family_summary["sourceLedgerRef"],
+            format!("packet:/part4DistanceCoverageLedger/{index}")
+        );
+        assert_eq!(
+            family_summary["ledgerEntryId"],
+            ledger_entry["ledgerEntryId"]
+        );
+        assert_eq!(
+            family_summary["distanceFamily"],
+            ledger_entry["distanceFamily"]
+        );
+        assert_eq!(
+            family_summary["coverageStatus"],
+            ledger_entry["coverageStatus"]
+        );
+        assert_eq!(
+            family_summary["measurementStatus"],
+            ledger_entry["measurementStatus"]
+        );
+        assert_eq!(family_summary["readingCount"], ledger_entry["readingCount"]);
+        assert_eq!(
+            family_summary["rawPacketRefs"],
+            ledger_entry["rawPacketRefs"]
+        );
+    }
+    assert_eq!(
+        packet["architectureDistance"]["measurementStateSummary"]["missingCanonicalFamilyCount"]
+            .as_u64(),
+        Some(0),
+        "canonical family bundle must not omit a Part IV distance family"
+    );
+    let measured_total_scope = &packet["architectureDistance"]["summary"]["measuredTotalScope"];
+    assert_eq!(
+        measured_total_scope["scope"].as_str(),
+        Some("aggregated architecture-distance-point families only")
+    );
+    assert_eq!(
+        string_set(&measured_total_scope["includedFamilies"]),
+        BTreeSet::from([
+            "atomGeometry".to_string(),
+            "configurationGeometry".to_string(),
+            "operationGeometry".to_string(),
+            "signatureGeometry".to_string(),
+        ]),
+        "measuredTotal must state exactly which families are numerically aggregated"
+    );
+    assert_eq!(
+        string_set(&measured_total_scope["nonAggregatedFamilies"]),
+        BTreeSet::from([
+            "boundedDiagnosticConclusion".to_string(),
+            "curvatureGeometry".to_string(),
+            "foundation".to_string(),
+            "homotopyFillingGeometry".to_string(),
+            "measurementBoundary".to_string(),
+            "representationMetric".to_string(),
+        ]),
+        "non-aggregated canonical families must stay visible outside measuredTotal"
     );
     assert!(
         packet["replacementRegistry"]
@@ -1610,6 +1715,7 @@ fn cli_analyze_v1_emit_raw_artifacts_writes_typed_packet_detail_and_handoff() {
         "pathMultiplicityLossReadings",
         "typedEvaluatorResults",
         "architectureDistanceSignatureReadings",
+        "part4DistanceCoverageLedger",
     ] {
         let pointer = packet["generatedPacketRefs"][field]
             .as_str()
@@ -1770,6 +1876,7 @@ fn cli_analyze_v1_emit_raw_artifacts_writes_typed_packet_detail_and_handoff() {
         "archsig.v1.architectureDistanceProfileRefsMatch",
         "archsig.v1.architectureDistanceBreakdownSums",
         "archsig.v1.architectureDistanceReadingCounts",
+        "archsig.v1.architectureDistanceCanonicalBundle",
         "archsig.v1.replacementRegistryPresent",
         "archsig.v1.replacementRegistryResultsMatch",
         "archsig.v1.replacementRegistryOutputRefs",
@@ -2252,6 +2359,41 @@ fn cli_analyze_v1_strict_distance_rejects_blocked_typed_results() {
 }
 
 #[test]
+fn cli_analyze_v1_strict_distance_rejects_partial_canonical_family_bundle() {
+    let out_dir = temp_dir("analyze-v1-strict-distance-partial-family-bundle");
+    let root = practical_rust_service_root();
+
+    let output = run_sig0_output(&[
+        "analyze",
+        "--archmap",
+        root.join("archmap/archmap.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--law-policy",
+        root.join("law_policy/law_policy.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--out-dir",
+        out_dir.to_str().expect("path is utf-8"),
+        "--strict-distance",
+    ]);
+
+    assert!(!output.status.success());
+    assert_eq!(output.status.code(), Some(1));
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(
+        stderr.contains("incomplete canonical distance family states"),
+        "--strict-distance must reject partial canonical family bundles\n{stderr}"
+    );
+    let architecture_distance = read_json(&out_dir.join("architecture-distance.json"));
+    assert_eq!(
+        architecture_distance["measurementStateSummary"]["status"].as_str(),
+        Some("partial"),
+        "strict rejection must match the emitted canonical distance family state"
+    );
+}
+
+#[test]
 fn practical_rust_service_example_runs_v1_analyze() {
     let out_dir = temp_dir("practical-rust-service-v1-analyze");
     let root = practical_rust_service_root();
@@ -2269,7 +2411,6 @@ fn practical_rust_service_example_runs_v1_analyze() {
         "--out-dir",
         out_dir.to_str().expect("path is utf-8"),
         "--emit-raw-artifacts",
-        "--strict-distance",
     ]);
 
     assert!(output.status.success());
@@ -2293,10 +2434,8 @@ fn practical_rust_service_example_runs_v1_analyze() {
                 .any(|molecule| molecule["sourceMoleculeId"] == source_molecule_id)
         })
     }));
-    assert_eq!(
-        read_json(&out_dir.join("archsig-analysis-packet.json"))["schema"],
-        "archsig-analysis-packet/v1"
-    );
+    let packet = read_json(&out_dir.join("archsig-analysis-packet.json"));
+    assert_eq!(packet["schema"], "archsig-analysis-packet/v1");
     let typed = read_json(&out_dir.join("typed-evaluator-results.json"));
     assert!(
         typed["replacementEvaluatorResults"]
@@ -2328,6 +2467,68 @@ fn practical_rust_service_example_runs_v1_analyze() {
     assert_eq!(
         architecture_distance["summary"]["profileRef"],
         "distance-profile:practical-rust-service@1"
+    );
+    assert_eq!(
+        architecture_distance["familySummaries"], packet["architectureDistance"]["familySummaries"],
+        "primary architecture-distance artifact and raw packet must expose the same canonical family bundle"
+    );
+    assert_eq!(
+        architecture_distance["measurementStateSummary"],
+        packet["architectureDistance"]["measurementStateSummary"],
+        "primary architecture-distance artifact and raw packet must expose the same measurement state summary"
+    );
+    assert_eq!(
+        architecture_distance["measurementStateSummary"]["familyCount"].as_u64(),
+        Some(10),
+        "practical fixture must expose all canonical distance families"
+    );
+    assert_eq!(
+        architecture_distance["measurementStateSummary"]["missingCanonicalFamilyCount"].as_u64(),
+        Some(0),
+        "strict-distance practical fixture must not omit canonical distance families"
+    );
+    assert_eq!(
+        string_set(&architecture_distance["summary"]["measuredTotalScope"]["includedFamilies"]),
+        BTreeSet::from([
+            "atomGeometry".to_string(),
+            "configurationGeometry".to_string(),
+            "operationGeometry".to_string(),
+            "signatureGeometry".to_string(),
+        ]),
+        "measuredTotal must be scoped to architecture-distance-point families"
+    );
+    assert!(
+        string_set(
+            &architecture_distance["summary"]["measuredTotalScope"]["nonAggregatedFamilies"]
+        )
+        .is_superset(&BTreeSet::from([
+            "curvatureGeometry".to_string(),
+            "homotopyFillingGeometry".to_string(),
+            "representationMetric".to_string(),
+        ])),
+        "derived Part IV families must be visible as non-aggregated canonical distance families"
+    );
+    assert!(
+        architecture_distance["familySummaries"]
+            .as_array()
+            .is_some_and(|families| families
+                .iter()
+                .zip(
+                    packet["part4DistanceCoverageLedger"]
+                        .as_array()
+                        .expect("raw packet ledger is emitted")
+                        .iter()
+                )
+                .enumerate()
+                .all(|(index, (family_summary, ledger_entry))| {
+                    family_summary["sourceLedgerRef"]
+                        == format!("packet:/part4DistanceCoverageLedger/{index}")
+                        && family_summary["ledgerEntryId"] == ledger_entry["ledgerEntryId"]
+                        && family_summary["distanceFamily"] == ledger_entry["distanceFamily"]
+                        && family_summary["measurementStatus"] == ledger_entry["measurementStatus"]
+                        && family_summary["readingCount"] == ledger_entry["readingCount"]
+                })),
+        "primary architecture-distance family bundle must mirror the raw packet ledger"
     );
     assert_eq!(
         architecture_distance["profile"]["signatureViolationWeight"].as_i64(),
