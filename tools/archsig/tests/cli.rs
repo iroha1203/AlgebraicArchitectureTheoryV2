@@ -2809,6 +2809,68 @@ fn practical_rust_service_example_runs_v1_analyze() {
                 }),
         "summary, viewer, and LLM packet must expose curvature zero/nonzero/blocked counts without turning zero curvature into global lawfulness"
     );
+    assert!(
+        architecture_distance["representationMetricReadings"]
+            .as_array()
+            .is_some_and(|items| {
+                items.len() == 1
+                    && items.iter().all(|reading| {
+                        reading["distanceFamily"] == "representationMetric"
+                            && reading["status"] == "partial"
+                            && reading["structuralDistance"]["status"] == "measured"
+                            && reading["analyticDistance"]["status"] == "boundedProxy"
+                            && reading["lipschitzUpperBound"]["status"] == "blockedByProxy"
+                            && reading["biLipschitzFaithfulness"]["status"] == "blocked"
+                            && reading["blockerRefs"]
+                                .as_array()
+                                .is_some_and(|refs| !refs.is_empty())
+                            && reading["coverageBlockerRefs"]
+                                .as_array()
+                                .is_some_and(|refs| !refs.is_empty())
+                            && reading["witnessCompletenessBlockerRefs"]
+                                .as_array()
+                                .is_some_and(|refs| !refs.is_empty())
+                            && reading["sourceRefs"]
+                                .as_array()
+                                .is_some_and(|refs| !refs.is_empty())
+                            && reading["part4DefinitionReadings"]
+                                .as_array()
+                                .is_some_and(|rows| {
+                                    ["representationStability", "representationFaithfulness"]
+                                        .into_iter()
+                                        .all(|component| {
+                                            rows.iter().any(|row| row["componentKind"] == component)
+                                        })
+                                })
+                    })
+            }),
+        "primary representation metric rows must expose structural distance, bounded analytic proxy, blocked Lipschitz upper-bound, and blocked faithfulness"
+    );
+    assert!(
+        summary["distanceDiagnosis"]["representationInsights"]["status"] == "partial"
+            && summary["distanceDiagnosis"]["representationInsights"]
+                ["measuredStructuralDistanceCount"]
+                == 1
+            && summary["distanceDiagnosis"]["representationInsights"]["boundedProxyAnalyticCount"]
+                == 1
+            && summary["distanceDiagnosis"]["representationInsights"]["blockedFaithfulnessCount"]
+                == 1
+            && viewer["reportPane"]["distanceDiagnosis"]["representationInsights"]
+                ["topRepresentationMetrics"]
+                .as_array()
+                .is_some_and(|items| !items.is_empty())
+            && llm_packet["distanceDiagnosisSummary"]["representationInsights"]
+                ["topRepresentationMetrics"]
+                .as_array()
+                .is_some_and(|items| {
+                    items.iter().all(|reading| {
+                        reading["recommendedNextAction"]
+                            .as_str()
+                            .is_some_and(|action| action.contains("proxy telemetry"))
+                    })
+                }),
+        "summary, viewer, and LLM packet must expose representation proxy / faithfulness blockers instead of measured analytic distance"
+    );
     assert_eq!(
         architecture_distance["profile"]["signatureViolationWeight"].as_i64(),
         Some(2),
@@ -6503,6 +6565,17 @@ fn cli_schema_catalog_is_primary_archsig_surface_only() {
                     })
         }),
         "schema catalog must describe architecture-distance-v1 curvature primary surface"
+    );
+    assert!(
+        artifacts.iter().any(|entry| {
+            entry["artifactId"] == "architecture-distance-v1"
+                && entry["compatibilityBoundary"]["fieldMappingPolicy"]
+                    .as_str()
+                    .is_some_and(|description| {
+                        description.contains("primary representation metric readings")
+                    })
+        }),
+        "schema catalog must describe architecture-distance-v1 representation primary surface"
     );
 }
 
