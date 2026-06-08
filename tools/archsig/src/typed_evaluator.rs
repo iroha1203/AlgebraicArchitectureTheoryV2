@@ -24,7 +24,6 @@ struct ArchitectureDistanceProfileV1 {
     signature_violation_weight: i64,
     dependency_inversion_operation_cost: i64,
     infrastructure_dependency_operation_cost: i64,
-    default_operation_cost: i64,
 }
 
 pub fn evaluate_typed_v1(
@@ -1112,8 +1111,11 @@ pub fn build_architecture_distance_v1(
         architecture_configuration_distance_readings(normalized, profile);
     let signature_distance_readings =
         architecture_signature_distance_readings(typed_results, profile);
-    let operation_distance_readings =
-        architecture_operation_distance_readings(typed_results, profile);
+    let operation_distance_readings = architecture_operation_distance_readings(
+        typed_results,
+        profile,
+        &signature_distance_readings,
+    );
     let atom_subtotal = measured_sum(&atom_distance_readings, "measuredValue");
     let configuration_subtotal = measured_sum(&configuration_distance_readings, "measuredValue");
     let signature_subtotal = measured_sum(&signature_distance_readings, "measuredValue");
@@ -1152,6 +1154,7 @@ pub fn build_architecture_distance_v1(
         &atom_distance_readings,
         &configuration_distance_readings,
     );
+    let operation_insights = operation_primary_insights(&operation_distance_readings);
     let top_moved_axes = signature_distance_readings
         .iter()
         .filter(|reading| {
@@ -1180,9 +1183,9 @@ pub fn build_architecture_distance_v1(
             "signatureViolationWeight": profile.signature_violation_weight,
             "operationCosts": {
                 "solid.dependency-inversion": profile.dependency_inversion_operation_cost,
-                "domain.no-direct-infra-dependency": profile.infrastructure_dependency_operation_cost,
-                "default": profile.default_operation_cost
-            }
+                "domain.no-direct-infra-dependency": profile.infrastructure_dependency_operation_cost
+            },
+            "operationCostFallbackPolicy": "blockedWhenOperationCostMissing"
         },
         "sourceRefs": {
             "normalizedArchMap": "normalized-archmap.json",
@@ -1209,6 +1212,7 @@ pub fn build_architecture_distance_v1(
             "topMovedAtomPairs": atom_configuration_insights["topMovedAtomPairs"].clone(),
             "topMovedMolecules": atom_configuration_insights["topMovedMolecules"].clone(),
             "atomConfigurationInsights": atom_configuration_insights.clone(),
+            "operationInsights": operation_insights.clone(),
             "blockedResults": blocked_distance_results(
                 &atom_distance_readings,
                 &configuration_distance_readings,
@@ -1223,6 +1227,7 @@ pub fn build_architecture_distance_v1(
             )
         },
         "atomConfigurationInsights": atom_configuration_insights,
+        "operationInsights": operation_insights,
         "atomDistanceReadings": atom_distance_readings,
         "configurationDistanceReadings": configuration_distance_readings,
         "signatureDistanceReadings": signature_distance_readings,
@@ -5478,7 +5483,6 @@ fn architecture_distance_profile_v1(profile_ref: &str) -> Option<ArchitectureDis
             signature_violation_weight: 2,
             dependency_inversion_operation_cost: 4,
             infrastructure_dependency_operation_cost: 6,
-            default_operation_cost: 3,
         }),
         "distance-profile:architecture-default@1" => Some(ArchitectureDistanceProfileV1 {
             profile_ref: "distance-profile:architecture-default@1",
@@ -5490,7 +5494,6 @@ fn architecture_distance_profile_v1(profile_ref: &str) -> Option<ArchitectureDis
             signature_violation_weight: 1,
             dependency_inversion_operation_cost: 4,
             infrastructure_dependency_operation_cost: 5,
-            default_operation_cost: 3,
         }),
         _ => None,
     }
@@ -6202,15 +6205,16 @@ fn architecture_signature_distance_readings(
 fn architecture_operation_distance_readings(
     typed_results: &TypedEvaluatorResultsV1,
     profile: ArchitectureDistanceProfileV1,
+    signature_distance_readings: &[Value],
 ) -> Vec<Value> {
     typed_results
         .results
         .iter()
-        .filter(|result| result.status == "measuredViolation" || result.status == "blocked")
+        .filter(|result| operation_distance_result_is_primary(result, profile))
         .map(|result| {
             if result.status == "blocked" {
                 return blocked_distance_reading(
-                    "operationDistance",
+                    "operationGeometry",
                     &format!("operation-distance:{}", stable_ref(&result.law)),
                     result
                         .blocker_reason
@@ -6219,34 +6223,320 @@ fn architecture_operation_distance_readings(
                     result.detail_refs.clone(),
                 );
             }
-            let (operation_kind, cost) = recommended_operation(&result.law, profile);
+            let Some(operation) = recommended_operation(&result.law, profile) else {
+                return blocked_distance_reading(
+                    "operationGeometry",
+                    &format!("operation-distance:{}", stable_ref(&result.law)),
+                    "operation cost is not declared by the selected DistanceProfile",
+                    result.detail_refs.clone(),
+                );
+            };
+            let selected_repair = result.status == "measuredViolation";
+            let signature_reading =
+                signature_distance_reading_for_law(signature_distance_readings, &result.law);
+            let signature_reading_ref = signature_reading
+                .and_then(|reading| reading["readingId"].as_str())
+                .unwrap_or("unavailable");
+            let current_signature_distance = signature_reading
+                .and_then(|reading| {
+                    (reading["status"] == "measured").then(|| reading["measuredValue"].as_i64())
+                })
+                .flatten();
+            let signature_blocker_refs = if selected_repair && current_signature_distance.is_none()
+            {
+                vec![format!("missingSignatureDistanceWitness:{}", result.law)]
+            } else {
+                Vec::new()
+            };
+            let target_decrease = if selected_repair {
+                current_signature_distance
+            } else {
+                Some(0)
+            };
+            let distance_to_flat = target_decrease
+                .map(|decrease| current_signature_distance.unwrap_or(0).saturating_sub(decrease));
+            let transfer_risk_blocker_refs = if selected_repair {
+                vec![format!("missingTransferRiskEvidence:{}", result.law)]
+            } else {
+                Vec::new()
+            };
+            let row_blocker_refs = signature_blocker_refs
+                .iter()
+                .cloned()
+                .chain(transfer_risk_blocker_refs.iter().cloned())
+                .collect::<Vec<_>>();
+            let row_status = if row_blocker_refs.is_empty() {
+                "measured"
+            } else {
+                "blocked"
+            };
+            let measured_value = if row_status == "measured" {
+                if selected_repair {
+                    Some(operation.cost)
+                } else {
+                    Some(0)
+                }
+            } else {
+                None
+            };
+            let repair_route_status = if selected_repair && !transfer_risk_blocker_refs.is_empty() {
+                "candidate-blocked-by-missing-transfer-risk-evidence"
+            } else if selected_repair {
+                "candidate"
+            } else {
+                "not-required"
+            };
             json!({
                 "readingId": format!("operation-distance:{}", stable_ref(&result.law)),
-                "distanceFamily": "operation",
+                "distanceFamily": "operationGeometry",
                 "law": result.law,
-                "status": "measured",
-                "operationKind": operation_kind,
-                "measuredValue": cost,
+                "evaluator": result.evaluator,
+                "status": row_status,
+                "operationKind": operation.operation_kind,
+                "measuredValue": measured_value,
                 "unit": "architecture-distance-point",
-                "basis": "registry-owned recommended operation cost for selected violation",
-                "detailRefs": result.detail_refs
+                "blockerRefs": row_blocker_refs,
+                "part4DefinitionReadings": [
+                    {
+                        "definitionRef": "definitions:5.1",
+                        "definitionName": "Operation Cost",
+                        "componentKind": "operationCost",
+                        "status": "measured",
+                        "measuredValue": operation.cost,
+                        "unit": "architecture-distance-point",
+                        "sourceRef": operation.cost_source_ref,
+                        "includedInMeasuredValue": selected_repair,
+                        "evaluatorBasisRefs": [
+                            format!("operationCost:{}", operation.operation_kind),
+                            format!("profile:{}", profile.profile_ref),
+                            operation.cost_source_ref
+                        ],
+                        "reading": "operation cost is selected from the current ArchSig DistanceProfile table"
+                    },
+                    {
+                        "definitionRef": "definitions:5.2",
+                        "definitionName": "Operation Distance",
+                        "componentKind": "targetDistanceDecrease",
+                        "status": if target_decrease.is_some() { "measured" } else { "blocked" },
+                        "measuredValue": target_decrease,
+                        "unit": "architecture-distance-point",
+                        "signatureDistanceReadingRef": signature_reading_ref,
+                        "blockerRefs": signature_blocker_refs,
+                        "evaluatorBasisRefs": [
+                            format!("targetDecrease:{}", result.status),
+                            format!("law:{}", result.law),
+                            format!("signatureDistanceReading:{signature_reading_ref}")
+                        ],
+                        "reading": "target decrease is read from the selected signature-distance witness for violations and is zero for an already measured pass"
+                    },
+                    {
+                        "definitionRef": "definitions:5.3",
+                        "definitionName": "Distance to Selected Flatness",
+                        "componentKind": "distanceToSelectedFlat",
+                        "status": if distance_to_flat.is_some() { "measured" } else { "blocked" },
+                        "measuredValue": distance_to_flat,
+                        "unit": "architecture-distance-point",
+                        "signatureDistanceReadingRef": signature_reading_ref,
+                        "blockerRefs": signature_blocker_refs,
+                        "evaluatorBasisRefs": [
+                            format!("selectedFlat:{}", result.law),
+                            format!("targetDecrease:{}", target_decrease.unwrap_or(0)),
+                            format!("signatureDistanceReading:{signature_reading_ref}")
+                        ],
+                        "reading": "distance to selected flatness subtracts the target decrease from the selected signature-distance witness and does not claim global flatness"
+                    },
+                    {
+                        "definitionRef": "definitions:5.4",
+                        "definitionName": "Repair Route",
+                        "componentKind": "repairRoute",
+                        "status": repair_route_status,
+                        "measuredValue": null,
+                        "unit": "route-state",
+                        "sourceRefs": result.detail_refs,
+                        "preconditionRefs": operation.precondition_refs,
+                        "transferRiskRefs": [],
+                        "transferRiskBlockerRefs": transfer_risk_blocker_refs,
+                        "evaluatorBasisRefs": [
+                            format!("repairRoute:{}", operation.operation_kind),
+                            format!("lawStatus:{}", result.status)
+                        ],
+                        "reading": if selected_repair {
+                            "selected violation has a diagnostic repair-route candidate, not an automatic safe refactoring"
+                        } else {
+                            "selected law is already measured pass; route records the maintained boundary and is not a required repair"
+                        }
+                    },
+                    {
+                        "definitionRef": "definitions:5.5",
+                        "definitionName": "Side-Effect Bound",
+                        "componentKind": "sideEffectBound",
+                        "status": if transfer_risk_blocker_refs.is_empty() { "measured" } else { "blocked" },
+                        "measuredValue": if transfer_risk_blocker_refs.is_empty() { Some(0) } else { None },
+                        "unit": "selected-transfer-risk-count",
+                        "transferRiskRefs": [],
+                        "blockerRefs": transfer_risk_blocker_refs,
+                        "evaluatorBasisRefs": [
+                            format!("sideEffectBound:{}", operation.operation_kind),
+                            "selected-law-axis-only".to_string()
+                        ],
+                        "reading": "side-effect bound is measured zero only when no repair is selected; selected repair routes require transfer-risk evidence and otherwise remain blocked"
+                    }
+                ],
+                "operationCost": {
+                    "status": "measured",
+                    "measuredValue": operation.cost,
+                    "unit": "architecture-distance-point",
+                    "sourceRef": operation.cost_source_ref,
+                    "includedInMeasuredValue": selected_repair,
+                    "evaluatorBasisRefs": [
+                        format!("operationCost:{}", operation.operation_kind),
+                        format!("profile:{}", profile.profile_ref)
+                    ]
+                },
+                "targetDistanceDecrease": {
+                    "status": if target_decrease.is_some() { "measured" } else { "blocked" },
+                    "measuredValue": target_decrease,
+                    "unit": "architecture-distance-point",
+                    "signatureDistanceReadingRef": signature_reading_ref,
+                    "blockerRefs": signature_blocker_refs,
+                    "evaluatorBasisRefs": [
+                        format!("targetDecrease:{}", result.status),
+                        format!("law:{}", result.law),
+                        format!("signatureDistanceReading:{signature_reading_ref}")
+                    ]
+                },
+                "distanceToSelectedFlat": {
+                    "status": if distance_to_flat.is_some() { "measured" } else { "blocked" },
+                    "measuredValue": distance_to_flat,
+                    "unit": "architecture-distance-point",
+                    "signatureDistanceReadingRef": signature_reading_ref,
+                    "blockerRefs": signature_blocker_refs,
+                    "evaluatorBasisRefs": [
+                        format!("selectedFlat:{}", result.law),
+                        format!("targetDecrease:{}", target_decrease.unwrap_or(0)),
+                        format!("signatureDistanceReading:{signature_reading_ref}")
+                    ]
+                },
+                "repairRoute": {
+                    "status": repair_route_status,
+                    "routeKind": operation.operation_kind,
+                    "sourceRefs": result.detail_refs,
+                    "preconditionRefs": operation.precondition_refs,
+                    "transferRiskRefs": [],
+                    "transferRiskBlockerRefs": transfer_risk_blocker_refs,
+                    "safetyBoundary": "diagnostic route candidate only; ArchSig does not claim automatic repair safety"
+                },
+                "sideEffectBound": {
+                    "status": if transfer_risk_blocker_refs.is_empty() { "measured" } else { "blocked" },
+                    "measuredValue": if transfer_risk_blocker_refs.is_empty() { Some(0) } else { None },
+                    "unit": "selected-transfer-risk-count",
+                    "transferRiskRefs": [],
+                    "blockerRefs": transfer_risk_blocker_refs,
+                    "evaluatorBasisRefs": [
+                        format!("sideEffectBound:{}", operation.operation_kind),
+                        "selected-law-axis-only".to_string()
+                    ]
+                },
+                "basis": "operation geometry is resolved from the selected LawPolicy DistanceProfile and typed evaluator result",
+                "detailRefs": result.detail_refs,
+                "evidenceBoundary": "operation distance is a diagnostic reading over selected law evidence; it is not automatic repair safety and does not generate atoms",
+                "nonConclusions": [
+                    "Repair route candidates are not automatic safe refactorings.",
+                    "Operation distance does not claim that operations generate Atom input.",
+                    "Distance to selected flatness is scoped to the selected law axis and evidence contract."
+                ]
             })
         })
         .collect()
 }
 
-fn recommended_operation(law: &str, profile: ArchitectureDistanceProfileV1) -> (&'static str, i64) {
+fn signature_distance_reading_for_law<'a>(
+    signature_distance_readings: &'a [Value],
+    law: &str,
+) -> Option<&'a Value> {
+    signature_distance_readings
+        .iter()
+        .find(|reading| reading["law"].as_str() == Some(law))
+}
+
+fn operation_distance_result_is_primary(
+    result: &TypedEvaluatorResultV1,
+    profile: ArchitectureDistanceProfileV1,
+) -> bool {
+    result.status == "blocked"
+        || result.status == "measuredViolation"
+        || (result.status == "measuredPass"
+            && recommended_operation(&result.law, profile).is_some())
+}
+
+struct OperationRecommendationV1 {
+    operation_kind: &'static str,
+    cost: i64,
+    cost_source_ref: &'static str,
+    precondition_refs: Vec<&'static str>,
+}
+
+fn recommended_operation(
+    law: &str,
+    profile: ArchitectureDistanceProfileV1,
+) -> Option<OperationRecommendationV1> {
     match law {
-        "solid.dependency-inversion" => (
-            "introduce-or-confirm-port-boundary",
-            profile.dependency_inversion_operation_cost,
-        ),
-        "domain.no-direct-infra-dependency" => (
-            "split-domain-infrastructure-boundary",
-            profile.infrastructure_dependency_operation_cost,
-        ),
-        _ => ("review-selected-violation", profile.default_operation_cost),
+        "solid.dependency-inversion" => Some(OperationRecommendationV1 {
+            operation_kind: "introduce-or-confirm-port-boundary",
+            cost: profile.dependency_inversion_operation_cost,
+            cost_source_ref: "distanceProfile.operationCosts.solid.dependency-inversion",
+            precondition_refs: vec![
+                "precondition:port-boundary-observed",
+                "precondition:dependency-target-classified",
+            ],
+        }),
+        "domain.no-direct-infra-dependency" => Some(OperationRecommendationV1 {
+            operation_kind: "split-domain-infrastructure-boundary",
+            cost: profile.infrastructure_dependency_operation_cost,
+            cost_source_ref: "distanceProfile.operationCosts.domain.no-direct-infra-dependency",
+            precondition_refs: vec![
+                "precondition:domain-boundary-observed",
+                "precondition:infrastructure-adapter-observed",
+            ],
+        }),
+        _ => None,
     }
+}
+
+fn operation_primary_insights(operation_distance_readings: &[Value]) -> Value {
+    let mut candidates = operation_distance_readings
+        .iter()
+        .filter(|reading| reading["status"] == "measured" || reading["status"] == "blocked")
+        .map(|reading| {
+            json!({
+                "readingRef": reading["readingId"],
+                "law": reading["law"],
+                "operationKind": reading["operationKind"],
+                "measuredValue": reading["measuredValue"],
+                "operationCost": reading["operationCost"],
+                "targetDistanceDecrease": reading["targetDistanceDecrease"],
+                "distanceToSelectedFlat": reading["distanceToSelectedFlat"],
+                "repairRoute": reading["repairRoute"],
+                "sideEffectBound": reading["sideEffectBound"],
+                "detailRefs": reading["detailRefs"]
+            })
+        })
+        .collect::<Vec<_>>();
+    candidates.sort_by(|left, right| {
+        let right_value = right["measuredValue"]
+            .as_i64()
+            .or_else(|| right["operationCost"]["measuredValue"].as_i64());
+        let left_value = left["measuredValue"]
+            .as_i64()
+            .or_else(|| left["operationCost"]["measuredValue"].as_i64());
+        right_value.cmp(&left_value)
+    });
+    candidates.truncate(5);
+
+    json!({
+        "topOperationCandidates": candidates,
+        "reading": "operation insights expose profile cost, target decrease, selected flatness distance, repair-route state, and side-effect bound without claiming automatic repair safety"
+    })
 }
 
 fn blocked_distance_reading(
@@ -6654,6 +6944,39 @@ mod tests {
                 .is_some_and(|blocked| blocked.iter().any(|result| result["readingId"]
                     == architecture_distance["atomDistanceReadings"][0]["readingId"])),
             "blockedResults must expose the parent atom reading blocker"
+        );
+    }
+
+    #[test]
+    fn operation_distance_blocks_violation_without_declared_profile_cost() {
+        let profile = architecture_distance_profile_v1("distance-profile:architecture-default@1")
+            .expect("default profile exists");
+        let mut typed_results = empty_typed_results_for_test();
+        typed_results.results.push(TypedEvaluatorResultV1 {
+            evaluator: "evaluator:test".to_string(),
+            law: "custom.unpriced-operation".to_string(),
+            status: "measuredViolation".to_string(),
+            support_atom_refs: Vec::new(),
+            support_molecule_refs: Vec::new(),
+            basis_refs: vec!["test:law-policy".to_string()],
+            detail_refs: vec!["atom:test".to_string()],
+            replacement_id: None,
+            replacement_for_v0_field: None,
+            typed_output_packet_refs: Vec::new(),
+            summary: "synthetic violation without operation cost".to_string(),
+            blocker_reason: None,
+        });
+
+        let readings = architecture_operation_distance_readings(&typed_results, profile, &[]);
+        assert_eq!(readings.len(), 1);
+        assert_eq!(readings[0]["status"].as_str(), Some("blocked"));
+        assert_eq!(
+            readings[0]["blockerReason"].as_str(),
+            Some("operation cost is not declared by the selected DistanceProfile")
+        );
+        assert!(
+            readings[0]["measuredValue"].is_null(),
+            "missing operation cost must not fall back to a guessed measured value"
         );
     }
 

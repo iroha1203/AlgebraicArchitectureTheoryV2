@@ -641,6 +641,43 @@ fn cli_analyze_v1_spectrum_detects_nonzero_curvature_from_typed_violation() {
             }),
         "nonzero witness clusters must reference existing transfer edges"
     );
+    let architecture_distance = read_json(&out_dir.join("architecture-distance.json"));
+    assert!(
+        architecture_distance["operationDistanceReadings"]
+            .as_array()
+            .is_some_and(|items| {
+                items.iter().any(|reading| {
+                    reading["law"] == "domain.no-direct-infra-dependency"
+                        && reading["distanceFamily"] == "operationGeometry"
+                        && reading["status"] == "blocked"
+                        && reading["operationCost"]["status"] == "measured"
+                        && reading["operationCost"]["measuredValue"] == 5
+                        && reading["operationCost"]["sourceRef"]
+                            == "distanceProfile.operationCosts.domain.no-direct-infra-dependency"
+                        && reading["operationCost"]["includedInMeasuredValue"] == true
+                        && reading["targetDistanceDecrease"]["status"] == "measured"
+                        && reading["targetDistanceDecrease"]["measuredValue"] == 1
+                        && reading["targetDistanceDecrease"]["signatureDistanceReadingRef"]
+                            == "signature-distance:domain-no-direct-infra-dependency"
+                        && reading["distanceToSelectedFlat"]["status"] == "measured"
+                        && reading["distanceToSelectedFlat"]["measuredValue"] == 0
+                        && reading["repairRoute"]["status"]
+                            == "candidate-blocked-by-missing-transfer-risk-evidence"
+                        && reading["repairRoute"]["preconditionRefs"]
+                            .as_array()
+                            .is_some_and(|refs| !refs.is_empty())
+                        && reading["repairRoute"]["transferRiskBlockerRefs"]
+                            .as_array()
+                            .is_some_and(|refs| !refs.is_empty())
+                        && reading["sideEffectBound"]["status"] == "blocked"
+                        && reading["sideEffectBound"]["measuredValue"].is_null()
+                        && reading["sideEffectBound"]["blockerRefs"]
+                            .as_array()
+                            .is_some_and(|refs| !refs.is_empty())
+                })
+            }),
+        "priced measuredViolation operationGeometry must keep operation cost and selected-flat distance while blocking missing side-effect evidence"
+    );
     let llm_packet = read_json(&out_dir.join("llm-interpretation-packet.json"));
     assert_eq!(
         llm_packet["architectureSpectrumReportSummary"]["reportRef"].as_str(),
@@ -2612,6 +2649,65 @@ fn practical_rust_service_example_runs_v1_analyze() {
                 .as_array()
                 .is_some_and(|items| !items.is_empty()),
         "summary, viewer, and LLM packet must expose top atom-pair and molecule distance insights"
+    );
+    let operation_distance_readings = architecture_distance["operationDistanceReadings"]
+        .as_array()
+        .expect("primary operation distance readings are emitted");
+    assert!(
+        operation_distance_readings.iter().any(|reading| {
+            reading["law"] == "solid.dependency-inversion"
+                && reading["status"] == "measured"
+                && reading["measuredValue"] == 0
+                && reading["operationCost"]["sourceRef"]
+                    == "distanceProfile.operationCosts.solid.dependency-inversion"
+                && reading["operationCost"]["includedInMeasuredValue"] == false
+                && reading["targetDistanceDecrease"]["measuredValue"] == 0
+                && reading["distanceToSelectedFlat"]["measuredValue"] == 0
+                && reading["repairRoute"]["status"] == "not-required"
+                && reading["repairRoute"]["sourceRefs"]
+                    .as_array()
+                    .is_some_and(|refs| !refs.is_empty())
+                && reading["repairRoute"]["preconditionRefs"]
+                    .as_array()
+                    .is_some_and(|refs| !refs.is_empty())
+                && reading["repairRoute"]["transferRiskRefs"]
+                    .as_array()
+                    .is_some_and(|refs| refs.is_empty())
+                && reading["sideEffectBound"]["measuredValue"] == 0
+                && reading["part4DefinitionReadings"]
+                    .as_array()
+                    .is_some_and(|rows| {
+                        [
+                            "operationCost",
+                            "targetDistanceDecrease",
+                            "distanceToSelectedFlat",
+                            "repairRoute",
+                            "sideEffectBound",
+                        ]
+                        .into_iter()
+                        .all(|component| rows.iter().any(|row| row["componentKind"] == component))
+                    })
+                && reading["evidenceBoundary"]
+                    .as_str()
+                    .is_some_and(|boundary| {
+                        boundary.contains("not automatic repair safety")
+                            && boundary.contains("does not generate atoms")
+                    })
+        }),
+        "practical fixture must expose a profile-driven operation / repair / flatness / side-effect primary row even when the selected law already passes"
+    );
+    assert!(
+        summary["distanceDiagnosis"]["operationInsights"]["topOperationCandidates"]
+            .as_array()
+            .is_some_and(|items| !items.is_empty())
+            && viewer["reportPane"]["distanceDiagnosis"]["operationInsights"]
+                ["topOperationCandidates"]
+                .as_array()
+                .is_some_and(|items| !items.is_empty())
+            && llm_packet["distanceDiagnosisSummary"]["operationInsights"]["topOperationCandidates"]
+                .as_array()
+                .is_some_and(|items| !items.is_empty()),
+        "summary, viewer, and LLM packet must expose operation family insights"
     );
     assert_eq!(
         architecture_distance["profile"]["signatureViolationWeight"].as_i64(),
