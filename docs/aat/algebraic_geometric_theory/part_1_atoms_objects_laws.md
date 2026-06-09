@@ -257,6 +257,48 @@ semantic(x, identifies y)
 semantic(v, satisfies q)
 ```
 
+semantic Atom の一意性は、意味対象の絶対的な一意性としてではなく、
+使われ方の規則に相対化して定義する。これは後期ウィトゲンシュタインの
+言語ゲームの立場、すなわち「意味は使用である」という見方を AAT の
+semantic Atom に移したものである。
+
+```text
+Meaning is use.
+```
+
+AAT では、program fragment や architecture subject の意味を、それが参加する
+language game、すなわち rule-governed practice の中での使われ方によって読む。
+
+```text
+UseContext Γ
+UseRuleSet R
+
+semantic_Γ(t, s)
+```
+
+ここで `Γ` は、`t` がどの workflow、contract、operation、state transition、effect、
+authorization rule、test、example、documented practice の中で使われるかを与える。
+`R` は、その use-context において同一視、区別、保存、置換、失敗を決める規則である。
+
+したがって、semantic Atom family の一意性は次の形を取る。
+
+```text
+source S
+AtomVocabulary V
+UseContext Γ
+UseRuleSet R
+resolution ρ
+
+Atomize_{V,Γ,R,ρ}(S) = F
+Atomize_{V,Γ,R,ρ}(S) = G
+--------------------------
+F = G
+```
+
+意味は開発者の心理的意図や自然言語ラベルだけでは定まらない。
+固定された language game と use-rule の下で、どの semantic fact が canonical Atom family に
+入るかが定まる。
+
 semantic Atom は単一所属を要求しない。同じ subject が複数の semantic Atom を同時に
 担うことがある。これは意味の非一意性ではなく、semantic fact の重なりである。
 
@@ -266,6 +308,13 @@ semantic Atom は単一所属を要求しない。同じ subject が複数の se
 ```text
 semantic(sendEmail, twoFactorAuthentication)
 semantic(sendEmail, newsletterDelivery)
+```
+
+これは、異なる language game における use-rule が異なる semantic fact を支えることを表す。
+
+```text
+semantic_{twoFactorAuthGame}(sendEmail, verificationChannel)
+semantic_{newsletterGame}(sendEmail, deliveryChannel)
 ```
 
 観測がこれを `notification` のような粗い意味へ潰す場合、それは semantic Atom の
