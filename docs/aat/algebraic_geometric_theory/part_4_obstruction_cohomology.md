@@ -13,9 +13,10 @@ Flat_U(X) = V(I_Ob^U)
 しかし、局所的に lawful であることは、ただちに大域的な lawfulness を意味しない。
 
 ```text
-forall i, Flat_U(W_i)
+forall i, exists s_i : W_i -> Flat_U(X)
 does not automatically imply
-Flat_U(W)
+exists s : W -> Flat_U(X)
+with s|W_i = s_i
 ```
 
 局所 context では defect が消えていても、overlap 上の貼り合わせが失敗することがある。
@@ -24,11 +25,11 @@ Flat_U(W)
 第IV部の目的は、この差を obstruction sheaf の cohomology として定義することである。
 
 ```text
-local vanishing
+local lawful sections
   + gluing data
   + descent condition
   -------------------
-  global vanishing
+  global lawful section
 ```
 
 この推論が失敗するとき、その失敗は次の cohomology group の class として表される。
@@ -263,7 +264,10 @@ H^n(𝒰, Ob_U)
   ker d^n / im d^{n-1}
 ```
 
-cover を refinement に関して極限したものを、`X` 上の obstruction cohomology と読む。
+固定された cover `𝒰` に対する群を、cover-relative Čech obstruction cohomology と呼ぶ。
+
+chosen topology と coefficient sheaf が Čech cohomology によって sheaf cohomology を計算できる場合、
+または refinement system を明示して極限を取る場合、`X` 上の obstruction cohomology と書く。
 
 ```text
 H^n(X, Ob_U)
@@ -289,6 +293,10 @@ H^n(𝒰, Ob_U)
 ```
 
 として扱うことが多い。
+
+`H^n(𝒰, Ob_U)` と `H^n(X, Ob_U)` は区別する。
+Čech cohomology が sheaf cohomology を計算する条件が固定されていない場合、
+`H^n(𝒰, Ob_U)` は cover-relative obstruction reading である。
 
 ### 意味 4.2 Cohomological Degrees
 
@@ -383,6 +391,15 @@ s_j|W_{ij}
 ```
 
 これらが一致しない差を、gluing mismatch と呼ぶ。
+
+ここでは、選ばれた local data sheaf `F` に対して、比較写像が与えられていると仮定する。
+
+```text
+mismatch_{ij}
+  :
+  F(W_{ij}) x F(W_{ij})
+  -> Ob_U(W_{ij})
+```
 
 ```text
 g_{ij}
@@ -651,7 +668,7 @@ coverage mismatch
 
 ### 定義 8.3 Boundary Connecting Homomorphism
 
-obstruction sheaf に対して、次の triangle を考える。
+obstruction sheaf に対して、次が derived category 上の distinguished triangle であると仮定する。
 
 ```text
 Ob_C'
@@ -913,11 +930,12 @@ global flatness
 より記号的には、
 
 ```text
-forall i, Flat_U(W_i)
+forall i, exists s_i : W_i -> Flat_U(X)
 and
 [g] = 0 in H^1(X, Ob_U)
 --------------------------------
-Flat_U(W)
+exists s : W -> Flat_U(X)
+with s|W_i = s_i after local adjustment
 ```
 
 である。

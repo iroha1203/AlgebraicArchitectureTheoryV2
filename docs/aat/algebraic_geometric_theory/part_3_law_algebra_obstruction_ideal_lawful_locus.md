@@ -47,10 +47,10 @@ AATSh(A,U,J)
   Sh(ArchCtx(A), J_U)
 ```
 
-この舞台の上に、各 context `W` に対して可換環を割り当てる。
+この舞台の上に、まず各 context `W` に対して可換環を割り当てる presheaf を作る。
 
 ```text
-O_X^U(W)
+O_raw^U(W)
 ```
 
 これは、`W` 上で読める architecture coordinate の可換環である。
@@ -58,25 +58,27 @@ O_X^U(W)
 ```text
 W
   -> architectural coordinates
-  -> commutative ring O_X^U(W)
+  -> commutative ring O_raw^U(W)
 ```
 
 context morphism
 
 ```text
-f : W' -> W
+i : W' -> W
 ```
 
 は、restriction によって可換環準同型を誘導する。
 
 ```text
-res_f : O_X^U(W) -> O_X^U(W')
+res_i : O_raw^U(W) -> O_raw^U(W')
 ```
 
-したがって `O_X^U` は、AAT site 上の可換環の層である。
+この presheaf を sheafification して、AAT site 上の可換環の層を得る。
 
 ```text
-O_X^U : ArchCtx(A)^op -> CommRing
+O_X^U
+  =
+  (O_raw^U)^+
 ```
 
 このとき、組
@@ -103,10 +105,16 @@ X = X_S^{V,U,J}
 O_X^U
 ```
 
-これは AAT site 上の可換環の層である。
+これは AAT site 上の可換環の層である。構成としては、raw coordinate algebra presheaf の
+sheafification として定義する。
 
 ```text
 O_X^U in Sh(ArchCtx(A), J_U; CommRing)
+```
+
+```text
+O_raw^U : ArchCtx(A)^op -> CommRing
+O_X^U   = (O_raw^U)^+
 ```
 
 各 context `W` に対して、
@@ -309,12 +317,12 @@ runtime trace typing
 structural relation は、law failure を消すための関係ではない。
 coordinate が同じ architecture object の読みとして整合するための関係である。
 
-### 定義 4.3 Ambient Law Algebra
+### 定義 4.3 Raw Ambient Law Algebra
 
-context `W` 上の ambient law algebra を次で定義する。
+context `W` 上の raw ambient law algebra を次で定義する。
 
 ```text
-O_X^U(W)
+O_raw^U(W)
   =
   FreeCommAlg(Coord_X(W)) / Rel_struct(W)
 ```
@@ -322,7 +330,7 @@ O_X^U(W)
 ここで上付き `U` は、law universe `U` によって選ばれる coordinate、witness、signature axis、
 coverage reading に相対化されていることを表す。
 
-重要なのは、`O_X^U(W)` の段階では selected law defect をすべて zero にしていないことである。
+重要なのは、`O_raw^U(W)` の段階では selected law defect をすべて zero にしていないことである。
 
 ```text
 law equations are not all quotiented out at the ambient stage.
@@ -339,6 +347,14 @@ structural relations:
 
 law defect equations:
   they cut out lawful locus as zeros.
+```
+
+sheafification 後の structure sheaf は次である。
+
+```text
+O_X^U
+  =
+  (O_raw^U)^+
 ```
 
 ### 原則 4.4 Law Does Not Create Coordinates
@@ -426,7 +442,34 @@ different use-rule
 δ_semantic != 0
 ```
 
-### 原則 5.3 Equation Relativity
+### 例 5.3 Defect Encoding
+
+coefficient ring `k` と selected witness family が固定されているとき、
+cycle defect は選ばれた cycle witness coordinate の和として書ける。
+
+```text
+δ_cycle(W)
+  =
+  sum_{c in CycleWitness_U(W)} x_c
+  in O_X^U(W)
+```
+
+ここで `x_c` は cycle witness `c` に対応する coordinate である。
+`δ_cycle(W) = 0` は、選ばれた cycle witness が zero であることを読む。
+
+substitution defect も同様に、contract mismatch witness coordinate から生成できる。
+
+```text
+δ_substitution(W)
+  =
+  sum_{m in SubstitutionMismatch_U(W)} x_m
+  in O_X^U(W)
+```
+
+このように、defect section は law predicate そのものではなく、
+選ばれた witness を coordinate ring の元として符号化したものである。
+
+### 原則 5.4 Equation Relativity
 
 law equation は、次に相対化される。
 
@@ -500,13 +543,13 @@ I_Ob^U(W) ideal of O_X^U(W)
 context morphism
 
 ```text
-f : W' -> W
+i : W' -> W
 ```
 
 に対して、restriction は次を満たす。
 
 ```text
-res_f(I_Ob^U(W)) subset I_Ob^U(W')
+res_i(I_Ob^U(W)) subset I_Ob^U(W')
 ```
 
 この条件により、law failure は局所 context 間で整合的に制限される。
@@ -594,6 +637,17 @@ signature axes に相対化された零点集合である。
 Flat_U(X) is lawful within U.
 ```
 
+ここでいう flatness は AAT-flatness である。
+通常の代数幾何における morphism の flatness ではなく、`U` に相対化された lawfulness を表す。
+
+```text
+AAT-flatness:
+  factorization through lawful locus.
+
+algebraic flatness:
+  flatness of morphisms.
+```
+
 これは、すべての可能な law、すべての未来の振る舞い、すべての意味論的 universe に対する完全正当性ではない。
 
 AAT は、固定された幾何の中で語れる lawfulness を定義する。
@@ -617,7 +671,9 @@ AffAAT(W,U)
 Spec_AAT(O_X^U(W))
 ```
 
-ここで `Spec_AAT` は、AAT の typed coordinate と law-reading を保った affine spectrum として読む。
+ここで `Spec_AAT(R)` は、通常の `Spec(R)` に AAT の typed coordinate label、
+selected law reading、signature axis reading を付加した affine spectrum として読む。
+基礎となる可換環の spectrum は通常の `Spec` である。
 
 ### 定義 8.2 Local Lawful Chart
 
@@ -742,13 +798,13 @@ AATSh(A,U,J)
 context morphism
 
 ```text
-f : W' -> W
+i : W' -> W
 ```
 
 に対して、structure sheaf は可換環準同型を与える。
 
 ```text
-res_f : O_X^U(W) -> O_X^U(W')
+res_i : O_X^U(W) -> O_X^U(W')
 ```
 
 これは、`W` 上の coordinate を `W'` へ制限する操作である。
@@ -770,7 +826,7 @@ forgotten coordinate != zero coordinate
 obstruction ideal sheaf は、restriction と整合する。
 
 ```text
-res_f(I_Ob^U(W)) subset I_Ob^U(W')
+res_i(I_Ob^U(W)) subset I_Ob^U(W')
 ```
 
 これは、law failure の読みが context restriction に沿って制限されることを意味する。
@@ -813,15 +869,16 @@ sheaf descent
   -> gluing of affine AAT charts
 ```
 
-### 原則 10.4 Local Vanishing Need Not Glue Globally
+### 原則 10.4 Local Lawful Sections Need Not Glue
 
-各 chart 上で defect が消えていても、それだけで大域的 lawfulness は従わない。
+独立に選ばれた local lawful sections があっても、それだけで大域的 lawful section は従わない。
 overlap compatibility と descent が必要である。
 
 ```text
-forall i, I_Ob^U(W_i) vanishes
+forall i, exists s_i : W_i -> Flat_U(X)
 does not automatically imply
-I_Ob^U(W) vanishes
+exists s : W -> Flat_U(X)
+with s|W_i = s_i
 ```
 
 この局所-大域の差が、次の obstruction cohomology への入口である。
@@ -970,12 +1027,12 @@ lawfulness is vanishing.
 architecture is scheme.
 ```
 
-残る問いは、局所的な vanishing が大域的に貼り合うかである。
+残る問いは、local lawful sections が大域的な lawful section へ貼り合うかである。
 
 ```text
-local vanishing
+local lawful sections
   -> ?
-global vanishing
+global lawful section
 ```
 
 この問いが、第IV部の obstruction cohomology へつながる。

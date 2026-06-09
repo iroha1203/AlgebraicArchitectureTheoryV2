@@ -223,7 +223,15 @@ ArchCtx(A)
 射は context 間の読み替えである。
 
 ```text
-f : W -> W'
+i : W' -> W
+```
+
+この向きでは、`W'` は `W` の上にある readable local context である。
+すなわち、局所 context が大域 context へ射を持つ。
+
+```text
+local context
+  -> global context
 ```
 
 射は次のような操作として現れる。
@@ -239,7 +247,21 @@ base change
 
 射も Atom を生成しない。射は、局所 view 間でどの情報を保ち、どの情報を忘れ、どの情報を細かく読むかを表す。
 
-### 原則 4.2 Context Non-Generation
+### 仮定 4.2 Pullback and Overlap
+
+`ArchCtx(A)` は、cover の overlap を作るために必要な pullback を持つと仮定する。
+
+```text
+W_i -> W
+W_j -> W
+----------------
+W_i x_W W_j
+```
+
+この pullback を context overlap と呼ぶ。
+第IV部の Čech complex は、この overlap に対して定義される。
+
+### 原則 4.3 Context Non-Generation
 
 ```text
 context does not create atoms
@@ -272,9 +294,10 @@ restriction は、局所 view で見える Atom、law、signature、state、effe
 projection は、選ばれた座標だけを残し、他の座標を忘れる。
 
 ```text
-proj : W -> W_axis
+proj : W_axis -> W
 ```
 
+ここで `W_axis` は、`W` を選ばれた axis で読む局所 context である。
 projection は zero claim ではない。
 projection によって見えなくなった axis は、zero になったのではなく、忘れられたのである。
 
@@ -347,7 +370,7 @@ runtime cover:
 
 ## 7. AAT Grothendieck Topology
 
-law universe `U` に対して、`ArchCtx(A)` 上の Grothendieck topology を定義する。
+law universe `U` に対して、`ArchCtx(A)` 上の Grothendieck pretopology を定義する。
 
 ```text
 J_U
@@ -382,18 +405,21 @@ Non-generation:
   cover は Atom を生成しない。
 ```
 
-さらに、Grothendieck topology として次の安定性を満たす。
+さらに、Grothendieck pretopology として次の安定性を満たす。
 
 ```text
-isomorphism cover:
-  isomorphism は cover である。
+identity / isomorphism:
+  identity と isomorphism は cover である。
 
 base-change stability:
   cover は pullback / refinement の下で cover である。
 
-composition stability:
+transitivity:
   cover の cover は cover である。
 ```
+
+この pretopology から生成される sieve topology も `J_U` と書く。
+以後、AAT site の sheaf はこの topology に関して読む。
 
 ### 原則 7.2 Coverage Relativity
 

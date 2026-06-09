@@ -143,6 +143,16 @@ S subset X
 L_{S/U}
 ```
 
+ここでは、`S` は `U`-law coordinate geometry の中の derived stratum として与えられ、
+包含または構造射
+
+```text
+S -> X_U
+```
+
+が固定されていると仮定する。
+`L_{S/U}` は、この `U`-law base に相対的な cotangent complex である。
+
 これは、stratum `S` が law universe `U` によってどのように拘束されているかを表す。
 
 ```text
@@ -172,6 +182,8 @@ H^0(T_{S/U}):
 H^1(T_{S/U}):
   blocked refactor / lifting obstruction.
 ```
+
+cohomological grading は、`H^1(T_{S/U})` が first obstruction classes を含む convention を採用する。
 
 ### 原則 3.3 Tangent Is Not Operation List
 
@@ -491,7 +503,16 @@ operation loop
 gamma in pi_1^AAT(X,U)
 ```
 
-は、architecture sheaf に自己同型を誘導する。
+に対して、monodromy representation が与えられていると仮定する。
+
+```text
+rho_U
+  :
+  pi_1^AAT(X,U)
+  -> Aut(Ob_U) x Aut(Sem_U) x Aut(Eff_U)
+```
+
+この表現により、`gamma` は architecture sheaf に自己同型を誘導する。
 
 ```text
 Mon_gamma(Ob_U)  : Ob_U  -> Ob_U
@@ -499,6 +520,13 @@ Mon_gamma(Sem_U) : Sem_U -> Sem_U
 Mon_gamma(Eff_U) : Eff_U -> Eff_U
 ```
 
+ここで、
+
+```text
+Mon_gamma := rho_U(gamma)
+```
+
+である。
 この作用を monodromy と呼ぶ。
 
 endpoint が refactor equivalence の下で同じでも、sheaf 上の作用が恒等とは限らない。
@@ -667,10 +695,19 @@ stack 的な扱いが自然である。
 
 law universe `U` に対して、codebase essence を quotient stack として定義する。
 
+ここでは、refactor groupoid object
+
+```text
+Ref_U ⇉ X^U
+```
+
+が `X^U` に作用していると仮定する。
+このとき、codebase essence は quotient stack として定義される。
+
 ```text
 Ess_U(X)
   =
-  [X^U / Ref_U(X)]
+  [X^U / Ref_U]
 ```
 
 これは、refactor equivalence の下で不変に残る architecture structure である。
@@ -775,6 +812,8 @@ H^2(X, Aut(Dec_U))
 ```
 
 ここで `Aut(Dec_U)` は decomposition groupoid の自己同型 sheaf である。
+この `H^2` は一般には abelian sheaf cohomology ではなく、decomposition groupoid に相対化された
+non-abelian gerbe obstruction として読む。
 
 ### 定理 16.2 No Canonical Decomposition
 

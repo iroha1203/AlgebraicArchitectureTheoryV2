@@ -339,7 +339,8 @@ derived intersection is defined
 Tor_1^{O_X}(O_X/I_U, O_X/I_V) != 0
 ```
 
-なら、`U`-lawfulness と `V`-lawfulness の同時実現には latent compatibility obstruction が存在する。
+なら、`Flat_U(X)` と `Flat_V(X)` の同時実現 locus は derived-nontransverse であり、
+latent compatibility residue を持つ。
 
 すなわち、
 
@@ -348,13 +349,13 @@ U-lawful deformation
 V-lawful deformation
 ```
 
-がそれぞれ局所的に存在しても、
+を同時に扱う repair や deformation は、この residue を考慮しなければならない。
 
 ```text
-jointly lawful deformation
+joint lawfulness
+  requires accounting for
+derived compatibility residue
 ```
-
-が存在するとは限らない。
 
 ### 証明の読み
 
@@ -483,9 +484,9 @@ all axes non-increasing
 
 これは例外的な事故ではなく、lawful loci の非横断性から生じる構造的現象である。
 
-## 9. No Free Repair Theorem
+## 9. No Monotone Repair Guarantee Theorem
 
-### 定理 9.1 No Free Repair
+### 定理 9.1 No Monotone Repair Guarantee
 
 repair path
 
@@ -507,12 +508,12 @@ Tor_1^{O_X}(O_X/I_U, O_X/I_V) != 0
 
 が成り立つとする。
 
-このとき、`V`-axis への transferred obstruction は構造的に発生しうる。
+このとき、`U`-axis の obstruction 減少だけから、`V`-axis の obstruction が非増加であることは従わない。
 
 ```text
-U-axis repair
-  may transfer obstruction to
-V-axis
+U-axis obstruction decreases
+does not imply
+V-axis obstruction non-increases
 ```
 
 したがって、
@@ -535,16 +536,16 @@ s' closer to Flat_U(X)
 ```
 
 しかし、`Flat_U(X)` と `Flat_V(X)` の derived intersection が非横断であるなら、
-`Flat_U` 方向への移動は `Flat_V` 方向で余剰 obstruction を生みうる。
+`Flat_U` 方向への移動が `Flat_V` 方向でも単調改善であることは保証されない。
 
 ```text
 move toward Flat_U
 through non-transverse intersection
-creates V-residue
+does not guarantee monotone movement toward Flat_V
 ```
 
 この residue は、classical intersection だけを見ていると副作用に見える。
-しかし derived law geometry では、`Tor_1` によって予告される構造的転送である。
+derived law geometry では、`Tor_1` によって読まれる構造的 compatibility residue である。
 
 ## 10. Transferred Obstruction
 

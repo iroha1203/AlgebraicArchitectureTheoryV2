@@ -468,6 +468,7 @@ distance does not turn unmeasured into zero
 ### 定義 9.1 Distance Value
 
 distance value は実数だけではない。
+第VII部では、distance value domain を部分順序つき enriched value object として扱う。
 
 ```text
 DistanceValue =
@@ -477,6 +478,10 @@ DistanceValue =
   unavailable
   incomparable
   infinite
+```
+
+```text
+DistanceValue : partially ordered enriched value object
 ```
 
 `zero` は測定された zero である。
@@ -523,6 +528,8 @@ d_op(A,B)
 ### 定義 10.2 Distance to Flatness
 
 lawful locus への距離を次で定義する。
+
+ここでは、`DistanceValue` または選ばれた cost domain が infimum を持つ範囲に相対化する。
 
 ```text
 dist_flat_U(A)
