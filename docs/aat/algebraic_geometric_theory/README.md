@@ -56,8 +56,8 @@ SFT、ArchSig、FieldSig、実コードベース抽出、tool diagnosis、empiri
 1. [第I部 Atom・対象・法則](part_1_atoms_objects_laws.md)
 2. [第II部 Architecture Geometry・Site・Sheaf](part_2_architecture_geometry_sites_sheaves.md)
 3. [第III部 Law Algebra・Obstruction Ideal・Lawful Locus](part_3_law_algebra_obstruction_ideal_lawful_locus.md)
-4. 第IV部 Obstruction Cohomology
-5. 第V部 Derived Law Geometry と Repair
+4. [第IV部 Obstruction Cohomology](part_4_obstruction_cohomology.md)
+5. [第V部 Derived Law Geometry と Repair](part_5_derived_law_geometry_repair.md)
 6. 第VI部 Singularity・Monodromy・Stack
 7. 第VII部 Representation・Periods・Analysis
 
