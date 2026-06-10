@@ -263,36 +263,101 @@ faithful reading
 
 ## 5. Period Family
 
-### 定義 5.1 Period
+### 定義 5.1 Representation Reading
 
-representation `R` に対して、architecture geometry `X` の period を次で定義する。
+representation `R` に対して、architecture geometry `X` の reading を次で定義する。
 
 ```text
-Period_R(X)
+Read_R(X)
   =
   R(X)
 ```
 
-period は、`X` を特定の representation で読んだ値である。
+これは、`X` を特定の representation で読んだ値である。
+従来の広い意味では、この reading を broad period と呼んでもよい。
 
 ```text
-graph period
-matrix period
-signature period
-curvature period
-semantic period
-effect period
-runtime period
+Period_R^{broad}(X)
+  :=
+Read_R(X)
+
+Period_R(X)
+  may be used as shorthand
+  only when broad-period convention is fixed.
 ```
 
-### 定義 5.2 Period Family
+代表例は次である。
+
+```text
+graph reading
+matrix reading
+signature reading
+curvature reading
+semantic reading
+effect reading
+runtime reading
+```
+
+### 定義 5.2 Strict Period
+
+狭義の period は、単なる representation value ではなく、cohomology class、cycle、trace、
+operation loop などとの pairing として定義する。
+
+たとえば obstruction cohomology class
+
+```text
+omega in H^n(X, Ob_U)
+```
+
+と cycle または test object
+
+```text
+gamma in H_n(X, Z)
+```
+
+が固定されているとき、strict obstruction period を次で表す。
+
+```text
+Per_{omega,gamma}(X)
+  :=
+< omega, gamma >
+```
+
+monodromy representation
+
+```text
+rho_U : pi_1^{op}(X) -> Aut(F)
+```
+
+が固定されている場合、operation loop `gamma` に沿う trace period を次で表す。
+
+```text
+Per_rho(gamma)
+  :=
+Tr(rho_U(gamma))
+```
+
+したがって、本文では次を区別する。
+
+```text
+reading:
+  R(X), representation による値。
+
+broad period:
+  reading を period family の成分として読む広義の用法。
+
+strict period:
+  cohomology / cycle / trace / loop との pairing。
+```
+
+### 定義 5.3 Period Family
 
 period family を次で定義する。
 
 ```text
 Per(X)
   =
-  { Period_R(X) | R in Rep(AAT) }
+  { Read_R(X) | R in Rep(AAT) }
 ```
 
 `Per(X)` は、architecture geometry `X` の多面的な analytic reading である。
@@ -313,25 +378,25 @@ Per(X)
 
 ### 定理 6.1 Period Separation
 
-architecture geometries `X` と `Y` について、ある representation では同じ period を持ち、
-別の representation では異なる period を持つことがある。
+architecture geometries `X` と `Y` について、ある representation では同じ broad period / reading を持ち、
+別の representation では異なる broad period / reading を持つことがある。
 
 たとえば、
 
 ```text
-Period_graph(X) = Period_graph(Y)
+Period_graph^{broad}(X) = Period_graph^{broad}(Y)
 ```
 
 であっても、
 
 ```text
-Period_semantic(X) != Period_semantic(Y)
+Period_semantic^{broad}(X) != Period_semantic^{broad}(Y)
 ```
 
 または、
 
 ```text
-Period_effect(X) != Period_effect(Y)
+Period_effect^{broad}(X) != Period_effect^{broad}(Y)
 ```
 
 となりうる。
@@ -343,20 +408,21 @@ semantic representation は language game と use-rule に相対化された mea
 effect representation は authority、state、runtime effect の reading を与える。
 
 これらは異なる coordinate family を読む。
-したがって、graph period が一致しても、semantic period や effect period が異なることがある。
+したがって、graph broad period / reading が一致しても、semantic broad period や
+effect broad period が異なることがある。
 
 ```text
-same graph period
-different semantic period
-different effect period
+same graph broad period
+different semantic broad period
+different effect broad period
 ```
 
-この定理は、graph period の位置を明確にする。
+この定理は、graph broad period / reading の位置を明確にする。
 
 ```text
-graph is a legitimate period.
-semantic is another period.
-effect is another period.
+graph is a legitimate broad period.
+semantic is another broad period.
+effect is another broad period.
 ```
 
 ## 7. Signature and Curvature Readings
@@ -761,7 +827,8 @@ complete for selected purpose
 ```
 
 ある representation は graph structure には faithful でも、semantic structure には coarse でありうる。
-別の representation は semantic period をよく分離しても、runtime interaction を読まないことがある。
+別の representation は semantic reading / broad period をよく分離しても、
+runtime interaction を読まないことがある。
 
 ### 原則 15.2 Choose a Representation Family
 
@@ -769,16 +836,16 @@ complete for selected purpose
 
 ```text
 dependency questions:
-  graph and matrix periods.
+  graph and matrix readings.
 
 semantic questions:
-  semantic and contract periods.
+  semantic and contract readings.
 
 effect questions:
-  authority and effect periods.
+  authority and effect readings.
 
 runtime questions:
-  trace and state periods.
+  trace and state readings.
 
 repair questions:
   distance, normal cone, derived conflict, monodromy readings.

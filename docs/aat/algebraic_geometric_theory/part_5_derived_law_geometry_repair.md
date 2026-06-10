@@ -326,7 +326,31 @@ LawConflict_1(U,V)
 
 である。
 
-### 原則 5.2 Conflict Is Structural
+### 定義 5.2 Higher Law Conflict Sheaves
+
+一次 conflict だけでなく、derived intersection は高次の非横断性を持ちうる。
+law universe `U` と `V` に対して、高次 law conflict sheaf を次で定義する。
+
+```text
+LawConflict_i(U,V)
+  =
+Tor_i^{O_X}(O_X/I_U, O_X/I_V)
+for i > 0
+```
+
+`LawConflict_1(U,V)` はその低次成分であり、first-order non-transversality を読む。
+`LawConflict_i(U,V)` は、高次の coherence、multi-boundary、derived repair obstruction を読む。
+
+derived intersection 全体を読む場合は、
+
+```text
+O_X/I_U tensor^L_{O_X} O_X/I_V
+```
+
+を基本対象とし、`LawConflict_i` はその homology sheaf / cohomology sheaf の選ばれた grading convention に
+よる成分として読む。
+
+### 原則 5.3 Conflict Is Structural
 
 `LawConflict_1(U,V)` は、単なる defect count ではない。
 また、`U` と `V` の両方に違反があるというだけでもない。
@@ -405,7 +429,7 @@ derived-transversely compatible
 
 ### 定義 7.1 Transverse Law Universes
 
-law universe `U` と `V` が横断的に交わるとは、次が消えることをいう。
+law universe `U` と `V` が一次横断的に交わるとは、次が消えることをいう。
 
 ```text
 LawConflict_1(U,V) = 0
@@ -419,12 +443,56 @@ transverse law intersection
 no first derived law conflict
 ```
 
-### 定義 7.2 Non-Transverse Law Universes
+### 定義 7.2 Derived-Transverse Law Universes
+
+law universe `U` と `V` が derived-transverse に交わるとは、すべての正次数 conflict が消えることをいう。
+
+```text
+LawConflict_i(U,V) = 0
+for all i > 0
+```
+
+同値に、局所的には derived tensor product が古典的 tensor product と同じ情報だけを持つ。
+
+```text
+O_X/I_U tensor^L_{O_X} O_X/I_V
+  has no higher Tor residue.
+```
+
+この条件は `LawConflict_1 = 0` より強い。
+一次 conflict が消えていても、高次 conflict が残る場合は derived-transverse とは呼ばない。
+
+### 定理 7.3 Derived Transversality Criterion
+
+次を仮定する。
+
+```text
+O_X is a commutative structure sheaf
+I_U and I_V define the selected lawful loci
+derived tensor product is defined in the chosen category
+the grading convention for Tor is fixed
+```
+
+このとき、`Flat_U(X)` と `Flat_V(X)` は、選ばれた derived reading において、
+
+```text
+Tor_i^{O_X}(O_X/I_U, O_X/I_V) = 0
+for all i > 0
+```
+
+なら derived-transversely compatible である。
+逆に、正次数 Tor が残るなら、その次数に対応する derived law conflict を持つ。
+
+この定理は、classical joint lawful locus の存在を否定しない。
+古典的な共通零点が存在しても、正次数 Tor が非零なら、交差の仕方に derived residue が残る。
+
+### 定義 7.4 Non-Transverse Law Universes
 
 law universe `U` と `V` が非横断的に交わるとは、次が非零であることをいう。
 
 ```text
-LawConflict_1(U,V) != 0
+LawConflict_i(U,V) != 0
+for some i > 0
 ```
 
 このとき、二つの law universe の同時実現には derived law conflict がある。
@@ -435,7 +503,9 @@ non-transverse law intersection
 latent compatibility obstruction
 ```
 
-### 原則 7.3 Non-Transversality Is Not Failure Count
+一次の非横断性を特に読む場合は、`LawConflict_1(U,V) != 0` と書く。
+
+### 原則 7.5 Non-Transversality Is Not Failure Count
 
 非横断性は、失敗の数ではない。
 失敗数が少なくても、lawful loci が非横断的に交われば、repair は別 axis に obstruction を転送しうる。
@@ -506,7 +576,103 @@ X' prec^{geom}_{P_U} X
 
 と書く。
 
-### 定義 8.2 Repair Path
+### 定義 8.2 Pullback Repair Profile
+
+geometric repair
+
+```text
+r : X -> X'
+```
+
+の obstruction を比較するには、scheme morphism の反変性を明示する。
+repair comparison profile `P_U` は、必要に応じて次の比較写像を含む。
+
+```text
+r^{-1} I'_U · O_X
+  <=_{P_U}
+I_U
+```
+
+ここで `I_U subset O_X` は repair 前の obstruction ideal、
+`I'_U subset O_{X'}` は repair 後の obstruction ideal である。
+左辺は `I'_U` を `X` 側へ引き戻して比較したものである。
+
+probe family
+
+```text
+s : T -> X
+```
+
+が固定されている場合は、section-level comparison として次を使う。
+
+```text
+(r circ s)^* I'_U
+  <=_{P_U}
+s^* I_U
+```
+
+したがって repair の改善は、少なくとも次の二種類に分けて読む。
+
+```text
+Internal repair:
+  same X 上の section deformation s -> s'。
+  obstruction comparison is s'^* I_U <=_{P_U} s^* I_U.
+
+Geometric repair:
+  architecture geometry morphism r : X -> X'。
+  obstruction comparison is made after a chosen pullback / probe profile.
+```
+
+pullback profile または probe profile を固定しない限り、
+`r : X -> X'` が `U`-improving であるという theorem は立てない。
+
+### 定義 8.3 Conflict Comparison Profile
+
+repair が derived conflict を増やさないことを述べるには、obstruction ideal とは別に、
+law conflict sheaf / Tor complex の比較 profile を固定する。
+
+law universe pair `(U,V)`、degree set `D subset Nat_{>0}`、repair `r : X -> X'` に対して、
+conflict comparison profile を次の data として置く。
+
+```text
+Q_{U,V}
+```
+
+`Q_{U,V}` は少なくとも次を含む。
+
+```text
+degree profile:
+  selected positive degrees D.
+
+comparison maps:
+  cmp_i(r) :
+    pullback_r LawConflict'_i(U,V)
+      -> LawConflict_i(U,V)
+  or probe-level maps along selected s : T -> X.
+
+order / vanishing predicate:
+  <=_{Q_{U,V}} on selected conflict readings,
+  and a notion of zero / nonzero after comparison.
+```
+
+ここで `LawConflict'_i(U,V)` は repair 後の geometry `X'` 上で計算される conflict sheaf である。
+pullback、pushforward、または probe-level comparison のどれを使うかは `Q_{U,V}` の一部として固定する。
+
+repair が selected derived conflict を増やさないとは、
+
+```text
+pullback_r LawConflict'_i(U,V)
+  <=_{Q_{U,V}}
+LawConflict_i(U,V)
+for all i in D
+```
+
+または、同じ意味を持つ selected probe-level comparison が成り立つことである。
+
+`Q_{U,V}` を固定しない限り、`LawConflict_i(U,V)` が repair によって増えない、
+または新たに非零化しない、という theorem は立てない。
+
+### 定義 8.4 Repair Path
 
 repair path とは、architecture geometry 上の変形または morphism である。
 
@@ -543,7 +709,7 @@ under P_U
 以後の repair theorem は、必ず profile `P_U` と、それが section 比較なのか geometry 比較なのかに
 相対化して読む。
 
-### 原則 8.3 Repair Is Not Scalar Improvement
+### 原則 8.5 Repair Is Not Scalar Improvement
 
 repair は単一の scalar score の改善ではない。
 
@@ -696,7 +862,8 @@ derived conflict class does not increase
 transferred obstruction is zero or controlled
 ```
 
-記号的には、law universe `U,V in 𝓛` について、
+記号的には、law universe `U,V in 𝓛` について、repair comparison profile `P_U` と
+conflict comparison profile `Q_{U,V}` を固定し、
 
 ```text
 r(X) prec^{geom}_{P_U} X
@@ -705,10 +872,15 @@ r(X) prec^{geom}_{P_U} X
 かつ、
 
 ```text
-LawConflict_1(U,V)
+pullback_r LawConflict'_i(U,V)
+  <=_{Q_{U,V}}
+LawConflict_i(U,V)
+for selected i in D
 ```
 
-が repair によって新たに非零化しないことを要求する。
+が成り立つことを要求する。
+低次だけを読む repair criterion では `i = 1` に制限してよい。
+高次 coherence まで含める場合は、選ばれた conflict degree profile を明示する。
 
 ### 原則 11.2 Repair Preserves Geometry
 
@@ -761,13 +933,25 @@ LawConflict_1(U,V)
   Tor_1^{O_X}(O_X/I_U, O_X/I_V)
 ```
 
-cohomological grading を固定した場合、この sheaf は derived intersection の負次数として読める。
+さらに、正次数全体の conflict sheaf を次で定義した。
+
+```text
+LawConflict_i(U,V)
+  =
+Tor_i^{O_X}(O_X/I_U, O_X/I_V)
+for i > 0
+```
+
+cohomological grading を固定した場合、一次 conflict sheaf は derived intersection の負次数として読める。
 
 ```text
 LawConflict_1(U,V)
   ≅
   H^{-1}(O_{Flat_U intersection^R Flat_V})
 ```
+
+すべての `i > 0` で `LawConflict_i(U,V) = 0` なら、選ばれた derived reading において
+`U` と `V` は derived-transverse である。
 
 第V部の核心は次である。
 

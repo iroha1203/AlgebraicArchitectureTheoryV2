@@ -605,6 +605,53 @@ resolution ρ
 
 であっても、選ばれていない reading について zero を主張しない。
 
+### 原則 5.8 Law Condition Types
+
+第III部の核は、closed equational law を ideal の零点集合として読むことである。
+しかし、すべての architecture law を無条件に closed ideal へ押し込めるわけではない。
+
+law condition には少なくとも次の型がある。
+
+```text
+Closed equational law:
+  selected witness ideal I_L の vanishing として読む law。
+
+Open / inequational law:
+  nonzero capability, enabled provider, available path など、
+  D(f) 型の open condition として読む law。
+
+Constructible law:
+  closed condition と open condition の boolean combination として読む law。
+
+Descent law:
+  local lawful sections が cover と gluing data に沿って貼り合うことを要求する law。
+
+Temporal / trace law:
+  runtime trace sheaf、state transition、automata、temporal predicate に相対化される law。
+
+Higher / stacky law:
+  decomposition、semantic identification、refactor equivalence など、
+  groupoid-valued または stack-valued data に相対化される law。
+```
+
+したがって本文の slogan は次のように読む。
+
+```text
+closed law is equation.
+general law is a geometric condition.
+obstruction ideal is the closed defect envelope
+of selected witnesses.
+```
+
+`I_Ob^U` は、選ばれた witness family のうち closed equational envelope として読める部分を集める。
+open、constructible、descent、temporal、stacky な law は、必要な追加構造を固定した上で、
+open subobject、locally closed subobject、descent condition、trace condition、
+または stack condition として扱う。
+
+この分類は law-as-equation の核を弱めるものではない。
+closed defect を ideal として扱える場所を正確に固定し、それ以外の law を不自然に ideal 化しないための
+claim boundary である。
+
 ## 6. Obstruction Ideal Sheaf
 
 ### 定義 6.1 Local Obstruction Ideal
@@ -788,7 +835,102 @@ Spec_AAT(O_X^U(W))
 selected law reading、signature axis reading を付加した affine spectrum として読む。
 基礎となる可換環の spectrum は通常の `Spec` である。
 
-### 定義 8.2 Local Lawful Chart
+### 定義 8.2 R-Valued Local Configuration Functor
+
+context `W` と law universe `U` に対して、`R`-valued local architecture configuration functor を
+次で表す。
+
+```text
+h_W^U : CommAlg_k -> Set
+```
+
+`h_W^U(R)` は、`W` 上で読める typed architecture coordinates に `R`-value を与え、
+structural relations を満たす局所 architecture configuration の集合である。
+
+```text
+h_W^U(R)
+  =
+{ R-valued W-local architecture configurations
+  satisfying structural relations }
+```
+
+この段階では selected law witness ideals をすべて zero にするとは限らない。
+lawful locus は、後で `I_Ob^U` の vanishing によって切り出す。
+
+### 定理 8.3 Raw Affine Chart Representability
+
+context `W` が有限表示の coordinate family と structural relation family を持ち、
+restriction が typed coordinate と structural relation を保つと仮定する。
+このとき、
+
+```text
+A_{raw,W}^U := O_raw^U(W)
+```
+
+は `h_W^U` を表現する。
+
+```text
+h_W^U(R)
+  ≅
+Hom_{k-Alg}(A_{raw,W}^U, R)
+```
+
+したがって、
+
+```text
+AffAAT_raw(W,U)
+  =
+Spec_AAT(A_{raw,W}^U)
+```
+
+は、`W` 上の typed local architecture configurations の moduli functor を表現する affine scheme に
+AAT の label と selected reading を載せた chart である。
+
+この raw representability は、自由可換環を structural relation ideal で割った presentation の
+普遍性から読む。
+
+### 仮定 8.4 Sheafified Chart Presentation
+
+sheafification 後の structure sheaf section
+
+```text
+O_X^U(W)
+```
+
+を同じ local configuration functor の coordinate algebra として使うには、追加の presentation-preservation
+仮定を固定する。
+
+```text
+A_W^U := O_X^U(W)
+
+presentation preservation:
+  O_raw^U(W) -> O_X^U(W)
+  preserves the selected finite presentation for h_W^U,
+  or induces an isomorphism on the represented local functor.
+```
+
+この仮定の下でのみ、
+
+```text
+h_W^U(R)
+  ≅
+Hom_{k-Alg}(A_W^U, R)
+```
+
+と読み、
+
+```text
+AffAAT(W,U)
+  =
+Spec_AAT(A_W^U)
+```
+
+を sheafified affine AAT chart と呼ぶ。
+
+したがって、`Spec_AAT(O_X^U(W))` は無条件に raw moduli functor を表現するのではない。
+raw chart representability と、sheafified chart がその presentation を保つ条件を分けて読む。
+
+### 定義 8.5 Local Lawful Chart
 
 context `W` 上の local lawful chart を次で定義する。
 
@@ -807,7 +949,7 @@ Flat_U(W)
   { p in Spec_AAT(O_X^U(W)) | I_Ob^U(W) subset p }
 ```
 
-### 例 8.3 Boundary Chart
+### 例 8.6 Boundary Chart
 
 boundary context `W_boundary` では、次の coordinate が現れる。
 
