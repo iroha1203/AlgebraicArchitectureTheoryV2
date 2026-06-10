@@ -853,6 +853,66 @@ repair questions:
 
 representation family を選ぶことは、AAT geometry をどの窓から読むかを選ぶことである。
 
+### 定義 15.3 U-Detecting Representation Family
+
+law universe `U` と selected obstruction class family `Obs_U` に対して、
+representation family `Rep` が `U`-detecting であるとは、selected readings の vanishing が
+selected witness vanishing を検出することをいう。
+
+```text
+for alpha in Obs_U,
+  (forall R in Rep, R(alpha) = 0)
+  implies
+  WitnessZero_U(alpha)
+```
+
+ここで `R(alpha)` は、cohomology class、obstruction ideal section、derived conflict class、
+monodromy residue などを、representation `R` が読んだ値である。
+`WitnessZero_U(alpha)` は、`U` が選んだ witness family に沿って `alpha` の obstruction witness が
+すべて zero と読めることを表す。
+
+この性質は、単一 representation ではなく representation family に対して置く。
+graph reading が消えていても semantic obstruction が残ることはありうる。
+したがって detecting は、選ばれた obstruction family と coverage / exactness assumption に相対化される。
+
+### 定理 15.4 Representation Conservativity under Adequacy
+
+次を仮定する。
+
+```text
+Rep is U-detecting for selected Obs_U.
+the cover is U-adequate.
+witness exactness holds.
+axis exactness holds.
+coefficient discipline is fixed.
+```
+
+このとき、selected obstruction class `alpha in Obs_U` について、
+
+```text
+forall R in Rep, R(alpha) = 0
+```
+
+なら、
+
+```text
+alpha = 0
+```
+
+である。
+すなわち、adequacy と exactness の下で、`Rep` は selected obstruction family に対して
+`U`-conservative である。
+
+```text
+all selected readings vanish
+  + detecting / adequacy / exactness
+  --------------------------------------
+selected obstruction vanishes
+```
+
+この theorem は、任意の単一 metric や graph reading が完全であるという主張ではない。
+保証されるのは、固定された `Rep`、`Obs_U`、coverage、witness exactness、axis exactness の範囲だけである。
+
 ## 16. Final Synthesis
 
 ### 定理 16.1 Algebraic-Geometric AAT Synthesis

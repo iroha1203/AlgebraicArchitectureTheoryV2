@@ -181,6 +181,7 @@ Gerbe / stack layer:
 ### 定義 2.4 Canonical Obstruction Package
 
 `Ob_U` は、問題に応じて選ばれる coefficient sheaf である。
+ただし closed equational law から出発する場合、この節の package を標準 obstruction hierarchy として優先して参照する。
 ただし、lawful locus
 
 ```text
@@ -227,6 +228,8 @@ i_* ConDef_U
 closed immersion の conormal sheaf としての `(I_U/I_U^2)|_{Flat_U(X)}` を使う。
 どちらの圏で扱うかを固定せずに cohomology group を書かない。
 
+この package は、visible closed defect、first-order defect residue、deformation obstruction を
+同じ closed immersion から読むための標準係数体系である。
 この package により、`Ob_U` は次のいずれか、またはその functorial extension として選ばれる。
 
 ```text
@@ -457,6 +460,42 @@ metric is a reading.
 cohomology is structure.
 ```
 
+### 原則 4.4 Concrete Class, Not Merely Nonzero Group
+
+`H^1(X, Ob_U)` が非零であることだけから、与えられた local lawful sections が貼り合わないとは言えない。
+それが言うのは、非自明な obstruction class が存在しうるということである。
+
+貼り合わせ失敗を主張するには、local data から定まる具体的な cocycle
+
+```text
+g in C^1(𝒰, Ob_U)
+```
+
+と、その class
+
+```text
+[g] in H^1(𝒰, Ob_U)
+```
+
+を指定し、
+
+```text
+[g] != 0
+```
+
+を仮定する。
+
+逆向きに `[g] = 0` から global lawful section を得るには、local adjustments が実際に作用する torsor /
+module structure と effectivity assumption を固定する。
+
+```text
+nonzero group:
+  possible obstruction classes exist.
+
+nonzero concrete class [g]:
+  this local gluing data is obstructed.
+```
+
 ## 5. Local Flatness and Descent Data
 
 ### 定義 5.1 Local Flatness Data
@@ -551,12 +590,14 @@ refinement に関して安定な場合、
 
 として読む。
 
-`[g] = 0` であれば、mismatch は 0-cochain の境界として解消できる。
+fixed local adjustment structure の下で `[g] = 0` であれば、
+mismatch は 0-cochain の境界として解消できる。
 `[g] != 0` であれば、local lawful sections は大域的に貼り合わない。
 
 ```text
 [g] = 0:
-  mismatch is removable by local adjustment.
+  mismatch is removable by local adjustment,
+  when the adjustment action is fixed and effective.
 
 [g] != 0:
   mismatch is a genuine global obstruction.
