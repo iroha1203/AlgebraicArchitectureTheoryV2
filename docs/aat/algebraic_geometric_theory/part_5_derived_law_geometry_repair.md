@@ -239,6 +239,18 @@ O_{Flat_U intersection^R Flat_V}
 
 ここで `tensor^L` は derived tensor product である。
 
+この式は sheaf-theoretic に読む。
+局所 chart 上では可換環の derived tensor product として計算でき、
+大域的には derived tensor sheaf またはその hypercohomology を扱う。
+
+```text
+local derived intersection:
+  (O_X/I_U) tensor^L_{O_X} (O_X/I_V) as a complex of O_X-modules.
+
+global derived reading:
+  derived global sections / hypercohomology of the local complex.
+```
+
 ### 原則 4.2 Derived Intersection Remembers Conflict
 
 derived intersection は、古典的な共通零点だけでなく、二つの ideal が非横断的に交わるときの余剰構造を保持する。
@@ -271,32 +283,43 @@ repair cycle obstruction
 これは単なる repair の副作用ではない。
 `Flat_cycle(X)` と `Flat_semantic(X)` の交差が非横断であることの現れである。
 
-## 5. Law Conflict Object
+## 5. Law Conflict Sheaf
 
-### 定義 5.1 Law Conflict Object
+### 定義 5.1 First Law Conflict Sheaf
 
-law universe `U` と `V` に対して、law conflict object を次で定義する。
+law universe `U` と `V` に対して、first law conflict sheaf を次で定義する。
 
 ```text
-LawConflict(U,V)
+LawConflict_1(U,V)
   =
+  Tor_1^{O_X}(O_X/I_U, O_X/I_V)
+```
+
+これは、lawful loci の交差が一次で非横断であることを表す sheaf-theoretic obstruction である。
+
+cohomological grading convention を固定すると、次のように derived intersection の負次数として読める。
+
+```text
+LawConflict_1(U,V)
+  is isomorphic to
   H^{-1}(O_{Flat_U intersection^R Flat_V})
 ```
 
-これは、derived intersection の負次数に残る compatibility obstruction である。
-
-計算可能な場合、次のように読む。
+大域的な conflict group が必要な場合は、さらに次のいずれかを固定する。
 
 ```text
-LawConflict(U,V)
-  is isomorphic to
-  Tor_1^{O_X}(O_X/I_U, O_X/I_V)
+H^0(X, LawConflict_1(U,V)):
+  global sections of the first conflict sheaf.
+
+hypercohomology:
+  derived global reading of
+  O_X/I_U tensor^L_{O_X} O_X/I_V.
 ```
 
 すなわち、
 
 ```text
-LawConflict(U,V)
+LawConflict_1(U,V)
   ≅
   Tor_1^{O_X}(O_X/I_U, O_X/I_V)
 ```
@@ -305,7 +328,7 @@ LawConflict(U,V)
 
 ### 原則 5.2 Conflict Is Structural
 
-`LawConflict(U,V)` は、単なる defect count ではない。
+`LawConflict_1(U,V)` は、単なる defect count ではない。
 また、`U` と `V` の両方に違反があるというだけでもない。
 
 ```text
@@ -316,7 +339,7 @@ law conflict object:
   how law ideals fail to intersect transversely.
 ```
 
-law conflict object は、lawful loci の交差構造から生じる。
+first law conflict sheaf は、lawful loci の交差構造から生じる。
 
 ## 6. Derived Law Conflict Theorem
 
@@ -336,7 +359,7 @@ derived intersection is defined
 このとき、
 
 ```text
-Tor_1^{O_X}(O_X/I_U, O_X/I_V) != 0
+LawConflict_1(U,V) != 0
 ```
 
 なら、`Flat_U(X)` と `Flat_V(X)` の同時実現 locus は derived-nontransverse であり、
@@ -359,7 +382,7 @@ derived compatibility residue
 
 ### 証明の読み
 
-`Tor_1` が非零であることは、`O_X/I_U` と `O_X/I_V` の derived tensor product が
+`LawConflict_1(U,V)` が非零であることは、`O_X/I_U` と `O_X/I_V` の derived tensor product が
 古典的 tensor product だけでは表せない負次数の情報を持つことを意味する。
 
 ```text
@@ -385,7 +408,7 @@ derived-transversely compatible
 law universe `U` と `V` が横断的に交わるとは、次が消えることをいう。
 
 ```text
-Tor_1^{O_X}(O_X/I_U, O_X/I_V) = 0
+LawConflict_1(U,V) = 0
 ```
 
 このとき、`Flat_U(X)` と `Flat_V(X)` の交差には、一次の derived conflict が残らない。
@@ -401,7 +424,7 @@ no first derived law conflict
 law universe `U` と `V` が非横断的に交わるとは、次が非零であることをいう。
 
 ```text
-Tor_1^{O_X}(O_X/I_U, O_X/I_V) != 0
+LawConflict_1(U,V) != 0
 ```
 
 このとき、二つの law universe の同時実現には derived law conflict がある。
@@ -427,7 +450,63 @@ nonzero derived conflict
 
 ## 8. Repair Path
 
-### 定義 8.1 Repair Path
+### 定義 8.1 Repair Comparison Profile
+
+repair の改善を述べるには、比較構造を固定する。
+repair comparison profile を次で表す。
+
+```text
+P_U
+```
+
+`P_U` は少なくとも二つの比較を含む。
+
+```text
+prec^{sec}_{P_U}:
+  section-level comparison.
+
+prec^{geom}_{P_U}:
+  geometry / object-level comparison.
+```
+
+section-level comparison は、二つの section
+
+```text
+s, s' : T -> X
+```
+
+を比較する。
+geometry-level comparison は、architecture geometry や scheme の presentation 全体を比較する。
+これは、すべての selected test section、または指定された family of probes に沿った
+section-level comparison から誘導される。
+
+代表的な profile は次である。
+
+```text
+ideal-order repair:
+  s'^* I_U subsetneq s^* I_U at the section level.
+
+valuation repair:
+  nu_U(s') < nu_U(s).
+
+rank repair:
+  rank Ob_U(s') < rank Ob_U(s).
+
+support repair:
+  Supp(s'^* I_U) subsetneq Supp(s^* I_U).
+```
+
+比較を一般に
+
+```text
+s' prec^{sec}_{P_U} s
+
+X' prec^{geom}_{P_U} X
+```
+
+と書く。
+
+### 定義 8.2 Repair Path
 
 repair path とは、architecture geometry 上の変形または morphism である。
 
@@ -443,10 +522,10 @@ s -> s'
 
 と書く。
 
-repair が `U`-axis の obstruction を減らすとは、選ばれた reading の下で、
+repair が `U`-axis の obstruction を減らすとは、固定された repair comparison profile `P_U` の下で、
 
 ```text
-I_U(s') < I_U(s)
+s' prec^{sec}_{P_U} s
 ```
 
 または、
@@ -455,14 +534,16 @@ I_U(s') < I_U(s)
 s'^* I_U
   is smaller than
 s^* I_U
+under P_U
 ```
 
 と読めることをいう。
 
-ここで `<` は、ideal inclusion、valuation、rank、selected obstruction order など、
-固定された比較構造に相対化される。
+`<` を固定しない theorem は立てない。
+以後の repair theorem は、必ず profile `P_U` と、それが section 比較なのか geometry 比較なのかに
+相対化して読む。
 
-### 原則 8.2 Repair Is Not Scalar Improvement
+### 原則 8.3 Repair Is Not Scalar Improvement
 
 repair は単一の scalar score の改善ではない。
 
@@ -494,16 +575,17 @@ repair path
 r : X -> X'
 ```
 
-が `U`-axis の obstruction を減らすとする。
+が、固定された repair comparison profile `P_U` の geometry-level comparison の下で
+`U`-axis の obstruction を減らすとする。
 
 ```text
-I_U(X') < I_U(X)
+X' prec^{geom}_{P_U} X
 ```
 
 しかし、repair locus において、
 
 ```text
-Tor_1^{O_X}(O_X/I_U, O_X/I_V) != 0
+LawConflict_1(U,V) != 0
 ```
 
 が成り立つとする。
@@ -617,13 +699,13 @@ transferred obstruction is zero or controlled
 記号的には、law universe `U,V in 𝓛` について、
 
 ```text
-I_U(r(X)) < I_U(X)
+r(X) prec^{geom}_{P_U} X
 ```
 
 かつ、
 
 ```text
-LawConflict(U,V)
+LawConflict_1(U,V)
 ```
 
 が repair によって新たに非零化しないことを要求する。
@@ -671,18 +753,20 @@ refactoring is controlled deformation of architecture geometry.
 Flat_U(X) intersection^R Flat_V(X)
 ```
 
-この derived intersection の負次数に残る構造を、law conflict object として定義した。
+この derived intersection の一次非横断性を、first law conflict sheaf として定義した。
 
 ```text
-LawConflict(U,V)
+LawConflict_1(U,V)
   =
-  H^{-1}(O_{Flat_U intersection^R Flat_V})
+  Tor_1^{O_X}(O_X/I_U, O_X/I_V)
 ```
 
-計算可能な場合、これは次で読める。
+cohomological grading を固定した場合、この sheaf は derived intersection の負次数として読める。
 
 ```text
-Tor_1^{O_X}(O_X/I_U, O_X/I_V)
+LawConflict_1(U,V)
+  ≅
+  H^{-1}(O_{Flat_U intersection^R Flat_V})
 ```
 
 第V部の核心は次である。

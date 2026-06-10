@@ -16,17 +16,19 @@ source of truth として扱わない。
 
 1. [研究の全体目標](research_goal.md)
 2. [AAT 数学理論](aat/mathematical_theory/README.md)
-3. [AAT / SFT Interface](sft/aat_interface.md)
-4. [ソフトウェアの場の理論](sft/software_field_theory.md)
-5. [証明義務と実証仮説](aat/proof_obligations.md)
-6. [Lean 定義・定理索引](aat/lean_theorem_index.md)
-7. [AAT Tooling Documentation](tool/README.md)
-8. 必要に応じて [AAT directory guide](aat/README.md), [SFT directory guide](sft/README.md)
+3. 必要に応じて [代数幾何的 AAT 拡張本文](aat/algebraic_geometric_theory/README.md)
+4. [AAT / SFT Interface](sft/aat_interface.md)
+5. [ソフトウェアの場の理論](sft/software_field_theory.md)
+6. [証明義務と実証仮説](aat/proof_obligations.md)
+7. [Lean 定義・定理索引](aat/lean_theorem_index.md)
+8. [AAT Tooling Documentation](tool/README.md)
+9. 必要に応じて [AAT directory guide](aat/README.md), [SFT directory guide](sft/README.md)
 
 ## 全体文書
 
 - [研究の全体目標](research_goal.md): AAT / SFT / ArchSig / AI-driven Development の全体像を示す入口文書。
 - [AAT 数学理論](aat/mathematical_theory/README.md): Atom から `ArchitectureObject`, law, obstruction circuit, operation, flatness, path, homotopy, analytic representation, distance / measure を構成する。
+- [代数幾何的 AAT 拡張本文](aat/algebraic_geometric_theory/README.md): AAT を site、ringed topos、affine chart、scheme、derived / stacky geometry として読む拡張本文。Lean 形式化との対応は Lean 索引と証明義務で確認する。
 - [AAT / SFT Interface](sft/aat_interface.md): SFT が AAT から借りる概念と、片方向依存の interface を整理する。
 - [ソフトウェアの場の理論](sft/software_field_theory.md): PRD / Spec / Issue / PR / Review / CI / organization / AI / lifecycle を force, field, trajectory, control として整理する。
 - [証明義務と実証仮説](aat/proof_obligations.md): theorem assumption、未解決課題、empirical hypothesis の台帳。
@@ -51,7 +53,7 @@ Review / CI controls transitions.
 
 | 層 | 役割 | 主な文書 |
 | --- | --- | --- |
-| AAT | Atom から立ち上がる局所的・代数的・形式的・証明可能な核。 | `docs/aat/mathematical_theory/README.md` |
+| AAT | Atom から立ち上がる局所的・代数的・形式的・証明可能な核。 | `docs/aat/mathematical_theory/README.md`, `docs/aat/algebraic_geometric_theory/README.md` |
 | AAT / SFT Interface | AAT から SFT への片方向依存と claim discipline。 | `docs/sft/aat_interface.md` |
 | ArchSig | AAT 的観測量を抽出し、SFT 的予測・制御に渡す計測層。 | `docs/tool/` |
 | SFT | 大域的・力学的・予測的・制御的な上位理論。 | `docs/sft/software_field_theory.md` |
