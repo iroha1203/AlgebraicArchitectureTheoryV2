@@ -178,7 +178,91 @@ Gerbe / stack layer:
 第二層と第三層は、第VI部の stack / gerbe 構造に持ち上げて扱う。
 この分離により、abelian cohomology の計算可能性と、non-abelian gluing の強さを混同しない。
 
-### 原則 2.4 Obstruction Sheaf Relativity
+### 定義 2.4 Canonical Obstruction Package
+
+`Ob_U` は、問題に応じて選ばれる coefficient sheaf である。
+ただし、lawful locus
+
+```text
+i : Flat_U(X) -> X
+```
+
+が obstruction ideal
+
+```text
+I_U = I_Ob^U subset O_X^U
+```
+
+によって切り出されている場合、標準的な obstruction package を次で置く。
+ここでは、`I_U/I_U^2` は lawful locus 上の conormal sheaf として読む。
+すなわち、係数圏は `O_{Flat_U(X)}`-modules である。
+
+```text
+Def_U
+  :=
+I_U
+
+ConDef_U
+  :=
+(I_U / I_U^2) on Flat_U(X)
+  as an O_{Flat_U(X)}-module
+
+DerOb_U(M)
+  :=
+Ext^1(L_{Flat_U(X)/X}, M)
+  for M in Mod(O_{Flat_U(X)})
+```
+
+`Def_U` は見えている closed defect ideal である。
+`ConDef_U` は lawful locus から見た first-order defect residue である。
+`DerOb_U(M)` は、deformation module `M` に相対化された derived obstruction space である。
+
+`ConDef_U` を `X` 上で比較したい場合は、包含 `i` に沿った pushforward を明示して
+
+```text
+i_* ConDef_U
+```
+
+として読む。lawful locus 上へ制限して読む場合は、`i^* I_U / i^* I_U^2` ではなく、
+closed immersion の conormal sheaf としての `(I_U/I_U^2)|_{Flat_U(X)}` を使う。
+どちらの圏で扱うかを固定せずに cohomology group を書かない。
+
+この package により、`Ob_U` は次のいずれか、またはその functorial extension として選ばれる。
+
+```text
+Ob_U = Def_U
+Ob_U = ConDef_U
+Ob_U = a module derived from L_{Flat_U(X)/X}
+Ob_U = an abelianization of torsor / stack obstruction data
+```
+
+したがって、
+
+```text
+H^0(X, Def_U):
+  visible closed defect sections.
+
+H^1(X, ConDef_U):
+  first-order gluing residue of closed defect data.
+
+Ext^1(L_{Flat_U(X)/X}, M):
+  deformation obstruction for selected module M.
+```
+
+と読むことができる。
+ただし `ConDef_U` を lawful locus 上の sheaf として扱う場合、cohomology は
+
+```text
+H^1(Flat_U(X), ConDef_U)
+```
+
+であり、`X` 上で読む場合は `H^1(X, i_* ConDef_U)` と書く。
+
+これは `Ob_U` を一種類に固定する定義ではない。
+cohomology を語るときに、どの obstruction coefficient を使っているかを明示するための
+canonical reference package である。
+
+### 原則 2.5 Obstruction Sheaf Relativity
 
 `Ob_U` は次に相対化される。
 

@@ -8,6 +8,10 @@ Flat_U(X) intersection^R Flat_V(X)
 LawConflict_1(U,V)
   =
   Tor_1^{O_X}(O_X/I_U, O_X/I_V)
+LawConflict_i(U,V)
+  =
+  Tor_i^{O_X}(O_X/I_U, O_X/I_V)
+  for i > 0
 ```
 
 また、repair や refactoring を、lawful loci の間を動く derived-geometric deformation として定式化した。
@@ -49,10 +53,12 @@ stack:
 Part5 の derived law geometry は、lawful loci の交差に残る latent conflict を扱った。
 
 ```text
-LawConflict_1(U,V) != 0
+LawConflict_i(U,V) != 0
+for some selected i > 0
 ```
 
 この非零性は、law universe `U` と `V` の同時実現に潜在的な incompatibility があることを示す。
+一次 conflict に注目する場合は、特に `LawConflict_1(U,V) != 0` と書く。
 
 しかし、次の問いが残る。
 
@@ -723,6 +729,41 @@ stack:
 architecture では、refactor、decomposition、semantic-preserving rewrite が本質的な同型として現れるため、
 stack 的な扱いが自然である。
 
+### 定義 13.3 Algebraic Architecture Stack
+
+architecture stack は、任意の AAT site 上の groupoid-valued sheaf である。
+これを algebraic stack と呼ぶには、さらに代数幾何的な representability 条件が必要である。
+
+architecture stack `𝓧` が algebraic architecture stack であるとは、次を満たすことをいう。
+
+```text
+representable diagonal:
+  diagonal 𝓧 -> 𝓧 x 𝓧 is representable by ArchitectureSchemes.
+
+atlas:
+  there exists an atlas class AtlasClass
+  and an admissible atlas
+  X_0 -> 𝓧
+  from an ArchitectureScheme X_0.
+
+descent of structure:
+  obstruction ideals, law sheaves, signature sheaves,
+  and selected structure sheaves descend along the atlas.
+```
+
+したがって、本文で単に stack と呼ぶときは groupoid-valued descent object を意味する。
+`algebraic architecture stack` と呼ぶときだけ、diagonal、atlas、descent of structure を備えた
+強い対象を意味する。
+
+```text
+stack
+  !=
+algebraic stack
+```
+
+この分離により、decomposition や refactor equivalence を stack として扱うことと、
+それが scheme atlas を持つ algebraic stack であることを混同しない。
+
 ## 14. Codebase Essence as Quotient Stack
 
 ### 定義 14.1 Codebase Essence
@@ -736,6 +777,24 @@ Ref_U ⇉ X^U
 ```
 
 が `X^U` に作用していると仮定する。
+すなわち、少なくとも次の data が与えられている。
+
+```text
+source, target:
+  s,t : Ref_U -> X^U
+
+identity:
+  e : X^U -> Ref_U
+
+inverse:
+  inv : Ref_U -> Ref_U
+
+composition:
+  Ref_U x_{X^U} Ref_U -> Ref_U
+```
+
+これらは groupoid identities を満たし、さらに selected law、obstruction、signature、
+structure sheaf と整合するものとする。
 このとき、codebase essence は quotient stack として定義される。
 
 ```text

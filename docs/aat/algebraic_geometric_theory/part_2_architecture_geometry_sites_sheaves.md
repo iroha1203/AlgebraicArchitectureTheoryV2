@@ -299,7 +299,47 @@ W' is a local/refined readable context of W
 と置ける。この poset model は、後続の sheaf、Čech complex、affine chart gluing の
 基礎例として十分である。
 
-### 仮定 4.2 Pullback and Overlap
+### 命題 4.2 Minimal Context Finite-Meet Site
+
+最小 context model において、support、axis、observable family が finite meet を持ち、
+observable restriction が meet と整合すると仮定する。
+さらに context equality は readable identity を同一視した equivalence quotient で読み、
+任意の二つの context の間には高々一つの readable morphism があるとする。
+
+```text
+Supp(W_i) meet Supp(W_j)
+Ax(W_i)   meet Ax(W_j)
+Obs(W_i)  pullback_{Obs(W)} Obs(W_j)
+
+morphism uniqueness:
+  Hom(W', W) is either empty or contractible.
+
+antisymmetry after quotient:
+  W' <= W and W <= W'
+  implies W' = W in ArchCtx_min(A).
+```
+
+このとき、`ArchCtx_min(A)` は finite-meet poset category になる。
+恒等射は同じ context の readable identity であり、合成は restriction / refinement の合成である。
+
+equivalence quotient を取らない場合、同じ data は finite-meet preorder category として読む。
+poset category と呼ぶのは、thinness と antisymmetry を固定した後である。
+
+overlap は meet として構成される。
+
+```text
+W_i x_W W_j
+  =
+W_i meet_W W_j
+```
+
+すなわち、support と axis は共通部分または共通 refinement として読み、
+observable family は単なる集合交差ではなく、restriction diagram の pullback として読む。
+
+この命題は、一般の `ArchCtx(A)` が常に finite-meet category であるという主張ではない。
+後続の Čech complex と chart gluing を支える最小構成モデルである。
+
+### 仮定 4.3 Pullback and Overlap
 
 `ArchCtx(A)` は、cover の overlap を作るために必要な pullback を持つと仮定する。
 
@@ -313,7 +353,7 @@ W_i x_W W_j
 この pullback を context overlap と呼ぶ。
 第IV部の Čech complex は、この overlap に対して定義される。
 
-### 原則 4.3 Context Non-Generation
+### 原則 4.4 Context Non-Generation
 
 ```text
 context does not create atoms
