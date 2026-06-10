@@ -167,6 +167,57 @@ law does not create atoms.
 law cuts out loci.
 ```
 
+### 定義 2.3 Derived Lawful Locus
+
+law universe `U` の closed defect data が、perfect module または vector bundle `E_U` に値を持つ
+defect section として与えられるとする。
+
+```text
+delta_U in Gamma(X, E_U^vee)
+```
+
+このとき、`U` に対する derived lawful locus を `delta_U` の derived zero locus として定義する。
+
+```text
+Flat_U^der(X)
+  :=
+derived zero locus of delta_U
+```
+
+局所的には、その structure sheaf は Koszul complex で表される。
+
+```text
+O_{Flat_U^der}
+  ≃
+Kosz(O_X; delta_U)
+```
+
+classical lawful locus は、derived lawful locus の truncation として読む。
+
+```text
+t_0 Flat_U^der(X) = Flat_U(X)
+```
+
+ideal `I_U` だけから出発する場合は、`I_U` を生成する selected defect sections を選び、
+それらの Koszul complex を使う。
+生成系の選択や perfectness が問題になる場合は、derived zero locus の構成を仮定として明示する。
+
+### 原則 2.4 Classical Locus Is the Truncation
+
+`Flat_U(X) = V(I_U)` は closed equational law の classical vanishing locus である。
+一方、`Flat_U^der(X)` は、law equations がどのように消えているかという derived residue を保持する。
+
+```text
+classical lawful locus:
+  common zeros.
+
+derived lawful locus:
+  common zeros plus higher vanishing data.
+```
+
+したがって、後続の law conflict は、classical loci の交差だけでなく、
+derived lawful loci の interaction として読める。
+
 ## 3. Classical Intersection
 
 ### 定義 3.1 Classical Joint Lawful Locus
@@ -228,6 +279,11 @@ Flat_U(X) intersection^R Flat_V(X)
 ```
 
 これは、`Flat_U(X)` と `Flat_V(X)` の交差を、導来的な余剰構造ごと保持する対象である。
+derived lawful loci が構成されている場合は、より構造的に次として読む。
+
+```text
+Flat_U^der(X) x_X^R Flat_V^der(X)
+```
 
 局所的に、structure sheaf は形式的に次で与えられる。
 
@@ -847,6 +903,92 @@ TransOb_{U -> V}
 
 `U` と `V` を変えれば、何が transfer として見えるかも変わる。
 選ばれていない law axis について、obstruction の増減を主張しない。
+
+### 定義 10.4 Repair Direction and Transfer Pairing
+
+特定の repair が `V`-axis へ obstruction を転送することを述べるには、
+repair path 全体ではなく、その first-order direction または selected deformation direction を固定する。
+
+```text
+v in T_X
+```
+
+また、`U` と `V` の derived non-transversality から得られる selected conflict class を固定する。
+
+```text
+kappa_{U,V} in LawConflict_1(U,V)
+```
+
+または、選ばれた global / local reading に沿って
+
+```text
+kappa_{U,V} in H^0(X, LawConflict_1(U,V))
+```
+
+と読む。
+さらに transfer residue の target と zero predicate を固定する。
+
+```text
+TransRes_{U,V}:
+  selected transfer residue object.
+
+0_{TransRes}:
+  distinguished zero residue.
+
+Nontrivial_{TransRes}:
+  selected nonzero / nontrivial residue predicate.
+```
+
+repair transfer pairing を次で表す。
+
+```text
+< -, - >_{U,V}
+  :
+T_X x LawConflict_1(U,V) -> TransRes_{U,V}
+
+Transfer_{U -> V}(v)
+  :=
+< v, kappa_{U,V} >_{U,V}
+```
+
+pairing の target は、選ばれた coefficient module、normal cone reading、または obstruction residue module に
+相対化される。
+pairing を固定しない限り、特定の repair direction が transfer を持つという theorem は立てない。
+
+### 定理 10.5 Pairing-Based Transfer
+
+次を仮定する。
+
+```text
+repair direction v is defined.
+conflict class kappa_{U,V} is selected.
+transfer target TransRes_{U,V} is fixed.
+zero / nontrivial predicate on TransRes_{U,V} is fixed.
+the transfer pairing < -, - >_{U,V} is defined.
+```
+
+このとき、
+
+```text
+Nontrivial_{TransRes}(< v, kappa_{U,V} >_{U,V})
+```
+
+なら、repair direction `v` は `V`-axis に対して非自明な transferred obstruction residue を持つ。
+
+```text
+nonzero pairing
+  implies
+nontrivial selected transfer residue.
+```
+
+一方、
+
+```text
+LawConflict_1(U,V) != 0
+```
+
+だけでは、任意の具体的 repair direction が transfer を持つとは言えない。
+それは、`U` と `V` の間に transfer を起こしうる derived conflict が存在する、という構造的事実である。
 
 ## 11. Derived Repair Criterion
 

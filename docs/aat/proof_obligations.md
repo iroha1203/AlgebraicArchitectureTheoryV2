@@ -76,6 +76,12 @@ QED 境界、Issue 管理状態を持たせない。
 coverage assumptions、exactness assumptions、observation model、witness family に
 相対化して読む。
 
+`docs/aat/algebraic_geometric_theory/` の theorem label、ambient convention、appendix の定義は、
+この文書または [Lean 定義・定理索引](lean_theorem_index.md) に対応する Lean API / proof obligation
+として明示されている場合に限り、Lean status を持つ。
+対応行がない場合、それらは代数幾何的 AAT 本文内の数学命題または設計上の標準化であり、
+現在の Lean proved claim でも、自動的な future proof obligation でもない。
+
 `defined only` / `proved` が併記される領域では、通常、schema や carrier 定義は
 `defined only`、soundness bridge、bounded completeness theorem、accessor theorem、
 代表例 theorem の一部が `proved` であることを意味する。混同を避けるため、主要な
