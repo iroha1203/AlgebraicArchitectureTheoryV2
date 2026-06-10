@@ -5,9 +5,9 @@ law conflict を derived non-transversality として読んだ。
 
 ```text
 Flat_U(X) intersection^R Flat_V(X)
-LawConflict(U,V)
+LawConflict_1(U,V)
   =
-  H^{-1}(O_{Flat_U intersection^R Flat_V})
+  Tor_1^{O_X}(O_X/I_U, O_X/I_V)
 ```
 
 また、repair や refactoring を、lawful loci の間を動く derived-geometric deformation として定式化した。
@@ -49,7 +49,7 @@ stack:
 Part5 の derived law geometry は、lawful loci の交差に残る latent conflict を扱った。
 
 ```text
-Tor_1^{O_X}(O_X/I_U, O_X/I_V) != 0
+LawConflict_1(U,V) != 0
 ```
 
 この非零性は、law universe `U` と `V` の同時実現に潜在的な incompatibility があることを示す。
@@ -265,12 +265,23 @@ local lifting fails
 derived law conflict concentrates on S
 ```
 
-これは、`S` の近傍で小さな lawful deformation が高次へ延長できない可能性を表す。
+これは、`S` の近傍に非自明な obstruction space、非滑らかな tangent behavior、
+または実際の lifting failure が存在することを表す。
 
 ```text
 first-order refactor exists
 but
 higher-order lawful deformation is blocked.
+```
+
+ただし、`H^1(T_{S/U}) != 0` は「obstruction が入る場所」が非自明であることを意味する。
+個々の deformation が実際に失敗するには、その deformation に対応する obstruction class が
+この space の非零元として現れる必要がある。
+
+```text
+nonzero obstruction space
+  !=
+every deformation is obstructed.
 ```
 
 ### 定義 5.2 Normal Cone Reading
@@ -336,14 +347,15 @@ S is U-singular.
 ### 証明の読み
 
 `H^1(T_{S/U})` が非零であることは、first-order lawful deformation を高次へ持ち上げる際の
-obstruction が存在することを意味する。
+obstruction space が非自明であることを意味する。
 
 ```text
-first-order direction
-  fails to lift
-because
+possible lifting obstruction lives in
 H^1(T_{S/U}) != 0
 ```
+
+ある具体的な first-order direction が実際に lift しないことは、その direction の obstruction class が
+非零であることを別途示す命題である。
 
 cotangent complex が滑らかでない場合も、deformation theory は滑らかな lifting を持たない。
 したがって、`S` は repair や refactor が詰まりやすい architecture singularity である。
@@ -493,6 +505,24 @@ pi_1^AAT(X,U)
 
 これは、operation history の loop structure を表す。
 
+より構成的には、次の段階を経て定義される。
+
+```text
+operation category:
+  architecture operations and composable operation paths.
+
+operation groupoid:
+  reversible or equivalence-preserving operation paths are inverted.
+
+homotopy category / fundamental groupoid:
+  selected operation homotopy under refactor equivalence is quotiented.
+
+pi_1^AAT(X,U):
+  chosen base architecture at a component of the fundamental groupoid.
+```
+
+この構成を固定して初めて、operation loop が sheaf に作用するかどうかを問える。
+
 ## 10. Monodromy
 
 ### 定義 10.1 Monodromy Action
@@ -528,6 +558,10 @@ Mon_gamma := rho_U(gamma)
 
 である。
 この作用を monodromy と呼ぶ。
+
+monodromy は AAT geometry が自動的に持つ構造ではない。
+operation loop が obstruction、semantic、effect などの sheaf に作用する representation を
+備えるときに定義される。
 
 endpoint が refactor equivalence の下で同じでも、sheaf 上の作用が恒等とは限らない。
 
@@ -814,6 +848,16 @@ H^2(X, Aut(Dec_U))
 ここで `Aut(Dec_U)` は decomposition groupoid の自己同型 sheaf である。
 この `H^2` は一般には abelian sheaf cohomology ではなく、decomposition groupoid に相対化された
 non-abelian gerbe obstruction として読む。
+
+もし gerbe が abelian sheaf `A` によって banded される場合は、
+
+```text
+[gerbe_U(X)] in H^2(X, A)
+```
+
+として通常の abelian sheaf cohomology に入る。
+そうでない場合、`[gerbe_U(X)]` は cohomology group の元というより、
+non-abelian cohomology / stack obstruction class として扱う。
 
 ### 定理 16.2 No Canonical Decomposition
 

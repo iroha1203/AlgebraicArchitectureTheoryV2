@@ -8,6 +8,7 @@ Atom
   -> ArchitectureGeometry
   -> AATSite
   -> Ringed AAT Topos
+  -> Affine AAT Charts
   -> ArchitectureScheme
   -> LawfulLocus
   -> ObstructionCohomology
@@ -798,6 +799,7 @@ Atom
   -> ArchitectureGeometry
   -> AATSite
   -> RingedAATTopos
+  -> AffineAATCharts
   -> ArchitectureScheme
   -> LawfulLocus
   -> ObstructionCohomology

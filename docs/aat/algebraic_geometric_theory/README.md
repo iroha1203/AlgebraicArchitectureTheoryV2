@@ -30,8 +30,10 @@ Atom
   -> Architecture context category
   -> AAT site
   -> Sheaves
+  -> Ringed AAT topos
   -> Law algebra
   -> Obstruction ideal sheaf
+  -> Affine AAT charts
   -> Architecture scheme
   -> Lawful locus
   -> Obstruction cohomology
@@ -61,7 +63,7 @@ SFT、ArchSig、FieldSig、実コードベース抽出、tool diagnosis、empiri
 6. [第VI部 Singularity・Monodromy・Stack](part_6_singularity_monodromy_stack.md)
 7. [第VII部 Representation・Periods・Analysis](part_7_representation_periods_analysis.md)
 
-## Claim Discipline
+## 主張の読み方
 
 AAT 本文の主張は、固定された vocabulary、law universe、coverage topology、
 係数 sheaf、表現族に相対化される。次を混同しない。
@@ -73,10 +75,41 @@ Formal theorem:
 Certified bounded inference:
   coverage, exactness, witness completeness などの仮定の下で成立する相対的推論。
 
-Tool diagnosis:
-  測定済み artifact に相対化された実用的報告。
-  AAT 本文の theorem ではない。
+Analytic reading:
+  構成された幾何対象を graph、signature、period、metric などで読む表現。
 ```
 
-本文が扱うのは、最初の二つである。tool diagnosis は、AAT の外部で
-`ArchMap + LawPolicy + evidence contract` に相対化して扱う。
+本文の `Theorem` は、この本文で明示した定義と仮定のもとで読む数学的命題である。
+Lean 形式化との対応は、必要に応じて
+[`lean_theorem_index.md`](../lean_theorem_index.md) と
+[`proof_obligations.md`](../proof_obligations.md) で確認する。
+
+実コードベースからの読み取り、測定、経験的検証は、この幾何対象を別の観点から読む
+後続の営みである。AAT 本文は、それらの完全性を仮定せず、固定された数学的対象の中で
+語れることを述べる。
+
+## 強い代数幾何としての階層
+
+この本文は、AAT を単に「幾何的に見立てる」のではなく、次の階層で代数幾何化する。
+
+```text
+AAT site:
+  局所 context、cover、restriction、descent を与える。
+
+Ringed AAT topos:
+  AAT site 上に可換環の層 O_X^U を載せる。
+
+Affine AAT chart:
+  Spec_AAT(O_X^U(W)) として局所的な affine geometry を読む。
+
+Architecture scheme:
+  affine AAT chart が open immersion と cocycle condition によって貼れる場合の
+  chart-compatible locally ringed architecture geometry。
+
+Derived / stacky AAT geometry:
+  lawful loci の derived intersection、Tor conflict、cotangent complex、
+  monodromy representation、decomposition stack / gerbe を扱う。
+```
+
+したがって、`ringed AAT topos` は architecture scheme を作るための基礎階である。
+scheme と呼ぶ部分は、chart compatibility を満たす場合に強い意味で使う。
