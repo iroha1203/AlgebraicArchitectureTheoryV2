@@ -70,8 +70,7 @@ representation、measurement profile、trace category である。
 7. [第VII部 Representation・Periods・Analysis](part_7_representation_periods_analysis.md)
 8. [第VIII部 Measurement Theory](part_8_measurement_theory.md)
 9. [第IX部 Evolution Geometry](part_9_evolution_geometry.md)
-10. [付録 A Mathematical Ambient and Standard AG Embedding](appendix_mathematical_ambient.md)
-11. [付録 B Claim Status and Finite Worked Example](appendix_claim_status_and_worked_example.md)
+10. [付録 Mathematical Ambient, Claim Status, and Finite Worked Example](appendix.md)
 
 ## 主張の読み方
 
@@ -113,7 +112,7 @@ Analytic reading:
 ```
 
 主要な未定義語、primitive predicate、future design obligation は
-[付録 B](appendix_claim_status_and_worked_example.md) の status ledger にまとめる。
+[付録](appendix.md) の status ledger にまとめる。
 Lean 形式化との対応は、必要に応じて
 [`lean_theorem_index.md`](../lean_theorem_index.md) と
 [`proof_obligations.md`](../proof_obligations.md) で確認する。
@@ -159,4 +158,4 @@ Evolution geometry:
 scheme と呼ぶ部分は、chart compatibility を満たす場合に強い意味で使う。
 
 標準代数幾何への埋め込み方、係数環、relative parameters、law condition の一般形は
-[付録 A](appendix_mathematical_ambient.md) にまとめる。
+[付録](appendix.md) にまとめる。

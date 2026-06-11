@@ -1332,7 +1332,7 @@ Int_{U,V}(t)
 ```
 
 は、独立に交わった場合の期待値からのずれを、Tor 質量の交代和として会計する。
-付録 B の finite worked example では、この `Tor_0` 表示により
+付録の finite worked example では、この `Tor_0` 表示により
 `R/(I_U+I_V)` の Hilbert series が干渉級数の基準項として現れる。
 
 ### 原則 12.3 Hilbert Series Is an Audit Reading
