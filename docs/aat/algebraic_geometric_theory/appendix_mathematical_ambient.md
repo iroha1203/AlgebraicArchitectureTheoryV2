@@ -1,8 +1,7 @@
 # 付録 A Mathematical Ambient and Standard AG Embedding
 
 この付録は、代数幾何的 AAT 本文で使う ambient convention と、標準的な代数幾何への埋め込み方をまとめる。
-本文の主系列は Atom から始まるため、この付録は Part 0 ではない。
-必要なときに参照する標準化レイヤである。
+本文の主系列は Atom から始まる。この付録は、必要なときに参照する標準化レイヤである。
 
 この付録の目的は次である。
 
@@ -14,7 +13,7 @@ plus typed architectural decoration.
 
 ## A.1 Size and Coefficient Conventions
 
-必要に応じて、sites は small または essentially small として扱う。
+必要に応じて、site は small または essentially small として扱う。
 size issue が問題になる場合は、固定した Grothendieck universe の中で対象と射を読む。
 
 係数環を次で固定する。
@@ -82,7 +81,7 @@ p : Reading
 
 ### A.2.1 Parameter Functoriality
 
-relative parameter は単なる注記ではなく、条件がそろう場合には比較射を持つ。
+relative parameter は、条件がそろう場合には比較射を持つ。
 ただし、以下は自動成立ではなく、witness ideal、restriction、coverage、coefficient base change が
 compatible である場合に限る。
 
@@ -223,7 +222,7 @@ X_AAT
   (X, O_X, D_X)
 ```
 
-ここで、`(X,O_X)` は標準的な locally ringed space であり、chart atlas が通常の affine schemes で
+ここで、`(X,O_X)` は標準的な locally ringed space であり、chart atlas が通常の affine scheme で
 与えられる場合に scheme と呼ぶ。
 `D_X` は Atom labels、signature readings、law readings、obstruction ideals、interpretation maps などの
 AAT decoration である。
@@ -259,7 +258,7 @@ cocycle:
 ringed AAT topos はより一般の sheaf-theoretic ambient であり、
 ArchitectureScheme は affine chart atlas が標準 scheme の意味で貼れる場合の強い対象である。
 
-注意として、affine AAT charts を貼り合わせて得られる ArchitectureScheme は、
+affine AAT chart を貼り合わせて得られる ArchitectureScheme は、
 一般にはその大域切断環の `Spec_AAT` ではない。
 
 ```text
@@ -271,8 +270,6 @@ Spec_AAT(Gamma(X,O_X), D_X)
 単一の affine chart として戻るには、underlying glued scheme が affine であり、
 大域切断環との標準比較射が同型で、さらに decoration がその比較射に沿って一致することを
 別途仮定する。
-この本文で `ArchitectureScheme` と呼ぶのは、atlas gluing までを含む標準 scheme 側の対象であり、
-「glued scheme is automatically affine」という主張ではない。
 
 ## A.6 Law Conditions as Subfunctors
 
@@ -294,7 +291,7 @@ stack 的な同型や descent data を保持する必要がある場合は、sub
 L subset 𝓧
 ```
 
-この一般形により、law を無理にすべて closed ideal へ押し込めない。
+この一般形により、すべての law を closed ideal へ押し込む必要がない。
 
 ```text
 Closed equational law:
@@ -355,8 +352,8 @@ Flat_U(X) = V(I_U)
 
 である。
 
-この構成は、open、temporal、descent、stacky な law を消すものではない。
-それらは `Flat_U(X)` の外側、または追加の subfunctor / substack condition として扱う。
+open、temporal、descent、stacky な law は、`Flat_U(X)` の外側、
+または追加の subfunctor / substack condition として扱う。
 
 ## A.8 Presheaf and Presentation Conditions
 

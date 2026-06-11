@@ -6,6 +6,7 @@
 ## B.1 Claim Status Ledger
 
 本文の主要な predicate と theorem label は、次の status で読む。
+`local theorem candidate` は中央 Lean obligation ではなく、登録時に `proof_obligations.md` 側へ移す。
 
 | 語 | status | 読み方 |
 | --- | --- | --- |
@@ -26,13 +27,13 @@
 | `finite measurement regime` | certified assumption | finite site、finite cover、effective coefficient data、finite witness variables、selected finite resolutions が固定された計算可能 regime。 |
 | `Finite AAT Computability` | certified bounded inference | finite measurement regime と `EffCoeff_M` の範囲で selected invariants を有限線形代数・有限表示加群計算・有限組合せ計算へ落とす主張。 |
 | `Stanley-Reisner / Alexander Dual Repair Theorem` | certified bounded inference | finite square-free witness regime で obstruction ideal を Stanley-Reisner ideal として読み、Alexander dual を repair hitting set として読む主張。 |
-| `Cech stability` | local theorem candidate | finite square-free regime で witness perturbation と persistence / zigzag stability distance を結ぶ安定性主張。中央 Lean obligation ではなく、登録時に `proof_obligations.md` 側へ移す。 |
+| `Cech stability` | local theorem candidate | finite square-free regime で witness perturbation と persistence / zigzag stability distance を結ぶ安定性主張。 |
 | `cellular sheaf Laplacian` | analytic reading | finite cellular sheaf model 上で residual norm、spectrum、distance-to-flatness を読む方法。structural lawfulness そのものではない。 |
 | `Refactor Invariance under Equivalence` | certified bounded inference | selected finite sites、ringed ambient、coefficient、law ideal、witness reading が同型的に保存される場合の measurement verdict 保存。 |
-| `LawConflict base change` | local theorem candidate | common ambient と flat morphism of ringed sites の下で Tor conflict の pullback 保存を読む主張。中央 Lean obligation ではなく、登録時に `proof_obligations.md` 側へ移す。 |
+| `LawConflict base change` | local theorem candidate | common ambient と flat morphism of ringed sites の下で Tor conflict の pullback 保存を読む主張。 |
 | `Support-Localized Transfer` | certified bounded inference | common ambient、conflict class、repair direction、pairing、zero predicate を固定した場合の transferred residue の十分条件。 |
-| `transfer lower bound` | local theorem candidate | support-localized pairing、norm、support weight を固定した場合の analytic residue bound。中央 Lean obligation ではなく、登録時に `proof_obligations.md` 側へ移す。 |
-| `Finite Measurement Synthesis` | certified bounded inference | finite measurement regime と selected assumptions の範囲で Part VIII の measurement packet を bounded mathematical measurement として返す synthesis。 |
+| `transfer lower bound` | local theorem candidate | support-localized pairing、norm、support weight を固定した場合の analytic residue bound。 |
+| `Finite Measurement Synthesis` | certified bounded inference | finite measurement regime と selected assumptions の範囲で第VIII部の measurement packet を bounded mathematical measurement として返す synthesis。 |
 | `NoHigherBoundaryObstruction` | future design obligation | boundary class だけで判定を完備にするための追加仮定。本文内では未証明の bounded assumption として読む。 |
 | `operation homotopy` | future design obligation | operation category / groupoid を固定した後に定義する homotopy predicate。 |
 | `trace topos` | future design obligation | temporal law を扱うための後続 ambient。AAT 本文の core site とは分けて読む。 |
@@ -83,7 +84,7 @@ Analytic reading:
   構成済み幾何対象の representation / metric / period / mass reading。
 ```
 
-したがって、例えば `Lawfulness-Zero Obstruction` は zero-reflecting aggregation と
+したがって、たとえば `Lawfulness-Zero Obstruction` は zero-reflecting aggregation と
 soundness / completeness に相対化された certified bounded inference であり、
 選ばれていない law universe や metric aggregation についての絶対 claim ではない。
 
@@ -98,7 +99,7 @@ A ∩ B = P ⊔ Q
 ```
 
 coefficient sheaf は constant abelian sheaf `Z` とし、restriction は恒等写像とする。
-この cover の Cech complex は
+この cover の Čech complex は
 
 ```text
 C^0(U,Z) = Z_A ⊕ Z_B
@@ -162,7 +163,7 @@ minimal repair hitting sets は、これら二つの forbidden support の hitti
 ```
 
 が最小候補になる。これは Alexander dual 側で「どの witness を消せば obstruction pattern を打つか」
-として読むことができる。
+として読める。
 
 ## B.5 Monomial Tor Conflict
 
@@ -215,8 +216,7 @@ gamma = P - Q
 
 である。この値は、選ばれた cover、coefficient sheaf、cycle representative に相対化された
 period reading である。
-この pairing は、未選択の data source や外部 defect を直接主張しない。
-それは、構成済み AAT geometry の中で、local mismatch class が cycle に沿って非自明に読める、
+これは、構成済み AAT geometry の中で、local mismatch class が cycle に沿って非自明に読める、
 という有限数学モデルである。
 
 ## B.7 Worked Example Summary
@@ -283,7 +283,7 @@ coefficient sheaf は constant abelian sheaf `Z` とし、restriction はこの 
 2-face として採用しない。
 したがって nerve は埋まった 2-simplex ではなく、三つの edge からなる 1-cycle である。
 
-### B.8.2 Cech Mismatch
+### B.8.2 Čech Mismatch
 
 local lawful section の mismatch を
 
@@ -324,7 +324,7 @@ g_P + g_Q - g_R.
 1 + 0 - 0 = 1
 ```
 
-なので、`g` は `H^1` の nonzero class を与える。
+したがって、`g` は `H^1` の nonzero class を与える。
 これは、dependency、state、effect の局所 reading が、それぞれ単独では整合していても、
 三者を同時に貼ると mismatch class が残ることを読む toy model である。
 
@@ -393,7 +393,7 @@ gamma = P + Q - R
 ```
 
 である。
-これは Cech class を検出する functional と一致し、state transition chart を挟んだ
+これは Čech class を検出する functional と一致し、state transition chart を挟んだ
 dependency/effect mismatch の reading になる。
 
 ### B.8.5 Verdict Boundary

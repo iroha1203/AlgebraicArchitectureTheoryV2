@@ -46,7 +46,7 @@ repair は単なる局所改善ではなく、lawful loci 間の derived obstruc
 
 ## 1. Part4 から Part5 へ
 
-Part4 の中心は、ひとつの law universe `U` に対して、local flatness が global flatness へ貼り合うかであった。
+第IV部の中心は、一つの law universe `U` に対して、local flatness が global flatness へ貼り合うかどうかであった。
 
 ```text
 forall i, Flat_U(W_i)
@@ -56,7 +56,7 @@ and
 Flat_U(W)
 ```
 
-Part5 では、二つ以上の law universe を同時に考える。
+第V部では、二つ以上の law universe を同時に考える。
 
 ```text
 U : LawUniverse
@@ -84,7 +84,7 @@ I_V = 0
 ```
 
 を同時に解く問題ではない。
-`I_U` と `I_V` がどのように交わるか、すなわち law constraints が横断的に交わるかどうかが重要である。
+`I_U` と `I_V` の交わり方、すなわち law constraints が横断的に交わるかどうかが重要である。
 
 ```text
 lawfulness is vanishing.
@@ -104,7 +104,7 @@ I_U subset O_X
 
 と書く。
 
-ここでは簡潔のため、Part3 の記法
+ここでは簡単のため、第III部の記法
 
 ```text
 I_Ob^U
@@ -247,7 +247,7 @@ Flat_U(X) intersection Flat_V(X)
 
 ### 原則 3.2 Classical Intersection Forgets How
 
-classical intersection は、交差する結果を表す。
+classical intersection は、交差の結果を表す。
 しかし、二つの locus がどのように交わったかを十分には覚えていない。
 
 ```text
@@ -278,7 +278,7 @@ lawful loci の derived intersection を次で表す。
 Flat_U(X) intersection^R Flat_V(X)
 ```
 
-これは、`Flat_U(X)` と `Flat_V(X)` の交差を、導来的な余剰構造ごと保持する対象である。
+これは、`Flat_U(X)` と `Flat_V(X)` の交差を、derived な余剰構造ごと保持する対象である。
 derived lawful loci が構成されている場合は、より構造的に次として読む。
 
 ```text
@@ -326,7 +326,7 @@ law conflict is not merely two laws both failing.
 law conflict is non-transverse interaction of lawful loci.
 ```
 
-### 例 4.3 非横断的 Law
+### 例 4.3 Non-Transverse Laws
 
 たとえば、cycle law を直す repair が、component boundary を分割するとする。
 このとき dependency cycle は消えるが、semantic boundary や authority/effect boundary が歪むことがある。
@@ -372,16 +372,6 @@ hypercohomology:
   O_X/I_U tensor^L_{O_X} O_X/I_V.
 ```
 
-すなわち、
-
-```text
-LawConflict_1(U,V)
-  ≅
-  Tor_1^{O_X}(O_X/I_U, O_X/I_V)
-```
-
-である。
-
 ### 定義 5.2 Higher Law Conflict Sheaves
 
 一次 conflict だけでなく、derived intersection は高次の非横断性を持ちうる。
@@ -409,7 +399,6 @@ O_X/I_U tensor^L_{O_X} O_X/I_V
 ### 原則 5.3 Conflict Is Structural
 
 `LawConflict_1(U,V)` は、単なる defect count ではない。
-また、`U` と `V` の両方に違反があるというだけでもない。
 
 ```text
 defect count:
@@ -419,11 +408,9 @@ law conflict object:
   how law ideals fail to intersect transversely.
 ```
 
-first law conflict sheaf は、lawful loci の交差構造から生じる。
-
 ### 定義 5.4 Monomial Law Conflict Regime
 
-local chart `W` 上で、`U` と `V` の obstruction ideals が同じ polynomial witness algebra
+局所 chart `W` 上で、`U` と `V` の obstruction ideals が同じ polynomial witness algebra
 
 ```text
 R_W = k[E_W]
@@ -484,7 +471,7 @@ I_V = < x z >
 ここで `x` は共有 boundary witness、`y` は `U` 側の追加 witness、
 `z` は `V` 側の追加 witness と読む。
 
-`I_U` と `I_V` はどちらも principal monomial ideal だが、共有因子 `x` を持つため、
+`I_U` と `I_V` はどちらも principal monomial ideal であるが、共有因子 `x` を持つため、
 交差は derived に非横断である。
 実際、resolution
 
@@ -544,7 +531,7 @@ derived intersection is defined
 LawConflict_1(U,V) != 0
 ```
 
-なら、`Flat_U(X)` と `Flat_V(X)` の同時実現 locus は derived-nontransverse であり、
+なら、`Flat_U(X)` と `Flat_V(X)` の同時実現 locus は derived non-transverse であり、
 latent compatibility residue を持つ。
 
 すなわち、
@@ -641,7 +628,6 @@ for all i > 0
 なら derived-transversely compatible である。
 逆に、正次数 Tor が残るなら、その次数に対応する derived law conflict を持つ。
 
-この定理は、classical joint lawful locus の存在を否定しない。
 古典的な共通零点が存在しても、正次数 Tor が非零なら、交差の仕方に derived residue が残る。
 
 ### 定義 7.4 Non-Transverse Law Universes
@@ -665,7 +651,6 @@ latent compatibility obstruction
 
 ### 原則 7.5 Non-Transversality Is Not Failure Count
 
-非横断性は、失敗の数ではない。
 失敗数が少なくても、lawful loci が非横断的に交われば、repair は別 axis に obstruction を転送しうる。
 
 ```text
@@ -674,9 +659,13 @@ but
 nonzero derived conflict
 ```
 
-この場合、局所的には小さな変更に見えても、architecture geometry 上では深い制約に触れている。
+この場合、局所的には小さな変更に見えても、derived conflict の制約に触れている。
 
 ## 8. Repair Path
+
+以後の規約として、comparison profile や pairing を固定しない theorem は立てない。
+repair theorem は、必ず固定された profile と、それが section 比較なのか geometry 比較なのかに
+相対化して読む。
 
 ### 定義 8.1 Repair Comparison Profile
 
@@ -781,9 +770,6 @@ Geometric repair:
   obstruction comparison is made after a chosen pullback / probe profile.
 ```
 
-pullback profile または probe profile を固定しない限り、
-`r : X -> X'` が `U`-improving であるという theorem は立てない。
-
 ### 定義 8.3 Conflict Comparison Profile
 
 repair が derived conflict を増やさないことを述べるには、obstruction ideal とは別に、
@@ -827,9 +813,6 @@ for all i in D
 
 または、同じ意味を持つ selected probe-level comparison が成り立つことである。
 
-`Q_{U,V}` を固定しない限り、`LawConflict_i(U,V)` が repair によって増えない、
-または新たに非零化しない、という theorem は立てない。
-
 ### 定義 8.4 Repair Path
 
 repair path とは、architecture geometry 上の変形または morphism である。
@@ -862,10 +845,6 @@ under P_U
 ```
 
 と読めることをいう。
-
-`<` を固定しない theorem は立てない。
-以後の repair theorem は、必ず profile `P_U` と、それが section 比較なのか geometry 比較なのかに
-相対化して読む。
 
 ### 原則 8.5 Repair Is Not Scalar Improvement
 
@@ -922,28 +901,15 @@ does not certify
 V-axis obstruction non-increases
 ```
 
-したがって、
-
-```text
-selected repair decrease
-  does not certify
-all axes non-increasing
-```
-
-である。
-
-これは「証明書がないことから偽を証明する」定理ではない。
-claim boundary として、固定された comparison profile が語れる monotonicity だけを語るという規律である。
+これは、claim boundary として、固定された comparison profile が語れる monotonicity だけを語るという規律である。
 実際に `U`-axis 改善が `V`-axis 非増加を含意しないことは、
 次の monomial counterexample family によって示す。
 
 `LawConflict_1(U,V) != 0` は、この非含意を説明しうる derived non-transversality の
 構造的 witness である。
-しかし、特定の repair path による transfer を主張するには、
-その path が selected conflict support とどう交わるか、また transfer pairing が何を読むかを
-別途固定しなければならない。
+特定の repair path による transfer を主張するには、定義 10.4 の support-localized pairing を固定する。
 
-### 読み
+### 原則 9.1 の読み
 
 `U`-axis の repair は、section を `Flat_U(X)` へ近づける。
 
@@ -963,7 +929,7 @@ does not guarantee monotone movement toward Flat_V
 
 この residue は、classical intersection だけを見ていると副作用に見える。
 derived law geometry では、`Tor_1` によって読まれる構造的 compatibility residue の候補である。
-具体的な repair direction への帰属は、§10 の support-localized pairing で述べる。
+具体的な repair direction への帰属は、定義 10.4 の support-localized pairing で述べる。
 
 ### 命題 9.2 Shared-Witness Repair Counterexample [Certified bounded inference]
 
@@ -1025,10 +991,7 @@ Tor_1^R(R/<xy>, R/<xz>) != 0
 この事実は、ambient chart に共有 witness factor を持つ derived conflict が存在することを示す。
 ただし、この path では `x |-> 1` と固定されるため、`Tor_1` の support `V(x)` 上を通る
 support-localized transfer の例ではない。
-この例が示すのは、`U`-axis の改善だけでは `V`-axis の非増加が論理的には従わないこと、
-および同じ ambient に derived conflict が存在しうることである。
-具体的な transfer を Tor に帰属するには、repair path が conflict support を通るか、
-または選ばれた pairing が非零 residue を返すことを別途示す必要がある。
+具体的な transfer の Tor への帰属は、定義 10.4 の support-localized pairing による。
 
 同じ構成を
 
@@ -1093,7 +1056,6 @@ TransOb_{U -> V}
 ```
 
 `U` と `V` を変えれば、何が transfer として見えるかも変わる。
-選ばれていない law axis について、obstruction の増減を主張しない。
 
 ### 定義 10.4 Repair Direction and Transfer Pairing
 
@@ -1157,7 +1119,6 @@ Transfer_{U -> V}(v)
 
 pairing の target は、選ばれた coefficient module、normal cone reading、または obstruction residue module に
 相対化される。
-pairing を固定しない限り、特定の repair direction が transfer を持つという theorem は立てない。
 
 ### 定理 10.5 Pairing-Based Transfer [Certified bounded inference]
 
@@ -1186,16 +1147,9 @@ nonzero pairing
 nontrivial selected transfer residue.
 ```
 
-一方、
+一方、`LawConflict_1(U,V) != 0` だけでは、任意の具体的 repair direction が transfer を持つとは言えない(定義 10.4)。
 
-```text
-LawConflict_1(U,V) != 0
-```
-
-だけでは、任意の具体的 repair direction が transfer を持つとは言えない。
-それは、`U` と `V` の間に transfer を起こしうる derived conflict が存在する、という構造的事実である。
-
-### 定理 10.6 Generic Transfer
+### 定理 10.6 Generic Transfer [Certified bounded inference]
 
 `k` を体とし、selected repair directions を finite-dimensional `k`-vector space
 
@@ -1298,8 +1252,7 @@ refactor:
   avoids uncontrolled derived conflict.
 ```
 
-したがって、良い refactoring は単なる code cleanup ではない。
-architecture geometry 上で、lawful loci への接近と derived conflict の制御を同時に行う morphism である。
+したがって、良い refactoring は、architecture geometry 上で、lawful loci への接近と derived conflict の制御を同時に行う morphism である。
 
 ```text
 good refactor
@@ -1312,15 +1265,12 @@ control of derived law conflict
 ### 系 11.3 Refactoring Is Derived-Geometric
 
 refactoring の本質は、architecture scheme の presentation を変えながら、
-selected law universe に関する obstruction を減らし、
-他の law universe との derived conflict を制御することである。
+selected law universe の obstruction を減らし、他の law universe との conflict を制御することにある。
 
 ```text
 refactoring is not just rearrangement of code.
 refactoring is controlled deformation of architecture geometry.
 ```
-
-このため、refactoring は Part5 の自然な対象である。
 
 ## 12. Hilbert Series Conflict Accounting
 
@@ -1448,8 +1398,8 @@ A_0 ->_r A_1 ->_r A_2 ->_r ...
 
 は finite length で停止する。
 
-証明は well-foundedness の定義による。
-無限列が存在すれば
+証明の読みは well-foundedness の定義による。
+無限 repair sequence が存在すれば
 
 ```text
 A_0 >_{rep} A_1 >_{rep} A_2 >_{rep} ...
@@ -1536,8 +1486,7 @@ but
 V-axis obstruction transfer
 ```
 
-この現象は、単なる repair の副作用ではない。
-lawful loci の derived intersection に残る構造的 obstruction である。
+この現象は、lawful loci の derived intersection に残る構造的 obstruction である。
 
 次の問いは、この derived conflict が architecture geometry のどこに集中するかである。
 
@@ -1545,4 +1494,4 @@ lawful loci の derived intersection に残る構造的 obstruction である。
 Where does derived obstruction concentrate?
 ```
 
-その集中点、層、経路依存性を読むために、第VI部では singularity、monodromy、stack へ進む。
+その集中点、成層、経路依存性を読むために、第VI部では singularity、monodromy、stack へ進む。
