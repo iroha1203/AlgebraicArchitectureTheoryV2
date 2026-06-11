@@ -421,6 +421,108 @@ law conflict object:
 
 first law conflict sheaf は、lawful loci の交差構造から生じる。
 
+### 定義 5.4 Monomial Law Conflict Regime
+
+local chart `W` 上で、`U` と `V` の obstruction ideals が同じ polynomial witness algebra
+
+```text
+R_W = k[E_W]
+```
+
+上の square-free monomial ideals
+
+```text
+I_U(W), I_V(W) subset R_W
+```
+
+として与えられるとき、`(U,V)` は `W` 上で monomial law conflict regime にあるという。
+
+```text
+LawConflict_i(U,V)|_W
+  =
+Tor_i^{R_W}(R_W/I_U(W), R_W/I_V(W)).
+```
+
+### 命題 5.5 Monomial Conflict Calculation
+
+monomial law conflict regime では、`LawConflict_i(U,V)|_W` は monomial free resolution によって
+計算できる。
+たとえば Taylor resolution、minimal resolution、Scarf complex が使える場合の Scarf resolution、
+または lcm-lattice による multigraded resolution を用いる。
+
+この計算で現れる multidegree は、`U` 側 forbidden support と `V` 側 forbidden support の
+least common multiple、すなわち witness support の合成として読む。
+
+```text
+monomial generator of I_U:
+  forbidden U-support S.
+
+monomial generator of I_V:
+  forbidden V-support T.
+
+lcm(x_S, x_T):
+  combined witness support S union T.
+```
+
+### 例 5.6 Shared Witness Factor Conflict
+
+局所 coordinate ring を
+
+```text
+R = k[x,y,z]
+```
+
+とし、二つの law universe が次の forbidden witness support を選ぶとする。
+
+```text
+Forb_U(W) = { {x,y} }
+Forb_V(W) = { {x,z} }
+I_U = < x y >
+I_V = < x z >
+```
+
+ここで `x` は共有 boundary witness、`y` は `U` 側の追加 witness、
+`z` は `V` 側の追加 witness と読む。
+
+`I_U` と `I_V` はどちらも principal monomial ideal だが、共有因子 `x` を持つため、
+交差は derived に非横断である。
+実際、resolution
+
+```text
+0 -> R --xy--> R -> R/I_U -> 0
+```
+
+を `R/I_V` と tensor すると、
+
+```text
+Tor_1^R(R/I_U, R/I_V)
+  =
+ker( R/I_V --xy--> R/I_V )
+```
+
+である。
+`z` の class は
+
+```text
+xy * z = xyz in < xz >
+```
+
+を満たすため kernel に入る。
+したがって、
+
+```text
+Tor_1^R(R/<xy>, R/<xz>) != 0.
+```
+
+AAT 的には、これは次を意味する。
+
+```text
+U forbids the joint support {x,y}.
+V forbids the joint support {x,z}.
+both laws share boundary witness x.
+repairing one side can transfer residue through the shared support.
+```
+
 ## 6. Derived Law Conflict Theorem
 
 ### 定理 6.1 Derived Law Conflict
@@ -851,6 +953,72 @@ does not guarantee monotone movement toward Flat_V
 この residue は、classical intersection だけを見ていると副作用に見える。
 derived law geometry では、`Tor_1` によって読まれる構造的 compatibility residue である。
 
+### 例 9.2 Shared-Witness Repair Counterexample
+
+局所 chart を
+
+```text
+R = k[x,y,z]
+I_U = < x y >
+I_V = < x z >
+```
+
+とする。
+section family
+
+```text
+s_t : R -> k[t]
+x |-> 1
+y |-> 1 - t
+z |-> t
+```
+
+を考える。
+`U`-axis と `V`-axis の obstruction residue はそれぞれ
+
+```text
+s_t(x y) = 1 - t
+s_t(x z) = t.
+```
+
+したがって、`t = 0` から `t = 1` へ進む repair path では、
+
+```text
+U-residue: 1 -> 0
+V-residue: 0 -> 1
+```
+
+である。
+この path は、`U`-axis の obstruction を消すが、`V`-axis の obstruction を増やす。
+
+```text
+selected U-repair
+  =
+y -> 0
+
+transferred V-residue
+  =
+z -> 1
+```
+
+共有 witness `x` によって、二つの monomial law ideals は
+
+```text
+Tor_1^R(R/<xy>, R/<xz>) != 0
+```
+
+を持つ。
+
+同じ構成を
+
+```text
+R = k[x,y_1,...,y_m,z_1,...,z_n]
+I_U = < x y_1, ..., x y_m >
+I_V = < x z_1, ..., x z_n >
+```
+
+に拡張すると、共有 witness factor `x` を持つ counterexample family が得られる。
+
 ## 10. Transferred Obstruction
 
 ### 定義 10.1 Transferred Obstruction
@@ -989,6 +1157,64 @@ LawConflict_1(U,V) != 0
 
 だけでは、任意の具体的 repair direction が transfer を持つとは言えない。
 それは、`U` と `V` の間に transfer を起こしうる derived conflict が存在する、という構造的事実である。
+
+### 定理 10.6 Generic Transfer
+
+`k` を体とし、selected repair directions を finite-dimensional `k`-vector space
+
+```text
+T_rep subset T_X
+```
+
+として固定する。
+transfer target を `k`-vector space `TransRes_{U,V}` とし、pairing
+
+```text
+< -, - >_{U,V}
+  :
+T_rep x LawConflict_1(U,V) -> TransRes_{U,V}
+```
+
+が `k`-bilinear であるとする。
+selected conflict class
+
+```text
+kappa_{U,V} in LawConflict_1(U,V)
+```
+
+について線形写像
+
+```text
+tau_{kappa}
+  :
+T_rep -> TransRes_{U,V}
+
+tau_{kappa}(v)
+  =
+< v, kappa_{U,V} >_{U,V}
+```
+
+を定義する。
+もし
+
+```text
+tau_{kappa} != 0
+```
+
+なら、
+
+```text
+ker(tau_{kappa}) proper subset T_rep.
+```
+
+したがって、
+
+```text
+v notin ker(tau_{kappa})
+```
+
+である repair direction は nonzero transferred residue を持つ。
+transfer-zero directions は proper linear subspace に含まれる。
 
 ## 11. Derived Repair Criterion
 

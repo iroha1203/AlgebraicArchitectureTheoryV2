@@ -625,8 +625,8 @@ no-cancellation discipline が必要である。
 安全な基本形は次である。
 
 ```text
-Boolean / idempotent coordinates:
-  x_v^2 - x_v = 0.
+Boolean evaluation:
+  ev_s(x_v) in {0,1}.
 
 monomial witness ideals:
   I_L(W) = < x_v | v in Viol_L(W) >.
@@ -646,6 +646,160 @@ I_sub   = < substitutes_Impl_Base * contract_mismatch >
 のように書ける。
 この discipline により、`zero witness ideal` は「選ばれた violation witness が消えた」
 という意味を保ち、単なる加法的 cancellation を lawfulness と誤読しない。
+
+### 補題 5.6A Idempotent Coordinate Collapse
+
+有限個の selected coordinate に対して、体 `k` 上で
+
+```text
+A = k[x_v | v in E] / < x_v^2 - x_v | v in E >
+```
+
+と置く。
+このとき `A` は有限個の `k` の直積であり、次を満たす。
+
+```text
+Tor_i^A(M,N) = 0 for i > 0.
+I/I^2 = 0 for every ideal I subset A.
+Omega_{A/k} = 0.
+```
+
+### 定義 5.6B Square-Free Witness Regime
+
+context `W` 上で、選ばれた primitive witness coordinate の有限集合を
+
+```text
+E_W = { e_1, ..., e_n }
+```
+
+とし、coordinate algebra の deformation 側を
+
+```text
+k[e_1, ..., e_n]
+```
+
+として保つ。
+law universe `U` が forbidden witness support の族
+
+```text
+Forb_U(W) subset FinSubsets(E_W)
+```
+
+を選び、各 forbidden support `S` に対して square-free monomial
+
+```text
+x_S = product_{e in S} e
+```
+
+を対応させるとき、`W` は square-free witness regime にあるという。
+
+このとき obstruction ideal は
+
+```text
+I_Ob^U(W)
+  =
+  < x_S | S in Forb_U(W) >
+  subset k[E_W]
+```
+
+である。
+
+### 定理 5.6C Stanley-Reisner Obstruction Theorem
+
+`W` が square-free witness regime にあるとする。
+`Forb_U(W)` が inclusion-minimal forbidden support の族である場合、
+simplicial complex
+
+```text
+Delta_U(W)
+  =
+  { T subset E_W | no S in Forb_U(W) satisfies S subset T }
+```
+
+を定義できる。
+このとき、
+
+```text
+I_Ob^U(W) = I_{Delta_U(W)}
+```
+
+であり、`I_Ob^U(W)` は `Delta_U(W)` の Stanley-Reisner ideal である。
+
+```text
+Flat_U(W)
+  =
+  V(I_{Delta_U(W)})
+```
+
+は、forbidden witness support を同時に含まない coordinate subspace arrangement として読む。
+
+`Forb_U(W)` が minimal でない場合でも、inclusion-minimal な forbidden support へ縮約すれば
+同じ radical obstruction ideal を与える。
+
+記法:
+
+```text
+E_W:
+  primitive readable witness coordinates.
+
+Forb_U(W):
+  selected law が禁止する witness support.
+
+Delta_U(W):
+  selected reading の中で lawful に同時出現できる witness support.
+```
+
+### 系 5.6D Obstruction Invariants
+
+square-free witness regime では、次を obstruction invariant として読む。
+
+```text
+minimal forbidden supports:
+  minimal law obstruction patterns.
+
+faces of Delta_U(W):
+  simultaneously admissible witness supports.
+
+links and restrictions of Delta_U(W):
+  context refinement and boundary-local readings.
+
+minimal monomial generators of I_Ob^U(W):
+  irreducible selected obstruction witnesses.
+```
+
+### 例 5.6E Three-Witness Stanley-Reisner Chart
+
+```text
+E_W = { x, y, z }
+Forb_U(W) = { {x,y} }
+```
+
+とする。
+このとき
+
+```text
+Delta_U(W)
+  =
+  { T subset {x,y,z} | {x,y} not subset T }
+```
+
+であり、
+
+```text
+I_Ob^U(W) = < x y > subset k[x,y,z].
+```
+
+同様に、
+
+```text
+Forb_V(W) = { {x,z} }
+Delta_V(W)
+  =
+  { T subset {x,y,z} | {x,z} not subset T }
+I_Ob^V(W) = < x z >.
+```
+
+この chart は第V部の monomial law conflict 計算で使う。
 
 ### 原則 5.7 Equation Relativity
 
@@ -798,6 +952,17 @@ res_i(I_Ob^U(W)) subset I_Ob^U(W')
 
 この条件により、law failure は局所 context 間で整合的に制限される。
 
+同じ内容を無条件に構成したい場合は、選ばれた local witness ideals の直和からの射
+
+```text
+direct_sum_L I_L -> O_X^U
+```
+
+の sheaf image を `I_Ob^U` として定義する。
+この場合、`I_Ob^U subset O_X^U` は定義から ideal sheaf であり、
+restriction compatibility は sheaf image の functoriality として読む。
+本文で local sum の表示を使うときは、この sheaf-image construction と一致する範囲で読む。
+
 ### 原則 6.3 Obstruction Is Ideal-Theoretic
 
 obstruction は単なる失敗ラベルではない。
@@ -871,6 +1036,136 @@ Lawful_U(s)
   iff
 s^* I_Ob^U = 0
 ```
+
+### 定理候補 7.2A Architecture Nullstellensatz
+
+affine chart
+
+```text
+X_W = Spec k[E_W]
+```
+
+を固定し、`k` を algebraically closed field とする。
+Boolean evaluation を課す coordinate の集合を `E_bool subset E_W` とし、
+
+```text
+B_W
+  =
+  < e^2 - e | e in E_bool >
+```
+
+と置く。
+closed equational obstruction ideal を
+
+```text
+I_U(W) = I_Ob^U(W) subset k[E_W]
+```
+
+とする。
+このとき、selected Boolean affine lawful points が空であることは
+
+```text
+V(I_U(W) + B_W)(k) = empty
+```
+
+であり、Hilbert Nullstellensatz により次と同値である。
+
+```text
+1 in radical(I_U(W) + B_W).
+```
+
+特に `I_U(W) + B_W` が radical であれば、
+
+```text
+V(I_U(W) + B_W)(k) = empty
+  iff
+1 in I_U(W) + B_W.
+```
+
+このとき、`1` の表示
+
+```text
+1 = sum_i a_i f_i
+```
+
+ただし `f_i` は `I_U(W)` と `B_W` の chosen generators である、を
+unlawfulness certificate と呼ぶ。
+chosen generators に対する最小表示次数を
+
+```text
+NSdeg_U(W)
+```
+
+と書く。
+
+### 定義 7.2B Nullstellensatz Depth
+
+chosen generators
+
+```text
+F_U(W)
+  =
+generators(I_U(W)) union generators(B_W)
+```
+
+に対して、`1` の表示
+
+```text
+1 = sum_{f in F_U(W)} a_f f
+```
+
+の次数を
+
+```text
+deg_F(1 = sum a_f f)
+  =
+max_f deg(a_f f)
+```
+
+とする。
+`V(I_U(W)+B_W)(k) = empty` のとき、
+
+```text
+NSdepth_U(W)
+  :=
+min deg_F(1 = sum a_f f)
+```
+
+と定義する。
+
+### 命題 7.2C Nullstellensatz Depth Monotonicity
+
+chosen generators を固定し、law universe が
+
+```text
+U subset U'
+I_U(W) subset I_{U'}(W)
+```
+
+を満たすとする。
+さらに `F_{U'}(W)` は `F_U(W)` に generators を追加して得られるとする。
+両方の selected Boolean lawful point set が空であれば、
+
+```text
+NSdepth_{U'}(W) <= NSdepth_U(W)
+```
+
+である。
+
+### 例 7.2D Unit Certificate
+
+```text
+I_U(W) = < x >
+B_W = < x - 1 >
+```
+
+なら
+
+```text
+1 = x - (x - 1)
+```
+
+であり、`NSdepth_U(W) = 1` である。
 
 ### 原則 7.3 Lawful Locus Is Not Total Correctness
 

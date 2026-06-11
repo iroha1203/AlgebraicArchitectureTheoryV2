@@ -61,6 +61,80 @@ X^{V,U,J,k}
 この相対性は、AAT の弱さではない。
 どの vocabulary、law、coverage、coefficient の範囲で語っているかを明示するための構造である。
 
+本文でより細かい reading を扱うときは、`p` に次の選択も含めてよい。
+
+```text
+selected witness family
+selected signature axes
+selected representation family
+selected profile / repair order
+```
+
+この拡張された parameter を `Reading` と呼ぶ。
+
+```text
+p : Reading
+```
+
+すべての theorem は、明示された `p` に相対化される。
+`p` の外側にある vocabulary、witness、axis、profile について、zero、lawful、complete を
+主張しない。
+
+### A.2.1 Parameter Functoriality
+
+relative parameter は単なる注記ではなく、条件がそろう場合には比較射を持つ。
+ただし、以下は自動成立ではなく、witness ideal、restriction、coverage、coefficient base change が
+compatible である場合に限る。
+
+law universe が増える場合、
+
+```text
+U subset U'
+I_U subset I_{U'}
+```
+
+であれば、lawful loci には閉埋め込みの塔がある。
+
+```text
+Flat_{U'}(X) subset Flat_U(X)
+```
+
+したがって、語彙や law を増やしたときに以前の結論が残るかは、
+この閉埋め込みに沿う pullback / restriction の問題として読む。
+
+coverage topology の refinement
+
+```text
+J' refines J
+```
+
+が chosen witness と coefficient sheaf を保つ場合、Čech complex と sheaf cohomology には
+comparison map が生じる。
+
+```text
+H^n_J(X, Ob_U) -> H^n_{J'}(X, Ob_U)
+```
+
+この射により、obstruction class が被覆細分に耐えるかを問える。
+
+coefficient ring の base change
+
+```text
+k -> k'
+```
+
+に対して flat base change 条件がある場合、coordinate algebra、obstruction ideal、
+Tor conflict、cohomology class は `k'` 上へ移せる。
+
+```text
+I_U \otimes_k k'
+LawConflict_i \otimes_k k'
+H^n(X, Ob_U) \otimes_k k'
+```
+
+この functoriality は、AAT の relativity を「語れない外側への沈黙」だけでなく、
+reading を変えたときの結論の安定性を調べる道具にする。
+
 ## A.3 Decoration Principle
 
 AAT 固有の語彙は、標準的な幾何対象を置き換えない。
