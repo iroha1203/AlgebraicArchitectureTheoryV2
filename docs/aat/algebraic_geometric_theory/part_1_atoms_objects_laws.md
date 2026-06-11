@@ -1066,38 +1066,94 @@ substitutes(Impl, Base)
 Obstruction valuation は、law universe に対して obstruction の量を与える。
 
 ```text
-omega_U(A) : LawUniverse -> Value
+omega_L(A) : Value
 ```
 
 典型的には count、boolean、weight、rank、energy などを値に取る。
+ただし zero obstruction と lawfulness を同値に読むには、値域と集約は任意ではない。
+本節では、選ばれた値域 `Value_U` が次を持つときだけ zero theorem を述べる。
+
+```text
+0 in Value_U
+positive predicate (> 0)
+zero/positive dichotomy for selected readings
+no cancellation at zero
+```
+
+law universe `U` に対する集約
+
+```text
+Agg_U : (forall L in U, Value_U) -> Value_U
+```
+
+は zero-reflecting であると仮定する。
+
+```text
+Agg_U((v_L)_{L in U}) = 0
+  iff
+forall L in U, v_L = 0
+```
+
+この仮定は、符号付き和や相殺を許す集約を排除するためのものである。
+count の和、boolean の disjunction、非負 weight の和、sup などは典型例である。
+以後、
+
+```text
+omega_U(A) := Agg_U((omega_L(A))_{L in U})
+```
+
+と書く。
 
 ## 9. Lawfulness と Zero Obstruction
 
 Lawfulness と obstruction zero は同じ現象を二つの方向から読む。
 
-### 命題 9.1 Soundness
+### 命題 9.1 Obstruction Soundness
 
-law `L` に対する obstruction valuation `omega_L` が exact なら、
+law `L` に対する obstruction valuation `omega_L` が sound であるとは、
+law が成り立つとき selected obstruction が出ないことをいう。
 
 ```text
-omega_L(A) = 0 -> L(A)
+L(A) -> omega_L(A) = 0
 ```
 
-が成り立つ。
+同値に、zero/positive dichotomy の下では、
+
+```text
+omega_L(A) > 0 -> not L(A)
+```
+
+である。
 
 ### 命題 9.2 Completeness
 
-law `L` に対する obstruction family が complete なら、
+law `L` に対する obstruction family が complete であるとは、
+law failure が selected obstruction として必ず検出されることをいう。
 
 ```text
 not L(A) -> omega_L(A) > 0
 ```
 
-が成り立つ。
+同値に、zero/positive dichotomy の下では、
 
-### 定理 9.3 Lawfulness-Zero Obstruction
+```text
+omega_L(A) = 0 -> L(A)
+```
 
-law universe `U` に対して soundness と completeness が成り立つなら、
+である。
+
+### 定理 9.3 Lawfulness-Zero Obstruction [Certified bounded inference]
+
+law universe `U` に対して、次を仮定する。
+
+```text
+forall L in U, omega_L is sound.
+forall L in U, omega_L is complete.
+Agg_U is zero-reflecting.
+Lawful_U(A) iff forall L in U, L(A).
+```
+
+このとき、
 
 ```text
 Lawful_U(A) iff omega_U(A) = 0
@@ -1105,7 +1161,21 @@ Lawful_U(A) iff omega_U(A) = 0
 
 が成り立つ。
 
-この定理が AAT の flatness theorem の基本形である。
+証明の読みは次である。
+
+```text
+Lawful_U(A)
+  iff forall L in U, L(A)
+  iff forall L in U, omega_L(A) = 0
+  iff omega_U(A) = 0
+```
+
+二つ目の同値は soundness と completeness による。
+最後の同値は zero-reflecting aggregation による。
+したがって、この定理は選ばれた law universe、obstruction family、
+値域、集約に相対化された certified bounded inference である。
+選ばれていない law、witness、axis、または zero-reflecting でない metric aggregation について
+zero claim を出さない。
 
 より構造的には、law universe `U`、witness family `W`、signature axes `S` について、
 witness completeness、axis exactness、coverage、selected reading の exactness が揃うと、

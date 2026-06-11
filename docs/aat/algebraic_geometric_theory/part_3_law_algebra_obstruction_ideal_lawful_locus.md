@@ -1553,25 +1553,40 @@ covering family
 Spec_AAT(O_X^U(W_i), D_{W_i}^U)
 ```
 
-が overlap 上で compatible であるとき、これらは `W` 上の chart へ貼り合う。
+が overlap 上で compatible であるとき、これらは標準的な scheme gluing と同じ意味で、
+一般には新しい locally ringed architecture geometry へ貼り合う。
 
 ```text
 Spec_AAT(O_X^U(W_i), D_{W_i}^U)
 agree on
 Spec_AAT(O_X^U(W_i x_W W_j), D_{W_i x_W W_j}^U)
 --------------------------------
-Spec_AAT(O_X^U(W), D_W^U)
+glued locally ringed architecture geometry X_glue
 ```
 
-ただし、これを `ArchitectureScheme` の gluing と呼ぶためには、単なる section compatibility だけでなく、
-定義 9.2 の chart compatibility が必要である。
+ここで得られる `X_glue` が `Spec_AAT(O_X^U(W), D_W^U)` と同一であるとは限らない。
+通常の代数幾何でも、affine charts を貼った scheme が大域切断環の Spec になるとは限らないからである。
+したがって、`W` 上の単一 affine chart へ戻るには、次のような追加条件を別途仮定する。
+
+```text
+the glued underlying scheme is affine.
+the canonical comparison X_glue -> Spec Gamma(X_glue,O_X) is an isomorphism.
+O_X^U(W) identifies with Gamma(X_glue,O_X).
+the glued decoration D_glue identifies with D_W^U.
+```
+
+これを `ArchitectureScheme` の gluing と呼ぶためには、単なる section compatibility だけでなく、
+定義 9.2 の chart compatibility、open immersion、joint coverage、cocycle、
+decoration compatibility が必要である。
 
 Part2 の sheaf descent は、Part3 では ringed geometry の gluing として現れる。
 
 ```text
 sheaf descent
-  -> gluing of affine AAT charts
+  -> gluing of affine AAT charts into a locally ringed architecture geometry
 ```
+
+affine representability は、この gluing の追加帰結であり、無条件の帰結ではない。
 
 ### 原則 10.4 Local Lawful Sections Need Not Glue
 

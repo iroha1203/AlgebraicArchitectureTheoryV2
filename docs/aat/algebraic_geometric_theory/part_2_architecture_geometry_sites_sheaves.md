@@ -551,22 +551,35 @@ restriction maps preserve the selected witness ideals.
 したがって、lawfulness や cohomological flatness を述べるときは、
 単なる cover ではなく、必要な witness と axis を保つ cover を使う。
 
-### 補題 7.2A Witness-Closure Cover
+### 補題 7.2A Witness-Closure Cover [Certified bounded inference]
 
 required witness family が局所有限であり、各 witness の support が context category の中で
 表現可能で、有限交差または必要な overlap が存在すると仮定する。
+さらに、選ばれた reading について次を仮定する。
+
+```text
+restriction maps preserve the selected witness ideals.
+required signature axes are readable on the closed cover.
+required boundary witnesses remain visible on overlaps.
+```
+
 このとき、required witness support とその boundary overlaps を含むように cover を閉じて得られる
 witness-closure cover は `U`-adequate である。
 
 ```text
 local finite witness supports
 + representable overlaps
++ restriction-stable witness ideals
++ readable required axes
++ visible boundary witnesses
 --------------------------------
 witness-closure cover is U-adequate
 ```
 
 この補題は、すべての cover が `U`-adequate であるとは言わない。
 定理で必要な witness と axis を失わない cover を構成する十分条件を与える。
+support を含むだけでは、選ばれた ideal、axis、boundary reading が自動的に保存されるとは限らない。
+それらの保存はこの補題の仮定であり、後続の定理へ渡される。
 
 有限 poset context の場合、principal context による cover は扱いやすい標準例である。
 poset 上の sheaf は functor として読め、principal context 上の section は stalk 的に振る舞うため、
