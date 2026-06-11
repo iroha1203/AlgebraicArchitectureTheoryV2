@@ -1209,7 +1209,10 @@ metric opens proximity and cost.
 period family opens multiple readings at once.
 ```
 
-これにより、代数幾何的アーキテクチャ論は閉じる。
+これにより、representation / period / metric / analysis の層は閉じる。
 AAT は、ソフトウェアアーキテクチャを Atom から生成される幾何対象として構成し、
 その局所-大域構造、law、obstruction、repair、singularity、history、decomposition、
 そして analytic reading を一つの理論の中で扱う。
+
+次の第VIII部では、これらの reading がどの有限条件、安定性条件、functoriality 条件、
+verdict discipline の下で measurement として扱えるかを述べる。

@@ -43,6 +43,7 @@ Atom
   -> Derived law geometry
   -> Singularity / monodromy / stack
   -> Representation / periods / analysis
+  -> Measurement theory
   -> Claim status / finite worked example
 ```
 
@@ -66,8 +67,9 @@ SFT、ArchSig、FieldSig、実コードベース抽出、tool diagnosis、empiri
 5. [第V部 Derived Law Geometry と Repair](part_5_derived_law_geometry_repair.md)
 6. [第VI部 Singularity・Monodromy・Stack](part_6_singularity_monodromy_stack.md)
 7. [第VII部 Representation・Periods・Analysis](part_7_representation_periods_analysis.md)
-8. [付録 A Mathematical Ambient and Standard AG Embedding](appendix_mathematical_ambient.md)
-9. [付録 B Claim Status and Finite Worked Example](appendix_claim_status_and_worked_example.md)
+8. [第VIII部 Measurement Theory](part_8_measurement_theory.md)
+9. [付録 A Mathematical Ambient and Standard AG Embedding](appendix_mathematical_ambient.md)
+10. [付録 B Claim Status and Finite Worked Example](appendix_claim_status_and_worked_example.md)
 
 ## 主張の読み方
 
@@ -97,7 +99,9 @@ Theorem / Proposition / Lemma:
   Certified bounded inference であり、無条件の絶対 claim ではない。
 
 Theorem candidate:
-  今後の証明義務を示す設計上の定理候補。
+  今後の定義・証明設計を示す本文内の定理候補。
+  Lean の中央 proof obligation になるのは、
+  lean_theorem_index.md または proof_obligations.md に対応行を置いた場合だけである。
 
 Principle:
   claim boundary、読み方、非主張を固定する規律。
@@ -114,9 +118,9 @@ Lean 形式化との対応は、必要に応じて
 これらの台帳に対応する Lean API または proof obligation が記載されていない theorem label は、
 本文内の数学命題であり、現在の Lean proved claim とは読まない。
 
-実コードベースからの読み取り、測定、経験的検証は、この幾何対象を別の観点から読む
-後続の営みである。AAT 本文は、それらの完全性を仮定せず、固定された数学的対象の中で
-語れることを述べる。
+実コードベースからの読み取り、tooling measurement、経験的検証は、この幾何対象を別の観点から読む
+後続の営みである。AAT 本文内の measurement は、固定された数学的対象と selected profile に
+相対化された reading であり、実コード観測や empirical validation の完全性を仮定しない。
 
 ## 強い代数幾何としての階層
 
