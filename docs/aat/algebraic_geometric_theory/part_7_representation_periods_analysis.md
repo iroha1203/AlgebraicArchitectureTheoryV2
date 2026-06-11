@@ -43,7 +43,7 @@ Representation is how geometry becomes readable.
 
 ## 1. Part6 から Part7 へ
 
-Part6 では、architecture geometry の中に singularity、monodromy、stack が現れることを見た。
+第VI部では、architecture geometry の中に singularity、monodromy、stack が現れることを見た。
 
 ```text
 singularity:
@@ -56,7 +56,7 @@ stack:
   how refactor equivalence and decomposition non-uniqueness are preserved.
 ```
 
-Part7 では、これらの構造を representation、period、metric、analytic reading として読む。
+第VII部では、これらの構造を representation、period、metric、analytic reading として読む。
 
 ```text
 architecture geometry
@@ -66,7 +66,7 @@ architecture geometry
   -> bounded analytic interpretation
 ```
 
-この章では、構成された geometry の多様な読み方を整理する。
+第VII部では、構成された geometry の多様な読み方を整理する。
 
 ```text
 graph:
@@ -118,7 +118,7 @@ f : X_AAT -> Y_AAT
 ```
 
 は、通常の scheme morphism `f : X -> Y` と、typed Atom labels、selected law reading、
-obstruction ideals、signature readings、interpretation maps を保存または指定された形で制限する
+obstruction ideals、signature readings、interpretation maps を保存し、または指定どおりに制限する
 compatibility data からなる。
 fiber product は、underlying scheme 側で存在し、decoration が pullback で整合的に定まる場合に使う。
 
@@ -172,7 +172,7 @@ Rep(AAT)
   { R_graph, R_matrix, R_sig, R_curv, R_state, R_trace, ... }
 ```
 
-representation family は、ひとつの geometry を複数の角度から読む。
+representation family は、一つの geometry を複数の角度から読む。
 
 ```text
 same geometry
@@ -261,8 +261,7 @@ A_X^N = 0
 
 となる。
 
-この命題は、graph representation の有限 relation structure についての reading であり、
-全 architecture lawfulness や semantic flatness を主張しない。
+この命題は、graph representation の有限 relation structure についての reading である。
 
 ### 原則 3.7 Graph / Matrix Boundary
 
@@ -406,18 +405,18 @@ tr_{U,*} : H^n(X, Ob_U) -> H^n(X, underline Lambda)
 と書く。
 このとき strict obstruction period を次で表す。
 
-ここで `H_n(X,Z)` と `Lambda` は ambient に応じて固定する。
-標準的な topological / analytic realization がある場合はその singular homology を使う。
-finite context poset として読む場合は、context poset の order complex、または chosen cover の nerve の
-simplicial homology を使う。
-この homology model と係数評価を固定せずに strict period pairing は主張しない。
-
 ```text
 Per_{omega,gamma}^{tr_U}(X)
   :=
 < tr_{U,*}(omega), gamma >
   in Lambda
 ```
+
+ここで `H_n(X,Z)` と `Lambda` は ambient に応じて固定する。
+標準的な topological / analytic realization がある場合はその singular homology を使う。
+finite context poset として読む場合は、context poset の order complex、または chosen cover の nerve の
+simplicial homology を使う。
+この homology model と係数評価を固定した場合に限り定義する。
 
 monodromy representation
 
@@ -578,7 +577,7 @@ r_sync - r_async.
 Per_{omega,gamma}^{epsilon} = 1.
 ```
 
-したがって、本文では次を区別する。
+以下では次の三つを区別する。
 
 ```text
 reading:
@@ -649,8 +648,6 @@ semantic representation は language game と use-rule に相対化された mea
 effect representation は authority、state、runtime effect の reading を与える。
 
 これらは異なる coordinate family を読む。
-したがって、graph broad period / reading が一致しても、semantic broad period や
-effect broad period が異なることがある。
 
 ```text
 same graph broad period
@@ -658,7 +655,7 @@ different semantic broad period
 different effect broad period
 ```
 
-この定理は、graph broad period / reading の位置を明確にする。
+この分離の下でも、各 representation の reading は正当である。
 
 ```text
 graph is a legitimate broad period.
@@ -708,7 +705,7 @@ Period_graph^{broad}(X)
 Period_graph^{broad}(Y)
 ```
 
-だが、
+しかし、
 
 ```text
 Period_semantic^{broad}(X)
@@ -738,8 +735,8 @@ Sig_U(X)
   selected axes reading of X
 ```
 
-selected axis が zero であることは、Part3 の lawful locus、Part4 の obstruction cohomology、
-Part5 の law conflict と接続される。
+selected axis が zero であることは、第III部の lawful locus、第IV部の obstruction cohomology、
+第V部の law conflict と接続される。
 
 ```text
 required signature zero
@@ -774,8 +771,7 @@ X factors through Flat_U
 
 ### 原則 7.3 Curvature as Reading
 
-curvature は lawfulness を置き換えない。
-curvature は、obstruction geometry の analytic reading である。
+curvature は lawfulness を置き換えず、obstruction geometry の analytic reading である。
 
 ```text
 lawfulness:
@@ -829,8 +825,7 @@ distance does not turn unmeasured into zero
 
 ### 定義 9.1 Distance Value
 
-distance value は実数だけではない。
-第VII部では、distance value domain を部分順序つき enriched value object として扱う。
+第VII部では、distance value domain を実数に限らず、部分順序つき enriched value object として扱う。
 
 ```text
 DistanceValue =
@@ -847,7 +842,6 @@ DistanceValue : partially ordered enriched value object
 ```
 
 `zero` は測定された zero である。
-`unmeasured` は zero ではない。
 
 ```text
 unmeasured != zero
@@ -891,15 +885,15 @@ d_op(A,B)
 
 lawful locus への距離を次で定義する。
 
-ここでは、`DistanceValue` または選ばれた cost domain が infimum を持つ範囲に相対化する。
-
 ```text
 dist_flat_U(A)
   =
   inf { d_op(A,F) | F in Flat_U(X) }
 ```
 
-これは、architecture state `A` が `U` に対する lawful locus へどれだけ近いかを読む metric reading である。
+ここでは、`DistanceValue` または選ばれた cost domain が infimum を持つ範囲に相対化される。
+
+これは、architecture state `A` の、`U` に対する lawful locus への近さの metric reading である。
 
 ```text
 distance to lawful locus
@@ -910,16 +904,13 @@ metric reading of proximity to Flat_U.
 ### 原則 10.3 Near Flat Is Not Flat
 
 `dist_flat_U(A)` が小さいことは有用な analytic reading である。
-ただし、flatness は Part3 の因子化条件である。
+ただし、flatness は第III部の因子化条件であり、obstruction ideal の vanishing として定義される。
 
 ```text
 Flat_U(A)
   iff
 A factors through V(I_U)
 ```
-
-距離は、lawful locus への近さを読む。
-flatness そのものは、obstruction ideal の vanishing として定義される。
 
 ## 11. Obstruction Mass
 
@@ -967,7 +958,7 @@ Mass_U(A)
 coverage, coefficient, measure, selected axes.
 ```
 
-測定されていない region や axis を zero mass とみなさない。
+未測定の region や axis を zero mass とみなさない。
 
 ## 12. Repair Cost and Route Geometry
 
@@ -1035,7 +1026,7 @@ margin_P(A)
 ```
 
 margin は、selected measured axes、metric、selected unsafe predicate に相対化される。
-具体的には、selected safe region `Safe_P` とその boundary `BoundaryUnsafe_P` に対し、
+具体的には、selected safe region `Safe_P` とその boundary `BoundaryUnsafe_P` に対して、
 
 ```text
 margin_P(A) = dist_P(A, BoundaryUnsafe_P)
@@ -1063,17 +1054,18 @@ length_P(p) < margin_P(A)
 B remains inside the selected safe region.
 ```
 
-これは、未測定 axis や未選択 law universe の安全性を主張しない。
 証明は三角不等式による。
 もし `B` が selected unsafe boundary 上またはその外側にあれば、
 `dist_P(A,B) >= margin_P(A)` でなければならない。
-一方 `dist_P(A,B) <= length_P(p) < margin_P(A)` なので矛盾する。
+一方 `dist_P(A,B) <= length_P(p) < margin_P(A)` であるから矛盾する。
+
+この定理は、未測定 axis や未選択 law universe の安全性を主張しない。
 
 ### 定義 12.6 Architectural Dehn Function
 
 presentation two-complex `K_H(X,U)` と filling area reading を固定する。
 loop `ell` の boundary length を `|ell|` とし、minimal filling area を `FillArea(ell)` と書く。
-Architectural Dehn function を次で定義する。
+architectural Dehn function を次で定義する。
 
 ```text
 Dehn_{X,U,H}(n)
@@ -1100,7 +1092,7 @@ fill_cost(P . Q^{-1}) >= delta / L.
 ```
 
 この下界は、selected observation reading と Lipschitz constant に相対化される。
-observation gap が未測定の axis では、この結論は使えない。
+observation gap が未測定の axis では、この結論は適用できない。
 
 ### 定義 12.8 Bi-Lipschitz Representation
 
@@ -1137,7 +1129,7 @@ derived conflict concentration reading
 repair difficulty reading
 ```
 
-これは Part6 の singularity を analytic representation で読むものである。
+これは第VI部の singularity を analytic representation で読む。
 
 ### 定義 13.2 Monodromy Index
 
@@ -1194,7 +1186,7 @@ reflect only under stated assumptions.
 keep unmeasured support explicit.
 ```
 
-この規律により、analysis は AAT geometry の外へ過剰に飛び出さず、
+この規律により、analysis は AAT geometry の外へ逸脱せず、
 構成された対象の disciplined reading として機能する。
 
 ## 15. Representation Completeness as a Spectrum
@@ -1213,7 +1205,7 @@ complete for selected purpose
 ```
 
 ある representation は graph structure には faithful でも、semantic structure には coarse でありうる。
-別の representation は semantic reading / broad period をよく分離しても、
+別の representation は semantic broad period / reading をよく分離しても、
 runtime interaction を読まないことがある。
 
 ### 原則 15.2 Choose a Representation Family
@@ -1253,11 +1245,11 @@ for alpha in Obs_U,
 ```
 
 ここで `R(alpha)` は、cohomology class、obstruction ideal section、derived conflict class、
-monodromy residue などを、representation `R` が読んだ値である。
+monodromy residue などを representation `R` で読んだ値である。
 `WitnessZero_U(alpha)` は、`U` が選んだ witness family に沿って `alpha` の obstruction witness が
 すべて zero と読めることを表す。
 
-この性質は、単一 representation ではなく representation family に対して置く。
+この性質は、representation family に対して置く。
 graph reading が消えていても semantic obstruction が残ることはありうる。
 したがって detecting は、選ばれた obstruction family と coverage / exactness assumption に相対化される。
 
@@ -1296,7 +1288,7 @@ all selected readings vanish
 selected obstruction vanishes
 ```
 
-この theorem は、任意の単一 metric や graph reading が完全であるという主張ではない。
+この定理は、任意の単一 metric や graph reading が完全であるという主張ではない。
 保証されるのは、固定された `Rep`、`Obs_U`、coverage、witness exactness、axis exactness の範囲だけである。
 
 ## 16. Final Synthesis
@@ -1337,7 +1329,7 @@ metric enrichment
 
 ### 原則 16.2 Geometry Becomes Readable
 
-Part7 の結論は次である。
+第VII部の結論は次である。
 
 ```text
 Representation is how geometry becomes readable.
@@ -1358,10 +1350,10 @@ metric opens proximity and cost.
 period family opens multiple readings at once.
 ```
 
-これにより、representation / period / metric / analysis の層は閉じる。
+これにより、representation / period / metric / analysis の階層は閉じる。
 AAT は、ソフトウェアアーキテクチャを Atom から生成される幾何対象として構成し、
 その局所-大域構造、law、obstruction、repair、singularity、history、decomposition、
-そして analytic reading を一つの理論の中で扱う。
+analytic reading を一つの理論の中で扱う。
 
-次の第VIII部では、これらの reading がどの有限条件、安定性条件、functoriality 条件、
+第VIII部では、これらの reading がどの有限条件、安定性条件、functoriality 条件、
 verdict discipline の下で measurement として扱えるかを述べる。
