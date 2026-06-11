@@ -1,7 +1,7 @@
 # 付録 B Claim Status and Finite Worked Example
 
 この付録は、本文の主張区分を読むための台帳と、有限 regime の最小 worked example を与える。
-ここで扱うのは純数学的な AAT geometry であり、source extraction、ArchSig 実装、empirical validation ではない。
+ここで扱うのは純数学的な AAT geometry であり、選ばれていない観測過程や外部手続きではない。
 
 ## B.1 Claim Status Ledger
 
@@ -36,6 +36,27 @@
 | `NoHigherBoundaryObstruction` | future design obligation | boundary class だけで判定を完備にするための追加仮定。本文内では未証明の bounded assumption として読む。 |
 | `operation homotopy` | future design obligation | operation category / groupoid を固定した後に定義する homotopy predicate。 |
 | `trace topos` | future design obligation | temporal law を扱うための後続 ambient。AAT 本文の core site とは分けて読む。 |
+| `homotopy generator family` | defined predicate family | selected operation homotopy を生成する 2-cell relation family。採用する generator は law universe / operation family / transport profile に相対化される。 |
+| `presentation two-complex K_H` | defined object | selected operation graph に homotopy generator family の 2-cell を貼った finite / combinatorial presentation。 |
+| `measured square monodromy` | analytic reading | `K_H` の selected square boundary に沿う coefficient transport defect。all-path monodromy completeness ではない。 |
+| `Transport Descent Criterion` | certified bounded inference | edge transport が `pi_1^AAT(X,U,H,A)` へ降りることを、selected generator 2-cell 上の zero monodromy defect で検出する主張。 |
+| `Square Monodromy Nonfillability` | certified bounded inference | selected square boundary、coefficient transport、monodromy defect が固定された場合、nonzero defect が selected filler の不在を検出する主張。 |
+| `AAT-GAGA` | certified bounded inference bundle | finite measurement profile 内で Hodge / period / topological capacity / Tor を比較する束。candidate に依存する stability 条項は追加 regime の interface として読む。 |
+| `topological debt capacity` | certified bounded inference | finite cover nerve と cochain dimension から `H^1` capacity を読む。具体的な nonzero class の存在とは区別する。 |
+| `harmonic debt minimality` | certified bounded inference | finite inner-product cochain model で local adjustment 後の residual norm を harmonic representative の norm として読む。 |
+| `Finite Hodge Decomposition` | certified bounded inference | finite-dimensional inner product cochain complex と adjoint が固定された場合の直交 Hodge 分解。一般 sheaf cohomology の無条件分解ではない。 |
+| `Margin Stability` | certified bounded inference | selected metric、unsafe boundary までの margin、三角不等式、path length bound が固定された場合の safe region 不脱出。 |
+| `Hilbert series conflict accounting` | certified bounded inference | graded monomial conflict regime で Tor conflict の交代 Hilbert series を audit reading として読む。 |
+| `Repair Termination` | certified bounded inference | well-founded repair comparison profile と strictly decreasing repair step を固定した場合の有限停止。lawfulness 到達は別仮定。 |
+| `scale-stable debt` | theorem candidate / defined reading | selected aggregation family に沿って coarse side から持ち上がる `H^1` class。すべての尺度に対する絶対不変性ではない。 |
+| `discrete Morse repair reading` | analytic reading / theorem candidate | square-free complex の collapse data を combinatorial repair route として読む。operation semantics は別 profile。 |
+| `Wasserstein transfer cost` | analytic reading / theorem candidate | finite support graph 上の obstruction measure の移動距離。mass preservation と ground metric に相対化される。 |
+| `Monotone Witness Stability` | theorem candidate | monotone forbidden-support filtration、comparison map、interleaving / correspondence を固定した場合の persistence stability reading。 |
+| `state transition presheaf` | defined object | selected trace category と AAT site 上で state space / transition monoid を割り当てる presheaf。descent 条件が確認された regime で sheaf と呼ぶ。 |
+| `temporal coefficient` | defined coefficient object | temporal law data の mismatch / gluing defect を測る abelian coefficient sheaf。 |
+| `Temporal Descent Criterion` | certified bounded inference | finite trace product site、temporal coefficient、zero mismatch class のもとで local adjustment 後の replay data が大域 transition へ貼れる主張。 |
+| `Force Integrability Obstruction` | theorem candidate | force に付随する temporal mismatch class が定義され、descent 検出性が固定された場合の non-integrability criterion。 |
+| `dissipative policy` | certified bounded inference when finite | selected evolution functional を非増加にする operation family。未選択の future state や外部成功条件ではない。 |
 | `witness exactness` | certified assumption | selected witness family が selected obstruction reading に対して sound / complete であること。 |
 
 ## B.2 Label Discipline
@@ -194,7 +215,7 @@ gamma = P - Q
 
 である。この値は、選ばれた cover、coefficient sheaf、cycle representative に相対化された
 period reading である。
-この pairing は source extraction の完全性や実コード上の defect を直接主張しない。
+この pairing は、未選択の data source や外部 defect を直接主張しない。
 それは、構成済み AAT geometry の中で、local mismatch class が cycle に沿って非自明に読める、
 という有限数学モデルである。
 
@@ -213,4 +234,180 @@ finite context cover
 ```
 
 すべての構成は、選ばれた finite site、coefficient sheaf、witness variables、law ideals に相対化される。
-未選択の law、axis、runtime trace、source observation については何も主張しない。
+未選択の law、axis、trace、data source については何も主張しない。
+
+## B.8 Atom-Family-To-Geometry Toy Reading
+
+第I部 例1.4 の finite Atom family を、固定された Atom vocabulary と reading doctrine の下で読む。
+ここで使うのは、本文が明示した Atom family である。
+
+```text
+component(C)
+component(D)
+relation_imports(C, D)
+state(C, x : X)
+relation_calls(m, D.read)
+relation_writes(m, x)
+effect(e)
+relation_emits(m, e)
+authority(a, act, r)
+contract(m, P -> Q)
+semantic(q(y), denotes result-of-m)
+```
+
+### B.8.1 Finite Context Cover
+
+この Atom family から、三つの chart を持つ finite cover を固定する。
+
+```text
+W_dep:
+  component / dependency reading.
+
+W_state:
+  state transition reading.
+
+W_effect:
+  effect / authority reading.
+```
+
+overlap component を次のように置く。
+
+```text
+P = W_dep intersection W_state
+Q = W_state intersection W_effect
+R = W_dep intersection W_effect
+```
+
+coefficient sheaf は constant abelian sheaf `Z` とし、restriction はこの toy model では恒等とする。
+三重 overlap `W_dep intersection W_state intersection W_effect` は空、または selected cover nerve の
+2-face として採用しない。
+したがって nerve は埋まった 2-simplex ではなく、三つの edge からなる 1-cycle である。
+
+### B.8.2 Cech Mismatch
+
+local lawful section の mismatch を
+
+```text
+g = (1, 0, 0) in Z_P + Z_Q + Z_R
+```
+
+と置く。
+orientation を
+
+```text
+P : W_dep -> W_state
+Q : W_state -> W_effect
+R : W_dep -> W_effect
+```
+
+と取ると、0-cochain `s = (s_dep,s_state,s_effect)` の coboundary は
+
+```text
+d s = (s_state - s_dep, s_effect - s_state, s_effect - s_dep).
+```
+
+したがって `im d^0` は
+
+```text
+{(u,v,u+v)}
+```
+
+であり、class を検出する functional は
+
+```text
+g_P + g_Q - g_R.
+```
+
+この例では
+
+```text
+1 + 0 - 0 = 1
+```
+
+なので、`g` は `H^1` の nonzero class を与える。
+これは、dependency、state、effect の局所 reading が、それぞれ単独では整合していても、
+三者を同時に貼ると mismatch class が残ることを読む toy model である。
+
+### B.8.3 Obstruction Ideal
+
+witness variables を次で置く。
+
+```text
+p = dependency-state mismatch witness
+q = state-effect mismatch witness
+r = dependency-effect mismatch witness
+```
+
+forbidden supports を
+
+```text
+{p,q}
+{q,r}
+```
+
+とすると、
+
+```text
+I_Ob = <p q, q r> subset k[p,q,r]
+```
+
+を得る。
+これは B.4 と同じ Stanley-Reisner chart であり、selected Atom family 由来の witness names を
+割り当てた例である。
+
+### B.8.4 Tor and Period
+
+law universes を
+
+```text
+U = dependency-state law
+V = state-effect law
+```
+
+として、同じ ambient ring 上で
+
+```text
+I_U = <p q>
+I_V = <q r>
+```
+
+と読む。
+共有 witness factor `q` により、
+
+```text
+Tor_1^R(R/I_U, R/I_V)
+```
+
+は `q` support に沿う derived conflict residue を持つ。
+
+また、cycle
+
+```text
+gamma = P + Q - R
+```
+
+に対する period pairing は、
+
+```text
+<g, gamma> = g_P + g_Q - g_R = 1
+```
+
+である。
+これは Cech class を検出する functional と一致し、state transition chart を挟んだ
+dependency/effect mismatch の reading になる。
+
+### B.8.5 Verdict Boundary
+
+この toy reading が示すのは次である。
+
+```text
+given selected Atom family
+  -> finite cover
+  -> Cech mismatch
+  -> square-free obstruction ideal
+  -> Tor conflict
+  -> period reading.
+```
+
+これは、未選択の trace completeness や外部 authority model の正しさを主張しない。
+本文内で構成済みの Atom family を入力にした、finite AAT geometry の worked example である。

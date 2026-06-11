@@ -211,6 +211,64 @@ effect representation:
 
 これらは、同じ architecture geometry を異なる方向から読む period family の成分である。
 
+### 定義 3.3 Graph Representation
+
+graph representation は、AAT geometry の selected relation data を graph category へ送る functor である。
+
+```text
+R_graph : AATGeometry -> Graph
+```
+
+代表的な edge は、dependency、call、ownership、authority、state transition、effect relation である。
+どの relation を edge とするかは representation profile の一部である。
+
+### 命題 3.4 Acyclicity Preservation [Certified bounded inference]
+
+次を仮定する。
+
+```text
+R_graph is selected for dependency-axis reading.
+cycle obstruction witness is exact for the selected graph edges.
+structural dependency obstruction is zero.
+```
+
+このとき、`R_graph(X)` は selected dependency graph として acyclic である。
+
+逆に、`R_graph(X)` が acyclic であっても、semantic、effect、state transition の obstruction が
+消えるとは限らない。
+
+### 定義 3.5 Matrix Representation
+
+finite graph representation が与えられたとき、その adjacency / incidence / transition matrix を
+matrix representation と呼ぶ。
+
+```text
+R_matrix(X)
+```
+
+`R_matrix` は graph reading の線形代数化であり、walk count、rank、nilpotence、spectral radius などを読む。
+
+### 命題 3.6 Matrix Walk Reading [Certified bounded inference]
+
+finite adjacency matrix `A_X = R_matrix(X)` を固定する。
+このとき、`(A_X^n)_{ij}` は selected graph representation における length `n` walk count を読む。
+
+さらに、selected graph が finite directed acyclic graph である場合、ある `N` について
+
+```text
+A_X^N = 0
+```
+
+となる。
+
+この命題は、graph representation の有限 relation structure についての reading であり、
+全 architecture lawfulness や semantic flatness を主張しない。
+
+### 原則 3.7 Graph / Matrix Boundary
+
+graph と matrix は、AAT geometry の selected relation を読む representation である。
+それらは有用な analytic reading を与えるが、選ばれていない coefficient、law、semantic axis を自動的には読まない。
+
 ## 4. Preservation and Reflection
 
 ### 定義 4.1 Preservation Properties
@@ -966,6 +1024,97 @@ metric improvement
 ```
 
 repair cost は、metric reading と derived geometry の両方に相対化される。
+
+### 定義 12.4 Margin
+
+metric profile `P` の下で、architecture state `A` が selected unsafe boundary まで持つ余裕を
+margin と呼ぶ。
+
+```text
+margin_P(A)
+```
+
+margin は、selected measured axes、metric、selected unsafe predicate に相対化される。
+具体的には、selected safe region `Safe_P` とその boundary `BoundaryUnsafe_P` に対し、
+
+```text
+margin_P(A) = dist_P(A, BoundaryUnsafe_P)
+```
+
+として読む。
+
+### 定理 12.5 Margin Stability [Certified bounded inference]
+
+次を仮定する。
+
+```text
+operation path p : A -> B is measured in P.
+length_P(p) < margin_P(A).
+dist_P satisfies the triangle inequality on the selected measured axes.
+path endpoint distance satisfies dist_P(A,B) <= length_P(p).
+margin_P(A) is the distance to the selected unsafe boundary.
+```
+
+このとき、`B` は selected unsafe boundary を越えない。
+
+```text
+length_P(p) < margin_P(A)
+  =>
+B remains inside the selected safe region.
+```
+
+これは、未測定 axis や未選択 law universe の安全性を主張しない。
+証明は三角不等式による。
+もし `B` が selected unsafe boundary 上またはその外側にあれば、
+`dist_P(A,B) >= margin_P(A)` でなければならない。
+一方 `dist_P(A,B) <= length_P(p) < margin_P(A)` なので矛盾する。
+
+### 定義 12.6 Architectural Dehn Function
+
+presentation two-complex `K_H(X,U)` と filling area reading を固定する。
+loop `ell` の boundary length を `|ell|` とし、minimal filling area を `FillArea(ell)` と書く。
+Architectural Dehn function を次で定義する。
+
+```text
+Dehn_{X,U,H}(n)
+  =
+  max { FillArea(ell) | |ell| <= n }
+```
+
+この関数は、selected homotopy presentation の中で、loop を埋めるために必要な 2-cell area の増大を読む。
+
+### 定理 12.7 Observation Gap Lower Bound [Certified bounded inference]
+
+次を仮定する。
+
+```text
+O is L-Lipschitz with respect to selected filling generator cost.
+two operation paths P,Q have observation gap delta:
+  d_obs(O(P), O(Q)) = delta.
+```
+
+このとき、loop `P . Q^{-1}` の filling cost について、
+
+```text
+fill_cost(P . Q^{-1}) >= delta / L.
+```
+
+この下界は、selected observation reading と Lipschitz constant に相対化される。
+observation gap が未測定の axis では、この結論は使えない。
+
+### 定義 12.8 Bi-Lipschitz Representation
+
+representation `R` が metric profile `P` と `Q` の間で bi-Lipschitz であるとは、
+定数 `c,C > 0` が存在して、selected comparable state pair について
+
+```text
+c * d_P(A,B) <= d_Q(R(A),R(B)) <= C * d_P(A,B)
+```
+
+が成り立つことである。
+
+bi-Lipschitz representation は、selected metric geometry を粗く潰さずに読む。
+ただし、comparable pair、coverage、witness completeness は profile に含める。
 
 ## 13. Analytic Reading of Singularity and Monodromy
 

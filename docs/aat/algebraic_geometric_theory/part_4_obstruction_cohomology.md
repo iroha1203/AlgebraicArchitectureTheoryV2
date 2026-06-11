@@ -1375,7 +1375,263 @@ vanishing in one projection != total vanishing
 AAT は、固定された cover、coefficient sheaf、witness family、exactness assumption の範囲で
 cohomological conclusion を述べる。
 
-## 12. Part4 の結論
+## 12. Topological Debt Theorem
+
+### 定義 12.1 Cover Nerve
+
+有限 cover
+
+```text
+U = {W_i -> W}
+```
+
+に対して、overlap component を明示した nerve 複体を `N(U)` と書く。
+頂点は chart `W_i`、辺は二重 overlap component、面は三重 overlap component である。
+overlap が複数成分を持つ場合、`N(U)` は多重グラフまたは多重複体として読む。
+
+```text
+vertices:
+  charts
+
+edges:
+  connected components of W_i intersection W_j
+
+faces:
+  connected components of triple overlaps
+```
+
+### 定理 12.2 Topological Debt Capacity [Certified bounded inference]
+
+有限 poset regime で、cochain groups が finite-dimensional `k`-vector spaces であるとする。
+このとき、rank-nullity により次の容量下界を得る。
+
+```text
+dim_k H^1(U,F)
+  >=
+  dim C^1(U,F) - dim C^0(U,F) - dim C^2(U,F).
+```
+
+証明の読みは有限次元線形代数である。
+`H^1 = ker d_1 / im d_0` なので
+
+```text
+dim H^1 = dim ker d_1 - dim im d_0.
+```
+
+rank-nullity から `dim ker d_1 >= dim C^1 - dim C^2` であり、
+また `dim im d_0 <= dim C^0` であるため、上の不等式が従う。
+
+特に stalk dimension が overlap component ごとに固定されている場合、この右辺は
+`N(U)` の chart、edge、face と stalk dimension だけから読める。
+
+これは、具体的な obstruction class が存在することを直ちに主張しない。
+言うのは、選ばれた cover の形が `H^1` の容量をどこまで許すかである。
+
+### 系 12.3 Constant Coefficient Nerve Reading
+
+係数 sheaf が定数層 `k` であり、restriction が標準的であるとき、
+
+```text
+H^1(U,k) ≅ H^1(N(U),k)
+```
+
+と読める。
+したがって、
+
+```text
+dim_k H^1(U,k) = b_1(N(U)).
+```
+
+`b_1(N(U))` は、選ばれた nerve complex が持つ独立 loop の数である。
+三重 overlap などの face が選ばれて loop を埋める場合、その face を含む複体の Betti 数として読む。
+これは、大域 section への貼り合わせで追加条件が必要になりうる構造的余地を示す。
+
+### 定理 12.4 Local Gluing Sufficiency [Certified bounded inference]
+
+次を仮定する。
+
+```text
+N(U) is a forest.
+there are no triple overlap faces.
+all restriction maps F(W_i) -> F(W_e) are surjective.
+```
+
+このとき、
+
+```text
+H^1(U,F) = 0.
+```
+
+したがって、この regime では任意の mismatch cocycle は coboundary である。
+特に定理 11.1 の effective torsor regime では、local adjustment を選べば local lawful family は
+大域 section へ貼り合う。
+
+証明の読みは次である。
+forest-shaped cover では 1-cycle がなく、surjective restriction により edge 上の mismatch は
+vertex 上の local adjustment で逐次吸収できる。
+したがって `C^1` の cocycle は `im d^0` に入り、`H^1(U,F)=0` となる。
+
+この定理は、non-abelian torsor、stacky descent、gerbe obstruction を排除しない。
+主張は、選ばれた abelian coefficient sheaf と forest-shaped cover に相対化される。
+
+### 系 12.5 Euler Accounting
+
+有限 cochain complex に対し、
+
+```text
+chi(U,F) = sum_n (-1)^n dim C^n(U,F)
+```
+
+は、cochain group の次元だけから決まる。
+cover の shape と stalk dimension を保つ refactor は、obstruction mass を次数間で移動させても、
+この交代和を変えない。
+
+これは、負債が消えたことではなく、選ばれた cochain accounting における保存則である。
+
+## 13. Period Stokes Accounting
+
+### 定義 13.1 Cochain-Chain Pairing
+
+有限 poset / Cech homology model で、orientation を固定し、cochain と chain の pairing を固定する。
+
+```text
+< -, - > : C^n(U,F) x C_n(U,F^*) -> k
+```
+
+標準的には、basis simplex `sigma` と dual basis cochain `sigma^*` について
+
+```text
+<sigma^*, sigma> = 1
+```
+
+とし、線形に拡張する。
+boundary と coboundary がこの pairing に関して随伴であるとき、Stokes-compatible pairing と呼ぶ。
+
+### 定理 13.2 Period Stokes Identity [Certified bounded inference]
+
+有限 poset / Cech model の標準的な交代符号 convention で上の pairing を取る。
+このとき、任意の cochain `omega` と chain `gamma` について、
+
+```text
+<d omega, gamma> = <omega, boundary gamma>.
+```
+
+証明は basis simplex 上で確認すればよい。
+`d` の交代符号は `boundary` の交代符号と同じ face incidence number を持つため、
+両辺は同じ incidence contribution の和になる。
+
+さらに、feature extension cover から来る boundary mismatch section `b` と
+connecting homomorphism
+
+```text
+delta : H^0(boundary, Ob_U) -> H^1(U, Ob_U)
+```
+
+が固定されている場合、
+
+```text
+<delta(b), gamma> = <b, boundary gamma>
+```
+
+が成り立つ。
+
+これは connecting homomorphism が boundary restriction の coboundary representative として構成される場合、
+上の Stokes identity をその representative に適用したものである。
+
+これは、release loop や feature boundary に沿って測った period が、境界 mismatch の符号付き会計と
+一致することを意味する。
+
+### 原則 13.3 Stokes Accounting Boundary
+
+Stokes identity は、構成済み AAT geometry 内部の数学である。
+未選択の data source や外部手続きが pairing を保存することは主張しない。
+
+```text
+accounting identity in geometry
+  !=
+external procedure correctness.
+```
+
+### 定義 13.4 Extension Holonomy Accounting Reading
+
+feature extension
+
+```text
+A -> B
+```
+
+と extension interface `f`、boundary mismatch section `b_f`、boundary holonomy `Hol_U(boundary f)` が
+同じ Mayer-Vietoris / boundary residue regime で定義されているとする。
+selected obstruction accounting の加法性を次の形で固定する。
+
+```text
+kappa_U(B)
+  =
+  kappa_U(A)
+  +
+  kappa_U(f)
+  +
+  Hol_U(boundary f).
+```
+
+ここで `Hol_U(boundary f)` は、この等式が成り立つように選ばれた boundary residue / correction term である。
+したがってこれは定理 13.2 から自動的に出る系ではなく、Mayer-Vietoris / boundary residue regime 上の
+accounting convention である。
+`kappa_U` の値域、加法性、boundary residue の検出性を別途固定した場合にのみ、定理として昇格できる。
+
+この式は、`NoHigherBoundaryObstruction` などの追加仮定なしに、boundary class だけで
+lawfulness を完全判定するとは主張しない。
+
+## 14. Scale-Stable Debt
+
+### 定義 14.1 Aggregation Morphism
+
+fine site から coarse site への尺度変更を、有限 site の射として表す。
+
+```text
+pi : X_fine -> X_coarse
+```
+
+`pi_* Ob` は coarse site 上で見える obstruction coefficient であり、
+`R^q pi_* Ob` は coarse cell の内部に残る高次 obstruction を読む。
+
+### 定理候補 14.2 Leray Five-Term Debt Sequence
+
+有限 site 射 `pi` と coefficient object `Ob` に対して、Leray spectral sequence が構成できる regime では、
+低次に次の五項完全列を期待する。
+
+```text
+0 -> H^1(X_coarse, pi_* Ob)
+  -> H^1(X_fine, Ob)
+  -> H^0(X_coarse, R^1 pi_* Ob)
+  -> H^2(X_coarse, pi_* Ob)
+  -> H^2(X_fine, Ob)
+```
+
+この列は、fine scale の hidden coupling class が、
+coarse scale でも見える成分と、集約単位の内部に局在する成分へ分配されることを読む。
+
+### 定義 14.3 Scale-Stable Debt
+
+selected aggregation family `Pi` に対して、obstruction class `alpha in H^1(X_fine,Ob)` が
+すべての `pi in Pi` で coarse 側から来るとき、`alpha` を scale-stable debt と呼ぶ。
+
+```text
+alpha is scale-stable
+  iff
+for all pi in Pi,
+alpha lies in image(H^1(X_coarse, pi_* Ob) -> H^1(X_fine, Ob)).
+```
+
+scale-stable debt は、単なる粒度の取り方で現れた artifact ではなく、選ばれた集約族を通じて
+持続する obstruction class である。
+
+### 原則 14.4 Scale Relativity
+
+尺度安定性は、選ばれた aggregation family に相対化される。
+すべての分解、すべての module boundary、すべての runtime grouping に対する不変性を主張しない。
+
+## 15. Part4 の結論
 
 第IV部では、Part3 で定義した lawful locus の局所-大域問題を obstruction cohomology として定式化した。
 
@@ -1415,6 +1671,11 @@ global obstruction remains
 ```
 
 この現象は、経験的な複雑性ではなく、cohomological obstruction である。
+
+さらに、有限 cover の形そのものが `H^1` の容量を制御し、
+period pairing は境界 mismatch の会計恒等式として読める。
+尺度変更に対しては、fine / coarse の間でどの obstruction class が持続するかを
+Leray 型の低次列として追跡する。
 
 次の問いは、複数の lawful loci を同時に満たそうとするとき、
 その交差が古典的には正しく見えても、導来的には余剰 obstruction を持つ場合をどう読むかである。

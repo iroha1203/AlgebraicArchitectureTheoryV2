@@ -690,7 +690,7 @@ A' ~_ref A
 operation loop の homotopy class の集合を、architecture fundamental group と呼ぶ。
 
 ```text
-pi_1^AAT(X,U)
+pi_1^AAT(X,U; chosen homotopy data)
 ```
 
 これは、operation history の loop structure を表す。
@@ -707,11 +707,86 @@ operation groupoid:
 homotopy category / fundamental groupoid:
   selected operation homotopy under refactor equivalence is quotiented.
 
-pi_1^AAT(X,U):
+pi_1^AAT(X,U; chosen homotopy data):
   chosen base architecture at a component of the fundamental groupoid.
 ```
 
 この構成を固定して初めて、operation loop が sheaf に作用するかどうかを問える。
+
+### 定義 9.3 Homotopy Generator Family
+
+operation category `Op_U(X)` に対し、selected operation homotopy を生成する関係族を
+homotopy generator family と呼ぶ。
+
+```text
+H_U(X)
+```
+
+代表的な generator は次である。
+
+```text
+independent square:
+  独立な二つの operation の交換。
+
+same contract replacement:
+  同じ contract を保つ replacement。
+
+repair filler:
+  repair path と direct path の間の filling。
+
+identity insertion / deletion:
+  恒等 operation の挿入と除去。
+
+associativity reassociation:
+  合成括弧の付け替え。
+```
+
+どの generator を採用するかは、law universe、operation family、refactor equivalence、
+coefficient transport に相対化される。
+
+### 定義 9.4 Presentation Two-Complex
+
+operation graph の 1-skeleton を取り、`H_U(X)` の各 generator を 2-cell として貼った 2-complex を
+presentation two-complex と呼ぶ。
+
+```text
+K_H(X,U)
+```
+
+edge は selected operation、2-cell は selected operation homotopy relation である。
+
+### 定義 9.5 Presented Architecture Fundamental Group
+
+base architecture state `A` を固定する。
+presentation two-complex `K_H(X,U)` の edge-path group を、`H` に相対化された
+architecture fundamental group と呼ぶ。
+
+```text
+pi_1^AAT(X,U,H,A)
+  =
+  pi_1(K_H(X,U), A).
+```
+
+base point が文脈から明らかな場合は、`A` を省略する。
+
+```text
+pi_1^AAT(X,U,H)
+```
+
+この定義は、operation homotopy を未指定の商として扱わず、generator family `H` に相対化して
+明示する。
+edge-path group では edge を形式的に可逆化する。
+逆向き edge は、対応する逆 operation が architecture operation として存在することを主張しない。
+
+### 原則 9.6 Homotopy Presentation Boundary
+
+`pi_1^AAT(X,U,H)` は、選ばれた operation graph と homotopy generator family の fundamental group である。
+未選択の operation、未選択の semantic equivalence、未構成の path は含まない。
+
+```text
+different H
+  -> different pi_1^AAT reading.
+```
 
 ## 10. Monodromy
 
@@ -720,15 +795,15 @@ pi_1^AAT(X,U):
 operation loop
 
 ```text
-gamma in pi_1^AAT(X,U)
+gamma in pi_1^AAT(X,U,H,A)
 ```
 
 に対して、monodromy representation が与えられていると仮定する。
 
 ```text
-rho_U
+rho_{U,H,A}
   :
-  pi_1^AAT(X,U)
+  pi_1^AAT(X,U,H,A)
   -> Aut(Ob_U) x Aut(Sem_U) x Aut(Eff_U)
 ```
 
@@ -743,7 +818,7 @@ Mon_gamma(Eff_U) : Eff_U -> Eff_U
 ここで、
 
 ```text
-Mon_gamma := rho_U(gamma)
+Mon_gamma := rho_{U,H,A}(gamma)
 ```
 
 である。
@@ -836,6 +911,101 @@ but
 different obstruction sheaf state
 ```
 
+### 定義 10.4 Measured Square Monodromy
+
+`K_H(X,U)` の selected 2-cell `sigma` を取る。
+その境界 loop を
+
+```text
+boundary sigma : gamma_sigma
+```
+
+と書く。
+coefficient transport が `gamma_sigma` に沿って定義され、selected axis `x` に comparison reading があるとき、
+square-level monodromy defect を次で表す。
+
+```text
+mu_x(sigma)
+  =
+  d_x(Transport(gamma_sigma), id)
+```
+
+ここで `d_x` は selected axis 上の distance または equality-defect reading である。
+この値は、2-cell が selected coefficient reading をどれだけ恒等的に transport するかを測る。
+
+### 定理 10.5 Transport Descent Criterion [Certified bounded inference]
+
+`K_H(X,U)`、base architecture `A`、coefficient transport functor、selected detecting axis family `X_axis` を固定する。
+operation graph の edge transport が与えられているとする。
+この edge transport が表示群
+
+```text
+pi_1^AAT(X,U,H,A)
+```
+
+へ降りるための十分必要条件は、各 homotopy generator 2-cell `sigma` について、
+その boundary transport が恒等として検出されることである。
+
+```text
+for all sigma in H_U(X),
+for all x in X_axis,
+  mu_x(sigma) = 0
+
+iff
+
+edge transport descends to
+  rho_{U,H,A} : pi_1^AAT(X,U,H,A) -> Aut(Coeff_U)
+```
+
+ここで `X_axis` は transport equality を反映する selected detecting family である。
+証明の読みは表示群の普遍性である。
+free path groupoid 上の transport は edge によって定まり、`H` の 2-cell は関係式である。
+すべての関係式の boundary transport が恒等なら transport は quotient group へ因子化する。
+逆に quotient group へ因子化するなら、各関係式は単位元へ送られるため、すべての `mu_x(sigma)` は zero になる。
+
+### 定義 10.6 Architectural Monodromy Index
+
+finite measured square family
+
+```text
+Sigma = {sigma_1, ..., sigma_n}
+```
+
+と positive weights `w_i` を固定する。
+Architectural Monodromy Index を次で読む。
+
+```text
+AMI_x(Sigma)
+  =
+  sum_i w_i * mu_x(sigma_i).
+```
+
+複数 axis を束ねる場合は、axis aggregation policy を measurement profile に含める。
+
+### 定理 10.7 Square Monodromy Nonfillability [Certified bounded inference]
+
+次を仮定する。
+
+```text
+K_H(X,U) is fixed.
+sigma is a selected 2-cell or selected square boundary.
+coefficient transport along boundary sigma is defined.
+selected axis x detects transport equality.
+mu_x(sigma) != 0.
+```
+
+このとき、`sigma` の境界 loop は、selected axis `x` に関して恒等 transport を持つ
+filling としては読めない。
+
+```text
+mu_x(sigma) != 0
+  =>
+selected x-axis filling is refuted.
+```
+
+これは、すべての homotopy filling の不存在を主張しない。
+主張は、固定された `K_H(X,U)`、transport、axis exactness に相対化される。
+
 ## 11. Monodromy Debt Theorem
 
 ### 定理 11.1 Monodromy Debt
@@ -924,6 +1094,51 @@ different presentation
 ```
 
 この違いを潰さずに保持するため、AAT は stack 的な対象へ進む。
+
+### 定義 12.3 Operation-Invariant Galois Data
+
+refactor groupoid `Ref_U(X)` の部分 groupoid の族を `SubGpd(Ref_U(X))` とし、
+selected invariant family の族を `InvFam_U(X)` とする。
+
+operation family `G` が保存する invariant を
+
+```text
+Inv(G)
+```
+
+と書き、invariant family `I` を保存する operation を
+
+```text
+Ops(I)
+```
+
+と書く。
+
+### 定理 12.4 Operation-Invariant Galois Correspondence [Certified bounded inference]
+
+次を仮定する。
+
+```text
+Ref_U(X) is fixed.
+invariant preservation predicate is fixed.
+SubGpd(Ref_U(X)) and InvFam_U(X) are ordered by inclusion.
+```
+
+このとき、次は Galois connection をなす。
+
+```text
+G <= Ops(I)
+  iff
+I <= Inv(G).
+```
+
+この対応は、operation family を増やすほど保存される invariant family が小さくなり、
+invariant requirement を増やすほど許される operation family が小さくなることを読む。
+
+### 原則 12.5 Galois Relativity
+
+この Galois connection は、選ばれた invariant predicate と refactor groupoid に相対化される。
+すべての設計原則、すべての semantic property、すべての未選択 behavior を含むものではない。
 
 ## 13. Architecture Stack
 
