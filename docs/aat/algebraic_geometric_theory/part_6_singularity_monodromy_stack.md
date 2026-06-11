@@ -215,28 +215,51 @@ tangent direction is geometry of change.
 
 ### 定義 4.1 U-Smooth Stratum
 
-architecture stratum `S` が `U`-smooth であるとは、十分小さな lawful deformation、
-refactor、base change が局所的 lifting と filling を持ち、高次 obstruction を生まないことをいう。
+architecture stratum `S` が `U`-smooth であるとは、選ばれた deformation test class
+`DefTest_U(S)` に属するすべての first-order lawful deformation が、指定された nilpotent thickening
+および base-change test に沿って lifting と filling を持ち、selected obstruction class が消えることをいう。
 
-形式的には、次のいずれかを満たすこととして読む。
+形式的には、lifting / filling predicate を明示して次を主定義とする。
+
+```text
+LiftFill_U(eta):
+  eta has the selected lifting and filling property.
+
+forall eta in DefTest_U(S),
+  LiftFill_U(eta)
+  and
+  ob_U(eta) = 0
+```
+
+obstruction class の零化だけで smoothness を証明する場合は、選ばれた deformation regime に
+effective obstruction theory を仮定する。
+
+```text
+ob_U(eta) = 0 -> LiftFill_U(eta)
+LiftFill_U(eta) -> ob_U(eta) = 0
+```
+
+前者は lift / fill existence を得るための effectiveness であり、
+後者は obstruction reading の soundness である。
+この仮定を置いた regime では、`forall eta, ob_U(eta)=0` は上の主定義と同値に読める。
+
+標準的な十分条件として、選ばれた deformation modules `M_T` すべてに対して
+
+```text
+Ext^1_{O_T}(L xi^* L_{S/U}, M_T) = 0
+for all selected local bases xi : T -> S
+and all selected deformation modules M_T
+```
+
+が成り立つなら、`S` は `U`-smooth である。
+また、固定した係数 regime で tangent cohomology が obstruction space を計算する場合、
 
 ```text
 H^1(T_{S/U}) = 0
 ```
 
-または、
-
-```text
-Ext^1_{O_T}(L xi^* L_{S/U}, M_T) = 0
-for selected local bases xi : T -> S
-and selected deformation modules M_T
-```
-
-または、
-
-```text
-every first-order lawful deformation lifts.
-```
+も十分条件として使える。
+これらは主定義の別名ではなく、同じ regime で smoothness を証明するための criterion である。
 
 ### 原則 4.2 Smooth Does Not Mean Small
 
@@ -261,20 +284,25 @@ small but singular
 
 ### 定義 5.1 U-Singular Stratum
 
-architecture stratum `S` が `U`-singular であるとは、次のいずれかが成り立つことをいう。
+architecture stratum `S` が `U`-singular であるとは、選ばれた deformation test class の中に、
+selected obstruction class が非零になる first-order lawful deformation が存在することをいう。
 
 ```text
-H^1(T_{S/U}) != 0
-Ext^1_{O_T}(L xi^* L_{S/U}, M_T) != 0
-for some selected xi : T -> S and M_T
-tangent rank jumps
-normal cone is nontrivial
-local lifting fails
-derived law conflict concentrates on S
+exists eta in DefTest_U(S),
+  ob_U(eta) != 0
 ```
 
-これは、`S` の近傍に非自明な obstruction space、非滑らかな tangent behavior、
-または実際の lifting failure が存在することを表す。
+さらに、選ばれた deformation regime で obstruction reading が lifting failure に対して sound である、
+すなわち
+
+```text
+ob_U(eta) != 0 -> not LiftFill_U(eta)
+```
+
+を仮定すると、これは、`S` の近傍で実際の selected lifting failure が存在することを表す。
+この意味で `U`-singular は `U`-smooth を否定する。
+ただし、定義としては存在命題を先に置き、`not U-smooth` との同値は
+選ばれた obstruction theory の exactness に相対化して読む。
 
 ```text
 first-order refactor exists
@@ -282,7 +310,19 @@ but
 higher-order lawful deformation is blocked.
 ```
 
-ただし、`H^1(T_{S/U}) != 0` は「obstruction が入る場所」が非自明であることを意味する。
+次の条件は、適切な regime を固定したときの singularity criteria または analytic readings であり、
+主定義そのものではない。
+
+```text
+H^1(T_{S/U}) != 0 as an obstruction space.
+Ext^1_{O_T}(L xi^* L_{S/U}, M_T) != 0 for some selected test.
+tangent rank jumps.
+normal cone has a selected nonzero obstruction direction.
+local lifting fails for a specified deformation.
+derived law conflict concentrates on S.
+```
+
+特に、`H^1(T_{S/U}) != 0` は「obstruction が入る場所」が非自明であることを意味する。
 個々の deformation が実際に失敗するには、その deformation に対応する obstruction class が
 この space の非零元として現れる必要がある。
 
@@ -328,7 +368,7 @@ place where repair geometry is obstructed.
 
 ## 6. Singularity Criterion
 
-### 定理 6.1 Architecture Singularity Criterion
+### 定理 6.1 Architecture Singularity Criterion [Certified bounded inference]
 
 component、boundary、service、shared state、authority hub、semantic boundary、
 runtime interaction などの stratum `S` について、次を仮定する。
@@ -340,17 +380,22 @@ selected deformation modules are fixed
 law universe U is fixed
 ```
 
-このとき、
+このとき、ある selected first-order deformation `eta` に対して、
 
 ```text
-H^1(T_{S/U}) != 0
+ob_U(eta) != 0 in H^1(T_{S/U})
 ```
 
-または、cotangent complex が滑らかでないなら、`S` は `U`-singular である。
+が成り立つなら、`S` は `U`-singular である。
 
 ```text
 S is U-singular.
 ```
+
+また、cotangent complex が滑らかでない、tangent rank が jump する、normal cone が非自明である、
+または `H^1(T_{S/U}) != 0` であることは、selected obstruction class が現れうることを示す
+singularity warning として読む。
+それだけでは、定義5.1の意味での singularity を自動的には結論しない。
 
 ### 証明の読み
 
@@ -365,8 +410,10 @@ H^1(T_{S/U}) != 0
 ある具体的な first-order direction が実際に lift しないことは、その direction の obstruction class が
 非零であることを別途示す命題である。
 
-cotangent complex が滑らかでない場合も、deformation theory は滑らかな lifting を持たない。
-したがって、`S` は repair や refactor が詰まりやすい architecture singularity である。
+cotangent complex が滑らかでない場合も、deformation theory は滑らかな lifting を持たない可能性を示す。
+そのため、`S` は repair や refactor が詰まりやすい singularity candidate である。
+定義上の `U`-singular stratum と呼ぶには、選ばれた deformation test に対する非零 obstruction class を
+明示する。
 
 ### 定理 6.2 Square-Zero Lifting Obstruction
 

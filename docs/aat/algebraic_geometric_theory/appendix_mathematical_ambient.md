@@ -259,6 +259,21 @@ cocycle:
 ringed AAT topos はより一般の sheaf-theoretic ambient であり、
 ArchitectureScheme は affine chart atlas が標準 scheme の意味で貼れる場合の強い対象である。
 
+注意として、affine AAT charts を貼り合わせて得られる ArchitectureScheme は、
+一般にはその大域切断環の `Spec_AAT` ではない。
+
+```text
+glue_i Spec_AAT(A_i,D_i)
+  need not be
+Spec_AAT(Gamma(X,O_X), D_X)
+```
+
+単一の affine chart として戻るには、underlying glued scheme が affine であり、
+大域切断環との標準比較射が同型で、さらに decoration がその比較射に沿って一致することを
+別途仮定する。
+この本文で `ArchitectureScheme` と呼ぶのは、atlas gluing までを含む標準 scheme 側の対象であり、
+「glued scheme is automatically affine」という主張ではない。
+
 ## A.6 Law Conditions as Subfunctors
 
 architecture scheme `X` の functor of points を次で表す。

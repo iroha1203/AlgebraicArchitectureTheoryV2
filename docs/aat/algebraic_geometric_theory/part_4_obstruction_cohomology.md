@@ -1261,7 +1261,7 @@ H^2(C, Ob_U) may be nonzero.
 
 ## 11. Cohomological Flatness Criterion
 
-### 定理 11.1 Cohomological Flatness Criterion
+### 定理 11.1 Cohomological Flatness Criterion [Certified bounded inference]
 
 cover
 
@@ -1273,8 +1273,9 @@ cover
 
 ```text
 forall i, s_i factors through Flat_U(X)
-overlap mismatch cocycle is defined
-or the local lawful sections form an effective torsor after abelianization
+Ob_U is an abelian sheaf, or an O_X^U-module, on the chosen site.
+overlap mismatch cocycle g is defined as an Ob_U-valued Cech 1-cocycle.
+the local lawful sections form an effective Ob_U-torsor.
 𝒰 is U-adequate for the selected witnesses and axes
 obstruction soundness holds
 obstruction completeness holds
@@ -1283,6 +1284,17 @@ witness coverage holds
 the chosen coefficient object satisfies descent
 local adjustment action is fixed and effective
 ```
+
+ここで「effective Ob_U-torsor」とは、local adjustment の差が abelian coefficient sheaf
+`Ob_U` の作用で記述され、torsor の Cech class が
+
+```text
+[g] in H^1(X, Ob_U)
+```
+
+に入ることを意味する。
+非可換 torsor を abelianization した class だけでは、元の torsor の自明性は一般に復元できない。
+したがって、この定理は abelian coefficient torsor の範囲で読む。
 
 このとき、local lawful sections `s_i` が global lawful section へ貼り合うための obstruction は、
 
@@ -1312,8 +1324,16 @@ s factors through Flat_U(X)
 [g] != 0
 ```
 
-なら、その cover と coefficient sheaf に相対化して、local lawful sections は
-global lawful section へ貼り合わない。
+なら、その cover、coefficient sheaf、effective torsor structure に相対化して、
+この local lawful family は global lawful section へ貼り合わない。
+
+### 証明の読み
+
+abelian sheaf `Ob_U` に値を持つ torsor の標準事実として、torsor class が
+`H^1(X,Ob_U)` で消えることと torsor が自明であることは同値である。
+自明化は local adjustment を与え、adjusted local lawful sections は descent により大域 section へ貼り合う。
+逆に大域 section が存在するなら、local differences は coboundary であり、class は消える。
+この議論は選ばれた abelian coefficient と cover に相対化される。
 
 ### 系 11.2 Local-to-Global Flatness
 

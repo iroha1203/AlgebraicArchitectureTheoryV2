@@ -43,6 +43,7 @@ Atom
   -> Derived law geometry
   -> Singularity / monodromy / stack
   -> Representation / periods / analysis
+  -> Claim status / finite worked example
 ```
 
 ## 位置づけ
@@ -66,6 +67,7 @@ SFT、ArchSig、FieldSig、実コードベース抽出、tool diagnosis、empiri
 6. [第VI部 Singularity・Monodromy・Stack](part_6_singularity_monodromy_stack.md)
 7. [第VII部 Representation・Periods・Analysis](part_7_representation_periods_analysis.md)
 8. [付録 A Mathematical Ambient and Standard AG Embedding](appendix_mathematical_ambient.md)
+9. [付録 B Claim Status and Finite Worked Example](appendix_claim_status_and_worked_example.md)
 
 ## 主張の読み方
 
@@ -83,7 +85,29 @@ Analytic reading:
   構成された幾何対象を graph、signature、period、metric などで読む表現。
 ```
 
-本文の `Theorem` は、この本文で明示した定義と仮定のもとで読む数学的命題である。
+本文のラベルは次の規律で読む。
+
+```text
+Definition / Construction:
+  対象、係数、reading、predicate を導入する。
+
+Theorem / Proposition / Lemma:
+  本文で明示した定義と仮定のもとで読む数学命題。
+  ただし coverage, exactness, witness completeness などを仮定に置くものは
+  Certified bounded inference であり、無条件の絶対 claim ではない。
+
+Theorem candidate:
+  今後の証明義務を示す設計上の定理候補。
+
+Principle:
+  claim boundary、読み方、非主張を固定する規律。
+
+Analytic reading:
+  表現、metric、period、mass など、構成済み幾何対象を読む方法。
+```
+
+主要な未定義語、primitive predicate、future design obligation は
+[付録 B](appendix_claim_status_and_worked_example.md) の status ledger にまとめる。
 Lean 形式化との対応は、必要に応じて
 [`lean_theorem_index.md`](../lean_theorem_index.md) と
 [`proof_obligations.md`](../proof_obligations.md) で確認する。
