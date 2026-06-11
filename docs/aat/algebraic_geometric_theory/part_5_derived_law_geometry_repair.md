@@ -1322,7 +1322,166 @@ refactoring is controlled deformation of architecture geometry.
 
 このため、refactoring は Part5 の自然な対象である。
 
-## 12. Part5 の結論
+## 12. Hilbert Series Conflict Accounting
+
+### 定義 12.1 Graded Monomial Conflict Regime
+
+common ambient ring
+
+```text
+R = k[x_1, ..., x_n]
+```
+
+を標準次数付き多項式環とし、law universes `U`、`V` の lawful loci が homogeneous monomial ideals
+
+```text
+I_U, I_V subset R
+```
+
+で定義されるとき、graded monomial conflict regime と呼ぶ。
+
+この regime では、各 `LawConflict_i(U,V)` は graded module として読む。
+
+```text
+LawConflict_i(U,V)
+  =
+  Tor_i^R(R/I_U, R/I_V)
+```
+
+### 定理 12.2 Hilbert Series Conflict Identity [Certified bounded inference]
+
+graded monomial conflict regime で、各 Tor module の Hilbert series が定義されるとする。
+このとき、graded free resolution の Euler characteristic により、
+
+```text
+H_{R/I_U}(t) * H_{R/I_V}(t) / H_R(t)
+  =
+  sum_i (-1)^i H_{LawConflict_i(U,V)}(t)
+```
+
+が成り立つ。
+ここで
+
+```text
+LawConflict_0(U,V) = Tor_0^R(R/I_U,R/I_V) = R/(I_U + I_V).
+```
+
+証明の読みは、`R/I_U` の graded free resolution に `R/I_V` を tensor し、
+Euler characteristic を Hilbert series に適用することである。
+free module の Hilbert series は shift を除いて `H_R(t)` の和であり、tensor 後の homology が
+`Tor_i^R(R/I_U,R/I_V)` であるため、上の交代和が得られる。
+
+したがって、干渉級数
+
+```text
+Int_{U,V}(t)
+  =
+  H_{R/(I_U + I_V)}(t)
+  -
+  H_{R/I_U}(t) * H_{R/I_V}(t) / H_R(t)
+```
+
+は、独立に交わった場合の期待値からのずれを、Tor 質量の交代和として会計する。
+付録 B の finite worked example では、この `Tor_0` 表示により
+`R/(I_U+I_V)` の Hilbert series が干渉級数の基準項として現れる。
+
+### 原則 12.3 Hilbert Series Is an Audit Reading
+
+Hilbert series conflict は、law universes の derived non-transversality を次数別に読む audit reading である。
+これは、どちらの law が重要であるか、どの repair が実務的に望ましいかを自動的に決めない。
+
+```text
+degree-k interference
+  =
+selected witness size / grading level reading,
+not total policy priority.
+```
+
+## 13. Well-Founded Repair
+
+### 定義 13.1 Well-Founded Repair Comparison Profile
+
+repair comparison profile は、architecture state の集合 `S` と、well-founded order
+
+```text
+<_{rep}
+```
+
+および repair step relation
+
+```text
+A ->_r B
+```
+
+を含む。
+すべての repair step が
+
+```text
+B <_{rep} A
+```
+
+を満たすとき、profile は well-founded repair comparison profile である。
+
+### 定義 13.2 Sound Repair Step
+
+repair step `A ->_r B` が sound であるとは、選ばれた target obstruction predicate について
+次のいずれかを満たすことである。
+
+```text
+target obstruction strictly decreases.
+target obstruction is cleared.
+selected certificate records why no target repair exists.
+```
+
+soundness は、selected target と selected certificate に相対化される。
+全 obstruction の除去や最短 repair を意味しない。
+
+### 定理 13.3 Repair Termination [Certified bounded inference]
+
+well-founded repair comparison profile を固定し、すべての selected repair step が
+`<_{rep}` に関して減少するとする。
+このとき、無限 repair sequence は存在しない。
+
+```text
+A_0 ->_r A_1 ->_r A_2 ->_r ...
+```
+
+は finite length で停止する。
+
+証明は well-foundedness の定義による。
+無限列が存在すれば
+
+```text
+A_0 >_{rep} A_1 >_{rep} A_2 >_{rep} ...
+```
+
+という無限下降列を与え、`<_{rep}` が well-founded であることに反する。
+
+### 定理 13.4 Sound Repair Synthesis [Certified bounded inference]
+
+次を仮定する。
+
+```text
+repair comparison profile is well-founded.
+each selected step is sound for the target obstruction.
+the synthesis rule only emits selected sound steps or a selected no-solution certificate.
+```
+
+このとき、synthesis は finite sequence として停止し、その出力は次のどちらかである。
+
+```text
+target obstruction cleared in the selected profile.
+selected no-solution certificate returned.
+```
+
+証明の読みは定理 13.3 と出力規則の合成である。
+規則が repair step を出す限り `<_{rep}` は下降するため、無限には続かない。
+停止時には、規則の定義により target obstruction cleared または selected no-solution certificate の
+どちらかだけが出力される。
+
+この定理は、solver completeness、global repair optimality、全 law universe の同時改善を主張しない。
+
+## 14. Part5 の結論
 
 第V部では、複数の lawful loci の交差を derived geometry として扱った。
 
@@ -1365,6 +1524,8 @@ law conflict is derived non-transversality.
 repair is controlled movement through lawful loci.
 bad repair transfers obstruction.
 refactoring is derived-geometric deformation.
+Hilbert series accounts for graded conflict mass.
+well-founded repair terminates under selected comparison profile.
 ```
 
 これにより、AAT は次を扱える。

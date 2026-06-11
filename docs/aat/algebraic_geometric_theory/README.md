@@ -44,15 +44,16 @@ Atom
   -> Singularity / monodromy / stack
   -> Representation / periods / analysis
   -> Measurement theory
+  -> Evolution geometry
   -> Claim status / finite worked example
 ```
 
 ## 位置づけ
 
 このディレクトリの本文では、AAT を純粋な数学理論として扱う。
-SFT、ArchSig、FieldSig、実コードベース抽出、tool diagnosis、empirical validation は
-本文の内部対象ではない。それらは、AAT で構成された幾何対象を読む、測る、または
-進化させる後続の理論・artifact で扱う。
+本文の内部対象は、Atom、architecture object、law universe、site、sheaf、cohomology、
+representation、measurement profile、trace category である。
+未選択の観測過程、外部過程、応用上の判定手続きについて、本文は主張しない。
 
 従来の Atom / law / obstruction / flatness / signature による AAT は、
 この理論史における古典的な有限・構成的基礎である。この本文は、その旧体系への
@@ -68,8 +69,9 @@ SFT、ArchSig、FieldSig、実コードベース抽出、tool diagnosis、empiri
 6. [第VI部 Singularity・Monodromy・Stack](part_6_singularity_monodromy_stack.md)
 7. [第VII部 Representation・Periods・Analysis](part_7_representation_periods_analysis.md)
 8. [第VIII部 Measurement Theory](part_8_measurement_theory.md)
-9. [付録 A Mathematical Ambient and Standard AG Embedding](appendix_mathematical_ambient.md)
-10. [付録 B Claim Status and Finite Worked Example](appendix_claim_status_and_worked_example.md)
+9. [第IX部 Evolution Geometry](part_9_evolution_geometry.md)
+10. [付録 A Mathematical Ambient and Standard AG Embedding](appendix_mathematical_ambient.md)
+11. [付録 B Claim Status and Finite Worked Example](appendix_claim_status_and_worked_example.md)
 
 ## 主張の読み方
 
@@ -118,9 +120,8 @@ Lean 形式化との対応は、必要に応じて
 これらの台帳に対応する Lean API または proof obligation が記載されていない theorem label は、
 本文内の数学命題であり、現在の Lean proved claim とは読まない。
 
-実コードベースからの読み取り、tooling measurement、経験的検証は、この幾何対象を別の観点から読む
-後続の営みである。AAT 本文内の measurement は、固定された数学的対象と selected profile に
-相対化された reading であり、実コード観測や empirical validation の完全性を仮定しない。
+AAT 本文内の measurement は、固定された数学的対象と selected profile に相対化された reading である。
+選ばれていない data source、観測手段、判定手続きの完全性は仮定しない。
 
 ## 強い代数幾何としての階層
 
@@ -144,6 +145,14 @@ Architecture scheme:
 Derived / stacky AAT geometry:
   lawful loci の derived intersection、Tor conflict、cotangent complex、
   monodromy representation、decomposition stack / gerbe を扱う。
+
+Finite measurement geometry:
+  finite poset site、cellular sheaf、Stanley-Reisner 複体、Tor、
+  period pairing、Laplacian、transport cost を、選ばれた profile の中で測る。
+
+Evolution geometry:
+  trace category、state transition presheaf、temporal coefficient、dissipative policy、Lyapunov reading を、
+  AAT geometry の時間方向の構造として扱う。
 ```
 
 したがって、`ringed AAT topos` は architecture scheme を作るための基礎階である。

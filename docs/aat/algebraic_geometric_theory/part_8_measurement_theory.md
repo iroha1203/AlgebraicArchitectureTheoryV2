@@ -10,8 +10,8 @@ representation、metric enrichment を構成した。
 When is this geometry measurably readable?
 ```
 
-ここでいう measurement は、実コード抽出 profile や tooling validation ではない。
-すでに構成された AAT geometry の中で、どの有限条件、係数条件、安定性条件の下なら
+ここでいう measurement は、すでに構成された AAT geometry の内部で行う bounded reading である。
+どの有限条件、係数条件、安定性条件の下なら
 obstruction、cohomology、Tor、distance、repair residue を計算可能な不変量として読めるかを述べる。
 
 ```text
@@ -95,7 +95,7 @@ Measured_M(alpha)
 選ばれた predicate と certificate に相対化された verdict であり、
 arbitrary coefficient regime 上の自動決定可能性ではない。
 
-### 原則 2.2 Measurement Is Not Extraction
+### 原則 2.2 Measurement Is Internal
 
 Part VIII の measurement は、AAT geometry 内部の数学的 reading である。
 
@@ -104,13 +104,12 @@ measurement in Part VIII:
   finite computation over selected AAT geometry.
 
 not asserted here:
-  source extraction completeness.
-  ArchSig implementation correctness.
-  empirical validation over codebases.
+  completeness of unselected data.
+  correctness of unselected procedures.
+  validity outside the selected profile.
 ```
 
-ArchSig、FieldSig、source observation、empirical validation へ接続する場合は、
-Part VIII の下流 surface で、別の artifact contract として扱う。
+未選択の観測過程、外部手続き、応用上の判定は Part VIII の数学的主張ではない。
 
 ## 3. Measurement Verdict Discipline
 
@@ -335,7 +334,7 @@ minimal generators of I_{Delta_U^vee}:
 ### 原則 5.3 Repair Hitting Set Is Not Repair Semantics
 
 Alexander dual は、obstruction pattern を打つ最小 witness set を与える。
-しかし、それは実コード操作や architecture operation の意味論を自動的には与えない。
+しかし、それは architecture operation の意味論を自動的には与えない。
 
 ```text
 minimal hitting set:
@@ -344,6 +343,27 @@ minimal hitting set:
 actual repair operation:
   requires operation semantics, legality, cost, and side-effect profile.
 ```
+
+### 定義 5.4 Discrete Morse Repair Reading
+
+square-free repair regime の simplicial complex `Delta_U` に acyclic matching または discrete Morse function を
+選ぶ。
+
+```text
+Morse_U(Delta_U)
+```
+
+critical cells は、chosen collapse sequence では消えない obstruction pattern を読む。
+matching に沿う collapse sequence は、`Delta_U` を簡約する selected combinatorial repair route として読む。
+
+### 定理候補 5.5 Morse Lower Bound for Structural Repair
+
+`Delta_U`、acyclic matching、repair operation semantics が compatible である regime では、
+critical cell の数は、selected collapse-style structural repair route の手数に対する下界を与えると期待する。
+
+この主張は theorem candidate である。
+Morse matching は repair target の組合せ reading であり、実際の operation legality や side-effect control は
+別途 repair profile に含める。
 
 ## 6. Cech Stability
 
@@ -438,6 +458,41 @@ computed value
   !=
 stable measurement
 ```
+
+### 定理候補 6.5 Monotone Witness Stability
+
+finite square-free regime で、forbidden support family が単調に増える filtration
+
+```text
+F_0 <= F_1 <= ... <= F_m
+```
+
+を固定する。
+各 step が forbidden support 一つの追加であり、対応する simplicial complex の反変的 inclusion、
+filtration value、coefficient comparison map、barcode を比較する interleaving または correspondence が
+profile に含まれるとする。
+このとき、通常の persistence stability を適用できる regime では、次を期待する。
+
+```text
+d_bottleneck(Barcode(F_i), Barcode(F_j))
+  <=
+|i - j|
+```
+
+として読む。
+
+より一般には、選ばれた witness perturbation distance に対して、
+
+```text
+d_bottleneck(Barcode(F), Barcode(F'))
+  <=
+d_wit(F,F')
+```
+
+となると読む。
+
+これは theorem candidate であり、monotone filtration と比較 map を固定した場合の安定性主張である。
+forbidden support の追加と削除が混在する場合は、定理候補 6.3 の zigzag profile に戻る。
 
 ## 7. Refactor Functoriality and Class Transport
 
@@ -595,6 +650,119 @@ lawful.
 
 structural zero を主張するには、Part III / Part IV の obstruction zero、axis exactness、
 witness coverage、coefficient exactness が必要である。
+
+### 定理 8.5 Finite Hodge Decomposition [Certified bounded inference]
+
+finite-dimensional inner product regime で、cochain complex
+
+```text
+C^n(X_M,F)
+```
+
+と adjoint `d_n^*` が定義されているとする。
+このとき、
+
+```text
+C^n
+  =
+  im d_{n-1}
+  ⊕
+  ker L_n
+  ⊕
+  im d_n^*
+```
+
+という直交分解を読む。
+さらに、
+
+```text
+ker L_n ≅ H^n(X_M,F)
+```
+
+であり、`ker L_n` の元は cohomology class の harmonic representative である。
+証明の読みは有限次元 Hilbert complex の標準分解である。
+有限次元性により
+
+```text
+C^n = im d_{n-1} ⊕ (im d_{n-1})^\perp
+```
+
+と分解でき、`(im d_{n-1})^\perp = ker d_{n-1}^*` である。
+さらに `ker d_{n-1}^*` を `ker d_n` と `im d_n^*` の直交成分に分けると、
+harmonic part は `ker d_n ∩ ker d_{n-1}^* = ker L_n` になる。
+exact component を quotient すると、各 cohomology class は一意の harmonic representative を持つ。
+
+### 定理 8.6 Harmonic Debt Minimality [Certified bounded inference]
+
+mismatch cocycle `g in C^1(X_M,F)` を固定する。
+Hodge 分解で得られる harmonic component を `h(g)` と書く。
+このとき、local adjustment `c in C^0(X_M,F)` によって消せる成分を除いた residual norm は、
+
+```text
+min_c || g - d_0 c || = || h(g) ||
+```
+
+として読む。
+
+したがって、`||h(g)|| > 0` なら、site、coefficient sheaf、law ideal を変えない local adjustment だけでは
+`g` を zero mismatch にできない。
+証明の読みは直交射影である。
+`d_0 c` で動かせる成分は `im d_0` に限られ、Hodge 分解により harmonic component は
+`im d_0` と直交する。
+したがって affine subspace `g - im d_0` の最小 norm representative は harmonic component `h(g)` である。
+
+### 系 8.7 Essential Repair Lower Bound
+
+さらに、selected repair cost が cochain norm に対して `L`-Lipschitz であり、
+大域 lawful state へ行く任意の repair route が harmonic mismatch を解消しなければならないとする。
+このとき、任意の selected repair route の cost は
+
+```text
+||h(g)|| / L
+```
+
+以上である。
+
+この下界は、selected cost model と Lipschitz assumption に相対化される。
+距離だけから lawfulness を主張するものではない。
+
+### 定義 8.8 Spectral Gap Reading
+
+`L_1` の非零最小固有値を
+
+```text
+lambda_1^+(L_1)
+```
+
+と書く。
+これは、selected cellular sheaf model において、small perturbation がどれだけ harmonic component へ
+近づきやすいかを読む analytic stability indicator である。
+
+### 定義 8.9 Curvature Transfer Spectrum
+
+support set `S` と axis set `A` を固定し、`S x A` 上の finite weighted directed graph を作る。
+edge は selected transfer relation を表す。
+その weighted adjacency operator を
+
+```text
+T_{curv}
+```
+
+と書き、spectrum を curvature transfer spectrum と呼ぶ。
+
+```text
+Spec(T_{curv})
+```
+
+spectral radius は、selected transfer relation の反復的な戻りやすさを読む。
+これは recurrence reading であり、未選択の future state や外部過程での再発を主張しない。
+
+### 定理候補 8.10 Spectral Hotspot Reading
+
+`T_{curv}` が nonnegative finite operator であり、Perron-Frobenius reading が適用できる場合、
+principal eigenvector の大きな support は selected curvature transfer hotspot として読むことができる。
+
+この主張は、support / axis graph、weight、transfer relation の選択に相対化される。
 
 ## 9. LawConflict Measurement and Base Change
 
@@ -812,6 +980,39 @@ small distance-to-flatness
 zero transferred residue.
 ```
 
+### 定義 10.6 Wasserstein Transfer Cost
+
+support graph `G_S` と ground distance `d_S` を固定する。
+obstruction measure
+
+```text
+Omega_U(A)
+```
+
+が support 上の finite nonnegative measure として与えられるとき、operation `op : A -> B` の
+transfer cost を次で読む。
+
+```text
+W_1(Omega_U(A), Omega_U(B)).
+```
+
+これは、selected support graph 上で obstruction mass がどれだけ移動したかを読む optimal transport reading である。
+
+### 定理候補 10.7 Transfer Cost Lower Bound
+
+selected profile で総 obstruction mass が保存され、mass `m` が support `s` から消え、
+吸収可能 support の集合 `Abs` へ移る必要があるとする。
+このとき、
+
+```text
+W_1 >= m * dist(s, Abs)
+```
+
+という下界を期待する。
+
+これは theorem candidate である。
+mass preservation、ground distance、吸収可能 support、axis aggregation が固定されていない場合は定義されない。
+
 ## 11. Measurement Packet
 
 ### 定義 11.1 AAT Measurement Packet
@@ -830,13 +1031,14 @@ computedInvariants:
   H^n, Tor_i, generators, supports, dimensions, ranks, representatives.
 
 analyticReadings:
-  distance, mass, spectrum, residual norm, barcode, repair cost.
+  distance, mass, spectrum, residual norm, harmonic mass, barcode, repair cost,
+  Wasserstein transfer cost, Morse collapse reading, monodromy index.
 
 assumptions:
   adequacy, exactness, finite regime, common ambient, base change, detecting profile.
 
 nonConclusions:
-  unselected laws, unmeasured support, source extraction completeness, empirical validity.
+  unselected laws, unmeasured support, unprovided coefficient data, undecided predicates.
 ```
 
 ### 原則 11.2 Measurement Packet Is Bounded
@@ -879,12 +1081,15 @@ refactor transport maps and invariance conditions
 cellular sheaf Laplacian analytic distances
 LawConflict base-change conditions
 support-localized transfer residues
+Hodge / harmonic decomposition readings
+monotone stability readings
+Wasserstein transfer cost readings
+discrete Morse repair readings
+curvature transfer spectrum readings
 measurement verdict boundary
 ```
 
-この synthesis は、実コード抽出の完全性、ArchSig 実装、FieldSig governance、
-empirical validation を主張しない。
-それらは、Part VIII の measurement packet を下流 artifact として読む別 surface の責務である。
+この synthesis は、選ばれていない data、support、coefficient、law universe に対する結論を主張しない。
 
 ### 原則 12.2 What Part VIII Adds
 
@@ -918,4 +1123,73 @@ unknown:
 ```
 
 Part VIII は、AAT 本文の純数学的側に残る。
-実際の codebase、tool execution、schema、fixture、empirical report は、この章の外側で扱う。
+選ばれていない外部過程や応用上の判定手続きは、この章の内部対象ではない。
+
+### 定理 12.3 Finite Measurement Comparison Theorem (AAT-GAGA) [Certified bounded inference]
+
+finite measurement regime `M` で、次を固定する。
+
+```text
+finite poset site X_M.
+finite cover U_M.
+abelian coefficient sheaf F with inner products.
+cellular cochain model C^n(X_M,F).
+square-free witness regime where used.
+common ambient for selected LawConflict readings.
+stability distance and comparison maps where an applicable stability theorem is fixed.
+```
+
+このとき、`M` の範囲で次の比較 reading を同時に扱える。
+
+```text
+Hodge comparison:
+  H^n(X_M,F) ≅ ker L_n.
+
+harmonic decomposition:
+  cochains split into exact, harmonic, and coexact components.
+
+period accounting:
+  <d omega, gamma> = <omega, boundary gamma>.
+
+topological capacity:
+  low-degree obstruction capacity is controlled by the selected nerve data.
+
+derived conflict accounting:
+  monomial LawConflict can be read by Tor and Hilbert-series accounting.
+
+stability candidate interface:
+  monotone witness filtrations admit persistence stability readings only
+  in the regime of theorem candidate 6.5 or another fixed stability theorem.
+```
+
+この theorem は、代数的 obstruction data と analytic / combinatorial readings を、
+明示された finite profile の中で比較するための束である。
+ただし theorem candidate に依存する条項は、この theorem の certified 結論ではなく、
+その candidate regime を追加した場合の interface として読む。
+名前の `GAGA` は、代数的対象と analytic reading の比較を表す比喩であり、
+未選択の data source や外部手続きの忠実性を主張しない。
+
+### 原則 12.4 AAT-GAGA Boundary
+
+AAT-GAGA は selected finite measurement profile の中でだけ読む。
+
+```text
+constructed AAT geometry
+  + finite profile
+  + exactness / adequacy assumptions
+  ----------------------------------
+comparison reading.
+```
+
+次は結論しない。
+
+```text
+all unselected data are complete.
+all external procedures preserve the profile.
+all law universes are measured.
+analytic smallness implies lawfulness.
+```
+
+次の第IX部では、静的な measurement profile から、trace category、state transition presheaf、
+temporal coefficient を持つ
+evolution geometry へ進む。
