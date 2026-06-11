@@ -21,7 +21,18 @@
 | `tangent rank jumps` | analytic / criterion | singularity の十分条件になりうる reading。主定義そのものではない。 |
 | `normal cone is nontrivial` | analytic / criterion | selected obstruction direction がある場合に singularity criterion として使う。 |
 | `LawConflict_i(U,V)` | defined object | 同一 ambient 上の lawful loci の derived non-transversality を読む Tor object。 |
-| `support-localized transfer` | defined predicate | repair direction が selected conflict class の support と非自明に交わる、または pairing がその direction 上で定義されること。 |
+| `support-localized transfer predicate` | defined predicate | repair direction が selected conflict class の support と非自明に交わる、または pairing がその direction 上で定義されること。 |
+| `measurement verdict` | defined predicate family | selected profile 内で `measured_zero` / `measured_nonzero` / `unmeasured` / `unknown` / `not_computed` を区別する reporting discipline。 |
+| `finite measurement regime` | certified assumption | finite site、finite cover、effective coefficient data、finite witness variables、selected finite resolutions が固定された計算可能 regime。 |
+| `Finite AAT Computability` | certified bounded inference | finite measurement regime と `EffCoeff_M` の範囲で selected invariants を有限線形代数・有限表示加群計算・有限組合せ計算へ落とす主張。 |
+| `Stanley-Reisner / Alexander Dual Repair Theorem` | certified bounded inference | finite square-free witness regime で obstruction ideal を Stanley-Reisner ideal として読み、Alexander dual を repair hitting set として読む主張。 |
+| `Cech stability` | local theorem candidate | finite square-free regime で witness perturbation と persistence / zigzag stability distance を結ぶ安定性主張。中央 Lean obligation ではなく、登録時に `proof_obligations.md` 側へ移す。 |
+| `cellular sheaf Laplacian` | analytic reading | finite cellular sheaf model 上で residual norm、spectrum、distance-to-flatness を読む方法。structural lawfulness そのものではない。 |
+| `Refactor Invariance under Equivalence` | certified bounded inference | selected finite sites、ringed ambient、coefficient、law ideal、witness reading が同型的に保存される場合の measurement verdict 保存。 |
+| `LawConflict base change` | local theorem candidate | common ambient と flat morphism of ringed sites の下で Tor conflict の pullback 保存を読む主張。中央 Lean obligation ではなく、登録時に `proof_obligations.md` 側へ移す。 |
+| `Support-Localized Transfer` | certified bounded inference | common ambient、conflict class、repair direction、pairing、zero predicate を固定した場合の transferred residue の十分条件。 |
+| `transfer lower bound` | local theorem candidate | support-localized pairing、norm、support weight を固定した場合の analytic residue bound。中央 Lean obligation ではなく、登録時に `proof_obligations.md` 側へ移す。 |
+| `Finite Measurement Synthesis` | certified bounded inference | finite measurement regime と selected assumptions の範囲で Part VIII の measurement packet を bounded mathematical measurement として返す synthesis。 |
 | `NoHigherBoundaryObstruction` | future design obligation | boundary class だけで判定を完備にするための追加仮定。本文内では未証明の bounded assumption として読む。 |
 | `operation homotopy` | future design obligation | operation category / groupoid を固定した後に定義する homotopy predicate。 |
 | `trace topos` | future design obligation | temporal law を扱うための後続 ambient。AAT 本文の core site とは分けて読む。 |
@@ -40,7 +51,9 @@ Theorem / Proposition / Lemma:
   exactness / coverage / adequacy を仮定するものは certified bounded inference。
 
 Theorem candidate:
-  将来の定義・証明設計を明示した定理候補。
+  将来の定義・証明設計を明示した本文内の定理候補。
+  Lean の中央 proof obligation になるのは、
+  lean_theorem_index.md または proof_obligations.md に対応行を置いた場合だけである。
 
 Principle:
   claim boundary または読み方の規律。
