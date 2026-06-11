@@ -568,6 +568,42 @@ g in C^1(𝒰, Ob_U)
 
 である。
 
+### 原則 5.2A Torsor-Normalized Mismatch
+
+gluing mismatch を標準的に扱う最も強い形は、local lawful sections が sheaf of groups
+`G_U` の pseudo-torsor をなす場合である。
+
+```text
+Lawful_U(W_i) is a G_U(W_i)-pseudo-torsor.
+```
+
+このとき、overlap 上の差は
+
+```text
+g_{ij} = s_j - s_i in G_U(W_{ij})
+```
+
+として定まり、torsor の結合法則から
+
+```text
+g_{ij} + g_{jk} + g_{ki} = 0
+```
+
+が triple overlap 上で自動的に成り立つ。
+したがって `g` は 1-cocycle であり、`[g]` は torsor class である。
+
+```text
+[g] = 0
+  iff
+the pseudo-torsor has a global section,
+provided the torsor action is effective.
+```
+
+第IV部で ordinary cohomology を使う場合は、この torsor class を abelianization または
+module-valued coefficient sheaf へ送った class として読む。
+任意の `mismatch_{ij}` を使う場合は、cocycle condition と local adjustment の effectivity を
+別途仮定する。
+
 ### 定義 5.3 Descent Obstruction Class
 
 gluing mismatch `g` が cocycle condition を満たすとき、
@@ -684,7 +720,8 @@ s_i factors through Flat_U(X)
 
 が成り立つと仮定する。
 
-また、overlap mismatch が定める hidden coupling class
+また、overlap mismatch が torsor-normalized cocycle として、または明示された
+cocycle condition の下で、hidden coupling class
 
 ```text
 [hc_U(X)] in H^1(X, Ob_U)
@@ -816,7 +853,9 @@ coverage mismatch
 
 ### 定義 8.3 Boundary Connecting Homomorphism
 
-obstruction sheaf に対して、次が derived category 上の distinguished triangle であると仮定する。
+obstruction sheaf が `C' = C_core union F` 上の一つの coefficient object の制限として与えられ、
+`B = C_core intersection F` への restriction と extension-by-zero が標準的に定義される場合、
+Mayer-Vietoris triangle により、derived category 上で次が得られる。
 
 ```text
 Ob_C'
@@ -824,6 +863,10 @@ Ob_C'
   -> Ob_B
   -> Ob_C'[1]
 ```
+
+この場合、distinguished triangle は追加の architecture 仮定ではなく、選ばれた coefficient object に
+対する Mayer-Vietoris の標準形である。
+`Ob_core`、`Ob_F`、`Ob_B` を互いに独立に選ぶ場合は、この triangle の存在を別途仮定する。
 
 ここから長完全列が得られる。
 
@@ -878,8 +921,13 @@ C_core is U-flat
 F is U-flat
 boundary witnesses are covered
 axis exactness holds
-Ob_U satisfies descent
+Ob_C' is a boundary-exact coefficient object
+  such as ConDef_U or a fixed abelianized torsor coefficient
 ring restriction compatibility holds
+local lawful adjustments form the selected torsor/module
+selected descent for that torsor/module is effective
+all selected global obstruction classes are represented by delta(b_U)
+NoHigherBoundaryObstruction(C', Ob_C') holds
 ```
 
 このとき、
@@ -904,13 +952,23 @@ delta(b_U) = 0
 
 `C_core` と `F` がそれぞれ U-flat であるため、それぞれの local section は
 lawful locus を通り、obstruction ideal は section に沿って vanishing する。
+boundary の張り合わせで残る mismatch は、選ばれた adjustment torsor/module の元として
+`b_U` に集約される。
+boundary exactness と effective descent により、`delta(b_U)=0` なら局所調整は大域 section へ降下する。
+逆に大域 U-flat section が存在すれば、同じ exact sequence で boundary mismatch は coboundary であり、
+`delta(b_U)=0` である。
+ここで `all selected global obstruction classes are represented by delta(b_U)` と
+`NoHigherBoundaryObstruction(C', Ob_C')` は、この判定が boundary class だけで完備になるための仮定である。
 
 ```text
 s_core^* I_Ob^U = 0
 s_F^* I_Ob^U = 0
 ```
 
-したがって、global flatness の唯一の残りは boundary 上の gluing data である。
+boundary-exact coefficient を固定しているため、global flatness の残りは
+boundary 上の gluing data とその connecting class によって読む。
+この coefficient を固定しない場合、`iff` ではなく、
+非零の concrete class が貼り合わせ失敗を与える片方向の obstruction statement として読む。
 
 boundary residue
 
@@ -940,6 +998,141 @@ core is locally lawful.
 boundary holonomy is nonzero.
 therefore the extension is not globally lawful.
 ```
+
+### 例 9.3 擬円周 Boundary Model
+
+core context `C_0` と feature context `C_1` からなる cover を考える。
+overlap は二つの connected boundary channel に分かれる。
+
+```text
+C' = C_0 union C_1
+C_0 intersection C_1 = B_sync disjoint_union B_async
+```
+
+係数を定数 sheaf `Z` とする。
+local lawful sections
+
+```text
+s_0 in Lawful_U(C_0)
+s_1 in Lawful_U(C_1)
+```
+
+の差を、二つの boundary channel 上で
+
+```text
+r_sync  in Z
+r_async in Z
+```
+
+として読む。
+
+cover-relative Čech complex は次である。
+
+```text
+C^0 = Z e_0 direct_sum Z e_1
+C^1 = Z b_sync direct_sum Z b_async
+C^n = 0 for n >= 2
+```
+
+`C^0` の元を `(a_0,a_1)`、`C^1` の元を `(r_sync,r_async)` と書く。
+Čech differential は
+
+```text
+d^0(a_0,a_1)
+  =
+  (a_1 - a_0, a_1 - a_0).
+```
+
+したがって、1-cocycles はすべての `C^1` であり、coboundaries は diagonal copy of `Z` である。
+
+```text
+H^1
+  =
+  coker(d^0)
+  =
+  Z^2 / diagonal(Z)
+  ≅ Z.
+```
+
+quotient map は
+
+```text
+q : Z^2 -> Z
+q(r_sync,r_async) = r_sync - r_async.
+```
+
+boundary residue
+
+```text
+b_U = (r_sync,r_async) in H^0(B_sync,Z) direct_sum H^0(B_async,Z)
+```
+
+の boundary holonomy は
+
+```text
+Hol_U(Boundary(C_0,C_1))
+  =
+  [b_U]
+  =
+  r_sync - r_async
+  in Z.
+```
+
+特に、
+
+```text
+b_U = (1,0)
+```
+
+なら
+
+```text
+Hol_U(Boundary(C_0,C_1)) = 1.
+```
+
+この local lawful data は大域的 lawful section へ貼り合わない。
+
+```text
+forall i, s_i factors through Flat_U(X)
+Hol_U(Boundary(C_0,C_1)) != 0
+--------------------------------
+not exists s : C' -> Flat_U(X)
+with s|C_i = s_i after local adjustment.
+```
+
+### 例 9.4 擬円周 Cycle Pairing
+
+同じ cover から、Čech nerve with boundary components の chain complex を作る。
+
+```text
+C_1 = Z e_sync direct_sum Z e_async
+C_0 = Z v_0 direct_sum Z v_1
+partial(e_sync)  = v_1 - v_0
+partial(e_async) = v_1 - v_0
+```
+
+したがって、
+
+```text
+gamma = e_sync - e_async
+```
+
+は 1-cycle である。
+cochain
+
+```text
+omega = (r_sync,r_async) in C^1
+```
+
+との pairing は
+
+```text
+< omega, gamma >
+  =
+  r_sync - r_async.
+```
+
+この pairing は `H^1 ≅ Z` の同型と一致する。
 
 ## 10. H2 and Higher Coherence
 
@@ -1010,6 +1203,62 @@ stack / gerbe:
 
 この分離により、第IV部は obstruction cohomology の範囲に留まる。
 
+### 定理候補 10.4 Multi-Feature Mayer-Vietoris Spectral Sequence
+
+finite feature cover
+
+```text
+C = union_{i in I} W_i
+```
+
+と coefficient sheaf `Ob_U` を固定する。
+各 finite intersection
+
+```text
+W_{i_0...i_p}
+  =
+W_{i_0} intersection ... intersection W_{i_p}
+```
+
+について cohomology が定義され、Čech-to-derived comparison が固定されているとき、
+Mayer-Vietoris spectral sequence は次の形を持つ。
+
+```text
+E_1^{p,q}
+  =
+direct_sum_{i_0 < ... < i_p}
+H^q(W_{i_0...i_p}, Ob_U)
+  =>
+H^{p+q}(C, Ob_U).
+```
+
+`d_1` は alternating restriction map である。
+
+```text
+d_1 = sum_j (-1)^j res_j.
+```
+
+特に、各 pairwise overlap の class が消えていても、
+
+```text
+d_2(E_2^{0,1}) subset E_2^{2,0}
+```
+
+または
+
+```text
+E_2^{2,0} != 0
+```
+
+によって triple-overlap coherence class が残る場合がある。
+
+```text
+pairwise boundary residues vanish
+triple overlap class remains
+--------------------------------
+H^2(C, Ob_U) may be nonzero.
+```
+
 ## 11. Cohomological Flatness Criterion
 
 ### 定理 11.1 Cohomological Flatness Criterion
@@ -1025,12 +1274,14 @@ cover
 ```text
 forall i, s_i factors through Flat_U(X)
 overlap mismatch cocycle is defined
+or the local lawful sections form an effective torsor after abelianization
 𝒰 is U-adequate for the selected witnesses and axes
 obstruction soundness holds
 obstruction completeness holds
 axis exactness holds
 witness coverage holds
-Ob_U satisfies descent
+the chosen coefficient object satisfies descent
+local adjustment action is fixed and effective
 ```
 
 このとき、local lawful sections `s_i` が global lawful section へ貼り合うための obstruction は、

@@ -105,6 +105,22 @@ R_eff    : AATSch -> EffectSpace
 ```
 
 ここで `AATSch` は、AAT architecture schemes の圏である。
+より正確には、fixed reading parameter `p` に対して、対象は decorated architecture scheme
+
+```text
+X_AAT = (X, O_X, D_X)
+```
+
+であり、射は underlying scheme morphism に AAT decoration preservation を加えたものとして読む。
+
+```text
+f : X_AAT -> Y_AAT
+```
+
+は、通常の scheme morphism `f : X -> Y` と、typed Atom labels、selected law reading、
+obstruction ideals、signature readings、interpretation maps を保存または指定された形で制限する
+compatibility data からなる。
+fiber product は、underlying scheme 側で存在し、decoration が pullback で整合的に定まる場合に使う。
 
 representation は、architecture geometry の特定の側面を計算可能な形式へ送る。
 
@@ -315,12 +331,34 @@ omega in H^n(X, Ob_U)
 gamma in H_n(X, Z)
 ```
 
-が固定されているとき、strict obstruction period を次で表す。
+だけでは scalar-valued period は定まらない。
+period target と係数評価
 
 ```text
-Per_{omega,gamma}(X)
+Lambda: additive period target
+tr_U : Ob_U -> underline Lambda
+```
+
+を固定し、cohomology 上の誘導写像を
+
+```text
+tr_{U,*} : H^n(X, Ob_U) -> H^n(X, underline Lambda)
+```
+
+と書く。
+このとき strict obstruction period を次で表す。
+
+ここで `H_n(X,Z)` と `Lambda` は ambient に応じて固定する。
+標準的な topological / analytic realization がある場合はその singular homology を使う。
+finite context poset として読む場合は、context poset の order complex、または chosen cover の nerve の
+simplicial homology を使う。
+この homology model と係数評価を固定せずに strict period pairing は主張しない。
+
+```text
+Per_{omega,gamma}^{tr_U}(X)
   :=
-< omega, gamma >
+< tr_{U,*}(omega), gamma >
+  in Lambda
 ```
 
 monodromy representation
@@ -335,6 +373,151 @@ rho_U : pi_1^{op}(X) -> Aut(F)
 Per_rho(gamma)
   :=
 Tr(rho_U(gamma))
+```
+
+### 定義 5.2A Finite Poset / Čech Homology Model
+
+finite context poset
+
+```text
+P = ArchCtx_min(A)
+```
+
+に対して、order complex を
+
+```text
+Ord(P)
+```
+
+と書く。
+`n`-simplex は chain
+
+```text
+W_0 < W_1 < ... < W_n
+```
+
+である。
+
+```text
+H_n^{poset}(P,Z)
+  :=
+H_n(C_*(Ord(P),Z)).
+```
+
+finite context cover
+
+```text
+𝒰 = { W_i -> W }
+```
+
+について、overlap component を区別した Čech nerve を
+
+```text
+N(𝒰)
+```
+
+と書く。
+`n`-chain は nonempty `(n+1)`-fold overlap component の free abelian group とする。
+
+```text
+C_n(N(𝒰),Z)
+  =
+free_Z{ W_{i_0...i_n,alpha} }
+```
+
+boundary map は face restriction の alternating sum である。
+
+```text
+partial = sum_j (-1)^j d_j.
+```
+
+この homology を finite cover strict period の homology model とする。
+
+```text
+H_n^{Cech}(𝒰,Z)
+  :=
+H_n(C_*(N(𝒰),Z)).
+```
+
+cochain
+
+```text
+omega in C^n(𝒰, Ob_U)
+```
+
+と、overlap component ごとの係数評価
+
+```text
+epsilon_{i_0...i_n,alpha}:
+  Ob_U(W_{i_0...i_n,alpha}) -> Lambda
+```
+
+を固定する。
+`epsilon` は face restriction と整合し、coboundary / boundary の pairing が消えるように選ぶ。
+これは constant coefficient への trace、residue map、selected witness coordinate などで与えられる。
+
+また、chain
+
+```text
+gamma = sum_alpha m_alpha W_{i_0...i_n,alpha}
+```
+
+の pairing は
+
+```text
+< omega, gamma >
+  =
+sum_alpha
+  m_alpha
+  epsilon_{i_0...i_n,alpha}
+    (omega(W_{i_0...i_n,alpha}))
+  in Lambda
+```
+
+である。
+`omega` が cocycle、`gamma` が cycle で、係数評価が face restriction と整合していれば、
+これは cohomology class と homology class の pairing を `Lambda` 上に与える。
+
+### 例 5.2B 擬円周 Strict Period
+
+第IV部の擬円周 boundary cover では、
+
+```text
+C_1 = Z e_sync direct_sum Z e_async
+C_0 = Z v_0 direct_sum Z v_1
+partial(e_sync)  = v_1 - v_0
+partial(e_async) = v_1 - v_0
+```
+
+である。
+したがって、
+
+```text
+gamma = e_sync - e_async
+```
+
+は 1-cycle である。
+obstruction cocycle
+
+```text
+omega = (r_sync,r_async)
+r_sync, r_async in Lambda
+```
+
+に対して、
+
+```text
+Per_{omega,gamma}^{epsilon}
+  =
+< omega, gamma >
+  =
+r_sync - r_async.
+```
+
+特に `omega = (1,0)` のとき、
+
+```text
+Per_{omega,gamma}^{epsilon} = 1.
 ```
 
 したがって、本文では次を区別する。
@@ -423,6 +606,60 @@ different effect broad period
 graph is a legitimate broad period.
 semantic is another broad period.
 effect is another broad period.
+```
+
+### 例 6.2 Same Graph, Different Semantic / Effect Reading
+
+二つの architecture geometry `X` と `Y` を、同じ directed graph reading を持つものとして置く。
+
+```text
+R_graph(X) = R_graph(Y)
+
+components:
+  A, B
+
+edge:
+  A -> B
+```
+
+semantic reading は次のように異なる。
+
+```text
+R_sem(X):
+  A uses B as query provider.
+
+R_sem(Y):
+  A uses B as command executor.
+```
+
+effect reading も次のように異なる。
+
+```text
+R_eff(X):
+  A -> B is read-only.
+
+R_eff(Y):
+  A -> B may mutate shared state.
+```
+
+したがって、
+
+```text
+Period_graph^{broad}(X)
+  =
+Period_graph^{broad}(Y)
+```
+
+だが、
+
+```text
+Period_semantic^{broad}(X)
+  !=
+Period_semantic^{broad}(Y)
+
+Period_effect^{broad}(X)
+  !=
+Period_effect^{broad}(Y).
 ```
 
 ## 7. Signature and Curvature Readings
