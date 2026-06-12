@@ -230,6 +230,8 @@ pub struct NormalizedAtomV2 {
     pub subject: String,
     pub axis: String,
     pub predicate: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub object: Option<String>,
     pub source_refs: Vec<String>,
     pub context_memberships: Vec<String>,
     pub normalization_status: String,

@@ -152,7 +152,10 @@ fn cli_analyze_v2_writes_measurement_packet_foundation() {
     assert!(packet["analyticReadings"].is_array());
     assert!(packet["assumptions"].is_array());
     assert!(packet["nonConclusions"].is_array());
-    assert_eq!(packet["structuralVerdict"][0]["verdict"], "unmeasured");
+    assert_eq!(packet["structuralVerdict"][0]["verdict"], "measured_zero");
+    let cech = invariant_by_id(&packet, "cech-cohomology:profile:ag-default@1");
+    assert_eq!(cech["dimensions"]["H1"], Value::from(0));
+    assert_eq!(cech["selectedH2"]["dimension"], Value::from(0));
     assert_eq!(packet["analyticReadings"][0]["regime"], "theorem-candidate");
 
     let validation = read_json(&out_dir.join("archsig-analysis-validation.json"));
@@ -168,14 +171,224 @@ fn cli_analyze_v2_writes_measurement_packet_foundation() {
     let summary = read_json(&out_dir.join("archsig-analysis-summary.json"));
     assert_eq!(
         summary["conclusion"],
-        "AG_MEASUREMENT_FOUNDATION_READY_UNDER_PROFILE"
+        "NO_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE"
     );
+}
+
+#[test]
+fn cli_analyze_v2_cech_h1_visible_fixture_measures_nonzero() {
+    let out_dir = temp_dir("ag-measurement-cech-h1-visible");
+    let root = ag_measurement_root();
+
+    run_sig0(&[
+        "analyze",
+        "--archmap",
+        root.join("archmap_v2_cech_h1_visible.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--law-policy",
+        root.join("law_policy_ag.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--out-dir",
+        out_dir.to_str().expect("path is utf-8"),
+    ]);
+
+    let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
+    assert_eq!(
+        packet["structuralVerdict"][0]["evaluator"],
+        "ag.cech-obstruction@1"
+    );
+    assert_eq!(
+        packet["structuralVerdict"][0]["verdict"],
+        "measured_nonzero"
+    );
+    assert_eq!(
+        packet["structuralVerdict"][0]["verdictData"]["nonZero"],
+        true
+    );
+    let cech = invariant_by_id(&packet, "cech-cohomology:profile:ag-default@1");
+    assert_eq!(cech["observedCocycle"]["classNonzero"], true);
+    assert_eq!(
+        cech["observedCocycle"]["representative"]
+            .as_array()
+            .expect("representative is array")
+            .len(),
+        1
+    );
+    assert_eq!(
+        cech["observedCocycle"]["mismatchSupportRefs"][0],
+        "atom:left-bottom-cech-mismatch"
+    );
+    assert_eq!(
+        cech["selectedH2"]["status"],
+        "computed_for_selected_1_skeleton"
+    );
+    let witness_counting = invariant_by_id(&packet, "witness-counting:profile:ag-default@1");
+    assert_eq!(
+        witness_counting["invariantId"],
+        "witness-counting:profile:ag-default@1"
+    );
+    assert_eq!(witness_counting["verdict"], "measured_zero");
+
+    let summary = read_json(&out_dir.join("archsig-analysis-summary.json"));
+    assert_eq!(
+        summary["conclusion"],
+        "MEASURED_H1_OBSTRUCTION_UNDER_PROFILE"
+    );
+}
+
+#[test]
+fn cli_analyze_v2_cech_rejects_unsupported_measurement_profile_selectors() {
+    let out_dir = temp_dir("ag-measurement-cech-bad-profile");
+    let root = ag_measurement_root();
+    let mut policy = read_json(&root.join("law_policy_ag.json"));
+    policy["measurementProfiles"][0]["coefficient"] = Value::String("Z".to_string());
+    let policy_path = out_dir.join("law_policy_bad_cech_selector.json");
+    fs::write(
+        &policy_path,
+        serde_json::to_vec_pretty(&policy).expect("policy serializes"),
+    )
+    .expect("policy fixture can be written");
+
+    run_sig0_expect_code(
+        &[
+            "analyze",
+            "--archmap",
+            root.join("archmap_v2_cech_h1_visible.json")
+                .to_str()
+                .expect("path is utf-8"),
+            "--law-policy",
+            policy_path.to_str().expect("path is utf-8"),
+            "--out-dir",
+            out_dir.to_str().expect("path is utf-8"),
+        ],
+        2,
+    );
+}
+
+#[test]
+fn cli_analyze_v2_cech_requires_matching_witness_family() {
+    let out_dir = temp_dir("ag-measurement-cech-witness-family");
+    let root = ag_measurement_root();
+    let mut policy = read_json(&root.join("law_policy_ag.json"));
+    policy["measurementProfiles"][0]["witnessFamily"] = Value::Array(vec![]);
+    let policy_path = out_dir.join("law_policy_missing_cech_witness.json");
+    fs::write(
+        &policy_path,
+        serde_json::to_vec_pretty(&policy).expect("policy serializes"),
+    )
+    .expect("policy fixture can be written");
+
+    run_sig0_expect_code(
+        &[
+            "analyze",
+            "--archmap",
+            root.join("archmap_v2_cech_h1_visible.json")
+                .to_str()
+                .expect("path is utf-8"),
+            "--law-policy",
+            policy_path.to_str().expect("path is utf-8"),
+            "--out-dir",
+            out_dir.to_str().expect("path is utf-8"),
+        ],
+        2,
+    );
+}
+
+#[test]
+fn cli_analyze_v2_cech_ignores_unanchored_mismatch_support() {
+    let out_dir = temp_dir("ag-measurement-cech-unanchored-support");
+    let root = ag_measurement_root();
+    let mut archmap = read_json(&root.join("archmap_v2_cech_h1_visible.json"));
+    archmap["atoms"][4]["object"] = Value::String("ctx:right".to_string());
+    let archmap_path = out_dir.join("archmap_v2_unanchored_cech.json");
+    fs::write(
+        &archmap_path,
+        serde_json::to_vec_pretty(&archmap).expect("archmap serializes"),
+    )
+    .expect("archmap fixture can be written");
+
+    run_sig0(&[
+        "analyze",
+        "--archmap",
+        archmap_path.to_str().expect("path is utf-8"),
+        "--law-policy",
+        root.join("law_policy_ag.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--out-dir",
+        out_dir.to_str().expect("path is utf-8"),
+    ]);
+
+    let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
+    assert_eq!(packet["structuralVerdict"][0]["verdict"], "measured_zero");
+    let cech = invariant_by_id(&packet, "cech-cohomology:profile:ag-default@1");
+    assert_eq!(cech["dimensions"]["H1"], Value::from(1));
+    assert_eq!(cech["observedCocycle"]["classNonzero"], false);
+    assert_eq!(
+        cech["observedCocycle"]["mismatchSupportRefs"]
+            .as_array()
+            .expect("mismatch support refs is array")
+            .len(),
+        0
+    );
+}
+
+#[test]
+fn cli_locks_ag_measurement_cech_h1_visible_golden_fixture() {
+    let crate_root = Path::new(env!("CARGO_MANIFEST_DIR"));
+    let repo_root = crate_root
+        .parent()
+        .and_then(Path::parent)
+        .expect("crate root is tools/archsig inside repo");
+    let fixture = read_json(&ag_measurement_root().join("archmap_v2_cech_h1_visible.json"));
+    assert_eq!(fixture["schema"], "archmap/v2");
+    assert_eq!(fixture["id"], "ag-measurement-cech-h1-visible-fixture");
+    assert!(
+        fixture["atoms"]
+            .as_array()
+            .expect("atoms is array")
+            .iter()
+            .any(|atom| atom["axis"] == "cech" && atom["predicate"] == "mismatch"),
+        "AG golden fixture must contain an explicit Cech mismatch atom"
+    );
+
+    let golden_corpus = fs::read_to_string(repo_root.join("docs/tool/golden_corpus.md"))
+        .expect("golden corpus docs are readable");
+    for snippet in [
+        "archmap_v2_cech_h1_visible.json",
+        "cli_analyze_v2_cech_h1_visible_fixture_measures_nonzero",
+        "witness-blind / H1-visible",
+    ] {
+        assert!(
+            golden_corpus.contains(snippet),
+            "AG golden corpus docs must mention {snippet}"
+        );
+    }
 }
 
 #[test]
 fn cli_analyze_v2_strict_distance_rejects_unmeasured_foundation_rows() {
     let out_dir = temp_dir("ag-measurement-strict");
     let root = ag_measurement_root();
+    let mut policy = read_json(&root.join("law_policy_ag.json"));
+    policy["policies"]
+        .as_array_mut()
+        .expect("policies is array")
+        .push(serde_json::json!({
+            "law": "ag.square-free-repair",
+            "evaluator": "ag.square-free-repair@1",
+            "basis": ["policy-basis:layering"],
+            "scope": ["src/"],
+            "severity": "medium"
+        }));
+    let policy_path = out_dir.join("law_policy_ag_with_unmeasured.json");
+    fs::write(
+        &policy_path,
+        serde_json::to_vec_pretty(&policy).expect("policy serializes"),
+    )
+    .expect("policy fixture can be written");
 
     run_sig0_expect_code(
         &[
@@ -185,9 +398,7 @@ fn cli_analyze_v2_strict_distance_rejects_unmeasured_foundation_rows() {
                 .to_str()
                 .expect("path is utf-8"),
             "--law-policy",
-            root.join("law_policy_ag.json")
-                .to_str()
-                .expect("path is utf-8"),
+            policy_path.to_str().expect("path is utf-8"),
             "--out-dir",
             out_dir.to_str().expect("path is utf-8"),
             "--strict-distance",
@@ -7511,6 +7722,15 @@ fn run_sig0_output(args: &[&str]) -> std::process::Output {
 fn read_json(path: &Path) -> Value {
     serde_json::from_slice(&fs::read(path).expect("json fixture can be read"))
         .expect("json fixture parses")
+}
+
+fn invariant_by_id<'a>(packet: &'a Value, invariant_id: &str) -> &'a Value {
+    packet["computedInvariants"]
+        .as_array()
+        .expect("computedInvariants is array")
+        .iter()
+        .find(|invariant| invariant["invariantId"] == invariant_id)
+        .unwrap_or_else(|| panic!("missing computed invariant {invariant_id}"))
 }
 
 fn assert_public_artifact_omits_part4(label: &str, value: &Value) {
