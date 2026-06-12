@@ -1329,6 +1329,402 @@ fn cli_analyze_v2_sheaf_laplacian_without_boundary_is_not_computed() {
 }
 
 #[test]
+fn cli_analyze_v2_period_stokes_outputs_pairing_and_audit_reading() {
+    let out_dir = temp_dir("ag-measurement-period-stokes");
+    let root = ag_measurement_root();
+
+    run_sig0(&[
+        "analyze",
+        "--archmap",
+        root.join("archmap_v2_period_stokes.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--law-policy",
+        root.join("law_policy_period.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--out-dir",
+        out_dir.to_str().expect("path is utf-8"),
+    ]);
+
+    let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
+    assert_eq!(
+        packet["structuralVerdict"]
+            .as_array()
+            .expect("structural verdict is array")
+            .len(),
+        0,
+        "period readings are analytic-only and must not generate structural verdict rows"
+    );
+    let invariant = invariant_by_id(&packet, "period-stokes:profile:ag-period-stokes@1");
+    assert_eq!(
+        invariant["periodPairingMatrix"],
+        serde_json::json!([[2.0, -1.0]])
+    );
+    assert_eq!(invariant["stokesAudit"]["status"], "checked");
+    assert_eq!(
+        invariant["stokesAudit"]["maxAbsoluteResidual"],
+        Value::from(0.0)
+    );
+    let reading = packet["analyticReadings"]
+        .as_array()
+        .expect("analytic readings is array")
+        .iter()
+        .find(|reading| reading["evaluator"] == "ag.period-stokes@1")
+        .expect("period analytic reading exists");
+    assert_eq!(reading["structuralVerdictRef"], Value::Null);
+    assert_eq!(reading["regime"], "analytic-measurement");
+    assert_eq!(reading["value"]["modelRelative"], true);
+    assert_eq!(
+        reading["value"]["cycleBasis"],
+        serde_json::json!(["cycle:alpha", "cycle:beta"])
+    );
+    assert_eq!(
+        reading["value"]["periodPairingMatrix"],
+        serde_json::json!([[2.0, -1.0]])
+    );
+    assert_eq!(
+        reading["value"]["nonConclusion"],
+        "period pairing is a model-relative analytic reading and is not a structural lawfulness verdict"
+    );
+    assert!(
+        packet["assumptions"]
+            .as_array()
+            .expect("assumptions is array")
+            .iter()
+            .any(|entry| {
+                entry["assumption"] == "period_comparison" && entry["status"] == "assumed"
+            })
+    );
+
+    let summary = read_json(&out_dir.join("archsig-analysis-summary.json"));
+    assert_eq!(
+        summary["conclusion"],
+        "AG_MEASUREMENT_FOUNDATION_READY_UNDER_PROFILE"
+    );
+}
+
+#[test]
+fn cli_analyze_v2_period_stokes_audit_mismatch_fails_fast() {
+    let out_dir = temp_dir("ag-measurement-period-stokes-audit-mismatch");
+    let root = ag_measurement_root();
+    let mut archmap = read_json(&root.join("archmap_v2_period_stokes.json"));
+    archmap["atoms"][3]["object"] = Value::String("chain:sigma=4".to_string());
+    let archmap_path = out_dir.join("archmap_v2_period_stokes_audit_mismatch.json");
+    fs::write(
+        &archmap_path,
+        serde_json::to_vec_pretty(&archmap).expect("archmap serializes"),
+    )
+    .expect("archmap fixture can be written");
+
+    let output = run_sig0_output(&[
+        "analyze",
+        "--archmap",
+        archmap_path.to_str().expect("path is utf-8"),
+        "--law-policy",
+        root.join("law_policy_period.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--out-dir",
+        out_dir.to_str().expect("path is utf-8"),
+    ]);
+    assert_eq!(output.status.code(), Some(2));
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(
+        stderr.contains("Stokes audit failed"),
+        "Stokes audit mismatch must fail as evaluator error\n{stderr}"
+    );
+    assert!(
+        !out_dir.join("archsig-measurement-packet.json").exists(),
+        "Stokes audit fail-fast must not leave a success packet"
+    );
+}
+
+#[test]
+fn cli_analyze_v2_period_stokes_without_audit_is_not_computed() {
+    let out_dir = temp_dir("ag-measurement-period-stokes-no-audit");
+    let root = ag_measurement_root();
+    let mut archmap = read_json(&root.join("archmap_v2_period_stokes.json"));
+    archmap["atoms"] = Value::Array(
+        archmap["atoms"]
+            .as_array()
+            .expect("atoms is array")
+            .iter()
+            .filter(|atom| {
+                atom["predicate"] != "dOmegaIntegral" && atom["predicate"] != "boundaryPeriod"
+            })
+            .cloned()
+            .collect(),
+    );
+    archmap["contexts"][0]["atoms"] = Value::Array(
+        archmap["contexts"][0]["atoms"]
+            .as_array()
+            .expect("context atoms is array")
+            .iter()
+            .filter(|atom| {
+                !matches!(
+                    atom.as_str(),
+                    Some("atom:stokes-domega-sigma" | "atom:stokes-boundary-sigma")
+                )
+            })
+            .cloned()
+            .collect(),
+    );
+    let archmap_path = out_dir.join("archmap_v2_period_stokes_no_audit.json");
+    fs::write(
+        &archmap_path,
+        serde_json::to_vec_pretty(&archmap).expect("archmap serializes"),
+    )
+    .expect("archmap fixture can be written");
+
+    run_sig0(&[
+        "analyze",
+        "--archmap",
+        archmap_path.to_str().expect("path is utf-8"),
+        "--law-policy",
+        root.join("law_policy_period.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--out-dir",
+        out_dir.to_str().expect("path is utf-8"),
+    ]);
+
+    let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
+    assert_eq!(
+        packet["structuralVerdict"]
+            .as_array()
+            .expect("structural verdict is array")
+            .len(),
+        0
+    );
+    let invariant = invariant_by_id(&packet, "period-stokes:profile:ag-period-stokes@1");
+    assert_eq!(invariant["status"], "not_computed");
+    assert_eq!(invariant["reason"], "period_model_missing");
+}
+
+#[test]
+fn cli_analyze_v2_period_stokes_missing_pairing_cell_is_not_computed() {
+    let out_dir = temp_dir("ag-measurement-period-stokes-missing-cell");
+    let root = ag_measurement_root();
+    let mut archmap = read_json(&root.join("archmap_v2_period_stokes.json"));
+    archmap["atoms"]
+        .as_array_mut()
+        .expect("atoms is array")
+        .push(serde_json::json!({
+            "id": "atom:period-eta-alpha",
+            "kind": "semantic",
+            "subject": "omega:secondary",
+            "object": "cycle:alpha=5",
+            "axis": "period",
+            "predicate": "periodIntegral",
+            "refs": ["src:period-alpha"]
+        }));
+    archmap["contexts"][0]["atoms"]
+        .as_array_mut()
+        .expect("context atoms is array")
+        .push(Value::String("atom:period-eta-alpha".to_string()));
+    let archmap_path = out_dir.join("archmap_v2_period_stokes_missing_cell.json");
+    fs::write(
+        &archmap_path,
+        serde_json::to_vec_pretty(&archmap).expect("archmap serializes"),
+    )
+    .expect("archmap fixture can be written");
+
+    run_sig0(&[
+        "analyze",
+        "--archmap",
+        archmap_path.to_str().expect("path is utf-8"),
+        "--law-policy",
+        root.join("law_policy_period.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--out-dir",
+        out_dir.to_str().expect("path is utf-8"),
+    ]);
+
+    let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
+    let invariant = invariant_by_id(&packet, "period-stokes:profile:ag-period-stokes@1");
+    assert_eq!(invariant["status"], "not_computed");
+    assert_eq!(
+        invariant["reason"],
+        "period_model_missing:omega:secondary/cycle:beta"
+    );
+    assert!(
+        packet["analyticReadings"]
+            .as_array()
+            .expect("analytic readings is array")
+            .iter()
+            .all(|reading| reading["evaluator"] != "ag.period-stokes@1"),
+        "missing period pairing cells must not synthesize zero analytic readings"
+    );
+}
+
+#[test]
+fn cli_analyze_v2_period_stokes_rejects_unknown_cycle() {
+    let out_dir = temp_dir("ag-measurement-period-stokes-unknown-cycle");
+    let root = ag_measurement_root();
+    let mut archmap = read_json(&root.join("archmap_v2_period_stokes.json"));
+    archmap["atoms"][0]["object"] = Value::String("cycle:missing=2".to_string());
+    let archmap_path = out_dir.join("archmap_v2_period_stokes_unknown_cycle.json");
+    fs::write(
+        &archmap_path,
+        serde_json::to_vec_pretty(&archmap).expect("archmap serializes"),
+    )
+    .expect("archmap fixture can be written");
+
+    run_sig0_expect_code(
+        &[
+            "analyze",
+            "--archmap",
+            archmap_path.to_str().expect("path is utf-8"),
+            "--law-policy",
+            root.join("law_policy_period.json")
+                .to_str()
+                .expect("path is utf-8"),
+            "--out-dir",
+            out_dir.to_str().expect("path is utf-8"),
+        ],
+        2,
+    );
+}
+
+#[test]
+fn cli_analyze_v2_period_stokes_rejects_duplicate_pairings() {
+    let out_dir = temp_dir("ag-measurement-period-stokes-duplicate");
+    let root = ag_measurement_root();
+    let mut archmap = read_json(&root.join("archmap_v2_period_stokes.json"));
+    let mut duplicate = archmap["atoms"][0].clone();
+    duplicate["id"] = Value::String("atom:period-omega-alpha-duplicate".to_string());
+    archmap["atoms"]
+        .as_array_mut()
+        .expect("atoms is array")
+        .push(duplicate);
+    archmap["contexts"][0]["atoms"]
+        .as_array_mut()
+        .expect("context atoms is array")
+        .push(Value::String(
+            "atom:period-omega-alpha-duplicate".to_string(),
+        ));
+    let archmap_path = out_dir.join("archmap_v2_period_stokes_duplicate.json");
+    fs::write(
+        &archmap_path,
+        serde_json::to_vec_pretty(&archmap).expect("archmap serializes"),
+    )
+    .expect("archmap fixture can be written");
+
+    run_sig0_expect_code(
+        &[
+            "analyze",
+            "--archmap",
+            archmap_path.to_str().expect("path is utf-8"),
+            "--law-policy",
+            root.join("law_policy_period.json")
+                .to_str()
+                .expect("path is utf-8"),
+            "--out-dir",
+            out_dir.to_str().expect("path is utf-8"),
+        ],
+        2,
+    );
+}
+
+#[test]
+fn cli_analyze_v2_period_stokes_rejects_non_finite_values() {
+    let out_dir = temp_dir("ag-measurement-period-stokes-nan");
+    let root = ag_measurement_root();
+    let mut archmap = read_json(&root.join("archmap_v2_period_stokes.json"));
+    archmap["atoms"][0]["object"] = Value::String("cycle:alpha=NaN".to_string());
+    let archmap_path = out_dir.join("archmap_v2_period_stokes_nan.json");
+    fs::write(
+        &archmap_path,
+        serde_json::to_vec_pretty(&archmap).expect("archmap serializes"),
+    )
+    .expect("archmap fixture can be written");
+
+    run_sig0_expect_code(
+        &[
+            "analyze",
+            "--archmap",
+            archmap_path.to_str().expect("path is utf-8"),
+            "--law-policy",
+            root.join("law_policy_period.json")
+                .to_str()
+                .expect("path is utf-8"),
+            "--out-dir",
+            out_dir.to_str().expect("path is utf-8"),
+        ],
+        2,
+    );
+}
+
+#[test]
+fn cli_analyze_v2_period_stokes_rejects_malformed_profile_selector() {
+    let out_dir = temp_dir("ag-measurement-period-stokes-bad-profile");
+    let root = ag_measurement_root();
+    let mut policy = read_json(&root.join("law_policy_period.json"));
+    policy["measurementProfiles"][0]["resolutionSelector"] =
+        Value::String("unsupported@1".to_string());
+    let policy_path = out_dir.join("law_policy_period_bad_profile.json");
+    fs::write(
+        &policy_path,
+        serde_json::to_vec_pretty(&policy).expect("policy serializes"),
+    )
+    .expect("policy fixture can be written");
+
+    run_sig0_expect_code(
+        &[
+            "analyze",
+            "--archmap",
+            root.join("archmap_v2_period_stokes.json")
+                .to_str()
+                .expect("path is utf-8"),
+            "--law-policy",
+            policy_path.to_str().expect("path is utf-8"),
+            "--out-dir",
+            out_dir.to_str().expect("path is utf-8"),
+        ],
+        2,
+    );
+}
+
+#[test]
+fn cli_analyze_v2_period_stokes_missing_witness_cycle_is_not_computed() {
+    let out_dir = temp_dir("ag-measurement-period-stokes-missing-witness");
+    let root = ag_measurement_root();
+    let mut policy = read_json(&root.join("law_policy_period.json"));
+    policy["measurementProfiles"][0]["witnessFamily"]
+        .as_array_mut()
+        .expect("witnessFamily is array")
+        .push(serde_json::json!({
+            "law": "ag.period-stokes",
+            "variable": "cycle:extra"
+        }));
+    let policy_path = out_dir.join("law_policy_period_missing_witness.json");
+    fs::write(
+        &policy_path,
+        serde_json::to_vec_pretty(&policy).expect("policy serializes"),
+    )
+    .expect("policy fixture can be written");
+
+    run_sig0(&[
+        "analyze",
+        "--archmap",
+        root.join("archmap_v2_period_stokes.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--law-policy",
+        policy_path.to_str().expect("path is utf-8"),
+        "--out-dir",
+        out_dir.to_str().expect("path is utf-8"),
+    ]);
+
+    let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
+    let invariant = invariant_by_id(&packet, "period-stokes:profile:ag-period-stokes@1");
+    assert_eq!(invariant["status"], "not_computed");
+    assert_eq!(invariant["reason"], "period_model_missing:cycle:extra");
+}
+
+#[test]
 fn cli_analyze_v2_sheaf_laplacian_rejects_unknown_cell() {
     let out_dir = temp_dir("ag-measurement-sheaf-laplacian-unknown-cell");
     let root = ag_measurement_root();
@@ -1493,6 +1889,40 @@ fn cli_locks_ag_measurement_sheaf_laplacian_golden_fixture() {
 }
 
 #[test]
+fn cli_locks_ag_measurement_period_stokes_golden_fixture() {
+    let crate_root = Path::new(env!("CARGO_MANIFEST_DIR"));
+    let repo_root = crate_root
+        .parent()
+        .and_then(Path::parent)
+        .expect("crate root is tools/archsig inside repo");
+    let fixture = read_json(&ag_measurement_root().join("archmap_v2_period_stokes.json"));
+    assert_eq!(fixture["schema"], "archmap/v2");
+    assert_eq!(fixture["id"], "ag-measurement-period-stokes-fixture");
+    assert!(
+        fixture["atoms"]
+            .as_array()
+            .expect("atoms is array")
+            .iter()
+            .any(|atom| atom["axis"] == "period" && atom["predicate"] == "boundaryPeriod"),
+        "AG Period fixture must contain an explicit Stokes boundary-period atom"
+    );
+
+    let golden_corpus = fs::read_to_string(repo_root.join("docs/tool/golden_corpus.md"))
+        .expect("golden corpus docs are readable");
+    for snippet in [
+        "archmap_v2_period_stokes.json",
+        "law_policy_period.json",
+        "cli_analyze_v2_period_stokes_outputs_pairing_and_audit_reading",
+        "model-relative analytic reading",
+    ] {
+        assert!(
+            golden_corpus.contains(snippet),
+            "AG golden corpus docs must mention {snippet}"
+        );
+    }
+}
+
+#[test]
 fn cli_analyze_v2_strict_distance_rejects_unmeasured_foundation_rows() {
     let out_dir = temp_dir("ag-measurement-strict");
     let root = ag_measurement_root();
@@ -1501,8 +1931,8 @@ fn cli_analyze_v2_strict_distance_rejects_unmeasured_foundation_rows() {
         .as_array_mut()
         .expect("policies is array")
         .push(serde_json::json!({
-            "law": "ag.period-stokes",
-            "evaluator": "ag.period-stokes@1",
+            "law": "ag.support-transfer",
+            "evaluator": "ag.support-transfer@1",
             "basis": ["policy-basis:layering"],
             "scope": ["src/"],
             "severity": "medium"

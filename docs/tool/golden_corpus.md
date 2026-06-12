@@ -35,10 +35,12 @@ covers rather than molecule-primary ArchMaps.
 - `tools/archsig/tests/fixtures/ag_measurement/archmap_v2_square_free_repair.json`
 - `tools/archsig/tests/fixtures/ag_measurement/archmap_v2_law_conflict_tor.json`
 - `tools/archsig/tests/fixtures/ag_measurement/archmap_v2_sheaf_laplacian.json`
+- `tools/archsig/tests/fixtures/ag_measurement/archmap_v2_period_stokes.json`
 - `tools/archsig/tests/fixtures/ag_measurement/law_policy_ag.json`
 - `tools/archsig/tests/fixtures/ag_measurement/law_policy_square_free.json`
 - `tools/archsig/tests/fixtures/ag_measurement/law_policy_tor.json`
 - `tools/archsig/tests/fixtures/ag_measurement/law_policy_laplacian.json`
+- `tools/archsig/tests/fixtures/ag_measurement/law_policy_period.json`
 - `tools/archsig/tests/fixtures/ag_measurement/law_policy_missing_profile.json`
 
 The executable lock is
@@ -79,6 +81,19 @@ The companion regressions
 `cli_analyze_v2_sheaf_laplacian_missing_witness_cell_is_not_computed`, and
 `cli_analyze_v2_sheaf_laplacian_rejects_unknown_cell` keep missing cellular
 model evidence and witness mismatches from becoming measured zero.
+
+The Period / Stokes lock is
+`cli_analyze_v2_period_stokes_outputs_pairing_and_audit_reading`. It fixes the
+B.6 worked example path: finite period integral atoms yield a strict period
+pairing matrix, and paired `dOmegaIntegral` / `boundaryPeriod` atoms check the
+Stokes audit identity as evaluator self-check evidence. The period reading is a
+model-relative analytic reading only; it does not produce structural
+lawfulness. The companion regressions
+`cli_analyze_v2_period_stokes_audit_mismatch_fails_fast`,
+`cli_analyze_v2_period_stokes_without_audit_is_not_computed`, and
+`cli_analyze_v2_period_stokes_rejects_unknown_cycle` keep audit mismatches,
+missing finite period evidence, and witness mismatches from becoming measured
+zero.
 
 ## V1 Positive Fixtures
 

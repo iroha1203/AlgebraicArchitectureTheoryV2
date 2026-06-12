@@ -1,0 +1,40 @@
+{
+  "schema": "law-policy/v1",
+  "id": "ag-period-stokes-policy",
+  "measurementProfileRef": "profile:ag-period-stokes@1",
+  "measurementProfiles": [
+    {
+      "schema": "measurement-profile/v1",
+      "profileId": "profile:ag-period-stokes@1",
+      "siteRef": "archmap:/contexts",
+      "coverRef": "cover:period-stokes",
+      "coefficient": "R",
+      "effCoeff": "finite-linear-algebra@1",
+      "witnessFamily": [
+        {
+          "law": "ag.period-stokes",
+          "variable": "cycle:alpha"
+        },
+        {
+          "law": "ag.period-stokes",
+          "variable": "cycle:beta"
+        }
+      ],
+      "resolutionSelector": "finite-poset-period@1",
+      "domain": "finite-poset-site",
+      "zeroPredicate": "analytic-zero@1",
+      "nonZeroPredicate": "analytic-positive@1",
+      "certSelector": "analytic-reading@1",
+      "verdictDiscipline": "five-valued-structural-verdict@1"
+    }
+  ],
+  "policies": [
+    {
+      "law": "ag.period-stokes",
+      "evaluator": "ag.period-stokes@1",
+      "basis": ["policy-basis:layering"],
+      "scope": ["src/"],
+      "severity": "medium"
+    }
+  ]
+}
