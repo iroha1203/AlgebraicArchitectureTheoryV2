@@ -1,0 +1,4 @@
+interface:
+  display_name: "PRD Loop"
+  short_description: "PRDの完了条件を満たすまで Issue→PR→レビュー→マージを反復する"
+  default_prompt: "Use $prd-loop with docs/tool/archsig_v0_4_0_algebraic_geometry_measurement_prd.md to iterate gap analysis, issue creation, implementation, review, and merge until the PRD acceptance criteria are satisfied."
