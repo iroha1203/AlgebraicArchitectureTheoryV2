@@ -4439,10 +4439,11 @@ completeness、FieldSig forecast calibration は結論しない。
 
 File: `Formal/AG.lean`, `Formal/AG/Atom/Atom.lean`, `Formal/AG/Atom/Axioms.lean`,
 `Formal/AG/Atom/Observation.lean`, `Formal/AG/Atom/Family.lean`,
-`Formal/AG/Atom/Configuration.lean`, `Formal/AG/Atom/ArchitectureObject.lean`.
+`Formal/AG/Atom/Configuration.lean`, `Formal/AG/Atom/ArchitectureObject.lean`,
+`Formal/AG/Atom/Invariant.lean`.
 
 PRD-1 [第I部 Atom・対象・法則](lean_ag_part_1_atoms_objects_laws_prd.md) の
-AC1/R0、AC2/R1、AC3/R1、AC4/R2、AC5/R3、AC6/R4 に対応する初期 Atom entrypoint である。`Formal/Arch` は import せず、
+AC1/R0、AC2/R1、AC3/R1、AC4/R2、AC5/R3、AC6/R4、AC7/R5 に対応する初期 Atom entrypoint である。`Formal/Arch` は import せず、
 AG 版 AAT の namespace を `AAT.AG` として分離する。この節は Part I の最下層索引であり、
 定理9.3、定理10.5 の完了宣言ではない。
 
@@ -4458,9 +4459,11 @@ AG 版 AAT の namespace を `AAT.AG` として分離する。この節は Part 
 | `I.定義3.1-3.5` | `AAT.AG.AtomFamily`, `AtomFamily.Subset`, `AtomFamily.support`, `AtomFamily.restrictAxis`, `AtomFamily.Compatible`, `AtomFamily.EqCompatible`, `AtomFamily.AtomOrigin`, `AtomFamily.OriginMarked`, `AtomFamily.InferenceSystem`, `AtomFamily.IsClosed`, `AtomFamily.closure`, `AtomFamily.support_of_mem`, `AtomFamily.restrictAxis_subset`, `AtomFamily.restrictAxis_axis`, `AtomFamily.subset_closure`, `AtomFamily.closure_isClosed`, `AtomFamily.closure_minimal` | `structure` / `def` / `inductive` / `theorem` | Atom family、subset、support、axis restriction、選択された payload compatibility relation に相対化された compatibility、origin marker、monotone 推論規則族 closure と support/restriction 補題および closure 3補題。 | `defined only` / `proved` |
 | `I.定義4.1 / 4.2 / 4.4` | `AAT.AG.AtomConfiguration`, `AtomConfiguration.Subconfiguration`, `AtomConfiguration.FamilySupported`, `AtomConfiguration.Molecule`, `AtomConfiguration.Subconfiguration.refl`, `AtomConfiguration.Subconfiguration.trans`, `AtomConfiguration.Subconfiguration.preorder`, `AtomConfiguration.Molecule.family_subset_parent`, `AtomConfiguration.Molecule.finite_marker` | `structure` / `def` / `theorem` | Atom configuration `C = (F, R, E)`、R/E の family-supported predicate、finite marker 付き molecule、subconfiguration と、その反射・推移・preorder 補題。 | `defined only` / `proved` |
 | `I.定義5.1 / 5.2 / 命題5.3 / 定義5.4` | `AAT.AG.ArchitectureObject`, `ArchitectureObject.GeneratedObject`, `ArchitectureObject.ObjectEquivalence`, `ArchitectureObject.atom_origin`, `ArchitectureObject.generated_family_eq`, `ArchitectureObject.generated_family_subset`, `ArchitectureObject.ObjectEquivalence.configuration_equivalent`, `ArchitectureObject.ObjectEquivalence.structure_maps_preserved`, `ArchitectureObject.ObjectEquivalence.selected_quantities_preserved` | `structure` / `def` / `theorem` | Architecture object `A = (C, S, Q)`、抽象 structure maps / selected quantities、Atom family からの generated object relation、Atom-Origin theorem、object equivalence の保存 predicate。 | `defined only` / `proved` |
+| `I.定義6.1-6.3` | `AAT.AG.FunctionInvariant`, `AAT.AG.PredicateInvariant`, `AAT.AG.Invariant`, `AAT.AG.InvariantFamily`, `Invariant.EqualityPreserved`, `Invariant.OrderPreserved`, `Invariant.PredicatePreserved`, `Invariant.equalityPreserved_apply`, `Invariant.orderPreserved_apply`, `Invariant.predicatePreserved_apply`, `InvariantFamily.get`, `InvariantFamily.get_eq` | `structure` / `inductive` / `def` / `theorem` | ArchitectureObject 上の関数形 invariant、述語形 invariant、mixed invariant family、等式形 preservation `I(A)=I(B)`、順序形 preservation `I(B) <= I(A)`、predicate preservation と accessor 補題。 | `defined only` / `proved` |
 
 Non-conclusions: この bootstrap は `Formal/AG` の Atom carrier、A0-A8 package、A9、
-AtomFamily / closure、Configuration / Molecule、ArchitectureObject / Atom-Origin の入口であり、Lawfulness-Zero Obstruction、
+AtomFamily / closure、Configuration / Molecule、ArchitectureObject / Atom-Origin、
+Invariant / preservation の入口であり、Lawfulness-Zero Obstruction、
 AAT Core、有限モデルは後続 Issue の対象である。
 
 ## Reverse-Import Theorem Packages

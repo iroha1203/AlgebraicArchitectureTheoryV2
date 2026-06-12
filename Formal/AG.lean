@@ -4,3 +4,4 @@ import Formal.AG.Atom.Observation
 import Formal.AG.Atom.Family
 import Formal.AG.Atom.Configuration
 import Formal.AG.Atom.ArchitectureObject
+import Formal.AG.Atom.Invariant
