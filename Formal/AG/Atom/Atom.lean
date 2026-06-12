@@ -7,8 +7,8 @@ I.定義1.1 Atom.
 
 An `AtomRecord` is the five-coordinate typed fact used by AG AAT Part I:
 kind, axis, subject, predicate, and payload. This bootstrap declaration only
-introduces the carrier shape; the A0-A8 law package is introduced by the next
-PRD loop step.
+introduces the carrier shape; the A0-A8 package lives in
+`Formal.AG.Atom.Axioms`.
 -/
 structure AtomRecord
     (AtomKind Axis Subject Predicate Payload : Type u) where
