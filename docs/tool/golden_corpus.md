@@ -32,7 +32,9 @@ covers rather than molecule-primary ArchMaps.
 
 - `tools/archsig/tests/fixtures/ag_measurement/archmap_v2.json`
 - `tools/archsig/tests/fixtures/ag_measurement/archmap_v2_cech_h1_visible.json`
+- `tools/archsig/tests/fixtures/ag_measurement/archmap_v2_square_free_repair.json`
 - `tools/archsig/tests/fixtures/ag_measurement/law_policy_ag.json`
+- `tools/archsig/tests/fixtures/ag_measurement/law_policy_square_free.json`
 - `tools/archsig/tests/fixtures/ag_measurement/law_policy_missing_profile.json`
 
 The executable lock is
@@ -41,6 +43,14 @@ witness-blind / H1-visible discriminator: classical witness counting remains
 `measured_zero`, while the finite F2 Cech evaluator emits
 `measured_nonzero` for the selected H1 obstruction and records a cocycle
 representative with mismatch support refs.
+
+The square-free repair lock is
+`cli_analyze_v2_square_free_repair_outputs_hitting_sets_and_nsdepth`. It fixes
+the B.3 / B.4 worked example path: `I_Ob^U`, minimal forbidden supports,
+`Delta_U`, Alexander dual minimal repair hitting sets, and an NSdepth
+certificate are emitted as finite measurement packet invariants. The companion
+`cli_analyze_v2_square_free_without_certificate_returns_unknown` regression
+keeps missing certificates as `unknown`, not lawful or measured zero.
 
 ## V1 Positive Fixtures
 

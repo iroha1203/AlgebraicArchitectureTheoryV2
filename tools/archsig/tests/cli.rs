@@ -336,6 +336,293 @@ fn cli_analyze_v2_cech_ignores_unanchored_mismatch_support() {
 }
 
 #[test]
+fn cli_analyze_v2_square_free_repair_outputs_hitting_sets_and_nsdepth() {
+    let out_dir = temp_dir("ag-measurement-square-free-repair");
+    let root = ag_measurement_root();
+
+    run_sig0(&[
+        "analyze",
+        "--archmap",
+        root.join("archmap_v2_square_free_repair.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--law-policy",
+        root.join("law_policy_square_free.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--out-dir",
+        out_dir.to_str().expect("path is utf-8"),
+    ]);
+
+    let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
+    assert_eq!(
+        packet["structuralVerdict"][0]["evaluator"],
+        "ag.square-free-repair@1"
+    );
+    assert_eq!(
+        packet["structuralVerdict"][0]["verdict"],
+        "measured_nonzero"
+    );
+    assert_eq!(
+        packet["structuralVerdict"][0]["verdictData"]["certRef"],
+        "atom:nsdepth-certificate"
+    );
+    let repair = invariant_by_id(&packet, "square-free-repair:profile:ag-square-free@1");
+    assert_eq!(repair["obstructionIdeal"]["id"], "I_Ob^U");
+    assert_eq!(
+        repair["minimalForbiddenSupports"],
+        serde_json::json!([["x_checkout", "x_inventory"], ["x_inventory", "x_payment"]])
+    );
+    assert_eq!(
+        repair["alexanderDualRepair"]["minimalHittingSets"],
+        serde_json::json!([["x_inventory"], ["x_checkout", "x_payment"]])
+    );
+    assert_eq!(repair["nsdepthCertificate"]["nsdepth"], Value::from(2));
+
+    let summary = read_json(&out_dir.join("archsig-analysis-summary.json"));
+    assert_eq!(
+        summary["conclusion"],
+        "MEASURED_AG_OBSTRUCTION_UNDER_PROFILE"
+    );
+}
+
+#[test]
+fn cli_analyze_v2_square_free_without_certificate_returns_unknown() {
+    let out_dir = temp_dir("ag-measurement-square-free-no-cert");
+    let root = ag_measurement_root();
+    let mut archmap = read_json(&root.join("archmap_v2_square_free_repair.json"));
+    archmap["atoms"] = Value::Array(
+        archmap["atoms"]
+            .as_array()
+            .expect("atoms is array")
+            .iter()
+            .filter(|atom| atom["id"] != "atom:nsdepth-certificate")
+            .cloned()
+            .collect(),
+    );
+    archmap["contexts"][0]["atoms"] = Value::Array(
+        archmap["contexts"][0]["atoms"]
+            .as_array()
+            .expect("context atoms is array")
+            .iter()
+            .filter(|atom| atom.as_str() != Some("atom:nsdepth-certificate"))
+            .cloned()
+            .collect(),
+    );
+    let archmap_path = out_dir.join("archmap_v2_square_free_no_cert.json");
+    fs::write(
+        &archmap_path,
+        serde_json::to_vec_pretty(&archmap).expect("archmap serializes"),
+    )
+    .expect("archmap fixture can be written");
+
+    run_sig0(&[
+        "analyze",
+        "--archmap",
+        archmap_path.to_str().expect("path is utf-8"),
+        "--law-policy",
+        root.join("law_policy_square_free.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--out-dir",
+        out_dir.to_str().expect("path is utf-8"),
+    ]);
+
+    let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
+    assert_eq!(packet["structuralVerdict"][0]["verdict"], "unknown");
+    assert_eq!(
+        packet["structuralVerdict"][0]["verdictData"]["methodStatus"],
+        "nsdepth_certificate_missing"
+    );
+    let repair = invariant_by_id(&packet, "square-free-repair:profile:ag-square-free@1");
+    assert_eq!(repair["nsdepthCertificate"]["status"], "missing");
+}
+
+#[test]
+fn cli_analyze_v2_square_free_requires_matching_witness_family() {
+    let out_dir = temp_dir("ag-measurement-square-free-witness-family");
+    let root = ag_measurement_root();
+    let mut policy = read_json(&root.join("law_policy_square_free.json"));
+    policy["measurementProfiles"][0]["witnessFamily"] = Value::Array(vec![]);
+    let policy_path = out_dir.join("law_policy_square_free_missing_witness.json");
+    fs::write(
+        &policy_path,
+        serde_json::to_vec_pretty(&policy).expect("policy serializes"),
+    )
+    .expect("policy fixture can be written");
+
+    run_sig0_expect_code(
+        &[
+            "analyze",
+            "--archmap",
+            root.join("archmap_v2_square_free_repair.json")
+                .to_str()
+                .expect("path is utf-8"),
+            "--law-policy",
+            policy_path.to_str().expect("path is utf-8"),
+            "--out-dir",
+            out_dir.to_str().expect("path is utf-8"),
+        ],
+        2,
+    );
+}
+
+#[test]
+fn cli_analyze_v2_square_free_rejects_malformed_nsdepth_certificate() {
+    let out_dir = temp_dir("ag-measurement-square-free-bad-cert");
+    let root = ag_measurement_root();
+    let mut archmap = read_json(&root.join("archmap_v2_square_free_repair.json"));
+    archmap["atoms"][5]["object"] = Value::String("not-a-number".to_string());
+    let archmap_path = out_dir.join("archmap_v2_square_free_bad_cert.json");
+    fs::write(
+        &archmap_path,
+        serde_json::to_vec_pretty(&archmap).expect("archmap serializes"),
+    )
+    .expect("archmap fixture can be written");
+
+    run_sig0_expect_code(
+        &[
+            "analyze",
+            "--archmap",
+            archmap_path.to_str().expect("path is utf-8"),
+            "--law-policy",
+            root.join("law_policy_square_free.json")
+                .to_str()
+                .expect("path is utf-8"),
+            "--out-dir",
+            out_dir.to_str().expect("path is utf-8"),
+        ],
+        2,
+    );
+}
+
+#[test]
+fn cli_analyze_v2_square_free_rejects_generator_outside_witness_family() {
+    let out_dir = temp_dir("ag-measurement-square-free-unknown-variable");
+    let root = ag_measurement_root();
+    let mut archmap = read_json(&root.join("archmap_v2_square_free_repair.json"));
+    archmap["atoms"][3]["subject"] = Value::String("x_unknown".to_string());
+    let archmap_path = out_dir.join("archmap_v2_square_free_unknown_variable.json");
+    fs::write(
+        &archmap_path,
+        serde_json::to_vec_pretty(&archmap).expect("archmap serializes"),
+    )
+    .expect("archmap fixture can be written");
+
+    run_sig0_expect_code(
+        &[
+            "analyze",
+            "--archmap",
+            archmap_path.to_str().expect("path is utf-8"),
+            "--law-policy",
+            root.join("law_policy_square_free.json")
+                .to_str()
+                .expect("path is utf-8"),
+            "--out-dir",
+            out_dir.to_str().expect("path is utf-8"),
+        ],
+        2,
+    );
+}
+
+#[test]
+fn cli_analyze_v2_square_free_rejects_too_many_witness_variables() {
+    let out_dir = temp_dir("ag-measurement-square-free-too-many-witnesses");
+    let root = ag_measurement_root();
+    let mut policy = read_json(&root.join("law_policy_square_free.json"));
+    policy["measurementProfiles"][0]["witnessFamily"] = Value::Array(
+        (0..13)
+            .map(|index| {
+                serde_json::json!({
+                    "law": "ag.square-free-repair",
+                    "variable": format!("x_{index}")
+                })
+            })
+            .collect(),
+    );
+    let policy_path = out_dir.join("law_policy_square_free_too_many_witnesses.json");
+    fs::write(
+        &policy_path,
+        serde_json::to_vec_pretty(&policy).expect("policy serializes"),
+    )
+    .expect("policy fixture can be written");
+
+    run_sig0_expect_code(
+        &[
+            "analyze",
+            "--archmap",
+            root.join("archmap_v2_square_free_repair.json")
+                .to_str()
+                .expect("path is utf-8"),
+            "--law-policy",
+            policy_path.to_str().expect("path is utf-8"),
+            "--out-dir",
+            out_dir.to_str().expect("path is utf-8"),
+        ],
+        2,
+    );
+}
+
+#[test]
+fn cli_analyze_v2_square_free_without_generators_returns_measured_zero() {
+    let out_dir = temp_dir("ag-measurement-square-free-zero");
+    let root = ag_measurement_root();
+    let mut archmap = read_json(&root.join("archmap_v2_square_free_repair.json"));
+    archmap["atoms"] = Value::Array(
+        archmap["atoms"]
+            .as_array()
+            .expect("atoms is array")
+            .iter()
+            .filter(|atom| atom["predicate"] != "obstructionGenerator")
+            .cloned()
+            .collect(),
+    );
+    archmap["contexts"][0]["atoms"] = Value::Array(
+        archmap["contexts"][0]["atoms"]
+            .as_array()
+            .expect("context atoms is array")
+            .iter()
+            .filter(|atom| {
+                !matches!(
+                    atom.as_str(),
+                    Some("atom:ob-checkout-inventory" | "atom:ob-inventory-payment")
+                )
+            })
+            .cloned()
+            .collect(),
+    );
+    let archmap_path = out_dir.join("archmap_v2_square_free_zero.json");
+    fs::write(
+        &archmap_path,
+        serde_json::to_vec_pretty(&archmap).expect("archmap serializes"),
+    )
+    .expect("archmap fixture can be written");
+
+    run_sig0(&[
+        "analyze",
+        "--archmap",
+        archmap_path.to_str().expect("path is utf-8"),
+        "--law-policy",
+        root.join("law_policy_square_free.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--out-dir",
+        out_dir.to_str().expect("path is utf-8"),
+    ]);
+
+    let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
+    assert_eq!(packet["structuralVerdict"][0]["verdict"], "measured_zero");
+    let repair = invariant_by_id(&packet, "square-free-repair:profile:ag-square-free@1");
+    assert_eq!(
+        repair["obstructionIdeal"]["generators"]
+            .as_array()
+            .expect("generators is array")
+            .len(),
+        0
+    );
+}
+
+#[test]
 fn cli_locks_ag_measurement_cech_h1_visible_golden_fixture() {
     let crate_root = Path::new(env!("CARGO_MANIFEST_DIR"));
     let repo_root = crate_root
@@ -369,6 +656,40 @@ fn cli_locks_ag_measurement_cech_h1_visible_golden_fixture() {
 }
 
 #[test]
+fn cli_locks_ag_measurement_square_free_golden_fixture() {
+    let crate_root = Path::new(env!("CARGO_MANIFEST_DIR"));
+    let repo_root = crate_root
+        .parent()
+        .and_then(Path::parent)
+        .expect("crate root is tools/archsig inside repo");
+    let fixture = read_json(&ag_measurement_root().join("archmap_v2_square_free_repair.json"));
+    assert_eq!(fixture["schema"], "archmap/v2");
+    assert_eq!(fixture["id"], "ag-measurement-square-free-repair-fixture");
+    assert!(
+        fixture["atoms"]
+            .as_array()
+            .expect("atoms is array")
+            .iter()
+            .any(|atom| atom["axis"] == "square-free" && atom["predicate"] == "nsdepthCertificate"),
+        "AG square-free fixture must contain an explicit NSdepth certificate atom"
+    );
+
+    let golden_corpus = fs::read_to_string(repo_root.join("docs/tool/golden_corpus.md"))
+        .expect("golden corpus docs are readable");
+    for snippet in [
+        "archmap_v2_square_free_repair.json",
+        "law_policy_square_free.json",
+        "cli_analyze_v2_square_free_repair_outputs_hitting_sets_and_nsdepth",
+        "cli_analyze_v2_square_free_without_certificate_returns_unknown",
+    ] {
+        assert!(
+            golden_corpus.contains(snippet),
+            "AG golden corpus docs must mention {snippet}"
+        );
+    }
+}
+
+#[test]
 fn cli_analyze_v2_strict_distance_rejects_unmeasured_foundation_rows() {
     let out_dir = temp_dir("ag-measurement-strict");
     let root = ag_measurement_root();
@@ -377,8 +698,8 @@ fn cli_analyze_v2_strict_distance_rejects_unmeasured_foundation_rows() {
         .as_array_mut()
         .expect("policies is array")
         .push(serde_json::json!({
-            "law": "ag.square-free-repair",
-            "evaluator": "ag.square-free-repair@1",
+            "law": "ag.law-conflict-tor",
+            "evaluator": "ag.law-conflict-tor@1",
             "basis": ["policy-basis:layering"],
             "scope": ["src/"],
             "severity": "medium"
