@@ -1,0 +1,93 @@
+{
+  "schema": "archmap/v2",
+  "id": "ag-measurement-period-stokes-fixture",
+  "extractionDoctrineRef": {
+    "doctrineId": "doctrine:ag-fixture@1",
+    "fingerprint": "sha256:ag-fixture-doctrine",
+    "components": ["V", "Gamma", "R", "rho", "E", "N"]
+  },
+  "sources": {
+    "src:period-alpha": {
+      "kind": "policy",
+      "path": "docs/tool/archsig_v0_4_0_algebraic_geometry_measurement_prd.md",
+      "section": "R7-period-alpha"
+    },
+    "src:period-beta": {
+      "kind": "policy",
+      "path": "docs/tool/archsig_v0_4_0_algebraic_geometry_measurement_prd.md",
+      "section": "R7-period-beta"
+    },
+    "src:stokes-domega": {
+      "kind": "policy",
+      "path": "docs/tool/archsig_v0_4_0_algebraic_geometry_measurement_prd.md",
+      "section": "R7-stokes-domega"
+    },
+    "src:stokes-boundary": {
+      "kind": "policy",
+      "path": "docs/tool/archsig_v0_4_0_algebraic_geometry_measurement_prd.md",
+      "section": "R7-stokes-boundary"
+    },
+    "src:cover": {
+      "kind": "policy",
+      "path": "docs/tool/archsig_v0_4_0_algebraic_geometry_measurement_prd.md",
+      "section": "R7"
+    }
+  },
+  "atoms": [
+    {
+      "id": "atom:period-omega-alpha",
+      "kind": "semantic",
+      "subject": "omega:curvature",
+      "object": "cycle:alpha=2",
+      "axis": "period",
+      "predicate": "periodIntegral",
+      "refs": ["src:period-alpha"]
+    },
+    {
+      "id": "atom:period-omega-beta",
+      "kind": "semantic",
+      "subject": "omega:curvature",
+      "object": "cycle:beta=-1",
+      "axis": "period",
+      "predicate": "periodIntegral",
+      "refs": ["src:period-beta"]
+    },
+    {
+      "id": "atom:stokes-domega-sigma",
+      "kind": "semantic",
+      "subject": "omega:curvature",
+      "object": "chain:sigma=3",
+      "axis": "period",
+      "predicate": "dOmegaIntegral",
+      "refs": ["src:stokes-domega"]
+    },
+    {
+      "id": "atom:stokes-boundary-sigma",
+      "kind": "semantic",
+      "subject": "omega:curvature",
+      "object": "chain:sigma=3",
+      "axis": "period",
+      "predicate": "boundaryPeriod",
+      "refs": ["src:stokes-boundary"]
+    }
+  ],
+  "contexts": [
+    {
+      "id": "ctx:period-stokes-local",
+      "atoms": [
+        "atom:period-omega-alpha",
+        "atom:period-omega-beta",
+        "atom:stokes-domega-sigma",
+        "atom:stokes-boundary-sigma"
+      ],
+      "refs": ["src:cover"]
+    }
+  ],
+  "covers": [
+    {
+      "id": "cover:period-stokes",
+      "contexts": ["ctx:period-stokes-local"],
+      "refs": ["src:cover"]
+    }
+  ]
+}
