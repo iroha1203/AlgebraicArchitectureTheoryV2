@@ -4437,22 +4437,25 @@ completeness、FieldSig forecast calibration は結論しない。
 
 ## AG版AAT Lean形式化 PRD-1 bootstrap
 
-File: `Formal/AG.lean`, `Formal/AG/Atom/Atom.lean`.
+File: `Formal/AG.lean`, `Formal/AG/Atom/Atom.lean`, `Formal/AG/Atom/Axioms.lean`.
 
 PRD-1 [第I部 Atom・対象・法則](lean_ag_part_1_atoms_objects_laws_prd.md) の
-AC1/R0 に対応する初期 entrypoint である。`Formal/Arch` は import せず、
-AG 版 AAT の namespace を `AAT.AG` として分離する。この節は bootstrap の索引であり、
-A0-A8、命題A9、定理9.3、定理10.5 の完了宣言ではない。
+AC1/R0 と AC2/R1 に対応する初期 Atom entrypoint である。`Formal/Arch` は import せず、
+AG 版 AAT の namespace を `AAT.AG` として分離する。この節は Part I の最下層索引であり、
+命題A9、定理9.3、定理10.5 の完了宣言ではない。
 
 | 本文ラベル | Lean 名 | 種別 | 意味 | Status |
 | --- | --- | --- | --- | --- |
 | `I.定義1.1` | `AAT.AG.AtomRecord` | `structure` | kind / axis / subject / predicate / payload を持つ五成分 Atom record。 | `defined only` |
 | `I.定義1.1` | `AAT.AG.AtomCarrier` | `structure` | Atom 型と五つの coordinate projection を束ねる carrier。 | `defined only` |
 | `I.定義1.1` | `AAT.AG.AtomCarrier.record` | `def` | carrier 内の Atom を `AtomRecord` として読む projection。 | `defined only` |
+| `I.公理A0-A8` | `AAT.AG.AtomAxiomSystem` | `structure` | AG Atom carrier 上で A0-A8 を structure field として束ねる package。 | `defined only` |
+| `I.公理A3` | `AAT.AG.SameCoordinates`, `AAT.AG.AtomAxiomSystem.eq_iff_sameCoordinates`, `AAT.AG.AtomAxiomSystem.ext` | `def` / `theorem` | 五成分一致と Atom 同一性の同値、ならびに ext 補題。 | `proved` |
+| `I.公理A8` | `AAT.AG.ExtractionDoctrine`, `AAT.AG.ExtractionDoctrine.atomize_unique`, `AAT.AG.CoarseProjection`, `AAT.AG.AtomAxiomSystem.doctrine_family_unique` | `structure` / `theorem` | extraction doctrine と、`atomize` が関数であることから得る canonical Atom family の一意性。 | `defined only` / `proved` |
 
-Non-conclusions: この bootstrap は `Formal/AG` を `lake build` 対象に入れるための
-入口であり、Atom 公理系 A0-A8、A3 ext 補題、A8 一意性、命題A9、
-Lawfulness-Zero Obstruction、AAT Core、有限モデルは後続 Issue の対象である。
+Non-conclusions: この bootstrap は `Formal/AG` の Atom carrier と A0-A8 package の
+入口であり、命題A9、AtomFamily、Configuration、Lawfulness-Zero Obstruction、
+AAT Core、有限モデルは後続 Issue の対象である。
 
 ## Reverse-Import Theorem Packages
 
