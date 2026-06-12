@@ -1019,6 +1019,345 @@ fn cli_analyze_v2_law_conflict_tor_rejects_generator_outside_witness_family() {
 }
 
 #[test]
+fn cli_analyze_v2_sheaf_laplacian_outputs_analytic_hodge_reading() {
+    let out_dir = temp_dir("ag-measurement-sheaf-laplacian");
+    let root = ag_measurement_root();
+
+    run_sig0(&[
+        "analyze",
+        "--archmap",
+        root.join("archmap_v2_sheaf_laplacian.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--law-policy",
+        root.join("law_policy_laplacian.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--out-dir",
+        out_dir.to_str().expect("path is utf-8"),
+    ]);
+
+    let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
+    assert_eq!(
+        packet["structuralVerdict"][0]["evaluator"],
+        "ag.sheaf-laplacian@1"
+    );
+    assert_eq!(packet["structuralVerdict"][0]["verdict"], "unknown");
+    assert_eq!(
+        packet["structuralVerdict"][0]["verdictData"]["methodStatus"],
+        "finite_laplacian_analytic_reading_computed"
+    );
+    let invariant = invariant_by_id(&packet, "sheaf-laplacian:profile:ag-sheaf-laplacian@1");
+    assert_eq!(
+        invariant["laplacianMatrix"],
+        serde_json::json!([[1.0, -1.0], [-1.0, 1.0]])
+    );
+    let reading = packet["analyticReadings"]
+        .as_array()
+        .expect("analytic readings is array")
+        .iter()
+        .find(|reading| reading["evaluator"] == "ag.sheaf-laplacian@1")
+        .expect("laplacian analytic reading exists");
+    assert_eq!(reading["structuralVerdictRef"], Value::Null);
+    assert_eq!(reading["regime"], "analytic-measurement");
+    assert_eq!(
+        reading["value"]["hodgeDecomposition"]["harmonic"],
+        serde_json::json!([0.5, 0.5])
+    );
+    assert_eq!(
+        reading["value"]["hodgeDecomposition"]["exact"],
+        serde_json::json!([0.0, 0.0])
+    );
+    assert_eq!(
+        reading["value"]["hodgeDecomposition"]["coexact"],
+        serde_json::json!([0.5, -0.5])
+    );
+    assert_eq!(reading["value"]["harmonicMass"], Value::from(0.5));
+    assert_eq!(reading["value"]["distanceToFlatness"], Value::from(0.5));
+    assert_eq!(reading["value"]["spectralGap"], Value::from(2.0));
+    assert_eq!(
+        reading["value"]["curvatureTransferSpectrum"],
+        serde_json::json!([
+            {"cell": "cell:left", "curvature": 1.0},
+            {"cell": "cell:right", "curvature": -1.0}
+        ])
+    );
+    assert_eq!(reading["value"]["essentialRepairLowerBound"], Value::Null);
+    assert_eq!(
+        reading["value"]["nonConclusion"],
+        "near-flat analytic values are not structural lawfulness verdicts"
+    );
+    let candidate = packet["analyticReadings"]
+        .as_array()
+        .expect("analytic readings is array")
+        .iter()
+        .find(|reading| {
+            reading["readingId"]
+                .as_str()
+                .is_some_and(|id| id.starts_with("theorem-candidate:harmonic-debt:"))
+        })
+        .expect("harmonic debt theorem-candidate reading exists");
+    assert_eq!(candidate["regime"], "theorem-candidate");
+    assert_eq!(
+        candidate["value"]["essentialRepairLowerBound"],
+        Value::from(0.707107)
+    );
+
+    let summary = read_json(&out_dir.join("archsig-analysis-summary.json"));
+    assert_eq!(
+        summary["conclusion"],
+        "AG_MEASUREMENT_FOUNDATION_READY_UNDER_PROFILE"
+    );
+}
+
+#[test]
+fn cli_analyze_v2_sheaf_laplacian_rejects_duplicate_cochain_cells() {
+    let out_dir = temp_dir("ag-measurement-sheaf-laplacian-duplicate-cell");
+    let root = ag_measurement_root();
+    let mut archmap = read_json(&root.join("archmap_v2_sheaf_laplacian.json"));
+    let mut duplicate = archmap["atoms"][0].clone();
+    duplicate["id"] = Value::String("atom:laplacian-left-cochain-duplicate".to_string());
+    archmap["atoms"]
+        .as_array_mut()
+        .expect("atoms is array")
+        .push(duplicate);
+    archmap["contexts"][0]["atoms"]
+        .as_array_mut()
+        .expect("context atoms is array")
+        .push(Value::String(
+            "atom:laplacian-left-cochain-duplicate".to_string(),
+        ));
+    let archmap_path = out_dir.join("archmap_v2_sheaf_laplacian_duplicate_cell.json");
+    fs::write(
+        &archmap_path,
+        serde_json::to_vec_pretty(&archmap).expect("archmap serializes"),
+    )
+    .expect("archmap fixture can be written");
+
+    run_sig0_expect_code(
+        &[
+            "analyze",
+            "--archmap",
+            archmap_path.to_str().expect("path is utf-8"),
+            "--law-policy",
+            root.join("law_policy_laplacian.json")
+                .to_str()
+                .expect("path is utf-8"),
+            "--out-dir",
+            out_dir.to_str().expect("path is utf-8"),
+        ],
+        2,
+    );
+}
+
+#[test]
+fn cli_analyze_v2_sheaf_laplacian_rejects_non_finite_cochain_values() {
+    let out_dir = temp_dir("ag-measurement-sheaf-laplacian-nan");
+    let root = ag_measurement_root();
+    let mut archmap = read_json(&root.join("archmap_v2_sheaf_laplacian.json"));
+    archmap["atoms"][0]["object"] = Value::String("NaN".to_string());
+    let archmap_path = out_dir.join("archmap_v2_sheaf_laplacian_nan.json");
+    fs::write(
+        &archmap_path,
+        serde_json::to_vec_pretty(&archmap).expect("archmap serializes"),
+    )
+    .expect("archmap fixture can be written");
+
+    run_sig0_expect_code(
+        &[
+            "analyze",
+            "--archmap",
+            archmap_path.to_str().expect("path is utf-8"),
+            "--law-policy",
+            root.join("law_policy_laplacian.json")
+                .to_str()
+                .expect("path is utf-8"),
+            "--out-dir",
+            out_dir.to_str().expect("path is utf-8"),
+        ],
+        2,
+    );
+}
+
+#[test]
+fn cli_analyze_v2_sheaf_laplacian_rejects_malformed_profile_selector() {
+    let out_dir = temp_dir("ag-measurement-sheaf-laplacian-bad-profile");
+    let root = ag_measurement_root();
+    let mut policy = read_json(&root.join("law_policy_laplacian.json"));
+    policy["measurementProfiles"][0]["resolutionSelector"] =
+        Value::String("unsupported@1".to_string());
+    let policy_path = out_dir.join("law_policy_laplacian_bad_profile.json");
+    fs::write(
+        &policy_path,
+        serde_json::to_vec_pretty(&policy).expect("policy serializes"),
+    )
+    .expect("policy fixture can be written");
+
+    run_sig0_expect_code(
+        &[
+            "analyze",
+            "--archmap",
+            root.join("archmap_v2_sheaf_laplacian.json")
+                .to_str()
+                .expect("path is utf-8"),
+            "--law-policy",
+            policy_path.to_str().expect("path is utf-8"),
+            "--out-dir",
+            out_dir.to_str().expect("path is utf-8"),
+        ],
+        2,
+    );
+}
+
+#[test]
+fn cli_analyze_v2_sheaf_laplacian_missing_witness_cell_is_not_computed() {
+    let out_dir = temp_dir("ag-measurement-sheaf-laplacian-missing-witness");
+    let root = ag_measurement_root();
+    let mut policy = read_json(&root.join("law_policy_laplacian.json"));
+    policy["measurementProfiles"][0]["witnessFamily"]
+        .as_array_mut()
+        .expect("witnessFamily is array")
+        .push(serde_json::json!({
+            "law": "ag.sheaf-laplacian",
+            "variable": "cell:extra"
+        }));
+    let policy_path = out_dir.join("law_policy_laplacian_missing_witness.json");
+    fs::write(
+        &policy_path,
+        serde_json::to_vec_pretty(&policy).expect("policy serializes"),
+    )
+    .expect("policy fixture can be written");
+
+    run_sig0(&[
+        "analyze",
+        "--archmap",
+        root.join("archmap_v2_sheaf_laplacian.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--law-policy",
+        policy_path.to_str().expect("path is utf-8"),
+        "--out-dir",
+        out_dir.to_str().expect("path is utf-8"),
+    ]);
+
+    let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
+    assert_eq!(packet["structuralVerdict"][0]["verdict"], "not_computed");
+    let invariant = invariant_by_id(&packet, "sheaf-laplacian:profile:ag-sheaf-laplacian@1");
+    assert_eq!(invariant["status"], "not_computed");
+    assert_eq!(invariant["reason"], "cellular_model_missing:cell:extra");
+}
+
+#[test]
+fn cli_analyze_v2_sheaf_laplacian_near_flat_is_not_measured_zero() {
+    let out_dir = temp_dir("ag-measurement-sheaf-laplacian-near-flat");
+    let root = ag_measurement_root();
+    let mut archmap = read_json(&root.join("archmap_v2_sheaf_laplacian.json"));
+    archmap["atoms"][0]["object"] = Value::String("0.001".to_string());
+    archmap["atoms"][1]["object"] = Value::String("0".to_string());
+    let archmap_path = out_dir.join("archmap_v2_sheaf_laplacian_near_flat.json");
+    fs::write(
+        &archmap_path,
+        serde_json::to_vec_pretty(&archmap).expect("archmap serializes"),
+    )
+    .expect("archmap fixture can be written");
+
+    run_sig0(&[
+        "analyze",
+        "--archmap",
+        archmap_path.to_str().expect("path is utf-8"),
+        "--law-policy",
+        root.join("law_policy_laplacian.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--out-dir",
+        out_dir.to_str().expect("path is utf-8"),
+    ]);
+
+    let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
+    assert_eq!(packet["structuralVerdict"][0]["verdict"], "unknown");
+    assert_eq!(packet["structuralVerdict"][0]["verdictData"]["zero"], false);
+}
+
+#[test]
+fn cli_analyze_v2_sheaf_laplacian_without_boundary_is_not_computed() {
+    let out_dir = temp_dir("ag-measurement-sheaf-laplacian-no-boundary");
+    let root = ag_measurement_root();
+    let mut archmap = read_json(&root.join("archmap_v2_sheaf_laplacian.json"));
+    archmap["atoms"] = Value::Array(
+        archmap["atoms"]
+            .as_array()
+            .expect("atoms is array")
+            .iter()
+            .filter(|atom| atom["predicate"] != "cellularBoundary")
+            .cloned()
+            .collect(),
+    );
+    archmap["contexts"][0]["atoms"] = Value::Array(
+        archmap["contexts"][0]["atoms"]
+            .as_array()
+            .expect("context atoms is array")
+            .iter()
+            .filter(|atom| atom.as_str() != Some("atom:laplacian-boundary"))
+            .cloned()
+            .collect(),
+    );
+    let archmap_path = out_dir.join("archmap_v2_sheaf_laplacian_no_boundary.json");
+    fs::write(
+        &archmap_path,
+        serde_json::to_vec_pretty(&archmap).expect("archmap serializes"),
+    )
+    .expect("archmap fixture can be written");
+
+    run_sig0(&[
+        "analyze",
+        "--archmap",
+        archmap_path.to_str().expect("path is utf-8"),
+        "--law-policy",
+        root.join("law_policy_laplacian.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--out-dir",
+        out_dir.to_str().expect("path is utf-8"),
+    ]);
+
+    let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
+    assert_eq!(packet["structuralVerdict"][0]["verdict"], "not_computed");
+    assert_eq!(
+        packet["structuralVerdict"][0]["verdictData"]["methodStatus"],
+        "cellular_model_missing"
+    );
+}
+
+#[test]
+fn cli_analyze_v2_sheaf_laplacian_rejects_unknown_cell() {
+    let out_dir = temp_dir("ag-measurement-sheaf-laplacian-unknown-cell");
+    let root = ag_measurement_root();
+    let mut archmap = read_json(&root.join("archmap_v2_sheaf_laplacian.json"));
+    archmap["atoms"][0]["subject"] = Value::String("cell:missing".to_string());
+    let archmap_path = out_dir.join("archmap_v2_sheaf_laplacian_unknown_cell.json");
+    fs::write(
+        &archmap_path,
+        serde_json::to_vec_pretty(&archmap).expect("archmap serializes"),
+    )
+    .expect("archmap fixture can be written");
+
+    run_sig0_expect_code(
+        &[
+            "analyze",
+            "--archmap",
+            archmap_path.to_str().expect("path is utf-8"),
+            "--law-policy",
+            root.join("law_policy_laplacian.json")
+                .to_str()
+                .expect("path is utf-8"),
+            "--out-dir",
+            out_dir.to_str().expect("path is utf-8"),
+        ],
+        2,
+    );
+}
+
+#[test]
 fn cli_locks_ag_measurement_cech_h1_visible_golden_fixture() {
     let crate_root = Path::new(env!("CARGO_MANIFEST_DIR"));
     let repo_root = crate_root
@@ -1120,6 +1459,40 @@ fn cli_locks_ag_measurement_law_conflict_tor_golden_fixture() {
 }
 
 #[test]
+fn cli_locks_ag_measurement_sheaf_laplacian_golden_fixture() {
+    let crate_root = Path::new(env!("CARGO_MANIFEST_DIR"));
+    let repo_root = crate_root
+        .parent()
+        .and_then(Path::parent)
+        .expect("crate root is tools/archsig inside repo");
+    let fixture = read_json(&ag_measurement_root().join("archmap_v2_sheaf_laplacian.json"));
+    assert_eq!(fixture["schema"], "archmap/v2");
+    assert_eq!(fixture["id"], "ag-measurement-sheaf-laplacian-fixture");
+    assert!(
+        fixture["atoms"]
+            .as_array()
+            .expect("atoms is array")
+            .iter()
+            .any(|atom| atom["axis"] == "laplacian" && atom["predicate"] == "cellularBoundary"),
+        "AG Laplacian fixture must contain an explicit cellular boundary atom"
+    );
+
+    let golden_corpus = fs::read_to_string(repo_root.join("docs/tool/golden_corpus.md"))
+        .expect("golden corpus docs are readable");
+    for snippet in [
+        "archmap_v2_sheaf_laplacian.json",
+        "law_policy_laplacian.json",
+        "cli_analyze_v2_sheaf_laplacian_outputs_analytic_hodge_reading",
+        "near-flat analytic values are not structural lawfulness verdicts",
+    ] {
+        assert!(
+            golden_corpus.contains(snippet),
+            "AG golden corpus docs must mention {snippet}"
+        );
+    }
+}
+
+#[test]
 fn cli_analyze_v2_strict_distance_rejects_unmeasured_foundation_rows() {
     let out_dir = temp_dir("ag-measurement-strict");
     let root = ag_measurement_root();
@@ -1128,8 +1501,8 @@ fn cli_analyze_v2_strict_distance_rejects_unmeasured_foundation_rows() {
         .as_array_mut()
         .expect("policies is array")
         .push(serde_json::json!({
-            "law": "ag.sheaf-laplacian",
-            "evaluator": "ag.sheaf-laplacian@1",
+            "law": "ag.period-stokes",
+            "evaluator": "ag.period-stokes@1",
             "basis": ["policy-basis:layering"],
             "scope": ["src/"],
             "severity": "medium"
