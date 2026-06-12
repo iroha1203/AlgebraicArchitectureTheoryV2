@@ -4435,6 +4435,25 @@ theorem と分類 registry を固定するが、全 theorem package の Atom-gen
 completeness、ArchMap observation completeness、global semantic flatness、all-path homotopy
 completeness、FieldSig forecast calibration は結論しない。
 
+## AG版AAT Lean形式化 PRD-1 bootstrap
+
+File: `Formal/AG.lean`, `Formal/AG/Atom/Atom.lean`.
+
+PRD-1 [第I部 Atom・対象・法則](lean_ag_part_1_atoms_objects_laws_prd.md) の
+AC1/R0 に対応する初期 entrypoint である。`Formal/Arch` は import せず、
+AG 版 AAT の namespace を `AAT.AG` として分離する。この節は bootstrap の索引であり、
+A0-A8、命題A9、定理9.3、定理10.5 の完了宣言ではない。
+
+| 本文ラベル | Lean 名 | 種別 | 意味 | Status |
+| --- | --- | --- | --- | --- |
+| `I.定義1.1` | `AAT.AG.AtomRecord` | `structure` | kind / axis / subject / predicate / payload を持つ五成分 Atom record。 | `defined only` |
+| `I.定義1.1` | `AAT.AG.AtomCarrier` | `structure` | Atom 型と五つの coordinate projection を束ねる carrier。 | `defined only` |
+| `I.定義1.1` | `AAT.AG.AtomCarrier.record` | `def` | carrier 内の Atom を `AtomRecord` として読む projection。 | `defined only` |
+
+Non-conclusions: この bootstrap は `Formal/AG` を `lake build` 対象に入れるための
+入口であり、Atom 公理系 A0-A8、A3 ext 補題、A8 一意性、命題A9、
+Lawfulness-Zero Obstruction、AAT Core、有限モデルは後続 Issue の対象である。
+
 ## Reverse-Import Theorem Packages
 
 File: `Formal/Arch/Evolution/ReverseImportTheorems.lean`.
