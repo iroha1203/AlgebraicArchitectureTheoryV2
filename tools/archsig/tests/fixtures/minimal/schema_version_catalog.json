@@ -87,6 +87,33 @@
       }
     },
     {
+      "artifactId": "archmap-v2",
+      "artifactName": "ArchMap v2 finite poset site artifact",
+      "schemaVersionName": "archmap/v2",
+      "artifactRole": "primary",
+      "ownerPhase": "ArchSig v0.4.0 Algebraic Geometry Measurement",
+      "status": "implemented",
+      "primaryDocs": [
+        "docs/tool/archsig_v0_4_0_algebraic_geometry_measurement_prd.md"
+      ],
+      "downstreamIssues": [],
+      "compatibilityBoundary": {
+        "fieldMappingPolicy": "ArchMap v2 records sources, subject/axis-decorated atoms, finite context posets, covers, and extractionDoctrineRef. Molecules are not a primary v2 field.",
+        "deprecatedFields": [],
+        "newRequiredAssumptions": [
+          "Required fields, observation families, law refs, or analysis axes change.",
+          "Evidence boundaries or non-conclusions are removed or weakened."
+        ],
+        "coverageExactnessBoundary": [
+          "Coverage and exactness are artifact-local and do not imply semantic completeness."
+        ],
+        "nonConclusions": [
+          "ArchMap v2 validation does not prove source extraction soundness, U-adequacy, exactness, Lean theorem discharge, or architecture lawfulness.",
+          "Contexts and covers are observation structure; measurement choices live in MeasurementProfile."
+        ]
+      }
+    },
+    {
       "artifactId": "law-policy",
       "artifactName": "Legacy LawPolicy v0 interpretation profile artifact",
       "schemaVersionName": "law-policy-v0",
@@ -141,6 +168,33 @@
         "nonConclusions": [
           "LawPolicy v1 selects evaluators; it does not define witness predicates, axis valuation, obstruction definitions, or Lean proofs.",
           "LawPolicy v1 validation does not run the v1 evaluator pipeline."
+        ]
+      }
+    },
+    {
+      "artifactId": "measurement-profile-v1",
+      "artifactName": "MeasurementProfile v1 AG evaluator selector",
+      "schemaVersionName": "measurement-profile/v1",
+      "artifactRole": "primary",
+      "ownerPhase": "ArchSig v0.4.0 Algebraic Geometry Measurement",
+      "status": "implemented",
+      "primaryDocs": [
+        "docs/tool/archsig_v0_4_0_algebraic_geometry_measurement_prd.md"
+      ],
+      "downstreamIssues": [],
+      "compatibilityBoundary": {
+        "fieldMappingPolicy": "MeasurementProfile v1 declares selected site, cover, coefficient, EffCoeff procedure, witness family, resolution selector, Dom/Zero/NonZero/Cert predicates, and five-valued verdict discipline.",
+        "deprecatedFields": [],
+        "newRequiredAssumptions": [
+          "Required fields, observation families, law refs, or analysis axes change.",
+          "Evidence boundaries or non-conclusions are removed or weakened."
+        ],
+        "coverageExactnessBoundary": [
+          "Coverage and exactness are artifact-local and do not imply semantic completeness."
+        ],
+        "nonConclusions": [
+          "MeasurementProfile selects a bounded measurement regime; it does not prove adequacy or theorem hypotheses.",
+          "Profile absence for AG evaluators is a validation error, not an unmeasured zero result."
         ]
       }
     },
@@ -226,6 +280,33 @@
       }
     },
     {
+      "artifactId": "normalized-archmap-v2",
+      "artifactName": "Normalized ArchMap v2 finite poset site artifact",
+      "schemaVersionName": "normalized-archmap/v2",
+      "artifactRole": "primary",
+      "ownerPhase": "ArchSig v0.4.0 Algebraic Geometry Measurement",
+      "status": "implemented",
+      "primaryDocs": [
+        "docs/tool/archsig_v0_4_0_algebraic_geometry_measurement_prd.md"
+      ],
+      "downstreamIssues": [],
+      "compatibilityBoundary": {
+        "fieldMappingPolicy": "Normalized ArchMap v2 is the deterministic finite-poset-site presentation produced from ArchMap v2 under a declared extraction doctrine fingerprint.",
+        "deprecatedFields": [],
+        "newRequiredAssumptions": [
+          "Required fields, observation families, law refs, or analysis axes change.",
+          "Evidence boundaries or non-conclusions are removed or weakened."
+        ],
+        "coverageExactnessBoundary": [
+          "Coverage and exactness are artifact-local and do not imply semantic completeness."
+        ],
+        "nonConclusions": [
+          "Normalized ArchMap v2 does not prove source extraction soundness.",
+          "A8 determinism is relative to the declared extraction doctrine fingerprint."
+        ]
+      }
+    },
+    {
       "artifactId": "typed-evaluator-results-v1",
       "artifactName": "Typed evaluator results v1",
       "schemaVersionName": "typed-evaluator-results/v1",
@@ -277,6 +358,34 @@
           "Architecture distance is a diagnostic ArchSig artifact, not a Lean theorem proof.",
           "Typed evaluator violation counts are not substituted for architecture distance.",
           "Blocked or unmeasured distance readings are not measured zero."
+        ]
+      }
+    },
+    {
+      "artifactId": "archsig-measurement-packet-v1",
+      "artifactName": "ArchSig measurement packet v1",
+      "schemaVersionName": "archsig-measurement-packet/v1",
+      "artifactRole": "primary",
+      "ownerPhase": "ArchSig v0.4.0 Algebraic Geometry Measurement",
+      "status": "implemented",
+      "primaryDocs": [
+        "docs/tool/archsig_v0_4_0_algebraic_geometry_measurement_prd.md"
+      ],
+      "downstreamIssues": [],
+      "compatibilityBoundary": {
+        "fieldMappingPolicy": "ArchSig measurement packet v1 carries profile, structuralVerdict, computedInvariants, analyticReadings, assumptions, and nonConclusions as the AG Definition 11.1-aligned output contract.",
+        "deprecatedFields": [],
+        "newRequiredAssumptions": [
+          "Required fields, observation families, law refs, or analysis axes change.",
+          "Evidence boundaries or non-conclusions are removed or weakened."
+        ],
+        "coverageExactnessBoundary": [
+          "Coverage and exactness are artifact-local and do not imply semantic completeness."
+        ],
+        "nonConclusions": [
+          "Structural verdicts are limited to measured_zero, measured_nonzero, unmeasured, unknown, and not_computed.",
+          "Analytic readings do not generate structural verdicts unless a certified evaluator explicitly emits one.",
+          "Theorem-candidate readings are analytic-only."
         ]
       }
     },

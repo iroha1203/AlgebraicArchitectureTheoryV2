@@ -15,7 +15,8 @@ use crate::{
     LAW_POLICY_SCHEMA_VERSION, LAW_POLICY_V1_SCHEMA, LAW_POLICY_VALIDATION_REPORT_SCHEMA_VERSION,
     LawPolicyDocumentV0, LawPolicyDocumentV1, LawPolicyValidationInputV0,
     LawPolicyValidationInputV1, LawPolicyValidationReportV0, LawPolicyValidationReportV1,
-    LawPolicyValidationSummaryV0, LawPolicyValidationSummaryV1, ValidationCheck, ValidationExample,
+    LawPolicyValidationSummaryV0, LawPolicyValidationSummaryV1, MEASUREMENT_PROFILE_V1_SCHEMA,
+    MeasurementProfileV1, ValidationCheck, ValidationExample,
 };
 
 pub fn validate_law_policy_v1_report(
@@ -30,6 +31,9 @@ pub fn validate_law_policy_v1_report(
         check_v1_basis(policy),
         check_v1_pack_and_evaluator_vocabulary(policy),
         check_v1_distance_profile_selector(policy),
+        check_v1_measurement_profile_selector(policy),
+        check_v1_measurement_profiles(policy),
+        check_v1_ag_evaluators_require_profile(policy),
         check_v1_replacement_registry_manifest(),
     ];
     let failed_check_count = count_checks(&checks, "fail");
@@ -243,6 +247,142 @@ fn check_v1_distance_profile_selector(policy: &LawPolicyDocumentV1) -> Validatio
         "LawPolicy v1 selects an optional distance profile by ref instead of embedding a distance DSL",
         examples,
     )
+}
+
+fn check_v1_measurement_profile_selector(policy: &LawPolicyDocumentV1) -> ValidationCheck {
+    let mut examples = Vec::new();
+    if let Some(profile_ref) = policy.measurement_profile_ref.as_deref() {
+        if profile_ref.trim().is_empty() {
+            examples.push(generic_validation_example(
+                "measurementProfileRef",
+                "empty",
+                "measurement profile ref must be non-empty when present",
+            ));
+        } else if !policy
+            .measurement_profiles
+            .iter()
+            .any(|profile| profile.profile_id == profile_ref)
+        {
+            examples.push(generic_validation_example(
+                "measurementProfileRef",
+                profile_ref,
+                "measurement profile ref must resolve to measurementProfiles[].profileId",
+            ));
+        }
+    }
+    check_examples(
+        "law-policy-v1-measurement-profile-selector",
+        "LawPolicy v1 can select a first-class MeasurementProfile for AG evaluators",
+        examples,
+    )
+}
+
+fn check_v1_measurement_profiles(policy: &LawPolicyDocumentV1) -> ValidationCheck {
+    let mut examples = Vec::new();
+    examples.extend(
+        duplicates(
+            policy
+                .measurement_profiles
+                .iter()
+                .map(|profile| profile.profile_id.as_str()),
+        )
+        .into_iter()
+        .map(|duplicate| {
+            generic_validation_example(
+                "measurementProfiles[].profileId",
+                &duplicate,
+                "measurement profile id must be unique",
+            )
+        }),
+    );
+    for profile in &policy.measurement_profiles {
+        measurement_profile_errors(profile, &mut examples);
+    }
+    check_examples(
+        "law-policy-v1-measurement-profile-shape",
+        "MeasurementProfile v1 declares site, cover, coefficients, predicates, certificates, and verdict discipline",
+        examples,
+    )
+}
+
+fn measurement_profile_errors(
+    profile: &MeasurementProfileV1,
+    examples: &mut Vec<ValidationExample>,
+) {
+    if profile.schema != MEASUREMENT_PROFILE_V1_SCHEMA {
+        examples.push(generic_validation_example(
+            &profile.profile_id,
+            &profile.schema,
+            "measurement profile schema must be measurement-profile/v1",
+        ));
+    }
+    for (field, value) in [
+        ("profileId", profile.profile_id.as_str()),
+        ("siteRef", profile.site_ref.as_str()),
+        ("coverRef", profile.cover_ref.as_str()),
+        ("coefficient", profile.coefficient.as_str()),
+        ("effCoeff", profile.eff_coeff.as_str()),
+        ("resolutionSelector", profile.resolution_selector.as_str()),
+        ("domain", profile.domain.as_str()),
+        ("zeroPredicate", profile.zero_predicate.as_str()),
+        ("nonZeroPredicate", profile.non_zero_predicate.as_str()),
+        ("certSelector", profile.cert_selector.as_str()),
+        ("verdictDiscipline", profile.verdict_discipline.as_str()),
+    ] {
+        if value.trim().is_empty() {
+            examples.push(generic_validation_example(
+                &format!("measurementProfiles[].{field}"),
+                "empty",
+                "measurement profile field must be non-empty",
+            ));
+        }
+    }
+    if profile.verdict_discipline != "five-valued-structural-verdict@1" {
+        examples.push(generic_validation_example(
+            &profile.profile_id,
+            &profile.verdict_discipline,
+            "verdict discipline must select the v0.4.0 five-valued structural verdict rule",
+        ));
+    }
+    for witness in &profile.witness_family {
+        if witness.law.trim().is_empty() || witness.variable.trim().is_empty() {
+            examples.push(generic_validation_example(
+                &profile.profile_id,
+                "witnessFamily",
+                "witness family entries must carry law and square-free variable refs",
+            ));
+        }
+    }
+}
+
+fn check_v1_ag_evaluators_require_profile(policy: &LawPolicyDocumentV1) -> ValidationCheck {
+    let ag_evaluator_count = policy
+        .policies
+        .iter()
+        .filter(|entry| {
+            entry
+                .evaluator
+                .as_deref()
+                .is_some_and(is_ag_measurement_evaluator)
+        })
+        .count();
+    let mut examples = Vec::new();
+    if ag_evaluator_count > 0 && policy.measurement_profile_ref.is_none() {
+        examples.push(generic_validation_example(
+            "measurementProfileRef",
+            "missing",
+            "AG evaluator execution requires a selected MeasurementProfile",
+        ));
+    }
+    check_examples(
+        "law-policy-v1-ag-evaluator-profile-required",
+        "AG evaluator selectors fail closed when MeasurementProfile is absent",
+        examples,
+    )
+}
+
+fn is_ag_measurement_evaluator(evaluator: &str) -> bool {
+    evaluator.starts_with("ag.")
 }
 
 fn check_v1_replacement_registry_manifest() -> ValidationCheck {

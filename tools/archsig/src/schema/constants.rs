@@ -1,13 +1,17 @@
 pub const ARCHMAP_SCHEMA_VERSION: &str = "archmap-observation-map-v0";
 pub const ARCHMAP_V1_SCHEMA: &str = "archmap/v1";
+pub const ARCHMAP_V2_SCHEMA: &str = "archmap/v2";
 pub const ARCHMAP_SOURCE_INVENTORY_SCHEMA_VERSION: &str = "archmap-source-inventory-v0";
 pub const ARCHMAP_VALIDATION_REPORT_SCHEMA_VERSION: &str = "archmap-validation-report-v0";
 pub const LAW_POLICY_SCHEMA_VERSION: &str = "law-policy-v0";
 pub const LAW_POLICY_V1_SCHEMA: &str = "law-policy/v1";
 pub const LAW_POLICY_VALIDATION_REPORT_SCHEMA_VERSION: &str = "law-policy-validation-report-v0";
 pub const NORMALIZED_ARCHMAP_V1_SCHEMA: &str = "normalized-archmap/v1";
+pub const NORMALIZED_ARCHMAP_V2_SCHEMA: &str = "normalized-archmap/v2";
+pub const MEASUREMENT_PROFILE_V1_SCHEMA: &str = "measurement-profile/v1";
 pub const TYPED_EVALUATOR_RESULTS_V1_SCHEMA: &str = "typed-evaluator-results/v1";
 pub const ARCHITECTURE_DISTANCE_V1_SCHEMA: &str = "archsig-architecture-distance/v1";
+pub const ARCHSIG_MEASUREMENT_PACKET_V1_SCHEMA: &str = "archsig-measurement-packet/v1";
 pub const ARCHSIG_ANALYSIS_PACKET_SCHEMA_VERSION: &str = "archsig-analysis-packet-v0";
 pub const ARCHSIG_ANALYSIS_PACKET_V1_SCHEMA: &str = "archsig-analysis-packet/v1";
 pub const ARCHSIG_ANALYSIS_PACKET_VALIDATION_REPORT_SCHEMA_VERSION: &str =

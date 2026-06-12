@@ -207,7 +207,7 @@ fn solid_pack_entries() -> Vec<LawPolicyPackEntryV1> {
 }
 
 fn evaluator_manifests() -> Vec<LawEvaluatorManifestV1> {
-    vec![
+    let mut manifests = vec![
         solid_manifest(
             "solid.single-responsibility@1",
             "solid.single-responsibility",
@@ -259,7 +259,48 @@ fn evaluator_manifests() -> Vec<LawEvaluatorManifestV1> {
             detail_output_refs: vec!["typedResults[].evidenceRefs".to_string()],
             negative_fixtures: vec!["law_policy_unknown_evaluator.json".to_string()],
         },
-    ]
+    ];
+    manifests.extend([
+        ag_manifest("ag.cech-obstruction@1", "ag.cech-obstruction"),
+        ag_manifest("ag.square-free-repair@1", "ag.square-free-repair"),
+        ag_manifest("ag.law-conflict-tor@1", "ag.law-conflict-tor"),
+        ag_manifest("ag.sheaf-laplacian@1", "ag.sheaf-laplacian"),
+        ag_manifest("ag.period-stokes@1", "ag.period-stokes"),
+        ag_manifest("ag.support-transfer@1", "ag.support-transfer"),
+    ]);
+    manifests
+}
+
+fn ag_manifest(evaluator_id: &str, law_id: &str) -> LawEvaluatorManifestV1 {
+    LawEvaluatorManifestV1 {
+        evaluator_id: evaluator_id.to_string(),
+        law_id: law_id.to_string(),
+        required_atom_constructors: Vec::new(),
+        required_predicates: Vec::new(),
+        required_molecule_condition:
+            "archmap/v2 contexts and covers replace molecule primary input".to_string(),
+        scope_filtering_rule: "selected finite poset site from MeasurementProfile".to_string(),
+        missing_blocker_rule:
+            "missing MeasurementProfile fails validation before evaluator execution".to_string(),
+        pass_criteria: "schema foundation only; concrete AG evaluator verdicts are follow-up work"
+            .to_string(),
+        violation_criteria:
+            "schema foundation only; concrete AG evaluator verdicts are follow-up work".to_string(),
+        typed_result_schema: "archsig-measurement-packet/v1".to_string(),
+        distance_contribution: "structural verdict and analytic readings remain separated"
+            .to_string(),
+        summary_output_refs: vec![
+            "/structuralVerdict".to_string(),
+            "/analyticReadings".to_string(),
+        ],
+        detail_output_refs: vec![
+            "/assumptions".to_string(),
+            "/computedInvariants".to_string(),
+        ],
+        negative_fixtures: vec![
+            "tests/fixtures/ag_measurement/law_policy_missing_profile.json".to_string(),
+        ],
+    }
 }
 
 fn replacement_manifest(

@@ -9,6 +9,27 @@ The previous mixed tool documents are archived under:
 
 Current source-of-truth boundaries:
 
+- ArchMap v2 is the v0.4.0 AG measurement input contract. It records
+  `sources`, subject / axis-decorated `atoms`, finite-poset `contexts`,
+  selected `covers`, and `extractionDoctrineRef`. `molecules` are not a v2
+  primary field; context membership replaces them for AG measurement.
+- MeasurementProfile v1 is the first-class selected measurement regime. It
+  declares site / cover refs, coefficient, EffCoeff procedure, witness family,
+  resolution selector, Dom / Zero / NonZero / Cert predicates, and the
+  five-valued verdict discipline. AG evaluators fail validation when this
+  profile is not selected.
+- ArchSig v0.4.0 emits `archsig-measurement-packet/v1` as the AG measurement
+  packet. The packet has `profile`, `structuralVerdict`,
+  `computedInvariants`, `analyticReadings`, `assumptions`, and
+  `nonConclusions`. Structural verdicts are limited to `measured_zero`,
+  `measured_nonzero`, `unmeasured`, `unknown`, and `not_computed`; analytic
+  readings, including theorem-candidate readings, are separate from structural
+  verdicts.
+- The v0.4.0 assumption ledger records checked / assumed / violated CBI
+  assumptions once at packet time. If an assumption is violated, dependent AG
+  structural verdicts fall to `not_computed`; conclusion text stays
+  ledger-relative and conclusion-first.
+
 - ArchMap v1 starts from supplied `archmap/v1` evidence read as a source-grounded Atom map. It records only `sources`, `atoms`, and `molecules` as primary input. Removed v0 fields such as `semanticObservations`, `projectionInfo`, `operationSquareEvidence`, `concernHints`, and `observationGaps` are not v1 input surfaces.
 - ArchMap authoring should produce the source-grounded atoms and explicit molecule membership needed for the requested ArchSig measurement. Private, unavailable, and out-of-scope evidence belongs in authoring notes, CI reports, or review notes, not ArchMap primary JSON.
 - ArchMapStore is the forward storage boundary for ArchMap history. It models `ArchMapDelta`, `ArchMapCommit`, `ArchMapSnapshot`, `ArchMapIndex`, and validation reports so PR review can read ArchMap-level deltas instead of raw language diffs. Raw diffs are not ArchSig PR-review inputs.

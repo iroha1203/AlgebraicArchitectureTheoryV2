@@ -9,8 +9,38 @@ pub struct LawPolicyDocumentV1 {
     pub id: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub distance_profile_ref: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub measurement_profile_ref: Option<String>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub measurement_profiles: Vec<MeasurementProfileV1>,
     #[serde(default)]
     pub policies: Vec<LawPolicyEntryV1>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct MeasurementProfileV1 {
+    pub schema: String,
+    pub profile_id: String,
+    pub site_ref: String,
+    pub cover_ref: String,
+    pub coefficient: String,
+    pub eff_coeff: String,
+    #[serde(default)]
+    pub witness_family: Vec<MeasurementProfileWitnessV1>,
+    pub resolution_selector: String,
+    pub domain: String,
+    pub zero_predicate: String,
+    pub non_zero_predicate: String,
+    pub cert_selector: String,
+    pub verdict_discipline: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct MeasurementProfileWitnessV1 {
+    pub law: String,
+    pub variable: String,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
