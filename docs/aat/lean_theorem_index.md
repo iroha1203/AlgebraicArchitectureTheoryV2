@@ -4442,12 +4442,12 @@ File: `Formal/AG.lean`, `Formal/AG/Atom/Atom.lean`, `Formal/AG/Atom/Axioms.lean`
 `Formal/AG/Atom/Configuration.lean`, `Formal/AG/Atom/ArchitectureObject.lean`,
 `Formal/AG/Atom/Invariant.lean`, `Formal/AG/Atom/Law.lean`,
 `Formal/AG/Atom/Obstruction.lean`, `Formal/AG/Atom/LawfulnessZero.lean`,
-`Formal/AG/Atom/ThreeReading.lean`, `Formal/AG/Atom/ObjectAlgebra.lean`.
+`Formal/AG/Atom/ThreeReading.lean`, `Formal/AG/Atom/ObjectAlgebra.lean`,
+`Formal/AG/Atom/AATCore.lean`.
 
 PRD-1 [第I部 Atom・対象・法則](lean_ag_part_1_atoms_objects_laws_prd.md) の
-AC1/R0、AC2/R1、AC3/R1、AC4/R2、AC5/R3、AC6/R4、AC7/R5、AC8/R6、AC9/R7、AC10/R8、AC11/R8、AC12/R9 に対応する初期 Atom entrypoint である。`Formal/Arch` は import せず、
-AG 版 AAT の namespace を `AAT.AG` として分離する。この節は Part I の最下層索引であり、
-定理10.5 の完了宣言ではない。
+AC1/R0、AC2/R1、AC3/R1、AC4/R2、AC5/R3、AC6/R4、AC7/R5、AC8/R6、AC9/R7、AC10/R8、AC11/R8、AC12/R9、AC13/R9 に対応する初期 Atom entrypoint である。`Formal/Arch` は import せず、
+AG 版 AAT の namespace を `AAT.AG` として分離する。
 
 | 本文ラベル | Lean 名 | 種別 | 意味 | Status |
 | --- | --- | --- | --- | --- |
@@ -4467,12 +4467,13 @@ AG 版 AAT の namespace を `AAT.AG` として分離する。この節は Part 
 | `I.命題9.1 / 9.2 / 定理9.3` | `AAT.AG.ObstructionSound`, `AAT.AG.ObstructionComplete`, `AAT.AG.law_holds_iff_omega_zero`, `AAT.AG.lawfulness_iff_omegaU_zero` | `def` / `theorem` | selected law valuation の soundness / completeness predicate、per-law `L(A) ↔ omega_L(A)=0`、required law universe と zero-reflecting aggregation に相対化した `Lawfulness A LU ↔ omegaU ... A = 0`。三述語一致は主張しない。 | `defined only` / `proved` |
 | `I.定理9.3 後段` | `AAT.AG.ThreeReadingAgreementAssumptions`, `ThreeReadingAgreementAssumptions.semanticLawful_iff_noRequiredObstruction`, `ThreeReadingAgreementAssumptions.noRequiredObstruction_iff_requiredSignatureAxesZero`, `ThreeReadingAgreementAssumptions.semanticLawful_iff_requiredSignatureAxesZero`, `ThreeReadingAgreementAssumptions.threeReadingAgreement` | `structure` / `theorem` | witness completeness、axis exactness、coverage、selected reading exactness を明示 field として持つ package から、`SemanticLawful(A,U)` / `NoRequiredObstruction(A,W)` / `RequiredSignatureAxesZero(A,S)` の三読み一致を取り出す。 | `defined only` / `proved` |
 | `I.定義10.1-10.3 / 命題10.4` | `AAT.AG.Operation`, `AAT.AG.ArchitectureSignature`, `AAT.AG.ObjectAlgebra`, `AAT.AG.OperationRole`, `Operation.objectMap_apply`, `Operation.configurationMap_apply`, `Operation.PreservesFunctionInvariant`, `Operation.PreservesPredicateInvariant`, `Operation.ReflectsObstruction`, `Operation.RepairsObstruction`, `Operation.ExtendsAtomFamily`, `Operation.SynthesizesLawfulObject`, `Operation.TranslatesRepresentation`, `Operation.preservesFunctionInvariant_apply`, `Operation.preservesPredicateInvariant_apply`, `Operation.reflectsObstruction_witness`, `Operation.repairsObstruction_apply`, `Operation.extendsAtomFamily_apply`, `Operation.synthesizesLawfulObject_apply`, `Operation.translatesRepresentation_witness`, `ArchitectureSignature.read`, `ArchitectureSignature.selected_axis`, `ArchitectureSignature.read_eq_coordinate`, `ObjectAlgebra.getObject`, `ObjectAlgebra.getOperation`, `ObjectAlgebra.getOperationSource`, `ObjectAlgebra.getOperationTarget`, `ObjectAlgebra.getObstructionCircuit`, `ObjectAlgebra.getObject_eq`, `ObjectAlgebra.getOperation_eq`, `ObjectAlgebra.operation_source_object`, `ObjectAlgebra.operation_target_object`, `ObjectAlgebra.getObstructionCircuit_eq` | `structure` / `inductive` / `def` / `theorem` | Object Algebra の Obj / Op / Inv / Law / Ob / Sig、source / target と configuration map を持つ operation、Op の source / target が Obj 内にあること、多軸 signature、operation の preservation / reflection / repair / extension / synthesis / translation の六役割 predicate と accessor 補題。定理10.5 は主張しない。 | `defined only` / `proved` |
+| `I.定理10.5` | `AAT.AG.AATCorePackage`, `AATCorePackage.identityOperation`, `AATCorePackage.objectAlgebraOfComponents`, `AATCorePackage.ofComponents`, `AATCorePackage.exists_ofComponents`, `AATCorePackage.axioms_eq`, `AATCorePackage.family_eq`, `AATCorePackage.configuration_eq`, `AATCorePackage.object_eq`, `AATCorePackage.configuration_family`, `AATCorePackage.object_configuration`, `AATCorePackage.lawUniverse_eq`, `AATCorePackage.obstructionLaw_eq`, `AATCorePackage.obstructionCircuit_eq`, `AATCorePackage.signature_eq`, `AATCorePackage.algebra_eq`, `AATCorePackage.algebra_object`, `AATCorePackage.algebra_lawUniverse`, `AATCorePackage.algebra_signature`, `AATCorePackage.algebra_operation_source`, `AATCorePackage.algebra_operation_target` | `structure` / `def` / `theorem` | AtomAxiomSystem と R1-R7 / AC12 の component を受け取り、configuration-family / object-configuration 整合性付きで singleton ObjectAlgebra に束ねた AAT Core theorem package を構成する。`exists_ofComponents` は obstruction circuit component を heterogeneous equality として含む。`#print axioms` で `exists_ofComponents` / `ofComponents` / `algebra_object` が追加公理に依存しないことを確認済み。 | `defined only` / `proved` |
 
 Non-conclusions: この bootstrap は `Formal/AG` の Atom carrier、A0-A8 package、A9、
 AtomFamily / closure、Configuration / Molecule、ArchitectureObject / Atom-Origin、
 Invariant / preservation、Law / Lawfulness、Obstruction / Valuation、定理9.3 本体と後段三読み一致、
-Object Algebra / operation / signature / operation role predicate の入口であり、
-定理10.5 AAT Core、有限モデルは後続 Issue の対象である。
+Object Algebra / operation / signature / operation role predicate、定理10.5 AAT Core theorem package の入口であり、
+有限モデルは後続 Issue の対象である。
 
 ## Reverse-Import Theorem Packages
 
