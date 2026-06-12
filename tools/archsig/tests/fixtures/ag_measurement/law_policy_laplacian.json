@@ -1,0 +1,40 @@
+{
+  "schema": "law-policy/v1",
+  "id": "ag-sheaf-laplacian-policy",
+  "measurementProfileRef": "profile:ag-sheaf-laplacian@1",
+  "measurementProfiles": [
+    {
+      "schema": "measurement-profile/v1",
+      "profileId": "profile:ag-sheaf-laplacian@1",
+      "siteRef": "archmap:/contexts",
+      "coverRef": "cover:sheaf-laplacian",
+      "coefficient": "R",
+      "effCoeff": "finite-linear-algebra@1",
+      "witnessFamily": [
+        {
+          "law": "ag.sheaf-laplacian",
+          "variable": "cell:left"
+        },
+        {
+          "law": "ag.sheaf-laplacian",
+          "variable": "cell:right"
+        }
+      ],
+      "resolutionSelector": "cellular-laplacian@1",
+      "domain": "finite-poset-site",
+      "zeroPredicate": "analytic-zero@1",
+      "nonZeroPredicate": "analytic-positive@1",
+      "certSelector": "analytic-reading@1",
+      "verdictDiscipline": "five-valued-structural-verdict@1"
+    }
+  ],
+  "policies": [
+    {
+      "law": "ag.sheaf-laplacian",
+      "evaluator": "ag.sheaf-laplacian@1",
+      "basis": ["policy-basis:layering"],
+      "scope": ["src/"],
+      "severity": "medium"
+    }
+  ]
+}

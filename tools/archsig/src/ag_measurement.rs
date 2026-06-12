@@ -18,6 +18,7 @@ const VERDICTS: [&str; 5] = [
 ];
 const MAX_SQUARE_FREE_WITNESS_VARIABLES: usize = 12;
 const MAX_TOR_WITNESS_VARIABLES: usize = 12;
+const MAX_LAPLACIAN_CELLS: usize = 16;
 
 pub fn selected_measurement_profile_v1(
     policy: &LawPolicyDocumentV1,
@@ -48,6 +49,16 @@ pub fn build_foundation_measurement_packet_v1(
         "coverCount": normalized.summary.cover_count,
         "doctrineFingerprint": normalized.summary.doctrine_fingerprint
     })];
+    let mut analytic_readings = vec![AgAnalyticReadingV1 {
+        reading_id: "candidate-regime:stability-placeholder".to_string(),
+        evaluator: "ag.foundation@1".to_string(),
+        value: json!({
+            "state": "not_evaluated",
+            "reason": "theorem-candidate readings are analytic-only until a follow-up evaluator computes them"
+        }),
+        regime: Some("theorem-candidate".to_string()),
+        structural_verdict_ref: None,
+    }];
     let mut assumptions = vec![
         AgAssumptionLedgerEntryV1 {
             theorem_ref: "part8/4.2".to_string(),
@@ -150,6 +161,28 @@ pub fn build_foundation_measurement_packet_v1(
                 },
                 reason: Some(measurement.reason),
             });
+        } else if evaluator == "ag.sheaf-laplacian@1" {
+            validate_laplacian_profile_v1(&profile)?;
+            let measurement = evaluate_sheaf_laplacian_v1(normalized, &profile)?;
+            computed_invariants.extend(measurement.computed_invariants);
+            analytic_readings.extend(measurement.analytic_readings);
+            assumptions.extend(measurement.assumptions);
+            structural_verdict.push(AgStructuralVerdictV1 {
+                evaluator: evaluator.to_string(),
+                law: entry
+                    .law
+                    .clone()
+                    .unwrap_or_else(|| "ag.sheaf-laplacian".to_string()),
+                verdict: measurement.verdict,
+                verdict_data: AgVerdictDataV1 {
+                    in_scope: true,
+                    zero: false,
+                    non_zero: false,
+                    method_status: measurement.method_status,
+                    cert_ref: measurement.cert_ref,
+                },
+                reason: Some(measurement.reason),
+            });
         } else {
             structural_verdict.push(AgStructuralVerdictV1 {
                 evaluator: evaluator.to_string(),
@@ -175,16 +208,7 @@ pub fn build_foundation_measurement_packet_v1(
         profile,
         structural_verdict,
         computed_invariants,
-        analytic_readings: vec![AgAnalyticReadingV1 {
-            reading_id: "candidate-regime:stability-placeholder".to_string(),
-            evaluator: "ag.foundation@1".to_string(),
-            value: json!({
-                "state": "not_evaluated",
-                "reason": "theorem-candidate readings are analytic-only until a follow-up evaluator computes them"
-            }),
-            regime: Some("theorem-candidate".to_string()),
-            structural_verdict_ref: None,
-        }],
+        analytic_readings,
         assumptions,
         non_conclusions: vec![
             format!(
@@ -263,6 +287,33 @@ struct TorConflictClassV1 {
     right_law: String,
     right_generator_ref: String,
     context_refs: Vec<String>,
+    source_refs: Vec<String>,
+}
+
+#[derive(Debug, Clone)]
+struct LaplacianMeasurementV1 {
+    verdict: String,
+    method_status: String,
+    cert_ref: Option<String>,
+    reason: String,
+    computed_invariants: Vec<Value>,
+    analytic_readings: Vec<AgAnalyticReadingV1>,
+    assumptions: Vec<AgAssumptionLedgerEntryV1>,
+}
+
+#[derive(Debug, Clone)]
+struct LaplacianCellV1 {
+    cell_id: String,
+    value: f64,
+    atom_ref: String,
+    source_refs: Vec<String>,
+}
+
+#[derive(Debug, Clone)]
+struct LaplacianEdgeV1 {
+    source: String,
+    target: String,
+    atom_ref: String,
     source_refs: Vec<String>,
 }
 
@@ -535,6 +586,167 @@ fn evaluate_law_conflict_tor_v1(
             ]
         })],
         assumptions: tor_assumptions(profile, Some(&ambient), "checked"),
+    })
+}
+
+fn evaluate_sheaf_laplacian_v1(
+    normalized: &NormalizedArchMapV2,
+    profile: &MeasurementProfileV1,
+) -> Result<LaplacianMeasurementV1, String> {
+    let selected_contexts = selected_cover_contexts(normalized, profile)
+        .into_iter()
+        .collect::<BTreeSet<_>>();
+    let witness_variables = laplacian_witness_variables(profile);
+    let cells = laplacian_cells(normalized, &selected_contexts, &witness_variables)?;
+    let edges = laplacian_edges(normalized, &selected_contexts)?;
+    let observed_cells = cells
+        .iter()
+        .map(|cell| cell.cell_id.clone())
+        .collect::<BTreeSet<_>>();
+    let missing_cells = witness_variables
+        .iter()
+        .filter(|cell| !observed_cells.contains(*cell))
+        .cloned()
+        .collect::<Vec<_>>();
+    if cells.is_empty() || edges.is_empty() || !missing_cells.is_empty() {
+        let reason = if missing_cells.is_empty() {
+            "cellular_model_missing".to_string()
+        } else {
+            format!("cellular_model_missing:{}", missing_cells.join(","))
+        };
+        return Ok(LaplacianMeasurementV1 {
+            verdict: "not_computed".to_string(),
+            method_status: "cellular_model_missing".to_string(),
+            cert_ref: None,
+            reason: "selected cellular cochains or boundaries are missing; no Laplacian analytic reading is computed".to_string(),
+            computed_invariants: vec![json!({
+                "invariantId": format!("sheaf-laplacian:{}", profile.profile_id),
+                "evaluator": "ag.sheaf-laplacian@1",
+                "status": "not_computed",
+                "reason": reason
+            })],
+            analytic_readings: Vec::new(),
+            assumptions: laplacian_assumptions(profile, "violated"),
+        });
+    }
+
+    let cell_ids = cells
+        .iter()
+        .map(|cell| cell.cell_id.clone())
+        .collect::<Vec<_>>();
+    let cell_index = cell_ids
+        .iter()
+        .enumerate()
+        .map(|(index, cell)| (cell.clone(), index))
+        .collect::<BTreeMap<_, _>>();
+    for edge in &edges {
+        if !cell_index.contains_key(&edge.source) || !cell_index.contains_key(&edge.target) {
+            return Err(format!(
+                "ag.sheaf-laplacian@1 boundary {} references cells outside selected cochain family",
+                edge.atom_ref
+            ));
+        }
+    }
+    let laplacian = graph_laplacian(&cell_ids, &cell_index, &edges);
+    let cochain = cells.iter().map(|cell| cell.value).collect::<Vec<_>>();
+    let components = graph_components(cell_ids.len(), &cell_index, &edges);
+    let harmonic = harmonic_projection(&cochain, &components);
+    let exact = vec![0.0; cochain.len()];
+    let coexact = cochain
+        .iter()
+        .zip(harmonic.iter())
+        .map(|(value, harmonic)| value - harmonic)
+        .collect::<Vec<_>>();
+    let harmonic_mass = squared_norm(&harmonic);
+    let distance_to_flatness = squared_norm(&coexact);
+    let eigenvalues = jacobi_eigenvalues_symmetric(laplacian.clone());
+    let spectral_gap = eigenvalues
+        .iter()
+        .copied()
+        .filter(|value| *value > 1.0e-9)
+        .fold(None, |best: Option<f64>, value| {
+            Some(best.map_or(value, |best| best.min(value)))
+        })
+        .unwrap_or(0.0);
+    let curvature_transfer = laplacian
+        .iter()
+        .enumerate()
+        .map(|(index, row)| {
+            let value = row
+                .iter()
+                .zip(cochain.iter())
+                .map(|(entry, cochain)| entry * cochain)
+                .sum::<f64>();
+            json!({
+                "cell": cell_ids[index],
+                "curvature": round_f64(value)
+            })
+        })
+        .collect::<Vec<_>>();
+    let source_refs = cells
+        .iter()
+        .flat_map(|cell| cell.source_refs.iter())
+        .chain(edges.iter().flat_map(|edge| edge.source_refs.iter()))
+        .cloned()
+        .collect::<BTreeSet<_>>()
+        .into_iter()
+        .collect::<Vec<_>>();
+
+    let analytic_value = json!({
+        "readingKind": "cellular-sheaf-laplacian@1",
+        "selectedCoverRef": profile.cover_ref,
+        "cells": cell_ids,
+        "cochain": rounded_vec(&cochain),
+        "hodgeDecomposition": {
+            "exact": rounded_vec(&exact),
+            "harmonic": rounded_vec(&harmonic),
+            "coexact": rounded_vec(&coexact)
+        },
+        "harmonicMass": round_f64(harmonic_mass),
+        "distanceToFlatness": round_f64(distance_to_flatness),
+        "spectralGap": round_f64(spectral_gap),
+        "curvatureTransferSpectrum": curvature_transfer,
+        "nonConclusion": "near-flat analytic values are not structural lawfulness verdicts"
+    });
+
+    Ok(LaplacianMeasurementV1 {
+        verdict: "unknown".to_string(),
+        method_status: "finite_laplacian_analytic_reading_computed".to_string(),
+        cert_ref: None,
+        reason: "finite Laplacian / Hodge values were computed as analytic readings; structural lawfulness is not concluded".to_string(),
+        computed_invariants: vec![json!({
+            "invariantId": format!("sheaf-laplacian:{}", profile.profile_id),
+            "evaluator": "ag.sheaf-laplacian@1",
+            "method": "finite-graph-laplacian@1",
+            "selectedCoverRef": profile.cover_ref,
+            "cellRefs": cells.iter().map(|cell| json!({
+                "cell": cell.cell_id,
+                "cochainAtomRef": cell.atom_ref
+            })).collect::<Vec<_>>(),
+            "laplacianMatrix": rounded_matrix(&laplacian),
+            "sourceRefs": source_refs
+        })],
+        analytic_readings: vec![
+            AgAnalyticReadingV1 {
+                reading_id: format!("analytic:sheaf-laplacian:{}", profile.profile_id),
+                evaluator: "ag.sheaf-laplacian@1".to_string(),
+                value: analytic_value,
+                regime: Some("analytic-measurement".to_string()),
+                structural_verdict_ref: None,
+            },
+            AgAnalyticReadingV1 {
+                reading_id: format!("theorem-candidate:harmonic-debt:{}", profile.profile_id),
+                evaluator: "ag.foundation@1".to_string(),
+                value: json!({
+                    "readingKind": "harmonic-debt-minimality-candidate@1",
+                    "essentialRepairLowerBound": round_f64(distance_to_flatness.sqrt()),
+                    "reason": "harmonic debt minimality remains theorem-candidate and cannot generate a structural verdict"
+                }),
+                regime: Some("theorem-candidate".to_string()),
+                structural_verdict_ref: None,
+            },
+        ],
+        assumptions: laplacian_assumptions(profile, "checked"),
     })
 }
 
@@ -896,6 +1108,336 @@ fn tor_witness_variables(profile: &MeasurementProfileV1) -> Vec<String> {
         .collect::<BTreeSet<_>>()
         .into_iter()
         .collect()
+}
+
+fn validate_laplacian_profile_v1(profile: &MeasurementProfileV1) -> Result<(), String> {
+    let expected = [
+        ("coefficient", profile.coefficient.as_str(), "R"),
+        (
+            "effCoeff",
+            profile.eff_coeff.as_str(),
+            "finite-linear-algebra@1",
+        ),
+        (
+            "resolutionSelector",
+            profile.resolution_selector.as_str(),
+            "cellular-laplacian@1",
+        ),
+        (
+            "zeroPredicate",
+            profile.zero_predicate.as_str(),
+            "analytic-zero@1",
+        ),
+        (
+            "nonZeroPredicate",
+            profile.non_zero_predicate.as_str(),
+            "analytic-positive@1",
+        ),
+        (
+            "certSelector",
+            profile.cert_selector.as_str(),
+            "analytic-reading@1",
+        ),
+    ];
+    for (field, actual, expected) in expected {
+        if actual != expected {
+            return Err(format!(
+                "ag.sheaf-laplacian@1 requires MeasurementProfile {field}={expected}, found {actual}"
+            ));
+        }
+    }
+    if laplacian_witness_variables(profile).is_empty() {
+        return Err(format!(
+            "ag.sheaf-laplacian@1 requires MeasurementProfile {} witnessFamily law ag.sheaf-laplacian",
+            profile.profile_id
+        ));
+    }
+    if laplacian_witness_variables(profile).len() > MAX_LAPLACIAN_CELLS {
+        return Err(format!(
+            "ag.sheaf-laplacian@1 supports at most {MAX_LAPLACIAN_CELLS} witness cells for finite Laplacian enumeration"
+        ));
+    }
+    Ok(())
+}
+
+fn laplacian_witness_variables(profile: &MeasurementProfileV1) -> Vec<String> {
+    profile
+        .witness_family
+        .iter()
+        .filter(|witness| witness.law == "ag.sheaf-laplacian")
+        .map(|witness| witness.variable.clone())
+        .collect::<BTreeSet<_>>()
+        .into_iter()
+        .collect()
+}
+
+fn laplacian_cells(
+    normalized: &NormalizedArchMapV2,
+    selected_contexts: &BTreeSet<String>,
+    witness_variables: &[String],
+) -> Result<Vec<LaplacianCellV1>, String> {
+    let witness_set = witness_variables.iter().cloned().collect::<BTreeSet<_>>();
+    let mut cells = Vec::new();
+    for atom in normalized
+        .atoms
+        .iter()
+        .filter(|atom| atom.axis == "laplacian" && atom.predicate == "cellularCochain")
+        .filter(|atom| atom_belongs_to_selected_context(atom, selected_contexts))
+    {
+        if !witness_set.contains(&atom.subject) {
+            return Err(format!(
+                "ag.sheaf-laplacian@1 cochain {} uses cell outside witnessFamily: {}",
+                atom.normalized_atom_id, atom.subject
+            ));
+        }
+        let raw = atom.object.as_deref().ok_or_else(|| {
+            format!(
+                "ag.sheaf-laplacian@1 cochain {} requires numeric object",
+                atom.normalized_atom_id
+            )
+        })?;
+        let value = raw.parse::<f64>().map_err(|_| {
+            format!(
+                "ag.sheaf-laplacian@1 cochain {} has non-numeric object {raw}",
+                atom.normalized_atom_id
+            )
+        })?;
+        if !value.is_finite() {
+            return Err(format!(
+                "ag.sheaf-laplacian@1 cochain {} requires finite numeric object",
+                atom.normalized_atom_id
+            ));
+        }
+        if cells
+            .iter()
+            .any(|cell: &LaplacianCellV1| cell.cell_id == atom.subject)
+        {
+            return Err(format!(
+                "ag.sheaf-laplacian@1 duplicate cellular cochain for {}",
+                atom.subject
+            ));
+        }
+        cells.push(LaplacianCellV1 {
+            cell_id: atom.subject.clone(),
+            value,
+            atom_ref: atom.normalized_atom_id.clone(),
+            source_refs: atom.source_refs.clone(),
+        });
+    }
+    cells.sort_by(|left, right| left.cell_id.cmp(&right.cell_id));
+    Ok(cells)
+}
+
+fn laplacian_edges(
+    normalized: &NormalizedArchMapV2,
+    selected_contexts: &BTreeSet<String>,
+) -> Result<Vec<LaplacianEdgeV1>, String> {
+    let mut edges = Vec::new();
+    for atom in normalized
+        .atoms
+        .iter()
+        .filter(|atom| atom.axis == "laplacian" && atom.predicate == "cellularBoundary")
+        .filter(|atom| atom_belongs_to_selected_context(atom, selected_contexts))
+    {
+        let target = atom.object.as_deref().ok_or_else(|| {
+            format!(
+                "ag.sheaf-laplacian@1 boundary {} requires target cell object",
+                atom.normalized_atom_id
+            )
+        })?;
+        edges.push(LaplacianEdgeV1 {
+            source: atom.subject.clone(),
+            target: target.to_string(),
+            atom_ref: atom.normalized_atom_id.clone(),
+            source_refs: atom.source_refs.clone(),
+        });
+    }
+    edges.sort_by(|left, right| {
+        left.source
+            .cmp(&right.source)
+            .then_with(|| left.target.cmp(&right.target))
+            .then_with(|| left.atom_ref.cmp(&right.atom_ref))
+    });
+    Ok(edges)
+}
+
+fn graph_laplacian(
+    cell_ids: &[String],
+    cell_index: &BTreeMap<String, usize>,
+    edges: &[LaplacianEdgeV1],
+) -> Vec<Vec<f64>> {
+    let mut matrix = vec![vec![0.0; cell_ids.len()]; cell_ids.len()];
+    for edge in edges {
+        let source = cell_index[&edge.source];
+        let target = cell_index[&edge.target];
+        if source == target {
+            continue;
+        }
+        matrix[source][source] += 1.0;
+        matrix[target][target] += 1.0;
+        matrix[source][target] -= 1.0;
+        matrix[target][source] -= 1.0;
+    }
+    matrix
+}
+
+fn graph_components(
+    cell_count: usize,
+    cell_index: &BTreeMap<String, usize>,
+    edges: &[LaplacianEdgeV1],
+) -> Vec<Vec<usize>> {
+    let mut adjacency = vec![Vec::<usize>::new(); cell_count];
+    for edge in edges {
+        let source = cell_index[&edge.source];
+        let target = cell_index[&edge.target];
+        adjacency[source].push(target);
+        adjacency[target].push(source);
+    }
+    let mut seen = vec![false; cell_count];
+    let mut components = Vec::new();
+    for start in 0..cell_count {
+        if seen[start] {
+            continue;
+        }
+        let mut stack = vec![start];
+        let mut component = Vec::new();
+        seen[start] = true;
+        while let Some(node) = stack.pop() {
+            component.push(node);
+            for next in &adjacency[node] {
+                if !seen[*next] {
+                    seen[*next] = true;
+                    stack.push(*next);
+                }
+            }
+        }
+        component.sort();
+        components.push(component);
+    }
+    components
+}
+
+fn harmonic_projection(values: &[f64], components: &[Vec<usize>]) -> Vec<f64> {
+    let mut harmonic = vec![0.0; values.len()];
+    for component in components {
+        let average =
+            component.iter().map(|index| values[*index]).sum::<f64>() / component.len() as f64;
+        for index in component {
+            harmonic[*index] = average;
+        }
+    }
+    harmonic
+}
+
+fn squared_norm(values: &[f64]) -> f64 {
+    values.iter().map(|value| value * value).sum()
+}
+
+fn jacobi_eigenvalues_symmetric(mut matrix: Vec<Vec<f64>>) -> Vec<f64> {
+    let n = matrix.len();
+    if n == 0 {
+        return Vec::new();
+    }
+    for _ in 0..64 {
+        let mut p = 0;
+        let mut q = 0;
+        let mut max_value = 0.0;
+        for i in 0..n {
+            for j in (i + 1)..n {
+                let value = matrix[i][j].abs();
+                if value > max_value {
+                    max_value = value;
+                    p = i;
+                    q = j;
+                }
+            }
+        }
+        if max_value < 1.0e-10 {
+            break;
+        }
+        let tau = (matrix[q][q] - matrix[p][p]) / (2.0 * matrix[p][q]);
+        let t = if tau >= 0.0 {
+            1.0 / (tau + (1.0 + tau * tau).sqrt())
+        } else {
+            -1.0 / (-tau + (1.0 + tau * tau).sqrt())
+        };
+        let c = 1.0 / (1.0 + t * t).sqrt();
+        let s = t * c;
+        let app = matrix[p][p];
+        let aqq = matrix[q][q];
+        let apq = matrix[p][q];
+        matrix[p][p] = c * c * app - 2.0 * s * c * apq + s * s * aqq;
+        matrix[q][q] = s * s * app + 2.0 * s * c * apq + c * c * aqq;
+        matrix[p][q] = 0.0;
+        matrix[q][p] = 0.0;
+        for r in 0..n {
+            if r == p || r == q {
+                continue;
+            }
+            let arp = matrix[r][p];
+            let arq = matrix[r][q];
+            matrix[r][p] = c * arp - s * arq;
+            matrix[p][r] = matrix[r][p];
+            matrix[r][q] = s * arp + c * arq;
+            matrix[q][r] = matrix[r][q];
+        }
+    }
+    let mut eigenvalues = (0..n)
+        .map(|index| round_f64(matrix[index][index]))
+        .collect::<Vec<_>>();
+    eigenvalues.sort_by(|left, right| left.total_cmp(right));
+    eigenvalues
+}
+
+fn rounded_vec(values: &[f64]) -> Vec<Value> {
+    values
+        .iter()
+        .map(|value| json!(round_f64(*value)))
+        .collect()
+}
+
+fn rounded_matrix(values: &[Vec<f64>]) -> Vec<Vec<Value>> {
+    values.iter().map(|row| rounded_vec(row)).collect()
+}
+
+fn round_f64(value: f64) -> f64 {
+    if value.abs() < 1.0e-9 {
+        0.0
+    } else {
+        (value * 1_000_000.0).round() / 1_000_000.0
+    }
+}
+
+fn laplacian_assumptions(
+    profile: &MeasurementProfileV1,
+    cellular_model_status: &str,
+) -> Vec<AgAssumptionLedgerEntryV1> {
+    vec![
+        AgAssumptionLedgerEntryV1 {
+            theorem_ref: "part8/8.1".to_string(),
+            assumption: "finite cellular measurement model selected by MeasurementProfile"
+                .to_string(),
+            status: cellular_model_status.to_string(),
+            checked_by: (cellular_model_status == "checked")
+                .then(|| format!("measurement-profile:{}.witnessFamily", profile.profile_id)),
+            assumed_by: (cellular_model_status != "checked")
+                .then(|| format!("measurement-profile:{}", profile.profile_id)),
+        },
+        AgAssumptionLedgerEntryV1 {
+            theorem_ref: "part8/8.5".to_string(),
+            assumption: "finite Hodge decomposition is analytic reading only".to_string(),
+            status: "checked".to_string(),
+            checked_by: Some("finite-graph-laplacian@1".to_string()),
+            assumed_by: None,
+        },
+        AgAssumptionLedgerEntryV1 {
+            theorem_ref: "part8/8.6".to_string(),
+            assumption: "harmonic debt minimality remains theorem-candidate".to_string(),
+            status: "assumed".to_string(),
+            checked_by: None,
+            assumed_by: Some(format!("measurement-profile:{}", profile.profile_id)),
+        },
+    ]
 }
 
 fn tor_common_ambient(

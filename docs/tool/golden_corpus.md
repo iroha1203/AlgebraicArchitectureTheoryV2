@@ -34,9 +34,11 @@ covers rather than molecule-primary ArchMaps.
 - `tools/archsig/tests/fixtures/ag_measurement/archmap_v2_cech_h1_visible.json`
 - `tools/archsig/tests/fixtures/ag_measurement/archmap_v2_square_free_repair.json`
 - `tools/archsig/tests/fixtures/ag_measurement/archmap_v2_law_conflict_tor.json`
+- `tools/archsig/tests/fixtures/ag_measurement/archmap_v2_sheaf_laplacian.json`
 - `tools/archsig/tests/fixtures/ag_measurement/law_policy_ag.json`
 - `tools/archsig/tests/fixtures/ag_measurement/law_policy_square_free.json`
 - `tools/archsig/tests/fixtures/ag_measurement/law_policy_tor.json`
+- `tools/archsig/tests/fixtures/ag_measurement/law_policy_laplacian.json`
 - `tools/archsig/tests/fixtures/ag_measurement/law_policy_missing_profile.json`
 
 The executable lock is
@@ -65,6 +67,18 @@ source refs. The companion
 `cli_analyze_v2_law_conflict_tor_without_common_ambient_is_not_computed`
 regression keeps missing ambient evidence as `not_computed` /
 `no_common_ambient`, not measured zero or conflict absence.
+
+The sheaf Laplacian lock is
+`cli_analyze_v2_sheaf_laplacian_outputs_analytic_hodge_reading`. It fixes the
+R6 analytic path: a finite cellular boundary yields a graph Laplacian, Hodge
+decomposition, harmonic mass, distance-to-flatness, spectral gap, curvature
+transfer spectrum, and essential repair lower bound. These are analytic
+readings only; near-flat analytic values are not structural lawfulness verdicts.
+The companion regressions
+`cli_analyze_v2_sheaf_laplacian_without_boundary_is_not_computed`,
+`cli_analyze_v2_sheaf_laplacian_missing_witness_cell_is_not_computed`, and
+`cli_analyze_v2_sheaf_laplacian_rejects_unknown_cell` keep missing cellular
+model evidence and witness mismatches from becoming measured zero.
 
 ## V1 Positive Fixtures
 

@@ -1,0 +1,78 @@
+{
+  "schema": "archmap/v2",
+  "id": "ag-measurement-sheaf-laplacian-fixture",
+  "extractionDoctrineRef": {
+    "doctrineId": "doctrine:ag-fixture@1",
+    "fingerprint": "sha256:ag-fixture-doctrine",
+    "components": ["V", "Gamma", "R", "rho", "E", "N"]
+  },
+  "sources": {
+    "src:left-cell": {
+      "kind": "policy",
+      "path": "docs/tool/archsig_v0_4_0_algebraic_geometry_measurement_prd.md",
+      "section": "R6-left"
+    },
+    "src:right-cell": {
+      "kind": "policy",
+      "path": "docs/tool/archsig_v0_4_0_algebraic_geometry_measurement_prd.md",
+      "section": "R6-right"
+    },
+    "src:boundary": {
+      "kind": "policy",
+      "path": "docs/tool/archsig_v0_4_0_algebraic_geometry_measurement_prd.md",
+      "section": "R6-boundary"
+    },
+    "src:cover": {
+      "kind": "policy",
+      "path": "docs/tool/archsig_v0_4_0_algebraic_geometry_measurement_prd.md",
+      "section": "R6"
+    }
+  },
+  "atoms": [
+    {
+      "id": "atom:laplacian-left-cochain",
+      "kind": "semantic",
+      "subject": "cell:left",
+      "object": "1",
+      "axis": "laplacian",
+      "predicate": "cellularCochain",
+      "refs": ["src:left-cell"]
+    },
+    {
+      "id": "atom:laplacian-right-cochain",
+      "kind": "semantic",
+      "subject": "cell:right",
+      "object": "0",
+      "axis": "laplacian",
+      "predicate": "cellularCochain",
+      "refs": ["src:right-cell"]
+    },
+    {
+      "id": "atom:laplacian-boundary",
+      "kind": "relation",
+      "subject": "cell:left",
+      "object": "cell:right",
+      "axis": "laplacian",
+      "predicate": "cellularBoundary",
+      "refs": ["src:boundary"]
+    }
+  ],
+  "contexts": [
+    {
+      "id": "ctx:sheaf-laplacian-local",
+      "atoms": [
+        "atom:laplacian-left-cochain",
+        "atom:laplacian-right-cochain",
+        "atom:laplacian-boundary"
+      ],
+      "refs": ["src:cover"]
+    }
+  ],
+  "covers": [
+    {
+      "id": "cover:sheaf-laplacian",
+      "contexts": ["ctx:sheaf-laplacian-local"],
+      "refs": ["src:cover"]
+    }
+  ]
+}
