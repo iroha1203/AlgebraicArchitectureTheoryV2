@@ -542,13 +542,15 @@ Issue [#1913](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/
 では `Formal/AG` の bootstrap と `I.定義1.1` の Atom carrier entrypoint を追加した。
 Issue [#1918](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1918)
 では A0-A8 を structure field として束ね、A3 ext 補題と A8 一意性 theorem を追加した。
+Issue [#1922](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1922)
+では命題A9の観測不完全性と存在一意性の分離を有限例 theorem として追加した。
 これは定理9.3 / 定理10.5 の証明済み主張ではない。
 
 | 対象 | 現在の扱い | 残す境界 |
 | --- | --- | --- |
-| `I.定義1.1` Atom carrier | `defined only`. `Formal/AG/Atom/Atom.lean` が `AAT.AG.AtomRecord`, `AAT.AG.AtomCarrier`, `AAT.AG.AtomCarrier.record` を持つ。 | 命題A9、AtomFamily、Configuration、Lawfulness-Zero Obstruction、AAT Core、有限モデルはまだ proved claim ではない。 |
-| `I.公理A0-A8` Atom system package | `defined only` / `proved` for A3 and A8 accessors. `Formal/AG/Atom/Axioms.lean` が `AAT.AG.AtomAxiomSystem`, `AAT.AG.AtomAxiomSystem.ext`, `AAT.AG.ExtractionDoctrine.atomize_unique`, `AAT.AG.AtomAxiomSystem.doctrine_family_unique` を持つ。 | A4/R3 との具体接続、命題A9 の観測不完全性 example theorem、R2 以降の AtomFamily / Configuration 実装は後続 Issue に残る。 |
-| 命題A9 観測不完全性と存在一意性 | `future proof obligation`. | 観測写像、projection、非単射観測 example theorem、canonical family の存在一意性との分離を後続 Issue で証明する。 |
+| `I.定義1.1` Atom carrier | `defined only`. `Formal/AG/Atom/Atom.lean` が `AAT.AG.AtomRecord`, `AAT.AG.AtomCarrier`, `AAT.AG.AtomCarrier.record` を持つ。 | AtomFamily、Configuration、Lawfulness-Zero Obstruction、AAT Core、有限モデルはまだ proved claim ではない。 |
+| `I.公理A0-A8` Atom system package | `defined only` / `proved` for A3 and A8 accessors. `Formal/AG/Atom/Axioms.lean` が `AAT.AG.AtomAxiomSystem`, `AAT.AG.AtomAxiomSystem.ext`, `AAT.AG.ExtractionDoctrine.atomize_unique`, `AAT.AG.AtomAxiomSystem.doctrine_family_unique` を持つ。 | A4/R3 との具体接続、R2 以降の AtomFamily / Configuration 実装は後続 Issue に残る。 |
+| `I.命題A9` 観測不完全性と存在一意性 | `defined only` / `proved`. `Formal/AG/Atom/Observation.lean` が `ObservationModel`, `ObservationProjection`, `ReconstructionAttempt`, `no_exact_reconstruction_of_nonInjective`, `A9Example.projection`, `A9Example.reconstruction`, `A9Example.noninjective_atom_observation`, `A9Example.unobserved_atom_exists`, `A9Example.noninjective_family_observation`, `A9Example.reconstruction_not_exact`, `A9Example.canonical_family_unique`, `A9Example.observation_incompleteness_coexists_with_a8` を持つ。 | R2 以降の本格的な AtomFamily / closure / Configuration API との接続は後続 Issue に残る。 |
 | 命題5.3 Atom-Origin | `future proof obligation`. | ArchitectureObject / Generated Object の定義が入った後で、生成関係から証明する。 |
 | 例8.3 / 例8.4 obstruction example theorem | `future proof obligation`. | R7 と R10 の有限モデルが入るまで proved claim として扱わない。 |
 | 定理9.3 Lawfulness-Zero Obstruction | `future proof obligation`. | soundness、completeness、zero-reflecting aggregation、三読み一致の明示仮定が入るまで proved claim として扱わない。 |
