@@ -4442,10 +4442,10 @@ File: `Formal/AG.lean`, `Formal/AG/Atom/Atom.lean`, `Formal/AG/Atom/Axioms.lean`
 `Formal/AG/Atom/Configuration.lean`, `Formal/AG/Atom/ArchitectureObject.lean`,
 `Formal/AG/Atom/Invariant.lean`, `Formal/AG/Atom/Law.lean`,
 `Formal/AG/Atom/Obstruction.lean`, `Formal/AG/Atom/LawfulnessZero.lean`,
-`Formal/AG/Atom/ThreeReading.lean`.
+`Formal/AG/Atom/ThreeReading.lean`, `Formal/AG/Atom/ObjectAlgebra.lean`.
 
 PRD-1 [第I部 Atom・対象・法則](lean_ag_part_1_atoms_objects_laws_prd.md) の
-AC1/R0、AC2/R1、AC3/R1、AC4/R2、AC5/R3、AC6/R4、AC7/R5、AC8/R6、AC9/R7、AC10/R8、AC11/R8 に対応する初期 Atom entrypoint である。`Formal/Arch` は import せず、
+AC1/R0、AC2/R1、AC3/R1、AC4/R2、AC5/R3、AC6/R4、AC7/R5、AC8/R6、AC9/R7、AC10/R8、AC11/R8、AC12/R9 に対応する初期 Atom entrypoint である。`Formal/Arch` は import せず、
 AG 版 AAT の namespace を `AAT.AG` として分離する。この節は Part I の最下層索引であり、
 定理10.5 の完了宣言ではない。
 
@@ -4466,11 +4466,13 @@ AG 版 AAT の namespace を `AAT.AG` として分離する。この節は Part 
 | `I.定義8.1 / 8.2 / 8.5` | `AAT.AG.Obstruction`, `AAT.AG.ObstructionCircuit`, `AAT.AG.ObstructionValueDomain`, `AAT.AG.ObstructionValuation`, `AAT.AG.ZeroReflectingAggregation`, `AAT.AG.ZeroReflectingListAggregation`, `LawUniverse.RequiredIndex`, `AAT.AG.FiniteIndexEnumeration`, `ZeroReflectingListAggregation.toIndexed`, `AAT.AG.omegaU`, `AAT.AG.omegaU_zero_iff_required`, `ObstructionCircuit.relation_supported_holds`, `ObstructionCircuit.finite_marker`, `ObstructionCircuit.law_failure_holds`, `ObstructionValueDomain.nat`, `ObstructionValueDomain.bool`, `ObstructionValueDomain.NonnegativeWeight`, `ObstructionValueDomain.NonnegativeWeight.zero`, `ObstructionValueDomain.NonnegativeWeight.sup`, `ObstructionValueDomain.nonnegativeWeight`, `ObstructionAggregation.natSum`, `ObstructionAggregation.boolOr`, `ObstructionAggregation.weightSup`, `ObstructionAggregation.natSum_eq_zero_iff`, `ObstructionAggregation.boolOr_eq_false_iff`, `ObstructionAggregation.weightSup_eq_zero_iff`, `ObstructionAggregation.natSumListAggregation`, `ObstructionAggregation.boolOrListAggregation`, `ObstructionAggregation.weightSupListAggregation` | `structure` / `def` / `theorem` | Obstruction witness、finite marker 付き obstruction circuit、zero / positive / dichotomy / no-cancellation を持つ値域、law-indexed valuation、required law index に相対化した aggregate valuation、finite-list aggregation から selected finite index aggregation への bridge、count sum / boolean disjunction / nonnegative-weight sup の finite-list zero-reflecting theorem。定理9.3 は主張しない。 | `defined only` / `proved` |
 | `I.命題9.1 / 9.2 / 定理9.3` | `AAT.AG.ObstructionSound`, `AAT.AG.ObstructionComplete`, `AAT.AG.law_holds_iff_omega_zero`, `AAT.AG.lawfulness_iff_omegaU_zero` | `def` / `theorem` | selected law valuation の soundness / completeness predicate、per-law `L(A) ↔ omega_L(A)=0`、required law universe と zero-reflecting aggregation に相対化した `Lawfulness A LU ↔ omegaU ... A = 0`。三述語一致は主張しない。 | `defined only` / `proved` |
 | `I.定理9.3 後段` | `AAT.AG.ThreeReadingAgreementAssumptions`, `ThreeReadingAgreementAssumptions.semanticLawful_iff_noRequiredObstruction`, `ThreeReadingAgreementAssumptions.noRequiredObstruction_iff_requiredSignatureAxesZero`, `ThreeReadingAgreementAssumptions.semanticLawful_iff_requiredSignatureAxesZero`, `ThreeReadingAgreementAssumptions.threeReadingAgreement` | `structure` / `theorem` | witness completeness、axis exactness、coverage、selected reading exactness を明示 field として持つ package から、`SemanticLawful(A,U)` / `NoRequiredObstruction(A,W)` / `RequiredSignatureAxesZero(A,S)` の三読み一致を取り出す。 | `defined only` / `proved` |
+| `I.定義10.1-10.3 / 命題10.4` | `AAT.AG.Operation`, `AAT.AG.ArchitectureSignature`, `AAT.AG.ObjectAlgebra`, `AAT.AG.OperationRole`, `Operation.objectMap_apply`, `Operation.configurationMap_apply`, `Operation.PreservesFunctionInvariant`, `Operation.PreservesPredicateInvariant`, `Operation.ReflectsObstruction`, `Operation.RepairsObstruction`, `Operation.ExtendsAtomFamily`, `Operation.SynthesizesLawfulObject`, `Operation.TranslatesRepresentation`, `Operation.preservesFunctionInvariant_apply`, `Operation.preservesPredicateInvariant_apply`, `Operation.reflectsObstruction_witness`, `Operation.repairsObstruction_apply`, `Operation.extendsAtomFamily_apply`, `Operation.synthesizesLawfulObject_apply`, `Operation.translatesRepresentation_witness`, `ArchitectureSignature.read`, `ArchitectureSignature.selected_axis`, `ArchitectureSignature.read_eq_coordinate`, `ObjectAlgebra.getObject`, `ObjectAlgebra.getOperation`, `ObjectAlgebra.getOperationSource`, `ObjectAlgebra.getOperationTarget`, `ObjectAlgebra.getObstructionCircuit`, `ObjectAlgebra.getObject_eq`, `ObjectAlgebra.getOperation_eq`, `ObjectAlgebra.operation_source_object`, `ObjectAlgebra.operation_target_object`, `ObjectAlgebra.getObstructionCircuit_eq` | `structure` / `inductive` / `def` / `theorem` | Object Algebra の Obj / Op / Inv / Law / Ob / Sig、source / target と configuration map を持つ operation、Op の source / target が Obj 内にあること、多軸 signature、operation の preservation / reflection / repair / extension / synthesis / translation の六役割 predicate と accessor 補題。定理10.5 は主張しない。 | `defined only` / `proved` |
 
 Non-conclusions: この bootstrap は `Formal/AG` の Atom carrier、A0-A8 package、A9、
 AtomFamily / closure、Configuration / Molecule、ArchitectureObject / Atom-Origin、
-Invariant / preservation、Law / Lawfulness、Obstruction / Valuation、定理9.3 本体と後段三読み一致の入口であり、
-AAT Core、有限モデルは後続 Issue の対象である。
+Invariant / preservation、Law / Lawfulness、Obstruction / Valuation、定理9.3 本体と後段三読み一致、
+Object Algebra / operation / signature / operation role predicate の入口であり、
+定理10.5 AAT Core、有限モデルは後続 Issue の対象である。
 
 ## Reverse-Import Theorem Packages
 

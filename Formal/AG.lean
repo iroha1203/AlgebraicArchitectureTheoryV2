@@ -9,3 +9,4 @@ import Formal.AG.Atom.Law
 import Formal.AG.Atom.Obstruction
 import Formal.AG.Atom.LawfulnessZero
 import Formal.AG.Atom.ThreeReading
+import Formal.AG.Atom.ObjectAlgebra
