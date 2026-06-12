@@ -676,6 +676,349 @@ fn cli_analyze_v2_square_free_without_generators_returns_measured_zero() {
 }
 
 #[test]
+fn cli_analyze_v2_law_conflict_tor_outputs_conflict_classes() {
+    let out_dir = temp_dir("ag-measurement-law-conflict-tor");
+    let root = ag_measurement_root();
+
+    run_sig0(&[
+        "analyze",
+        "--archmap",
+        root.join("archmap_v2_law_conflict_tor.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--law-policy",
+        root.join("law_policy_tor.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--out-dir",
+        out_dir.to_str().expect("path is utf-8"),
+    ]);
+
+    let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
+    assert_eq!(
+        packet["structuralVerdict"][0]["evaluator"],
+        "ag.law-conflict-tor@1"
+    );
+    assert_eq!(
+        packet["structuralVerdict"][0]["verdict"],
+        "measured_nonzero"
+    );
+    assert_eq!(
+        packet["structuralVerdict"][0]["verdictData"]["methodStatus"],
+        "finite_monomial_tor_computed"
+    );
+    assert_eq!(
+        packet["structuralVerdict"][0]["verdictData"]["certRef"],
+        "atom:tor-common-ambient"
+    );
+    let tor = invariant_by_id(&packet, "law-conflict-tor:profile:ag-law-conflict-tor@1");
+    assert_eq!(
+        tor["commonAmbient"]["ambientRef"],
+        "ambient:checkout-inventory"
+    );
+    assert_eq!(
+        tor["lawConflicts"],
+        serde_json::json!([{
+            "conflictId": "LawConflict_1:1",
+            "degree": 1,
+            "support": ["x_checkout", "x_inventory", "x_payment"],
+            "sharedSupport": ["x_inventory"],
+            "leftLaw": "law:checkout",
+            "leftGeneratorRef": "atom:checkout-law-generator",
+            "rightLaw": "law:inventory",
+            "rightGeneratorRef": "atom:inventory-law-generator",
+            "contextRefs": ["ctx:tor-common-ambient"],
+            "sourceRefs": ["src:checkout-policy", "src:inventory-policy"]
+        }])
+    );
+    assert_eq!(
+        tor["torByDegree"],
+        serde_json::json!([{"degree": 1, "classCount": 1}])
+    );
+
+    let summary = read_json(&out_dir.join("archsig-analysis-summary.json"));
+    assert_eq!(
+        summary["conclusion"],
+        "MEASURED_AG_OBSTRUCTION_UNDER_PROFILE"
+    );
+}
+
+#[test]
+fn cli_analyze_v2_law_conflict_tor_disjoint_supports_are_measured_zero() {
+    let out_dir = temp_dir("ag-measurement-law-conflict-tor-disjoint");
+    let root = ag_measurement_root();
+    let mut archmap = read_json(&root.join("archmap_v2_law_conflict_tor.json"));
+    archmap["atoms"][1]["object"] = Value::String("x_checkout".to_string());
+    archmap["atoms"][2]["object"] = Value::String("x_payment".to_string());
+    let archmap_path = out_dir.join("archmap_v2_law_conflict_tor_disjoint.json");
+    fs::write(
+        &archmap_path,
+        serde_json::to_vec_pretty(&archmap).expect("archmap serializes"),
+    )
+    .expect("archmap fixture can be written");
+
+    run_sig0(&[
+        "analyze",
+        "--archmap",
+        archmap_path.to_str().expect("path is utf-8"),
+        "--law-policy",
+        root.join("law_policy_tor.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--out-dir",
+        out_dir.to_str().expect("path is utf-8"),
+    ]);
+
+    let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
+    assert_eq!(packet["structuralVerdict"][0]["verdict"], "measured_zero");
+    let tor = invariant_by_id(&packet, "law-conflict-tor:profile:ag-law-conflict-tor@1");
+    assert_eq!(
+        tor["lawConflicts"]
+            .as_array()
+            .expect("conflicts is array")
+            .len(),
+        0
+    );
+}
+
+#[test]
+fn cli_analyze_v2_law_conflict_tor_nested_common_factor_is_nonzero() {
+    let out_dir = temp_dir("ag-measurement-law-conflict-tor-nested");
+    let root = ag_measurement_root();
+    let mut archmap = read_json(&root.join("archmap_v2_law_conflict_tor.json"));
+    archmap["atoms"][1]["object"] = Value::String("x_inventory".to_string());
+    archmap["atoms"][2]["object"] = Value::String("x_inventory,x_payment".to_string());
+    let archmap_path = out_dir.join("archmap_v2_law_conflict_tor_nested.json");
+    fs::write(
+        &archmap_path,
+        serde_json::to_vec_pretty(&archmap).expect("archmap serializes"),
+    )
+    .expect("archmap fixture can be written");
+
+    run_sig0(&[
+        "analyze",
+        "--archmap",
+        archmap_path.to_str().expect("path is utf-8"),
+        "--law-policy",
+        root.join("law_policy_tor.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--out-dir",
+        out_dir.to_str().expect("path is utf-8"),
+    ]);
+
+    let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
+    assert_eq!(
+        packet["structuralVerdict"][0]["verdict"],
+        "measured_nonzero"
+    );
+    let tor = invariant_by_id(&packet, "law-conflict-tor:profile:ag-law-conflict-tor@1");
+    assert_eq!(
+        tor["lawConflicts"][0]["sharedSupport"],
+        serde_json::json!(["x_inventory"])
+    );
+}
+
+#[test]
+fn cli_analyze_v2_law_conflict_tor_rejects_generators_outside_ambient_pair() {
+    let out_dir = temp_dir("ag-measurement-law-conflict-tor-ambient-mismatch");
+    let root = ag_measurement_root();
+    let mut archmap = read_json(&root.join("archmap_v2_law_conflict_tor.json"));
+    archmap["atoms"][2]["subject"] = Value::String("law:shipping".to_string());
+    let archmap_path = out_dir.join("archmap_v2_law_conflict_tor_ambient_mismatch.json");
+    fs::write(
+        &archmap_path,
+        serde_json::to_vec_pretty(&archmap).expect("archmap serializes"),
+    )
+    .expect("archmap fixture can be written");
+
+    run_sig0_expect_code(
+        &[
+            "analyze",
+            "--archmap",
+            archmap_path.to_str().expect("path is utf-8"),
+            "--law-policy",
+            root.join("law_policy_tor.json")
+                .to_str()
+                .expect("path is utf-8"),
+            "--out-dir",
+            out_dir.to_str().expect("path is utf-8"),
+        ],
+        2,
+    );
+}
+
+#[test]
+fn cli_analyze_v2_law_conflict_tor_without_common_ambient_is_not_computed() {
+    let out_dir = temp_dir("ag-measurement-law-conflict-tor-no-ambient");
+    let root = ag_measurement_root();
+    let mut archmap = read_json(&root.join("archmap_v2_law_conflict_tor.json"));
+    archmap["atoms"] = Value::Array(
+        archmap["atoms"]
+            .as_array()
+            .expect("atoms is array")
+            .iter()
+            .filter(|atom| atom["predicate"] != "commonAmbient")
+            .cloned()
+            .collect(),
+    );
+    archmap["contexts"][0]["atoms"] = Value::Array(
+        archmap["contexts"][0]["atoms"]
+            .as_array()
+            .expect("context atoms is array")
+            .iter()
+            .filter(|atom| atom.as_str() != Some("atom:tor-common-ambient"))
+            .cloned()
+            .collect(),
+    );
+    let archmap_path = out_dir.join("archmap_v2_law_conflict_tor_no_ambient.json");
+    fs::write(
+        &archmap_path,
+        serde_json::to_vec_pretty(&archmap).expect("archmap serializes"),
+    )
+    .expect("archmap fixture can be written");
+
+    run_sig0(&[
+        "analyze",
+        "--archmap",
+        archmap_path.to_str().expect("path is utf-8"),
+        "--law-policy",
+        root.join("law_policy_tor.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--out-dir",
+        out_dir.to_str().expect("path is utf-8"),
+    ]);
+
+    let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
+    assert_eq!(packet["structuralVerdict"][0]["verdict"], "not_computed");
+    assert_eq!(
+        packet["structuralVerdict"][0]["verdictData"]["methodStatus"],
+        "no_common_ambient"
+    );
+    let tor = invariant_by_id(&packet, "law-conflict-tor:profile:ag-law-conflict-tor@1");
+    assert_eq!(tor["status"], "not_computed");
+    assert_eq!(tor["reason"], "no_common_ambient");
+}
+
+#[test]
+fn cli_analyze_v2_law_conflict_tor_requires_matching_witness_family() {
+    let out_dir = temp_dir("ag-measurement-law-conflict-tor-witness-family");
+    let root = ag_measurement_root();
+    let mut policy = read_json(&root.join("law_policy_tor.json"));
+    policy["measurementProfiles"][0]["witnessFamily"] = Value::Array(vec![]);
+    let policy_path = out_dir.join("law_policy_tor_missing_witness.json");
+    fs::write(
+        &policy_path,
+        serde_json::to_vec_pretty(&policy).expect("policy serializes"),
+    )
+    .expect("policy fixture can be written");
+
+    run_sig0_expect_code(
+        &[
+            "analyze",
+            "--archmap",
+            root.join("archmap_v2_law_conflict_tor.json")
+                .to_str()
+                .expect("path is utf-8"),
+            "--law-policy",
+            policy_path.to_str().expect("path is utf-8"),
+            "--out-dir",
+            out_dir.to_str().expect("path is utf-8"),
+        ],
+        2,
+    );
+}
+
+#[test]
+fn cli_analyze_v2_law_conflict_tor_rejects_unsupported_resolution_selector() {
+    let out_dir = temp_dir("ag-measurement-law-conflict-tor-bad-resolution");
+    let root = ag_measurement_root();
+    let mut policy = read_json(&root.join("law_policy_tor.json"));
+    policy["measurementProfiles"][0]["resolutionSelector"] =
+        Value::String("unsupported@1".to_string());
+    let policy_path = out_dir.join("law_policy_tor_bad_resolution.json");
+    fs::write(
+        &policy_path,
+        serde_json::to_vec_pretty(&policy).expect("policy serializes"),
+    )
+    .expect("policy fixture can be written");
+
+    run_sig0_expect_code(
+        &[
+            "analyze",
+            "--archmap",
+            root.join("archmap_v2_law_conflict_tor.json")
+                .to_str()
+                .expect("path is utf-8"),
+            "--law-policy",
+            policy_path.to_str().expect("path is utf-8"),
+            "--out-dir",
+            out_dir.to_str().expect("path is utf-8"),
+        ],
+        2,
+    );
+}
+
+#[test]
+fn cli_analyze_v2_law_conflict_tor_rejects_malformed_common_ambient_pair() {
+    let out_dir = temp_dir("ag-measurement-law-conflict-tor-bad-ambient");
+    let root = ag_measurement_root();
+    let mut archmap = read_json(&root.join("archmap_v2_law_conflict_tor.json"));
+    archmap["atoms"][0]["object"] = Value::String("law:checkout".to_string());
+    let archmap_path = out_dir.join("archmap_v2_law_conflict_tor_bad_ambient.json");
+    fs::write(
+        &archmap_path,
+        serde_json::to_vec_pretty(&archmap).expect("archmap serializes"),
+    )
+    .expect("archmap fixture can be written");
+
+    run_sig0_expect_code(
+        &[
+            "analyze",
+            "--archmap",
+            archmap_path.to_str().expect("path is utf-8"),
+            "--law-policy",
+            root.join("law_policy_tor.json")
+                .to_str()
+                .expect("path is utf-8"),
+            "--out-dir",
+            out_dir.to_str().expect("path is utf-8"),
+        ],
+        2,
+    );
+}
+
+#[test]
+fn cli_analyze_v2_law_conflict_tor_rejects_generator_outside_witness_family() {
+    let out_dir = temp_dir("ag-measurement-law-conflict-tor-unknown-variable");
+    let root = ag_measurement_root();
+    let mut archmap = read_json(&root.join("archmap_v2_law_conflict_tor.json"));
+    archmap["atoms"][1]["object"] = Value::String("x_unknown,x_inventory".to_string());
+    let archmap_path = out_dir.join("archmap_v2_law_conflict_tor_unknown_variable.json");
+    fs::write(
+        &archmap_path,
+        serde_json::to_vec_pretty(&archmap).expect("archmap serializes"),
+    )
+    .expect("archmap fixture can be written");
+
+    run_sig0_expect_code(
+        &[
+            "analyze",
+            "--archmap",
+            archmap_path.to_str().expect("path is utf-8"),
+            "--law-policy",
+            root.join("law_policy_tor.json")
+                .to_str()
+                .expect("path is utf-8"),
+            "--out-dir",
+            out_dir.to_str().expect("path is utf-8"),
+        ],
+        2,
+    );
+}
+
+#[test]
 fn cli_locks_ag_measurement_cech_h1_visible_golden_fixture() {
     let crate_root = Path::new(env!("CARGO_MANIFEST_DIR"));
     let repo_root = crate_root
@@ -743,6 +1086,40 @@ fn cli_locks_ag_measurement_square_free_golden_fixture() {
 }
 
 #[test]
+fn cli_locks_ag_measurement_law_conflict_tor_golden_fixture() {
+    let crate_root = Path::new(env!("CARGO_MANIFEST_DIR"));
+    let repo_root = crate_root
+        .parent()
+        .and_then(Path::parent)
+        .expect("crate root is tools/archsig inside repo");
+    let fixture = read_json(&ag_measurement_root().join("archmap_v2_law_conflict_tor.json"));
+    assert_eq!(fixture["schema"], "archmap/v2");
+    assert_eq!(fixture["id"], "ag-measurement-law-conflict-tor-fixture");
+    assert!(
+        fixture["atoms"]
+            .as_array()
+            .expect("atoms is array")
+            .iter()
+            .any(|atom| atom["axis"] == "tor" && atom["predicate"] == "commonAmbient"),
+        "AG Tor fixture must contain an explicit common ambient atom"
+    );
+
+    let golden_corpus = fs::read_to_string(repo_root.join("docs/tool/golden_corpus.md"))
+        .expect("golden corpus docs are readable");
+    for snippet in [
+        "archmap_v2_law_conflict_tor.json",
+        "law_policy_tor.json",
+        "cli_analyze_v2_law_conflict_tor_outputs_conflict_classes",
+        "cli_analyze_v2_law_conflict_tor_without_common_ambient_is_not_computed",
+    ] {
+        assert!(
+            golden_corpus.contains(snippet),
+            "AG golden corpus docs must mention {snippet}"
+        );
+    }
+}
+
+#[test]
 fn cli_analyze_v2_strict_distance_rejects_unmeasured_foundation_rows() {
     let out_dir = temp_dir("ag-measurement-strict");
     let root = ag_measurement_root();
@@ -751,8 +1128,8 @@ fn cli_analyze_v2_strict_distance_rejects_unmeasured_foundation_rows() {
         .as_array_mut()
         .expect("policies is array")
         .push(serde_json::json!({
-            "law": "ag.law-conflict-tor",
-            "evaluator": "ag.law-conflict-tor@1",
+            "law": "ag.sheaf-laplacian",
+            "evaluator": "ag.sheaf-laplacian@1",
             "basis": ["policy-basis:layering"],
             "scope": ["src/"],
             "severity": "medium"

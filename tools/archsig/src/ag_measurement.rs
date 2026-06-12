@@ -17,6 +17,7 @@ const VERDICTS: [&str; 5] = [
     "not_computed",
 ];
 const MAX_SQUARE_FREE_WITNESS_VARIABLES: usize = 12;
+const MAX_TOR_WITNESS_VARIABLES: usize = 12;
 
 pub fn selected_measurement_profile_v1(
     policy: &LawPolicyDocumentV1,
@@ -128,6 +129,27 @@ pub fn build_foundation_measurement_packet_v1(
                 },
                 reason: Some(measurement.reason),
             });
+        } else if evaluator == "ag.law-conflict-tor@1" {
+            validate_tor_profile_v1(&profile)?;
+            let measurement = evaluate_law_conflict_tor_v1(normalized, &profile)?;
+            computed_invariants.extend(measurement.computed_invariants);
+            assumptions.extend(measurement.assumptions);
+            structural_verdict.push(AgStructuralVerdictV1 {
+                evaluator: evaluator.to_string(),
+                law: entry
+                    .law
+                    .clone()
+                    .unwrap_or_else(|| "ag.law-conflict-tor".to_string()),
+                verdict: measurement.verdict,
+                verdict_data: AgVerdictDataV1 {
+                    in_scope: true,
+                    zero: measurement.zero,
+                    non_zero: measurement.non_zero,
+                    method_status: measurement.method_status,
+                    cert_ref: measurement.cert_ref,
+                },
+                reason: Some(measurement.reason),
+            });
         } else {
             structural_verdict.push(AgStructuralVerdictV1 {
                 evaluator: evaluator.to_string(),
@@ -199,6 +221,49 @@ struct SquareFreeCertificateV1 {
     cert_ref: String,
     nsdepth: usize,
     support_atom_refs: Vec<String>,
+}
+
+#[derive(Debug, Clone)]
+struct TorMeasurementV1 {
+    verdict: String,
+    zero: bool,
+    non_zero: bool,
+    method_status: String,
+    cert_ref: Option<String>,
+    reason: String,
+    computed_invariants: Vec<Value>,
+    assumptions: Vec<AgAssumptionLedgerEntryV1>,
+}
+
+#[derive(Debug, Clone)]
+struct TorCommonAmbientV1 {
+    ambient_ref: String,
+    atom_ref: String,
+    law_pair: Vec<String>,
+    source_refs: Vec<String>,
+}
+
+#[derive(Debug, Clone)]
+struct TorIdealGeneratorV1 {
+    law: String,
+    generator_id: String,
+    support: Vec<String>,
+    context_refs: Vec<String>,
+    source_refs: Vec<String>,
+}
+
+#[derive(Debug, Clone)]
+struct TorConflictClassV1 {
+    conflict_id: String,
+    degree: usize,
+    support: Vec<String>,
+    shared_support: Vec<String>,
+    left_law: String,
+    left_generator_ref: String,
+    right_law: String,
+    right_generator_ref: String,
+    context_refs: Vec<String>,
+    source_refs: Vec<String>,
 }
 
 fn evaluate_square_free_repair_v1(
@@ -332,6 +397,144 @@ fn evaluate_square_free_repair_v1(
                 ),
             },
         ],
+    })
+}
+
+fn evaluate_law_conflict_tor_v1(
+    normalized: &NormalizedArchMapV2,
+    profile: &MeasurementProfileV1,
+) -> Result<TorMeasurementV1, String> {
+    let selected_contexts = selected_cover_contexts(normalized, profile)
+        .into_iter()
+        .collect::<BTreeSet<_>>();
+    let witness_variables = tor_witness_variables(profile);
+    let ambient = tor_common_ambient(normalized, &selected_contexts)?;
+    let Some(ambient) = ambient else {
+        return Ok(TorMeasurementV1 {
+            verdict: "not_computed".to_string(),
+            zero: false,
+            non_zero: false,
+            method_status: "no_common_ambient".to_string(),
+            cert_ref: None,
+            reason: "common ambient pair is not supplied; no LawConflict comparison is computed"
+                .to_string(),
+            computed_invariants: vec![json!({
+                "invariantId": format!("law-conflict-tor:{}", profile.profile_id),
+                "evaluator": "ag.law-conflict-tor@1",
+                "method": "finite-monomial-tor@1",
+                "selectedCoverRef": profile.cover_ref,
+                "status": "not_computed",
+                "reason": "no_common_ambient"
+            })],
+            assumptions: tor_assumptions(profile, None, "violated"),
+        });
+    };
+
+    let generators = tor_ideal_generators(normalized, &selected_contexts, &witness_variables)?;
+    let law_order = ambient.law_pair.clone();
+    let selected_laws = generators
+        .iter()
+        .map(|generator| generator.law.clone())
+        .collect::<BTreeSet<_>>()
+        .into_iter()
+        .collect::<Vec<_>>();
+    let ambient_laws = law_order.iter().cloned().collect::<BTreeSet<_>>();
+    let outside_ambient = selected_laws
+        .iter()
+        .filter(|law| !ambient_laws.contains(*law))
+        .cloned()
+        .collect::<Vec<_>>();
+    if !outside_ambient.is_empty() {
+        return Err(format!(
+            "ag.law-conflict-tor@1 selected law generators outside common ambient pair: {}",
+            outside_ambient.join(",")
+        ));
+    }
+    if selected_laws.len() != 2 || selected_laws != law_order {
+        return Err(format!(
+            "ag.law-conflict-tor@1 requires generators for exactly the common ambient law pair {}, found {}",
+            law_order.join(","),
+            selected_laws.join(",")
+        ));
+    }
+    let conflicts = tor_conflict_classes(&generators, &law_order[0], &law_order[1]);
+    let has_conflict = !conflicts.is_empty();
+    let law_ideals = law_order
+        .iter()
+        .map(|law| {
+            json!({
+                "law": law,
+                "generators": generators.iter()
+                    .filter(|generator| &generator.law == law)
+                    .map(|generator| json!({
+                        "generatorId": generator.generator_id,
+                        "support": generator.support,
+                        "contextRefs": generator.context_refs,
+                        "sourceRefs": generator.source_refs
+                    }))
+                    .collect::<Vec<_>>()
+            })
+        })
+        .collect::<Vec<_>>();
+    let conflict_json = conflicts
+        .iter()
+        .map(|conflict| {
+            json!({
+                "conflictId": conflict.conflict_id,
+                "degree": conflict.degree,
+                "support": conflict.support,
+                "sharedSupport": conflict.shared_support,
+                "leftLaw": conflict.left_law,
+                "leftGeneratorRef": conflict.left_generator_ref,
+                "rightLaw": conflict.right_law,
+                "rightGeneratorRef": conflict.right_generator_ref,
+                "contextRefs": conflict.context_refs,
+                "sourceRefs": conflict.source_refs
+            })
+        })
+        .collect::<Vec<_>>();
+
+    Ok(TorMeasurementV1 {
+        verdict: if has_conflict {
+            "measured_nonzero".to_string()
+        } else {
+            "measured_zero".to_string()
+        },
+        zero: !has_conflict,
+        non_zero: has_conflict,
+        method_status: "finite_monomial_tor_computed".to_string(),
+        cert_ref: Some(ambient.atom_ref.clone()),
+        reason: if has_conflict {
+            "finite monomial Tor found LawConflict classes under the supplied common ambient"
+                .to_string()
+        } else {
+            "finite monomial Tor found no LawConflict class under the supplied common ambient"
+                .to_string()
+        },
+        computed_invariants: vec![json!({
+            "invariantId": format!("law-conflict-tor:{}", profile.profile_id),
+            "evaluator": "ag.law-conflict-tor@1",
+            "method": "finite-monomial-tor@1",
+            "resolution": profile.resolution_selector,
+            "selectedCoverRef": profile.cover_ref,
+            "witnessVariables": witness_variables,
+            "commonAmbient": {
+                "ambientRef": ambient.ambient_ref,
+                "atomRef": ambient.atom_ref,
+                "lawPair": ambient.law_pair,
+                "sourceRefs": ambient.source_refs
+            },
+            "lawIdeals": law_ideals,
+            "lawConflicts": conflict_json,
+            "torByDegree": [{
+                "degree": 1,
+                "classCount": conflicts.len()
+            }],
+            "nonConclusions": [
+                "Flat base change stability is a theorem-candidate reading and is not concluded by this structural verdict."
+            ]
+        })],
+        assumptions: tor_assumptions(profile, Some(&ambient), "checked"),
     })
 }
 
@@ -631,6 +834,281 @@ fn square_free_witness_variables(profile: &MeasurementProfileV1) -> Vec<String> 
         .collect::<BTreeSet<_>>()
         .into_iter()
         .collect()
+}
+
+fn validate_tor_profile_v1(profile: &MeasurementProfileV1) -> Result<(), String> {
+    let expected = [
+        ("coefficient", profile.coefficient.as_str(), "F2"),
+        (
+            "effCoeff",
+            profile.eff_coeff.as_str(),
+            "finite-linear-algebra@1",
+        ),
+        (
+            "zeroPredicate",
+            profile.zero_predicate.as_str(),
+            "rank-zero@1",
+        ),
+        (
+            "nonZeroPredicate",
+            profile.non_zero_predicate.as_str(),
+            "rank-positive@1",
+        ),
+        (
+            "certSelector",
+            profile.cert_selector.as_str(),
+            "finite-certificate@1",
+        ),
+    ];
+    for (field, actual, expected) in expected {
+        if actual != expected {
+            return Err(format!(
+                "ag.law-conflict-tor@1 requires MeasurementProfile {field}={expected}, found {actual}"
+            ));
+        }
+    }
+    if !matches!(profile.resolution_selector.as_str(), "taylor@1" | "scarf@1") {
+        return Err(format!(
+            "ag.law-conflict-tor@1 requires MeasurementProfile resolutionSelector=taylor@1 or scarf@1, found {}",
+            profile.resolution_selector
+        ));
+    }
+    if tor_witness_variables(profile).is_empty() {
+        return Err(format!(
+            "ag.law-conflict-tor@1 requires MeasurementProfile {} witnessFamily law ag.law-conflict-tor",
+            profile.profile_id
+        ));
+    }
+    if tor_witness_variables(profile).len() > MAX_TOR_WITNESS_VARIABLES {
+        return Err(format!(
+            "ag.law-conflict-tor@1 supports at most {MAX_TOR_WITNESS_VARIABLES} witness variables for finite monomial enumeration"
+        ));
+    }
+    Ok(())
+}
+
+fn tor_witness_variables(profile: &MeasurementProfileV1) -> Vec<String> {
+    profile
+        .witness_family
+        .iter()
+        .filter(|witness| witness.law == "ag.law-conflict-tor")
+        .map(|witness| witness.variable.clone())
+        .collect::<BTreeSet<_>>()
+        .into_iter()
+        .collect()
+}
+
+fn tor_common_ambient(
+    normalized: &NormalizedArchMapV2,
+    selected_contexts: &BTreeSet<String>,
+) -> Result<Option<TorCommonAmbientV1>, String> {
+    let ambients = normalized
+        .atoms
+        .iter()
+        .filter(|atom| atom.axis == "tor" && atom.predicate == "commonAmbient")
+        .filter(|atom| atom_belongs_to_selected_context(atom, selected_contexts))
+        .map(|atom| {
+            let raw_pair = atom.object.as_deref().ok_or_else(|| {
+                format!(
+                    "ag.law-conflict-tor@1 common ambient {} requires object law pair",
+                    atom.normalized_atom_id
+                )
+            })?;
+            let law_pair = raw_pair
+                .split(',')
+                .map(str::trim)
+                .filter(|law| !law.is_empty())
+                .map(ToString::to_string)
+                .collect::<BTreeSet<_>>()
+                .into_iter()
+                .collect::<Vec<_>>();
+            if law_pair.len() != 2 {
+                return Err(format!(
+                    "ag.law-conflict-tor@1 common ambient {} requires exactly two laws in object",
+                    atom.normalized_atom_id
+                ));
+            }
+            Ok(TorCommonAmbientV1 {
+                ambient_ref: atom.subject.clone(),
+                atom_ref: atom.normalized_atom_id.clone(),
+                law_pair,
+                source_refs: atom.source_refs.clone(),
+            })
+        })
+        .collect::<Result<Vec<_>, _>>()?;
+
+    if ambients.len() > 1 {
+        return Err(format!(
+            "ag.law-conflict-tor@1 expected at most one selected common ambient, found {}",
+            ambients.len()
+        ));
+    }
+
+    Ok(ambients.into_iter().next())
+}
+
+fn tor_ideal_generators(
+    normalized: &NormalizedArchMapV2,
+    selected_contexts: &BTreeSet<String>,
+    witness_variables: &[String],
+) -> Result<Vec<TorIdealGeneratorV1>, String> {
+    let witness_set = witness_variables.iter().cloned().collect::<BTreeSet<_>>();
+    let mut generators = Vec::new();
+    for atom in normalized
+        .atoms
+        .iter()
+        .filter(|atom| atom.axis == "tor" && atom.predicate == "lawIdealGenerator")
+        .filter(|atom| atom_belongs_to_selected_context(atom, selected_contexts))
+    {
+        let support = tor_atom_variables(atom);
+        let unknown = support
+            .iter()
+            .filter(|variable| !witness_set.contains(*variable))
+            .cloned()
+            .collect::<Vec<_>>();
+        if !unknown.is_empty() {
+            return Err(format!(
+                "ag.law-conflict-tor@1 generator {} contains variables outside witnessFamily: {}",
+                atom.normalized_atom_id,
+                unknown.join(",")
+            ));
+        }
+        if support.is_empty() {
+            return Err(format!(
+                "ag.law-conflict-tor@1 generator {} has no Tor witness variables",
+                atom.normalized_atom_id
+            ));
+        }
+        generators.push(TorIdealGeneratorV1 {
+            law: atom.subject.clone(),
+            generator_id: atom.normalized_atom_id.clone(),
+            support,
+            context_refs: atom.context_memberships.clone(),
+            source_refs: atom.source_refs.clone(),
+        });
+    }
+    generators.sort_by(|left, right| {
+        left.law
+            .cmp(&right.law)
+            .then_with(|| left.generator_id.cmp(&right.generator_id))
+    });
+    Ok(generators)
+}
+
+fn tor_atom_variables(atom: &crate::NormalizedAtomV2) -> Vec<String> {
+    atom.object
+        .as_deref()
+        .unwrap_or_default()
+        .split(',')
+        .map(str::trim)
+        .filter(|value| !value.is_empty())
+        .map(ToString::to_string)
+        .collect::<BTreeSet<_>>()
+        .into_iter()
+        .collect()
+}
+
+fn tor_conflict_classes(
+    generators: &[TorIdealGeneratorV1],
+    left_law: &str,
+    right_law: &str,
+) -> Vec<TorConflictClassV1> {
+    let left_generators = generators
+        .iter()
+        .filter(|generator| generator.law == left_law)
+        .collect::<Vec<_>>();
+    let right_generators = generators
+        .iter()
+        .filter(|generator| generator.law == right_law)
+        .collect::<Vec<_>>();
+    let mut classes = Vec::new();
+    for left in &left_generators {
+        for right in &right_generators {
+            let shared_support = left
+                .support
+                .iter()
+                .filter(|variable| right.support.contains(*variable))
+                .cloned()
+                .collect::<Vec<_>>();
+            if shared_support.is_empty() {
+                continue;
+            }
+            let mut support = left
+                .support
+                .iter()
+                .chain(right.support.iter())
+                .cloned()
+                .collect::<BTreeSet<_>>()
+                .into_iter()
+                .collect::<Vec<_>>();
+            support.sort();
+            let context_refs = left
+                .context_refs
+                .iter()
+                .chain(right.context_refs.iter())
+                .cloned()
+                .collect::<BTreeSet<_>>()
+                .into_iter()
+                .collect::<Vec<_>>();
+            let source_refs = left
+                .source_refs
+                .iter()
+                .chain(right.source_refs.iter())
+                .cloned()
+                .collect::<BTreeSet<_>>()
+                .into_iter()
+                .collect::<Vec<_>>();
+            classes.push(TorConflictClassV1 {
+                conflict_id: format!("LawConflict_1:{}", classes.len() + 1),
+                degree: 1,
+                support,
+                shared_support,
+                left_law: left.law.clone(),
+                left_generator_ref: left.generator_id.clone(),
+                right_law: right.law.clone(),
+                right_generator_ref: right.generator_id.clone(),
+                context_refs,
+                source_refs,
+            });
+        }
+    }
+    classes
+}
+
+fn tor_assumptions(
+    profile: &MeasurementProfileV1,
+    ambient: Option<&TorCommonAmbientV1>,
+    ambient_status: &str,
+) -> Vec<AgAssumptionLedgerEntryV1> {
+    vec![
+        AgAssumptionLedgerEntryV1 {
+            theorem_ref: "part8/9.1".to_string(),
+            assumption: "common ambient pair supplied by ArchMap under MeasurementProfile"
+                .to_string(),
+            status: ambient_status.to_string(),
+            checked_by: ambient.map(|ambient| ambient.atom_ref.clone()),
+            assumed_by: (ambient_status != "checked")
+                .then(|| format!("measurement-profile:{}", profile.profile_id)),
+        },
+        AgAssumptionLedgerEntryV1 {
+            theorem_ref: "part5/5.5".to_string(),
+            assumption: "finite monomial law ideals selected for Taylor / Scarf Tor enumeration"
+                .to_string(),
+            status: "checked".to_string(),
+            checked_by: Some(format!(
+                "measurement-profile:{}.witnessFamily",
+                profile.profile_id
+            )),
+            assumed_by: None,
+        },
+        AgAssumptionLedgerEntryV1 {
+            theorem_ref: "part8/9.2".to_string(),
+            assumption: "flat base change stability is theorem-candidate only".to_string(),
+            status: "assumed".to_string(),
+            checked_by: None,
+            assumed_by: Some(format!("measurement-profile:{}", profile.profile_id)),
+        },
+    ]
 }
 
 fn square_free_generators(

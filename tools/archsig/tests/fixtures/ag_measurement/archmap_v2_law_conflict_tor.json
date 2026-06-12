@@ -1,0 +1,78 @@
+{
+  "schema": "archmap/v2",
+  "id": "ag-measurement-law-conflict-tor-fixture",
+  "extractionDoctrineRef": {
+    "doctrineId": "doctrine:ag-fixture@1",
+    "fingerprint": "sha256:ag-fixture-doctrine",
+    "components": ["V", "Gamma", "R", "rho", "E", "N"]
+  },
+  "sources": {
+    "src:checkout-policy": {
+      "kind": "policy",
+      "path": "docs/tool/archsig_v0_4_0_algebraic_geometry_measurement_prd.md",
+      "section": "B.5-checkout"
+    },
+    "src:inventory-policy": {
+      "kind": "policy",
+      "path": "docs/tool/archsig_v0_4_0_algebraic_geometry_measurement_prd.md",
+      "section": "B.5-inventory"
+    },
+    "src:ambient": {
+      "kind": "policy",
+      "path": "docs/tool/archsig_v0_4_0_algebraic_geometry_measurement_prd.md",
+      "section": "R5"
+    },
+    "src:cover": {
+      "kind": "policy",
+      "path": "docs/tool/archsig_v0_4_0_algebraic_geometry_measurement_prd.md",
+      "section": "R5"
+    }
+  },
+  "atoms": [
+    {
+      "id": "atom:tor-common-ambient",
+      "kind": "semantic",
+      "subject": "ambient:checkout-inventory",
+      "object": "law:checkout,law:inventory",
+      "axis": "tor",
+      "predicate": "commonAmbient",
+      "refs": ["src:ambient"]
+    },
+    {
+      "id": "atom:checkout-law-generator",
+      "kind": "relation",
+      "subject": "law:checkout",
+      "object": "x_checkout,x_inventory",
+      "axis": "tor",
+      "predicate": "lawIdealGenerator",
+      "refs": ["src:checkout-policy"]
+    },
+    {
+      "id": "atom:inventory-law-generator",
+      "kind": "relation",
+      "subject": "law:inventory",
+      "object": "x_inventory,x_payment",
+      "axis": "tor",
+      "predicate": "lawIdealGenerator",
+      "refs": ["src:inventory-policy"]
+    }
+  ],
+  "contexts": [
+    {
+      "id": "ctx:tor-common-ambient",
+      "atoms": [
+        "atom:tor-common-ambient",
+        "atom:checkout-law-generator",
+        "atom:inventory-law-generator"
+      ],
+      "refs": ["src:cover"]
+    }
+  ],
+  "covers": [
+    {
+      "id": "cover:law-conflict-tor",
+      "contexts": ["ctx:tor-common-ambient"],
+      "refs": ["src:cover"]
+    }
+  ]
+}

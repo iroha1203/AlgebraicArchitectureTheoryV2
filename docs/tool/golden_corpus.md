@@ -33,8 +33,10 @@ covers rather than molecule-primary ArchMaps.
 - `tools/archsig/tests/fixtures/ag_measurement/archmap_v2.json`
 - `tools/archsig/tests/fixtures/ag_measurement/archmap_v2_cech_h1_visible.json`
 - `tools/archsig/tests/fixtures/ag_measurement/archmap_v2_square_free_repair.json`
+- `tools/archsig/tests/fixtures/ag_measurement/archmap_v2_law_conflict_tor.json`
 - `tools/archsig/tests/fixtures/ag_measurement/law_policy_ag.json`
 - `tools/archsig/tests/fixtures/ag_measurement/law_policy_square_free.json`
+- `tools/archsig/tests/fixtures/ag_measurement/law_policy_tor.json`
 - `tools/archsig/tests/fixtures/ag_measurement/law_policy_missing_profile.json`
 
 The executable lock is
@@ -53,6 +55,16 @@ as measurement packet invariants. Because the NSdepth atom is not a finite
 verifier payload, the structural verdict remains `unknown`. The companion
 `cli_analyze_v2_square_free_without_certificate_returns_unknown` regression
 keeps missing certificates as `unknown`, not lawful or measured zero.
+
+The LawConflict Tor lock is
+`cli_analyze_v2_law_conflict_tor_outputs_conflict_classes`. It fixes the B.5
+worked example path: an explicit common ambient atom bounds the comparison,
+finite monomial law ideal generators are read under that ambient, and
+`LawConflict_1` classes record witness-variable support, context refs, and
+source refs. The companion
+`cli_analyze_v2_law_conflict_tor_without_common_ambient_is_not_computed`
+regression keeps missing ambient evidence as `not_computed` /
+`no_common_ambient`, not measured zero or conflict absence.
 
 ## V1 Positive Fixtures
 
