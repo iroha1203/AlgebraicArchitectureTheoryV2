@@ -11,3 +11,4 @@ import Formal.AG.Atom.LawfulnessZero
 import Formal.AG.Atom.ThreeReading
 import Formal.AG.Atom.ObjectAlgebra
 import Formal.AG.Atom.AATCore
+import Formal.AG.Examples.FiniteModel
