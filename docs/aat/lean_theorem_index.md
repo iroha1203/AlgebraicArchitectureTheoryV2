@@ -4438,10 +4438,11 @@ completeness、FieldSig forecast calibration は結論しない。
 ## AG版AAT Lean形式化 PRD-1 bootstrap
 
 File: `Formal/AG.lean`, `Formal/AG/Atom/Atom.lean`, `Formal/AG/Atom/Axioms.lean`,
-`Formal/AG/Atom/Observation.lean`, `Formal/AG/Atom/Family.lean`.
+`Formal/AG/Atom/Observation.lean`, `Formal/AG/Atom/Family.lean`,
+`Formal/AG/Atom/Configuration.lean`.
 
 PRD-1 [第I部 Atom・対象・法則](lean_ag_part_1_atoms_objects_laws_prd.md) の
-AC1/R0、AC2/R1、AC3/R1、AC4/R2 に対応する初期 Atom entrypoint である。`Formal/Arch` は import せず、
+AC1/R0、AC2/R1、AC3/R1、AC4/R2、AC5/R3 に対応する初期 Atom entrypoint である。`Formal/Arch` は import せず、
 AG 版 AAT の namespace を `AAT.AG` として分離する。この節は Part I の最下層索引であり、
 定理9.3、定理10.5 の完了宣言ではない。
 
@@ -4455,9 +4456,10 @@ AG 版 AAT の namespace を `AAT.AG` として分離する。この節は Part 
 | `I.公理A8` | `AAT.AG.ExtractionDoctrine`, `AAT.AG.ExtractionDoctrine.atomize_unique`, `AAT.AG.CoarseProjection`, `AAT.AG.AtomAxiomSystem.doctrine_family_unique` | `structure` / `theorem` | extraction doctrine と、`atomize` が関数であることから得る canonical Atom family の一意性。 | `defined only` / `proved` |
 | `I.命題A9` | `AAT.AG.ObservationModel`, `ObservationModel.NonInjective`, `ObservationProjection`, `ReconstructionAttempt`, `no_exact_reconstruction_of_nonInjective`, `A9Example.projection`, `A9Example.reconstruction`, `A9Example.noninjective_atom_observation`, `A9Example.unobserved_atom_exists`, `A9Example.noninjective_family_observation`, `A9Example.reconstruction_not_exact`, `A9Example.canonical_family_unique`, `A9Example.observation_incompleteness_coexists_with_a8` | `structure` / `def` / `theorem` | 観測写像、projection、reconstruction、非単射観測、未観測 Atom、A8 一意性との分離を有限例で示す。 | `defined only` / `proved` |
 | `I.定義3.1-3.5` | `AAT.AG.AtomFamily`, `AtomFamily.Subset`, `AtomFamily.support`, `AtomFamily.restrictAxis`, `AtomFamily.Compatible`, `AtomFamily.EqCompatible`, `AtomFamily.AtomOrigin`, `AtomFamily.OriginMarked`, `AtomFamily.InferenceSystem`, `AtomFamily.IsClosed`, `AtomFamily.closure`, `AtomFamily.support_of_mem`, `AtomFamily.restrictAxis_subset`, `AtomFamily.restrictAxis_axis`, `AtomFamily.subset_closure`, `AtomFamily.closure_isClosed`, `AtomFamily.closure_minimal` | `structure` / `def` / `inductive` / `theorem` | Atom family、subset、support、axis restriction、選択された payload compatibility relation に相対化された compatibility、origin marker、monotone 推論規則族 closure と support/restriction 補題および closure 3補題。 | `defined only` / `proved` |
+| `I.定義4.1 / 4.2 / 4.4` | `AAT.AG.AtomConfiguration`, `AtomConfiguration.Subconfiguration`, `AtomConfiguration.FamilySupported`, `AtomConfiguration.Molecule`, `AtomConfiguration.Subconfiguration.refl`, `AtomConfiguration.Subconfiguration.trans`, `AtomConfiguration.Subconfiguration.preorder`, `AtomConfiguration.Molecule.family_subset_parent`, `AtomConfiguration.Molecule.finite_marker` | `structure` / `def` / `theorem` | Atom configuration `C = (F, R, E)`、R/E の family-supported predicate、finite marker 付き molecule、subconfiguration と、その反射・推移・preorder 補題。 | `defined only` / `proved` |
 
 Non-conclusions: この bootstrap は `Formal/AG` の Atom carrier、A0-A8 package、A9、
-AtomFamily / closure の入口であり、Configuration、Lawfulness-Zero Obstruction、
+AtomFamily / closure、Configuration / Molecule の入口であり、Lawfulness-Zero Obstruction、
 AAT Core、有限モデルは後続 Issue の対象である。
 
 ## Reverse-Import Theorem Packages
