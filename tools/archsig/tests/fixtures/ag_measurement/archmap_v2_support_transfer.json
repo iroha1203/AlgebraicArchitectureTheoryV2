@@ -1,0 +1,108 @@
+{
+  "schema": "archmap/v2",
+  "id": "ag-measurement-support-transfer-fixture",
+  "extractionDoctrineRef": {
+    "doctrineId": "doctrine:ag-fixture@1",
+    "fingerprint": "sha256:ag-fixture-doctrine",
+    "components": ["V", "Gamma", "R", "rho", "E", "N"]
+  },
+  "sources": {
+    "src:transfer-api": {
+      "kind": "policy",
+      "path": "docs/tool/archsig_v0_4_0_algebraic_geometry_measurement_prd.md",
+      "section": "R8-transfer-api"
+    },
+    "src:transfer-data": {
+      "kind": "policy",
+      "path": "docs/tool/archsig_v0_4_0_algebraic_geometry_measurement_prd.md",
+      "section": "R8-transfer-data"
+    },
+    "src:ground-api": {
+      "kind": "policy",
+      "path": "docs/tool/archsig_v0_4_0_algebraic_geometry_measurement_prd.md",
+      "section": "R8-ground-api"
+    },
+    "src:ground-data": {
+      "kind": "policy",
+      "path": "docs/tool/archsig_v0_4_0_algebraic_geometry_measurement_prd.md",
+      "section": "R8-ground-data"
+    },
+    "src:repair-path": {
+      "kind": "policy",
+      "path": "docs/tool/archsig_v0_4_0_algebraic_geometry_measurement_prd.md",
+      "section": "R8-repair-path"
+    },
+    "src:cover": {
+      "kind": "policy",
+      "path": "docs/tool/archsig_v0_4_0_algebraic_geometry_measurement_prd.md",
+      "section": "R8"
+    }
+  },
+  "atoms": [
+    {
+      "id": "atom:transfer-repair-path-core",
+      "kind": "semantic",
+      "subject": "repair:path:core",
+      "object": "selected",
+      "axis": "transfer",
+      "predicate": "repairPath",
+      "refs": ["src:repair-path"]
+    },
+    {
+      "id": "atom:transfer-path-api",
+      "kind": "semantic",
+      "subject": "repair:path:core",
+      "object": "support:api=0.25",
+      "axis": "transfer",
+      "predicate": "transferPairing",
+      "refs": ["src:transfer-api"]
+    },
+    {
+      "id": "atom:transfer-path-data",
+      "kind": "semantic",
+      "subject": "repair:path:core",
+      "object": "support:data=0.75",
+      "axis": "transfer",
+      "predicate": "transferPairing",
+      "refs": ["src:transfer-data"]
+    },
+    {
+      "id": "atom:transfer-ground-api",
+      "kind": "semantic",
+      "subject": "support:api",
+      "object": "2",
+      "axis": "transfer",
+      "predicate": "groundCost",
+      "refs": ["src:ground-api"]
+    },
+    {
+      "id": "atom:transfer-ground-data",
+      "kind": "semantic",
+      "subject": "support:data",
+      "object": "4",
+      "axis": "transfer",
+      "predicate": "groundCost",
+      "refs": ["src:ground-data"]
+    }
+  ],
+  "contexts": [
+    {
+      "id": "ctx:support-transfer-local",
+      "atoms": [
+        "atom:transfer-repair-path-core",
+        "atom:transfer-path-api",
+        "atom:transfer-path-data",
+        "atom:transfer-ground-api",
+        "atom:transfer-ground-data"
+      ],
+      "refs": ["src:cover"]
+    }
+  ],
+  "covers": [
+    {
+      "id": "cover:support-transfer",
+      "contexts": ["ctx:support-transfer-local"],
+      "refs": ["src:cover"]
+    }
+  ]
+}

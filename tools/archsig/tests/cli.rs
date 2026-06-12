@@ -1725,6 +1725,447 @@ fn cli_analyze_v2_period_stokes_missing_witness_cycle_is_not_computed() {
 }
 
 #[test]
+fn cli_analyze_v2_support_transfer_outputs_residue_and_wasserstein_cost() {
+    let out_dir = temp_dir("ag-measurement-support-transfer");
+    let root = ag_measurement_root();
+
+    run_sig0(&[
+        "analyze",
+        "--archmap",
+        root.join("archmap_v2_support_transfer.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--law-policy",
+        root.join("law_policy_transfer.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--out-dir",
+        out_dir.to_str().expect("path is utf-8"),
+    ]);
+
+    let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
+    assert_eq!(
+        packet["structuralVerdict"]
+            .as_array()
+            .expect("structural verdict is array")
+            .len(),
+        0,
+        "transfer readings are analytic-only and must not generate structural verdict rows"
+    );
+    let invariant = invariant_by_id(&packet, "support-transfer:profile:ag-support-transfer@1");
+    assert_eq!(
+        invariant["transferMeasurementPairing"],
+        serde_json::json!([[0.25, 0.75]])
+    );
+    assert_eq!(invariant["transferResidue"], Value::from(0.790569));
+    assert_eq!(invariant["wassersteinTransferCost"], Value::from(3.5));
+    let reading = packet["analyticReadings"]
+        .as_array()
+        .expect("analytic readings is array")
+        .iter()
+        .find(|reading| reading["evaluator"] == "ag.support-transfer@1")
+        .expect("transfer analytic reading exists");
+    assert_eq!(reading["structuralVerdictRef"], Value::Null);
+    assert_eq!(reading["regime"], "analytic-measurement");
+    assert_eq!(
+        reading["value"]["transferMeasurementPairing"],
+        serde_json::json!([[0.25, 0.75]])
+    );
+    assert_eq!(reading["value"]["transferResidue"], Value::from(0.790569));
+    assert_eq!(
+        reading["value"]["wassersteinTransferCost"],
+        Value::from(3.5)
+    );
+    assert_eq!(
+        reading["value"]["nonConclusion"],
+        "transfer readings do not prove absence of side effects or global repair safety"
+    );
+    let candidate = packet["analyticReadings"]
+        .as_array()
+        .expect("analytic readings is array")
+        .iter()
+        .find(|reading| {
+            reading["readingId"]
+                .as_str()
+                .is_some_and(|id| id.starts_with("theorem-candidate:transfer-lower-bound:"))
+        })
+        .expect("transfer lower bound theorem-candidate reading exists");
+    assert_eq!(candidate["regime"], "theorem-candidate");
+    assert_eq!(candidate["value"]["transferLowerBound"], Value::from(3.5));
+    assert!(
+        packet["assumptions"]
+            .as_array()
+            .expect("assumptions is array")
+            .iter()
+            .any(|entry| {
+                entry["assumption"] == "transfer_lower_bound" && entry["status"] == "assumed"
+            })
+    );
+
+    let summary = read_json(&out_dir.join("archsig-analysis-summary.json"));
+    assert_eq!(
+        summary["conclusion"],
+        "AG_MEASUREMENT_FOUNDATION_READY_UNDER_PROFILE"
+    );
+}
+
+#[test]
+fn cli_analyze_v2_support_transfer_missing_pairing_cell_is_not_computed() {
+    let out_dir = temp_dir("ag-measurement-support-transfer-missing-cell");
+    let root = ag_measurement_root();
+    let mut archmap = read_json(&root.join("archmap_v2_support_transfer.json"));
+    archmap["atoms"]
+        .as_array_mut()
+        .expect("atoms is array")
+        .push(serde_json::json!({
+            "id": "atom:transfer-repair-path-secondary",
+            "kind": "semantic",
+            "subject": "repair:path:secondary",
+            "object": "selected",
+            "axis": "transfer",
+            "predicate": "repairPath",
+            "refs": ["src:repair-path"]
+        }));
+    archmap["atoms"]
+        .as_array_mut()
+        .expect("atoms is array")
+        .push(serde_json::json!({
+            "id": "atom:transfer-secondary-api",
+            "kind": "semantic",
+            "subject": "repair:path:secondary",
+            "object": "support:api=0.5",
+            "axis": "transfer",
+            "predicate": "transferPairing",
+            "refs": ["src:transfer-api"]
+        }));
+    archmap["contexts"][0]["atoms"]
+        .as_array_mut()
+        .expect("context atoms is array")
+        .push(Value::String(
+            "atom:transfer-repair-path-secondary".to_string(),
+        ));
+    archmap["contexts"][0]["atoms"]
+        .as_array_mut()
+        .expect("context atoms is array")
+        .push(Value::String("atom:transfer-secondary-api".to_string()));
+    let archmap_path = out_dir.join("archmap_v2_support_transfer_missing_cell.json");
+    fs::write(
+        &archmap_path,
+        serde_json::to_vec_pretty(&archmap).expect("archmap serializes"),
+    )
+    .expect("archmap fixture can be written");
+
+    run_sig0(&[
+        "analyze",
+        "--archmap",
+        archmap_path.to_str().expect("path is utf-8"),
+        "--law-policy",
+        root.join("law_policy_transfer.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--out-dir",
+        out_dir.to_str().expect("path is utf-8"),
+    ]);
+
+    let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
+    let invariant = invariant_by_id(&packet, "support-transfer:profile:ag-support-transfer@1");
+    assert_eq!(invariant["status"], "not_computed");
+    assert_eq!(
+        invariant["reason"],
+        "transfer_model_missing:repair:path:secondary/support:data"
+    );
+    assert!(
+        packet["analyticReadings"]
+            .as_array()
+            .expect("analytic readings is array")
+            .iter()
+            .all(|reading| reading["evaluator"] != "ag.support-transfer@1"),
+        "missing transfer pairing cells must not synthesize zero analytic readings"
+    );
+}
+
+#[test]
+fn cli_analyze_v2_support_transfer_missing_repair_path_row_is_not_computed() {
+    let out_dir = temp_dir("ag-measurement-support-transfer-missing-row");
+    let root = ag_measurement_root();
+    let mut archmap = read_json(&root.join("archmap_v2_support_transfer.json"));
+    archmap["atoms"]
+        .as_array_mut()
+        .expect("atoms is array")
+        .push(serde_json::json!({
+            "id": "atom:transfer-repair-path-secondary",
+            "kind": "semantic",
+            "subject": "repair:path:secondary",
+            "object": "selected",
+            "axis": "transfer",
+            "predicate": "repairPath",
+            "refs": ["src:repair-path"]
+        }));
+    archmap["contexts"][0]["atoms"]
+        .as_array_mut()
+        .expect("context atoms is array")
+        .push(Value::String(
+            "atom:transfer-repair-path-secondary".to_string(),
+        ));
+    let archmap_path = out_dir.join("archmap_v2_support_transfer_missing_row.json");
+    fs::write(
+        &archmap_path,
+        serde_json::to_vec_pretty(&archmap).expect("archmap serializes"),
+    )
+    .expect("archmap fixture can be written");
+
+    run_sig0(&[
+        "analyze",
+        "--archmap",
+        archmap_path.to_str().expect("path is utf-8"),
+        "--law-policy",
+        root.join("law_policy_transfer.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--out-dir",
+        out_dir.to_str().expect("path is utf-8"),
+    ]);
+
+    let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
+    let invariant = invariant_by_id(&packet, "support-transfer:profile:ag-support-transfer@1");
+    assert_eq!(invariant["status"], "not_computed");
+    assert_eq!(
+        invariant["reason"],
+        "transfer_model_missing:repair:path:secondary/support:api,repair:path:secondary/support:data"
+    );
+}
+
+#[test]
+fn cli_analyze_v2_support_transfer_rejects_unknown_target() {
+    let out_dir = temp_dir("ag-measurement-support-transfer-unknown-target");
+    let root = ag_measurement_root();
+    let mut archmap = read_json(&root.join("archmap_v2_support_transfer.json"));
+    archmap["atoms"][1]["object"] = Value::String("support:missing=0.25".to_string());
+    let archmap_path = out_dir.join("archmap_v2_support_transfer_unknown_target.json");
+    fs::write(
+        &archmap_path,
+        serde_json::to_vec_pretty(&archmap).expect("archmap serializes"),
+    )
+    .expect("archmap fixture can be written");
+
+    run_sig0_expect_code(
+        &[
+            "analyze",
+            "--archmap",
+            archmap_path.to_str().expect("path is utf-8"),
+            "--law-policy",
+            root.join("law_policy_transfer.json")
+                .to_str()
+                .expect("path is utf-8"),
+            "--out-dir",
+            out_dir.to_str().expect("path is utf-8"),
+        ],
+        2,
+    );
+}
+
+#[test]
+fn cli_analyze_v2_strict_distance_rejects_not_computed_analytic_invariants() {
+    let out_dir = temp_dir("ag-measurement-strict-transfer-missing-cost");
+    let root = ag_measurement_root();
+    let mut archmap = read_json(&root.join("archmap_v2_support_transfer.json"));
+    archmap["atoms"] = Value::Array(
+        archmap["atoms"]
+            .as_array()
+            .expect("atoms is array")
+            .iter()
+            .filter(|atom| atom["id"] != "atom:transfer-ground-data")
+            .cloned()
+            .collect(),
+    );
+    archmap["contexts"][0]["atoms"] = Value::Array(
+        archmap["contexts"][0]["atoms"]
+            .as_array()
+            .expect("context atoms is array")
+            .iter()
+            .filter(|atom| atom.as_str() != Some("atom:transfer-ground-data"))
+            .cloned()
+            .collect(),
+    );
+    let archmap_path = out_dir.join("archmap_v2_support_transfer_missing_cost.json");
+    fs::write(
+        &archmap_path,
+        serde_json::to_vec_pretty(&archmap).expect("archmap serializes"),
+    )
+    .expect("archmap fixture can be written");
+
+    let output = run_sig0_output(&[
+        "analyze",
+        "--archmap",
+        archmap_path.to_str().expect("path is utf-8"),
+        "--law-policy",
+        root.join("law_policy_transfer.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--out-dir",
+        out_dir.to_str().expect("path is utf-8"),
+        "--strict-distance",
+    ]);
+    assert_eq!(output.status.code(), Some(1));
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(
+        stderr.contains("not_computed analytic invariants")
+            && stderr.contains("violated assumptions"),
+        "strict-distance must reject incomplete analytic-only transfer evidence\n{stderr}"
+    );
+    let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
+    let invariant = invariant_by_id(&packet, "support-transfer:profile:ag-support-transfer@1");
+    assert_eq!(invariant["status"], "not_computed");
+}
+
+#[test]
+fn cli_analyze_v2_support_transfer_rejects_duplicate_pairings() {
+    let out_dir = temp_dir("ag-measurement-support-transfer-duplicate");
+    let root = ag_measurement_root();
+    let mut archmap = read_json(&root.join("archmap_v2_support_transfer.json"));
+    let mut duplicate = archmap["atoms"][1].clone();
+    duplicate["id"] = Value::String("atom:transfer-path-api-duplicate".to_string());
+    archmap["atoms"]
+        .as_array_mut()
+        .expect("atoms is array")
+        .push(duplicate);
+    archmap["contexts"][0]["atoms"]
+        .as_array_mut()
+        .expect("context atoms is array")
+        .push(Value::String(
+            "atom:transfer-path-api-duplicate".to_string(),
+        ));
+    let archmap_path = out_dir.join("archmap_v2_support_transfer_duplicate.json");
+    fs::write(
+        &archmap_path,
+        serde_json::to_vec_pretty(&archmap).expect("archmap serializes"),
+    )
+    .expect("archmap fixture can be written");
+
+    run_sig0_expect_code(
+        &[
+            "analyze",
+            "--archmap",
+            archmap_path.to_str().expect("path is utf-8"),
+            "--law-policy",
+            root.join("law_policy_transfer.json")
+                .to_str()
+                .expect("path is utf-8"),
+            "--out-dir",
+            out_dir.to_str().expect("path is utf-8"),
+        ],
+        2,
+    );
+}
+
+#[test]
+fn cli_analyze_v2_support_transfer_rejects_non_finite_values() {
+    let out_dir = temp_dir("ag-measurement-support-transfer-nan");
+    let root = ag_measurement_root();
+    let mut archmap = read_json(&root.join("archmap_v2_support_transfer.json"));
+    archmap["atoms"][1]["object"] = Value::String("support:api=NaN".to_string());
+    let archmap_path = out_dir.join("archmap_v2_support_transfer_nan.json");
+    fs::write(
+        &archmap_path,
+        serde_json::to_vec_pretty(&archmap).expect("archmap serializes"),
+    )
+    .expect("archmap fixture can be written");
+
+    run_sig0_expect_code(
+        &[
+            "analyze",
+            "--archmap",
+            archmap_path.to_str().expect("path is utf-8"),
+            "--law-policy",
+            root.join("law_policy_transfer.json")
+                .to_str()
+                .expect("path is utf-8"),
+            "--out-dir",
+            out_dir.to_str().expect("path is utf-8"),
+        ],
+        2,
+    );
+}
+
+#[test]
+fn cli_analyze_v2_support_transfer_rejects_malformed_profile_selector() {
+    let out_dir = temp_dir("ag-measurement-support-transfer-bad-profile");
+    let root = ag_measurement_root();
+    let mut policy = read_json(&root.join("law_policy_transfer.json"));
+    policy["measurementProfiles"][0]["resolutionSelector"] =
+        Value::String("unsupported@1".to_string());
+    let policy_path = out_dir.join("law_policy_transfer_bad_profile.json");
+    fs::write(
+        &policy_path,
+        serde_json::to_vec_pretty(&policy).expect("policy serializes"),
+    )
+    .expect("policy fixture can be written");
+
+    run_sig0_expect_code(
+        &[
+            "analyze",
+            "--archmap",
+            root.join("archmap_v2_support_transfer.json")
+                .to_str()
+                .expect("path is utf-8"),
+            "--law-policy",
+            policy_path.to_str().expect("path is utf-8"),
+            "--out-dir",
+            out_dir.to_str().expect("path is utf-8"),
+        ],
+        2,
+    );
+}
+
+#[test]
+fn cli_analyze_v2_support_transfer_missing_ground_cost_is_not_computed() {
+    let out_dir = temp_dir("ag-measurement-support-transfer-missing-cost");
+    let root = ag_measurement_root();
+    let mut archmap = read_json(&root.join("archmap_v2_support_transfer.json"));
+    archmap["atoms"] = Value::Array(
+        archmap["atoms"]
+            .as_array()
+            .expect("atoms is array")
+            .iter()
+            .filter(|atom| atom["id"] != "atom:transfer-ground-data")
+            .cloned()
+            .collect(),
+    );
+    archmap["contexts"][0]["atoms"] = Value::Array(
+        archmap["contexts"][0]["atoms"]
+            .as_array()
+            .expect("context atoms is array")
+            .iter()
+            .filter(|atom| atom.as_str() != Some("atom:transfer-ground-data"))
+            .cloned()
+            .collect(),
+    );
+    let archmap_path = out_dir.join("archmap_v2_support_transfer_missing_cost.json");
+    fs::write(
+        &archmap_path,
+        serde_json::to_vec_pretty(&archmap).expect("archmap serializes"),
+    )
+    .expect("archmap fixture can be written");
+
+    run_sig0(&[
+        "analyze",
+        "--archmap",
+        archmap_path.to_str().expect("path is utf-8"),
+        "--law-policy",
+        root.join("law_policy_transfer.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--out-dir",
+        out_dir.to_str().expect("path is utf-8"),
+    ]);
+
+    let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
+    let invariant = invariant_by_id(&packet, "support-transfer:profile:ag-support-transfer@1");
+    assert_eq!(invariant["status"], "not_computed");
+    assert_eq!(invariant["reason"], "missing_ground_costs:support:data");
+}
+
+#[test]
 fn cli_analyze_v2_sheaf_laplacian_rejects_unknown_cell() {
     let out_dir = temp_dir("ag-measurement-sheaf-laplacian-unknown-cell");
     let root = ag_measurement_root();
@@ -1923,49 +2364,73 @@ fn cli_locks_ag_measurement_period_stokes_golden_fixture() {
 }
 
 #[test]
-fn cli_analyze_v2_strict_distance_rejects_unmeasured_foundation_rows() {
-    let out_dir = temp_dir("ag-measurement-strict");
-    let root = ag_measurement_root();
-    let mut policy = read_json(&root.join("law_policy_ag.json"));
-    policy["policies"]
-        .as_array_mut()
-        .expect("policies is array")
-        .push(serde_json::json!({
-            "law": "ag.support-transfer",
-            "evaluator": "ag.support-transfer@1",
-            "basis": ["policy-basis:layering"],
-            "scope": ["src/"],
-            "severity": "medium"
-        }));
-    let policy_path = out_dir.join("law_policy_ag_with_unmeasured.json");
-    fs::write(
-        &policy_path,
-        serde_json::to_vec_pretty(&policy).expect("policy serializes"),
-    )
-    .expect("policy fixture can be written");
-
-    run_sig0_expect_code(
-        &[
-            "analyze",
-            "--archmap",
-            root.join("archmap_v2.json")
-                .to_str()
-                .expect("path is utf-8"),
-            "--law-policy",
-            policy_path.to_str().expect("path is utf-8"),
-            "--out-dir",
-            out_dir.to_str().expect("path is utf-8"),
-            "--strict-distance",
-        ],
-        1,
+fn cli_locks_ag_measurement_support_transfer_golden_fixture() {
+    let crate_root = Path::new(env!("CARGO_MANIFEST_DIR"));
+    let repo_root = crate_root
+        .parent()
+        .and_then(Path::parent)
+        .expect("crate root is tools/archsig inside repo");
+    let fixture = read_json(&ag_measurement_root().join("archmap_v2_support_transfer.json"));
+    assert_eq!(fixture["schema"], "archmap/v2");
+    assert_eq!(fixture["id"], "ag-measurement-support-transfer-fixture");
+    assert!(
+        fixture["atoms"]
+            .as_array()
+            .expect("atoms is array")
+            .iter()
+            .any(|atom| atom["axis"] == "transfer" && atom["predicate"] == "groundCost"),
+        "AG Transfer fixture must contain explicit transfer ground-cost atoms"
     );
+
+    let golden_corpus = fs::read_to_string(repo_root.join("docs/tool/golden_corpus.md"))
+        .expect("golden corpus docs are readable");
+    for snippet in [
+        "archmap_v2_support_transfer.json",
+        "law_policy_transfer.json",
+        "cli_analyze_v2_support_transfer_outputs_residue_and_wasserstein_cost",
+        "global repair safety",
+    ] {
+        assert!(
+            golden_corpus.contains(snippet),
+            "AG golden corpus docs must mention {snippet}"
+        );
+    }
+}
+
+#[test]
+fn cli_analyze_v2_strict_distance_allows_implemented_analytic_only_evaluators() {
+    let out_dir = temp_dir("ag-measurement-strict-analytic-only");
+    let root = ag_measurement_root();
+
+    run_sig0(&[
+        "analyze",
+        "--archmap",
+        root.join("archmap_v2_support_transfer.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--law-policy",
+        root.join("law_policy_transfer.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--out-dir",
+        out_dir.to_str().expect("path is utf-8"),
+        "--strict-distance",
+    ]);
 
     let summary = read_json(&out_dir.join("archsig-analysis-summary.json"));
     assert_eq!(
         summary["conclusion"],
         "AG_MEASUREMENT_FOUNDATION_READY_UNDER_PROFILE"
     );
-    assert_eq!(summary["structuralVerdictSummary"]["nonTerminalCount"], 1);
+    assert_eq!(summary["structuralVerdictSummary"]["rowCount"], 0);
+    let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
+    assert!(
+        packet["analyticReadings"]
+            .as_array()
+            .expect("analytic readings is array")
+            .iter()
+            .any(|reading| reading["evaluator"] == "ag.support-transfer@1")
+    );
 }
 
 #[test]

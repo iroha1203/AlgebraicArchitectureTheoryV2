@@ -20,6 +20,7 @@ const MAX_SQUARE_FREE_WITNESS_VARIABLES: usize = 12;
 const MAX_TOR_WITNESS_VARIABLES: usize = 12;
 const MAX_LAPLACIAN_CELLS: usize = 16;
 const MAX_PERIOD_CYCLES: usize = 16;
+const MAX_TRANSFER_TARGETS: usize = 16;
 
 pub fn selected_measurement_profile_v1(
     policy: &LawPolicyDocumentV1,
@@ -190,6 +191,12 @@ pub fn build_foundation_measurement_packet_v1(
             computed_invariants.extend(measurement.computed_invariants);
             analytic_readings.extend(measurement.analytic_readings);
             assumptions.extend(measurement.assumptions);
+        } else if evaluator == "ag.support-transfer@1" {
+            validate_transfer_profile_v1(&profile)?;
+            let measurement = evaluate_support_transfer_v1(normalized, &profile)?;
+            computed_invariants.extend(measurement.computed_invariants);
+            analytic_readings.extend(measurement.analytic_readings);
+            assumptions.extend(measurement.assumptions);
         } else {
             structural_verdict.push(AgStructuralVerdictV1 {
                 evaluator: evaluator.to_string(),
@@ -345,6 +352,37 @@ struct StokesAuditValueV1 {
     form_id: String,
     chain_id: String,
     value: f64,
+    atom_ref: String,
+    source_refs: Vec<String>,
+}
+
+#[derive(Debug, Clone)]
+struct TransferMeasurementV1 {
+    computed_invariants: Vec<Value>,
+    analytic_readings: Vec<AgAnalyticReadingV1>,
+    assumptions: Vec<AgAssumptionLedgerEntryV1>,
+}
+
+#[derive(Debug, Clone)]
+struct TransferPairingV1 {
+    path_id: String,
+    target_id: String,
+    value: f64,
+    atom_ref: String,
+    source_refs: Vec<String>,
+}
+
+#[derive(Debug, Clone)]
+struct TransferRepairPathV1 {
+    path_id: String,
+    atom_ref: String,
+    source_refs: Vec<String>,
+}
+
+#[derive(Debug, Clone)]
+struct TransferGroundCostV1 {
+    target_id: String,
+    cost: f64,
     atom_ref: String,
     source_refs: Vec<String>,
 }
@@ -926,6 +964,208 @@ fn evaluate_period_stokes_v1(
     })
 }
 
+fn evaluate_support_transfer_v1(
+    normalized: &NormalizedArchMapV2,
+    profile: &MeasurementProfileV1,
+) -> Result<TransferMeasurementV1, String> {
+    let selected_contexts = selected_cover_contexts(normalized, profile)
+        .into_iter()
+        .collect::<BTreeSet<_>>();
+    let targets = transfer_witness_targets(profile);
+    let repair_paths = transfer_repair_paths(normalized, &selected_contexts)?;
+    let pairings = transfer_pairings(normalized, &selected_contexts, &targets)?;
+    let ground_costs = transfer_ground_costs(normalized, &selected_contexts, &targets)?;
+    let observed_targets = pairings
+        .iter()
+        .map(|pairing| pairing.target_id.clone())
+        .collect::<BTreeSet<_>>();
+    let missing_targets = targets
+        .iter()
+        .filter(|target| !observed_targets.contains(*target))
+        .cloned()
+        .collect::<Vec<_>>();
+    let cost_targets = ground_costs
+        .iter()
+        .map(|cost| cost.target_id.clone())
+        .collect::<BTreeSet<_>>();
+    let missing_costs = targets
+        .iter()
+        .filter(|target| !cost_targets.contains(*target))
+        .cloned()
+        .collect::<Vec<_>>();
+    if repair_paths.is_empty()
+        || pairings.is_empty()
+        || ground_costs.is_empty()
+        || !missing_targets.is_empty()
+        || !missing_costs.is_empty()
+    {
+        let mut reasons = Vec::new();
+        if repair_paths.is_empty() || pairings.is_empty() || ground_costs.is_empty() {
+            reasons.push("transfer_model_missing".to_string());
+        }
+        if !missing_targets.is_empty() {
+            reasons.push(format!("missing_pairings:{}", missing_targets.join(",")));
+        }
+        if !missing_costs.is_empty() {
+            reasons.push(format!("missing_ground_costs:{}", missing_costs.join(",")));
+        }
+        return Ok(TransferMeasurementV1 {
+            computed_invariants: vec![json!({
+                "invariantId": format!("support-transfer:{}", profile.profile_id),
+                "evaluator": "ag.support-transfer@1",
+                "status": "not_computed",
+                "reason": reasons.join(";")
+            })],
+            analytic_readings: Vec::new(),
+            assumptions: transfer_assumptions(profile, "violated"),
+        });
+    }
+
+    let paths = repair_paths
+        .iter()
+        .map(|path| path.path_id.clone())
+        .collect::<Vec<_>>();
+    let path_set = paths.iter().cloned().collect::<BTreeSet<_>>();
+    let outside_paths = pairings
+        .iter()
+        .filter(|pairing| !path_set.contains(&pairing.path_id))
+        .map(|pairing| pairing.path_id.clone())
+        .collect::<BTreeSet<_>>()
+        .into_iter()
+        .collect::<Vec<_>>();
+    if !outside_paths.is_empty() {
+        return Err(format!(
+            "ag.support-transfer@1 transfer pairings reference paths outside selected repair path model: {}",
+            outside_paths.join(",")
+        ));
+    }
+    let observed_pairings = pairings
+        .iter()
+        .map(|pairing| (pairing.path_id.clone(), pairing.target_id.clone()))
+        .collect::<BTreeSet<_>>();
+    let mut missing_pairings = Vec::new();
+    for path in &paths {
+        for target in &targets {
+            if !observed_pairings.contains(&(path.clone(), target.clone())) {
+                missing_pairings.push(format!("{path}/{target}"));
+            }
+        }
+    }
+    if !missing_pairings.is_empty() {
+        return Ok(TransferMeasurementV1 {
+            computed_invariants: vec![json!({
+                "invariantId": format!("support-transfer:{}", profile.profile_id),
+                "evaluator": "ag.support-transfer@1",
+                "status": "not_computed",
+                "reason": format!("transfer_model_missing:{}", missing_pairings.join(","))
+            })],
+            analytic_readings: Vec::new(),
+            assumptions: transfer_assumptions(profile, "violated"),
+        });
+    }
+
+    let path_index = paths
+        .iter()
+        .enumerate()
+        .map(|(index, path)| (path.clone(), index))
+        .collect::<BTreeMap<_, _>>();
+    let target_index = targets
+        .iter()
+        .enumerate()
+        .map(|(index, target)| (target.clone(), index))
+        .collect::<BTreeMap<_, _>>();
+    let mut matrix = vec![vec![0.0; targets.len()]; paths.len()];
+    for pairing in &pairings {
+        matrix[path_index[&pairing.path_id]][target_index[&pairing.target_id]] = pairing.value;
+    }
+    let cost_by_target = ground_costs
+        .iter()
+        .map(|cost| (cost.target_id.clone(), cost.cost))
+        .collect::<BTreeMap<_, _>>();
+    let transfer_residue = matrix
+        .iter()
+        .flatten()
+        .map(|value| value * value)
+        .sum::<f64>()
+        .sqrt();
+    let wasserstein_cost = pairings
+        .iter()
+        .map(|pairing| pairing.value.abs() * cost_by_target[&pairing.target_id])
+        .sum::<f64>();
+    let source_refs = pairings
+        .iter()
+        .flat_map(|pairing| pairing.source_refs.iter())
+        .chain(repair_paths.iter().flat_map(|path| path.source_refs.iter()))
+        .chain(ground_costs.iter().flat_map(|cost| cost.source_refs.iter()))
+        .cloned()
+        .collect::<BTreeSet<_>>()
+        .into_iter()
+        .collect::<Vec<_>>();
+
+    let analytic_value = json!({
+        "readingKind": "support-localized-transfer@1",
+        "selectedCoverRef": profile.cover_ref,
+        "modelRelative": true,
+        "repairPaths": paths,
+        "transferTargets": targets,
+        "transferMeasurementPairing": rounded_matrix(&matrix),
+        "transferResidue": round_f64(transfer_residue),
+        "wassersteinTransferCost": round_f64(wasserstein_cost),
+        "groundCosts": ground_costs.iter().map(|cost| json!({
+            "target": cost.target_id,
+            "cost": round_f64(cost.cost),
+            "atomRef": cost.atom_ref
+        })).collect::<Vec<_>>(),
+        "nonConclusion": "transfer readings do not prove absence of side effects or global repair safety"
+    });
+
+    Ok(TransferMeasurementV1 {
+        computed_invariants: vec![json!({
+            "invariantId": format!("support-transfer:{}", profile.profile_id),
+            "evaluator": "ag.support-transfer@1",
+            "method": "finite-support-localized-transfer@1",
+            "selectedCoverRef": profile.cover_ref,
+            "repairPathAtomRefs": repair_paths.iter().map(|path| json!({
+                "repairPath": path.path_id,
+                "atomRef": path.atom_ref
+            })).collect::<Vec<_>>(),
+            "pairingAtomRefs": pairings.iter().map(|pairing| json!({
+                "repairPath": pairing.path_id,
+                "target": pairing.target_id,
+                "atomRef": pairing.atom_ref
+            })).collect::<Vec<_>>(),
+            "transferMeasurementPairing": rounded_matrix(&matrix),
+            "transferResidue": round_f64(transfer_residue),
+            "wassersteinTransferCost": round_f64(wasserstein_cost),
+            "sourceRefs": source_refs
+        })],
+        analytic_readings: vec![
+            AgAnalyticReadingV1 {
+                reading_id: format!("analytic:support-transfer:{}", profile.profile_id),
+                evaluator: "ag.support-transfer@1".to_string(),
+                value: analytic_value,
+                regime: Some("analytic-measurement".to_string()),
+                structural_verdict_ref: None,
+            },
+            AgAnalyticReadingV1 {
+                reading_id: format!(
+                    "theorem-candidate:transfer-lower-bound:{}",
+                    profile.profile_id
+                ),
+                evaluator: "ag.foundation@1".to_string(),
+                value: json!({
+                    "readingKind": "transfer-lower-bound-candidate@1",
+                    "transferLowerBound": round_f64(wasserstein_cost),
+                    "reason": "transfer lower bound remains theorem-candidate and cannot generate a structural verdict"
+                }),
+                regime: Some("theorem-candidate".to_string()),
+                structural_verdict_ref: None,
+            },
+        ],
+        assumptions: transfer_assumptions(profile, "checked"),
+    })
+}
+
 pub fn build_measurement_summary_v1(packet: &ArchSigMeasurementPacketV1) -> Value {
     let nonzero_count = packet
         .structural_verdict
@@ -1388,6 +1628,56 @@ fn validate_period_profile_v1(profile: &MeasurementProfileV1) -> Result<(), Stri
     Ok(())
 }
 
+fn validate_transfer_profile_v1(profile: &MeasurementProfileV1) -> Result<(), String> {
+    let expected = [
+        ("coefficient", profile.coefficient.as_str(), "R"),
+        (
+            "effCoeff",
+            profile.eff_coeff.as_str(),
+            "finite-linear-algebra@1",
+        ),
+        (
+            "resolutionSelector",
+            profile.resolution_selector.as_str(),
+            "support-localized-transfer@1",
+        ),
+        (
+            "zeroPredicate",
+            profile.zero_predicate.as_str(),
+            "analytic-zero@1",
+        ),
+        (
+            "nonZeroPredicate",
+            profile.non_zero_predicate.as_str(),
+            "analytic-positive@1",
+        ),
+        (
+            "certSelector",
+            profile.cert_selector.as_str(),
+            "analytic-reading@1",
+        ),
+    ];
+    for (field, actual, expected) in expected {
+        if actual != expected {
+            return Err(format!(
+                "ag.support-transfer@1 requires MeasurementProfile {field}={expected}, found {actual}"
+            ));
+        }
+    }
+    if transfer_witness_targets(profile).is_empty() {
+        return Err(format!(
+            "ag.support-transfer@1 requires MeasurementProfile {} witnessFamily law ag.support-transfer",
+            profile.profile_id
+        ));
+    }
+    if transfer_witness_targets(profile).len() > MAX_TRANSFER_TARGETS {
+        return Err(format!(
+            "ag.support-transfer@1 supports at most {MAX_TRANSFER_TARGETS} witness targets for finite transfer enumeration"
+        ));
+    }
+    Ok(())
+}
+
 fn laplacian_witness_variables(profile: &MeasurementProfileV1) -> Vec<String> {
     profile
         .witness_family
@@ -1404,6 +1694,17 @@ fn period_witness_cycles(profile: &MeasurementProfileV1) -> Vec<String> {
         .witness_family
         .iter()
         .filter(|witness| witness.law == "ag.period-stokes")
+        .map(|witness| witness.variable.clone())
+        .collect::<BTreeSet<_>>()
+        .into_iter()
+        .collect()
+}
+
+fn transfer_witness_targets(profile: &MeasurementProfileV1) -> Vec<String> {
+    profile
+        .witness_family
+        .iter()
+        .filter(|witness| witness.law == "ag.support-transfer")
         .map(|witness| witness.variable.clone())
         .collect::<BTreeSet<_>>()
         .into_iter()
@@ -1674,6 +1975,147 @@ fn stokes_audit_report(
     }))
 }
 
+fn transfer_pairings(
+    normalized: &NormalizedArchMapV2,
+    selected_contexts: &BTreeSet<String>,
+    targets: &[String],
+) -> Result<Vec<TransferPairingV1>, String> {
+    let target_set = targets.iter().cloned().collect::<BTreeSet<_>>();
+    let mut pairings = Vec::new();
+    for atom in normalized
+        .atoms
+        .iter()
+        .filter(|atom| atom.axis == "transfer" && atom.predicate == "transferPairing")
+        .filter(|atom| atom_belongs_to_selected_context(atom, selected_contexts))
+    {
+        let raw = atom.object.as_deref().ok_or_else(|| {
+            format!(
+                "ag.support-transfer@1 transfer pairing {} requires object target=value",
+                atom.normalized_atom_id
+            )
+        })?;
+        let (target_id, value) = parse_numeric_assignment(
+            raw,
+            "ag.support-transfer@1 transfer pairing",
+            &atom.normalized_atom_id,
+        )?;
+        if !target_set.contains(&target_id) {
+            return Err(format!(
+                "ag.support-transfer@1 transfer pairing {} uses target outside witnessFamily: {}",
+                atom.normalized_atom_id, target_id
+            ));
+        }
+        if pairings.iter().any(|pairing: &TransferPairingV1| {
+            pairing.path_id == atom.subject && pairing.target_id == target_id
+        }) {
+            return Err(format!(
+                "ag.support-transfer@1 duplicate transfer pairing for path {} and target {}",
+                atom.subject, target_id
+            ));
+        }
+        pairings.push(TransferPairingV1 {
+            path_id: atom.subject.clone(),
+            target_id,
+            value,
+            atom_ref: atom.normalized_atom_id.clone(),
+            source_refs: atom.source_refs.clone(),
+        });
+    }
+    pairings.sort_by(|left, right| {
+        left.path_id
+            .cmp(&right.path_id)
+            .then_with(|| left.target_id.cmp(&right.target_id))
+    });
+    Ok(pairings)
+}
+
+fn transfer_repair_paths(
+    normalized: &NormalizedArchMapV2,
+    selected_contexts: &BTreeSet<String>,
+) -> Result<Vec<TransferRepairPathV1>, String> {
+    let mut paths = Vec::new();
+    for atom in normalized
+        .atoms
+        .iter()
+        .filter(|atom| atom.axis == "transfer" && atom.predicate == "repairPath")
+        .filter(|atom| atom_belongs_to_selected_context(atom, selected_contexts))
+    {
+        if paths
+            .iter()
+            .any(|path: &TransferRepairPathV1| path.path_id == atom.subject)
+        {
+            return Err(format!(
+                "ag.support-transfer@1 duplicate repair path {}",
+                atom.subject
+            ));
+        }
+        paths.push(TransferRepairPathV1 {
+            path_id: atom.subject.clone(),
+            atom_ref: atom.normalized_atom_id.clone(),
+            source_refs: atom.source_refs.clone(),
+        });
+    }
+    paths.sort_by(|left, right| left.path_id.cmp(&right.path_id));
+    Ok(paths)
+}
+
+fn transfer_ground_costs(
+    normalized: &NormalizedArchMapV2,
+    selected_contexts: &BTreeSet<String>,
+    targets: &[String],
+) -> Result<Vec<TransferGroundCostV1>, String> {
+    let target_set = targets.iter().cloned().collect::<BTreeSet<_>>();
+    let mut costs = Vec::new();
+    for atom in normalized
+        .atoms
+        .iter()
+        .filter(|atom| atom.axis == "transfer" && atom.predicate == "groundCost")
+        .filter(|atom| atom_belongs_to_selected_context(atom, selected_contexts))
+    {
+        if !target_set.contains(&atom.subject) {
+            return Err(format!(
+                "ag.support-transfer@1 ground cost {} uses target outside witnessFamily: {}",
+                atom.normalized_atom_id, atom.subject
+            ));
+        }
+        let raw = atom.object.as_deref().ok_or_else(|| {
+            format!(
+                "ag.support-transfer@1 ground cost {} requires numeric object",
+                atom.normalized_atom_id
+            )
+        })?;
+        let cost = raw.parse::<f64>().map_err(|_| {
+            format!(
+                "ag.support-transfer@1 ground cost {} has non-numeric object {raw}",
+                atom.normalized_atom_id
+            )
+        })?;
+        if !cost.is_finite() || cost < 0.0 {
+            return Err(format!(
+                "ag.support-transfer@1 ground cost {} requires finite non-negative object",
+                atom.normalized_atom_id
+            ));
+        }
+        if costs
+            .iter()
+            .any(|cost_entry: &TransferGroundCostV1| cost_entry.target_id == atom.subject)
+        {
+            return Err(format!(
+                "ag.support-transfer@1 duplicate ground cost for target {}",
+                atom.subject
+            ));
+        }
+        costs.push(TransferGroundCostV1 {
+            target_id: atom.subject.clone(),
+            cost,
+            atom_ref: atom.normalized_atom_id.clone(),
+            source_refs: atom.source_refs.clone(),
+        });
+    }
+    costs.sort_by(|left, right| left.target_id.cmp(&right.target_id));
+    Ok(costs)
+}
+
 fn graph_laplacian(
     cell_ids: &[String],
     cell_index: &BTreeMap<String, usize>,
@@ -1879,6 +2321,41 @@ fn period_assumptions(
         AgAssumptionLedgerEntryV1 {
             theorem_ref: "part7/5.2A".to_string(),
             assumption: "period_comparison".to_string(),
+            status: "assumed".to_string(),
+            checked_by: None,
+            assumed_by: Some(format!("measurement-profile:{}", profile.profile_id)),
+        },
+    ]
+}
+
+fn transfer_assumptions(
+    profile: &MeasurementProfileV1,
+    transfer_model_status: &str,
+) -> Vec<AgAssumptionLedgerEntryV1> {
+    vec![
+        AgAssumptionLedgerEntryV1 {
+            theorem_ref: "part8/10.1".to_string(),
+            assumption: "finite support-localized transfer model selected by MeasurementProfile"
+                .to_string(),
+            status: transfer_model_status.to_string(),
+            checked_by: (transfer_model_status == "checked")
+                .then(|| format!("measurement-profile:{}.witnessFamily", profile.profile_id)),
+            assumed_by: (transfer_model_status != "checked")
+                .then(|| format!("measurement-profile:{}", profile.profile_id)),
+        },
+        AgAssumptionLedgerEntryV1 {
+            theorem_ref: "part8/10.6".to_string(),
+            assumption: "finite Wasserstein transfer cost computed on supplied ground costs"
+                .to_string(),
+            status: transfer_model_status.to_string(),
+            checked_by: (transfer_model_status == "checked")
+                .then(|| "finite-support-localized-transfer@1".to_string()),
+            assumed_by: (transfer_model_status != "checked")
+                .then(|| format!("measurement-profile:{}", profile.profile_id)),
+        },
+        AgAssumptionLedgerEntryV1 {
+            theorem_ref: "part8/10.4".to_string(),
+            assumption: "transfer_lower_bound".to_string(),
             status: "assumed".to_string(),
             checked_by: None,
             assumed_by: Some(format!("measurement-profile:{}", profile.profile_id)),

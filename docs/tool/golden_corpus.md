@@ -36,11 +36,13 @@ covers rather than molecule-primary ArchMaps.
 - `tools/archsig/tests/fixtures/ag_measurement/archmap_v2_law_conflict_tor.json`
 - `tools/archsig/tests/fixtures/ag_measurement/archmap_v2_sheaf_laplacian.json`
 - `tools/archsig/tests/fixtures/ag_measurement/archmap_v2_period_stokes.json`
+- `tools/archsig/tests/fixtures/ag_measurement/archmap_v2_support_transfer.json`
 - `tools/archsig/tests/fixtures/ag_measurement/law_policy_ag.json`
 - `tools/archsig/tests/fixtures/ag_measurement/law_policy_square_free.json`
 - `tools/archsig/tests/fixtures/ag_measurement/law_policy_tor.json`
 - `tools/archsig/tests/fixtures/ag_measurement/law_policy_laplacian.json`
 - `tools/archsig/tests/fixtures/ag_measurement/law_policy_period.json`
+- `tools/archsig/tests/fixtures/ag_measurement/law_policy_transfer.json`
 - `tools/archsig/tests/fixtures/ag_measurement/law_policy_missing_profile.json`
 
 The executable lock is
@@ -94,6 +96,17 @@ lawfulness. The companion regressions
 `cli_analyze_v2_period_stokes_rejects_unknown_cycle` keep audit mismatches,
 missing finite period evidence, and witness mismatches from becoming measured
 zero.
+
+The support-localized transfer lock is
+`cli_analyze_v2_support_transfer_outputs_residue_and_wasserstein_cost`. It
+fixes the R8 analytic path: finite transfer pairing atoms and explicit ground
+cost atoms yield a transfer measurement pairing, transfer residue, and
+Wasserstein transfer cost. These transfer readings do not prove absence of side
+effects or global repair safety. The companion regressions
+`cli_analyze_v2_support_transfer_missing_pairing_cell_is_not_computed`,
+`cli_analyze_v2_support_transfer_missing_ground_cost_is_not_computed`, and
+`cli_analyze_v2_support_transfer_rejects_unknown_target` keep incomplete
+transfer evidence and witness mismatches from becoming measured zero.
 
 ## V1 Positive Fixtures
 

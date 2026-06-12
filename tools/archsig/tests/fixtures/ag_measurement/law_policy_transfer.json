@@ -1,0 +1,40 @@
+{
+  "schema": "law-policy/v1",
+  "id": "ag-support-transfer-policy",
+  "measurementProfileRef": "profile:ag-support-transfer@1",
+  "measurementProfiles": [
+    {
+      "schema": "measurement-profile/v1",
+      "profileId": "profile:ag-support-transfer@1",
+      "siteRef": "archmap:/contexts",
+      "coverRef": "cover:support-transfer",
+      "coefficient": "R",
+      "effCoeff": "finite-linear-algebra@1",
+      "witnessFamily": [
+        {
+          "law": "ag.support-transfer",
+          "variable": "support:api"
+        },
+        {
+          "law": "ag.support-transfer",
+          "variable": "support:data"
+        }
+      ],
+      "resolutionSelector": "support-localized-transfer@1",
+      "domain": "finite-poset-site",
+      "zeroPredicate": "analytic-zero@1",
+      "nonZeroPredicate": "analytic-positive@1",
+      "certSelector": "analytic-reading@1",
+      "verdictDiscipline": "five-valued-structural-verdict@1"
+    }
+  ],
+  "policies": [
+    {
+      "law": "ag.support-transfer",
+      "evaluator": "ag.support-transfer@1",
+      "basis": ["policy-basis:layering"],
+      "scope": ["src/"],
+      "severity": "medium"
+    }
+  ]
+}
