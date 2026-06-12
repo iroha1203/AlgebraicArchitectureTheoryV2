@@ -1,0 +1,44 @@
+{
+  "schema": "law-policy/v1",
+  "id": "ag-law-conflict-tor-policy",
+  "measurementProfileRef": "profile:ag-law-conflict-tor@1",
+  "measurementProfiles": [
+    {
+      "schema": "measurement-profile/v1",
+      "profileId": "profile:ag-law-conflict-tor@1",
+      "siteRef": "archmap:/contexts",
+      "coverRef": "cover:law-conflict-tor",
+      "coefficient": "F2",
+      "effCoeff": "finite-linear-algebra@1",
+      "witnessFamily": [
+        {
+          "law": "ag.law-conflict-tor",
+          "variable": "x_checkout"
+        },
+        {
+          "law": "ag.law-conflict-tor",
+          "variable": "x_inventory"
+        },
+        {
+          "law": "ag.law-conflict-tor",
+          "variable": "x_payment"
+        }
+      ],
+      "resolutionSelector": "taylor@1",
+      "domain": "finite-poset-site",
+      "zeroPredicate": "rank-zero@1",
+      "nonZeroPredicate": "rank-positive@1",
+      "certSelector": "finite-certificate@1",
+      "verdictDiscipline": "five-valued-structural-verdict@1"
+    }
+  ],
+  "policies": [
+    {
+      "law": "ag.law-conflict-tor",
+      "evaluator": "ag.law-conflict-tor@1",
+      "basis": ["policy-basis:layering"],
+      "scope": ["src/"],
+      "severity": "high"
+    }
+  ]
+}
