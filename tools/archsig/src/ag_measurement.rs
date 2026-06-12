@@ -217,6 +217,7 @@ fn evaluate_square_free_repair_v1(
             .collect(),
     );
     let delta_faces = stanley_reisner_faces(&witness_variables, &minimal_forbidden_supports);
+    let reduced_homology = reduced_simplicial_homology_f2(&delta_faces);
     let repair_hitting_sets = minimal_hitting_sets(&witness_variables, &minimal_forbidden_supports);
     let certificate = square_free_certificate(normalized, &selected_contexts)?;
     let has_obstruction = !minimal_forbidden_supports.is_empty();
@@ -233,13 +234,12 @@ fn evaluate_square_free_repair_v1(
         )
     } else if let Some(certificate) = &certificate {
         (
-            "measured_nonzero".to_string(),
+            "unknown".to_string(),
             false,
-            true,
-            "square_free_repair_certificate_computed".to_string(),
+            false,
+            "nsdepth_certificate_author_supplied_unverified".to_string(),
             Some(certificate.cert_ref.clone()),
-            "square-free obstruction ideal has selected generators and an NSdepth certificate"
-                .to_string(),
+            "square-free obstruction generators were found and an NSdepth certificate reference was supplied, but no finite NSdepth verifier payload was checked; lawfulness is not concluded".to_string(),
         )
     } else {
         (
@@ -278,16 +278,23 @@ fn evaluate_square_free_repair_v1(
             "minimalForbiddenSupports": minimal_forbidden_supports,
             "stanleyReisnerComplex": {
                 "id": "Delta_U",
-                "faces": delta_faces
+                "faces": delta_faces,
+                "reducedHomology": {
+                    "field": "F2",
+                    "method": "finite-f2-simplicial-boundary@1",
+                    "betti": reduced_homology
+                }
             },
             "alexanderDualRepair": {
                 "minimalHittingSets": repair_hitting_sets,
                 "minimality": "checked_by_finite_support_enumeration"
             },
             "nsdepthCertificate": certificate.as_ref().map(|certificate| json!({
+                "status": "author_supplied_unverified",
                 "certificateRef": certificate.cert_ref,
                 "nsdepth": certificate.nsdepth,
-                "supportAtomRefs": certificate.support_atom_refs
+                "supportAtomRefs": certificate.support_atom_refs,
+                "effect": "structural verdict remains unknown until a finite NSdepth verifier payload is checked"
             })).unwrap_or_else(|| json!({
                 "status": "missing",
                 "effect": "structural verdict remains unknown when obstruction generators are present"
@@ -314,19 +321,15 @@ fn evaluate_square_free_repair_v1(
             },
             AgAssumptionLedgerEntryV1 {
                 theorem_ref: "part3/7.2B".to_string(),
-                assumption: "NSdepth certificate supplied by ArchMap author".to_string(),
-                status: if certificate.is_some() {
-                    "checked"
-                } else {
-                    "assumed"
-                }
-                .to_string(),
-                checked_by: certificate
-                    .as_ref()
-                    .map(|certificate| certificate.cert_ref.clone()),
-                assumed_by: certificate
-                    .is_none()
-                    .then(|| format!("measurement-profile:{}", profile.profile_id)),
+                assumption: "NSdepth certificate value supplied by ArchMap author; finite verifier payload is not checked by this evaluator".to_string(),
+                status: "assumed".to_string(),
+                checked_by: None,
+                assumed_by: Some(
+                    certificate
+                        .as_ref()
+                        .map(|certificate| certificate.cert_ref.clone())
+                        .unwrap_or_else(|| format!("measurement-profile:{}", profile.profile_id)),
+                ),
             },
         ],
     })
@@ -692,7 +695,7 @@ fn square_free_certificate(
     normalized: &NormalizedArchMapV2,
     selected_contexts: &BTreeSet<String>,
 ) -> Result<Option<SquareFreeCertificateV1>, String> {
-    normalized
+    let certificates = normalized
         .atoms
         .iter()
         .filter(|atom| atom.axis == "square-free" && atom.predicate == "nsdepthCertificate")
@@ -722,8 +725,16 @@ fn square_free_certificate(
                 support_atom_refs: vec![atom.normalized_atom_id.clone()],
             })
         })
-        .next()
-        .transpose()
+        .collect::<Result<Vec<_>, _>>()?;
+
+    if certificates.len() > 1 {
+        return Err(format!(
+            "ag.square-free-repair@1 expected at most one selected NSdepth certificate, found {}",
+            certificates.len()
+        ));
+    }
+
+    Ok(certificates.into_iter().next())
 }
 
 fn atom_belongs_to_selected_context(
@@ -766,6 +777,97 @@ fn stanley_reisner_faces(
                 .any(|forbidden| is_subset(forbidden.as_slice(), face.as_slice()))
         })
         .collect()
+}
+
+fn reduced_simplicial_homology_f2(faces: &[Vec<String>]) -> Vec<Value> {
+    let mut simplices_by_degree = BTreeMap::<usize, Vec<Vec<String>>>::new();
+    for face in faces.iter().filter(|face| !face.is_empty()) {
+        simplices_by_degree
+            .entry(face.len() - 1)
+            .or_default()
+            .push(face.clone());
+    }
+    for simplices in simplices_by_degree.values_mut() {
+        simplices.sort();
+        simplices.dedup();
+    }
+
+    let max_degree = simplices_by_degree.keys().next_back().copied().unwrap_or(0);
+    let mut betti = Vec::new();
+    for degree in 0..=max_degree {
+        let dim_chain = simplices_by_degree
+            .get(&degree)
+            .map_or(0, std::vec::Vec::len);
+        let boundary_rank = if degree == 0 {
+            usize::from(dim_chain > 0)
+        } else {
+            boundary_rank_f2(&simplices_by_degree, degree)
+        };
+        let next_boundary_rank = boundary_rank_f2(&simplices_by_degree, degree + 1);
+        let dimension = dim_chain.saturating_sub(boundary_rank + next_boundary_rank);
+        betti.push(json!({
+            "degree": degree,
+            "dimension": dimension
+        }));
+    }
+    betti
+}
+
+fn boundary_rank_f2(
+    simplices_by_degree: &BTreeMap<usize, Vec<Vec<String>>>,
+    degree: usize,
+) -> usize {
+    if degree == 0 {
+        return 0;
+    }
+    let Some(domain) = simplices_by_degree.get(&degree) else {
+        return 0;
+    };
+    let Some(codomain) = simplices_by_degree.get(&(degree - 1)) else {
+        return 0;
+    };
+    let row_index = codomain
+        .iter()
+        .enumerate()
+        .map(|(index, simplex)| (simplex.clone(), index))
+        .collect::<BTreeMap<_, _>>();
+    let mut rows = vec![vec![0u8; domain.len()]; codomain.len()];
+    for (column, simplex) in domain.iter().enumerate() {
+        for omitted in 0..simplex.len() {
+            let mut facet = simplex.clone();
+            facet.remove(omitted);
+            if let Some(row) = row_index.get(&facet) {
+                rows[*row][column] ^= 1;
+            }
+        }
+    }
+    matrix_rank_f2(rows)
+}
+
+fn matrix_rank_f2(mut rows: Vec<Vec<u8>>) -> usize {
+    if rows.is_empty() {
+        return 0;
+    }
+    let column_count = rows[0].len();
+    let mut rank = 0;
+    for column in 0..column_count {
+        let Some(pivot) = (rank..rows.len()).find(|row| rows[*row][column] == 1) else {
+            continue;
+        };
+        rows.swap(rank, pivot);
+        for row in 0..rows.len() {
+            if row != rank && rows[row][column] == 1 {
+                for next_column in column..column_count {
+                    rows[row][next_column] ^= rows[rank][next_column];
+                }
+            }
+        }
+        rank += 1;
+        if rank == rows.len() {
+            break;
+        }
+    }
+    rank
 }
 
 fn minimal_hitting_sets(

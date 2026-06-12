@@ -47,8 +47,10 @@ representative with mismatch support refs.
 The square-free repair lock is
 `cli_analyze_v2_square_free_repair_outputs_hitting_sets_and_nsdepth`. It fixes
 the B.3 / B.4 worked example path: `I_Ob^U`, minimal forbidden supports,
-`Delta_U`, Alexander dual minimal repair hitting sets, and an NSdepth
-certificate are emitted as finite measurement packet invariants. The companion
+`Delta_U` faces with finite F2 reduced homology, Alexander dual minimal repair
+hitting sets, and an author-supplied NSdepth certificate reference are emitted
+as measurement packet invariants. Because the NSdepth atom is not a finite
+verifier payload, the structural verdict remains `unknown`. The companion
 `cli_analyze_v2_square_free_without_certificate_returns_unknown` regression
 keeps missing certificates as `unknown`, not lawful or measured zero.
 

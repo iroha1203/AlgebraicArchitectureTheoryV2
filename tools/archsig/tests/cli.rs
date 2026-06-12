@@ -359,9 +359,10 @@ fn cli_analyze_v2_square_free_repair_outputs_hitting_sets_and_nsdepth() {
         packet["structuralVerdict"][0]["evaluator"],
         "ag.square-free-repair@1"
     );
+    assert_eq!(packet["structuralVerdict"][0]["verdict"], "unknown");
     assert_eq!(
-        packet["structuralVerdict"][0]["verdict"],
-        "measured_nonzero"
+        packet["structuralVerdict"][0]["verdictData"]["methodStatus"],
+        "nsdepth_certificate_author_supplied_unverified"
     );
     assert_eq!(
         packet["structuralVerdict"][0]["verdictData"]["certRef"],
@@ -377,12 +378,23 @@ fn cli_analyze_v2_square_free_repair_outputs_hitting_sets_and_nsdepth() {
         repair["alexanderDualRepair"]["minimalHittingSets"],
         serde_json::json!([["x_inventory"], ["x_checkout", "x_payment"]])
     );
+    assert_eq!(
+        repair["stanleyReisnerComplex"]["reducedHomology"]["betti"],
+        serde_json::json!([
+            {"degree": 0, "dimension": 1},
+            {"degree": 1, "dimension": 0}
+        ])
+    );
+    assert_eq!(
+        repair["nsdepthCertificate"]["status"],
+        "author_supplied_unverified"
+    );
     assert_eq!(repair["nsdepthCertificate"]["nsdepth"], Value::from(2));
 
     let summary = read_json(&out_dir.join("archsig-analysis-summary.json"));
     assert_eq!(
         summary["conclusion"],
-        "MEASURED_AG_OBSTRUCTION_UNDER_PROFILE"
+        "AG_MEASUREMENT_FOUNDATION_READY_UNDER_PROFILE"
     );
 }
 
@@ -474,6 +486,47 @@ fn cli_analyze_v2_square_free_rejects_malformed_nsdepth_certificate() {
     let mut archmap = read_json(&root.join("archmap_v2_square_free_repair.json"));
     archmap["atoms"][5]["object"] = Value::String("not-a-number".to_string());
     let archmap_path = out_dir.join("archmap_v2_square_free_bad_cert.json");
+    fs::write(
+        &archmap_path,
+        serde_json::to_vec_pretty(&archmap).expect("archmap serializes"),
+    )
+    .expect("archmap fixture can be written");
+
+    run_sig0_expect_code(
+        &[
+            "analyze",
+            "--archmap",
+            archmap_path.to_str().expect("path is utf-8"),
+            "--law-policy",
+            root.join("law_policy_square_free.json")
+                .to_str()
+                .expect("path is utf-8"),
+            "--out-dir",
+            out_dir.to_str().expect("path is utf-8"),
+        ],
+        2,
+    );
+}
+
+#[test]
+fn cli_analyze_v2_square_free_rejects_any_malformed_nsdepth_certificate() {
+    let out_dir = temp_dir("ag-measurement-square-free-extra-bad-cert");
+    let root = ag_measurement_root();
+    let mut archmap = read_json(&root.join("archmap_v2_square_free_repair.json"));
+    let mut bad_cert = archmap["atoms"][5].clone();
+    bad_cert["id"] = Value::String("atom:nsdepth-certificate-malformed".to_string());
+    bad_cert["object"] = Value::String("not-a-number".to_string());
+    archmap["atoms"]
+        .as_array_mut()
+        .expect("atoms is array")
+        .push(bad_cert);
+    archmap["contexts"][0]["atoms"]
+        .as_array_mut()
+        .expect("context atoms is array")
+        .push(Value::String(
+            "atom:nsdepth-certificate-malformed".to_string(),
+        ));
+    let archmap_path = out_dir.join("archmap_v2_square_free_extra_bad_cert.json");
     fs::write(
         &archmap_path,
         serde_json::to_vec_pretty(&archmap).expect("archmap serializes"),
