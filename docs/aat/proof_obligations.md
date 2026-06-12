@@ -562,7 +562,10 @@ Issue [#1945](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/
 zero-reflecting aggregation と Nat / Bool / 非負 weight の finite-list theorem を追加した。
 Issue [#1948](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1948)
 では soundness / completeness 仮定から定理9.3 Lawfulness-Zero Obstruction 本体を証明した。
-これは定理9.3 後段の三読み一致 / 定理10.5 の証明済み主張ではない。
+Issue [#1951](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1951)
+では witness completeness / axis exactness / coverage / selected reading exactness を明示仮定として、
+定理9.3 後段の三読み一致を証明した。
+これは定理10.5 の証明済み主張ではない。
 
 | 対象 | 現在の扱い | 残す境界 |
 | --- | --- | --- |
@@ -576,8 +579,8 @@ Issue [#1948](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/
 | `I.定義7.1-7.3` Law / LawUniverse / Lawfulness | `defined only` / `proved`. `Formal/AG/Atom/Law.lean` が `Law`, `LawRole`, `LawWitnessFamily`, `SignatureAxes`, `LawUniverse`, `LawUniverse.Required`, `LawUniverse.Optional`, `LawUniverse.Derived`, `Lawfulness`, `SemanticLawful`, `NoRequiredObstruction`, `RequiredSignatureAxesZero`, `lawfulness_required_holds`, `semanticLawful_iff_lawfulness`, `noRequiredObstruction_no_bad_witness`, `requiredSignatureAxesZero_axis` を持つ。 | required law satisfaction、selected witness absence、selected signature axes zero は定義として分離する。定理9.3 後段の三述語一致、AAT Core、有限モデルは後続 Issue に残る。 |
 | `I.定義8.1 / 8.2 / 8.5` Obstruction / ObstructionCircuit / ObstructionValuation | `defined only` / `proved`. `Formal/AG/Atom/Obstruction.lean` が `Obstruction`, `ObstructionCircuit`, `ObstructionValueDomain`, `ObstructionValuation`, `ZeroReflectingAggregation`, `ZeroReflectingListAggregation`, `LawUniverse.RequiredIndex`, `FiniteIndexEnumeration`, `ZeroReflectingListAggregation.toIndexed`, `omegaU`, `omegaU_zero_iff_required`, `ObstructionCircuit.relation_supported_holds`, `ObstructionCircuit.finite_marker`, `ObstructionCircuit.law_failure_holds`, `ObstructionValueDomain.nat`, `ObstructionValueDomain.bool`, `ObstructionValueDomain.NonnegativeWeight`, `ObstructionValueDomain.nonnegativeWeight`, `ObstructionAggregation.natSum_eq_zero_iff`, `ObstructionAggregation.boolOr_eq_false_iff`, `ObstructionAggregation.weightSup_eq_zero_iff`, `ObstructionAggregation.natSumListAggregation`, `ObstructionAggregation.boolOrListAggregation`, `ObstructionAggregation.weightSupListAggregation` を持つ。 | obstruction valuation は required law / selected aggregation に相対化される。finite-list aggregation は explicit covering enumeration により selected finite index aggregation へ持ち上げる。定理9.3 後段の三述語一致、AAT Core、有限モデルは後続 Issue に残る。 |
 | `I.命題9.1 / 9.2 / 定理9.3` Lawfulness-Zero Obstruction 本体 | `defined only` / `proved`. `Formal/AG/Atom/LawfulnessZero.lean` が `ObstructionSound`, `ObstructionComplete`, `law_holds_iff_omega_zero`, `lawfulness_iff_omegaU_zero` を持つ。 | soundness / completeness / zero-reflecting aggregation は theorem 引数として明示される。定理9.3 後段の `SemanticLawful` / `NoRequiredObstruction` / `RequiredSignatureAxesZero` 三述語一致、AAT Core、有限モデルは後続 Issue に残る。 |
+| `I.定理9.3 後段` 三読み一致 | `defined only` / `proved`. `Formal/AG/Atom/ThreeReading.lean` が `ThreeReadingAgreementAssumptions`, `ThreeReadingAgreementAssumptions.semanticLawful_iff_noRequiredObstruction`, `ThreeReadingAgreementAssumptions.noRequiredObstruction_iff_requiredSignatureAxesZero`, `ThreeReadingAgreementAssumptions.semanticLawful_iff_requiredSignatureAxesZero`, `ThreeReadingAgreementAssumptions.threeReadingAgreement` を持つ。 | witness completeness、axis exactness、coverage、selected reading exactness は package field として明示される。AAT Core、有限モデルは後続 Issue に残る。 |
 | 例8.3 / 例8.4 obstruction example theorem | `future proof obligation`. | R7 と R10 の有限モデルが入るまで proved claim として扱わない。 |
-| 定理9.3 後段の三読み一致 | `future proof obligation`. | witness completeness、axis exactness、coverage、selected reading exactness を明示仮定として入れるまで proved claim として扱わない。 |
 | 定理10.5 AAT Core | `future proof obligation`. | A0-A8 と R1-R7 の塔がそろうまで proved claim として扱わない。 |
 
 ## 現在の未解決カテゴリ
