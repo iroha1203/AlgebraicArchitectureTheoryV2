@@ -555,6 +555,295 @@ fn cli_projects_archsig_analysis_packet_to_sft_input_boundary() {
 }
 
 #[test]
+fn cli_projects_archsig_measurement_packet_to_sft_input_boundary() {
+    let out_dir = temp_dir("archsig-measurement-sft-input");
+    let packet = out_dir.join("archsig-measurement-packet.json");
+    let estimate = out_dir.join("operation-support-estimate.json");
+    let estimate_validation = out_dir.join("operation-support-estimate-validation.json");
+    let packet_json = serde_json::json!({
+        "schema": "archsig-measurement-packet/v1",
+        "packetId": "measurement:test-handoff",
+        "profile": {
+            "schema": "measurement-profile/v1",
+            "profileId": "profile:test-handoff",
+            "siteRef": "archmap:/contexts",
+            "coverRef": "cover:test",
+            "coefficient": "F2",
+            "effCoeff": "finite-linear-algebra@1",
+            "witnessFamily": [],
+            "resolutionSelector": "cech@1",
+            "domain": "finite-poset-site",
+            "zeroPredicate": "rank-zero@1",
+            "nonZeroPredicate": "rank-positive@1",
+            "certSelector": "finite-certificate@1",
+            "verdictDiscipline": "five-valued-structural-verdict@1"
+        },
+        "structuralVerdict": [{
+            "evaluator": "ag.cech-obstruction@1",
+            "law": "ag.cech-obstruction",
+            "verdict": "measured_nonzero",
+            "verdictData": {
+                "inScope": true,
+                "zero": false,
+                "nonZero": true,
+                "methodStatus": "computed",
+                "certRef": "computedInvariants/cech-cohomology:profile:test-handoff"
+            }
+        }, {
+            "evaluator": "ag.cech-obstruction@1",
+            "law": "ag.cech-obstruction",
+            "verdict": "unknown",
+            "reason": "certificate boundary is outside the selected profile",
+            "verdictData": {
+                "inScope": true,
+                "zero": false,
+                "nonZero": false,
+                "methodStatus": "certificate_missing"
+            }
+        }],
+        "computedInvariants": [{
+            "invariantId": "cech-cohomology:profile:test-handoff",
+            "evaluator": "ag.cech-obstruction@1",
+            "status": "computed",
+            "dimensions": {"H0": 1, "H1": 1}
+        }],
+        "analyticReadings": [{
+            "readingId": "theorem-candidate:transfer-lower-bound:test",
+            "evaluator": "ag.foundation@1",
+            "value": {"transferLowerBound": 3.5},
+            "regime": "theorem-candidate",
+            "structuralVerdictRef": null
+        }],
+        "assumptions": [{
+            "theoremRef": "part8/4.2",
+            "assumption": "finite site",
+            "status": "checked",
+            "checkedBy": "finite-linear-algebra@1"
+        }, {
+            "theoremRef": "part8/10.4",
+            "assumption": "transfer_lower_bound",
+            "status": "assumed",
+            "assumedBy": "measurement-profile author"
+        }],
+        "nonConclusions": [
+            "ArchSig measurement packet is a computation artifact, not a Lean proof object."
+        ]
+    });
+    fs::write(
+        &packet,
+        serde_json::to_string_pretty(&packet_json).expect("measurement packet serializes"),
+    )
+    .expect("measurement packet fixture is written");
+
+    run_sig0(&[
+        "archsig-analysis-sft-input",
+        "--measurement-packet",
+        packet.to_str().expect("measurement packet path is utf-8"),
+        "--out",
+        estimate.to_str().expect("estimate path is utf-8"),
+    ]);
+    run_sig0(&[
+        "operation-support-estimate",
+        "--input",
+        estimate.to_str().expect("estimate path is utf-8"),
+        "--out",
+        estimate_validation
+            .to_str()
+            .expect("estimate validation path is utf-8"),
+    ]);
+
+    let estimate_json = read_json(&estimate);
+    assert_eq!(
+        estimate_json["schemaVersion"],
+        "operation-support-estimate-v0"
+    );
+    assert_eq!(
+        estimate_json["descriptorRef"]["artifactKind"],
+        "archsig-measurement-packet"
+    );
+    assert!(
+        estimate_json["descriptorRef"]["sourceRefIds"]
+            .as_array()
+            .expect("source refs are array")
+            .iter()
+            .any(|source| source == "archsigMeasurementPacket:measurement:test-handoff"),
+        "FieldSig must retain the measurement packet id as a handoff source ref"
+    );
+    assert!(
+        estimate_json["candidateOperationFamilies"]
+            .as_array()
+            .expect("candidate families are array")
+            .iter()
+            .any(|family| family["supportKind"] == "measurement-packet-structural-verdict"),
+        "FieldSig must project measurement-packet structural verdict rows into bounded candidate families"
+    );
+    let structural_family_ids = estimate_json["candidateOperationFamilies"]
+        .as_array()
+        .expect("candidate families are array")
+        .iter()
+        .filter(|family| family["supportKind"] == "measurement-packet-structural-verdict")
+        .map(|family| {
+            family["familyId"]
+                .as_str()
+                .expect("family id is string")
+                .to_string()
+        })
+        .collect::<Vec<_>>();
+    let unique_structural_family_ids = structural_family_ids
+        .iter()
+        .collect::<std::collections::BTreeSet<_>>();
+    assert_eq!(
+        structural_family_ids.len(),
+        2,
+        "fixture should contain duplicate evaluator structural rows"
+    );
+    assert_eq!(
+        unique_structural_family_ids.len(),
+        structural_family_ids.len(),
+        "duplicate evaluator structural rows must still produce distinct family IDs"
+    );
+    assert!(
+        estimate_json["candidateOperationFamilies"]
+            .as_array()
+            .expect("candidate families are array")
+            .iter()
+            .any(|family| family["supportKind"] == "measurement-packet-analytic-reading"),
+        "FieldSig must retain analytic readings without turning them into structural verdicts"
+    );
+    assert!(
+        estimate_json["evidenceBoundary"]["measurementBoundaryRefs"]
+            .as_array()
+            .expect("measurement boundary refs are array")
+            .iter()
+            .any(|source| source
+                == "archsigMeasurementVerdict:ag.cech-obstruction@1:measured_nonzero"),
+        "FieldSig must carry measurement packet verdict boundaries"
+    );
+    assert!(
+        estimate_json["unknownRemainder"]
+            .as_array()
+            .expect("unknown remainder is array")
+            .iter()
+            .any(|entry| {
+                entry["reason"]
+                    .as_str()
+                    .expect("reason is string")
+                    .contains("part8/10.4")
+                    && entry["treatment"]
+                        .as_str()
+                        .expect("treatment is string")
+                        .contains("do not promote it to proof")
+            }),
+        "assumed theorem-candidate boundaries must remain unknown remainder"
+    );
+    assert!(
+        estimate_json["unknownRemainder"]
+            .as_array()
+            .expect("unknown remainder is array")
+            .iter()
+            .any(|entry| {
+                entry["reason"]
+                    .as_str()
+                    .expect("reason is string")
+                    .contains("ag.cech-obstruction@1 returned unknown")
+                    && entry["unknownAxes"]
+                        .as_array()
+                        .expect("unknown axes are array")
+                        .iter()
+                        .any(|axis| axis == "unknown")
+            }),
+        "unknown structural verdicts must remain unknown remainder"
+    );
+    assert!(
+        estimate_json["knownForbiddenSupport"]
+            .as_array()
+            .expect("forbidden support entries are array")
+            .iter()
+            .any(|entry| entry["operationFamily"] == "raw-archmap-truth-promotion"),
+        "raw ArchMap observation must not be promoted to forecast truth"
+    );
+    let validation_json = read_json(&estimate_validation);
+    assert_eq!(validation_json["summary"]["result"], "pass");
+}
+
+#[test]
+fn cli_rejects_invalid_measurement_packet_handoff_inputs() {
+    let out_dir = temp_dir("archsig-measurement-sft-input-rejected");
+    let schema_only = out_dir.join("schema-only-measurement-packet.json");
+    fs::write(
+        &schema_only,
+        serde_json::to_string_pretty(&serde_json::json!({
+            "schema": "archsig-measurement-packet/v1"
+        }))
+        .expect("schema-only packet serializes"),
+    )
+    .expect("schema-only packet fixture is written");
+
+    let malformed = run_sig0_output(&[
+        "archsig-analysis-sft-input",
+        "--measurement-packet",
+        schema_only
+            .to_str()
+            .expect("schema-only packet path is utf-8"),
+        "--out",
+        out_dir
+            .join("malformed.json")
+            .to_str()
+            .expect("malformed path is utf-8"),
+    ]);
+    assert!(!malformed.status.success());
+    assert!(
+        String::from_utf8_lossy(&malformed.stderr).contains("requires non-empty packetId"),
+        "schema-only measurement packet must be rejected before writing a handoff estimate"
+    );
+
+    let rejected = run_sig0_output(&[
+        "archsig-analysis-sft-input",
+        "--measurement-packet",
+        fixture_root()
+            .join("archmap.json")
+            .to_str()
+            .expect("archmap path is utf-8"),
+        "--out",
+        out_dir
+            .join("rejected.json")
+            .to_str()
+            .expect("rejected path is utf-8"),
+    ]);
+    assert!(!rejected.status.success());
+    assert!(
+        String::from_utf8_lossy(&rejected.stderr)
+            .contains("requires archsig-measurement-packet/v1"),
+        "raw ArchMap input must be rejected by the measurement-packet handoff"
+    );
+
+    let both = run_sig0_output(&[
+        "archsig-analysis-sft-input",
+        "--measurement-packet",
+        fixture_root()
+            .join("llm_native_handoff/archsig_analysis_packet.json")
+            .to_str()
+            .expect("analysis packet path is utf-8"),
+        "--analysis-packet",
+        fixture_root()
+            .join("llm_native_handoff/archsig_analysis_packet.json")
+            .to_str()
+            .expect("analysis packet path is utf-8"),
+        "--out",
+        out_dir
+            .join("both.json")
+            .to_str()
+            .expect("both path is utf-8"),
+    ]);
+    assert!(!both.status.success());
+    assert!(
+        String::from_utf8_lossy(&both.stderr)
+            .contains("--measurement-packet and --analysis-packet are mutually exclusive"),
+        "handoff inputs must be explicit and mutually exclusive"
+    );
+}
+
+#[test]
 fn cli_projects_archsig_v1_packet_refs_and_schema_compatibility() {
     let out_dir = temp_dir("archsig-v1-analysis-sft-input");
     let packet = out_dir.join("archsig-analysis-packet-v1.json");

@@ -55,8 +55,9 @@ jobs:
           out_dir=".tmp/archsig-analyze-e2e"
           archsig_dir="$out_dir/archsig"
           archsig_raw_dir="$out_dir/archsig-raw"
+          archsig_measurement_dir="$out_dir/archsig-measurement"
           fieldsig_dir="$out_dir/fieldsig"
-          mkdir -p "$archsig_dir" "$archsig_raw_dir" "$fieldsig_dir"
+          mkdir -p "$archsig_dir" "$archsig_raw_dir" "$archsig_measurement_dir" "$fieldsig_dir"
 
           cargo run --manifest-path tools/archsig/Cargo.toml -- analyze \
             --archmap tools/archsig/tests/fixtures/archmap_v1/archmap.json \
@@ -190,6 +191,36 @@ jobs:
             echo "FieldSig accepted raw ArchMap as ArchSig analysis packet" >&2
             exit 1
           fi
+
+          cargo run --manifest-path tools/archsig/Cargo.toml -- analyze \
+            --archmap tools/archsig/tests/fixtures/ag_measurement/archmap_v2_support_transfer.json \
+            --law-policy tools/archsig/tests/fixtures/ag_measurement/law_policy_transfer.json \
+            --out-dir "$archsig_measurement_dir"
+
+          test -s "$archsig_measurement_dir/archsig-measurement-packet.json"
+
+          jq -e '
+            .schema == "archsig-measurement-packet/v1"
+            and .packetId == "measurement:ag-measurement-support-transfer-fixture"
+            and (.profile.profileId == "profile:ag-support-transfer@1")
+            and ((.computedInvariants | length) > 0)
+            and ((.analyticReadings | length) > 0)
+            and ([.assumptions[]? | select(.assumption == "transfer_lower_bound" and .status == "assumed")] | length == 1)
+          ' "$archsig_measurement_dir/archsig-measurement-packet.json"
+
+          cargo run --manifest-path tools/fieldsig/Cargo.toml -- archsig-analysis-sft-input \
+            --measurement-packet "$archsig_measurement_dir/archsig-measurement-packet.json" \
+            --out "$fieldsig_dir/operation-support-estimate-measurement.json"
+
+          jq -e '
+            .schemaVersion == "operation-support-estimate-v0"
+            and .descriptorRef.artifactKind == "archsig-measurement-packet"
+            and ([.candidateOperationFamilies[]?.supportKind] | index("measurement-packet-analytic-reading") != null)
+            and ([.descriptorRef.sourceRefIds[]? | startswith("archsigMeasurementPacket:")] | any)
+            and ([.evidenceBoundary.measurementBoundaryRefs[]? | startswith("archsigMeasurementAnalytic:")] | any)
+            and ([.knownForbiddenSupport[]?.operationFamily] | index("raw-archmap-truth-promotion") != null)
+            and ([.unknownRemainder[]?.reason | contains("transfer_lower_bound")] | any)
+          ' "$fieldsig_dir/operation-support-estimate-measurement.json"
 
       - name: Upload ArchSig analyze e2e artifacts
         uses: actions/upload-artifact@v4
