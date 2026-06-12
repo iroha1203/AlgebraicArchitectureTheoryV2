@@ -16,6 +16,7 @@ const VERDICTS: [&str; 5] = [
     "unknown",
     "not_computed",
 ];
+const MAX_SQUARE_FREE_WITNESS_VARIABLES: usize = 12;
 
 pub fn selected_measurement_profile_v1(
     policy: &LawPolicyDocumentV1,
@@ -106,6 +107,27 @@ pub fn build_foundation_measurement_packet_v1(
                         .to_string()
                 }),
             });
+        } else if evaluator == "ag.square-free-repair@1" {
+            validate_square_free_profile_v1(&profile)?;
+            let measurement = evaluate_square_free_repair_v1(normalized, &profile)?;
+            computed_invariants.extend(measurement.computed_invariants);
+            assumptions.extend(measurement.assumptions);
+            structural_verdict.push(AgStructuralVerdictV1 {
+                evaluator: evaluator.to_string(),
+                law: entry
+                    .law
+                    .clone()
+                    .unwrap_or_else(|| "ag.square-free-repair".to_string()),
+                verdict: measurement.verdict,
+                verdict_data: AgVerdictDataV1 {
+                    in_scope: true,
+                    zero: measurement.zero,
+                    non_zero: measurement.non_zero,
+                    method_status: measurement.method_status,
+                    cert_ref: measurement.cert_ref,
+                },
+                reason: Some(measurement.reason),
+            });
         } else {
             structural_verdict.push(AgStructuralVerdictV1 {
                 evaluator: evaluator.to_string(),
@@ -153,6 +175,166 @@ pub fn build_foundation_measurement_packet_v1(
     })
 }
 
+#[derive(Debug, Clone)]
+struct SquareFreeMeasurementV1 {
+    verdict: String,
+    zero: bool,
+    non_zero: bool,
+    method_status: String,
+    cert_ref: Option<String>,
+    reason: String,
+    computed_invariants: Vec<Value>,
+    assumptions: Vec<AgAssumptionLedgerEntryV1>,
+}
+
+#[derive(Debug, Clone)]
+struct SquareFreeGeneratorV1 {
+    generator_id: String,
+    support: Vec<String>,
+    support_atom_refs: Vec<String>,
+}
+
+#[derive(Debug, Clone)]
+struct SquareFreeCertificateV1 {
+    cert_ref: String,
+    nsdepth: usize,
+    support_atom_refs: Vec<String>,
+}
+
+fn evaluate_square_free_repair_v1(
+    normalized: &NormalizedArchMapV2,
+    profile: &MeasurementProfileV1,
+) -> Result<SquareFreeMeasurementV1, String> {
+    let selected_contexts = selected_cover_contexts(normalized, profile)
+        .into_iter()
+        .collect::<BTreeSet<_>>();
+    let witness_variables = square_free_witness_variables(profile);
+    let generators = square_free_generators(normalized, &selected_contexts, &witness_variables)?;
+    let minimal_forbidden_supports = minimal_supports(
+        generators
+            .iter()
+            .map(|generator| generator.support.clone())
+            .collect(),
+    );
+    let delta_faces = stanley_reisner_faces(&witness_variables, &minimal_forbidden_supports);
+    let reduced_homology = reduced_simplicial_homology_f2(&delta_faces);
+    let repair_hitting_sets = minimal_hitting_sets(&witness_variables, &minimal_forbidden_supports);
+    let certificate = square_free_certificate(normalized, &selected_contexts)?;
+    let has_obstruction = !minimal_forbidden_supports.is_empty();
+    let (verdict, zero, non_zero, method_status, cert_ref, reason) = if !has_obstruction {
+        (
+            "measured_zero".to_string(),
+            true,
+            false,
+            "square_free_ideal_computed".to_string(),
+            certificate
+                .as_ref()
+                .map(|certificate| certificate.cert_ref.clone()),
+            "square-free obstruction ideal has no selected generators".to_string(),
+        )
+    } else if let Some(certificate) = &certificate {
+        (
+            "unknown".to_string(),
+            false,
+            false,
+            "nsdepth_certificate_author_supplied_unverified".to_string(),
+            Some(certificate.cert_ref.clone()),
+            "square-free obstruction generators were found and an NSdepth certificate reference was supplied, but no finite NSdepth verifier payload was checked; lawfulness is not concluded".to_string(),
+        )
+    } else {
+        (
+            "unknown".to_string(),
+            false,
+            false,
+            "nsdepth_certificate_missing".to_string(),
+            None,
+            "square-free obstruction generators were found, but no NSdepth certificate was supplied; lawfulness is not concluded".to_string(),
+        )
+    };
+
+    Ok(SquareFreeMeasurementV1 {
+        verdict,
+        zero,
+        non_zero,
+        method_status,
+        cert_ref,
+        reason,
+        computed_invariants: vec![json!({
+            "invariantId": format!("square-free-repair:{}", profile.profile_id),
+            "evaluator": "ag.square-free-repair@1",
+            "method": "finite-square-free-monomial-repair@1",
+            "selectedCoverRef": profile.cover_ref,
+            "witnessVariables": witness_variables,
+            "obstructionIdeal": {
+                "id": "I_Ob^U",
+                "generators": generators.iter().map(|generator| {
+                    json!({
+                        "generatorId": generator.generator_id,
+                        "support": generator.support,
+                        "supportAtomRefs": generator.support_atom_refs
+                    })
+                }).collect::<Vec<_>>()
+            },
+            "minimalForbiddenSupports": minimal_forbidden_supports,
+            "stanleyReisnerComplex": {
+                "id": "Delta_U",
+                "faces": delta_faces,
+                "reducedHomology": {
+                    "field": "F2",
+                    "method": "finite-f2-simplicial-boundary@1",
+                    "betti": reduced_homology
+                }
+            },
+            "alexanderDualRepair": {
+                "minimalHittingSets": repair_hitting_sets,
+                "minimality": "checked_by_finite_support_enumeration"
+            },
+            "nsdepthCertificate": certificate.as_ref().map(|certificate| json!({
+                "status": "author_supplied_unverified",
+                "certificateRef": certificate.cert_ref,
+                "nsdepth": certificate.nsdepth,
+                "supportAtomRefs": certificate.support_atom_refs,
+                "effect": "structural verdict remains unknown until a finite NSdepth verifier payload is checked"
+            })).unwrap_or_else(|| json!({
+                "status": "missing",
+                "effect": "structural verdict remains unknown when obstruction generators are present"
+            }))
+        })],
+        assumptions: vec![
+            AgAssumptionLedgerEntryV1 {
+                theorem_ref: "part8/5.1".to_string(),
+                assumption: "square-free witness variables selected by MeasurementProfile"
+                    .to_string(),
+                status: "checked".to_string(),
+                checked_by: Some(format!(
+                    "measurement-profile:{}.witnessFamily",
+                    profile.profile_id
+                )),
+                assumed_by: None,
+            },
+            AgAssumptionLedgerEntryV1 {
+                theorem_ref: "part8/5.2".to_string(),
+                assumption: "finite support family for Alexander dual enumeration".to_string(),
+                status: "checked".to_string(),
+                checked_by: Some("archmap-v2-validation.contexts-finite".to_string()),
+                assumed_by: None,
+            },
+            AgAssumptionLedgerEntryV1 {
+                theorem_ref: "part3/7.2B".to_string(),
+                assumption: "NSdepth certificate value supplied by ArchMap author; finite verifier payload is not checked by this evaluator".to_string(),
+                status: "assumed".to_string(),
+                checked_by: None,
+                assumed_by: Some(
+                    certificate
+                        .as_ref()
+                        .map(|certificate| certificate.cert_ref.clone())
+                        .unwrap_or_else(|| format!("measurement-profile:{}", profile.profile_id)),
+                ),
+            },
+        ],
+    })
+}
+
 pub fn build_measurement_summary_v1(packet: &ArchSigMeasurementPacketV1) -> Value {
     let nonzero_count = packet
         .structural_verdict
@@ -169,8 +351,13 @@ pub fn build_measurement_summary_v1(packet: &ArchSigMeasurementPacketV1) -> Valu
             )
         })
         .count();
-    let conclusion = if nonzero_count > 0 {
+    let cech_nonzero = packet.structural_verdict.iter().any(|verdict| {
+        verdict.evaluator == "ag.cech-obstruction@1" && verdict.verdict == "measured_nonzero"
+    });
+    let conclusion = if cech_nonzero {
         "MEASURED_H1_OBSTRUCTION_UNDER_PROFILE"
+    } else if nonzero_count > 0 {
+        "MEASURED_AG_OBSTRUCTION_UNDER_PROFILE"
     } else if unmeasured_count > 0 {
         "AG_MEASUREMENT_FOUNDATION_READY_UNDER_PROFILE"
     } else if nonzero_count == 0 {
@@ -383,6 +570,345 @@ fn validate_cech_profile_v1(profile: &MeasurementProfileV1) -> Result<(), String
         ));
     }
     Ok(())
+}
+
+fn validate_square_free_profile_v1(profile: &MeasurementProfileV1) -> Result<(), String> {
+    let expected = [
+        ("coefficient", profile.coefficient.as_str(), "F2"),
+        (
+            "effCoeff",
+            profile.eff_coeff.as_str(),
+            "finite-linear-algebra@1",
+        ),
+        (
+            "resolutionSelector",
+            profile.resolution_selector.as_str(),
+            "taylor@1",
+        ),
+        (
+            "zeroPredicate",
+            profile.zero_predicate.as_str(),
+            "rank-zero@1",
+        ),
+        (
+            "nonZeroPredicate",
+            profile.non_zero_predicate.as_str(),
+            "rank-positive@1",
+        ),
+        (
+            "certSelector",
+            profile.cert_selector.as_str(),
+            "finite-certificate@1",
+        ),
+    ];
+    for (field, actual, expected) in expected {
+        if actual != expected {
+            return Err(format!(
+                "ag.square-free-repair@1 requires MeasurementProfile {field}={expected}, found {actual}"
+            ));
+        }
+    }
+    if square_free_witness_variables(profile).is_empty() {
+        return Err(format!(
+            "ag.square-free-repair@1 requires MeasurementProfile {} witnessFamily law ag.square-free-repair",
+            profile.profile_id
+        ));
+    }
+    if square_free_witness_variables(profile).len() > MAX_SQUARE_FREE_WITNESS_VARIABLES {
+        return Err(format!(
+            "ag.square-free-repair@1 supports at most {MAX_SQUARE_FREE_WITNESS_VARIABLES} witness variables for finite support enumeration"
+        ));
+    }
+    Ok(())
+}
+
+fn square_free_witness_variables(profile: &MeasurementProfileV1) -> Vec<String> {
+    profile
+        .witness_family
+        .iter()
+        .filter(|witness| witness.law == "ag.square-free-repair")
+        .map(|witness| witness.variable.clone())
+        .collect::<BTreeSet<_>>()
+        .into_iter()
+        .collect()
+}
+
+fn square_free_generators(
+    normalized: &NormalizedArchMapV2,
+    selected_contexts: &BTreeSet<String>,
+    witness_variables: &[String],
+) -> Result<Vec<SquareFreeGeneratorV1>, String> {
+    let witness_set = witness_variables.iter().cloned().collect::<BTreeSet<_>>();
+    let mut generators = Vec::new();
+    for atom in normalized
+        .atoms
+        .iter()
+        .filter(|atom| atom.axis == "square-free" && atom.predicate == "obstructionGenerator")
+        .filter(|atom| atom_belongs_to_selected_context(atom, selected_contexts))
+    {
+        let raw_variables = square_free_atom_variables(atom);
+        let unknown = raw_variables
+            .iter()
+            .filter(|variable| !witness_set.contains(*variable))
+            .cloned()
+            .collect::<Vec<_>>();
+        if !unknown.is_empty() {
+            return Err(format!(
+                "ag.square-free-repair@1 generator {} contains variables outside witnessFamily: {}",
+                atom.normalized_atom_id,
+                unknown.join(",")
+            ));
+        }
+        if raw_variables.is_empty() {
+            return Err(format!(
+                "ag.square-free-repair@1 generator {} has no square-free witness variables",
+                atom.normalized_atom_id
+            ));
+        }
+        generators.push(SquareFreeGeneratorV1 {
+            generator_id: atom.normalized_atom_id.clone(),
+            support: raw_variables,
+            support_atom_refs: vec![atom.normalized_atom_id.clone()],
+        });
+    }
+    generators.sort_by(|left, right| left.generator_id.cmp(&right.generator_id));
+    Ok(generators)
+}
+
+fn square_free_atom_variables(atom: &crate::NormalizedAtomV2) -> Vec<String> {
+    let mut support = Vec::new();
+    for value in std::iter::once(atom.subject.as_str()).chain(atom.object.as_deref()) {
+        for variable in value
+            .split(',')
+            .map(str::trim)
+            .filter(|value| !value.is_empty())
+        {
+            support.push(variable.to_string());
+        }
+    }
+    support.sort();
+    support.dedup();
+    support
+}
+
+fn square_free_certificate(
+    normalized: &NormalizedArchMapV2,
+    selected_contexts: &BTreeSet<String>,
+) -> Result<Option<SquareFreeCertificateV1>, String> {
+    let certificates = normalized
+        .atoms
+        .iter()
+        .filter(|atom| atom.axis == "square-free" && atom.predicate == "nsdepthCertificate")
+        .filter(|atom| atom_belongs_to_selected_context(atom, selected_contexts))
+        .map(|atom| {
+            let raw = atom.object.as_deref().ok_or_else(|| {
+                format!(
+                    "ag.square-free-repair@1 NSdepth certificate {} requires numeric object",
+                    atom.normalized_atom_id
+                )
+            })?;
+            let nsdepth = raw.parse::<usize>().map_err(|_| {
+                format!(
+                    "ag.square-free-repair@1 NSdepth certificate {} has non-numeric object {raw}",
+                    atom.normalized_atom_id
+                )
+            })?;
+            if nsdepth == 0 {
+                return Err(format!(
+                    "ag.square-free-repair@1 NSdepth certificate {} must have positive object",
+                    atom.normalized_atom_id
+                ));
+            }
+            Ok(SquareFreeCertificateV1 {
+                cert_ref: atom.normalized_atom_id.clone(),
+                nsdepth,
+                support_atom_refs: vec![atom.normalized_atom_id.clone()],
+            })
+        })
+        .collect::<Result<Vec<_>, _>>()?;
+
+    if certificates.len() > 1 {
+        return Err(format!(
+            "ag.square-free-repair@1 expected at most one selected NSdepth certificate, found {}",
+            certificates.len()
+        ));
+    }
+
+    Ok(certificates.into_iter().next())
+}
+
+fn atom_belongs_to_selected_context(
+    atom: &crate::NormalizedAtomV2,
+    selected_contexts: &BTreeSet<String>,
+) -> bool {
+    atom.context_memberships
+        .iter()
+        .any(|membership| selected_contexts.contains(membership))
+}
+
+fn minimal_supports(mut supports: Vec<Vec<String>>) -> Vec<Vec<String>> {
+    for support in &mut supports {
+        support.sort();
+        support.dedup();
+    }
+    supports.sort();
+    supports.dedup();
+    supports
+        .iter()
+        .filter(|support| {
+            !supports.iter().any(|candidate| {
+                candidate.len() < support.len()
+                    && is_subset(candidate.as_slice(), support.as_slice())
+            })
+        })
+        .cloned()
+        .collect()
+}
+
+fn stanley_reisner_faces(
+    witness_variables: &[String],
+    minimal_forbidden_supports: &[Vec<String>],
+) -> Vec<Vec<String>> {
+    all_subsets(witness_variables)
+        .into_iter()
+        .filter(|face| {
+            !minimal_forbidden_supports
+                .iter()
+                .any(|forbidden| is_subset(forbidden.as_slice(), face.as_slice()))
+        })
+        .collect()
+}
+
+fn reduced_simplicial_homology_f2(faces: &[Vec<String>]) -> Vec<Value> {
+    let mut simplices_by_degree = BTreeMap::<usize, Vec<Vec<String>>>::new();
+    for face in faces.iter().filter(|face| !face.is_empty()) {
+        simplices_by_degree
+            .entry(face.len() - 1)
+            .or_default()
+            .push(face.clone());
+    }
+    for simplices in simplices_by_degree.values_mut() {
+        simplices.sort();
+        simplices.dedup();
+    }
+
+    let max_degree = simplices_by_degree.keys().next_back().copied().unwrap_or(0);
+    let mut betti = Vec::new();
+    for degree in 0..=max_degree {
+        let dim_chain = simplices_by_degree
+            .get(&degree)
+            .map_or(0, std::vec::Vec::len);
+        let boundary_rank = if degree == 0 {
+            usize::from(dim_chain > 0)
+        } else {
+            boundary_rank_f2(&simplices_by_degree, degree)
+        };
+        let next_boundary_rank = boundary_rank_f2(&simplices_by_degree, degree + 1);
+        let dimension = dim_chain.saturating_sub(boundary_rank + next_boundary_rank);
+        betti.push(json!({
+            "degree": degree,
+            "dimension": dimension
+        }));
+    }
+    betti
+}
+
+fn boundary_rank_f2(
+    simplices_by_degree: &BTreeMap<usize, Vec<Vec<String>>>,
+    degree: usize,
+) -> usize {
+    if degree == 0 {
+        return 0;
+    }
+    let Some(domain) = simplices_by_degree.get(&degree) else {
+        return 0;
+    };
+    let Some(codomain) = simplices_by_degree.get(&(degree - 1)) else {
+        return 0;
+    };
+    let row_index = codomain
+        .iter()
+        .enumerate()
+        .map(|(index, simplex)| (simplex.clone(), index))
+        .collect::<BTreeMap<_, _>>();
+    let mut rows = vec![vec![0u8; domain.len()]; codomain.len()];
+    for (column, simplex) in domain.iter().enumerate() {
+        for omitted in 0..simplex.len() {
+            let mut facet = simplex.clone();
+            facet.remove(omitted);
+            if let Some(row) = row_index.get(&facet) {
+                rows[*row][column] ^= 1;
+            }
+        }
+    }
+    matrix_rank_f2(rows)
+}
+
+fn matrix_rank_f2(mut rows: Vec<Vec<u8>>) -> usize {
+    if rows.is_empty() {
+        return 0;
+    }
+    let column_count = rows[0].len();
+    let mut rank = 0;
+    for column in 0..column_count {
+        let Some(pivot) = (rank..rows.len()).find(|row| rows[*row][column] == 1) else {
+            continue;
+        };
+        rows.swap(rank, pivot);
+        for row in 0..rows.len() {
+            if row != rank && rows[row][column] == 1 {
+                for next_column in column..column_count {
+                    rows[row][next_column] ^= rows[rank][next_column];
+                }
+            }
+        }
+        rank += 1;
+        if rank == rows.len() {
+            break;
+        }
+    }
+    rank
+}
+
+fn minimal_hitting_sets(
+    witness_variables: &[String],
+    minimal_forbidden_supports: &[Vec<String>],
+) -> Vec<Vec<String>> {
+    if minimal_forbidden_supports.is_empty() {
+        return Vec::new();
+    }
+    let hitting_sets = all_subsets(witness_variables)
+        .into_iter()
+        .filter(|candidate| !candidate.is_empty())
+        .filter(|candidate| {
+            minimal_forbidden_supports
+                .iter()
+                .all(|support| candidate.iter().any(|variable| support.contains(variable)))
+        })
+        .collect::<Vec<_>>();
+    let mut minimal = minimal_supports(hitting_sets);
+    minimal.sort_by(|left, right| left.len().cmp(&right.len()).then_with(|| left.cmp(right)));
+    minimal
+}
+
+fn all_subsets(items: &[String]) -> Vec<Vec<String>> {
+    let mut subsets = Vec::new();
+    let limit = 1usize << items.len();
+    for mask in 0..limit {
+        let mut subset = Vec::new();
+        for (index, item) in items.iter().enumerate() {
+            if mask & (1usize << index) != 0 {
+                subset.push(item.clone());
+            }
+        }
+        subsets.push(subset);
+    }
+    subsets.sort();
+    subsets
+}
+
+fn is_subset(left: &[String], right: &[String]) -> bool {
+    left.iter().all(|item| right.contains(item))
 }
 
 fn cech_edges(normalized: &NormalizedArchMapV2, selected_contexts: &[String]) -> Vec<CechEdgeV1> {

@@ -1,0 +1,113 @@
+{
+  "schema": "archmap/v2",
+  "id": "ag-measurement-square-free-repair-fixture",
+  "extractionDoctrineRef": {
+    "doctrineId": "doctrine:ag-fixture@1",
+    "fingerprint": "sha256:ag-fixture-doctrine",
+    "components": ["V", "Gamma", "R", "rho", "E", "N"]
+  },
+  "sources": {
+    "src:checkout": {
+      "kind": "rust",
+      "path": "src/checkout.rs",
+      "symbol": "CheckoutContext",
+      "line": 1
+    },
+    "src:inventory": {
+      "kind": "rust",
+      "path": "src/inventory.rs",
+      "symbol": "InventoryContext",
+      "line": 1
+    },
+    "src:payment": {
+      "kind": "rust",
+      "path": "src/payment.rs",
+      "symbol": "PaymentContext",
+      "line": 1
+    },
+    "src:certificate": {
+      "kind": "policy",
+      "path": "docs/tool/archsig_v0_4_0_algebraic_geometry_measurement_prd.md",
+      "section": "B.3-B.4"
+    },
+    "src:cover": {
+      "kind": "policy",
+      "path": "docs/tool/archsig_v0_4_0_algebraic_geometry_measurement_prd.md",
+      "section": "R4"
+    }
+  },
+  "atoms": [
+    {
+      "id": "atom:checkout",
+      "kind": "component",
+      "subject": "src:checkout",
+      "axis": "static",
+      "predicate": "component",
+      "refs": ["src:checkout"]
+    },
+    {
+      "id": "atom:inventory",
+      "kind": "component",
+      "subject": "src:inventory",
+      "axis": "static",
+      "predicate": "component",
+      "refs": ["src:inventory"]
+    },
+    {
+      "id": "atom:payment",
+      "kind": "component",
+      "subject": "src:payment",
+      "axis": "static",
+      "predicate": "component",
+      "refs": ["src:payment"]
+    },
+    {
+      "id": "atom:ob-checkout-inventory",
+      "kind": "relation",
+      "subject": "x_checkout",
+      "object": "x_inventory",
+      "axis": "square-free",
+      "predicate": "obstructionGenerator",
+      "refs": ["src:checkout", "src:inventory"]
+    },
+    {
+      "id": "atom:ob-inventory-payment",
+      "kind": "relation",
+      "subject": "x_inventory",
+      "object": "x_payment",
+      "axis": "square-free",
+      "predicate": "obstructionGenerator",
+      "refs": ["src:inventory", "src:payment"]
+    },
+    {
+      "id": "atom:nsdepth-certificate",
+      "kind": "semantic",
+      "subject": "cert:nsdepth-square-free",
+      "object": "2",
+      "axis": "square-free",
+      "predicate": "nsdepthCertificate",
+      "refs": ["src:certificate"]
+    }
+  ],
+  "contexts": [
+    {
+      "id": "ctx:square-free-local",
+      "atoms": [
+        "atom:checkout",
+        "atom:inventory",
+        "atom:payment",
+        "atom:ob-checkout-inventory",
+        "atom:ob-inventory-payment",
+        "atom:nsdepth-certificate"
+      ],
+      "refs": ["src:cover"]
+    }
+  ],
+  "covers": [
+    {
+      "id": "cover:square-free-repair",
+      "contexts": ["ctx:square-free-local"],
+      "refs": ["src:cover"]
+    }
+  ]
+}
