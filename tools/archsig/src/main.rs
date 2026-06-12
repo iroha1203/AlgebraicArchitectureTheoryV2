@@ -819,9 +819,26 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                     ["nonTerminalCount"]
                     .as_u64()
                     .unwrap_or(0);
-                if strict_distance && non_terminal_count > 0 {
+                let analytic_not_computed_count = measurement_packet
+                    .computed_invariants
+                    .iter()
+                    .filter(|invariant| {
+                        invariant["status"]
+                            .as_str()
+                            .is_some_and(|status| status == "not_computed")
+                    })
+                    .count();
+                let violated_assumption_count =
+                    measurement_summary["assumptionSummary"]["violatedCount"]
+                        .as_u64()
+                        .unwrap_or(0);
+                if strict_distance
+                    && (non_terminal_count > 0
+                        || analytic_not_computed_count > 0
+                        || violated_assumption_count > 0)
+                {
                     eprintln!(
-                        "--strict-distance rejected v2 measurement foundation with unmeasured, unknown, or not_computed structural verdict rows"
+                        "--strict-distance rejected v2 measurement foundation with unmeasured structural verdict rows, not_computed analytic invariants, or violated assumptions"
                     );
                     return Ok(ExitCode::from(1));
                 }
