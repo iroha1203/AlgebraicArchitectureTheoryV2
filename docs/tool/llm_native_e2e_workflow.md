@@ -100,7 +100,27 @@ packet is the compact `llmInterpretationPacket` reading surface from the raw
 analysis packet; it is intentionally not a byte-for-byte copy of the full
 analysis packet. For large ArchMaps, run the workflow with `cargo run --release`.
 
-Project the ArchSig analysis packet into FieldSig:
+Project the primary v0.4.0 ArchSig measurement packet into FieldSig:
+
+```bash
+cargo run --manifest-path tools/archsig/Cargo.toml -- analyze \
+  --archmap tools/archsig/tests/fixtures/ag_measurement/archmap_v2_support_transfer.json \
+  --law-policy tools/archsig/tests/fixtures/ag_measurement/law_policy_transfer.json \
+  --out-dir .tmp/archsig-analyze-e2e/archsig-measurement
+
+cargo run --manifest-path tools/fieldsig/Cargo.toml -- archsig-analysis-sft-input \
+  --measurement-packet .tmp/archsig-analyze-e2e/archsig-measurement/archsig-measurement-packet.json \
+  --out .tmp/archsig-analyze-e2e/fieldsig/operation-support-estimate-measurement.json
+```
+
+The output must be `operation-support-estimate-v0` with
+`descriptorRef.artifactKind = "archsig-measurement-packet"`. FieldSig preserves
+structural verdict rows, computed invariants, analytic readings, assumption
+ledger refs, and non-conclusions as bounded current AG measurement state. It
+does not promote raw ArchMap observations, analytic readings, theorem-candidate
+readings, or assumed boundaries to forecast truth.
+
+Legacy analysis packet compatibility handoff:
 
 ```bash
 cargo run --manifest-path tools/fieldsig/Cargo.toml -- archsig-analysis-sft-input \
