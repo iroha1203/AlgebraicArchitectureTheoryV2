@@ -1,19 +1,392 @@
-use std::collections::BTreeSet;
+use std::collections::{BTreeMap, BTreeSet};
 
 use crate::validation::{count_checks, duplicates, generic_validation_example, validation_check};
 use crate::{
     ARCHMAP_SCHEMA_VERSION, ARCHMAP_SOURCE_INVENTORY_SCHEMA_VERSION, ARCHMAP_V1_SCHEMA,
-    ARCHMAP_VALIDATION_REPORT_SCHEMA_VERSION, ArchMapAtomV1, ArchMapAtomicObservationSummary,
-    ArchMapDocumentV0, ArchMapDocumentV1, ArchMapLeanPreservationChecklistEntry,
-    ArchMapLeanPreservationVocabularyEntry, ArchMapSourceInventoryV0, ArchMapSourceRef,
-    ArchMapValidationReportV0, ArchMapValidationReportV1, ArchMapValidationSummary,
-    ArchMapValidationSummaryV1, ValidationCheck, ValidationExample,
+    ARCHMAP_V2_SCHEMA, ARCHMAP_VALIDATION_REPORT_SCHEMA_VERSION, ArchMapAtomV1,
+    ArchMapAtomicObservationSummary, ArchMapDocumentV0, ArchMapDocumentV1, ArchMapDocumentV2,
+    ArchMapLeanPreservationChecklistEntry, ArchMapLeanPreservationVocabularyEntry,
+    ArchMapSourceInventoryV0, ArchMapSourceRef, ArchMapValidationReportV0,
+    ArchMapValidationReportV1, ArchMapValidationReportV2, ArchMapValidationSummary,
+    ArchMapValidationSummaryV1, ArchMapValidationSummaryV2, ValidationCheck, ValidationExample,
 };
 
 pub struct ArchMapSourceInventoryInput<'a> {
     pub path: &'a str,
     pub document: Option<&'a ArchMapSourceInventoryV0>,
     pub read_error: Option<String>,
+}
+
+pub fn compare_archmap_v2_doctrine(
+    left: &ArchMapDocumentV2,
+    right: &ArchMapDocumentV2,
+) -> serde_json::Value {
+    if left.extraction_doctrine_ref.fingerprint == right.extraction_doctrine_ref.fingerprint {
+        serde_json::json!({
+            "status": "comparable",
+            "reason": "same_doctrine",
+            "leftDoctrine": left.extraction_doctrine_ref.doctrine_id,
+            "rightDoctrine": right.extraction_doctrine_ref.doctrine_id
+        })
+    } else {
+        serde_json::json!({
+            "status": "not_comparable",
+            "reason": "cross_doctrine_not_comparable",
+            "leftDoctrine": left.extraction_doctrine_ref.doctrine_id,
+            "rightDoctrine": right.extraction_doctrine_ref.doctrine_id
+        })
+    }
+}
+
+pub fn validate_archmap_v2_report(
+    document: &ArchMapDocumentV2,
+    input_path: &str,
+) -> ArchMapValidationReportV2 {
+    let checks = vec![
+        check_archmap_v2_schema(&document.schema),
+        check_archmap_v2_doctrine(document),
+        check_archmap_v2_sources(document),
+        check_archmap_v2_atom_ids(document),
+        check_archmap_v2_atom_shapes(document),
+        check_archmap_v2_contexts(document),
+        check_archmap_v2_covers(document),
+    ];
+    let failed_check_count = count_checks(&checks, "fail");
+    let warning_check_count = count_checks(&checks, "warn");
+    let result = if failed_check_count > 0 {
+        "fail"
+    } else if warning_check_count > 0 {
+        "warn"
+    } else {
+        "pass"
+    };
+
+    ArchMapValidationReportV2 {
+        schema_version: "archmap-validation-report-v2".to_string(),
+        archmap_ref: input_path.to_string(),
+        input_schema: document.schema.clone(),
+        checks,
+        summary: ArchMapValidationSummaryV2 {
+            result: result.to_string(),
+            source_count: document.sources.len(),
+            atom_count: document.atoms.len(),
+            context_count: document.contexts.len(),
+            cover_count: document.covers.len(),
+            failed_check_count,
+            warning_check_count,
+        },
+        non_conclusions: vec![
+            "ArchMap v2 validation checks the finite poset site observation contract; it does not prove source extraction soundness, U-adequacy, architecture lawfulness, or Lean theorem discharge.".to_string(),
+            "Contexts and covers are source-grounded observations; selected measurement coefficients, witnesses, and verdict predicates belong to MeasurementProfile.".to_string(),
+        ],
+    }
+}
+
+fn check_archmap_v2_schema(schema: &str) -> ValidationCheck {
+    let mut check = validation_check(
+        "archmap-v2-schema",
+        "ArchMap v2 uses the finite poset site schema discriminator",
+        if schema == ARCHMAP_V2_SCHEMA {
+            "pass"
+        } else {
+            "fail"
+        },
+    );
+    if check.result == "fail" {
+        check.reason = Some(format!("expected {ARCHMAP_V2_SCHEMA}, found {schema}"));
+    }
+    check
+}
+
+fn check_archmap_v2_doctrine(document: &ArchMapDocumentV2) -> ValidationCheck {
+    let mut examples = Vec::new();
+    if document
+        .extraction_doctrine_ref
+        .doctrine_id
+        .trim()
+        .is_empty()
+    {
+        examples.push(generic_validation_example(
+            "extractionDoctrineRef.doctrineId",
+            "empty",
+            "doctrine id must be non-empty",
+        ));
+    }
+    if document
+        .extraction_doctrine_ref
+        .fingerprint
+        .trim()
+        .is_empty()
+    {
+        examples.push(generic_validation_example(
+            "extractionDoctrineRef.fingerprint",
+            "empty",
+            "doctrine fingerprint must be non-empty",
+        ));
+    }
+    check_from_examples(
+        "archmap-v2-extraction-doctrine-ref",
+        "ArchMap v2 declares the extraction doctrine fingerprint used for A8-relative determinism",
+        examples,
+    )
+}
+
+fn check_archmap_v2_sources(document: &ArchMapDocumentV2) -> ValidationCheck {
+    let mut examples = Vec::new();
+    if document.sources.is_empty() {
+        examples.push(generic_validation_example(
+            "sources",
+            "empty",
+            "ArchMap v2 needs a source table for atom, context, and cover refs",
+        ));
+    }
+    for (source_id, source) in &document.sources {
+        if source.kind.trim().is_empty() {
+            examples.push(generic_validation_example(
+                "sources",
+                source_id,
+                "source kind must be non-empty",
+            ));
+        }
+        if let Some(parent) = source.source.as_deref() {
+            if !document.sources.contains_key(parent) {
+                examples.push(generic_validation_example(
+                    source_id,
+                    parent,
+                    "source parent must resolve to sources",
+                ));
+            }
+        }
+    }
+    check_from_examples(
+        "archmap-v2-sources-resolve",
+        "sources table is present and internally resolvable",
+        examples,
+    )
+}
+
+fn check_archmap_v2_atom_ids(document: &ArchMapDocumentV2) -> ValidationCheck {
+    let mut examples = Vec::new();
+    for atom in &document.atoms {
+        if atom.id.trim().is_empty() {
+            examples.push(generic_validation_example(
+                "atoms[].id",
+                "empty",
+                "atom id must be non-empty",
+            ));
+        }
+    }
+    examples.extend(
+        duplicates(document.atoms.iter().map(|atom| atom.id.as_str()))
+            .into_iter()
+            .map(|duplicate| {
+                generic_validation_example("atoms[].id", &duplicate, "atom id must be unique")
+            }),
+    );
+    check_from_examples(
+        "archmap-v2-atom-ids",
+        "atom ids are non-empty and unique",
+        examples,
+    )
+}
+
+fn check_archmap_v2_atom_shapes(document: &ArchMapDocumentV2) -> ValidationCheck {
+    let mut examples = Vec::new();
+    for atom in &document.atoms {
+        if atom.subject.trim().is_empty() {
+            examples.push(generic_validation_example(
+                &atom.id,
+                "subject",
+                "ArchMap v2 atom subject is required",
+            ));
+        }
+        if atom.axis.trim().is_empty() {
+            examples.push(generic_validation_example(
+                &atom.id,
+                "axis",
+                "ArchMap v2 atom axis decoration is required",
+            ));
+        }
+        for source_ref in &atom.refs {
+            if !document.sources.contains_key(source_ref) {
+                examples.push(generic_validation_example(
+                    &atom.id,
+                    source_ref,
+                    "atom refs[] entry must resolve to sources",
+                ));
+            }
+        }
+    }
+    check_from_examples(
+        "archmap-v2-atom-subject-axis-refs",
+        "atoms carry subject / axis decorations and source refs resolve",
+        examples,
+    )
+}
+
+fn check_archmap_v2_contexts(document: &ArchMapDocumentV2) -> ValidationCheck {
+    let atom_ids = document
+        .atoms
+        .iter()
+        .map(|atom| atom.id.as_str())
+        .collect::<BTreeSet<_>>();
+    let context_ids = document
+        .contexts
+        .iter()
+        .map(|context| context.id.as_str())
+        .collect::<BTreeSet<_>>();
+    let mut examples = Vec::new();
+    examples.extend(
+        duplicates(document.contexts.iter().map(|context| context.id.as_str()))
+            .into_iter()
+            .map(|duplicate| {
+                generic_validation_example("contexts[].id", &duplicate, "context id must be unique")
+            }),
+    );
+    for context in &document.contexts {
+        if context.id.trim().is_empty() {
+            examples.push(generic_validation_example(
+                "contexts[].id",
+                "empty",
+                "context id must be non-empty",
+            ));
+        }
+        if context.atoms.is_empty() {
+            examples.push(generic_validation_example(
+                &context.id,
+                "atoms",
+                "context must observe an explicit atom subfamily",
+            ));
+        }
+        for atom_ref in &context.atoms {
+            if !atom_ids.contains(atom_ref.as_str()) {
+                examples.push(generic_validation_example(
+                    &context.id,
+                    atom_ref,
+                    "context atom ref must resolve to atoms",
+                ));
+            }
+        }
+        for context_ref in &context.restricts_to {
+            if !context_ids.contains(context_ref.as_str()) {
+                examples.push(generic_validation_example(
+                    &context.id,
+                    context_ref,
+                    "context restriction target must resolve to contexts",
+                ));
+            }
+            if context_ref == &context.id {
+                examples.push(generic_validation_example(
+                    &context.id,
+                    context_ref,
+                    "context restriction must be irreflexive in primary input",
+                ));
+            }
+        }
+        for source_ref in &context.refs {
+            if !document.sources.contains_key(source_ref) {
+                examples.push(generic_validation_example(
+                    &context.id,
+                    source_ref,
+                    "context refs[] entry must resolve to sources",
+                ));
+            }
+        }
+    }
+    let graph = document
+        .contexts
+        .iter()
+        .map(|context| (context.id.as_str(), context.restricts_to.as_slice()))
+        .collect::<BTreeMap<_, _>>();
+    for context_id in graph.keys() {
+        let mut path = Vec::new();
+        if restriction_cycle_reaches(context_id, context_id, &graph, &mut path) {
+            examples.push(generic_validation_example(
+                "contexts[].restrictsTo",
+                context_id,
+                "context restriction relation must be acyclic to define a finite poset",
+            ));
+        }
+    }
+    check_from_examples(
+        "archmap-v2-context-poset-refs",
+        "contexts form a finite source-grounded poset over atom subfamilies",
+        examples,
+    )
+}
+
+fn restriction_cycle_reaches<'a>(
+    start: &'a str,
+    current: &'a str,
+    graph: &BTreeMap<&'a str, &'a [String]>,
+    path: &mut Vec<&'a str>,
+) -> bool {
+    if path.contains(&current) {
+        return false;
+    }
+    path.push(current);
+    let reaches_start = graph.get(current).is_some_and(|targets| {
+        targets
+            .iter()
+            .any(|target| target == start || restriction_cycle_reaches(start, target, graph, path))
+    });
+    path.pop();
+    reaches_start
+}
+
+fn check_archmap_v2_covers(document: &ArchMapDocumentV2) -> ValidationCheck {
+    let context_ids = document
+        .contexts
+        .iter()
+        .map(|context| context.id.as_str())
+        .collect::<BTreeSet<_>>();
+    let mut examples = Vec::new();
+    examples.extend(
+        duplicates(document.covers.iter().map(|cover| cover.id.as_str()))
+            .into_iter()
+            .map(|duplicate| {
+                generic_validation_example("covers[].id", &duplicate, "cover id must be unique")
+            }),
+    );
+    for cover in &document.covers {
+        if cover.id.trim().is_empty() {
+            examples.push(generic_validation_example(
+                "covers[].id",
+                "empty",
+                "cover id must be non-empty",
+            ));
+        }
+        if cover.contexts.is_empty() {
+            examples.push(generic_validation_example(
+                &cover.id,
+                "contexts",
+                "cover must select a finite context family",
+            ));
+        }
+        for context_ref in &cover.contexts {
+            if !context_ids.contains(context_ref.as_str()) {
+                examples.push(generic_validation_example(
+                    &cover.id,
+                    context_ref,
+                    "cover context ref must resolve to contexts",
+                ));
+            }
+        }
+        for source_ref in &cover.refs {
+            if !document.sources.contains_key(source_ref) {
+                examples.push(generic_validation_example(
+                    &cover.id,
+                    source_ref,
+                    "cover refs[] entry must resolve to sources",
+                ));
+            }
+        }
+    }
+    check_from_examples(
+        "archmap-v2-cover-refs",
+        "covers select finite source-grounded context families",
+        examples,
+    )
 }
 
 pub fn validate_archmap_v1_report(

@@ -4,6 +4,7 @@ use std::path::{Component, Path, PathBuf};
 use std::process::Command;
 use std::time::{SystemTime, UNIX_EPOCH};
 
+use archsig::{ArchMapDocumentV2, compare_archmap_v2_doctrine};
 use serde_json::Value;
 
 fn fixture_root() -> PathBuf {
@@ -56,6 +57,260 @@ fn sharded_root() -> PathBuf {
 
 fn negative_root() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/negative")
+}
+
+fn ag_measurement_root() -> PathBuf {
+    Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/ag_measurement")
+}
+
+#[test]
+fn cli_validates_archmap_v2_finite_poset_site_contract() {
+    let out_dir = temp_dir("archmap-v2-validation");
+    let root = ag_measurement_root();
+    let report = out_dir.join("archmap-validation.json");
+
+    run_sig0(&[
+        "archmap",
+        "--input",
+        root.join("archmap_v2.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--out",
+        report.to_str().expect("path is utf-8"),
+    ]);
+
+    let json = read_json(&report);
+    assert_eq!(json["schemaVersion"], "archmap-validation-report-v2");
+    assert_eq!(json["inputSchema"], "archmap/v2");
+    assert_eq!(json["summary"]["result"], "pass");
+    assert_eq!(json["summary"]["atomCount"], 3);
+    assert_eq!(json["summary"]["contextCount"], 3);
+    assert_eq!(json["summary"]["coverCount"], 1);
+}
+
+#[test]
+fn cli_law_policy_ag_evaluator_requires_measurement_profile() {
+    let out_dir = temp_dir("ag-policy-missing-profile");
+    let root = ag_measurement_root();
+    let report = out_dir.join("law-policy-validation.json");
+
+    run_sig0_expect_code(
+        &[
+            "law-policy",
+            "--input",
+            root.join("law_policy_missing_profile.json")
+                .to_str()
+                .expect("path is utf-8"),
+            "--out",
+            report.to_str().expect("path is utf-8"),
+        ],
+        1,
+    );
+
+    let json = read_json(&report);
+    assert_eq!(json["summary"]["result"], "fail");
+    assert!(
+        json["checks"].as_array().unwrap().iter().any(|check| {
+            check["id"] == "law-policy-v1-ag-evaluator-profile-required"
+                && check["result"] == "fail"
+        }),
+        "AG evaluator execution must fail closed without MeasurementProfile"
+    );
+}
+
+#[test]
+fn cli_analyze_v2_writes_measurement_packet_foundation() {
+    let out_dir = temp_dir("ag-measurement-analyze");
+    let root = ag_measurement_root();
+
+    run_sig0(&[
+        "analyze",
+        "--archmap",
+        root.join("archmap_v2.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--law-policy",
+        root.join("law_policy_ag.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--out-dir",
+        out_dir.to_str().expect("path is utf-8"),
+    ]);
+
+    let normalized = read_json(&out_dir.join("normalized-archmap.json"));
+    assert_eq!(normalized["schema"], "normalized-archmap/v2");
+    assert_eq!(
+        normalized["summary"]["doctrineFingerprint"],
+        "sha256:ag-fixture-doctrine"
+    );
+
+    let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
+    assert_eq!(packet["schema"], "archsig-measurement-packet/v1");
+    assert!(packet["profile"].is_object());
+    assert!(packet["structuralVerdict"].is_array());
+    assert!(packet["computedInvariants"].is_array());
+    assert!(packet["analyticReadings"].is_array());
+    assert!(packet["assumptions"].is_array());
+    assert!(packet["nonConclusions"].is_array());
+    assert_eq!(packet["structuralVerdict"][0]["verdict"], "unmeasured");
+    assert_eq!(packet["analyticReadings"][0]["regime"], "theorem-candidate");
+
+    let validation = read_json(&out_dir.join("archsig-analysis-validation.json"));
+    assert_eq!(validation["summary"]["result"], "pass");
+
+    let viewer = read_json(&out_dir.join("archsig-atom-viewer-data.json"));
+    assert_eq!(viewer["schemaVersion"], "archsig-atom-viewer-data-v2");
+    assert_eq!(
+        viewer["sourceArtifactRefs"]["measurementPacket"],
+        "archsig-measurement-packet.json"
+    );
+
+    let summary = read_json(&out_dir.join("archsig-analysis-summary.json"));
+    assert_eq!(
+        summary["conclusion"],
+        "AG_MEASUREMENT_FOUNDATION_READY_UNDER_PROFILE"
+    );
+}
+
+#[test]
+fn cli_analyze_v2_strict_distance_rejects_unmeasured_foundation_rows() {
+    let out_dir = temp_dir("ag-measurement-strict");
+    let root = ag_measurement_root();
+
+    run_sig0_expect_code(
+        &[
+            "analyze",
+            "--archmap",
+            root.join("archmap_v2.json")
+                .to_str()
+                .expect("path is utf-8"),
+            "--law-policy",
+            root.join("law_policy_ag.json")
+                .to_str()
+                .expect("path is utf-8"),
+            "--out-dir",
+            out_dir.to_str().expect("path is utf-8"),
+            "--strict-distance",
+        ],
+        1,
+    );
+
+    let summary = read_json(&out_dir.join("archsig-analysis-summary.json"));
+    assert_eq!(
+        summary["conclusion"],
+        "AG_MEASUREMENT_FOUNDATION_READY_UNDER_PROFILE"
+    );
+    assert_eq!(summary["structuralVerdictSummary"]["nonTerminalCount"], 1);
+}
+
+#[test]
+fn cli_analyze_v2_rejects_unresolved_measurement_profile_refs() {
+    let out_dir = temp_dir("ag-measurement-bad-profile");
+    let root = ag_measurement_root();
+    let mut policy = read_json(&root.join("law_policy_ag.json"));
+    policy["measurementProfiles"][0]["coverRef"] = Value::String("cover:missing".to_string());
+    let policy_path = out_dir.join("law_policy_bad_cover.json");
+    fs::write(
+        &policy_path,
+        serde_json::to_vec_pretty(&policy).expect("policy serializes"),
+    )
+    .expect("policy fixture can be written");
+
+    run_sig0_expect_code(
+        &[
+            "analyze",
+            "--archmap",
+            root.join("archmap_v2.json")
+                .to_str()
+                .expect("path is utf-8"),
+            "--law-policy",
+            policy_path.to_str().expect("path is utf-8"),
+            "--out-dir",
+            out_dir.to_str().expect("path is utf-8"),
+        ],
+        2,
+    );
+}
+
+#[test]
+fn cli_rejects_archmap_v2_context_restriction_cycle() {
+    let out_dir = temp_dir("ag-measurement-context-cycle");
+    let root = ag_measurement_root();
+    let mut archmap = read_json(&root.join("archmap_v2.json"));
+    archmap["contexts"][2]["restrictsTo"] =
+        Value::Array(vec![Value::String("ctx:order".to_string())]);
+    let archmap_path = out_dir.join("archmap_v2_cycle.json");
+    fs::write(
+        &archmap_path,
+        serde_json::to_vec_pretty(&archmap).expect("archmap serializes"),
+    )
+    .expect("archmap fixture can be written");
+    let report = out_dir.join("archmap-validation.json");
+
+    run_sig0_expect_code(
+        &[
+            "archmap",
+            "--input",
+            archmap_path.to_str().expect("path is utf-8"),
+            "--out",
+            report.to_str().expect("path is utf-8"),
+        ],
+        1,
+    );
+
+    let json = read_json(&report);
+    assert!(
+        json["checks"].as_array().unwrap().iter().any(|check| {
+            check["id"] == "archmap-v2-context-poset-refs" && check["result"] == "fail"
+        }),
+        "context restriction cycle must fail finite-poset validation"
+    );
+}
+
+#[test]
+fn archmap_v2_normalize_is_byte_deterministic() {
+    let out_dir_a = temp_dir("ag-normalize-a");
+    let out_dir_b = temp_dir("ag-normalize-b");
+    let root = ag_measurement_root();
+
+    for out_dir in [&out_dir_a, &out_dir_b] {
+        run_sig0(&[
+            "analyze",
+            "--archmap",
+            root.join("archmap_v2.json")
+                .to_str()
+                .expect("path is utf-8"),
+            "--law-policy",
+            root.join("law_policy_ag.json")
+                .to_str()
+                .expect("path is utf-8"),
+            "--out-dir",
+            out_dir.to_str().expect("path is utf-8"),
+        ]);
+    }
+
+    let first = fs::read(out_dir_a.join("normalized-archmap.json")).expect("first output exists");
+    let second = fs::read(out_dir_b.join("normalized-archmap.json")).expect("second output exists");
+    assert_eq!(
+        first, second,
+        "same ArchMap v2 input must normalize to byte-identical output"
+    );
+}
+
+#[test]
+fn archmap_v2_cross_doctrine_comparison_is_not_comparable() {
+    let root = ag_measurement_root();
+    let left_value = read_json(&root.join("archmap_v2.json"));
+    let mut right_value = left_value.clone();
+    right_value["extractionDoctrineRef"]["fingerprint"] =
+        Value::String("sha256:other-doctrine".to_string());
+    let left: ArchMapDocumentV2 = serde_json::from_value(left_value).expect("left archmap parses");
+    let right: ArchMapDocumentV2 =
+        serde_json::from_value(right_value).expect("right archmap parses");
+
+    let result = compare_archmap_v2_doctrine(&left, &right);
+    assert_eq!(result["status"], "not_comparable");
+    assert_eq!(result["reason"], "cross_doctrine_not_comparable");
 }
 
 #[test]
@@ -6887,13 +7142,17 @@ fn cli_schema_catalog_is_primary_archsig_surface_only() {
             "archmap",
             "archmap-validation-report",
             "archmap-v1",
+            "archmap-v2",
             "law-policy",
             "law-policy-v1",
+            "measurement-profile-v1",
             "law-evaluator-registry-v1",
             "law-policy-validation-report",
             "normalized-archmap-v1",
+            "normalized-archmap-v2",
             "typed-evaluator-results-v1",
             "architecture-distance-v1",
+            "archsig-measurement-packet-v1",
             "archsig-analysis-packet",
             "archsig-analysis-packet-v1",
             "archsig-analysis-packet-validation-report",
@@ -7224,6 +7483,18 @@ fn run_sig0(args: &[&str]) {
     assert!(
         output.status.success(),
         "archsig {:?} failed\nstdout:\n{}\nstderr:\n{}",
+        args,
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr)
+    );
+}
+
+fn run_sig0_expect_code(args: &[&str], expected_code: i32) {
+    let output = run_sig0_output(args);
+    assert_eq!(
+        output.status.code(),
+        Some(expected_code),
+        "archsig {:?} exit code mismatch\nstdout:\n{}\nstderr:\n{}",
         args,
         String::from_utf8_lossy(&output.stdout),
         String::from_utf8_lossy(&output.stderr)

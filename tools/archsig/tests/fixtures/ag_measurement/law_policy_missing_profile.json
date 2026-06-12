@@ -1,0 +1,13 @@
+{
+  "schema": "law-policy/v1",
+  "id": "ag-measurement-policy-missing-profile",
+  "policies": [
+    {
+      "law": "ag.cech-obstruction",
+      "evaluator": "ag.cech-obstruction@1",
+      "basis": ["policy-basis:layering"],
+      "scope": ["src/"],
+      "severity": "high"
+    }
+  ]
+}

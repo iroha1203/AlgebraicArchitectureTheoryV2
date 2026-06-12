@@ -4,13 +4,16 @@ use std::path::{Path, PathBuf};
 use std::process::ExitCode;
 
 use archsig::{
-    ARCHMAP_V1_SCHEMA, ArchMapDocumentV1, LAW_POLICY_V1_SCHEMA, LawPolicyDocumentV1,
-    SchemaVersionCatalogV0, build_architecture_distance_v1, build_typed_analysis_packet_v1,
+    ARCHMAP_V1_SCHEMA, ARCHMAP_V2_SCHEMA, ArchMapDocumentV1, ArchMapDocumentV2,
+    LAW_POLICY_V1_SCHEMA, LawPolicyDocumentV1, SchemaVersionCatalogV0,
+    build_architecture_distance_v1, build_foundation_measurement_packet_v1,
+    build_measurement_summary_v1, build_measurement_viewer_data_v1, build_typed_analysis_packet_v1,
     build_typed_analysis_summary_v1, build_typed_analysis_validation_v1,
     build_typed_atom_viewer_data_v1, build_typed_detail_index_v1,
     build_typed_llm_interpretation_packet_v1, enrich_architecture_distance_with_part4_bundle_v1,
-    evaluate_typed_v1, normalize_archmap_v1, static_law_evaluator_registry_v1,
-    static_schema_version_catalog, validate_archmap_v1_report, validate_law_policy_v1_report,
+    evaluate_typed_v1, normalize_archmap_v1, normalize_archmap_v2,
+    static_law_evaluator_registry_v1, static_schema_version_catalog, validate_archmap_v1_report,
+    validate_archmap_v2_report, validate_law_policy_v1_report, validate_measurement_packet_v1,
 };
 use clap::{Parser, Subcommand};
 use serde_json::Value;
@@ -124,11 +127,24 @@ fn validate_archmap_command_input(
     input: &PathBuf,
 ) -> Result<(serde_json::Value, bool, bool), Box<dyn Error>> {
     let raw: serde_json::Value = read_json(input)?;
-    require_schema(&raw, ARCHMAP_V1_SCHEMA, "--input")?;
-    let document: ArchMapDocumentV1 = serde_json::from_value(raw)?;
-    let report = validate_archmap_v1_report(&document, &input.display().to_string());
-    let failed = report.summary.result == "fail";
-    Ok((serde_json::to_value(report)?, failed, true))
+    match json_schema(&raw) {
+        Some(ARCHMAP_V1_SCHEMA) => {
+            let document: ArchMapDocumentV1 = serde_json::from_value(raw)?;
+            let report = validate_archmap_v1_report(&document, &input.display().to_string());
+            let failed = report.summary.result == "fail";
+            Ok((serde_json::to_value(report)?, failed, true))
+        }
+        Some(ARCHMAP_V2_SCHEMA) => {
+            let document: ArchMapDocumentV2 = serde_json::from_value(raw)?;
+            let report = validate_archmap_v2_report(&document, &input.display().to_string());
+            let failed = report.summary.result == "fail";
+            Ok((serde_json::to_value(report)?, failed, false))
+        }
+        _ => {
+            require_schema(&raw, ARCHMAP_V1_SCHEMA, "--input")?;
+            unreachable!("require_schema returns on success for archmap/v1")
+        }
+    }
 }
 
 fn validate_law_policy_command_input(
@@ -706,6 +722,7 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
             let normalized_archmap_path = out_dir.join("normalized-archmap.json");
             let typed_evaluator_results_path = out_dir.join("typed-evaluator-results.json");
             let architecture_distance_path = out_dir.join("architecture-distance.json");
+            let measurement_packet_path = out_dir.join("archsig-measurement-packet.json");
             let analysis_packet_path = out_dir.join("archsig-analysis-packet.json");
             let analysis_validation_path = out_dir.join("archsig-analysis-validation.json");
             let llm_interpretation_path = out_dir.join("llm-interpretation-packet.json");
@@ -714,8 +731,8 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                 validate_archmap_command_input(&archmap)?;
             let (law_policy_preflight, law_policy_failed, law_policy_is_v1) =
                 validate_law_policy_command_input(&law_policy)?;
-            if !archmap_is_v1 || !law_policy_is_v1 {
-                return Err("archsig analyze accepts only archmap/v1 and law-policy/v1".into());
+            if !law_policy_is_v1 {
+                return Err("archsig analyze accepts only law-policy/v1".into());
             }
             std::fs::create_dir_all(&out_dir)?;
             remove_analyze_success_artifacts(&out_dir)?;
@@ -723,10 +740,96 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
             write_json(Some(law_policy_validation_path), &law_policy_preflight)?;
             if archmap_failed || law_policy_failed {
                 eprintln!(
-                    "archsig analyze wrote v1 validation artifacts to {} and stopped before normalization",
+                    "archsig analyze wrote validation artifacts to {} and stopped before normalization",
                     out_dir.display()
                 );
                 return Ok(ExitCode::from(1));
+            }
+            if !archmap_is_v1 {
+                let law_policy_document: LawPolicyDocumentV1 = read_json(&law_policy)?;
+                let archmap_document: ArchMapDocumentV2 = read_json(&archmap)?;
+                let normalized_archmap =
+                    normalize_archmap_v2(&archmap_document, &archmap.display().to_string());
+                write_json(Some(normalized_archmap_path), &normalized_archmap)?;
+                let measurement_packet = build_foundation_measurement_packet_v1(
+                    &normalized_archmap,
+                    &law_policy_document,
+                    &archmap.display().to_string(),
+                    &law_policy.display().to_string(),
+                )
+                .map_err(|message| -> Box<dyn Error> { message.into() })?;
+                let packet_validation = validate_measurement_packet_v1(&measurement_packet);
+                let packet_failed = packet_validation.iter().any(|check| check.result == "fail");
+                write_json(Some(measurement_packet_path), &measurement_packet)?;
+                let measurement_summary = build_measurement_summary_v1(&measurement_packet);
+                let measurement_viewer_data = build_measurement_viewer_data_v1(
+                    &normalized_archmap,
+                    &measurement_packet,
+                    &measurement_summary,
+                );
+                write_json(
+                    Some(analysis_validation_path),
+                    &serde_json::json!({
+                        "schemaVersion": "archsig-measurement-packet-validation-report-v1",
+                        "packetSchema": measurement_packet.schema,
+                        "checks": packet_validation,
+                        "summary": {
+                            "result": if packet_failed { "fail" } else { "pass" }
+                        }
+                    }),
+                )?;
+                write_json(
+                    Some(analysis_summary_path),
+                    &measurement_summary,
+                )?;
+                write_json(
+                    Some(atom_viewer_data_path),
+                    &measurement_viewer_data,
+                )?;
+                write_json(
+                    Some(run_manifest_path),
+                    &serde_json::json!({
+                        "schemaVersion": "archsig-run-manifest-v2",
+                        "commandName": "analyze",
+                        "outputMode": "v2-measurement-foundation",
+                        "archmapInputPath": archmap.display().to_string(),
+                        "lawPolicyInputPath": law_policy.display().to_string(),
+                        "generatedArtifacts": [
+                            "archmap-validation.json",
+                            "law-policy-validation.json",
+                            "normalized-archmap.json",
+                            "archsig-measurement-packet.json",
+                            "archsig-analysis-validation.json",
+                            "archsig-analysis-summary.json",
+                            "archsig-atom-viewer-data.json",
+                            "archsig-run-manifest.json"
+                        ],
+                        "validationResultSummary": {
+                            "archmap": { "result": summary_result(&archmap_preflight) },
+                            "lawPolicy": { "result": summary_result(&law_policy_preflight) },
+                            "measurementPacket": { "result": if packet_failed { "fail" } else { "pass" } }
+                        },
+                        "nonConclusions": [
+                            "v2 run manifest records the v0.4.0 AG measurement foundation artifacts.",
+                            "Foundation packet rows are not completed AG invariant evaluator computation."
+                        ]
+                    }),
+                )?;
+                let non_terminal_count = measurement_summary["structuralVerdictSummary"]
+                    ["nonTerminalCount"]
+                    .as_u64()
+                    .unwrap_or(0);
+                if strict_distance && non_terminal_count > 0 {
+                    eprintln!(
+                        "--strict-distance rejected v2 measurement foundation with unmeasured, unknown, or not_computed structural verdict rows"
+                    );
+                    return Ok(ExitCode::from(1));
+                }
+                return Ok(if packet_failed {
+                    ExitCode::from(1)
+                } else {
+                    ExitCode::SUCCESS
+                });
             }
             let law_policy_document: LawPolicyDocumentV1 = read_json(&law_policy)?;
             if strict_distance && law_policy_document.distance_profile_ref.is_none() {
@@ -874,6 +977,7 @@ fn remove_analyze_success_artifacts(out_dir: &PathBuf) -> Result<(), Box<dyn Err
         "normalized-archmap.json",
         "typed-evaluator-results.json",
         "architecture-distance.json",
+        "archsig-measurement-packet.json",
         "archsig-analysis-packet.json",
         "archsig-analysis-detail-index.json",
         "archsig-analysis-validation.json",

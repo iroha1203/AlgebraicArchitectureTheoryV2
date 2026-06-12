@@ -8059,6 +8059,8 @@ mod tests {
             schema: "law-policy/v1".to_string(),
             id: "policy:test".to_string(),
             distance_profile_ref: Some("distance-profile:unknown@1".to_string()),
+            measurement_profile_ref: None,
+            measurement_profiles: Vec::new(),
             policies: Vec::new(),
         };
         let typed_results = TypedEvaluatorResultsV1 {
@@ -8278,6 +8280,8 @@ mod tests {
             schema: "law-policy/v1".to_string(),
             id: "policy:test".to_string(),
             distance_profile_ref: Some("distance-profile:architecture-default@1".to_string()),
+            measurement_profile_ref: None,
+            measurement_profiles: Vec::new(),
             policies: Vec::new(),
         };
         let typed_results = empty_typed_results_for_test();

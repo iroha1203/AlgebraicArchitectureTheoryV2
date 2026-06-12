@@ -4,11 +4,11 @@
 
 ## 境界
 
-- ArchMap v1 は supplied `archmap/v1` evidence を読む source-grounded Atom map である。primary input は `sources` / `atoms` / `molecules` であり、gap、projection info、concern hints、provenance、non-conclusions を primary schema に戻さない。
+- ArchMap v2 は supplied `archmap/v2` evidence を読む source-grounded finite poset site map である。primary input は `sources` / `atoms`(subject / axis 必須) / `contexts` / `covers` / `extractionDoctrineRef` であり、`molecules` は primary field ではない。gap、projection info、concern hints、provenance、non-conclusions を primary schema に戻さない。
 - AAT は Atom を公理的出発点とする。ArchMap / extractor は source code から Atom input を提示・検査する
   実測 surface であり、AAT の定理や完了条件を定義しない。
-- LawPolicy v1 は policy pack / evaluator / basis / scope / severity を選ぶ selector である。witness rule、signature axis、coverage requirement、exactness assumption、distance rule は evaluator registry の責務である。AAT そのものではない。
-- ArchSig は ArchMap + LawPolicy から typed evaluator results と `archsig-analysis-packet/v1` を作る AAT structural analysis layer である。Lean 証明器ではない。Rust と Lean の対応を tooling contract として要求しない。
+- LawPolicy v1 は policy pack / evaluator / basis / scope / severity を選ぶ selector である。AG evaluator を選ぶ場合は `measurementProfileRef` で `measurement-profile/v1` を選ぶ。witness rule、signature axis、coverage requirement、exactness assumption、distance rule は evaluator registry または MeasurementProfile の責務である。AAT そのものではない。
+- ArchSig v0.4.0 は ArchMap v2 + LawPolicy v1 + MeasurementProfile から `archsig-measurement-packet/v1` を作る AG measurement layer である。Lean 証明器ではない。Rust と Lean の対応を tooling contract として要求しない。
 - ArchSig は tool として肯定的な bounded diagnostic conclusion を出す。たとえば
   `SAFE_WITHIN_POLICY`、`NO_SELECTED_OBSTRUCTION`、`ACCEPTABLE_UNDER_EVIDENCE_CONTRACT`、
   `DISTANCE_WITHIN_THRESHOLD` のように、選ばれた LawPolicy、DistanceProfile、evidence contract の中で
