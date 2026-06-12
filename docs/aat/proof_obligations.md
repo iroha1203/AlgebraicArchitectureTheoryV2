@@ -574,12 +574,15 @@ Issue [#1955](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/
 Issue [#1957](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1957)
 では finite Atom universe、例8.3 / 例8.4 の obstruction circuit、定理9.3 の finite example theorem、
 AAT Core への handoff を追加した。
+Issue [#1959](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1959)
+では `Formal/AG` 全体の placeholder / unsafe scan、`Formal.Arch` import scan、
+および R11 台帳同期を最終確認した。
 
 | 対象 | 現在の扱い | 残す境界 |
 | --- | --- | --- |
 | `I.定義1.1` Atom carrier | `defined only`. `Formal/AG/Atom/Atom.lean` が `AAT.AG.AtomRecord`, `AAT.AG.AtomCarrier`, `AAT.AG.AtomCarrier.record` を持つ。 | concrete graph / category / algebra / diagram / state transition instance はまだ proved claim ではない。 |
-| `I.公理A0-A8` Atom system package | `defined only` / `proved` for A3 and A8 accessors. `Formal/AG/Atom/Axioms.lean` が `AAT.AG.AtomAxiomSystem`, `AAT.AG.AtomAxiomSystem.ext`, `AAT.AG.ExtractionDoctrine.atomize_unique`, `AAT.AG.AtomAxiomSystem.doctrine_family_unique` を持つ。 | concrete graph / category / algebra / diagram / state transition instance と R11 最終台帳整理は後続 Issue に残る。 |
-| `I.命題A9` 観測不完全性と存在一意性 | `defined only` / `proved`. `Formal/AG/Atom/Observation.lean` が `ObservationModel`, `ObservationProjection`, `ReconstructionAttempt`, `no_exact_reconstruction_of_nonInjective`, `A9Example.projection`, `A9Example.reconstruction`, `A9Example.noninjective_atom_observation`, `A9Example.unobserved_atom_exists`, `A9Example.noninjective_family_observation`, `A9Example.reconstruction_not_exact`, `A9Example.canonical_family_unique`, `A9Example.observation_incompleteness_coexists_with_a8` を持つ。 | R6 以降の Law API との接続は後続 Issue に残る。 |
+| `I.公理A0-A8` Atom system package | `defined only` / `proved` for A3 and A8 accessors. `Formal/AG/Atom/Axioms.lean` が `AAT.AG.AtomAxiomSystem`, `AAT.AG.AtomAxiomSystem.ext`, `AAT.AG.ExtractionDoctrine.atomize_unique`, `AAT.AG.AtomAxiomSystem.doctrine_family_unique` を持つ。 | concrete graph / category / algebra / diagram / state transition instance は後続 PRD に残る。 |
+| `I.命題A9` 観測不完全性と存在一意性 | `defined only` / `proved`. `Formal/AG/Atom/Observation.lean` が `ObservationModel`, `ObservationProjection`, `ReconstructionAttempt`, `no_exact_reconstruction_of_nonInjective`, `A9Example.projection`, `A9Example.reconstruction`, `A9Example.noninjective_atom_observation`, `A9Example.unobserved_atom_exists`, `A9Example.noninjective_family_observation`, `A9Example.reconstruction_not_exact`, `A9Example.canonical_family_unique`, `A9Example.observation_incompleteness_coexists_with_a8` を持つ。 | A9 は observation incompleteness と A8 一意性の分離であり、Lawfulness theorem への追加接続は主張しない。 |
 | `I.定義3.1-3.5` AtomFamily / closure | `defined only` / `proved`. `Formal/AG/Atom/Family.lean` が `AtomFamily`, `AtomFamily.Subset`, `AtomFamily.support`, `AtomFamily.restrictAxis`, `AtomFamily.Compatible`, `AtomFamily.EqCompatible`, `AtomFamily.AtomOrigin`, `AtomFamily.OriginMarked`, `AtomFamily.InferenceSystem`, `AtomFamily.IsClosed`, `AtomFamily.closure`, `AtomFamily.support_of_mem`, `AtomFamily.restrictAxis_subset`, `AtomFamily.restrictAxis_axis`, `AtomFamily.subset_closure`, `AtomFamily.closure_isClosed`, `AtomFamily.closure_minimal` を持つ。 | compatibility は選択された payload compatibility relation に相対化され、closure 3補題は monotone inference system に相対化される。 |
 | `I.定義4.1 / 4.2 / 4.4` Configuration / Molecule / Subconfiguration | `defined only` / `proved`. `Formal/AG/Atom/Configuration.lean` が `AtomConfiguration`, `AtomConfiguration.Subconfiguration`, `AtomConfiguration.FamilySupported`, `AtomConfiguration.Molecule`, `AtomConfiguration.Subconfiguration.refl`, `AtomConfiguration.Subconfiguration.trans`, `AtomConfiguration.Subconfiguration.preorder`, `AtomConfiguration.Molecule.family_subset_parent`, `AtomConfiguration.Molecule.finite_marker` を持つ。 | relation / identification は Atom pair predicate として抽象化し、family support は `FamilySupported` predicate として分離する。graph / category / algebra / diagram への concrete structure maps は後続 Issue に残る。 |
 | `I.定義5.1 / 5.2 / 命題5.3 / 定義5.4` ArchitectureObject / GeneratedObject / Atom-Origin / ObjectEquivalence | `defined only` / `proved`. `Formal/AG/Atom/ArchitectureObject.lean` が `ArchitectureObject`, `ArchitectureObject.GeneratedObject`, `ArchitectureObject.ObjectEquivalence`, `ArchitectureObject.atom_origin`, `ArchitectureObject.generated_family_eq`, `ArchitectureObject.generated_family_subset`, `ArchitectureObject.ObjectEquivalence.configuration_equivalent`, `ArchitectureObject.ObjectEquivalence.structure_maps_preserved`, `ArchitectureObject.ObjectEquivalence.selected_quantities_preserved` を持つ。 | structure maps `S` と selected quantities `Q` は抽象 carrier として記録し、graph / category / algebra / diagram / state transition への concrete interpretation は後続 PRD に残す。 |
@@ -591,6 +594,20 @@ AAT Core への handoff を追加した。
 | `I.定義10.1-10.3 / 命題10.4` Object Algebra / Operation / Signature / Operation Reading | `defined only` / `proved`. `Formal/AG/Atom/ObjectAlgebra.lean` が `Operation`, `ArchitectureSignature`, `ObjectAlgebra`, `OperationRole`, `Operation.PreservesFunctionInvariant`, `Operation.PreservesPredicateInvariant`, `Operation.ReflectsObstruction`, `Operation.RepairsObstruction`, `Operation.ExtendsAtomFamily`, `Operation.SynthesizesLawfulObject`, `Operation.TranslatesRepresentation`, `ObjectAlgebra.operation_source_object`, `ObjectAlgebra.operation_target_object` と accessor theorem を持つ。 | これは R9 前半の語彙固定であり、定理10.5 AAT Core theorem package は下行で扱う。 |
 | `I.定理10.5` AAT Core theorem package | `defined only` / `proved`. `Formal/AG/Atom/AATCore.lean` が `AATCorePackage`, `AATCorePackage.ofComponents`, `AATCorePackage.exists_ofComponents`, configuration-family / object-configuration 整合性 theorem、各 component accessor theorem を持つ。`#print axioms` では `exists_ofComponents`, `ofComponents`, `algebra_object` が追加公理に依存しない。 | これは selected component を singleton ObjectAlgebra に束ねる theorem package であり、obstruction circuit component の一致は `exists_ofComponents` 内では heterogeneous equality として読む。concrete graph / category / algebra / diagram / state transition instance は後続 Issue に残る。 |
 | R10 finite model / 例8.3 / 例8.4 / 定理9.3 example theorem | `defined only` / `proved`. `Formal/AG/Examples/FiniteModel.lean` が `FiniteAtom`, `carrier`, `axiomSystem`, `finite_atom_exists`, `hasCycleWitness`, `cycleObstructionCircuit`, `substitutionObstructionCircuit`, `noCycleValuation`, `finite_lawfulness_iff_omega_zero`, `corePackage` を持つ。 | finite model は component / depends / contract / substitution atoms を持つ selected example universe として扱う。NoCycle / substitution failure と valuation は selected relation witness に相対化される。第II部以降の concrete graph / category / algebra / diagram / state transition instance は後続 Issue に残る。 |
+
+第I部 PRD-1 の証明対象ラベルは次の状態で閉じる。
+
+| 証明対象ラベル | Lean status |
+| --- | --- |
+| `I.命題A9` | `proved` |
+| `I.命題5.3` | `proved` |
+| `I.命題9.1 / 9.2 / 定理9.3` | `proved` |
+| `I.定理9.3 後段` | `proved` |
+| `I.定理10.5` | `proved` |
+| `I.例8.3 / 例8.4 / 定理9.3 example` | `proved` |
+
+AC15 scan status: `rg -n "\b(axiom|admit|sorry|unsafe)\b" Formal/AG Formal/AG.lean`
+と `rg -n "Formal\.Arch|import Formal\.Arch" Formal/AG Formal/AG.lean` は no matches である。
 
 ## 現在の未解決カテゴリ
 
