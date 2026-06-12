@@ -22,6 +22,26 @@ homotopy, structural reading, FieldSig handoff, removed-field-only,
 label-only, schema-only, missing-support, blocked-molecule, strict-distance,
 and stale success artifact suppression cases.
 
+## AG v0.4.0 Measurement Fixtures
+
+The AG measurement corpus is the current v0.4.0 fixture surface for
+`archmap/v2`, `measurement-profile/v1`, and
+`archsig-measurement-packet/v1`. It is intentionally separate from the v1
+output replacement corpus because v0.4.0 reads finite poset sites and selected
+covers rather than molecule-primary ArchMaps.
+
+- `tools/archsig/tests/fixtures/ag_measurement/archmap_v2.json`
+- `tools/archsig/tests/fixtures/ag_measurement/archmap_v2_cech_h1_visible.json`
+- `tools/archsig/tests/fixtures/ag_measurement/law_policy_ag.json`
+- `tools/archsig/tests/fixtures/ag_measurement/law_policy_missing_profile.json`
+
+The executable lock is
+`cli_analyze_v2_cech_h1_visible_fixture_measures_nonzero`. It fixes the
+witness-blind / H1-visible discriminator: classical witness counting remains
+`measured_zero`, while the finite F2 Cech evaluator emits
+`measured_nonzero` for the selected H1 obstruction and records a cocycle
+representative with mismatch support refs.
+
 ## V1 Positive Fixtures
 
 - `tools/archsig/tests/fixtures/archmap_v1/archmap.json`

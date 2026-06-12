@@ -162,6 +162,7 @@ pub fn normalize_archmap_v2(document: &ArchMapDocumentV2, input_path: &str) -> N
                 subject: atom.subject.clone(),
                 axis: atom.axis.clone(),
                 predicate: atom.predicate.clone().unwrap_or_else(|| atom.kind.clone()),
+                object: atom.object.clone(),
                 source_refs: refs,
                 context_memberships: context_memberships
                     .get(&atom.id)
