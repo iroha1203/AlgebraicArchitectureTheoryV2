@@ -615,10 +615,13 @@ PRD-2 は `docs/aat/lean_ag_part_2_sites_sheaves_prd.md` で管理する。
 Issue [#1962](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1962)
 では `Formal/AG/Site` の初期 entrypoint を追加し、PRD-1 の
 `AATCorePackage` に依存する prerequisite package を置いた。
+Issue [#1964](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1964)
+では Architecture Context の最小モデルと §5 の context morphism role predicate を追加した。
 
 | 対象 | 現在の扱い | 残す境界 |
 | --- | --- | --- |
-| `II.R0` Part I prerequisites / Formal/AG/Site entrypoint | `defined only` / `proved`. `Formal/AG/Site/Basic.lean` が `AAT.AG.Site.PartIPrerequisites` と accessor theorem を持つ。 | Architecture Context、Coverage、Grothendieck topology、AAT Site、Presheaf / Sheaf、Descent、Finite Poset regime、AATSh は後続 Issue に残る。 |
+| `II.R0` Part I prerequisites / Formal/AG/Site entrypoint | `defined only` / `proved`. `Formal/AG/Site/Basic.lean` が `AAT.AG.Site.PartIPrerequisites` と accessor theorem を持つ。 | Coverage、Grothendieck topology、AAT Site、Presheaf / Sheaf、Descent、Finite Poset regime、AATSh は後続 Issue に残る。 |
+| `II.定義3.1 / §5.1-5.4` Architecture Context と射 role | `defined only` / `proved`. `Formal/AG/Site/Context.lean` が `MinimalContext`, `ArchitectureContext`, `ContextMorphism`、restriction / projection / refinement / base change role predicate と accessor theorem を持つ。 | Context Category、finite-meet poset category、pullback / overlap、coverage family、Grothendieck topology は後続 Issue に残る。 |
 
 第II部 PRD-2 の証明対象ラベルは次の状態から開始する。
 
