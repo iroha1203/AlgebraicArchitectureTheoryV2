@@ -2290,6 +2290,13 @@ fn attach_gluing_scene_geometry(mut scene: Value, gluing_geometry: &Value) -> Va
     };
     scene["gluingGeometryRefs"] = geometry_refs;
     scene["axisMappingImplemented"] = json!(true);
+    scene["axisMetricBindings"] = json!({
+        "x": "xValue",
+        "y": "yValue",
+        "z": "zValue",
+        "fallbackBlend": 0.35,
+        "source": "renderer sceneAxisPosition reads these metric keys from each gluing geometry object"
+    });
     scene["projectionBoundary"] = json!(
         "Scene geometry is a bounded projection of archsig-measurement-packet/v1 and archsig-insight-report/v1; it does not create a new structural verdict."
     );
@@ -2385,11 +2392,9 @@ fn gluing_geometry_projection_v1(
         .iter()
         .find_map(|invariant| invariant.get("coverNerveProjection").cloned())
         .unwrap_or_else(|| {
-            cover_nerve_projection_v1(
-                normalized,
-                &selected_contexts,
-                &cech_edges,
+            empty_cover_nerve_projection_v1(
                 &packet.profile.cover_ref,
+                "missing packet coverNerveProjection; viewer does not infer cover triangles",
             )
         });
     let cover = normalized.covers.iter().find(|cover| {
@@ -2524,6 +2529,7 @@ fn forbidden_cage_projection(
     normalized: &NormalizedArchMapV2,
     packet: &ArchSigMeasurementPacketV1,
 ) -> Vec<Value> {
+    let atom_refs_by_variable = atom_refs_by_square_free_variable(normalized);
     let mut cages = Vec::new();
     for invariant in &packet.computed_invariants {
         let generators = invariant["obstructionIdeal"]["generators"]
@@ -2536,30 +2542,26 @@ fn forbidden_cage_projection(
             if support_atom_refs.is_empty() && support_variables.is_empty() {
                 continue;
             }
+            let atom_refs = if support_atom_refs.is_empty() {
+                support_variables
+                    .iter()
+                    .filter_map(|variable| atom_refs_by_variable.get(variable))
+                    .flatten()
+                    .cloned()
+                    .collect::<Vec<_>>()
+            } else {
+                support_atom_refs
+            };
             let generator_id = string_field(generator, "generatorId");
             cages.push(json!({
                 "cageId": format!("forbidden-cage:{generator_id}"),
-                "atomRefs": support_atom_refs,
+                "atomRefs": atom_refs,
                 "supportVariables": support_variables,
                 "sourceInvariantRef": invariant["invariantId"],
                 "sourceGeneratorRef": generator_id,
                 "shapeRole": "cage",
                 "lineRole": "broken_line",
-                "source": "packet obstructionIdeal.generators[].supportAtomRefs"
-            }));
-        }
-    }
-    if cages.is_empty() {
-        for atom in normalized.atoms.iter().filter(|atom| {
-            atom.predicate.contains("obstruction") || atom.predicate.contains("forbidden")
-        }) {
-            cages.push(json!({
-                "cageId": format!("forbidden-cage:{}", atom.normalized_atom_id),
-                "atomRefs": [atom.normalized_atom_id.clone()],
-                "sourceAtomRef": atom.normalized_atom_id,
-                "shapeRole": "cage",
-                "lineRole": "broken_line",
-                "source": "source-backed obstruction atom; packet has no obstructionIdeal generator support"
+                "source": "packet obstructionIdeal.generators[].supportAtomRefs/support"
             }));
         }
     }
@@ -2609,14 +2611,31 @@ fn repair_morph_projection(
         .iter()
         .enumerate()
         .map(|(index, candidate)| {
+            let candidate_variables = string_array_at(candidate, &["supportVariables"]);
+            let related_cages = related_forbidden_cages(forbidden_cages, candidate);
+            let from_cage_ref = related_cages
+                .get(index % related_cages.len().max(1))
+                .or_else(|| related_cages.first())
+                .cloned()
+                .unwrap_or_else(|| "forbidden-cage:unavailable".to_string());
+            let from_atom_refs = related_cages
+                .iter()
+                .filter_map(|cage_id| {
+                    forbidden_cages
+                        .iter()
+                        .find(|cage| cage["cageId"] == *cage_id)
+                })
+                .flat_map(|cage| string_array_at(cage, &["atomRefs"]))
+                .collect::<BTreeSet<_>>()
+                .into_iter()
+                .collect::<Vec<_>>();
             json!({
                 "morphId": format!("repair-morph:{}", string_field(candidate, "candidateId")),
-                "fromCageRef": forbidden_cages
-                    .first()
-                    .and_then(|cage| cage["cageId"].as_str())
-                    .unwrap_or("forbidden-cage:unavailable"),
+                "fromCageRef": from_cage_ref,
+                "fromCageRefs": related_cages,
+                "fromAtomRefs": from_atom_refs,
                 "toCandidateRef": candidate["candidateId"],
-                "supportVariables": string_array_at(candidate, &["supportVariables"]),
+                "supportVariables": candidate_variables,
                 "sourceInvariantRef": candidate["sourceInvariantRef"],
                 "lowerBoundReadingRefs": lower_bound_readings
                     .iter()
@@ -2629,6 +2648,50 @@ fn repair_morph_projection(
             })
         })
         .collect()
+}
+
+fn atom_refs_by_square_free_variable(
+    normalized: &NormalizedArchMapV2,
+) -> BTreeMap<String, Vec<String>> {
+    let mut refs_by_variable = BTreeMap::<String, Vec<String>>::new();
+    for atom in &normalized.atoms {
+        for key in [
+            atom.source_atom_id.as_str(),
+            atom.normalized_atom_id.as_str(),
+            atom.subject.as_str(),
+        ] {
+            refs_by_variable
+                .entry(key.to_string())
+                .or_default()
+                .push(atom.normalized_atom_id.clone());
+        }
+    }
+    refs_by_variable
+}
+
+fn related_forbidden_cages(forbidden_cages: &[Value], candidate: &Value) -> Vec<String> {
+    let source_invariant = string_field(candidate, "sourceInvariantRef");
+    let candidate_variables = string_array_at(candidate, &["supportVariables"])
+        .into_iter()
+        .collect::<BTreeSet<_>>();
+    let mut related = forbidden_cages
+        .iter()
+        .filter(|cage| {
+            cage["sourceInvariantRef"] == source_invariant
+                && string_array_at(cage, &["supportVariables"])
+                    .into_iter()
+                    .any(|variable| candidate_variables.contains(&variable))
+        })
+        .filter_map(|cage| cage["cageId"].as_str().map(ToOwned::to_owned))
+        .collect::<Vec<_>>();
+    if related.is_empty() {
+        related = forbidden_cages
+            .iter()
+            .filter(|cage| cage["sourceInvariantRef"] == source_invariant)
+            .filter_map(|cage| cage["cageId"].as_str().map(ToOwned::to_owned))
+            .collect();
+    }
+    related
 }
 
 fn locus_field_projection(packet: &ArchSigMeasurementPacketV1) -> Value {
@@ -5637,6 +5700,18 @@ fn cover_nerve_projection_v1(
     })
 }
 
+fn empty_cover_nerve_projection_v1(cover_ref: &str, reason: &str) -> Value {
+    json!({
+        "coverRef": cover_ref,
+        "vertices": [],
+        "edges": [],
+        "faces": [],
+        "faceSource": reason,
+        "h2CoherenceVisualized": false,
+        "projectionStatus": "not_projected_missing_packet_cover_nerve"
+    })
+}
+
 fn marker_atom_marks_edge(
     atom: &crate::NormalizedAtomV2,
     source_context: &str,
@@ -6386,6 +6461,99 @@ mod tests {
         .expect("packet fixture parses")
     }
 
+    fn normalized_fixture() -> NormalizedArchMapV2 {
+        serde_json::from_value(json!({
+            "schema": "archmap-normalized/v2",
+            "normalizerId": "test-normalizer",
+            "sourceArchmapRef": "archmap:test",
+            "sourceArchmapId": "archmap:test",
+            "extractionDoctrineRef": {
+                "doctrineId": "doctrine:test",
+                "fingerprint": "sha256:test"
+            },
+            "atoms": [
+                {
+                    "sourceAtomId": "x_checkout",
+                    "normalizedAtomId": "atom:checkout",
+                    "atomKind": "component",
+                    "subject": "x_checkout",
+                    "axis": "semantic",
+                    "predicate": "forbidden_obstruction_marker",
+                    "object": null,
+                    "sourceRefs": ["fixture://checkout"],
+                    "contextMemberships": ["ctx:a", "ctx:b", "ctx:c"],
+                    "normalizationStatus": "normalized"
+                },
+                {
+                    "sourceAtomId": "x_inventory",
+                    "normalizedAtomId": "atom:inventory",
+                    "atomKind": "component",
+                    "subject": "x_inventory",
+                    "axis": "semantic",
+                    "predicate": "service",
+                    "object": null,
+                    "sourceRefs": ["fixture://inventory"],
+                    "contextMemberships": ["ctx:a", "ctx:b", "ctx:c"],
+                    "normalizationStatus": "normalized"
+                },
+                {
+                    "sourceAtomId": "x_payment",
+                    "normalizedAtomId": "atom:payment",
+                    "atomKind": "component",
+                    "subject": "x_payment",
+                    "axis": "semantic",
+                    "predicate": "service",
+                    "object": null,
+                    "sourceRefs": ["fixture://payment"],
+                    "contextMemberships": ["ctx:b", "ctx:c"],
+                    "normalizationStatus": "normalized"
+                }
+            ],
+            "contexts": [
+                {
+                    "sourceContextId": "ctx:a",
+                    "normalizedContextId": "ctx:a",
+                    "atomIds": ["atom:checkout", "atom:inventory"],
+                    "restrictsTo": ["ctx:b"],
+                    "sourceRefs": ["fixture://a"],
+                    "posetStatus": "selected"
+                },
+                {
+                    "sourceContextId": "ctx:b",
+                    "normalizedContextId": "ctx:b",
+                    "atomIds": ["atom:checkout", "atom:inventory", "atom:payment"],
+                    "restrictsTo": ["ctx:c"],
+                    "sourceRefs": ["fixture://b"],
+                    "posetStatus": "selected"
+                },
+                {
+                    "sourceContextId": "ctx:c",
+                    "normalizedContextId": "ctx:c",
+                    "atomIds": ["atom:checkout", "atom:inventory", "atom:payment"],
+                    "restrictsTo": [],
+                    "sourceRefs": ["fixture://c"],
+                    "posetStatus": "selected"
+                }
+            ],
+            "covers": [{
+                "sourceCoverId": "cover:test",
+                "normalizedCoverId": "cover:test",
+                "contextIds": ["ctx:a", "ctx:b", "ctx:c"],
+                "sourceRefs": ["fixture://cover"],
+                "coverageStatus": "selected"
+            }],
+            "summary": {
+                "atomCount": 3,
+                "normalizedAtomCount": 3,
+                "contextCount": 3,
+                "coverCount": 1,
+                "doctrineFingerprint": "sha256:test"
+            },
+            "nonConclusions": []
+        }))
+        .expect("normalized fixture parses")
+    }
+
     #[test]
     fn invalid_structural_verdict_value_fails_validation() {
         let mut packet = packet_fixture();
@@ -6428,5 +6596,81 @@ mod tests {
             check.id == "measurement-packet-v1-theorem-candidate-analytic-only"
                 && check.result == "fail"
         }));
+    }
+
+    #[test]
+    fn gluing_projection_does_not_infer_cover_nerve_without_packet_projection() {
+        let normalized = normalized_fixture();
+        let packet = packet_fixture();
+
+        let gluing = gluing_geometry_projection_v1(&normalized, &packet);
+
+        assert_eq!(
+            gluing["nerve"]["triangles"],
+            json!([]),
+            "viewer gluing projection must not infer triangle geometry when packet has no coverNerveProjection"
+        );
+        assert_eq!(
+            gluing["nerve"]["triangleSource"],
+            "missing packet coverNerveProjection; viewer does not infer cover triangles"
+        );
+    }
+
+    #[test]
+    fn forbidden_cages_do_not_fallback_to_predicate_atoms() {
+        let normalized = normalized_fixture();
+        let packet = packet_fixture();
+
+        let cages = forbidden_cage_projection(&normalized, &packet);
+
+        assert!(
+            cages.is_empty(),
+            "predicate names alone must not create forbidden support cages without packet support"
+        );
+    }
+
+    #[test]
+    fn repair_morphs_link_related_forbidden_cages() {
+        let normalized = normalized_fixture();
+        let mut packet = packet_fixture();
+        packet.computed_invariants = vec![json!({
+            "invariantId": "square-free-repair:test",
+            "obstructionIdeal": {
+                "generators": [
+                    {
+                        "generatorId": "g0",
+                        "support": ["x_checkout", "x_inventory"]
+                    },
+                    {
+                        "generatorId": "g1",
+                        "support": ["x_inventory", "x_payment"]
+                    }
+                ]
+            },
+            "alexanderDualRepair": {
+                "minimalHittingSets": [
+                    ["x_inventory"],
+                    ["x_checkout", "x_payment"]
+                ]
+            }
+        })];
+
+        let cages = forbidden_cage_projection(&normalized, &packet);
+        let morphs = repair_morph_projection(&normalized, &packet, &cages);
+
+        assert_eq!(cages.len(), 2);
+        assert_eq!(morphs.len(), 2);
+        assert!(morphs.iter().all(|morph| {
+            morph["fromCageRefs"]
+                .as_array()
+                .is_some_and(|refs| refs.len() == 2)
+                && morph["fromAtomRefs"]
+                    .as_array()
+                    .is_some_and(|refs| !refs.is_empty())
+        }));
+        assert_eq!(
+            morphs[1]["fromCageRef"], "forbidden-cage:g1",
+            "multiple repair morphs must not all start from the first forbidden cage"
+        );
     }
 }
