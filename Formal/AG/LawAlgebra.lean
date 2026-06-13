@@ -3,3 +3,4 @@ import Formal.AG.LawAlgebra.AmbientAlgebra
 import Formal.AG.LawAlgebra.StructuralRelation
 import Formal.AG.LawAlgebra.StructureSheaf
 import Formal.AG.LawAlgebra.WitnessIdeal
+import Formal.AG.LawAlgebra.IdempotentCollapse
