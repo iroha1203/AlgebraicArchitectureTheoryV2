@@ -5,3 +5,4 @@ import Formal.AG.Derived.FreeResolution
 import Formal.AG.Derived.TaylorResolution
 import Formal.AG.Derived.Transversality
 import Formal.AG.Derived.RepairProfile
+import Formal.AG.Derived.Counterexample
