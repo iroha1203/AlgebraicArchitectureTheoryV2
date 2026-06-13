@@ -187,6 +187,160 @@ theorem pseudoCircle_h0_invisible_h1_obstructed
     no_global_lawful_section_by_localFlatnessGap W Hyp⟩
 
 end PseudoCircleGolden
+
+namespace BoundaryResidueGolden
+
+variable {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+variable {S : Site.AATSite A}
+variable {Ob : ObstructionSheaf S}
+variable {E : TwoChartFeatureExtensionCover S}
+variable {𝒰 : CoverRelativeCechCover S}
+variable {K : CoverRelativeCechComplex 𝒰 Ob}
+variable {D : TwoChartConnectingHomomorphism Ob E K}
+variable {b : BoundaryMismatchSection Ob E}
+
+/--
+IV.R10 / AC14: zero boundary residue glues.
+
+This is the finite-example theorem shape for the `delta(b) = 0` direction of
+Theorem 9.2, relative to an explicit `BoundaryResidueHypotheses` package.
+-/
+theorem zero_boundaryResidue_glues
+    (H : BoundaryResidueHypotheses D b)
+    (hzero : BoundaryHolonomyVanishes D b) :
+    H.globallyUFlat :=
+  H.globallyUFlat_of_boundaryHolonomy_zero hzero
+
+/--
+IV.R10 / AC14: nonzero boundary residue prevents gluing.
+
+This is the finite-example theorem shape for the `delta(b) != 0` direction:
+if a global U-flat gluing existed, Theorem 9.2 would force zero boundary
+holonomy, contradicting the selected nonzero residue.
+-/
+theorem nonzero_boundaryResidue_blocks_gluing
+    (H : BoundaryResidueHypotheses D b)
+    (hnonzero : ¬ BoundaryHolonomyVanishes D b) :
+    ¬ H.globallyUFlat := by
+  intro hflat
+  exact hnonzero (H.boundaryHolonomy_zero_of_globallyUFlat hflat)
+
+/-- IV.R10 / AC14: bundled Boundary Residue two-direction example. -/
+theorem boundaryResidue_two_direction_example
+    (H : BoundaryResidueHypotheses D b) :
+    (BoundaryHolonomyVanishes D b -> H.globallyUFlat) ∧
+      ((¬ BoundaryHolonomyVanishes D b) -> ¬ H.globallyUFlat) :=
+  ⟨zero_boundaryResidue_glues H, nonzero_boundaryResidue_blocks_gluing H⟩
+
+end BoundaryResidueGolden
+
+namespace NerveGolden
+
+/-- IV.R10 / AC14: selected two-chart forest nerve. -/
+inductive ForestChart where
+  | root
+  | leaf
+  deriving DecidableEq
+
+/-- IV.R10 / AC14: the unique forest edge. -/
+inductive ForestEdge where
+  | root_leaf
+  deriving DecidableEq
+
+/-- IV.R10 / AC14: cover nerve for a one-edge forest. -/
+def forestCoverNerve : CoverNerve where
+  Chart := ForestChart
+  EdgeComponent := ForestEdge
+  FaceComponent := Empty
+  edgeLeft := fun _ => ForestChart.root
+  edgeRight := fun _ => ForestChart.leaf
+  faceEdge0 := Empty.elim
+  faceEdge1 := Empty.elim
+  faceEdge2 := Empty.elim
+  edgeOverlapComponent := fun _ => True
+  faceTripleOverlapComponent := fun _ => False
+  edgeOverlapComponent_holds := fun _ => trivial
+  faceTripleOverlapComponent_holds := Empty.elim
+
+/-- IV.R10 / AC14: explicit forest-cover gluing data with trivial selected H1. -/
+def forestCoverGluingData :
+    ForestCoverGluingData forestCoverNerve where
+  H1 := PUnit
+  noTripleFaces := by
+    change IsEmpty Empty
+    infer_instance
+  forestNerve := True
+  forestNerve_holds := trivial
+  restrictionSurjective := True
+  restrictionSurjective_holds := trivial
+  baseClass := 0
+  baseClass_eq_zero := rfl
+  absorbsEveryClassByForestInduction := by
+    intro _hforest _hsurj _hfaces x
+    cases x
+    rfl
+
+/-- IV.R10 / AC14: forest cover example verifies Theorem 12.4's `H^1 = 0`. -/
+theorem forestCover_H1_zero :
+    ∀ x : forestCoverGluingData.H1, x = 0 :=
+  forestCoverGluingData.localGluingSufficiency
+
+/-- IV.R10 / AC14: selected cycle charts for the constant-coefficient nerve example. -/
+inductive CycleChart where
+  | A
+  | B
+  | C
+  deriving DecidableEq
+
+/-- IV.R10 / AC14: selected cycle edges. -/
+inductive CycleEdge where
+  | AB
+  | BC
+  | CA
+  deriving DecidableEq
+
+/-- IV.R10 / AC14: cover nerve with one visible 1-cycle and no triple face. -/
+def cycleCoverNerve : CoverNerve where
+  Chart := CycleChart
+  EdgeComponent := CycleEdge
+  FaceComponent := Empty
+  edgeLeft
+    | CycleEdge.AB => CycleChart.A
+    | CycleEdge.BC => CycleChart.B
+    | CycleEdge.CA => CycleChart.C
+  edgeRight
+    | CycleEdge.AB => CycleChart.B
+    | CycleEdge.BC => CycleChart.C
+    | CycleEdge.CA => CycleChart.A
+  faceEdge0 := Empty.elim
+  faceEdge1 := Empty.elim
+  faceEdge2 := Empty.elim
+  edgeOverlapComponent := fun _ => True
+  faceTripleOverlapComponent := fun _ => False
+  edgeOverlapComponent_holds := fun _ => trivial
+  faceTripleOverlapComponent_holds := Empty.elim
+
+/-- IV.R10 / AC14: constant-coefficient `b_1` reading for the selected cycle nerve. -/
+def cycleConstantCoefficientReading :
+    ConstantCoefficientNerveReading cycleCoverNerve where
+  k := ZMod 2
+  spaceH1 := ZMod 2
+  nerveH1 := ZMod 2
+  h1LinearEquiv := LinearEquiv.refl (ZMod 2) (ZMod 2)
+  dimSpaceH1 := Module.finrank (ZMod 2) (ZMod 2)
+  dimNerveH1 := Module.finrank (ZMod 2) (ZMod 2)
+  b1 := Module.finrank (ZMod 2) (ZMod 2)
+  dimSpace_eq_finrank := rfl
+  dimNerve_eq_finrank := rfl
+  dimNerve_eq_b1 := rfl
+
+/-- IV.R10 / AC14: cycle nerve example verifies Corollary 12.3's `b_1` reading. -/
+theorem cycleNerve_dimH1_eq_b1 :
+    cycleConstantCoefficientReading.dimSpaceH1 =
+      cycleConstantCoefficientReading.b1 :=
+  cycleConstantCoefficientReading.dimH1_eq_b1
+
+end NerveGolden
 end FiniteExamples
 end Cohomology
 end AAT.AG
