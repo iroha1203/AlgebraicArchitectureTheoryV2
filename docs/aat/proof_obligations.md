@@ -680,6 +680,37 @@ cohomology、nerve dimension 上の高次 cochain / cohomology vanishing surface
 | `II.命題7.2C` | `proved` |
 | `II.R11 finite model examples` | `proved` |
 
+## AG版AAT PRD-3 / 第III部 Law Algebra・Obstruction Ideal・Lawful Locus
+
+Tracking Issue [#1998](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1998)。
+Issue [#1999](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1999)
+では `Formal/AG/LawAlgebra` entrypoint、context 相対 coordinate family、
+coefficient-valued coordinate reading、`FreeCommAlg_k(Coord_X(W))` から
+Mathlib `MvPolynomial` への definitional bridge を追加した。
+
+| 対象 | 現在の扱い | 残す境界 |
+| --- | --- | --- |
+| `III.R0` Formal/AG/LawAlgebra entrypoint | `defined only`. `Formal/AG/LawAlgebra.lean` が `Coordinate` と `AmbientAlgebra` を束ね、`Formal/AG.lean` から import される。 | R2 以降の structural quotient、law witness ideal、obstruction ideal、lawful locus はまだ扱わない。 |
+| `III.定義3.1` Coordinate | `defined only` / `proved`. `Formal/AG/LawAlgebra/Coordinate.lean` が `CoordinateLabel`, `ArchitectureCoordinate`, `CoordinateFamily`, `CoordinateReading` と accessor theorem を持つ。 | coordinate は abstract local data reading であり、source observation completeness や concrete runtime coordinate の全列挙は主張しない。 |
+| `III.定義4.1` Free Typed Commutative Algebra | `defined only` / `proved`. `Formal/AG/LawAlgebra/AmbientAlgebra.lean` が `FreeCommAlg`, `FreeTypedCommAlg`, `FreeTypedCommAlg.eq_mvPolynomial`, `FreeTypedCommAlg.coordVar`, `FreeTypedCommAlg.coordVar_eq_X` を持つ。 | ambient stage では law witness equation を quotient しない。`J_struct` quotient と restriction descent は後続 R2 に残る。 |
+
+第III部 PRD-3 の証明対象ラベルは次の現在状態である。
+
+| 証明対象ラベル | Lean status |
+| --- | --- |
+| `III.R0` | `defined only` |
+| `III.定義3.1` | `defined only` / `proved` |
+| `III.定義4.1` | `defined only` / `proved` |
+| `III.条件4.4` | `future proof obligation` |
+| `III.補題5.6A` | `future proof obligation` |
+| `III.定理5.6C` | `future proof obligation` |
+| `III.系5.6D` | `future proof obligation` |
+| `III.定理候補7.2A` | `future proof obligation` |
+| `III.命題7.2C` | `future proof obligation` |
+| `III.定理8.3` | `future proof obligation` |
+| `III.定理11.1` | `future proof obligation` |
+| `III.R13 finite model examples` | `future proof obligation` |
+
 ## 現在の未解決カテゴリ
 
 | カテゴリ | 扱い |
