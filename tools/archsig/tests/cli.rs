@@ -791,6 +791,7 @@ fn cli_analyze_v2_insight_surface_preserves_false_clean_and_not_computed_boundar
         gluing_geometry["omittedGeometryCounts"]
             .as_object()
             .is_some_and(|counts| counts.contains_key("measuredZeroRegions")
+                && counts.contains_key("cocycleSupportEdges")
                 && counts.contains_key("blockedRegions")
                 && counts.contains_key("atomGlyphs")),
         "gluing projection must report omitted counts for each independently capped geometry family"
@@ -3324,6 +3325,24 @@ fn cli_locks_archsig_viewer_gluing_geometry_golden_ux_fixture() {
                     .as_array()
                     .is_some_and(|items| items.len() >= min_support_edges as usize),
                 "{case_id} must render cocycle support ribbon edges"
+            );
+        }
+        if let Some(max_support_edges) = expected["maxCocycleSupportEdges"].as_u64() {
+            let support_edges = gluing["cocycleRibbon"]["supportEdges"]
+                .as_array()
+                .expect("cocycle support edges are array");
+            assert!(
+                support_edges.len() <= max_support_edges as usize,
+                "{case_id} must cap cocycle support ribbon edges"
+            );
+            assert_eq!(
+                gluing["renderLimits"]["cocycleSupportEdges"].as_u64(),
+                Some(max_support_edges),
+                "{case_id} must expose the cocycle support edge render limit"
+            );
+            assert!(
+                gluing["omittedGeometryCounts"]["cocycleSupportEdges"].is_u64(),
+                "{case_id} must expose the cocycle support edge omitted count"
             );
         }
         if let Some(closure_gap_visible) = expected["closureGapVisible"].as_bool() {
@@ -8736,6 +8755,7 @@ fn atom_viewer_reads_insight_report_surface_contract() {
         "LineDashedMaterial",
         "ConeGeometry",
         "repairMorphArrow",
+        "cocycleSupportEdges",
         "thicknessRole",
         "visualEncodingChannel",
         "thickness",

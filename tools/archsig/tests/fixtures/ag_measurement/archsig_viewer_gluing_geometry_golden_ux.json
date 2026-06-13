@@ -21,6 +21,7 @@
       "lawPolicy": "law_policy_ag.json",
       "expected": {
         "minCocycleSupportEdges": 1,
+        "maxCocycleSupportEdges": 80,
         "closureGapVisible": true,
         "requiredNonClaims": ["monodromy verdict is not generated"],
         "requiredScenes": ["cech-h1-mismatch"]
@@ -79,6 +80,7 @@
     "LineDashedMaterial",
     "ConeGeometry",
     "repairMorphArrow",
+    "cocycleSupportEdges",
     "thicknessRole",
     "visualEncodingChannel",
     "__archsigViewerDebug",
