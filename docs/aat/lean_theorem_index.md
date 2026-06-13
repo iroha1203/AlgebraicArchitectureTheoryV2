@@ -4588,6 +4588,31 @@ AAT topos / architecture scheme / scheme gluing surface、明示仮定下の
 Lawfulness-Ideal Correspondence theorem package、selected finite examples だけを示す。
 Nullstellensatz candidate は statement-only であり、証明昇格はしない。
 
+## AG版AAT Lean形式化 PRD-4 / 第IV部 Obstruction Cohomology
+
+File: `Formal/AG/Cohomology.lean`, `Formal/AG/Cohomology/Basic.lean`,
+`Formal/AG/Cohomology/ObstructionSheaf.lean`.
+
+PRD-4 [第IV部 Obstruction Cohomology](lean_ag_part_4_obstruction_cohomology_prd.md)
+の AC1/R0 と AC2/R1 に対応する初期 entrypoint である。現時点では
+`Formal/AG/Cohomology` を build 対象へ追加し、PRD-2 `Site` と PRD-3
+`LawAlgebra` への prerequisite package、obstruction coefficient sheaf carrier、
+`O_X^U`-module valued coefficient surface、`Def_U = I_U`、`ConDef_U = I_U/I_U^2`
+の Mathlib `Ideal.Cotangent` bridge、`i_* ConDef_U` の selected pushforward
+carrier boundary、`DerOb_U` の type-signature-only placeholder までを Lean 上に置く。
+
+| 本文ラベル | Lean 名 | 種別 | 意味 | Status |
+| --- | --- | --- | --- | --- |
+| `IV.R0` | `AAT.AG.Cohomology.PartIVPrerequisites`, `PartIVPrerequisites.sitePrerequisites`, `PartIVPrerequisites.selectedAffineChart`, `PartIVPrerequisites.site_architectureObject_eq` | `structure` / `def` / `theorem` | 第IV部 obstruction-cohomology tower が PRD-2 site surface と PRD-3 law-algebra surface の上に立つことを記録する bootstrap package。obstruction sheaf、Cech complex、cohomology group はまだ定義しない。 | `defined only` / `proved accessor` |
+| `IV.定義2.1 / 定義2.2` | `AAT.AG.Cohomology.ObstructionSheaf`, `AAT.AG.Cohomology.Ob_U`, `AAT.AG.Cohomology.ModuleObstructionSheaf`, `AAT.AG.Cohomology.OXModuleOb_U` | `structure` / `abbrev` | PRD-2 Type-valued AAT sheaf carrier に abelian group structure を添えた obstruction coefficient sheaf と、PRD-3 `O_X^U(W)` section ring 上の module-valued coefficient surface。 | `defined only` |
+| `IV.定義2.4` | `AAT.AG.Cohomology.StandardObstruction.Def_U`, `StandardObstruction.LawfulLocusAlgebra`, `StandardObstruction.ConDef_U`, `StandardObstruction.conDefModule`, `StandardObstruction.toConDef`, `StandardObstruction.PushforwardConDef`, `StandardObstruction.CanonicalPackage`, `CanonicalPackage.defU`, `CanonicalPackage.conDefU`, `CanonicalPackage.defU_eq_localObstructionIdeal`, `CanonicalPackage.pushforwardCarrier`, `StandardObstruction.DerOb_U` | `def` / `abbrev` / `instance` / `structure` / `theorem` / `opaque` | PRD-3 `SelectedLawWitnessIdealFamily.localObstructionIdeal` を `Def_U := I_U` として読み、`ConDef_U := I_U/I_U^2` を Mathlib `Ideal.Cotangent` で公開する。`ConDef_U` は lawful-locus quotient `O_X^U/I_U` 上の module として扱い、`i_* ConDef_U` は別 carrier として区別する。`DerOb_U` は型シグネチャのみで、第V部へ委譲する。 | `defined only` / `proved accessor` |
+
+Non-conclusions: この entrypoint は obstruction coefficient sheaf carrier、module-valued
+coefficient surface、`Def_U` / `ConDef_U` / `DerOb_U` placeholder の R1 package だけを示す。
+一般 site の Cech complex、`d ∘ d = 0`、cover-relative cohomology、PRD-2 finite
+poset Cech との一致、Local Flatness Gap、Boundary Residue、Cohomological Flatness
+Criterion、derived category、cotangent complex、`Ext^1` はまだ形式化しない。
+
 ## Reverse-Import Theorem Packages
 
 File: `Formal/Arch/Evolution/ReverseImportTheorems.lean`.
