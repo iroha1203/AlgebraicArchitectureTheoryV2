@@ -135,6 +135,101 @@ structure SelectedClassicalAgreementData
   positiveLawConflictVanishing_iff_classicalAgreement :
     PositiveLawConflictVanishing A P ↔ classicalAgreement
 
+/--
+V.定理7.3: concrete selected classical-agreement reading attached to the
+chosen derived tensor surface.
+
+The first component says all positive Mathlib Tor residues vanish.  The second
+component records that the selected degree-zero homology of the chosen derived
+tensor complex is the classical joint quotient.  This is still a selected
+chart-level surface, not a global derived-category theorem.
+-/
+def SelectedDerivedTensorClassicalAgreement
+    (P : Intersection.LawConflictPackage.{u, v} A I_U I_V) : Prop :=
+  PositiveMathlibTorVanishing A (I_U := I_U) (I_V := I_V) ∧
+    Nonempty
+      (P.intersection.structureSheafComplex.homology0 ≃ₗ[A]
+        Intersection.classicalJointQuotient A I_U I_V)
+
+namespace SelectedDerivedTensorClassicalAgreement
+
+variable {A}
+variable {P : Intersection.LawConflictPackage.{u, v} A I_U I_V}
+
+/--
+V.定理7.3: Mathlib positive Tor vanishing is exactly the higher-residue part
+of the concrete selected derived-tensor agreement reading.
+-/
+theorem iff_positiveMathlibTorVanishing :
+    SelectedDerivedTensorClassicalAgreement A P ↔
+      PositiveMathlibTorVanishing A (I_U := I_U) (I_V := I_V) := by
+  constructor
+  · intro h
+    exact h.1
+  · intro h
+    exact
+      ⟨h,
+        ⟨P.intersection.homology0LinearEquivClassicalJoint⟩⟩
+
+/--
+V.定理7.3: selected LawConflict vanishing is equivalent to the concrete
+selected derived-tensor classical-agreement reading.
+-/
+theorem iff_positiveLawConflictVanishing :
+    SelectedDerivedTensorClassicalAgreement A P ↔
+      PositiveLawConflictVanishing A P :=
+  iff_positiveMathlibTorVanishing (A := A) (P := P) |>.trans
+    (LawConflictPackage.positiveLawConflictVanishing_iff_mathlibTorVanishing P).symm
+
+/--
+V.定理7.3: selected LawConflict vanishing gives the concrete selected
+derived-tensor classical-agreement reading.
+-/
+theorem of_positiveLawConflictVanishing
+    (h : PositiveLawConflictVanishing A P) :
+    SelectedDerivedTensorClassicalAgreement A P :=
+  (iff_positiveLawConflictVanishing (A := A) (P := P)).2 h
+
+/--
+V.定理7.3: concrete selected derived-tensor agreement gives selected
+LawConflict vanishing.
+-/
+theorem positiveLawConflictVanishing
+    (h : SelectedDerivedTensorClassicalAgreement A P) :
+    PositiveLawConflictVanishing A P :=
+  (iff_positiveLawConflictVanishing (A := A) (P := P)).1 h
+
+/--
+V.定理7.3: Mathlib Tor vanishing gives the concrete selected derived-tensor
+agreement reading without a separate selected equivalence field.
+-/
+theorem of_positiveMathlibTorVanishing
+    (h : PositiveMathlibTorVanishing A (I_U := I_U) (I_V := I_V)) :
+    SelectedDerivedTensorClassicalAgreement A P :=
+  (iff_positiveMathlibTorVanishing (A := A) (P := P)).2 h
+
+/--
+V.定理7.3: build the usual criterion package from the concrete selected
+derived-tensor agreement reading.
+-/
+def toDerivedTransversalityCriterion :
+    DerivedTransversalityCriterion A P where
+  classicalAgreement := SelectedDerivedTensorClassicalAgreement A P
+  positiveTorVanishing_iff_classicalAgreement :=
+    (iff_positiveMathlibTorVanishing (A := A) (P := P)).symm
+
+/--
+V.定理7.3: build the law-conflict agreement-data package from the concrete
+selected derived-tensor agreement reading.
+-/
+def toSelectedClassicalAgreementData :
+    SelectedClassicalAgreementData A P where
+  classicalAgreement := SelectedDerivedTensorClassicalAgreement A P
+  positiveLawConflictVanishing_iff_classicalAgreement :=
+    (iff_positiveLawConflictVanishing (A := A) (P := P)).symm
+
+end SelectedDerivedTensorClassicalAgreement
+
 namespace SelectedClassicalAgreementData
 
 variable {A}
