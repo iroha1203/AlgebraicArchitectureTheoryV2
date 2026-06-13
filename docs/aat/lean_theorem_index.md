@@ -4603,7 +4603,8 @@ File: `Formal/AG/Cohomology.lean`, `Formal/AG/Cohomology/Basic.lean`,
 `Formal/AG/Cohomology/FlatnessCriterion.lean`,
 `Formal/AG/Cohomology/CoverNerve.lean`,
 `Formal/AG/Cohomology/FiniteExamples.lean`,
-`Formal/AG/Cohomology/PeriodStokes.lean`.
+`Formal/AG/Cohomology/PeriodStokes.lean`,
+`Formal/AG/Cohomology/Aggregation.lean`.
 
 PRD-4 [第IV部 Obstruction Cohomology](lean_ag_part_4_obstruction_cohomology_prd.md)
 の AC1/R0、AC2/R1、AC3/R2 の一般 complex surface、AC4/R2 の有限
@@ -4630,7 +4631,7 @@ rank-nullity lower bound / constant coefficient nerve reading / forest vanishing
 Euler invariance、擬円周 golden example の H0/H1 分離と local-flatness-gap 型の
 global section 不存在 theorem、Boundary Residue 両方向例と forest / cycle nerve
 finite examples、period Stokes theorem と extension holonomy accounting convention
-までを Lean 上に置く。
+、aggregation / scale-stable debt statement surface までを Lean 上に置く。
 
 | 本文ラベル | Lean 名 | 種別 | 意味 | Status |
 | --- | --- | --- | --- | --- |
@@ -4650,6 +4651,7 @@ finite examples、period Stokes theorem と extension holonomy accounting conven
 | `IV.R10(a) / AC13` | `AAT.AG.Cohomology.FiniteExamples.PseudoCircleGolden.Chart`, `BoundaryEdge`, `edgeLeft`, `edgeRight`, `coverNerve`, `LocallyLawful`, `each_chart_lawful`, `witnessCountingObstruction`, `h0_witness_counting_sees_no_obstruction`, `BoundaryMismatchValue`, `boundaryCocycle`, `boundaryCocycle_AB_nonzero`, `CoverRelativeH1NonzeroWitness`, `CoverRelativeH1NonzeroWitness.concreteClass_nonzero`, `no_global_lawful_section_by_localFlatnessGap`, `pseudoCircle_h0_invisible_h1_obstructed` | `inductive` / `def` / `structure` / `theorem` | ArchSig v0.4.0 R14 golden fixture に対応する selected 擬円周 boundary model。各 chart は locally lawful、H0 的 witness count は zero、finite boundary cocycle は visibly nonzero。`CoverRelativeH1NonzeroWitness` が concrete `K.CechCocycle 1` と既存 `HiddenCouplingData.hiddenCouplingClass : K.CoverRelativeHn 1` を接続し、その actual cover-relative H1 class 非零から既存 `localFlatnessGap_no_globalLawfulSection` を呼んで compatible global lawful section 不在を証明する。 | `proved finite example under explicit cover-relative H1 witness` |
 | `IV.R10(b)(c) / AC14` | `AAT.AG.Cohomology.FiniteExamples.BoundaryResidueGolden.zero_boundaryResidue_glues`, `BoundaryResidueGolden.nonzero_boundaryResidue_blocks_gluing`, `BoundaryResidueGolden.boundaryResidue_two_direction_example`, `NerveGolden.forestCoverNerve`, `NerveGolden.forestCoverGluingData`, `NerveGolden.forestCover_H1_zero`, `NerveGolden.cycleCoverNerve`, `NerveGolden.cycleConstantCoefficientReading`, `NerveGolden.cycleNerve_dimH1_eq_b1` | `def` / `theorem` | Boundary Residue finite example は既存 `BoundaryResidueHypotheses` に相対化し、`delta(b)=0` から global U-flat、`delta(b)≠0` から global U-flat 不在を証明する。forest cover example は `ForestCoverGluingData` を instantiate して selected `H^1 = 0` を証明し、cycle nerve example は `ConstantCoefficientNerveReading` を instantiate して `dim H^1 = b_1` を読む。 | `proved finite examples under explicit packages` |
 | `IV.定義13.1 / 定理13.2 / 定義13.4` | `AAT.AG.Cohomology.FiniteCechChainComplex`, `FiniteCechChainComplex.boundaryOp`, `FiniteCechChainComplex.boundary_comp_zero`, `CechCochainChainPairing`, `CechCochainChainPairing.pair`, `StokesCompatiblePairing`, `StokesCompatiblePairing.cechStokes`, `ConnectingBoundaryRepresentative`, `ConnectingBoundaryRepresentative.connectingStokes`, `ExtensionHolonomyAccounting`, `ExtensionHolonomyAccounting.kappa_U_additive`, `ExtensionHolonomyAccounting.kappa_U_zero` | `structure` / `def` / `theorem` | finite Čech chain complex、boundary、cochain-chain pairing、Stokes-compatible condition を定義し、`<d omega, gamma> = <omega, boundary gamma>` を証明する。connecting homomorphism が selected coboundary representative で構成される場合の `<delta(b), gamma> = <b, boundary gamma>` も明示 compatibility data から証明する。定義13.4 は `kappa_U` の加法性を defining property とする extension holonomy accounting convention として定義し、Stokes theorem の自動系とは主張しない。 | `proved under explicit pairing/accounting data` |
+| `IV.定義14.1 / 定理候補14.2 / 定義14.3` | `AAT.AG.Cohomology.FiniteSiteMorphism`, `PushforwardObstructionSheaf`, `HigherDirectImageCech`, `AggregationComparisonMap`, `AggregationComparisonMap.InComparisonImage`, `AggregationFiveTermStatement`, `ScaleStableDebt`, `ScaleStableDebt.in_comparison_image` | `structure` / `def` / `theorem` | selected finite site morphism `pi : X_fine -> X_coarse`、pushforward `pi_* Ob`、Čech-style `R^q pi_* Ob` statement surface、`H^1(X_coarse, pi_* Ob) -> H^1(X_fine, Ob)` comparison map、定理候補14.2 の五項完全列 statement package、selected aggregation family 全体で comparison image に入る scale-stable debt を定義する。 | `statement only` / `defined only` / `proved accessor` |
 
 Non-conclusions: この entrypoint は obstruction coefficient sheaf carrier、module-valued
 coefficient surface、`Def_U` / `ConDef_U` / `DerOb_U` placeholder の R1 package、
@@ -4668,6 +4670,7 @@ finite golden example、R10(b)(c) の Boundary Residue / forest / cycle selected
 仮定なしの Cohomological Flatness Criterion、任意 cover の無条件 nerve cohomology 計算、
 ArchSig fixture JSON の検証、Boundary Residue 仮定ブロックの無条件構成、任意 cover の forest / cycle 分類、
 Stokes-compatible pairing の無条件存在、`kappa_U` accounting が Stokes theorem から自動的に従うこと、
+aggregation five-term statement の証明、spectral sequence 構成、任意 aggregation family の scale stability、
 non-abelian torsor triviality、スペクトル系列一般論、derived category、cotangent complex、
 `Ext^1` はまだ形式化しない。
 

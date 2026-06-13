@@ -12,3 +12,4 @@ import Formal.AG.Cohomology.FlatnessCriterion
 import Formal.AG.Cohomology.CoverNerve
 import Formal.AG.Cohomology.FiniteExamples
 import Formal.AG.Cohomology.PeriodStokes
+import Formal.AG.Cohomology.Aggregation
