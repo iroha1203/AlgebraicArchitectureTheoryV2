@@ -1398,11 +1398,16 @@
 
     function sceneAxisPosition(scene, ref, index, total, fallback, metrics = {}) {
       const axes = scene?.axisMapping || {};
+      const bindings = scene?.axisMetricBindings || {};
       const totalSafe = Math.max(total || 1, 1);
       const rank = (index % totalSafe) / totalSafe;
-      const xValue = Number.isFinite(Number(metrics.xValue)) ? Number(metrics.xValue) : rank;
-      const yValue = Number.isFinite(Number(metrics.yValue)) ? Number(metrics.yValue) : 0;
-      const zValue = Number.isFinite(Number(metrics.zValue)) ? Number(metrics.zValue) : 0;
+      const xKey = bindings.x || "xValue";
+      const yKey = bindings.y || "yValue";
+      const zKey = bindings.z || "zValue";
+      const blend = Number.isFinite(Number(bindings.fallbackBlend)) ? Number(bindings.fallbackBlend) : 0.35;
+      const xValue = Number.isFinite(Number(metrics[xKey])) ? Number(metrics[xKey]) : rank;
+      const yValue = Number.isFinite(Number(metrics[yKey])) ? Number(metrics[yKey]) : 0;
+      const zValue = Number.isFinite(Number(metrics[zKey])) ? Number(metrics[zKey]) : 0;
       const xScale = 46 + (hashText(axes.x || "x") % 17);
       const yScale = 9 + (hashText(axes.y || "y") % 7);
       const zScale = 32 + (hashText(axes.z || "z") % 19);
@@ -1411,7 +1416,7 @@
       const y = -26 + yValue * yScale + rank * 18;
       const axisPoint = new THREE.Vector3(Math.cos(phase) * (radius + xValue * xScale), y, Math.sin(phase) * radius);
       if (!fallback) return axisPoint;
-      return axisPoint.lerp(fallback.clone(), 0.35);
+      return axisPoint.lerp(fallback.clone(), blend);
     }
 
     function renderNerveGeometry(scene, nerve, positions, encoding) {
@@ -1596,12 +1601,18 @@
     function renderRepairMorphs(scene, morphs, positions, encoding, limits) {
       morphs.slice(0, limits.repairMorphs || 50).forEach((morph, index) => {
         const fallback = groupPosition(index, Math.max(morphs.length, 1), 62);
+        const sourcePoints = (morph.fromAtomRefs || []).map((ref) => positions.get(ref)).filter(Boolean);
+        const sourceFallback = sourcePoints.length ? centroid(sourcePoints) : fallback.clone().add(new THREE.Vector3(-22 - index * 0.8, 18, -12));
         const target = sceneAxisPosition(scene, morph.toAtomRef || morph.toCandidateRef || morph.morphId, index, Math.max(morphs.length, 1), positions.get(morph.toAtomRef) || fallback, {
           xValue: index / Math.max(morphs.length - 1, 1),
           yValue: Math.min((morph.supportVariables || morph.supportAtomRefs || []).length, 12),
           zValue: Math.min((morph.lowerBoundReadingRefs || []).length + 1, 12)
         });
-        const start = target.clone().add(new THREE.Vector3(-22 - index * 0.8, 18, -12));
+        const start = sceneAxisPosition(scene, morph.fromCageRef || morph.morphId, index, Math.max(morphs.length, 1), sourceFallback, {
+          xValue: index / Math.max(morphs.length - 1, 1),
+          yValue: Math.min((morph.fromCageRefs || []).length, 12),
+          zValue: Math.min((morph.fromAtomRefs || []).length, 12)
+        });
         addLineSegments([start.x, start.y, start.z, target.x, target.y + 5, target.z], sceneColorHex("repair_candidate"), 0.74, "repairMorphPath");
         const marker = new THREE.Mesh(
           new THREE.SphereGeometry(2.8, 16, 10),
