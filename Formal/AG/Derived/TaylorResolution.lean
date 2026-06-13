@@ -69,6 +69,30 @@ theorem lcmSupport_eq_union (R : MonomialLawConflictRegime A E I_U I_V)
       R.left.forbiddenSupport gU ∪ R.right.forbiddenSupport gV :=
   rfl
 
+/-- V.命題5.5: a left forbidden coordinate is contained in the combined lcm support. -/
+theorem left_forbiddenSupport_subset_lcmSupport
+    (R : MonomialLawConflictRegime A E I_U I_V)
+    (gU : R.left.Generator) (gV : R.right.Generator) :
+    R.left.forbiddenSupport gU ⊆ R.lcmSupport gU gV := by
+  intro e he
+  simp [lcmSupport, he]
+
+/-- V.命題5.5: a right forbidden coordinate is contained in the combined lcm support. -/
+theorem right_forbiddenSupport_subset_lcmSupport
+    (R : MonomialLawConflictRegime A E I_U I_V)
+    (gU : R.left.Generator) (gV : R.right.Generator) :
+    R.right.forbiddenSupport gV ⊆ R.lcmSupport gU gV := by
+  intro e he
+  simp [lcmSupport, he]
+
+/-- V.命題5.5: membership in the lcm support is membership in one selected support. -/
+theorem mem_lcmSupport_iff
+    (R : MonomialLawConflictRegime A E I_U I_V)
+    (gU : R.left.Generator) (gV : R.right.Generator) (e : E) :
+    e ∈ R.lcmSupport gU gV ↔
+      e ∈ R.left.forbiddenSupport gU ∨ e ∈ R.right.forbiddenSupport gV := by
+  simp [lcmSupport]
+
 end MonomialLawConflictRegime
 
 /--
@@ -105,13 +129,78 @@ theorem resolvesQuotient_certificate (T : TaylorComplex A E P) :
     T.resolvesQuotient :=
   T.resolvesQuotient_holds
 
+/-- V.R4(b): the Taylor differential squares to zero. -/
+theorem d_comp_d_certificate (T : TaylorComplex A E P)
+    (n : Nat) (x : T.Term n.succ.succ) :
+    T.d n (T.d n.succ x) = 0 :=
+  T.d_comp_d n x
+
 /-- V.R4(b): multidegree of a union is the lcm/union support. -/
 theorem multidegree_union_eq (T : TaylorComplex A E P)
     (S Tset : Finset P.Generator) :
     T.multidegree (S ∪ Tset) = T.multidegree S ∪ T.multidegree Tset :=
   T.multidegree_union S Tset
 
+/--
+V.R4(b): the multidegree of a two-generator Taylor face is the union of
+the selected forbidden supports.
+-/
+theorem multidegree_pair_eq_union (T : TaylorComplex A E P)
+    (g h : P.Generator) :
+    T.multidegree ({g} ∪ {h}) =
+      P.forbiddenSupport g ∪ P.forbiddenSupport h := by
+  rw [T.multidegree_union_eq, T.multidegree_singleton, T.multidegree_singleton]
+
 end TaylorComplex
+
+/--
+V.R4(b) / AC6: selected finite-free resolution data identifying a Taylor
+complex with an exact quotient resolution.
+
+This package keeps the construction relative to explicit selected data. The
+theorem below reads quotient-resolution of the Taylor complex from exactness of
+the selected finite-free resolution, instead of merely projecting the
+`TaylorComplex.resolvesQuotient` field.
+-/
+structure TaylorSelectedFreeResolutionData {I : Ideal A}
+    (P : SquareFreeMonomialIdealPresentation A E I) where
+  taylor : TaylorComplex A E P
+  quotientResolution :
+    FreeResolution.SelectedFiniteFreeResolution.{u, v} A (A ⧸ I)
+  termIdentifications :
+    (n : Nat) -> taylor.Term n ≃ₗ[A] quotientResolution.Term n
+  differentialCompatible : Prop
+  differentialCompatible_holds : differentialCompatible
+  resolvesQuotient_of_exact :
+    quotientResolution.exact -> taylor.resolvesQuotient
+
+namespace TaylorSelectedFreeResolutionData
+
+variable {A E}
+variable {I : Ideal A} {P : SquareFreeMonomialIdealPresentation A E I}
+
+/-- V.R4(b) / AC6: every Taylor term is identified with a finite-free term. -/
+def termLinearEquivSelectedResolution
+    (D : TaylorSelectedFreeResolutionData.{u, v} A E P) (n : Nat) :
+    D.taylor.Term n ≃ₗ[A] D.quotientResolution.Term n :=
+  D.termIdentifications n
+
+/-- V.R4(b) / AC6: the selected Taylor differential is compatible with the resolution. -/
+theorem differentialCompatible_certificate
+    (D : TaylorSelectedFreeResolutionData.{u, v} A E P) :
+    D.differentialCompatible :=
+  D.differentialCompatible_holds
+
+/--
+V.R4(b) / AC6: the Taylor complex resolves the quotient because the selected
+finite-free resolution is exact.
+-/
+theorem resolvesQuotient_from_selectedResolution
+    (D : TaylorSelectedFreeResolutionData.{u, v} A E P) :
+    D.taylor.resolvesQuotient :=
+  D.resolvesQuotient_of_exact D.quotientResolution.exact_certificate
+
+end TaylorSelectedFreeResolutionData
 
 /--
 V.R4(b) / AC6: Taylor complex together with a Mathlib finite-free projective
@@ -255,6 +344,20 @@ theorem taylorResolution_certificates
     C.rightTaylorResolution.taylorResolution_certificate⟩
 
 /--
+V.命題5.5 / AC7: both selected Taylor differentials square to zero.
+-/
+theorem taylor_differentials_square_zero
+    (C : Proposition55TheoremPackage A E I_U I_V) :
+    (∀ (n : Nat) (x : C.leftTaylorResolution.taylor.Term n.succ.succ),
+      C.leftTaylorResolution.taylor.d n
+        (C.leftTaylorResolution.taylor.d n.succ x) = 0) ∧
+    (∀ (n : Nat) (x : C.rightTaylorResolution.taylor.Term n.succ.succ),
+      C.rightTaylorResolution.taylor.d n
+        (C.rightTaylorResolution.taylor.d n.succ x) = 0) :=
+  ⟨C.leftTaylorResolution.taylor.d_comp_d_certificate,
+    C.rightTaylorResolution.taylor.d_comp_d_certificate⟩
+
+/--
 V.命題5.5 / AC7: Mathlib `Tor_i(A/I_U,A/I_V)` is computed by the
 Mathlib finite-free tensor complex attached to the selected right Taylor
 package.
@@ -279,6 +382,54 @@ theorem lcm_multidegree_eq_union
     C.regime.lcmSupport gU gV =
       C.regime.left.forbiddenSupport gU ∪ C.regime.right.forbiddenSupport gV :=
   C.regime.lcmSupport_eq_union gU gV
+
+/-- V.命題5.5 / AC7: left support membership is preserved in the lcm support. -/
+theorem left_forbiddenSupport_subset_lcmSupport
+    (C : Proposition55TheoremPackage A E I_U I_V)
+    (gU : C.regime.left.Generator) (gV : C.regime.right.Generator) :
+    C.regime.left.forbiddenSupport gU ⊆ C.regime.lcmSupport gU gV :=
+  C.regime.left_forbiddenSupport_subset_lcmSupport gU gV
+
+/-- V.命題5.5 / AC7: right support membership is preserved in the lcm support. -/
+theorem right_forbiddenSupport_subset_lcmSupport
+    (C : Proposition55TheoremPackage A E I_U I_V)
+    (gU : C.regime.left.Generator) (gV : C.regime.right.Generator) :
+    C.regime.right.forbiddenSupport gV ⊆ C.regime.lcmSupport gU gV :=
+  C.regime.right_forbiddenSupport_subset_lcmSupport gU gV
+
+/-- V.命題5.5 / AC7: lcm support membership is exactly support-union membership. -/
+theorem mem_lcmSupport_iff
+    (C : Proposition55TheoremPackage A E I_U I_V)
+    (gU : C.regime.left.Generator) (gV : C.regime.right.Generator) (e : E) :
+    e ∈ C.regime.lcmSupport gU gV ↔
+      e ∈ C.regime.left.forbiddenSupport gU ∨
+        e ∈ C.regime.right.forbiddenSupport gV :=
+  C.regime.mem_lcmSupport_iff gU gV e
+
+/--
+V.命題5.5 / AC7: package-level data bundling the Tor computation with the
+lcm multidegree reading.
+-/
+structure ComputedTorAndLcmSupport
+    (C : Proposition55TheoremPackage A E I_U I_V) (i : Nat)
+    (gU : C.regime.left.Generator) (gV : C.regime.right.Generator) where
+  torIso :
+    Intersection.mathlibTor A I_U I_V i ≅
+      (C.rightTaylorResolution.finiteFreeResolution.tensorComplex I_U).homology i
+  lcmSupport_eq_union :
+    C.regime.lcmSupport gU gV =
+      C.regime.left.forbiddenSupport gU ∪ C.regime.right.forbiddenSupport gV
+
+/--
+V.命題5.5 / AC7: construct the combined Tor/lcm package from the theorem
+package.
+-/
+noncomputable def torComputationAndLcmSupport
+    (C : Proposition55TheoremPackage A E I_U I_V) (i : Nat)
+    (gU : C.regime.left.Generator) (gV : C.regime.right.Generator) :
+    ComputedTorAndLcmSupport C i gU gV where
+  torIso := C.lawConflictIsoRightMathlibResolutionTensorHomology i
+  lcmSupport_eq_union := C.lcm_multidegree_eq_union gU gV
 
 end Proposition55TheoremPackage
 
