@@ -135,19 +135,343 @@ theorem sharedWitnessTorOneCoeff_three :
     sharedWitnessTorOneCoeff 3 = 1 :=
   rfl
 
+/-- V.R11(c): quotient coefficient as an integer-valued linear function. -/
+private def sharedWitnessQuotientIntCoeff (n : Nat) : Int :=
+  2 * (n : Int) + 1
+
+/-- V.R11(c): ambient coefficient as an integer-valued triangular number. -/
+private def sharedWitnessAmbientIntCoeff (n : Nat) : Int :=
+  ((n + 2).choose 2 : Nat)
+
 /--
-V.R11(c): concrete finite-window G5 coefficient check for `I_U=<xy>`,
+V.R11(c): closed coefficient form of `H_{R/<xy,xz>} - H_{Tor_1}`.
+
+The concrete shared-witness alternating conflict series has coefficients
+`[1, 3, 4, 4, ...]`.
+-/
+def sharedWitnessConflictAlternatingCoeff (n : Nat) : Int :=
+  if n = 0 then 1 else if n = 1 then 3 else 4
+
+private def sharedWitnessG5LeftCoeff (n : Nat) : Int :=
+  ∑ i ∈ Finset.range (n + 1),
+    sharedWitnessQuotientIntCoeff i * sharedWitnessQuotientIntCoeff (n - i)
+
+private def sharedWitnessG5RightCoeff (n : Nat) : Int :=
+  ∑ i ∈ Finset.range (n + 1),
+    sharedWitnessAmbientIntCoeff i * sharedWitnessConflictAlternatingCoeff (n - i)
+
+private theorem sharedWitnessQuotientHilbertCoeff_eq (n : Nat) :
+    sharedWitnessQuotientHilbertSeries.coeff n = sharedWitnessQuotientIntCoeff n := by
+  simp [sharedWitnessQuotientHilbertSeries, sharedWitnessQuotientCoeff,
+    sharedWitnessQuotientIntCoeff]
+
+private theorem sharedWitnessAmbientHilbertCoeff_eq (n : Nat) :
+    sharedWitnessAmbientHilbertSeries.coeff n = sharedWitnessAmbientIntCoeff n :=
+  rfl
+
+/--
+V.R11(c): the alternating conflict coefficient is `[1, 3, 4, 4, ...]`.
+
+This is the concrete reading of
+`H_{R/<xy,xz>} - H_{Tor_1}` for the shared-witness chart.
+-/
+theorem sharedWitnessConflictAlternatingCoeff_closed (n : Nat) :
+    sharedWitnessConflictAlternatingSeries.coeff n =
+      sharedWitnessConflictAlternatingCoeff n := by
+  unfold sharedWitnessConflictAlternatingSeries sharedWitnessJointHilbertSeries
+    sharedWitnessTorOneHilbertSeries sharedWitnessJointCoeff sharedWitnessTorOneCoeff
+    sharedWitnessConflictAlternatingCoeff
+  simp [HilbertSeries.ofNatCoefficients]
+  split <;> split <;> omega
+
+private theorem sharedWitnessQuotientIntCoeff_sum (n : Nat) :
+    (∑ i ∈ Finset.range (n + 1), sharedWitnessQuotientIntCoeff i) =
+      ((n + 1 : Nat) : Int) ^ 2 := by
+  induction n with
+  | zero =>
+      simp [sharedWitnessQuotientIntCoeff]
+  | succ n ih =>
+      rw [Finset.sum_range_succ]
+      rw [ih]
+      simp [sharedWitnessQuotientIntCoeff]
+      ring
+
+private theorem sharedWitnessG5LeftCoeff_increment (n : Nat) :
+    sharedWitnessG5LeftCoeff (n + 1) =
+      sharedWitnessG5LeftCoeff n +
+        2 * ((n + 1 : Nat) : Int) ^ 2 +
+        sharedWitnessQuotientIntCoeff (n + 1) := by
+  unfold sharedWitnessG5LeftCoeff
+  rw [Finset.sum_range_succ]
+  have hsum :
+      (∑ i ∈ Finset.range (n + 1),
+          sharedWitnessQuotientIntCoeff i * sharedWitnessQuotientIntCoeff (n + 1 - i)) =
+        (∑ i ∈ Finset.range (n + 1),
+          (sharedWitnessQuotientIntCoeff i * sharedWitnessQuotientIntCoeff (n - i) +
+            2 * sharedWitnessQuotientIntCoeff i)) := by
+    apply Finset.sum_congr rfl
+    intro i hi
+    have hi_le : i ≤ n := Nat.lt_succ_iff.mp (Finset.mem_range.mp hi)
+    have hq :
+        sharedWitnessQuotientIntCoeff (n + 1 - i) =
+          sharedWitnessQuotientIntCoeff (n - i) + 2 := by
+      simp [sharedWitnessQuotientIntCoeff]
+      omega
+    rw [hq]
+    ring
+  rw [hsum]
+  rw [Finset.sum_add_distrib]
+  rw [← Finset.mul_sum]
+  rw [sharedWitnessQuotientIntCoeff_sum n]
+  simp [sharedWitnessQuotientIntCoeff]
+
+private theorem sharedWitnessConflictAlternatingCoeff_zero :
+    sharedWitnessConflictAlternatingCoeff 0 = 1 :=
+  rfl
+
+private theorem sharedWitnessConflictAlternatingCoeff_one :
+    sharedWitnessConflictAlternatingCoeff 1 = 3 := by
+  simp [sharedWitnessConflictAlternatingCoeff]
+
+private theorem sharedWitnessConflictAlternatingCoeff_of_two_le {n : Nat}
+    (hn : 2 ≤ n) :
+    sharedWitnessConflictAlternatingCoeff n = 4 := by
+  simp [sharedWitnessConflictAlternatingCoeff]
+  omega
+
+private theorem two_mul_sharedWitnessAmbientIntCoeff (n : Nat) :
+    2 * sharedWitnessAmbientIntCoeff n =
+      ((n + 2 : Nat) : Int) * ((n + 1 : Nat) : Int) := by
+  have hnat : 2 * ((n + 2).choose 2) = (n + 2) * (n + 1) := by
+    rw [Nat.choose_two_right]
+    rw [Nat.mul_div_cancel' (Nat.two_dvd_mul_sub_one (n + 2))]
+    have hsub : n + 2 - 1 = n + 1 := by omega
+    rw [hsub]
+  unfold sharedWitnessAmbientIntCoeff
+  exact_mod_cast hnat
+
+private theorem sharedWitnessG5RightCoeff_prefix_shift_one (m : Nat) :
+    (∑ i ∈ Finset.range (m + 1),
+        sharedWitnessAmbientIntCoeff i * sharedWitnessConflictAlternatingCoeff (m + 2 - i)) =
+      (∑ i ∈ Finset.range (m + 1),
+        sharedWitnessAmbientIntCoeff i * sharedWitnessConflictAlternatingCoeff (m + 1 - i)) +
+        sharedWitnessAmbientIntCoeff m := by
+  rw [Finset.sum_range_succ]
+  have hprefix :
+      (∑ i ∈ Finset.range m,
+          sharedWitnessAmbientIntCoeff i * sharedWitnessConflictAlternatingCoeff (m + 2 - i)) =
+        (∑ i ∈ Finset.range m,
+          sharedWitnessAmbientIntCoeff i * sharedWitnessConflictAlternatingCoeff (m + 1 - i)) := by
+    apply Finset.sum_congr rfl
+    intro i hi
+    have hi_lt : i < m := Finset.mem_range.mp hi
+    have h1 : 2 ≤ m + 2 - i := by omega
+    have h2 : 2 ≤ m + 1 - i := by omega
+    rw [sharedWitnessConflictAlternatingCoeff_of_two_le h1,
+      sharedWitnessConflictAlternatingCoeff_of_two_le h2]
+  rw [hprefix]
+  rw [Finset.sum_range_succ]
+  have hleft : sharedWitnessConflictAlternatingCoeff (m + 2 - m) = 4 := by
+    have h : 2 ≤ m + 2 - m := by omega
+    exact sharedWitnessConflictAlternatingCoeff_of_two_le h
+  have hright : sharedWitnessConflictAlternatingCoeff (m + 1 - m) = 3 := by
+    have h : m + 1 - m = 1 := by omega
+    rw [h]
+    exact sharedWitnessConflictAlternatingCoeff_one
+  rw [hleft, hright]
+  ring
+
+private theorem sharedWitnessG5RightCoeff_prefix_shift_two (m : Nat) :
+    (∑ i ∈ Finset.range (m + 2),
+        sharedWitnessAmbientIntCoeff i * sharedWitnessConflictAlternatingCoeff (m + 2 - i)) =
+      (∑ i ∈ Finset.range (m + 2),
+        sharedWitnessAmbientIntCoeff i * sharedWitnessConflictAlternatingCoeff (m + 1 - i)) +
+        2 * sharedWitnessAmbientIntCoeff (m + 1) +
+        sharedWitnessAmbientIntCoeff m := by
+  have hleft : sharedWitnessConflictAlternatingCoeff (m + 2 - (m + 1)) = 3 := by
+    have h : m + 2 - (m + 1) = 1 := by omega
+    rw [h]
+    exact sharedWitnessConflictAlternatingCoeff_one
+  have hright : sharedWitnessConflictAlternatingCoeff (m + 1 - (m + 1)) = 1 := by
+    have h : m + 1 - (m + 1) = 0 := by omega
+    rw [h]
+    exact sharedWitnessConflictAlternatingCoeff_zero
+  calc
+    (∑ i ∈ Finset.range (m + 2),
+        sharedWitnessAmbientIntCoeff i * sharedWitnessConflictAlternatingCoeff (m + 2 - i))
+        =
+          (∑ i ∈ Finset.range (m + 1),
+            sharedWitnessAmbientIntCoeff i * sharedWitnessConflictAlternatingCoeff (m + 2 - i)) +
+            sharedWitnessAmbientIntCoeff (m + 1) * 3 := by
+          rw [Finset.sum_range_succ, hleft]
+    _ =
+          ((∑ i ∈ Finset.range (m + 1),
+            sharedWitnessAmbientIntCoeff i * sharedWitnessConflictAlternatingCoeff (m + 1 - i)) +
+            sharedWitnessAmbientIntCoeff m) +
+            sharedWitnessAmbientIntCoeff (m + 1) * 3 := by
+          rw [sharedWitnessG5RightCoeff_prefix_shift_one m]
+    _ =
+          ((∑ i ∈ Finset.range (m + 1),
+            sharedWitnessAmbientIntCoeff i * sharedWitnessConflictAlternatingCoeff (m + 1 - i)) +
+            sharedWitnessAmbientIntCoeff (m + 1) * 1) +
+            2 * sharedWitnessAmbientIntCoeff (m + 1) +
+            sharedWitnessAmbientIntCoeff m := by
+          ring
+    _ =
+          (∑ i ∈ Finset.range (m + 2),
+            sharedWitnessAmbientIntCoeff i * sharedWitnessConflictAlternatingCoeff (m + 1 - i)) +
+            2 * sharedWitnessAmbientIntCoeff (m + 1) +
+            sharedWitnessAmbientIntCoeff m := by
+          symm
+          rw [Finset.sum_range_succ, hright]
+
+private theorem sharedWitnessG5RightCoeff_increment (n : Nat) :
+    sharedWitnessG5RightCoeff (n + 1) =
+      sharedWitnessG5RightCoeff n +
+        sharedWitnessAmbientIntCoeff (n + 1) +
+        2 * sharedWitnessAmbientIntCoeff n +
+        (if n = 0 then 0 else sharedWitnessAmbientIntCoeff (n - 1)) := by
+  cases n with
+  | zero =>
+      native_decide
+  | succ m =>
+      unfold sharedWitnessG5RightCoeff
+      rw [Finset.sum_range_succ]
+      rw [sharedWitnessG5RightCoeff_prefix_shift_two m]
+      have hlast :
+          sharedWitnessConflictAlternatingCoeff (m + 1 + 1 - (m + 1 + 1)) = 1 := by
+        have h : m + 1 + 1 - (m + 1 + 1) = 0 := by omega
+        rw [h]
+        exact sharedWitnessConflictAlternatingCoeff_zero
+      rw [hlast]
+      simp
+      have htwo : m + 1 + 1 = m + 2 := by omega
+      rw [htwo]
+      ring
+
+private theorem sharedWitnessG5_increment_eq (n : Nat) :
+    sharedWitnessAmbientIntCoeff (n + 1) +
+        2 * sharedWitnessAmbientIntCoeff n +
+        (if n = 0 then 0 else sharedWitnessAmbientIntCoeff (n - 1)) =
+      2 * ((n + 1 : Nat) : Int) ^ 2 +
+        sharedWitnessQuotientIntCoeff (n + 1) := by
+  by_cases hn : n = 0
+  · subst n
+    native_decide
+  · apply mul_left_cancel₀ (show (2 : Int) ≠ 0 by norm_num)
+    rw [mul_add, mul_add, mul_add]
+    simp [hn]
+    rw [two_mul_sharedWitnessAmbientIntCoeff (n + 1),
+      two_mul_sharedWitnessAmbientIntCoeff n,
+      two_mul_sharedWitnessAmbientIntCoeff (n - 1)]
+    simp [sharedWitnessQuotientIntCoeff]
+    have hsub1 : ((n - 1 : Nat) : Int) + 2 = (n : Int) + 1 := by omega
+    have hsub2 : ((n - 1 : Nat) : Int) + 1 = (n : Int) := by omega
+    rw [hsub1, hsub2]
+    ring
+
+private theorem sharedWitnessG5_coefficients_eq (n : Nat) :
+    sharedWitnessG5LeftCoeff n = sharedWitnessG5RightCoeff n := by
+  induction n with
+  | zero =>
+      native_decide
+  | succ n ih =>
+      rw [sharedWitnessG5LeftCoeff_increment,
+        sharedWitnessG5RightCoeff_increment, ih]
+      have h := sharedWitnessG5_increment_eq n
+      ring_nf at h ⊢
+      exact congrArg (fun x => x + sharedWitnessG5RightCoeff n) h.symm
+
+/--
+V.R11(c) / V.定理12.2: all-degree G5 coefficient identity for
+`I_U=<xy>` and `I_V=<xz>`.
+
+This upgrades the earlier finite-window audit to a theorem for every degree.
+The proof uses the concrete coefficient readings:
+`H_{R/<xy>}` has coefficients `2n+1`, while
+`H_{R/<xy,xz>} - H_{Tor_1}` has coefficients `[1, 3, 4, 4, ...]`.
+-/
+theorem sharedWitnessG5_all_degree_coefficient_identity (n : Nat) :
+    (sharedWitnessQuotientHilbertSeries * sharedWitnessQuotientHilbertSeries).coeff n =
+      (sharedWitnessAmbientHilbertSeries * sharedWitnessConflictAlternatingSeries).coeff n := by
+  calc
+    (sharedWitnessQuotientHilbertSeries * sharedWitnessQuotientHilbertSeries).coeff n
+        = sharedWitnessG5LeftCoeff n := by
+          unfold sharedWitnessG5LeftCoeff
+          change
+            (∑ i ∈ Finset.range (n + 1),
+              sharedWitnessQuotientHilbertSeries.coeff i *
+                sharedWitnessQuotientHilbertSeries.coeff (n - i)) =
+              ∑ i ∈ Finset.range (n + 1),
+                sharedWitnessQuotientIntCoeff i * sharedWitnessQuotientIntCoeff (n - i)
+          apply Finset.sum_congr rfl
+          intro i _hi
+          rw [sharedWitnessQuotientHilbertCoeff_eq i,
+            sharedWitnessQuotientHilbertCoeff_eq (n - i)]
+    _ = sharedWitnessG5RightCoeff n :=
+          sharedWitnessG5_coefficients_eq n
+    _ = (sharedWitnessAmbientHilbertSeries * sharedWitnessConflictAlternatingSeries).coeff n := by
+          unfold sharedWitnessG5RightCoeff
+          symm
+          change
+            (sharedWitnessAmbientHilbertSeries * sharedWitnessConflictAlternatingSeries).coeff n =
+              ∑ i ∈ Finset.range (n + 1),
+                sharedWitnessAmbientIntCoeff i * sharedWitnessConflictAlternatingCoeff (n - i)
+          change
+            (∑ i ∈ Finset.range (n + 1),
+              sharedWitnessAmbientHilbertSeries.coeff i *
+                sharedWitnessConflictAlternatingSeries.coeff (n - i)) =
+              ∑ i ∈ Finset.range (n + 1),
+                sharedWitnessAmbientIntCoeff i * sharedWitnessConflictAlternatingCoeff (n - i)
+          apply Finset.sum_congr rfl
+          intro i _hi
+          rw [sharedWitnessAmbientHilbertCoeff_eq i,
+            sharedWitnessConflictAlternatingCoeff_closed (n - i)]
+
+/--
+V.定理12.2: denominator-cleared Hilbert-series identity for the concrete
+shared-witness chart.
+-/
+theorem sharedWitnessG5_denominatorClearedIdentity :
+    sharedWitnessQuotientHilbertSeries * sharedWitnessQuotientHilbertSeries =
+      sharedWitnessAmbientHilbertSeries * sharedWitnessConflictAlternatingSeries := by
+  apply HilbertSeries.ext
+  exact sharedWitnessG5_all_degree_coefficient_identity
+
+/--
+V.定理12.2: coefficient-wise identity package for the shared-witness G5
+calculation.
+-/
+def sharedWitnessG5CoefficientIdentityPackage (k : Type v) [CommRing k] :
+    HilbertSeriesConflictCoefficientIdentityPackage
+      (Derived.Counterexample.SharedWitnessCoord.ChartRing k) where
+  regime := sharedWitnessHilbertRegime k
+  conflictAlternatingSum := sharedWitnessConflictAlternatingSeries
+  eulerCharacteristic :=
+    { termEulerCharacteristic := sharedWitnessConflictAlternatingSeries
+      homologyEulerCharacteristic := sharedWitnessConflictAlternatingSeries
+      eulerCharacteristic_eq := rfl }
+  coefficientIdentity := sharedWitnessG5_all_degree_coefficient_identity
+
+/- V.定理12.2: ordinary identity package obtained from the all-degree coefficient theorem. -/
+def sharedWitnessG5IdentityPackage (k : Type v) [CommRing k] :
+    HilbertSeriesConflictIdentityPackage
+      (Derived.Counterexample.SharedWitnessCoord.ChartRing k) :=
+  (sharedWitnessG5CoefficientIdentityPackage k).toIdentityPackage
+
+/--
+V.R11(c): finite-window G5 coefficient check for `I_U=<xy>`,
 `I_V=<xz>`.
 
-This is the machine-checked numerical audit table for degrees `0` through `9`:
+This finite-window audit is now a corollary of
+`sharedWitnessG5_all_degree_coefficient_identity`: in degrees `0` through `9`,
 the coefficient of `H_{R/<xy>} * H_{R/<xz>}` agrees with the coefficient of
 `H_R * (H_{R/<xy,xz>} - H_{Tor_1})`.
 -/
-theorem sharedWitnessG5_window_identity {n : Nat} (hn : n ∈ Finset.range 10) :
+theorem sharedWitnessG5_window_identity {n : Nat} (_hn : n ∈ Finset.range 10) :
     (sharedWitnessQuotientHilbertSeries * sharedWitnessQuotientHilbertSeries).coeff n =
       (sharedWitnessAmbientHilbertSeries * sharedWitnessConflictAlternatingSeries).coeff n := by
-  simp only [Finset.mem_range] at hn
-  interval_cases n <;> native_decide
+  exact sharedWitnessG5_all_degree_coefficient_identity n
 
 /--
 V.R11(c): finite-window G5 audit package for `I_U=<xy>`, `I_V=<xz>`.
