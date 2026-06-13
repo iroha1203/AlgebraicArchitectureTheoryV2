@@ -877,7 +877,7 @@
           <div id="overview" class="list"></div>
         </div>
         <div class="section">
-          <h2>Top Findings</h2>
+          <h2>Insight Queue</h2>
           <div id="findings" class="list"></div>
         </div>
         <div class="section">
@@ -885,7 +885,7 @@
           <div id="distance-diagnosis" class="list"></div>
         </div>
         <div class="section">
-          <h2>Action Queue</h2>
+          <h2>Suggested Next Inspections</h2>
           <div id="actions" class="list"></div>
         </div>
       </div>
@@ -965,6 +965,7 @@
     let atomInstanceMesh = null;
     let selectedAtomKey = null;
     let activeLayoutContext = null;
+    let activeTourState = null;
 
     const colorByStatus = {
       observed: 0x4cc3a7,
@@ -1068,7 +1069,10 @@
     }
 
     function hasViewerContent(data) {
-      return Array.isArray(data?.atomNodes) && data.atomNodes.length > 0;
+      return (Array.isArray(data?.atomNodes) && data.atomNodes.length > 0)
+        || Boolean(data?.decisionBar)
+        || (Array.isArray(data?.insightQueue) && data.insightQueue.length > 0)
+        || (Array.isArray(data?.viewerVisualScenes) && data.viewerVisualScenes.length > 0);
     }
 
     function renderScene() {
@@ -1094,6 +1098,7 @@
       renderMoleculeGroups(renderedGroups, positions, activeLayoutContext);
       renderViewerDistanceBonds(positions, activeLayoutContext);
       renderedEdgeCount = renderEdges(edges, positions);
+      renderSceneLayers(sceneForMode(viewModeEl.value), positions);
       renderLegend();
       renderAxisHud();
       updateVisibility();
@@ -1224,6 +1229,83 @@
       const material = new THREE.LineBasicMaterial({ color: 0x5f6f86, transparent: true, opacity: points.length > 9000 ? 0.22 : 0.42 });
       edgeGroup.add(new THREE.LineSegments(geometry, material));
       return points.length / 6;
+    }
+
+    function renderSceneLayers(scene, positions) {
+      if (!scene || !Array.isArray(scene.layers) || scene.sceneStatus === "not_active_for_packet") return;
+      const encoding = Array.isArray(scene.visualEncodings) ? scene.visualEncodings[0] || {} : {};
+      const refs = scene.primaryRefs || {};
+      const atomRefs = Array.isArray(refs.atomRefs) ? refs.atomRefs : [];
+      const contextRefs = Array.isArray(refs.contextRefs) ? refs.contextRefs : [];
+      const points = [...atomRefs, ...contextRefs].map((ref) => positions.get(ref)).filter(Boolean);
+      const center = points.length ? centroid(points) : new THREE.Vector3(0, 0, 0);
+      scene.layers.forEach((layer, index) => {
+        const mesh = sceneLayerMesh(layer, encoding, center, index, points.length);
+        if (!mesh) return;
+        mesh.userData = { kind: "sceneLayer", scene, layer };
+        edgeGroup.add(mesh);
+      });
+      if (points.length > 1) {
+        const geometry = new THREE.BufferGeometry();
+        const vertices = [];
+        points.forEach((point) => vertices.push(center.x, center.y, center.z, point.x, point.y, point.z));
+        geometry.setAttribute("position", new THREE.Float32BufferAttribute(vertices, 3));
+        const material = new THREE.LineBasicMaterial({
+          color: sceneColorHex(encoding.colorRole),
+          transparent: true,
+          opacity: 0.68
+        });
+        const lines = new THREE.LineSegments(geometry, material);
+        lines.userData = { kind: "sceneLayerRefs", scene };
+        edgeGroup.add(lines);
+      }
+    }
+
+    function sceneLayerMesh(layer, encoding, center, index, supportCount) {
+      const role = layer.geometryRole || encoding.shapeRole || "beacon";
+      const color = sceneColorHex(encoding.colorRole);
+      const size = 4 + Math.min(supportCount, 16) * 0.35 + index;
+      let geometry;
+      if (role.includes("ribbon") || role.includes("seam")) {
+        geometry = new THREE.TorusGeometry(size * 1.7, 0.32, 8, 48);
+      } else if (role.includes("cage") || role.includes("wall")) {
+        geometry = new THREE.BoxGeometry(size * 2.4, size * 1.2, size * 0.28);
+      } else if (role.includes("cut")) {
+        geometry = new THREE.ConeGeometry(size, size * 2.4, 4);
+      } else if (role.includes("patch")) {
+        geometry = new THREE.CircleGeometry(size * 2.1, 32);
+      } else {
+        geometry = new THREE.SphereGeometry(size, 16, 10);
+      }
+      const material = new THREE.MeshStandardMaterial({
+        color,
+        transparent: true,
+        opacity: role.includes("patch") ? 0.28 : 0.46,
+        roughness: 0.44,
+        metalness: 0.02,
+        wireframe: role.includes("cage") || role.includes("wall")
+      });
+      const mesh = new THREE.Mesh(geometry, material);
+      mesh.position.copy(center);
+      mesh.position.y += 14 + index * 3;
+      mesh.rotation.x = role.includes("patch") ? -Math.PI / 2 : Math.PI / 7;
+      mesh.rotation.z = (hashText(layer.layerId || role) % 628) / 100;
+      return mesh;
+    }
+
+    function sceneColorHex(role) {
+      const colors = {
+        measured_nonzero: 0xf2c15f,
+        measured_zero: 0x64d6be,
+        not_computed: 0xff6b6b,
+        analytic_reading: 0x73b7ff,
+        repair_candidate: 0xb087ff,
+        source_evidence: 0x8bd46e,
+        unknown: 0x9fb3c8,
+        checked: 0x64d6be,
+        not_applicable: 0x5f6f86
+      };
+      return colors[role] || 0xf2c15f;
     }
 
     function buildLayoutContext(nodes, groups, data) {
@@ -1842,7 +1924,28 @@
     }
 
     function nodeColor(node) {
+      const sceneColor = sceneNodeColor(node);
+      if (sceneColor) return sceneColor;
       return colorByFamily[node.atomFamily] || colorByStatus[node.observationStatus] || 0xb087ff;
+    }
+
+    function sceneNodeColor(node) {
+      const scene = sceneForMode(viewModeEl.value);
+      if (!scene || scene.sceneStatus === "not_active_for_packet") return null;
+      const refs = scene.primaryRefs || {};
+      const atomRefs = new Set(Array.isArray(refs.atomRefs) ? refs.atomRefs.map(String) : []);
+      if (!atomRefs.has(String(node.nodeId))) return null;
+      const role = scene.visualEncodings?.[0]?.colorRole || "";
+      const colors = {
+        measured_nonzero: 0xf2c15f,
+        measured_zero: 0x64d6be,
+        not_computed: 0xff6b6b,
+        analytic_reading: 0x73b7ff,
+        repair_candidate: 0xb087ff,
+        unknown: 0x9fb3c8,
+        checked: 0x64d6be
+      };
+      return colors[role] || 0xf2c15f;
     }
 
     function currentAatContext() {
@@ -1995,6 +2098,15 @@
     }
 
     function axisHudText(mode) {
+      const scene = sceneForMode(mode);
+      if (scene && scene.axisMapping) {
+        return {
+          title: scene.title || scene.sceneId || "Insight scene",
+          x: scene.axisMapping.x || "scene x axis",
+          y: scene.axisMapping.y || "scene y axis",
+          z: scene.axisMapping.z || "scene z axis"
+        };
+      }
       const layouts = {
         families: {
           title: "Family spiral",
@@ -2078,6 +2190,41 @@
       return layouts[mode] || layouts.families;
     }
 
+    function sceneForMode(mode) {
+      const scenes = Array.isArray(currentData?.viewerVisualScenes) ? currentData.viewerVisualScenes : [];
+      const mapping = {
+        families: "overview",
+        aatAxes: "site-cover",
+        holonomy: "cech-gluing",
+        obstructionLoops: "cech-h1-mismatch",
+        obstructions: "obstruction",
+        projection: "repair-dual",
+        risk: "boundary-assumption",
+        sources: "source-evidence",
+        curvature: "hodge-debt-field",
+        flatness: "hodge-debt-field",
+        spectrum: "hodge-debt-field"
+      };
+      const sceneId = mapping[mode] || mode;
+      return scenes.find((scene) => scene.sceneId === sceneId || scene.kind === sceneId);
+    }
+
+    function modeForScene(sceneId) {
+      const mapping = {
+        overview: "families",
+        "site-cover": "aatAxes",
+        "cech-gluing": "holonomy",
+        "cech-h1-mismatch": "obstructionLoops",
+        obstruction: "obstructions",
+        "repair-dual": "projection",
+        "law-conflict-tor": "risk",
+        "hodge-debt-field": "curvature",
+        "boundary-assumption": "risk",
+        "source-evidence": "sources"
+      };
+      return mapping[sceneId] || "families";
+    }
+
     function hashText(text) {
       text = String(text);
       let hash = 0;
@@ -2105,6 +2252,8 @@
     searchEl.addEventListener("input", debounce(renderScene, 90));
     resetEl.addEventListener("click", resetCamera);
     reportToggleEl.addEventListener("click", toggleReport);
+    reportEl.addEventListener("click", handleReportAction);
+    detailEl.addEventListener("click", handleTourStepAction);
     renderer.domElement.addEventListener("pointerdown", selectVisual);
 
     fileEl.addEventListener("change", async (event) => {
@@ -2176,6 +2325,8 @@
       const detailRefs = Array.isArray(item.detailRefs) ? item.detailRefs : Array.isArray(item.packetRefs) ? item.packetRefs : [];
       const labels = Array.isArray(item.labels) ? item.labels : [];
       const rows = [
+        item.what && `What: ${item.what}`,
+        item.whyItMatters && `Why: ${item.whyItMatters}`,
         item.nodeId || item.groupId || item.ref || item.axisRef || item.lawRef,
         item.atomFamily && `family: ${item.atomFamily}`,
         item.observationStatus && `status: ${item.observationStatus}`,
@@ -2185,12 +2336,82 @@
         item.conclusion && `conclusion: ${item.conclusion}`,
         item.recommendedAction && `next: ${item.recommendedAction}`,
         item.recommendedNextAction && `next: ${item.recommendedNextAction}`,
+        item.nextAction?.label && `Next: ${item.nextAction.label}`,
+        item.evidence && `Measurement: ${compactJson(item.evidence)}`,
+        item.boundaryDigest && `Boundary: ${compactJson(item.boundaryDigest)}`,
+        Array.isArray(item.nonClaims) && item.nonClaims.length && `Boundary: ${item.nonClaims.join("; ")}`,
         labels.length && `labels: ${labels.join(", ")}`,
         sourceRefs.length && `source refs: ${sourceRefs.map(sourceRefLabel).join(", ")}`,
         detailRefs.length && `detail refs: ${detailRefs.join(", ")}`
       ].filter(Boolean);
       detailEl.innerHTML = `<h2>${escapeHtml(kind)}</h2>${rows.map((row) => `<p>${escapeHtml(String(row))}</p>`).join("")}`;
       detailEl.hidden = false;
+    }
+
+    async function handleReportAction(event) {
+      const button = event.target.closest("[data-tour-id], [data-scene-id], [data-copy-source-refs]");
+      if (!button) return;
+      if (button.dataset.tourId) {
+        startGuidedTour(button.dataset.tourId);
+      }
+      if (button.dataset.sceneId) {
+        viewModeEl.value = modeForScene(button.dataset.sceneId);
+        renderScene();
+        status(`Scene: ${button.dataset.sceneId}`);
+      }
+      if (button.dataset.copySourceRefs) {
+        await copyText(button.dataset.copySourceRefs);
+      }
+    }
+
+    function startGuidedTour(tourId) {
+      const tours = Array.isArray(currentData?.guidedTours) ? currentData.guidedTours : [];
+      const tour = tours.find((item) => item.tourId === tourId);
+      if (!tour || !Array.isArray(tour.steps) || !tour.steps.length) {
+        status(`Tour not found: ${tourId}`);
+        return;
+      }
+      activeTourState = { tour, stepIndex: 0 };
+      showTourStep();
+    }
+
+    function showTourStep() {
+      if (!activeTourState) return;
+      const { tour, stepIndex } = activeTourState;
+      const step = tour.steps[stepIndex];
+      viewModeEl.value = modeForScene(step.sceneId);
+      renderScene();
+      const nextButton = stepIndex + 1 < tour.steps.length
+        ? `<button type="button" data-tour-next="true">Next</button>`
+        : `<button type="button" data-tour-end="true">Done</button>`;
+      detailEl.innerHTML = `<h2>${escapeHtml(tour.title || tour.tourId)}</h2><p>${escapeHtml(step.caption || step.sceneId)}</p><p>${escapeHtml(compactJson(step.highlightRefs || {}))}</p><div class="chips">${nextButton}</div>`;
+      detailEl.hidden = false;
+      status(`Tour ${stepIndex + 1}/${tour.steps.length}: ${step.sceneId}`);
+    }
+
+    function handleTourStepAction(event) {
+      const next = event.target.closest("[data-tour-next]");
+      const end = event.target.closest("[data-tour-end]");
+      if (next && activeTourState) {
+        activeTourState.stepIndex += 1;
+        showTourStep();
+      }
+      if (end) {
+        activeTourState = null;
+        detailEl.hidden = true;
+        status("Tour complete");
+      }
+    }
+
+    async function copyText(text) {
+      try {
+        await navigator.clipboard.writeText(text);
+        status("Copied source refs");
+      } catch (_error) {
+        detailEl.innerHTML = `<h2>Copy source refs</h2><p>${escapeHtml(text)}</p>`;
+        detailEl.hidden = false;
+        status("Source refs shown in detail panel");
+      }
     }
 
     function sourceRefLabel(ref) {
@@ -2205,21 +2426,25 @@
       const overview = report.overview || {};
       const verdict = overview.summaryVerdict || summary.verdict || {};
       const validation = overview.validation || summary.validation || manifest.validationResultSummary || {};
+      const decisionBar = data.decisionBar || report.decisionBar || {};
+      const evidenceDetailShape = report.evidenceDetailShape || [];
+      const insightQueue = report.insightQueue || data.insightQueue || summary.insightCards || report.topFindings || summary.dominantFindings || data.analysisOverlays?.dominantFindings;
+      const actionQueue = report.actionQueue || data.actionQueue || summary.actionQueue || data.analysisOverlays?.actionQueue;
 
       document.getElementById("report-title").textContent =
-        overview.architectureId || overview.mapId || "ArchSig Atom Viewer";
+        decisionBar.conclusion || overview.architectureId || overview.mapId || "ArchSig Atom Viewer";
       document.getElementById("metric-atoms").textContent = count(data.atomNodes);
       document.getElementById("metric-groups").textContent = count(data.moleculeGroups);
       document.getElementById("metric-edges").textContent = count(data.atomEdges);
       document.getElementById("metric-verdict").innerHTML = verdictBadge(verdict);
       document.getElementById("metric-validation").innerHTML = validationBadge(validation);
 
-      renderOverview(overview, verdict, summary, data.nonConclusions || []);
-      renderItems("findings", report.topFindings || summary.dominantFindings || data.analysisOverlays?.dominantFindings, "finding");
+      renderOverview(overview, verdict, summary, data.nonConclusions || [], decisionBar, report.readThisFirst || summary.readThisFirst);
+      renderItems("findings", insightQueue, "insight");
       renderDistanceDiagnosis(report.distanceDiagnosis || summary.distanceDiagnosis || data.aatGeometryOverlays?.diagnosticDistanceReadings);
-      renderItems("actions", report.actionQueue || summary.actionQueue || data.analysisOverlays?.actionQueue, "action");
-      renderCoverage(report.coverageAndBoundaries || {}, verdict, summary);
-      renderArtifacts(report.artifacts || {}, data.sourceArtifactRefs || {}, manifest);
+      renderItems("actions", actionQueue, "action");
+      renderCoverage(report.coverageAndBoundaries || report.boundaryDigest || {}, verdict, summary);
+      renderArtifacts(report.artifacts || report.artifactLinks || decisionBar.artifactLinks || {}, data.sourceArtifactRefs || {}, manifest);
       renderValidationStatus(validation);
       renderOmitted(data.omittedDetailCounts || {}, data.truncationPolicy || {});
     }
@@ -2246,9 +2471,13 @@
       return `<span class="${klass}">${escapeHtml(String(value))}</span>`;
     }
 
-    function renderOverview(overview, verdict, summary, nonConclusions) {
+    function renderOverview(overview, verdict, summary, nonConclusions, decisionBar = {}, readThisFirst = {}) {
       const root = document.getElementById("overview");
       const rows = [
+        decisionBar.conclusion && ["Decision Bar", decisionBar.conclusion],
+        decisionBar.boundaryDigest && ["boundary digest", decisionBar.boundaryDigest],
+        readThisFirst.whatItMeans && ["Read this first", readThisFirst.whatItMeans],
+        readThisFirst.nextAction && ["next action", readThisFirst.nextAction],
         overview.mapId && ["archmap", overview.mapId],
         overview.analysisId && ["analysis", overview.analysisId],
         verdict.readingMode && ["reading mode", verdict.readingMode],
@@ -2348,14 +2577,24 @@
     function itemHtml(item, fallbackLabel, index) {
       if (item && typeof item === "object") {
         const title = item.title || item.kind || item.conclusion || item.id || `${fallbackLabel} ${index + 1}`;
-        const text = item.summary || item.description || item.reading || item.reason || item.recommendedAction || item.recommendedNextAction || JSON.stringify(item).slice(0, 240);
+        const text = item.oneLine || item.whyItMatters || item.summary || item.description || item.reading || item.reason || item.recommendedAction || item.recommendedNextAction || JSON.stringify(item).slice(0, 240);
+        const sceneId = item.viewerNavigation?.sceneId || item.sceneId;
+        const sourceRefs = item.evidence?.sourceRefs || item.sourceRefs || [];
         const refs = [
           item.ref,
           item.axisRef,
           item.lawRef,
+          item.nextAction?.label && `next: ${item.nextAction.label}`,
+          Array.isArray(item.tourRefs) && item.tourRefs.length ? `Start tour: ${item.tourRefs[0]}` : null,
+          item.evidence?.sourceRefs?.length ? `copy source refs: ${item.evidence.sourceRefs.slice(0, 3).join(", ")}` : null,
           Array.isArray(item.detailRefs) && item.detailRefs.length ? `detail: ${item.detailRefs.slice(0, 2).join(", ")}` : null
         ].filter(Boolean).join(" / ");
-        return `<div class="item"><strong>${escapeHtml(String(title))}</strong><p>${escapeHtml(String(text))}</p>${refs ? `<p>${escapeHtml(refs)}</p>` : ""}</div>`;
+        const tourId = Array.isArray(item.tourRefs) && item.tourRefs.length ? item.tourRefs[0] : null;
+        const actions = [
+          tourId ? `<button type="button" data-tour-id="${escapeAttr(tourId)}">Start tour</button>` : sceneId ? `<button type="button" data-scene-id="${escapeAttr(sceneId)}">Open scene</button>` : "",
+          Array.isArray(sourceRefs) && sourceRefs.length ? `<button type="button" data-copy-source-refs="${escapeAttr(sourceRefs.join("\\n"))}">copy source refs</button>` : ""
+        ].filter(Boolean).join("");
+        return `<div class="item"><strong>${escapeHtml(String(title))}</strong><p>${escapeHtml(String(text))}</p>${refs ? `<p>${escapeHtml(refs)}</p>` : ""}${actions ? `<div class="chips">${actions}</div>` : ""}</div>`;
       }
       return `<div class="item"><strong>${escapeHtml(`${fallbackLabel} ${index + 1}`)}</strong><p>${escapeHtml(String(item))}</p></div>`;
     }

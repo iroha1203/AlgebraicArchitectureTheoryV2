@@ -11,9 +11,9 @@ mod typed_evaluator;
 mod validation;
 
 pub use ag_measurement::{
-    build_foundation_measurement_packet_v1, build_measurement_summary_v1,
-    build_measurement_viewer_data_v1, selected_measurement_profile_v1,
-    validate_measurement_packet_v1,
+    build_foundation_measurement_packet_v1, build_insight_brief_v1, build_insight_report_v1,
+    build_measurement_summary_v1, build_measurement_viewer_data_v1,
+    selected_measurement_profile_v1, validate_measurement_packet_v1,
 };
 pub use archmap::{
     ArchMapSourceInventoryInput, compare_archmap_v2_doctrine, validate_archmap_report,
