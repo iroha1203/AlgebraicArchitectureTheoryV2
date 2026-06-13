@@ -80,6 +80,7 @@
 
 ## 主要な入口
 
+- `VISION.md`: プロジェクト全体の VISION。
 - `docs/README.md`: 研究 docs 全体の読み方。
 - `docs/aat/mathematical_theory/README.md`: AAT 数学本文の入口。
 - `docs/aat/proof_obligations.md`: Lean proof obligation と empirical hypothesis の台帳。

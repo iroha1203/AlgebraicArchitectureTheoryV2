@@ -18,6 +18,7 @@ ArchSig makes architecture observable.
 SFT makes software evolution computable.
 ```
 
+The project vision is summarized in [VISION](VISION.md).
 The main entry point for the overall research program is
 [Research Goal](docs/research_goal.md).
 
@@ -63,14 +64,15 @@ summaries will be added as the theory and Lean formalization stabilize.
 
 ## Reading Order
 
-1. [Research Goal](docs/research_goal.md)
-2. [AAT Mathematical Theory](docs/aat/mathematical_theory/README.md)
-3. [AAT / SFT Interface](docs/sft/aat_interface.md)
-4. [Software Field Theory](docs/sft/software_field_theory.md)
-5. [Proof Obligations and Empirical Hypotheses](docs/aat/proof_obligations.md)
-6. [Lean Definitions and Theorem Index](docs/aat/lean_theorem_index.md)
-7. [AAT Tooling Documentation](docs/tool/README.md)
-8. As needed:
+1. [VISION](VISION.md)
+2. [Research Goal](docs/research_goal.md)
+3. [AAT Mathematical Theory](docs/aat/mathematical_theory/README.md)
+4. [AAT / SFT Interface](docs/sft/aat_interface.md)
+5. [Software Field Theory](docs/sft/software_field_theory.md)
+6. [Proof Obligations and Empirical Hypotheses](docs/aat/proof_obligations.md)
+7. [Lean Definitions and Theorem Index](docs/aat/lean_theorem_index.md)
+8. [AAT Tooling Documentation](docs/tool/README.md)
+9. As needed:
    [docs guide](docs/README.md),
    [AAT directory guide](docs/aat/README.md),
    [SFT directory guide](docs/sft/README.md),
