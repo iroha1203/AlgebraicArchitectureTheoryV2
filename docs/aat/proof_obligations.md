@@ -732,10 +732,15 @@ Issue [#2025](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/
 では Lawfulness-Ideal Correspondence の7点明示仮定 package、`Lawful_U(s)` /
 `s^* I_Ob^U = 0` / factorization through `Flat_U(X)` / PRD-1 `omegaU = 0` /
 PRD-1 `RequiredSignatureAxesZero` の5項同値 edge theorem と theorem package を追加した。
+Issue [#2027](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2027)
+では例5.6E Stanley-Reisner chart、例7.2D concrete certificate / NSdepth、
+cycle witness coordinate `c_ABC` の selected ideal `I_cycle = <c_ABC>`、
+acyclic / cyclic pullback lawful locus、定理11.1 の acyclic / cyclic finite
+correspondence package を example theorem として追加した。
 
 | 対象 | 現在の扱い | 残す境界 |
 | --- | --- | --- |
-| `III.R0` Formal/AG/LawAlgebra entrypoint | `defined only`. `Formal/AG/LawAlgebra.lean` が `Coordinate`、`AmbientAlgebra`、`StructuralRelation`、`StructureSheaf`、`WitnessIdeal`、`IdempotentCollapse`、`StanleyReisner`、`ObstructionIdeal`、`LawfulLocus`、`Nullstellensatz`、`AffineChart`、`Scheme`、`Correspondence` を束ね、`Formal/AG.lean` から import される。 | finite model examples はまだ扱わない。 |
+| `III.R0` Formal/AG/LawAlgebra entrypoint | `defined only`. `Formal/AG/LawAlgebra.lean` が `Coordinate`、`AmbientAlgebra`、`StructuralRelation`、`StructureSheaf`、`WitnessIdeal`、`IdempotentCollapse`、`StanleyReisner`、`ObstructionIdeal`、`LawfulLocus`、`Nullstellensatz`、`AffineChart`、`Scheme`、`Correspondence`、`FiniteExamples` を束ね、`Formal/AG.lean` から import される。 | R14 の最終台帳整備はまだ扱わない。 |
 | `III.定義3.1` Coordinate | `defined only` / `proved`. `Formal/AG/LawAlgebra/Coordinate.lean` が `CoordinateLabel`, `ArchitectureCoordinate`, `CoordinateFamily`, `CoordinateReading` と accessor theorem を持つ。 | coordinate は abstract local data reading であり、source observation completeness や concrete runtime coordinate の全列挙は主張しない。 |
 | `III.定義4.1` Free Typed Commutative Algebra | `defined only` / `proved`. `Formal/AG/LawAlgebra/AmbientAlgebra.lean` が `FreeCommAlg`, `FreeTypedCommAlg`, `FreeTypedCommAlg.eq_mvPolynomial`, `FreeTypedCommAlg.coordVar`, `FreeTypedCommAlg.coordVar_eq_X` を持つ。 | ambient stage では law witness equation を quotient しない。 |
 | `III.定義4.2 / 定義4.3 / 条件4.4` Structural Relation と Raw Ambient Algebra | `defined only` / `proved`. `Formal/AG/LawAlgebra/StructuralRelation.lean` が `StructuralRelationFamily`, `RelStruct`, `JStruct`, `RawAmbientLawAlgebra`, `TypedCoordinateRestriction`, `RestrictionStableStructuralRelations`, quotient descent lemma、明示 identity / composition law を持つ `RawAmbientPresheafBridge` を持つ。 | law witness equation は ambient stage では quotient しない。scheme-level atlas は R11 で別 package として追加済み。 |
@@ -749,6 +754,7 @@ PRD-1 `RequiredSignatureAxesZero` の5項同値 edge theorem と theorem package
 | `III.定義8.1 / 定義8.2 / 定義8.5 / 定理8.3 / 仮定8.4` Affine AAT Chart / Representability | `defined only` / `proved under selected presentation assumptions`. `Formal/AG/LawAlgebra/AffineChart.lean` が `SpecAAT`, `pointSpace`, `localLawfulChart`, `AffineAATChart`, `hWU`, `rawAffineChartRepresentability`, `SheafifiedChartPresentation`, `sheafifiedChartRepresentability` を持つ。 | `Spec_AAT` は ordinary `PrimeSpectrum` と decoration の package として扱う。scheme-level atlas / gluing surface は R11 で追加済み。 |
 | `III.定義9.1 / 定義9.2 / 定義9.3 / 定義10.3` Ringed AAT Topos / Architecture Scheme / Scheme Gluing | `defined only` / `proved for forgetful bridge`. `Formal/AG/LawAlgebra/Scheme.lean` が `RingedAATTopos`, `ChartCompatibility`, `ArchitectureScheme`, `SchemeGluingData`, `AffineReturnConditions`、既存 `Site.AATSh S` / `LawAlgebraSheafPackage S k` への接続、Mathlib `LocallyRingedSpace` forgetful bridge theorem を持つ。 | decorated gluing の一般論は主張しない。単一 affine chart への復帰は `AffineReturnConditions` の明示仮定として扱う。 |
 | `III.定理11.1` Lawfulness-Ideal Correspondence | `proved under explicit correspondence assumptions`. `Formal/AG/LawAlgebra/Correspondence.lean` が `LawfulnessIdealCorrespondenceAssumptions`, `LawfulnessIdealCorrespondencePackage`, `lawful_iff_pulledObstructionIdeal_eq_bot`, `pulledObstructionIdeal_eq_bot_iff_factorsThroughLawfulLocus`, `factorsThroughLawfulLocus_iff_omegaU_zero`, `omegaU_zero_iff_requiredSignatureAxesZero`, `lawfulnessIdealCorrespondence` を持つ。 | obstruction soundness / completeness、axis exactness、witness coverage、U-adequate cover、`Ob_U` sheaf descent、ring restriction compatibility は明示仮定として扱う。Nullstellensatz 7.2A の証明昇格は主張しない。 |
+| `III.例5.6E / 例7.2D / R13 finite examples` | `proved examples`. `Formal/AG/LawAlgebra/FiniteExamples.lean` が Stanley-Reisner chart、`I_Ob = <xy>`、faces/nonfaces、`1 = x - (x - 1)` concrete certificate から生成される `NSdepth = 1` profile、cycle witness coordinate `c_ABC` と `I_cycle = <c_ABC>`、acyclic / cyclic pullback lawful locus の点あり/なし、定理11.1 の acyclic / cyclic finite package を持つ。 | examples は selected finite surfaces であり、Nullstellensatz 7.2A の一般証明や全 finite graph の分類は主張しない。 |
 
 第III部 PRD-3 の証明対象ラベルは次の現在状態である。
 
@@ -775,7 +781,7 @@ PRD-1 `RequiredSignatureAxesZero` の5項同値 edge theorem と theorem package
 | `III.定義9.1 / 定義9.2 / 定義9.3` | `defined only` / `proved for forgetful bridge` |
 | `III.定義10.3` | `defined only under explicit affine-return assumptions` |
 | `III.定理11.1` | `proved under explicit correspondence assumptions` |
-| `III.R13 finite model examples` | `future proof obligation` |
+| `III.R13 finite model examples` | `proved examples` |
 
 ## 現在の未解決カテゴリ
 
