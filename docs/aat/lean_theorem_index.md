@@ -4676,7 +4676,7 @@ non-abelian torsor triviality、スペクトル系列一般論、derived categor
 ## AG版AAT Lean形式化 PRD-5 / 第V部 Derived Law Geometry と Repair
 
 File: `Formal/AG/Derived.lean`, `Formal/AG/Derived/LawfulLoci.lean`,
-`Formal/AG/Derived/Koszul.lean`.
+`Formal/AG/Derived/Koszul.lean`, `Formal/AG/Derived/Intersection.lean`.
 
 PRD-5 [第V部 Derived Law Geometry と Repair](lean_ag_part_5_derived_law_geometry_repair_prd.md)
 の AC1/R0 と AC2/R1 に対応する entrypoint である。現時点では
@@ -4686,18 +4686,25 @@ ideal surface を再利用して、law universe pair、`I_U` / `I_V` 記法、
 `V(I_U + I_V)` を Lean 上に置く。R2 として、selected finite generators に
 相対化した chart-level Koszul surface、derived lawful locus、`H_0` truncation
 が classical quotient / lawful locus に戻る accessor も追加している。
+R3 として、selected derived tensor complex を持つ chart-level derived intersection と
+Mathlib `Tor` object への selected bridge に相対化した `LawConflict_i` /
+`LawConflict_0` surface、および selected global / hypercohomology notation carrier
+も追加している。
 
 | 本文ラベル | Lean 名 | 種別 | 意味 | Status |
 | --- | --- | --- | --- | --- |
-| `V.R0` | `Formal.AG.Derived`, `Formal.AG.Derived.LawfulLoci`, `Formal.AG.Derived.Koszul` | `import` | 第V部 derived-law-geometry tower の entrypoint。`Formal/AG.lean` から import され、`lake build` 対象に入る。 | `defined only` |
+| `V.R0` | `Formal.AG.Derived`, `Formal.AG.Derived.LawfulLoci`, `Formal.AG.Derived.Koszul`, `Formal.AG.Derived.Intersection` | `import` | 第V部 derived-law-geometry tower の entrypoint。`Formal/AG.lean` から import され、`lake build` 対象に入る。 | `defined only` |
 | `V.定義2.1 / 定義3.1` | `AAT.AG.Derived.LawfulLoci.LawUniverseReading`, `LawUniversePair`, `LawUniversePair.I_U`, `LawUniversePair.I_V`, `LawUniversePair.flatU`, `LawUniversePair.flatV`, `LawUniversePair.classicalJointIdeal`, `LawUniversePair.classicalJointLawfulLocus`, `LawUniversePair.flatU_eq_lawfulLocus`, `LawUniversePair.flatV_eq_lawfulLocus`, `LawUniversePair.classicalJointLawfulLocus_eq_zeroLocus`, `LawUniversePair.classicalJointLawfulLocus_eq_flatU_inter_flatV` | `abbrev` / `structure` / `def` / `theorem` | 同じ chart algebra 上の二つの selected law-universe reading から、PRD-3 の `localObstructionIdeal` を `I_U` / `I_V` として読み、classical joint lawful locus を `V(I_U + I_V)` および `Flat_U(X) ∩ Flat_V(X)` として公開する。 | `defined only` / `proved accessor` |
 | `V.定義2.3 / 原則2.4` | `AAT.AG.Derived.Koszul.SelectedGeneratorFamily`, `SelectedGeneratorFamily.generatedIdeal`, `SelectedGeneratorFamily.firstTerm`, `SelectedGeneratorFamily.d1`, `SelectedGeneratorFamily.d1_mem_generatedIdeal`, `KoszulComplex`, `KoszulComplex.C0`, `KoszulComplex.C1`, `KoszulComplex.d1`, `KoszulComplex.zeroHomologyIdeal`, `KoszulComplex.zeroHomology`, `KoszulComplex.zeroHomologyIdeal_eq`, `KoszulComplex.zeroHomology_eq_classicalQuotient`, `KoszulComplex.zeroHomologyAlgEquivClassicalQuotient`, `KoszulComplex.zeroHomologyRingEquivClassicalQuotient`, `DerivedLawfulLocus`, `DerivedLawfulLocus.structureSheafComplex`, `DerivedLawfulLocus.truncation`, `DerivedLawfulLocus.truncation_eq_classicalQuotient`, `DerivedLawfulLocus.truncationAlgEquivClassicalQuotient`, `DerivedLawfulLocus.truncationRingEquivClassicalQuotient`, `DerivedLawfulLocus.truncationIdeal_eq`, `DerivedLawfulLocus.truncation_locus_eq_classical` | `structure` / `abbrev` / `def` / `theorem` | selected finite defect generators から chart-level Koszul surface を作り、zero-th truncation quotient が classical quotient `O_X/I` に戻り、その locus が classical lawful locus と一致することを accessor theorem として公開する。quotient truncation は type equality に加えて algebra/ring equivalence でも参照できる。 | `defined only` / `proved accessor` |
+| `V.定義4.1 / 5.1 / 5.2` | `AAT.AG.Derived.Intersection.classicalJointQuotient`, `AAT.AG.Derived.Intersection.mathlibTor`, `SelectedDerivedTensorComplex`, `SelectedDerivedTensorComplex.C0`, `SelectedDerivedTensorComplex.homology0`, `SelectedDerivedTensorComplex.homology0LinearEquivClassicalJoint`, `ChartDerivedIntersection`, `ChartDerivedIntersection.classicalQuotient`, `ChartDerivedIntersection.structureSheafComplex`, `ChartDerivedIntersection.homology0LinearEquivClassicalJoint`, `SelectedTorBridge`, `SelectedTorBridge.torLinearEquivMathlib`, `SelectedTorBridge.LawConflict`, `SelectedTorBridge.LawConflict₁`, `SelectedTorBridge.lawConflict_eq_tor`, `SelectedTorBridge.lawConflictLinearEquivMathlibTor`, `SelectedTorBridge.lawConflict0AlgEquivClassicalJoint`, `SelectedTorBridge.lawConflict0RingEquivClassicalJoint`, `LawConflictPackage`, `LawConflictPackage.LawConflict`, `LawConflictPackage.LawConflict₁`, `LawConflictPackage.lawConflict_eq_tor`, `LawConflictPackage.lawConflictLinearEquivMathlibTor`, `LawConflictPackage.lawConflict0AlgEquivClassicalJoint`, `LawConflictPackage.lawConflict0RingEquivClassicalJoint`, `SelectedGlobalLawConflictReading`, `SelectedGlobalLawConflictReading.H0`, `SelectedGlobalLawConflictReading.H0LawConflict₁`, `SelectedGlobalLawConflictReading.h0LinearEquivSelectedLawConflict`, `SelectedGlobalLawConflictReading.hypercohomology`, `LawfulLoci.LawUniversePair.DerivedIntersectionFor`, `LawfulLoci.LawUniversePair.derivedIntersection` | `abbrev` / `structure` / `def` / `theorem` | chart-level derived intersectionを selected Koszul presentations と selected derived tensor complex として持ち、`LawConflict_i` を Mathlib `Tor_i(O_X/I_U,O_X/I_V)` への selected linear equivalence として公開する。degree zero は `O_X/(I_U+I_V)` への algebra/ring equivalence として固定し、`H^0(X, LawConflict_i)` と hypercohomology は selected notation carrier として置く。 | `defined only` / `proved accessor` |
 
 Non-conclusions: この entrypoint は derived category 一般論、
-chart-level derived intersection、Tor / `LawConflict_i`、Taylor resolution、
-repair transfer、Hilbert series、well-founded repair、cotangent complex、
+Taylor resolution、repair transfer、Hilbert series、well-founded repair、cotangent complex、
 `Ext^1` をまだ形式化しない。Koszul surface は selected finite generators に
 相対化され、generator choice independence や higher Koszul homology は主張しない。
+LawConflict は selected complex / bridge / global notation data に相対化され、Tor の計算や
+finite free resolution から bridge を構成する補題、Cech-to-sheaf comparison、
+global cohomology 計算はまだ主張しない。
 PRD-4 の `DerOb_U` は type-signature-only placeholder のまま維持する。
 
 ## Reverse-Import Theorem Packages
