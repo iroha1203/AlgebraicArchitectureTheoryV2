@@ -800,7 +800,8 @@ File: `Formal/AG/Cohomology.lean`, `Formal/AG/Cohomology/Basic.lean`,
 `Formal/AG/Cohomology/BoundaryHolonomy.lean`,
 `Formal/AG/Cohomology/BoundaryResidue.lean`,
 `Formal/AG/Cohomology/HigherOverlap.lean`,
-`Formal/AG/Cohomology/FlatnessCriterion.lean`.
+`Formal/AG/Cohomology/FlatnessCriterion.lean`,
+`Formal/AG/Cohomology/CoverNerve.lean`.
 
 PRD-4 [第IV部 Obstruction Cohomology](lean_ag_part_4_obstruction_cohomology_prd.md)
 は AC1/R0 と AC2/R1 から着手している。Issue
@@ -824,6 +825,10 @@ PRD-4 [第IV部 Obstruction Cohomology](lean_ag_part_4_obstruction_cohomology_pr
 では `H^2` coherence failure と五項完全列 statement を追加した。Issue
 [#2062](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2062)
 では Cohomological Flatness Criterion と Local-to-Global Flatness corollary を追加した。
+Issue
+[#2064](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2064)
+では cover nerve と、明示的な有限次元 accounting data 下の定理12.2 / 系12.3 /
+定理12.4 / 系12.5 を追加した。
 
 | 対象 | 現在の扱い | 残す境界 |
 | --- | --- | --- |
@@ -839,6 +844,7 @@ PRD-4 [第IV部 Obstruction Cohomology](lean_ag_part_4_obstruction_cohomology_pr
 | `IV.定理9.2` Boundary Residue theorem | `proved under explicit Boundary Residue hypotheses`. `Formal/AG/Cohomology/BoundaryResidue.lean` が `BoundaryHolonomyVanishes`、`BoundaryResidueHypotheses`、`boundaryResidueSoundness`、`boundaryResidueCompleteness`、`globallyUFlat`、`boundaryResidueTheorem`、`globallyUFlat_of_boundaryHolonomy_zero`、`boundaryHolonomy_zero_of_globallyUFlat` を持つ。 | `C_core / F` の U-flatness、boundary witness coverage、axis exactness、boundary-exact 係数、ring restriction compatibility、effective torsor/module descent、holonomy completeness、NoHigherBoundaryObstruction は明示 field として扱い、soundness / completeness data はこれらの witness を受け取る。仮定なしの global flatness criterion や derived Mayer-Vietoris triangle は主張しない。 |
 | `IV.定義10.1 / 定理候補10.4` H2 coherence failure and five-term statement | `statement only` / `defined only` / `proved accessor`. `Formal/AG/Cohomology/HigherOverlap.lean` が `TripleOverlapCoherenceFailure`、`hCocycle`、`hClass`、`LowDegreeFiveTermData`、`FiveTermExact`、`FiveTermStatement`、`fiveTermExact_of_statement` を持つ。 | triple-overlap coherence failure は degree-two Čech cocycle と `H^2` class として扱う。定理候補10.4 は既存 cover-relative Čech complex に相対化された finite-cover Čech filtration provenance 付きの低次五項完全列 statement に限定し、スペクトル系列一般論と証明は主張しない。 |
 | `IV.定理11.1 / 系11.2` Cohomological Flatness Criterion | `proved under explicit Cohomological Flatness hypotheses`. `Formal/AG/Cohomology/FlatnessCriterion.lean` が `H1ClassVanishes`、`GluingObstructionClass`、`EffectiveAbelianObstructionTorsor`、`CohomologicalFlatnessCriterionHypotheses`、`cohomologicalFlatnessCriterion`、`adjustedGlobalLawfulSection_of_h1Class_zero`、`noAdjustedGlobalLawfulSection_of_h1Class_nonzero`、`localToGlobalFlatness` を持つ。 | local flatness、abelian coefficients、cocycle `g`、effective torsor、U-adequate cover、soundness / completeness、axis exactness、witness coverage、descent、effective adjustment は明示 field として扱う。torsor triviality を経由して `[g]=0` と調整後の大域 lawful section の同値を読む。abelianized class から non-abelian torsor の自明性が復元できるとは主張しない。 |
+| `IV.定義12.1 / 定理12.2 / 系12.3 / 定理12.4 / 系12.5` Cover nerve and topological debt accounting | `proved under explicit finite-dimensional accounting data`. `Formal/AG/Cohomology/CoverNerve.lean` が `CoverNerve`、`ParallelEdgeComponents`、`ParallelFaceComponents`、`edge_component_selected`、`face_component_selected`、`FiniteDimensionalNerveCohomologyData`、`topologicalDebtCapacity`、`ConstantCoefficientNerveReading`、`h1_equiv`、`dimSpace_eq_dimNerve`、`dimH1_eq_b1`、`ForestCoverGluingData`、`localGluingSufficiency`、`localGluingSufficiency_subsingleton`、`EulerCochainAccounting`、`eulerAccounting`、`ShapeStalkPreservingRefactor`、`chi_invariant_under_refactor` を持つ。 | cover nerve は chart / pairwise-overlap component / triple-overlap component の明示 structure であり、多重 component を許す。rank-nullity lower bound、constant coefficient nerve reading、forest vanishing、Euler invariance は、有限 poset regime、有限次元 `k`-linear coefficient data、selected `k`-linear comparison、tree-induction absorption、shape/stalk-preserving refactor data に相対化する。forest vanishing は selected `H^1` の各 class が `0` になる theorem として扱う。任意 cover の無条件計算定理や一般 spectral sequence は主張しない。 |
 
 第IV部 PRD-4 の証明対象ラベルは次の現在状態である。
 
@@ -856,7 +862,7 @@ PRD-4 [第IV部 Obstruction Cohomology](lean_ag_part_4_obstruction_cohomology_pr
 | `IV.定理9.2` | `proved under explicit Boundary Residue hypotheses` |
 | `IV.定義10.1 / 定理候補10.4` | `statement only` / `defined only` / `proved accessor` |
 | `IV.定理11.1 / 系11.2` | `proved under explicit Cohomological Flatness hypotheses` |
-| `IV.定理12.2 / 系12.3 / 定理12.4 / 系12.5` | `future proof obligation` |
+| `IV.定理12.2 / 系12.3 / 定理12.4 / 系12.5` | `proved under explicit finite-dimensional accounting data` |
 | `IV.定理13.2` | `future proof obligation` |
 | `IV.定理候補10.4 / 定理候補14.2` | `future proof obligation` |
 
