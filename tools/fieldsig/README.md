@@ -8,7 +8,7 @@ FieldSig artifacts are measurement and workflow evidence. They do not prove fore
 
 ```bash
 cargo run --manifest-path tools/fieldsig/Cargo.toml -- archsig-analysis-sft-input \
-  --measurement-packet .tmp/archsig-analyze-e2e/archsig-raw/archsig-measurement-packet.json \
+  --measurement-packet .tmp/archsig-analyze/archsig-measurement-packet.json \
   --out .fieldsig/operation-support-estimate.json
 cargo run --manifest-path tools/fieldsig/Cargo.toml -- software-field-measurement --fixture --out .fieldsig/software-field-measurement.json
 cargo run --manifest-path tools/fieldsig/Cargo.toml -- software-field-measurement --input .fieldsig/software-field-measurement.json --out .fieldsig/software-field-measurement-validation.json

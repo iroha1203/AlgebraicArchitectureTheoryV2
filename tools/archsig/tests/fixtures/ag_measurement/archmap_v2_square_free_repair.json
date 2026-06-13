@@ -83,7 +83,7 @@
       "id": "atom:nsdepth-certificate",
       "kind": "semantic",
       "subject": "cert:nsdepth-square-free",
-      "object": "2",
+      "object": "nsdepth=2;depthRule=alexanderDualMaxMinimalHittingSet@1;minimalForbiddenSupports=x_checkout+x_inventory|x_inventory+x_payment;supportAtomRefs=atom:ob-checkout-inventory,atom:ob-inventory-payment",
       "axis": "square-free",
       "predicate": "nsdepthCertificate",
       "refs": ["src:certificate"]

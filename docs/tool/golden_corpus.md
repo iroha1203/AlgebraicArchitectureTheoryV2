@@ -56,28 +56,32 @@ The square-free repair lock is
 `cli_analyze_v2_square_free_repair_outputs_hitting_sets_and_nsdepth`. It fixes
 the B.3 / B.4 worked example path: `I_Ob^U`, minimal forbidden supports,
 `Delta_U` faces with finite F2 reduced homology, Alexander dual minimal repair
-hitting sets, and an author-supplied NSdepth certificate reference are emitted
-as measurement packet invariants. Because the NSdepth atom is not a finite
-verifier payload, the structural verdict remains `unknown`. The companion
+hitting sets, and a finite NSdepth verifier payload are emitted as measurement
+packet invariants. A verifier payload that matches the computed obstruction
+ideal, selected `depthRule`, and support atom refs yields `measured_nonzero`;
+missing, numeric-only, malformed, or depth-mismatched payloads remain
+`unknown`, not lawful or measured zero. The companion
 `cli_analyze_v2_square_free_without_certificate_returns_unknown` regression
 keeps missing certificates as `unknown`, not lawful or measured zero.
 
 The LawConflict Tor lock is
 `cli_analyze_v2_law_conflict_tor_outputs_conflict_classes`. It fixes the B.5
 worked example path: an explicit common ambient atom bounds the comparison,
-finite monomial law ideal generators are read under that ambient, and
-`LawConflict_1` classes record witness-variable support, context refs, and
-source refs. The companion
+finite selected law generators are read under that ambient, and the degree-1
+shared-support detector records `LawConflict_1` classes with witness-variable
+support, context refs, and source refs. It does not claim a full Taylor, Scarf,
+or free-resolution Tor computation. The companion
 `cli_analyze_v2_law_conflict_tor_without_common_ambient_is_not_computed`
 regression keeps missing ambient evidence as `not_computed` /
 `no_common_ambient`, not measured zero or conflict absence.
 
 The sheaf Laplacian lock is
 `cli_analyze_v2_sheaf_laplacian_outputs_analytic_hodge_reading`. It fixes the
-R6 analytic path: a finite cellular boundary yields a graph Laplacian, Hodge
-decomposition, harmonic mass, distance-to-flatness, spectral gap, curvature
-transfer spectrum, and essential repair lower bound. These are analytic
-readings only; near-flat analytic values are not structural lawfulness verdicts.
+R6 analytic path: a finite cellular boundary yields a graph Laplacian proxy,
+Hodge-style decomposition, harmonic mass, distance-to-flatness, spectral gap,
+curvature transfer spectrum, and essential repair lower bound. These are
+analytic readings only; near-flat analytic values are not structural lawfulness verdicts.
+The graph proxy is not a full chain-complex Hodge theorem.
 The companion regressions
 `cli_analyze_v2_sheaf_laplacian_without_boundary_is_not_computed`,
 `cli_analyze_v2_sheaf_laplacian_missing_witness_cell_is_not_computed`, and

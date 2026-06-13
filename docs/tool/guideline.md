@@ -47,8 +47,8 @@ ArchSig analyze:
 
 ```bash
 cargo run --manifest-path tools/archsig/Cargo.toml -- analyze \
-  --archmap tools/archsig/tests/fixtures/archmap_v1/archmap.json \
-  --law-policy tools/archsig/tests/fixtures/archmap_v1/law_policy.json \
+  --archmap tools/archsig/tests/fixtures/ag_measurement/archmap_v2.json \
+  --law-policy tools/archsig/tests/fixtures/ag_measurement/law_policy_ag.json \
   --out-dir .tmp/archsig-analyze
 ```
 
@@ -56,7 +56,7 @@ FieldSig handoff:
 
 ```bash
 cargo run --manifest-path tools/fieldsig/Cargo.toml -- archsig-analysis-sft-input \
-  --analysis-packet .tmp/archsig-analyze/archsig-analysis-packet.json \
+  --measurement-packet .tmp/archsig-analyze/archsig-measurement-packet.json \
   --out .tmp/fieldsig/operation-support-estimate.json
 ```
 

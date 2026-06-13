@@ -1,8 +1,10 @@
 # ArchSig
 
-`archsig` is the ArchMap -> ArchSig structural analysis CLI. The current v1
-runtime reads supplied `archmap/v1` evidence and a selected `law-policy/v1`
-profile, then emits a typed evaluator output chain for LLM and human review.
+`archsig` is the ArchMap -> ArchSig structural analysis CLI. The current
+runtime has two explicit paths: the legacy v1 structural analysis path reads
+supplied `archmap/v1` evidence and a selected `law-policy/v1` profile, while
+the v0.4.0 AG measurement path reads `archmap/v2` plus a selected
+`measurement-profile/v1` and emits `archsig-measurement-packet/v1`.
 
 ArchSig is an LLM-native tool. The intended product interface is the bundled
 LLM skills in `tools/archsig/skills`, not a human manually reading raw AAT
@@ -42,6 +44,7 @@ are not measured zeros.
 | ArchMap validation and authoring | `archmap` | ArchMap v1 records source-grounded Atom observations and explicit molecule candidates. Removed v0 helper fields such as `semanticObservations`, `projectionInfo`, `operationSquareEvidence`, `concernHints`, and `observationGaps` are not positive input. Complete-first authoring should collect source support and molecule candidates before handoff. ArchMap does not select laws or output obstruction circuits. |
 | Interpretation profile | `law-policy` | LawPolicy v1 selects evaluator manifests, basis refs, selected laws, distance profile, and non-conclusions. It is an evaluator selector, not AAT itself. |
 | ArchSig analysis | `analyze` | `analyze` is the primary workflow from ArchMap v1 + LawPolicy v1 to validation reports, normalized ArchMap, typed evaluator results, architecture distance, `archsig-analysis-summary.json`, `archsig-atom-viewer-data.json`, and `archsig-run-manifest.json`. Raw packet, detail index, and LLM interpretation artifacts are emitted only with `--emit-raw-artifacts`. |
+| AG measurement | `analyze` | When `law-policy/v1` selects `measurementProfileRef` and the input is `archmap/v2`, `analyze` runs the v0.4.0 finite AG measurement path and emits `archsig-measurement-packet/v1`, conclusion-first summary, viewer data, and run manifest. This path is not backward-compatible with v1 ArchMap input, but the legacy v1 structural path remains a bounded compatibility runtime. |
 | Lightweight PR review | `pr-review` | Reads base `archmap/v1`, optional head / intermediate `archmap/v1`, PR-local `archmap-delta-v0`, and required `law-policy/v1`. It does not accept raw diff, ArchMapCommit, or base/head analysis packets as PR-review inputs. It internally computes report-local v1 snapshots and emits delta packet intersections, architecture-distance movement, hidden-excursion boundary, safe-change budget, and structural review focus. |
 | Schema | `schema-catalog` | The catalog lists the current ArchMap, LawPolicy, ArchSig analysis packet, and validation report artifacts. |
 
