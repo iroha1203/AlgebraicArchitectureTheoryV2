@@ -26,14 +26,61 @@ abbrev mathlibTor (I_U I_V : Ideal A) (i : Nat) : ModuleCat.{v} A :=
     (ModuleCat.of A (A ⧸ I_V)))
 
 /--
+V.定義4.1: selected chart-level derived tensor complex.
+
+This is the bounded surface for `(O_X/I_U) ⊗^L (O_X/I_V)` used by R3. It records
+the chosen complex and its degree-zero homology carrier, but does not construct a
+finite free resolution or compute higher homology.
+-/
+structure SelectedDerivedTensorComplex (I_U I_V : Ideal A) where
+  Term : Nat -> Type v
+  [termAddCommGroup : (n : Nat) -> AddCommGroup (Term n)]
+  [termModule : (n : Nat) -> Module A (Term n)]
+  d : (n : Nat) -> Term n.succ →ₗ[A] Term n
+  d_comp_d : ∀ (n : Nat) (x : Term n.succ.succ), d n (d n.succ x) = 0
+  H0 : Type v
+  [h0AddCommGroup : AddCommGroup H0]
+  [h0Module : Module A H0]
+  h0LinearEquivClassicalJoint : H0 ≃ₗ[A] classicalJointQuotient A I_U I_V
+
+attribute [instance] SelectedDerivedTensorComplex.termAddCommGroup
+attribute [instance] SelectedDerivedTensorComplex.termModule
+attribute [instance] SelectedDerivedTensorComplex.h0AddCommGroup
+attribute [instance] SelectedDerivedTensorComplex.h0Module
+
+namespace SelectedDerivedTensorComplex
+
+variable {A}
+
+/-- V.定義4.1: degree-zero term of the selected derived tensor complex. -/
+abbrev C0 {I_U I_V : Ideal A}
+    (T : SelectedDerivedTensorComplex.{v} A I_U I_V) : Type v :=
+  T.Term 0
+
+/-- V.定義4.1: selected degree-zero homology carrier. -/
+abbrev homology0 {I_U I_V : Ideal A}
+    (T : SelectedDerivedTensorComplex.{v} A I_U I_V) : Type v :=
+  T.H0
+
+/-- V.R3: selected `H_0` of the derived tensor complex recovers the classical joint quotient. -/
+def homology0LinearEquivClassicalJoint {I_U I_V : Ideal A}
+    (T : SelectedDerivedTensorComplex.{v} A I_U I_V) :
+    T.homology0 ≃ₗ[A] classicalJointQuotient A I_U I_V :=
+  T.h0LinearEquivClassicalJoint
+
+end SelectedDerivedTensorComplex
+
+/--
 V.定義4.1: chart-level derived intersection surface.
 
-This records the two selected Koszul presentations and the classical degree-zero
-joint quotient. It deliberately avoids a general derived category `D(O_X)`.
+This records the two selected Koszul presentations, the selected derived tensor
+complex, and the classical degree-zero joint quotient. It deliberately avoids a
+general derived category `D(O_X)`.
 -/
 structure ChartDerivedIntersection (I_U I_V : Ideal A) where
   leftKoszul : Koszul.KoszulComplex.{u, v} A I_U
   rightKoszul : Koszul.KoszulComplex.{u, v} A I_V
+  derivedTensor : SelectedDerivedTensorComplex.{v} A I_U I_V
 
 namespace ChartDerivedIntersection
 
@@ -43,6 +90,18 @@ variable {A}
 abbrev classicalQuotient {I_U I_V : Ideal A}
     (_X : ChartDerivedIntersection.{u, v} A I_U I_V) :=
   classicalJointQuotient A I_U I_V
+
+/-- V.定義4.1: selected complex representing `(O_X/I_U) ⊗^L (O_X/I_V)`. -/
+def structureSheafComplex {I_U I_V : Ideal A}
+    (X : ChartDerivedIntersection.{u, v} A I_U I_V) :
+    SelectedDerivedTensorComplex.{v} A I_U I_V :=
+  X.derivedTensor
+
+/-- V.R3: selected degree-zero homology of the derived intersection is the joint quotient. -/
+def homology0LinearEquivClassicalJoint {I_U I_V : Ideal A}
+    (X : ChartDerivedIntersection.{u, v} A I_U I_V) :
+    X.structureSheafComplex.homology0 ≃ₗ[A] classicalJointQuotient A I_U I_V :=
+  X.structureSheafComplex.homology0LinearEquivClassicalJoint
 
 end ChartDerivedIntersection
 
@@ -153,6 +212,56 @@ def lawConflict0RingEquivClassicalJoint {I_U I_V : Ideal A}
 
 end LawConflictPackage
 
+/--
+V.R3: selected global notation for law-conflict sheaves.
+
+This packages the notation for `H^0(X, LawConflict_i)` and hypercohomology of
+the selected derived intersection. It is only notation data; it does not prove a
+Cech-to-sheaf comparison or compute global cohomology.
+-/
+structure SelectedGlobalLawConflictReading (I_U I_V : Ideal A) where
+  package : LawConflictPackage.{u, v} A I_U I_V
+  H0LawConflict : Nat -> Type v
+  [h0AddCommGroup : (i : Nat) -> AddCommGroup (H0LawConflict i)]
+  [h0Module : (i : Nat) -> Module A (H0LawConflict i)]
+  h0LawConflictLinearEquivSelected :
+    (i : Nat) -> H0LawConflict i ≃ₗ[A] package.LawConflict i
+  Hypercohomology : Int -> Type v
+  [hyperAddCommGroup : (n : Int) -> AddCommGroup (Hypercohomology n)]
+  [hyperModule : (n : Int) -> Module A (Hypercohomology n)]
+
+attribute [instance] SelectedGlobalLawConflictReading.h0AddCommGroup
+attribute [instance] SelectedGlobalLawConflictReading.h0Module
+attribute [instance] SelectedGlobalLawConflictReading.hyperAddCommGroup
+attribute [instance] SelectedGlobalLawConflictReading.hyperModule
+
+namespace SelectedGlobalLawConflictReading
+
+variable {A}
+
+/-- V.R3: selected notation for `H^0(X, LawConflict_i)`. -/
+abbrev H0 {I_U I_V : Ideal A}
+    (G : SelectedGlobalLawConflictReading.{u, v} A I_U I_V) (i : Nat) : Type v :=
+  G.H0LawConflict i
+
+/-- V.R3: selected notation for `H^0(X, LawConflict_1)`. -/
+abbrev H0LawConflict₁ {I_U I_V : Ideal A}
+    (G : SelectedGlobalLawConflictReading.{u, v} A I_U I_V) : Type v :=
+  G.H0 1
+
+/-- V.R3: selected bridge from global notation back to the chosen local law conflict. -/
+def h0LinearEquivSelectedLawConflict {I_U I_V : Ideal A}
+    (G : SelectedGlobalLawConflictReading.{u, v} A I_U I_V) (i : Nat) :
+    G.H0 i ≃ₗ[A] G.package.LawConflict i :=
+  G.h0LawConflictLinearEquivSelected i
+
+/-- V.R3: selected hypercohomology notation for the derived intersection. -/
+abbrev hypercohomology {I_U I_V : Ideal A}
+    (G : SelectedGlobalLawConflictReading.{u, v} A I_U I_V) (n : Int) : Type v :=
+  G.Hypercohomology n
+
+end SelectedGlobalLawConflictReading
+
 end Intersection
 
 namespace LawfulLoci.LawUniversePair
@@ -169,9 +278,10 @@ abbrev DerivedIntersectionFor
 def derivedIntersection
     (P : LawUniversePair.{u, v} A)
     (left : Koszul.KoszulComplex.{u, v} A P.I_U)
-    (right : Koszul.KoszulComplex.{u, v} A P.I_V) :
+    (right : Koszul.KoszulComplex.{u, v} A P.I_V)
+    (derivedTensor : Intersection.SelectedDerivedTensorComplex.{v} A P.I_U P.I_V) :
     DerivedIntersectionFor P :=
-  ⟨left, right⟩
+  ⟨left, right, derivedTensor⟩
 
 end LawfulLoci.LawUniversePair
 
