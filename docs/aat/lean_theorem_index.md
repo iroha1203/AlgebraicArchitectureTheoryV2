@@ -4534,10 +4534,11 @@ File: `Formal/AG/LawAlgebra.lean`, `Formal/AG/LawAlgebra/Coordinate.lean`,
 `Formal/AG/LawAlgebra/WitnessIdeal.lean`,
 `Formal/AG/LawAlgebra/IdempotentCollapse.lean`,
 `Formal/AG/LawAlgebra/StanleyReisner.lean`,
-`Formal/AG/LawAlgebra/ObstructionIdeal.lean`.
+`Formal/AG/LawAlgebra/ObstructionIdeal.lean`,
+`Formal/AG/LawAlgebra/LawfulLocus.lean`.
 
 PRD-3 [第III部 Law Algebra・Obstruction Ideal・Lawful Locus](lean_ag_part_3_law_algebra_lawful_locus_prd.md) の
-R0-R7、AC1-AC10 に対応する entrypoint である。現時点では
+R0-R8、AC1-AC11 に対応する entrypoint である。現時点では
 `Formal/AG/LawAlgebra` を build 対象へ追加し、context に相対化された coordinate
 family と、`FreeCommAlg_k(Coord_X(W))` を Mathlib `MvPolynomial` として読む
 definitional bridge、structural relation family、`J_struct`、raw ambient quotient、
@@ -4549,7 +4550,8 @@ primary ideal-vanishing encoding、no-cancellation 付き defect representative 
 finite idempotent coordinate algebra の Boolean 点直積への collapse と flat / Tor /
 ideal square / Kähler 消滅 surface、square-free witness regime と
 Stanley-Reisner obstruction theorem / invariants surface、local obstruction ideal
-sum と restriction / sheaf-image surface までを Lean 上に置く。
+sum と restriction / sheaf-image surface、lawful locus と section factorization
+surface までを Lean 上に置く。
 
 | 本文ラベル | Lean 名 | 種別 | 意味 | Status |
 | --- | --- | --- | --- | --- |
@@ -4562,12 +4564,14 @@ sum と restriction / sheaf-image surface までを Lean 上に置く。
 | `III.補題5.6A` | `AAT.AG.LawAlgebra.BoolPoint`, `AAT.AG.LawAlgebra.IdempotentCollapse.boolValue`, `IdempotentCollapse.booleanEval`, `IdempotentCollapse.booleanRelation`, `IdempotentCollapse.booleanIdeal`, `IdempotentCollapse.IdempotentAlgebra`, `IdempotentCollapse.booleanIdeal_eq_ker`, `IdempotentCollapse.booleanEval_surjective`, `IdempotentCollapse.quotientAlgEquivPi`, `IdempotentCollapse.quotientRingEquivPi`, `IdempotentCollapse.module_projective`, `IdempotentCollapse.module_flat`, `IdempotentCollapse.isZero_Tor_succ`, `IdempotentCollapse.ideal_mul_self`, `IdempotentCollapse.ideal_square_comap_eq_top`, `IdempotentCollapse.kaehler_subsingleton` | `abbrev` / `def` / `theorem` / `instance` | finite coordinate set `E` と field `k` に対し、`k[x_e]/<x_e^2-x_e>` を Boolean points `E -> Bool` 上の finite product `BoolPoint E -> k` へ `AlgEquiv` で collapse する。semisimple ring 経由で全 module projective / flat、Mathlib `Tor` の projective 消滅 API で higher Tor zero、ideal idempotence により `I/I²=0` の top 条件、`FormallyUnramified` 経由で `Ω_{A/k}=0` を与える。 | `proved` |
 | `III.定義5.6B / 定理5.6C / 系5.6D` | `AAT.AG.LawAlgebra.StanleyReisner.squareFreeMonomial`, `StanleyReisner.SquareFreeWitnessRegime`, `SquareFreeWitnessRegime.obstructionIdeal`, `SquareFreeWitnessRegime.AdmissibleSupport`, `SquareFreeWitnessRegime.AbstractSimplicialComplex`, `SquareFreeWitnessRegime.delta`, `SquareFreeWitnessRegime.stanleyReisnerIdeal`, `SquareFreeWitnessRegime.coordinateSubspaceArrangement`, `SquareFreeWitnessRegime.flatChart`, `SquareFreeWitnessRegime.obstructionIdeal_eq_stanleyReisnerIdeal`, `SquareFreeWitnessRegime.obstructionIdeal_eq_stanleyReisnerIdeal_of_minimal`, `SquareFreeWitnessRegime.minimalReduction_obstructionIdeal_eq`, `SquareFreeWitnessRegime.radical_minimalReduction_obstructionIdeal_eq`, `SquareFreeWitnessRegime.face_iff_admissibleSupport`, `SquareFreeWitnessRegime.minimalGeneratorSupport_iff_minimalForbidden` | `structure` / `def` / `theorem` | square-free witness regime `Forb` と monomial obstruction ideal、`Finset` ベースの abstract simplicial complex `Delta_U(W)`、Stanley-Reisner ideal、coordinate subspace arrangement `V(I_Delta)` を定義する。非 face monomial が forbidden monomial の倍元になることから `I_Ob = I_Delta` を証明し、minimal family wrapper、finite witness 型での minimal reduction exact ideal equality / radical equality、minimal generator support と minimal forbidden support の一致、face と admissible support の一致を与える。 | `defined only` / `proved` |
 | `III.定義6.1 / 定義6.2 / 定義10.2` | `AAT.AG.LawAlgebra.ObstructionIdeal.SelectedLawWitnessIdealFamily`, `SelectedLawWitnessIdealFamily.selectedElementSet`, `SelectedLawWitnessIdealFamily.localObstructionIdeal`, `SelectedLawWitnessIdealFamily.witnessIdeal_le_localObstructionIdeal`, `SelectedLawWitnessIdealFamily.localObstructionIdeal_le_iff`, `SelectedLawWitnessIdealFamily.RestrictionCompatible`, `SelectedLawWitnessIdealFamily.map_localObstructionIdeal_le`, `SelectedLawWitnessIdealFamily.SheafImageConstruction`, `SheafImageConstruction.imageIdeal_eq_localObstructionIdeal`, `SheafImageConstruction.localObstructionIdeal_eq_imageIdeal` | `structure` / `def` / `theorem` | selected law witness ideal family の和として local obstruction ideal `I_Ob^U(W)` を定義する。選択された各 `I_L(W)` が local sum に入ること、local sum の最小性、restriction map が selected ideals を target selected ideals へ送る仮定の下で `I_Ob` が restriction-compatible になること、sheaf-image construction が local sum 表示と一致する範囲を明示する。 | `defined only` / `proved under explicit restriction-compatibility and sheaf-image agreement assumptions` |
+| `III.定義7.1 / 定義7.2` | `AAT.AG.LawAlgebra.LawfulLocus.lawfulLocus`, `LawfulLocus.localLawfulLocus`, `LawfulLocus.LawfulSectionData`, `LawfulSectionData.pulledObstructionIdeal`, `LawfulSectionData.Lawful`, `LawfulSectionData.FactorsThroughLawfulLocus`, `LawfulSectionData.lawful_iff_pulledObstructionIdeal_eq_bot`, `LawfulSectionData.factorsThroughLawfulLocus_of_lawful`, `LawfulSectionData.lawful_of_factorsThroughLawfulLocus`, `LawfulSectionData.lawful_iff_factorsThroughLawfulLocus`, `LawfulLocus.LocalLawfulSectionData` | `structure` / `def` / `theorem` | lawful locus `Flat_U(X) = V(I_Ob^U)` を `PrimeSpectrum.zeroLocus` として定義し、section pullback に沿った `s^* I_Ob^U = 0` を lawfulness とする。factorization through lawful locus は同じ vanishing condition を保持する package として置き、lawful section と factorization の同値を証明する。 | `defined only` / `proved` |
 
 Non-conclusions: この entrypoint は coordinate と free typed commutative algebra の
 bridge、structural quotient、restriction descent bridge、law algebra sheafification
 bridge、law witness ideal、defect representative reading、idempotent coordinate collapse、
 square-free local obstruction ideal と Stanley-Reisner chart reading、selected law
-ideal sum と sheaf-image 表示だけを示す。lawful locus、Nullstellensatz、affine chart、scheme、
+ideal sum と sheaf-image 表示、lawful locus / lawful section factorization だけを示す。
+Nullstellensatz、affine chart、scheme、
 定理11.1 はまだ形式化しない。
 
 ## Reverse-Import Theorem Packages
