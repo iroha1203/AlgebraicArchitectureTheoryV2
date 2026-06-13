@@ -4530,16 +4530,19 @@ PRD-1 finite model 上の singleton site example だけを示す。
 File: `Formal/AG/LawAlgebra.lean`, `Formal/AG/LawAlgebra/Coordinate.lean`,
 `Formal/AG/LawAlgebra/AmbientAlgebra.lean`,
 `Formal/AG/LawAlgebra/StructuralRelation.lean`,
-`Formal/AG/LawAlgebra/StructureSheaf.lean`.
+`Formal/AG/LawAlgebra/StructureSheaf.lean`,
+`Formal/AG/LawAlgebra/WitnessIdeal.lean`.
 
 PRD-3 [第III部 Law Algebra・Obstruction Ideal・Lawful Locus](lean_ag_part_3_law_algebra_lawful_locus_prd.md) の
-R0-R3、AC1-AC4 に対応する entrypoint である。現時点では
+R0-R4、AC1-AC5 に対応する entrypoint である。現時点では
 `Formal/AG/LawAlgebra` を build 対象へ追加し、context に相対化された coordinate
 family と、`FreeCommAlg_k(Coord_X(W))` を Mathlib `MvPolynomial` として読む
 definitional bridge、structural relation family、`J_struct`、raw ambient quotient、
 restriction-stability 下の quotient 降下補題、明示法則付き raw ambient presheaf
 bridge、universe-lifted commutative `k`-algebra-valued presheaf /
-sheafification bridge、presentation-stability assumption package までを Lean 上に置く。
+sheafification bridge、presentation-stability assumption package、law-indexed violation
+witness family、law witness ideal、ideal / point / canonical section pullback に沿った
+primary ideal-vanishing encoding、no-cancellation 付き defect representative reading までを Lean 上に置く。
 
 | 本文ラベル | Lean 名 | 種別 | 意味 | Status |
 | --- | --- | --- | --- | --- |
@@ -4548,11 +4551,12 @@ sheafification bridge、presentation-stability assumption package までを Lean
 | `III.定義4.1` | `AAT.AG.LawAlgebra.FreeCommAlg`, `AAT.AG.LawAlgebra.FreeTypedCommAlg`, `FreeTypedCommAlg.eq_mvPolynomial`, `FreeTypedCommAlg.coordVar`, `FreeTypedCommAlg.coordVar_eq_X` | `abbrev` / `def` / `theorem` | `FreeCommAlg_k(Coord_X(W))` を `MvPolynomial F.CoordX k` として読む bridge。law witness equation は ambient stage では quotient しない。 | `defined only` / `proved` |
 | `III.定義4.2 / 定義4.3 / 条件4.4` | `AAT.AG.LawAlgebra.StructuralRelationFamily`, `StructuralRelationFamily.RelStruct`, `StructuralRelationFamily.JStruct`, `StructuralRelationFamily.polynomial_mem_JStruct`, `StructuralRelationFamily.RawAmbientLawAlgebra`, `StructuralRelationFamily.quotientMap`, `StructuralRelationFamily.quotientMap_polynomial_eq_zero`, `AAT.AG.LawAlgebra.TypedCoordinateRestriction`, `TypedCoordinateRestriction.polynomialMap`, `TypedCoordinateRestriction.polynomialMap_X`, `AAT.AG.LawAlgebra.RestrictionStableStructuralRelations`, `RestrictionStableStructuralRelations.quotientDesc`, `RestrictionStableStructuralRelations.quotientDesc_mk`, `AAT.AG.LawAlgebra.RawAmbientPresheafBridge`, `RawAmbientPresheafBridge.rawAlgebra`, `RawAmbientPresheafBridge.res`, `RawAmbientPresheafBridge.identityLaw`, `RawAmbientPresheafBridge.compositionLaw` | `structure` / `def` / `abbrev` / `theorem` | structural relation family `Rel_struct(W)` と生成 ideal `J_struct(W)` を分離し、`O_raw^U(W)` を `FreeTypedCommAlg / J_struct` として定義する。typed coordinate restriction が `J_struct` を保存する仮定の下で quotient に降りることを証明し、identity / composition law を明示フィールドとして持つ raw ambient presheaf bridge を公開する。 | `defined only` / `proved under explicit restriction-stability and presheaf-law assumptions` |
 | `III.定義2.1 / 条件4.5` | `AAT.AG.LawAlgebra.AATCommAlgCat`, `AAT.AG.LawAlgebra.AlgebraValuedAATPresheaf`, `AAT.AG.LawAlgebra.LawAlgebraSheaf`, `AAT.AG.LawAlgebra.RawAmbientAlgebraPresheafBridge`, `RawAmbientAlgebraPresheafBridge.toPresheaf`, `RawAmbientAlgebraPresheafBridge.objectIso`, `RawAmbientAlgebraPresheafBridge.restriction_naturality_apply`, `AAT.AG.LawAlgebra.LawAlgebraSheafificationBridge`, `LawAlgebraSheafificationBridge.OX`, `LawAlgebraSheafificationBridge.OXPresheaf`, `LawAlgebraSheafificationBridge.canonicalAt`, `LawAlgebraSheafificationBridge.plus_isSheaf`, `LawAlgebraSheafificationBridge.OX_eq_plus`, `LawAlgebraSheafificationBridge.sheafification_lift_unique`, `AAT.AG.LawAlgebra.SelectedLawAlgebraPresentation`, `AAT.AG.LawAlgebra.PresentationStableAt`, `AAT.AG.LawAlgebra.PresentationStableAATSite`, `PresentationStableAATSite.presentsRaw`, `PresentationStableAATSite.canonicalPreservesGenerators`, `PresentationStableAATSite.canonicalPreservesRelations`, `PresentationStableAATSite.presentsSheafified`, `AAT.AG.LawAlgebra.LawAlgebraSheafPackage`, `LawAlgebraSheafPackage.OX`, `LawAlgebraSheafPackage.raw_eq_rawAmbient`, `LawAlgebraSheafPackage.presentationStableAt` | `abbrev` / `structure` / `def` / `theorem` | `O_X^U = (O_raw^U)^+` を、universe-lifted commutative `k`-algebra-valued presheaf、Mathlib `Sheaf` object、canonical map、sheafification universal property からなる selected sheafification bridge として定義する。raw ambient restriction と presheaf map の自然性を明示し、条件4.5 は selected generator / relation が canonical bridge で保たれる型付き仮定 package として持つ。 | `defined only` / `proved under explicit sheafification-bridge and presentation-stability assumptions` |
+| `III.定義5.1 / 定義5.2 / 定義5.3` | `AAT.AG.LawAlgebra.ViolationWitnessFamily`, `ViolationWitnessFamily.LawIndex`, `ViolationWitnessFamily.law`, `ViolationWitnessFamily.coordinateSet`, `AAT.AG.LawAlgebra.LawWitnessIdeal`, `LawWitnessIdeal.coordinate_mem`, `AAT.AG.LawAlgebra.LawWitnessPoint`, `AAT.AG.LawAlgebra.LawWitnessIdealVanishesAtIdeal`, `AAT.AG.LawAlgebra.LawWitnessIdealVanishesAtPoint`, `AAT.AG.LawAlgebra.LawWitnessSectionPullback`, `LawWitnessSectionPullback.pullback`, `LawWitnessSectionPullback.pulledIdeal`, `LawWitnessSectionPullback.Vanishes`, `AAT.AG.LawAlgebra.DefectRepresentativeReading`, `DefectRepresentativeReading.Vanishes`, `DefectRepresentativeReading.noCancellation_of_vanishes` | `structure` / `def` / `theorem` | law-indexed violation witness family `Viol_L(W)`、対応する coordinate set、生成 ideal `I_L(W)`、ideal support に沿った `I_L(W) ⊆ p`、point condition を持つ point support、canonical `O_raw^U(W) -> O_X^U(W)` bridge 経由の section pullback に沿った `s^* I_L = 0` を primary encoding として定義する。代表元 `δ_L` による `s^*(δ_L)=0` の読みは no-cancellation 条件を持つ別 surface として分離する。 | `defined only` / `proved for accessor lemma` |
 
 Non-conclusions: この entrypoint は coordinate と free typed commutative algebra の
 bridge、structural quotient、restriction descent bridge、law algebra sheafification
-bridge だけを示す。law witness ideal、obstruction ideal、lawful locus、
-Nullstellensatz、affine chart、scheme、定理11.1 はまだ形式化しない。
+bridge、law witness ideal と defect representative reading だけを示す。obstruction
+ideal、lawful locus、Nullstellensatz、affine chart、scheme、定理11.1 はまだ形式化しない。
 
 ## Reverse-Import Theorem Packages
 
