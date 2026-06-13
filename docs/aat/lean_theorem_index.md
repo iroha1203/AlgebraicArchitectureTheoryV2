@@ -4607,8 +4607,7 @@ File: `Formal/AG/Cohomology.lean`, `Formal/AG/Cohomology/Basic.lean`,
 `Formal/AG/Cohomology/Aggregation.lean`.
 
 PRD-4 [第IV部 Obstruction Cohomology](lean_ag_part_4_obstruction_cohomology_prd.md)
-の AC1/R0、AC2/R1、AC3/R2 の一般 complex surface、AC4/R2 の有限
-poset 比較 target、AC5/R3、AC6/R4、AC7/R5、AC8/R6 first half、AC9/R6、AC10/R7、AC11/R8、AC12/R9、AC13/R10(a) に対応する entrypoint である。現時点では
+の AC1/R0 から AC16/R12 までに対応する entrypoint である。現時点では
 `Formal/AG/Cohomology` を build 対象へ追加し、PRD-2 `Site` と PRD-3
 `LawAlgebra` への prerequisite package、obstruction coefficient sheaf carrier、
 `O_X^U`-module valued coefficient surface、`Def_U = I_U`、`ConDef_U = I_U/I_U^2`
