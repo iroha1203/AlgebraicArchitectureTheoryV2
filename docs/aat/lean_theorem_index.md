@@ -4487,15 +4487,16 @@ File: `Formal/AG/Site.lean`, `Formal/AG/Site/Basic.lean`,
 `Formal/AG/Site/Context.lean`, `Formal/AG/Site/ContextCategory.lean`,
 `Formal/AG/Site/Coverage.lean`, `Formal/AG/Site/Topology.lean`,
 `Formal/AG/Site/Adequate.lean`, `Formal/AG/Site/Geometry.lean`,
-`Formal/AG/Site/Sheaf.lean`, `Formal/AG/Site/Descent.lean`.
+`Formal/AG/Site/Sheaf.lean`, `Formal/AG/Site/Descent.lean`,
+`Formal/AG/Site/FinitePoset.lean`.
 
 PRD-2 [第II部 Architecture Geometry・Site・Sheaf](lean_ag_part_2_sites_sheaves_prd.md) の
-AC1/R0、AC2/R1、AC3-AC4/R2、AC5/R3、AC6-AC7/R4、AC8-AC9/R5、AC10/R6、AC11/R7、AC12/R8 に対応する site/context entrypoint である。現時点では
+AC1/R0、AC2/R1、AC3-AC4/R2、AC5/R3、AC6-AC7/R4、AC8-AC9/R5、AC10/R6、AC11/R7、AC12/R8、AC13-AC14/R9 に対応する site/context entrypoint である。現時点では
 PRD-1 の `AATCorePackage` に依存する入口、Architecture Context の最小モデル、
 §5 の射 role predicate、命題4.2 の finite-meet preorder / quotient-poset package、
 仮定4.3 の pullback lifting package、coverage family、admissible cover の5条件までを Lean 上に置き、
 admissible cover から生成される `J_U` と Mathlib `Coverage.toGrothendieck` bridge までを Lean 上に置く。
-U-adequate cover、補題7.2A、AAT Site、Architecture Geometry、presheaf、sheaf condition bridge、名前付き sheaf family、gluing / descent、sheafification comparison / gap も Lean 上に置く。
+U-adequate cover、補題7.2A、AAT Site、Architecture Geometry、presheaf、sheaf condition bridge、名前付き sheaf family、gluing / descent、sheafification comparison / gap、finite poset Čech regime と高次消滅も Lean 上に置く。
 
 | 本文ラベル | Lean 名 | 種別 | 意味 | Status |
 | --- | --- | --- | --- | --- |
@@ -4508,6 +4509,7 @@ U-adequate cover、補題7.2A、AAT Site、Architecture Geometry、presheaf、sh
 | `II.定義8.1 / 定義2.1` | `AAT.AG.Site.AATSite`, `AATSite.architectureObject`, `AATSite.category`, `AATSite.topology`, `AATSite.topology_eq`, `AATSite.top_mem`, `AAT.AG.Site.ArchitectureGeometry`, `ArchitectureGeometry.generatedObject`, `ArchitectureGeometry.generatedObject_eq_core`, `ArchitectureGeometry.contextPreorder`, `ArchitectureGeometry.category`, `ArchitectureGeometry.topology`, `ArchitectureGeometry.topology_eq_site` | `structure` / `abbrev` / `def` / `theorem` | `ArchCtx(A)` と `J_U` を束ねる AAT Site package、および PRD-1 の `PartIPrerequisites` / `AATCorePackage` 由来 object に site を載せる Architecture Geometry package。第III部以降の sheaf 群の置き場はコメントに留める。 | `defined only` / `proved` |
 | `II.定義9.1 / 定義10.1 / 定義10.2` | `AAT.AG.Site.AATPresheaf`, `AAT.AG.Site.AtRaw`, `AAT.AG.Site.LawRaw`, `AAT.AG.Site.SigRaw`, `AAT.AG.Site.AATSheafConditionFor`, `AAT.AG.Site.AATSheafCondition`, `AATSheafCondition.cover`, `AATSheafCondition.iff_presieve_isSheaf`, `AAT.AG.Site.AATSheaf`, `AATSheaf.toPresheaf`, `AATSheaf.presieve_isSheaf`, `AAT.AG.Site.ArchitectureSheafFamily`, `ArchitectureSheafFamily.At_isSheaf`, `ArchitectureSheafFamily.Law_isSheaf`, `ArchitectureSheafFamily.Sig_isSheaf`, `ArchitectureSheafFamily.State_isSheaf`, `ArchitectureSheafFamily.Eff_isSheaf`, `ArchitectureSheafFamily.Auth_isSheaf`, `ArchitectureSheafFamily.Sem_isSheaf`, `ArchitectureSheafFamily.Trace_isSheaf` | `abbrev` / `structure` / `def` / `theorem` | `ArchCtx(A)^op` 上の Type-valued presheaf、代表的 raw presheaf signature、compatible local sections が一意の global section へ貼り合う sheaf condition、Mathlib `Presieve.IsSheaf` bridge、および `At / Law / Sig / State / Eff / Auth / Sem / Trace` の名前付き sheaf family carrier package。 | `defined only` / `proved` |
 | `II.定義11.1 / 定義11.2 / 定義12.1` | `AAT.AG.Site.AATLocalSectionFamily`, `AAT.AG.Site.AATOverlapAgreement`, `AAT.AG.Site.AATCocycleCondition`, `AAT.AG.Site.AATGluingData`, `AATGluingData.cocycle`, `AAT.AG.Site.AATGlobalSectionRealizes`, `AAT.AG.Site.AATDescent`, `AATDescent.exists_global`, `AATSheafConditionFor.descent`, `AATSheafCondition.descent`, `AATSheaf.descent`, `AAT.AG.Site.AATSheafificationComparison`, `AATSheafificationComparison.plus_isSheaf`, `AAT.AG.Site.AATSheafificationGap` | `abbrev` / `structure` / `def` / `theorem` | cover 上の局所 section family、overlap agreement / cocycle condition、gluing data、compatible gluing data が一意の global section から来る descent、sheaf condition から descent を読む補題、および canonical map `F_raw -> F_raw^+` に相対化した sheafification comparison / gap。 | `defined only` / `proved` |
+| `II.定義7.2B / 命題7.2C` | `AAT.AG.Site.FinitePosetAATSiteRegime`, `FinitePosetAATSiteRegime.cover_index_finite`, `FinitePosetAATSiteRegime.cover_is_uAdequate`, `AAT.AG.Site.FinitePosetCechSimplex`, `FinitePosetCechSimplex.indices`, `FinitePosetCechSimplex.overlap`, `FinitePosetCechSimplex.overlap_le_patch`, `FinitePosetCechSimplex.finite`, `AAT.AG.Site.FinitePosetCechCochain`, `AAT.AG.Site.FinitePosetCechZeroCochain`, `AAT.AG.Site.FinitePosetCechComplex`, `AAT.AG.Site.FinitePosetCechCochainsVanish`, `AAT.AG.Site.FinitePosetCechCohomologyVanishes`, `AAT.AG.Site.FinitePosetNerveDimension`, `AAT.AG.Site.finitePosetCechComplex_finite`, `AAT.AG.Site.finitePosetCechCochains_vanish_above_nerveDimension`, `AAT.AG.Site.finitePosetCechCohomology_vanishes_above_nerveDimension` | `structure` / `abbrev` / `def` / `theorem` | finite contexts、finite meet、finite witness-closure adequate cover、coefficient presheaf、selected finite nerve simplex と overlap データを束ねる finite poset AAT site regime。cover-relative Čech cochain / complex vocabulary、各 degree の finite summand、nerve dimension `d` より上の cochain / cohomology vanishing を定義・証明する。 | `defined only` / `proved` |
 
 Non-conclusions: この entrypoint は `Formal/AG/Site` が build 対象に入ったことと
 PRD-1 依存の入口、定義3.1 Architecture Context、§5 の射 role predicate、
@@ -4515,8 +4517,9 @@ PRD-1 依存の入口、定義3.1 Architecture Context、§5 の射 role predica
 coverage family と admissible cover の5条件、admissible cover から生成される `J_U`、
 明示された pullback / base-change 前提下の Mathlib coverage bridge、U-adequate cover、
 補題7.2A の十分条件、AAT Site、Architecture Geometry、presheaf、sheaf condition bridge、
-名前付き sheaf family carrier package、gluing / descent、sheafification comparison / gap だけを示す。
-Cech complex、`AATSh`、有限 poset site example はまだ形式化しない。
+名前付き sheaf family carrier package、gluing / descent、sheafification comparison / gap、
+finite poset cover-relative Čech vocabulary と nerve dimension 上の高次消滅だけを示す。
+一般 site の Čech complex、sheaf cohomology 計算、`AATSh`、有限 poset site example はまだ形式化しない。
 
 ## Reverse-Import Theorem Packages
 

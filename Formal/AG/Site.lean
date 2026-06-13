@@ -7,3 +7,4 @@ import Formal.AG.Site.Adequate
 import Formal.AG.Site.Geometry
 import Formal.AG.Site.Sheaf
 import Formal.AG.Site.Descent
+import Formal.AG.Site.FinitePoset
