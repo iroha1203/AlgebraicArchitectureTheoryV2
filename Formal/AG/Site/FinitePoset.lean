@@ -9,14 +9,29 @@ universe u
 II.定義7.2B: finite poset AAT site regime.
 
 This is the finite, cover-relative regime used by the Čech computation
-surface. It records finiteness of contexts and of the selected cover index, the
-finite-meet overlap structure, the witness-closure adequacy boundary, and a
-coefficient presheaf on the selected AAT site.
+surface. It records a selected finite context poset, a selected cover, the
+witness-closure adequacy boundary, and a coefficient presheaf on the selected
+AAT site. It does not claim every possible `ArchCtx(A)` is finite.
 -/
 structure FinitePosetAATSiteRegime {U : AtomCarrier.{u}}
     {A : ArchitectureObject U} (S : AATSite A) where
-  finiteContexts : Finite (ArchCtx A)
-  finiteMeet : ContextFiniteMeet S.contextPreorder
+  ContextIndex : Type u
+  finiteContextIndex : Finite ContextIndex
+  context : ContextIndex -> ArchCtx A
+  contextLe : ContextIndex -> ContextIndex -> Prop
+  contextLe_refl : ∀ i : ContextIndex, contextLe i i
+  contextLe_trans :
+    ∀ {i j k : ContextIndex}, contextLe i j -> contextLe j k -> contextLe i k
+  contextLe_antisymm :
+    ∀ {i j : ContextIndex}, contextLe i j -> contextLe j i -> i = j
+  contextLe_sound :
+    ∀ {i j : ContextIndex}, contextLe i j -> S.contextPreorder.le (context i) (context j)
+  contextMeet : ContextIndex -> ContextIndex -> ContextIndex
+  contextMeet_le_left : ∀ i j : ContextIndex, contextLe (contextMeet i j) i
+  contextMeet_le_right : ∀ i j : ContextIndex, contextLe (contextMeet i j) j
+  context_le_meet :
+    ∀ {i j k : ContextIndex}, contextLe k i -> contextLe k j ->
+      contextLe k (contextMeet i j)
   base : S.category
   cover : AATCoverageFamily S.requirements S.overlap base
   finiteCoverIndex : Finite cover.Index
@@ -33,6 +48,26 @@ structure FinitePosetAATSiteRegime {U : AtomCarrier.{u}}
   coefficient : AATPresheaf S
 
 namespace FinitePosetAATSiteRegime
+
+/-- II.定義7.2B: the selected context poset is finite. -/
+theorem context_index_finite {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : AATSite A} (K : FinitePosetAATSiteRegime S) :
+    Finite K.ContextIndex :=
+  K.finiteContextIndex
+
+/-- II.定義7.2B: selected context order maps into the site preorder. -/
+theorem selected_context_le_sound {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : AATSite A} (K : FinitePosetAATSiteRegime S)
+    {i j : K.ContextIndex} (h : K.contextLe i j) :
+    S.contextPreorder.le (K.context i) (K.context j) :=
+  K.contextLe_sound h
+
+/-- II.定義7.2B: selected context order is antisymmetric. -/
+theorem selected_context_le_antisymm {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : AATSite A} (K : FinitePosetAATSiteRegime S)
+    {i j : K.ContextIndex} (hij : K.contextLe i j) (hji : K.contextLe j i) :
+    i = j :=
+  K.contextLe_antisymm hij hji
 
 /-- II.定義7.2B: the selected cover is finite. -/
 theorem cover_index_finite {U : AtomCarrier.{u}} {A : ArchitectureObject U}
