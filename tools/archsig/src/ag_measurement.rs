@@ -23,6 +23,7 @@ const MAX_LAPLACIAN_CELLS: usize = 16;
 const MAX_PERIOD_CYCLES: usize = 16;
 const MAX_TRANSFER_TARGETS: usize = 16;
 const GLUING_TRIANGLE_RENDER_LIMIT: usize = 80;
+const GLUING_COCYCLE_EDGE_RENDER_LIMIT: usize = 80;
 const GLUING_FIELD_ROW_RENDER_LIMIT: usize = 64;
 const GLUING_REGION_RENDER_LIMIT: usize = 24;
 const GLUING_CAGE_RENDER_LIMIT: usize = 80;
@@ -2445,6 +2446,20 @@ fn gluing_geometry_projection_v1(
         .map(Vec::len)
         .unwrap_or_default();
     let atom_glyph_total_count = normalized.atoms.len();
+    let cocycle_support_edge_count = nonzero_edges.len();
+    let cocycle_support_edges = nonzero_edges
+        .iter()
+        .take(GLUING_COCYCLE_EDGE_RENDER_LIMIT)
+        .map(|edge| {
+            json!({
+                "edgeId": edge.edge_id,
+                "sourceContextRef": edge.source_context,
+                "targetContextRef": edge.target_context,
+                "value": edge.value,
+                "supportAtomRefs": edge.support_atom_refs
+            })
+        })
+        .collect::<Vec<_>>();
     json!({
         "schema": "archsig-viewer-gluing-geometry/v1",
         "sourcePacketRef": "archsig-measurement-packet.json",
@@ -2461,13 +2476,7 @@ fn gluing_geometry_projection_v1(
         },
         "cocycleRibbon": {
             "supportAtomRefs": cocycle_support_atom_refs,
-            "supportEdges": nonzero_edges.iter().map(|edge| json!({
-                "edgeId": edge.edge_id,
-                "sourceContextRef": edge.source_context,
-                "targetContextRef": edge.target_context,
-                "value": edge.value,
-                "supportAtomRefs": edge.support_atom_refs
-            })).collect::<Vec<_>>(),
+            "supportEdges": cocycle_support_edges,
             "closureGapEncoding": {
                 "kind": "holonomyLikeGapMarker",
                 "visible": class_nonzero && !nonzero_edges.is_empty(),
@@ -2483,6 +2492,7 @@ fn gluing_geometry_projection_v1(
         "visualEncodingLegend": visual_encoding_legend_v1(),
         "renderLimits": {
             "nerveTriangles": GLUING_TRIANGLE_RENDER_LIMIT,
+            "cocycleSupportEdges": GLUING_COCYCLE_EDGE_RENDER_LIMIT,
             "curvatureFieldRows": GLUING_FIELD_ROW_RENDER_LIMIT,
             "curvatureRegions": GLUING_REGION_RENDER_LIMIT,
             "forbiddenCages": GLUING_CAGE_RENDER_LIMIT,
@@ -2491,7 +2501,7 @@ fn gluing_geometry_projection_v1(
         },
         "omittedGeometryCounts": {
             "nerveTriangles": triangle_count.saturating_sub(GLUING_TRIANGLE_RENDER_LIMIT),
-            "cocycleSupportEdges": 0,
+            "cocycleSupportEdges": cocycle_support_edge_count.saturating_sub(GLUING_COCYCLE_EDGE_RENDER_LIMIT),
             "curvatureFieldRows": field_row_count.saturating_sub(GLUING_FIELD_ROW_RENDER_LIMIT),
             "measuredZeroRegions": zero_region_count.saturating_sub(GLUING_REGION_RENDER_LIMIT),
             "blockedRegions": blocked_region_count.saturating_sub(GLUING_REGION_RENDER_LIMIT),
@@ -6613,6 +6623,77 @@ mod tests {
         assert_eq!(
             gluing["nerve"]["triangleSource"],
             "missing packet coverNerveProjection; viewer does not infer cover triangles"
+        );
+    }
+
+    #[test]
+    fn gluing_projection_caps_cocycle_support_edges_and_reports_omissions() {
+        let mut normalized = normalized_fixture();
+        let mut context_ids = Vec::new();
+        let mut contexts = Vec::new();
+        let mut atoms = Vec::new();
+        for index in 0..=GLUING_COCYCLE_EDGE_RENDER_LIMIT {
+            let source = format!("ctx:{index}");
+            let target = format!("ctx:{}", index + 1);
+            let atom_id = format!("atom:mismatch:{index}");
+            context_ids.push(source.clone());
+            contexts.push(NormalizedContextV2 {
+                source_context_id: source.clone(),
+                normalized_context_id: source.clone(),
+                atom_ids: vec![atom_id.clone()],
+                restricts_to: vec![target.clone()],
+                source_refs: vec![format!("fixture://{source}")],
+                poset_status: "selected".to_string(),
+            });
+            atoms.push(NormalizedAtomV2 {
+                source_atom_id: atom_id.clone(),
+                normalized_atom_id: atom_id,
+                atom_kind: "component".to_string(),
+                subject: source.clone(),
+                axis: "cech".to_string(),
+                predicate: "mismatch".to_string(),
+                object: Some(target.clone()),
+                source_refs: vec![source, target.clone()],
+                context_memberships: vec![target],
+                normalization_status: "normalized".to_string(),
+            });
+        }
+        let final_context = format!("ctx:{}", GLUING_COCYCLE_EDGE_RENDER_LIMIT + 1);
+        context_ids.push(final_context.clone());
+        contexts.push(NormalizedContextV2 {
+            source_context_id: final_context.clone(),
+            normalized_context_id: final_context.clone(),
+            atom_ids: Vec::new(),
+            restricts_to: Vec::new(),
+            source_refs: vec![format!("fixture://{final_context}")],
+            poset_status: "selected".to_string(),
+        });
+        normalized.contexts = contexts;
+        normalized.atoms = atoms;
+        normalized.covers[0].context_ids = context_ids;
+        normalized.summary.atom_count = normalized.atoms.len();
+        normalized.summary.normalized_atom_count = normalized.atoms.len();
+        normalized.summary.context_count = normalized.contexts.len();
+
+        let packet = packet_fixture();
+        let gluing = gluing_geometry_projection_v1(&normalized, &packet);
+
+        assert_eq!(
+            gluing["cocycleRibbon"]["supportEdges"]
+                .as_array()
+                .expect("support edges are array")
+                .len(),
+            GLUING_COCYCLE_EDGE_RENDER_LIMIT,
+            "cocycle ribbon support must be capped before entering the viewer projection"
+        );
+        assert_eq!(
+            gluing["renderLimits"]["cocycleSupportEdges"].as_u64(),
+            Some(GLUING_COCYCLE_EDGE_RENDER_LIMIT as u64)
+        );
+        assert_eq!(
+            gluing["omittedGeometryCounts"]["cocycleSupportEdges"].as_u64(),
+            Some(1),
+            "cocycle ribbon omissions must be reported for large H1 support"
         );
     }
 

@@ -1381,7 +1381,7 @@
         renderNerveGeometry(scene, geometry.nerve || {}, positions, encoding);
       }
       if (scene.sceneId === "cech-h1-mismatch") {
-        renderCocycleRibbon(scene, geometry.cocycleRibbon || {}, positions, encoding);
+        renderCocycleRibbon(scene, geometry.cocycleRibbon || {}, positions, encoding, geometry.renderLimits || {});
       }
       if (scene.sceneId === "hodge-debt-field") {
         renderLocusField(scene, geometry.locusField || {}, positions, geometry.renderLimits || {});
@@ -1496,8 +1496,9 @@
       addLineSegments(mismatch, sceneColorHex(encoding.colorRole || "measured_nonzero"), 0.9, "nerveMismatchEdge", { lineRole: "thick_glowing_line", thicknessRole: "thick" });
     }
 
-    function renderCocycleRibbon(scene, ribbon, positions, encoding) {
-      const supportEdges = Array.isArray(ribbon.supportEdges) ? ribbon.supportEdges : [];
+    function renderCocycleRibbon(scene, ribbon, positions, encoding, limits = {}) {
+      const supportEdgeLimit = limits.cocycleSupportEdges || 80;
+      const supportEdges = (Array.isArray(ribbon.supportEdges) ? ribbon.supportEdges : []).slice(0, supportEdgeLimit);
       const points = [];
       supportEdges.forEach((edge, index) => {
         const metrics = { xValue: index / Math.max(supportEdges.length - 1, 1), yValue: Number(edge.value || 0), zValue: Math.min((edge.supportAtomRefs || []).length, 12) };
