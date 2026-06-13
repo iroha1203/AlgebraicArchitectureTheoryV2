@@ -628,6 +628,8 @@ Issue [#1972](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/
 では U-adequate cover と補題7.2A Witness-Closure Cover を追加した。
 Issue [#1974](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1974)
 では AAT Site と Architecture Geometry package を追加した。
+Issue [#1976](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1976)
+では presheaf、sheaf condition bridge、名前付き sheaf family package を追加した。
 
 | 対象 | 現在の扱い | 残す境界 |
 | --- | --- | --- |
@@ -638,6 +640,7 @@ Issue [#1974](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/
 | `II.定義7.1後半 / R4` `J_U` と Mathlib bridge | `defined only` / `proved`. `Formal/AG/Site/Topology.lean` が context preorder の Mathlib thin category wrapper、admissible cover generated precoverage、`AATGrothendieckTopology`、identity/top cover、base-change stability、transitivity、admissible generated cover membership、明示 pullback / base-change 前提下の `Coverage.toGrothendieck` bridge theorem を持つ。 | AAT Site、Presheaf / Sheaf、Descent、finite poset Cech regime は後続 Issue に残る。 |
 | `II.定義7.2 / 補題7.2A` U-adequate cover と witness-closure | `defined only` / `proved under explicit WitnessClosureCover package assumptions`. `Formal/AG/Site/Adequate.lean` が U-adequate cover、selected reading 上の witness ideal predicate とその restriction 保存、witness-closure cover construction package、補題7.2A `witnessClosureCover_uAdequate` を持つ。 | AAT Site、Presheaf / Sheaf、Descent、finite poset Cech regime は後続 Issue に残る。 |
 | `II.定義8.1 / 定義2.1` AAT Site と Architecture Geometry | `defined only` / `proved`. `Formal/AG/Site/Geometry.lean` が `AATSite`、`AATSite.topology`、`ArchitectureGeometry`、PRD-1 core object との accessor theorem を持つ。 | Presheaf / Sheaf、Descent、finite poset Cech regime、`AATSh` は後続 Issue に残る。 |
+| `II.定義9.1 / 定義10.1 / 定義10.2` Presheaf と sheaf condition | `defined only` / `proved`. `Formal/AG/Site/Sheaf.lean` が `AATPresheaf`、raw presheaf signature、`AATSheafCondition`、Mathlib `Presieve.IsSheaf` bridge、`AATSheaf`、`At / Law / Sig / State / Eff / Auth / Sem / Trace` の `ArchitectureSheafFamily` を持つ。 | Descent、finite poset Cech regime、`AATSh` は後続 Issue に残る。 |
 
 第II部 PRD-2 の証明対象ラベルは次の状態から開始する。
 
@@ -650,7 +653,7 @@ Issue [#1974](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/
 | `II.補題7.2A` | `proved under explicit WitnessClosureCover package assumptions` |
 | `II.定義8.1 AAT Site` | `defined only` / `proved` |
 | `II.定義2.1 Architecture Geometry` | `defined only` / `proved` |
-| `II.定義10.1 sheaf condition bridge` | `future proof obligation` |
+| `II.定義10.1 sheaf condition bridge` | `proved` |
 | `II.定義11.1-12.1 sheaf-descent` | `future proof obligation` |
 | `II.命題7.2C` | `future proof obligation` |
 | `II.R11 finite model examples` | `future proof obligation` |
