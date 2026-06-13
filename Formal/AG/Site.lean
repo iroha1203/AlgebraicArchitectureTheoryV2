@@ -4,3 +4,4 @@ import Formal.AG.Site.ContextCategory
 import Formal.AG.Site.Coverage
 import Formal.AG.Site.Topology
 import Formal.AG.Site.Adequate
+import Formal.AG.Site.Geometry
