@@ -4485,15 +4485,16 @@ finite model example theorem package までを含む。第II部以降の concret
 
 File: `Formal/AG/Site.lean`, `Formal/AG/Site/Basic.lean`,
 `Formal/AG/Site/Context.lean`, `Formal/AG/Site/ContextCategory.lean`,
-`Formal/AG/Site/Coverage.lean`, `Formal/AG/Site/Topology.lean`.
+`Formal/AG/Site/Coverage.lean`, `Formal/AG/Site/Topology.lean`,
+`Formal/AG/Site/Adequate.lean`.
 
 PRD-2 [第II部 Architecture Geometry・Site・Sheaf](lean_ag_part_2_sites_sheaves_prd.md) の
-AC1/R0、AC2/R1、AC3-AC4/R2、AC5/R3、AC6-AC7/R4 に対応する site/context entrypoint である。現時点では
+AC1/R0、AC2/R1、AC3-AC4/R2、AC5/R3、AC6-AC7/R4、AC8-AC9/R5 に対応する site/context entrypoint である。現時点では
 PRD-1 の `AATCorePackage` に依存する入口、Architecture Context の最小モデル、
 §5 の射 role predicate、命題4.2 の finite-meet preorder / quotient-poset package、
 仮定4.3 の pullback lifting package、coverage family、admissible cover の5条件までを Lean 上に置き、
 admissible cover から生成される `J_U` と Mathlib `Coverage.toGrothendieck` bridge までを Lean 上に置く。
-sheaf category は後続 Issue の対象として残す。
+U-adequate cover と補題7.2A も Lean 上に置く。sheaf category は後続 Issue の対象として残す。
 
 | 本文ラベル | Lean 名 | 種別 | 意味 | Status |
 | --- | --- | --- | --- | --- |
@@ -4502,12 +4503,14 @@ sheaf category は後続 Issue の対象として残す。
 | `II.定義4.1 / 命題4.2 / 仮定4.3` | `AAT.AG.Site.ArchCtx`, `ContextPreorderCategory`, `ContextPreorderCategory.Hom`, `ContextPreorderCategory.hom_subsingleton`, `ContextPreorderCategory.id`, `ContextPreorderCategory.comp`, `ContextPreorderCategory.morphism`, `ContextPreorderCategory.morphism_isRestriction`, `ContextFiniteMeet`, `ReadableEquivalent`, `ReadableEquivalent.refl`, `ReadableEquivalent.symm`, `ReadableEquivalent.trans`, `readableSetoid`, `QuotientArchCtx`, `ContextFiniteMeetPreorderCategory`, `ContextFiniteMeetPosetCategory`, `QuotientFiniteMeetPosetCategory`, `finiteMeetPreorderCategoryOf`, `finiteMeetPosetCategoryOf`, `minimalContextFiniteMeetPreorderCategory`, `minimalContextFiniteMeetPosetCategory`, `minimalContextQuotientFiniteMeetPosetCategory`, `ContextOverlapPullback`, `ContextOverlapPullback.left`, `ContextOverlapPullback.right`, `ContextOverlapPullback.base`, `ContextOverlapPullback.lift`, `meetOverlapPullback`, `minimalMeetPullback` | `abbrev` / `structure` / `def` / `theorem` | `ArchCtx(A)` の readable morphism 付き preorder-category reading、finite meet、readable equivalence quotient、quotient object 上の finite-meet poset package、pullback / overlap 仮定 package と lifting property、および meet が overlap を実現する補題。 | `defined only` / `proved` |
 | `II.定義6.1 / 定義7.1前半` | `AAT.AG.Site.CoverageFamily`, `CoverageFamily.inclusionMorphism`, `CoverageFamily.inclusion_isRestriction`, `CoverageFamily.inclusion_nonGenerating`, `AAT.AG.Site.CoverageRequirements`, `AAT.AG.Site.AdmissibleCover`, `AdmissibleCover.support`, `AdmissibleCover.witness`, `AdmissibleCover.axis`, `AdmissibleCover.boundary`, `AdmissibleCover.nonGenerating`, `AdmissibleCover.nonGenerating_from_inclusions` | `structure` / `def` / `theorem` | coverage family `{ W_i -> W }`、law universe と selected reading を実引数に取る required support / witness / axis、overlap package に相対化した witness / boundary visibility、および admissible cover の5条件と accessor。 | `defined only` / `proved` |
 | `II.定義7.1後半 / R4` | `AAT.AG.Site.ContextCategoryObject`, `ContextCategoryObject.of`, `AAT.AG.Site.AATCoverageFamily`, `AATCoverageFamily.toCoverageFamily`, `AATCoverageFamily.presieve`, `AATCoverageFamily.admissibleCover`, `AAT.AG.Site.admissiblePrecoverage`, `AAT.AG.Site.AATGrothendieckTopology`, `AATGrothendieckTopology.top_mem`, `AATGrothendieckTopology.pullback_stable`, `AATGrothendieckTopology.transitive`, `AATGrothendieckTopology.generate_mem`, `AATGrothendieckTopology.eq_coverage_toGrothendieck` | `structure` / `def` / `theorem` | context preorder を Mathlib の thin preorder category に包み、admissible cover family を presieve として生成 precoverage に入れ、その `toGrothendieck` を `J_U` として定義する。Mathlib `Coverage.toGrothendieck` との一致は、admissible precoverage が pullback と base-change stability を持つことを明示前提にした bridge theorem。 | `defined only` / `proved` |
+| `II.定義7.2 / 補題7.2A` | `AAT.AG.Site.UAdequacyRequirements`, `AAT.AG.Site.UAdequateCover`, `UAdequateCover.isCover`, `UAdequateCover.support`, `UAdequateCover.witness`, `UAdequateCover.axis`, `UAdequateCover.boundary`, `UAdequateCover.witnessIdeal`, `AAT.AG.Site.RequiredWitnessSubtype`, `AAT.AG.Site.WitnessClosureIndex`, `WitnessClosureIndex.patch`, `AAT.AG.Site.WitnessClosureCover`, `WitnessClosureCover.ClosedIndex`, `WitnessClosureCover.patch`, `WitnessClosureCover.inclusion`, `WitnessClosureCover.toAATCoverageFamily`, `AAT.AG.Site.witnessClosureCover_uAdequate` | `abbrev` / `structure` / `def` / `theorem` | `J_U` cover に required support / witness / axis / boundary visibility と selected reading 上の witness ideal predicate の restriction 保存を追加した `U`-adequate cover。補題7.2A は seed patch、局所有限な required witness subtype、required witness support、seed-boundary overlap branch から生成される closed index を持つ witness-closure cover construction package を明示引数に取り、その package から admissible family を構成する。admissibility と adequacy の boundary 条件は明示された boundary visibility field から得る。 | `defined only` / `proved under explicit WitnessClosureCover package assumptions` |
 
 Non-conclusions: この entrypoint は `Formal/AG/Site` が build 対象に入ったことと
 PRD-1 依存の入口、定義3.1 Architecture Context、§5 の射 role predicate、
 命題4.2 と仮定4.3 の明示仮定 package と pullback lifting property、
 coverage family と admissible cover の5条件、admissible cover から生成される `J_U`、
-および明示された pullback / base-change 前提下の Mathlib coverage bridge だけを示す。
+明示された pullback / base-change 前提下の Mathlib coverage bridge、U-adequate cover、
+および補題7.2A の十分条件だけを示す。
 AAT Site、Presheaf / Sheaf、
 Descent、Cech complex、`AATSh`、有限 poset site example はまだ形式化しない。
 
