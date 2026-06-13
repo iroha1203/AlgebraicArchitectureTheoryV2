@@ -33,6 +33,7 @@
       "expected": {
         "minForbiddenCages": 1,
         "minRepairMorphs": 1,
+        "minRepairFromCageRefs": 2,
         "requiredNonClaims": ["not automatic repair"],
         "requiredScenes": ["obstruction", "repair-dual"]
       }

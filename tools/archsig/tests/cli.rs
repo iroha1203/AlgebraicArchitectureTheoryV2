@@ -1291,9 +1291,15 @@ fn cli_analyze_v2_square_free_repair_outputs_hitting_sets_and_nsdepth() {
                 items.iter().any(|item| {
                     item["animationRole"] == "continuous_morph_lower_bound"
                         && item["nonClaim"] == "not automatic repair"
+                        && item["fromCageRefs"]
+                            .as_array()
+                            .is_some_and(|refs| refs.len() >= 2)
+                        && item["fromAtomRefs"]
+                            .as_array()
+                            .is_some_and(|refs| !refs.is_empty())
                 })
             }),
-        "square-free repair fixture must project lower-bound repair candidate as continuous morph"
+        "square-free repair fixture must project lower-bound repair candidate from related forbidden supports"
     );
     assert_eq!(
         viewer["aatGeometryOverlays"]["forbiddenCages"], report["gluingGeometry"]["forbiddenCages"],
@@ -3343,6 +3349,19 @@ fn cli_locks_archsig_viewer_gluing_geometry_golden_ux_fixture() {
                 "{case_id} must render repair morph lower-bound paths"
             );
         }
+        if let Some(min_refs) = expected["minRepairFromCageRefs"].as_u64() {
+            assert!(
+                gluing["repairMorphs"]
+                    .as_array()
+                    .is_some_and(|items| items.iter().any(|item| item["fromCageRefs"]
+                        .as_array()
+                        .is_some_and(|refs| refs.len() >= min_refs as usize)
+                        && item["fromAtomRefs"]
+                            .as_array()
+                            .is_some_and(|refs| !refs.is_empty()))),
+                "{case_id} repair morphs must be grounded in related forbidden cage support"
+            );
+        }
         if let Some(min_rows) = expected["minCurvatureFieldRows"].as_u64() {
             assert!(
                 gluing["locusField"]["fieldRows"]
@@ -3417,6 +3436,21 @@ fn cli_locks_archsig_viewer_gluing_geometry_golden_ux_fixture() {
                 scene["axisMappingImplemented"].as_bool(),
                 Some(true),
                 "{case_id} scene {scene_id} must use axisMapping as geometry-driving"
+            );
+            assert_eq!(
+                scene["axisMetricBindings"]["x"].as_str(),
+                Some("xValue"),
+                "{case_id} scene {scene_id} must declare the renderer metric key for the X axis"
+            );
+            assert_eq!(
+                scene["axisMetricBindings"]["y"].as_str(),
+                Some("yValue"),
+                "{case_id} scene {scene_id} must declare the renderer metric key for the Y axis"
+            );
+            assert_eq!(
+                scene["axisMetricBindings"]["z"].as_str(),
+                Some("zValue"),
+                "{case_id} scene {scene_id} must declare the renderer metric key for the Z axis"
             );
             assert!(
                 scene["visualEncodingLegend"]
