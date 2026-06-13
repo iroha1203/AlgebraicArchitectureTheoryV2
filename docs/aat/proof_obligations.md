@@ -888,7 +888,8 @@ Issue
 ## AG版AAT Lean形式化 PRD-5 / 第V部 Derived Law Geometry と Repair
 
 File: `Formal/AG/Derived.lean`, `Formal/AG/Derived/LawfulLoci.lean`,
-`Formal/AG/Derived/Koszul.lean`, `Formal/AG/Derived/Intersection.lean`.
+`Formal/AG/Derived/Koszul.lean`, `Formal/AG/Derived/Intersection.lean`,
+`Formal/AG/Derived/FreeResolution.lean`, `Formal/AG/Derived/TaylorResolution.lean`.
 
 PRD-5 [第V部 Derived Law Geometry と Repair](lean_ag_part_5_derived_law_geometry_repair_prd.md)
 は Issue [#2076](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2076)
@@ -907,16 +908,23 @@ Issue
 Mathlib `Tor` object への selected bridge に相対化した `LawConflict_i`、
 `LawConflict_0 = O/(I_U + I_V)` accessor、および selected global /
 hypercohomology notation carrier を追加した。
+Issue
+[#2084](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2084)
+では selected finite free resolution、selected tensor-complex Tor computation、
+Taylor complex surface、monomial law conflict regime、命題5.5 calculation package
+の carrier / accessor surface を追加した。AC5--AC7 の本証明は、Mathlib `Tor`
+計算補題および Taylor resolution の構成証明として後続 Issue に残す。
 PRD 本体の checkbox は prd-loop の不変条件として編集せず、達成状態はこの台帳と
 tracking Issue [#2076](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2076)
 で管理する。
 
 | 対象 | 現在の扱い | 残す境界 |
 | --- | --- | --- |
-| `V.R0` Formal/AG/Derived entrypoint | `defined only`. `Formal/AG/Derived.lean` が `Formal/AG/Derived/LawfulLoci.lean`、`Formal/AG/Derived/Koszul.lean`、`Formal/AG/Derived/Intersection.lean` を束ね、`Formal/AG.lean` から import される。 | Taylor calculation、repair profile、Hilbert series、well-founded repair はまだ定義しない。 |
+| `V.R0` Formal/AG/Derived entrypoint | `defined only`. `Formal/AG/Derived.lean` が `Formal/AG/Derived/LawfulLoci.lean`、`Formal/AG/Derived/Koszul.lean`、`Formal/AG/Derived/Intersection.lean`、`Formal/AG/Derived/FreeResolution.lean`、`Formal/AG/Derived/TaylorResolution.lean` を束ね、`Formal/AG.lean` から import される。 | transversality theorem、repair profile、Hilbert series、well-founded repair はまだ定義しない。 |
 | `V.定義2.1 / 定義3.1` Lawful loci and classical joint locus | `defined only` / `proved accessor`. `LawUniverseReading`、`LawUniversePair`、`LawUniversePair.I_U`、`I_V`、`flatU`、`flatV`、`classicalJointIdeal`、`classicalJointLawfulLocus`、`flatU_eq_lawfulLocus`、`flatV_eq_lawfulLocus`、`classicalJointLawfulLocus_eq_zeroLocus`、`classicalJointLawfulLocus_eq_flatU_inter_flatV` を持つ。 | この行では classical joint locus までを扱う。derived lawful locus、`LawConflict_i`、`Tor_i`、derived non-transversality は後続行で管理する。 |
 | `V.定義2.3 / 原則2.4` Koszul complex and derived lawful locus truncation | `defined only` / `proved accessor`. `Koszul.SelectedGeneratorFamily`、`SelectedGeneratorFamily.generatedIdeal`、`firstTerm`、`d1`、`d1_mem_generatedIdeal`、`KoszulComplex`、`C0`、`C1`、`d1`、`zeroHomologyIdeal`、`zeroHomology`、`zeroHomologyIdeal_eq`、`zeroHomology_eq_classicalQuotient`、`zeroHomologyAlgEquivClassicalQuotient`、`zeroHomologyRingEquivClassicalQuotient`、`DerivedLawfulLocus`、`structureSheafComplex`、`truncation`、`truncation_eq_classicalQuotient`、`truncationAlgEquivClassicalQuotient`、`truncationRingEquivClassicalQuotient`、`truncationIdeal_eq`、`truncation_locus_eq_classical` を持つ。 | chart-level selected finite generator surface であり、derived category 一般論、higher Koszul homology、Tor、generator choice independence は R3 以降または future boundary に残す。 |
-| `V.定義4.1 / 5.1 / 5.2` Derived intersection and LawConflict bridge | `defined only` / `proved accessor`. `Intersection.classicalJointQuotient`、`mathlibTor`、`SelectedDerivedTensorComplex`、`SelectedDerivedTensorComplex.C0`、`homology0`、`homology0LinearEquivClassicalJoint`、`ChartDerivedIntersection`、`ChartDerivedIntersection.classicalQuotient`、`structureSheafComplex`、`homology0LinearEquivClassicalJoint`、`SelectedTorBridge`、`SelectedTorBridge.torLinearEquivMathlib`、`SelectedTorBridge.LawConflict`、`LawConflict₁`、`lawConflict_eq_tor`、`lawConflictLinearEquivMathlibTor`、`lawConflict0AlgEquivClassicalJoint`、`lawConflict0RingEquivClassicalJoint`、`LawConflictPackage`、`LawConflictPackage.LawConflict`、`LawConflictPackage.LawConflict₁`、`LawConflictPackage.lawConflict_eq_tor`、`LawConflictPackage.lawConflictLinearEquivMathlibTor`、`LawConflictPackage.lawConflict0AlgEquivClassicalJoint`、`LawConflictPackage.lawConflict0RingEquivClassicalJoint`、`SelectedGlobalLawConflictReading`、`SelectedGlobalLawConflictReading.H0`、`H0LawConflict₁`、`h0LinearEquivSelectedLawConflict`、`hypercohomology`、`LawfulLoci.LawUniversePair.DerivedIntersectionFor`、`LawfulLoci.LawUniversePair.derivedIntersection` を持つ。 | selected complex / bridge / global notation data に相対化しており、Tor の計算、finite free resolution、Taylor resolution、finite free resolution から bridge を構成する補題、Cech-to-sheaf comparison、global cohomology 計算は R4 以降に残す。 |
+| `V.定義4.1 / 5.1 / 5.2` Derived intersection and LawConflict bridge | `defined only` / `proved accessor`. `Intersection.classicalJointQuotient`、`mathlibTor`、`SelectedDerivedTensorComplex`、`SelectedDerivedTensorComplex.C0`、`homology0`、`homology0LinearEquivClassicalJoint`、`ChartDerivedIntersection`、`ChartDerivedIntersection.classicalQuotient`、`structureSheafComplex`、`homology0LinearEquivClassicalJoint`、`SelectedTorBridge`、`SelectedTorBridge.torLinearEquivMathlib`、`SelectedTorBridge.LawConflict`、`LawConflict₁`、`lawConflict_eq_tor`、`lawConflictLinearEquivMathlibTor`、`lawConflict0AlgEquivClassicalJoint`、`lawConflict0RingEquivClassicalJoint`、`LawConflictPackage`、`LawConflictPackage.LawConflict`、`LawConflictPackage.LawConflict₁`、`LawConflictPackage.lawConflict_eq_tor`、`LawConflictPackage.lawConflictLinearEquivMathlibTor`、`LawConflictPackage.lawConflict0AlgEquivClassicalJoint`、`LawConflictPackage.lawConflict0RingEquivClassicalJoint`、`SelectedGlobalLawConflictReading`、`SelectedGlobalLawConflictReading.H0`、`H0LawConflict₁`、`h0LinearEquivSelectedLawConflict`、`hypercohomology`、`LawfulLoci.LawUniversePair.DerivedIntersectionFor`、`LawfulLoci.LawUniversePair.derivedIntersection` を持つ。 | selected complex / bridge / global notation data に相対化しており、Cech-to-sheaf comparison、global cohomology 計算は R5 以降に残す。 |
+| `V.R4 scaffold / 定義5.4 support` Monomial conflict calculation surface | `defined only` / `proved accessor surface`. `FreeResolution.SelectedFiniteFreeResolution`、`SelectedFiniteFreeResolution.termLinearEquivFree_certificate`、`exact_certificate`、`SelectedTensorComplex`、`SelectedTensorComplex.homology`、`tensorOfResolution_certificate`、`FiniteFreeResolutionTorComputation`、`mathlibTorLinearEquivTensorHomology`、`tensorHomologyLinearEquivMathlibTor`、`TaylorResolution.SquareFreeMonomialIdealPresentation`、`generatedIdeal_eq`、`squareFree_certificate`、`MonomialLawConflictRegime`、`lcmSupport`、`lcmSupport_eq_union`、`TaylorComplex`、`TaylorComplex.resolvesQuotient_certificate`、`multidegree_union_eq`、`MonomialConflictCalculation`、`computesLawConflict_certificate`、`lawConflictLinearEquivTensorHomology`、`lcm_multidegree_eq_union` を持つ。 | selected package の明示 certificate から読む surface であり、AC5--AC7 の本証明ではない。任意の有限自由分解が Tor を計算する一般補題、Taylor complex が `R/I` の自由分解である構成証明、命題5.5 の theorem package 昇格、Scarf complex、lcm-lattice resolution、minimality、concrete Tor nonzero examples、transversality theorem はまだ主張しない。 |
 | `IV.定義2.4 DerOb_U` の内部構成 | `future proof obligation` / `unassigned`. PRD-5 R0/R1 では触らず、PRD-5 本文が展開する chart-level Koszul / Tor 構成とは別境界として維持する。 | 余接複体 `L_{Flat/X}` と `Ext^1` の一般形式化は PRD-5 の現在 scope では実装しない。 |
 
 第V部 PRD-5 の証明対象ラベルは次の現在状態である。
@@ -927,7 +935,7 @@ tracking Issue [#2076](https://github.com/iroha1203/AlgebraicArchitectureTheoryV
 | `V.定義2.1 / 定義3.1` | `defined only` / `proved accessor` |
 | `V.定義2.3 / 原則2.4` | `defined only` / `proved accessor` |
 | `V.定義4.1 / 5.1 / 5.2` | `defined only` / `proved accessor` |
-| `V.命題5.5` | `future proof obligation` |
+| `V.命題5.5` | `future proof obligation` / `selected accessor surface only` |
 | `V.定理6.1 / 定理7.3` | `future proof obligation` |
 | `V.命題9.2` | `future proof obligation` |
 | `V.定理10.5 / 定理10.6` | `future proof obligation` |
