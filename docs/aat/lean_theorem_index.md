@@ -4484,22 +4484,25 @@ finite model example theorem package までを含む。第II部以降の concret
 ## AG版AAT Lean形式化 PRD-2 / 第II部 Architecture Geometry・Site・Sheaf
 
 File: `Formal/AG/Site.lean`, `Formal/AG/Site/Basic.lean`,
-`Formal/AG/Site/Context.lean`.
+`Formal/AG/Site/Context.lean`, `Formal/AG/Site/ContextCategory.lean`.
 
 PRD-2 [第II部 Architecture Geometry・Site・Sheaf](lean_ag_part_2_sites_sheaves_prd.md) の
-AC1/R0 と AC2/R1 に対応する site/context entrypoint である。現時点では
+AC1/R0、AC2/R1、AC3-AC4/R2 に対応する site/context entrypoint である。現時点では
 PRD-1 の `AATCorePackage` に依存する入口、Architecture Context の最小モデル、
-§5 の射 role predicate までを Lean 上に置き、Context Category、coverage、
-Grothendieck topology、sheaf category は後続 Issue の対象として残す。
+§5 の射 role predicate、命題4.2 の finite-meet preorder / quotient-poset package、
+仮定4.3 の pullback lifting package までを Lean 上に置き、coverage、Grothendieck topology、
+sheaf category は後続 Issue の対象として残す。
 
 | 本文ラベル | Lean 名 | 種別 | 意味 | Status |
 | --- | --- | --- | --- | --- |
 | `II.R0` | `AAT.AG.Site.PartIPrerequisites`, `PartIPrerequisites.architectureObject`, `PartIPrerequisites.lawUniverse`, `PartIPrerequisites.signature`, `PartIPrerequisites.architectureObject_configuration` | `structure` / `def` / `theorem` | 第II部 site tower が PRD-1 の `AATCorePackage` から architecture object / law universe / signature を読むための prerequisite package と accessor。 | `defined only` / `proved` |
 | `II.定義3.1 / §5.1-5.4` | `AAT.AG.Site.MinimalContext`, `AAT.AG.Site.ArchitectureContext`, `ArchitectureContext.Support`, `ArchitectureContext.Axis`, `ArchitectureContext.Observable`, `AAT.AG.Site.ContextMorphism`, `ContextMorphism.IsRestriction`, `ContextMorphism.IsProjection`, `ContextMorphism.IsRefinement`, `ContextMorphism.IsBaseChange`, `ContextMorphism.supportReadable_of_restriction`, `ContextMorphism.axisReadable_of_restriction`, `ContextMorphism.observableFunctorial_of_restriction`, `ContextMorphism.nonGenerating_of_restriction`, `ContextMorphism.axisForgetting_of_projection`, `ContextMorphism.supportRefinement_of_refinement`, `ContextMorphism.axisRefinement_of_refinement`, `ContextMorphism.baseChangeCompatible_of_baseChange` | `structure` / `def` / `theorem` | 最小 context model `(Supp, Ax, Obs)`、最小読みを含む一般 context、local context から target context への readable morphism、および restriction / projection / refinement / base change の role predicate と accessor。 | `defined only` / `proved` |
+| `II.定義4.1 / 命題4.2 / 仮定4.3` | `AAT.AG.Site.ArchCtx`, `ContextPreorderCategory`, `ContextPreorderCategory.Hom`, `ContextPreorderCategory.hom_subsingleton`, `ContextPreorderCategory.id`, `ContextPreorderCategory.comp`, `ContextPreorderCategory.morphism`, `ContextPreorderCategory.morphism_isRestriction`, `ContextFiniteMeet`, `ReadableEquivalent`, `ReadableEquivalent.refl`, `ReadableEquivalent.symm`, `ReadableEquivalent.trans`, `readableSetoid`, `QuotientArchCtx`, `ContextFiniteMeetPreorderCategory`, `ContextFiniteMeetPosetCategory`, `QuotientFiniteMeetPosetCategory`, `finiteMeetPreorderCategoryOf`, `finiteMeetPosetCategoryOf`, `minimalContextFiniteMeetPreorderCategory`, `minimalContextFiniteMeetPosetCategory`, `minimalContextQuotientFiniteMeetPosetCategory`, `ContextOverlapPullback`, `ContextOverlapPullback.left`, `ContextOverlapPullback.right`, `ContextOverlapPullback.base`, `ContextOverlapPullback.lift`, `meetOverlapPullback`, `minimalMeetPullback` | `abbrev` / `structure` / `def` / `theorem` | `ArchCtx(A)` の readable morphism 付き preorder-category reading、finite meet、readable equivalence quotient、quotient object 上の finite-meet poset package、pullback / overlap 仮定 package と lifting property、および meet が overlap を実現する補題。 | `defined only` / `proved` |
 
 Non-conclusions: この entrypoint は `Formal/AG/Site` が build 対象に入ったことと
-PRD-1 依存の入口、定義3.1 Architecture Context、§5 の射 role predicate だけを示す。
-命題4.2、pullback / overlap、admissible cover、`J_U`、Mathlib bridge、sheaf condition、Cech complex、
+PRD-1 依存の入口、定義3.1 Architecture Context、§5 の射 role predicate、
+命題4.2 と仮定4.3 の明示仮定 package と pullback lifting property だけを示す。
+admissible cover、`J_U`、Mathlib bridge、sheaf condition、Cech complex、
 `AATSh`、有限 poset site example はまだ形式化しない。
 
 ## Reverse-Import Theorem Packages
