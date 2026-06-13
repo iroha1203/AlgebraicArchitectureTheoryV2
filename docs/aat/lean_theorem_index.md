@@ -4525,6 +4525,28 @@ finite poset cover-relative Čech section product / face restriction differentia
 PRD-1 finite model 上の singleton site example だけを示す。
 一般 site の Čech complex、sheaf cohomology 計算、law algebra sheaf の具体構成、非 singleton の finite poset site example はまだ形式化しない。
 
+## AG版AAT Lean形式化 PRD-3 / 第III部 Law Algebra・Obstruction Ideal・Lawful Locus
+
+File: `Formal/AG/LawAlgebra.lean`, `Formal/AG/LawAlgebra/Coordinate.lean`,
+`Formal/AG/LawAlgebra/AmbientAlgebra.lean`.
+
+PRD-3 [第III部 Law Algebra・Obstruction Ideal・Lawful Locus](lean_ag_part_3_law_algebra_lawful_locus_prd.md) の
+R0/R1、AC1-AC2 に対応する初期 entrypoint である。現時点では
+`Formal/AG/LawAlgebra` を build 対象へ追加し、context に相対化された coordinate
+family と、`FreeCommAlg_k(Coord_X(W))` を Mathlib `MvPolynomial` として読む
+definitional bridge までを Lean 上に置く。
+
+| 本文ラベル | Lean 名 | 種別 | 意味 | Status |
+| --- | --- | --- | --- | --- |
+| `III.R0` | `Formal.AG.LawAlgebra` entrypoint | `import` | 第III部 LawAlgebra module を `Formal/AG.lean` から import し、PRD-1 `Formal/AG/Atom` と PRD-2 `Formal/AG/Site` の成果物上に立ち上げる。 | `defined only` |
+| `III.定義3.1` | `AAT.AG.LawAlgebra.CoordinateLabel`, `AAT.AG.LawAlgebra.ArchitectureCoordinate`, `ArchitectureCoordinate.eval`, `ArchitectureCoordinate.eval_eq_read`, `AAT.AG.LawAlgebra.CoordinateFamily`, `CoordinateFamily.CoordX`, `CoordinateFamily.namespaceLabel`, `CoordinateFamily.localData`, `AAT.AG.LawAlgebra.CoordinateReading`, `CoordinateReading.eval`, `CoordinateReading.eval_eq_read` | `inductive` / `structure` / `abbrev` / `def` / `theorem` | context `W` に相対化された coordinate label、単一 coordinate、coordinate family、係数値 reading。coordinate は局所データから係数 carrier への読みとして扱い、structural relation や law equation はまだ課さない。 | `defined only` / `proved` |
+| `III.定義4.1` | `AAT.AG.LawAlgebra.FreeCommAlg`, `AAT.AG.LawAlgebra.FreeTypedCommAlg`, `FreeTypedCommAlg.eq_mvPolynomial`, `FreeTypedCommAlg.coordVar`, `FreeTypedCommAlg.coordVar_eq_X` | `abbrev` / `def` / `theorem` | `FreeCommAlg_k(Coord_X(W))` を `MvPolynomial F.CoordX k` として読む bridge。law witness equation は ambient stage では quotient しない。 | `defined only` / `proved` |
+
+Non-conclusions: この entrypoint は coordinate と free typed commutative algebra の
+bridge だけを示す。structural relation、`J_struct`、quotient `O_raw^U`、
+restriction descent、law witness ideal、obstruction ideal、lawful locus、
+Nullstellensatz、affine chart、scheme、定理11.1 はまだ形式化しない。
+
 ## Reverse-Import Theorem Packages
 
 File: `Formal/Arch/Evolution/ReverseImportTheorems.lean`.

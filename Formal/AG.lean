@@ -13,3 +13,4 @@ import Formal.AG.Atom.ObjectAlgebra
 import Formal.AG.Atom.AATCore
 import Formal.AG.Examples.FiniteModel
 import Formal.AG.Site
+import Formal.AG.LawAlgebra
