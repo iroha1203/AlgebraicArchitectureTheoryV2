@@ -592,10 +592,74 @@ theorem finitePosetRegime_nerveDimension_zero :
       change IsEmpty Empty
       infer_instance
 
-/-- R11 / II.AC16: zero differential Čech complex on the singleton finite site. -/
-def finitePosetCechComplex : Site.FinitePosetCechComplex finitePosetRegime Nat where
-  differential := fun _n _cochain _simplex => 0
-  differential_zero := fun _n => rfl
+/-- R11 / II.AC16: selected zero and face-combination data for the singleton finite site. -/
+def finitePosetCechAdditiveData :
+    Site.FinitePosetCechAdditiveData finitePosetRegime where
+  zeroSection := fun _n _simplex => PUnit.unit
+  combineFaces := fun _n _simplex _faces => PUnit.unit
+  combineFaces_zero := fun _n _simplex => rfl
+
+/-- R11 / II.AC16: selected face maps for the singleton finite site. -/
+def finitePosetCechFaceData :
+    Site.FinitePosetCechFaceData finitePosetRegime where
+  face := by
+    intro n simplex _i
+    cases n with
+    | zero => exact Empty.elim simplex
+    | succ _ => exact Empty.elim simplex
+  faceOverlap_le := by
+    intro n simplex _i
+    cases n with
+    | zero => exact Empty.elim simplex
+    | succ _ => exact Empty.elim simplex
+
+/--
+R11 / II.AC16: Čech complex on the singleton finite site.
+
+The differential is the selected face-restriction combination, and all positive
+target degrees are empty because the selected cover has nerve dimension zero.
+-/
+def finitePosetCechComplex : Site.FinitePosetCechComplex finitePosetRegime where
+  additive := finitePosetCechAdditiveData
+  faces := finitePosetCechFaceData
+  differential := by
+    intro n _cochain simplex
+    cases n with
+    | zero => exact Empty.elim simplex
+    | succ _ => exact Empty.elim simplex
+  differential_eq_restrictions := by
+    intro n _cochain simplex
+    cases n with
+    | zero => exact Empty.elim simplex
+    | succ _ => exact Empty.elim simplex
+  differential_zero := by
+    intro n
+    funext simplex
+    cases n with
+    | zero => exact Empty.elim simplex
+    | succ _ => exact Empty.elim simplex
+  differential_comp_zero := by
+    intro n _cochain
+    funext simplex
+    cases n with
+    | zero => exact Empty.elim simplex
+    | succ _ => exact Empty.elim simplex
+
+/-- R11 / II.AC16: equality quotient relation for the singleton finite cohomology. -/
+def finitePosetCechCoboundaryRelation (n : Nat) :
+    Site.FinitePosetCechCoboundaryRelation finitePosetCechComplex n where
+  related := fun left right => left = right
+  refl := fun _ => rfl
+  symm := fun h => h.symm
+  trans := fun hleft hright => hleft.trans hright
+  kills_image := by
+    intro cocycle himage
+    cases n with
+    | zero => exact False.elim himage
+    | succ _ =>
+        apply Subtype.ext
+        funext simplex
+        exact Empty.elim simplex
 
 /-- R11 / II.AC16: example theorem for finite summands of the Čech complex. -/
 theorem finitePosetRegime_cechComplex_finite (n : Nat) :
@@ -609,9 +673,10 @@ The singleton cover has nerve dimension zero, so every positive degree
 vanishes in the finite cover-relative Čech vocabulary.
 -/
 theorem finitePosetRegime_cech_vanishes_above_dimension {n : Nat} (hn : 0 < n) :
-    Site.FinitePosetCechCohomologyVanishes finitePosetRegime Nat n :=
+    Site.FinitePosetCechCohomologyVanishes finitePosetCechComplex n
+      (finitePosetCechCoboundaryRelation n) :=
   Site.finitePosetCechCohomology_vanishes_above_nerveDimension
-    finitePosetRegime Nat finitePosetCechComplex
+    finitePosetCechComplex (finitePosetCechCoboundaryRelation n)
     finitePosetRegime_nerveDimension_zero hn
 
 end FiniteModel
