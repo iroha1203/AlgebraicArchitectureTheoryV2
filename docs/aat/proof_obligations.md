@@ -630,17 +630,20 @@ Issue [#1974](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/
 では AAT Site と Architecture Geometry package を追加した。
 Issue [#1976](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1976)
 では presheaf、sheaf condition bridge、名前付き sheaf family package を追加した。
+Issue [#1978](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1978)
+では gluing data、descent、sheaf-descent 補題、sheafification comparison / gap を追加した。
 
 | 対象 | 現在の扱い | 残す境界 |
 | --- | --- | --- |
-| `II.R0` Part I prerequisites / Formal/AG/Site entrypoint | `defined only` / `proved`. `Formal/AG/Site/Basic.lean` が `AAT.AG.Site.PartIPrerequisites` と accessor theorem を持つ。 | AAT Site、Presheaf / Sheaf、Descent、Finite Poset regime、AATSh は後続 Issue に残る。 |
-| `II.定義3.1 / §5.1-5.4` Architecture Context と射 role | `defined only` / `proved`. `Formal/AG/Site/Context.lean` が `MinimalContext`, `ArchitectureContext`, `ContextMorphism`、restriction / projection / refinement / base change role predicate と accessor theorem を持つ。 | AAT Site、Presheaf / Sheaf、Descent は後続 Issue に残る。 |
-| `II.定義4.1 / 命題4.2 / 仮定4.3` Context Category と meet-pullback | `defined only` / `proved`. `Formal/AG/Site/ContextCategory.lean` が readable morphism 付き preorder-category package、finite meet、readable equivalence quotient、quotient object 上の finite-meet poset package、pullback / overlap package、pullback lifting property、meet-overlap 補題を持つ。 | AAT Site、Presheaf / Sheaf、Descent は後続 Issue に残る。 |
-| `II.定義6.1 / 定義7.1前半` Coverage Family と admissible cover | `defined only` / `proved`. `Formal/AG/Site/Coverage.lean` が coverage family `{ W_i -> W }`、selected law universe / selected reading を実引数に取る required support / witness / axis、overlap package に相対化した witness / boundary visibility、admissible cover の5条件と accessor theorem を持つ。 | AAT Site、Presheaf / Sheaf、Descent は後続 Issue に残る。 |
-| `II.定義7.1後半 / R4` `J_U` と Mathlib bridge | `defined only` / `proved`. `Formal/AG/Site/Topology.lean` が context preorder の Mathlib thin category wrapper、admissible cover generated precoverage、`AATGrothendieckTopology`、identity/top cover、base-change stability、transitivity、admissible generated cover membership、明示 pullback / base-change 前提下の `Coverage.toGrothendieck` bridge theorem を持つ。 | AAT Site、Presheaf / Sheaf、Descent、finite poset Cech regime は後続 Issue に残る。 |
-| `II.定義7.2 / 補題7.2A` U-adequate cover と witness-closure | `defined only` / `proved under explicit WitnessClosureCover package assumptions`. `Formal/AG/Site/Adequate.lean` が U-adequate cover、selected reading 上の witness ideal predicate とその restriction 保存、witness-closure cover construction package、補題7.2A `witnessClosureCover_uAdequate` を持つ。 | AAT Site、Presheaf / Sheaf、Descent、finite poset Cech regime は後続 Issue に残る。 |
-| `II.定義8.1 / 定義2.1` AAT Site と Architecture Geometry | `defined only` / `proved`. `Formal/AG/Site/Geometry.lean` が `AATSite`、`AATSite.topology`、`ArchitectureGeometry`、PRD-1 core object との accessor theorem を持つ。 | Presheaf / Sheaf、Descent、finite poset Cech regime、`AATSh` は後続 Issue に残る。 |
-| `II.定義9.1 / 定義10.1 / 定義10.2` Presheaf と sheaf condition | `defined only` / `proved`. `Formal/AG/Site/Sheaf.lean` が `AATPresheaf`、raw presheaf signature、`AATSheafCondition`、Mathlib `Presieve.IsSheaf` bridge、`AATSheaf`、`At / Law / Sig / State / Eff / Auth / Sem / Trace` の `ArchitectureSheafFamily` を持つ。 | Descent、finite poset Cech regime、`AATSh` は後続 Issue に残る。 |
+| `II.R0` Part I prerequisites / Formal/AG/Site entrypoint | `defined only` / `proved`. `Formal/AG/Site/Basic.lean` が `AAT.AG.Site.PartIPrerequisites` と accessor theorem を持つ。 | Finite Poset regime、AATSh は後続 Issue に残る。 |
+| `II.定義3.1 / §5.1-5.4` Architecture Context と射 role | `defined only` / `proved`. `Formal/AG/Site/Context.lean` が `MinimalContext`, `ArchitectureContext`, `ContextMorphism`、restriction / projection / refinement / base change role predicate と accessor theorem を持つ。 | Finite Poset regime、AATSh は後続 Issue に残る。 |
+| `II.定義4.1 / 命題4.2 / 仮定4.3` Context Category と meet-pullback | `defined only` / `proved`. `Formal/AG/Site/ContextCategory.lean` が readable morphism 付き preorder-category package、finite meet、readable equivalence quotient、quotient object 上の finite-meet poset package、pullback / overlap package、pullback lifting property、meet-overlap 補題を持つ。 | Finite Poset regime、AATSh は後続 Issue に残る。 |
+| `II.定義6.1 / 定義7.1前半` Coverage Family と admissible cover | `defined only` / `proved`. `Formal/AG/Site/Coverage.lean` が coverage family `{ W_i -> W }`、selected law universe / selected reading を実引数に取る required support / witness / axis、overlap package に相対化した witness / boundary visibility、admissible cover の5条件と accessor theorem を持つ。 | Finite Poset regime、AATSh は後続 Issue に残る。 |
+| `II.定義7.1後半 / R4` `J_U` と Mathlib bridge | `defined only` / `proved`. `Formal/AG/Site/Topology.lean` が context preorder の Mathlib thin category wrapper、admissible cover generated precoverage、`AATGrothendieckTopology`、identity/top cover、base-change stability、transitivity、admissible generated cover membership、明示 pullback / base-change 前提下の `Coverage.toGrothendieck` bridge theorem を持つ。 | finite poset Cech regime は後続 Issue に残る。 |
+| `II.定義7.2 / 補題7.2A` U-adequate cover と witness-closure | `defined only` / `proved under explicit WitnessClosureCover package assumptions`. `Formal/AG/Site/Adequate.lean` が U-adequate cover、selected reading 上の witness ideal predicate とその restriction 保存、witness-closure cover construction package、補題7.2A `witnessClosureCover_uAdequate` を持つ。 | finite poset Cech regime は後続 Issue に残る。 |
+| `II.定義8.1 / 定義2.1` AAT Site と Architecture Geometry | `defined only` / `proved`. `Formal/AG/Site/Geometry.lean` が `AATSite`、`AATSite.topology`、`ArchitectureGeometry`、PRD-1 core object との accessor theorem を持つ。 | finite poset Cech regime、`AATSh` は後続 Issue に残る。 |
+| `II.定義9.1 / 定義10.1 / 定義10.2` Presheaf と sheaf condition | `defined only` / `proved`. `Formal/AG/Site/Sheaf.lean` が `AATPresheaf`、raw presheaf signature、`AATSheafCondition`、Mathlib `Presieve.IsSheaf` bridge、`AATSheaf`、`At / Law / Sig / State / Eff / Auth / Sem / Trace` の `ArchitectureSheafFamily` を持つ。 | finite poset Cech regime、`AATSh` は後続 Issue に残る。 |
+| `II.定義11.1 / 定義11.2 / 定義12.1` Gluing / Descent / Sheafification Gap | `defined only` / `proved`. `Formal/AG/Site/Descent.lean` が `AATLocalSectionFamily`、`AATOverlapAgreement`、`AATCocycleCondition`、`AATGluingData`、`AATDescent`、`AATSheafConditionFor.descent`、`AATSheafCondition.descent`、`AATSheaf.descent`、`AATSheafificationComparison`、`AATSheafificationGap` を持つ。 | 一般 site の sheafification 構成、finite poset Cech regime、`AATSh` は後続 Issue に残る。 |
 
 第II部 PRD-2 の証明対象ラベルは次の状態から開始する。
 
@@ -654,7 +657,7 @@ Issue [#1976](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/
 | `II.定義8.1 AAT Site` | `defined only` / `proved` |
 | `II.定義2.1 Architecture Geometry` | `defined only` / `proved` |
 | `II.定義10.1 sheaf condition bridge` | `proved` |
-| `II.定義11.1-12.1 sheaf-descent` | `future proof obligation` |
+| `II.定義11.1-12.1 sheaf-descent` | `proved` |
 | `II.命題7.2C` | `future proof obligation` |
 | `II.R11 finite model examples` | `future proof obligation` |
 
