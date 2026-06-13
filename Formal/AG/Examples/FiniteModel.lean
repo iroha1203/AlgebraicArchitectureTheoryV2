@@ -505,6 +505,11 @@ def finitePosetRegime : Site.FinitePosetAATSiteRegime site where
   contextLe := fun _ _ => True
   contextLe_refl := fun _ => trivial
   contextLe_trans := fun _hij _hjk => trivial
+  contextLe_antisymm := by
+    intro i j _hij _hji
+    cases i
+    cases j
+    rfl
   contextLe_sound := fun h => siteContextLe_sound h
   contextMeet := siteContextMeet
   contextMeet_le_left := fun _ _ => trivial
@@ -553,6 +558,23 @@ theorem finitePosetRegime_context_finite :
 theorem finitePosetRegime_context_meet_left (i j : finitePosetRegime.ContextIndex) :
     finitePosetRegime.contextLe (finitePosetRegime.contextMeet i j) i :=
   finitePosetRegime.contextMeet_le_left i j
+
+/-- R11 / II.AC16: example theorem for the selected singleton meet. -/
+theorem finitePosetRegime_context_meet_right (i j : finitePosetRegime.ContextIndex) :
+    finitePosetRegime.contextLe (finitePosetRegime.contextMeet i j) j :=
+  finitePosetRegime.contextMeet_le_right i j
+
+/-- R11 / II.AC16: example theorem for the selected singleton meet universal property. -/
+theorem finitePosetRegime_context_le_meet {i j k : finitePosetRegime.ContextIndex}
+    (hik : finitePosetRegime.contextLe k i) (hjk : finitePosetRegime.contextLe k j) :
+    finitePosetRegime.contextLe k (finitePosetRegime.contextMeet i j) :=
+  finitePosetRegime.context_le_meet hik hjk
+
+/-- R11 / II.AC16: example theorem for the selected finite context poset antisymmetry. -/
+theorem finitePosetRegime_context_antisymm {i j : finitePosetRegime.ContextIndex}
+    (hij : finitePosetRegime.contextLe i j) (hji : finitePosetRegime.contextLe j i) :
+    i = j :=
+  finitePosetRegime.selected_context_le_antisymm hij hji
 
 /-- R11 / II.AC16: the singleton finite site has the top cover. -/
 theorem site_top_mem :

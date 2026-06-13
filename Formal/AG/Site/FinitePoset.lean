@@ -22,6 +22,8 @@ structure FinitePosetAATSiteRegime {U : AtomCarrier.{u}}
   contextLe_refl : ∀ i : ContextIndex, contextLe i i
   contextLe_trans :
     ∀ {i j k : ContextIndex}, contextLe i j -> contextLe j k -> contextLe i k
+  contextLe_antisymm :
+    ∀ {i j : ContextIndex}, contextLe i j -> contextLe j i -> i = j
   contextLe_sound :
     ∀ {i j : ContextIndex}, contextLe i j -> S.contextPreorder.le (context i) (context j)
   contextMeet : ContextIndex -> ContextIndex -> ContextIndex
@@ -59,6 +61,13 @@ theorem selected_context_le_sound {U : AtomCarrier.{u}} {A : ArchitectureObject 
     {i j : K.ContextIndex} (h : K.contextLe i j) :
     S.contextPreorder.le (K.context i) (K.context j) :=
   K.contextLe_sound h
+
+/-- II.定義7.2B: selected context order is antisymmetric. -/
+theorem selected_context_le_antisymm {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : AATSite A} (K : FinitePosetAATSiteRegime S)
+    {i j : K.ContextIndex} (hij : K.contextLe i j) (hji : K.contextLe j i) :
+    i = j :=
+  K.contextLe_antisymm hij hji
 
 /-- II.定義7.2B: the selected cover is finite. -/
 theorem cover_index_finite {U : AtomCarrier.{u}} {A : ArchitectureObject U}
