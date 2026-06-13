@@ -1147,11 +1147,13 @@
         if (!p) return;
         const valence = Math.min(Number(glyph.valence || 0), 12);
         const blockedAnchor = String(glyph.semanticAnchor || "").includes("blocked");
-        const geometry = blockedAnchor
-          ? new THREE.OctahedronGeometry(2.6 + valence * 0.16, 0)
-          : new THREE.TorusGeometry(2.2 + valence * 0.14, 0.16, 6, 18);
+        const fiber = String(glyph.fiber || node.atomKind || "unknown");
+        const carrier = String(glyph.carrier || node.subject || "");
+        const baseSize = 2.2 + valence * 0.14;
+        const geometry = atomGlyphGeometry(fiber, baseSize, blockedAnchor);
+        const color = atomGlyphColor(fiber, carrier, blockedAnchor);
         const material = new THREE.MeshStandardMaterial({
-          color: blockedAnchor ? 0xff6b6b : 0x8bd46e,
+          color,
           transparent: true,
           opacity: blockedAnchor ? 0.86 : 0.58,
           roughness: 0.48,
@@ -1160,10 +1162,33 @@
         });
         const mesh = new THREE.Mesh(geometry, material);
         mesh.position.copy(p);
-        mesh.rotation.x = Math.PI / 2;
+        mesh.rotation.x = Math.PI / 2 + (hashText(fiber) % 9) * 0.07;
+        mesh.rotation.y = (hashText(carrier) % 17) * 0.11;
+        mesh.scale.setScalar(1 + Math.min(carrier.length, 24) * 0.008);
         mesh.userData = { kind: "atomInternalGlyph", item: glyph, node };
         atomGroup.add(mesh);
       });
+    }
+
+    function atomGlyphGeometry(fiber, baseSize, blockedAnchor) {
+      if (blockedAnchor) return new THREE.OctahedronGeometry(baseSize + 0.4, 0);
+      const normalized = String(fiber || "").toLowerCase();
+      if (normalized.includes("relation")) {
+        return new THREE.TorusKnotGeometry(baseSize * 0.62, 0.14, 36, 6);
+      }
+      if (normalized.includes("component")) {
+        return new THREE.TorusGeometry(baseSize, 0.16, 6, 18);
+      }
+      if (normalized.includes("operation") || normalized.includes("event")) {
+        return new THREE.TetrahedronGeometry(baseSize * 0.94, 0);
+      }
+      return new THREE.DodecahedronGeometry(baseSize * 0.72, 0);
+    }
+
+    function atomGlyphColor(fiber, carrier, blockedAnchor) {
+      if (blockedAnchor) return 0xff6b6b;
+      const hue = (hashText(`${fiber}:${carrier}`) % 360) / 360;
+      return new THREE.Color().setHSL(hue, 0.54, 0.58);
     }
 
     function renderMoleculeGroups(groups, positions, layoutContext) {
@@ -2826,7 +2851,10 @@
       renderCoverage(report.coverageAndBoundaries || report.boundaryDigest || {}, verdict, summary);
       renderArtifacts(report.artifacts || report.artifactLinks || decisionBar.artifactLinks || {}, data.sourceArtifactRefs || {}, manifest);
       renderValidationStatus(validation);
-      renderOmitted(data.omittedDetailCounts || {}, data.truncationPolicy || {});
+      const geometryCounts = data.aatGeometryOverlays?.omittedGeometryCounts
+        || data.aatGeometryOverlays?.gluingGeometry?.omittedGeometryCounts
+        || {};
+      renderOmitted(data.omittedDetailCounts || {}, data.truncationPolicy || {}, geometryCounts);
     }
 
     function count(value) {
@@ -3033,14 +3061,16 @@
       root.innerHTML = rows.length ? rows.join("") : emptyItem();
     }
 
-    function renderOmitted(counts, policy) {
+    function renderOmitted(counts, policy, geometryCounts = {}) {
       const root = document.getElementById("omitted");
       const rows = Object.entries(counts)
         .filter(([key]) => key !== "omittedReasons" && key !== "rawPacketDetail")
         .map(([key, value]) => `${key}: ${value}`);
+      const geometryRows = Object.entries(geometryCounts)
+        .map(([key, value]) => `gluingGeometry.${key}: ${value}`);
       const reasons = Array.isArray(counts.omittedReasons) ? counts.omittedReasons : [];
       const policyText = [policy.atomNodes, policy.moleculeGroups, policy.overlays].filter(Boolean);
-      const items = [...rows, counts.rawPacketDetail, ...reasons, ...policyText].filter(Boolean);
+      const items = [...geometryRows, ...rows, counts.rawPacketDetail, ...reasons, ...policyText].filter(Boolean);
       root.innerHTML = items.length
         ? items.slice(0, 12).map((item) => `<div class="item"><p>${escapeHtml(String(item))}</p></div>`).join("")
         : emptyItem();
