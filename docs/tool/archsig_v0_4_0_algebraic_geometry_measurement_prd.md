@@ -52,10 +52,13 @@ ArchMap v2 (finite poset site observation)
   -> conclusion-first summary / viewer
 ```
 
-互換性方針: v0.4.0 は後方互換性を持たない。`archmap/v1`、`law-policy/v1`、
-`archsig-analysis-packet/v1` 系 artifact chain は v0.4.0 の入力・出力 surface から
-削除し、fixtures は v2 形式へ全面移行する。旧形式は Git history にのみ残る。
-現時点のユーザーは単一であり、migration tooling は作らない。
+互換性方針: v0.4.0 の非互換性は AG measurement path に限定する。
+`archmap/v2` + `measurement-profile/v1` は `archsig-measurement-packet/v1`
+を一次 surface とし、v1 typed evaluator artifact chain をこの path の入力・出力
+surface として扱わない。一方で、現行 CLI には `archmap/v1` + `law-policy/v1`
+の structural analysis path が bounded legacy compatibility として残る。これを
+削除する場合は、別 Issue で runtime、schema catalog、fixtures、FieldSig
+compatibility を同時に更新する。現時点では migration tooling は作らない。
 
 ## 背景
 

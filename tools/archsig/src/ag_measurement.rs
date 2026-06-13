@@ -257,8 +257,11 @@ struct SquareFreeGeneratorV1 {
 #[derive(Debug, Clone)]
 struct SquareFreeCertificateV1 {
     cert_ref: String,
-    nsdepth: usize,
+    nsdepth: Option<usize>,
     support_atom_refs: Vec<String>,
+    verified_minimal_forbidden_supports: Vec<Vec<String>>,
+    status: String,
+    effect: String,
 }
 
 #[derive(Debug, Clone)]
@@ -405,7 +408,14 @@ fn evaluate_square_free_repair_v1(
     let delta_faces = stanley_reisner_faces(&witness_variables, &minimal_forbidden_supports);
     let reduced_homology = reduced_simplicial_homology_f2(&delta_faces);
     let repair_hitting_sets = minimal_hitting_sets(&witness_variables, &minimal_forbidden_supports);
-    let certificate = square_free_certificate(normalized, &selected_contexts)?;
+    let certificate = square_free_certificate(
+        normalized,
+        &selected_contexts,
+        &minimal_forbidden_supports,
+        &repair_hitting_sets,
+        &generators,
+        witness_variables.len(),
+    )?;
     let has_obstruction = !minimal_forbidden_supports.is_empty();
     let (verdict, zero, non_zero, method_status, cert_ref, reason) = if !has_obstruction {
         (
@@ -419,14 +429,25 @@ fn evaluate_square_free_repair_v1(
             "square-free obstruction ideal has no selected generators".to_string(),
         )
     } else if let Some(certificate) = &certificate {
-        (
-            "unknown".to_string(),
-            false,
-            false,
-            "nsdepth_certificate_author_supplied_unverified".to_string(),
-            Some(certificate.cert_ref.clone()),
-            "square-free obstruction generators were found and an NSdepth certificate reference was supplied, but no finite NSdepth verifier payload was checked; lawfulness is not concluded".to_string(),
-        )
+        if certificate.status == "verified" {
+            (
+                "measured_nonzero".to_string(),
+                false,
+                true,
+                "nsdepth_certificate_verified".to_string(),
+                Some(certificate.cert_ref.clone()),
+                "square-free obstruction generators were found and the selected finite NSdepth certificate payload matches the computed obstruction ideal".to_string(),
+            )
+        } else {
+            (
+                "unknown".to_string(),
+                false,
+                false,
+                format!("nsdepth_certificate_{}", certificate.status),
+                Some(certificate.cert_ref.clone()),
+                certificate.effect.clone(),
+            )
+        }
     } else {
         (
             "unknown".to_string(),
@@ -476,11 +497,12 @@ fn evaluate_square_free_repair_v1(
                 "minimality": "checked_by_finite_support_enumeration"
             },
             "nsdepthCertificate": certificate.as_ref().map(|certificate| json!({
-                "status": "author_supplied_unverified",
+                "status": certificate.status,
                 "certificateRef": certificate.cert_ref,
                 "nsdepth": certificate.nsdepth,
                 "supportAtomRefs": certificate.support_atom_refs,
-                "effect": "structural verdict remains unknown until a finite NSdepth verifier payload is checked"
+                "verifiedMinimalForbiddenSupports": certificate.verified_minimal_forbidden_supports,
+                "effect": certificate.effect
             })).unwrap_or_else(|| json!({
                 "status": "missing",
                 "effect": "structural verdict remains unknown when obstruction generators are present"
@@ -507,15 +529,27 @@ fn evaluate_square_free_repair_v1(
             },
             AgAssumptionLedgerEntryV1 {
                 theorem_ref: "part3/7.2B".to_string(),
-                assumption: "NSdepth certificate value supplied by ArchMap author; finite verifier payload is not checked by this evaluator".to_string(),
-                status: "assumed".to_string(),
-                checked_by: None,
-                assumed_by: Some(
-                    certificate
-                        .as_ref()
-                        .map(|certificate| certificate.cert_ref.clone())
-                        .unwrap_or_else(|| format!("measurement-profile:{}", profile.profile_id)),
-                ),
+                assumption: "NSdepth certificate payload covers the computed square-free obstruction ideal within the selected witness family".to_string(),
+                status: certificate
+                    .as_ref()
+                    .filter(|certificate| certificate.status == "verified")
+                    .map(|_| "checked")
+                    .unwrap_or("assumed")
+                    .to_string(),
+                checked_by: certificate
+                    .as_ref()
+                    .filter(|certificate| certificate.status == "verified")
+                    .map(|certificate| format!("ag.square-free-repair@1:{}", certificate.cert_ref)),
+                assumed_by: certificate
+                    .as_ref()
+                    .map(|certificate| {
+                        if certificate.status == "verified" {
+                            None
+                        } else {
+                            Some(certificate.cert_ref.clone())
+                        }
+                    })
+                    .unwrap_or_else(|| Some(format!("measurement-profile:{}", profile.profile_id))),
             },
         ],
     })
@@ -623,20 +657,21 @@ fn evaluate_law_conflict_tor_v1(
         },
         zero: !has_conflict,
         non_zero: has_conflict,
-        method_status: "finite_monomial_tor_computed".to_string(),
+        method_status: "finite_degree1_shared_support_conflict_computed".to_string(),
         cert_ref: Some(ambient.atom_ref.clone()),
         reason: if has_conflict {
-            "finite monomial Tor found LawConflict classes under the supplied common ambient"
+            "finite degree-1 shared-support detector found LawConflict classes under the supplied common ambient"
                 .to_string()
         } else {
-            "finite monomial Tor found no LawConflict class under the supplied common ambient"
+            "finite degree-1 shared-support detector found no LawConflict class under the supplied common ambient"
                 .to_string()
         },
         computed_invariants: vec![json!({
-            "invariantId": format!("law-conflict-tor:{}", profile.profile_id),
-            "evaluator": "ag.law-conflict-tor@1",
-            "method": "finite-monomial-tor@1",
-            "resolution": profile.resolution_selector,
+                "invariantId": format!("law-conflict-tor:{}", profile.profile_id),
+                "evaluator": "ag.law-conflict-tor@1",
+                "method": "finite-degree1-shared-support-conflict@1",
+                "claimScope": "degree-1 shared-support conflict detector over the selected common ambient pair",
+                "resolution": profile.resolution_selector,
             "selectedCoverRef": profile.cover_ref,
             "witnessVariables": witness_variables,
             "commonAmbient": {
@@ -649,9 +684,11 @@ fn evaluate_law_conflict_tor_v1(
             "lawConflicts": conflict_json,
             "torByDegree": [{
                 "degree": 1,
-                "classCount": conflicts.len()
+                "classCount": conflicts.len(),
+                "scope": "detected shared witness-variable support only"
             }],
             "nonConclusions": [
+                "This evaluator does not compute a full Taylor, Scarf, or free resolution Tor algebra.",
                 "Flat base change stability is a theorem-candidate reading and is not concluded by this structural verdict."
             ]
         })],
@@ -763,7 +800,8 @@ fn evaluate_sheaf_laplacian_v1(
         .collect::<Vec<_>>();
 
     let analytic_value = json!({
-        "readingKind": "cellular-sheaf-laplacian@1",
+        "readingKind": "graph-laplacian-hodge-proxy@1",
+        "modelScope": "finite graph Laplacian over selected cochain cells and boundary edges",
         "selectedCoverRef": profile.cover_ref,
         "cells": cell_ids,
         "cochain": rounded_vec(&cochain),
@@ -788,6 +826,7 @@ fn evaluate_sheaf_laplacian_v1(
             "invariantId": format!("sheaf-laplacian:{}", profile.profile_id),
             "evaluator": "ag.sheaf-laplacian@1",
             "method": "finite-graph-laplacian@1",
+            "claimScope": "graph Laplacian analytic proxy; not a full sheaf chain-complex Hodge theorem",
             "selectedCoverRef": profile.cover_ref,
             "cellRefs": cells.iter().map(|cell| json!({
                 "cell": cell.cell_id,
@@ -1281,6 +1320,7 @@ fn evaluate_cech_obstruction_v1(
                 "invariantId": format!("cech-cohomology:{}", profile.profile_id),
                 "evaluator": "ag.cech-obstruction@1",
                 "method": "finite-f2-incidence-graph-cochain@1",
+                "claimScope": "selected-cover 1-skeleton Cech cochain calculation",
                 "selectedCoverRef": profile.cover_ref,
                 "coefficient": profile.coefficient,
                 "contextCount": selected_contexts.len(),
@@ -2557,8 +2597,9 @@ fn tor_assumptions(
         },
         AgAssumptionLedgerEntryV1 {
             theorem_ref: "part5/5.5".to_string(),
-            assumption: "finite monomial law ideals selected for Taylor / Scarf Tor enumeration"
-                .to_string(),
+            assumption:
+                "finite monomial law ideals selected for degree-1 shared-support conflict detection"
+                    .to_string(),
             status: "checked".to_string(),
             checked_by: Some(format!(
                 "measurement-profile:{}.witnessFamily",
@@ -2637,6 +2678,10 @@ fn square_free_atom_variables(atom: &crate::NormalizedAtomV2) -> Vec<String> {
 fn square_free_certificate(
     normalized: &NormalizedArchMapV2,
     selected_contexts: &BTreeSet<String>,
+    minimal_forbidden_supports: &[Vec<String>],
+    repair_hitting_sets: &[Vec<String>],
+    generators: &[SquareFreeGeneratorV1],
+    witness_variable_count: usize,
 ) -> Result<Option<SquareFreeCertificateV1>, String> {
     let certificates = normalized
         .atoms
@@ -2644,31 +2689,30 @@ fn square_free_certificate(
         .filter(|atom| atom.axis == "square-free" && atom.predicate == "nsdepthCertificate")
         .filter(|atom| atom_belongs_to_selected_context(atom, selected_contexts))
         .map(|atom| {
-            let raw = atom.object.as_deref().ok_or_else(|| {
-                format!(
-                    "ag.square-free-repair@1 NSdepth certificate {} requires numeric object",
-                    atom.normalized_atom_id
-                )
-            })?;
-            let nsdepth = raw.parse::<usize>().map_err(|_| {
-                format!(
-                    "ag.square-free-repair@1 NSdepth certificate {} has non-numeric object {raw}",
-                    atom.normalized_atom_id
-                )
-            })?;
-            if nsdepth == 0 {
-                return Err(format!(
-                    "ag.square-free-repair@1 NSdepth certificate {} must have positive object",
-                    atom.normalized_atom_id
-                ));
-            }
-            Ok(SquareFreeCertificateV1 {
+            let raw = atom.object.as_deref();
+            let verification = verify_square_free_nsdepth_certificate(
+                raw,
+                minimal_forbidden_supports,
+                repair_hitting_sets,
+                generators,
+                witness_variable_count,
+            );
+            let support_atom_refs = if verification.support_atom_refs.is_empty() {
+                vec![atom.normalized_atom_id.clone()]
+            } else {
+                verification.support_atom_refs.clone()
+            };
+            SquareFreeCertificateV1 {
                 cert_ref: atom.normalized_atom_id.clone(),
-                nsdepth,
-                support_atom_refs: vec![atom.normalized_atom_id.clone()],
-            })
+                nsdepth: verification.nsdepth,
+                support_atom_refs,
+                verified_minimal_forbidden_supports: verification
+                    .verified_minimal_forbidden_supports,
+                status: verification.status,
+                effect: verification.effect,
+            }
         })
-        .collect::<Result<Vec<_>, _>>()?;
+        .collect::<Vec<_>>();
 
     if certificates.len() > 1 {
         return Err(format!(
@@ -2678,6 +2722,226 @@ fn square_free_certificate(
     }
 
     Ok(certificates.into_iter().next())
+}
+
+#[derive(Debug, Clone)]
+struct SquareFreeCertificateVerificationV1 {
+    nsdepth: Option<usize>,
+    support_atom_refs: Vec<String>,
+    verified_minimal_forbidden_supports: Vec<Vec<String>>,
+    status: String,
+    effect: String,
+}
+
+fn verify_square_free_nsdepth_certificate(
+    raw: Option<&str>,
+    minimal_forbidden_supports: &[Vec<String>],
+    repair_hitting_sets: &[Vec<String>],
+    generators: &[SquareFreeGeneratorV1],
+    witness_variable_count: usize,
+) -> SquareFreeCertificateVerificationV1 {
+    let Some(raw) = raw.map(str::trim).filter(|value| !value.is_empty()) else {
+        return square_free_certificate_unverified(
+            None,
+            "invalid_payload",
+            "NSdepth certificate object is missing; structural verdict remains unknown",
+        );
+    };
+
+    if let Ok(nsdepth) = raw.parse::<usize>() {
+        if nsdepth == 0 {
+            return square_free_certificate_unverified(
+                None,
+                "invalid_payload",
+                "NSdepth certificate numeric object must be positive; structural verdict remains unknown",
+            );
+        }
+        return square_free_certificate_unverified(
+            Some(nsdepth),
+            "author_supplied_unverified",
+            "NSdepth certificate only supplies a numeric value, not a finite verifier payload; structural verdict remains unknown",
+        );
+    }
+
+    let fields = match parse_square_free_certificate_fields(raw) {
+        Ok(fields) => fields,
+        Err(reason) => {
+            return square_free_certificate_unverified(
+                None,
+                "invalid_payload",
+                &format!("{reason}; structural verdict remains unknown"),
+            );
+        }
+    };
+    let nsdepth = match fields
+        .get("nsdepth")
+        .and_then(|value| value.as_str().parse::<usize>().ok())
+    {
+        Some(nsdepth) if nsdepth > 0 => nsdepth,
+        _ => {
+            return square_free_certificate_unverified(
+                None,
+                "invalid_payload",
+                "NSdepth verifier payload requires positive nsdepth field; structural verdict remains unknown",
+            );
+        }
+    };
+    if nsdepth > witness_variable_count {
+        return square_free_certificate_unverified(
+            Some(nsdepth),
+            "invalid_payload",
+            "NSdepth verifier payload exceeds selected witness family size; structural verdict remains unknown",
+        );
+    }
+    let Some(depth_rule) = fields.get("depthRule") else {
+        return square_free_certificate_unverified(
+            Some(nsdepth),
+            "invalid_payload",
+            "NSdepth verifier payload requires depthRule field; structural verdict remains unknown",
+        );
+    };
+    if depth_rule != "alexanderDualMaxMinimalHittingSet@1" {
+        return square_free_certificate_unverified(
+            Some(nsdepth),
+            "invalid_payload",
+            "NSdepth verifier payload uses unsupported depthRule; structural verdict remains unknown",
+        );
+    }
+    let expected_nsdepth = repair_hitting_sets.iter().map(Vec::len).max().unwrap_or(0);
+    if nsdepth != expected_nsdepth {
+        return square_free_certificate_unverified(
+            Some(nsdepth),
+            "invalid_payload",
+            "NSdepth verifier payload value does not match the selected finite depthRule; structural verdict remains unknown",
+        );
+    }
+
+    let payload_supports = fields
+        .get("minimalForbiddenSupports")
+        .map(|value| parse_square_free_support_payload(value.as_str()))
+        .unwrap_or_default();
+    let support_atom_refs = fields
+        .get("supportAtomRefs")
+        .map(|value| parse_csv_values(value.as_str()))
+        .unwrap_or_default();
+    let expected_atom_refs = generators
+        .iter()
+        .map(|generator| generator.generator_id.clone())
+        .collect::<Vec<_>>();
+    if payload_supports != minimal_forbidden_supports {
+        return square_free_certificate_unverified(
+            Some(nsdepth),
+            "invalid_payload",
+            "NSdepth verifier payload minimalForbiddenSupports does not match the computed obstruction ideal; structural verdict remains unknown",
+        );
+    }
+    if support_atom_refs != expected_atom_refs {
+        return square_free_certificate_unverified(
+            Some(nsdepth),
+            "invalid_payload",
+            "NSdepth verifier payload supportAtomRefs does not match selected obstruction generator atoms; structural verdict remains unknown",
+        );
+    }
+
+    SquareFreeCertificateVerificationV1 {
+        nsdepth: Some(nsdepth),
+        support_atom_refs,
+        verified_minimal_forbidden_supports: payload_supports,
+        status: "verified".to_string(),
+        effect:
+            "finite verifier payload matched selected obstruction generators, minimal forbidden supports, and depthRule-derived NSdepth; structural verdict is measured_nonzero"
+                .to_string(),
+    }
+}
+
+fn parse_square_free_certificate_fields(raw: &str) -> Result<BTreeMap<String, String>, String> {
+    let mut fields = BTreeMap::new();
+    let allowed = BTreeSet::from([
+        "nsdepth",
+        "minimalForbiddenSupports",
+        "supportAtomRefs",
+        "depthRule",
+    ]);
+    for segment in raw.split(';') {
+        let segment = segment.trim();
+        if segment.is_empty() {
+            return Err("NSdepth verifier payload contains an empty segment".to_string());
+        }
+        let Some((key, value)) = segment.split_once('=') else {
+            return Err(format!(
+                "NSdepth verifier payload segment {segment} must be key=value"
+            ));
+        };
+        let key = key.trim();
+        let value = value.trim();
+        if key.is_empty() || value.is_empty() {
+            return Err("NSdepth verifier payload contains empty key or value".to_string());
+        }
+        if !allowed.contains(key) {
+            return Err(format!(
+                "NSdepth verifier payload contains unsupported field {key}"
+            ));
+        }
+        if fields.insert(key.to_string(), value.to_string()).is_some() {
+            return Err(format!(
+                "NSdepth verifier payload contains duplicate field {key}"
+            ));
+        }
+    }
+    Ok(fields)
+}
+
+fn square_free_certificate_unverified(
+    nsdepth: Option<usize>,
+    status: &str,
+    effect: &str,
+) -> SquareFreeCertificateVerificationV1 {
+    SquareFreeCertificateVerificationV1 {
+        nsdepth,
+        support_atom_refs: Vec::new(),
+        verified_minimal_forbidden_supports: Vec::new(),
+        status: status.to_string(),
+        effect: effect.to_string(),
+    }
+}
+
+fn parse_square_free_support_payload(raw: &str) -> Vec<Vec<String>> {
+    let mut supports = raw
+        .split('|')
+        .map(parse_plus_values)
+        .filter(|support| !support.is_empty())
+        .collect::<Vec<_>>();
+    for support in &mut supports {
+        support.sort();
+        support.dedup();
+    }
+    supports.sort();
+    supports.dedup();
+    supports
+}
+
+fn parse_plus_values(raw: &str) -> Vec<String> {
+    let mut values = raw
+        .split('+')
+        .map(str::trim)
+        .filter(|value| !value.is_empty())
+        .map(ToOwned::to_owned)
+        .collect::<Vec<_>>();
+    values.sort();
+    values.dedup();
+    values
+}
+
+fn parse_csv_values(raw: &str) -> Vec<String> {
+    let mut values = raw
+        .split(',')
+        .map(str::trim)
+        .filter(|value| !value.is_empty())
+        .map(ToOwned::to_owned)
+        .collect::<Vec<_>>();
+    values.sort();
+    values.dedup();
+    values
 }
 
 fn atom_belongs_to_selected_context(

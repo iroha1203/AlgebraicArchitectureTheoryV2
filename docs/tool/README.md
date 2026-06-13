@@ -25,16 +25,28 @@ Current source-of-truth boundaries:
   `measured_nonzero`, `unmeasured`, `unknown`, and `not_computed`; analytic
   readings, including theorem-candidate readings, are separate from structural
   verdicts.
+- v0.4.0 non-compatibility is scoped to the AG measurement path: `archmap/v2`
+  plus `measurement-profile/v1` produces `archsig-measurement-packet/v1` and
+  does not accept or emit the v1 typed evaluator artifact chain as that path's
+  primary surface. The existing `archmap/v1` + `law-policy/v1` structural
+  analysis runtime remains available as bounded legacy compatibility until a
+  dedicated removal issue changes that surface.
 - The v0.4.0 assumption ledger records checked / assumed / violated CBI
   assumptions once at packet time. If an assumption is violated, dependent AG
   structural verdicts fall to `not_computed`; conclusion text stays
   ledger-relative and conclusion-first.
+- FieldSig validates serialized `archsig-measurement-packet/v1` handoff
+  semantics before projection. Measured structural verdict rows must carry a
+  `certRef` or matching computed invariant evidence. Because the current packet
+  does not encode row-level assumption dependencies, a violated assumption next
+  to any measured structural verdict is treated as a conservative fail-fast
+  packet-level contradiction rather than a success-looking SFT input.
 
 - ArchMap v1 starts from supplied `archmap/v1` evidence read as a source-grounded Atom map. It records only `sources`, `atoms`, and `molecules` as primary input. Removed v0 fields such as `semanticObservations`, `projectionInfo`, `operationSquareEvidence`, `concernHints`, and `observationGaps` are not v1 input surfaces.
 - ArchMap authoring should produce the source-grounded atoms and explicit molecule membership needed for the requested ArchSig measurement. Private, unavailable, and out-of-scope evidence belongs in authoring notes, CI reports, or review notes, not ArchMap primary JSON.
 - ArchMapStore is the forward storage boundary for ArchMap history. It models `ArchMapDelta`, `ArchMapCommit`, `ArchMapSnapshot`, `ArchMapIndex`, and validation reports so PR review can read ArchMap-level deltas instead of raw language diffs. Raw diffs are not ArchSig PR-review inputs.
 - LawPolicy v1 uses the `law-policy/v1` JSON schema. It is a selector over repository policies, evaluator ids, policy packs, basis refs, scope, severity, and optional `distanceProfileRef`. It does not carry witness rules, signature axes, coverage requirements, exactness assumptions, `part4DistanceProfile`, spectrum profiles, homotopy profiles, distance weights, operation costs, or distance DSLs; those calculation rules belong to the ArchSig evaluator registry / selected distance profile.
-- ArchSig reads ArchMap v1 + LawPolicy v1 and computes a typed evaluator artifact chain: `normalized-archmap/v1`, `typed-evaluator-results/v1`, `archsig-architecture-distance/v1`, `archsig-analysis-packet/v1`, `archsig-analysis-summary/v1`, and `archsig-atom-viewer-data-v1`. Positive bounded conclusions are generated from typed evaluator results, architecture distance readings, support refs, basis refs, and detail refs.
+- ArchSig's legacy v1 structural path reads ArchMap v1 + LawPolicy v1 and computes a typed evaluator artifact chain: `normalized-archmap/v1`, `typed-evaluator-results/v1`, `archsig-architecture-distance/v1`, `archsig-analysis-packet/v1`, `archsig-analysis-summary/v1`, and `archsig-atom-viewer-data-v1`. Positive bounded conclusions are generated from typed evaluator results, architecture distance readings, support refs, basis refs, and detail refs.
 - Wittgensteinian responsibility boundary: ArchSig says only what can be said from the supplied `ArchMap + LawPolicy + evidence contract`, and remains silent about what cannot be said from that input. The ArchMap author is responsible for Atom mapping and evidence correctness. The LawPolicy author is responsible for policy, evaluator, and restricted measurement profile selection. Axis, witness, coverage, and missing-blocker rules belong to the evaluator registry. ArchSig does not complete, infer, or validate the outside world; it emits a consistent bounded diagnostic conclusion within the input contract.
 - `analyze` is the primary ArchSig workflow entry point. `llm-native-workflow` / `north-star-workflow`, `archsig-analysis` / `aat-analysis`, `analysis-summary`, `codebase-inspection`, and `archmap-generate` are not current runtime surfaces. Old command behavior remains available only through Git history or historical fixtures, not through the v1 CLI contract.
 - `pr-review` is the lightweight CI / PR surface. The v1 path reads base `archmap/v1`, optional head / intermediate `archmap/v1`, PR-local `archmap-delta-v0`, and `law-policy/v1`; it reports typed evaluator status plus report-local refs to derived obstruction, spectrum, homotopy, structural reading, and architecture distance surfaces. It does not reconstruct v0 witness rules or accept raw diff / base packet inputs.

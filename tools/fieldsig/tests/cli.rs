@@ -624,6 +624,11 @@ fn cli_projects_archsig_measurement_packet_to_sft_input_boundary() {
             "assumption": "transfer_lower_bound",
             "status": "assumed",
             "assumedBy": "measurement-profile author"
+        }, {
+            "theoremRef": "part8/10.4",
+            "assumption": "second transfer boundary",
+            "status": "assumed",
+            "assumedBy": "measurement-profile author"
         }],
         "nonConclusions": [
             "ArchSig measurement packet is a computation artifact, not a Lean proof object."
@@ -736,6 +741,36 @@ fn cli_projects_archsig_measurement_packet_to_sft_input_boundary() {
             }),
         "assumed theorem-candidate boundaries must remain unknown remainder"
     );
+    let duplicate_theorem_remainders = estimate_json["unknownRemainder"]
+        .as_array()
+        .expect("unknown remainder is array")
+        .iter()
+        .filter(|entry| {
+            entry["reason"]
+                .as_str()
+                .expect("reason is string")
+                .contains("part8/10.4")
+        })
+        .map(|entry| {
+            entry["remainderId"]
+                .as_str()
+                .expect("remainder id is string")
+                .to_string()
+        })
+        .collect::<Vec<_>>();
+    let unique_duplicate_theorem_remainders = duplicate_theorem_remainders
+        .iter()
+        .collect::<std::collections::BTreeSet<_>>();
+    assert_eq!(
+        duplicate_theorem_remainders.len(),
+        2,
+        "fixture should contain two same-theorem assumed rows"
+    );
+    assert_eq!(
+        unique_duplicate_theorem_remainders.len(),
+        duplicate_theorem_remainders.len(),
+        "same theoremRef assumption rows must still produce distinct unknown remainder IDs"
+    );
     assert!(
         estimate_json["unknownRemainder"]
             .as_array()
@@ -840,6 +875,127 @@ fn cli_rejects_invalid_measurement_packet_handoff_inputs() {
         String::from_utf8_lossy(&both.stderr)
             .contains("--measurement-packet and --analysis-packet are mutually exclusive"),
         "handoff inputs must be explicit and mutually exclusive"
+    );
+
+    let valid_measurement_packet = serde_json::json!({
+        "schema": "archsig-measurement-packet/v1",
+        "packetId": "measurement:semantic-validation",
+        "profile": {
+            "schema": "measurement-profile/v1",
+            "profileId": "profile:semantic-validation"
+        },
+        "structuralVerdict": [{
+            "evaluator": "ag.square-free-repair@1",
+            "law": "ag.square-free-repair",
+            "verdict": "measured_nonzero",
+            "verdictData": {
+                "inScope": true,
+                "zero": false,
+                "nonZero": true,
+                "methodStatus": "nsdepth_certificate_verified",
+                "certRef": "computedInvariants/square-free-repair:profile:semantic-validation"
+            }
+        }],
+        "computedInvariants": [],
+        "analyticReadings": [],
+        "assumptions": [{
+            "theoremRef": "part3/7.2B",
+            "assumption": "finite certificate verified",
+            "status": "checked",
+            "checkedBy": "ag.square-free-repair@1"
+        }],
+        "nonConclusions": []
+    });
+
+    let invalid_verdict_packet = out_dir.join("invalid-verdict-measurement-packet.json");
+    let mut invalid_verdict_json = valid_measurement_packet.clone();
+    invalid_verdict_json["structuralVerdict"][0]["verdict"] = serde_json::json!("measured_unknown");
+    fs::write(
+        &invalid_verdict_packet,
+        serde_json::to_string_pretty(&invalid_verdict_json)
+            .expect("invalid verdict packet serializes"),
+    )
+    .expect("invalid verdict packet fixture is written");
+    let invalid_verdict = run_sig0_output(&[
+        "archsig-analysis-sft-input",
+        "--measurement-packet",
+        invalid_verdict_packet
+            .to_str()
+            .expect("invalid verdict packet path is utf-8"),
+        "--out",
+        out_dir
+            .join("invalid-verdict.json")
+            .to_str()
+            .expect("invalid verdict output path is utf-8"),
+    ]);
+    assert!(!invalid_verdict.status.success());
+    assert!(
+        String::from_utf8_lossy(&invalid_verdict.stderr)
+            .contains("unsupported verdict measured_unknown"),
+        "measurement-packet handoff must reject unsupported structural verdicts"
+    );
+
+    let violated_assumption_packet = out_dir.join("violated-assumption-measurement-packet.json");
+    let mut violated_assumption_json = valid_measurement_packet.clone();
+    violated_assumption_json["assumptions"][0]["status"] = serde_json::json!("violated");
+    violated_assumption_json["assumptions"][0]
+        .as_object_mut()
+        .expect("assumption row is object")
+        .remove("checkedBy");
+    fs::write(
+        &violated_assumption_packet,
+        serde_json::to_string_pretty(&violated_assumption_json)
+            .expect("violated assumption packet serializes"),
+    )
+    .expect("violated assumption packet fixture is written");
+    let violated_assumption = run_sig0_output(&[
+        "archsig-analysis-sft-input",
+        "--measurement-packet",
+        violated_assumption_packet
+            .to_str()
+            .expect("violated assumption packet path is utf-8"),
+        "--out",
+        out_dir
+            .join("violated-assumption.json")
+            .to_str()
+            .expect("violated assumption output path is utf-8"),
+    ]);
+    assert!(!violated_assumption.status.success());
+    assert!(
+        String::from_utf8_lossy(&violated_assumption.stderr)
+            .contains("is violated while structural verdicts contain measured rows"),
+        "measurement-packet handoff must reject violated assumptions paired with measured structural verdicts"
+    );
+
+    let missing_evidence_packet = out_dir.join("missing-evidence-measurement-packet.json");
+    let mut missing_evidence_json = valid_measurement_packet.clone();
+    missing_evidence_json["structuralVerdict"][0]["verdictData"]
+        .as_object_mut()
+        .expect("verdictData is object")
+        .remove("certRef");
+    fs::write(
+        &missing_evidence_packet,
+        serde_json::to_string_pretty(&missing_evidence_json)
+            .expect("missing evidence packet serializes"),
+    )
+    .expect("missing evidence packet fixture is written");
+    let missing_evidence = run_sig0_output(&[
+        "archsig-analysis-sft-input",
+        "--measurement-packet",
+        missing_evidence_packet
+            .to_str()
+            .expect("missing evidence packet path is utf-8"),
+        "--out",
+        out_dir
+            .join("missing-evidence.json")
+            .to_str()
+            .expect("missing evidence output path is utf-8"),
+    ]);
+    assert!(!missing_evidence.status.success());
+    assert!(
+        String::from_utf8_lossy(&missing_evidence.stderr)
+            .contains("requires certRef or matching computed invariant evidence"),
+        "measurement-packet handoff must reject measured verdicts without evidence linkage"
     );
 }
 

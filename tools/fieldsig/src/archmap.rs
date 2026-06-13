@@ -826,6 +826,15 @@ fn json_path_string(packet: &serde_json::Value, path: &[&str], key: &str) -> Opt
 fn validate_archsig_measurement_packet_handoff_shape(
     packet: &serde_json::Value,
 ) -> Result<(), Box<dyn std::error::Error>> {
+    let schema = packet
+        .get("schema")
+        .and_then(|value| value.as_str())
+        .unwrap_or_default();
+    if schema != "archsig-measurement-packet/v1" {
+        return Err(
+            "FieldSig ArchSig measurement handoff requires archsig-measurement-packet/v1".into(),
+        );
+    }
     let packet_id = packet
         .get("packetId")
         .and_then(|value| value.as_str())
@@ -857,7 +866,219 @@ fn validate_archsig_measurement_packet_handoff_shape(
             );
         }
     }
+    validate_archsig_measurement_packet_structural_verdicts(packet)?;
+    validate_archsig_measurement_packet_assumptions(packet)?;
     Ok(())
+}
+
+fn validate_archsig_measurement_packet_structural_verdicts(
+    packet: &serde_json::Value,
+) -> Result<(), Box<dyn std::error::Error>> {
+    for (index, row) in packet
+        .get("structuralVerdict")
+        .and_then(|value| value.as_array())
+        .into_iter()
+        .flatten()
+        .enumerate()
+    {
+        let evaluator = required_string(row, "evaluator").map_err(|message| {
+            format!("FieldSig ArchSig measurement handoff structuralVerdict[{index}] {message}")
+        })?;
+        required_string(row, "law").map_err(|message| {
+            format!("FieldSig ArchSig measurement handoff structuralVerdict[{index}] {message}")
+        })?;
+        let verdict = required_string(row, "verdict").map_err(|message| {
+            format!("FieldSig ArchSig measurement handoff structuralVerdict[{index}] {message}")
+        })?;
+        if !matches!(
+            verdict,
+            "measured_zero" | "measured_nonzero" | "unmeasured" | "unknown" | "not_computed"
+        ) {
+            return Err(format!(
+                "FieldSig ArchSig measurement handoff structuralVerdict[{index}] has unsupported verdict {verdict}"
+            )
+            .into());
+        }
+        let data = row
+            .get("verdictData")
+            .and_then(|value| value.as_object())
+            .ok_or_else(|| {
+                format!(
+                    "FieldSig ArchSig measurement handoff structuralVerdict[{index}] requires verdictData object"
+                )
+            })?;
+        let zero = required_bool(data, "zero").map_err(|message| {
+            format!("FieldSig ArchSig measurement handoff structuralVerdict[{index}] {message}")
+        })?;
+        let non_zero = required_bool(data, "nonZero").map_err(|message| {
+            format!("FieldSig ArchSig measurement handoff structuralVerdict[{index}] {message}")
+        })?;
+        required_bool(data, "inScope").map_err(|message| {
+            format!("FieldSig ArchSig measurement handoff structuralVerdict[{index}] {message}")
+        })?;
+        required_object_string(data, "methodStatus").map_err(|message| {
+            format!("FieldSig ArchSig measurement handoff structuralVerdict[{index}] {message}")
+        })?;
+        if zero && non_zero {
+            return Err(format!(
+                "FieldSig ArchSig measurement handoff structuralVerdict[{index}] for {evaluator} marks both zero and nonZero"
+            )
+            .into());
+        }
+        match verdict {
+            "measured_zero" if !zero || non_zero => {
+                return Err(format!(
+                    "FieldSig ArchSig measurement handoff structuralVerdict[{index}] measured_zero requires zero=true and nonZero=false"
+                )
+                .into());
+            }
+            "measured_nonzero" if zero || !non_zero => {
+                return Err(format!(
+                    "FieldSig ArchSig measurement handoff structuralVerdict[{index}] measured_nonzero requires zero=false and nonZero=true"
+                )
+                .into());
+            }
+            "unknown" | "unmeasured" | "not_computed" if zero || non_zero => {
+                return Err(format!(
+                    "FieldSig ArchSig measurement handoff structuralVerdict[{index}] {verdict} must not carry zero/nonZero measured flags"
+                )
+                .into());
+            }
+            _ => {}
+        }
+        if matches!(verdict, "measured_zero" | "measured_nonzero")
+            && !archsig_measurement_verdict_has_evidence(packet, row, evaluator)
+        {
+            return Err(format!(
+                "FieldSig ArchSig measurement handoff structuralVerdict[{index}] {verdict} requires certRef or matching computed invariant evidence"
+            )
+            .into());
+        }
+    }
+    Ok(())
+}
+
+fn archsig_measurement_verdict_has_evidence(
+    packet: &serde_json::Value,
+    row: &serde_json::Value,
+    evaluator: &str,
+) -> bool {
+    if row
+        .get("verdictData")
+        .and_then(|data| data.get("certRef"))
+        .and_then(|value| value.as_str())
+        .is_some_and(|value| !value.trim().is_empty())
+    {
+        return true;
+    }
+    packet
+        .get("computedInvariants")
+        .and_then(|value| value.as_array())
+        .into_iter()
+        .flatten()
+        .any(|invariant| {
+            invariant
+                .get("evaluator")
+                .and_then(|value| value.as_str())
+                .is_some_and(|value| value == evaluator)
+                && ["invariantId", "readingId", "id"].iter().any(|key| {
+                    invariant
+                        .get(*key)
+                        .and_then(|value| value.as_str())
+                        .is_some_and(|value| !value.trim().is_empty())
+                })
+        })
+}
+
+fn validate_archsig_measurement_packet_assumptions(
+    packet: &serde_json::Value,
+) -> Result<(), Box<dyn std::error::Error>> {
+    let measured_structural_verdict = packet
+        .get("structuralVerdict")
+        .and_then(|value| value.as_array())
+        .into_iter()
+        .flatten()
+        .any(|row| {
+            row.get("verdict")
+                .and_then(|value| value.as_str())
+                .is_some_and(|verdict| matches!(verdict, "measured_zero" | "measured_nonzero"))
+        });
+    for (index, row) in packet
+        .get("assumptions")
+        .and_then(|value| value.as_array())
+        .into_iter()
+        .flatten()
+        .enumerate()
+    {
+        let theorem_ref = required_string(row, "theoremRef").map_err(|message| {
+            format!("FieldSig ArchSig measurement handoff assumptions[{index}] {message}")
+        })?;
+        required_string(row, "assumption").map_err(|message| {
+            format!("FieldSig ArchSig measurement handoff assumptions[{index}] {message}")
+        })?;
+        let status = required_string(row, "status").map_err(|message| {
+            format!("FieldSig ArchSig measurement handoff assumptions[{index}] {message}")
+        })?;
+        match status {
+            "checked" => {
+                required_string(row, "checkedBy").map_err(|message| {
+                    format!("FieldSig ArchSig measurement handoff assumptions[{index}] {message}")
+                })?;
+            }
+            "assumed" => {
+                required_string(row, "assumedBy").map_err(|message| {
+                    format!("FieldSig ArchSig measurement handoff assumptions[{index}] {message}")
+                })?;
+            }
+            "violated" => {
+                if measured_structural_verdict {
+                    return Err(format!(
+                        "FieldSig ArchSig measurement handoff assumption {theorem_ref} is violated while structural verdicts contain measured rows"
+                    )
+                    .into());
+                }
+            }
+            _ => {
+                return Err(format!(
+                    "FieldSig ArchSig measurement handoff assumptions[{index}] has unsupported status {status}"
+                )
+                .into());
+            }
+        }
+    }
+    Ok(())
+}
+
+fn required_string<'a>(
+    object: &'a serde_json::Value,
+    key: &str,
+) -> Result<&'a str, Box<dyn std::error::Error>> {
+    object
+        .get(key)
+        .and_then(|value| value.as_str())
+        .filter(|value| !value.trim().is_empty())
+        .ok_or_else(|| format!("requires non-empty {key}").into())
+}
+
+fn required_bool(
+    object: &serde_json::Map<String, serde_json::Value>,
+    key: &str,
+) -> Result<bool, Box<dyn std::error::Error>> {
+    object
+        .get(key)
+        .and_then(|value| value.as_bool())
+        .ok_or_else(|| format!("requires boolean verdictData.{key}").into())
+}
+
+fn required_object_string<'a>(
+    object: &'a serde_json::Map<String, serde_json::Value>,
+    key: &str,
+) -> Result<&'a str, Box<dyn std::error::Error>> {
+    object
+        .get(key)
+        .and_then(|value| value.as_str())
+        .filter(|value| !value.trim().is_empty())
+        .ok_or_else(|| format!("requires non-empty verdictData.{key}").into())
 }
 
 fn archsig_measurement_packet_sft_source_refs(
@@ -1188,7 +1409,8 @@ fn archsig_measurement_packet_unknown_remainders(
             .and_then(|value| value.as_array())
             .into_iter()
             .flatten()
-            .filter_map(|assumption| {
+            .enumerate()
+            .filter_map(|(index, assumption)| {
                 let status = assumption.get("status")?.as_str()?;
                 if status == "checked" {
                     return None;
@@ -1201,10 +1423,11 @@ fn archsig_measurement_packet_unknown_remainders(
                     .get("assumption")
                     .and_then(|value| value.as_str())
                     .unwrap_or("assumption");
+                let assumption_key = format!("{index}:{theorem_ref}:{assumption_text}:{status}");
                 Some(OperationSupportUnknownRemainderV0 {
                     remainder_id: format!(
                         "unknown:archsig-measurement:assumption:{}",
-                        stable_id(theorem_ref)
+                        stable_id(&assumption_key)
                     ),
                     affected_family_ids: family_ids.to_vec(),
                     source_ref_ids: source_ref_ids.to_vec(),
