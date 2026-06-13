@@ -9,3 +9,4 @@ import Formal.AG.Derived.Counterexample
 import Formal.AG.Derived.Transfer
 import Formal.AG.Derived.StructurallyLawfulRepair
 import Formal.AG.Derived.HilbertSeries
+import Formal.AG.Derived.WellFoundedRepair
