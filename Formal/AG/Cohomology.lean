@@ -7,3 +7,4 @@ import Formal.AG.Cohomology.GluingMismatch
 import Formal.AG.Cohomology.LocalFlatnessGap
 import Formal.AG.Cohomology.BoundaryHolonomy
 import Formal.AG.Cohomology.BoundaryResidue
+import Formal.AG.Cohomology.HigherOverlap
