@@ -11,6 +11,89 @@ namespace FreeResolution
 
 variable (A : Type v) [CommRing A]
 
+namespace MathlibResolution
+
+open CategoryTheory
+open CategoryTheory.MonoidalCategory
+
+/-- V.R4(a): quotient module carrier used by the Mathlib Tor bridge. -/
+abbrev quotientModule (I : Ideal A) : ModuleCat.{v} A :=
+  ModuleCat.of A (A ⧸ I)
+
+/--
+V.R4(a): applying `A/I_U ⊗ -` to a projective resolution of `A/I_V`.
+
+Mathlib defines `Tor` by left-deriving the second tensor factor, so a projective
+resolution of `A/I_V` computes `Tor_i(A/I_U, A/I_V)`.
+-/
+abbrev tensorAppliedComplex (I_U : Ideal A) {I_V : Ideal A}
+    (P : ProjectiveResolution (quotientModule A I_V)) :
+    ChainComplex (ModuleCat.{v} A) ℕ :=
+  ((((tensoringLeft (ModuleCat.{v} A)).obj (quotientModule A I_U)).mapHomologicalComplex _).obj
+    P.complex)
+
+/--
+V.R4(a): Mathlib theorem that a chosen projective resolution computes
+`Tor_i(A/I_U, A/I_V)`.
+-/
+noncomputable def torIsoProjectiveResolutionHomology
+    (I_U : Ideal A) {I_V : Ideal A}
+    (P : ProjectiveResolution (quotientModule A I_V)) (i : Nat) :
+    Intersection.mathlibTor A I_U I_V i ≅
+      (tensorAppliedComplex A I_U P).homology i :=
+  P.isoLeftDerivedObj ((tensoringLeft (ModuleCat.{v} A)).obj (quotientModule A I_U)) i
+
+/--
+V.R4(a): a finite free Mathlib projective resolution of `A/I`.
+
+The projective resolution and quasi-isomorphism are Mathlib data. The finite-free
+fields record the R4 finite coordinate presentation of each degree.
+-/
+structure FiniteFreeMathlibResolution (I : Ideal A) where
+  projectiveResolution : ProjectiveResolution (quotientModule A I)
+  length : Nat
+  BasisIndex : Nat -> Type v
+  [basisIndexFintype : (n : Nat) -> Fintype (BasisIndex n)]
+  termIsoFree :
+    (n : Nat) -> projectiveResolution.complex.X n ≅ ModuleCat.of A (BasisIndex n -> A)
+  supported_le_length : ∀ n, length < n -> Subsingleton (projectiveResolution.complex.X n)
+
+attribute [instance] FiniteFreeMathlibResolution.basisIndexFintype
+
+namespace FiniteFreeMathlibResolution
+
+variable {A}
+variable {I : Ideal A}
+
+/-- V.R4(a): the categorical complex obtained by tensoring the finite free resolution. -/
+abbrev tensorComplex (F : FiniteFreeMathlibResolution.{v} A I) (I_U : Ideal A) :
+    ChainComplex (ModuleCat.{v} A) ℕ :=
+  tensorAppliedComplex A I_U F.projectiveResolution
+
+/-- V.R4(a): every selected term is a finite free `A`-module. -/
+def termIsoFree_certificate (F : FiniteFreeMathlibResolution.{v} A I) (n : Nat) :
+    F.projectiveResolution.complex.X n ≅ ModuleCat.of A (F.BasisIndex n -> A) :=
+  F.termIsoFree n
+
+/--
+V.R4(a) / AC5: a finite free Mathlib resolution computes
+`Tor_i(A/I_U, A/I)` by the homology of its tensor complex.
+-/
+noncomputable def torIsoTensorHomology
+    (F : FiniteFreeMathlibResolution.{v} A I) (I_U : Ideal A) (i : Nat) :
+    Intersection.mathlibTor A I_U I i ≅ (F.tensorComplex I_U).homology i :=
+  torIsoProjectiveResolutionHomology A I_U F.projectiveResolution i
+
+/-- V.R4(a) / AC5: inverse orientation of the finite free Tor computation. -/
+noncomputable def tensorHomologyIsoTor
+    (F : FiniteFreeMathlibResolution.{v} A I) (I_U : Ideal A) (i : Nat) :
+    (F.tensorComplex I_U).homology i ≅ Intersection.mathlibTor A I_U I i :=
+  (F.torIsoTensorHomology I_U i).symm
+
+end FiniteFreeMathlibResolution
+
+end MathlibResolution
+
 /--
 V.R4(a): selected finite free resolution of an `A`-module.
 
@@ -96,7 +179,11 @@ end SelectedTensorComplex
 
 /--
 V.R4(a): package saying that a selected finite free resolution computes Mathlib
-`Tor_i(A/I_U, A/I_V)` via the homology of its tensor complex.
+`Tor_i(A/I_U, A/I_V)` via an explicit selected equivalence with tensor-complex
+homology.
+
+Mathlib's canonical projective-resolution computation is recorded separately in
+`MathlibResolution.FiniteFreeMathlibResolution`.
 -/
 structure FiniteFreeResolutionTorComputation (I_U I_V : Ideal A) where
   quotientResolution :
@@ -110,13 +197,13 @@ namespace FiniteFreeResolutionTorComputation
 
 variable {A}
 
-/-- V.R4(a): selected finite free resolution computes Mathlib `Tor_i`. -/
+/-- V.R4(a): selected equivalence from Mathlib `Tor_i` to tensor-complex homology. -/
 def mathlibTorLinearEquivTensorHomology {I_U I_V : Ideal A}
     (C : FiniteFreeResolutionTorComputation.{u, v} A I_U I_V) (i : Nat) :
     Intersection.mathlibTor A I_U I_V i ≃ₗ[A] C.tensorComplex.homology i :=
   C.torLinearEquivTensorHomology i
 
-/-- V.R4(a): inverse form, reading tensor-complex homology as law-conflict Tor. -/
+/-- V.R4(a): inverse selected equivalence, reading tensor homology as law-conflict Tor. -/
 def tensorHomologyLinearEquivMathlibTor {I_U I_V : Ideal A}
     (C : FiniteFreeResolutionTorComputation.{u, v} A I_U I_V) (i : Nat) :
     C.tensorComplex.homology i ≃ₗ[A] Intersection.mathlibTor A I_U I_V i :=

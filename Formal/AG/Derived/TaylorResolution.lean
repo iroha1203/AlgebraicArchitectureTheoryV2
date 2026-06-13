@@ -114,6 +114,61 @@ theorem multidegree_union_eq (T : TaylorComplex A E P)
 end TaylorComplex
 
 /--
+V.R4(b) / AC6: Taylor complex together with a Mathlib finite-free projective
+resolution of `A/I`.
+
+The Mathlib resolution carries the exactness/quasi-isomorphism proof. The
+comparison fields identify that resolution with the selected Taylor complex
+surface used by the monomial calculation.
+-/
+structure TaylorMathlibResolution {I : Ideal A}
+    (P : SquareFreeMonomialIdealPresentation A E I) where
+  taylor : TaylorComplex A E P
+  finiteFreeResolution : FreeResolution.MathlibResolution.FiniteFreeMathlibResolution.{v} A I
+  identifiesTaylorTerms : Prop
+  identifiesTaylorTerms_holds : identifiesTaylorTerms
+  identifiesTaylorDifferentials : Prop
+  identifiesTaylorDifferentials_holds : identifiesTaylorDifferentials
+
+namespace TaylorMathlibResolution
+
+variable {A E}
+variable {I : Ideal A} {P : SquareFreeMonomialIdealPresentation A E I}
+
+/-- V.R4(b) / AC6: the selected Taylor terms are identified with the Mathlib resolution. -/
+theorem identifiesTaylorTerms_certificate (T : TaylorMathlibResolution A E P) :
+    T.identifiesTaylorTerms :=
+  T.identifiesTaylorTerms_holds
+
+/-- V.R4(b) / AC6: the selected Taylor differential is identified with the Mathlib one. -/
+theorem identifiesTaylorDifferentials_certificate (T : TaylorMathlibResolution A E P) :
+    T.identifiesTaylorDifferentials :=
+  T.identifiesTaylorDifferentials_holds
+
+/--
+V.R4(b) / AC6: the selected Taylor package carries a quotient-resolution
+certificate and comparison data with the Mathlib finite-free resolution.
+-/
+theorem taylorResolution_certificate (T : TaylorMathlibResolution A E P) :
+    T.taylor.resolvesQuotient ∧
+      T.identifiesTaylorTerms ∧ T.identifiesTaylorDifferentials :=
+  ⟨T.taylor.resolvesQuotient_certificate,
+    T.identifiesTaylorTerms_certificate, T.identifiesTaylorDifferentials_certificate⟩
+
+/--
+V.R4(b) / AC6: the Mathlib finite-free resolution attached to this Taylor
+package computes
+`Tor_i(A/I_U, A/I)` via Mathlib's projective-resolution theorem.
+-/
+noncomputable def mathlibResolutionTorIsoTensorHomology (T : TaylorMathlibResolution A E P)
+    (I_U : Ideal A) (i : Nat) :
+    Intersection.mathlibTor A I_U I i ≅
+      (T.finiteFreeResolution.tensorComplex I_U).homology i :=
+  T.finiteFreeResolution.torIsoTensorHomology I_U i
+
+end TaylorMathlibResolution
+
+/--
 V.命題5.5: monomial conflict calculation package.
 
 The package bundles the monomial regime, selected Taylor complexes, and a finite
@@ -128,6 +183,21 @@ structure MonomialConflictCalculation (I_U I_V : Ideal A) where
   computesLawConflict : Prop
   computesLawConflict_holds : computesLawConflict
 
+/--
+V.命題5.5 / AC7: theorem package for the monomial conflict calculation.
+
+The selected right Taylor package supplies the Mathlib finite-free resolution
+used to compute `Tor_i(A/I_U, A/I_V)`, because Mathlib's `Tor` derives the
+second tensor factor. The left package is retained so the theorem records the
+symmetric monomial regime.
+-/
+structure Proposition55TheoremPackage (I_U I_V : Ideal A) where
+  regime : MonomialLawConflictRegime A E I_U I_V
+  leftTaylorResolution : TaylorMathlibResolution A E regime.left
+  rightTaylorResolution : TaylorMathlibResolution A E regime.right
+  computesLawConflict : Prop
+  computesLawConflict_holds : computesLawConflict
+
 namespace MonomialConflictCalculation
 
 variable {A E}
@@ -139,7 +209,10 @@ theorem computesLawConflict_certificate
     C.computesLawConflict :=
   C.computesLawConflict_holds
 
-/-- V.命題5.5: Mathlib `Tor_i` is read from the selected finite free tensor homology. -/
+/--
+V.命題5.5: Mathlib `Tor_i` is read from an explicit selected equivalence with
+finite free tensor homology.
+-/
 def lawConflictLinearEquivTensorHomology
     (C : MonomialConflictCalculation.{u, v} A E I_U I_V) (i : Nat) :
     Intersection.mathlibTor A I_U I_V i ≃ₗ[A] C.computation.tensorComplex.homology i :=
@@ -154,6 +227,60 @@ theorem lcm_multidegree_eq_union
   C.regime.lcmSupport_eq_union gU gV
 
 end MonomialConflictCalculation
+
+namespace Proposition55TheoremPackage
+
+variable {A E}
+variable {I_U I_V : Ideal A}
+
+/-- V.命題5.5 / AC7: the theorem package carries its law-conflict computation proof. -/
+theorem computesLawConflict_certificate
+    (C : Proposition55TheoremPackage A E I_U I_V) :
+    C.computesLawConflict :=
+  C.computesLawConflict_holds
+
+/--
+V.命題5.5 / AC7: both selected Taylor packages carry quotient-resolution and
+Mathlib-resolution comparison certificates.
+-/
+theorem taylorResolution_certificates
+    (C : Proposition55TheoremPackage A E I_U I_V) :
+    (C.leftTaylorResolution.taylor.resolvesQuotient ∧
+      C.leftTaylorResolution.identifiesTaylorTerms ∧
+      C.leftTaylorResolution.identifiesTaylorDifferentials) ∧
+    (C.rightTaylorResolution.taylor.resolvesQuotient ∧
+      C.rightTaylorResolution.identifiesTaylorTerms ∧
+      C.rightTaylorResolution.identifiesTaylorDifferentials) :=
+  ⟨C.leftTaylorResolution.taylorResolution_certificate,
+    C.rightTaylorResolution.taylorResolution_certificate⟩
+
+/--
+V.命題5.5 / AC7: Mathlib `Tor_i(A/I_U,A/I_V)` is computed by the
+Mathlib finite-free tensor complex attached to the selected right Taylor
+package.
+-/
+noncomputable def lawConflictIsoRightMathlibResolutionTensorHomology
+    (C : Proposition55TheoremPackage A E I_U I_V) (i : Nat) :
+    Intersection.mathlibTor A I_U I_V i ≅
+      (C.rightTaylorResolution.finiteFreeResolution.tensorComplex I_U).homology i :=
+  C.rightTaylorResolution.mathlibResolutionTorIsoTensorHomology I_U i
+
+/-- V.命題5.5 / AC7: inverse orientation of the right-resolution Tor computation. -/
+noncomputable def rightMathlibResolutionTensorHomologyIsoLawConflict
+    (C : Proposition55TheoremPackage A E I_U I_V) (i : Nat) :
+    (C.rightTaylorResolution.finiteFreeResolution.tensorComplex I_U).homology i ≅
+      Intersection.mathlibTor A I_U I_V i :=
+  (C.lawConflictIsoRightMathlibResolutionTensorHomology i).symm
+
+/-- V.命題5.5 / AC7: lcm multidegree is the union of forbidden supports. -/
+theorem lcm_multidegree_eq_union
+    (C : Proposition55TheoremPackage A E I_U I_V)
+    (gU : C.regime.left.Generator) (gV : C.regime.right.Generator) :
+    C.regime.lcmSupport gU gV =
+      C.regime.left.forbiddenSupport gU ∪ C.regime.right.forbiddenSupport gV :=
+  C.regime.lcmSupport_eq_union gU gV
+
+end Proposition55TheoremPackage
 
 end TaylorResolution
 
