@@ -7,3 +7,4 @@ import Formal.AG.Derived.Transversality
 import Formal.AG.Derived.RepairProfile
 import Formal.AG.Derived.Counterexample
 import Formal.AG.Derived.Transfer
+import Formal.AG.Derived.StructurallyLawfulRepair
