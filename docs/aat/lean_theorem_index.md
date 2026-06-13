@@ -4673,6 +4673,28 @@ aggregation five-term statement の証明、spectral sequence 構成、任意 ag
 non-abelian torsor triviality、スペクトル系列一般論、derived category、cotangent complex、
 `Ext^1` はまだ形式化しない。
 
+## AG版AAT Lean形式化 PRD-5 / 第V部 Derived Law Geometry と Repair
+
+File: `Formal/AG/Derived.lean`, `Formal/AG/Derived/LawfulLoci.lean`.
+
+PRD-5 [第V部 Derived Law Geometry と Repair](lean_ag_part_5_derived_law_geometry_repair_prd.md)
+の AC1/R0 と AC2/R1 に対応する entrypoint である。現時点では
+`Formal/AG/Derived` を build 対象へ追加し、PRD-3 の lawful locus / obstruction
+ideal surface を再利用して、law universe pair、`I_U` / `I_V` 記法、
+`Flat_U(X)`、`Flat_V(X)`、および classical joint lawful locus
+`V(I_U + I_V)` を Lean 上に置く。
+
+| 本文ラベル | Lean 名 | 種別 | 意味 | Status |
+| --- | --- | --- | --- | --- |
+| `V.R0` | `Formal.AG.Derived`, `Formal.AG.Derived.LawfulLoci` | `import` | 第V部 derived-law-geometry tower の entrypoint。`Formal/AG.lean` から import され、`lake build` 対象に入る。 | `defined only` |
+| `V.定義2.1 / 定義3.1` | `AAT.AG.Derived.LawfulLoci.LawUniverseReading`, `LawUniversePair`, `LawUniversePair.I_U`, `LawUniversePair.I_V`, `LawUniversePair.flatU`, `LawUniversePair.flatV`, `LawUniversePair.classicalJointIdeal`, `LawUniversePair.classicalJointLawfulLocus`, `LawUniversePair.flatU_eq_lawfulLocus`, `LawUniversePair.flatV_eq_lawfulLocus`, `LawUniversePair.classicalJointLawfulLocus_eq_zeroLocus`, `LawUniversePair.classicalJointLawfulLocus_eq_flatU_inter_flatV` | `abbrev` / `structure` / `def` / `theorem` | 同じ chart algebra 上の二つの selected law-universe reading から、PRD-3 の `localObstructionIdeal` を `I_U` / `I_V` として読み、classical joint lawful locus を `V(I_U + I_V)` および `Flat_U(X) ∩ Flat_V(X)` として公開する。 | `defined only` / `proved accessor` |
+
+Non-conclusions: この entrypoint は derived category 一般論、Koszul complex、
+derived lawful locus、chart-level derived intersection、Tor / `LawConflict_i`、
+Taylor resolution、repair transfer、Hilbert series、well-founded repair、
+cotangent complex、`Ext^1` をまだ形式化しない。PRD-4 の `DerOb_U` は
+type-signature-only placeholder のまま維持する。
+
 ## Reverse-Import Theorem Packages
 
 File: `Formal/Arch/Evolution/ReverseImportTheorems.lean`.
