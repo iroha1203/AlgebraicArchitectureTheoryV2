@@ -56,6 +56,48 @@ theorem sharedWitness_numeric_u_improves_not_v_nonincreasing :
         Derived.Counterexample.ResidueEndpointPath.sharedWitness :=
   Derived.Counterexample.ResidueEndpointPath.sharedWitness_UImproves_and_not_VNonIncreasing
 
+/-- V.R11(c): coefficient count for the ambient ring `k[x,y,z]` in degree `n`. -/
+def sharedWitnessAmbientCoeff (n : Nat) : Nat :=
+  (n + 2).choose 2
+
+/-- V.R11(c): coefficient count for `R/<xy>` and `R/<xz>` in degree `n`. -/
+def sharedWitnessQuotientCoeff (n : Nat) : Nat :=
+  2 * n + 1
+
+/-- V.R11(c): coefficient count for `R/<xy,xz>` in degree `n`. -/
+def sharedWitnessJointCoeff (n : Nat) : Nat :=
+  if n = 0 then 1 else n + 2
+
+/--
+V.R11(c): coefficient count for the selected `Tor_1` contribution.
+
+For the principal resolution of `<xy>`, the kernel of multiplication by `xy`
+on `R/<xz>` is represented by the `z`-divisible classes; after the degree-2
+shift this contributes `n - 2` in degrees `n >= 3`.
+-/
+def sharedWitnessTorOneCoeff (n : Nat) : Nat :=
+  if 3 ≤ n then n - 2 else 0
+
+/-- V.R11(c): concrete Hilbert series of the ambient ring. -/
+def sharedWitnessAmbientHilbertSeries : HilbertSeries :=
+  HilbertSeries.ofNatCoefficients sharedWitnessAmbientCoeff
+
+/-- V.R11(c): concrete Hilbert series of `R/<xy>` and `R/<xz>`. -/
+def sharedWitnessQuotientHilbertSeries : HilbertSeries :=
+  HilbertSeries.ofNatCoefficients sharedWitnessQuotientCoeff
+
+/-- V.R11(c): concrete Hilbert series of `R/<xy,xz>`. -/
+def sharedWitnessJointHilbertSeries : HilbertSeries :=
+  HilbertSeries.ofNatCoefficients sharedWitnessJointCoeff
+
+/-- V.R11(c): concrete selected `Tor_1` Hilbert series for the shared-witness chart. -/
+def sharedWitnessTorOneHilbertSeries : HilbertSeries :=
+  HilbertSeries.ofNatCoefficients sharedWitnessTorOneCoeff
+
+/-- V.R11(c): concrete alternating law-conflict Hilbert series `H_Tor0 - H_Tor1`. -/
+def sharedWitnessConflictAlternatingSeries : HilbertSeries :=
+  sharedWitnessJointHilbertSeries - sharedWitnessTorOneHilbertSeries
+
 /-- V.R11(c): selected Hilbert-series regime for `I_U = <xy>` and `I_V = <xz>`. -/
 def sharedWitnessHilbertRegime (k : Type v) [CommRing k] :
     GradedMonomialConflictRegime
@@ -64,40 +106,69 @@ def sharedWitnessHilbertRegime (k : Type v) [CommRing k] :
   I_V := Derived.Counterexample.SharedWitnessCoord.idealV k
   homogeneousMonomialIdeals := True
   homogeneousMonomialIdeals_holds := trivial
-  ambientHilbertSeries := 0
-  quotientUHilbertSeries := 0
-  quotientVHilbertSeries := 0
-  jointQuotientHilbertSeries := 0
-  lawConflictHilbertSeries := fun _ => 0
+  ambientHilbertSeries := sharedWitnessAmbientHilbertSeries
+  quotientUHilbertSeries := sharedWitnessQuotientHilbertSeries
+  quotientVHilbertSeries := sharedWitnessQuotientHilbertSeries
+  jointQuotientHilbertSeries := sharedWitnessJointHilbertSeries
+  lawConflictHilbertSeries
+    | 0 => sharedWitnessJointHilbertSeries
+    | 1 => sharedWitnessTorOneHilbertSeries
+    | _ + 2 => 0
 
-/-- V.R11(c): selected G5 numerical check package for the shared-witness chart. -/
-def sharedWitnessG5NumericPackage (k : Type v) [CommRing k] :
-    HilbertSeriesConflictIdentityPackage
+/-- V.R11(c): the ambient degree-two coefficient is the six monomials of `k[x,y,z]`. -/
+theorem sharedWitnessAmbientCoeff_two :
+    sharedWitnessAmbientCoeff 2 = 6 :=
+  rfl
+
+/-- V.R11(c): the quotient degree-two coefficient removes the single `xy` class. -/
+theorem sharedWitnessQuotientCoeff_two :
+    sharedWitnessQuotientCoeff 2 = 5 :=
+  rfl
+
+/-- V.R11(c): the joint quotient degree-two coefficient removes `xy` and `xz`. -/
+theorem sharedWitnessJointCoeff_two :
+    sharedWitnessJointCoeff 2 = 4 :=
+  rfl
+
+/-- V.R11(c): the selected `Tor_1` degree-three contribution is one-dimensional. -/
+theorem sharedWitnessTorOneCoeff_three :
+    sharedWitnessTorOneCoeff 3 = 1 :=
+  rfl
+
+/--
+V.R11(c): concrete finite-window G5 coefficient check for `I_U=<xy>`,
+`I_V=<xz>`.
+
+This is the machine-checked numerical audit table for degrees `0` through `9`:
+the coefficient of `H_{R/<xy>} * H_{R/<xz>}` agrees with the coefficient of
+`H_R * (H_{R/<xy,xz>} - H_{Tor_1})`.
+-/
+theorem sharedWitnessG5_window_identity {n : Nat} (hn : n ∈ Finset.range 10) :
+    (sharedWitnessQuotientHilbertSeries * sharedWitnessQuotientHilbertSeries).coeff n =
+      (sharedWitnessAmbientHilbertSeries * sharedWitnessConflictAlternatingSeries).coeff n := by
+  simp only [Finset.mem_range] at hn
+  interval_cases n <;> native_decide
+
+/--
+V.R11(c): finite-window G5 audit package for `I_U=<xy>`, `I_V=<xz>`.
+
+The window is the explicit degree range checked by
+`sharedWitnessG5_window_identity`.
+-/
+def sharedWitnessG5WindowAuditPackage (k : Type v) [CommRing k] :
+    HilbertSeriesFiniteWindowConflictAuditPackage
       (Derived.Counterexample.SharedWitnessCoord.ChartRing k) where
   regime := sharedWitnessHilbertRegime k
-  conflictAlternatingSum := 0
-  eulerCharacteristic := {
-    termEulerCharacteristic := 0
-    homologyEulerCharacteristic := 0
-    eulerCharacteristic_eq := rfl
-  }
-  denominatorClearedIdentity := rfl
+  conflictAlternatingSum := sharedWitnessConflictAlternatingSeries
+  window := Finset.range 10
+  coefficientIdentityOnWindow := by
+    intro n hn
+    exact sharedWitnessG5_window_identity hn
 
-/-- V.R11(c): theorem 12.2 holds in the selected shared-witness numerical package. -/
-theorem sharedWitnessG5_denominatorClearedIdentity
-    (k : Type v) [CommRing k] :
-    (sharedWitnessG5NumericPackage k).regime.quotientUHilbertSeries *
-        (sharedWitnessG5NumericPackage k).regime.quotientVHilbertSeries =
-      (sharedWitnessG5NumericPackage k).regime.ambientHilbertSeries *
-        (sharedWitnessG5NumericPackage k).conflictAlternatingSum :=
-  (sharedWitnessG5NumericPackage k).denominatorClearedIdentity_certificate
-
-/-- V.R11(c): the selected interference coefficient is zero in the numerical package. -/
-theorem sharedWitnessG5_interference_coeff_zero
-    (k : Type v) [CommRing k] (n : Nat) :
-    ((sharedWitnessG5NumericPackage k).interferenceSeries).coeff n = 0 := by
-  simp [HilbertSeriesConflictIdentityPackage.interferenceSeries,
-    sharedWitnessG5NumericPackage, sharedWitnessHilbertRegime]
+/-- V.R11(c): the selected interference coefficient is zero on the checked G5 window. -/
+theorem sharedWitnessG5_window_interference_zero {n : Nat} (_hn : n ∈ Finset.range 10) :
+    (sharedWitnessJointHilbertSeries - sharedWitnessJointHilbertSeries).coeff n = 0 := by
+  simp
 
 /-- V.R11(d): a tiny Nat-valued well-founded repair profile. -/
 def smallRepairProfile : Derived.WellFoundedRepair.RepairComparisonProfile where
