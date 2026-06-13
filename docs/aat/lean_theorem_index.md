@@ -4675,25 +4675,30 @@ non-abelian torsor triviality、スペクトル系列一般論、derived categor
 
 ## AG版AAT Lean形式化 PRD-5 / 第V部 Derived Law Geometry と Repair
 
-File: `Formal/AG/Derived.lean`, `Formal/AG/Derived/LawfulLoci.lean`.
+File: `Formal/AG/Derived.lean`, `Formal/AG/Derived/LawfulLoci.lean`,
+`Formal/AG/Derived/Koszul.lean`.
 
 PRD-5 [第V部 Derived Law Geometry と Repair](lean_ag_part_5_derived_law_geometry_repair_prd.md)
 の AC1/R0 と AC2/R1 に対応する entrypoint である。現時点では
 `Formal/AG/Derived` を build 対象へ追加し、PRD-3 の lawful locus / obstruction
 ideal surface を再利用して、law universe pair、`I_U` / `I_V` 記法、
 `Flat_U(X)`、`Flat_V(X)`、および classical joint lawful locus
-`V(I_U + I_V)` を Lean 上に置く。
+`V(I_U + I_V)` を Lean 上に置く。R2 として、selected finite generators に
+相対化した chart-level Koszul surface、derived lawful locus、`H_0` truncation
+が classical quotient / lawful locus に戻る accessor も追加している。
 
 | 本文ラベル | Lean 名 | 種別 | 意味 | Status |
 | --- | --- | --- | --- | --- |
-| `V.R0` | `Formal.AG.Derived`, `Formal.AG.Derived.LawfulLoci` | `import` | 第V部 derived-law-geometry tower の entrypoint。`Formal/AG.lean` から import され、`lake build` 対象に入る。 | `defined only` |
+| `V.R0` | `Formal.AG.Derived`, `Formal.AG.Derived.LawfulLoci`, `Formal.AG.Derived.Koszul` | `import` | 第V部 derived-law-geometry tower の entrypoint。`Formal/AG.lean` から import され、`lake build` 対象に入る。 | `defined only` |
 | `V.定義2.1 / 定義3.1` | `AAT.AG.Derived.LawfulLoci.LawUniverseReading`, `LawUniversePair`, `LawUniversePair.I_U`, `LawUniversePair.I_V`, `LawUniversePair.flatU`, `LawUniversePair.flatV`, `LawUniversePair.classicalJointIdeal`, `LawUniversePair.classicalJointLawfulLocus`, `LawUniversePair.flatU_eq_lawfulLocus`, `LawUniversePair.flatV_eq_lawfulLocus`, `LawUniversePair.classicalJointLawfulLocus_eq_zeroLocus`, `LawUniversePair.classicalJointLawfulLocus_eq_flatU_inter_flatV` | `abbrev` / `structure` / `def` / `theorem` | 同じ chart algebra 上の二つの selected law-universe reading から、PRD-3 の `localObstructionIdeal` を `I_U` / `I_V` として読み、classical joint lawful locus を `V(I_U + I_V)` および `Flat_U(X) ∩ Flat_V(X)` として公開する。 | `defined only` / `proved accessor` |
+| `V.定義2.3 / 原則2.4` | `AAT.AG.Derived.Koszul.SelectedGeneratorFamily`, `SelectedGeneratorFamily.generatedIdeal`, `SelectedGeneratorFamily.firstTerm`, `SelectedGeneratorFamily.d1`, `SelectedGeneratorFamily.d1_mem_generatedIdeal`, `KoszulComplex`, `KoszulComplex.C0`, `KoszulComplex.C1`, `KoszulComplex.d1`, `KoszulComplex.zeroHomologyIdeal`, `KoszulComplex.zeroHomology`, `KoszulComplex.zeroHomologyIdeal_eq`, `KoszulComplex.zeroHomology_eq_classicalQuotient`, `KoszulComplex.zeroHomologyAlgEquivClassicalQuotient`, `KoszulComplex.zeroHomologyRingEquivClassicalQuotient`, `DerivedLawfulLocus`, `DerivedLawfulLocus.structureSheafComplex`, `DerivedLawfulLocus.truncation`, `DerivedLawfulLocus.truncation_eq_classicalQuotient`, `DerivedLawfulLocus.truncationAlgEquivClassicalQuotient`, `DerivedLawfulLocus.truncationRingEquivClassicalQuotient`, `DerivedLawfulLocus.truncationIdeal_eq`, `DerivedLawfulLocus.truncation_locus_eq_classical` | `structure` / `abbrev` / `def` / `theorem` | selected finite defect generators から chart-level Koszul surface を作り、zero-th truncation quotient が classical quotient `O_X/I` に戻り、その locus が classical lawful locus と一致することを accessor theorem として公開する。quotient truncation は type equality に加えて algebra/ring equivalence でも参照できる。 | `defined only` / `proved accessor` |
 
-Non-conclusions: この entrypoint は derived category 一般論、Koszul complex、
-derived lawful locus、chart-level derived intersection、Tor / `LawConflict_i`、
-Taylor resolution、repair transfer、Hilbert series、well-founded repair、
-cotangent complex、`Ext^1` をまだ形式化しない。PRD-4 の `DerOb_U` は
-type-signature-only placeholder のまま維持する。
+Non-conclusions: この entrypoint は derived category 一般論、
+chart-level derived intersection、Tor / `LawConflict_i`、Taylor resolution、
+repair transfer、Hilbert series、well-founded repair、cotangent complex、
+`Ext^1` をまだ形式化しない。Koszul surface は selected finite generators に
+相対化され、generator choice independence や higher Koszul homology は主張しない。
+PRD-4 の `DerOb_U` は type-signature-only placeholder のまま維持する。
 
 ## Reverse-Import Theorem Packages
 
