@@ -4596,11 +4596,12 @@ File: `Formal/AG/Cohomology.lean`, `Formal/AG/Cohomology/Basic.lean`,
 `Formal/AG/Cohomology/Cohomology.lean`,
 `Formal/AG/Cohomology/FinitePosetComparison.lean`,
 `Formal/AG/Cohomology/GluingMismatch.lean`,
-`Formal/AG/Cohomology/LocalFlatnessGap.lean`.
+`Formal/AG/Cohomology/LocalFlatnessGap.lean`,
+`Formal/AG/Cohomology/BoundaryHolonomy.lean`.
 
 PRD-4 [第IV部 Obstruction Cohomology](lean_ag_part_4_obstruction_cohomology_prd.md)
 の AC1/R0、AC2/R1、AC3/R2 の一般 complex surface、AC4/R2 の有限
-poset 比較 target、AC5/R3、AC6/R4、AC7/R5 に対応する entrypoint である。現時点では
+poset 比較 target、AC5/R3、AC6/R4、AC7/R5、AC8/R6 first half に対応する entrypoint である。現時点では
 `Formal/AG/Cohomology` を build 対象へ追加し、PRD-2 `Site` と PRD-3
 `LawAlgebra` への prerequisite package、obstruction coefficient sheaf carrier、
 `O_X^U`-module valued coefficient surface、`Def_U = I_U`、`ConDef_U = I_U/I_U^2`
@@ -4613,7 +4614,8 @@ finite-poset surface を明示 comparison data の下で PRD-4 comparison target
 pseudo-torsor 正規化による cocycle 自動成立補題、descent obstruction class
 `[g] in H^1(𝒰, Ob_U)`、hidden coupling class、compatible global lawful
 section から coboundary / zero class を得る step、および Local Flatness Gap
-の対偶 theorem までを Lean 上に置く。
+の対偶 theorem、2-chart feature-extension cover、boundary mismatch section、
+selected Čech-level connecting homomorphism、boundary holonomy class までを Lean 上に置く。
 
 | 本文ラベル | Lean 名 | 種別 | 意味 | Status |
 | --- | --- | --- | --- | --- |
@@ -4625,6 +4627,7 @@ section から coboundary / zero class を得る step、および Local Flatness
 | `IV.R2 finite-poset comparison` | `AAT.AG.Cohomology.finitePosetCoverRelativeCover`, `FinitePosetCechComparisonData`, `FinitePosetCechComparisonData.generalComplex`, `FinitePosetCechComparisonData.comparisonTarget`, `FinitePosetCechComparisonData.cochain_to_from`, `FinitePosetCechComparisonData.differential_compatible`, `FinitePosetCechComparisonData.cohomology_target_eq`, `FinitePosetCechComparisonData.cohomology_to_from`, `FinitePosetCechComparisonData.cohomology_from_to` | `def` / `structure` / `theorem` | PRD-2 finite poset Cech complex から PRD-4 cover-relative cover を作り、明示された coefficient / additive / cochain equivalence / quotient relation data の下で PRD-4 `FinitePosetComparisonTarget` として読む。differential compatibility、finite-poset cohomology target、selected cohomology maps の round-trip laws を accessor theorem として公開する。 | `proved under explicit comparison data` |
 | `IV.定義5.1-5.3 / 原則5.2A` | `AAT.AG.Cohomology.LocalFlatnessData`, `LocalFlatnessData.factorsThroughFlat_U`, `LocalFlatnessData.pulledObstructionIdeal_eq_bot`, `RestrictedLocalLawfulSection`, `RestrictedLocalLawfulSection.factorsThroughFlat_U`, `GluingMismatchData`, `GluingMismatchData.value`, `GluingMismatchData.gluingMismatchCochain`, `GluingMismatchData.gluingMismatchCochain_apply`, `GluingMismatchData.leftRestriction_holds`, `GluingMismatchData.rightRestriction_holds`, `PseudoTorsorNormalizedMismatch`, `PseudoTorsorNormalizedMismatch.readMismatch_gluingMismatch`, `PseudoTorsorNormalizedMismatch.triple_mismatch_sum_zero`, `PseudoTorsorNormalizedMismatch.gluingMismatch_cocycle`, `descentCocycle`, `descentObstructionClass`, `descentObstructionClassOfPseudoTorsor` | `structure` / `def` / `theorem` | PRD-3 lawful section surface に基づく local flatness data、overlap 上の selected restricted lawful section、選択された比較写像による gluing mismatch cochain、abelian pseudo-torsor 正規化で mismatch cochain が `g_ij = s_j - s_i` 型の差分 carrier へ読まれ、triple-overlap sum が消えること、および既存 cover-relative `H^1(𝒰, Ob_U)` に入る descent obstruction class を定義する。Čech differential が triple sum zero を cocycle に読む方向は selected package の明示 field に相対化する。 | `defined only` / `proved accessor` |
 | `IV.定義6.1 / 6.2 / 定理7.1` | `AAT.AG.Cohomology.h1ZeroCocycle`, `h1ZeroClass`, `HiddenCouplingData`, `HiddenCouplingData.hiddenCouplingCocycle`, `HiddenCouplingData.hiddenCouplingClass`, `CompatibleGlobalLawfulSection`, `CompatibleGlobalLawfulSection.globalFactorsThroughFlat_U`, `GlobalSectionCoboundarySoundness`, `GlobalSectionCoboundarySoundness.hiddenCouplingClass_eq_zero`, `LocalFlatnessGapHypotheses`, `localFlatnessGap_no_globalLawfulSection` | `def` / `structure` / `theorem` | R4 の descent obstruction class を hidden coupling cocycle / class として読む。U-adequate cover・global lawful section・local restriction compatibility を持つ compatible global lawful section を statement-level object とし、global section から coboundary witness を得る soundness は明示 hypothesis として分離する。定理7.1 は hidden coupling class 非零なら compatible global lawful section は存在しない、という対偶 theorem として証明する。 | `proved under explicit compatibility data` |
+| `IV.定義8.1-8.3 / 9.1` | `AAT.AG.Cohomology.TwoChartFeatureExtensionCover`, `TwoChartFeatureExtensionCover.boundaryObject`, `TwoChartFeatureExtensionCover.extensionObject`, `BoundaryCoefficient`, `CoreCoefficient`, `FeatureCoefficient`, `BoundaryMismatchSection`, `BoundaryMismatchSection.b_U`, `TwoChartCechBoundaryComplex`, `TwoChartCechBoundaryComplex.C0`, `TwoChartCechBoundaryComplex.C1`, `TwoChartCechBoundaryComplex.d0`, `TwoChartCechBoundaryComplex.d0_apply`, `TwoChartConnectingHomomorphism`, `TwoChartConnectingHomomorphism.delta`, `TwoChartConnectingHomomorphism.delta_eq_boundaryRestrictionSource`, `TwoChartConnectingHomomorphism.deltaCocycle`, `TwoChartConnectingHomomorphism.deltaClass`, `TwoChartConnectingHomomorphism.deltaH1`, `TwoChartConnectingHomomorphism.deltaH1_eq_deltaClass`, `TwoChartConnectingHomomorphism.boundaryHolonomy`, `TwoChartConnectingHomomorphism.boundaryHolonomy_eq_delta` | `structure` / `abbrev` / `def` / `theorem` | 2-chart feature-extension cover `C' = C_core ∪ F` と boundary `B = C_core ∩ F` を selected cover data として記録し、`C^0 = Ob(C_core) × Ob(F)`、`C^1 = Ob(B)`、boundary differential `s_F|_B - s_core|_B`、boundary mismatch section `b_U ∈ H^0(B, Ob_B)`、selected Čech-level cochain map と selected class-level connecting homomorphism `δ : H^0(B, Ob_B) -> H^1(C', Ob_C')`、boundary holonomy `Hol_U = δ(b_U)` を既存 cover-relative Čech complex 上に置く。derived Mayer-Vietoris triangle と定理9.2 は主張しない。 | `defined only` / `proved accessor` |
 
 Non-conclusions: この entrypoint は obstruction coefficient sheaf carrier、module-valued
 coefficient surface、`Def_U` / `ConDef_U` / `DerOb_U` placeholder の R1 package、
@@ -4632,9 +4635,10 @@ coefficient surface、`Def_U` / `ConDef_U` / `DerOb_U` placeholder の R1 packag
 cover-relative cohomology notation、条件付き space-level notation、明示 comparison
 data 下の finite-poset target、R4 の local flatness / gluing mismatch / pseudo-torsor
 normalized cocycle / descent class surface、R5 の explicit compatibility data 下の
-Local Flatness Gap theorem だけを示す。任意の finite-poset regime が
+Local Flatness Gap theorem、R6 first half の 2-chart connecting homomorphism /
+boundary holonomy だけを示す。任意の finite-poset regime が
 自動的に obstruction sheaf comparison data を持つこと、descent class の非零性や
-非零 hidden coupling class の具体例、一般 descent theorem、Boundary Residue、
+非零 hidden coupling class の具体例、一般 descent theorem、Boundary Residue theorem / 定理9.2、
 Cohomological Flatness Criterion、derived category、cotangent complex、`Ext^1` はまだ形式化しない。
 
 ## Reverse-Import Theorem Packages
