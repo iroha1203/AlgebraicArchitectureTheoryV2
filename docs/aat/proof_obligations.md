@@ -796,7 +796,8 @@ File: `Formal/AG/Cohomology.lean`, `Formal/AG/Cohomology/Basic.lean`,
 `Formal/AG/Cohomology/Cohomology.lean`,
 `Formal/AG/Cohomology/FinitePosetComparison.lean`,
 `Formal/AG/Cohomology/GluingMismatch.lean`,
-`Formal/AG/Cohomology/LocalFlatnessGap.lean`.
+`Formal/AG/Cohomology/LocalFlatnessGap.lean`,
+`Formal/AG/Cohomology/BoundaryHolonomy.lean`.
 
 PRD-4 [第IV部 Obstruction Cohomology](lean_ag_part_4_obstruction_cohomology_prd.md)
 は AC1/R0 と AC2/R1 から着手している。Issue
@@ -811,7 +812,9 @@ PRD-4 [第IV部 Obstruction Cohomology](lean_ag_part_4_obstruction_cohomology_pr
 [#2051](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2051)
 では gluing mismatch、pseudo-torsor normalized cocycle、descent obstruction class を追加した。Issue
 [#2054](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2054)
-では hidden coupling class と Local Flatness Gap theorem を追加した。
+では hidden coupling class と Local Flatness Gap theorem を追加した。Issue
+[#2056](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2056)
+では 2-chart connecting homomorphism と boundary holonomy を追加した。
 
 | 対象 | 現在の扱い | 残す境界 |
 | --- | --- | --- |
@@ -823,6 +826,7 @@ PRD-4 [第IV部 Obstruction Cohomology](lean_ag_part_4_obstruction_cohomology_pr
 | `IV.R2 / AC4` PRD-2 finite-poset comparison | `proved under explicit comparison data`. `Formal/AG/Cohomology/FinitePosetComparison.lean` が `finitePosetCoverRelativeCover`、`FinitePosetCechComparisonData`、`generalComplex`、`comparisonTarget`、`cochain_to_from`、`differential_compatible`、`cohomology_target_eq`、`cohomology_to_from`、`cohomology_from_to` を持つ。 | PRD-2 Type-valued coefficient surface と PRD-4 additive obstruction sheaf surface の同一視、加法構造、cochain equivalence、cohomology quotient relation、cohomology map round-trip laws は明示 data として扱う。任意の finite-poset regime がその data を自動的に持つとは主張しない。 |
 | `IV.定義5.1-5.3 / 原則5.2A` Gluing mismatch and descent class | `defined only` / `proved accessor`. `Formal/AG/Cohomology/GluingMismatch.lean` が `LocalFlatnessData`、`RestrictedLocalLawfulSection`、`GluingMismatchData`、`PseudoTorsorNormalizedMismatch`、`readMismatch_gluingMismatch`、`triple_mismatch_sum_zero`、`gluingMismatch_cocycle`、`descentObstructionClass` を持つ。 | restriction と Čech differential compatibility は selected package の明示 field に相対化する。descent class の非零性、coboundary 判定、global lawful section の不存在は R5 以降に残す。 |
 | `IV.定義6.1 / 6.2 / 定理7.1` Hidden coupling and Local Flatness Gap | `proved under explicit compatibility data`. `Formal/AG/Cohomology/LocalFlatnessGap.lean` が `HiddenCouplingData`、`hiddenCouplingCocycle`、`hiddenCouplingClass`、`CompatibleGlobalLawfulSection`、`GlobalSectionCoboundarySoundness`、`hiddenCouplingClass_eq_zero`、`LocalFlatnessGapHypotheses`、`localFlatnessGap_no_globalLawfulSection` を持つ。 | global compatible lawful section は statement-level object として分離し、global section から coboundary witness を得る soundness は明示 hypothesis として扱う。hidden coupling class の具体的非零例、一般 descent theorem、R6 Boundary Residue はまだ主張しない。 |
+| `IV.定義8.1-8.3 / 9.1` Boundary holonomy | `defined only` / `proved accessor`. `Formal/AG/Cohomology/BoundaryHolonomy.lean` が `TwoChartFeatureExtensionCover`、`BoundaryCoefficient`、`CoreCoefficient`、`FeatureCoefficient`、`BoundaryMismatchSection`、`TwoChartCechBoundaryComplex`、`d0`、`d0_apply`、`TwoChartConnectingHomomorphism`、`deltaCocycle`、`deltaClass`、`deltaH1`、`deltaH1_eq_deltaClass`、`boundaryHolonomy`、`boundaryHolonomy_eq_delta` を持つ。 | `C' = C_core ∪ F` と `B = C_core ∩ F` は selected 2-chart cover data として扱い、`C^0 = Ob(C_core) × Ob(F)`、`C^1 = Ob(B)`、`d^0 = s_F|_B - s_core|_B` を concrete Čech surface として記録する。connecting homomorphism は既存 cover-relative Čech complex 上の selected cochain map と selected class-level map であり、derived Mayer-Vietoris triangle、Boundary Residue theorem / 定理9.2 はまだ主張しない。 |
 
 第IV部 PRD-4 の証明対象ラベルは次の現在状態である。
 
@@ -836,6 +840,7 @@ PRD-4 [第IV部 Obstruction Cohomology](lean_ag_part_4_obstruction_cohomology_pr
 | `IV.定義4.1 / R3` | `defined only` / `proved accessor under explicit comparison or refinement assumptions` |
 | `IV.定義5.1-5.3 / R4` | `defined only` / `proved pseudo-torsor cocycle accessor under explicit normalization data` |
 | `IV.定理7.1` | `proved under explicit compatibility data` |
+| `IV.定義8.1-8.3 / 9.1` | `defined only` / `proved accessor` |
 | `IV.定理9.2` | `future proof obligation` |
 | `IV.定理11.1 / 系11.2` | `future proof obligation` |
 | `IV.定理12.2 / 系12.3 / 定理12.4 / 系12.5` | `future proof obligation` |
