@@ -1,4 +1,5 @@
 import Formal.AG.Examples.FiniteModel
+import Formal.AG.Derived.Counterexample
 import Formal.AG.Derived.WellFoundedRepair
 
 noncomputable section
@@ -19,9 +20,24 @@ principal-resolution Tor certificate from proposition 9.2.
 structure Example56TorCalculation (k : Type v) [CommRing k] where
   counterexample : Derived.Counterexample.SharedWitnessRepairCounterexample k
 
+/--
+V.R11(a): direct finite example package reading example 5.6 from the selected
+principal kernel-quotient calculation.
+-/
+structure Example56DirectTorCalculation (k : Type v) [CommRing k] where
+  principalKernelCalculation :
+    Derived.Counterexample.SharedWitnessPrincipalKernelQuotientCalculation k
+
 namespace Example56TorCalculation
 
 variable {k : Type v} [CommRing k]
+
+/-- V.R11(a): build the legacy example package from the direct calculation. -/
+def ofPrincipalKernelCalculation
+    (C : Derived.Counterexample.SharedWitnessPrincipalKernelQuotientCalculation k) :
+    Example56TorCalculation k where
+  counterexample :=
+    Derived.Counterexample.SharedWitnessRepairCounterexample.ofKernelQuotientCalculation C
 
 /-- V.R11(a): `Tor_1(R/<xy>, R/<xz>)` has a selected nonzero class. -/
 theorem tor1_nonzero (E : Example56TorCalculation k) :
@@ -33,6 +49,26 @@ theorem tor1_nonzero (E : Example56TorCalculation k) :
   E.counterexample.tor1_nonzero
 
 end Example56TorCalculation
+
+namespace Example56DirectTorCalculation
+
+variable {k : Type v} [CommRing k]
+
+/-- V.R11(a): direct example 5.6 theorem from the principal kernel quotient. -/
+theorem tor1_nonzero (E : Example56DirectTorCalculation k) :
+    ∃ x : Derived.Intersection.mathlibTor
+        (Derived.Counterexample.SharedWitnessCoord.ChartRing k)
+        (Derived.Counterexample.SharedWitnessCoord.idealU k)
+        (Derived.Counterexample.SharedWitnessCoord.idealV k) 1,
+      x ≠ 0 :=
+  E.principalKernelCalculation.mathlibTor1_nonzero_of_kernelQuotientCalculation
+
+/-- V.R11(a): direct example 5.6 also induces the legacy example package. -/
+def toExample56TorCalculation (E : Example56DirectTorCalculation k) :
+    Example56TorCalculation k :=
+  Example56TorCalculation.ofPrincipalKernelCalculation E.principalKernelCalculation
+
+end Example56DirectTorCalculation
 
 /-- V.R11(b): the selected `s_t` family has the endpoint residues of proposition 9.2. -/
 theorem sharedWitness_numeric_residue_path :
