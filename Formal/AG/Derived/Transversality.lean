@@ -56,6 +56,17 @@ theorem derivedNonTransverse_of_firstLawConflictNonzero
     DerivedNonTransverse A P :=
   ⟨1, Nat.zero_lt_one, h⟩
 
+/--
+V.定理6.1: a first nonzero law conflict rules out positive-degree
+law-conflict vanishing.
+-/
+theorem not_positiveLawConflictVanishing_of_firstLawConflictNonzero
+    (h : FirstLawConflictNonzero A P) :
+    ¬ PositiveLawConflictVanishing A P := by
+  intro hvanish
+  rcases h with ⟨x, hx⟩
+  exact hx (hvanish 1 Nat.zero_lt_one x)
+
 /-- V.R5: selected `LawConflict_i` vanishes iff the bridged Mathlib `Tor_i` vanishes. -/
 theorem lawConflictVanishes_iff_mathlibTorVanishes (i : Nat) :
     LawConflictVanishes A P i ↔
@@ -85,6 +96,17 @@ theorem positiveLawConflictVanishing_iff_mathlibTorVanishing :
   · intro h i hi
     exact (lawConflictVanishes_iff_mathlibTorVanishes P i).2 (h i hi)
 
+/--
+V.定理6.1: a first nonzero law conflict also rules out positive Mathlib Tor
+vanishing through the selected bridge.
+-/
+theorem not_positiveMathlibTorVanishing_of_firstLawConflictNonzero
+    (h : FirstLawConflictNonzero A P) :
+    ¬ PositiveMathlibTorVanishing A (I_U := I_U) (I_V := I_V) := by
+  intro htor
+  exact not_positiveLawConflictVanishing_of_firstLawConflictNonzero P h
+    ((positiveLawConflictVanishing_iff_mathlibTorVanishing P).2 htor)
+
 end LawConflictPackage
 
 /--
@@ -99,6 +121,52 @@ structure DerivedTransversalityCriterion
   classicalAgreement : Prop
   positiveTorVanishing_iff_classicalAgreement :
     PositiveMathlibTorVanishing A (I_U := I_U) (I_V := I_V) ↔ classicalAgreement
+
+/--
+V.定理7.3: selected classical-agreement data stated directly in terms of
+LawConflict vanishing.
+
+The derived transversality criterion below reconstructs the Mathlib Tor
+criterion from this data using the selected `LawConflict_i = Tor_i` bridge.
+-/
+structure SelectedClassicalAgreementData
+    (P : Intersection.LawConflictPackage.{u, v} A I_U I_V) where
+  classicalAgreement : Prop
+  positiveLawConflictVanishing_iff_classicalAgreement :
+    PositiveLawConflictVanishing A P ↔ classicalAgreement
+
+namespace SelectedClassicalAgreementData
+
+variable {A}
+variable {P : Intersection.LawConflictPackage.{u, v} A I_U I_V}
+
+/--
+V.定理7.3: build the Mathlib Tor criterion from selected law-conflict
+vanishing data.
+-/
+def toDerivedTransversalityCriterion
+    (D : SelectedClassicalAgreementData A P) :
+    DerivedTransversalityCriterion A P where
+  classicalAgreement := D.classicalAgreement
+  positiveTorVanishing_iff_classicalAgreement :=
+    (LawConflictPackage.positiveLawConflictVanishing_iff_mathlibTorVanishing P).symm.trans
+      D.positiveLawConflictVanishing_iff_classicalAgreement
+
+/-- V.定理7.3: selected law-conflict vanishing gives selected classical agreement. -/
+theorem classicalAgreement_of_positiveLawConflictVanishing
+    (D : SelectedClassicalAgreementData A P)
+    (h : PositiveLawConflictVanishing A P) :
+    D.classicalAgreement :=
+  D.positiveLawConflictVanishing_iff_classicalAgreement.1 h
+
+/-- V.定理7.3: selected classical agreement gives law-conflict vanishing. -/
+theorem positiveLawConflictVanishing_of_classicalAgreement
+    (D : SelectedClassicalAgreementData A P)
+    (h : D.classicalAgreement) :
+    PositiveLawConflictVanishing A P :=
+  D.positiveLawConflictVanishing_iff_classicalAgreement.2 h
+
+end SelectedClassicalAgreementData
 
 namespace DerivedTransversalityCriterion
 

@@ -10,6 +10,8 @@ universe u v
 
 namespace Counterexample
 
+set_option linter.unusedSectionVars false
+
 open MvPolynomial
 
 /-- V.命題9.2: coordinates of the shared-witness chart `k[x,y,z]`. -/
@@ -174,6 +176,26 @@ structure SharedWitnessTorNonzeroCertificate (k : Type v) [CommRing k] where
   principalResolutionCalculation : Prop
   principalResolutionCalculation_holds : principalResolutionCalculation
 
+/--
+V.命題9.2(iii): selected principal-resolution calculation surface for the
+shared-witness Tor class.
+
+The package records the actual Mathlib Tor class together with the
+principal-resolution reading that identifies it as the nonzero shifted kernel
+class in the `<xy>` resolution tensored with `R/<xz>`.
+-/
+structure SharedWitnessPrincipalResolutionCalculation (k : Type v) [CommRing k] where
+  torClass :
+    Intersection.mathlibTor (SharedWitnessCoord.ChartRing k)
+      (SharedWitnessCoord.idealU k) (SharedWitnessCoord.idealV k) 1
+  torClass_ne_zero : torClass ≠ 0
+  shiftedKernelRepresentative : Prop
+  shiftedKernelRepresentative_holds : shiftedKernelRepresentative
+  tensorDifferentialKillsRepresentative : Prop
+  tensorDifferentialKillsRepresentative_holds : tensorDifferentialKillsRepresentative
+  notTensorBoundary : Prop
+  notTensorBoundary_holds : notTensorBoundary
+
 namespace SharedWitnessTorNonzeroCertificate
 
 variable {k : Type v} [CommRing k]
@@ -193,6 +215,58 @@ theorem mathlibTor1_nonzero
   ⟨C.torClass, C.torClass_ne_zero⟩
 
 end SharedWitnessTorNonzeroCertificate
+
+namespace SharedWitnessPrincipalResolutionCalculation
+
+variable {k : Type v} [CommRing k]
+
+/-- V.命題9.2(iii): the selected class is the shifted kernel representative. -/
+theorem shiftedKernelRepresentative_certificate
+    (C : SharedWitnessPrincipalResolutionCalculation k) :
+    C.shiftedKernelRepresentative :=
+  C.shiftedKernelRepresentative_holds
+
+/-- V.命題9.2(iii): the tensor differential kills the selected representative. -/
+theorem tensorDifferentialKillsRepresentative_certificate
+    (C : SharedWitnessPrincipalResolutionCalculation k) :
+    C.tensorDifferentialKillsRepresentative :=
+  C.tensorDifferentialKillsRepresentative_holds
+
+/-- V.命題9.2(iii): the selected representative is not a tensor boundary. -/
+theorem notTensorBoundary_certificate
+    (C : SharedWitnessPrincipalResolutionCalculation k) :
+    C.notTensorBoundary :=
+  C.notTensorBoundary_holds
+
+/--
+V.命題9.2(iii): principal-resolution calculation package induces the earlier
+Tor nonzero certificate.
+-/
+def toTorNonzeroCertificate
+    (C : SharedWitnessPrincipalResolutionCalculation k) :
+    SharedWitnessTorNonzeroCertificate k where
+  torClass := C.torClass
+  torClass_ne_zero := C.torClass_ne_zero
+  principalResolutionCalculation :=
+    C.shiftedKernelRepresentative ∧
+      C.tensorDifferentialKillsRepresentative ∧ C.notTensorBoundary
+  principalResolutionCalculation_holds :=
+    ⟨C.shiftedKernelRepresentative_certificate,
+      C.tensorDifferentialKillsRepresentative_certificate,
+      C.notTensorBoundary_certificate⟩
+
+/--
+V.命題9.2(iii): `Tor_1(R/<xy>, R/<xz>)` is nonzero from the selected
+principal-resolution calculation.
+-/
+theorem mathlibTor1_nonzero_of_principalResolutionCalculation
+    (C : SharedWitnessPrincipalResolutionCalculation k) :
+    ∃ x : Intersection.mathlibTor (SharedWitnessCoord.ChartRing k)
+        (SharedWitnessCoord.idealU k) (SharedWitnessCoord.idealV k) 1,
+      x ≠ 0 :=
+  C.toTorNonzeroCertificate.mathlibTor1_nonzero
+
+end SharedWitnessPrincipalResolutionCalculation
 
 /-- V.命題9.2(iv): coordinates for the generalized shared-witness family. -/
 inductive GeneralizedCoord (Y Z : Type u) where
@@ -238,11 +312,53 @@ theorem sharedWitness_mem_lcmSupport (i : Y) (j : Z) :
     GeneralizedCoord.x ∈ lcmSupport (Y := Y) (Z := Z) i j := by
   simp [lcmSupport, leftSupport]
 
+/-- V.命題9.2(iv): shared witness belongs to both selected supports. -/
+theorem sharedWitness_mem_bothSupports (i : Y) (j : Z) :
+    GeneralizedCoord.x ∈ leftSupport (Y := Y) (Z := Z) i ∧
+      GeneralizedCoord.x ∈ rightSupport (Y := Y) (Z := Z) j :=
+  ⟨sharedWitness_mem_leftSupport i, sharedWitness_mem_rightSupport j⟩
+
+/--
+V.命題9.2(iv): the generalized shared-witness family has the same residue
+counterexample behavior as the base path.
+-/
+theorem generalized_sharedWitness_u_improves_not_v_nonincreasing
+    (_i : Y) (_j : Z) :
+    ResidueEndpointPath.UImproves ResidueEndpointPath.sharedWitness ∧
+      ¬ ResidueEndpointPath.VNonIncreasing ResidueEndpointPath.sharedWitness :=
+  ResidueEndpointPath.sharedWitness_UImproves_and_not_VNonIncreasing
+
+/--
+V.命題9.2(iv): combined support and residue counterexample surface for the
+generalized family `<x y_i>` / `<x z_j>`.
+-/
+theorem generalized_sharedWitness_counterexample_surface (i : Y) (j : Z) :
+    GeneralizedCoord.x ∈ leftSupport (Y := Y) (Z := Z) i ∧
+      GeneralizedCoord.x ∈ rightSupport (Y := Y) (Z := Z) j ∧
+      GeneralizedCoord.x ∈ lcmSupport (Y := Y) (Z := Z) i j ∧
+      ResidueEndpointPath.UImproves ResidueEndpointPath.sharedWitness ∧
+      ¬ ResidueEndpointPath.VNonIncreasing ResidueEndpointPath.sharedWitness :=
+  ⟨sharedWitness_mem_leftSupport i,
+    sharedWitness_mem_rightSupport j,
+    sharedWitness_mem_lcmSupport i j,
+    ResidueEndpointPath.sharedWitness_UImproves,
+    ResidueEndpointPath.sharedWitness_not_VNonIncreasing⟩
+
 end GeneralizedCoord
 
 /-- V.命題9.2: theorem package for the shared-witness repair counterexample. -/
 structure SharedWitnessRepairCounterexample (k : Type v) [CommRing k] where
   torCertificate : SharedWitnessTorNonzeroCertificate k
+
+/--
+V.命題9.2: theorem package built directly from the selected
+principal-resolution calculation.
+-/
+def SharedWitnessRepairCounterexample.ofPrincipalResolutionCalculation
+    {k : Type v} [CommRing k]
+    (C : SharedWitnessPrincipalResolutionCalculation k) :
+    SharedWitnessRepairCounterexample k where
+  torCertificate := C.toTorNonzeroCertificate
 
 namespace SharedWitnessRepairCounterexample
 
