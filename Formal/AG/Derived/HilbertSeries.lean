@@ -20,6 +20,24 @@ structure HilbertSeries where
 
 namespace HilbertSeries
 
+theorem ext {H K : HilbertSeries} (h : ∀ n, H.coeff n = K.coeff n) :
+    H = K := by
+  cases H with
+  | mk hCoeff =>
+      cases K with
+      | mk kCoeff =>
+          congr
+          funext n
+          exact h n
+
+/-- V.定義12.1: Hilbert series read from degree-wise finite dimensions. -/
+def ofNatCoefficients (degreeDimension : Nat -> Nat) : HilbertSeries where
+  coeff n := degreeDimension n
+
+@[simp] theorem ofNatCoefficients_coeff (degreeDimension : Nat -> Nat) (n : Nat) :
+    (ofNatCoefficients degreeDimension).coeff n = degreeDimension n :=
+  rfl
+
 instance : Zero HilbertSeries where
   zero := ⟨fun _ => 0⟩
 
@@ -78,6 +96,95 @@ theorem homogeneousMonomialIdeals_certificate
   R.homogeneousMonomialIdeals_holds
 
 end GradedMonomialConflictRegime
+
+/--
+V.R10: degree-wise short exact Hilbert data.
+
+This strengthens the earlier equality-only package: the equality of Hilbert
+series is derived from degree-wise finite dimensions.
+-/
+structure DegreewiseShortExactPackage where
+  leftDimension : Nat -> Nat
+  middleDimension : Nat -> Nat
+  rightDimension : Nat -> Nat
+  middleDimension_eq :
+    ∀ n, middleDimension n = leftDimension n + rightDimension n
+
+namespace DegreewiseShortExactPackage
+
+def leftHilbertSeries (S : DegreewiseShortExactPackage) : HilbertSeries :=
+  HilbertSeries.ofNatCoefficients S.leftDimension
+
+def middleHilbertSeries (S : DegreewiseShortExactPackage) : HilbertSeries :=
+  HilbertSeries.ofNatCoefficients S.middleDimension
+
+def rightHilbertSeries (S : DegreewiseShortExactPackage) : HilbertSeries :=
+  HilbertSeries.ofNatCoefficients S.rightDimension
+
+/-- V.R10: Hilbert series additivity from degree-wise short exact dimensions. -/
+theorem hilbertSeries_additivity (S : DegreewiseShortExactPackage) :
+    S.middleHilbertSeries = S.leftHilbertSeries + S.rightHilbertSeries := by
+  apply HilbertSeries.ext
+  intro n
+  simp [middleHilbertSeries, leftHilbertSeries, rightHilbertSeries,
+    S.middleDimension_eq n]
+
+end DegreewiseShortExactPackage
+
+/-- V.R10: degree-wise shifted finite free Hilbert data. -/
+structure DegreewiseShiftedFreePackage where
+  rank : Nat
+  shiftDegree : Nat
+  ambientDimension : Nat -> Nat
+  shiftedDimension : Nat -> Nat
+  shiftedDimension_eq :
+    ∀ n, shiftedDimension n =
+      rank * if shiftDegree ≤ n then ambientDimension (n - shiftDegree) else 0
+
+namespace DegreewiseShiftedFreePackage
+
+def ambientHilbertSeries (F : DegreewiseShiftedFreePackage) : HilbertSeries :=
+  HilbertSeries.ofNatCoefficients F.ambientDimension
+
+def shiftedFreeHilbertSeries (F : DegreewiseShiftedFreePackage) : HilbertSeries :=
+  HilbertSeries.ofNatCoefficients F.shiftedDimension
+
+/-- V.R10: shifted free Hilbert series from degree-wise dimensions. -/
+theorem shiftedFree_eq_rank_smul_shift (F : DegreewiseShiftedFreePackage) :
+    F.shiftedFreeHilbertSeries =
+      ⟨fun n => (F.rank : Int) *
+        (HilbertSeries.shift F.shiftDegree F.ambientHilbertSeries).coeff n⟩ := by
+  apply HilbertSeries.ext
+  intro n
+  simp [shiftedFreeHilbertSeries, ambientHilbertSeries, HilbertSeries.shift,
+    F.shiftedDimension_eq n]
+
+end DegreewiseShiftedFreePackage
+
+/-- V.R10: degree-wise Euler characteristic data for a finite complex. -/
+structure DegreewiseEulerCharacteristicPackage where
+  termEulerCoeff : Nat -> Int
+  homologyEulerCoeff : Nat -> Int
+  coeff_eq : ∀ n, termEulerCoeff n = homologyEulerCoeff n
+
+namespace DegreewiseEulerCharacteristicPackage
+
+def termEulerHilbertSeries (E : DegreewiseEulerCharacteristicPackage) : HilbertSeries where
+  coeff := E.termEulerCoeff
+
+def homologyEulerHilbertSeries (E : DegreewiseEulerCharacteristicPackage) : HilbertSeries where
+  coeff := E.homologyEulerCoeff
+
+/--
+V.R10: finite complex Euler characteristic agrees with homology Euler
+characteristic by degree-wise coefficient equality.
+-/
+theorem eulerCharacteristic_eq (E : DegreewiseEulerCharacteristicPackage) :
+    E.termEulerHilbertSeries = E.homologyEulerHilbertSeries := by
+  apply HilbertSeries.ext
+  exact E.coeff_eq
+
+end DegreewiseEulerCharacteristicPackage
 
 /-- V.R10: short exact sequence Hilbert series additivity package. -/
 structure HilbertSeriesShortExactPackage where
@@ -176,6 +283,84 @@ def interferenceSeries (G : HilbertSeriesConflictIdentityPackage A) : HilbertSer
   rfl
 
 end HilbertSeriesConflictIdentityPackage
+
+/--
+V.定理12.2: coefficient-wise certificate for the denominator-cleared Hilbert
+series identity.
+
+This is stronger than storing the series equality directly: the global equality
+is reconstructed from equality in every degree.
+-/
+structure HilbertSeriesConflictCoefficientIdentityPackage (A : Type v) [CommRing A] where
+  regime : GradedMonomialConflictRegime A
+  conflictAlternatingSum : HilbertSeries
+  eulerCharacteristic : FiniteComplexEulerCharacteristicPackage
+  coefficientIdentity :
+    ∀ n,
+      (regime.quotientUHilbertSeries * regime.quotientVHilbertSeries).coeff n =
+        (regime.ambientHilbertSeries * conflictAlternatingSum).coeff n
+
+namespace HilbertSeriesConflictCoefficientIdentityPackage
+
+variable {A : Type v} [CommRing A]
+
+/--
+V.定理12.2: denominator-cleared identity obtained from coefficient-wise data.
+-/
+theorem denominatorClearedIdentity_of_coefficients
+    (G : HilbertSeriesConflictCoefficientIdentityPackage A) :
+    G.regime.quotientUHilbertSeries * G.regime.quotientVHilbertSeries =
+      G.regime.ambientHilbertSeries * G.conflictAlternatingSum := by
+  apply HilbertSeries.ext
+  exact G.coefficientIdentity
+
+/-- V.定理12.2: forget the coefficient proof to the ordinary identity package. -/
+def toIdentityPackage
+    (G : HilbertSeriesConflictCoefficientIdentityPackage A) :
+    HilbertSeriesConflictIdentityPackage A where
+  regime := G.regime
+  conflictAlternatingSum := G.conflictAlternatingSum
+  eulerCharacteristic := G.eulerCharacteristic
+  denominatorClearedIdentity := G.denominatorClearedIdentity_of_coefficients
+
+/-- V.定理12.2: the selected Euler characteristic certificate used by the identity. -/
+theorem eulerCharacteristic_certificate
+    (G : HilbertSeriesConflictCoefficientIdentityPackage A) :
+    G.eulerCharacteristic.termEulerCharacteristic =
+      G.eulerCharacteristic.homologyEulerCharacteristic :=
+  G.eulerCharacteristic.eulerCharacteristic_certificate
+
+end HilbertSeriesConflictCoefficientIdentityPackage
+
+/--
+V.R11(c): finite degree-window audit package for a concrete Hilbert-series G5
+calculation.
+
+This is intentionally finite: it records the checked numerical window without
+claiming a general monomial Hilbert-series computation beyond the selected data.
+-/
+structure HilbertSeriesFiniteWindowConflictAuditPackage (A : Type v) [CommRing A] where
+  regime : GradedMonomialConflictRegime A
+  conflictAlternatingSum : HilbertSeries
+  window : Finset Nat
+  coefficientIdentityOnWindow :
+    ∀ n, n ∈ window →
+      (regime.quotientUHilbertSeries * regime.quotientVHilbertSeries).coeff n =
+        (regime.ambientHilbertSeries * conflictAlternatingSum).coeff n
+
+namespace HilbertSeriesFiniteWindowConflictAuditPackage
+
+variable {A : Type v} [CommRing A]
+
+/-- V.R11(c): read the checked coefficient identity inside the finite window. -/
+theorem coefficientIdentity_certificate
+    (G : HilbertSeriesFiniteWindowConflictAuditPackage A) {n : Nat}
+    (hn : n ∈ G.window) :
+    (G.regime.quotientUHilbertSeries * G.regime.quotientVHilbertSeries).coeff n =
+      (G.regime.ambientHilbertSeries * G.conflictAlternatingSum).coeff n :=
+  G.coefficientIdentityOnWindow n hn
+
+end HilbertSeriesFiniteWindowConflictAuditPackage
 
 end HilbertSeriesTheory
 
