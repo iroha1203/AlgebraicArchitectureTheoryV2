@@ -8,3 +8,4 @@ import Formal.AG.LawAlgebra.StanleyReisner
 import Formal.AG.LawAlgebra.ObstructionIdeal
 import Formal.AG.LawAlgebra.LawfulLocus
 import Formal.AG.LawAlgebra.Nullstellensatz
+import Formal.AG.LawAlgebra.AffineChart
