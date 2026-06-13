@@ -1,0 +1,47 @@
+import Formal.AG.Atom.AATCore
+
+namespace AAT.AG
+namespace Site
+
+universe u
+
+/--
+II.R0: Part I prerequisite package for the Part II site tower.
+
+The site formalization starts from the Part I `AATCorePackage`; it does not
+import `Formal/Arch` and it does not manufacture Atom, law, obstruction, or
+object data on its own.
+-/
+structure PartIPrerequisites where
+  carrier : AtomCarrier.{u}
+  core : AATCorePackage carrier
+
+namespace PartIPrerequisites
+
+/-- II.R0: read the selected ArchitectureObject supplied by Part I. -/
+def architectureObject (P : PartIPrerequisites.{u}) :
+    ArchitectureObject P.carrier :=
+  P.core.object
+
+/-- II.R0: read the selected LawUniverse supplied by Part I. -/
+def lawUniverse (P : PartIPrerequisites.{u}) :
+    LawUniverse P.carrier :=
+  P.core.lawUniverse
+
+/-- II.R0: read the selected ArchitectureSignature supplied by Part I. -/
+def signature (P : PartIPrerequisites.{u}) :
+    ArchitectureSignature P.carrier :=
+  P.core.signature
+
+/--
+II.R0: the Part I object still carries the configuration packaged by the
+selected AAT core.
+-/
+theorem architectureObject_configuration (P : PartIPrerequisites.{u}) :
+    P.architectureObject.configuration = P.core.configuration :=
+  P.core.object_configuration_eq
+
+end PartIPrerequisites
+
+end Site
+end AAT.AG

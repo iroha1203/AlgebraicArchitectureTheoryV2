@@ -4481,6 +4481,24 @@ Invariant / preservation、Law / Lawfulness、Obstruction / Valuation、定理9.
 Object Algebra / operation / signature / operation role predicate、定理10.5 AAT Core theorem package の入口であり、
 finite model example theorem package までを含む。第II部以降の concrete graph / category / algebra / diagram / state transition instance は後続 Issue の対象である。
 
+## AG版AAT Lean形式化 PRD-2 / 第II部 Architecture Geometry・Site・Sheaf
+
+File: `Formal/AG/Site.lean`, `Formal/AG/Site/Basic.lean`.
+
+PRD-2 [第II部 Architecture Geometry・Site・Sheaf](lean_ag_part_2_sites_sheaves_prd.md) の
+AC1/R0 に対応する初期 site entrypoint である。現時点では PRD-1 の
+`AATCorePackage` に依存することだけを Lean 上に置き、Architecture Context、
+coverage、Grothendieck topology、sheaf category は後続 Issue の対象として残す。
+
+| 本文ラベル | Lean 名 | 種別 | 意味 | Status |
+| --- | --- | --- | --- | --- |
+| `II.R0` | `AAT.AG.Site.PartIPrerequisites`, `PartIPrerequisites.architectureObject`, `PartIPrerequisites.lawUniverse`, `PartIPrerequisites.signature`, `PartIPrerequisites.architectureObject_configuration` | `structure` / `def` / `theorem` | 第II部 site tower が PRD-1 の `AATCorePackage` から architecture object / law universe / signature を読むための prerequisite package と accessor。 | `defined only` / `proved` |
+
+Non-conclusions: この entrypoint は `Formal/AG/Site` が build 対象に入ったことと
+PRD-1 依存の入口だけを示す。定義3.1 Architecture Context、命題4.2、
+admissible cover、`J_U`、Mathlib bridge、sheaf condition、Cech complex、
+`AATSh`、有限 poset site example はまだ形式化しない。
+
 ## Reverse-Import Theorem Packages
 
 File: `Formal/Arch/Evolution/ReverseImportTheorems.lean`.
