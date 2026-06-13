@@ -5,3 +5,4 @@ import Formal.AG.LawAlgebra.StructureSheaf
 import Formal.AG.LawAlgebra.WitnessIdeal
 import Formal.AG.LawAlgebra.IdempotentCollapse
 import Formal.AG.LawAlgebra.StanleyReisner
+import Formal.AG.LawAlgebra.ObstructionIdeal
