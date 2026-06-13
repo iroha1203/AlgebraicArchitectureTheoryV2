@@ -885,6 +885,39 @@ Issue
 | `IV.定義14.1 / 定理候補14.2 / 定義14.3` | `statement only` / `defined only` / `proved accessor` |
 | `IV.定理候補10.4 / 定理候補14.2` | `future proof obligation` |
 
+## AG版AAT Lean形式化 PRD-5 / 第V部 Derived Law Geometry と Repair
+
+File: `Formal/AG/Derived.lean`, `Formal/AG/Derived/LawfulLoci.lean`.
+
+PRD-5 [第V部 Derived Law Geometry と Repair](lean_ag_part_5_derived_law_geometry_repair_prd.md)
+は Issue [#2076](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2076)
+で tracking している。Issue
+[#2077](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2077)
+では `Formal/AG/Derived` の entrypoint と、PRD-3 の lawful locus surface を再利用した
+`I_U` / `I_V` 記法、law universe pair、classical joint lawful locus
+`V(I_U + I_V)` を追加した。
+
+| 対象 | 現在の扱い | 残す境界 |
+| --- | --- | --- |
+| `V.R0` Formal/AG/Derived entrypoint | `defined only`. `Formal/AG/Derived.lean` が `Formal/AG/Derived/LawfulLoci.lean` を束ね、`Formal/AG.lean` から import される。 | Koszul complex、derived intersection、Tor、repair profile、Hilbert series、well-founded repair はまだ定義しない。 |
+| `V.定義2.1 / 定義3.1` Lawful loci and classical joint locus | `defined only` / `proved accessor`. `LawUniverseReading`、`LawUniversePair`、`LawUniversePair.I_U`、`I_V`、`flatU`、`flatV`、`classicalJointIdeal`、`classicalJointLawfulLocus`、`flatU_eq_lawfulLocus`、`flatV_eq_lawfulLocus`、`classicalJointLawfulLocus_eq_zeroLocus`、`classicalJointLawfulLocus_eq_flatU_inter_flatV` を持つ。 | `Flat_U^der`、`LawConflict_i`、`Tor_i`、derived non-transversality は R2 以降に残す。 |
+| `IV.定義2.4 DerOb_U` の内部構成 | `future proof obligation` / `unassigned`. PRD-5 R0/R1 では触らず、PRD-5 本文が展開する chart-level Koszul / Tor 構成とは別境界として維持する。 | 余接複体 `L_{Flat/X}` と `Ext^1` の一般形式化は PRD-5 の現在 scope では実装しない。 |
+
+第V部 PRD-5 の証明対象ラベルは次の現在状態である。
+
+| 証明対象ラベル | Lean status |
+| --- | --- |
+| `V.R0` | `defined only` |
+| `V.定義2.1 / 定義3.1` | `defined only` / `proved accessor` |
+| `V.定義2.3 / 原則2.4` | `future proof obligation` |
+| `V.定義4.1 / 5.1 / 5.2` | `future proof obligation` |
+| `V.命題5.5` | `future proof obligation` |
+| `V.定理6.1 / 定理7.3` | `future proof obligation` |
+| `V.命題9.2` | `future proof obligation` |
+| `V.定理10.5 / 定理10.6` | `future proof obligation` |
+| `V.定理12.2` | `future proof obligation` |
+| `V.定理13.3 / 定理13.4` | `future proof obligation` |
+
 ## 現在の未解決カテゴリ
 
 | カテゴリ | 扱い |
