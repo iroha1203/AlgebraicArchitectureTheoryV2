@@ -4537,10 +4537,11 @@ File: `Formal/AG/LawAlgebra.lean`, `Formal/AG/LawAlgebra/Coordinate.lean`,
 `Formal/AG/LawAlgebra/ObstructionIdeal.lean`,
 `Formal/AG/LawAlgebra/LawfulLocus.lean`,
 `Formal/AG/LawAlgebra/Nullstellensatz.lean`,
-`Formal/AG/LawAlgebra/AffineChart.lean`.
+`Formal/AG/LawAlgebra/AffineChart.lean`,
+`Formal/AG/LawAlgebra/Scheme.lean`.
 
 PRD-3 [第III部 Law Algebra・Obstruction Ideal・Lawful Locus](lean_ag_part_3_law_algebra_lawful_locus_prd.md) の
-R0-R10、AC1-AC15 に対応する entrypoint である。現時点では
+R0-R11、AC1-AC17 に対応する entrypoint である。現時点では
 `Formal/AG/LawAlgebra` を build 対象へ追加し、context に相対化された coordinate
 family と、`FreeCommAlg_k(Coord_X(W))` を Mathlib `MvPolynomial` として読む
 definitional bridge、structural relation family、`J_struct`、raw ambient quotient、
@@ -4554,7 +4555,8 @@ ideal square / Kähler 消滅 surface、square-free witness regime と
 Stanley-Reisner obstruction theorem / invariants surface、local obstruction ideal
 sum と restriction / sheaf-image surface、lawful locus と section factorization
 surface、Architecture Nullstellensatz statement と NSdepth monotonicity surface
-、Affine AAT chart と raw/sheafified representability surface までを Lean 上に置く。
+、Affine AAT chart と raw/sheafified representability surface、ringed AAT topos /
+architecture scheme / scheme gluing surface までを Lean 上に置く。
 
 | 本文ラベル | Lean 名 | 種別 | 意味 | Status |
 | --- | --- | --- | --- | --- |
@@ -4570,14 +4572,16 @@ surface、Architecture Nullstellensatz statement と NSdepth monotonicity surfac
 | `III.定義7.1 / 定義7.2` | `AAT.AG.LawAlgebra.LawfulLocus.lawfulLocus`, `LawfulLocus.localLawfulLocus`, `LawfulLocus.LawfulSectionData`, `LawfulSectionData.pulledObstructionIdeal`, `LawfulSectionData.Lawful`, `LawfulSectionData.FactorsThroughLawfulLocus`, `LawfulSectionData.lawful_iff_pulledObstructionIdeal_eq_bot`, `LawfulSectionData.factorsThroughLawfulLocus_of_lawful`, `LawfulSectionData.lawful_of_factorsThroughLawfulLocus`, `LawfulSectionData.lawful_iff_factorsThroughLawfulLocus`, `LawfulLocus.LocalLawfulSectionData` | `structure` / `def` / `theorem` | lawful locus `Flat_U(X) = V(I_Ob^U)` を `PrimeSpectrum.zeroLocus` として定義し、section pullback に沿った `s^* I_Ob^U = 0` を lawfulness とする。factorization through lawful locus は同じ vanishing condition を保持する package として置き、lawful section と factorization の同値を証明する。 | `defined only` / `proved` |
 | `III.定理候補7.2A / 定義7.2B / 命題7.2C` | `AAT.AG.LawAlgebra.Nullstellensatz.booleanLawIdeal`, `Nullstellensatz.VanishesAtIdeal`, `Nullstellensatz.BooleanLawZeroSetEmpty`, `Nullstellensatz.ArchitectureNullstellensatzCandidate`, `Nullstellensatz.RadicalUnitCertificate`, `Nullstellensatz.UnlawfulnessCertificate`, `Nullstellensatz.HasCertificateAt`, `Nullstellensatz.NSdepthProfile`, `NSdepthProfile.NSdepth`, `NSdepthProfile.GeneratorExtension`, `NSdepthProfile.NSdepth_mono_of_generatorExtension` | `def` / `structure` / `theorem` | Boolean law ideal `I_U(W)+B_W`、Boolean law zero set empty、radical unit certificate を用いて Architecture Nullstellensatz candidate を statement-only `Prop` として定義する。NSdepth は certificate availability profile の最小次数として package 化し、generator extension が certificate を同次数で保存する仮定から `NSdepth_new ≤ NSdepth_old` を証明する。 | `statement only` / `defined only` / `proved` |
 | `III.定義8.1 / 定義8.2 / 定義8.5 / 定理8.3 / 仮定8.4` | `AAT.AG.LawAlgebra.AffineChart.SpecAAT`, `SpecAAT.pointSpace`, `SpecAAT.localLawfulChart`, `AffineChart.AffineAATChart`, `AffineAATChart.hWU`, `AffineAATChart.rawAffineChartRepresentability`, `AffineAATChart.SheafifiedChartPresentation`, `AffineAATChart.sheafifiedChartRepresentability` | `structure` / `abbrev` / `def` | `Spec_AAT(A,D)` を ordinary `PrimeSpectrum A` と decoration / obstruction ideal の package として定義し、`R`-valued local configuration functor `h_W^U(R)` を chosen coordinate algebra からの `k`-Alg Hom として置く。定理8.3 はこの chosen raw algebra による representability として `Equiv.refl` で証明され、仮定8.4 は sheafified chart presentation package と、その下での representability 系として公開する。 | `defined only` / `proved under selected presentation assumptions` |
+| `III.定義9.1 / 定義9.2 / 定義9.3 / 定義10.3` | `AAT.AG.LawAlgebra.Scheme.RingedAATTopos`, `RingedAATTopos.OX`, `RingedAATTopos.forgetfulLocallyRingedSpace`, `RingedAATTopos.forgetfulLocallyRingedSpace_eq`, `AAT.AG.LawAlgebra.Scheme.ChartCompatibility`, `ChartCompatibility.allConditions`, `AAT.AG.LawAlgebra.Scheme.ArchitectureScheme`, `ArchitectureScheme.forgetfulLocallyRingedSpace`, `ArchitectureScheme.forgetful_reading_locallyRingedSpace`, `ArchitectureScheme.ringedTopos_forgetful_eq_underlying`, `AAT.AG.LawAlgebra.Scheme.SchemeGluingData`, `AAT.AG.LawAlgebra.Scheme.AffineReturnConditions`, `AffineReturnConditions.affineReturnAssumptions` | `structure` / `def` / `theorem` | ringed AAT topos を既存 `Site.AATSh S` object / `LawAlgebraSheafPackage S k` の `O_X^U` / Mathlib `LocallyRingedSpace` の package として定義する。chart compatibility は 7条件の Prop package とし、architecture scheme は chart-compatible atlas と decorated locally ringed geometry の selected package とする。forgetful reading は Mathlib `LocallyRingedSpace` へ戻る bridge theorem として固定する。scheme gluing は chart gluing data、underlying Mathlib gluing bridge predicate、単一 affine chart へ戻るための glued affine / canonical ring comparison / `O_X^U(W)` と glued global sections の comparison / decoration 同定の明示仮定までに限定する。 | `defined only` / `proved for forgetful bridge` |
 
 Non-conclusions: この entrypoint は coordinate と free typed commutative algebra の
 bridge、structural quotient、restriction descent bridge、law algebra sheafification
 bridge、law witness ideal、defect representative reading、idempotent coordinate collapse、
 square-free local obstruction ideal と Stanley-Reisner chart reading、selected law
-ideal sum と sheaf-image 表示、lawful locus / lawful section factorization だけを示す。
-Nullstellensatz candidate は statement-only であり、証明昇格はしない。scheme、
-定理11.1 はまだ形式化しない。
+ideal sum と sheaf-image 表示、lawful locus / lawful section factorization、ringed
+AAT topos / architecture scheme / scheme gluing surface だけを示す。
+Nullstellensatz candidate は statement-only であり、証明昇格はしない。定理11.1 と
+finite model examples はまだ形式化しない。
 
 ## Reverse-Import Theorem Packages
 
