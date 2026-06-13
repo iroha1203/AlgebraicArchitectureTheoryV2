@@ -920,6 +920,7 @@
     const fileEl = document.getElementById("file");
     const resetEl = document.getElementById("reset");
     const reportToggleEl = document.getElementById("report-toggle");
+    const reportEl = document.getElementById("report");
     const detailEl = document.getElementById("detail");
     const legendEl = document.getElementById("legend");
     const axisHudEl = document.getElementById("axis-hud");
@@ -1027,6 +1028,7 @@
     function animate() {
       requestAnimationFrame(animate);
       controls.update();
+      updateRepairMorphAnimation();
       renderer.render(scene, camera);
     }
 
@@ -1095,10 +1097,21 @@
       activeLayoutContext = buildLayoutContext(renderedAtoms, renderedGroups, currentData);
       renderedAtoms.forEach((node, index) => positions.set(node.nodeId, nodePosition(node, index, renderedAtoms.length, activeLayoutContext)));
       renderAtomInstances(renderedAtoms, positions);
+      renderAtomGlyphOverlays(renderedAtoms, positions, activeLayoutContext);
       renderMoleculeGroups(renderedGroups, positions, activeLayoutContext);
       renderViewerDistanceBonds(positions, activeLayoutContext);
       renderedEdgeCount = renderEdges(edges, positions);
-      renderSceneLayers(sceneForMode(viewModeEl.value), positions);
+      const activeScene = sceneForMode(viewModeEl.value);
+      const edgeChildrenBeforeSceneLayers = edgeGroup.children.length;
+      renderSceneLayers(activeScene, positions);
+      window.__archsigViewerDebug = {
+        ...(window.__archsigViewerDebug || {}),
+        activeSceneId: activeScene?.sceneId || null,
+        activeSceneStatus: activeScene?.sceneStatus || null,
+        activeSceneLayerCount: Array.isArray(activeScene?.layers) ? activeScene.layers.length : 0,
+        hasGluingGeometry: Boolean(activeLayoutContext?.aat?.gluingGeometry?.schema),
+        sceneLayerObjectDelta: edgeGroup.children.length - edgeChildrenBeforeSceneLayers
+      };
       renderLegend();
       renderAxisHud();
       updateVisibility();
@@ -1122,6 +1135,35 @@
       atomInstanceMesh.instanceMatrix.needsUpdate = true;
       if (atomInstanceMesh.instanceColor) atomInstanceMesh.instanceColor.needsUpdate = true;
       atomGroup.add(atomInstanceMesh);
+    }
+
+    function renderAtomGlyphOverlays(nodes, positions, layoutContext) {
+      const glyphs = layoutContext?.aat?.atomGlyphByRef || new Map();
+      if (!glyphs.size) return;
+      nodes.slice(0, 2000).forEach((node) => {
+        const glyph = glyphs.get(node.nodeId);
+        if (!glyph) return;
+        const p = positions.get(node.nodeId);
+        if (!p) return;
+        const valence = Math.min(Number(glyph.valence || 0), 12);
+        const blockedAnchor = String(glyph.semanticAnchor || "").includes("blocked");
+        const geometry = blockedAnchor
+          ? new THREE.OctahedronGeometry(2.6 + valence * 0.16, 0)
+          : new THREE.TorusGeometry(2.2 + valence * 0.14, 0.16, 6, 18);
+        const material = new THREE.MeshStandardMaterial({
+          color: blockedAnchor ? 0xff6b6b : 0x8bd46e,
+          transparent: true,
+          opacity: blockedAnchor ? 0.86 : 0.58,
+          roughness: 0.48,
+          metalness: 0.03,
+          wireframe: blockedAnchor
+        });
+        const mesh = new THREE.Mesh(geometry, material);
+        mesh.position.copy(p);
+        mesh.rotation.x = Math.PI / 2;
+        mesh.userData = { kind: "atomInternalGlyph", item: glyph, node };
+        atomGroup.add(mesh);
+      });
     }
 
     function renderMoleculeGroups(groups, positions, layoutContext) {
@@ -1235,6 +1277,7 @@
       if (!scene || !Array.isArray(scene.layers) || scene.sceneStatus === "not_active_for_packet") return;
       const encodings = Array.isArray(scene.visualEncodings) ? scene.visualEncodings : [];
       const encodingById = new Map(encodings.map((encoding) => [encoding.encodingId, encoding]));
+      renderGluingGeometry(scene, positions, encodings[0] || {});
       const refs = scene.primaryRefs || {};
       const atomRefs = Array.isArray(refs.atomRefs) ? refs.atomRefs : [];
       const contextRefs = Array.isArray(refs.contextRefs) ? refs.contextRefs : [];
@@ -1296,6 +1339,276 @@
       return mesh;
     }
 
+    function renderGluingGeometry(scene, positions, encoding) {
+      const geometry = activeLayoutContext?.aat?.gluingGeometry || {};
+      if (!geometry || !scene?.sceneId) return;
+      const before = edgeGroup.children.length;
+      if (scene.sceneId === "site-cover" || scene.sceneId === "cech-gluing") {
+        renderNerveGeometry(scene, geometry.nerve || {}, positions, encoding);
+      }
+      if (scene.sceneId === "cech-h1-mismatch") {
+        renderCocycleRibbon(scene, geometry.cocycleRibbon || {}, positions, encoding);
+      }
+      if (scene.sceneId === "hodge-debt-field") {
+        renderLocusField(scene, geometry.locusField || {}, positions, geometry.renderLimits || {});
+      }
+      if (scene.sceneId === "obstruction") {
+        renderForbiddenCages(scene, geometry.forbiddenCages || [], positions, encoding, geometry.renderLimits || {});
+      }
+      if (scene.sceneId === "repair-dual") {
+        renderRepairMorphs(scene, geometry.repairMorphs || [], positions, encoding, geometry.renderLimits || {});
+      }
+      const created = edgeGroup.children.slice(before);
+      window.__archsigViewerDebug = {
+        lastGluingSceneId: scene.sceneId,
+        lastGluingObjectCount: created.length,
+        lastGluingObjectKinds: created.reduce((counts, child) => {
+          const kind = child.userData?.kind || "unknown";
+          counts[kind] = (counts[kind] || 0) + 1;
+          return counts;
+        }, {}),
+        projectionBoundary: geometry.projectionBoundary || ""
+      };
+    }
+
+    function sceneAxisPosition(scene, ref, index, total, fallback, metrics = {}) {
+      const axes = scene?.axisMapping || {};
+      const totalSafe = Math.max(total || 1, 1);
+      const rank = (index % totalSafe) / totalSafe;
+      const xValue = Number.isFinite(Number(metrics.xValue)) ? Number(metrics.xValue) : rank;
+      const yValue = Number.isFinite(Number(metrics.yValue)) ? Number(metrics.yValue) : 0;
+      const zValue = Number.isFinite(Number(metrics.zValue)) ? Number(metrics.zValue) : 0;
+      const xScale = 46 + (hashText(axes.x || "x") % 17);
+      const yScale = 9 + (hashText(axes.y || "y") % 7);
+      const zScale = 32 + (hashText(axes.z || "z") % 19);
+      const phase = xValue * Math.PI * 2 + index * 0.11;
+      const radius = zScale + Math.sqrt(index + 1) * 1.8 + Math.min(Math.abs(zValue), 12) * 5;
+      const y = -26 + yValue * yScale + rank * 18;
+      const axisPoint = new THREE.Vector3(Math.cos(phase) * (radius + xValue * xScale), y, Math.sin(phase) * radius);
+      if (!fallback) return axisPoint;
+      return axisPoint.lerp(fallback.clone(), 0.35);
+    }
+
+    function renderNerveGeometry(scene, nerve, positions, encoding) {
+      const vertices = Array.isArray(nerve.vertices) ? nerve.vertices : [];
+      const edges = Array.isArray(nerve.edges) ? nerve.edges : [];
+      const triangles = Array.isArray(nerve.triangles) ? nerve.triangles : [];
+      vertices.forEach((vertex, index) => {
+        const center = sceneAxisPosition(scene, vertex.contextRef, index, Math.max(vertices.length, 1), positions.get(vertex.contextRef), {
+          xValue: index / Math.max(vertices.length - 1, 1),
+          yValue: Math.min((vertex.atomRefs || []).length, 12),
+          zValue: Math.min((vertex.atomRefs || []).length, 12)
+        });
+        if (!center) return;
+        const patch = new THREE.Mesh(
+          new THREE.CircleGeometry(5.4 + Math.min((vertex.atomRefs || []).length, 8) * 0.4, 24),
+          new THREE.MeshStandardMaterial({
+            color: 0x64d6be,
+            transparent: true,
+            opacity: 0.24,
+            roughness: 0.52,
+            side: THREE.DoubleSide
+          })
+        );
+        patch.position.copy(center);
+        patch.position.y += 4 + index * 0.2;
+        patch.rotation.x = -Math.PI / 2;
+        patch.userData = { kind: "nerveVertexPatch", item: vertex };
+        edgeGroup.add(patch);
+      });
+      renderNerveEdges(scene, edges, positions, encoding);
+      const triangleLimit = activeLayoutContext?.aat?.gluingGeometry?.renderLimits?.nerveTriangles || 80;
+      triangles.slice(0, triangleLimit).forEach((triangle, index) => {
+        const points = (triangle.contextRefs || []).map((ref, refIndex) =>
+          sceneAxisPosition(scene, ref, index * 3 + refIndex, Math.max(triangles.length * 3, 1), positions.get(ref), {
+            xValue: refIndex / 3,
+            yValue: Math.min((triangle.sharedAtomRefs || []).length, 12),
+            zValue: Math.min((triangle.edgeRefs || []).length, 3)
+          })
+        ).filter(Boolean);
+        if (points.length !== 3) return;
+        const geometry = new THREE.BufferGeometry();
+        geometry.setAttribute("position", new THREE.Float32BufferAttribute(points.flatMap((p) => [p.x, p.y + 2, p.z]), 3));
+        geometry.computeVertexNormals();
+        const mesh = new THREE.Mesh(geometry, new THREE.MeshStandardMaterial({
+          color: 0x73b7ff,
+          transparent: true,
+          opacity: 0.18,
+          side: THREE.DoubleSide,
+          roughness: 0.6
+        }));
+        mesh.userData = { kind: "nerveTriangle", item: triangle, nonClaim: "H2 coherence is not visualized" };
+        edgeGroup.add(mesh);
+      });
+    }
+
+    function renderNerveEdges(scene, edges, positions, encoding) {
+      const solid = [];
+      const mismatch = [];
+      edges.forEach((edge, index) => {
+        const metrics = { xValue: index / Math.max(edges.length - 1, 1), yValue: Number(edge.value || 0), zValue: Math.min((edge.supportAtomRefs || []).length, 12) };
+        const source = sceneAxisPosition(scene, edge.sourceContextRef, index * 2, Math.max(edges.length * 2, 1), positions.get(edge.sourceContextRef), metrics);
+        const target = sceneAxisPosition(scene, edge.targetContextRef, index * 2 + 1, Math.max(edges.length * 2, 1), positions.get(edge.targetContextRef), metrics);
+        if (!source || !target) return;
+        const bucket = Number(edge.value || 0) > 0 ? mismatch : solid;
+        bucket.push(source.x, source.y + 3, source.z, target.x, target.y + 3, target.z);
+      });
+      addLineSegments(solid, sceneColorHex("checked"), 0.52, "nerveEdge");
+      addLineSegments(mismatch, sceneColorHex(encoding.colorRole || "measured_nonzero"), 0.9, "nerveMismatchEdge");
+    }
+
+    function renderCocycleRibbon(scene, ribbon, positions, encoding) {
+      const supportEdges = Array.isArray(ribbon.supportEdges) ? ribbon.supportEdges : [];
+      const points = [];
+      supportEdges.forEach((edge, index) => {
+        const metrics = { xValue: index / Math.max(supportEdges.length - 1, 1), yValue: Number(edge.value || 0), zValue: Math.min((edge.supportAtomRefs || []).length, 12) };
+        const source = sceneAxisPosition(scene, edge.sourceContextRef, index * 2, Math.max(supportEdges.length * 2, 1), positions.get(edge.sourceContextRef), metrics);
+        const target = sceneAxisPosition(scene, edge.targetContextRef, index * 2 + 1, Math.max(supportEdges.length * 2, 1), positions.get(edge.targetContextRef), metrics);
+        if (!source || !target) return;
+        if (!points.length) points.push(source.clone().add(new THREE.Vector3(0, 8, 0)));
+        points.push(target.clone().add(new THREE.Vector3(0, 8 + Number(edge.value || 0) * 7, 0)));
+      });
+      if (points.length < 2) return;
+      const curve = new THREE.CatmullRomCurve3(points, false, "catmullrom", 0.45);
+      const tube = new THREE.Mesh(
+        new THREE.TubeGeometry(curve, 80, 0.92, 8, false),
+        new THREE.MeshStandardMaterial({
+          color: sceneColorHex(encoding.colorRole || "measured_nonzero"),
+          transparent: true,
+          opacity: 0.72,
+          roughness: 0.38,
+          metalness: 0.05
+        })
+      );
+      tube.userData = { kind: "cocycleRibbon", item: ribbon };
+      edgeGroup.add(tube);
+      if (ribbon.closureGapEncoding?.visible) {
+        const gap = new THREE.Mesh(
+          new THREE.TorusKnotGeometry(3.2, 0.34, 48, 8),
+          new THREE.MeshStandardMaterial({ color: 0xff6b6b, emissive: 0x3a0808, roughness: 0.4 })
+        );
+        gap.position.copy(points[points.length - 1]);
+        gap.userData = { kind: "holonomyLikeGapMarker", item: ribbon.closureGapEncoding };
+        edgeGroup.add(gap);
+      }
+    }
+
+    function renderLocusField(scene, field, positions, limits) {
+      const rows = Array.isArray(field.fieldRows) ? field.fieldRows : [];
+      const zeroRegions = Array.isArray(field.measuredZeroRegions) ? field.measuredZeroRegions : [];
+      const blockedRegions = Array.isArray(field.blockedRegions) ? field.blockedRegions : [];
+      rows.slice(0, limits.curvatureFieldRows || 64).forEach((row, index) => {
+        const center = sceneAxisPosition(scene, row.fieldId || `field:${index}`, index, Math.max(rows.length, 1), groupPosition(index, Math.max(rows.length, 1), 48), {
+          xValue: index / Math.max(rows.length - 1, 1),
+          yValue: Number(row.height || 0),
+          zValue: Number(row.height || 0)
+        });
+        const height = 3 + Math.min(Number(row.height || 0), 12) * 7;
+        const mesh = new THREE.Mesh(
+          new THREE.CylinderGeometry(3.6, 6.2, height, 18),
+          new THREE.MeshStandardMaterial({
+            color: sceneColorHex(row.colorRole || "analytic_reading"),
+            transparent: true,
+            opacity: 0.46,
+            roughness: 0.5
+          })
+        );
+        mesh.position.set(center.x, height / 2 - 20, center.z);
+        mesh.userData = { kind: "curvatureHeightField", item: row };
+        edgeGroup.add(mesh);
+      });
+      zeroRegions.slice(0, limits.curvatureRegions || 24).forEach((region, index) => {
+        const center = sceneAxisPosition(scene, region.regionId || `zero:${index}`, index, Math.max(zeroRegions.length, 1), groupPosition(index, Math.max(zeroRegions.length, 1), 34), { xValue: index / Math.max(zeroRegions.length - 1, 1), yValue: 0, zValue: 0 });
+        const mesh = new THREE.Mesh(
+          new THREE.CircleGeometry(7.5, 32),
+          new THREE.MeshStandardMaterial({ color: 0x64d6be, transparent: true, opacity: 0.2, side: THREE.DoubleSide })
+        );
+        mesh.position.set(center.x, -24, center.z);
+        mesh.rotation.x = -Math.PI / 2;
+        mesh.userData = { kind: "measuredZeroLocusPatch", item: region };
+        edgeGroup.add(mesh);
+      });
+      blockedRegions.slice(0, limits.curvatureRegions || 24).forEach((region, index) => {
+        const center = sceneAxisPosition(scene, region.regionId || `blocked:${index}`, index, Math.max(blockedRegions.length, 1), groupPosition(index, Math.max(blockedRegions.length, 1), 60), { xValue: index / Math.max(blockedRegions.length - 1, 1), yValue: 2, zValue: 2 });
+        const mesh = new THREE.Mesh(
+          new THREE.BoxGeometry(8, 18, 1.2),
+          new THREE.MeshStandardMaterial({ color: 0xff6b6b, transparent: true, opacity: 0.34, wireframe: true })
+        );
+        mesh.position.set(center.x, 2, center.z);
+        mesh.rotation.y = index * 0.45;
+        mesh.userData = { kind: "blockedUnmeasuredRegion", item: region };
+        edgeGroup.add(mesh);
+      });
+    }
+
+    function renderForbiddenCages(scene, cages, positions, encoding, limits) {
+      cages.slice(0, limits.forbiddenCages || 80).forEach((cage, index) => {
+        const points = (cage.atomRefs || []).map((ref) => positions.get(ref)).filter(Boolean);
+        const center = sceneAxisPosition(scene, cage.cageId || `cage:${index}`, index, Math.max(cages.length, 1), points.length ? centroid(points) : groupPosition(index, Math.max(cages.length, 1), 52), {
+          xValue: index / Math.max(cages.length - 1, 1),
+          yValue: Math.min((cage.supportVariables || cage.atomRefs || []).length, 12),
+          zValue: Math.min((cage.atomRefs || []).length, 12)
+        });
+        const size = 7 + Math.min(points.length, 8) * 1.2;
+        const mesh = new THREE.Mesh(
+          new THREE.IcosahedronGeometry(size, 1),
+          new THREE.MeshStandardMaterial({
+            color: sceneColorHex(encoding.colorRole || "measured_nonzero"),
+            transparent: true,
+            opacity: 0.36,
+            wireframe: true,
+            roughness: 0.45
+          })
+        );
+        mesh.position.copy(center);
+        mesh.position.y += 12;
+        mesh.userData = { kind: "forbiddenSupportCage", item: cage };
+        edgeGroup.add(mesh);
+        addLineSegments(points.flatMap((p) => [center.x, center.y + 12, center.z, p.x, p.y, p.z]), 0xff9468, 0.68, "forbiddenSimplexEdge");
+      });
+    }
+
+    function renderRepairMorphs(scene, morphs, positions, encoding, limits) {
+      morphs.slice(0, limits.repairMorphs || 50).forEach((morph, index) => {
+        const fallback = groupPosition(index, Math.max(morphs.length, 1), 62);
+        const target = sceneAxisPosition(scene, morph.toAtomRef || morph.toCandidateRef || morph.morphId, index, Math.max(morphs.length, 1), positions.get(morph.toAtomRef) || fallback, {
+          xValue: index / Math.max(morphs.length - 1, 1),
+          yValue: Math.min((morph.supportVariables || morph.supportAtomRefs || []).length, 12),
+          zValue: Math.min((morph.lowerBoundReadingRefs || []).length + 1, 12)
+        });
+        const start = target.clone().add(new THREE.Vector3(-22 - index * 0.8, 18, -12));
+        addLineSegments([start.x, start.y, start.z, target.x, target.y + 5, target.z], sceneColorHex("repair_candidate"), 0.74, "repairMorphPath");
+        const marker = new THREE.Mesh(
+          new THREE.SphereGeometry(2.8, 16, 10),
+          new THREE.MeshStandardMaterial({ color: 0xb087ff, emissive: 0x160a28, roughness: 0.36 })
+        );
+        marker.userData = { kind: "repairMorphMarker", item: morph, nonClaim: "not automatic repair", start, target: target.clone().add(new THREE.Vector3(0, 5, 0)), phase: index * 0.17 };
+        edgeGroup.add(marker);
+      });
+    }
+
+    function addLineSegments(vertices, color, opacity, kind) {
+      if (!vertices.length) return;
+      const geometry = new THREE.BufferGeometry();
+      geometry.setAttribute("position", new THREE.Float32BufferAttribute(vertices, 3));
+      const material = new THREE.LineBasicMaterial({ color, transparent: true, opacity });
+      const lines = new THREE.LineSegments(geometry, material);
+      lines.userData = { kind };
+      edgeGroup.add(lines);
+    }
+
+    function updateRepairMorphAnimation() {
+      const t = (performance.now() % 2400) / 2400;
+      const eased = 0.5 - Math.cos(t * Math.PI * 2) * 0.5;
+      edgeGroup.children.forEach((child) => {
+        if (child.userData?.kind !== "repairMorphMarker") return;
+        const { start, target, phase } = child.userData;
+        if (!start || !target) return;
+        const local = (eased + Number(phase || 0)) % 1;
+        child.position.copy(start).lerp(target, local);
+      });
+    }
+
     function sceneColorHex(role) {
       const colors = {
         measured_nonzero: 0xf2c15f,
@@ -1342,6 +1655,7 @@
     function buildAatContext(atomIndex, data) {
       const overlays = data.analysisOverlays || {};
       const geometry = data.aatGeometryOverlays || {};
+      const gluingGeometry = geometry.gluingGeometry || geometry;
       const axes = Array.isArray(overlays.signatureAxes) ? overlays.signatureAxes : [];
       const obstructions = Array.isArray(overlays.obstructionCircuits) ? overlays.obstructionCircuits : [];
       const findings = overlays.dominantFindings || {};
@@ -1456,6 +1770,8 @@
         atomToSpectrum,
         atomToViewerDistances,
         viewerDistances,
+        gluingGeometry,
+        atomGlyphByRef: new Map((Array.isArray(gluingGeometry.atomGlyphs) ? gluingGeometry.atomGlyphs : []).map((glyph) => [String(glyph.atomRef || ""), glyph])),
         axisByRef,
         axisCenters,
         obstructionCenters,
@@ -2089,10 +2405,36 @@
     }
 
     function renderLegend() {
+      const scene = sceneForMode(viewModeEl.value);
+      const sceneLegend = Array.isArray(scene?.visualEncodingLegend) ? scene.visualEncodingLegend : [];
+      if (sceneLegend.length) {
+        legendEl.innerHTML = sceneLegend.slice(0, 8).map((item) =>
+          `<span class="legend-item"><span class="swatch" style="background:#${legendSwatchColor(item.channel)}"></span>${escapeHtml(item.channel || "encoding")}: ${escapeHtml(item.meaning || "")} ${legendValueText(item.values)}</span>`
+        ).join("");
+        return;
+      }
       const items = Object.entries(colorByFamily);
       legendEl.innerHTML = items.slice(0, 12).map(([label, color]) =>
         `<span class="legend-item"><span class="swatch" style="background:#${Number(color).toString(16).padStart(6, "0")}"></span>${escapeHtml(label)}</span>`
       ).join("");
+    }
+
+    function legendSwatchColor(channel) {
+      const colors = {
+        color: "f2c15f",
+        shape: "73b7ff",
+        line: "d8dee9",
+        opacity: "8bd46e",
+        thickness: "b087ff"
+      };
+      return colors[channel] || "9fb3c8";
+    }
+
+    function legendValueText(values) {
+      if (!values || typeof values !== "object") return "";
+      return Object.entries(values).slice(0, 5).map(([key, value]) =>
+        `${key}=${value}`
+      ).join("; ");
     }
 
     function renderAxisHud() {
