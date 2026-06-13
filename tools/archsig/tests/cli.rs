@@ -3202,6 +3202,162 @@ fn cli_analyze_v2_sheaf_laplacian_rejects_unknown_cell() {
 }
 
 #[test]
+fn cli_locks_archsig_viewer_gluing_geometry_golden_ux_fixture() {
+    let root = ag_measurement_root();
+    let manifest = read_json(&root.join("archsig_viewer_gluing_geometry_golden_ux.json"));
+    assert_eq!(
+        manifest["schema"],
+        "archsig-viewer-gluing-geometry-golden-ux/v1"
+    );
+
+    let viewer_path = Path::new(env!("CARGO_MANIFEST_DIR")).join("viewer/archsig-atom-viewer.html");
+    let viewer_html = fs::read_to_string(&viewer_path).expect("viewer html can be read");
+    for required in manifest["requiredViewerFunctions"]
+        .as_array()
+        .expect("requiredViewerFunctions is array")
+    {
+        let required = required
+            .as_str()
+            .expect("required viewer function is string");
+        assert!(
+            viewer_html.contains(required),
+            "gluing geometry golden UX fixture requires viewer function {required}"
+        );
+    }
+
+    for case in manifest["cases"].as_array().expect("cases is array") {
+        let case_id = case["caseId"].as_str().expect("caseId is string");
+        let out_dir = temp_dir(&format!("ag-gluing-golden-ux-{case_id}"));
+        run_sig0(&[
+            "analyze",
+            "--archmap",
+            root.join(case["archmap"].as_str().expect("archmap is string"))
+                .to_str()
+                .expect("path is utf-8"),
+            "--law-policy",
+            root.join(case["lawPolicy"].as_str().expect("lawPolicy is string"))
+                .to_str()
+                .expect("path is utf-8"),
+            "--out-dir",
+            out_dir.to_str().expect("path is utf-8"),
+        ]);
+
+        let report = read_json(&out_dir.join("archsig-insight-report.json"));
+        let viewer = read_json(&out_dir.join("archsig-atom-viewer-data.json"));
+        let gluing = &report["gluingGeometry"];
+        assert_eq!(gluing["schema"], "archsig-viewer-gluing-geometry/v1");
+        assert_eq!(
+            viewer["aatGeometryOverlays"]["gluingGeometry"], report["gluingGeometry"],
+            "{case_id} viewer data must expose the same golden gluing geometry projection"
+        );
+
+        let expected = &case["expected"];
+        if let Some(min_vertices) = expected["minNerveVertices"].as_u64() {
+            assert!(
+                gluing["nerve"]["vertices"]
+                    .as_array()
+                    .is_some_and(|items| items.len() >= min_vertices as usize),
+                "{case_id} must render expected cover nerve vertices"
+            );
+        }
+        if let Some(min_edges) = expected["minNerveEdges"].as_u64() {
+            assert!(
+                gluing["nerve"]["edges"]
+                    .as_array()
+                    .is_some_and(|items| items.len() >= min_edges as usize),
+                "{case_id} must render expected cover nerve edges"
+            );
+        }
+        if let Some(min_triangles) = expected["minNerveTriangles"].as_u64() {
+            assert!(
+                gluing["nerve"]["triangles"]
+                    .as_array()
+                    .is_some_and(|items| items.len() >= min_triangles as usize),
+                "{case_id} must render packet-derived cover nerve triangles"
+            );
+            assert!(
+                gluing["nerve"]["triangleSource"]
+                    .as_str()
+                    .is_some_and(|text| text.contains("not inferred by the viewer")),
+                "{case_id} must keep triangle provenance out of viewer inference"
+            );
+        }
+        if let Some(expected_h2) = expected["h2CoherenceVisualized"].as_bool() {
+            assert_eq!(
+                gluing["nerve"]["h2CoherenceVisualized"].as_bool(),
+                Some(expected_h2),
+                "{case_id} must preserve H2 silence boundary"
+            );
+        }
+        if let Some(min_support_edges) = expected["minCocycleSupportEdges"].as_u64() {
+            assert!(
+                gluing["cocycleRibbon"]["supportEdges"]
+                    .as_array()
+                    .is_some_and(|items| items.len() >= min_support_edges as usize),
+                "{case_id} must render cocycle support ribbon edges"
+            );
+        }
+        if let Some(closure_gap_visible) = expected["closureGapVisible"].as_bool() {
+            assert_eq!(
+                gluing["cocycleRibbon"]["closureGapEncoding"]["visible"].as_bool(),
+                Some(closure_gap_visible),
+                "{case_id} must preserve fixed closure-gap visual encoding"
+            );
+        }
+        if let Some(min_cages) = expected["minForbiddenCages"].as_u64() {
+            assert!(
+                gluing["forbiddenCages"]
+                    .as_array()
+                    .is_some_and(|items| items.len() >= min_cages as usize),
+                "{case_id} must render forbidden support cages"
+            );
+        }
+        if let Some(min_morphs) = expected["minRepairMorphs"].as_u64() {
+            assert!(
+                gluing["repairMorphs"]
+                    .as_array()
+                    .is_some_and(|items| items.len() >= min_morphs as usize),
+                "{case_id} must render repair morph lower-bound paths"
+            );
+        }
+
+        let report_text = serde_json::to_string(&report).expect("report serializes");
+        for required in expected["requiredNonClaims"]
+            .as_array()
+            .into_iter()
+            .flatten()
+        {
+            let required = required.as_str().expect("required non-claim is string");
+            assert!(
+                report_text.contains(required),
+                "{case_id} must keep non-claim boundary text {required}"
+            );
+        }
+
+        for scene_id in expected["requiredScenes"].as_array().into_iter().flatten() {
+            let scene_id = scene_id.as_str().expect("required scene id is string");
+            let scene = viewer["viewerVisualScenes"]
+                .as_array()
+                .expect("viewerVisualScenes is array")
+                .iter()
+                .find(|scene| scene["sceneId"] == scene_id)
+                .unwrap_or_else(|| panic!("{case_id} missing scene {scene_id}"));
+            assert_eq!(
+                scene["axisMappingImplemented"].as_bool(),
+                Some(true),
+                "{case_id} scene {scene_id} must use axisMapping as geometry-driving"
+            );
+            assert!(
+                scene["visualEncodingLegend"]
+                    .as_array()
+                    .is_some_and(|items| items.len() >= 5),
+                "{case_id} scene {scene_id} must expose complete visual encoding legend"
+            );
+        }
+    }
+}
+
+#[test]
 fn cli_locks_ag_measurement_cech_h1_visible_golden_fixture() {
     let crate_root = Path::new(env!("CARGO_MANIFEST_DIR"));
     let repo_root = crate_root

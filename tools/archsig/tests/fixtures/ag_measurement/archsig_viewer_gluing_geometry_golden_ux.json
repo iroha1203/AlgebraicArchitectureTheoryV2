@@ -1,0 +1,52 @@
+{
+  "schema": "archsig-viewer-gluing-geometry-golden-ux/v1",
+  "prdRef": "docs/tool/archsig_viewer_gluing_geometry_prd.md",
+  "description": "Golden UX regression manifest for ArchSig viewer gluing geometry projections.",
+  "cases": [
+    {
+      "caseId": "cover-nerve-triple-overlap",
+      "archmap": "archmap_v2.json",
+      "lawPolicy": "law_policy_ag.json",
+      "expected": {
+        "minNerveVertices": 3,
+        "minNerveEdges": 2,
+        "minNerveTriangles": 1,
+        "h2CoherenceVisualized": false,
+        "requiredScenes": ["site-cover", "cech-gluing"]
+      }
+    },
+    {
+      "caseId": "cech-h1-cocycle-ribbon",
+      "archmap": "archmap_v2_cech_h1_visible.json",
+      "lawPolicy": "law_policy_ag.json",
+      "expected": {
+        "minCocycleSupportEdges": 1,
+        "closureGapVisible": true,
+        "requiredNonClaims": ["monodromy verdict is not generated"],
+        "requiredScenes": ["cech-h1-mismatch"]
+      }
+    },
+    {
+      "caseId": "square-free-forbidden-cage-repair-morph",
+      "archmap": "archmap_v2_square_free_repair.json",
+      "lawPolicy": "law_policy_square_free.json",
+      "expected": {
+        "minForbiddenCages": 1,
+        "minRepairMorphs": 1,
+        "requiredNonClaims": ["not automatic repair"],
+        "requiredScenes": ["obstruction", "repair-dual"]
+      }
+    }
+  ],
+  "requiredViewerFunctions": [
+    "renderGluingGeometry",
+    "renderNerveGeometry",
+    "renderCocycleRibbon",
+    "renderLocusField",
+    "renderForbiddenCages",
+    "renderRepairMorphs",
+    "renderAtomGlyphOverlays",
+    "sceneAxisPosition",
+    "legendValueText"
+  ]
+}
