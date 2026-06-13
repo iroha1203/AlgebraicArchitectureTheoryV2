@@ -258,6 +258,73 @@ noncomputable def mathlibResolutionTorIsoTensorHomology (T : TaylorMathlibResolu
 end TaylorMathlibResolution
 
 /--
+V.R4(b) / AC6: direct theorem package joining the selected Taylor finite-free
+resolution data with the Mathlib finite-free resolution data.
+
+The quotient-resolution statement for the Taylor surface is read from exactness
+of the selected finite-free resolution, not from the `TaylorComplex` field
+projection.
+-/
+structure DirectTaylorResolutionPackage {I : Ideal A}
+    (P : SquareFreeMonomialIdealPresentation A E I) where
+  selectedResolution : TaylorSelectedFreeResolutionData.{u, v} A E P
+  mathlibResolution : TaylorMathlibResolution A E P
+  sameTaylorComplex : mathlibResolution.taylor = selectedResolution.taylor
+
+namespace DirectTaylorResolutionPackage
+
+variable {A E}
+variable {I : Ideal A} {P : SquareFreeMonomialIdealPresentation A E I}
+
+/--
+V.R4(b) / AC6: the selected Taylor complex resolves the quotient by exactness of
+the selected finite-free resolution.
+-/
+theorem selectedTaylor_resolvesQuotient_from_exact
+    (D : DirectTaylorResolutionPackage A E P) :
+    D.selectedResolution.taylor.resolvesQuotient :=
+  D.selectedResolution.resolvesQuotient_from_selectedResolution
+
+/--
+V.R4(b) / AC6: the Mathlib-facing Taylor complex resolves the quotient by the
+same selected exactness proof, transported across the Taylor-complex
+identification.
+-/
+theorem mathlibTaylor_resolvesQuotient_from_selectedExact
+    (D : DirectTaylorResolutionPackage A E P) :
+    D.mathlibResolution.taylor.resolvesQuotient := by
+  rw [D.sameTaylorComplex]
+  exact D.selectedTaylor_resolvesQuotient_from_exact
+
+/--
+V.R4(b) / AC6: direct Taylor resolution theorem surface.
+
+The first component is produced from selected finite-free exactness rather than
+from `TaylorComplex.resolvesQuotient_holds`.
+-/
+theorem taylorResolution_theorem
+    (D : DirectTaylorResolutionPackage A E P) :
+    D.mathlibResolution.taylor.resolvesQuotient ∧
+      D.mathlibResolution.identifiesTaylorTerms ∧
+      D.mathlibResolution.identifiesTaylorDifferentials :=
+  ⟨D.mathlibTaylor_resolvesQuotient_from_selectedExact,
+    D.mathlibResolution.identifiesTaylorTerms_certificate,
+    D.mathlibResolution.identifiesTaylorDifferentials_certificate⟩
+
+/--
+V.R4(b) / AC6: the selected Taylor differential squares to zero on the direct
+theorem package.
+-/
+theorem differential_square_zero
+    (D : DirectTaylorResolutionPackage A E P)
+    (n : Nat) (x : D.mathlibResolution.taylor.Term n.succ.succ) :
+    D.mathlibResolution.taylor.d n
+      (D.mathlibResolution.taylor.d n.succ x) = 0 :=
+  D.mathlibResolution.taylor.d_comp_d_certificate n x
+
+end DirectTaylorResolutionPackage
+
+/--
 V.命題5.5: monomial conflict calculation package.
 
 The package bundles the monomial regime, selected Taylor complexes, and a finite
@@ -286,6 +353,19 @@ structure Proposition55TheoremPackage (I_U I_V : Ideal A) where
   rightTaylorResolution : TaylorMathlibResolution A E regime.right
   computesLawConflict : Prop
   computesLawConflict_holds : computesLawConflict
+
+/--
+V.命題5.5 / AC7: direct theorem package for monomial conflict calculation.
+
+Unlike `Proposition55TheoremPackage`, this surface does not store a separate
+`computesLawConflict` Prop. The Tor computation is the explicit Mathlib
+finite-free resolution isomorphism attached to the right Taylor package, and the
+lcm multidegree reading is the theorem on the monomial regime.
+-/
+structure Proposition55DirectTheoremPackage (I_U I_V : Ideal A) where
+  regime : MonomialLawConflictRegime A E I_U I_V
+  leftTaylorResolution : DirectTaylorResolutionPackage A E regime.left
+  rightTaylorResolution : DirectTaylorResolutionPackage A E regime.right
 
 namespace MonomialConflictCalculation
 
@@ -316,6 +396,119 @@ theorem lcm_multidegree_eq_union
   C.regime.lcmSupport_eq_union gU gV
 
 end MonomialConflictCalculation
+
+namespace Proposition55DirectTheoremPackage
+
+variable {A E}
+variable {I_U I_V : Ideal A}
+
+/--
+V.命題5.5 / AC7: both selected Taylor packages carry direct resolution
+theorem surfaces.
+-/
+theorem taylorResolution_theorems
+    (C : Proposition55DirectTheoremPackage A E I_U I_V) :
+    (C.leftTaylorResolution.mathlibResolution.taylor.resolvesQuotient ∧
+      C.leftTaylorResolution.mathlibResolution.identifiesTaylorTerms ∧
+      C.leftTaylorResolution.mathlibResolution.identifiesTaylorDifferentials) ∧
+    (C.rightTaylorResolution.mathlibResolution.taylor.resolvesQuotient ∧
+      C.rightTaylorResolution.mathlibResolution.identifiesTaylorTerms ∧
+      C.rightTaylorResolution.mathlibResolution.identifiesTaylorDifferentials) :=
+  ⟨C.leftTaylorResolution.taylorResolution_theorem,
+    C.rightTaylorResolution.taylorResolution_theorem⟩
+
+/--
+V.命題5.5 / AC7: both selected Taylor differentials square to zero on the direct
+theorem package.
+-/
+theorem taylor_differentials_square_zero
+    (C : Proposition55DirectTheoremPackage A E I_U I_V) :
+    (∀ (n : Nat)
+      (x : C.leftTaylorResolution.mathlibResolution.taylor.Term n.succ.succ),
+      C.leftTaylorResolution.mathlibResolution.taylor.d n
+        (C.leftTaylorResolution.mathlibResolution.taylor.d n.succ x) = 0) ∧
+    (∀ (n : Nat)
+      (x : C.rightTaylorResolution.mathlibResolution.taylor.Term n.succ.succ),
+      C.rightTaylorResolution.mathlibResolution.taylor.d n
+        (C.rightTaylorResolution.mathlibResolution.taylor.d n.succ x) = 0) :=
+  ⟨C.leftTaylorResolution.differential_square_zero,
+    C.rightTaylorResolution.differential_square_zero⟩
+
+/--
+V.命題5.5 / AC7: Mathlib `Tor_i(A/I_U,A/I_V)` is computed by the
+Mathlib finite-free tensor complex attached to the selected right Taylor
+package, without a separate selected calculation Prop.
+-/
+noncomputable def lawConflictIsoRightMathlibResolutionTensorHomology
+    (C : Proposition55DirectTheoremPackage A E I_U I_V) (i : Nat) :
+    Intersection.mathlibTor A I_U I_V i ≅
+      (C.rightTaylorResolution.mathlibResolution.finiteFreeResolution.tensorComplex I_U).homology i :=
+  C.rightTaylorResolution.mathlibResolution.mathlibResolutionTorIsoTensorHomology I_U i
+
+/-- V.命題5.5 / AC7: inverse orientation of the direct right-resolution Tor computation. -/
+noncomputable def rightMathlibResolutionTensorHomologyIsoLawConflict
+    (C : Proposition55DirectTheoremPackage A E I_U I_V) (i : Nat) :
+    (C.rightTaylorResolution.mathlibResolution.finiteFreeResolution.tensorComplex I_U).homology i ≅
+      Intersection.mathlibTor A I_U I_V i :=
+  (C.lawConflictIsoRightMathlibResolutionTensorHomology i).symm
+
+/-- V.命題5.5 / AC7: lcm multidegree is the union of forbidden supports. -/
+theorem lcm_multidegree_eq_union
+    (C : Proposition55DirectTheoremPackage A E I_U I_V)
+    (gU : C.regime.left.Generator) (gV : C.regime.right.Generator) :
+    C.regime.lcmSupport gU gV =
+      C.regime.left.forbiddenSupport gU ∪ C.regime.right.forbiddenSupport gV :=
+  C.regime.lcmSupport_eq_union gU gV
+
+/-- V.命題5.5 / AC7: left support membership is preserved in the lcm support. -/
+theorem left_forbiddenSupport_subset_lcmSupport
+    (C : Proposition55DirectTheoremPackage A E I_U I_V)
+    (gU : C.regime.left.Generator) (gV : C.regime.right.Generator) :
+    C.regime.left.forbiddenSupport gU ⊆ C.regime.lcmSupport gU gV :=
+  C.regime.left_forbiddenSupport_subset_lcmSupport gU gV
+
+/-- V.命題5.5 / AC7: right support membership is preserved in the lcm support. -/
+theorem right_forbiddenSupport_subset_lcmSupport
+    (C : Proposition55DirectTheoremPackage A E I_U I_V)
+    (gU : C.regime.left.Generator) (gV : C.regime.right.Generator) :
+    C.regime.right.forbiddenSupport gV ⊆ C.regime.lcmSupport gU gV :=
+  C.regime.right_forbiddenSupport_subset_lcmSupport gU gV
+
+/-- V.命題5.5 / AC7: lcm support membership is exactly support-union membership. -/
+theorem mem_lcmSupport_iff
+    (C : Proposition55DirectTheoremPackage A E I_U I_V)
+    (gU : C.regime.left.Generator) (gV : C.regime.right.Generator) (e : E) :
+    e ∈ C.regime.lcmSupport gU gV ↔
+      e ∈ C.regime.left.forbiddenSupport gU ∨
+        e ∈ C.regime.right.forbiddenSupport gV :=
+  C.regime.mem_lcmSupport_iff gU gV e
+
+/--
+V.命題5.5 / AC7: package-level data bundling the direct Tor computation with
+the lcm multidegree reading.
+-/
+structure ComputedTorAndLcmSupport
+    (C : Proposition55DirectTheoremPackage A E I_U I_V) (i : Nat)
+    (gU : C.regime.left.Generator) (gV : C.regime.right.Generator) where
+  torIso :
+    Intersection.mathlibTor A I_U I_V i ≅
+      (C.rightTaylorResolution.mathlibResolution.finiteFreeResolution.tensorComplex I_U).homology i
+  lcmSupport_eq_union :
+    C.regime.lcmSupport gU gV =
+      C.regime.left.forbiddenSupport gU ∪ C.regime.right.forbiddenSupport gV
+
+/--
+V.命題5.5 / AC7: construct the direct combined Tor/lcm package from the theorem
+package.
+-/
+noncomputable def torComputationAndLcmSupport
+    (C : Proposition55DirectTheoremPackage A E I_U I_V) (i : Nat)
+    (gU : C.regime.left.Generator) (gV : C.regime.right.Generator) :
+    ComputedTorAndLcmSupport C i gU gV where
+  torIso := C.lawConflictIsoRightMathlibResolutionTensorHomology i
+  lcmSupport_eq_union := C.lcm_multidegree_eq_union gU gV
+
+end Proposition55DirectTheoremPackage
 
 namespace Proposition55TheoremPackage
 
