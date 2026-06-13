@@ -609,6 +609,31 @@ Issue [#1959](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/
 AC15 scan status: `rg -n "\b(axiom|admit|sorry|unsafe)\b" Formal/AG Formal/AG.lean`
 と `rg -n "Formal\.Arch|import Formal\.Arch" Formal/AG Formal/AG.lean` は no matches である。
 
+## AG版AAT PRD-2 / 第II部 Architecture Geometry・Site・Sheaf
+
+PRD-2 は `docs/aat/lean_ag_part_2_sites_sheaves_prd.md` で管理する。
+Issue [#1962](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1962)
+では `Formal/AG/Site` の初期 entrypoint を追加し、PRD-1 の
+`AATCorePackage` に依存する prerequisite package を置いた。
+
+| 対象 | 現在の扱い | 残す境界 |
+| --- | --- | --- |
+| `II.R0` Part I prerequisites / Formal/AG/Site entrypoint | `defined only` / `proved`. `Formal/AG/Site/Basic.lean` が `AAT.AG.Site.PartIPrerequisites` と accessor theorem を持つ。 | Architecture Context、Coverage、Grothendieck topology、AAT Site、Presheaf / Sheaf、Descent、Finite Poset regime、AATSh は後続 Issue に残る。 |
+
+第II部 PRD-2 の証明対象ラベルは次の状態から開始する。
+
+| 証明対象ラベル | Lean status |
+| --- | --- |
+| `II.命題4.2` | `future proof obligation` |
+| `II.仮定4.3 meet-pullback` | `future proof obligation` |
+| `II.定義7.1 J_U topology axioms` | `future proof obligation` |
+| `II.定義7.1 Coverage.toGrothendieck bridge` | `future proof obligation` |
+| `II.補題7.2A` | `future proof obligation` |
+| `II.定義10.1 sheaf condition bridge` | `future proof obligation` |
+| `II.定義11.1-12.1 sheaf-descent` | `future proof obligation` |
+| `II.命題7.2C` | `future proof obligation` |
+| `II.R11 finite model examples` | `future proof obligation` |
+
 ## 現在の未解決カテゴリ
 
 | カテゴリ | 扱い |
