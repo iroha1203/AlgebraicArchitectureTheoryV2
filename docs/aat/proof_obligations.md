@@ -704,16 +704,23 @@ Issue [#2007](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/
 `(E -> Bool) -> k` に collapse する `AlgEquiv`、全 module の
 projective / flat surface、Mathlib `Tor` API による higher Tor 消滅、
 ideal square の top 条件、`Ω_{A/k}=0` を追加した。
+Issue [#2009](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2009)
+では square-free witness regime、monomial obstruction ideal、
+`Finset` ベースの abstract simplicial complex、Stanley-Reisner ideal、
+`I_Ob = I_Delta`、minimal reduction exact ideal equality / radical equality、
+minimal generator support と minimal forbidden support の一致、face と
+admissible support の一致を追加した。
 
 | 対象 | 現在の扱い | 残す境界 |
 | --- | --- | --- |
-| `III.R0` Formal/AG/LawAlgebra entrypoint | `defined only`. `Formal/AG/LawAlgebra.lean` が `Coordinate`、`AmbientAlgebra`、`StructuralRelation`、`StructureSheaf`、`WitnessIdeal`、`IdempotentCollapse` を束ね、`Formal/AG.lean` から import される。 | obstruction ideal、lawful locus はまだ扱わない。 |
+| `III.R0` Formal/AG/LawAlgebra entrypoint | `defined only`. `Formal/AG/LawAlgebra.lean` が `Coordinate`、`AmbientAlgebra`、`StructuralRelation`、`StructureSheaf`、`WitnessIdeal`、`IdempotentCollapse`、`StanleyReisner` を束ね、`Formal/AG.lean` から import される。 | obstruction ideal sheaf、lawful locus はまだ扱わない。 |
 | `III.定義3.1` Coordinate | `defined only` / `proved`. `Formal/AG/LawAlgebra/Coordinate.lean` が `CoordinateLabel`, `ArchitectureCoordinate`, `CoordinateFamily`, `CoordinateReading` と accessor theorem を持つ。 | coordinate は abstract local data reading であり、source observation completeness や concrete runtime coordinate の全列挙は主張しない。 |
 | `III.定義4.1` Free Typed Commutative Algebra | `defined only` / `proved`. `Formal/AG/LawAlgebra/AmbientAlgebra.lean` が `FreeCommAlg`, `FreeTypedCommAlg`, `FreeTypedCommAlg.eq_mvPolynomial`, `FreeTypedCommAlg.coordVar`, `FreeTypedCommAlg.coordVar_eq_X` を持つ。 | ambient stage では law witness equation を quotient しない。 |
 | `III.定義4.2 / 定義4.3 / 条件4.4` Structural Relation と Raw Ambient Algebra | `defined only` / `proved`. `Formal/AG/LawAlgebra/StructuralRelation.lean` が `StructuralRelationFamily`, `RelStruct`, `JStruct`, `RawAmbientLawAlgebra`, `TypedCoordinateRestriction`, `RestrictionStableStructuralRelations`, quotient descent lemma、明示 identity / composition law を持つ `RawAmbientPresheafBridge` を持つ。 | law witness equation は ambient stage では quotient しない。obstruction ideal、lawful locus は後続 R7/R8 に残る。 |
 | `III.定義2.1 / 条件4.5` Law Algebra Sheaf と Presentation Stability | `defined only` / `proved`. `Formal/AG/LawAlgebra/StructureSheaf.lean` が `AATCommAlgCat`, `AlgebraValuedAATPresheaf`, `LawAlgebraSheaf`, `RawAmbientAlgebraPresheafBridge`, `LawAlgebraSheafificationBridge`, `PresentationStableAATSite`, `LawAlgebraSheafPackage` と accessor theorem を持つ。raw ambient restriction と presheaf map の自然性、canonical map の sheafification universal property、selected generator / relation の canonical preservation を明示する。 | `O_X^U = (O_raw^U)^+` は selected sheafification bridge として扱う。一般 site の algebra-valued sheafification 理論は新規証明しない。obstruction ideal、lawful locus は後続 R7/R8 に残る。 |
 | `III.定義5.1 / 定義5.2 / 定義5.3` Violation Witness Family / Law Witness Ideal / Defect Section | `defined only` / `proved for accessor lemma`. `Formal/AG/LawAlgebra/WitnessIdeal.lean` が law-indexed `ViolationWitnessFamily`, `LawWitnessIdeal`, `LawWitnessPoint`, `LawWitnessIdealVanishesAtIdeal`, `LawWitnessIdealVanishesAtPoint`, `LawWitnessSectionPullback`, `DefectRepresentativeReading` と coordinate membership / no-cancellation accessor theorem を持つ。 | primary encoding は `I_L(W) ⊆ p` と canonical `O_raw^U(W) -> O_X^U(W)` bridge 経由の `s^* I_L = 0` であり、代表元 `δ_L` の vanishing は no-cancellation 条件つきの secondary reading としてだけ扱う。obstruction ideal と lawful locus は後続 R7/R8 に残る。 |
-| `III.補題5.6A` Idempotent Coordinate Collapse | `proved`. `Formal/AG/LawAlgebra/IdempotentCollapse.lean` が `IdempotentAlgebra = MvPolynomial E k ⧸ booleanIdeal E k`、`quotientAlgEquivPi : IdempotentAlgebra E k ≃ₐ[k] (BoolPoint E -> k)`、全 module projective / flat、higher Tor zero、ideal square top condition、Kähler differential subsingleton を持つ。 | square-free witness regime、Stanley-Reisner obstruction theorem、obstruction ideal / lawful locus は後続 R6-R8 に残る。`I/I²=0` は Lean では quotient-zero と同値な `ideal_square_comap_eq_top` として公開する。 |
+| `III.補題5.6A` Idempotent Coordinate Collapse | `proved`. `Formal/AG/LawAlgebra/IdempotentCollapse.lean` が `IdempotentAlgebra = MvPolynomial E k ⧸ booleanIdeal E k`、`quotientAlgEquivPi : IdempotentAlgebra E k ≃ₐ[k] (BoolPoint E -> k)`、全 module projective / flat、higher Tor zero、ideal square top condition、Kähler differential subsingleton を持つ。 | obstruction ideal sheaf、lawful locus は後続 R7/R8 に残る。`I/I²=0` は Lean では quotient-zero と同値な `ideal_square_comap_eq_top` として公開する。 |
+| `III.定義5.6B / 定理5.6C / 系5.6D` Square-Free Witness Regime / Stanley-Reisner Obstruction Theorem / Obstruction Invariants | `defined only` / `proved`. `Formal/AG/LawAlgebra/StanleyReisner.lean` が `squareFreeMonomial`, `SquareFreeWitnessRegime`, `obstructionIdeal`, `AbstractSimplicialComplex`, `delta`, `stanleyReisnerIdeal`, `coordinateSubspaceArrangement`, `flatChart`, `obstructionIdeal_eq_stanleyReisnerIdeal`, `obstructionIdeal_eq_stanleyReisnerIdeal_of_minimal`, `minimalReduction_obstructionIdeal_eq`, `radical_minimalReduction_obstructionIdeal_eq`, `face_iff_admissibleSupport`, `minimalGeneratorSupport_iff_minimalForbidden` を持つ。 | ここでの obstruction ideal は square-free local monomial regime の ideal であり、R7 の obstruction ideal sheaf ではない。lawful locus / lawful section factorization は後続 R8 に残る。 |
 
 第III部 PRD-3 の証明対象ラベルは次の現在状態である。
 
@@ -727,8 +734,9 @@ ideal square の top 条件、`Ω_{A/k}=0` を追加した。
 | `III.定義2.1 / 条件4.5` | `proved under explicit sheafification-bridge and presentation-stability assumptions` |
 | `III.定義5.1 / 定義5.2 / 定義5.3` | `defined only` / `proved for accessor lemma` |
 | `III.補題5.6A` | `proved` |
-| `III.定理5.6C` | `future proof obligation` |
-| `III.系5.6D` | `future proof obligation` |
+| `III.定義5.6B` | `defined only` / `proved for support lemmas` |
+| `III.定理5.6C` | `proved` |
+| `III.系5.6D` | `proved` |
 | `III.定理候補7.2A` | `future proof obligation` |
 | `III.命題7.2C` | `future proof obligation` |
 | `III.定理8.3` | `future proof obligation` |
