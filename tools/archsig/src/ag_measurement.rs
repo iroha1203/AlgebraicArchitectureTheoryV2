@@ -22,6 +22,12 @@ const MAX_TOR_WITNESS_VARIABLES: usize = 12;
 const MAX_LAPLACIAN_CELLS: usize = 16;
 const MAX_PERIOD_CYCLES: usize = 16;
 const MAX_TRANSFER_TARGETS: usize = 16;
+const GLUING_TRIANGLE_RENDER_LIMIT: usize = 80;
+const GLUING_FIELD_ROW_RENDER_LIMIT: usize = 64;
+const GLUING_REGION_RENDER_LIMIT: usize = 24;
+const GLUING_CAGE_RENDER_LIMIT: usize = 80;
+const GLUING_MORPH_RENDER_LIMIT: usize = 50;
+const GLUING_ATOM_GLYPH_RENDER_LIMIT: usize = 2_000;
 
 pub fn selected_measurement_profile_v1(
     policy: &LawPolicyDocumentV1,
@@ -1294,7 +1300,9 @@ pub fn build_insight_report_v1(
     let boundary_digest = insight_boundary_digest(packet, summary);
     let insight_cards = insight_cards_v1(normalized, packet, summary);
     let action_queue = insight_action_queue_v1(&insight_cards);
-    let viewer_visual_scenes = insight_viewer_visual_scenes_v1(normalized, packet, &insight_cards);
+    let gluing_geometry = gluing_geometry_projection_v1(normalized, packet);
+    let viewer_visual_scenes =
+        insight_viewer_visual_scenes_v1(normalized, packet, &insight_cards, &gluing_geometry);
     let guided_tours = insight_guided_tours_v1(&insight_cards);
     let copy_blocks = insight_copy_blocks_v1(normalized, &insight_cards, &boundary_digest);
     let omitted_detail_counts = insight_omitted_detail_counts_v1(normalized, &viewer_visual_scenes);
@@ -1352,6 +1360,7 @@ pub fn build_insight_report_v1(
         "actionQueue": action_queue,
         "boundaryDigest": boundary_digest,
         "omittedDetailCounts": omitted_detail_counts,
+        "gluingGeometry": gluing_geometry,
         "viewerVisualScenes": viewer_visual_scenes,
         "guidedTours": guided_tours,
         "copyBlocks": copy_blocks,
@@ -1969,6 +1978,7 @@ fn insight_viewer_visual_scenes_v1(
     normalized: &NormalizedArchMapV2,
     packet: &ArchSigMeasurementPacketV1,
     cards: &[Value],
+    gluing_geometry: &Value,
 ) -> Vec<Value> {
     let overview_refs = scene_refs_for_kinds(
         normalized,
@@ -2042,7 +2052,7 @@ fn insight_viewer_visual_scenes_v1(
     let has_debt = cards
         .iter()
         .any(|card| string_field(card, "kind") == "architecture_debt_mass");
-    vec![
+    let scenes = vec![
         scene_v1(
             "overview",
             "overview_constellation",
@@ -2244,7 +2254,463 @@ fn insight_viewer_visual_scenes_v1(
             "thin_line",
             !string_array_at(&source_refs, &["sourceRefs"]).is_empty(),
         ),
-    ]
+    ];
+    scenes
+        .into_iter()
+        .map(|scene| attach_gluing_scene_geometry(scene, gluing_geometry))
+        .collect()
+}
+
+fn attach_gluing_scene_geometry(mut scene: Value, gluing_geometry: &Value) -> Value {
+    let scene_id = string_field(&scene, "sceneId");
+    let geometry_refs = match scene_id.as_str() {
+        "site-cover" | "cech-gluing" => json!({
+            "nerveRef": "gluingGeometry.nerve",
+            "projectionObjectKinds": ["nerveVertex", "nerveEdge", "nerveTriangle"]
+        }),
+        "cech-h1-mismatch" => json!({
+            "cocycleRibbonRef": "gluingGeometry.cocycleRibbon",
+            "projectionObjectKinds": ["cocycleRibbon", "holonomyLikeGapMarker"]
+        }),
+        "obstruction" => json!({
+            "forbiddenCagesRef": "gluingGeometry.forbiddenCages",
+            "projectionObjectKinds": ["forbiddenSupportCage", "simplexEdge"]
+        }),
+        "repair-dual" => json!({
+            "repairMorphsRef": "gluingGeometry.repairMorphs",
+            "projectionObjectKinds": ["repairMorphPath", "lowerBoundMarker"]
+        }),
+        "hodge-debt-field" => json!({
+            "locusFieldRef": "gluingGeometry.locusField",
+            "projectionObjectKinds": ["curvatureHeightField", "blockedUnmeasuredRegion"]
+        }),
+        _ => json!({
+            "projectionObjectKinds": []
+        }),
+    };
+    scene["gluingGeometryRefs"] = geometry_refs;
+    scene["axisMappingImplemented"] = json!(true);
+    scene["projectionBoundary"] = json!(
+        "Scene geometry is a bounded projection of archsig-measurement-packet/v1 and archsig-insight-report/v1; it does not create a new structural verdict."
+    );
+    scene["visualEncodingLegend"] = visual_encoding_legend_v1();
+    if scene_id == "cech-h1-mismatch" {
+        let mut non_claims = string_array_at(&scene, &["nonClaims"]);
+        non_claims.push(
+            "Holonomy-like ribbon closure is an exploratory restriction-path view, not a monodromy verdict."
+                .to_string(),
+        );
+        scene["nonClaims"] = json!(non_claims);
+    }
+    if scene_id == "repair-dual" {
+        let mut non_claims = string_array_at(&scene, &["nonClaims"]);
+        non_claims.push(
+            "Repair morph animation shows lower-bound movement only; it is not an automatic repair."
+                .to_string(),
+        );
+        scene["nonClaims"] = json!(non_claims);
+    }
+    if scene_id == "hodge-debt-field"
+        && gluing_geometry["locusField"]["blockedRegions"]
+            .as_array()
+            .is_some_and(|items| !items.is_empty())
+    {
+        scene["visualEncodings"][0]["textRole"] = json!(
+            "curvature support field; blocked/unmeasured remains visibly separate from measured-zero"
+        );
+    }
+    scene
+}
+
+fn visual_encoding_legend_v1() -> Value {
+    json!([
+        {
+            "channel": "color",
+            "meaning": "measurement state",
+            "values": {
+                "measured_nonzero": "amber obstruction or mismatch support",
+                "measured_zero": "teal selected-support zero",
+                "not_computed": "red blocker",
+                "unmeasured": "gray unmeasured region",
+                "repair_candidate": "violet lower-bound repair candidate"
+            }
+        },
+        {
+            "channel": "shape",
+            "meaning": "geometry object kind",
+            "values": {
+                "triangle": "packet cover triple simplex face",
+                "ribbon": "Cech support path with closure gap marker",
+                "cage": "minimal forbidden support simplex",
+                "morph": "repair candidate lower-bound path",
+                "glyph": "atom fiber/carrier/valence/semantic-anchor encoding"
+            }
+        },
+        {
+            "channel": "line",
+            "meaning": "claim boundary",
+            "values": {
+                "solid": "measured or checked relation",
+                "dashed": "blocked/unmeasured boundary",
+                "thick": "top insight support"
+            }
+        },
+        {
+            "channel": "opacity",
+            "meaning": "projection confidence",
+            "values": {
+                "opaque": "source-backed selected support",
+                "translucent": "context or omitted background projection"
+            }
+        },
+        {
+            "channel": "thickness",
+            "meaning": "support priority",
+            "values": {
+                "thick": "top insight or nonzero support",
+                "thin": "orientation or background relation"
+            }
+        }
+    ])
+}
+
+fn gluing_geometry_projection_v1(
+    normalized: &NormalizedArchMapV2,
+    packet: &ArchSigMeasurementPacketV1,
+) -> Value {
+    let selected_contexts = selected_cover_contexts(normalized, &packet.profile);
+    let cech_edges = cech_edges(normalized, &selected_contexts);
+    let cover_nerve_projection = packet
+        .computed_invariants
+        .iter()
+        .find_map(|invariant| invariant.get("coverNerveProjection").cloned())
+        .unwrap_or_else(|| {
+            cover_nerve_projection_v1(
+                normalized,
+                &selected_contexts,
+                &cech_edges,
+                &packet.profile.cover_ref,
+            )
+        });
+    let cover = normalized.covers.iter().find(|cover| {
+        cover.normalized_cover_id == packet.profile.cover_ref
+            || cover.source_cover_id == packet.profile.cover_ref
+    });
+    let cover_refs = cover
+        .map(|cover| cover.source_refs.clone())
+        .unwrap_or_default();
+    let nonzero_edges = cech_edges
+        .iter()
+        .filter(|edge| edge.value > 0 || !edge.support_atom_refs.is_empty())
+        .collect::<Vec<_>>();
+    let class_nonzero = packet
+        .computed_invariants
+        .iter()
+        .find_map(|invariant| {
+            invariant
+                .get("observedCocycle")
+                .and_then(|cocycle| cocycle.get("classNonzero"))
+                .and_then(Value::as_bool)
+        })
+        .unwrap_or(false);
+    let cocycle_support_atom_refs = nonzero_edges
+        .iter()
+        .flat_map(|edge| edge.support_atom_refs.iter().cloned())
+        .collect::<BTreeSet<_>>()
+        .into_iter()
+        .collect::<Vec<_>>();
+    let forbidden_cages = forbidden_cage_projection(normalized, packet);
+    let repair_morphs = repair_morph_projection(normalized, packet, &forbidden_cages);
+    let locus_field = locus_field_projection(packet);
+    let atom_glyphs = atom_glyph_projection(normalized);
+    let triangle_count = cover_nerve_projection["faces"]
+        .as_array()
+        .map(Vec::len)
+        .unwrap_or_default();
+    let field_row_count = locus_field["fieldRows"]
+        .as_array()
+        .map(Vec::len)
+        .unwrap_or_default();
+    let blocked_region_count = locus_field["blockedRegions"]
+        .as_array()
+        .map(Vec::len)
+        .unwrap_or_default();
+    let zero_region_count = locus_field["measuredZeroRegions"]
+        .as_array()
+        .map(Vec::len)
+        .unwrap_or_default();
+    let atom_glyph_total_count = normalized.atoms.len();
+    json!({
+        "schema": "archsig-viewer-gluing-geometry/v1",
+        "sourcePacketRef": "archsig-measurement-packet.json",
+        "sourceInsightReportRef": "archsig-insight-report.json",
+        "projectionBoundary": "This geometry translates measured packet and ArchMap cover support into viewer objects. It adds no structural verdict, H2 coherence claim, or monodromy verdict.",
+        "nerve": {
+            "coverRef": packet.profile.cover_ref,
+            "sourceRefs": cover_refs,
+            "vertices": cover_nerve_projection["vertices"],
+            "edges": cover_nerve_projection["edges"],
+            "triangles": cover_nerve_projection["faces"],
+            "triangleSource": cover_nerve_projection["faceSource"],
+            "h2CoherenceVisualized": cover_nerve_projection["h2CoherenceVisualized"]
+        },
+        "cocycleRibbon": {
+            "supportAtomRefs": cocycle_support_atom_refs,
+            "supportEdges": nonzero_edges.iter().map(|edge| json!({
+                "edgeId": edge.edge_id,
+                "sourceContextRef": edge.source_context,
+                "targetContextRef": edge.target_context,
+                "value": edge.value,
+                "supportAtomRefs": edge.support_atom_refs
+            })).collect::<Vec<_>>(),
+            "closureGapEncoding": {
+                "kind": "holonomyLikeGapMarker",
+                "visible": class_nonzero && !nonzero_edges.is_empty(),
+                "lineRole": "thick_glowing_dashed_seam",
+                "source": "observedCocycle.classNonzero plus representative support from packet",
+                "nonClaim": "Exploratory restriction-path closure gap only; monodromy verdict is not generated."
+            }
+        },
+        "locusField": locus_field,
+        "forbiddenCages": forbidden_cages,
+        "repairMorphs": repair_morphs,
+        "atomGlyphs": atom_glyphs,
+        "visualEncodingLegend": visual_encoding_legend_v1(),
+        "renderLimits": {
+            "nerveTriangles": GLUING_TRIANGLE_RENDER_LIMIT,
+            "curvatureFieldRows": GLUING_FIELD_ROW_RENDER_LIMIT,
+            "curvatureRegions": GLUING_REGION_RENDER_LIMIT,
+            "forbiddenCages": GLUING_CAGE_RENDER_LIMIT,
+            "repairMorphs": GLUING_MORPH_RENDER_LIMIT,
+            "atomGlyphs": GLUING_ATOM_GLYPH_RENDER_LIMIT
+        },
+        "omittedGeometryCounts": {
+            "nerveTriangles": triangle_count.saturating_sub(GLUING_TRIANGLE_RENDER_LIMIT),
+            "cocycleSupportEdges": 0,
+            "curvatureFieldRows": field_row_count.saturating_sub(GLUING_FIELD_ROW_RENDER_LIMIT),
+            "measuredZeroRegions": zero_region_count.saturating_sub(GLUING_REGION_RENDER_LIMIT),
+            "blockedRegions": blocked_region_count.saturating_sub(GLUING_REGION_RENDER_LIMIT),
+            "forbiddenCages": forbidden_cages.len().saturating_sub(GLUING_CAGE_RENDER_LIMIT),
+            "repairMorphs": repair_morphs.len().saturating_sub(GLUING_MORPH_RENDER_LIMIT),
+            "atomGlyphs": atom_glyph_total_count.saturating_sub(GLUING_ATOM_GLYPH_RENDER_LIMIT)
+        },
+        "nonClaims": [
+            "No H2 coherence failure is visualized by this projection.",
+            "Holonomy-like ribbon display is not a monodromy verdict.",
+            "Repair morphs are lower-bound inspection aids, not automatic repairs."
+        ]
+    })
+}
+
+fn context_atom_refs(
+    normalized: &NormalizedArchMapV2,
+    selected_contexts: &[String],
+) -> BTreeMap<String, Vec<String>> {
+    let selected = selected_contexts.iter().cloned().collect::<BTreeSet<_>>();
+    normalized
+        .contexts
+        .iter()
+        .filter(|context| selected.contains(&context.normalized_context_id))
+        .map(|context| {
+            (
+                context.normalized_context_id.clone(),
+                context.atom_ids.iter().take(24).cloned().collect(),
+            )
+        })
+        .collect()
+}
+
+fn forbidden_cage_projection(
+    normalized: &NormalizedArchMapV2,
+    packet: &ArchSigMeasurementPacketV1,
+) -> Vec<Value> {
+    let mut cages = Vec::new();
+    for invariant in &packet.computed_invariants {
+        let generators = invariant["obstructionIdeal"]["generators"]
+            .as_array()
+            .into_iter()
+            .flatten();
+        for generator in generators {
+            let support_atom_refs = string_array_at(generator, &["supportAtomRefs"]);
+            let support_variables = string_array_at(generator, &["support"]);
+            if support_atom_refs.is_empty() && support_variables.is_empty() {
+                continue;
+            }
+            let generator_id = string_field(generator, "generatorId");
+            cages.push(json!({
+                "cageId": format!("forbidden-cage:{generator_id}"),
+                "atomRefs": support_atom_refs,
+                "supportVariables": support_variables,
+                "sourceInvariantRef": invariant["invariantId"],
+                "sourceGeneratorRef": generator_id,
+                "shapeRole": "cage",
+                "lineRole": "broken_line",
+                "source": "packet obstructionIdeal.generators[].supportAtomRefs"
+            }));
+        }
+    }
+    if cages.is_empty() {
+        for atom in normalized.atoms.iter().filter(|atom| {
+            atom.predicate.contains("obstruction") || atom.predicate.contains("forbidden")
+        }) {
+            cages.push(json!({
+                "cageId": format!("forbidden-cage:{}", atom.normalized_atom_id),
+                "atomRefs": [atom.normalized_atom_id.clone()],
+                "sourceAtomRef": atom.normalized_atom_id,
+                "shapeRole": "cage",
+                "lineRole": "broken_line",
+                "source": "source-backed obstruction atom; packet has no obstructionIdeal generator support"
+            }));
+        }
+    }
+    cages
+}
+
+fn repair_morph_projection(
+    _normalized: &NormalizedArchMapV2,
+    packet: &ArchSigMeasurementPacketV1,
+    forbidden_cages: &[Value],
+) -> Vec<Value> {
+    let lower_bound_readings = packet
+        .analytic_readings
+        .iter()
+        .filter(|reading| {
+            reading.reading_id.contains("repair")
+                || reading.evaluator.contains("support-transfer")
+                || reading.value.to_string().contains("lower-bound")
+        })
+        .collect::<Vec<_>>();
+    let repair_candidates = packet
+        .computed_invariants
+        .iter()
+        .flat_map(|invariant| {
+            invariant["alexanderDualRepair"]["minimalHittingSets"]
+                .as_array()
+                .into_iter()
+                .flatten()
+                .enumerate()
+                .map(|(index, hitting_set)| {
+                    json!({
+                        "candidateId": format!("{}:repair-candidate:{index}", string_field(invariant, "invariantId")),
+                        "sourceInvariantRef": invariant["invariantId"],
+                        "supportVariables": hitting_set
+                            .as_array()
+                            .into_iter()
+                            .flatten()
+                            .filter_map(Value::as_str)
+                            .map(ToOwned::to_owned)
+                            .collect::<Vec<_>>()
+                    })
+                })
+                .collect::<Vec<_>>()
+        })
+        .collect::<Vec<_>>();
+    repair_candidates
+        .iter()
+        .enumerate()
+        .map(|(index, candidate)| {
+            json!({
+                "morphId": format!("repair-morph:{}", string_field(candidate, "candidateId")),
+                "fromCageRef": forbidden_cages
+                    .first()
+                    .and_then(|cage| cage["cageId"].as_str())
+                    .unwrap_or("forbidden-cage:unavailable"),
+                "toCandidateRef": candidate["candidateId"],
+                "supportVariables": string_array_at(candidate, &["supportVariables"]),
+                "sourceInvariantRef": candidate["sourceInvariantRef"],
+                "lowerBoundReadingRefs": lower_bound_readings
+                    .iter()
+                    .map(|reading| reading.reading_id.clone())
+                    .take(8)
+                    .collect::<Vec<_>>(),
+                "animationRole": "continuous_morph_lower_bound",
+                "samplePhase": index,
+                "nonClaim": "not automatic repair"
+            })
+        })
+        .collect()
+}
+
+fn locus_field_projection(packet: &ArchSigMeasurementPacketV1) -> Value {
+    let field_rows = packet
+        .structural_verdict
+        .iter()
+        .enumerate()
+        .filter(|(_, row)| row.evaluator.contains("curvature") || row.law.contains("curvature"))
+        .map(|(index, row)| {
+            json!({
+                "fieldId": format!("curvature-field:{index}:{}", row.evaluator),
+                "status": row.verdict,
+                "height": if row.verdict == "measured_nonzero" { 1 } else { 0 },
+                "colorRole": match row.verdict.as_str() {
+                    "measured_nonzero" => "measured_nonzero",
+                    "measured_zero" => "measured_zero",
+                    "not_computed" => "not_computed",
+                    "unmeasured" => "unmeasured",
+                    _ => "unknown"
+                },
+                "source": "structural verdict curvature row"
+            })
+        })
+        .collect::<Vec<_>>();
+    let blocked_regions = packet
+        .structural_verdict
+        .iter()
+        .filter(|row| {
+            matches!(
+                row.verdict.as_str(),
+                "unmeasured" | "unknown" | "not_computed"
+            )
+        })
+        .map(|row| {
+            json!({
+                "regionId": format!("blocked-region:{}", row.evaluator),
+                "status": row.verdict,
+                "shapeRole": "blocked_unmeasured_region",
+                "source": "non-terminal packet verdict"
+            })
+        })
+        .collect::<Vec<_>>();
+    let measured_zero_regions = packet
+        .structural_verdict
+        .iter()
+        .filter(|row| row.verdict == "measured_zero")
+        .map(|row| {
+            json!({
+                "regionId": format!("measured-zero-region:{}", row.evaluator),
+                "status": row.verdict,
+                "shapeRole": "smooth_measured_zero_patch",
+                "source": "selected-support zero packet verdict"
+            })
+        })
+        .collect::<Vec<_>>();
+    json!({
+        "fieldRows": field_rows,
+        "measuredZeroRegions": measured_zero_regions,
+        "blockedRegions": blocked_regions
+    })
+}
+
+fn atom_glyph_projection(normalized: &NormalizedArchMapV2) -> Vec<Value> {
+    normalized
+        .atoms
+        .iter()
+        .take(GLUING_ATOM_GLYPH_RENDER_LIMIT)
+        .map(|atom| {
+            let semantic_anchor_missing =
+                atom.subject.is_empty() || atom.source_refs.is_empty() || atom.axis == "unknown";
+            json!({
+                "atomRef": atom.normalized_atom_id,
+                "fiber": atom.atom_kind,
+                "carrier": atom.subject,
+                "valence": atom.context_memberships.len(),
+                "semanticAnchor": if semantic_anchor_missing { "blocked_missing_anchor" } else { "source_backed" },
+                "shapeRole": if semantic_anchor_missing { "blocked_anchor_glyph" } else { "structured_atom_glyph" },
+                "sizeRole": "valence",
+                "colorRole": if semantic_anchor_missing { "not_computed" } else { "source_evidence" }
+            })
+        })
+        .collect()
 }
 
 fn overview_color_role(cards: &[Value]) -> &'static str {
@@ -3095,6 +3561,12 @@ fn evaluate_cech_obstruction_v1(
 ) -> CechMeasurementV1 {
     let selected_contexts = selected_cover_contexts(normalized, profile);
     let edges = cech_edges(normalized, &selected_contexts);
+    let cover_nerve_projection =
+        cover_nerve_projection_v1(normalized, &selected_contexts, &edges, &profile.cover_ref);
+    let cover_nerve_face_count = cover_nerve_projection["faces"]
+        .as_array()
+        .map(Vec::len)
+        .unwrap_or_default();
     let component_count = graph_component_count(&selected_contexts, &edges);
     let h0_dimension = component_count;
     let h1_dimension = edges
@@ -3137,15 +3609,24 @@ fn evaluate_cech_obstruction_v1(
                 "coefficient": profile.coefficient,
                 "contextCount": selected_contexts.len(),
                 "restrictionEdgeCount": edges.len(),
+                "coverNerveProjection": cover_nerve_projection,
                 "rankD0": selected_contexts.len().saturating_sub(component_count),
                 "dimensions": {
                     "H0": h0_dimension,
                     "H1": h1_dimension
                 },
                 "selectedH2": {
-                    "dimension": 0,
-                    "status": "computed_for_selected_1_skeleton",
-                    "reason": "no selected 2-simplices are present in the finite incidence graph complex"
+                    "dimension": if cover_nerve_face_count == 0 { json!(0) } else { Value::Null },
+                    "status": if cover_nerve_face_count == 0 {
+                        "computed_for_selected_1_skeleton"
+                    } else {
+                        "not_measured_for_triple_overlap_faces"
+                    },
+                    "reason": if cover_nerve_face_count == 0 {
+                        "no selected 2-simplices are present in the finite incidence graph complex"
+                    } else {
+                        "triple-overlap faces are projected for viewer geometry only; H2 coherence remains outside this measurement"
+                    }
                 },
                 "observedCocycle": {
                     "classNonzero": h1_class_nonzero,
@@ -4990,6 +5471,125 @@ fn cech_edges(normalized: &NormalizedArchMapV2, selected_contexts: &[String]) ->
     edges
 }
 
+fn cover_nerve_projection_v1(
+    normalized: &NormalizedArchMapV2,
+    selected_contexts: &[String],
+    edges: &[CechEdgeV1],
+    cover_ref: &str,
+) -> Value {
+    let context_atom_refs = context_atom_refs(normalized, selected_contexts);
+    let vertices = selected_contexts
+        .iter()
+        .map(|context| {
+            json!({
+                "contextRef": context,
+                "atomRefs": context_atom_refs.get(context).cloned().unwrap_or_default(),
+                "objectKind": "nerveVertex"
+            })
+        })
+        .collect::<Vec<_>>();
+    let edge_rows = edges
+        .iter()
+        .map(|edge| {
+            json!({
+                "edgeId": edge.edge_id,
+                "sourceContextRef": edge.source_context,
+                "targetContextRef": edge.target_context,
+                "value": edge.value,
+                "supportAtomRefs": edge.support_atom_refs,
+                "objectKind": "nerveEdge",
+                "source": "selected cover restriction edge"
+            })
+        })
+        .collect::<Vec<_>>();
+    let selected = selected_contexts.iter().cloned().collect::<BTreeSet<_>>();
+    let mut edge_by_pair = BTreeMap::new();
+    for edge in edges {
+        edge_by_pair.insert(
+            (edge.source_context.clone(), edge.target_context.clone()),
+            edge.edge_id.clone(),
+        );
+        edge_by_pair.insert(
+            (edge.target_context.clone(), edge.source_context.clone()),
+            edge.edge_id.clone(),
+        );
+    }
+    let atom_refs_by_context = normalized
+        .contexts
+        .iter()
+        .filter(|context| selected.contains(&context.normalized_context_id))
+        .map(|context| {
+            (
+                context.normalized_context_id.clone(),
+                context.atom_ids.iter().cloned().collect::<BTreeSet<_>>(),
+            )
+        })
+        .collect::<BTreeMap<_, _>>();
+    let mut faces = Vec::new();
+    for left in 0..selected_contexts.len() {
+        for middle in left + 1..selected_contexts.len() {
+            for right in middle + 1..selected_contexts.len() {
+                let contexts = [
+                    selected_contexts[left].clone(),
+                    selected_contexts[middle].clone(),
+                    selected_contexts[right].clone(),
+                ];
+                let Some(left_atoms) = atom_refs_by_context.get(&contexts[0]) else {
+                    continue;
+                };
+                let Some(middle_atoms) = atom_refs_by_context.get(&contexts[1]) else {
+                    continue;
+                };
+                let Some(right_atoms) = atom_refs_by_context.get(&contexts[2]) else {
+                    continue;
+                };
+                let shared_atom_refs = left_atoms
+                    .intersection(middle_atoms)
+                    .cloned()
+                    .collect::<BTreeSet<_>>()
+                    .intersection(right_atoms)
+                    .cloned()
+                    .collect::<Vec<_>>();
+                if shared_atom_refs.is_empty() {
+                    continue;
+                }
+                let edge_refs = [
+                    edge_by_pair
+                        .get(&(contexts[0].clone(), contexts[1].clone()))
+                        .cloned(),
+                    edge_by_pair
+                        .get(&(contexts[0].clone(), contexts[2].clone()))
+                        .cloned(),
+                    edge_by_pair
+                        .get(&(contexts[1].clone(), contexts[2].clone()))
+                        .cloned(),
+                ]
+                .into_iter()
+                .flatten()
+                .collect::<Vec<_>>();
+                faces.push(json!({
+                    "faceId": format!("nerve-face:{}:{}:{}", contexts[0], contexts[1], contexts[2]),
+                    "coverRef": cover_ref,
+                    "contextRefs": contexts,
+                    "edgeRefs": edge_refs,
+                    "sharedAtomRefs": shared_atom_refs,
+                    "objectKind": "nerveTriangle",
+                    "source": "selected cover triple overlap with shared atom refs",
+                    "coherenceClaim": "not_visualized"
+                }));
+            }
+        }
+    }
+    json!({
+        "coverRef": cover_ref,
+        "vertices": vertices,
+        "edges": edge_rows,
+        "faces": faces,
+        "faceSource": "selected cover triple-overlap sharedAtomRefs recorded in archsig-measurement-packet/v1; not inferred by the viewer",
+        "h2CoherenceVisualized": false
+    })
+}
+
 fn marker_atom_marks_edge(
     atom: &crate::NormalizedAtomV2,
     source_context: &str,
@@ -5193,6 +5793,19 @@ pub fn build_measurement_viewer_data_v1(
         "viewerVisualScenes": insight_report["viewerVisualScenes"],
         "guidedTours": insight_report["guidedTours"],
         "copyBlocks": insight_report["copyBlocks"],
+        "aatGeometryOverlays": {
+            "schemaVersion": "archsig-aat-geometry-overlays-v1",
+            "projectionBoundary": "bounded viewer projection of measured ArchSig AG geometry; visual richness is not a new verdict",
+            "gluingGeometry": insight_report["gluingGeometry"],
+            "nerve": insight_report["gluingGeometry"]["nerve"],
+            "cocycleRibbon": insight_report["gluingGeometry"]["cocycleRibbon"],
+            "locusField": insight_report["gluingGeometry"]["locusField"],
+            "forbiddenCages": insight_report["gluingGeometry"]["forbiddenCages"],
+            "repairMorphs": insight_report["gluingGeometry"]["repairMorphs"],
+            "atomGlyphs": insight_report["gluingGeometry"]["atomGlyphs"],
+            "omittedGeometryCounts": insight_report["gluingGeometry"]["omittedGeometryCounts"],
+            "nonClaims": insight_report["gluingGeometry"]["nonClaims"]
+        },
         "reportPane": {
             "conclusion": summary["conclusion"],
             "profileRef": packet.profile.profile_id,

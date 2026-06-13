@@ -155,7 +155,11 @@ fn cli_analyze_v2_writes_measurement_packet_foundation() {
     assert_eq!(packet["structuralVerdict"][0]["verdict"], "measured_zero");
     let cech = invariant_by_id(&packet, "cech-cohomology:profile:ag-default@1");
     assert_eq!(cech["dimensions"]["H1"], Value::from(0));
-    assert_eq!(cech["selectedH2"]["dimension"], Value::from(0));
+    assert_eq!(cech["selectedH2"]["dimension"], Value::Null);
+    assert_eq!(
+        cech["selectedH2"]["status"],
+        "not_measured_for_triple_overlap_faces"
+    );
     assert_eq!(packet["analyticReadings"][0]["regime"], "theorem-candidate");
 
     let validation = read_json(&out_dir.join("archsig-analysis-validation.json"));
@@ -224,6 +228,12 @@ fn cli_analyze_v2_cech_h1_visible_fixture_measures_nonzero() {
         cech["observedCocycle"]["mismatchSupportRefs"][0],
         "atom:left-bottom-cech-mismatch"
     );
+    assert!(
+        cech["coverNerveProjection"]["faces"]
+            .as_array()
+            .is_some_and(Vec::is_empty),
+        "Cech H1 visible fixture has restriction chains but no measured triple-overlap 2-simplex"
+    );
     assert_eq!(
         cech["selectedH2"]["status"],
         "computed_for_selected_1_skeleton"
@@ -239,6 +249,108 @@ fn cli_analyze_v2_cech_h1_visible_fixture_measures_nonzero() {
     assert_eq!(
         summary["conclusion"],
         "MEASURED_H1_OBSTRUCTION_UNDER_PROFILE"
+    );
+}
+
+#[test]
+fn cli_analyze_v2_cover_nerve_faces_require_packet_triple_overlap_support() {
+    let out_dir = temp_dir("ag-measurement-cech-triple-overlap");
+    let root = ag_measurement_root();
+    let mut archmap = read_json(&root.join("archmap_v2_cech_h1_visible.json"));
+    archmap["atoms"]
+        .as_array_mut()
+        .expect("atoms is array")
+        .push(json!({
+            "id": "atom:triple-overlap",
+            "kind": "component",
+            "subject": "src:triple-overlap",
+            "axis": "static",
+            "predicate": "tripleOverlapWitness",
+            "refs": ["src:triple-overlap"]
+        }));
+    archmap["sources"]["src:triple-overlap"] = json!({
+        "kind": "policy",
+        "path": "docs/tool/archsig_viewer_gluing_geometry_prd.md",
+        "section": "cover nerve triple-overlap fixture"
+    });
+    for context_id in ["ctx:top", "ctx:left", "ctx:bottom"] {
+        let context = archmap["contexts"]
+            .as_array_mut()
+            .expect("contexts is array")
+            .iter_mut()
+            .find(|context| context["id"] == context_id)
+            .unwrap_or_else(|| panic!("context {context_id} exists"));
+        context["atoms"]
+            .as_array_mut()
+            .expect("context atoms is array")
+            .push(Value::String("atom:triple-overlap".to_string()));
+    }
+    let archmap_path = out_dir.join("archmap_v2_cech_triple_overlap.json");
+    fs::write(
+        &archmap_path,
+        serde_json::to_vec_pretty(&archmap).expect("archmap serializes"),
+    )
+    .expect("archmap fixture can be written");
+
+    run_sig0(&[
+        "analyze",
+        "--archmap",
+        archmap_path.to_str().expect("path is utf-8"),
+        "--law-policy",
+        root.join("law_policy_ag.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--out-dir",
+        out_dir.to_str().expect("path is utf-8"),
+    ]);
+
+    let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
+    let cech = invariant_by_id(&packet, "cech-cohomology:profile:ag-default@1");
+    let faces = cech["coverNerveProjection"]["faces"]
+        .as_array()
+        .expect("cover nerve faces are array");
+    assert!(
+        faces.iter().any(|face| {
+            let contexts = face["contextRefs"]
+                .as_array()
+                .expect("contextRefs is array")
+                .iter()
+                .filter_map(Value::as_str)
+                .collect::<BTreeSet<_>>();
+            contexts == BTreeSet::from(["ctx:bottom", "ctx:left", "ctx:top"])
+                && face["sharedAtomRefs"]
+                    .as_array()
+                    .expect("sharedAtomRefs is array")
+                    .iter()
+                    .any(|atom| atom == "atom:triple-overlap")
+                && face["coherenceClaim"] == "not_visualized"
+        }),
+        "cover nerve faces must be sourced from selected triple-overlap sharedAtomRefs"
+    );
+    assert_eq!(
+        cech["coverNerveProjection"]["faceSource"],
+        "selected cover triple-overlap sharedAtomRefs recorded in archsig-measurement-packet/v1; not inferred by the viewer"
+    );
+    assert_eq!(cech["coverNerveProjection"]["h2CoherenceVisualized"], false);
+    assert_eq!(cech["selectedH2"]["dimension"], Value::Null);
+    assert_eq!(
+        cech["selectedH2"]["status"],
+        "not_measured_for_triple_overlap_faces"
+    );
+
+    let report = read_json(&out_dir.join("archsig-insight-report.json"));
+    assert_eq!(
+        report["gluingGeometry"]["nerve"]["triangles"], cech["coverNerveProjection"]["faces"],
+        "viewer gluing projection must consume packet-projected faces"
+    );
+    assert_eq!(
+        report["gluingGeometry"]["nerve"]["h2CoherenceVisualized"],
+        false
+    );
+    assert!(
+        report["gluingGeometry"]["nerve"]["triangleSource"]
+            .as_str()
+            .is_some_and(|text| text.contains("not inferred by the viewer"))
     );
 }
 
@@ -627,6 +739,96 @@ fn cli_analyze_v2_insight_surface_preserves_false_clean_and_not_computed_boundar
                 && scene["visualEncodings"][0]["colorRole"] == "measured_zero"),
         "measured_zero Cech scene must stay active and explicitly measured_zero"
     );
+    let gluing_geometry = report["gluingGeometry"]
+        .as_object()
+        .expect("insight report must expose gluing geometry projection");
+    assert_eq!(
+        gluing_geometry["schema"].as_str(),
+        Some("archsig-viewer-gluing-geometry/v1"),
+        "gluing geometry projection must be typed"
+    );
+    assert!(
+        gluing_geometry["nerve"]["vertices"]
+            .as_array()
+            .is_some_and(|items| !items.is_empty())
+            && gluing_geometry["nerve"]["edges"]
+                .as_array()
+                .is_some_and(|items| !items.is_empty()),
+        "cover nerve must expose packet-derived vertices and restriction edges"
+    );
+    assert!(
+        gluing_geometry["nerve"]["triangleSource"]
+            .as_str()
+            .is_some_and(|text| text.contains("not inferred by the viewer")),
+        "cover nerve triangles must be sourced from packet cover projection, not viewer inference"
+    );
+    assert_eq!(
+        gluing_geometry["nerve"]["h2CoherenceVisualized"].as_bool(),
+        Some(false),
+        "gluing viewer PRD must preserve the H2 silence boundary"
+    );
+    assert!(
+        gluing_geometry["cocycleRibbon"]["closureGapEncoding"]["nonClaim"]
+            .as_str()
+            .is_some_and(|text| text.contains("monodromy verdict is not generated")),
+        "H1 cocycle ribbon must keep the monodromy non-claim explicit"
+    );
+    assert!(
+        gluing_geometry["atomGlyphs"]
+            .as_array()
+            .is_some_and(|items| items
+                .iter()
+                .any(|item| item["shapeRole"] == "structured_atom_glyph")),
+        "atom internal glyph projection must expose fiber/carrier/valence/semantic-anchor roles"
+    );
+    assert!(
+        gluing_geometry["repairMorphs"]
+            .as_array()
+            .is_some_and(Vec::is_empty),
+        "repair morphs must not be inferred without packet alexanderDualRepair minimal hitting sets"
+    );
+    assert!(
+        gluing_geometry["omittedGeometryCounts"]
+            .as_object()
+            .is_some_and(|counts| counts.contains_key("measuredZeroRegions")
+                && counts.contains_key("blockedRegions")
+                && counts.contains_key("atomGlyphs")),
+        "gluing projection must report omitted counts for each independently capped geometry family"
+    );
+    assert_eq!(
+        viewer["aatGeometryOverlays"]["gluingGeometry"], report["gluingGeometry"],
+        "viewer data must consume the same gluing geometry projection as the insight report"
+    );
+    for scene_id in [
+        "site-cover",
+        "cech-gluing",
+        "cech-h1-mismatch",
+        "hodge-debt-field",
+    ] {
+        let scene = viewer["viewerVisualScenes"]
+            .as_array()
+            .expect("viewer visual scenes are array")
+            .iter()
+            .find(|scene| scene["sceneId"] == scene_id)
+            .unwrap_or_else(|| panic!("scene {scene_id} exists"));
+        assert_eq!(
+            scene["axisMappingImplemented"].as_bool(),
+            Some(true),
+            "{scene_id} must mark axisMapping as geometry-driving"
+        );
+        assert!(
+            scene["visualEncodingLegend"]
+                .as_array()
+                .is_some_and(|items| items.len() >= 4),
+            "{scene_id} must carry fixed color/shape/line/opacity legend"
+        );
+        assert!(
+            scene["projectionBoundary"]
+                .as_str()
+                .is_some_and(|text| text.contains("does not create a new structural verdict")),
+            "{scene_id} must keep visual richness below verdict level"
+        );
+    }
     for forbidden in [
         "Architecture is clean",
         "No architecture issue exists",
@@ -1073,6 +1275,33 @@ fn cli_analyze_v2_square_free_repair_outputs_hitting_sets_and_nsdepth() {
     assert_eq!(
         summary["conclusion"],
         "MEASURED_AG_OBSTRUCTION_UNDER_PROFILE"
+    );
+    let report = read_json(&out_dir.join("archsig-insight-report.json"));
+    let viewer = read_json(&out_dir.join("archsig-atom-viewer-data.json"));
+    assert!(
+        report["gluingGeometry"]["forbiddenCages"]
+            .as_array()
+            .is_some_and(|items| !items.is_empty()),
+        "square-free obstruction fixture must project minimal forbidden support as cage geometry"
+    );
+    assert!(
+        report["gluingGeometry"]["repairMorphs"]
+            .as_array()
+            .is_some_and(|items| {
+                items.iter().any(|item| {
+                    item["animationRole"] == "continuous_morph_lower_bound"
+                        && item["nonClaim"] == "not automatic repair"
+                })
+            }),
+        "square-free repair fixture must project lower-bound repair candidate as continuous morph"
+    );
+    assert_eq!(
+        viewer["aatGeometryOverlays"]["forbiddenCages"], report["gluingGeometry"]["forbiddenCages"],
+        "viewer overlay must carry forbidden cage geometry"
+    );
+    assert_eq!(
+        viewer["aatGeometryOverlays"]["repairMorphs"], report["gluingGeometry"]["repairMorphs"],
+        "viewer overlay must carry repair morph geometry"
     );
 }
 
@@ -8228,8 +8457,22 @@ fn atom_viewer_reads_insight_report_surface_contract() {
         "sceneNodeColor",
         "renderSceneLayers",
         "sceneLayerMesh",
+        "renderGluingGeometry",
+        "renderNerveGeometry",
+        "renderCocycleRibbon",
+        "renderLocusField",
+        "renderForbiddenCages",
+        "renderRepairMorphs",
+        "renderAtomGlyphOverlays",
+        "updateRepairMorphAnimation",
+        "sceneAxisPosition",
+        "legendSwatchColor",
+        "legendValueText",
+        "thickness",
+        "window.__archsigViewerDebug",
         "sceneColorHex",
         "handleReportAction",
+        "const reportEl = document.getElementById(\"report\")",
         "startGuidedTour",
         "showTourStep",
         "data-tour-id",
@@ -8239,6 +8482,10 @@ fn atom_viewer_reads_insight_report_surface_contract() {
         "data-copy-source-refs",
         "Boolean(data?.decisionBar)",
         "evidenceDetailShape",
+        "holonomyLikeGapMarker",
+        "blockedUnmeasuredRegion",
+        "forbiddenSupportCage",
+        "not automatic repair",
     ] {
         assert!(
             viewer.contains(required),
