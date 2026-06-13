@@ -36,6 +36,33 @@
         "requiredNonClaims": ["not automatic repair"],
         "requiredScenes": ["obstruction", "repair-dual"]
       }
+    },
+    {
+      "caseId": "sheaf-laplacian-curvature-field",
+      "archmap": "archmap_v2_sheaf_laplacian.json",
+      "lawPolicy": "law_policy_laplacian.json",
+      "expected": {
+        "minCurvatureFieldRows": 3,
+        "minBlockedRegions": 1,
+        "minAnalyticMassRows": 1,
+        "requiredScenes": ["hodge-debt-field"]
+      }
+    },
+    {
+      "caseId": "semantic-anchor-blocker-glyph",
+      "archmap": "archmap_v2_cech_h1_visible.json",
+      "lawPolicy": "law_policy_ag.json",
+      "mutations": [
+        {
+          "atomId": "atom:top",
+          "field": "axis",
+          "value": "unknown"
+        }
+      ],
+      "expected": {
+        "minBlockedAnchorGlyphs": 1,
+        "requiredScenes": ["site-cover"]
+      }
     }
   ],
   "requiredViewerFunctions": [
@@ -46,7 +73,10 @@
     "renderForbiddenCages",
     "renderRepairMorphs",
     "renderAtomGlyphOverlays",
+    "atomGlyphGeometry",
+    "atomGlyphColor",
     "sceneAxisPosition",
-    "legendValueText"
+    "legendValueText",
+    "gluingGeometry."
   ]
 }

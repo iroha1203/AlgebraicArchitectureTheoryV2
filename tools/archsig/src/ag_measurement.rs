@@ -2632,7 +2632,7 @@ fn repair_morph_projection(
 }
 
 fn locus_field_projection(packet: &ArchSigMeasurementPacketV1) -> Value {
-    let field_rows = packet
+    let mut field_rows = packet
         .structural_verdict
         .iter()
         .enumerate()
@@ -2653,6 +2653,7 @@ fn locus_field_projection(packet: &ArchSigMeasurementPacketV1) -> Value {
             })
         })
         .collect::<Vec<_>>();
+    field_rows.extend(analytic_locus_field_rows(packet));
     let blocked_regions = packet
         .structural_verdict
         .iter()
@@ -2691,6 +2692,50 @@ fn locus_field_projection(packet: &ArchSigMeasurementPacketV1) -> Value {
     })
 }
 
+fn analytic_locus_field_rows(packet: &ArchSigMeasurementPacketV1) -> Vec<Value> {
+    let mut rows = Vec::new();
+    for reading in &packet.analytic_readings {
+        let reading_kind = string_at(&reading.value, &["readingKind"]);
+        if reading_kind != "graph-laplacian-hodge-proxy@1" {
+            continue;
+        }
+        let harmonic_mass = reading.value["harmonicMass"].as_f64().unwrap_or(0.0);
+        let distance_to_flatness = reading.value["distanceToFlatness"].as_f64().unwrap_or(0.0);
+        let mass_height = harmonic_mass.max(distance_to_flatness);
+        rows.push(json!({
+            "fieldId": format!("curvature-mass:{}", reading.reading_id),
+            "status": "analytic_reading",
+            "height": round_f64(mass_height),
+            "harmonicMass": round_f64(harmonic_mass),
+            "distanceToFlatness": round_f64(distance_to_flatness),
+            "colorRole": "analytic_reading",
+            "sourceReadingRef": reading.reading_id,
+            "source": "analytic reading harmonicMass / distanceToFlatness"
+        }));
+        for (index, transfer) in reading.value["curvatureTransferSpectrum"]
+            .as_array()
+            .into_iter()
+            .flatten()
+            .enumerate()
+        {
+            let curvature = transfer["curvature"].as_f64().unwrap_or(0.0);
+            rows.push(json!({
+                "fieldId": format!("curvature-support:{}:{index}", reading.reading_id),
+                "status": "analytic_reading",
+                "height": round_f64(curvature.abs()),
+                "signedCurvature": round_f64(curvature),
+                "cellRef": string_field(transfer, "cell"),
+                "harmonicMass": round_f64(harmonic_mass),
+                "distanceToFlatness": round_f64(distance_to_flatness),
+                "colorRole": if curvature.abs() > 1.0e-9 { "analytic_reading" } else { "measured_zero" },
+                "sourceReadingRef": reading.reading_id,
+                "source": "analytic reading curvatureTransferSpectrum support / mass"
+            }));
+        }
+    }
+    rows
+}
+
 fn atom_glyph_projection(normalized: &NormalizedArchMapV2) -> Vec<Value> {
     normalized
         .atoms
@@ -2706,6 +2751,8 @@ fn atom_glyph_projection(normalized: &NormalizedArchMapV2) -> Vec<Value> {
                 "valence": atom.context_memberships.len(),
                 "semanticAnchor": if semantic_anchor_missing { "blocked_missing_anchor" } else { "source_backed" },
                 "shapeRole": if semantic_anchor_missing { "blocked_anchor_glyph" } else { "structured_atom_glyph" },
+                "fiberShapeRole": format!("fiber_shape:{}", atom.atom_kind),
+                "carrierColorRole": format!("carrier_color:{}", slug(&atom.subject)),
                 "sizeRole": "valence",
                 "colorRole": if semantic_anchor_missing { "not_computed" } else { "source_evidence" }
             })

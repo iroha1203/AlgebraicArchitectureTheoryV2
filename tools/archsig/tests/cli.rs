@@ -3228,12 +3228,35 @@ fn cli_locks_archsig_viewer_gluing_geometry_golden_ux_fixture() {
     for case in manifest["cases"].as_array().expect("cases is array") {
         let case_id = case["caseId"].as_str().expect("caseId is string");
         let out_dir = temp_dir(&format!("ag-gluing-golden-ux-{case_id}"));
+        let archmap_path = if case["mutations"].is_array() {
+            let mut archmap =
+                read_json(&root.join(case["archmap"].as_str().expect("archmap is string")));
+            for mutation in case["mutations"].as_array().expect("mutations is array") {
+                let atom_id = mutation["atomId"].as_str().expect("atomId is string");
+                let field = mutation["field"].as_str().expect("field is string");
+                let value = mutation["value"].clone();
+                let atom = archmap["atoms"]
+                    .as_array_mut()
+                    .expect("atoms is array")
+                    .iter_mut()
+                    .find(|atom| atom["id"] == atom_id)
+                    .unwrap_or_else(|| panic!("{case_id} missing mutation atom {atom_id}"));
+                atom[field] = value;
+            }
+            let archmap_path = out_dir.join(format!("{case_id}.archmap.json"));
+            fs::write(
+                &archmap_path,
+                serde_json::to_vec_pretty(&archmap).expect("mutated archmap serializes"),
+            )
+            .expect("mutated archmap can be written");
+            archmap_path
+        } else {
+            root.join(case["archmap"].as_str().expect("archmap is string"))
+        };
         run_sig0(&[
             "analyze",
             "--archmap",
-            root.join(case["archmap"].as_str().expect("archmap is string"))
-                .to_str()
-                .expect("path is utf-8"),
+            archmap_path.to_str().expect("path is utf-8"),
             "--law-policy",
             root.join(case["lawPolicy"].as_str().expect("lawPolicy is string"))
                 .to_str()
@@ -3320,6 +3343,54 @@ fn cli_locks_archsig_viewer_gluing_geometry_golden_ux_fixture() {
                 "{case_id} must render repair morph lower-bound paths"
             );
         }
+        if let Some(min_rows) = expected["minCurvatureFieldRows"].as_u64() {
+            assert!(
+                gluing["locusField"]["fieldRows"]
+                    .as_array()
+                    .is_some_and(|items| items.len() >= min_rows as usize),
+                "{case_id} must render curvature support / mass field rows"
+            );
+        }
+        if let Some(min_regions) = expected["minBlockedRegions"].as_u64() {
+            assert!(
+                gluing["locusField"]["blockedRegions"]
+                    .as_array()
+                    .is_some_and(|items| items.len() >= min_regions as usize),
+                "{case_id} must keep blocked/unmeasured locus visibly separate"
+            );
+        }
+        if let Some(min_rows) = expected["minAnalyticMassRows"].as_u64() {
+            assert!(
+                gluing["locusField"]["fieldRows"]
+                    .as_array()
+                    .is_some_and(|items| items
+                        .iter()
+                        .filter(|item| item["harmonicMass"].is_number()
+                            && item["sourceReadingRef"].as_str().is_some())
+                        .count()
+                        >= min_rows as usize),
+                "{case_id} must project analytic harmonic mass into the height field"
+            );
+        }
+        if let Some(min_glyphs) = expected["minBlockedAnchorGlyphs"].as_u64() {
+            assert!(
+                gluing["atomGlyphs"].as_array().is_some_and(|items| items
+                    .iter()
+                    .filter(|item| {
+                        item["semanticAnchor"] == "blocked_missing_anchor"
+                            && item["shapeRole"] == "blocked_anchor_glyph"
+                            && item["fiberShapeRole"].as_str().is_some()
+                            && item["carrierColorRole"].as_str().is_some()
+                    })
+                    .count()
+                    >= min_glyphs as usize),
+                "{case_id} must render semantic-anchor gaps as blocker glyphs with fiber/carrier roles"
+            );
+        }
+        assert!(
+            viewer["aatGeometryOverlays"]["omittedGeometryCounts"].is_object(),
+            "{case_id} must expose geometry omitted counts to the viewer payload"
+        );
 
         let report_text = serde_json::to_string(&report).expect("report serializes");
         for required in expected["requiredNonClaims"]
@@ -8620,10 +8691,13 @@ fn atom_viewer_reads_insight_report_surface_contract() {
         "renderForbiddenCages",
         "renderRepairMorphs",
         "renderAtomGlyphOverlays",
+        "atomGlyphGeometry",
+        "atomGlyphColor",
         "updateRepairMorphAnimation",
         "sceneAxisPosition",
         "legendSwatchColor",
         "legendValueText",
+        "gluingGeometry.",
         "thickness",
         "window.__archsigViewerDebug",
         "sceneColorHex",
