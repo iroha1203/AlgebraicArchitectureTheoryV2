@@ -801,7 +801,8 @@ File: `Formal/AG/Cohomology.lean`, `Formal/AG/Cohomology/Basic.lean`,
 `Formal/AG/Cohomology/BoundaryResidue.lean`,
 `Formal/AG/Cohomology/HigherOverlap.lean`,
 `Formal/AG/Cohomology/FlatnessCriterion.lean`,
-`Formal/AG/Cohomology/CoverNerve.lean`.
+`Formal/AG/Cohomology/CoverNerve.lean`,
+`Formal/AG/Cohomology/FiniteExamples.lean`.
 
 PRD-4 [第IV部 Obstruction Cohomology](lean_ag_part_4_obstruction_cohomology_prd.md)
 は AC1/R0 と AC2/R1 から着手している。Issue
@@ -829,6 +830,9 @@ Issue
 [#2064](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2064)
 では cover nerve と、明示的な有限次元 accounting data 下の定理12.2 / 系12.3 /
 定理12.4 / 系12.5 を追加した。
+Issue
+[#2066](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2066)
+では擬円周 boundary model の finite golden example を追加した。
 
 | 対象 | 現在の扱い | 残す境界 |
 | --- | --- | --- |
@@ -845,6 +849,7 @@ Issue
 | `IV.定義10.1 / 定理候補10.4` H2 coherence failure and five-term statement | `statement only` / `defined only` / `proved accessor`. `Formal/AG/Cohomology/HigherOverlap.lean` が `TripleOverlapCoherenceFailure`、`hCocycle`、`hClass`、`LowDegreeFiveTermData`、`FiveTermExact`、`FiveTermStatement`、`fiveTermExact_of_statement` を持つ。 | triple-overlap coherence failure は degree-two Čech cocycle と `H^2` class として扱う。定理候補10.4 は既存 cover-relative Čech complex に相対化された finite-cover Čech filtration provenance 付きの低次五項完全列 statement に限定し、スペクトル系列一般論と証明は主張しない。 |
 | `IV.定理11.1 / 系11.2` Cohomological Flatness Criterion | `proved under explicit Cohomological Flatness hypotheses`. `Formal/AG/Cohomology/FlatnessCriterion.lean` が `H1ClassVanishes`、`GluingObstructionClass`、`EffectiveAbelianObstructionTorsor`、`CohomologicalFlatnessCriterionHypotheses`、`cohomologicalFlatnessCriterion`、`adjustedGlobalLawfulSection_of_h1Class_zero`、`noAdjustedGlobalLawfulSection_of_h1Class_nonzero`、`localToGlobalFlatness` を持つ。 | local flatness、abelian coefficients、cocycle `g`、effective torsor、U-adequate cover、soundness / completeness、axis exactness、witness coverage、descent、effective adjustment は明示 field として扱う。torsor triviality を経由して `[g]=0` と調整後の大域 lawful section の同値を読む。abelianized class から non-abelian torsor の自明性が復元できるとは主張しない。 |
 | `IV.定義12.1 / 定理12.2 / 系12.3 / 定理12.4 / 系12.5` Cover nerve and topological debt accounting | `proved under explicit finite-dimensional accounting data`. `Formal/AG/Cohomology/CoverNerve.lean` が `CoverNerve`、`ParallelEdgeComponents`、`ParallelFaceComponents`、`edge_component_selected`、`face_component_selected`、`FiniteDimensionalNerveCohomologyData`、`topologicalDebtCapacity`、`ConstantCoefficientNerveReading`、`h1_equiv`、`dimSpace_eq_dimNerve`、`dimH1_eq_b1`、`ForestCoverGluingData`、`localGluingSufficiency`、`localGluingSufficiency_subsingleton`、`EulerCochainAccounting`、`eulerAccounting`、`ShapeStalkPreservingRefactor`、`chi_invariant_under_refactor` を持つ。 | cover nerve は chart / pairwise-overlap component / triple-overlap component の明示 structure であり、多重 component を許す。rank-nullity lower bound、constant coefficient nerve reading、forest vanishing、Euler invariance は、有限 poset regime、有限次元 `k`-linear coefficient data、selected `k`-linear comparison、tree-induction absorption、shape/stalk-preserving refactor data に相対化する。forest vanishing は selected `H^1` の各 class が `0` になる theorem として扱う。任意 cover の無条件計算定理や一般 spectral sequence は主張しない。 |
+| `IV.R10(a) / AC13` Pseudo-circle golden example | `proved finite example under explicit cover-relative H1 witness`. `Formal/AG/Cohomology/FiniteExamples.lean` が `FiniteExamples.PseudoCircleGolden.Chart`、`BoundaryEdge`、`coverNerve`、`each_chart_lawful`、`h0_witness_counting_sees_no_obstruction`、`boundaryCocycle`、`boundaryCocycle_AB_nonzero`、`CoverRelativeH1NonzeroWitness`、`concreteClass_nonzero`、`no_global_lawful_section_by_localFlatnessGap`、`pseudoCircle_h0_invisible_h1_obstructed` を持つ。 | 擬円周例は ArchSig v0.4.0 R14 golden fixture に対応する selected finite surface として扱う。H0 的 witness count は zero、finite boundary cocycle は visibly nonzero。actual cover-relative `K.CoverRelativeHn 1` の nonzero hidden coupling class は `CoverRelativeH1NonzeroWitness` として明示し、既存 `localFlatnessGap_no_globalLawfulSection` を呼んで compatible global lawful section が存在しないことを示す。ArchSig fixture JSON の検証、定理9.2 両方向例、forest / cycle nerve 例は AC14 に残す。 |
 
 第IV部 PRD-4 の証明対象ラベルは次の現在状態である。
 
@@ -863,6 +868,7 @@ Issue
 | `IV.定義10.1 / 定理候補10.4` | `statement only` / `defined only` / `proved accessor` |
 | `IV.定理11.1 / 系11.2` | `proved under explicit Cohomological Flatness hypotheses` |
 | `IV.定理12.2 / 系12.3 / 定理12.4 / 系12.5` | `proved under explicit finite-dimensional accounting data` |
+| `IV.R10(a) / AC13` | `proved finite example under explicit cover-relative H1 witness` |
 | `IV.定理13.2` | `future proof obligation` |
 | `IV.定理候補10.4 / 定理候補14.2` | `future proof obligation` |
 

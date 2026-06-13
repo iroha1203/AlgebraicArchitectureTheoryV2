@@ -4601,11 +4601,12 @@ File: `Formal/AG/Cohomology.lean`, `Formal/AG/Cohomology/Basic.lean`,
 `Formal/AG/Cohomology/BoundaryResidue.lean`,
 `Formal/AG/Cohomology/HigherOverlap.lean`,
 `Formal/AG/Cohomology/FlatnessCriterion.lean`,
-`Formal/AG/Cohomology/CoverNerve.lean`.
+`Formal/AG/Cohomology/CoverNerve.lean`,
+`Formal/AG/Cohomology/FiniteExamples.lean`.
 
 PRD-4 [第IV部 Obstruction Cohomology](lean_ag_part_4_obstruction_cohomology_prd.md)
 の AC1/R0、AC2/R1、AC3/R2 の一般 complex surface、AC4/R2 の有限
-poset 比較 target、AC5/R3、AC6/R4、AC7/R5、AC8/R6 first half、AC9/R6、AC10/R7、AC11/R8、AC12/R9 に対応する entrypoint である。現時点では
+poset 比較 target、AC5/R3、AC6/R4、AC7/R5、AC8/R6 first half、AC9/R6、AC10/R7、AC11/R8、AC12/R9、AC13/R10(a) に対応する entrypoint である。現時点では
 `Formal/AG/Cohomology` を build 対象へ追加し、PRD-2 `Site` と PRD-3
 `LawAlgebra` への prerequisite package、obstruction coefficient sheaf carrier、
 `O_X^U`-module valued coefficient surface、`Def_U = I_U`、`ConDef_U = I_U/I_U^2`
@@ -4625,7 +4626,8 @@ failure `H^2` class、低次五項完全列形の theorem-candidate statement、
 effective abelian torsor surface、Cohomological Flatness Criterion と
 Local-to-Global Flatness corollary、cover nerve と明示的な有限次元 accounting data 下の
 rank-nullity lower bound / constant coefficient nerve reading / forest vanishing /
-Euler invariance までを Lean 上に置く。
+Euler invariance、擬円周 golden example の H0/H1 分離と local-flatness-gap 型の
+global section 不存在 theorem までを Lean 上に置く。
 
 | 本文ラベル | Lean 名 | 種別 | 意味 | Status |
 | --- | --- | --- | --- | --- |
@@ -4642,6 +4644,7 @@ Euler invariance までを Lean 上に置く。
 | `IV.定義10.1 / 定理候補10.4` | `AAT.AG.Cohomology.TripleOverlapCoherenceFailure`, `TripleOverlapCoherenceFailure.hCocycle`, `TripleOverlapCoherenceFailure.hClass`, `LowDegreeFiveTermData`, `LowDegreeFiveTermData.FiveTermExact`, `LowDegreeFiveTermData.FiveTermStatement`, `LowDegreeFiveTermData.fiveTermExact_of_statement` | `structure` / `def` / `theorem` | triple-overlap coherence failure を degree-two Čech cocycle `h` と class `[h] in H^2(𝒰, Ob_U)` として定義し、定理候補10.4 は既存 cover-relative Čech complex に相対化された finite-cover Čech filtration provenance 付きの低次五項完全列 statement shape として `Prop` に記録する。一般スペクトル系列機構や statement の証明は構成しない。 | `statement only` / `defined only` / `proved accessor` |
 | `IV.定理11.1 / 系11.2` | `AAT.AG.Cohomology.H1ClassVanishes`, `GluingObstructionClass`, `GluingObstructionClass.h1Class`, `GluingObstructionClass.h1Class_eq`, `EffectiveAbelianObstructionTorsor`, `CohomologicalFlatnessCriterionHypotheses`, `CohomologicalFlatnessCriterionHypotheses.cohomologicalFlatnessCriterion`, `CohomologicalFlatnessCriterionHypotheses.adjustedGlobalLawfulSection_of_h1Class_zero`, `CohomologicalFlatnessCriterionHypotheses.noAdjustedGlobalLawfulSection_of_h1Class_nonzero`, `CohomologicalFlatnessCriterionHypotheses.localToGlobalFlatness` | `def` / `structure` / `theorem` | gluing obstruction を concrete cocycle `g` の class `[g] in H^1(𝒰, Ob_U)` として読み、effective abelian torsor、local flatness、abelian coefficients、U-adequate cover、soundness / completeness、axis exactness、witness coverage、descent、effective adjustment を明示 field とする仮定ブロックの下で、torsor triviality を経由して `[g]=0` と調整後の大域 lawful section の同値を証明し、`[g]≠0` なら調整後の大域 lawful section が存在しないこと、および local-to-global flatness を証明する。abelianization が non-abelian torsor の自明性を復元するとは主張しない。 | `proved under explicit Cohomological Flatness hypotheses` |
 | `IV.定義12.1 / 定理12.2 / 系12.3 / 定理12.4 / 系12.5` | `AAT.AG.Cohomology.CoverNerve`, `CoverNerve.ParallelEdgeComponents`, `CoverNerve.ParallelFaceComponents`, `CoverNerve.edge_component_selected`, `CoverNerve.face_component_selected`, `FiniteDimensionalNerveCohomologyData`, `FiniteDimensionalNerveCohomologyData.topologicalDebtCapacity`, `ConstantCoefficientNerveReading`, `ConstantCoefficientNerveReading.h1_equiv`, `ConstantCoefficientNerveReading.dimSpace_eq_dimNerve`, `ConstantCoefficientNerveReading.dimH1_eq_b1`, `ForestCoverGluingData`, `ForestCoverGluingData.localGluingSufficiency`, `ForestCoverGluingData.localGluingSufficiency_subsingleton`, `EulerCochainAccounting`, `EulerCochainAccounting.eulerAccounting`, `EulerCochainAccounting.ShapeStalkPreservingRefactor`, `EulerCochainAccounting.chi_invariant_under_refactor` | `structure` / `def` / `theorem` | cover nerve を chart 頂点、pairwise-overlap component 辺、triple-overlap component 面として定義し、多重 edge / face component を許す。有限 poset regime と有限次元 `k`-linear coefficient accounting data の下で `dim C^1 <= dim H^1 + dim C^0 + dim C^2` を証明し、定数係数の `k`-linear comparison data から `H^1(U,k) ≃ₗ[k] H^1(N(U),k)` と `dim H^1(U,k) = b_1(N(U))` を読む。forest / no triple faces / surjective restrictions から tree-induction absorption data を通じて selected `H^1` の全 class が `0` になること、shape/stalk-preserving refactor が Euler characteristic を保つことを証明する。 | `proved under explicit finite-dimensional accounting data` |
+| `IV.R10(a) / AC13` | `AAT.AG.Cohomology.FiniteExamples.PseudoCircleGolden.Chart`, `BoundaryEdge`, `edgeLeft`, `edgeRight`, `coverNerve`, `LocallyLawful`, `each_chart_lawful`, `witnessCountingObstruction`, `h0_witness_counting_sees_no_obstruction`, `BoundaryMismatchValue`, `boundaryCocycle`, `boundaryCocycle_AB_nonzero`, `CoverRelativeH1NonzeroWitness`, `CoverRelativeH1NonzeroWitness.concreteClass_nonzero`, `no_global_lawful_section_by_localFlatnessGap`, `pseudoCircle_h0_invisible_h1_obstructed` | `inductive` / `def` / `structure` / `theorem` | ArchSig v0.4.0 R14 golden fixture に対応する selected 擬円周 boundary model。各 chart は locally lawful、H0 的 witness count は zero、finite boundary cocycle は visibly nonzero。`CoverRelativeH1NonzeroWitness` が concrete `K.CechCocycle 1` と既存 `HiddenCouplingData.hiddenCouplingClass : K.CoverRelativeHn 1` を接続し、その actual cover-relative H1 class 非零から既存 `localFlatnessGap_no_globalLawfulSection` を呼んで compatible global lawful section 不在を証明する。 | `proved finite example under explicit cover-relative H1 witness` |
 
 Non-conclusions: この entrypoint は obstruction coefficient sheaf carrier、module-valued
 coefficient surface、`Def_U` / `ConDef_U` / `DerOb_U` placeholder の R1 package、
@@ -4653,10 +4656,12 @@ Local Flatness Gap theorem、R6 first half の 2-chart connecting homomorphism /
 boundary holonomy、R6 の explicit Boundary Residue hypotheses 下の theorem、
 R7 の `H^2` class と低次五項 statement、R8 の explicit Cohomological
 Flatness hypotheses 下の criterion theorem、R9 の explicit finite-dimensional
-accounting data 下の cover nerve theorem package だけを示す。任意の finite-poset regime が
+accounting data 下の cover nerve theorem package、R10(a) の selected pseudo-circle
+finite golden example だけを示す。任意の finite-poset regime が
 自動的に obstruction sheaf comparison data を持つこと、descent class の非零性や
 非零 hidden coupling class の具体例、一般 descent theorem、仮定なしの Boundary Residue theorem、
 仮定なしの Cohomological Flatness Criterion、任意 cover の無条件 nerve cohomology 計算、
+ArchSig fixture JSON の検証、定理9.2 両方向 finite example、forest / cycle nerve finite example、
 non-abelian torsor triviality、スペクトル系列一般論、derived category、cotangent complex、
 `Ext^1` はまだ形式化しない。
 
