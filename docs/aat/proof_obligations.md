@@ -803,7 +803,8 @@ File: `Formal/AG/Cohomology.lean`, `Formal/AG/Cohomology/Basic.lean`,
 `Formal/AG/Cohomology/FlatnessCriterion.lean`,
 `Formal/AG/Cohomology/CoverNerve.lean`,
 `Formal/AG/Cohomology/FiniteExamples.lean`,
-`Formal/AG/Cohomology/PeriodStokes.lean`.
+`Formal/AG/Cohomology/PeriodStokes.lean`,
+`Formal/AG/Cohomology/Aggregation.lean`.
 
 PRD-4 [第IV部 Obstruction Cohomology](lean_ag_part_4_obstruction_cohomology_prd.md)
 は AC1/R0 と AC2/R1 から着手している。Issue
@@ -837,6 +838,9 @@ Issue
 Issue
 [#2070](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2070)
 では period pairing、Stokes theorem、extension holonomy accounting convention を追加した。
+Issue
+[#2072](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2072)
+では aggregation map、comparison map、定理候補14.2 statement、scale-stable debt を追加した。
 
 | 対象 | 現在の扱い | 残す境界 |
 | --- | --- | --- |
@@ -856,6 +860,7 @@ Issue
 | `IV.R10(a) / AC13` Pseudo-circle golden example | `proved finite example under explicit cover-relative H1 witness`. `Formal/AG/Cohomology/FiniteExamples.lean` が `FiniteExamples.PseudoCircleGolden.Chart`、`BoundaryEdge`、`coverNerve`、`each_chart_lawful`、`h0_witness_counting_sees_no_obstruction`、`boundaryCocycle`、`boundaryCocycle_AB_nonzero`、`CoverRelativeH1NonzeroWitness`、`concreteClass_nonzero`、`no_global_lawful_section_by_localFlatnessGap`、`pseudoCircle_h0_invisible_h1_obstructed` を持つ。 | 擬円周例は ArchSig v0.4.0 R14 golden fixture に対応する selected finite surface として扱う。H0 的 witness count は zero、finite boundary cocycle は visibly nonzero。actual cover-relative `K.CoverRelativeHn 1` の nonzero hidden coupling class は `CoverRelativeH1NonzeroWitness` として明示し、既存 `localFlatnessGap_no_globalLawfulSection` を呼んで compatible global lawful section が存在しないことを示す。ArchSig fixture JSON の検証、定理9.2 両方向例、forest / cycle nerve 例は AC14 に残す。 |
 | `IV.R10(b)(c) / AC14` Boundary Residue and nerve finite examples | `proved finite examples under explicit packages`. `Formal/AG/Cohomology/FiniteExamples.lean` が `BoundaryResidueGolden.zero_boundaryResidue_glues`、`nonzero_boundaryResidue_blocks_gluing`、`boundaryResidue_two_direction_example`、`NerveGolden.forestCoverNerve`、`forestCoverGluingData`、`forestCover_H1_zero`、`cycleCoverNerve`、`cycleConstantCoefficientReading`、`cycleNerve_dimH1_eq_b1` を持つ。 | Boundary Residue 両方向例は既存 `BoundaryResidueHypotheses` に相対化し、`delta(b)=0` から global U-flat、`delta(b)≠0` から global U-flat 不在を読む。forest/cycle nerve 例は AC12 の `ForestCoverGluingData` と `ConstantCoefficientNerveReading` を finite selected examples として instantiate する。任意 cover の一般計算や ArchSig fixture JSON 検証は主張しない。 |
 | `IV.定義13.1 / 定理13.2 / 定義13.4` Period Stokes and holonomy accounting | `proved under explicit pairing/accounting data`. `Formal/AG/Cohomology/PeriodStokes.lean` が `FiniteCechChainComplex`、`boundaryOp`、`boundary_comp_zero`、`CechCochainChainPairing`、`pair`、`StokesCompatiblePairing`、`cechStokes`、`ConnectingBoundaryRepresentative`、`connectingStokes`、`ExtensionHolonomyAccounting`、`kappa_U_additive`、`kappa_U_zero` を持つ。 | Stokes theorem は selected chain complex、cochain-chain pairing、Stokes-compatible condition に相対化する。connecting formula は selected connecting representative と boundary pairing compatibility に相対化する。定義13.4 は `kappa_U` の加法性を defining property とする会計規約であり、定理13.2 から自動的に従う系ではない。 |
+| `IV.定義14.1 / 定理候補14.2 / 定義14.3` Aggregation and scale-stable debt | `statement only` / `defined only` / `proved accessor`. `Formal/AG/Cohomology/Aggregation.lean` が `FiniteSiteMorphism`、`PushforwardObstructionSheaf`、`HigherDirectImageCech`、`AggregationComparisonMap`、`InComparisonImage`、`AggregationFiveTermStatement`、`ScaleStableDebt`、`in_comparison_image` を持つ。 | finite site morphism、pushforward、higher direct image は selected statement surface として扱う。定理候補14.2 は五項完全列形の statement-only package であり、証明や spectral sequence 構成は主張しない。scale-stable debt は selected aggregation family 全体で comparison image に入ることとして定義する。 |
 
 第IV部 PRD-4 の証明対象ラベルは次の現在状態である。
 
@@ -877,6 +882,7 @@ Issue
 | `IV.R10(a) / AC13` | `proved finite example under explicit cover-relative H1 witness` |
 | `IV.R10(b)(c) / AC14` | `proved finite examples under explicit packages` |
 | `IV.定義13.1 / 定理13.2 / 定義13.4` | `proved under explicit pairing/accounting data` |
+| `IV.定義14.1 / 定理候補14.2 / 定義14.3` | `statement only` / `defined only` / `proved accessor` |
 | `IV.定理候補10.4 / 定理候補14.2` | `future proof obligation` |
 
 ## 現在の未解決カテゴリ
