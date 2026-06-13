@@ -1,7 +1,11 @@
 import Formal.AG.Atom.AATCore
 import Formal.AG.Atom.LawfulnessZero
+import Formal.AG.Site.FinitePoset
+import Formal.AG.Site.SheafCategory
 
 namespace AAT.AG
+
+open CategoryTheory
 
 namespace FiniteModel
 
@@ -316,6 +320,277 @@ def corePackage : AATCorePackage carrier :=
 theorem corePackage_object :
     corePackage.object = object :=
   rfl
+
+/-!
+## Part II finite site example
+
+The following singleton context/site extends the Part I finite model to the
+Part II site layer. It is intentionally selected and finite: it does not claim
+that every possible `ArchCtx(object)` is finite.
+-/
+
+/-- R11 / II.AC16: singleton context over the finite architecture object. -/
+def siteContext : Site.ArchCtx object where
+  minimal := {
+    Support := PUnit
+    Axis := PUnit
+    Observable := PUnit
+    supportReads := fun _ _ => True
+    axisReads := fun _ => True
+    observableReads := fun _ => True
+  }
+  Extension := PUnit
+  extension := PUnit.unit
+
+/-- R11 / II.AC16: identity readable morphism for the finite context example. -/
+def siteContextIdentityMorphism (W : Site.ArchCtx object) :
+    Site.ContextMorphism W W where
+  supportMap := id
+  axisMap := id
+  observableRestrict := id
+  supportReadable := True
+  axisReadable := True
+  observableFunctorial := True
+  nonGenerating := True
+  axisForgetting := False
+  supportRefinement := True
+  axisRefinement := True
+  baseChangeCompatible := True
+
+/-- R11 / II.AC16: equality preorder on contexts, used by the singleton selected poset. -/
+def siteContextPreorder : Site.ContextPreorderCategory object where
+  le W V := W = V
+  refl W := rfl
+  trans hWV hVX := hWV.trans hVX
+  readableMorphism := fun h => by
+    cases h
+    exact siteContextIdentityMorphism _
+  readableMorphism_isRestriction := fun h => by
+    cases h
+    exact ⟨trivial, trivial, trivial, trivial⟩
+
+/-- R11 / II.AC16: singleton selected finite context index. -/
+abbrev SiteContextIndex := PUnit
+
+/-- R11 / II.AC16: selected finite context for the singleton poset. -/
+def siteContextOf (_i : SiteContextIndex) : Site.ArchCtx object :=
+  siteContext
+
+/-- R11 / II.AC16: the selected context poset is finite. -/
+theorem siteContextIndex_finite : Finite SiteContextIndex :=
+  inferInstance
+
+/-- R11 / II.AC16: selected meet in the singleton context poset. -/
+def siteContextMeet (_i _j : SiteContextIndex) : SiteContextIndex :=
+  PUnit.unit
+
+/-- R11 / II.AC16: singleton selected context order maps into the site preorder. -/
+theorem siteContextLe_sound {i j : SiteContextIndex} (_h : True) :
+    siteContextPreorder.le (siteContextOf i) (siteContextOf j) :=
+  rfl
+
+/-- R11 / II.AC16: explicit pullback / overlap package for the equality context preorder. -/
+def siteOverlap : Site.ContextOverlapPullback siteContextPreorder where
+  overlap base _left _right := base
+  overlap_le_left := by
+    intro base left _right hl _hr
+    exact hl.symm
+  overlap_le_right := by
+    intro base _left right _hl hr
+    exact hr.symm
+  overlap_le_base := by
+    intro _base _left _right _hl _hr
+    rfl
+  overlap_lift := by
+    intro _base left _right X hl _hr hXleft _hXright
+    exact hXleft.trans hl
+
+/-- R11 / II.AC16: coverage requirements that make every selected finite datum visible. -/
+def siteCoverageRequirements :
+    Site.CoverageRequirements object lawUniverse signature where
+  selectedReading := lawUniverse.selectedReading
+  requiredSupport := fun _ _ => True
+  requiredWitness := fun _ _ => True
+  requiredAxis := fun _ _ => True
+  supportVisibleOn := fun _ _ => True
+  witnessVisibleOn := fun _ _ => True
+  axisReadableOn := fun _ _ => True
+  boundaryVisibleOn := fun _ _ => True
+
+/-- R11 / II.AC16: the finite AAT site over the PRD-1 finite model. -/
+def site : Site.AATSite object where
+  contextPreorder := siteContextPreorder
+  lawUniverse := lawUniverse
+  signature := signature
+  requirements := siteCoverageRequirements
+  overlap := siteOverlap
+
+/-- R11 / II.AC16: the singleton base object of the finite site. -/
+def siteBase : site.category :=
+  Site.ContextCategoryObject.of siteContextPreorder siteContext
+
+/-- R11 / II.AC16: singleton admissible cover of the finite site. -/
+def siteSingletonCover :
+    Site.AATCoverageFamily siteCoverageRequirements siteOverlap siteBase where
+  Index := PUnit
+  patch := fun _ => siteContext
+  inclusion := fun _ => rfl
+  admissible := {
+    atomSupportCoverage := fun _atom _hreq => ⟨PUnit.unit, trivial⟩
+    lawWitnessCoverage := fun _witness _hreq => Or.inl ⟨PUnit.unit, trivial⟩
+    signatureAxisCoverage := fun _axis _hreq => ⟨PUnit.unit, trivial⟩
+    boundaryCoverage := fun _i _j => trivial
+    nonGeneration := fun _i => trivial
+  }
+
+/-- R11 / II.AC16: selected witness ideal requirements for the finite site. -/
+def siteAdequacyRequirements :
+    Site.UAdequacyRequirements siteContextPreorder siteCoverageRequirements where
+  selectedWitnessIdeal := fun _ _ => True
+  witnessIdealPreservedBy := fun _h _hideal => trivial
+
+/-- R11 / II.AC16: direct `U`-adequacy of the singleton finite cover. -/
+theorem siteSingletonCover_uAdequate :
+    Site.UAdequateCover siteAdequacyRequirements siteSingletonCover where
+  topologyCover := Site.AATGrothendieckTopology.generate_mem siteSingletonCover
+  requiredSupportCovered := fun _atom _hreq => ⟨PUnit.unit, trivial⟩
+  requiredWitnessesVisible := fun _witness _hreq => Or.inl ⟨PUnit.unit, trivial⟩
+  requiredAxesReadable := fun _axis _hreq => ⟨PUnit.unit, trivial⟩
+  boundaryWitnessesVisible := fun _i _j => trivial
+  restrictionMapsPreserveWitnessIdeals := fun _i _hbase => trivial
+
+/-- R11 / II.AC16: the finite model has finitely many required witnesses. -/
+theorem site_requiredWitnessSubtype_finite :
+    Finite (Site.RequiredWitnessSubtype siteCoverageRequirements) := by
+  change Finite { witness : PUnit // True }
+  infer_instance
+
+/-- R11 / II.AC16: witness-closure cover package for the finite model. -/
+def siteWitnessClosureCover :
+    Site.WitnessClosureCover siteAdequacyRequirements siteOverlap siteBase where
+  SeedIndex := PUnit
+  seedPatch := fun _ => siteContext
+  seedInclusion := fun _ => rfl
+  localFiniteRequiredWitnesses := site_requiredWitnessSubtype_finite
+  RequiredWitnessSupport := fun _ => siteContext
+  requiredWitnessSupport_inclusion := fun _ => rfl
+  requiredWitnessSupport_visible := fun _ => trivial
+  requiredSupportCovered := fun _atom _hreq => ⟨Sum.inl PUnit.unit, trivial⟩
+  readableRequiredAxes := fun _axis _hreq => ⟨Sum.inl PUnit.unit, trivial⟩
+  visibleBoundaryWitnesses := fun _i _j => trivial
+
+/-- R11 / II.AC16: example theorem reading lemma 7.2A on the finite model. -/
+theorem siteWitnessClosureCover_uAdequate :
+    Site.UAdequateCover siteAdequacyRequirements
+      siteWitnessClosureCover.toAATCoverageFamily :=
+  Site.witnessClosureCover_uAdequate siteWitnessClosureCover
+
+/-- R11 / II.AC16: small coefficient presheaf on the finite site. -/
+def siteCoefficient : Site.AATPresheaf site where
+  obj _ := PUnit
+  map _ x := x
+  map_id _ := rfl
+  map_comp _ _ := rfl
+
+/-- R11 / II.AC16: selected finite nerve simplices for the singleton cover. -/
+def siteNerveSimplex : Nat -> Type
+  | 0 => PUnit
+  | _ + 1 => Empty
+
+/-- R11 / II.AC16: selected finite poset regime for the finite site. -/
+def finitePosetRegime : Site.FinitePosetAATSiteRegime site where
+  ContextIndex := SiteContextIndex
+  finiteContextIndex := siteContextIndex_finite
+  context := siteContextOf
+  contextLe := fun _ _ => True
+  contextLe_refl := fun _ => trivial
+  contextLe_trans := fun _hij _hjk => trivial
+  contextLe_sound := fun h => siteContextLe_sound h
+  contextMeet := siteContextMeet
+  contextMeet_le_left := fun _ _ => trivial
+  contextMeet_le_right := fun _ _ => trivial
+  context_le_meet := fun _hik _hjk => trivial
+  base := siteBase
+  cover := siteSingletonCover
+  finiteCoverIndex := by
+    change Finite PUnit
+    infer_instance
+  nerveSimplex := siteNerveSimplex
+  finiteNerveSimplex := by
+    intro n
+    cases n with
+    | zero =>
+        change Finite PUnit
+        infer_instance
+    | succ _ =>
+        change Finite Empty
+        infer_instance
+  simplexIndices := by
+    intro n simplex _k
+    cases n with
+    | zero => exact PUnit.unit
+    | succ _ => exact Empty.elim simplex
+  simplexOverlap := by
+    intro n simplex
+    cases n with
+    | zero => exact siteContext
+    | succ _ => exact Empty.elim simplex
+  simplexOverlap_le_patch := by
+    intro n simplex _k
+    cases n with
+    | zero => rfl
+    | succ _ => exact Empty.elim simplex
+  adequacyRequirements := siteAdequacyRequirements
+  coverAdequate := siteSingletonCover_uAdequate
+  coefficient := siteCoefficient
+
+/-- R11 / II.AC16: example theorem for the selected finite context poset. -/
+theorem finitePosetRegime_context_finite :
+    Finite finitePosetRegime.ContextIndex :=
+  finitePosetRegime.context_index_finite
+
+/-- R11 / II.AC16: example theorem for the selected singleton meet. -/
+theorem finitePosetRegime_context_meet_left (i j : finitePosetRegime.ContextIndex) :
+    finitePosetRegime.contextLe (finitePosetRegime.contextMeet i j) i :=
+  finitePosetRegime.contextMeet_le_left i j
+
+/-- R11 / II.AC16: the singleton finite site has the top cover. -/
+theorem site_top_mem :
+    (⊤ : Sieve siteBase) ∈ site.topology siteBase :=
+  site.top_mem siteBase
+
+/-- R11 / II.AC16: the singleton cover has nerve dimension zero. -/
+theorem finitePosetRegime_nerveDimension_zero :
+    Site.FinitePosetNerveDimension finitePosetRegime 0 := by
+  intro n hn
+  cases n with
+  | zero =>
+      exact False.elim ((Nat.lt_irrefl 0) hn)
+  | succ _ =>
+      change IsEmpty Empty
+      infer_instance
+
+/-- R11 / II.AC16: zero differential Čech complex on the singleton finite site. -/
+def finitePosetCechComplex : Site.FinitePosetCechComplex finitePosetRegime Nat where
+  differential := fun _n _cochain _simplex => 0
+  differential_zero := fun _n => rfl
+
+/-- R11 / II.AC16: example theorem for finite summands of the Čech complex. -/
+theorem finitePosetRegime_cechComplex_finite (n : Nat) :
+    Finite (Site.FinitePosetCechSimplex finitePosetRegime n) :=
+  Site.finitePosetCechComplex_finite finitePosetRegime n
+
+/--
+R11 / II.AC16: example theorem reading proposition 7.2C on the finite model.
+
+The singleton cover has nerve dimension zero, so every positive degree
+vanishes in the finite cover-relative Čech vocabulary.
+-/
+theorem finitePosetRegime_cech_vanishes_above_dimension {n : Nat} (hn : 0 < n) :
+    Site.FinitePosetCechCohomologyVanishes finitePosetRegime Nat n :=
+  Site.finitePosetCechCohomology_vanishes_above_nerveDimension
+    finitePosetRegime Nat finitePosetCechComplex
+    finitePosetRegime_nerveDimension_zero hn
 
 end FiniteModel
 
