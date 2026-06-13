@@ -961,6 +961,12 @@ Issue
 では well-founded repair comparison profile、sound repair step evidence、
 定理13.3の infinite repair sequence exclusion、定理13.4の finite sound synthesis
 package、および第V部 finite examples を追加した。
+Issue
+[#2109](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2109)
+では R12 の最終 scan と台帳同期を行い、`Formal/AG` 全体に
+`axiom` / `admit` / `sorry` / `unsafe` がないこと、`Formal/AG.lean` が
+第V部 entrypoint と finite examples を import すること、両台帳が第V部の
+最終 Lean surface と residual boundary に一致することを確認した。
 PRD 本体の checkbox は prd-loop の不変条件として編集せず、達成状態はこの台帳と
 tracking Issue [#2076](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2076)
 で管理する。
@@ -980,6 +986,7 @@ tracking Issue [#2076](https://github.com/iroha1203/AlgebraicArchitectureTheoryV
 | `V.定義12.1 / 定理12.2` Hilbert series conflict accounting | `proved under explicit Hilbert-series / Euler-characteristic data`. `HilbertSeriesTheory.HilbertSeries`、`HilbertSeries.zero_coeff`、`add_coeff`、`sub_coeff`、`HilbertSeries.shift`、`GradedMonomialConflictRegime`、`GradedMonomialConflictRegime.homogeneousMonomialIdeals_certificate`、`HilbertSeriesShortExactPackage`、`HilbertSeriesShortExactPackage.additivity_certificate`、`ShiftedFreeHilbertSeriesPackage`、`ShiftedFreeHilbertSeriesPackage.shiftedFree_certificate`、`FiniteComplexEulerCharacteristicPackage`、`FiniteComplexEulerCharacteristicPackage.eulerCharacteristic_certificate`、`HilbertSeriesConflictIdentityPackage`、`HilbertSeriesConflictIdentityPackage.denominatorClearedIdentity_certificate`、`eulerCharacteristic_certificate`、`interferenceSeries`、`interferenceSeries_coeff` を持つ。 | Hilbert series は degree-wise coefficient reading として扱い、有理関数表示は主張しない。定理12.2 は selected graded monomial regime と Euler-characteristic package に相対化した denominator-cleared identity として読む。 |
 | `V.定義13.1 / 定義13.2 / 定理13.3 / 定理13.4` Well-founded repair | `proved under explicit well-founded repair profile / finite synthesis data`. `WellFoundedRepair.RepairComparisonProfile`、`RepairComparisonProfile.step_decreases_certificate`、`InfiniteRepairSequence`、`no_infinite_repair_sequence`、`SoundRepairStepEvidence`、`SoundRepairStepEvidence.sound_or_certificate`、`SynthesisOutput`、`SoundRepairSynthesisPackage`、`finite_trace_certificate`、`emitsOnlySoundStepsOrNoSolutionCertificate_certificate`、`output_cleared_or_noSolution` を持つ。 | 定理13.3 は selected step relation が well-founded comparison で下降することに相対化する。定理13.4 は finite `List` trace と cleared / no-solution output package に相対化し、solver completeness、global repair optimality、全 law universe 同時改善は主張しない。 |
 | `V.R11 finite examples` | `proved examples under explicit certificates / selected audit data`. `Formal/AG/Examples/DerivedPart5.lean` が `Example56TorCalculation`、`Example56TorCalculation.tor1_nonzero`、`sharedWitness_numeric_residue_path`、`sharedWitness_numeric_u_improves_not_v_nonincreasing`、`sharedWitnessHilbertRegime`、`sharedWitnessG5NumericPackage`、`sharedWitnessG5_denominatorClearedIdentity`、`sharedWitnessG5_interference_coeff_zero`、`smallRepairProfile`、`smallRepair_step_two_one`、`smallRepair_step_one_zero`、`smallRepair_no_infinite_sequence`、`smallRepairClearedSynthesis`、`smallRepairCleared_trace_length`、`smallRepairCleared_output`、`smallRepairNoSolutionSynthesis`、`smallRepairNoSolution_output` を持つ。 | 例5.6 Tor 非零は既存の explicit principal-resolution certificate から読む。G5 数値例は selected zeroed coefficient audit package として扱い、有理関数展開や一般 monomial Hilbert series 計算は主張しない。 |
+| `V.R12 final ledger / scan` | `proved final ledger sync`. `rg -n "\b(axiom\|admit\|sorry\|unsafe)\b" Formal/AG Formal/AG.lean` は no match。`Formal/AG.lean` は `Formal.AG.Derived` と `Formal.AG.Examples.DerivedPart5` を import し、`lake build` 対象に入る。 | R12 は台帳・検証の完了確認であり、新しい数学 claim は追加しない。余接複体 `L_{Flat/X}` と `Ext^1` は未割当 future proof obligation のまま維持する。 |
 | `IV.定義2.4 DerOb_U` の内部構成 | `future proof obligation` / `unassigned`. PRD-5 R0/R1 では触らず、PRD-5 本文が展開する chart-level Koszul / Tor 構成とは別境界として維持する。 | 余接複体 `L_{Flat/X}` と `Ext^1` の一般形式化は PRD-5 の現在 scope では実装しない。 |
 
 第V部 PRD-5 の証明対象ラベルは次の現在状態である。
@@ -999,6 +1006,7 @@ tracking Issue [#2076](https://github.com/iroha1203/AlgebraicArchitectureTheoryV
 | `V.定理12.2` | `proved under explicit Hilbert-series / Euler-characteristic data` |
 | `V.定理13.3 / 定理13.4` | `proved under explicit well-founded repair profile / finite synthesis data` |
 | `V.R11 finite examples` | `proved examples under explicit certificates / selected audit data` |
+| `V.R12 final ledger / scan` | `proved final ledger sync` |
 
 ## 現在の未解決カテゴリ
 
