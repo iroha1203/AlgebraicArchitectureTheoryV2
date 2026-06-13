@@ -307,6 +307,21 @@ fn cli_analyze_v2_emits_insight_report_brief_and_viewer_scene_contract() {
             .any(|entry| entry == "measured_nonzero structural verdict"),
         "deterministic ranking basis must be recorded"
     );
+    let ranking_basis = report["rankingBasis"]
+        .as_array()
+        .expect("ranking basis is array");
+    let boundary_rank = ranking_basis
+        .iter()
+        .position(|entry| entry == "measurement boundary")
+        .expect("measurement boundary ranking basis is recorded");
+    let zero_rank = ranking_basis
+        .iter()
+        .position(|entry| entry == "measured_zero confirmation")
+        .expect("measured_zero ranking basis is recorded");
+    assert!(
+        boundary_rank < zero_rank,
+        "ranking basis must place measurement boundary before measured_zero confirmation"
+    );
     assert_eq!(
         report["insightCards"][0]["tourRefs"][0], report["guidedTours"][0]["tourId"],
         "Insight Card tourRefs and Tour insightRefs must be mutually linked"
@@ -402,6 +417,71 @@ fn cli_analyze_v2_emits_insight_report_brief_and_viewer_scene_contract() {
                 && scene["layers"][0]["geometryRole"] == "ribbon"),
         "H1 scene must expose cocycle representative ribbon/seam"
     );
+    let boundary_scene = report["viewerVisualScenes"]
+        .as_array()
+        .expect("scenes are array")
+        .iter()
+        .find(|scene| scene["sceneId"] == "boundary-assumption")
+        .expect("boundary scene is present");
+    let boundary_layers = boundary_scene["layers"]
+        .as_array()
+        .expect("boundary scene layers are array");
+    let boundary_encodings = boundary_scene["visualEncodings"]
+        .as_array()
+        .expect("boundary scene visual encodings are array");
+    assert_eq!(
+        boundary_layers.len(),
+        6,
+        "boundary scene must expose one layer per checked/assumed/unknown/unmeasured/not_computed/violated state"
+    );
+    for state in [
+        "checked",
+        "assumed",
+        "unknown",
+        "unmeasured",
+        "not_computed",
+        "violated",
+    ] {
+        assert!(
+            boundary_layers
+                .iter()
+                .any(|layer| layer["boundaryState"] == state
+                    && layer["encodingRef"] == format!("encoding:boundary-assumption:{state}")),
+            "boundary scene must include a layer for {state}"
+        );
+        assert!(
+            boundary_encodings
+                .iter()
+                .any(|encoding| encoding["boundaryState"] == state
+                    && encoding["colorRole"] == state
+                    && encoding["shapeRole"].as_str().is_some()
+                    && encoding["lineRole"].as_str().is_some()
+                    && encoding["textRole"].as_str().is_some()),
+            "boundary scene must include visual encoding for {state}"
+        );
+    }
+    let repair_scene = report["viewerVisualScenes"]
+        .as_array()
+        .expect("scenes are array")
+        .iter()
+        .find(|scene| scene["sceneId"] == "repair-dual")
+        .expect("repair scene is present");
+    assert!(
+        repair_scene["nonClaims"]
+            .as_array()
+            .expect("repair scene nonClaims are array")
+            .iter()
+            .any(|claim| claim
+                .as_str()
+                .is_some_and(|text| text.contains("not a semantic refactor guarantee"))),
+        "repair scene must carry the not-auto-repair non-claim"
+    );
+    assert!(
+        repair_scene["visualEncodings"][0]["textRole"]
+            .as_str()
+            .is_some_and(|text| text.contains("not automatic repair")),
+        "repair scene text role must keep the non-automatic repair boundary visible"
+    );
     assert_eq!(
         viewer["decisionBar"]["conclusion"],
         "MEASURED_H1_OBSTRUCTION_UNDER_PROFILE"
@@ -445,6 +525,10 @@ fn cli_analyze_v2_emits_insight_report_brief_and_viewer_scene_contract() {
     assert_eq!(
         viewer["omittedDetailCounts"]["omittedSceneLayerObjects"].as_u64(),
         Some(0)
+    );
+    assert_eq!(
+        viewer["reportPane"]["omittedDetailCounts"], viewer["omittedDetailCounts"],
+        "report pane and viewer payload must agree on omitted detail counts"
     );
     assert_eq!(summary["readThisFirst"]["heading"], "Read this first");
     assert_eq!(
@@ -493,6 +577,24 @@ fn cli_analyze_v2_insight_surface_preserves_false_clean_and_not_computed_boundar
             .any(|card| card["kind"] == "no_measured_glue_mismatch"),
         "measured_zero must be represented as a profile-relative zero insight"
     );
+    let card_kinds = report["insightCards"]
+        .as_array()
+        .expect("insight cards are array")
+        .iter()
+        .map(|card| card["kind"].as_str().unwrap_or_default())
+        .collect::<Vec<_>>();
+    let boundary_index = card_kinds
+        .iter()
+        .position(|kind| *kind == "measurement_boundary")
+        .expect("fixture must surface a measurement boundary card");
+    let zero_index = card_kinds
+        .iter()
+        .position(|kind| *kind == "no_measured_glue_mismatch")
+        .expect("fixture must surface a measured_zero card");
+    assert!(
+        boundary_index < zero_index,
+        "measurement boundary card must rank before measured_zero confirmation when both are present"
+    );
     assert!(
         viewer["viewerVisualScenes"]
             .as_array()
@@ -512,8 +614,8 @@ fn cli_analyze_v2_insight_surface_preserves_false_clean_and_not_computed_boundar
             .expect("viewer visual scenes are array")
             .iter()
             .any(|scene| scene["sceneId"] == "overview"
-                && scene["visualEncodings"][0]["colorRole"] == "measured_zero"),
-        "zero top insight must render overview as measured_zero, not a nonzero beacon"
+                && scene["visualEncodings"][0]["colorRole"] == "unknown"),
+        "measurement boundary top insight must render overview as boundary/unknown, not a false clean or nonzero beacon"
     );
     assert!(
         viewer["viewerVisualScenes"]
@@ -600,6 +702,15 @@ fn cli_analyze_v2_insight_surface_preserves_false_clean_and_not_computed_boundar
                     .is_some_and(|text| text.contains("no_common_ambient"))),
         "LawConflict scene must show blocking reason instead of an empty conflict view"
     );
+    assert!(
+        viewer["viewerVisualScenes"]
+            .as_array()
+            .expect("viewer visual scenes are array")
+            .iter()
+            .any(|scene| scene["sceneId"] == "law-conflict-tor"
+                && scene["visualEncodings"][0]["colorRole"] == "not_computed"),
+        "LawConflict not_computed blocker must remain visually distinct"
+    );
 }
 
 #[test]
@@ -645,6 +756,8 @@ fn cli_analyze_v2_insight_viewer_truncates_large_background_projection() {
     ]);
 
     let viewer = read_json(&out_dir.join("archsig-atom-viewer-data.json"));
+    let brief = fs::read_to_string(out_dir.join("archsig-insight-brief.md"))
+        .expect("insight brief is generated");
     assert!(
         viewer["finitePosetSite"]["atoms"]
             .as_array()
@@ -661,6 +774,20 @@ fn cli_analyze_v2_insight_viewer_truncates_large_background_projection() {
             .is_some_and(|count| count > 0),
         "viewer payload must report omitted background atoms"
     );
+    for key in [
+        "omittedAtoms",
+        "omittedEdges",
+        "omittedContextMemberships",
+        "omittedCoverOverlaps",
+        "omittedSceneLayerObjects",
+        "omittedLabels",
+        "omittedSourceRefs",
+    ] {
+        assert!(
+            brief.contains(key),
+            "insight brief must include omitted detail count for {key}"
+        );
+    }
     assert!(
         viewer["largeGraphStrategy"]["topInsightEvidencePinning"]["preservedRefs"]
             .as_array()

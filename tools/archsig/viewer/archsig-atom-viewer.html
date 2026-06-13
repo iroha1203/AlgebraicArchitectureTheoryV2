@@ -1233,19 +1233,22 @@
 
     function renderSceneLayers(scene, positions) {
       if (!scene || !Array.isArray(scene.layers) || scene.sceneStatus === "not_active_for_packet") return;
-      const encoding = Array.isArray(scene.visualEncodings) ? scene.visualEncodings[0] || {} : {};
+      const encodings = Array.isArray(scene.visualEncodings) ? scene.visualEncodings : [];
+      const encodingById = new Map(encodings.map((encoding) => [encoding.encodingId, encoding]));
       const refs = scene.primaryRefs || {};
       const atomRefs = Array.isArray(refs.atomRefs) ? refs.atomRefs : [];
       const contextRefs = Array.isArray(refs.contextRefs) ? refs.contextRefs : [];
       const points = [...atomRefs, ...contextRefs].map((ref) => positions.get(ref)).filter(Boolean);
       const center = points.length ? centroid(points) : new THREE.Vector3(0, 0, 0);
       scene.layers.forEach((layer, index) => {
+        const encoding = encodingById.get(layer.encodingRef) || encodings[0] || {};
         const mesh = sceneLayerMesh(layer, encoding, center, index, points.length);
         if (!mesh) return;
-        mesh.userData = { kind: "sceneLayer", scene, layer };
+        mesh.userData = { kind: "sceneLayer", scene, layer, encoding };
         edgeGroup.add(mesh);
       });
       if (points.length > 1) {
+        const encoding = encodings[0] || {};
         const geometry = new THREE.BufferGeometry();
         const vertices = [];
         points.forEach((point) => vertices.push(center.x, center.y, center.z, point.x, point.y, point.z));
@@ -1256,7 +1259,7 @@
           opacity: 0.68
         });
         const lines = new THREE.LineSegments(geometry, material);
-        lines.userData = { kind: "sceneLayerRefs", scene };
+        lines.userData = { kind: "sceneLayerRefs", scene, encoding };
         edgeGroup.add(lines);
       }
     }
@@ -1303,6 +1306,9 @@
         source_evidence: 0x8bd46e,
         unknown: 0x9fb3c8,
         checked: 0x64d6be,
+        assumed: 0x73b7ff,
+        unmeasured: 0x8a96a8,
+        violated: 0xff4d7a,
         not_applicable: 0x5f6f86
       };
       return colors[role] || 0xf2c15f;
@@ -2306,17 +2312,22 @@
       pointer.y = -(((event.clientY - rect.top) / Math.max(rect.height, 1)) * 2 - 1);
       raycaster.setFromCamera(pointer, camera);
       const hits = raycaster.intersectObjects([atomInstanceMesh].filter(Boolean), false);
-      if (!hits.length) {
-        detailEl.hidden = true;
-        selectedAtomKey = null;
-        return;
-      }
-      const hit = hits[0];
-      if (hit.object === atomInstanceMesh) {
+      if (hits.length && hits[0].object === atomInstanceMesh) {
+        const hit = hits[0];
         const node = renderedAtoms[hit.instanceId];
         selectedAtomKey = node?.nodeId || null;
         renderDetail("Atom", node);
+        return;
       }
+      const sceneHits = raycaster.intersectObjects(edgeGroup.children, true)
+        .filter((hit) => hit.object?.userData?.kind === "sceneLayer" || hit.object?.userData?.kind === "sceneLayerRefs");
+      if (sceneHits.length) {
+        const { scene, layer, encoding } = sceneHits[0].object.userData;
+        renderDetail("Scene", sceneDetailItem(scene, layer, encoding));
+        return;
+      }
+      detailEl.hidden = true;
+      selectedAtomKey = null;
     }
 
     function renderDetail(kind, item) {
@@ -2348,6 +2359,31 @@
       detailEl.hidden = false;
     }
 
+    function sceneDetailItem(scene, layer = {}, encoding = {}) {
+      const refs = layer.refs || scene.primaryRefs || {};
+      return {
+        what: scene.userQuestion,
+        conclusion: scene.sceneStatus,
+        recommendedNextAction: scene.title,
+        boundaryDigest: scene.boundaryDigestRef,
+        nonClaims: scene.nonClaims,
+        labels: [
+          scene.sceneId,
+          layer.kind,
+          layer.boundaryState && `boundary:${layer.boundaryState}`,
+          encoding.colorRole && `color:${encoding.colorRole}`,
+          encoding.shapeRole && `shape:${encoding.shapeRole}`,
+          encoding.lineRole && `line:${encoding.lineRole}`,
+          encoding.textRole && `text:${encoding.textRole}`
+        ].filter(Boolean),
+        detailRefs: [
+          ...(Array.isArray(refs.insightRefs) ? refs.insightRefs : []),
+          ...(Array.isArray(refs.atomRefs) ? refs.atomRefs.slice(0, 4) : []),
+          ...(Array.isArray(refs.contextRefs) ? refs.contextRefs.slice(0, 4) : [])
+        ]
+      };
+    }
+
     async function handleReportAction(event) {
       const button = event.target.closest("[data-tour-id], [data-scene-id], [data-copy-source-refs]");
       if (!button) return;
@@ -2357,6 +2393,8 @@
       if (button.dataset.sceneId) {
         viewModeEl.value = modeForScene(button.dataset.sceneId);
         renderScene();
+        const scene = (currentData?.viewerVisualScenes || []).find((item) => item.sceneId === button.dataset.sceneId);
+        if (scene) renderDetail("Scene", sceneDetailItem(scene, scene.layers?.[0], scene.visualEncodings?.[0]));
         status(`Scene: ${button.dataset.sceneId}`);
       }
       if (button.dataset.copySourceRefs) {

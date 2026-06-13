@@ -1297,6 +1297,7 @@ pub fn build_insight_report_v1(
     let viewer_visual_scenes = insight_viewer_visual_scenes_v1(normalized, packet, &insight_cards);
     let guided_tours = insight_guided_tours_v1(&insight_cards);
     let copy_blocks = insight_copy_blocks_v1(normalized, &insight_cards, &boundary_digest);
+    let omitted_detail_counts = insight_omitted_detail_counts_v1(normalized, &viewer_visual_scenes);
     let top_card = insight_cards.first().cloned().unwrap_or_else(|| {
         json!({
             "id": "insight:measurement-boundary:empty",
@@ -1350,6 +1351,7 @@ pub fn build_insight_report_v1(
         "insightCards": insight_cards,
         "actionQueue": action_queue,
         "boundaryDigest": boundary_digest,
+        "omittedDetailCounts": omitted_detail_counts,
         "viewerVisualScenes": viewer_visual_scenes,
         "guidedTours": guided_tours,
         "copyBlocks": copy_blocks,
@@ -1480,6 +1482,23 @@ pub fn build_insight_brief_v1(report: &Value) -> String {
         "- blocking: {}",
         number_at(report, &["boundaryDigest", "blockingCount"])
     ));
+    if report["omittedDetailCounts"].is_object() {
+        lines.push("- omitted detail counts:".to_string());
+        for key in [
+            "omittedAtoms",
+            "omittedEdges",
+            "omittedContextMemberships",
+            "omittedCoverOverlaps",
+            "omittedSceneLayerObjects",
+            "omittedLabels",
+            "omittedSourceRefs",
+        ] {
+            lines.push(format!(
+                "  - {key}: {}",
+                number_at(report, &["omittedDetailCounts", key])
+            ));
+        }
+    }
     lines.push(String::new());
     lines.push("## Artifact links".to_string());
     for key in ["summaryRef", "briefRef", "viewerDataRef"] {
@@ -1887,6 +1906,38 @@ fn insight_boundary_digest(packet: &ArchSigMeasurementPacketV1, summary: &Value)
     })
 }
 
+fn insight_omitted_detail_counts_v1(normalized: &NormalizedArchMapV2, scenes: &[Value]) -> Value {
+    let atom_count = normalized.atoms.len();
+    let context_memberships = normalized
+        .atoms
+        .iter()
+        .map(|atom| atom.context_memberships.len())
+        .sum::<usize>();
+    let cover_overlaps = normalized
+        .covers
+        .iter()
+        .map(|cover| cover.context_ids.len().saturating_sub(1))
+        .sum::<usize>();
+    let scene_layer_objects = scenes
+        .iter()
+        .flat_map(|scene| scene["layers"].as_array().into_iter().flatten())
+        .count();
+    json!({
+        "omittedAtoms": if atom_count > 10_000 { atom_count.saturating_sub(10_000) } else { 0 },
+        "omittedEdges": 0,
+        "omittedContextMemberships": if context_memberships > 20_000 { context_memberships.saturating_sub(20_000) } else { 0 },
+        "omittedCoverOverlaps": if cover_overlaps > 10_000 { cover_overlaps.saturating_sub(10_000) } else { 0 },
+        "omittedSceneLayerObjects": if scene_layer_objects > 1_000 { scene_layer_objects.saturating_sub(1_000) } else { 0 },
+        "omittedLabels": if atom_count > 10_000 { atom_count.saturating_sub(10_000) } else { 0 },
+        "omittedSourceRefs": 0,
+        "omittedReasons": [
+            "large graph projection may aggregate background geometry",
+            "top insight support and blocking reason objects are preserved before background objects",
+            "viewer data remains a projection and does not embed raw source content"
+        ]
+    })
+}
+
 fn insight_action_queue_v1(cards: &[Value]) -> Vec<Value> {
     cards
         .iter()
@@ -1982,12 +2033,12 @@ fn insight_viewer_visual_scenes_v1(
     let has_repair = cards
         .iter()
         .any(|card| string_field(card, "kind") == "minimal_repair_candidate");
-    let has_law_conflict = cards.iter().any(|card| {
-        matches!(
-            string_field(card, "kind").as_str(),
-            "policy_conflict" | "not_computed_blocker"
-        )
-    });
+    let has_policy_conflict = cards
+        .iter()
+        .any(|card| string_field(card, "kind") == "policy_conflict");
+    let has_not_computed_blocker = cards
+        .iter()
+        .any(|card| string_field(card, "kind") == "not_computed_blocker");
     let has_debt = cards
         .iter()
         .any(|card| string_field(card, "kind") == "architecture_debt_mass");
@@ -2100,21 +2151,27 @@ fn insight_viewer_visual_scenes_v1(
             "broken_line",
             has_repair,
         ),
-        scene_v1(
-            "repair-dual",
-            "repair_dual",
-            "Repair",
-            "Which candidate support intersects measured obstructions?",
-            ("forbidden support", "candidate set", "lower-bound pressure"),
-            "repair_candidate_cut",
-            "cut",
-            "repairCandidateCut",
-            "minimal repair hitting set",
-            &obstruction_refs,
-            "repair_candidate",
-            "cut",
-            "arrow",
-            has_repair,
+        with_scene_non_claims(
+            scene_v1(
+                "repair-dual",
+                "repair_dual",
+                "Repair",
+                "Which candidate support intersects measured obstructions?",
+                ("forbidden support", "candidate set", "lower-bound pressure"),
+                "repair_candidate_cut",
+                "cut",
+                "repairCandidateCut",
+                "minimal repair hitting set; not automatic repair",
+                &obstruction_refs,
+                "repair_candidate",
+                "cut",
+                "arrow",
+                has_repair,
+            ),
+            &[
+                "This is a combinatorial repair candidate. It is not a semantic refactor guarantee.",
+                "This does not prove repair safety.",
+            ],
         ),
         scene_v1(
             "law-conflict-tor",
@@ -2129,16 +2186,22 @@ fn insight_viewer_visual_scenes_v1(
             "law_conflict_bridge",
             "bridge",
             "lawConflictBridge",
-            "common ambient or no_common_ambient blocker",
+            if has_not_computed_blocker {
+                "no_common_ambient blocker or not_computed reason code"
+            } else {
+                "common ambient conflict witness"
+            },
             &law_refs,
-            if has_law_conflict {
+            if has_not_computed_blocker {
                 "not_computed"
+            } else if has_policy_conflict {
+                "measured_nonzero"
             } else {
                 "not_applicable"
             },
             "wall",
             "broken_line",
-            has_law_conflict,
+            has_policy_conflict || has_not_computed_blocker,
         ),
         scene_v1(
             "hodge-debt-field",
@@ -2160,26 +2223,7 @@ fn insight_viewer_visual_scenes_v1(
             "contour",
             has_debt,
         ),
-        scene_v1(
-            "boundary-assumption",
-            "boundary_assumption",
-            "Boundary",
-            "Which regions are checked, assumed, unknown, unmeasured, not_computed, or violated?",
-            (
-                "evidence contract",
-                "assumption status",
-                "blocker intensity",
-            ),
-            "boundary_wall",
-            "wall",
-            "boundaryWall",
-            "measurement boundary state",
-            &boundary_refs,
-            "unknown",
-            "wall_fog",
-            "broken_line",
-            true,
-        ),
+        boundary_scene_v1(&boundary_refs),
         scene_v1(
             "source-evidence",
             "source_evidence",
@@ -2339,6 +2383,113 @@ fn scene_v1(
             "textRole": if active { text_role.to_string() } else { format!("not active for this packet: {text_role}") }
         }],
         "boundaryDigestRef": "boundary-digest:main"
+    })
+}
+
+fn with_scene_non_claims(mut scene: Value, non_claims: &[&str]) -> Value {
+    scene["nonClaims"] = json!(non_claims);
+    scene
+}
+
+fn boundary_scene_v1(primary_refs: &Value) -> Value {
+    let states = [
+        (
+            "checked",
+            "checked_boundary_surface",
+            "surface",
+            "boundaryChecked",
+            "checked evidence boundary",
+            "checked",
+            "solid_surface",
+            "thin_line",
+        ),
+        (
+            "assumed",
+            "assumed_boundary_surface",
+            "surface",
+            "boundaryAssumed",
+            "assumed profile boundary",
+            "assumed",
+            "translucent_surface",
+            "thin_line",
+        ),
+        (
+            "unknown",
+            "unknown_boundary_region",
+            "region",
+            "boundaryUnknown",
+            "unknown unresolved region",
+            "unknown",
+            "grey_region",
+            "broken_line",
+        ),
+        (
+            "unmeasured",
+            "unmeasured_boundary_fog",
+            "fog",
+            "boundaryUnmeasured",
+            "unmeasured support",
+            "unmeasured",
+            "fog",
+            "dotted_line",
+        ),
+        (
+            "not_computed",
+            "not_computed_blocking_wall",
+            "wall",
+            "boundaryNotComputed",
+            "not_computed blocker reason",
+            "not_computed",
+            "blocking_wall",
+            "broken_line",
+        ),
+        (
+            "violated",
+            "violated_boundary",
+            "broken_boundary",
+            "boundaryViolated",
+            "violated assumption",
+            "violated",
+            "red_broken_boundary",
+            "broken_line",
+        ),
+    ];
+    json!({
+        "sceneId": "boundary-assumption",
+        "kind": "boundary_assumption",
+        "title": "Boundary",
+        "sceneStatus": "active",
+        "userQuestion": "Which regions are checked, assumed, unknown, unmeasured, not_computed, or violated?",
+        "axisMapping": {
+            "x": "evidence contract",
+            "y": "assumption status",
+            "z": "blocker intensity"
+        },
+        "primaryRefs": primary_refs,
+        "layers": states.iter().map(|(state, layer_kind, geometry_role, click_target_kind, _, _, _, _)| json!({
+            "layerId": format!("layer:boundary-assumption:{state}"),
+            "kind": layer_kind,
+            "boundaryState": state,
+            "geometryRole": geometry_role,
+            "encodingRef": format!("encoding:boundary-assumption:{state}"),
+            "clickTargetKind": click_target_kind,
+            "refs": primary_refs,
+            "omissionPolicy": "preserve_for_top_insight",
+            "animationPurpose": "navigation"
+        })).collect::<Vec<_>>(),
+        "visualEncodings": states.iter().map(|(state, _, _, _, text_role, color_role, shape_role, line_role)| json!({
+            "encodingId": format!("encoding:boundary-assumption:{state}"),
+            "boundaryState": state,
+            "colorRole": color_role,
+            "shapeRole": shape_role,
+            "lineRole": line_role,
+            "textRole": text_role
+        })).collect::<Vec<_>>(),
+        "boundaryDigestRef": "boundary-digest:main",
+        "nonClaims": [
+            "Boundary states qualify the selected measurement profile; they are not inferred source facts.",
+            "Unmeasured, unknown, not_computed, and violated states are not measured zero."
+        ]
     })
 }
 
@@ -2842,8 +2993,8 @@ fn insight_rank(card: &Value) -> usize {
         "repair_lower_bound" | "minimal_repair_candidate" => 600,
         "policy_conflict" => 500,
         "architecture_debt_mass" => 400,
-        "no_measured_glue_mismatch" => 300,
-        "measurement_boundary" => 250,
+        "measurement_boundary" => 300,
+        "no_measured_glue_mismatch" => 250,
         _ => 100,
     }
 }
@@ -5015,6 +5166,10 @@ pub fn build_measurement_viewer_data_v1(
         || context_memberships > 20_000
         || cover_overlaps > 10_000
         || scene_layer_objects > 1_000;
+    let omitted_detail_counts = insight_report["viewerVisualScenes"]
+        .as_array()
+        .map(|scenes| insight_omitted_detail_counts_v1(normalized, scenes))
+        .unwrap_or_else(|| insight_omitted_detail_counts_v1(normalized, &[]));
     json!({
         "schemaVersion": "archsig-atom-viewer-data-v2",
         "sourceArtifactRefs": {
@@ -5048,6 +5203,7 @@ pub fn build_measurement_viewer_data_v1(
             "actionQueue": insight_report["actionQueue"],
             "evidenceDetailShape": ["What", "Why", "Where", "Measurement", "Boundary", "Next"],
             "boundaryDigest": insight_report["boundaryDigest"],
+            "omittedDetailCounts": omitted_detail_counts,
             "artifactLinks": insight_report["outputArtifacts"]
         },
         "finitePosetSite": {
@@ -5072,20 +5228,7 @@ pub fn build_measurement_viewer_data_v1(
                 "omittedRefs": if large_graph_mode { vec!["background-labels"] } else { Vec::<&str>::new() }
             }
         },
-        "omittedDetailCounts": {
-            "omittedAtoms": if atom_count > 10_000 { atom_count.saturating_sub(10_000) } else { 0 },
-            "omittedEdges": 0,
-            "omittedContextMemberships": if context_memberships > 20_000 { context_memberships.saturating_sub(20_000) } else { 0 },
-            "omittedCoverOverlaps": if cover_overlaps > 10_000 { cover_overlaps.saturating_sub(10_000) } else { 0 },
-            "omittedSceneLayerObjects": if scene_layer_objects > 1_000 { scene_layer_objects.saturating_sub(1_000) } else { 0 },
-            "omittedLabels": if atom_count > 10_000 { atom_count.saturating_sub(10_000) } else { 0 },
-            "omittedSourceRefs": 0,
-            "omittedReasons": [
-                "large graph projection may aggregate background geometry",
-                "top insight support and blocking reason objects are preserved before background objects",
-                "viewer data remains a projection and does not embed raw source content"
-            ]
-        },
+        "omittedDetailCounts": insight_report["omittedDetailCounts"],
         "nonConclusions": [
             "Viewer data is a bounded projection of ArchMap v2 and measurement packet foundation rows.",
             "Layout and site visualization are not AG invariant values or Lean proof objects.",
