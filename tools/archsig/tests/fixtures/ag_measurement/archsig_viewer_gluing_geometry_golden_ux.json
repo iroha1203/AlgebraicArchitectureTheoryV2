@@ -76,6 +76,13 @@
     "renderAtomGlyphOverlays",
     "atomGlyphGeometry",
     "atomGlyphColor",
+    "LineDashedMaterial",
+    "ConeGeometry",
+    "repairMorphArrow",
+    "thicknessRole",
+    "visualEncodingChannel",
+    "__archsigViewerDebug",
+    "value=\"obstructions\"",
     "sceneAxisPosition",
     "legendValueText",
     "gluingGeometry."

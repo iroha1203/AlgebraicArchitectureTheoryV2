@@ -827,6 +827,7 @@
             <option value="curvature">Curvature field</option>
             <option value="holonomy">Holonomy paths</option>
             <option value="obstructionLoops">Obstruction loops</option>
+            <option value="obstructions">Forbidden support cages</option>
             <option value="spectrum">Spectrum landscape</option>
             <option value="flatness">Flatness surface</option>
             <option value="aatAxes">AAT law axes</option>
@@ -1366,6 +1367,14 @@
 
     function renderGluingGeometry(scene, positions, encoding) {
       const geometry = activeLayoutContext?.aat?.gluingGeometry || {};
+      if (!window.__archsigViewerDebug) {
+        window.__archsigViewerDebug = {
+          lastGluingSceneId: null,
+          lastGluingObjectCount: 0,
+          lastGluingObjectKinds: {},
+          projectionBoundary: ""
+        };
+      }
       if (!geometry || !scene?.sceneId) return;
       const before = edgeGroup.children.length;
       if (scene.sceneId === "site-cover" || scene.sceneId === "cech-gluing") {
@@ -1483,8 +1492,8 @@
         const bucket = Number(edge.value || 0) > 0 ? mismatch : solid;
         bucket.push(source.x, source.y + 3, source.z, target.x, target.y + 3, target.z);
       });
-      addLineSegments(solid, sceneColorHex("checked"), 0.52, "nerveEdge");
-      addLineSegments(mismatch, sceneColorHex(encoding.colorRole || "measured_nonzero"), 0.9, "nerveMismatchEdge");
+      addLineSegments(solid, sceneColorHex("checked"), 0.52, "nerveEdge", { lineRole: "solid", thicknessRole: "thin" });
+      addLineSegments(mismatch, sceneColorHex(encoding.colorRole || "measured_nonzero"), 0.9, "nerveMismatchEdge", { lineRole: "thick_glowing_line", thicknessRole: "thick" });
     }
 
     function renderCocycleRibbon(scene, ribbon, positions, encoding) {
@@ -1594,7 +1603,7 @@
         mesh.position.y += 12;
         mesh.userData = { kind: "forbiddenSupportCage", item: cage };
         edgeGroup.add(mesh);
-        addLineSegments(points.flatMap((p) => [center.x, center.y + 12, center.z, p.x, p.y, p.z]), 0xff9468, 0.68, "forbiddenSimplexEdge");
+        addLineSegments(points.flatMap((p) => [center.x, center.y + 12, center.z, p.x, p.y, p.z]), 0xff9468, 0.68, "forbiddenSimplexEdge", { lineRole: "broken_line", thicknessRole: "thick" });
       });
     }
 
@@ -1613,24 +1622,63 @@
           yValue: Math.min((morph.fromCageRefs || []).length, 12),
           zValue: Math.min((morph.fromAtomRefs || []).length, 12)
         });
-        addLineSegments([start.x, start.y, start.z, target.x, target.y + 5, target.z], sceneColorHex("repair_candidate"), 0.74, "repairMorphPath");
+        const targetPoint = target.clone().add(new THREE.Vector3(0, 5, 0));
+        addLineSegments([start.x, start.y, start.z, targetPoint.x, targetPoint.y, targetPoint.z], sceneColorHex("repair_candidate"), 0.74, "repairMorphPath", { lineRole: "arrow", thicknessRole: "thick" });
+        const direction = targetPoint.clone().sub(start).normalize();
+        const arrowHead = new THREE.Mesh(
+          new THREE.ConeGeometry(2.6, 6.4, 16),
+          new THREE.MeshStandardMaterial({ color: sceneColorHex("repair_candidate"), emissive: 0x1d1038, roughness: 0.34 })
+        );
+        arrowHead.position.copy(targetPoint.clone().addScaledVector(direction, -3.2));
+        arrowHead.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), direction);
+        arrowHead.userData = { kind: "repairMorphArrow", item: morph, lineRole: "arrow", visualEncodingChannel: "line" };
+        edgeGroup.add(arrowHead);
         const marker = new THREE.Mesh(
           new THREE.SphereGeometry(2.8, 16, 10),
           new THREE.MeshStandardMaterial({ color: 0xb087ff, emissive: 0x160a28, roughness: 0.36 })
         );
-        marker.userData = { kind: "repairMorphMarker", item: morph, nonClaim: "not automatic repair", start, target: target.clone().add(new THREE.Vector3(0, 5, 0)), phase: index * 0.17 };
+        marker.userData = { kind: "repairMorphMarker", item: morph, nonClaim: "not automatic repair", start, target: targetPoint, phase: index * 0.17 };
         edgeGroup.add(marker);
       });
     }
 
-    function addLineSegments(vertices, color, opacity, kind) {
+    function addLineSegments(vertices, color, opacity, kind, style = {}) {
       if (!vertices.length) return;
       const geometry = new THREE.BufferGeometry();
       geometry.setAttribute("position", new THREE.Float32BufferAttribute(vertices, 3));
-      const material = new THREE.LineBasicMaterial({ color, transparent: true, opacity });
+      const lineRole = style.lineRole || "solid";
+      const thicknessRole = style.thicknessRole || "thin";
+      const dashed = lineRole.includes("dash") || lineRole.includes("broken");
+      const material = dashed
+        ? new THREE.LineDashedMaterial({
+            color,
+            transparent: true,
+            opacity,
+            dashSize: lineRole.includes("broken") ? 2.2 : 5.2,
+            gapSize: lineRole.includes("broken") ? 1.8 : 3.4
+          })
+        : new THREE.LineBasicMaterial({ color, transparent: true, opacity });
       const lines = new THREE.LineSegments(geometry, material);
-      lines.userData = { kind };
+      if (dashed && typeof lines.computeLineDistances === "function") lines.computeLineDistances();
+      lines.userData = { kind, lineRole, thicknessRole, dashed };
       edgeGroup.add(lines);
+      if (thicknessRole === "thick") {
+        const shadowGeometry = geometry.clone();
+        const shadowMaterial = dashed
+          ? new THREE.LineDashedMaterial({
+              color,
+              transparent: true,
+              opacity: Math.min(opacity + 0.12, 1),
+              dashSize: lineRole.includes("broken") ? 2.2 : 5.2,
+              gapSize: lineRole.includes("broken") ? 1.8 : 3.4
+            })
+          : new THREE.LineBasicMaterial({ color, transparent: true, opacity: Math.min(opacity + 0.12, 1) });
+        const shadow = new THREE.LineSegments(shadowGeometry, shadowMaterial);
+        if (dashed && typeof shadow.computeLineDistances === "function") shadow.computeLineDistances();
+        shadow.position.set(0.9, 0.55, 0.9);
+        shadow.userData = { kind: `${kind}Thickness`, lineRole, thicknessRole, dashed, visualEncodingChannel: "thickness" };
+        edgeGroup.add(shadow);
+      }
     }
 
     function updateRepairMorphAnimation() {
