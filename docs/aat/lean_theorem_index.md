@@ -4535,10 +4535,11 @@ File: `Formal/AG/LawAlgebra.lean`, `Formal/AG/LawAlgebra/Coordinate.lean`,
 `Formal/AG/LawAlgebra/IdempotentCollapse.lean`,
 `Formal/AG/LawAlgebra/StanleyReisner.lean`,
 `Formal/AG/LawAlgebra/ObstructionIdeal.lean`,
-`Formal/AG/LawAlgebra/LawfulLocus.lean`.
+`Formal/AG/LawAlgebra/LawfulLocus.lean`,
+`Formal/AG/LawAlgebra/Nullstellensatz.lean`.
 
 PRD-3 [第III部 Law Algebra・Obstruction Ideal・Lawful Locus](lean_ag_part_3_law_algebra_lawful_locus_prd.md) の
-R0-R8、AC1-AC11 に対応する entrypoint である。現時点では
+R0-R9、AC1-AC13 に対応する entrypoint である。現時点では
 `Formal/AG/LawAlgebra` を build 対象へ追加し、context に相対化された coordinate
 family と、`FreeCommAlg_k(Coord_X(W))` を Mathlib `MvPolynomial` として読む
 definitional bridge、structural relation family、`J_struct`、raw ambient quotient、
@@ -4551,7 +4552,8 @@ finite idempotent coordinate algebra の Boolean 点直積への collapse と fl
 ideal square / Kähler 消滅 surface、square-free witness regime と
 Stanley-Reisner obstruction theorem / invariants surface、local obstruction ideal
 sum と restriction / sheaf-image surface、lawful locus と section factorization
-surface までを Lean 上に置く。
+surface、Architecture Nullstellensatz statement と NSdepth monotonicity surface
+までを Lean 上に置く。
 
 | 本文ラベル | Lean 名 | 種別 | 意味 | Status |
 | --- | --- | --- | --- | --- |
@@ -4565,13 +4567,14 @@ surface までを Lean 上に置く。
 | `III.定義5.6B / 定理5.6C / 系5.6D` | `AAT.AG.LawAlgebra.StanleyReisner.squareFreeMonomial`, `StanleyReisner.SquareFreeWitnessRegime`, `SquareFreeWitnessRegime.obstructionIdeal`, `SquareFreeWitnessRegime.AdmissibleSupport`, `SquareFreeWitnessRegime.AbstractSimplicialComplex`, `SquareFreeWitnessRegime.delta`, `SquareFreeWitnessRegime.stanleyReisnerIdeal`, `SquareFreeWitnessRegime.coordinateSubspaceArrangement`, `SquareFreeWitnessRegime.flatChart`, `SquareFreeWitnessRegime.obstructionIdeal_eq_stanleyReisnerIdeal`, `SquareFreeWitnessRegime.obstructionIdeal_eq_stanleyReisnerIdeal_of_minimal`, `SquareFreeWitnessRegime.minimalReduction_obstructionIdeal_eq`, `SquareFreeWitnessRegime.radical_minimalReduction_obstructionIdeal_eq`, `SquareFreeWitnessRegime.face_iff_admissibleSupport`, `SquareFreeWitnessRegime.minimalGeneratorSupport_iff_minimalForbidden` | `structure` / `def` / `theorem` | square-free witness regime `Forb` と monomial obstruction ideal、`Finset` ベースの abstract simplicial complex `Delta_U(W)`、Stanley-Reisner ideal、coordinate subspace arrangement `V(I_Delta)` を定義する。非 face monomial が forbidden monomial の倍元になることから `I_Ob = I_Delta` を証明し、minimal family wrapper、finite witness 型での minimal reduction exact ideal equality / radical equality、minimal generator support と minimal forbidden support の一致、face と admissible support の一致を与える。 | `defined only` / `proved` |
 | `III.定義6.1 / 定義6.2 / 定義10.2` | `AAT.AG.LawAlgebra.ObstructionIdeal.SelectedLawWitnessIdealFamily`, `SelectedLawWitnessIdealFamily.selectedElementSet`, `SelectedLawWitnessIdealFamily.localObstructionIdeal`, `SelectedLawWitnessIdealFamily.witnessIdeal_le_localObstructionIdeal`, `SelectedLawWitnessIdealFamily.localObstructionIdeal_le_iff`, `SelectedLawWitnessIdealFamily.RestrictionCompatible`, `SelectedLawWitnessIdealFamily.map_localObstructionIdeal_le`, `SelectedLawWitnessIdealFamily.SheafImageConstruction`, `SheafImageConstruction.imageIdeal_eq_localObstructionIdeal`, `SheafImageConstruction.localObstructionIdeal_eq_imageIdeal` | `structure` / `def` / `theorem` | selected law witness ideal family の和として local obstruction ideal `I_Ob^U(W)` を定義する。選択された各 `I_L(W)` が local sum に入ること、local sum の最小性、restriction map が selected ideals を target selected ideals へ送る仮定の下で `I_Ob` が restriction-compatible になること、sheaf-image construction が local sum 表示と一致する範囲を明示する。 | `defined only` / `proved under explicit restriction-compatibility and sheaf-image agreement assumptions` |
 | `III.定義7.1 / 定義7.2` | `AAT.AG.LawAlgebra.LawfulLocus.lawfulLocus`, `LawfulLocus.localLawfulLocus`, `LawfulLocus.LawfulSectionData`, `LawfulSectionData.pulledObstructionIdeal`, `LawfulSectionData.Lawful`, `LawfulSectionData.FactorsThroughLawfulLocus`, `LawfulSectionData.lawful_iff_pulledObstructionIdeal_eq_bot`, `LawfulSectionData.factorsThroughLawfulLocus_of_lawful`, `LawfulSectionData.lawful_of_factorsThroughLawfulLocus`, `LawfulSectionData.lawful_iff_factorsThroughLawfulLocus`, `LawfulLocus.LocalLawfulSectionData` | `structure` / `def` / `theorem` | lawful locus `Flat_U(X) = V(I_Ob^U)` を `PrimeSpectrum.zeroLocus` として定義し、section pullback に沿った `s^* I_Ob^U = 0` を lawfulness とする。factorization through lawful locus は同じ vanishing condition を保持する package として置き、lawful section と factorization の同値を証明する。 | `defined only` / `proved` |
+| `III.定理候補7.2A / 定義7.2B / 命題7.2C` | `AAT.AG.LawAlgebra.Nullstellensatz.booleanLawIdeal`, `Nullstellensatz.VanishesAtIdeal`, `Nullstellensatz.BooleanLawZeroSetEmpty`, `Nullstellensatz.ArchitectureNullstellensatzCandidate`, `Nullstellensatz.RadicalUnitCertificate`, `Nullstellensatz.UnlawfulnessCertificate`, `Nullstellensatz.HasCertificateAt`, `Nullstellensatz.NSdepthProfile`, `NSdepthProfile.NSdepth`, `NSdepthProfile.GeneratorExtension`, `NSdepthProfile.NSdepth_mono_of_generatorExtension` | `def` / `structure` / `theorem` | Boolean law ideal `I_U(W)+B_W`、Boolean law zero set empty、radical unit certificate を用いて Architecture Nullstellensatz candidate を statement-only `Prop` として定義する。NSdepth は certificate availability profile の最小次数として package 化し、generator extension が certificate を同次数で保存する仮定から `NSdepth_new ≤ NSdepth_old` を証明する。 | `statement only` / `defined only` / `proved` |
 
 Non-conclusions: この entrypoint は coordinate と free typed commutative algebra の
 bridge、structural quotient、restriction descent bridge、law algebra sheafification
 bridge、law witness ideal、defect representative reading、idempotent coordinate collapse、
 square-free local obstruction ideal と Stanley-Reisner chart reading、selected law
 ideal sum と sheaf-image 表示、lawful locus / lawful section factorization だけを示す。
-Nullstellensatz、affine chart、scheme、
+Nullstellensatz candidate は statement-only であり、証明昇格はしない。affine chart、scheme、
 定理11.1 はまだ形式化しない。
 
 ## Reverse-Import Theorem Packages
