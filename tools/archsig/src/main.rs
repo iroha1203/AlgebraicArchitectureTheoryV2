@@ -6,14 +6,15 @@ use std::process::ExitCode;
 use archsig::{
     ARCHMAP_V1_SCHEMA, ARCHMAP_V2_SCHEMA, ArchMapDocumentV1, ArchMapDocumentV2,
     LAW_POLICY_V1_SCHEMA, LawPolicyDocumentV1, SchemaVersionCatalogV0,
-    build_architecture_distance_v1, build_foundation_measurement_packet_v1,
-    build_measurement_summary_v1, build_measurement_viewer_data_v1, build_typed_analysis_packet_v1,
-    build_typed_analysis_summary_v1, build_typed_analysis_validation_v1,
-    build_typed_atom_viewer_data_v1, build_typed_detail_index_v1,
-    build_typed_llm_interpretation_packet_v1, enrich_architecture_distance_with_part4_bundle_v1,
-    evaluate_typed_v1, normalize_archmap_v1, normalize_archmap_v2,
-    static_law_evaluator_registry_v1, static_schema_version_catalog, validate_archmap_v1_report,
-    validate_archmap_v2_report, validate_law_policy_v1_report, validate_measurement_packet_v1,
+    build_architecture_distance_v1, build_foundation_measurement_packet_v1, build_insight_brief_v1,
+    build_insight_report_v1, build_measurement_summary_v1, build_measurement_viewer_data_v1,
+    build_typed_analysis_packet_v1, build_typed_analysis_summary_v1,
+    build_typed_analysis_validation_v1, build_typed_atom_viewer_data_v1,
+    build_typed_detail_index_v1, build_typed_llm_interpretation_packet_v1,
+    enrich_architecture_distance_with_part4_bundle_v1, evaluate_typed_v1, normalize_archmap_v1,
+    normalize_archmap_v2, static_law_evaluator_registry_v1, static_schema_version_catalog,
+    validate_archmap_v1_report, validate_archmap_v2_report, validate_law_policy_v1_report,
+    validate_measurement_packet_v1,
 };
 use clap::{Parser, Subcommand};
 use serde_json::Value;
@@ -723,6 +724,8 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
             let typed_evaluator_results_path = out_dir.join("typed-evaluator-results.json");
             let architecture_distance_path = out_dir.join("architecture-distance.json");
             let measurement_packet_path = out_dir.join("archsig-measurement-packet.json");
+            let insight_report_path = out_dir.join("archsig-insight-report.json");
+            let insight_brief_path = out_dir.join("archsig-insight-brief.md");
             let analysis_packet_path = out_dir.join("archsig-analysis-packet.json");
             let analysis_validation_path = out_dir.join("archsig-analysis-validation.json");
             let llm_interpretation_path = out_dir.join("llm-interpretation-packet.json");
@@ -739,8 +742,48 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
             write_json(Some(archmap_validation_path), &archmap_preflight)?;
             write_json(Some(law_policy_validation_path), &law_policy_preflight)?;
             if archmap_failed || law_policy_failed {
+                let insight_report = build_validation_failure_insight_report(
+                    &archmap_preflight,
+                    &law_policy_preflight,
+                );
+                let insight_brief = build_insight_brief_v1(&insight_report);
+                let viewer_data = build_validation_failure_viewer_data(&insight_report);
+                write_json(Some(insight_report_path), &insight_report)?;
+                std::fs::write(insight_brief_path, insight_brief)?;
+                write_json(Some(atom_viewer_data_path), &viewer_data)?;
+                write_json(
+                    Some(run_manifest_path),
+                    &serde_json::json!({
+                        "schema": "archsig-run-manifest/v1",
+                        "command": "analyze",
+                        "status": "validation_failed",
+                        "generatedArtifacts": [
+                            "archmap-validation.json",
+                            "law-policy-validation.json",
+                            "archsig-insight-report.json",
+                            "archsig-insight-brief.md",
+                            "archsig-atom-viewer-data.json",
+                            "archsig-run-manifest.json"
+                        ],
+                        "artifactLinks": {
+                            "archmapValidation": "archmap-validation.json",
+                            "lawPolicyValidation": "law-policy-validation.json",
+                            "insightReport": "archsig-insight-report.json",
+                            "insightBrief": "archsig-insight-brief.md",
+                            "viewerData": "archsig-atom-viewer-data.json"
+                        },
+                        "validationResultSummary": {
+                            "archmap": { "result": summary_result(&archmap_preflight) },
+                            "lawPolicy": { "result": summary_result(&law_policy_preflight) }
+                        },
+                        "nonConclusions": [
+                            "Validation failure insight is a pre-normalization projection and does not contain measurement packet claims.",
+                            "No measurement packet, structural verdict, or AG invariant was computed after failed preflight validation."
+                        ]
+                    }),
+                )?;
                 eprintln!(
-                    "archsig analyze wrote validation artifacts to {} and stopped before normalization",
+                    "archsig analyze wrote validation insight artifacts to {} and stopped before normalization",
                     out_dir.display()
                 );
                 return Ok(ExitCode::from(1));
@@ -762,10 +805,17 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                 let packet_failed = packet_validation.iter().any(|check| check.result == "fail");
                 write_json(Some(measurement_packet_path), &measurement_packet)?;
                 let measurement_summary = build_measurement_summary_v1(&measurement_packet);
+                let insight_report = build_insight_report_v1(
+                    &normalized_archmap,
+                    &measurement_packet,
+                    &measurement_summary,
+                );
+                let insight_brief = build_insight_brief_v1(&insight_report);
                 let measurement_viewer_data = build_measurement_viewer_data_v1(
                     &normalized_archmap,
                     &measurement_packet,
                     &measurement_summary,
+                    &insight_report,
                 );
                 write_json(
                     Some(analysis_validation_path),
@@ -787,6 +837,11 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                     &measurement_viewer_data,
                 )?;
                 write_json(
+                    Some(insight_report_path),
+                    &insight_report,
+                )?;
+                std::fs::write(insight_brief_path, insight_brief)?;
+                write_json(
                     Some(run_manifest_path),
                     &serde_json::json!({
                         "schemaVersion": "archsig-run-manifest-v2",
@@ -801,9 +856,18 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                             "archsig-measurement-packet.json",
                             "archsig-analysis-validation.json",
                             "archsig-analysis-summary.json",
+                            "archsig-insight-report.json",
+                            "archsig-insight-brief.md",
                             "archsig-atom-viewer-data.json",
                             "archsig-run-manifest.json"
                         ],
+                        "artifactLinks": {
+                            "measurementPacket": "archsig-measurement-packet.json",
+                            "summary": "archsig-analysis-summary.json",
+                            "insightReport": "archsig-insight-report.json",
+                            "insightBrief": "archsig-insight-brief.md",
+                            "viewerData": "archsig-atom-viewer-data.json"
+                        },
                         "validationResultSummary": {
                             "archmap": { "result": summary_result(&archmap_preflight) },
                             "lawPolicy": { "result": summary_result(&law_policy_preflight) },
@@ -995,6 +1059,8 @@ fn remove_analyze_success_artifacts(out_dir: &PathBuf) -> Result<(), Box<dyn Err
         "typed-evaluator-results.json",
         "architecture-distance.json",
         "archsig-measurement-packet.json",
+        "archsig-insight-report.json",
+        "archsig-insight-brief.md",
         "archsig-analysis-packet.json",
         "archsig-analysis-detail-index.json",
         "archsig-analysis-validation.json",
@@ -1008,4 +1074,292 @@ fn remove_analyze_success_artifacts(out_dir: &PathBuf) -> Result<(), Box<dyn Err
         }
     }
     Ok(())
+}
+
+fn build_validation_failure_insight_report(
+    archmap_validation: &Value,
+    law_policy_validation: &Value,
+) -> Value {
+    let failed_refs = validation_failure_refs(archmap_validation, law_policy_validation);
+    let primary_ref = failed_refs
+        .first()
+        .cloned()
+        .unwrap_or_else(|| "validation:unknown-failure".to_string());
+    serde_json::json!({
+        "schema": "archsig-insight-report/v1",
+        "reportId": "insight:validation-failure",
+        "sourcePacketRef": null,
+        "generatedAt": "deterministic-run-artifact",
+        "outputArtifacts": {
+            "summaryRef": null,
+            "briefRef": "archsig-insight-brief.md",
+            "viewerDataRef": "archsig-atom-viewer-data.json"
+        },
+        "headline": {
+            "conclusionCode": "VALIDATION_FAILED_BEFORE_MEASUREMENT",
+            "title": "Validation failed before measurement",
+            "summary": "ArchSig stopped before normalization because an input validation check failed.",
+            "decisionState": "blocked",
+            "primaryVerdictRefs": [],
+            "boundaryDigestRef": "boundary-digest:validation"
+        },
+        "readThisFirst": {
+            "heading": "Read this first",
+            "conclusion": "VALIDATION_FAILED_BEFORE_MEASUREMENT",
+            "whatItMeans": "No measurement packet or AG invariant was computed. Fix the failing ArchMap or LawPolicy validation first.",
+            "whereToLookFirst": failed_refs,
+            "nextAction": "Inspect failed validation checks",
+            "boundary": "Pre-normalization validation failed; no structural verdict is available.",
+            "details": {
+                "validationRefs": failed_refs,
+                "sourceRefs": [],
+                "atomRefs": [],
+                "contextRefs": []
+            }
+        },
+        "insightCards": [{
+            "id": "insight:validation-failure:001",
+            "kind": "validation_failure",
+            "severity": "blocking",
+            "title": "Validation failed before measurement",
+            "oneLine": "ArchSig stopped before normalization because input validation failed.",
+            "whyItMatters": "The viewer and brief can identify the blocker, but they must not present measurement conclusions that were never computed.",
+            "evidence": {
+                "structuralVerdictRefs": [],
+                "computedInvariantRefs": [],
+                "analyticReadingRefs": [],
+                "assumptionRefs": [],
+                "sourceRefs": [],
+                "atomRefs": [],
+                "contextRefs": [],
+                "coverRefs": [],
+                "evaluatorRefs": [],
+                "validationRefs": failed_refs,
+                "evidenceResolutionStatus": "validation_failure_before_measurement"
+            },
+            "sampleRefs": {
+                "atomRefs": [],
+                "contextRefs": [],
+                "sourceRefs": [],
+                "note": "No normalized ArchMap projection exists after validation failure."
+            },
+            "nextAction": {
+                "label": "Inspect failed validation checks",
+                "kind": "validation_blocker",
+                "targetRefs": [primary_ref]
+            },
+            "viewerNavigation": {
+                "sceneId": "boundary-assumption",
+                "highlightRefs": {
+                    "atomRefs": [],
+                    "contextRefs": [],
+                    "sourceRefs": [],
+                    "validationRefs": failed_refs
+                }
+            },
+            "tourRefs": ["tour:validation-failure:001"],
+            "rankingBasis": ["validation_failure"],
+            "nonClaims": [
+                "This is not a measured AG obstruction.",
+                "No measurement packet, structural verdict, or analytic reading was computed."
+            ]
+        }],
+        "actionQueue": [{
+            "id": "action:validation:1",
+            "kind": "validation_blocker",
+            "title": "Inspect failed validation checks",
+            "reason": "Input validation failed before ArchSig could normalize and measure.",
+            "targetRefs": failed_refs,
+            "expectedUserOutcome": "Fix the input contract before reading measurement claims.",
+            "nonClaims": ["No AG measurement conclusion exists for this run."]
+        }],
+        "boundaryDigest": {
+            "id": "boundary-digest:validation",
+            "shortText": "Validation failed before normalization; measurement is not computed.",
+            "checkedCount": 0,
+            "assumedCount": 0,
+            "violatedCount": 1,
+            "unmeasuredCount": 0,
+            "unknownCount": 0,
+            "notComputedCount": 1,
+            "blockingCount": 1,
+            "blocking": failed_refs,
+            "nonClaims": ["Validation failure does not imply measured nonzero or measured zero."]
+        },
+        "viewerVisualScenes": [validation_failure_scene(&failed_refs)],
+        "guidedTours": [{
+            "tourId": "tour:validation-failure:001",
+            "title": "Validation failed before measurement",
+            "insightRefs": ["insight:validation-failure:001"],
+            "steps": [{
+                "sceneId": "boundary-assumption",
+                "caption": "This boundary explains why no measurement packet was produced.",
+                "highlightRefs": {
+                    "validationRefs": failed_refs
+                }
+            }]
+        }],
+        "copyBlocks": {
+            "sourceRefs": [],
+            "llmHandoff": {
+                "instruction": "Use this as a validation blocker only. Do not infer measurement conclusions.",
+                "boundary": "Validation failed before normalization.",
+                "topInsights": ["ArchSig stopped before measurement because validation failed."]
+            }
+        },
+        "rankingBasis": ["validation_failure"],
+        "claimValidation": {
+            "measuredClaimsRequireStructuralVerdictRefs": true,
+            "analyticReadingsDoNotPromoteLawfulOrUnlawful": true,
+            "validationFailureDoesNotCreateMeasurementClaim": true
+        },
+        "nonConclusions": [
+            "Validation failure insight is a pre-normalization projection.",
+            "No measurement packet claims are generated."
+        ]
+    })
+}
+
+fn build_validation_failure_viewer_data(insight_report: &Value) -> Value {
+    serde_json::json!({
+        "schemaVersion": "archsig-atom-viewer-data-v2",
+        "sourceArtifactRefs": {
+            "archmapValidation": "archmap-validation.json",
+            "lawPolicyValidation": "law-policy-validation.json",
+            "insightReport": "archsig-insight-report.json",
+            "insightBrief": "archsig-insight-brief.md"
+        },
+        "decisionBar": {
+            "conclusion": "VALIDATION_FAILED_BEFORE_MEASUREMENT",
+            "validation": "see archmap-validation.json and law-policy-validation.json",
+            "boundaryDigest": insight_report["boundaryDigest"]["shortText"],
+            "artifactLinks": insight_report["outputArtifacts"]
+        },
+        "insightQueue": insight_report["insightCards"],
+        "actionQueue": insight_report["actionQueue"],
+        "viewerVisualScenes": insight_report["viewerVisualScenes"],
+        "guidedTours": insight_report["guidedTours"],
+        "copyBlocks": insight_report["copyBlocks"],
+        "reportPane": {
+            "readThisFirst": insight_report["readThisFirst"],
+            "insightQueue": insight_report["insightCards"],
+            "actionQueue": insight_report["actionQueue"],
+            "evidenceDetailShape": ["What", "Why", "Measurement", "Boundary", "Next"],
+            "boundaryDigest": insight_report["boundaryDigest"],
+            "artifactLinks": insight_report["outputArtifacts"]
+        },
+        "finitePosetSite": {
+            "atoms": [],
+            "contexts": [],
+            "covers": []
+        },
+        "largeGraphStrategy": {
+            "mode": "validation_blocked",
+            "thresholds": {
+                "fullGeometryAtoms": 2_000,
+                "instancedAtoms": 10_000,
+                "clusterAtoms": 50_000
+            },
+            "topInsightEvidencePinning": {
+                "policy": "preserve_for_top_insight",
+                "preservedRefs": insight_report["readThisFirst"]["whereToLookFirst"],
+                "aggregatedRefs": [],
+                "omittedRefs": []
+            }
+        },
+        "omittedDetailCounts": {
+            "omittedAtoms": 0,
+            "omittedEdges": 0,
+            "omittedContextMemberships": 0,
+            "omittedCoverOverlaps": 0,
+            "omittedSceneLayerObjects": 0,
+            "omittedLabels": 0,
+            "omittedSourceRefs": 0,
+            "omittedReasons": ["normalization did not run after validation failure"]
+        },
+        "nonConclusions": [
+            "Validation failure viewer data is a diagnostic projection, not a measurement scene."
+        ]
+    })
+}
+
+fn validation_failure_refs(
+    archmap_validation: &Value,
+    law_policy_validation: &Value,
+) -> Vec<String> {
+    let mut refs = Vec::new();
+    refs.extend(validation_report_failure_refs(
+        "archmap-validation",
+        archmap_validation,
+    ));
+    refs.extend(validation_report_failure_refs(
+        "law-policy-validation",
+        law_policy_validation,
+    ));
+    if refs.is_empty() {
+        refs.push("validation:failed".to_string());
+    }
+    refs
+}
+
+fn validation_report_failure_refs(prefix: &str, report: &Value) -> Vec<String> {
+    report["checks"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .filter(|check| check["result"].as_str() == Some("fail"))
+        .map(|check| {
+            format!(
+                "{}:{}",
+                prefix,
+                check["id"]
+                    .as_str()
+                    .or_else(|| check["checkId"].as_str())
+                    .unwrap_or("failed-check")
+            )
+        })
+        .collect()
+}
+
+fn validation_failure_scene(failed_refs: &[String]) -> Value {
+    serde_json::json!({
+        "sceneId": "boundary-assumption",
+        "kind": "validation_boundary",
+        "title": "Validation Boundary",
+        "sceneStatus": "active",
+        "userQuestion": "Why did ArchSig stop before measurement?",
+        "axisMapping": {
+            "x": "input contract",
+            "y": "validation result",
+            "z": "blocked measurement stage"
+        },
+        "primaryRefs": {
+            "insightRefs": ["insight:validation-failure:001"],
+            "validationRefs": failed_refs,
+            "atomRefs": [],
+            "contextRefs": [],
+            "coverRefs": [],
+            "sourceRefs": []
+        },
+        "layers": [{
+            "layerId": "layer:boundary-assumption:validation-wall",
+            "kind": "boundary_wall",
+            "geometryRole": "wall",
+            "encodingRef": "encoding:boundary-assumption:validation",
+            "clickTargetKind": "validationBlocker",
+            "refs": {
+                "validationRefs": failed_refs
+            },
+            "omissionPolicy": "preserve_for_top_insight",
+            "animationPurpose": "navigation"
+        }],
+        "visualEncodings": [{
+            "encodingId": "encoding:boundary-assumption:validation",
+            "colorRole": "not_computed",
+            "shapeRole": "wall_fog",
+            "lineRole": "broken_line",
+            "textRole": "validation blocker before measurement"
+        }],
+        "boundaryDigestRef": "boundary-digest:validation"
+    })
 }

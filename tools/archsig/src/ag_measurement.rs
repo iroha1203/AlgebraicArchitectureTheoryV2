@@ -6,7 +6,8 @@ use crate::validation::{generic_validation_example, validation_check};
 use crate::{
     ARCHSIG_MEASUREMENT_PACKET_V1_SCHEMA, AgAnalyticReadingV1, AgAssumptionLedgerEntryV1,
     AgStructuralVerdictV1, AgVerdictDataV1, ArchSigMeasurementPacketV1, LawPolicyDocumentV1,
-    MeasurementProfileV1, NormalizedArchMapV2, ValidationCheck, ValidationExample,
+    MeasurementProfileV1, NormalizedArchMapV2, NormalizedAtomV2, NormalizedContextV2,
+    NormalizedCoverV2, ValidationCheck, ValidationExample,
 };
 
 const VERDICTS: [&str; 5] = [
@@ -1240,8 +1241,33 @@ pub fn build_measurement_summary_v1(packet: &ArchSigMeasurementPacketV1) -> Valu
     json!({
         "schema": "archsig-analysis-summary/v2",
         "conclusion": conclusion,
+        "readThisFirst": {
+            "heading": "Read this first",
+            "conclusion": conclusion,
+            "whatItMeans": if cech_nonzero {
+                "Local rules are not enough to explain the selected cover; ArchSig measured a cross-context glue mismatch."
+            } else if nonzero_count > 0 {
+                "ArchSig measured a selected AG obstruction under the profile."
+            } else if unmeasured_count > 0 {
+                "ArchSig produced a profile-relative foundation result with unmeasured, unknown, or not_computed rows still visible."
+            } else {
+                "No selected H1 glue mismatch was measured under the profile."
+            },
+            "whereToLookFirst": "See archsig-insight-report.json#/insightCards/0/evidence",
+            "nextAction": "Open archsig-insight-brief.md or the viewer Insight Queue.",
+            "boundary": format!(
+                "Profile-relative. {} assumptions declared. {} non-terminal rows.",
+                packet.assumptions.iter().filter(|row| row.status == "assumed").count(),
+                unmeasured_count
+            )
+        },
         "measurementPacketSchema": packet.schema,
         "profileRef": packet.profile.profile_id,
+        "insightArtifacts": {
+            "insightReport": "archsig-insight-report.json",
+            "insightBrief": "archsig-insight-brief.md",
+            "viewerData": "archsig-atom-viewer-data.json"
+        },
         "structuralVerdictSummary": {
             "rowCount": packet.structural_verdict.len(),
             "measuredNonzeroCount": nonzero_count,
@@ -1258,6 +1284,1641 @@ pub fn build_measurement_summary_v1(packet: &ArchSigMeasurementPacketV1) -> Valu
             "Schema foundation rows do not claim completed AG invariant computation."
         ]
     })
+}
+
+pub fn build_insight_report_v1(
+    normalized: &NormalizedArchMapV2,
+    packet: &ArchSigMeasurementPacketV1,
+    summary: &Value,
+) -> Value {
+    let boundary_digest = insight_boundary_digest(packet, summary);
+    let insight_cards = insight_cards_v1(normalized, packet, summary);
+    let action_queue = insight_action_queue_v1(&insight_cards);
+    let viewer_visual_scenes = insight_viewer_visual_scenes_v1(normalized, packet, &insight_cards);
+    let guided_tours = insight_guided_tours_v1(&insight_cards);
+    let copy_blocks = insight_copy_blocks_v1(normalized, &insight_cards, &boundary_digest);
+    let top_card = insight_cards.first().cloned().unwrap_or_else(|| {
+        json!({
+            "id": "insight:measurement-boundary:empty",
+            "kind": "measurement_boundary",
+            "severity": "info",
+            "title": "Measurement boundary recorded",
+            "oneLine": "ArchSig generated a bounded measurement projection under the selected profile.",
+            "whyItMatters": "Reviewers can inspect the selected profile, assumptions, and artifact links before reading details.",
+            "evidence": empty_insight_evidence(),
+            "nextAction": {
+                "label": "Inspect measurement boundary",
+                "kind": "inspect",
+                "targetRefs": ["boundary-digest:main"]
+            },
+            "viewerNavigation": {
+                "sceneId": "boundary-assumption",
+                "highlightRefs": empty_highlight_refs()
+            },
+            "tourRefs": ["tour:measurement-boundary:empty"],
+            "rankingBasis": ["fallback boundary reading"],
+            "nonClaims": ["This does not add a new measurement claim."]
+        })
+    });
+    json!({
+        "schema": "archsig-insight-report/v1",
+        "reportId": format!("insight:{}", packet.packet_id),
+        "sourcePacketRef": "archsig-measurement-packet.json",
+        "generatedAt": "deterministic-run-artifact",
+        "outputArtifacts": {
+            "summaryRef": "archsig-analysis-summary.json",
+            "briefRef": "archsig-insight-brief.md",
+            "viewerDataRef": "archsig-atom-viewer-data.json"
+        },
+        "headline": {
+            "conclusionCode": summary["conclusion"],
+            "title": top_card["title"],
+            "summary": top_card["oneLine"],
+            "decisionState": insight_decision_state(&top_card),
+            "primaryVerdictRefs": top_card["evidence"]["structuralVerdictRefs"],
+            "boundaryDigestRef": "boundary-digest:main"
+        },
+        "readThisFirst": {
+            "heading": "Read this first",
+            "conclusion": summary["conclusion"],
+            "whatItMeans": top_card["oneLine"],
+            "whereToLookFirst": top_card["evidence"]["sourceRefs"],
+            "nextAction": top_card["nextAction"]["label"],
+            "boundary": boundary_digest["shortText"],
+            "details": top_card["evidence"]
+        },
+        "insightCards": insight_cards,
+        "actionQueue": action_queue,
+        "boundaryDigest": boundary_digest,
+        "viewerVisualScenes": viewer_visual_scenes,
+        "guidedTours": guided_tours,
+        "copyBlocks": copy_blocks,
+        "rankingBasis": [
+            "validation_failure",
+            "measured_nonzero structural verdict",
+            "not_computed due to violated assumption",
+            "repair lower bound or minimal repair candidate",
+            "policy conflict",
+            "architecture debt mass analytic reading",
+            "measurement boundary",
+            "measured_zero confirmation"
+        ],
+        "claimValidation": {
+            "measuredClaimsRequireStructuralVerdictRefs": true,
+            "analyticReadingsDoNotPromoteLawfulOrUnlawful": true,
+            "highSeverityInsightsRequireWhereRefs": true,
+            "notComputedBlockersRequireReasonCode": true,
+            "repairCandidatesRequireNonClaims": true,
+            "theoremCandidatePromotionForbidden": true,
+            "monodromyVerdictGenerated": false
+        },
+        "nonConclusions": [
+            "Insight report is a projection of archsig-measurement-packet/v1 and does not generate new measurement claims.",
+            "Repair candidates are next inspection cues, not automatic fixes.",
+            "Viewer scenes are visual projections, not structural verdict derivations."
+        ]
+    })
+}
+
+pub fn build_insight_brief_v1(report: &Value) -> String {
+    let mut lines = Vec::new();
+    lines.push("# ArchSig Insight Brief".to_string());
+    lines.push(String::new());
+    lines.push("## Read this first".to_string());
+    lines.push(format!(
+        "Conclusion: {}",
+        string_at(report, &["readThisFirst", "conclusion"])
+    ));
+    lines.push(String::new());
+    lines.push("What it means:".to_string());
+    lines.push(string_at(report, &["readThisFirst", "whatItMeans"]));
+    lines.push(String::new());
+    lines.push("Where to look first:".to_string());
+    for item in string_array_at(report, &["readThisFirst", "whereToLookFirst"])
+        .into_iter()
+        .take(5)
+    {
+        lines.push(format!("- {item}"));
+    }
+    lines.push(String::new());
+    lines.push("Next action:".to_string());
+    lines.push(string_at(report, &["readThisFirst", "nextAction"]));
+    lines.push(String::new());
+    lines.push("Boundary:".to_string());
+    lines.push(string_at(report, &["readThisFirst", "boundary"]));
+    lines.push(String::new());
+    lines.push("## Top insights".to_string());
+    for card in report["insightCards"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .take(3)
+    {
+        lines.push(format!(
+            "- {}: {}",
+            string_field(card, "title"),
+            string_field(card, "oneLine")
+        ));
+        lines.push(format!(
+            "  Why this matters: {}",
+            string_field(card, "whyItMatters")
+        ));
+    }
+    lines.push(String::new());
+    lines.push("## Where to look".to_string());
+    for block in report["copyBlocks"]["sourceRefs"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .take(10)
+    {
+        lines.push(format!("- {}", block.as_str().unwrap_or_default()));
+    }
+    lines.push(String::new());
+    lines.push("## Suggested next inspections".to_string());
+    for action in report["actionQueue"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .take(8)
+    {
+        lines.push(format!(
+            "- {}: {}",
+            string_field(action, "title"),
+            string_field(action, "reason")
+        ));
+    }
+    lines.push(String::new());
+    lines.push("## Repair candidates".to_string());
+    for card in report["insightCards"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .filter(|card| string_field(card, "kind") == "minimal_repair_candidate")
+    {
+        lines.push(format!("- {}", string_field(card, "oneLine")));
+        lines.push("  Boundary: This is a combinatorial repair candidate, not a semantic refactor guarantee.".to_string());
+    }
+    if !lines
+        .last()
+        .is_some_and(|line| line.starts_with("  Boundary"))
+    {
+        lines.push("- No measured repair candidate was promoted by this packet.".to_string());
+    }
+    lines.push(String::new());
+    lines.push("## Measurement boundary".to_string());
+    lines.push(string_at(report, &["boundaryDigest", "shortText"]));
+    lines.push(format!(
+        "- checked: {}",
+        number_at(report, &["boundaryDigest", "checkedCount"])
+    ));
+    lines.push(format!(
+        "- assumed: {}",
+        number_at(report, &["boundaryDigest", "assumedCount"])
+    ));
+    lines.push(format!(
+        "- blocking: {}",
+        number_at(report, &["boundaryDigest", "blockingCount"])
+    ));
+    lines.push(String::new());
+    lines.push("## Artifact links".to_string());
+    for key in ["summaryRef", "briefRef", "viewerDataRef"] {
+        lines.push(format!(
+            "- {}: {}",
+            key,
+            string_at(report, &["outputArtifacts", key])
+        ));
+    }
+    lines.push(String::new());
+    lines.push("## Raw technical details".to_string());
+    lines.push(format!(
+        "- source packet: {}",
+        string_field(report, "sourcePacketRef")
+    ));
+    lines.push(
+        "- theorem-candidate readings are analytic-only and are not structural conclusions."
+            .to_string(),
+    );
+    lines.push("- holonomy-like visual modes are exploratory cover / restriction path views, not monodromy verdicts.".to_string());
+    lines.push(String::new());
+    lines.push("## LLM handoff".to_string());
+    lines.push("Use the following ArchSig result as bounded evidence.".to_string());
+    lines.push("Do not infer beyond the listed claims and boundaries.".to_string());
+    lines.push(String::new());
+    lines.push("Conclusion:".to_string());
+    lines.push(string_at(report, &["readThisFirst", "conclusion"]));
+    lines.push(String::new());
+    lines.push("Top insights:".to_string());
+    for card in report["insightCards"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .take(3)
+    {
+        lines.push(format!("- {}", string_field(card, "oneLine")));
+    }
+    lines.push(String::new());
+    lines.push("Boundary:".to_string());
+    lines.push(string_at(report, &["boundaryDigest", "shortText"]));
+    lines.push(String::new());
+    lines.push("Source refs:".to_string());
+    for source_ref in string_array_at(report, &["copyBlocks", "sourceRefs"])
+        .into_iter()
+        .take(10)
+    {
+        lines.push(format!("- {source_ref}"));
+    }
+    lines.push(String::new());
+    lines.join("\n")
+}
+
+fn insight_cards_v1(
+    normalized: &NormalizedArchMapV2,
+    packet: &ArchSigMeasurementPacketV1,
+    summary: &Value,
+) -> Vec<Value> {
+    let mut cards = Vec::new();
+    for row in &packet.structural_verdict {
+        if row.evaluator == "ag.cech-obstruction@1" && row.verdict == "measured_nonzero" {
+            cards.push(insight_card(
+                "insight:h1-glue-mismatch:001",
+                "global_glue_mismatch",
+                "high",
+                "Global glue mismatch measured",
+                "Local checks do not explain the whole selected cover; ArchSig measured a cross-context H^1 mismatch.",
+                "This highlights architecture drift that can be invisible as a local law violation and gives reviewers a first seam to inspect.",
+                row,
+                packet,
+                normalized,
+                "Inspect mismatch support",
+                "cech-h1-mismatch",
+                vec![
+                    "measured_nonzero structural verdict".to_string(),
+                    "has context refs".to_string(),
+                    "has next inspection action".to_string(),
+                ],
+                vec![
+                    "This does not prove source extraction completeness.".to_string(),
+                    "This does not automatically identify a safe repair.".to_string(),
+                ],
+            ));
+        } else if row.evaluator == "ag.cech-obstruction@1" && row.verdict == "measured_zero" {
+            cards.push(insight_card(
+                "insight:h1-glue-mismatch:zero",
+                "no_measured_glue_mismatch",
+                "info",
+                "No measured H^1 glue mismatch under profile",
+                "No selected-cover H^1 glue mismatch was measured under this profile.",
+                "This lets reviewers distinguish a profile-relative zero result from unmeasured or unknown regions.",
+                row,
+                packet,
+                normalized,
+                "Inspect measurement boundary",
+                "boundary-assumption",
+                vec![
+                    "measured_zero confirmation".to_string(),
+                    "boundary digest remains visible".to_string(),
+                ],
+                vec![
+                    "This does not mean the architecture is clean.".to_string(),
+                    "This does not rule out unmeasured or unknown support.".to_string(),
+                ],
+            ));
+        } else if row.evaluator == "ag.square-free-repair@1" && row.verdict == "measured_nonzero" {
+            cards.push(insight_card(
+                "insight:repair-candidate:001",
+                "minimal_repair_candidate",
+                "high",
+                "Minimal repair candidate available",
+                "Measured forbidden supports have a combinatorial hitting-set repair candidate.",
+                "This gives refactor planning a concrete support set to inspect without claiming an automatic semantic repair.",
+                row,
+                packet,
+                normalized,
+                "Compare repair candidate with forbidden supports",
+                "repair-dual",
+                vec![
+                    "repair candidate".to_string(),
+                    "lower-bound language".to_string(),
+                    "non-claim required".to_string(),
+                ],
+                vec![
+                    "This is a combinatorial repair candidate, not a semantic refactor guarantee.".to_string(),
+                    "This does not prove repair safety.".to_string(),
+                ],
+            ));
+        } else if row.evaluator == "ag.law-conflict-tor@1" && row.verdict == "measured_nonzero" {
+            cards.push(insight_card(
+                "insight:policy-conflict:001",
+                "policy_conflict",
+                "high",
+                "Policy conflict measured",
+                "Selected law universes have a measured Tor conflict class in the common ambient.",
+                "This points reviewers to the witness/context where policy choices structurally collide.",
+                row,
+                packet,
+                normalized,
+                "Inspect policy conflict witness",
+                "law-conflict-tor",
+                vec!["policy conflict".to_string(), "measured_nonzero structural verdict".to_string()],
+                vec!["This does not prove there is no compatible refactor.".to_string()],
+            ));
+        } else if row.verdict == "not_computed" {
+            cards.push(insight_card(
+                &format!("insight:not-computed:{}", slug(&row.evaluator)),
+                "not_computed_blocker",
+                "high",
+                "Measurement blocked by reason code",
+                &format!(
+                    "{} did not compute because {}.",
+                    row.evaluator, row.verdict_data.method_status
+                ),
+                "The blocked reason belongs in the Decision Bar so reviewers do not mistake an empty scene for absence of conflict.",
+                row,
+                packet,
+                normalized,
+                "Inspect blocking reason",
+                if row.evaluator == "ag.law-conflict-tor@1" {
+                    "law-conflict-tor"
+                } else {
+                    "boundary-assumption"
+                },
+                vec![
+                    "not_computed due to reason code".to_string(),
+                    row.verdict_data.method_status.clone(),
+                ],
+                vec!["This is not a measured zero result.".to_string()],
+            ));
+        }
+    }
+    if packet
+        .analytic_readings
+        .iter()
+        .any(|reading| reading.evaluator == "ag.sheaf-laplacian@1")
+    {
+        cards.push(analytic_insight_card(
+            "insight:architecture-debt-mass:001",
+            "architecture_debt_mass",
+            "medium",
+            "Architecture debt field available",
+            "Harmonic mass and flatness distance are available as analytic readings.",
+            "This supports debt inspection as an analytic field while keeping lawful/unlawful verdicts separate.",
+            packet,
+            normalized,
+            "Inspect Hodge debt field",
+            "hodge-debt-field",
+            vec!["architecture debt mass / analytic reading".to_string()],
+            vec![
+                "Near-flat is not lawful.".to_string(),
+                "Analytic readings do not generate structural verdicts.".to_string(),
+            ],
+        ));
+    }
+    if packet
+        .assumptions
+        .iter()
+        .any(|assumption| assumption.status != "checked")
+        || summary["structuralVerdictSummary"]["nonTerminalCount"]
+            .as_u64()
+            .unwrap_or(0)
+            > 0
+    {
+        cards.push(analytic_insight_card(
+            "insight:measurement-boundary:001",
+            "measurement_boundary",
+            "medium",
+            "Measurement boundary recorded",
+            "Checked, assumed, unmeasured, unknown, and not_computed states are preserved for review.",
+            "This tells reviewers exactly where the conclusion is profile-relative and where it is blocked or unmeasured.",
+            packet,
+            normalized,
+            "Inspect measurement boundary",
+            "boundary-assumption",
+            vec!["measurement boundary".to_string(), "unknown states remain visible".to_string()],
+            vec!["Boundary visibility is not a negative conclusion by itself.".to_string()],
+        ));
+    }
+    cards.sort_by(|left, right| {
+        insight_rank(right)
+            .cmp(&insight_rank(left))
+            .then_with(|| string_field(left, "id").cmp(&string_field(right, "id")))
+    });
+    cards
+}
+
+fn insight_card(
+    id: &str,
+    kind: &str,
+    severity: &str,
+    title: &str,
+    one_line: &str,
+    why_it_matters: &str,
+    row: &AgStructuralVerdictV1,
+    packet: &ArchSigMeasurementPacketV1,
+    normalized: &NormalizedArchMapV2,
+    next_action: &str,
+    scene_id: &str,
+    ranking_basis: Vec<String>,
+    non_claims: Vec<String>,
+) -> Value {
+    let refs = insight_refs_for_row(normalized, packet, row);
+    let structural_verdict_ref = structural_verdict_ref(row);
+    let sample_refs = insight_sample_refs(normalized);
+    let evidence_resolution_status = if refs.3.is_empty() && refs.4.is_empty() && refs.5.is_empty()
+    {
+        "boundary_only"
+    } else {
+        "resolved_from_packet_support"
+    };
+    json!({
+        "id": id,
+        "kind": kind,
+        "severity": severity,
+        "title": title,
+        "oneLine": one_line,
+        "whyItMatters": why_it_matters,
+        "evidence": {
+            "structuralVerdictRefs": [structural_verdict_ref],
+            "computedInvariantRefs": refs.0,
+            "analyticReadingRefs": refs.1,
+            "assumptionRefs": refs.2,
+            "sourceRefs": refs.3,
+            "atomRefs": refs.4,
+            "contextRefs": refs.5,
+            "coverRefs": [packet.profile.cover_ref.clone()],
+            "evaluatorRefs": [row.evaluator.clone()],
+            "evidenceResolutionStatus": evidence_resolution_status
+        },
+        "sampleRefs": sample_refs,
+        "nextAction": {
+            "label": next_action,
+            "kind": if kind == "minimal_repair_candidate" { "repair_candidate" } else { "next_inspection" },
+            "targetRefs": refs.6
+        },
+        "viewerNavigation": {
+            "sceneId": scene_id,
+            "highlightRefs": {
+                "atomRefs": refs.4,
+                "contextRefs": refs.5,
+                "sourceRefs": refs.3
+            }
+        },
+        "tourRefs": [format!("tour:{}", id.trim_start_matches("insight:"))],
+        "rankingBasis": ranking_basis,
+        "nonClaims": non_claims
+    })
+}
+
+fn analytic_insight_card(
+    id: &str,
+    kind: &str,
+    severity: &str,
+    title: &str,
+    one_line: &str,
+    why_it_matters: &str,
+    packet: &ArchSigMeasurementPacketV1,
+    normalized: &NormalizedArchMapV2,
+    next_action: &str,
+    scene_id: &str,
+    ranking_basis: Vec<String>,
+    non_claims: Vec<String>,
+) -> Value {
+    let source_refs = top_source_refs(normalized);
+    let atom_refs = top_atom_refs(normalized);
+    let context_refs = top_context_refs(normalized);
+    let sample_refs = insight_sample_refs(normalized);
+    json!({
+        "id": id,
+        "kind": kind,
+        "severity": severity,
+        "title": title,
+        "oneLine": one_line,
+        "whyItMatters": why_it_matters,
+        "evidence": {
+            "structuralVerdictRefs": [],
+            "computedInvariantRefs": invariant_refs(packet),
+            "analyticReadingRefs": analytic_reading_refs(packet),
+            "assumptionRefs": assumption_refs(packet),
+            "sourceRefs": source_refs,
+            "atomRefs": atom_refs,
+            "contextRefs": context_refs,
+            "coverRefs": [packet.profile.cover_ref.clone()],
+            "evaluatorRefs": evaluator_refs(packet),
+            "evidenceResolutionStatus": "analytic_or_boundary_summary"
+        },
+        "sampleRefs": sample_refs,
+        "nextAction": {
+            "label": next_action,
+            "kind": "next_inspection",
+            "targetRefs": ["boundary-digest:main"]
+        },
+        "viewerNavigation": {
+            "sceneId": scene_id,
+            "highlightRefs": {
+                "atomRefs": atom_refs,
+                "contextRefs": context_refs,
+                "sourceRefs": source_refs
+            }
+        },
+        "tourRefs": [format!("tour:{}", id.trim_start_matches("insight:"))],
+        "rankingBasis": ranking_basis,
+        "nonClaims": non_claims
+    })
+}
+
+fn insight_boundary_digest(packet: &ArchSigMeasurementPacketV1, summary: &Value) -> Value {
+    let checked = packet
+        .assumptions
+        .iter()
+        .filter(|assumption| assumption.status == "checked")
+        .count();
+    let assumed = packet
+        .assumptions
+        .iter()
+        .filter(|assumption| assumption.status == "assumed")
+        .count();
+    let violated = packet
+        .assumptions
+        .iter()
+        .filter(|assumption| assumption.status == "violated")
+        .count();
+    let unmeasured = packet
+        .structural_verdict
+        .iter()
+        .filter(|row| row.verdict == "unmeasured")
+        .count();
+    let unknown = packet
+        .structural_verdict
+        .iter()
+        .filter(|row| row.verdict == "unknown")
+        .count();
+    let not_computed = packet
+        .structural_verdict
+        .iter()
+        .filter(|row| row.verdict == "not_computed")
+        .count();
+    let blocking = violated + not_computed;
+    json!({
+        "id": "boundary-digest:main",
+        "shortText": format!(
+            "Profile-relative. {assumed} assumptions declared. {unmeasured} supports unmeasured. {unknown} unknown. {not_computed} not_computed."
+        ),
+        "profileRef": packet.profile.profile_id,
+        "checkedCount": checked,
+        "assumedCount": assumed,
+        "violatedCount": violated,
+        "unmeasuredCount": unmeasured,
+        "unknownCount": unknown,
+        "notComputedCount": not_computed,
+        "blockingCount": blocking,
+        "conclusionRef": summary["conclusion"],
+        "checked": packet.assumptions.iter().filter(|row| row.status == "checked").map(assumption_row).collect::<Vec<_>>(),
+        "assumed": packet.assumptions.iter().filter(|row| row.status == "assumed").map(assumption_row).collect::<Vec<_>>(),
+        "blocking": packet.assumptions.iter().filter(|row| row.status == "violated").map(assumption_row).chain(packet.structural_verdict.iter().filter(|row| row.verdict == "not_computed").map(|row| json!({
+            "kind": "not_computed",
+            "evaluator": row.evaluator,
+            "reasonCode": row.verdict_data.method_status,
+            "reason": row.reason
+        }))).collect::<Vec<_>>(),
+        "nonClaims": [
+            "Boundary digest qualifies where the conclusion applies; it does not add a new negative conclusion.",
+            "Unmeasured, unknown, and not_computed are not measured zero."
+        ]
+    })
+}
+
+fn insight_action_queue_v1(cards: &[Value]) -> Vec<Value> {
+    cards
+        .iter()
+        .enumerate()
+        .map(|(index, card)| {
+            let kind = if string_field(card, "kind") == "minimal_repair_candidate" {
+                "repair_candidate"
+            } else {
+                "next_inspection"
+            };
+            json!({
+                "id": format!("action:{}:{}", kind, index + 1),
+                "kind": kind,
+                "title": string_at(card, &["nextAction", "label"]),
+                "reason": string_field(card, "oneLine"),
+                "targetRefs": card["nextAction"]["targetRefs"],
+                "expectedUserOutcome": if kind == "repair_candidate" {
+                    "Decide whether this combinatorial candidate should seed a refactor plan."
+                } else {
+                    "Decide which measured support, boundary, or source ref to inspect next."
+                },
+                "nonClaims": card["nonClaims"]
+            })
+        })
+        .collect()
+}
+
+fn insight_viewer_visual_scenes_v1(
+    normalized: &NormalizedArchMapV2,
+    packet: &ArchSigMeasurementPacketV1,
+    cards: &[Value],
+) -> Vec<Value> {
+    let overview_refs = scene_refs_for_kinds(
+        normalized,
+        packet,
+        cards,
+        &[
+            "global_glue_mismatch",
+            "minimal_repair_candidate",
+            "policy_conflict",
+            "not_computed_blocker",
+            "architecture_debt_mass",
+            "measurement_boundary",
+            "confirmed_zero",
+            "no_measured_glue_mismatch",
+        ],
+        true,
+    );
+    let cech_refs = scene_refs_for_kinds(
+        normalized,
+        packet,
+        cards,
+        &[
+            "global_glue_mismatch",
+            "confirmed_zero",
+            "no_measured_glue_mismatch",
+        ],
+        false,
+    );
+    let obstruction_refs = scene_refs_for_kinds(
+        normalized,
+        packet,
+        cards,
+        &["minimal_repair_candidate"],
+        false,
+    );
+    let law_refs = scene_refs_for_kinds(
+        normalized,
+        packet,
+        cards,
+        &["policy_conflict", "not_computed_blocker"],
+        false,
+    );
+    let hodge_refs = scene_refs_for_kinds(
+        normalized,
+        packet,
+        cards,
+        &["architecture_debt_mass"],
+        false,
+    );
+    let boundary_refs =
+        scene_refs_for_kinds(normalized, packet, cards, &["measurement_boundary"], false);
+    let source_refs = source_scene_refs(normalized, packet, cards);
+    let has_glue_mismatch = cards
+        .iter()
+        .any(|card| string_field(card, "kind") == "global_glue_mismatch");
+    let has_glue_zero = cards.iter().any(|card| {
+        matches!(
+            string_field(card, "kind").as_str(),
+            "confirmed_zero" | "no_measured_glue_mismatch"
+        )
+    });
+    let has_repair = cards
+        .iter()
+        .any(|card| string_field(card, "kind") == "minimal_repair_candidate");
+    let has_law_conflict = cards.iter().any(|card| {
+        matches!(
+            string_field(card, "kind").as_str(),
+            "policy_conflict" | "not_computed_blocker"
+        )
+    });
+    let has_debt = cards
+        .iter()
+        .any(|card| string_field(card, "kind") == "architecture_debt_mass");
+    vec![
+        scene_v1(
+            "overview",
+            "overview_constellation",
+            "Overview",
+            "Which insight should I inspect first?",
+            (
+                "source locality / module neighborhood",
+                "architecture layer or atom family rank",
+                "insight priority / measured severity",
+            ),
+            "top_insight_beacon",
+            "beacon",
+            "topInsightBeacon",
+            "selected insight support",
+            &overview_refs,
+            overview_color_role(cards),
+            "sphere",
+            "thick_glowing_line",
+            true,
+        ),
+        scene_v1(
+            "site-cover",
+            "finite_poset_site",
+            "Site / Cover",
+            "What finite site and cover did ArchSig measure?",
+            (
+                "source neighborhood",
+                "poset rank",
+                "coverage density or context size",
+            ),
+            "context_patch",
+            "patch",
+            "contextPatch",
+            "context and cover membership",
+            &overview_refs,
+            "checked",
+            "translucent_patch",
+            "arrow",
+            true,
+        ),
+        scene_v1(
+            "cech-gluing",
+            "cover_gluing",
+            "Cover & Gluing",
+            "Where does local structure fail to glue globally?",
+            (
+                "context neighborhood / source locality",
+                "context rank / restriction depth",
+                "gluing mismatch intensity",
+            ),
+            "overlap_seam",
+            "ribbon",
+            "cechMismatchSeam",
+            "overlap seam and gluing mismatch",
+            &cech_refs,
+            if has_glue_mismatch {
+                "measured_nonzero"
+            } else {
+                "measured_zero"
+            },
+            "ribbon",
+            "thick_glowing_line",
+            has_glue_mismatch || has_glue_zero,
+        ),
+        scene_v1(
+            "cech-h1-mismatch",
+            "cech_h1_mismatch",
+            "H1 Mismatch",
+            "Which mismatch class remains after local explanations?",
+            (
+                "cover overlap support",
+                "cochain / coboundary role",
+                "H1 mismatch weight",
+            ),
+            "cocycle_ribbon",
+            "ribbon",
+            "cechMismatchSeam",
+            "cocycle representative support",
+            &cech_refs,
+            if has_glue_mismatch {
+                "measured_nonzero"
+            } else {
+                "measured_zero"
+            },
+            "ribbon",
+            "thick_glowing_line",
+            has_glue_mismatch || has_glue_zero,
+        ),
+        scene_v1(
+            "obstruction",
+            "forbidden_support",
+            "Obstruction",
+            "Which atom combinations form forbidden support?",
+            (
+                "atom support neighborhood",
+                "law family",
+                "obstruction intensity",
+            ),
+            "forbidden_support_cage",
+            "cage",
+            "forbiddenSupportCage",
+            "minimal forbidden support",
+            &obstruction_refs,
+            "measured_nonzero",
+            "cage",
+            "broken_line",
+            has_repair,
+        ),
+        scene_v1(
+            "repair-dual",
+            "repair_dual",
+            "Repair",
+            "Which candidate support intersects measured obstructions?",
+            ("forbidden support", "candidate set", "lower-bound pressure"),
+            "repair_candidate_cut",
+            "cut",
+            "repairCandidateCut",
+            "minimal repair hitting set",
+            &obstruction_refs,
+            "repair_candidate",
+            "cut",
+            "arrow",
+            has_repair,
+        ),
+        scene_v1(
+            "law-conflict-tor",
+            "law_conflict",
+            "Law Conflict",
+            "Which law universe conflict is loaded on which witness?",
+            (
+                "law universe A",
+                "common ambient / blocker",
+                "law universe B",
+            ),
+            "law_conflict_bridge",
+            "bridge",
+            "lawConflictBridge",
+            "common ambient or no_common_ambient blocker",
+            &law_refs,
+            if has_law_conflict {
+                "not_computed"
+            } else {
+                "not_applicable"
+            },
+            "wall",
+            "broken_line",
+            has_law_conflict,
+        ),
+        scene_v1(
+            "hodge-debt-field",
+            "hodge_debt_field",
+            "Hodge Debt Field",
+            "Where is analytic architecture debt mass concentrated?",
+            (
+                "support locality",
+                "harmonic / exact component",
+                "debt mass / flatness distance",
+            ),
+            "analytic_debt_field",
+            "field",
+            "hodgeDebtField",
+            "harmonic mass analytic reading",
+            &hodge_refs,
+            "analytic_reading",
+            "heat",
+            "contour",
+            has_debt,
+        ),
+        scene_v1(
+            "boundary-assumption",
+            "boundary_assumption",
+            "Boundary",
+            "Which regions are checked, assumed, unknown, unmeasured, not_computed, or violated?",
+            (
+                "evidence contract",
+                "assumption status",
+                "blocker intensity",
+            ),
+            "boundary_wall",
+            "wall",
+            "boundaryWall",
+            "measurement boundary state",
+            &boundary_refs,
+            "unknown",
+            "wall_fog",
+            "broken_line",
+            true,
+        ),
+        scene_v1(
+            "source-evidence",
+            "source_evidence",
+            "Source Evidence",
+            "Which source refs ground this insight?",
+            (
+                "path / directory neighborhood",
+                "symbol / file depth",
+                "evidence role",
+            ),
+            "source_node",
+            "node",
+            "sourceNode",
+            "copyable source refs",
+            &source_refs,
+            "source_evidence",
+            "node",
+            "thin_line",
+            !string_array_at(&source_refs, &["sourceRefs"]).is_empty(),
+        ),
+    ]
+}
+
+fn overview_color_role(cards: &[Value]) -> &'static str {
+    let top_kind = cards.first().map(|card| string_field(card, "kind"));
+    match top_kind.as_deref() {
+        Some("global_glue_mismatch")
+        | Some("minimal_repair_candidate")
+        | Some("policy_conflict") => "measured_nonzero",
+        Some("no_measured_glue_mismatch") | Some("confirmed_zero") => "measured_zero",
+        Some("not_computed_blocker") => "not_computed",
+        Some("architecture_debt_mass") => "analytic_reading",
+        Some("measurement_boundary") => "unknown",
+        _ => "checked",
+    }
+}
+
+fn scene_refs_for_kinds(
+    normalized: &NormalizedArchMapV2,
+    packet: &ArchSigMeasurementPacketV1,
+    cards: &[Value],
+    kinds: &[&str],
+    include_samples: bool,
+) -> Value {
+    let kind_set = kinds.iter().copied().collect::<BTreeSet<_>>();
+    let mut insight_refs = Vec::new();
+    let mut atom_refs = BTreeSet::new();
+    let mut context_refs = BTreeSet::new();
+    let mut source_refs = BTreeSet::new();
+
+    for card in cards
+        .iter()
+        .filter(|card| kind_set.contains(string_field(card, "kind").as_str()))
+    {
+        insight_refs.push(string_field(card, "id"));
+        for atom_ref in string_array_at(card, &["evidence", "atomRefs"]) {
+            atom_refs.insert(atom_ref);
+        }
+        for context_ref in string_array_at(card, &["evidence", "contextRefs"]) {
+            context_refs.insert(context_ref);
+        }
+        for source_ref in string_array_at(card, &["evidence", "sourceRefs"]) {
+            source_refs.insert(source_ref);
+        }
+    }
+
+    if include_samples {
+        atom_refs.extend(top_atom_refs(normalized));
+        context_refs.extend(top_context_refs(normalized));
+        source_refs.extend(top_source_refs(normalized));
+    }
+
+    json!({
+        "insightRefs": insight_refs,
+        "atomRefs": atom_refs.into_iter().take(24).collect::<Vec<_>>(),
+        "contextRefs": context_refs.into_iter().take(16).collect::<Vec<_>>(),
+        "coverRefs": [packet.profile.cover_ref.clone()],
+        "sourceRefs": source_refs.into_iter().take(20).collect::<Vec<_>>()
+    })
+}
+
+fn source_scene_refs(
+    normalized: &NormalizedArchMapV2,
+    packet: &ArchSigMeasurementPacketV1,
+    cards: &[Value],
+) -> Value {
+    let mut insight_refs = Vec::new();
+    let mut atom_refs = BTreeSet::new();
+    let mut context_refs = BTreeSet::new();
+    let mut source_refs = BTreeSet::new();
+    for card in cards
+        .iter()
+        .filter(|card| !string_array_at(card, &["evidence", "sourceRefs"]).is_empty())
+    {
+        insight_refs.push(string_field(card, "id"));
+        for atom_ref in string_array_at(card, &["evidence", "atomRefs"]) {
+            atom_refs.insert(atom_ref);
+        }
+        for context_ref in string_array_at(card, &["evidence", "contextRefs"]) {
+            context_refs.insert(context_ref);
+        }
+        for source_ref in string_array_at(card, &["evidence", "sourceRefs"]) {
+            source_refs.insert(source_ref);
+        }
+    }
+    if source_refs.is_empty() {
+        source_refs.extend(top_source_refs(normalized));
+    }
+    json!({
+        "insightRefs": insight_refs,
+        "atomRefs": atom_refs.into_iter().take(24).collect::<Vec<_>>(),
+        "contextRefs": context_refs.into_iter().take(16).collect::<Vec<_>>(),
+        "coverRefs": [packet.profile.cover_ref.clone()],
+        "sourceRefs": source_refs.into_iter().take(20).collect::<Vec<_>>()
+    })
+}
+
+fn scene_v1(
+    scene_id: &str,
+    kind: &str,
+    title: &str,
+    user_question: &str,
+    axis: (&str, &str, &str),
+    layer_kind: &str,
+    geometry_role: &str,
+    click_target_kind: &str,
+    text_role: &str,
+    primary_refs: &Value,
+    color_role: &str,
+    shape_role: &str,
+    line_role: &str,
+    active: bool,
+) -> Value {
+    json!({
+        "sceneId": scene_id,
+        "kind": kind,
+        "title": title,
+        "sceneStatus": if active { "active" } else { "not_active_for_packet" },
+        "userQuestion": user_question,
+        "axisMapping": { "x": axis.0, "y": axis.1, "z": axis.2 },
+        "primaryRefs": primary_refs,
+        "layers": [{
+            "layerId": format!("layer:{scene_id}:{layer_kind}"),
+            "kind": layer_kind,
+            "geometryRole": geometry_role,
+            "encodingRef": format!("encoding:{scene_id}:main"),
+            "clickTargetKind": click_target_kind,
+            "refs": primary_refs,
+            "omissionPolicy": if active { "preserve_for_top_insight" } else { "omittable_background" },
+            "animationPurpose": if active { "navigation" } else { "orientation" }
+        }],
+        "visualEncodings": [{
+            "encodingId": format!("encoding:{scene_id}:main"),
+            "colorRole": if active { color_role } else { "not_applicable" },
+            "shapeRole": shape_role,
+            "lineRole": line_role,
+            "textRole": if active { text_role.to_string() } else { format!("not active for this packet: {text_role}") }
+        }],
+        "boundaryDigestRef": "boundary-digest:main"
+    })
+}
+
+fn insight_guided_tours_v1(cards: &[Value]) -> Vec<Value> {
+    cards
+        .iter()
+        .map(|card| {
+            let tour_id = format!("tour:{}", string_field(card, "id").trim_start_matches("insight:"));
+            json!({
+                "tourId": tour_id,
+                "title": string_field(card, "title"),
+                "insightRefs": [string_field(card, "id")],
+                "steps": [
+                    {
+                        "sceneId": "site-cover",
+                        "caption": "These contexts form the selected cover.",
+                        "highlightRefs": card["viewerNavigation"]["highlightRefs"]
+                    },
+                    {
+                        "sceneId": card["viewerNavigation"]["sceneId"],
+                        "caption": "This scene highlights the measured support or blocker.",
+                        "highlightRefs": card["viewerNavigation"]["highlightRefs"]
+                    },
+                    {
+                        "sceneId": "source-evidence",
+                        "caption": "These source refs ground the insight.",
+                        "highlightRefs": card["viewerNavigation"]["highlightRefs"]
+                    },
+                    {
+                        "sceneId": "boundary-assumption",
+                        "caption": "This boundary explains what is checked, assumed, unknown, unmeasured, or not_computed.",
+                        "highlightRefs": card["viewerNavigation"]["highlightRefs"]
+                    }
+                ]
+            })
+        })
+        .collect()
+}
+
+fn insight_copy_blocks_v1(
+    normalized: &NormalizedArchMapV2,
+    cards: &[Value],
+    boundary_digest: &Value,
+) -> Value {
+    let mut source_refs = cards
+        .iter()
+        .flat_map(|card| string_array_at(card, &["evidence", "sourceRefs"]))
+        .chain(top_source_refs(normalized))
+        .collect::<BTreeSet<_>>()
+        .into_iter()
+        .collect::<Vec<_>>();
+    source_refs.truncate(20);
+    json!({
+        "sourceRefs": source_refs,
+        "llmHandoff": {
+            "instruction": "Use the following ArchSig result as bounded evidence. Do not infer beyond the listed claims and boundaries.",
+            "boundary": boundary_digest["shortText"],
+            "topInsights": cards.iter().take(3).map(|card| string_field(card, "oneLine")).collect::<Vec<_>>()
+        }
+    })
+}
+
+fn insight_refs_for_row(
+    normalized: &NormalizedArchMapV2,
+    packet: &ArchSigMeasurementPacketV1,
+    row: &AgStructuralVerdictV1,
+) -> (
+    Vec<String>,
+    Vec<String>,
+    Vec<String>,
+    Vec<String>,
+    Vec<String>,
+    Vec<String>,
+    Vec<String>,
+) {
+    let row_invariants = invariant_values_for_row(packet, row);
+    let mut packet_atom_refs = collect_packet_refs_from_values(
+        &row_invariants,
+        &[
+            "supportAtomRefs",
+            "mismatchSupportRefs",
+            "witnessSupportRefs",
+            "atomRefs",
+            "atomRef",
+        ],
+    );
+    packet_atom_refs.extend(atom_refs_for_row(normalized, row));
+    let atom_refs = normalize_atom_refs(normalized, packet_atom_refs);
+    let mut context_refs = context_refs_for_atoms(normalized, &atom_refs);
+    context_refs.extend(normalize_context_refs(
+        normalized,
+        collect_packet_refs_from_values(
+            &row_invariants,
+            &[
+                "contextRefs",
+                "contextRef",
+                "selectedContexts",
+                "sourceContext",
+                "targetContext",
+            ],
+        ),
+    ));
+    context_refs = sorted_truncated(context_refs, 8);
+    let mut source_refs = source_refs_for_atoms(normalized, &atom_refs);
+    source_refs.extend(
+        collect_packet_refs_from_values(&row_invariants, &["sourceRefs", "sourceRef"])
+            .into_iter()
+            .map(|source_ref| sanitize_source_ref(&source_ref)),
+    );
+    source_refs = sorted_truncated(source_refs, 10);
+    let mut target_refs = atom_refs.clone();
+    target_refs.extend(context_refs.clone());
+    if target_refs.is_empty() {
+        target_refs.push(structural_verdict_ref(row));
+    }
+    (
+        invariant_refs_for_values(&row_invariants),
+        analytic_reading_refs_for_row(packet, row),
+        assumption_refs(packet),
+        source_refs,
+        atom_refs,
+        context_refs,
+        target_refs,
+    )
+}
+
+fn atom_refs_for_row(normalized: &NormalizedArchMapV2, row: &AgStructuralVerdictV1) -> Vec<String> {
+    let evaluator_hint = evaluator_hint(&row.evaluator);
+    let refs = normalized
+        .atoms
+        .iter()
+        .filter(|atom| {
+            evaluator_hint
+                .is_some_and(|hint| atom.axis.contains(hint) || atom.predicate.contains(hint))
+                || row
+                    .verdict_data
+                    .cert_ref
+                    .as_deref()
+                    .is_some_and(|cert| cert.contains(&atom.source_atom_id))
+        })
+        .map(|atom| atom.normalized_atom_id.clone())
+        .collect::<BTreeSet<_>>()
+        .into_iter()
+        .collect::<Vec<_>>();
+    refs.into_iter().take(12).collect()
+}
+
+fn context_refs_for_atoms(normalized: &NormalizedArchMapV2, atom_refs: &[String]) -> Vec<String> {
+    let atoms = atom_refs
+        .iter()
+        .map(String::as_str)
+        .collect::<BTreeSet<_>>();
+    let mut refs = normalized
+        .contexts
+        .iter()
+        .filter(|context| {
+            context
+                .atom_ids
+                .iter()
+                .any(|atom| atoms.contains(atom.as_str()))
+        })
+        .map(|context| context.normalized_context_id.clone())
+        .collect::<BTreeSet<_>>()
+        .into_iter()
+        .collect::<Vec<_>>();
+    refs.truncate(8);
+    refs
+}
+
+fn source_refs_for_atoms(normalized: &NormalizedArchMapV2, atom_refs: &[String]) -> Vec<String> {
+    let atoms = atom_refs
+        .iter()
+        .map(String::as_str)
+        .collect::<BTreeSet<_>>();
+    let mut refs = normalized
+        .atoms
+        .iter()
+        .filter(|atom| atoms.contains(atom.normalized_atom_id.as_str()))
+        .flat_map(|atom| {
+            atom.source_refs
+                .iter()
+                .map(|source_ref| sanitize_source_ref(source_ref))
+        })
+        .collect::<BTreeSet<_>>()
+        .into_iter()
+        .collect::<Vec<_>>();
+    refs.truncate(10);
+    refs
+}
+
+fn structural_verdict_ref(row: &AgStructuralVerdictV1) -> String {
+    format!(
+        "structuralVerdict/{}/{}/{}",
+        stable_ref_segment(&row.evaluator),
+        stable_ref_segment(&row.law),
+        stable_ref_segment(&row.verdict_data.method_status)
+    )
+}
+
+fn stable_ref_segment(value: &str) -> String {
+    value
+        .chars()
+        .map(|ch| if ch.is_ascii_alphanumeric() { ch } else { '-' })
+        .collect::<String>()
+        .trim_matches('-')
+        .to_string()
+}
+
+fn evaluator_hint(evaluator: &str) -> Option<&'static str> {
+    if evaluator.contains("cech") {
+        Some("cech")
+    } else if evaluator.contains("square-free") || evaluator.contains("square_free") {
+        Some("square")
+    } else if evaluator.contains("tor") {
+        Some("tor")
+    } else if evaluator.contains("laplacian") {
+        Some("laplacian")
+    } else if evaluator.contains("period") {
+        Some("period")
+    } else if evaluator.contains("transfer") {
+        Some("transfer")
+    } else {
+        None
+    }
+}
+
+fn invariant_values_for_row(
+    packet: &ArchSigMeasurementPacketV1,
+    row: &AgStructuralVerdictV1,
+) -> Vec<Value> {
+    let cert_invariant = row
+        .verdict_data
+        .cert_ref
+        .as_deref()
+        .and_then(|cert_ref| cert_ref.strip_prefix("computedInvariants/"));
+    let hint = evaluator_hint(&row.evaluator);
+    packet
+        .computed_invariants
+        .iter()
+        .filter(|value| {
+            let invariant_id = value["invariantId"].as_str().unwrap_or_default();
+            cert_invariant.is_some_and(|cert| cert == invariant_id)
+                || value["evaluator"].as_str() == Some(row.evaluator.as_str())
+                || hint.is_some_and(|hint| invariant_id.contains(hint))
+        })
+        .cloned()
+        .collect()
+}
+
+fn invariant_refs_for_values(values: &[Value]) -> Vec<String> {
+    values
+        .iter()
+        .filter_map(|value| value["invariantId"].as_str())
+        .map(ToOwned::to_owned)
+        .collect::<BTreeSet<_>>()
+        .into_iter()
+        .take(12)
+        .collect()
+}
+
+fn analytic_reading_refs_for_row(
+    packet: &ArchSigMeasurementPacketV1,
+    row: &AgStructuralVerdictV1,
+) -> Vec<String> {
+    packet
+        .analytic_readings
+        .iter()
+        .filter(|reading| {
+            reading.evaluator == row.evaluator
+                || reading.structural_verdict_ref.as_deref() == row.verdict_data.cert_ref.as_deref()
+                || evaluator_hint(&row.evaluator)
+                    .is_some_and(|hint| reading.reading_id.contains(hint))
+        })
+        .map(|reading| reading.reading_id.clone())
+        .collect::<BTreeSet<_>>()
+        .into_iter()
+        .take(12)
+        .collect()
+}
+
+fn collect_packet_refs_from_values(values: &[Value], keys: &[&str]) -> Vec<String> {
+    let key_set = keys.iter().copied().collect::<BTreeSet<_>>();
+    let mut refs = BTreeSet::new();
+    for value in values {
+        collect_packet_refs(value, &key_set, &mut refs);
+    }
+    refs.into_iter().collect()
+}
+
+fn collect_packet_refs(value: &Value, keys: &BTreeSet<&str>, refs: &mut BTreeSet<String>) {
+    match value {
+        Value::Object(object) => {
+            for (key, nested) in object {
+                if keys.contains(key.as_str()) {
+                    collect_strings(nested, refs);
+                }
+                collect_packet_refs(nested, keys, refs);
+            }
+        }
+        Value::Array(items) => {
+            for item in items {
+                collect_packet_refs(item, keys, refs);
+            }
+        }
+        _ => {}
+    }
+}
+
+fn collect_strings(value: &Value, refs: &mut BTreeSet<String>) {
+    match value {
+        Value::String(value) => {
+            refs.insert(value.clone());
+        }
+        Value::Array(items) => {
+            for item in items {
+                collect_strings(item, refs);
+            }
+        }
+        _ => {}
+    }
+}
+
+fn normalize_atom_refs(normalized: &NormalizedArchMapV2, refs: Vec<String>) -> Vec<String> {
+    let by_source = normalized
+        .atoms
+        .iter()
+        .map(|atom| {
+            (
+                atom.source_atom_id.as_str(),
+                atom.normalized_atom_id.clone(),
+            )
+        })
+        .collect::<BTreeMap<_, _>>();
+    let normalized_ids = normalized
+        .atoms
+        .iter()
+        .map(|atom| atom.normalized_atom_id.as_str())
+        .collect::<BTreeSet<_>>();
+    refs.into_iter()
+        .filter_map(|atom_ref| {
+            if normalized_ids.contains(atom_ref.as_str()) {
+                Some(atom_ref)
+            } else {
+                by_source.get(atom_ref.as_str()).cloned()
+            }
+        })
+        .collect::<BTreeSet<_>>()
+        .into_iter()
+        .take(12)
+        .collect()
+}
+
+fn normalize_context_refs(normalized: &NormalizedArchMapV2, refs: Vec<String>) -> Vec<String> {
+    let by_source = normalized
+        .contexts
+        .iter()
+        .map(|context| {
+            (
+                context.source_context_id.as_str(),
+                context.normalized_context_id.clone(),
+            )
+        })
+        .collect::<BTreeMap<_, _>>();
+    let normalized_ids = normalized
+        .contexts
+        .iter()
+        .map(|context| context.normalized_context_id.as_str())
+        .collect::<BTreeSet<_>>();
+    refs.into_iter()
+        .filter_map(|context_ref| {
+            if normalized_ids.contains(context_ref.as_str()) {
+                Some(context_ref)
+            } else {
+                by_source.get(context_ref.as_str()).cloned()
+            }
+        })
+        .collect::<BTreeSet<_>>()
+        .into_iter()
+        .take(8)
+        .collect()
+}
+
+fn sorted_truncated(refs: Vec<String>, limit: usize) -> Vec<String> {
+    refs.into_iter()
+        .collect::<BTreeSet<_>>()
+        .into_iter()
+        .take(limit)
+        .collect()
+}
+
+fn sanitize_source_ref(source_ref: &str) -> String {
+    if source_ref.starts_with('/')
+        || source_ref.contains("\\")
+        || source_ref.contains("/Users/")
+        || source_ref.contains(".codex")
+        || source_ref.contains("Documents/LEAN")
+        || source_ref.contains("HelloLean")
+    {
+        "source-ref:redacted-local-path".to_string()
+    } else {
+        source_ref.to_string()
+    }
+}
+
+fn invariant_refs(packet: &ArchSigMeasurementPacketV1) -> Vec<String> {
+    packet
+        .computed_invariants
+        .iter()
+        .filter_map(|value| value["invariantId"].as_str())
+        .map(ToOwned::to_owned)
+        .take(12)
+        .collect()
+}
+
+fn analytic_reading_refs(packet: &ArchSigMeasurementPacketV1) -> Vec<String> {
+    packet
+        .analytic_readings
+        .iter()
+        .map(|reading| reading.reading_id.clone())
+        .take(12)
+        .collect()
+}
+
+fn assumption_refs(packet: &ArchSigMeasurementPacketV1) -> Vec<String> {
+    packet
+        .assumptions
+        .iter()
+        .map(|assumption| assumption.theorem_ref.clone())
+        .collect::<BTreeSet<_>>()
+        .into_iter()
+        .collect()
+}
+
+fn evaluator_refs(packet: &ArchSigMeasurementPacketV1) -> Vec<String> {
+    packet
+        .structural_verdict
+        .iter()
+        .map(|row| row.evaluator.clone())
+        .collect::<BTreeSet<_>>()
+        .into_iter()
+        .collect()
+}
+
+fn top_atom_refs(normalized: &NormalizedArchMapV2) -> Vec<String> {
+    normalized
+        .atoms
+        .iter()
+        .map(|atom| atom.normalized_atom_id.clone())
+        .take(8)
+        .collect()
+}
+
+fn top_context_refs(normalized: &NormalizedArchMapV2) -> Vec<String> {
+    normalized
+        .contexts
+        .iter()
+        .map(|context| context.normalized_context_id.clone())
+        .take(8)
+        .collect()
+}
+
+fn top_source_refs(normalized: &NormalizedArchMapV2) -> Vec<String> {
+    normalized
+        .atoms
+        .iter()
+        .flat_map(|atom| {
+            atom.source_refs
+                .iter()
+                .map(|source_ref| sanitize_source_ref(source_ref))
+        })
+        .collect::<BTreeSet<_>>()
+        .into_iter()
+        .take(12)
+        .collect()
+}
+
+fn insight_sample_refs(normalized: &NormalizedArchMapV2) -> Value {
+    json!({
+        "atomRefs": top_atom_refs(normalized),
+        "contextRefs": top_context_refs(normalized),
+        "sourceRefs": top_source_refs(normalized),
+        "note": "Sample refs support orientation only; measured insight evidence is listed under evidence."
+    })
+}
+
+fn assumption_row(row: &AgAssumptionLedgerEntryV1) -> Value {
+    json!({
+        "theoremRef": row.theorem_ref,
+        "assumption": row.assumption,
+        "status": row.status,
+        "checkedBy": row.checked_by,
+        "assumedBy": row.assumed_by
+    })
+}
+
+fn insight_rank(card: &Value) -> usize {
+    match string_field(card, "kind").as_str() {
+        "validation_failure" => 800,
+        "global_glue_mismatch" => 700,
+        "not_computed_blocker" => 650,
+        "repair_lower_bound" | "minimal_repair_candidate" => 600,
+        "policy_conflict" => 500,
+        "architecture_debt_mass" => 400,
+        "no_measured_glue_mismatch" => 300,
+        "measurement_boundary" => 250,
+        _ => 100,
+    }
+}
+
+fn insight_decision_state(card: &Value) -> &'static str {
+    match string_field(card, "severity").as_str() {
+        "high" => "needs_attention",
+        "medium" => "review_boundary",
+        _ => "informational",
+    }
+}
+
+fn empty_insight_evidence() -> Value {
+    json!({
+        "structuralVerdictRefs": [],
+        "computedInvariantRefs": [],
+        "analyticReadingRefs": [],
+        "assumptionRefs": [],
+        "sourceRefs": [],
+        "atomRefs": [],
+        "contextRefs": [],
+        "coverRefs": [],
+        "evaluatorRefs": []
+    })
+}
+
+fn empty_highlight_refs() -> Value {
+    json!({
+        "atomRefs": [],
+        "contextRefs": [],
+        "sourceRefs": []
+    })
+}
+
+fn string_field(value: &Value, field: &str) -> String {
+    value[field].as_str().unwrap_or_default().to_string()
+}
+
+fn string_at(value: &Value, path: &[&str]) -> String {
+    let mut current = value;
+    for key in path {
+        current = &current[*key];
+    }
+    current
+        .as_str()
+        .map(ToOwned::to_owned)
+        .unwrap_or_else(|| current.to_string())
+}
+
+fn number_at(value: &Value, path: &[&str]) -> u64 {
+    let mut current = value;
+    for key in path {
+        current = &current[*key];
+    }
+    current.as_u64().unwrap_or(0)
+}
+
+fn string_array_at(value: &Value, path: &[&str]) -> Vec<String> {
+    let mut current = value;
+    for key in path {
+        current = &current[*key];
+    }
+    current
+        .as_array()
+        .into_iter()
+        .flatten()
+        .filter_map(|value| value.as_str().map(ToOwned::to_owned))
+        .collect()
+}
+
+fn slug(value: &str) -> String {
+    value
+        .chars()
+        .map(|ch| if ch.is_ascii_alphanumeric() { ch } else { '-' })
+        .collect()
 }
 
 #[derive(Debug, Clone)]
@@ -3323,30 +4984,339 @@ pub fn build_measurement_viewer_data_v1(
     normalized: &NormalizedArchMapV2,
     packet: &ArchSigMeasurementPacketV1,
     summary: &Value,
+    insight_report: &Value,
 ) -> Value {
+    let atom_count = normalized.atoms.len();
+    let preserved_atom_refs = top_insight_atom_refs(insight_report);
+    let preserved_context_refs = top_insight_context_refs(insight_report);
+    let viewer_atoms = projected_atoms(normalized, &preserved_atom_refs, 10_000);
+    let viewer_contexts = projected_contexts(normalized, &preserved_context_refs, 20_000);
+    let viewer_covers = projected_covers(normalized, 10_000);
+    let atom_nodes = viewer_atom_nodes(&viewer_atoms, insight_report);
+    let molecule_groups = viewer_molecule_groups(&viewer_contexts);
+    let atom_edges = viewer_atom_edges(&viewer_contexts);
+    let context_memberships = normalized
+        .atoms
+        .iter()
+        .map(|atom| atom.context_memberships.len())
+        .sum::<usize>();
+    let cover_overlaps = normalized
+        .covers
+        .iter()
+        .map(|cover| cover.context_ids.len().saturating_sub(1))
+        .sum::<usize>();
+    let scene_layer_objects = insight_report["viewerVisualScenes"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .flat_map(|scene| scene["layers"].as_array().into_iter().flatten())
+        .count();
+    let large_graph_mode = atom_count >= 10_000
+        || context_memberships > 20_000
+        || cover_overlaps > 10_000
+        || scene_layer_objects > 1_000;
     json!({
         "schemaVersion": "archsig-atom-viewer-data-v2",
         "sourceArtifactRefs": {
             "normalizedArchMap": "normalized-archmap.json",
             "measurementPacket": "archsig-measurement-packet.json",
-            "summary": "archsig-analysis-summary.json"
+            "summary": "archsig-analysis-summary.json",
+            "insightReport": "archsig-insight-report.json",
+            "insightBrief": "archsig-insight-brief.md"
         },
+        "decisionBar": {
+            "conclusion": insight_report["headline"]["conclusionCode"],
+            "validation": "see archsig-analysis-validation.json",
+            "boundaryDigest": insight_report["boundaryDigest"]["shortText"],
+            "artifactLinks": insight_report["outputArtifacts"]
+        },
+        "atomNodes": atom_nodes,
+        "moleculeGroups": molecule_groups,
+        "atomEdges": atom_edges,
+        "insightQueue": insight_report["insightCards"],
+        "actionQueue": insight_report["actionQueue"],
+        "viewerVisualScenes": insight_report["viewerVisualScenes"],
+        "guidedTours": insight_report["guidedTours"],
+        "copyBlocks": insight_report["copyBlocks"],
         "reportPane": {
             "conclusion": summary["conclusion"],
             "profileRef": packet.profile.profile_id,
             "assumptionSummary": summary["assumptionSummary"],
-            "structuralVerdictSummary": summary["structuralVerdictSummary"]
+            "structuralVerdictSummary": summary["structuralVerdictSummary"],
+            "readThisFirst": insight_report["readThisFirst"],
+            "insightQueue": insight_report["insightCards"],
+            "actionQueue": insight_report["actionQueue"],
+            "evidenceDetailShape": ["What", "Why", "Where", "Measurement", "Boundary", "Next"],
+            "boundaryDigest": insight_report["boundaryDigest"],
+            "artifactLinks": insight_report["outputArtifacts"]
         },
         "finitePosetSite": {
-            "atoms": normalized.atoms,
-            "contexts": normalized.contexts,
-            "covers": normalized.covers
+            "atoms": viewer_atoms,
+            "contexts": viewer_contexts,
+            "covers": viewer_covers
+        },
+        "largeGraphStrategy": {
+            "mode": if large_graph_mode { "cluster_aggregation" } else { "full_projection" },
+            "thresholds": {
+                "fullGeometryAtoms": 2_000,
+                "instancedAtoms": 10_000,
+                "clusterAtoms": 50_000,
+                "contextMemberships": 20_000,
+                "coverOverlaps": 10_000,
+                "sceneLayerObjects": 1_000
+            },
+            "topInsightEvidencePinning": {
+                "policy": "preserve_for_top_insight",
+                "preservedRefs": top_insight_preserved_refs(insight_report),
+                "aggregatedRefs": if large_graph_mode { vec!["background-geometry"] } else { Vec::<&str>::new() },
+                "omittedRefs": if large_graph_mode { vec!["background-labels"] } else { Vec::<&str>::new() }
+            }
+        },
+        "omittedDetailCounts": {
+            "omittedAtoms": if atom_count > 10_000 { atom_count.saturating_sub(10_000) } else { 0 },
+            "omittedEdges": 0,
+            "omittedContextMemberships": if context_memberships > 20_000 { context_memberships.saturating_sub(20_000) } else { 0 },
+            "omittedCoverOverlaps": if cover_overlaps > 10_000 { cover_overlaps.saturating_sub(10_000) } else { 0 },
+            "omittedSceneLayerObjects": if scene_layer_objects > 1_000 { scene_layer_objects.saturating_sub(1_000) } else { 0 },
+            "omittedLabels": if atom_count > 10_000 { atom_count.saturating_sub(10_000) } else { 0 },
+            "omittedSourceRefs": 0,
+            "omittedReasons": [
+                "large graph projection may aggregate background geometry",
+                "top insight support and blocking reason objects are preserved before background objects",
+                "viewer data remains a projection and does not embed raw source content"
+            ]
         },
         "nonConclusions": [
             "Viewer data is a bounded projection of ArchMap v2 and measurement packet foundation rows.",
-            "Layout and site visualization are not AG invariant values or Lean proof objects."
+            "Layout and site visualization are not AG invariant values or Lean proof objects.",
+            "Holonomy-like views are restriction path or cover path exploration, not monodromy verdicts.",
+            "Theorem-candidate readings are not displayed as structural conclusions."
         ]
     })
+}
+
+fn top_insight_preserved_refs(insight_report: &Value) -> Vec<String> {
+    let mut refs = BTreeSet::new();
+    for value in string_array_at(insight_report, &["headline", "primaryVerdictRefs"]) {
+        refs.insert(value);
+    }
+    if let Some(card) = insight_report["insightCards"]
+        .as_array()
+        .and_then(|cards| cards.first())
+    {
+        for path in [
+            ["evidence", "structuralVerdictRefs"],
+            ["evidence", "computedInvariantRefs"],
+            ["evidence", "analyticReadingRefs"],
+            ["evidence", "atomRefs"],
+            ["evidence", "contextRefs"],
+            ["evidence", "sourceRefs"],
+            ["nextAction", "targetRefs"],
+        ] {
+            for value in string_array_at(card, &path) {
+                refs.insert(value);
+            }
+        }
+    }
+    refs.into_iter().take(32).collect()
+}
+
+fn top_insight_atom_refs(insight_report: &Value) -> BTreeSet<String> {
+    let mut refs = BTreeSet::new();
+    if let Some(card) = insight_report["insightCards"]
+        .as_array()
+        .and_then(|cards| cards.first())
+    {
+        for value in string_array_at(card, &["evidence", "atomRefs"]) {
+            refs.insert(value);
+        }
+        for value in string_array_at(card, &["viewerNavigation", "highlightRefs", "atomRefs"]) {
+            refs.insert(value);
+        }
+    }
+    refs
+}
+
+fn top_insight_context_refs(insight_report: &Value) -> BTreeSet<String> {
+    let mut refs = BTreeSet::new();
+    if let Some(card) = insight_report["insightCards"]
+        .as_array()
+        .and_then(|cards| cards.first())
+    {
+        for value in string_array_at(card, &["evidence", "contextRefs"]) {
+            refs.insert(value);
+        }
+        for value in string_array_at(card, &["viewerNavigation", "highlightRefs", "contextRefs"]) {
+            refs.insert(value);
+        }
+    }
+    refs
+}
+
+fn projected_atoms(
+    normalized: &NormalizedArchMapV2,
+    preserved_refs: &BTreeSet<String>,
+    limit: usize,
+) -> Vec<NormalizedAtomV2> {
+    let mut selected = Vec::new();
+    let mut seen = BTreeSet::new();
+    for atom in normalized.atoms.iter().filter(|atom| {
+        preserved_refs.contains(atom.normalized_atom_id.as_str())
+            || preserved_refs.contains(atom.source_atom_id.as_str())
+    }) {
+        if seen.insert(atom.normalized_atom_id.clone()) {
+            selected.push(sanitize_viewer_atom(atom.clone()));
+        }
+    }
+    for atom in &normalized.atoms {
+        if selected.len() >= limit {
+            break;
+        }
+        if seen.insert(atom.normalized_atom_id.clone()) {
+            selected.push(sanitize_viewer_atom(atom.clone()));
+        }
+    }
+    selected.truncate(limit);
+    selected
+}
+
+fn projected_contexts(
+    normalized: &NormalizedArchMapV2,
+    preserved_refs: &BTreeSet<String>,
+    limit: usize,
+) -> Vec<NormalizedContextV2> {
+    let mut selected = Vec::new();
+    let mut seen = BTreeSet::new();
+    for context in normalized.contexts.iter().filter(|context| {
+        preserved_refs.contains(context.normalized_context_id.as_str())
+            || preserved_refs.contains(context.source_context_id.as_str())
+    }) {
+        if seen.insert(context.normalized_context_id.clone()) {
+            selected.push(sanitize_viewer_context(context.clone()));
+        }
+    }
+    for context in &normalized.contexts {
+        if selected.len() >= limit {
+            break;
+        }
+        if seen.insert(context.normalized_context_id.clone()) {
+            selected.push(sanitize_viewer_context(context.clone()));
+        }
+    }
+    selected.truncate(limit);
+    selected
+}
+
+fn projected_covers(normalized: &NormalizedArchMapV2, limit: usize) -> Vec<NormalizedCoverV2> {
+    normalized
+        .covers
+        .iter()
+        .take(limit)
+        .cloned()
+        .map(sanitize_viewer_cover)
+        .collect()
+}
+
+fn viewer_atom_nodes(atoms: &[NormalizedAtomV2], insight_report: &Value) -> Vec<Value> {
+    let top_atoms = top_insight_atom_refs(insight_report);
+    atoms
+        .iter()
+        .map(|atom| {
+            let source_refs = atom
+                .source_refs
+                .iter()
+                .map(|source_ref| json!({ "ref": source_ref }))
+                .collect::<Vec<_>>();
+            json!({
+                "nodeId": atom.normalized_atom_id,
+                "sourceAtomId": atom.source_atom_id,
+                "atomKind": atom.atom_kind,
+                "atomFamily": atom.atom_kind,
+                "subjectRef": atom.subject,
+                "axis": atom.axis,
+                "predicate": atom.predicate,
+                "objectRef": atom.object,
+                "observationStatus": atom.normalization_status,
+                "normalizationStatus": atom.normalization_status,
+                "moleculeMemberships": atom.context_memberships,
+                "projectionRefs": atom.context_memberships,
+                "sourceRefSamples": source_refs,
+                "sourceRefCount": atom.source_refs.len(),
+                "objectRefCount": usize::from(atom.object.is_some()),
+                "priorityScore": if top_atoms.contains(atom.normalized_atom_id.as_str()) || top_atoms.contains(atom.source_atom_id.as_str()) { 100 } else { 10 },
+                "labels": [atom.axis.clone(), atom.predicate.clone()]
+            })
+        })
+        .collect()
+}
+
+fn viewer_molecule_groups(contexts: &[NormalizedContextV2]) -> Vec<Value> {
+    contexts
+        .iter()
+        .map(|context| {
+            json!({
+                "groupId": context.normalized_context_id,
+                "sourceMoleculeId": context.source_context_id,
+                "atomObservationRefs": context.atom_ids,
+                "atomIds": context.atom_ids,
+                "generatedMoleculeCandidateStatus": context.poset_status,
+                "requiredPortStatus": "not_applicable",
+                "compositionStatus": context.poset_status
+            })
+        })
+        .collect()
+}
+
+fn viewer_atom_edges(contexts: &[NormalizedContextV2]) -> Vec<Value> {
+    let mut edges = Vec::new();
+    for context in contexts {
+        for target in &context.restricts_to {
+            edges.push(json!({
+                "edgeId": format!("edge:{}->{}", context.normalized_context_id, target),
+                "sourceNodeRef": context.normalized_context_id,
+                "targetNodeRef": target,
+                "edgeKind": "contextRestriction"
+            }));
+        }
+        for pair in context.atom_ids.windows(2) {
+            if let [source, target] = pair {
+                edges.push(json!({
+                    "edgeId": format!("edge:{}:{}->{}", context.normalized_context_id, source, target),
+                    "sourceNodeRef": source,
+                    "targetNodeRef": target,
+                    "edgeKind": "contextMembership"
+                }));
+            }
+        }
+    }
+    edges
+}
+
+fn sanitize_viewer_atom(mut atom: NormalizedAtomV2) -> NormalizedAtomV2 {
+    atom.source_refs = atom
+        .source_refs
+        .iter()
+        .map(|source_ref| sanitize_source_ref(source_ref))
+        .collect();
+    atom
+}
+
+fn sanitize_viewer_context(mut context: NormalizedContextV2) -> NormalizedContextV2 {
+    context.source_refs = context
+        .source_refs
+        .iter()
+        .map(|source_ref| sanitize_source_ref(source_ref))
+        .collect();
+    context
+}
+
+fn sanitize_viewer_cover(mut cover: NormalizedCoverV2) -> NormalizedCoverV2 {
+    cover.source_refs = cover
+        .source_refs
+        .iter()
+        .map(|source_ref| sanitize_source_ref(source_ref))
+        .collect();
+    cover
 }
 
 fn validate_profile_refs(

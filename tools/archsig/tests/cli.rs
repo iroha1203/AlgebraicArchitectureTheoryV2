@@ -5,7 +5,7 @@ use std::process::Command;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use archsig::{ArchMapDocumentV2, compare_archmap_v2_doctrine};
-use serde_json::Value;
+use serde_json::{Value, json};
 
 fn fixture_root() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/minimal")
@@ -239,6 +239,549 @@ fn cli_analyze_v2_cech_h1_visible_fixture_measures_nonzero() {
     assert_eq!(
         summary["conclusion"],
         "MEASURED_H1_OBSTRUCTION_UNDER_PROFILE"
+    );
+}
+
+#[test]
+fn cli_analyze_v2_emits_insight_report_brief_and_viewer_scene_contract() {
+    let out_dir = temp_dir("ag-measurement-insight-viewer");
+    let root = ag_measurement_root();
+
+    run_sig0(&[
+        "analyze",
+        "--archmap",
+        root.join("archmap_v2_cech_h1_visible.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--law-policy",
+        root.join("law_policy_ag.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--out-dir",
+        out_dir.to_str().expect("path is utf-8"),
+    ]);
+
+    let summary = read_json(&out_dir.join("archsig-analysis-summary.json"));
+    let report = read_json(&out_dir.join("archsig-insight-report.json"));
+    let viewer = read_json(&out_dir.join("archsig-atom-viewer-data.json"));
+    let manifest = read_json(&out_dir.join("archsig-run-manifest.json"));
+    let brief = fs::read_to_string(out_dir.join("archsig-insight-brief.md"))
+        .expect("insight brief is generated");
+
+    assert_eq!(report["schema"], "archsig-insight-report/v1");
+    assert_eq!(
+        report["headline"]["conclusionCode"],
+        "MEASURED_H1_OBSTRUCTION_UNDER_PROFILE"
+    );
+    assert_eq!(report["insightCards"][0]["kind"], "global_glue_mismatch");
+    assert!(
+        report["insightCards"][0]["whyItMatters"]
+            .as_str()
+            .is_some_and(|text| text.contains("architecture drift")),
+        "Top insight must explain why it matters"
+    );
+    assert!(
+        report["insightCards"][0]["evidence"]["structuralVerdictRefs"]
+            .as_array()
+            .is_some_and(|refs| !refs.is_empty())
+            && report["insightCards"][0]["evidence"]["sourceRefs"]
+                .as_array()
+                .is_some_and(|refs| !refs.is_empty()),
+        "Top insight must carry verdict and where refs"
+    );
+    assert_eq!(
+        report["insightCards"][0]["evidence"]["evidenceResolutionStatus"],
+        "resolved_from_packet_support"
+    );
+    assert!(
+        report["insightCards"][0]["sampleRefs"]["note"]
+            .as_str()
+            .is_some_and(|note| note.contains("orientation only")),
+        "sample refs must be separated from measured evidence refs"
+    );
+    assert!(
+        report["rankingBasis"]
+            .as_array()
+            .expect("ranking basis is array")
+            .iter()
+            .any(|entry| entry == "measured_nonzero structural verdict"),
+        "deterministic ranking basis must be recorded"
+    );
+    assert_eq!(
+        report["insightCards"][0]["tourRefs"][0], report["guidedTours"][0]["tourId"],
+        "Insight Card tourRefs and Tour insightRefs must be mutually linked"
+    );
+    assert!(
+        report["guidedTours"][0]["insightRefs"]
+            .as_array()
+            .expect("tour insightRefs are array")
+            .contains(&report["insightCards"][0]["id"])
+    );
+    let tour_ids = report["guidedTours"]
+        .as_array()
+        .expect("guided tours are array")
+        .iter()
+        .map(|tour| tour["tourId"].as_str().expect("tour id is present"))
+        .collect::<BTreeSet<_>>();
+    for card in report["insightCards"]
+        .as_array()
+        .expect("insight cards are array")
+    {
+        for tour_ref in card["tourRefs"].as_array().expect("tour refs are array") {
+            let tour_ref = tour_ref.as_str().expect("tour ref is string");
+            assert!(
+                tour_ids.contains(tour_ref),
+                "every insight card tourRef must resolve to a guided tour"
+            );
+            let tour = report["guidedTours"]
+                .as_array()
+                .expect("guided tours are array")
+                .iter()
+                .find(|tour| tour["tourId"] == tour_ref)
+                .expect("tour ref resolves");
+            assert!(
+                tour["insightRefs"]
+                    .as_array()
+                    .expect("tour insight refs are array")
+                    .contains(&card["id"]),
+                "guided tour must link back to its insight card"
+            );
+        }
+    }
+    for scene in report["viewerVisualScenes"]
+        .as_array()
+        .expect("viewer visual scenes are array")
+    {
+        assert!(
+            scene["userQuestion"]
+                .as_str()
+                .is_some_and(|text| !text.is_empty())
+        );
+        assert!(scene["axisMapping"]["x"].as_str().is_some());
+        assert!(
+            scene["layers"][0]["refs"].is_object()
+                && scene["layers"][0]["clickTargetKind"].as_str().is_some()
+                && scene["visualEncodings"][0]["shapeRole"].as_str().is_some()
+                && scene["visualEncodings"][0]["lineRole"].as_str().is_some()
+                && scene["visualEncodings"][0]["textRole"].as_str().is_some()
+        );
+        if scene["sceneStatus"] == "active" {
+            assert_eq!(
+                scene["layers"][0]["omissionPolicy"],
+                "preserve_for_top_insight"
+            );
+        } else {
+            assert_eq!(scene["layers"][0]["omissionPolicy"], "omittable_background");
+            assert_eq!(scene["visualEncodings"][0]["colorRole"], "not_applicable");
+        }
+    }
+    assert!(
+        report["viewerVisualScenes"]
+            .as_array()
+            .expect("scenes are array")
+            .iter()
+            .any(|scene| scene["sceneId"] == "overview"
+                && scene["layers"][0]["kind"] == "top_insight_beacon"),
+        "overview scene must carry top insight beacons"
+    );
+    assert!(
+        report["viewerVisualScenes"]
+            .as_array()
+            .expect("scenes are array")
+            .iter()
+            .any(|scene| scene["sceneId"] == "cech-gluing"
+                && scene["layers"][0]["kind"] == "overlap_seam"),
+        "gluing scene must expose overlap seams"
+    );
+    assert!(
+        report["viewerVisualScenes"]
+            .as_array()
+            .expect("scenes are array")
+            .iter()
+            .any(|scene| scene["sceneId"] == "cech-h1-mismatch"
+                && scene["layers"][0]["geometryRole"] == "ribbon"),
+        "H1 scene must expose cocycle representative ribbon/seam"
+    );
+    assert_eq!(
+        viewer["decisionBar"]["conclusion"],
+        "MEASURED_H1_OBSTRUCTION_UNDER_PROFILE"
+    );
+    assert!(
+        viewer["atomNodes"]
+            .as_array()
+            .is_some_and(|items| !items.is_empty())
+            && viewer["moleculeGroups"]
+                .as_array()
+                .is_some_and(|items| !items.is_empty())
+            && viewer["atomEdges"].as_array().is_some(),
+        "AG viewer data must project finitePosetSite into renderer-compatible atomNodes, moleculeGroups, and atomEdges"
+    );
+    assert!(
+        viewer["reportPane"]["evidenceDetailShape"]
+            .as_array()
+            .expect("detail shape is array")
+            .iter()
+            .any(|section| section == "Boundary")
+            && viewer["copyBlocks"]["sourceRefs"]
+                .as_array()
+                .is_some_and(|refs| !refs.is_empty()),
+        "viewer must expose Evidence Detail shape and copyable source refs"
+    );
+    assert!(
+        viewer["actionQueue"]
+            .as_array()
+            .is_some_and(|items| !items.is_empty())
+            && viewer["reportPane"]["actionQueue"]
+                .as_array()
+                .is_some_and(|items| !items.is_empty()),
+        "viewer must expose suggested next inspections at top-level and in the report pane"
+    );
+    assert!(
+        viewer["largeGraphStrategy"]["topInsightEvidencePinning"]["preservedRefs"]
+            .as_array()
+            .is_some_and(|refs| !refs.is_empty()),
+        "large graph strategy must pin concrete top-insight evidence refs"
+    );
+    assert_eq!(
+        viewer["omittedDetailCounts"]["omittedSceneLayerObjects"].as_u64(),
+        Some(0)
+    );
+    assert_eq!(summary["readThisFirst"]["heading"], "Read this first");
+    assert_eq!(
+        manifest["artifactLinks"]["insightBrief"],
+        "archsig-insight-brief.md"
+    );
+    assert!(
+        manifest["generatedArtifacts"]
+            .as_array()
+            .expect("generated artifacts are array")
+            .iter()
+            .any(|artifact| artifact == "archsig-insight-report.json")
+    );
+    assert!(brief.starts_with("# ArchSig Insight Brief\n\n## Read this first"));
+    assert!(brief.contains("## LLM handoff"));
+}
+
+#[test]
+fn cli_analyze_v2_insight_surface_preserves_false_clean_and_not_computed_boundaries() {
+    let out_dir = temp_dir("ag-measurement-insight-boundaries");
+    let root = ag_measurement_root();
+
+    run_sig0(&[
+        "analyze",
+        "--archmap",
+        root.join("archmap_v2.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--law-policy",
+        root.join("law_policy_ag.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--out-dir",
+        out_dir.to_str().expect("path is utf-8"),
+    ]);
+
+    let report = read_json(&out_dir.join("archsig-insight-report.json"));
+    let viewer = read_json(&out_dir.join("archsig-atom-viewer-data.json"));
+    let brief = fs::read_to_string(out_dir.join("archsig-insight-brief.md"))
+        .expect("insight brief is generated");
+    assert!(
+        report["insightCards"]
+            .as_array()
+            .expect("insight cards are array")
+            .iter()
+            .any(|card| card["kind"] == "no_measured_glue_mismatch"),
+        "measured_zero must be represented as a profile-relative zero insight"
+    );
+    assert!(
+        viewer["viewerVisualScenes"]
+            .as_array()
+            .expect("viewer visual scenes are array")
+            .iter()
+            .filter(|scene| {
+                scene["sceneId"] == "cech-gluing"
+                    || scene["sceneId"] == "cech-h1-mismatch"
+                    || scene["sceneId"] == "obstruction"
+            })
+            .all(|scene| scene["visualEncodings"][0]["colorRole"] != "measured_nonzero"),
+        "zero or inactive scenes must not use measured_nonzero coloring"
+    );
+    assert!(
+        viewer["viewerVisualScenes"]
+            .as_array()
+            .expect("viewer visual scenes are array")
+            .iter()
+            .any(|scene| scene["sceneId"] == "overview"
+                && scene["visualEncodings"][0]["colorRole"] == "measured_zero"),
+        "zero top insight must render overview as measured_zero, not a nonzero beacon"
+    );
+    assert!(
+        viewer["viewerVisualScenes"]
+            .as_array()
+            .expect("viewer visual scenes are array")
+            .iter()
+            .any(|scene| scene["sceneId"] == "cech-gluing"
+                && scene["sceneStatus"] == "active"
+                && scene["visualEncodings"][0]["colorRole"] == "measured_zero"),
+        "measured_zero Cech scene must stay active and explicitly measured_zero"
+    );
+    for forbidden in [
+        "Architecture is clean",
+        "No architecture issue exists",
+        "Codebase is lawful",
+    ] {
+        assert!(
+            !brief.contains(forbidden),
+            "false clean claim must not appear in brief: {forbidden}"
+        );
+    }
+
+    let no_ambient_out_dir = temp_dir("ag-measurement-insight-no-common-ambient");
+    let mut archmap = read_json(&root.join("archmap_v2_law_conflict_tor.json"));
+    archmap["atoms"] = Value::Array(
+        archmap["atoms"]
+            .as_array()
+            .expect("atoms is array")
+            .iter()
+            .filter(|atom| atom["predicate"] != "commonAmbient")
+            .cloned()
+            .collect(),
+    );
+    archmap["contexts"][0]["atoms"] = Value::Array(
+        archmap["contexts"][0]["atoms"]
+            .as_array()
+            .expect("context atoms is array")
+            .iter()
+            .filter(|atom| atom.as_str() != Some("atom:tor-common-ambient"))
+            .cloned()
+            .collect(),
+    );
+    let archmap_path = no_ambient_out_dir.join("archmap_v2_law_conflict_tor_no_ambient.json");
+    fs::write(
+        &archmap_path,
+        serde_json::to_vec_pretty(&archmap).expect("archmap serializes"),
+    )
+    .expect("archmap fixture can be written");
+
+    run_sig0(&[
+        "analyze",
+        "--archmap",
+        archmap_path.to_str().expect("path is utf-8"),
+        "--law-policy",
+        root.join("law_policy_tor.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--out-dir",
+        no_ambient_out_dir.to_str().expect("path is utf-8"),
+    ]);
+    let report = read_json(&no_ambient_out_dir.join("archsig-insight-report.json"));
+    let viewer = read_json(&no_ambient_out_dir.join("archsig-atom-viewer-data.json"));
+    assert!(
+        report["insightCards"]
+            .as_array()
+            .expect("insight cards are array")
+            .iter()
+            .any(|card| card["kind"] == "not_computed_blocker"
+                && card["rankingBasis"]
+                    .as_array()
+                    .expect("ranking basis is array")
+                    .iter()
+                    .any(|basis| basis == "no_common_ambient")),
+        "not_computed reason code must be promoted to a blocker insight"
+    );
+    assert!(
+        viewer["viewerVisualScenes"]
+            .as_array()
+            .expect("scenes are array")
+            .iter()
+            .any(|scene| scene["sceneId"] == "law-conflict-tor"
+                && scene["visualEncodings"][0]["textRole"]
+                    .as_str()
+                    .is_some_and(|text| text.contains("no_common_ambient"))),
+        "LawConflict scene must show blocking reason instead of an empty conflict view"
+    );
+}
+
+#[test]
+fn cli_analyze_v2_insight_viewer_truncates_large_background_projection() {
+    let out_dir = temp_dir("ag-measurement-insight-large-viewer");
+    let root = ag_measurement_root();
+    let mut archmap = read_json(&root.join("archmap_v2_cech_h1_visible.json"));
+    let template_atom = archmap["atoms"]
+        .as_array()
+        .and_then(|atoms| atoms.first())
+        .cloned()
+        .expect("fixture has an atom template");
+    let original_atoms = archmap["atoms"]
+        .as_array()
+        .cloned()
+        .expect("fixture atoms are array");
+    let mut atoms = Vec::new();
+    for index in 0..10_050 {
+        let mut atom = template_atom.clone();
+        atom["id"] = Value::String(format!("atom:background:{index}"));
+        atom["predicate"] = Value::String("backgroundSample".to_string());
+        atoms.push(atom);
+    }
+    atoms.extend(original_atoms);
+    archmap["atoms"] = Value::Array(atoms);
+    let archmap_path = out_dir.join("archmap_v2_large_background.json");
+    fs::write(
+        &archmap_path,
+        serde_json::to_vec_pretty(&archmap).expect("large archmap serializes"),
+    )
+    .expect("large archmap can be written");
+
+    run_sig0(&[
+        "analyze",
+        "--archmap",
+        archmap_path.to_str().expect("path is utf-8"),
+        "--law-policy",
+        root.join("law_policy_ag.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--out-dir",
+        out_dir.to_str().expect("path is utf-8"),
+    ]);
+
+    let viewer = read_json(&out_dir.join("archsig-atom-viewer-data.json"));
+    assert!(
+        viewer["finitePosetSite"]["atoms"]
+            .as_array()
+            .is_some_and(|atoms| atoms.len() <= 10_000),
+        "viewer payload must truncate background atom projection"
+    );
+    assert_eq!(
+        viewer["largeGraphStrategy"]["mode"], "cluster_aggregation",
+        "large graph strategy must switch when the source ArchMap crosses the atom threshold"
+    );
+    assert!(
+        viewer["omittedDetailCounts"]["omittedAtoms"]
+            .as_u64()
+            .is_some_and(|count| count > 0),
+        "viewer payload must report omitted background atoms"
+    );
+    assert!(
+        viewer["largeGraphStrategy"]["topInsightEvidencePinning"]["preservedRefs"]
+            .as_array()
+            .is_some_and(|refs| !refs.is_empty()),
+        "top insight evidence must remain pinned while background atoms are truncated"
+    );
+    assert!(
+        viewer["finitePosetSite"]["atoms"]
+            .as_array()
+            .expect("viewer atoms are array")
+            .iter()
+            .any(
+                |atom| atom["normalizedAtomId"] == "atom:left-bottom-cech-mismatch"
+                    || atom["sourceAtomId"] == "atom:left-bottom-cech-mismatch"
+            ),
+        "top insight support atom must remain in the truncated viewer projection even when it appears after background atoms"
+    );
+}
+
+#[test]
+fn cli_analyze_v2_insight_artifacts_redact_local_source_refs() {
+    let out_dir = temp_dir("ag-measurement-insight-source-redaction");
+    let root = ag_measurement_root();
+    let mut archmap = read_json(&root.join("archmap_v2_cech_h1_visible.json"));
+    let private_ref = "/Users/nakahata/private/internal.rs";
+    archmap["sources"][private_ref] = json!({
+        "kind": "rust",
+        "path": private_ref,
+        "symbol": "InternalOnly",
+        "line": 1
+    });
+    let atoms = archmap["atoms"].as_array_mut().expect("atoms are array");
+    let mismatch = atoms
+        .iter_mut()
+        .find(|atom| atom["id"] == "atom:left-bottom-cech-mismatch")
+        .expect("mismatch atom exists");
+    mismatch["refs"]
+        .as_array_mut()
+        .expect("refs are array")
+        .push(Value::String(private_ref.to_string()));
+    let archmap_path = out_dir.join("archmap_v2_private_source_ref.json");
+    fs::write(
+        &archmap_path,
+        serde_json::to_vec_pretty(&archmap).expect("archmap serializes"),
+    )
+    .expect("archmap can be written");
+
+    run_sig0(&[
+        "analyze",
+        "--archmap",
+        archmap_path.to_str().expect("path is utf-8"),
+        "--law-policy",
+        root.join("law_policy_ag.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--out-dir",
+        out_dir.to_str().expect("path is utf-8"),
+    ]);
+
+    let report = fs::read_to_string(out_dir.join("archsig-insight-report.json"))
+        .expect("insight report is generated");
+    let brief = fs::read_to_string(out_dir.join("archsig-insight-brief.md"))
+        .expect("insight brief is generated");
+    let viewer = fs::read_to_string(out_dir.join("archsig-atom-viewer-data.json"))
+        .expect("viewer data is generated");
+    for artifact in [&report, &brief, &viewer] {
+        assert!(
+            !artifact.contains(private_ref),
+            "insight artifacts must not leak local source refs"
+        );
+        assert!(
+            artifact.contains("source-ref:redacted-local-path"),
+            "insight artifacts must preserve a redacted source-ref marker"
+        );
+    }
+}
+
+#[test]
+fn cli_analyze_v2_validation_failure_emits_blocking_insight_projection() {
+    let out_dir = temp_dir("ag-measurement-insight-validation-failure");
+    let root = archmap_v1_root();
+
+    let output = run_sig0_output(&[
+        "analyze",
+        "--archmap",
+        root.join("replacement_negative/archmap_label_only_semantic.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--law-policy",
+        root.join("law_policy.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--out-dir",
+        out_dir.to_str().expect("path is utf-8"),
+    ]);
+
+    assert!(!output.status.success());
+    assert!(
+        !out_dir.join("archsig-analysis-summary.json").exists(),
+        "validation failure must not emit a success summary"
+    );
+    assert!(
+        !out_dir.join("archsig-measurement-packet.json").exists(),
+        "validation failure must not emit a measurement packet"
+    );
+    let report = read_json(&out_dir.join("archsig-insight-report.json"));
+    let viewer = read_json(&out_dir.join("archsig-atom-viewer-data.json"));
+    let manifest = read_json(&out_dir.join("archsig-run-manifest.json"));
+    let brief = fs::read_to_string(out_dir.join("archsig-insight-brief.md"))
+        .expect("validation brief is generated");
+    assert_eq!(report["insightCards"][0]["kind"], "validation_failure");
+    assert_eq!(
+        viewer["decisionBar"]["conclusion"],
+        "VALIDATION_FAILED_BEFORE_MEASUREMENT"
+    );
+    assert_eq!(viewer["largeGraphStrategy"]["mode"], "validation_blocked");
+    assert_eq!(manifest["status"], "validation_failed");
+    assert!(
+        brief.contains("Validation failed before measurement")
+            && brief.contains("Do not infer beyond the listed claims and boundaries."),
+        "validation brief must be usable without measurement claims"
     );
 }
 
@@ -5091,6 +5634,8 @@ fn cli_analyze_v1_validation_failure_removes_stale_success_artifacts() {
         "normalized-archmap.json",
         "typed-evaluator-results.json",
         "architecture-distance.json",
+        "archsig-insight-report.json",
+        "archsig-insight-brief.md",
         "archsig-analysis-packet.json",
         "archsig-analysis-detail-index.json",
         "archsig-analysis-validation.json",
@@ -5121,8 +5666,6 @@ fn cli_analyze_v1_validation_failure_removes_stale_success_artifacts() {
     );
     for stale_artifact in [
         "archsig-analysis-summary.json",
-        "archsig-atom-viewer-data.json",
-        "archsig-run-manifest.json",
         "normalized-archmap.json",
         "typed-evaluator-results.json",
         "architecture-distance.json",
@@ -5136,6 +5679,15 @@ fn cli_analyze_v1_validation_failure_removes_stale_success_artifacts() {
             "v1 validation failure must remove stale success artifact {stale_artifact}"
         );
     }
+    assert_eq!(
+        read_json(&out_dir.join("archsig-insight-report.json"))["insightCards"][0]["kind"],
+        "validation_failure",
+        "validation failure should replace stale insight report with a validation blocker projection"
+    );
+    assert_eq!(
+        read_json(&out_dir.join("archsig-run-manifest.json"))["status"],
+        "validation_failed"
+    );
 }
 
 #[test]
@@ -7531,6 +8083,44 @@ fn atom_viewer_uses_atom_shape_distance_inputs_for_molecule_layout() {
 }
 
 #[test]
+fn atom_viewer_reads_insight_report_surface_contract() {
+    let viewer_path = Path::new(env!("CARGO_MANIFEST_DIR")).join("viewer/archsig-atom-viewer.html");
+    let viewer = fs::read_to_string(&viewer_path).expect("viewer html can be read");
+
+    for required in [
+        "Insight Queue",
+        "Suggested Next Inspections",
+        "Decision Bar",
+        "Read this first",
+        "copy source refs",
+        "Start tour",
+        "viewerVisualScenes",
+        "axisMapping",
+        "sceneForMode",
+        "modeForScene",
+        "sceneNodeColor",
+        "renderSceneLayers",
+        "sceneLayerMesh",
+        "sceneColorHex",
+        "handleReportAction",
+        "startGuidedTour",
+        "showTourStep",
+        "data-tour-id",
+        "data-tour-next",
+        "navigator.clipboard.writeText",
+        "data-scene-id",
+        "data-copy-source-refs",
+        "Boolean(data?.decisionBar)",
+        "evidenceDetailShape",
+    ] {
+        assert!(
+            viewer.contains(required),
+            "atom viewer must read the insight report surface contract: missing {required}"
+        );
+    }
+}
+
+#[test]
 #[ignore = "legacy large v0 ArchMap viewer projection is no longer current runtime surface"]
 fn cli_analyze_bounds_atom_viewer_data_for_large_repo_projection() {
     let out_dir = temp_dir("analyze-large-viewer-data");
@@ -9578,9 +10168,9 @@ fn archsig_atom_viewer_static_app_is_packaged_asset() {
     );
     for section in [
         "Overview",
-        "Top Findings",
+        "Insight Queue",
         "Distance Diagnosis",
-        "Action Queue",
+        "Suggested Next Inspections",
         "Coverage And Boundaries",
         "Artifacts",
         "Validation Status",
