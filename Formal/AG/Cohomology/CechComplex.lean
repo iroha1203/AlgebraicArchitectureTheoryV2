@@ -194,6 +194,12 @@ structure FinitePosetComparisonTarget (K : CoverRelativeCechComplex 𝒰 Ob) whe
   finitePosetCohomology : Nat -> Type u
   toFinitePosetCohomology : ∀ n : Nat, K.CoverRelativeHn n -> finitePosetCohomology n
   fromFinitePosetCohomology : ∀ n : Nat, finitePosetCohomology n -> K.CoverRelativeHn n
+  to_from_finitePosetCohomology :
+    ∀ (n : Nat) (h : finitePosetCohomology n),
+      toFinitePosetCohomology n (fromFinitePosetCohomology n h) = h
+  from_to_finitePosetCohomology :
+    ∀ (n : Nat) (h : K.CoverRelativeHn n),
+      fromFinitePosetCohomology n (toFinitePosetCohomology n h) = h
 
 end CoverRelativeCechComplex
 
