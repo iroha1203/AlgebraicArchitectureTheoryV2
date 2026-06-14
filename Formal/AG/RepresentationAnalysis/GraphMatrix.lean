@@ -179,6 +179,73 @@ theorem relationEdge_selected_holds (P : GraphRepresentationProfile p)
 
 end GraphRepresentationProfile
 
+/--
+VII.命題3.4: assumptions needed for acyclicity preservation.
+
+This package records exactly the direction used by Proposition 3.4: when the
+dependency-axis graph reading is selected, every graph cycle yields a selected
+cycle-obstruction witness, and structural dependency-obstruction zero excludes
+such witnesses.
+-/
+structure DependencyAcyclicityProfile {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    {p : AATSchReadingParameter.{u, v, w, x, y} S k}
+    (P : GraphRepresentationProfile p) where
+  dependencyAxisSelected : AATSch p -> Prop
+  structuralDependencyObstructionZero : AATSch p -> Prop
+  selectedCycleObstructionWitness :
+    ∀ X : AATSch p, FiniteDirectedGraphTarget.DirectedCycle (P.graphOf X) -> Prop
+  graphCycle_yields_obstructionWitness :
+    ∀ X : AATSch p, dependencyAxisSelected X ->
+      ∀ c : FiniteDirectedGraphTarget.DirectedCycle (P.graphOf X),
+        selectedCycleObstructionWitness X c
+  obstructionZero_excludes_cycleWitness :
+    ∀ X : AATSch p, structuralDependencyObstructionZero X ->
+      ∀ c : FiniteDirectedGraphTarget.DirectedCycle (P.graphOf X),
+        ¬ selectedCycleObstructionWitness X c
+
+namespace DependencyAcyclicityProfile
+
+variable {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+variable {S : Site.AATSite A} {k : Type v} [CommRing k]
+variable {p : AATSchReadingParameter.{u, v, w, x, y} S k}
+variable {P : GraphRepresentationProfile p}
+
+/-- VII.命題3.4: graph cycles yield selected obstruction witnesses. -/
+theorem selectedCycleObstructionWitness_of_graphCycle
+    (D : DependencyAcyclicityProfile P) {X : AATSch p}
+    (haxis : D.dependencyAxisSelected X)
+    (c : FiniteDirectedGraphTarget.DirectedCycle (P.graphOf X)) :
+    D.selectedCycleObstructionWitness X c :=
+  D.graphCycle_yields_obstructionWitness X haxis c
+
+/-- VII.命題3.4: structural dependency-obstruction zero excludes cycle witnesses. -/
+theorem no_selectedCycleObstructionWitness_of_obstructionZero
+    (D : DependencyAcyclicityProfile P) {X : AATSch p}
+    (hzero : D.structuralDependencyObstructionZero X)
+    (c : FiniteDirectedGraphTarget.DirectedCycle (P.graphOf X)) :
+    ¬ D.selectedCycleObstructionWitness X c :=
+  D.obstructionZero_excludes_cycleWitness X hzero c
+
+/--
+VII.命題3.4: Acyclicity Preservation.
+
+If the dependency-axis graph reading is selected, graph cycles are exact enough
+to produce selected cycle-obstruction witnesses, and structural dependency
+obstruction is zero, then the selected graph reading is acyclic.
+-/
+theorem acyclicityPreservation
+    (D : DependencyAcyclicityProfile P) {X : AATSch p}
+    (haxis : D.dependencyAxisSelected X)
+    (hzero : D.structuralDependencyObstructionZero X) :
+    FiniteDirectedGraphTarget.Acyclic (P.graphOf X) := by
+  refine ⟨?_⟩
+  intro c
+  exact D.no_selectedCycleObstructionWitness_of_obstructionZero hzero c
+    (D.selectedCycleObstructionWitness_of_graphCycle haxis c)
+
+end DependencyAcyclicityProfile
+
 /-- VII.定義3.5: adjacency matrix over natural edge multiplicities. -/
 def adjacencyMatrix {Vertex Edge RelationLabel : Type z}
     (G : FiniteDirectedGraphTarget Vertex Edge RelationLabel) :
