@@ -1301,6 +1301,321 @@ fn cli_analyze_v2_restriction_compatibility_measures_support_inclusion() {
         ],
         2,
     );
+
+    let missing_witness_family_dir = root_out.join("missing-witness-family");
+    fs::create_dir_all(&missing_witness_family_dir).expect("missing witness family dir exists");
+    let missing_witness_family_policy = missing_witness_family_dir.join("law_policy.json");
+    let mut policy = section_policy();
+    policy["measurementProfiles"][0]["witnessFamily"] = Value::Array(vec![]);
+    fs::write(
+        &missing_witness_family_policy,
+        serde_json::to_vec_pretty(&policy).expect("policy serializes"),
+    )
+    .expect("missing witness family policy is written");
+    run_sig0_expect_code(
+        &[
+            "analyze",
+            "--archmap",
+            zero_archmap.to_str().unwrap(),
+            "--law-policy",
+            missing_witness_family_policy.to_str().unwrap(),
+            "--out-dir",
+            missing_witness_family_dir.to_str().unwrap(),
+        ],
+        2,
+    );
+
+    for (case, assignment) in [
+        ("missing-equals", "x"),
+        ("unknown-variable", "z=1"),
+        ("non-boolean", "x=maybe"),
+        ("duplicate-variable", "x=1,x=0"),
+        ("empty-assignment", ""),
+    ] {
+        let malformed_dir = root_out.join(format!("malformed-{case}"));
+        fs::create_dir_all(&malformed_dir).expect("malformed dir exists");
+        let malformed_archmap = malformed_dir.join("archmap.json");
+        let malformed_policy = malformed_dir.join("law_policy.json");
+        let mut archmap = section_archmap("lawful");
+        archmap["atoms"][2]["object"] = Value::String(assignment.to_string());
+        fs::write(
+            &malformed_archmap,
+            serde_json::to_vec_pretty(&archmap).expect("archmap serializes"),
+        )
+        .expect("malformed archmap is written");
+        fs::write(
+            &malformed_policy,
+            serde_json::to_vec_pretty(&section_policy()).expect("policy serializes"),
+        )
+        .expect("malformed policy is written");
+        run_sig0_expect_code(
+            &[
+                "analyze",
+                "--archmap",
+                malformed_archmap.to_str().unwrap(),
+                "--law-policy",
+                malformed_policy.to_str().unwrap(),
+                "--out-dir",
+                malformed_dir.to_str().unwrap(),
+            ],
+            2,
+        );
+    }
+}
+
+#[test]
+fn cli_analyze_v2_section_factorization_checks_selected_section() {
+    let root_out = temp_dir("ag-measurement-section-factorization");
+
+    let zero_dir = root_out.join("zero");
+    fs::create_dir_all(&zero_dir).expect("zero dir exists");
+    let zero_archmap = zero_dir.join("archmap.json");
+    let zero_policy = zero_dir.join("law_policy.json");
+    fs::write(
+        &zero_archmap,
+        serde_json::to_vec_pretty(&section_archmap("lawful")).expect("archmap serializes"),
+    )
+    .expect("zero archmap is written");
+    fs::write(
+        &zero_policy,
+        serde_json::to_vec_pretty(&section_policy()).expect("policy serializes"),
+    )
+    .expect("zero policy is written");
+    run_sig0(&[
+        "analyze",
+        "--archmap",
+        zero_archmap.to_str().unwrap(),
+        "--law-policy",
+        zero_policy.to_str().unwrap(),
+        "--out-dir",
+        zero_dir.to_str().unwrap(),
+    ]);
+    let zero_packet = read_json(&zero_dir.join("archsig-measurement-packet.json"));
+    let zero_row = section_row(&zero_packet);
+    assert_eq!(zero_row["verdict"], "measured_zero");
+    assert_eq!(zero_row["verdictData"]["zero"], true);
+    assert_eq!(
+        zero_row["verdictData"]["methodStatus"],
+        "finite_section_pullback_computed"
+    );
+    let zero_invariant =
+        invariant_by_id(&zero_packet, "section-factorization:profile:ag-section@1");
+    assert_eq!(
+        zero_invariant["sectionAssignment"]["assignmentStatus"],
+        "total"
+    );
+    assert_eq!(
+        zero_invariant["sectionAssignment"]["activeSupport"],
+        json!(["x"])
+    );
+    assert_eq!(
+        zero_invariant["minimalForbiddenSupports"][0]["supportRef"],
+        "atom:forbid-xy"
+    );
+    assert_eq!(zero_invariant["violatedForbiddenSupports"], json!([]));
+    assert!(
+        zero_invariant["boundaryNote"]
+            .as_str()
+            .is_some_and(|note| note.contains("section-relative lawful only")
+                && note.contains("exactness without No-Cancellation")),
+        "section-relative boundary must be explicit"
+    );
+    assert!(
+        zero_packet["assumptions"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|row| {
+                row["theoremRef"] == "part8/P0-3"
+                    && row["checkedBy"]
+                        .as_str()
+                        .is_some_and(|checked_by| checked_by.contains("atom:forbid-xy"))
+            }),
+        "I_Ob^U presentation ledger must be checked by selected obstructionGenerator atoms"
+    );
+
+    let nonzero_dir = root_out.join("nonzero");
+    fs::create_dir_all(&nonzero_dir).expect("nonzero dir exists");
+    let nonzero_archmap = nonzero_dir.join("archmap.json");
+    let nonzero_policy = nonzero_dir.join("law_policy.json");
+    fs::write(
+        &nonzero_archmap,
+        serde_json::to_vec_pretty(&section_archmap("unlawful")).expect("archmap serializes"),
+    )
+    .expect("nonzero archmap is written");
+    fs::write(
+        &nonzero_policy,
+        serde_json::to_vec_pretty(&section_policy()).expect("policy serializes"),
+    )
+    .expect("nonzero policy is written");
+    run_sig0(&[
+        "analyze",
+        "--archmap",
+        nonzero_archmap.to_str().unwrap(),
+        "--law-policy",
+        nonzero_policy.to_str().unwrap(),
+        "--out-dir",
+        nonzero_dir.to_str().unwrap(),
+    ]);
+    let nonzero_packet = read_json(&nonzero_dir.join("archsig-measurement-packet.json"));
+    let nonzero_row = section_row(&nonzero_packet);
+    assert_eq!(nonzero_row["verdict"], "measured_nonzero");
+    assert_eq!(nonzero_row["verdictData"]["nonZero"], true);
+    let nonzero_invariant = invariant_by_id(
+        &nonzero_packet,
+        "section-factorization:profile:ag-section@1",
+    );
+    assert_eq!(
+        nonzero_invariant["violatedForbiddenSupports"][0]["support"],
+        json!(["x", "y"])
+    );
+    assert!(
+        nonzero_packet["structuralVerdict"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .all(|row| matches!(
+                row["verdict"].as_str().unwrap(),
+                "measured_zero" | "measured_nonzero" | "unmeasured" | "unknown" | "not_computed"
+            )),
+        "section evaluator must reuse the existing five verdict values"
+    );
+
+    let partial_dir = root_out.join("partial");
+    fs::create_dir_all(&partial_dir).expect("partial dir exists");
+    let partial_archmap = partial_dir.join("archmap.json");
+    let partial_policy = partial_dir.join("law_policy.json");
+    fs::write(
+        &partial_archmap,
+        serde_json::to_vec_pretty(&section_archmap("partial")).expect("archmap serializes"),
+    )
+    .expect("partial archmap is written");
+    fs::write(
+        &partial_policy,
+        serde_json::to_vec_pretty(&section_policy()).expect("policy serializes"),
+    )
+    .expect("partial policy is written");
+    run_sig0(&[
+        "analyze",
+        "--archmap",
+        partial_archmap.to_str().unwrap(),
+        "--law-policy",
+        partial_policy.to_str().unwrap(),
+        "--out-dir",
+        partial_dir.to_str().unwrap(),
+    ]);
+    let partial_packet = read_json(&partial_dir.join("archsig-measurement-packet.json"));
+    let partial_row = section_row(&partial_packet);
+    assert_eq!(partial_row["verdict"], "unknown");
+    assert_eq!(
+        partial_row["verdictData"]["methodStatus"],
+        "section_assignment_partial_undecidable"
+    );
+
+    let absent_dir = root_out.join("absent");
+    fs::create_dir_all(&absent_dir).expect("absent dir exists");
+    let absent_archmap = absent_dir.join("archmap.json");
+    let absent_policy = absent_dir.join("law_policy.json");
+    fs::write(
+        &absent_archmap,
+        serde_json::to_vec_pretty(&section_archmap("absent")).expect("archmap serializes"),
+    )
+    .expect("absent archmap is written");
+    fs::write(
+        &absent_policy,
+        serde_json::to_vec_pretty(&section_policy()).expect("policy serializes"),
+    )
+    .expect("absent policy is written");
+    run_sig0(&[
+        "analyze",
+        "--archmap",
+        absent_archmap.to_str().unwrap(),
+        "--law-policy",
+        absent_policy.to_str().unwrap(),
+        "--out-dir",
+        absent_dir.to_str().unwrap(),
+    ]);
+    let absent_packet = read_json(&absent_dir.join("archsig-measurement-packet.json"));
+    let absent_row = section_row(&absent_packet);
+    assert_eq!(absent_row["verdict"], "not_computed");
+    assert_eq!(
+        absent_row["verdictData"]["methodStatus"],
+        "section_assignment_absent"
+    );
+    assert!(
+        absent_packet["assumptions"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|row| {
+                row["theoremRef"] == "part8/P0-3-boundary" && row["status"] == "assumed"
+            }),
+        "No-Cancellation/exactness must stay in the assumption ledger"
+    );
+
+    let missing_generator_dir = root_out.join("missing-generator");
+    fs::create_dir_all(&missing_generator_dir).expect("missing generator dir exists");
+    let missing_generator_archmap = missing_generator_dir.join("archmap.json");
+    let missing_generator_policy = missing_generator_dir.join("law_policy.json");
+    fs::write(
+        &missing_generator_archmap,
+        serde_json::to_vec_pretty(&section_archmap("missing-generator"))
+            .expect("archmap serializes"),
+    )
+    .expect("missing generator archmap is written");
+    fs::write(
+        &missing_generator_policy,
+        serde_json::to_vec_pretty(&section_policy()).expect("policy serializes"),
+    )
+    .expect("missing generator policy is written");
+    run_sig0(&[
+        "analyze",
+        "--archmap",
+        missing_generator_archmap.to_str().unwrap(),
+        "--law-policy",
+        missing_generator_policy.to_str().unwrap(),
+        "--out-dir",
+        missing_generator_dir.to_str().unwrap(),
+    ]);
+    let missing_generator_packet =
+        read_json(&missing_generator_dir.join("archsig-measurement-packet.json"));
+    let missing_generator_row = section_row(&missing_generator_packet);
+    assert_eq!(missing_generator_row["verdict"], "not_computed");
+    assert_eq!(
+        missing_generator_row["verdictData"]["methodStatus"],
+        "obstruction_generators_absent"
+    );
+    assert!(
+        missing_generator_packet["assumptions"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|row| row["theoremRef"] == "part8/P0-3" && row["status"] == "violated"),
+        "missing obstructionGenerator evidence must not be treated as an empty ideal"
+    );
+
+    let bad_profile_dir = root_out.join("bad-profile");
+    fs::create_dir_all(&bad_profile_dir).expect("bad profile dir exists");
+    let bad_policy = bad_profile_dir.join("law_policy.json");
+    let mut policy = section_policy();
+    policy["measurementProfiles"][0]["zeroPredicate"] = Value::String("rank-zero@1".to_string());
+    fs::write(
+        &bad_policy,
+        serde_json::to_vec_pretty(&policy).expect("policy serializes"),
+    )
+    .expect("bad policy is written");
+    run_sig0_expect_code(
+        &[
+            "analyze",
+            "--archmap",
+            zero_archmap.to_str().unwrap(),
+            "--law-policy",
+            bad_policy.to_str().unwrap(),
+            "--out-dir",
+            bad_profile_dir.to_str().unwrap(),
+        ],
+        2,
+    );
 }
 
 #[test]
@@ -12081,6 +12396,15 @@ fn restriction_row(packet: &Value) -> &Value {
         .expect("restriction compatibility row exists")
 }
 
+fn section_row(packet: &Value) -> &Value {
+    packet["structuralVerdict"]
+        .as_array()
+        .expect("structuralVerdict is array")
+        .iter()
+        .find(|row| row["evaluator"] == "ag.section-factorization@1")
+        .expect("section factorization row exists")
+}
+
 fn restriction_policy() -> Value {
     json!({
         "schema": "law-policy/v1",
@@ -12107,6 +12431,39 @@ fn restriction_policy() -> Value {
         "policies": [{
             "law": "ag.restriction-compatibility",
             "evaluator": "ag.restriction-compatibility@1",
+            "basis": ["policy-basis:layering"],
+            "scope": ["src/"],
+            "severity": "high"
+        }]
+    })
+}
+
+fn section_policy() -> Value {
+    json!({
+        "schema": "law-policy/v1",
+        "id": "ag-section-policy",
+        "measurementProfileRef": "profile:ag-section@1",
+        "measurementProfiles": [{
+            "schema": "measurement-profile/v1",
+            "profileId": "profile:ag-section@1",
+            "siteRef": "archmap:/contexts",
+            "coverRef": "cover:section",
+            "coefficient": "F2",
+            "effCoeff": "finite-section-evaluation@1",
+            "witnessFamily": [
+                {"law": "ag.section-factorization", "variable": "x"},
+                {"law": "ag.section-factorization", "variable": "y"}
+            ],
+            "resolutionSelector": "section-factorization@1",
+            "domain": "finite-poset-site",
+            "zeroPredicate": "pullback-zero@1",
+            "nonZeroPredicate": "pullback-nonzero@1",
+            "certSelector": "finite-certificate@1",
+            "verdictDiscipline": "five-valued-structural-verdict@1"
+        }],
+        "policies": [{
+            "law": "ag.section-factorization",
+            "evaluator": "ag.section-factorization@1",
             "basis": ["policy-basis:layering"],
             "scope": ["src/"],
             "severity": "high"
@@ -12212,6 +12569,97 @@ fn restriction_archmap(case: &str) -> Value {
             "id": "cover:restriction",
             "contexts": ["ctx:source", "ctx:target"],
             "refs": ["ctx:source", "ctx:target"]
+        }]
+    })
+}
+
+fn section_archmap(case: &str) -> Value {
+    let assignment = match case {
+        "lawful" => Some((
+            "atom:section-assignment-a",
+            "x=1,y=0",
+            "src:section-assignment-a",
+        )),
+        "unlawful" => Some((
+            "atom:section-assignment-b",
+            "x=1,y=1",
+            "src:section-assignment-b",
+        )),
+        "partial" => Some(("atom:section-partial", "x=1", "src:section-partial")),
+        "missing-generator" => Some((
+            "atom:section-assignment-no-generator",
+            "x=0,y=0",
+            "src:section-assignment-no-generator",
+        )),
+        "absent" => None,
+        _ => panic!("unknown section fixture case: {case}"),
+    };
+    let include_generator = case != "missing-generator";
+    let mut atoms = vec![atom_json(
+        "atom:section-carrier",
+        "component",
+        "section:selected",
+        "section-factorization",
+        "selectedSection",
+        None,
+        vec!["src:section-carrier"],
+    )];
+    if include_generator {
+        atoms.push(atom_json(
+            "atom:forbid-xy",
+            "relation",
+            "I_Ob^U",
+            "section-factorization",
+            "obstructionGenerator",
+            Some("x,y"),
+            vec!["src:forbidden-support", "ctx:section"],
+        ));
+    }
+    if let Some((atom_id, object, source_ref)) = assignment {
+        atoms.push(atom_json(
+            atom_id,
+            "relation",
+            "section:selected",
+            "section-factorization",
+            "witnessAssignment",
+            Some(object),
+            vec![source_ref, "ctx:section"],
+        ));
+    }
+    let mut context_atoms = vec!["atom:section-carrier"];
+    if include_generator {
+        context_atoms.push("atom:forbid-xy");
+    }
+    if let Some((atom_id, _, _)) = assignment {
+        context_atoms.push(atom_id);
+    }
+    json!({
+        "schema": "archmap/v2",
+        "id": format!("ag-section-fixture-{case}"),
+        "extractionDoctrineRef": {
+            "doctrineId": "doctrine:ag-fixture@1",
+            "fingerprint": "sha256:ag-section-fixture",
+            "components": ["V", "Gamma", "R", "rho", "E", "N"]
+        },
+        "sources": {
+            "src:section-carrier": {"kind": "policy", "path": "docs/tool/archsig_measurement_faithfulness_and_ag_viewer_prd.md", "section": "M3 section"},
+            "src:forbidden-support": {"kind": "policy", "path": "docs/tool/archsig_measurement_faithfulness_and_ag_viewer_prd.md", "section": "M3 minimal forbidden support"},
+            "src:section-assignment-a": {"kind": "policy", "path": "docs/tool/archsig_measurement_faithfulness_and_ag_viewer_prd.md", "section": "M3 total section assignment A"},
+            "src:section-assignment-b": {"kind": "policy", "path": "docs/tool/archsig_measurement_faithfulness_and_ag_viewer_prd.md", "section": "M3 total section assignment B"},
+            "src:section-partial": {"kind": "policy", "path": "docs/tool/archsig_measurement_faithfulness_and_ag_viewer_prd.md", "section": "M3 partial section"},
+            "src:section-assignment-no-generator": {"kind": "policy", "path": "docs/tool/archsig_measurement_faithfulness_and_ag_viewer_prd.md", "section": "M3 assignment without obstructionGenerator"},
+            "ctx:section": {"kind": "policy", "path": "docs/tool/archsig_measurement_faithfulness_and_ag_viewer_prd.md", "section": "M3"}
+        },
+        "atoms": atoms,
+        "contexts": [{
+            "id": "ctx:section",
+            "atoms": context_atoms,
+            "refs": ["ctx:section"]
+        }],
+        "covers": [{
+            "id": "cover:section",
+            "contexts": ["ctx:section"],
+            "refs": ["ctx:section"]
         }]
     })
 }
