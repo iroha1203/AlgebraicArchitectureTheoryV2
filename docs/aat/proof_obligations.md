@@ -1112,17 +1112,21 @@ PRD-7 は tracking Issue [#2157](https://github.com/iroha1203/AlgebraicArchitect
 では AC1/R0 を対象にし、`Formal/AG/RepresentationAnalysis` の entrypoint と
 先行 PRD-3〜6 依存確認 surface を追加した。PRD 本体の checkbox は prd-loop の
 不変条件として編集せず、達成状態は tracking Issue とこの台帳で同期する。
+Issue [#2162](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2162)
+では AC2/R1 を対象にし、`AATSch p`、selected morphism interface、
+optional fiber product data、functor-like `AnalyticRepresentation` を追加した。
 
 | 対象 | 現在の扱い | 残す境界 |
 | --- | --- | --- |
-| `VII.R0` Formal/AG/RepresentationAnalysis entrypoint | `defined only` / `proved accessor`. `Formal/AG/RepresentationAnalysis.lean` が `Bootstrap.lean` を束ね、`Formal/AG.lean` が `Formal.AG.RepresentationAnalysis` を import する。`UsesArchitectureScheme`、`UsesCoverRelativeCechComplex`、`UsesRepairComparisonProfile`、`UsesArchitectureStratum` が PRD-3 `LawAlgebra`、PRD-4 `Cohomology`、PRD-5 `Derived`、PRD-6 `SingularityMonodromyStack` の concrete Lean 型を参照する。`currentDependencyStatus` と accessor theorem 群は、現時点で先行依存が available であることを保持する。`PartVIINoMeasurementVerdictBoundary` は、第VII部が reading layer であり measurement verdict を導入しない境界を保持する。 | AC1 scaffold は build 対象に入った。AC2 以降の representation / graph / period / metric / conservativity / synthesis / finite examples は後続 Issue で扱う。 |
+| `VII.R0` Formal/AG/RepresentationAnalysis entrypoint | `defined only` / `proved accessor`. `Formal/AG/RepresentationAnalysis.lean` が `Bootstrap.lean` を束ね、`Formal/AG.lean` が `Formal.AG.RepresentationAnalysis` を import する。`UsesArchitectureScheme`、`UsesCoverRelativeCechComplex`、`UsesRepairComparisonProfile`、`UsesArchitectureStratum` が PRD-3 `LawAlgebra`、PRD-4 `Cohomology`、PRD-5 `Derived`、PRD-6 `SingularityMonodromyStack` の concrete Lean 型を参照する。`currentDependencyStatus` と accessor theorem 群は、現時点で先行依存が available であることを保持する。`PartVIINoMeasurementVerdictBoundary` は、第VII部が reading layer であり measurement verdict を導入しない境界を保持する。 | AC1 scaffold は build 対象に入った。AC2/R1 は別行で扱う。AC3 以降の representation family / graph / period / metric / conservativity / synthesis / finite examples は後続 Issue で扱う。 |
+| `VII.定義2.1` AATSch and AnalyticRepresentation | `defined only` / `proved accessor`. `AATSchReadingParameter` が PRD-3 `ArchitectureScheme` 上の selected scheme morphism interface、identity、composition、Atom label / law / obstruction ideal / signature / interpretation map readings を保持する。`AATSch` は fixed parameter `p` に相対化した decorated scheme、`AATSchMorphism` は selected compatibility certificates を持つ morphism、`AATSchIdentityData` / `AATSchCompositionData` は selected identity / composition data を保持する。`AATSchFiberProductData` は underlying pullback と decoration pullback compatibility が与えられた場合だけ存在する optional surface として置く。`AnalyticRepresentation` は target category interface、object map、morphism map、identity / composition law fields を持つ functor-like data として定義する。 | Mathlib `CategoryTheory.Functor` への本格 bridge、representation family、preservation / reflection / conservative / faithful predicate、graph / matrix representation は後続 Issue で扱う。 |
 
 第VII部 PRD-7 の証明対象ラベルは次の現在状態である。
 
 | 証明対象ラベル | Lean status |
 | --- | --- |
 | `VII.R0` | `defined only` / `proved accessor` |
-| `VII.定義2.1` `AATSch p` / `AnalyticRepresentation` | `future proof obligation` / `unassigned` |
+| `VII.定義2.1` `AATSch p` / `AnalyticRepresentation` | `defined only` / `proved accessor` |
 | `VII.定義3.1 / 4.1-4.3` representation family and preservation / reflection | `future proof obligation` / `unassigned` |
 | `VII.命題3.4` Acyclicity Preservation | `future proof obligation` / `unassigned` |
 | `VII.命題3.6` Matrix Walk Reading | `future proof obligation` / `unassigned` |
