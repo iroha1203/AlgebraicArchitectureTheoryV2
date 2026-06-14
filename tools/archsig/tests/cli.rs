@@ -692,6 +692,197 @@ fn cli_analyze_v2_cech_h1_visible_fixture_measures_nonzero() {
         cech["selectedH2"]["status"],
         "computed_for_selected_1_skeleton"
     );
+    let mut stable_cech_row = packet["structuralVerdict"][0].clone();
+    stable_cech_row
+        .as_object_mut()
+        .expect("structural row is object")
+        .remove("dependsOnAssumptions");
+    assert_eq!(
+        stable_cech_row,
+        json!({
+            "evaluator": "ag.cech-obstruction@1",
+            "law": "ag.cech-obstruction",
+            "verdict": "measured_nonzero",
+            "verdictData": {
+                "inScope": true,
+                "zero": false,
+                "nonZero": true,
+                "methodStatus": "finite_f2_cech_computed",
+                "certRef": "computedInvariants/cech-cohomology:profile:ag-default@1"
+            },
+            "reason": "finite F2 Cech 1-cocycle is not a coboundary on the selected cover"
+        }),
+        "ledger transparency must not change the Cech structural verdict payload except assumption refs"
+    );
+    let cech_fixture_path = root
+        .join("archmap_v2_cech_h1_visible.json")
+        .to_string_lossy()
+        .to_string();
+    assert_eq!(
+        packet["computedInvariants"],
+        json!([
+            {
+                "archmapRef": cech_fixture_path,
+                "atomCount": 5,
+                "contextCount": 4,
+                "coverCount": 1,
+                "doctrineFingerprint": "sha256:ag-fixture-doctrine",
+                "invariantId": "finite-poset-site-shape"
+            },
+            {
+                "claimScope": "selected-cover 1-skeleton Cech cochain calculation",
+                "coefficient": "F2",
+                "contextCount": 4,
+                "coverNerveProjection": {
+                    "coverRef": "cover:order-inventory",
+                    "edges": [
+                        {
+                            "edgeId": "ctx:left->ctx:bottom",
+                            "objectKind": "nerveEdge",
+                            "source": "selected cover restriction edge",
+                            "sourceContextRef": "ctx:left",
+                            "supportAtomRefs": ["atom:left-bottom-cech-mismatch"],
+                            "targetContextRef": "ctx:bottom",
+                            "value": 1
+                        },
+                        {
+                            "edgeId": "ctx:right->ctx:bottom",
+                            "objectKind": "nerveEdge",
+                            "source": "selected cover restriction edge",
+                            "sourceContextRef": "ctx:right",
+                            "supportAtomRefs": [],
+                            "targetContextRef": "ctx:bottom",
+                            "value": 0
+                        },
+                        {
+                            "edgeId": "ctx:top->ctx:left",
+                            "objectKind": "nerveEdge",
+                            "source": "selected cover restriction edge",
+                            "sourceContextRef": "ctx:top",
+                            "supportAtomRefs": [],
+                            "targetContextRef": "ctx:left",
+                            "value": 0
+                        },
+                        {
+                            "edgeId": "ctx:top->ctx:right",
+                            "objectKind": "nerveEdge",
+                            "source": "selected cover restriction edge",
+                            "sourceContextRef": "ctx:top",
+                            "supportAtomRefs": [],
+                            "targetContextRef": "ctx:right",
+                            "value": 0
+                        }
+                    ],
+                    "faceSource": "selected cover triple-overlap sharedAtomRefs recorded in archsig-measurement-packet/v1; not inferred by the viewer",
+                    "faces": [],
+                    "h2CoherenceVisualized": false,
+                    "vertices": [
+                        {
+                            "atomRefs": ["atom:bottom"],
+                            "contextRef": "ctx:bottom",
+                            "objectKind": "nerveVertex"
+                        },
+                        {
+                            "atomRefs": ["atom:left", "atom:left-bottom-cech-mismatch"],
+                            "contextRef": "ctx:left",
+                            "objectKind": "nerveVertex"
+                        },
+                        {
+                            "atomRefs": ["atom:right"],
+                            "contextRef": "ctx:right",
+                            "objectKind": "nerveVertex"
+                        },
+                        {
+                            "atomRefs": ["atom:top"],
+                            "contextRef": "ctx:top",
+                            "objectKind": "nerveVertex"
+                        }
+                    ]
+                },
+                "dimensions": {
+                    "H0": 1,
+                    "H1": 1
+                },
+                "evaluator": "ag.cech-obstruction@1",
+                "invariantId": "cech-cohomology:profile:ag-default@1",
+                "method": "finite-f2-incidence-graph-cochain@1",
+                "methodStatus": "finite_f2_cech_computed",
+                "observedCocycle": {
+                    "classNonzero": true,
+                    "mismatchSupportRefs": ["atom:left-bottom-cech-mismatch"],
+                    "representative": [
+                        {
+                            "edge": "ctx:left->ctx:bottom",
+                            "sourceContext": "ctx:left",
+                            "supportAtomRefs": ["atom:left-bottom-cech-mismatch"],
+                            "targetContext": "ctx:bottom",
+                            "value": 1
+                        }
+                    ]
+                },
+                "rankD0": 3,
+                "reason": "selected cover has a non-empty Cech 1-skeleton for ag.cech-obstruction@1",
+                "restrictionEdgeCount": 4,
+                "selectedCoverRef": "cover:order-inventory",
+                "selectedH2": {
+                    "dimension": 0,
+                    "reason": "no selected 2-simplices are present in the finite incidence graph complex",
+                    "status": "computed_for_selected_1_skeleton"
+                },
+                "status": "computed"
+            },
+            {
+                "evaluator": "witness-counting@1",
+                "invariantId": "witness-counting:profile:ag-default@1",
+                "nonConclusion": "Witness counting is reported as a fixture discriminator and does not determine Cech H1.",
+                "supportAtomRefs": [],
+                "verdict": "measured_zero",
+                "violationCount": 0
+            }
+        ]),
+        "ledger transparency must not change computed invariants for the same Cech input"
+    );
+    assert_eq!(
+        packet["analyticReadings"],
+        json!([
+            {
+                "readingId": "candidate-regime:stability-placeholder",
+                "evaluator": "ag.foundation@1",
+                "value": {
+                    "reason": "theorem-candidate readings are analytic-only until a follow-up evaluator computes them",
+                    "state": "not_evaluated"
+                },
+                "regime": "theorem-candidate",
+                "structuralVerdictRef": Value::Null
+            }
+        ]),
+        "ledger transparency must not change analytic readings for the same Cech input"
+    );
+    assert!(
+        packet["assumptions"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|entry| {
+                entry["theoremRef"] == "part4/12.4"
+                    && entry["assumption"]
+                        == "selected Cech nerve is a forest with no triple-overlap faces"
+                    && entry["status"] == "assumed"
+            }),
+        "cycle/no-triple Cech nerve must not check the theorem 12.4 forest premise"
+    );
+    assert!(
+        packet["assumptions"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|entry| {
+                entry["theoremRef"] == "part4/12.4"
+                    && entry["assumption"] == "restriction maps are surjective"
+                    && entry["status"] == "assumed"
+            }),
+        "surjective restriction must remain assumed even when other structural premises are visible"
+    );
     let witness_counting = invariant_by_id(&packet, "witness-counting:profile:ag-default@1");
     assert_eq!(
         witness_counting["invariantId"],
@@ -703,6 +894,93 @@ fn cli_analyze_v2_cech_h1_visible_fixture_measures_nonzero() {
     assert_eq!(
         summary["conclusion"],
         "MEASURED_H1_OBSTRUCTION_UNDER_PROFILE"
+    );
+}
+
+#[test]
+fn cli_analyze_v2_cech_effectivity_ledger_checks_forest_no_triple_only() {
+    let out_dir = temp_dir("ag-measurement-cech-effectivity-ledger");
+    let root = ag_measurement_root();
+    let mut archmap = read_json(&root.join("archmap_v2_cech_h1_visible.json"));
+    let right_context = archmap["contexts"]
+        .as_array_mut()
+        .expect("contexts is array")
+        .iter_mut()
+        .find(|context| context["id"] == "ctx:right")
+        .expect("right context exists");
+    right_context["restrictsTo"] = json!([]);
+    let archmap_path = out_dir.join("archmap_v2_cech_forest_no_triple.json");
+    fs::write(
+        &archmap_path,
+        serde_json::to_vec_pretty(&archmap).expect("archmap serializes"),
+    )
+    .expect("archmap fixture can be written");
+
+    run_sig0(&[
+        "analyze",
+        "--archmap",
+        archmap_path.to_str().expect("path is utf-8"),
+        "--law-policy",
+        root.join("law_policy_ag.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--out-dir",
+        out_dir.to_str().expect("path is utf-8"),
+    ]);
+
+    let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
+    let cech_row = &packet["structuralVerdict"][0];
+    assert_eq!(cech_row["evaluator"], "ag.cech-obstruction@1");
+    assert_eq!(
+        cech_row["verdict"], "measured_zero",
+        "ledger transparency must not change the Cech verdict calculation"
+    );
+    assert_eq!(cech_row["verdictData"]["zero"], true);
+    assert_eq!(
+        cech_row["verdictData"]["methodStatus"],
+        "finite_f2_cech_computed"
+    );
+    let cech = invariant_by_id(&packet, "cech-cohomology:profile:ag-default@1");
+    assert_eq!(cech["dimensions"]["H1"], Value::from(0));
+    assert_eq!(cech["observedCocycle"]["classNonzero"], false);
+    assert!(
+        cech["coverNerveProjection"]["faces"]
+            .as_array()
+            .is_some_and(Vec::is_empty),
+        "forest/no-triple fixture must have no projected triple-overlap face"
+    );
+
+    let assumptions = packet["assumptions"].as_array().unwrap();
+    for assumption in [
+        "local lawful sections form an effective Ob_U-torsor",
+        "local adjustment action is fixed and effective",
+        "coefficient object satisfies descent",
+    ] {
+        assert!(
+            assumptions.iter().any(|entry| {
+                entry["theoremRef"] == "part4/11.1"
+                    && entry["assumption"] == assumption
+                    && entry["status"] == "assumed"
+            }),
+            "theorem 11.1 premise must be visible in the CBI ledger: {assumption}"
+        );
+    }
+    assert!(
+        assumptions.iter().any(|entry| {
+            entry["theoremRef"] == "part4/12.4"
+                && entry["assumption"] == "restriction maps are surjective"
+                && entry["status"] == "assumed"
+        }),
+        "surjective restriction must remain assumed even for forest/no-triple covers"
+    );
+    assert!(
+        assumptions.iter().any(|entry| {
+            entry["theoremRef"] == "part4/12.4"
+                && entry["assumption"]
+                    == "selected Cech nerve is a forest with no triple-overlap faces"
+                && entry["status"] == "checked"
+        }),
+        "forest/no-triple structural premise must be checked from the selected cover nerve"
     );
 }
 
@@ -790,6 +1068,31 @@ fn cli_analyze_v2_cover_nerve_faces_require_packet_triple_overlap_support() {
     assert_eq!(
         cech["selectedH2"]["status"],
         "not_measured_for_triple_overlap_faces"
+    );
+    assert!(
+        packet["assumptions"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|entry| {
+                entry["theoremRef"] == "part4/12.4"
+                    && entry["assumption"]
+                        == "selected Cech nerve is a forest with no triple-overlap faces"
+                    && entry["status"] == "assumed"
+            }),
+        "triple-overlap faces keep theorem 12.4 forest/no-triple premise assumed"
+    );
+    assert!(
+        packet["assumptions"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|entry| {
+                entry["theoremRef"] == "part4/12.4"
+                    && entry["assumption"] == "restriction maps are surjective"
+                    && entry["status"] == "assumed"
+            }),
+        "surjective restriction must remain assumed even when triple-overlap faces are present"
     );
 
     let report = read_json(&out_dir.join("archsig-insight-report.json"));
