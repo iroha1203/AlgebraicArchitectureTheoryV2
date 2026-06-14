@@ -174,6 +174,98 @@ theorem safeRegionMembership_iff
 end MarginProfile
 
 /--
+VII.定理12.5: explicit assumptions for margin stability.
+
+The theorem is not a global metric theorem.  It is relative to the selected
+path length, endpoint-distance bound, margin budget, and the profile-specific
+rule that such a bound preserves the selected safe region.
+-/
+structure MarginStabilityProfile {U : AtomCarrier.{u}} {Obj : ArchitectureObject U}
+    {C : DistanceFlatnessMassContext Obj} (M : MarginProfile C) where
+  start : C.operationDistance.GeometryState
+  endpoint : C.operationDistance.GeometryState
+  pathLength : Nat
+  endpointDistance : Nat
+  marginBudget : Nat
+  marginBudget_reads_margin : M.Margin start = DistanceValue.measured marginBudget
+  boundaryDistanceNat :
+    C.operationDistance.GeometryState -> C.operationDistance.GeometryState -> Nat
+  boundaryDistance_reads_nat :
+    ∀ A B, M.boundaryDistance A B = DistanceValue.measured (boundaryDistanceNat A B)
+  start_safe : M.safeRegionMembership start
+  endpointDistance_le_pathLength : endpointDistance ≤ pathLength
+  pathLength_lt_margin : pathLength < marginBudget
+  margin_le_boundaryDistance :
+    ∀ B, B ∈ M.UnsafeBoundary -> marginBudget ≤ boundaryDistanceNat start B
+  triangle_boundaryDistance :
+    ∀ B, B ∈ M.UnsafeBoundary ->
+      boundaryDistanceNat start B ≤ endpointDistance + boundaryDistanceNat endpoint B
+  boundary_self_distance_zero :
+    ∀ B, B ∈ M.UnsafeBoundary -> boundaryDistanceNat B B = 0
+  safeRegion_avoids_boundary :
+    ∀ A, M.safeRegionMembership A -> A ∉ M.UnsafeBoundary
+  safeRegion_of_avoids_boundary :
+    ∀ A, A ∉ M.UnsafeBoundary -> M.safeRegionMembership A
+
+namespace MarginStabilityProfile
+
+variable {U : AtomCarrier.{u}} {Obj : ArchitectureObject U}
+variable {C : DistanceFlatnessMassContext Obj}
+variable {M : MarginProfile C}
+
+/-- VII.定理12.5: endpoint distance is within the selected margin budget. -/
+theorem endpointDistance_lt_margin
+    (P : MarginStabilityProfile M) :
+    P.endpointDistance < P.marginBudget :=
+  Nat.lt_of_le_of_lt P.endpointDistance_le_pathLength P.pathLength_lt_margin
+
+/-- VII.定理12.5: the selected margin budget is read from `margin(start)`. -/
+theorem marginBudget_reads_margin_holds
+    (P : MarginStabilityProfile M) :
+    M.Margin P.start = DistanceValue.measured P.marginBudget :=
+  P.marginBudget_reads_margin
+
+/--
+VII.定理12.5: if the endpoint were on the selected boundary, triangle and
+margin lower-bound assumptions would force a strict self-contradiction.
+-/
+theorem marginStability_no_boundary_crossing
+    (P : MarginStabilityProfile M) :
+    P.endpoint ∉ M.UnsafeBoundary := by
+  intro hboundary
+  have hmargin_le :
+      P.marginBudget ≤ P.boundaryDistanceNat P.start P.endpoint :=
+    P.margin_le_boundaryDistance P.endpoint hboundary
+  have htriangle :
+      P.boundaryDistanceNat P.start P.endpoint ≤
+        P.endpointDistance + P.boundaryDistanceNat P.endpoint P.endpoint :=
+    P.triangle_boundaryDistance P.endpoint hboundary
+  have hself :
+      P.boundaryDistanceNat P.endpoint P.endpoint = 0 :=
+    P.boundary_self_distance_zero P.endpoint hboundary
+  have hboundary_le_endpoint :
+      P.boundaryDistanceNat P.start P.endpoint ≤ P.endpointDistance := by
+    simpa [hself] using htriangle
+  have hbudget_le_endpoint : P.marginBudget ≤ P.endpointDistance :=
+    Nat.le_trans hmargin_le hboundary_le_endpoint
+  have hendpoint_lt_budget : P.endpointDistance < P.marginBudget :=
+    P.endpointDistance_lt_margin
+  exact (Nat.not_lt_of_ge hbudget_le_endpoint) hendpoint_lt_budget
+
+/--
+VII.定理12.5: Margin Stability.
+
+Under the explicit path-length, endpoint-distance, triangle-inequality, and
+margin-definition assumptions, the endpoint remains in the selected safe region.
+-/
+theorem marginStability_endpoint_safe
+    (P : MarginStabilityProfile M) :
+    M.safeRegionMembership P.endpoint :=
+  P.safeRegion_of_avoids_boundary P.endpoint P.marginStability_no_boundary_crossing
+
+end MarginStabilityProfile
+
+/--
 VII.定義12.4: architectural Dehn function interface.
 
 The presentation two-complex is a selected PRD-6 carrier.  The Dehn function is
