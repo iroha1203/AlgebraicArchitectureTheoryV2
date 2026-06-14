@@ -6,3 +6,4 @@ import Formal.AG.SingularityMonodromyStack.SmoothSingular
 import Formal.AG.SingularityMonodromyStack.SingularityTheorems
 import Formal.AG.SingularityMonodromyStack.Kuranishi
 import Formal.AG.SingularityMonodromyStack.OperationCategory
+import Formal.AG.SingularityMonodromyStack.OperationHomotopy
