@@ -371,7 +371,7 @@
 
     .detail {
       position: absolute;
-      z-index: 5;
+      z-index: 9;
       right: 12px;
       top: 188px;
       bottom: auto;
@@ -561,13 +561,18 @@
         0 0 0 1px rgba(100, 214, 190, 0.08),
         inset 0 1px 0 rgba(255, 255, 255, 0.06);
       transform: translateY(calc(100% + 24px));
-      transition: transform 180ms ease;
+      visibility: hidden;
+      pointer-events: none;
+      transition: transform 180ms ease, visibility 0ms linear 180ms;
       backdrop-filter: blur(18px);
       clip-path: polygon(16px 0, 100% 0, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0 100%, 0 16px);
     }
 
     .app.report-open .report {
       transform: translateY(0);
+      visibility: visible;
+      pointer-events: auto;
+      transition: transform 180ms ease;
     }
 
     .panel {
@@ -830,7 +835,7 @@
             <option value="obstructions">Forbidden support cages</option>
             <option value="spectrum">Spectrum landscape</option>
             <option value="flatness">Flatness surface</option>
-            <option value="aatAxes">AAT law axes</option>
+            <option value="aatAxes">Site / Cover</option>
             <option value="molecules">Molecule map</option>
             <option value="sources">Source map</option>
             <option value="projection">Projection map</option>
@@ -2564,31 +2569,34 @@
       if (!activeLayoutContext) return "";
       const aat = activeLayoutContext.aat;
       if (viewModeEl.value === "aatAxes") {
-        return `, ${aat.atomToAxes.size} axis-support atoms, ${aat.axes.length} axes`;
+        return coverGluingStatusText(aat.gluingGeometry);
       }
       if (viewModeEl.value === "curvature") {
-        return `, ${aat.atomToCurvature.size} curvature-support atoms, ${aat.curvatureItems.length} curvature readings`;
+        return hodgeFieldStatusText(aat.gluingGeometry);
       }
       if (viewModeEl.value === "holonomy") {
         return coverGluingStatusText(aat.gluingGeometry);
       }
       if (viewModeEl.value === "obstructionLoops" || viewModeEl.value === "obstructions") {
-        return `, ${aat.atomToObstructionLoops.size || aat.atomToObstructions.size} loop-support atoms, ${aat.obstructionLoopItems.length || aat.obstructions.length} loop readings`;
+        return viewModeEl.value === "obstructionLoops"
+          ? h1MismatchStatusText(aat.gluingGeometry)
+          : forbiddenSupportStatusText(aat.gluingGeometry);
       }
       if (viewModeEl.value === "flatness") {
-        const boundaryAtoms = renderedAtoms.filter((node) =>
-          (aat.atomToAxes.get(node.nodeId) || []).some((item) => String(item.axis.coverageStatus || "").includes("gap")) ||
-          (aat.atomToCurvature.get(node.nodeId) || []).length ||
-          (aat.atomToHolonomy.get(node.nodeId) || []).length
-        ).length;
-        return `, ${boundaryAtoms} flatness-boundary atoms`;
+        return hodgeFieldStatusText(aat.gluingGeometry);
       }
       if (viewModeEl.value === "spectrum") {
         const hotAtoms = renderedAtoms.filter((node) => (aat.atomToSpectrum.get(node.nodeId) || []).length || (aat.atomToAxes.get(node.nodeId) || []).some((item) => aat.hotspotByAxis.has(item.axis.axisRef))).length;
-        return `, ${hotAtoms} spectrum-support atoms, ${aat.spectrumItems.length || aat.hotspots.length} spectral readings`;
+        const spectralReadings = aat.spectrumItems.length || aat.hotspots.length;
+        return spectralReadings
+          ? `, ${hotAtoms} spectrum-support atoms, ${spectralReadings} spectral readings`
+          : hodgeFieldStatusText(aat.gluingGeometry);
       }
       if (viewModeEl.value === "molecules") {
         return `, ${aat.atomToViewerDistances.size} distance-positioned atoms, ${aat.viewerDistances.length} AtomShape distance inputs`;
+      }
+      if (viewModeEl.value === "projection") {
+        return repairMorphStatusText(aat.gluingGeometry);
       }
       return "";
     }
@@ -2602,6 +2610,32 @@
         ? nerve.edges.filter((edge) => Number(edge.value || 0) > 0).length
         : 0;
       return `, ${vertices} cover patches, ${edges} gluing edges, ${triangles} shared faces, ${nonzeroEdges} nonzero gluing edges`;
+    }
+
+    function hodgeFieldStatusText(gluingGeometry) {
+      const field = gluingGeometry?.locusField || {};
+      const rows = Array.isArray(field.fieldRows) ? field.fieldRows.length : 0;
+      const measuredZero = Array.isArray(field.measuredZeroRegions) ? field.measuredZeroRegions.length : 0;
+      const blocked = Array.isArray(field.blockedRegions) ? field.blockedRegions.length : 0;
+      return `, ${rows} field rows, ${measuredZero} measured-zero regions, ${blocked} blocked regions`;
+    }
+
+    function h1MismatchStatusText(gluingGeometry) {
+      const ribbon = gluingGeometry?.cocycleRibbon || {};
+      const supportEdges = Array.isArray(ribbon.supportEdges) ? ribbon.supportEdges.length : 0;
+      const markers = Array.isArray(ribbon.markers) ? ribbon.markers.length : 0;
+      const closureVisible = ribbon.closureGapEncoding?.visible ? 1 : 0;
+      return `, ${supportEdges} H1 mismatch support edges, ${markers + closureVisible} closure markers`;
+    }
+
+    function forbiddenSupportStatusText(gluingGeometry) {
+      const cages = Array.isArray(gluingGeometry?.forbiddenCages) ? gluingGeometry.forbiddenCages.length : 0;
+      return `, ${cages} forbidden support cages`;
+    }
+
+    function repairMorphStatusText(gluingGeometry) {
+      const morphs = Array.isArray(gluingGeometry?.repairMorphs) ? gluingGeometry.repairMorphs.length : 0;
+      return `, ${morphs} repair morphs`;
     }
 
     function renderLegend() {
@@ -2680,10 +2714,10 @@
           z: "AAT geometry support"
         },
         holonomy: {
-          title: "Holonomy paths",
-          x: "path support + loop phase",
-          y: "holonomy distance",
-          z: "path support + loop phase"
+          title: "Cover & Gluing",
+          x: "context neighborhood",
+          y: "restriction depth",
+          z: "gluing mismatch intensity"
         },
         obstructionLoops: {
           title: "Obstruction loops",
@@ -2704,10 +2738,10 @@
           z: "spectral support"
         },
         aatAxes: {
-          title: "AAT law axes",
-          x: "selected law axis cluster",
-          y: "coverage gap / support",
-          z: "selected law axis cluster"
+          title: "Site / Cover",
+          x: "source neighborhood",
+          y: "poset rank",
+          z: "coverage density or context size"
         },
         molecules: {
           title: "Molecule map",
@@ -2852,7 +2886,11 @@
     }
 
     function toggleReport() {
-      const isOpen = appEl.classList.toggle("report-open");
+      setReportOpen(!appEl.classList.contains("report-open"));
+    }
+
+    function setReportOpen(isOpen) {
+      appEl.classList.toggle("report-open", isOpen);
       reportToggleEl.textContent = isOpen ? "Hide report" : "Show report";
       reportToggleEl.setAttribute("aria-expanded", String(isOpen));
       window.setTimeout(resize, 190);
@@ -2965,6 +3003,7 @@
         status(`Tour not found: ${tourId}`);
         return;
       }
+      setReportOpen(false);
       activeTourState = { tour, stepIndex: 0 };
       showTourStep();
     }
