@@ -4859,6 +4859,37 @@ measurement verdict / DistanceValue への接続、
 余接複体一般構成、RHom 一般構成、algebraic stack 一般論、stackification 一般構成、
 non-abelian gerbe cohomology 一般論、全 decomposition 分類、finite witness package を越える golden example calibration は PRD-6 の claim boundary どおり future proof obligation として扱う。
 
+## AG版AAT Lean形式化 PRD-7 / 第VII部 Representation・Periods・Analysis
+
+File: `Formal/AG/RepresentationAnalysis.lean`,
+`Formal/AG/RepresentationAnalysis/Bootstrap.lean`.
+
+PRD-7 [第VII部 Representation・Periods・Analysis](lean_ag_part_7_representation_periods_analysis_prd.md)
+の AC1/R0 に対応する entrypoint である。現時点では
+`Formal/AG/RepresentationAnalysis` を build 対象へ追加し、PRD-3 `LawAlgebra`、
+PRD-4 `Cohomology`、PRD-5 `Derived`、PRD-6 `SingularityMonodromyStack`
+を第VII部の前提 module として import する。最初の surface として、
+`UsesArchitectureScheme`、`UsesCoverRelativeCechComplex`、
+`UsesRepairComparisonProfile`、`UsesArchitectureStratum` が既存 Part III-VI の
+具体 Lean 型を参照する。`PartVIIDependencyStatus` と
+`currentDependencyStatus` は、先行 PRD 依存が present / blocked のどちらであるかを
+Lean-facing status として保持する。`PartVIINoMeasurementVerdictBoundary` は、
+第VII部が representation / period / metric reading layer であり、measurement verdict は
+第VIII部へ残すことを明示する。
+
+Tracking Issue: [#2157](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2157).
+Initial implementation Issue: [#2158](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2158).
+
+| 本文ラベル | Lean 名 | 種別 | 意味 | Status |
+| --- | --- | --- | --- | --- |
+| `VII.R0` | `Formal.AG.RepresentationAnalysis`, `Formal.AG.RepresentationAnalysis.Bootstrap`, `AAT.AG.RepresentationAnalysis.UsesArchitectureScheme`, `UsesCoverRelativeCechComplex`, `UsesRepairComparisonProfile`, `UsesArchitectureStratum`, `PrerequisiteStatus`, `PartVIIDependencyStatus`, `currentDependencyStatus`, `current_lawAlgebra_available`, `current_cohomology_available`, `current_derived_available`, `current_singularityMonodromyStack_available`, `PartVIINoMeasurementVerdictBoundary`, `noMeasurementVerdictBoundary`, `PartVIINoMeasurementVerdictBoundary.readingLayer_holds`, `PartVIINoMeasurementVerdictBoundary.measurementVerdictReservedForPartVIII_holds` | `import` / `abbrev` / `inductive` / `structure` / `def` / `theorem` | 第VII部 Representation・Periods・Analysis module を `Formal/AG.lean` から import し、PRD-3〜6 の成果物上に立ち上げる。先行依存は concrete Lean 型参照で確認し、measurement verdict は第VII部に導入しない境界を保持する。 | `defined only` / `proved accessor` |
+
+Non-conclusions: この entrypoint は `AATSch p`、`AnalyticRepresentation`、
+graph / matrix representation、period family、strict period、metric enrichment、
+margin / observation gap theorem、detecting representation conservativity、synthesis theorem、
+finite golden examples をまだ実装しない。measurement verdict / finite computability profile は
+PRD-8 の範囲であり、第VII部 bootstrap では導入しない。
+
 ## Reverse-Import Theorem Packages
 
 File: `Formal/Arch/Evolution/ReverseImportTheorems.lean`.

@@ -19,3 +19,4 @@ import Formal.AG.Derived
 import Formal.AG.Examples.DerivedPart5
 import Formal.AG.SingularityMonodromyStack
 import Formal.AG.Examples.SingularityMonodromyStackPart6
+import Formal.AG.RepresentationAnalysis

@@ -1105,6 +1105,41 @@ No Canonical Decomposition theorem を explicit selected gerbe soundness interfa
 | `VI.定義15.1 / 定義16.1 / 定理16.2` | `defined only` / `proved under explicit selected gerbe soundness interface` |
 | `VI.R12 finite examples` | `proved example theorem` |
 
+## AG版AAT Lean形式化 PRD-7 / 第VII部 Representation・Periods・Analysis
+
+PRD-7 は tracking Issue [#2157](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2157)
+で管理する。初回実装 Issue [#2158](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2158)
+では AC1/R0 を対象にし、`Formal/AG/RepresentationAnalysis` の entrypoint と
+先行 PRD-3〜6 依存確認 surface を追加した。PRD 本体の checkbox は prd-loop の
+不変条件として編集せず、達成状態は tracking Issue とこの台帳で同期する。
+
+| 対象 | 現在の扱い | 残す境界 |
+| --- | --- | --- |
+| `VII.R0` Formal/AG/RepresentationAnalysis entrypoint | `defined only` / `proved accessor`. `Formal/AG/RepresentationAnalysis.lean` が `Bootstrap.lean` を束ね、`Formal/AG.lean` が `Formal.AG.RepresentationAnalysis` を import する。`UsesArchitectureScheme`、`UsesCoverRelativeCechComplex`、`UsesRepairComparisonProfile`、`UsesArchitectureStratum` が PRD-3 `LawAlgebra`、PRD-4 `Cohomology`、PRD-5 `Derived`、PRD-6 `SingularityMonodromyStack` の concrete Lean 型を参照する。`currentDependencyStatus` と accessor theorem 群は、現時点で先行依存が available であることを保持する。`PartVIINoMeasurementVerdictBoundary` は、第VII部が reading layer であり measurement verdict を導入しない境界を保持する。 | AC1 scaffold は build 対象に入った。AC2 以降の representation / graph / period / metric / conservativity / synthesis / finite examples は後続 Issue で扱う。 |
+
+第VII部 PRD-7 の証明対象ラベルは次の現在状態である。
+
+| 証明対象ラベル | Lean status |
+| --- | --- |
+| `VII.R0` | `defined only` / `proved accessor` |
+| `VII.定義2.1` `AATSch p` / `AnalyticRepresentation` | `future proof obligation` / `unassigned` |
+| `VII.定義3.1 / 4.1-4.3` representation family and preservation / reflection | `future proof obligation` / `unassigned` |
+| `VII.命題3.4` Acyclicity Preservation | `future proof obligation` / `unassigned` |
+| `VII.命題3.6` Matrix Walk Reading | `future proof obligation` / `unassigned` |
+| `VII.定義5.1-5.3 / 5.2A` broad / strict period and finite homology | `future proof obligation` / `unassigned` |
+| `VII.定理6.1 / 例6.2` Period Separation | `future proof obligation` / `unassigned` |
+| `VII.定義7.1 / 7.2` signature / curvature reading | `future proof obligation` / `unassigned` |
+| `VII.定義8.1 / 9.1 / 9.2` Metric AAT and DistanceValue | `future proof obligation` / `unassigned` |
+| `VII.定義10.1-11.2` operation distance / distance to flatness / obstruction mass | `future proof obligation` / `unassigned` |
+| `VII.定義12.1-12.8 / 定理12.5 / 定理12.7` repair cost / margin / Dehn / observation gap | `future proof obligation` / `unassigned` |
+| `VII.定義13.1 / 13.2` SingularityProfile and MonodromyIndex | `future proof obligation` / `unassigned` |
+| `VII.定義14.1 / 15.1 / 15.3 / 定理15.4` analytic context and conservativity | `future proof obligation` / `unassigned` |
+| `VII.定理16.1` Algebraic-Geometric AAT Synthesis | `future proof obligation` / `unassigned` |
+| `VII.R13 finite examples` graph/matrix, period separation, pseudo-circle period, margin, observation gap, detecting representation | `future proof obligation` / `unassigned` |
+| `GeneralSingularHomologyRealization` | `future proof obligation` / explicit non-goal for PRD-7 |
+| `GeneralMeasureTheoryForObstructionMass` | `future proof obligation` / explicit non-goal for PRD-7 |
+| `CompleteMetricReflectionFromDistanceZero` | `future proof obligation` / explicit non-goal for PRD-7 |
+
 ## 現在の未解決カテゴリ
 
 | カテゴリ | 扱い |
