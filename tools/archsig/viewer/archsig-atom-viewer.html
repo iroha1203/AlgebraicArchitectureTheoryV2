@@ -984,15 +984,18 @@
 
     const colorByFamily = {
       authority: 0xef6767,
-      trust: 0xe0b84e,
-      permission: 0xff8f5a,
-      state: 0x66a6ff,
-      effect: 0x4cc3a7,
-      relation: 0xb087ff,
-      semantic: 0xd8dee9,
       capability: 0x8bd46e,
+      component: 0x73b7ff,
+      contract: 0xf2c15f,
+      contractSpecification: 0xf2cf66,
+      effect: 0x4cc3a7,
       existence: 0x9aa8b8,
-      contractSpecification: 0xf2cf66
+      permission: 0xff8f5a,
+      relation: 0xb087ff,
+      runtime: 0xff8f5a,
+      semantic: 0xd8dee9,
+      state: 0x66a6ff,
+      trust: 0xe0b84e
     };
 
     async function createRenderer() {
@@ -2409,15 +2412,18 @@
     function familyRank(family) {
       const ordered = [
         "authority",
-        "trust",
-        "permission",
-        "state",
-        "effect",
-        "contractSpecification",
-        "relation",
         "capability",
+        "component",
+        "contract",
+        "contractSpecification",
+        "effect",
+        "existence",
+        "permission",
+        "relation",
+        "runtime",
         "semantic",
-        "existence"
+        "state",
+        "trust"
       ];
       const index = ordered.indexOf(String(family || ""));
       return index >= 0 ? index : hashText(family || "atom") % ordered.length;
@@ -2650,6 +2656,10 @@
         ).join("");
         return;
       }
+      if (usesFamilyLegend(viewModeEl.value)) {
+        renderFamilyLegend();
+        return;
+      }
       const scene = sceneForMode(viewModeEl.value);
       const sceneLegend = Array.isArray(scene?.visualEncodingLegend) ? scene.visualEncodingLegend : [];
       if (sceneLegend.length) {
@@ -2662,6 +2672,18 @@
       legendEl.innerHTML = items.slice(0, 12).map(([label, color]) =>
         `<span class="legend-item"><span class="swatch" style="background:#${Number(color).toString(16).padStart(6, "0")}"></span>${escapeHtml(label)}</span>`
       ).join("");
+    }
+
+    function usesFamilyLegend(mode) {
+      return ["families", "density", "evidence", "molecules"].includes(mode);
+    }
+
+    function renderFamilyLegend() {
+      const families = uniqueSorted(renderedAtoms.map((node) => node.atomFamily || "unknown"));
+      legendEl.innerHTML = families.slice(0, 12).map((label) => {
+        const color = colorByFamily[label] || 0xb087ff;
+        return `<span class="legend-item"><span class="swatch" style="background:#${Number(color).toString(16).padStart(6, "0")}"></span>${escapeHtml(label)}</span>`;
+      }).join("");
     }
 
     function legendSwatchColor(channel) {
