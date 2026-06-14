@@ -4327,6 +4327,14 @@ fn cli_analyze_v2_law_conflict_tor_outputs_conflict_classes() {
         packet["structuralVerdict"][0]["verdictData"]["certRef"],
         "atom:tor-common-ambient"
     );
+    assert!(
+        packet["structuralVerdict"][0]["dependsOnAssumptions"]
+            .as_array()
+            .expect("dependsOnAssumptions is array")
+            .iter()
+            .any(|theorem_ref| theorem_ref == "part8/9.1-coefficient-compatibility"),
+        "Tor verdict must depend on the common ambient coefficient compatibility ledger row"
+    );
     assert_eq!(
         packet["structuralVerdict"]
             .as_array()
@@ -4345,6 +4353,12 @@ fn cli_analyze_v2_law_conflict_tor_outputs_conflict_classes() {
     assert_eq!(
         tor["commonAmbient"]["ambientRef"],
         "ambient:checkout-inventory"
+    );
+    let tor_object = tor.as_object().expect("Tor invariant is object");
+    assert!(
+        !tor_object.contains_key("coefficientRef")
+            && !tor_object.contains_key("comparisonMorphismRef"),
+        "M15 must expose coefficient compatibility through the assumption ledger, not new Tor schema fields"
     );
     assert_eq!(
         tor["lawConflicts"],
@@ -4378,6 +4392,19 @@ fn cli_analyze_v2_law_conflict_tor_outputs_conflict_classes() {
             .as_str()
             .is_some_and(|note| note.contains("higher Tor_i") && note.contains("F2")),
         "Tor boundary note must keep higher Tor and field-coefficient boundaries visible"
+    );
+    assert!(
+        packet["assumptions"]
+            .as_array()
+            .expect("assumptions is array")
+            .iter()
+            .any(|row| row["theoremRef"] == "part8/9.1-coefficient-compatibility"
+                && row["assumption"]
+                    == "common ambient coefficient compatibility under the selected single F2 coefficient model"
+                && row["status"] == "checked"
+                && row["checkedBy"]
+                    == "measurement-profile:profile:ag-law-conflict-tor@1.coefficient:F2"),
+        "Tor assumption ledger must record checked coefficient compatibility for the selected common ambient"
     );
     let hilbert = packet["analyticReadings"]
         .as_array()
@@ -4712,9 +4739,33 @@ fn cli_analyze_v2_law_conflict_tor_without_common_ambient_is_not_computed() {
         packet["structuralVerdict"][0]["verdictData"]["methodStatus"],
         "no_common_ambient"
     );
+    assert!(
+        packet["structuralVerdict"][0]["dependsOnAssumptions"]
+            .as_array()
+            .expect("dependsOnAssumptions is array")
+            .iter()
+            .any(|theorem_ref| theorem_ref == "part8/9.1-coefficient-compatibility"),
+        "not-computed Tor verdict still records the coefficient compatibility dependency"
+    );
     let tor = invariant_by_id(&packet, "law-conflict-tor:profile:ag-law-conflict-tor@1");
     assert_eq!(tor["status"], "not_computed");
     assert_eq!(tor["reason"], "no_common_ambient");
+    assert_ne!(
+        packet["structuralVerdict"][0]["verdict"], "measured_zero",
+        "violated common ambient / coefficient compatibility must not degrade to measured_zero"
+    );
+    assert!(
+        packet["assumptions"]
+            .as_array()
+            .expect("assumptions is array")
+            .iter()
+            .any(
+                |row| row["theoremRef"] == "part8/9.1-coefficient-compatibility"
+                    && row["status"] == "violated"
+                    && row["assumedBy"] == "measurement-profile:profile:ag-law-conflict-tor@1"
+            ),
+        "missing common ambient must mark coefficient compatibility violated in the assumption ledger"
+    );
 }
 
 #[test]

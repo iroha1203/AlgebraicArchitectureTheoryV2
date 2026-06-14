@@ -8181,6 +8181,12 @@ fn tor_assumptions(
     ambient_status: &str,
     square_free_status: &str,
 ) -> Vec<AgAssumptionLedgerEntryV1> {
+    let coefficient_status = if ambient_status == "checked" {
+        "checked"
+    } else {
+        "violated"
+    };
+
     vec![
         AgAssumptionLedgerEntryV1 {
             theorem_ref: "part8/9.1".to_string(),
@@ -8189,6 +8195,18 @@ fn tor_assumptions(
             status: ambient_status.to_string(),
             checked_by: ambient.map(|ambient| ambient.atom_ref.clone()),
             assumed_by: (ambient_status != "checked")
+                .then(|| format!("measurement-profile:{}", profile.profile_id)),
+        },
+        AgAssumptionLedgerEntryV1 {
+            theorem_ref: "part8/9.1-coefficient-compatibility".to_string(),
+            assumption:
+                "common ambient coefficient compatibility under the selected single F2 coefficient model"
+                    .to_string(),
+            status: coefficient_status.to_string(),
+            checked_by: (coefficient_status == "checked").then(|| {
+                format!("measurement-profile:{}.coefficient:F2", profile.profile_id)
+            }),
+            assumed_by: (coefficient_status != "checked")
                 .then(|| format!("measurement-profile:{}", profile.profile_id)),
         },
         AgAssumptionLedgerEntryV1 {
