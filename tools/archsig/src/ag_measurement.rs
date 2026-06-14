@@ -5,9 +5,9 @@ use serde_json::{Value, json};
 use crate::validation::{generic_validation_example, validation_check};
 use crate::{
     ARCHSIG_MEASUREMENT_PACKET_V1_SCHEMA, AgAnalyticReadingV1, AgAssumptionLedgerEntryV1,
-    AgStructuralVerdictV1, AgVerdictDataV1, ArchSigMeasurementPacketV1, LawPolicyDocumentV1,
-    MeasurementProfileV1, NormalizedArchMapV2, NormalizedAtomV2, NormalizedContextV2,
-    NormalizedCoverV2, ValidationCheck, ValidationExample,
+    AgStructuralVerdictV1, AgVerdictDataV1, ArchSigMeasurementPacketV1, BoundaryStatementV1,
+    LawPolicyDocumentV1, MeasurementProfileV1, NormalizedArchMapV2, NormalizedAtomV2,
+    NormalizedContextV2, NormalizedCoverV2, ValidationCheck, ValidationExample,
 };
 
 const VERDICTS: [&str; 5] = [
@@ -29,6 +29,14 @@ const GLUING_REGION_RENDER_LIMIT: usize = 24;
 const GLUING_CAGE_RENDER_LIMIT: usize = 80;
 const GLUING_MORPH_RENDER_LIMIT: usize = 50;
 const GLUING_ATOM_GLYPH_RENDER_LIMIT: usize = 2_000;
+const BOUNDARY_STATEMENT_KINDS: [&str; 6] = [
+    "silence_by_design",
+    "out_of_selected_vocabulary",
+    "unmeasured_support",
+    "violated_assumption",
+    "blocked_method",
+    "not_applicable",
+];
 
 pub fn selected_measurement_profile_v1(
     policy: &LawPolicyDocumentV1,
@@ -38,6 +46,85 @@ pub fn selected_measurement_profile_v1(
         .measurement_profiles
         .iter()
         .find(|profile| profile.profile_id == profile_ref)
+}
+
+fn boundary_statements_for_measurement_packet(
+    packet: &ArchSigMeasurementPacketV1,
+) -> Vec<BoundaryStatementV1> {
+    let mut statements = packet
+        .non_conclusions
+        .iter()
+        .enumerate()
+        .map(|(index, text)| BoundaryStatementV1 {
+            id: format!("boundary:silence-by-design:{index}"),
+            kind: "silence_by_design".to_string(),
+            scope_refs: vec![packet.packet_id.clone()],
+            reason: "compat_non_conclusion".to_string(),
+            text: text.clone(),
+        })
+        .collect::<Vec<_>>();
+
+    for (index, row) in packet.structural_verdict.iter().enumerate() {
+        let scope_ref = structural_verdict_ref(row);
+        if row.verdict == "unmeasured" {
+            statements.push(BoundaryStatementV1 {
+                id: format!("boundary:unmeasured-support:{index}"),
+                kind: "unmeasured_support".to_string(),
+                scope_refs: vec![scope_ref.clone()],
+                reason: row.verdict_data.method_status.clone(),
+                text: row.reason.clone().unwrap_or_else(|| {
+                    "Unmeasured structural verdict is not a measured zero result.".to_string()
+                }),
+            });
+        }
+        if row.verdict == "not_computed" {
+            statements.push(BoundaryStatementV1 {
+                id: format!("boundary:blocked-method:{index}"),
+                kind: "blocked_method".to_string(),
+                scope_refs: vec![scope_ref.clone()],
+                reason: row.verdict_data.method_status.clone(),
+                text: row.reason.clone().unwrap_or_else(|| {
+                    "Structural verdict is not computed under the selected method.".to_string()
+                }),
+            });
+        }
+    }
+
+    for (index, reading) in packet.analytic_readings.iter().enumerate() {
+        if reading.regime.as_deref() == Some("theorem-candidate")
+            && reading.structural_verdict_ref.is_none()
+        {
+            statements.push(BoundaryStatementV1 {
+                id: format!("boundary:not-applicable:{index}"),
+                kind: "not_applicable".to_string(),
+                scope_refs: vec![reading.reading_id.clone()],
+                reason: "analytic_only".to_string(),
+                text: "Theorem-candidate reading is analytic-only and cannot generate a structural verdict.".to_string(),
+            });
+        }
+    }
+
+    let not_computed_scope_refs = not_computed_scope_refs(packet)
+        .into_iter()
+        .collect::<Vec<_>>();
+    for (index, assumption) in packet.assumptions.iter().enumerate() {
+        if assumption.status == "violated" {
+            let mut scope_refs = vec![assumption.theorem_ref.clone()];
+            scope_refs.extend(not_computed_scope_refs.clone());
+            statements.push(BoundaryStatementV1 {
+                id: format!("boundary:violated-assumption:{index}"),
+                kind: "violated_assumption".to_string(),
+                scope_refs,
+                reason: assumption.status.clone(),
+                text: format!(
+                    "Assumption {} is violated for the selected measurement packet.",
+                    assumption.theorem_ref
+                ),
+            });
+        }
+    }
+
+    statements
 }
 
 pub fn build_foundation_measurement_packet_v1(
@@ -215,7 +302,15 @@ pub fn build_foundation_measurement_packet_v1(
         }
     }
 
-    Ok(ArchSigMeasurementPacketV1 {
+    let non_conclusions = vec![
+        format!(
+            "ArchSig v0.4.0 foundation packet is computed from {archmap_ref} and {law_policy_ref}; it is not a Lean proof object."
+        ),
+        "Unmeasured AG evaluator rows are schema handoff rows, not measured zero.".to_string(),
+        "Theorem-candidate readings are analytic-only and cannot generate structural verdicts."
+            .to_string(),
+    ];
+    let mut packet = ArchSigMeasurementPacketV1 {
         schema: ARCHSIG_MEASUREMENT_PACKET_V1_SCHEMA.to_string(),
         packet_id: format!("measurement:{}", normalized.source_archmap_id),
         profile,
@@ -223,15 +318,11 @@ pub fn build_foundation_measurement_packet_v1(
         computed_invariants,
         analytic_readings,
         assumptions,
-        non_conclusions: vec![
-            format!(
-                "ArchSig v0.4.0 foundation packet is computed from {archmap_ref} and {law_policy_ref}; it is not a Lean proof object."
-            ),
-            "Unmeasured AG evaluator rows are schema handoff rows, not measured zero.".to_string(),
-            "Theorem-candidate readings are analytic-only and cannot generate structural verdicts."
-                .to_string(),
-        ],
-    })
+        boundary_statements: Vec::new(),
+        non_conclusions,
+    };
+    packet.boundary_statements = boundary_statements_for_measurement_packet(&packet);
+    Ok(packet)
 }
 
 #[derive(Debug, Clone)]
@@ -6319,6 +6410,7 @@ pub fn validate_measurement_packet_v1(packet: &ArchSigMeasurementPacketV1) -> Ve
         check_structural_verdict_data(packet),
         check_analytic_regime_boundary(packet),
         check_assumption_ledger(packet),
+        check_boundary_statements(packet),
     ]
 }
 
@@ -6485,6 +6577,160 @@ fn check_assumption_ledger(packet: &ArchSigMeasurementPacketV1) -> ValidationChe
     )
 }
 
+fn check_boundary_statements(packet: &ArchSigMeasurementPacketV1) -> ValidationCheck {
+    let mut examples = Vec::new();
+    let mut ids = BTreeSet::new();
+    let valid_scope_refs = measurement_packet_scope_refs(packet);
+    let boundary_texts = packet
+        .boundary_statements
+        .iter()
+        .map(|statement| statement.text.as_str())
+        .collect::<BTreeSet<_>>();
+
+    if packet.boundary_statements.is_empty() {
+        examples.push(generic_validation_example(
+            "boundaryStatements",
+            "empty",
+            "measurement packet must expose typed boundary statements",
+        ));
+    }
+
+    for statement in &packet.boundary_statements {
+        if statement.id.trim().is_empty() {
+            examples.push(generic_validation_example(
+                "boundaryStatements[].id",
+                "empty",
+                "boundary statement id must be non-empty",
+            ));
+        } else if !ids.insert(statement.id.as_str()) {
+            examples.push(generic_validation_example(
+                "boundaryStatements[].id",
+                &statement.id,
+                "boundary statement id must be unique",
+            ));
+        }
+        if !BOUNDARY_STATEMENT_KINDS.contains(&statement.kind.as_str()) {
+            examples.push(generic_validation_example(
+                &statement.id,
+                &statement.kind,
+                "boundary statement kind must be one of the v1 boundary kinds",
+            ));
+        }
+        if statement.reason.trim().is_empty() {
+            examples.push(generic_validation_example(
+                &statement.id,
+                "reason",
+                "boundary statement reason must be non-empty",
+            ));
+        }
+        if statement.text.trim().is_empty() {
+            examples.push(generic_validation_example(
+                &statement.id,
+                "text",
+                "boundary statement text must be non-empty",
+            ));
+        }
+        if statement.scope_refs.is_empty() {
+            examples.push(generic_validation_example(
+                &statement.id,
+                "scopeRefs",
+                "boundary statement scopeRefs must be non-empty",
+            ));
+        }
+        for scope_ref in &statement.scope_refs {
+            if !valid_scope_refs.contains(scope_ref) {
+                examples.push(generic_validation_example(
+                    &statement.id,
+                    scope_ref,
+                    "boundary statement scopeRefs must resolve inside the measurement packet",
+                ));
+            }
+        }
+        if statement.kind == "violated_assumption"
+            && !statement
+                .scope_refs
+                .iter()
+                .any(|scope_ref| not_computed_scope_refs(packet).contains(scope_ref))
+        {
+            examples.push(generic_validation_example(
+                &statement.id,
+                "scopeRefs",
+                "violated_assumption boundary must scope to a not_computed packet surface",
+            ));
+        }
+    }
+
+    for text in &packet.non_conclusions {
+        if !boundary_texts.contains(text.as_str()) {
+            examples.push(generic_validation_example(
+                "nonConclusions",
+                text,
+                "compat nonConclusions text must be reproduced by boundaryStatements[].text",
+            ));
+        }
+    }
+
+    check_examples(
+        "measurement-packet-v1-boundary-statements",
+        "boundaryStatements provide typed, scoped non-conclusion qualifiers with nonConclusions compatibility",
+        examples,
+    )
+}
+
+fn measurement_packet_scope_refs(packet: &ArchSigMeasurementPacketV1) -> BTreeSet<String> {
+    let mut refs = BTreeSet::new();
+    refs.insert(packet.packet_id.clone());
+    refs.extend(
+        packet
+            .analytic_readings
+            .iter()
+            .map(|reading| reading.reading_id.clone()),
+    );
+    refs.extend(
+        packet
+            .assumptions
+            .iter()
+            .map(|assumption| assumption.theorem_ref.clone()),
+    );
+    for row in &packet.structural_verdict {
+        refs.insert(row.evaluator.clone());
+        refs.insert(row.law.clone());
+        refs.insert(structural_verdict_ref(row));
+    }
+    for invariant in &packet.computed_invariants {
+        for field in ["id", "invariantId", "readingId", "computedInvariantId"] {
+            if let Some(value) = invariant.get(field).and_then(Value::as_str) {
+                refs.insert(value.to_string());
+            }
+        }
+    }
+    refs
+}
+
+fn not_computed_scope_refs(packet: &ArchSigMeasurementPacketV1) -> BTreeSet<String> {
+    let mut refs = packet
+        .structural_verdict
+        .iter()
+        .filter(|row| row.verdict == "not_computed")
+        .map(structural_verdict_ref)
+        .collect::<BTreeSet<_>>();
+    refs.extend(packet.analytic_readings.iter().filter_map(|reading| {
+        (reading.value.get("status").and_then(Value::as_str) == Some("not_computed"))
+            .then(|| reading.reading_id.clone())
+    }));
+    for invariant in &packet.computed_invariants {
+        if invariant.get("status").and_then(Value::as_str) == Some("not_computed") {
+            for field in ["id", "invariantId", "readingId", "computedInvariantId"] {
+                if let Some(value) = invariant.get(field).and_then(Value::as_str) {
+                    refs.insert(value.to_string());
+                    break;
+                }
+            }
+        }
+    }
+    refs
+}
+
 fn check_examples(id: &str, title: &str, examples: Vec<ValidationExample>) -> ValidationCheck {
     let mut check = validation_check(id, title, if examples.is_empty() { "pass" } else { "fail" });
     if !examples.is_empty() {
@@ -6499,7 +6745,7 @@ mod tests {
     use super::*;
 
     fn packet_fixture() -> ArchSigMeasurementPacketV1 {
-        serde_json::from_value(json!({
+        let mut packet: ArchSigMeasurementPacketV1 = serde_json::from_value(json!({
             "schema": "archsig-measurement-packet/v1",
             "packetId": "measurement:test",
             "profile": {
@@ -6544,7 +6790,9 @@ mod tests {
             }],
             "nonConclusions": ["test fixture"]
         }))
-        .expect("packet fixture parses")
+        .expect("packet fixture parses");
+        packet.boundary_statements = boundary_statements_for_measurement_packet(&packet);
+        packet
     }
 
     fn normalized_fixture() -> NormalizedArchMapV2 {
@@ -6681,6 +6929,108 @@ mod tests {
         assert!(checks.iter().any(|check| {
             check.id == "measurement-packet-v1-theorem-candidate-analytic-only"
                 && check.result == "fail"
+        }));
+    }
+
+    #[test]
+    fn boundary_statements_reproduce_non_conclusion_compat_text() {
+        let packet = packet_fixture();
+        let checks = validate_measurement_packet_v1(&packet);
+
+        assert!(checks.iter().any(|check| {
+            check.id == "measurement-packet-v1-boundary-statements" && check.result == "pass"
+        }));
+        assert!(packet.non_conclusions.iter().all(|text| {
+            packet
+                .boundary_statements
+                .iter()
+                .any(|statement| statement.text == *text)
+        }));
+        assert!(packet.boundary_statements.iter().any(|statement| {
+            statement.kind == "unmeasured_support"
+                && statement
+                    .scope_refs
+                    .iter()
+                    .any(|scope_ref| scope_ref.starts_with("structuralVerdict/"))
+        }));
+        assert!(packet.boundary_statements.iter().any(|statement| {
+            statement.kind == "not_applicable"
+                && statement
+                    .scope_refs
+                    .iter()
+                    .any(|scope_ref| scope_ref == "candidate:test")
+        }));
+    }
+
+    #[test]
+    fn boundary_statement_empty_scope_refs_fail_validation() {
+        let mut packet = packet_fixture();
+        packet.boundary_statements[0].scope_refs.clear();
+        let checks = validate_measurement_packet_v1(&packet);
+
+        assert!(checks.iter().any(|check| {
+            check.id == "measurement-packet-v1-boundary-statements" && check.result == "fail"
+        }));
+    }
+
+    #[test]
+    fn boundary_statement_unresolved_scope_refs_fail_validation() {
+        let mut packet = packet_fixture();
+        packet.boundary_statements[0].scope_refs = vec!["missing:scope".to_string()];
+        let checks = validate_measurement_packet_v1(&packet);
+
+        assert!(checks.iter().any(|check| {
+            check.id == "measurement-packet-v1-boundary-statements" && check.result == "fail"
+        }));
+    }
+
+    #[test]
+    fn boundary_statement_unknown_kind_fails_validation() {
+        let mut packet = packet_fixture();
+        packet.boundary_statements[0].kind = "maybe_conclusion".to_string();
+        let checks = validate_measurement_packet_v1(&packet);
+
+        assert!(checks.iter().any(|check| {
+            check.id == "measurement-packet-v1-boundary-statements" && check.result == "fail"
+        }));
+    }
+
+    #[test]
+    fn violated_assumption_boundary_scopes_to_not_computed_verdict() {
+        let mut packet = packet_fixture();
+        packet.structural_verdict[0].verdict = "not_computed".to_string();
+        packet.structural_verdict[0].verdict_data.method_status =
+            "empty_selected_scope".to_string();
+        packet.assumptions[0].status = "violated".to_string();
+        packet.assumptions[0].checked_by = None;
+        packet.boundary_statements = boundary_statements_for_measurement_packet(&packet);
+
+        assert!(packet.boundary_statements.iter().any(|statement| {
+            statement.kind == "violated_assumption"
+                && statement
+                    .scope_refs
+                    .iter()
+                    .any(|scope_ref| scope_ref == "part8/4.2")
+                && statement
+                    .scope_refs
+                    .iter()
+                    .any(|scope_ref| scope_ref.starts_with("structuralVerdict/"))
+        }));
+        let checks = validate_measurement_packet_v1(&packet);
+        assert!(checks.iter().any(|check| {
+            check.id == "measurement-packet-v1-boundary-statements" && check.result == "pass"
+        }));
+
+        let mut broken = packet;
+        let statement = broken
+            .boundary_statements
+            .iter_mut()
+            .find(|statement| statement.kind == "violated_assumption")
+            .expect("violated assumption boundary exists");
+        statement.scope_refs = vec!["part8/4.2".to_string()];
+        let checks = validate_measurement_packet_v1(&broken);
+        assert!(checks.iter().any(|check| {
+            check.id == "measurement-packet-v1-boundary-statements" && check.result == "fail"
         }));
     }
 
