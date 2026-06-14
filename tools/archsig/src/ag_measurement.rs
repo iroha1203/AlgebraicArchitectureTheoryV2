@@ -18,6 +18,7 @@ const VERDICTS: [&str; 5] = [
     "not_computed",
 ];
 const MAX_SQUARE_FREE_WITNESS_VARIABLES: usize = 12;
+const MAX_COHERENCE_CONTEXTS: usize = 12;
 const MAX_TOR_WITNESS_VARIABLES: usize = 12;
 const MAX_LAPLACIAN_CELLS: usize = 16;
 const MAX_PERIOD_CYCLES: usize = 16;
@@ -263,6 +264,29 @@ pub fn build_foundation_measurement_packet_v1(
                 depends_on_assumptions,
                 reason: Some(measurement.reason),
             });
+        } else if evaluator == "ag.coherence-obstruction@1" {
+            validate_coherence_profile_v1(&profile)?;
+            let measurement = evaluate_coherence_obstruction_v1(normalized, &profile);
+            let depends_on_assumptions = assumption_theorem_refs(&measurement.assumptions);
+            computed_invariants.extend(measurement.computed_invariants);
+            assumptions.extend(measurement.assumptions);
+            structural_verdict.push(AgStructuralVerdictV1 {
+                evaluator: evaluator.to_string(),
+                law: entry
+                    .law
+                    .clone()
+                    .unwrap_or_else(|| "ag.coherence-obstruction".to_string()),
+                verdict: measurement.verdict,
+                verdict_data: AgVerdictDataV1 {
+                    in_scope: true,
+                    zero: measurement.zero,
+                    non_zero: measurement.non_zero,
+                    method_status: measurement.method_status,
+                    cert_ref: measurement.cert_ref,
+                },
+                depends_on_assumptions,
+                reason: Some(measurement.reason),
+            });
         } else if evaluator == "ag.square-free-repair@1" {
             validate_square_free_profile_v1(&profile)?;
             let measurement = evaluate_square_free_repair_v1(normalized, &profile)?;
@@ -399,6 +423,42 @@ struct SquareFreeMeasurementV1 {
     reason: String,
     computed_invariants: Vec<Value>,
     assumptions: Vec<AgAssumptionLedgerEntryV1>,
+}
+
+#[derive(Debug, Clone)]
+struct CoherenceMeasurementV1 {
+    verdict: String,
+    zero: bool,
+    non_zero: bool,
+    method_status: String,
+    cert_ref: Option<String>,
+    reason: String,
+    computed_invariants: Vec<Value>,
+    assumptions: Vec<AgAssumptionLedgerEntryV1>,
+}
+
+#[derive(Debug, Clone)]
+struct CoherenceFaceV1 {
+    face_id: String,
+    context_refs: Vec<String>,
+    edge_refs: Vec<String>,
+    shared_atom_refs: Vec<String>,
+}
+
+#[derive(Debug, Clone)]
+struct CoherenceTetrahedronV1 {
+    tetrahedron_id: String,
+    context_refs: Vec<String>,
+    face_refs: Vec<String>,
+    shared_atom_refs: Vec<String>,
+}
+
+#[derive(Debug, Clone)]
+struct CoherenceWitnessV1 {
+    atom_ref: String,
+    face_ref: String,
+    context_refs: Vec<String>,
+    source_refs: Vec<String>,
 }
 
 #[derive(Debug, Clone)]
@@ -542,6 +602,296 @@ struct TransferGroundCostV1 {
     cost: f64,
     atom_ref: String,
     source_refs: Vec<String>,
+}
+
+fn evaluate_coherence_obstruction_v1(
+    normalized: &NormalizedArchMapV2,
+    profile: &MeasurementProfileV1,
+) -> CoherenceMeasurementV1 {
+    let selected_contexts = selected_cover_contexts(normalized, profile);
+    let selected_context_set = selected_contexts.iter().cloned().collect::<BTreeSet<_>>();
+    let mut assumptions = coherence_assumptions(profile, "checked");
+    if selected_contexts.len() > MAX_COHERENCE_CONTEXTS {
+        assumptions.push(AgAssumptionLedgerEntryV1 {
+            theorem_ref: "part4/10.1-selected-cover-budget".to_string(),
+            assumption: format!(
+                "selected cover has at most {MAX_COHERENCE_CONTEXTS} contexts for finite H2 coherence enumeration"
+            ),
+            status: "violated".to_string(),
+            checked_by: None,
+            assumed_by: Some(format!("measurement-profile:{}", profile.profile_id)),
+        });
+        return CoherenceMeasurementV1 {
+            verdict: "not_computed".to_string(),
+            zero: false,
+            non_zero: false,
+            method_status: "selected_cover_too_large".to_string(),
+            cert_ref: None,
+            reason: format!(
+                "selected cover has {} contexts; ag.coherence-obstruction@1 enumerates at most {MAX_COHERENCE_CONTEXTS}",
+                selected_contexts.len()
+            ),
+            computed_invariants: vec![coherence_invariant_json(
+                profile,
+                "not_computed",
+                "selected_cover_too_large",
+                &selected_contexts,
+                &[],
+                &[],
+                &[],
+                &[],
+                &[],
+                0,
+                0,
+                0,
+                0,
+                false,
+                Vec::new(),
+            )],
+            assumptions,
+        };
+    }
+    let edges = cech_edges(normalized, &selected_contexts);
+    let faces = coherence_faces(normalized, &selected_contexts, &edges, &profile.cover_ref);
+    let tetrahedra = coherence_tetrahedra(normalized, &selected_contexts, &faces);
+    let witness_atoms = coherence_witness_atoms(normalized, &selected_context_set);
+
+    if profile.coefficient != "F2" {
+        assumptions = coherence_assumptions(profile, "violated");
+        return CoherenceMeasurementV1 {
+            verdict: "not_computed".to_string(),
+            zero: false,
+            non_zero: false,
+            method_status: "banding_violated".to_string(),
+            cert_ref: None,
+            reason: "selected coefficient is outside the banded abelian F2 coherence vocabulary"
+                .to_string(),
+            computed_invariants: vec![coherence_invariant_json(
+                profile,
+                "not_computed",
+                "banding_violated",
+                &selected_contexts,
+                &edges,
+                &faces,
+                &tetrahedra,
+                &[],
+                &[],
+                0,
+                0,
+                0,
+                0,
+                false,
+                Vec::new(),
+            )],
+            assumptions,
+        };
+    }
+
+    if faces.is_empty() {
+        assumptions.push(AgAssumptionLedgerEntryV1 {
+            theorem_ref: "part4/10.1-empty-selected-2-skeleton".to_string(),
+            assumption: "selected cover supplies a non-empty triple-overlap 2-skeleton".to_string(),
+            status: "violated".to_string(),
+            checked_by: None,
+            assumed_by: Some(format!("measurement-profile:{}", profile.profile_id)),
+        });
+        return CoherenceMeasurementV1 {
+            verdict: "not_computed".to_string(),
+            zero: false,
+            non_zero: false,
+            method_status: "empty_selected_2_skeleton".to_string(),
+            cert_ref: None,
+            reason:
+                "selected cover has no triple-overlap 2-skeleton for ag.coherence-obstruction@1"
+                    .to_string(),
+            computed_invariants: vec![coherence_invariant_json(
+                profile,
+                "not_computed",
+                "empty_selected_2_skeleton",
+                &selected_contexts,
+                &edges,
+                &faces,
+                &tetrahedra,
+                &[],
+                &[],
+                0,
+                0,
+                0,
+                0,
+                false,
+                Vec::new(),
+            )],
+            assumptions,
+        };
+    }
+
+    if faces.iter().any(|face| face.edge_refs.len() != 3) {
+        assumptions.push(AgAssumptionLedgerEntryV1 {
+            theorem_ref: "part4/10.1-incomplete-selected-2-skeleton".to_string(),
+            assumption: "selected triple-overlap faces have all three restriction boundary edges"
+                .to_string(),
+            status: "violated".to_string(),
+            checked_by: None,
+            assumed_by: Some(format!("measurement-profile:{}", profile.profile_id)),
+        });
+        return CoherenceMeasurementV1 {
+            verdict: "not_computed".to_string(),
+            zero: false,
+            non_zero: false,
+            method_status: "incomplete_selected_2_skeleton".to_string(),
+            cert_ref: None,
+            reason: "selected triple-overlap 2-skeleton is missing a boundary restriction edge"
+                .to_string(),
+            computed_invariants: vec![coherence_invariant_json(
+                profile,
+                "not_computed",
+                "incomplete_selected_2_skeleton",
+                &selected_contexts,
+                &edges,
+                &faces,
+                &tetrahedra,
+                &[],
+                &[],
+                0,
+                0,
+                0,
+                0,
+                false,
+                Vec::new(),
+            )],
+            assumptions,
+        };
+    }
+
+    if witness_atoms.is_empty() {
+        return CoherenceMeasurementV1 {
+            verdict: "unmeasured".to_string(),
+            zero: false,
+            non_zero: false,
+            method_status: "coherence_witness_absent".to_string(),
+            cert_ref: None,
+            reason: "no coherence witness atom is supplied; H2 coherence remains silent"
+                .to_string(),
+            computed_invariants: vec![coherence_invariant_json(
+                profile,
+                "unmeasured",
+                "coherence_witness_absent",
+                &selected_contexts,
+                &edges,
+                &faces,
+                &tetrahedra,
+                &[],
+                &[],
+                0,
+                0,
+                0,
+                0,
+                false,
+                Vec::new(),
+            )],
+            assumptions,
+        };
+    }
+
+    let witnesses = coherence_witnesses_for_faces(&witness_atoms, &faces);
+    let h = faces
+        .iter()
+        .map(|face| {
+            (witnesses
+                .iter()
+                .filter(|witness| witness.face_ref == face.face_id)
+                .count()
+                % 2) as u8
+        })
+        .collect::<Vec<_>>();
+    let d2_rows = coherence_d2_rows(&faces, &tetrahedra);
+    let d2_h = d2_rows
+        .iter()
+        .map(|row| {
+            row.iter()
+                .zip(h.iter())
+                .fold(0u8, |acc, (entry, value)| acc ^ (entry & value))
+        })
+        .collect::<Vec<_>>();
+    let cocycle_gate_passed = d2_h.iter().all(|value| *value == 0);
+    let d1_rows = coherence_d1_rows(&edges, &faces);
+    let rank_d1 = matrix_rank_f2(d1_rows.clone());
+    let rank_d2 = matrix_rank_f2(d2_rows.clone());
+    let rank_ker_d2 = faces.len().saturating_sub(rank_d2);
+    let h2_dimension = rank_ker_d2.saturating_sub(rank_d1);
+    let selected_representative = cocycle_gate_passed
+        .then(|| {
+            if vector_in_span_f2(&d1_rows, &h) {
+                h2_representative_f2(&d2_rows, &d1_rows, faces.len()).unwrap_or_default()
+            } else {
+                h.clone()
+            }
+        })
+        .unwrap_or_default();
+    let representative = coherence_representative_json(&selected_representative, &faces);
+
+    let (verdict, zero, non_zero, method_status, reason) = if !cocycle_gate_passed {
+        (
+            "not_computed".to_string(),
+            false,
+            false,
+            "not_2_cocycle".to_string(),
+            "coherence 2-cochain fails the d2 h = 0 cocycle gate; im d1 membership is not evaluated".to_string(),
+        )
+    } else if h2_dimension == 0 {
+        (
+            "measured_zero".to_string(),
+            true,
+            false,
+            "finite_f2_h2_coherence_computed".to_string(),
+            "finite F2 H2 coherence quotient is zero on the selected cover".to_string(),
+        )
+    } else {
+        (
+            "measured_nonzero".to_string(),
+            false,
+            true,
+            "finite_f2_h2_coherence_computed".to_string(),
+            "finite F2 H2 coherence quotient is nonzero on the selected cover".to_string(),
+        )
+    };
+    let cert_ref = (verdict != "not_computed").then(|| {
+        format!(
+            "computedInvariants/coherence-obstruction:{}",
+            profile.profile_id
+        )
+    });
+
+    CoherenceMeasurementV1 {
+        verdict: verdict.to_string(),
+        zero,
+        non_zero,
+        method_status: method_status.to_string(),
+        cert_ref,
+        reason,
+        computed_invariants: vec![coherence_invariant_json(
+            profile,
+            if verdict == "not_computed" {
+                "not_computed"
+            } else {
+                "computed"
+            },
+            &method_status,
+            &selected_contexts,
+            &edges,
+            &faces,
+            &tetrahedra,
+            &witnesses,
+            &h,
+            rank_d1,
+            rank_ker_d2,
+            h2_dimension,
+            d2_rows.len(),
+            cocycle_gate_passed,
+            representative,
+        )],
+        assumptions,
+    }
 }
 
 fn evaluate_square_free_repair_v1(
@@ -4089,6 +4439,54 @@ fn validate_cech_profile_v1(profile: &MeasurementProfileV1) -> Result<(), String
     Ok(())
 }
 
+fn validate_coherence_profile_v1(profile: &MeasurementProfileV1) -> Result<(), String> {
+    let expected = [
+        (
+            "effCoeff",
+            profile.eff_coeff.as_str(),
+            "finite-linear-algebra@1",
+        ),
+        (
+            "resolutionSelector",
+            profile.resolution_selector.as_str(),
+            "h2-coherence@1",
+        ),
+        (
+            "zeroPredicate",
+            profile.zero_predicate.as_str(),
+            "rank-zero@1",
+        ),
+        (
+            "nonZeroPredicate",
+            profile.non_zero_predicate.as_str(),
+            "rank-positive@1",
+        ),
+        (
+            "certSelector",
+            profile.cert_selector.as_str(),
+            "finite-certificate@1",
+        ),
+    ];
+    for (field, actual, expected) in expected {
+        if actual != expected {
+            return Err(format!(
+                "ag.coherence-obstruction@1 requires MeasurementProfile {field}={expected}, found {actual}"
+            ));
+        }
+    }
+    if !profile
+        .witness_family
+        .iter()
+        .any(|witness| witness.law == "ag.coherence-obstruction")
+    {
+        return Err(format!(
+            "ag.coherence-obstruction@1 requires MeasurementProfile {} witnessFamily law ag.coherence-obstruction",
+            profile.profile_id
+        ));
+    }
+    Ok(())
+}
+
 fn validate_square_free_profile_v1(profile: &MeasurementProfileV1) -> Result<(), String> {
     let expected = [
         ("coefficient", profile.coefficient.as_str(), "F2"),
@@ -5047,6 +5445,47 @@ fn transfer_assumptions(
     ]
 }
 
+fn coherence_assumptions(
+    profile: &MeasurementProfileV1,
+    coefficient_status: &str,
+) -> Vec<AgAssumptionLedgerEntryV1> {
+    vec![
+        AgAssumptionLedgerEntryV1 {
+            theorem_ref: "part4/10.1".to_string(),
+            assumption: "banded abelian F2 coefficient object for selected H2 coherence"
+                .to_string(),
+            status: coefficient_status.to_string(),
+            checked_by: (coefficient_status == "checked").then(|| {
+                format!(
+                    "measurement-profile:{}.coefficient={}",
+                    profile.profile_id, profile.coefficient
+                )
+            }),
+            assumed_by: (coefficient_status != "checked")
+                .then(|| format!("measurement-profile:{}", profile.profile_id)),
+        },
+        AgAssumptionLedgerEntryV1 {
+            theorem_ref: "part4/10.1".to_string(),
+            assumption: "selected cover supplies a finite triple-overlap 2-skeleton".to_string(),
+            status: "checked".to_string(),
+            checked_by: Some(format!(
+                "measurement-profile:{}.coverRef",
+                profile.profile_id
+            )),
+            assumed_by: None,
+        },
+        AgAssumptionLedgerEntryV1 {
+            theorem_ref: "part8/B.8.2".to_string(),
+            assumption:
+                "Leray / acyclicity comparison from selected Cech complex to sheaf cohomology"
+                    .to_string(),
+            status: "assumed".to_string(),
+            checked_by: None,
+            assumed_by: Some(format!("measurement-profile:{}", profile.profile_id)),
+        },
+    ]
+}
+
 fn tor_common_ambient(
     normalized: &NormalizedArchMapV2,
     selected_contexts: &BTreeSet<String>,
@@ -5820,6 +6259,436 @@ fn cech_edges(normalized: &NormalizedArchMapV2, selected_contexts: &[String]) ->
     }
     edges.sort_by(|left, right| left.edge_id.cmp(&right.edge_id));
     edges
+}
+
+fn coherence_faces(
+    normalized: &NormalizedArchMapV2,
+    selected_contexts: &[String],
+    edges: &[CechEdgeV1],
+    cover_ref: &str,
+) -> Vec<CoherenceFaceV1> {
+    let selected = selected_contexts.iter().cloned().collect::<BTreeSet<_>>();
+    let mut edge_by_pair = BTreeMap::new();
+    for edge in edges {
+        edge_by_pair.insert(
+            sorted_pair(&edge.source_context, &edge.target_context),
+            edge.edge_id.clone(),
+        );
+    }
+    let atom_refs_by_context = normalized
+        .contexts
+        .iter()
+        .filter(|context| selected.contains(&context.normalized_context_id))
+        .map(|context| {
+            (
+                context.normalized_context_id.clone(),
+                context.atom_ids.iter().cloned().collect::<BTreeSet<_>>(),
+            )
+        })
+        .collect::<BTreeMap<_, _>>();
+    let mut faces = Vec::new();
+    for left in 0..selected_contexts.len() {
+        for middle in left + 1..selected_contexts.len() {
+            for right in middle + 1..selected_contexts.len() {
+                let contexts = vec![
+                    selected_contexts[left].clone(),
+                    selected_contexts[middle].clone(),
+                    selected_contexts[right].clone(),
+                ];
+                let Some(left_atoms) = atom_refs_by_context.get(&contexts[0]) else {
+                    continue;
+                };
+                let Some(middle_atoms) = atom_refs_by_context.get(&contexts[1]) else {
+                    continue;
+                };
+                let Some(right_atoms) = atom_refs_by_context.get(&contexts[2]) else {
+                    continue;
+                };
+                let shared_atom_refs = left_atoms
+                    .intersection(middle_atoms)
+                    .cloned()
+                    .collect::<BTreeSet<_>>()
+                    .intersection(right_atoms)
+                    .cloned()
+                    .collect::<Vec<_>>();
+                if shared_atom_refs.is_empty() {
+                    continue;
+                }
+                let edge_refs = [
+                    edge_by_pair.get(&sorted_pair(&contexts[0], &contexts[1])),
+                    edge_by_pair.get(&sorted_pair(&contexts[0], &contexts[2])),
+                    edge_by_pair.get(&sorted_pair(&contexts[1], &contexts[2])),
+                ]
+                .into_iter()
+                .flatten()
+                .cloned()
+                .collect::<Vec<_>>();
+                faces.push(CoherenceFaceV1 {
+                    face_id: format!(
+                        "coherence-face:{}:{}:{}:{}",
+                        cover_ref, contexts[0], contexts[1], contexts[2]
+                    ),
+                    context_refs: contexts,
+                    edge_refs,
+                    shared_atom_refs,
+                });
+            }
+        }
+    }
+    faces.sort_by(|left, right| left.face_id.cmp(&right.face_id));
+    faces
+}
+
+fn coherence_tetrahedra(
+    normalized: &NormalizedArchMapV2,
+    selected_contexts: &[String],
+    faces: &[CoherenceFaceV1],
+) -> Vec<CoherenceTetrahedronV1> {
+    let face_by_contexts = faces
+        .iter()
+        .map(|face| {
+            (
+                face.context_refs.iter().cloned().collect::<BTreeSet<_>>(),
+                face.face_id.clone(),
+            )
+        })
+        .collect::<BTreeMap<_, _>>();
+    let selected = selected_contexts.iter().cloned().collect::<BTreeSet<_>>();
+    let atom_refs_by_context = normalized
+        .contexts
+        .iter()
+        .filter(|context| selected.contains(&context.normalized_context_id))
+        .map(|context| {
+            (
+                context.normalized_context_id.clone(),
+                context.atom_ids.iter().cloned().collect::<BTreeSet<_>>(),
+            )
+        })
+        .collect::<BTreeMap<_, _>>();
+    let mut tetrahedra = Vec::new();
+    for first in 0..selected_contexts.len() {
+        for second in first + 1..selected_contexts.len() {
+            for third in second + 1..selected_contexts.len() {
+                for fourth in third + 1..selected_contexts.len() {
+                    let contexts = vec![
+                        selected_contexts[first].clone(),
+                        selected_contexts[second].clone(),
+                        selected_contexts[third].clone(),
+                        selected_contexts[fourth].clone(),
+                    ];
+                    let Some(shared_atom_refs) =
+                        shared_atoms_for_contexts(&atom_refs_by_context, &contexts)
+                    else {
+                        continue;
+                    };
+                    if shared_atom_refs.is_empty() {
+                        continue;
+                    }
+                    let mut face_refs = Vec::new();
+                    for omitted in 0..contexts.len() {
+                        let face_contexts = contexts
+                            .iter()
+                            .enumerate()
+                            .filter(|(index, _)| *index != omitted)
+                            .map(|(_, context)| context.clone())
+                            .collect::<BTreeSet<_>>();
+                        let Some(face_ref) = face_by_contexts.get(&face_contexts) else {
+                            face_refs.clear();
+                            break;
+                        };
+                        face_refs.push(face_ref.clone());
+                    }
+                    if face_refs.len() != 4 {
+                        continue;
+                    }
+                    tetrahedra.push(CoherenceTetrahedronV1 {
+                        tetrahedron_id: format!(
+                            "coherence-tetrahedron:{}:{}:{}:{}",
+                            contexts[0], contexts[1], contexts[2], contexts[3]
+                        ),
+                        context_refs: contexts,
+                        face_refs,
+                        shared_atom_refs,
+                    });
+                }
+            }
+        }
+    }
+    tetrahedra.sort_by(|left, right| left.tetrahedron_id.cmp(&right.tetrahedron_id));
+    tetrahedra
+}
+
+fn shared_atoms_for_contexts(
+    atom_refs_by_context: &BTreeMap<String, BTreeSet<String>>,
+    contexts: &[String],
+) -> Option<Vec<String>> {
+    let mut iter = contexts.iter();
+    let first = iter.next()?;
+    let mut shared = atom_refs_by_context.get(first)?.clone();
+    for context in iter {
+        let atoms = atom_refs_by_context.get(context)?;
+        shared = shared.intersection(atoms).cloned().collect();
+    }
+    Some(shared.into_iter().collect())
+}
+
+fn coherence_witness_atoms<'a>(
+    normalized: &'a NormalizedArchMapV2,
+    selected_contexts: &BTreeSet<String>,
+) -> Vec<&'a NormalizedAtomV2> {
+    normalized
+        .atoms
+        .iter()
+        .filter(|atom| atom.axis == "coherence")
+        .filter(|atom| {
+            matches!(
+                atom.predicate.as_str(),
+                "tripleMismatch" | "coherenceMismatch" | "h2Mismatch"
+            )
+        })
+        .filter(|atom| atom_belongs_to_selected_context(atom, selected_contexts))
+        .collect()
+}
+
+fn coherence_witnesses_for_faces(
+    witness_atoms: &[&NormalizedAtomV2],
+    faces: &[CoherenceFaceV1],
+) -> Vec<CoherenceWitnessV1> {
+    let mut witnesses = Vec::new();
+    for atom in witness_atoms {
+        for face in faces {
+            if coherence_atom_marks_face(atom, face) {
+                witnesses.push(CoherenceWitnessV1 {
+                    atom_ref: atom.normalized_atom_id.clone(),
+                    face_ref: face.face_id.clone(),
+                    context_refs: face.context_refs.clone(),
+                    source_refs: atom.source_refs.clone(),
+                });
+            }
+        }
+    }
+    witnesses.sort_by(|left, right| {
+        left.face_ref
+            .cmp(&right.face_ref)
+            .then_with(|| left.atom_ref.cmp(&right.atom_ref))
+    });
+    witnesses
+}
+
+fn coherence_atom_marks_face(atom: &NormalizedAtomV2, face: &CoherenceFaceV1) -> bool {
+    let mut refs = atom.source_refs.iter().cloned().collect::<BTreeSet<_>>();
+    refs.extend(atom.context_memberships.iter().cloned());
+    refs.insert(atom.subject.clone());
+    if let Some(object) = atom.object.as_deref() {
+        refs.extend(parse_csv_values(object));
+    }
+    refs.contains(&face.face_id)
+        || face.context_refs.iter().all(|context| {
+            refs.contains(context)
+                || refs.contains(unprefixed(context))
+                || refs.contains(&format!("ctx:{}", unprefixed(context)))
+        })
+}
+
+fn coherence_d1_rows(edges: &[CechEdgeV1], faces: &[CoherenceFaceV1]) -> Vec<Vec<u8>> {
+    let edge_index = edges
+        .iter()
+        .enumerate()
+        .map(|(index, edge)| (edge.edge_id.clone(), index))
+        .collect::<BTreeMap<_, _>>();
+    let mut rows = vec![vec![0u8; edges.len()]; faces.len()];
+    for (row, face) in faces.iter().enumerate() {
+        for edge_ref in &face.edge_refs {
+            if let Some(column) = edge_index.get(edge_ref) {
+                rows[row][*column] ^= 1;
+            }
+        }
+    }
+    rows
+}
+
+fn coherence_d2_rows(
+    faces: &[CoherenceFaceV1],
+    tetrahedra: &[CoherenceTetrahedronV1],
+) -> Vec<Vec<u8>> {
+    let face_index = faces
+        .iter()
+        .enumerate()
+        .map(|(index, face)| (face.face_id.clone(), index))
+        .collect::<BTreeMap<_, _>>();
+    let mut rows = vec![vec![0u8; faces.len()]; tetrahedra.len()];
+    for (row, tetrahedron) in tetrahedra.iter().enumerate() {
+        for face_ref in &tetrahedron.face_refs {
+            if let Some(column) = face_index.get(face_ref) {
+                rows[row][*column] ^= 1;
+            }
+        }
+    }
+    rows
+}
+
+fn vector_in_span_f2(rows: &[Vec<u8>], vector: &[u8]) -> bool {
+    if rows.len() != vector.len() {
+        return false;
+    }
+    if vector.iter().all(|value| *value == 0) {
+        return true;
+    }
+    let rank = matrix_rank_f2(rows.to_vec());
+    let mut augmented = rows.to_vec();
+    for (row, value) in augmented.iter_mut().zip(vector.iter()) {
+        row.push(*value);
+    }
+    matrix_rank_f2(augmented) == rank
+}
+
+fn h2_representative_f2(
+    d2_rows: &[Vec<u8>],
+    d1_rows: &[Vec<u8>],
+    face_count: usize,
+) -> Option<Vec<u8>> {
+    nullspace_basis_f2(d2_rows, face_count)
+        .into_iter()
+        .find(|candidate| !vector_in_span_f2(d1_rows, candidate))
+}
+
+fn nullspace_basis_f2(rows: &[Vec<u8>], columns: usize) -> Vec<Vec<u8>> {
+    let mut rref = rows
+        .iter()
+        .map(|row| {
+            let mut normalized = vec![0u8; columns];
+            for (column, value) in row.iter().take(columns).enumerate() {
+                normalized[column] = value & 1;
+            }
+            normalized
+        })
+        .collect::<Vec<_>>();
+    let mut pivot_columns = Vec::new();
+    let mut pivot_row = 0usize;
+
+    for column in 0..columns {
+        let Some(row) = (pivot_row..rref.len()).find(|row| rref[*row][column] == 1) else {
+            continue;
+        };
+        rref.swap(pivot_row, row);
+        for row in 0..rref.len() {
+            if row != pivot_row && rref[row][column] == 1 {
+                for entry in column..columns {
+                    rref[row][entry] ^= rref[pivot_row][entry];
+                }
+            }
+        }
+        pivot_columns.push(column);
+        pivot_row += 1;
+        if pivot_row == rref.len() {
+            break;
+        }
+    }
+
+    let pivot_set = pivot_columns.iter().copied().collect::<BTreeSet<_>>();
+    (0..columns)
+        .filter(|column| !pivot_set.contains(column))
+        .map(|free_column| {
+            let mut vector = vec![0u8; columns];
+            vector[free_column] = 1;
+            for (row, pivot_column) in pivot_columns.iter().enumerate() {
+                if rref[row][free_column] == 1 {
+                    vector[*pivot_column] = 1;
+                }
+            }
+            vector
+        })
+        .collect()
+}
+
+fn coherence_representative_json(cochain: &[u8], faces: &[CoherenceFaceV1]) -> Vec<Value> {
+    faces
+        .iter()
+        .zip(cochain.iter())
+        .filter(|(_, value)| **value == 1)
+        .map(|(face, _)| {
+            json!({
+                "faceRef": face.face_id,
+                "contextRefs": face.context_refs,
+                "sharedAtomRefs": face.shared_atom_refs
+            })
+        })
+        .collect::<Vec<_>>()
+}
+
+fn sorted_pair(left: &str, right: &str) -> (String, String) {
+    if left <= right {
+        (left.to_string(), right.to_string())
+    } else {
+        (right.to_string(), left.to_string())
+    }
+}
+
+#[allow(clippy::too_many_arguments)]
+fn coherence_invariant_json(
+    profile: &MeasurementProfileV1,
+    status: &str,
+    method_status: &str,
+    selected_contexts: &[String],
+    edges: &[CechEdgeV1],
+    faces: &[CoherenceFaceV1],
+    tetrahedra: &[CoherenceTetrahedronV1],
+    witnesses: &[CoherenceWitnessV1],
+    cochain: &[u8],
+    rank_d1: usize,
+    rank_ker_d2: usize,
+    h2_dimension: usize,
+    d2_row_count: usize,
+    cocycle_gate_passed: bool,
+    representative: Vec<Value>,
+) -> Value {
+    json!({
+        "invariantId": format!("coherence-obstruction:{}", profile.profile_id),
+        "evaluator": "ag.coherence-obstruction@1",
+        "method": "finite-f2-h2-coherence@1",
+        "status": status,
+        "methodStatus": method_status,
+        "claimScope": "selected-cover banded abelian F2 H2 coherence calculation",
+        "selectedCoverRef": profile.cover_ref,
+        "coefficient": profile.coefficient,
+        "cohomologyQuotient": "ker d^2/im d^1",
+        "contextCount": selected_contexts.len(),
+        "edgeCount": edges.len(),
+        "faceCount": faces.len(),
+        "tetrahedronCount": tetrahedra.len(),
+        "rankD1": rank_d1,
+        "rankKerD2": rank_ker_d2,
+        "h2Dimension": h2_dimension,
+        "d2RowCount": d2_row_count,
+        "cocycleGate": {
+            "condition": "d2 h = 0",
+            "passed": cocycle_gate_passed
+        },
+        "faces": faces.iter().enumerate().map(|(index, face)| json!({
+            "faceId": face.face_id,
+            "contextRefs": face.context_refs,
+            "edgeRefs": face.edge_refs,
+            "sharedAtomRefs": face.shared_atom_refs,
+            "cochainValue": cochain.get(index).copied()
+        })).collect::<Vec<_>>(),
+        "tetrahedra": tetrahedra.iter().map(|tetrahedron| json!({
+            "tetrahedronId": tetrahedron.tetrahedron_id,
+            "contextRefs": tetrahedron.context_refs,
+            "faceRefs": tetrahedron.face_refs,
+            "sharedAtomRefs": tetrahedron.shared_atom_refs
+        })).collect::<Vec<_>>(),
+        "coherenceWitnesses": witnesses.iter().map(|witness| json!({
+            "atomRef": witness.atom_ref,
+            "faceRef": witness.face_ref,
+            "contextRefs": witness.context_refs,
+            "sourceRefs": witness.source_refs
+        })).collect::<Vec<_>>(),
+        "representative": representative,
+        "nonConclusions": [
+            "This is cover-relative H2 over banded abelian F2, not a non-abelian gerbe verdict.",
+            "H1 Cech verdict rows are not changed by this evaluator."
+        ]
+    })
 }
 
 fn cover_nerve_projection_v1(

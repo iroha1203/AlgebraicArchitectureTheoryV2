@@ -809,6 +809,436 @@ fn cli_analyze_v2_cover_nerve_faces_require_packet_triple_overlap_support() {
 }
 
 #[test]
+fn cli_analyze_v2_coherence_obstruction_measures_h2_nonzero_with_representative() {
+    let out_dir = temp_dir("ag-measurement-coherence-h2-nonzero");
+    let archmap_path = out_dir.join("archmap_coherence_h2_nonzero.json");
+    let policy_path = out_dir.join("law_policy_coherence.json");
+    fs::write(
+        &archmap_path,
+        serde_json::to_vec_pretty(&coherence_boundary_archmap(true)).expect("archmap serializes"),
+    )
+    .expect("archmap fixture can be written");
+    fs::write(
+        &policy_path,
+        serde_json::to_vec_pretty(&coherence_policy("F2", true)).expect("policy serializes"),
+    )
+    .expect("policy fixture can be written");
+
+    run_sig0(&[
+        "analyze",
+        "--archmap",
+        archmap_path.to_str().expect("path is utf-8"),
+        "--law-policy",
+        policy_path.to_str().expect("path is utf-8"),
+        "--out-dir",
+        out_dir.to_str().expect("path is utf-8"),
+    ]);
+
+    let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
+    let cech = packet["structuralVerdict"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|row| row["evaluator"] == "ag.cech-obstruction@1")
+        .expect("H1 row is present");
+    assert_eq!(
+        cech["verdict"], "measured_zero",
+        "H2 evaluator must not change the coexisting H1 verdict"
+    );
+    let coherence = packet["structuralVerdict"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|row| row["evaluator"] == "ag.coherence-obstruction@1")
+        .expect("H2 coherence row is present");
+    assert_eq!(coherence["verdict"], "measured_nonzero");
+    assert_eq!(coherence["verdictData"]["nonZero"], true);
+    assert_eq!(
+        coherence["verdictData"]["methodStatus"],
+        "finite_f2_h2_coherence_computed"
+    );
+    let invariant = invariant_by_id(&packet, "coherence-obstruction:profile:ag-coherence@1");
+    assert_eq!(invariant["cohomologyQuotient"], "ker d^2/im d^1");
+    assert!(
+        !serde_json::to_string(invariant)
+            .expect("invariant serializes")
+            .contains("ker d^1/im d^0"),
+        "H2 invariant prose must not use the H1 quotient"
+    );
+    assert_eq!(invariant["cocycleGate"]["passed"], true);
+    assert_eq!(
+        invariant["representative"]
+            .as_array()
+            .expect("representative is array")
+            .len(),
+        1,
+        "tetrahedron-boundary fixture carries a concrete H2 representative"
+    );
+    assert!(
+        packet["assumptions"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|entry| entry["assumption"]
+                == "banded abelian F2 coefficient object for selected H2 coherence"
+                && entry["status"] == "checked"),
+        "coefficient=F2 must be checked in the CBI ledger"
+    );
+    assert!(
+        packet["assumptions"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|entry| entry["assumption"]
+                == "Leray / acyclicity comparison from selected Cech complex to sheaf cohomology"
+                && entry["status"] == "assumed"),
+        "Leray comparison must stay assumed"
+    );
+
+    let zero_cochain_dir = temp_dir("ag-measurement-coherence-h2-nonzero-zero-cochain");
+    let zero_cochain_archmap_path = zero_cochain_dir.join("archmap_coherence_h2_zero_cochain.json");
+    let zero_cochain_policy_path = zero_cochain_dir.join("law_policy_coherence.json");
+    fs::write(
+        &zero_cochain_archmap_path,
+        serde_json::to_vec_pretty(&coherence_boundary_zero_cochain_archmap())
+            .expect("archmap serializes"),
+    )
+    .expect("archmap fixture can be written");
+    fs::write(
+        &zero_cochain_policy_path,
+        serde_json::to_vec_pretty(&coherence_policy("F2", true)).expect("policy serializes"),
+    )
+    .expect("policy fixture can be written");
+    run_sig0(&[
+        "analyze",
+        "--archmap",
+        zero_cochain_archmap_path.to_str().expect("path is utf-8"),
+        "--law-policy",
+        zero_cochain_policy_path.to_str().expect("path is utf-8"),
+        "--out-dir",
+        zero_cochain_dir.to_str().expect("path is utf-8"),
+    ]);
+    let zero_cochain_packet = read_json(&zero_cochain_dir.join("archsig-measurement-packet.json"));
+    let zero_cochain_row = coherence_row(&zero_cochain_packet);
+    assert_eq!(
+        zero_cochain_row["verdict"], "measured_nonzero",
+        "H2 quotient must be nonzero even when the supplied witness cochain is zero"
+    );
+    let zero_cochain_invariant = invariant_by_id(
+        &zero_cochain_packet,
+        "coherence-obstruction:profile:ag-coherence@1",
+    );
+    assert_eq!(zero_cochain_invariant["h2Dimension"], Value::from(1));
+    assert!(
+        !zero_cochain_invariant["representative"]
+            .as_array()
+            .expect("representative is array")
+            .is_empty(),
+        "nonzero H2 quotient must surface a representative independent of the zero witness cochain"
+    );
+}
+
+#[test]
+fn cli_analyze_v2_coherence_obstruction_distinguishes_zero_silence_and_banding_boundary() {
+    let root_out = temp_dir("ag-measurement-coherence-statuses");
+
+    let zero_dir = root_out.join("zero");
+    fs::create_dir_all(&zero_dir).expect("zero dir exists");
+    let zero_archmap = zero_dir.join("archmap.json");
+    let zero_policy = zero_dir.join("law_policy.json");
+    fs::write(
+        &zero_archmap,
+        serde_json::to_vec_pretty(&coherence_triangle_archmap(true)).expect("archmap serializes"),
+    )
+    .expect("zero archmap is written");
+    fs::write(
+        &zero_policy,
+        serde_json::to_vec_pretty(&coherence_policy("F2", false)).expect("policy serializes"),
+    )
+    .expect("zero policy is written");
+    run_sig0(&[
+        "analyze",
+        "--archmap",
+        zero_archmap.to_str().unwrap(),
+        "--law-policy",
+        zero_policy.to_str().unwrap(),
+        "--out-dir",
+        zero_dir.to_str().unwrap(),
+    ]);
+    let zero_packet = read_json(&zero_dir.join("archsig-measurement-packet.json"));
+    let zero_row = coherence_row(&zero_packet);
+    assert_eq!(zero_row["verdict"], "measured_zero");
+    assert_eq!(zero_row["verdictData"]["zero"], true);
+    let zero_invariant =
+        invariant_by_id(&zero_packet, "coherence-obstruction:profile:ag-coherence@1");
+    assert_eq!(zero_invariant["cocycleGate"]["passed"], true);
+
+    let unmeasured_dir = root_out.join("unmeasured");
+    fs::create_dir_all(&unmeasured_dir).expect("unmeasured dir exists");
+    let unmeasured_archmap = unmeasured_dir.join("archmap.json");
+    let unmeasured_policy = unmeasured_dir.join("law_policy.json");
+    fs::write(
+        &unmeasured_archmap,
+        serde_json::to_vec_pretty(&coherence_triangle_archmap(false)).expect("archmap serializes"),
+    )
+    .expect("unmeasured archmap is written");
+    fs::write(
+        &unmeasured_policy,
+        serde_json::to_vec_pretty(&coherence_policy("F2", false)).expect("policy serializes"),
+    )
+    .expect("unmeasured policy is written");
+    run_sig0(&[
+        "analyze",
+        "--archmap",
+        unmeasured_archmap.to_str().unwrap(),
+        "--law-policy",
+        unmeasured_policy.to_str().unwrap(),
+        "--out-dir",
+        unmeasured_dir.to_str().unwrap(),
+    ]);
+    let unmeasured_packet = read_json(&unmeasured_dir.join("archsig-measurement-packet.json"));
+    let unmeasured_row = coherence_row(&unmeasured_packet);
+    assert_eq!(unmeasured_row["verdict"], "unmeasured");
+    assert_eq!(
+        unmeasured_row["verdictData"]["methodStatus"],
+        "coherence_witness_absent"
+    );
+
+    let empty_dir = root_out.join("empty");
+    fs::create_dir_all(&empty_dir).expect("empty dir exists");
+    let empty_archmap = empty_dir.join("archmap.json");
+    let empty_policy = empty_dir.join("law_policy.json");
+    fs::write(
+        &empty_archmap,
+        serde_json::to_vec_pretty(&coherence_empty_archmap()).expect("archmap serializes"),
+    )
+    .expect("empty archmap is written");
+    fs::write(
+        &empty_policy,
+        serde_json::to_vec_pretty(&coherence_policy("F2", false)).expect("policy serializes"),
+    )
+    .expect("empty policy is written");
+    run_sig0(&[
+        "analyze",
+        "--archmap",
+        empty_archmap.to_str().unwrap(),
+        "--law-policy",
+        empty_policy.to_str().unwrap(),
+        "--out-dir",
+        empty_dir.to_str().unwrap(),
+    ]);
+    let empty_packet = read_json(&empty_dir.join("archsig-measurement-packet.json"));
+    let empty_row = coherence_row(&empty_packet);
+    assert_eq!(empty_row["verdict"], "not_computed");
+    assert_eq!(
+        empty_row["verdictData"]["methodStatus"],
+        "empty_selected_2_skeleton"
+    );
+
+    let banding_dir = root_out.join("banding");
+    fs::create_dir_all(&banding_dir).expect("banding dir exists");
+    let banding_archmap = banding_dir.join("archmap.json");
+    let banding_policy = banding_dir.join("law_policy.json");
+    fs::write(
+        &banding_archmap,
+        serde_json::to_vec_pretty(&coherence_triangle_archmap(true)).expect("archmap serializes"),
+    )
+    .expect("banding archmap is written");
+    fs::write(
+        &banding_policy,
+        serde_json::to_vec_pretty(&coherence_policy("Aut(Dec_U)", false))
+            .expect("policy serializes"),
+    )
+    .expect("banding policy is written");
+    run_sig0(&[
+        "analyze",
+        "--archmap",
+        banding_archmap.to_str().unwrap(),
+        "--law-policy",
+        banding_policy.to_str().unwrap(),
+        "--out-dir",
+        banding_dir.to_str().unwrap(),
+    ]);
+    let banding_packet = read_json(&banding_dir.join("archsig-measurement-packet.json"));
+    let banding_row = coherence_row(&banding_packet);
+    assert_eq!(banding_row["verdict"], "not_computed");
+    assert_eq!(
+        banding_row["verdictData"]["methodStatus"],
+        "banding_violated"
+    );
+    assert!(
+        banding_packet["structuralVerdict"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .all(|row| matches!(
+                row["verdict"].as_str().unwrap(),
+                "measured_zero" | "measured_nonzero" | "unmeasured" | "unknown" | "not_computed"
+            )),
+        "coherence evaluator must reuse the existing five verdict values"
+    );
+
+    let non_cocycle_dir = root_out.join("non-cocycle");
+    fs::create_dir_all(&non_cocycle_dir).expect("non-cocycle dir exists");
+    let non_cocycle_archmap = non_cocycle_dir.join("archmap.json");
+    let non_cocycle_policy = non_cocycle_dir.join("law_policy.json");
+    fs::write(
+        &non_cocycle_archmap,
+        serde_json::to_vec_pretty(&coherence_filled_tetrahedron_archmap())
+            .expect("archmap serializes"),
+    )
+    .expect("non-cocycle archmap is written");
+    fs::write(
+        &non_cocycle_policy,
+        serde_json::to_vec_pretty(&coherence_policy("F2", false)).expect("policy serializes"),
+    )
+    .expect("non-cocycle policy is written");
+    run_sig0(&[
+        "analyze",
+        "--archmap",
+        non_cocycle_archmap.to_str().unwrap(),
+        "--law-policy",
+        non_cocycle_policy.to_str().unwrap(),
+        "--out-dir",
+        non_cocycle_dir.to_str().unwrap(),
+    ]);
+    let non_cocycle_packet = read_json(&non_cocycle_dir.join("archsig-measurement-packet.json"));
+    let non_cocycle_row = coherence_row(&non_cocycle_packet);
+    assert_eq!(non_cocycle_row["verdict"], "not_computed");
+    assert_eq!(
+        non_cocycle_row["verdictData"]["methodStatus"], "not_2_cocycle",
+        "d2 h = 0 must gate im d1 membership before a nonzero verdict can be emitted"
+    );
+    let non_cocycle_invariant = invariant_by_id(
+        &non_cocycle_packet,
+        "coherence-obstruction:profile:ag-coherence@1",
+    );
+    assert_eq!(non_cocycle_invariant["cocycleGate"]["passed"], false);
+
+    let incomplete_dir = root_out.join("incomplete");
+    fs::create_dir_all(&incomplete_dir).expect("incomplete dir exists");
+    let incomplete_archmap = incomplete_dir.join("archmap.json");
+    let incomplete_policy = incomplete_dir.join("law_policy.json");
+    fs::write(
+        &incomplete_archmap,
+        serde_json::to_vec_pretty(&coherence_incomplete_triangle_archmap())
+            .expect("archmap serializes"),
+    )
+    .expect("incomplete archmap is written");
+    fs::write(
+        &incomplete_policy,
+        serde_json::to_vec_pretty(&coherence_policy("F2", false)).expect("policy serializes"),
+    )
+    .expect("incomplete policy is written");
+    run_sig0(&[
+        "analyze",
+        "--archmap",
+        incomplete_archmap.to_str().unwrap(),
+        "--law-policy",
+        incomplete_policy.to_str().unwrap(),
+        "--out-dir",
+        incomplete_dir.to_str().unwrap(),
+    ]);
+    let incomplete_packet = read_json(&incomplete_dir.join("archsig-measurement-packet.json"));
+    let incomplete_row = coherence_row(&incomplete_packet);
+    assert_eq!(incomplete_row["verdict"], "not_computed");
+    assert_eq!(
+        incomplete_row["verdictData"]["methodStatus"],
+        "incomplete_selected_2_skeleton"
+    );
+
+    let oversized_dir = root_out.join("oversized");
+    fs::create_dir_all(&oversized_dir).expect("oversized dir exists");
+    let oversized_archmap = oversized_dir.join("archmap.json");
+    let oversized_policy = oversized_dir.join("law_policy.json");
+    fs::write(
+        &oversized_archmap,
+        serde_json::to_vec_pretty(&coherence_oversized_archmap()).expect("archmap serializes"),
+    )
+    .expect("oversized archmap is written");
+    fs::write(
+        &oversized_policy,
+        serde_json::to_vec_pretty(&coherence_policy("F2", false)).expect("policy serializes"),
+    )
+    .expect("oversized policy is written");
+    run_sig0(&[
+        "analyze",
+        "--archmap",
+        oversized_archmap.to_str().unwrap(),
+        "--law-policy",
+        oversized_policy.to_str().unwrap(),
+        "--out-dir",
+        oversized_dir.to_str().unwrap(),
+    ]);
+    let oversized_packet = read_json(&oversized_dir.join("archsig-measurement-packet.json"));
+    let oversized_row = coherence_row(&oversized_packet);
+    assert_eq!(oversized_row["verdict"], "not_computed");
+    assert_eq!(
+        oversized_row["verdictData"]["methodStatus"],
+        "selected_cover_too_large"
+    );
+
+    let missing_family_dir = root_out.join("missing-family");
+    fs::create_dir_all(&missing_family_dir).expect("missing-family dir exists");
+    let missing_family_archmap = missing_family_dir.join("archmap.json");
+    let missing_family_policy = missing_family_dir.join("law_policy.json");
+    let mut missing_family = coherence_policy("F2", false);
+    missing_family["measurementProfiles"][0]["witnessFamily"] = Value::Array(vec![]);
+    fs::write(
+        &missing_family_archmap,
+        serde_json::to_vec_pretty(&coherence_triangle_archmap(true)).expect("archmap serializes"),
+    )
+    .expect("missing-family archmap is written");
+    fs::write(
+        &missing_family_policy,
+        serde_json::to_vec_pretty(&missing_family).expect("policy serializes"),
+    )
+    .expect("missing-family policy is written");
+    run_sig0_expect_code(
+        &[
+            "analyze",
+            "--archmap",
+            missing_family_archmap.to_str().unwrap(),
+            "--law-policy",
+            missing_family_policy.to_str().unwrap(),
+            "--out-dir",
+            missing_family_dir.to_str().unwrap(),
+        ],
+        2,
+    );
+
+    let bad_selector_dir = root_out.join("bad-selector");
+    fs::create_dir_all(&bad_selector_dir).expect("bad-selector dir exists");
+    let bad_selector_archmap = bad_selector_dir.join("archmap.json");
+    let bad_selector_policy = bad_selector_dir.join("law_policy.json");
+    let mut bad_selector = coherence_policy("F2", false);
+    bad_selector["measurementProfiles"][0]["resolutionSelector"] =
+        Value::String("taylor@1".to_string());
+    fs::write(
+        &bad_selector_archmap,
+        serde_json::to_vec_pretty(&coherence_triangle_archmap(true)).expect("archmap serializes"),
+    )
+    .expect("bad-selector archmap is written");
+    fs::write(
+        &bad_selector_policy,
+        serde_json::to_vec_pretty(&bad_selector).expect("policy serializes"),
+    )
+    .expect("bad-selector policy is written");
+    run_sig0_expect_code(
+        &[
+            "analyze",
+            "--archmap",
+            bad_selector_archmap.to_str().unwrap(),
+            "--law-policy",
+            bad_selector_policy.to_str().unwrap(),
+            "--out-dir",
+            bad_selector_dir.to_str().unwrap(),
+        ],
+        2,
+    );
+}
+
+#[test]
 fn cli_analyze_v2_emits_insight_report_brief_and_viewer_scene_contract() {
     let out_dir = temp_dir("ag-measurement-insight-viewer");
     let root = ag_measurement_root();
@@ -11136,6 +11566,542 @@ fn invariant_by_id<'a>(packet: &'a Value, invariant_id: &str) -> &'a Value {
         .iter()
         .find(|invariant| invariant["invariantId"] == invariant_id)
         .unwrap_or_else(|| panic!("missing computed invariant {invariant_id}"))
+}
+
+fn coherence_row(packet: &Value) -> &Value {
+    packet["structuralVerdict"]
+        .as_array()
+        .expect("structuralVerdict is array")
+        .iter()
+        .find(|row| row["evaluator"] == "ag.coherence-obstruction@1")
+        .expect("coherence row exists")
+}
+
+fn coherence_policy(coefficient: &str, include_cech: bool) -> Value {
+    let mut witness_family = vec![json!({
+        "law": "ag.coherence-obstruction",
+        "variable": "h2"
+    })];
+    let mut policies = vec![json!({
+        "law": "ag.coherence-obstruction",
+        "evaluator": "ag.coherence-obstruction@1",
+        "basis": ["policy-basis:layering"],
+        "scope": ["src/"],
+        "severity": "high"
+    })];
+    if include_cech {
+        witness_family.push(json!({
+            "law": "ag.cech-obstruction",
+            "variable": "x_coherence"
+        }));
+        policies.insert(
+            0,
+            json!({
+                "law": "ag.cech-obstruction",
+                "evaluator": "ag.cech-obstruction@1",
+                "basis": ["policy-basis:layering"],
+                "scope": ["src/"],
+                "severity": "high"
+            }),
+        );
+    }
+    json!({
+        "schema": "law-policy/v1",
+        "id": "ag-coherence-policy",
+        "measurementProfileRef": "profile:ag-coherence@1",
+        "measurementProfiles": [{
+            "schema": "measurement-profile/v1",
+            "profileId": "profile:ag-coherence@1",
+            "siteRef": "archmap:/contexts",
+            "coverRef": "cover:coherence",
+            "coefficient": coefficient,
+            "effCoeff": "finite-linear-algebra@1",
+            "witnessFamily": witness_family,
+            "resolutionSelector": "h2-coherence@1",
+            "domain": "finite-poset-site",
+            "zeroPredicate": "rank-zero@1",
+            "nonZeroPredicate": "rank-positive@1",
+            "certSelector": "finite-certificate@1",
+            "verdictDiscipline": "five-valued-structural-verdict@1"
+        }],
+        "policies": policies
+    })
+}
+
+fn coherence_triangle_archmap(include_witness: bool) -> Value {
+    let mut atoms = vec![
+        atom_json(
+            "atom:a",
+            "component",
+            "src:a",
+            "static",
+            "component",
+            None,
+            vec!["src:a"],
+        ),
+        atom_json(
+            "atom:b",
+            "component",
+            "src:b",
+            "static",
+            "component",
+            None,
+            vec!["src:b"],
+        ),
+        atom_json(
+            "atom:c",
+            "component",
+            "src:c",
+            "static",
+            "component",
+            None,
+            vec!["src:c"],
+        ),
+        atom_json(
+            "atom:abc",
+            "component",
+            "src:abc",
+            "static",
+            "tripleOverlapWitness",
+            None,
+            vec!["src:abc"],
+        ),
+    ];
+    if include_witness {
+        atoms.push(atom_json(
+            "atom:h2-abc",
+            "relation",
+            "ctx:a",
+            "coherence",
+            "tripleMismatch",
+            Some("ctx:a,ctx:b,ctx:c"),
+            vec!["ctx:a", "ctx:b", "ctx:c"],
+        ));
+    }
+    let c_atoms = if include_witness {
+        vec!["atom:c", "atom:abc", "atom:h2-abc"]
+    } else {
+        vec!["atom:c", "atom:abc"]
+    };
+    archmap_with_contexts(
+        atoms,
+        vec![
+            context_json("ctx:a", vec!["atom:a", "atom:abc"], vec!["ctx:b", "ctx:c"]),
+            context_json("ctx:b", vec!["atom:b", "atom:abc"], vec!["ctx:c"]),
+            context_json("ctx:c", c_atoms, vec![]),
+        ],
+    )
+}
+
+fn coherence_boundary_archmap(include_witnesses: bool) -> Value {
+    let face_specs = [
+        ("abc", vec!["ctx:a", "ctx:b", "ctx:c"]),
+        ("abd", vec!["ctx:a", "ctx:b", "ctx:d"]),
+        ("acd", vec!["ctx:a", "ctx:c", "ctx:d"]),
+        ("bcd", vec!["ctx:b", "ctx:c", "ctx:d"]),
+    ];
+    let mut atoms = vec![
+        atom_json(
+            "atom:a",
+            "component",
+            "src:a",
+            "static",
+            "component",
+            None,
+            vec!["src:a"],
+        ),
+        atom_json(
+            "atom:b",
+            "component",
+            "src:b",
+            "static",
+            "component",
+            None,
+            vec!["src:b"],
+        ),
+        atom_json(
+            "atom:c",
+            "component",
+            "src:c",
+            "static",
+            "component",
+            None,
+            vec!["src:c"],
+        ),
+        atom_json(
+            "atom:d",
+            "component",
+            "src:d",
+            "static",
+            "component",
+            None,
+            vec!["src:d"],
+        ),
+    ];
+    for (name, contexts) in face_specs.iter() {
+        atoms.push(atom_json(
+            &format!("atom:face-{name}"),
+            "component",
+            &format!("src:face-{name}"),
+            "static",
+            "tripleOverlapWitness",
+            None,
+            vec![&format!("src:face-{name}")],
+        ));
+        if include_witnesses && *name == "abc" {
+            atoms.push(atom_json(
+                &format!("atom:h2-{name}"),
+                "relation",
+                contexts[0],
+                "coherence",
+                "tripleMismatch",
+                Some(&contexts.join(",")),
+                contexts.clone(),
+            ));
+        }
+    }
+    let contexts = if include_witnesses {
+        vec![
+            context_json(
+                "ctx:a",
+                vec![
+                    "atom:a",
+                    "atom:face-abc",
+                    "atom:face-abd",
+                    "atom:face-acd",
+                    "atom:h2-abc",
+                ],
+                vec!["ctx:b", "ctx:c", "ctx:d"],
+            ),
+            context_json(
+                "ctx:b",
+                vec![
+                    "atom:b",
+                    "atom:face-abc",
+                    "atom:face-abd",
+                    "atom:face-bcd",
+                    "atom:h2-abc",
+                ],
+                vec!["ctx:c", "ctx:d"],
+            ),
+            context_json(
+                "ctx:c",
+                vec![
+                    "atom:c",
+                    "atom:face-abc",
+                    "atom:face-acd",
+                    "atom:face-bcd",
+                    "atom:h2-abc",
+                ],
+                vec!["ctx:d"],
+            ),
+            context_json(
+                "ctx:d",
+                vec!["atom:d", "atom:face-abd", "atom:face-acd", "atom:face-bcd"],
+                vec![],
+            ),
+        ]
+    } else {
+        vec![
+            context_json(
+                "ctx:a",
+                vec!["atom:a", "atom:face-abc", "atom:face-abd", "atom:face-acd"],
+                vec!["ctx:b", "ctx:c", "ctx:d"],
+            ),
+            context_json(
+                "ctx:b",
+                vec!["atom:b", "atom:face-abc", "atom:face-abd", "atom:face-bcd"],
+                vec!["ctx:c", "ctx:d"],
+            ),
+            context_json(
+                "ctx:c",
+                vec!["atom:c", "atom:face-abc", "atom:face-acd", "atom:face-bcd"],
+                vec!["ctx:d"],
+            ),
+            context_json(
+                "ctx:d",
+                vec!["atom:d", "atom:face-abd", "atom:face-acd", "atom:face-bcd"],
+                vec![],
+            ),
+        ]
+    };
+    archmap_with_contexts(atoms, contexts)
+}
+
+fn coherence_boundary_zero_cochain_archmap() -> Value {
+    let mut archmap = coherence_boundary_archmap(true);
+    archmap["atoms"]
+        .as_array_mut()
+        .expect("atoms is array")
+        .push(atom_json(
+            "atom:h2-abc-duplicate",
+            "relation",
+            "ctx:a",
+            "coherence",
+            "tripleMismatch",
+            Some("ctx:a,ctx:b,ctx:c"),
+            vec!["ctx:a", "ctx:b", "ctx:c"],
+        ));
+    for context_id in ["ctx:a", "ctx:b", "ctx:c"] {
+        let context = archmap["contexts"]
+            .as_array_mut()
+            .expect("contexts is array")
+            .iter_mut()
+            .find(|context| context["id"] == context_id)
+            .unwrap_or_else(|| panic!("context {context_id} exists"));
+        context["atoms"]
+            .as_array_mut()
+            .expect("context atoms is array")
+            .push(Value::String("atom:h2-abc-duplicate".to_string()));
+    }
+    archmap
+}
+
+fn coherence_empty_archmap() -> Value {
+    archmap_with_contexts(
+        vec![
+            atom_json(
+                "atom:a",
+                "component",
+                "src:a",
+                "static",
+                "component",
+                None,
+                vec!["src:a"],
+            ),
+            atom_json(
+                "atom:b",
+                "component",
+                "src:b",
+                "static",
+                "component",
+                None,
+                vec!["src:b"],
+            ),
+        ],
+        vec![
+            context_json("ctx:a", vec!["atom:a"], vec!["ctx:b"]),
+            context_json("ctx:b", vec!["atom:b"], vec![]),
+        ],
+    )
+}
+
+fn coherence_incomplete_triangle_archmap() -> Value {
+    archmap_with_contexts(
+        vec![
+            atom_json(
+                "atom:a",
+                "component",
+                "src:a",
+                "static",
+                "component",
+                None,
+                vec!["src:a"],
+            ),
+            atom_json(
+                "atom:b",
+                "component",
+                "src:b",
+                "static",
+                "component",
+                None,
+                vec!["src:b"],
+            ),
+            atom_json(
+                "atom:c",
+                "component",
+                "src:c",
+                "static",
+                "component",
+                None,
+                vec!["src:c"],
+            ),
+            atom_json(
+                "atom:abc",
+                "component",
+                "src:abc",
+                "static",
+                "tripleOverlapWitness",
+                None,
+                vec!["src:abc"],
+            ),
+            atom_json(
+                "atom:h2-abc",
+                "relation",
+                "ctx:a",
+                "coherence",
+                "tripleMismatch",
+                Some("ctx:a,ctx:b,ctx:c"),
+                vec!["ctx:a", "ctx:b", "ctx:c"],
+            ),
+        ],
+        vec![
+            context_json(
+                "ctx:a",
+                vec!["atom:a", "atom:abc", "atom:h2-abc"],
+                vec!["ctx:b"],
+            ),
+            context_json("ctx:b", vec!["atom:b", "atom:abc", "atom:h2-abc"], vec![]),
+            context_json("ctx:c", vec!["atom:c", "atom:abc", "atom:h2-abc"], vec![]),
+        ],
+    )
+}
+
+fn coherence_oversized_archmap() -> Value {
+    let mut atoms = Vec::new();
+    let mut contexts = Vec::new();
+    for index in 0..13 {
+        let context_id = format!("ctx:n{index}");
+        let atom_id = format!("atom:n{index}");
+        atoms.push(atom_json(
+            &atom_id,
+            "component",
+            "src:a",
+            "static",
+            "component",
+            None,
+            vec!["src:a"],
+        ));
+        contexts.push(json!({
+            "id": context_id,
+            "atoms": [atom_id],
+            "refs": ["src:a"]
+        }));
+    }
+    let mut archmap = archmap_with_contexts(atoms, contexts);
+    for index in 0..13 {
+        archmap["sources"][format!("ctx:n{index}")] = json!({
+            "kind": "policy",
+            "path": "docs/tool/archsig_measurement_faithfulness_and_ag_viewer_prd.md",
+            "section": "M5"
+        });
+    }
+    archmap
+}
+
+fn coherence_filled_tetrahedron_archmap() -> Value {
+    let mut archmap = coherence_boundary_archmap(false);
+    archmap["atoms"]
+        .as_array_mut()
+        .expect("atoms is array")
+        .extend([
+            atom_json(
+                "atom:abcd",
+                "component",
+                "src:abcd",
+                "static",
+                "quadrupleOverlapWitness",
+                None,
+                vec!["src:abc"],
+            ),
+            atom_json(
+                "atom:h2-abc",
+                "relation",
+                "ctx:a",
+                "coherence",
+                "tripleMismatch",
+                Some("ctx:a,ctx:b,ctx:c"),
+                vec!["ctx:a", "ctx:b", "ctx:c"],
+            ),
+        ]);
+    for context_id in ["ctx:a", "ctx:b", "ctx:c", "ctx:d"] {
+        let context = archmap["contexts"]
+            .as_array_mut()
+            .expect("contexts is array")
+            .iter_mut()
+            .find(|context| context["id"] == context_id)
+            .unwrap_or_else(|| panic!("context {context_id} exists"));
+        context["atoms"]
+            .as_array_mut()
+            .expect("context atoms is array")
+            .push(Value::String("atom:abcd".to_string()));
+    }
+    for context_id in ["ctx:a", "ctx:b", "ctx:c"] {
+        let context = archmap["contexts"]
+            .as_array_mut()
+            .expect("contexts is array")
+            .iter_mut()
+            .find(|context| context["id"] == context_id)
+            .unwrap_or_else(|| panic!("context {context_id} exists"));
+        context["atoms"]
+            .as_array_mut()
+            .expect("context atoms is array")
+            .push(Value::String("atom:h2-abc".to_string()));
+    }
+    archmap
+}
+
+fn archmap_with_contexts(atoms: Vec<Value>, contexts: Vec<Value>) -> Value {
+    let cover_contexts = contexts
+        .iter()
+        .filter_map(|context| context["id"].as_str())
+        .collect::<Vec<_>>();
+    json!({
+        "schema": "archmap/v2",
+        "id": "ag-coherence-fixture",
+        "extractionDoctrineRef": {
+            "doctrineId": "doctrine:ag-fixture@1",
+            "fingerprint": "sha256:ag-coherence-fixture",
+            "components": ["V", "Gamma", "R", "rho", "E", "N"]
+        },
+        "sources": {
+            "src:a": {"kind": "rust", "path": "src/a.rs", "symbol": "A", "line": 1},
+            "src:b": {"kind": "rust", "path": "src/b.rs", "symbol": "B", "line": 1},
+            "src:c": {"kind": "rust", "path": "src/c.rs", "symbol": "C", "line": 1},
+            "src:d": {"kind": "rust", "path": "src/d.rs", "symbol": "D", "line": 1},
+            "src:abc": {"kind": "policy", "path": "docs/tool/archsig_measurement_faithfulness_and_ag_viewer_prd.md", "section": "M5"},
+            "src:face-abc": {"kind": "policy", "path": "docs/tool/archsig_measurement_faithfulness_and_ag_viewer_prd.md", "section": "M5"},
+            "src:face-abd": {"kind": "policy", "path": "docs/tool/archsig_measurement_faithfulness_and_ag_viewer_prd.md", "section": "M5"},
+            "src:face-acd": {"kind": "policy", "path": "docs/tool/archsig_measurement_faithfulness_and_ag_viewer_prd.md", "section": "M5"},
+            "src:face-bcd": {"kind": "policy", "path": "docs/tool/archsig_measurement_faithfulness_and_ag_viewer_prd.md", "section": "M5"},
+            "ctx:a": {"kind": "policy", "path": "docs/tool/archsig_measurement_faithfulness_and_ag_viewer_prd.md", "section": "M5"},
+            "ctx:b": {"kind": "policy", "path": "docs/tool/archsig_measurement_faithfulness_and_ag_viewer_prd.md", "section": "M5"},
+            "ctx:c": {"kind": "policy", "path": "docs/tool/archsig_measurement_faithfulness_and_ag_viewer_prd.md", "section": "M5"},
+            "ctx:d": {"kind": "policy", "path": "docs/tool/archsig_measurement_faithfulness_and_ag_viewer_prd.md", "section": "M5"}
+        },
+        "atoms": atoms,
+        "contexts": contexts,
+        "covers": [{
+            "id": "cover:coherence",
+            "contexts": cover_contexts.clone(),
+            "refs": cover_contexts
+        }]
+    })
+}
+
+fn atom_json(
+    id: &str,
+    kind: &str,
+    subject: &str,
+    axis: &str,
+    predicate: &str,
+    object: Option<&str>,
+    refs: Vec<&str>,
+) -> Value {
+    let mut atom = json!({
+        "id": id,
+        "kind": kind,
+        "subject": subject,
+        "axis": axis,
+        "predicate": predicate,
+        "refs": refs
+    });
+    if let Some(object) = object {
+        atom["object"] = Value::String(object.to_string());
+    }
+    atom
+}
+
+fn context_json(id: &str, atoms: Vec<&str>, restricts_to: Vec<&str>) -> Value {
+    let mut context = json!({
+        "id": id,
+        "atoms": atoms,
+        "refs": [id]
+    });
+    if !restricts_to.is_empty() {
+        context["restrictsTo"] = json!(restricts_to);
+    }
+    context
 }
 
 fn has_nested_key(value: &Value, key: &str) -> bool {

@@ -262,6 +262,7 @@ fn evaluator_manifests() -> Vec<LawEvaluatorManifestV1> {
     ];
     manifests.extend([
         ag_manifest("ag.cech-obstruction@1", "ag.cech-obstruction"),
+        ag_coherence_manifest(),
         ag_manifest("ag.square-free-repair@1", "ag.square-free-repair"),
         ag_manifest("ag.law-conflict-tor@1", "ag.law-conflict-tor"),
         ag_manifest("ag.sheaf-laplacian@1", "ag.sheaf-laplacian"),
@@ -269,6 +270,37 @@ fn evaluator_manifests() -> Vec<LawEvaluatorManifestV1> {
         ag_manifest("ag.support-transfer@1", "ag.support-transfer"),
     ]);
     manifests
+}
+
+fn ag_coherence_manifest() -> LawEvaluatorManifestV1 {
+    LawEvaluatorManifestV1 {
+        evaluator_id: "ag.coherence-obstruction@1".to_string(),
+        law_id: "ag.coherence-obstruction".to_string(),
+        required_atom_constructors: Vec::new(),
+        required_predicates: vec!["coherence.tripleMismatch".to_string()],
+        required_molecule_condition:
+            "archmap/v2 contexts and selected cover triple-overlap 2-skeleton".to_string(),
+        scope_filtering_rule:
+            "selected finite poset site and cover from MeasurementProfile".to_string(),
+        missing_blocker_rule:
+            "missing coherence witness atoms are unmeasured; incomplete 2-skeleton is not_computed"
+                .to_string(),
+        pass_criteria:
+            "selected-cover banded abelian F2 H2 coherence cocycle is a coboundary"
+                .to_string(),
+        violation_criteria:
+            "selected-cover banded abelian F2 H2 coherence cocycle has a representative outside im d1"
+                .to_string(),
+        typed_result_schema: "archsig-measurement-packet/v1".to_string(),
+        distance_contribution: "structural H2 coherence verdict remains cover-relative and F2-banded"
+            .to_string(),
+        summary_output_refs: vec!["/structuralVerdict".to_string()],
+        detail_output_refs: vec![
+            "/assumptions".to_string(),
+            "/computedInvariants".to_string(),
+        ],
+        negative_fixtures: vec!["ag_coherence_obstruction_negative.json".to_string()],
+    }
 }
 
 fn ag_manifest(evaluator_id: &str, law_id: &str) -> LawEvaluatorManifestV1 {
