@@ -168,5 +168,54 @@ theorem witnessZero_of_all_readings_zero
 
 end AnalyticReadingContext
 
+/--
+VII.定理15.4: representation conservativity under explicit adequacy and
+exactness assumptions.
+
+The package is deliberately selected-obstruction-class scoped.  `U`-detecting
+gives `WitnessZero_U alpha`; the conversion from that witness to `alpha =
+zeroClass` is an explicit exactness assumption.
+-/
+structure RepresentationConservativityUnderAdequacy {U : AtomCarrier.{u}}
+    {Obj : ArchitectureObject U}
+    {S : Site.AATSite Obj} {k : Type v} [CommRing k]
+    {p : AATSchReadingParameter.{u, v, w, x, y} S k}
+    (C : AnalyticReadingContext.{u, v, w, x, y, z} Obj p) where
+  zeroClass : C.detectingFamily.ObstructionClass
+  coverageAdequate : C.coverageAdequacy
+  witnessExact : C.witnessExactness
+  axisExact : C.axisExactness
+  coefficientDisciplined : C.coefficientDiscipline
+  witnessZero_eq_zero :
+    ∀ alpha : C.detectingFamily.ObstructionClass,
+      C.detectingFamily.WitnessZero_U alpha -> alpha = zeroClass
+
+namespace RepresentationConservativityUnderAdequacy
+
+variable {U : AtomCarrier.{u}} {Obj : ArchitectureObject U}
+variable {S : Site.AATSite Obj} {k : Type v} [CommRing k]
+variable {p : AATSchReadingParameter.{u, v, w, x, y} S k}
+variable {C : AnalyticReadingContext.{u, v, w, x, y, z} Obj p}
+
+/-- VII.定理15.4: expose the combined adequacy / exactness discipline. -/
+theorem adequacyDiscipline
+    (T : RepresentationConservativityUnderAdequacy.{u, v, w, x, y, z} C) :
+    C.AdequacyDiscipline :=
+  ⟨T.coverageAdequate, T.witnessExact, T.axisExact, T.coefficientDisciplined⟩
+
+/--
+VII.定理15.4: if all selected representation readings of `alpha` are zero,
+then the selected obstruction class is the chosen zero class.
+-/
+theorem representation_conservativity_under_adequacy
+    (T : RepresentationConservativityUnderAdequacy.{u, v, w, x, y, z} C)
+    (alpha : C.detectingFamily.ObstructionClass)
+    (hzero : ∀ i : C.representationFamily.Index,
+      C.detectingFamily.analyticZeroReading i alpha) :
+    alpha = T.zeroClass :=
+  T.witnessZero_eq_zero alpha (C.witnessZero_of_all_readings_zero alpha hzero)
+
+end RepresentationConservativityUnderAdequacy
+
 end RepresentationAnalysis
 end AAT.AG
