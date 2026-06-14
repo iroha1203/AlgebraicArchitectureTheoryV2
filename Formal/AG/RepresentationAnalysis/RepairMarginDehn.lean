@@ -297,6 +297,70 @@ theorem fillingArea_le_dehn
 end ArchitecturalDehnProfile
 
 /--
+VII.定理12.7: explicit observation-gap lower-bound assumptions.
+
+The primary Lean inequality is `observationGap <= lipschitzConstant * fillCost`.
+This is the integer-safe form of the lower-bound statement; quotient-style
+readings are exposed only through an explicit selected predicate.
+-/
+structure ObservationGapLowerBoundProfile where
+  Path : Type u
+  Filler : Type u
+  observationGap : Path -> Path -> Nat
+  loopFromPair : Path -> Path -> Type u
+  selectedLoop : ∀ P Q, loopFromPair P Q
+  fillerForLoop : ∀ P Q, loopFromPair P Q -> Filler
+  fillCost : Filler -> Nat
+  generatorCost : Filler -> Nat
+  lipschitzConstant : Nat
+  lipschitzConstant_pos : 0 < lipschitzConstant
+  observationMapLipschitz :
+    ∀ P Q,
+      observationGap P Q ≤
+        lipschitzConstant * generatorCost (fillerForLoop P Q (selectedLoop P Q))
+  generatorCost_le_fillCost :
+    ∀ P Q,
+      generatorCost (fillerForLoop P Q (selectedLoop P Q)) ≤
+        fillCost (fillerForLoop P Q (selectedLoop P Q))
+  quotientLowerBound : Nat -> Nat -> Prop
+  quotientLowerBound_holds :
+    ∀ P Q,
+      observationGap P Q ≤
+        lipschitzConstant * fillCost (fillerForLoop P Q (selectedLoop P Q)) ->
+      quotientLowerBound (observationGap P Q)
+        (fillCost (fillerForLoop P Q (selectedLoop P Q)))
+
+namespace ObservationGapLowerBoundProfile
+
+/-- VII.定理12.7: selected filling for the pair loop `P . Q^{-1}`. -/
+def selectedFiller
+    (G : ObservationGapLowerBoundProfile.{u}) (P Q : G.Path) : G.Filler :=
+  G.fillerForLoop P Q (G.selectedLoop P Q)
+
+/--
+VII.定理12.7: Lipschitz observation gap gives the selected filling-cost lower
+bound in multiplication form.
+-/
+theorem observationGap_le_lipschitz_fillCost
+    (G : ObservationGapLowerBoundProfile.{u}) (P Q : G.Path) :
+    G.observationGap P Q ≤
+      G.lipschitzConstant * G.fillCost (G.selectedFiller P Q) := by
+  exact Nat.le_trans (G.observationMapLipschitz P Q)
+    (Nat.mul_le_mul_left G.lipschitzConstant (G.generatorCost_le_fillCost P Q))
+
+/--
+VII.定理12.7: selected quotient-style lower-bound reading, supplied explicitly
+to avoid untracked Nat-division rounding claims.
+-/
+theorem quotientLowerBound_certificate
+    (G : ObservationGapLowerBoundProfile.{u}) (P Q : G.Path) :
+    G.quotientLowerBound (G.observationGap P Q)
+      (G.fillCost (G.selectedFiller P Q)) :=
+  G.quotientLowerBound_holds P Q (G.observationGap_le_lipschitz_fillCost P Q)
+
+end ObservationGapLowerBoundProfile
+
+/--
 VII.定義12.8: selected bi-Lipschitz representation profile.
 
 The inequalities are over selected comparable state pairs.  No completeness over
