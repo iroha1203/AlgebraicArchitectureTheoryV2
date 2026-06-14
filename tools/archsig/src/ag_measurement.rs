@@ -31,6 +31,7 @@ const GLUING_REGION_RENDER_LIMIT: usize = 24;
 const GLUING_CAGE_RENDER_LIMIT: usize = 80;
 const GLUING_MORPH_RENDER_LIMIT: usize = 50;
 const GLUING_ATOM_GLYPH_RENDER_LIMIT: usize = 2_000;
+const ANALYTIC_OVERLAY_RENDER_LIMIT: usize = 80;
 const BOUNDARY_STATEMENT_KINDS: [&str; 6] = [
     "silence_by_design",
     "out_of_selected_vocabulary",
@@ -3985,6 +3986,7 @@ fn insight_viewer_visual_scenes_v1(
         &["architecture_debt_mass"],
         false,
     );
+    let analytic_overlay_refs = analytic_overlay_scene_refs(packet, gluing_geometry);
     let boundary_refs =
         scene_refs_for_kinds(normalized, packet, cards, &["measurement_boundary"], false);
     let source_refs = source_scene_refs(normalized, packet, cards);
@@ -4009,6 +4011,8 @@ fn insight_viewer_visual_scenes_v1(
     let has_debt = cards
         .iter()
         .any(|card| string_field(card, "kind") == "architecture_debt_mass");
+    let has_analytic_overlay =
+        !string_array_at(&analytic_overlay_refs, &["overlayRefs"]).is_empty();
     let scenes = vec![
         scene_v1(
             "overview",
@@ -4190,6 +4194,32 @@ fn insight_viewer_visual_scenes_v1(
             "contour",
             has_debt,
         ),
+        with_scene_non_claims(
+            scene_v1(
+                "analytic-overlay",
+                "analytic_overlay",
+                "Analytic Overlay",
+                "Which measured analytic readings can be inspected without promoting them to verdicts?",
+                (
+                    "analytic source family",
+                    "selected cover or support stratum",
+                    "reading magnitude / proxy height",
+                ),
+                "analytic_overlay_lane",
+                "overlay",
+                "analyticOverlay",
+                "packet analytic reading overlay; no new structural verdict",
+                &analytic_overlay_refs,
+                "analytic_reading",
+                "heat",
+                "contour",
+                has_analytic_overlay,
+            ),
+            &[
+                "Analytic overlays are packet projections only; they do not create structural verdicts.",
+                "Near-flat or low proxy values are not measured_zero lawfulness.",
+            ],
+        ),
         boundary_scene_v1(&boundary_refs),
         scene_v1(
             "source-evidence",
@@ -4241,6 +4271,16 @@ fn attach_gluing_scene_geometry(mut scene: Value, gluing_geometry: &Value) -> Va
             "locusFieldRef": "gluingGeometry.locusField",
             "projectionObjectKinds": ["curvatureHeightField", "blockedUnmeasuredRegion"]
         }),
+        "analytic-overlay" => json!({
+            "analyticOverlayBundleRef": "gluingGeometry.analyticOverlayBundle",
+            "projectionObjectKinds": [
+                "periodPairingMatrixOverlay",
+                "transferCostOverlay",
+                "spectralGapOverlay",
+                "curvatureHotspotOverlay",
+                "singularityConcentrationOverlay"
+            ]
+        }),
         _ => json!({
             "projectionObjectKinds": []
         }),
@@ -4286,6 +4326,44 @@ fn attach_gluing_scene_geometry(mut scene: Value, gluing_geometry: &Value) -> Va
     scene
 }
 
+fn analytic_overlay_scene_refs(
+    packet: &ArchSigMeasurementPacketV1,
+    gluing_geometry: &Value,
+) -> Value {
+    let overlays = gluing_geometry["analyticOverlayBundle"]["overlays"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .collect::<Vec<_>>();
+    let overlay_refs = overlays
+        .iter()
+        .filter_map(|overlay| overlay["overlayId"].as_str())
+        .map(ToOwned::to_owned)
+        .collect::<Vec<_>>();
+    let analytic_reading_refs = overlays
+        .iter()
+        .filter_map(|overlay| overlay["sourceReadingRef"].as_str())
+        .map(ToOwned::to_owned)
+        .collect::<BTreeSet<_>>()
+        .into_iter()
+        .collect::<Vec<_>>();
+    let invariant_refs = overlays
+        .iter()
+        .filter_map(|overlay| overlay["sourceInvariantRef"].as_str())
+        .map(ToOwned::to_owned)
+        .collect::<BTreeSet<_>>()
+        .into_iter()
+        .collect::<Vec<_>>();
+
+    json!({
+        "overlayRefs": overlay_refs,
+        "analyticReadingRefs": analytic_reading_refs,
+        "invariantRefs": invariant_refs,
+        "coverRefs": [packet.profile.cover_ref.clone()],
+        "sourceRefs": []
+    })
+}
+
 fn visual_encoding_legend_v1() -> Value {
     json!([
         {
@@ -4296,6 +4374,7 @@ fn visual_encoding_legend_v1() -> Value {
                 "measured_zero": "teal selected-support zero",
                 "not_computed": "red blocker",
                 "unmeasured": "gray unmeasured region",
+                "analytic_reading": "blue analytic reading lane; never promoted to structural zero",
                 "repair_candidate": "violet lower-bound repair candidate"
             }
         },
@@ -4385,6 +4464,7 @@ fn gluing_geometry_projection_v1(
     let repair_morphs = repair_morph_projection(normalized, packet, &forbidden_cages);
     let locus_field = locus_field_projection(packet);
     let atom_glyphs = atom_glyph_projection(normalized);
+    let analytic_overlay_bundle = analytic_overlay_bundle_projection(packet);
     let triangle_count = cover_nerve_projection["faces"]
         .as_array()
         .map(Vec::len)
@@ -4402,6 +4482,9 @@ fn gluing_geometry_projection_v1(
         .map(Vec::len)
         .unwrap_or_default();
     let atom_glyph_total_count = normalized.atoms.len();
+    let analytic_overlay_count = analytic_overlay_bundle["rawOverlayCount"]
+        .as_u64()
+        .unwrap_or_default() as usize;
     let cocycle_support_edge_count = nonzero_edges.len();
     let cocycle_support_edges = nonzero_edges
         .iter()
@@ -4445,6 +4528,7 @@ fn gluing_geometry_projection_v1(
         "forbiddenCages": forbidden_cages,
         "repairMorphs": repair_morphs,
         "atomGlyphs": atom_glyphs,
+        "analyticOverlayBundle": analytic_overlay_bundle,
         "visualEncodingLegend": visual_encoding_legend_v1(),
         "renderLimits": {
             "nerveTriangles": GLUING_TRIANGLE_RENDER_LIMIT,
@@ -4453,7 +4537,8 @@ fn gluing_geometry_projection_v1(
             "curvatureRegions": GLUING_REGION_RENDER_LIMIT,
             "forbiddenCages": GLUING_CAGE_RENDER_LIMIT,
             "repairMorphs": GLUING_MORPH_RENDER_LIMIT,
-            "atomGlyphs": GLUING_ATOM_GLYPH_RENDER_LIMIT
+            "atomGlyphs": GLUING_ATOM_GLYPH_RENDER_LIMIT,
+            "analyticOverlays": ANALYTIC_OVERLAY_RENDER_LIMIT
         },
         "omittedGeometryCounts": {
             "nerveTriangles": triangle_count.saturating_sub(GLUING_TRIANGLE_RENDER_LIMIT),
@@ -4463,7 +4548,8 @@ fn gluing_geometry_projection_v1(
             "blockedRegions": blocked_region_count.saturating_sub(GLUING_REGION_RENDER_LIMIT),
             "forbiddenCages": forbidden_cages.len().saturating_sub(GLUING_CAGE_RENDER_LIMIT),
             "repairMorphs": repair_morphs.len().saturating_sub(GLUING_MORPH_RENDER_LIMIT),
-            "atomGlyphs": atom_glyph_total_count.saturating_sub(GLUING_ATOM_GLYPH_RENDER_LIMIT)
+            "atomGlyphs": atom_glyph_total_count.saturating_sub(GLUING_ATOM_GLYPH_RENDER_LIMIT),
+            "analyticOverlays": analytic_overlay_count.saturating_sub(ANALYTIC_OVERLAY_RENDER_LIMIT)
         },
         "nonClaims": [
             "No H2 coherence failure is visualized by this projection.",
@@ -4614,6 +4700,173 @@ fn repair_morph_projection(
             })
         })
         .collect()
+}
+
+fn analytic_overlay_bundle_projection(packet: &ArchSigMeasurementPacketV1) -> Value {
+    let mut period_pairing = Vec::new();
+    let mut transfer_cost = Vec::new();
+    let mut spectral_gap = Vec::new();
+    let mut curvature_hotspot = Vec::new();
+
+    for reading in &packet.analytic_readings {
+        let reading_kind = string_at(&reading.value, &["readingKind"]);
+        match reading_kind.as_str() {
+            "strict-period-pairing@1" => {
+                period_pairing.push(json!({
+                    "overlayId": format!("overlay:period-pairing:{}", stable_ref_segment(&reading.reading_id)),
+                    "overlayKind": "period_pairing_matrix",
+                    "sourceReadingRef": reading.reading_id,
+                    "sourceEvaluator": reading.evaluator,
+                    "sourceReadingKind": reading_kind,
+                    "sourceRegime": reading.regime,
+                    "colorRole": "analytic_reading",
+                    "forms": reading.value["forms"].clone(),
+                    "cycleBasis": reading.value["cycleBasis"].clone(),
+                    "periodPairingMatrix": reading.value["periodPairingMatrix"].clone(),
+                    "nonClaim": reading.value["nonConclusion"].clone(),
+                    "projectionBoundary": "modelRelative period landscape; not a structural verdict"
+                }));
+            }
+            "support-localized-transfer@1" => {
+                transfer_cost.push(json!({
+                    "overlayId": format!("overlay:transfer-cost:{}", stable_ref_segment(&reading.reading_id)),
+                    "overlayKind": "wasserstein_transfer_cost",
+                    "sourceReadingRef": reading.reading_id,
+                    "sourceEvaluator": reading.evaluator,
+                    "sourceReadingKind": reading_kind,
+                    "sourceRegime": reading.regime,
+                    "colorRole": "analytic_reading",
+                    "repairPaths": reading.value["repairPaths"].clone(),
+                    "transferTargets": reading.value["transferTargets"].clone(),
+                    "transferMeasurementPairing": reading.value["transferMeasurementPairing"].clone(),
+                    "transferResidue": reading.value["transferResidue"].clone(),
+                    "wassersteinTransferCost": reading.value["wassersteinTransferCost"].clone(),
+                    "nonClaim": "Wasserstein transfer cost is a supplied finite support-localized analytic reading; it is not W1 itself and does not prove global repair safety.",
+                    "projectionBoundary": reading.value["nonConclusion"].clone()
+                }));
+            }
+            "graph-laplacian-hodge-proxy@1" => {
+                spectral_gap.push(json!({
+                    "overlayId": format!("overlay:spectral-gap:{}", stable_ref_segment(&reading.reading_id)),
+                    "overlayKind": "spectral_gap_proxy",
+                    "sourceReadingRef": reading.reading_id,
+                    "sourceEvaluator": reading.evaluator,
+                    "sourceReadingKind": reading_kind,
+                    "sourceRegime": reading.regime,
+                    "colorRole": "analytic_reading",
+                    "cells": reading.value["cells"].clone(),
+                    "spectralGap": reading.value["spectralGap"].clone(),
+                    "harmonicMass": reading.value["harmonicMass"].clone(),
+                    "distanceToFlatness": reading.value["distanceToFlatness"].clone(),
+                    "nonClaim": "spectralGap is a finite graph-Laplacian proxy eigenvalue, not L1 and not measured_zero lawfulness.",
+                    "projectionBoundary": reading.value["nonConclusion"].clone()
+                }));
+            }
+            "curvature-transfer-perron-hotspot@1" => {
+                curvature_hotspot.push(json!({
+                    "overlayId": format!("overlay:curvature-hotspot:{}", stable_ref_segment(&reading.reading_id)),
+                    "overlayKind": "curvature_spectrum_hotspot",
+                    "sourceReadingRef": reading.reading_id,
+                    "sourceEvaluator": reading.evaluator,
+                    "sourceReadingKind": reading_kind,
+                    "sourceRegime": reading.regime,
+                    "colorRole": "analytic_reading",
+                    "hotspots": reading.value["hotspots"].clone(),
+                    "nonClaim": reading.value["nonConclusion"].clone(),
+                    "projectionBoundary": "hotspot projection is gated by the landed theorem-candidate reading; it creates no structural verdict"
+                }));
+            }
+            _ => {}
+        }
+    }
+
+    let singularity_concentration = packet
+        .computed_invariants
+        .iter()
+        .filter(|invariant| invariant["evaluator"] == "ag.law-conflict-tor@1")
+        .flat_map(|invariant| {
+            invariant["lawConflicts"]
+                .as_array()
+                .into_iter()
+                .flatten()
+                .enumerate()
+                .map(|(index, conflict)| {
+                    let shared_support = string_array_at(conflict, &["sharedSupport"]);
+                    json!({
+                        "overlayId": format!(
+                            "overlay:singularity-concentration:{}:{index}",
+                            stable_ref_segment(&string_field(invariant, "invariantId"))
+                        ),
+                        "overlayKind": "singularity_concentration",
+                        "sourceInvariantRef": invariant["invariantId"],
+                        "sourceEvaluator": invariant["evaluator"],
+                        "colorRole": "analytic_reading",
+                        "stratumRef": if shared_support.is_empty() {
+                            format!("law-conflict-stratum:{index}")
+                        } else {
+                            format!("law-conflict-stratum:{}", shared_support.join("+"))
+                        },
+                        "sharedSupport": shared_support,
+                        "multidegree": conflict["multidegree"].clone(),
+                        "commonAmbient": invariant["commonAmbient"].clone(),
+                        "concentrationCount": 1,
+                        "deformationRegime": "not_provided",
+                        "nonClaim": "singularity concentration is a selected LawConflict_1 count projection only; deformation regime is not provided and this is not object size or repair difficulty."
+                    })
+                })
+                .collect::<Vec<_>>()
+        })
+        .collect::<Vec<_>>();
+
+    let raw_overlay_count = period_pairing.len()
+        + transfer_cost.len()
+        + spectral_gap.len()
+        + curvature_hotspot.len()
+        + singularity_concentration.len();
+
+    period_pairing.truncate(ANALYTIC_OVERLAY_RENDER_LIMIT);
+    transfer_cost.truncate(ANALYTIC_OVERLAY_RENDER_LIMIT);
+    spectral_gap.truncate(ANALYTIC_OVERLAY_RENDER_LIMIT);
+    curvature_hotspot.truncate(ANALYTIC_OVERLAY_RENDER_LIMIT);
+    let mut singularity_concentration = singularity_concentration;
+    singularity_concentration.truncate(ANALYTIC_OVERLAY_RENDER_LIMIT);
+
+    let overlays = period_pairing
+        .iter()
+        .chain(transfer_cost.iter())
+        .chain(spectral_gap.iter())
+        .chain(curvature_hotspot.iter())
+        .chain(singularity_concentration.iter())
+        .take(ANALYTIC_OVERLAY_RENDER_LIMIT)
+        .cloned()
+        .collect::<Vec<_>>();
+
+    json!({
+        "schemaVersion": "archsig-analytic-overlay-bundle-v1",
+        "allowlist": [
+            "strict-period-pairing@1",
+            "support-localized-transfer@1",
+            "graph-laplacian-hodge-proxy@1",
+            "curvature-transfer-perron-hotspot@1",
+            "ag.law-conflict-tor@1/lawConflicts"
+        ],
+        "colorRole": "analytic_reading",
+        "rawOverlayCount": raw_overlay_count,
+        "projectionBoundary": "This bundle projects existing packet analytic readings and computed invariants into the viewer; it creates no structural verdict and never promotes analytic values to measured_zero.",
+        "periodPairingOverlays": period_pairing,
+        "transferCostOverlays": transfer_cost,
+        "spectralGapOverlays": spectral_gap,
+        "curvatureHotspotOverlays": curvature_hotspot,
+        "singularityConcentrationOverlays": singularity_concentration,
+        "overlays": overlays,
+        "nonClaims": [
+            "Period overlays are model-relative.",
+            "Transfer cost overlays are finite support-localized readings, not global repair safety.",
+            "Spectral gap overlays are proxy eigenvalues and are not structural lawfulness.",
+            "Curvature hotspot overlays are theorem-candidate projections.",
+            "Singularity concentration has deformationRegime=not_provided and is not a size or difficulty score."
+        ]
+    })
 }
 
 fn atom_refs_by_square_free_variable(
@@ -10206,6 +10459,12 @@ pub fn build_measurement_viewer_data_v1(
             "forbiddenCages": insight_report["gluingGeometry"]["forbiddenCages"],
             "repairMorphs": insight_report["gluingGeometry"]["repairMorphs"],
             "atomGlyphs": insight_report["gluingGeometry"]["atomGlyphs"],
+            "analyticOverlayBundle": insight_report["gluingGeometry"]["analyticOverlayBundle"],
+            "periodPairingOverlays": insight_report["gluingGeometry"]["analyticOverlayBundle"]["periodPairingOverlays"],
+            "transferCostOverlays": insight_report["gluingGeometry"]["analyticOverlayBundle"]["transferCostOverlays"],
+            "spectralGapOverlays": insight_report["gluingGeometry"]["analyticOverlayBundle"]["spectralGapOverlays"],
+            "curvatureHotspotOverlays": insight_report["gluingGeometry"]["analyticOverlayBundle"]["curvatureHotspotOverlays"],
+            "singularityConcentrationOverlays": insight_report["gluingGeometry"]["analyticOverlayBundle"]["singularityConcentrationOverlays"],
             "omittedGeometryCounts": insight_report["gluingGeometry"]["omittedGeometryCounts"],
             "nonClaims": insight_report["gluingGeometry"]["nonClaims"]
         },

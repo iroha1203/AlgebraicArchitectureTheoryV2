@@ -72,6 +72,7 @@
     "renderNerveGeometry",
     "renderCocycleRibbon",
     "renderLocusField",
+    "renderAnalyticOverlays",
     "renderForbiddenCages",
     "renderRepairMorphs",
     "renderAtomGlyphOverlays",
@@ -85,6 +86,7 @@
     "visualEncodingChannel",
     "__archsigViewerDebug",
     "value=\"obstructions\"",
+    "value=\"analyticOverlay\"",
     "sceneAxisPosition",
     "legendValueText",
     "gluingGeometry."

@@ -3779,6 +3779,163 @@ fn cli_analyze_v2_square_free_repair_outputs_hitting_sets_and_nsdepth() {
 }
 
 #[test]
+fn cli_analyze_v2_projects_analytic_overlay_bundle_to_viewer_lane() {
+    let period_out = run_ag_measurement_fixture(
+        "m14-period-overlay",
+        "archmap_v2_period_stokes.json",
+        "law_policy_period.json",
+    );
+    let period_packet = read_json(&period_out.join("archsig-measurement-packet.json"));
+    let period_report = read_json(&period_out.join("archsig-insight-report.json"));
+    let period_viewer = read_json(&period_out.join("archsig-atom-viewer-data.json"));
+    assert_eq!(
+        period_viewer["aatGeometryOverlays"]["analyticOverlayBundle"],
+        period_report["gluingGeometry"]["analyticOverlayBundle"],
+        "viewer data must carry the same allowlisted analytic overlay bundle as gluing geometry"
+    );
+    for expected in [
+        "strict-period-pairing@1",
+        "support-localized-transfer@1",
+        "graph-laplacian-hodge-proxy@1",
+        "curvature-transfer-perron-hotspot@1",
+        "ag.law-conflict-tor@1/lawConflicts",
+    ] {
+        assert!(
+            period_viewer["aatGeometryOverlays"]["analyticOverlayBundle"]["allowlist"]
+                .as_array()
+                .expect("allowlist is array")
+                .iter()
+                .any(|entry| entry.as_str() == Some(expected)),
+            "analytic overlay allowlist must contain {expected}"
+        );
+    }
+    assert_eq!(
+        period_packet["structuralVerdict"]
+            .as_array()
+            .expect("structuralVerdict is array")
+            .len(),
+        0,
+        "period overlay projection must not create structural verdict rows"
+    );
+    let period_overlay = overlay_by_kind(&period_viewer, "period_pairing_matrix");
+    assert_eq!(period_overlay["colorRole"], "analytic_reading");
+    assert_eq!(
+        period_overlay["periodPairingMatrix"],
+        serde_json::json!([[2.0, -1.0]])
+    );
+    assert_eq!(period_overlay["sourceRegime"], "analytic-measurement");
+    assert!(
+        period_overlay["nonClaim"]
+            .as_str()
+            .is_some_and(|text| text.contains("model-relative")),
+        "period overlay must carry model-relative non-claim"
+    );
+    assert_analytic_overlay_scene_active(&period_viewer);
+
+    let transfer_out = run_ag_measurement_fixture(
+        "m14-transfer-overlay",
+        "archmap_v2_support_transfer.json",
+        "law_policy_transfer.json",
+    );
+    let transfer_packet = read_json(&transfer_out.join("archsig-measurement-packet.json"));
+    let transfer_viewer = read_json(&transfer_out.join("archsig-atom-viewer-data.json"));
+    assert_eq!(
+        transfer_packet["structuralVerdict"]
+            .as_array()
+            .expect("structuralVerdict is array")
+            .len(),
+        0,
+        "transfer overlay projection must not create structural verdict rows"
+    );
+    let transfer_overlay = overlay_by_kind(&transfer_viewer, "wasserstein_transfer_cost");
+    assert_eq!(transfer_overlay["colorRole"], "analytic_reading");
+    assert_eq!(transfer_overlay["transferResidue"], Value::from(0.790569));
+    assert_eq!(
+        transfer_overlay["wassersteinTransferCost"],
+        Value::from(3.5)
+    );
+    assert!(
+        transfer_overlay["nonClaim"]
+            .as_str()
+            .is_some_and(|text| text.contains("not W1 itself")),
+        "transfer overlay must not claim W1/global repair safety"
+    );
+
+    let laplacian_out = run_ag_measurement_fixture(
+        "m14-laplacian-overlay",
+        "archmap_v2_sheaf_laplacian.json",
+        "law_policy_laplacian.json",
+    );
+    let laplacian_packet = read_json(&laplacian_out.join("archsig-measurement-packet.json"));
+    let laplacian_viewer = read_json(&laplacian_out.join("archsig-atom-viewer-data.json"));
+    assert_eq!(
+        laplacian_packet["structuralVerdict"]
+            .as_array()
+            .expect("structuralVerdict is array")
+            .len(),
+        1,
+        "spectral overlays must not add to the sheaf-laplacian structural verdict row"
+    );
+    let spectral_overlay = overlay_by_kind(&laplacian_viewer, "spectral_gap_proxy");
+    assert_eq!(spectral_overlay["colorRole"], "analytic_reading");
+    assert_eq!(spectral_overlay["spectralGap"], Value::from(2.0));
+    assert!(
+        spectral_overlay["nonClaim"]
+            .as_str()
+            .is_some_and(|text| text.contains("not measured_zero lawfulness")),
+        "spectral gap overlay must not be promoted to measured_zero"
+    );
+    let hotspot_overlay = overlay_by_kind(&laplacian_viewer, "curvature_spectrum_hotspot");
+    assert_eq!(hotspot_overlay["colorRole"], "analytic_reading");
+    assert_eq!(hotspot_overlay["sourceRegime"], "theorem-candidate");
+    assert!(
+        hotspot_overlay["hotspots"]
+            .as_array()
+            .is_some_and(|items| !items.is_empty()),
+        "hotspot overlay must be gated by an existing landed hotspot reading"
+    );
+
+    let tor_out = run_ag_measurement_fixture(
+        "m14-singularity-overlay",
+        "archmap_v2_law_conflict_tor.json",
+        "law_policy_tor.json",
+    );
+    let tor_packet = read_json(&tor_out.join("archsig-measurement-packet.json"));
+    let tor_viewer = read_json(&tor_out.join("archsig-atom-viewer-data.json"));
+    assert_eq!(
+        tor_packet["structuralVerdict"]
+            .as_array()
+            .expect("structuralVerdict is array")
+            .len(),
+        1,
+        "singularity concentration overlay must not add to the Tor structural verdict row"
+    );
+    let concentration_overlay = overlay_by_kind(&tor_viewer, "singularity_concentration");
+    assert_eq!(concentration_overlay["colorRole"], "analytic_reading");
+    assert_eq!(concentration_overlay["deformationRegime"], "not_provided");
+    assert_eq!(concentration_overlay["concentrationCount"], Value::from(1));
+
+    let square_free_out = run_ag_measurement_fixture(
+        "m14-empty-overlay",
+        "archmap_v2_square_free_repair.json",
+        "law_policy_square_free.json",
+    );
+    let square_free_viewer = read_json(&square_free_out.join("archsig-atom-viewer-data.json"));
+    assert!(
+        square_free_viewer["aatGeometryOverlays"]["analyticOverlayBundle"]["overlays"]
+            .as_array()
+            .is_some_and(Vec::is_empty),
+        "packets without M14 allowlisted readings must keep analytic overlays silent"
+    );
+    let inactive_scene = viewer_scene_by_id(&square_free_viewer, "analytic-overlay");
+    assert_eq!(inactive_scene["sceneStatus"], "not_active_for_packet");
+    assert_eq!(
+        inactive_scene["visualEncodings"][0]["colorRole"], "not_applicable",
+        "empty analytic overlay packet must not be rendered as a red error or structural color"
+    );
+}
+
+#[test]
 fn cli_analyze_v2_square_free_without_certificate_returns_unknown() {
     let out_dir = temp_dir("ag-measurement-square-free-no-cert");
     let root = ag_measurement_root();
@@ -9497,7 +9654,11 @@ fn practical_rust_service_example_runs_current_analyze() {
     assert_eq!(viewer["atomEdges"].as_array().map(Vec::len), Some(78));
     assert_eq!(
         viewer["viewerVisualScenes"].as_array().map(Vec::len),
-        Some(10)
+        Some(11)
+    );
+    assert_eq!(
+        viewer_scene_by_id(&viewer, "analytic-overlay")["sceneStatus"],
+        "not_active_for_packet"
     );
     assert_eq!(viewer["guidedTours"].as_array().map(Vec::len), Some(2));
     assert_eq!(
@@ -13627,6 +13788,49 @@ fn run_sig0_output(args: &[&str]) -> std::process::Output {
 fn read_json(path: &Path) -> Value {
     serde_json::from_slice(&fs::read(path).expect("json fixture can be read"))
         .expect("json fixture parses")
+}
+
+fn run_ag_measurement_fixture(case_id: &str, archmap: &str, law_policy: &str) -> PathBuf {
+    let root = ag_measurement_root();
+    let out_dir = temp_dir(case_id);
+    run_sig0(&[
+        "analyze",
+        "--archmap",
+        root.join(archmap).to_str().expect("path is utf-8"),
+        "--law-policy",
+        root.join(law_policy).to_str().expect("path is utf-8"),
+        "--out-dir",
+        out_dir.to_str().expect("path is utf-8"),
+    ]);
+    out_dir
+}
+
+fn overlay_by_kind<'a>(viewer: &'a Value, overlay_kind: &str) -> &'a Value {
+    viewer["aatGeometryOverlays"]["analyticOverlayBundle"]["overlays"]
+        .as_array()
+        .expect("analytic overlay bundle overlays is array")
+        .iter()
+        .find(|overlay| overlay["overlayKind"] == overlay_kind)
+        .unwrap_or_else(|| panic!("missing analytic overlay kind {overlay_kind}"))
+}
+
+fn viewer_scene_by_id<'a>(viewer: &'a Value, scene_id: &str) -> &'a Value {
+    viewer["viewerVisualScenes"]
+        .as_array()
+        .expect("viewerVisualScenes is array")
+        .iter()
+        .find(|scene| scene["sceneId"] == scene_id)
+        .unwrap_or_else(|| panic!("missing viewer scene {scene_id}"))
+}
+
+fn assert_analytic_overlay_scene_active(viewer: &Value) {
+    let scene = viewer_scene_by_id(viewer, "analytic-overlay");
+    assert_eq!(scene["sceneStatus"], "active");
+    assert_eq!(scene["visualEncodings"][0]["colorRole"], "analytic_reading");
+    assert_eq!(
+        scene["gluingGeometryRefs"]["analyticOverlayBundleRef"],
+        "gluingGeometry.analyticOverlayBundle"
+    );
 }
 
 fn invariant_by_id<'a>(packet: &'a Value, invariant_id: &str) -> &'a Value {
