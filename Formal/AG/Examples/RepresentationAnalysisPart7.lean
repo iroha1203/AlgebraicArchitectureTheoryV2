@@ -1,5 +1,4 @@
 import Formal.AG.Examples.FiniteModel
-import Formal.AG.Cohomology.FiniteExamples
 import Formal.AG.RepresentationAnalysis
 
 noncomputable section
@@ -99,37 +98,79 @@ theorem periodSeparation_toy_model :
 
 /-! ### (c) pseudo-circle strict period toy model -/
 
-abbrev PseudoCircleEdge :=
-  Cohomology.FiniteExamples.PseudoCircleGolden.BoundaryEdge
+inductive PseudoCircleVertex where
+  | source
+  | target
+deriving DecidableEq, Fintype
 
-abbrev PseudoCircleChain := PseudoCircleEdge -> Int
+inductive PseudoCircleEdge where
+  | sync
+  | async
+deriving DecidableEq, Fintype
 
-instance : AddCommGroup PseudoCircleChain :=
-  Pi.addCommGroup
+abbrev PseudoCircleChain : Nat -> Type
+  | 0 => PseudoCircleVertex -> Int
+  | 1 => PseudoCircleEdge -> Int
+  | _ + 2 => Int
+
+def pseudoCircleChainAddCommGroup (n : Nat) : AddCommGroup (PseudoCircleChain n) :=
+  match n with
+  | 0 => Pi.addCommGroup
+  | 1 => Pi.addCommGroup
+  | _ + 2 => inferInstance
+
+instance (n : Nat) : AddCommGroup (PseudoCircleChain n) :=
+  pseudoCircleChainAddCommGroup n
+
+def pseudoCircleBoundaryZero :
+    PseudoCircleChain 1 →+ PseudoCircleChain 0 where
+  toFun γ
+    | PseudoCircleVertex.source => -γ PseudoCircleEdge.sync - γ PseudoCircleEdge.async
+    | PseudoCircleVertex.target => γ PseudoCircleEdge.sync + γ PseudoCircleEdge.async
+  map_zero' := by
+    funext v
+    cases v <;> simp
+  map_add' := by
+    intro γ δ
+    funext v
+    cases v <;> simp [Pi.add_apply] <;> ring_nf
+
+def pseudoCircleBoundary : (n : Nat) -> PseudoCircleChain (n + 1) →+ PseudoCircleChain n
+  | 0 => pseudoCircleBoundaryZero
+  | 1 => 0
+  | _ + 2 => 0
 
 def pseudoCircleChainComplex : Cohomology.FiniteCechChainComplex where
-  Chain _ := PseudoCircleChain
-  chainAddCommGroup _ := inferInstance
-  boundary _ := 0
-  boundary_comp _ _ := rfl
+  Chain := PseudoCircleChain
+  chainAddCommGroup := pseudoCircleChainAddCommGroup
+  boundary := pseudoCircleBoundary
+  boundary_comp := by
+    intro n γ
+    cases n with
+    | zero =>
+        funext v
+        cases v <;> rfl
+    | succ n =>
+        cases n <;> rfl
 
-def pseudoCircleCocycle : PseudoCircleChain
-  | Cohomology.FiniteExamples.PseudoCircleGolden.BoundaryEdge.AB => 1
-  | Cohomology.FiniteExamples.PseudoCircleGolden.BoundaryEdge.BC => 0
-  | Cohomology.FiniteExamples.PseudoCircleGolden.BoundaryEdge.CA => 0
+def pseudoCircleSyncChain : PseudoCircleChain 1
+  | PseudoCircleEdge.sync => 1
+  | PseudoCircleEdge.async => 0
 
-def pseudoCircleCycle : PseudoCircleChain
-  | Cohomology.FiniteExamples.PseudoCircleGolden.BoundaryEdge.AB => 1
-  | Cohomology.FiniteExamples.PseudoCircleGolden.BoundaryEdge.BC => -1
-  | Cohomology.FiniteExamples.PseudoCircleGolden.BoundaryEdge.CA => 0
+def pseudoCircleAsyncChain : PseudoCircleChain 1
+  | PseudoCircleEdge.sync => 0
+  | PseudoCircleEdge.async => 1
 
-def pseudoCirclePairing (ω γ : PseudoCircleChain) : Int :=
-  ω Cohomology.FiniteExamples.PseudoCircleGolden.BoundaryEdge.AB *
-      γ Cohomology.FiniteExamples.PseudoCircleGolden.BoundaryEdge.AB +
-    ω Cohomology.FiniteExamples.PseudoCircleGolden.BoundaryEdge.BC *
-      γ Cohomology.FiniteExamples.PseudoCircleGolden.BoundaryEdge.BC +
-    ω Cohomology.FiniteExamples.PseudoCircleGolden.BoundaryEdge.CA *
-      γ Cohomology.FiniteExamples.PseudoCircleGolden.BoundaryEdge.CA
+def pseudoCircleCocycle : PseudoCircleChain 1
+  | PseudoCircleEdge.sync => 1
+  | PseudoCircleEdge.async => 0
+
+def pseudoCircleCycle : PseudoCircleChain 1 :=
+  pseudoCircleSyncChain - pseudoCircleAsyncChain
+
+def pseudoCirclePairing (ω γ : PseudoCircleChain 1) : Int :=
+  ω PseudoCircleEdge.sync * γ PseudoCircleEdge.sync +
+    ω PseudoCircleEdge.async * γ PseudoCircleEdge.async
 
 def pseudoCircleStrictPeriod : Int :=
   pseudoCirclePairing pseudoCircleCocycle pseudoCircleCycle
@@ -138,17 +179,19 @@ abbrev pseudoCircleCechPairing
     {𝒰 : Cohomology.CoverRelativeCechCover site}
     {Ob : Cohomology.ObstructionSheaf site}
     (K : Cohomology.CoverRelativeCechComplex 𝒰 Ob)
-    (cochainReading : ∀ n : Nat, K.Cn n -> PseudoCircleChain) :
+    (cochainReading : ∀ n : Nat, K.Cn n -> PseudoCircleChain n) :
     Cohomology.CechCochainChainPairing K pseudoCircleChainComplex where
   Period := Int
   periodAddCommGroup := inferInstance
-  pairing n ω γ := pseudoCirclePairing (cochainReading n ω) γ
+  pairing
+    | 1, ω, γ => pseudoCirclePairing (cochainReading 1 ω) γ
+    | _, _, _ => 0
 
 def pseudoCircleStrictPeriodRepresentative
     {𝒰 : Cohomology.CoverRelativeCechCover site}
     {Ob : Cohomology.ObstructionSheaf site}
     (K : Cohomology.CoverRelativeCechComplex 𝒰 Ob)
-    (cochainReading : ∀ n : Nat, K.Cn n -> PseudoCircleChain)
+    (cochainReading : ∀ n : Nat, K.Cn n -> PseudoCircleChain n)
     (ω : K.Cn 1)
     (hω : letI := K.cochainAddCommGroup 2; K.d 1 ω = 0)
     (hclass : K.CoverRelativeHn 1)
@@ -161,7 +204,10 @@ def pseudoCircleStrictPeriodRepresentative
   cocycle_is_cocycle := hω
   representsCohomologyClass := hrep
   cycle := pseudoCircleCycle
-  cycle_boundary_zero := rfl
+  cycle_boundary_zero := by
+    change pseudoCircleChainComplex.boundaryOp 0 pseudoCircleCycle = 0
+    funext v
+    cases v <;> rfl
   boundaryCompatible := True
   boundaryCompatible_cert := trivial
   coboundaryCompatible := True
@@ -171,7 +217,7 @@ def pseudoCircleStrictPeriodData
     {𝒰 : Cohomology.CoverRelativeCechCover site}
     {Ob : Cohomology.ObstructionSheaf site}
     (K : Cohomology.CoverRelativeCechComplex 𝒰 Ob)
-    (cochainReading : ∀ n : Nat, K.Cn n -> PseudoCircleChain)
+    (cochainReading : ∀ n : Nat, K.Cn n -> PseudoCircleChain n)
     (ω : K.Cn 1)
     (hω : letI := K.cochainAddCommGroup 2; K.d 1 ω = 0)
     (hclass : K.CoverRelativeHn 1)
@@ -181,6 +227,18 @@ def pseudoCircleStrictPeriodData
     (i : F.Index) : StrictPeriodData F X :=
   (pseudoCircleStrictPeriodRepresentative K cochainReading ω hω hclass hrep).toStrictPeriodData i
 
+theorem pseudoCircle_sync_async_shared_boundary :
+    pseudoCircleChainComplex.boundaryOp 0 pseudoCircleSyncChain =
+      pseudoCircleChainComplex.boundaryOp 0 pseudoCircleAsyncChain := by
+  funext v
+  cases v <;> rfl
+
+theorem pseudoCircle_cycle_boundary_zero :
+    FiniteCechCycleClosed pseudoCircleChainComplex 1 pseudoCircleCycle := by
+  change pseudoCircleChainComplex.boundaryOp 0 pseudoCircleCycle = 0
+  funext v
+  cases v <;> rfl
+
 theorem pseudoCircle_boundary_comp_zero (γ : pseudoCircleChainComplex.Chain 2) :
     pseudoCircleChainComplex.boundaryOp 0
       (pseudoCircleChainComplex.boundaryOp 1 γ) = 0 :=
@@ -189,13 +247,14 @@ theorem pseudoCircle_boundary_comp_zero (γ : pseudoCircleChainComplex.Chain 2) 
 
 theorem pseudoCircle_strictPeriod_eq_one :
     pseudoCircleStrictPeriod = 1 := by
-  rfl
+  simp [pseudoCircleStrictPeriod, pseudoCirclePairing, pseudoCircleCocycle,
+    pseudoCircleCycle, pseudoCircleSyncChain, pseudoCircleAsyncChain]
 
 theorem pseudoCircle_strictPeriodRepresentative_eq_one
     {𝒰 : Cohomology.CoverRelativeCechCover site}
     {Ob : Cohomology.ObstructionSheaf site}
     (K : Cohomology.CoverRelativeCechComplex 𝒰 Ob)
-    (cochainReading : ∀ n : Nat, K.Cn n -> PseudoCircleChain)
+    (cochainReading : ∀ n : Nat, K.Cn n -> PseudoCircleChain n)
     (ω : K.Cn 1)
     (hω : letI := K.cochainAddCommGroup 2; K.d 1 ω = 0)
     (hclass : K.CoverRelativeHn 1)
@@ -203,17 +262,15 @@ theorem pseudoCircle_strictPeriodRepresentative_eq_one
     (hread : cochainReading 1 ω = pseudoCircleCocycle) :
     (pseudoCircleStrictPeriodRepresentative K cochainReading ω hω hclass hrep).strictPeriodValue =
       1 := by
-  simp [pseudoCircleStrictPeriodRepresentative,
-    FiniteCechStrictPeriodRepresentative.strictPeriodValue,
-    Cohomology.CechCochainChainPairing.pair,
-    pseudoCircleCechPairing, pseudoCirclePairing, hread,
-    pseudoCircleCocycle, pseudoCircleCycle]
+  change pseudoCirclePairing (cochainReading 1 ω) pseudoCircleCycle = 1
+  rw [hread]
+  exact pseudoCircle_strictPeriod_eq_one
 
 theorem pseudoCircle_strictPeriodData_reads_representative
     {𝒰 : Cohomology.CoverRelativeCechCover site}
     {Ob : Cohomology.ObstructionSheaf site}
     (K : Cohomology.CoverRelativeCechComplex 𝒰 Ob)
-    (cochainReading : ∀ n : Nat, K.Cn n -> PseudoCircleChain)
+    (cochainReading : ∀ n : Nat, K.Cn n -> PseudoCircleChain n)
     (ω : K.Cn 1)
     (hω : letI := K.cochainAddCommGroup 2; K.d 1 ω = 0)
     (hclass : K.CoverRelativeHn 1)
