@@ -4872,10 +4872,12 @@ File: `Formal/AG/RepresentationAnalysis.lean`,
 `Formal/AG/RepresentationAnalysis/SignatureCurvature.lean`,
 `Formal/AG/RepresentationAnalysis/Metric.lean`,
 `Formal/AG/RepresentationAnalysis/DistanceFlatnessMass.lean`,
-`Formal/AG/RepresentationAnalysis/RepairMarginDehn.lean`.
+`Formal/AG/RepresentationAnalysis/RepairMarginDehn.lean`,
+`Formal/AG/RepresentationAnalysis/AnalyticContext.lean`,
+`Formal/AG/RepresentationAnalysis/Synthesis.lean`.
 
 PRD-7 [第VII部 Representation・Periods・Analysis](lean_ag_part_7_representation_periods_analysis_prd.md)
-の AC1/R0 から AC13/R9 までに対応する entrypoint である。現時点では
+の AC1/R0 から AC19/R12 までに対応する entrypoint である。現時点では
 `Formal/AG/RepresentationAnalysis` を build 対象へ追加し、PRD-3 `LawAlgebra`、
 PRD-4 `Cohomology`、PRD-5 `Derived`、PRD-6 `SingularityMonodromyStack`
 を第VII部の前提 module として import する。最初の surface として、
@@ -4924,6 +4926,15 @@ selected boundary distance triangle inequality、safe-region boundary separation
 AC15/R9 として、observation map の selected Lipschitz bound と filling
 generator cost / filling cost comparison に相対化した定理12.7 Observation Gap
 Lower Bound を証明している。
+AC16/R10 として、PRD-6 stratum / tangent / normal cone / monodromy data を
+analytic reading として束ねる `SingularityProfile` と `MonodromyIndex` を追加している。
+AC17/R11 として、`AnalyticReadingContext`、`CompletenessSpectrum`、
+`UDetectingRepresentationFamily` を追加している。AC18/R11 として、explicit
+adequacy / witness exactness / axis exactness / coefficient discipline assumptions の下で
+定理15.4 Representation Conservativity under Adequacy を証明している。
+AC19/R12 として、PRD-1〜7 の tower と reading layer を束ねる theorem package
+`AATSynthesisAssumptions` / `AATSynthesisPackage` と定理16.1
+Algebraic-Geometric AAT Synthesis を追加している。
 
 Tracking Issue: [#2157](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2157).
 Initial implementation Issue: [#2158](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2158).
@@ -4943,6 +4954,8 @@ AC14 implementation Issue: [#2192](https://github.com/iroha1203/AlgebraicArchite
 AC15 implementation Issue: [#2194](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2194).
 AC16 implementation Issue: [#2196](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2196).
 AC17 implementation Issue: [#2198](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2198).
+AC18 implementation Issue: [#2201](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2201).
+AC19 implementation Issue: [#2203](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2203).
 
 | 本文ラベル | Lean 名 | 種別 | 意味 | Status |
 | --- | --- | --- | --- | --- |
@@ -4964,9 +4977,10 @@ AC17 implementation Issue: [#2198](https://github.com/iroha1203/AlgebraicArchite
 | `VII.定義13.1 / 13.2` | `AAT.AG.RepresentationAnalysis.SingularityProfile`, `SingularityProfile.selectedPoint_mem_holds`, `SingularityProfile.liftingFailure`, `SingularityProfile.selectedDerivedConflict_supported_holds`, `SingularityProfile.selectedRepairDifficulty_certificate`, `MonodromyIndex`, `MonodromyIndex.monodromyAction_eq_Mon_gamma_holds`, `MonodromyIndex.obstructionAction_eq_holds`, `MonodromyIndex.semanticAction_eq_holds`, `MonodromyIndex.effectAction_eq_holds`, `MonodromyIndex.loopResidueBound_le_holds`, `MonodromyIndex.boundedReading_certificate`, `MonodromyIndex.architecturalMonodromyIndex_value_eq_weighted_sum` | `structure` / `theorem` | `SingularityProfile` は PRD-6 の `ArchitectureStratum`、`CotangentData`、`TangentData`、`DeformationObstructionTheory`、`NormalConeReading` を parameter に持ち、selected point、非零 obstruction による lifting failure、normal cone 上の derived conflict concentration、repair difficulty reading、measurement verdict reserved carrier を束ねる。`MonodromyIndex` は PRD-6 の `MonodromyAction` と selected loop `gamma` に相対化され、`Mon_gamma`、obstruction / semantic / effect action、period change、loop residue bound、finite `ArchitecturalMonodromyIndex` reading、measurement verdict reserved carrier を束ねる。 | `defined only` / `proved accessor` |
 | `VII.定義14.1 / 15.1 / 15.3` | `AAT.AG.RepresentationAnalysis.CompletenessSpectrum`, `UDetectingRepresentationFamily`, `UDetectingRepresentationFamily.witnessZero_of_all_readings_zero`, `UDetectingRepresentationFamily.selectedCompletenessLevel`, `AnalyticReadingContext`, `AnalyticReadingContext.Rep`, `AnalyticReadingContext.distanceProfile`, `AnalyticReadingContext.signatureAxes`, `AnalyticReadingContext.UDetecting`, `AnalyticReadingContext.AdequacyDiscipline`, `AnalyticReadingContext.coverageAdequacy_holds`, `AnalyticReadingContext.witnessExactness_holds`, `AnalyticReadingContext.axisExactness_holds`, `AnalyticReadingContext.coefficientDiscipline_holds`, `AnalyticReadingContext.witnessZero_of_all_readings_zero` | `inductive` / `structure` / `def` / `theorem` | `CompletenessSpectrum` は reading / preserving / reflecting / conservative / faithful / complete-for-selected-purpose の selected label を定義する。`UDetectingRepresentationFamily` は selected obstruction class `alpha` について全 representation reading が analytic zero なら `WitnessZero_U alpha` を返す package である。`AnalyticReadingContext` は Atom vocabulary、law universe、coverage topology、coefficient sheaf、representation family、distance / obstruction mass profile、selected witness family、selected signature axes、U-detecting package、later theorem 用の adequacy / exactness / coefficient discipline props を束ねる。 | `defined only` / `proved accessor` |
 | `VII.定理15.4` | `AAT.AG.RepresentationAnalysis.RepresentationConservativityUnderAdequacy`, `RepresentationConservativityUnderAdequacy.adequacyDiscipline`, `RepresentationConservativityUnderAdequacy.representation_conservativity_under_adequacy` | `structure` / `theorem` | selected `AnalyticReadingContext` 上で、coverage adequacy、witness exactness、axis exactness、coefficient discipline、`WitnessZero_U alpha -> alpha = zeroClass` を明示 field として持つ theorem package を定義する。全 selected representation reading が analytic zero の selected obstruction class `alpha` について、U-detecting で `WitnessZero_U alpha` を得て、explicit exactness field により `alpha = zeroClass` を証明する。 | `proved under explicit adequacy and witness-exactness assumptions` |
+| `VII.定理16.1` | `AAT.AG.RepresentationAnalysis.AATSynthesisAssumptions`, `AATSynthesisAssumptions.lawfulLocus_is_zeroLocus`, `AATSynthesisPackage`, `AATSynthesisPackage.aatSite_is_geometry_site`, `AATSynthesisPackage.ringedAATTopos_is_scheme_ringedTopos`, `AATSynthesisPackage.affineAATCharts_are_scheme_charts`, `AATSynthesisPackage.lawfulLocus_is_zeroLocus`, `AATSynthesisPackage.analyticReadingContext`, `AATSynthesisAssumptions.toPackage`, `algebraicGeometricAATSynthesis` | `structure` / `def` / `theorem` | PRD-1〜7 の selected tower を `Site.PartIPrerequisites`、`AtomFamily`、`ArchitectureObject`、`ArchitectureGeometry`、`AATSite`、`RingedAATTopos`、`ArchitectureScheme`、scheme atlas としての `AffineAATChart` family、`LawfulLocus` / `LawfulSectionData`、cover-relative Cech obstruction cohomology、`RepairComparisonProfile`、PRD-6 `ArchitectureStratum`、第VII部 `AnalyticReadingContext` として束ねる theorem package。`toPackage` が前提 tower から package を構成し、定理16.1 が selected site、scheme ringed topos / atlas coherence、lawful locus、obstruction cohomology、derived geometry、singularity stack、analytic reading context の保持を証明する。 | `proved theorem package` |
 
 Non-conclusions: この entrypoint は general singular homology、canonical realization、
-unconditional / global conservativity theorem、synthesis theorem、finite golden examples をまだ実装しない。
+unconditional / global conservativity theorem、finite golden examples をまだ実装しない。
 measurement verdict / finite computability profile は
 PRD-8 の範囲であり、第VII部 bootstrap では導入しない。
 

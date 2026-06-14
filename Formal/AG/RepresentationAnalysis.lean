@@ -10,3 +10,4 @@ import Formal.AG.RepresentationAnalysis.Metric
 import Formal.AG.RepresentationAnalysis.DistanceFlatnessMass
 import Formal.AG.RepresentationAnalysis.RepairMarginDehn
 import Formal.AG.RepresentationAnalysis.AnalyticContext
+import Formal.AG.RepresentationAnalysis.Synthesis
