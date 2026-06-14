@@ -4863,10 +4863,11 @@ non-abelian gerbe cohomology 一般論、全 decomposition 分類、finite witne
 
 File: `Formal/AG/RepresentationAnalysis.lean`,
 `Formal/AG/RepresentationAnalysis/Bootstrap.lean`,
-`Formal/AG/RepresentationAnalysis/AATSch.lean`.
+`Formal/AG/RepresentationAnalysis/AATSch.lean`,
+`Formal/AG/RepresentationAnalysis/PreservationReflection.lean`.
 
 PRD-7 [第VII部 Representation・Periods・Analysis](lean_ag_part_7_representation_periods_analysis_prd.md)
-の AC1/R0 と AC2/R1 に対応する entrypoint である。現時点では
+の AC1/R0、AC2/R1、AC3/R2 に対応する entrypoint である。現時点では
 `Formal/AG/RepresentationAnalysis` を build 対象へ追加し、PRD-3 `LawAlgebra`、
 PRD-4 `Cohomology`、PRD-5 `Derived`、PRD-6 `SingularityMonodromyStack`
 を第VII部の前提 module として import する。最初の surface として、
@@ -4878,21 +4879,25 @@ Lean-facing status として保持する。`PartVIINoMeasurementVerdictBoundary`
 第VII部が representation / period / metric reading layer であり、measurement verdict は
 第VIII部へ残すことを明示する。AC2/R1 として、fixed reading parameter に相対化された
 `AATSch`、selected morphism interface、optional fiber product data、
-functor-like `AnalyticRepresentation` も追加している。
+functor-like `AnalyticRepresentation` も追加している。AC3/R2 として、
+indexed `RepresentationFamily`、selected structural / analytic notion package、
+reflection assumption package、preservation / reflection / conservative / faithful
+predicate を追加している。
 
 Tracking Issue: [#2157](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2157).
 Initial implementation Issue: [#2158](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2158).
 AC2 implementation Issue: [#2162](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2162).
+AC3 implementation Issue: [#2165](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2165).
 
 | 本文ラベル | Lean 名 | 種別 | 意味 | Status |
 | --- | --- | --- | --- | --- |
 | `VII.R0` | `Formal.AG.RepresentationAnalysis`, `Formal.AG.RepresentationAnalysis.Bootstrap`, `AAT.AG.RepresentationAnalysis.UsesArchitectureScheme`, `UsesCoverRelativeCechComplex`, `UsesRepairComparisonProfile`, `UsesArchitectureStratum`, `PrerequisiteStatus`, `PartVIIDependencyStatus`, `currentDependencyStatus`, `current_lawAlgebra_available`, `current_cohomology_available`, `current_derived_available`, `current_singularityMonodromyStack_available`, `PartVIINoMeasurementVerdictBoundary`, `noMeasurementVerdictBoundary`, `PartVIINoMeasurementVerdictBoundary.readingLayer_holds`, `PartVIINoMeasurementVerdictBoundary.measurementVerdictReservedForPartVIII_holds` | `import` / `abbrev` / `inductive` / `structure` / `def` / `theorem` | 第VII部 Representation・Periods・Analysis module を `Formal/AG.lean` から import し、PRD-3〜6 の成果物上に立ち上げる。先行依存は concrete Lean 型参照で確認し、measurement verdict は第VII部に導入しない境界を保持する。 | `defined only` / `proved accessor` |
 | `VII.定義2.1` | `AAT.AG.RepresentationAnalysis.AATSchReadingParameter`, `AATSch`, `AATSch.underlyingScheme`, `AATSch.underlyingScheme_eq`, `AATSchMorphism`, `AATSchMorphism.atomLabelsCompatible_holds`, `AATSchMorphism.lawReadingCompatible_holds`, `AATSchMorphism.obstructionIdealCompatible_holds`, `AATSchMorphism.signatureReadingCompatible_holds`, `AATSchMorphism.interpretationMapCompatible_holds`, `AATSchIdentityData`, `AATSchCompositionData`, `AATSchFiberProductData`, `AATSchFiberProductData.underlyingPullback_holds`, `AATSchFiberProductData.decorationPullbackCompatible_holds`, `AnalyticTargetCategory`, `AnalyticRepresentation`, `AnalyticRepresentation.map_identity`, `AnalyticRepresentation.map_composition` | `structure` / `def` / `theorem` | fixed reading parameter `p` に相対化された decorated architecture scheme、selected morphism interface、optional fiber product data、target category interface、functor-like analytic representation を定義する。identity / composition は selected data と representation law fields として保持し、Mathlib functor bridge はまだ主張しない。 | `defined only` / `proved accessor` |
+| `VII.定義3.1 / 定義4.1-4.3` | `AAT.AG.RepresentationAnalysis.RepresentationFamily`, `RepresentationFamily.Read`, `RepresentationFamily.Rep`, `RepresentationFamily.read_eq_obj`, `RepresentationNotions`, `ReflectionAssumptions`, `ReflectionAssumptions.Holds`, `ReflectionAssumptions.coverage_holds`, `ReflectionAssumptions.witnessCompleteness_holds`, `ReflectionAssumptions.axisExactness_holds`, `ReflectionAssumptions.coefficientDiscipline_holds`, `RepresentationNotions.ZeroPreserving`, `ZeroReflecting`, `ObstructionPreserving`, `ObstructionReflecting`, `IsoPreserving`, `IsoReflecting`, `MorphismEqPreserving`, `MorphismEqReflecting`, `Conservative`, `Faithful`, `analyticZero_of_structuralZero`, `structuralZero_of_analyticZero`, `analyticObstruction_of_structuralObstruction`, `structuralObstruction_of_analyticObstruction`, `analyticIso_of_selectedIso`, `selectedIso_of_analyticIso`, `analyticMorphismEq_of_selectedMorphismEq`, `selectedMorphismEq_of_analyticMorphismEq`, `structuralZero_of_conservative`, `selectedMorphismEq_of_faithful` | `structure` / `def` / `theorem` | indexed representation family、selected structural / analytic notion package、coverage / witness completeness / axis exactness / coefficient discipline を明示する reflection assumption package、zero / obstruction / selected iso / selected morphism equality の preservation / reflection predicate、conservative / faithful predicate を定義する。reflection は assumption package の `Holds` を受ける場合だけ使える。 | `defined only` / `proved accessor` |
 
 Non-conclusions: この entrypoint は graph / matrix representation、
-representation family の preservation / reflection predicate、period family、strict period、
-metric enrichment、margin / observation gap theorem、detecting representation conservativity、
-synthesis theorem、finite golden examples をまだ実装しない。
+period family、strict period、metric enrichment、margin / observation gap theorem、
+detecting representation conservativity theorem、synthesis theorem、finite golden examples をまだ実装しない。
 measurement verdict / finite computability profile は
 PRD-8 の範囲であり、第VII部 bootstrap では導入しない。
 
