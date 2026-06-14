@@ -2645,15 +2645,42 @@
     }
 
     function renderLegend() {
-      if (viewModeEl.value === "holonomy") {
-        legendEl.innerHTML = [
+      if (viewModeEl.value === "holonomy" || viewModeEl.value === "aatAxes") {
+        renderSimpleLegend([
           ["64d6be", "context patch"],
           ["d8dee9", "selected cover gluing edge"],
           ["73b7ff", "shared cover face"],
           ["f2c15f", "nonzero gluing edge"]
-        ].map(([color, label]) =>
-          `<span class="legend-item"><span class="swatch" style="background:#${color}"></span>${label}</span>`
-        ).join("");
+        ]);
+        return;
+      }
+      if (["curvature", "flatness", "spectrum"].includes(viewModeEl.value)) {
+        renderSimpleLegend([
+          ["64d6be", "measured-zero region"],
+          ["f2c15f", "field row"],
+          ["ff6b6b", "blocked region"]
+        ]);
+        return;
+      }
+      if (viewModeEl.value === "obstructionLoops") {
+        renderSimpleLegend([
+          ["f2c15f", "H1 support ribbon"],
+          ["ff6b6b", "closure marker"]
+        ]);
+        return;
+      }
+      if (viewModeEl.value === "obstructions") {
+        renderSimpleLegend([
+          ["ff9468", "forbidden support cage"],
+          ["d8dee9", "support edge"]
+        ]);
+        return;
+      }
+      if (viewModeEl.value === "projection") {
+        renderSimpleLegend([
+          ["b087ff", "repair morph"],
+          ["d8dee9", "candidate target"]
+        ]);
         return;
       }
       if (usesFamilyLegend(viewModeEl.value)) {
@@ -2671,6 +2698,12 @@
       const items = Object.entries(colorByFamily);
       legendEl.innerHTML = items.slice(0, 12).map(([label, color]) =>
         `<span class="legend-item"><span class="swatch" style="background:#${Number(color).toString(16).padStart(6, "0")}"></span>${escapeHtml(label)}</span>`
+      ).join("");
+    }
+
+    function renderSimpleLegend(items) {
+      legendEl.innerHTML = items.map(([color, label]) =>
+        `<span class="legend-item"><span class="swatch" style="background:#${color}"></span>${escapeHtml(label)}</span>`
       ).join("");
     }
 
