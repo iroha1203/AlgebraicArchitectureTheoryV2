@@ -13652,7 +13652,7 @@ fn archsig_atom_viewer_static_app_is_packaged_asset() {
             && html.contains("ShadowMaterial")
             && html.contains("castShadow = true")
             && html.contains("receiveShadow = true")
-            && html.contains("scene.fog = new THREE.Fog"),
+            && html.contains("scene.fog = new THREE.FogExp2"),
         "viewer V1 PBR foundation must include three-point lighting, contact shadows, and fog"
     );
     assert!(
@@ -13688,6 +13688,30 @@ fn archsig_atom_viewer_static_app_is_packaged_asset() {
             && html.contains("selectiveBloomStatus")
             && html.contains("bloomRegisteredCount"),
         "viewer V2 must mask non-bloom objects and expose bloom diagnostics"
+    );
+    assert!(
+        html.contains("BokehPass.js")
+            && html.contains("new BokehPass(scene, camera")
+            && html.contains("updateBokehFocus()")
+            && html.contains("camera.position.distanceTo(controls.target)")
+            && html.contains("silenceDepthStatus"),
+        "viewer V3 must keep silence depth in FogExp2 and BokehPass focus"
+    );
+    assert!(
+        html.contains("createSilenceGlassMaterial")
+            && html.contains("alphaMap: silenceHatchAlphaMap")
+            && html.contains("depthWrite: false")
+            && html.contains("nerveTriangleSilenceGlass")
+            && html.contains("h2CoherenceVisualized: false")
+            && html.contains("blockedUnmeasuredRegion")
+            && html.contains("redErrorEncodingRemoved: true"),
+        "viewer V3 must render H2 and blocked silence as frosted non-verdict glass"
+    );
+    assert!(
+        html.contains("sceneColorHex(\"measured_nonzero\")")
+            && !html.contains("MeshStandardMaterial({ color: 0xff6b6b, transparent: true, opacity: 0.34, wireframe: true })")
+            && !html.contains("MeshStandardMaterial({ color: 0xff6b6b, emissive: 0x3a0808"),
+        "viewer V3 must remove red error encoding from blocked regions and closure gap marker"
     );
     assert!(
         html.contains("type=\"file\"")

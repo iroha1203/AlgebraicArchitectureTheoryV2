@@ -923,6 +923,7 @@
     import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
     import { ShaderPass } from "three/addons/postprocessing/ShaderPass.js";
     import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";
+    import { BokehPass } from "three/addons/postprocessing/BokehPass.js";
     import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
 
     const container = document.getElementById("scene");
@@ -950,7 +951,7 @@
 
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0x0d1015);
-    scene.fog = new THREE.Fog(0x0d1015, 600, 2600);
+    scene.fog = new THREE.FogExp2(0x0d1015, 0.00078);
     const camera = new THREE.PerspectiveCamera(48, 1, 0.1, 4000);
     const atomGroup = new THREE.Group();
     const moleculeGroup = new THREE.Group();
@@ -981,8 +982,10 @@
     const darkBloomLineMaterial = new THREE.LineBasicMaterial({ color: 0x000000 });
     const darkBloomSpriteMaterial = new THREE.SpriteMaterial({ color: 0x000000 });
     const bloomMaskedMaterials = new Map();
+    const silenceHatchAlphaMap = createSilenceHatchAlphaMap();
     let bloomComposer = null;
     let finalComposer = null;
+    let bokehPass = null;
     let bloomRegisteredCount = 0;
 
     let renderer = await createRenderer();
@@ -1119,13 +1122,46 @@
         finalComposer = new EffectComposer(targetRenderer);
         finalComposer.addPass(baseRenderPass);
         finalComposer.addPass(finalPass);
+        bokehPass = new BokehPass(scene, camera, {
+          focus: camera.position.distanceTo(controls.target),
+          aperture: 0.000055,
+          maxblur: 0.008,
+          width: 1,
+          height: 1
+        });
+        finalComposer.addPass(bokehPass);
         finalComposer.addPass(new OutputPass());
         scene.userData.selectiveBloomStatus = "enabled";
+        scene.userData.silenceDepthStatus = "fog-exp2-bokeh";
       } catch (_error) {
         bloomComposer = null;
         finalComposer = null;
+        bokehPass = null;
         scene.userData.selectiveBloomStatus = "unavailable";
+        scene.userData.silenceDepthStatus = "fallback-no-bokeh";
       }
+    }
+
+    function createSilenceHatchAlphaMap() {
+      const canvas = document.createElement("canvas");
+      canvas.width = 96;
+      canvas.height = 96;
+      const context = canvas.getContext("2d");
+      context.fillStyle = "rgba(255,255,255,0.18)";
+      context.fillRect(0, 0, canvas.width, canvas.height);
+      context.strokeStyle = "rgba(255,255,255,0.42)";
+      context.lineWidth = 2;
+      for (let offset = -96; offset < 192; offset += 12) {
+        context.beginPath();
+        context.moveTo(offset, 96);
+        context.lineTo(offset + 96, 0);
+        context.stroke();
+      }
+      const texture = new THREE.CanvasTexture(canvas);
+      texture.wrapS = THREE.RepeatWrapping;
+      texture.wrapT = THREE.RepeatWrapping;
+      texture.repeat.set(3, 3);
+      return texture;
     }
 
     function createGroundShadow() {
@@ -1182,10 +1218,16 @@
         renderWithoutComposer(renderer, scene, camera);
         return;
       }
+      updateBokehFocus();
       scene.traverse(darkenNonBloomed);
       bloomComposer.render();
       scene.traverse(restoreBloomMaterials);
       finalComposer.render();
+    }
+
+    function updateBokehFocus() {
+      if (!bokehPass?.materialBokeh?.uniforms?.focus) return;
+      bokehPass.materialBokeh.uniforms.focus.value = camera.position.distanceTo(controls.target);
     }
 
     function renderWithoutComposer(targetRenderer, targetScene, targetCamera) {
@@ -1308,12 +1350,14 @@
         hasGluingGeometry: Boolean(activeLayoutContext?.aat?.gluingGeometry?.schema),
         sceneLayerObjectDelta: edgeGroup.children.length - edgeChildrenBeforeSceneLayers,
         selectiveBloomStatus: scene.userData.selectiveBloomStatus || "unknown",
+        silenceDepthStatus: scene.userData.silenceDepthStatus || "unknown",
         bloomLayer: BLOOM_LAYER,
         bloomRegisteredCount
       };
       renderLegend();
       renderAxisHud();
       updateVisibility();
+      window.__archsigViewerSceneGroups = [atomGroup, moleculeGroup, edgeGroup];
       statusText(allNodes, edges);
     }
 
@@ -1346,6 +1390,32 @@
         material.emissive.lerp(new THREE.Color(material.color || 0xffffff), 0.52);
         material.emissiveIntensity = Math.max(Number(material.emissiveIntensity || 0), intensity);
       });
+    }
+
+    function createSilenceGlassMaterial(opacity = 0.12) {
+      return new THREE.MeshPhysicalMaterial({
+        color: 0x8a94a3,
+        transparent: true,
+        opacity,
+        roughness: 0.82,
+        metalness: 0.0,
+        transmission: 0.18,
+        alphaMap: silenceHatchAlphaMap,
+        depthWrite: false,
+        side: THREE.DoubleSide
+      });
+    }
+
+    function biasObjectIntoSilenceDepth(object, amount, reason) {
+      const direction = new THREE.Vector3();
+      camera.getWorldDirection(direction);
+      object.position.addScaledVector(direction, amount);
+      object.userData = {
+        ...(object.userData || {}),
+        silenceDepthBias: amount,
+        silenceDepthReason: reason,
+        measuredFocus: false
+      };
     }
 
     function renderAtomInstances(nodes, positions) {
@@ -1711,23 +1781,24 @@
         const geometry = new THREE.BufferGeometry();
         geometry.setAttribute("position", new THREE.Float32BufferAttribute(points.flatMap((p) => [p.x, p.y, p.z]), 3));
         geometry.computeVertexNormals();
-        const mesh = new THREE.Mesh(geometry, new THREE.MeshStandardMaterial({
-          color: 0x73b7ff,
-          transparent: true,
-          opacity: 0.34,
-          side: THREE.DoubleSide,
-          roughness: 0.6
-        }));
-        mesh.userData = { kind: "nerveTriangle", item: triangle };
+        const mesh = new THREE.Mesh(geometry, createSilenceGlassMaterial(0.12));
+        mesh.userData = {
+          kind: "nerveTriangleSilenceGlass",
+          item: triangle,
+          coherenceClaim: triangle.coherenceClaim || "not_visualized",
+          h2CoherenceVisualized: false,
+          silenceBoundary: "H^2 coherence is not visualized by this viewer layer"
+        };
+        biasObjectIntoSilenceDepth(mesh, 34, "coherenceClaim:not_visualized");
         edgeGroup.add(mesh);
-        addTriangleOutline(points, "nerveTriangleOutline");
+        addTriangleOutline(points, "nerveTriangleSilenceOutline", 0x8a94a3, 0.34, "dashed_silence");
         const marker = new THREE.Mesh(
           new THREE.SphereGeometry(2.8 + Math.min((triangle.sharedAtomRefs || []).length, 6) * 0.38, 18, 12),
           new THREE.MeshStandardMaterial({
             color: 0x73b7ff,
             emissive: 0x0b2f46,
             transparent: true,
-            opacity: 0.92,
+            opacity: 0.72,
             roughness: 0.44
           })
         );
@@ -1771,12 +1842,12 @@
       addLineSegments(mismatch, sceneColorHex(encoding.colorRole || "measured_nonzero"), 0.9, "nerveMismatchEdge", { lineRole: "thick_glowing_line", thicknessRole: "thick" });
     }
 
-    function addTriangleOutline(points, kind) {
+    function addTriangleOutline(points, kind, color = 0x73b7ff, opacity = 0.9, lineRole = "solid") {
       addLineSegments([
         points[0].x, points[0].y + 0.4, points[0].z, points[1].x, points[1].y + 0.4, points[1].z,
         points[1].x, points[1].y + 0.4, points[1].z, points[2].x, points[2].y + 0.4, points[2].z,
         points[2].x, points[2].y + 0.4, points[2].z, points[0].x, points[0].y + 0.4, points[0].z
-      ], 0x73b7ff, 0.9, kind, { lineRole: "solid", thicknessRole: "thick" });
+      ], color, opacity, kind, { lineRole, thicknessRole: "thin" });
     }
 
     function contextLabel(ref) {
@@ -1851,10 +1922,19 @@
       if (ribbon.closureGapEncoding?.visible) {
         const gap = new THREE.Mesh(
           new THREE.TorusKnotGeometry(3.2, 0.34, 48, 8),
-          new THREE.MeshStandardMaterial({ color: 0xff6b6b, emissive: 0x3a0808, roughness: 0.4 })
+          new THREE.MeshStandardMaterial({
+            color: sceneColorHex("measured_nonzero"),
+            emissive: 0x3f2d08,
+            roughness: 0.4
+          })
         );
         gap.position.copy(points[points.length - 1]);
-        gap.userData = { kind: "holonomyLikeGapMarker", item: ribbon.closureGapEncoding };
+        gap.userData = {
+          kind: "holonomyLikeGapMarker",
+          item: ribbon.closureGapEncoding,
+          measuredFocus: true,
+          redErrorEncodingRemoved: true
+        };
         registerMeasuredBloom(gap, "headline_h1_closure_gap", 0.9);
         edgeGroup.add(gap);
       }
@@ -1899,11 +1979,17 @@
         const center = sceneAxisPosition(scene, region.regionId || `blocked:${index}`, index, Math.max(blockedRegions.length, 1), groupPosition(index, Math.max(blockedRegions.length, 1), 60), { xValue: index / Math.max(blockedRegions.length - 1, 1), yValue: 2, zValue: 2 });
         const mesh = new THREE.Mesh(
           new THREE.BoxGeometry(8, 18, 1.2),
-          new THREE.MeshStandardMaterial({ color: 0xff6b6b, transparent: true, opacity: 0.34, wireframe: true })
+          createSilenceGlassMaterial(0.16)
         );
         mesh.position.set(center.x, 2, center.z);
         mesh.rotation.y = index * 0.45;
-        mesh.userData = { kind: "blockedUnmeasuredRegion", item: region };
+        mesh.userData = {
+          kind: "blockedUnmeasuredRegion",
+          item: region,
+          silenceBoundary: "unmeasured support stays in fog; not a failure glyph",
+          redErrorEncodingRemoved: true
+        };
+        biasObjectIntoSilenceDepth(mesh, 58, "locusField.status:blocked");
         edgeGroup.add(mesh);
       });
     }
